@@ -1,0 +1,17 @@
+{
+    "name": "rocky",
+    "version-string": "0.1",
+    "builtin-baseline" : "a4013afe6d3053e739b37c4cb6b5e64b55611e24",
+    "port-version": 1,
+    "description": "Rocky by Pelican Mapping",
+    "homepage": "https://github.com/pelicanmapping/rocky",
+    "supports": "!(x86 | wasm32)",
+    "dependencies": [
+        "curl",
+        "gdal",
+        "glm",
+        "nlohmann-json",
+        "stb",
+        "tinyxml"
+    ]
+}
