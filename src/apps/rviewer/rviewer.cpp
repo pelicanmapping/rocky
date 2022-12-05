@@ -19,7 +19,7 @@ int main(int argc, char** argv)
     // set up defaults and read command line arguments to override them
     vsg::CommandLine arguments(&argc, argv);
 
-    if (arguments.read({ "--help", "-h", "-?" }))
+    if (arguments.read({ "--help" }))
     {
         return usage(argv[0]);
     }
@@ -29,15 +29,17 @@ int main(int argc, char** argv)
     arguments.read(options);
 
     // window configuration
-    auto traits = vsg::WindowTraits::create();
-    traits->windowTitle = "Rocky";
+    auto traits = vsg::WindowTraits::create("Rocky * Pelican Mapping");
     traits->debugLayer = arguments.read({ "--debug" });
     traits->apiDumpLayer = arguments.read({ "--api" });
+    traits->samples = 1;
     auto window = vsg::Window::create(traits);
 
     // main viewer
     auto viewer = vsg::Viewer::create();
     viewer->addWindow(window);
+
+    viewer->addEventHandler(vsg::CloseHandler::create(viewer));
 
     // the scene graph
     auto vsg_scene = vsg::Group::create();
@@ -49,32 +51,35 @@ int main(int argc, char** argv)
     //mapNode->getMap()->addLayer(layer);
     vsg_scene->addChild(mapNode);
 
+    // let the map node know about our viewer so it can affect
+    // runtime update operations.
+    mapNode->runtime.viewer = viewer;
+
     // compute the bounds of the scene graph to help position camera
-    vsg::ComputeBounds computeBounds;
-    vsg_scene->accept(computeBounds);
-    vsg::dvec3 centre = (computeBounds.bounds.min + computeBounds.bounds.max) * 0.5;
-    double radius = vsg::length(computeBounds.bounds.max - computeBounds.bounds.min) * 0.6;
+    vsg::ComputeBounds cb;
+    vsg_scene->accept(cb);
+    vsg::dsphere bs(
+        (cb.bounds.min + cb.bounds.max) * 0.5,
+        vsg::length(cb.bounds.max - cb.bounds.min) * 0.5);
 
     double nearFarRatio = 0.0005;
 
     // set up the camera
     auto perspective = vsg::Perspective::create(
         30.0,
-        static_cast<double>(window->extent2D().width) / static_cast<double>(window->extent2D().height),
-        nearFarRatio * radius,
-        radius * 4.5);
+        (double)(window->extent2D().width) / (double)(window->extent2D().height),
+        nearFarRatio * bs.radius,
+        bs.radius * 4.5);
 
     auto lookAt = vsg::LookAt::create(
-        centre + vsg::dvec3(0.0, -radius * 3.5, 0.0),
-        centre,
+        bs.center + vsg::dvec3(0.0, -bs.radius * 3.5, 0.0),
+        bs.center,
         vsg::dvec3(0.0, 0.0, 1.0));
 
     auto camera = vsg::Camera::create(
         perspective,
         lookAt,
         vsg::ViewportState::create(window->extent2D()));
-
-    viewer->addEventHandler(vsg::CloseHandler::create(viewer));
 
     viewer->addEventHandler(vsg::Trackball::create(camera));
 
@@ -94,7 +99,7 @@ int main(int argc, char** argv)
     {
         viewer->handleEvents();
         viewer->update();
-        //TODO: MapNode updates here.
+        //TODO: MapNode updates here?
         viewer->recordAndSubmit();
         viewer->present();
     }

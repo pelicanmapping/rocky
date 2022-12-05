@@ -17,6 +17,7 @@
 
 #include <vsg/nodes/CullGroup.h>
 #include <vsg/app/RecordTraversal.h>
+#include <vsg/app/CompileManager.h>
 #include <vsg/ui/UIEvent.h> // time_point
 
 namespace rocky
@@ -102,9 +103,9 @@ namespace rocky
         }
 
         /** Elevation data for this node along with its scale/bias matrix; needed for bounding box */
-        void setElevationRaster(
+        void setElevation(
             shared_ptr<Heightfield> image,
-            const fmat4& matrix) { }
+            const dmat4& matrix);
 
         void updateElevationRaster() { }
 
@@ -228,13 +229,15 @@ namespace rocky
         vsg::observer_ptr<TerrainTileNode> _eastNeighbor;
         vsg::observer_ptr<TerrainTileNode> _southNeighbor;
 
+        mutable util::Future<bool> _childLoader;
+
     private:
 
         void updateNormalMap(
             const TerrainSettings&);
 
-        bool createChildren(
-            TerrainContext&);
+        void createChildren(
+            TerrainContext&) const;
 
         //vsg::ref_ptr<TerrainTileNode> createChild(
         //    const TileKey& key,
@@ -265,8 +268,9 @@ namespace rocky
         // Inherit one shared sampler from parent tile if possible
         void inheritSharedSampler(int binding);
 
-        //const TerrainOptions& options() const;
-
         void dirtyBound();
+
+        vsg::ref_ptr<vsg::StateGroup> createStateGroup(
+            TerrainContext&) const;
     };
 }

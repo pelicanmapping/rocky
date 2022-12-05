@@ -484,16 +484,32 @@ namespace rocky
         return true;
     }
 
-    template<typename A, typename B>
-    A pre_mult(const A& m, const B& rhs) {
-       return rhs * m;
+#if 1
+    // vec3 * mat4
+    //template<typename A, typename B>
+    //A pre_mult(const A& v, const B& _mat) {
+    //    double d = 1.0f / (_mat[0][3] * v.x + _mat[1][3] * v.y + _mat[2][3] * v.z + _mat[3][3]);
+    //    return A(
+    //        (_mat[0][0] * v.x + _mat[1][0] * v.y + _mat[2][0] * v.z + _mat[3][0])*d,
+    //        (_mat[0][1] * v.x + _mat[1][1] * v.y + _mat[2][1] * v.z + _mat[3][1])*d,
+    //        (_mat[0][2] * v.x + _mat[1][2] * v.y + _mat[2][2] * v.z + _mat[3][2])*d);
+    //}
+
+    template<typename M>
+    M pre_mult(const M& a, const M& b) {
+        return a * b;
     }
 
-    template<typename A, typename B>
-    A post_mult(const A& m, const B& rhs) {
-        return m * rhs;
+    //! Convenience function to transform a 3D vector using a 4D matrix
+    inline fvec3 operator * (const fmat4& mat, const fvec3& v) {
+        return fvec3(mat * fvec4(v, 1));
     }
 
+    //! Convenience function to transform a 3D vector using a 4D matrix
+    inline dvec3 operator * (const dmat4& mat, const dvec3& v) {
+        return dvec3(mat * dvec4(v, 1));
+    }
+#endif
 
 #if 0
     /**

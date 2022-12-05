@@ -16,15 +16,16 @@ endif()
 file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 file(GLOB SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*)
+file(GLOB SHADERS_TO_COMPILE
+    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.vert
+    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.frag)
 
 #set(INLINE_GLSL_FILES ${CMAKE_CURRENT_SOURCE_DIR}/shaders/terrain.sdk.glsl)
 
-# Shaders
-make_shader(
-    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/terrain.vert)
-    
-make_shader(
-    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/terrain.frag)
+# Compile shaders into SPIRV
+foreach(file ${SHADERS_TO_COMPILE})
+    compile_shader(${file})
+endforeach()
     
 message(STATUS "Shaders = ${SPIRV_SHADERS}")
 
@@ -64,4 +65,4 @@ if (BUILD_SHARED_LIBS)
 endif()
 
 install(FILES ${HEADERS} DESTINATION include)
-install(FILES ${SPIRV_SHADERS} DESTINATION share)
+install(FILES ${SHADERS} ${SPIRV_SHADERS} DESTINATION share)

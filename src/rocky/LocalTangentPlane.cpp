@@ -45,7 +45,7 @@ TangentPlaneSRS::preTransform(
 {
     for(auto& point : points)
     {
-        dvec3 world = dvec4(point, 1.0) * _local2world;
+        dvec3 world = _local2world * point; // dvec4(point, 1.0) *;
         //double lat, lon, height;
         point = getEllipsoid().geocentricToGeodetic(world);
         //getEllipsoid()->convertXYZToLatLongHeight(world.x(), world.y(), world.z(), lat, lon, height);
@@ -69,7 +69,7 @@ TangentPlaneSRS::postTransform(
     for(auto& point : points)
     {
         world = getEllipsoid().geodeticToGeocentric(point);
-        point = dvec4(world, 1.0) * _world2local;
+        point = _world2local * world; // dvec4(world, 1.0) * _world2local;
     }
 
     if (out_srs)

@@ -26,10 +26,7 @@ namespace
         dvec3 east(-sin(longitude), cos(longitude), 0);
 
         // Compute north vector = outer product up x east
-        dvec3 north = glm::cross(up, east); // ^ east;
-
-        // is this right? or row/col swapped w.r.t. osg?
-        ROCKY_WARN << "Check dmat4 v. osgmatrix" << std::endl;
+        dvec3 north = glm::cross(up, east);
 
         localToWorld[0][0] = east[0];
         localToWorld[0][1] = east[1];
@@ -42,22 +39,6 @@ namespace
         localToWorld[2][0] = up[0];
         localToWorld[2][1] = up[1];
         localToWorld[2][2] = up[2];
-
-
-#if 0
-        // set matrix
-        localToWorld(0, 0) = east[0];
-        localToWorld(0, 1) = east[1];
-        localToWorld(0, 2) = east[2];
-
-        localToWorld(1, 0) = north[0];
-        localToWorld(1, 1) = north[1];
-        localToWorld(1, 2) = north[2];
-
-        localToWorld(2, 0) = up[0];
-        localToWorld(2, 1) = up[1];
-        localToWorld(2, 2) = up[2];
-#endif
     }
 
     inline void convertLatLongHeightToXYZ(

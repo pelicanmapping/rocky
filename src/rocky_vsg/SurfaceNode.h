@@ -46,7 +46,7 @@ namespace rocky
             const TileKey& tilekey);
 
         //! Update the elevation raster associated with this tile
-        void setElevationData(
+        void setElevation(
             shared_ptr<Heightfield> raster,
             const dmat4& scaleBias);
 
@@ -56,7 +56,7 @@ namespace rocky
         }
 
         //! Elevation matrix representing to this surface
-        const dmat4& getElevationMatrix() const { 
+        const dmat4& getElevationMatrix() const {
             return _elevationMatrix;
         }
 
@@ -135,6 +135,8 @@ namespace rocky
 
         Box _localbbox;
         const Box& recomputeLocalBBox();
+
+        std::vector<vsg::vec3> _proxyMesh;
     };
 
 }

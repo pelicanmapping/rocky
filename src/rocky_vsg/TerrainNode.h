@@ -22,11 +22,10 @@ namespace rocky
         public TerrainContext
     {
     public:
-        //! Construct a new terrain node with defaults
-        TerrainNode();
-
         //! Deserialize a new terrain node
-        TerrainNode(const Config& conf);
+        TerrainNode(
+            RuntimeContext& runtime,
+            const Config& conf);
 
         //! Map to render
         void setMap(shared_ptr<Map> map);
@@ -35,7 +34,7 @@ namespace rocky
         //! Serialize
         virtual Config getConfig() const;
 
-    public: // vsg::Group
+    public: // vsg
 
         void traverse(vsg::RecordTraversal&) const override;
 

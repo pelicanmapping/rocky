@@ -6,19 +6,19 @@ SET(CONCAT_COMMAND ${CMAKE_SOURCE_DIR}/cmake/concat_command.cmake)
 
 # compiles a GLSL shader into SPV
 # inputs:
-#   SHADER_SOURCE = source file of shader
+#   GLSL_FILE_TO_COMPILE = source file of shader
 #   SHADER_OUTPUT = output file of shader, without the .spv extension
 #   SHADER_INCLUDES = any GLSL include files that are used by the main GLSL source
 # outputs:
 #   TARGET_SPIRV is appended with the output file + .spv extension
 
-macro(make_shader_with_inlines SHADER_SOURCE SHADER_OUTPUT FILES_TO_CONCAT)    
+macro(compile_shader_with_inlines GLSL_FILE_TO_COMPILE SHADER_OUTPUT FILES_TO_CONCAT)    
     
     # concatenates files to process include files
     add_custom_command(
         OUTPUT ${SHADER_OUTPUT}
-        COMMAND "${CMAKE_COMMAND}" -P ${CONCAT_COMMAND} ${SHADER_SOURCE} ${FILES_TO_CONCAT} ${SHADER_OUTPUT}
-        DEPENDS ${SHADER_SOURCE} ${FILES_TO_CONCAT}
+        COMMAND "${CMAKE_COMMAND}" -P ${CONCAT_COMMAND} ${GLSL_FILE_TO_COMPILE} ${FILES_TO_CONCAT} ${SHADER_OUTPUT}
+        DEPENDS ${GLSL_FILE_TO_COMPILE} ${FILES_TO_CONCAT}
     )
 
     # compiles GLSL into SPIRV
@@ -31,7 +31,13 @@ macro(make_shader_with_inlines SHADER_SOURCE SHADER_OUTPUT FILES_TO_CONCAT)
     list(APPEND SPIRV_SHADERS ${SHADER_OUTPUT}.spv)  
 endmacro()
 
-macro(make_shader GLSL_FILE_TO_COMPILE)
+# compiles a GLSL shader into SPV
+# inputs:
+#   GLSL_FILE_TO_COMPILE = source file of shader
+# outputs:
+#   creates new file: "${GLSL_FILE_TO_COMPILE}.spv"
+#   TARGET_SPIRV is appended with the above new file name
+macro(compile_shader GLSL_FILE_TO_COMPILE)
     # compiles GLSL into SPIRV
     set(SPIRV_OUTPUT_FILE ${GLSL_FILE_TO_COMPILE}.spv)
     add_custom_command(

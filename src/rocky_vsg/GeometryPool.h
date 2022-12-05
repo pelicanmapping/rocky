@@ -35,6 +35,10 @@ namespace rocky
         }
 
         bool hasConstraints;
+        vsg::ref_ptr<vsg::vec3Array> proxy_verts;
+        vsg::ref_ptr<vsg::vec3Array> proxy_normals;
+        vsg::ref_ptr<vsg::vec3Array> proxy_uvs;
+        vsg::ref_ptr<vsg::ushortArray> proxy_indices;
     };
 
 

@@ -61,6 +61,8 @@ TileNodeRegistry::add(
 {
     util::ScopedLock lock(_mutex);
 
+    ROCKY_INFO << LC << "Adding " << tile->getKey().str() << std::endl;
+
     auto& entry = _tiles[tile->getKey()];
     entry._tile = tile;
     bool recyclingOrphan = entry._trackerToken != nullptr;

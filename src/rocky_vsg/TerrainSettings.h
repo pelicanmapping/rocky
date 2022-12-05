@@ -15,6 +15,8 @@ namespace rocky
     public:
         TerrainSettings(const Config& conf);
 
+        void saveToConfig(Config& conf) const;
+
         //! Size of each dimension of each terrain tile, in verts.
         //! Ideally this will be a power of 2 plus 1, i.e.: a number X
         //! such that X = (2^Y)+1 where Y is an integer >= 1. Default=17.

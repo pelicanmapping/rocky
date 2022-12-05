@@ -10,5 +10,5 @@ layout(location = 0) out vec4 outColor;
 
 void main()
 {
-    outColor.rgb = fragColor.rgb;
+    outColor.rgb = fragColor;
 }

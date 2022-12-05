@@ -6,10 +6,10 @@ layout(push_constant) uniform PushConstants
     mat4 modelview;
 } pc;
 
-layout(location = 0) in vec3 inPosition;
+layout(location = 0) in vec3 inVertex;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec3 inUV;
-layout(location = 3) in vec3 inNeighbor;
+layout(location = 3) in vec3 inNeighborVertex;
 layout(location = 4) in vec3 inNeighborNormal;
 
 layout(location = 0) out vec3 fragColor;
@@ -33,7 +33,7 @@ void main()
     //}
 
     float elevation = 0.0; // oe_terrain_getElevation(inTexCoord);
-    vec3 position = inPosition + inNormal*elevation;
+    vec3 position = inVertex + inNormal*elevation;
     gl_Position = (projection * pc.modelview) * vec4(position, 1.0);
 
     mat3 normalMatrix = mat3(transpose(inverse(pc.modelview)));

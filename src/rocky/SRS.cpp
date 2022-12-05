@@ -749,9 +749,7 @@ SRS::createLocalToWorld(
         if (!transformToWorld(xyz, world))
             return false;
        
-        out_local2world = glm::translate(
-            glm::identity<glm::dmat4>(),
-            world);
+        out_local2world = glm::translate(dmat4(1), world);
     }
     else if (isGeocentric())
     {

@@ -142,6 +142,7 @@ namespace rocky
             _revision = rhs._revision;
             // do NOT copy and overwrite _futureTexture!
             _matrix = pre_mult(_matrix, scaleBias);
+            //_matrix *= scaleBIs
             //_matrix.preMult(scaleBias);
         }
     };

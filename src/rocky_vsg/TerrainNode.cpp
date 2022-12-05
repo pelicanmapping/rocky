@@ -16,17 +16,9 @@ using namespace rocky::util;
 
 #define ARENA_LOAD_TILE "terrain.load_tile"
 
-
-TerrainNode::TerrainNode() :
-    vsg::Inherit<vsg::Group,TerrainNode>(),
-    TerrainContext(Config())
-{
-    construct(Config());
-}
-
-TerrainNode::TerrainNode(const Config& conf) :
+TerrainNode::TerrainNode(RuntimeContext& rt, const Config& conf) :
     vsg::Inherit<vsg::Group, TerrainNode>(),
-    TerrainContext(conf)
+    TerrainContext(rt, conf)
 {
     construct(conf);
 }
@@ -35,14 +27,13 @@ void
 TerrainNode::construct(const Config& conf)
 {
     firstLOD.setDefault(0u);
-
-    conf.get("first_lod", firstLOD);
 }
 
 Config
 TerrainNode::getConfig() const
 {
     Config conf("terrain");
+    TerrainSettings::saveToConfig(conf);
     return conf;
 }
 
@@ -62,8 +53,6 @@ TerrainNode::loadMap(const TerrainSettings* settings, IOControl* ioc)
 
     _tilesRoot = vsg::Group::create();
 
-    //this->addChild(_tilesRoot);
-
     // Build the first level of the terrain.
     // Collect the tile keys comprising the root tiles of the terrain.
     //auto map = _map.lock();
@@ -71,6 +60,9 @@ TerrainNode::loadMap(const TerrainSettings* settings, IOControl* ioc)
 
     std::vector<TileKey> keys;
     Profile::getAllKeysAtLOD(settings->firstLOD, map->getProfile(), keys);
+
+    // Now that we have a profile, set up the selection info
+    selectionInfo.initialize(firstLOD, maxLOD, map->getProfile(), minTileRangeFactor, true);
 
 #if 0
     // Load all the root key tiles.
@@ -137,250 +129,95 @@ vsg::ref_ptr<vsg::Node>
 TerrainNode::createPipeline(
     vsg::ref_ptr<vsg::Node> content) const
 {
-    const uint32_t mipmapLevelsHint = 16;
-    const uint32_t reverseDepth = 0;
-    const VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
+    // This method uses the "terrainShaderSet" as a prototype to
+    // define a graphics pipeline that will render the terrain.
 
-    // set up search paths to SPIRV shaders and textures
-    vsg::Paths searchPaths = vsg::getEnvPaths("VSG_FILE_PATH");
-    auto dataDirPath = vsg::Path(); // VSGEARTH_FULL_DATA_DIR);
-    searchPaths.push_back(dataDirPath);
-    searchPaths.push_back(vsg::Path("H:/devel/rocky/install/share"));
+    auto gp_config = vsg::GraphicsPipelineConfig::create(
+        terrainShaderSet);
 
-    // load shaders
-    auto vertexShader = vsg::ShaderStage::read(
-        VK_SHADER_STAGE_VERTEX_BIT,
-        "main",
-        vsg::findFile("terrain.vert.spv",
-            searchPaths));
+    // activate the arrays we intend to use
+    gp_config->enableArray("inVertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    gp_config->enableArray("inNormal", VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    gp_config->enableArray("inUV", VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    gp_config->enableArray("inNeighborVertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    gp_config->enableArray("inNeighborNormal", VK_VERTEX_INPUT_RATE_VERTEX, 12);
 
-    auto fragmentShader = vsg::ShaderStage::read(
-        VK_SHADER_STAGE_FRAGMENT_BIT,
-        "main",
-        vsg::findFile("terrain.frag.spv",
-        searchPaths));
+    // wireframe rendering:
+    gp_config->rasterizationState->polygonMode = VK_POLYGON_MODE_LINE;
 
-    if (!vertexShader || !fragmentShader)
+    // Configure the descriptors we need for textures and uniforms:
+    vsg::Descriptors descriptors;
+
+#if 0 // TODO - one per layer...?
+    if (stateInfo.image)
     {
-        ROCKY_WARN << "Could not create shaders." << std::endl;
-        return content;
-        //return vsg::ref_ptr<vsg::Node>(nullptr);
-    }
+        auto sampler = Sampler::create();
+        sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 
-    vsg::DescriptorSetLayoutBindings layerDescriptorBindings {
-        // layer parameters
-        { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
-    };
-    auto layerDescriptorSetLayout = vsg::DescriptorSetLayout::create(layerDescriptorBindings);
+        if (sharedObjects) sharedObjects->share(sampler);
 
-    // Now the visible layers
-    auto layers = map->getLayers<ImageLayer>([&](const ImageLayer* layer) {
-        return layer && layer->isOpen();
-        });
+        graphicsPipelineConfig->assignTexture(descriptors, "diffuseMap", stateInfo.image, sampler);
 
-    uint32_t numLayers = (uint32_t)layers.size();
-
-#if 0
-    auto layerParams = LayerParams::create(numLayers);
-    for (int i = 0; i < numImageLayers; ++i)
-    {
-        layerParams->layerUIDs[i] = imageLayers[i]->getUID();
-        layerParams->setEnabled(i, imageLayers[i]->getVisible());
-        layerParams->setOpacity(i, imageLayers[i]->getOpacity());
-        layerParams->setBlendMode(i, imageLayers[i]->getColorBlending());
-        imageLayers[i]->Layer::addCallback(new VOELayerCallback(layerParams, i));
+        if (stateInfo.greyscale) defines.insert("VSG_GREYSACLE_DIFFUSE_MAP");
     }
 #endif
 
-    vsg::DescriptorSetLayoutBindings descriptorSetBindings
+    // Initialize GraphicsPipeline from the data in the configuration.
+    if (sharedObjects)
+        sharedObjects->share(gp_config, [](auto gpc) { gpc->init(); });
+    else
+        gp_config->init();
+
+    // create StateGroup as the root of the scene/command graph to hold
+    // the GraphicsProgram, and binding of Descriptors to decorate the whole graph
+    auto stateGroup = vsg::StateGroup::create();
+    stateGroup->add(gp_config->bindGraphicsPipeline);
+
+    // set up any samplers and uniforms the terrain intends to use;
+    // these go in a descriptor set.
+    if (!descriptors.empty())
     {
-        // color layers:
-        {0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, numLayers, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+        // the descriptor set itself (coupled with its layout):
+        auto descriptorSet = vsg::DescriptorSet::create(
+            gp_config->descriptorSetLayout,
+            descriptors);
 
-        // elevation:
-        {1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
+        if (sharedObjects)
+            sharedObjects->share(descriptorSet);
 
-        // normal:
-        {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+        // the bind command, which will run as part of the state group
+        auto bindDescriptorSet = vsg::BindDescriptorSet::create(
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            gp_config->layout,
+            0,
+            descriptorSet);
 
-        {3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
-    };
-    auto descriptorSetLayout = vsg::DescriptorSetLayout::create(descriptorSetBindings);
+        if (sharedObjects)
+            sharedObjects->share(bindDescriptorSet);
 
-    // projection view, and model matrices, actual push constant calls autoaatically provided by
-    // VSG's DispatchTraversal
-    vsg::PushConstantRanges pushConstantRanges
-    {
-        {VK_SHADER_STAGE_VERTEX_BIT, 0, 128} 
-    };
-
-    auto pipelineLayout = vsg::PipelineLayout::create(
-        vsg::DescriptorSetLayouts{
-            descriptorSetLayout,
-            vsg::ViewDescriptorSetLayout::create(),
-            layerDescriptorSetLayout },
-        pushConstantRanges);
-
-    auto sampler = vsg::Sampler::create();
-    sampler->maxLod = mipmapLevelsHint;
-    sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    sampler->anisotropyEnable = VK_TRUE;
-    sampler->maxAnisotropy = 16.0f;
-
-    auto elevationSampler = vsg::Sampler::create();
-    elevationSampler->maxLod = 0;
-    elevationSampler->minFilter = VK_FILTER_NEAREST;
-    elevationSampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    elevationSampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    elevationSampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-
-    auto normalSampler = vsg::Sampler::create();
-    normalSampler->maxLod = 0;
-    normalSampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    normalSampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    normalSampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        stateGroup->add(bindDescriptorSet);
 
 #if 0
-    osg::Texture* emptyOsgElevation = createEmptyElevationTexture();
-    auto emptyElevData = convertToVsg(emptyOsgElevation->getImage(0));
-    emptyElevationDescImage = vsg::DescriptorImage::create(
-        elevationSampler,
-        emptyElevData,
-        1,
-        0,
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        // the bind-view command, which binds descriptors for view-dependent
+        // things like lights. Not sure if this goes here.
+        auto bindViewDescriptorSets = vsg::BindViewDescriptorSets::create(
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            gp_config->layout,
+            1);
 
-    osg::Texture* emptyOsgNormal = createEmptyNormalMapTexture();
-    auto emptyNormalData = convertToVsg(emptyOsgNormal->getImage(0));
-    emptyNormalDescImage = vsg::DescriptorImage::create(
-        normalSampler,
-        emptyNormalData,
-        2,
-        0,
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        if (sharedObjects)
+            sharedObjects->share(bindViewDescriptorSets);
+
+        stateGroup->add(bindViewDescriptorSets);
 #endif
-
-    vsg::VertexInputState::Bindings vertexBindingsDescriptions
-    {
-        VkVertexInputBindingDescription{0, sizeof(vsg::vec3), VK_VERTEX_INPUT_RATE_VERTEX}, // verts
-        VkVertexInputBindingDescription{1, sizeof(vsg::vec3), VK_VERTEX_INPUT_RATE_VERTEX}, // normals
-        VkVertexInputBindingDescription{2, sizeof(vsg::vec3), VK_VERTEX_INPUT_RATE_VERTEX}, // uvs
-        VkVertexInputBindingDescription{3, sizeof(vsg::vec3), VK_VERTEX_INPUT_RATE_VERTEX}, // neighbors
-        VkVertexInputBindingDescription{4, sizeof(vsg::vec3), VK_VERTEX_INPUT_RATE_VERTEX}, // neighbor normals
-    };
-
-    vsg::VertexInputState::Attributes vertexAttributeDescriptions
-    {
-        VkVertexInputAttributeDescription{0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0}, // verts
-        VkVertexInputAttributeDescription{1, 1, VK_FORMAT_R32G32B32_SFLOAT, 0}, // normals
-        VkVertexInputAttributeDescription{2, 2, VK_FORMAT_R32G32B32_SFLOAT, 0}, // uvs
-        VkVertexInputAttributeDescription{3, 3, VK_FORMAT_R32G32B32_SFLOAT, 0}, // neighbors
-        VkVertexInputAttributeDescription{3, 3, VK_FORMAT_R32G32B32_SFLOAT, 0}  // neighbor normals
-    };
-
-    auto depthStencilState = vsg::DepthStencilState::create();
-
-    vsg::ShaderStage::SpecializationConstants specializationConstants
-    {
-        {0, vsg::uintValue::create(reverseDepth)},
-        {1, vsg::uintValue::create(numLayers)}
-    };
-    vertexShader->specializationConstants = specializationConstants;
-    fragmentShader->specializationConstants = specializationConstants;
-
-    vsg::GraphicsPipelineStates fillPipelineStates
-    {
-        vsg::RasterizationState::create(),
-        vsg::VertexInputState::create(vertexBindingsDescriptions, vertexAttributeDescriptions),
-        vsg::InputAssemblyState::create(),
-        vsg::MultisampleState::create(samples),
-        vsg::ColorBlendState::create(),
-        depthStencilState
-    };
-
-    auto wireRasterState = vsg::RasterizationState::create();
-    wireRasterState->polygonMode = VK_POLYGON_MODE_LINE;
-    vsg::GraphicsPipelineStates wirePipelineStates(fillPipelineStates);
-    wirePipelineStates[0] = wireRasterState;
-
-    auto pointRasterState = vsg::RasterizationState::create();
-    pointRasterState->polygonMode = VK_POLYGON_MODE_POINT;
-    vsg::GraphicsPipelineStates pointPipelineStates(fillPipelineStates);
-    pointPipelineStates[0] = pointRasterState;
-
-    vsg::ShaderStages shaderStages { vertexShader, fragmentShader };
-
-    auto lightStateGroup = vsg::StateGroup::create();
-
-    lightStateGroup->add(vsg::BindViewDescriptorSets::create(
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        pipelineLayout,
-        1));
-
-#if 0
-    auto layerDescriptorSet = vsg::DescriptorSet::create(
-        layerDescriptorSetLayout,
-        vsg::Descriptors{ layerParams->layerParamsDescriptor });
-
-    auto bindLayerDescriptorSet = vsg::BindDescriptorSet::create(
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        pipelineLayout,
-        2,
-        layerDescriptorSet);
-
-    lightStateGroup->add(bindLayerDescriptorSet);
-#endif
-
-    // StateSwitch experiments
-    auto rasterStateGroup = vsg::StateGroup::create();
-    auto rasterSwitch = vsg::StateSwitch::create();
-
-    vsg::GraphicsPipelineStates* pipelineStates[] = {
-        &fillPipelineStates,
-        &wirePipelineStates,
-        &pointPipelineStates };
-
-    for (int i = 0; i < 3; ++i)
-    {
-        auto graphicsPipeline = vsg::GraphicsPipeline::create(
-            pipelineLayout,
-            shaderStages,
-            *pipelineStates[i]);
-
-        auto bindGraphicsPipeline = vsg::BindGraphicsPipeline::create(graphicsPipeline);
-        rasterSwitch->add(i == 0, bindGraphicsPipeline);
     }
-    rasterStateGroup->add(rasterSwitch);
-    rasterStateGroup->addChild(lightStateGroup);
 
-    //auto plodRoot = vsg::read_cast<vsg::Node>("root.tile", options);
+    // assign any custom ArrayState that may be required.
+    stateGroup->prototypeArrayState = terrainShaderSet->getSuitableArrayState(
+        gp_config->shaderHints->defines);
 
-    lightStateGroup->addChild(content);
+    stateGroup->addChild(content);
 
-    // Put everything under a group node in order to have a place to hang the lights.
-
-#if 0
-    auto sceneGroup = vsg::Group::create();
-
-    sceneGroup->addChild(rasterStateGroup);
-    directionalLight = vsg::DirectionalLight::create();
-    directionalLight->name = "directional";
-    directionalLight->color = simState.getColor();
-    directionalLight->intensity = 1.0f;
-    directionalLight->direction = simState.worldDirection;
-    sceneGroup->addChild(directionalLight);
-    ambientLight = vsg::AmbientLight::create();
-    ambientLight->name = "ambient";
-    ambientLight->color = simState.getAmbient();
-    ambientLight->intensity = 1.0f;
-    sceneGroup->addChild(ambientLight);
-    // assign the EllipsoidModel so that the overall geometry of the database can be used as guide
-    // for clipping and navigation.
-    sceneGroup->setObject("EllipsoidModel", ellipsoidModel);
-    return sceneGroup;
-#endif
-
-    return rasterStateGroup;
+    return stateGroup;
 }

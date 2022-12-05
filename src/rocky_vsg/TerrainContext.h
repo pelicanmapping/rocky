@@ -8,37 +8,58 @@
 #include <rocky_vsg/Common.h>
 #include <rocky_vsg/GeometryPool.h>
 #include <rocky_vsg/Merger.h>
+#include <rocky_vsg/RuntimeContext.h>
 #include <rocky_vsg/SelectionInfo.h>
 #include <rocky_vsg/TerrainSettings.h>
 #include <rocky_vsg/TileNodeRegistry.h>
 #include <rocky_vsg/TileRenderModel.h>
-#include <vsg/core/ref_ptr.h>
+
+#include <vsg/io/Options.h>
+#include <vsg/utils/ShaderSet.h>
+#include <vsg/utils/SharedObjects.h>
 
 namespace rocky
 {
-    class GeometryPool;
     class Map;
-    class Merger;
-    class SelectionInfo;
-    class TerrainNode;
-    class TerrainSettings;
-    class TileNodeRegistry;
 
     class TerrainContext : public TerrainSettings
     {
     public:
-        TerrainContext(const Config& conf) :
-            TerrainSettings(conf) { }
+        TerrainContext(
+            RuntimeContext& runtime,
+            const Config& conf);
 
+        //! runtime operations (scene graph, views, etc)
+        RuntimeContext& runtime;
+
+        //! the map this terrain is rendering
         shared_ptr<Map> map;
-        //vsg::ref_ptr<TerrainNode> terrain;
+
+        //! creator of terrain til geometry
         GeometryPool geometryPool;
+
+        //! merges new tiles into the live scene graph
         Merger merger;
+
+        //! tracks all existing tiles
         TileNodeRegistry tiles;
+
         RenderBindings bindings{ 5 };
+
+        //! manages visibility and morphing ranges
         internal::SelectionInfo selectionInfo;
+
+        //! name of job arena used to load data
         std::string loadArenaName = "terrain.load";
-        //TerrainSettings* settings;
+
+        //! VSG state sharing
+        vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
+
+        //! VSG parent shader set that we use to develop
+        //! the terrain tile state group for each tile.
+        //! Not sure yet if we're doing this correctly.
+        vsg::ref_ptr<vsg::ShaderSet> terrainShaderSet;
+        
 
 #if 0
             const Map*                          map,
@@ -102,6 +123,10 @@ namespace rocky
         const FrameClock*                     _clock;
         osg::ref_ptr<TextureArena>            _textures;
 #endif
+
+    private:
+
+        vsg::ref_ptr<vsg::ShaderSet> createTerrainShaderSet() const;
     };
 
 }

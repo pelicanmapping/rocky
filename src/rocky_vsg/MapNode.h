@@ -6,9 +6,15 @@
 #pragma once
 
 #include <rocky_vsg/Common.h>
+#include <rocky_vsg/RuntimeContext.h>
 #include <rocky/Map.h>
 #include <rocky/Instance.h>
 #include <vsg/nodes/Group.h>
+#include <vsg/app/CompileManager.h>
+
+namespace vsg {
+    class Viewer;
+}
 
 namespace rocky
 {
@@ -16,6 +22,7 @@ namespace rocky
     class DrapableNode;
     class ClampableNode;
     class TerrainNode;
+    class SceneGraphContext;
 
     namespace util
     {
@@ -132,6 +139,8 @@ namespace rocky
             float my) const;
 
 
+        RuntimeContext runtime;
+
     public: //override
 
         //virtual Sphere computeBound() const;
@@ -170,7 +179,6 @@ namespace rocky
         optional<float> _screenSpaceError;
 
         Instance& _instance;
-        //vsg::ref_ptr<TerrainNode> _terrainNode;
 
         vsg::ref_ptr<TerrainNode> _terrain;
         shared_ptr<Map> _map;

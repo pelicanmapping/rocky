@@ -216,20 +216,14 @@ MapNode::MapNode(Instance& i) :
     construct(Config());
 }
 
-MapNode::MapNode(
-    shared_ptr<Map> map,
-    Instance& i) :
-
+MapNode::MapNode(shared_ptr<Map> map, Instance& i) :
     _instance(i),
     _map(map ? map : Map::create(i))
 {
     construct(Config());
 }
 
-MapNode::MapNode(
-    const Config& conf,
-    Instance& i) :
-
+MapNode::MapNode(const Config& conf, Instance& i) :
     _map(Map::create(i)),
     _instance(i)
 {
@@ -270,7 +264,8 @@ MapNode::construct(const Config& conf)
     //ShaderGenerator::setIgnoreHint(this, true);
 
     // initialize 0Ls
-    _terrain = TerrainNode::create(conf);
+    _terrain = TerrainNode::create(runtime, conf);
+
     addChild(_terrain);
 
     //_terrainEngine = nullptr;

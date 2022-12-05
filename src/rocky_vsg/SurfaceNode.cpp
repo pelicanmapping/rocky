@@ -5,6 +5,7 @@
  */
 #include "SurfaceNode.h"
 #include "Utils.h"
+#include <rocky/Heightfield.h>
 #include <rocky/Horizon.h>
 #include <numeric>
 
@@ -44,10 +45,10 @@ HorizonTileCuller::set(
         //    _points[i] = bbox.corner(4 + i) * local2world;
         //}
 
-        _points[0] = dvec3(bbox.xmin, bbox.ymin, bbox.zmax);
-        _points[1] = dvec3(bbox.xmax, bbox.ymin, bbox.zmax);
-        _points[2] = dvec3(bbox.xmax, bbox.ymax, bbox.zmax);
-        _points[3] = dvec3(bbox.xmin, bbox.ymax, bbox.zmax);
+        _points[0] = local2world * dvec3(bbox.xmin, bbox.ymin, bbox.zmax);
+        _points[1] = local2world * dvec3(bbox.xmax, bbox.ymin, bbox.zmax);
+        _points[2] = local2world * dvec3(bbox.xmax, bbox.ymax, bbox.zmax);
+        _points[3] = local2world * dvec3(bbox.xmin, bbox.ymax, bbox.zmax);
     }
 }
 
@@ -72,17 +73,9 @@ HorizonTileCuller::isVisible(const dvec3& from) const
 
 const bool SurfaceNode::_enableDebugNodes = ::getenv("OSGEARTH_REX_DEBUG") != 0L;
 
-SurfaceNode::SurfaceNode(
-    const TileKey& tilekey) //,
-    //vsg::ref_ptr<TileDrawable> drawable)
+SurfaceNode::SurfaceNode(const TileKey& tilekey)
 {
-    //setName(tilekey.str());
     _tileKey = tilekey;
-
-    //_drawable = drawable;
-
-    // Create the final node.
-    //addChild(_drawable);
 
     // Establish a local reference frame for the tile:
     GeoPoint centroid = tilekey.getExtent().getCentroid();
@@ -90,10 +83,9 @@ SurfaceNode::SurfaceNode(
     dmat4 local2world;
     centroid.createLocalToWorld( local2world );
     this->matrix = to_vsg(local2world);
-    //setMatrix( local2world );
     
     // Initialize the cached bounding box.
-    setElevationData(nullptr, fmat4(1));
+    setElevation(nullptr, fmat4(1));
 }
 
 vsg::dsphere
@@ -106,7 +98,7 @@ SurfaceNode::computeBound() const
 
     Sphere bs;
     for (unsigned i = 0; i < 8; ++i)
-        bs.expandBy(_localbbox.corner(i)*local2world);
+        bs.expandBy(local2world * _localbbox.corner(i));
 
     return vsg::dsphere(
         vsg::dvec3(bs.center.x, bs.center.y, bs.center.z),
@@ -136,11 +128,72 @@ const Box&
 SurfaceNode::recomputeLocalBBox()
 {
     ROCKY_TODO("compute the local bounding box for a surface node (take from TileDrawable)");
+
+    auto geom = children[0].cast<SharedGeometry>();
+    ROCKY_SOFT_ASSERT_AND_RETURN(geom, _localbbox);
+
+    auto verts = geom->proxy_verts;
+    auto normals = geom->proxy_normals;
+    auto uvs = geom->proxy_uvs;
+    
+    ROCKY_SOFT_ASSERT_AND_RETURN(verts && normals && uvs, _localbbox);
+
+
+    //const osg::Vec3Array& verts = *static_cast<osg::Vec3Array*>(_geom->getVertexArray());
+    //const osg::DrawElements* de = dynamic_cast<osg::DrawElements*>(_geom->getDrawElements());
+
+    //OE_SOFT_ASSERT_AND_RETURN(de != nullptr, void());
+
+    if (_proxyMesh.size() < verts->size())
+    {
+        _proxyMesh.resize(verts->size());
+    }
+
+    if (_elevationRaster)
+    {
+        float
+            scaleU = _elevationMatrix[0][0],
+            scaleV = _elevationMatrix[1][1],
+            biasU = _elevationMatrix[3][0],
+            biasV = _elevationMatrix[3][1];
+
+        ROCKY_SOFT_ASSERT_AND_RETURN(!equivalent(scaleU, 0.0f) && equivalent(scaleV, 0.0f),
+            _localbbox);
+
+        for (int i = 0; i < verts->size(); ++i)
+        {
+            if (((int)uvs->at(i).z & VERTEX_HAS_ELEVATION) == 0)
+            {
+                float h = _elevationRaster->heightAt(
+                    clamp(uvs->at(i).x*scaleU + biasU, 0.0f, 1.0f),
+                    clamp(uvs->at(i).y*scaleV + biasV, 0.0f, 1.0f));
+
+                _proxyMesh[i] = verts->at(i) + normals->at(i) * h;
+            }
+            else
+            {
+                _proxyMesh[i] = verts->at(i);
+            }
+        }
+    }
+
+    else
+    {
+        std::copy(verts->begin(), verts->end(), _proxyMesh.begin());
+    }
+
+    Box box;
+    for (auto& vert : _proxyMesh)
+    {
+        box.expandBy(to_glm(vert));
+    }
+    _localbbox = box;
+
     return _localbbox;
 }
 
 void
-SurfaceNode::setElevationData(
+SurfaceNode::setElevation(
     shared_ptr<Heightfield> raster,
     const dmat4& scaleBias)
 {
@@ -226,7 +279,7 @@ SurfaceNode::setElevationData(
         for (int j = 0; j < 8; ++j)
         {
             dvec4 corner = dvec4(to_glm(childCorners[j]), 1);
-            corner = corner * local2world;
+            corner = local2world * corner;
             childCorners[j] = to_vsg(fvec3(corner));
             //corner = to_vsg(dvec4(to_glm(corner),1) * local2world;
         }

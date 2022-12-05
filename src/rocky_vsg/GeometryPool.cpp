@@ -179,12 +179,7 @@ GeometryPool::createIndices(
     unsigned numIncidesInSkirt = getNumSkirtElements(tileSize, settings.skirtRatio);
     unsigned numIndices = numIndicesInSurface + numIncidesInSkirt;
 
-    //GLenum mode = UseGpuTessellation ? GL_PATCHES : GL_TRIANGLES;
-
     auto indices = vsg::ushortArray::create(numIndices);
-
-    //osg::ref_ptr<SharedDrawElements> primSet = new SharedDrawElements(mode);
-    //primSet->reserveElements(numIndiciesInSurface + numIncidesInSkirt);
 
     // tessellate the surface:
     unsigned p = 0;
@@ -222,32 +217,24 @@ GeometryPool::createIndices(
         addSkirtTriangles(p, i, skirtBegin);
     }
 
-    //primSet->setElementBufferObject(new osg::ElementBufferObject());
-
     return indices;
-    //return primSet.release();
-}
-
-
-
-void
-GeometryPool::tessellateSurface(
-    unsigned tileSize,
-    vsg::ref_ptr<vsg::ushortArray> indices) const
-{
 }
 
 namespace
 {
     struct Locator
     {
-        shared_ptr<SRS> _srs;
-        dmat4 _xform{ 1 }, _inverse{ 1 };
+        dmat4 _xform;
+        bool _isGeographic;
+        const Ellipsoid& _ellipsoid;
+        //dmat4 _inverse{ 1 };
 
-        Locator(const GeoExtent& extent)
+        Locator(const GeoExtent& extent) :
+            _isGeographic(extent.getSRS()->isGeographic()),
+            _ellipsoid(extent.getSRS()->getEllipsoid())
         {
-            _srs = extent.getSRS();
-            ROCKY_HARD_ASSERT(_srs);
+            //_xform = glm::translate(dmat4(1), dvec3(extent.xmin(), extent.ymin(), 0));
+            //_xform = glm::scale(_xform, dvec3(extent.width(), extent.height(), 1));
 
             _xform = dmat4(
                 extent.width(), 0.0, 0.0, 0.0,
@@ -255,20 +242,21 @@ namespace
                 0.0, 0.0, 1.0, 0.0,
                 extent.xMin(), extent.yMin(), 0.0, 1.0);
 
-            _inverse = glm::inverse(_xform);
+            //_inverse = glm::inverse(_xform);
         }
 
-        void worldToUnit(const dvec3& world, dvec3& unit) const {
-            if (_srs->isGeographic())
-                unit = _srs->getEllipsoid().geocentricToGeodetic(world) * _inverse;
-            else
-                unit = world * _inverse;
-        }
+        //void worldToUnit(const dvec3& world, dvec3& unit) const {
+        //    if (_srs->isGeographic())
+        //        unit = _inverse * _srs->getEllipsoid().geocentricToGeodetic(world);
+        //    else
+        //        unit = _inverse * world;
+        //}
 
-        void unitToWorld(const dvec3& unit, dvec3& world) const {
-            world = unit * _xform;
-            if (_srs->isGeographic())
-                world = _srs->getEllipsoid().geodeticToGeocentric(world);
+        inline dvec3 unitToWorld(const dvec3& unit) const {
+            dvec3 world = _xform * unit;
+            if (_isGeographic)
+                world = _ellipsoid.geodeticToGeocentric(world);
+            return world;
         }
     };
 }
@@ -285,9 +273,8 @@ GeometryPool::createGeometry(
     GeoPoint centroid = tileKey.getExtent().getCentroid();
     centroid.toWorld( centerWorld );
 
-    dmat4 world2local, local2world;
+    dmat4 world2local;
     centroid.createWorldToLocal(world2local);
-    local2world = glm::inverse(world2local);// .invert(world2local);
 
     // Attempt to calculate the number of verts in the surface geometry.
     bool needsSkirt = settings.skirtRatio > 0.0f;
@@ -302,57 +289,18 @@ GeometryPool::createGeometry(
     ROCKY_TODO("GLenum mode = gpuTessellation ? GL_PATCHES : GL_TRIANGLES;");
 
     Sphere tileBound;
-    //osg::BoundingSphere tileBound;
-
-    ROCKY_TODO("Make the geometry!!");
-//    osg::ref_ptr<osg::VertexBufferObject> vbo = new osg::VertexBufferObject();
-
-    //SharedDrawElements* primSet = nullptr;
 
     // the initial vertex locations:
     auto verts = vsg::vec3Array::create(numVerts);
-    //osg::ref_ptr<osg::Vec3Array> verts = new osg::Vec3Array();
-    //verts->setVertexBufferObject(vbo.get());
-    //verts->reserve( numVerts );
-    //verts->setBinding(verts->BIND_PER_VERTEX);
-    //geom->setVertexArray( verts.get() );
-
-    // the surface normals (i.e. extrusion vectors)
     auto normals = vsg::vec3Array::create(numVerts);
-    //osg::ref_ptr<osg::Vec3Array> normals = new osg::Vec3Array();
-    //normals->setVertexBufferObject(vbo.get());
-    //normals->reserve( numVerts );
-    //normals->setBinding(normals->BIND_PER_VERTEX);
-    //geom->setNormalArray( normals.get() );
-
-    // tex coord is [0..1] across the tile. The 3rd dimension tracks whether the
-    // vert is masked: 0=yes, 1=no
-    bool populate_uvs = true;
     auto uvs = vsg::vec3Array::create(numVerts);
-    //osg::ref_ptr<osg::Vec3Array> texCoords = new osg::Vec3Array();
-    //texCoords->setBinding(texCoords->BIND_PER_VERTEX);
-    //texCoords->setVertexBufferObject(vbo.get());
-    //texCoords->reserve( numVerts );
-    //geom->setTexCoordArray(texCoords.get());
-
     vsg::ref_ptr<vsg::vec3Array> neighbors;
     vsg::ref_ptr<vsg::vec3Array> neighborNormals;
+
     if (settings.morphTerrain == true)
     {
-        // neighbor positions (for morphing)
         neighbors = vsg::vec3Array::create(numVerts);
-        //neighbors = new osg::Vec3Array();
-        //neighbors->setBinding(neighbors->BIND_PER_VERTEX);
-        //neighbors->setVertexBufferObject(vbo.get());
-        //neighbors->reserve( numVerts );
-        //geom->setNeighborArray(neighbors.get());
-
         neighborNormals = vsg::vec3Array::create(numVerts);
-        //neighborNormals = new osg::Vec3Array();
-        //neighborNormals->setVertexBufferObject(vbo.get());
-        //neighborNormals->reserve( numVerts );
-        //neighborNormals->setBinding(neighborNormals->BIND_PER_VERTEX);
-        //geom->setNeighborNormalArray( neighborNormals.get() );
     }
 
 #if 0
@@ -373,9 +321,9 @@ GeometryPool::createGeometry(
 #endif
     {
         dvec3 unit;
-        dvec3 model;
-        dvec3 modelLTP;
-        dvec3 modelPlusOne;
+        dvec3 world;
+        dvec3 local;
+        dvec3 world_plus_one;
         dvec3 normal;
 
         Locator locator(tileKey.getExtent());
@@ -389,29 +337,20 @@ GeometryPool::createGeometry(
                 unsigned i = row * tileSize + col;
 
                 unit = dvec3(nx, ny, 0.0);
-                locator.unitToWorld(unit, model);
-                modelLTP = model * world2local;
-                verts->set(i, vsg::vec3(modelLTP.x, modelLTP.y, modelLTP.z));
-                //verts->push_back(modelLTP);
+                world = locator.unitToWorld(unit);
+                local = world2local * world;
+                verts->set(i, vsg::vec3(local.x, local.y, local.z));
 
-                tileBound.expandBy(modelLTP);
+                tileBound.expandBy(local);
 
-                if (populate_uvs)
-                {
-                    // Use the Z coord as a type marker
-                    float marker = VERTEX_VISIBLE;
-                    uvs->set(i, vsg::vec3(nx, ny, marker));
-                    //xCoords->push_back(osg::Vec3f(nx, ny, marker));
-                }
+                // Use the Z coord as a type marker
+                float marker = VERTEX_VISIBLE;
+                uvs->set(i, vsg::vec3(nx, ny, marker));
 
                 unit.z = 1.0;
-                //unit.z() = 1.0f;
-                locator.unitToWorld(unit, modelPlusOne);
-                normal = (modelPlusOne*world2local) - modelLTP;
-                normal = glm::normalize(normal);
-                //normal.normalize();
+                world_plus_one = locator.unitToWorld(unit);
+                normal = glm::normalize((world2local*world_plus_one) - local);
                 normals->set(i, vsg::vec3(normal.x, normal.y, normal.z));
-                //normals->push_back(normal);
 
                 // neighbor:
                 if (neighbors)
@@ -451,76 +390,12 @@ GeometryPool::createGeometry(
                 addSkirtDataForIndex(p, r*tileSize, height); //west
         }
 
-        // By default we tessellate the surface, but if there's a masking set
-        // it might replace some or all of our surface geometry.
-        //bool tessellateSurface = true;
-
-//        if (tessellateSurface) // && primSet == nullptr)
-
         auto indices =
             _enabled ? _defaultIndices : createIndices(settings);
 
-        //{
-        //    if (_enabled)
-        //        primSet = _defaultPrimSet.get();
-        //    else
-        //        primSet = createPrimitiveSet(settings);
-        //}
-
-        //if (primSet)
-        //{
-        //    geom->setDrawElements(primSet);
-        //}
-    //}
-
-#if 0
-    // if we are using GL4, create the GL4 tile model.
-        if (/*using GL4*/true)
-        {
-            unsigned size = geom->getVertexArray()->size();
-
-            geom->_verts.reserve(size);
-
-            for (unsigned i = 0; i < size; ++i)
-            {
-                GL4Vertex v;
-
-                v.position = (*geom->getVertexArray())[i];
-                v.normal = (*geom->getNormalArray())[i];
-                v.uv = (*geom->getTexCoordArray())[i];
-
-                if (geom->getNeighborArray())
-                    v.neighborPosition = (*geom->getNeighborArray())[i];
-
-                if (geom->getNeighborNormalArray())
-                    v.neighborNormal = (*geom->getNeighborNormalArray())[i];
-
-                geom->_verts.emplace_back(std::move(v));
-            }
-        }
-#endif
-
-        //return geom.release();
-
         // the geometry:
         auto geom = SharedGeometry::create();
-        //geom->verts = verts;
-        //geom->normals = normals;
-        //geom->uvs = uvs;
-        //geom->neighbors = neighbors;
-        //geom->neighborNormals = neighborNormals;
-        //geom->indices = indices;
 
-#if 0
-        geom->addChild(vsg::BindVertexBuffers::create(
-            0,
-            vsg::DataList{ verts, normals, uvs, neighbors, neighborNormals }));
-
-        geom->addChild(vsg::BindIndexBuffer::create(indices));
-
-        geom->addChild(vsg::DrawIndexed::create(
-            indices->size(), 1, 0, 0, 0));
-#else
         geom->assignArrays(vsg::DataList{
             verts, normals, uvs, neighbors, neighborNormals });
 
@@ -533,7 +408,12 @@ GeometryPool::createGeometry(
                 0,               // first index
                 0,               // vertex offset
                 0));             // first instance
-#endif
+
+        // maintain for calculating proxy geometries
+        geom->proxy_verts = verts;
+        geom->proxy_normals = normals;
+        geom->proxy_uvs = uvs;
+        geom->proxy_indices = indices;
 
         return geom;
     }

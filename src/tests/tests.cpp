@@ -31,14 +31,20 @@ TEST_CASE("Math")
     REQUIRE(is_identity(fmat4(1)));
     REQUIRE(!is_identity(fmat4()));
 
-    fmat4 scalebias{ 1 };
-    scalebias = glm::translate(fmat4(1), fvec3(0.5, 0.5, 0.0));
-    scalebias = glm::scale(scalebias, fvec3(0.5, 0.5, 1.0));
-    REQUIRE(!is_identity(scalebias));
-    REQUIRE(scalebias[0][0] == 0.5);
-    REQUIRE(scalebias[1][1] == 0.5);
-    REQUIRE(scalebias[3][0] == 0.5);
-    REQUIRE(scalebias[3][1] == 0.5);
+    fmat4 scale_bias{ 1 };
+    scale_bias = glm::translate(fmat4(1), fvec3(0.25, 0.25, 0.0));
+    scale_bias = glm::scale(scale_bias, fvec3(0.5, 0.5, 1.0));
+    REQUIRE(!is_identity(scale_bias));
+    REQUIRE(scale_bias[0][0] == 0.5f);
+    REQUIRE(scale_bias[1][1] == 0.5f);
+    REQUIRE(scale_bias[3][0] == 0.25f);
+    REQUIRE(scale_bias[3][1] == 0.25f);
+
+    fvec3 r = scale_bias * fvec3(1, 1, 0); // pre_mult(fvec3(0, 0, 0), scalebias);
+    std::cout << r.x << ", " << r.y << ", " << r.z << std::endl;
+    REQUIRE(r == fvec3(0.75f, 0.75f, 0));
+
+
 }
 
 TEST_CASE("Image")
