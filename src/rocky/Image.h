@@ -85,17 +85,17 @@ namespace rocky
 
         //! Value (type T) at s, t, layer.
         template<class T> T data(unsigned s, unsigned t, unsigned layer = 0) const {
-            return ((T*)_data.get())[layer*width()*height() + t*width() + s];
+            return reinterpret_cast<T*>(_data.get())[layer*width()*height() + t*width() + s];
         }
 
         //! Mutable reference to the value (type T) at s, t, layer.
         template<class T> T& data(unsigned s, unsigned t, unsigned layer = 0) {
-            return ((T*)_data.get())[layer*width()*height() + t*width() + s];
+            return reinterpret_cast<T*>(_data.get())[layer*width()*height() + t*width() + s];
         }
 
         //! Value at the i'th position in the data array
         template<class T> T data(unsigned offset) const {
-            return ((T*)_data.get())[offset];
+            return reinterpret_cast<T*>(_data.get())[offset];
         }
 
         //! Read the pixel at a column, row, and layer
@@ -223,7 +223,7 @@ namespace rocky
     {
         _layouts[pixelFormat()].read(
             pixel,
-            _data.get() + (width()*height()*r + height()*t + s)*_layouts[pixelFormat()].bytes_per_pixel,
+            _data.get() + (width()*height()*r + width()*t + s)*_layouts[pixelFormat()].bytes_per_pixel,
             _layouts[pixelFormat()].num_components);
     }
 

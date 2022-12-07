@@ -12,6 +12,8 @@
 
 namespace rocky
 {
+    class TerrainSettings;
+
     /**
      * Keeps track of all the tiles resident in the terrain engine.
      */
@@ -73,18 +75,8 @@ namespace rocky
         //! Empty the registry, releasing all tiles.
         void releaseAll(); // osg::State* state);
 
-        //! Collect dormant tiles. This is called by UnloaderGroup
-        //! during update/event to remove dormant scene graphs.
-        void collectDormantTiles(
-            std::chrono::steady_clock::time_point olderThanTime,       // collect only if tile is older than this time
-            unsigned olderThanFrame,    // collect only if tile is older than this frame
-            float fartherThanRange,     // collect only if tile is farther away than this distance (meters)
-            unsigned maxCount,          // maximum number of tiles to collect
-            TerrainContext& terrain,
-            std::vector<vsg::observer_ptr<TerrainTileNode>>& output);   // put dormant tiles here
-
         //! Update traversal
-        void update(vsg::Visitor&);
+        void update(const TerrainSettings&, const vsg::FrameStamp* fs);
 
     protected:
 
@@ -117,5 +109,18 @@ namespace rocky
             const TileKey& keyToWairFor,
             const TileKey& waiterKey,
             TerrainContext&);
+
+        //! Collect dormant tiles. This is called by UnloaderGroup
+        //! during update/event to remove dormant scene graphs.
+        void collectDormantTiles(
+            const TerrainSettings&,
+            const vsg::FrameStamp*);
+        //std::chrono::steady_clock::time_point olderThanTime,       // collect only if tile is older than this time
+        //unsigned olderThanFrame,    // collect only if tile is older than this frame
+        //float fartherThanRange,     // collect only if tile is farther away than this distance (meters)
+        //unsigned maxCount,          // maximum number of tiles to collect
+        //TerrainContext& terrain,
+        //std::vector<vsg::observer_ptr<TerrainTileNode>>& output);   // put dormant tiles here
+
     };
 }

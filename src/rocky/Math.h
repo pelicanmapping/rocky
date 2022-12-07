@@ -127,8 +127,8 @@ namespace rocky
         dvec3 corner(unsigned i) const {
             return dvec3(
                 (i & 0x1) ? xmax : xmin,
-                (i & 0x2) ? ymax : xmin,
-                (i & 0x4) ? zmax : zmin);            
+                (i & 0x2) ? ymax : ymin,
+                (i & 0x4) ? zmax : zmin);
         }
 
         void expandBy(const Sphere& rhs) {

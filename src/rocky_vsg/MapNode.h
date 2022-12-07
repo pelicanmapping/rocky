@@ -151,6 +151,8 @@ namespace rocky
 
         //virtual void releaseGLObjects(osg::State* state) const;
 
+        void update(const vsg::FrameStamp*);
+
     protected:
 
         virtual ~MapNode();

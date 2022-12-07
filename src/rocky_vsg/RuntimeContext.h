@@ -8,9 +8,12 @@
 #include <rocky_vsg/Common.h>
 #include <rocky/Instance.h>
 #include <rocky/Threading.h>
+
 #include <vsg/core/observer_ptr.h>
-#include <vsg/core/ref_ptr.h>
+#include <vsg/app/CompileManager.h>
+#include <vsg/app/UpdateOperations.h>
 #include <vsg/threading/OperationThreads.h>
+#include <vsg/utils/SharedObjects.h>
 
 namespace vsg
 {
@@ -28,27 +31,30 @@ namespace rocky
     class ROCKY_VSG_EXPORT RuntimeContext
     {
     public:
-        RuntimeContext();
+        //! Compiler for new vsg objects
+        std::function<vsg::CompileManager*()> getCompiler;
 
-        vsg::observer_ptr<vsg::Viewer> viewer;
+        //! Update operations queue
+        std::function<vsg::UpdateOperations*()> getUpdates;
 
+        //! Pool of threads used to load terrain data
         vsg::ref_ptr<vsg::OperationThreads> loaders;
 
-        //! Schedules one or more nodes to be added to the
-        //! parent group during an update cycle.
-        //util::Future<bool> addChildren(
-        //    vsg::Group* parent,
-        //    std::vector<vsg::ref_ptr<vsg::Node>> nodes,
-        //    util::Promise<bool> );
+        //! VSG state sharing
+        vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
 
-        using Creator = std::function<bool(
-            std::vector<vsg::ref_ptr<vsg::Node>>&,
-            Cancelable*)>;
+        //! Function for creating a collection of nodes
+        using NodeProvider = std::function<vsg::ref_ptr<vsg::Node>(Cancelable*)>;
 
         //! Schedules data creation; the resulting node or nodes 
         //! get added to "parent" if the operation suceeds.
         //! Returns a future you can check for completion.
-        util::Future<bool> addChildren(
-            vsg::Group* parent, Creator);
+        util::Future<bool> compileAndAddNode(
+            vsg::Group* parent,
+            NodeProvider provider);
+
+        void removeNode(
+            vsg::Group* parent,
+            unsigned index);
     };
 }

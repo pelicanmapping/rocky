@@ -4,6 +4,8 @@
  * MIT License
  */
 #include "TileNodeRegistry.h"
+#include "TerrainSettings.h"
+#include <vsg/ui/FrameStamp.h>
 
 using namespace rocky;
 
@@ -48,7 +50,7 @@ TileNodeRegistry::setDirty(
             maxLevel >= key.getLOD() &&
             (!extent.valid() || extent.intersects(key.getExtent())))
         {
-            entry._tile->refreshLayers(manifest, terrain);
+            entry._tile->refreshLayers(manifest);
             //i->second._tile->refreshLayers(manifest);
         }
     }
@@ -60,8 +62,6 @@ TileNodeRegistry::add(
     TerrainContext& terrain)
 {
     util::ScopedLock lock(_mutex);
-
-    ROCKY_INFO << LC << "Adding " << tile->getKey().str() << std::endl;
 
     auto& entry = _tiles[tile->getKey()];
     entry._tile = tile;
@@ -101,6 +101,8 @@ TileNodeRegistry::add(
             _notifiers.erase( notifier );
         }
     }
+
+    ROCKY_INFO << LC << "Tiles = " << _tiles.size() << std::endl;
 }
 
 void
@@ -191,7 +193,7 @@ TileNodeRegistry::touch(const TerrainTileNode* tile)
 }
 
 void
-TileNodeRegistry::update(vsg::Visitor& nv)
+TileNodeRegistry::update(const TerrainSettings& settings, const vsg::FrameStamp* fs)
 {
     util::ScopedLock lock(_mutex);
 
@@ -200,9 +202,7 @@ TileNodeRegistry::update(vsg::Visitor& nv)
         // Sorting these from high to low LOD will reduce the number 
         // of inheritance steps each updated image will have to perform
         // against the tile's children
-        std::sort(
-            _tilesToUpdate.begin(),
-            _tilesToUpdate.end(),
+        std::sort(_tilesToUpdate.begin(), _tilesToUpdate.end(),
             [](const TileKey& lhs, const TileKey& rhs) {
                 return lhs.getLOD() > rhs.getLOD();
             });
@@ -212,26 +212,34 @@ TileNodeRegistry::update(vsg::Visitor& nv)
             auto iter = _tiles.find(key);
             if (iter != _tiles.end())
             {
-                iter->second._tile->update(nv);
+                iter->second._tile->update(fs);
             }
         }
 
         _tilesToUpdate.clear();
     }
+
+    //collectDormantTiles(settings, fs);
 }
 
 void
 TileNodeRegistry::collectDormantTiles(
-    std::chrono::steady_clock::time_point oldestAllowableTime,
-    unsigned oldestAllowableFrame,
-    float farthestAllowableRange,
-    unsigned maxTiles,
-    TerrainContext& terrain,
-    std::vector<vsg::observer_ptr<TerrainTileNode>>& output)
+    const TerrainSettings& settings,
+    const vsg::FrameStamp* fs)
+    //std::chrono::steady_clock::time_point oldestAllowableTime,
+    //unsigned oldestAllowableFrame,
+    //float farthestAllowableRange,
+    //unsigned maxTiles)
+    //TerrainContext& terrain,
+    //std::vector<vsg::observer_ptr<TerrainTileNode>>& output)
 {
-    util::ScopedLock lock(_mutex);
+    //util::ScopedLock lock(_mutex);
 
     unsigned count = 0u;
+
+
+    auto oldestAllowableTime = std::chrono::steady_clock::now() - std::chrono::seconds(settings.minSecondsBeforeUnload);
+    auto oldestAllowableFrame = fs->frameCount - settings.minFramesBeforeUnload;
 
     const auto disposeTile = [&](TerrainTileNode* tile) -> bool
     {
@@ -242,17 +250,17 @@ TileNodeRegistry::collectDormantTiles(
         if (tile->getDoNotExpire() == false &&
             tile->getLastTraversalTime() < oldestAllowableTime &&
             tile->getLastTraversalFrame() < (int)oldestAllowableFrame &&
-            tile->getLastTraversalRange() > farthestAllowableRange &&
-            tile->areSiblingsDormant(terrain))
+            tile->getLastTraversalRange() > settings.minRangeBeforeUnload) // &&
+            //tile->areSiblingsDormant(terrain))
         {
-            if (_notifyNeighbors)
-            {
-                // remove neighbor listeners:
-                stopListeningFor(key.createNeighborKey(1, 0), key, terrain);
-                stopListeningFor(key.createNeighborKey(0, 1), key, terrain);
-            }
+            //if (_notifyNeighbors)
+            //{
+            //    // remove neighbor listeners:
+            //    stopListeningFor(key.createNeighborKey(1, 0), key, terrain);
+            //    stopListeningFor(key.createNeighborKey(0, 1), key, terrain);
+            //}
 
-            output.push_back(vsg::observer_ptr<TerrainTileNode>(tile));
+            //output.push_back(vsg::observer_ptr<TerrainTileNode>(tile));
 
             _tiles.erase(key);
 
@@ -266,7 +274,7 @@ TileNodeRegistry::collectDormantTiles(
         }
     };
     
-    _tracker.flush(maxTiles, disposeTile);
+    _tracker.flush(settings.maxTilesToUnloadPerFrame, disposeTile);
 
     //ROCKY_PROFILING_PLOT(PROFILING_REX_TILES, (float)(_tiles.size()));
 }

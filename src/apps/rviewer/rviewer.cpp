@@ -2,6 +2,7 @@
 #include <rocky/Notify.h>
 #include <rocky/GDALLayers.h>
 #include <rocky_vsg/MapNode.h>
+#include <rocky_vsg/TerrainNode.h>
 #include <vsg/all.h>
 
 using namespace rocky;
@@ -38,7 +39,6 @@ int main(int argc, char** argv)
     // main viewer
     auto viewer = vsg::Viewer::create();
     viewer->addWindow(window);
-
     viewer->addEventHandler(vsg::CloseHandler::create(viewer));
 
     // the scene graph
@@ -46,14 +46,18 @@ int main(int argc, char** argv)
 
     // TODO: read this from an earth file
     auto mapNode = MapNode::create(instance);
+
+    // set up the runtime context with everything we need.
+    mapNode->runtime.getCompiler = [viewer]() { return viewer->compileManager; };
+    mapNode->runtime.getUpdates = [viewer]() { return viewer->updateOperations; };
+    mapNode->runtime.sharedObjects = vsg::SharedObjects::create();
+    mapNode->runtime.loaders = vsg::OperationThreads::create(mapNode->getTerrainNode()->concurrency);
+
     //auto layer = GDALImageLayer::create();
     //layer->setURI("D:/data/imagery/world.tif");
     //mapNode->getMap()->addLayer(layer);
-    vsg_scene->addChild(mapNode);
 
-    // let the map node know about our viewer so it can affect
-    // runtime update operations.
-    mapNode->runtime.viewer = viewer;
+    vsg_scene->addChild(mapNode);
 
     // compute the bounds of the scene graph to help position camera
     vsg::ComputeBounds cb;
@@ -99,7 +103,9 @@ int main(int argc, char** argv)
     {
         viewer->handleEvents();
         viewer->update();
-        //TODO: MapNode updates here?
+
+        mapNode->update(viewer->getFrameStamp());
+
         viewer->recordAndSubmit();
         viewer->present();
     }

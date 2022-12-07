@@ -1066,3 +1066,9 @@ MapNode::getGeoPointUnderMouse(
     return p;
 }
 #endif
+
+void
+MapNode::update(const vsg::FrameStamp* f)
+{
+    _terrain->update(f);
+}

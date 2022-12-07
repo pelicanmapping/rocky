@@ -27,4 +27,4 @@
 #define ROCKY_IF_SOFT_ASSERT(EXPR, ...) if(!(EXPR)) { ROCKY_WARN << "ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; } else
 #define ROCKY_HARD_ASSERT(EXPR, ...) if(!(EXPR)) { ROCKY_WARN << "FATAL ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; abort(); }
 
-#define ROCKY_TODO(...) ROCKY_WARN << "TODO (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ")..." << __VA_ARGS__ "" << std::endl
+#define ROCKY_TODO(...) ROCKY_DEBUG << "TODO (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ")..." << __VA_ARGS__ "" << std::endl

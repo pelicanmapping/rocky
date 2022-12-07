@@ -17,31 +17,78 @@ namespace rocky
 {
     class TileRenderModel;
 
-#if 0
-    class TextureData
+    //enum Channels
+    //{
+    //    COLOR,
+    //    ELEVATION,
+    //    NORMAL
+    //};
+
+    //struct TileImages
+    //{
+    //    vsg::ref_ptr<vsg::Data> color;
+    //    vsg::ref_ptr<vsg::Data> elevation;
+    //    vsg::ref_ptr<vsg::Data> normal;
+    //};
+
+#if 1
+
+
+    struct TextureData
     {
-    public:
+        //vsg::ref_ptr<vsg::Data> imageData;
+        //vsg::ref_ptr<vsg::Sampler> sampler;
+        shared_ptr<Image> image;
+        dmat4 matrix{ 1 };
         vsg::ref_ptr<vsg::ImageInfo> texture;
-        fmat4 matrix{ 1 };
     };
 
-    enum LayerType
+    enum TextureType
     {
-        ELEVATION,
-        NORMAL,
         COLOR,
         COLOR_PARENT,
-        NUM_LAYER_TYPES
+        ELEVATION,
+        NORMAL,
+        NUM_TEXTURE_TYPES
     };
 
-    class TileRenderData // ... new model???
+    struct TileDescriptorModel
+    {
+        vsg::ref_ptr<vsg::DescriptorImage> color;
+        vsg::ref_ptr<vsg::DescriptorImage> colorParent;
+        vsg::ref_ptr<vsg::DescriptorImage> elevation;
+        vsg::ref_ptr<vsg::DescriptorImage> normal;
+
+        vsg::ref_ptr<vsg::BindDescriptorSet> bindDescriptorSetCommand;
+    };
+
+    class TileRenderModel // ... new model???
     {
     public:
-        std::vector<TextureData> slots { NUM_LAYER_TYPES };
-        vsg::ref_ptr<vsg::DescriptorSet> descriptorSet;
-        vsg::ref_ptr<vsg::Geometry> geometry;
+        TextureData color;
+        TextureData elevation;
+        TextureData normal;
+        TextureData colorParent;
+
+        TileDescriptorModel descriptorModel;
+
+        //std::vector<TextureData> slots { NUM_LAYER_TYPES };
+        //vsg::ref_ptr<vsg::DescriptorSet> descriptorSet;
+        //vsg::ref_ptr<vsg::Geometry> geometry;
+
+        void applyScaleBias(const dmat4& sb)
+        {
+            if (color.image)
+                color.matrix *= sb;
+            if (elevation.image)
+                elevation.matrix *= sb;
+            if (normal.image)
+                normal.matrix *= sb;
+            if (colorParent.image)
+                colorParent.matrix *= sb;
+        }
     };
-#endif
+#else
 
     /**
      * Defines the usage information for a single texture sampler.
@@ -386,4 +433,5 @@ namespace rocky
         //}
     };
 
+#endif
 }

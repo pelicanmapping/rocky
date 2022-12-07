@@ -25,3 +25,5 @@ namespace rocky
     #  define ROCKY_VSG_EXPORT
 #endif  
 
+// marker for non-exported classes
+#define ROCKY_VSG_INTERNAL

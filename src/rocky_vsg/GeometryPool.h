@@ -149,11 +149,10 @@ namespace rocky
         //! Gets the Geometry associated with a tile key, creating a new one if
         //! necessary and storing it in the pool.
         //!
-        void getPooledGeometry(
+        vsg::ref_ptr<SharedGeometry> getPooledGeometry(
             const TileKey& tileKey,
             const Map* map,
             const TerrainSettings& options,
-            vsg::ref_ptr<SharedGeometry>& out,
             Cancelable* state);
 
         //! The number of elements (incides) in the terrain skirt if applicable

@@ -12,8 +12,10 @@ layout(location = 2) in vec3 inUV;
 layout(location = 3) in vec3 inNeighborVertex;
 layout(location = 4) in vec3 inNeighborNormal;
 
-layout(location = 0) out vec3 fragColor;
-layout(location = 1) out vec3 fragUV;
+layout(set = 0, binding = 10) uniform sampler2D elevation_tex;
+
+layout(location = 0) out vec3 frag_color;
+layout(location = 1) out vec2 frag_uv;
 layout(location = 2) out vec3 oe_UpVectorView;
 layout(location = 3) out vec2 oe_normalMapCoords;
 layout(location = 4) out vec3 oe_normalMapBinormal;
@@ -38,8 +40,8 @@ void main()
 
     mat3 normalMatrix = mat3(transpose(inverse(pc.modelview)));
     
-    fragColor = vec3(1, 1, 1);
-    fragUV = inUV;
+    frag_color = vec3(1);
+    frag_uv = inUV.st;
 
     // The normal map stuff
     oe_UpVectorView = normalMatrix * inNormal;

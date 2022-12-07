@@ -16,6 +16,7 @@
 #include <rocky/TileKey.h>
 
 #include <vsg/nodes/CullGroup.h>
+#include <vsg/nodes/StateGroup.h>
 #include <vsg/app/RecordTraversal.h>
 #include <vsg/app/CompileManager.h>
 #include <vsg/ui/UIEvent.h> // time_point
@@ -54,35 +55,31 @@ namespace rocky
 
         bool getDoNotExpire() const { return _doNotExpire; }
 
+#if 1
         /** Tells this tile to load all its layers. */
-        void refreshAllLayers(
-            TerrainContext&);
+        void refreshAllLayers();
 
         /** Tells this tile to request data for the data in the manifest */
         void refreshLayers(
-            const CreateTileManifest& manifest,
-            TerrainContext&);
+            const CreateTileManifest& manifest);
+#endif
 
-        /** Install new geometry in this tile */
+        //! Install new geometry in this tile
         void createGeometry(
-            TerrainContext&,
+            TerrainContext& terrain,
             Cancelable*);
 
         /** Initial inheritance of tile data from the parent node. */
-        void initializeData(
-            TerrainContext&);
+        void initializeData(TerrainContext& terrain);
 
         /** Whether the tile is expired; i.e. has not been visited in some time. */
-        bool isDormant(
-            TerrainContext&) const;
+        bool isDormant() const;
 
         /** Whether all the subtiles are this tile are dormant (have not been visited recently) */
-        bool areSubTilesDormant(
-            TerrainContext&) const;
+        bool areSubTilesDormant() const;
 
         /** Whether all 3 quadtree siblings of this tile are dormant */
-        bool areSiblingsDormant(
-            TerrainContext&) const;
+        bool areSiblingsDormant() const;
 
         /** Removed any sub tiles from the scene graph. Please call from a safe thread only (update) */
         void removeSubTiles();
@@ -97,31 +94,34 @@ namespace rocky
             return vsg::ref_ptr<TerrainTileNode>(_parentTile);
         }
 
-        /** Returns the SurfaceNode under this node. */
-        vsg::ref_ptr<SurfaceNode> getSurfaceNode() {
-            return _surface;
+        //! Node containing the surface state + geometry
+        SurfaceNode* surface() const {
+            return static_cast<SurfaceNode*>(children[0].get());
+        }
+
+        vsg::StateGroup* stateGroup() const {
+            return static_cast<vsg::StateGroup*>(surface()->children[0].get());
         }
 
         /** Elevation data for this node along with its scale/bias matrix; needed for bounding box */
         void setElevation(
-            shared_ptr<Heightfield> image,
+            shared_ptr<Image> image,
             const dmat4& matrix);
 
-        void updateElevationRaster() { }
-
-        shared_ptr<Heightfield> getElevationRaster() const {
-            return _surface->getElevationRaster();
+        shared_ptr<Image> getElevationRaster() const {
+            return surface()->getElevationRaster();
         }
 
         const dmat4& getElevationMatrix() const {
-            return _surface->getElevationMatrix();
+            return surface()->getElevationMatrix();
         }
 
         // access to subtiles
-        TerrainTileNode* getSubTile(unsigned i) const {
-            return i + 1 < children.size() ?
-                static_cast<TerrainTileNode*>(children[i + 1].get()) :
-                nullptr;
+        inline TerrainTileNode* subTile(unsigned i) const
+        {            
+            return children.size() < 2 ? nullptr :
+                static_cast<TerrainTileNode*>(
+                    static_cast<vsg::Group*>(children[1].get())->children[i].get());
         }
 
         /** Merge new Tile model data into this tile's rendering data model. */
@@ -132,6 +132,7 @@ namespace rocky
 
         /** Access the rendering model for this tile */
         TileRenderModel& renderModel() { return _renderModel; }
+        const TileRenderModel& renderModel() const { return _renderModel; }
 
         const fvec4& getTileKeyValue() const { return _tileKeyValue; }
 
@@ -139,7 +140,7 @@ namespace rocky
 
         void loadSync(TerrainContext&);
 
-        void refreshSharedSamplers(const RenderBindings& bindings);
+        //void refreshSharedSamplers(const RenderBindings& bindings);
 
         int getRevision() const { return _revision; }
 
@@ -154,7 +155,7 @@ namespace rocky
 
         // update-traverse this node, updating any images that require
         // and update-traverse
-        void update(vsg::Visitor& nv);
+        void update(const vsg::FrameStamp* fs);
 
         int getLastTraversalFrame() const {
             return _lastTraversalFrame;
@@ -179,7 +180,7 @@ namespace rocky
 
     public: 
 
-        void recomputeBound();
+        //void recomputeBound();
 
         //void traverse(osg::NodeVisitor& nv);
 
@@ -192,16 +193,17 @@ namespace rocky
 
         TileKey _key;
         vsg::observer_ptr<TerrainTileNode> _parentTile;
-        vsg::ref_ptr<SurfaceNode> _surface;
-        //weak_ptr<EngineContext> _context;
+        //vsg::ref_ptr<SurfaceNode> _surface;
+        //vsg::ref_ptr<vsg::StateGroup> _stateGroup;
         mutable util::Mutex _mutex;
 
         mutable std::atomic<uint64_t> _lastTraversalFrame;
         mutable std::atomic<vsg::time_point> _lastTraversalTime;
         mutable std::atomic<float> _lastTraversalRange;
 
-        mutable bool _childrenReady;
         mutable fvec4 _tileKeyValue;
+        float _childrenVisibilityRange;
+        unsigned _numLODs;
         fvec2 _morphConstants;
         TileRenderModel _renderModel;
         bool _empty;
@@ -229,9 +231,16 @@ namespace rocky
         vsg::observer_ptr<TerrainTileNode> _eastNeighbor;
         vsg::observer_ptr<TerrainTileNode> _southNeighbor;
 
+        void inherit(TerrainContext&);
+
         mutable util::Future<bool> _childLoader;
 
+        void updateElevationRaster();
+
     private:
+
+        void refreshStateGroup(
+            TerrainContext&);
 
         void updateNormalMap(
             const TerrainSettings&);
@@ -244,18 +253,14 @@ namespace rocky
         //    Cancelable* cancelable);
 
         // Returns false if the Surface node fails visiblity test
-        bool cull(
-            vsg::RecordTraversal& nv,
-            TerrainContext& terrain) const;
+        bool cull(vsg::RecordTraversal& nv) const;
 
-        bool cull_spy(TerrainCuller*);
+        //bool cull_spy(TerrainCuller*);
 
-        bool shouldSubDivide(
-            vsg::State* state,
-            TerrainContext& terrain) const;
+        bool shouldSubDivide(vsg::State* state) const;
 
         // whether this tile should render the given pass
-        bool passInLegalRange(const RenderingPass&) const;
+        //bool passInLegalRange(const RenderingPass&) const;
 
         /** Load (or continue loading) content for the tiles in this quad. */
         void load(
@@ -263,14 +268,21 @@ namespace rocky
             TerrainContext& terrain) const;
 
         /** Ensure that inherited data from the parent node is up to date. */
-        void refreshInheritedData(TerrainTileNode* parent, const RenderBindings& bindings);
+        void refreshInheritedData(const TerrainTileNode* parent);
 
         // Inherit one shared sampler from parent tile if possible
         void inheritSharedSampler(int binding);
 
-        void dirtyBound();
+        //void rebuildStateGroup(
+        //    TerrainContext& );
+
+        void recomputeBound();
 
         vsg::ref_ptr<vsg::StateGroup> createStateGroup(
             TerrainContext&) const;
+
+        inline bool hasChildren() const {
+            return children.size() >= 2;
+        }
     };
 }

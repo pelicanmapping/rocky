@@ -25,7 +25,7 @@ namespace
         }
         static void write(const Image::Pixel& pixel, unsigned char* ptr, int n) {
             for (int i = 0; i < n; ++i)
-                *ptr = (T)(pixel[i] * norm_8);
+                *ptr++ = (T)(pixel[i] * norm_8);
         }
     };
 
@@ -42,7 +42,7 @@ namespace
         static void write(const Image::Pixel& pixel, unsigned char* ptr, int n) {
             T* sptr = (T*)ptr;
             for (int i = 0; i < n; ++i)
-                *sptr = (T)(pixel[i] * norm_16);
+                *sptr++ = (T)(pixel[i] * norm_16);
         }
     };
 
@@ -56,7 +56,7 @@ namespace
         static void write(const Image::Pixel& pixel, unsigned char* ptr, int n) {
             T* sptr = (T*)ptr;
             for (int i = 0; i < n; ++i)
-                *sptr = (T)pixel[i];
+                *sptr++ = (T)pixel[i];
         }
     };
 }
@@ -186,6 +186,6 @@ Image::fill(const Image::Pixel& value)
 {
     for (unsigned r = 0; r < depth(); ++r)
         for (unsigned t = 0; t < height(); ++t)
-            for (unsigned s = 0; s < height(); ++s)
+            for (unsigned s = 0; s < width(); ++s)
                 write(value, s, t, r);
 }

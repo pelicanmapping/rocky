@@ -140,7 +140,7 @@ LoadTileDataOperation::merge(
         // wipe the data model, update the revisions, and try again.
         //ROCKY_DEBUG << LC << "Request for tile " << tilenode->getKey().str() << " out of date and will be requeued" << std::endl;
         _manifest.updateRevisions(map.get());
-        tile->refreshLayers(_manifest, terrain);
+        tile->refreshLayers(_manifest);
         return false;
     }
 

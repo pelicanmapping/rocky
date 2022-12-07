@@ -10,106 +10,107 @@ using namespace rocky;
 
 namespace
 {
-    struct AddChildrenSafely : public vsg::Inherit<vsg::Operation, AddChildrenSafely>
+    struct AddNodeAsync : public vsg::Inherit<vsg::Operation, AddNodeAsync>
     {
-        // raw pointer b/c this operation is added directy to Viewer
-        vsg::Viewer* _viewer;
+        RuntimeContext _runtime;
 
-        // observer since the parent might disappear
+        // parent to which to add the child
         vsg::observer_ptr<vsg::Group> _parent;
 
-        // ref because childref may only exist here
-        std::vector<vsg::ref_ptr<vsg::Node>> _children;
+        // function that will provide the child to add
+        RuntimeContext::NodeProvider _childProvider;
 
-        // promise that must be fulfilled
+        // ref because child probably only exists here
+        vsg::ref_ptr<vsg::Node> _child;
+
+        // promise that will be resolved after this operation runs
         util::Promise<bool> _promise;
+           
+        AddNodeAsync(
+            const RuntimeContext& runtime,
+            //vsg::observer_ptr<vsg::UpdateOperations> updates,
+            vsg::Group* parent,
+            RuntimeContext::NodeProvider func) :
 
-        AddChildrenSafely(vsg::Viewer* viewer, vsg::Group* parent) :
-            _viewer(viewer), _parent(parent)
+            _runtime(runtime), _parent(parent), _childProvider(func)
         {
             //nop
         }
 
         void run() override
         {
-            vsg::ref_ptr<vsg::Group> parent(_parent);
-            if (parent)
+            bool error = true;
+
+            if (!_child)
             {
-                // Don't think we actually need this most of the time...
-                // revisit...
-                //vsg::updateViewer(*_viewer, result);
+                // resolve the observer pointers:
+                auto compiler = _runtime.getCompiler();
+                auto updates = _runtime.getUpdates();
 
-                for (auto& child : _children)
+                if (compiler && updates)
                 {
-                    parent->addChild(child);
-                }
+                    // generate the child node:
+                    _child = _childProvider(nullptr);
+                    if (_child)
+                    {
+                        compiler->compile(_child);
 
-                _promise.resolve(true);
+                        // re-queue this operation on the viewer's update queue
+                        updates->add(vsg::ref_ptr<vsg::Operation>(this));
+                        error = false;
+                    }
+                }
+            }
+            else
+            {
+                vsg::ref_ptr<vsg::Group> parent = _parent;
+                if (parent)
+                {
+                    parent->addChild(_child);
+                    _promise.resolve(true);
+                    error = false;
+                }
+            }
+
+            if (error)
+            {
+                _promise.resolve(false);
             }
         }
     };
 
-    struct RunAndAdd : public vsg::Inherit<vsg::Operation, RunAndAdd>
+    struct RemoveNodeAsync : public vsg::Inherit<vsg::Operation, RemoveNodeAsync>
     {
-        vsg::Viewer* _viewer;
         vsg::observer_ptr<vsg::Group> _parent;
-        RuntimeContext::Creator _func;
-        vsg::ref_ptr<AddChildrenSafely> _adder;
-           
-        RunAndAdd(
-            vsg::Viewer* viewer,
-            vsg::Group* parent,
-            RuntimeContext::Creator func) :
+        unsigned _index;
 
-            _viewer(viewer),
-            _parent(parent),
-            _func(func),
-            _adder(AddChildrenSafely::create(viewer, parent))
-        {
-        }
+        RemoveNodeAsync(vsg::Group* parent, unsigned index) :
+            _parent(parent), _index(index) { }
 
         void run() override
         {
-            if (_func(_adder->_children, nullptr))
+            vsg::ref_ptr<vsg::Group> parent = _parent;
+            if (parent && parent->children.size() >= _index)
             {
-                _viewer->updateOperations->add(_adder);
+                auto iter = parent->children.begin() + _index;
+                parent->children.erase(iter);
             }
         }
     };
-
 }
-
-RuntimeContext::RuntimeContext()
-{
-    loaders = vsg::OperationThreads::create(4);
-}
-
-//util::Future<bool>
-//RuntimeContext::addChildren(
-//    vsg::Group* parent,
-//    std::vector<vsg::ref_ptr<vsg::Node>> children,
-//    util::Promise<bool> promise)
-//{
-//    vsg::ref_ptr<vsg::Viewer> v = viewer;
-//    if (v)
-//    {
-//        v->addUpdateOperation(
-//            AddChildrenSafely::create(v.get(), parent, children, promise),
-//            vsg::UpdateOperations::ONE_TIME);
-//    }
-//}
 
 util::Future<bool>
-RuntimeContext::addChildren(
-    vsg::Group* parent, Creator func)
+RuntimeContext::compileAndAddNode(vsg::Group* parent, NodeProvider func)
 {
-    vsg::ref_ptr<vsg::Viewer> viewer_safe(viewer);
-    if (viewer_safe)
-    {
-        auto runner = RunAndAdd::create(viewer_safe.get(), parent, func);
-        auto future = runner->_adder->_promise.getFuture();
-        loaders->add(runner);
-        return future;
-    }
-    else return util::Future<bool>();
+    auto runner = AddNodeAsync::create(*this, parent, func);
+    auto future = runner->_promise.getFuture();
+    loaders->add(runner);
+    return future;
+}
+
+void
+RuntimeContext::removeNode(vsg::Group* parent, unsigned index)
+{
+    auto remover = RemoveNodeAsync::create(parent, index);
+    loaders->add(remover);
 }

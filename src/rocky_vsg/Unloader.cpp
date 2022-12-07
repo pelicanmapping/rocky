@@ -3,6 +3,7 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
+#if 0
 #include "Unloader.h"
 
 #undef  LC
@@ -82,3 +83,4 @@ Unloader::update(TerrainContext& terrain)
     }
 }
 
+#endif

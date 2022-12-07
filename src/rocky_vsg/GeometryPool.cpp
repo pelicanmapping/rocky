@@ -36,14 +36,15 @@ GeometryPool::GeometryPool() :
     }
 }
 
-void
+vsg::ref_ptr<SharedGeometry>
 GeometryPool::getPooledGeometry(
     const TileKey& tileKey,
     const Map* map,
     const TerrainSettings& settings,
-    vsg::ref_ptr<SharedGeometry>& out,
     Cancelable* progress)
 {
+    vsg::ref_ptr<SharedGeometry> out;
+
     // convert to a unique-geometry key:
     GeometryKey geomKey;
     createKeyForTileKey( tileKey, settings.tileSize, geomKey );
@@ -102,6 +103,8 @@ GeometryPool::getPooledGeometry(
             //meshEditor,
             progress);
     }
+
+    return out;
 }
 
 void

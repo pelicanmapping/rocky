@@ -18,6 +18,7 @@
 
 #include <rocky_vsg/Common.h>
 #include <rocky_vsg/TerrainContext.h>
+#include <chrono>
 
 namespace rocky
 {
@@ -71,7 +72,7 @@ namespace rocky
         //void unloadChildren(const std::vector<TileKey>& keys);
 
     public: // osg::Node
-        void update(TerrainContext& terrain);
+        void update(TerrainContext& );
 
     protected:
         unsigned _minResidentTiles;

@@ -78,6 +78,16 @@ TEST_CASE("Image")
         REQUIRE(image->componentSizeInBytes() == 1);
         REQUIRE(image->sizeInPixels() == 65536);
     }
+
+    image = Image::create(Image::R8G8B8A8_UNORM, 256, 256);
+    image->fill(Color::Orange); // fvec4(1, 0.5, 0.0, 1));
+    Image::Pixel value;
+    image->read(value, 17, 17);
+    std::cout << value.r << ", " << value.g << ", " << value.b << ", " << value.a << std::endl;
+    REQUIRE(equivalent(value.r, 1.0f, 0.01f));
+    REQUIRE(equivalent(value.g, 0.5f, 0.01f));
+    REQUIRE(equivalent(value.b, 0.0f, 0.01f));
+    REQUIRE(equivalent(value.a, 1.0f, 0.01f));
 }
 
 TEST_CASE("Heightfield")

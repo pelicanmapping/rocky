@@ -34,6 +34,8 @@ namespace rocky
         //! Serialize
         virtual Config getConfig() const;
 
+        void update(const vsg::FrameStamp*);
+
     public: // vsg
 
         void traverse(vsg::RecordTraversal&) const override;
@@ -47,10 +49,6 @@ namespace rocky
         void loadMap(
             const TerrainSettings* settings,
             IOControl* ioc);
-
-        //! Set up the rendering state
-        vsg::ref_ptr<vsg::Node> createPipeline(
-            vsg::ref_ptr<vsg::Node> content) const;
 
         vsg::ref_ptr<vsg::Group> _tilesRoot;
     };
