@@ -24,6 +24,9 @@ namespace rocky
 {
     class Map;
 
+    /**
+     * Acces to all  terrain-specific logic, data, and settings.
+     */
     class TerrainContext : public TerrainSettings
     {
     public:
@@ -37,7 +40,7 @@ namespace rocky
         //! the map this terrain is rendering
         shared_ptr<Map> map;
 
-        //! creator of terrain til geometry
+        //! creator of terrain tile triangles and attributes
         GeometryPool geometryPool;
 
         //! merges new tiles into the live scene graph
@@ -54,10 +57,6 @@ namespace rocky
 
         //! name of job arena used to load data
         std::string loadArenaName = "terrain.load";
-
-    private:
-
-        vsg::ref_ptr<vsg::ShaderSet> createTerrainShaderSet() const;
     };
 
 }

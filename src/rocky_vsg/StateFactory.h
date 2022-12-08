@@ -18,14 +18,15 @@ namespace rocky
 {
     class TerrainTileNode;
 
-    struct TextureBinding
-    {
-        std::string name;
-        uint32_t uniform_binding;
-        vsg::ref_ptr<vsg::Sampler> sampler;
-        vsg::ref_ptr<vsg::Data> defaultData;
-    };
-
+    /**
+     * StateFactory creates all the Vulkan state necessary to
+     * render the terrain.
+     *
+     * TODO: Eventually, this will need to integrate "upwards" to the 
+     * MapNode and finally to the application level itself so we
+     * do shader composition with some kind of uber-shader-with-defines
+     * architecture.
+     */
     class ROCKY_VSG_INTERNAL StateFactory
     {
     public:
@@ -54,10 +55,23 @@ namespace rocky
         //! terrain rendering subsystem.
         vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
 
-        //! Default state model for a terrain tile.
+        //! Default state descriptors for a terrain tile.
+        //! This holds the "default" (i.e. empty) textures and uniforms
+        //! that will populate a descriptor set when no other textures are available.
+        //! Terrain tiles copy and use this until new data becomes available.
         TileDescriptorModel defaultTileDescriptors;
 
+        //MANUAL ALTERNATIVE to pipelineConfig approach
+        //Just for testing for now ... the pipelineConfig approach will
+        //potentially be better due to its defines handling
+        vsg::ref_ptr<vsg::GraphicsPipeline> pipeline;
+
     protected:
+
+        //! Creates all the default texture information,
+        //! i.e. placeholder textures and uniforms for all tiles
+        //! when they don't have actual data.
+        void createDefaultDescriptors();
 
         //! Creates the base shader set used when rendering terrain
         virtual vsg::ref_ptr<vsg::ShaderSet> createShaderSet() const;
@@ -68,18 +82,33 @@ namespace rocky
         //! to work with the specific decriptors you PLAN to provide.
         virtual vsg::ref_ptr<vsg::GraphicsPipelineConfig> createPipelineConfig(vsg::SharedObjects*) const;
 
-        //! Creates all the default texture information.
-        void createDefaultDescriptors();
+        //! ALT MANUAL ALTERNATIVE to using the PipelineCOnfig -
+        //! for testing only for now
+        virtual vsg::ref_ptr<vsg::GraphicsPipeline> createPipeline(vsg::SharedObjects*) const;
+
+        struct TextureDef
+        {
+            // name in the shader
+            std::string name;
+
+            // binding point (layout binding=X) in the shader
+            uint32_t uniform_binding;
+
+            // sampler to use
+            vsg::ref_ptr<vsg::Sampler> sampler;
+
+            // default placeholder texture data
+            vsg::ref_ptr<vsg::Data> defaultData;
+        };
 
         //! stock samplers to use for terrain textures
-        TextureBinding _color;
-        TextureBinding _colorParent;
-        TextureBinding _elevation;
-        TextureBinding _normal;
-
-        //vsg::ref_ptr<vsg::Sampler>
-        //    _colorSampler,
-        //    _elevationSampler,
-        //    _normalSampler;
+        struct
+        {
+            TextureDef color;
+            TextureDef colorParent;
+            TextureDef elevation;
+            TextureDef normal;
+        }
+        textures;
     };
 }

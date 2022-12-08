@@ -17,6 +17,9 @@ namespace rocky
 {
     class Map;
 
+    /**
+     * Root node of the terrain geometry
+     */
     class ROCKY_VSG_EXPORT TerrainNode :
         public vsg::Inherit<vsg::Group, TerrainNode>,
         public TerrainContext
@@ -34,10 +37,12 @@ namespace rocky
         //! Serialize
         virtual Config getConfig() const;
 
+        //! Updates the terrain periodically at a safe time
         void update(const vsg::FrameStamp*);
 
     public: // vsg
 
+        //! Override the Recorder so we can inject information
         void traverse(vsg::RecordTraversal&) const override;
 
     private:

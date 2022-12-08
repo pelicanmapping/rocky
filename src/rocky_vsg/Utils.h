@@ -56,21 +56,31 @@ namespace rocky
 
     // adapted from vsg
     template<typename T>
-    vsg::ref_ptr<vsg::Data> create(shared_ptr<Image> image, VkFormat format)
+    vsg::ref_ptr<vsg::Data> move(shared_ptr<Image> image, VkFormat format)
     {
+        // NB!
+        // We copy the values out of image FIRST because once we call
+        // image->releaseData() they will all reset!
+        unsigned
+            width = image->width(),
+            height = image->height(),
+            depth = image->depth();
+
+        T* data = reinterpret_cast<T*>(image->releaseData());
+
         vsg::ref_ptr<vsg::Data> vsg_data;
-        if (image->depth() == 1)
+        if (depth == 1)
         {
             vsg_data = vsg::Array2D<T>::create(
-                image->width(), image->height(),
-                image->data<T>(),
+                width, height,
+                data,
                 vsg::Data::Layout{ format });
         }
         else
         {
             vsg_data = vsg::Array3D<T>::create(
-                image->width(), image->height(), image->depth(),
-                image->data<T>(),
+                width, height, depth,
+                data,
                 vsg::Data::Layout{ format });
         }
 
@@ -78,77 +88,48 @@ namespace rocky
     }
 
     // adapted from vsg
-    inline vsg::ref_ptr<vsg::Data> createExpandedData(shared_ptr<Image> image)
-    {
-        if (image->componentSizeInBytes() != 1)
-            return {};
-
-        unsigned sourceSize = image->sizeInBytes(); // getTotalSizeInBytesIncludingMipmaps();
-        unsigned sourceElements = sourceSize / 3;
-        auto sourceData = image->data<unsigned char>();
-        vsg::ubvec4* destData = new vsg::ubvec4[sourceElements];
-        const unsigned char* srcPtr = sourceData;
-        for (unsigned i = 0; i < sourceElements; ++i)
-        {
-            for (unsigned j = 0; j < 3; ++j)
-                destData[i][j] = *srcPtr++;
-            destData[i][3] = 255;
-        }
-        vsg::Data::Layout layout;
-        layout.format = VK_FORMAT_R8G8B8A8_UNORM;
-
-        //layout.maxNumMipmaps = image->getNumMipmapLevels();
-        //if (image->getOrigin() == osg::Image::BOTTOM_LEFT)
-        //    layout.origin = vsg::BOTTOM_LEFT;
-        //else
-        //    layout.origin = vsg::TOP_LEFT;
-
-        return vsg::Array2D<vsg::ubvec4>::create(
-            image->width(), image->height(),
-            destData,
-            vsg::Data::Layout{ VK_FORMAT_R8G8B8A8_UNORM });
-    }
-
-    // adapted from vsg
-    inline vsg::ref_ptr<vsg::Data> convertImage(const shared_ptr<Image> image)
+    inline vsg::ref_ptr<vsg::Data> moveImageData(shared_ptr<Image> image)
     {
         if (!image) return { };
 
         switch (image->pixelFormat())
         {
         case Image::R8_UNORM:
-            return create<unsigned char>(image, VK_FORMAT_R8_UNORM);
+            return move<unsigned char>(image, VK_FORMAT_R8_UNORM);
             break;
         case Image::R8G8_UNORM:
-            return create<vsg::ubvec2>(image, VK_FORMAT_R8G8_UNORM);
+            return move<vsg::ubvec2>(image, VK_FORMAT_R8G8_UNORM);
             break;
         case Image::R8G8B8_UNORM:
-            return create<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_UNORM);
+            return move<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_UNORM);
             break;
         case Image::R8G8B8A8_UNORM:
-            return create<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_UNORM);
+            return move<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_UNORM);
             break;
         case Image::R16_UNORM:
-            return create<unsigned short>(image, VK_FORMAT_R16_UNORM);
+            return move<unsigned short>(image, VK_FORMAT_R16_UNORM);
             break;
         case Image::R32_SFLOAT:
-            return create<float>(image, VK_FORMAT_R32_SFLOAT);
+            return move<float>(image, VK_FORMAT_R32_SFLOAT);
             break;
         case Image::R64_SFLOAT:
-            return create<double>(image, VK_FORMAT_R64_SFLOAT);
+            return move<double>(image, VK_FORMAT_R64_SFLOAT);
             break;
         };
 
         return { };
     }
 
-    // adapted from vsg
-    inline vsg::ref_ptr<vsg::Data> convertImageToVSG(const shared_ptr<Image> image)
+    // adapted from vsg.
+    // take ownership of the input image as a VSG object.
+    // the input image becomes INVALID after this method. If that's not what
+    // you want, clone the input image first!
+    inline vsg::ref_ptr<vsg::Data> moveImageToVSG(shared_ptr<Image> image)
     {
         if (!image)
             return {};
 
-        auto data = convertImage(image);
+        auto data = moveImageData(image);
         data->properties.origin = vsg::TOP_LEFT;
         data->properties.maxNumMipmaps = 1;
 

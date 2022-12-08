@@ -403,6 +403,7 @@ TerrainTileNode::shouldSubDivide(vsg::State* state) const
 
         if (range_to_center < 0.0)
         {
+            //ROCKY_SOFT_ASSERT_AND_RETURN(range_to_center >= 0.0, false);
             //float range = state->lodDistance(bound);
             //ROCKY_WARN << "range = " << range << std::endl;
             return false;
@@ -757,7 +758,7 @@ TerrainTileNode::merge(
         {
             _renderModel.color.image = layer.image.getImage();
             _renderModel.color.matrix = layer.matrix;
-            _renderModel.descriptorModel.color = nullptr;
+            //_renderModel.descriptorModel.color = nullptr;
         }
     }
 
@@ -765,14 +766,14 @@ TerrainTileNode::merge(
     {
         _renderModel.elevation.image = tile_model.elevation.heightfield.getHeightfield();
         _renderModel.elevation.matrix = tile_model.elevation.matrix;
-        _renderModel.descriptorModel.elevation = nullptr;
+        //_renderModel.descriptorModel.elevation = nullptr;
     }
 
     if (tile_model.normalMap.image.valid())
     {
         _renderModel.normal.image = tile_model.normalMap.image.getImage();
         _renderModel.normal.matrix = tile_model.normalMap.matrix;
-        _renderModel.descriptorModel.normal = nullptr;
+        //_renderModel.descriptorModel.normal = nullptr;
     }
 
     refreshStateGroup(terrain);

@@ -76,9 +76,10 @@ Image::Layout Image::_layouts[7] =
 Image::Image() :
     super(),
     _width(0), _height(0), _depth(0),
-    _pixelFormat(R8G8B8A8_UNORM)
+    _pixelFormat(R8G8B8A8_UNORM),
+    _data(nullptr)
 {
-    //todo
+    // nop
 }
 
 Image::Image(
@@ -89,20 +90,29 @@ Image::Image(
     
     super(),
     _width(0), _height(0), _depth(0),
-    _pixelFormat(R8G8B8A8_UNORM)
+    _pixelFormat(R8G8B8A8_UNORM),
+    _data(nullptr)
 {
     allocate(cols, rows, depth, format);
+}
+
+Image::~Image()
+{
+    if (_data)
+        delete[] _data;
 }
 
 shared_ptr<Image>
 Image::clone() const
 {
+    ROCKY_SOFT_ASSERT_AND_RETURN(_data, nullptr);
+
     auto clone = Image::create(
         pixelFormat(), width(), height(), depth());
 
     memcpy(
         clone->data<unsigned char*>(),
-        _data.get(),
+        _data,
         sizeInBytes());
 
     return clone;
@@ -127,8 +137,21 @@ Image::allocate(
 
     auto layout = _layouts[pixelFormat()];
 
-    _data = std::unique_ptr<unsigned char>(
-        new unsigned char[sizeInBytes()]);
+    if (_data)
+        delete[] _data;
+       
+    _data = new unsigned char[sizeInBytes()];
+}
+
+void*
+Image::releaseData()
+{
+    auto released = _data;
+    _data = nullptr;
+    _width = 0;
+    _height = 0;
+    _depth = 0;
+    return (void*)released;
 }
 
 bool

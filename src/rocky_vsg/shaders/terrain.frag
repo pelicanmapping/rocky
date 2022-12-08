@@ -35,7 +35,4 @@ layout(location = 0) out vec4 out_color;
 void main()
 {
     out_color = texture(color_tex, frag_uv);
-
-    //out_color.rgb = frag_color;
-    //out_color = texture(color_tex, (tile.color_matrix * vec4(frag_uv,0,1)).st);
 }

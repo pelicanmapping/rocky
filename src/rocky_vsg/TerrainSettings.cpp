@@ -11,7 +11,7 @@ TerrainSettings::TerrainSettings(const Config& conf)
 {
     tileSize.setDefault(17);
     minTileRangeFactor.setDefault(7.0);
-    maxLOD.setDefault(19u);
+    maxLOD.setDefault(0u); // 19u);
     minLOD.setDefault(0u);
     firstLOD.setDefault(0u);
     //enableLighting.setDefault(true);

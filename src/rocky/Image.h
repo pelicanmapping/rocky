@@ -65,6 +65,9 @@ namespace rocky
             unsigned t,
             unsigned r =1);
 
+        //! Destruct and release the data unless it's not owned
+        virtual ~Image();
+
         //! Allocate this image from a stream
         bool fromStream(
             std::istream& input,
@@ -75,27 +78,27 @@ namespace rocky
 
         //! Pointer to the data array (type T).
         template<class T> T* data() {
-            return reinterpret_cast<T*>(_data.get());
+            return reinterpret_cast<T*>(_data);
         }
 
         //! Const pointer to the data array (type T).
         template<class T> const T* data() const {
-            return reinterpret_cast<T*>(_data.get());
+            return reinterpret_cast<T*>(_data);
         }
 
         //! Value (type T) at s, t, layer.
         template<class T> T data(unsigned s, unsigned t, unsigned layer = 0) const {
-            return reinterpret_cast<T*>(_data.get())[layer*width()*height() + t*width() + s];
+            return reinterpret_cast<T*>(_data)[layer*width()*height() + t*width() + s];
         }
 
         //! Mutable reference to the value (type T) at s, t, layer.
         template<class T> T& data(unsigned s, unsigned t, unsigned layer = 0) {
-            return reinterpret_cast<T*>(_data.get())[layer*width()*height() + t*width() + s];
+            return reinterpret_cast<T*>(_data)[layer*width()*height() + t*width() + s];
         }
 
         //! Value at the i'th position in the data array
         template<class T> T data(unsigned offset) const {
-            return reinterpret_cast<T*>(_data.get())[offset];
+            return reinterpret_cast<T*>(_data)[offset];
         }
 
         //! Read the pixel at a column, row, and layer
@@ -184,10 +187,16 @@ namespace rocky
         //! Fills the entire image with a single value
         void fill(const Pixel& p);
 
+        //! Releases this image's data without deleting it. 
+        //! Use this to transfer ownership of the raw data to someone else.
+        //! The inheritor is responsible to deleting the data.
+        //! This object becomes invalid unless you call allocate() on it again.
+        void* releaseData();
+
     private:
         unsigned _width, _height, _depth;
         PixelFormat _pixelFormat;
-        std::unique_ptr<unsigned char> _data;
+        unsigned char* _data;
 
         void allocate(
             unsigned s,
@@ -223,7 +232,7 @@ namespace rocky
     {
         _layouts[pixelFormat()].read(
             pixel,
-            _data.get() + (width()*height()*r + width()*t + s)*_layouts[pixelFormat()].bytes_per_pixel,
+            _data + (width()*height()*r + width()*t + s)*_layouts[pixelFormat()].bytes_per_pixel,
             _layouts[pixelFormat()].num_components);
     }
 
@@ -259,7 +268,7 @@ namespace rocky
     {
         _layouts[pixelFormat()].write(
             pixel,
-            _data.get() + (width()*height()*r + height() * t + s)*_layouts[pixelFormat()].bytes_per_pixel,
+            _data + (width()*height()*r + height() * t + s)*_layouts[pixelFormat()].bytes_per_pixel,
             _layouts[pixelFormat()].num_components);
     }
 
@@ -280,7 +289,7 @@ namespace rocky
 
     unsigned char* Image::data_at_miplevel(unsigned m)
     {
-        auto d = _data.get();
+        auto d = _data;
         for (int i = 0; i < (int)m; ++i)
             d += sizeof_miplevel(i);
         return d;
