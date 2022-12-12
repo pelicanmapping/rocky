@@ -11,65 +11,62 @@
 
 namespace rocky
 {
-    namespace internal
+    /**
+     * SelectionInfo is a data structure that holds the LOD distance switching
+     * information for the terrain, to support paging and LOD morphing.
+     * This is calculated once when the terrain is first created.
+     */
+    class SelectionInfo
     {
-        /**
-         * SelectionInfo is a data structure that holds the LOD distance switching
-         * information for the terrain, to support paging and LOD morphing.
-         * This is calculated once when the terrain is first created.
-         */
-        class SelectionInfo
+    public:
+        struct LOD
         {
-        public:
-            struct LOD
-            {
-                double _visibilityRange;
-                double _morphStart;
-                double _morphEnd;
-                unsigned _minValidTY, _maxValidTY;
-            };
-
-        public:
-            SelectionInfo() : _firstLOD(0) { }
-
-            //! Initialize the selection into LODs
-            void initialize(
-                unsigned firstLod,
-                unsigned maxLod,
-                shared_ptr<Profile> profile,
-                double mtrf,
-                bool restrictPolarSubdivision);
-
-            //! Number of LODs
-            unsigned getNumLODs(void) const { 
-                return _lods.size();
-            }
-
-            //! Visibility and morphing information for a specific LOD
-            const LOD& getLOD(unsigned lod) const;
-
-            //! Fetch the effective visibility range and morphing range for a key
-            void get(
-                const TileKey& key,
-                float& out_range,
-                float& out_startMorphRange,
-                float& out_endMorphRange) const;
-
-            //! Get just the visibility range for a TileKey.
-            //! inlined for speed (SL measured)
-            inline float getRange(const TileKey& key) const {
-                const LOD& lod = _lods[key.getLOD()];
-                if (key.getTileY() >= lod._minValidTY && key.getTileY() <= lod._maxValidTY)
-                {
-                    return lod._visibilityRange;
-                }
-                return 0.0f;
-            }
-
-        private:
-            std::vector<LOD>    _lods;
-            unsigned            _firstLOD;
-            static const double _morphStartRatio;
+            double _visibilityRange;
+            double _morphStart;
+            double _morphEnd;
+            unsigned _minValidTY, _maxValidTY;
         };
-    }
+
+    public:
+        SelectionInfo() : _firstLOD(0) { }
+
+        //! Initialize the selection into LODs
+        void initialize(
+            unsigned firstLod,
+            unsigned maxLod,
+            shared_ptr<Profile> profile,
+            double mtrf,
+            bool restrictPolarSubdivision);
+
+        //! Number of LODs
+        unsigned getNumLODs(void) const {
+            return _lods.size();
+        }
+
+        //! Visibility and morphing information for a specific LOD
+        const LOD& getLOD(unsigned lod) const;
+
+        //! Fetch the effective visibility range and morphing range for a key
+        void get(
+            const TileKey& key,
+            float& out_range,
+            float& out_startMorphRange,
+            float& out_endMorphRange) const;
+
+        //! Get just the visibility range for a TileKey.
+        //! inlined for speed (SL measured)
+        inline float getRange(const TileKey& key) const {
+            const LOD& lod = _lods[key.getLOD()];
+            if (key.getTileY() >= lod._minValidTY && key.getTileY() <= lod._maxValidTY)
+            {
+                return lod._visibilityRange;
+            }
+            return 0.0f;
+        }
+
+    private:
+        std::vector<LOD>    _lods;
+        unsigned            _firstLOD;
+        static const double _morphStartRatio;
+    };
 }

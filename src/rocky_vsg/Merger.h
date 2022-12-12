@@ -12,6 +12,8 @@
 
 namespace rocky
 {
+    class TerrainContext;
+
     /**
      * A queue that merges new tile data into the respective tile.
      */
@@ -34,7 +36,7 @@ namespace rocky
 
         //! Call this once and a while to get tiles merged
         void update(
-            TerrainContext& terrain);
+            shared_ptr<TerrainContext> terrain);
 
 
         //void traverse(osg::NodeVisitor& nv) override;

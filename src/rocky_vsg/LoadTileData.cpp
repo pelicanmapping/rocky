@@ -23,7 +23,7 @@ LoadTileDataOperation::LoadTileDataOperation(
     _dispatched(false),
     _merged(false)
 {
-    _name = tilenode->getKey().str();
+    _name = tilenode->key.str();
 }
 
 LoadTileDataOperation::LoadTileDataOperation(
@@ -38,7 +38,7 @@ LoadTileDataOperation::LoadTileDataOperation(
     _dispatched(false),
     _merged(false)
 {
-    _name = tilenode->getKey().str();
+    _name = tilenode->key.str();
 }
 
 LoadTileDataOperation::~LoadTileDataOperation()
@@ -60,7 +60,7 @@ LoadTileDataOperation::dispatch(bool async)
     CreateTileManifest manifest(_manifest);
     bool enableCancel = _enableCancel;
 
-    TileKey key(tile->getKey());
+    TileKey key(tile->key);
 
     shared_ptr<Map> map = _map.lock();
 
@@ -84,7 +84,7 @@ LoadTileDataOperation::dispatch(bool async)
     {
         if (tile_obs.valid() == false) return FLT_MAX; // quick trivial reject
         vsg::ref_ptr<TerrainTileNode> tilenode(tile_obs);
-        return tilenode ? tilenode->getLoadPriority() : FLT_MAX;
+        return FLT_MAX; // tilenode ? tilenode->getLoadPriority() : FLT_MAX;
     };
 
 
@@ -107,8 +107,7 @@ LoadTileDataOperation::dispatch(bool async)
 
 
 bool
-LoadTileDataOperation::merge(
-    TerrainContext& terrain)
+LoadTileDataOperation::merge(shared_ptr<TerrainContext> terrain)
 {
     _merged = true;
 
@@ -122,7 +121,7 @@ LoadTileDataOperation::merge(
     // GW: should never happen.
     if (!_result.isAvailable())
     {
-        ROCKY_WARN << tile->getKey().str() << " bailing out of merge b/c data model is NULL" << std::endl;
+        ROCKY_WARN << tile->key.str() << " bailing out of merge b/c data model is NULL" << std::endl;
         return false;
     }
 

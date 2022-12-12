@@ -17,7 +17,7 @@ namespace rocky
     class CreateTileManifest;
     class TerrainContext;
     class TerrainTileNode;
-    struct TerrainTileModel;
+    class TerrainTileModel;
 
     /**
      * Handles the loading of data of an individual tile node
@@ -48,8 +48,7 @@ namespace rocky
         bool dispatch(bool async = true);
 
         //! Merge the results into the TileNode
-        bool merge(
-            TerrainContext& context);
+        bool merge(shared_ptr<TerrainContext> context);
 
         util::Future<TerrainTileModel> _result;
         CreateTileManifest _manifest;

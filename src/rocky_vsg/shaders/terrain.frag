@@ -35,4 +35,7 @@ layout(location = 0) out vec4 out_color;
 void main()
 {
     out_color = texture(color_tex, frag_uv);
+
+    if (gl_FrontFacing == false)
+        out_color *= 0.5;
 }

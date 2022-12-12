@@ -44,8 +44,8 @@ namespace
             if (!_child)
             {
                 // resolve the observer pointers:
-                auto compiler = _runtime.getCompiler();
-                auto updates = _runtime.getUpdates();
+                auto compiler = _runtime.compiler();
+                auto updates = _runtime.updates();
 
                 if (compiler && updates)
                 {

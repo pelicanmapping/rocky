@@ -39,8 +39,7 @@ GeometryPool::GeometryPool() :
 vsg::ref_ptr<SharedGeometry>
 GeometryPool::getPooledGeometry(
     const TileKey& tileKey,
-    const Map* map,
-    const TerrainSettings& settings,
+    const Settings& settings,
     Cancelable* progress)
 {
     vsg::ref_ptr<SharedGeometry> out;
@@ -120,10 +119,9 @@ GeometryPool::createKeyForTileKey(
 
 int
 GeometryPool::getNumSkirtElements(
-    unsigned tileSize,
-    float skirtRatio) const
+    const Settings& settings) const
 {
-    return skirtRatio > 0.0f ? (tileSize-1) * 4 * 6 : 0;
+    return settings.skirtRatio > 0.0f ? (settings.tileSize-1) * 4 * 6 : 0;
 }
 
 namespace
@@ -166,8 +164,7 @@ namespace
 }
 
 vsg::ref_ptr<vsg::ushortArray>
-GeometryPool::createIndices(
-    const TerrainSettings& settings) const
+GeometryPool::createIndices(const Settings& settings) const
 {
     ROCKY_HARD_ASSERT(settings.tileSize > 0u);
 
@@ -179,7 +176,7 @@ GeometryPool::createIndices(
     unsigned numVertsInSkirt = needsSkirt ? (tileSize - 1) * 2u * 4u : 0;
     unsigned numVerts = numVertsInSurface + numVertsInSkirt;
     unsigned numIndicesInSurface = (tileSize - 1) * (tileSize - 1) * 6;
-    unsigned numIncidesInSkirt = getNumSkirtElements(tileSize, settings.skirtRatio);
+    unsigned numIncidesInSkirt = getNumSkirtElements(settings);
     unsigned numIndices = numIndicesInSurface + numIncidesInSkirt;
 
     auto indices = vsg::ushortArray::create(numIndices);
@@ -267,7 +264,7 @@ namespace
 vsg::ref_ptr<SharedGeometry>
 GeometryPool::createGeometry(
     const TileKey& tileKey,
-    const TerrainSettings& settings,
+    const Settings& settings,
     //MeshEditor& editor,
     Cancelable* progress) const
 {
@@ -287,7 +284,7 @@ GeometryPool::createGeometry(
     const uint32_t numVertsInSkirt      = needsSkirt ? (tileSize-1)*2u * 4u : 0;
     const uint32_t numVerts             = numVertsInSurface + numVertsInSkirt;
     const uint32_t numIndiciesInSurface = (tileSize-1) * (tileSize-1) * 6;
-    const uint32_t numIncidesInSkirt    = getNumSkirtElements(tileSize, settings.skirtRatio);
+    const uint32_t numIncidesInSkirt    = getNumSkirtElements(settings);
 
     ROCKY_TODO("GLenum mode = gpuTessellation ? GL_PATCHES : GL_TRIANGLES;");
 
@@ -300,7 +297,7 @@ GeometryPool::createGeometry(
     vsg::ref_ptr<vsg::vec3Array> neighbors;
     vsg::ref_ptr<vsg::vec3Array> neighborNormals;
 
-    if (settings.morphTerrain == true)
+    if (settings.morphing == true)
     {
         neighbors = vsg::vec3Array::create(numVerts);
         neighborNormals = vsg::vec3Array::create(numVerts);

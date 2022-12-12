@@ -163,8 +163,7 @@ TileKey::createNeighborKey( int xoffset, int yoffset ) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(valid(), TileKey::INVALID);
 
-    unsigned tx, ty;
-    getProfile()->getNumTiles( _lod, tx, ty );
+    auto[tx, ty] = getProfile()->getNumTiles(_lod);
 
     int sx = (int)_x + xoffset;
     unsigned x =
@@ -229,8 +228,7 @@ TileKey::createTileKeyContainingPoint(
 
     if (extent.contains(x, y))
     {
-        unsigned tilesX, tilesY;
-        profile->getNumTiles(level, tilesX, tilesY);
+        auto [tilesX, tilesY] = profile->getNumTiles(level);
         //unsigned tilesX = _numTilesWideAtLod0 * (1 << (unsigned)level);
         //unsigned tilesY = _numTilesHighAtLod0 * (1 << (unsigned)level);
 
@@ -324,8 +322,7 @@ namespace
         if (tileMaxX < tileMinX)
             tileMaxX = tileMinX;
 
-        unsigned int numWide, numHigh;
-        target_profile->getNumTiles(localLOD, numWide, numHigh);
+        auto[numWide, numHigh] = target_profile->getNumTiles(localLOD);
 
         // bail out if the tiles are out of bounds.
         if (tileMinX >= (int)numWide || tileMinY >= (int)numHigh ||

@@ -5,6 +5,7 @@
  */
 #include "MapNode.h"
 #include "TerrainNode.h"
+#include <vsg/io/Options.h>
 
 using namespace rocky;
 using namespace rocky::util;
@@ -298,7 +299,7 @@ MapNode::construct(const Config& conf)
     _readyForUpdate = true;
 
     // Fire it up
-    _terrain->setMap(_map);
+    _terrain->setMap(_map, nullptr);
 }
 
 Config

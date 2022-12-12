@@ -92,13 +92,13 @@ SurfaceNode::getPixelSizeOnScreen(osg::CullStack* cull) const
     //double R = _drawable->getRadius() / 1.4142;
     return cull->clampedPixelSize(getMatrix().getTrans(), R) / cull->getLODScale();
 }
-#endif
 
 void
 SurfaceNode::setLastFramePassedCull(unsigned fn)
 {
     _lastFramePassedCull = fn;
 }
+#endif
 
 
 void
@@ -157,10 +157,20 @@ SurfaceNode::recomputeLocalBBox()
         std::copy(verts->begin(), verts->end(), _proxyMesh.begin());
     }
 
+    float r2 = 0;
     for (auto& vert : _proxyMesh)
     {
         _localbbox.add(vert);
+        r2 = std::max(r2, vsg::length2(vert));
     }
+
+    //boundingSphere.set(
+    //    vsg::dvec3(0, 0, 0) * this->matrix,
+    //    sqrt((double)r2));
+
+    boundingSphere.set(
+        this->matrix * vsg::dvec3(0, 0, 0),
+        sqrt((double)r2));
 }
 
 void
@@ -184,82 +194,32 @@ SurfaceNode::recomputeBound()
     // next compute the bounding box in local space:
     recomputeLocalBBox();
 
+    auto& m = this->matrix;
+
     // Compute the medians of each potential child node:
+    _worldPoints = {
+        // bottom:
+        m * corner(0),
+        m * corner(1),
+        m * corner(2),
+        m * corner(3),
+        m * ((corner(0) + corner(1))*0.5),
+        m * ((corner(1) + corner(3))*0.5),
+        m * ((corner(3) + corner(2))*0.5),
+        m * ((corner(0) + corner(2))*0.5),
+        m * ((corner(0) + corner(3))*0.5),
 
-    vsg::dvec3 minZMedians[4];
-    vsg::dvec3 maxZMedians[4];
-
-    minZMedians[0] = (corner(0) + corner(1))*0.5;
-    minZMedians[1] = (corner(1) + corner(3))*0.5;
-    minZMedians[2] = (corner(3) + corner(2))*0.5;
-    minZMedians[3] = (corner(0) + corner(2))*0.5;
-
-    maxZMedians[0] = (corner(4) + corner(5))*0.5;
-    maxZMedians[1] = (corner(5) + corner(7))*0.5;
-    maxZMedians[2] = (corner(7) + corner(6))*0.5;
-    maxZMedians[3] = (corner(4) + corner(6))*0.5;
-
-    // Child 0 corners
-    _childrenCorners[0][0] = (corner(0));
-    _childrenCorners[0][1] = minZMedians[0];
-    _childrenCorners[0][2] = minZMedians[3];
-    _childrenCorners[0][3] = (minZMedians[0] + minZMedians[2])*0.5;
-
-    _childrenCorners[0][4] = (corner(4));
-    _childrenCorners[0][5] = maxZMedians[0];
-    _childrenCorners[0][6] = maxZMedians[3];
-    _childrenCorners[0][7] = (maxZMedians[0] + maxZMedians[2])*0.5;
-
-    // Child 1 corners
-    _childrenCorners[1][0] = minZMedians[0];
-    _childrenCorners[1][1] = (corner(1));
-    _childrenCorners[1][2] = (minZMedians[0] + minZMedians[2])*0.5;
-    _childrenCorners[1][3] = minZMedians[1];
-
-    _childrenCorners[1][4] = maxZMedians[0];
-    _childrenCorners[1][5] = (corner(5));
-    _childrenCorners[1][6] = (maxZMedians[0] + maxZMedians[2])*0.5;
-    _childrenCorners[1][7] = maxZMedians[1];
-
-    // Child 2 corners
-    _childrenCorners[2][0] = minZMedians[3];
-    _childrenCorners[2][1] = (minZMedians[0] + minZMedians[2])*0.5;
-    _childrenCorners[2][2] = (corner(2));
-    _childrenCorners[2][3] = minZMedians[2];
-
-    _childrenCorners[2][4] = maxZMedians[3];
-    _childrenCorners[2][5] = (maxZMedians[0] + maxZMedians[2])*0.5;
-    _childrenCorners[2][6] = (corner(6));
-    _childrenCorners[2][7] = maxZMedians[2];
-
-    // Child 3 corners
-    _childrenCorners[3][0] = (minZMedians[0] + minZMedians[2])*0.5;
-    _childrenCorners[3][1] = minZMedians[1];
-    _childrenCorners[3][2] = minZMedians[2];
-    _childrenCorners[3][3] = (corner(3));
-
-    _childrenCorners[3][4] = (maxZMedians[0] + maxZMedians[2])*0.5;
-    _childrenCorners[3][5] = maxZMedians[1];
-    _childrenCorners[3][6] = maxZMedians[2];
-    _childrenCorners[3][7] = (corner(7));
-
-    // Transform the child corners to world space
-    
-    for (int i = 0; i < 4; ++i)
-    {
-        VectorPoints& childCorners = _childrenCorners[i];
-        for (int j = 0; j < 8; ++j)
-        {
-            childCorners[j] = childCorners[j] * this->matrix;
-            _spheres[i * 8 + j].set(childCorners[j], 0.0f);
-        }
-    }
-
-    //if (_enableDebugNodes)
-    //{
-    //    removeDebugNode();
-    //    addDebugNode(box);
-    //}
+        // top:
+        m * corner(4),
+        m * corner(5),
+        m * corner(6),
+        m * corner(7),
+        m * ((corner(4) + corner(5))*0.5),
+        m * ((corner(5) + corner(7))*0.5),
+        m * ((corner(7) + corner(6))*0.5),
+        m * ((corner(4) + corner(6))*0.5),
+        m * ((corner(4) + corner(7))*0.5)
+    };
 
 #if 1
     // Update the horizon culler.
@@ -271,10 +231,4 @@ SurfaceNode::recomputeBound()
 
     // need this?
     //dirtyBound();
-
-    auto center_local = (_localbbox.min + _localbbox.max) * 0.5;
-
-    boundingSphere.set(
-        center_local * this->matrix, // world coords
-        length(corner(0) + corner(7)) * 0.5);
 }

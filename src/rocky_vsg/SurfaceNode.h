@@ -9,6 +9,7 @@
 #include <rocky/Image.h>
 #include <rocky/SRS.h>
 #include <rocky/TileKey.h>
+#include <rocky_vsg/Utils.h>
 #include <vsg/nodes/MatrixTransform.h>
 #include <vsg/vk/State.h>
 #include <vsg/maths/vec3.h>
@@ -92,17 +93,12 @@ namespace rocky
 
         bool anyChildBoxWithinRange(float range, vsg::State* state) const
         {
-            for (unsigned i = 0u; i < 32u; ++i) {
-                auto d = state->lodDistance(_spheres[i]);
-                if (d >= 0.0 && d <= range)
+            for (unsigned i = 0u; i < 18u; ++i) {
+                if (distanceTo(_worldPoints[i], state) <= range)
                     return true;
             }
             return false;
         }
-
-        void setLastFramePassedCull(unsigned fn);
-
-        unsigned getLastFramePassedCull() const { return _lastFramePassedCull; }
 
         void recomputeBound();
 
@@ -118,11 +114,7 @@ namespace rocky
         HorizonTileCuller _horizonCuller;
         shared_ptr<Image> _elevationRaster;
         dmat4 _elevationMatrix;
-
-        using VectorPoints = vsg::dvec3[8];
-        using ChildrenCorners = VectorPoints[4];
-        ChildrenCorners _childrenCorners;
-        vsg::sphere _spheres[32];
+        std::vector<vsg::dvec3> _worldPoints;
         vsg::dbox _localbbox;
         void recomputeLocalBBox();
 

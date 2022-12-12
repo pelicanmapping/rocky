@@ -110,7 +110,7 @@ Merger::merge(LoadTileDataOperation::Ptr data)
 }
 
 void
-Merger::update(TerrainContext& terrain)
+Merger::update(shared_ptr<TerrainContext> terrain)
 {
     util::ScopedLock lock(_mutex);
 

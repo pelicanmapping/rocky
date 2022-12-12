@@ -139,10 +139,7 @@ ROCKY_SPECIALIZE_CONFIG(rocky::ProfileOptions);
         /**
          *Gets the number wide and high at the given lod
          */
-        void getNumTiles(
-            unsigned lod,
-            unsigned& out_tiles_wide,
-            unsigned int& out_tiles_high) const;
+        std::pair<unsigned, unsigned> getNumTiles(unsigned lod) const;
 
         /** 
          * Clamps the incoming extents to the extents of this profile, and then converts the 

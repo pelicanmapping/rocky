@@ -7,7 +7,6 @@
 #include <rocky/Notify.h>
 
 using namespace rocky;
-using namespace rocky::internal;
 
 #define LC "[SelectionInfo] "
 
@@ -48,8 +47,7 @@ SelectionInfo::initialize(
 
     for (unsigned lod = 0; lod <= maxLod; ++lod)
     {
-        unsigned tx, ty;
-        profile->getNumTiles(lod, tx, ty);
+        auto[tx, ty] = profile->getNumTiles(lod);
         TileKey key(lod, tx / 2, ty / 2, profile);
         GeoExtent e = key.getExtent();
         GeoCircle c = e.computeBoundingGeoCircle();
@@ -83,8 +81,7 @@ SelectionInfo::initialize(
             double lodT = (double)(lod-startLOD)/(double)(numLods-1);
             double minAR = startAR + (endAR-startAR)*lodT;
 
-            unsigned tx, ty;
-            profile->getNumTiles(lod, tx, ty);
+            auto[tx, ty] = profile->getNumTiles(lod);
             for(int y=(int)ty/2; y>=0; --y)
             {
                 TileKey k(lod, 0, y, profile);
@@ -96,13 +93,6 @@ SelectionInfo::initialize(
                 {
                     _lods[lod]._minValidTY = std::min(y+1, (int)(ty-1));
                     _lods[lod]._maxValidTY = (ty-1)-_lods[lod]._minValidTY;
-                    ROCKY_DEBUG << "LOD " << lod 
-                        << " TY=" << ty
-                        << " minAR=" << minAR
-                        << " minTY=" << _lods[lod]._minValidTY
-                        << " maxTY=" << _lods[lod]._maxValidTY
-                        << " (+/-" << lat << " deg)"
-                        << std::endl;
                     break;
                 }
             }

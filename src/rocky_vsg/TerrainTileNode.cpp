@@ -21,9 +21,6 @@
 #include <vsg/vk/State.h>
 #include <vsg/ui/FrameStamp.h>
 #include <vsg/nodes/StateGroup.h>
-#include <vsg/utils/ShaderSet.h>
-#include <vsg/utils/GraphicsPipelineConfig.h>
-#include <vsg/all.h>
 
 using namespace rocky;
 
@@ -42,124 +39,40 @@ namespace
 }
 
 TerrainTileNode::TerrainTileNode(
-    const TileKey& key,
-    TerrainTileNode* parent,
-    TerrainContext& terrain,
-    Cancelable* progress) :
-
-    _key(key),
-    _parentTile(parent),
-    _loadsInQueue(0u),
-    _lastTraversalTime(vsg::time_point()),
-    _lastTraversalFrame(0),
-    _lastTraversalRange(FLT_MAX),
-    _empty(false), // an "empty" node exists but has no geometry or children
-    _imageUpdatesActive(false),
-    _doNotExpire(false),
-    _revision(0),
-    _mutex("TerrainTileNode(OE)"),
-    _loadQueue("TerrainTileNode LoadQueue(OE)"),
-    _createChildAsync(true),
-    _nextLoadManifestPtr(nullptr),
-    _loadPriority(0.0f)
+    const TileKey& in_key,
+    TerrainTileNode* in_parent,
+    vsg::ref_ptr<vsg::Node> in_geometry,
+    const fvec2& in_morphConstants,
+    float in_childrenVisibilityRange,
+    const TileDescriptorModel& in_initialDescriptorModel,
+    TerrainTileHost* in_host)
 {
-    // build the actual geometry for this node
-    createGeometry(terrain, progress);
+    key = in_key;
+    parent = in_parent;
+    morphConstants = in_morphConstants;
+    childrenVisibilityRange = in_childrenVisibilityRange;
+    renderModel.descriptorModel = in_initialDescriptorModel;
+    _host = in_host;
 
-    // Encode the tile key in a uniform. Note! The X and Y components are presented
-    // modulo 2^16 form so they don't overrun single-precision space.
-    unsigned tw, th;
-    _key.getProfile()->getNumTiles(_key.getLOD(), tw, th);
-
-    const double m = 65536; //pow(2.0, 16.0);
-
-    double x = (double)_key.getTileX();
-    double y = (double)(th - _key.getTileY() - 1);
-
-    //_tileKeyValue.set(
-    //    (float)(int)fmod(x, m),
-    //    (float)(int)fmod(y, m),
-    //    (float)_key.getLOD(),
-    //    -1.0f);
-
-    _tileKeyValue = fvec4(
-        (float)(x-tw/2), //(int)fmod(x, m),
-        (float)(y-th/2), // (int)fmod(y, m),
-        (float)_key.getLOD(),
-        -1.0f);
-
-    // initialize all the per-tile uniforms the shaders will need:
-    float range, morphStart, morphEnd;
-    terrain.selectionInfo.get(_key, range, morphStart, morphEnd);
-
-    float one_over_end_minus_start = 1.0f / (morphEnd - morphStart);
-    _morphConstants = fvec2(morphEnd * one_over_end_minus_start, one_over_end_minus_start);
-
-    _numLODs = terrain.selectionInfo.getNumLODs();
-    _childrenVisibilityRange = terrain.selectionInfo.getLOD(_key.getLOD() + 1)._visibilityRange;
-
-    // Make a tilekey to use for testing whether to subdivide.
-    if (_key.getTileY() <= th / 2)
-        _subdivideTestKey = _key.createChildKey(0);
-    else
-        _subdivideTestKey = _key.createChildKey(3);
-
-    _doNotExpire = _key.getLOD() == terrain.firstLOD;
-
-    // register me.
-    // TODO: can this go elsewhere? can we 'register' the first time touch() happens?
-    terrain.tiles.add(this, terrain);
-
-    _renderModel.descriptorModel = terrain.stateFactory.defaultTileDescriptors;
-
-    // start by inheriting model data from the parent.
-    inherit(terrain);
-}
-
-TerrainTileNode::~TerrainTileNode()
-{
-    //nop
-}
-
-void
-TerrainTileNode::setDoNotExpire(bool value)
-{
-    _doNotExpire = value;
-}
-
-void
-TerrainTileNode::createGeometry(
-    TerrainContext& terrain,
-    Cancelable* progress)
-{
-    ROCKY_SOFT_ASSERT_AND_RETURN(terrain.map, void());
-
-    _empty = false;
-
-    unsigned tileSize = terrain.tileSize;
-
-    // Get a shared geometry from the pool that corresponds to this tile key:
-    vsg::ref_ptr<SharedGeometry> geom;
-
-    geom = terrain.geometryPool.getPooledGeometry(
-        _key,
-        terrain.map.get(),
-        terrain,
-        progress);
-
-    if (progress && progress->isCanceled())
-        return;
-
-    if (geom.valid())
+    doNotExpire = false;
+    revision = 0;
+    surface = nullptr;
+    stategroup = nullptr;
+    lastTraversalFrame = 0;
+    lastTraversalRange = FLT_MAX;
+    _needsData = true;
+    _needsChildren = false;
+    _needsUpdate = false;
+    
+    if (in_geometry.valid())
     {
         // scene graph is: tile->surface->stateGroup->geometry
-
         // construct a state group for this tile's render model
-        auto surface = SurfaceNode::create(_key);
+        surface = SurfaceNode::create(key);
 
         // empty state group - will populate later in refreshStateGroup
-        auto stategroup = vsg::StateGroup::create();
-        stategroup->addChild(geom);
+        stategroup = vsg::StateGroup::create();
+        stategroup->addChild(in_geometry);
 
         surface->addChild(stategroup);
 
@@ -168,32 +81,51 @@ TerrainTileNode::createGeometry(
         else
             children[0] = surface;
     }
-    else
-    {
-        _empty = true;
-    }
 
+    // Encode the tile key in a uniform. Note! The X and Y components are presented
+    // modulo 2^16 form so they don't overrun single-precision space.
+    auto[tw, th] = key.getProfile()->getNumTiles(key.getLOD());
+
+    double x = (double)key.getTileX();
+    double y = (double)(th - key.getTileY() - 1);
+
+    _tileKeyValue = fvec4(
+        (float)(x - tw / 2), //(int)fmod(x, m),
+        (float)(y - th / 2), // (int)fmod(y, m),
+        (float)key.getLOD(),
+        -1.0f);
+
+    // inherit model data from the parent
+    inherit();
+
+    // update the bounding sphere for culling
     recomputeBound();
+}
+
+TerrainTileNode::~TerrainTileNode()
+{
+    //nop
 }
 
 void
 TerrainTileNode::recomputeBound()
 {
-    if (surface())
+    if (surface.valid())
     {
-        surface()->recomputeBound();
-        bound = surface()->boundingSphere;
+        surface->recomputeBound();
+        bound = surface->boundingSphere;
     }
 }
 
+
+#if 0
 void
 TerrainTileNode::initializeData(TerrainContext& terrain)
 {
-#if 0
     // Initialize the data model by copying the parent's rendering data
     // and scale/biasing the matrices.
 
-    vsg::ref_ptr<TerrainTileNode> parent(_parentTile);
+    auto parent = getParentTile();
     if (parent)
     {
         unsigned quadrant = getKey().getQuadrant();
@@ -245,27 +177,10 @@ TerrainTileNode::initializeData(TerrainContext& terrain)
     // tell the world.
     //OE_DEBUG << LC << "notify (create) key " << getKey().str() << std::endl;
     //terrain.tiles.notifyTileUpdate(getKey(), this);
-#endif
 }
+#endif
 
 #if 0
-void
-TerrainTileNode::recomputeBound()
-{
-    this->bound = _sur_surface->boundingSphere;
-    //vsg::dsphere bs 
-
-    //if (_surface)
-    //{
-    //    bs = _surface->computeBound();
-    //    ROCKY_TODO("auto bbox = _surface->getAlignedBoundingBox();");
-    //    //_tileKeyValue.a = std::max( (bbox.max.x-bbox.min.x), (bbox.max.y-bbox.min.y) );
-    //}    
-
-    //this->bound = bs;
-}
-#endif
-
 bool
 TerrainTileNode::isDormant() const
 {
@@ -291,18 +206,30 @@ TerrainTileNode::areSiblingsDormant() const
     return parent ? parent->areSubTilesDormant() : true;
 }
 
+bool
+TerrainTileNode::areSubTilesDormant() const
+{
+    return
+        hasChildren() &&
+        subTile(0)->isDormant() &&
+        subTile(1)->isDormant() &&
+        subTile(2)->isDormant() &&
+        subTile(3)->isDormant();
+}
+#endif
+
 void
 TerrainTileNode::setElevation(
     shared_ptr<Image> image,
     const dmat4& matrix)
 {
-    if (surface())
+    if (surface)
     {
         if (image != getElevationRaster() ||
             matrix != getElevationMatrix() ||
             !this->bound.valid())
         {
-            surface()->setElevation(image, matrix);
+            surface->setElevation(image, matrix);
             recomputeBound();
         }
     }
@@ -311,8 +238,8 @@ TerrainTileNode::setElevation(
 void
 TerrainTileNode::updateElevationRaster()
 {
-    if (_renderModel.elevation.texture)
-        setElevation(_renderModel.elevation.image, _renderModel.elevation.matrix);
+    if (renderModel.elevation.texture)
+        setElevation(renderModel.elevation.image, renderModel.elevation.matrix);
     else
         setElevation(nullptr, dmat4(1));
 
@@ -322,21 +249,6 @@ TerrainTileNode::updateElevationRaster()
     //else
     //    setElevation(nullptr, dmat4(1));
 }
-
-#if 0
-const osg::Image*
-TerrainTileNode::getElevationRaster() const
-{
-    return _surface.valid() ? _surface->getElevationRaster() : 0L;
-}
-
-const fmat4&
-TerrainTileNode::getElevationMatrix() const
-{
-    static fmat4 s_identity(1);
-    return _surface.valid() ? _surface->getElevationMatrix() : s_identity;
-}
-#endif
 
 void
 TerrainTileNode::refreshAllLayers()
@@ -391,33 +303,18 @@ TerrainTileNode::resizeGLObjectBuffers(unsigned maxSize)
 
 bool
 TerrainTileNode::shouldSubDivide(vsg::State* state) const
-    //TerrainContext& terrain) const
-{    
-    unsigned myLOD = _key.getLOD();
+{
+    // can we subdivide at all?
+    if (childrenVisibilityRange == FLT_MAX)
+        return false;
 
-    if (myLOD < _numLODs - 1)
-        //if (myLOD < terrain.selectionInfo.getNumLODs() &&
-        //    myLOD != terrain.selectionInfo.getNumLODs()-1)
-    {
-        auto range_to_center = state->lodDistance(bound);
+    // are we inside the bounding sphere?
+    //else if (distanceTo(bound.center, state) - bound.radius <= 0.0f)
+    //    return true;
 
-        if (range_to_center < 0.0)
-        {
-            //ROCKY_SOFT_ASSERT_AND_RETURN(range_to_center >= 0.0, false);
-            //float range = state->lodDistance(bound);
-            //ROCKY_WARN << "range = " << range << std::endl;
-            return false;
-        }
-
-        else
-        {
-            float range_to_edge = range_to_center - bound.radius;
-
-            if (range_to_edge <= 0.0)
-                return true;
-
-            return surface()->anyChildBoxWithinRange(_childrenVisibilityRange, state);
-        }
+    // are the children in range?
+    else
+        return surface->anyChildBoxWithinRange(childrenVisibilityRange, state);
 
 #if 0
         // In PSOS mode, subdivide when the on-screen size of a tile exceeds the maximum
@@ -458,145 +355,74 @@ TerrainTileNode::shouldSubDivide(vsg::State* state) const
 #endif
         }
 #endif
-    }
-    return false;
-}
-
-#if 0
-bool
-TerrainTileNode::cull_spy(
-    vsg::RecordTraversal& nv,
-    TerrainContext& context)
-{
-    bool visible = false;
-
-    EngineContext* context = culler->getEngineContext();
-
-    // Shows all culled tiles. All this does is traverse the terrain
-    // and add any tile that's been "legitimately" culled (i.e. culled
-    // by a non-spy traversal) in the last 2 frames. We use this
-    // trick to spy on another camera.
-    unsigned frame = context->getClock()->getFrame();
-
-    if ( frame - _surface->getLastFramePassedCull() < 2u)
-    {
-        _surface->accept( *culler );
-    }
-
-    else if ( _childrenReady )
-    {
-        for(int i=0; i<4; ++i)
-        {
-            TerrainTileNode* child = getSubTile(i);
-            if (child)
-                child->accept( *culler );
-        }
-    }
-
-    return visible;
-}
-#endif
-
-bool
-TerrainTileNode::cull(vsg::RecordTraversal& nv) const
-{
-    // determine whether we can and should subdivide to a higher resolution:
-    bool childrenInRange = shouldSubDivide(nv.getState());
-
-    // whether it is OK to create child TerrainTileNodes (if necessary)
-    bool canLoadChildren = childrenInRange;
-
-#if 0
-    // whether it is OK to load data (if necessary)
-    bool canLoadData = _noNotExpire;
-        _doNotExpire ||
-        _key.getLOD() == terrain.firstLOD ||
-        _key.getLOD() >= terrain.minLOD;
-#endif
-
-    bool childrenLoaded = (children.size() == 2);
-
-    if (childrenInRange && childrenLoaded)
-    {
-        // children are available, accept them now.
-        children[1]->accept(nv);
-    }
-    else
-    {
-        // children do not exist or are out of range; accept this tile's surface
-        children[0]->accept(nv);
-
-        if (childrenInRange)
-        {
-            auto terrain = nv.getObject<TerrainContext>("TerrainContext");
-            createChildren(*terrain);
-        }
-        else if (children.size() > 1)
-        {
-            //todo: remove invisible children
-            //terrain.runtime.removeNode(const_cast<TerrainTileNode*>(this), 1u);
-        }
-    }
-
-#if 0
-    // If this tile is marked dirty, try loading data.
-    if ( dirty() && canLoadData )
-    {
-        load(nv.getState(), terrain);
-    }
-#endif
-
-    return true;
+    //}
+    //return false;
 }
 
 void
 TerrainTileNode::accept(vsg::RecordTraversal& nv) const
 {
-    _lastTraversalFrame.exchange(nv.getFrameStamp()->frameCount);
-    _lastTraversalTime.exchange(nv.getFrameStamp()->time);
+    lastTraversalFrame.exchange(nv.getFrameStamp()->frameCount);
+    lastTraversalTime.exchange(nv.getFrameStamp()->time);
+    lastTraversalRange.exchange(std::min(
+        (float)lastTraversalRange,
+        (float)distanceTo(bound.center, nv.getState())));
 
-    // update the timestamp so this tile doesn't become dormant.
-    //_lastTraversalFrame.exchange(_context->getClock()->getFrame());
-    //_lastTraversalTime = _context->getClock()->getTime();
-    //_lastTraversalRange = std::min(_lastTraversalRange, nv.getDistanceToViewPoint(getBound().center(), true));
+    if (hasChildren())
+        _needsChildren = false;
 
-    auto terrain_ptr = nv.getObject<TerrainContext>("TerrainContext");
-    ROCKY_SOFT_ASSERT_AND_RETURN(terrain_ptr, void());
+    // TODO: this is no good from a multi-threaded record perspective
+    //_needsChildren = false;
 
-    auto& terrain = *terrain_ptr;
-    terrain.tiles.touch(this);
-
-    auto state = nv.getState();
-
-    if (_empty)
+    if (surface->isVisibleFrom(nv.getState()))
     {
-        // even if the tile's empty, we need to process its load queue
-        if (dirty())
+        // determine whether we can and should subdivide to a higher resolution:
+        bool childrenInRange = shouldSubDivide(nv.getState());
+
+        if (childrenInRange && hasChildren())
         {
-            load(state, terrain);
+            // children are available, traverse them now.
+            children[1]->accept(nv);
+        }
+        else
+        {
+            // children do not exist or are out of range; use this tile's geometry
+            children[0]->accept(nv);
+
+            if (childrenInRange && !childLoader.isWorking())
+            {
+                _needsChildren = true;
+            }
         }
     }
-    else
-    {
-#if 0
-        if (culler->_isSpy)
-        {
-            // spy mode: don't actually cull
-            cull_spy(culler);
-        }
 
-        else
-#endif
-            
-        if (surface()->isVisibleFrom(state))
-        {
-            cull(nv);
-        }
+    if (hasChildren())
+    {
+        // always ping all children at once so the system can never
+        // delete one of a quad.
+        _host->ping(
+            subTile(0), subTile(1), subTile(2), subTile(3),
+            nv);
+    }
+
+    if (!parent.valid())
+    {
+        _host->ping(
+            const_cast<TerrainTileNode*>(this), 
+            nullptr, nullptr, nullptr,
+            nv);
     }
 }
 
 void
-TerrainTileNode::update(const vsg::FrameStamp*) //osg::NodeVisitor& nv)
+TerrainTileNode::unloadChildren()
+{
+    children.resize(1);
+    childLoader.reset();
+}
+
+void
+TerrainTileNode::update(const vsg::FrameStamp*)
 {
 #if 0
     unsigned numUpdatedTotal = 0u;
@@ -663,128 +489,74 @@ TerrainTileNode::update(const vsg::FrameStamp*) //osg::NodeVisitor& nv)
 #endif
 }
 
-void
-TerrainTileNode::createChildren(TerrainContext& terrain) const
-{
-    if (!_childLoader.isWorking())
-    {
-        util::ScopedLock lock(_mutex);
-
-        // double check pattern!
-        if (!_childLoader.isWorking())
-        {
-            // prepare variables to send to the async loader
-            TileKey parentkey(_key);
-
-            vsg::observer_ptr<TerrainTileNode> parent(
-                const_cast<TerrainTileNode*>(this));
-
-            // function that will create all 4 children and compile them
-            auto create_children = [parentkey, parent, &terrain](Cancelable* io)
-            {
-                vsg::ref_ptr<vsg::Node> result;
-
-                vsg::ref_ptr<TerrainTileNode> parent_safe = parent;
-                if (parent_safe)
-                {
-                    auto group = vsg::Group::create();
-
-                    // create all four children:
-                    for (unsigned quadrant = 0; quadrant < 4; ++quadrant)
-                    {
-                        if (io && io->isCanceled())
-                            return result;
-
-                        TileKey childkey = parentkey.createChildKey(quadrant);
-
-                        auto tile = TerrainTileNode::create(
-                            childkey,
-                            parent_safe,
-                            terrain,
-                            io);
-
-                        tile->loadSync(terrain);
-
-                        group->addChild(tile);
-                    }
-
-                    result = group;
-                }
-
-                return result;
-            };
-
-            // queue up the job.
-            _childLoader = terrain.runtime.compileAndAddNode(
-                const_cast<TerrainTileNode*>(this),
-                create_children);
-        }
-    }
-}
-
 #if 1
 
 void
-TerrainTileNode::inherit(TerrainContext& terrain)
+TerrainTileNode::inherit()
 {
-    vsg::ref_ptr<TerrainTileNode> parent = _parentTile;
-    if (parent)
+    vsg::ref_ptr<TerrainTileNode> safe_parent = parent;
+    if (safe_parent)
     {
-        auto& parentModel = parent->renderModel();
-        auto& sb = scaleBias[_key.getQuadrant()];
+        auto& sb = scaleBias[key.getQuadrant()];
 
-        _renderModel = parentModel;
-        _renderModel.applyScaleBias(sb);
+        renderModel = safe_parent->renderModel;
+        renderModel.applyScaleBias(sb);
+
+        revision = safe_parent->revision;
     }
 
-    refreshStateGroup(terrain);
+    //_needsData = true;
+
+    //refreshStateGroup(terrain);
 }
 
 void
 TerrainTileNode::merge(
     const TerrainTileModel& tile_model,
     const CreateTileManifest& manifest,
-    TerrainContext& terrain)
+    shared_ptr<TerrainContext> terrain)
 {
-    if (manifest.includesConstraints())
-    {
-        createGeometry(terrain, nullptr);
-    }
+    //if (manifest.includesConstraints())
+    //{
+    //    createGeometry(terrain, nullptr);
+    //}
 
     if (tile_model.colorLayers.size() > 0)
     {
         auto& layer = tile_model.colorLayers[0];
         if (layer.image.valid())
         {
-            _renderModel.color.image = layer.image.getImage();
-            _renderModel.color.matrix = layer.matrix;
+            renderModel.color.image = layer.image.getImage();
+            renderModel.color.matrix = layer.matrix;
             //_renderModel.descriptorModel.color = nullptr;
         }
     }
 
     if (tile_model.elevation.heightfield.valid())
     {
-        _renderModel.elevation.image = tile_model.elevation.heightfield.getHeightfield();
-        _renderModel.elevation.matrix = tile_model.elevation.matrix;
+        renderModel.elevation.image = tile_model.elevation.heightfield.getHeightfield();
+        renderModel.elevation.matrix = tile_model.elevation.matrix;
         //_renderModel.descriptorModel.elevation = nullptr;
     }
 
     if (tile_model.normalMap.image.valid())
     {
-        _renderModel.normal.image = tile_model.normalMap.image.getImage();
-        _renderModel.normal.matrix = tile_model.normalMap.matrix;
+        renderModel.normal.image = tile_model.normalMap.image.getImage();
+        renderModel.normal.matrix = tile_model.normalMap.matrix;
         //_renderModel.descriptorModel.normal = nullptr;
     }
 
-    refreshStateGroup(terrain);
+    //refreshStateGroup(terrain);
+
+    // NEEDS STATE UPDATE?? _needsState = true??
 }
 
-void
-TerrainTileNode::refreshStateGroup(TerrainContext& terrain)
-{
-    terrain.stateFactory.refreshStateGroup(this);
-}
-
+//void
+//TerrainTileNode::refreshStateGroup(TerrainContext& terrain)
+//{
+//    terrain.stateFactory.refreshStateGroup(this);
+//}
+//
 #else
 void
 TerrainTileNode::merge(
@@ -1287,6 +1059,7 @@ TerrainTileNode::passInLegalRange(const RenderingPass& pass) const
 }
 #endif
 
+#if 0
 void
 TerrainTileNode::load(
     vsg::State* state,
@@ -1342,51 +1115,33 @@ TerrainTileNode::load(
         }
     }
 }
+#endif
 
 void
-TerrainTileNode::loadSync(
-    TerrainContext& terrain)
+TerrainTileNode::loadSync(shared_ptr<TerrainContext> terrain)
 {
     LoadTileDataOperation::Ptr loadTileData =
-        std::make_shared<LoadTileDataOperation>(terrain.map, this);
+        std::make_shared<LoadTileDataOperation>(terrain->map, this);
 
     loadTileData->setEnableCancelation(false);
     loadTileData->dispatch(false);
     loadTileData->merge(terrain);
 }
 
-bool
-TerrainTileNode::areSubTilesDormant() const
-{
-    return
-        hasChildren() &&
-        subTile(0)->isDormant() &&
-        subTile(1)->isDormant() &&
-        subTile(2)->isDormant() &&
-        subTile(3)->isDormant();
-}
-
-void
-TerrainTileNode::removeSubTiles()
-{
-    _childLoader.abandon();
-    children.resize(1);
-}
-
 void
 TerrainTileNode::notifyOfArrival(
     TerrainTileNode* that,
-    TerrainContext& terrain)
+    shared_ptr<TerrainContext> terrain)
 {
-    if (terrain.normalizeEdges)
+    if (terrain->settings.normalizeEdges)
     {
-        if (_key.createNeighborKey(1, 0) == that->getKey())
+        if (key.createNeighborKey(1, 0) == that->key)
             _eastNeighbor = vsg::observer_ptr<TerrainTileNode>(that);
 
-        if (_key.createNeighborKey(0, 1) == that->getKey())
+        if (key.createNeighborKey(0, 1) == that->key)
             _southNeighbor = vsg::observer_ptr<TerrainTileNode>(that);
 
-        updateNormalMap(terrain);
+        updateNormalMap(terrain->settings);
     }
 }
 
@@ -1472,159 +1227,3 @@ TerrainTileNode::updateNormalMap(
 #endif
     //OE_INFO << LC << _key.str() << " : updated normal map.\n";
 }
-
-#if 0
-bool
-TerrainTileNode::nextLoadIsProgressive(
-    TerrainContext& terrain) const
-{
-    return
-        (terrain.progressive == true) &&
-        (_nextLoadManifestPtr == nullptr) || (!_nextLoadManifestPtr->progressive().isSetTo(false));
-}
-#endif
-
-
-#if 0
-vsg::ref_ptr<vsg::StateGroup>
-TerrainTileNode::createStateGroup(
-    TerrainContext& terrain) const
-{
-    vsg::ref_ptr<vsg::ShaderSet> shaderSet =
-        terrain.terrainShaderSet;
-
-    vsg::ref_ptr<vsg::Options> options;
-
-    if (!shaderSet.valid())
-    {
-        shaderSet = vsg::createFlatShadedShaderSet(options);
-    }
-
-    auto graphicsPipelineConfig = vsg::GraphicsPipelineConfig::create(shaderSet);
-
-    auto& defines = graphicsPipelineConfig->shaderHints->defines;
-
-    // set up graphics pipeline
-    vsg::Descriptors descriptors;
-
-    // set up graphics pipeline
-    vsg::DescriptorSetLayoutBindings descriptorBindings;
-
-#if 0 // todo...
-    if (stateInfo.image)
-    {
-        auto sampler = Sampler::create();
-        sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-
-        if (sharedObjects) sharedObjects->share(sampler);
-
-        graphicsPipelineConfig->assignTexture(descriptors, "diffuseMap", stateInfo.image, sampler);
-
-        if (stateInfo.greyscale) defines.insert("VSG_GREYSACLE_DIFFUSE_MAP");
-    }
-
-    if (stateInfo.displacementMap)
-    {
-        auto sampler = Sampler::create();
-        sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-
-        if (sharedObjects) sharedObjects->share(sampler);
-
-        graphicsPipelineConfig->assignTexture(descriptors, "displacementMap", stateInfo.displacementMap, sampler);
-    }
-
-    // set up pass of material
-    auto mat = vsg::PhongMaterialValue::create();
-    mat->value().specular = vec4(0.5f, 0.5f, 0.5f, 1.0f);
-
-    graphicsPipelineConfig->assignUniform(descriptors, "material", mat);
-
-    if (sharedObjects) sharedObjects->share(descriptors);
-#endif
-
-    // set up ViewDependentState
-    vsg::ref_ptr<vsg::ViewDescriptorSetLayout> vdsl;
-    if (terrain.runtime.sharedObjects)
-        vdsl = terrain.runtime.sharedObjects->shared_default<vsg::ViewDescriptorSetLayout>();
-    else
-        vdsl = vsg::ViewDescriptorSetLayout::create();
-    graphicsPipelineConfig->additionalDescriptorSetLayout = vdsl;
-
-    graphicsPipelineConfig->enableArray("inVertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    graphicsPipelineConfig->enableArray("inNormal", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    graphicsPipelineConfig->enableArray("inUV", VK_VERTEX_INPUT_RATE_VERTEX, 8);
-
-#if 0
-    if (stateInfo.instance_colors_vec4)
-    {
-        graphicsPipelineConfig->enableArray("vsg_Color", VK_VERTEX_INPUT_RATE_INSTANCE, 16);
-    }
-
-    if (stateInfo.instance_positions_vec3)
-    {
-        graphicsPipelineConfig->enableArray("vsg_position", VK_VERTEX_INPUT_RATE_INSTANCE, 12);
-    }
-
-    if (stateInfo.two_sided)
-    {
-        graphicsPipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
-        defines.insert("VSG_TWO_SIDED_LIGHTING");
-    }
-
-    graphicsPipelineConfig->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments
-    {
-        { stateInfo.blending, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_SUBTRACT, VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT}
-    };
-
-    if (stateInfo.wireframe)
-    {
-        graphicsPipelineConfig->inputAssemblyState->topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-    }
-#endif
-
-    // if required initialize GraphicsPipeline/Layout etc.
-    if (terrain.runtime.sharedObjects)
-        terrain.runtime.sharedObjects->share(graphicsPipelineConfig, [](auto gpc) { gpc->init(); });
-    else
-        graphicsPipelineConfig->init();
-
-    auto descriptorSet = vsg::DescriptorSet::create(
-        graphicsPipelineConfig->descriptorSetLayout,
-        descriptors);
-
-    if (terrain.runtime.sharedObjects)
-        terrain.runtime.sharedObjects->share(descriptorSet);
-
-    auto bindDescriptorSet = vsg::BindDescriptorSet::create(
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        graphicsPipelineConfig->layout,
-        0,
-        descriptorSet);
-
-    if (terrain.runtime.sharedObjects)
-        terrain.runtime.sharedObjects->share(bindDescriptorSet);
-
-    // create StateGroup as the root of the scene/command graph to hold the GraphicsProgram, and binding of Descriptors to decorate the whole graph
-    auto stateGroup = vsg::StateGroup::create();
-    stateGroup->add(graphicsPipelineConfig->bindGraphicsPipeline);
-    stateGroup->add(bindDescriptorSet);
-
-    // assign any custom ArrayState that may be required.
-    stateGroup->prototypeArrayState = shaderSet->getSuitableArrayState(
-        graphicsPipelineConfig->shaderHints->defines);
-
-    auto bindViewDescriptorSets = vsg::BindViewDescriptorSets::create(
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        graphicsPipelineConfig->layout,
-        1);
-
-    if (terrain.runtime.sharedObjects)
-        terrain.runtime.sharedObjects->share(bindViewDescriptorSets);
-
-    stateGroup->add(bindViewDescriptorSets);
-
-    return stateGroup;
-}
-#endif

@@ -69,8 +69,9 @@ namespace rocky
     /**
      * Data model backing an individual terrain tile.
      */
-    struct ROCKY_EXPORT TerrainTileModel
+    class ROCKY_EXPORT TerrainTileModel
     {
+    public:
         struct ROCKY_EXPORT Tile
         {
             Revision revision = -1;

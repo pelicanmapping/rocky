@@ -32,10 +32,10 @@ namespace rocky
     {
     public:
         //! Compiler for new vsg objects
-        std::function<vsg::CompileManager*()> getCompiler;
+        std::function<vsg::CompileManager*()> compiler;
 
         //! Update operations queue
-        std::function<vsg::UpdateOperations*()> getUpdates;
+        std::function<vsg::UpdateOperations*()> updates;
 
         //! Pool of threads used to load terrain data
         vsg::ref_ptr<vsg::OperationThreads> loaders;

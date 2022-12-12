@@ -225,7 +225,8 @@ StateFactory::createPipelineConfig(vsg::SharedObjects* sharedObjects) const
     pipelineConfig->enableArray("inNeighborNormal", VK_VERTEX_INPUT_RATE_VERTEX, 12);
 
     // wireframe rendering:
-    //pipelineConfig->rasterizationState->polygonMode = VK_POLYGON_MODE_LINE;
+    pipelineConfig->rasterizationState->polygonMode = VK_POLYGON_MODE_LINE;
+    pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
 
     // Temporary decriptors that we will use to set up the PipelineConfig.
     // Note, we only use these for setup, and then throw them away!
@@ -441,13 +442,13 @@ StateFactory::createTileDescriptorModel(const TileRenderModel& renderModel) cons
 void
 StateFactory::refreshStateGroup(TerrainTileNode* tile) const
 {
-    auto& renderModel = tile->renderModel();
+    auto& renderModel = tile->renderModel;
 
     // make a new descriptor model for this tile
     renderModel.descriptorModel = createTileDescriptorModel(renderModel);
 
-    tile->stateGroup()->stateCommands.clear();
-    tile->stateGroup()->add(renderModel.descriptorModel.bindDescriptorSetCommand);
+    tile->stategroup->stateCommands.clear();
+    tile->stategroup->add(renderModel.descriptorModel.bindDescriptorSetCommand);
 
     //TODO: add the view-dependency descriptor sets??? huh
 

@@ -9,6 +9,7 @@
 #include <rocky/Math.h>
 #include <vsg/maths/vec3.h>
 #include <vsg/maths/mat4.h>
+#include <vsg/vk/State.h>
 
 namespace rocky
 {
@@ -52,6 +53,10 @@ namespace rocky
             a[1][0], a[1][1], a[1][2], a[1][3],
             a[2][0], a[2][1], a[2][2], a[2][3],
             a[3][0], a[3][1], a[3][2], a[3][3]);
+    }
+
+    inline float distanceTo(const vsg::dvec3& p, vsg::State* state) {
+        return vsg::length(state->modelviewMatrixStack.top() * p);
     }
 
     // adapted from vsg

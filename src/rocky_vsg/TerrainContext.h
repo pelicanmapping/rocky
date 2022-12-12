@@ -14,25 +14,26 @@
 #include <rocky_vsg/TerrainSettings.h>
 #include <rocky_vsg/TileNodeRegistry.h>
 #include <rocky_vsg/TileRenderModel.h>
-//#include <rocky_vsg/Unloader.h>
-
-//#include <vsg/io/Options.h>
-//#include <vsg/utils/ShaderSet.h>
-//#include <vsg/utils/SharedObjects.h>
 
 namespace rocky
 {
     class Map;
 
     /**
-     * Acces to all  terrain-specific logic, data, and settings.
+     * Access to all terrain-specific logic, data, and settings
+     * associated with a Map.
      */
-    class TerrainContext : public TerrainSettings
+    class TerrainContext
     {
     public:
         TerrainContext(
+            shared_ptr<Map> map,
             RuntimeContext& runtime,
-            const Config& conf);
+            const TerrainSettings& settings,
+            TerrainTileHost* host);
+
+        //! Terrain settings.
+        const TerrainSettings& settings;
 
         //! runtime operations (scene graph, views, etc)
         RuntimeContext& runtime;
@@ -41,19 +42,19 @@ namespace rocky
         shared_ptr<Map> map;
 
         //! creator of terrain tile triangles and attributes
-        GeometryPool geometryPool;
+        shared_ptr<GeometryPool> geometryPool;
 
         //! merges new tiles into the live scene graph
         Merger merger;
 
         //! tracks all existing tiles
-        TileNodeRegistry tiles;
+        shared_ptr<TileNodeRegistry> tiles;
 
         //! manages visibility and morphing ranges
-        internal::SelectionInfo selectionInfo;
+        shared_ptr<SelectionInfo> selectionInfo;
 
-        //! Facotry for creating rendering state commands
-        StateFactory stateFactory;
+        //! Factory for creating rendering state commands
+        shared_ptr<StateFactory> stateFactory;
 
         //! name of job arena used to load data
         std::string loadArenaName = "terrain.load";

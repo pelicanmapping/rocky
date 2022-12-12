@@ -10,14 +10,15 @@
 #include <ctime>
 #include <cstring>
 #include <string>
+#include <chrono>
 
 namespace rocky
 {
     /** Basic timestamp (seconds from the 1970 epoch) */
-    typedef ::time_t TimeStamp;
+    using TimeStamp = ::time_t;
 
     /** Time span (in seconds) */
-    typedef long TimeSpan;
+    using TimeSpan = long;
 
     /**
      * General-purpose UTC date/time object.

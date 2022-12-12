@@ -5,6 +5,7 @@
  */
 #include "TerrainNode.h"
 #include "TerrainTileNode.h"
+#include "TerrainContext.h"
 #include <rocky/TileKey.h>
 #include <rocky/Threading.h>
 #include <rocky/ImageLayer.h>
@@ -16,9 +17,10 @@ using namespace rocky::util;
 
 #define ARENA_LOAD_TILE "terrain.load_tile"
 
-TerrainNode::TerrainNode(RuntimeContext& rt, const Config& conf) :
+TerrainNode::TerrainNode(RuntimeContext& new_runtime, const Config& conf) :
     vsg::Inherit<vsg::Group, TerrainNode>(),
-    TerrainContext(rt, conf)
+    TerrainSettings(conf),
+    _runtime(new_runtime)
 {
     construct(conf);
 }
@@ -26,7 +28,7 @@ TerrainNode::TerrainNode(RuntimeContext& rt, const Config& conf) :
 void
 TerrainNode::construct(const Config& conf)
 {
-    firstLOD.setDefault(0u);
+    //nop
 }
 
 Config
@@ -38,75 +40,45 @@ TerrainNode::getConfig() const
 }
 
 void
-TerrainNode::setMap(shared_ptr<Map> new_map)
+TerrainNode::setMap(shared_ptr<Map> new_map, IOControl* ioc)
 {
-    map = new_map;
+    ROCKY_SOFT_ASSERT_AND_RETURN(new_map, void());
 
-    loadMap(this, nullptr);
-}
+    // create a new context for this map
+    _context = std::make_shared<TerrainContext>(
+        new_map,
+        _runtime,
+        *this, // settings
+        this); // host
 
-void
-TerrainNode::loadMap(const TerrainSettings* settings, IOControl* ioc)
-{
     // remove everything and start over
     this->children.clear();
 
     _tilesRoot = vsg::Group::create();
 
-    // Build the first level of the terrain.
-    // Collect the tile keys comprising the root tiles of the terrain.
-    //auto map = _map.lock();
-    ROCKY_SOFT_ASSERT_AND_RETURN(map, void());
-
     std::vector<TileKey> keys;
-    Profile::getAllKeysAtLOD(settings->firstLOD, map->getProfile(), keys);
-
-    // Now that we have a profile, set up the selection info
-    selectionInfo.initialize(firstLOD, maxLOD, map->getProfile(), minTileRangeFactor, true);
-
-#if 0
-    // Load all the root key tiles.
-    JobGroup loadGroup;
-    Job load;
-    load.setArena(ARENA_LOAD_TILE);
-    load.setGroup(&loadGroup);
-#endif
+    Profile::getAllKeysAtLOD(this->firstLOD, new_map->getProfile(), keys);
 
     for (unsigned i = 0; i < keys.size(); ++i)
     {
-        auto tileNode = TerrainTileNode::create(
+        auto tile = _context->tiles->createTile(
             keys[i],
-            nullptr, // parent tile
-            *this,   // terrain context
-            ioc);
+            nullptr, // parent
+            _context);
 
-        tileNode->setDoNotExpire(true);
+        tile->doNotExpire = true;
 
         // Add it to the scene graph
-        _tilesRoot->addChild(tileNode);
+        _tilesRoot->addChild(tile);
 
 #if 0 // temp
         // Post-add initialization:
         tileNode->initializeData(*this);
 #endif 
-
-#if 0
-        // And load the tile's data
-        load.dispatch([&](Cancelable*) {
-            tileNode->loadSync(*this);
-            });
-#endif
-
-        ROCKY_DEBUG << " - " << (i + 1) << "/" << keys.size() << " : " << keys[i].str() << std::endl;
     }
 
-#if 0
-    // wait for all loadSync calls to complete
-    loadGroup.join();
-#endif
-
     // create the graphics pipeline to render this map
-    auto stateGroup = stateFactory.createTerrainStateGroup();
+    auto stateGroup = _context->stateFactory->createTerrainStateGroup();
     stateGroup->addChild(_tilesRoot);
     this->addChild(stateGroup);
 }
@@ -125,7 +97,16 @@ TerrainNode::traverse(vsg::RecordTraversal& nv) const
 void
 TerrainNode::update(const vsg::FrameStamp* fs)
 {
-    tiles.update(*this, fs);
-    //merger.update(*this);
-    //unloader.update(*this);
+    _context->tiles->update(fs, _context);
+}
+
+void
+TerrainNode::ping(
+    TerrainTileNode* tile0,
+    TerrainTileNode* tile1, 
+    TerrainTileNode* tile2, 
+    TerrainTileNode* tile3,
+    vsg::RecordTraversal& nv)
+{
+    _context->tiles->ping(tile0, tile1, tile2, tile3, nv);
 }

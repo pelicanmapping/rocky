@@ -146,19 +146,23 @@ namespace rocky
         using SharedGeometries = std::unordered_map<
             GeometryKey, vsg::ref_ptr<SharedGeometry>>;
 
+        struct Settings {
+            uint32_t tileSize;
+            float skirtRatio;
+            bool morphing;
+        };
+
         //! Gets the Geometry associated with a tile key, creating a new one if
         //! necessary and storing it in the pool.
         //!
         vsg::ref_ptr<SharedGeometry> getPooledGeometry(
             const TileKey& tileKey,
-            const Map* map,
-            const TerrainSettings& options,
+            const Settings& settings,
             Cancelable* state);
 
         //! The number of elements (incides) in the terrain skirt if applicable
         int getNumSkirtElements(
-            unsigned tileSize,
-            float skirtRatio) const;
+            const Settings& settings) const;
 
         //! Are we doing pooling?
         bool isEnabled() const {
@@ -189,13 +193,12 @@ namespace rocky
 
         vsg::ref_ptr<SharedGeometry> createGeometry(
             const TileKey& tileKey,
-            const TerrainSettings& settings,
-            //MeshEditor& meshEditor,
+            const Settings& settings,
             Cancelable* progress) const;
 
         // builds a primitive set to use for any tile without a mask
         vsg::ref_ptr<vsg::ushortArray> createIndices(
-            const TerrainSettings& settings) const;
+            const Settings& settings) const;
 
         void tessellateSurface(
             unsigned tileSize,

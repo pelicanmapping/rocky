@@ -4,6 +4,7 @@
 #include <rocky_vsg/MapNode.h>
 #include <rocky_vsg/TerrainNode.h>
 #include <vsg/all.h>
+#include <chrono>
 
 using namespace rocky;
 
@@ -15,15 +16,14 @@ int usage(const char* msg)
 
 int main(int argc, char** argv)
 {
-    Instance instance;
+    // rocky instance
+    rocky::Instance instance;
 
     // set up defaults and read command line arguments to override them
     vsg::CommandLine arguments(&argc, argv);
 
     if (arguments.read({ "--help" }))
-    {
         return usage(argv[0]);
-    }
 
     // options that get passed to VSG reader/writer modules?
     auto options = vsg::Options::create();
@@ -34,6 +34,9 @@ int main(int argc, char** argv)
     traits->debugLayer = arguments.read({ "--debug" });
     traits->apiDumpLayer = arguments.read({ "--api" });
     traits->samples = 1;
+    if (arguments.read({ "--novsync" }))
+        traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+
     auto window = vsg::Window::create(traits);
 
     // main viewer
@@ -48,8 +51,8 @@ int main(int argc, char** argv)
     auto mapNode = MapNode::create(instance);
 
     // set up the runtime context with everything we need.
-    mapNode->runtime.getCompiler = [viewer]() { return viewer->compileManager; };
-    mapNode->runtime.getUpdates = [viewer]() { return viewer->updateOperations; };
+    mapNode->runtime.compiler = [viewer]() { return viewer->compileManager; };
+    mapNode->runtime.updates = [viewer]() { return viewer->updateOperations; };
     mapNode->runtime.sharedObjects = vsg::SharedObjects::create();
     mapNode->runtime.loaders = vsg::OperationThreads::create(mapNode->getTerrainNode()->concurrency);
 
@@ -65,7 +68,6 @@ int main(int argc, char** argv)
     vsg::dsphere bs(
         (cb.bounds.min + cb.bounds.max) * 0.5,
         vsg::length(cb.bounds.max - cb.bounds.min) * 0.5);
-
     double nearFarRatio = 0.0005;
 
     // set up the camera
@@ -92,15 +94,19 @@ int main(int argc, char** argv)
         camera,
         vsg_scene,
         VK_SUBPASS_CONTENTS_INLINE,
-        false);
+        true); // assignHeadlight
 
     viewer->assignRecordAndSubmitTaskAndPresentation({ commandGraph });
 
     viewer->compile();
 
+    std::vector<std::chrono::microseconds> times;
+
     // rendering main loop
     while (viewer->advanceToNextFrame())
     {
+        auto start = clock::now();
+
         viewer->handleEvents();
         viewer->update();
 
@@ -108,7 +114,22 @@ int main(int argc, char** argv)
 
         viewer->recordAndSubmit();
         viewer->present();
+
+        // sample the frame rate every N frames
+        if ((viewer->getFrameStamp()->frameCount % 10) == 0) {
+            auto end = std::chrono::steady_clock::now();
+            auto t = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+            times.push_back(t);
+        }
     }
+
+    std::chrono::microseconds total(0);
+    for (auto time : times)
+        total += time;
+    total /= times.size();
+
+    ROCKY_NOTICE << "Average frame time = " 
+        << std::setprecision(3) << 0.001f * (float)total.count() << " ms" << std::endl;
 
     return 0;
 }

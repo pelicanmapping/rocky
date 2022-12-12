@@ -409,8 +409,7 @@ Profile::getAllKeysAtLOD(
 
     out_keys.clear();
 
-    unsigned tx, ty;
-    profile->getNumTiles(lod, tx, ty);
+    auto[tx, ty] = profile->getNumTiles(lod);
 
     for (unsigned c = 0; c < tx; ++c)
     {
@@ -458,15 +457,17 @@ Profile::getTileDimensions(unsigned int lod, double& out_width, double& out_heig
     out_height /= (double)factor;
 }
 
-void
-Profile::getNumTiles(unsigned int lod, unsigned int& out_tiles_wide, unsigned int& out_tiles_high) const
+std::pair<unsigned, unsigned>
+Profile::getNumTiles(unsigned lod) const
 {
-    out_tiles_wide = _numTilesWideAtLod0;
-    out_tiles_high = _numTilesHighAtLod0;
+    unsigned out_tiles_wide = _numTilesWideAtLod0;
+    unsigned out_tiles_high = _numTilesHighAtLod0;
 
     double factor = double(1u << lod);
     out_tiles_wide *= factor;
     out_tiles_high *= factor;
+
+    return std::make_pair(out_tiles_wide, out_tiles_high);
 }
 
 unsigned int
