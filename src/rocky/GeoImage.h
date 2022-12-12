@@ -25,6 +25,8 @@ namespace rocky
         //! Construct an empty (invalid) geoimage
         GeoImage();
 
+        GeoImage(const GeoImage& rhs) = default;
+
         //! Construct an image with an error status
         GeoImage(const Status&);
 

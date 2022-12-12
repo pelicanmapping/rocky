@@ -594,13 +594,13 @@ GDAL::Driver::open(
         std::string prjLocation = util::Path(source).replace_extension("prj").string();
 
         auto rr = URI(prjLocation).read(nullptr); // TODO io
-        if (rr.ok() && rr->data.valid())
+        if (rr.status.ok() && rr.value.data.valid())
         {
 
         //ReadResult r = URI(prjLocation).readString(readOptions);
         //if (r.succeeded())
         //{
-            src_srs = SRS::get(util::trim(rr->data.to_string()));
+            src_srs = SRS::get(util::trim(rr.value.data.to_string()));
         }
     }
 
@@ -1031,6 +1031,8 @@ GDAL::Driver::createImage(
         return NULL;
     }
 
+    //ROCKY_WARN << "key = " << key.str() << std::endl;
+
     shared_ptr<Image> image;
 
     //Get the extents of the tile
@@ -1213,11 +1215,14 @@ GDAL::Driver::createImage(
                 src_col < target_width;
                 ++src_col, ++dst_col)
             {
-                u8vec4 c = u8vec4(
-                    red[src_col + src_row * target_width],
-                    green[src_col + src_row * target_width],
-                    blue[src_col + src_row * target_width],
-                    alpha[src_col + src_row * target_width]);
+                //u8vec4 c = u8vec4(
+                //    red[src_col + src_row * target_width],
+                //    green[src_col + src_row * target_width],
+                //    blue[src_col + src_row * target_width],
+                //    alpha[src_col + src_row * target_width]);
+
+                int i = src_col + src_row * target_width;
+                u8vec4 c = u8vec4(red[i], green[i], blue[i], alpha[i]);                    
 
                 if (!isValidValue(c.r, bandRed) ||
                     !isValidValue(c.g, bandGreen) ||
@@ -1914,6 +1919,8 @@ GDALImageLayer::construct(const Config& conf)
     // Initialize the image layer (always first)
     _driversMutex.setName("OE.GDALImageLayer.drivers");
     _singleThreadingMutex.setName("OE.GDALImageLayer.st");
+
+    setRenderType(RENDERTYPE_TERRAIN_SURFACE);
 }
 
 Config
@@ -1981,7 +1988,7 @@ GDALImageLayer::createImageImplementation(
     IOControl* ioc) const
 {
     if (getStatus().failed())
-        return GeoImage::INVALID;
+        return Result(GeoImage::INVALID);
 
     unsigned id = getSingleThreaded() ? 0u : util::getCurrentThreadId();
 
@@ -1993,7 +2000,7 @@ GDALImageLayer::createImageImplementation(
 
         // check while locked to ensure we may continue
         if (isClosing() || !isOpen())
-            return GeoImage::INVALID;
+            return Result(GeoImage::INVALID);
 
         GDAL::Driver::Ptr& test_driver = _drivers[id];
 
@@ -2028,10 +2035,10 @@ GDALImageLayer::createImageImplementation(
         if (getSingleThreaded())
             _singleThreadingMutex.unlock();
 
-        return GeoImage(image, key.getExtent());
+        return Result(GeoImage(image, key.getExtent()));
     }
 
-    return GeoImage::INVALID;
+    return Result(GeoImage::INVALID);
 }
 
 //......................................................................
@@ -2075,6 +2082,8 @@ GDALElevationLayer::construct(const Config& conf)
 
     _driversMutex.setName("OE.GDALElevationLayer.drivers");
     _singleThreadingMutex.setName("OE.GDALElevationLayer.st");
+
+    setRenderType(RENDERTYPE_TERRAIN_SURFACE);
 }
 
 Config
@@ -2141,8 +2150,7 @@ GDALElevationLayer::createHeightfieldImplementation(
     IOControl* ioc) const
 {
     if (getStatus().failed())
-        return getStatus();
-        //return GeoHeightField(getStatus());
+        return Result<GeoHeightfield>(getStatus());
 
     unsigned id = getSingleThreaded() ? 0u : util::getCurrentThreadId();
 

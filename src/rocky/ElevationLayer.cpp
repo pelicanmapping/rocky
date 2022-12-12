@@ -337,9 +337,9 @@ ElevationLayer::assembleHeightfield(
 
                 auto result = createHeightfieldImplementation(layerKey, ioc);
 
-                if (result.ok() && result->valid())
+                if (result.status.ok() && result.value.valid())
                 {
-                    geohf_list.push_back(result.value());
+                    geohf_list.push_back(result.value);
                 }
             }
         }
@@ -441,7 +441,7 @@ ElevationLayer::createHeightfield(
     // If the layer is disabled, bail out
     if (!isOpen())
     {
-        return GeoHeightfield::INVALID;
+        return Result(GeoHeightfield::INVALID);
     }
 
     //NetworkMonitor::ScopedRequestLayer layerRequest(getName());
@@ -460,7 +460,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
     auto profile = getProfile();
     if (!profile || !isOpen())
     {
-        return Status(Status::ResourceUnavailable, "Layer not open or initialize");
+        return Result<GeoHeightfield>(Status::ResourceUnavailable, "Layer not open or initialize");
     }
 
     ROCKY_TODO("cache, gate");
@@ -556,17 +556,17 @@ ElevationLayer::createHeightfieldInKeyProfile(
             // Check that the key is legal (in valid LOD range, etc.)
             if ( !isKeyInLegalRange(key) )
             {
-                return GeoHeightfield::INVALID;
+                return Result(GeoHeightfield::INVALID);
             }
 
             if (key.getProfile()->isHorizEquivalentTo(profile))
             {
                 util::ScopedReadLock lock(layerMutex());
                 auto r = createHeightfieldImplementation(key, ioc);
-                if (r.failed())
+                if (r.status.failed())
                     return r;
                 else
-                    result = r.value();
+                    result = r.value;
             }
             else
             {
@@ -579,7 +579,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
             // Check for cancelation before writing to a cache
             if (ioc && ioc->isCanceled())
             {
-                return GeoHeightfield::INVALID;
+                return Result(GeoHeightfield::INVALID);
             }
 
             // The const_cast is safe here because we just created the
@@ -591,7 +591,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
             if (hf && !validateHeightfield(hf.get()))
             {
                 ROCKY_WARN << LC << "Generated an illegal heightfield!" << std::endl;
-                return Status("Generated an illegal heightfield!");
+                return Result<GeoHeightfield>(Status::GeneralError, "Generated an illegal heightfield!");
                 //hf = 0L; // to fall back on cached data if possible.
             }
 
@@ -639,7 +639,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
             // No luck on any path:
             if (hf == nullptr)
             {
-                return GeoHeightfield::INVALID;
+                return Result(GeoHeightfield::INVALID);
             }
         }
 
@@ -652,7 +652,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
     // Check for cancelation before writing to a cache:
     if (ioc && ioc->isCanceled())
     {
-        return GeoHeightfield::INVALID;
+        return Result(GeoHeightfield::INVALID);
     }
 
 #if 0
@@ -664,7 +664,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
     }
 #endif
 
-    return result;
+    return Result(result);
 }
 
 Status
@@ -948,16 +948,16 @@ ElevationLayerVector::populateHeightfield(
         ElevationLayer* layer = contenders[0].layer.get();
 
         auto layerHF = layer->createHeightfield(contenders[0].key, ioc);
-        if (layerHF->valid())
+        if (layerHF.value.valid())
         {
-            if (layerHF->getHeightfield()->width() == hf->width() &&
-                layerHF->getHeightfield()->height() == hf->height())
+            if (layerHF.value.getHeightfield()->width() == hf->width() &&
+                layerHF.value.getHeightfield()->height() == hf->height())
             {
                 requiresResample = false;
 
                 memcpy(
                     hf->data<unsigned char>(),
-                    layerHF->getHeightfield()->data<unsigned char>(),
+                    layerHF.value.getHeightfield()->data<unsigned char>(),
                     hf->sizeInBytes());
                 //memcpy(hf->getFloatArray()->asVector().data(),
                 //    layerHF.getHeightfield()->getFloatArray()->asVector().data(),
@@ -1037,7 +1037,7 @@ ElevationLayerVector::populateHeightfield(
                         // We also fallback on parent layers to make sure that we have data at the location even if it's fallback.
                         while (!layerHF.valid() && actualKey.valid() && layer->isKeyInLegalRange(actualKey))
                         {
-                            layerHF = layer->createHeightfield(actualKey, ioc).value();
+                            layerHF = layer->createHeightfield(actualKey, ioc).value;
                             if (!layerHF.valid())
                             {
                                 actualKey.makeParent();
@@ -1125,7 +1125,7 @@ ElevationLayerVector::populateHeightfield(
                     {
                         ElevationLayer* offset = offsets[i].layer.get();
 
-                        layerHF = offset->createHeightfield(contenderKey, ioc).value();
+                        layerHF = offset->createHeightfield(contenderKey, ioc).value;
                         if (!layerHF.valid())
                         {
                             offsetFailed[i] = true;

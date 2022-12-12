@@ -16,6 +16,7 @@
 
 namespace rocky
 {
+    class RuntimeContext;
     class TerrainTileNode;
 
     /**
@@ -37,10 +38,10 @@ namespace rocky
         virtual vsg::ref_ptr<vsg::StateGroup> createTerrainStateGroup() const;
 
         //! Creates a state group for rendering a specific terrain tile
-        virtual TileDescriptorModel createTileDescriptorModel(const TileRenderModel& renderModel) const;
-
-        //! Updates a tile's state group to reflect its current descriptor model.
-        virtual void refreshStateGroup(TerrainTileNode* tile) const;
+        virtual void updateTileDescriptorModel(
+            const TileRenderModel& renderModel,
+            vsg::ref_ptr<vsg::StateGroup> stategroup,
+            RuntimeContext& runtime) const;
 
     public:
 

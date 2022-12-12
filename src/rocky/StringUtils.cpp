@@ -642,10 +642,10 @@ rocky::util::parseXML(
             buf << " " << i + 1 << (i + 1 == doc.ErrorRow() ? " *" : "  ") << "\t" << output[i] << std::endl;
         }
 
-        return Status(Status::ConfigurationError, buf.str());
+        return Result<TiXmlDocument>(Status::ConfigurationError, buf.str());
     }
 
-    return doc;
+    return Result(doc);
 }
 
 #if 0

@@ -241,26 +241,26 @@ URI::read(IOControl* io) const
     {
         HTTPRequest request{ full() };
         auto r = http_get(request);
-        if (r.failed())
+        if (r.status.failed())
         {
             return IOResult<Content>::propagate(r);
         }
 
         std::string contentType;
 
-        auto i = r->headers.find("Content-Type");
-        if (i != r->headers.end())
+        auto i = r.value.headers.find("Content-Type");
+        if (i != r.value.headers.end())
             contentType = i->second;
         else
             contentType = inferContentTypeFromFileExtension(full());
 
         if (contentType.empty())
-            contentType = inferContentTypeFromData(r->data);
+            contentType = inferContentTypeFromData(r.value.data);
 
         return Content
         {
             std::shared_ptr<std::istream>(
-                new std::stringstream(r->data, std::ios_base::in)),
+                new std::stringstream(r.value.data, std::ios_base::in)),
             contentType
         };
     }

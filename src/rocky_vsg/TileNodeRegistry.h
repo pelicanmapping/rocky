@@ -53,10 +53,6 @@ namespace rocky
         //! Sets the frame clock to use
         //void setFrameClock(const FrameClock* value) { _clock = value; }
 
-        //! Whether tiles will listen for their neighbors to arrive in order to
-        //! facilitate normal map edge matching.
-        void setNotifyNeighbors(bool value);
-
         //! Marks all tiles intersecting the extent as dirty. If incremental
         //! update is enabled, they will automatically reload.
         //! NOTE: Input extent SRS must match the terrain's SRS exactly.
@@ -69,11 +65,6 @@ namespace rocky
             shared_ptr<TerrainContext> terrain);
 
         ~TileNodeRegistry();
-
-        //! Adds a tile to the registry. Called by the TileNode itself.
-        void add(
-            TerrainTileNode* tile,
-            shared_ptr<TerrainContext> terrain);
 
         //! TerrainTileNode will call this to let us know that it's alive
         //! and that it may need something.
@@ -104,60 +95,20 @@ namespace rocky
             TerrainTileNode* parent,
             shared_ptr<TerrainContext> terrain);
 
+        vsg::ref_ptr<TerrainTileNode> getTile(const TileKey& key) const;
+
     protected:
 
         TileTable _tiles;
         Tracker _tracker;
         mutable util::Mutex _mutex;
-        bool _notifyNeighbors;
-        //const FrameClock* _clock;
         TerrainTileHost* _host;
-
-        // for storing neighbor information
-        using TileKeySet = std::unordered_set<TileKey>;
-        using TileKeyOneToMany = std::unordered_map<TileKey, TileKeySet>;
-        TileKeyOneToMany _notifiers;
 
         std::vector<TileKey> _needsUpdate;
         std::vector<TileKey> _needsData;
         std::vector<TileKey> _needsChildren;
 
     private:
-
-        /** Tells the registry to listen for the TileNode for the specific key
-            to arrive, and upon its arrival, notifies the waiter. After notifying
-            the waiter, it removes the listen request. (assumes lock held) */
-        void startListeningFor(
-            const TileKey& keyToWaitFor,
-            TerrainTileNode* waiter,
-            shared_ptr<TerrainContext>);
-
-        /** Removes a listen request set by startListeningFor (assumes lock held) */
-        void stopListeningFor(
-            const TileKey& keyToWairFor,
-            const TileKey& waiterKey,
-            shared_ptr<TerrainContext>);
-
-#if 0
-        //! Collect dormant tiles. This is called by UnloaderGroup
-        //! during update/event to remove dormant scene graphs.
-        void collectDormantTiles(
-            const TerrainSettings&,
-            const vsg::FrameStamp*);
-#endif
-
-        //std::chrono::steady_clock::time_point olderThanTime,       // collect only if tile is older than this time
-        //unsigned olderThanFrame,    // collect only if tile is older than this frame
-        //float fartherThanRange,     // collect only if tile is farther away than this distance (meters)
-        //unsigned maxCount,          // maximum number of tiles to collect
-        //TerrainContext& terrain,
-        //std::vector<vsg::observer_ptr<TerrainTileNode>>& output);   // put dormant tiles here
-
-        //vsg::ref_ptr<TerrainTileNode> createTile(
-        //    const TileKey& key,
-        //    TerrainTileNode* parent,
-        //    const TerrainSettings& settings,
-        //    shared_ptr<TerrainTileHost> host);
 
         void createTileChildren(
             TerrainTileNode* parent,

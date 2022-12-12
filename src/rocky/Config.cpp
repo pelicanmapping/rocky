@@ -53,13 +53,13 @@ bool
 Config::fromXML(std::istream& in)
 {
     auto result = util::parseXML(in, referrer());
-    if (result.failed())
+    if (result.status.failed())
     {
-        set("error", result.message());
+        set("error", result.status.message);
         return false;
     }
 
-    const TiXmlDocument& doc = result.value();
+    const TiXmlDocument& doc = result.value;
 
     ROCKY_TODO("Parse the XML into a Config");
 

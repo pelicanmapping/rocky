@@ -106,7 +106,7 @@ namespace rocky
             const TileKey&,
             IOControl* progress) const
         {
-            return GeoHeightfield::INVALID;
+            return Result(GeoHeightfield::INVALID);
         }
 
         //! Subalss can override this to enable writing heightfields.

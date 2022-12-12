@@ -8,6 +8,8 @@
 #include "TerrainContext.h"
 #include "RuntimeContext.h"
 
+#include <rocky/TerrainTileModelFactory.h>
+
 #include <vsg/ui/FrameStamp.h>
 
 using namespace rocky;
@@ -18,7 +20,6 @@ using namespace rocky;
 
 TileNodeRegistry::TileNodeRegistry(TerrainTileHost* in_host) :
     _host(in_host),
-    _notifyNeighbors(false),
     _mutex("TileNodeRegistry(OE)")
 {
     //nop
@@ -27,12 +28,6 @@ TileNodeRegistry::TileNodeRegistry(TerrainTileHost* in_host) :
 TileNodeRegistry::~TileNodeRegistry()
 {
     releaseAll();
-}
-
-void
-TileNodeRegistry::setNotifyNeighbors(bool value)
-{
-    _notifyNeighbors = value;
 }
 
 void
@@ -61,104 +56,6 @@ TileNodeRegistry::setDirty(
 }
 
 void
-TileNodeRegistry::add(
-    TerrainTileNode* tile,
-    shared_ptr<TerrainContext> terrain)
-{
-    util::ScopedLock lock(_mutex);
-
-    auto& entry = _tiles[tile->key];
-    entry._tile = tile;
-    bool recyclingOrphan = entry._trackerToken != nullptr;
-    entry._trackerToken = _tracker.use(tile, nullptr);
-
-#if 0
-    // Start waiting on our neighbors.
-    // (If we're recycling and orphaned record, we need to remove old listeners first)
-    if (_notifyNeighbors)
-    {
-        const TileKey& key = tile->getKey();
-
-        // If we're recycling, we need to remove the old listeners first
-        if (recyclingOrphan)
-        {
-            stopListeningFor(key.createNeighborKey(1, 0), key, terrain);
-            stopListeningFor(key.createNeighborKey(0, 1), key, terrain);
-        }
-
-        startListeningFor(key.createNeighborKey(1, 0), tile, terrain);
-        startListeningFor(key.createNeighborKey(0, 1), tile, terrain);
-
-        // check for tiles that are waiting on this tile, and notify them!
-        TileKeyOneToMany::iterator notifier = _notifiers.find( tile->getKey() );
-        if ( notifier != _notifiers.end() )
-        {
-            TileKeySet& listeners = notifier->second;
-
-            for(TileKeySet::iterator listener = listeners.begin(); listener != listeners.end(); ++listener)
-            {
-                TileTable::iterator i = _tiles.find( *listener );
-                if ( i != _tiles.end())
-                {
-                    i->second._tile->notifyOfArrival(tile, terrain);
-                }
-            }
-            _notifiers.erase( notifier );
-        }
-    }
-#endif
-
-    //ROCKY_INFO << LC << "Tiles = " << _tiles.size() << std::endl;
-}
-
-void
-TileNodeRegistry::startListeningFor(
-    const TileKey& tileToWaitFor,
-    TerrainTileNode* waiter,
-    shared_ptr<TerrainContext> terrain)
-{
-    // ASSUME EXCLUSIVE LOCK
-
-    TileTable::iterator i = _tiles.find(tileToWaitFor);
-    if (i != _tiles.end())
-    {
-        TerrainTileNode* tile = i->second._tile.get();
-
-        ROCKY_DEBUG << LC << waiter->key.str() << " listened for " << tileToWaitFor.str()
-            << ", but it was already in the repo.\n";
-
-        waiter->notifyOfArrival(tile, terrain);
-    }
-    else
-    {
-        ROCKY_DEBUG << LC << waiter->key.str() << " listened for " << tileToWaitFor.str() << ".\n";
-        _notifiers[tileToWaitFor].insert( waiter->key );
-    }
-}
-
-void
-TileNodeRegistry::stopListeningFor(
-    const TileKey& tileToWaitFor,
-    const TileKey& waiterKey,
-    shared_ptr<TerrainContext> terrain)
-{
-    // ASSUME EXCLUSIVE LOCK
-
-    TileKeyOneToMany::iterator i = _notifiers.find(tileToWaitFor);
-    if (i != _notifiers.end())
-    {
-        // remove the waiter from this set:
-        i->second.erase(waiterKey);
-
-        // if the set is now empty, remove the set entirely
-        if (i->second.empty())
-        {
-            _notifiers.erase(i);
-        }
-    }
-}
-
-void
 TileNodeRegistry::releaseAll()
 {
     util::ScopedLock lock(_mutex);
@@ -171,8 +68,6 @@ TileNodeRegistry::releaseAll()
     _tiles.clear();
 
     _tracker.reset();
-
-    _notifiers.clear();
 
     _needsUpdate.clear();
     _needsData.clear();
@@ -325,13 +220,6 @@ TileNodeRegistry::collectDormantTiles(
             tile->lastTraversalRange > settings.minRangeBeforeUnload) // &&
             //tile->areSiblingsDormant(terrain))
         {
-            //if (_notifyNeighbors)
-            //{
-            //    // remove neighbor listeners:
-            //    stopListeningFor(key.createNeighborKey(1, 0), key, terrain);
-            //    stopListeningFor(key.createNeighborKey(0, 1), key, terrain);
-            //}
-
             //output.push_back(vsg::observer_ptr<TerrainTileNode>(tile));
 
             _tiles.erase(key);
@@ -406,63 +294,24 @@ TileNodeRegistry::createTile(
     // tile->setParent(parent) ... ?
 
     // Generate its state group:
-    terrain->stateFactory->refreshStateGroup(tile);
+    terrain->stateFactory->updateTileDescriptorModel(
+        tile->renderModel,
+        tile->stategroup,
+        terrain->runtime);
+    //terrain->stateFactory->refreshStateGroup(tile);
 
     return tile;
 }
-    
-#if 0
+
 vsg::ref_ptr<TerrainTileNode>
-TileNodeRegistry::createTile(
-    const TileKey& key,
-    TerrainTileNode* parent,
-    const TerrainSettings& settings,
-    shared_ptr<TerrainTileHost> host)
+TileNodeRegistry::getTile(const TileKey& key) const
 {
-    GeometryPool::Settings geomSettings {
-        settings.tileSize,
-        settings.skirtRatio,
-        settings.morphTerrain
-    };
-
-    // Get a shared geometry from the pool that corresponds to this tile key:
-    auto geometry = geometryPool->getPooledGeometry(
-        key,
-        geomSettings,
-        nullptr);
-
-    // initialize all the per-tile uniforms the shaders will need:
-    float range, morphStart, morphEnd;
-    selectionInfo->get(key, range, morphStart, morphEnd);
-
-    float one_over_end_minus_start = 1.0f / (morphEnd - morphStart);
-    fvec2 morphConstants = fvec2(morphEnd * one_over_end_minus_start, one_over_end_minus_start);
-
-    unsigned numLODs = selectionInfo->getNumLODs();
-    float childrenVisibilityRange = selectionInfo->getLOD(key.getLOD() + 1)._visibilityRange;
-
-    // Make the new terrain tile
-    auto tile = TerrainTileNode::create(
-        key,
-        parent,
-        geometry,
-        morphConstants,
-        childrenVisibilityRange,
-        numLODs,
-        stateFactory->defaultTileDescriptors,
-        host);
-
-    //tile->setDoNotExpire(key.getLOD() == terrain.firstLOD);
-
-    // set parent?
-    // tile->setParent(parent) ... ?
-
-    // Generate its state group:
-    stateFactory->refreshStateGroup(tile);
-
-    return tile;
+    util::ScopedLock lock(_mutex);
+    auto iter = _tiles.find(key);
+    return
+        iter != _tiles.end() ? iter->second._tile :
+        vsg::ref_ptr<TerrainTileNode>(nullptr);
 }
-#endif
 
 void
 TileNodeRegistry::createTileChildren(
@@ -488,7 +337,7 @@ TileNodeRegistry::createTileChildren(
         vsg::ref_ptr<TerrainTileNode> parent = parent_weakptr;
         if (parent)
         {
-            auto quad = vsg::Group::create(); // TerrainTileQuad::create(parent_key, this);
+            auto quad = vsg::Group::create();
 
             for (unsigned quadrant = 0; quadrant < 4; ++quadrant)
             {
@@ -511,9 +360,6 @@ TileNodeRegistry::createTileChildren(
             result = quad;
         }
 
-        // register me.
-        //terrain.tiles.add(this, terrain);
-
         return result;
     };
 
@@ -528,5 +374,71 @@ TileNodeRegistry::requestTileData(
     TerrainTileNode* tile,
     shared_ptr<TerrainContext> terrain) const
 {
-    //TODO.
+    ROCKY_SOFT_ASSERT_AND_RETURN(tile, void());
+
+    // make sure we're not already working on it
+    if (tile->dataLoader.isWorking() || tile->dataLoader.isAvailable())
+    {
+        return;
+    }
+
+    auto key = tile->key;
+    CreateTileManifest manifest;
+
+    const auto load_async = [key, manifest, terrain](Cancelable* p) -> Result<TerrainTileModel>
+    {
+        TerrainTileModelFactory factory;
+
+        auto model = factory.createTileModel(
+            terrain->map.get(),
+            key,
+            manifest,
+            nullptr);
+
+        return Result(model);
+    };
+
+    const auto merge_sync = [key, manifest, terrain](const TerrainTileModel& model, Cancelable* p)
+    {
+        auto tile = terrain->tiles->getTile(key);
+        if (tile)
+        {
+            //ROCKY_INFO << "Merging data for tile " << key.str() << std::endl;
+            //tile->merge(model, manifest);
+
+            auto& renderModel = tile->renderModel;
+            auto compiler = terrain->runtime.compiler();
+
+            if (model.colorLayers.size() > 0)
+            {
+                auto& layer = model.colorLayers[0];
+                if (layer.image.valid())
+                {
+                    renderModel.color.image = layer.image.getImage();
+                    renderModel.color.matrix = layer.matrix;
+                }
+            }
+
+            if (model.elevation.heightfield.valid())
+            {
+                renderModel.elevation.image = model.elevation.heightfield.getHeightfield();
+                renderModel.elevation.matrix = model.elevation.matrix;
+            }
+
+            if (model.normalMap.image.valid())
+            {
+                renderModel.normal.image = model.normalMap.image.getImage();
+                renderModel.normal.matrix = model.normalMap.matrix;
+            }
+
+            terrain->stateFactory->updateTileDescriptorModel(
+                renderModel,
+                tile->stategroup,
+                terrain->runtime);
+        }
+    };
+
+    tile->dataLoader = terrain->runtime.runAsyncUpdateSync<TerrainTileModel>(
+        load_async,
+        merge_sync);
 }

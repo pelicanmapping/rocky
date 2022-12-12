@@ -439,12 +439,12 @@ ImageLayer::createImage(
 
     if (!isOpen())
     {
-        return GeoImage::INVALID;
+        return Result(GeoImage::INVALID);
     }
 
     //NetworkMonitor::ScopedRequestLayer layerRequest(getName());
 
-    GeoImage result = createImageInKeyProfile( key, progress );
+    auto result = createImageInKeyProfile( key, progress );
 
 #if 0
     // Post-cache operations:
@@ -489,14 +489,14 @@ ImageLayer::createImageInKeyProfile(
     // If the layer is disabled, bail out.
     if ( !isOpen() )
     {
-        return GeoImage::INVALID;
+        return Result(GeoImage::INVALID);
     }
 
     // Make sure the request is in range.
     // TODO: perhaps this should be a call to mayHaveData(key) instead.
     if ( !isKeyInLegalRange(key) )
     {
-        return GeoImage::INVALID;
+        return Result(GeoImage::INVALID);
     }
 
     // Tile gate prevents two threads from requesting the same key
@@ -507,7 +507,7 @@ ImageLayer::createImageInKeyProfile(
     //    return _memCache.valid();
     //});
 
-    GeoImage result;
+    Result<GeoImage> result;
 
     ROCKY_DEBUG << LC << "create image for \"" << key.str() << "\", ext= "
         << key.getExtent().toString() << std::endl;
@@ -628,7 +628,7 @@ ImageLayer::createImageInKeyProfile(
     // Check for cancelation before writing to a cache:
     if (ioc && ioc->isCanceled())
     {
-        return GeoImage::INVALID;
+        return Result(GeoImage::INVALID);
     }
 
 #if 0
@@ -674,7 +674,7 @@ ImageLayer::createImageInKeyProfile(
     return result;
 }
 
-GeoImage
+Result<GeoImage>
 ImageLayer::assembleImage(
     const TileKey& key,
     IOControl* ioc) const
@@ -683,7 +683,7 @@ ImageLayer::assembleImage(
     if (!getProfile())
     {
         setStatus(Status::Error(Status::AssertionFailure, "assembleImage with undefined profile"));
-        return GeoImage::INVALID;
+        return Result(GeoImage::INVALID);
     }
 
     GeoImage mosaicedImage, result;
@@ -725,9 +725,9 @@ ImageLayer::assembleImage(
 
         for(auto& k : intersectingKeys)
         {
-            GeoImage image = createImageInKeyProfile(k, ioc);
+            auto image = createImageInKeyProfile(k, ioc);
 
-            if (image.valid())
+            if (image.value.valid())
             {
 #if 0
                 // use std::dynamic_pointer_cast....
@@ -744,7 +744,7 @@ ImageLayer::assembleImage(
                 else
 #endif
                 {
-                    mosaic.getImages().emplace_back(image.getImage(), k);
+                    mosaic.getImages().emplace_back(image.value.getImage(), k);
                 }
             }
             else
@@ -766,7 +766,7 @@ ImageLayer::assembleImage(
         {
             // if we didn't get any data at LOD>0, fail.
             ROCKY_DEBUG << LC << "Couldn't create image for ImageMosaic " << std::endl;
-            return GeoImage::INVALID;
+            return Result(GeoImage::INVALID);
         }
 
         // We got at least one good tile, OR we got nothing but since the LOD==0 we have to
@@ -775,10 +775,10 @@ ImageLayer::assembleImage(
         // to fill in the gaps. The entire mosaic must be populated or this qualifies as a bad tile.
         for(auto& k : failedKeys)
         {
-            GeoImage geoimage;
+            Result<GeoImage> geoimage;
 
             for(TileKey parentKey = k.createParentKey();
-                parentKey.valid() && !geoimage.valid();
+                parentKey.valid() && !geoimage.value.valid();
                 parentKey.makeParent())
             {
                 {
@@ -786,27 +786,27 @@ ImageLayer::assembleImage(
                     geoimage = createImageImplementation(parentKey, ioc);
                 }
 
-                if (geoimage.valid())
+                if (geoimage.value.valid())
                 {
                     GeoImage cropped;
 
                     if ( !isCoverage() )
                     {
-                        cropped = geoimage.crop(
+                        cropped = geoimage.value.crop(
                             k.getExtent(),
                             false,
-                            geoimage.getImage()->width(),
-                            geoimage.getImage()->height() );
+                            geoimage.value.getImage()->width(),
+                            geoimage.value.getImage()->height() );
                     }
 
                     else
                     {
                         // TODO: may not work.... test; tilekey extent will <> cropped extent
-                        cropped = geoimage.crop(
+                        cropped = geoimage.value.crop(
                             k.getExtent(),
                             true,
-                            geoimage.getImage()->width(),
-                            geoimage.getImage()->height(),
+                            geoimage.value.getImage()->width(),
+                            geoimage.value.getImage()->height(),
                             false );
                     }
 
@@ -816,7 +816,7 @@ ImageLayer::assembleImage(
                 }
             }
 
-            if (!geoimage.valid())
+            if (!geoimage.value.valid())
             {
                 // a tile completely failed, even with fallback. Eject.
                 ROCKY_DEBUG << LC << "Couldn't fallback on tiles for ImageMosaic" << std::endl;
@@ -856,10 +856,10 @@ ImageLayer::assembleImage(
 
     if (ioc && ioc->isCanceled())
     {
-        return GeoImage::INVALID;
+        return Result<GeoImage>(Status::ResourceUnavailable, "Canceled");
     }
 
-    return result;
+    return Result(result);
 }
 
 Status

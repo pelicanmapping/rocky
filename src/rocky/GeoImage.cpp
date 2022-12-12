@@ -518,7 +518,7 @@ GeoImage::GeoImage(shared_ptr<Image> image, const GeoExtent& extent) :
 {
     if (!extent.valid())
     {
-        _status.set(Status::AssertionFailure, "Invalid geoextent");
+        _status = Status(Status::AssertionFailure, "Invalid geoextent");
     }
 
     //if (image)
@@ -535,11 +535,11 @@ GeoImage::GeoImage(util::Future<shared_ptr<Image>> fimage, const GeoExtent& exte
 
     if (_future->isAbandoned())
     {
-        _status.set(Status::ResourceUnavailable, "Async request canceled");
+        _status = Status(Status::ResourceUnavailable, "Async request canceled");
     }
     else if (!extent.valid())
     {
-        _status.set(Status::GeneralError, "Invalid geoextent");
+        _status = Status(Status::GeneralError, "Invalid geoextent");
     }
 }
 

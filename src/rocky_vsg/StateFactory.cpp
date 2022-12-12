@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "StateFactory.h"
+#include "RuntimeContext.h"
 #include "TerrainTileNode.h"
 #include "TileRenderModel.h"
 
@@ -24,6 +25,9 @@
 
 #define NORMAL_TEX_NAME "normal_tex"
 #define NORMAL_TEX_BINDING 12
+
+#define TILE_BUFFER_NAME "tile"
+#define TILE_BUFFER_BINDING 13
 
 using namespace rocky;
 
@@ -188,6 +192,8 @@ StateFactory::createShaderSet() const
     shaderSet->addUniformBinding(textures.elevation.name, "", 0, textures.elevation.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT, {}); // , vsg::floatArray2D::create(1, 1));
     shaderSet->addUniformBinding(textures.color.name, "", 0, textures.color.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {}); // , vsg::vec3Array2D::create(1, 1));
     shaderSet->addUniformBinding(textures.normal.name, "", 0, textures.normal.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {}); // , vsg::vec3Array2D::create(1, 1));
+
+    shaderSet->addUniformBinding(TILE_BUFFER_NAME, "", 0, TILE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {}); // , vsg::vec3Array2D::create(1, 1));
     //shaderSet->addUniformBinding(_colorParent.name, "", 0, _colorParent.location, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, vsg::vec4Array2D::create(1, 1));
 
     //shaderSet->addUniformBinding("displacementMap", "VSG_DISPLACEMENT_MAP", 0, 6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT, vsg::vec4Array2D::create(1, 1));
@@ -225,7 +231,7 @@ StateFactory::createPipelineConfig(vsg::SharedObjects* sharedObjects) const
     pipelineConfig->enableArray("inNeighborNormal", VK_VERTEX_INPUT_RATE_VERTEX, 12);
 
     // wireframe rendering:
-    pipelineConfig->rasterizationState->polygonMode = VK_POLYGON_MODE_LINE;
+    //pipelineConfig->rasterizationState->polygonMode = VK_POLYGON_MODE_LINE;
     pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
 
     // Temporary decriptors that we will use to set up the PipelineConfig.
@@ -235,6 +241,8 @@ StateFactory::createPipelineConfig(vsg::SharedObjects* sharedObjects) const
     pipelineConfig->assignTexture(descriptors, textures.elevation.name, textures.elevation.defaultData, textures.elevation.sampler);
     pipelineConfig->assignTexture(descriptors, textures.color.name, textures.color.defaultData, textures.color.sampler);
     pipelineConfig->assignTexture(descriptors, textures.normal.name, textures.normal.defaultData, textures.normal.sampler);
+
+    pipelineConfig->assignUniform(descriptors, TILE_BUFFER_NAME, { });
 
 #if 0 // TODO - one per layer...?
     if (stateInfo.image)
@@ -291,7 +299,9 @@ StateFactory::createPipeline(vsg::SharedObjects* sharedObjects) const
     {
         {textures.elevation.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
         {textures.color.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, numColorLayers, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
-        {textures.normal.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}
+        {textures.normal.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+        {TILE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
+    
         //{3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
     };
     auto descriptorSetLayout = vsg::DescriptorSetLayout::create(descriptorBindings);
@@ -369,12 +379,14 @@ StateFactory::createTerrainStateGroup() const
     return stateGroup;
 }
 
-TileDescriptorModel
-StateFactory::createTileDescriptorModel(const TileRenderModel& renderModel) const
+void
+StateFactory::updateTileDescriptorModel(
+    const TileRenderModel& renderModel,
+    vsg::ref_ptr<vsg::StateGroup> stategroup,
+    RuntimeContext& runtime) const
 {
     // Takes a tile's render model (which holds the raw image and matrix data)
     // and creates the necessary VK data to render that model.
-    auto stategroup = vsg::StateGroup::create();
 
     // copy the existing one:
     TileDescriptorModel dm = renderModel.descriptorModel;
@@ -415,6 +427,17 @@ StateFactory::createTileDescriptorModel(const TileRenderModel& renderModel) cons
         }
     }
 
+    TileDescriptorModel::Uniforms uniforms;
+    uniforms.elevation_matrix = renderModel.elevation.matrix;
+    uniforms.color_matrix = renderModel.color.matrix;
+    uniforms.normal_matrix = renderModel.normal.matrix;
+
+    vsg::ref_ptr<vsg::ubyteArray> data = vsg::ubyteArray::create(sizeof(uniforms));
+    memcpy(data->dataPointer(), &uniforms, sizeof(uniforms));
+    dm.uniforms = vsg::DescriptorBuffer::create(
+        data,
+        TILE_BUFFER_BINDING);
+
     // we can get rid of this once we decide finally on config versus pipeline approach
     auto pipelineLayout =
         pipeline ? pipeline->layout :
@@ -424,9 +447,9 @@ StateFactory::createTileDescriptorModel(const TileRenderModel& renderModel) cons
 
     auto descriptorSet = vsg::DescriptorSet::create(
         descriptorSetLayout,
-        vsg::Descriptors{ dm.elevation, dm.color, dm.normal }
+        vsg::Descriptors{ dm.elevation, dm.color, dm.normal, dm.uniforms }
     );
-    if (sharedObjects) sharedObjects->share(descriptorSet);
+    //if (sharedObjects) sharedObjects->share(descriptorSet);
 
     dm.bindDescriptorSetCommand = vsg::BindDescriptorSet::create(
         VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -434,11 +457,25 @@ StateFactory::createTileDescriptorModel(const TileRenderModel& renderModel) cons
         0, // first set
         descriptorSet
     );
-    if (sharedObjects) sharedObjects->share(dm.bindDescriptorSetCommand);
 
-    return dm;
+    // No...?
+    //if (sharedObjects) sharedObjects->share(dm.bindDescriptorSetCommand);
+
+    if (stategroup)
+    {
+        // Need to compile the descriptors
+        if (runtime.compiler)
+        {
+            runtime.compiler()->compile(dm.bindDescriptorSetCommand);
+        }
+
+        // And update the tile's state group
+        stategroup->stateCommands.clear();
+        stategroup->add(dm.bindDescriptorSetCommand);
+    }
 }
 
+#if 0
 void
 StateFactory::refreshStateGroup(TerrainTileNode* tile) const
 {
@@ -465,3 +502,18 @@ StateFactory::refreshStateGroup(TerrainTileNode* tile) const
     stateGroup()->add(bindViewDescriptorSets);
 #endif
 }
+
+TileDescriptorModel
+StateFactory::updateDescriptorModel(
+    const TileDescriptorModel& input,
+    vsg::StateGroup* stategroup) const
+{
+    auto model = terrain->stateFactory->createTileDescriptorModel(
+    renderModel);
+
+terrain->runtime.compiler()->compile(
+    renderModel.descriptorModel.bindDescriptorSetCommand);
+
+tile->stategroup->stateCommands.clear();
+tile->stategroup->add(renderModel.descriptorModel.bindDescriptorSetCommand);
+#endif

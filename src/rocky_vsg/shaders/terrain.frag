@@ -13,28 +13,21 @@ layout(location = 4) in vec3 oe_normalMapBinormal;
 layout(set = 0, binding = 11) uniform sampler2D color_tex;
 layout(set = 0, binding = 12) uniform sampler2D normal_tex;
 
-//layout(set = 0, binding = 3) uniform TerrainTile
-//{
-//    mat4 color_matrix;
-//    mat4 elevation_matrix;
-//    mat4 normal_matrix;
-//    vec4 elevation_coefficients;
-//} tile;
+layout(set = 0, binding = 13) uniform TileData_ {
+    mat4 elevation_matrix;
+    mat4 color_matrix;
+    mat4 normal_matrix;
+    vec2 elevTexelCoeff;
+} tile;
 
 // outputs
 
 layout(location = 0) out vec4 out_color;
 
-//struct TileImageLayer
-//{
-//    mat4 imageTexMatrix;
-//    uint layerIndex;            // Layer's index in voeLayers.imageLayerParams
-//    // 12 bytes padding
-//};
-
 void main()
 {
-    out_color = texture(color_tex, frag_uv);
+    vec4 texel = texture(color_tex, frag_uv);
+    out_color = texel;
 
     if (gl_FrontFacing == false)
         out_color *= 0.5;

@@ -144,7 +144,7 @@ LoadTileDataOperation::merge(shared_ptr<TerrainContext> terrain)
     }
 
     // Merge the new data into the tile.
-    tile->merge(model, _manifest, terrain);
+    tile->merge(model, _manifest);
 
     return true;
 }

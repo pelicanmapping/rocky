@@ -105,12 +105,17 @@ Layer::construct(const Config& conf)
 {
     _revision = 1;
     _uid = rocky::createUID();
-    _renderType = RENDERTYPE_NONE;
-    _status.set(Status::ResourceUnavailable,
+    _status = Status(
+        Status::ResourceUnavailable,
         getOpenAutomatically() ? "Layer closed" : "Layer disabled");
     _isClosing = false;
     _isOpening = false;
     _reopenRequired = false;
+    _renderType = RENDERTYPE_NONE;
+
+    _openAutomatically.setDefault(true);
+    _l2cachesize.setDefault(0);
+    _cachePolicy.setDefault(CachePolicy::DEFAULT);
 
     conf.get("name", _name);
     //conf.set("enabled", enabled());
@@ -446,7 +451,7 @@ Layer::close()
         util::ScopedWriteLock lock(layerMutex());
         _isClosing = true;
         closeImplementation();
-        _status.set(Status::ResourceUnavailable, "Layer closed");
+        _status = Status(Status::ResourceUnavailable, "Layer closed");
         _runtimeCacheId = "";
         //fireCallback(&LayerCallback::onClose);
         _isClosing = false;

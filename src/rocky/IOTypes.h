@@ -196,7 +196,7 @@ namespace rocky
 
         template<typename RHS>
         static IOResult<T> propagate(const IOResult<RHS>& rhs) {
-            IOResult<T> lhs((Status)rhs);
+            IOResult<T> lhs(rhs.status);
             lhs.ioCode = rhs.ioCode;
             lhs.metadata = rhs.metadata;
             lhs.fromCache = rhs.fromCache;

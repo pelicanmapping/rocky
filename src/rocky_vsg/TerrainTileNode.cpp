@@ -504,17 +504,12 @@ TerrainTileNode::inherit()
 
         revision = safe_parent->revision;
     }
-
-    //_needsData = true;
-
-    //refreshStateGroup(terrain);
 }
 
 void
 TerrainTileNode::merge(
     const TerrainTileModel& tile_model,
-    const CreateTileManifest& manifest,
-    shared_ptr<TerrainContext> terrain)
+    const CreateTileManifest& manifest)
 {
     //if (manifest.includesConstraints())
     //{
@@ -545,6 +540,8 @@ TerrainTileNode::merge(
         renderModel.normal.matrix = tile_model.normalMap.matrix;
         //_renderModel.descriptorModel.normal = nullptr;
     }
+
+    _needsData = false;
 
     //refreshStateGroup(terrain);
 

@@ -14,6 +14,13 @@ layout(location = 4) in vec3 inNeighborNormal;
 
 layout(set = 0, binding = 10) uniform sampler2D elevation_tex;
 
+layout(set = 0, binding = 13) uniform TileData_ {
+    mat4 elevation_matrix;
+    mat4 color_matrix;
+    mat4 normal_matrix;
+    vec2 elevTexelCoeff;
+} tile;
+
 layout(location = 0) out vec3 frag_color;
 layout(location = 1) out vec2 frag_uv;
 layout(location = 2) out vec3 oe_UpVectorView;
@@ -41,7 +48,7 @@ void main()
     mat3 normalMatrix = mat3(transpose(inverse(pc.modelview)));
     
     frag_color = vec3(1);
-    frag_uv = inUV.st;
+    frag_uv = (tile.color_matrix * vec4(inUV.st, 0, 1)).st;
 
     // The normal map stuff
     oe_UpVectorView = normalMatrix * inNormal;

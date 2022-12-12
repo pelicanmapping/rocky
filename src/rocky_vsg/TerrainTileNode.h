@@ -61,6 +61,7 @@ namespace rocky
         vsg::ref_ptr<vsg::StateGroup> stategroup;
         
         mutable util::Future<bool> childLoader;
+        mutable util::Future<bool> dataLoader;
         mutable std::atomic<uint64_t> lastTraversalFrame;
         mutable std::atomic<vsg::time_point> lastTraversalTime;
         mutable std::atomic<float> lastTraversalRange;
@@ -82,25 +83,6 @@ namespace rocky
 
         //! Tells this tile to request data for the data in the manifest
         void refreshLayers(const CreateTileManifest& manifest);
-
-        //! Install new geometry in this tile
-        //void createGeometry(
-        //    TerrainContext& terrain,
-        //    Cancelable*);
-
-        /** Initial inheritance of tile data from the parent node. */
-        //void initializeData(TerrainContext& terrain);
-
-#if 0
-        /** Whether the tile is expired; i.e. has not been visited in some time. */
-        bool isDormant() const;
-
-        /** Whether all the subtiles are this tile are dormant (have not been visited recently) */
-        bool areSubTilesDormant() const;
-
-        /** Whether all 3 quadtree siblings of this tile are dormant */
-        bool areSiblingsDormant() const;
-#endif
 
         /** Notifies this tile that another tile has come into existence. */
         void notifyOfArrival(
@@ -136,8 +118,7 @@ namespace rocky
         //! Merge new Tile model data into this tile
         void merge(
             const TerrainTileModel& model,
-            const CreateTileManifest& manifest,
-            shared_ptr<TerrainContext> terrain);
+            const CreateTileManifest& manifest);
 
         //! TODO?
         void loadSync(shared_ptr<TerrainContext> terrain);
@@ -151,7 +132,7 @@ namespace rocky
 
     public:
 
-        //TODO: implement for a custom cull traversal...
+        //! Customized cull traversal
         void accept(vsg::RecordTraversal& visitor) const override;
 
         //void resizeGLObjectBuffers(unsigned maxSize);
@@ -173,9 +154,6 @@ namespace rocky
         void updateElevationRaster();
 
     private:
-
-        //void refreshStateGroup(
-        //    TerrainContext&);
 
         void updateNormalMap(const TerrainSettings&);
 

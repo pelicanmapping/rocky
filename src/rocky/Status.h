@@ -23,30 +23,26 @@ namespace rocky
             GeneralError          // something else went wrong
         };
 
-    public:
-        Status() : _errorCode(NoError) { }
-        Status(const Status& rhs) : _errorCode(rhs._errorCode), _errorMsg(rhs._errorMsg) { }
-        Status(const Code& code) : _errorCode(code) { }
-        Status(const std::string& msg) : _errorCode(GeneralError), _errorMsg(msg) { }
-        Status(const Code& code, const std::string& msg) : _errorCode(code), _errorMsg(msg) { }
-        bool ok() const { return _errorCode == NoError; }
+        int code;
+        std::string message;
+
+        Status() : code(NoError) { }
+        Status(const Status& rhs) = default; // : _errorCode(rhs._errorCode), _errorMsg(rhs._errorMsg) { }
+        Status(const Code& c) : code(c) { }
+        Status(const std::string& m) : code(GeneralError), message(m) { }
+        Status(const Code& c, const std::string& m) : code(c), message(m) { }
+        bool ok() const { return code == NoError; }
         bool failed() const { return !ok(); }
-        int errorCode() const { return _errorCode; }
-        const std::string& message() const { return _errorMsg; }
-        bool operator == (const Status& rhs) const { return _errorCode == rhs._errorCode && _errorMsg.compare(rhs._errorMsg) == 0; }
+        bool operator == (const Status& rhs) const { return code == rhs.code && message.compare(rhs.message) == 0; }
         bool operator != (const Status& rhs) const { return !(*this==rhs); }
         bool const operator ! () const { return failed(); }
-        //static Status OK() { return Status(); }
-        static Status Error(const Code& code) { return Status(code); }
-        static Status Error(const std::string& msg) { return Status(msg); }
-        static Status Error(const Code& code, const std::string& msg) { return Status(code, msg); }
-        void set(const Code& code, const std::string& msg) { _errorCode = code, _errorMsg = msg; }
+        static Status Error(const Code& c) { return Status(c); }
+        static Status Error(const std::string& m) { return Status(m); }
+        static Status Error(const Code& c, const std::string& m) { return Status(c, m); }
         std::string toString() const {
-            return _errorCodeText[errorCode() < 6 ? errorCode() : 5] + ": " + message();
+            return _errorCodeText[code < 6 ? code : 5] + ": " + message;
         }
     private:
-        int _errorCode;
-        std::string _errorMsg;
         static std::string _errorCodeText[6];
     };
 
@@ -56,19 +52,14 @@ namespace rocky
      * Generic return value that wraps a value type and a Status.
      */
     template<typename T>
-    class Result : public Status
+    struct Result
     {
-    public:
-        Result() : Status() { }
-        Result(Status::Code code) : Status(code) { }
-        Result(const T& val) : _value(val) { }
-        Result(const Status& s) : Status(s) { }
-        const T& value() const { return _value; }
-        T& get() { return _value; }
-        const T& get() const { return _value; }
-        T* operator -> () { return &_value; }
-        const T* operator -> () const { return &_value; }
-    private:
-        T _value;
+        Result(const T& v) : value(v) { }
+        explicit Result() : status(Status::ResourceUnavailable) { }
+        explicit Result(const Status& s) : status(s) { }
+        explicit Result(const Status::Code& c, const std::string& m) : status(c, m) { }
+
+        T value;
+        Status status;
     };
 }

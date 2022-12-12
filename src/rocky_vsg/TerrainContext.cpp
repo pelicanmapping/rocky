@@ -7,6 +7,7 @@
 #include "TileNodeRegistry.h"
 #include "GeometryPool.h"
 #include <rocky/Notify.h>
+#include <rocky/TerrainTileModelFactory.h>
 
 #include <vsg/state/ShaderStage.h>
 
@@ -39,4 +40,11 @@ TerrainContext::TerrainContext(
     tiles->geometryPool = geometryPool;
     tiles->selectionInfo = selectionInfo;
     tiles->stateFactory = stateFactory;
+}
+
+void
+TerrainContext::loadAndMergeData(
+    TerrainTileNode* tile,
+    std::function<TerrainTileModel(Cancelable*)> loader)
+{
 }

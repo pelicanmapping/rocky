@@ -177,13 +177,13 @@ TerrainTileModelFactory::addImageLayer(
         imageLayer->isKeyInLegalRange(key) &&
         imageLayer->mayHaveData(key))
     {
-        GeoImage geoImage = imageLayer->createImage(key, progress);
-        if (geoImage.valid())
+        auto result = imageLayer->createImage(key, progress);
+        if (result.value.valid())
         {
             TerrainTileModel::ColorLayer m;
             m.layer = imageLayer; // Layer::cast(imageLayer);
             m.revision = imageLayer->getRevision();
-            m.image = geoImage;
+            m.image = result.value;
             model.colorLayers.emplace_back(std::move(m));
 
             //if (imageLayer->isShared())

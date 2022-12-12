@@ -56,9 +56,10 @@ int main(int argc, char** argv)
     mapNode->runtime.sharedObjects = vsg::SharedObjects::create();
     mapNode->runtime.loaders = vsg::OperationThreads::create(mapNode->getTerrainNode()->concurrency);
 
-    //auto layer = GDALImageLayer::create();
-    //layer->setURI("D:/data/imagery/world.tif");
-    //mapNode->getMap()->addLayer(layer);
+    auto layer = GDALImageLayer::create();
+    layer->setURI("D:/data/imagery/world.tif");
+    //layer->setURI("D:/data/naturalearth/raster-10m/HYP_HR/HYP_HR.tif");
+    mapNode->getMap()->addLayer(layer);
 
     vsg_scene->addChild(mapNode);
 
@@ -94,13 +95,13 @@ int main(int argc, char** argv)
         camera,
         vsg_scene,
         VK_SUBPASS_CONTENTS_INLINE,
-        true); // assignHeadlight
+        false); // assignHeadlight
 
     viewer->assignRecordAndSubmitTaskAndPresentation({ commandGraph });
 
     viewer->compile();
 
-    std::vector<std::chrono::microseconds> times;
+    std::vector<std::chrono::microseconds> timeSamples;
 
     // rendering main loop
     while (viewer->advanceToNextFrame())
@@ -119,14 +120,14 @@ int main(int argc, char** argv)
         if ((viewer->getFrameStamp()->frameCount % 10) == 0) {
             auto end = std::chrono::steady_clock::now();
             auto t = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-            times.push_back(t);
+            timeSamples.push_back(t);
         }
     }
 
     std::chrono::microseconds total(0);
-    for (auto time : times)
-        total += time;
-    total /= times.size();
+    for (auto sample : timeSamples)
+        total += sample;
+    total /= timeSamples.size();
 
     ROCKY_NOTICE << "Average frame time = " 
         << std::setprecision(3) << 0.001f * (float)total.count() << " ms" << std::endl;

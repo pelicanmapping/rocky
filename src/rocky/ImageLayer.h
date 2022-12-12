@@ -159,7 +159,7 @@ namespace rocky
             const TileKey& key,
             IOControl* ioc) const
         {
-            return GeoImage::INVALID;
+            return Result(GeoImage::INVALID);
         }
 
 #if 0
@@ -202,7 +202,7 @@ namespace rocky
         virtual Result<GeoImage> createImageImplementation(
             const GeoImage& canvas,
             const TileKey& key,
-            IOControl* ioc) const { return canvas; }
+            IOControl* ioc) const { return Result(canvas); }
 
         //! Override to do something to an image before returning
         //! it from createImage (including a GeoImage read from the cache)
@@ -252,7 +252,7 @@ namespace rocky
         // Fetches multiple images from the TileSource; mosaics/reprojects/crops as necessary, and
         // returns a single tile. This is called by createImageFromTileSource() if the key profile
         // doesn't match the layer profile.
-        GeoImage assembleImage(
+        Result<GeoImage> assembleImage(
             const TileKey& key,
             IOControl* ioc) const;
 

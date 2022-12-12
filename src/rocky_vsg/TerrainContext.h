@@ -58,6 +58,10 @@ namespace rocky
 
         //! name of job arena used to load data
         std::string loadArenaName = "terrain.load";
+
+        void loadAndMergeData(
+            TerrainTileNode* tile,
+            std::function<TerrainTileModel(Cancelable*)> loader);
     };
 
 }
