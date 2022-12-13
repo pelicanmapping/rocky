@@ -350,7 +350,7 @@ Layer::getCachePolicy() const
 }
 
 Status
-Layer::open(const IOOptions* io)
+Layer::open(const IOOptions& io)
 {
     // Cannot open a layer that's already open OR is disabled.
     if (isOpen())
@@ -392,11 +392,11 @@ Layer::open(const IOOptions* io)
 Status
 Layer::open()
 {
-    return open(nullptr);
+    return open(IOOptions());
 }
 
 Status
-Layer::openImplementation(const IOOptions* io)
+Layer::openImplementation(const IOOptions& io)
 {
 #if 0
     // Create some local cache settings for this layer.

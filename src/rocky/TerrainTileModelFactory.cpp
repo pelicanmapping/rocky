@@ -123,7 +123,7 @@ TerrainTileModelFactory::createTileModel(
     const Map* map,
     const TileKey& key,
     const CreateTileManifest& manifest,
-    IOControl* ioc)
+    const IOOptions& io)
 {
     ROCKY_PROFILING_ZONE;
 
@@ -133,10 +133,10 @@ TerrainTileModelFactory::createTileModel(
     model.revision = map->getDataModelRevision();
 
     // assemble all the components:
-    addColorLayers(model, map, key, manifest, ioc, false);
+    addColorLayers(model, map, key, manifest, io, false);
 
     unsigned border = 0u;
-    addElevation(model, map, key, manifest, border, ioc);
+    addElevation(model, map, key, manifest, border, io);
 
     return std::move(model);
 }
@@ -146,7 +146,7 @@ TerrainTileModelFactory::createStandaloneTileModel(
     const Map* map,
     const TileKey& key,
     const CreateTileManifest& manifest,
-    IOControl* ioc)
+    const IOOptions& io)
 {
     ROCKY_PROFILING_ZONE;
 
@@ -156,9 +156,9 @@ TerrainTileModelFactory::createStandaloneTileModel(
     model.revision = map->getDataModelRevision();
 
     // assemble all the components:
-    addColorLayers(model, map, key, manifest, ioc, true);
+    addColorLayers(model, map, key, manifest, io, true);
 
-    addStandaloneElevation(model, map, key, manifest, 0u, ioc);
+    addStandaloneElevation(model, map, key, manifest, 0u, io);
 
     return std::move(model);
 }
@@ -168,7 +168,7 @@ TerrainTileModelFactory::addImageLayer(
     TerrainTileModel& model,
     shared_ptr<const ImageLayer> imageLayer,
     const TileKey& key,
-    IOControl* progress)
+    const IOOptions& io)
 {
     ROCKY_PROFILING_ZONE;
     ROCKY_PROFILING_ZONE_TEXT(imageLayer->getName());
@@ -177,7 +177,7 @@ TerrainTileModelFactory::addImageLayer(
         imageLayer->isKeyInLegalRange(key) &&
         imageLayer->mayHaveData(key))
     {
-        auto result = imageLayer->createImage(key, progress);
+        auto result = imageLayer->createImage(key, io);
         if (result.value.valid())
         {
             TerrainTileModel::ColorLayer m;
@@ -207,14 +207,14 @@ TerrainTileModelFactory::addStandaloneImageLayer(
     TerrainTileModel& model,
     shared_ptr<const ImageLayer> imageLayer,
     const TileKey& key,
-    IOControl* progress)
+    const IOOptions& io)
 {
     TileKey key_to_use = key;
 
     bool added = false;
     while (key_to_use.valid() & !added)
     {
-        if (addImageLayer(model, imageLayer, key_to_use, progress))
+        if (addImageLayer(model, imageLayer, key_to_use, io))
             added = true;
         else
             key_to_use.makeParent();
@@ -227,7 +227,7 @@ TerrainTileModelFactory::addColorLayers(
     const Map* map,
     const TileKey& key,
     const CreateTileManifest& manifest,
-    IOControl* ioc,
+    const IOOptions& io,
     bool standalone)
 {
     ROCKY_PROFILING_ZONE;
@@ -253,11 +253,11 @@ TerrainTileModelFactory::addColorLayers(
         {
             if (standalone)
             {
-                addStandaloneImageLayer(model, imageLayer, key, ioc);
+                addStandaloneImageLayer(model, imageLayer, key, io);
             }
             else
             {
-                addImageLayer(model, imageLayer, key, ioc);
+                addImageLayer(model, imageLayer, key, io);
             }
         }
         else // non-image kind of TILE layer (e.g., splatting)
@@ -277,7 +277,7 @@ TerrainTileModelFactory::addElevation(
     const TileKey& key,
     const CreateTileManifest& manifest,
     unsigned border,
-    IOControl* ioc)
+    const IOOptions& io)
 {
     ROCKY_PROFILING_ZONE;
     ROCKY_PROFILING_ZONE_TEXT("Elevation");
@@ -346,14 +346,14 @@ TerrainTileModelFactory::addStandaloneElevation(
     const TileKey& key,
     const CreateTileManifest& manifest,
     unsigned border,
-    IOControl* ioc)
+    const IOOptions& io)
 {
     TileKey key_to_use = key;
 
     bool added = false;
     while (key_to_use.valid() & !added)
     {
-        if (addElevation(model, map, key_to_use, manifest, border, ioc))
+        if (addElevation(model, map, key_to_use, manifest, border, io))
             added = true;
         else
             key_to_use.makeParent();

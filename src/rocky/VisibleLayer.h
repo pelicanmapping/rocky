@@ -48,7 +48,7 @@ namespace rocky
 
     public: // Layer
 
-        virtual Status openImplementation(const IOOptions*) override;
+        virtual Status openImplementation(const IOOptions&) override;
 
         virtual Config getConfig() const override;
 

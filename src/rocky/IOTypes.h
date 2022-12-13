@@ -16,17 +16,28 @@
  */
 namespace rocky
 {
-    class ROCKY_EXPORT IOOptions
-    {
-    };
-
+    /** General purpose interface for any operation that may be canceled */
     class Cancelable
     {
     public:
         virtual bool isCanceled() const = 0;
     };
 
-    class ROCKY_EXPORT IOControl : public IOOptions, public Cancelable
+    /** Options passed along to any I/O or data creation routine */
+    class ROCKY_EXPORT IOOptions : public Cancelable
+    {
+    public:
+        // Disk cache
+        // L2 cache
+        // Environment
+
+        //! Never canceled by default
+        virtual bool isCanceled() const override {
+            return false;
+        }
+    };
+
+    class ROCKY_EXPORT IOControl : public IOOptions
     {
     public:
         //TODO: implement

@@ -63,24 +63,36 @@ Map::Options::fromConfig(const Config& conf)
 //...................................................................
 #endif
 
-Map::Map(Instance& instance) :
-    _instance(instance)
+Map::Map() :
+    _instance(Instance::create())
 {
-    construct(Config());
+    construct(Config(), _instance->ioOptions);
+}
+
+Map::Map(Instance::ptr instance) :
+    _instance(instance ? instance : Instance::create())
+{
+    construct(Config(), _instance->ioOptions);
+}
+
+Map::Map(Instance::ptr instance, const IOOptions& io) :
+    _instance(instance ? instance : Instance::create())
+{
+    construct(Config(), io);
 }
 
 Map::Map(
     const Config& conf,
-    Instance& instance,
-    const IOOptions* io) :
+    Instance::ptr instance,
+    const IOOptions& io) :
 
-    _instance(instance)
+    _instance(instance ? instance : Instance::create())
 {
-    construct(Config());
+    construct(Config(), io);
 }
 
 void
-Map::construct(const Config& conf)
+Map::construct(const Config& conf, const IOOptions& io)
 {
     // reset the revision:
     _dataModelRevision = 0;
@@ -386,9 +398,13 @@ Map::endUpdate()
 #endif
 
 void
-Map::addLayer(
-    shared_ptr<Layer> layer,
-    const IOOptions* io)
+Map::addLayer(shared_ptr<Layer> layer)
+{
+    addLayer(layer, _instance->ioOptions);
+}
+
+void
+Map::addLayer(shared_ptr<Layer> layer, const IOOptions& io)
 {
     if (layer == NULL)
         return;
@@ -442,20 +458,22 @@ Map::addLayer(
 }
 
 void
+Map::insertLayer(shared_ptr<Layer> layer, unsigned index)
+{
+    insertLayer(layer, index, _instance->ioOptions);
+}
+
+void
 Map::insertLayer(
     shared_ptr<Layer> layer,
     unsigned index,
-    const IOOptions* io)
+    const IOOptions& io)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(layer != nullptr, void());
 
     // ensure it's not already in the map
     if (getIndexOfLayer(layer.get()) != getNumLayers())
         return;
-
-    //rocky::Registry::instance()->clearBlacklist();
-
-    //layer->setReadOptions(getReadOptions());
 
     if (layer->getOpenAutomatically())
     {
@@ -487,13 +505,6 @@ Map::insertLayer(
     }
 
     onLayerAdded(layer, index, newRevision);
-
-    // a separate block b/c we don't need the mutex
-    //for (MapCallbackList::iterator i = _mapCallbacks.begin(); i != _mapCallbacks.end(); i++)
-    //{
-    //    i->get()->onMapModelChanged(MapModelChange(
-    //        MapModelChange::ADD_LAYER, newRevision, layer, index));
-    //}
 }
 
 void
@@ -606,9 +617,15 @@ Map::moveLayer(shared_ptr<Layer> layerToMove, unsigned newIndex)
 }
 
 void
+Map::addLayers(const std::vector<Layer::ptr>& layers)
+{
+    addLayers(layers, _instance->ioOptions);
+}
+
+void
 Map::addLayers(
     const std::vector<Layer::ptr>& layers,
-    const IOOptions* io)
+    const IOOptions& io)
 {
     // This differs from addLayer() in a loop because it will
     // (a) call addedToMap only after all the layers are added, and
@@ -798,91 +815,10 @@ Map::getWorldSRS() const
 #endif
 
 #if 0
-bool
-Map::isFast(const TileKey& key, const LayerVector& layers) const
-{
-    if (getCache() == NULL)
-        return false;
-
-    for (LayerVector::const_iterator i = layers.begin(); i != layers.end(); ++i)
-    {
-        Layer* layer = i->get();
-        if (!layer)
-            continue;
-
-        if (!layer->isOpen())
-            continue;
-
-        TileLayer* tilelayer = dynamic_cast<TileLayer*>(layer);
-        if (tilelayer)
-        {
-            if (tilelayer->getCacheSettings()->cachePolicy()->isCacheDisabled())
-              return false;
-
-            //If no data is available on this tile, we'll be fast
-            if (!tilelayer->mayHaveData(key))
-                continue;
-
-            if (!tilelayer->isCached(key))
-                return false;
-        }
-    }
-    return true;
-}
-#endif
-
-#if 0
 int 
 Map::getNumTerrainPatchLayers() const
 {
     return _numTerrainPatchLayers;
-}
-#endif
-
-#if 0
-UID
-Map::onLayerAdded(LayerCallback value)
-{
-    util::ScopedWriteLock lock(_mapDataMutex);
-    auto uid = createUID();
-    //_onLayerAdded[uid] = value;
-    _onLayerAdded.functions[uid] = value;
-    return uid;
-}
-
-void
-Map::fire_onLayerAdded(shared_ptr<Layer> layer, unsigned index, Revision rev)
-{
-    LayerCallbacks temp;
-    {
-        util::ScopedReadLock lock(_mapDataMutex);
-        temp.insert(_onLayerAdded.begin(), _onLayerAdded.end());
-    }
-
-    for (auto& iter : temp)
-        iter.second(layer, index, rev);
-}
-
-UID
-Map::onLayerRemoved(LayerCallback value)
-{
-    util::ScopedWriteLock lock(_mapDataMutex);
-    auto uid = createUID();
-    _onLayerRemoved[uid] = value;
-    return uid;
-}
-
-void
-Map::fire_onLayerRemoved(shared_ptr<Layer> layer, unsigned index, Revision rev)
-{
-    LayerCallbacks temp;
-    {
-        util::ScopedReadLock lock(_mapDataMutex);
-        temp.insert(_onLayerRemoved.begin(), _onLayerRemoved.end());
-    }
-
-    for (auto& iter : temp)
-        iter.second(layer, index, rev);
 }
 #endif
 

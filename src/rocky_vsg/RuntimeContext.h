@@ -7,6 +7,7 @@
 
 #include <rocky_vsg/Common.h>
 #include <rocky/Instance.h>
+#include <rocky/IOTypes.h>
 #include <rocky/Threading.h>
 
 #include <vsg/core/observer_ptr.h>
@@ -65,8 +66,8 @@ namespace rocky
         //! synchronously.
         template<class T>
         util::Future<bool> runAsyncUpdateSync(
-            std::function<Result<T>(Cancelable*)> async,
-            std::function<void(const T&, Cancelable*)> sync);
+            std::function<Result<T>(Cancelable&)> async,
+            std::function<void(const T&, Cancelable&)> sync);
     };
 
 
@@ -74,27 +75,26 @@ namespace rocky
 
     template<class T>
     util::Future<bool> RuntimeContext::runAsyncUpdateSync(
-        std::function<Result<T>(Cancelable*)> async,
-        std::function<void(const T&, Cancelable*)> sync)
+        std::function<Result<T>(Cancelable&)> async,
+        std::function<void(const T&, Cancelable&)> sync)
     {
         struct ComboOp : public vsg::Inherit<vsg::Operation, ComboOp> {
             RuntimeContext* _runtime;
-            std::function<Result<T>(rocky::Cancelable*)> _async;
-            std::function<void(const T&, Cancelable*)> _sync;
+            std::function<Result<T>(Cancelable&)> _async;
+            std::function<void(const T&, Cancelable&)> _sync;
             Result<T> _result;
             util::Promise<bool> _promise;
-            Cancelable* _p = nullptr;
             void run() override {
                 if (!_promise.isAbandoned()) {
                     if (!_result.status.ok()) {
-                        _result = _async(_p);
+                        _result = _async(_promise);
                         if (_result.status.ok()) {
                             _runtime->updates()->add(vsg::ref_ptr<vsg::Operation>(this));
                             _promise.resolve(true);
                         }
                     }
                     else {
-                        _sync(_result.value, _p);
+                        _sync(_result.value, _promise);
                         _promise.resolve(true);
                     }
                 }

@@ -11,14 +11,13 @@
 #include <rocky/Layer.h>
 #include <rocky/Threading.h>
 #include <rocky/Callbacks.h>
+#include <rocky/IOTypes.h>
 //#include <rocky/ElevationPool.h>
 #include <functional>
 #include <set>
 
 namespace rocky
 {
-    class IOOptions;
-
     /**
      * Map is the main data model. A Map hold a collection of
      * Layers, each of which provides data of some kind to the
@@ -28,11 +27,12 @@ namespace rocky
     class ROCKY_EXPORT Map : public Inherit<Object, Map>
     {
     public:
-        //! Construct a new, empty map.
-        Map(Instance&);
+
+        //! Global application instance
+        Instance::ptr instance() const { return _instance; }
 
         //! This Map's unique ID
-        UID getUID() const { return _uid; }
+        UID uid() const { return _uid; }
 
         //! The map's master tiling profile, which defines its SRS and tiling structure
         void setProfile(shared_ptr<Profile>);
@@ -42,20 +42,22 @@ namespace rocky
         shared_ptr<SRS> getSRS() const;
 
         //! Adds a Layer to the map.
-        void addLayer(
-            shared_ptr<Layer> layer,
-            const IOOptions* io = nullptr);
+        void addLayer(shared_ptr<Layer> layer);
+        void addLayer(shared_ptr<Layer> layer, const IOOptions& io);
 
         //! Adds a collection of layers to the map.
-        void addLayers(
-            const std::vector<shared_ptr<Layer>>& layers,
-            const IOOptions* io = nullptr);
+        void addLayers(const std::vector<shared_ptr<Layer>>& layers);
+        void addLayers(const std::vector<shared_ptr<Layer>>& layers, const IOOptions& io);
 
-        //! Inserts a Layer at a specific index in the Map.
+        //! Insert a Layer at a specific index in the Map.
+        void insertLayer(
+            shared_ptr<Layer> layer,
+            unsigned index);
+
         void insertLayer(
             shared_ptr<Layer> layer,
             unsigned index,
-            const IOOptions* io = nullptr);
+            const IOOptions& io);
 
         //! Removes a layer from the map.
         void removeLayer(shared_ptr<Layer> layer);
@@ -145,28 +147,32 @@ namespace rocky
 
     public:
 
+        //! Construct (please use Map::create)
+        Map();
+
         //! Construct
-        Map(Instance& instance,
-            const IOOptions* io);
+        Map(Instance::ptr instance);
+
+        //! Construct with custom options
+        Map(Instance::ptr, const IOOptions& io);
 
         //! Deserialize
-        Map(const Config& conf,
-            Instance& instance,
-            const IOOptions*io);
+        Map(const Config& conf, Instance::ptr, const IOOptions& io);
 
-        //! Ready-only access to the serialization options for this map
-        //const Options& options() const { return _optionsConcrete; }
+     public:
 
+        //! Serialize
         virtual Config getConfig() const;
 
     public:
         //! Callbacks
         using LayerAdded = std::function<void(shared_ptr<Layer>, unsigned index, Revision)>;
-        using LayerRemoved = std::function<void(shared_ptr<Layer>, Revision)>;
-        using LayerMoved = std::function<void(shared_ptr<Layer>, unsigned oldIndex, unsigned newIndex, Revision)>;
-
         Callback<LayerAdded> onLayerAdded;
+
+        using LayerRemoved = std::function<void(shared_ptr<Layer>, Revision)>;
         Callback<LayerRemoved> onLayerRemoved;
+
+        using LayerMoved = std::function<void(shared_ptr<Layer>, unsigned oldIndex, unsigned newIndex, Revision)>;
         Callback<LayerMoved> onLayerMoved;
 
     protected:
@@ -174,7 +180,7 @@ namespace rocky
         optional<std::string> _profileLayer;
 
     private:
-        Instance& _instance;
+        Instance::ptr _instance;
         UID _uid;
         std::vector<shared_ptr<Layer>> _layers;
         mutable util::ReadWriteMutex _mapDataMutex;
@@ -183,7 +189,7 @@ namespace rocky
         //shared_ptr<ElevationPool> _elevationPool;
         Revision _dataModelRevision;
 
-        void construct(const Config&);
+        void construct(const Config&, const IOOptions& io);
     };
 
 

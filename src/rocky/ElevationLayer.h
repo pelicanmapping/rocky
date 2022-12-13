@@ -70,7 +70,7 @@ namespace rocky
          */
         Result<GeoHeightfield> createHeightfield(
             const TileKey& key,
-            IOControl* progress);
+            const IOOptions& io);
 
         /**
          * Writes a height field for the specified key, if writing is
@@ -79,7 +79,7 @@ namespace rocky
         Status writeHeightfield(
             const TileKey& key,
             const Heightfield* hf,
-            IOControl* progress) const;
+            const IOOptions& io) const;
 
     protected: // TileLayer
 
@@ -98,13 +98,13 @@ namespace rocky
         //! Entry point for createHeightfield
         Result<GeoHeightfield> createHeightfieldInKeyProfile(
             const TileKey& key,
-            IOControl* progress);
+            const IOOptions& io);
 
         //! Subclass overrides this to generate image data for the key.
         //! The key will always be in the same profile as the layer.
         virtual Result<GeoHeightfield> createHeightfieldImplementation(
             const TileKey&,
-            IOControl* progress) const
+            const IOOptions& io) const
         {
             return Result(GeoHeightfield::INVALID);
         }
@@ -113,7 +113,7 @@ namespace rocky
         virtual Status writeHeightfieldImplementation(
             const TileKey& key,
             const Heightfield* hf,
-            IOControl* progress) const;
+            const IOOptions& io) const;
 
         virtual ~ElevationLayer() { }
 
@@ -131,7 +131,7 @@ namespace rocky
         void assembleHeightfield(
             const TileKey& key,
             shared_ptr<Heightfield> out_hf,
-            IOControl* progress) const;
+            const IOOptions& io) const;
 
         void normalizeNoDataValues(
             Heightfield* hf) const;
@@ -165,7 +165,7 @@ namespace rocky
             const TileKey& key,
             shared_ptr<Profile> hae_profile,
             Heightfield::Interpolation interpolation,
-            IOControl* progress ) const;
+            const IOOptions& io ) const;
     };
 
 } // namespace

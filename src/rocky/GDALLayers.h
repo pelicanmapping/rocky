@@ -97,26 +97,26 @@ namespace rocky
                 const Options& options,
                 unsigned tileSize,
                 DataExtentList* out_dataExtents,
-                const IOOptions* io);
+                const IOOptions& io);
 
             //! Creates an image if possible
             shared_ptr<Image> createImage(
                 const TileKey& key,
                 unsigned tileSize,
                 bool isCoverage,
-                IOControl* ioc);
+                const IOOptions& io);
 
             //! Creates a heightfield if possible
             shared_ptr<Heightfield> createHeightfield(
                 const TileKey& key,
                 unsigned tileSize,
-                IOControl* ioc);
+                const IOOptions& io);
 
             //! Creates a heightfield if possible using a faster path that creates a temporary warped VRT.
             shared_ptr<Heightfield> createHeightfieldWithVRT(
                 const TileKey& key,
                 unsigned tileSize,
-                IOControl* ioc);
+                const IOOptions& io);
 
             shared_ptr<Profile> getProfile() const {
                 return _profile;
@@ -228,7 +228,7 @@ namespace rocky
     public: // Layer
 
         //! Establishes a connection to the TMS repository
-        virtual Status openImplementation(const IOOptions*) override;
+        virtual Status openImplementation(const IOOptions&) override;
 
         //! Closes down any GDAL connections
         virtual Status closeImplementation() override;
@@ -236,7 +236,7 @@ namespace rocky
         //! Gets a raster image for the given tile key
         virtual Result<GeoImage> createImageImplementation(
             const TileKey& key,
-            IOControl* ioc) const override;
+            const IOOptions& io) const override;
 
         virtual Config getConfig() const override;
 
@@ -272,7 +272,7 @@ namespace rocky
     public: // Layer
 
         //! Establishes a connection to the repository
-        virtual Status openImplementation(const IOOptions*) override;
+        virtual Status openImplementation(const IOOptions&) override;
 
         //! Closes down any GDAL connections
         virtual Status closeImplementation() override;
@@ -280,7 +280,7 @@ namespace rocky
         //! Gets a heightfield for the given tile key
         virtual Result<GeoHeightfield> createHeightfieldImplementation(
             const TileKey& key,
-            IOControl* progress) const override;
+            const IOOptions& io) const override;
 
     private:
 

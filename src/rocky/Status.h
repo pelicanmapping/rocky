@@ -17,7 +17,7 @@ namespace rocky
         enum Code {
             NoError,
             ResourceUnavailable,  // e.g. failure to access a file, URL, database, or other resource
-            ServiceUnavailable,   // e.g. failure to load a plugin, extension, or other module
+            ServiceUnavailable,   // e.g. failure to connect to a site, load a plugin, extension, or other module
             ConfigurationError,   // required data or properties missing
             AssertionFailure,     // an illegal software state was detected
             GeneralError          // something else went wrong

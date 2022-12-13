@@ -85,8 +85,8 @@ namespace rocky
         //! Open a layer.
         Status open();
 
-        //! Open a layer. Shortcut for calling setReadOptions() followed by open().
-        Status open(const IOOptions* options);
+        //! Open a layer.
+        Status open(const IOOptions& options);
 
         //! Close this layer.
         Status close();
@@ -281,7 +281,7 @@ namespace rocky
         //! appropriate. When added to a map, init() is called before open()
         //! and addedToMap() is called after open() if it succeeds.
         //! By default, returns STATUS_OK.
-        virtual Status openImplementation(const IOOptions* io);
+        virtual Status openImplementation(const IOOptions& io);
 
         //! Called by close() to shut down the resources associated with a layer.
         virtual Status closeImplementation();

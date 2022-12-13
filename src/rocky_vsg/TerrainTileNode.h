@@ -7,6 +7,7 @@
 
 #include <rocky_vsg/Common.h>
 #include <rocky_vsg/SurfaceNode.h>
+#include <rocky_vsg/TerrainTileHost.h>
 #include <rocky/TileKey.h>
 #include <rocky/Image.h>
 
@@ -81,21 +82,6 @@ namespace rocky
             if (colorParent.image)
                 colorParent.matrix *= sb;
         }
-    };
-
-    /**
-     * Interface for a tile to notify the engine that
-     * certain tiles are active in the scene graph.
-     */
-    class TerrainTileHost
-    {
-    public:
-        virtual void ping(
-            TerrainTileNode* tile0,
-            TerrainTileNode* tile1,
-            TerrainTileNode* tile2,
-            TerrainTileNode* tile3,
-            vsg::RecordTraversal& nv) = 0;
     };
 
     /**
@@ -180,7 +166,9 @@ namespace rocky
             const CreateTileManifest& manifest);
 
         //! Apply any thread-safe updates to the tile
-        void update(const vsg::FrameStamp* fs);
+        void update(
+            const vsg::FrameStamp* fs,
+            const IOOptions& io);
 
         //! Remove this tile's children and reset the child
         //! loader future.
@@ -190,11 +178,7 @@ namespace rocky
 
         //! Customized cull traversal
         void accept(vsg::RecordTraversal& visitor) const override;
-
-        //void resizeGLObjectBuffers(unsigned maxSize);
-
-        //void releaseGLObjects(osg::State* state) const;
-
+        
     protected:
 
         mutable fvec4 _tileKeyValue;

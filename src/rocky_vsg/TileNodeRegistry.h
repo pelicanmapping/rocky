@@ -87,6 +87,7 @@ namespace rocky
         //! Update traversal
         void update(
             const vsg::FrameStamp* fs,
+            const IOOptions& io,
             shared_ptr<TerrainContext> terrain);
 
         //! Create a single terrain tile.
@@ -116,6 +117,7 @@ namespace rocky
 
         void requestTileData(
             TerrainTileNode* tile,
+            const IOOptions& io,
             shared_ptr<TerrainContext> terrain) const;
     };
 }

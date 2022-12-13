@@ -41,19 +41,14 @@ namespace rocky
     {
     public: // constructors
 
-        //! Creates an empty map node (with a default empty Map).
-        MapNode(
-            Instance& instance);
-
-        //! Creates an empty map node with some intialization options
-        MapNode(
-            const Config& conf,
-            Instance& instance); // Options& options);
+        //! Creates an empty map node (with a default empty Map)
+        MapNode(Instance::ptr instance = {});
 
         //! Creates a map node that will render the given Map.
-        MapNode(
-            shared_ptr<Map> map,
-            Instance& instance);
+        MapNode(shared_ptr<Map> map);
+
+        //! Deserialize a MapNode
+        MapNode(const Config& conf, Instance::ptr instance = {});
 
     public:
 
@@ -179,8 +174,6 @@ namespace rocky
         optional<float> _overlayResolutionRatio;
         optional<int> _drapingRenderBinNumber;
         optional<float> _screenSpaceError;
-
-        Instance& _instance;
 
         vsg::ref_ptr<TerrainNode> _terrain;
         shared_ptr<Map> _map;

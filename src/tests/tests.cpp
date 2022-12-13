@@ -16,7 +16,7 @@ namespace
     class TestLayer : public Inherit<Layer, TestLayer>
     {
     public:
-        Status openImplementation(const IOOptions* io) override {
+        Status openImplementation(const IOOptions& io) override {
             return STATUS_OK;
         }
     };
@@ -124,7 +124,7 @@ TEST_CASE("Heightfield")
 
 TEST_CASE("Map")
 {
-    Instance instance;
+    auto instance = Instance::create();
 
     auto map = Map::create(instance);
     REQUIRE(map);
@@ -153,11 +153,11 @@ TEST_CASE("Open layer")
 
 TEST_CASE("Deserialize layer")
 {
-    Instance instance;
+    auto instance = Instance::create();
     Config conf("gdalimage");
     conf.set("name", "World imagery");
     conf.set("url", "D:/data/imagery/world.tif");
-    auto layer = Layer::cast(instance.create(conf));
+    auto layer = Layer::cast(instance->read(conf));
     REQUIRE(layer);
     if (layer) {
         auto s = layer->open();

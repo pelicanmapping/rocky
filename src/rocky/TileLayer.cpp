@@ -295,7 +295,7 @@ const optional<bool>& TileLayer::upsample() const {
 }
 
 Status
-TileLayer::openImplementation(const IOOptions* io)
+TileLayer::openImplementation(const IOOptions& io)
 {
     Status parent = VisibleLayer::openImplementation(io);
     if (parent.failed())

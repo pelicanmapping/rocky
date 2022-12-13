@@ -100,7 +100,7 @@ VisibleLayer::getConfig() const
 }
 
 Status
-VisibleLayer::openImplementation(const IOOptions* io)
+VisibleLayer::openImplementation(const IOOptions& io)
 {
     Status parent = Layer::openImplementation(io);
     if (parent.failed())

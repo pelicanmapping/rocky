@@ -37,7 +37,7 @@ namespace rocky
             const Map* map,
             const TileKey& key,
             const CreateTileManifest& manifest,
-            IOControl* ioc);
+            const IOOptions& io);
 
         //! Same as createTileModel, except that this method will create "fallback"
         //! data for each layer that doesn't have real data at the TileKey's LOD.
@@ -47,7 +47,7 @@ namespace rocky
             const Map* map,
             const TileKey& key,
             const CreateTileManifest& manifest,
-            IOControl* ioc);
+            const IOOptions& io);
 
     protected:
 
@@ -56,20 +56,20 @@ namespace rocky
             const Map* map,
             const TileKey& key,
             const CreateTileManifest& manifest,
-            IOControl* progress,
+            const IOOptions& io,
             bool standalone);
 
         virtual bool addImageLayer(
             TerrainTileModel& model,
             shared_ptr<const ImageLayer> layer,
             const TileKey& key,
-            IOControl* progress);
+            const IOOptions& io);
 
         virtual void addStandaloneImageLayer(
             TerrainTileModel& model,
             shared_ptr<const ImageLayer> layer,
             const TileKey& key,
-            IOControl* progress);
+            const IOOptions& io);
 
         virtual bool addElevation(
             TerrainTileModel& model,
@@ -77,7 +77,7 @@ namespace rocky
             const TileKey& key,
             const CreateTileManifest& manifest,
             unsigned border,
-            IOControl* progress);
+            const IOOptions& io);
 
         virtual bool addStandaloneElevation(
             TerrainTileModel& model,
@@ -85,8 +85,6 @@ namespace rocky
             const TileKey& key,
             const CreateTileManifest& manifest,
             unsigned border,
-            IOControl* progress);
-
-        //TerrainOptions _options;
+            const IOOptions& io);
     };
 }

@@ -272,7 +272,7 @@ TerrainTileNode::unloadChildren()
 }
 
 void
-TerrainTileNode::update(const vsg::FrameStamp*)
+TerrainTileNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
 {
 #if 0
     unsigned numUpdatedTotal = 0u;

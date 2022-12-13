@@ -321,7 +321,7 @@ ImageLayer::getAsyncLoading() const
 //}
 
 Status
-ImageLayer::openImplementation(const IOOptions* io)
+ImageLayer::openImplementation(const IOOptions& io)
 {
     Status parent = TileLayer::openImplementation(io);
     if (parent.failed())
@@ -423,16 +423,15 @@ ImageLayer::setUseCreateTexture()
 #endif
 
 Result<GeoImage>
-ImageLayer::createImage(
-    const TileKey& key) const
+ImageLayer::createImage(const TileKey& key) const
 {
-    return createImage(key, nullptr);
+    return createImage(key, IOOptions());
 }
 
 Result<GeoImage>
 ImageLayer::createImage(
     const TileKey& key,
-    IOControl* progress) const
+    const IOOptions& io) const
 {    
     ROCKY_PROFILING_ZONE;
     ROCKY_PROFILING_ZONE_TEXT(getName() + " " + key.str());
@@ -444,7 +443,7 @@ ImageLayer::createImage(
 
     //NetworkMonitor::ScopedRequestLayer layerRequest(getName());
 
-    auto result = createImageInKeyProfile( key, progress );
+    auto result = createImageInKeyProfile(key, io);
 
 #if 0
     // Post-cache operations:
@@ -475,16 +474,16 @@ Result<GeoImage>
 ImageLayer::createImage(
     const GeoImage& canvas,
     const TileKey& key,
-    IOControl* progress)
+    const IOOptions& io)
 {
     util::ScopedReadLock lock(layerMutex());
-    return createImageImplementation(canvas, key, progress);
+    return createImageImplementation(canvas, key, io);
 }
 
 Result<GeoImage>
 ImageLayer::createImageInKeyProfile(
     const TileKey& key,
-    IOControl* ioc) const
+    const IOOptions& io) const
 {
     // If the layer is disabled, bail out.
     if ( !isOpen() )
@@ -616,17 +615,17 @@ ImageLayer::createImageInKeyProfile(
         else
         {
             util::ScopedReadLock lock(layerMutex());
-            result = createImageImplementation(key, ioc);
+            result = createImageImplementation(key, io);
         }
     }
     else
     {
         // If the profiles are different, use a compositing method to assemble the tile.
-        result = assembleImage(key, ioc);
+        result = assembleImage(key, io);
     }
 
     // Check for cancelation before writing to a cache:
-    if (ioc && ioc->isCanceled())
+    if (io.isCanceled())
     {
         return Result(GeoImage::INVALID);
     }
@@ -677,7 +676,7 @@ ImageLayer::createImageInKeyProfile(
 Result<GeoImage>
 ImageLayer::assembleImage(
     const TileKey& key,
-    IOControl* ioc) const
+    const IOOptions& io) const
 {
     // If we got here, asset that there's a non-null layer profile.
     if (!getProfile())
@@ -725,7 +724,7 @@ ImageLayer::assembleImage(
 
         for(auto& k : intersectingKeys)
         {
-            auto image = createImageInKeyProfile(k, ioc);
+            auto image = createImageInKeyProfile(k, io);
 
             if (image.value.valid())
             {
@@ -752,7 +751,7 @@ ImageLayer::assembleImage(
                 // the tile source did not return a tile, so make a note of it.
                 failedKeys.push_back(k);
 
-                if (ioc && ioc->isCanceled())
+                if (io.isCanceled())
                 {
                     retry = true;
                     break;
@@ -783,7 +782,7 @@ ImageLayer::assembleImage(
             {
                 {
                     util::ScopedReadLock lock(layerMutex());
-                    geoimage = createImageImplementation(parentKey, ioc);
+                    geoimage = createImageImplementation(parentKey, io);
                 }
 
                 if (geoimage.value.valid())
@@ -854,7 +853,7 @@ ImageLayer::assembleImage(
             true);
     }
 
-    if (ioc && ioc->isCanceled())
+    if (io.isCanceled())
     {
         return Result<GeoImage>(Status::ResourceUnavailable, "Canceled");
     }
@@ -863,17 +862,17 @@ ImageLayer::assembleImage(
 }
 
 Status
-ImageLayer::writeImage(const TileKey& key, const Image* image, IOControl* progress)
+ImageLayer::writeImage(const TileKey& key, const Image* image, const IOOptions& io)
 {
     if (getStatus().failed())
         return getStatus();
 
     util::ScopedReadLock lock(layerMutex());
-    return writeImageImplementation(key, image, progress);
+    return writeImageImplementation(key, image, io);
 }
 
 Status
-ImageLayer::writeImageImplementation(const TileKey& key, const Image* image, IOControl* progress) const
+ImageLayer::writeImageImplementation(const TileKey& key, const Image* image, const IOOptions& io) const
 {
     return Status(Status::ServiceUnavailable);
 }

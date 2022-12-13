@@ -6,16 +6,16 @@
 #pragma once
 
 #include <rocky_vsg/Common.h>
-#include <rocky_vsg/RuntimeContext.h>
 #include <rocky_vsg/TerrainSettings.h>
-#include <rocky_vsg/TerrainTileNode.h>
+#include <rocky_vsg/TerrainTileHost.h>
 #include <rocky/Config.h>
-#include <rocky/Map.h>
 #include <vsg/nodes/Group.h>
 
 namespace rocky
 {
+    class IOOptions;
     class Map;
+    class RuntimeContext;
     class TerrainContext;
 
     /**
@@ -33,20 +33,17 @@ namespace rocky
             const Config& conf);
 
         //! Map to render
-        void setMap(shared_ptr<Map> new_map, IOControl* ioc = nullptr);
+        void setMap(shared_ptr<Map> new_map);
 
         //! Serialize
         virtual Config getConfig() const;
 
         //! Updates the terrain periodically at a safe time
-        void update(const vsg::FrameStamp*);
+        void update(const vsg::FrameStamp*, const IOOptions& io);
 
-    public: // vsg
+    protected:
 
-        //! Override the Recorder so we can inject information
-        void traverse(vsg::RecordTraversal&) const override;
-
-        //! Host callback for tiles to ping
+        //! TerrainTileHost interface
         void ping(
             TerrainTileNode*,
             TerrainTileNode*, 
@@ -58,9 +55,6 @@ namespace rocky
 
         //! Deserialize and initialize
         void construct(const Config&);
-
-        //! Rebuild the scene graph from the map
-        void reloadMap(IOControl* ioc);
         
         RuntimeContext& _runtime;
         vsg::ref_ptr<vsg::Group> _tilesRoot;

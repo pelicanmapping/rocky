@@ -138,14 +138,14 @@ namespace rocky
         //! @param progress Optional progress/cancelation callback
         Result<GeoImage> createImage(
             const TileKey& key,
-            IOControl* ioc) const;
+            const IOOptions& io) const;
 
         //! Stores an image in this layer (if writing is enabled).
         //! Returns a status value indicating whether the store succeeded.
         Status writeImage(
             const TileKey& key,
             const Image* image,
-            IOControl* ioc = nullptr);
+            const IOOptions& io);
 
         //! Returns the compression method prefered by this layer
         //! that you can pass to ImageUtils::compressImage.
@@ -157,7 +157,7 @@ namespace rocky
         //! The key will always be in the same profile as the layer.
         virtual Result<GeoImage> createImageImplementation(
             const TileKey& key,
-            IOControl* ioc) const
+            const IOOptions& io) const
         {
             return Result(GeoImage::INVALID);
         }
@@ -185,7 +185,7 @@ namespace rocky
         virtual Status writeImageImplementation(
             const TileKey& key,
             const Image* image,
-            IOControl* ioc) const;
+            const IOOptions& io) const;
 
         //! Modify the bbox if an altitude is set (for culling)
         virtual void modifyTileBoundingBox(
@@ -196,26 +196,26 @@ namespace rocky
         Result<GeoImage> createImage(
             const GeoImage& canvas,
             const TileKey& key,
-            IOControl* ioc);
+            const IOOptions& io);
 
         //! Override to write an image over top of an existing image
         virtual Result<GeoImage> createImageImplementation(
             const GeoImage& canvas,
             const TileKey& key,
-            IOControl* ioc) const { return Result(canvas); }
+            const IOOptions& io) const { return Result(canvas); }
 
         //! Override to do something to an image before returning
         //! it from createImage (including a GeoImage read from the cache)
         virtual void postCreateImageImplementation(
             GeoImage& createdImage,
             const TileKey& key,
-            IOControl* ioc) const { }
+            const IOOptions& io) const { }
 
     protected: // Layer
 
         //! Open the layer for reading.
         virtual Status openImplementation(
-            const IOOptions*) override;
+            const IOOptions& io) override;
 
 
         //! Configure the layer to create textures via createTexture instead of
@@ -247,14 +247,14 @@ namespace rocky
         // Creates an image that's in the same profile as the provided key.
         Result<GeoImage> createImageInKeyProfile(
             const TileKey& key,
-            IOControl* ioc) const;
+            const IOOptions& io) const;
 
         // Fetches multiple images from the TileSource; mosaics/reprojects/crops as necessary, and
         // returns a single tile. This is called by createImageFromTileSource() if the key profile
         // doesn't match the layer profile.
         Result<GeoImage> assembleImage(
             const TileKey& key,
-            IOControl* ioc) const;
+            const IOOptions& io) const;
 
 #if 0
         // Creates an image that enhances the previous LOD's image

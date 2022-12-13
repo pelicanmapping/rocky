@@ -6,9 +6,9 @@
 #include "TerrainNode.h"
 #include "TerrainTileNode.h"
 #include "TerrainContext.h"
+#include <rocky/IOTypes.h>
+#include <rocky/Map.h>
 #include <rocky/TileKey.h>
-#include <rocky/Threading.h>
-#include <rocky/ImageLayer.h>
 
 #include <vsg/all.h>
 
@@ -40,16 +40,16 @@ TerrainNode::getConfig() const
 }
 
 void
-TerrainNode::setMap(shared_ptr<Map> new_map, IOControl* ioc)
+TerrainNode::setMap(shared_ptr<Map> new_map)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(new_map, void());
 
     // create a new context for this map
     _context = std::make_shared<TerrainContext>(
         new_map,
-        _runtime,
-        *this, // settings
-        this); // host
+        _runtime, // runtime API
+        *this,    // settings
+        this);    // host
 
     // remove everything and start over
     this->children.clear();
@@ -70,11 +70,6 @@ TerrainNode::setMap(shared_ptr<Map> new_map, IOControl* ioc)
 
         // Add it to the scene graph
         _tilesRoot->addChild(tile);
-
-#if 0 // temp
-        // Post-add initialization:
-        tileNode->initializeData(*this);
-#endif 
     }
 
     // create the graphics pipeline to render this map
@@ -84,20 +79,9 @@ TerrainNode::setMap(shared_ptr<Map> new_map, IOControl* ioc)
 }
 
 void
-TerrainNode::traverse(vsg::RecordTraversal& nv) const
+TerrainNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
 {
-    // Pass the context along in the traversal
-    nv.setObject("TerrainContext",
-        static_cast<vsg::Object*>(
-            const_cast<TerrainNode*>(this)));
-
-    vsg::Group::traverse(nv);
-}
-
-void
-TerrainNode::update(const vsg::FrameStamp* fs)
-{
-    _context->tiles->update(fs, _context);
+    _context->tiles->update(fs, io, _context);
 }
 
 void

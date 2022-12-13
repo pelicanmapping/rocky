@@ -473,7 +473,7 @@ GDAL::Driver::open(
     const GDAL::Options& options,
     unsigned tileSize,
     DataExtentList* layerDataExtents,
-    const IOOptions* io)
+    const IOOptions& io)
 {
     bool info = (layerDataExtents != NULL);
 
@@ -1017,7 +1017,7 @@ GDAL::Driver::createImage(
     const TileKey& key,
     unsigned tileSize,
     bool isCoverage,
-    IOControl* progress)
+    const IOOptions& io)
 {
     if (_maxDataLevel.isSet() && key.getLevelOfDetail() > _maxDataLevel.get())
     {
@@ -1026,7 +1026,7 @@ GDAL::Driver::createImage(
         return NULL;
     }
 
-    if (progress && progress->isCanceled())
+    if (io.isCanceled())
     {
         return NULL;
     }
@@ -1505,7 +1505,7 @@ shared_ptr<Heightfield>
 GDAL::Driver::createHeightfield(
     const TileKey& key,
     unsigned tileSize,
-    IOControl* ioc)
+    const IOOptions& io)
 {
     if (_maxDataLevel.isSet() && key.getLevelOfDetail() > _maxDataLevel.get())
     {
@@ -1607,7 +1607,7 @@ shared_ptr<Heightfield>
 GDAL::Driver::createHeightfieldWithVRT(
     const TileKey& key,
     unsigned tileSize,
-    IOControl* ioc)
+    const IOOptions& io)
 {
     if (_maxDataLevel.isSet() && key.getLevelOfDetail() > _maxDataLevel.get())
     {
@@ -1841,7 +1841,7 @@ namespace
         GDAL::Driver::Ptr& driver,
         shared_ptr<Profile>* profile,
         DataExtentList* out_dataExtents,
-        const IOOptions* io)
+        const IOOptions& io)
     {
         driver = std::make_shared<GDAL::Driver>();
 
@@ -1932,7 +1932,7 @@ GDALImageLayer::getConfig() const
 }
 
 Status
-GDALImageLayer::openImplementation(const IOOptions* io)
+GDALImageLayer::openImplementation(const IOOptions& io)
 {
     Status parent = ImageLayer::openImplementation(io);
     if (parent.failed())
@@ -1985,7 +1985,7 @@ GDALImageLayer::closeImplementation()
 Result<GeoImage>
 GDALImageLayer::createImageImplementation(
     const TileKey& key,
-    IOControl* ioc) const
+    const IOOptions& io) const
 {
     if (getStatus().failed())
         return Result(GeoImage::INVALID);
@@ -2014,7 +2014,7 @@ GDALImageLayer::createImageImplementation(
                 test_driver,
                 nullptr,
                 nullptr,
-                ioc);
+                io);
         }
 
         // assign to a ref_ptr to continue
@@ -2030,7 +2030,7 @@ GDALImageLayer::createImageImplementation(
             key,
             _tileSize,
             _coverage == true,
-            ioc);
+            io);
 
         if (getSingleThreaded())
             _singleThreadingMutex.unlock();
@@ -2095,7 +2095,7 @@ GDALElevationLayer::getConfig() const
 }
 
 Status
-GDALElevationLayer::openImplementation(const IOOptions* io)
+GDALElevationLayer::openImplementation(const IOOptions& io)
 {
     Status parent = ElevationLayer::openImplementation(io);
     if (parent.failed())
@@ -2147,7 +2147,7 @@ GDALElevationLayer::closeImplementation()
 Result<GeoHeightfield>
 GDALElevationLayer::createHeightfieldImplementation(
     const TileKey& key,
-    IOControl* ioc) const
+    const IOOptions& io) const
 {
     if (getStatus().failed())
         return Result<GeoHeightfield>(getStatus());
@@ -2176,7 +2176,7 @@ GDALElevationLayer::createHeightfieldImplementation(
                 test_driver,
                 nullptr,
                 nullptr,
-                ioc);
+                io);
         }
 
         // assign to a ref_ptr to continue
@@ -2195,14 +2195,14 @@ GDALElevationLayer::createHeightfieldImplementation(
             heightfield = driver->createHeightfieldWithVRT(
                 key,
                 tileSize(),
-                ioc);
+                io);
         }
         else
         {
             heightfield = driver->createHeightfield(
                 key,
                 tileSize(),
-                ioc);
+                io);
         }
 
         if (getSingleThreaded())

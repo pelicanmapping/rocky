@@ -6,8 +6,6 @@
 #include <vsg/all.h>
 #include <chrono>
 
-using namespace rocky;
-
 int usage(const char* msg)
 {
     std::cout << msg << std::endl;
@@ -17,7 +15,7 @@ int usage(const char* msg)
 int main(int argc, char** argv)
 {
     // rocky instance
-    rocky::Instance instance;
+    auto instance = rocky::Instance::create();
 
     // set up defaults and read command line arguments to override them
     vsg::CommandLine arguments(&argc, argv);
@@ -48,7 +46,7 @@ int main(int argc, char** argv)
     auto vsg_scene = vsg::Group::create();
 
     // TODO: read this from an earth file
-    auto mapNode = MapNode::create(instance);
+    auto mapNode = rocky::MapNode::create(instance);
 
     // set up the runtime context with everything we need.
     mapNode->runtime.compiler = [viewer]() { return viewer->compileManager; };
@@ -56,7 +54,7 @@ int main(int argc, char** argv)
     mapNode->runtime.sharedObjects = vsg::SharedObjects::create();
     mapNode->runtime.loaders = vsg::OperationThreads::create(mapNode->getTerrainNode()->concurrency);
 
-    auto layer = GDALImageLayer::create();
+    auto layer = rocky::GDALImageLayer::create();
     layer->setURI("D:/data/imagery/world.tif");
     //layer->setURI("D:/data/naturalearth/raster-10m/HYP_HR/HYP_HR.tif");
     mapNode->getMap()->addLayer(layer);
@@ -106,7 +104,7 @@ int main(int argc, char** argv)
     // rendering main loop
     while (viewer->advanceToNextFrame())
     {
-        auto start = clock::now();
+        auto start = std::chrono::steady_clock::now();
 
         viewer->handleEvents();
         viewer->update();

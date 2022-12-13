@@ -41,16 +41,12 @@ TileNodeRegistry::setDirty(
     util::ScopedLock lock(_mutex);
     
     for(auto& [key, entry] : _tiles)
-    //for( TileTable::iterator i = _tiles.begin(); i != _tiles.end(); ++i )
     {
-        //const TileKey& key = i->first;
-
         if (minLevel <= key.getLOD() && 
             maxLevel >= key.getLOD() &&
             (!extent.valid() || extent.intersects(key.getExtent())))
         {
             entry._tile->refreshLayers(manifest);
-            //i->second._tile->refreshLayers(manifest);
         }
     }
 }
@@ -60,20 +56,11 @@ TileNodeRegistry::releaseAll()
 {
     util::ScopedLock lock(_mutex);
 
-    for (auto& tile : _tiles)
-    {
-        //tile.second._tile->releaseGLObjects(state);
-    }
-
     _tiles.clear();
-
     _tracker.reset();
-
     _needsUpdate.clear();
     _needsData.clear();
     _needsChildren.clear();
-
-    //OE_PROFILING_PLOT(PROFILING_REX_TILES, (float)(_tiles.size()));
 }
 
 void
@@ -122,6 +109,7 @@ TileNodeRegistry::ping(
 void
 TileNodeRegistry::update(
     const vsg::FrameStamp* fs,
+    const IOOptions& io,
     shared_ptr<TerrainContext> terrain)
 {
     util::ScopedLock lock(_mutex);
@@ -132,8 +120,7 @@ TileNodeRegistry::update(
         auto iter = _tiles.find(key);
         if (iter != _tiles.end())
         {
-            iter->second._tile->update(fs);
-            //iter->second._tile->_needsUpdate = false;
+            iter->second._tile->update(fs, io);
         }
     }
     _needsUpdate.clear();
@@ -159,7 +146,7 @@ TileNodeRegistry::update(
         auto iter = _tiles.find(key);
         if (iter != _tiles.end())
         {
-            requestTileData(iter->second._tile.get(), terrain);
+            requestTileData(iter->second._tile.get(), io, terrain);
         }
     }
     _needsData.clear();
@@ -184,61 +171,7 @@ TileNodeRegistry::update(
     };
 
     _tracker.flush(~0, dispose);
-
-    //ROCKY_INFO << "tiles = " << _tiles.size() << std::endl;
 }
-
-#if 0
-void
-TileNodeRegistry::collectDormantTiles(
-    const TerrainSettings& settings,
-    const vsg::FrameStamp* fs)
-    //std::chrono::steady_clock::time_point oldestAllowableTime,
-    //unsigned oldestAllowableFrame,
-    //float farthestAllowableRange,
-    //unsigned maxTiles)
-    //TerrainContext& terrain,
-    //std::vector<vsg::observer_ptr<TerrainTileNode>>& output)
-{
-    //util::ScopedLock lock(_mutex);
-
-    unsigned count = 0u;
-
-
-    auto oldestAllowableTime = std::chrono::steady_clock::now() - std::chrono::seconds(settings.minSecondsBeforeUnload);
-    auto oldestAllowableFrame = fs->frameCount - settings.minFramesBeforeUnload;
-
-    const auto disposeTile = [&](TerrainTileNode* tile) -> bool
-    {
-        ROCKY_SOFT_ASSERT_AND_RETURN(tile != nullptr, true);
-
-        const TileKey& key = tile->key;
-
-        if (tile->doNotExpire == false &&
-            (vsg::time_point)tile->lastTraversalTime < oldestAllowableTime &&
-            tile->lastTraversalFrame < (int)oldestAllowableFrame &&
-            tile->lastTraversalRange > settings.minRangeBeforeUnload) // &&
-            //tile->areSiblingsDormant(terrain))
-        {
-            //output.push_back(vsg::observer_ptr<TerrainTileNode>(tile));
-
-            _tiles.erase(key);
-
-            return true; // dispose it
-        }
-        else
-        {
-            tile->resetTraversalRange();
-
-            return false; // keep it
-        }
-    };
-    
-    _tracker.flush(settings.maxTilesToUnloadPerFrame, disposeTile);
-
-    //ROCKY_PROFILING_PLOT(PROFILING_REX_TILES, (float)(_tiles.size()));
-}
-#endif
 
 vsg::ref_ptr<TerrainTileNode>
 TileNodeRegistry::createTile(
@@ -262,13 +195,10 @@ TileNodeRegistry::createTile(
     // initialize all the per-tile uniforms the shaders will need:
     float range, morphStart, morphEnd;
     terrain->selectionInfo->get(key, range, morphStart, morphEnd);
-
     float one_over_end_minus_start = 1.0f / (morphEnd - morphStart);
     fvec2 morphConstants = fvec2(morphEnd * one_over_end_minus_start, one_over_end_minus_start);
 
-    unsigned numLODs = terrain->selectionInfo->getNumLODs();
-
-    // Make a tilekey to use for testing whether to subdivide.
+    // Calculate the visibility range for this tile's children.
     float childrenVisibilityRange = FLT_MAX;
     if (key.getLOD() < (terrain->selectionInfo->getNumLODs() - 1))
     {
@@ -287,18 +217,11 @@ TileNodeRegistry::createTile(
         terrain->stateFactory->defaultTileDescriptors,
         terrain->tiles->_host);
 
-
-    //tile->setDoNotExpire(key.getLOD() == terrain.firstLOD);
-
-    // set parent?
-    // tile->setParent(parent) ... ?
-
     // Generate its state group:
     terrain->stateFactory->updateTerrainTileDescriptors(
         tile->renderModel,
         tile->stategroup,
         terrain->runtime);
-    //terrain->stateFactory->refreshStateGroup(tile);
 
     return tile;
 }
@@ -372,6 +295,7 @@ TileNodeRegistry::createTileChildren(
 void
 TileNodeRegistry::requestTileData(
     TerrainTileNode* tile,
+    const IOOptions& in_io,
     shared_ptr<TerrainContext> terrain) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(tile, void());
@@ -384,22 +308,29 @@ TileNodeRegistry::requestTileData(
 
     auto key = tile->key;
     CreateTileManifest manifest;
+    const IOOptions io = in_io;
 
-    const auto load_async = [key, manifest, terrain](Cancelable* p) -> Result<TerrainTileModel>
+    const auto load_async = [key, manifest, terrain, io](Cancelable& p) -> Result<TerrainTileModel>
     {
+        if (p.isCanceled())
+            return Result<TerrainTileModel>();
+
         TerrainTileModelFactory factory;
 
         auto model = factory.createTileModel(
             terrain->map.get(),
             key,
             manifest,
-            nullptr);
+            io);
 
         return Result(model);
     };
 
-    const auto merge_sync = [key, manifest, terrain](const TerrainTileModel& model, Cancelable* p)
+    const auto merge_sync = [key, manifest, terrain](const TerrainTileModel& model, Cancelable& p)
     {
+        if (p.isCanceled())
+            return;
+
         auto tile = terrain->tiles->getTile(key);
         if (tile)
         {

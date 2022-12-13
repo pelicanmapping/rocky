@@ -277,7 +277,7 @@ void
 ElevationLayer::assembleHeightfield(
     const TileKey& key,
     shared_ptr<Heightfield> out_hf,
-    IOControl* ioc) const
+    const IOOptions& io) const
 {
     // Collect the heightfields for each of the intersecting tiles.
     std::vector<GeoHeightfield> geohf_list;
@@ -335,7 +335,7 @@ ElevationLayer::assembleHeightfield(
             {
                 util::ScopedReadLock lock(layerMutex());
 
-                auto result = createHeightfieldImplementation(layerKey, ioc);
+                auto result = createHeightfieldImplementation(layerKey, io);
 
                 if (result.status.ok() && result.value.valid())
                 {
@@ -417,7 +417,7 @@ ElevationLayer::assembleHeightfield(
 
 
     // If the progress was cancelled clear out any of the output data.
-    if (ioc && ioc->isCanceled())
+    if (io.isCanceled())
     {
         out_hf = nullptr;
     }
@@ -426,13 +426,13 @@ ElevationLayer::assembleHeightfield(
 Result<GeoHeightfield>
 ElevationLayer::createHeightfield(const TileKey& key)
 {
-    return createHeightfield(key, nullptr);
+    return createHeightfield(key, IOOptions());
 }
 
 Result<GeoHeightfield>
 ElevationLayer::createHeightfield(
     const TileKey& key,
-    IOControl* ioc)
+    const IOOptions& io)
 {    
     ROCKY_PROFILING_ZONE;
     ROCKY_PROFILING_ZONE_TEXT(getName());
@@ -446,13 +446,13 @@ ElevationLayer::createHeightfield(
 
     //NetworkMonitor::ScopedRequestLayer layerRequest(getName());
 
-    return createHeightfieldInKeyProfile(key, ioc);
+    return createHeightfieldInKeyProfile(key, io);
 }
 
 Result<GeoHeightfield>
 ElevationLayer::createHeightfieldInKeyProfile(
     const TileKey& key,
-    IOControl* ioc)
+    const IOOptions& io)
 {
     GeoHeightfield result;
     shared_ptr<Heightfield> hf;
@@ -562,7 +562,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
             if (key.getProfile()->isHorizEquivalentTo(profile))
             {
                 util::ScopedReadLock lock(layerMutex());
-                auto r = createHeightfieldImplementation(key, ioc);
+                auto r = createHeightfieldImplementation(key, io);
                 if (r.status.failed())
                     return r;
                 else
@@ -572,12 +572,12 @@ ElevationLayer::createHeightfieldInKeyProfile(
             {
                 // If the profiles are different, use a compositing method to assemble the tile.
                 shared_ptr<Heightfield> hf;
-                assembleHeightfield(key, hf, ioc);
+                assembleHeightfield(key, hf, io);
                 result = GeoHeightfield(hf, key.getExtent());
             }
 
             // Check for cancelation before writing to a cache
-            if (ioc && ioc->isCanceled())
+            if (io.isCanceled())
             {
                 return Result(GeoHeightfield::INVALID);
             }
@@ -650,7 +650,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
     }
 
     // Check for cancelation before writing to a cache:
-    if (ioc && ioc->isCanceled())
+    if (io.isCanceled())
     {
         return Result(GeoHeightfield::INVALID);
     }
@@ -671,12 +671,12 @@ Status
 ElevationLayer::writeHeightfield(
     const TileKey& key,
     const Heightfield* hf,
-    IOControl* ioc) const
+    const IOOptions& io) const
 {
     if (isWritingSupported() && isWritingRequested())
     {
         util::ScopedReadLock lock(layerMutex());
-        return writeHeightfieldImplementation(key, hf, ioc);
+        return writeHeightfieldImplementation(key, hf, io);
     }
     return Status::ServiceUnavailable;
 }
@@ -685,7 +685,7 @@ Status
 ElevationLayer::writeHeightfieldImplementation(
     const TileKey& key,
     const Heightfield* hf,
-    IOControl* ioc) const
+    const IOOptions& io) const
 {
     return Status::ServiceUnavailable;
 }
@@ -802,7 +802,7 @@ ElevationLayerVector::populateHeightfield(
     const TileKey& key,
     shared_ptr<Profile> haeProfile,
     Heightfield::Interpolation interpolation,
-    IOControl* ioc) const
+    const IOOptions& io) const
 {
     // heightfield must already exist.
     if ( !hf )
@@ -947,7 +947,7 @@ ElevationLayerVector::populateHeightfield(
     {
         ElevationLayer* layer = contenders[0].layer.get();
 
-        auto layerHF = layer->createHeightfield(contenders[0].key, ioc);
+        auto layerHF = layer->createHeightfield(contenders[0].key, io);
         if (layerHF.value.valid())
         {
             if (layerHF.value.getHeightfield()->width() == hf->width() &&
@@ -1003,7 +1003,7 @@ ElevationLayerVector::populateHeightfield(
             double x = xmin + (dx * (double)c);
 
             // periodically check for cancelation
-            if (ioc && ioc->isCanceled())
+            if (io.isCanceled())
             {
                 return false;
             }
@@ -1037,7 +1037,7 @@ ElevationLayerVector::populateHeightfield(
                         // We also fallback on parent layers to make sure that we have data at the location even if it's fallback.
                         while (!layerHF.valid() && actualKey.valid() && layer->isKeyInLegalRange(actualKey))
                         {
-                            layerHF = layer->createHeightfield(actualKey, ioc).value;
+                            layerHF = layer->createHeightfield(actualKey, io).value;
                             if (!layerHF.valid())
                             {
                                 actualKey.makeParent();
@@ -1107,7 +1107,7 @@ ElevationLayerVector::populateHeightfield(
 
                 for (int i = offsets.size() - 1; i >= 0; --i)
                 {
-                    if (ioc && ioc->isCanceled())
+                    if (io.isCanceled())
                         return false;
 
                     // Only apply an offset layer if it sits on top of the resolved layer
@@ -1125,7 +1125,7 @@ ElevationLayerVector::populateHeightfield(
                     {
                         ElevationLayer* offset = offsets[i].layer.get();
 
-                        layerHF = offset->createHeightfield(contenderKey, ioc).value;
+                        layerHF = offset->createHeightfield(contenderKey, io).value;
                         if (!layerHF.valid())
                         {
                             offsetFailed[i] = true;
@@ -1162,7 +1162,7 @@ ElevationLayerVector::populateHeightfield(
     // Resolve any invalid heights in the output heightfield.
     resolveInvalidHeights(hf.get(), key.getExtent(), NO_DATA_VALUE, nullptr);
 
-    if (ioc && ioc->isCanceled())
+    if (io.isCanceled())
     {
         return false;
     }

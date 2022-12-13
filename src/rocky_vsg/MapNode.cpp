@@ -210,23 +210,20 @@ MapNode::Options::fromConfig(const Config& conf)
 
 //....................................................................
 
-MapNode::MapNode(Instance& i) :
-    _instance(i),
-    _map(Map::create(i))
+MapNode::MapNode(Instance::ptr instance) :
+    _map(Map::create(instance))
 {
     construct(Config());
 }
 
-MapNode::MapNode(shared_ptr<Map> map, Instance& i) :
-    _instance(i),
-    _map(map ? map : Map::create(i))
+MapNode::MapNode(shared_ptr<Map> map) :
+    _map(map ? map : Map::create())
 {
     construct(Config());
 }
 
-MapNode::MapNode(const Config& conf, Instance& i) :
-    _map(Map::create(i)),
-    _instance(i)
+MapNode::MapNode(const Config& conf, Instance::ptr instance) :
+    _map(Map::create(instance))
 {
     construct(conf);
 }
@@ -299,7 +296,7 @@ MapNode::construct(const Config& conf)
     _readyForUpdate = true;
 
     // Fire it up
-    _terrain->setMap(_map, nullptr);
+    _terrain->setMap(_map);
 }
 
 Config
@@ -1071,5 +1068,5 @@ MapNode::getGeoPointUnderMouse(
 void
 MapNode::update(const vsg::FrameStamp* f)
 {
-    _terrain->update(f);
+    _terrain->update(f, _map->instance()->ioOptions);
 }

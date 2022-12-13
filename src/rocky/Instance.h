@@ -10,16 +10,20 @@
 
 namespace rocky
 {
-    class ROCKY_EXPORT Instance
+    class ROCKY_EXPORT Instance : public Inherit<Object, Instance>
     {
     public:
-        // construct a new application instance
+        //! Use Instance::create to construct
         Instance();
 
         // destructor
         ~Instance();
 
-        optional_prop(CachePolicy, cachePolicy);
+        // default IO options
+        IOOptions ioOptions;
+
+        // global caching policy
+        CachePolicy cachePolicy;
 
         using ContentFactory = std::function<
             shared_ptr<Object>(
@@ -42,7 +46,7 @@ namespace rocky
             const std::string& name,
             ConfigFactory factory);
 
-        shared_ptr<Object> create(const Config& conf) const;
+        shared_ptr<Object> read(const Config& conf) const;
 
     private:
         std::unordered_map<std::string, ConfigFactory> _configFactories;

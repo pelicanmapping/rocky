@@ -249,7 +249,7 @@ namespace rocky
 
     protected: // Layer
 
-        virtual Status openImplementation(const IOOptions*) override;
+        virtual Status openImplementation(const IOOptions&) override;
 
         virtual Status closeImplementation() override;
 

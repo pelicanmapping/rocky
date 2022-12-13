@@ -71,7 +71,7 @@ Instance::addFactory(const std::string& contentType, ContentFactory f)
 }
 
 shared_ptr<Object>
-Instance::create(const Config& conf) const
+Instance::read(const Config& conf) const
 {
     auto i = _configFactories.find(conf.key());
     if (i == _configFactories.end())
