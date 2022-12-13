@@ -34,7 +34,6 @@ namespace rocky
 
         //! Map to render
         void setMap(shared_ptr<Map> new_map, IOControl* ioc = nullptr);
-        shared_ptr<Map> getMap() const;
 
         //! Serialize
         virtual Config getConfig() const;

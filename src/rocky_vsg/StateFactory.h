@@ -6,18 +6,19 @@
 #pragma once
 
 #include <rocky_vsg/Common.h>
+#include <rocky_vsg/TerrainTileNode.h>
 
 #include <vsg/io/Options.h>
 #include <vsg/utils/GraphicsPipelineConfig.h>
 #include <vsg/utils/ShaderSet.h>
 #include <vsg/utils/SharedObjects.h>
 #include <vsg/nodes/StateGroup.h>
-#include <rocky_vsg/TileRenderModel.h>
 
 namespace rocky
 {
     class RuntimeContext;
     class TerrainTileNode;
+    class TerrainTileRenderModel;
 
     /**
      * StateFactory creates all the Vulkan state necessary to
@@ -38,8 +39,8 @@ namespace rocky
         virtual vsg::ref_ptr<vsg::StateGroup> createTerrainStateGroup() const;
 
         //! Creates a state group for rendering a specific terrain tile
-        virtual void updateTileDescriptorModel(
-            const TileRenderModel& renderModel,
+        virtual void updateTerrainTileDescriptors(
+            const TerrainTileRenderModel& renderModel,
             vsg::ref_ptr<vsg::StateGroup> stategroup,
             RuntimeContext& runtime) const;
 
@@ -60,7 +61,7 @@ namespace rocky
         //! This holds the "default" (i.e. empty) textures and uniforms
         //! that will populate a descriptor set when no other textures are available.
         //! Terrain tiles copy and use this until new data becomes available.
-        TileDescriptorModel defaultTileDescriptors;
+        TerrainTileDescriptors defaultTileDescriptors;
 
         //MANUAL ALTERNATIVE to pipelineConfig approach
         //Just for testing for now ... the pipelineConfig approach will

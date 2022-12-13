@@ -14,7 +14,7 @@ layout(location = 4) in vec3 inNeighborNormal;
 
 layout(set = 0, binding = 10) uniform sampler2D elevation_tex;
 
-layout(set = 0, binding = 13) uniform TileData_ {
+layout(set = 0, binding = 13) uniform TileData {
     mat4 elevation_matrix;
     mat4 color_matrix;
     mat4 normal_matrix;

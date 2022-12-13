@@ -294,7 +294,7 @@ TileNodeRegistry::createTile(
     // tile->setParent(parent) ... ?
 
     // Generate its state group:
-    terrain->stateFactory->updateTileDescriptorModel(
+    terrain->stateFactory->updateTerrainTileDescriptors(
         tile->renderModel,
         tile->stategroup,
         terrain->runtime);
@@ -431,7 +431,7 @@ TileNodeRegistry::requestTileData(
                 renderModel.normal.matrix = model.normalMap.matrix;
             }
 
-            terrain->stateFactory->updateTileDescriptorModel(
+            terrain->stateFactory->updateTerrainTileDescriptors(
                 renderModel,
                 tile->stategroup,
                 terrain->runtime);

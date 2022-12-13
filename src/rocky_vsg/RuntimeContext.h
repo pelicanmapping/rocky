@@ -53,10 +53,16 @@ namespace rocky
             vsg::Group* parent,
             NodeProvider provider);
 
+        //! Safely removes a node from the scene graph (async)
         void removeNode(
             vsg::Group* parent,
             unsigned index);
 
+        //! Runs two function, first an asychronous function that returns
+        //! a piece of data; then a synchronous function (during the
+        //! viewer's 'update' phase). For example, you can load data
+        //! asynchronously and then merge it into the scene graph
+        //! synchronously.
         template<class T>
         util::Future<bool> runAsyncUpdateSync(
             std::function<Result<T>(Cancelable*)> async,

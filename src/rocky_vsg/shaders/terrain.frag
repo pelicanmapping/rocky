@@ -13,7 +13,7 @@ layout(location = 4) in vec3 oe_normalMapBinormal;
 layout(set = 0, binding = 11) uniform sampler2D color_tex;
 layout(set = 0, binding = 12) uniform sampler2D normal_tex;
 
-layout(set = 0, binding = 13) uniform TileData_ {
+layout(set = 0, binding = 13) uniform TileData {
     mat4 elevation_matrix;
     mat4 color_matrix;
     mat4 normal_matrix;
@@ -27,8 +27,8 @@ layout(location = 0) out vec4 out_color;
 void main()
 {
     vec4 texel = texture(color_tex, frag_uv);
-    out_color = texel;
+    out_color = clamp(texel, 0, 1);
 
     if (gl_FrontFacing == false)
-        out_color *= 0.5;
+        out_color.r = 1.0;
 }

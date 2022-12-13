@@ -7,13 +7,11 @@
 
 #include <rocky_vsg/Common.h>
 #include <rocky_vsg/GeometryPool.h>
-#include <rocky_vsg/Merger.h>
 #include <rocky_vsg/RuntimeContext.h>
 #include <rocky_vsg/SelectionInfo.h>
 #include <rocky_vsg/StateFactory.h>
 #include <rocky_vsg/TerrainSettings.h>
 #include <rocky_vsg/TileNodeRegistry.h>
-#include <rocky_vsg/TileRenderModel.h>
 
 namespace rocky
 {
@@ -44,9 +42,6 @@ namespace rocky
         //! creator of terrain tile triangles and attributes
         shared_ptr<GeometryPool> geometryPool;
 
-        //! merges new tiles into the live scene graph
-        Merger merger;
-
         //! tracks all existing tiles
         shared_ptr<TileNodeRegistry> tiles;
 
@@ -58,10 +53,5 @@ namespace rocky
 
         //! name of job arena used to load data
         std::string loadArenaName = "terrain.load";
-
-        void loadAndMergeData(
-            TerrainTileNode* tile,
-            std::function<TerrainTileModel(Cancelable*)> loader);
     };
-
 }

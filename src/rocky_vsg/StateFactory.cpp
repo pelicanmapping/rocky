@@ -6,7 +6,6 @@
 #include "StateFactory.h"
 #include "RuntimeContext.h"
 #include "TerrainTileNode.h"
-#include "TileRenderModel.h"
 
 #include <rocky/Color.h>
 #include <rocky/Heightfield.h>
@@ -26,7 +25,7 @@
 #define NORMAL_TEX_NAME "normal_tex"
 #define NORMAL_TEX_BINDING 12
 
-#define TILE_BUFFER_NAME "tile"
+#define TILE_BUFFER_NAME "terrain_tile"
 #define TILE_BUFFER_BINDING 13
 
 using namespace rocky;
@@ -163,8 +162,7 @@ StateFactory::createShaderSet() const
         shaderSet,
         "Could not create terrain shaders");
 
-    // TODO
-#if 1
+#if 0
     const uint32_t reverseDepth = 0;
     const uint32_t numLayers = 0;
     vsg::ShaderStage::SpecializationConstants specializationConstants
@@ -194,20 +192,10 @@ StateFactory::createShaderSet() const
     shaderSet->addUniformBinding(textures.normal.name, "", 0, textures.normal.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {}); // , vsg::vec3Array2D::create(1, 1));
 
     shaderSet->addUniformBinding(TILE_BUFFER_NAME, "", 0, TILE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {}); // , vsg::vec3Array2D::create(1, 1));
-    //shaderSet->addUniformBinding(_colorParent.name, "", 0, _colorParent.location, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, vsg::vec4Array2D::create(1, 1));
 
-    //shaderSet->addUniformBinding("displacementMap", "VSG_DISPLACEMENT_MAP", 0, 6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT, vsg::vec4Array2D::create(1, 1));
-    //shaderSet->addUniformBinding("diffuseMap", "VSG_DIFFUSE_MAP", 0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, vsg::vec4Array2D::create(1, 1));
-    //shaderSet->addUniformBinding("material", "", 0, 10, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, vsg::PhongMaterialValue::create());
-
-    // Consider the sizing here (128?)
+    // Note: 128 is the maximum size required by the Vulkan spec, 
+    // so don't increase it :)
     shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
-
-    //shaderSet->optionalDefines = { "VSG_POINT_SPRITE", "VSG_GREYSACLE_DIFFUSE_MAP" };
-
-    //shaderSet->definesArrayStates.push_back(vsg::DefinesArrayState{ {"VSG_INSTANCE_POSITIONS", "VSG_DISPLACEMENT_MAP"}, vsg::PositionAndDisplacementMapArrayState::create() });
-    //shaderSet->definesArrayStates.push_back(vsg::DefinesArrayState{ {"VSG_INSTANCE_POSITIONS"}, vsg::PositionArrayState::create() });
-    //shaderSet->definesArrayStates.push_back(vsg::DefinesArrayState{ {"VSG_DISPLACEMENT_MAP"}, vsg::DisplacementMapArrayState::create() });
 
     return shaderSet;
 }
@@ -232,7 +220,9 @@ StateFactory::createPipelineConfig(vsg::SharedObjects* sharedObjects) const
 
     // wireframe rendering:
     //pipelineConfig->rasterizationState->polygonMode = VK_POLYGON_MODE_LINE;
-    pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
+
+    // backface culling off:
+    //pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
 
     // Temporary decriptors that we will use to set up the PipelineConfig.
     // Note, we only use these for setup, and then throw them away!
@@ -243,21 +233,6 @@ StateFactory::createPipelineConfig(vsg::SharedObjects* sharedObjects) const
     pipelineConfig->assignTexture(descriptors, textures.normal.name, textures.normal.defaultData, textures.normal.sampler);
 
     pipelineConfig->assignUniform(descriptors, TILE_BUFFER_NAME, { });
-
-#if 0 // TODO - one per layer...?
-    if (stateInfo.image)
-    {
-        auto sampler = Sampler::create();
-        sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-
-        if (sharedObjects) sharedObjects->share(sampler);
-
-        graphicsPipelineConfig->assignTexture(descriptors, "diffuseMap", stateInfo.image, sampler);
-
-        if (stateInfo.greyscale) defines.insert("VSG_GREYSACLE_DIFFUSE_MAP");
-    }
-#endif
 
     // Register the ViewDescriptorSetLayout (for view-dependent state stuff)
     // This is a weird way to add another descriptor set layout...
@@ -380,8 +355,8 @@ StateFactory::createTerrainStateGroup() const
 }
 
 void
-StateFactory::updateTileDescriptorModel(
-    const TileRenderModel& renderModel,
+StateFactory::updateTerrainTileDescriptors(
+    const TerrainTileRenderModel& renderModel,
     vsg::ref_ptr<vsg::StateGroup> stategroup,
     RuntimeContext& runtime) const
 {
@@ -389,7 +364,7 @@ StateFactory::updateTileDescriptorModel(
     // and creates the necessary VK data to render that model.
 
     // copy the existing one:
-    TileDescriptorModel dm = renderModel.descriptorModel;
+    TerrainTileDescriptors dm = renderModel.descriptorModel;
 
     if (renderModel.color.image)
     {
@@ -427,7 +402,7 @@ StateFactory::updateTileDescriptorModel(
         }
     }
 
-    TileDescriptorModel::Uniforms uniforms;
+    TerrainTileDescriptors::Uniforms uniforms;
     uniforms.elevation_matrix = renderModel.elevation.matrix;
     uniforms.color_matrix = renderModel.color.matrix;
     uniforms.normal_matrix = renderModel.normal.matrix;
@@ -474,46 +449,3 @@ StateFactory::updateTileDescriptorModel(
         stategroup->add(dm.bindDescriptorSetCommand);
     }
 }
-
-#if 0
-void
-StateFactory::refreshStateGroup(TerrainTileNode* tile) const
-{
-    auto& renderModel = tile->renderModel;
-
-    // make a new descriptor model for this tile
-    renderModel.descriptorModel = createTileDescriptorModel(renderModel);
-
-    tile->stategroup->stateCommands.clear();
-    tile->stategroup->add(renderModel.descriptorModel.bindDescriptorSetCommand);
-
-    //TODO: add the view-dependency descriptor sets??? huh
-
-#if 0
-    // assign any custom ArrayState that may be required.
-    stateGroup()->prototypeArrayState = terrain.stateFactory.shaderSet->getSuitableArrayState(
-        terrain.stateFactory.pipelineConfig->shaderHints->defines);
-
-    auto bindViewDescriptorSets = vsg::BindViewDescriptorSets::create(
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        terrain.stateFactory.pipelineConfig->layout,
-        1);
-
-    stateGroup()->add(bindViewDescriptorSets);
-#endif
-}
-
-TileDescriptorModel
-StateFactory::updateDescriptorModel(
-    const TileDescriptorModel& input,
-    vsg::StateGroup* stategroup) const
-{
-    auto model = terrain->stateFactory->createTileDescriptorModel(
-    renderModel);
-
-terrain->runtime.compiler()->compile(
-    renderModel.descriptorModel.bindDescriptorSetCommand);
-
-tile->stategroup->stateCommands.clear();
-tile->stategroup->add(renderModel.descriptorModel.bindDescriptorSetCommand);
-#endif

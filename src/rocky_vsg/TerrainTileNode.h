@@ -7,13 +7,16 @@
 
 #include <rocky_vsg/Common.h>
 #include <rocky_vsg/SurfaceNode.h>
-#include <rocky_vsg/TileRenderModel.h>
 #include <rocky/TileKey.h>
+#include <rocky/Image.h>
 
 #include <vsg/nodes/CullGroup.h>
 #include <vsg/nodes/StateGroup.h>
 #include <vsg/app/RecordTraversal.h>
 #include <vsg/ui/UIEvent.h> // time_point
+
+#include <vsg/state/Sampler.h>
+#include <vsg/state/ImageInfo.h>
 
 namespace rocky
 {
@@ -23,6 +26,62 @@ namespace rocky
     class TerrainTileNode;
     class TerrainContext;
     class TerrainSettings;
+
+    struct TextureData
+    {
+        shared_ptr<Image> image;
+        dmat4 matrix{ 1 };
+        vsg::ref_ptr<vsg::ImageInfo> texture;
+    };
+
+    enum TextureType
+    {
+        COLOR,
+        COLOR_PARENT,
+        ELEVATION,
+        NORMAL,
+        NUM_TEXTURE_TYPES
+    };
+
+    struct TerrainTileDescriptors
+    {
+        struct Uniforms
+        {
+            fmat4 elevation_matrix;
+            fmat4 color_matrix;
+            fmat4 normal_matrix;
+            fvec2 elev_texel_coeff;
+        };
+        vsg::ref_ptr<vsg::DescriptorImage> color;
+        vsg::ref_ptr<vsg::DescriptorImage> colorParent;
+        vsg::ref_ptr<vsg::DescriptorImage> elevation;
+        vsg::ref_ptr<vsg::DescriptorImage> normal;
+        vsg::ref_ptr<vsg::DescriptorBuffer> uniforms;
+        vsg::ref_ptr<vsg::BindDescriptorSet> bindDescriptorSetCommand;
+    };
+
+    class TerrainTileRenderModel
+    {
+    public:
+        TextureData color;
+        TextureData elevation;
+        TextureData normal;
+        TextureData colorParent;
+
+        TerrainTileDescriptors descriptorModel;
+
+        void applyScaleBias(const dmat4& sb)
+        {
+            if (color.image)
+                color.matrix *= sb;
+            if (elevation.image)
+                elevation.matrix *= sb;
+            if (normal.image)
+                normal.matrix *= sb;
+            if (colorParent.image)
+                colorParent.matrix *= sb;
+        }
+    };
 
     /**
      * Interface for a tile to notify the engine that
@@ -54,7 +113,7 @@ namespace rocky
         fvec2 morphConstants;
         float childrenVisibilityRange;
         unsigned numLODs;
-        TileRenderModel renderModel;
+        TerrainTileRenderModel renderModel;
         
         vsg::observer_ptr<TerrainTileNode> parent;
         vsg::ref_ptr<SurfaceNode> surface;
@@ -73,7 +132,7 @@ namespace rocky
             vsg::ref_ptr<vsg::Node> geometry,
             const fvec2& morphConstants,
             float childrenVisibilityRange,
-            const TileDescriptorModel& initialDescriptorModel,
+            const TerrainTileDescriptors& initialDescriptorModel,
             TerrainTileHost* in_host);
 
         virtual ~TerrainTileNode();
@@ -119,9 +178,6 @@ namespace rocky
         void merge(
             const TerrainTileModel& model,
             const CreateTileManifest& manifest);
-
-        //! TODO?
-        void loadSync(shared_ptr<TerrainContext> terrain);
 
         //! Apply any thread-safe updates to the tile
         void update(const vsg::FrameStamp* fs);
