@@ -1977,7 +1977,7 @@ GDALImageLayer::createImageImplementation(
     const TileKey& key,
     const IOOptions& io) const
 {
-    if (getStatus().failed())
+    if (status().failed())
         return Result(GeoImage::INVALID);
 
     if (isClosing() || !isOpen())
@@ -2110,8 +2110,8 @@ GDALElevationLayer::createHeightfieldImplementation(
     const TileKey& key,
     const IOOptions& io) const
 {
-    if (getStatus().failed())
-        return Result<GeoHeightfield>(getStatus());
+    if (status().failed())
+        return Result<GeoHeightfield>(status());
 
     // check while locked to ensure we may continue
     if (isClosing() || !isOpen())

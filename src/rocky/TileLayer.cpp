@@ -317,7 +317,7 @@ TileLayer::openImplementation(const IOOptions& io)
         _memCache->clear();
 #endif
 
-    return getStatus();
+    return status();
 }
 
 Status
@@ -395,7 +395,7 @@ TileLayer::openForWriting()
     {
         _writingRequested = true;
         open();
-        return getStatus();
+        return status();
     }
     return setStatus(Status::ServiceUnavailable, "Layer does not support writing");
 }

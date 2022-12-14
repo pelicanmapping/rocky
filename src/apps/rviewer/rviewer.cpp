@@ -75,9 +75,13 @@ int main(int argc, char** argv)
 
 #if 1
     auto layer = rocky::GDALImageLayer::create();
-    layer->setURI("D:/data/imagery/world.tif");
+    layer->setURI("D:/data/imagery/worlwd.tif");
     //layer->setURI("D:/data/naturalearth/raster-10m/HYP_HR/HYP_HR.tif");
     mapNode->getMap()->addLayer(layer);
+
+    if (layer->status().failed())
+        ROCKY_WARN << layer->status().message << std::endl;
+
 #else
     auto layer = rocky::TestLayer::create();
     mapNode->getMap()->addLayer(layer);

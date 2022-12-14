@@ -733,7 +733,7 @@ Map::getLayerByUID(UID uid) const
 {
     util::ScopedReadLock lock( _mapDataMutex );
     for (auto layer : _layers)
-        if (layer->getUID() == uid)
+        if (layer->uid() == uid)
             return layer;
     return nullptr;
 }

@@ -26,7 +26,7 @@ CreateTileManifest::insert(shared_ptr<Layer> layer)
 {
     if (layer)
     {
-        _layers[layer->getUID()] = layer->getRevision();
+        _layers[layer->uid()] = layer->getRevision();
 
         if (std::dynamic_pointer_cast<ElevationLayer>(layer))
         {
@@ -43,7 +43,7 @@ CreateTileManifest::insert(shared_ptr<Layer> layer)
 bool
 CreateTileManifest::excludes(const Layer* layer) const
 {
-    return !empty() && _layers.find(layer->getUID()) == _layers.end();
+    return !empty() && _layers.find(layer->uid()) == _layers.end();
 }
 
 bool
@@ -84,7 +84,7 @@ CreateTileManifest::updateRevisions(const Map* map)
 bool
 CreateTileManifest::includes(const Layer* layer) const
 {
-    return includes(layer->getUID());
+    return includes(layer->uid());
 }
 
 bool

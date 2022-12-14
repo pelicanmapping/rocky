@@ -220,89 +220,11 @@ Layer::getReadOptions() const
 #endif
 
 void
-Layer::setCacheID(const std::string& value)
+Layer::removeCallback(UID uid)
 {
-    _runtimeCacheId = "";
-    setOptionThatRequiresReopen(_cacheid, value); // options().cacheId(), value);
+    onLayerOpened.functions.erase(uid);
+    onLayerClosed.functions.erase(uid);
 }
-
-std::string
-Layer::getCacheID() const
-{
-    // create the unique cache ID for the cache bin.
-    if (_runtimeCacheId.empty() == false)
-    {
-        return _runtimeCacheId;
-    }
-    else if (_cacheid.has_value() && !_cacheid->empty())
-    {
-        // user expliticy set a cacheId in the terrain layer options.
-        // this appears to be a NOP; review for removal -gw
-        return _cacheid.get();
-    }
-    else
-    {
-        // system will generate a cacheId from the layer configuration.
-        Config hashConf = getConfig(); // options().getConfig();
-
-        // remove non-data properties.
-        // TODO: move these a virtual function called
-        // getNonDataProperties() or something.
-        hashConf.remove("accept_draping");
-        hashConf.remove("altitude");
-        hashConf.remove("async");
-        hashConf.remove("attenuation_range");
-        hashConf.remove("attribution");
-        hashConf.remove("blend");
-        hashConf.remove("cacheid");
-        hashConf.remove("cache_id");
-        hashConf.remove("cache_enabled");
-        hashConf.remove("cache_only");
-        hashConf.remove("cache_policy");
-        hashConf.remove("caching");
-        hashConf.remove("color_filters");
-        hashConf.remove("enabled");
-        hashConf.remove("fid_attribute");
-        hashConf.remove("geo_interpolation");
-        hashConf.remove("l2_cache_size");
-        hashConf.remove("max_data_level");
-        hashConf.remove("max_filter");
-        hashConf.remove("max_level");
-        hashConf.remove("max_range");
-        hashConf.remove("min_filter");
-        hashConf.remove("min_level");
-        hashConf.remove("min_range");
-        hashConf.remove("name");
-        hashConf.remove("open_write");
-        hashConf.remove("proxy");
-        hashConf.remove("rewind_polygons");
-        hashConf.remove("shader");
-        hashConf.remove("shaders");
-        hashConf.remove("shader_define");
-        hashConf.remove("shared");
-        hashConf.remove("shared_sampler");
-        hashConf.remove("shared_matrix");
-        hashConf.remove("terrain");
-        hashConf.remove("texture_compression");
-        hashConf.remove("visible");
-
-        unsigned hash = util::hashString(hashConf.toJSON());
-        std::stringstream buf;
-        const char hyphen = '-';
-        if (name()->empty() == false)
-            buf << util::toLegalFileName(name(), false, &hyphen) << hyphen;
-        buf << std::hex << std::setw(8) << std::setfill('0') << hash;
-        return buf.str();
-    }
-}
-
-//Config
-//Layer::getConfig() const
-//{
-//    Config conf = options().getConfig();
-//    conf.key() = getConfigKey();
-//    return conf;
-//}
 
 bool
 Layer::getOpenAutomatically() const
@@ -355,7 +277,7 @@ Layer::open(const IOOptions& io)
     // Cannot open a layer that's already open OR is disabled.
     if (isOpen())
     {
-        return getStatus();
+        return status();
     }
 
     util::ScopedWriteLock lock(layerMutex());
@@ -386,7 +308,7 @@ Layer::open(const IOOptions& io)
     }
     _isOpening = false;
 
-    return getStatus();
+    return status();
 }
 
 Status
@@ -456,17 +378,17 @@ Layer::close()
         //fireCallback(&LayerCallback::onClose);
         _isClosing = false;
     }
-    return getStatus();
+    return status();
 }
 
 bool
 Layer::isOpen() const
 {
-    return getStatus().ok();
+    return status().ok();
 }
 
 const Status&
-Layer::getStatus() const
+Layer::status() const
 {
     return _status;
 }

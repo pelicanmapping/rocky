@@ -8,10 +8,10 @@
 #include <rocky/Common.h>
 #include <iostream>
 
-#define ROCKY_DEBUG if (false) std::cout << "[rocky]--"
-#define ROCKY_INFO std::cout << "[rocky]- "
-#define ROCKY_NOTICE std::cout << "[rocky]  "
-#define ROCKY_WARN std::cout << "[rocky]* "
+#define ROCKY_DEBUG if (false) std::cout << "[rk]--"
+#define ROCKY_INFO std::cout << "[rk]- "
+#define ROCKY_NOTICE std::cout << "[rk]  "
+#define ROCKY_WARN std::cout << "[rk]* "
 #define ROCKY_NULL if (false) std::cout
 
 #define ROCKY_DEPRECATED(A, B) OE_WARN << #A << " is deprecated; please use " << #B << std::endl

@@ -866,8 +866,8 @@ ImageLayer::assembleImage(
 Status
 ImageLayer::writeImage(const TileKey& key, const Image* image, const IOOptions& io)
 {
-    if (getStatus().failed())
-        return getStatus();
+    if (status().failed())
+        return status();
 
     util::ScopedReadLock lock(layerMutex());
     return writeImageImplementation(key, image, io);

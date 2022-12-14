@@ -6,6 +6,7 @@
 #pragma once
 
 #include <rocky/Common.h>
+#include <rocky/Callbacks.h>
 #include <rocky/Config.h>
 #include <rocky/Status.h>
 #include <rocky/IOTypes.h>
@@ -80,7 +81,10 @@ namespace rocky
         //! This layer's unique ID.
         //! This value is generated automatically at runtime and is not
         //! guaranteed to be the same from one run to the next.
-        UID getUID() const { return _uid; }
+        UID uid() const { return _uid; }
+
+        //! Status of this layer
+        const Status& status() const;
 
         //! Open a layer.
         Status open();
@@ -93,9 +97,6 @@ namespace rocky
 
         //! Whether the layer is open
         bool isOpen() const;
-
-        //! Status of this layer
-        const Status& getStatus() const;
 
         //! Serialize this layer into a Config object (if applicable)
         virtual Config getConfig() const;
@@ -120,30 +121,18 @@ namespace rocky
         //! Temporal extent of this layer's data.
         virtual DateTimeExtent getDateTimeExtent() const;
 
-        //! Unique caching ID for this layer.
-        //! Only set this before opening the layer or adding to a map.
-        //! WARNING: You should be Very Careful when using this. The Layer will
-        //! automatically generate a cache ID that is sufficient most of the time.
-        //! Setting your own cache ID will require manual cache invalidation when
-        //! you change certain properties. Use are your own risk!
-        void setCacheID(const std::string& value);
-        virtual std::string getCacheID() const;
-
-        //! Callbacks that one can use to detect scene graph changes
-        //SceneGraphCallbacks* getSceneGraphCallbacks() const;
-
         //! Hints that a subclass can set to influence the engine
         const Hints& getHints() const;
 
-        //! Options string to pass to OpenSceneGraph reader/writers
-        const std::string& getOsgOptionString() const;
+        //! Register a callback for layer open
+        using LayerOpened = std::function<void(shared_ptr<Layer>)>;
+        Callback<LayerOpened> onLayerOpened;
 
-        UID onOpen(std::function<void(Layer::ptr)>);
-        UID onClose(std::function<void(Layer::ptr)>);
+        //! Register a callback for layer close
+        using LayerClosed = std::function<void(shared_ptr<Layer>)>;
+        Callback<LayerClosed> onLayerClosed;
+
         void removeCallback(UID);
-
-        std::unordered_map<UID, std::function<void(Layer::ptr)>> _onOpen;
-        std::unordered_map<UID, std::function<void(Layer::ptr)>> _onClose;
 
     public:
 
@@ -235,7 +224,7 @@ namespace rocky
         //! Map will call this function when this Layer is removed from a Map.
         virtual void removedFromMap(const class Map*) { }
 
-    public: // osg::Object
+    public:
 
         virtual void setName(const std::string& name);
 
