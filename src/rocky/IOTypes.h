@@ -8,7 +8,6 @@
 #include <rocky/Config.h>
 #include <rocky/DateTime.h>
 #include <rocky/Status.h>
-//#include <rocky/Containers.h>
 #include <rocky/Units.h>
 
 /**
@@ -16,32 +15,81 @@
  */
 namespace rocky
 {
-    /** General purpose interface for any operation that may be canceled */
+    class IOOptions;
+    class Image;
+
+    //! General purpose interface things that can be canceled
     class Cancelable
     {
     public:
-        virtual bool isCanceled() const = 0;
+        virtual bool canceled() const = 0;
     };
 
-    /** Options passed along to any I/O or data creation routine */
+    //! Base class for a cache
+    class Cache : public Inherit<Object, Cache>
+    {
+    };
+
+#if 0
+    class Reader : public Inherit<Object, Reader>
+    {
+    public:
+        template<class T>
+        inline Result<shared_ptr<T>> read(
+            const std::string& location,
+            const IOOptions& io) const;
+
+    protected:
+        virtual Result<shared_ptr<Object>> read(
+            const std::string& location,
+            const IOOptions& io) const = 0;
+    };
+#endif
+
+    //! Function signature for reading an image
+    using ImageReader = std::function<
+        Result<shared_ptr<Image>>(const std::string& url, const IOOptions&)>;
+
+
+    class ROCKY_EXPORT IOServices
+    {
+    public:
+        Cache::ptr cache;
+
+        ImageReader readImage;
+    };
+
+    // User options passed along with an IO context.
     class ROCKY_EXPORT IOOptions : public Cancelable
     {
     public:
-        // Disk cache
-        // L2 cache
-        // Environment
+        IOOptions();
+        IOOptions(const IOOptions& rhs);
+        IOOptions(Cancelable& p);
+        IOOptions(const IOOptions& rhs, Cancelable& p);
 
-        //! Never canceled by default
-        virtual bool isCanceled() const override {
-            return false;
+        //! Access to IO-related services
+        IOServices services;
+
+        //! Custom options for reading/writing data
+        std::unordered_map<std::string, std::string> properties;
+        inline std::string property(const std::string& name) const;
+        inline std::string& property(const std::string& name);
+
+        //! Was the current operation canceled?
+        virtual bool canceled() const override {
+            return _p ? _p->canceled() : false;
         }
+
+    private:
+        Cancelable* _p;
     };
 
+#if 0
     class ROCKY_EXPORT IOControl : public IOOptions
     {
     public:
-        //TODO: implement
-        bool isCanceled() const {
+        bool canceled() const override {
             return _canceled;
         }
 
@@ -56,6 +104,7 @@ namespace rocky
     private:
         bool _canceled = false;
     };
+#endif
 
     class ROCKY_EXPORT CachePolicy
     {
@@ -243,6 +292,34 @@ namespace rocky
             return getResultCodeString(ioCode);
         }
     };
+
+
+
+    // inline functions
+
+#if 0
+    template<class T>
+    inline Result<shared_ptr<T>> Reader::read(const std::string& location, const IOOptions& io) const
+    {
+        auto result = read(location, io);
+        if (result.status.failed()) {
+            return Result<T>(result.status);
+        }
+        else {
+            auto obj = T::cast(result.value);
+            return Result(obj);
+        }
+    }
+#endif
+
+    std::string IOOptions::property(const std::string& name) const {
+        auto i = properties.find(name);
+        return i != properties.end() ? i->second : "";
+    }
+
+    std::string& IOOptions::property(const std::string& name) {
+        return properties[name];
+    }
 }
 
 ROCKY_SPECIALIZE_CONFIG(rocky::CachePolicy);

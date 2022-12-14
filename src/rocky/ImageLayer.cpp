@@ -130,13 +130,13 @@ ImageLayer::Options::getConfig() const
 //------------------------------------------------------------------------
 
 ImageLayer::ImageLayer() :
-    super()
+    Inherit()
 {
     construct(Config());
 }
 
 ImageLayer::ImageLayer(const Config& conf) :
-    super(conf)
+    Inherit(conf)
 {
     construct(conf);
 }
@@ -210,6 +210,8 @@ ImageLayer::construct(const Config& conf)
     {
         setAcceptDraping(_acceptDraping);
     }
+
+    setRenderType(RENDERTYPE_TERRAIN_SURFACE);
 }
 
 Config
@@ -625,7 +627,7 @@ ImageLayer::createImageInKeyProfile(
     }
 
     // Check for cancelation before writing to a cache:
-    if (io.isCanceled())
+    if (io.canceled())
     {
         return Result(GeoImage::INVALID);
     }
@@ -751,7 +753,7 @@ ImageLayer::assembleImage(
                 // the tile source did not return a tile, so make a note of it.
                 failedKeys.push_back(k);
 
-                if (io.isCanceled())
+                if (io.canceled())
                 {
                     retry = true;
                     break;
@@ -853,7 +855,7 @@ ImageLayer::assembleImage(
             true);
     }
 
-    if (io.isCanceled())
+    if (io.canceled())
     {
         return Result<GeoImage>(Status::ResourceUnavailable, "Canceled");
     }
@@ -986,13 +988,13 @@ FutureTexture2D::update()
         return;
     }
 
-    else if (_result.isCanceled())
+    else if (_result.canceled())
     {
         dispatch();
         return;
     }
 
-    else if (_result.isAvailable() == true)
+    else if (_result.available() == true)
     {
         ROCKY_DEBUG<< LC << "Async result available for " << getName() << std::endl;
 

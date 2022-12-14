@@ -6,6 +6,7 @@
 #pragma once
 
 #include <rocky_vsg/Common.h>
+#include <rocky/Image.h>
 #include <rocky/Math.h>
 #include <vsg/maths/vec3.h>
 #include <vsg/maths/mat4.h>
@@ -89,6 +90,11 @@ namespace rocky
                 vsg::Data::Layout{ format });
         }
 
+        //if (image->origin() == Image::BOTTOM_LEFT)
+        //    vsg_data->properties.origin = vsg::TOP_LEFT;
+        //else
+        //    vsg_data->properties.origin = vsg::BOTTOM_LEFT;
+
         return vsg_data;
     }
 
@@ -139,5 +145,46 @@ namespace rocky
         data->properties.maxNumMipmaps = 1;
 
         return data;
+    }
+
+    // conver a vsg::Data structure to an Image if possible
+    inline Result<shared_ptr<Image>> makeImageFromVSG(vsg::ref_ptr<vsg::Data> data)
+    {
+        if (!data)
+            return Result<shared_ptr<Image>>(Status::ResourceUnavailable);
+
+        // TODO: move this into a utility somewhere
+        auto vkformat = data->properties.format;
+
+        Image::PixelFormat format =
+            vkformat == VK_FORMAT_R8_UNORM ? Image::R8_UNORM :
+            vkformat == VK_FORMAT_R8G8_UNORM ? Image::R8G8_UNORM :
+            vkformat == VK_FORMAT_R8G8B8_UNORM ? Image::R8G8B8_UNORM :
+            vkformat == VK_FORMAT_R8G8B8A8_UNORM ? Image::R8G8B8A8_UNORM :
+            vkformat == VK_FORMAT_R16_UNORM ? Image::R16_UNORM :
+            vkformat == VK_FORMAT_R32_SFLOAT ? Image::R32_SFLOAT :
+            vkformat == VK_FORMAT_R64_SFLOAT ? Image::R64_SFLOAT :
+            Image::UNDEFINED;
+
+        if (format == Image::UNDEFINED)
+        {
+            return Result<shared_ptr<Image>>(
+                Status::ResourceUnavailable, "Unsupported image format");
+        }
+
+        auto image = Image::create(
+            format,
+            data->width(),
+            data->height(),
+            data->depth());
+
+        memcpy(image->data<uint8_t>(), data->dataPointer(), image->sizeInBytes());
+
+        if (data->properties.origin == vsg::TOP_LEFT)
+        {
+            image->flipVerticalInPlace();
+        }
+
+        return Result(image);
     }
 }

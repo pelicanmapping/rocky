@@ -221,3 +221,32 @@ REGISTER_OSGPLUGIN( xml, rockyStringReaderWriterXML );
 STRING_READER_WRITER_SHIM( JSON, "json", "rocky JSON shim" );
 REGISTER_OSGPLUGIN( json, rockyStringReaderWriterJSON );
 #endif
+
+
+IOOptions::IOOptions() :
+    _p(nullptr)
+{
+    // nop
+}
+
+IOOptions::IOOptions(const IOOptions& rhs) :
+    _p(rhs._p),
+    services(rhs.services),
+    properties(rhs.properties)
+{
+    //nop
+}
+
+IOOptions::IOOptions(Cancelable& p) :
+    _p(&p)
+{
+    //nop
+}
+
+IOOptions::IOOptions(const IOOptions& rhs, Cancelable& p) :
+    services(rhs.services),
+    properties(rhs.properties),
+    _p(&p)
+{
+    //nop
+}

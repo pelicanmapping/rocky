@@ -41,6 +41,9 @@ namespace
         {
             bool error = true;
 
+            if (_promise.canceled())
+                return;
+
             if (!_child)
             {
                 // resolve the observer pointers:
@@ -50,7 +53,7 @@ namespace
                 if (compiler && updates)
                 {
                     // generate the child node:
-                    _child = _childProvider(nullptr);
+                    _child = _childProvider(_promise);
                     if (_child)
                     {
                         compiler->compile(_child);

@@ -9,7 +9,7 @@
 #include <rocky_vsg/TerrainTileNode.h>
 
 #include <vsg/io/Options.h>
-#include <vsg/utils/GraphicsPipelineConfig.h>
+#include <vsg/utils/GraphicsPipelineConfigurator.h>
 #include <vsg/utils/ShaderSet.h>
 #include <vsg/utils/SharedObjects.h>
 #include <vsg/nodes/StateGroup.h>

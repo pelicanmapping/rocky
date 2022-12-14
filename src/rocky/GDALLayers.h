@@ -164,9 +164,7 @@ namespace rocky
         struct ROCKY_EXPORT LayerBase
         {
         protected:
-            mutable util::Mutex _driversMutex;
-            mutable util::Mutex _singleThreadingMutex;
-            mutable std::unordered_map<unsigned, Driver::Ptr> _drivers;
+            mutable util::ThreadLocal<Driver::Ptr> _drivers;
             mutable GDAL::Options _options;
 
         public:
@@ -182,10 +180,6 @@ namespace rocky
             //! GDAL sub-dataset index (optional)
             void setSubDataSet(unsigned value);
             unsigned getSubDataSet() const;
-
-            //! Use a single-threaded driver (default is multi-threaded)
-            void setSingleThreaded(bool value);
-            bool getSingleThreaded() const;
 
             //! Interpolation method for resampling (default is bilinear)
             void setInterpolation(const Image::Interpolation& value);

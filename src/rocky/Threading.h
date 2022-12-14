@@ -265,24 +265,24 @@ namespace rocky { namespace util
         }
 
         //! True if the promise was resolved and a result if available.
-        bool isAvailable() const {
+        bool available() const {
             return _ev->isSet();
         }
 
         //! True if the Promise that generated this Future no longer exists
         //! and the Promise was never resolved.
-        bool isAbandoned() const {
-            return !isAvailable() && _shared.use_count() == 1;
+        bool abandoned() const {
+            return !available() && _shared.use_count() == 1;
         }
 
         //! True if a Promise exists, but has not yet been fulfilled.
-        bool isWorking() const {
-            return !isAvailable() && !isAbandoned();
+        bool working() const {
+            return !available() && !abandoned();
         }
 
         //! Synonym for isAbandoned. (Canceleble interface)
-        bool isCanceled() const override {
-            return isAbandoned();
+        bool canceled() const override {
+            return abandoned();
         }
 
         //! Deference the result object. Make sure you check isAvailable()
@@ -300,7 +300,7 @@ namespace rocky { namespace util
         //! Same as get(), but if the result is available will reset the
         //! future before returning the result object.
         T release() {
-            bool avail = isAvailable();
+            bool avail = available();
             T result = get();
             if (avail)
                 reset();
@@ -311,18 +311,18 @@ namespace rocky { namespace util
         //! then returns the result object.
         T join() const {
             while (
-                !isAbandoned() &&
+                !abandoned() &&
                 !_ev->wait(1u));
             return get();
         }
 
         //! Blocks until the result becomes available or the future is abandoned
         //! or a cancelation flag is set; then returns the result object.
-        T join(const Cancelable* cancelable) const {
+        T join(const Cancelable& p) const {
             while (
-                !isAvailable() &&
-                !isAbandoned() &&
-                !(cancelable && cancelable->isCanceled()))
+                !available() &&
+                !abandoned() &&
+                !(p.canceled()))
             {
                 _ev->wait(1u);
             }
@@ -369,7 +369,7 @@ namespace rocky { namespace util
      *   the result is available.
      */
     template<typename T>
-    class Promise : public IOControl
+    class Promise : public Cancelable
     {
     public:
         Promise() { }
@@ -393,17 +393,17 @@ namespace rocky { namespace util
         }
 
         //! True if the promise is resolved and the Future holds a valid result.
-        bool isResolved() const {
+        bool resolved() const {
             return _future._ev->isSet();
         }
 
         //! True is there are no Future objects waiting on this Promise.
-        bool isAbandoned() const {
+        bool abandoned() const {
             return _future._shared.use_count() == 1;
         }
 
-        bool isCanceled() const override {
-            return isAbandoned();
+        bool canceled() const override {
+            return abandoned();
         }
 
     private:
@@ -419,11 +419,11 @@ namespace rocky { namespace util
     {
     public:
         bool isReady() const { 
-            return _future.isAvailable() || _future.isAbandoned();
+            return _future.available() || _future.abandoned();
         }
 
         bool isWorking() const {
-            return !_future.isAvailable() && !_future.isAbandoned();
+            return !_future.available() && !_future.abandoned();
         }
 
     protected:
@@ -690,12 +690,42 @@ namespace rocky { namespace util
         //! Block until the semaphore count returns to zero, or
         //! the operation is canceled.
         //! (It must first have left zero)
-        void join(Cancelable* cancelable);
+        void join(Cancelable& cancelable);
 
     private:
         int _count;
         std::condition_variable_any _cv;
         mutable Mutex _m;
+    };
+
+
+    /** Per-thread data store */
+    template<class T>
+    struct ThreadLocal : public Mutex
+    {
+        ThreadLocal() : Mutex() { }
+
+        ThreadLocal(const std::string& name) : Mutex(name) { }
+
+        T& get() {
+            ScopedMutexLock lock(*this);
+            return _data[util::getCurrentThreadId()];
+        }
+
+        void clear() {
+            ScopedMutexLock lock(*this);
+            _data.clear();
+        }
+
+        using container_t = typename std::unordered_map<unsigned, T>;
+        using iterator = typename container_t::iterator;
+
+        // NB. lock before using these!
+        iterator begin() { return _data.begin(); }
+        iterator end() { return _data.end(); }
+
+    private:
+        container_t _data;
     };
 
     class JobArena;
@@ -718,7 +748,7 @@ namespace rocky { namespace util
 
         //! Block until all jobs dispatched under this group are complete,
         //! or the operation is canceled.
-        void join(Cancelable*);
+        void join(Cancelable&);
 
     private:
         std::shared_ptr<Semaphore> _sema;
@@ -735,17 +765,17 @@ namespace rocky { namespace util
      *   Job job;
      *   
      *   Future<int> result = job.dispatch<int>(
-     *      [a, b](Cancelable* progress) {
+     *      [a, b](Cancelable& p) {
      *          return (a + b);
      *      }
      *   );
      *
      *   // later...
      *
-     *   if (result.isAvailable()) {
+     *   if (result.available()) {
      *       std::cout << "Answer = " << result.get() << std::endl;
      *   }
-     *   else if (result.isAbandoned()) {
+     *   else if (result.abandoned()) {
      *       // task was canceled
      *   }
      *
@@ -813,12 +843,12 @@ namespace rocky { namespace util
         //!         the job will be canceled and may not run at all.
         template<typename T>
         Future<T> dispatch(
-            std::function<T(IOControl*)> func) const;
+            std::function<T(Cancelable&)> func) const;
 
         //! Dispatch the job for asynchronous execution and forget
         //! about it. No return value.
         inline void dispatch(
-            std::function<void(IOControl*)> func) const;
+            std::function<void(Cancelable&)> func) const;
 
     private:
         std::string _name;
@@ -1031,14 +1061,13 @@ namespace rocky { namespace util
     }
 
     template<typename T>
-    Future<T> Job::dispatch(
-        std::function<T(IOControl*)> function) const
+    Future<T> Job::dispatch(std::function<T(Cancelable&)> function) const
     {
         Promise<T> promise;
         Future<T> future = promise.getFuture();
         JobArena::Delegate delegate = [function, promise]() mutable
         {
-            bool good = !promise.isAbandoned();
+            bool good = !promise.abandoned();
             if (good)
                 promise.resolve(function(&promise));
             return good;
@@ -1048,12 +1077,11 @@ namespace rocky { namespace util
         return std::move(future);
     }
 
-    void Job::dispatch(
-        std::function<void(IOControl*)> function) const
+    void Job::dispatch(std::function<void(Cancelable& p)> function) const
     {
         JobArena* arena = _arena ? _arena : JobArena::get("");
         JobArena::Delegate delegate = [function]() {
-            function(nullptr);
+            function(IOOptions());
             return true;
         };
         arena->dispatch(*this, delegate);

@@ -15,8 +15,7 @@ namespace rocky
     /**
      * A raster image
      */
-    class ROCKY_EXPORT Image :
-        public Inherit<Object, Image>
+    class ROCKY_EXPORT Image : public Inherit<Object, Image>
     {
     public:
         enum Interpolation {
@@ -36,7 +35,8 @@ namespace rocky
             R16_UNORM,
             R32_SFLOAT,
             R64_SFLOAT,
-            NUM_PIXEL_FORMATS
+            NUM_PIXEL_FORMATS,
+            UNDEFINED
         };
 
         using Pixel = fvec4;
@@ -58,12 +58,13 @@ namespace rocky
         //! Construct an empty (invalid) image
         Image();
 
-        //! Construct an image an allocate memory for it
+        //! Construct an image an allocate memory for it,
+        //! unless data is non-null, in which case use that memory
         Image(
             PixelFormat format,
             unsigned s,
             unsigned t,
-            unsigned r =1);
+            unsigned r = 1);
 
         //! Destruct and release the data unless it's not owned
         virtual ~Image();
@@ -199,10 +200,10 @@ namespace rocky
         unsigned char* _data;
 
         void allocate(
+            PixelFormat format,
             unsigned s,
             unsigned t,
-            unsigned r,
-            PixelFormat format);
+            unsigned r);
 
         struct Layout {
             void(*read)(Pixel&, unsigned char*, int);

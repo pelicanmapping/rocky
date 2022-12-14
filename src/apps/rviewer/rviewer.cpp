@@ -1,6 +1,6 @@
-#include <rocky/Instance.h>
 #include <rocky/Notify.h>
 #include <rocky/GDALLayers.h>
+#include <rocky_vsg/InstanceVSG.h>
 #include <rocky_vsg/MapNode.h>
 #include <rocky_vsg/TerrainNode.h>
 #include <vsg/all.h>
@@ -12,10 +12,29 @@ int usage(const char* msg)
     return -1;
 }
 
+namespace rocky
+{
+    //! Simplest possible image layer.
+    struct TestLayer : public Inherit<ImageLayer, TestLayer>
+    {
+        Result<GeoImage> createImageImplementation(
+            const TileKey& key,
+            const IOOptions& io) const override
+        {
+            auto image = io.services.readImage("D:/data/images/BENDER.png", io);
+
+            if (image.status.ok())
+                return Result(GeoImage(image.value, key.getExtent()));
+            else
+                return Result<GeoImage>(image.status);
+        }
+    };
+}
+
 int main(int argc, char** argv)
 {
     // rocky instance
-    auto instance = rocky::Instance::create();
+    auto instance = rocky::InstanceVSG::create();
 
     // set up defaults and read command line arguments to override them
     vsg::CommandLine arguments(&argc, argv);
@@ -54,19 +73,22 @@ int main(int argc, char** argv)
     mapNode->runtime.sharedObjects = vsg::SharedObjects::create();
     mapNode->runtime.loaders = vsg::OperationThreads::create(mapNode->getTerrainNode()->concurrency);
 
+#if 1
     auto layer = rocky::GDALImageLayer::create();
     layer->setURI("D:/data/imagery/world.tif");
     //layer->setURI("D:/data/naturalearth/raster-10m/HYP_HR/HYP_HR.tif");
     mapNode->getMap()->addLayer(layer);
+#else
+    auto layer = rocky::TestLayer::create();
+    mapNode->getMap()->addLayer(layer);
+#endif
 
     vsg_scene->addChild(mapNode);
 
     // compute the bounds of the scene graph to help position camera
     vsg::ComputeBounds cb;
     vsg_scene->accept(cb);
-    vsg::dsphere bs(
-        (cb.bounds.min + cb.bounds.max) * 0.5,
-        vsg::length(cb.bounds.max - cb.bounds.min) * 0.5);
+    vsg::dsphere bs((cb.bounds.min + cb.bounds.max) * 0.5, vsg::length(cb.bounds.max - cb.bounds.min) * 0.5);
     double nearFarRatio = 0.0005;
 
     // set up the camera
@@ -74,7 +96,7 @@ int main(int argc, char** argv)
         30.0,
         (double)(window->extent2D().width) / (double)(window->extent2D().height),
         nearFarRatio * bs.radius,
-        bs.radius * 4.5);
+        bs.radius * 10.0);
 
     auto lookAt = vsg::LookAt::create(
         bs.center + vsg::dvec3(0.0, -bs.radius * 3.5, 0.0),

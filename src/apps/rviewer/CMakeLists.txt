@@ -8,12 +8,8 @@ set(SOURCES
 
 add_executable(rviewer ${SOURCES})
 
-target_link_libraries(rviewer rocky rocky_vsg)
 
-# if (vsgXchange_FOUND)
-#     target_compile_definitions(rviewer PRIVATE vsgXchange_FOUND)
-#     target_link_libraries(rviewer vsgXchange::vsgXchange)
-# endif()
+target_link_libraries(rviewer rocky rocky_vsg)
 
 install(TARGETS rviewer RUNTIME DESTINATION bin)
 
