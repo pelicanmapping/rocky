@@ -62,7 +62,7 @@ namespace
 
 //------------------------------------------------------------------------
 
-SRS::ThreadLocal::ThreadLocal() :
+SRS::ThreadLocalData::ThreadLocalData() :
     _handle(nullptr),
     _workspace(nullptr),
     _workspaceSize(0u),
@@ -71,7 +71,7 @@ SRS::ThreadLocal::ThreadLocal() :
     //nop
 }
 
-SRS::ThreadLocal::~ThreadLocal()
+SRS::ThreadLocalData::~ThreadLocalData()
 {
     if (_workspace)
         delete[] _workspace;
@@ -255,10 +255,10 @@ SRS::SRS(const Key& key) :
     init();
 }
 
-SRS::ThreadLocal&
-SRS::getLocal() const
+SRS::ThreadLocalData&
+SRS::getThreadLocal() const
 {
-    ThreadLocal& local = _local.get();
+    auto& local = _local.get();
 
     if (local._handle == nullptr)
     {
@@ -340,7 +340,7 @@ SRS::getBounds() const
 void*
 SRS::getHandle() const
 {
-    return getLocal()._handle;
+    return getThreadLocal()._handle;
 }
 
 SRS::~SRS()
@@ -849,7 +849,7 @@ SRS::transformInPlace(
         z_done = inputSRS->transformZ(points, outputSRS, true);
     }
 
-    ThreadLocal& local = getLocal();
+    auto& local = getThreadLocal();
 
     // move the xy data into straight arrays that OGR can use
     unsigned count = points.size();
@@ -940,7 +940,7 @@ SRS::transform2D(
 
 bool
 SRS::transformXYPointArrays(
-    ThreadLocal& local,
+    ThreadLocalData& local,
     double*  x,
     double*  y,
     unsigned count,

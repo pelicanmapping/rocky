@@ -8,9 +8,7 @@
 #include <rocky/Common.h>
 #include <rocky/Units.h>
 #include <rocky/Ellipsoid.h>
-//#include <rocky/VerticalDatum.h>
 #include <rocky/Threading.h>
-#include <rocky/Containers.h>
 #include <unordered_map>
 
 namespace rocky
@@ -314,10 +312,10 @@ namespace rocky
         typedef std::unordered_map<std::string,optional<TransformInfo>> TransformHandleCache;
 
         // SRS requires per-thread handles to be thread safe
-        struct ThreadLocal
+        struct ThreadLocalData
         {
-            ThreadLocal();
-            ~ThreadLocal();
+            ThreadLocalData();
+            ~ThreadLocalData();
             std::thread::id _threadId;
             void* _handle;
             TransformHandleCache _xformCache;
@@ -326,7 +324,7 @@ namespace rocky
         };
 
         // gets the thread-safe handle, initializing it if necessary
-        ThreadLocal& getLocal() const;
+        ThreadLocalData& getThreadLocal() const;
 
         enum InitType {
             INIT_USER,
@@ -384,7 +382,7 @@ namespace rocky
         mutable bool _initialized;
         Setup _setup;
         Box _bounds;
-        mutable util::PerThread<ThreadLocal> _local;
+        mutable util::ThreadLocal<ThreadLocalData> _local;
 
         // user can override these methods in a subclass to perform custom functionality; must
         // call the superclass version.
@@ -407,7 +405,7 @@ namespace rocky
         }
 
         bool transformXYPointArrays(
-            ThreadLocal& local,
+            ThreadLocalData& local,
             double* x,
             double* y,
             unsigned numPoints,

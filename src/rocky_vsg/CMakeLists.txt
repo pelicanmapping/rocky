@@ -1,4 +1,4 @@
-include(CheckCXXSourceCompiles)
+#include(CheckCXXSourceCompiles)
 
 set(TARGET rocky_vsg)
 
@@ -20,6 +20,9 @@ file(GLOB SHADERS_TO_COMPILE
     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.vert
     ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.frag)
 
+# create the target:
+add_library(${TARGET} ${HEADERS} ${SOURCES} ${SHADERS})
+
 #set(INLINE_GLSL_FILES ${CMAKE_CURRENT_SOURCE_DIR}/shaders/terrain.sdk.glsl)
 
 # Compile shaders into SPIRV
@@ -28,6 +31,10 @@ foreach(file ${SHADERS_TO_COMPILE})
 endforeach()
     
 message(STATUS "Shaders = ${SPIRV_SHADERS}")
+
+add_custom_target(rocky_vsg_shaders ALL DEPENDS ${SPIRV_SHADERS})
+
+find_package(vsg CONFIG REQUIRED)
 
 # Lib dependencies
 set(LIBRARIES PUBLIC
@@ -38,9 +45,13 @@ set(LIBRARIES PUBLIC
     rocky
 )
 
-add_library(${TARGET} ${HEADERS} ${SOURCES} ${SHADERS})
-
-add_custom_target(rocky_vsg_shaders ALL DEPENDS ${SPIRV_SHADERS})
+# link in vsgXchange if we have it
+find_package(vsgXchange CONFIG)
+if (vsgXchange_FOUND)
+     target_compile_definitions(${TARGET} PRIVATE VSGXCHANGE_FOUND)
+     #target_link_libraries(rviewer )
+     list(APPEND LIBRARIES vsgXchange::vsgXchange)
+endif()
 
 # IDE settings
 set_target_properties(${TARGET} PROPERTIES FOLDER "rocky")
@@ -54,7 +65,6 @@ set_property(TARGET ${TARGET} PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_property(TARGET ${TARGET} PROPERTY CXX_STANDARD 17)
 
 target_compile_definitions(${TARGET} PRIVATE ${EXTRA_DEFINES})
-#target_include_directories(rocky PUBLIC $<BUILD_INTERFACE:${ROCKY_SOURCE_DIR} $<BUILD_INTERFACE:${ROCKY_BINARY_DIR}/include>)
 
 target_link_libraries(${TARGET} ${LIBRARIES})
 

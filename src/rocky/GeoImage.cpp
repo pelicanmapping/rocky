@@ -533,7 +533,7 @@ GeoImage::GeoImage(util::Future<shared_ptr<Image>> fimage, const GeoExtent& exte
 {
     _future = fimage;
 
-    if (_future->isAbandoned())
+    if (_future->abandoned())
     {
         _status = Status(Status::ResourceUnavailable, "Async request canceled");
     }
@@ -550,14 +550,14 @@ GeoImage::valid() const
         return false;
 
     return
-        (_future.has_value() && !_future->isAbandoned()) ||
+        (_future.has_value() && !_future->abandoned()) ||
         _myimage != nullptr;
 }
 
 shared_ptr<Image>
 GeoImage::getImage() const
 {
-    return _future.has_value() && _future->isAvailable() ?
+    return _future.has_value() && _future->available() ?
         _future->join() :
         _myimage;
 }

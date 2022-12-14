@@ -14,20 +14,18 @@ file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 # set up library dependencies
 set(LIBRARIES PUBLIC
-    CURL::libcurl
     GDAL::GDAL
     glm::glm
     nlohmann_json::nlohmann_json
     unofficial-tinyxml::unofficial-tinyxml
-    vsg::vsg
 )
 add_library(rocky ${HEADERS} ${SOURCES})
 
 set_target_properties(rocky PROPERTIES FOLDER "rocky")
 
 # STB header-only
-find_path(STB_INCLUDE_DIRS "stb_c_lexer.h")
-target_include_directories(rocky PRIVATE ${STB_INCLUDE_DIRS})
+# find_path(STB_INCLUDE_DIRS "stb_c_lexer.h")
+# target_include_directories(rocky PRIVATE ${STB_INCLUDE_DIRS})
 
 if(MSVC)
     # ensure the libraries are all built in the lib directory

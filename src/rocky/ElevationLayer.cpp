@@ -399,7 +399,7 @@ ElevationLayer::assembleHeightfield(
                         }
                     }
 
-                    out_hf->write(dvec4(elevation), c, r);
+                    out_hf->write(fvec4(elevation), c, r);
                 }
             }
         }
@@ -417,7 +417,7 @@ ElevationLayer::assembleHeightfield(
 
 
     // If the progress was cancelled clear out any of the output data.
-    if (io.isCanceled())
+    if (io.canceled())
     {
         out_hf = nullptr;
     }
@@ -577,7 +577,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
             }
 
             // Check for cancelation before writing to a cache
-            if (io.isCanceled())
+            if (io.canceled())
             {
                 return Result(GeoHeightfield::INVALID);
             }
@@ -650,7 +650,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
     }
 
     // Check for cancelation before writing to a cache:
-    if (io.isCanceled())
+    if (io.canceled())
     {
         return Result(GeoHeightfield::INVALID);
     }
@@ -1003,7 +1003,7 @@ ElevationLayerVector::populateHeightfield(
             double x = xmin + (dx * (double)c);
 
             // periodically check for cancelation
-            if (io.isCanceled())
+            if (io.canceled())
             {
                 return false;
             }
@@ -1107,7 +1107,7 @@ ElevationLayerVector::populateHeightfield(
 
                 for (int i = offsets.size() - 1; i >= 0; --i)
                 {
-                    if (io.isCanceled())
+                    if (io.canceled())
                         return false;
 
                     // Only apply an offset layer if it sits on top of the resolved layer
@@ -1162,7 +1162,7 @@ ElevationLayerVector::populateHeightfield(
     // Resolve any invalid heights in the output heightfield.
     resolveInvalidHeights(hf.get(), key.getExtent(), NO_DATA_VALUE, nullptr);
 
-    if (io.isCanceled())
+    if (io.canceled())
     {
         return false;
     }

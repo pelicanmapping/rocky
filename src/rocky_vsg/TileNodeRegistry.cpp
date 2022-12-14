@@ -84,14 +84,11 @@ TileNodeRegistry::ping(
                 // new entry:
                 auto& entry = _tiles[tile->key];
                 entry._tile = tile;
-                bool recyclingOrphan = entry._trackerToken != nullptr;
                 entry._trackerToken = _tracker.use(tile, nullptr);
             }
             else
             {
-                _tracker.use(
-                    const_cast<TerrainTileNode*>(tile),
-                    i->second._trackerToken);
+                _tracker.use(tile, i->second._trackerToken);
             }
 
             if (tile->_needsChildren)
@@ -163,7 +160,10 @@ TileNodeRegistry::update(
     {
         if (!tile->doNotExpire)
         {
-            tile->unloadChildren();
+            ROCKY_DEBUG << "Removing tile and sibs " << tile->key.str() << std::endl;
+            auto parent = tile->getParentTile();
+            if (parent)
+                parent->unloadChildren();
             _tiles.erase(tile->key);
             return true;
         }
@@ -244,7 +244,7 @@ TileNodeRegistry::createTileChildren(
     ROCKY_SOFT_ASSERT_AND_RETURN(parent, void());
 
     // make sure we're not already working on it
-    if (parent->childLoader.isWorking() || parent->childLoader.isAvailable())
+    if (parent->childLoader.working() || parent->childLoader.available())
     {
         return;
     }
@@ -254,7 +254,7 @@ TileNodeRegistry::createTileChildren(
     vsg::ref_ptr<TerrainTileNode> parent_weakptr(parent);
 
     // function that will create all 4 children and compile them
-    auto create_children = [terrain, parent_key, parent_weakptr](Cancelable* io)
+    auto create_children = [terrain, parent_key, parent_weakptr](Cancelable& p)
     {
         vsg::ref_ptr<vsg::Node> result;
         vsg::ref_ptr<TerrainTileNode> parent = parent_weakptr;
@@ -264,7 +264,7 @@ TileNodeRegistry::createTileChildren(
 
             for (unsigned quadrant = 0; quadrant < 4; ++quadrant)
             {
-                if (io && io->isCanceled())
+                if (p.canceled())
                     return result;
 
                 TileKey childkey = parent_key.createChildKey(quadrant);
@@ -301,19 +301,21 @@ TileNodeRegistry::requestTileData(
     ROCKY_SOFT_ASSERT_AND_RETURN(tile, void());
 
     // make sure we're not already working on it
-    if (tile->dataLoader.isWorking() || tile->dataLoader.isAvailable())
+    if (tile->dataLoader.working() || tile->dataLoader.available())
     {
         return;
     }
 
     auto key = tile->key;
     CreateTileManifest manifest;
-    const IOOptions io = in_io;
+    const IOOptions io(in_io);
 
     const auto load_async = [key, manifest, terrain, io](Cancelable& p) -> Result<TerrainTileModel>
     {
-        if (p.isCanceled())
+        if (p.canceled())
+        {
             return Result<TerrainTileModel>();
+        }
 
         TerrainTileModelFactory factory;
 
@@ -321,15 +323,17 @@ TileNodeRegistry::requestTileData(
             terrain->map.get(),
             key,
             manifest,
-            io);
+            IOOptions(io, p));
 
         return Result(model);
     };
 
     const auto merge_sync = [key, manifest, terrain](const TerrainTileModel& model, Cancelable& p)
     {
-        if (p.isCanceled())
+        if (p.canceled())
+        {
             return;
+        }
 
         auto tile = terrain->tiles->getTile(key);
         if (tile)

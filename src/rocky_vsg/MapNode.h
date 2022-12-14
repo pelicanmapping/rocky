@@ -36,8 +36,7 @@ namespace rocky
      * OSG Node that forms the root of an osgEarth map.
      * This node is a "view" component that renders data from a "Map" data model.
      */
-    class ROCKY_VSG_EXPORT MapNode :
-        public vsg::Inherit<vsg::Group, MapNode>
+    class ROCKY_VSG_EXPORT MapNode : public vsg::Inherit<vsg::Group, MapNode>
     {
     public: // constructors
 

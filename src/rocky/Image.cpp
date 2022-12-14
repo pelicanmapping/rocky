@@ -93,7 +93,7 @@ Image::Image(
     _pixelFormat(R8G8B8A8_UNORM),
     _data(nullptr)
 {
-    allocate(cols, rows, depth, format);
+    allocate(format, cols, rows, depth);
 }
 
 Image::~Image()
@@ -120,10 +120,10 @@ Image::clone() const
 
 void
 Image::allocate(
+    PixelFormat pixelFormat_,
     unsigned width_,
     unsigned height_,
-    unsigned depth_,
-    PixelFormat pixelFormat_)
+    unsigned depth_)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(
         width_ > 0 && height_ > 0 && depth_ > 0 &&
@@ -139,7 +139,7 @@ Image::allocate(
 
     if (_data)
         delete[] _data;
-       
+
     _data = new unsigned char[sizeInBytes()];
 }
 
@@ -189,15 +189,18 @@ Image::flipVerticalInPlace()
 {
     ROCKY_TODO("handle compressed pixel formats");
 
+    auto layerBytes = sizeInBytes() / depth();
     auto rowBytes = rowSizeInBytes();
+    auto halfRows = height() / 2;
 
     for (unsigned d = 0; d < depth(); ++d)
     {
-        auto halfRows = height() / 2;
+        unsigned layerOffset = d * layerBytes;
         for (unsigned row = 0; row < halfRows; ++row)
         {
-            auto row1 = data<uchar*>(0, row, d);
-            auto row2 = data<uchar*>(0, ((height()) - 1 - row), d);
+            auto antirow = height() - 1 - row;
+            auto row1 = data<uchar>() + layerOffset + row*rowBytes;
+            auto row2 = data<uchar>() + layerOffset + antirow*rowBytes;
             for (unsigned b = 0; b < rowBytes; ++b, ++row1, ++row2)
                 std::swap(*row1, *row2);
         }

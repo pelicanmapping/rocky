@@ -439,16 +439,16 @@ Semaphore::join()
 }
 
 void
-Semaphore::join(Cancelable* cancelable)
+Semaphore::join(Cancelable& p)
 {
     ScopedMutexLock lock(_m);
     _cv.wait_for(
         _m,
         std::chrono::seconds(1),
-        [this, cancelable]() {
+        [this, &p]() {
             return
                 (_count == 0) ||
-                (cancelable && cancelable->isCanceled());
+                (p.canceled());
         }
     );
     _count = 0;
@@ -480,11 +480,11 @@ JobGroup::join()
 }
 
 void
-JobGroup::join(Cancelable* cancelable)
+JobGroup::join(Cancelable& p)
 {
     if (_sema != nullptr && _sema.use_count() > 1)
     {
-        _sema->join(cancelable);
+        _sema->join(p);
     }
 }
 

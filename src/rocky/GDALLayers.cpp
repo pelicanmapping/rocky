@@ -1023,17 +1023,19 @@ GDAL::Driver::createImage(
     {
         ROCKY_DEBUG << LC << "Reached maximum data resolution key="
             << key.getLevelOfDetail() << " max=" << _maxDataLevel.get() << std::endl;
-        return NULL;
+        return { };
     }
 
-    if (io.isCanceled())
+    if (io.canceled())
     {
-        return NULL;
+        return { };
     }
 
     //ROCKY_WARN << "key = " << key.str() << std::endl;
 
     shared_ptr<Image> image;
+
+    const bool invert = true;
 
     //Get the extents of the tile
     double xmin, ymin, xmax, ymax;
@@ -1043,7 +1045,7 @@ GDAL::Driver::createImage(
     rocky::GeoExtent intersection = key.getExtent().intersectionSameSRS(_extents);
     if (!intersection.valid())
     {
-        return 0;
+        return { };
     }
 
     double west = intersection.xMin();
@@ -1124,7 +1126,7 @@ GDAL::Driver::createImage(
     //Return if parameters are out of range.
     if (width <= 0 || height <= 0 || target_width <= 0 || target_height <= 0)
     {
-        return 0;
+        return { };
     }
 
 
@@ -1222,7 +1224,7 @@ GDAL::Driver::createImage(
                 //    alpha[src_col + src_row * target_width]);
 
                 int i = src_col + src_row * target_width;
-                u8vec4 c = u8vec4(red[i], green[i], blue[i], alpha[i]);                    
+                fvec4 c = fvec4(red[i], green[i], blue[i], alpha[i]) / 255.0f;
 
                 if (!isValidValue(c.r, bandRed) ||
                     !isValidValue(c.g, bandGreen) ||
@@ -1273,17 +1275,14 @@ GDAL::Driver::createImage(
                 tileSize,
                 tileSize);
 
-            //ImageUtils::PixelWriter write(image.get());
-
             // initialize all coverage texels to NODATA. -gw
             image->fill(fvec4(NO_DATA_VALUE));
-            //write.assign(Color(NO_DATA_VALUE));
 
             // coverage data; one channel data that is not subject to interpolated values
             unsigned char* data = new unsigned char[target_width * target_height * gdalSampleSize];
             memset(data, 0, target_width * target_height * gdalSampleSize);
 
-            fvec4 temp;
+            fvec4 temp(0.0f);
 
             int success;
             float nodata = bandGray->GetNoDataValue(&success);
@@ -1368,6 +1367,8 @@ GDAL::Driver::createImage(
                     {
                         c.a = 0.0f;
                     }
+
+                    c /= 255.0f;
 
                     image->write(c, dst_col, flippedRow);
 
@@ -1461,7 +1462,9 @@ GDAL::Driver::createImage(
                         }
                     }
 
-                    image->write(pixel, dst_col, flippedRow);
+                    fvec4 fpixel = fvec4(pixel) / 255.0f;
+
+                    image->write(fpixel, dst_col, flippedRow);
                 }
                 else
                 {
@@ -1475,8 +1478,8 @@ GDAL::Driver::createImage(
                         color.a = 0.0f;
                     }
 
-                    fvec4 c(color.r, color.g, color.b, color.a);
-                    image->write(c, dst_col, flippedRow);
+                    fvec4 fcolor = fvec4(color) / 255.0f;
+                    image->write(fcolor, dst_col, flippedRow);
                     //*(image->data(dst_col, flippedRow) + 0) = color.r();
                     //*(image->data(dst_col, flippedRow) + 1) = color.g();
                     //*(image->data(dst_col, flippedRow) + 2) = color.b();
@@ -1495,7 +1498,7 @@ GDAL::Driver::createImage(
             << gdalOptions().url->full()
             << ".  Cannot create image. " << std::endl;
 
-        return NULL;
+        return { };
     }
 
     return image;
@@ -1808,12 +1811,6 @@ void GDAL::LayerBase::setSubDataSet(unsigned value) {
 unsigned GDAL::LayerBase::getSubDataSet() const {
     return _options.subDataSet;
 }
-void GDAL::LayerBase::setSingleThreaded(bool value) {
-    _options.singleThreaded = value;
-}
-bool GDAL::LayerBase::getSingleThreaded() const {
-    return _options.singleThreaded;
-}
 void GDAL::LayerBase::setInterpolation(const Image::Interpolation& value) {
     _options.interpolation = value;
 }
@@ -1916,10 +1913,6 @@ GDALImageLayer::construct(const Config& conf)
 {
     _options.readFrom(conf);
 
-    // Initialize the image layer (always first)
-    _driversMutex.setName("OE.GDALImageLayer.drivers");
-    _singleThreadingMutex.setName("OE.GDALImageLayer.st");
-
     setRenderType(RENDERTYPE_TERRAIN_SURFACE);
 }
 
@@ -1938,19 +1931,16 @@ GDALImageLayer::openImplementation(const IOOptions& io)
     if (parent.failed())
         return parent;
 
-    unsigned id = getSingleThreaded() ? 0u : util::getCurrentThreadId();
-
     shared_ptr<Profile> profile;
 
     // GDAL thread-safety requirement: each thread requires a separate GDALDataSet.
     // So we just encapsulate the entire setup once per thread.
     // https://trac.osgeo.org/gdal/wiki/FAQMiscellaneous#IstheGDALlibrarythread-safe
 
-    util::ScopedLock lock(_driversMutex);
-
-    GDAL::Driver::Ptr& driver = _drivers[id];
+    GDAL::Driver::Ptr& driver = _drivers.get();
 
     DataExtentList dataExtents;
+
     Status s = openOnThisThread(
         this,
         _options,
@@ -1977,8 +1967,8 @@ Status
 GDALImageLayer::closeImplementation()
 {
     // safely shut down all per-thread handles.
-    util::ScopedLock lock(_driversMutex);
     _drivers.clear();
+
     return ImageLayer::closeImplementation();
 }
 
@@ -1990,50 +1980,30 @@ GDALImageLayer::createImageImplementation(
     if (getStatus().failed())
         return Result(GeoImage::INVALID);
 
-    unsigned id = getSingleThreaded() ? 0u : util::getCurrentThreadId();
+    if (isClosing() || !isOpen())
+        return Result(GeoImage::INVALID);
 
-    GDAL::Driver::Ptr driver;
-
-    // lock while we look up and verify the per-thread driver:
+    GDAL::Driver::Ptr& driver = _drivers.get();
+    if (driver == nullptr)
     {
-        util::ScopedLock lock(_driversMutex);
-
-        // check while locked to ensure we may continue
-        if (isClosing() || !isOpen())
-            return Result(GeoImage::INVALID);
-
-        GDAL::Driver::Ptr& test_driver = _drivers[id];
-
-        if (test_driver == nullptr)
-        {
-            // calling openImpl with NULL params limits the setup
-            // since we already called this during openImplementation
-            openOnThisThread(
-                this,
-                _options,
-                test_driver,
-                nullptr,
-                nullptr,
-                io);
-        }
-
-        // assign to a ref_ptr to continue
-        driver = test_driver;
+        // calling openImpl with NULL params limits the setup
+        // since we already called this during openImplementation
+        openOnThisThread(
+            this,
+            _options,
+            driver,
+            nullptr,
+            nullptr,
+            io);
     }
 
-    if (driver != nullptr)
+    if (driver)
     {
-        if (getSingleThreaded())
-            _singleThreadingMutex.lock();
-
         auto image = driver->createImage(
             key,
             _tileSize,
             _coverage == true,
             io);
-
-        if (getSingleThreaded())
-            _singleThreadingMutex.unlock();
 
         return Result(GeoImage(image, key.getExtent()));
     }
@@ -2079,11 +2049,6 @@ void
 GDALElevationLayer::construct(const Config& conf)
 {
     _options.readFrom(conf);
-
-    _driversMutex.setName("OE.GDALElevationLayer.drivers");
-    _singleThreadingMutex.setName("OE.GDALElevationLayer.st");
-
-    setRenderType(RENDERTYPE_TERRAIN_SURFACE);
 }
 
 Config
@@ -2101,20 +2066,17 @@ GDALElevationLayer::openImplementation(const IOOptions& io)
     if (parent.failed())
         return parent;
 
-    unsigned id = getSingleThreaded() ? 0u : util::getCurrentThreadId();
-
     shared_ptr<Profile> profile;
 
     // GDAL thread-safety requirement: each thread requires a separate GDALDataSet.
     // So we just encapsulate the entire setup once per thread.
     // https://trac.osgeo.org/gdal/wiki/FAQMiscellaneous#IstheGDALlibrarythread-safe
 
-    util::ScopedLock lock(_driversMutex);
-
     // Open the dataset temporarily to query the profile and extents.
-    GDAL::Driver::Ptr driver;
+    GDAL::Driver::Ptr driver = _drivers.get();
 
     DataExtentList dataExtents;
+
     Status s = openOnThisThread(
         this,
         _options,
@@ -2139,7 +2101,6 @@ Status
 GDALElevationLayer::closeImplementation()
 {
     // safely shut down all per-thread handles.
-    util::ScopedLock lock(_driversMutex);
     _drivers.clear();
     return ElevationLayer::closeImplementation();
 }
@@ -2152,42 +2113,26 @@ GDALElevationLayer::createHeightfieldImplementation(
     if (getStatus().failed())
         return Result<GeoHeightfield>(getStatus());
 
-    unsigned id = getSingleThreaded() ? 0u : util::getCurrentThreadId();
+    // check while locked to ensure we may continue
+    if (isClosing() || !isOpen())
+        return GeoHeightfield::INVALID;
 
-    GDAL::Driver::Ptr driver;
-
-    // lock while we look up and verify the per-thread driver:
+    GDAL::Driver::Ptr& driver = _drivers.get();
+    if (driver == nullptr)
     {
-        util::ScopedLock lock(_driversMutex);
-
-        // check while locked to ensure we may continue
-        if (isClosing() || !isOpen())
-            return GeoHeightfield::INVALID;
-
-        GDAL::Driver::Ptr& test_driver = _drivers[id];
-
-        if (test_driver == nullptr)
-        {
-            // calling openImpl with NULL params limits the setup
-            // since we already called this during openImplementation
-            openOnThisThread(
-                this,
-                _options,
-                test_driver,
-                nullptr,
-                nullptr,
-                io);
-        }
-
-        // assign to a ref_ptr to continue
-        driver = test_driver;
+        // calling openImpl with NULL params limits the setup
+        // since we already called this during openImplementation
+        openOnThisThread(
+            this,
+            _options,
+            driver,
+            nullptr,
+            nullptr,
+            io);
     }
 
-    if (driver != nullptr)
+    if (driver)
     {
-        if (getSingleThreaded())
-            _singleThreadingMutex.lock();
-
         shared_ptr<Heightfield> heightfield;
 
         if (_options.useVRT == true)
@@ -2204,9 +2149,6 @@ GDALElevationLayer::createHeightfieldImplementation(
                 tileSize(),
                 io);
         }
-
-        if (getSingleThreaded())
-            _singleThreadingMutex.unlock();
 
         return GeoHeightfield(heightfield, key.getExtent());
     }

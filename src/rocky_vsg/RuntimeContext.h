@@ -45,7 +45,7 @@ namespace rocky
         vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
 
         //! Function for creating a collection of nodes
-        using NodeProvider = std::function<vsg::ref_ptr<vsg::Node>(Cancelable*)>;
+        using NodeProvider = std::function<vsg::ref_ptr<vsg::Node>(Cancelable&)>;
 
         //! Schedules data creation; the resulting node or nodes 
         //! get added to "parent" if the operation suceeds.
@@ -78,22 +78,26 @@ namespace rocky
         std::function<Result<T>(Cancelable&)> async,
         std::function<void(const T&, Cancelable&)> sync)
     {
-        struct ComboOp : public vsg::Inherit<vsg::Operation, ComboOp> {
+        struct TwoStepOp : public vsg::Inherit<vsg::Operation, TwoStepOp> {
             RuntimeContext* _runtime;
             std::function<Result<T>(Cancelable&)> _async;
             std::function<void(const T&, Cancelable&)> _sync;
             Result<T> _result;
             util::Promise<bool> _promise;
             void run() override {
-                if (!_promise.isAbandoned()) {
+                if (!_promise.abandoned()) {
                     if (!_result.status.ok()) {
+                        // step 1: run the async function and set the status
                         _result = _async(_promise);
                         if (_result.status.ok()) {
                             _runtime->updates()->add(vsg::ref_ptr<vsg::Operation>(this));
-                            _promise.resolve(true);
+                        } 
+                        else {
+                            _promise.resolve(false);
                         }
                     }
                     else {
+                        // step 2: run the sync function and resolve the promise
                         _sync(_result.value, _promise);
                         _promise.resolve(true);
                     }
@@ -101,7 +105,7 @@ namespace rocky
             }
         };
 
-        auto op = ComboOp::create();
+        auto op = TwoStepOp::create();
         op->_runtime = this;
         op->_async = async;
         op->_sync = sync;

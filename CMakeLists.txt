@@ -28,10 +28,6 @@ if (VULKAN_SDK)
     set(ENV{VULKAN_SDK} ${VULKAN_SDK})
 endif()
 
-find_package(vsg REQUIRED)
-# find_package(vsgXchange QUIET)
-# find_package(vsgImGui QUIET)
-
 find_package(GDAL CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
