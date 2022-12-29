@@ -342,7 +342,7 @@ GeoPoint::transform(shared_ptr<SRS> outSRS, GeoPoint& output) const
 }
 
 bool
-GeoPoint::toWorld( dvec3& out_world ) const
+GeoPoint::toWorld_impl(dvec3& out_world) const
 {
     if ( !valid() )
     {
@@ -358,7 +358,7 @@ GeoPoint::toWorld( dvec3& out_world ) const
 }
 
 bool
-GeoPoint::toWorld( dvec3& out_world, const TerrainResolver* terrain ) const
+GeoPoint::toWorld(dvec3& out_world, const TerrainResolver* terrain) const
 {
     if ( !valid() )
     {
@@ -387,7 +387,7 @@ GeoPoint::toWorld( dvec3& out_world, const TerrainResolver* terrain ) const
 
 
 bool
-GeoPoint::fromWorld(shared_ptr<SRS> srs, const dvec3& world)
+GeoPoint::fromWorld_impl(shared_ptr<SRS> srs, const dvec3& world)
 {
     if ( srs )
     {

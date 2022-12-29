@@ -58,7 +58,7 @@ Viewpoint::Viewpoint(const Config& conf)
     double zOffset = conf.value("z_offset", 0.0);
     if ( xOffset != 0.0 || yOffset != 0.0 || zOffset != 0.0 )
     {
-        posOffset = dvec3(xOffset, yOffset, zOffset);
+        positionOffset = dvec3(xOffset, yOffset, zOffset);
     }
 }
 
@@ -95,11 +95,11 @@ Viewpoint::getConfig() const
             conf.set("vdatum", point->getSRS()->getVertInitString());
     }
 
-    if ( posOffset.has_value() )
+    if (positionOffset.has_value() )
     {
-        conf.set("x_offset", posOffset->x);
-        conf.set("y_offset", posOffset->y);
-        conf.set("z_offset", posOffset->z);
+        conf.set("x_offset", positionOffset->x);
+        conf.set("y_offset", positionOffset->y);
+        conf.set("z_offset", positionOffset->z);
     }
 
     return conf;
@@ -122,9 +122,9 @@ Viewpoint::toString() const
         << ", h=" << heading->to(Units::DEGREES).asParseableString()
         << ", p=" << pitch->to(Units::DEGREES).asParseableString()
         << ", d=" << range->asParseableString()
-        << ", xo=" << posOffset->x
-        << ", yo=" << posOffset->y
-        << ", zo=" << posOffset->z;
+        << ", xo=" << positionOffset->x
+        << ", yo=" << positionOffset->y
+        << ", zo=" << positionOffset->z;
     //else
     //{
     //    return util::make_string()

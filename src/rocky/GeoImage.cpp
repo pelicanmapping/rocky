@@ -720,7 +720,7 @@ GeoImage::takeImage()
     }
     else
     {
-        result = _myimage; // const_cast<osg::Image*>(_myimage.release());
+        result = _myimage;
         _myimage = nullptr;
     }
     return result;

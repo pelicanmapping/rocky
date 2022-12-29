@@ -10,6 +10,11 @@ else()
     add_definitions(-DROCKY_VSG_LIBRARY)
 endif()
 
+# find the Vulkan SDK
+if (VULKAN_SDK)
+    set(ENV{VULKAN_SDK} ${VULKAN_SDK})
+endif()
+
 #message(STATUS "Current build folder is ${CMAKE_CURRENT_SOURCE_DIR}")
 
 # collect all the headers in the source directory

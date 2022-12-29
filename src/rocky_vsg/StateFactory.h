@@ -86,7 +86,7 @@ namespace rocky
 
         //! ALT MANUAL ALTERNATIVE to using the PipelineCOnfig -
         //! for testing only for now
-        virtual vsg::ref_ptr<vsg::GraphicsPipeline> createPipeline(vsg::SharedObjects*) const;
+        //virtual vsg::ref_ptr<vsg::GraphicsPipeline> createPipeline(vsg::SharedObjects*) const;
 
         struct TextureDef
         {

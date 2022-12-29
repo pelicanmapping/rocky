@@ -284,6 +284,13 @@ namespace rocky
     {
         return sqrt(distanceSquared3D(a, b));
     }
+
+    template<typename T>
+    inline T square(const T& a)
+    {
+        return (a) * (a);
+    }
+
     template<typename T>
     inline T normalize(const T& a)
     {

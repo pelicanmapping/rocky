@@ -11,9 +11,10 @@ project(
 set(CMAKE_CXX_STANDARD 17)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-include(vsgMacros)
-vsg_setup_dir_vars()
-vsg_setup_build_vars()
+
+include(setup_macros)
+setup_dir_vars()
+setup_build_vars()
 
 # build all examples into the bin directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
@@ -22,11 +23,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
-
-# find the Vulkan SDK
-if (VULKAN_SDK)
-    set(ENV{VULKAN_SDK} ${VULKAN_SDK})
-endif()
 
 find_package(GDAL CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
@@ -37,4 +33,3 @@ find_package(nlohmann_json CONFIG REQUIRED)
 # source code
 add_subdirectory(src)
 
-vsg_add_feature_summary()

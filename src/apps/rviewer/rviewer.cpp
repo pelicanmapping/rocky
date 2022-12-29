@@ -3,6 +3,7 @@
 #include <rocky_vsg/InstanceVSG.h>
 #include <rocky_vsg/MapNode.h>
 #include <rocky_vsg/TerrainNode.h>
+#include <rocky_vsg/MapManipulator.h>
 #include <vsg/all.h>
 #include <chrono>
 
@@ -75,7 +76,7 @@ int main(int argc, char** argv)
 
 #if 1
     auto layer = rocky::GDALImageLayer::create();
-    layer->setURI("D:/data/imagery/worlwd.tif");
+    layer->setURI("D:/data/imagery/world.tif");
     //layer->setURI("D:/data/naturalearth/raster-10m/HYP_HR/HYP_HR.tif");
     mapNode->getMap()->addLayer(layer);
 
@@ -103,7 +104,7 @@ int main(int argc, char** argv)
         bs.radius * 10.0);
 
     auto lookAt = vsg::LookAt::create(
-        bs.center + vsg::dvec3(0.0, -bs.radius * 3.5, 0.0),
+        bs.center + vsg::dvec3(bs.radius * 3.5, 0.0, 0.0),
         bs.center,
         vsg::dvec3(0.0, 0.0, 1.0));
 
@@ -112,7 +113,9 @@ int main(int argc, char** argv)
         lookAt,
         vsg::ViewportState::create(window->extent2D()));
 
-    viewer->addEventHandler(vsg::Trackball::create(camera));
+    //viewer->addEventHandler(vsg::Trackball::create(camera));
+
+    viewer->addEventHandler(rocky::MapManipulator::create(mapNode, camera));
 
     auto commandGraph = vsg::createCommandGraphForView(
         window, 

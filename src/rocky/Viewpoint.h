@@ -23,7 +23,7 @@ namespace rocky
         optional<Angle> heading;
         optional<Angle> pitch;
         optional<Distance> range;
-        optional<dvec3> posOffset;
+        optional<dvec3> positionOffset;
 
     public:
         Viewpoint();

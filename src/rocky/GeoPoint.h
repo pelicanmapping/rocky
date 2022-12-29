@@ -158,7 +158,8 @@ namespace rocky
          * the actual Z coordinate. Use the variant of toWorld that takes a
          * Terrain* instead.
          */
-        bool toWorld(dvec3& out_world) const;
+        template<class DVEC3>
+        inline bool toWorld(DVEC3& out_world) const;
 
         /**
          * Outputs world coordinates corresponding to this point, passing in a Terrain
@@ -170,7 +171,8 @@ namespace rocky
         /**
          * Converts world coordinates into a geopoint
          */
-        bool fromWorld(shared_ptr<SRS> srs, const dvec3& world);
+        template<class DVEC3>
+        inline bool fromWorld(shared_ptr<SRS> srs, const DVEC3& world);
 
         /**
          * geopoint into absolute world coords.
@@ -235,5 +237,25 @@ namespace rocky
         dvec3 _p;
         shared_ptr<SRS> _srs;
         AltitudeMode _altMode;
+
+        bool toWorld_impl(dvec3& out) const;
+        bool fromWorld_impl(shared_ptr<SRS> srs, const dvec3& in);
     };
+
+
+
+    template<class DVEC3>
+    bool GeoPoint::toWorld(DVEC3& out_dvec3) const
+    {
+        dvec3 temp;
+        bool ok = toWorld_impl(temp);
+        out_dvec3 = DVEC3(temp.x, temp.y, temp.z);
+        return ok;
+    }
+
+    template<class DVEC3>
+    bool GeoPoint::fromWorld(shared_ptr<SRS> srs, const DVEC3& in)
+    {
+        return fromWorld_impl(srs, dvec3(in.x, in.y, in.z));
+    }
 }
