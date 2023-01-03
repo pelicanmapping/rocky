@@ -450,10 +450,10 @@ GeoExtent::computeBoundingGeoCircle() const
             GeoPoint(getSRS(), east(), north(), 0, ALTMODE_ABSOLUTE).toWorld(ne);
             GeoPoint(getSRS(), west(), north(), 0, ALTMODE_ABSOLUTE).toWorld(nw);
             
-            double radius2 = length_squared(center - sw);
-            radius2 = std::max(radius2, length_squared(center - se));
-            radius2 = std::max(radius2, length_squared(center - ne));
-            radius2 = std::max(radius2, length_squared(center - sw));
+            double radius2 = lengthSquared(center - sw);
+            radius2 = std::max(radius2, lengthSquared(center - se));
+            radius2 = std::max(radius2, lengthSquared(center - ne));
+            radius2 = std::max(radius2, lengthSquared(center - sw));
 
             circle.setRadius(sqrt(radius2));
         }

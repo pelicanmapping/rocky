@@ -159,7 +159,7 @@ namespace rocky
     };
 
     template<typename T>
-    inline double length_squared(const T& v) {
+    inline double lengthSquared(const T& v) {
         return glm::dot(v, v);
     }
 
@@ -202,21 +202,17 @@ namespace rocky
 
     // move closer to one
     template<typename T>
-    inline T harden(T x)
+    inline T decel(T x)
     {
-        return static_cast<T>(1.0) - (static_cast<T>(1.0) - x)*(static_cast<T>(1.0) - x);
+        return static_cast<T>(1.0) - (static_cast<T>(1.0) - x) * (static_cast<T>(1.0) - x);
     }
-    template<typename T>
-    inline T decel(T x) { return harden(x); }
 
     // move closer to zero
     template<typename T>
-    inline T soften(T x)
-    {
-        return x * x;
+    inline T accel(T x)
+    { 
+        return soften(x*x);
     }
-    template<typename T>
-    inline T accel(T x) { return soften(x); }
 
     template<typename T>
     inline T threshold(T x, T thresh, T buf)

@@ -70,7 +70,7 @@ GeoCircle::intersects( const GeoCircle& rhs ) const
         if ( getSRS()->isProjected() )
         {
             dvec2 vec = dvec2(center().x(), center().y()) - dvec2(rhs.center().x(), rhs.center().y());
-            return length_squared(vec) <= (radius() + rhs.radius())*(radius() + rhs.radius());
+            return lengthSquared(vec) <= (radius() + rhs.radius())*(radius() + rhs.radius());
         }
         else // if ( isGeographic() )
         {

@@ -373,8 +373,10 @@ StateFactory::updateTerrainTileDescriptors(
         if (data)
         {
             dm.color = vsg::DescriptorImage::create(
-                textures.color.sampler, data, textures.color.uniform_binding,
-                0, // array element (TODO: increment when we change to an array)
+                textures.color.sampler,
+                data,
+                textures.color.uniform_binding,
+                0, // array element (TODO: increment if we change to an array)
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
         }
     }
@@ -385,7 +387,9 @@ StateFactory::updateTerrainTileDescriptors(
         if (data)
         {
             dm.elevation = vsg::DescriptorImage::create(
-                textures.elevation.sampler, data, textures.elevation.uniform_binding,
+                textures.elevation.sampler,
+                data,
+                textures.elevation.uniform_binding,
                 0, // array element
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
         }
@@ -397,7 +401,9 @@ StateFactory::updateTerrainTileDescriptors(
         if (data)
         {
             dm.normal = vsg::DescriptorImage::create(
-                textures.normal.sampler, data, textures.normal.uniform_binding,
+                textures.normal.sampler,
+                data,
+                textures.normal.uniform_binding,
                 0, // array element
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
         }
