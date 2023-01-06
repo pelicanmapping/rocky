@@ -341,7 +341,7 @@ TileLayer::addedToMap(const Map* map)
         !map->getProfile()->getSRS()->isHorizEquivalentTo(getProfile()->getSRS()))
     {
         l2CacheSize = 16u;
-        ROCKY_INFO << LC << "Map/Layer profiles differ; requesting L2 cache" << std::endl;
+        //ROCKY_INFO << LC << "Map/Layer profiles differ; requesting L2 cache" << std::endl;
     }
 
     // Use the user defined option if it's set.
@@ -370,7 +370,7 @@ TileLayer::setUpL2Cache(unsigned minSize)
     if (l2env)
     {
         l2CacheSize = util::as<int>(std::string(l2env), 0);
-        ROCKY_INFO << LC << "L2 cache size set from environment = " << l2CacheSize << "\n";
+        //ROCKY_INFO << LC << "L2 cache size set from environment = " << l2CacheSize << "\n";
     }
 
     // Env cache-only mode also disables the L2 cache.
@@ -384,7 +384,7 @@ TileLayer::setUpL2Cache(unsigned minSize)
     if (l2CacheSize > 0)
     {
 //        _memCache = new MemCache(l2CacheSize);
-        ROCKY_INFO << LC << "L2 cache size = " << l2CacheSize << std::endl;
+        //ROCKY_INFO << LC << "L2 cache size = " << l2CacheSize << std::endl;
     }
 }
 
@@ -879,7 +879,7 @@ TileLayer::getBestAvailableTileKey(
         ScopedWriteLock lock(_data_mutex);
         if (!_dataExtentsIndex) // Double check
         {
-            ROCKY_INFO << LC << "Building data extents index with " << _dataExtents.size() << " extents" << std::endl;
+            //ROCKY_INFO << LC << "Building data extents index with " << _dataExtents.size() << " extents" << std::endl;
             DataExtentsIndex* dataExtentsIndex = new DataExtentsIndex();
             for (auto de = _dataExtents.begin(); de != _dataExtents.end(); ++de)
             {

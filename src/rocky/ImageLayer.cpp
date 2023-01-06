@@ -340,7 +340,7 @@ ImageLayer::openImplementation(const IOOptions& io)
         options().shareTexMatUniformName().init(options().shareTexUniformName().get() + "_matrix");
 #endif
 
-    return Status::NoError;
+    return StatusOK;
 }
 
 
@@ -687,7 +687,8 @@ ImageLayer::assembleImage(
         return Result(GeoImage::INVALID);
     }
 
-    GeoImage mosaicedImage, result;
+    GeoImage mosaicedImage;
+    Result<GeoImage> result;
 
 #if 0
     // Scale the extent if necessary to apply an "edge buffer"
@@ -789,7 +790,7 @@ ImageLayer::assembleImage(
 
                 if (geoimage.value.valid())
                 {
-                    GeoImage cropped;
+                    Result<GeoImage> cropped;
 
                     if ( !isCoverage() )
                     {
@@ -811,8 +812,11 @@ ImageLayer::assembleImage(
                             false );
                     }
 
-                    // and queue it.
-                    mosaic.getImages().emplace_back(cropped.getImage(), k);
+                    if (cropped.status.ok())
+                    {
+                        // and queue it.
+                        mosaic.getImages().emplace_back(cropped->getImage(), k);
+                    }
 
                 }
             }
@@ -857,10 +861,10 @@ ImageLayer::assembleImage(
 
     if (io.canceled())
     {
-        return Result<GeoImage>(Status::ResourceUnavailable, "Canceled");
+        return Status(Status::ResourceUnavailable, "Canceled");
     }
 
-    return Result(result);
+    return result;
 }
 
 Status

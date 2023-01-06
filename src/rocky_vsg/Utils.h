@@ -60,51 +60,6 @@ namespace rocky
         return vsg::length(state->modelviewMatrixStack.top() * p);
     }
 
-#if 0
-    // from osg::Quat
-    template<class QUAT, class MAT4>
-    inline MAT4 quat_to_mat4(const QUAT& q) {
-        MAT4 m(1);
-        double length2 = vsg::square(length(q));
-        if (fabs(length2) <= std::numeric_limits<double>::min()) {
-            m[0][0] = 0.0;
-            m[1][1] = 0.0;
-            m[2][2] = 0.0;
-        }
-        else {
-            double rlength2;
-            if (length2 != 1.0)
-                rlength2 = 2.0 / length2;
-            else
-                rlength2 = 2.0;
-
-            double wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
-            x2 = rlength2 * QX;
-            y2 = rlength2 * QY;
-            z2 = rlength2 * QZ;
-            xx = QX * x2;
-            xy = QX * y2;
-            xz = QX * z2;
-            yy = QY * y2;
-            yz = QY * z2;
-            zz = QZ * z2;
-            wx = QW * x2;
-            wy = QW * y2;
-            wz = QW * z2;
-            m[0][0] = 1.0 - (yy + zz);
-            m[1][0] = xy - wz;
-            m[2][0] = xz + wy;
-            m[0][1] = xy + wz;
-            m[1][1] = 1.0 - (xx + zz);
-            m[2][1] = yz - wx;
-            m[0][2] = xz - wy;
-            m[1][2] = yz + wx;
-            m[2][2] = 1.0 - (xx + yy);
-        }
-        return m;
-    }
-#endif
-
     // adapted from vsg
     template<typename T>
     vsg::ref_ptr<vsg::Data> move(shared_ptr<Image> image, VkFormat format)
@@ -196,7 +151,7 @@ namespace rocky
     inline Result<shared_ptr<Image>> makeImageFromVSG(vsg::ref_ptr<vsg::Data> data)
     {
         if (!data)
-            return Result<shared_ptr<Image>>(Status::ResourceUnavailable);
+            return Status(Status::ResourceUnavailable);
 
         // TODO: move this into a utility somewhere
         auto vkformat = data->properties.format;
@@ -213,8 +168,7 @@ namespace rocky
 
         if (format == Image::UNDEFINED)
         {
-            return Result<shared_ptr<Image>>(
-                Status::ResourceUnavailable, "Unsupported image format");
+            return Status(Status::ResourceUnavailable, "Unsupported image format");
         }
 
         auto image = Image::create(

@@ -66,8 +66,6 @@ namespace rocky
     class Inherit : public PARENT
     {
     protected:
-        //template<typename... Args>
-        //Inherit(Args&... args) : PARENT(args...) { }
         template<typename... Args>
         Inherit(const Args&... args) : PARENT(args...) { }
     public:

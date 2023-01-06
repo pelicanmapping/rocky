@@ -17,7 +17,7 @@ namespace
     {
     public:
         Status openImplementation(const IOOptions& io) override {
-            return STATUS_OK;
+            return StatusOK;
         }
     };
 

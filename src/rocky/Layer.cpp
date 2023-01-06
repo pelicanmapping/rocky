@@ -283,7 +283,7 @@ Layer::open(const IOOptions& io)
     util::ScopedWriteLock lock(layerMutex());
 
     // be optimistic :)
-    _status = STATUS_OK;
+    _status = StatusOK;
 
     // Copy the layer options name into the Object name.
     if (_name.has_value())
@@ -356,13 +356,13 @@ Layer::openImplementation(const IOOptions& io)
     // Store it for further propagation!
     _cacheSettings->store(_readOptions.get());
 #endif
-    return STATUS_OK;
+    return StatusOK;
 }
 
 Status
 Layer::closeImplementation()
 {
-    return Status::NoError;
+    return status();
 }
 
 Status

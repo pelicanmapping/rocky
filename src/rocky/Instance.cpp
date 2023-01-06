@@ -12,7 +12,8 @@
 
 using namespace rocky;
 
-Instance::Instance()
+Instance::Instance() :
+    log(ioOptions.services.log)
 {
     ROCKY_INFO << "Hello, world." << std::endl;
 

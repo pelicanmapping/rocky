@@ -262,8 +262,6 @@ ElevationLayer::applyProfileOverrides(
         if (profileVDatumStr.empty())
             profileVDatumStr = "geodetic";
 
-        ROCKY_INFO << LC << "Override vdatum = " << vdatum << " (was " << profileVDatumStr << ")" << std::endl;
-
         if (!util::ciEquals(getProfile()->getSRS()->getVertInitString(), vdatum))
         {
             Config conf = getConfig();
@@ -678,7 +676,7 @@ ElevationLayer::writeHeightfield(
         util::ScopedReadLock lock(layerMutex());
         return writeHeightfieldImplementation(key, hf, io);
     }
-    return Status::ServiceUnavailable;
+    return Status(Status::ServiceUnavailable);
 }
 
 Status
@@ -687,7 +685,7 @@ ElevationLayer::writeHeightfieldImplementation(
     const Heightfield* hf,
     const IOOptions& io) const
 {
-    return Status::ServiceUnavailable;
+    return Status(Status::ServiceUnavailable);
 }
 
 #if 0

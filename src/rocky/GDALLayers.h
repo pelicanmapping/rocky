@@ -100,20 +100,20 @@ namespace rocky
                 const IOOptions& io);
 
             //! Creates an image if possible
-            shared_ptr<Image> createImage(
+            Result<shared_ptr<Image>> createImage(
                 const TileKey& key,
                 unsigned tileSize,
                 bool isCoverage,
                 const IOOptions& io);
 
             //! Creates a heightfield if possible
-            shared_ptr<Heightfield> createHeightfield(
+            Result<shared_ptr<Heightfield>> createHeightfield(
                 const TileKey& key,
                 unsigned tileSize,
                 const IOOptions& io);
 
             //! Creates a heightfield if possible using a faster path that creates a temporary warped VRT.
-            shared_ptr<Heightfield> createHeightfieldWithVRT(
+            Result<shared_ptr<Heightfield>> createHeightfieldWithVRT(
                 const TileKey& key,
                 unsigned tileSize,
                 const IOOptions& io);
@@ -203,21 +203,10 @@ namespace rocky
         public Inherit<ImageLayer, GDALImageLayer>,
         public GDAL::LayerBase
     {
-    //public: // serialization
-    //    class ROCKY_EXPORT Options : public ImageLayer::Options, public GDAL::Options {
-    //    public:
-    //        ROCKY_LayerOptions(Options, ImageLayer::Options);
-    //        virtual Config getConfig() const;
-    //    private:
-    //        void fromConfig(const Config&);
-    //    };
-
     public:
         GDALImageLayer();
 
         GDALImageLayer(const Config&);
-
-        //ROCKY_Layer(GDALImageLayer, Options, GDALImage);
 
     public: // Layer
 

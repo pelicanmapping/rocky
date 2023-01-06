@@ -111,7 +111,7 @@ VisibleLayer::openImplementation(const IOOptions& io)
         setVisible(_visible.get());
     }
 
-    return Status::NoError;
+    return StatusOK;
 }
 
 #if 0

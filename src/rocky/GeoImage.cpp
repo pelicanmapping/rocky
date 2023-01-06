@@ -600,7 +600,7 @@ GeoImage::getCoord(int s, int t, double& out_x, double& out_y) const
     return true;
 }
 
-GeoImage
+Result<GeoImage>
 GeoImage::crop(
     const GeoExtent& extent,
     bool exact, 
@@ -612,8 +612,8 @@ GeoImage::crop(
         return *this;
 
     shared_ptr<Image> image = getImage();
-    if ( !image )
-        return GeoImage::INVALID;
+    if (!image)
+        return Status(Status::ResourceUnavailable);
 
     //Check for equivalence
     if (extent.getSRS()->isEquivalentTo(getSRS()))
@@ -655,13 +655,11 @@ GeoImage::crop(
     }
     else
     {
-        //TODO: just reproject the image before cropping
-        ROCKY_WARN << "[rocky::GeoImage::crop] Cropping extent does not have equivalent SpatialReference" << std::endl;
-        return GeoImage::INVALID;
+        return Status("Cropping extent does not have equivalent SpatialReference");
     }
 }
 
-GeoImage
+Result<GeoImage>
 GeoImage::reproject(
     shared_ptr<SRS> to_srs,
     const GeoExtent* to_extent,
@@ -705,25 +703,9 @@ GeoImage::reproject(
             width,
             height,
             useBilinearInterpolation);
-    }   
-    return GeoImage(resultImage, destExtent);
-}
+    }
 
-Image::ptr
-GeoImage::takeImage()
-{
-    Image::ptr result;
-    if (_future.has_value())
-    {
-        result = _future->join();
-        _future->abandon();
-    }
-    else
-    {
-        result = _myimage;
-        _myimage = nullptr;
-    }
-    return result;
+    return GeoImage(resultImage, destExtent);
 }
 
 void

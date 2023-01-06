@@ -122,17 +122,13 @@ CubeUtils::latLonToFaceCoords(double lat_deg, double lon_deg,
 }
 
 bool
-CubeUtils::faceCoordsToLatLon( double x, double y, int face, double& out_lat_deg, double& out_lon_deg )
+CubeUtils::faceCoordsToLatLon(double x, double y, int face, double& out_lat_deg, double& out_lon_deg)
 {
     double offset = 0.0;
     dvec2 s( x, y );
 
     // validate coordinate range:
-    if ( x < 0 || x > 1 || y < 0 || y > 1 )
-    {
-        ROCKY_WARN << LC << "faceCoordToLatLon: input out of range" << std::endl;
-        return false;
-    }
+    ROCKY_SOFT_ASSERT_AND_RETURN((x >= 0 && x <= 1 && y >= 0 && y <= 1), false);
 
     if ( face < 4 ) // equatorial faces
     {

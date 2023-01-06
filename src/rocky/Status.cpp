@@ -7,7 +7,7 @@
 
 using namespace rocky;
 
-const rocky::Status rocky::STATUS_OK;
+const rocky::Status rocky::StatusOK;
 
 std::string rocky::Status::_errorCodeText[6] = {
     "No error",

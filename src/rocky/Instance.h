@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky/Common.h>
 #include <rocky/IOTypes.h> // replace 
+#include <rocky/Log.h>
 #include <unordered_map>
 
 namespace rocky
@@ -24,6 +25,9 @@ namespace rocky
 
         // global caching policy
         CachePolicy cachePolicy;
+
+        // logging service
+        Log& log;
 
         using ContentFactory = std::function<
             shared_ptr<Object>(

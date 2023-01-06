@@ -23,14 +23,14 @@ namespace rocky
             GeneralError          // something else went wrong
         };
 
-        int code;
+        Code code;
         std::string message;
 
         Status() : code(NoError) { }
         Status(const Status& rhs) = default; // : _errorCode(rhs._errorCode), _errorMsg(rhs._errorMsg) { }
-        Status(const Code& c) : code(c) { }
-        Status(const std::string& m) : code(GeneralError), message(m) { }
-        Status(const Code& c, const std::string& m) : code(c), message(m) { }
+        explicit Status(const Code& c) : code(c) { }
+        explicit Status(const std::string& m) : code(GeneralError), message(m) { }
+        explicit Status(const Code& c, const std::string& m) : code(c), message(m) { }
         bool ok() const { return code == NoError; }
         bool failed() const { return !ok(); }
         bool operator == (const Status& rhs) const { return code == rhs.code && message.compare(rhs.message) == 0; }
@@ -40,13 +40,13 @@ namespace rocky
         static Status Error(const std::string& m) { return Status(m); }
         static Status Error(const Code& c, const std::string& m) { return Status(c, m); }
         std::string toString() const {
-            return _errorCodeText[code < 6 ? code : 5] + ": " + message;
+            return _errorCodeText[(int)code < 6 ? (int)code : 5] + ": " + message;
         }
     private:
         static std::string _errorCodeText[6];
     };
 
-    extern ROCKY_EXPORT const Status STATUS_OK;
+    extern ROCKY_EXPORT const Status StatusOK;
 
     /**
      * Generic return value that wraps a value type and a Status.
@@ -55,9 +55,11 @@ namespace rocky
     struct Result
     {
         Result(const T& v) : value(v) { }
+        Result(const Status& s) : status(s) { }
         explicit Result() : status(Status::ResourceUnavailable) { }
-        explicit Result(const Status& s) : status(s) { }
         explicit Result(const Status::Code& c, const std::string& m) : status(c, m) { }
+        T* operator -> () { return &value; }
+        const T* operator -> () const { return &value; }
 
         T value;
         Status status;

@@ -69,7 +69,7 @@ namespace rocky
          *      New pixel size for the output image. By default, the method will automatically
          *      calculate a new pixel size.
          */
-        GeoImage crop(
+        Result<GeoImage> crop(
             const GeoExtent& extent,
             bool exact = false,
             unsigned int width = 0,
@@ -88,21 +88,14 @@ namespace rocky
          *      New pixel size for the output image. Be default, the method will automatically
          *      calculate a new pixel size.
          */
-        GeoImage reproject(
+        Result<GeoImage> reproject(
             shared_ptr<SRS> to_srs,
             const GeoExtent* to_extent = nullptr,
             unsigned width = 0,
             unsigned height = 0,
             bool useBilinearInterpolation = true) const;
 
-        /**
-         * Returns the underlying OSG image and releases the reference pointer.
-         */
-        shared_ptr<Image> takeImage();
-
-        /**
-         * Gets the units per pixel of this geoimage
-         */
+        //! Gets the units per pixel of this geoimage
         double getUnitsPerPixel() const;
 
         //! Gets the coordinate at the image's s,t
@@ -113,21 +106,6 @@ namespace rocky
         //! for example to detect destruction.
         void setTrackingToken(shared_ptr<Object> token);
         shared_ptr<Object> getTrackingToken() const;
-
-        //unsigned width() const;
-        //unsigned height() const;
-
-        //bool read(pixel_type& output, unsigned s, unsigned t) const {
-        //    _read(output, s, t);
-        //    return output.r() != NO_DATA_VALUE;
-        //}
-        //bool read(pixel_type& output, double u, double v) const {
-        //    _read(output, u, v);
-        //    return output.r() != NO_DATA_VALUE;
-        //}
-
-        //ImageUtils::PixelReader& getReader() { return _read; };
-        //const ImageUtils::PixelReader& getReader() const { return _read; }
 
         //! Read the value of a pixel at a geopoint.
         bool read(
@@ -141,20 +119,4 @@ namespace rocky
         mutable optional<util::Future<shared_ptr<Image>>> _future;
         shared_ptr<Object> _token;
     };
-
-    //typedef std::vector<GeoImage> GeoImageVector;
-
-    //struct GeoImageIterator : public ImageUtils::ImageIteratorWithExtent<GeoExtent>
-    //{
-    //    GeoImageIterator(const GeoImage& im) :
-    //        ImageUtils::ImageIteratorWithExtent<GeoExtent>(
-    //            im.getImage(), im.getExtent()) { }
-    //};
-
-    //struct GeoImagePixelReader : public ImageUtils::PixelReaderWithExtent<GeoExtent>
-    //{
-    //    GeoImagePixelReader(const GeoImage& im) :
-    //        ImageUtils::PixelReaderWithExtent<GeoExtent>(
-    //            im.getImage(), im.getExtent()) { }
-    //};
 }

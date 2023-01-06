@@ -6,6 +6,7 @@
 #include "GDALLayers.h"
 #include "Heightfield.h"
 #include "Image.h"
+#include "Log.h"
 
 #include <gdal.h>
 #include <gdalwarper.h>
@@ -277,8 +278,6 @@ namespace rocky
             if (!colorEntry)
             {
                 //FIXME: What to do here?
-
-                //ROCKY_INFO << "NO COLOR ENTRY FOR COLOR " << rawImageData[i] << std::endl;
                 color.r = 255;
                 color.g = 0;
                 color.b = 0;
@@ -462,8 +461,6 @@ GDAL::Driver::~Driver()
         GDALClose(_warpedDS);
     else if (_srcDS)
         GDALClose(_srcDS);
-
-    ROCKY_DEBUG << "Closed GDAL Driver on thread " << _threadId << std::endl;
 }
 
 // Open the data source and prepare it for reading
@@ -625,7 +622,6 @@ GDAL::Driver::open(
     // Otherwise, collect information and make the profile later.
     if (src_srs->isGeographic())
     {
-        ROCKY_DEBUG << INDENT << "Creating Profile from source's geographic SRS: " << src_srs->getName() << std::endl;
         _profile = Profile::create(src_srs);
         if (!_profile)
         {
@@ -700,8 +696,6 @@ GDAL::Driver::open(
     pixelToGeo(0.0, _warpedDS->GetRasterYSize(), minX, minY);
     pixelToGeo(_warpedDS->GetRasterXSize(), 0.0, maxX, maxY);
 
-    ROCKY_DEBUG << LC << INDENT << "Bounds: " << minX << "," << minY << " .. " << maxX << "," << maxY << std::endl;
-
     // If we don't have a profile yet, that means this is a projected dataset
     // so we will create the profile from the actual data extents.
     if (!_profile)
@@ -719,9 +713,6 @@ GDAL::Driver::open(
             return Status::Error(
                 "Cannot create projected Profile from dataset's warped spatial reference WKT: " + warpedSRSWKT);
         }
-
-        if (info)
-            ROCKY_INFO << LC << INDENT << source << " is projected, SRS = " << warpedSRSWKT << std::endl;
     }
 
     ROCKY_HARD_ASSERT(_profile != nullptr);
@@ -731,13 +722,9 @@ GDAL::Driver::open(
     double resolutionY = (maxY - minY) / (double)_warpedDS->GetRasterYSize();
     double maxResolution = std::min(resolutionX, resolutionY);
 
-    if (info)
-        ROCKY_INFO << LC << INDENT << "Resolution= " << resolutionX << "x" << resolutionY << " max=" << maxResolution << std::endl;
-
     if (_maxDataLevel.isSet())
     {
-        if (info)
-            ROCKY_INFO << LC << INDENT << gdalOptions().url->full() << " using max data level " << _maxDataLevel.get() << std::endl;
+        //nop
     }
     else
     {
@@ -755,9 +742,6 @@ GDAL::Driver::open(
                 break;
             }
         }
-
-        if (info)
-            ROCKY_INFO << LC << INDENT << gdalOptions().url->full() << " max Data Level: " << _maxDataLevel.get() << std::endl;
     }
 
     // If the input dataset is a VRT, then get the individual files in the dataset and use THEM for the DataExtents.
@@ -801,14 +785,8 @@ GDAL::Driver::open(
             _bounds.ymax = 90;
             clamped = true;
         }
-        if (clamped)
-        {
-            ROCKY_INFO << LC << "Clamped out-of-range geographic extents" << std::endl;
-        }
     }
     _extents = GeoExtent(srs, _bounds);
-
-    ROCKY_DEBUG << LC << "GeoExtent = " << _extents.toString() << std::endl;
 
     if (layerDataExtents)
     {
@@ -831,10 +809,7 @@ GDAL::Driver::open(
     // Get the linear units of the SRS for scaling elevation values
     _linearUnits = srs->getReportedLinearUnits();
 
-    if (info)
-        ROCKY_DEBUG << LC << INDENT << "Set Profile to " << _profile->toString() << std::endl;
-
-    return STATUS_OK;
+    return StatusOK;
 }
 
 void
@@ -975,29 +950,23 @@ GDAL::Driver::getInterpolatedValue(GDALRasterBand* band, double x, double y, boo
             //Check for exact value
             if ((colMax == colMin) && (rowMax == rowMin))
             {
-                //ROCKY_NOTICE << "Exact value" << std::endl;
                 result = llHeight;
             }
             else if (colMax == colMin)
             {
-                //ROCKY_NOTICE << "Vertically" << std::endl;
                 //Linear interpolate vertically
                 result = ((float)rowMax - r) * llHeight + (r - (float)rowMin) * ulHeight;
             }
             else if (rowMax == rowMin)
             {
-                //ROCKY_NOTICE << "Horizontally" << std::endl;
                 //Linear interpolate horizontally
                 result = ((float)colMax - c) * llHeight + (c - (float)colMin) * lrHeight;
             }
             else
             {
-                //ROCKY_NOTICE << "Bilinear" << std::endl;
                 //Bilinear interpolate
                 float r1 = ((float)colMax - c) * llHeight + (c - (float)colMin) * lrHeight;
                 float r2 = ((float)colMax - c) * ulHeight + (c - (float)colMin) * urHeight;
-
-                //ROCKY_INFO << "r1, r2 = " << r1 << " , " << r2 << std::endl;
                 result = ((float)rowMax - r) * r1 + (r - (float)rowMin) * r2;
             }
         }
@@ -1012,7 +981,7 @@ GDAL::Driver::intersects(const TileKey& key)
     return key.getExtent().intersects(_extents);
 }
 
-shared_ptr<Image>
+Result<shared_ptr<Image>>
 GDAL::Driver::createImage(
     const TileKey& key,
     unsigned tileSize,
@@ -1021,17 +990,13 @@ GDAL::Driver::createImage(
 {
     if (_maxDataLevel.isSet() && key.getLevelOfDetail() > _maxDataLevel.get())
     {
-        ROCKY_DEBUG << LC << "Reached maximum data resolution key="
-            << key.getLevelOfDetail() << " max=" << _maxDataLevel.get() << std::endl;
-        return { };
+        return nullptr;
     }
 
     if (io.canceled())
     {
-        return { };
+        return nullptr;
     }
-
-    //ROCKY_WARN << "key = " << key.str() << std::endl;
 
     shared_ptr<Image> image;
 
@@ -1045,7 +1010,7 @@ GDAL::Driver::createImage(
     rocky::GeoExtent intersection = key.getExtent().intersectionSameSRS(_extents);
     if (!intersection.valid())
     {
-        return { };
+        return nullptr;
     }
 
     double west = intersection.xMin();
@@ -1100,7 +1065,10 @@ GDAL::Driver::createImage(
 
     if (off_x + width > rasterWidth || off_y + height > rasterHeight)
     {
-        ROCKY_WARN << LC << "Read window outside of bounds of dataset.  Source Dimensions=" << rasterWidth << "x" << rasterHeight << " Read Window=" << off_x << ", " << off_y << " " << width << "x" << height << std::endl;
+        io.services.log.warn <<
+            "Read window outside of bounds of dataset.  Source Dimensions=" 
+            << rasterWidth << "x" << rasterHeight 
+            << " Read Window=" << off_x << ", " << off_y << " " << width << "x" << height << std::endl;
     }
 
     // Determine the destination window
@@ -1119,17 +1087,11 @@ GDAL::Driver::createImage(
     double dx = (xmax - xmin) / (double)(tileSize - 1);
     double dy = (ymax - ymin) / (double)(tileSize - 1);
 
-    ROCKY_DEBUG << LC << "ReadWindow " << off_x << "," << off_y << " " << width << "x" << height << std::endl;
-    ROCKY_DEBUG << LC << "DestWindow " << tile_offset_left << "," << tile_offset_top << " " << target_width << "x" << target_height << std::endl;
-
-
-    //Return if parameters are out of range.
+    // Return if parameters are out of range.
     if (width <= 0 || height <= 0 || target_width <= 0 || target_height <= 0)
     {
-        return { };
+        return nullptr;
     }
-
-
 
     GDALRasterBand* bandRed = findBandByColorInterp(_warpedDS, GCI_RedBand);
     GDALRasterBand* bandGreen = findBandByColorInterp(_warpedDS, GCI_GreenBand);
@@ -1142,7 +1104,6 @@ GDAL::Driver::createImage(
 
     if (!bandRed && !bandGreen && !bandBlue && !bandAlpha && !bandGray && !bandPalette)
     {
-        ROCKY_DEBUG << LC << "Could not determine bands based on color interpretation, using band count" << std::endl;
         //We couldn't find any valid bands based on the color interp, so just make an educated guess based on the number of bands in the file
         //RGB = 3 bands
         if (_warpedDS->GetRasterCount() == 3)
@@ -1316,8 +1277,9 @@ GDAL::Driver::createImage(
             }
             else // err != CE_None
             {
-                ROCKY_WARN << LC << "RasterIO failed.\n";
+                //ROCKY_WARN << LC << "RasterIO failed.\n";
                 // TODO - handle error condition
+                io.services.log.warn << "RasterIO failed" << std::endl;
             }
 
             delete[] data;
@@ -1493,18 +1455,20 @@ GDAL::Driver::createImage(
     }
     else
     {
-        ROCKY_WARN
+        io.services.log.warn
             << LC << "Could not find red, green and blue bands or gray bands in "
             << gdalOptions().url->full()
             << ".  Cannot create image. " << std::endl;
 
-        return { };
+        return Status(
+            Status::ResourceUnavailable,
+            "Could not find red, green, blue, or gray band");
     }
 
     return image;
 }
 
-shared_ptr<Heightfield>
+Result<shared_ptr<Heightfield>>
 GDAL::Driver::createHeightfield(
     const TileKey& key,
     unsigned tileSize,
@@ -1513,7 +1477,7 @@ GDAL::Driver::createHeightfield(
     if (_maxDataLevel.isSet() && key.getLevelOfDetail() > _maxDataLevel.get())
     {
         //ROCKY_NOTICE << "Reached maximum data resolution key=" << key.getLevelOfDetail() << " max=" << _maxDataLevel <<  std::endl;
-        return NULL;
+        return nullptr;
     }
 
     //GDAL_SCOPED_LOCK;
@@ -1606,7 +1570,7 @@ GDAL::Driver::createHeightfield(
     return hf;
 }
 
-shared_ptr<Heightfield>
+Result<shared_ptr<Heightfield>>
 GDAL::Driver::createHeightfieldWithVRT(
     const TileKey& key,
     unsigned tileSize,
@@ -1775,7 +1739,7 @@ GDAL::Options::readFrom(const Config& conf)
     };
     for (const auto& key : deprecated_keys)
         if (conf.hasValue(key))
-            ROCKY_INFO << "Deprecated property \"" << key << "\" ignored" << std::endl;
+            ROCKY_WARN << "Deprecated property \"" << key << "\" ignored" << std::endl;
 }
 
 void
@@ -1871,7 +1835,7 @@ namespace
             *profile = driver->getProfile();
         }
 
-        return Status::NoError;
+        return StatusOK;
     }
 }
 
@@ -1978,10 +1942,10 @@ GDALImageLayer::createImageImplementation(
     const IOOptions& io) const
 {
     if (status().failed())
-        return Result(GeoImage::INVALID);
+        return status();
 
     if (isClosing() || !isOpen())
-        return Result(GeoImage::INVALID);
+        return Status(Status::ResourceUnavailable);
 
     GDAL::Driver::Ptr& driver = _drivers.get();
     if (driver == nullptr)
@@ -2005,10 +1969,10 @@ GDALImageLayer::createImageImplementation(
             _coverage == true,
             io);
 
-        return Result(GeoImage(image, key.getExtent()));
+        return GeoImage(image.value, key.getExtent());
     }
 
-    return Result(GeoImage::INVALID);
+    return GeoImage::INVALID;
 }
 
 //......................................................................
@@ -2111,11 +2075,11 @@ GDALElevationLayer::createHeightfieldImplementation(
     const IOOptions& io) const
 {
     if (status().failed())
-        return Result<GeoHeightfield>(status());
+        return status();
 
     // check while locked to ensure we may continue
     if (isClosing() || !isOpen())
-        return GeoHeightfield::INVALID;
+        return Status(Status::ResourceUnavailable);
 
     GDAL::Driver::Ptr& driver = _drivers.get();
     if (driver == nullptr)
@@ -2133,7 +2097,7 @@ GDALElevationLayer::createHeightfieldImplementation(
 
     if (driver)
     {
-        shared_ptr<Heightfield> heightfield;
+        Result<shared_ptr<Heightfield>> heightfield;
 
         if (_options.useVRT == true)
         {
@@ -2150,10 +2114,13 @@ GDALElevationLayer::createHeightfieldImplementation(
                 io);
         }
 
-        return GeoHeightfield(heightfield, key.getExtent());
+        if (heightfield.status.ok())
+            return GeoHeightfield(heightfield.value, key.getExtent());
+        else
+            return heightfield.status;
     }
 
-    return GeoHeightfield::INVALID;
+    return Status(Status::ResourceUnavailable);
 }
 
 //...................................................................
@@ -2232,9 +2199,10 @@ namespace
             pixelBytes,
             pixelBytes * image->width(),
             1);
+
         if (err != CE_None)
         {
-            ROCKY_WARN << LC << "RasterIO failed.\n";
+            std::cerr << LC << "RasterIO failed.\n";
         }
 
         ds->FlushCache();
@@ -2244,22 +2212,20 @@ namespace
         return image;
     }
 
-    GDALDataset* createMemDS(int width, int height, int numBands, GDALDataType dataType, double minX, double minY, double maxX, double maxY, const std::string &projection)
+    Result<GDALDataset*> createMemDS(int width, int height, int numBands, GDALDataType dataType, double minX, double minY, double maxX, double maxY, const std::string &projection)
     {
         //Get the MEM driver
         GDALDriver* memDriver = (GDALDriver*)GDALGetDriverByName("MEM");
         if (!memDriver)
         {
-            ROCKY_WARN << LC << "Could not get MEM driver" << std::endl;
-            return NULL;
+            return Result<GDALDataset*>(Status::ResourceUnavailable, "Could not get MEM driver");
         }
 
         //Create the in memory dataset.
         GDALDataset* ds = memDriver->Create("", width, height, numBands, dataType, 0);
         if (!ds)
         {
-            ROCKY_WARN << LC << "memDriver.create failed" << std::endl;
-            return NULL;
+            return Result<GDALDataset*>(Status::ResourceUnavailable, "memDriver.create failed");
         }
 
         //Initialize the color interpretation
@@ -2295,7 +2261,7 @@ namespace
         return ds;
     }
 
-    GDALDataset* createDataSetFromImage(
+    Result<GDALDataset*> createDataSetFromImage(
         const Image* image,
         double minX, double minY, double maxX, double maxY,
         const std::string& projection)
@@ -2326,8 +2292,9 @@ namespace
 
         if (numBands == 0)
         {
-            ROCKY_WARN << LC << "Failure in createDataSetFromImage: unsupported pixel format\n";
-            return nullptr;
+            return Result<GDALDataset*>(
+                Status::ResourceUnavailable,
+                "Failure in createDataSetFromImage: unsupported pixel format");
         }
 
         int pixelBytes =
@@ -2335,16 +2302,16 @@ namespace
             gdalDataType == GDT_UInt16 ? 2 * numBands :
             4 * numBands;
 
-        GDALDataset* srcDS = createMemDS(
+        auto srcDS = createMemDS(
             image->width(), image->height(),
             numBands,
             gdalDataType,
             minX, minY, maxX, maxY,
             projection);
 
-        if (srcDS)
+        if (srcDS.status.ok())
         {
-            CPLErr err = srcDS->RasterIO(
+            CPLErr err = srcDS.value->RasterIO(
                 GF_Write,
                 0, 0,
                 clonedImage->width(), clonedImage->height(),
@@ -2357,12 +2324,13 @@ namespace
                 pixelBytes,
                 pixelBytes * image->width(),
                 1);
+
+            srcDS.value->FlushCache();
+
             if (err != CE_None)
             {
-                ROCKY_WARN << LC << "RasterIO failed.\n";
+                return Result<GDALDataset*>(Status::GeneralError, "RasterIO Failed");
             }
-
-            srcDS->FlushCache();
         }
 
         return srcDS;
@@ -2384,53 +2352,59 @@ rocky::GDAL::reprojectImage(
     //GDAL_SCOPED_LOCK;
 
     //Create a dataset from the source image
-    GDALDataset* srcDS = createDataSetFromImage(
+    auto srcDS = createDataSetFromImage(
         srcImage, srcMinX, srcMinY, srcMaxX, srcMaxY, srcWKT);
 
-    if (srcDS == nullptr)
+    if (srcDS.status.failed() || srcDS.value == nullptr)
         return nullptr;
 
     if (width == 0 || height == 0)
     {
         double outgeotransform[6];
         double extents[4];
-        void* transformer = GDALCreateGenImgProjTransformer(srcDS, srcWKT.c_str(), NULL, destWKT.c_str(), 1, 0, 0);
-        GDALSuggestedWarpOutput2(srcDS,
+        void* transformer = GDALCreateGenImgProjTransformer(srcDS.value, srcWKT.c_str(), NULL, destWKT.c_str(), 1, 0, 0);
+
+        GDALSuggestedWarpOutput2(
+            srcDS.value,
             GDALGenImgProjTransform, transformer,
             outgeotransform,
             &width,
             &height,
             extents,
             0);
+
         GDALDestroyGenImgProjTransformer(transformer);
     }
 
-    int numBands = srcDS->GetRasterCount();
-    GDALDataType dataType = srcDS->GetRasterBand(1)->GetRasterDataType();
+    int numBands = srcDS.value->GetRasterCount();
+    GDALDataType dataType = srcDS.value->GetRasterBand(1)->GetRasterDataType();
 
-    GDALDataset* destDS = createMemDS(width, height, numBands, dataType, destMinX, destMinY, destMaxX, destMaxY, destWKT);
+    auto destDS = createMemDS(width, height, numBands, dataType, destMinX, destMinY, destMaxX, destMaxY, destWKT);
+
+    if (destDS.status.failed())
+        return nullptr;
 
     if (useBilinearInterpolation == true)
     {
         GDALReprojectImage(
-            srcDS, nullptr,
-            destDS, nullptr,
+            srcDS.value, nullptr,
+            destDS.value, nullptr,
             GRA_Bilinear,
             0, 0, 0, 0, 0);
     }
     else
     {
         GDALReprojectImage(
-            srcDS, nullptr,
-            destDS, nullptr,
+            srcDS.value, nullptr,
+            destDS.value, nullptr,
             GRA_NearestNeighbour,
             0, 0, 0, 0, 0);
     }
 
-    auto result = createImageFromDataset(destDS);
+    auto result = createImageFromDataset(destDS.value);
 
-    delete srcDS;
-    delete destDS;
+    delete srcDS.value;
+    delete destDS.value;
 
     return result;
 }

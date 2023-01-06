@@ -7,6 +7,7 @@
 
 #include <rocky/Config.h>
 #include <rocky/DateTime.h>
+#include <rocky/Log.h>
 #include <rocky/Status.h>
 #include <rocky/Units.h>
 
@@ -47,16 +48,23 @@ namespace rocky
 #endif
 
     //! Function signature for reading an image
-    using ImageReader = std::function<
+    using ReadImage = std::function<
         Result<shared_ptr<Image>>(const std::string& url, const IOOptions&)>;
 
+    using CacheImpl = void*; // todo.
+    using CacheService = std::function<shared_ptr<CacheImpl>()>;
 
-    class ROCKY_EXPORT IOServices
+
+    class ROCKY_EXPORT Services
     {
     public:
-        Cache::ptr cache;
+        Log log;
 
-        ImageReader readImage;
+        CacheService cache;
+        
+        ReadImage readImage;
+
+        // ElevationService elevation;
     };
 
     // User options passed along with an IO context.
@@ -68,8 +76,8 @@ namespace rocky
         IOOptions(Cancelable& p);
         IOOptions(const IOOptions& rhs, Cancelable& p);
 
-        //! Access to IO-related services
-        IOServices services;
+        //! Access to useful services
+        Services services;
 
         //! Custom options for reading/writing data
         std::unordered_map<std::string, std::string> properties;
@@ -84,27 +92,6 @@ namespace rocky
     private:
         Cancelable* _p;
     };
-
-#if 0
-    class ROCKY_EXPORT IOControl : public IOOptions
-    {
-    public:
-        bool canceled() const override {
-            return _canceled;
-        }
-
-    public: // Cancelable
-        void cancel() {
-            _canceled = true;
-        }
-
-        //TODO - stack class only?
-        //Should replace Progress?
-        //Holds a pointer to io options?
-    private:
-        bool _canceled = false;
-    };
-#endif
 
     class ROCKY_EXPORT CachePolicy
     {

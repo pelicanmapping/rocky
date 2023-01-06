@@ -35,7 +35,7 @@ namespace rocky
 int main(int argc, char** argv)
 {
     // rocky instance
-    auto instance = rocky::InstanceVSG::create();
+    auto rk = rocky::InstanceVSG::create();
 
     // set up defaults and read command line arguments to override them
     vsg::CommandLine arguments(&argc, argv);
@@ -66,7 +66,7 @@ int main(int argc, char** argv)
     auto vsg_scene = vsg::Group::create();
 
     // TODO: read this from an earth file
-    auto mapNode = rocky::MapNode::create(instance);
+    auto mapNode = rocky::MapNode::create(rk);
 
     // set up the runtime context with everything we need.
     mapNode->runtime.compiler = [viewer]() { return viewer->compileManager; };
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
     mapNode->getMap()->addLayer(layer);
 
     if (layer->status().failed())
-        ROCKY_WARN << layer->status().message << std::endl;
+        rk->log.warn << layer->status().message << std::endl;
 
 #else
     auto layer = rocky::TestLayer::create();
@@ -112,8 +112,6 @@ int main(int argc, char** argv)
         perspective,
         lookAt,
         vsg::ViewportState::create(window->extent2D()));
-
-    //viewer->addEventHandler(vsg::Trackball::create(camera));
 
     viewer->addEventHandler(rocky::MapManipulator::create(mapNode, camera));
 

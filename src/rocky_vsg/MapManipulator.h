@@ -599,7 +599,7 @@ namespace rocky
         {
             Task() : _type(TASK_NONE) { }
             void set(TaskType type, const vsg::dvec2& delta, double duration, vsg::time_point now) {
-                _type = type; _delta; _duration_s = duration; _time_last_service = now;
+                _type = type; _delta = delta; _duration_s = duration; _time_last_service = now;
             }
             void reset() {
                 _type = TASK_NONE;
