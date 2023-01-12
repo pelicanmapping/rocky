@@ -23,15 +23,12 @@ namespace rocky
         //! Constructs an empty (and invalid) geopoint.
         GeoPoint();
 
-        //! Copy
-        GeoPoint(const GeoPoint& rhs);
-
         //! Constructs a GeoPoint at 0,0,0 absolute.
-        GeoPoint(shared_ptr<SRS> srs);
+        GeoPoint(const SRS& srs);
 
         //! Constructs a GeoPoint
         GeoPoint(
-            shared_ptr<SRS> srs,
+            const SRS& srs,
             double x,
             double y,
             double z,
@@ -40,25 +37,25 @@ namespace rocky
         //! Constructs a GeoPoint with X and Y coordinates. The Z defaults
         //! to zero with an ALTMODE_RELATIVE altitude mode (i.e., 0 meters)
         GeoPoint(
-            shared_ptr<SRS> srs,
+            const SRS& srs,
             double x,
             double y);
 
         GeoPoint(
-            shared_ptr<SRS> srs,
+            const SRS& srs,
             const dvec3& xyz,
             const AltitudeMode& altmode = ALTMODE_ABSOLUTE);
 
         //! Constructs a new GeoPoint by transforming an existing GeoPoint into
         //! the specified spatial reference.
         GeoPoint(
-            shared_ptr<SRS> srs,
+            const SRS& srs,
             const GeoPoint& rhs);
 
         //! Constructs a geopoint from serialization
         GeoPoint(
             const Config& conf,
-            shared_ptr<SRS> srs = nullptr);
+            const SRS& srs = {});
 
 
         /** dtor */
@@ -66,13 +63,13 @@ namespace rocky
 
         //! Sets the SRS and coords
         void set(
-            shared_ptr<SRS> srs,
+            const SRS& srs,
             const dvec3& xyz,
             const AltitudeMode& mode);
 
         //! Sets the SRS and coords
         void set(
-            shared_ptr<SRS> srs,
+            const SRS& srs,
             double                  x,
             double                  y,
             double                  z,
@@ -96,7 +93,7 @@ namespace rocky
 
         const dvec3& to_dvec3() const { return _p; }
 
-        shared_ptr<SRS> getSRS() const { return _srs; }
+        const SRS& getSRS() const { return _srs; }
 
         /**
          * AltitudeMode reflects whether the Z coordinate is absolute with
@@ -112,17 +109,17 @@ namespace rocky
         /**
          * Returns a copy of this geopoint transformed into another SRS.
          */
-        GeoPoint transform(shared_ptr<SRS> outSRS) const;
+        GeoPoint transform(const SRS& outSRS) const;
 
         /**
          * Transforms this geopoint into another SRS.
          */
-        bool transform(shared_ptr<SRS> outSRS, GeoPoint& output) const;
+        bool transform(const SRS& outSRS, GeoPoint& output) const;
 
         /**
          * Transforms this point in place to another SRS.
          */
-        bool transformInPlace(shared_ptr<SRS> srs);
+        bool transformInPlace(const SRS& srs);
 
         /**
          * Transforms this geopoint's Z coordinate (in place)
@@ -140,17 +137,17 @@ namespace rocky
         /**
          * Transforms this geopoint's Z to be absolute w.r.t. the vertical datum
          */
-        bool makeAbsolute(const TerrainResolver* t) { return transformZ(ALTMODE_ABSOLUTE, t); }
+        //bool makeAbsolute(const TerrainResolver* t) { return transformZ(ALTMODE_ABSOLUTE, t); }
 
         /**
          * Transforms this geopoint's Z to be terrain-relative.
          */
-        bool makeRelative(const TerrainResolver* t) { return transformZ(ALTMODE_RELATIVE, t); }
+        //bool makeRelative(const TerrainResolver* t) { return transformZ(ALTMODE_RELATIVE, t); }
 
         /**
          * Transforms this GeoPoint to geographic (lat/long) coords in place.
          */
-        bool makeGeographic();
+        //bool makeGeographic();
 
         /**
          * Outputs world coordinates corresponding to this point. If the point
@@ -158,43 +155,43 @@ namespace rocky
          * the actual Z coordinate. Use the variant of toWorld that takes a
          * Terrain* instead.
          */
-        template<class DVEC3>
-        inline bool toWorld(DVEC3& out_world) const;
+        //template<class DVEC3>
+        //inline bool toWorld(DVEC3& out_world) const;
 
         /**
          * Outputs world coordinates corresponding to this point, passing in a Terrain
          * object that will be used if the point needs to be converted to absolute
          * altitude
          */
-        bool toWorld(dvec3& out_world, const TerrainResolver* terrain) const;
+        //bool toWorld(dvec3& out_world, const TerrainResolver* terrain) const;
 
         /**
          * Converts world coordinates into a geopoint
          */
-        template<class DVEC3>
-        inline bool fromWorld(shared_ptr<SRS> srs, const DVEC3& world);
+        //template<class DVEC3>
+        //inline bool fromWorld(const SRS& srs, const DVEC3& world);
 
         /**
          * geopoint into absolute world coords.
          */
-        bool createLocalToWorld(dmat4& out_local2world) const;
+        //bool createLocalToWorld(dmat4& out_local2world) const;
 
         /**
          * Outputs a matrix that will transform absolute world coordiantes so they are
          * localized into a local tangent place around this geopoint.
          */
-        bool createWorldToLocal(dmat4& out_world2local) const;
+        //bool createWorldToLocal(dmat4& out_world2local) const;
 
         /**
          * Converts this point to the same point in a local tangent plane.
          */
-        GeoPoint toLocalTangentPlane() const;
+        //GeoPoint toLocalTangentPlane() const;
 
         /**
          * Outputs an "up" vector corresponding to the given point. The up vector
          * is orthogonal to a local tangent plane at that point on the map.
          */
-        bool createWorldUpVector(dvec3& out_up) const;
+        //bool createWorldUpVector(dvec3& out_up) const;
 
         //! Geodesic distance from this point to another.
         //! This is the distance along the real-world ellipsoidal surface
@@ -214,14 +211,14 @@ namespace rocky
          * Interpolates a point between this point and another point
          * using the parameter t [0..1].
          */
-        GeoPoint interpolate(const GeoPoint& rhs, double t) const;
+        //GeoPoint interpolate(const GeoPoint& rhs, double t) const;
 
         //! Convenience function to return xy units
-        const Units& getXYUnits() const;
+        Units getXYUnits() const;
 
         bool operator == (const GeoPoint& rhs) const;
         bool operator != (const GeoPoint& rhs) const { return !operator==(rhs); }
-        bool valid() const { return _srs != nullptr; }
+        bool valid() const { return _srs.valid(); }
 
         Config getConfig() const;
 
@@ -233,16 +230,22 @@ namespace rocky
     public:
         static GeoPoint INVALID;
 
+        // copy/move ops
+        GeoPoint(const GeoPoint& rhs) = default;
+        GeoPoint& operator=(const GeoPoint & rhs) = default;
+        GeoPoint(GeoPoint && rhs) { *this = rhs; }
+        GeoPoint& operator=(GeoPoint && rhs);
+
     protected:
         dvec3 _p;
-        shared_ptr<SRS> _srs;
+        SRS _srs;
         AltitudeMode _altMode;
 
-        bool toWorld_impl(dvec3& out) const;
-        bool fromWorld_impl(shared_ptr<SRS> srs, const dvec3& in);
+        //bool toWorld_impl(dvec3& out) const;
+        //bool fromWorld_impl(const SRS& srs, const dvec3& in);
     };
 
-
+#if 0
 
     template<class DVEC3>
     bool GeoPoint::toWorld(DVEC3& out_dvec3) const
@@ -254,8 +257,9 @@ namespace rocky
     }
 
     template<class DVEC3>
-    bool GeoPoint::fromWorld(shared_ptr<SRS> srs, const DVEC3& in)
+    bool GeoPoint::fromWorld(const SRS& srs, const DVEC3& in)
     {
         return fromWorld_impl(srs, dvec3(in.x, in.y, in.z));
     }
+#endif
 }

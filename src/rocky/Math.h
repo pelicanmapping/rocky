@@ -294,101 +294,42 @@ namespace rocky
         temp.normalize();
         return temp;
     }
-    // Newton-Raphson solver
-    template<typename Func, typename FuncDeriv>
-    double solve(Func func, FuncDeriv deriv, double guess, double tolerance, bool& valid, int maxIterations = 16)
-    {
-        double xn = guess;
-        for (int i = 0; i <= maxIterations; ++i)
-        {
-            double f = func(xn);
-            if (fabs(f) <= tolerance)
-            {
-                valid = true;
-                return xn;
-            }
-            xn = xn - f / deriv(xn);
-        }
-        valid = false;
-        return xn;
-    }
-
-    // Courtesy of stackoverflow, return -1, 0, +1 based on the sign
-    // of a number
-    template<typename T>
-    int sgn(T val)
-    {
-        return (T(0) < val) - (val < T(0));
-    }
-    // Bisection solver, useful when the derivative of a function is
-    // unknown or expensive to calculate.
-    // x0 and x1 are initial guesses surrounding the root. The signs
-    // of func(x0) and func(x1) should be different; otherwise we bail
-    // immediately.
-    template<typename Func>
-    double solveBisect(const Func& func, double x0, double x1, double tolerance, int maxIterations = 8)
-    {
-        double f0 = func(x0);
-        double f1 =func(x1);
-        if (sgn(f0) == sgn(f1))
-        {
-            return x0;
-        }
-        double midPoint = 0.0;
-        for (int i = 0; i < maxIterations; ++i)
-        {
-            midPoint = (x0 + x1) / 2.0;
-            double fMidpoint = func(midPoint);
-            if (fabs(fMidpoint) <= tolerance)
-            {
-                return midPoint;
-            }
-            else if (sgn(f0) == sgn(fMidpoint))
-            {
-                x0 = midPoint;
-                f0 = fMidpoint;
-            }
-            else
-            {
-                x1 = midPoint;
-                f1 = fMidpoint;
-            }
-        }
-        return midPoint;
-    }
-
-    // Project osg::Vec3 a onto b.
-    template<typename VecType>
-    VecType vecProjection(const VecType& a, const VecType& b)
-    {
-        return b * ((a * b) / (b * b));
-    }
-
-    // Project osg::Vec3 a onto the plane perpendicular to b.
-    template<typename VecType>
-    VecType vecRejection(const VecType& a, const VecType& b)
-    {
-        return a - vecProjection(a, b);
-    }
 
     // Round integral x to the nearest multiple of "multiple" greater than or equal to x
     template<typename T>
-    T align(T x, T multiple) {
+    inline T align(T x, T multiple) 
+    {
         T isPositive = (T)(x >= 0);
         return ((x + isPositive * (multiple - 1)) / multiple) * multiple;
     }
 
     // equal within a threshold
     template<typename T>
-    bool equivalent(T x, T y, T epsilon) {
+    inline bool equiv(T x, T y, double epsilon) 
+    {
         T delta = x - y;
         return delta < 0.0 ? delta >= -epsilon : delta <= epsilon;
     }
 
     // equal within a default threshold
     template<typename T>
-    bool equivalent(T x, T y) {
-        return equivalent(x, y, static_cast<T>(1e-6));
+    inline bool equiv(T x, T y) 
+    {
+        return equiv(x, y, 1e-6);
+    }
+
+    // equal within a default threshold
+    template<>
+    inline bool equiv<dvec3>(dvec3 a, dvec3 b, double E)
+    {
+        return equiv(a.x, b.x, E) && equiv(a.y, b.y, E) && equiv(a.z, b.z, E);
+    }
+
+    // equal within a default threshold
+    template<>
+    inline bool equiv<dvec3>(dvec3 a, dvec3 b) 
+    {
+        return equiv(a.x, b.x) && equiv(a.y, b.y) && equiv(a.z, b.z);
     }
 
     inline int nextPowerOf2(int x)
@@ -481,8 +422,8 @@ namespace rocky
     bool is_identity(const glm::mat<C, R, T, Q>& m) {
         for(int c=0; c<C; ++c)
             for(int r=0; r<R; ++r)
-                if ((c == r && !equivalent(m[c][r],static_cast<T>(1))) ||
-                    (c != r && !equivalent(m[c][r],static_cast<T>(0))))
+                if ((c == r && !equiv(m[c][r],static_cast<T>(1))) ||
+                    (c != r && !equiv(m[c][r],static_cast<T>(0))))
                     return false;
         return true;
     }

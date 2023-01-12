@@ -3,6 +3,7 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
+#if 0
 #include "Cube.h"
 #include "Notify.h"
 
@@ -57,7 +58,7 @@ CubeUtils::latLonToFaceCoords(double lat_deg, double lon_deg,
         //GW: not sure why this was here; but I think this issue is the cause of cracks when
         //    projecting CUBE source imagery onto a WGS84 globe.
         //
-        //if ( equivalent( lat_deg, -45 ) )
+        //if ( equiv( lat_deg, -45 ) )
         //    out_face = 5;
     }
 
@@ -375,7 +376,7 @@ CubeSRS::postTransform(
 
 bool
 CubeSRS::transformExtentToMBR(
-    shared_ptr<SRS> to_srs,
+    const SRS& to_srs,
     double&                 in_out_xmin,
     double&                 in_out_ymin,
     double&                 in_out_xmax,
@@ -424,7 +425,7 @@ CubeSRS::transformExtentToMBR(
 
 bool
 CubeSRS::transformInFaceExtentToMBR(
-    shared_ptr<SRS> to_srs,
+    const SRS& to_srs,
     int face,
     double& in_out_xmin,
     double& in_out_ymin,
@@ -463,16 +464,16 @@ CubeSRS::transformInFaceExtentToMBR(
             bool north = face == 4; // else south
             dvec3 output;
             
-            to_srs->getGeographicSRS()->transform( dvec3(-180.0, north? 45.0 : -90.0, 0), to_srs.get(), output );
+            to_srs.getGeographicSRS()->transform( dvec3(-180.0, north? 45.0 : -90.0, 0), to_srs.get(), output );
             in_out_xmin = output.x;
             in_out_ymin = output.y;
 
-            to_srs->getGeographicSRS()->transform( dvec3(180.0, north? 90.0 : -45.0, 0), to_srs.get(), output );
+            to_srs.getGeographicSRS()->transform( dvec3(180.0, north? 90.0 : -45.0, 0), to_srs.get(), output );
             in_out_xmax = output.x;
             in_out_ymax = output.y;
             
-            //to_srs->getGeographicSRS()->transform2D( -180.0, north? 45.0 : -90.0, to_srs, in_out_xmin, in_out_ymin );
-            //to_srs->getGeographicSRS()->transform2D( 180.0, north? 90.0 : -45.0, to_srs, in_out_xmax, in_out_ymax );
+            //to_srs.getGeographicSRS()->transform2D( -180.0, north? 45.0 : -90.0, to_srs, in_out_xmin, in_out_ymin );
+            //to_srs.getGeographicSRS()->transform2D( 180.0, north? 90.0 : -45.0, to_srs, in_out_xmax, in_out_ymax );
         }
 
         else
@@ -503,7 +504,7 @@ CubeSRS::transformInFaceExtentToMBR(
                 lonmax = largest(lon_deg[0], lon_deg[1], lon_deg[2], lon_deg[3]);
             }
 
-            if ( to_srs->isGeographic() )
+            if ( to_srs.isGeographic() )
             {
                 in_out_xmin = lonmin;
                 in_out_xmax = lonmax;
@@ -544,9 +545,9 @@ UnifiedCubeProfile::UnifiedCubeProfile() :
         6, 1)
 
 {
-    auto srs = getSRS()->getGeographicSRS();
+    auto srs = getSRS().getGeographicSRS();
 
-    _latlong_extent = GeoExtent(
+    _shared->_latlong_extent = GeoExtent(
         srs, -180.0, -90.0, 180.0, 90.0);
 
     // set up some constant extents
@@ -613,7 +614,7 @@ UnifiedCubeProfile::transformAndExtractContiguousExtents(
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(valid() && input.valid(), false);
 
-    if (getSRS()->isHorizEquivalentTo(input.getSRS()))
+    if (getSRS().isHorizEquivalentTo(input.getSRS()))
     {
         output.push_back(input);
     }
@@ -623,9 +624,9 @@ UnifiedCubeProfile::transformAndExtractContiguousExtents(
         // to fully intersect the remote extent.
 
         // first transform the remote extent to lat/long.
-        GeoExtent input_gcs = input.getSRS()->isGeographic()
+        GeoExtent input_gcs = input.getSRS().isGeographic()
             ? input
-            : input.transform(input.getSRS()->getGeographicSRS());
+            : input.transform(input.getSRS().getGeographicSRS());
 
         // Chop the input extent into three separate extents: for the equatorial, north polar,
         // and south polar tile regions.
@@ -652,7 +653,7 @@ UnifiedCubeProfile::getIntersectingTiles(const GeoExtent&      remoteExtent,
                                          unsigned              localLOD,
                                          std::vector<TileKey>& out_intersectingKeys ) const
 {
-    if (getSRS()->isHorizEquivalentTo(remoteExtent.getSRS().get()))
+    if (getSRS().isHorizEquivalentTo(remoteExtent.getSRS().get()))
     {
         addIntersectingKeys(remoteExtent, localLOD, out_intersectingKeys);
     }
@@ -662,9 +663,9 @@ UnifiedCubeProfile::getIntersectingTiles(const GeoExtent&      remoteExtent,
         // to fully intersect the remote extent.
 
         // first transform the remote extent to lat/long.
-        GeoExtent remoteExtent_gcs = remoteExtent.getSRS()->isGeographic()
+        GeoExtent remoteExtent_gcs = remoteExtent.getSRS().isGeographic()
             ? remoteExtent
-            : remoteExtent.transform( remoteExtent.getSRS()->getGeographicSRS() );
+            : remoteExtent.transform( remoteExtent.getSRS().getGeographicSRS() );
 
         // Chop the input extent into three separate extents: for the equatorial, north polar,
         // and south polar tile regions.
@@ -691,3 +692,4 @@ UnifiedCubeProfile::getEquivalentLOD(const Profile* rhsProfile, unsigned rhsLOD)
 UnifiedCubeProfile::~UnifiedCubeProfile()
 {
 }
+#endif

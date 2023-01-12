@@ -79,7 +79,7 @@ TerrainTileNode::TerrainTileNode(
 
     // Encode the tile key in a uniform. Note! The X and Y components are presented
     // modulo 2^16 form so they don't overrun single-precision space.
-    auto[tw, th] = key.getProfile()->getNumTiles(key.getLOD());
+    auto[tw, th] = key.getProfile().getNumTiles(key.getLOD());
 
     double x = (double)key.getTileX();
     double y = (double)(th - key.getTileY() - 1);

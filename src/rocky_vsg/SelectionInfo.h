@@ -34,7 +34,7 @@ namespace rocky
         void initialize(
             unsigned firstLod,
             unsigned maxLod,
-            shared_ptr<Profile> profile,
+            const Profile& profile,
             double mtrf,
             bool restrictPolarSubdivision);
 

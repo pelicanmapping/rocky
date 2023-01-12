@@ -12,8 +12,25 @@ using namespace rocky::util;
 
 GeoPoint GeoPoint::INVALID;
 
+
+GeoPoint::GeoPoint() :
+    _altMode(ALTMODE_ABSOLUTE)
+{
+    //nop
+}
+
+GeoPoint&
+GeoPoint::operator=(GeoPoint&& rhs)
+{
+    _srs = rhs._srs;
+    _p = rhs._p;
+    _altMode = rhs._altMode;
+    rhs._srs = SRS();
+    return *this;
+}
+
 GeoPoint::GeoPoint(
-    shared_ptr<SRS> srs,
+    const SRS& srs,
     double x,
     double y) :
 
@@ -25,7 +42,7 @@ GeoPoint::GeoPoint(
 }
 
 GeoPoint::GeoPoint(
-    shared_ptr<SRS> srs,
+    const SRS& srs,
     double x,
     double y,
     double z,
@@ -39,7 +56,7 @@ GeoPoint::GeoPoint(
 }
 
 GeoPoint::GeoPoint(
-    shared_ptr<SRS> srs,
+    const SRS& srs,
     const dvec3& xyz,
     const AltitudeMode& altMode) :
 
@@ -51,7 +68,7 @@ GeoPoint::GeoPoint(
 }
 
 GeoPoint::GeoPoint(
-    shared_ptr<SRS> srs,
+    const SRS& srs,
     const GeoPoint& rhs) :
 
     _altMode(rhs._altMode)
@@ -59,29 +76,14 @@ GeoPoint::GeoPoint(
      rhs.transform(srs, *this);
 }
 
-GeoPoint::GeoPoint(const GeoPoint& rhs) :
-    _srs(rhs._srs.get()),
-    _p(rhs._p),
-    _altMode(rhs._altMode)
-{
-    //nop
-}
-
-GeoPoint::GeoPoint() :
-    _srs(0L),
-    _altMode(ALTMODE_ABSOLUTE)
-{
-    //nop
-}
-
-GeoPoint::GeoPoint(shared_ptr<SRS> srs) :
+GeoPoint::GeoPoint(const SRS& srs) :
     _srs(srs),
     _altMode(ALTMODE_ABSOLUTE)
 {
     //nop
 }
 
-GeoPoint::GeoPoint(const Config& conf, shared_ptr<SRS> srs) :
+GeoPoint::GeoPoint(const Config& conf, const SRS& srs) :
     _srs(srs),
     _altMode(ALTMODE_ABSOLUTE)
 {
@@ -91,20 +93,20 @@ GeoPoint::GeoPoint(const Config& conf, shared_ptr<SRS> srs) :
     conf.get( "alt", _p.z );
     conf.get( "hat", _p.z ); // height above terrain (relative)
 
-    if ( !_srs && conf.hasValue("srs") )
-        _srs = SRS::get( conf.value("srs"), conf.value("vdatum") );
+    if (!_srs.valid() && conf.hasValue("srs"))
+        _srs = SRS(conf.value("srs"), conf.value("vdatum"));
 
-    if ( conf.hasValue("lat") && (!_srs || _srs->isGeographic()) )
+    if ( conf.hasValue("lat") && (!_srs.valid() || _srs.isGeographic()) )
     {
         conf.get( "lat", _p.y );
-        if ( !_srs ) 
-            _srs = SRS::get("wgs84");
+        if (!_srs.valid())
+            _srs = SRS::WGS84;
     }
-    if ( conf.hasValue("long") && (!_srs || _srs->isGeographic()))
+    if ( conf.hasValue("long") && (!_srs.valid() || _srs.isGeographic()))
     {
         conf.get("long", _p.x);
-        if ( !_srs ) 
-            _srs = SRS::get("wgs84");
+        if (!_srs.valid())
+            _srs = SRS::WGS84;
     }
 
     if ( conf.hasValue("mode") )
@@ -128,7 +130,7 @@ Config
 GeoPoint::getConfig() const
 {
     Config conf;
-    if ( _srs && _srs->isGeographic() )
+    if ( _srs.isGeographic() )
     {
         conf.set( "lat", _p.y );
         conf.set( "long", _p.x );
@@ -145,11 +147,11 @@ GeoPoint::getConfig() const
     if (_altMode == ALTMODE_RELATIVE)
         conf.set("mode", "relative");
 
-    if ( _srs )
+    if (_srs.valid())
     {
-        conf.set("srs", _srs->getHorizInitString());
-        if ( _srs->getVerticalDatum() )
-            conf.set("vdatum", _srs->getVertInitString());
+        conf.set("srs", _srs.definition());
+        if (!_srs.vertical().empty())
+            conf.set("vdatum", _srs.vertical());
     }
 
     return conf;
@@ -157,7 +159,7 @@ GeoPoint::getConfig() const
 
 void
 GeoPoint::set(
-    shared_ptr<SRS> srs,
+    const SRS& srs,
     const dvec3& xyz,
     const AltitudeMode& altMode)
 {
@@ -168,7 +170,7 @@ GeoPoint::set(
 
 void
 GeoPoint::set(
-    shared_ptr<SRS> srs,
+    const SRS& srs,
     double                  x,
     double                  y,
     double                  z,
@@ -179,10 +181,10 @@ GeoPoint::set(
     _altMode = altMode;
 }
 
-const Units&
+Units
 GeoPoint::getXYUnits() const
 {
-    return getSRS() ? getSRS()->getUnits() : Units::DEGREES;
+    return getSRS().valid() ? getSRS().units() : Units::DEGREES;
 }
 
 bool 
@@ -192,55 +194,40 @@ GeoPoint::operator == (const GeoPoint& rhs) const
         valid() && rhs.valid() &&
         _p        == rhs._p        &&
         _altMode  == rhs._altMode  &&
-        ((_altMode == ALTMODE_ABSOLUTE && _srs->isEquivalentTo(rhs._srs.get())) ||
-         (_altMode == ALTMODE_RELATIVE && _srs->isHorizEquivalentTo(rhs._srs.get())));
+        ((_altMode == ALTMODE_ABSOLUTE && _srs.isEquivalentTo(rhs._srs)) ||
+         (_altMode == ALTMODE_RELATIVE && _srs.isHorizEquivalentTo(rhs._srs)));
 }
 
 GeoPoint
-GeoPoint::transform(shared_ptr<SRS> outSRS) const
+GeoPoint::transform(const SRS& outSRS) const
 {
-    if (valid() && outSRS)
+    if (valid() && outSRS.valid())
     {
         dvec3 out;
-        if (_altMode == ALTMODE_ABSOLUTE)
+        if (_srs.to(outSRS).transform(_p, out))
         {
-            if (_srs->transform(_p, outSRS.get(), out))
-                return GeoPoint(outSRS, out.x, out.y, out.z, ALTMODE_ABSOLUTE);
-        }
-        else // if ( _altMode == ALTMODE_RELATIVE )
-        {
-            if (_srs->transform2D(_p.x, _p.y, outSRS, out.x, out.y))
-            {
+            if (_altMode == ALTMODE_RELATIVE)
                 out.z = _p.z;
-                return GeoPoint(outSRS, out.x, out.y, out.z, ALTMODE_RELATIVE);
-            }
+
+            return GeoPoint(outSRS, out.x, out.y, out.z, _altMode);
         }
     }
-    return GeoPoint::INVALID;
+    return { };
 }
 
 bool
-GeoPoint::transformInPlace(shared_ptr<SRS> srs)
+GeoPoint::transformInPlace(const SRS& srs)
 {
-    if ( valid() && srs )
+    if (valid() && srs.valid())
     {
         dvec3 out;
-        if ( _altMode == ALTMODE_ABSOLUTE )
+        if (_srs.to(srs).transform(_p, out))
         {
-            if ( _srs->transform(_p, srs.get(), out) )
-            {
-                set(srs, out.x, out.y, out.z, ALTMODE_ABSOLUTE);
-                return true;
-            }
-        }
-        else // if ( _altMode == ALTMODE_RELATIVE )
-        {
-            if ( _srs->transform2D(_p.x, _p.y, srs, out.x, out.y) )
-            {
+            if (_altMode == ALTMODE_RELATIVE)
                 out.z = _p.z;
-                set(srs, out, ALTMODE_RELATIVE);
-                return true;
-            }
+
+            set(srs, out.x, out.y, out.z, _altMode);
+            return true;
         }
     }
     return false;
@@ -301,7 +288,7 @@ GeoPoint::transformResolution(const Distance& resolution, const Units& outUnits)
         return resolution;
 
     // is this just a normal transformation?
-    if (resolution.getUnits().isLinear() ||
+    if (resolution.units().isLinear() ||
         outUnits.isAngular())
     {
         return resolution.to(outUnits);
@@ -309,38 +296,47 @@ GeoPoint::transformResolution(const Distance& resolution, const Units& outUnits)
 
     double refLatDegrees = y();
 
-    if (!getSRS()->isGeographic())
+    if (!getSRS().isGeographic())
     {
         double refLonDegrees; // unused
 
-        getSRS()->transform2D(
-            x(), y(),
-            getSRS()->getGeographicSRS(),
-            refLonDegrees,
-            refLatDegrees);
+        dvec3 from(x(), y(), 0.0);
+        dvec3 to;
+        getSRS().to(getSRS().geoSRS()).transform(from, to);
+        refLonDegrees = to.x;
+        refLatDegrees = to.y;
+        //getSRS().transform2D(
+        //    x(), y(),
+        //    getSRS().getGeographicSRS(),
+        //    refLonDegrees,
+        //    refLatDegrees);
     }
 
     double d = resolution.asDistance(outUnits, refLatDegrees);
     return Distance(d, outUnits);
 }
 
+#if 0
 bool
 GeoPoint::makeGeographic()
 {
     if (!valid())
         return false;
-    if (!_srs->isGeographic())
-        return _srs->transform(_p, _srs->getGeographicSRS(), _p);
+    if (!_srs.isGeographic())
+        return _srs.to(_srs.geoSRS()).transform(_p, _p);
+        //return _srs.transform(_p, _srs.getGeographicSRS(), _p);
     return true;
 }
+#endif
 
 bool
-GeoPoint::transform(shared_ptr<SRS> outSRS, GeoPoint& output) const
+GeoPoint::transform(const SRS& outSRS, GeoPoint& output) const
 {
     output = transform(outSRS);
     return output.valid();
 }
 
+#if 0
 bool
 GeoPoint::toWorld_impl(dvec3& out_world) const
 {
@@ -354,7 +350,7 @@ GeoPoint::toWorld_impl(dvec3& out_world) const
         ROCKY_WARN << LC << "ILLEGAL: called GeoPoint::toWorld with AltitudeMode = RELATIVE_TO_TERRAIN" << std::endl;
         return false;
     }
-    return _srs->transformToWorld( _p, out_world );
+    return _srs.transformToWorld( _p, out_world );
 }
 
 bool
@@ -367,7 +363,7 @@ GeoPoint::toWorld(dvec3& out_world, const TerrainResolver* terrain) const
     }
     if ( _altMode == ALTMODE_ABSOLUTE )
     {
-        return _srs->transformToWorld( _p, out_world );
+        return _srs.transformToWorld( _p, out_world );
     }
     else if ( terrain != 0L )
     {
@@ -387,14 +383,14 @@ GeoPoint::toWorld(dvec3& out_world, const TerrainResolver* terrain) const
 
 
 bool
-GeoPoint::fromWorld_impl(shared_ptr<SRS> srs, const dvec3& world)
+GeoPoint::fromWorld_impl(const SRS& srs, const dvec3& world)
 {
-    if ( srs )
+    if (srs)
     {
         dvec3 p;
-        if ( srs->transformFromWorld(world, p) )
+        if (srs.transformFromWorld(world, p))
         {
-            set( srs, p, ALTMODE_ABSOLUTE );
+            set(srs, p, ALTMODE_ABSOLUTE);
             return true;
         }
     }
@@ -405,7 +401,7 @@ bool
 GeoPoint::createLocalToWorld( dmat4& out_l2w ) const
 {
     if ( !valid() ) return false;
-    bool result = _srs->createLocalToWorld( _p, out_l2w );
+    bool result = _srs.createLocalToWorld( _p, out_l2w );
     if ( _altMode != ALTMODE_ABSOLUTE )
     {
         ROCKY_DEBUG << LC << "ILLEGAL: called GeoPoint::createLocalToWorld with AltitudeMode = RELATIVE_TO_TERRAIN" << std::endl;
@@ -418,7 +414,7 @@ bool
 GeoPoint::createWorldToLocal( dmat4& out_w2l ) const
 {
     if ( !valid() ) return false;
-    bool result = _srs->createWorldToLocal( _p, out_w2l );
+    bool result = _srs.createWorldToLocal( _p, out_w2l );
     if ( _altMode != ALTMODE_ABSOLUTE )
     {
         ROCKY_DEBUG << LC << "ILLEGAL: called GeoPoint::createWorldToLocal with AltitudeMode = RELATIVE_TO_TERRAIN" << std::endl;
@@ -433,7 +429,7 @@ GeoPoint::toLocalTangentPlane() const
     if (!valid())
         return GeoPoint::INVALID;
 
-    return transform(getSRS()->createTangentPlaneSRS(dvec3()));
+    return transform(getSRS().createTangentPlaneSRS(dvec3()));
 }
 
 bool
@@ -441,12 +437,12 @@ GeoPoint::createWorldUpVector( dvec3& out_up ) const
 {
     if ( !valid() ) return false;
 
-    if ( _srs->isProjected() )
+    if ( _srs.isProjected() )
     {
         out_up = dvec3(0, 0, 1);
         return true;
     }
-    else if (_srs->isGeographic())
+    else if (_srs.isGeographic())
     {
         double coslon = cos(deg2rad(x()));
         double coslat = cos(deg2rad(y()));
@@ -461,13 +457,15 @@ GeoPoint::createWorldUpVector( dvec3& out_up ) const
         dvec3 ecef;
         if ( this->toWorld( ecef ) )
         {
-            out_up = _srs->getEllipsoid().geocentricToUpVector(ecef);
+            out_up = _srs.ellipsoid().geocentricToUpVector(ecef);
             return true;
         }
     }
     return false;
 }
+#endif
 
+#if 0
 GeoPoint
 GeoPoint::interpolate(const GeoPoint& rhs, double t) const
 {
@@ -480,7 +478,7 @@ GeoPoint::interpolate(const GeoPoint& rhs, double t) const
 
     GeoPoint to = rhs.transform(getSRS());
 
-    if (getSRS()->isProjected())
+    if (getSRS().isProjected())
     {
         dvec3 w1, w2;
         toWorld(w1);
@@ -498,7 +496,7 @@ GeoPoint::interpolate(const GeoPoint& rhs, double t) const
     {
         dvec3 output;
 
-        getSRS()->getEllipsoid().geodesicInterpolate(
+        getSRS().ellipsoid().geodesicInterpolate(
             dvec3(),
             to.to_dvec3(),
             t,
@@ -512,6 +510,7 @@ GeoPoint::interpolate(const GeoPoint& rhs, double t) const
 
     return result;
 }
+#endif
 
 Distance
 GeoPoint::geodesicDistanceTo(const GeoPoint& rhs) const
@@ -519,11 +518,11 @@ GeoPoint::geodesicDistanceTo(const GeoPoint& rhs) const
     // Transform both points to lat/long and do a great circle measurement.
     // https://en.wikipedia.org/wiki/Geographical_distance#Ellipsoidal-surface_formulae
 
-    GeoPoint p1 = transform(getSRS()->getGeographicSRS());
+    GeoPoint p1 = transform(getSRS().geoSRS());
     GeoPoint p2 = rhs.transform(p1.getSRS());
 
     return Distance(
-        getSRS()->getEllipsoid().geodesicDistance(
+        getSRS().ellipsoid().geodesicDistance(
             dvec2(p1.x(), p1.y()),
             dvec2(p2.x(), p2.y())),
         Units::METERS);
@@ -535,9 +534,9 @@ GeoPoint::distanceTo(const GeoPoint& rhs) const
 {
     // @deprecated, because this method is ambiguous.
 
-    if ( getSRS()->isProjected() && rhs.getSRS()->isProjected() )
+    if ( getSRS().isProjected() && rhs.getSRS().isProjected() )
     {
-        if (getSRS()->isEquivalentTo(rhs.getSRS()))
+        if (getSRS().isEquivalentTo(rhs.getSRS()))
         {
             return (_p - rhs._p).length();
         }
@@ -551,11 +550,11 @@ GeoPoint::distanceTo(const GeoPoint& rhs) const
     {
         // https://en.wikipedia.org/wiki/Geographical_distance#Ellipsoidal-surface_formulae
 
-        GeoPoint p1 = transform( getSRS()->getGeographicSRS() );
+        GeoPoint p1 = transform( getSRS().geoSRS() );
         GeoPoint p2 = rhs.transform( p1.getSRS() );
 
-        double Re = getSRS()->getEllipsoid().getRadiusEquator();
-        double Rp = getSRS()->getEllipsoid().getRadiusPolar();
+        double Re = getSRS().ellipsoid().semiMajorAxis();
+        double Rp = getSRS().ellipsoid().semiMinorAxis();
         double F  = (Re-Rp)/Re; // flattening
 
         double

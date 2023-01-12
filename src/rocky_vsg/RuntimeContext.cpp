@@ -20,7 +20,7 @@ namespace
         vsg::observer_ptr<vsg::Group> _parent;
 
         // function that will provide the child to add
-        RuntimeContext::NodeProvider _childProvider;
+        RuntimeContext::NodeFactory _childFactory;
 
         // ref because child probably only exists here
         vsg::ref_ptr<vsg::Node> _child;
@@ -31,9 +31,9 @@ namespace
         AddNodeAsync(
             const RuntimeContext& runtime,
             vsg::Group* parent,
-            RuntimeContext::NodeProvider func) :
+            RuntimeContext::NodeFactory func) :
 
-            _runtime(runtime), _parent(parent), _childProvider(func)
+            _runtime(runtime), _parent(parent), _childFactory(func)
         {
             //nop
         }
@@ -54,7 +54,7 @@ namespace
                 if (compiler && updates)
                 {
                     // generate the child node:
-                    _child = _childProvider(_promise);
+                    _child = _childFactory(_promise);
                     if (_child)
                     {
                         compiler->compile(_child);
@@ -105,9 +105,9 @@ namespace
 }
 
 util::Future<bool>
-RuntimeContext::compileAndAddNode(vsg::Group* parent, NodeProvider func)
+RuntimeContext::compileAndAddNode(vsg::Group* parent, NodeFactory factory)
 {
-    auto runner = AddNodeAsync::create(*this, parent, func);
+    auto runner = AddNodeAsync::create(*this, parent, factory);
     auto future = runner->_promise.getFuture();
     loaders->add(runner);
     return future;

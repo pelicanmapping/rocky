@@ -30,12 +30,11 @@ void
 SelectionInfo::initialize(
     unsigned firstLod, 
     unsigned maxLod, 
-    shared_ptr<Profile> profile,
+    const Profile& profile,
     double mtrf,
     bool restrictPolarSubdivision)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(profile != nullptr, void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(profile->getSRS() != nullptr && profile->getSRS()->valid(), void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(profile.valid(), void());
     ROCKY_SOFT_ASSERT_AND_RETURN(getNumLODs() == 0, void(), "Selection Information already initialized");
     ROCKY_SOFT_ASSERT_AND_RETURN(firstLod <= maxLod, void(), "Inconsistent First and Max LODs");
 
@@ -47,7 +46,7 @@ SelectionInfo::initialize(
 
     for (unsigned lod = 0; lod <= maxLod; ++lod)
     {
-        auto[tx, ty] = profile->getNumTiles(lod);
+        auto[tx, ty] = profile.getNumTiles(lod);
         TileKey key(lod, tx / 2, ty / 2, profile);
         GeoExtent e = key.getExtent();
         GeoCircle c = e.computeBoundingGeoCircle();
@@ -57,7 +56,7 @@ SelectionInfo::initialize(
         _lods[lod]._maxValidTY = 0xFFFFFFFF;
     }
 
-    double metersPerEquatorialDegree = (profile->getSRS()->getEllipsoid().getRadiusEquator() * 2.0 * M_PI) / 360.0;
+    double metersPerEquatorialDegree = (profile.getSRS().ellipsoid().semiMajorAxis() * 2.0 * M_PI) / 360.0;
 
     double prevPos = 0.0;
 
@@ -74,14 +73,14 @@ SelectionInfo::initialize(
         // In a geographic map, this will effectively limit the maximum LOD
         // progressively starting at about +/- 72 degrees latitude.
         int startLOD = 6;
-        if (restrictPolarSubdivision && lod >= startLOD && profile->getSRS()->isGeographic())
+        if (restrictPolarSubdivision && lod >= startLOD && profile.getSRS().isGeographic())
         {            
             const double startAR = 0.1; // minimum allowable aspect ratio at startLOD
             const double endAR = 0.4;   // minimum allowable aspect ratio at maxLOD
             double lodT = (double)(lod-startLOD)/(double)(numLods-1);
             double minAR = startAR + (endAR-startAR)*lodT;
 
-            auto[tx, ty] = profile->getNumTiles(lod);
+            auto[tx, ty] = profile.getNumTiles(lod);
             for(int y=(int)ty/2; y>=0; --y)
             {
                 TileKey k(lod, 0, y, profile);

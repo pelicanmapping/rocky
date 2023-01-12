@@ -78,7 +78,7 @@ namespace
     {
         double det = cross2d(d0, d1);
 
-        if (equivalent(det, (0.0)))
+        if (equiv(det, (0.0)))
             return false;
 
         out_u = cross2d(p1-p0, d1) / det;
@@ -91,7 +91,7 @@ namespace
         //static const double epsilon = 0.001;
 
         //double det = d0.y()*d1.x() - d0.x()*d1.y();
-        //if ( equivalent(det, 0.0, epsilon) )
+        //if ( equiv(det, 0.0, epsilon) )
         //    return false; // parallel
 
         //out_u = (d1.x()*(p1.y()-p0.y())+d1.y()*(p0.x()-p1.x()))/det;

@@ -79,11 +79,11 @@ namespace weemesh
     inline bool same_vert(const vert_t& a, const vert_t& b, vert_t::value_type epsilon = EPSILON)
     {
         return
-            equivalent(a.x(), b.x(), epsilon) &&
-            equivalent(a.y(), b.y(), epsilon);
+            equiv(a.x(), b.x(), epsilon) &&
+            equiv(a.y(), b.y(), epsilon);
 
         // use this if we move to 3D one day
-        // && equivalent(a.z(), b.z(), epsilon);
+        // && equiv(a.z(), b.z(), epsilon);
     }
 
 
@@ -106,7 +106,7 @@ namespace weemesh
             vert_t s = rhs.second - rhs.first;
             vert_t::value_type det = r.cross2d(s);
 
-            if (equivalent(det, zero))
+            if (equiv(det, zero))
                 return false;
 
             vert_t diff = rhs.first - first;
@@ -144,14 +144,14 @@ namespace weemesh
         // true if point P is one of the triangle's verts
         inline bool is_vertex(const vert_t& p, vert_t::value_type e = EPSILON) const
         {
-            if (equivalent(p.x(), p0.x(), e) &&
-                equivalent(p.y(), p0.y(), e))
+            if (equiv(p.x(), p0.x(), e) &&
+                equiv(p.y(), p0.y(), e))
                 return true;
-            if (equivalent(p.x(), p1.x(), e) &&
-                equivalent(p.y(), p1.y(), e))
+            if (equiv(p.x(), p1.x(), e) &&
+                equiv(p.y(), p1.y(), e))
                 return true;
-            if (equivalent(p.x(), p2.x(), e) &&
-                equivalent(p.y(), p2.y(), e))
+            if (equiv(p.x(), p2.x(), e) &&
+                equiv(p.y(), p2.y(), e))
                 return true;
 
             return false;
@@ -168,7 +168,7 @@ namespace weemesh
             vert_t::value_type denom = d00 * d11 - d01 * d01;
 
             // means that one of more of the triangles points are coincident:
-            if (equivalent(denom, 0.0))
+            if (equiv(denom, 0.0))
                 return false;
 
             out.y() = (d11*d20 - d01 * d21) / denom;
@@ -564,7 +564,7 @@ namespace weemesh
             if (tri.get_barycentric(p, bary) == false)
                 return;
 
-            if (!equivalent(bary[2], 0.0, EPSILON)) {
+            if (!equiv(bary[2], 0.0, EPSILON)) {
                 new_uid = add_triangle(tri.i0, tri.i1, new_i);
                 if (new_uid >= 0 && uid_list) {
                     _markers[tri.i0] |= _constraint_marker;
@@ -574,7 +574,7 @@ namespace weemesh
                 }
             }
 
-            if (!equivalent(bary[0], 0.0, EPSILON)) {
+            if (!equiv(bary[0], 0.0, EPSILON)) {
                 new_uid = add_triangle(tri.i1, tri.i2, new_i);
                 if (new_uid >= 0 && uid_list) {
                     _markers[tri.i1] |= _constraint_marker;
@@ -584,7 +584,7 @@ namespace weemesh
                 }
             }
 
-            if (!equivalent(bary[1], 0.0, EPSILON)) {
+            if (!equiv(bary[1], 0.0, EPSILON)) {
                 new_uid = add_triangle(tri.i2, tri.i0, new_i);
                 if (new_uid >= 0 && uid_list) {
                     _markers[tri.i2] |= _constraint_marker;

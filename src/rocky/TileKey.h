@@ -37,7 +37,7 @@ namespace rocky
             unsigned lod,
             unsigned tile_x,
             unsigned tile_y,
-            shared_ptr<Profile> profile );
+            const Profile& profile);
 
         //! Compare two tilekeys for equality.
         inline bool operator == (const TileKey& rhs) const {
@@ -46,7 +46,7 @@ namespace rocky
                 _lod == rhs._lod &&
                 _x == rhs._x &&
                 _y == rhs._y &&
-                _profile->isHorizEquivalentTo(rhs._profile);
+                _profile.isHorizEquivalentTo(rhs._profile);
         }
 
         //! Compare two tilekeys for inequality
@@ -56,7 +56,7 @@ namespace rocky
                 _lod != rhs._lod ||
                 _x != rhs._x ||
                 _y != rhs._y ||
-                !_profile->isEquivalentTo(rhs._profile);
+                !_profile.isEquivalentTo(rhs._profile);
         }
 
         //! Sorts tilekeys, ignoring profiles
@@ -67,7 +67,7 @@ namespace rocky
             if (_x > rhs._x) return false;
             if (_y < rhs._y) return true;
             if (_y > rhs._y) return false;
-            return _profile->getHorizSignature() < rhs._profile->getHorizSignature();
+            return _profile.getHorizSignature() < rhs._profile.getHorizSignature();
         }
 
         //! Canonical invalid tile key
@@ -78,11 +78,11 @@ namespace rocky
         const std::string str() const;
 
         //! Gets the profile within which this key is interpreted.
-        shared_ptr<Profile> getProfile() const;
+        const Profile& getProfile() const;
 
         //! Whether this is a valid key.
         bool valid() const {
-            return _profile && _profile->valid();
+            return _profile.valid();
         }
 
         //! Get the quadrant relative to this key's parent.
@@ -144,23 +144,23 @@ namespace rocky
         //! Creates a TileKey containing (x, y) in the requested profile.
         static TileKey createTileKeyContainingPoint(
             double x, double y, unsigned lod,
-            shared_ptr<Profile> profile);
+            const Profile& profile);
 
         //! Creates a TileKey containing (x, y) in the requested profile.
         static TileKey createTileKeyContainingPoint(
             const GeoPoint& point,
             unsigned lod,
-            shared_ptr<Profile> profile);
+            const Profile& profile);
 
         //! Gets the keys that intersect this TileKey in the requested profile.
         void getIntersectingKeys(
-            shared_ptr<Profile> profile,
+            const Profile& profile,
             std::vector<TileKey>& output) const;
 
         static void getIntersectingKeys(
             const GeoExtent& extent,
             unsigned localLOD,
-            shared_ptr<Profile> target_profile,
+            const Profile& target_profile,
             std::vector<TileKey>& out_intersectingKeys);
 
         //! Convenience method to match this key.
@@ -172,7 +172,7 @@ namespace rocky
         unsigned _lod;
         unsigned _x;
         unsigned _y;
-        shared_ptr<Profile> _profile;
+        Profile _profile;
         size_t _hash;
         void rehash();
 

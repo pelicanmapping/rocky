@@ -27,7 +27,7 @@ namespace rocky
         std::string message;
 
         Status() : code(NoError) { }
-        Status(const Status& rhs) = default; // : _errorCode(rhs._errorCode), _errorMsg(rhs._errorMsg) { }
+        Status(const Status& rhs) = default;
         explicit Status(const Code& c) : code(c) { }
         explicit Status(const std::string& m) : code(GeneralError), message(m) { }
         explicit Status(const Code& c, const std::string& m) : code(c), message(m) { }

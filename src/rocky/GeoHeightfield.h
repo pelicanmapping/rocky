@@ -11,8 +11,6 @@
 
 namespace rocky
 {
-    class VerticalDatum;
-
     /**
      * A georeferenced heightfield
      */
@@ -21,6 +19,10 @@ namespace rocky
     public:
         //! Constructs an empty (invalid) heightfield.
         GeoHeightfield();
+        GeoHeightfield(const GeoHeightfield&) = default;
+        GeoHeightfield& operator=(const GeoHeightfield&) = default;
+        GeoHeightfield(GeoHeightfield&& rhs) { *this = rhs; }
+        GeoHeightfield& operator=(GeoHeightfield&& rhs);
 
         //! Constructs a new georeferenced heightfield.
         GeoHeightfield(
@@ -51,13 +53,18 @@ namespace rocky
         //! @return
         //!      True if the elevation query was succesful; false if not (e.g. if the query
         //!      fell outside the geospatial extent of the heightfield)
+        //bool getElevation(
+        //    const SRS& inputSRS,
+        //    double x,
+        //    double y,
+        //    Image::Interpolation interp,
+        //    const SRS& srsWithOutputVerticalDatum,
+        //    float& out_elevation) const;
+
         bool getElevation(
-            shared_ptr<SRS> inputSRS,
-            double x,
-            double y,
-            Image::Interpolation interp,
-            shared_ptr<SRS> srsWithOutputVerticalDatum,
-            float& out_elevation) const;
+            const SRS& inputSRS,
+            dvec3& in_out_point,
+            Image::Interpolation interp) const;
 
         //! Gets the elevation at a point (must be in the same SRS; bilinear interpolation)
         //float getElevation(

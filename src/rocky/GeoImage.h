@@ -24,8 +24,10 @@ namespace rocky
 
         //! Construct an empty (invalid) geoimage
         GeoImage();
-
-        GeoImage(const GeoImage& rhs) = default;
+        GeoImage(const GeoImage&) = default;
+        GeoImage& operator=(const GeoImage&) = default;
+        GeoImage(const GeoImage&& rhs) { *this = rhs; }
+        GeoImage& operator=(GeoImage&&);
 
         //! Construct an image with an error status
         GeoImage(const Status&);
@@ -52,7 +54,7 @@ namespace rocky
 
         //! Shortcut to get the spatial reference system describing
         //! the projection of the image.
-        shared_ptr<SRS> getSRS() const;
+        const SRS& getSRS() const;
 
         /**
          * Crops the image to a new geospatial extent.
@@ -89,7 +91,7 @@ namespace rocky
          *      calculate a new pixel size.
          */
         Result<GeoImage> reproject(
-            shared_ptr<SRS> to_srs,
+            const SRS& to_srs,
             const GeoExtent* to_extent = nullptr,
             unsigned width = 0,
             unsigned height = 0,

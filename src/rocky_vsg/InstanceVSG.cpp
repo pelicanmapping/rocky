@@ -18,10 +18,10 @@ using namespace rocky;
 InstanceVSG::InstanceVSG() :
     Inherit()
 {
-    auto vsg_options = vsg::Options::create();
+    _vsgOptions = vsg::Options::create();
 
 #ifdef VSGXCHANGE_FOUND
-    vsg_options->add(vsgXchange::all::create());
+    _vsgOptions->add(vsgXchange::all::create());
 #endif
 
     // Install a readImage function that uses the VSG facility
@@ -30,10 +30,10 @@ InstanceVSG::InstanceVSG() :
     // stripping it out and later converting it back; or that only transcodes
     // it if it needs to. vsg::read_cast() might do some internal caching
     // as well -- need to look into that.
-    ioOptions.services.readImage = [vsg_options](
+    ioOptions().services().readImage = [=](
         const std::string& location, const rocky::IOOptions& io)
     {
-        auto result = vsg::read_cast<vsg::Data>(location, vsg_options);
+        auto result = vsg::read_cast<vsg::Data>(location, this->_vsgOptions);
         return makeImageFromVSG(result);
     };
 }

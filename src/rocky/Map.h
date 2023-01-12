@@ -35,11 +35,11 @@ namespace rocky
         UID uid() const { return _uid; }
 
         //! The map's master tiling profile, which defines its SRS and tiling structure
-        void setProfile(shared_ptr<Profile>);
-        shared_ptr<Profile> getProfile() const;
+        void setProfile(const Profile&);
+        const Profile& getProfile() const;
 
         //! Spatial reference system of the map's profile (convenience)
-        shared_ptr<SRS> getSRS() const;
+        const SRS& getSRS() const;
 
         //! Adds a Layer to the map.
         void addLayer(shared_ptr<Layer> layer);
@@ -127,7 +127,7 @@ namespace rocky
         Revision getDataModelRevision() const;
 
         //! Gets a version of the map profile without any vertical datum
-        const Profile* getProfileNoVDatum() const { return _profileNoVDatum.get(); }
+        const Profile& getProfileNoVDatum() const { return _profileNoVDatum; }
 
         //! Access to an elevation sampling service tied to this map
         //ElevationPool* getElevationPool() const;
@@ -162,7 +162,7 @@ namespace rocky
      public:
 
         //! Serialize
-        virtual Config getConfig() const;
+        Config getConfig() const;
 
     public:
         //! Callbacks
@@ -184,8 +184,8 @@ namespace rocky
         UID _uid;
         std::vector<shared_ptr<Layer>> _layers;
         mutable util::ReadWriteMutex _mapDataMutex;
-        shared_ptr<Profile> _profile;
-        shared_ptr<Profile> _profileNoVDatum;
+        Profile _profile;
+        Profile _profileNoVDatum;
         //shared_ptr<ElevationPool> _elevationPool;
         Revision _dataModelRevision;
 

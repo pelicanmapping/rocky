@@ -261,6 +261,51 @@ namespace
         return result;
     }
 
+    bool transformGrid(
+        const SRS& fromSRS,
+        const SRS& toSRS,
+        double in_xmin, double in_ymin,
+        double in_xmax, double in_ymax,
+        double* x, double* y,
+        unsigned int numx, unsigned int numy)
+    {
+        ROCKY_SOFT_ASSERT_AND_RETURN(fromSRS.valid() && toSRS.valid(), false);
+
+        auto xform = fromSRS.to(toSRS);
+        if (!xform.valid())
+            return false;
+
+        std::vector<dvec3> points;
+
+        const double dx = (in_xmax - in_xmin) / (numx - 1);
+        const double dy = (in_ymax - in_ymin) / (numy - 1);
+
+        unsigned int pixel = 0;
+        double fc = 0.0;
+        for (unsigned int c = 0; c < numx; ++c, ++fc)
+        {
+            const double dest_x = in_xmin + fc * dx;
+            double fr = 0.0;
+            for (unsigned int r = 0; r < numy; ++r, ++fr)
+            {
+                const double dest_y = in_ymin + fr * dy;
+                points.emplace_back(dest_x, dest_y, 0);
+                pixel++;
+            }
+        }
+
+        if (xform.transformRange(points.begin(), points.end()))
+        {
+            for (unsigned i = 0; i < points.size(); ++i)
+            {
+                x[i] = points[i].x;
+                y[i] = points[i].y;
+            }
+            return true;
+        }
+        return false;
+    }
+
     shared_ptr<Image> manualReproject(
         const Image*      image,
         const GeoExtent&  src_extent,
@@ -306,7 +351,8 @@ namespace
         double *srcPointsX = new double[numPixels * 2];
         double *srcPointsY = srcPointsX + numPixels;
 
-        dest_extent.getSRS()->transformGrid(
+        transformGrid(
+            dest_extent.getSRS(),
             src_extent.getSRS(),
             dest_extent.xMin() + .5 * dx, dest_extent.yMin() + .5 * dy,
             dest_extent.xMax() - .5 * dx, dest_extent.yMax() - .5 * dy,
@@ -504,6 +550,14 @@ GeoImage::GeoImage() :
     //nop
 }
 
+GeoImage&
+GeoImage::operator=(GeoImage&& rhs)
+{
+    *this = (const GeoImage&)rhs;
+    rhs._extent = GeoExtent::INVALID;
+    return *this;
+}
+
 GeoImage::GeoImage(const Status& status) :
     _myimage(nullptr),
     _extent(GeoExtent::INVALID),
@@ -562,7 +616,7 @@ GeoImage::getImage() const
         _myimage;
 }
 
-shared_ptr<SRS>
+const SRS&
 GeoImage::getSRS() const
 {
     return _extent.getSRS();
@@ -616,7 +670,7 @@ GeoImage::crop(
         return Status(Status::ResourceUnavailable);
 
     //Check for equivalence
-    if (extent.getSRS()->isEquivalentTo(getSRS()))
+    if (extent.getSRS().isEquivalentTo(getSRS()))
     {
         //If we want an exact crop or they want to specify the output size of the image, use GDAL
         if (exact || width != 0 || height != 0)
@@ -661,7 +715,7 @@ GeoImage::crop(
 
 Result<GeoImage>
 GeoImage::reproject(
-    shared_ptr<SRS> to_srs,
+    const SRS& to_srs,
     const GeoExtent* to_extent,
     unsigned width,
     unsigned height,
@@ -679,7 +733,8 @@ GeoImage::reproject(
 
     Image::ptr resultImage;
 
-    if (getSRS()->isUserDefined() || to_srs->isUserDefined() || getImage()->depth() > 1)
+    //if (getSRS().isUserDefined() || to_srs.isUserDefined() || getImage()->depth() > 1)
+    if (getImage()->depth() > 1)
     {
         // if either of the SRS is a custom projection or it is a 3D image, we have to do a manual reprojection since
         // GDAL will not recognize the SRS and does not handle 3D images.
@@ -696,9 +751,9 @@ GeoImage::reproject(
         // otherwise use GDAL.
         resultImage = GDAL_reprojectImage(
             getImage().get(),
-            getSRS()->getWKT(),
+            getSRS().wkt(),
             getExtent().xMin(), getExtent().yMin(), getExtent().xMax(), getExtent().yMax(),
-            to_srs->getWKT(),
+            to_srs.wkt(),
             destExtent.xMin(), destExtent.yMin(), destExtent.xMax(), destExtent.yMax(),
             width,
             height,
@@ -731,7 +786,7 @@ GeoImage::read(
     }
 
     // transform if necessary
-    if (!p.getSRS()->isHorizEquivalentTo(getSRS()))
+    if (!p.getSRS().isHorizEquivalentTo(getSRS()))
     {
         return read(output, p.transform(getSRS()));
     }

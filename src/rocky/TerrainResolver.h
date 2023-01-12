@@ -15,7 +15,7 @@ namespace rocky
     public:
 
         virtual bool getHeight(
-            shared_ptr<SRS> srs,
+            const SRS& srs,
             double                  x,
             double                  y,
             double*                 out_heightAboveMSL,

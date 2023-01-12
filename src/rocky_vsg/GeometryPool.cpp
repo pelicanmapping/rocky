@@ -113,7 +113,7 @@ GeometryPool::createKeyForTileKey(
     GeometryKey& out) const
 {
     out.lod  = tileKey.getLOD();
-    out.tileY = tileKey.getProfile()->getSRS()->isGeographic()? tileKey.getTileY() : 0;
+    out.tileY = tileKey.getProfile().getSRS().isGeographic()? tileKey.getTileY() : 0;
     out.size = tileSize;
 }
 
@@ -230,8 +230,8 @@ namespace
         //dmat4 _inverse{ 1 };
 
         Locator(const GeoExtent& extent) :
-            _isGeographic(extent.getSRS()->isGeographic()),
-            _ellipsoid(extent.getSRS()->getEllipsoid())
+            _isGeographic(extent.getSRS().isGeographic()),
+            _ellipsoid(extent.getSRS().ellipsoid())
         {
             //_xform = glm::translate(dmat4(1), dvec3(extent.xmin(), extent.ymin(), 0));
             //_xform = glm::scale(_xform, dvec3(extent.width(), extent.height(), 1));
@@ -246,8 +246,8 @@ namespace
         }
 
         //void worldToUnit(const dvec3& world, dvec3& unit) const {
-        //    if (_srs->isGeographic())
-        //        unit = _inverse * _srs->getEllipsoid().geocentricToGeodetic(world);
+        //    if (_srs.isGeographic())
+        //        unit = _inverse * _srs.ellipsoid().geocentricToGeodetic(world);
         //    else
         //        unit = _inverse * world;
         //}
@@ -269,12 +269,15 @@ GeometryPool::createGeometry(
     Cancelable* progress) const
 {
     // Establish a local reference frame for the tile:
-    dvec3 centerWorld;
     GeoPoint centroid = tileKey.getExtent().getCentroid();
-    centroid.toWorld( centerWorld );
 
-    dmat4 world2local;
-    centroid.createWorldToLocal(world2local);
+    dmat4 world2local = glm::inverse(
+        centroid.getSRS().localToWorldMatrix(centroid.to_dvec3()));
+
+    //dvec3 centerWorld;
+    //centroid.toWorld( centerWorld );
+    //dmat4 world2local;
+    //centroid.createWorldToLocal(world2local);
 
     // Attempt to calculate the number of verts in the surface geometry.
     bool needsSkirt = settings.skirtRatio > 0.0f;

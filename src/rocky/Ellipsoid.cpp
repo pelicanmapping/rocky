@@ -179,7 +179,7 @@ Ellipsoid::setSemiMajorAxis(double value)
 }
 
 double
-Ellipsoid::getSemiMajorAxis() const
+Ellipsoid::semiMajorAxis() const
 {
     return _re;
 }
@@ -191,7 +191,7 @@ Ellipsoid::setSemiMinorAxis(double value)
 }
 
 double
-Ellipsoid::getSemiMinorAxis() const
+Ellipsoid::semiMinorAxis() const
 {
     return _rp;
 }
@@ -280,7 +280,7 @@ Ellipsoid::set(double re, double rp)
 double
 Ellipsoid::longitudinalDegreesToMeters(double value, double lat_deg) const
 {
-    return value * (2.0 * M_PI * getRadiusEquator() / 360.0) * cos(deg2rad(lat_deg));
+    return value * (2.0 * M_PI * semiMajorAxis() / 360.0) * cos(deg2rad(lat_deg));
 }
 
 double
@@ -358,8 +358,8 @@ Ellipsoid::geodesicDistance(
         lat2 = deg2rad(p2.y),
         lon2 = deg2rad(p2.x);
 
-    double Re = getRadiusEquator();
-    double Rp = getRadiusPolar();
+    double Re = semiMajorAxis();
+    double Rp = semiMinorAxis();
     double F = (Re - Rp) / Re; // flattening
 
     double B1 = atan((1.0 - F)*tan(lat1));

@@ -6,8 +6,6 @@
 #include "Profile.h"
 #include "TileKey.h"
 #include "Math.h"
-#include "VerticalDatum.h"
-#include "Notify.h"
 
 using namespace rocky;
 
@@ -104,18 +102,25 @@ ProfileOptions::defined() const
 /***********************************************************************/
 
 const std::string Profile::GLOBAL_GEODETIC("global-geodetic");
-const std::string Profile::GLOBAL_MERCATOR("global-mercator");
 const std::string Profile::SPHERICAL_MERCATOR("spherical-mercator");
 const std::string Profile::PLATE_CARREE("plate-carree");
 
+//Definitions for the mercator extent
+const double MERC_MINX = -20037508.34278925;
+const double MERC_MINY = -20037508.34278925;
+const double MERC_MAXX = 20037508.34278925;
+const double MERC_MAXY = 20037508.34278925;
+const double MERC_WIDTH = MERC_MAXX - MERC_MINX;
+const double MERC_HEIGHT = MERC_MAXY - MERC_MINY;
+
 void
 Profile::setup(
-    shared_ptr<SRS> srs,
+    const SRS& srs,
     const Box& bounds,
     unsigned numTilesWideAtLod0,
     unsigned numTilesHighAtLod0)
 {
-    if (srs)
+    if (srs.valid())
     {
         Box b;
         unsigned tx = numTilesWideAtLod0;
@@ -127,38 +132,50 @@ Profile::setup(
         }
         else
         {
-            if (srs->isGeographic())
+            b = srs.bounds();
+
+            //TODO: CHECK THIS
+            ROCKY_TODO("");
+
+#if 0
+            if (srs.isGeographic())
             {
                 b = Box(-180.0, -90.0, 180.0, 90.0);
             }
-            else if (srs->isMercator())
+
+            else if (srs.isMercator())
             {
                 // automatically figure out proper mercator extents:
                 dvec3 point(180.0, 0.0, 0.0);
-                srs->getGeographicSRS()->transform(point, srs.get(), point);
+                srs.getGeographicSRS()->transform(point, srs.get(), point);
                 double e = point.x;
                 b = Box(-e, -e, e, e);
             }
             else
             {
                 ROCKY_INFO << LC << "No extents given, making some up.\n";
-                b = srs->getBounds();
+                b = srs.bounds();
             }
+#endif
         }
 
         if (tx == 0 || ty == 0)
         {
-            if (srs->isGeographic())
+            ROCKY_TODO("");
+#if 0
+            if (srs.isGeographic())
             {
                 tx = 2;
                 ty = 1;
             }
-            else if (srs->isMercator())
+            else if (srs.isMercator())
             {
                 tx = 1;
                 ty = 1;
             }
-            else if (b.valid())
+            else
+#endif
+                if (b.valid())
             {
                 double ar = b.width() / b.height();
                 if (ar >= 1.0) {
@@ -179,30 +196,44 @@ Profile::setup(
             }
         }
 
-        _extent = GeoExtent(srs, b);
+        _shared->_extent = GeoExtent(srs, b);
 
-        _numTilesWideAtLod0 = tx;
-        _numTilesHighAtLod0 = ty;
+        _shared->_numTilesWideAtLod0 = tx;
+        _shared->_numTilesHighAtLod0 = ty;
 
         // automatically calculate the lat/long extents:
-        _latlong_extent = srs->isGeographic() ?
-            _extent :
-            _extent.transform(srs->getGeographicSRS());
+        _shared->_latlong_extent = srs.isGeographic() ?
+            _shared->_extent :
+            _shared->_extent.transform(srs.geoSRS());
 
         // make a profile sig (sans srs) and an srs sig for quick comparisons.
         Config temp = getConfig();
-        _fullSignature = util::Stringify() << std::hex << util::hashString(temp.toJSON());
+        _shared->_fullSignature = util::Stringify() << std::hex << util::hashString(temp.toJSON());
         temp.remove("vdatum");
         //temp.vsrsString() = "";
-        _horizSignature = util::Stringify() << std::hex << util::hashString(temp.toJSON());
+        _shared->_horizSignature = util::Stringify() << std::hex << util::hashString(temp.toJSON());
 
-        _hash = std::hash<std::string>()(temp.toJSON());
+        _shared->_hash = std::hash<std::string>()(temp.toJSON());
     }
+}
+
+// invalid profile
+Profile::Profile()
+{
+    _shared = std::make_shared<Data>();
+}
+
+Profile&
+Profile::operator=(Profile&& rhs)
+{
+    *this = (const Profile&)rhs;
+    rhs._shared = nullptr;
+    return *this;
 }
 
 Profile::Profile(const Config& conf)
 {
-    //Config input = conf;
+    _shared = std::make_shared<Data>();
 
     if (!conf.value().empty())
     {
@@ -231,9 +262,9 @@ Profile::Profile(const Config& conf)
         conf.get("num_tiles_high_at_lod_0", ty);
         conf.get("ty", ty);
 
-        auto srs = SRS::get(horiz, vdatum);
+        SRS srs(horiz, vdatum);
 
-        if (srs)
+        if (srs.valid())
         {
             setup(srs, box, tx, ty);
         }
@@ -247,21 +278,21 @@ Profile::getConfig() const
 
     if (valid())
     {
-        if (_wellKnownName.empty() == false)
+        if (_shared->_wellKnownName.empty() == false)
         {
-            conf.setValue(_wellKnownName);
+            conf.setValue(_shared->_wellKnownName);
         }
         else
         {
-            conf.set("srs", getSRS()->getHorizInitString());
-            if (!getSRS()->getVertInitString().empty())
-                conf.set("vdatum", getSRS()->getVertInitString());
-            conf.set("xmin", _extent.xmin());
-            conf.set("ymin", _extent.ymin());
-            conf.set("xmax", _extent.xmax());
-            conf.set("ymax", _extent.ymax());
-            conf.set("tx", _numTilesWideAtLod0);
-            conf.set("ty", _numTilesHighAtLod0);
+            conf.set("srs", getSRS().definition());
+            if (!getSRS().vertical().empty())
+                conf.set("vdatum", getSRS().vertical());
+            conf.set("xmin", _shared->_extent.xmin());
+            conf.set("ymin", _shared->_extent.ymin());
+            conf.set("xmax", _shared->_extent.xmax());
+            conf.set("ymax", _shared->_extent.ymax());
+            conf.set("tx", _shared->_numTilesWideAtLod0);
+            conf.set("ty", _shared->_numTilesHighAtLod0);
         }
     }
 
@@ -270,22 +301,24 @@ Profile::getConfig() const
 
 Profile::Profile(const std::string& wellKnownName)
 {
+    _shared = std::make_shared<Data>();
     setup(wellKnownName);
 }
 
 Profile::Profile(
-    shared_ptr<SRS> srs,
+    const SRS& srs,
     const Box& bounds,
     unsigned x_tiles_at_lod0,
     unsigned y_tiles_at_lod0)
 {
+    _shared = std::make_shared<Data>();
     setup(srs, bounds, x_tiles_at_lod0, y_tiles_at_lod0);
 }
 
 void
 Profile::setup(const std::string& name)
 {
-    _wellKnownName = name;
+    _shared->_wellKnownName = name;
 
     if (util::ciEquals(name, PLATE_CARREE) ||
         util::ciEquals(name, "plate-carre") ||
@@ -293,33 +326,25 @@ Profile::setup(const std::string& name)
     {
         // Yes I know this is not really Plate Carre but it will stand in for now.
         dvec3 ex;
-        auto plateCarre = SRS::get("plate-carre");
-        auto wgs84 = SRS::get("wgs84");
-        wgs84->transform(dvec3(180,90,0), plateCarre.get(), ex);
+
+        SRS::WGS84.to(SRS::PLATE_CARREE).transform(dvec3(180, 90, 0), ex);
 
         setup(
-            plateCarre,
+            SRS::PLATE_CARREE,
             Box(-ex.x, -ex.y, ex.x, ex.y),
             2u, 1u);
     }
     else if (util::ciEquals(name, GLOBAL_GEODETIC))
     {
         setup(
-            SRS::get("wgs84"),
+            SRS::WGS84,
             Box(-180.0, -90.0, 180.0, 90.0),
             2, 1);
-    }
-    else if (util::ciEquals(name, GLOBAL_MERCATOR))
-    {
-        setup(
-            SRS::get("global-mercator"),
-            Box(MERC_MINX, MERC_MINY, MERC_MAXX, MERC_MAXY),
-            1, 1);
     }
     else if (util::ciEquals(name, SPHERICAL_MERCATOR))
     {
         setup(
-            SRS::get("spherical-mercator"),
+            SRS::SPHERICAL_MERCATOR,
             Box(MERC_MINX, MERC_MINY, MERC_MAXX, MERC_MAXY),
             1, 1);
     }
@@ -327,34 +352,34 @@ Profile::setup(const std::string& name)
 
 bool
 Profile::valid() const {
-    return _extent.valid();
+    return _shared->_extent.valid();
 }
 
-shared_ptr<SRS>
+const SRS&
 Profile::getSRS() const {
-    return _extent.getSRS();
+    return _shared->_extent.getSRS();
 }
 
 const GeoExtent&
 Profile::getExtent() const {
-    return _extent;
+    return _shared->_extent;
 }
 
 const GeoExtent&
 Profile::getLatLongExtent() const {
-    return _latlong_extent;
+    return _shared->_latlong_extent;
 }
 
 std::string
 Profile::toString() const
 {
-    auto srs = _extent.getSRS();
+    auto srs = _shared->_extent.getSRS();
     return util::make_string()
         << std::setprecision(16)
-        << "[srs=" << srs->getName() << ", min=" << _extent.xMin() << "," << _extent.yMin()
-        << " max=" << _extent.xMax() << "," << _extent.yMax()
-        << " ar=" << _numTilesWideAtLod0 << ":" << _numTilesHighAtLod0
-        << " vdatum=" << (srs->getVerticalDatum() ? srs->getVerticalDatum()->getName() : "geodetic")
+        << "[srs=" << srs.name() << ", min=" << _shared->_extent.xMin() << "," << _shared->_extent.yMin()
+        << " max=" << _shared->_extent.xMax() << "," << _shared->_extent.yMax()
+        << " ar=" << _shared->_numTilesWideAtLod0 << ":" << _shared->_numTilesHighAtLod0
+        << " vdatum=" << (!srs.vertical().empty() ? srs.vertical() : "geodetic")
         << "]";
 }
 
@@ -369,8 +394,8 @@ Profile::toProfileOptions() const
     }
     else
     {
-        op.srsString() = getSRS()->getHorizInitString();
-        op.vsrsString() = getSRS()->getVertInitString();
+        op.srsString() = getSRS().getHorizInitString();
+        op.vsrsString() = getSRS().getVertInitString();
         op.bounds()->xmin = _extent.xMin();
         op.bounds()->ymin = _extent.yMin();
         op.bounds()->xmax = _extent.xMax();
@@ -382,18 +407,18 @@ Profile::toProfileOptions() const
 }
 #endif
 
-Profile::ptr
-Profile::overrideSRS(shared_ptr<SRS> srs) const
+Profile
+Profile::overrideSRS(const SRS& srs) const
 {
-    return Profile::create(
+    return Profile(
         srs,
-        Box(_extent.xMin(), _extent.yMin(), _extent.xMax(), _extent.yMax()),
-        _numTilesWideAtLod0, _numTilesHighAtLod0);
+        Box(_shared->_extent.xMin(), _shared->_extent.yMin(), _shared->_extent.xMax(), _shared->_extent.yMax()),
+        _shared->_numTilesWideAtLod0, _shared->_numTilesHighAtLod0);
 }
 
 void
 Profile::getRootKeys(
-    shared_ptr<Profile> profile,
+    const Profile& profile,
     std::vector<TileKey>& out_keys)
 {
     getAllKeysAtLOD(0, profile, out_keys);
@@ -402,14 +427,14 @@ Profile::getRootKeys(
 void
 Profile::getAllKeysAtLOD(
     unsigned lod,
-    shared_ptr<Profile> profile,
+    const Profile& profile,
     std::vector<TileKey>& out_keys)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(profile && profile->valid(), void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(profile.valid(), void());
 
     out_keys.clear();
 
-    auto[tx, ty] = profile->getNumTiles(lod);
+    auto[tx, ty] = profile.getNumTiles(lod);
 
     for (unsigned c = 0; c < tx; ++c)
     {
@@ -421,47 +446,48 @@ Profile::getAllKeysAtLOD(
 }
 
 GeoExtent
-Profile::calculateExtent( unsigned int lod, unsigned int tileX, unsigned int tileY ) const
+Profile::calculateExtent(unsigned lod, unsigned tileX, unsigned tileY) const
 {
-    double width, height;
-    getTileDimensions(lod, width, height);
+    auto [width, height] = getTileDimensions(lod);
 
     double xmin = getExtent().xMin() + (width * (double)tileX);
     double ymax = getExtent().yMax() - (height * (double)tileY);
     double xmax = xmin + width;
     double ymin = ymax - height;
 
-    return GeoExtent( getSRS(), xmin, ymin, xmax, ymax );
+    return GeoExtent(getSRS(), xmin, ymin, xmax, ymax);
 }
 
 bool
-Profile::isEquivalentTo(Profile::ptr rhs) const
+Profile::isEquivalentTo(const Profile& rhs) const
 {
-    return rhs && getFullSignature() == rhs->getFullSignature();
+    return getFullSignature() == rhs.getFullSignature();
 }
 
 bool
-Profile::isHorizEquivalentTo(Profile::ptr rhs) const
+Profile::isHorizEquivalentTo(const Profile& rhs) const
 {
-    return rhs && getHorizSignature() == rhs->getHorizSignature();
+    return getHorizSignature() == rhs.getHorizSignature();
 }
 
-void
-Profile::getTileDimensions(unsigned int lod, double& out_width, double& out_height) const
+std::pair<double,double>
+Profile::getTileDimensions(unsigned int lod) const
 {
-    out_width  = _extent.width() / (double)_numTilesWideAtLod0;
-    out_height = _extent.height() / (double)_numTilesHighAtLod0;
+    double out_width  = _shared->_extent.width() / (double)_shared->_numTilesWideAtLod0;
+    double out_height = _shared->_extent.height() / (double)_shared->_numTilesHighAtLod0;
 
     double factor = double(1u << lod);
     out_width /= (double)factor;
     out_height /= (double)factor;
+
+    return std::make_pair(out_width, out_height);
 }
 
 std::pair<unsigned, unsigned>
 Profile::getNumTiles(unsigned lod) const
 {
-    unsigned out_tiles_wide = _numTilesWideAtLod0;
-    unsigned out_tiles_high = _numTilesHighAtLod0;
+    unsigned out_tiles_wide = _shared->_numTilesWideAtLod0;
+    unsigned out_tiles_high = _shared->_numTilesHighAtLod0;
 
     double factor = double(1u << lod);
     out_tiles_wide *= factor;
@@ -475,7 +501,7 @@ Profile::getLevelOfDetailForHorizResolution( double resolution, int tileSize ) c
 {
     if ( tileSize <= 0 || resolution <= 0.0 ) return 23;
 
-    double tileRes = (_extent.width() / (double)_numTilesWideAtLod0) / (double)tileSize;
+    double tileRes = (_shared->_extent.width() / (double)_shared->_numTilesWideAtLod0) / (double)tileSize;
     unsigned int level = 0;
     while( tileRes > resolution ) 
     {
@@ -524,11 +550,11 @@ Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) cons
     {
         // The extent transformation failed, probably due to an out-of-bounds condition.
         // Go to Plan B: attempt the operation in lat/long
-        auto geo_srs = getSRS()->getGeographicSRS();
+        auto geo_srs = getSRS().geoSRS();
 
         // get the input in lat/long:
         GeoExtent gcs_input =
-            input.getSRS()->isGeographic() ?
+            input.getSRS().isGeographic() ?
             input :
             input.transform(geo_srs);
 
@@ -537,23 +563,23 @@ Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) cons
             return GeoExtent::INVALID;
 
         // bail out if the extent's do not intersect at all:
-        if (!gcs_input.intersects(_latlong_extent, false))
+        if (!gcs_input.intersects(_shared->_latlong_extent, false))
             return GeoExtent::INVALID;
 
         // clamp it to the profile's extents:
         GeoExtent clamped_gcs_input = GeoExtent(
             gcs_input.getSRS(),
-            clamp(gcs_input.xMin(), _latlong_extent.xMin(), _latlong_extent.xMax()),
-            clamp(gcs_input.yMin(), _latlong_extent.yMin(), _latlong_extent.yMax()),
-            clamp(gcs_input.xMax(), _latlong_extent.xMin(), _latlong_extent.xMax()),
-            clamp(gcs_input.yMax(), _latlong_extent.yMin(), _latlong_extent.yMax()));
+            clamp(gcs_input.xMin(), _shared->_latlong_extent.xMin(), _shared->_latlong_extent.xMax()),
+            clamp(gcs_input.yMin(), _shared->_latlong_extent.yMin(), _shared->_latlong_extent.yMax()),
+            clamp(gcs_input.xMax(), _shared->_latlong_extent.xMin(), _shared->_latlong_extent.xMax()),
+            clamp(gcs_input.yMax(), _shared->_latlong_extent.yMin(), _shared->_latlong_extent.yMax()));
 
         if (out_clamped)
             *out_clamped = (clamped_gcs_input != gcs_input);
 
         // finally, transform the clamped extent into this profile's SRS and return it.
         GeoExtent result =
-            clamped_gcs_input.getSRS()->isEquivalentTo(this->getSRS().get()) ?
+            clamped_gcs_input.getSRS().isEquivalentTo(this->getSRS()) ?
             clamped_gcs_input :
             clamped_gcs_input.transform(this->getSRS());
 
@@ -567,37 +593,37 @@ Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) cons
 }
 
 unsigned
-Profile::getEquivalentLOD(Profile::ptr rhsProfile, unsigned rhsLOD) const
+Profile::getEquivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(rhsProfile!=nullptr, rhsLOD);
+    ROCKY_SOFT_ASSERT_AND_RETURN(rhsProfile.valid(), rhsLOD);
 
     //If the profiles are equivalent, just use the incoming lod
     if (this->isHorizEquivalentTo(rhsProfile))
         return rhsLOD;
 
-    static Profile::ptr ggProfile = Profile::create(Profile::GLOBAL_GEODETIC);
-    static Profile::ptr smProfile = Profile::create(Profile::SPHERICAL_MERCATOR);
+    static Profile ggProfile = Profile(Profile::GLOBAL_GEODETIC);
+    static Profile smProfile = Profile(Profile::SPHERICAL_MERCATOR);
 
     // Special check for geodetic to mercator or vise versa, they should match up in LOD.
     // TODO not sure about this.. -gw
-    if ((rhsProfile->isEquivalentTo(smProfile) && isEquivalentTo(ggProfile)) ||
-        (rhsProfile->isEquivalentTo(ggProfile) && isEquivalentTo(smProfile)))
+    if ((rhsProfile.isEquivalentTo(smProfile) && isEquivalentTo(ggProfile)) ||
+        (rhsProfile.isEquivalentTo(ggProfile) && isEquivalentTo(smProfile)))
     {
         return rhsLOD;
     }
 
-    double rhsWidth, rhsHeight;
-    rhsProfile->getTileDimensions(rhsLOD, rhsWidth, rhsHeight);
+    auto[rhsWidth, rhsHeight] = rhsProfile.getTileDimensions(rhsLOD);
 
     // safety catch
-    if (equivalent(rhsWidth, 0.0) || equivalent(rhsHeight, 0.0))
+    if (equiv(rhsWidth, 0.0) || equiv(rhsHeight, 0.0))
     {
         ROCKY_WARN << LC << "getEquivalentLOD: zero dimension" << std::endl;
         return rhsLOD;
     }
 
-    auto rhsSRS = rhsProfile->getSRS();
-    double rhsTargetHeight = rhsSRS->transformUnits(rhsHeight, getSRS());
+    auto rhsSRS = rhsProfile.getSRS();
+    double rhsTargetHeight = rhsSRS.units().convertTo(getSRS().units(), rhsHeight);
+//    double rhsTargetHeight = rhsSRS.transformUnits(rhsHeight, getSRS());
 
     int currLOD = 0;
     int destLOD = currLOD;
@@ -610,8 +636,7 @@ Profile::getEquivalentLOD(Profile::ptr rhsProfile, unsigned rhsLOD) const
     {
         double prevDelta = delta;
 
-        double w, h;
-        getTileDimensions(currLOD, w, h);
+        auto[w, h] = getTileDimensions(currLOD);
 
         delta = fabs(h - rhsTargetHeight);
         if (delta < prevDelta)
@@ -642,8 +667,7 @@ Profile::getLOD(double height) const
     {
         double prevDelta = delta;
 
-        double w, h;
-        getTileDimensions(currLOD, w, h);
+        auto[w, h] = getTileDimensions(currLOD);
 
         delta = fabs(h - height);
         if (delta < prevDelta)
@@ -671,7 +695,7 @@ Profile::transformAndExtractContiguousExtents(
     GeoExtent target_extent = input;
 
     // reproject into the profile's SRS if necessary:
-    if (!getSRS()->isHorizEquivalentTo(input.getSRS()))
+    if (!getSRS().isHorizEquivalentTo(input.getSRS()))
     {
         // localize the extents and clamp them to legal values
         target_extent = clampAndTransformExtent(input);

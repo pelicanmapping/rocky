@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "Layer.h"
+#include "GeoExtent.h"
 
 using namespace rocky;
 

@@ -31,7 +31,7 @@ Viewpoint::Viewpoint(const Config& conf)
     const std::string vert = conf.value("vdatum");
 
     // try to parse an SRS, defaulting to WGS84 if not able to do so
-    auto srs = SRS::get(horiz, vert);
+    SRS srs(horiz, vert);
 
     // try x/y/z variant:
     if ( conf.hasValue("x") )
@@ -76,7 +76,7 @@ Viewpoint::getConfig() const
     
     if ( point.has_value() )
     {
-        if ( point->getSRS()->isGeographic() )
+        if ( point->getSRS().isGeographic() )
         {
             conf.set("long",   point->x());
             conf.set("lat",    point->y());
@@ -89,10 +89,10 @@ Viewpoint::getConfig() const
             conf.set("z", point->z());
         }
 
-        conf.set("srs", point->getSRS()->getHorizInitString());
+        conf.set("srs", point->getSRS().definition());
 
-        if ( point->getSRS()->getVerticalDatum() )
-            conf.set("vdatum", point->getSRS()->getVertInitString());
+        if ( !point->getSRS().vertical().empty() )
+            conf.set("vdatum", point->getSRS().vertical());
     }
 
     if (positionOffset.has_value() )

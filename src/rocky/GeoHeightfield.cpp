@@ -1,6 +1,5 @@
 #include "GeoHeightfield.h"
 #include "Heightfield.h"
-#include "VerticalDatum.h"
 #include "Math.h"
 
 using namespace rocky;
@@ -16,6 +15,14 @@ GeoHeightfield::GeoHeightfield() :
     _maxHeight(0.0f)
 {
     init();
+}
+
+GeoHeightfield&
+GeoHeightfield::operator=(GeoHeightfield&& rhs)
+{
+    *this = (const GeoHeightfield&)rhs;
+    rhs._extent = GeoExtent::INVALID;
+    return *this;
 }
 
 GeoHeightfield::GeoHeightfield(
@@ -89,66 +96,50 @@ GeoHeightfield::getHeightAtLocation(
 
 bool
 GeoHeightfield::getElevation(
-    shared_ptr<SRS> inputSRS,
-    double x,
-    double y,
-    Image::Interpolation interp,
-    shared_ptr<SRS> outputSRS,
-    float& out_elevation) const
+    const SRS& inputSRS,
+    dvec3& in_out_point,
+    Image::Interpolation interp) const
 {
-    dvec3 xy(x, y, 0);
-    dvec3 local = xy;
-    shared_ptr<SRS> extentSRS = _extent.getSRS();
+    const SRS& localSRS = _extent.getSRS();
+
+    dvec3 local;
 
     // first xform the input point into our local SRS:
-    if (inputSRS != extentSRS)
+    SRSTransform xform;
+    if (inputSRS != localSRS)
     {
-        if (inputSRS && !inputSRS->transform(xy, extentSRS, local))
+        xform = inputSRS.to(localSRS);
+    }
+
+    if (xform.valid())
+    {
+        if (!xform(in_out_point, local))
             return false;
+    }
+    else
+    {
+        local = in_out_point;
     }
 
     // check that the point falls within the heightfield bounds:
     if (_extent.contains(local.x, local.y))
     {
-        //double xInterval = _extent.width()  / (double)(_hf->getNumColumns()-1);
-        //double yInterval = _extent.height() / (double)(_heightField->getNumRows()-1);
-
         // sample the heightfield at the input coordinates:
-        // (note: since it's sampling the HF, it will return an MSL height if applicable)
-        out_elevation = getHeightAtLocation(
-            local.x, local.y, interp);
-        //_heightField.get(), 
-        //local.x(), local.y(),
-            //_extent.xMin(), _extent.yMin(), 
-            //xInterval, yInterval, 
-            //interp);
+        local.z = getHeightAtLocation(local.x, local.y, interp);
 
-        // if the vertical datums don't match, do a conversion:
-        if (out_elevation != NO_DATA_VALUE && 
-            outputSRS &&
-            !extentSRS->isVertEquivalentTo(outputSRS.get()))
-        {
-            // if the caller provided a custom output SRS, perform the appropriate
-            // Z transformation. This requires a lat/long point:
+        if (xform.valid())
+            xform.inverse(local, in_out_point);
+        else
+            in_out_point = local;
 
-            dvec3 geolocal(local);
-            if (!extentSRS->isGeographic())
-            {
-                extentSRS->transform(geolocal, extentSRS->getGeographicSRS(), geolocal);
-            }
-
-            VerticalDatum::transform(
-                extentSRS->getVerticalDatum().get(),
-                outputSRS->getVerticalDatum().get(),
-                geolocal.y, geolocal.x,
-                out_elevation);
-        }
+        if (local.z == NO_DATA_VALUE)
+            in_out_point.z = NO_DATA_VALUE;
 
         return true;
     }
     else
     {
-        out_elevation = 0.0f;
+        in_out_point.z = 0.0;
         return false;
     }
 }

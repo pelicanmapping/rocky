@@ -458,7 +458,7 @@ MapNode::open()
     }
 
     // A shader define indicating that this is a geocentric display
-    if ( _map->getSRS()->isGeographic() )
+    if ( _map->getSRS().isGeographic() )
     {
         stateset->setDefine("OE_IS_GEOCENTRIC");
     }
@@ -486,7 +486,7 @@ MapNode::open()
     // install a callback that updates a horizon object and installs a clipping plane
     if (getMapSRS()->isGeographic())
     {
-        this->addCullCallback(new HorizonClipPlane(getMapSRS()->getEllipsoid()));
+        this->addCullCallback(new HorizonClipPlane(getMapSRS()->ellipsoid()));
     }
 
     // connect any extensions that have already been added.
@@ -629,12 +629,21 @@ MapNode::getMap() const
     return _map;
 }
 
-shared_ptr<SRS>
+const SRS&
 MapNode::getMapSRS() const
 {
-    return getMap() && getMap()->getProfile() ?
-        getMap()->getProfile()->getSRS() :
-        nullptr;
+    return getMap() && getMap()->getProfile().valid() ?
+        getMap()->getProfile().getSRS() :
+        SRS::EMPTY;
+}
+
+const SRS&
+MapNode::getWorldSRS() const
+{
+    if (getMapSRS().isProjected())
+        return getMapSRS();
+    else
+        return SRS::ECEF;
 }
 
 #if 0
@@ -1068,5 +1077,5 @@ MapNode::getGeoPointUnderMouse(
 void
 MapNode::update(const vsg::FrameStamp* f)
 {
-    _terrain->update(f, _map->instance()->ioOptions);
+    _terrain->update(f, _map->instance()->ioOptions());
 }

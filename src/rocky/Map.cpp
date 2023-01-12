@@ -66,13 +66,13 @@ Map::Options::fromConfig(const Config& conf)
 Map::Map() :
     _instance(Instance::create())
 {
-    construct(Config(), _instance->ioOptions);
+    construct(Config(), _instance->ioOptions());
 }
 
 Map::Map(Instance::ptr instance) :
     _instance(instance ? instance : Instance::create())
 {
-    construct(Config(), _instance->ioOptions);
+    construct(Config(), _instance->ioOptions());
 }
 
 Map::Map(Instance::ptr instance, const IOOptions& io) :
@@ -171,12 +171,12 @@ Map::construct(const Config& conf, const IOOptions& io)
     conf.get("profile_layer", _profileLayer);
 
     if (conf.hasChild("profile"))
-        setProfile(Profile::create(conf.child("profile"))); 
+        setProfile(Profile(conf.child("profile"))); 
 
     // set a default profile if neccesary.
-    if (!getProfile())
+    if (!getProfile().valid())
     {
-        setProfile(Profile::create(Profile::GLOBAL_GEODETIC));
+        setProfile(Profile(Profile::GLOBAL_GEODETIC));
     }
 }
 
@@ -186,8 +186,8 @@ Map::getConfig() const
     Config conf("map");
     conf.set("name", _name);
 
-    if (getProfile())
-        conf.set("profile", getProfile()->getConfig());
+    if (getProfile().valid())
+        conf.set("profile", getProfile().getConfig());
 
     //conf.set( "cache",        cache() );
     //conf.set( "cache_policy", cachePolicy() );
@@ -253,20 +253,20 @@ Map::getDataModelRevision() const
 }
 
 void
-Map::setProfile(shared_ptr<Profile> value)
+Map::setProfile(const Profile& value)
 {
-    bool notifyLayers = (_profile == nullptr);
+    bool notifyLayers = (!_profile.valid());
 
-    if (value)
+    if (value.valid())
     {
         _profile = value;
 
         // create a "proxy" profile to use when querying elevation layers with a vertical datum
-        if (_profile && _profile->getSRS()->getVerticalDatum() != 0L )
+        if (!_profile.getSRS().vertical().empty())
         {
-            Config conf = _profile->getConfig();
+            Config conf = _profile.getConfig();
             conf.remove("vdatum");
-            _profileNoVDatum = Profile::create(conf);
+            _profileNoVDatum = Profile(conf);
             //ProfileOptions po = _profile->toProfileOptions();
             //po.vsrsString().unset();
             //_profileNoVDatum = Profile::create(po);
@@ -277,12 +277,13 @@ Map::setProfile(shared_ptr<Profile> value)
         }
 
         // finally, fire an event if the profile has been set.
-        ROCKY_INFO << LC << "Map profile is: " << _profile->toString() << std::endl;
+        _instance->log().info << "Map profile is: " << _profile.toString() << std::endl;
     }
 
+#if 0
     // If we just set the profile, tell all our layers they are now added
     // to a valid map.
-    if (_profile && notifyLayers)
+    if (_profile.valid() && notifyLayers)
     {
         for(auto& layer : _layers)
         {
@@ -292,9 +293,10 @@ Map::setProfile(shared_ptr<Profile> value)
             }
         }
     }
+#endif
 }
 
-shared_ptr<Profile>
+const Profile&
 Map::getProfile() const
 {
     return _profile;
@@ -400,7 +402,7 @@ Map::endUpdate()
 void
 Map::addLayer(shared_ptr<Layer> layer)
 {
-    addLayer(layer, _instance->ioOptions);
+    addLayer(layer, _instance->ioOptions());
 }
 
 void
@@ -425,11 +427,13 @@ Map::addLayer(shared_ptr<Layer> layer, const IOOptions& io)
         layer->open();
     }
 
+#if 0
     // do we need this? Won't the callback to this?
     if (layer->isOpen() && getProfile() != NULL)
     {
         layer->addedToMap(this);
     }
+#endif
 
     // Set up callbacks. Do this *after* calling addedToMap (since the callback invokes addedToMap)
     //installLayerCallbacks(layer);
@@ -460,7 +464,7 @@ Map::addLayer(shared_ptr<Layer> layer, const IOOptions& io)
 void
 Map::insertLayer(shared_ptr<Layer> layer, unsigned index)
 {
-    insertLayer(layer, index, _instance->ioOptions);
+    insertLayer(layer, index, _instance->ioOptions());
 }
 
 void
@@ -480,10 +484,12 @@ Map::insertLayer(
         layer->open(io);
     }
 
+#if 0
     if (layer->isOpen() && getProfile() != NULL)
     {
         layer->addedToMap(this);
     }
+#endif
 
     // Set up callbacks. Do this *after* calling addedToMap (since the callback invokes addedToMap)
     //installLayerCallbacks(layer);
@@ -525,7 +531,9 @@ Map::removeLayer(shared_ptr<Layer> layer)
 
     //uninstallLayerCallbacks(layerToRemove.get());
 
+#if 0
     layer->removedFromMap(this);
+#endif
 
     // Close the layer if we opened it.
     if (layer->getOpenAutomatically())
@@ -619,7 +627,7 @@ Map::moveLayer(shared_ptr<Layer> layerToMove, unsigned newIndex)
 void
 Map::addLayers(const std::vector<Layer::ptr>& layers)
 {
-    addLayers(layers, _instance->ioOptions);
+    addLayers(layers, _instance->ioOptions());
 }
 
 void
@@ -667,10 +675,12 @@ Map::addLayers(
     {
         if (layer)
         {
+#if 0
             if (layer->isOpen() && getProfile() != NULL)
             {
                 layer->addedToMap(this);
             }
+#endif
 
             // Set up callbacks.
             //installLayerCallbacks(layer);
@@ -800,17 +810,18 @@ Map::clear()
     //}
 }
 
-shared_ptr<SRS>
+const SRS&
 Map::getSRS() const
 {
-    return _profile ? _profile->getSRS() : nullptr;
+    static SRS emptySRS;
+    return _profile.valid() ? _profile.getSRS() : emptySRS;
 }
 
 #if 0
-shared_ptr<SRS>
+const SRS&
 Map::getWorldSRS() const
 {
-    return getSRS() && getSRS()->isGeographic() ? getSRS()->getGeocentricSRS() : getSRS();
+    return getSRS() && getSRS().isGeographic() ? getSRS().getGeocentricSRS() : getSRS();
 }
 #endif
 

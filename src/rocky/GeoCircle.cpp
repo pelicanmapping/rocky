@@ -33,22 +33,22 @@ GeoCircle::GeoCircle(const GeoPoint& center,
 bool
 GeoCircle::operator == ( const GeoCircle& rhs ) const
 {
-    return 
-        _center == rhs._center && 
-        equivalent(_radius, rhs._radius);
+    return
+        _center == rhs._center &&
+        equiv(_radius, rhs._radius);
 }
 
 GeoCircle
-GeoCircle::transform(shared_ptr<SRS> srs) const
+GeoCircle::transform(const SRS& srs) const
 {
     return GeoCircle(
-        center().transform( srs ),
-        radius() );
+        center().transform(srs),
+        radius());
 }
 
 bool
 GeoCircle::transform(
-    shared_ptr<SRS> srs,
+    const SRS& srs,
     GeoCircle& output) const
 {
     output._radius = _radius;
@@ -61,13 +61,13 @@ GeoCircle::intersects( const GeoCircle& rhs ) const
     if ( !valid() || !rhs.valid() )
         return false;
 
-    if ( !getSRS()->isHorizEquivalentTo( rhs.getSRS() ) )
+    if ( !getSRS().isHorizEquivalentTo( rhs.getSRS() ) )
     {
         return intersects( rhs.transform(getSRS()) );
     }
     else
     {
-        if ( getSRS()->isProjected() )
+        if ( getSRS().isProjected() )
         {
             dvec2 vec = dvec2(center().x(), center().y()) - dvec2(rhs.center().x(), rhs.center().y());
             return lengthSquared(vec) <= (radius() + rhs.radius())*(radius() + rhs.radius());

@@ -4,7 +4,7 @@
  * MIT License
  */
 #pragma once
-
+#if 0
 #include <rocky/Common.h>
 #include <rocky/Profile.h>
 #include <rocky/TileKey.h>
@@ -99,7 +99,7 @@ namespace rocky { namespace contrib
             const SRS** new_srs) const override;
 
         virtual bool transformExtentToMBR(
-            shared_ptr<SRS> to_srs,
+            const SRS& to_srs,
             double& in_out_xmin,
             double& in_out_ymin,
             double& in_out_xmax,
@@ -108,7 +108,7 @@ namespace rocky { namespace contrib
     private:
 
         bool transformInFaceExtentToMBR(
-            shared_ptr<SRS> to_srs,
+            const SRS& to_srs,
             int face,
             double& in_out_xmin,
             double& in_out_ymin,
@@ -176,3 +176,4 @@ namespace rocky { namespace contrib
         GeoExtent transformGcsExtentOnFace( const GeoExtent& gcsExtent, int face ) const;
     };
 } }
+#endif

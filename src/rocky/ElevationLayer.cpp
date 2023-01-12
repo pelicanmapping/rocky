@@ -7,7 +7,6 @@
 #include "Geoid.h"
 #include "Heightfield.h"
 #include "Metrics.h"
-#include "VerticalDatum.h"
 
 #include <cinttypes>
 
@@ -239,7 +238,7 @@ ElevationLayer::normalizeNoDataValues(Heightfield* hf) const
         {
             float h = *pixel;
             if (std::isnan(h) ||
-                equivalent(h, noDataValue().value()) ||
+                equiv(h, noDataValue().value()) ||
                 h < minValidValue() ||
                 h > maxValidValue())
             {
@@ -251,22 +250,22 @@ ElevationLayer::normalizeNoDataValues(Heightfield* hf) const
 
 void
 ElevationLayer::applyProfileOverrides(
-    shared_ptr<Profile>& inOutProfile) const
+    Profile& inOutProfile) const
 {
     // Check for a vertical datum override.
-    if (inOutProfile && inOutProfile->valid() && _verticalDatum.isSet())
+    if (inOutProfile.valid() && _verticalDatum.isSet())
     {
         std::string vdatum = _verticalDatum;
 
-        std::string profileVDatumStr = _profile->getSRS()->getVertInitString();
+        std::string profileVDatumStr = _profile.getSRS().vertical();
         if (profileVDatumStr.empty())
             profileVDatumStr = "geodetic";
 
-        if (!util::ciEquals(getProfile()->getSRS()->getVertInitString(), vdatum))
+        if (!util::ciEquals(getProfile().getSRS().vertical(), vdatum))
         {
             Config conf = getConfig();
             conf.set("vdatum", vdatum);
-            inOutProfile = Profile::create(conf);
+            inOutProfile = Profile(conf);
         }
     }
 }
@@ -286,7 +285,7 @@ ElevationLayer::assembleHeightfield(
     if (key.getLOD() > 0u)
     {
         key.getIntersectingKeys(getProfile(), intersectingKeys);
-        //getProfile()->getIntersectingTiles(key, intersectingTiles);
+        //getProfile().getIntersectingTiles(key, intersectingTiles);
     }
 
     else
@@ -297,7 +296,7 @@ ElevationLayer::assembleHeightfield(
         // surpasses the max data LOD of the tile source.
         unsigned numTilesThatMayHaveData = 0u;
 
-        int intersectionLOD = getProfile()->getEquivalentLOD(key.getProfile(), key.getLOD());
+        int intersectionLOD = getProfile().getEquivalentLOD(key.getProfile(), key.getLOD());
 
         while (numTilesThatMayHaveData == 0u && intersectionLOD >= 0)
         {
@@ -308,7 +307,7 @@ ElevationLayer::assembleHeightfield(
                 intersectionLOD,
                 getProfile(),
                 intersectingKeys);
-            //getProfile()->getIntersectingTiles(key.getExtent(), intersectionLOD, intersectingTiles);
+            //getProfile().getIntersectingTiles(key.getExtent(), intersectionLOD, intersectingTiles);
 
             for (auto& layerKey : intersectingKeys)
             {
@@ -383,18 +382,27 @@ ElevationLayer::assembleHeightfield(
                     {
                         // get the elevation value, at the same time transforming it vertically into the
                         // requesting key's vertical datum.
-                        float e = 0.0;
+                        dvec3 point(x, y, 0);
 
                         if (geohf.getElevation(
                             key.getExtent().getSRS(),
-                            x, y,
-                            Heightfield::BILINEAR,
-                            key.getExtent().getSRS(),
-                            e))
+                            point,
+                            Heightfield::BILINEAR))
                         {
-                            elevation = e;
+                            elevation = point.z;
                             break;
                         }
+
+                        //if (geohf.getElevation(
+                        //    key.getExtent().getSRS(),
+                        //    x, y,
+                        //    Heightfield::BILINEAR,
+                        //    key.getExtent().getSRS(),
+                        //    e))
+                        //{
+                        //    elevation = e;
+                        //    break;
+                        //}
                     }
 
                     out_hf->write(fvec4(elevation), c, r);
@@ -456,7 +464,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
     shared_ptr<Heightfield> hf;
 
     auto profile = getProfile();
-    if (!profile || !isOpen())
+    if (!profile.valid() || !isOpen())
     {
         return Result<GeoHeightfield>(Status::ResourceUnavailable, "Layer not open or initialize");
     }
@@ -478,7 +486,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
     // cache key combines the key with the full signature (incl vdatum)
     // the cache key combines the Key and the horizontal profile.
     std::string cacheKey = Cache::makeCacheKey(
-        Stringify() << key.str() << "-" << std::hex << key.getProfile()->getHorizSignature(),
+        Stringify() << key.str() << "-" << std::hex << key.getProfile().getHorizSignature(),
         "elevation");
     const CachePolicy& policy = getCacheSettings()->cachePolicy().get();
 
@@ -490,7 +498,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
         sprintf(memCacheKey, "%d/%s/%s",
             getRevision(),
             key.str().c_str(),
-            key.getProfile()->getHorizSignature().c_str());
+            key.getProfile().getHorizSignature().c_str());
 
         CacheBin* bin = _memCache->getOrCreateDefaultBin();
         ReadResult cacheResult = bin->readObject(memCacheKey, 0L);
@@ -557,7 +565,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
                 return Result(GeoHeightfield::INVALID);
             }
 
-            if (key.getProfile()->isHorizEquivalentTo(profile))
+            if (key.getProfile().isHorizEquivalentTo(profile))
             {
                 util::ScopedReadLock lock(layerMutex());
                 auto r = createHeightfieldImplementation(key, io);
@@ -596,16 +604,19 @@ ElevationLayer::createHeightfieldInKeyProfile(
             // Pre-caching operations:
             normalizeNoDataValues(hf.get());
 
+            // Should be good now
+#if 0
             // If the result is good, we now have a heightfield but its vertical values
             // are still relative to the source's vertical datum. Convert them.
-            if (hf && !key.getExtent().getSRS()->isVertEquivalentTo(profile->getSRS().get()))
+            if (hf && !key.getExtent().getSRS().isVertEquivalentTo(profile.getSRS().get()))
             {
                 VerticalDatum::transform(
-                    profile->getSRS()->getVerticalDatum().get(),    // from
-                    key.getExtent().getSRS()->getVerticalDatum().get(),  // to
+                    profile.getSRS().getVerticalDatum().get(),    // from
+                    key.getExtent().getSRS().getVerticalDatum().get(),  // to
                     key.getExtent(),
                     hf);
             }
+#endif
 
 #if 0
             // Invoke user callbacks
@@ -761,8 +772,8 @@ namespace
             unsigned numRows = grid->height();
             unsigned numCols = grid->width();
             GeoExtent geodeticExtent = 
-                ex.getSRS()->isGeographic() ? ex :
-                ex.transform(ex.getSRS()->getGeographicSRS());
+                ex.getSRS().isGeographic() ? ex :
+                ex.transform(ex.getSRS().geoSRS());
             double latMin = geodeticExtent.yMin();
             double lonMin = geodeticExtent.xMin();
             double lonInterval = geodeticExtent.width() / (double)(numCols - 1);
@@ -798,7 +809,7 @@ ElevationLayerVector::populateHeightfield(
     shared_ptr<Heightfield> hf,
     std::vector<float>* resolutions,
     const TileKey& key,
-    shared_ptr<Profile> haeProfile,
+    const Profile& haeProfile,
     Heightfield::Interpolation interpolation,
     const IOOptions& io) const
 {
@@ -813,7 +824,7 @@ ElevationLayerVector::populateHeightfield(
     // terrain, for example. Construct a temporary key that doesn't have the vertical
     // datum info and use that to query the elevation data.
     TileKey keyToUse = key;
-    if (haeProfile)
+    if (haeProfile.valid())
     {
         keyToUse = TileKey(key.getLOD(), key.getTileX(), key.getTileY(), haeProfile);
     }
@@ -927,7 +938,7 @@ ElevationLayerVector::populateHeightfield(
     double   dx = key.getExtent().width() / (double)(numColumns - 1);
     double   dy = key.getExtent().height() / (double)(numRows - 1);
 
-    auto keySRS = keyToUse.getProfile()->getSRS();
+    auto keySRS = keyToUse.getProfile().getSRS();
 
     bool realData = false;
 
@@ -1069,16 +1080,16 @@ ElevationLayerVector::populateHeightfield(
                             realData = true;
                         }
 
-                        float elevation;
-                        if (layerHF.getElevation(keySRS, x, y, interpolation, keySRS, elevation))
+                        dvec3 temp(x, y, 0);
+                        if (layerHF.getElevation(keySRS, temp, interpolation))
                         {
-                            if (elevation != NO_DATA_VALUE)
+                            if (temp.z != NO_DATA_VALUE)
                             {
                                 // remember the index so we can only apply offset layers that
                                 // sit on TOP of this layer.
                                 resolvedIndex = index;
 
-                                hf->write(fvec4(elevation), c, r);
+                                hf->write(fvec4(temp.z), c, r);
 
                                 resolution = actualKey.getResolution(hf->width()).second;
                             }
@@ -1134,12 +1145,12 @@ ElevationLayerVector::populateHeightfield(
                     // If we actually got a layer then we have real data
                     realData = true;
 
-                    float elevation = 0.0f;
-                    if (layerHF.getElevation(keySRS, x, y, interpolation, keySRS, elevation) &&
-                        elevation != NO_DATA_VALUE &&
-                        !equivalent(elevation, 0.0f))
+                    dvec3 temp(x, y, 0);
+                    if (layerHF.getElevation(keySRS, temp, interpolation) &&
+                        temp.z != NO_DATA_VALUE &&
+                        !equiv(temp.z, 0.0))
                     {
-                        hf->heightAt(c, r) += elevation;
+                        hf->heightAt(c, r) += temp.z;
 
                         // Technically this is correct, but the resultin normal maps
                         // look awful and faceted.

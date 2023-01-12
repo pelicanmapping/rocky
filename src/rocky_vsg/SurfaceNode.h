@@ -29,7 +29,7 @@ namespace rocky
         shared_ptr<Horizon> _horizon;
 
         //! Reconfigure the culler
-        void set(shared_ptr<SRS> srs, const vsg::dmat4& local2world, const vsg::dbox& bbox);
+        void set(const SRS& srs, const vsg::dmat4& local2world, const vsg::dbox& bbox);
 
         //! True if this tile may be visible relative to the horizon
         bool isVisible(const dvec3& from) const;

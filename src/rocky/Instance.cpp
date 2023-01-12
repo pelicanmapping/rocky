@@ -12,10 +12,13 @@
 
 using namespace rocky;
 
-Instance::Instance() :
-    log(ioOptions.services.log)
+Instance::Instance()
 {
-    ROCKY_INFO << "Hello, world." << std::endl;
+    // set up a default logging service.
+    ioOptions().services().log = [=]() -> Log&
+    {
+        return this->_log;
+    };
 
     OGRRegisterAll();
     GDALAllRegister();
@@ -50,7 +53,7 @@ Instance::Instance() :
 Instance::~Instance()
 {
     //nop
-    ROCKY_INFO << "Goodbye." << std::endl;
+    log().info << "Goodbye" << std::endl;
 }
 
 UID rocky::createUID()

@@ -115,7 +115,7 @@ namespace rocky
         //! on information gathered from source metadata. If your Layer
         //! needs the user to expressly set a profile, override this to
         //! make it public.
-        virtual void setProfile(shared_ptr<Profile>);
+        virtual void setProfile(const Profile&);
 
     public: // Layer
 
@@ -129,7 +129,7 @@ namespace rocky
         bool isWritingRequested() const { return _writingRequested; }
 
         //! Tiling profile for this layer
-        shared_ptr<Profile> getProfile() const;
+        const Profile& getProfile() const;
 
         //! Whether the layer represents dynamic data, i.e. it generates data
         //! that requires period updates
@@ -207,10 +207,7 @@ namespace rocky
         virtual const GeoExtent& getExtent() const;
 
         //! Called by Map when added
-        virtual void addedToMap(const Map*);
-
-        //! Called by Map when removed
-        virtual void removedFromMap(const Map*);
+        //void addedToMap(const Map*) override;
 
     public:
 
@@ -242,23 +239,21 @@ namespace rocky
         };
 
         //! Access to information about the cache
-        CacheBinMetadata* getCacheBinMetadata(const Profile* profile);
+        CacheBinMetadata* getCacheBinMetadata(const Profile& profile);
 
         //! Sets up a small data cache if necessary.
-        void setUpL2Cache(unsigned minSize =0u);
+        //void setUpL2Cache(unsigned minSize =0u);
 
     protected: // Layer
 
-        virtual Status openImplementation(const IOOptions&) override;
-
-        virtual Status closeImplementation() override;
+        Status openImplementation(const IOOptions&) override;
 
     protected:
 
         //! Opportunity for a subclass to alter and/or override components
         //! of the Profile
         virtual void applyProfileOverrides(
-            shared_ptr<Profile>& in_out_profile) const { }
+            Profile& in_out_profile) const { }
 
         //! Gets or create a caching bin to use with data in the supplied profile
         //CacheBin* getCacheBin(const Profile* profile);
@@ -269,7 +264,7 @@ namespace rocky
     protected:
 
         // cache key for metadata
-        std::string getMetadataKey(const Profile*) const;
+        std::string getMetadataKey(const Profile&) const;
 
         optional<unsigned> _minLevel;
         optional<double> _minResolution;
@@ -286,7 +281,7 @@ namespace rocky
         bool _writingRequested;
 
         // profile to use
-        mutable shared_ptr<Profile> _profile;
+        mutable Profile _profile;
 
     private:
         // Post-ctor

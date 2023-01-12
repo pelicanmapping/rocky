@@ -1,4 +1,4 @@
-#include <rocky/Notify.h>
+#include <rocky/Instance.h>
 #include <rocky/GDALLayers.h>
 #include <rocky_vsg/InstanceVSG.h>
 #include <rocky_vsg/MapNode.h>
@@ -22,20 +22,26 @@ namespace rocky
             const TileKey& key,
             const IOOptions& io) const override
         {
-            auto image = io.services.readImage("D:/data/images/BENDER.png", io);
+            auto image = io.services().readImage("D:/data/images/BENDER.png", io);
 
             if (image.status.ok())
-                return Result(GeoImage(image.value, key.getExtent()));
+                return GeoImage(image.value, key.getExtent());
             else
-                return Result<GeoImage>(image.status);
+                return image.status;
         }
     };
 }
+
+#include <thread>
+#include <rocky/SRS.h>
 
 int main(int argc, char** argv)
 {
     // rocky instance
     auto rk = rocky::InstanceVSG::create();
+
+    rk->log().threshold = rocky::LogThreshold::INFO;
+    rk->log().notice << "Hello, world." << std::endl;
 
     // set up defaults and read command line arguments to override them
     vsg::CommandLine arguments(&argc, argv);
@@ -56,6 +62,7 @@ int main(int argc, char** argv)
         traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 
     auto window = vsg::Window::create(traits);
+    window->clearColor() = VkClearColorValue{ 0.0f, 0.0f, 0.0f, 1.0f };
 
     // main viewer
     auto viewer = vsg::Viewer::create();
@@ -81,7 +88,7 @@ int main(int argc, char** argv)
     mapNode->getMap()->addLayer(layer);
 
     if (layer->status().failed())
-        rk->log.warn << layer->status().message << std::endl;
+        rk->log().warn << layer->status().message << std::endl;
 
 #else
     auto layer = rocky::TestLayer::create();
@@ -103,14 +110,9 @@ int main(int argc, char** argv)
         nearFarRatio * bs.radius,
         bs.radius * 10.0);
 
-    auto lookAt = vsg::LookAt::create(
-        bs.center + vsg::dvec3(bs.radius * 3.5, 0.0, 0.0),
-        bs.center,
-        vsg::dvec3(0.0, 0.0, 1.0));
-
     auto camera = vsg::Camera::create(
         perspective,
-        lookAt,
+        vsg::LookAt::create(),
         vsg::ViewportState::create(window->extent2D()));
 
     viewer->addEventHandler(rocky::MapManipulator::create(mapNode, camera));
@@ -127,6 +129,7 @@ int main(int argc, char** argv)
     viewer->compile();
 
     std::vector<std::chrono::microseconds> timeSamples;
+    bool measureFrameTime = (rk->log().threshold <= rocky::LogThreshold::INFO);
 
     // rendering main loop
     while (viewer->advanceToNextFrame())
@@ -142,20 +145,24 @@ int main(int argc, char** argv)
         viewer->present();
 
         // sample the frame rate every N frames
-        if ((viewer->getFrameStamp()->frameCount % 10) == 0) {
+        if (measureFrameTime && (viewer->getFrameStamp()->frameCount % 10) == 0)
+        {
             auto end = std::chrono::steady_clock::now();
             auto t = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
             timeSamples.push_back(t);
         }
     }
 
-    std::chrono::microseconds total(0);
-    for (auto sample : timeSamples)
-        total += sample;
-    total /= timeSamples.size();
+    if (measureFrameTime)
+    {
+        std::chrono::microseconds total(0);
+        for (auto sample : timeSamples)
+            total += sample;
+        total /= timeSamples.size();
 
-    ROCKY_NOTICE << "Average frame time = " 
-        << std::setprecision(3) << 0.001f * (float)total.count() << " ms" << std::endl;
+        rk->log().info << "Average frame time = "
+            << std::setprecision(3) << 0.001f * (float)total.count() << " ms" << std::endl;
+    }
 
     return 0;
 }

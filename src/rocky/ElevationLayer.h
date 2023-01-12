@@ -84,8 +84,8 @@ namespace rocky
     protected: // TileLayer
 
         //! Override aspects of the layer Profile as needed
-        virtual void applyProfileOverrides(
-            shared_ptr<Profile>& in_out_profile) const override;
+        void applyProfileOverrides(
+            Profile& in_out_profile) const override;
 
     protected: // ElevationLayer
 
@@ -163,7 +163,7 @@ namespace rocky
             shared_ptr<Heightfield> in_out_hf,
             std::vector<float>* resolutions,
             const TileKey& key,
-            shared_ptr<Profile> hae_profile,
+            const Profile& hae_profile,
             Heightfield::Interpolation interpolation,
             const IOOptions& io ) const;
     };

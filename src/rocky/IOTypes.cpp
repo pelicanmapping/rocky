@@ -224,29 +224,35 @@ REGISTER_OSGPLUGIN( json, rockyStringReaderWriterJSON );
 
 
 IOOptions::IOOptions() :
-    _p(nullptr)
+    _cancelable(nullptr)
 {
     // nop
 }
 
-IOOptions::IOOptions(const IOOptions& rhs) :
-    _p(rhs._p),
-    services(rhs.services),
-    properties(rhs.properties)
+IOOptions::IOOptions(const IOOptions& rhs)
+{
+    this->operator=(rhs);
+}
+
+IOOptions::IOOptions(Cancelable& c) :
+    _cancelable(&c)
 {
     //nop
 }
 
-IOOptions::IOOptions(Cancelable& p) :
-    _p(&p)
+IOOptions::IOOptions(const IOOptions& rhs, Cancelable& c) :
+    _services(rhs._services),
+    _properties(rhs._properties),
+    _cancelable(&c)
 {
     //nop
 }
 
-IOOptions::IOOptions(const IOOptions& rhs, Cancelable& p) :
-    services(rhs.services),
-    properties(rhs.properties),
-    _p(&p)
+IOOptions&
+IOOptions::operator = (const IOOptions& rhs)
 {
-    //nop
+    _cancelable = rhs._cancelable;
+    _services = rhs._services;
+    _properties = rhs._properties;
+    return *this;
 }

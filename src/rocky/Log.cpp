@@ -15,11 +15,26 @@ LogStream::LogStream(LogThreshold t) :
     _null.open("/dev/null", std::ofstream::out | std::ofstream::app);
 }
 
-LogStream::LogStream(const LogStream& rhs) :
-    _threshold(rhs._threshold),
-    _stream(rhs._stream)
+LogStream::LogStream(const LogStream& rhs)
 {
+    operator=(rhs);
+}
+
+LogStream&
+LogStream::operator=(const LogStream& rhs)
+{
+    _threshold = rhs._threshold;
+    _stream = rhs._stream;
+    _prefix = rhs._prefix;
     _null.open("/dev/null", std::ofstream::out | std::ofstream::app);
+    return *this;
+}
+
+void
+LogStream::attach(std::ostream& value)
+{
+    std::lock_guard<std::mutex> lock(_mutex);
+    _stream = &value;
 }
 
 std::ostream&
@@ -32,6 +47,7 @@ LogStream::getStream() const
 }
 
 LogThreshold Log::threshold = LogThreshold::NOTICE;
+std::string Log::prefix = "[rk]";
 
 Log::Log() :
     debug(LogThreshold::DEBUG),
@@ -40,7 +56,32 @@ Log::Log() :
     warn(LogThreshold::WARN)
 {
     debug.attach(std::cout);
+    debug._prefix = "(debug)";
+
     info.attach(std::cout);
+    info._prefix = "(info)";
+
     notice.attach(std::cout);
+
     warn.attach(std::cout);
+    warn._prefix = "(WARNING)";
+}
+
+Log::Log(const Log& rhs) :
+    debug(rhs.debug),
+    info(rhs.info),
+    notice(rhs.notice),
+    warn(rhs.warn)
+{
+    //nop
+}
+
+Log&
+Log::operator=(const Log& rhs)
+{
+    debug = rhs.debug;
+    info = rhs.info;
+    notice = rhs.notice;
+    warn = rhs.warn;
+    return *this;
 }

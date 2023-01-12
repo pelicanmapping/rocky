@@ -600,7 +600,8 @@ MapManipulator::MapManipulator(vsg::ref_ptr<MapNode> mapNode, vsg::ref_ptr<vsg::
     _lastAction(ACTION_NULL)
 {
     if (mapNode.valid())
-        _srs = mapNode->getMapSRS();
+        _worldSRS = mapNode->getWorldSRS();
+        //_srs = mapNode->getMapSRS();
 
     reinitialize();
 
@@ -609,7 +610,7 @@ MapManipulator::MapManipulator(vsg::ref_ptr<MapNode> mapNode, vsg::ref_ptr<vsg::
 
     // compute the bounds of the scene graph to help position camera
     auto center = vsg::dvec3(0, 0, 0); // (cb.bounds.min + cb.bounds.max) * 0.5;
-    auto radius = _srs->getEllipsoid().getRadiusEquator();
+    auto radius = _worldSRS.ellipsoid().semiMajorAxis();
     setCenter(vsg::dvec3(radius, 0, 0));
     setDistance(radius * 3.5);
 
@@ -717,7 +718,7 @@ MapManipulator::applySettings(shared_ptr<Settings> settings)
     setDistance(_state.distance);
 
 #if 0
-    if (!equivalent(new_pitch_deg, old_pitch_deg))
+    if (!equiv(new_pitch_deg, old_pitch_deg))
     {
         Viewpoint vp = getViewpoint();
         vp.pitch->set(new_pitch_deg, Units::DEGREES);
@@ -770,15 +771,21 @@ MapManipulator::createLocalCoordFrame(
     const vsg::dvec3& worldPos,
     vsg::dmat4& out_frame) const
 {
-    if (_srs)
-    {
-        dvec3 mapPos;
-        dmat4 output;
-        _srs->transformFromWorld(to_glm(worldPos), mapPos);
-        _srs->createLocalToWorld(mapPos, output);
-        out_frame = to_vsg(output);
+    if (_worldSRS.valid())
+    {        
+        //dvec3 mapPos;
+        //dmat4 output;
+
+        //_worldSRS.to(getMapNode()->getWorldSRS()).transform(worldPos, mapPos);
+        //out_frame = to_vsg(_srs.localToWorldMatrix(mapPos));
+
+        out_frame = to_vsg(_worldSRS.localToWorldMatrix(to_glm(worldPos)));
+
+        //_srs.transformFromWorld(to_glm(worldPos), mapPos);
+        //_srs.createLocalToWorld(mapPos, output);
+        //out_frame = to_vsg(output);
     }
-    return _srs != nullptr;
+    return _worldSRS.valid();
 }
 
 
@@ -787,11 +794,13 @@ MapManipulator::setCenter(const vsg::dvec3& worldPos)
 {
     _state.center = worldPos;
 
-    dmat4 m;
-    if (_srs->isGeographic())
-        _srs->getGeocentricSRS()->createLocalToWorld(to_glm(worldPos), m);
-    else
-        _srs->createLocalToWorld(to_glm(worldPos), m);
+    dmat4 m = _worldSRS.localToWorldMatrix(to_glm(worldPos));
+    //m = _srs.localToWorldMatrix(to_glm(worldPos));
+
+    //if (_srs.isGeographic())
+    //    _srs.getGeocentricSRS()->createLocalToWorld(to_glm(worldPos), m);
+    //else
+    //    _srs.createLocalToWorld(to_glm(worldPos), m);
 
     // remove the translation component
     _state.centerRotation = to_vsg(m);
@@ -842,7 +851,7 @@ MapManipulator::getWorldLookAtMatrix(const vsg::dvec3& point) const
     vsg::dvec3 worldUp(0,0,1);
 
     double ca = fabs(vsg::dot(worldUp, lookVector));
-    if (equivalent(ca, 1.0))
+    if (equiv(ca, 1.0))
     {
         //We are looking nearly straight down the up vector, so use the Y vector for world up instead
         worldUp = vsg::dvec3(0, 1, 0);
@@ -1034,7 +1043,7 @@ MapManipulator::setViewpoint(const Viewpoint& vp, double duration_seconds)
             // Adjust the duration if necessary.
             if ( _settings->getAutoViewpointDurationEnabled() )
             {
-                double maxDistance = _srs->getEllipsoid().getRadiusEquator();
+                double maxDistance = _srs.ellipsoid().semiMajorAxis();
                 double ratio = clamp(de / maxDistance, 0.0, 1.0);
                 ratio = accelerationInterp(ratio, -4.5);
                 double minDur, maxDur;
@@ -1125,7 +1134,7 @@ MapManipulator::setViewpointFrame(double time_s)
         }
 
         vsg::dvec3 newCenter =
-            _srs->isGeographic()
+            _srs.isGeographic()
             ? nlerp(startWorld, endWorld, tp)
             : lerp(startWorld, endWorld, tp);
 
@@ -1284,7 +1293,7 @@ void MapManipulator::collisionDetect()
     vsg::dvec3 eyeUp = getUpVector(eyeCoordFrame);
 
     // Try to intersect the terrain with a vector going straight up and down.
-    double r = std::min(_srs->getEllipsoid().getRadiusEquator(), _srs->getEllipsoid().getRadiusPolar());
+    double r = std::min(_srs.ellipsoid().semiMajorAxis(), _srs.ellipsoid().semiMinorAxis());
     vsg::dvec3 ip, normal;
 
     if (intersect(eye + eyeUp * r, eye - eyeUp * r, ip, normal))
@@ -1376,7 +1385,7 @@ void
 MapManipulator::home()
 {
     _state.localRotation.set(0, 0, 0, 1);
-    auto radius = _srs->getEllipsoid().getRadiusEquator();
+    auto radius = _worldSRS.ellipsoid().semiMajorAxis();
     setCenter(vsg::dvec3(radius, 0, 0));
     setDistance(radius * 3.5);
     clearEvents();
@@ -1570,7 +1579,16 @@ MapManipulator::apply(vsg::FrameEvent& frame)
         vsg::rotate(_state.localRotation) *
         vsg::translate(0.0, 0.0, _state.distance);
 
-    _camera->viewMatrix = SimpleViewMatrix::create(_viewMatrix);
+    //_camera->viewMatrix = SimpleViewMatrix::create(_viewMatrix);
+
+    auto lookat = _camera->viewMatrix.cast<vsg::LookAt>();
+    if (!lookat)
+    {
+        lookat = vsg::LookAt::create();
+        _camera->viewMatrix = lookat;
+    }
+
+    lookat->set(_viewMatrix);
 
     _dirty = false;
 }
@@ -1654,7 +1672,7 @@ MapManipulator::recalculateCenterFromLookVector()
     }
     
     // back up plan, intersect the ellipsoid if geographic
-    if (_srs->isGeographic())
+    if (_worldSRS.isGeocentric())
     {
         dvec3 i;
         vsg::LookAt lookat;
@@ -1662,7 +1680,7 @@ MapManipulator::recalculateCenterFromLookVector()
          
         auto vec = lookat.center - lookat.eye;
         auto target = lookat.eye + vec * 1e10;
-        if (_srs->getEllipsoid().intersectGeocentricLine(to_glm(lookat.eye), to_glm(target), i))
+        if (_worldSRS.ellipsoid().intersectGeocentricLine(to_glm(lookat.eye), to_glm(target), i))
         {
             setCenter(to_vsg(i));
             return true;
@@ -1695,7 +1713,7 @@ MapManipulator::pan(double dx, double dy)
     double len = vsg::length(_state.center);
     vsg::dvec3 newCenter = _state.center + dv;
 
-    if (_srs->isGeographic())
+    if (_worldSRS.isGeocentric())
     {
         // in geocentric, ensure that it doesn't change length.
         newCenter = vsg::normalize(newCenter);
@@ -1833,7 +1851,7 @@ MapManipulator::zoom(double dx, double dy)
     {
         _lastPointOnEarth = target;
 
-        if (_srs.valid() && _srs->isGeographic())
+        if (_srs.valid() && _srs.isGeographic())
         {
             // globe
 

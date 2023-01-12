@@ -689,7 +689,7 @@ namespace rocky
 
         vsg::observer_ptr<MapNode> _mapNode;
         vsg::ref_ptr<vsg::Camera> _camera;
-        shared_ptr<SRS> _srs;
+        SRS _worldSRS;
 
         optional<vsg::MoveEvent> _currentMove, _previousMove;
         optional<vsg::ButtonPressEvent> _buttonPress;

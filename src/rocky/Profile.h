@@ -66,13 +66,11 @@ ROCKY_SPECIALIZE_CONFIG(rocky::ProfileOptions);
      * spatial reference system (SRS), the geospatial extents within that SRS, and
      * the tiling scheme.
      */
-    class ROCKY_EXPORT Profile :
-        public Inherit<Object, Profile>
+    class ROCKY_EXPORT Profile
     {
     public:
         // well knowns
         static const std::string GLOBAL_GEODETIC;
-        static const std::string GLOBAL_MERCATOR;
         static const std::string SPHERICAL_MERCATOR;
         static const std::string PLATE_CARREE;
 
@@ -88,7 +86,7 @@ ROCKY_SPECIALIZE_CONFIG(rocky::ProfileOptions);
         const GeoExtent& getLatLongExtent() const;
         
         //! spatial reference system underlying this profile.
-        shared_ptr<SRS> getSRS() const;
+        const SRS& getSRS() const;
 
         //! Given an x-resolution, specified in the profile's SRS units, calculates and
         //! returns the closest LOD level.
@@ -99,17 +97,17 @@ ROCKY_SPECIALIZE_CONFIG(rocky::ProfileOptions);
         //! tile keys that comprise the tiles at the root (LOD 0) of this
         //! profile. Same as calling getAllKeysAtLOD(0).
         static void getRootKeys(
-            shared_ptr<Profile> target_profile,
+            const Profile& target_profile,
             std::vector<TileKey>& out_keys);
 
         //! Gets all the tile keys at the specified LOD.
         static void getAllKeysAtLOD(
             unsigned lod,
-            shared_ptr<Profile> target_profile,
+            const Profile& target_profile,
             std::vector<TileKey>& out_keys);
 
         //! Calculates an extent given a tile location in this profile.
-        virtual GeoExtent calculateExtent(
+        GeoExtent calculateExtent(
             unsigned lod,
             unsigned tileX,
             unsigned tileY) const;
@@ -117,7 +115,7 @@ ROCKY_SPECIALIZE_CONFIG(rocky::ProfileOptions);
         //! Gets whether the two profiles can be treated as equivalent.
         //! @param rhs
         //!   Comparison profile
-        bool isEquivalentTo(Profile::ptr rhs) const;
+        bool isEquivalentTo(const Profile& rhs) const;
 
         /**
          * Gets whether the two profiles can be treated as equivalent (without regard
@@ -126,15 +124,12 @@ ROCKY_SPECIALIZE_CONFIG(rocky::ProfileOptions);
          * @param rhs
          *      Comparison profile
          */
-        bool isHorizEquivalentTo(Profile::ptr rhs) const;
+        bool isHorizEquivalentTo(const Profile& rhs) const;
 
         /**
          *Gets the tile dimensions at the given lod.
          */
-        void getTileDimensions(
-            unsigned lod,
-            double& out_width,
-            double& out_height) const;
+        std::pair<double, double> getTileDimensions(unsigned lod) const;
 
         /**
          *Gets the number wide and high at the given lod
@@ -175,48 +170,46 @@ ROCKY_SPECIALIZE_CONFIG(rocky::ProfileOptions);
         /**
          * Returns a signature hash code unique to this profile.
          */
-        const std::string& getFullSignature() const { return _fullSignature; }
+        inline const std::string& getFullSignature() const;
 
         /**
          * Returns a signature hash code that uniquely identifies this profile
          * without including any vertical datum information. This is useful for
          * seeing if two profiles are horizontally compatible.
          */
-        const std::string& getHorizSignature() const { return _horizSignature; }
+        inline const std::string& getHorizSignature() const;
 
         /**
          * Given another Profile and an LOD in that Profile, determine 
          * the LOD in this Profile that is nearly equivalent.
          */
-        virtual unsigned getEquivalentLOD(Profile::ptr, unsigned lod) const;
+        unsigned getEquivalentLOD(const Profile&, unsigned lod) const;
 
         /**
          * Given a LOD-0 tile height, determine the LOD in this Profile that
          * most closely houses a tile with that height.
          */
-        virtual unsigned getLOD(double tileHeight) const;
+        unsigned getLOD(double tileHeight) const;
 
         //! Get the hash code for this profile
-        std::size_t hash() const { return _hash; }
+        inline std::size_t hash() const;
 
         /**
          * Given an input extent, translate it into one or more
          * GeoExtents in this profile.
          */
-        virtual bool transformAndExtractContiguousExtents(
+        bool transformAndExtractContiguousExtents(
             const GeoExtent& input,
             std::vector<GeoExtent>& output) const;
 
-
         Config getConfig() const;
-
 
     public:
 
         /**
          * Makes a clone of this profile but replaces the SRS with a custom one.
          */
-        Profile::ptr overrideSRS(shared_ptr<SRS>) const;
+        Profile overrideSRS(const SRS&) const;
 
     protected:
 
@@ -224,34 +217,49 @@ ROCKY_SPECIALIZE_CONFIG(rocky::ProfileOptions);
             const std::string& wellKnownName);
 
         void setup(
-            shared_ptr<SRS> srs,
+            const SRS&,
             const Box& bounds,
             unsigned dim_x,
             unsigned dim_y );
 
     protected:
 
-        std::string _wellKnownName;
-        GeoExtent   _extent;
-        GeoExtent   _latlong_extent;
-        unsigned    _numTilesWideAtLod0;
-        unsigned    _numTilesHighAtLod0;
-        std::string _fullSignature;
-        std::string _horizSignature;
-        std::size_t _hash;
+        struct Data
+        {
+            std::string _wellKnownName;
+            GeoExtent   _extent;
+            GeoExtent   _latlong_extent;
+            unsigned    _numTilesWideAtLod0;
+            unsigned    _numTilesHighAtLod0;
+            std::string _fullSignature;
+            std::string _horizSignature;
+            std::size_t _hash;
+        };
+        shared_ptr<Data> _shared;
 
     public:
+        Profile();
+        Profile(const Profile& rhs) = default;
+        Profile& operator=(const Profile& rhs) = default;
+        Profile(Profile&& rhs) { *this = rhs; }
+        Profile& operator=(Profile&& rhs);
 
         explicit Profile(const Config&);
 
         explicit Profile(const std::string& well_known_name);
 
         Profile(
-            shared_ptr<SRS> srs,
+            const SRS& srs,
             const Box& bounds = Box(),
             unsigned x_tiles_at_lod0 = 0,
             unsigned y_tiles_at_lod0 = 0);
     };
+
+
+    // inlines
+    const std::string& Profile::getFullSignature() const { return _shared->_fullSignature; }
+    const std::string& Profile::getHorizSignature() const { return _shared->_horizSignature; }
+    std::size_t Profile::hash() const { return _shared->_hash; }
 }
 
 namespace std {

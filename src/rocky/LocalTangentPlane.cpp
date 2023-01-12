@@ -3,6 +3,7 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
+#if 0
 #include "LocalTangentPlane.h"
 
 using namespace rocky;
@@ -25,10 +26,10 @@ TangentPlaneSRS::TangentPlaneSRS(
 
     // set up the LTP matrixes.
 
-    dvec3 xyz = getEllipsoid().geodeticToGeocentric(_originLLA);
-    _local2world = getEllipsoid().geocentricToLocalToWorld(xyz);
+    dvec3 xyz = ellipsoid().geodeticToGeocentric(_originLLA);
+    _local2world = ellipsoid().geocentricToLocalToWorld(xyz);
 
-    //getEllipsoid()->computeLocalToWorldTransformFromLatLongHeight(
+    //ellipsoid()->computeLocalToWorldTransformFromLatLongHeight(
     //    deg2rad(_originLLA.y()),
     //    deg2rad(_originLLA.x()),
     //    _originLLA.z(),
@@ -47,8 +48,8 @@ TangentPlaneSRS::preTransform(
     {
         dvec3 world = _local2world * point; // dvec4(point, 1.0) *;
         //double lat, lon, height;
-        point = getEllipsoid().geocentricToGeodetic(world);
-        //getEllipsoid()->convertXYZToLatLongHeight(world.x(), world.y(), world.z(), lat, lon, height);
+        point = ellipsoid().geocentricToGeodetic(world);
+        //ellipsoid()->convertXYZToLatLongHeight(world.x(), world.y(), world.z(), lat, lon, height);
         //i->x() = osg::rad2deg(lon);
         //i->y() = osg::rad2deg(lat);
         //i->z() = height;
@@ -68,7 +69,7 @@ TangentPlaneSRS::postTransform(
     dvec3 world;
     for(auto& point : points)
     {
-        world = getEllipsoid().geodeticToGeocentric(point);
+        world = ellipsoid().geodeticToGeocentric(point);
         point = _world2local * world; // dvec4(world, 1.0) * _world2local;
     }
 
@@ -82,7 +83,8 @@ bool
 TangentPlaneSRS::_isEquivalentTo(const SRS* srs, bool considerVDatum) const
 {
     return
-        srs->isLTP() &&
+        srs.isLTP() &&
         _originLLA == static_cast<const TangentPlaneSRS*>(srs)->_originLLA;
     // todo: check the reference ellipsoids?
 }
+#endif

@@ -517,7 +517,7 @@ ImageLayer::createImageInKeyProfile(
 #if 0
     // the cache key combines the Key and the horizontal profile.
     std::string cacheKey = Cache::makeCacheKey(
-        strings::Stringify() << key.str() << "-" << std::hex << key.getProfile()->getHorizSignature(),
+        strings::Stringify() << key.str() << "-" << std::hex << key.getProfile().getHorizSignature(),
         "image");
 
     // The L2 cache key includes the layer revision of course!
@@ -531,7 +531,7 @@ ImageLayer::createImageInKeyProfile(
         sprintf(memCacheKey, "%d/%s/%s", 
             getRevision(), 
             key.str().c_str(), 
-            key.getProfile()->getHorizSignature().c_str());
+            key.getProfile().getHorizSignature().c_str());
 
         CacheBin* bin = _memCache->getOrCreateDefaultBin();
         ReadResult result = bin->readObject(memCacheKey, 0L);
@@ -590,7 +590,7 @@ ImageLayer::createImageInKeyProfile(
     }
 #endif
 
-    if (key.getProfile()->isHorizEquivalentTo(getProfile()))
+    if (key.getProfile().isHorizEquivalentTo(getProfile()))
     {
         bool createUpsampledImage = false;
 
@@ -681,7 +681,7 @@ ImageLayer::assembleImage(
     const IOOptions& io) const
 {
     // If we got here, asset that there's a non-null layer profile.
-    if (!getProfile())
+    if (!getProfile().valid())
     {
         setStatus(Status::Error(Status::AssertionFailure, "assembleImage with undefined profile"));
         return Result(GeoImage::INVALID);
@@ -703,12 +703,12 @@ ImageLayer::assembleImage(
     // Get a set of layer tiles that intersect the requested extent.
     std::vector<TileKey> intersectingKeys;
     key.getIntersectingKeys(getProfile(), intersectingKeys);
-    //getProfile()->getIntersectingTiles( key, intersectingKeys );
+    //getProfile().getIntersectingTiles( key, intersectingKeys );
 
     if ( intersectingKeys.size() > 0 )
     {
 #if 0
-        GeoExtent ee = key.getExtent().transform(intersectingKeys.front().getProfile()->getSRS());
+        GeoExtent ee = key.getExtent().transform(intersectingKeys.front().getProfile().getSRS());
         ROCKY_INFO << "Tile " << key.str() << " ... " << ee.toString() << std::endl;
         for (auto key : intersectingKeys) {
             ROCKY_INFO << " - " << key.str() << " ... " << key.getExtent().toString() << std::endl;
@@ -835,7 +835,7 @@ ImageLayer::assembleImage(
 
         mosaicedImage = GeoImage(
             mosaic.createImage(),
-            GeoExtent( getProfile()->getSRS(), rxmin, rymin, rxmax, rymax ) );
+            GeoExtent( getProfile().getSRS(), rxmin, rymin, rxmax, rymax ) );
     }
     else
     {
@@ -853,7 +853,7 @@ ImageLayer::assembleImage(
         const GeoExtent& extent = key.getExtent();
 
         result = mosaicedImage.reproject(
-            key.getProfile()->getSRS(),
+            key.getProfile().getSRS(),
             &extent,
             tileSize(), tileSize(),
             true);

@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky_vsg/Common.h>
 #include <rocky/Instance.h>
+#include <vsg/io/Options.h>
 
 namespace rocky
 {
@@ -13,5 +14,8 @@ namespace rocky
     {
     public:
         InstanceVSG();
+
+    private:
+        vsg::ref_ptr<vsg::Options> _vsgOptions;
     };
 }

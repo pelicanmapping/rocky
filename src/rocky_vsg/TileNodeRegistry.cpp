@@ -202,7 +202,7 @@ TileNodeRegistry::createTile(
     float childrenVisibilityRange = FLT_MAX;
     if (key.getLOD() < (terrain->selectionInfo->getNumLODs() - 1))
     {
-        auto[tw, th] = key.getProfile()->getNumTiles(key.getLOD());
+        auto[tw, th] = key.getProfile().getNumTiles(key.getLOD());
         TileKey testKey = key.createChildKey((key.getTileY() <= th / 2) ? 0 : 3);
         childrenVisibilityRange = terrain->selectionInfo->getRange(testKey);
     }

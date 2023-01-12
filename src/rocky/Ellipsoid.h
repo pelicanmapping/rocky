@@ -28,17 +28,17 @@ namespace rocky
             double semiMinorRadius);
 
         //! Equatorial radius
-        double getSemiMajorAxis() const;
-        double getRadiusEquator() const { return getSemiMajorAxis(); }
+        double semiMajorAxis() const;
+        double radiusEquator() const { return semiMajorAxis(); }
         void setSemiMajorAxis(double value);
 
         //! Polar radius (meters)
-        double getSemiMinorAxis() const;
-        double getRadiusPolar() const { return getSemiMinorAxis(); }
+        double semiMinorAxis() const;
+        double radiusPolar() const { return semiMinorAxis(); }
         void setSemiMinorAxis(double value);
 
         //! Name of this ellipsoid (meters)
-        const std::string& getName() const { return _name; }
+        const std::string& name() const { return _name; }
         void setName(const std::string& value) { _name = value; }
 
         //! Matrix to transform from LTP at a point to geocentric
@@ -73,7 +73,6 @@ namespace rocky
             const dvec3& longlat2_deg,
             double t,
             dvec3& out_longlat_deg) const;
-
 
         //! Intersects a geocentric line with the ellipsoid.
         //! Upon success return true and place the first intersection

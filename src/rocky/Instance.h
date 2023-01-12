@@ -20,14 +20,14 @@ namespace rocky
         // destructor
         ~Instance();
 
-        // default IO options
-        IOOptions ioOptions;
+        //! Default IO options
+        inline IOOptions& ioOptions();
 
-        // global caching policy
-        CachePolicy cachePolicy;
+        //! Global caching policy
+        inline CachePolicy& cachePolicy();
 
-        // logging service
-        Log& log;
+        //! Logging service
+        inline Log& log();
 
         using ContentFactory = std::function<
             shared_ptr<Object>(
@@ -55,5 +55,21 @@ namespace rocky
     private:
         std::unordered_map<std::string, ConfigFactory> _configFactories;
         std::unordered_map<std::string, ContentFactory> _contentFactories;
+        CachePolicy _cachePolicy;
+        IOOptions _ioOptions;
+        Log _log;
     };
+
+
+    // inlines ...
+
+    CachePolicy& Instance::cachePolicy() {
+        return _cachePolicy;
+    }
+    IOOptions& Instance::ioOptions() {
+        return _ioOptions;
+    }
+    Log& Instance::log() {
+        return ioOptions().services().log();
+    }
 }

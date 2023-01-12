@@ -243,7 +243,7 @@ namespace rocky
             GDALApplyGeoTransform(geotransform, ds->GetRasterXSize(), 0.0, &maxX, &maxY);
 
             std::string srsString = ds->GetProjectionRef();
-            auto srs = SRS::get(srsString);
+            SRS srs(srsString);
 
             GDALClose(ds);
 
@@ -567,7 +567,7 @@ GDAL::Driver::open(
     }
 
     // Establish the source spatial reference:
-    shared_ptr<SRS> src_srs;
+    SRS src_srs;
 
     std::string srcProj = _srcDS->GetProjectionRef();
 
@@ -579,29 +579,24 @@ GDAL::Driver::open(
 
     if (!srcProj.empty())
     {
-        src_srs = SRS::get(srcProj);
+        src_srs = SRS(srcProj);
     }
 
     // still no luck? (for example, an ungeoreferenced file lika jpeg?)
     // try to read a .prj file:
-    if (!src_srs)
+    if (!src_srs.valid())
     {
         // not found in the dataset; try loading a .prj file
-        //std::string prjLocation = osgDB::getNameLessExtension(source) + std::string(".prj");
         std::string prjLocation = util::Path(source).replace_extension("prj").string();
 
         auto rr = URI(prjLocation).read(nullptr); // TODO io
         if (rr.status.ok() && rr.value.data.valid())
         {
-
-        //ReadResult r = URI(prjLocation).readString(readOptions);
-        //if (r.succeeded())
-        //{
-            src_srs = SRS::get(util::trim(rr.value.data.to_string()));
+            src_srs = SRS(util::trim(rr.value.data.to_string()));
         }
     }
 
-    if (!src_srs)
+    if (!src_srs.valid())
     {
         return Status::Error(Status::ResourceUnavailable,
             "Dataset has no spatial reference information (" + source + ")");
@@ -620,24 +615,25 @@ GDAL::Driver::open(
 
     // For a geographic SRS, use the whole-globe profile for performance.
     // Otherwise, collect information and make the profile later.
-    if (src_srs->isGeographic())
+    if (src_srs.isGeographic())
     {
-        _profile = Profile::create(src_srs);
-        if (!_profile)
+        _profile = Profile(src_srs);
+        if (!_profile.valid())
         {
             return Status::Error(Status::ResourceUnavailable,
-                "Cannot create geographic Profile from dataset's spatial reference information: " + src_srs->getName());
+                "Cannot create geographic Profile from dataset's spatial reference information: " +
+                std::string(src_srs.name()));
         }
 
         // no xform an geographic? Match the profile.
         if (!hasGeoTransform)
         {
-            _geotransform[0] = _profile->getExtent().xMin();
-            _geotransform[1] = _profile->getExtent().width() / (double)_srcDS->GetRasterXSize();
+            _geotransform[0] = _profile.getExtent().xMin();
+            _geotransform[1] = _profile.getExtent().width() / (double)_srcDS->GetRasterXSize();
             _geotransform[2] = 0;
-            _geotransform[3] = _profile->getExtent().yMax();
+            _geotransform[3] = _profile.getExtent().yMax();
             _geotransform[4] = 0;
-            _geotransform[5] = -_profile->getExtent().height() / (double)_srcDS->GetRasterYSize();
+            _geotransform[5] = -_profile.getExtent().height() / (double)_srcDS->GetRasterYSize();
             hasGeoTransform = true;
         }
     }
@@ -645,24 +641,26 @@ GDAL::Driver::open(
     // Handle some special cases.
     std::string warpedSRSWKT;
 
-    if (requiresReprojection || (_profile && !_profile->getSRS()->isEquivalentTo(src_srs.get())))
+    if (requiresReprojection || (_profile.valid() && !_profile.getSRS().isEquivalentTo(src_srs)))
     {
-        if (_profile && _profile->getSRS()->isGeographic() && (src_srs->isNorthPolar() || src_srs->isSouthPolar()))
+#if 0
+        if (_profile.valid() && _profile.getSRS().isGeographic() && (src_srs.isNorthPolar() || src_srs.isSouthPolar()))
         {
             _warpedDS = (GDALDataset*)GDALAutoCreateWarpedVRTforPolarStereographic(
                 _srcDS,
-                src_srs->getWKT().c_str(),
-                _profile->getSRS()->getWKT().c_str(),
+                src_srs.wkt().c_str(),
+                _profile.getSRS().wkt().c_str(),
                 GRA_NearestNeighbour,
                 5.0,
                 nullptr);
         }
         else
+#endif
         {
-            std::string destWKT = _profile ? _profile->getSRS()->getWKT() : src_srs->getWKT();
+            std::string destWKT = _profile.valid() ? _profile.getSRS().wkt() : src_srs.wkt();
             _warpedDS = (GDALDataset*)GDALAutoCreateWarpedVRT(
                 _srcDS,
-                src_srs->getWKT().c_str(),
+                src_srs.wkt().c_str(),
                 destWKT.c_str(),
                 GRA_NearestNeighbour,
                 5.0,
@@ -678,7 +676,7 @@ GDAL::Driver::open(
     else
     {
         _warpedDS = _srcDS;
-        warpedSRSWKT = src_srs->getWKT();
+        warpedSRSWKT = src_srs.wkt();
 
         // re-read the extents from the new DS:
         _warpedDS->GetGeoTransform(_geotransform);
@@ -698,24 +696,24 @@ GDAL::Driver::open(
 
     // If we don't have a profile yet, that means this is a projected dataset
     // so we will create the profile from the actual data extents.
-    if (!_profile)
+    if (!_profile.valid())
     {
-        auto srs = SRS::get(warpedSRSWKT);
-        if (srs)
+        SRS srs(warpedSRSWKT);
+        if (srs.valid())
         {
-            _profile = Profile::create(
+            _profile = Profile(
                 srs,
                 Box(minX, minY, maxX, maxY));
         }
 
-        if (!_profile)
+        if (!_profile.valid())
         {
             return Status::Error(
                 "Cannot create projected Profile from dataset's warped spatial reference WKT: " + warpedSRSWKT);
         }
     }
 
-    ROCKY_HARD_ASSERT(_profile != nullptr);
+    ROCKY_HARD_ASSERT(_profile.valid());
 
     //Compute the min and max data levels
     double resolutionX = (maxX - minX) / (double)_warpedDS->GetRasterXSize();
@@ -732,8 +730,7 @@ GDAL::Driver::open(
         for (unsigned int i = 0; i < max_level; ++i)
         {
             _maxDataLevel = i;
-            double w, h;
-            _profile->getTileDimensions(i, w, h);
+            auto[w, h] = _profile.getTileDimensions(i);
             double resX = w / (double)tileSize;
             double resY = h / (double)tileSize;
 
@@ -749,7 +746,7 @@ GDAL::Driver::open(
     // will allow rocky to only create tiles where there is actually data.
     DataExtentList dataExtents;
 
-    auto srs = SRS::get(warpedSRSWKT);
+    auto srs = SRS(warpedSRSWKT);
 
     // record the data extent in profile space:
     _bounds = Box(minX, minY, maxX, maxY);
@@ -758,7 +755,7 @@ GDAL::Driver::open(
     bool is_area = pora != nullptr && util::toLower(std::string(pora)) == "area";
 
     bool clamped = false;
-    if (srs->isGeographic())
+    if (srs.isGeographic())
     {
         if (is_area && (_bounds.xmin < -180.0 || _bounds.xmax > 180.0))
         {
@@ -790,7 +787,7 @@ GDAL::Driver::open(
 
     if (layerDataExtents)
     {
-        GeoExtent profile_extent = _extents.transform(_profile->getSRS());
+        GeoExtent profile_extent = _extents.transform(_profile.getSRS());
         if (dataExtents.empty())
         {
             // Use the extents of the whole file.
@@ -807,7 +804,7 @@ GDAL::Driver::open(
     }
 
     // Get the linear units of the SRS for scaling elevation values
-    _linearUnits = srs->getReportedLinearUnits();
+    _linearUnits = 1.0; // srs.getReportedLinearUnits();
 
     return StatusOK;
 }
@@ -827,10 +824,10 @@ GDAL::Driver::geoToPixel(double geoX, double geoY, double &x, double &y)
 
     //Account for slight rounding errors.  If we are right on the edge of the dataset, clamp to the edge
     double eps = 0.0001;
-    if (equivalent(x, 0.0, eps)) x = 0;
-    if (equivalent(y, 0.0, eps)) y = 0;
-    if (equivalent(x, (double)_warpedDS->GetRasterXSize(), eps)) x = _warpedDS->GetRasterXSize();
-    if (equivalent(y, (double)_warpedDS->GetRasterYSize(), eps)) y = _warpedDS->GetRasterYSize();
+    if (equiv(x, 0.0, eps)) x = 0;
+    if (equiv(y, 0.0, eps)) y = 0;
+    if (equiv(x, (double)_warpedDS->GetRasterXSize(), eps)) x = _warpedDS->GetRasterXSize();
+    if (equiv(y, (double)_warpedDS->GetRasterYSize(), eps)) y = _warpedDS->GetRasterYSize();
 
 }
 
@@ -1021,7 +1018,7 @@ GDAL::Driver::createImage(
     // The extents and the intersection will be normalized between -180 and 180 longitude if they are geographic.
     // However, the georeferencing will expect the coordinates to be in the same longitude frame as the original dataset,
     // so the intersection bounds are adjusted here if necessary so that the values line up with the georeferencing.
-    if (_extents.getSRS()->isGeographic())
+    if (_extents.getSRS().isGeographic())
     {
         while (west < _bounds.xmin)
         {
@@ -1065,7 +1062,7 @@ GDAL::Driver::createImage(
 
     if (off_x + width > rasterWidth || off_y + height > rasterHeight)
     {
-        io.services.log.warn <<
+        io.services().log().warn <<
             "Read window outside of bounds of dataset.  Source Dimensions=" 
             << rasterWidth << "x" << rasterHeight 
             << " Read Window=" << off_x << ", " << off_y << " " << width << "x" << height << std::endl;
@@ -1279,7 +1276,7 @@ GDAL::Driver::createImage(
             {
                 //ROCKY_WARN << LC << "RasterIO failed.\n";
                 // TODO - handle error condition
-                io.services.log.warn << "RasterIO failed" << std::endl;
+                io.services().log().warn << "RasterIO failed" << std::endl;
             }
 
             delete[] data;
@@ -1455,7 +1452,7 @@ GDAL::Driver::createImage(
     }
     else
     {
-        io.services.log.warn
+        io.services().log().warn
             << LC << "Could not find red, green and blue bands or gray bands in "
             << gdalOptions().url->full()
             << ".  Cannot create image. " << std::endl;
@@ -1653,7 +1650,7 @@ GDAL::Driver::createHeightfieldWithVRT(
 
         GDALDatasetH tileDS = GDALCreateWarpedVRT(_srcDS, tileSize, tileSize, adfGeoTransform, psWarpOptions);
 
-        GDALSetProjection(tileDS, key.getProfile()->getSRS()->getWKT().c_str());
+        GDALSetProjection(tileDS, key.getProfile().getSRS().wkt().c_str());
 
         resolution = key.getExtent().width() / ((double)tileSize);
         adfGeoTransform[0] = key.getExtent().xMin();
@@ -1800,7 +1797,7 @@ namespace
         const T* layer,
         const GDAL::Options& options,
         GDAL::Driver::Ptr& driver,
-        shared_ptr<Profile>* profile,
+        Profile* profile,
         DataExtentList* out_dataExtents,
         const IOOptions& io)
     {
@@ -1830,7 +1827,7 @@ namespace
         if (status.failed())
             return status;
 
-        if (driver->getProfile() && profile != nullptr)
+        if (driver->getProfile().valid() && profile != nullptr)
         {
             *profile = driver->getProfile();
         }
@@ -1895,7 +1892,7 @@ GDALImageLayer::openImplementation(const IOOptions& io)
     if (parent.failed())
         return parent;
 
-    shared_ptr<Profile> profile;
+    Profile profile;
 
     // GDAL thread-safety requirement: each thread requires a separate GDALDataSet.
     // So we just encapsulate the entire setup once per thread.
@@ -1917,7 +1914,7 @@ GDALImageLayer::openImplementation(const IOOptions& io)
         return s;
 
     // if the driver generated a valid profile, set it.
-    if (profile)
+    if (profile.valid())
     {
         setProfile(profile);
     }
@@ -2030,7 +2027,7 @@ GDALElevationLayer::openImplementation(const IOOptions& io)
     if (parent.failed())
         return parent;
 
-    shared_ptr<Profile> profile;
+    Profile profile;
 
     // GDAL thread-safety requirement: each thread requires a separate GDALDataSet.
     // So we just encapsulate the entire setup once per thread.
@@ -2052,7 +2049,7 @@ GDALElevationLayer::openImplementation(const IOOptions& io)
     if (s.failed())
         return s;
 
-    if (profile)
+    if (profile.valid())
         setProfile(profile);
 
     setDataExtents(dataExtents);

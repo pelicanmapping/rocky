@@ -118,7 +118,7 @@ namespace rocky
                 unsigned tileSize,
                 const IOOptions& io);
 
-            shared_ptr<Profile> getProfile() const {
+            const Profile& getProfile() const {
                 return _profile;
             }
 
@@ -139,7 +139,7 @@ namespace rocky
             double _invtransform[6];
             GeoExtent _extents;
             Box _bounds;
-            shared_ptr<Profile> _profile;
+            Profile _profile;
             Options _gdalOptions;
             const Options& gdalOptions() const { return _gdalOptions; }
             shared_ptr<GDAL::ExternalDataset> _externalDataset;

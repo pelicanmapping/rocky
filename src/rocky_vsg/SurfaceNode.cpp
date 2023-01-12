@@ -15,18 +15,18 @@ using namespace rocky;
 
 void
 HorizonTileCuller::set(
-    shared_ptr<SRS> srs,
+    const SRS& srs,
     const vsg::dmat4& local2world,
     const vsg::dbox& bbox)
 {
-    if (!_horizon && srs->isGeographic())
+    if (!_horizon && srs.isGeographic())
     {
         _horizon = std::make_shared<Horizon>();
     }
 
     if (_horizon)
     {
-        _horizon->setEllipsoid(srs->getEllipsoid());
+        _horizon->setEllipsoid(srs.ellipsoid());
 
         // Adjust the horizon ellipsoid based on the minimum Z value of the tile;
         // necessary because a tile that's below the ellipsoid (ocean floor, e.g.)
@@ -37,8 +37,8 @@ HorizonTileCuller::set(
         zMin = std::max(zMin, -25000.0); // approx the lowest point on earth * 2
 
         _horizon->setEllipsoid(Ellipsoid(
-            srs->getEllipsoid().getRadiusEquator() + zMin,
-            srs->getEllipsoid().getRadiusPolar() + zMin));
+            srs.ellipsoid().semiMajorAxis() + zMin,
+            srs.ellipsoid().semiMinorAxis() + zMin));
 
         dmat4 m = to_glm(local2world);
 
@@ -77,8 +77,8 @@ SurfaceNode::SurfaceNode(const TileKey& tilekey)
     // Establish a local reference frame for the tile:
     GeoPoint centroid = tilekey.getExtent().getCentroid();
 
-    dmat4 local2world;
-    centroid.createLocalToWorld( local2world );
+    dmat4 local2world = centroid.getSRS().localToWorldMatrix(centroid.to_dvec3());
+    //centroid.createLocalToWorld( local2world );
     this->matrix = to_vsg(local2world);
 }
 
@@ -133,7 +133,7 @@ SurfaceNode::recomputeLocalBBox()
             biasU = _elevationMatrix[3][0],
             biasV = _elevationMatrix[3][1];
 
-        ROCKY_SOFT_ASSERT_AND_RETURN(!equivalent(scaleU, 0.0f) && equivalent(scaleV, 0.0f), void());
+        ROCKY_SOFT_ASSERT_AND_RETURN(!equiv(scaleU, 0.0f) && equiv(scaleV, 0.0f), void());
 
         for (int i = 0; i < verts->size(); ++i)
         {
@@ -224,7 +224,7 @@ SurfaceNode::recomputeBound()
 #if 1
     // Update the horizon culler.
     _horizonCuller.set(
-        _tileKey.getProfile()->getSRS(),
+        _tileKey.getProfile().getSRS(),
         this->matrix, //local2world,
         _localbbox);
 #endif

@@ -63,7 +63,10 @@ namespace rocky
         const bool& getEnableLighting() const;
 
         //! Spatial Reference System of the underlying map.
-        shared_ptr<SRS> getMapSRS() const;
+        const SRS& getMapSRS() const;
+
+        //! Spatial reference system of the rendered map.
+        const SRS& getWorldSRS() const;
 
         /**
          * Finds the topmost Map node in the specified scene graph, or returns NULL if
@@ -77,12 +80,6 @@ namespace rocky
         static shared_ptr<MapNode> get(
             const vsg::Node* graph,
             unsigned travMask = ~0);
-
-        /**
-         * Returns true if the realized terrain model is geocentric, false if
-         * it is flat/projected.
-         */
-        //bool isGeocentric() const;
 
         /**
          * Accesses the group node that contains all the nodes added by Layers.

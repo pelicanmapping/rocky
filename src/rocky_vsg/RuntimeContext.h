@@ -44,15 +44,15 @@ namespace rocky
         //! VSG state sharing
         vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
 
-        //! Function for creating a collection of nodes
-        using NodeProvider = std::function<vsg::ref_ptr<vsg::Node>(Cancelable&)>;
+        //! Function that creates a node
+        using NodeFactory = std::function<vsg::ref_ptr<vsg::Node>(Cancelable&)>;
 
         //! Schedules data creation; the resulting node or nodes 
         //! get added to "parent" if the operation suceeds.
         //! Returns a future you can check for completion.
         util::Future<bool> compileAndAddNode(
             vsg::Group* parent,
-            NodeProvider provider);
+            NodeFactory factory);
 
         //! Safely removes a node from the scene graph (async)
         void removeNode(

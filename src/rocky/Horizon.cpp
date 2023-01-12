@@ -27,14 +27,14 @@ Horizon::setEllipsoid(const Ellipsoid& em)
     _em = em;
 
     _scaleInv = dvec3(
-        em.getRadiusEquator(),
-        em.getRadiusEquator(),
-        em.getRadiusPolar());
+        em.semiMajorAxis(),
+        em.semiMajorAxis(),
+        em.semiMinorAxis());
 
     _scale = dvec3(
-        1.0 / em.getRadiusEquator(),
-        1.0 / em.getRadiusEquator(),
-        1.0 / em.getRadiusPolar());
+        1.0 / em.semiMajorAxis(),
+        1.0 / em.semiMajorAxis(),
+        1.0 / em.semiMinorAxis());
 
     _minHAE = 500.0;
     _minVCmag = 1.0 + (_scale*_minHAE).length();
@@ -304,8 +304,8 @@ HorizonCullCallback::HorizonCullCallback() :
 void
 HorizonCullCallback::setEllipsoid(const Ellipsoid& em)
 {
-    _customEllipsoid.setSemiMajorAxis(em.getRadiusEquator());
-    _customEllipsoid.setSemiMinorAxis(em.getRadiusPolar());
+    _customEllipsoid.setSemiMajorAxis(em.semiMajorAxis());
+    _customEllipsoid.setSemiMinorAxis(em.semiMinorAxis());
     _customEllipsoidSet = true;
 }
 

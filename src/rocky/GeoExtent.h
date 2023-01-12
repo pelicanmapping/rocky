@@ -18,24 +18,25 @@ namespace rocky
     class ROCKY_EXPORT GeoExtent
     {
     public:
-        /** Default ctor creates an "invalid" extent */
+        //! Default ctor creates an invalid extent
         GeoExtent();
+        GeoExtent(const GeoExtent& rhs) = default;
+        GeoExtent& operator=(const GeoExtent&) = default;
+        GeoExtent(GeoExtent&& rhs) { *this = rhs; }
+        GeoExtent& operator=(GeoExtent&&);
 
         /** Contructs a valid extent */
         GeoExtent(
-            shared_ptr<SRS> srs,
+            const SRS& srs,
             double west, double south,
             double east, double north);
 
         /** Contructs an invalid extent that you can grow with the expandToInclude method */
-        GeoExtent(shared_ptr<SRS> srs);
-
-        /** Copy ctor */
-        GeoExtent(const GeoExtent& rhs);
+        GeoExtent(const SRS& srs);
 
         /** create from Bounds object */
         GeoExtent(
-            shared_ptr<SRS>,
+            const SRS& srs,
             const Box& bounds);
 
         /** dtor */
@@ -48,7 +49,7 @@ namespace rocky
         bool operator != (const GeoExtent& rhs) const;
 
         /** Gets the spatial reference system underlying this extent. */
-        shared_ptr<SRS> getSRS() const { return _srs; }
+        const SRS& getSRS() const { return _srs; }
 
         //! Coordinates of the bounding edges, normalized for the lat/long frame if necessary
         inline double west() const { return _west; }
@@ -94,7 +95,7 @@ namespace rocky
         /** True if this object defines a real, valid extent with positive area */
         inline bool valid() const
         {
-            return _srs != nullptr && _width >= 0.0 && _height >= 0.0;
+            return _srs.valid() && _width >= 0.0 && _height >= 0.0;
         }
 
         /**
@@ -113,12 +114,12 @@ namespace rocky
          * globe.) Consider using Profile:clampAndTransformExtent() instead of using
          * this method directly.
          */
-        GeoExtent transform(shared_ptr<SRS> to_srs) const;
+        GeoExtent transform(const SRS& to_srs) const;
 
         /**
          * Same as transform(srs) but puts the result in the output extent
          */
-        bool transform(shared_ptr<SRS> to_srs, GeoExtent& output) const;
+        bool transform(const SRS& to_srs, GeoExtent& output) const;
 
         /**
          * Returns true if the specified point falls within the bounds of the extent.
@@ -129,9 +130,9 @@ namespace rocky
          *      SRS of input x and y coordinates; if null, the method assumes x and y
          *      are in the same SRS as this object.
          */
-        bool contains(double x, double y, shared_ptr<SRS> srs = nullptr) const;
+        bool contains(double x, double y, const SRS& srs = { }) const;
 
-        bool contains(const dvec3& xy, shared_ptr<SRS> srs = nullptr) const { 
+        bool contains(const dvec3& xy, const SRS& srs = { }) const {
             return contains(xy.x, xy.y, srs);
         }
 
@@ -245,7 +246,7 @@ namespace rocky
 
     private:
         double _west, _width, _south, _height;
-        shared_ptr<SRS> _srs;
+        SRS _srs;
 
         double normalizeX(double longitude) const;
 

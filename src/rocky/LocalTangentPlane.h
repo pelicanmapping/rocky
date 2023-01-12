@@ -4,7 +4,7 @@
  * MIT License
  */
 #pragma once
-
+#if 0
 #include <rocky/Common.h>
 #include <rocky/Profile.h>
 #include <rocky/TileKey.h>
@@ -58,3 +58,4 @@ namespace rocky
     };
 
 }
+#endif

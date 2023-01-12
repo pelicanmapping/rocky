@@ -18,6 +18,7 @@ namespace rocky
 {
     class IOOptions;
     class Image;
+    class Layer;
 
     //! General purpose interface things that can be canceled
     class Cancelable
@@ -31,39 +32,31 @@ namespace rocky
     {
     };
 
-#if 0
-    class Reader : public Inherit<Object, Reader>
-    {
-    public:
-        template<class T>
-        inline Result<shared_ptr<T>> read(
-            const std::string& location,
-            const IOOptions& io) const;
+    //! Service providing a Log
+    using LogService = std::function<Log&()>;
 
-    protected:
-        virtual Result<shared_ptr<Object>> read(
-            const std::string& location,
-            const IOOptions& io) const = 0;
-    };
-#endif
-
-    //! Function signature for reading an image
-    using ReadImage = std::function<
+    //! Service for reading an image from a URL
+    using ReadImageService = std::function<
         Result<shared_ptr<Image>>(const std::string& url, const IOOptions&)>;
 
+    //! Service for caching data
     using CacheImpl = void*; // todo.
     using CacheService = std::function<shared_ptr<CacheImpl>()>;
 
+    //! Service for accessing other data
+    class DataInterface {
+    public:
+        virtual shared_ptr<Layer> findLayerByName(const std::string& name) const = 0;
+    };
+    using DataService = std::function<DataInterface&()>;
 
     class ROCKY_EXPORT Services
     {
     public:
-        Log log;
-
+        LogService log;
+        ReadImageService readImage;
         CacheService cache;
-        
-        ReadImage readImage;
-
+        DataService data;
         // ElevationService elevation;
     };
 
@@ -77,21 +70,25 @@ namespace rocky
         IOOptions(const IOOptions& rhs, Cancelable& p);
 
         //! Access to useful services
-        Services services;
+        inline Services& services();
+        inline const Services& services() const;
 
         //! Custom options for reading/writing data
-        std::unordered_map<std::string, std::string> properties;
         inline std::string property(const std::string& name) const;
         inline std::string& property(const std::string& name);
 
         //! Was the current operation canceled?
-        virtual bool canceled() const override {
-            return _p ? _p->canceled() : false;
-        }
+        inline bool canceled() const override;
+
+    public:
+        IOOptions& operator = (const IOOptions& rhs);
 
     private:
-        Cancelable* _p;
+        Cancelable* _cancelable;
+        Services _services;
+        std::unordered_map<std::string, std::string> _properties;
     };
+
 
     class ROCKY_EXPORT CachePolicy
     {
@@ -299,14 +296,27 @@ namespace rocky
     }
 #endif
 
+    Services& IOOptions::services() {
+        return _services;
+    }
+
+    const Services& IOOptions::services() const {
+        return _services;
+    }
+
     std::string IOOptions::property(const std::string& name) const {
-        auto i = properties.find(name);
-        return i != properties.end() ? i->second : "";
+        auto i = _properties.find(name);
+        return i != _properties.end() ? i->second : "";
     }
 
     std::string& IOOptions::property(const std::string& name) {
-        return properties[name];
+        return _properties[name];
     }
+
+    bool IOOptions::canceled() const {
+        return _cancelable ? _cancelable->canceled() : false;
+    }
+
 }
 
 ROCKY_SPECIALIZE_CONFIG(rocky::CachePolicy);

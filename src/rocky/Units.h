@@ -288,8 +288,8 @@ namespace rocky
             else return as(convertTo);
         }
 
-        double       getValue() const { return _value; }
-        const Units& getUnits() const { return _units; }
+        double       value() const { return _value; }
+        const Units& units() const { return _units; }
 
         // same as getValue; use this class directly as a double or a float
         operator double() const { return _value; }

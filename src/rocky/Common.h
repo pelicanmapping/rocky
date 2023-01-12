@@ -31,6 +31,7 @@
 #include <rocky/optional.h>
 #include <string>
 #include <memory>
+#include <iostream>
 
 namespace rocky
 {
@@ -160,16 +161,17 @@ namespace rocky
     const TYPE & CLASS ::get ## FUNC () const { return options(). OPTION ().get(); }
 
 //! property macro
-#define ROCKY_PROPERTY(TYPE, NAME) \
+#define rk_property(TYPE, NAME) \
     private: \
     TYPE _ ## NAME ; \
     public: \
     TYPE & NAME () { return _ ## NAME; } \
     TYPE & NAME ## _mutable() { return _ ## NAME; } \
+    void set_ ## NAME (const TYPE& value) { _ ## NAME = value; } \
     const TYPE & NAME () const { return _ ## NAME; }
 
 //! const property macro
-#define ROCKY_PROPERTY_CONST(TYPE, NAME) \
+#define rk_readonly_property(TYPE, NAME) \
     private: \
     TYPE _ ## NAME ; \
     protected: \
@@ -196,3 +198,24 @@ namespace rocky
 #define ROCKY_STRINGIFY_0(x) #x
 #define ROCKY_STRINGIFY(x) ROCKY_STRINGIFY_0(x)
 
+// please use Log instead
+#define ROCKY_DEBUG if (false) std::cout << "[rk]--"
+#define ROCKY_INFO std::cout << "[rk]- "
+#define ROCKY_NOTICE std::cout << "[rk]  "
+#define ROCKY_WARN std::cout << "[rk]* "
+#define ROCKY_NULL if (false) std::cout
+
+#define ROCKY_DEPRECATED(A, B) OE_WARN << #A << " is deprecated; please use " << #B << std::endl
+
+#if defined(_MSC_VER)
+#define ROCKY_FILE (std::strrchr(__FILE__, '\\') ? std::strrchr(__FILE__, '\\') + 1 : __FILE__)
+#else
+#define ROCKY_FILE (std::strrchr(__FILE__, '/') ? std::strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif
+
+#define ROCKY_SOFT_ASSERT(EXPR, ...) if(!(EXPR)) { ROCKY_WARN << "ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; }
+#define ROCKY_SOFT_ASSERT_AND_RETURN(EXPR, RETVAL, ...) if(!(EXPR)) { ROCKY_WARN << "ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; return RETVAL; }
+#define ROCKY_IF_SOFT_ASSERT(EXPR, ...) if(!(EXPR)) { ROCKY_WARN << "ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; } else
+#define ROCKY_HARD_ASSERT(EXPR, ...) if(!(EXPR)) { ROCKY_WARN << "FATAL ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; abort(); }
+
+#define ROCKY_TODO(...) ROCKY_DEBUG << "TODO (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ")..." << __VA_ARGS__ "" << std::endl

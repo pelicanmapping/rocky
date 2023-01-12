@@ -39,7 +39,7 @@ namespace rocky
         void setRadius( double value ) { _radius = value; }
 
         /** SRS of the center point */
-        shared_ptr<SRS> getSRS() const { return _center.getSRS(); }
+        const SRS& getSRS() const { return _center.getSRS(); }
 
         /** equality test */
         bool operator == ( const GeoCircle& rhs ) const;
@@ -51,10 +51,10 @@ namespace rocky
         bool valid() const { return _center.valid() && _radius > 0.0; }
 
         /** transform the GeoCircle to another SRS */
-        GeoCircle transform(shared_ptr<SRS> srs) const;
+        GeoCircle transform(const SRS& srs) const;
 
         /** transform the GeoCircle to another SRS */
-        bool transform(shared_ptr<SRS> srs, GeoCircle& out_circle) const;
+        bool transform(const SRS& srs, GeoCircle& out_circle) const;
 
         /** does this GeoCircle intersect another? */
         bool intersects(const GeoCircle& rhs) const;

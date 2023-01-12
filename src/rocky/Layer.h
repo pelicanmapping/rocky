@@ -8,10 +8,9 @@
 #include <rocky/Common.h>
 #include <rocky/Callbacks.h>
 #include <rocky/Config.h>
-#include <rocky/Status.h>
-#include <rocky/IOTypes.h>
 #include <rocky/DateTime.h>
-#include <rocky/GeoExtent.h>
+#include <rocky/IOTypes.h>
+#include <rocky/Status.h>
 #include <vector>
 
 namespace rocky
@@ -66,7 +65,7 @@ namespace rocky
         {
         public:
             ROCKY_OPTION(CachePolicy, cachePolicy);
-            ROCKY_OPTION(unsigned, L2CacheSize);
+            //ROCKY_OPTION(unsigned, L2CacheSize);
             ROCKY_OPTION(bool, dynamic);
         };
 
@@ -219,10 +218,10 @@ namespace rocky
 #endif
 
         //! Map will call this function when this Layer is added to a Map.
-        virtual void addedToMap(const class Map*) { }
+        //virtual void addedToMap(const class Map*) { }
 
         //! Map will call this function when this Layer is removed from a Map.
-        virtual void removedFromMap(const class Map*) { }
+        //virtual void removedFromMap(const class Map*) { }
 
     public:
 
