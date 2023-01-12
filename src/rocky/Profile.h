@@ -10,7 +10,7 @@
 #include <rocky/GeoExtent.h>
 #include <vector>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class TileKey;
 
@@ -80,13 +80,13 @@ ROCKY_SPECIALIZE_CONFIG(rocky::ProfileOptions);
         bool valid() const;
 
         //! Gets the extent of the profile (in the profile's SRS)
-        const GeoExtent& getExtent() const;
+        const GeoExtent& extent() const;
 
         //! Gets the extent of the profile (in lat/long.)
-        const GeoExtent& getLatLongExtent() const;
+        const GeoExtent& latLongExtent() const;
         
         //! spatial reference system underlying this profile.
-        const SRS& getSRS() const;
+        const SRS& srs() const;
 
         //! Given an x-resolution, specified in the profile's SRS units, calculates and
         //! returns the closest LOD level.
@@ -113,102 +113,58 @@ ROCKY_SPECIALIZE_CONFIG(rocky::ProfileOptions);
             unsigned tileY) const;
 
         //! Gets whether the two profiles can be treated as equivalent.
-        //! @param rhs
-        //!   Comparison profile
+        //! @param rhs Comparison profile
         bool isEquivalentTo(const Profile& rhs) const;
 
-        /**
-         * Gets whether the two profiles can be treated as equivalent (without regard
-         * for any vertical datum information - i.e., still returns true if the SRS
-         * vertical datums are different)
-         * @param rhs
-         *      Comparison profile
-         */
+        //! Gets whether the two profiles can be treated as equivalent (without regard
+        //! for any vertical datum information - i.e., still returns true if the SRS
+        //! vertical datums are different)
+        //! @param rhs Comparison profile
         bool isHorizEquivalentTo(const Profile& rhs) const;
 
-        /**
-         *Gets the tile dimensions at the given lod.
-         */
-        std::pair<double, double> getTileDimensions(unsigned lod) const;
+        //! Gets the tile dimensions at the given lod.
+        std::pair<double, double> tileDimensions(unsigned lod) const;
 
-        /**
-         *Gets the number wide and high at the given lod
-         */
-        std::pair<unsigned, unsigned> getNumTiles(unsigned lod) const;
+        //! The number wide and high at the given lod
+        std::pair<unsigned, unsigned> numTiles(unsigned lod) const;
 
-        /** 
-         * Clamps the incoming extents to the extents of this profile, and then converts the 
-         * clamped extents to this profile's SRS, and returns the result. Returned GeoExtent::INVALID
-         * if the transformation fails.
-         */
+        //! Clamps the incoming extents to the extents of this profile, and then converts the 
+        //! clamped extents to this profile's SRS, and returns the result. Returned GeoExtent::INVALID
+        //! if the transformation fails.
         GeoExtent clampAndTransformExtent( const GeoExtent& input, bool* out_clamped =0L ) const;
 
-        /**
-         * Creates a tile key for a tile that contains the input location at the specified LOD.
-         * Express the coordinates in the profile's SRS.
-         * Returns TileKey::INVALID if the point lies outside the profile's extents.
-         */
-        //TODO: Move to TileKey
-        //TileKey createTileKey( double x, double y, unsigned int level ) const;
-
-        //! Creates a tile key for a tile that contains the input location.
-        //! @param point Point at which to create the tile key
-        //! @param lod LOD at which to create the tile key
-        //! @return tile key containing the point
-        //TileKey createTileKey(const GeoPoint& point, unsigned level) const;
-
-        /**
-         * Returns a readable description of the profile.
-         */
+        //! Returns a readable description of the profile.
         std::string toString() const;
 
-        /**
-         * Builds and returns a ProfileOptions for this profile
-         */
-        //ProfileOptions toProfileOptions() const;
-
-        /**
-         * Returns a signature hash code unique to this profile.
-         */
+        //! Returns a signature hash code unique to this profile
         inline const std::string& getFullSignature() const;
 
-        /**
-         * Returns a signature hash code that uniquely identifies this profile
-         * without including any vertical datum information. This is useful for
-         * seeing if two profiles are horizontally compatible.
-         */
+        //! Returns a signature hash code that uniquely identifies this profile
+        //! without including any vertical datum information. This is useful for
+        //! seeing if two profiles are horizontally compatible.
         inline const std::string& getHorizSignature() const;
 
-        /**
-         * Given another Profile and an LOD in that Profile, determine 
-         * the LOD in this Profile that is nearly equivalent.
-         */
+        //! Given another Profile and an LOD in that Profile, determine 
+        //! the LOD in this Profile that is nearly equivalent.
         unsigned getEquivalentLOD(const Profile&, unsigned lod) const;
 
-        /**
-         * Given a LOD-0 tile height, determine the LOD in this Profile that
-         * most closely houses a tile with that height.
-         */
-        unsigned getLOD(double tileHeight) const;
+        //! Given a LOD-0 tile height, determine the LOD in this Profile that
+        //! most closely houses a tile with that height.
+        unsigned levelOfDetail(double tileHeight) const;
 
         //! Get the hash code for this profile
         inline std::size_t hash() const;
 
-        /**
-         * Given an input extent, translate it into one or more
-         * GeoExtents in this profile.
-         */
+        //! Given an input extent, translate it into one or more
+        //! GeoExtents in this profile.
         bool transformAndExtractContiguousExtents(
             const GeoExtent& input,
             std::vector<GeoExtent>& output) const;
 
+        //! Serialize
         Config getConfig() const;
 
-    public:
-
-        /**
-         * Makes a clone of this profile but replaces the SRS with a custom one.
-         */
+        //! Makes a clone of this profile but replaces the SRS with a custom one.
         Profile overrideSRS(const SRS&) const;
 
     protected:

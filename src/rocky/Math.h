@@ -14,7 +14,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     using dvec2 = glm::dvec2;
     using dvec3 = glm::dvec3;
@@ -304,16 +304,16 @@ namespace rocky
     }
 
     // equal within a threshold
-    template<typename T>
-    inline bool equiv(T x, T y, double epsilon) 
+    template<typename A, typename B>
+    inline bool equiv(A x, B y, double epsilon) 
     {
-        T delta = x - y;
+        double delta = x - y;
         return delta < 0.0 ? delta >= -epsilon : delta <= epsilon;
     }
 
     // equal within a default threshold
-    template<typename T>
-    inline bool equiv(T x, T y) 
+    template<typename A, typename B>
+    inline bool equiv(A x, B y) 
     {
         return equiv(x, y, 1e-6);
     }

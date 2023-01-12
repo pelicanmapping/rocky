@@ -10,7 +10,7 @@
 #include <cpl_string.h>
 #include <gdal_vrt.h>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 namespace
 {
@@ -352,8 +352,8 @@ namespace
         double *srcPointsY = srcPointsX + numPixels;
 
         transformGrid(
-            dest_extent.getSRS(),
-            src_extent.getSRS(),
+            dest_extent.srs(),
+            src_extent.srs(),
             dest_extent.xMin() + .5 * dx, dest_extent.yMin() + .5 * dy,
             dest_extent.xMax() - .5 * dx, dest_extent.yMax() - .5 * dy,
             srcPointsX, srcPointsY, width, height);
@@ -543,9 +543,8 @@ GeoImage GeoImage::INVALID;
 
 
 GeoImage::GeoImage() :
-    _myimage(nullptr),
-    _extent(GeoExtent::INVALID),
-    _status()
+    _image(nullptr),
+    _extent(GeoExtent::INVALID)
 {
     //nop
 }
@@ -554,76 +553,38 @@ GeoImage&
 GeoImage::operator=(GeoImage&& rhs)
 {
     *this = (const GeoImage&)rhs;
+    rhs._image = nullptr;
     rhs._extent = GeoExtent::INVALID;
     return *this;
 }
 
-GeoImage::GeoImage(const Status& status) :
-    _myimage(nullptr),
-    _extent(GeoExtent::INVALID),
-    _status(status)
+GeoImage::GeoImage(shared_ptr<Image> image, const GeoExtent& extent) :
+    _image(image),
+    _extent(extent)
 {
     //nop
-}
-
-GeoImage::GeoImage(shared_ptr<Image> image, const GeoExtent& extent) :
-    _myimage(image),
-    _extent(extent)
-{
-    if (!extent.valid())
-    {
-        _status = Status(Status::AssertionFailure, "Invalid geoextent");
-    }
-
-    //if (image)
-    //{
-    //    _read.setImage(image);
-    //}
-}
-
-GeoImage::GeoImage(util::Future<shared_ptr<Image>> fimage, const GeoExtent& extent) :
-    _myimage(nullptr),
-    _extent(extent)
-{
-    _future = fimage;
-
-    if (_future->abandoned())
-    {
-        _status = Status(Status::ResourceUnavailable, "Async request canceled");
-    }
-    else if (!extent.valid())
-    {
-        _status = Status(Status::GeneralError, "Invalid geoextent");
-    }
 }
 
 bool
 GeoImage::valid() const 
 {
-    if (!_extent.valid())
-        return false;
-
-    return
-        (_future.has_value() && !_future->abandoned()) ||
-        _myimage != nullptr;
+    return _extent.valid();
 }
 
 shared_ptr<Image>
-GeoImage::getImage() const
+GeoImage::image() const
 {
-    return _future.has_value() && _future->available() ?
-        _future->join() :
-        _myimage;
+    return _image;
 }
 
 const SRS&
-GeoImage::getSRS() const
+GeoImage::srs() const
 {
-    return _extent.getSRS();
+    return _extent.srs();
 }
 
 const GeoExtent&
-GeoImage::getExtent() const
+GeoImage::extent() const
 {
     return _extent;
 }
@@ -631,11 +592,10 @@ GeoImage::getExtent() const
 double
 GeoImage::getUnitsPerPixel() const
 {
-    shared_ptr<Image> image = getImage();
-    if (image)
+    if (image())
     {
-        double uppw = _extent.width() / (double)image->width();
-        double upph = _extent.height() / (double)image->height();
+        double uppw = _extent.width() / (double)image()->width();
+        double upph = _extent.height() / (double)image()->height();
         return (uppw + upph) / 2.0;
     }
     else return 0.0;
@@ -645,10 +605,10 @@ bool
 GeoImage::getCoord(int s, int t, double& out_x, double& out_y) const
 {
     if (!valid()) return false;
-    if (!_myimage) return false;
+    if (!_image) return false;
 
-    double u = (double)s / (double)(_myimage->width() - 1);
-    double v = (double)t / (double)(_myimage->height() - 1);
+    double u = (double)s / (double)(_image->width() - 1);
+    double v = (double)t / (double)(_image->height() - 1);
     out_x = _extent.xMin() + u * _extent.width();
     out_y = _extent.yMin() + v * _extent.height();
     return true;
@@ -656,7 +616,7 @@ GeoImage::getCoord(int s, int t, double& out_x, double& out_y) const
 
 Result<GeoImage>
 GeoImage::crop(
-    const GeoExtent& extent,
+    const GeoExtent& e,
     bool exact, 
     unsigned int width, 
     unsigned int height, 
@@ -665,12 +625,11 @@ GeoImage::crop(
     if (!valid())
         return *this;
 
-    shared_ptr<Image> image = getImage();
-    if (!image)
+    if (!image())
         return Status(Status::ResourceUnavailable);
 
     //Check for equivalence
-    if (extent.getSRS().isEquivalentTo(getSRS()))
+    if (e.srs().isEquivalentTo(srs()))
     {
         //If we want an exact crop or they want to specify the output size of the image, use GDAL
         if (exact || width != 0 || height != 0)
@@ -678,32 +637,32 @@ GeoImage::crop(
             //Suggest an output image size
             if (width == 0 || height == 0)
             {
-                double xRes = getExtent().width() / (double)image->width();
-                double yRes = getExtent().height() / (double)image->height();
+                double xRes = extent().width() / (double)image()->width();
+                double yRes = extent().height() / (double)image()->height();
 
-                width = std::max(1u, (unsigned int)(extent.width() / xRes));
-                height = std::max(1u, (unsigned int)(extent.height() / yRes));
+                width = std::max(1u, (unsigned int)(e.width() / xRes));
+                height = std::max(1u, (unsigned int)(e.height() / yRes));
             }
 
             //Note:  Passing in the current SRS simply forces GDAL to not do any warping
-            return reproject(getSRS(), &extent, width, height, useBilinearInterpolation);
+            return reproject(srs(), &e, width, height, useBilinearInterpolation);
         }
         else
         {
             //If an exact crop is not desired, we can use the faster image cropping code that does no resampling.
-            double destXMin = extent.xMin();
-            double destYMin = extent.yMin();
-            double destXMax = extent.xMax();
-            double destYMax = extent.yMax();
+            double destXMin = e.xMin();
+            double destYMin = e.yMin();
+            double destXMax = e.xMax();
+            double destYMax = e.yMax();
 
             shared_ptr<Image> new_image = cropImage(
-                image.get(),
+                image().get(),
                 _extent.xMin(), _extent.yMin(), _extent.xMax(), _extent.yMax(),
                 destXMin, destYMin, destXMax, destYMax);
 
             //The destination extents may be different than the input extents due to not being able to crop along pixel boundaries.
             return new_image ?
-                GeoImage(new_image, GeoExtent(getSRS(), destXMin, destYMin, destXMax, destYMax)) :
+                GeoImage(new_image, GeoExtent(srs(), destXMin, destYMin, destXMax, destYMax)) :
                 GeoImage::INVALID;
         }
     }
@@ -728,19 +687,19 @@ GeoImage::reproject(
     }
     else
     {
-        destExtent = getExtent().transform(to_srs);    
+        destExtent = extent().transform(to_srs);    
     }
 
     Image::ptr resultImage;
 
-    //if (getSRS().isUserDefined() || to_srs.isUserDefined() || getImage()->depth() > 1)
-    if (getImage()->depth() > 1)
+    //if (srs().isUserDefined() || to_srs.isUserDefined() || getImage()->depth() > 1)
+    if (image()->depth() > 1)
     {
         // if either of the SRS is a custom projection or it is a 3D image, we have to do a manual reprojection since
         // GDAL will not recognize the SRS and does not handle 3D images.
         resultImage = manualReproject(
-            getImage().get(),
-            getExtent(),
+            image().get(),
+            extent(),
             destExtent,
             useBilinearInterpolation,
             width,
@@ -750,9 +709,9 @@ GeoImage::reproject(
     {
         // otherwise use GDAL.
         resultImage = GDAL_reprojectImage(
-            getImage().get(),
-            getSRS().wkt(),
-            getExtent().xMin(), getExtent().yMin(), getExtent().xMax(), getExtent().yMax(),
+            image().get(),
+            srs().wkt(),
+            extent().xMin(), extent().yMin(), extent().xMax(), extent().yMax(),
             to_srs.wkt(),
             destExtent.xMin(), destExtent.yMin(), destExtent.xMax(), destExtent.yMax(),
             width,
@@ -761,18 +720,6 @@ GeoImage::reproject(
     }
 
     return GeoImage(resultImage, destExtent);
-}
-
-void
-GeoImage::setTrackingToken(shared_ptr<Object> value)
-{
-    _token = value;
-}
-
-shared_ptr<Object>
-GeoImage::getTrackingToken() const
-{
-    return _token;
 }
 
 bool
@@ -786,9 +733,10 @@ GeoImage::read(
     }
 
     // transform if necessary
-    if (!p.getSRS().isHorizEquivalentTo(getSRS()))
+    if (!p.srs().isHorizEquivalentTo(srs()))
     {
-        return read(output, p.transform(getSRS()));
+        GeoPoint c;
+        return p.transform(srs(), c) && read(output, c);
     }
 
     double u = (p.x() - _extent.xMin()) / _extent.width();
@@ -800,7 +748,7 @@ GeoImage::read(
         return false;
     }
 
-    _myimage->read(output, u, v);
+    _image->read(output, u, v);
 
     return true;
 }

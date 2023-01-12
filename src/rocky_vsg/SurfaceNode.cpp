@@ -9,7 +9,7 @@
 #include <rocky/Horizon.h>
 #include <numeric>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #define LC "[SurfaceNode] "
 
@@ -70,15 +70,16 @@ HorizonTileCuller::isVisible(const dvec3& from) const
 
 const bool SurfaceNode::_enableDebugNodes = ::getenv("OSGEARTH_REX_DEBUG") != 0L;
 
-SurfaceNode::SurfaceNode(const TileKey& tilekey)
+SurfaceNode::SurfaceNode(const TileKey& tilekey, const SRS& worldSRS)
 {
     _tileKey = tilekey;
 
     // Establish a local reference frame for the tile:
-    GeoPoint centroid = tilekey.getExtent().getCentroid();
+    GeoPoint centroid = tilekey.extent().getCentroid();
+    centroid.transformInPlace(worldSRS);
 
-    dmat4 local2world = centroid.getSRS().localToWorldMatrix(centroid.to_dvec3());
-    //centroid.createLocalToWorld( local2world );
+    dmat4 local2world = worldSRS.localToWorldMatrix(centroid.to_dvec3());
+
     this->matrix = to_vsg(local2world);
 }
 
@@ -224,7 +225,7 @@ SurfaceNode::recomputeBound()
 #if 1
     // Update the horizon culler.
     _horizonCuller.set(
-        _tileKey.getProfile().getSRS(),
+        _tileKey.profile().srs(),
         this->matrix, //local2world,
         _localbbox);
 #endif

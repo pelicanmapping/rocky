@@ -12,8 +12,8 @@
 
 #include <vsg/all.h>
 
-using namespace rocky;
-using namespace rocky::util;
+using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 #define ARENA_LOAD_TILE "terrain.load_tile"
 
@@ -40,13 +40,22 @@ TerrainNode::getConfig() const
 }
 
 void
-TerrainNode::setMap(shared_ptr<Map> new_map)
+TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(new_map, void());
+
+    SRS worldSRS = new_worldSRS;
+    if (!worldSRS.valid())
+    {
+        worldSRS = new_map->srs().isGeographic() ?
+            SRS::ECEF :
+            new_map->srs();
+    }
 
     // create a new context for this map
     _context = std::make_shared<TerrainContext>(
         new_map,
+        worldSRS,
         _runtime, // runtime API
         *this,    // settings
         this);    // host
@@ -57,7 +66,7 @@ TerrainNode::setMap(shared_ptr<Map> new_map)
     _tilesRoot = vsg::Group::create();
 
     std::vector<TileKey> keys;
-    Profile::getAllKeysAtLOD(this->firstLOD, new_map->getProfile(), keys);
+    Profile::getAllKeysAtLOD(this->firstLOD, new_map->profile(), keys);
 
     for (unsigned i = 0; i < keys.size(); ++i)
     {

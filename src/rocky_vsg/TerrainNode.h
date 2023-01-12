@@ -11,11 +11,12 @@
 #include <rocky/Config.h>
 #include <vsg/nodes/Group.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class IOOptions;
     class Map;
     class RuntimeContext;
+    class SRS;
     class TerrainContext;
 
     /**
@@ -32,8 +33,10 @@ namespace rocky
             RuntimeContext& runtime,
             const Config& conf);
 
-        //! Map to render
-        void setMap(shared_ptr<Map> new_map);
+        //! Map to render, and SRS to render it in
+        void setMap(
+            shared_ptr<Map> new_map,
+            const SRS& world_srs);
 
         //! Serialize
         virtual Config getConfig() const;

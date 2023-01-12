@@ -5,7 +5,7 @@
  */
 #pragma once
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * A template for defining "optional" class members. An optional member has a default value

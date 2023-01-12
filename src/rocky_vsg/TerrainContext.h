@@ -13,7 +13,7 @@
 #include <rocky_vsg/TerrainSettings.h>
 #include <rocky_vsg/TileNodeRegistry.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class Map;
 
@@ -26,6 +26,7 @@ namespace rocky
     public:
         TerrainContext(
             shared_ptr<Map> map,
+            const SRS& worldSRS,
             RuntimeContext& runtime,
             const TerrainSettings& settings,
             TerrainTileHost* host);
@@ -38,6 +39,9 @@ namespace rocky
 
         //! the map this terrain is rendering
         shared_ptr<Map> map;
+
+        //! SRS of the rendered terrain and map
+        SRS worldSRS;
 
         //! creator of terrain tile triangles and attributes
         shared_ptr<GeometryPool> geometryPool;

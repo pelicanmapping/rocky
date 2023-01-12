@@ -12,16 +12,18 @@
 
 #include <vsg/state/ShaderStage.h>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 
 TerrainContext::TerrainContext(
     shared_ptr<Map> new_map,
+    const SRS& new_worldSRS,
     RuntimeContext& new_runtime,
     const TerrainSettings& new_settings,
     TerrainTileHost* host) :
 
     map(new_map),
+    worldSRS(new_worldSRS),
     runtime(new_runtime),
     settings(new_settings)
 {
@@ -29,13 +31,14 @@ TerrainContext::TerrainContext(
     selectionInfo->initialize(
         settings.firstLOD,
         settings.maxLOD,
-        map->getProfile(),
+        map->profile(),
         settings.minTileRangeFactor,
         true); // restruct polar subdivision..
 
     stateFactory = std::make_shared<StateFactory>();
 
-    geometryPool = std::make_shared<GeometryPool>();
+    geometryPool = std::make_shared<GeometryPool>(
+        worldSRS);
 
     tiles = std::make_shared<TileNodeRegistry>(host);
     tiles->geometryPool = geometryPool;

@@ -13,7 +13,7 @@
 #include <rocky/Status.h>
 #include <vector>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class GeoExtent;
     class TileKey;
@@ -115,7 +115,7 @@ namespace rocky
         //! Extent of this layer's data.
         //! This method may return GeoExtent::INVALID which means that the
         //! extent is unavailable (not necessarily that there is no data).
-        virtual const GeoExtent& getExtent() const;
+        virtual const GeoExtent& extent() const;
 
         //! Temporal extent of this layer's data.
         virtual DateTimeExtent getDateTimeExtent() const;
@@ -409,4 +409,4 @@ namespace rocky
     static osgDB::PluginFunctionProxy proxy_osgearth_layer_##NAME(osgdb_##NAME);
 
 #endif
-} // namespace rocky
+} // namespace ROCKY_NAMESPACE

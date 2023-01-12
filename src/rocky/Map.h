@@ -16,7 +16,7 @@
 #include <functional>
 #include <set>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * Map is the main data model. A Map hold a collection of
@@ -36,10 +36,10 @@ namespace rocky
 
         //! The map's master tiling profile, which defines its SRS and tiling structure
         void setProfile(const Profile&);
-        const Profile& getProfile() const;
+        const Profile& profile() const;
 
         //! Spatial reference system of the map's profile (convenience)
-        const SRS& getSRS() const;
+        const SRS& srs() const;
 
         //! Adds a Layer to the map.
         void addLayer(shared_ptr<Layer> layer);
@@ -65,8 +65,8 @@ namespace rocky
         //! Moves a layer to another position in the Map.
         void moveLayer(shared_ptr<Layer> layer, unsigned index);
 
-        //! Index of the specified layer, or returns getNumLayers() if the layer is not found.
-        unsigned getIndexOfLayer(const Layer* layer) const;
+        //! Index of the specified layer, or returns numLayers() if the layer is not found.
+        unsigned indexOfLayer(const Layer* layer) const;
 
         //! Fills the vector with references to all layers of the specified type
         //! and returns the corresponding revision number.
@@ -79,7 +79,7 @@ namespace rocky
             Revision* out_revision = nullptr);
 
         //! Number of layers in the map.
-        unsigned getNumLayers() const;
+        unsigned numLayers() const;
 
         //! Gets a layer by name.
         shared_ptr<Layer> getLayerByName(const std::string& name) const;
@@ -97,7 +97,6 @@ namespace rocky
         //! and returns the corresponding revision number.
         template<typename T>
         Revision getOpenLayers(std::vector<shared_ptr<T>>& output) const;
-
 
         //! Copies references of the map layers into the output list for which
         //! the predicate function returns true.
@@ -124,26 +123,10 @@ namespace rocky
         //! Gets the revision # of the map. The revision # changes every time
         //! you add, remove, or move layers. You can use this to track changes
         //! in the map model (as a alternative to installing a MapCallback).
-        Revision getDataModelRevision() const;
-
-        //! Gets a version of the map profile without any vertical datum
-        const Profile& getProfileNoVDatum() const { return _profileNoVDatum; }
-
-        //! Access to an elevation sampling service tied to this map
-        //ElevationPool* getElevationPool() const;
+        Revision dataModelRevision() const;
 
         //! List of attribution strings to be displayed by the application
-        void getAttributions(std::set<std::string>& attributions) const;
-
-        //! Number of layers marked as terrain pathes
-        //int getNumTerrainPatchLayers() const;
-
-        //void setName(const std::string& value) { options().name() = value; }
-        //const std::string& getName() const { return options().name().get(); }
-
-        //shared_ptr<IOOptions> getReadOptions() const { return _readOptions; }
-
-        void removeCallback(UID uid);
+        std::set<std::string> attributions() const;
 
     public:
 
@@ -175,6 +158,9 @@ namespace rocky
         using LayerMoved = std::function<void(shared_ptr<Layer>, unsigned oldIndex, unsigned newIndex, Revision)>;
         Callback<LayerMoved> onLayerMoved;
 
+        //! Remove a callback added to thie object
+        void removeCallback(UID uid);
+
     protected:
         optional<std::string> _name;
         optional<std::string> _profileLayer;
@@ -185,7 +171,7 @@ namespace rocky
         std::vector<shared_ptr<Layer>> _layers;
         mutable util::ReadWriteMutex _mapDataMutex;
         Profile _profile;
-        Profile _profileNoVDatum;
+        //Profile _profileNoVDatum;
         //shared_ptr<ElevationPool> _elevationPool;
         Revision _dataModelRevision;
 

@@ -14,8 +14,8 @@
 
 #include <filesystem>
 
-using namespace rocky;
-using namespace rocky::GDAL;
+using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::GDAL;
 
 #undef LC
 #define LC "[GDAL] \"" << getName() << "\" "
@@ -56,7 +56,7 @@ using namespace rocky::GDAL;
 #define GEOTRSFRM_NS_RES               5
 
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     namespace GDAL
     {
@@ -442,7 +442,7 @@ namespace rocky
             return (err == CE_None);
         }
     }
-} // namespace rocky::GDAL
+} // namespace ROCKY_NAMESPACE::GDAL
 
 //...................................................................
 
@@ -628,12 +628,12 @@ GDAL::Driver::open(
         // no xform an geographic? Match the profile.
         if (!hasGeoTransform)
         {
-            _geotransform[0] = _profile.getExtent().xMin();
-            _geotransform[1] = _profile.getExtent().width() / (double)_srcDS->GetRasterXSize();
+            _geotransform[0] = _profile.extent().xMin();
+            _geotransform[1] = _profile.extent().width() / (double)_srcDS->GetRasterXSize();
             _geotransform[2] = 0;
-            _geotransform[3] = _profile.getExtent().yMax();
+            _geotransform[3] = _profile.extent().yMax();
             _geotransform[4] = 0;
-            _geotransform[5] = -_profile.getExtent().height() / (double)_srcDS->GetRasterYSize();
+            _geotransform[5] = -_profile.extent().height() / (double)_srcDS->GetRasterYSize();
             hasGeoTransform = true;
         }
     }
@@ -641,15 +641,15 @@ GDAL::Driver::open(
     // Handle some special cases.
     std::string warpedSRSWKT;
 
-    if (requiresReprojection || (_profile.valid() && !_profile.getSRS().isEquivalentTo(src_srs)))
+    if (requiresReprojection || (_profile.valid() && !_profile.srs().isEquivalentTo(src_srs)))
     {
 #if 0
-        if (_profile.valid() && _profile.getSRS().isGeographic() && (src_srs.isNorthPolar() || src_srs.isSouthPolar()))
+        if (_profile.valid() && _profile.srs().isGeographic() && (src_srs.isNorthPolar() || src_srs.isSouthPolar()))
         {
             _warpedDS = (GDALDataset*)GDALAutoCreateWarpedVRTforPolarStereographic(
                 _srcDS,
                 src_srs.wkt().c_str(),
-                _profile.getSRS().wkt().c_str(),
+                _profile.srs().wkt().c_str(),
                 GRA_NearestNeighbour,
                 5.0,
                 nullptr);
@@ -657,7 +657,7 @@ GDAL::Driver::open(
         else
 #endif
         {
-            std::string destWKT = _profile.valid() ? _profile.getSRS().wkt() : src_srs.wkt();
+            std::string destWKT = _profile.valid() ? _profile.srs().wkt() : src_srs.wkt();
             _warpedDS = (GDALDataset*)GDALAutoCreateWarpedVRT(
                 _srcDS,
                 src_srs.wkt().c_str(),
@@ -730,7 +730,7 @@ GDAL::Driver::open(
         for (unsigned int i = 0; i < max_level; ++i)
         {
             _maxDataLevel = i;
-            auto[w, h] = _profile.getTileDimensions(i);
+            auto[w, h] = _profile.tileDimensions(i);
             double resX = w / (double)tileSize;
             double resY = h / (double)tileSize;
 
@@ -787,7 +787,7 @@ GDAL::Driver::open(
 
     if (layerDataExtents)
     {
-        GeoExtent profile_extent = _extents.transform(_profile.getSRS());
+        GeoExtent profile_extent = _extents.transform(_profile.srs());
         if (dataExtents.empty())
         {
             // Use the extents of the whole file.
@@ -975,7 +975,7 @@ GDAL::Driver::getInterpolatedValue(GDALRasterBand* band, double x, double y, boo
 bool
 GDAL::Driver::intersects(const TileKey& key)
 {
-    return key.getExtent().intersects(_extents);
+    return key.extent().intersects(_extents);
 }
 
 Result<shared_ptr<Image>>
@@ -985,7 +985,7 @@ GDAL::Driver::createImage(
     bool isCoverage,
     const IOOptions& io)
 {
-    if (_maxDataLevel.isSet() && key.getLevelOfDetail() > _maxDataLevel.get())
+    if (_maxDataLevel.isSet() && key.levelOfDetail() > _maxDataLevel.get())
     {
         return nullptr;
     }
@@ -1001,10 +1001,10 @@ GDAL::Driver::createImage(
 
     //Get the extents of the tile
     double xmin, ymin, xmax, ymax;
-    key.getExtent().getBounds(xmin, ymin, xmax, ymax);
+    key.extent().getBounds(xmin, ymin, xmax, ymax);
 
     // Compute the intersection of the incoming key with the data extents of the dataset
-    rocky::GeoExtent intersection = key.getExtent().intersectionSameSRS(_extents);
+    rocky::GeoExtent intersection = key.extent().intersectionSameSRS(_extents);
     if (!intersection.valid())
     {
         return nullptr;
@@ -1018,7 +1018,7 @@ GDAL::Driver::createImage(
     // The extents and the intersection will be normalized between -180 and 180 longitude if they are geographic.
     // However, the georeferencing will expect the coordinates to be in the same longitude frame as the original dataset,
     // so the intersection bounds are adjusted here if necessary so that the values line up with the georeferencing.
-    if (_extents.getSRS().isGeographic())
+    if (_extents.srs().isGeographic())
     {
         while (west < _bounds.xmin)
         {
@@ -1075,10 +1075,10 @@ GDAL::Driver::createImage(
     double offset_top = ymax - intersection.yMax();
 
 
-    int target_width = (int)ceil((intersection.width() / key.getExtent().width())*(double)tileSize);
-    int target_height = (int)ceil((intersection.height() / key.getExtent().height())*(double)tileSize);
-    int tile_offset_left = (int)floor((offset_left / key.getExtent().width()) * (double)tileSize);
-    int tile_offset_top = (int)floor((offset_top / key.getExtent().height()) * (double)tileSize);
+    int target_width = (int)ceil((intersection.width() / key.extent().width())*(double)tileSize);
+    int target_height = (int)ceil((intersection.height() / key.extent().height())*(double)tileSize);
+    int tile_offset_left = (int)floor((offset_left / key.extent().width()) * (double)tileSize);
+    int tile_offset_top = (int)floor((offset_top / key.extent().height()) * (double)tileSize);
 
     // Compute spacing
     double dx = (xmax - xmin) / (double)(tileSize - 1);
@@ -1471,7 +1471,7 @@ GDAL::Driver::createHeightfield(
     unsigned tileSize,
     const IOOptions& io)
 {
-    if (_maxDataLevel.isSet() && key.getLevelOfDetail() > _maxDataLevel.get())
+    if (_maxDataLevel.isSet() && key.levelOfDetail() > _maxDataLevel.get())
     {
         //ROCKY_NOTICE << "Reached maximum data resolution key=" << key.getLevelOfDetail() << " max=" << _maxDataLevel <<  std::endl;
         return nullptr;
@@ -1489,7 +1489,7 @@ GDAL::Driver::createHeightfield(
     {
         //Get the meter extents of the tile
         double xmin, ymin, xmax, ymax;
-        key.getExtent().getBounds(xmin, ymin, xmax, ymax);
+        key.extent().getBounds(xmin, ymin, xmax, ymax);
 
         // Try to find a FLOAT band
         GDALRasterBand* band = findBandByDataType(_warpedDS, GDT_Float32);
@@ -1573,7 +1573,7 @@ GDAL::Driver::createHeightfieldWithVRT(
     unsigned tileSize,
     const IOOptions& io)
 {
-    if (_maxDataLevel.isSet() && key.getLevelOfDetail() > _maxDataLevel.get())
+    if (_maxDataLevel.isSet() && key.levelOfDetail() > _maxDataLevel.get())
     {
         return nullptr;
     }
@@ -1633,12 +1633,12 @@ GDAL::Driver::createHeightfieldWithVRT(
         }
 
         // Expanded
-        double resolution = key.getExtent().width() / ((double)tileSize - 1);
+        double resolution = key.extent().width() / ((double)tileSize - 1);
         double adfGeoTransform[6];
-        adfGeoTransform[0] = key.getExtent().xMin() - resolution;
+        adfGeoTransform[0] = key.extent().xMin() - resolution;
         adfGeoTransform[1] = resolution;
         adfGeoTransform[2] = 0;
-        adfGeoTransform[3] = key.getExtent().yMax() + resolution;
+        adfGeoTransform[3] = key.extent().yMax() + resolution;
         adfGeoTransform[4] = 0;
         adfGeoTransform[5] = -resolution;
 
@@ -1650,13 +1650,13 @@ GDAL::Driver::createHeightfieldWithVRT(
 
         GDALDatasetH tileDS = GDALCreateWarpedVRT(_srcDS, tileSize, tileSize, adfGeoTransform, psWarpOptions);
 
-        GDALSetProjection(tileDS, key.getProfile().getSRS().wkt().c_str());
+        GDALSetProjection(tileDS, key.profile().srs().wkt().c_str());
 
-        resolution = key.getExtent().width() / ((double)tileSize);
-        adfGeoTransform[0] = key.getExtent().xMin();
+        resolution = key.extent().width() / ((double)tileSize);
+        adfGeoTransform[0] = key.extent().xMin();
         adfGeoTransform[1] = resolution;
         adfGeoTransform[2] = 0;
-        adfGeoTransform[3] = key.getExtent().yMax();
+        adfGeoTransform[3] = key.extent().yMax();
         adfGeoTransform[4] = 0;
         adfGeoTransform[5] = -resolution;
 
@@ -1827,9 +1827,9 @@ namespace
         if (status.failed())
             return status;
 
-        if (driver->getProfile().valid() && profile != nullptr)
+        if (driver->profile().valid() && profile != nullptr)
         {
-            *profile = driver->getProfile();
+            *profile = driver->profile();
         }
 
         return StatusOK;
@@ -1966,7 +1966,7 @@ GDALImageLayer::createImageImplementation(
             _coverage == true,
             io);
 
-        return GeoImage(image.value, key.getExtent());
+        return GeoImage(image.value, key.extent());
     }
 
     return GeoImage::INVALID;
@@ -2112,7 +2112,7 @@ GDALElevationLayer::createHeightfieldImplementation(
         }
 
         if (heightfield.status.ok())
-            return GeoHeightfield(heightfield.value, key.getExtent());
+            return GeoHeightfield(heightfield.value, key.extent());
         else
             return heightfield.status;
     }

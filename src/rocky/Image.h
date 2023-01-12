@@ -8,7 +8,7 @@
 #include <rocky/Common.h>
 #include <rocky/Math.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class IOOptions;
 
@@ -68,11 +68,6 @@ namespace rocky
 
         //! Destruct and release the data unless it's not owned
         virtual ~Image();
-
-        //! Allocate this image from a stream
-        bool fromStream(
-            std::istream& input,
-            const IOOptions* io) const;
 
         //! Whether this object contains valid data
         inline bool valid() const;

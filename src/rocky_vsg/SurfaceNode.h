@@ -14,7 +14,7 @@
 #include <vsg/vk/State.h>
 #include <vsg/maths/vec3.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class Heightfield;
     class Horizon;
@@ -35,7 +35,6 @@ namespace rocky
         bool isVisible(const dvec3& from) const;
     };
 
-
     /**
      * SurfaceNode holds the geometry and transform information
      * for one terrain tile surface.
@@ -45,7 +44,8 @@ namespace rocky
     {
     public:
         SurfaceNode(
-            const TileKey& tilekey);
+            const TileKey& tilekey,
+            const SRS& worldSRS);
 
         //! Update the elevation raster associated with this tile
         void setElevation(

@@ -12,7 +12,7 @@
 
 #include <vsg/ui/FrameStamp.h>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #define LC "[TileNodeRegistry] "
 
@@ -42,9 +42,9 @@ TileNodeRegistry::setDirty(
     
     for(auto& [key, entry] : _tiles)
     {
-        if (minLevel <= key.getLOD() && 
-            maxLevel >= key.getLOD() &&
-            (!extent.valid() || extent.intersects(key.getExtent())))
+        if (minLevel <= key.levelOfDetail() && 
+            maxLevel >= key.levelOfDetail() &&
+            (!extent.valid() || extent.intersects(key.extent())))
         {
             entry._tile->refreshLayers(manifest);
         }
@@ -200,10 +200,10 @@ TileNodeRegistry::createTile(
 
     // Calculate the visibility range for this tile's children.
     float childrenVisibilityRange = FLT_MAX;
-    if (key.getLOD() < (terrain->selectionInfo->getNumLODs() - 1))
+    if (key.levelOfDetail() < (terrain->selectionInfo->getNumLODs() - 1))
     {
-        auto[tw, th] = key.getProfile().getNumTiles(key.getLOD());
-        TileKey testKey = key.createChildKey((key.getTileY() <= th / 2) ? 0 : 3);
+        auto[tw, th] = key.profile().numTiles(key.levelOfDetail());
+        TileKey testKey = key.createChildKey((key.tileY() <= th / 2) ? 0 : 3);
         childrenVisibilityRange = terrain->selectionInfo->getRange(testKey);
     }
 
@@ -214,6 +214,7 @@ TileNodeRegistry::createTile(
         geometry,
         morphConstants,
         childrenVisibilityRange,
+        terrain->worldSRS,
         terrain->stateFactory->defaultTileDescriptors,
         terrain->tiles->_host);
 
@@ -349,20 +350,20 @@ TileNodeRegistry::requestTileData(
                 auto& layer = model.colorLayers[0];
                 if (layer.image.valid())
                 {
-                    renderModel.color.image = layer.image.getImage();
+                    renderModel.color.image = layer.image.image();
                     renderModel.color.matrix = layer.matrix;
                 }
             }
 
             if (model.elevation.heightfield.valid())
             {
-                renderModel.elevation.image = model.elevation.heightfield.getHeightfield();
+                renderModel.elevation.image = model.elevation.heightfield.heightfield();
                 renderModel.elevation.matrix = model.elevation.matrix;
             }
 
             if (model.normalMap.image.valid())
             {
-                renderModel.normal.image = model.normalMap.image.getImage();
+                renderModel.normal.image = model.normalMap.image.image();
                 renderModel.normal.matrix = model.normalMap.matrix;
             }
 

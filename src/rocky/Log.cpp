@@ -6,7 +6,7 @@
 #include "Log.h"
 #include <iostream>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 LogStream::LogStream(LogThreshold t) :
     _threshold(t),

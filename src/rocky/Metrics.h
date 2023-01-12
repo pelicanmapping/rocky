@@ -6,7 +6,7 @@
 #pragma once
 #include <rocky/Common.h>
 
-namespace rocky { namespace util
+namespace ROCKY_NAMESPACE { namespace util
 {
     class ROCKY_EXPORT Metrics
     {

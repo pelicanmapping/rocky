@@ -28,12 +28,14 @@
 #  define ROCKY_EXPORT
 #endif  
 
+#define ROCKY_NAMESPACE rocky
+
 #include <rocky/optional.h>
 #include <string>
 #include <memory>
 #include <iostream>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     template<class T> using shared_ptr = std::shared_ptr<T>;
     template<class T> using shared_constptr = std::shared_ptr<const T>;
@@ -158,7 +160,7 @@ namespace rocky
 
 #define ROCKY_OPTION_IMPL(CLASS, TYPE, FUNC, OPTION) \
     void CLASS ::set ## FUNC (const TYPE & value) { options(). set_ ## OPTION (value); }\
-    const TYPE & CLASS ::get ## FUNC () const { return options(). OPTION ().get(); }
+    const TYPE & CLASS :: ## OPTION () const { return options(). OPTION ().get(); }
 
 //! property macro
 #define rk_property(TYPE, NAME) \

@@ -7,16 +7,14 @@
 
 #include <rocky/Common.h>
 #include <rocky/GeoExtent.h>
-#include <rocky/Status.h>
-#include <rocky/Threading.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class Image;
     class GeoExtent;
 
     /**
-     * A georeferenced image; i.e. an osg::Image and an associated GeoExtent with SRS.
+     * A georeferenced image; i.e. an Image coupled with a GeoExtent.
      */
     class ROCKY_EXPORT GeoImage
     {
@@ -29,14 +27,8 @@ namespace rocky
         GeoImage(const GeoImage&& rhs) { *this = rhs; }
         GeoImage& operator=(GeoImage&&);
 
-        //! Construct an image with an error status
-        GeoImage(const Status&);
-
         //! Constructs a new goereferenced image.
         GeoImage(shared_ptr<Image> image, const GeoExtent& extent);
-
-        //! Constructs a new goereferenced image from a future.
-        GeoImage(util::Future<shared_ptr<Image>> image, const GeoExtent& extent);
 
         //! Destructor
         virtual ~GeoImage() { }
@@ -47,14 +39,14 @@ namespace rocky
         bool valid() const;
 
         //! Gets a pointer to the underlying OSG image.
-        shared_ptr<Image> getImage() const;
+        shared_ptr<Image> image() const;
 
         //! Gets the geospatial extent of the image.
-        const GeoExtent& getExtent() const;
+        const GeoExtent& extent() const;
 
         //! Shortcut to get the spatial reference system describing
         //! the projection of the image.
-        const SRS& getSRS() const;
+        const SRS& srs() const;
 
         /**
          * Crops the image to a new geospatial extent.
@@ -103,22 +95,11 @@ namespace rocky
         //! Gets the coordinate at the image's s,t
         bool getCoord(int s, int t, double& out_x, double& out_y) const;
 
-        //! Sets a token object in this GeoImage. You can use this to
-        //! keep a weak reference to the object after creating it,
-        //! for example to detect destruction.
-        void setTrackingToken(shared_ptr<Object> token);
-        shared_ptr<Object> getTrackingToken() const;
-
         //! Read the value of a pixel at a geopoint.
-        bool read(
-            fvec4& output,
-            const GeoPoint& p) const;
+        bool read(fvec4& output, const GeoPoint& p) const;
 
     private:
         GeoExtent _extent;
-        Status _status;
-        shared_ptr<Image> _myimage;
-        mutable optional<util::Future<shared_ptr<Image>>> _future;
-        shared_ptr<Object> _token;
+        shared_ptr<Image> _image;
     };
 }

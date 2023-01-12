@@ -5,7 +5,7 @@
  */
 #include "Status.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 const rocky::Status rocky::StatusOK;
 

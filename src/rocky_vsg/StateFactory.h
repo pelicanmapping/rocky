@@ -14,7 +14,7 @@
 #include <vsg/utils/SharedObjects.h>
 #include <vsg/nodes/StateGroup.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class RuntimeContext;
     class TerrainTileNode;

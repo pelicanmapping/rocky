@@ -18,7 +18,7 @@
 #define VERTEX_SKIRT         8 // it's a skirt vertex (bitmask)
 #define VERTEX_CONSTRAINT   16 // part of a non-morphable constraint
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class Map;
     class MeshEditor;
@@ -123,7 +123,7 @@ namespace std {
 }
 
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * Pool of terrain tile geometries.
@@ -142,7 +142,7 @@ namespace rocky
     {
     public:
         //! Construct the geometry pool
-        GeometryPool();
+        GeometryPool(const SRS& worldSRS);
 
         using SharedGeometries = std::unordered_map<
             GeometryKey, vsg::ref_ptr<SharedGeometry>>;
@@ -182,6 +182,7 @@ namespace rocky
         /** Perform an update traversal to check for unused resources. */
         //void traverse(osg::NodeVisitor& nv);
 
+        SRS _worldSRS;
         mutable util::Gate<GeometryKey> _keygate;
         mutable util::Mutex _mutex;
         SharedGeometries _sharedGeometries;

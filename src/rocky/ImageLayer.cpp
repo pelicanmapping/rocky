@@ -16,8 +16,8 @@
 #include "TileKey.h"
 #include <cinttypes>
 
-using namespace rocky;
-using namespace rocky::util;
+using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 #define LC "[ImageLayer] \"" << name().value() << "\" "
 
@@ -511,13 +511,13 @@ ImageLayer::createImageInKeyProfile(
     Result<GeoImage> result;
 
     ROCKY_DEBUG << LC << "create image for \"" << key.str() << "\", ext= "
-        << key.getExtent().toString() << std::endl;
+        << key.extent().toString() << std::endl;
 
     ROCKY_TODO("Caching");
 #if 0
     // the cache key combines the Key and the horizontal profile.
     std::string cacheKey = Cache::makeCacheKey(
-        strings::Stringify() << key.str() << "-" << std::hex << key.getProfile().getHorizSignature(),
+        strings::Stringify() << key.str() << "-" << std::hex << key.profile().getHorizSignature(),
         "image");
 
     // The L2 cache key includes the layer revision of course!
@@ -531,22 +531,22 @@ ImageLayer::createImageInKeyProfile(
         sprintf(memCacheKey, "%d/%s/%s", 
             getRevision(), 
             key.str().c_str(), 
-            key.getProfile().getHorizSignature().c_str());
+            key.profile().getHorizSignature().c_str());
 
         CacheBin* bin = _memCache->getOrCreateDefaultBin();
         ReadResult result = bin->readObject(memCacheKey, 0L);
         if (result.succeeded())
         {
-            return GeoImage(static_cast<osg::Image*>(result.releaseObject()), key.getExtent());
+            return GeoImage(static_cast<osg::Image*>(result.releaseObject()), key.extent());
         }
     }
 
     // locate the cache bin for the target profile for this layer:
-    CacheBin* cacheBin = getCacheBin( key.getProfile() );
+    CacheBin* cacheBin = getCacheBin( key.profile() );
 
     // validate the existance of a valid layer profile (unless we're in cache-only mode, in which
     // case there is no layer profile)
-    if ( !policy.isCacheOnly() && !getProfile() )
+    if ( !policy.isCacheOnly() && !profile() )
     {
         disable("Could not establish a valid profile");
         return GeoImage::INVALID;
@@ -566,7 +566,7 @@ ImageLayer::createImageInKeyProfile(
             if (!expired)
             {
                 ROCKY_DEBUG << "Got cached image for " << key.str() << std::endl;
-                return GeoImage(cachedImage.get(), key.getExtent());
+                return GeoImage(cachedImage.get(), key.extent());
             }
             else
             {
@@ -581,7 +581,7 @@ ImageLayer::createImageInKeyProfile(
         // If it's cache only and we have an expired but cached image, just return it.
         if (cachedImage.valid())
         {
-            return GeoImage( cachedImage.get(), key.getExtent() );
+            return GeoImage( cachedImage.get(), key.extent() );
         }
         else
         {
@@ -590,19 +590,19 @@ ImageLayer::createImageInKeyProfile(
     }
 #endif
 
-    if (key.getProfile().isHorizEquivalentTo(getProfile()))
+    if (key.profile().isHorizEquivalentTo(profile()))
     {
         bool createUpsampledImage = false;
 
         if (upsample() == true &&
-            maxDataLevel() > key.getLOD())
+            maxDataLevel() > key.levelOfDetail())
         {
             TileKey best = getBestAvailableTileKey(key, false);
             if (best.valid())
             {
                 TileKey best_upsampled = getBestAvailableTileKey(key, true);
                 if (best_upsampled.valid() &&
-                    best.getLOD() < best_upsampled.getLOD())
+                    best.levelOfDetail() < best_upsampled.levelOfDetail())
                 {
                     createUpsampledImage = true;
                 }
@@ -649,7 +649,7 @@ ImageLayer::createImageInKeyProfile(
         if (cacheBin        &&
             policy.isCacheWriteable())
         {
-            if ( key.getExtent() != result.getExtent() )
+            if ( key.extent() != result.extent() )
             {
                 ROCKY_INFO << LC << "WARNING! mismatched extents." << std::endl;
             }
@@ -667,7 +667,7 @@ ImageLayer::createImageInKeyProfile(
         if (cachedImage.valid())
         {
             ROCKY_DEBUG << LC << "Using cached but expired image for " << key.str() << std::endl;
-            result = GeoImage( cachedImage.get(), key.getExtent());
+            result = GeoImage( cachedImage.get(), key.extent());
         }
     }
 #endif
@@ -681,7 +681,7 @@ ImageLayer::assembleImage(
     const IOOptions& io) const
 {
     // If we got here, asset that there's a non-null layer profile.
-    if (!getProfile().valid())
+    if (!profile().valid())
     {
         setStatus(Status::Error(Status::AssertionFailure, "assembleImage with undefined profile"));
         return Result(GeoImage::INVALID);
@@ -692,7 +692,7 @@ ImageLayer::assembleImage(
 
 #if 0
     // Scale the extent if necessary to apply an "edge buffer"
-    GeoExtent ext = key.getExtent();
+    GeoExtent ext = key.extent();
     if ( options().edgeBufferRatio().has_value() )
     {
         double ratio = options().edgeBufferRatio().get();
@@ -702,20 +702,20 @@ ImageLayer::assembleImage(
 
     // Get a set of layer tiles that intersect the requested extent.
     std::vector<TileKey> intersectingKeys;
-    key.getIntersectingKeys(getProfile(), intersectingKeys);
-    //getProfile().getIntersectingTiles( key, intersectingKeys );
+    key.getIntersectingKeys(profile(), intersectingKeys);
+    //profile().getIntersectingTiles( key, intersectingKeys );
 
     if ( intersectingKeys.size() > 0 )
     {
 #if 0
-        GeoExtent ee = key.getExtent().transform(intersectingKeys.front().getProfile().getSRS());
+        GeoExtent ee = key.extent().transform(intersectingKeys.front().profile().srs());
         ROCKY_INFO << "Tile " << key.str() << " ... " << ee.toString() << std::endl;
         for (auto key : intersectingKeys) {
-            ROCKY_INFO << " - " << key.str() << " ... " << key.getExtent().toString() << std::endl;
+            ROCKY_INFO << " - " << key.str() << " ... " << key.extent().toString() << std::endl;
         }
 #endif
         double dst_minx, dst_miny, dst_maxx, dst_maxy;
-        key.getExtent().getBounds(dst_minx, dst_miny, dst_maxx, dst_maxy);
+        key.extent().getBounds(dst_minx, dst_miny, dst_maxx, dst_maxy);
 
         // if we find at least one "real" tile in the mosaic, then the whole result tile is
         // "real" (i.e. not a fallback tile)
@@ -727,9 +727,9 @@ ImageLayer::assembleImage(
 
         for(auto& k : intersectingKeys)
         {
-            auto image = createImageInKeyProfile(k, io);
+            auto geoimage = createImageInKeyProfile(k, io);
 
-            if (image.value.valid())
+            if (geoimage->valid())
             {
 #if 0
                 // use std::dynamic_pointer_cast....
@@ -746,7 +746,7 @@ ImageLayer::assembleImage(
                 else
 #endif
                 {
-                    mosaic.getImages().emplace_back(image.value.getImage(), k);
+                    mosaic.getImages().emplace_back(geoimage->image(), k);
                 }
             }
             else
@@ -764,7 +764,7 @@ ImageLayer::assembleImage(
 
         // Fail is: a) we got no data and the LOD is greater than zero; or
         // b) the operation was canceled mid-stream.
-        if ( (mosaic.getImages().empty() && key.getLOD() > 0) || retry)
+        if ( (mosaic.getImages().empty() && key.levelOfDetail() > 0) || retry)
         {
             // if we didn't get any data at LOD>0, fail.
             ROCKY_DEBUG << LC << "Couldn't create image for ImageMosaic " << std::endl;
@@ -795,27 +795,27 @@ ImageLayer::assembleImage(
                     if ( !isCoverage() )
                     {
                         cropped = geoimage.value.crop(
-                            k.getExtent(),
+                            k.extent(),
                             false,
-                            geoimage.value.getImage()->width(),
-                            geoimage.value.getImage()->height() );
+                            geoimage->image()->width(),
+                            geoimage->image()->height() );
                     }
 
                     else
                     {
                         // TODO: may not work.... test; tilekey extent will <> cropped extent
                         cropped = geoimage.value.crop(
-                            k.getExtent(),
+                            k.extent(),
                             true,
-                            geoimage.value.getImage()->width(),
-                            geoimage.value.getImage()->height(),
+                            geoimage->image()->width(),
+                            geoimage->image()->height(),
                             false );
                     }
 
                     if (cropped.status.ok())
                     {
                         // and queue it.
-                        mosaic.getImages().emplace_back(cropped->getImage(), k);
+                        mosaic.getImages().emplace_back(cropped->image(), k);
                     }
 
                 }
@@ -835,7 +835,7 @@ ImageLayer::assembleImage(
 
         mosaicedImage = GeoImage(
             mosaic.createImage(),
-            GeoExtent( getProfile().getSRS(), rxmin, rymin, rxmax, rymax ) );
+            GeoExtent( profile().srs(), rxmin, rymin, rxmax, rymax ) );
     }
     else
     {
@@ -850,10 +850,10 @@ ImageLayer::assembleImage(
         // same (even though extents are different), then this operation is technically not a
         // reprojection but merely a resampling.
 
-        const GeoExtent& extent = key.getExtent();
+        const GeoExtent& extent = key.extent();
 
         result = mosaicedImage.reproject(
-            key.getProfile().getSRS(),
+            key.profile().srs(),
             &extent,
             tileSize(), tileSize(),
             true);
@@ -968,7 +968,7 @@ FutureTexture2D::dispatch() const
     job.setName(Stringify() << key.str() << " " << _layer->getName());
 
     // prioritize higher LOD tiles.
-    job.setPriority(key.getLOD());
+    job.setPriority(key.levelOfDetail());
 
     _result = job.dispatch<GeoImage>(
         [layer_ptr, key](Cancelable* progress) mutable
@@ -1057,7 +1057,7 @@ ImageLayer::createFractalUpsampledImage(
     );
     TileKey parentKey = key.createParentKey();
     dmat4 scale_bias;
-    key.getExtent().createScaleBias(parentKey.getExtent(), scale_bias);
+    key.extent().createScaleBias(parentKey.extent(), scale_bias);
     input.setCenterTileKey(parentKey, scale_bias);
 
     // validate that we have a good metatile.
@@ -1195,6 +1195,6 @@ ImageLayer::createFractalUpsampledImage(
         return GeoImage::INVALID;
     }
 
-    return GeoImage(output.get(), key.getExtent());
+    return GeoImage(output.get(), key.extent());
 }
 #endif

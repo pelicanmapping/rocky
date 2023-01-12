@@ -9,7 +9,7 @@
 #include <rocky/Heightfield.h>
 #include <rocky/GDALLayers.h>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 namespace
 {
@@ -128,10 +128,10 @@ TEST_CASE("Map")
         auto layer = TestLayer::create();
 
         map->addLayer(layer);
-        REQUIRE(map->getNumLayers() == 1);
+        REQUIRE(map->numLayers() == 1);
 
         map->removeLayer(layer);
-        REQUIRE(map->getNumLayers() == 0);
+        REQUIRE(map->numLayers() == 0);
     }
 }
 
@@ -164,6 +164,12 @@ TEST_CASE("Deserialize layer")
 
 TEST_CASE("SRS")
 {
+    // See info messages from the SRS system
+    Instance::log().threshold = LogThreshold::INFO;
+
+    // epsilon
+    const double E = 0.1;
+
     SECTION("spherical-mercator")
     {        
         SRS merc("epsg:3785"); // spherical mercator SRS
@@ -172,7 +178,7 @@ TEST_CASE("SRS")
         REQUIRE(merc.isGeographic() == false);
         REQUIRE(merc.isGeocentric() == false);
 
-        SRS wgs84("epsg:4979"); // geographic 3D WGS84 (long/lat/hae)
+        SRS wgs84("epsg:4326"); // geographic WGS84 (long/lat/hae)
         REQUIRE(wgs84.valid());
         REQUIRE(wgs84.isProjected() == false);
         REQUIRE(wgs84.isGeographic() == true);
@@ -203,7 +209,7 @@ TEST_CASE("SRS")
 
     SECTION("wgs84/ecef")
     {
-        SRS wgs84("epsg:4979"); // geographic 3D WGS84 (long/lat/hae)
+        SRS wgs84("epsg:4326"); // geographic WGS84 (long/lat/hae)
         REQUIRE(wgs84.valid());
         REQUIRE(wgs84.isProjected() == false);
         REQUIRE(wgs84.isGeographic() == true);
@@ -227,13 +233,35 @@ TEST_CASE("SRS")
         REQUIRE(equiv(out, dvec3(0, 0, 0)));
     }
 
+    SECTION("plate-carree")
+    {
+        auto pc = SRS("plate-carree");
+        REQUIRE(pc == SRS::PLATE_CARREE);
+        REQUIRE(pc.isProjected() == true);
+        REQUIRE(pc.isGeographic() == false);
+        REQUIRE(pc.isGeocentric() == false);
+        auto b = pc.bounds();
+        REQUIRE((b.valid() &&
+            equiv(b.xmin, -20037508.342, E) && equiv(b.xmax, 20037508.342, E) &&
+            equiv(b.ymin, -10018754.171, E) && equiv(b.ymax, 10018754.171, E)));
+    }
+
     SECTION("utm")
     {
-        SRS utm("epsg:32632"); // +proj = utm + zone = 32 + datum = WGS84");
-        REQUIRE(utm.valid());
-        REQUIRE(utm.isProjected() == true);
-        REQUIRE(utm.isGeographic() == false);
-        REQUIRE(utm.isGeocentric() == false);
+        SRS utm32N("epsg:32632"); // +proj=utm +zone=32 +datum=WGS84
+        REQUIRE(utm32N.valid());
+        REQUIRE(utm32N.isProjected() == true);
+        REQUIRE(utm32N.isGeographic() == false);
+        REQUIRE(utm32N.isGeocentric() == false);
+        REQUIRE(utm32N.bounds().valid());
+
+        SRS utm32S("+proj=utm +zone=32 +south +datum=WGS84");
+        REQUIRE(utm32S.valid());
+        REQUIRE(utm32S.isProjected() == true);
+        REQUIRE(utm32S.isGeographic() == false);
+        REQUIRE(utm32S.isGeocentric() == false);
+        auto b = utm32S.bounds();
+        REQUIRE((b.valid() && b.xmin == 166000 && b.xmax == 834000 && b.ymin == 1116915 && b.ymax == 10000000));
     }
 
     SECTION("invalid")
@@ -255,7 +283,6 @@ TEST_CASE("SRS")
 
         // Reference: http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm96/intpt.html
         dvec3 out;
-        double epsilon = 0.1;
 
         // geodetic to vdatum:
         {
@@ -263,23 +290,23 @@ TEST_CASE("SRS")
             REQUIRE(xform.valid());
 
             REQUIRE(xform(dvec3(0, 0, 17.16), out));
-            REQUIRE(equiv(out.z, 0.0, epsilon));
+            REQUIRE(equiv(out.z, 0.0, E));
             REQUIRE(xform(dvec3(90, 0, -63.24), out));
-            REQUIRE(equiv(out.z, 0.0, epsilon));
+            REQUIRE(equiv(out.z, 0.0, E));
             REQUIRE(xform(dvec3(180, 0, 21.15), out));
-            REQUIRE(equiv(out.z, 0.0, epsilon));
+            REQUIRE(equiv(out.z, 0.0, E));
             REQUIRE(xform(dvec3(-90, 0, -4.29), out));
-            REQUIRE(equiv(out.z, 0.0, epsilon));
+            REQUIRE(equiv(out.z, 0.0, E));
 
             // inverse
             REQUIRE(xform.inverse(dvec3(0, 0, 0), out));
-            REQUIRE(equiv(out.z, 17.16, epsilon));
+            REQUIRE(equiv(out.z, 17.16, E));
             REQUIRE(xform.inverse(dvec3(90, 0, 0), out));
-            REQUIRE(equiv(out.z, -63.24, epsilon));
+            REQUIRE(equiv(out.z, -63.24, E));
             REQUIRE(xform.inverse(dvec3(180, 0, 0), out));
-            REQUIRE(equiv(out.z, 21.15, epsilon));
+            REQUIRE(equiv(out.z, 21.15, E));
             REQUIRE(xform.inverse(dvec3(-90, 0, 0), out));
-            REQUIRE(equiv(out.z, -4.29, epsilon));
+            REQUIRE(equiv(out.z, -4.29, E));
         }
 
         // vdatum to geodetic:
@@ -288,23 +315,23 @@ TEST_CASE("SRS")
             REQUIRE(xform.valid());
 
             REQUIRE(xform(dvec3(0, 0, 0), out));
-            REQUIRE(equiv(out.z, 17.16, epsilon));
+            REQUIRE(equiv(out.z, 17.16, E));
             REQUIRE(xform(dvec3(90, 0, 0), out));
-            REQUIRE(equiv(out.z, -63.24, epsilon));
+            REQUIRE(equiv(out.z, -63.24, E));
             REQUIRE(xform(dvec3(180, 0, 0), out));
-            REQUIRE(equiv(out.z, 21.15, epsilon));
+            REQUIRE(equiv(out.z, 21.15, E));
             REQUIRE(xform(dvec3(-90, 0, 0), out));
-            REQUIRE(equiv(out.z, -4.29, epsilon));
+            REQUIRE(equiv(out.z, -4.29, E));
 
             // inverse
             REQUIRE(xform.inverse(dvec3(0, 0, 17.16), out));
-            REQUIRE(equiv(out.z, 0.0, epsilon));
+            REQUIRE(equiv(out.z, 0.0, E));
             REQUIRE(xform.inverse(dvec3(90, 0, -63.24), out));
-            REQUIRE(equiv(out.z, 0.0, epsilon));
+            REQUIRE(equiv(out.z, 0.0, E));
             REQUIRE(xform.inverse(dvec3(180, 0, 21.15), out));
-            REQUIRE(equiv(out.z, 0.0, epsilon));
+            REQUIRE(equiv(out.z, 0.0, E));
             REQUIRE(xform.inverse(dvec3(-90, 0, -4.29), out));
-            REQUIRE(equiv(out.z, 0.0, epsilon));
+            REQUIRE(equiv(out.z, 0.0, E));
         }
 
         // vdatum to vdatum (noop)
@@ -314,7 +341,7 @@ TEST_CASE("SRS")
 
             dvec3 out;
             REQUIRE(xform(dvec3(0, 0, 17.16), out));
-            REQUIRE(equiv(out.z, 17.16, epsilon));
+            REQUIRE(equiv(out.z, 17.16, E));
         }
     }
 
@@ -328,10 +355,10 @@ TEST_CASE("SRS")
         REQUIRE(equiv(b.ymax, 90.0));
 
         b = SRS::SPHERICAL_MERCATOR.bounds();
-        REQUIRE(equiv(b.xmin, -20037508.342789244));
-        REQUIRE(equiv(b.xmax, 20037508.342789244));
-        REQUIRE(equiv(b.ymin, -20048966.104014594));
-        REQUIRE(equiv(b.ymax, 20048966.104014594));
+        REQUIRE(equiv(b.xmin, -20037508.342789244, E));
+        REQUIRE(equiv(b.xmax, 20037508.342789244, E));
+        REQUIRE(equiv(b.ymin, -20048966.104014594, E));
+        REQUIRE(equiv(b.ymax, 20048966.104014594, E));
 
         auto ellipsoid = SRS::WGS84.ellipsoid();
         REQUIRE(ellipsoid.semiMajorAxis() == 6378137.0);
@@ -345,24 +372,37 @@ TEST_CASE("SRS")
 
     SECTION("multithreading")
     {
-        std::vector<std::thread> threads;
+        // tests the fact that SRS are thread-specific
+        auto function = []()
+        {
+            SRS a("wgs84");
+            SRS b("spherical-mercator");
+            auto xform = a.to(b);
+            dvec3 out;
+            REQUIRE(xform(dvec3(-180, 0, 0), out));
+            REQUIRE(equiv(out, dvec3(-20037508.34278925, 0, 0)));
+        };
 
+        std::vector<std::thread> threads;
         for (unsigned i = 0; i < 12; ++i)
         {
-            threads.emplace_back([]()
-                {
-                    SRS a("wgs84");
-                    SRS b("spherical-mercator");
-                    auto xform = a.to(b);
-                    dvec3 out;
-                    REQUIRE(xform(dvec3(-180, 0, 0), out));
-                    REQUIRE(equiv(out, dvec3(-20037508.34278925, 0, 0)));
-                });
+            threads.emplace_back(function);
         }
 
         for (auto& t : threads)
             t.join();
 
         // REQUIRE no crash :)
+    }
+
+    SECTION("profiles")
+    {
+        Profile GG("global-geodetic");
+        REQUIRE(GG.valid());
+        REQUIRE(GG.srs() == SRS::WGS84);
+
+        Profile SM("spherical-mercator");
+        REQUIRE(SM.valid());
+        REQUIRE(SM.srs() == SRS::SPHERICAL_MERCATOR);
     }
 }

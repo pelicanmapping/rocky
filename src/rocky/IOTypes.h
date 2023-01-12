@@ -14,7 +14,7 @@
 /**
  * A collection of types used by the various I/O systems.
  */
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class IOOptions;
     class Image;

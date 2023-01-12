@@ -9,7 +9,7 @@
 #include <rocky/GeoExtent.h>
 #include <rocky/Heightfield.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * A georeferenced heightfield
@@ -79,24 +79,24 @@ namespace rocky
             Image::Interpolation interpolation) const;
 
         //! Gets the geospatial extent of the heightfield.
-        const GeoExtent& getExtent() const;
+        const GeoExtent& extent() const;
 
         //! The minimum height in the heightfield
-        float getMinHeight() const { return _minHeight; }
+        float minHeight() const { return _minHeight; }
 
         //! The maximum height in the heightfield
-        float getMaxHeight() const { return _maxHeight; }
+        float maxHeight() const { return _maxHeight; }
 
         //! Gets a pointer to the underlying OSG heightfield.
-        shared_ptr<Heightfield> getHeightfield() const {
+        shared_ptr<Heightfield> heightfield() const {
             return _hf;
         }
 
         //! Gets the X interval of this GeoHeightField
-        inline dvec2 getResolution() const;
+        inline dvec2 resolution() const;
 
         //! Gets the height at a geographic location (in this object's SRS)
-        float getHeightAtLocation(
+        float heightAtLocation(
             double x, double y,
             Image::Interpolation interp = Image::BILINEAR) const;
 
@@ -105,7 +105,7 @@ namespace rocky
         {
             inline bool operator() (const GeoHeightfield& lhs, const GeoHeightfield& rhs) const
             {
-                return lhs.getResolution().x < rhs.getResolution().x;
+                return lhs.resolution().x < rhs.resolution().x;
             }
         };
 
@@ -123,7 +123,7 @@ namespace rocky
     //    return _hf;
     //}
 
-    inline dvec2 GeoHeightfield::getResolution() const {
+    inline dvec2 GeoHeightfield::resolution() const {
         return _resolution;
     }
 }

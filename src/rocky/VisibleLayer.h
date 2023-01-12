@@ -6,7 +6,7 @@
 #pragma once
 #include <rocky/Layer.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     enum ColorBlending
     {

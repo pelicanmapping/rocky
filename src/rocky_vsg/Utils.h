@@ -12,7 +12,7 @@
 #include <vsg/maths/mat4.h>
 #include <vsg/vk/State.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     inline fvec3 to_glm(const vsg::vec3& a) {
         return fvec3(a.x, a.y, a.z);

@@ -24,7 +24,7 @@
 // uncomment to activate mutex contention tracking when profiling
 // #define ROCKY_MUTEX_CONTENTION_TRACKING
 
-namespace rocky { namespace util
+namespace ROCKY_NAMESPACE { namespace util
 {
     //! C++ BasicLockable requirement
     class BasicLockable

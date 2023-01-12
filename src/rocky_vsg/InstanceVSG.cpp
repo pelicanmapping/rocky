@@ -13,7 +13,7 @@
 #include <vsgXchange/all.h>
 #endif
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 InstanceVSG::InstanceVSG() :
     Inherit()

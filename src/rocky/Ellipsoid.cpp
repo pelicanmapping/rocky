@@ -7,7 +7,7 @@
 #include "Notify.h"
 #include "Math.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 // https://en.wikipedia.org/wiki/World_Geodetic_System
 #define WGS84_RADIUS_EQUATOR 6378137.0

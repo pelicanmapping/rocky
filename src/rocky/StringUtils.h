@@ -24,7 +24,7 @@
 
 class TiXmlDocument;
 
-namespace rocky { namespace util
+namespace ROCKY_NAMESPACE { namespace util
 {
     extern ROCKY_EXPORT const std::string EMPTY_STRING;
 

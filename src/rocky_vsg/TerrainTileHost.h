@@ -7,7 +7,7 @@
 
 #include <vsg/app/RecordTraversal.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class TerrainTileNode;
 

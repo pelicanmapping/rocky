@@ -20,7 +20,7 @@
 #include <vsg/state/Sampler.h>
 #include <vsg/state/ImageInfo.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class CreateTileManifest;
     class SurfaceNode;
@@ -119,6 +119,7 @@ namespace rocky
             vsg::ref_ptr<vsg::Node> geometry,
             const fvec2& morphConstants,
             float childrenVisibilityRange,
+            const SRS& worldSRS,
             const TerrainTileDescriptors& initialDescriptorModel,
             TerrainTileHost* in_host);
 

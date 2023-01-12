@@ -9,7 +9,7 @@
 #include <rocky/Profile.h>
 #include <rocky/TileKey.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * Local Tangent Plane SRS.

@@ -2,7 +2,7 @@
 #include "Heightfield.h"
 #include "Math.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #define LC "[GeoHeightfield] "
 
@@ -81,7 +81,7 @@ GeoHeightfield::init()
 }
 
 float
-GeoHeightfield::getHeightAtLocation(
+GeoHeightfield::heightAtLocation(
     double x,
     double y,
     Image::Interpolation interpolation) const
@@ -100,7 +100,7 @@ GeoHeightfield::getElevation(
     dvec3& in_out_point,
     Image::Interpolation interp) const
 {
-    const SRS& localSRS = _extent.getSRS();
+    const SRS& localSRS = _extent.srs();
 
     dvec3 local;
 
@@ -125,7 +125,7 @@ GeoHeightfield::getElevation(
     if (_extent.contains(local.x, local.y))
     {
         // sample the heightfield at the input coordinates:
-        local.z = getHeightAtLocation(local.x, local.y, interp);
+        local.z = heightAtLocation(local.x, local.y, interp);
 
         if (xform.valid())
             xform.inverse(local, in_out_point);
@@ -182,7 +182,7 @@ GeoHeightfield::createSubSample(
 }
 
 const GeoExtent&
-GeoHeightfield::getExtent() const
+GeoHeightfield::extent() const
 {
     return _extent;
 }

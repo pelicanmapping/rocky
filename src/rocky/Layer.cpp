@@ -6,7 +6,7 @@
 #include "Layer.h"
 #include "GeoExtent.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #define LC "[Layer] \"" << getName() << "\" "
 
@@ -547,7 +547,7 @@ Layer::getCullCallback() const
 #endif
 
 const GeoExtent&
-Layer::getExtent() const
+Layer::extent() const
 {
     static GeoExtent s_invalid;
     return s_invalid;

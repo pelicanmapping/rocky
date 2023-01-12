@@ -13,9 +13,10 @@
 #undef LC
 #define LC "[GeometryPool] "
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
-GeometryPool::GeometryPool() :
+GeometryPool::GeometryPool(const SRS& worldSRS) :
+    _worldSRS(worldSRS),
     _enabled(true),
     _debug(false),
     _mutex("GeometryPool"),
@@ -112,8 +113,8 @@ GeometryPool::createKeyForTileKey(
     unsigned tileSize,
     GeometryKey& out) const
 {
-    out.lod  = tileKey.getLOD();
-    out.tileY = tileKey.getProfile().getSRS().isGeographic()? tileKey.getTileY() : 0;
+    out.lod  = tileKey.levelOfDetail();
+    out.tileY = tileKey.profile().srs().isGeographic()? tileKey.tileY() : 0;
     out.size = tileSize;
 }
 
@@ -230,8 +231,8 @@ namespace
         //dmat4 _inverse{ 1 };
 
         Locator(const GeoExtent& extent) :
-            _isGeographic(extent.getSRS().isGeographic()),
-            _ellipsoid(extent.getSRS().ellipsoid())
+            _isGeographic(extent.srs().isGeographic()),
+            _ellipsoid(extent.srs().ellipsoid())
         {
             //_xform = glm::translate(dmat4(1), dvec3(extent.xmin(), extent.ymin(), 0));
             //_xform = glm::scale(_xform, dvec3(extent.width(), extent.height(), 1));
@@ -259,6 +260,33 @@ namespace
             return world;
         }
     };
+
+    struct Locator2
+    {
+        GeoExtent tile_extent;
+        Ellipsoid ellipsoid;
+        SRSTransform tile_to_world;
+
+        Locator2(const GeoExtent& extent, const SRS& worldSRS)
+        {
+            tile_extent = extent;
+            tile_to_world = tile_extent.srs().to(worldSRS);
+        }
+
+        inline dvec3 unitToWorld(const dvec3& unit) const
+        {
+            // unit to tile:
+            dvec3 tile(
+                unit.x * tile_extent.width() + tile_extent.xmin(),
+                unit.y * tile_extent.height() + tile_extent.ymin(),
+                unit.z);
+
+            dvec3 world;
+            tile_to_world(tile, world);
+
+            return world;
+        }
+    };
 }
 
 vsg::ref_ptr<SharedGeometry>
@@ -269,15 +297,9 @@ GeometryPool::createGeometry(
     Cancelable* progress) const
 {
     // Establish a local reference frame for the tile:
-    GeoPoint centroid = tileKey.getExtent().getCentroid();
-
-    dmat4 world2local = glm::inverse(
-        centroid.getSRS().localToWorldMatrix(centroid.to_dvec3()));
-
-    //dvec3 centerWorld;
-    //centroid.toWorld( centerWorld );
-    //dmat4 world2local;
-    //centroid.createWorldToLocal(world2local);
+    GeoPoint centroid = tileKey.extent().getCentroid();
+    centroid.transformInPlace(_worldSRS);
+    dmat4 world2local = glm::inverse(_worldSRS.localToWorldMatrix(centroid.to_dvec3()));
 
     // Attempt to calculate the number of verts in the surface geometry.
     bool needsSkirt = settings.skirtRatio > 0.0f;
@@ -329,7 +351,8 @@ GeometryPool::createGeometry(
         dvec3 world_plus_one;
         dvec3 normal;
 
-        Locator locator(tileKey.getExtent());
+        //Locator locator(tileKey.extent());
+        Locator2 locator(tileKey.extent(), _worldSRS);
 
         for (unsigned row = 0; row < tileSize; ++row)
         {

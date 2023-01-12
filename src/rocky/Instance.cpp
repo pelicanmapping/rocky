@@ -10,7 +10,9 @@
 
 #include "GDALLayers.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
+
+Log Instance::_log;
 
 Instance::Instance()
 {
@@ -22,6 +24,7 @@ Instance::Instance()
 
     OGRRegisterAll();
     GDALAllRegister();
+
 
 #ifdef ROCKY_USE_UTF8_FILENAME
     CPLSetConfigOption("GDAL_FILENAME_IS_UTF8", "YES");

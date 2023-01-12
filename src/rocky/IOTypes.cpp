@@ -5,7 +5,7 @@
  */
 #include "IOTypes.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 const std::string IOMetadata::CONTENT_TYPE = "Content-Type";
 

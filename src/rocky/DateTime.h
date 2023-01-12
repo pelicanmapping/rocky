@@ -12,7 +12,7 @@
 #include <string>
 #include <chrono>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /** Basic timestamp (seconds from the 1970 epoch) */
     using TimeStamp = ::time_t;
@@ -148,5 +148,5 @@ namespace rocky
         }
         return false;
     }
-} // namespace rocky
+} // namespace ROCKY_NAMESPACE
 

@@ -28,7 +28,7 @@
 #define TILE_BUFFER_NAME "terrain_tile"
 #define TILE_BUFFER_BINDING 13
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 StateFactory::StateFactory()
 {

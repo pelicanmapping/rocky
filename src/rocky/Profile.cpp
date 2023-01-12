@@ -7,7 +7,7 @@
 #include "TileKey.h"
 #include "Math.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #define LC "[Profile] "
 
@@ -284,9 +284,9 @@ Profile::getConfig() const
         }
         else
         {
-            conf.set("srs", getSRS().definition());
-            if (!getSRS().vertical().empty())
-                conf.set("vdatum", getSRS().vertical());
+            conf.set("srs", srs().definition());
+            if (!srs().vertical().empty())
+                conf.set("vdatum", srs().vertical());
             conf.set("xmin", _shared->_extent.xmin());
             conf.set("ymin", _shared->_extent.ymin());
             conf.set("xmax", _shared->_extent.xmax());
@@ -356,24 +356,24 @@ Profile::valid() const {
 }
 
 const SRS&
-Profile::getSRS() const {
-    return _shared->_extent.getSRS();
+Profile::srs() const {
+    return _shared->_extent.srs();
 }
 
 const GeoExtent&
-Profile::getExtent() const {
+Profile::extent() const {
     return _shared->_extent;
 }
 
 const GeoExtent&
-Profile::getLatLongExtent() const {
+Profile::latLongExtent() const {
     return _shared->_latlong_extent;
 }
 
 std::string
 Profile::toString() const
 {
-    auto srs = _shared->_extent.getSRS();
+    auto srs = _shared->_extent.srs();
     return util::make_string()
         << std::setprecision(16)
         << "[srs=" << srs.name() << ", min=" << _shared->_extent.xMin() << "," << _shared->_extent.yMin()
@@ -394,8 +394,8 @@ Profile::toProfileOptions() const
     }
     else
     {
-        op.srsString() = getSRS().getHorizInitString();
-        op.vsrsString() = getSRS().getVertInitString();
+        op.srsString() = srs().getHorizInitString();
+        op.vsrsString() = srs().getVertInitString();
         op.bounds()->xmin = _extent.xMin();
         op.bounds()->ymin = _extent.yMin();
         op.bounds()->xmax = _extent.xMax();
@@ -434,7 +434,7 @@ Profile::getAllKeysAtLOD(
 
     out_keys.clear();
 
-    auto[tx, ty] = profile.getNumTiles(lod);
+    auto[tx, ty] = profile.numTiles(lod);
 
     for (unsigned c = 0; c < tx; ++c)
     {
@@ -448,14 +448,14 @@ Profile::getAllKeysAtLOD(
 GeoExtent
 Profile::calculateExtent(unsigned lod, unsigned tileX, unsigned tileY) const
 {
-    auto [width, height] = getTileDimensions(lod);
+    auto [width, height] = tileDimensions(lod);
 
-    double xmin = getExtent().xMin() + (width * (double)tileX);
-    double ymax = getExtent().yMax() - (height * (double)tileY);
+    double xmin = extent().xMin() + (width * (double)tileX);
+    double ymax = extent().yMax() - (height * (double)tileY);
     double xmax = xmin + width;
     double ymin = ymax - height;
 
-    return GeoExtent(getSRS(), xmin, ymin, xmax, ymax);
+    return GeoExtent(srs(), xmin, ymin, xmax, ymax);
 }
 
 bool
@@ -471,7 +471,7 @@ Profile::isHorizEquivalentTo(const Profile& rhs) const
 }
 
 std::pair<double,double>
-Profile::getTileDimensions(unsigned int lod) const
+Profile::tileDimensions(unsigned int lod) const
 {
     double out_width  = _shared->_extent.width() / (double)_shared->_numTilesWideAtLod0;
     double out_height = _shared->_extent.height() / (double)_shared->_numTilesHighAtLod0;
@@ -484,7 +484,7 @@ Profile::getTileDimensions(unsigned int lod) const
 }
 
 std::pair<unsigned, unsigned>
-Profile::getNumTiles(unsigned lod) const
+Profile::numTiles(unsigned lod) const
 {
     unsigned out_tiles_wide = _shared->_numTilesWideAtLod0;
     unsigned out_tiles_high = _shared->_numTilesHighAtLod0;
@@ -524,23 +524,23 @@ Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) cons
 
     if (input.isWholeEarth())
     {
-        if (out_clamped && !getExtent().isWholeEarth())
+        if (out_clamped && !extent().isWholeEarth())
             *out_clamped = true;
-        return getExtent();
+        return extent();
     }
 
     // begin by transforming the input extent to this profile's SRS.
-    GeoExtent inputInMySRS = input.transform(getSRS());
+    GeoExtent inputInMySRS = input.transform(srs());
 
     if (inputInMySRS.valid())
     {
         // Compute the intersection of the two:
-        GeoExtent intersection = inputInMySRS.intersectionSameSRS(getExtent());
+        GeoExtent intersection = inputInMySRS.intersectionSameSRS(extent());
 
         // expose whether clamping took place:
         if (out_clamped != 0L)
         {
-            *out_clamped = intersection != getExtent();
+            *out_clamped = intersection != extent();
         }
 
         return intersection;
@@ -550,11 +550,11 @@ Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) cons
     {
         // The extent transformation failed, probably due to an out-of-bounds condition.
         // Go to Plan B: attempt the operation in lat/long
-        auto geo_srs = getSRS().geoSRS();
+        auto geo_srs = srs().geoSRS();
 
         // get the input in lat/long:
         GeoExtent gcs_input =
-            input.getSRS().isGeographic() ?
+            input.srs().isGeographic() ?
             input :
             input.transform(geo_srs);
 
@@ -568,7 +568,7 @@ Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) cons
 
         // clamp it to the profile's extents:
         GeoExtent clamped_gcs_input = GeoExtent(
-            gcs_input.getSRS(),
+            gcs_input.srs(),
             clamp(gcs_input.xMin(), _shared->_latlong_extent.xMin(), _shared->_latlong_extent.xMax()),
             clamp(gcs_input.yMin(), _shared->_latlong_extent.yMin(), _shared->_latlong_extent.yMax()),
             clamp(gcs_input.xMax(), _shared->_latlong_extent.xMin(), _shared->_latlong_extent.xMax()),
@@ -579,9 +579,9 @@ Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) cons
 
         // finally, transform the clamped extent into this profile's SRS and return it.
         GeoExtent result =
-            clamped_gcs_input.getSRS().isEquivalentTo(this->getSRS()) ?
+            clamped_gcs_input.srs().isEquivalentTo(this->srs()) ?
             clamped_gcs_input :
-            clamped_gcs_input.transform(this->getSRS());
+            clamped_gcs_input.transform(this->srs());
 
         if (!result.valid())
         {
@@ -612,7 +612,7 @@ Profile::getEquivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
         return rhsLOD;
     }
 
-    auto[rhsWidth, rhsHeight] = rhsProfile.getTileDimensions(rhsLOD);
+    auto[rhsWidth, rhsHeight] = rhsProfile.tileDimensions(rhsLOD);
 
     // safety catch
     if (equiv(rhsWidth, 0.0) || equiv(rhsHeight, 0.0))
@@ -621,9 +621,9 @@ Profile::getEquivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
         return rhsLOD;
     }
 
-    auto rhsSRS = rhsProfile.getSRS();
-    double rhsTargetHeight = rhsSRS.units().convertTo(getSRS().units(), rhsHeight);
-//    double rhsTargetHeight = rhsSRS.transformUnits(rhsHeight, getSRS());
+    auto rhsSRS = rhsProfile.srs();
+    double rhsTargetHeight = rhsSRS.units().convertTo(srs().units(), rhsHeight);
+//    double rhsTargetHeight = rhsSRS.transformUnits(rhsHeight, srs());
 
     int currLOD = 0;
     int destLOD = currLOD;
@@ -636,7 +636,7 @@ Profile::getEquivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
     {
         double prevDelta = delta;
 
-        auto[w, h] = getTileDimensions(currLOD);
+        auto[w, h] = tileDimensions(currLOD);
 
         delta = fabs(h - rhsTargetHeight);
         if (delta < prevDelta)
@@ -655,7 +655,7 @@ Profile::getEquivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
 }
 
 unsigned
-Profile::getLOD(double height) const
+Profile::levelOfDetail(double height) const
 {
     int currLOD = 0;
     int destLOD = currLOD;
@@ -667,7 +667,7 @@ Profile::getLOD(double height) const
     {
         double prevDelta = delta;
 
-        auto[w, h] = getTileDimensions(currLOD);
+        auto[w, h] = tileDimensions(currLOD);
 
         delta = fabs(h - height);
         if (delta < prevDelta)
@@ -695,7 +695,7 @@ Profile::transformAndExtractContiguousExtents(
     GeoExtent target_extent = input;
 
     // reproject into the profile's SRS if necessary:
-    if (!getSRS().isHorizEquivalentTo(input.getSRS()))
+    if (!srs().isHorizEquivalentTo(input.srs()))
     {
         // localize the extents and clamp them to legal values
         target_extent = clampAndTransformExtent(input);

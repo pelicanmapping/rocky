@@ -9,7 +9,7 @@
 #include <rocky/GeoExtent.h>
 #include <rocky/Units.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * An equipotential surface representing a gravitational model of the

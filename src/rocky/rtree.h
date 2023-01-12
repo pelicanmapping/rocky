@@ -1716,7 +1716,7 @@ std::vector<typename RTREE_QUAL::Rect> RTREE_QUAL::ListTree() const
 #include <unordered_set>
 #include <queue>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
 //
 // RTree.h

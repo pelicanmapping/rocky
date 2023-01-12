@@ -13,7 +13,7 @@ int usage(const char* msg)
     return -1;
 }
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     //! Simplest possible image layer.
     struct TestLayer : public Inherit<ImageLayer, TestLayer>
@@ -25,15 +25,12 @@ namespace rocky
             auto image = io.services().readImage("D:/data/images/BENDER.png", io);
 
             if (image.status.ok())
-                return GeoImage(image.value, key.getExtent());
+                return GeoImage(image.value, key.extent());
             else
                 return image.status;
         }
     };
 }
-
-#include <thread>
-#include <rocky/SRS.h>
 
 int main(int argc, char** argv)
 {
@@ -79,20 +76,20 @@ int main(int argc, char** argv)
     mapNode->runtime.compiler = [viewer]() { return viewer->compileManager; };
     mapNode->runtime.updates = [viewer]() { return viewer->updateOperations; };
     mapNode->runtime.sharedObjects = vsg::SharedObjects::create();
-    mapNode->runtime.loaders = vsg::OperationThreads::create(mapNode->getTerrainNode()->concurrency);
+    mapNode->runtime.loaders = vsg::OperationThreads::create(mapNode->terrainNode()->concurrency);
 
 #if 1
     auto layer = rocky::GDALImageLayer::create();
     layer->setURI("D:/data/imagery/world.tif");
     //layer->setURI("D:/data/naturalearth/raster-10m/HYP_HR/HYP_HR.tif");
-    mapNode->getMap()->addLayer(layer);
+    mapNode->map()->addLayer(layer);
 
     if (layer->status().failed())
         rk->log().warn << layer->status().message << std::endl;
 
 #else
     auto layer = rocky::TestLayer::create();
-    mapNode->getMap()->addLayer(layer);
+    mapNode->map()->addLayer(layer);
 #endif
 
     vsg_scene->addChild(mapNode);

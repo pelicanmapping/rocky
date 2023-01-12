@@ -9,7 +9,7 @@
 #include <rocky/TileKey.h>
 #include <vector>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * SelectionInfo is a data structure that holds the LOD distance switching
@@ -44,7 +44,7 @@ namespace rocky
         }
 
         //! Visibility and morphing information for a specific LOD
-        const LOD& getLOD(unsigned lod) const;
+        const LOD& levelOfDetail(unsigned lod) const;
 
         //! Fetch the effective visibility range and morphing range for a key
         void get(
@@ -56,8 +56,8 @@ namespace rocky
         //! Get just the visibility range for a TileKey.
         //! inlined for speed (SL measured)
         inline float getRange(const TileKey& key) const {
-            const LOD& lod = _lods[key.getLOD()];
-            if (key.getTileY() >= lod._minValidTY && key.getTileY() <= lod._maxValidTY)
+            const LOD& lod = _lods[key.levelOfDetail()];
+            if (key.tileY() >= lod._minValidTY && key.tileY() <= lod._maxValidTY)
             {
                 return lod._visibilityRange;
             }

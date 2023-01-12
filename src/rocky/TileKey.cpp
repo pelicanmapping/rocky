@@ -7,7 +7,7 @@
 #include "Math.h"
 #include "GeoPoint.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 TileKey TileKey::INVALID(0, 0, 0, Profile());
 
@@ -35,24 +35,24 @@ TileKey::rehash()
 }
 
 const Profile&
-TileKey::getProfile() const
+TileKey::profile() const
 {
     return _profile;
 }
 
 const GeoExtent
-TileKey::getExtent() const
+TileKey::extent() const
 {
     if (!valid())
         return GeoExtent::INVALID;
 
-    auto[width, height] = _profile.getTileDimensions(_lod);
-    double xmin = _profile.getExtent().xMin() + (width * (double)_x);
-    double ymax = _profile.getExtent().yMax() - (height * (double)_y);
+    auto[width, height] = _profile.tileDimensions(_lod);
+    double xmin = _profile.extent().xMin() + (width * (double)_x);
+    double ymax = _profile.extent().yMax() - (height * (double)_y);
     double xmax = xmin + width;
     double ymin = ymax - height;
 
-    return GeoExtent( _profile.getSRS(), xmin, ymin, xmax, ymax );
+    return GeoExtent( _profile.srs(), xmin, ymin, xmax, ymax );
 }
 
 const std::string
@@ -82,9 +82,9 @@ TileKey::getQuadrant() const
 }
 
 std::pair<double, double>
-TileKey::getResolution(unsigned tileSize) const
+TileKey::getResolutionForTileSize(unsigned tileSize) const
 {
-    auto [width, height] = _profile.getTileDimensions(_lod);
+    auto [width, height] = _profile.tileDimensions(_lod);
 
     return std::make_pair(
         width/(double)(tileSize-1),
@@ -162,7 +162,7 @@ TileKey::createNeighborKey( int xoffset, int yoffset ) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(valid(), TileKey::INVALID);
 
-    auto[tx, ty] = getProfile().getNumTiles(_lod);
+    auto[tx, ty] = profile().numTiles(_lod);
 
     int sx = (int)_x + xoffset;
     unsigned x =
@@ -187,14 +187,14 @@ TileKey::mapResolution(unsigned targetSize,
                        unsigned minimumLOD) const
 {
     // This only works when falling back; i.e. targetSize is smaller than sourceSize.
-    if ( getLOD() == 0 || targetSize >= sourceSize )
+    if (levelOfDetail() == 0 || targetSize >= sourceSize )
         return *this;
 
     // Minimum target tile size.
     if ( targetSize < 2 )
         targetSize = 2;
 
-    int lod = (int)getLOD();
+    int lod = (int)levelOfDetail();
     int targetSizePOT = nextPowerOf2((int)targetSize);
 
     while(true)
@@ -223,11 +223,11 @@ TileKey::createTileKeyContainingPoint(
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(profile.valid(), TileKey::INVALID);
 
-    auto& extent = profile.getExtent();
+    auto& extent = profile.extent();
 
     if (extent.contains(x, y))
     {
-        auto [tilesX, tilesY] = profile.getNumTiles(level);
+        auto [tilesX, tilesY] = profile.numTiles(level);
         //unsigned tilesX = _numTilesWideAtLod0 * (1 << (unsigned)level);
         //unsigned tilesY = _numTilesHighAtLod0 * (1 << (unsigned)level);
 
@@ -261,15 +261,16 @@ TileKey::createTileKeyContainingPoint(
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(point.valid() && profile.valid(), TileKey::INVALID);
 
-    if (point.getSRS().isHorizEquivalentTo(profile.getSRS()))
+    if (point.srs().isHorizEquivalentTo(profile.srs()))
     {
         return createTileKeyContainingPoint(
             point.x(), point.y(), level, profile);
     }
     else
     {
-        return createTileKeyContainingPoint(
-            point.transform(profile.getSRS()), level, profile);
+        GeoPoint c;
+        point.transform(profile.srs(), c);
+        return createTileKeyContainingPoint(c, level, profile);
     }
 }
 
@@ -289,9 +290,9 @@ namespace
         int tileMinX, tileMaxX;
         int tileMinY, tileMaxY;
 
-        auto [destTileWidth, destTileHeight] = target_profile.getTileDimensions(localLOD);
+        auto [destTileWidth, destTileHeight] = target_profile.tileDimensions(localLOD);
 
-        auto profile_extent = target_profile.getExtent();
+        auto profile_extent = target_profile.extent();
 
         double west = key_ext.xMin() - profile_extent.xMin();
         double east = key_ext.xMax() - profile_extent.xMin();
@@ -320,7 +321,7 @@ namespace
         if (tileMaxX < tileMinX)
             tileMaxX = tileMinX;
 
-        auto[numWide, numHigh] = target_profile.getNumTiles(localLOD);
+        auto[numWide, numHigh] = target_profile.numTiles(localLOD);
 
         // bail out if the tiles are out of bounds.
         if (tileMinX >= (int)numWide || tileMinY >= (int)numHigh ||
@@ -355,7 +356,7 @@ TileKey::getIntersectingKeys(
     ROCKY_SOFT_ASSERT_AND_RETURN(valid(), void());
 
     //If the profiles are exactly equal, just add the given tile key.
-    if (getProfile().isHorizEquivalentTo(target_profile))
+    if (profile().isHorizEquivalentTo(target_profile))
     {
         //Clear the incoming list
         out_intersectingKeys.clear();
@@ -365,8 +366,8 @@ TileKey::getIntersectingKeys(
     {
         // figure out which LOD in the local profile is a best match for the LOD
         // in the source LOD in terms of resolution.
-        unsigned target_LOD = target_profile.getEquivalentLOD(getProfile(), getLOD());
-        getIntersectingKeys(getExtent(), target_LOD, target_profile, out_intersectingKeys);
+        unsigned target_LOD = target_profile.getEquivalentLOD(profile(), levelOfDetail());
+        getIntersectingKeys(extent(), target_LOD, target_profile, out_intersectingKeys);
         //ROCKY_DEBUG << LC << "GIT, key=" << key.str() << ", localLOD=" << localLOD
         //    << ", resulted in " << out_intersectingKeys.size() << " tiles" << std::endl;
     }
@@ -394,7 +395,7 @@ TileKey::getIntersectingKeys(
 
 #if 0
     // reproject into the profile's SRS if necessary:
-    if (!target_profile->getSRS().isHorizEquivalentTo(extent.getSRS().get()))
+    if (!target_profile->srs().isHorizEquivalentTo(extent.srs().get()))
     {
         // localize the extents and clamp them to legal values
         target_extent = target_profile->clampAndTransformExtent(extent);

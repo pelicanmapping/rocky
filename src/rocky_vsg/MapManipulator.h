@@ -20,15 +20,15 @@
 namespace vsg
 {
     class Window;
-    class View;
 }
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class MapNode;
 
     /**
-     * A programmable manipulator suitable for use with geospatial terrains
+     * Programmable event handler that lets you control a camera using input devices,
+     * designed for use with a geospatial display (2D map or 3D globe).
      */
     class ROCKY_VSG_EXPORT MapManipulator : public vsg::Inherit<vsg::Visitor, MapManipulator>
     {

@@ -8,7 +8,7 @@
 #include "VisibleLayer.h"
 #include <tuple>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #define LC "[Map] "
 
@@ -112,7 +112,7 @@ Map::construct(const Config& conf, const IOOptions& io)
     //if (options().profile().has_value())
     //    setProfile(Profile::create(options().profile().get()));
 
-    //if (getProfile() == nullptr)
+    //if (profile() == nullptr)
     //    setProfile(Profile::create(Profile::GLOBAL_GEODETIC));
 
 #if 0
@@ -174,7 +174,7 @@ Map::construct(const Config& conf, const IOOptions& io)
         setProfile(Profile(conf.child("profile"))); 
 
     // set a default profile if neccesary.
-    if (!getProfile().valid())
+    if (!profile().valid())
     {
         setProfile(Profile(Profile::GLOBAL_GEODETIC));
     }
@@ -186,8 +186,8 @@ Map::getConfig() const
     Config conf("map");
     conf.set("name", _name);
 
-    if (getProfile().valid())
-        conf.set("profile", getProfile().getConfig());
+    if (profile().valid())
+        conf.set("profile", profile().getConfig());
 
     //conf.set( "cache",        cache() );
     //conf.set( "cache_policy", cachePolicy() );
@@ -224,7 +224,7 @@ Map::notifyOnLayerOpenOrClose(Layer* layer)
 
     if (layer->isOpen())
     {
-        if (getProfile())
+        if (profile())
         {
             layer->addedToMap(this);
         }
@@ -247,7 +247,7 @@ Map::notifyOnLayerOpenOrClose(Layer* layer)
 #endif
 
 Revision
-Map::getDataModelRevision() const
+Map::dataModelRevision() const
 {
     return _dataModelRevision;
 }
@@ -261,23 +261,7 @@ Map::setProfile(const Profile& value)
     {
         _profile = value;
 
-        // create a "proxy" profile to use when querying elevation layers with a vertical datum
-        if (!_profile.getSRS().vertical().empty())
-        {
-            Config conf = _profile.getConfig();
-            conf.remove("vdatum");
-            _profileNoVDatum = Profile(conf);
-            //ProfileOptions po = _profile->toProfileOptions();
-            //po.vsrsString().unset();
-            //_profileNoVDatum = Profile::create(po);
-        }
-        else
-        {
-            _profileNoVDatum = _profile;
-        }
-
-        // finally, fire an event if the profile has been set.
-        _instance->log().info << "Map profile is: " << _profile.toString() << std::endl;
+        _instance->log().debug << "Map profile is: " << _profile.toString() << std::endl;
     }
 
 #if 0
@@ -297,7 +281,7 @@ Map::setProfile(const Profile& value)
 }
 
 const Profile&
-Map::getProfile() const
+Map::profile() const
 {
     return _profile;
 }
@@ -334,9 +318,11 @@ Map::setCache(Cache* cache)
 }
 #endif
 
-void
-Map::getAttributions(std::set<std::string>& attributions) const
+std::set<std::string>
+Map::attributions() const
 {
+    std::set<std::string> result;
+
     util::ScopedReadLock lock(_mapDataMutex);
     for(auto& layer : _layers)
     {
@@ -350,11 +336,13 @@ Map::getAttributions(std::set<std::string>& attributions) const
                 std::string attribution = layer->getAttribution();
                 if (!attribution.empty())
                 {
-                    attributions.insert(attribution);
+                    result.insert(attribution);
                 }
             }
         }
     }
+    
+    return std::move(result);
 }
 
 #if 0
@@ -412,7 +400,7 @@ Map::addLayer(shared_ptr<Layer> layer, const IOOptions& io)
         return;
 
     // ensure it's not already in the map
-    if (getIndexOfLayer(layer.get()) != getNumLayers())
+    if (indexOfLayer(layer.get()) != numLayers())
         return;
 
     // Store in a ref_ptr for scope to ensure callbacks don't accidentally delete while adding
@@ -429,7 +417,7 @@ Map::addLayer(shared_ptr<Layer> layer, const IOOptions& io)
 
 #if 0
     // do we need this? Won't the callback to this?
-    if (layer->isOpen() && getProfile() != NULL)
+    if (layer->isOpen() && profile() != NULL)
     {
         layer->addedToMap(this);
     }
@@ -476,7 +464,7 @@ Map::insertLayer(
     ROCKY_SOFT_ASSERT_AND_RETURN(layer != nullptr, void());
 
     // ensure it's not already in the map
-    if (getIndexOfLayer(layer.get()) != getNumLayers())
+    if (indexOfLayer(layer.get()) != numLayers())
         return;
 
     if (layer->getOpenAutomatically())
@@ -485,7 +473,7 @@ Map::insertLayer(
     }
 
 #if 0
-    if (layer->isOpen() && getProfile() != NULL)
+    if (layer->isOpen() && profile() != NULL)
     {
         layer->addedToMap(this);
     }
@@ -520,7 +508,7 @@ Map::removeLayer(shared_ptr<Layer> layer)
         return;
 
     // ensure it's in the map
-    if (getIndexOfLayer(layer.get()) == getNumLayers())
+    if (indexOfLayer(layer.get()) == numLayers())
         return;
 
     //rocky::Registry::instance()->clearBlacklist();
@@ -676,7 +664,7 @@ Map::addLayers(
         if (layer)
         {
 #if 0
-            if (layer->isOpen() && getProfile() != NULL)
+            if (layer->isOpen() && profile() != NULL)
             {
                 layer->addedToMap(this);
             }
@@ -722,7 +710,7 @@ Map::addLayers(
 //}
 
 unsigned
-Map::getNumLayers() const
+Map::numLayers() const
 {
     util::ScopedReadLock lock( _mapDataMutex );
     return _layers.size();
@@ -759,7 +747,7 @@ Map::getLayerAt(unsigned index) const
 }
 
 unsigned
-Map::getIndexOfLayer(const Layer* layer) const
+Map::indexOfLayer(const Layer* layer) const
 {
     if (!layer)
         return -1;
@@ -811,17 +799,17 @@ Map::clear()
 }
 
 const SRS&
-Map::getSRS() const
+Map::srs() const
 {
     static SRS emptySRS;
-    return _profile.valid() ? _profile.getSRS() : emptySRS;
+    return _profile.valid() ? _profile.srs() : emptySRS;
 }
 
 #if 0
 const SRS&
-Map::getWorldSRS() const
+Map::worldSRS() const
 {
-    return getSRS() && getSRS().isGeographic() ? getSRS().getGeocentricSRS() : getSRS();
+    return srs() && srs().isGeographic() ? srs().getGeocentricSRS() : srs();
 }
 #endif
 

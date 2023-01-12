@@ -9,7 +9,7 @@
 #include <rocky/Units.h>
 #include <rocky/Ellipsoid.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class SRSTransform;
 
@@ -20,11 +20,25 @@ namespace rocky
     {
     public:
         // Commonly used SRS's.
-        static SRS WGS84;
-        static SRS ECEF;
-        static SRS SPHERICAL_MERCATOR;
-        static SRS PLATE_CARREE;
-        static SRS EMPTY;
+
+        //! Latitude and Longitude on the WGS84 ellipsoid
+        //! https://en.wikipedia.org/wiki/World_Geodetic_System
+        static const SRS WGS84;
+
+        //! Earth Centered Earth Fixed (Geocentric cartesian)
+        //! https://en.wikipedia.org/wiki/Earth-centered,_Earth-fixed_coordinate_system
+        static const SRS ECEF;
+
+        //! Spherical Mercator, most common SRS for web maps
+        //! https://proj.org/operations/projections/merc.html
+        static const SRS SPHERICAL_MERCATOR;
+
+        //! Equidistant Cylindrical
+        //! https://proj.org/operations/projections/eqc.html
+        static const SRS PLATE_CARREE;
+
+        //! Empty invalid SRS
+        static const SRS EMPTY;
 
     public:
         //! Construct an empty (invalid) SRS.
@@ -57,7 +71,7 @@ namespace rocky
             return _valid;
         }
 
-        //! Is this a geographic (lat/long) SRS?
+        //! Is this a geographic (long, lat) SRS?
         bool isGeographic() const;
 
         //! Is this projected (XY) SRS?
@@ -70,16 +84,16 @@ namespace rocky
         SRS geoSRS() const;
 
         //! WKT (OGC Well-Known Text) representation
-        std::string wkt() const;
+        const std::string& wkt() const;
 
         //! Units of measure
-        Units units() const;
+        const Units& units() const;
 
         //! Underlying reference ellipsoid
-        Ellipsoid ellipsoid() const;
+        const Ellipsoid& ellipsoid() const;
 
         //! Bounding box, if known
-        Box bounds() const;
+        const Box& bounds() const;
 
         //! Whether this SRS is mathematically equivalent to another SRS
         //! without taking vertical datums into account.
@@ -98,18 +112,20 @@ namespace rocky
             return !operator==(rhs);
         }
 
-        //! Make a matrix representing a local tangent plane
-        //! centered at the origin point in this SRS.
+        //! Make a matrix that will transform coordinates from a topocentric
+        //! ENU coordinate system (e.g., a local tangent plane) centered at
+        //! the provided origin into cartesian world coordinates (geocentric if
+        //! the SRS is geographic; projected if the SRS is projected).
         dmat4 localToWorldMatrix(const dvec3& origin) const;
 
-        //! Units transformation accounting for latitude
+        //! Units transformation accounting for latitude if necessary
         static double transformUnits(
             double input,
             const SRS& fromSRS,
             const SRS& toSRS,
             const Angle& latitude);
 
-        //! Units transformation accounting for latitude
+        //! Units transformation accounting for latitude if necessary
         static double transformUnits(
             const Distance& distance,
             const SRS& outSRS,
@@ -143,12 +159,14 @@ namespace rocky
         //! Whether this is a valid and legal transform
         bool valid() const;
 
-        const SRS& first() const {
-            return _first;
+        //! Source SRS of the transformation
+        const SRS& from() const {
+            return _from;
         }
 
-        const SRS& second() const {
-            return _second;
+        //! Target SRS of the transformation
+        const SRS& to() const {
+            return _to;
         }
 
         template<typename DVEC3A, typename DVEC3B>
@@ -197,8 +215,8 @@ namespace rocky
         ~SRSTransform();
 
     private:
-        SRS _first;
-        SRS _second;
+        SRS _from;
+        SRS _to;
 
         void* get_handle() const;
         bool forward(void* handle, double& x, double& y, double& z) const;

@@ -7,7 +7,7 @@
 #include "Notify.h"
 //#include <stb_image.h>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 namespace
 {

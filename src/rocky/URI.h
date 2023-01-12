@@ -12,7 +12,7 @@
 #include <iostream>
 #include <string>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class URI;
     class IOControl;

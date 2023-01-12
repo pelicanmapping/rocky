@@ -7,7 +7,7 @@
 
 #include <rocky/GeoPoint.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class GeoExtent;
 
@@ -39,7 +39,7 @@ namespace rocky
         void setRadius( double value ) { _radius = value; }
 
         /** SRS of the center point */
-        const SRS& getSRS() const { return _center.getSRS(); }
+        const SRS& srs() const { return _center.srs(); }
 
         /** equality test */
         bool operator == ( const GeoCircle& rhs ) const;
@@ -49,9 +49,6 @@ namespace rocky
 
         /** validity test */
         bool valid() const { return _center.valid() && _radius > 0.0; }
-
-        /** transform the GeoCircle to another SRS */
-        GeoCircle transform(const SRS& srs) const;
 
         /** transform the GeoCircle to another SRS */
         bool transform(const SRS& srs, GeoCircle& out_circle) const;

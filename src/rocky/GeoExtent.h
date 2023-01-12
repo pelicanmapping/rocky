@@ -9,7 +9,7 @@
 #include <rocky/GeoPoint.h>
 #include <rocky/GeoCircle.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * An axis-aligned geospatial extent. A bounding box that is aligned with a
@@ -49,7 +49,7 @@ namespace rocky
         bool operator != (const GeoExtent& rhs) const;
 
         /** Gets the spatial reference system underlying this extent. */
-        const SRS& getSRS() const { return _srs; }
+        const SRS& srs() const { return _srs; }
 
         //! Coordinates of the bounding edges, normalized for the lat/long frame if necessary
         inline double west() const { return _west; }

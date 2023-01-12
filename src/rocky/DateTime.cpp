@@ -7,7 +7,7 @@
 #include "StringUtils.h"
 #include <stdio.h> 
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 namespace
 {

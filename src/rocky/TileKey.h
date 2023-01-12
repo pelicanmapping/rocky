@@ -10,7 +10,7 @@
 #include <string>
 #include <functional> // std::hash
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class GeoPoint;
 
@@ -78,7 +78,7 @@ namespace rocky
         const std::string str() const;
 
         //! Gets the profile within which this key is interpreted.
-        const Profile& getProfile() const;
+        const Profile& profile() const;
 
         //! Whether this is a valid key.
         bool valid() const {
@@ -109,15 +109,15 @@ namespace rocky
         TileKey createNeighborKey(int xoffset, int yoffset) const;
 
         //! Gets the level of detail of the tile represented by this key.
-        unsigned getLevelOfDetail() const { return _lod; }
-        unsigned getLOD() const { return _lod; }
+        unsigned levelOfDetail() const { return _lod; }
+        unsigned LOD() const { return _lod; }
 
         //! Gets the geospatial extents of the tile represented by this key.
-        const GeoExtent getExtent() const;
+        const GeoExtent extent() const;
 
-        unsigned getTileX() const { return _x; }
+        unsigned tileX() const { return _x; }
 
-        unsigned getTileY() const { return _y; }
+        unsigned tileY() const { return _y; }
 
         //! Maps this tile key to another tile key in order to account in
         //! a resolution difference. For example: we are requesting data for
@@ -138,7 +138,7 @@ namespace rocky
             unsigned minimumLOD =0) const;
 
         //! X and Y resolution (in profile units) for the given tile size
-        std::pair<double,double> getResolution(
+        std::pair<double,double> getResolutionForTileSize(
             unsigned tileSize) const;
 
         //! Creates a TileKey containing (x, y) in the requested profile.

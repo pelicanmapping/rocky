@@ -12,7 +12,7 @@
 #include <rocky/Profile.h>
 #include <rocky/TileKey.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     //struct TileLayerCallback : public VisibleLayerCallback
     //{
@@ -129,7 +129,7 @@ namespace rocky
         bool isWritingRequested() const { return _writingRequested; }
 
         //! Tiling profile for this layer
-        const Profile& getProfile() const;
+        const Profile& profile() const;
 
         //! Whether the layer represents dynamic data, i.e. it generates data
         //! that requires period updates
@@ -204,7 +204,7 @@ namespace rocky
     public: // Layer interface
 
         //! Extent of this layer's data.
-        virtual const GeoExtent& getExtent() const;
+        virtual const GeoExtent& extent() const;
 
         //! Called by Map when added
         //void addedToMap(const Map*) override;

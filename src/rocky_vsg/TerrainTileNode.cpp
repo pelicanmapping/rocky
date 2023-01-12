@@ -17,7 +17,7 @@
 #include <vsg/ui/FrameStamp.h>
 #include <vsg/nodes/StateGroup.h>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #define LC "[TerrainTileNode] "
 
@@ -39,6 +39,7 @@ TerrainTileNode::TerrainTileNode(
     vsg::ref_ptr<vsg::Node> in_geometry,
     const fvec2& in_morphConstants,
     float in_childrenVisibilityRange,
+    const SRS& worldSRS,
     const TerrainTileDescriptors& in_initialDescriptorModel,
     TerrainTileHost* in_host)
 {
@@ -63,7 +64,7 @@ TerrainTileNode::TerrainTileNode(
     {
         // scene graph is: tile->surface->stateGroup->geometry
         // construct a state group for this tile's render model
-        surface = SurfaceNode::create(key);
+        surface = SurfaceNode::create(key, worldSRS);
 
         // empty state group - will populate later in refreshStateGroup
         stategroup = vsg::StateGroup::create();
@@ -79,15 +80,15 @@ TerrainTileNode::TerrainTileNode(
 
     // Encode the tile key in a uniform. Note! The X and Y components are presented
     // modulo 2^16 form so they don't overrun single-precision space.
-    auto[tw, th] = key.getProfile().getNumTiles(key.getLOD());
+    auto[tw, th] = key.profile().numTiles(key.levelOfDetail());
 
-    double x = (double)key.getTileX();
-    double y = (double)(th - key.getTileY() - 1);
+    double x = (double)key.tileX();
+    double y = (double)(th - key.tileY() - 1);
 
     _tileKeyValue = fvec4(
         (float)(x - tw / 2), //(int)fmod(x, m),
         (float)(y - th / 2), // (int)fmod(y, m),
-        (float)key.getLOD(),
+        (float)key.levelOfDetail(),
         -1.0f);
 
     // inherit model data from the parent
@@ -369,7 +370,7 @@ TerrainTileNode::merge(
         auto& layer = tile_model.colorLayers[0];
         if (layer.image.valid())
         {
-            renderModel.color.image = layer.image.getImage();
+            renderModel.color.image = layer.image.image();
             renderModel.color.matrix = layer.matrix;
             //_renderModel.descriptorModel.color = nullptr;
         }
@@ -377,14 +378,14 @@ TerrainTileNode::merge(
 
     if (tile_model.elevation.heightfield.valid())
     {
-        renderModel.elevation.image = tile_model.elevation.heightfield.getHeightfield();
+        renderModel.elevation.image = tile_model.elevation.heightfield.heightfield();
         renderModel.elevation.matrix = tile_model.elevation.matrix;
         //_renderModel.descriptorModel.elevation = nullptr;
     }
 
     if (tile_model.normalMap.image.valid())
     {
-        renderModel.normal.image = tile_model.normalMap.image.getImage();
+        renderModel.normal.image = tile_model.normalMap.image.image();
         renderModel.normal.matrix = tile_model.normalMap.matrix;
         //_renderModel.descriptorModel.normal = nullptr;
     }

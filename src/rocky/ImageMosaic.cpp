@@ -9,8 +9,8 @@
 
 #define LC "[ImageMosaic] "
 
-using namespace rocky;
-using namespace rocky::util;
+using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 
 /***************************************************************************/
@@ -18,9 +18,9 @@ using namespace rocky::util;
 ImageMosaic::SourceImage::SourceImage(shared_ptr<Image> image_, const TileKey& key)
 {
     image = image_;
-    key.getExtent().getBounds(xmin, ymin, xmax, ymax);
-    tilex = key.getTileX();
-    tiley = key.getTileY();
+    key.extent().getBounds(xmin, ymin, xmax, ymax);
+    tilex = key.tileX();
+    tiley = key.tileY();
 }
 
 void ImageMosaic::getExtents(double &minX, double &minY, double &maxX, double &maxY)

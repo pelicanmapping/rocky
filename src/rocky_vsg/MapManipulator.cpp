@@ -17,7 +17,7 @@
 #include <vsg/ui/KeyEvent.h>
 #include <vsg/ui/ScrollWheelEvent.h>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #undef LC
 #define LC "[MapManipulator] "
@@ -45,7 +45,7 @@ namespace
     // normalized linear intep
     template<class DVEC3>
     vsg::dvec3 nlerp(const DVEC3& a, const DVEC3& b, double t) {
-        double am = length(a), bm = length(b); // a.length(), bm = b.length();
+        double am = length(a), bm = length(b);
         vsg::dvec3 c = a*(1.0-t) + b*t;
         c = normalize(c);
         c *= (1.0-t)*am + t*bm;
@@ -64,26 +64,18 @@ namespace
     }
 
     template<class DMAT4>
-    inline vsg::dvec3 getUpVector(const DMAT4& cf) {
-        return vsg::dvec3(cf[2][0], cf[2][1], cf[2][2]);
-    }
-    template<class DMAT4>
-    inline vsg::dvec3 getZAxis(const DMAT4& cf) {
-        return vsg::dvec3(cf[2][0], cf[2][1], cf[2][2]);
+    inline vsg::dvec3 getXAxis(const DMAT4& cf) {
+        return vsg::dvec3(cf[0][0], cf[0][1], cf[0][2]);
     }
 
-    template<class DMAT4>
-    inline vsg::dvec3 getFrontVector(const DMAT4& cf) {
-        return vsg::dvec3(cf[1][0], cf[1][1], cf[1][2]);
-    }
     template<class DMAT4>
     inline vsg::dvec3 getYAxis(const DMAT4& cf) {
         return vsg::dvec3(cf[1][0], cf[1][1], cf[1][2]);
     }
 
     template<class DMAT4>
-    inline vsg::dvec3 getXAxis(const DMAT4& cf) {
-        return vsg::dvec3(cf[0][0], cf[0][1], cf[0][2]);
+    inline vsg::dvec3 getZAxis(const DMAT4& cf) {
+        return vsg::dvec3(cf[2][0], cf[2][1], cf[2][2]);
     }
 
     template<class DURATION>
@@ -600,8 +592,8 @@ MapManipulator::MapManipulator(vsg::ref_ptr<MapNode> mapNode, vsg::ref_ptr<vsg::
     _lastAction(ACTION_NULL)
 {
     if (mapNode.valid())
-        _worldSRS = mapNode->getWorldSRS();
-        //_srs = mapNode->getMapSRS();
+        _worldSRS = mapNode->worldSRS();
+        //_srs = mapNode->mapSRS();
 
     reinitialize();
 
@@ -609,10 +601,11 @@ MapManipulator::MapManipulator(vsg::ref_ptr<MapNode> mapNode, vsg::ref_ptr<vsg::
 
 
     // compute the bounds of the scene graph to help position camera
-    auto center = vsg::dvec3(0, 0, 0); // (cb.bounds.min + cb.bounds.max) * 0.5;
-    auto radius = _worldSRS.ellipsoid().semiMajorAxis();
-    setCenter(vsg::dvec3(radius, 0, 0));
-    setDistance(radius * 3.5);
+    //auto center = vsg::dvec3(0, 0, 0); // (cb.bounds.min + cb.bounds.max) * 0.5;
+    //auto radius = _worldSRS.ellipsoid().semiMajorAxis();
+    //setCenter(vsg::dvec3(radius, 0, 0));
+    //setDistance(radius * 3.5);
+    home();
 
     //if (_settings)
     //    _lastTetherMode = _settings->getTetherMode();
@@ -757,7 +750,7 @@ MapManipulator::handleTileUpdate(const TileKey& key, vsg::Node* graph, TerrainCa
         !isSettingViewpoint() )
     {
         const GeoPoint& pt = centerMap();
-        if ( key.getExtent().contains(pt.x(), pt.y()) )
+        if ( key.extent().contains(pt.x(), pt.y()) )
         {
             recalculateCenterFromLookVector();
             collisionDetect();
@@ -776,7 +769,7 @@ MapManipulator::createLocalCoordFrame(
         //dvec3 mapPos;
         //dmat4 output;
 
-        //_worldSRS.to(getMapNode()->getWorldSRS()).transform(worldPos, mapPos);
+        //_worldSRS.to(getMapNode()->worldSRS()).transform(worldPos, mapPos);
         //out_frame = to_vsg(_srs.localToWorldMatrix(mapPos));
 
         out_frame = to_vsg(_worldSRS.localToWorldMatrix(to_glm(worldPos)));
@@ -843,7 +836,7 @@ MapManipulator::getWorldLookAtMatrix(const vsg::dvec3& point) const
     vsg::dmat4 cf;
     createLocalCoordFrame(point, cf);
 
-    vsg::dvec3 lookVector = -getUpVector(cf);
+    vsg::dvec3 lookVector = -getZAxis(cf);
 
     vsg::dvec3 side;
 
@@ -1340,7 +1333,7 @@ MapManipulator::intersect(
     {
         vsg::LineSegmentIntersector lsi(start, end);
 
-        mapNode->getTerrainNode()->accept(lsi);
+        mapNode->terrainNode()->accept(lsi);
 
         if (!lsi.intersections.empty())
         {
@@ -1356,6 +1349,7 @@ MapManipulator::intersect(
             }
 
             out_intersection = lsi.intersections.front()->worldIntersection;
+            //std::cout << out_intersection.x << ", " << out_intersection.y << ", " << out_intersection.z << std::endl;
             return true;
         }
     }
@@ -1385,9 +1379,21 @@ void
 MapManipulator::home()
 {
     _state.localRotation.set(0, 0, 0, 1);
-    auto radius = _worldSRS.ellipsoid().semiMajorAxis();
-    setCenter(vsg::dvec3(radius, 0, 0));
+
+    double radius;
+    if (_worldSRS.isGeocentric())
+    {
+        radius = _worldSRS.ellipsoid().semiMajorAxis();
+        setCenter(vsg::dvec3(radius, 0, 0));
+    }
+    else
+    {
+        radius = _worldSRS.bounds().width() * 0.5;
+        setCenter(vsg::dvec3(0, 0, 0));
+    }
+
     setDistance(radius * 3.5);
+
     clearEvents();
 }
 
@@ -1548,17 +1554,6 @@ MapManipulator::apply(vsg::TouchMoveEvent& touchMove)
     ROCKY_TODO("");
 }
 
-namespace
-{
-    struct SimpleViewMatrix : public vsg::Inherit<vsg::ViewMatrix, SimpleViewMatrix>
-    {
-        SimpleViewMatrix(const vsg::dmat4& rhs) : m_inv(rhs), m(vsg::inverse(rhs)) { }
-        vsg::dmat4 inverse() const override { return m_inv; }
-        vsg::dmat4 transform() const override { return m; }
-        vsg::dmat4 m, m_inv;
-    };
-}
-
 void
 MapManipulator::apply(vsg::FrameEvent& frame)
 {
@@ -1578,8 +1573,6 @@ MapManipulator::apply(vsg::FrameEvent& frame)
         _state.centerRotation *
         vsg::rotate(_state.localRotation) *
         vsg::translate(0.0, 0.0, _state.distance);
-
-    //_camera->viewMatrix = SimpleViewMatrix::create(_viewMatrix);
 
     auto lookat = _camera->viewMatrix.cast<vsg::LookAt>();
     if (!lookat)
@@ -1659,32 +1652,42 @@ MapManipulator::isMouseClick() const
 bool
 MapManipulator::recalculateCenterFromLookVector()
 {
-    auto mapNode = getMapNode();
-    if (mapNode)
-    {
-        vsg::dvec3 intersection;
-
-        if (intersectAlongLookVector(intersection))
-        {
-            setCenter(intersection);
-            return true;
-        }
-    }
+    vsg::LookAt lookat;
+    lookat.set(_camera->viewMatrix->inverse());
+    auto look = vsg::normalize(lookat.center - lookat.eye);
     
-    // back up plan, intersect the ellipsoid if geographic
+    vsg::dvec3 i;
+    if (intersect(lookat.eye, look * _state.distance * 1.5, i))
+    {
+        setCenter(i);
+        return true;
+    }
+
+    // backup plan, intersect the ellipsoid or the ground plane
     if (_worldSRS.isGeocentric())
     {
         dvec3 i;
-        vsg::LookAt lookat;
-        lookat.set(_camera->viewMatrix->inverse());
-         
-        auto vec = lookat.center - lookat.eye;
-        auto target = lookat.eye + vec * 1e10;
+        auto target = lookat.eye + look * 1e10;
         if (_worldSRS.ellipsoid().intersectGeocentricLine(to_glm(lookat.eye), to_glm(target), i))
         {
             setCenter(to_vsg(i));
             return true;
         }
+    }
+
+    else
+    {
+        // simple line/plane intersection
+        vsg::dvec3 P0(0, 0, 0); // point on the plane
+        vsg::dvec3 N(0, 0, 1); // normal to the plane
+        vsg::dvec3 L = look; // unit direction of the line
+        vsg::dvec3 L0 = lookat.eye; // point on the line
+        auto LdotN = vsg::dot(L, N);
+        if (equiv(LdotN, 0)) return false; // parallel
+        auto D = vsg::dot((P0 - L0), N) / LdotN;
+        if (D < 0) return false; // behind the camera
+        setCenter(L0 + L * D);
+        return true;
     }
 
     return false;
@@ -1710,17 +1713,17 @@ MapManipulator::pan(double dx, double dy)
     //vsg::dmat4 oldCenterLocalToWorld = _centerReferenceFrame; // _centerLocalToWorld;
 
     // move the center point
-    double len = vsg::length(_state.center);
-    vsg::dvec3 newCenter = _state.center + dv;
+    double old_len = vsg::length(_state.center);
+    vsg::dvec3 new_center = _state.center + dv;
 
     if (_worldSRS.isGeocentric())
     {
         // in geocentric, ensure that it doesn't change length.
-        newCenter = vsg::normalize(newCenter);
-        newCenter *= len;
-
-        setCenter(newCenter);
+        new_center = vsg::normalize(new_center);
+        new_center *= old_len;
     }
+
+    setCenter(new_center);
 
 #if 0
         if ( _settings->getLockAzimuthWhilePanning() )
@@ -1933,7 +1936,7 @@ MapManipulator::screenToWorld(float x, float y, vsg::dvec3& out_coords) const
 
         ROCKY_TODO("");
         return false;
-        //return mapNode->getTerrainNode()->getWorldCoordsUnderMouse(window, x, y, out_coords);
+        //return mapNode->terrainNode()->getWorldCoordsUnderMouse(window, x, y, out_coords);
     }
     else
         return false;

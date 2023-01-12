@@ -7,8 +7,8 @@
 #include "TerrainNode.h"
 #include <vsg/io/Options.h>
 
-using namespace rocky;
-using namespace rocky::util;
+using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 #undef LC
 #define LC "[MapNode] "
@@ -33,10 +33,10 @@ namespace
             _node->onLayerMoved(layer, oldIndex, newIndex);
         }
         void onLayerOpened(Layer* layer) {
-            _node->onLayerAdded(layer, _node->getMap()->getIndexOfLayer(layer));
+            _node->onLayerAdded(layer, _node->map()->getIndexOfLayer(layer));
         }
         void onLayerClosed(Layer* layer) {
-            _node->onLayerRemoved(layer, _node->getMap()->getIndexOfLayer(layer));
+            _node->onLayerRemoved(layer, _node->map()->getIndexOfLayer(layer));
         }
 
         osg::observer_ptr<MapNode> _node;
@@ -296,7 +296,8 @@ MapNode::construct(const Config& conf)
     _readyForUpdate = true;
 
     // Fire it up
-    _terrain->setMap(_map);
+    //_worldSRS = SRS::PLATE_CARREE; // testing
+    _terrain->setMap(_map, worldSRS());
 }
 
 Config
@@ -334,7 +335,7 @@ MapNode::getConfig() const
 }
 
 vsg::ref_ptr<TerrainNode>
-MapNode::getTerrainNode() const
+MapNode::terrainNode() const
 {
     return _terrain;
 }
@@ -406,7 +407,7 @@ MapNode::open()
     bool envUseCascadedDraping = (::getenv("OSGEARTH_USE_CASCADE_DRAPING") != 0L);
     if (envUseCascadedDraping || options().useCascadeDraping() == true)
     {
-        CascadeDrapingDecorator* cascadeDrapingDecorator = new CascadeDrapingDecorator(getMapSRS(), _terrainEngine->getResources());
+        CascadeDrapingDecorator* cascadeDrapingDecorator = new CascadeDrapingDecorator(mapSRS(), _terrainEngine->getResources());
         overlayDecorator->addChild(cascadeDrapingDecorator);
         _drapingManager = cascadeDrapingDecorator->getDrapingManager();
         cascadeDrapingDecorator->addChild(_terrainEngine);
@@ -458,7 +459,7 @@ MapNode::open()
     }
 
     // A shader define indicating that this is a geocentric display
-    if ( _map->getSRS().isGeographic() )
+    if ( _map->srs().isGeographic() )
     {
         stateset->setDefine("OE_IS_GEOCENTRIC");
     }
@@ -484,9 +485,9 @@ MapNode::open()
     this->addCullCallback(new InstallCameraUniform());
 
     // install a callback that updates a horizon object and installs a clipping plane
-    if (getMapSRS()->isGeographic())
+    if (mapSRS()->isGeographic())
     {
-        this->addCullCallback(new HorizonClipPlane(getMapSRS()->ellipsoid()));
+        this->addCullCallback(new HorizonClipPlane(mapSRS()->ellipsoid()));
     }
 
     // connect any extensions that have already been added.
@@ -624,26 +625,28 @@ MapNode::computeBound() const
 #endif
 
 shared_ptr<Map>
-MapNode::getMap() const
+MapNode::map() const
 {
     return _map;
 }
 
 const SRS&
-MapNode::getMapSRS() const
+MapNode::mapSRS() const
 {
-    return getMap() && getMap()->getProfile().valid() ?
-        getMap()->getProfile().getSRS() :
+    return map() && map()->profile().valid() ?
+        map()->profile().srs() :
         SRS::EMPTY;
 }
 
 const SRS&
-MapNode::getWorldSRS() const
+MapNode::worldSRS() const
 {
-    if (getMapSRS().isProjected())
-        return getMapSRS();
-    else
+    if (_worldSRS.valid())
+        return _worldSRS;
+    else if (mapSRS().isGeographic())
         return SRS::ECEF;
+    else
+        return mapSRS();
 }
 
 #if 0
@@ -706,7 +709,7 @@ MapNode::setScreenSpaceError(float value)
 }
 
 float
-MapNode::getScreenSpaceError() const
+MapNode::screenSpaceError() const
 {
     return _screenSpaceError;
 }
@@ -723,8 +726,8 @@ MapNode::addExtension(Extension* extension, const osgDB::Options* options)
         if ( options )
             extension->setDBOptions( options );
 
-        else if ( getMap()->getReadOptions() )
-            extension->setDBOptions( getMap()->getReadOptions() );
+        else if ( map()->getReadOptions() )
+            extension->setDBOptions( map()->getReadOptions() );
 
         // start it if the map is open; otherwise this will happen during MapNode::open.
         if (_isOpen)
@@ -945,7 +948,7 @@ MapNode::traverse( osg::NodeVisitor& nv )
 
 
         LayerVector layers;
-        getMap()->getLayers(layers);
+        map()->getLayers(layers);
 
         int count = 0;
         for (auto& layer : layers)
@@ -1007,7 +1010,7 @@ void
 MapNode::resizeGLObjectBuffers(unsigned maxSize)
 {
     LayerVector layers;
-    getMap()->getLayers(layers);
+    map()->getLayers(layers);
     for (LayerVector::const_iterator i = layers.begin(); i != layers.end(); ++i)
     {
         i->get()->resizeGLObjectBuffers(maxSize);
@@ -1020,7 +1023,7 @@ void
 MapNode::releaseGLObjects(osg::State* state) const
 {
     LayerVector layers;
-    getMap()->getLayers(layers);
+    map()->getLayers(layers);
     for (LayerVector::const_iterator i = layers.begin(); i != layers.end(); ++i)
     {
         i->get()->releaseGLObjects(state);
@@ -1058,7 +1061,7 @@ MapNode::getGeoPointUnderMouse(
     osg::Vec3d world;
     if (getTerrain()->getWorldCoordsUnderMouse(view, mx, my, world))
     {
-        return output.fromWorld(getMapSRS(), world);
+        return output.fromWorld(mapSRS(), world);
     }
     return false;
 }

@@ -12,7 +12,7 @@
 
 #define LC "[TerrainTileModelFactory] "
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 CreateTileManifest::CreateTileManifest()
 {
@@ -130,7 +130,7 @@ TerrainTileModelFactory::createTileModel(
     // Make a new model:
     TerrainTileModel model;
     model.key = key;
-    model.revision = map->getDataModelRevision();
+    model.revision = map->dataModelRevision();
 
     // assemble all the components:
     addColorLayers(model, map, key, manifest, io, false);
@@ -153,7 +153,7 @@ TerrainTileModelFactory::createStandaloneTileModel(
     // Make a new model:
     TerrainTileModel model;
     model.key = key;
-    model.revision = map->getDataModelRevision();
+    model.revision = map->dataModelRevision();
 
     // assemble all the components:
     addColorLayers(model, map, key, manifest, io, true);
@@ -287,7 +287,7 @@ TerrainTileModelFactory::addElevation(
     //std::vector<shared_ptr<const ElevationLayer>> layers;
     //map->getLayers(layers);
 
-    int combinedRevision = map->getDataModelRevision();
+    int combinedRevision = map->dataModelRevision();
     if (!manifest.empty())
     {
         for (const auto& layer : layers)

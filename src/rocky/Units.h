@@ -23,7 +23,7 @@
 #include <rocky/Config.h>
 #include <ostream>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class Registry;
 

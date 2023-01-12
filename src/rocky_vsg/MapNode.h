@@ -16,7 +16,7 @@ namespace vsg {
     class Viewer;
 }
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class SRS;
     class DrapableNode;
@@ -52,21 +52,21 @@ namespace rocky
     public:
 
         //! Map this node is rendering.
-        shared_ptr<Map> getMap() const;
+        shared_ptr<Map> map() const;
 
         //! Screen-space error for geometry level of detail
         void setScreenSpaceError(float sse);
-        float getScreenSpaceError() const;
+        float screenSpaceError() const;
 
         //! Whether to allow lighting when present
         void setEnableLighting(const bool& value);
         const bool& getEnableLighting() const;
 
         //! Spatial Reference System of the underlying map.
-        const SRS& getMapSRS() const;
+        const SRS& mapSRS() const;
 
         //! Spatial reference system of the rendered map.
-        const SRS& getWorldSRS() const;
+        const SRS& worldSRS() const;
 
         /**
          * Finds the topmost Map node in the specified scene graph, or returns NULL if
@@ -90,7 +90,7 @@ namespace rocky
          * Gets the underlying terrain engine that renders the terrain surface of the map.
          */
         //vsg::ref_ptr<TerrainEngine> getTerrainEngine() const;
-        vsg::ref_ptr<TerrainNode> getTerrainNode() const;
+        vsg::ref_ptr<TerrainNode> terrainNode() const;
 
         /**
          * Gets the Config object serializing external data. External data is information
@@ -171,6 +171,7 @@ namespace rocky
         optional<int> _drapingRenderBinNumber;
         optional<float> _screenSpaceError;
 
+        SRS _worldSRS;
         vsg::ref_ptr<TerrainNode> _terrain;
         shared_ptr<Map> _map;
         vsg::ref_ptr<vsg::Group> _layerNodes;

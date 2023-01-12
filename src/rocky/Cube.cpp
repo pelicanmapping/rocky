@@ -7,8 +7,8 @@
 #include "Cube.h"
 #include "Notify.h"
 
-using namespace rocky;
-using namespace rocky::contrib;
+using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::contrib;
 
 #define LC "[Cube] "
 
@@ -545,7 +545,7 @@ UnifiedCubeProfile::UnifiedCubeProfile() :
         6, 1)
 
 {
-    auto srs = getSRS().getGeographicSRS();
+    auto srs = srs().getGeographicSRS();
 
     _shared->_latlong_extent = GeoExtent(
         srs, -180.0, -90.0, 180.0, 90.0);
@@ -562,7 +562,7 @@ UnifiedCubeProfile::UnifiedCubeProfile() :
 int
 UnifiedCubeProfile::getFace( const TileKey& key )
 {
-    return key.getTileX() >> key.getLevelOfDetail();
+    return key.tileX() >> key.getLevelOfDetail();
 }
 
 GeoExtent
@@ -573,7 +573,7 @@ UnifiedCubeProfile::transformGcsExtentOnFace( const GeoExtent& gcsExtent, int fa
         const GeoExtent& fex = _faceExtent_gcs[face];
 
         return GeoExtent(
-            getSRS(),
+            srs(),
             (double)face + (gcsExtent.xMin()-fex.xMin()) / fex.width(),
             (gcsExtent.yMin()-fex.yMin()) / fex.height(),
             (double)face + (gcsExtent.xMax()-fex.xMin()) / fex.width(),
@@ -603,7 +603,7 @@ UnifiedCubeProfile::transformGcsExtentOnFace( const GeoExtent& gcsExtent, int fa
         CubeUtils::faceToCube( xmin, ymin, face );
         CubeUtils::faceToCube( xmax, ymax, face );
 
-        return GeoExtent( getSRS(), xmin, ymin, xmax, ymax );
+        return GeoExtent( srs(), xmin, ymin, xmax, ymax );
     }
 }
 
@@ -614,7 +614,7 @@ UnifiedCubeProfile::transformAndExtractContiguousExtents(
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(valid() && input.valid(), false);
 
-    if (getSRS().isHorizEquivalentTo(input.getSRS()))
+    if (srs().isHorizEquivalentTo(input.srs()))
     {
         output.push_back(input);
     }
@@ -624,9 +624,9 @@ UnifiedCubeProfile::transformAndExtractContiguousExtents(
         // to fully intersect the remote extent.
 
         // first transform the remote extent to lat/long.
-        GeoExtent input_gcs = input.getSRS().isGeographic()
+        GeoExtent input_gcs = input.srs().isGeographic()
             ? input
-            : input.transform(input.getSRS().getGeographicSRS());
+            : input.transform(input.srs().getGeographicSRS());
 
         // Chop the input extent into three separate extents: for the equatorial, north polar,
         // and south polar tile regions.
@@ -653,7 +653,7 @@ UnifiedCubeProfile::getIntersectingTiles(const GeoExtent&      remoteExtent,
                                          unsigned              localLOD,
                                          std::vector<TileKey>& out_intersectingKeys ) const
 {
-    if (getSRS().isHorizEquivalentTo(remoteExtent.getSRS().get()))
+    if (srs().isHorizEquivalentTo(remoteExtent.srs().get()))
     {
         addIntersectingKeys(remoteExtent, localLOD, out_intersectingKeys);
     }
@@ -663,9 +663,9 @@ UnifiedCubeProfile::getIntersectingTiles(const GeoExtent&      remoteExtent,
         // to fully intersect the remote extent.
 
         // first transform the remote extent to lat/long.
-        GeoExtent remoteExtent_gcs = remoteExtent.getSRS().isGeographic()
+        GeoExtent remoteExtent_gcs = remoteExtent.srs().isGeographic()
             ? remoteExtent
-            : remoteExtent.transform( remoteExtent.getSRS().getGeographicSRS() );
+            : remoteExtent.transform( remoteExtent.srs().getGeographicSRS() );
 
         // Chop the input extent into three separate extents: for the equatorial, north polar,
         // and south polar tile regions.

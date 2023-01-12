@@ -9,7 +9,7 @@
 #include <rocky/Threading.h>
 #include <unordered_map>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * Easy way to add a thread-safe callback to a class.

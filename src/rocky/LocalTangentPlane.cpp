@@ -6,7 +6,7 @@
 #if 0
 #include "LocalTangentPlane.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #define LC "[LTP] "
 
