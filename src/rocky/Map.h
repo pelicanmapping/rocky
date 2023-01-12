@@ -16,7 +16,7 @@
 #include <functional>
 #include <set>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * Map is the main data model. A Map hold a collection of
@@ -36,10 +36,10 @@ namespace rocky
 
         //! The map's master tiling profile, which defines its SRS and tiling structure
         void setProfile(const Profile&);
-        const Profile& getProfile() const;
+        const Profile& profile() const;
 
         //! Spatial reference system of the map's profile (convenience)
-        const SRS& getSRS() const;
+        const SRS& srs() const;
 
         //! Adds a Layer to the map.
         void addLayer(shared_ptr<Layer> layer);

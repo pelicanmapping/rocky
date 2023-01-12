@@ -8,7 +8,7 @@
 #include <rocky/TileLayer.h>
 #include <rocky/GeoHeightfield.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * A map terrain layer containing elevation grid heightfields.

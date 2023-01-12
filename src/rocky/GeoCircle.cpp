@@ -1,7 +1,7 @@
 #include "GeoCircle.h"
 #include "Math.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #define LC "[GeoCircle] "
 
@@ -38,21 +38,12 @@ GeoCircle::operator == ( const GeoCircle& rhs ) const
         equiv(_radius, rhs._radius);
 }
 
-GeoCircle
-GeoCircle::transform(const SRS& srs) const
-{
-    return GeoCircle(
-        center().transform(srs),
-        radius());
-}
-
 bool
-GeoCircle::transform(
-    const SRS& srs,
-    GeoCircle& output) const
+GeoCircle::transform(const SRS& srs, GeoCircle& output) const
 {
     output._radius = _radius;
-    return center().transform(srs, output._center);
+    center().transform(srs, output._center);
+    return true;
 }
 
 bool 
@@ -61,25 +52,26 @@ GeoCircle::intersects( const GeoCircle& rhs ) const
     if ( !valid() || !rhs.valid() )
         return false;
 
-    if ( !getSRS().isHorizEquivalentTo( rhs.getSRS() ) )
+    if ( !srs().isHorizEquivalentTo( rhs.srs() ) )
     {
-        return intersects( rhs.transform(getSRS()) );
+        GeoCircle c;
+        return rhs.transform(SRS(), c) && intersects(c);
     }
     else
     {
-        if ( getSRS().isProjected() )
+        if ( srs().isProjected() )
         {
             dvec2 vec = dvec2(center().x(), center().y()) - dvec2(rhs.center().x(), rhs.center().y());
             return lengthSquared(vec) <= (radius() + rhs.radius())*(radius() + rhs.radius());
         }
         else // if ( isGeographic() )
         {
-            GeoPoint p0(getSRS(), dvec3(center().x(), center().y(), 0.0));
-            GeoPoint p1(getSRS(), dvec3(rhs.center().x(), rhs.center().y(), 0.0));
+            GeoPoint p0(srs(), dvec3(center().x(), center().y(), 0.0));
+            GeoPoint p1(srs(), dvec3(rhs.center().x(), rhs.center().y(), 0.0));
             return p0.geodesicDistanceTo(p1) <= (radius() + rhs.radius());
             //dvec3 p0( _center.x(), _center.y(), 0.0 );
             //dvec3 p1( rhs.getCenter().x(), rhs.getCenter().y(), 0.0 );
-            //return GeoMath::distance( p0, p1, getSRS() ) <= (_radius + rhs.getRadius());
+            //return GeoMath::distance( p0, p1, srs() ) <= (_radius + rhs.getRadius());
         }
     }
 }

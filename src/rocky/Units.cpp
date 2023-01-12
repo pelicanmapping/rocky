@@ -1,8 +1,8 @@
 #include "Units.h"
 #include "Threading.h"
 
-using namespace rocky;
-using namespace rocky::util;
+using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 namespace
 {

@@ -12,8 +12,8 @@
 
 #include <vsg/all.h>
 
-using namespace rocky;
-using namespace rocky::util;
+using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 #define ARENA_LOAD_TILE "terrain.load_tile"
 
@@ -57,7 +57,7 @@ TerrainNode::setMap(shared_ptr<Map> new_map)
     _tilesRoot = vsg::Group::create();
 
     std::vector<TileKey> keys;
-    Profile::getAllKeysAtLOD(this->firstLOD, new_map->getProfile(), keys);
+    Profile::getAllKeysAtLOD(this->firstLOD, new_map->profile(), keys);
 
     for (unsigned i = 0; i < keys.size(); ++i)
     {

@@ -9,7 +9,7 @@
 #include <rocky/Units.h>
 #include <rocky/Ellipsoid.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class SRSTransform;
 
@@ -20,11 +20,11 @@ namespace rocky
     {
     public:
         // Commonly used SRS's.
-        static SRS WGS84;
-        static SRS ECEF;
-        static SRS SPHERICAL_MERCATOR;
-        static SRS PLATE_CARREE;
-        static SRS EMPTY;
+        static const SRS WGS84;
+        static const SRS ECEF;
+        static const SRS SPHERICAL_MERCATOR;
+        static const SRS PLATE_CARREE;
+        static const SRS EMPTY;
 
     public:
         //! Construct an empty (invalid) SRS.
@@ -76,7 +76,7 @@ namespace rocky
         Units units() const;
 
         //! Underlying reference ellipsoid
-        Ellipsoid ellipsoid() const;
+        const Ellipsoid& ellipsoid() const;
 
         //! Bounding box, if known
         Box bounds() const;
@@ -100,6 +100,8 @@ namespace rocky
 
         //! Make a matrix representing a local tangent plane
         //! centered at the origin point in this SRS.
+        //! (Note: in this is a geographic SRS, the LTP will
+        //! be in geocentric cartesian space.)
         dmat4 localToWorldMatrix(const dvec3& origin) const;
 
         //! Units transformation accounting for latitude

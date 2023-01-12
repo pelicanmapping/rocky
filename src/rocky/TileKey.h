@@ -10,7 +10,7 @@
 #include <string>
 #include <functional> // std::hash
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class GeoPoint;
 
@@ -78,7 +78,7 @@ namespace rocky
         const std::string str() const;
 
         //! Gets the profile within which this key is interpreted.
-        const Profile& getProfile() const;
+        const Profile& profile() const;
 
         //! Whether this is a valid key.
         bool valid() const {
@@ -113,7 +113,7 @@ namespace rocky
         unsigned getLOD() const { return _lod; }
 
         //! Gets the geospatial extents of the tile represented by this key.
-        const GeoExtent getExtent() const;
+        const GeoExtent extent() const;
 
         unsigned getTileX() const { return _x; }
 

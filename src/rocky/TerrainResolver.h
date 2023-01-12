@@ -7,7 +7,7 @@
 
 #include <rocky/Common.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     // TEMPORARY - replace
     class TerrainResolver

@@ -16,7 +16,7 @@ namespace vsg {
     class Viewer;
 }
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class SRS;
     class DrapableNode;

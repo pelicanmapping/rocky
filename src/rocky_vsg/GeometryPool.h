@@ -18,7 +18,7 @@
 #define VERTEX_SKIRT         8 // it's a skirt vertex (bitmask)
 #define VERTEX_CONSTRAINT   16 // part of a non-morphable constraint
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class Map;
     class MeshEditor;
@@ -123,7 +123,7 @@ namespace std {
 }
 
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * Pool of terrain tile geometries.

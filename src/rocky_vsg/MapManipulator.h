@@ -23,7 +23,7 @@ namespace vsg
     class View;
 }
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class MapNode;
 

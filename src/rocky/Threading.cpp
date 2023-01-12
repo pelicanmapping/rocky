@@ -25,8 +25,8 @@
 #undef min
 #undef max
 
-using namespace rocky;
-using namespace rocky::util;
+using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 //...................................................................
 

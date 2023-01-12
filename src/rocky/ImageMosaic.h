@@ -9,13 +9,13 @@
 #include <rocky/Math.h>
 #include <vector>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class Image;
     class TileKey;
 }
 
-namespace rocky { namespace util
+namespace ROCKY_NAMESPACE { namespace util
 {
     /**
      * Utility class for extracting a single image from a collection of image tiles

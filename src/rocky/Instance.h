@@ -5,11 +5,11 @@
  */
 #pragma once
 #include <rocky/Common.h>
-#include <rocky/IOTypes.h> // replace 
+#include <rocky/IOTypes.h>
 #include <rocky/Log.h>
 #include <unordered_map>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class ROCKY_EXPORT Instance : public Inherit<Object, Instance>
     {
@@ -18,7 +18,7 @@ namespace rocky
         Instance();
 
         // destructor
-        ~Instance();
+        virtual ~Instance();
 
         //! Default IO options
         inline IOOptions& ioOptions();

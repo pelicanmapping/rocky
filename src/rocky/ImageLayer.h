@@ -11,7 +11,7 @@
 #include <rocky/GeoImage.h>
 #include <rocky/Color.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class Color;
     class Profile;
@@ -281,5 +281,5 @@ namespace rocky
 
     typedef std::vector<shared_ptr<ImageLayer>> ImageLayerVector;
 
-} // namespace rocky
+} // namespace ROCKY_NAMESPACE
 

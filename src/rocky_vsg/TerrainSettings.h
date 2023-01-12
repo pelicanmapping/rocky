@@ -8,7 +8,7 @@
 #include <rocky/Color.h>
 #include <rocky_vsg/Common.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class TerrainSettings
     {

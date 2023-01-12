@@ -11,7 +11,7 @@
 #include <rocky/Config.h>
 #include <vsg/nodes/Group.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class IOOptions;
     class Map;

@@ -8,7 +8,7 @@
 
 namespace weemesh
 {
-    using namespace rocky;
+    using namespace ROCKY_NAMESPACE;
 
     // MESHING SDK
 

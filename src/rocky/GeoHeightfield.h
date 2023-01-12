@@ -9,7 +9,7 @@
 #include <rocky/GeoExtent.h>
 #include <rocky/Heightfield.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * A georeferenced heightfield
@@ -79,7 +79,7 @@ namespace rocky
             Image::Interpolation interpolation) const;
 
         //! Gets the geospatial extent of the heightfield.
-        const GeoExtent& getExtent() const;
+        const GeoExtent& extent() const;
 
         //! The minimum height in the heightfield
         float getMinHeight() const { return _minHeight; }

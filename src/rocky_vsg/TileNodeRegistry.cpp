@@ -12,7 +12,7 @@
 
 #include <vsg/ui/FrameStamp.h>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #define LC "[TileNodeRegistry] "
 
@@ -44,7 +44,7 @@ TileNodeRegistry::setDirty(
     {
         if (minLevel <= key.getLOD() && 
             maxLevel >= key.getLOD() &&
-            (!extent.valid() || extent.intersects(key.getExtent())))
+            (!extent.valid() || extent.intersects(key.extent())))
         {
             entry._tile->refreshLayers(manifest);
         }
@@ -202,7 +202,7 @@ TileNodeRegistry::createTile(
     float childrenVisibilityRange = FLT_MAX;
     if (key.getLOD() < (terrain->selectionInfo->getNumLODs() - 1))
     {
-        auto[tw, th] = key.getProfile().getNumTiles(key.getLOD());
+        auto[tw, th] = key.profile().numTiles(key.getLOD());
         TileKey testKey = key.createChildKey((key.getTileY() <= th / 2) ? 0 : 3);
         childrenVisibilityRange = terrain->selectionInfo->getRange(testKey);
     }

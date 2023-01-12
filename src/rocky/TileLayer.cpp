@@ -8,8 +8,8 @@
 #include "Map.h"
 #include "rtree.h"
 
-using namespace rocky;
-using namespace rocky::util;
+using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 namespace
 {
@@ -162,7 +162,7 @@ TileLayer::CacheBinMetadata::getConfig() const
         for (DataExtentList::const_iterator i = _dataExtents.begin(); i != _dataExtents.end(); ++i)
         {
             Config extent;
-            extent.set("srs", i->getSRS().definition());
+            extent.set("srs", i->srs().definition());
             extent.set("xmin", i->xMin());
             extent.set("ymin", i->yMin());
             extent.set("xmax", i->xMax());
@@ -332,9 +332,9 @@ TileLayer::addedToMap(const Map* map)
     // If the profiles don't match, mosaicing will be likely so set up a
     // small L2 cache for this layer.
     if (map &&
-        map->getProfile() &&
-        getProfile() &&
-        !map->getProfile().getSRS().isHorizEquivalentTo(getProfile().getSRS()))
+        map->profile() &&
+        profile() &&
+        !map->profile().srs().isHorizEquivalentTo(profile().srs()))
     {
         l2CacheSize = 16u;
         //ROCKY_INFO << LC << "Map/Layer profiles differ; requesting L2 cache" << std::endl;
@@ -398,7 +398,7 @@ TileLayer::establishCacheSettings()
 }
 
 const Profile&
-TileLayer::getProfile() const
+TileLayer::profile() const
 {
     return _profile;
 }
@@ -500,7 +500,7 @@ TileLayer::getCacheBin(const Profile* profile)
     if (!metadataOK)
     {
         // cache metadata does not exist, so try to create it.
-        if (getProfile())
+        if (profile())
         {
             meta = new CacheBinMetadata();
 
@@ -508,7 +508,7 @@ TileLayer::getCacheBin(const Profile* profile)
             meta->_cacheBinId = _runtimeCacheId;
             meta->_sourceName = this->getName();
             meta->_sourceTileSize = getTileSize();
-            meta->_sourceProfile = getProfile().toProfileOptions();
+            meta->_sourceProfile = profile().toProfileOptions();
             meta->_cacheProfile = profile->toProfileOptions();
             meta->_cacheCreateTime = DateTime().asTimeStamp();
             // Use _dataExtents directly here since the _data_mutex is already locked.
@@ -585,8 +585,8 @@ TileLayer::isKeyInLegalRange(const TileKey& key) const
     }
 
     // We must use the equivalent lod b/c the input key can be in any profile.
-    unsigned localLOD = getProfile().valid() ?
-        getProfile().getEquivalentLOD(key.getProfile(), key.getLOD()) :
+    unsigned localLOD = profile().valid() ?
+        profile().getEquivalentLOD(key.profile(), key.getLOD()) :
         key.getLOD();
 
 
@@ -608,12 +608,12 @@ TileLayer::isKeyInLegalRange(const TileKey& key) const
     if (_minResolution.has_value() || _maxResolution.has_value())
     //if (options().minResolution().has_value() || options().maxResolution().has_value())
     {
-        if (getProfile().valid())
+        if (profile().valid())
         {
             // calculate the resolution in the layer's profile, which can
             // be different that the key's profile.
-            double resKey = key.getExtent().width() / (double)tileSize();
-            double resLayer = key.getProfile().getSRS().units().convertTo(getProfile().getSRS().units(), resKey);
+            double resKey = key.extent().width() / (double)tileSize();
+            double resLayer = key.profile().srs().units().convertTo(profile().srs().units(), resKey);
 
             if (_maxResolution.has_value() && _maxResolution > resLayer)
             //if (options().maxResolution().has_value() &&
@@ -643,8 +643,8 @@ TileLayer::isKeyInVisualRange(const TileKey& key) const
     }
 
     // We must use the equivalent lod b/c the input key can be in any profile.
-    unsigned localLOD = getProfile().valid() ?
-        getProfile().getEquivalentLOD(key.getProfile(), key.getLOD()) :
+    unsigned localLOD = profile().valid() ?
+        profile().getEquivalentLOD(key.profile(), key.getLOD()) :
         key.getLOD();
 
 
@@ -658,12 +658,12 @@ TileLayer::isKeyInVisualRange(const TileKey& key) const
     // Next, check against resolution limits (based on the source tile size).
     if (_minResolution.has_value() || _maxResolution.has_value())
     {
-        if (getProfile().valid())
+        if (profile().valid())
         {
             // calculate the resolution in the layer's profile, which can
             // be different that the key's profile.
-            double resKey = key.getExtent().width() / (double)tileSize();
-            double resLayer = key.getProfile().getSRS().units().convertTo(getProfile().getSRS().units(), resKey);
+            double resKey = key.extent().width() / (double)tileSize();
+            double resLayer = key.profile().srs().units().convertTo(profile().srs().units(), resKey);
 
             if (_maxResolution.has_value() && _maxResolution > resLayer)
             {
@@ -692,7 +692,7 @@ TileLayer::isCached(const TileKey& key) const
         return true;
 
     // next check for a bin:
-    CacheBin* bin = const_cast<TileLayer*>(this)->getCacheBin( key.getProfile() );
+    CacheBin* bin = const_cast<TileLayer*>(this)->getCacheBin( key.profile() );
     if ( !bin )
         return false;
 
@@ -783,7 +783,7 @@ TileLayer::getDataExtentsUnion() const
 }
 
 const GeoExtent&
-TileLayer::getExtent() const
+TileLayer::extent() const
 {
     return getDataExtentsUnion();
 }
@@ -802,8 +802,8 @@ TileLayer::getBestAvailableTileKey(
     unsigned MDL = _maxDataLevel;
 
     // We must use the equivalent lod b/c the input key can be in any profile.
-    unsigned localLOD = getProfile().valid() ?
-        getProfile().getEquivalentLOD(key.getProfile(), key.getLOD()) :
+    unsigned localLOD = profile().valid() ?
+        profile().getEquivalentLOD(key.profile(), key.getLOD()) :
         key.getLOD();
 
     // Check against level extrema:
@@ -816,12 +816,12 @@ TileLayer::getBestAvailableTileKey(
     // Next, check against resolution limits (based on the source tile size).
     if (_minResolution.has_value() || _maxResolution.has_value())
     {
-        if (getProfile().valid())
+        if (profile().valid())
         {
             // calculate the resolution in the layer's profile, which can
             // be different that the key's profile.
-            double resKey = key.getExtent().width() / (double)tileSize();
-            double resLayer = key.getProfile().getSRS().units().convertTo(getProfile().getSRS().units(), resKey);
+            double resKey = key.extent().width() / (double)tileSize();
+            double resLayer = key.profile().srs().units().convertTo(profile().srs().units(), resKey);
 
             if (_maxResolution.has_value() && _maxResolution > resLayer)
             {
@@ -843,7 +843,7 @@ TileLayer::getBestAvailableTileKey(
 
     // Reject if the extents don't overlap at all.
     // (Note: this does not consider min/max levels, only spatial extents)
-    if (!getDataExtentsUnion().intersects(key.getExtent()))
+    if (!getDataExtentsUnion().intersects(key.extent()))
     {
         return TileKey::INVALID;
     }
@@ -863,9 +863,9 @@ TileLayer::getBestAvailableTileKey(
             for (auto de = _dataExtents.begin(); de != _dataExtents.end(); ++de)
             {
                 // Build the index in the SRS of this layer
-                GeoExtent extentInLayerSRS = getProfile().clampAndTransformExtent(*de);
+                GeoExtent extentInLayerSRS = profile().clampAndTransformExtent(*de);
 
-                if (extentInLayerSRS.getSRS().isGeographic() && extentInLayerSRS.crossesAntimeridian())
+                if (extentInLayerSRS.srs().isGeographic() && extentInLayerSRS.crossesAntimeridian())
                 {
                     GeoExtent west, east;
                     extentInLayerSRS.splitAcrossAntimeridian(west, east);
@@ -900,7 +900,7 @@ TileLayer::getBestAvailableTileKey(
     }
 
     // Transform the key extent to the SRS of this layer to do the index search
-    GeoExtent keyExtentInLayerSRS = getProfile().clampAndTransformExtent(key.getExtent());
+    GeoExtent keyExtentInLayerSRS = profile().clampAndTransformExtent(key.extent());
 
     a_min[0] = keyExtentInLayerSRS.xMin(); a_min[1] = keyExtentInLayerSRS.yMin();
     a_max[0] = keyExtentInLayerSRS.xMax(); a_max[1] = keyExtentInLayerSRS.yMax();

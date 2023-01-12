@@ -12,7 +12,7 @@
 
 #define LC "[TerrainTileModelFactory] "
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 CreateTileManifest::CreateTileManifest()
 {

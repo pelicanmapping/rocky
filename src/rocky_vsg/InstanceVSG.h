@@ -8,8 +8,11 @@
 #include <rocky/Instance.h>
 #include <vsg/io/Options.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
+    /**
+     * Rocky instance to use when running a VSG-based application
+     */
     class ROCKY_VSG_EXPORT InstanceVSG : public Inherit<Instance, InstanceVSG>
     {
     public:

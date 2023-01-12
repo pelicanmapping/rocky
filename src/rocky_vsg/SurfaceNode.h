@@ -14,7 +14,7 @@
 #include <vsg/vk/State.h>
 #include <vsg/maths/vec3.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class Heightfield;
     class Horizon;

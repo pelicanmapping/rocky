@@ -9,7 +9,7 @@
 #include <rocky/TileKey.h>
 #include <vector>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * SelectionInfo is a data structure that holds the LOD distance switching

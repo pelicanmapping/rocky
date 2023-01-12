@@ -8,7 +8,7 @@
 #include <rocky/Common.h>
 #include <rocky/Math.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class IOOptions;
 

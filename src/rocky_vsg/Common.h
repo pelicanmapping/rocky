@@ -8,7 +8,7 @@
 #include <rocky/Common.h>
 #include <chrono>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     using clock = std::chrono::steady_clock;
 }

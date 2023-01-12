@@ -9,7 +9,7 @@
 #include <rocky/TerrainOptions.h>
 #include <unordered_map>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class ElevationLayerVector;
     class Map;

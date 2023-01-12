@@ -10,7 +10,7 @@
 #include <rocky/Color.h>
 #include <string>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     // Options structure for a terrain engine (internal)
     class ROCKY_EXPORT TerrainOptions : public DriverConfigOptions
@@ -248,4 +248,4 @@ namespace rocky
         const TerrainOptions& options() const { return *_ptr; }
     };
 
-} // namespace rocky
+} // namespace ROCKY_NAMESPACE

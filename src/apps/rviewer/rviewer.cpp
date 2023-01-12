@@ -13,7 +13,7 @@ int usage(const char* msg)
     return -1;
 }
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     //! Simplest possible image layer.
     struct TestLayer : public Inherit<ImageLayer, TestLayer>
@@ -25,7 +25,7 @@ namespace rocky
             auto image = io.services().readImage("D:/data/images/BENDER.png", io);
 
             if (image.status.ok())
-                return GeoImage(image.value, key.getExtent());
+                return GeoImage(image.value, key.extent());
             else
                 return image.status;
         }

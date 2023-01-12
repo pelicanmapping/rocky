@@ -17,7 +17,7 @@ class GDALDataset;
 class GDALRasterBand;
 
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     namespace GDAL
     {
@@ -118,7 +118,7 @@ namespace rocky
                 unsigned tileSize,
                 const IOOptions& io);
 
-            const Profile& getProfile() const {
+            const Profile& profile() const {
                 return _profile;
             }
 
@@ -194,7 +194,7 @@ namespace rocky
 
 
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * Image layer connected to a GDAL raster dataset
@@ -271,4 +271,4 @@ namespace rocky
         void construct(const Config&);
     };
 
-} // namespace rocky
+} // namespace ROCKY_NAMESPACE

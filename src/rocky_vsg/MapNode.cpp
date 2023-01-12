@@ -7,8 +7,8 @@
 #include "TerrainNode.h"
 #include <vsg/io/Options.h>
 
-using namespace rocky;
-using namespace rocky::util;
+using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 #undef LC
 #define LC "[MapNode] "
@@ -458,7 +458,7 @@ MapNode::open()
     }
 
     // A shader define indicating that this is a geocentric display
-    if ( _map->getSRS().isGeographic() )
+    if ( _map->srs().isGeographic() )
     {
         stateset->setDefine("OE_IS_GEOCENTRIC");
     }
@@ -632,8 +632,8 @@ MapNode::getMap() const
 const SRS&
 MapNode::getMapSRS() const
 {
-    return getMap() && getMap()->getProfile().valid() ?
-        getMap()->getProfile().getSRS() :
+    return getMap() && getMap()->profile().valid() ?
+        getMap()->profile().srs() :
         SRS::EMPTY;
 }
 

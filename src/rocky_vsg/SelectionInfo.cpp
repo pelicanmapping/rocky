@@ -6,7 +6,7 @@
 #include "SelectionInfo.h"
 #include <rocky/Notify.h>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #define LC "[SelectionInfo] "
 
@@ -46,9 +46,9 @@ SelectionInfo::initialize(
 
     for (unsigned lod = 0; lod <= maxLod; ++lod)
     {
-        auto[tx, ty] = profile.getNumTiles(lod);
+        auto[tx, ty] = profile.numTiles(lod);
         TileKey key(lod, tx / 2, ty / 2, profile);
-        GeoExtent e = key.getExtent();
+        GeoExtent e = key.extent();
         GeoCircle c = e.computeBoundingGeoCircle();
         double range = c.radius() * mtrf * 2.0 * (1.0 / 1.405);
         _lods[lod]._visibilityRange = range;
@@ -56,7 +56,7 @@ SelectionInfo::initialize(
         _lods[lod]._maxValidTY = 0xFFFFFFFF;
     }
 
-    double metersPerEquatorialDegree = (profile.getSRS().ellipsoid().semiMajorAxis() * 2.0 * M_PI) / 360.0;
+    double metersPerEquatorialDegree = (profile.srs().ellipsoid().semiMajorAxis() * 2.0 * M_PI) / 360.0;
 
     double prevPos = 0.0;
 
@@ -73,18 +73,18 @@ SelectionInfo::initialize(
         // In a geographic map, this will effectively limit the maximum LOD
         // progressively starting at about +/- 72 degrees latitude.
         int startLOD = 6;
-        if (restrictPolarSubdivision && lod >= startLOD && profile.getSRS().isGeographic())
+        if (restrictPolarSubdivision && lod >= startLOD && profile.srs().isGeographic())
         {            
             const double startAR = 0.1; // minimum allowable aspect ratio at startLOD
             const double endAR = 0.4;   // minimum allowable aspect ratio at maxLOD
             double lodT = (double)(lod-startLOD)/(double)(numLods-1);
             double minAR = startAR + (endAR-startAR)*lodT;
 
-            auto[tx, ty] = profile.getNumTiles(lod);
+            auto[tx, ty] = profile.numTiles(lod);
             for(int y=(int)ty/2; y>=0; --y)
             {
                 TileKey k(lod, 0, y, profile);
-                const GeoExtent& e = k.getExtent();
+                const GeoExtent& e = k.extent();
                 double lat = 0.5*(e.yMax()+e.yMin());
                 double width = e.width() * metersPerEquatorialDegree * cos(deg2rad(lat));
                 double height = e.height() * metersPerEquatorialDegree;

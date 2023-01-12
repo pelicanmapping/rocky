@@ -5,7 +5,7 @@
  */
 #include "Horizon.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 Horizon::Horizon() :
     _valid(false),

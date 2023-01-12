@@ -14,7 +14,7 @@
 //#include <rocky/StringUtils.h>
 #include <chrono>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class TerrainSettings;
     class RuntimeContext;

@@ -11,8 +11,8 @@
 
 #include <tinyxml.h>
 
-using namespace rocky;
-using namespace rocky::util;
+using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 StringTokenizer::StringTokenizer(
     const std::string& delims,

@@ -28,12 +28,14 @@
 #  define ROCKY_EXPORT
 #endif  
 
+#define ROCKY_NAMESPACE rocky
+
 #include <rocky/optional.h>
 #include <string>
 #include <memory>
 #include <iostream>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     template<class T> using shared_ptr = std::shared_ptr<T>;
     template<class T> using shared_constptr = std::shared_ptr<const T>;

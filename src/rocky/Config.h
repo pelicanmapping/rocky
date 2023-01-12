@@ -14,7 +14,7 @@
 #include <optional>
 #include <nlohmann/json.hpp>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     // New plan??
     //struct Config : public nlohmann::json
@@ -434,7 +434,7 @@ namespace rocky
     // NOTE: You must only use this macro in the global namespace!
 
 #define ROCKY_SPECIALIZE_CONFIG(TYPE) \
-    namespace rocky { \
+    namespace ROCKY_NAMESPACE { \
         template<> inline \
         void Config::set<TYPE>(const std::string& key, const TYPE& obj) { \
             set( key, obj.getConfig() ); \
@@ -465,7 +465,7 @@ namespace rocky
             conf.key() = key; \
             add( conf ); \
         } \
-    } // namespace rocky
+    } // namespace ROCKY_NAMESPACE
 
     //--------------------------------------------------------------------
 

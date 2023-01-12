@@ -9,7 +9,7 @@
 #include <rocky/GeoPoint.h>
 #include <rocky/Units.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * Viewpoint stores a focal point (or a focal node) and camera parameters
@@ -44,4 +44,4 @@ namespace rocky
         Config getConfig() const;
     };
 
-} // namespace rocky
+} // namespace ROCKY_NAMESPACE

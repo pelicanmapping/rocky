@@ -5,7 +5,7 @@
  */
 #include "VisibleLayer.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #define LC "[VisibleLayer] \"" << getName() << "\" "
 

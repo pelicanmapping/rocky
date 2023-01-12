@@ -5,7 +5,7 @@
  */
 #include "Heightfield.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 namespace
 {

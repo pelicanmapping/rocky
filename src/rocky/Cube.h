@@ -11,9 +11,9 @@
 #include <rocky/Math.h>
 //#include <rocky/Locators>
 
-namespace rocky { namespace contrib
+namespace ROCKY_NAMESPACE { namespace contrib
 {
-    using namespace rocky;
+    using namespace ROCKY_NAMESPACE;
 
     /**
      * Utilities for working with cube and cubeface coordinates.

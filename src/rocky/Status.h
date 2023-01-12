@@ -8,7 +8,7 @@
 #include <rocky/Common.h>
 #include <string>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /** General purpose status object */
     class ROCKY_EXPORT Status

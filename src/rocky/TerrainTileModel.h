@@ -12,7 +12,7 @@
 #include <rocky/GeoHeightfield.h>
 #include <vector>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class Image;
     class Heightfield;

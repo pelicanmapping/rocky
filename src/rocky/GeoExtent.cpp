@@ -1,7 +1,7 @@
 #include "GeoExtent.h"
 #include "Math.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #undef  LC
 #define LC "[GeoExtent] "
@@ -140,9 +140,8 @@ GeoExtent::getCentroid() const
     {
         return GeoPoint(
             _srs,
-            normalizeX(west() + 0.5*width()),
-            south() + 0.5*height(),
-            ALTMODE_ABSOLUTE);
+            normalizeX(west() + 0.5 * width()),
+            south() + 0.5 * height());
     }
     else return GeoPoint::INVALID;
 }
@@ -160,12 +159,12 @@ GeoExtent::width(const Units& units) const
 {
     if (!valid())
         return 0.0;
-    else if (getSRS().isProjected()) {
-        return Units::convert(getSRS().units(), units, width());
+    else if (srs().isProjected()) {
+        return Units::convert(srs().units(), units, width());
     }
     else {
-        Distance d(width(), getSRS().units());
-        double m_per_deg = 2.0 * getSRS().ellipsoid().radiusEquator() * M_PI / 360.0;
+        Distance d(width(), srs().units());
+        double m_per_deg = 2.0 * srs().ellipsoid().radiusEquator() * M_PI / 360.0;
         double d0 = m_per_deg * fabs(cos(yMin())) * width();
         double d1 = m_per_deg * fabs(cos(yMax())) * height();
         return Distance(std::max(d0, d1), Units::METERS).as(units);
@@ -177,12 +176,12 @@ GeoExtent::height(const Units& units) const
 {
     if (!valid())
         return 0.0;
-    else if (getSRS().isProjected()) {
-        return Units::convert(getSRS().units(), units, width());
+    else if (srs().isProjected()) {
+        return Units::convert(srs().units(), units, width());
     }
     else {
         return Distance(
-            getSRS().ellipsoid().longitudinalDegreesToMeters(height(), 0.0),
+            srs().ellipsoid().longitudinalDegreesToMeters(height(), 0.0),
             Units::METERS).as(units);
     }
 }
@@ -267,8 +266,8 @@ namespace
         //if (fromSRS.isGeographic() && (toSRS.isMercator() || toSRS.isSphericalMercator()))
         {
             //Profile merc(Profile::SPHERICAL_MERCATOR);
-            //in_out_ymin = clamp(in_out_ymin, merc.getLatLongExtent().yMin(), merc.getLatLongExtent().yMax());
-            //in_out_ymax = clamp(in_out_ymax, merc.getLatLongExtent().yMin(), merc.getLatLongExtent().yMax());
+            //in_out_ymin = clamp(in_out_ymin, merc.latLongExtent().yMin(), merc.latLongExtent().yMax());
+            //in_out_ymax = clamp(in_out_ymax, merc.latLongExtent().yMin(), merc.latLongExtent().yMax());
 
             Box b = toSRS.bounds(); // long,lat degrees
             if (b.valid())
@@ -369,7 +368,7 @@ GeoExtent::transform(const SRS& to_srs) const
         return GeoExtent::INVALID;
 
     // check for equivalence
-    if (getSRS().isHorizEquivalentTo(to_srs))
+    if (srs().isHorizEquivalentTo(to_srs))
         return *this;
 
     //TODO: this may not work across the antimeridian - unit test required
@@ -379,7 +378,7 @@ GeoExtent::transform(const SRS& to_srs) const
         double xmin = west(), ymin = south();
         double xmax = west() + width(), ymax = south() + height();
 
-        if (transformExtentToMBR(getSRS(), to_srs, xmin, ymin, xmax, ymax))
+        if (transformExtentToMBR(srs(), to_srs, xmin, ymin, xmax, ymax))
         {
             return GeoExtent(to_srs, xmin, ymin, xmax, ymax);
         }
@@ -469,7 +468,7 @@ GeoExtent::contains(double x, double y, const SRS& srs) const
 bool
 GeoExtent::contains(const GeoPoint& rhs) const
 {
-    return contains(rhs.x(), rhs.y(), rhs.getSRS());
+    return contains(rhs.x(), rhs.y(), rhs.srs());
 }
 
 bool
@@ -489,9 +488,9 @@ GeoExtent::contains(const GeoExtent& rhs) const
     return
         valid() &&
         rhs.valid() &&
-        contains(rhs.west(), rhs.south(), rhs.getSRS()) &&
-        contains(rhs.east(), rhs.north(), rhs.getSRS()) &&
-        contains(rhs.getCentroid().to_dvec3(), rhs.getSRS());   // this accounts for the antimeridian
+        contains(rhs.west(), rhs.south(), rhs.srs()) &&
+        contains(rhs.east(), rhs.north(), rhs.srs()) &&
+        contains(rhs.getCentroid().to_dvec3(), rhs.srs());   // this accounts for the antimeridian
 }
 
 #undef  OVERLAPS
@@ -504,11 +503,11 @@ GeoExtent::intersects(const GeoExtent& rhs, bool checkSRS) const
         return false;
 
     // Transform the incoming extent if necessary:
-    if (checkSRS && !_srs.isHorizEquivalentTo(rhs.getSRS()))
+    if (checkSRS && !_srs.isHorizEquivalentTo(rhs.srs()))
     {
         // non-contiguous projection? convert to a contiguous one:
-        GeoExtent thisGeo = transform(getSRS().geoSRS());
-        GeoExtent rhsGeo = rhs.transform(getSRS().geoSRS());
+        GeoExtent thisGeo = transform(srs().geoSRS());
+        GeoExtent rhsGeo = rhs.transform(srs().geoSRS());
         return thisGeo.intersects(rhsGeo, false);
     }
 
@@ -551,7 +550,7 @@ GeoExtent::computeBoundingGeoCircle() const
     {
         GeoPoint centroid = getCentroid();
 
-        if ( getSRS().isProjected() )
+        if ( srs().isProjected() )
         {
             double ext = std::max( width(), height() );
             circle.setRadius( 0.5*ext * 1.414121356237 ); /*sqrt(2)*/
@@ -560,7 +559,7 @@ GeoExtent::computeBoundingGeoCircle() const
         {
             dvec3 center, sw, se, ne, nw;
 
-            auto to_ecef = getSRS().to(SRS("geocentric"));
+            auto to_ecef = srs().to(SRS("geocentric"));
 
             to_ecef(dvec3(centroid.x(), centroid.y(), 0.0), center);
             to_ecef(dvec3(west(), south(), 0.0), sw);
@@ -568,11 +567,11 @@ GeoExtent::computeBoundingGeoCircle() const
             to_ecef(dvec3(east(), north(), 0.0), ne);
             to_ecef(dvec3(west(), north(), 0.0), nw);
 
-            //GeoPoint(getSRS(), centroid.x(), centroid.y(), 0, ALTMODE_ABSOLUTE).toWorld(center);
-            //GeoPoint(getSRS(), west(), south(), 0, ALTMODE_ABSOLUTE).toWorld(sw);
-            //GeoPoint(getSRS(), east(), south(), 0, ALTMODE_ABSOLUTE).toWorld(se);
-            //GeoPoint(getSRS(), east(), north(), 0, ALTMODE_ABSOLUTE).toWorld(ne);
-            //GeoPoint(getSRS(), west(), north(), 0, ALTMODE_ABSOLUTE).toWorld(nw);
+            //GeoPoint(srs(), centroid.x(), centroid.y(), 0, ALTMODE_ABSOLUTE).toWorld(center);
+            //GeoPoint(srs(), west(), south(), 0, ALTMODE_ABSOLUTE).toWorld(sw);
+            //GeoPoint(srs(), east(), south(), 0, ALTMODE_ABSOLUTE).toWorld(se);
+            //GeoPoint(srs(), east(), north(), 0, ALTMODE_ABSOLUTE).toWorld(ne);
+            //GeoPoint(srs(), west(), north(), 0, ALTMODE_ABSOLUTE).toWorld(nw);
             
             double radius2 = lengthSquared(center - sw);
             radius2 = std::max(radius2, lengthSquared(center - se));
@@ -690,7 +689,7 @@ GeoExtent::expandToInclude(const GeoExtent& rhs)
         return true;
     }
 
-    if (!rhs.getSRS().isHorizEquivalentTo(_srs))
+    if (!rhs.srs().isHorizEquivalentTo(_srs))
     {
         return expandToInclude(rhs.transform(_srs));
     }
@@ -764,7 +763,7 @@ namespace
 GeoExtent
 GeoExtent::intersectionSameSRS(const GeoExtent& rhs) const
 {
-    if ( !valid() || !rhs.valid() || !_srs.isHorizEquivalentTo( rhs.getSRS() ) )
+    if ( !valid() || !rhs.valid() || !_srs.isHorizEquivalentTo( rhs.srs() ) )
         return GeoExtent::INVALID;
 
     if ( !intersects(rhs) )
@@ -987,7 +986,7 @@ GeoExtent::createPolytope(osg::Polytope& tope) const
     if ( ! this->valid() )
         return false;
 
-    if ( getSRS().isProjected() )
+    if ( srs().isProjected() )
     {
         // add planes for the four sides of the extent, Normals point inwards.
         double halfWidth  = 0.5*width();
@@ -1005,10 +1004,10 @@ GeoExtent::createPolytope(osg::Polytope& tope) const
         // convert 4 corners to world space (ECEF)
         dvec3 center(0.0, 0.0, 0.0);
         dvec3 sw, se, nw, ne;
-        GeoPoint(getSRS(), west(), south(), 0.0, ALTMODE_ABSOLUTE).toWorld( sw );
-        GeoPoint(getSRS(), east(), south(), 0.0, ALTMODE_ABSOLUTE).toWorld( se );
-        GeoPoint(getSRS(), east(), north(), 0.0, ALTMODE_ABSOLUTE).toWorld( ne );
-        GeoPoint(getSRS(), west(), north(), 0.0, ALTMODE_ABSOLUTE).toWorld( nw );
+        GeoPoint(srs(), west(), south(), 0.0, ALTMODE_ABSOLUTE).toWorld( sw );
+        GeoPoint(srs(), east(), south(), 0.0, ALTMODE_ABSOLUTE).toWorld( se );
+        GeoPoint(srs(), east(), north(), 0.0, ALTMODE_ABSOLUTE).toWorld( ne );
+        GeoPoint(srs(), west(), north(), 0.0, ALTMODE_ABSOLUTE).toWorld( nw );
 
         // bounding planes in ECEF space:
         tope.add( osg::Plane(center, nw, sw) ); // west
@@ -1026,12 +1025,12 @@ GeoExtent::createWorldBoundingSphere(double minElev, double maxElev) const
 {
     Sphere bs;
 
-    if (getSRS().isProjected())
+    if (srs().isProjected())
     {
         bs.expandBy(dvec3(xmin(), ymin(), minElev));
         bs.expandBy(dvec3(xmax(), ymax(), maxElev));
-        //GeoPoint(getSRS(), xMin(), yMin(), minElev, ALTMODE_ABSOLUTE).toWorld(w); bs.expandBy(w);
-        //GeoPoint(getSRS(), xMax(), yMax(), maxElev, ALTMODE_ABSOLUTE).toWorld(w); bs.expandBy(w);
+        //GeoPoint(srs(), xMin(), yMin(), minElev, ALTMODE_ABSOLUTE).toWorld(w); bs.expandBy(w);
+        //GeoPoint(srs(), xMax(), yMax(), maxElev, ALTMODE_ABSOLUTE).toWorld(w); bs.expandBy(w);
     }
     else // geocentric
     {
@@ -1053,15 +1052,15 @@ GeoExtent::createWorldBoundingSphere(double minElev, double maxElev) const
                 samplePoints.emplace_back(x, y, minElev);
                 samplePoints.emplace_back(x, y, maxElev);
                 //dvec3 world;
-                //GeoPoint(getSRS(), x, y, minElev, ALTMODE_ABSOLUTE).toWorld(world);
+                //GeoPoint(srs(), x, y, minElev, ALTMODE_ABSOLUTE).toWorld(world);
                 //samplePoints.push_back(world);               
-                //GeoPoint(getSRS(), x, y, maxElev, ALTMODE_ABSOLUTE).toWorld(world);
+                //GeoPoint(srs(), x, y, maxElev, ALTMODE_ABSOLUTE).toWorld(world);
                 //samplePoints.push_back(world);
             }
         }
 
         // transform to world coords:
-        auto to_world = getSRS().to(SRS::ECEF);
+        auto to_world = srs().to(SRS::ECEF);
         to_world.transformRange(samplePoints.begin(), samplePoints.end());
 
         // Compute the bounding box of the sample points

@@ -19,7 +19,7 @@
         LayerReference< TYPE >& NAME () { return _layerRef_ ## NAME ; } \
         const LayerReference< TYPE >& NAME () const { return _layerRef_ ## NAME ; }
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * Helper class for Layers that reference other layers.

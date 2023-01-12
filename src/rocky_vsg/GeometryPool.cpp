@@ -13,7 +13,7 @@
 #undef LC
 #define LC "[GeometryPool] "
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 GeometryPool::GeometryPool() :
     _enabled(true),
@@ -113,7 +113,7 @@ GeometryPool::createKeyForTileKey(
     GeometryKey& out) const
 {
     out.lod  = tileKey.getLOD();
-    out.tileY = tileKey.getProfile().getSRS().isGeographic()? tileKey.getTileY() : 0;
+    out.tileY = tileKey.profile().srs().isGeographic()? tileKey.getTileY() : 0;
     out.size = tileSize;
 }
 
@@ -230,8 +230,8 @@ namespace
         //dmat4 _inverse{ 1 };
 
         Locator(const GeoExtent& extent) :
-            _isGeographic(extent.getSRS().isGeographic()),
-            _ellipsoid(extent.getSRS().ellipsoid())
+            _isGeographic(extent.srs().isGeographic()),
+            _ellipsoid(extent.srs().ellipsoid())
         {
             //_xform = glm::translate(dmat4(1), dvec3(extent.xmin(), extent.ymin(), 0));
             //_xform = glm::scale(_xform, dvec3(extent.width(), extent.height(), 1));
@@ -269,10 +269,10 @@ GeometryPool::createGeometry(
     Cancelable* progress) const
 {
     // Establish a local reference frame for the tile:
-    GeoPoint centroid = tileKey.getExtent().getCentroid();
+    GeoPoint centroid = tileKey.extent().getCentroid();
 
     dmat4 world2local = glm::inverse(
-        centroid.getSRS().localToWorldMatrix(centroid.to_dvec3()));
+        centroid.srs().localToWorldMatrix(centroid.to_dvec3()));
 
     //dvec3 centerWorld;
     //centroid.toWorld( centerWorld );
@@ -329,7 +329,7 @@ GeometryPool::createGeometry(
         dvec3 world_plus_one;
         dvec3 normal;
 
-        Locator locator(tileKey.getExtent());
+        Locator locator(tileKey.extent());
 
         for (unsigned row = 0; row < tileSize; ++row)
         {

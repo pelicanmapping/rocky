@@ -20,7 +20,7 @@
 #include <vsg/state/Sampler.h>
 #include <vsg/state/ImageInfo.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class CreateTileManifest;
     class SurfaceNode;

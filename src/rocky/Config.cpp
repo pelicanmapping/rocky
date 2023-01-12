@@ -10,7 +10,7 @@
 #include <tinyxml.h>
 #include <nlohmann/json.hpp>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #define LC "[Config] "
 

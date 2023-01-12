@@ -17,7 +17,7 @@
 #include <vsg/ui/KeyEvent.h>
 #include <vsg/ui/ScrollWheelEvent.h>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #undef LC
 #define LC "[MapManipulator] "
@@ -757,7 +757,7 @@ MapManipulator::handleTileUpdate(const TileKey& key, vsg::Node* graph, TerrainCa
         !isSettingViewpoint() )
     {
         const GeoPoint& pt = centerMap();
-        if ( key.getExtent().contains(pt.x(), pt.y()) )
+        if ( key.extent().contains(pt.x(), pt.y()) )
         {
             recalculateCenterFromLookVector();
             collisionDetect();

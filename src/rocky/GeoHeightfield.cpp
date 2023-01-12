@@ -2,7 +2,7 @@
 #include "Heightfield.h"
 #include "Math.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #define LC "[GeoHeightfield] "
 
@@ -100,7 +100,7 @@ GeoHeightfield::getElevation(
     dvec3& in_out_point,
     Image::Interpolation interp) const
 {
-    const SRS& localSRS = _extent.getSRS();
+    const SRS& localSRS = _extent.srs();
 
     dvec3 local;
 
@@ -182,7 +182,7 @@ GeoHeightfield::createSubSample(
 }
 
 const GeoExtent&
-GeoHeightfield::getExtent() const
+GeoHeightfield::extent() const
 {
     return _extent;
 }

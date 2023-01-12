@@ -10,7 +10,7 @@
 
 #define LC "[Geoid] "
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 
 Geoid::Geoid(

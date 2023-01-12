@@ -13,7 +13,7 @@
 #include <rocky_vsg/TerrainSettings.h>
 #include <rocky_vsg/TileNodeRegistry.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class Map;
 

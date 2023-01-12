@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * Pre-set colors (convenience class).
@@ -124,7 +124,7 @@ namespace rocky
 
 //------------------------------------------------------------------------
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     // Config specializations for Color:
     template<> inline

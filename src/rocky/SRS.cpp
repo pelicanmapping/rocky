@@ -13,8 +13,8 @@
 
 #define LC "[SRS] "
 
-using namespace rocky;
-using namespace rocky::util;
+using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 namespace
 {
@@ -24,7 +24,16 @@ namespace
         return s.rfind(pattern, 0) == 0;
     }
 
-    struct SRSRepo : public std::unordered_map<std::string, PJ*>
+    Ellipsoid empty_ellipsoid = { };
+
+    struct SRSEntry
+    {
+        PJ* pj = nullptr;
+        Ellipsoid ellipsoid = { };
+        std::string error;
+    };
+
+    struct SRSRepo : public std::unordered_map<std::string, SRSEntry>
     {
         ~SRSRepo()
         {
@@ -33,9 +42,9 @@ namespace
 
             for (auto iter = begin(); iter != end(); ++iter)
             {
-                if (iter->second)
+                if (iter->second.pj)
                 {
-                    proj_destroy(iter->second);
+                    proj_destroy(iter->second.pj);
                 }
             }
 
@@ -45,7 +54,8 @@ namespace
 
         PJ* get_or_create(const std::string& def)
         {
-            PJ* result = nullptr;
+            PJ* pj = nullptr;
+
             if (g_pjctx == nullptr)
             {
                 g_pjctx = proj_context_create();
@@ -70,28 +80,50 @@ namespace
                 auto wkt_dialect = proj_context_guess_wkt_dialect(g_pjctx, to_try.c_str());
                 if (wkt_dialect != PJ_GUESSED_NOT_WKT)
                 {
-                    result = proj_create_from_wkt(g_pjctx, to_try.c_str(), nullptr, nullptr, nullptr);
+                    pj = proj_create_from_wkt(g_pjctx, to_try.c_str(), nullptr, nullptr, nullptr);
                 }
                 else
                 {
-                    result = proj_create(g_pjctx, to_try.c_str());
+                    pj = proj_create(g_pjctx, to_try.c_str());
                 }
 
-                if (result == nullptr)
+                SRSEntry& new_entry = (*this)[def];
+                new_entry.pj = pj;
+
+                if (pj == nullptr)
                 {
                     auto err_no = proj_context_errno(g_pjctx);
-                    std::string err = proj_errno_string(err_no);
-                    std::cerr << err << " (get_or_create " << def << ")" << std::endl;
+                    new_entry.error = proj_errno_string(err_no);
+                    std::cerr << new_entry.error << " (get_or_create " << def << ")" << std::endl;
                 }
-
-                (*this)[def] = result;
+                else
+                {
+                    PJ* ellps = proj_get_ellipsoid(g_pjctx, pj);
+                    if (ellps)
+                    {
+                        double semi_major, semi_minor, inv_flattening;
+                        int is_semi_minor_computed;
+                        proj_ellipsoid_get_parameters(g_pjctx, ellps, &semi_major, &semi_minor, &is_semi_minor_computed, &inv_flattening);
+                        proj_destroy(ellps);
+                        new_entry.ellipsoid = Ellipsoid(semi_major, semi_minor);
+                    }
+                }
             }
             else
             {
-                result = iter->second;
-            }            
-            return result;
+                pj = iter->second.pj;
+            }
+            return pj;
         }
+
+        const Ellipsoid& get_ellipsoid(const std::string& def) const
+        {
+            auto iter = find(def);
+            if (iter == end())
+                return empty_ellipsoid;
+            else
+                return iter->second.ellipsoid;
+        };
 
         std::string make_grid_name(const std::string& in)
         {
@@ -105,12 +137,14 @@ namespace
 
         PJ* get_or_create_xform(const SRS& first, const SRS& second)
         {
-            PJ* result = nullptr;
+            PJ* pj = nullptr;
 
             if (g_pjctx == nullptr)
             {
                 g_pjctx = proj_context_create();
             }
+
+            std::string error;
             std::string def = first.definition() + first.vertical() + ">" + second.definition() + second.vertical();
             auto iter = find(def);
             if (iter == end())
@@ -119,8 +153,8 @@ namespace
                 PJ* p2 = get_or_create(second.definition());
                 if (p1 && p2)
                 {
-                    result = proj_create_crs_to_crs_from_pj(g_pjctx, p1, p2, nullptr, nullptr);
-                    if (result)
+                    pj = proj_create_crs_to_crs_from_pj(g_pjctx, p1, p2, nullptr, nullptr);
+                    if (pj)
                     {
                         bool xform_is_noop = false;
 
@@ -128,7 +162,7 @@ namespace
                         if (!first.vertical().empty() || !second.vertical().empty())
                         {
                             // extract the transformation string:
-                            std::string str = proj_as_proj_string(g_pjctx, result, PJ_PROJ_5, nullptr);
+                            std::string str = proj_as_proj_string(g_pjctx, pj, PJ_PROJ_5, nullptr);
                             
                             // if it doesn't start with pipeline, it's a noop and we need to insert a pipeline
                             if (!starts_with(str, "+proj=pipeline"))
@@ -155,37 +189,39 @@ namespace
                             }
                             
                             // ditch the old one
-                            proj_destroy(result);
+                            proj_destroy(pj);
 
                             // make the new one
-                            result = proj_create(g_pjctx, str.c_str());
+                            pj = proj_create(g_pjctx, str.c_str());
                         }
 
-                        if (result && !xform_is_noop)
+                        if (pj && !xform_is_noop)
                         {
                             // re-order the coordinates to long=x, lat=y
-                            result = proj_normalize_for_visualization(g_pjctx, result);
+                            pj = proj_normalize_for_visualization(g_pjctx, pj);
                         }
                     }
 
-                    if (!result)
+                    if (!pj)
                     {
                         auto err_no = proj_context_errno(g_pjctx);
                         if (err_no != 0)
                         {
-                            std::string err = proj_errno_string(err_no);
-                            std::cerr << err << " (get_or_create_xform " << def << ")" << std::endl;
+                            error = proj_errno_string(err_no);
+                            std::cerr << error << " (get_or_create_xform " << def << ")" << std::endl;
                         }
                     }
                 }
 
-                (*this)[def] = result;
+                auto& new_entry = (*this)[def];
+                new_entry.pj = pj;
+                new_entry.error = error;
             }
             else
             {
-                result = iter->second;
+                pj = iter->second.pj;
             }
-            return result;
+            return pj;
         }
     };
 
@@ -193,11 +229,11 @@ namespace
 }
 
 // common ones.
-SRS SRS::WGS84("epsg:4326");
-SRS SRS::ECEF("geocentric");
-SRS SRS::SPHERICAL_MERCATOR("spherical-mercator");
-SRS SRS::PLATE_CARREE("plate-carree");
-SRS SRS::EMPTY;
+const SRS SRS::WGS84("epsg:4326");
+const SRS SRS::ECEF("geocentric");
+const SRS SRS::SPHERICAL_MERCATOR("spherical-mercator");
+const SRS SRS::PLATE_CARREE("plate-carree");
+const SRS SRS::EMPTY;
 
 SRS::SRS() :
     _valid(false)
@@ -305,21 +341,22 @@ SRS::units() const
     return isGeographic() ? Units::DEGREES : Units::METERS;
 }
 
-Ellipsoid
+const Ellipsoid&
 SRS::ellipsoid() const
 {
-    PJ* pj = g_srs_lut.get_or_create(definition());
-    if (!pj) return {};
+    return g_srs_lut.get_ellipsoid(definition());
+    //PJ* pj = g_srs_lut.get_or_create(definition());
+    //if (!pj) return {};
 
-    PJ* ellps = proj_get_ellipsoid(g_pjctx, pj);
-    if (!ellps) return {};
+    //PJ* ellps = proj_get_ellipsoid(g_pjctx, pj);
+    //if (!ellps) return {};
 
-    double semi_major, semi_minor, inv_flattening;
-    int is_semi_minor_computed;
-    proj_ellipsoid_get_parameters(g_pjctx, ellps, &semi_major, &semi_minor, &is_semi_minor_computed, &inv_flattening);
-    proj_destroy(ellps);
-    
-    return Ellipsoid(semi_major, semi_minor);
+    //double semi_major, semi_minor, inv_flattening;
+    //int is_semi_minor_computed;
+    //proj_ellipsoid_get_parameters(g_pjctx, ellps, &semi_major, &semi_minor, &is_semi_minor_computed, &inv_flattening);
+    //proj_destroy(ellps);
+    //
+    //return Ellipsoid(semi_major, semi_minor);
 }
 
 Box

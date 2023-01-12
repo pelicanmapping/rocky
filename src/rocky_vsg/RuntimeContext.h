@@ -23,7 +23,7 @@ namespace vsg
     class Node;
 }
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * Access layer to viewer, rendering, scene graph, and 

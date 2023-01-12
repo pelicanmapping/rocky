@@ -10,7 +10,7 @@
 #include <rocky/Status.h>
 #include <rocky/Threading.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     class Image;
     class GeoExtent;
@@ -50,11 +50,11 @@ namespace rocky
         shared_ptr<Image> getImage() const;
 
         //! Gets the geospatial extent of the image.
-        const GeoExtent& getExtent() const;
+        const GeoExtent& extent() const;
 
         //! Shortcut to get the spatial reference system describing
         //! the projection of the image.
-        const SRS& getSRS() const;
+        const SRS& srs() const;
 
         /**
          * Crops the image to a new geospatial extent.

@@ -9,7 +9,7 @@
 #include <fstream>
 #include <mutex>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     enum class LogThreshold
     {

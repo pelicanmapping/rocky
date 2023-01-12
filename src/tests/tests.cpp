@@ -9,7 +9,7 @@
 #include <rocky/Heightfield.h>
 #include <rocky/GDALLayers.h>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 namespace
 {
@@ -345,24 +345,37 @@ TEST_CASE("SRS")
 
     SECTION("multithreading")
     {
-        std::vector<std::thread> threads;
+        // tests the fact that SRS are thread-specific
+        auto function = []()
+        {
+            SRS a("wgs84");
+            SRS b("spherical-mercator");
+            auto xform = a.to(b);
+            dvec3 out;
+            REQUIRE(xform(dvec3(-180, 0, 0), out));
+            REQUIRE(equiv(out, dvec3(-20037508.34278925, 0, 0)));
+        };
 
+        std::vector<std::thread> threads;
         for (unsigned i = 0; i < 12; ++i)
         {
-            threads.emplace_back([]()
-                {
-                    SRS a("wgs84");
-                    SRS b("spherical-mercator");
-                    auto xform = a.to(b);
-                    dvec3 out;
-                    REQUIRE(xform(dvec3(-180, 0, 0), out));
-                    REQUIRE(equiv(out, dvec3(-20037508.34278925, 0, 0)));
-                });
+            threads.emplace_back(function);
         }
 
         for (auto& t : threads)
             t.join();
 
         // REQUIRE no crash :)
+    }
+
+    SECTION("profiles")
+    {
+        Profile GG("global-geodetic");
+        REQUIRE(GG.valid());
+        REQUIRE(GG.srs() == SRS::WGS84);
+
+        Profile SM("spherical-mercator");
+        REQUIRE(SM.valid());
+        REQUIRE(SM.srs() == SRS::SPHERICAL_MERCATOR);
     }
 }

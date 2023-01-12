@@ -8,7 +8,7 @@
 #include "VisibleLayer.h"
 #include <tuple>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #define LC "[Map] "
 
@@ -112,7 +112,7 @@ Map::construct(const Config& conf, const IOOptions& io)
     //if (options().profile().has_value())
     //    setProfile(Profile::create(options().profile().get()));
 
-    //if (getProfile() == nullptr)
+    //if (profile() == nullptr)
     //    setProfile(Profile::create(Profile::GLOBAL_GEODETIC));
 
 #if 0
@@ -174,7 +174,7 @@ Map::construct(const Config& conf, const IOOptions& io)
         setProfile(Profile(conf.child("profile"))); 
 
     // set a default profile if neccesary.
-    if (!getProfile().valid())
+    if (!profile().valid())
     {
         setProfile(Profile(Profile::GLOBAL_GEODETIC));
     }
@@ -186,8 +186,8 @@ Map::getConfig() const
     Config conf("map");
     conf.set("name", _name);
 
-    if (getProfile().valid())
-        conf.set("profile", getProfile().getConfig());
+    if (profile().valid())
+        conf.set("profile", profile().getConfig());
 
     //conf.set( "cache",        cache() );
     //conf.set( "cache_policy", cachePolicy() );
@@ -224,7 +224,7 @@ Map::notifyOnLayerOpenOrClose(Layer* layer)
 
     if (layer->isOpen())
     {
-        if (getProfile())
+        if (profile())
         {
             layer->addedToMap(this);
         }
@@ -262,7 +262,7 @@ Map::setProfile(const Profile& value)
         _profile = value;
 
         // create a "proxy" profile to use when querying elevation layers with a vertical datum
-        if (!_profile.getSRS().vertical().empty())
+        if (!_profile.srs().vertical().empty())
         {
             Config conf = _profile.getConfig();
             conf.remove("vdatum");
@@ -297,7 +297,7 @@ Map::setProfile(const Profile& value)
 }
 
 const Profile&
-Map::getProfile() const
+Map::profile() const
 {
     return _profile;
 }
@@ -429,7 +429,7 @@ Map::addLayer(shared_ptr<Layer> layer, const IOOptions& io)
 
 #if 0
     // do we need this? Won't the callback to this?
-    if (layer->isOpen() && getProfile() != NULL)
+    if (layer->isOpen() && profile() != NULL)
     {
         layer->addedToMap(this);
     }
@@ -485,7 +485,7 @@ Map::insertLayer(
     }
 
 #if 0
-    if (layer->isOpen() && getProfile() != NULL)
+    if (layer->isOpen() && profile() != NULL)
     {
         layer->addedToMap(this);
     }
@@ -676,7 +676,7 @@ Map::addLayers(
         if (layer)
         {
 #if 0
-            if (layer->isOpen() && getProfile() != NULL)
+            if (layer->isOpen() && profile() != NULL)
             {
                 layer->addedToMap(this);
             }
@@ -811,17 +811,17 @@ Map::clear()
 }
 
 const SRS&
-Map::getSRS() const
+Map::srs() const
 {
     static SRS emptySRS;
-    return _profile.valid() ? _profile.getSRS() : emptySRS;
+    return _profile.valid() ? _profile.srs() : emptySRS;
 }
 
 #if 0
 const SRS&
 Map::getWorldSRS() const
 {
-    return getSRS() && getSRS().isGeographic() ? getSRS().getGeocentricSRS() : getSRS();
+    return srs() && srs().isGeographic() ? srs().getGeocentricSRS() : srs();
 }
 #endif
 

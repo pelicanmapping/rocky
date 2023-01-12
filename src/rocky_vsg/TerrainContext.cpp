@@ -12,7 +12,7 @@
 
 #include <vsg/state/ShaderStage.h>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 
 TerrainContext::TerrainContext(
@@ -29,7 +29,7 @@ TerrainContext::TerrainContext(
     selectionInfo->initialize(
         settings.firstLOD,
         settings.maxLOD,
-        map->getProfile(),
+        map->profile(),
         settings.minTileRangeFactor,
         true); // restruct polar subdivision..
 

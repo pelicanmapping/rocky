@@ -6,7 +6,7 @@
 #include "TerrainOptions.h"
 #include <cstdlib> // for getenv
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 #undef LC
 #define LC "[TerrainOptions] "

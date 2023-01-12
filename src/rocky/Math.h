@@ -14,7 +14,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     using dvec2 = glm::dvec2;
     using dvec3 = glm::dvec3;

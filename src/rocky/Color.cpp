@@ -11,7 +11,7 @@
 #include <random>
 #include <ctype.h>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 namespace
 {

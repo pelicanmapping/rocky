@@ -6,7 +6,7 @@
 #include "RuntimeContext.h"
 #include <vsg/app/Viewer.h>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 namespace
 {

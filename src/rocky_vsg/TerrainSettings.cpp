@@ -5,7 +5,7 @@
  */
 #include "TerrainSettings.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 TerrainSettings::TerrainSettings(const Config& conf)
 {

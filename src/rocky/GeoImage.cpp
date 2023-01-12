@@ -10,7 +10,7 @@
 #include <cpl_string.h>
 #include <gdal_vrt.h>
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 namespace
 {
@@ -352,8 +352,8 @@ namespace
         double *srcPointsY = srcPointsX + numPixels;
 
         transformGrid(
-            dest_extent.getSRS(),
-            src_extent.getSRS(),
+            dest_extent.srs(),
+            src_extent.srs(),
             dest_extent.xMin() + .5 * dx, dest_extent.yMin() + .5 * dy,
             dest_extent.xMax() - .5 * dx, dest_extent.yMax() - .5 * dy,
             srcPointsX, srcPointsY, width, height);
@@ -617,13 +617,13 @@ GeoImage::getImage() const
 }
 
 const SRS&
-GeoImage::getSRS() const
+GeoImage::srs() const
 {
-    return _extent.getSRS();
+    return _extent.srs();
 }
 
 const GeoExtent&
-GeoImage::getExtent() const
+GeoImage::extent() const
 {
     return _extent;
 }
@@ -656,7 +656,7 @@ GeoImage::getCoord(int s, int t, double& out_x, double& out_y) const
 
 Result<GeoImage>
 GeoImage::crop(
-    const GeoExtent& extent,
+    const GeoExtent& e,
     bool exact, 
     unsigned int width, 
     unsigned int height, 
@@ -670,7 +670,7 @@ GeoImage::crop(
         return Status(Status::ResourceUnavailable);
 
     //Check for equivalence
-    if (extent.getSRS().isEquivalentTo(getSRS()))
+    if (e.srs().isEquivalentTo(srs()))
     {
         //If we want an exact crop or they want to specify the output size of the image, use GDAL
         if (exact || width != 0 || height != 0)
@@ -678,23 +678,23 @@ GeoImage::crop(
             //Suggest an output image size
             if (width == 0 || height == 0)
             {
-                double xRes = getExtent().width() / (double)image->width();
-                double yRes = getExtent().height() / (double)image->height();
+                double xRes = extent().width() / (double)image->width();
+                double yRes = extent().height() / (double)image->height();
 
-                width = std::max(1u, (unsigned int)(extent.width() / xRes));
-                height = std::max(1u, (unsigned int)(extent.height() / yRes));
+                width = std::max(1u, (unsigned int)(e.width() / xRes));
+                height = std::max(1u, (unsigned int)(e.height() / yRes));
             }
 
             //Note:  Passing in the current SRS simply forces GDAL to not do any warping
-            return reproject(getSRS(), &extent, width, height, useBilinearInterpolation);
+            return reproject(srs(), &e, width, height, useBilinearInterpolation);
         }
         else
         {
             //If an exact crop is not desired, we can use the faster image cropping code that does no resampling.
-            double destXMin = extent.xMin();
-            double destYMin = extent.yMin();
-            double destXMax = extent.xMax();
-            double destYMax = extent.yMax();
+            double destXMin = e.xMin();
+            double destYMin = e.yMin();
+            double destXMax = e.xMax();
+            double destYMax = e.yMax();
 
             shared_ptr<Image> new_image = cropImage(
                 image.get(),
@@ -703,7 +703,7 @@ GeoImage::crop(
 
             //The destination extents may be different than the input extents due to not being able to crop along pixel boundaries.
             return new_image ?
-                GeoImage(new_image, GeoExtent(getSRS(), destXMin, destYMin, destXMax, destYMax)) :
+                GeoImage(new_image, GeoExtent(srs(), destXMin, destYMin, destXMax, destYMax)) :
                 GeoImage::INVALID;
         }
     }
@@ -728,19 +728,19 @@ GeoImage::reproject(
     }
     else
     {
-        destExtent = getExtent().transform(to_srs);    
+        destExtent = extent().transform(to_srs);    
     }
 
     Image::ptr resultImage;
 
-    //if (getSRS().isUserDefined() || to_srs.isUserDefined() || getImage()->depth() > 1)
+    //if (srs().isUserDefined() || to_srs.isUserDefined() || getImage()->depth() > 1)
     if (getImage()->depth() > 1)
     {
         // if either of the SRS is a custom projection or it is a 3D image, we have to do a manual reprojection since
         // GDAL will not recognize the SRS and does not handle 3D images.
         resultImage = manualReproject(
             getImage().get(),
-            getExtent(),
+            extent(),
             destExtent,
             useBilinearInterpolation,
             width,
@@ -751,8 +751,8 @@ GeoImage::reproject(
         // otherwise use GDAL.
         resultImage = GDAL_reprojectImage(
             getImage().get(),
-            getSRS().wkt(),
-            getExtent().xMin(), getExtent().yMin(), getExtent().xMax(), getExtent().yMax(),
+            srs().wkt(),
+            extent().xMin(), extent().yMin(), extent().xMax(), extent().yMax(),
             to_srs.wkt(),
             destExtent.xMin(), destExtent.yMin(), destExtent.xMax(), destExtent.yMax(),
             width,
@@ -786,9 +786,10 @@ GeoImage::read(
     }
 
     // transform if necessary
-    if (!p.getSRS().isHorizEquivalentTo(getSRS()))
+    if (!p.srs().isHorizEquivalentTo(srs()))
     {
-        return read(output, p.transform(getSRS()));
+        GeoPoint c;
+        return p.transform(srs(), c) && read(output, c);
     }
 
     double u = (p.x() - _extent.xMin()) / _extent.width();

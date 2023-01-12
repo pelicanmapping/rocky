@@ -5,7 +5,7 @@
  */
 #include "Viewpoint.h"
 
-using namespace rocky;
+using namespace ROCKY_NAMESPACE;
 
 
 Viewpoint::Viewpoint() :
@@ -40,17 +40,15 @@ Viewpoint::Viewpoint(const Config& conf)
             srs,
             conf.value<double>("x", 0.0),
             conf.value<double>("y", 0.0),
-            conf.value<double>("z", 0.0),
-            ALTMODE_ABSOLUTE );
+            conf.value<double>("z", 0.0));
     }
     else if ( conf.hasValue("lat") )
     {
         point = GeoPoint(
             srs,
-            conf.value<double>("long",   0.0),
-            conf.value<double>("lat",    0.0),
-            conf.value<double>("height", 0.0),
-            ALTMODE_ABSOLUTE );
+            conf.value<double>("long", 0.0),
+            conf.value<double>("lat", 0.0),
+            conf.value<double>("height", 0.0));
     }
 
     double xOffset = conf.value("x_offset", 0.0);
@@ -76,7 +74,7 @@ Viewpoint::getConfig() const
     
     if ( point.has_value() )
     {
-        if ( point->getSRS().isGeographic() )
+        if ( point->srs().isGeographic() )
         {
             conf.set("long",   point->x());
             conf.set("lat",    point->y());
@@ -89,10 +87,10 @@ Viewpoint::getConfig() const
             conf.set("z", point->z());
         }
 
-        conf.set("srs", point->getSRS().definition());
+        conf.set("srs", point->srs().definition());
 
-        if ( !point->getSRS().vertical().empty() )
-            conf.set("vdatum", point->getSRS().vertical());
+        if ( !point->srs().vertical().empty() )
+            conf.set("vdatum", point->srs().vertical());
     }
 
     if (positionOffset.has_value() )

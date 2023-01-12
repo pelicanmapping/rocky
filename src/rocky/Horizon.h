@@ -9,7 +9,7 @@
 #include <rocky/Ellipsoid.h>
 #include <rocky/Math.h>
 
-namespace rocky
+namespace ROCKY_NAMESPACE
 {
     /**
      * Horizon operations (for a geocentric map).
