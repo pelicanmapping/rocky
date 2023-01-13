@@ -20,6 +20,11 @@ namespace ROCKY_NAMESPACE
     {
     public:
         // Commonly used SRS's.
+        static const SRS WGS84;
+        static const SRS ECEF;
+        static const SRS SPHERICAL_MERCATOR;
+        static const SRS PLATE_CARREE;
+        static const SRS EMPTY;
 
         //! Latitude and Longitude on the WGS84 ellipsoid
         //! https://en.wikipedia.org/wiki/World_Geodetic_System
@@ -116,6 +121,8 @@ namespace ROCKY_NAMESPACE
         //! ENU coordinate system (e.g., a local tangent plane) centered at
         //! the provided origin into cartesian world coordinates (geocentric if
         //! the SRS is geographic; projected if the SRS is projected).
+        //! (Note: in this is a geographic SRS, the LTP will
+        //! be in geocentric cartesian space.)
         dmat4 localToWorldMatrix(const dvec3& origin) const;
 
         //! Units transformation accounting for latitude if necessary
