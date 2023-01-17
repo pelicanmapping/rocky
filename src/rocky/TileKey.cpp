@@ -335,8 +335,6 @@ namespace
         tileMinY = clamp(tileMinY, 0, (int)numHigh - 1);
         tileMaxY = clamp(tileMaxY, 0, (int)numHigh - 1);
 
-        ROCKY_DEBUG << std::fixed << "  Dest Tiles: " << tileMinX << "," << tileMinY << " => " << tileMaxX << "," << tileMaxY << std::endl;
-
         for (int i = tileMinX; i <= tileMaxX; ++i)
         {
             for (int j = tileMinY; j <= tileMaxY; ++j)

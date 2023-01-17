@@ -73,7 +73,8 @@ namespace
 
         if (err != CE_None)
         {
-            ROCKY_WARN << "[gdal] RasterIO failed.\n";
+            std::cerr << "[gdal] RasterIO failed.\n";
+            return nullptr;
         }
 
         ds->FlushCache();
@@ -89,7 +90,7 @@ namespace
         GDALDriver* memDriver = (GDALDriver*)GDALGetDriverByName("MEM");
         if (!memDriver)
         {
-            ROCKY_WARN << "[gdal] Could not get MEM driver" << std::endl;
+            //ROCKY_WARN << "[gdal] Could not get MEM driver" << std::endl;
             return NULL;
         }
 
@@ -97,7 +98,7 @@ namespace
         GDALDataset* ds = memDriver->Create("", width, height, numBands, dataType, 0);
         if (!ds)
         {
-            ROCKY_WARN << "[gdal] memDriver.create failed" << std::endl;
+            //ROCKY_WARN << "[gdal] memDriver.create failed" << std::endl;
             return NULL;
         }
 
@@ -157,7 +158,7 @@ namespace
 
         if (numBands == 0)
         {
-            ROCKY_WARN << "[gdal] Failure in createDataSetFromImage: unsupported pixel format\n";
+            //ROCKY_WARN << "[gdal] Failure in createDataSetFromImage: unsupported pixel format\n";
             return nullptr;
         }
 
@@ -188,9 +189,10 @@ namespace
                 pixelBytes,
                 pixelBytes * image->width(),
                 1);
+
             if (err != CE_None)
             {
-                ROCKY_WARN << "RasterIO failed.\n";
+                //ROCKY_WARN << "RasterIO failed.\n";
             }
 
             srcDS->FlushCache();

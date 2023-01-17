@@ -1734,9 +1734,9 @@ GDAL::Options::readFrom(const Config& conf)
         "use_vrt",
         "warp_profile"
     };
-    for (const auto& key : deprecated_keys)
-        if (conf.hasValue(key))
-            ROCKY_WARN << "Deprecated property \"" << key << "\" ignored" << std::endl;
+    //for (const auto& key : deprecated_keys)
+    //    if (conf.hasValue(key))
+    //        ROCKY_WARN << "Deprecated property \"" << key << "\" ignored" << std::endl;
 }
 
 void

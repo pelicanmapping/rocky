@@ -1,5 +1,6 @@
 #include "GeoExtent.h"
 #include "Math.h"
+#include "Instance.h"
 
 using namespace ROCKY_NAMESPACE;
 

@@ -65,11 +65,11 @@ namespace
         if (!hf)
             return false;
         if (hf->height() < 1 || hf->height() > 1024) {
-            ROCKY_WARN << "row count = " << hf->height() << std::endl;
+            //ROCKY_WARN << "row count = " << hf->height() << std::endl;
             return false;
         }
         if (hf->width() < 1 || hf->width() > 1024) {
-            ROCKY_WARN << "col count = " << hf->width() << std::endl;
+            //ROCKY_WARN << "col count = " << hf->width() << std::endl;
             return false;
         }
         //if (hf->getHeightList().size() != hf->width() * hf->height()) {
@@ -596,9 +596,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
             // validate it to make sure it's legal.
             if (hf && !validateHeightfield(hf.get()))
             {
-                ROCKY_WARN << LC << "Generated an illegal heightfield!" << std::endl;
                 return Result<GeoHeightfield>(Status::GeneralError, "Generated an illegal heightfield!");
-                //hf = 0L; // to fall back on cached data if possible.
             }
 
             // Pre-caching operations:

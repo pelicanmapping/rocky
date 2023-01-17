@@ -6,6 +6,7 @@
 #include "ImageMosaic.h"
 #include "Image.h"
 #include "TileKey.h"
+#include "Instance.h"
 
 #define LC "[ImageMosaic] "
 

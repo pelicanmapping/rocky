@@ -33,7 +33,7 @@ GeometryPool::GeometryPool(const SRS& worldSRS) :
     if ( ::getenv("ROCKY_REX_NO_POOL") )
     {
         _enabled = false;
-        ROCKY_INFO << LC << "Geometry pool disabled (environment)" << std::endl;
+        //ROCKY_INFO << LC << "Geometry pool disabled (environment)" << std::endl;
     }
 }
 

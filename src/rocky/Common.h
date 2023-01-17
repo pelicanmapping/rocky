@@ -201,11 +201,20 @@ namespace ROCKY_NAMESPACE
 #define ROCKY_STRINGIFY(x) ROCKY_STRINGIFY_0(x)
 
 // please use Log instead
+#define ROCKY_USE_STATIC_INSTANCE_LOG
+
+#ifdef ROCKY_USE_STATIC_INSTANCE_LOG
+#define ROCKY_DEBUG rocky::Instance::log().debug
+#define ROCKY_INFO rocky::Instance::log().info
+#define ROCKY_NOTICE rocky::Instance::log().notice
+#define ROCKY_WARN rocky::Instance::log().warn
+#else
 #define ROCKY_DEBUG if (false) std::cout << "[rk]--"
 #define ROCKY_INFO std::cout << "[rk]- "
 #define ROCKY_NOTICE std::cout << "[rk]  "
 #define ROCKY_WARN std::cout << "[rk]* "
 #define ROCKY_NULL if (false) std::cout
+#endif
 
 #define ROCKY_DEPRECATED(A, B) OE_WARN << #A << " is deprecated; please use " << #B << std::endl
 
@@ -215,9 +224,9 @@ namespace ROCKY_NAMESPACE
 #define ROCKY_FILE (std::strrchr(__FILE__, '/') ? std::strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
 
-#define ROCKY_SOFT_ASSERT(EXPR, ...) if(!(EXPR)) { ROCKY_WARN << "ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; }
-#define ROCKY_SOFT_ASSERT_AND_RETURN(EXPR, RETVAL, ...) if(!(EXPR)) { ROCKY_WARN << "ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; return RETVAL; }
-#define ROCKY_IF_SOFT_ASSERT(EXPR, ...) if(!(EXPR)) { ROCKY_WARN << "ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; } else
-#define ROCKY_HARD_ASSERT(EXPR, ...) if(!(EXPR)) { ROCKY_WARN << "FATAL ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; abort(); }
+#define ROCKY_SOFT_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr << "ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; }
+#define ROCKY_SOFT_ASSERT_AND_RETURN(EXPR, RETVAL, ...) if(!(EXPR)) { std::cerr << "ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; return RETVAL; }
+#define ROCKY_IF_SOFT_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr << "ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; } else
+#define ROCKY_HARD_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr << "FATAL ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; abort(); }
 
-#define ROCKY_TODO(...) ROCKY_DEBUG << "TODO (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ")..." << __VA_ARGS__ "" << std::endl
+#define ROCKY_TODO(...) std::cerr << "TODO (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ")..." << __VA_ARGS__ "" << std::endl

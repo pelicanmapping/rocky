@@ -7,6 +7,8 @@
 #include "IOTypes.h"
 #include "Metrics.h"
 #include "StringUtils.h"
+#include "Instance.h"
+
 #include <cstdlib>
 #include <climits>
 #include <mutex>

@@ -583,11 +583,6 @@ Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) cons
             clamped_gcs_input :
             clamped_gcs_input.transform(this->srs());
 
-        if (!result.valid())
-        {
-            ROCKY_DEBUG << LC << "clamp&xform: input=" << input.toString() << ", output=" << result.toString() << std::endl;
-        }
-
         return result;
     }    
 }
@@ -617,7 +612,7 @@ Profile::getEquivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
     // safety catch
     if (equiv(rhsWidth, 0.0) || equiv(rhsHeight, 0.0))
     {
-        ROCKY_WARN << LC << "getEquivalentLOD: zero dimension" << std::endl;
+        std::cerr << LC << "[rk] Profile: getEquivalentLOD: zero dimension" << std::endl;
         return rhsLOD;
     }
 
