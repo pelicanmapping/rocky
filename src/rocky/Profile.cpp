@@ -366,7 +366,7 @@ Profile::extent() const {
 }
 
 const GeoExtent&
-Profile::latLongExtent() const {
+Profile::geographicExtent() const {
     return _shared->_latlong_extent;
 }
 

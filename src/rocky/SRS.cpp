@@ -206,7 +206,7 @@ namespace
                 west_lon > -1000)
             {
                 // always returns lat/long, so transform back to this srs
-                auto xform = get_or_create_xform("wgs84", "", def, ""); // don't call proj_destroy on this
+                auto xform = get_or_create_operation("wgs84", "", def, ""); // don't call proj_destroy on this
                 PJ_COORD LL = proj_trans(xform, PJ_FWD, PJ_COORD{ west_lon, south_lat, 0.0, 0.0 });
                 PJ_COORD UR = proj_trans(xform, PJ_FWD, PJ_COORD{ east_lon, north_lat, 0.0, 0.0 });
                 entry.bounds = Box(LL.xyz.x, LL.xyz.y, UR.xyz.x, UR.xyz.y);
@@ -257,13 +257,14 @@ namespace
         }
 
         //! retrieve or create a transformation object
-        PJ* get_or_create_xform(
+        PJ* get_or_create_operation(
             const std::string& firstDef, const std::string& firstVert,
             const std::string& secondDef, const std::string& secondVert)
         {
             init_threading_context();
 
             PJ* pj = nullptr;
+            std::string proj;
             std::string error;
 
             // make a unique identifer for the transformation
@@ -277,29 +278,91 @@ namespace
                 PJ* p2 = get_or_create(secondDef);
                 if (p1 && p2)
                 {
-                    // make the transformer
-                    pj = proj_create_crs_to_crs_from_pj(g_pjctx, p1, p2, nullptr, nullptr);
+                    bool p1_is_crs = proj_is_crs(p1);
+                    bool p2_is_crs = proj_is_crs(p2);
+
+                    bool normalize_to_gis_coords = true;
+
+                    if (p1_is_crs && p2_is_crs)
+                    {
+                        // if they are both CRS's, just make a transform operation.
+                        pj = proj_create_crs_to_crs_from_pj(g_pjctx, p1, p2, nullptr, nullptr);
+                    }
+
+                    else if (p1_is_crs && !p2_is_crs)
+                    {
+                        PJ_TYPE type = proj_get_type(p1);
+
+                        if (type == PJ_TYPE_GEOGRAPHIC_2D_CRS || type == PJ_TYPE_GEOGRAPHIC_3D_CRS)
+                        {
+                            proj =
+                                "+proj=pipeline"
+                                " +step +proj=unitconvert +xy_in=deg +xy_out=rad"
+                                " +step " + std::string(proj_as_proj_string(g_pjctx, p2, PJ_PROJ_5, nullptr));
+
+                            pj = proj_create(g_pjctx, proj.c_str());
+
+                            normalize_to_gis_coords = false;
+                        }
+                        else
+                        {
+                            proj =
+                                "+proj=pipeline"
+                                " +step +proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0"
+                                " +step +proj=unitconvert +xy_in=deg +xy_out=rad"
+                                " +step " + std::string(proj_as_proj_string(g_pjctx, p2, PJ_PROJ_5, nullptr)) +
+                                " +step +proj=unitconvert +xy_in=rad +xy_out=deg";
+
+                            pj = proj_create(g_pjctx, proj.c_str());
+
+                            normalize_to_gis_coords = false;
+                        }
+                    }
+
+                    else if (!p1_is_crs && p2_is_crs)
+                    {
+                        proj =
+                            "+proj=pipeline"
+                            " +step +inv " + std::string(proj_as_proj_string(g_pjctx, p1, PJ_PROJ_5, nullptr)) +
+                            " +step " + std::string(proj_as_proj_string(g_pjctx, p2, PJ_PROJ_5, nullptr)) +
+                            " +step +proj=unitconvert +xy_in=rad +xy_out=deg";
+
+                        pj = proj_create(g_pjctx, proj.c_str());
+
+                        normalize_to_gis_coords = false;
+                    }
+
+                    else
+                    {
+                        proj =
+                            "+proj=pipeline"
+                            " +step +inv " + std::string(proj_as_proj_string(g_pjctx, p1, PJ_PROJ_5, nullptr)) +
+                            " +step " + std::string(proj_as_proj_string(g_pjctx, p2, PJ_PROJ_5, nullptr));
+
+                        pj = proj_create(g_pjctx, proj.c_str());
+
+                        normalize_to_gis_coords = false;
+                    }
+
+                    // integrate forward and backward vdatum conversions if necessary.
                     if (pj)
                     {
-                        bool xform_is_noop = false;
-
-                        // integrate forward and backward vdatum conversions if necessary.
                         if (!firstVert.empty() || !secondVert.empty())
                         {
                             // extract the transformation string:
-                            std::string str = proj_as_proj_string(g_pjctx, pj, PJ_PROJ_5, nullptr);
+                            proj = proj_as_proj_string(g_pjctx, pj, PJ_PROJ_5, nullptr);
                             
                             // if it doesn't start with pipeline, it's a noop and we need to insert a pipeline
-                            if (!starts_with(str, "+proj=pipeline"))
+                            if (!starts_with(proj, "+proj=pipeline"))
                             {
-                                str = "+proj=pipeline +step " + str;
-                                xform_is_noop = true;
+                                proj = "+proj=pipeline +step " + proj;
+                                normalize_to_gis_coords = false;
                             }
 
                             // n.b., vgridshift requires radians
                             if (!firstVert.empty())
                             {
-                                str +=
+                                proj +=
                                     " +step +proj=unitconvert +xy_in=deg +xy_out=rad"
                                     " +step +inv +proj=vgridshift +grids=" + make_grid_name(firstVert) +
                                     " +step +proj=unitconvert +xy_in=rad +xy_out=deg";
@@ -307,7 +370,7 @@ namespace
 
                             if (!secondVert.empty())
                             {
-                                str +=
+                                proj +=
                                     " +step +proj=unitconvert +xy_in=deg +xy_out=rad"
                                     " +step +proj=vgridshift +grids=" + make_grid_name(secondVert) +
                                     " +step +proj=unitconvert +xy_in=rad +xy_out=deg";
@@ -317,10 +380,10 @@ namespace
                             proj_destroy(pj);
 
                             // make the new one
-                            pj = proj_create(g_pjctx, str.c_str());
+                            pj = proj_create(g_pjctx, proj.c_str());
                         }
 
-                        if (pj && !xform_is_noop)
+                        if (pj && normalize_to_gis_coords)
                         {
                             // re-order the coordinates to GIS standard long=x, lat=y
                             pj = proj_normalize_for_visualization(g_pjctx, pj);
@@ -340,6 +403,7 @@ namespace
 
                 auto& new_entry = (*this)[def];
                 new_entry.pj = pj;
+                new_entry.proj = proj;
                 new_entry.error = error;
             }
             else
@@ -637,7 +701,7 @@ SRSTransform::valid() const
 void*
 SRSTransform::get_handle() const
 {
-    return (void*)g_srs_lut.get_or_create_xform(
+    return (void*)g_srs_lut.get_or_create_operation(
         _from.definition(),
         _from.vertical(),
         _to.definition(),

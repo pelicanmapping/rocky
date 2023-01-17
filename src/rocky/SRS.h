@@ -157,6 +157,10 @@ namespace ROCKY_NAMESPACE
     using SpatialReference = SRS;
 
 
+    /**
+    * Transformation from one SRS to another (and back)
+    * Create an SRSTransform with the SRS::to() method.
+    */
     class ROCKY_EXPORT SRSTransform
     {
     public:
@@ -176,18 +180,24 @@ namespace ROCKY_NAMESPACE
             return _to;
         }
 
+        //! Transform a 3-vector
+        //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
         bool transform(const DVEC3A& in, DVEC3B& out) const {
             out.x = in.x, out.y = in.y, out.z = in.z;
             return forward(get_handle(), out.x, out.y, out.z);
         }
 
+        //! Transform a 3-vector (symonym for transform() method)
+        //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
         bool operator()(const DVEC3A& in, DVEC3B& out) const {
             out.x = in.x, out.y = in.y, out.z = in.z;
             return forward(get_handle(), out.x, out.y, out.z);
         }
 
+        //! Transform a range of 3-vectors in place
+        //! @return True if all transformations succeeded
         template<typename ITERATOR>
         bool transformRange(ITERATOR begin, ITERATOR end) const {
             unsigned errors = 0;
@@ -198,14 +208,18 @@ namespace ROCKY_NAMESPACE
             return errors == 0;
         }
 
+        //! Inverse-transform a 3-vector
+        //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
         bool inverse(const DVEC3A& in, DVEC3B& out) const {
             out = in;
             return inverse(get_handle(), out.x, out.y, out.z);
         }
 
+        //! Inverse-transform a range of 3-vectors in place
+        //! @return True if all transformations succeeded
         template<typename ITERATOR>
-        void inverseRange(ITERATOR begin, ITERATOR end) const {
+        bool inverseRange(ITERATOR begin, ITERATOR end) const {
             unsigned errors = 0;
             void* handle = get_handle();
             for (auto iter = begin; iter != end; ++iter)

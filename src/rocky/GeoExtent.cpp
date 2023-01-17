@@ -264,12 +264,7 @@ namespace
         // Start by clamping to the out_srs' legal bounds, if possible.
         // TODO: rethink this to be more generic.
         if (fromSRS.isGeographic() && !toSRS.isGeographic())
-        //if (fromSRS.isGeographic() && (toSRS.isMercator() || toSRS.isSphericalMercator()))
         {
-            //Profile merc(Profile::SPHERICAL_MERCATOR);
-            //in_out_ymin = clamp(in_out_ymin, merc.latLongExtent().yMin(), merc.latLongExtent().yMax());
-            //in_out_ymax = clamp(in_out_ymax, merc.latLongExtent().yMin(), merc.latLongExtent().yMax());
-
             Box b = toSRS.bounds(); // long,lat degrees
             if (b.valid())
             {

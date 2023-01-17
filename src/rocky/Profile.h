@@ -14,53 +14,6 @@ namespace ROCKY_NAMESPACE
 {
     class TileKey;
 
-#if 0
-    /**
-     * Configuration options for initializing a Profile.
-     * TODO: refactor into Profile::Options
-     */
-    class ROCKY_EXPORT ProfileOptions : public ConfigOptions
-    {
-    public:
-        ProfileOptions( const ConfigOptions& options =ConfigOptions() );
-        ProfileOptions( const std::string& namedProfile );
-
-        /** dtor */
-        virtual ~ProfileOptions() { }
-
-        /** Returns true if this configuration is well-defined and usable */
-        bool defined() const;
-
-    public: // properties
-
-
-        //! optional Well-Known Profile string.
-        ROCKY_OPTION(std::string, namedProfile);
-        //! spatial reference system initialization string to use for the profile. */
-        ROCKY_OPTION(std::string, srsString);
-        //! Gets the vertical spatial reference init string for this profile.
-        ROCKY_OPTION(std::string, vsrsString);
-        //! Geospatial bounds for this profile's extent
-        ROCKY_OPTION(Box, bounds);
-        //! Number of tiles in the X axis at LOD 0
-        ROCKY_OPTION(int, numTilesWideAtLod0);
-        //! Number of tiles on the Y axis at LOD 0
-        ROCKY_OPTION(int, numTilesHighAtLod0);
-
-    public:
-        Config getConfig() const;
-
-    protected:
-        virtual void mergeConfig( const Config& conf );
-
-    private:
-        void fromConfig( const Config& conf );
-    };
-}
-ROCKY_SPECIALIZE_CONFIG(rocky::ProfileOptions);
-#endif
-
-
     /**
      * A "profile" defines the layout of a data source. The profile conveys the
      * spatial reference system (SRS), the geospatial extents within that SRS, and
@@ -75,6 +28,32 @@ ROCKY_SPECIALIZE_CONFIG(rocky::ProfileOptions);
         static const std::string PLATE_CARREE;
 
     public:
+        //! Construct an empty, invalid profile
+        Profile();
+
+        //! Construct a profile from a well-know name
+        //! (See the well-known constants above)
+        explicit Profile(const std::string& well_known_name);
+
+        //! Construct a profile
+        //! @param srs Spatial reference system of the underlying tiles
+        //! @param box Full extent of the profile (in the provided SRS)
+        //! @param x_tiles_at_root Number of tiles in the X dimension at level of detail zero
+        //! @param y_tiles_at_root Number of tiles in the Y dimension at level of detail zero
+        Profile(
+            const SRS& srs,
+            const Box& bounds = Box(),
+            unsigned x_tiles_at_root = 0,
+            unsigned y_tiles_at_root = 0);
+
+        //! Deserialize a profile
+        explicit Profile(const Config&);
+
+        // copy/move ops
+        Profile(const Profile& rhs) = default;
+        Profile& operator=(const Profile & rhs) = default;
+        Profile(Profile && rhs) { *this = rhs; }
+        Profile& operator=(Profile && rhs);
 
         //! Wheter the profile is properly initialized.
         bool valid() const;
@@ -82,8 +61,8 @@ ROCKY_SPECIALIZE_CONFIG(rocky::ProfileOptions);
         //! Gets the extent of the profile (in the profile's SRS)
         const GeoExtent& extent() const;
 
-        //! Gets the extent of the profile (in lat/long.)
-        const GeoExtent& latLongExtent() const;
+        //! Gets the extent of the profile in geographic coordinates (long, lat degrees)
+        const GeoExtent& geographicExtent() const;
         
         //! spatial reference system underlying this profile.
         const SRS& srs() const;
@@ -192,23 +171,6 @@ ROCKY_SPECIALIZE_CONFIG(rocky::ProfileOptions);
             std::size_t _hash;
         };
         shared_ptr<Data> _shared;
-
-    public:
-        Profile();
-        Profile(const Profile& rhs) = default;
-        Profile& operator=(const Profile& rhs) = default;
-        Profile(Profile&& rhs) { *this = rhs; }
-        Profile& operator=(Profile&& rhs);
-
-        explicit Profile(const Config&);
-
-        explicit Profile(const std::string& well_known_name);
-
-        Profile(
-            const SRS& srs,
-            const Box& bounds = Box(),
-            unsigned x_tiles_at_lod0 = 0,
-            unsigned y_tiles_at_lod0 = 0);
     };
 
 
