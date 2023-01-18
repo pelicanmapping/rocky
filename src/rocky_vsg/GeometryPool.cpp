@@ -265,7 +265,7 @@ namespace
     {
         GeoExtent tile_extent;
         Ellipsoid ellipsoid;
-        SRSTransform tile_to_world;
+        SRSOperation tile_to_world;
 
         Locator2(const GeoExtent& extent, const SRS& worldSRS)
         {

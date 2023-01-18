@@ -17,11 +17,6 @@
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 
-// see Instance.cpp
-
-//! Per thread proj threading context.
-thread_local PJ_CONTEXT* g_pjctx = nullptr;
-
 namespace
 {
     void redirect_proj_log(void* user, int level, const char* msg)
@@ -37,6 +32,10 @@ namespace
     inline bool contains(const std::string& s, const char* pattern) {
         return s.find(pattern) != std::string::npos;
     }
+
+
+    //! Per thread proj threading context.
+    thread_local PJ_CONTEXT* g_pj_thread_local_context = nullptr;
 
     const Ellipsoid default_ellipsoid = { };
     const Box empty_box = { };
@@ -54,11 +53,11 @@ namespace
         std::string error;
     };
 
-    //! SRS data cache
-    struct SRSRepo : public std::unordered_map<std::string, SRSEntry>
+    //! SRS data factory and PROJ main interface
+    struct SRSFactory : public std::unordered_map<std::string, SRSEntry>
     {
         //! destroy cache entries and threading context upon descope
-        ~SRSRepo()
+        ~SRSFactory()
         {
             Instance::log().debug << "SRSRepo: destructor in thread " << util::getCurrentThreadId()
                 << " destroying " << size() << " objects" << std::endl;
@@ -71,17 +70,18 @@ namespace
                 }
             }
 
-            if (g_pjctx)
-                proj_context_destroy(g_pjctx);
+            if (g_pj_thread_local_context)
+                proj_context_destroy(g_pj_thread_local_context);
         }
 
-        void init_threading_context()
+        PJ_CONTEXT* threading_context()
         {
-            if (g_pjctx == nullptr)
+            if (g_pj_thread_local_context == nullptr)
             {
-                g_pjctx = proj_context_create();
-                proj_log_func(g_pjctx, nullptr, redirect_proj_log);
+                g_pj_thread_local_context = proj_context_create();
+                proj_log_func(g_pj_thread_local_context, nullptr, redirect_proj_log);
             }
+            return g_pj_thread_local_context;
         }
 
         //! retrieve or create a PJ projection object based on the provided definition string,
@@ -89,7 +89,7 @@ namespace
         //! like "spherical-mercator" or "wgs84".
         PJ* get_or_create(const std::string& def)
         {
-            init_threading_context();
+            auto ctx = threading_context();
 
             PJ* pj = nullptr;
             auto iter = find(def);
@@ -111,14 +111,30 @@ namespace
                     to_try = "epsg:32663";
 
                 // try to determine whether this ia WKT so we can use the right create function
-                auto wkt_dialect = proj_context_guess_wkt_dialect(g_pjctx, to_try.c_str());
+                auto wkt_dialect = proj_context_guess_wkt_dialect(ctx, to_try.c_str());
                 if (wkt_dialect != PJ_GUESSED_NOT_WKT)
                 {
-                    pj = proj_create_from_wkt(g_pjctx, to_try.c_str(), nullptr, nullptr, nullptr);
+                    pj = proj_create_from_wkt(ctx, to_try.c_str(), nullptr, nullptr, nullptr);
                 }
                 else
                 {
-                    pj = proj_create(g_pjctx, to_try.c_str());
+                    // if it's a PROJ string, be sure to add the +type=crs
+                    if (contains(ndef, "+proj"))
+                    {
+                        if (!contains(ndef, "proj=pipeline") && !contains(ndef, "type=crs"))
+                        {
+                            to_try += " +type=crs";
+                        }
+                    }
+                    else
+                    {
+                        // perhaps it's an EPSG string, in which case we must lower-case it so it
+                        // works on case-sensitive file systems
+                        // https://github.com/pyproj4/pyproj/blob/9283f962e4792da2a7f05ba3735c1ed7f3479502/pyproj/crs/crs.py#L111
+                        replace_in_place(to_try, "+init=EPSG", "+init=epsg");
+                    }
+
+                    pj = proj_create(ctx, to_try.c_str());
                 }
 
                 // store in the cache (even if it failed)
@@ -128,7 +144,7 @@ namespace
                 if (pj == nullptr)
                 {
                     // store any error in the cache entry
-                    auto err_no = proj_context_errno(g_pjctx);
+                    auto err_no = proj_context_errno(ctx);
                     new_entry.error = proj_errno_string(err_no);
                     Instance::log().warn << new_entry.error << " (\"" << def << "\")" << std::endl;
                 }
@@ -139,23 +155,23 @@ namespace
 
                     // extract the ellipsoid parameters.
                     // if this fails, the entry will contain the default WGS84 ellipsoid, and that is ok.
-                    PJ* ellps = proj_get_ellipsoid(g_pjctx, pj);
+                    PJ* ellps = proj_get_ellipsoid(ctx, pj);
                     if (ellps)
                     {
                         double semi_major, semi_minor, inv_flattening;
                         int is_semi_minor_computed;
-                        proj_ellipsoid_get_parameters(g_pjctx, ellps, &semi_major, &semi_minor, &is_semi_minor_computed, &inv_flattening);
+                        proj_ellipsoid_get_parameters(ctx, ellps, &semi_major, &semi_minor, &is_semi_minor_computed, &inv_flattening);
                         proj_destroy(ellps);
                         new_entry.ellipsoid = Ellipsoid(semi_major, semi_minor);
                     }
 
                     // extract the WKT
-                    const char* wkt = proj_as_wkt(g_pjctx, pj, PJ_WKT2_2019, nullptr);
+                    const char* wkt = proj_as_wkt(ctx, pj, PJ_WKT2_2019, nullptr);
                     if (wkt)
                         new_entry.wkt = wkt;
 
                     // extract the PROJ string
-                    const char* proj = proj_as_proj_string(g_pjctx, pj, PJ_PROJ_5, nullptr);
+                    const char* proj = proj_as_proj_string(ctx, pj, PJ_PROJ_5, nullptr);
                     if (proj)
                         new_entry.proj = proj;
                 }
@@ -191,7 +207,7 @@ namespace
         //! Get the computed bounds of a projection (or guess at them)
         const Box& get_bounds(const std::string& def)
         {
-            init_threading_context();
+            auto ctx = threading_context();
 
             auto iter = find(def);
             if (iter == end() || iter->second.pj == nullptr)
@@ -202,7 +218,7 @@ namespace
                 return entry.bounds.get();
 
             double west_lon, south_lat, east_lon, north_lat;
-            if (proj_get_area_of_use(g_pjctx, entry.pj, &west_lon, &south_lat, &east_lon, &north_lat, nullptr) &&
+            if (proj_get_area_of_use(ctx, entry.pj, &west_lon, &south_lat, &east_lon, &north_lat, nullptr) &&
                 west_lon > -1000)
             {
                 // always returns lat/long, so transform back to this srs
@@ -233,6 +249,16 @@ namespace
                         // values found empirically 
                         entry.bounds = Box(-20037508.342789244, -20048966.104014594, 20037508.342789244, 20048966.104014594);
                     }
+
+                    else if (contains(entry.proj, "proj=qsc"))
+                    {
+                        // maximum possible values, I think
+                        entry.bounds = Box(
+                            -entry.ellipsoid.semiMajorAxis(),
+                            -entry.ellipsoid.semiMinorAxis(),
+                            entry.ellipsoid.semiMajorAxis(),
+                            entry.ellipsoid.semiMinorAxis());
+                    }
                 }
             }
 
@@ -261,7 +287,7 @@ namespace
             const std::string& firstDef, const std::string& firstVert,
             const std::string& secondDef, const std::string& secondVert)
         {
-            init_threading_context();
+            auto ctx = threading_context();
 
             PJ* pj = nullptr;
             std::string proj;
@@ -286,7 +312,7 @@ namespace
                     if (p1_is_crs && p2_is_crs)
                     {
                         // if they are both CRS's, just make a transform operation.
-                        pj = proj_create_crs_to_crs_from_pj(g_pjctx, p1, p2, nullptr, nullptr);
+                        pj = proj_create_crs_to_crs_from_pj(ctx, p1, p2, nullptr, nullptr);
                     }
 
                     else if (p1_is_crs && !p2_is_crs)
@@ -298,9 +324,9 @@ namespace
                             proj =
                                 "+proj=pipeline"
                                 " +step +proj=unitconvert +xy_in=deg +xy_out=rad"
-                                " +step " + std::string(proj_as_proj_string(g_pjctx, p2, PJ_PROJ_5, nullptr));
+                                " +step " + std::string(proj_as_proj_string(ctx, p2, PJ_PROJ_5, nullptr));
 
-                            pj = proj_create(g_pjctx, proj.c_str());
+                            pj = proj_create(ctx, proj.c_str());
 
                             normalize_to_gis_coords = false;
                         }
@@ -310,10 +336,10 @@ namespace
                                 "+proj=pipeline"
                                 " +step +proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0"
                                 " +step +proj=unitconvert +xy_in=deg +xy_out=rad"
-                                " +step " + std::string(proj_as_proj_string(g_pjctx, p2, PJ_PROJ_5, nullptr)) +
+                                " +step " + std::string(proj_as_proj_string(ctx, p2, PJ_PROJ_5, nullptr)) +
                                 " +step +proj=unitconvert +xy_in=rad +xy_out=deg";
 
-                            pj = proj_create(g_pjctx, proj.c_str());
+                            pj = proj_create(ctx, proj.c_str());
 
                             normalize_to_gis_coords = false;
                         }
@@ -323,11 +349,11 @@ namespace
                     {
                         proj =
                             "+proj=pipeline"
-                            " +step +inv " + std::string(proj_as_proj_string(g_pjctx, p1, PJ_PROJ_5, nullptr)) +
-                            " +step " + std::string(proj_as_proj_string(g_pjctx, p2, PJ_PROJ_5, nullptr)) +
+                            " +step +inv " + std::string(proj_as_proj_string(ctx, p1, PJ_PROJ_5, nullptr)) +
+                            " +step " + std::string(proj_as_proj_string(ctx, p2, PJ_PROJ_5, nullptr)) +
                             " +step +proj=unitconvert +xy_in=rad +xy_out=deg";
 
-                        pj = proj_create(g_pjctx, proj.c_str());
+                        pj = proj_create(ctx, proj.c_str());
 
                         normalize_to_gis_coords = false;
                     }
@@ -336,10 +362,10 @@ namespace
                     {
                         proj =
                             "+proj=pipeline"
-                            " +step +inv " + std::string(proj_as_proj_string(g_pjctx, p1, PJ_PROJ_5, nullptr)) +
-                            " +step " + std::string(proj_as_proj_string(g_pjctx, p2, PJ_PROJ_5, nullptr));
+                            " +step +inv " + std::string(proj_as_proj_string(ctx, p1, PJ_PROJ_5, nullptr)) +
+                            " +step " + std::string(proj_as_proj_string(ctx, p2, PJ_PROJ_5, nullptr));
 
-                        pj = proj_create(g_pjctx, proj.c_str());
+                        pj = proj_create(ctx, proj.c_str());
 
                         normalize_to_gis_coords = false;
                     }
@@ -350,7 +376,7 @@ namespace
                         if (!firstVert.empty() || !secondVert.empty())
                         {
                             // extract the transformation string:
-                            proj = proj_as_proj_string(g_pjctx, pj, PJ_PROJ_5, nullptr);
+                            proj = proj_as_proj_string(ctx, pj, PJ_PROJ_5, nullptr);
                             
                             // if it doesn't start with pipeline, it's a noop and we need to insert a pipeline
                             if (!starts_with(proj, "+proj=pipeline"))
@@ -380,19 +406,19 @@ namespace
                             proj_destroy(pj);
 
                             // make the new one
-                            pj = proj_create(g_pjctx, proj.c_str());
+                            pj = proj_create(ctx, proj.c_str());
                         }
 
                         if (pj && normalize_to_gis_coords)
                         {
                             // re-order the coordinates to GIS standard long=x, lat=y
-                            pj = proj_normalize_for_visualization(g_pjctx, pj);
+                            pj = proj_normalize_for_visualization(ctx, pj);
                         }
                     }
 
                     if (!pj)
                     {
-                        auto err_no = proj_context_errno(g_pjctx);
+                        auto err_no = proj_context_errno(ctx);
                         if (err_no != 0)
                         {
                             error = proj_errno_string(err_no);
@@ -415,7 +441,7 @@ namespace
     };
 
     // create an SRS repo per thread since proj is not thread safe.
-    thread_local SRSRepo g_srs_lut;
+    thread_local SRSFactory g_srs_factory;
 }
 
 
@@ -437,7 +463,7 @@ SRS::SRS(const std::string& h, const std::string& v) :
     _vertical(v),
     _valid(false)
 {
-    PJ* pj = g_srs_lut.get_or_create(h);
+    PJ* pj = g_srs_factory.get_or_create(h);
     _valid = (pj != nullptr);
 }
 
@@ -460,7 +486,7 @@ SRS::~SRS()
 const char*
 SRS::name() const
 {
-    PJ* pj = g_srs_lut.get_or_create(_definition);
+    PJ* pj = g_srs_factory.get_or_create(_definition);
     if (!pj) return "";
     return proj_get_name(pj);
 }
@@ -471,7 +497,7 @@ SRS::isGeographic() const
     if (!valid())
         return false;
 
-    auto type = g_srs_lut.get_type(definition());
+    auto type = g_srs_factory.get_type(definition());
     return
         type == PJ_TYPE_GEOGRAPHIC_2D_CRS ||
         type == PJ_TYPE_GEOGRAPHIC_3D_CRS;
@@ -483,7 +509,7 @@ SRS::isGeocentric() const
     if (!valid())
         return false;
 
-    auto type = g_srs_lut.get_type(definition());
+    auto type = g_srs_factory.get_type(definition());
     return
         type == PJ_TYPE_GEOCENTRIC_CRS;
 }
@@ -494,11 +520,9 @@ SRS::isProjected() const
     if (!valid())
         return false;
 
-    auto type = g_srs_lut.get_type(definition());
+    auto type = g_srs_factory.get_type(definition());
     return
-        type != PJ_TYPE_GEOGRAPHIC_2D_CRS &&
-        type != PJ_TYPE_GEOGRAPHIC_3D_CRS &&
-        type != PJ_TYPE_GEOCENTRIC_CRS;
+        type == PJ_TYPE_PROJECTED_CRS;
 }
 
 bool
@@ -513,18 +537,19 @@ SRS::isEquivalentTo(const SRS& rhs) const
 bool
 SRS::isHorizEquivalentTo(const SRS& rhs) const
 {
-    PJ* pj1 = g_srs_lut.get_or_create(definition());
-    PJ* pj2 = g_srs_lut.get_or_create(rhs.definition());
+    PJ* pj1 = g_srs_factory.get_or_create(definition());
+    PJ* pj2 = g_srs_factory.get_or_create(rhs.definition());
     if (!pj1 || !pj2)
         return false;
     else
-        return proj_is_equivalent_to_with_ctx(g_pjctx, pj1, pj2, PJ_COMP_EQUIVALENT);
+        return proj_is_equivalent_to_with_ctx(
+            g_srs_factory.threading_context(), pj1, pj2, PJ_COMP_EQUIVALENT);
 }
 
 const std::string&
 SRS::wkt() const
 {
-    return g_srs_lut.get_wkt(definition());
+    return g_srs_factory.get_wkt(definition());
 }
 
 const Units&
@@ -536,19 +561,19 @@ SRS::units() const
 const Ellipsoid&
 SRS::ellipsoid() const
 {
-    return g_srs_lut.get_ellipsoid(definition());
+    return g_srs_factory.get_ellipsoid(definition());
 }
 
 const Box&
 SRS::bounds() const
 {
-    return g_srs_lut.get_bounds(definition());
+    return g_srs_factory.get_bounds(definition());
 }
 
-SRSTransform
+SRSOperation
 SRS::to(const SRS& rhs) const
 {
-    SRSTransform result;
+    SRSOperation result;
     if (valid() && rhs.valid())
     {
         result._from = *this;
@@ -561,13 +586,14 @@ SRS::to(const SRS& rhs) const
 SRS
 SRS::geoSRS() const
 {
-    PJ* pj = g_srs_lut.get_or_create(_definition);
+    PJ* pj = g_srs_factory.get_or_create(_definition);
     if (pj)
     {
-        PJ* pjgeo = proj_crs_get_geodetic_crs(g_pjctx, pj);
+        auto ctx = g_srs_factory.threading_context();
+        PJ* pjgeo = proj_crs_get_geodetic_crs(ctx, pj);
         if (pjgeo)
         {
-            std::string wkt = proj_as_wkt(g_pjctx, pjgeo, PJ_WKT2_2019, nullptr);
+            std::string wkt = proj_as_wkt(ctx, pjgeo, PJ_WKT2_2019, nullptr);
             proj_destroy(pjgeo);
             return SRS(wkt, vertical());
         }
@@ -672,13 +698,13 @@ SRS::transformUnits(
 }
 
 
-SRSTransform::SRSTransform()
+SRSOperation::SRSOperation()
 {
     // nop
 }
 
-SRSTransform&
-SRSTransform::operator=(SRSTransform&& rhs)
+SRSOperation&
+SRSOperation::operator=(SRSOperation&& rhs)
 {
     _from = rhs._from;
     _to = rhs._to;
@@ -687,21 +713,21 @@ SRSTransform::operator=(SRSTransform&& rhs)
     return *this;
 }
 
-SRSTransform::~SRSTransform()
+SRSOperation::~SRSOperation()
 {
     //nop
 }
 
 bool
-SRSTransform::valid() const
+SRSOperation::valid() const
 {
     return _from.valid() && _to.valid() && get_handle() != nullptr;
 }
 
 void*
-SRSTransform::get_handle() const
+SRSOperation::get_handle() const
 {
-    return (void*)g_srs_lut.get_or_create_operation(
+    return (void*)g_srs_factory.get_or_create_operation(
         _from.definition(),
         _from.vertical(),
         _to.definition(),
@@ -709,13 +735,12 @@ SRSTransform::get_handle() const
 }
 
 bool
-SRSTransform::forward(void* handle, double& x, double& y, double& z) const
+SRSOperation::forward(void* handle, double& x, double& y, double& z) const
 {
     if (handle)
     {
-        //std::cout << proj_as_proj_string(g_pjctx, (PJ*)handle, PJ_PROJ_5, nullptr) << std::endl;
         proj_errno_reset((PJ*)handle);
-        auto out = proj_trans((PJ*)handle, PJ_FWD, PJ_COORD{ x, y, z });
+        PJ_COORD out = proj_trans((PJ*)handle, PJ_FWD, PJ_COORD{ x, y, z });
         if (proj_errno((PJ*)handle) != 0)
             return false;
         x = out.xyz.x, y = out.xyz.y, z = out.xyz.z;
@@ -726,12 +751,12 @@ SRSTransform::forward(void* handle, double& x, double& y, double& z) const
 }
 
 bool
-SRSTransform::inverse(void* handle, double& x, double& y, double& z) const
+SRSOperation::inverse(void* handle, double& x, double& y, double& z) const
 {
     if (handle)
     {
         proj_errno_reset((PJ*)handle);
-        auto out = proj_trans((PJ*)handle, PJ_INV, PJ_COORD{ x, y, z });
+        PJ_COORD out = proj_trans((PJ*)handle, PJ_INV, PJ_COORD{ x, y, z });
         if (proj_errno((PJ*)handle) != 0)
         {
             std::string err = proj_errno_string(proj_errno((PJ*)handle));

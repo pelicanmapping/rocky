@@ -105,7 +105,7 @@ GeoHeightfield::getElevation(
     dvec3 local;
 
     // first xform the input point into our local SRS:
-    SRSTransform xform;
+    SRSOperation xform;
     if (inputSRS != localSRS)
     {
         xform = inputSRS.to(localSRS);

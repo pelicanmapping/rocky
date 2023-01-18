@@ -446,7 +446,7 @@ Profile::getAllKeysAtLOD(
 }
 
 GeoExtent
-Profile::calculateExtent(unsigned lod, unsigned tileX, unsigned tileY) const
+Profile::tileExtent(unsigned lod, unsigned tileX, unsigned tileY) const
 {
     auto [width, height] = tileDimensions(lod);
 

@@ -33,13 +33,13 @@ namespace ROCKY_NAMESPACE { namespace util
     using StringTable = std::unordered_map<std::string, std::string>;
 
     /** Replaces all the instances of "pattern" with "replacement" in "in_out" */
-    extern ROCKY_EXPORT std::string& replaceIn(
+    extern ROCKY_EXPORT std::string& replace_in_place(
         std::string&       in_out,
         const std::string& pattern,
         const std::string& replacement );
 
     /** Replaces all the instances of "pattern" with "replacement" in "in_out" (case-insensitive) */
-    extern ROCKY_EXPORT std::string& ciReplaceIn(
+    extern ROCKY_EXPORT std::string& replace_in_place_case_insensitive(
         std::string&       in_out,
         const std::string& pattern,
         const std::string& replacement );

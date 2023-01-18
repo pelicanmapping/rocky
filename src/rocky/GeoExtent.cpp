@@ -197,11 +197,11 @@ GeoExtent::operator == ( const GeoExtent& rhs ) const
         return false;
 
     return
-        west() == rhs.west() &&
-        east() == rhs.east() &&
-        south() == rhs.south() &&
-        north() == rhs.north() &&
-        _srs.isEquivalentTo(rhs._srs);
+        equiv(west(), rhs.west()) &&
+        equiv(south(), rhs.south()) &&
+        equiv(width(), rhs.width()) &&
+        equiv(height(), rhs.height()) &&
+        _srs == rhs._srs;
 }
 
 bool
@@ -553,26 +553,22 @@ GeoExtent::computeBoundingGeoCircle() const
         }
         else // isGeographic
         {
-            dvec3 center, sw, se, ne, nw;
-
-            auto to_ecef = srs().to(SRS("geocentric"));
-
-            to_ecef(dvec3(centroid.x(), centroid.y(), 0.0), center);
-            to_ecef(dvec3(west(), south(), 0.0), sw);
-            to_ecef(dvec3(east(), south(), 0.0), se);
-            to_ecef(dvec3(east(), north(), 0.0), ne);
-            to_ecef(dvec3(west(), north(), 0.0), nw);
-
-            //GeoPoint(srs(), centroid.x(), centroid.y(), 0, ALTMODE_ABSOLUTE).toWorld(center);
-            //GeoPoint(srs(), west(), south(), 0, ALTMODE_ABSOLUTE).toWorld(sw);
-            //GeoPoint(srs(), east(), south(), 0, ALTMODE_ABSOLUTE).toWorld(se);
-            //GeoPoint(srs(), east(), north(), 0, ALTMODE_ABSOLUTE).toWorld(ne);
-            //GeoPoint(srs(), west(), north(), 0, ALTMODE_ABSOLUTE).toWorld(nw);
+            // calculate the radius in meters using the ECEF coordinate system
+            std::vector<dvec3> p =
+            {
+                dvec3(centroid.x(), centroid.y(), 0.0),
+                dvec3(west(), south(), 0.0),
+                dvec3(east(), south(), 0.0),
+                dvec3(east(), north(), 0.0),
+                dvec3(west(), north(), 0.0)
+            };
             
-            double radius2 = lengthSquared(center - sw);
-            radius2 = std::max(radius2, lengthSquared(center - se));
-            radius2 = std::max(radius2, lengthSquared(center - ne));
-            radius2 = std::max(radius2, lengthSquared(center - sw));
+            srs().to(SRS::ECEF).transformRange(p.begin(), p.end());
+            
+            double radius2 = lengthSquared(p[0] - p[1]);
+            radius2 = std::max(radius2, lengthSquared(p[0] - p[2]));
+            radius2 = std::max(radius2, lengthSquared(p[0] - p[3]));
+            radius2 = std::max(radius2, lengthSquared(p[0] - p[4]));
 
             circle.setRadius(sqrt(radius2));
         }

@@ -11,10 +11,11 @@
 
 namespace ROCKY_NAMESPACE
 {
-    class SRSTransform;
+    class SRSOperation;
 
     /**
     * Spatial reference system.
+    * An SRS is the context that makes a coordinates geospatially meaningful.
     */
     class ROCKY_EXPORT SRS
     {
@@ -49,14 +50,21 @@ namespace ROCKY_NAMESPACE
         //! Construct an empty (invalid) SRS.
         SRS();
 
-        //! Construct a new SRS from a definition string and
-        //! an optional vertical datum string.
+        //! Construct a new SRS from defintion strings.
+        //! 
+        //! @param horizontal Main definition string may be WKT definition, 
+        //!     a PROJ init string, or an epsg code (like epsg:4326), or a
+        //!     well-known alias like "wgs84" or "spherical-mercator".
+        //! @param vertical Vertical datum string, typically the local filename
+        //!     of a grid file (like "us_nga_egm96_15m.tif") found in the 
+        //!     PROJ_DATA folder
         SRS(
             const std::string& horizontal,
             const std::string& vertical = {});
 
-        //! Make a transform from this SRS to another
-        SRSTransform to(const SRS&) const;
+        //! Make an operation that will take coordinates from this SRS to another
+        //! @param target Target SRS for coordinate operation
+        SRSOperation to(const SRS& target) const;
 
         //! Name of this SRS
         const char* name() const;
@@ -91,7 +99,7 @@ namespace ROCKY_NAMESPACE
         //! WKT (OGC Well-Known Text) representation
         const std::string& wkt() const;
 
-        //! Units of measure
+        //! Units of measure for the horizontal components
         const Units& units() const;
 
         //! Underlying reference ellipsoid
@@ -150,7 +158,7 @@ namespace ROCKY_NAMESPACE
         std::string _definition;
         std::string _vertical;
         bool _valid;
-        friend class SRSTransform;
+        friend class SRSOperation;
     };
 
     //! Convenient symonym
@@ -158,24 +166,26 @@ namespace ROCKY_NAMESPACE
 
 
     /**
-    * Transformation from one SRS to another (and back)
-    * Create an SRSTransform with the SRS::to() method.
+    * Coordinate operation that translates coordinates from one SRS to another.
+    * It will also allow the inverse operation if it exists.
+    * 
+    * Create an SRSOperation with the SRS::to() method.
     */
-    class ROCKY_EXPORT SRSTransform
+    class ROCKY_EXPORT SRSOperation
     {
     public:
-        //! Construct an empty (invalid) transform
-        SRSTransform();
+        //! Construct an empty (invalid) operation
+        SRSOperation();
 
-        //! Whether this is a valid and legal transform
+        //! Whether this is a valid and legal operation
         bool valid() const;
 
-        //! Source SRS of the transformation
+        //! Source SRS of the operation
         const SRS& from() const {
             return _from;
         }
 
-        //! Target SRS of the transformation
+        //! Target SRS of the operation
         const SRS& to() const {
             return _to;
         }
@@ -229,11 +239,11 @@ namespace ROCKY_NAMESPACE
         }
 
         // copy/move ops
-        SRSTransform(const SRSTransform& rhs) = default;
-        SRSTransform& operator=(const SRSTransform&) = default;
-        SRSTransform(SRSTransform && rhs) { *this = rhs; }
-        SRSTransform& operator=(SRSTransform&&);
-        ~SRSTransform();
+        SRSOperation(const SRSOperation& rhs) = default;
+        SRSOperation& operator=(const SRSOperation&) = default;
+        SRSOperation(SRSOperation&& rhs) { *this = rhs; }
+        SRSOperation& operator=(SRSOperation&&);
+        ~SRSOperation();
 
     private:
         SRS _from;

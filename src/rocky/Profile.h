@@ -55,38 +55,46 @@ namespace ROCKY_NAMESPACE
         Profile(Profile && rhs) { *this = rhs; }
         Profile& operator=(Profile && rhs);
 
-        //! Wheter the profile is properly initialized.
+        //! @return True if the profile is properly initialized.
         bool valid() const;
 
-        //! Gets the extent of the profile (in the profile's SRS)
+        //! @return Extent of the profile (in the profile's SRS)
         const GeoExtent& extent() const;
 
-        //! Gets the extent of the profile in geographic coordinates (long, lat degrees)
+        //! @return Extent of the profile in geographic coordinates (long, lat degrees)
         const GeoExtent& geographicExtent() const;
         
-        //! spatial reference system underlying this profile.
+        //! @return Spatial reference system underlying this profile.
         const SRS& srs() const;
 
-        //! Given an x-resolution, specified in the profile's SRS units, calculates and
+        //! @return Given an x-resolution, specified in the profile's SRS units, calculates and
         //! returns the closest LOD level.
-        unsigned int getLevelOfDetailForHorizResolution(
+        unsigned getLevelOfDetailForHorizResolution(
             double resolution,
             int tileSize ) const;
 
-        //! tile keys that comprise the tiles at the root (LOD 0) of this
+        //! Tile keys that comprise the tiles at the root (LOD 0) of this
         //! profile. Same as calling getAllKeysAtLOD(0).
+        //! @param target_profile Profile for which to query root keys
+        //! @param out_keys Places keys in this vector
         static void getRootKeys(
             const Profile& target_profile,
             std::vector<TileKey>& out_keys);
 
         //! Gets all the tile keys at the specified LOD.
+        //! @param lod Level of detail for which to query keys
+        //! @param target_profile Profile for which to query keys
+        //! @param out_keys Places keys in this vector
         static void getAllKeysAtLOD(
             unsigned lod,
             const Profile& target_profile,
             std::vector<TileKey>& out_keys);
 
-        //! Calculates an extent given a tile location in this profile.
-        GeoExtent calculateExtent(
+        //! @return Extent given a tile location in this profile.
+        //! @param lod Level of detail for which to calculate tile extent
+        //! @param tileX X tile index
+        //! @param tile& Y tile index
+        GeoExtent tileExtent(
             unsigned lod,
             unsigned tileX,
             unsigned tileY) const;
