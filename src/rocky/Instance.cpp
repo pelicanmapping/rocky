@@ -5,8 +5,11 @@
  */
 #include "Instance.h"
 #include "Threading.h"
+
+#ifdef GDAL_FOUND
 #include <gdal.h>
 #include <cpl_conv.h>
+#endif
 
 #include "GDALLayers.h"
 
@@ -22,9 +25,9 @@ Instance::Instance()
         return this->_log;
     };
 
+#ifdef GDAL_FOUND
     OGRRegisterAll();
     GDALAllRegister();
-
 
 #ifdef ROCKY_USE_UTF8_FILENAME
     CPLSetConfigOption("GDAL_FILENAME_IS_UTF8", "YES");
@@ -44,6 +47,7 @@ Instance::Instance()
     // Set the GDAL shared block cache size. This defaults to 5% of
     // available memory which is too high.
     GDALSetCacheMax(40 * 1024 * 1024);
+#endif // GDAL_FOUND
 
     // register known layer types.
     addFactory("gdalimage",

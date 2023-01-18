@@ -13,12 +13,17 @@ file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 # set up library dependencies
+set(PRIVATE_LIBS
+    PROJ::proj
+    nlohmann_json::nlohmann_json
+    unofficial-tinyxml::unofficial-tinyxml)
+    
+if(GDAL_FOUND)
+    list(APPEND PRIVATE_LIBS GDAL::GDAL)
+endif()
+
 set(LIBRARIES
-    PRIVATE
-        PROJ::proj
-        GDAL::GDAL
-        nlohmann_json::nlohmann_json
-        unofficial-tinyxml::unofficial-tinyxml
+    PRIVATE ${PRIVATE_LIBS}
     PUBLIC
         glm::glm
 )

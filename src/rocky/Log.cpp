@@ -64,7 +64,7 @@ Log::Log() :
     notice.attach(std::cout);
 
     warn.attach(std::cout);
-    warn._prefix = "(WARNING)";
+    warn._prefix = "---WARNING---";
 }
 
 Log::Log(const Log& rhs) :

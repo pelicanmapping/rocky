@@ -146,6 +146,9 @@ namespace ROCKY_NAMESPACE
             const SRS& outSRS,
             const Angle& latitude);
 
+        //! If the event of an error, return the last error message
+        const std::string& errorMessage() const;
+
         // copy/move operations
         SRS(const SRS& rhs) = default;
         SRS& operator=(const SRS& rhs) = default;

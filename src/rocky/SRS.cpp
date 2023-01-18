@@ -84,6 +84,15 @@ namespace
             return g_pj_thread_local_context;
         }
 
+        const std::string& get_error_message(const std::string& def)
+        {
+            auto iter = find(def);
+            if (iter == end())
+                return empty_string; // shouldn't happen
+            else
+                return iter->second.error;
+        }
+
         //! retrieve or create a PJ projection object based on the provided definition string,
         //! which may be a proj string, a WKT string, an espg identifer, or a well-known alias
         //! like "spherical-mercator" or "wgs84".
@@ -415,15 +424,15 @@ namespace
                             pj = proj_normalize_for_visualization(ctx, pj);
                         }
                     }
+                }
 
-                    if (!pj)
+                if (!pj)
+                {
+                    auto err_no = proj_context_errno(ctx);
+                    if (err_no != 0)
                     {
-                        auto err_no = proj_context_errno(ctx);
-                        if (err_no != 0)
-                        {
-                            error = proj_errno_string(err_no);
-                            Instance::log().warn << error << " (\"" << def << "\")" << std::endl;
-                        }
+                        error = proj_errno_string(err_no);
+                        Instance::log().warn << error << " (\"" << def << "\")" << std::endl;
                     }
                 }
 
@@ -695,6 +704,12 @@ SRS::transformUnits(
     {
         return distance.as(outSRS.units());
     }
+}
+
+const std::string&
+SRS::errorMessage() const
+{
+    return g_srs_factory.get_error_message(definition());
 }
 
 

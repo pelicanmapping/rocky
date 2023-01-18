@@ -3,17 +3,20 @@
 #include "Image.h"
 #include "Metrics.h"
 
+#ifdef GDAL_FOUND
 #include <gdal.h>
 #include <gdalwarper.h>
 #include <ogr_spatialref.h>
 #include <gdal_proxy.h>
 #include <cpl_string.h>
 #include <gdal_vrt.h>
+#endif
 
 using namespace ROCKY_NAMESPACE;
 
 namespace
 {
+#ifdef GDAL_FOUND
     shared_ptr<Image> createImageFromDataset(GDALDataset* ds)
     {
         // called internally -- GDAL lock not required
@@ -262,6 +265,7 @@ namespace
 
         return result;
     }
+#endif
 
     bool transformGrid(
         const SRS& fromSRS,
@@ -694,8 +698,16 @@ GeoImage::reproject(
 
     Image::ptr resultImage;
 
+
+    bool reproject_with_gdal = false;
+
+#ifndef GDAL_FOUND
+    reproject_with_gdal = image()->depth() == 1;
+#endif
+
+
     //if (srs().isUserDefined() || to_srs.isUserDefined() || getImage()->depth() > 1)
-    if (image()->depth() > 1)
+    if (reproject_with_gdal == false)
     {
         // if either of the SRS is a custom projection or it is a 3D image, we have to do a manual reprojection since
         // GDAL will not recognize the SRS and does not handle 3D images.
@@ -707,6 +719,8 @@ GeoImage::reproject(
             width,
             height);
     }
+
+#ifdef GDAL_FOUND
     else
     {
         // otherwise use GDAL.
@@ -720,6 +734,7 @@ GeoImage::reproject(
             height,
             useBilinearInterpolation);
     }
+#endif
 
     return GeoImage(resultImage, destExtent);
 }

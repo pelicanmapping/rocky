@@ -85,7 +85,9 @@ int main(int argc, char** argv)
     mapNode->map()->addLayer(layer);
 
     if (layer->status().failed())
-        rk->log().warn << layer->status().message << std::endl;
+    {
+        rk->log().warn << "Failed to load GeoTIFF: " << layer->status().message << std::endl;
+    }
 
 #else
     auto layer = rocky::TestLayer::create();

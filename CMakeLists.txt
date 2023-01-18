@@ -24,13 +24,24 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
+# PROJ - geospatial projections library - required
 find_package(PROJ CONFIG REQUIRED)
-find_package(GDAL CONFIG REQUIRED)
-# find_package(CURL CONFIG REQUIRED)
+
+# glm - vector and matrix math library - required
 find_package(glm CONFIG REQUIRED)
+
 find_package(tinyxml CONFIG REQUIRED)
+
 find_package(nlohmann_json CONFIG REQUIRED)
+
+# GDAL - geospatial data abstraction library - optional
+option(BUILD_WITH_GDAL "Use GDAL to load GeoTIFF and other geodata formats" ON)
+if(BUILD_WITH_GDAL)
+    find_package(GDAL CONFIG REQUIRED)
+    if (GDAL_FOUND)
+        add_definitions("-DGDAL_FOUND")
+    endif()
+endif()
 
 # source code
 add_subdirectory(src)
-

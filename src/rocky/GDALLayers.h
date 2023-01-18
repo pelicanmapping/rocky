@@ -50,12 +50,10 @@ namespace ROCKY_NAMESPACE
         {
         public:
             Options() { }
-            //Options(const ConfigOptions& input);
             optional<URI> url;
             optional<std::string> connection;
             optional<unsigned> subDataSet;
             optional<Image::Interpolation> interpolation;
-            //optional<ProfileOptions> warpProfile;
             optional<bool> useVRT;
             optional<bool> coverageUsesPaletteIndex;
             optional<bool> singleThreaded;
@@ -149,7 +147,7 @@ namespace ROCKY_NAMESPACE
             const std::string& getName() const { return _name; }
         };
 
-        //! Creates an OSG image from an entire GDAL dataset
+#if 0
         extern ROCKY_EXPORT shared_ptr<Image> reprojectImage(
             const Image* srcImage,
             const std::string srcWKT,
@@ -159,7 +157,7 @@ namespace ROCKY_NAMESPACE
             int width = 0,
             int height = 0,
             bool useBilinearInterpolation = true);
-
+#endif
 
         struct ROCKY_EXPORT LayerBase
         {
