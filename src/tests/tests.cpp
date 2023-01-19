@@ -8,6 +8,7 @@
 #include <rocky/Image.h>
 #include <rocky/Heightfield.h>
 #include <rocky/GDALLayers.h>
+#include <rocky/URI.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -132,15 +133,22 @@ TEST_CASE("Map")
     }
 }
 
-TEST_CASE("Open layer")
+TEST_CASE("Open Layer")
 {
-    auto layer = GDALImageLayer::create();
-    REQUIRE(layer);
-    if (layer) {
-        layer->setName("World imagery");
-        layer->setURI("D:/data/imagery/world.tif");
-        auto s = layer->open();
-        CHECK(s.ok());
+    SECTION("GDAL")
+    {
+#ifdef GDAL_FOUND
+        auto layer = GDALImageLayer::create();
+        CHECKED_IF(layer != nullptr)
+        {
+            layer->setName("World imagery");
+            layer->setURI("D:/data/imagery/world.tif");
+            auto s = layer->open();
+            CHECK(s.ok());
+        }
+#else
+        WARN("GDAL not avaiable - skipping GDAL tests");
+#endif
     }
 }
 
@@ -151,8 +159,8 @@ TEST_CASE("Deserialize layer")
     conf.set("name", "World imagery");
     conf.set("url", "D:/data/imagery/world.tif");
     auto layer = Layer::cast(instance->read(conf));
-    REQUIRE(layer);
-    if (layer) {
+    CHECKED_IF(layer != nullptr)
+    {
         auto s = layer->open();
         CHECK(s.ok());
         if (s.failed()) ROCKY_WARN << s.toString() << std::endl;
@@ -485,5 +493,46 @@ TEST_CASE("SRS")
         REQUIRE(keys.size() == 2);
         CHECK(keys[0] == TileKey(0, 0, 0, GG));
         CHECK(keys[1] == TileKey(0, 1, 0, GG));
+    }
+}
+
+TEST_CASE("IO")
+{
+    SECTION("HTTP")
+    {
+        URI uri("http://readymap.org/readymap/tiles/1.0.0/7/");
+        auto r = uri.read(nullptr);
+        CHECKED_IF(r.status.ok())
+        {
+            CHECK(r.value.contentType == "text/xml");
+
+            auto body = r.value.data.to_string();
+            CHECK(!body.empty());
+            CHECK(rocky::util::startsWith(body, "<?xml"));
+        }
+        else
+        {
+            std::cerr << "HTTP/S request failed: " << r.status.message << std::endl;
+        }
+    }
+
+    SECTION("HTTPS")
+    {
+        if (URI::supportsHTTPS())
+        {
+            URI uri("https://readymap.org/readymap/tiles/1.0.0/7/");
+            auto r = uri.read(nullptr);
+            CHECKED_IF(r.status.ok())
+            {
+                CHECK(r.value.contentType == "text/xml");
+                auto body = r.value.data.to_string();
+                CHECK(!body.empty());
+                CHECK(rocky::util::startsWith(body, "<?xml"));
+            }
+        }
+        else
+        {
+            WARN("HTTPS support is not available - skipping HTTP tests");
+        }
     }
 }

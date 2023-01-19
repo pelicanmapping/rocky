@@ -18,15 +18,19 @@ set(PRIVATE_LIBS
     nlohmann_json::nlohmann_json
     unofficial-tinyxml::unofficial-tinyxml)
     
+set(PUBLIC_LIBS
+    glm::glm)
+    
 if(GDAL_FOUND)
     list(APPEND PRIVATE_LIBS GDAL::GDAL)
 endif()
 
-set(LIBRARIES
-    PRIVATE ${PRIVATE_LIBS}
-    PUBLIC
-        glm::glm
-)
+if (OPENSSL_FOUND)
+    list(APPEND PRIVATE_LIBS OpenSSL::SSL OpenSSL::Crypto)
+endif()
+
+set(LIBRARIES PRIVATE ${PRIVATE_LIBS} PUBLIC ${PUBLIC_LIBS})
+
 add_library(rocky ${HEADERS} ${SOURCES})
 
 set_target_properties(rocky PROPERTIES FOLDER "rocky")
@@ -62,28 +66,12 @@ if(MSVC)
     
 endif()
 
-
-# place header and source files into group folders to help IDE's present the files in a logical manner
-function(ASSIGN_SOURCE_GROUPS GROUP_NAME ROOT_FOLDER)
-    foreach(FILE IN ITEMS ${ARGN})
-        if (IS_ABSOLUTE "${FILE}")
-            file(RELATIVE_PATH RELATIVE_SOURCE "${ROOT_FOLDER}" "${FILE}")
-        else()
-            set(RELATIVE_SOURCE "${FILE}")
-        endif()
-        get_filename_component(SOURCE_PATH "${RELATIVE_SOURCE}" PATH)
-        string(REPLACE "/" "\\" SOURCE_PATH_MSVC "${SOURCE_PATH}")
-        source_group("${GROUP_NAME}\\${SOURCE_PATH_MSVC}" FILES "${FILE}")
-    endforeach()
-endfunction(ASSIGN_SOURCE_GROUPS)
-
 # enable folders for MSVC
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # group source files and headers
-ASSIGN_SOURCE_GROUPS("Source Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${SOURCES})
-ASSIGN_SOURCE_GROUPS("Header Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${HEADERS})
-
+assign_source_groups("Source Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${SOURCES})
+assign_source_groups("Header Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${HEADERS})
 
 # set up versions and position independent code that is required for unix platforms
 #set_property(TARGET rocky PROPERTY VERSION ${VSG_VERSION_MAJOR}.${VSG_VERSION_MINOR}.${VSG_VERSION_PATCH})
@@ -91,8 +79,7 @@ set_property(TARGET rocky PROPERTY SOVERSION ${ROCKY_SOVERSION})
 set_property(TARGET rocky PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_property(TARGET rocky PROPERTY CXX_STANDARD 17)
 
-target_compile_definitions(rocky PRIVATE ${EXTRA_DEFINES})
-#target_include_directories(rocky PUBLIC $<BUILD_INTERFACE:${ROCKY_SOURCE_DIR} $<BUILD_INTERFACE:${ROCKY_BINARY_DIR}/include>)
+# target_compile_definitions(rocky PRIVATE ${EXTRA_DEFINES})
 
 target_link_libraries(rocky ${LIBRARIES})
 

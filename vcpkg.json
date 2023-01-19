@@ -6,10 +6,12 @@
     "homepage": "https://github.com/pelicanmapping/rocky",
     "supports": "!(x86 | wasm32)",
     "dependencies": [
+        "cpp-httplib",
         "proj",
         "gdal",
         "glm",
         "nlohmann-json",
+        "openssl",
         "tinyxml",
         "vsg",
         "vsgxchange"

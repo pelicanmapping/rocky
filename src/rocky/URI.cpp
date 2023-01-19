@@ -9,11 +9,26 @@
 #include <fstream>
 #include <sstream>
 
+#ifdef HTTPLIB_FOUND
+#ifdef OPENSSL_FOUND
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#endif
+#include <httplib.h>
+#endif
+
 #define LC "[URI] "
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 
+bool URI::supportsHTTPS()
+{
+#ifdef CPPHTTPLIB_OPENSSL_SUPPORT
+    return true;
+#else
+    return false;
+#endif
+}
 
 namespace
 {
@@ -56,14 +71,112 @@ namespace
 
     struct HTTPResponse
     {
+        int status;
         std::string data;
         std::unordered_map<std::string, std::string> headers;
     };
 
+    bool split_url(
+        const std::string& url,
+        std::string& proto_host_port,
+        std::string& path,
+        std::string& query_text)
+    {
+        auto pos = url.find_first_of("://");
+        if (pos == url.npos)
+            return false;
+
+        pos = url.find_first_of('/', pos + 3);
+        if (pos == url.npos)
+        {
+            proto_host_port = url;
+        }
+        else
+        {
+            proto_host_port = url.substr(0, pos);
+            auto query_pos = url.find_first_of('?', pos);
+            if (query_pos == url.npos)
+            {
+                path = url.substr(pos);
+            }
+            else
+            {
+                path = url.substr(pos, query_pos - pos);
+                if (query_pos < url.length())
+                {
+                    query_text = url.substr(query_pos + 1);
+                }
+            }
+        }
+        return true;
+    }
+
     IOResult<HTTPResponse> http_get(const HTTPRequest& request)
     {
+#ifndef HTTPLIB_FOUND
         ROCKY_TODO("Implement HTTP GET");
         return Status(Status::ServiceUnavailable);
+#else        
+        httplib::Headers headers;
+        for (auto& h : request.headers)
+        {
+            headers.insert(std::make_pair(h.name, h.value));
+        }
+
+        //TODO: SSL support
+
+        std::string proto_host_port;
+        std::string path;
+        std::string query_text;
+
+        if (!split_url(request.url, proto_host_port, path, query_text))
+            return Status(Status::ConfigurationError);
+
+        httplib::Params params;
+        httplib::detail::parse_query_text(query_text, params);
+
+        HTTPResponse response;
+
+        try
+        {
+            httplib::Client client(proto_host_port);
+
+            // follow redirects
+            client.set_follow_location(true);
+
+            // disable cert verification
+            client.enable_server_certificate_verification(false);
+
+            auto r = client.Get(path, params, headers);
+
+            if (r.error() != httplib::Error::Success)
+            {
+                return Status(Status::GeneralError, httplib::to_string(r.error()));
+            }
+
+            if (r->status == 404)
+            {
+                return Status(Status::ResourceUnavailable, httplib::detail::status_message(r->status));
+            }
+            else if (r->status != 200)
+            {
+                return Status(Status::GeneralError, httplib::detail::status_message(r->status));
+            }
+
+            response.status = r->status;
+
+            for (auto& h : r->headers)
+                response.headers[h.first] = h.second;
+
+            response.data = std::move(r->body);
+        }
+        catch (std::exception& ex)
+        {
+            return Status(Status::GeneralError, ex.what());
+        }
+
+        return std::move(response);
+#endif
     }
 }
 
@@ -178,8 +291,6 @@ URI::Stream::to_string()
     os << _in->rdbuf();
     return os.str();
 }
-
-
 
 URI::URI()
 {
@@ -334,371 +445,8 @@ URI::mergeConfig(const Config& conf)
     }
 }
 
-// Ref.: https://stackoverflow.com/questions/154536/encode-decode-urls-in-c
 std::string
 URI::urlEncode(const std::string& value)
 {
-    std::ostringstream escaped;
-    escaped.fill('0');
-    escaped << std::hex;
-
-    for (std::string::const_iterator i = value.begin(), n = value.end(); i != n; ++i) {
-        std::string::value_type c = (*i);
-
-        // Keep alphanumeric and other accepted characters intact
-        if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
-            escaped << c;
-            continue;
-        }
-
-        // Any other characters are percent-encoded
-        escaped << std::uppercase;
-        escaped << '%' << std::setw(2) << int((unsigned char)c);
-        escaped << std::nouppercase;
-    }
-
-    return escaped.str();
+    return httplib::detail::encode_url(value);
 }
-
-#if 0
-namespace
-{
-    struct ReadObject
-    {
-        bool callbackRequestsCaching( URIReadCallback* cb ) const { return !cb || ((cb->cachingSupport() & URIReadCallback::CACHE_OBJECTS) != 0); }
-        ReadResult fromCallback( URIReadCallback* cb, const std::string& uri, const osgDB::Options* opt ) { return cb->readObject(uri, opt); }
-        ReadResult fromCache( CacheBin* bin, const std::string& key) { return bin->readObject(key, 0L); }
-        ReadResult fromHTTP( const URI& uri, const osgDB::Options* opt, ProgressCallback* p, TimeStamp lastModified )
-        {
-            HTTPRequest req(uri.full());
-            req.getHeaders() = uri.context().getHeaders();
-            if (lastModified > 0)
-            {
-                req.setLastModified(lastModified);
-            }
-            return HTTPClient::readObject(req, opt, p);
-        }
-        ReadResult fromFile( const std::string& uri, const osgDB::Options* opt ) {
-            osgDB::ReaderWriter::ReadResult osgRR = osgDB::Registry::instance()->readObject(uri, opt);
-            if (osgRR.validObject()) return ReadResult(osgRR.takeObject());
-            else return ReadResult(osgRR.message());
-        }
-    };
-
-    struct ReadNode
-    {
-        bool callbackRequestsCaching( URIReadCallback* cb ) const { return !cb || ((cb->cachingSupport() & URIReadCallback::CACHE_NODES) != 0); }
-        ReadResult fromCallback( URIReadCallback* cb, const std::string& uri, const osgDB::Options* opt ) { return cb->readNode(uri, opt); }
-        ReadResult fromCache( CacheBin* bin, const std::string& key ) { return bin->readObject(key, 0L); }
-        ReadResult fromHTTP(const URI& uri, const osgDB::Options* opt, ProgressCallback* p, TimeStamp lastModified )
-        {
-            HTTPRequest req(uri.full());
-            req.getHeaders() = uri.context().getHeaders();
-            if (lastModified > 0)
-            {
-                req.setLastModified(lastModified);
-            }
-            return HTTPClient::readNode(req, opt, p);
-        }
-        ReadResult fromFile( const std::string& uri, const osgDB::Options* opt ) {
-            osgDB::ReaderWriter::ReadResult osgRR = osgDB::Registry::instance()->readNode(uri, opt);
-            if (osgRR.validNode()) return ReadResult(osgRR.takeNode());
-            else return ReadResult(osgRR.message());
-        }
-    };
-
-    struct ReadImage
-    {
-        bool callbackRequestsCaching( URIReadCallback* cb ) const {
-            return !cb || ((cb->cachingSupport() & URIReadCallback::CACHE_IMAGES) != 0);
-        }
-        ReadResult fromCallback( URIReadCallback* cb, const std::string& uri, const osgDB::Options* opt ) {
-            ReadResult r = cb->readImage(uri, opt);
-            if ( r.getImage() ) r.getImage()->setFileName(uri);
-            return r;
-        }
-        ReadResult fromCache( CacheBin* bin, const std::string& key) {
-            ReadResult r = bin->readImage(key, 0L);
-            if ( r.getImage() ) r.getImage()->setFileName( key );
-            return r;
-        }
-        ReadResult fromHTTP(const URI& uri, const osgDB::Options* opt, ProgressCallback* p, TimeStamp lastModified ) {
-            HTTPRequest req(uri.full());
-            req.getHeaders() = uri.context().getHeaders();
-
-            if (lastModified > 0)
-            {
-                req.setLastModified(lastModified);
-            }
-            ReadResult r = HTTPClient::readImage(req, opt, p);
-            if ( r.getImage() ) r.getImage()->setFileName( uri.full() );
-            return r;
-        }
-        ReadResult fromFile( const std::string& uri, const osgDB::Options* opt ) {
-            // Call readImageImplementation instead of readImage to bypass any readfile callbacks installed in the registry.
-            osgDB::ReaderWriter::ReadResult osgRR = osgDB::Registry::instance()->readImageImplementation(uri, opt);
-            if (osgRR.validImage()) {
-                osgRR.getImage()->setFileName(uri);
-                return ReadResult(osgRR.takeImage());
-            }
-            else return ReadResult(osgRR.message());
-        }
-    };
-
-    struct ReadString
-    {
-        bool callbackRequestsCaching( URIReadCallback* cb ) const {
-            return !cb || ((cb->cachingSupport() & URIReadCallback::CACHE_STRINGS) != 0);
-        }
-        ReadResult fromCallback( URIReadCallback* cb, const std::string& uri, const osgDB::Options* opt ) {
-            return cb->readString(uri, opt);
-        }
-        ReadResult fromCache( CacheBin* bin, const std::string& key) {
-            return bin->readString(key, 0L);
-        }
-        ReadResult fromHTTP(const URI& uri, const osgDB::Options* opt, ProgressCallback* p, TimeStamp lastModified )
-        {
-            HTTPRequest req(uri.full());
-            req.getHeaders() = uri.context().getHeaders();
-            if (lastModified > 0)
-            {
-                req.setLastModified(lastModified);
-            }
-            return HTTPClient::readString(req, opt, p);
-        }
-        ReadResult fromFile( const std::string& uri, const osgDB::Options* opt ) {
-            return readStringFile(uri, opt);
-        }
-    };
-
-    //--------------------------------------------------------------------
-    // MASTER read template function. I templatized this so we wouldn't
-    // have 4 95%-identical code paths to maintain...
-
-    template<typename READ_FUNCTOR>
-    ReadResult doRead(
-        const URI&            inputURI,
-        const osgDB::Options* dbOptions,
-        ProgressCallback*     progress)
-    {
-        //osg::Timer_t startTime = osg::Timer::instance()->tick();
-
-        unsigned long handle = NetworkMonitor::begin(inputURI.full(), "pending", "URI");
-        ReadResult result;
-
-        if (rocky::Registry::instance()->isBlacklisted(inputURI.full()))
-        {
-            NetworkMonitor::end(handle, "Blacklisted");
-            return result;
-        }
-
-        if ( !inputURI.empty() )
-        {
-            // establish our IO options:
-            osg::ref_ptr<osgDB::Options> localOptions = dbOptions ? Registry::cloneOrCreateOptions(dbOptions) : Registry::cloneOrCreateOptions(Registry::instance()->getDefaultOptions());
-
-            // if we have an option string, incorporate it.
-            if ( inputURI.optionString().has_value() )
-            {
-                localOptions->setOptionString(
-                    inputURI.optionString().get() + " " + localOptions->getOptionString());
-            }
-
-            // Store a new URI context within the local options so that subloaders know the location they are loading from
-            // This is necessary for things like gltf files that can store external binary files that are relative to the gltf file.
-            URIContext(inputURI.full()).store(localOptions.get());
-
-            READ_FUNCTOR reader;
-
-            URI uri = inputURI;
-
-            bool gotResultFromCallback = false;
-
-            // check if there's an alias map, and if so, attempt to resolve the alias:
-            URIAliasMap* aliasMap = URIAliasMap::from( localOptions.get() );
-            if ( aliasMap )
-            {
-                uri = aliasMap->resolve(inputURI.full(), inputURI.context());
-            }
-
-            // check if there's a URI cache in the options.
-            URIResultCache* memCache = URIResultCache::from( localOptions.get() );
-            if ( memCache )
-            {
-                URIResultCache::Record rec;
-                if ( memCache->get(uri, rec) )
-                {
-                    result = rec.value();
-                }
-            }
-
-            if ( result.empty() )
-            {
-                // see if there's a read callback installed.
-                URIReadCallback* cb = Registry::instance()->getURIReadCallback();
-
-                // for a local URI, bypass all the caching logic
-                if ( !uri.isRemote() )
-                {
-                    // try to use the callback if it's set. Callback ignores the caching policy.
-                    if ( cb )
-                    {
-                        // if this returns "not implemented" we fill fall back
-                        result = reader.fromCallback( cb, uri.full(), localOptions.get() );
-
-                        if ( result.code() != ReadResult::RESULT_NOT_IMPLEMENTED )
-                        {
-                            // "not implemented" is the only excuse to fall back.
-                            gotResultFromCallback = true;
-                        }
-                    }
-
-                    if ( !gotResultFromCallback )
-                    {
-                        // no callback, just read from a local file.
-                        result = reader.fromFile( uri.full(), localOptions.get() );
-                    }
-                }
-
-                // remote URI, consider caching:
-                else
-                {
-                    bool callbackCachingOK = !cb || reader.callbackRequestsCaching(cb);
-
-                    optional<CachePolicy> cp;
-                    osg::ref_ptr<CacheBin> bin;
-
-                    CacheSettings* cacheSettings = CacheSettings::get(localOptions.get());
-                    if (cacheSettings)
-                    {
-                        cp = cacheSettings->cachePolicy();
-                        if (cp->isCacheEnabled() && callbackCachingOK)
-                        {
-                            bin = cacheSettings->getCacheBin();
-                        }
-                    }
-
-                    bool expired = false;
-                    // first try to go to the cache if there is one:
-                    if ( bin && cp->isCacheReadable() )
-                    {
-                        result = reader.fromCache( bin.get(), uri.cacheKey() );
-                        if ( result.succeeded() )
-                        {
-                            expired = cp->isExpired(result.lastModifiedTime());
-                            result.setIsFromCache(true);
-                        }
-                    }
-
-                    // If it's not cached, or it is cached but is expired then try to hit the server.
-                    if ( result.empty() || expired )
-                    {
-                        // Need to do this to support nested PLODs and Proxynodes.
-                        osg::ref_ptr<osgDB::Options> remoteOptions =
-                            Registry::instance()->cloneOrCreateOptions( localOptions.get() );
-                        remoteOptions->getDatabasePathList().push_front( osgDB::getFilePath(uri.full()) );
-
-                        // Store the existing object from the cache if there is one.
-                        osg::ref_ptr< osg::Object > object = result.getObject();
-
-                        // try to use the callback if it's set. Callback ignores the caching policy.
-                        if ( cb )
-                        {
-                            result = reader.fromCallback( cb, uri.full(), remoteOptions.get() );
-
-                            if ( result.code() != ReadResult::RESULT_NOT_IMPLEMENTED )
-                            {
-                                // "not implemented" is the only excuse for falling back
-                                gotResultFromCallback = true;
-                            }
-                        }
-
-                        if ( !gotResultFromCallback )
-                        {
-                            // still no data, go to the source:
-                            if ( (result.empty() || expired) && cp->usage() != CachePolicy::USAGE_CACHE_ONLY )
-                            {
-                                ReadResult remoteResult = reader.fromHTTP( uri, remoteOptions.get(), progress, result.lastModifiedTime() );
-                                if (remoteResult.code() == ReadResult::RESULT_NOT_MODIFIED)
-                                {
-                                    ROCKY_DEBUG << LC << uri.full() << " not modified, using cached result" << std::endl;
-                                    // Touch the cached item to update it's last modified timestamp so it doesn't expire again immediately.
-                                    if (bin)
-                                        bin->touch( uri.cacheKey() );
-                                }
-                                else
-                                {
-                                    ROCKY_DEBUG << LC << "Got remote result for " << uri.full() << std::endl;
-                                    result = remoteResult;
-                                }
-                            }
-
-                            // Check for cancellation before a cache write
-                            if (progress && progress->isCanceled())
-                            {
-                                NetworkMonitor::end(handle, "Canceled");
-                                return 0L;
-                            }
-
-                            // write the result to the cache if possible:
-                            if ( result.succeeded() && !result.isFromCache() && bin && cp->isCacheWriteable() )
-                            {
-                                ROCKY_DEBUG << LC << "Writing " << uri.cacheKey() << " to cache" << std::endl;
-                                bin->write( uri.cacheKey(), result.getObject(), result.metadata(), remoteOptions.get() );
-                            }
-                        }
-                    }
-                }
-
-                // Check for cancelation before a potential cache write
-                if (progress && progress->isCanceled())
-                {
-                    NetworkMonitor::end(handle, "Canceled");
-                    return 0L;
-                }
-
-                if (result.getObject() && !gotResultFromCallback)
-                {
-                    result.getObject()->setName( uri.base() );
-
-                    if ( memCache )
-                    {
-                        memCache->insert( uri, result );
-                    }
-                }
-
-                // If the request failed with an unrecoverable error,
-                // blacklist so we don't waste time on it again
-                if (result.failed())
-                {
-                    rocky::Registry::instance()->blacklist(inputURI.full());
-                }
-            }
-
-            ROCKY_TEST << LC
-                << uri.base() << ": "
-                << (result.succeeded() ? "OK" : "FAILED")
-                //<< "; policy=" << cp->usageString()
-                << (result.isFromCache() && result.succeeded() ? "; (from cache)" : "")
-                << std::endl;
-        }
-
-        // post-process if there's a post-URI callback.
-        URIPostReadCallback* post = URIPostReadCallback::from(dbOptions);
-        if ( post )
-        {
-            (*post)(result);
-        }
-
-        std::stringstream buf;
-        buf << result.getResultCodeString();
-        if (result.isFromCache() && result.succeeded())
-        {
-            buf << " (from cache)";
-        }
-        NetworkMonitor::end(handle, buf.str());
-
-        return result;
-    }
-}
-#endif

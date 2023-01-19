@@ -111,6 +111,9 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT URI
     {
     public:
+        //! Whether HTTPS support is available
+        static bool supportsHTTPS();
+
         //! Holds a stream for reading content data.
         struct ROCKY_EXPORT Stream
         {
@@ -217,7 +220,7 @@ namespace ROCKY_NAMESPACE
         std::string _cacheKey;
         URIContext _context;
         optional<std::string> _optionString;
-        IOResult<std::string> read_to_string() const;
+        //IOResult<std::string> read_to_string() const;
         void ctorCacheKey();
     };
 

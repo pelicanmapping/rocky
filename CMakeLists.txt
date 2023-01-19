@@ -24,6 +24,15 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
+
+set(BUILD_WITH_OPENSSL "Use OpenSSL to support HTTPS protocol" ON)
+if (BUILD_WITH_OPENSSL)
+    find_package(OpenSSL REQUIRED)
+    if (OPENSSL_FOUND)
+        add_definitions("-DOPENSSL_FOUND")
+    endif()
+endif()
+
 # PROJ - geospatial projections library - required
 find_package(PROJ CONFIG REQUIRED)
 
@@ -41,6 +50,15 @@ if(BUILD_WITH_GDAL)
     if (GDAL_FOUND)
         add_definitions("-DGDAL_FOUND")
     endif()
+endif()
+
+# httplib - http/https header-only SDK
+# (link to libssl and libcrypto for HTTPS support)
+# https://github.com/yhirose/cpp-httplib
+find_path(CPP_HTTPLIB_INCLUDE_DIRS "httplib.h")
+if(CPP_HTTPLIB_INCLUDE_DIRS)
+    include_directories(${CPP_HTTPLIB_INCLUDE_DIRS})
+    add_definitions("-DHTTPLIB_FOUND")
 endif()
 
 # source code
