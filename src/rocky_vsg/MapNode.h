@@ -6,9 +6,8 @@
 #pragma once
 
 #include <rocky_vsg/Common.h>
-#include <rocky_vsg/RuntimeContext.h>
+#include <rocky_vsg/InstanceVSG.h>
 #include <rocky/Map.h>
-#include <rocky/Instance.h>
 #include <vsg/nodes/Group.h>
 #include <vsg/app/CompileManager.h>
 
@@ -41,7 +40,7 @@ namespace ROCKY_NAMESPACE
     public: // constructors
 
         //! Creates an empty map node (with a default empty Map)
-        MapNode(Instance::ptr instance = {});
+        MapNode(InstanceVSG::ptr instance = {});
 
         //! Creates a map node that will render the given Map.
         MapNode(shared_ptr<Map> map);
@@ -129,8 +128,7 @@ namespace ROCKY_NAMESPACE
             float mx,
             float my) const;
 
-
-        RuntimeContext runtime;
+        RuntimeContext& runtime() const;
 
     public: //override
 
@@ -163,6 +161,7 @@ namespace ROCKY_NAMESPACE
         friend class ClampingTechnique;
         friend class ClampableNode;
 
+        InstanceVSG::ptr _instance;
         optional<bool> _enableLighting;
         optional<bool> _overlayBlending;
         optional<unsigned> _overlayTextureSize;

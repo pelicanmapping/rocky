@@ -210,7 +210,8 @@ MapNode::Options::fromConfig(const Config& conf)
 
 //....................................................................
 
-MapNode::MapNode(Instance::ptr instance) :
+MapNode::MapNode(InstanceVSG::ptr instance) :
+    _instance(instance),
     _map(Map::create(instance))
 {
     construct(Config());
@@ -255,14 +256,8 @@ MapNode::construct(const Config& conf)
     //if (conf.hasChild("terrain"))
     //    terrain() = TerrainOptions(conf.child("terrain"));
 
-    // Protect the MapNode from the Optimizer
-    //setDataVariance(osg::Object::DYNAMIC);
-
-    // Protect the MapNode from the ShaderGenerator
-    //ShaderGenerator::setIgnoreHint(this, true);
-
     // initialize 0Ls
-    _terrain = TerrainNode::create(runtime, conf);
+    _terrain = TerrainNode::create(runtime(), conf);
 
     addChild(_terrain);
 
@@ -332,6 +327,12 @@ MapNode::getConfig() const
     }
 
     return conf;
+}
+
+RuntimeContext&
+MapNode::runtime() const
+{
+    return _instance->runtime();
 }
 
 vsg::ref_ptr<TerrainNode>

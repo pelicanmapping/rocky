@@ -34,30 +34,26 @@ namespace ROCKY_NAMESPACE
 
 int main(int argc, char** argv)
 {
+    // set up defaults and read command line arguments to override them
+    vsg::CommandLine arguments(&argc, argv);
+    if (arguments.read({ "--help" }))
+        return usage(argv[0]);
+
     // rocky instance
-    auto rk = rocky::InstanceVSG::create();
+    auto rk = rocky::InstanceVSG::create(arguments);
 
     rk->log().threshold = rocky::LogThreshold::INFO;
     rk->log().notice << "Hello, world." << std::endl;
 
-    // set up defaults and read command line arguments to override them
-    vsg::CommandLine arguments(&argc, argv);
-
-    if (arguments.read({ "--help" }))
-        return usage(argv[0]);
-
-    // options that get passed to VSG reader/writer modules?
-    auto options = vsg::Options::create();
-    arguments.read(options);
-
-    // window configuration
+    // main window
     auto traits = vsg::WindowTraits::create("Rocky * Pelican Mapping");
     traits->debugLayer = arguments.read({ "--debug" });
     traits->apiDumpLayer = arguments.read({ "--api" });
     traits->samples = 1;
+    traits->width = 1920;
+    traits->height = 1080;
     if (arguments.read({ "--novsync" }))
         traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-
     auto window = vsg::Window::create(traits);
     window->clearColor() = VkClearColorValue{ 0.0f, 0.0f, 0.0f, 1.0f };
 
@@ -73,41 +69,38 @@ int main(int argc, char** argv)
     auto mapNode = rocky::MapNode::create(rk);
 
     // set up the runtime context with everything we need.
-    mapNode->runtime.compiler = [viewer]() { return viewer->compileManager; };
-    mapNode->runtime.updates = [viewer]() { return viewer->updateOperations; };
-    mapNode->runtime.sharedObjects = vsg::SharedObjects::create();
-    mapNode->runtime.loaders = vsg::OperationThreads::create(mapNode->terrainNode()->concurrency);
+    rk->runtime().compiler = [viewer]() { return viewer->compileManager; };
+    rk->runtime().updates = [viewer]() { return viewer->updateOperations; };
+    rk->runtime().sharedObjects = vsg::SharedObjects::create();
+    rk->runtime().loaders = vsg::OperationThreads::create(mapNode->terrainNode()->concurrency);
 
-#if 1
+#ifdef GDAL_FOUND
     auto layer = rocky::GDALImageLayer::create();
     layer->setURI("D:/data/imagery/world.tif");
     //layer->setURI("D:/data/naturalearth/raster-10m/HYP_HR/HYP_HR.tif");
     mapNode->map()->addLayer(layer);
-
-    if (layer->status().failed())
-    {
-        rk->log().warn << "Failed to load GeoTIFF: " << layer->status().message << std::endl;
-    }
-
 #else
     auto layer = rocky::TestLayer::create();
     mapNode->map()->addLayer(layer);
 #endif
 
+    if (layer->status().failed())
+    {
+        rk->log().warn << "Failed to open layer: " << layer->status().message << std::endl;
+        exit(-1);
+    }
+
     vsg_scene->addChild(mapNode);
 
-    // compute the bounds of the scene graph to help position camera
-    vsg::ComputeBounds cb;
-    vsg_scene->accept(cb);
-    vsg::dsphere bs((cb.bounds.min + cb.bounds.max) * 0.5, vsg::length(cb.bounds.max - cb.bounds.min) * 0.5);
+    // main camera
     double nearFarRatio = 0.0005;
+    double R = mapNode->mapSRS().ellipsoid().semiMajorAxis();
 
-    // set up the camera
     auto perspective = vsg::Perspective::create(
         30.0,
         (double)(window->extent2D().width) / (double)(window->extent2D().height),
-        nearFarRatio * bs.radius,
-        bs.radius * 10.0);
+        R * nearFarRatio,
+        R * 10.0);
 
     auto camera = vsg::Camera::create(
         perspective,
@@ -116,6 +109,7 @@ int main(int argc, char** argv)
 
     viewer->addEventHandler(rocky::MapManipulator::create(mapNode, camera));
 
+    // prepare the scene graph
     auto commandGraph = vsg::createCommandGraphForView(
         window, 
         camera,
@@ -124,17 +118,16 @@ int main(int argc, char** argv)
         false); // assignHeadlight
 
     viewer->assignRecordAndSubmitTaskAndPresentation({ commandGraph });
-
     viewer->compile();
 
-    std::vector<std::chrono::microseconds> timeSamples;
+
+    float frames = 0.0f;
     bool measureFrameTime = (rk->log().threshold <= rocky::LogThreshold::INFO);
 
     // rendering main loop
+    auto start = std::chrono::steady_clock::now();
     while (viewer->advanceToNextFrame())
     {
-        auto start = std::chrono::steady_clock::now();
-
         viewer->handleEvents();
         viewer->update();
 
@@ -143,24 +136,19 @@ int main(int argc, char** argv)
         viewer->recordAndSubmit();
         viewer->present();
 
-        // sample the frame rate every N frames
-        if (measureFrameTime && (viewer->getFrameStamp()->frameCount % 10) == 0)
-        {
-            auto end = std::chrono::steady_clock::now();
-            auto t = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-            timeSamples.push_back(t);
-        }
+        frames += 1.0f;
     }
+    auto end = std::chrono::steady_clock::now();
 
     if (measureFrameTime)
     {
-        std::chrono::microseconds total(0);
-        for (auto sample : timeSamples)
-            total += sample;
-        total /= timeSamples.size();
+        auto ms = 0.001f * (float)std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
-        rk->log().info << "Average frame time = "
-            << std::setprecision(3) << 0.001f * (float)total.count() << " ms" << std::endl;
+        rk->log().info
+            << "frames = " << frames << ", "
+            << std::setprecision(3) << "ms per frame = " << (ms / frames) << ", "
+            << std::setprecision(6) << "frames per second = " << 1000.f * (frames / ms)
+            << std::endl;
     }
 
     return 0;

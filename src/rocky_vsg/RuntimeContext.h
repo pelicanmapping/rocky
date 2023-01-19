@@ -26,8 +26,8 @@ namespace vsg
 namespace ROCKY_NAMESPACE
 {
     /**
-     * Access layer to viewer, rendering, scene graph, and 
-     * other runtime operations.
+     * Interface to runtime operations like the VSG compiler, thread pools,
+     * and asynchronous scene graph functions.
      */
     class ROCKY_VSG_EXPORT RuntimeContext
     {

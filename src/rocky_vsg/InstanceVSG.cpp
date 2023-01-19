@@ -37,3 +37,9 @@ InstanceVSG::InstanceVSG() :
         return makeImageFromVSG(result);
     };
 }
+
+InstanceVSG::InstanceVSG(vsg::CommandLine& args) :
+    InstanceVSG()
+{
+    args.read(_vsgOptions);
+}
