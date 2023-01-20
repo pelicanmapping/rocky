@@ -135,9 +135,9 @@ TEST_CASE("Map")
 
 TEST_CASE("Open Layer")
 {
+#ifdef GDAL_FOUND
     SECTION("GDAL")
     {
-#ifdef GDAL_FOUND
         auto layer = GDALImageLayer::create();
         CHECKED_IF(layer != nullptr)
         {
@@ -146,14 +146,15 @@ TEST_CASE("Open Layer")
             auto s = layer->open();
             CHECK(s.ok());
         }
-#else
-        WARN("GDAL not avaiable - skipping GDAL tests");
-#endif
     }
+#else
+    INFO("GDAL not avaiable - skipping GDAL tests");
+#endif
 }
 
 TEST_CASE("Deserialize layer")
 {
+#ifdef GDAL_FOUND
     auto instance = Instance::create();
     Config conf("gdalimage");
     conf.set("name", "World imagery");
@@ -165,6 +166,7 @@ TEST_CASE("Deserialize layer")
         CHECK(s.ok());
         if (s.failed()) ROCKY_WARN << s.toString() << std::endl;
     }
+#endif
 }
 
 TEST_CASE("SRS")

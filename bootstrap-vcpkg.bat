@@ -5,7 +5,7 @@ set ERROR_MSG=
 set SOURCE_DIR=.
 set BUILD_DIR=..\build
 set INSTALL_DIR=..\install
-set VCPKG_DIR=H:\devel\vcpkg\repo2
+set VCPKG_DIR=H:\devel\vcpkg\repo
 set VCPKG_TOOLCHAIN_FILE=%VCPKG_DIR%\scripts\buildsystems\vcpkg.cmake
 
 if not exist "vcpkg.json" (
