@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.7)
 
+# if using vcpkg, configure overlay ports (that are not available in vcpkg prime)
+set(VCPKG_OVERLAY_PORTS ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/ports)
+
 project(
     rocky
     VERSION 0.0.1
@@ -25,14 +28,6 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 
-set(BUILD_WITH_OPENSSL "Use OpenSSL to support HTTPS protocol" ON)
-if (BUILD_WITH_OPENSSL)
-    find_package(OpenSSL REQUIRED)
-    if (OPENSSL_FOUND)
-        add_definitions("-DOPENSSL_FOUND")
-    endif()
-endif()
-
 # PROJ - geospatial projections library - required
 find_package(PROJ CONFIG REQUIRED)
 
@@ -42,6 +37,14 @@ find_package(glm CONFIG REQUIRED)
 find_package(tinyxml CONFIG REQUIRED)
 
 find_package(nlohmann_json CONFIG REQUIRED)
+
+option(BUILD_WITH_OPENSSL "Use OpenSSL to support HTTPS protocol" ON)
+if (BUILD_WITH_OPENSSL)
+    find_package(OpenSSL REQUIRED)
+    if (OPENSSL_FOUND)
+        add_definitions("-DOPENSSL_FOUND")
+    endif()
+endif()
 
 # GDAL - geospatial data abstraction library - optional
 option(BUILD_WITH_GDAL "Use GDAL to load GeoTIFF and other geodata formats" ON)

@@ -329,7 +329,7 @@ TEST_CASE("SRS")
         SRS wgs84("epsg:4326"); // geographic WGS84
         REQUIRE(wgs84.valid());
 
-        SRS egm96("epsg:4326", "us_nga_egm96_15"); // WGS84 with EGM96 vdatum
+        SRS egm96("epsg:4326", "us_nga/us_nga_egm96_15"); // WGS84 with EGM96 vdatum
         REQUIRE(egm96.valid());
 
         // EGM96 test values are from:
