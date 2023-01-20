@@ -109,7 +109,7 @@ int main(int argc, char** argv)
 
     viewer->addEventHandler(rocky::MapManipulator::create(mapNode, camera));
 
-    // prepare the scene graph
+    // associate the scene graph with a window and camera in a new render graph
     auto commandGraph = vsg::createCommandGraphForView(
         window, 
         camera,
@@ -118,7 +118,18 @@ int main(int argc, char** argv)
         false); // assignHeadlight
 
     viewer->assignRecordAndSubmitTaskAndPresentation({ commandGraph });
-    viewer->compile();
+
+    // Configure a descriptor pool size that's appropriate for paged terrains
+    // (they are a good candidate for DS reuse)
+    // https://groups.google.com/g/vsg-users/c/JJQZ-RN7jC0/m/tyX8nT39BAAJ
+    auto resourceHints = vsg::ResourceHints::create();
+    resourceHints->numDescriptorSets = 256;
+    resourceHints->descriptorPoolSizes.push_back(
+        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 256 });
+
+    // configure the viewers rendering backend, initialize and compile Vulkan objects,
+    // passing in ResourceHints to guide the resources allocated.
+    viewer->compile(resourceHints);
 
 
     float frames = 0.0f;
