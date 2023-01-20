@@ -7,6 +7,7 @@ set BUILD_DIR=..\build
 set INSTALL_DIR=..\install
 set VCPKG_DIR=H:\devel\vcpkg\repo
 set VCPKG_TOOLCHAIN_FILE=%VCPKG_DIR%\scripts\buildsystems\vcpkg.cmake
+set GDAL_DIR=%VCPKG_DIR%\installed\x64-windows\share\
 
 if not exist "vcpkg.json" (
     set ERROR_MSG=Run this script from the root folder of the git repository
