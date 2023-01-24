@@ -52,7 +52,9 @@ if(BUILD_WITH_GDAL)
     find_package(GDAL CONFIG)
     if (GDAL_FOUND)
         add_definitions("-DGDAL_FOUND")
-    endif()
+    else()
+        message(WARNING "Build with GDAL ON, but GDAL NOT FOUND. Set GDAL_DIR")	
+	endif()
 endif()
 
 # httplib - http/https header-only SDK
