@@ -201,9 +201,8 @@ URIContext::URIContext(const URIContext& rhs) :
 std::string
 URIContext::getCanonicalPath(const std::string& target) const
 {
-    ROCKY_TODO("nyi");
+    ROCKY_TODO("nyi - resolve relative path into full absolute path");
     return target;
-    //return rocky::getFullPath( _referrer, target );
 }
 
 void
@@ -317,7 +316,10 @@ URI::URI(const std::string& location, const URIContext& context)
 {
     _context = context;
     _baseURI = location;
-    _fullURI = context.getCanonicalPath(_baseURI);
+    _fullURI = location;
+    if (!isRemote())
+        _fullURI = context.getCanonicalPath(_baseURI);
+
     ctorCacheKey();
 }
 
@@ -346,7 +348,7 @@ URI::ctorCacheKey()
 }
 
 IOResult<URI::Content>
-URI::read(IOControl* io) const
+URI::read(const IOOptions& io) const
 {
     if (containsServerAddress(full()))
     {

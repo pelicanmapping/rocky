@@ -181,7 +181,7 @@ TerrainTileModelFactory::addImageLayer(
         if (result.value.valid())
         {
             TerrainTileModel::ColorLayer m;
-            m.layer = imageLayer; // Layer::cast(imageLayer);
+            m.layer = imageLayer;
             m.revision = imageLayer->getRevision();
             m.image = result.value;
             model.colorLayers.emplace_back(std::move(m));
@@ -197,6 +197,10 @@ TerrainTileModelFactory::addImageLayer(
             }
 
             return true;
+        }
+        else if (result.status.failed() && io.services().log)
+        {
+            //io.services().log().warn << result.status.message << std::endl;
         }
     }
     return false;

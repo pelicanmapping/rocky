@@ -22,7 +22,7 @@ namespace
     void redirect_proj_log(void* user, int level, const char* msg)
     {
         if (msg)
-            Instance::log().info << msg << std::endl;
+            std::cerr << msg << std::endl; // Instance::log().info << msg << std::endl;
     }
 
     inline bool starts_with(const std::string& s, const char* pattern) {
@@ -59,8 +59,8 @@ namespace
         //! destroy cache entries and threading context upon descope
         ~SRSFactory()
         {
-            Instance::log().debug << "SRSRepo: destructor in thread " << util::getCurrentThreadId()
-                << " destroying " << size() << " objects" << std::endl;
+            //Instance::log().debug << "SRSRepo: destructor in thread " << util::getCurrentThreadId()
+            //    << " destroying " << size() << " objects" << std::endl;
 
             for (auto iter = begin(); iter != end(); ++iter)
             {
@@ -155,7 +155,7 @@ namespace
                     // store any error in the cache entry
                     auto err_no = proj_context_errno(ctx);
                     new_entry.error = proj_errno_string(err_no);
-                    Instance::log().warn << new_entry.error << " (\"" << def << "\")" << std::endl;
+                    //Instance::log().warn << new_entry.error << " (\"" << def << "\")" << std::endl;
                 }
                 else
                 {
@@ -432,7 +432,7 @@ namespace
                     if (err_no != 0)
                     {
                         error = proj_errno_string(err_no);
-                        Instance::log().warn << error << " (\"" << def << "\")" << std::endl;
+                        //Instance::log().warn << error << " (\"" << def << "\")" << std::endl;
                     }
                 }
 

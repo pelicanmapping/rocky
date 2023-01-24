@@ -9,6 +9,7 @@
 #include <rocky/Heightfield.h>
 #include <rocky/GDALLayers.h>
 #include <rocky/URI.h>
+#include <rocky/TMS.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -116,6 +117,13 @@ TEST_CASE("Heightfield")
     }
 }
 
+TEST_CASE("Instance")
+{
+    Services services;
+    CHECK(services.log);
+    services.log().warn << "Hello" << std::endl;
+}
+
 TEST_CASE("Map")
 {
     auto instance = Instance::create();
@@ -148,7 +156,34 @@ TEST_CASE("Open Layer")
         }
     }
 #else
-    INFO("GDAL not avaiable - skipping GDAL tests");
+    //INFO("GDAL not avaiable - skipping GDAL tests");
+#endif
+
+#if 0
+    // COMMENTED OUT - because the jpg reader (et al) is in InstanceVSG, not here.
+    SECTION("TMS")
+    {
+        InstanceVSG instance;
+        auto layer = TMSImageLayer::create();
+        CHECKED_IF(layer != nullptr)
+        {
+            layer->setURL("https://readymap.org/readymap/tiles/1.0.0/7/");
+            auto s = layer->open();
+            CHECKED_IF(s.ok())
+            {
+                TileKey key(0, 0, 0, Profile(Profile::GLOBAL_GEODETIC));
+                Result<GeoImage> tile = layer->createImage(key, instance.ioOptions());
+                CHECK(tile.status.ok());
+                CHECK(tile.value.valid());
+                CHECKED_IF(tile.value.image())
+                {
+                    CHECK(tile.value.image()->width() == 256);
+                    CHECK(tile.value.image()->height() == 256);
+                    CHECK(tile.value.image()->pixelFormat() == Image::R8G8B8_UNORM);
+                }
+            }
+        }
+    }
 #endif
 }
 
@@ -172,7 +207,7 @@ TEST_CASE("Deserialize layer")
 TEST_CASE("SRS")
 {
     // See info messages from the SRS system
-    Instance::log().threshold = LogThreshold::INFO;
+    //Instance::log().threshold = LogThreshold::INFO;
 
     // epsilon
     const double E = 0.1;
@@ -503,7 +538,7 @@ TEST_CASE("IO")
     SECTION("HTTP")
     {
         URI uri("http://readymap.org/readymap/tiles/1.0.0/7/");
-        auto r = uri.read(nullptr);
+        auto r = uri.read(IOOptions());
         CHECKED_IF(r.status.ok())
         {
             CHECK(r.value.contentType == "text/xml");
@@ -523,7 +558,7 @@ TEST_CASE("IO")
         if (URI::supportsHTTPS())
         {
             URI uri("https://readymap.org/readymap/tiles/1.0.0/7/");
-            auto r = uri.read(nullptr);
+            auto r = uri.read(IOOptions());
             CHECKED_IF(r.status.ok())
             {
                 CHECK(r.value.contentType == "text/xml");

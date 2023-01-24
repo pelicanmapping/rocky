@@ -33,17 +33,9 @@ out gl_PerVertex {
 
 void main()
 {
-    mat4 projection = pc.projection;
-
-    //if (reverseDepth != 0)
-    //{
-        //projection[2][2] *= -pc.projection[2][2] - 1.0;
-        //projection[3][2] *= -1.0;
-    //}
-
     float elevation = 0.0; // oe_terrain_getElevation(inTexCoord);
     vec3 position = inVertex + inNormal*elevation;
-    gl_Position = (projection * pc.modelview) * vec4(position, 1.0);
+    gl_Position = (pc.projection * pc.modelview) * vec4(position, 1.0);
 
     mat3 normalMatrix = mat3(transpose(inverse(pc.modelview)));
     

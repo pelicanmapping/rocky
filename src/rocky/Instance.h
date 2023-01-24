@@ -27,7 +27,7 @@ namespace ROCKY_NAMESPACE
         inline CachePolicy& cachePolicy();
 
         //! Logging service
-        static inline Log& log();
+        inline Log& log();
 
         using ContentFactory = std::function<
             shared_ptr<Object>(
@@ -57,7 +57,6 @@ namespace ROCKY_NAMESPACE
         std::unordered_map<std::string, ContentFactory> _contentFactories;
         CachePolicy _cachePolicy;
         IOOptions _ioOptions;
-        static Log _log;
     };
 
 
@@ -70,6 +69,6 @@ namespace ROCKY_NAMESPACE
         return _ioOptions;
     }
     Log& Instance::log() {
-        return _log; // ioOptions().services().log();
+        return _ioOptions.services().log();
     }
 }

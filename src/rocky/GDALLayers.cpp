@@ -496,7 +496,7 @@ GDAL::Driver::open(
         (!gdalOptions().url.isSet() || gdalOptions().url->empty()) &&
         (!gdalOptions().connection.isSet() || gdalOptions().connection->empty()))
     {
-        return Status::Error(Status::ConfigurationError, "No URL, directory, or connection string specified");
+        return Status(Status::ConfigurationError, "No URL, directory, or connection string specified");
     }
 
     // source connection:
@@ -532,7 +532,7 @@ GDAL::Driver::open(
 
         if (input.empty())
         {
-            return Status::Error(Status::ResourceUnavailable, "Could not find any valid input.");
+            return Status(Status::ResourceUnavailable, "Could not find any valid input.");
         }
 
         // Resolve the pathname...
@@ -566,7 +566,7 @@ GDAL::Driver::open(
 
         if (!_srcDS)
         {
-            return Status::Error(Status::ResourceUnavailable, "Failed to open " + input);
+            return Status(Status::ResourceUnavailable, "Failed to open " + input);
         }
     }
     else
@@ -606,7 +606,7 @@ GDAL::Driver::open(
 
     if (!src_srs.valid())
     {
-        return Status::Error(Status::ResourceUnavailable,
+        return Status(Status::ResourceUnavailable,
             "Dataset has no spatial reference information (" + source + ")");
     }
 
@@ -628,7 +628,7 @@ GDAL::Driver::open(
         _profile = Profile(src_srs);
         if (!_profile.valid())
         {
-            return Status::Error(Status::ResourceUnavailable,
+            return Status(Status::ResourceUnavailable,
                 "Cannot create geographic Profile from dataset's spatial reference information: " +
                 std::string(src_srs.name()));
         }
@@ -677,7 +677,7 @@ GDAL::Driver::open(
 
     if (!_warpedDS)
     {
-        return Status::Error("Failed to create a final sampling dataset");
+        return Status("Failed to create a final sampling dataset");
     }
 
     // calcluate the inverse of the geotransform:

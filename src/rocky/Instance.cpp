@@ -15,15 +15,13 @@
 
 using namespace ROCKY_NAMESPACE;
 
-Log Instance::_log;
-
 Instance::Instance()
 {
     // set up a default logging service.
-    ioOptions().services().log = [=]() -> Log&
-    {
-        return this->_log;
-    };
+    //ioOptions().services().log = [=]() -> Log&
+    //{
+    //    return this->_log;
+    //};
 
 #ifdef GDAL_FOUND
     OGRRegisterAll();

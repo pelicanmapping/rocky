@@ -683,7 +683,7 @@ ImageLayer::assembleImage(
     // If we got here, asset that there's a non-null layer profile.
     if (!profile().valid())
     {
-        setStatus(Status::Error(Status::AssertionFailure, "assembleImage with undefined profile"));
+        setStatus(Status(Status::AssertionFailure, "assembleImage with undefined profile"));
         return Result(GeoImage::INVALID);
     }
 

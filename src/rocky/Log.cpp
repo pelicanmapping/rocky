@@ -47,7 +47,7 @@ LogStream::getStream() const
 }
 
 LogThreshold Log::threshold = LogThreshold::NOTICE;
-std::string Log::prefix = "[rk]";
+std::string Log::prefix = "[r]";
 
 Log::Log() :
     debug(LogThreshold::DEBUG),

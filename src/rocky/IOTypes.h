@@ -36,8 +36,11 @@ namespace ROCKY_NAMESPACE
     using LogService = std::function<Log&()>;
 
     //! Service for reading an image from a URL
-    using ReadImageService = std::function<
-        Result<shared_ptr<Image>>(const std::string& url, const IOOptions&)>;
+    using ReadImageURIService = std::function<
+        Result<shared_ptr<Image>>(const std::string& location, const IOOptions&)>;
+
+    using ReadImageStreamService = std::function<
+        Result<shared_ptr<Image>>(std::istream& stream, const std::string& contentType, const IOOptions& io)>;
 
     //! Service for caching data
     using CacheImpl = void*; // todo.
@@ -53,11 +56,12 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT Services
     {
     public:
+        Services();
         LogService log;
-        ReadImageService readImage;
+        ReadImageURIService readImageFromURI;
+        ReadImageStreamService readImageFromStream;
         CacheService cache;
-        DataService data;
-        // ElevationService elevation;
+        //DataService data;
     };
 
     // User options passed along with an IO context.

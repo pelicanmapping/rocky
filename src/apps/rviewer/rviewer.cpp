@@ -1,5 +1,6 @@
 #include <rocky/Instance.h>
 #include <rocky/GDALLayers.h>
+#include <rocky/TMS.h>
 #include <rocky_vsg/InstanceVSG.h>
 #include <rocky_vsg/MapNode.h>
 #include <rocky_vsg/TerrainNode.h>
@@ -22,7 +23,7 @@ namespace ROCKY_NAMESPACE
             const TileKey& key,
             const IOOptions& io) const override
         {
-            auto image = io.services().readImage("D:/data/images/BENDER.png", io);
+            auto image = io.services().readImageFromURI("D:/data/images/BENDER.png", io);
 
             if (image.status.ok())
                 return GeoImage(image.value, key.extent());
@@ -80,13 +81,19 @@ int main(int argc, char** argv)
     //layer->setURI("D:/data/naturalearth/raster-10m/HYP_HR/HYP_HR.tif");
     mapNode->map()->addLayer(layer);
 #else
+    auto layer = rocky::TMSImageLayer::create();
+    layer->setURL("https://readymap.org/readymap/tiles/1.0.0/7/");
+    mapNode->map()->addLayer(layer);
+#endif
+
+#if 0
     auto layer = rocky::TestLayer::create();
     mapNode->map()->addLayer(layer);
 #endif
 
     if (layer->status().failed())
     {
-        rk->log().warn << "Failed to open layer: " << layer->status().message << std::endl;
+        rk->log().warn << "Problem with layer: " << layer->status().message << std::endl;
         exit(-1);
     }
 
@@ -110,12 +117,16 @@ int main(int argc, char** argv)
     viewer->addEventHandler(rocky::MapManipulator::create(mapNode, camera));
 
     // associate the scene graph with a window and camera in a new render graph
-    auto commandGraph = vsg::createCommandGraphForView(
-        window, 
+    auto renderGraph = vsg::createRenderGraphForView(
+        window,
         camera,
         vsg_scene,
         VK_SUBPASS_CONTENTS_INLINE,
         false); // assignHeadlight
+
+    // Command graph holds the render graph:
+    auto commandGraph = vsg::CommandGraph::create(window);
+    commandGraph->addChild(renderGraph);
 
     viewer->assignRecordAndSubmitTaskAndPresentation({ commandGraph });
 

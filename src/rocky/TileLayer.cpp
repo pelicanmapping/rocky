@@ -220,8 +220,6 @@ TileLayer::construct(const Config& conf)
 
     _writingRequested = false;
     _dataExtentsIndex = nullptr;
-
-    setProfile(Profile(Profile::GLOBAL_GEODETIC));
 }
 
 Config

@@ -61,10 +61,9 @@ StateFactory::createDefaultDescriptors()
     // TODO: more than one - make this an array?
     // TODO: activate mipmapping
     textures.color = { COLOR_TEX_NAME, COLOR_TEX_BINDING, vsg::Sampler::create(), {} };
-    textures.color.sampler->maxLod = 16; // 0; // mipmapLevelsHint;
-    //color_sampler->minFilter = mipmap filter!
     textures.color.sampler->minFilter = VK_FILTER_LINEAR;
-    textures.color.sampler->magFilter = VK_FILTER_NEAREST;
+    textures.color.sampler->magFilter = VK_FILTER_LINEAR;
+    textures.color.sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
     textures.color.sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     textures.color.sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     textures.color.sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
@@ -222,6 +221,10 @@ StateFactory::createPipelineConfig(vsg::SharedObjects* sharedObjects) const
 
     // backface culling off:
     //pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
+
+    // depth settings:
+    // NOTE: reverse-Z is the default in VSG.
+    // https://groups.google.com/g/vsg-users/c/AfR2KEBX_1Q/m/a2bky6c8EgAJ
 
     // Temporary decriptors that we will use to set up the PipelineConfig.
     // Note, we only use these for setup, and then throw them away!

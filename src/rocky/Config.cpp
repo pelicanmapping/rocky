@@ -14,6 +14,62 @@ using namespace ROCKY_NAMESPACE;
 
 #define LC "[Config] "
 
+namespace
+{
+    Config xml_node_to_config(Config* parent, const TiXmlNode* node)
+    {
+        ROCKY_SOFT_ASSERT_AND_RETURN(node != nullptr, Config());
+
+        Config conf;
+
+        if (node->Type() == TiXmlNode::TINYXML_ELEMENT)
+        {
+            const TiXmlElement* element = node->ToElement();
+            conf.key() = util::toLower(element->Value());
+            // attributes:
+            for (const TiXmlAttribute* attr = element->FirstAttribute(); attr != nullptr; attr = attr->Next())
+            {
+                Config attr_conf(util::toLower(attr->Name()), attr->Value());
+                if (!attr_conf.empty())
+                {
+                    conf.add(attr_conf);
+                }
+            }
+        }
+
+        else if (node->Type() == TiXmlNode::TINYXML_TEXT)
+        {
+            const TiXmlText* text = node->ToText();
+            if (parent)
+                parent->setValue(text->Value());
+        }
+
+        for (const TiXmlNode* child = node->FirstChild(); child != nullptr; child = child->NextSibling())
+        {
+            if (child)
+            {
+                Config child_conf = xml_node_to_config(&conf, child);
+                if (!child_conf.empty())
+                {
+                    conf.add(child_conf);
+                }
+            }
+        }
+
+        return conf;
+    }
+
+    Config xml_to_config(const TiXmlDocument& doc)
+    {
+        Config conf;
+        if (doc.RootElement())
+        {
+            conf = xml_node_to_config(nullptr, doc.RootElement());
+        }
+        return conf;
+    }
+}
+
 void
 Config::setReferrer(const std::string& referrer)
 {
@@ -61,7 +117,7 @@ Config::fromXML(std::istream& in)
 
     const TiXmlDocument& doc = result.value;
 
-    ROCKY_TODO("Parse the XML into a Config");
+    *this = xml_to_config(doc);
 
     return true;
 }

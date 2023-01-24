@@ -106,9 +106,6 @@ Layer::construct(const Config& conf)
 {
     _revision = 1;
     _uid = rocky::createUID();
-    _status = Status(
-        Status::ResourceUnavailable,
-        getOpenAutomatically() ? "Layer closed" : "Layer disabled");
     _isClosing = false;
     _isOpening = false;
     _reopenRequired = false;
@@ -119,16 +116,15 @@ Layer::construct(const Config& conf)
     _cachePolicy.setDefault(CachePolicy::DEFAULT);
 
     conf.get("name", _name);
-    //conf.set("enabled", enabled());
     conf.get("open", _openAutomatically);
     conf.get("cacheid", _cacheid);
     conf.get("cachepolicy", _cachePolicy);
-    //conf.set("shader_define", shaderDefine());
     conf.get("attribution", _attribution);
-    //conf.set("terrain", terrainPatch());
-    //conf.set("proxy", _proxySettings);
-    //conf.set("osg_options", osgOptionString());
     conf.get("l2_cache_size", _l2cachesize);
+
+    _status = Status(
+        Status::ResourceUnavailable,
+        getOpenAutomatically() ? "Layer closed" : "Layer disabled");
 
 #if 0
     // For detecting scene graph changes at runtime

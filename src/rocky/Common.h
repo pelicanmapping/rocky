@@ -201,7 +201,7 @@ namespace ROCKY_NAMESPACE
 #define ROCKY_STRINGIFY(x) ROCKY_STRINGIFY_0(x)
 
 // please use Log instead
-#define ROCKY_USE_STATIC_INSTANCE_LOG
+//#define ROCKY_USE_STATIC_INSTANCE_LOG
 
 #ifdef ROCKY_USE_STATIC_INSTANCE_LOG
 #define ROCKY_DEBUG rocky::Instance::log().debug
@@ -229,4 +229,4 @@ namespace ROCKY_NAMESPACE
 #define ROCKY_IF_SOFT_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr << "ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; } else
 #define ROCKY_HARD_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr << "FATAL ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; abort(); }
 
-#define ROCKY_TODO(...) std::cerr << "TODO (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ")..." << __VA_ARGS__ "" << std::endl
+#define ROCKY_TODO(...) if (false) std::cerr << "TODO (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ")..." << __VA_ARGS__ "" << std::endl

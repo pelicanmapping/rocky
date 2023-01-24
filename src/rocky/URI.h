@@ -190,7 +190,7 @@ namespace ROCKY_NAMESPACE
         //IOResult<T> read(IOControl* io) const;
 
         //! Reads the URI into a data buffer
-        IOResult<URI::Content> read(IOControl* io) const;
+        IOResult<URI::Content> read(const IOOptions& io) const;
 
     public:
 

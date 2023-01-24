@@ -141,6 +141,10 @@ Image::allocate(
         delete[] _data;
 
     _data = new unsigned char[sizeInBytes()];
+
+    // simple init for one-byte images
+    if (sizeInBytes() > 0)
+        write(fvec4(0, 0, 0, 0), 0, 0);
 }
 
 void*

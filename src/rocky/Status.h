@@ -27,7 +27,8 @@ namespace ROCKY_NAMESPACE
         std::string message;
 
         Status() : code(NoError) { }
-        Status(const Status& rhs) = default;
+        Status(const Status& rhs) : code(rhs.code), message(rhs.message) { }
+        Status& operator=(const Status& rhs) { code = rhs.code, message = rhs.message; return *this; }
         explicit Status(const Code& c) : code(c) { }
         explicit Status(const std::string& m) : code(GeneralError), message(m) { }
         explicit Status(const Code& c, const std::string& m) : code(c), message(m) { }
@@ -36,9 +37,7 @@ namespace ROCKY_NAMESPACE
         bool operator == (const Status& rhs) const { return code == rhs.code && message.compare(rhs.message) == 0; }
         bool operator != (const Status& rhs) const { return !(*this==rhs); }
         bool const operator ! () const { return failed(); }
-        static Status Error(const Code& c) { return Status(c); }
         static Status Error(const std::string& m) { return Status(m); }
-        static Status Error(const Code& c, const std::string& m) { return Status(c, m); }
         std::string toString() const {
             return _errorCodeText[(int)code < 6 ? (int)code : 5] + ": " + message;
         }
