@@ -274,11 +274,11 @@ TileMap::createProfile() const
 
     if (profileType == ProfileType::GEODETIC)
     {
-        profile = Profile(Profile::GLOBAL_GEODETIC);
+        profile = Profile::GLOBAL_GEODETIC;
     }
     else if (profileType == ProfileType::MERCATOR)
     {
-        profile = Profile(Profile::SPHERICAL_MERCATOR);
+        profile = Profile::SPHERICAL_MERCATOR;
     }
     else if (new_srs.isHorizEquivalentTo(SRS::SPHERICAL_MERCATOR))
     {
@@ -304,7 +304,7 @@ TileMap::createProfile() const
         equiv(minY,  -90.) &&
         equiv(maxY,   90.) )
     {
-        profile = Profile(Profile::GLOBAL_GEODETIC);
+        profile = Profile::GLOBAL_GEODETIC;
     }
 
     if (!profile.valid())

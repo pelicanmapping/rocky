@@ -209,10 +209,10 @@ namespace ROCKY_NAMESPACE
 #define ROCKY_NOTICE rocky::Instance::log().notice
 #define ROCKY_WARN rocky::Instance::log().warn
 #else
-#define ROCKY_DEBUG if (false) std::cout << "[rk]--"
-#define ROCKY_INFO std::cout << "[rk]- "
-#define ROCKY_NOTICE std::cout << "[rk]  "
-#define ROCKY_WARN std::cout << "[rk]* "
+#define ROCKY_DEBUG if (false) std::cout << "[r]--"
+#define ROCKY_INFO std::cout << "[r]- "
+#define ROCKY_NOTICE std::cout << "[r]  "
+#define ROCKY_WARN std::cout << "[r]* "
 #define ROCKY_NULL if (false) std::cout
 #endif
 

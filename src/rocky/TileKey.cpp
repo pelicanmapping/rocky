@@ -354,7 +354,7 @@ TileKey::getIntersectingKeys(
     ROCKY_SOFT_ASSERT_AND_RETURN(valid(), void());
 
     //If the profiles are exactly equal, just add the given tile key.
-    if (profile().isHorizEquivalentTo(target_profile))
+    if (profile() == target_profile)
     {
         //Clear the incoming list
         out_intersectingKeys.clear();

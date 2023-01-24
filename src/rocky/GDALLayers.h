@@ -4,6 +4,10 @@
  * MIT License
  */
 #pragma once
+#ifdef GDAL_FOUND
+
+#define ROCKY_HAVE_GDAL_IMAGE_LAYER
+#define ROCKY_HAVE_GDAL_ELEVATION_LAYER
 
 #include <rocky/ImageLayer.h>
 #include <rocky/ElevationLayer.h>
@@ -270,3 +274,5 @@ namespace ROCKY_NAMESPACE
     };
 
 } // namespace ROCKY_NAMESPACE
+
+#endif // GDAL_FOUND

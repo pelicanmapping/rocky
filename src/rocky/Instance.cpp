@@ -4,7 +4,9 @@
  * MIT License
  */
 #include "Instance.h"
-#include "Threading.h"
+
+#include "Profile.h"
+#include "SRS.h"
 
 #ifdef GDAL_FOUND
 #include <gdal.h>
@@ -14,6 +16,20 @@
 #include "GDALLayers.h"
 
 using namespace ROCKY_NAMESPACE;
+
+// declare static globals from Profile and SRS, so the dependency order is correct
+
+const SRS SRS::WGS84("wgs84");
+const SRS SRS::ECEF("geocentric");
+const SRS SRS::SPHERICAL_MERCATOR("spherical-mercator");
+const SRS SRS::PLATE_CARREE("plate-carree");
+const SRS SRS::EMPTY;
+
+const Profile Profile::GLOBAL_GEODETIC("global-geodetic");
+const Profile Profile::SPHERICAL_MERCATOR("spherical-mercator");
+const Profile Profile::PLATE_CARREE("plate-carree");
+
+
 
 Instance::Instance()
 {
@@ -45,7 +61,6 @@ Instance::Instance()
     // Set the GDAL shared block cache size. This defaults to 5% of
     // available memory which is too high.
     GDALSetCacheMax(40 * 1024 * 1024);
-#endif // GDAL_FOUND
 
     // register known layer types.
     addFactory("gdalimage",
@@ -53,6 +68,7 @@ Instance::Instance()
 
     addFactory("gdalelevation",
         [](const Config& conf) { return GDALElevationLayer::create(conf); });
+#endif // GDAL_FOUND
 }
 
 Instance::~Instance()

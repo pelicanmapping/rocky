@@ -23,9 +23,9 @@ namespace ROCKY_NAMESPACE
     {
     public:
         // well knowns
-        static const std::string GLOBAL_GEODETIC;
-        static const std::string SPHERICAL_MERCATOR;
-        static const std::string PLATE_CARREE;
+        static const Profile GLOBAL_GEODETIC;
+        static const Profile SPHERICAL_MERCATOR;
+        static const Profile PLATE_CARREE;
 
     public:
         //! Construct an empty, invalid profile
@@ -103,11 +103,19 @@ namespace ROCKY_NAMESPACE
         //! @param rhs Comparison profile
         bool isEquivalentTo(const Profile& rhs) const;
 
+        //! Equality is the same as equivalency
+        bool operator == (const Profile& rhs) const {
+            return isEquivalentTo(rhs);
+        }
+        bool operator != (const Profile& rhs) const {
+            return !isEquivalentTo(rhs);
+        }
+
         //! Gets whether the two profiles can be treated as equivalent (without regard
         //! for any vertical datum information - i.e., still returns true if the SRS
         //! vertical datums are different)
         //! @param rhs Comparison profile
-        bool isHorizEquivalentTo(const Profile& rhs) const;
+        //bool isHorizEquivalentTo(const Profile& rhs) const;
 
         //! Gets the tile dimensions at the given lod.
         std::pair<double, double> tileDimensions(unsigned lod) const;

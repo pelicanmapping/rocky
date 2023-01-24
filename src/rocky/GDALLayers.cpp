@@ -3,16 +3,16 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
+#ifdef GDAL_FOUND
+
 #include "GDALLayers.h"
 #include "Heightfield.h"
 #include "Image.h"
 #include "Log.h"
 
-#ifdef GDAL_FOUND
 #include <gdal.h>
 #include <gdalwarper.h>
 #include <ogr_spatialref.h>
-#endif
 
 #include <filesystem>
 
@@ -24,7 +24,6 @@ using namespace ROCKY_NAMESPACE::GDAL;
 
 #define INDENT ""
 
-#ifdef GDAL_FOUND
 #if (GDAL_VERSION_MAJOR > 1 || (GDAL_VERSION_MAJOR >= 1 && GDAL_VERSION_MINOR >= 5))
 #  define GDAL_VERSION_1_5_OR_NEWER 1
 #endif
@@ -57,11 +56,9 @@ using namespace ROCKY_NAMESPACE::GDAL;
 #define GEOTRSFRM_TOPLEFT_Y            3
 #define GEOTRSFRM_ROTATION_PARAM2      4
 #define GEOTRSFRM_NS_RES               5
-#endif
 
 namespace ROCKY_NAMESPACE
 {
-#ifdef GDAL_FOUND
     namespace GDAL
     {
         // From easyrgb.com
@@ -446,7 +443,6 @@ namespace ROCKY_NAMESPACE
             return (err == CE_None);
         }
     }
-#endif // GDAL_FOUND
 } // namespace ROCKY_NAMESPACE::GDAL
 
 //...................................................................
@@ -462,12 +458,10 @@ GDAL::Driver::Driver() :
 
 GDAL::Driver::~Driver()
 {
-#ifdef GDAL_FOUND
     if (_warpedDS)
         GDALClose(_warpedDS);
     else if (_srcDS)
         GDALClose(_srcDS);
-#endif
 }
 
 // Open the data source and prepare it for reading
@@ -479,7 +473,6 @@ GDAL::Driver::open(
     DataExtentList* layerDataExtents,
     const IOOptions& io)
 {
-#ifdef GDAL_FOUND
     bool info = (layerDataExtents != NULL);
 
     _name = name;
@@ -597,7 +590,7 @@ GDAL::Driver::open(
         // not found in the dataset; try loading a .prj file
         std::string prjLocation = util::Path(source).replace_extension("prj").string();
 
-        auto rr = URI(prjLocation).read(nullptr); // TODO io
+        auto rr = URI(prjLocation).read(io); // TODO io
         if (rr.status.ok() && rr.value.data.valid())
         {
             src_srs = SRS(util::trim(rr.value.data.to_string()));
@@ -800,24 +793,18 @@ GDAL::Driver::open(
     _linearUnits = 1.0; // srs.getReportedLinearUnits();
 
     return StatusOK;
-#else
-    return Status(Status::ResourceUnavailable, "SDK is not built with GDAL");
-#endif // GDAL_FOUND
 }
 
 void
 GDAL::Driver::pixelToGeo(double x, double y, double &geoX, double &geoY)
 {
-#ifdef GDAL_FOUND
     geoX = _geotransform[0] + _geotransform[1] * x + _geotransform[2] * y;
     geoY = _geotransform[3] + _geotransform[4] * x + _geotransform[5] * y;
-#endif
 }
 
 void
 GDAL::Driver::geoToPixel(double geoX, double geoY, double &x, double &y)
 {
-#ifdef GDAL_FOUND
     x = _invtransform[0] + _invtransform[1] * geoX + _invtransform[2] * geoY;
     y = _invtransform[3] + _invtransform[4] * geoX + _invtransform[5] * geoY;
 
@@ -827,13 +814,11 @@ GDAL::Driver::geoToPixel(double geoX, double geoY, double &x, double &y)
     if (equiv(y, 0.0, eps)) y = 0;
     if (equiv(x, (double)_warpedDS->GetRasterXSize(), eps)) x = _warpedDS->GetRasterXSize();
     if (equiv(y, (double)_warpedDS->GetRasterYSize(), eps)) y = _warpedDS->GetRasterYSize();
-#endif
 }
 
 bool
 GDAL::Driver::isValidValue(float v, GDALRasterBand* band)
 {
-#ifdef GDAL_FOUND
     float bandNoData = -32767.0f;
     int success;
     float value = band->GetNoDataValue(&success);
@@ -856,7 +841,6 @@ GDAL::Driver::isValidValue(float v, GDALRasterBand* band)
 
     if (_maxValidValue.isSet() && v > _maxValidValue.get())
         return false;
-#endif
 
     return true;
 }
@@ -864,7 +848,6 @@ GDAL::Driver::isValidValue(float v, GDALRasterBand* band)
 float
 GDAL::Driver::getInterpolatedValue(GDALRasterBand* band, double x, double y, bool applyOffset)
 {
-#ifdef GDAL_FOUND
     double r, c;
     geoToPixel(x, y, c, r);
 
@@ -972,9 +955,6 @@ GDAL::Driver::getInterpolatedValue(GDALRasterBand* band, double x, double y, boo
     }
 
     return result;
-#else
-    return 0.0f;
-#endif
 }
 
 bool
@@ -990,7 +970,6 @@ GDAL::Driver::createImage(
     bool isCoverage,
     const IOOptions& io)
 {
-#ifdef GDAL_FOUND
     if (_maxDataLevel.isSet() && key.levelOfDetail() > _maxDataLevel.get())
     {
         return nullptr;
@@ -1469,10 +1448,6 @@ GDAL::Driver::createImage(
     }
 
     return image;
-
-#else // !GDAL_FOUND
-    return nullptr;
-#endif
 }
 
 Result<shared_ptr<Heightfield>>
@@ -1481,7 +1456,6 @@ GDAL::Driver::createHeightfield(
     unsigned tileSize,
     const IOOptions& io)
 {
-#ifdef GDAL_FOUND
     if (_maxDataLevel.isSet() && key.levelOfDetail() > _maxDataLevel.get())
     {
         //ROCKY_NOTICE << "Reached maximum data resolution key=" << key.getLevelOfDetail() << " max=" << _maxDataLevel <<  std::endl;
@@ -1576,10 +1550,6 @@ GDAL::Driver::createHeightfield(
         //std::fill(heightList.begin(), heightList.end(), NO_DATA_VALUE);
     }
     return hf;
-
-#else // ! GDAL_FOUND
-    return Status(Status::ResourceUnavailable, "SDK not built with GDAL");
-#endif
 }
 
 Result<shared_ptr<Heightfield>>
@@ -1588,7 +1558,6 @@ GDAL::Driver::createHeightfieldWithVRT(
     unsigned tileSize,
     const IOOptions& io)
 {
-#ifdef GDAL_FOUND
     if (_maxDataLevel.isSet() && key.levelOfDetail() > _maxDataLevel.get())
     {
         return nullptr;
@@ -1722,10 +1691,6 @@ GDAL::Driver::createHeightfieldWithVRT(
         // Note:  The transformer is closed in the warped dataset so we don't need to free it ourselves.
     }
     return hf;
-
-#else // ! GDAL_FOUND
-    return Status(Status::ResourceUnavailable, "SDK not built with GDAL");
-#endif
 }
 //...................................................................
 
@@ -2426,4 +2391,8 @@ rocky::GDAL::reprojectImage(
 
     return result;
 }
+
+#endif // if 0
+
 #endif // GDAL_FOUND
+

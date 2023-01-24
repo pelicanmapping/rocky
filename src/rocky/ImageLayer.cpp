@@ -590,7 +590,7 @@ ImageLayer::createImageInKeyProfile(
     }
 #endif
 
-    if (key.profile().isHorizEquivalentTo(profile()))
+    if (key.profile() == profile())
     {
         bool createUpsampledImage = false;
 

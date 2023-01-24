@@ -121,7 +121,6 @@ TEST_CASE("Instance")
 {
     Services services;
     CHECK(services.log);
-    services.log().warn << "Hello" << std::endl;
 }
 
 TEST_CASE("Map")
@@ -155,15 +154,10 @@ TEST_CASE("Open Layer")
             CHECK(s.ok());
         }
     }
-#else
-    //INFO("GDAL not avaiable - skipping GDAL tests");
 #endif
 
-#if 0
-    // COMMENTED OUT - because the jpg reader (et al) is in InstanceVSG, not here.
     SECTION("TMS")
     {
-        InstanceVSG instance;
         auto layer = TMSImageLayer::create();
         CHECKED_IF(layer != nullptr)
         {
@@ -171,7 +165,11 @@ TEST_CASE("Open Layer")
             auto s = layer->open();
             CHECKED_IF(s.ok())
             {
-                TileKey key(0, 0, 0, Profile(Profile::GLOBAL_GEODETIC));
+                // NOTE: we cannot test this here because the JPG reader is in InstanceVSG.
+                // TODO: create a unit test for rocky_vsg? Or link rocky_vsg to this library?
+#if 0
+                InstanceVSG instance;
+                TileKey key(0, 0, 0, Profile::GLOBAL_GEODETIC);
                 Result<GeoImage> tile = layer->createImage(key, instance.ioOptions());
                 CHECK(tile.status.ok());
                 CHECK(tile.value.valid());
@@ -181,10 +179,10 @@ TEST_CASE("Open Layer")
                     CHECK(tile.value.image()->height() == 256);
                     CHECK(tile.value.image()->pixelFormat() == Image::R8G8B8_UNORM);
                 }
+#endif
             }
         }
     }
-#endif
 }
 
 TEST_CASE("Deserialize layer")

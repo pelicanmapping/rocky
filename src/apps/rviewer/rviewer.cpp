@@ -75,15 +75,15 @@ int main(int argc, char** argv)
     rk->runtime().sharedObjects = vsg::SharedObjects::create();
     rk->runtime().loaders = vsg::OperationThreads::create(mapNode->terrainNode()->concurrency);
 
-#ifdef GDAL_FOUND
-    auto layer = rocky::GDALImageLayer::create();
-    layer->setURI("D:/data/imagery/world.tif");
-    //layer->setURI("D:/data/naturalearth/raster-10m/HYP_HR/HYP_HR.tif");
-    mapNode->map()->addLayer(layer);
-#else
+    // add a layer to the map
     auto layer = rocky::TMSImageLayer::create();
     layer->setURL("https://readymap.org/readymap/tiles/1.0.0/7/");
     mapNode->map()->addLayer(layer);
+
+#if 0
+    auto layer = rocky::GDALImageLayer::create();
+    layer->setURL("D:/data/imagery/world.tif");
+    mapNode->map()->addLayer(layer)
 #endif
 
 #if 0

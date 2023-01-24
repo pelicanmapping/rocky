@@ -99,11 +99,6 @@ ProfileOptions::defined() const
 }
 #endif
 
-/***********************************************************************/
-
-const std::string Profile::GLOBAL_GEODETIC("global-geodetic");
-const std::string Profile::SPHERICAL_MERCATOR("spherical-mercator");
-const std::string Profile::PLATE_CARREE("plate-carree");
 
 //Definitions for the mercator extent
 const double MERC_MINX = -20037508.34278925;
@@ -320,7 +315,7 @@ Profile::setup(const std::string& name)
 {
     _shared->_wellKnownName = name;
 
-    if (util::ciEquals(name, PLATE_CARREE) ||
+    if (util::ciEquals(name, "plate-carree") ||
         util::ciEquals(name, "plate-carre") ||
         util::ciEquals(name, "eqc-wgs84"))
     {
@@ -334,14 +329,14 @@ Profile::setup(const std::string& name)
             Box(-ex.x, -ex.y, ex.x, ex.y),
             2u, 1u);
     }
-    else if (util::ciEquals(name, GLOBAL_GEODETIC))
+    else if (util::ciEquals(name, "global-geodetic"))
     {
         setup(
             SRS::WGS84,
             Box(-180.0, -90.0, 180.0, 90.0),
             2, 1);
     }
-    else if (util::ciEquals(name, SPHERICAL_MERCATOR))
+    else if (util::ciEquals(name, "spherical-mercator"))
     {
         setup(
             SRS::SPHERICAL_MERCATOR,
@@ -461,14 +456,15 @@ Profile::tileExtent(unsigned lod, unsigned tileX, unsigned tileY) const
 bool
 Profile::isEquivalentTo(const Profile& rhs) const
 {
-    return getFullSignature() == rhs.getFullSignature();
-}
-
-bool
-Profile::isHorizEquivalentTo(const Profile& rhs) const
-{
+    //return getFullSignature() == rhs.getFullSignature();
     return getHorizSignature() == rhs.getHorizSignature();
 }
+
+//bool
+//Profile::isHorizEquivalentTo(const Profile& rhs) const
+//{
+//    return getHorizSignature() == rhs.getHorizSignature();
+//}
 
 std::pair<double,double>
 Profile::tileDimensions(unsigned int lod) const
@@ -593,16 +589,13 @@ Profile::getEquivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
     ROCKY_SOFT_ASSERT_AND_RETURN(rhsProfile.valid(), rhsLOD);
 
     //If the profiles are equivalent, just use the incoming lod
-    if (this->isHorizEquivalentTo(rhsProfile))
+    if (this->isEquivalentTo(rhsProfile))
         return rhsLOD;
-
-    static Profile ggProfile = Profile(Profile::GLOBAL_GEODETIC);
-    static Profile smProfile = Profile(Profile::SPHERICAL_MERCATOR);
 
     // Special check for geodetic to mercator or vise versa, they should match up in LOD.
     // TODO not sure about this.. -gw
-    if ((rhsProfile.isEquivalentTo(smProfile) && isEquivalentTo(ggProfile)) ||
-        (rhsProfile.isEquivalentTo(ggProfile) && isEquivalentTo(smProfile)))
+    if ((rhsProfile.isEquivalentTo(Profile::SPHERICAL_MERCATOR) && isEquivalentTo(Profile::GLOBAL_GEODETIC)) ||
+        (rhsProfile.isEquivalentTo(Profile::GLOBAL_GEODETIC) && isEquivalentTo(Profile::SPHERICAL_MERCATOR)))
     {
         return rhsLOD;
     }

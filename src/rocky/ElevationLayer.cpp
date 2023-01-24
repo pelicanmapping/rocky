@@ -565,7 +565,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
                 return Result(GeoHeightfield::INVALID);
             }
 
-            if (key.profile().isHorizEquivalentTo(my_profile))
+            if (key.profile() == my_profile)
             {
                 util::ScopedReadLock lock(layerMutex());
                 auto r = createHeightfieldImplementation(key, io);
@@ -591,7 +591,6 @@ ElevationLayer::createHeightfieldInKeyProfile(
             // The const_cast is safe here because we just created the
             // heightfield from scratch...not from a cache.
             hf = result.heightfield();
-            //hf = const_cast<osg::Heightfield*>(result.getHeightfield());
 
             // validate it to make sure it's legal.
             if (hf && !validateHeightfield(hf.get()))

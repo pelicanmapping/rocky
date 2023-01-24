@@ -22,7 +22,7 @@ namespace
     void redirect_proj_log(void* user, int level, const char* msg)
     {
         if (msg)
-            std::cerr << msg << std::endl; // Instance::log().info << msg << std::endl;
+            ROCKY_INFO << "proj says: " << msg << std::endl;
     }
 
     inline bool starts_with(const std::string& s, const char* pattern) {
@@ -454,12 +454,14 @@ namespace
 }
 
 
-// common ones.
+#if 0
+// Note! Moved these to Instance.cpp since there's a static startup dependency!
 const SRS SRS::WGS84("wgs84");
 const SRS SRS::ECEF("geocentric");
 const SRS SRS::SPHERICAL_MERCATOR("spherical-mercator");
 const SRS SRS::PLATE_CARREE("plate-carree");
 const SRS SRS::EMPTY;
+#endif
 
 SRS::SRS() :
     _valid(false)
@@ -756,8 +758,12 @@ SRSOperation::forward(void* handle, double& x, double& y, double& z) const
     {
         proj_errno_reset((PJ*)handle);
         PJ_COORD out = proj_trans((PJ*)handle, PJ_FWD, PJ_COORD{ x, y, z });
-        if (proj_errno((PJ*)handle) != 0)
+        int err = proj_errno((PJ*)handle);
+        if (err != 0)
+        {
+            _lastError = proj_errno_string(err);
             return false;
+        }
         x = out.xyz.x, y = out.xyz.y, z = out.xyz.z;
         return true;
     }
@@ -772,10 +778,10 @@ SRSOperation::inverse(void* handle, double& x, double& y, double& z) const
     {
         proj_errno_reset((PJ*)handle);
         PJ_COORD out = proj_trans((PJ*)handle, PJ_INV, PJ_COORD{ x, y, z });
-        if (proj_errno((PJ*)handle) != 0)
+        int err = proj_errno((PJ*)handle);
+        if (err != 0)
         {
-            std::string err = proj_errno_string(proj_errno((PJ*)handle));
-            std::cerr << err << " (inverse)" << std::endl;
+            _lastError = proj_errno_string(err);
             return false;
         }
         x = out.xyz.x, y = out.xyz.y, z = out.xyz.z;

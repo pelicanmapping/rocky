@@ -176,7 +176,7 @@ Map::construct(const Config& conf, const IOOptions& io)
     // set a default profile if neccesary.
     if (!profile().valid())
     {
-        setProfile(Profile(Profile::GLOBAL_GEODETIC));
+        setProfile(Profile::GLOBAL_GEODETIC);
     }
 }
 

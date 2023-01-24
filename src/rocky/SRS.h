@@ -241,6 +241,11 @@ namespace ROCKY_NAMESPACE
             return errors == 0;
         }
 
+        //! Error message if something returns false
+        const std::string& lastError() const {
+            return _lastError;
+        }
+
         // copy/move ops
         SRSOperation(const SRSOperation& rhs) = default;
         SRSOperation& operator=(const SRSOperation&) = default;
@@ -251,6 +256,7 @@ namespace ROCKY_NAMESPACE
     private:
         SRS _from;
         SRS _to;
+        mutable std::string _lastError;
 
         void* get_handle() const;
         bool forward(void* handle, double& x, double& y, double& z) const;

@@ -46,7 +46,7 @@ namespace ROCKY_NAMESPACE
                 _lod == rhs._lod &&
                 _x == rhs._x &&
                 _y == rhs._y &&
-                _profile.isHorizEquivalentTo(rhs._profile);
+                _profile == rhs._profile;
         }
 
         //! Compare two tilekeys for inequality
@@ -56,7 +56,7 @@ namespace ROCKY_NAMESPACE
                 _lod != rhs._lod ||
                 _x != rhs._x ||
                 _y != rhs._y ||
-                !_profile.isEquivalentTo(rhs._profile);
+                _profile != rhs._profile;
         }
 
         //! Sorts tilekeys, ignoring profiles

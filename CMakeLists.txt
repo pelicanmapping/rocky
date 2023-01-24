@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.7)
 
 # if using vcpkg, configure overlay ports (that are not available in vcpkg prime)
-set(VCPKG_OVERLAY_PORTS ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/ports)
+if (${CMAKE_TOOLCHAIN_FILE} MATCHES ".*vcpkg.cmake.*")
+    message(STATUS "Building with vcpkg toolchain.")
+    set(USING_VCPKG ON)
+    set(VCPKG_OVERLAY_PORTS ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/ports)
+endif()
 
 project(
     rocky
@@ -27,7 +31,6 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
-
 # PROJ - geospatial projections library - required
 find_package(PROJ CONFIG REQUIRED)
 
@@ -38,11 +41,19 @@ find_package(tinyxml CONFIG REQUIRED)
 
 find_package(nlohmann_json CONFIG REQUIRED)
 
-option(BUILD_WITH_OPENSSL "Use OpenSSL to support HTTPS protocol" ON)
-if (BUILD_WITH_OPENSSL)
-    find_package(OpenSSL)
-    if (OPENSSL_FOUND)
-        add_definitions("-DOPENSSL_FOUND")
+# httplib - http/https header-only SDK (use BUILD_WITH_OPENSSL=ON for HTTPS support)
+find_path(CPP_HTTPLIB_INCLUDE_DIRS "httplib.h")
+if(CPP_HTTPLIB_INCLUDE_DIRS)
+    include_directories(${CPP_HTTPLIB_INCLUDE_DIRS})
+    add_definitions("-DHTTPLIB_FOUND")
+
+    # OpenSSL - for HTTPS support - optional
+    option(BUILD_WITH_OPENSSL "Use OpenSSL to support HTTPS protocol" ON)
+    if (BUILD_WITH_OPENSSL)
+        find_package(OpenSSL REQUIRED)
+        if (OPENSSL_FOUND)
+            add_definitions("-DOPENSSL_FOUND")
+        endif()
     endif()
 endif()
 
@@ -52,18 +63,9 @@ if(BUILD_WITH_GDAL)
     find_package(GDAL CONFIG)
     if (GDAL_FOUND)
         add_definitions("-DGDAL_FOUND")
-    else()
-        message(WARNING "Build with GDAL ON, but GDAL NOT FOUND. Set GDAL_DIR")	
-	endif()
-endif()
-
-# httplib - http/https header-only SDK
-# (link to libssl and libcrypto for HTTPS support)
-# https://github.com/yhirose/cpp-httplib
-find_path(CPP_HTTPLIB_INCLUDE_DIRS "httplib.h")
-if(CPP_HTTPLIB_INCLUDE_DIRS)
-    include_directories(${CPP_HTTPLIB_INCLUDE_DIRS})
-    add_definitions("-DHTTPLIB_FOUND")
+	else()
+        message(WARNING "BUILD_WITH_GDAL=ON but GDAL not found; consider adding it to vcpkg.json or to your CMAKE_PREFIX_PATH.")
+    endif()
 endif()
 
 # source code
