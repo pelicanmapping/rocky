@@ -130,19 +130,7 @@ namespace ROCKY_NAMESPACE
 
         RuntimeContext& runtime() const;
 
-    public: //override
-
-        //virtual Sphere computeBound() const;
-
-        //virtual void traverse(class osg::NodeVisitor& nv);
-
-        //virtual void resizeGLObjectBuffers(unsigned maxSize);
-
-        //virtual void releaseGLObjects(osg::State* state) const;
-
         void update(const vsg::FrameStamp*);
-
-    protected:
 
         virtual ~MapNode();
 

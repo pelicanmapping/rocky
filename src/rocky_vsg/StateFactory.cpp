@@ -32,6 +32,8 @@ using namespace ROCKY_NAMESPACE;
 
 StateFactory::StateFactory()
 {
+    status = StatusOK;
+
     // cache of shared objects in the terrain state. Re-using objects
     // helps performance.
     sharedObjects = vsg::SharedObjects::create();
@@ -41,6 +43,10 @@ StateFactory::StateFactory()
 
     // shader set prototype for use with a GraphicsPipelineConfig.
     shaderSet = createShaderSet();
+    if (!shaderSet)
+    {
+        status = Status(Status::ResourceUnavailable, "Terrain shaders missing or corrupt");
+    }
 
     // create the pipeline configurator for terrain; this is a helper object
     // that acts as a "template" for terrain tile rendering state.
@@ -142,7 +148,7 @@ StateFactory::createShaderSet() const
 
     // set up search paths to SPIRV shaders and textures
     vsg::Paths searchPaths = vsg::getEnvPaths("VSG_FILE_PATH");
-    searchPaths.push_back(vsg::Path("H:/devel/rocky/install/share"));
+    //searchPaths.push_back(vsg::Path("H:/devel/rocky/install/share"));
 
     // load shaders
     auto vertexShader = vsg::ShaderStage::read(
@@ -155,10 +161,10 @@ StateFactory::createShaderSet() const
         "main",
         vsg::findFile("terrain.frag", searchPaths));
 
-    ROCKY_SOFT_ASSERT_AND_RETURN(
-        vertexShader && fragmentShader,
-        shaderSet,
-        "Could not create terrain shaders");
+    if (!vertexShader || !fragmentShader)
+    {
+        return { };
+    }
 
 #if 0
     const uint32_t reverseDepth = 0;
@@ -202,7 +208,7 @@ StateFactory::createShaderSet() const
 vsg::ref_ptr<vsg::GraphicsPipelineConfig>
 StateFactory::createPipelineConfig(vsg::SharedObjects* sharedObjects) const
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(shaderSet.valid(), {});
+    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), {});
 
     // This method uses the "shaderSet" as a prototype to
     // define a graphics pipeline that will render the terrain.
@@ -345,6 +351,8 @@ StateFactory::createPipeline(vsg::SharedObjects* sharedObjects) const
 vsg::ref_ptr<vsg::StateGroup>
 StateFactory::createTerrainStateGroup() const
 {
+    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), { });
+
     // Just a StateGroup holding the graphics pipeline.
     // No actual descriptors here - those will appear on each tile.
 
@@ -364,6 +372,8 @@ StateFactory::updateTerrainTileDescriptors(
     vsg::ref_ptr<vsg::StateGroup> stategroup,
     RuntimeContext& runtime) const
 {
+    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), void());
+
     // Takes a tile's render model (which holds the raw image and matrix data)
     // and creates the necessary VK data to render that model.
 

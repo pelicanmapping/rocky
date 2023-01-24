@@ -44,6 +44,9 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::StateGroup> stategroup,
             RuntimeContext& runtime) const;
 
+        //! Status of the factory.
+        Status status;
+
     public:
 
         //! Config object for creating the terrain's graphics pipeline

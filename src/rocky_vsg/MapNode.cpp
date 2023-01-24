@@ -253,36 +253,18 @@ MapNode::construct(const Config& conf)
     conf.get("draping_render_bin_number", _drapingRenderBinNumber);
     conf.get("screen_space_error", _screenSpaceError);
 
-    //if (conf.hasChild("terrain"))
-    //    terrain() = TerrainOptions(conf.child("terrain"));
 
-    // initialize 0Ls
     _terrain = TerrainNode::create(runtime(), conf);
-
     addChild(_terrain);
 
-    //_terrainEngine = nullptr;
-    //_terrainGroup = nullptr;
     _layerNodes = nullptr;
-    //_lastNumBlacklistedFilenames = 0;
     _isOpen = false;
-
-    //setName("osgEarth::MapNode");
-
-    // Construct the container for the terrain engine, which also hold the options.
-    //_terrainGroup = vsg::Group::create();
-    //this->addChild(_terrainGroup);
 
     // make a group for the model layers.  This node is a PagingManager instead of a regular Group to allow PagedNode's to be used within the layers.
     ROCKY_TODO("PagingManager");
     //_layerNodes = PagingManager::create();
-
     _layerNodes = vsg::Group::create();
     this->addChild(_layerNodes);
-
-    // Make sure the Registry is not destroyed until we are done using
-    // it (in ~MapNode).
-    //_registry = Registry::instance();
 
     // the default SSE for all supporting geometries
     ROCKY_TODO("SSE uniform?");
@@ -292,7 +274,12 @@ MapNode::construct(const Config& conf)
 
     // Fire it up
     //_worldSRS = SRS::PLATE_CARREE; // testing
-    _terrain->setMap(_map, worldSRS());
+    Status s = _terrain->setMap(_map, worldSRS());
+    
+    if (s.failed())
+    {
+        _instance->log().warn << s.message << std::endl;
+    }
 }
 
 Config

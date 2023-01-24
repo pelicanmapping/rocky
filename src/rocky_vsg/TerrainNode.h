@@ -34,7 +34,7 @@ namespace ROCKY_NAMESPACE
             const Config& conf);
 
         //! Map to render, and SRS to render it in
-        void setMap(
+        Status setMap(
             shared_ptr<Map> new_map,
             const SRS& world_srs);
 

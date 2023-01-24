@@ -30,4 +30,21 @@ cmake --build ..\build --target INSTALL --config RelWithDebInfo
 ```
 The resulting files will be installed to the `install` folder you specified during bootstrap.
 
+### 4. Run it
+You will need the dependencies in your path. If you are using the vcpkg toolchain, the dependencies will be in `vcpkg_installed/x64-windows/bin` relative to your build location.
+
+You will also need some environment variables:
+```
+# PROJ database location:
+set PROJ_DATA=%path_to_vcpkg_deps%/share/proj
+
+# Shaders location:
+set VSG_FILE_PATH=%path_to_install_dir%/share
+```
+
+Now hopefully you will be able to try the viewer or the unit tester.
+```
+rviewer.exe
+rtests.exe
+```
 Enjoy!

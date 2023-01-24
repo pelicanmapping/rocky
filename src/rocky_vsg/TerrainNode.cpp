@@ -39,10 +39,11 @@ TerrainNode::getConfig() const
     return conf;
 }
 
-void
+Status
 TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(new_map, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(new_map,
+        Status(Status::ConfigurationError, "Null map"));
 
     SRS worldSRS = new_worldSRS;
     if (!worldSRS.valid())
@@ -62,6 +63,12 @@ TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
 
     // remove everything and start over
     this->children.clear();
+    
+    // check that everything initialized ok
+    if (_context->stateFactory->status.failed())
+    {
+        return _context->stateFactory->status;
+    }
 
     _tilesRoot = vsg::Group::create();
 
@@ -85,6 +92,8 @@ TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
     auto stateGroup = _context->stateFactory->createTerrainStateGroup();
     stateGroup->addChild(_tilesRoot);
     this->addChild(stateGroup);
+
+    return StatusOK;
 }
 
 void
