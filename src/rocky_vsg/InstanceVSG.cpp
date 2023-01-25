@@ -7,6 +7,7 @@
 #include "Utils.h"
 #include <rocky/Image.h>
 #include <vsg/io/read.h>
+#include <vsg/io/Logger.h>
 #include <vsg/state/Image.h>
 
 #ifdef VSGXCHANGE_FOUND
@@ -17,7 +18,7 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    // recursive search for a RW that matches the extension
+    // recursive search for a vsg::ReaderWriters that matches the extension
     // TODO: expand to include 'protocols' I guess
     vsg::ref_ptr<vsg::ReaderWriter> findReaderWriter(const std::string& extension, const vsg::ReaderWriters& readerWriters)
     {
@@ -58,6 +59,7 @@ InstanceVSG::InstanceVSG() :
     _vsgOptions = vsg::Options::create();
 
 #ifdef VSGXCHANGE_FOUND
+    // Adds all the readerwriters in vsgxchange to the options data.
     _vsgOptions->add(vsgXchange::all::create());
 #endif
 
@@ -74,6 +76,7 @@ InstanceVSG::InstanceVSG() :
         return makeImageFromVSG(result);
     };
 
+    // map of mime-types to extensions that VSG can understand
     static const std::unordered_map<std::string, std::string> ext_for_mime_type = {
         { "image/bmp", ".bmp" },
         { "image/gif", ".gif" },
@@ -84,6 +87,9 @@ InstanceVSG::InstanceVSG() :
         { "image/tif", ".tif" }
     };
 
+    // To read from a stream, we have to search all the VS readerwriters to
+    // find one that matches the 'extension' we want. We also have to put that
+    // extension in the options structure as a hint.
     ioOptions().services().readImageFromStream = [=](
         std::istream& location, const std::string& contentType, const rocky::IOOptions& io)
         -> Result<shared_ptr<Image>>
@@ -108,4 +114,23 @@ InstanceVSG::InstanceVSG(vsg::CommandLine& args) :
     InstanceVSG()
 {
     args.read(_vsgOptions);
+}
+
+void
+InstanceVSG::setUseVSGLogger(bool value)
+{
+    if (value)
+    {
+        Log::userFunction() = [](LogLevel level, const std::string& s)
+        {
+            if (level == LogLevel::INFO)
+                vsg::Logger::instance()->info(s);
+            else if (level == LogLevel::WARN)
+                vsg::Logger::instance()->warn(s);
+        };
+    }
+    else
+    {
+        Log::userFunction() = nullptr;
+    }
 }

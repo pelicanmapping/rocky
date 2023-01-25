@@ -15,7 +15,7 @@ namespace ROCKY_NAMESPACE
     /**
      * Rocky instance to use when running a VSG-based application
      */
-    class ROCKY_VSG_EXPORT InstanceVSG :  public Inherit<Instance, InstanceVSG>
+    class ROCKY_VSG_EXPORT InstanceVSG : public Inherit<Instance, InstanceVSG>
     {
     public:
         //! Construct a new VSG-based application instance
@@ -27,6 +27,9 @@ namespace ROCKY_NAMESPACE
 
         //! Runtime context
         RuntimeContext& runtime() { return _runtime; }
+
+        //! Whether to redirect rocky::Log messages to the vsg::Logger
+        void setUseVSGLogger(bool);
 
     private:
         vsg::ref_ptr<vsg::Options> _vsgOptions;

@@ -6,7 +6,6 @@
 #pragma once
 #include <rocky/Common.h>
 #include <rocky/IOTypes.h>
-#include <rocky/Log.h>
 #include <unordered_map>
 
 namespace ROCKY_NAMESPACE
@@ -25,9 +24,6 @@ namespace ROCKY_NAMESPACE
 
         //! Global caching policy
         inline CachePolicy& cachePolicy();
-
-        //! Logging service
-        inline Log& log();
 
         using ContentFactory = std::function<
             shared_ptr<Object>(
@@ -67,8 +63,5 @@ namespace ROCKY_NAMESPACE
     }
     IOOptions& Instance::ioOptions() {
         return _ioOptions;
-    }
-    Log& Instance::log() {
-        return _ioOptions.services().log();
     }
 }

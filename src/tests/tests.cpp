@@ -2,6 +2,7 @@
 #include "catch.hpp"
 
 #include <rocky/Instance.h>
+#include <rocky/Log.h>
 #include <rocky/Map.h>
 #include <rocky/Math.h>
 #include <rocky/Notify.h>
@@ -22,6 +23,36 @@ namespace
             return StatusOK;
         }
     };
+}
+
+TEST_CASE("Log")
+{
+    static LogLevel out_level;
+    static std::string out_string;
+
+    Log::userFunction() = [&](LogLevel level, const std::string& txt)
+    {
+        out_level = level;
+        out_string = txt;
+    };
+    Log::usePrefix() = false;
+
+    Log::info() << "Hello, world.";
+    CHECK(out_string.empty());
+
+    Log::info() << std::flush;
+    CHECK(out_string == "Hello, world.");
+    CHECK(out_level == LogLevel::INFO);
+
+    out_string = "";
+    Log::warn() << "Goodbye" << std::endl;
+    CHECK(out_string == "Goodbye\n");
+    CHECK(out_level == LogLevel::WARN);
+
+    Log::userFunction() = nullptr;
+    Log::usePrefix() = true;
+
+    Log::info() << "Log: This should print to the screen." << std::endl;
 }
 
 TEST_CASE("Math")
@@ -117,12 +148,6 @@ TEST_CASE("Heightfield")
     }
 }
 
-TEST_CASE("Instance")
-{
-    Services services;
-    CHECK(services.log);
-}
-
 TEST_CASE("Map")
 {
     auto instance = Instance::create();
@@ -204,9 +229,6 @@ TEST_CASE("Deserialize layer")
 
 TEST_CASE("SRS")
 {
-    // See info messages from the SRS system
-    //Instance::log().threshold = LogThreshold::INFO;
-
     // epsilon
     const double E = 0.1;
 

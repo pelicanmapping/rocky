@@ -510,9 +510,6 @@ ImageLayer::createImageInKeyProfile(
 
     Result<GeoImage> result;
 
-    io.services().log().debug << LC << "create image for \"" << key.str() << "\", ext= "
-        << key.extent().toString() << std::endl;
-
     ROCKY_TODO("Caching");
 #if 0
     // the cache key combines the Key and the horizontal profile.
@@ -767,8 +764,6 @@ ImageLayer::assembleImage(
         if ( (mosaic.getImages().empty() && key.levelOfDetail() > 0) || retry)
         {
             // if we didn't get any data at LOD>0, fail.
-            io.services().log().debug
-                << LC << "Couldn't create image for ImageMosaic " << std::endl;
             return Result(GeoImage::INVALID);
         }
 
@@ -825,7 +820,6 @@ ImageLayer::assembleImage(
             if (!geoimage.value.valid())
             {
                 // a tile completely failed, even with fallback. Eject.
-                io.services().log().debug << LC << "Couldn't fallback on tiles for ImageMosaic" << std::endl;
                 // let it go. The empty areas will be filled with alpha by ImageMosaic.
             }
         }
@@ -840,7 +834,7 @@ ImageLayer::assembleImage(
     }
     else
     {
-        io.services().log().debug << LC << "assembleImage: no intersections (" << key.str() << ")" << std::endl;
+        //ROCKY_DEBUG << "assembleImage: no intersections (" << key.str() << ")" << std::endl;
     }
 
     // Final step: transform the mosaic into the requesting key's extent.

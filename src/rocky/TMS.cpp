@@ -802,20 +802,17 @@ TMS::Driver::open(
     // Take the override profile if one is given
     if (profile.valid())
     {
-        if (io.services().log)
-        {
-            io.services().log().info << LC
-                << "Using express profile \"" << profile.toString()
-                << "\" for URI \"" << uri.base() << "\""
-                << std::endl;
-        }
+        Log::info() << LC
+            << "Using express profile \"" << profile.toString()
+            << "\" for URI \"" << uri.base() << "\""
+            << std::endl;
 
-        DataExtentList dataExtents; // empty
+        DataExtentList dataExtents_dummy; // empty
 
         _tileMap = TileMap(
             uri.full(),
             profile,
-            dataExtents,
+            dataExtents_dummy,
             format,
             256,
             256);

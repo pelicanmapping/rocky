@@ -260,8 +260,6 @@ Map::setProfile(const Profile& value)
     if (value.valid())
     {
         _profile = value;
-
-        _instance->log().debug << "Map profile is: " << _profile.toString() << std::endl;
     }
 
 #if 0

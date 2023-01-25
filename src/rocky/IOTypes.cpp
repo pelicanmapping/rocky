@@ -260,15 +260,12 @@ IOOptions::operator = (const IOOptions& rhs)
 
 namespace
 {
-    static Log g_default_log;
-    LogService default_log = []() -> Log& { return g_default_log; };
     ReadImageURIService default_read_image_from_uri = [](const std::string&, const IOOptions&) { return Status(Status::ServiceUnavailable); };
     ReadImageStreamService default_read_image_from_stream = [](std::istream&, const std::string&, const IOOptions&) { return Status(Status::ServiceUnavailable); };
     CacheService default_cache = []() { return nullptr; };
 }
 
 Services::Services() :
-    log(default_log),
     readImageFromURI(default_read_image_from_uri),
     readImageFromStream(default_read_image_from_stream),
     cache(default_cache)

@@ -1047,7 +1047,7 @@ GDAL::Driver::createImage(
 
     if (off_x + width > rasterWidth || off_y + height > rasterHeight)
     {
-        io.services().log().warn <<
+        Log::warn() <<
             "Read window outside of bounds of dataset.  Source Dimensions=" 
             << rasterWidth << "x" << rasterHeight 
             << " Read Window=" << off_x << ", " << off_y << " " << width << "x" << height << std::endl;
@@ -1261,7 +1261,7 @@ GDAL::Driver::createImage(
             {
                 //ROCKY_WARN << LC << "RasterIO failed.\n";
                 // TODO - handle error condition
-                io.services().log().warn << "RasterIO failed" << std::endl;
+                Log::warn() << "RasterIO failed" << std::endl;
             }
 
             delete[] data;
@@ -1437,7 +1437,7 @@ GDAL::Driver::createImage(
     }
     else
     {
-        io.services().log().warn
+        Log::warn()
             << LC << "Could not find red, green and blue bands or gray bands in "
             << gdalOptions().url->full()
             << ".  Cannot create image. " << std::endl;

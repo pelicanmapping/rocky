@@ -8,80 +8,104 @@
 
 using namespace ROCKY_NAMESPACE;
 
-LogStream::LogStream(LogThreshold t) :
-    _threshold(t),
-    _stream(nullptr)
+// statics
+LogLevel Log::level = LogLevel::WARN;
+
+namespace
 {
-    _null.open("/dev/null", std::ofstream::out | std::ofstream::app);
+    // global user function.
+    LogFunction g_userFunction = nullptr;
+    bool g_logUsePrefix = true;
+
+    // stream buffer that redirects chars to a string buffer
+    // and then calls the user function whenever that string buffer
+    // is flushed.
+    struct RedirectingStreamBuf : public std::basic_stringbuf<char, std::char_traits<char>>
+    {
+        int sync() override {
+            if (g_userFunction) {
+                std::string s = str();
+                if (!s.empty()) {
+                    g_userFunction(_level, s);
+                    str("");
+                }
+            }
+            return 0;
+        }
+        LogLevel _level = LogLevel::INFO;
+    };
+
+    // stream housing our redirection buffer above
+    struct RedirectingStream : public std::basic_ostream<char, std::char_traits<char>>
+    {
+        RedirectingStreamBuf _buf;
+        RedirectingStream() : std::basic_ostream<char, std::char_traits<char>>::basic_ostream(&_buf) { }
+    };
+
+    // single-level stream for use by the logger
+    struct LogStream
+    {
+        LogStream(LogLevel level, const std::string& prefix, std::ostream& stream) :
+            _level(level),
+            _prefix(prefix),
+            _stream(&stream)
+        {
+            _functionStream._buf._level = level;
+            _nullStream.setstate(std::ios_base::badbit);
+            //_nullStream.open("/dev/null", std::ofstream::out | std::ofstream::app);
+        }
+
+        // https://stackoverflow.com/questions/8243743/is-there-a-null-stdostream-implementation-in-c-or-libraries
+        mutable std::ofstream _nullStream;
+        mutable RedirectingStream _functionStream;
+        std::ostream* _stream = nullptr;
+        LogLevel _level;
+        std::string _prefix;
+    };
+
+    // static streams for each log level
+    LogStream g_infoStream(LogLevel::INFO, "[rk-info] ", std::cout);
+    LogStream g_warnStream(LogLevel::WARN, "[rk-WARN] ", std::cout);
 }
 
-LogStream::LogStream(const LogStream& rhs)
+LogFunction&
+Log::userFunction()
 {
-    operator=(rhs);
+    return g_userFunction;
 }
 
-LogStream&
-LogStream::operator=(const LogStream& rhs)
+bool&
+Log::usePrefix()
 {
-    _threshold = rhs._threshold;
-    _stream = rhs._stream;
-    _prefix = rhs._prefix;
-    _null.open("/dev/null", std::ofstream::out | std::ofstream::app);
-    return *this;
-}
-
-void
-LogStream::attach(std::ostream& value)
-{
-    std::lock_guard<std::mutex> lock(_mutex);
-    _stream = &value;
+    return g_logUsePrefix;
 }
 
 std::ostream&
-LogStream::getStream() const
+Log::log(LogLevel level)
 {
-    if (_stream != nullptr && _threshold >= Log::threshold)
-        return *_stream;
-    else
-        return _null;
+    LogStream& ls =
+        level == LogLevel::INFO ? g_infoStream :
+        g_warnStream;
+
+    auto& output =
+        (level < Log::level) ? ls._nullStream :
+        (g_userFunction) ? ls._functionStream :
+        *ls._stream;
+
+    if (g_logUsePrefix)
+        output << ls._prefix;
+
+    return output;
 }
 
-LogThreshold Log::threshold = LogThreshold::NOTICE;
-std::string Log::prefix = "[r]";
-
-Log::Log() :
-    debug(LogThreshold::DEBUG),
-    info(LogThreshold::INFO),
-    notice(LogThreshold::NOTICE),
-    warn(LogThreshold::WARN)
+std::ostream&
+Log::info()
 {
-    debug.attach(std::cout);
-    debug._prefix = "(debug)";
-
-    info.attach(std::cout);
-    info._prefix = "(info)";
-
-    notice.attach(std::cout);
-
-    warn.attach(std::cout);
-    warn._prefix = "---WARNING---";
+    return log(LogLevel::INFO);
 }
 
-Log::Log(const Log& rhs) :
-    debug(rhs.debug),
-    info(rhs.info),
-    notice(rhs.notice),
-    warn(rhs.warn)
+std::ostream&
+Log::warn()
 {
-    //nop
-}
-
-Log&
-Log::operator=(const Log& rhs)
-{
-    debug = rhs.debug;
-    info = rhs.info;
-    notice = rhs.notice;
-    warn = rhs.warn;
-    return *this;
+    return log(LogLevel::WARN);
 }

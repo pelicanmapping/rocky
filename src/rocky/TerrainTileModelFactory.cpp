@@ -198,7 +198,7 @@ TerrainTileModelFactory::addImageLayer(
 
             return true;
         }
-        else if (result.status.failed() && io.services().log)
+        else if (result.status.failed())
         {
             //io.services().log().warn << result.status.message << std::endl;
         }

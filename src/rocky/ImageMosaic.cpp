@@ -45,7 +45,6 @@ ImageMosaic::createImage() const
 {
     if (_images.size() == 0)
     {
-        ROCKY_DEBUG << "ImageMosaic has no images..." << std::endl;
         return 0;
     }
 

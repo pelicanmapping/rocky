@@ -278,7 +278,7 @@ MapNode::construct(const Config& conf)
     
     if (s.failed())
     {
-        _instance->log().warn << s.message << std::endl;
+        Log::warn() << s.message << std::endl;
     }
 }
 

@@ -74,7 +74,6 @@ Instance::Instance()
 Instance::~Instance()
 {
     //nop
-    log().info << "Goodbye" << std::endl;
 }
 
 UID rocky::createUID()

@@ -160,7 +160,6 @@ TileNodeRegistry::update(
     {
         if (!tile->doNotExpire)
         {
-            ROCKY_DEBUG << "Removing tile and sibs " << tile->key.str() << std::endl;
             auto parent = tile->getParentTile();
             if (parent)
                 parent->unloadChildren();

@@ -200,23 +200,18 @@ namespace ROCKY_NAMESPACE
 #define ROCKY_STRINGIFY_0(x) #x
 #define ROCKY_STRINGIFY(x) ROCKY_STRINGIFY_0(x)
 
-// please use Log instead
-//#define ROCKY_USE_STATIC_INSTANCE_LOG
+#define ROCKY_USE_STATIC_INSTANCE_LOG
 
 #ifdef ROCKY_USE_STATIC_INSTANCE_LOG
-#define ROCKY_DEBUG rocky::Instance::log().debug
-#define ROCKY_INFO rocky::Instance::log().info
-#define ROCKY_NOTICE rocky::Instance::log().notice
-#define ROCKY_WARN rocky::Instance::log().warn
+#define ROCKY_INFO rocky::Log::info()
+#define ROCKY_WARN rocky::Log::warn()
 #else
-#define ROCKY_DEBUG if (false) std::cout << "[r]--"
-#define ROCKY_INFO std::cout << "[r]- "
-#define ROCKY_NOTICE std::cout << "[r]  "
-#define ROCKY_WARN std::cout << "[r]* "
+#define ROCKY_INFO std::cout << "<rk> "
+#define ROCKY_WARN std::cout << "<rk> *** WARNING *** "
 #define ROCKY_NULL if (false) std::cout
 #endif
 
-#define ROCKY_DEPRECATED(A, B) OE_WARN << #A << " is deprecated; please use " << #B << std::endl
+#define ROCKY_DEPRECATED(A, B) ROCKY_WARN << #A << " is deprecated; please use " << #B << std::endl
 
 #if defined(_MSC_VER)
 #define ROCKY_FILE (std::strrchr(__FILE__, '\\') ? std::strrchr(__FILE__, '\\') + 1 : __FILE__)

@@ -57,11 +57,9 @@ namespace ROCKY_NAMESPACE
     {
     public:
         Services();
-        LogService log;
         ReadImageURIService readImageFromURI;
         ReadImageStreamService readImageFromStream;
         CacheService cache;
-        //DataService data;
     };
 
     // User options passed along with an IO context.

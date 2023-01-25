@@ -43,8 +43,8 @@ int main(int argc, char** argv)
     // rocky instance
     auto rk = rocky::InstanceVSG::create(arguments);
 
-    rk->log().threshold = rocky::LogThreshold::INFO;
-    rk->log().notice << "Hello, world." << std::endl;
+    rocky::Log::level = rocky::LogLevel::INFO;
+    rocky::Log::info() << "Hello, world." << std::endl;
 
     // main window
     auto traits = vsg::WindowTraits::create("Rocky * Pelican Mapping");
@@ -69,7 +69,8 @@ int main(int argc, char** argv)
     // TODO: read this from an earth file
     auto mapNode = rocky::MapNode::create(rk);
 
-    // set up the runtime context with everything we need.
+    // Set up the runtime context with everything we need.
+    // Eventually this should be automatic in InstanceVSG
     rk->runtime().compiler = [viewer]() { return viewer->compileManager; };
     rk->runtime().updates = [viewer]() { return viewer->updateOperations; };
     rk->runtime().sharedObjects = vsg::SharedObjects::create();
@@ -93,7 +94,7 @@ int main(int argc, char** argv)
 
     if (layer->status().failed())
     {
-        rk->log().warn << "Problem with layer: " << layer->status().message << std::endl;
+        rocky::Log::warn() << "Problem with layer: " << layer->status().message << std::endl;
         exit(-1);
     }
 
@@ -144,7 +145,7 @@ int main(int argc, char** argv)
 
 
     float frames = 0.0f;
-    bool measureFrameTime = (rk->log().threshold <= rocky::LogThreshold::INFO);
+    bool measureFrameTime = (rocky::Log::level >= rocky::LogLevel::INFO);
 
     // rendering main loop
     auto start = std::chrono::steady_clock::now();
@@ -166,7 +167,7 @@ int main(int argc, char** argv)
     {
         auto ms = 0.001f * (float)std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
-        rk->log().info
+        rocky::Log::info()
             << "frames = " << frames << ", "
             << std::setprecision(3) << "ms per frame = " << (ms / frames) << ", "
             << std::setprecision(6) << "frames per second = " << 1000.f * (frames / ms)

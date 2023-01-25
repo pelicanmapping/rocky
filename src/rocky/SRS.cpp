@@ -22,7 +22,7 @@ namespace
     void redirect_proj_log(void* user, int level, const char* msg)
     {
         if (msg)
-            ROCKY_INFO << "proj says: " << msg << std::endl;
+            Log::info() << "PROJ says: " << msg << std::endl;
     }
 
     inline bool starts_with(const std::string& s, const char* pattern) {
