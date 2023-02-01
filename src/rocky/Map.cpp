@@ -424,7 +424,7 @@ Map::addLayer(shared_ptr<Layer> layer, const IOOptions& io)
     //installLayerCallbacks(layer);
 
     // Add the layer to our stack.
-    int newRevision;
+    Revision newRevision;
     unsigned index = -1;
     {
         util::ScopedWriteLock lock( _mapDataMutex );
@@ -437,7 +437,7 @@ Map::addLayer(shared_ptr<Layer> layer, const IOOptions& io)
     // a separate block b/c we don't need the mutex
     //fire_onLayerAdded(layer, index, newRevision);
 
-    onLayerAdded(layer, index, newRevision);
+    onLayerAdded.fire(layer, index, newRevision);
 
     //for( MapCallbackList::iterator i = _mapCallbacks.begin(); i != _mapCallbacks.end(); i++ )
     //{
@@ -495,7 +495,7 @@ Map::insertLayer(
         //    ++_numTerrainPatchLayers;
     }
 
-    onLayerAdded(layer, index, newRevision);
+    onLayerAdded.fire(layer, index, newRevision);
 }
 
 void
@@ -549,7 +549,7 @@ Map::removeLayer(shared_ptr<Layer> layer)
     // a separate block b/c we don't need the mutex
     if ( newRevision >= 0 )
     {
-        onLayerRemoved(layerToRemove, newRevision);
+        onLayerRemoved.fire(layerToRemove, newRevision);
         //for( MapCallbackList::iterator i = _mapCallbacks.begin(); i != _mapCallbacks.end(); i++ )
         //{
         //    i->get()->onMapModelChanged( MapModelChange(
@@ -600,7 +600,7 @@ Map::moveLayer(shared_ptr<Layer> layerToMove, unsigned newIndex)
     // a separate block b/c we don't need the mutex
     if (layerToMove)
     {
-        onLayerMoved(layerToMove, oldIndex, newIndex, newRevision);
+        onLayerMoved.fire(layerToMove, oldIndex, newIndex, newRevision);
         //for (MapCallbackList::iterator i = _mapCallbacks.begin(); i != _mapCallbacks.end(); i++)
         //{
         //    i->get()->onMapModelChanged(MapModelChange(
@@ -637,7 +637,7 @@ Map::addLayers(
 
     unsigned firstIndex;
     unsigned count = 0;
-    int newRevision;
+    Revision newRevision;
 
     // Add the layers to the map.
     {
@@ -671,7 +671,7 @@ Map::addLayers(
             //installLayerCallbacks(layer);
 
             // a separate block b/c we don't need the mutex
-            onLayerAdded(layer, index++, newRevision);
+            onLayerAdded.fire(layer, index++, newRevision);
             //for( MapCallbackList::iterator i = _mapCallbacks.begin(); i != _mapCallbacks.end(); i++ )
             //{
             //    i->get()->onMapModelChanged(MapModelChange(
@@ -777,7 +777,7 @@ Map::clear()
     // a separate block b/c we don't need the mutex
     for (auto layer : layersRemoved)
     {
-        onLayerRemoved(layer, newRevision);
+        onLayerRemoved.fire(layer, newRevision);
     }
 
     //for( MapCallbackList::iterator i = _mapCallbacks.begin(); i != _mapCallbacks.end(); i++ )

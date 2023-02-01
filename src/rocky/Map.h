@@ -19,17 +19,15 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-     * Map is the main data model. A Map hold a collection of
-     * Layers, each of which provides data of some kind to the
-     * overall Map. Use a MapNode to render the contents of a
-     * Map.
+     * Map is the main data model, which holds a collection of layers.
+     * Create a Map by calling Map::create().
      */
     class ROCKY_EXPORT Map : public Inherit<Object, Map>
     {
     public:
 
         //! Global application instance
-        Instance::ptr instance() const { return _instance; }
+        shared_ptr<Instance> instance() const { return _instance; }
 
         //! This Map's unique ID
         UID uid() const { return _uid; }

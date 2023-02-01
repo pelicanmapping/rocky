@@ -165,10 +165,38 @@ TEST_CASE("Map")
     if (map) {
         auto layer = TestLayer::create();
 
+        unsigned cb_code = 0;
+
+        auto added_cb = [&cb_code](shared_ptr<Layer> layer, unsigned index, Revision rev)
+        {
+            cb_code = 100;
+        };
+        map->onLayerAdded(added_cb);
+
+        auto moved_cb = [&cb_code](shared_ptr<Layer> layer, unsigned oldIndex, unsigned newIndex, Revision rev)
+        {
+            cb_code = 200;
+        };
+        map->onLayerMoved(moved_cb);
+
+        auto removed_cb = [&cb_code](shared_ptr<Layer> layer, Revision rev)
+        {
+            cb_code = 300;
+        };
+        map->onLayerRemoved(removed_cb);
+
         map->addLayer(layer);
+        CHECK(cb_code == 100);
         CHECK(map->numLayers() == 1);
 
+        map->moveLayer(layer, 0);
+        CHECK(cb_code == 200);
+
+        auto layers = map->getLayers<Layer>();
+        CHECK(layers.size() == 1);
+
         map->removeLayer(layer);
+        CHECK(cb_code == 300);
         CHECK(map->numLayers() == 0);
     }
 }

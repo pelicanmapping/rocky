@@ -43,7 +43,7 @@ namespace ROCKY_NAMESPACE
 
         //! Executes all callback functions with the provided args
         template<typename... Args>
-        void operator()(Args&&... args) const {
+        void fire(Args&&... args) const {
             rocky::util::ScopedLock lock(mutex);
             for (auto& function : functions)
                 function.second(args...);
