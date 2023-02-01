@@ -4,7 +4,6 @@
  * MIT License
  */
 #include "URI.h"
-#include "Notify.h"
 #include <typeinfo>
 #include <fstream>
 #include <sstream>

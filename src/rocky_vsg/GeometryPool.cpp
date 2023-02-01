@@ -5,9 +5,6 @@
  */
 #include "GeometryPool.h"
 #include "TerrainSettings.h"
-#include <rocky/Notify.h>
-//#include <vsg/commands/BindVertexBuffers.h>
-//#include <vsg/commands/BindIndexBuffer.h>
 #include <vsg/commands/DrawIndexed.h>
 
 #undef LC

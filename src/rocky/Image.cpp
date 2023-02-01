@@ -4,8 +4,6 @@
  * MIT License
  */
 #include "Image.h"
-#include "Notify.h"
-//#include <stb_image.h>
 
 using namespace ROCKY_NAMESPACE;
 

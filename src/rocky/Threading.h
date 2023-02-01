@@ -6,7 +6,6 @@
 #pragma once
 #include <rocky/Common.h>
 #include <rocky/IOTypes.h>
-#include <rocky/Notify.h>
 #include <atomic>
 #include <functional>
 #include <condition_variable>

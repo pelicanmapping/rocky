@@ -597,14 +597,12 @@ TileLayer::isKeyInLegalRange(const TileKey& key) const
 
     // Next check the maxDataLevel if that is set.
     if (_maxDataLevel.has_value() && localLOD > _maxDataLevel)
-    //if (options().maxDataLevel().has_value() && localLOD > options().maxDataLevel().get())
     {
         return false;
     }
 
     // Next, check against resolution limits (based on the source tile size).
     if (_minResolution.has_value() || _maxResolution.has_value())
-    //if (options().minResolution().has_value() || options().maxResolution().has_value())
     {
         if (profile().valid())
         {
@@ -614,15 +612,11 @@ TileLayer::isKeyInLegalRange(const TileKey& key) const
             double resLayer = key.profile().srs().units().convertTo(profile().srs().units(), resKey);
 
             if (_maxResolution.has_value() && _maxResolution > resLayer)
-            //if (options().maxResolution().has_value() &&
-            //    options().maxResolution().value() > resLayer)
             {
                 return false;
             }
 
             if (_minResolution.has_value() && _minResolution < resLayer)
-            //if (options().minResolution().has_value() &&
-            //    options().minResolution().value() < resLayer)
             {
                 return false;
             }

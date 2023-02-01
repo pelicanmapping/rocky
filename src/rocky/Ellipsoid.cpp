@@ -4,7 +4,6 @@
  * MIT License
  */
 #include "Ellipsoid.h"
-#include "Notify.h"
 #include "Math.h"
 
 using namespace ROCKY_NAMESPACE;

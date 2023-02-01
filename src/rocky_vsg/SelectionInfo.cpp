@@ -4,7 +4,6 @@
  * MIT License
  */
 #include "SelectionInfo.h"
-#include <rocky/Notify.h>
 
 using namespace ROCKY_NAMESPACE;
 

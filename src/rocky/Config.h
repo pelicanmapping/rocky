@@ -7,7 +7,7 @@
 
 #include <rocky/Common.h>
 #include <rocky/Status.h>
-#include <rocky/StringUtils.h>
+#include <rocky/Utils.h>
 #include <list>
 #include <istream>
 #include <functional>

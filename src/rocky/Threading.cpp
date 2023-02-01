@@ -6,7 +6,7 @@
 #include "Threading.h"
 #include "IOTypes.h"
 #include "Metrics.h"
-#include "StringUtils.h"
+#include "Utils.h"
 #include "Instance.h"
 
 #include <cstdlib>

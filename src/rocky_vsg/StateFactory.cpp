@@ -10,7 +10,6 @@
 #include <rocky/Color.h>
 #include <rocky/Heightfield.h>
 #include <rocky/Image.h>
-#include <rocky/Notify.h>
 #include <rocky_vsg/Utils.h>
 
 #include <vsg/state/BindDescriptorSet.h>

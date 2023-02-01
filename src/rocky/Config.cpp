@@ -4,11 +4,16 @@
  * MIT License
  */
 #include "Config.h"
-#include "Notify.h"
 #include "URI.h"
-#include "StringUtils.h"
+#include "Utils.h"
+
+#ifdef TINYXML_FOUND
 #include <tinyxml.h>
+#endif
+
+#ifdef NLOHMANN_JSON_FOUND
 #include <nlohmann/json.hpp>
+#endif
 
 using namespace ROCKY_NAMESPACE;
 
@@ -16,6 +21,8 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
+#ifdef TINYXML_FOUND
+
     Config xml_node_to_config(Config* parent, const TiXmlNode* node)
     {
         ROCKY_SOFT_ASSERT_AND_RETURN(node != nullptr, Config());
@@ -68,6 +75,7 @@ namespace
         }
         return conf;
     }
+#endif // TINYXML_FOUND
 }
 
 void
@@ -108,18 +116,38 @@ Config::setReferrer(const std::string& referrer)
 bool
 Config::fromXML(std::istream& in)
 {
-    auto result = util::parseXML(in, referrer());
-    if (result.status.failed())
+#ifdef TINYXML_FOUND
+
+    //Read the entire document into a string
+    std::stringstream buffer;
+    buffer << in.rdbuf();
+    std::string xml_str = buffer.str();
+
+    // strip the DOCTYPE...apparently tinyxml doesn't like it
+    auto dtd = xml_str.find("<!DOCTYPE");
+    if (dtd != xml_str.npos)
     {
-        set("error", result.status.message);
+        auto dtd_end = xml_str.find_first_of('>', dtd);
+        if (dtd_end != xml_str.npos)
+            xml_str = xml_str.substr(dtd_end + 1);
+    }
+
+    TiXmlDocument doc;
+    doc.Parse(xml_str.c_str());
+
+    if (doc.Error())
+    {
+        std::stringstream buf;
+        buf << "XML parsing error at row " << doc.ErrorRow() << " col " << doc.ErrorCol() << std::endl;
+        set("error", buf.str());
         return false;
     }
 
-    const TiXmlDocument& doc = result.value;
-
     *this = xml_to_config(doc);
-
     return true;
+#else
+    ROCKY_SOFT_ASSERT_AND_RETURN(false, false, "XML support unavailable");
+#endif
 }
 
 const Config&

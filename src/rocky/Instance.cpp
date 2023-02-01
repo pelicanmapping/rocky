@@ -13,8 +13,6 @@
 #include <cpl_conv.h>
 #endif
 
-#include "GDALLayers.h"
-
 using namespace ROCKY_NAMESPACE;
 
 // declare static globals from Profile and SRS, so the dependency order is correct
@@ -62,12 +60,6 @@ Instance::Instance()
     // available memory which is too high.
     GDALSetCacheMax(40 * 1024 * 1024);
 
-    // register known layer types.
-    addFactory("gdalimage",
-        [](const Config& conf) { return GDALImageLayer::create(conf); });
-
-    addFactory("gdalelevation",
-        [](const Config& conf) { return GDALElevationLayer::create(conf); });
 #endif // GDAL_FOUND
 }
 

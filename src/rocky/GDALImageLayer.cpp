@@ -3,12 +3,11 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#ifdef GDAL_FOUND
-
-#include "GDALLayers.h"
-#include "Heightfield.h"
+#include "GDALImageLayer.h"
+#include "GeoCommon.h"
 #include "Image.h"
 #include "Log.h"
+#include "ElevationLayer.h"
 
 #include <gdal.h>
 #include <gdalwarper.h>
@@ -468,7 +467,7 @@ GDAL::Driver::~Driver()
 Status
 GDAL::Driver::open(
     const std::string& name,
-    const GDAL::Options& options,
+    const GDALImageLayer* layer,
     unsigned tileSize,
     DataExtentList* layerDataExtents,
     const IOOptions& io)
@@ -476,7 +475,7 @@ GDAL::Driver::open(
     bool info = (layerDataExtents != NULL);
 
     _name = name;
-    _gdalOptions = options;
+    _layer = layer;
 
     // Is a valid external GDAL dataset specified ?
     bool useExternalDataset = false;
@@ -485,9 +484,9 @@ GDAL::Driver::open(
         useExternalDataset = true;
     }
 
-    if (useExternalDataset == false &&
-        (!gdalOptions().url.isSet() || gdalOptions().url->empty()) &&
-        (!gdalOptions().connection.isSet() || gdalOptions().connection->empty()))
+    if (useExternalDataset == false &&        
+        (!layer->_uri.isSet() || layer->_uri->empty()) &&
+        (!layer->_connection.isSet() || layer->_connection->empty()))
     {
         return Status(Status::ConfigurationError, "No URL, directory, or connection string specified");
     }
@@ -496,21 +495,21 @@ GDAL::Driver::open(
     std::string source;
     bool isFile = true;
 
-    if (gdalOptions().url.isSet())
+    if (layer->_uri.isSet())
     {
         // Use the base instead of the full if this is a gdal virtual file system
-        if (util::startsWith(gdalOptions().url->base(), "/vsi"))
+        if (util::startsWith(layer->_uri->base(), "/vsi"))
         {
-            source = gdalOptions().url->base();
+            source = layer->_uri->base();
         }
         else
         {
-            source = gdalOptions().url->full();
+            source = layer->_uri->full();
         }
     }
-    else if (gdalOptions().connection.isSet())
+    else if (layer->_connection.isSet())
     {
-        source = gdalOptions().connection.get();
+        source = layer->_connection.get();
         isFile = false;
     }
 
@@ -518,8 +517,8 @@ GDAL::Driver::open(
     {
         std::string input;
 
-        if (gdalOptions().url.isSet())
-            input = gdalOptions().url->full();
+        if (layer->_uri.isSet())
+            input = layer->_uri->full();
         else
             input = source;
 
@@ -546,7 +545,7 @@ GDAL::Driver::open(
 
             if (numSubDatasets > 0)
             {
-                int subDataset = gdalOptions().subDataSet.isSet() ? *gdalOptions().subDataSet : 1;
+                int subDataset = layer->_subDataSet.isSet() ? layer->_subDataSet.get() : 1;
                 if (subDataset < 1 || subDataset > numSubDatasets) subDataset = 1;
                 std::stringstream buf;
                 buf << "SUBDATASET_" << subDataset << "_NAME";
@@ -885,7 +884,7 @@ GDAL::Driver::getInterpolatedValue(GDALRasterBand* band, double x, double y, boo
     if (c < 0 || r < 0 || c > _warpedDS->GetRasterXSize() - 1 || r > _warpedDS->GetRasterYSize() - 1)
         return NO_DATA_VALUE;
 
-    if (gdalOptions().interpolation == Image::NEAREST)
+    if (_layer->interpolation() == Image::NEAREST)
     {
         rasterIO(band, GF_Read, (int)round(c), (int)round(r), 1, 1, &result, 1, 1, GDT_Float32, 0, 0);
         if (!isValidValue(result, band))
@@ -915,7 +914,7 @@ GDAL::Driver::getInterpolatedValue(GDALRasterBand* band, double x, double y, boo
             return NO_DATA_VALUE;
         }
 
-        if (gdalOptions().interpolation == Image::AVERAGE)
+        if (_layer->_interpolation == Image::AVERAGE)
         {
             double x_rem = c - (int)c;
             double y_rem = r - (int)r;
@@ -927,7 +926,7 @@ GDAL::Driver::getInterpolatedValue(GDALRasterBand* band, double x, double y, boo
 
             result = (float)(w00 + w01 + w10 + w11);
         }
-        else if (gdalOptions().interpolation == Image::BILINEAR)
+        else if (_layer->_interpolation == Image::BILINEAR)
         {
             //Check for exact value
             if ((colMax == colMin) && (rowMax == rowMin))
@@ -1142,13 +1141,13 @@ GDAL::Driver::createImage(
         //image->allocateImage(tileSize, tileSize, 1, pixelFormat, GL_UNSIGNED_BYTE);
         //memset(image->data(), 0, image->getImageSizeInBytes());
 
-        rasterIO(bandRed, GF_Read, off_x, off_y, width, height, red, target_width, target_height, GDT_Byte, 0, 0, gdalOptions().interpolation);
-        rasterIO(bandGreen, GF_Read, off_x, off_y, width, height, green, target_width, target_height, GDT_Byte, 0, 0, gdalOptions().interpolation);
-        rasterIO(bandBlue, GF_Read, off_x, off_y, width, height, blue, target_width, target_height, GDT_Byte, 0, 0, gdalOptions().interpolation);
+        rasterIO(bandRed, GF_Read, off_x, off_y, width, height, red, target_width, target_height, GDT_Byte, 0, 0, _layer->_interpolation);
+        rasterIO(bandGreen, GF_Read, off_x, off_y, width, height, green, target_width, target_height, GDT_Byte, 0, 0, _layer->_interpolation);
+        rasterIO(bandBlue, GF_Read, off_x, off_y, width, height, blue, target_width, target_height, GDT_Byte, 0, 0, _layer->_interpolation);
 
         if (bandAlpha)
         {
-            rasterIO(bandAlpha, GF_Read, off_x, off_y, width, height, alpha, target_width, target_height, GDT_Byte, 0, 0, gdalOptions().interpolation);
+            rasterIO(bandAlpha, GF_Read, off_x, off_y, width, height, alpha, target_width, target_height, GDT_Byte, 0, 0, _layer->_interpolation);
         }
 
         for (int src_row = 0, dst_row = tile_offset_top;
@@ -1286,11 +1285,11 @@ GDAL::Driver::createImage(
             //image->allocateImage(tileSize, tileSize, 1, pixelFormat, GL_UNSIGNED_BYTE);
             //memset(image->data(), 0, image->getImageSizeInBytes());
 
-            rasterIO(bandGray, GF_Read, off_x, off_y, width, height, gray, target_width, target_height, GDT_Byte, 0, 0, gdalOptions().interpolation);
+            rasterIO(bandGray, GF_Read, off_x, off_y, width, height, gray, target_width, target_height, GDT_Byte, 0, 0, _layer->_interpolation);
 
             if (bandAlpha)
             {
-                rasterIO(bandAlpha, GF_Read, off_x, off_y, width, height, alpha, target_width, target_height, GDT_Byte, 0, 0, gdalOptions().interpolation);
+                rasterIO(bandAlpha, GF_Read, off_x, off_y, width, height, alpha, target_width, target_height, GDT_Byte, 0, 0, _layer->_interpolation);
             }
 
             for (int src_row = 0, dst_row = tile_offset_top;
@@ -1388,7 +1387,7 @@ GDAL::Driver::createImage(
 
                 if (isCoverage)
                 {
-                    if (_gdalOptions.coverageUsesPaletteIndex == true)
+                    if (_layer->_coverageUsesPaletteIndex == true)
                     {
                         pixel.r = (float)p;
                     }
@@ -1439,7 +1438,7 @@ GDAL::Driver::createImage(
     {
         Log::warn()
             << LC << "Could not find red, green and blue bands or gray bands in "
-            << gdalOptions().url->full()
+            << _layer->_uri->full()
             << ".  Cannot create image. " << std::endl;
 
         return Status(
@@ -1484,7 +1483,7 @@ GDAL::Driver::createHeightfield(
             band = _warpedDS->GetRasterBand(1);
         }
 
-        if (gdalOptions().interpolation == Image::NEAREST)
+        if (_layer->_interpolation == Image::NEAREST)
         {
             double colMin, colMax;
             double rowMin, rowMax;
@@ -1576,7 +1575,7 @@ GDAL::Driver::createHeightfieldWithVRT(
     if (intersects(key))
     {
         GDALResampleAlg resampleAlg = GRA_CubicSpline;
-        switch (_gdalOptions.interpolation)
+        switch (_layer->_interpolation)
         {
         case Image::NEAREST:
             resampleAlg = GRA_NearestNeighbour;
@@ -1739,35 +1738,35 @@ GDAL::Options::writeTo(Config& conf) const
     conf.set("single_threaded", singleThreaded);
 }
 
-void GDAL::LayerBase::setURI(const URI& value) {
-    _options.url = value;
+void GDALImageLayer::setURI(const URI& value) {
+    _uri = value;
 }
-const URI& GDAL::LayerBase::getURL() const {
-    return _options.url;
+const URI& GDALImageLayer::uri() const {
+    return _uri;
 }
-void GDAL::LayerBase::setConnection(const std::string& value) {
-    _options.connection = value;
+void GDALImageLayer::setConnection(const std::string& value) {
+    _connection = value;
 }
-const std::string& GDAL::LayerBase::getConnection() const {
-    return _options.connection;
+const std::string& GDALImageLayer::connection() const {
+    return _connection;
 }
-void GDAL::LayerBase::setSubDataSet(unsigned value) {
-    _options.subDataSet = value;
+void GDALImageLayer::setSubDataSet(unsigned value) {
+    _subDataSet = value;
 }
-unsigned GDAL::LayerBase::getSubDataSet() const {
-    return _options.subDataSet;
+unsigned GDALImageLayer::subDataSet() const {
+    return _subDataSet;
 }
-void GDAL::LayerBase::setInterpolation(const Image::Interpolation& value) {
-    _options.interpolation = value;
+void GDALImageLayer::setInterpolation(const Image::Interpolation& value) {
+    _interpolation = value;
 }
-const Image::Interpolation& GDAL::LayerBase::getInterpolation() const {
-    return _options.interpolation;
+const Image::Interpolation& GDALImageLayer::interpolation() const {
+    return _interpolation;
 }
-void GDAL::LayerBase::setUseVRT(bool value) {
-    _options.useVRT = value;
+void GDALImageLayer::setUseVRT(bool value) {
+    _useVRT = value;
 }
-bool GDAL::LayerBase::getUseVRT() const {
-    return _options.useVRT;
+bool GDALImageLayer::useVRT() const {
+    return _useVRT;
 }
 
 //......................................................................
@@ -1780,7 +1779,6 @@ namespace
     template<typename T>
     Status openOnThisThread(
         const T* layer,
-        const GDAL::Options& options,
         GDAL::Driver::Ptr& driver,
         Profile* profile,
         DataExtentList* out_dataExtents,
@@ -1804,7 +1802,7 @@ namespace
 
         Status status = driver->open(
             layer->name(),
-            options,
+            layer,
             layer->tileSize(),
             out_dataExtents,
             io);
@@ -1857,7 +1855,22 @@ GDALImageLayer::GDALImageLayer(const Config& conf) :
 void
 GDALImageLayer::construct(const Config& conf)
 {
-    _options.readFrom(conf);
+    _interpolation.setDefault(Image::AVERAGE);
+    _useVRT.setDefault(false);
+    _coverageUsesPaletteIndex.setDefault(true);
+    _singleThreaded.setDefault(false);
+
+    conf.get("url", _uri);
+    conf.get("uri", _uri);
+    conf.get("connection", _connection);
+    conf.get("subdataset", _subDataSet);
+    conf.get("interpolation", "nearest", _interpolation, Image::NEAREST);
+    conf.get("interpolation", "average", _interpolation, Image::AVERAGE);
+    conf.get("interpolation", "bilinear", _interpolation, Image::BILINEAR);
+    conf.get("interpolation", "cubic", _interpolation, Image::CUBIC);
+    conf.get("interpolation", "cubicspline", _interpolation, Image::CUBICSPLINE);
+    conf.get("coverage_uses_palette_index", _coverageUsesPaletteIndex);
+    conf.get("single_threaded", _singleThreaded);
 
     setRenderType(RENDERTYPE_TERRAIN_SURFACE);
 }
@@ -1866,7 +1879,16 @@ Config
 GDALImageLayer::getConfig() const
 {
     Config conf = ImageLayer::getConfig();
-    _options.writeTo(conf);
+    conf.set("url", _uri);
+    conf.set("connection", _connection);
+    conf.set("subdataset", _subDataSet);
+    conf.set("interpolation", "nearest", _interpolation, Image::NEAREST);
+    conf.set("interpolation", "average", _interpolation, Image::AVERAGE);
+    conf.set("interpolation", "bilinear", _interpolation, Image::BILINEAR);
+    conf.set("interpolation", "cubic", _interpolation, Image::CUBIC);
+    conf.set("interpolation", "cubicspline", _interpolation, Image::CUBICSPLINE);
+    conf.set("coverage_uses_palette_index", _coverageUsesPaletteIndex);
+    conf.set("single_threaded", _singleThreaded);
     return conf;
 }
 
@@ -1889,7 +1911,6 @@ GDALImageLayer::openImplementation(const IOOptions& io)
 
     Status s = openOnThisThread(
         this,
-        _options,
         driver,
         &profile,
         &dataExtents,
@@ -1936,7 +1957,6 @@ GDALImageLayer::createImageImplementation(
         // since we already called this during openImplementation
         openOnThisThread(
             this,
-            _options,
             driver,
             nullptr,
             nullptr,
@@ -1956,443 +1976,3 @@ GDALImageLayer::createImageImplementation(
 
     return GeoImage::INVALID;
 }
-
-//......................................................................
-
-#if 0
-Config
-GDALElevationLayer::Options::getConfig() const
-{
-    Config conf = ElevationLayer::Options::getConfig();
-    writeTo(conf);
-    return conf;
-}
-
-void
-GDALElevationLayer::Options::fromConfig(const Config& conf)
-{
-    readFrom(conf);
-}
-#endif
-
-//......................................................................
-
-//REGISTER_OSGEARTH_LAYER(gdalelevation, GDALElevationLayer);
-
-GDALElevationLayer::GDALElevationLayer() :
-    super()
-{
-    construct(Config());
-}
-
-GDALElevationLayer::GDALElevationLayer(const Config& conf) :
-    super(conf)
-{
-    construct(conf);
-}
-
-void
-GDALElevationLayer::construct(const Config& conf)
-{
-    _options.readFrom(conf);
-}
-
-Config
-GDALElevationLayer::getConfig() const
-{
-    Config conf = ElevationLayer::getConfig();
-    _options.writeTo(conf);
-    return conf;
-}
-
-Status
-GDALElevationLayer::openImplementation(const IOOptions& io)
-{
-    Status parent = ElevationLayer::openImplementation(io);
-    if (parent.failed())
-        return parent;
-
-    Profile profile;
-
-    // GDAL thread-safety requirement: each thread requires a separate GDALDataSet.
-    // So we just encapsulate the entire setup once per thread.
-    // https://trac.osgeo.org/gdal/wiki/FAQMiscellaneous#IstheGDALlibrarythread-safe
-
-    // Open the dataset temporarily to query the profile and extents.
-    GDAL::Driver::Ptr driver = _drivers.get();
-
-    DataExtentList dataExtents;
-
-    Status s = openOnThisThread(
-        this,
-        _options,
-        driver,
-        &profile,
-        &dataExtents,
-        io);
-
-    if (s.failed())
-        return s;
-
-    if (profile.valid())
-        setProfile(profile);
-
-    setDataExtents(dataExtents);
-
-
-    return s;
-}
-
-Status
-GDALElevationLayer::closeImplementation()
-{
-    // safely shut down all per-thread handles.
-    _drivers.clear();
-    return ElevationLayer::closeImplementation();
-}
-
-Result<GeoHeightfield>
-GDALElevationLayer::createHeightfieldImplementation(
-    const TileKey& key,
-    const IOOptions& io) const
-{
-    if (status().failed())
-        return status();
-
-    // check while locked to ensure we may continue
-    if (isClosing() || !isOpen())
-        return Status(Status::ResourceUnavailable);
-
-    GDAL::Driver::Ptr& driver = _drivers.get();
-    if (driver == nullptr)
-    {
-        // calling openImpl with NULL params limits the setup
-        // since we already called this during openImplementation
-        openOnThisThread(
-            this,
-            _options,
-            driver,
-            nullptr,
-            nullptr,
-            io);
-    }
-
-    if (driver)
-    {
-        Result<shared_ptr<Heightfield>> heightfield;
-
-        if (_options.useVRT == true)
-        {
-            heightfield = driver->createHeightfieldWithVRT(
-                key,
-                tileSize(),
-                io);
-        }
-        else
-        {
-            heightfield = driver->createHeightfield(
-                key,
-                tileSize(),
-                io);
-        }
-
-        if (heightfield.status.ok())
-            return GeoHeightfield(heightfield.value, key.extent());
-        else
-            return heightfield.status;
-    }
-
-    return Status(Status::ResourceUnavailable);
-}
-
-//...................................................................
-
-
-#undef LC
-#define LC "[GDAL] "
-
-#if 0
-namespace
-{
-    shared_ptr<Image> createImageFromDataset(GDALDataset* ds)
-    {
-        // called internally -- GDAL lock not required
-
-        int numBands = ds->GetRasterCount();
-        if (numBands < 1)
-            return nullptr;
-
-        Image::PixelFormat format;
-        //GLenum dataType;
-        int    sampleSize;
-        //GLint  internalFormat;
-
-        switch (ds->GetRasterBand(1)->GetRasterDataType())
-        {
-        case GDT_Byte:
-            sampleSize = 1;
-            format =
-                numBands == 1 ? Image::R8_UNORM :
-                numBands == 2 ? Image::R8G8_UNORM :
-                numBands == 3 ? Image::R8G8B8_UNORM :
-                Image::R8G8B8A8_UNORM;
-            //dataType = GL_UNSIGNED_BYTE;
-            //internalFormat = GL_R8;
-            break;
-        case GDT_UInt16:
-        case GDT_Int16:
-            sampleSize = 2;
-            format = Image::R16_UNORM;
-            //dataType = GL_UNSIGNED_SHORT;
-            //internalFormat = GL_R16;
-            break;
-        default:
-            format = Image::R32_SFLOAT;
-            sampleSize = 4;
-            //dataType = GL_FLOAT;
-            //internalFormat = GL_R32F; // GL_LUMINANCE32F_ARB;
-        }
-
-        //GLenum pixelFormat =
-        //    numBands == 1 ? GL_RED :
-        //    numBands == 2 ? GL_RG :
-        //    numBands == 3 ? GL_RGB :
-        //    GL_RGBA;
-
-        int pixelBytes = sampleSize * numBands;
-
-        //Allocate the image
-        auto image = Image::create(
-            format,
-            ds->GetRasterXSize(),
-            ds->GetRasterYSize());
-
-        //osg::Image *image = new osg::Image;
-        //image->allocateImage(ds->GetRasterXSize(), ds->GetRasterYSize(), 1, pixelFormat, dataType);
-
-        CPLErr err = ds->RasterIO(
-            GF_Read,
-            0, 0,
-            image->width(), image->height(),
-            (void*)image->data<void>(),
-            image->width(), image->height(),
-            ds->GetRasterBand(1)->GetRasterDataType(),
-            numBands,
-            nullptr,
-            pixelBytes,
-            pixelBytes * image->width(),
-            1);
-
-        if (err != CE_None)
-        {
-            std::cerr << LC << "RasterIO failed.\n";
-        }
-
-        ds->FlushCache();
-
-        image->flipVerticalInPlace();
-
-        return image;
-    }
-
-    Result<GDALDataset*> createMemDS(int width, int height, int numBands, GDALDataType dataType, double minX, double minY, double maxX, double maxY, const std::string &projection)
-    {
-        //Get the MEM driver
-        GDALDriver* memDriver = (GDALDriver*)GDALGetDriverByName("MEM");
-        if (!memDriver)
-        {
-            return Result<GDALDataset*>(Status::ResourceUnavailable, "Could not get MEM driver");
-        }
-
-        //Create the in memory dataset.
-        GDALDataset* ds = memDriver->Create("", width, height, numBands, dataType, 0);
-        if (!ds)
-        {
-            return Result<GDALDataset*>(Status::ResourceUnavailable, "memDriver.create failed");
-        }
-
-        //Initialize the color interpretation
-        if (numBands == 1)
-        {
-            ds->GetRasterBand(1)->SetColorInterpretation(GCI_GrayIndex);
-        }
-        else
-        {
-            if (numBands >= 1)
-                ds->GetRasterBand(1)->SetColorInterpretation(GCI_RedBand);
-            if (numBands >= 2)
-                ds->GetRasterBand(2)->SetColorInterpretation(GCI_GreenBand);
-            if (numBands >= 3)
-                ds->GetRasterBand(3)->SetColorInterpretation(GCI_BlueBand);
-            if (numBands >= 4)
-                ds->GetRasterBand(4)->SetColorInterpretation(GCI_AlphaBand);
-        }
-
-        //Initialize the geotransform
-        double geotransform[6];
-        double x_units_per_pixel = (maxX - minX) / (double)width;
-        double y_units_per_pixel = (maxY - minY) / (double)height;
-        geotransform[0] = minX;
-        geotransform[1] = x_units_per_pixel;
-        geotransform[2] = 0;
-        geotransform[3] = maxY;
-        geotransform[4] = 0;
-        geotransform[5] = -y_units_per_pixel;
-        ds->SetGeoTransform(geotransform);
-        ds->SetProjection(projection.c_str());
-
-        return ds;
-    }
-
-    Result<GDALDataset*> createDataSetFromImage(
-        const Image* image,
-        double minX, double minY, double maxX, double maxY,
-        const std::string& projection)
-    {
-        //Clone the incoming image
-        auto clonedImage = image->clone();
-        //osg::ref_ptr<osg::Image> clonedImage = new osg::Image(*image);
-
-        //Flip the image
-        clonedImage->flipVerticalInPlace();
-
-        auto b = image->componentSizeInBytes();
-        GDALDataType gdalDataType =
-            b == 1 ? GDT_Byte :
-            b == 2 ? GDT_UInt16 :
-            b == 4 ? GDT_Float32 :
-            b == 8 ? GDT_Float64 :
-            GDT_Byte;
-
-        //GDALDataType gdalDataType =
-        //    image->getDataType() == GL_UNSIGNED_BYTE ? GDT_Byte :
-        //    image->getDataType() == GL_UNSIGNED_SHORT ? GDT_UInt16 :
-        //    image->getDataType() == GL_FLOAT ? GDT_Float32 :
-        //    GDT_Byte;
-
-        int numBands = image->numComponents();
-        //osg::Image::computeNumComponents(image->getPixelFormat());
-
-        if (numBands == 0)
-        {
-            return Result<GDALDataset*>(
-                Status::ResourceUnavailable,
-                "Failure in createDataSetFromImage: unsupported pixel format");
-        }
-
-        int pixelBytes =
-            gdalDataType == GDT_Byte ? numBands :
-            gdalDataType == GDT_UInt16 ? 2 * numBands :
-            4 * numBands;
-
-        auto srcDS = createMemDS(
-            image->width(), image->height(),
-            numBands,
-            gdalDataType,
-            minX, minY, maxX, maxY,
-            projection);
-
-        if (srcDS.status.ok())
-        {
-            CPLErr err = srcDS.value->RasterIO(
-                GF_Write,
-                0, 0,
-                clonedImage->width(), clonedImage->height(),
-                (void*)clonedImage->data<void>(),
-                clonedImage->width(),
-                clonedImage->height(),
-                gdalDataType,
-                numBands,
-                NULL,
-                pixelBytes,
-                pixelBytes * image->width(),
-                1);
-
-            srcDS.value->FlushCache();
-
-            if (err != CE_None)
-            {
-                return Result<GDALDataset*>(Status::GeneralError, "RasterIO Failed");
-            }
-        }
-
-        return srcDS;
-    }
-}
-
-shared_ptr<Image>
-rocky::GDAL::reprojectImage(
-    const Image* srcImage,
-    const std::string srcWKT,
-    double srcMinX, double srcMinY, double srcMaxX, double srcMaxY,
-    const std::string destWKT,
-    double destMinX, double destMinY, double destMaxX, double destMaxY,
-    int width,
-    int height,
-    bool useBilinearInterpolation)
-{
-    // Unnessecary since this is totally self-contained with thread-safe DataSets
-    //GDAL_SCOPED_LOCK;
-
-    //Create a dataset from the source image
-    auto srcDS = createDataSetFromImage(
-        srcImage, srcMinX, srcMinY, srcMaxX, srcMaxY, srcWKT);
-
-    if (srcDS.status.failed() || srcDS.value == nullptr)
-        return nullptr;
-
-    if (width == 0 || height == 0)
-    {
-        double outgeotransform[6];
-        double extents[4];
-        void* transformer = GDALCreateGenImgProjTransformer(srcDS.value, srcWKT.c_str(), NULL, destWKT.c_str(), 1, 0, 0);
-
-        GDALSuggestedWarpOutput2(
-            srcDS.value,
-            GDALGenImgProjTransform, transformer,
-            outgeotransform,
-            &width,
-            &height,
-            extents,
-            0);
-
-        GDALDestroyGenImgProjTransformer(transformer);
-    }
-
-    int numBands = srcDS.value->GetRasterCount();
-    GDALDataType dataType = srcDS.value->GetRasterBand(1)->GetRasterDataType();
-
-    auto destDS = createMemDS(width, height, numBands, dataType, destMinX, destMinY, destMaxX, destMaxY, destWKT);
-
-    if (destDS.status.failed())
-        return nullptr;
-
-    if (useBilinearInterpolation == true)
-    {
-        GDALReprojectImage(
-            srcDS.value, nullptr,
-            destDS.value, nullptr,
-            GRA_Bilinear,
-            0, 0, 0, 0, 0);
-    }
-    else
-    {
-        GDALReprojectImage(
-            srcDS.value, nullptr,
-            destDS.value, nullptr,
-            GRA_NearestNeighbour,
-            0, 0, 0, 0, 0);
-    }
-
-    auto result = createImageFromDataset(destDS.value);
-
-    delete srcDS.value;
-    delete destDS.value;
-
-    return result;
-}
-
-#endif // if 0
-
-#endif // GDAL_FOUND
-

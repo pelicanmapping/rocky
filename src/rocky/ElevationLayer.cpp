@@ -183,14 +183,6 @@ ElevationLayer::setVisible(bool value)
         close();
 }
 
-void ElevationLayer::setVerticalDatum(const std::string& value) {
-    _verticalDatum = value, _reopenRequired = true;
-    // vertical datum change requires a profile override:
-    applyProfileOverrides(_profile);
-}
-const optional<std::string>& ElevationLayer::verticalDatum() const {
-    return _verticalDatum;
-}
 void ElevationLayer::setOffset(bool value) {
     _offset = value, _reopenRequired = true;
 }

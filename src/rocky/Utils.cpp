@@ -3,13 +3,10 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#include "StringUtils.h"
-#include "Notify.h"
+#include "Utils.h"
 #include "sha1.h"
 #include <cctype>
 #include <cstring>
-
-#include <tinyxml.h>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
@@ -606,52 +603,6 @@ rocky::util::getToken(const std::string& input, unsigned i, const std::string& d
     StringTokenizer t(delims);
     t.tokenize(input, tokens);
     return i < tokens.size() ? tokens[i] : "";    
-}
-
-Result<TiXmlDocument>
-rocky::util::parseXML(
-    std::istream& in,
-    const std::string& referrer)
-{
-    //Read the entire document into a string
-    std::stringstream buffer;
-    buffer << in.rdbuf();
-    std::string xml_str = buffer.str();
-
-    // strip the DOCTYPE...apparently tinyxml doesn't like it?
-    auto dtd = xml_str.find("<!DOCTYPE");
-    if (dtd != xml_str.npos)
-    {
-        auto dtd_end = xml_str.find_first_of('>', dtd);
-        if (dtd_end != xml_str.npos)
-            xml_str = xml_str.substr(dtd_end + 1);
-    }
-
-    TiXmlDocument doc;
-    doc.Parse(xml_str.c_str());
-
-    if (doc.Error())
-    {
-        std::stringstream buf;
-        buf << "XML parsing error";
-        if (!referrer.empty())
-            buf << " in \"" << referrer << "\"" << "\n";
-
-        // print some context
-        StringVector output;
-        StringTokenizer lines(xml_str, output, "\n", "", true, false);
-        int startLine = std::max(0, doc.ErrorRow() - 12);
-        int endLine = std::min((int)(output.size()) - 1, doc.ErrorRow() + 4);
-
-        for (int i = startLine; i <= endLine; ++i)
-        {
-            buf << " " << i + 1 << (i + 1 == doc.ErrorRow() ? " *" : "  ") << "\t" << output[i] << std::endl;
-        }
-
-        return Result<TiXmlDocument>(Status::ConfigurationError, buf.str());
-    }
-
-    return Result(doc);
 }
 
 #if 0

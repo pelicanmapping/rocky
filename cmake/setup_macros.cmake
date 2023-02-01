@@ -191,3 +191,4 @@ endmacro()
 # add options for vsg and all packages depending on vsg
 #
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+

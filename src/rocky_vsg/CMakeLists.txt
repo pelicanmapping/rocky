@@ -43,9 +43,6 @@ find_package(vsg CONFIG REQUIRED)
 
 # Lib dependencies
 set(LIBRARIES PUBLIC
-    glm::glm
-    nlohmann_json::nlohmann_json
-    unofficial-tinyxml::unofficial-tinyxml
     vsg::vsg
     rocky
 )

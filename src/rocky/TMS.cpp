@@ -8,22 +8,20 @@
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::TMS;
 
-#undef LC
-#define LC "[TMS] "
 
-//........................................................................
-
-namespace osgEarth { namespace TMS
-{
-    std::string toString(double value, int precision = 7)
+namespace osgEarth {
+    namespace TMS
     {
-        std::stringstream out;
-        out << std::fixed << std::setprecision(precision) << value;
-	    std::string outStr;
-	    outStr = out.str();
-        return outStr;
+        std::string toString(double value, int precision = 7)
+        {
+            std::stringstream out;
+            out << std::fixed << std::setprecision(precision) << value;
+            std::string outStr;
+            outStr = out.str();
+            return outStr;
+        }
     }
-} }
+}
 
 
 #define ELEM_TILEMAP "tilemap"
@@ -67,10 +65,10 @@ namespace osgEarth { namespace TMS
 
 namespace
 {
-    bool intersects(const double &minXa, const double &minYa, const double &maxXa, const double &maxYa,
-                    const double &minXb, const double &minYb, const double &maxXb, const double &maxYb)
+    bool intersects(const double& minXa, const double& minYa, const double& maxXa, const double& maxYa,
+        const double& minXb, const double& minYb, const double& maxXb, const double& maxYb)
     {
-        return std::max(minXa, minXb) <= std::min(maxXa,maxXb) &&
+        return std::max(minXa, minXb) <= std::min(maxXa, maxXb) &&
             std::max(minYa, minYb) <= std::min(maxYa, maxYb);
     }
 
@@ -190,7 +188,7 @@ namespace
         {
             Profile profile = tileMap.createProfile();
 
-            for(auto& conf : extentsConf->children(ELEM_DATA_EXTENT))
+            for (auto& conf : extentsConf->children(ELEM_DATA_EXTENT))
             {
                 double minX = conf.value<double>(ATTR_MINX, 0.0);
                 double minY = conf.value<double>(ATTR_MINY, 0.0);
@@ -300,9 +298,9 @@ TileMap::createProfile() const
     else if (
         new_srs.isGeographic() &&
         equiv(minX, -180.) &&
-        equiv(maxX,  180.) &&
-        equiv(minY,  -90.) &&
-        equiv(maxY,   90.) )
+        equiv(maxX, 180.) &&
+        equiv(minY, -90.) &&
+        equiv(maxY, 90.))
     {
         profile = Profile::GLOBAL_GEODETIC;
     }
@@ -314,7 +312,7 @@ TileMap::createProfile() const
             new_srs,
             Box(minX, minY, maxX, maxY),
             std::max(numTilesWide, 1u),
-            std::max(numTilesHigh, 1u) );
+            std::max(numTilesHigh, 1u));
     }
 
     return std::move(profile);
@@ -339,15 +337,15 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
     if (!invertY)
     {
         auto [numCols, numRows] = tilekey.profile().numTiles(tilekey.levelOfDetail());
-        y  = numRows - y - 1;
+        y = numRows - y - 1;
     }
 
     //OE_NOTICE << LC << "KEY: " << tilekey.str() << " level " << zoom << " ( " << x << ", " << y << ")" << std::endl;
 
     //Select the correct TileSet
-    if ( tileSets.size() > 0 )
+    if (tileSets.size() > 0)
     {
-        for(auto& tileSet : tileSets)
+        for (auto& tileSet : tileSets)
         {
             if (tileSet.order == zoom)
             {
@@ -359,8 +357,8 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
                 }
                 ss << zoom << "/" << x << "/" << y << "." << format.extension;
                 std::string ssStr;
-				ssStr = ss.str();
-				return ssStr;
+                ssStr = ss.str();
+                return ssStr;
             }
         }
     }
@@ -384,13 +382,13 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
 bool
 TileMap::intersectsKey(const TileKey& tilekey) const
 {
-//    dvvec3 keyMin, keyMax;
+    //    dvvec3 keyMin, keyMax;
 
-    //double keyMinX, keyMinY, keyMaxX, keyMaxY;
+        //double keyMinX, keyMinY, keyMaxX, keyMaxY;
 
-    //Check to see if the key overlaps the bounding box using lat/lon.  This is necessary to check even in
-    //Mercator situations in case the BoundingBox is described using lat/lon coordinates such as those produced by GDAL2Tiles
-    //This should be considered a bug on the TMS production side, but we can work around it for now...
+        //Check to see if the key overlaps the bounding box using lat/lon.  This is necessary to check even in
+        //Mercator situations in case the BoundingBox is described using lat/lon coordinates such as those produced by GDAL2Tiles
+        //This should be considered a bug on the TMS production side, but we can work around it for now...
     Box b = tilekey.extent().bounds();
     //tilekey.getExtent().getBounds(keyMinX, keyMinY, keyMaxX, keyMaxY);
 
@@ -402,7 +400,7 @@ TileMap::intersectsKey(const TileKey& tilekey) const
     {
         dvec3 keyMin(b.xmin, b.ymin, b.zmin);
         dvec3 keyMax(b.xmax, b.ymax, b.zmax);
-        
+
         auto xform = tilekey.profile().srs().to(tilekey.profile().srs().geoSRS());
         xform(keyMin, keyMin);
         xform(keyMax, keyMax);
@@ -482,7 +480,7 @@ TileMap::TileMap(
 
     // format can be a mime-type or an extension:
     std::string::size_type p = formatString.find('/');
-    if ( p == std::string::npos )
+    if (p == std::string::npos)
     {
         format.extension = formatString;
         format.mimeType = ""; // TODO
@@ -554,200 +552,6 @@ ROCKY_NAMESPACE::TMS::readTileMap(const URI& location, const IOOptions& io)
     return tilemap;
 }
 
-#if 0
-#define DOUBLE_PRECISION 25
-
-static XmlDocument*
-tileMapToXmlDocument(const TileMap* tileMap)
-{
-    //Create the root XML document
-    osg::ref_ptr<XmlDocument> doc = new XmlDocument();
-    doc->setName( ELEM_TILEMAP );
-    doc->getAttrs()[ ATTR_VERSION ] = tileMap->getVersion();
-    doc->getAttrs()[ ATTR_TILEMAPSERVICE ] = tileMap->getTileMapService();
-
-    doc->addSubElement( ELEM_TITLE, tileMap->getTitle() );
-    doc->addSubElement( ELEM_ABSTRACT, tileMap->getAbstract() );
-    doc->addSubElement( ELEM_SRS, tileMap.srs() );
-    doc->addSubElement( ELEM_VERTICAL_SRS, tileMap->getVerticalSRS() );
-
-    osg::ref_ptr<XmlElement> e_bounding_box = new XmlElement( ELEM_BOUNDINGBOX );
-    double minX, minY, maxX, maxY;
-    tileMap->getExtents( minX, minY, maxX, maxY );
-    e_bounding_box->getAttrs()[ATTR_MINX] = toString(minX, DOUBLE_PRECISION);
-    e_bounding_box->getAttrs()[ATTR_MINY] = toString(minY, DOUBLE_PRECISION);
-    e_bounding_box->getAttrs()[ATTR_MAXX] = toString(maxX, DOUBLE_PRECISION);
-    e_bounding_box->getAttrs()[ATTR_MAXY] = toString(maxY, DOUBLE_PRECISION);
-    doc->getChildren().push_back(e_bounding_box.get() );
-
-    osg::ref_ptr<XmlElement> e_origin = new XmlElement( ELEM_ORIGIN );
-    e_origin->getAttrs()[ATTR_X] = toString(tileMap->getOriginX(), DOUBLE_PRECISION);
-    e_origin->getAttrs()[ATTR_Y] = toString(tileMap->getOriginY(), DOUBLE_PRECISION);
-    doc->getChildren().push_back(e_origin.get());
-
-    osg::ref_ptr<XmlElement> e_tile_format = new XmlElement( ELEM_TILE_FORMAT );
-    e_tile_format->getAttrs()[ ATTR_EXTENSION ] = tileMap->getFormat().getExtension();
-    e_tile_format->getAttrs()[ ATTR_MIME_TYPE ] = tileMap->getFormat().getMimeType();
-    e_tile_format->getAttrs()[ ATTR_WIDTH ] = toString<unsigned int>(tileMap->getFormat().getWidth());
-    e_tile_format->getAttrs()[ ATTR_HEIGHT ] = toString<unsigned int>(tileMap->getFormat().getHeight());
-    doc->getChildren().push_back(e_tile_format.get());
-
-    osg::ref_ptr< const osgEarth::Profile > profile = tileMap->createProfile();
-
-    osg::ref_ptr<XmlElement> e_tile_sets = new XmlElement ( ELEM_TILESETS );
-    std::string profileString = "none";
-
-    osg::ref_ptr<const Profile> gg(Profile::create(Profile::GLOBAL_GEODETIC));
-    osg::ref_ptr<const Profile> sm(Profile::create(Profile::SPHERICAL_MERCATOR));
-
-    if (profile->isEquivalentTo(gg.get()))
-    {
-        profileString = "global-geodetic";
-    }
-    else if (profile->isEquivalentTo(sm.get()))
-    {
-        profileString = "global-mercator";
-    }
-    else
-    {
-        profileString = "local";
-    }
-    e_tile_sets->getAttrs()[ ATTR_PROFILE ] = profileString;
-
-
-    for (TileMap::TileSetList::const_iterator itr = tileMap->getTileSets().begin(); itr != tileMap->getTileSets().end(); ++itr)
-    {
-        osg::ref_ptr<XmlElement> e_tile_set = new XmlElement( ELEM_TILESET );
-        e_tile_set->getAttrs()[ATTR_HREF] = itr->getHref();
-        e_tile_set->getAttrs()[ATTR_ORDER] = toString<unsigned int>(itr->getOrder());
-        e_tile_set->getAttrs()[ATTR_UNITSPERPIXEL] = toString(itr->getUnitsPerPixel(), DOUBLE_PRECISION);
-        e_tile_sets->getChildren().push_back( e_tile_set.get() );
-    }
-    doc->getChildren().push_back(e_tile_sets.get());
-
-    //Write out the data areas
-    if (tileMap->getDataExtents().size() > 0)
-    {
-        osg::ref_ptr<XmlElement> e_data_extents = new XmlElement( ELEM_DATA_EXTENTS );
-        for (DataExtentList::const_iterator itr = tileMap->getDataExtents().begin(); itr != tileMap->getDataExtents().end(); ++itr)
-        {
-            osg::ref_ptr<XmlElement> e_data_extent = new XmlElement( ELEM_DATA_EXTENT );
-            e_data_extent->getAttrs()[ATTR_MINX] = toString(itr->xMin(), DOUBLE_PRECISION);
-            e_data_extent->getAttrs()[ATTR_MINY] = toString(itr->yMin(), DOUBLE_PRECISION);
-            e_data_extent->getAttrs()[ATTR_MAXX] = toString(itr->xMax(), DOUBLE_PRECISION);
-            e_data_extent->getAttrs()[ATTR_MAXY] = toString(itr->yMax(), DOUBLE_PRECISION);
-            if ( itr->minLevel().isSet() )
-                e_data_extent->getAttrs()[ATTR_MIN_LEVEL] = toString<unsigned int>(*itr->minLevel());
-            if ( itr->maxLevel().isSet() )
-                e_data_extent->getAttrs()[ATTR_MAX_LEVEL] = toString<unsigned int>(*itr->maxLevel());
-            if ( itr->description().isSet() )
-                e_data_extent->getAttrs()[ATTR_DESCRIPTION] = *itr->description();
-            e_data_extents->getChildren().push_back( e_data_extent );
-        }
-        doc->getChildren().push_back( e_data_extents.get() );
-    }
-    return doc.release();
-}
-
-void
-TileMapReaderWriter::write(const TileMap* tileMap, const std::string &location)
-{
-    std::string path = osgDB::getFilePath(location);
-    if (!osgDB::fileExists(path) && !osgDB::makeDirectory(path))
-    {
-        OE_WARN << LC << "Couldn't create path " << std::endl;
-    }
-    std::ofstream out(location.c_str());
-    write(tileMap, out);
-}
-
-void
-TileMapReaderWriter::write(const TileMap* tileMap, std::ostream &output)
-{
-    osg::ref_ptr<XmlDocument> doc = tileMapToXmlDocument(tileMap);
-    doc->store(output);
-}
-#endif
-
-//----------------------------------------------------------------------------
-
-#if 0
-TileMapEntry::TileMapEntry( const std::string& _title, const std::string& _href, const std::string& _srs, const std::string& _profile ):
-title( _title ),
-href( _href ),
-srs( _srs ),
-profile( _profile )
-{
-}
-
-//----------------------------------------------------------------------------
-
-TileMapServiceReader::TileMapServiceReader()
-{
-}
-
-TileMapServiceReader::TileMapServiceReader(const TileMapServiceReader& rhs)
-{
-}
-
-bool
-TileMapServiceReader::read( const std::string &location, const osgDB::ReaderWriter::Options* options, TileMapEntryList& tileMaps )
-{
-    ReadResult r = URI(location).readString();
-    if ( r.failed() )
-    {
-        OE_WARN << LC << "Failed to read TileMapServices from " << location << std::endl;
-        return 0L;
-    }
-
-    // Read tile map into a Config:
-    Config conf;
-    std::stringstream buf( r.getString() );
-    conf.fromXML( buf );
-
-    // parse that into a tile map:
-    return read( conf, tileMaps );
-}
-
-bool
-TileMapServiceReader::read( const Config& conf, TileMapEntryList& tileMaps)
-{
-    const Config* TileMapServiceConf = conf.find("tilemapservice");
-
-    if (!TileMapServiceConf)
-    {
-        OE_NOTICE << "Couldn't find root TileMapService element" << std::endl;
-        return false;
-    }
-
-    const Config* TileMapsConf = TileMapServiceConf->find("tilemaps");
-    if (TileMapsConf)
-    {
-        const ConfigSet& TileMaps = TileMapsConf->children("tilemap");
-        if (TileMaps.size() == 0)
-        {
-            return false;
-        }
-
-        for (ConfigSet::const_iterator itr = TileMaps.begin(); itr != TileMaps.end(); ++itr)
-        {
-            std::string href = itr->value("href");
-            std::string title = itr->value("title");
-            std::string profile = itr->value("profile");
-            std::string srs = itr->value("srs");
-
-            tileMaps.push_back( TileMapEntry( title, href, srs, profile ) );
-        }
-
-        return true;
-    }
-    return false;
-}
-#endif
-
-
-
-
 
 
 void
@@ -787,12 +591,12 @@ TMS::Driver::open(
 #if 0
     if (!uri.isRemote() &&
         !osgEarth::isPathToArchivedFile(uri.full()) &&
-        !osgDB::fileExists(uri.full()) )
+        !osgDB::fileExists(uri.full()))
     {
         isNewRepo = true;
 
         // new repo REQUIRES a profile:
-        if ( !profile.valid() )
+        if (!profile.valid())
         {
             return Status(Status::ConfigurationError, "Fail: profile required to create new TMS repo");
         }
@@ -802,7 +606,7 @@ TMS::Driver::open(
     // Take the override profile if one is given
     if (profile.valid())
     {
-        Log::info() << LC
+        Log::info() << "TMS: "
             << "Using express profile \"" << profile.toString()
             << "\" for URI \"" << uri.base() << "\""
             << std::endl;
@@ -819,14 +623,14 @@ TMS::Driver::open(
 
 #if 0
         // If this is a new repo, write the tilemap file to disk now.
-        if ( isNewRepo )
+        if (isNewRepo)
         {
-            if ( format.empty() )
+            if (format.empty())
             {
                 return Status(Status::ConfigurationError, "Missing required \"format\" property: e.g. png, jpg");
             }
 
-            TMS::TileMapReaderWriter::write( _tileMap.get(), uri.full() );
+            TMS::TileMapReaderWriter::write(_tileMap.get(), uri.full());
             OE_INFO << LC << "Created new TMS repo at " << uri.full() << std::endl;
         }
 #endif
@@ -870,7 +674,7 @@ TMS::Driver::open(
     {
         if (!_tileMap.dataExtents.empty())
         {
-            for(auto& de : _tileMap.dataExtents)
+            for (auto& de : _tileMap.dataExtents)
             {
                 dataExtents.push_back(de);
             }
@@ -935,30 +739,6 @@ TMS::Driver::read(
             }
         }
 
-#if 0
-        if (image)
-        {
-            if (_isCoverage && !LandCover::isLandCover(image.get()))
-            {
-                osg::Image* dest = LandCover::createImage(image->s(), image->t());
-                ImageUtils::PixelReader read(image.get());
-                ImageUtils::PixelWriter write(dest);
-                osg::Vec4 value;
-                for(int t=0; t<read.t(); ++t)
-                {
-                    for(int s=0; s<read.s(); ++s)
-                    {
-                        read(value, s, t);
-                        if (value.a() == 0.0)
-                            value.r() = NO_DATA_VALUE;
-                        write(value, s, t);
-                    }
-                }
-                image = dest;
-            }
-        }
-#endif
-
         return image;
     }
     else
@@ -966,17 +746,112 @@ TMS::Driver::read(
         return Status(Status::ResourceUnavailable);
     }
 }
+#if 0
+#define DOUBLE_PRECISION 25
+
+static XmlDocument*
+tileMapToXmlDocument(const TileMap* tileMap)
+{
+    //Create the root XML document
+    osg::ref_ptr<XmlDocument> doc = new XmlDocument();
+    doc->setName(ELEM_TILEMAP);
+    doc->getAttrs()[ATTR_VERSION] = tileMap->getVersion();
+    doc->getAttrs()[ATTR_TILEMAPSERVICE] = tileMap->getTileMapService();
+
+    doc->addSubElement(ELEM_TITLE, tileMap->getTitle());
+    doc->addSubElement(ELEM_ABSTRACT, tileMap->getAbstract());
+    doc->addSubElement(ELEM_SRS, tileMap.srs());
+    doc->addSubElement(ELEM_VERTICAL_SRS, tileMap->getVerticalSRS());
+
+    osg::ref_ptr<XmlElement> e_bounding_box = new XmlElement(ELEM_BOUNDINGBOX);
+    double minX, minY, maxX, maxY;
+    tileMap->getExtents(minX, minY, maxX, maxY);
+    e_bounding_box->getAttrs()[ATTR_MINX] = toString(minX, DOUBLE_PRECISION);
+    e_bounding_box->getAttrs()[ATTR_MINY] = toString(minY, DOUBLE_PRECISION);
+    e_bounding_box->getAttrs()[ATTR_MAXX] = toString(maxX, DOUBLE_PRECISION);
+    e_bounding_box->getAttrs()[ATTR_MAXY] = toString(maxY, DOUBLE_PRECISION);
+    doc->getChildren().push_back(e_bounding_box.get());
+
+    osg::ref_ptr<XmlElement> e_origin = new XmlElement(ELEM_ORIGIN);
+    e_origin->getAttrs()[ATTR_X] = toString(tileMap->getOriginX(), DOUBLE_PRECISION);
+    e_origin->getAttrs()[ATTR_Y] = toString(tileMap->getOriginY(), DOUBLE_PRECISION);
+    doc->getChildren().push_back(e_origin.get());
+
+    osg::ref_ptr<XmlElement> e_tile_format = new XmlElement(ELEM_TILE_FORMAT);
+    e_tile_format->getAttrs()[ATTR_EXTENSION] = tileMap->getFormat().getExtension();
+    e_tile_format->getAttrs()[ATTR_MIME_TYPE] = tileMap->getFormat().getMimeType();
+    e_tile_format->getAttrs()[ATTR_WIDTH] = toString<unsigned int>(tileMap->getFormat().getWidth());
+    e_tile_format->getAttrs()[ATTR_HEIGHT] = toString<unsigned int>(tileMap->getFormat().getHeight());
+    doc->getChildren().push_back(e_tile_format.get());
+
+    osg::ref_ptr< const osgEarth::Profile > profile = tileMap->createProfile();
+
+    osg::ref_ptr<XmlElement> e_tile_sets = new XmlElement(ELEM_TILESETS);
+    std::string profileString = "none";
+
+    osg::ref_ptr<const Profile> gg(Profile::create(Profile::GLOBAL_GEODETIC));
+    osg::ref_ptr<const Profile> sm(Profile::create(Profile::SPHERICAL_MERCATOR));
+
+    if (profile->isEquivalentTo(gg.get()))
+    {
+        profileString = "global-geodetic";
+    }
+    else if (profile->isEquivalentTo(sm.get()))
+    {
+        profileString = "global-mercator";
+    }
+    else
+    {
+        profileString = "local";
+    }
+    e_tile_sets->getAttrs()[ATTR_PROFILE] = profileString;
+
+
+    for (TileMap::TileSetList::const_iterator itr = tileMap->getTileSets().begin(); itr != tileMap->getTileSets().end(); ++itr)
+    {
+        osg::ref_ptr<XmlElement> e_tile_set = new XmlElement(ELEM_TILESET);
+        e_tile_set->getAttrs()[ATTR_HREF] = itr->getHref();
+        e_tile_set->getAttrs()[ATTR_ORDER] = toString<unsigned int>(itr->getOrder());
+        e_tile_set->getAttrs()[ATTR_UNITSPERPIXEL] = toString(itr->getUnitsPerPixel(), DOUBLE_PRECISION);
+        e_tile_sets->getChildren().push_back(e_tile_set.get());
+    }
+    doc->getChildren().push_back(e_tile_sets.get());
+
+    //Write out the data areas
+    if (tileMap->getDataExtents().size() > 0)
+    {
+        osg::ref_ptr<XmlElement> e_data_extents = new XmlElement(ELEM_DATA_EXTENTS);
+        for (DataExtentList::const_iterator itr = tileMap->getDataExtents().begin(); itr != tileMap->getDataExtents().end(); ++itr)
+        {
+            osg::ref_ptr<XmlElement> e_data_extent = new XmlElement(ELEM_DATA_EXTENT);
+            e_data_extent->getAttrs()[ATTR_MINX] = toString(itr->xMin(), DOUBLE_PRECISION);
+            e_data_extent->getAttrs()[ATTR_MINY] = toString(itr->yMin(), DOUBLE_PRECISION);
+            e_data_extent->getAttrs()[ATTR_MAXX] = toString(itr->xMax(), DOUBLE_PRECISION);
+            e_data_extent->getAttrs()[ATTR_MAXY] = toString(itr->yMax(), DOUBLE_PRECISION);
+            if (itr->minLevel().isSet())
+                e_data_extent->getAttrs()[ATTR_MIN_LEVEL] = toString<unsigned int>(*itr->minLevel());
+            if (itr->maxLevel().isSet())
+                e_data_extent->getAttrs()[ATTR_MAX_LEVEL] = toString<unsigned int>(*itr->maxLevel());
+            if (itr->description().isSet())
+                e_data_extent->getAttrs()[ATTR_DESCRIPTION] = *itr->description();
+            e_data_extents->getChildren().push_back(e_data_extent);
+        }
+        doc->getChildren().push_back(e_data_extents.get());
+    }
+    return doc.release();
+}
+#endif
 
 #if 0
 bool
 TMS::Driver::write(const URI& uri,
-                   const TileKey& key,
-                   const osg::Image* image,
-                   bool invertY,
-                   ProgressCallback* progress,
-                   const osgDB::Options* writeOptions) const
+    const TileKey& key,
+    const osg::Image* image,
+    bool invertY,
+    ProgressCallback* progress,
+    const osgDB::Options* writeOptions) const
 {
-    if ( !_writer.valid() )
+    if (!_writer.valid())
     {
         OE_WARN << LC << "Repo is read-only; store failed" << std::endl;
         return false;
@@ -1048,272 +923,5 @@ TMS::Driver::resolveWriter(const std::string& format)
     }
 
     return _writer.valid();
-}
-
-//........................................................................
-
-Config
-TMS::Options::getMetadata()
-{
-    return Config::readJSON(OE_MULTILINE(
-      { "name" : "TMS (Tile Map Service)",
-        "properties" : [
-          { "name": "url", "description" : "Location of the TMS repository", "type" : "string", "default" : "" },
-          { "name": "tms_type", "description" : "Set to 'google' to invert the Y index", "type" : "string", "default" : "" },
-          { "name": "format", "description" : "Image format to assume (e.g. jpeg, png)", "type" : "string", "default" : "" }
-        ]
-      }
-    ));
-}
-
-void
-TMS::Options::readFrom(const Config& conf)
-{
-    conf.get("url", _url);
-    conf.get("format", _format);
-    conf.get("tms_type", _tmsType);
-}
-
-void
-TMS::Options::writeTo(Config& conf) const
-{
-    conf.set("url", _url);
-    conf.set("tms_type", _tmsType);
-    conf.set("format", _format);
-}
-
-//........................................................................
-
-Config
-TMSImageLayer::Options::getConfig() const
-{
-    Config conf = ImageLayer::Options::getConfig();
-    writeTo(conf);
-    return conf;
-}
-
-void
-TMSImageLayer::Options::fromConfig(const Config& conf)
-{
-    readFrom(conf);
-}
-
-//........................................................................
-
-REGISTER_OSGEARTH_LAYER(tmsimage, TMSImageLayer);
-
-OE_LAYER_PROPERTY_IMPL(TMSImageLayer, URI, URL, url);
-OE_LAYER_PROPERTY_IMPL(TMSImageLayer, std::string, TMSType, tmsType);
-OE_LAYER_PROPERTY_IMPL(TMSImageLayer, std::string, Format, format);
-#endif
-
-TMSImageLayer::TMSImageLayer() :
-    Inherit()
-{
-    // nop
-}
-
-Status
-TMSImageLayer::openImplementation(const IOOptions& io)
-{
-    Status parent = ImageLayer::openImplementation(io);
-    if (parent.failed())
-        return parent;
-
-    Profile driver_profile = profile();
-
-    DataExtentList dataExtents;
-    Status status = _driver.open(
-        uri(),
-        driver_profile,
-        format(),
-        coverage(),
-        dataExtents,
-        io);
-
-    if (status.failed())
-        return status;
-
-    if (!driver_profile.isEquivalentTo(profile()))
-    {
-        setProfile(driver_profile);
-    }
-
-    setDataExtents(dataExtents);
-
-    return StatusOK;
-}
-
-Status
-TMSImageLayer::closeImplementation()
-{
-    _driver.close();
-    return ImageLayer::closeImplementation();
-}
-
-Result<GeoImage>
-TMSImageLayer::createImageImplementation(
-    const TileKey& key,
-    const IOOptions& io) const
-{
-    auto r = _driver.read(
-        uri(),
-        key,
-        tmsType() == "google",
-        io);
-
-    if (r.status.ok())
-        return GeoImage(r.value, key.extent());
-    else
-        return r.status;
-}
-
-#if 0
-Status
-TMSImageLayer::writeImageImplementation(const TileKey& key, const osg::Image* image, ProgressCallback* progress) const
-{
-    if (!isWritingRequested())
-        return Status::ServiceUnavailable;
-
-    bool ok = _driver.write(
-        options().url().get(),
-        key,
-        image,
-        options().tmsType().get() == "google",
-        progress,
-        getReadOptions());
-
-    if (!ok)
-    {
-        return Status::ServiceUnavailable;
-    }
-
-    return STATUS_OK;
-}
-#endif
-
-#if 0
-//........................................................................
-
-Config
-TMSElevationLayer::Options::getConfig() const
-{
-    Config conf = ElevationLayer::Options::getConfig();
-    writeTo(conf);
-    return conf;
-}
-
-void
-TMSElevationLayer::Options::fromConfig(const Config& conf)
-{
-    readFrom(conf);
-}
-
-
-//........................................................................
-
-REGISTER_OSGEARTH_LAYER(tmselevation, TMSElevationLayer);
-
-OE_LAYER_PROPERTY_IMPL(TMSElevationLayer, URI, URL, url);
-OE_LAYER_PROPERTY_IMPL(TMSElevationLayer, std::string, TMSType, tmsType);
-OE_LAYER_PROPERTY_IMPL(TMSElevationLayer, std::string, Format, format);
-
-void
-TMSElevationLayer::init()
-{
-    ElevationLayer::init();
-}
-
-Status
-TMSElevationLayer::openImplementation()
-{
-    Status parent = ElevationLayer::openImplementation();
-    if (parent.isError())
-        return parent;
-
-    // Create an image layer under the hood. TMS fetch is the same for image and
-    // elevation; we just convert the resulting image to a heightfield
-    _imageLayer = new TMSImageLayer(options());
-
-    // Initialize and open the image layer
-    _imageLayer->setReadOptions(getReadOptions());
-    Status status;
-    if (_writingRequested)
-    {
-        status = _imageLayer->openForWriting();
-    }
-    else
-    {
-        status = _imageLayer->open();
-    }
-
-    if (status.isError())
-        return status;
-
-    setProfile(_imageLayer->getProfile());
-    DataExtentList dataExtents;
-    _imageLayer->getDataExtents(dataExtents);
-    setDataExtents(dataExtents);
-
-    return Status::NoError;
-}
-
-Status
-TMSElevationLayer::closeImplementation()
-{
-    if (_imageLayer.valid())
-    {
-        _imageLayer->close();
-        _imageLayer = NULL;
-    }
-    return ElevationLayer::closeImplementation();
-}
-
-GeoHeightField
-TMSElevationLayer::createHeightFieldImplementation(const TileKey& key, ProgressCallback* progress) const
-{
-
-    if (_imageLayer.valid() == false ||
-        !_imageLayer->isOpen())
-    {
-        return GeoHeightField::INVALID;
-    }
-
-    // Make an image, then convert it to a heightfield
-    GeoImage image = _imageLayer->createImageImplementation(key, progress);
-    if (image.valid())
-    {
-        if (image.getImage()->s() > 1 && image.getImage()->t() > 1)
-        {
-            ImageToHeightFieldConverter conv;
-            osg::HeightField* hf = conv.convert(image.getImage());
-            return GeoHeightField(hf, key.getExtent());
-        }
-        else
-        {
-            return GeoHeightField::INVALID;
-        }
-    }
-    else
-    {
-        return GeoHeightField(image.getStatus());
-    }
-}
-
-Status
-TMSElevationLayer::writeHeightFieldImplementation(
-    const TileKey& key,
-    const osg::HeightField* hf,
-    ProgressCallback* progress) const
-{
-    if (_imageLayer.valid() == false ||
-        !_imageLayer->isOpen())
-    {
-        return getStatus();
-    }
-
-    ImageToHeightFieldConverter conv;
-    osg::ref_ptr<osg::Image> image = conv.convert(hf);
-    return _imageLayer->writeImageImplementation(key, image.get(), progress);
 }
 #endif

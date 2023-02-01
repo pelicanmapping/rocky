@@ -14,7 +14,7 @@
 
 namespace ROCKY_NAMESPACE
 {
-//    constexpr float NO_DATA_VALUE = -FLT_MAX;
+    constexpr float NO_DATA_VALUE = -FLT_MAX;
 
 #if 0
     /**

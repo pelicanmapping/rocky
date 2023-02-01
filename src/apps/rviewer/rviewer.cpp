@@ -1,12 +1,22 @@
 #include <rocky/Instance.h>
-#include <rocky/GDALLayers.h>
-#include <rocky/TMS.h>
+#include <rocky/ImageLayer.h>
+
 #include <rocky_vsg/InstanceVSG.h>
 #include <rocky_vsg/MapNode.h>
 #include <rocky_vsg/TerrainNode.h>
 #include <rocky_vsg/MapManipulator.h>
+
 #include <vsg/all.h>
 #include <chrono>
+
+#ifdef ROCKY_SUPPORTS_GDAL
+#include <rocky/GDALImageLayer.h>
+#endif
+
+#ifdef ROCKY_SUPPORTS_TMS
+#include <rocky/TMSImageLayer.h>
+#endif
+
 
 int usage(const char* msg)
 {
@@ -76,20 +86,24 @@ int main(int argc, char** argv)
     rk->runtime().sharedObjects = vsg::SharedObjects::create();
     rk->runtime().loaders = vsg::OperationThreads::create(mapNode->terrainNode()->concurrency);
 
+#if defined(ROCKY_SUPPORTS_TMS)
+
     // add a layer to the map
     auto layer = rocky::TMSImageLayer::create();
-    layer->setURL("https://readymap.org/readymap/tiles/1.0.0/7/");
+    layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
     mapNode->map()->addLayer(layer);
 
-#if 0
-    auto layer = rocky::GDALImageLayer::create();
-    layer->setURL("D:/data/imagery/world.tif");
-    mapNode->map()->addLayer(layer)
-#endif
+#elif defined(ROCKY_SUPPORTS_GDAL)
 
-#if 0
+    auto layer = rocky::GDALImageLayer::create();
+    layer->setURI("D:/data/imagery/world.tif");
+    mapNode->map()->addLayer(layer);
+
+#else
+
     auto layer = rocky::TestLayer::create();
     mapNode->map()->addLayer(layer);
+
 #endif
 
     if (layer->status().failed())

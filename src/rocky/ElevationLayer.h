@@ -13,22 +13,12 @@ namespace ROCKY_NAMESPACE
     /**
      * A map terrain layer containing elevation grid heightfields.
      */
-    class ROCKY_EXPORT ElevationLayer : 
-        public Inherit<TileLayer, ElevationLayer>
+    class ROCKY_EXPORT ElevationLayer :  public Inherit<TileLayer, ElevationLayer>
     {
     public:
-
-        //! Vertical data identifier (options)
-        void setVerticalDatum(const std::string& value);
-        const optional<std::string>& verticalDatum() const;
-
         //! Whether this layer contains offsets instead of absolute elevation heights
         void setOffset(bool value);
         const optional<bool>& offset() const;
-
-        ////! Policy for handling "no-data" elevation values
-        //void setNoDataPolicy(const ElevationNoDataPolicy& value);
-        //const ElevationNoDataPolicy& getNoDataPolicy() const;
 
         //! Value to treat as "absence of data"
         void setNoDataValue(float value);
@@ -120,7 +110,6 @@ namespace ROCKY_NAMESPACE
 
         optional<std::string> _verticalDatum;
         optional<bool> _offset;
-        //optional<ElevationNoDataPolicy> _noDataPolicy;
         optional<float> _noDataValue;
         optional<float> _minValidValue;
         optional<float> _maxValidValue;

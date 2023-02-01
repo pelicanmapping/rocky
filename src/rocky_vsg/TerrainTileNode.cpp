@@ -9,7 +9,6 @@
 #include "TerrainSettings.h"
 
 #include <rocky/Math.h>
-#include <rocky/Notify.h>
 #include <rocky/ImageLayer.h>
 #include <rocky/TerrainTileModel.h>
 

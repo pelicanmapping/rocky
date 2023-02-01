@@ -6,7 +6,6 @@
 #include "TerrainTileModelFactory.h"
 #include "Map.h"
 #include "Metrics.h"
-#include "Notify.h"
 #include "ElevationLayer.h"
 #include "ImageLayer.h"
 

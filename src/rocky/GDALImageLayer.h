@@ -4,14 +4,10 @@
  * MIT License
  */
 #pragma once
-#ifdef GDAL_FOUND
-
-#define ROCKY_HAVE_GDAL_IMAGE_LAYER
-#define ROCKY_HAVE_GDAL_ELEVATION_LAYER
 
 #include <rocky/ImageLayer.h>
-#include <rocky/ElevationLayer.h>
 #include <rocky/URI.h>
+#include <rocky/Heightfield.h>
 #include <rocky/Image.h>
 
 /**
@@ -23,6 +19,8 @@ class GDALRasterBand;
 
 namespace ROCKY_NAMESPACE
 {
+    class GDALImageLayer;
+
     namespace GDAL
     {
         /**
@@ -96,7 +94,7 @@ namespace ROCKY_NAMESPACE
             //! Opens and initializes the connection to the dataset
             Status open(
                 const std::string& name,
-                const Options& options,
+                const GDALImageLayer* layer,
                 unsigned tileSize,
                 DataExtentList* out_dataExtents,
                 const IOOptions& io);
@@ -108,6 +106,7 @@ namespace ROCKY_NAMESPACE
                 bool isCoverage,
                 const IOOptions& io);
 
+#if 1
             //! Creates a heightfield if possible
             Result<shared_ptr<Heightfield>> createHeightfield(
                 const TileKey& key,
@@ -119,7 +118,7 @@ namespace ROCKY_NAMESPACE
                 const TileKey& key,
                 unsigned tileSize,
                 const IOOptions& io);
-
+#endif
             const Profile& profile() const {
                 return _profile;
             }
@@ -142,8 +141,9 @@ namespace ROCKY_NAMESPACE
             GeoExtent _extents;
             Box _bounds;
             Profile _profile;
-            Options _gdalOptions;
-            const Options& gdalOptions() const { return _gdalOptions; }
+            //Options _gdalOptions;
+            const GDALImageLayer* _layer;
+            //const Options& gdalOptions() const { return _gdalOptions; }
             shared_ptr<GDAL::ExternalDataset> _externalDataset;
             std::string _name;
             unsigned _threadId;
@@ -166,30 +166,8 @@ namespace ROCKY_NAMESPACE
         struct ROCKY_EXPORT LayerBase
         {
         protected:
-            mutable util::ThreadLocal<Driver::Ptr> _drivers;
-            mutable GDAL::Options _options;
 
         public:
-
-            //! Base URL for TMS requests
-            void setURI(const URI& value);
-            const URI& getURL() const;
-
-            //! Database connection for GDAL database queries (alternative to URL)
-            void setConnection(const std::string& value);
-            const std::string& getConnection() const;
-
-            //! GDAL sub-dataset index (optional)
-            void setSubDataSet(unsigned value);
-            unsigned getSubDataSet() const;
-
-            //! Interpolation method for resampling (default is bilinear)
-            void setInterpolation(const Image::Interpolation& value);
-            const Image::Interpolation& getInterpolation() const;
-
-            //! Use the new VRT read approach
-            void setUseVRT(bool value);
-            bool getUseVRT() const;
         };
     }
 }
@@ -201,14 +179,34 @@ namespace ROCKY_NAMESPACE
     /**
      * Image layer connected to a GDAL raster dataset
      */
-    class ROCKY_EXPORT GDALImageLayer :
-        public Inherit<ImageLayer, GDALImageLayer>,
-        public GDAL::LayerBase
+    class ROCKY_EXPORT GDALImageLayer : public Inherit<ImageLayer, GDALImageLayer>
     {
     public:
+        //! Construct a GDAL image layer
         GDALImageLayer();
 
+        //! Deserialize a GDAL image layer
         GDALImageLayer(const Config&);
+
+        //! Base URL for TMS requests
+        void setURI(const URI& value);
+        const URI& uri() const;
+
+        //! Database connection for GDAL database queries (alternative to URL)
+        void setConnection(const std::string& value);
+        const std::string& connection() const;
+
+        //! GDAL sub-dataset index (optional)
+        void setSubDataSet(unsigned value);
+        unsigned subDataSet() const;
+
+        //! Interpolation method for resampling (default is bilinear)
+        void setInterpolation(const Image::Interpolation& value);
+        const Image::Interpolation& interpolation() const;
+
+        //! Use the new VRT read approach
+        void setUseVRT(bool value);
+        bool useVRT() const;
 
     public: // Layer
 
@@ -229,9 +227,21 @@ namespace ROCKY_NAMESPACE
 
         //! Called by the constructors
         void construct(const Config&);
+
+        optional<URI> _uri;
+        optional<std::string> _connection;
+        optional<unsigned> _subDataSet;
+        optional<Image::Interpolation> _interpolation;
+        optional<bool> _useVRT;
+        optional<bool> _coverageUsesPaletteIndex;
+        optional<bool> _singleThreaded;
+
+        mutable util::ThreadLocal<GDAL::Driver::Ptr> _drivers;
+        friend class GDAL::Driver;
     };
 
 
+#if 0
     //! Elevation layer connected to a GDAL facility
     class ROCKY_EXPORT GDALElevationLayer :
         public Inherit<ElevationLayer, GDALElevationLayer>,
@@ -272,7 +282,6 @@ namespace ROCKY_NAMESPACE
         //! Called by the constructor
         void construct(const Config&);
     };
+#endif
 
 } // namespace ROCKY_NAMESPACE
-
-#endif // GDAL_FOUND

@@ -279,10 +279,6 @@ namespace ROCKY_NAMESPACE { namespace util
     extern ROCKY_EXPORT std::string getAbsolutePath(const std::string&);
 #endif
 
-    extern ROCKY_EXPORT Result<TiXmlDocument> parseXML(
-        std::istream& input,
-        const std::string& referrer = "");
-
     /**
      * A filesystem Path that automatically normalizes
      * pathnames

@@ -10,7 +10,7 @@
 #include "ImageMosaic.h"
 #include "IOTypes.h"
 #include "Metrics.h"
-#include "StringUtils.h"
+#include "Utils.h"
 #include "GeoImage.h"
 #include "Image.h"
 #include "TileKey.h"
@@ -587,12 +587,18 @@ ImageLayer::createImageInKeyProfile(
     }
 #endif
 
-    if (key.profile() == profile())
+    // if this layer has no profile, just go straight to the driver.
+    if (!profile().valid())
     {
-        bool createUpsampledImage = false;
+        util::ScopedReadLock lock(layerMutex());
+        return createImageImplementation(key, io);
+    }
 
-        if (upsample() == true &&
-            maxDataLevel() > key.levelOfDetail())
+    else if (key.profile() == profile())
+    {
+        // test for an upsampling request:
+        bool createUpsampledImage = false;
+        if (upsample() == true && maxDataLevel() > key.levelOfDetail())
         {
             TileKey best = getBestAvailableTileKey(key, false);
             if (best.valid())

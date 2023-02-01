@@ -6,33 +6,128 @@ else()
     add_definitions(-DROCKY_LIBRARY)
 endif()
 
-message(STATUS "Current build folder is ${CMAKE_CURRENT_SOURCE_DIR}")
-
 # collect all the headers in the source directory
-file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
-file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+set(HEADERS
+    Callbacks.h
+    Color.h
+    Common.h
+    Config.h
+    DateTime.h
+    ElevationLayer.h
+    Ellipsoid.h
+    GeoCircle.h
+    GeoCommon.h
+    GeoExtent.h
+    GeoHeightfield.h
+    Geoid.h
+    GeoImage.h
+    GeoPoint.h
+    Heightfield.h
+    Horizon.h
+    Image.h
+    ImageLayer.h
+    ImageMosaic.h
+    Instance.h
+    IOTypes.h
+    Layer.h
+    LayerReference.h
+    Log.h
+    Map.h
+    Math.h
+    Metrics.h
+    optional.h
+    Profile.h
+    rtree.h
+    sha1.h
+    SRS.h
+    Status.h
+    TerrainOptions.h
+    TerrainResolver.h
+    TerrainTileModel.h
+    TerrainTileModelFactory.h
+    Threading.h
+    TileKey.h
+    TileLayer.h
+    Units.h
+    URI.h
+    Utils.h
+    Viewpoint.h
+    VisibleLayer.h
+    weemesh.h
+)
+
+set(SOURCES    
+    Color.cpp
+    Config.cpp
+    DateTime.cpp
+    ElevationLayer.cpp
+    Ellipsoid.cpp
+    GeoCircle.cpp
+    GeoExtent.cpp
+    GeoHeightfield.cpp
+    Geoid.cpp
+    GeoImage.cpp
+    GeoPoint.cpp
+    Heightfield.cpp
+    Horizon.cpp
+    Image.cpp
+    ImageLayer.cpp
+    ImageMosaic.cpp
+    Instance.cpp
+    IOTypes.cpp
+    Layer.cpp
+    Log.cpp
+    Map.cpp
+    Math.cpp
+    Metrics.cpp
+    Profile.cpp
+    SRS.cpp
+    Status.cpp
+    TerrainOptions.cpp
+    TerrainTileModel.cpp
+    TerrainTileModelFactory.cpp
+    Threading.cpp
+    TileKey.cpp
+    TileLayer.cpp
+    Units.cpp
+    URI.cpp
+    Utils.cpp
+    Viewpoint.cpp
+    VisibleLayer.cpp
+)
+        
+if(ROCKY_SUPPORTS_GDAL)
+    list(APPEND HEADERS GDALImageLayer.h)
+    list(APPEND SOURCES GDALImageLayer.cpp)
+endif()
+
+if(ROCKY_SUPPORTS_TMS)
+    list(APPEND HEADERS TMS.h TMSImageLayer.h)
+    list(APPEND SOURCES TMS.cpp TMSImageLayer.cpp)
+endif()
+
 
 # set up library dependencies
-set(PRIVATE_LIBS
-    PROJ::proj
-    nlohmann_json::nlohmann_json
-    unofficial-tinyxml::unofficial-tinyxml)
-    
-set(PUBLIC_LIBS
-    glm::glm)
+set(PRIVATE_LIBS PROJ::proj)
+set(PUBLIC_LIBS glm::glm)
     
 if(GDAL_FOUND)
     list(APPEND PRIVATE_LIBS GDAL::GDAL)
 endif()
-
 if (OPENSSL_FOUND)
     list(APPEND PRIVATE_LIBS OpenSSL::SSL OpenSSL::Crypto)
+endif()
+if (tinyxml_FOUND)
+    list(APPEND PRIVATE_LIBS unofficial-tinyxml::unofficial-tinyxml)
+endif()
+if (nlohmann_json_FOUND)
+    list(APPEND PRIVATE_LIBS nlohmann_json::nlohmann_json)
 endif()
 
 set(LIBRARIES PRIVATE ${PRIVATE_LIBS} PUBLIC ${PUBLIC_LIBS})
 
-add_library(rocky ${HEADERS} ${SOURCES})
 
+add_library(rocky ${HEADERS} ${SOURCES})
 set_target_properties(rocky PROPERTIES FOLDER "rocky")
 
 # STB header-only

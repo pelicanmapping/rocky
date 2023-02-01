@@ -2,15 +2,22 @@
 #include "catch.hpp"
 
 #include <rocky/Instance.h>
+#include <rocky/Color.h>
 #include <rocky/Log.h>
 #include <rocky/Map.h>
 #include <rocky/Math.h>
-#include <rocky/Notify.h>
 #include <rocky/Image.h>
 #include <rocky/Heightfield.h>
-#include <rocky/GDALLayers.h>
+#include <rocky/TileKey.h>
 #include <rocky/URI.h>
-#include <rocky/TMS.h>
+
+#ifdef ROCKY_SUPPORTS_GDAL
+#include <rocky/GDALImageLayer.h>
+#endif
+
+#ifdef ROCKY_SUPPORTS_TMS
+#include <rocky/TMSImageLayer.h>
+#endif
 
 using namespace ROCKY_NAMESPACE;
 
@@ -52,7 +59,8 @@ TEST_CASE("Log")
     Log::userFunction() = nullptr;
     Log::usePrefix() = true;
 
-    Log::info() << "Log: This should print to the screen." << std::endl;
+    Log::info() << "I am an info-level log message." << std::endl;
+    Log::warn() << "I am a warn-level log message." << std::endl;
 }
 
 TEST_CASE("Math")
@@ -165,54 +173,53 @@ TEST_CASE("Map")
     }
 }
 
-TEST_CASE("Open Layer")
+#ifdef ROCKY_SUPPORTS_GDAL
+TEST_CASE("GDAL")
 {
-#ifdef GDAL_FOUND
-    SECTION("GDAL")
+    auto layer = GDALImageLayer::create();
+    CHECKED_IF(layer != nullptr)
     {
-        auto layer = GDALImageLayer::create();
-        CHECKED_IF(layer != nullptr)
-        {
-            layer->setName("World imagery");
-            layer->setURI("D:/data/imagery/world.tif");
-            auto s = layer->open();
-            CHECK(s.ok());
-        }
+        layer->setName("World imagery");
+        layer->setURI("D:/data/imagery/world.tif");
+        auto s = layer->open();
+        CHECK(s.ok());
     }
-#endif
+}
+#endif // ROCKY_SUPPORTS_GDAL
 
-    SECTION("TMS")
+#ifdef ROCKY_SUPPORTS_TMS
+TEST_CASE("TMS")
+{
+    auto layer = TMSImageLayer::create();
+    CHECKED_IF(layer != nullptr)
     {
-        auto layer = TMSImageLayer::create();
-        CHECKED_IF(layer != nullptr)
+        layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
+        auto s = layer->open();
+        CHECKED_IF(s.ok())
         {
-            layer->setURL("https://readymap.org/readymap/tiles/1.0.0/7/");
-            auto s = layer->open();
-            CHECKED_IF(s.ok())
-            {
-                // NOTE: we cannot test this here because the JPG reader is in InstanceVSG.
-                // TODO: create a unit test for rocky_vsg? Or link rocky_vsg to this library?
+            // NOTE: we cannot test this here because the JPG reader is in InstanceVSG.
+            // TODO: create a unit test for rocky_vsg? Or link rocky_vsg to this library?
 #if 0
-                InstanceVSG instance;
-                TileKey key(0, 0, 0, Profile::GLOBAL_GEODETIC);
-                Result<GeoImage> tile = layer->createImage(key, instance.ioOptions());
-                CHECK(tile.status.ok());
-                CHECK(tile.value.valid());
-                CHECKED_IF(tile.value.image())
-                {
-                    CHECK(tile.value.image()->width() == 256);
-                    CHECK(tile.value.image()->height() == 256);
-                    CHECK(tile.value.image()->pixelFormat() == Image::R8G8B8_UNORM);
-                }
-#endif
+            InstanceVSG instance;
+            TileKey key(0, 0, 0, Profile::GLOBAL_GEODETIC);
+            Result<GeoImage> tile = layer->createImage(key, instance.ioOptions());
+            CHECK(tile.status.ok());
+            CHECK(tile.value.valid());
+            CHECKED_IF(tile.value.image())
+            {
+                CHECK(tile.value.image()->width() == 256);
+                CHECK(tile.value.image()->height() == 256);
+                CHECK(tile.value.image()->pixelFormat() == Image::R8G8B8_UNORM);
             }
+#endif
         }
     }
 }
+#endif // ROCKY_SUPPORTS_TMS
 
 TEST_CASE("Deserialize layer")
 {
-#ifdef GDAL_FOUND
+#if 0 // TODO for later.
     auto instance = Instance::create();
     Config conf("gdalimage");
     conf.set("name", "World imagery");
@@ -335,12 +342,12 @@ TEST_CASE("SRS")
         SRS wgs84("wgs84");
         REQUIRE(wgs84.valid());
 
-        SRS qsc0("+wktext +proj=qsc +units=m +ellps=WGS84 +datum=WGS84 +lat_0=0 +lon_0=0");
-        REQUIRE(qsc0.valid());
-        auto qsc_bounds = qsc0.bounds();
+        SRS qsc_face_0("+wktext +proj=qsc +units=m +ellps=WGS84 +datum=WGS84 +lat_0=0 +lon_0=0");
+        REQUIRE(qsc_face_0.valid());
+        auto qsc_bounds = qsc_face_0.bounds();
         CHECK(qsc_bounds.valid());
 
-        auto xform = wgs84.to(qsc0);
+        auto xform = wgs84.to(qsc_face_0);
         REQUIRE(xform.valid());
 
         double semi_major = wgs84.ellipsoid().semiMajorAxis();
@@ -365,7 +372,7 @@ TEST_CASE("SRS")
         //CHECK(equiv(c, dvec3(0, semi_minor, 0), E));
 
         // other way
-        xform = qsc0.to(wgs84);
+        xform = qsc_face_0.to(wgs84);
         REQUIRE(xform.valid());
 
         REQUIRE(xform(dvec3(semi_major, 0, 0), c));
@@ -374,6 +381,7 @@ TEST_CASE("SRS")
 
     SECTION("Invalid SRS")
     {
+        Log::info() << "You should see a PROJ info message:" << std::endl;
         SRS bad("gibberish");
         CHECK(bad.valid() == false);
         CHECK(bad.isProjected() == false);

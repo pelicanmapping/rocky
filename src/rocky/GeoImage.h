@@ -6,6 +6,7 @@
 #pragma once
 
 #include <rocky/Common.h>
+#include <rocky/GeoCommon.h>
 #include <rocky/GeoExtent.h>
 
 namespace ROCKY_NAMESPACE
@@ -38,10 +39,10 @@ namespace ROCKY_NAMESPACE
         //! True if this is a valid geo image.
         bool valid() const;
 
-        //! Gets a pointer to the underlying OSG image.
+        //! Gets a pointer to the underlying image
         shared_ptr<Image> image() const;
 
-        //! Gets the geospatial extent of the image.
+        //! Gets the geospatial extent of the image
         const GeoExtent& extent() const;
 
         //! Shortcut to get the spatial reference system describing

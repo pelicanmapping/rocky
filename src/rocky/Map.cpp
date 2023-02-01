@@ -4,7 +4,6 @@
  * MIT License
  */
 #include "Map.h"
-#include "Notify.h"
 #include "VisibleLayer.h"
 #include <tuple>
 
