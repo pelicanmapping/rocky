@@ -98,57 +98,8 @@ Map::construct(const Config& conf, const IOOptions& io)
 
     _mapDataMutex.setName("Map dataMutex(OE)");
 
-    // set the object name from the options:
-    //if (options().name().has_value())
-    //    setName(options().name().get());
-    //else
-    //    setName("rocky.Map");
-
     // Generate a UID.
     _uid = rocky::createUID();
-
-    // Set up the map's profile
-    //if (options().profile().has_value())
-    //    setProfile(Profile::create(options().profile().get()));
-
-    //if (profile() == nullptr)
-    //    setProfile(Profile::create(Profile::GLOBAL_GEODETIC));
-
-#if 0
-    // If the registry doesn't have a default cache policy, but the
-    // map options has one, make the map policy the default.
-    if (options().cachePolicy().has_value() &&
-        !_instance.cachePolicy().has_value())
-    {
-        _instance.cachePolicy() = options().cachePolicy().get();
-        ROCKY_INFO << LC
-            << "Setting default cache policy from map ("
-            << options().cachePolicy()->usageString() << ")" << std::endl;
-    }
-
-    // put the CacheSettings object in there. We will propogate this throughout
-    // the data model and the renderer. These will be stored in the readOptions
-    // (and ONLY there)
-    _cacheSettings = CacheSettings::create();
-
-    // Set up a cache if there's one in the options:
-    if (options().cache().has_value())
-        _cacheSettings->setCache(CacheFactory::create(options().cache().get()));
-
-    // Otherwise use the registry default cache if there is one:
-    if (_cacheSettings->getCache() == nullptr)
-        _cacheSettings->setCache(_instance.getDefaultCache());
-
-    // Integrate local cache policy (which can be overridden by the environment)
-    _cacheSettings->integrateCachePolicy(options().cachePolicy());
-
-    // store in the options so we can propagate it to layers, etc.
-    _cacheSettings->store(_readOptions.get());
-    ROCKY_INFO << LC << _cacheSettings->toString() << "\n";
-
-    // remember the referrer for relative-path resolution:
-    URIContext( options().referrer() ).store( _readOptions.get() );
-#endif
 
 #if 0
     // elevation sampling
@@ -210,40 +161,6 @@ Map::getElevationPool() const
 }
 #endif
 
-#if 0
-void
-Map::notifyOnLayerOpenOrClose(Layer* layer)
-{
-    // bump the revision safely:
-    Revision newRevision;
-    {
-        util::ScopedWriteLock lock(_mapDataMutex);
-        newRevision = ++_dataModelRevision;
-    }
-
-    if (layer->isOpen())
-    {
-        if (profile())
-        {
-            layer->addedToMap(this);
-        }
-    }
-    else
-    {
-        layer->removedFromMap(this);
-    }
-
-    MapModelChange change(
-        layer->isOpen() ? MapModelChange::OPEN_LAYER : MapModelChange::CLOSE_LAYER,
-        newRevision,
-        layer);
-
-    for( MapCallbackList::iterator i = _mapCallbacks.begin(); i != _mapCallbacks.end(); i++ )
-    {
-        i->get()->onMapModelChanged(change);
-    }
-}
-#endif
 
 Revision
 Map::dataModelRevision() const
@@ -283,38 +200,6 @@ Map::profile() const
     return _profile;
 }
 
-#if 0
-void
-Map::setElevationInterpolation(const RasterInterpolation& value)
-{
-    options().elevationInterpolation() = value;
-}
-
-const RasterInterpolation&
-Map::getElevationInterpolation() const
-{
-    return options().elevationInterpolation().get();
-}
-#endif
-
-#if 0
-Cache*
-Map::getCache() const
-{
-    CacheSettings* cacheSettings = CacheSettings::get(_readOptions.get());
-    return cacheSettings ? cacheSettings->getCache() : 0L;
-}
-
-void
-Map::setCache(Cache* cache)
-{
-    // note- probably unsafe to do this after initializing the terrain. so don't.
-    CacheSettings* cacheSettings = CacheSettings::get(_readOptions.get());
-    if (cacheSettings && cacheSettings->getCache() != cache)
-        cacheSettings->setCache(cache);
-}
-#endif
-
 std::set<std::string>
 Map::attributions() const
 {
@@ -327,10 +212,9 @@ Map::attributions() const
         {
             auto visibleLayer = VisibleLayer::cast(layer);
 
-            //auto visibleLayer = layer->as<VisibleLayer>();
             if (!visibleLayer || visibleLayer->getVisible())
             {
-                std::string attribution = layer->getAttribution();
+                std::string attribution = layer->attribution();
                 if (!attribution.empty())
                 {
                     result.insert(attribution);
@@ -341,48 +225,6 @@ Map::attributions() const
     
     return std::move(result);
 }
-
-#if 0
-MapCallback*
-Map::addMapCallback(MapCallback* cb) const
-{
-    if ( cb )
-        _mapCallbacks.push_back( cb );
-    return cb;
-}
-
-void
-Map::removeMapCallback(MapCallback* cb) const
-{
-    MapCallbackList::iterator i = std::find( _mapCallbacks.begin(), _mapCallbacks.end(), cb);
-    if (i != _mapCallbacks.end())
-    {
-        _mapCallbacks.erase( i );
-    }
-}
-
-void
-Map::beginUpdate()
-{
-    MapModelChange msg( MapModelChange::BEGIN_BATCH_UPDATE, _dataModelRevision );
-
-    for( MapCallbackList::iterator i = _mapCallbacks.begin(); i != _mapCallbacks.end(); i++ )
-    {
-        i->get()->onMapModelChanged( msg );
-    }
-}
-
-void
-Map::endUpdate()
-{
-    MapModelChange msg( MapModelChange::END_BATCH_UPDATE, _dataModelRevision );
-
-    for( MapCallbackList::iterator i = _mapCallbacks.begin(); i != _mapCallbacks.end(); i++ )
-    {
-        i->get()->onMapModelChanged( msg );
-    }
-}
-#endif
 
 void
 Map::addLayer(shared_ptr<Layer> layer)
@@ -400,13 +242,6 @@ Map::addLayer(shared_ptr<Layer> layer, const IOOptions& io)
     if (indexOfLayer(layer.get()) != numLayers())
         return;
 
-    // Store in a ref_ptr for scope to ensure callbacks don't accidentally delete while adding
-    //shared_ptr<Layer> layerRef(layer);
-
-    //rocky::Registry::instance()->clearBlacklist();
-
-    //layer->setReadOptions(_readOptions);
-
     if (layer->getOpenAutomatically())
     {
         layer->open();
@@ -420,9 +255,6 @@ Map::addLayer(shared_ptr<Layer> layer, const IOOptions& io)
     }
 #endif
 
-    // Set up callbacks. Do this *after* calling addedToMap (since the callback invokes addedToMap)
-    //installLayerCallbacks(layer);
-
     // Add the layer to our stack.
     Revision newRevision;
     unsigned index = -1;
@@ -434,16 +266,7 @@ Map::addLayer(shared_ptr<Layer> layer, const IOOptions& io)
         newRevision = ++_dataModelRevision;
     }
 
-    // a separate block b/c we don't need the mutex
-    //fire_onLayerAdded(layer, index, newRevision);
-
     onLayerAdded.fire(layer, index, newRevision);
-
-    //for( MapCallbackList::iterator i = _mapCallbacks.begin(); i != _mapCallbacks.end(); i++ )
-    //{
-    //    i->get()->onMapModelChanged(MapModelChange(
-    //        MapModelChange::ADD_LAYER, newRevision, layer, index));
-    //}
 }
 
 void
@@ -476,9 +299,6 @@ Map::insertLayer(
     }
 #endif
 
-    // Set up callbacks. Do this *after* calling addedToMap (since the callback invokes addedToMap)
-    //installLayerCallbacks(layer);
-
     // Add the layer to our stack.
     int newRevision;
     {
@@ -490,9 +310,6 @@ Map::insertLayer(
             _layers.insert(_layers.begin() + index, layer);
 
         newRevision = ++_dataModelRevision;
-
-        //if (layer->options().terrainPatch() == true)
-        //    ++_numTerrainPatchLayers;
     }
 
     onLayerAdded.fire(layer, index, newRevision);
@@ -508,13 +325,10 @@ Map::removeLayer(shared_ptr<Layer> layer)
     if (indexOfLayer(layer.get()) == numLayers())
         return;
 
-    //rocky::Registry::instance()->clearBlacklist();
     unsigned int index = -1;
 
     shared_ptr<Layer> layerToRemove(layer);
     Revision newRevision;
-
-    //uninstallLayerCallbacks(layerToRemove.get());
 
 #if 0
     layer->removedFromMap(this);
@@ -530,17 +344,12 @@ Map::removeLayer(shared_ptr<Layer> layer)
     {
         util::ScopedWriteLock lock( _mapDataMutex );
         index = 0;
-        for(LayerVector::iterator i = _layers.begin();
-            i != _layers.end(); ++i)
+        for(LayerVector::iterator i = _layers.begin(); i != _layers.end(); ++i)
         {
             if (layer == layerToRemove )
             {
                 _layers.erase(i);
                 newRevision = ++_dataModelRevision;
-
-                //if (layer->options().terrainPatch() == true)
-                //    --_numTerrainPatchLayers;
-
                 break;
             }
         }
@@ -550,11 +359,6 @@ Map::removeLayer(shared_ptr<Layer> layer)
     if ( newRevision >= 0 )
     {
         onLayerRemoved.fire(layerToRemove, newRevision);
-        //for( MapCallbackList::iterator i = _mapCallbacks.begin(); i != _mapCallbacks.end(); i++ )
-        //{
-        //    i->get()->onMapModelChanged( MapModelChange(
-        //        MapModelChange::REMOVE_LAYER, newRevision, layerToRemove.get(), index) );
-        //}
     }
 }
 
@@ -568,9 +372,6 @@ Map::moveLayer(shared_ptr<Layer> layerToMove, unsigned newIndex)
     if (layerToMove)
     {
         util::ScopedWriteLock lock( _mapDataMutex );
-
-        // preserve the layer with a ref:
-        //osg::ref_ptr<Layer> layerToMove( layer );
 
         // find it:
         LayerVector::iterator i_oldIndex = _layers.end();
@@ -601,11 +402,6 @@ Map::moveLayer(shared_ptr<Layer> layerToMove, unsigned newIndex)
     if (layerToMove)
     {
         onLayerMoved.fire(layerToMove, oldIndex, newIndex, newRevision);
-        //for (MapCallbackList::iterator i = _mapCallbacks.begin(); i != _mapCallbacks.end(); i++)
-        //{
-        //    i->get()->onMapModelChanged(MapModelChange(
-        //        MapModelChange::MOVE_LAYER, newRevision, layer, oldIndex, newIndex));
-        //}
     }
 }
 
@@ -667,44 +463,11 @@ Map::addLayers(
             }
 #endif
 
-            // Set up callbacks.
-            //installLayerCallbacks(layer);
-
             // a separate block b/c we don't need the mutex
             onLayerAdded.fire(layer, index++, newRevision);
-            //for( MapCallbackList::iterator i = _mapCallbacks.begin(); i != _mapCallbacks.end(); i++ )
-            //{
-            //    i->get()->onMapModelChanged(MapModelChange(
-            //        MapModelChange::ADD_LAYER, newRevision, layer, index++));
-            //}
         }
     }
 }
-
-//void
-//Map::installLayerCallbacks(Layer* layer)
-//{
-//    // Callback to detect changes in "enabled"
-//    layer->addCallback(_layerCB.get());
-//}
-
-//void
-//Map::uninstallLayerCallbacks(Layer* layer)
-//{
-//    layer->removeCallback(_layerCB.get());
-//}
-
-//Revision
-//Map::getLayers(LayerVector& out_list) const
-//{
-//    out_list.reserve( _layers.size() );
-//
-//    util::ScopedReadLock lock(_mapDataMutex);
-//    for (auto layer : _layers)
-//        out_list.emplace_back(layer);
-//
-//    return _dataModelRevision;
-//}
 
 unsigned
 Map::numLayers() const
@@ -759,7 +522,6 @@ Map::indexOfLayer(const Layer* layer) const
     return index;
 }
 
-
 void
 Map::clear()
 {
@@ -779,20 +541,6 @@ Map::clear()
     {
         onLayerRemoved.fire(layer, newRevision);
     }
-
-    //for( MapCallbackList::iterator i = _mapCallbacks.begin(); i != _mapCallbacks.end(); i++ )
-    //{
-    //    i->get()->onBeginUpdate();
-
-    //    for(LayerVector::iterator layer = layersRemoved.begin();
-    //        layer != layersRemoved.end();
-    //        ++layer)
-    //    {
-    //        i->get()->onMapModelChanged(MapModelChange(MapModelChange::REMOVE_LAYER, newRevision, layer->get()));
-    //    }
-
-    //    i->get()->onEndUpdate();
-    //}
 }
 
 const SRS&
@@ -801,22 +549,6 @@ Map::srs() const
     static SRS emptySRS;
     return _profile.valid() ? _profile.srs() : emptySRS;
 }
-
-#if 0
-const SRS&
-Map::worldSRS() const
-{
-    return srs() && srs().isGeographic() ? srs().getGeocentricSRS() : srs();
-}
-#endif
-
-#if 0
-int 
-Map::getNumTerrainPatchLayers() const
-{
-    return _numTerrainPatchLayers;
-}
-#endif
 
 void
 Map::removeCallback(UID uid)

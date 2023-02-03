@@ -74,13 +74,6 @@ GeoExtent::GeoExtent(const SRS& srs, const Box& bounds) :
     set(bounds.xmin, bounds.ymin, bounds.xmax, bounds.ymax);
 }
 
-
-bool
-GeoExtent::isGeographic() const
-{
-    return _srs.isGeographic();
-}
-
 bool
 GeoExtent::isWholeEarth() const
 {
@@ -111,7 +104,7 @@ GeoExtent::set(double west, double south, double east, double north)
     double width = 0.0;
     double height = 0.0;
 
-    if (isGeographic())
+    if (_srs.isGeographic())
     {
         // ensure east >= west in a geographic frame.
         while (east < west)
@@ -616,7 +609,7 @@ GeoExtent::expandToInclude(double x, double y)
 
     if (!containsX)
     {
-        if (isGeographic())
+        if (_srs.isGeographic())
         {
             if (x > west())
             {
@@ -704,7 +697,7 @@ GeoExtent::expandToInclude(const GeoExtent& rhs)
         // non-wrap-around new width:
         double w0 = std::max(xMax(), rhs.xMax()) - std::min(xMin(), rhs.xMin());
 
-        if (isGeographic())
+        if (_srs.isGeographic())
         {
             // wrap-around width:
             double w1 = west() > rhs.east()? (180-west())+(rhs.east()-(-180)) : (180-rhs.west()) + (east()-(-180));
@@ -765,7 +758,7 @@ GeoExtent::intersectionSameSRS(const GeoExtent& rhs) const
 
     GeoExtent result( *this );
 
-    if (isGeographic())
+    if (_srs.isGeographic())
     {
         if (width() == 360.0)
         {
@@ -898,7 +891,7 @@ GeoExtent::clamp()
     else if (equiv(_height, ceil(_height)))
         _height = ceil(_height);
 
-    if (isGeographic())
+    if (_srs.isGeographic())
     {
         _width = rocky::clamp(_width, 0.0, 360.0);
         //_height = osg::clampBetween(_height, 0.0, 180.0);

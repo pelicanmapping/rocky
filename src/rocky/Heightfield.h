@@ -12,8 +12,7 @@ namespace ROCKY_NAMESPACE
     /**
      * A grid of height values (32-bit floats).
      */
-    class ROCKY_EXPORT Heightfield :
-        public Inherit<Image, Heightfield>
+    class ROCKY_EXPORT Heightfield : public Inherit<Image, Heightfield>
     {
     public:
         //! Construct an empty (and invalid) heightfield
@@ -23,6 +22,9 @@ namespace ROCKY_NAMESPACE
         Heightfield(
             unsigned cols,
             unsigned rows);
+
+        //! Make a heightfield, stealing data from an image.
+        explicit Heightfield(Image* rhs);
 
         //! Access the height value at col, row
         inline float& heightAt(unsigned col, unsigned row);

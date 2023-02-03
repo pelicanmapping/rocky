@@ -88,7 +88,7 @@ Log::log(LogLevel level)
         g_warnStream;
 
     auto& output =
-        (level < Log::level) ? ls._nullStream :
+        (level > Log::level) ? ls._nullStream :
         (g_userFunction) ? ls._functionStream :
         *ls._stream;
 

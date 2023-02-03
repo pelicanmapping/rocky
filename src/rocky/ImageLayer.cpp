@@ -193,7 +193,7 @@ ImageLayer::construct(const Config& conf)
 
 
     //    _useCreateTexture = false;
-    _sentry.setName("ImageLayer " + *name());
+    _sentry.setName("ImageLayer " + name());
 
     // image layers render as a terrain texture.
     //setRenderType(RENDERTYPE_TERRAIN_SURFACE);

@@ -252,8 +252,6 @@ namespace ROCKY_NAMESPACE
 
         void clamp();
 
-        bool isGeographic() const;
-
         void setOriginAndSize(double west, double south, double width, double height);
     };
 

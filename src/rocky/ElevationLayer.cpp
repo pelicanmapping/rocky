@@ -100,22 +100,17 @@ ElevationLayer::ElevationLayer(const Config& conf) :
 void
 ElevationLayer::construct(const Config& conf)
 {
+    _tileSize.setDefault(257u);
     _offset.setDefault(false);
     _noDataValue.setDefault(NO_DATA_VALUE);
     _minValidValue.setDefault(-FLT_MAX);
     _maxValidValue.setDefault(FLT_MAX);
-//    _noDataPolicy.setDefault(NODATA_INTERPOLATE);
 
-    conf.get("vdatum", _verticalDatum);
     conf.get("offset", _offset);
     conf.get("nodata_value", _noDataValue);
     conf.get("no_data_value", _noDataValue);
     conf.get("min_valid_Value", _minValidValue);
     conf.get("max_valid_value", _maxValidValue);
-
-    //conf.get("nodata_policy", "default", _noDataPolicy, NODATA_INTERPOLATE);
-    //conf.get("nodata_policy", "interpolate", _noDataPolicy, NODATA_INTERPOLATE);
-    //conf.get("nodata_policy", "msl", _noDataPolicy, NODATA_MSL);
 
     // ElevationLayers are special in that visible really maps to whether the layer is open or closed
     // If a layer is marked as enabled (openAutomatically) but also marked as visible=false set
@@ -128,14 +123,7 @@ ElevationLayer::construct(const Config& conf)
         _openAutomatically = false;
     }
 
-    _sentry.setName("ElevationLayer " + name().value());
-
-    // override with a different default tile size since elevation
-    // tiles need overlapping edges
-    if (!_tileSize.has_value())
-    {
-        _tileSize.setDefault(257u);
-    }
+    _sentry.setName("ElevationLayer " + name());
 
     // a small L2 cache will help with things like normal map creation
     // (i.e. queries that sample neighboring tiles)
@@ -159,17 +147,10 @@ Config
 ElevationLayer::getConfig() const
 {
     Config conf = TileLayer::getConfig();
-
-    conf.set("vdatum", _verticalDatum);
     conf.set("offset", _offset);
     conf.set("no_data_value", _noDataValue);
     conf.set("min_valid_Value", _minValidValue);
     conf.set("max_valid_value", _maxValidValue);
-
-    //conf.set("nodata_policy", "default", _noDataPolicy, NODATA_INTERPOLATE);
-    //conf.set("nodata_policy", "interpolate", _noDataPolicy, NODATA_INTERPOLATE);
-    //conf.set("nodata_policy", "msl", _noDataPolicy, NODATA_MSL);
-
     return conf;
 }
 
@@ -241,28 +222,6 @@ ElevationLayer::normalizeNoDataValues(Heightfield* hf) const
 }
 
 void
-ElevationLayer::applyProfileOverrides(
-    Profile& inOutProfile) const
-{
-    // Check for a vertical datum override.
-    if (inOutProfile.valid() && _verticalDatum.isSet())
-    {
-        std::string vdatum = _verticalDatum;
-
-        std::string profileVDatumStr = _profile.srs().vertical();
-        if (profileVDatumStr.empty())
-            profileVDatumStr = "geodetic";
-
-        if (!util::ciEquals(profile().srs().vertical(), vdatum))
-        {
-            Config conf = getConfig();
-            conf.set("vdatum", vdatum);
-            inOutProfile = Profile(conf);
-        }
-    }
-}
-
-void
 ElevationLayer::assembleHeightfield(
     const TileKey& key,
     shared_ptr<Heightfield> out_hf,
@@ -277,7 +236,6 @@ ElevationLayer::assembleHeightfield(
     if (key.levelOfDetail() > 0u)
     {
         key.getIntersectingKeys(profile(), intersectingKeys);
-        //profile().getIntersectingTiles(key, intersectingTiles);
     }
 
     else
@@ -299,7 +257,6 @@ ElevationLayer::assembleHeightfield(
                 intersectionLOD,
                 profile(),
                 intersectingKeys);
-            //profile().getIntersectingTiles(key.extent(), intersectionLOD, intersectingTiles);
 
             for (auto& layerKey : intersectingKeys)
             {
@@ -376,25 +333,11 @@ ElevationLayer::assembleHeightfield(
                         // requesting key's vertical datum.
                         dvec3 point(x, y, 0);
 
-                        if (geohf.getElevation(
-                            key.extent().srs(),
-                            point,
-                            Heightfield::BILINEAR))
+                        if (geohf.getElevation(key.extent().srs(), point, Heightfield::BILINEAR))
                         {
                             elevation = point.z;
                             break;
                         }
-
-                        //if (geohf.getElevation(
-                        //    key.extent().srs(),
-                        //    x, y,
-                        //    Heightfield::BILINEAR,
-                        //    key.extent().srs(),
-                        //    e))
-                        //{
-                        //    elevation = e;
-                        //    break;
-                        //}
                     }
 
                     out_hf->write(fvec4(elevation), c, r);
@@ -422,7 +365,7 @@ ElevationLayer::assembleHeightfield(
 }
 
 Result<GeoHeightfield>
-ElevationLayer::createHeightfield(const TileKey& key)
+ElevationLayer::createHeightfield(const TileKey& key) const
 {
     return createHeightfield(key, IOOptions());
 }
@@ -430,12 +373,8 @@ ElevationLayer::createHeightfield(const TileKey& key)
 Result<GeoHeightfield>
 ElevationLayer::createHeightfield(
     const TileKey& key,
-    const IOOptions& io)
+    const IOOptions& io) const
 {    
-    ROCKY_PROFILING_ZONE;
-    ROCKY_PROFILING_ZONE_TEXT(getName());
-    ROCKY_PROFILING_ZONE_TEXT(key.str());
-
     // If the layer is disabled, bail out
     if (!isOpen())
     {
@@ -450,7 +389,7 @@ ElevationLayer::createHeightfield(
 Result<GeoHeightfield>
 ElevationLayer::createHeightfieldInKeyProfile(
     const TileKey& key,
-    const IOOptions& io)
+    const IOOptions& io) const
 {
     GeoHeightfield result;
     shared_ptr<Heightfield> hf;

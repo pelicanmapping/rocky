@@ -110,7 +110,7 @@ namespace ROCKY_NAMESPACE
 
         //! Cacheing policy. Only set this before opening the layer or adding to a map.
         void setCachePolicy(const CachePolicy& value);
-        const CachePolicy& getCachePolicy() const;
+        const CachePolicy& cachePolicy() const;
 
         //! Extent of this layer's data.
         //! This method may return GeoExtent::INVALID which means that the
@@ -118,10 +118,10 @@ namespace ROCKY_NAMESPACE
         virtual const GeoExtent& extent() const;
 
         //! Temporal extent of this layer's data.
-        virtual DateTimeExtent getDateTimeExtent() const;
+        virtual DateTimeExtent dateTimeExtent() const;
 
         //! Hints that a subclass can set to influence the engine
-        const Hints& getHints() const;
+        const Hints& hints() const;
 
         //! Register a callback for layer open
         using LayerOpened = std::function<void(shared_ptr<Layer>)>;
@@ -164,7 +164,7 @@ namespace ROCKY_NAMESPACE
         };
 
         //! Rendering type of this layer
-        RenderType getRenderType() const { return _renderType; }
+        RenderType renderType() const { return _renderType; }
 
         //! Rendering type of this layer
         void setRenderType(RenderType value) { _renderType = value; }
@@ -173,10 +173,10 @@ namespace ROCKY_NAMESPACE
         virtual void modifyTileBoundingBox(const TileKey& key, const Box& box) const;
 
         //! Class type name without namespace. For example if the leaf class type
-        const char* getTypeName() const;
+        const char* typeName() const;
 
         //! Attribution to be displayed by the application
-        virtual std::string getAttribution() const;
+        virtual std::string attribution() const;
 
         //! Attribution to be displayed by the application
         virtual void setAttribution(const std::string& attribution);
@@ -188,34 +188,11 @@ namespace ROCKY_NAMESPACE
 
         //! Get a serialized user property
         template<typename T>
-        inline T getUserProperty(
+        inline T userProperty(
             const std::string& key,
             T fallback) const;
 
     public:
-
-#if 0
-        //! Traversal callback
-        class ROCKY_EXPORT TraversalCallback : public osg::Callback
-        {
-        public:
-            virtual void operator()(osg::Node* node, osg::NodeVisitor* nv) const =0;
-        protected:
-            void traverse(osg::Node* node, osg::NodeVisitor* nv) const;
-        };
-
-        //! Callback invoked by the terrain engine on this layer before applying
-        //! @deprecated replace with cull() override
-        void setCullCallback(TraversalCallback* tc);
-        const TraversalCallback* getCullCallback() const;
-
-        //! Called to traverse this layer
-        //! @deprecated Replace with cull() override
-        void apply(osg::Node* node, osg::NodeVisitor* nv) const;
-
-        //! Called by the terrain engine during the update traversal
-        virtual void update(osg::NodeVisitor& nv) { }
-#endif
 
         //! Map will call this function when this Layer is added to a Map.
         //virtual void addedToMap(const class Map*) { }
@@ -223,28 +200,8 @@ namespace ROCKY_NAMESPACE
         //! Map will call this function when this Layer is removed from a Map.
         //virtual void removedFromMap(const class Map*) { }
 
-    public:
-
-        virtual void setName(const std::string& name);
-
-
-    public: // Public internal methods
-
-#if 0
-        //! Creates a layer from serialized data - internal use
-        static Layer* create(const ConfigOptions& options);
-
-        //! Extracts config options from a DB options - internal use
-        static const ConfigOptions& getConfigOptions(const IOOptions*);
-
-        //! Adds a property notification callback to this layer
-        void addCallback(LayerCallback* cb);
-
-        //! Removes a property notification callback from this layer
-        void removeCallback(LayerCallback* cb);
-#endif
         //! Revision number of this layer
-        int getRevision() const { return (int)_revision; }
+        Revision revision() const { return _revision; }
 
         //! Increment the revision number for this layer, which will
         //! invalidate caches.
@@ -257,11 +214,6 @@ namespace ROCKY_NAMESPACE
         Layer();
 
         Layer(const Config& conf);
-
-        //! Constructs a map layer by deserializing options.
-        //Layer(
-        //    Layer::Options* options,
-        //    const Layer::Options* options0);
 
         //! Called by open() to connect to external resources and return a status.
         //! MAKE SURE you call superclass openImplementation() if you override this!
@@ -285,36 +237,21 @@ namespace ROCKY_NAMESPACE
         //! Sets the status for this layer with a message - internal
         const Status& setStatus(const Status::Code& statusCode, const std::string& message) const;
 
-        //! mutable layer hints for the subclass to optionally access
-        Hints& layerHints();
-
     private:
         UID _uid;
-        //osg::ref_ptr<osg::StateSet> _stateSet;
         RenderType _renderType;
         mutable Status _status;
-        //osg::ref_ptr<SceneGraphCallbacks> _sceneGraphCallbacks;
-        //osg::ref_ptr<TraversalCallback> _traversalCallback;
         Hints _hints;
-        std::atomic_int _revision;
+        std::atomic<Revision> _revision;
         std::string _runtimeCacheId;
-        //shared_ptr<IOOptions> _readOptions;
-        //shared_ptr<CacheSettings> _cacheSettings;
-        //std::vector<osg::ref_ptr<LayerShader> > _shaders;
         mutable util::ReadWriteMutex* _mutex;
         bool _isClosing;
         bool _isOpening;
-        //std::unordered_map<UID, LayerCallback> _callbacks;
-
-        //! Prepares the layer for rendering if necessary.
-        //void invoke_prepareForRendering(TerrainEngine*);
 
         //! post-ctor initialization
         void construct(const Config&);
 
     protected:
-
-        //shared_ptr<IOOptions> getMutableReadOptions() { return _readOptions; }
 
         void bumpRevision();
 
@@ -395,7 +332,7 @@ namespace ROCKY_NAMESPACE
         }
     }
     template<typename T>
-    T Layer::getUserProperty(const std::string& key, T fallback) const {
+    T Layer::userProperty(const std::string& key, T fallback) const {
         return options()._internal().value(key, fallback);
     }
 

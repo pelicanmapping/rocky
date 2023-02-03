@@ -110,6 +110,7 @@ namespace ROCKY_NAMESPACE
 
             Result<shared_ptr<Image>> read(
                 const URI& uri,
+                const std::string& uri_suffix,
                 const TileKey& key,
                 bool invertY,
                 const IOOptions& io) const;

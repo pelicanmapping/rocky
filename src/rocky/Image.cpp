@@ -94,6 +94,22 @@ Image::Image(
     allocate(format, cols, rows, depth);
 }
 
+Image::Image(const Image& rhs) :
+    super(rhs)
+{
+    allocate(rhs.pixelFormat(), rhs.width(), rhs.height(), rhs.depth());
+    memcpy(_data, rhs._data, sizeInBytes());
+}
+
+Image::Image(Image&& rhs)
+{
+    _width = rhs._width;
+    _height = rhs._height;
+    _depth = rhs._depth;
+    _pixelFormat = rhs._pixelFormat;
+    _data = rhs.releaseData();
+}
+
 Image::~Image()
 {
     if (_data)
@@ -145,7 +161,7 @@ Image::allocate(
         write(fvec4(0, 0, 0, 0), 0, 0);
 }
 
-void*
+unsigned char*
 Image::releaseData()
 {
     auto released = _data;
@@ -153,7 +169,7 @@ Image::releaseData()
     _width = 0;
     _height = 0;
     _depth = 0;
-    return (void*)released;
+    return released;
 }
 
 bool

@@ -222,49 +222,11 @@ namespace
 {
     struct Locator
     {
-        dmat4 _xform;
-        bool _isGeographic;
-        const Ellipsoid& _ellipsoid;
-        //dmat4 _inverse{ 1 };
-
-        Locator(const GeoExtent& extent) :
-            _isGeographic(extent.srs().isGeographic()),
-            _ellipsoid(extent.srs().ellipsoid())
-        {
-            //_xform = glm::translate(dmat4(1), dvec3(extent.xmin(), extent.ymin(), 0));
-            //_xform = glm::scale(_xform, dvec3(extent.width(), extent.height(), 1));
-
-            _xform = dmat4(
-                extent.width(), 0.0, 0.0, 0.0,
-                0.0, extent.height(), 0.0, 0.0,
-                0.0, 0.0, 1.0, 0.0,
-                extent.xMin(), extent.yMin(), 0.0, 1.0);
-
-            //_inverse = glm::inverse(_xform);
-        }
-
-        //void worldToUnit(const dvec3& world, dvec3& unit) const {
-        //    if (_srs.isGeographic())
-        //        unit = _inverse * _srs.ellipsoid().geocentricToGeodetic(world);
-        //    else
-        //        unit = _inverse * world;
-        //}
-
-        inline dvec3 unitToWorld(const dvec3& unit) const {
-            dvec3 world = _xform * unit;
-            if (_isGeographic)
-                world = _ellipsoid.geodeticToGeocentric(world);
-            return world;
-        }
-    };
-
-    struct Locator2
-    {
         GeoExtent tile_extent;
         Ellipsoid ellipsoid;
         SRSOperation tile_to_world;
 
-        Locator2(const GeoExtent& extent, const SRS& worldSRS)
+        Locator(const GeoExtent& extent, const SRS& worldSRS)
         {
             tile_extent = extent;
             tile_to_world = tile_extent.srs().to(worldSRS);
@@ -284,6 +246,18 @@ namespace
             return world;
         }
     };
+
+    //template<class SPHERE, class VEC3>
+    inline void expandSphereToInclude(vsg::dsphere& sphere, const vsg::dvec3& p)
+    {
+        auto dv = p - sphere.center;
+        double r = length(dv);
+        if (r > sphere.radius) {
+            double dr = 0.5 * (r - sphere.radius);
+            sphere.center += dv * (dr / r);
+            sphere.radius += dr;
+        }
+    }
 }
 
 vsg::ref_ptr<SharedGeometry>
@@ -310,7 +284,8 @@ GeometryPool::createGeometry(
 
     ROCKY_TODO("GLenum mode = gpuTessellation ? GL_PATCHES : GL_TRIANGLES;");
 
-    Sphere tileBound;
+    vsg::dsphere tileBound;
+    //Sphere tileBound;
 
     // the initial vertex locations:
     auto verts = vsg::vec3Array::create(numVerts);
@@ -348,8 +323,7 @@ GeometryPool::createGeometry(
         dvec3 world_plus_one;
         dvec3 normal;
 
-        //Locator locator(tileKey.extent());
-        Locator2 locator(tileKey.extent(), _worldSRS);
+        Locator locator(tileKey.extent(), _worldSRS);
 
         for (unsigned row = 0; row < tileSize; ++row)
         {
@@ -359,12 +333,12 @@ GeometryPool::createGeometry(
                 float nx = (float)col / (float)(tileSize - 1);
                 unsigned i = row * tileSize + col;
 
-                unit = dvec3(nx, ny, 0.0);
+                unit = { nx, ny, 0.0 };
                 world = locator.unitToWorld(unit);
                 local = world2local * world;
                 verts->set(i, vsg::vec3(local.x, local.y, local.z));
 
-                tileBound.expandBy(local);
+                expandSphereToInclude(tileBound, vsg::dvec3(local.x, local.y, local.z));
 
                 // Use the Z coord as a type marker
                 float marker = VERTEX_VISIBLE;

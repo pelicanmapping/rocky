@@ -25,7 +25,7 @@ CreateTileManifest::insert(shared_ptr<Layer> layer)
 {
     if (layer)
     {
-        _layers[layer->uid()] = layer->getRevision();
+        _layers[layer->uid()] = layer->revision();
 
         if (std::dynamic_pointer_cast<ElevationLayer>(layer))
         {
@@ -59,7 +59,7 @@ CreateTileManifest::inSyncWith(const Map* map) const
         auto layer = map->getLayerByUID(iter.first);
 
         // note: if the layer is null, it was removed, so let it pass.
-        if (layer && layer->getRevision() != iter.second)
+        if (layer && layer->revision() != iter.second)
         {
             return false;
         }
@@ -75,7 +75,7 @@ CreateTileManifest::updateRevisions(const Map* map)
         auto layer = map->getLayerByUID(iter.first);
         if (layer)
         {
-            iter.second = layer->getRevision();
+            iter.second = layer->revision();
         }
     }
 }
@@ -181,14 +181,9 @@ TerrainTileModelFactory::addImageLayer(
         {
             TerrainTileModel::ColorLayer m;
             m.layer = imageLayer;
-            m.revision = imageLayer->getRevision();
+            m.revision = imageLayer->revision();
             m.image = result.value;
             model.colorLayers.emplace_back(std::move(m));
-
-            //if (imageLayer->isShared())
-            //{
-            //    model.sharedLayerIndices.push_back(model.colorLayers.size());
-            //}
 
             if (imageLayer->isDynamic() || imageLayer->getAsyncLoading())
             {
@@ -197,9 +192,13 @@ TerrainTileModelFactory::addImageLayer(
 
             return true;
         }
-        else if (result.status.failed())
+
+        // ResourceUnavailable just means the driver could not produce data
+        // for the tilekey; it is not an actual read error.
+        else if (result.status.failed() && result.status.code != Status::ResourceUnavailable)
         {
-            //io.services().log().warn << result.status.message << std::endl;
+            Log::warn() << "Problem getting data from \"" << imageLayer->name() << "\" : "
+                << result.status.message << std::endl;
         }
     }
     return false;
@@ -245,7 +244,7 @@ TerrainTileModelFactory::addColorLayers(
         if (!layer->isOpen())
             continue;
 
-        if (layer->getRenderType() != layer->RENDERTYPE_TERRAIN_SURFACE)
+        if (layer->renderType() != layer->RENDERTYPE_TERRAIN_SURFACE)
             continue;
 
         if (manifest.excludes(layer.get()))
@@ -267,7 +266,7 @@ TerrainTileModelFactory::addColorLayers(
         {
             TerrainTileModel::ColorLayer colorModel;
             colorModel.layer = layer;
-            colorModel.revision = layer->getRevision();
+            colorModel.revision = layer->revision();
             model.colorLayers.push_back(std::move(colorModel));
         }
     }
@@ -286,9 +285,10 @@ TerrainTileModelFactory::addElevation(
     ROCKY_PROFILING_ZONE_TEXT("Elevation");
 
     bool needElevation = manifest.includesElevation();
+
     auto layers = map->getLayers<ElevationLayer>();
-    //std::vector<shared_ptr<const ElevationLayer>> layers;
-    //map->getLayers(layers);
+    if (layers.empty())
+        return false;
 
     int combinedRevision = map->dataModelRevision();
     if (!manifest.empty())
@@ -299,13 +299,39 @@ TerrainTileModelFactory::addElevation(
             {
                 needElevation = true;
             }
-            combinedRevision += layer->getRevision();
+            combinedRevision += layer->revision();
         }
     }
     if (!needElevation)
         return false;
 
-    ROCKY_TODO("Write the Elevation Fetcher");
+    auto layer = layers.front();
+
+    if (layer->isOpen() &&
+        layer->isKeyInLegalRange(key) &&
+        layer->mayHaveData(key))
+    {
+        auto result = layer->createHeightfield(key, io);
+
+        if (result.status.ok())
+        {
+            model.elevation.heightfield = std::move(result.value);
+            model.elevation.revision = layer->revision();
+        }
+
+        // ResourceUnavailable just means the driver could not produce data
+        // for the tilekey; it is not an actual read error.
+        else if (result.status.code != Status::ResourceUnavailable)
+        {
+            Log::warn() << "Problem getting data from \"" << layer->name() << "\" : "
+                << result.status.message << std::endl;
+        }
+    }
+
+    return model.elevation.heightfield.valid();
+
+
+    //ROCKY_TODO("Write the Elevation Fetcher");
 
 #if 0 // TODO
     osg::ref_ptr<ElevationTexture> elevTex;
@@ -338,8 +364,6 @@ TerrainTileModelFactory::addElevation(
         }
     }
 #endif
-
-    return true;
 }
 
 bool

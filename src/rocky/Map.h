@@ -169,7 +169,6 @@ namespace ROCKY_NAMESPACE
         std::vector<shared_ptr<Layer>> _layers;
         mutable util::ReadWriteMutex _mapDataMutex;
         Profile _profile;
-        //Profile _profileNoVDatum;
         //shared_ptr<ElevationPool> _elevationPool;
         Revision _dataModelRevision;
 

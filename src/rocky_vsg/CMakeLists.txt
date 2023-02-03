@@ -18,12 +18,11 @@ endif()
 #message(STATUS "Current build folder is ${CMAKE_CURRENT_SOURCE_DIR}")
 
 # collect all the headers in the source directory
-file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
-file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
-file(GLOB SHADERS ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*)
-file(GLOB SHADERS_TO_COMPILE
-    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.vert
-    ${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.frag)
+file(GLOB HEADERS *.h)
+file(GLOB SOURCES *.cpp)
+file(GLOB SHADERS shaders/*)
+
+file(GLOB SHADERS_TO_COMPILE shaders/*.vert shaders/*.frag)
 
 # create the target:
 add_library(${TARGET} ${HEADERS} ${SOURCES} ${SHADERS})
@@ -32,7 +31,7 @@ add_library(${TARGET} ${HEADERS} ${SOURCES} ${SHADERS})
 
 # Compile shaders into SPIRV
 foreach(file ${SHADERS_TO_COMPILE})
-    compile_shader(${file})
+    compile_shader(${file}) #  ${SHADER_DEPENDENCIES})
 endforeach()
     
 message(STATUS "Shaders = ${SPIRV_SHADERS}")

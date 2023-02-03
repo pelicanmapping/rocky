@@ -692,6 +692,7 @@ TMS::Driver::open(
 Result<shared_ptr<Image>>
 TMS::Driver::read(
     const URI& uri,
+    const std::string& uri_suffix,
     const TileKey& key,
     bool invertY,
     const IOOptions& io) const
@@ -704,13 +705,16 @@ TMS::Driver::read(
 
         if (!imageURI.empty())
         {
-            auto rr = imageURI.read(io);
-            if (rr.status.failed())
+            if (!uri_suffix.empty())
+                imageURI = imageURI.append(uri_suffix);
+
+            auto fetch = imageURI.read(io);
+            if (fetch.status.failed())
             {
-                return rr.status;
+                return fetch.status;
             }
 
-            auto image_rr = io.services().readImageFromStream(rr->data, rr->contentType, io);
+            auto image_rr = io.services().readImageFromStream(fetch->data, fetch->contentType, io);
             if (image_rr.status.failed())
             {
                 return image_rr.status;

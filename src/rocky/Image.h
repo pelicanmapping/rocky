@@ -66,6 +66,12 @@ namespace ROCKY_NAMESPACE
             unsigned t,
             unsigned r = 1);
 
+        //! Copy constructor
+        Image(const Image& rhs);
+
+        //! Move constructor
+        Image(Image&& rhs);
+
         //! Destruct and release the data unless it's not owned
         virtual ~Image();
 
@@ -187,9 +193,9 @@ namespace ROCKY_NAMESPACE
         //! Use this to transfer ownership of the raw data to someone else.
         //! The inheritor is responsible to deleting the data.
         //! This object becomes invalid unless you call allocate() on it again.
-        void* releaseData();
+        unsigned char* releaseData();
 
-    private:
+    protected:
         unsigned _width, _height, _depth;
         PixelFormat _pixelFormat;
         unsigned char* _data;

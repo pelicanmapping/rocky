@@ -45,6 +45,7 @@ StateFactory::StateFactory()
     if (!shaderSet)
     {
         status = Status(Status::ResourceUnavailable, "Terrain shaders missing or corrupt");
+        return;
     }
 
     // create the pipeline configurator for terrain; this is a helper object
@@ -147,18 +148,21 @@ StateFactory::createShaderSet() const
 
     // set up search paths to SPIRV shaders and textures
     vsg::Paths searchPaths = vsg::getEnvPaths("VSG_FILE_PATH");
-    //searchPaths.push_back(vsg::Path("H:/devel/rocky/install/share"));
+
+    auto options = vsg::Options::create();
 
     // load shaders
     auto vertexShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_VERTEX_BIT,
         "main",
-        vsg::findFile("terrain.vert", searchPaths));
+        vsg::findFile("terrain.vert", searchPaths),
+        options);
 
     auto fragmentShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_FRAGMENT_BIT,
         "main",
-        vsg::findFile("terrain.frag", searchPaths));
+        vsg::findFile("terrain.frag", searchPaths),
+        options);
 
     if (!vertexShader || !fragmentShader)
     {

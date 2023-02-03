@@ -84,7 +84,8 @@ InstanceVSG::InstanceVSG() :
         { "image/jpeg", ".jpg" },
         { "image/png", ".png" },
         { "image/tga", ".tga" },
-        { "image/tif", ".tif" }
+        { "image/tif", ".tif" },
+        { "image/tiff", ".tif" }
     };
 
     // To read from a stream, we have to search all the VS readerwriters to

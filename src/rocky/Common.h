@@ -30,6 +30,10 @@
 
 #define ROCKY_NAMESPACE rocky
 
+#define ROCKY_MAJOR_VERSION 0
+#define ROCKY_MINOR_VERSION 1
+#define ROCKY_SOVERSION 100
+
 #include <rocky/optional.h>
 #include <string>
 #include <memory>
@@ -56,10 +60,10 @@ namespace ROCKY_NAMESPACE
     {
     protected:
         Object() { }
-        optional<std::string> _name;
+        std::string _name;
     public:
         void setName(const std::string& value) { _name = value; }
-        const optional<std::string>& name() const { return _name; }
+        const std::string& name() const { return _name; }
         virtual ~Object() { }
     };
 

@@ -51,6 +51,17 @@ Heightfield::Heightfield(unsigned cols, unsigned rows) :
     //nop
 }
 
+Heightfield::Heightfield(Image* image)
+{
+    if (image)
+    {
+        _pixelFormat = image->pixelFormat();
+        _width = image->width();
+        _height = image->height();
+        _depth = image->depth();
+        _data = image->releaseData();
+    }
+}
 
 float
 Heightfield::heightAtUV(

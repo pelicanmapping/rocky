@@ -40,7 +40,7 @@ namespace ROCKY_NAMESPACE
         return fvec3(fvec4(a, 1) * b);
     }
 
-
+#if 1
     class ROCKY_EXPORT Sphere
     {
     public:
@@ -72,6 +72,7 @@ namespace ROCKY_NAMESPACE
             return radius >= 0.0;
         }
     };
+#endif
 
     struct ROCKY_EXPORT Box
     {        
@@ -131,12 +132,14 @@ namespace ROCKY_NAMESPACE
                 (i & 0x4) ? zmax : zmin);
         }
 
+#if 1
         void expandBy(const Sphere& rhs) {
             expandBy(Box(
                 rhs.center.x - rhs.radius, rhs.center.x + rhs.radius,
                 rhs.center.y - rhs.radius, rhs.center.y + rhs.radius,
                 rhs.center.z - rhs.radius, rhs.center.z + rhs.radius));
         }
+#endif
 
         bool valid() const {
             return

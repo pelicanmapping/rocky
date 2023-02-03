@@ -15,6 +15,7 @@
 
 #ifdef ROCKY_SUPPORTS_TMS
 #include <rocky/TMSImageLayer.h>
+#include <rocky/TMSElevationLayer.h>
 #endif
 
 
@@ -92,6 +93,18 @@ int main(int argc, char** argv)
     auto layer = rocky::TMSImageLayer::create();
     layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
     mapNode->map()->addLayer(layer);
+    if (layer->status().failed()) {
+        rocky::Log::warn() << "Problem with layer: " << layer->status().message << std::endl;
+        exit(-1);
+    }
+
+    auto elev = rocky::TMSElevationLayer::create();
+    elev->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
+    mapNode->map()->addLayer(elev);
+    if (elev->status().failed()) {
+        rocky::Log::warn() << "Problem with layer: " << elev->status().message << std::endl;
+        exit(-1);
+    }
 
 #elif defined(ROCKY_SUPPORTS_GDAL)
 

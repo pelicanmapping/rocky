@@ -142,7 +142,7 @@ Layer::construct(const Config& conf)
     }
 #endif
 
-    _mutex = new util::ReadWriteMutex(name().value());
+    _mutex = new util::ReadWriteMutex(name());
 }
 
 Config
@@ -262,7 +262,7 @@ Layer::setCachePolicy(const CachePolicy& value)
 }
 
 const CachePolicy&
-Layer::getCachePolicy() const
+Layer::cachePolicy() const
 {
     return _cachePolicy.value();
     //return options().cachePolicy().get();
@@ -281,12 +281,6 @@ Layer::open(const IOOptions& io)
 
     // be optimistic :)
     _status = StatusOK;
-
-    // Copy the layer options name into the Object name.
-    if (_name.has_value())
-    {
-        setName(_name); // options().name().get());
-    }
 
 #if 0
     // Install any shader #defines
@@ -414,16 +408,8 @@ Layer::prepareForRendering(TerrainEngine* engine)
 }
 #endif
 
-void
-Layer::setName(const std::string& name)
-{
-    Object::setName(name);
-    //osg::Object::setName(name);
-    _name = name;
-}
-
 const char*
-Layer::getTypeName() const
+Layer::typeName() const
 {
     return typeid(*this).name();
 }
@@ -550,7 +536,7 @@ Layer::extent() const
 }
 
 DateTimeExtent
-Layer::getDateTimeExtent() const
+Layer::dateTimeExtent() const
 {
     return DateTimeExtent();
 }
@@ -587,7 +573,7 @@ Layer::fireCallback(LayerCallback::MethodPtr method)
 #endif
 
 std::string
-Layer::getAttribution() const
+Layer::attribution() const
 {
     // Get the attribution from the layer if it's set.
     return _attribution;
@@ -606,13 +592,7 @@ Layer::modifyTileBoundingBox(const TileKey& key, const Box& box) const
 }
 
 const Layer::Hints&
-Layer::getHints() const
-{
-    return _hints;
-}
-
-Layer::Hints&
-Layer::layerHints()
+Layer::hints() const
 {
     return _hints;
 }

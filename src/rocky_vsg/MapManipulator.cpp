@@ -1656,22 +1656,23 @@ MapManipulator::recalculateCenterFromLookVector()
     lookat.set(_camera->viewMatrix->inverse());
     auto look = vsg::normalize(lookat.center - lookat.eye);
     
-    vsg::dvec3 i;
-    if (intersect(lookat.eye, look * _state.distance * 1.5, i))
+    bool ok = false;
+    vsg::dvec3 intersection;
+
+    if (intersect(lookat.eye, look * _state.distance * 1.5, intersection))
     {
-        setCenter(i);
-        return true;
+        ok = true;
     }
 
     // backup plan, intersect the ellipsoid or the ground plane
-    if (_worldSRS.isGeocentric())
+    else if (_worldSRS.isGeocentric())
     {
         dvec3 i;
         auto target = lookat.eye + look * 1e10;
         if (_worldSRS.ellipsoid().intersectGeocentricLine(to_glm(lookat.eye), to_glm(target), i))
         {
-            setCenter(to_vsg(i));
-            return true;
+            intersection = to_vsg(i);
+            ok = true;
         }
     }
 
@@ -1686,11 +1687,22 @@ MapManipulator::recalculateCenterFromLookVector()
         if (equiv(LdotN, 0)) return false; // parallel
         auto D = vsg::dot((P0 - L0), N) / LdotN;
         if (D < 0) return false; // behind the camera
-        setCenter(L0 + L * D);
-        return true;
+        intersection = L0 + L * D;
+        ok = true;
     }
 
-    return false;
+    if (ok)
+    {
+#if 0
+        setCenter(i);
+#else
+        // keep the existing center, but 
+        double len = vsg::length(intersection);
+        _state.center = vsg::normalize(_state.center) * len;
+#endif
+    }
+
+    return ok;
 }
 
 void

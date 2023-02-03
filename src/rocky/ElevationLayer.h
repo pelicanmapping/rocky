@@ -11,7 +11,7 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-     * A map terrain layer containing elevation grid heightfields.
+     * A map terrain layer producing elevation grid heightfields.
      */
     class ROCKY_EXPORT ElevationLayer :  public Inherit<TileLayer, ElevationLayer>
     {
@@ -33,10 +33,10 @@ namespace ROCKY_NAMESPACE
         const optional<float>& maxValidValue() const;
 
         //! Override from VisibleLayer
-        virtual void setVisible(bool value);
+        void setVisible(bool value) override;
 
         //! Serialize this layer
-        virtual Config getConfig() const override;
+        Config getConfig() const override;
 
     public: // methods
 
@@ -48,7 +48,7 @@ namespace ROCKY_NAMESPACE
          * @param key TileKey for which to create a heightfield.
          */
         Result<GeoHeightfield> createHeightfield(
-            const TileKey& key);
+            const TileKey& key) const;
 
         /**
          * Creates a GeoHeightField for this layer that corresponds to the extents and LOD
@@ -60,7 +60,7 @@ namespace ROCKY_NAMESPACE
          */
         Result<GeoHeightfield> createHeightfield(
             const TileKey& key,
-            const IOOptions& io);
+            const IOOptions& io) const;
 
         /**
          * Writes a height field for the specified key, if writing is
@@ -70,12 +70,6 @@ namespace ROCKY_NAMESPACE
             const TileKey& key,
             const Heightfield* hf,
             const IOOptions& io) const;
-
-    protected: // TileLayer
-
-        //! Override aspects of the layer Profile as needed
-        void applyProfileOverrides(
-            Profile& in_out_profile) const override;
 
     protected: // ElevationLayer
 
@@ -88,12 +82,12 @@ namespace ROCKY_NAMESPACE
         //! Entry point for createHeightfield
         Result<GeoHeightfield> createHeightfieldInKeyProfile(
             const TileKey& key,
-            const IOOptions& io);
+            const IOOptions& io) const;
 
         //! Subclass overrides this to generate image data for the key.
         //! The key will always be in the same profile as the layer.
         virtual Result<GeoHeightfield> createHeightfieldImplementation(
-            const TileKey&,
+            const TileKey& key,
             const IOOptions& io) const
         {
             return Result(GeoHeightfield::INVALID);
@@ -107,8 +101,6 @@ namespace ROCKY_NAMESPACE
 
         virtual ~ElevationLayer() { }
 
-
-        optional<std::string> _verticalDatum;
         optional<bool> _offset;
         optional<float> _noDataValue;
         optional<float> _minValidValue;

@@ -35,17 +35,20 @@ endmacro()
 # inputs:
 #   GLSL_FILE_TO_COMPILE = source file of shader
 # outputs:
-#   creates new file: "${GLSL_FILE_TO_COMPILE}.spv"
+#   creates new file: "${input_file}.spv"
 #   TARGET_SPIRV is appended with the above new file name
-macro(compile_shader GLSL_FILE_TO_COMPILE)
-    # compiles GLSL into SPIRV
-    set(SPIRV_OUTPUT_FILE ${GLSL_FILE_TO_COMPILE}.spv)
+macro(compile_shader glsl_input)
+    #cmake_path(GET glsl_input FILENAME simple_filename) # cmake_path is busted.
+    #get_filename_component(simple_filename ${glsl_input} NAME)
+    #set(spirv_output ${CMAKE_CURRENT_BINARY_DIR}/shaders_spv/${simple_filename}.spv)
+    set(spirv_output ${glsl_input}.spv)
+    message(STATUS "Compiling shader ${glsl_input} ==> ${spirv_output}")
     add_custom_command(
-        OUTPUT ${GLSL_FILE_TO_COMPILE}.spv
-        COMMAND ${GLSLC} -I${CMAKE_CURRENT_SOURCE_DIR} -o ${SPIRV_OUTPUT_FILE} ${GLSL_FILE_TO_COMPILE}
-        DEPENDS ${GLSL_FILE_TO_COMPILE}
-    )  
-    list(APPEND SPIRV_SHADERS ${SPIRV_OUTPUT_FILE})  
+        OUTPUT ${spirv_output}
+        COMMAND ${GLSLC} -I${CMAKE_CURRENT_SOURCE_DIR} -o ${spirv_output} ${glsl_input}
+        DEPENDS ${glsl_input}
+    )
+    list(APPEND SPIRV_SHADERS ${spirv_output})
 endmacro()
 
 #[[

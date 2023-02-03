@@ -14,6 +14,7 @@ set(HEADERS
     Config.h
     DateTime.h
     ElevationLayer.h
+    # ElevationPool.h
     Ellipsoid.h
     GeoCircle.h
     GeoCommon.h
@@ -61,6 +62,7 @@ set(SOURCES
     Config.cpp
     DateTime.cpp
     ElevationLayer.cpp
+    # ElevationPool.cpp
     Ellipsoid.cpp
     GeoCircle.cpp
     GeoExtent.cpp
@@ -102,8 +104,8 @@ if(ROCKY_SUPPORTS_GDAL)
 endif()
 
 if(ROCKY_SUPPORTS_TMS)
-    list(APPEND HEADERS TMS.h TMSImageLayer.h)
-    list(APPEND SOURCES TMS.cpp TMSImageLayer.cpp)
+    list(APPEND HEADERS TMS.h   TMSImageLayer.h   TMSElevationLayer.h)
+    list(APPEND SOURCES TMS.cpp TMSImageLayer.cpp TMSElevationLayer.cpp)
 endif()
 
 
