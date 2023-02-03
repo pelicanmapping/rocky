@@ -1,4 +1,10 @@
+/**
+ * rocky c++
+ * Copyright 2023 Pelican Mapping
+ * MIT License
+ */
 #include <rocky/Instance.h>
+#include <rocky/Version.h>
 #include <rocky/ImageLayer.h>
 
 #include <rocky_vsg/InstanceVSG.h>
@@ -56,9 +62,10 @@ int main(int argc, char** argv)
 
     rocky::Log::level = rocky::LogLevel::INFO;
     rocky::Log::info() << "Hello, world." << std::endl;
+    rocky::Log::info() << "Welcome to " << ROCKY_PROJECT_NAME << " version " << ROCKY_VERSION_STRING << std::endl;
 
     // main window
-    auto traits = vsg::WindowTraits::create("Rocky * Pelican Mapping");
+    auto traits = vsg::WindowTraits::create(ROCKY_PROJECT_NAME);
     traits->debugLayer = arguments.read({ "--debug" });
     traits->apiDumpLayer = arguments.read({ "--api" });
     traits->samples = 1;
@@ -79,6 +86,8 @@ int main(int argc, char** argv)
 
     // TODO: read this from an earth file
     auto mapNode = rocky::MapNode::create(rk);
+
+    mapNode->terrainNode()->concurrency = 4u;
 
     // Set up the runtime context with everything we need.
     // Eventually this should be automatic in InstanceVSG

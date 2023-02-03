@@ -6,6 +6,11 @@ else()
     add_definitions(-DROCKY_LIBRARY)
 endif()
 
+# Create a "Version.h" header that automatically reflects the
+# version variables found in the CMake configuration.
+set(version_h ${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky/Version.h)
+configure_file(Version.h.in ${version_h})
+
 # collect all the headers in the source directory
 set(HEADERS
     Callbacks.h
@@ -55,6 +60,7 @@ set(HEADERS
     Viewpoint.h
     VisibleLayer.h
     weemesh.h
+    ${version_h}
 )
 
 set(SOURCES    
@@ -107,7 +113,6 @@ if(ROCKY_SUPPORTS_TMS)
     list(APPEND HEADERS TMS.h   TMSImageLayer.h   TMSElevationLayer.h)
     list(APPEND SOURCES TMS.cpp TMSImageLayer.cpp TMSElevationLayer.cpp)
 endif()
-
 
 # set up library dependencies
 set(PRIVATE_LIBS PROJ::proj)

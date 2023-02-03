@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.7)
 
+
 # if using vcpkg, configure overlay ports (that are not available in vcpkg prime)
 if (${CMAKE_TOOLCHAIN_FILE} MATCHES ".*vcpkg.cmake.*")
     message(STATUS "Building with vcpkg toolchain.")
@@ -9,10 +10,14 @@ endif()
 
 project(
     rocky
-    VERSION 0.0.1
+    VERSION 1.0.0
     DESCRIPTION "Rocky by Pelican Mapping"
+    HOMEPAGE_URL https://github.com/pelicanmapping/rocky
     LANGUAGES CXX C
 )
+
+# please update this with each ABI change!!
+set(PROJECT_VERSION_ABI 100)
 
 # require C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -25,6 +30,10 @@ setup_build_vars()
 
 # build all examples into the bin directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+
+# temporary folder to hold build-time header compilation (.in files built with compile_files)
+set(ROCKY_BUILDTIME_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/build_include")
+include_directories(${ROCKY_BUILDTIME_INCLUDE_DIR})
 
 # Change the default build type to Release
 if(NOT CMAKE_BUILD_TYPE)

@@ -30,10 +30,6 @@
 
 #define ROCKY_NAMESPACE rocky
 
-#define ROCKY_MAJOR_VERSION 0
-#define ROCKY_MINOR_VERSION 1
-#define ROCKY_SOVERSION 100
-
 #include <rocky/optional.h>
 #include <string>
 #include <memory>
