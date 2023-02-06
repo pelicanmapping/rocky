@@ -291,7 +291,7 @@ namespace ROCKY_NAMESPACE
         void establishCacheSettings();
 
         // general purpose data protector
-        mutable util::ReadWrite<util::Mutex> _data_mutex;
+        mutable std::shared_mutex _dataMutex;
         DataExtentList _dataExtents;
         mutable DataExtent _dataExtentsUnion;
         mutable void* _dataExtentsIndex;

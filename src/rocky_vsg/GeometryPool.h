@@ -93,15 +93,15 @@ namespace ROCKY_NAMESPACE
                 patch != rhs.patch;
         }
 
-        // hash function for unordered_map
-        std::size_t operator()(const GeometryKey& key) const
-        {
-            return hash_value_unsigned(
-                (unsigned)key.lod,
-                (unsigned)key.tileY,
-                key.size,
-                key.patch ? 1u : 0u);
-        }
+        //// hash function for unordered_map
+        //std::size_t operator()(const GeometryKey& key) const
+        //{
+        //    return hash_value_unsigned(
+        //        (unsigned)key.lod,
+        //        (unsigned)key.tileY,
+        //        key.size,
+        //        key.patch ? 1u : 0u);
+        //}
 
         int      lod;
         int      tileY;
@@ -184,7 +184,7 @@ namespace ROCKY_NAMESPACE
 
         SRS _worldSRS;
         mutable util::Gate<GeometryKey> _keygate;
-        mutable util::Mutex _mutex;
+        mutable std::mutex _mutex;
         SharedGeometries _sharedGeometries;
         vsg::ref_ptr<vsg::ushortArray> _defaultIndices;
 

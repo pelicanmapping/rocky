@@ -15,9 +15,7 @@ using namespace ROCKY_NAMESPACE;
 GeometryPool::GeometryPool(const SRS& worldSRS) :
     _worldSRS(worldSRS),
     _enabled(true),
-    _debug(false),
-    _mutex("GeometryPool"),
-    _keygate("GeometryPool.keygate")
+    _debug(false)
 {
     //ROCKY_TODO("ADJUST_UPDATE_TRAV_COUNT(this, +1)");
 
@@ -30,7 +28,7 @@ GeometryPool::GeometryPool(const SRS& worldSRS) :
     if ( ::getenv("ROCKY_REX_NO_POOL") )
     {
         _enabled = false;
-        //ROCKY_INFO << LC << "Geometry pool disabled (environment)" << std::endl;
+        Log::info() << LC << "Geometry pool disabled (environment)" << std::endl;
     }
 }
 
@@ -44,11 +42,11 @@ GeometryPool::getPooledGeometry(
 
     // convert to a unique-geometry key:
     GeometryKey geomKey;
-    createKeyForTileKey( tileKey, settings.tileSize, geomKey );
+    createKeyForTileKey(tileKey, settings.tileSize, geomKey);
 
     // make our globally shared EBO if we need it
     {
-        util::ScopedLock lock(_mutex);
+        std::scoped_lock lock(_mutex);
         if (_defaultIndices == nullptr)
         {
             _defaultIndices = createIndices(settings);
@@ -66,12 +64,12 @@ GeometryPool::getPooledGeometry(
         // first check the sharing cache:
         //if (!meshEditor.hasEdits())
         {
-            util::ScopedLock lock(_mutex);
+            std::scoped_lock lock(_mutex);
             auto i = _sharedGeometries.find(geomKey);
             if (i != _sharedGeometries.end())
             {
                 // found it:
-                out = i->second.get();
+                out = i->second;
             }
         }
 
@@ -86,8 +84,8 @@ GeometryPool::getPooledGeometry(
             // only store as a shared geometry if there are no constraints.
             if (out.valid()) //&& !meshEditor.hasEdits())
             {
-                util::ScopedLock lock(_mutex);
-                _sharedGeometries[geomKey] = out.get();
+                std::scoped_lock lock(_mutex);
+                _sharedGeometries.emplace(geomKey, out);
             }
         }
     }
@@ -449,8 +447,7 @@ GeometryPool::traverse(osg::NodeVisitor& nv)
 void
 GeometryPool::clear()
 {
-    //releaseGLObjects(nullptr);
-    util::ScopedLock lock(_mutex);
+    std::scoped_lock lock(_mutex);
     _sharedGeometries.clear();
 }
 

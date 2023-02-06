@@ -15,6 +15,7 @@
 //#include <rocky/ElevationPool.h>
 #include <functional>
 #include <set>
+#include <shared_mutex>
 
 namespace ROCKY_NAMESPACE
 {
@@ -167,7 +168,7 @@ namespace ROCKY_NAMESPACE
         Instance::ptr _instance;
         UID _uid;
         std::vector<shared_ptr<Layer>> _layers;
-        mutable util::ReadWriteMutex _mapDataMutex;
+        mutable std::shared_mutex _mapDataMutex;
         Profile _profile;
         //shared_ptr<ElevationPool> _elevationPool;
         Revision _dataModelRevision;
@@ -194,7 +195,7 @@ namespace ROCKY_NAMESPACE
     std::vector<shared_ptr<const T>>
     Map::getLayers(Revision* out_rev) const
     {
-        util::ScopedReadLock lock(_mapDataMutex);
+        std::shared_lock lock(_mapDataMutex);
         std::vector<shared_ptr<const T>> output;
         for (auto& i : _layers) {
             auto obj = T::cast(i);
@@ -208,7 +209,7 @@ namespace ROCKY_NAMESPACE
     std::vector<shared_ptr<T>>
     Map::getLayers(Revision* out_rev)
     {
-        util::ScopedReadLock lock(_mapDataMutex);
+        std::shared_lock lock(_mapDataMutex);
         std::vector<shared_ptr<T>> output;
         for (auto& i : _layers) {
             auto obj = T::cast(i);
@@ -220,7 +221,7 @@ namespace ROCKY_NAMESPACE
 
     template<typename T>
     Revision Map::getOpenLayers(std::vector<shared_ptr<T>>& output) const {
-        util::ScopedReadLock lock(_mapDataMutex);
+        std::shared_lock lock(_mapDataMutex);
         for (auto& i : _layers) {
             if (i->isOpen()) {
                 auto obj = T::cast(i);
@@ -231,7 +232,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<typename T> shared_ptr<T> Map::getLayer() const {
-        util::ScopedReadLock lock(_mapDataMutex);
+        std::shared_lock lock(_mapDataMutex);
         for (auto& i : _layers) {
             auto obj = T::cast(i);
             if (obj) return obj;
@@ -243,7 +244,7 @@ namespace ROCKY_NAMESPACE
         const std::function<bool(const Layer*)>& accept,
         Revision* out_revision) const
     {
-        util::ScopedReadLock lock(_mapDataMutex);
+        std::shared_lock lock(_mapDataMutex);
         std::vector<shared_ptr<Layer>> output;
         for (auto& layer : _layers) {
             if (accept(layer.get()))
@@ -259,7 +260,7 @@ namespace ROCKY_NAMESPACE
         const std::function<bool(const T*)>& accept,
         Revision* out_revision) const
     {
-        util::ScopedReadLock lock(_mapDataMutex);
+        std::shared_lock lock(_mapDataMutex);
         std::vector<shared_ptr<T>> output;
         for (auto& i : _layers) {
             auto obj = T::cast(i);

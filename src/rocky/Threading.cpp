@@ -252,26 +252,6 @@ RecursiveMutex::try_lock()
 
 //...................................................................
 
-unsigned rocky::util::getCurrentThreadId()
-{
-#ifdef _WIN32
-  return (unsigned)::GetCurrentThreadId();
-#elif __APPLE__
-  return ::syscall(SYS_thread_selfid);
-#elif __ANDROID__
-  return gettid();
-#elif __LINUX__
-  return (unsigned)::syscall(SYS_gettid);
-#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-  long  tid;
-  syscall(SYS_thr_self, &tid);
-  return (unsigned)tid;
-#else
-  /* :XXX: this truncates to 32 bits, but better than nothing */
-  return (unsigned)pthread_self();
-#endif
-}
-
 unsigned rocky::util::getConcurrency()
 {
     int value = std::thread::hardware_concurrency();
@@ -383,15 +363,13 @@ rocky::util::setThreadName(const std::string& name)
 #define LC "[Semaphore]"
 
 Semaphore::Semaphore() :
-    _count(0),
-    _m("oe.Semaphore")
+    _count(0)
 {
     //nop
 }
 
 Semaphore::Semaphore(const std::string& name) :
-    _count(0),
-    _m(name)
+    _count(0)
 {
     //nop
 }
@@ -399,14 +377,14 @@ Semaphore::Semaphore(const std::string& name) :
 void
 Semaphore::acquire()
 {
-    ScopedMutexLock lock(_m);
+    std::scoped_lock lock(_m);
     ++_count;
 }
 
 void
 Semaphore::release()
 {
-    ScopedMutexLock lock(_m);
+    std::scoped_lock lock(_m);
     _count = std::max(_count - 1, 0);
     if (_count == 0)
         _cv.notify_all();
@@ -415,7 +393,7 @@ Semaphore::release()
 void
 Semaphore::reset()
 {
-    ScopedMutexLock lock(_m);
+    std::scoped_lock lock(_m);
     _count = 0;
     _cv.notify_all();
 }
@@ -423,14 +401,14 @@ Semaphore::reset()
 std::size_t
 Semaphore::count() const
 {
-    ScopedMutexLock lock(_m);
+    std::scoped_lock lock(_m);
     return _count;
 }
 
 void
 Semaphore::join()
 {
-    ScopedMutexLock lock(_m);
+    std::scoped_lock lock(_m);
     _cv.wait(
         _m,
         [this]()
@@ -443,7 +421,7 @@ Semaphore::join()
 void
 Semaphore::join(Cancelable& p)
 {
-    ScopedMutexLock lock(_m);
+    std::scoped_lock lock(_m);
     _cv.wait_for(
         _m,
         std::chrono::seconds(1),
@@ -495,7 +473,7 @@ JobGroup::join(Cancelable& p)
 #define LC "[JobArena] "
 
 // JobArena statics:
-Mutex JobArena::_arenas_mutex("OE:JobArena");
+std::mutex JobArena::_arenas_mutex;
 std::unordered_map<std::string, std::shared_ptr<JobArena>> JobArena::_arenas;
 std::unordered_map<std::string, unsigned> JobArena::_arenaSizes;
 std::string JobArena::_defaultArenaName = "oe.default";
@@ -507,9 +485,7 @@ JobArena::JobArena(const std::string& name, unsigned concurrency, const Type& ty
     _name(name.empty()? defaultArenaName() : name),
     _targetConcurrency(concurrency),
     _type(type),
-    _done(false),
-    _queueMutex("OE.JobArena[" + _name + "].queue"),
-    _quitMutex("OE.JobArena[" + _name + "].quit")
+    _done(false)
 {
     // find a slot in the stats
     _metrics = _allMetrics.getOrCreate(_name);
@@ -537,7 +513,7 @@ JobArena::defaultArenaName()
 void
 JobArena::shutdownAll()
 {
-    ScopedMutexLock lock(_arenas_mutex);
+    std::scoped_lock lock(_arenas_mutex);
     ROCKY_INFO << LC << "Shutting down all job arenas." << std::endl;
     _arenas.clear();
 }
@@ -545,7 +521,7 @@ JobArena::shutdownAll()
 JobArena*
 JobArena::get(const std::string& name_)
 {
-    ScopedMutexLock lock(_arenas_mutex);
+    std::scoped_lock lock(_arenas_mutex);
 
     if (_arenas.empty())
     {
@@ -573,7 +549,7 @@ JobArena::get(const Type& type_)
         return get("oe.default");
     }
 
-    ScopedMutexLock lock(_arenas_mutex);
+    std::scoped_lock lock(_arenas_mutex);
 
     if (_arenas.empty())
     {
@@ -619,7 +595,7 @@ JobArena::setConcurrency(const std::string& name, unsigned value)
 
     value = std::max(value, 1u);
 
-    ScopedMutexLock lock(_arenas_mutex);
+    std::scoped_lock lock(_arenas_mutex);
     if (_arenaSizes[name] != value)
     {
         _arenaSizes[name] = value;
@@ -637,7 +613,7 @@ JobArena::setConcurrency(const std::string& name, unsigned value)
 void
 JobArena::cancelAll()
 {
-    std::lock_guard<Mutex> lock(_queueMutex);
+    std::unique_lock lock(_queueMutex);
     _queue.clear();
     _metrics->numJobsCanceled += _metrics->numJobsPending;
     _metrics->numJobsPending = 0;
@@ -660,7 +636,7 @@ JobArena::dispatch(
     {
         if (_targetConcurrency > 0)
         {
-            std::lock_guard<Mutex> lock(_queueMutex);
+            std::unique_lock lock(_queueMutex);
             _queue.emplace_back(job, delegate, sema);
             _metrics->numJobsPending++;
             _block.notify_one();
@@ -679,7 +655,7 @@ JobArena::dispatch(
 
     else // _type == traversal
     {
-        std::lock_guard<Mutex> lock(_queueMutex);
+        std::unique_lock lock(_queueMutex);
         _queue.emplace_back(job, delegate, sema);
         _metrics->numJobsPending++;
     }
@@ -697,7 +673,7 @@ JobArena::runJobs()
 
         bool have_next = false;
         {
-            std::unique_lock<Mutex> lock(_queueMutex);
+            std::unique_lock lock(_queueMutex);
             
             if (_type == THREAD_POOL)
             {
@@ -793,7 +769,8 @@ JobArena::runJobs()
         {
             // See if we no longer need this thread because the
             // target concurrency has been reduced
-            ScopedMutexLock quitLock(_quitMutex);
+            std::scoped_lock lock(_quitMutex);
+
             if (_targetConcurrency < _metrics->concurrency)
             {
                 _metrics->concurrency--;
@@ -835,7 +812,7 @@ void JobArena::stopThreads()
 
     // Clear out the queue
     {
-        std::lock_guard<Mutex> lock(_queueMutex);
+        std::unique_lock lock(_queueMutex);
 
         // reset any group semaphores so that JobGroup.join()
         // will not deadlock.
@@ -878,8 +855,8 @@ JobArena::Metrics::Metrics() :
     {
         _report = [](const Report& r)
         {
-            static Mutex _mutex;
-            ScopedMutexLock lock(_mutex);
+            static std::mutex _mutex;
+            std::scoped_lock lock(_mutex);
             std::string jobname = r.job.getName().empty() ? "unknown" : r.job.getName();
             ROCKY_INFO
                 << "[Job] " << jobname

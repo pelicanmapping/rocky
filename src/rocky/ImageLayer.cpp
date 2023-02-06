@@ -191,10 +191,6 @@ ImageLayer::construct(const Config& conf)
 
     conf.get("async", _async);
 
-
-    //    _useCreateTexture = false;
-    _sentry.setName("ImageLayer " + name());
-
     // image layers render as a terrain texture.
     //setRenderType(RENDERTYPE_TERRAIN_SURFACE);
 
@@ -478,7 +474,7 @@ ImageLayer::createImage(
     const TileKey& key,
     const IOOptions& io)
 {
-    util::ScopedReadLock lock(layerMutex());
+    std::shared_lock lock(layerMutex());
     return createImageImplementation(canvas, key, io);
 }
 
@@ -590,7 +586,7 @@ ImageLayer::createImageInKeyProfile(
     // if this layer has no profile, just go straight to the driver.
     if (!profile().valid())
     {
-        util::ScopedReadLock lock(layerMutex());
+        std::shared_lock lock(layerMutex());
         return createImageImplementation(key, io);
     }
 
@@ -619,7 +615,7 @@ ImageLayer::createImageInKeyProfile(
         }
         else
         {
-            util::ScopedReadLock lock(layerMutex());
+            std::shared_lock lock(layerMutex());
             result = createImageImplementation(key, io);
         }
     }
@@ -786,7 +782,7 @@ ImageLayer::assembleImage(
                 parentKey.makeParent())
             {
                 {
-                    util::ScopedReadLock lock(layerMutex());
+                    std::shared_lock lock(layerMutex());
                     geoimage = createImageImplementation(parentKey, io);
                 }
 
@@ -874,7 +870,7 @@ ImageLayer::writeImage(const TileKey& key, const Image* image, const IOOptions& 
     if (status().failed())
         return status();
 
-    util::ScopedReadLock lock(layerMutex());
+    std::shared_lock lock(layerMutex());
     return writeImageImplementation(key, image, io);
 }
 

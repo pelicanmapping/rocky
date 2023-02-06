@@ -694,13 +694,13 @@ TileLayer::isCached(const TileKey& key) const
 
 unsigned int TileLayer::getDataExtentsSize() const
 {
-    ScopedReadLock lk(_data_mutex);
+    std::shared_lock READ(_dataMutex);
     return _dataExtents.size();
 }
 
 void TileLayer::getDataExtents(DataExtentList& dataExtents) const
 {
-    ScopedReadLock lk(_data_mutex);
+    std::shared_lock READ(_dataMutex);
     if (!_dataExtents.empty())
     {
         dataExtents = _dataExtents;
@@ -718,14 +718,14 @@ void TileLayer::getDataExtents(DataExtentList& dataExtents) const
 
 void TileLayer::setDataExtents(const DataExtentList& dataExtents)
 {
-    ScopedWriteLock lk(_data_mutex);
+    std::shared_lock WRITE(_dataMutex);
     _dataExtents = dataExtents;
     dirtyDataExtents();
 }
 
 void TileLayer::addDataExtent(const DataExtent& dataExtent)
 {
-    ScopedWriteLock lk(_data_mutex);
+    std::shared_lock WRITE(_dataMutex);
     _dataExtents.push_back(dataExtent);
     dirtyDataExtents();
 }
@@ -747,7 +747,7 @@ TileLayer::getDataExtentsUnion() const
 {
     if (!_dataExtentsUnion.valid() && getDataExtentsSize() > 0)
     {
-        ScopedWriteLock lock(_data_mutex);
+        std::shared_lock WRITE(_dataMutex);
         {
             if (!_dataExtentsUnion.valid() && _dataExtents.size() > 0) // double-check
             {
@@ -847,7 +847,8 @@ TileLayer::getBestAvailableTileKey(
     // Build the index if needed.
     if (!_dataExtentsIndex)
     {
-        ScopedWriteLock lock(_data_mutex);
+        std::shared_lock WRITE(_dataMutex);
+
         if (!_dataExtentsIndex) // Double check
         {
             //ROCKY_INFO << LC << "Building data extents index with " << _dataExtents.size() << " extents" << std::endl;

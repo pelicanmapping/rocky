@@ -1,5 +1,6 @@
 #include "Units.h"
-#include "Threading.h"
+#include "Utils.h"
+#include <mutex>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
@@ -7,7 +8,7 @@ using namespace ROCKY_NAMESPACE::util;
 namespace
 {
     static std::unordered_map<std::string, const Units*> s_unitsTable;
-    static util::Mutex s_unitsTable_mutex;
+    static std::mutex s_unitsTable_mutex;
 
     template<typename T>
     bool
@@ -100,7 +101,7 @@ _time    ( &time )
 bool
 Units::parse(const std::string& name, Units& output)
 {
-    ScopedMutexLock lock(s_unitsTable_mutex);
+    std::unique_lock lock(s_unitsTable_mutex);
     auto i = s_unitsTable.find(name);
     if (i != s_unitsTable.end())
     {
@@ -175,7 +176,7 @@ const Units Units::PIXELS               ( "pixels", "px", Units::TYPE_SCREEN_SIZ
 void
 Units::registerAll()
 {
-    ScopedMutexLock lock(s_unitsTable_mutex);
+    std::unique_lock lock(s_unitsTable_mutex);
 
     auto units = {
         &Units::CENTIMETERS,

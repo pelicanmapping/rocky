@@ -96,7 +96,7 @@ Map::construct(const Config& conf, const IOOptions& io)
     // reset the revision:
     _dataModelRevision = 0;
 
-    _mapDataMutex.setName("Map dataMutex(OE)");
+    //_mapDataMutex.setName("Map dataMutex(OE)");
 
     // Generate a UID.
     _uid = rocky::createUID();
@@ -205,7 +205,9 @@ Map::attributions() const
 {
     std::set<std::string> result;
 
-    util::ScopedReadLock lock(_mapDataMutex);
+    std::shared_lock lock(_mapDataMutex);
+
+    //util::ScopedReadLock lock(_mapDataMutex);
     for(auto& layer : _layers)
     {
         if (layer->isOpen())
@@ -259,7 +261,7 @@ Map::addLayer(shared_ptr<Layer> layer, const IOOptions& io)
     Revision newRevision;
     unsigned index = -1;
     {
-        util::ScopedWriteLock lock( _mapDataMutex );
+        std::unique_lock lock(_mapDataMutex);
 
         _layers.push_back( layer );
         index = _layers.size() - 1;
@@ -302,7 +304,7 @@ Map::insertLayer(
     // Add the layer to our stack.
     int newRevision;
     {
-        util::ScopedWriteLock lock(_mapDataMutex);
+        std::unique_lock lock(_mapDataMutex);
 
         if (index >= _layers.size())
             _layers.push_back(layer);
@@ -342,7 +344,7 @@ Map::removeLayer(shared_ptr<Layer> layer)
 
     if ( layerToRemove.get() )
     {
-        util::ScopedWriteLock lock( _mapDataMutex );
+        std::unique_lock lock( _mapDataMutex );
         index = 0;
         for(LayerVector::iterator i = _layers.begin(); i != _layers.end(); ++i)
         {
@@ -371,7 +373,7 @@ Map::moveLayer(shared_ptr<Layer> layerToMove, unsigned newIndex)
 
     if (layerToMove)
     {
-        util::ScopedWriteLock lock( _mapDataMutex );
+        std::unique_lock lock( _mapDataMutex );
 
         // find it:
         LayerVector::iterator i_oldIndex = _layers.end();
@@ -437,7 +439,7 @@ Map::addLayers(
 
     // Add the layers to the map.
     {
-        util::ScopedWriteLock lock( _mapDataMutex );
+        std::unique_lock lock( _mapDataMutex );
 
         firstIndex = _layers.size();
         newRevision = ++_dataModelRevision;
@@ -472,14 +474,14 @@ Map::addLayers(
 unsigned
 Map::numLayers() const
 {
-    util::ScopedReadLock lock( _mapDataMutex );
+    std::shared_lock lock( _mapDataMutex );
     return _layers.size();
 }
 
 shared_ptr<Layer>
 Map::getLayerByName(const std::string& name) const
 {
-    util::ScopedReadLock lock( _mapDataMutex );
+    std::shared_lock lock( _mapDataMutex );
     for (auto layer : _layers)
         if (layer->name() == name)
             return layer;
@@ -489,7 +491,7 @@ Map::getLayerByName(const std::string& name) const
 shared_ptr<Layer>
 Map::getLayerByUID(UID uid) const
 {
-    util::ScopedReadLock lock( _mapDataMutex );
+    std::shared_lock lock( _mapDataMutex );
     for (auto layer : _layers)
         if (layer->uid() == uid)
             return layer;
@@ -499,7 +501,7 @@ Map::getLayerByUID(UID uid) const
 shared_ptr<Layer>
 Map::getLayerAt(unsigned index) const
 {
-    util::ScopedReadLock lock( _mapDataMutex );
+    std::shared_lock lock( _mapDataMutex );
     if (index >= 0 && index < (unsigned)_layers.size())
         return _layers[index];
     else
@@ -512,7 +514,7 @@ Map::indexOfLayer(const Layer* layer) const
     if (!layer)
         return -1;
 
-    util::ScopedReadLock lock( _mapDataMutex );
+    std::shared_lock lock( _mapDataMutex );
     unsigned index = 0;
     for (; index < _layers.size(); ++index)
     {
@@ -528,7 +530,7 @@ Map::clear()
     std::vector<Layer::ptr> layersRemoved;
     Revision newRevision;
     {
-        util::ScopedWriteLock lock( _mapDataMutex );
+        std::unique_lock lock( _mapDataMutex );
 
         layersRemoved.swap( _layers );
 

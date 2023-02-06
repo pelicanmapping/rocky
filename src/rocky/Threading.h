@@ -25,130 +25,6 @@
 
 namespace ROCKY_NAMESPACE { namespace util
 {
-    //! C++ BasicLockable requirement
-    class BasicLockable
-    {
-    public:
-        virtual void lock() =0;
-        virtual void unlock() = 0;
-    };
-
-    //! C++ Lockable requirement
-    class Lockable : public BasicLockable
-    {
-    public:
-        virtual bool try_lock() =0;
-    };
-
-#ifdef ROCKY_MUTEX_CONTENTION_TRACKING
-
-    /**
-     * A normal mutex that supports contention tracking
-     */
-    class ROCKY_EXPORT Mutex : public Lockable
-    {
-    public:
-        Mutex();
-        ~Mutex();
-
-        //! Explicitly block copying of mutexes
-        Mutex(const Mutex& copy) = delete;
-        Mutex& operator=(const Mutex& copy) = delete;
-
-        void lock() override;
-        void unlock() override;
-        bool try_lock() override;
-
-        // Methods for metrics-enabled mutexes
-        Mutex(const std::string& name, const char* file = nullptr, std::uint32_t line = 0);
-        void setName(const std::string& name);
-
-    private:
-        std::string _name;
-        void* _handle;
-        void* _metricsData;
-    };
-
-    /**
-     * A recursive mutex that supports contention tracking
-     */
-    class ROCKY_EXPORT RecursiveMutex : public Lockable
-    {
-    public:
-        RecursiveMutex();
-        RecursiveMutex(const std::string& name, const char* file = nullptr, std::uint32_t line = 0);
-        ~RecursiveMutex();
-
-        //! Enable or disable this mutex. Don't call this while threads are running.
-        void disable();
-
-        void lock() override;
-        void unlock() override;
-        bool try_lock() override;
-
-        void setName(const std::string& name);
-
-    private:
-        bool _enabled;
-        std::string _name;
-        void* _handle;
-        void* _metricsData;
-    };
-
-#else
-
-    /**
-     * Standard mutex that implements Lockable
-     */
-    class Mutex : public Lockable, public std::mutex
-    {
-    public:
-        Mutex() {}
-
-        Mutex(const Mutex& copy) = delete;
-        Mutex& operator=(const Mutex& copy) = delete;
-
-        void lock() override { std::mutex::lock(); }
-        void unlock() override { std::mutex::unlock(); }
-        bool try_lock() override { return std::mutex::try_lock(); }
-
-        // stub out the naming stuff so the API is compatible with 
-        // the tracking mutex
-        Mutex(const std::string& name, const char* file = nullptr, std::uint32_t line = 0) { }
-        void setName(const std::string& name) { }
-    };
-
-    /**
-     * Recursive mutex that implements Lockable
-     */
-    class RecursiveMutex : public Lockable, std::recursive_mutex
-    {
-    public:
-        RecursiveMutex() { }
-
-        RecursiveMutex(const RecursiveMutex& copy) = delete;
-        RecursiveMutex& operator=(const RecursiveMutex& copy) = delete;
-
-        void lock() override { std::recursive_mutex::lock(); }
-        void unlock() override { std::recursive_mutex::unlock(); }
-        bool try_lock() override { return std::recursive_mutex::try_lock(); }
-
-        // stub out the naming stuff so the API is compatible with 
-        // the tracking mutex
-        RecursiveMutex(const std::string& name, const char* file = nullptr, std::uint32_t line = 0) { }
-        void setName(const std::string& name) { }
-    };
-
-#endif
-
-    //! Locks a mutex for the duration of the scope
-    using ScopedMutexLock = std::lock_guard<BasicLockable>;
-    using ScopedLock = ScopedMutexLock;
-
-    //! Locks a recursive mutex for the duration of the scope
-    using ScopedRecursiveMutexLock = std::lock_guard<RecursiveMutex>;
-    using ScopedRecursiveLock = ScopedRecursiveMutexLock;
-
     /**
      * Gets the approximate number of available threading contexts.
      * Result is guaranteed to be greater than zero
@@ -158,7 +34,7 @@ namespace ROCKY_NAMESPACE { namespace util
     /**
      * Gets the unique ID of the running thread.
      */
-    extern ROCKY_EXPORT unsigned getCurrentThreadId();
+    //extern ROCKY_EXPORT unsigned getCurrentThreadId();
 
     /**
      * Event with a binary signaled state, for multi-threaded sychronization.
@@ -229,19 +105,19 @@ namespace ROCKY_NAMESPACE { namespace util
         struct Container {
             Container() { }
             void set(const T& obj) { 
-                ScopedMutexLock lock(_m);
+                std::scoped_lock lock(_m);
                 _obj = obj;
             }
-            void set(const T&& obj) {
-                ScopedMutexLock lock(_m);
+            void set(T&& obj) {
+                std::scoped_lock lock(_m);
                 _obj = std::move(obj);
             }
             const T& obj() const {
-                ScopedMutexLock lock(_m);
+                std::scoped_lock lock(_m);
                 return _obj;
             }
             T _obj;
-            mutable Mutex _m;
+            mutable std::mutex _m;
         };
 
     public:
@@ -410,50 +286,15 @@ namespace ROCKY_NAMESPACE { namespace util
     };
 
     /**
-     * Convenience base class for representing a Result object that may be
-     * synchronous or asynchronous, depending on which constructor you use.
-     */
-    template<typename T>
-    class FutureResult
-    {
-    public:
-        bool isReady() const { 
-            return _future.available() || _future.abandoned();
-        }
-
-        bool isWorking() const {
-            return !_future.available() && !_future.abandoned();
-        }
-
-    protected:
-        //! Asynchronous constructor
-        FutureResult(Future<T> f) : _future(f) { }
-
-        //! Immediate synchronous resolve constructor
-        FutureResult(const T& data) {
-            Promise<T> p;
-            _future = p.getFuture();
-            p.resolve(data);
-        }
-
-        Future<T> _future;
-    };
-
-
-    /**
     * Mutex that locks on a per-object basis
     */
     template<typename T>
     class Gate
     {
     public:
-        Gate() { }
-
-        Gate(const std::string& name) : _m(name) { }
-
         inline void lock(const T& key) {
-            std::unique_lock<Mutex> lock(_m);
-            auto thread_id = getCurrentThreadId();
+            std::unique_lock lock(_m);
+            auto thread_id = std::this_thread::get_id(); // getCurrentThreadId();
             for (;;) {
                 auto i = _keys.emplace(key, thread_id);
                 if (i.second)
@@ -464,19 +305,15 @@ namespace ROCKY_NAMESPACE { namespace util
         }
 
         inline void unlock(const T& key) {
-            std::unique_lock<Mutex> lock(_m);
+            std::unique_lock lock(_m);
             _keys.erase(key);
             _unlocked.notify_all();
         }
 
-        inline void setName(const std::string& name) {
-            _m.setName(name);
-        }
-
     private:
-        Mutex _m;
+        std::mutex _m;
         std::condition_variable_any _unlocked;
-        std::unordered_map<T,unsigned> _keys;
+        std::unordered_map<T,std::thread::id> _keys;
     };
 
     //! Gate the locks for the duration of this object's scope
@@ -516,141 +353,8 @@ namespace ROCKY_NAMESPACE { namespace util
         bool _active;
     };
 
-    /**
-     * Mutex that allows many simultaneous readers but only one writer
-     */
-    template<typename T>
-    class ReadWrite
-    {
-    public:
-        ReadWrite() :
-            _readers(0u), _writers(0u) { }
-
-        ReadWrite(const std::string& name) :
-            _m(name), _readers(0u), _writers(0u) { }
-
-        void read_lock() {
-            std::unique_lock<T> lock(_m);
-            _unlocked.wait(lock, [&]() { return _writers == 0; });
-            ++_readers;
-        }
-
-        void read_unlock() {
-            std::unique_lock<T> lock(_m);
-            --_readers;
-            if (_readers == 0)
-                _unlocked.notify_one();
-        }
-
-        void read_lock(std::function<void()> f) {
-            read_lock();
-            f();
-            read_unlock();
-        }
-
-        void write_lock() {
-            std::unique_lock<T> lock(_m);
-            _unlocked.wait(lock, [&]() { return _writers == 0 && _readers == 0; });
-            ++_writers;
-        }
-
-        void write_unlock() {
-            std::unique_lock<T> lock(_m);
-            _writers = 0;
-            _unlocked.notify_one();
-        }
-
-        void write_lock(std::function<void()> f) {
-            write_lock();
-            f();
-            write_unlock();
-        }
-
-        void setName(const std::string& name) {
-            _m.setName(name);
-        }
-
-    private:
-        T _m;
-        std::condition_variable_any _unlocked;
-        unsigned _writers;
-        unsigned _readers;
-    };
-
-    template<typename T>
-    struct ScopedWrite {
-        ScopedWrite( ReadWrite<T>& lock ) : _lock(lock) { _lock.write_lock(); }
-        ~ScopedWrite() { _lock.write_unlock(); }
-    private:
-        ReadWrite<T>& _lock;
-    };
-
-    template<typename T>
-    struct ScopedRead {
-        ScopedRead( ReadWrite<T>& lock ) : _lock(lock) { _lock.read_lock(); }
-        ~ScopedRead() { _lock.read_unlock(); }
-    private:
-        ReadWrite<T>& _lock;
-    };
-
-    typedef ReadWrite<Mutex> ReadWriteMutex;
-    typedef ReadWrite<RecursiveMutex> ReadWriteRecursiveMutex;
-    typedef ScopedRead<Mutex> ScopedReadLock;
-    typedef ScopedWrite<Mutex> ScopedWriteLock;
-    typedef ScopedRead<RecursiveMutex> ScopedRecursiveReadLock;
-    typedef ScopedWrite<RecursiveMutex> ScopedRecursiveWriteLock;
-
-    /**
-     * Simple convenience construct to make another type "lockable"
-     * as long as it has a default constructor
-     */
-    template<typename T>
-    struct Mutexed : public T, public BasicLockable {
-        Mutexed() : T() { }
-        Mutexed(const std::string& name) : _lockable_mutex(name), T() { }
-        void setName(const std::string& name) { _lockable_mutex.setName(name); }
-        void lock() { _lockable_mutex.lock(); }
-        void lock() const { _lockable_mutex.lock(); }
-        void unlock() { _lockable_mutex.unlock(); }
-        void unlock() const { _lockable_mutex.unlock(); }
-        void lock(std::function<void()> func) { lock(); func(); unlock(); }
-        void scoped_lock(std::function<void()> func) { lock(); func(); unlock(); }
-        Mutex& mutex() const { return _lockable_mutex; }
-        T& operator = (const T& rhs) { return T::operator=(rhs); }
-        T& operator = (const T&& rhs) { return T::operator=(rhs); }
-    private:
-        mutable Mutex _lockable_mutex;
-    };
-
-
-    /**
-     * Simple atomic counter that increments an atomic
-     * when entering a scope and decrements it upon exiting the scope
-     */
-    struct ScopedAtomicCounter
-    {
-        std::atomic_int& _a;
-        ScopedAtomicCounter(std::atomic_int& a) : _a(a) { ++_a; }
-        ~ScopedAtomicCounter() { --_a; }
-    };
-
     //! Sets the name of the curent thread
     extern ROCKY_EXPORT void setThreadName(const std::string& name);
-
-    //! Sets the thread name with details when scoped
-    struct ScopedThreadName
-    {
-        std::string _base;
-        ScopedThreadName(const std::string& base, const std::string& detail) : 
-            _base(base)
-        {
-            setThreadName(base + "(" + detail + ")");
-        }
-        ~ScopedThreadName()
-        {
-            setThreadName(_base);
-        }
-    };
 
     /**
      * Sempahore lets N users aquire it and then notifies when the
@@ -694,29 +398,25 @@ namespace ROCKY_NAMESPACE { namespace util
     private:
         int _count;
         std::condition_variable_any _cv;
-        mutable Mutex _m;
+        mutable std::mutex _m;
     };
 
 
     /** Per-thread data store */
     template<class T>
-    struct ThreadLocal : public Mutex
+    struct ThreadLocal : public std::mutex
     {
-        ThreadLocal() : Mutex() { }
-
-        ThreadLocal(const std::string& name) : Mutex(name) { }
-
         T& get() {
-            ScopedMutexLock lock(*this);
-            return _data[util::getCurrentThreadId()];
+            std::scoped_lock lock(*this);
+            return _data[std::this_thread::get_id()];
         }
 
         void clear() {
-            ScopedMutexLock lock(*this);
+            std::scoped_lock lock(*this);
             _data.clear();
         }
 
-        using container_t = typename std::unordered_map<unsigned, T>;
+        using container_t = typename std::unordered_map<std::thread::id, T>;
         using iterator = typename container_t::iterator;
 
         // NB. lock before using these!
@@ -1031,8 +731,8 @@ namespace ROCKY_NAMESPACE { namespace util
         using Queue = std::vector<QueuedJob>;
         Queue _queue;
         // protect access to the queue
-        mutable Mutex _queueMutex;
-        mutable Mutex _quitMutex;
+        mutable std::mutex _queueMutex;
+        mutable std::mutex _quitMutex;
         // target number of concurrent threads in the pool
         std::atomic<unsigned> _targetConcurrency;
         // thread waiter block
@@ -1044,7 +744,7 @@ namespace ROCKY_NAMESPACE { namespace util
         // pointer to the stats structure for this arena
         Metrics::Arena::Ptr _metrics;
 
-        static Mutex _arenas_mutex;
+        static std::mutex _arenas_mutex;
         static std::unordered_map<std::string, unsigned> _arenaSizes;
         static std::unordered_map<std::string, std::shared_ptr<JobArena>> _arenas;
         static std::string _defaultArenaName;

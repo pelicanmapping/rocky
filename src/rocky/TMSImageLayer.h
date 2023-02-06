@@ -62,7 +62,6 @@ namespace ROCKY_NAMESPACE
 
     private:
         TMS::Driver _driver;
-        mutable util::ReadWriteMutex _mutex;
         URI _uri;
         std::string _tmsType;
         std::string _format;

@@ -8,6 +8,7 @@
 #include <rocky/Common.h>
 #include <rocky/Math.h>
 #include <rocky/Status.h>
+#include <rocky/Log.h>
 
 #include <string>
 #include <algorithm>
@@ -21,6 +22,8 @@
 #include <filesystem>
 #include <ctype.h>
 #include <functional>
+#include <chrono>
+#include <thread>
 
 class TiXmlDocument;
 
@@ -410,6 +413,20 @@ namespace ROCKY_NAMESPACE { namespace util
             // reset the sentry.
             _list.splice(_list.begin(), _list, _sentryptr);
             _sentryptr = _list.begin();
+        }
+    };
+
+    struct scoped_chrono
+    {
+        std::string _me;
+        std::chrono::time_point<std::chrono::steady_clock> _a;
+        scoped_chrono(const std::string& me) : _me(me) {
+            _a = std::chrono::steady_clock::now();
+        }
+        ~scoped_chrono() {
+            auto b = std::chrono::steady_clock::now();
+            auto d = (float)std::chrono::duration_cast<std::chrono::microseconds>(b - _a).count();
+            rocky::Log::info() << std::this_thread::get_id() << " : " << _me << " = " << d << "us" << std::endl;
         }
     };
 } }

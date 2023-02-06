@@ -123,8 +123,6 @@ ElevationLayer::construct(const Config& conf)
         _openAutomatically = false;
     }
 
-    _sentry.setName("ElevationLayer " + name());
-
     // a small L2 cache will help with things like normal map creation
     // (i.e. queries that sample neighboring tiles)
     if (!_l2cachesize.has_value())
@@ -279,7 +277,7 @@ ElevationLayer::assembleHeightfield(
         {
             if ( isKeyInLegalRange(layerKey) )
             {
-                util::ScopedReadLock lock(layerMutex());
+                std::shared_lock L(layerMutex());
 
                 auto result = createHeightfieldImplementation(layerKey, io);
 
@@ -498,7 +496,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
 
             if (key.profile() == my_profile)
             {
-                util::ScopedReadLock lock(layerMutex());
+                std::shared_lock L(layerMutex());
                 auto r = createHeightfieldImplementation(key, io);
                 if (r.status.failed())
                     return r;
@@ -612,7 +610,7 @@ ElevationLayer::writeHeightfield(
 {
     if (isWritingSupported() && isWritingRequested())
     {
-        util::ScopedReadLock lock(layerMutex());
+        std::shared_lock L(layerMutex());
         return writeHeightfieldImplementation(key, hf, io);
     }
     return Status(Status::ServiceUnavailable);

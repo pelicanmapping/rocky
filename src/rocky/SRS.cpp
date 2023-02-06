@@ -95,14 +95,15 @@ namespace
         //! retrieve or create a PJ projection object based on the provided definition string,
         //! which may be a proj string, a WKT string, an espg identifer, or a well-known alias
         //! like "spherical-mercator" or "wgs84".
-        PJ* get_or_create(const std::string& def)
+        SRSEntry& get_or_create(const std::string& def)
         {
             auto ctx = threading_context();
 
-            PJ* pj = nullptr;
             auto iter = find(def);
             if (iter == end())
             {
+                PJ* pj = nullptr;
+
                 std::string to_try = def;
                 std::string ndef = util::toLower(def);
 
@@ -183,33 +184,26 @@ namespace
                     if (proj)
                         new_entry.proj = proj;
                 }
+
+                return new_entry;
             }
             else
             {
-                pj = iter->second.pj;
+                return iter->second;
             }
-            return pj;
         }
 
         //! fetch the projection type
-        PJ_TYPE get_type(const std::string& def) const
+        PJ_TYPE get_type(const std::string& def)
         {
-            auto iter = find(def);
-            if (iter == end())
-                return PJ_TYPE_UNKNOWN;
-            else
-                return iter->second.type;
+            return get_or_create(def).type;
         }
 
         //! fetch the ellipsoid associated with an SRS definition
         //! that was previously created
-        const Ellipsoid& get_ellipsoid(const std::string& def) const
+        const Ellipsoid& get_ellipsoid(const std::string& def)
         {
-            auto iter = find(def);
-            if (iter == end())
-                return default_ellipsoid;
-            else
-                return iter->second.ellipsoid;
+            return get_or_create(def).ellipsoid;
         };
 
         //! Get the computed bounds of a projection (or guess at them)
@@ -217,11 +211,11 @@ namespace
         {
             auto ctx = threading_context();
 
-            auto iter = find(def);
-            if (iter == end() || iter->second.pj == nullptr)
+            SRSEntry& entry = get_or_create(def);
+
+            if (entry.pj == nullptr)
                 return empty_box;
 
-            SRSEntry& entry = iter->second;
             if (entry.bounds.has_value())
                 return entry.bounds.get();
 
@@ -273,10 +267,17 @@ namespace
             return entry.bounds.get();
         }
 
-        const std::string& get_wkt(const std::string& def) const
+        const std::string& get_wkt(const std::string& def)
         {
             auto iter = find(def);
-            return iter != end() ? iter->second.wkt : empty_string;
+            if (iter == end())
+            {
+                get_or_create(def);
+                iter = find(def);
+                if (iter == end())
+                    return empty_string;
+            }
+            return iter->second.wkt;
         }
 
         //! process a vertical datum grid name into a proper file name for proj to load
@@ -308,8 +309,8 @@ namespace
 
             if (iter == end())
             {
-                PJ* p1 = get_or_create(firstDef);
-                PJ* p2 = get_or_create(secondDef);
+                PJ* p1 = get_or_create(firstDef).pj;
+                PJ* p2 = get_or_create(secondDef).pj;
                 if (p1 && p2)
                 {
                     bool p1_is_crs = proj_is_crs(p1);
@@ -473,7 +474,7 @@ SRS::SRS(const std::string& h, const std::string& v) :
     _vertical(v),
     _valid(false)
 {
-    PJ* pj = g_srs_factory.get_or_create(h);
+    PJ* pj = g_srs_factory.get_or_create(h).pj;
     _valid = (pj != nullptr);
 }
 
@@ -496,7 +497,7 @@ SRS::~SRS()
 const char*
 SRS::name() const
 {
-    PJ* pj = g_srs_factory.get_or_create(_definition);
+    PJ* pj = g_srs_factory.get_or_create(_definition).pj;
     if (!pj) return "";
     return proj_get_name(pj);
 }
@@ -547,8 +548,8 @@ SRS::isEquivalentTo(const SRS& rhs) const
 bool
 SRS::isHorizEquivalentTo(const SRS& rhs) const
 {
-    PJ* pj1 = g_srs_factory.get_or_create(definition());
-    PJ* pj2 = g_srs_factory.get_or_create(rhs.definition());
+    PJ* pj1 = g_srs_factory.get_or_create(definition()).pj;
+    PJ* pj2 = g_srs_factory.get_or_create(rhs.definition()).pj;
     if (!pj1 || !pj2)
         return false;
     else
@@ -596,7 +597,7 @@ SRS::to(const SRS& rhs) const
 SRS
 SRS::geoSRS() const
 {
-    PJ* pj = g_srs_factory.get_or_create(_definition);
+    PJ* pj = g_srs_factory.get_or_create(_definition).pj;
     if (pj)
     {
         auto ctx = g_srs_factory.threading_context();

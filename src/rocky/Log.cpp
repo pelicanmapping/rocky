@@ -52,7 +52,6 @@ namespace
         {
             _functionStream._buf._level = level;
             _nullStream.setstate(std::ios_base::badbit);
-            //_nullStream.open("/dev/null", std::ofstream::out | std::ofstream::app);
         }
 
         // https://stackoverflow.com/questions/8243743/is-there-a-null-stdostream-implementation-in-c-or-libraries

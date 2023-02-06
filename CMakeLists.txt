@@ -47,6 +47,7 @@ find_package(PROJ CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
 
+option(ROCKY_SUPPORTS_PROFILING "Build with performance profiling" OFF)
 option(ROCKY_SUPPORTS_HTTP "Support HTTP (reuqires httplib)" ON)
 option(ROCKY_SUPPORTS_HTTPS "Support HTTPS (requires openssl)" ON)
 option(ROCKY_SUPPORTS_TMS "Support OSGeo TileMapService" ON)
@@ -56,6 +57,10 @@ option(ROCKY_SUPPORTS_GDAL "Support GeoTIFF and other GDAL formats (required gda
 # option(ROCKY_SUPPORTS_MBTILES "Support MapBox MBTiles (requires sqlite3)" OFF)
 
 #set(BUILD_WITH_JSON ON)
+
+if(ROCKY_SUPPORTS_PROFILING)
+    set(BUILD_WITH_TRACY ON)
+endif()
 
 if(ROCKY_SUPPORTS_HTTP)
     set(BUILD_WITH_HTTPLIB ON)
@@ -146,6 +151,13 @@ if (BUILD_WITH_SQLITE3)
     endif()
 endif()
 
+# tracy - profiling tools and headers
+if (BUILD_WITH_TRACY)
+    find_package(Tracy CONFIG REQUIRED)
+    if (Tracy_FOUND)
+        add_definitions("-DTRACY_FOUND")
+    endif()
+endif()
 
 # source code
 add_subdirectory(src)

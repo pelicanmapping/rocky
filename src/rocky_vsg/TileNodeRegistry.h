@@ -102,7 +102,7 @@ namespace ROCKY_NAMESPACE
 
         TileTable _tiles;
         Tracker _tracker;
-        mutable util::Mutex _mutex;
+        mutable std::mutex _mutex;
         TerrainTileHost* _host;
 
         std::vector<TileKey> _needsUpdate;

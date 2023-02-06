@@ -146,7 +146,7 @@ namespace ROCKY_NAMESPACE
             //const Options& gdalOptions() const { return _gdalOptions; }
             shared_ptr<GDAL::ExternalDataset> _externalDataset;
             std::string _name;
-            unsigned _threadId;
+            std::thread::id _threadId;
 
             const std::string& getName() const { return _name; }
         };

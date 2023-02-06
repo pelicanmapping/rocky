@@ -452,7 +452,7 @@ GDAL::Driver::Driver() :
     _maxDataLevel(30),
     _linearUnits(1.0)
 {
-    _threadId = rocky::util::getCurrentThreadId();
+    _threadId = std::this_thread::get_id();
 }
 
 GDAL::Driver::~Driver()

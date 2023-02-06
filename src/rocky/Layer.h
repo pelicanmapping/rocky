@@ -12,6 +12,7 @@
 #include <rocky/IOTypes.h>
 #include <rocky/Status.h>
 #include <vector>
+#include <shared_mutex>
 
 namespace ROCKY_NAMESPACE
 {
@@ -244,7 +245,7 @@ namespace ROCKY_NAMESPACE
         Hints _hints;
         std::atomic<Revision> _revision;
         std::string _runtimeCacheId;
-        mutable util::ReadWriteMutex* _mutex;
+        mutable std::shared_mutex _mutex;
         bool _isClosing;
         bool _isOpening;
 
@@ -272,7 +273,7 @@ namespace ROCKY_NAMESPACE
         //! subclass access to a mutex that serializes the 
         //! Layer open and close methods with respect to any asynchronous
         //! functions that require the layer to remain open
-        util::ReadWriteMutex& layerMutex() const { return *_mutex; }
+        std::shared_mutex& layerMutex() const { return _mutex; }
 
         //! are we in the middle of a close() call?
         bool isClosing() const { return _isClosing; }

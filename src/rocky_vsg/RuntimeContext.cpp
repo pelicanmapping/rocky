@@ -11,7 +11,7 @@ using namespace ROCKY_NAMESPACE;
 namespace
 {
     //! Operation that asynchronously creates a node (via a user lambda function)
-    //! and then safely adds it to the scene graph in the update phase.
+    //! and then safely adds it to the `ene graph in the update phase.
     struct AddNodeAsync : public vsg::Inherit<vsg::Operation, AddNodeAsync>
     {
         RuntimeContext _runtime;

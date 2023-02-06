@@ -10,7 +10,7 @@ using namespace ROCKY_NAMESPACE;
 TerrainSettings::TerrainSettings(const Config& conf)
 {
     tileSize.setDefault(17);
-    minTileRangeFactor.setDefault(4.0);
+    minTileRangeFactor.setDefault(7.0);
     maxLOD.setDefault(19u);
     minLOD.setDefault(0u);
     firstLOD.setDefault(0u);

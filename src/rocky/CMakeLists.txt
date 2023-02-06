@@ -103,6 +103,10 @@ set(SOURCES
     Viewpoint.cpp
     VisibleLayer.cpp
 )
+
+if (ROCKY_SUPPORTS_PROFILING)
+    list(APPEND HEADERS Profiling.h)
+endif()
         
 if(ROCKY_SUPPORTS_GDAL)
     list(APPEND HEADERS GDALImageLayer.h)
@@ -118,6 +122,9 @@ endif()
 set(PRIVATE_LIBS PROJ::proj)
 set(PUBLIC_LIBS glm::glm)
     
+if(Tracy_FOUND)
+    list(APPEND PRIVATE_LIBS Tracy::TracyClient)
+endif()
 if(GDAL_FOUND)
     list(APPEND PRIVATE_LIBS GDAL::GDAL)
 endif()

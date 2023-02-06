@@ -24,12 +24,12 @@ namespace ROCKY_NAMESPACE
      */
     template<typename F>
     struct Callback {
-        mutable rocky::util::Mutex mutex;
+        mutable std::mutex mutex;
         mutable std::unordered_map<UID, F> functions;
 
         //! Adds a callback function
         UID operator()(const F& func) const {
-            rocky::util::ScopedLock lock(mutex);
+            std::scoped_lock lock(mutex);
             auto uid = createUID();
             functions[uid] = func;
             return uid;
@@ -37,14 +37,14 @@ namespace ROCKY_NAMESPACE
 
         //! Removed a callback function with the UID returned from ()
         void remove(UID uid) {
-            rocky::util::ScopedLock lock(mutex);
+            std::scoped_lock lock(mutex);
             functions.erase(uid);
         }
 
         //! Executes all callback functions with the provided args
         template<typename... Args>
         void fire(Args&&... args) const {
-            rocky::util::ScopedLock lock(mutex);
+            std::scoped_lock lock(mutex);
             for (auto& function : functions)
                 function.second(args...);
         }

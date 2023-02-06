@@ -142,7 +142,7 @@ Layer::construct(const Config& conf)
     }
 #endif
 
-    _mutex = new util::ReadWriteMutex(name());
+//    _mutex = new util::ReadWriteMutex(name());
 }
 
 Config
@@ -165,8 +165,7 @@ Layer::getConfig() const
 
 Layer::~Layer()
 {
-    if (_mutex)
-        delete _mutex;
+    //nop
 }
 
 void
@@ -277,7 +276,7 @@ Layer::open(const IOOptions& io)
         return status();
     }
 
-    util::ScopedWriteLock lock(layerMutex());
+    std::unique_lock lock(_mutex);
 
     // be optimistic :)
     _status = StatusOK;
@@ -361,7 +360,7 @@ Layer::close()
 {    
     if (isOpen())
     {
-        util::ScopedWriteLock lock(layerMutex());
+        std::unique_lock lock(_mutex);
         _isClosing = true;
         closeImplementation();
         _status = Status(Status::ResourceUnavailable, "Layer closed");

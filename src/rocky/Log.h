@@ -17,7 +17,7 @@ namespace ROCKY_NAMESPACE
     //! Threshold for logging
     enum class LogLevel
     {
-        SILENT=0, WARN=1, INFO=2
+        SILENT=0, WARN=1, INFO=2, ALL=3
     };
 
     //! Function for redirecting log messages from the console

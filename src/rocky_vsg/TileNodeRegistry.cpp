@@ -19,8 +19,7 @@ using namespace ROCKY_NAMESPACE;
 //----------------------------------------------------------------------------
 
 TileNodeRegistry::TileNodeRegistry(TerrainTileHost* in_host) :
-    _host(in_host),
-    _mutex("TileNodeRegistry(OE)")
+    _host(in_host)
 {
     //nop
 }
@@ -38,7 +37,7 @@ TileNodeRegistry::setDirty(
     const CreateTileManifest& manifest,
     shared_ptr<TerrainContext> terrain)
 {
-    util::ScopedLock lock(_mutex);
+    std::scoped_lock lock(_mutex);
     
     for(auto& [key, entry] : _tiles)
     {
@@ -54,7 +53,7 @@ TileNodeRegistry::setDirty(
 void
 TileNodeRegistry::releaseAll()
 {
-    util::ScopedLock lock(_mutex);
+    std::scoped_lock lock(_mutex);
 
     _tiles.clear();
     _tracker.reset();
@@ -71,7 +70,7 @@ TileNodeRegistry::ping(
     TerrainTileNode* tile3,
     vsg::RecordTraversal& nv)
 {
-    util::ScopedLock lock(_mutex);
+    std::scoped_lock lock(_mutex);
 
     for (auto tile : { tile0, tile1, tile2, tile3 })
     {
@@ -109,7 +108,7 @@ TileNodeRegistry::update(
     const IOOptions& io,
     shared_ptr<TerrainContext> terrain)
 {
-    util::ScopedLock lock(_mutex);
+    std::scoped_lock lock(_mutex);
 
     // update any tiles that asked for it
     for (auto& key : _needsUpdate)
@@ -229,7 +228,7 @@ TileNodeRegistry::createTile(
 vsg::ref_ptr<TerrainTileNode>
 TileNodeRegistry::getTile(const TileKey& key) const
 {
-    util::ScopedLock lock(_mutex);
+    std::scoped_lock lock(_mutex);
     auto iter = _tiles.find(key);
     return
         iter != _tiles.end() ? iter->second._tile :
@@ -316,6 +315,7 @@ TileNodeRegistry::requestTileData(
         {
             return Result<TerrainTileModel>();
         }
+        //util::scoped_chrono timer("load async " + key.str());
 
         TerrainTileModelFactory factory;
 
@@ -334,6 +334,8 @@ TileNodeRegistry::requestTileData(
         {
             return;
         }
+
+        //util::scoped_chrono timer("merge sync " + key.str());
 
         auto tile = terrain->tiles->getTile(key);
         if (tile)

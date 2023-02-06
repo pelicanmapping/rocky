@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "Utils.h"
+#include "Log.h"
 #include "sha1.h"
 #include <cctype>
 #include <cstring>

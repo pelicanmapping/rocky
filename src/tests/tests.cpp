@@ -44,6 +44,11 @@ TEST_CASE("Log")
     };
     Log::usePrefix() = false;
 
+    Log::level = LogLevel::WARN;
+    Log::info() << "Hello, world." << std::endl;
+    CHECK(out_string.empty());
+
+    Log::level = LogLevel::INFO;
     Log::info() << "Hello, world.";
     CHECK(out_string.empty());
 
@@ -64,6 +69,7 @@ TEST_CASE("Log")
 }
 
 TEST_CASE("Math")
+
 {
     CHECK(is_identity(fmat4(1)));
     CHECK(!is_identity(fmat4()));
