@@ -27,34 +27,42 @@ namespace ROCKY_NAMESPACE
             double semiMajorRadius,
             double semiMinorRadius);
 
-        //! Equatorial radius
+        //! Equatorial radius (meters)
         double semiMajorAxis() const;
-        double radiusEquator() const { return semiMajorAxis(); }
+
+        //! Equatorial radius (meters)
         void setSemiMajorAxis(double value);
 
         //! Polar radius (meters)
         double semiMinorAxis() const;
-        double radiusPolar() const { return semiMinorAxis(); }
+
+        //! Polar radius (meters)
         void setSemiMinorAxis(double value);
 
-        //! Name of this ellipsoid (meters)
+        //! Name of this ellipsoid
         const std::string& name() const { return _name; }
+
+        //! Name of this ellipsoid
         void setName(const std::string& value) { _name = value; }
 
         //! Matrix to transform from LTP at a point to geocentric
-        dmat4 geocentricToLocalToWorld(const dvec3& xyz) const;
+        //! @param xyz Input geocentric point
+        //! @return Matrix that transforms points from geocentric space to the tangent place XYZ space
+        dmat4 geocentricToLocalToWorld(const dvec3& geocPoint) const;
 
         //! Get local up vector at a geocentric point
-        dvec3 geocentricToUpVector(const dvec3& xyz) const;
+        dvec3 geocentricToUpVector(const dvec3& geocPoint) const;
 
-        //! Convert geocentric coords to geodetic (LL DEG + Alt M)
-        dvec3 geocentricToGeodetic(const dvec3& xyz) const;
+        //! Convert geocentric coords to geodetic
+        //! @param geocPoint Input geocentric point (x, y, z meters)
+        //! @return output geodetic (degrees longitude, degrees latitude, meters altitude) point
+        dvec3 geocentricToGeodetic(const dvec3& geocPoint) const;
 
         //! Convert geodetic coords to geocentric coord
-        dvec3 geodeticToGeocentric(const dvec3& lla) const;
+        dvec3 geodeticToGeocentric(const dvec3& geodPoint) const;
 
         //! Get the coordinate frame at the geocentric point
-        dmat4 geodeticToCoordFrame(const dvec3& xyz) const;
+        dmat4 geodeticToCoordFrame(const dvec3& geodPoint) const;
 
         //! Converts degrees to meters at a given latitide
         double longitudinalDegreesToMeters(double value, double lat_deg = 0.0) const;
