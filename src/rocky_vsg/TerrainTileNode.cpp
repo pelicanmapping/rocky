@@ -55,7 +55,6 @@ TerrainTileNode::TerrainTileNode(
     stategroup = nullptr;
     lastTraversalFrame = 0;
     lastTraversalRange = FLT_MAX;
-    _needsData = true;
     _needsChildren = false;
     _needsUpdate = false;
     
@@ -212,17 +211,18 @@ TerrainTileNode::shouldSubDivide(vsg::State* state) const
 void
 TerrainTileNode::accept(vsg::RecordTraversal& nv) const
 {
-    lastTraversalFrame.exchange(nv.getFrameStamp()->frameCount);
-    lastTraversalTime.exchange(nv.getFrameStamp()->time);
+    auto frame = nv.getFrameStamp()->frameCount;
+
+    auto new_frame = lastTraversalFrame.exchange(frame) != frame;
+
     lastTraversalRange.exchange(std::min(
-        (float)lastTraversalRange,
+        (float)(new_frame ? FLT_MAX : lastTraversalRange),
         (float)distanceTo(bound.center, nv.getState())));
+
+    lastTraversalTime.exchange(nv.getFrameStamp()->time);
 
     if (hasChildren())
         _needsChildren = false;
-
-    // TODO: this is no good from a multi-threaded record perspective
-    //_needsChildren = false;
 
     if (surface->isVisibleFrom(nv.getState()))
     {
@@ -239,7 +239,7 @@ TerrainTileNode::accept(vsg::RecordTraversal& nv) const
             // children do not exist or are out of range; use this tile's geometry
             children[0]->accept(nv);
 
-            if (childrenInRange && !childLoader.working())
+            if (childrenInRange && !childLoader.working() && !childLoader.available())
             {
                 _needsChildren = true;
             }
@@ -269,6 +269,9 @@ TerrainTileNode::unloadChildren()
 {
     children.resize(1);
     childLoader.reset();
+    dataLoader.reset();
+    dataMerger.reset();
+    _needsChildren = true;
 }
 
 void
@@ -342,7 +345,7 @@ TerrainTileNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
 void
 TerrainTileNode::inherit()
 {
-    vsg::ref_ptr<TerrainTileNode> safe_parent = parent;
+    auto safe_parent = parent.ref_ptr();
     if (safe_parent)
     {
         auto& sb = scaleBias[key.getQuadrant()];
@@ -352,46 +355,4 @@ TerrainTileNode::inherit()
 
         revision = safe_parent->revision;
     }
-}
-
-void
-TerrainTileNode::merge(
-    const TerrainTileModel& tile_model,
-    const CreateTileManifest& manifest)
-{
-    //if (manifest.includesConstraints())
-    //{
-    //    createGeometry(terrain, nullptr);
-    //}
-
-    if (tile_model.colorLayers.size() > 0)
-    {
-        auto& layer = tile_model.colorLayers[0];
-        if (layer.image.valid())
-        {
-            renderModel.color.image = layer.image.image();
-            renderModel.color.matrix = layer.matrix;
-            //_renderModel.descriptorModel.color = nullptr;
-        }
-    }
-
-    if (tile_model.elevation.heightfield.valid())
-    {
-        renderModel.elevation.image = tile_model.elevation.heightfield.heightfield();
-        renderModel.elevation.matrix = tile_model.elevation.matrix;
-        //_renderModel.descriptorModel.elevation = nullptr;
-    }
-
-    if (tile_model.normalMap.image.valid())
-    {
-        renderModel.normal.image = tile_model.normalMap.image.image();
-        renderModel.normal.matrix = tile_model.normalMap.matrix;
-        //_renderModel.descriptorModel.normal = nullptr;
-    }
-
-    _needsData = false;
-
-    //refreshStateGroup(terrain);
-
-    // NEEDS STATE UPDATE?? _needsState = true??
 }

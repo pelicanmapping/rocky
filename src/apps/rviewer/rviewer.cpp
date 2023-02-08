@@ -186,17 +186,27 @@ int main(int argc, char** argv)
     // rendering main loop
     auto start = std::chrono::steady_clock::now();
     while (viewer->advanceToNextFrame())
-    {
+    {        
         viewer->handleEvents();
-        viewer->update();
+
+        // since an event handler could deactivate the viewer:
+        if (!viewer->active())
+            break;
 
         mapNode->update(viewer->getFrameStamp());
+
+        // runs through the viewer's update operations queue; this includes update ops 
+        // initialized by rocky (tile merges for example)
+        viewer->update();
 
         viewer->recordAndSubmit();
         viewer->present();
 
         frames += 1.0f;
     }
+
+    viewer->stopThreading();
+
     auto end = std::chrono::steady_clock::now();
 
     if (measureFrameTime)

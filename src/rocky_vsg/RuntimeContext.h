@@ -32,6 +32,9 @@ namespace ROCKY_NAMESPACE
     class ROCKY_VSG_EXPORT RuntimeContext
     {
     public:
+        //! Constructor
+        RuntimeContext();
+
         //! Compiler for new vsg objects
         std::function<vsg::CompileManager*()> compiler;
 
@@ -65,18 +68,22 @@ namespace ROCKY_NAMESPACE
         //! asynchronously and then merge it into the scene graph
         //! synchronously.
         template<class T>
-        util::Future<bool> runAsyncUpdateSync(
+        util::Future<util::Future<bool>> runAsyncUpdateSync(
             std::function<Result<T>(Cancelable&)> async,
-            std::function<void(const T&, Cancelable&)> sync);
+            std::function<void(const T&, Cancelable&)> sync,
+            std::function<float()> priority_function);
     };
 
 
     // inlines
+#undef USE_VSG_FOR_RUN_ASYNC_UPDATE_SYNC
 
+#ifdef USE_VSG_FOR_RUN_ASYNC_UPDATE_SYNC
     template<class T>
     util::Future<bool> RuntimeContext::runAsyncUpdateSync(
         std::function<Result<T>(Cancelable&)> async,
-        std::function<void(const T&, Cancelable&)> sync)
+        std::function<void(const T&, Cancelable&)> sync,
+        std::function<float()> priority_func)
     {
         struct TwoStepOp : public vsg::Inherit<vsg::Operation, TwoStepOp> {
             RuntimeContext* _runtime;
@@ -111,8 +118,59 @@ namespace ROCKY_NAMESPACE
         op->_sync = sync;
         auto result = op->_promise.getFuture();
         this->loaders->add(op);
+
         return result;
     }
+#else
+    namespace util
+    {
+        template<typename T>
+        struct LambdaOperation : public vsg::Operation
+        {
+            T _value;
+            util::Promise<bool> _promise;
+            std::function<void(const T&, Cancelable&)> _func;
 
+            LambdaOperation(std::function<void(const T&, Cancelable&)> func, const T& value) :
+                vsg::Operation(),
+                _func(func),
+                _value(value) { }
+
+            void run() override {
+                _func(_value, _promise);
+                _promise.resolve(true);
+            }
+        };
+    }
+
+    template<class T>
+    util::Future<util::Future<bool>> RuntimeContext::runAsyncUpdateSync(
+        std::function<Result<T>(Cancelable&)> async,
+        std::function<void(const T&, Cancelable&)> sync,
+        std::function<float()> priority_func)
+    {
+        auto two_step_func = [async, sync, this](Cancelable& c) -> util::Future<bool>
+        {
+            if (c.canceled())
+                return {};
+
+            Result<T> result = async(c);
+            if (result.status.ok())
+            {
+                auto sync_op = vsg::ref_ptr<util::LambdaOperation<T>>(new util::LambdaOperation<T>(sync, result.value));
+                auto sync_result = sync_op->_promise.future();
+                this->updates()->add(sync_op);
+                return sync_result;
+            }
+            return {}; // failure
+        };
+
+        auto loaders = util::JobArena::get("loaders");
+        util::Job job;
+        job.setArena(loaders);
+        job.setPriorityFunction(priority_func);
+        return job.dispatch<util::Future<bool>>(two_step_func);
+    }
+#endif
 }
 

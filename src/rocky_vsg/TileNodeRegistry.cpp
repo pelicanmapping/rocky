@@ -57,9 +57,10 @@ TileNodeRegistry::releaseAll()
 
     _tiles.clear();
     _tracker.reset();
-    _needsUpdate.clear();
-    _needsData.clear();
     _needsChildren.clear();
+    _needsLoad.clear();
+    _needsMerge.clear();
+    _needsUpdate.clear();
 }
 
 void
@@ -90,11 +91,32 @@ TileNodeRegistry::ping(
                 _tracker.use(tile, i->second._trackerToken);
             }
 
-            if (tile->_needsChildren)
-                _needsChildren.push_back(tile->key);
+            // "progressive" means do not load LOD N+1 until LOD N is complete.
+            const bool progressive = true;
 
-            if (tile->_needsData)
-                _needsData.push_back(tile->key);
+            if (progressive)
+            {
+                auto parent = tile->parentTile();
+                auto tile_complete = tile->dataMerger.available();
+
+                if (tile->_needsChildren && tile_complete)
+                    _needsChildren.push_back(tile->key);
+
+                if (tile->dataLoader.idle() && (!parent || parent->dataMerger.available()))
+                    _needsLoad.push_back(tile->key);
+            }
+            else
+            {
+                // free for all
+                if (tile->_needsChildren)
+                    _needsChildren.push_back(tile->key);
+
+                if (tile->dataLoader.idle())
+                    _needsLoad.push_back(tile->key);
+            }
+
+            if (tile->dataLoader.available() && tile->dataMerger.idle())
+                _needsMerge.push_back(tile->key);
 
             if (tile->_needsUpdate)
                 _needsUpdate.push_back(tile->key);
@@ -137,15 +159,26 @@ TileNodeRegistry::update(
     _needsChildren.clear();
 
     // launch any data loading requests
-    for (auto& key : _needsData)
+    for (auto& key : _needsLoad)
     {
         auto iter = _tiles.find(key);
         if (iter != _tiles.end())
         {
-            requestTileData(iter->second._tile.get(), io, terrain);
+            requestLoad(iter->second._tile.get(), io, terrain);
         }
     }
-    _needsData.clear();
+    _needsLoad.clear();
+
+    // schedule any data merging requests
+    for (auto& key : _needsMerge)
+    {
+        auto iter = _tiles.find(key);
+        if (iter != _tiles.end())
+        {
+            requestMerge(iter->second._tile.get(), io, terrain);
+        }
+    }
+    _needsMerge.clear();
 
     // Flush unused tiles (i.e., tiles that failed to ping) out of
     // the system. Tiles ping their children all at once; this
@@ -159,9 +192,14 @@ TileNodeRegistry::update(
     {
         if (!tile->doNotExpire)
         {
-            auto parent = tile->getParentTile();
-            if (parent)
-                parent->unloadChildren();
+            auto parent_iter = _tiles.find(tile->key.createParentKey());
+            if (parent_iter != _tiles.end())
+            {
+                auto parent = parent_iter->second._tile;
+                //auto parent = tile->parentTile();
+                if (parent.valid())
+                    parent->unloadChildren();
+            }
             _tiles.erase(tile->key);
             return true;
         }
@@ -291,8 +329,32 @@ TileNodeRegistry::createTileChildren(
         create_children);
 }
 
+namespace
+{
+    template<class T>
+    struct PromiseOperation : public vsg::Operation
+    {
+        util::Promise<T> _promise;
+        std::function<T(Cancelable&)> _func;
+
+        PromiseOperation(std::function<T(Cancelable&)> func) :
+            _func(func) { }
+
+        void run() override {
+            if (!_promise.abandoned())
+                _promise.resolve(_func(_promise));
+            else
+                _promise.resolve();
+        }
+
+        util::Future<T> future() {
+            return _promise.future();
+        }
+    };
+}
+
 void
-TileNodeRegistry::requestTileData(
+TileNodeRegistry::requestLoad(
     TerrainTileNode* tile,
     const IOOptions& in_io,
     shared_ptr<TerrainContext> terrain) const
@@ -309,13 +371,12 @@ TileNodeRegistry::requestTileData(
     CreateTileManifest manifest;
     const IOOptions io(in_io);
 
-    const auto load_async = [key, manifest, terrain, io](Cancelable& p) -> Result<TerrainTileModel>
+    auto load = [key, manifest, terrain, io](Cancelable& p) -> TerrainTileModel
     {
         if (p.canceled())
         {
-            return Result<TerrainTileModel>();
+            return { };
         }
-        //util::scoped_chrono timer("load async " + key.str());
 
         TerrainTileModelFactory factory;
 
@@ -325,14 +386,53 @@ TileNodeRegistry::requestTileData(
             manifest,
             IOOptions(io, p));
 
-        return Result(model);
+        return model;
     };
 
-    const auto merge_sync = [key, manifest, terrain](const TerrainTileModel& model, Cancelable& p)
+#if 1
+    vsg::observer_ptr<TerrainTileNode> tile_weak(tile);
+    auto priority_func = [tile_weak]() -> float
+    {
+        vsg::ref_ptr<TerrainTileNode> tile(tile_weak);
+        return tile ? -tile->lastTraversalRange : 0.0f;
+    };
+
+    util::Job job;
+    job.setArena("loaders");
+    job.setPriorityFunction(priority_func);
+    tile->dataLoader = job.dispatch<TerrainTileModel>(load);
+#else
+    auto load_op = vsg::ref_ptr<PromiseOperation<TerrainTileModel>>(
+        new PromiseOperation<TerrainTileModel>(load));
+
+    tile->dataLoader = load_op->future();
+
+    terrain->runtime.loaders->add(load_op);
+#endif
+}
+
+void
+TileNodeRegistry::requestMerge(
+    TerrainTileNode* tile,
+    const IOOptions& in_io,
+    shared_ptr<TerrainContext> terrain) const
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(tile, void());
+
+    // make sure we're not already working on it
+    if (tile->dataMerger.working() || tile->dataMerger.available())
+    {
+        return;
+    }
+
+    auto key = tile->key;
+    const IOOptions io(in_io);
+
+    auto merge = [key, terrain](Cancelable& p) -> bool
     {
         if (p.canceled())
         {
-            return;
+            return false;
         }
 
         //util::scoped_chrono timer("merge sync " + key.str());
@@ -340,6 +440,8 @@ TileNodeRegistry::requestTileData(
         auto tile = terrain->tiles->getTile(key);
         if (tile)
         {
+            auto model = tile->dataLoader.get();
+
             //ROCKY_INFO << "Merging data for tile " << key.str() << std::endl;
             //tile->merge(model, manifest);
 
@@ -373,9 +475,14 @@ TileNodeRegistry::requestTileData(
                 tile->stategroup,
                 terrain->runtime);
         }
+
+        return true;
     };
 
-    tile->dataLoader = terrain->runtime.runAsyncUpdateSync<TerrainTileModel>(
-        load_async,
-        merge_sync);
+    auto merge_op = vsg::ref_ptr<PromiseOperation<bool>>(
+        new PromiseOperation<bool>(merge));
+
+    tile->dataMerger = merge_op->future();
+
+    terrain->runtime.updates()->add(merge_op);
 }

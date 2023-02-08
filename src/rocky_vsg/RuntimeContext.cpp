@@ -104,11 +104,16 @@ namespace
     };
 }
 
+RuntimeContext::RuntimeContext()
+{
+    util::JobArena::get("loaders")->setConcurrency(4);
+}
+
 util::Future<bool>
 RuntimeContext::compileAndAddNode(vsg::Group* parent, NodeFactory factory)
 {
     auto runner = AddNodeAsync::create(*this, parent, factory);
-    auto future = runner->_promise.getFuture();
+    auto future = runner->_promise.future();
     loaders->add(runner);
     return future;
 }

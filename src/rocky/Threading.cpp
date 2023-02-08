@@ -625,7 +625,7 @@ JobArena::dispatch(
     Delegate& delegate)
 {
     // If we have a group semaphore, acquire it BEFORE queuing the job
-    JobGroup* group = job.getGroup();
+    JobGroup* group = job.group();
     std::shared_ptr<Semaphore> sema = group ? group->_sema : nullptr;
     if (sema)
     {
@@ -707,10 +707,10 @@ JobArena::runJobs()
                 float highest_priority = -FLT_MAX;
                 for (unsigned i = 0; i < _queue.size(); ++i)
                 {
-                    if (index < 0 || _queue[i]._job.getPriority() > highest_priority)
+                    if (index < 0 || _queue[i]._job.priority() > highest_priority)
                     {
                         index = i;
-                        highest_priority = _queue[i]._job.getPriority();
+                        highest_priority = _queue[i]._job.priority();
                     }
                 }
                 
@@ -857,8 +857,8 @@ JobArena::Metrics::Metrics() :
         {
             static std::mutex _mutex;
             std::scoped_lock lock(_mutex);
-            std::string jobname = r.job.getName().empty() ? "unknown" : r.job.getName();
-            ROCKY_INFO
+            std::string jobname = r.job.name().empty() ? "unknown" : r.job.name();
+            rocky::Log::info()
                 << "[Job] " << jobname
                 << " (" << r.arena << ") "
                 << std::fixed << std::setprecision(1)
@@ -867,7 +867,7 @@ JobArena::Metrics::Metrics() :
 
         _reportMinDuration = std::chrono::microseconds(util::as<int>(report_us, 132));
 
-        ROCKY_INFO << LC << "Job report min duration set to " << report_us << "us" << std::endl;
+        rocky::Log::info() << LC << "Job report min duration set to " << report_us << "us" << std::endl;
     }
 }
 

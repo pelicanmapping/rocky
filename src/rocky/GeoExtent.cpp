@@ -158,7 +158,7 @@ GeoExtent::width(const Units& units) const
     }
     else {
         Distance d(width(), srs().units());
-        double m_per_deg = 2.0 * srs().ellipsoid().radiusEquator() * M_PI / 360.0;
+        double m_per_deg = 2.0 * srs().ellipsoid().semiMajorAxis() * M_PI / 360.0;
         double d0 = m_per_deg * fabs(cos(yMin())) * width();
         double d1 = m_per_deg * fabs(cos(yMax())) * height();
         return Distance(std::max(d0, d1), Units::METERS).as(units);

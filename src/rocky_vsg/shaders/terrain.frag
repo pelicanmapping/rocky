@@ -28,5 +28,5 @@ void main()
         
     // outlines
     float b = min(gl_BaryCoordNV.x, min(gl_BaryCoordNV.y, gl_BaryCoordNV.z))*32.0;
-    out_color.rgb = mix(vec3(1,1,1), out_color.rgb, clamp(b,0,1));
+    out_color.rgb = mix(vec3(1,1,1), out_color.rgb, clamp(b,0.75,1.0));
 }

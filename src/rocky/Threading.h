@@ -145,8 +145,14 @@ namespace ROCKY_NAMESPACE { namespace util
         }
 
         //! True if the Promise that generated this Future no longer exists
-        //! and the Promise was never resolved.
+        //! and the Promise was never resolved; or if this Future was never
+        //! associated with a Promise in the first place.
         bool abandoned() const {
+            return !available() && _shared.use_count() == 1;
+        }
+
+        //! True is this Future is unused or abandoned and contains no data.
+        bool idle() const {
             return !available() && _shared.use_count() == 1;
         }
 
@@ -250,7 +256,7 @@ namespace ROCKY_NAMESPACE { namespace util
         Promise() { }
 
         //! This promise's future result.
-        Future<T> getFuture() const { return _future; }
+        Future<T> future() const { return _future; }
 
         //! Resolve (fulfill) the promise with the provided result value.
         void resolve(const T& value) {
@@ -486,24 +492,22 @@ namespace ROCKY_NAMESPACE { namespace util
     class Job
     {
     public:
-
         //! Construct a new blank job
-        Job() :
-            _arena(nullptr), _group(nullptr), _priority(0.0f) { }
+        Job() { }
 
         //! Construct a new job in the specified arena
         Job(JobArena* arena) :
-            _arena(arena), _group(nullptr), _priority(0.0f) { }
+            _arena(arena) { }
 
         //! Construct a new job in the specified arena and job group
         Job(JobArena* arena, JobGroup* group) :
-            _arena(arena), _group(group), _priority(0.0f) { }
+            _arena(arena), _group(group) { }
 
         //! Name of this job
         void setName(const std::string& value) {
             _name = value;
         }
-        const std::string& getName() const {
+        const std::string& name() const {
             return _name;
         }
 
@@ -512,6 +516,10 @@ namespace ROCKY_NAMESPACE { namespace util
             _arena = arena;
         }
         inline void setArena(const std::string& arenaName);
+
+        JobArena* arena() const {
+            return _arena;
+        }
 
         //! Static priority
         void setPriority(float value) {
@@ -524,7 +532,7 @@ namespace ROCKY_NAMESPACE { namespace util
         }
 
         //! Get the priority of this job
-        float getPriority() const {
+        float priority() const {
             return _priorityFunc != nullptr ? _priorityFunc() : _priority;
         }
 
@@ -532,7 +540,7 @@ namespace ROCKY_NAMESPACE { namespace util
         void setGroup(JobGroup* group) {
             _group = group;
         }
-        JobGroup* getGroup() const {
+        JobGroup* group() const {
             return _group;
         }
 
@@ -551,10 +559,10 @@ namespace ROCKY_NAMESPACE { namespace util
 
     private:
         std::string _name;
-        float _priority;
-        JobArena* _arena;
-        JobGroup* _group;
-        std::function<float()> _priorityFunc;
+        float _priority = 0.0f;
+        JobArena* _arena = nullptr;
+        JobGroup* _group = nullptr;
+        std::function<float()> _priorityFunc = nullptr;
         friend class JobArena;
     };
 
@@ -592,6 +600,14 @@ namespace ROCKY_NAMESPACE { namespace util
 
         //! Discard all queued jobs
         void cancelAll();
+
+        using Delegate = std::function<bool()>;
+
+        //! Schedule an asynchronous task on this arena.
+        //! Use Job::dispatch to run jobs (usually no need to call this directly)
+        //! @param job Job details
+        //! @param delegate Function to execute
+        void dispatch(const Job& job, Delegate& delegate);
 
     public: // statics
 
@@ -701,16 +717,6 @@ namespace ROCKY_NAMESPACE { namespace util
 
         static void shutdownAll();
 
-        using Delegate = std::function<bool()>;
-
-        //! Schedule an asynchronous task on this arena.
-        //! Use Job::dispatch to run jobs (no need to call this directly)
-        //! @param job Job details
-        //! @param delegate Function to execute
-        void dispatch(
-            const Job& job,
-            Delegate& delegate);
-
         struct QueuedJob {
             QueuedJob() { }
             QueuedJob(const Job& job, const Delegate& delegate, std::shared_ptr<Semaphore> sema) :
@@ -719,7 +725,7 @@ namespace ROCKY_NAMESPACE { namespace util
             Delegate _delegate;
             std::shared_ptr<Semaphore> _groupsema;
             bool operator < (const QueuedJob& rhs) const { 
-                return _job.getPriority() < rhs._job.getPriority();
+                return _job.priority() < rhs._job.priority();
             }
         };
 
@@ -763,12 +769,12 @@ namespace ROCKY_NAMESPACE { namespace util
     Future<T> Job::dispatch(std::function<T(Cancelable&)> function) const
     {
         Promise<T> promise;
-        Future<T> future = promise.getFuture();
+        Future<T> future = promise.future();
         JobArena::Delegate delegate = [function, promise]() mutable
         {
             bool good = !promise.abandoned();
             if (good)
-                promise.resolve(function(&promise));
+                promise.resolve(function(promise));
             return good;
         };
         JobArena* arena = _arena ? _arena : JobArena::get("");

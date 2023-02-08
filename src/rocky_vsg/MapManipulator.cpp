@@ -22,6 +22,8 @@ using namespace ROCKY_NAMESPACE;
 #undef LC
 #define LC "[MapManipulator] "
 
+#define TEST_OUT if(true) Log::info()
+
 namespace
 {
     // a reasonable approximation of cosine interpolation
@@ -80,8 +82,8 @@ namespace
 
     template<class DURATION>
     double to_seconds(const DURATION& d) {
-        auto temp = std::chrono::duration_cast<std::chrono::microseconds>(d);
-        return (double)temp.count() * 0.000001;
+        auto temp = std::chrono::duration_cast<std::chrono::nanoseconds>(d);
+        return (double)temp.count() * 0.000000001;
     }
 
     template<class DMAT4>
@@ -358,7 +360,7 @@ MapManipulator::Settings::Settings() :
     _terrainAvoidanceMinDistance(1.0),
     _throwingEnabled(false),
     _throwDecayRate(0.05),
-    _zoomToMouse(false)
+    _zoomToMouse(true)
 {
     //NOP
 }
@@ -632,6 +634,7 @@ MapManipulator::configureDefaultSettings()
 
     options.clear();
     options.add(OPTION_CONTINUOUS, true);
+    options.add(OPTION_SCALE_Y, 5.0);
 
     // zoom as you hold the right button:
     _settings->bindMouse(ACTION_ZOOM, MOUSE_RIGHT_BUTTON, 0L, options);
@@ -683,6 +686,8 @@ MapManipulator::configureDefaultSettings()
 
     //_settings->setThrowingEnabled( false );
     _settings->setLockAzimuthWhilePanning(true);
+
+    _settings->setZoomToMouse(false);
 }
 
 void
@@ -1557,6 +1562,7 @@ MapManipulator::apply(vsg::TouchMoveEvent& touchMove)
 void
 MapManipulator::apply(vsg::FrameEvent& frame)
 {
+    //TEST_OUT << "FrameEvent-------------------------- " << frame.time.time_since_epoch().count() << std::endl;
     if (_continuous)
     {
         handleContinuousAction(_continuousAction, frame.time);
@@ -2032,11 +2038,9 @@ MapManipulator::handlePointAction(
 }
 
 void
-MapManipulator::handleContinuousAction(
-    const Action& action,
-    vsg::time_point time)
+MapManipulator::handleContinuousAction(const Action& action, vsg::time_point time)
 {
-    double t_factor = to_seconds(time - _last_continuous_action_time) / 0.016666666;
+    double t_factor = to_seconds(time - _last_continuous_action_time) * 60.0;
     _last_continuous_action_time = time;
     handleMovementAction(
         action._type,

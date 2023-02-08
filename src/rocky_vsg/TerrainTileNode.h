@@ -90,8 +90,7 @@ namespace ROCKY_NAMESPACE
      * one SurfaceNode that renders the actual tile content under a MatrixTransform;
      * and four TileNodes representing the LOD+1 quadtree tiles under this tile.
      */
-    class ROCKY_VSG_EXPORT TerrainTileNode :
-        public vsg::Inherit<vsg::CullGroup, TerrainTileNode>
+    class ROCKY_VSG_EXPORT TerrainTileNode : public vsg::Inherit<vsg::CullGroup, TerrainTileNode>
     {
     public:
         TileKey key;
@@ -107,7 +106,8 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::StateGroup> stategroup;
         
         mutable util::Future<bool> childLoader;
-        mutable util::Future<bool> dataLoader;
+        mutable util::Future<TerrainTileModel> dataLoader;
+        mutable util::Future<bool> dataMerger;
         mutable std::atomic<uint64_t> lastTraversalFrame;
         mutable std::atomic<vsg::time_point> lastTraversalTime;
         mutable std::atomic<float> lastTraversalRange;
@@ -137,8 +137,8 @@ namespace ROCKY_NAMESPACE
             shared_ptr<TerrainContext> terrain);
 
         /** Returns the tile's parent; convenience function */
-        inline vsg::ref_ptr<TerrainTileNode> getParentTile() const {
-            return vsg::ref_ptr<TerrainTileNode>(parent);
+        inline vsg::ref_ptr<TerrainTileNode> parentTile() const {
+            return parent.ref_ptr();
         }
 
         /** Elevation data for this node along with its scale/bias matrix; needed for bounding box */
@@ -163,9 +163,9 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Merge new Tile model data into this tile
-        void merge(
-            const TerrainTileModel& model,
-            const CreateTileManifest& manifest);
+        //void merge(
+        //    const TerrainTileModel& model,
+        //    const CreateTileManifest& manifest);
 
         //! Apply any thread-safe updates to the tile
         void update(
@@ -183,13 +183,12 @@ namespace ROCKY_NAMESPACE
         
     protected:
 
-        mutable fvec4 _tileKeyValue;
-        bool _needsData;
         mutable bool _needsChildren;
-        bool _needsUpdate;
+        mutable bool _needsUpdate;
         TerrainTileHost* _host;
         vsg::observer_ptr<TerrainTileNode> _eastNeighbor;
         vsg::observer_ptr<TerrainTileNode> _southNeighbor;
+        fvec4 _tileKeyValue;
 
         void inherit();
 

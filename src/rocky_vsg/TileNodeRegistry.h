@@ -105,9 +105,10 @@ namespace ROCKY_NAMESPACE
         mutable std::mutex _mutex;
         TerrainTileHost* _host;
 
-        std::vector<TileKey> _needsUpdate;
-        std::vector<TileKey> _needsData;
         std::vector<TileKey> _needsChildren;
+        std::vector<TileKey> _needsLoad;
+        std::vector<TileKey> _needsMerge;
+        std::vector<TileKey> _needsUpdate;
 
     private:
 
@@ -115,7 +116,12 @@ namespace ROCKY_NAMESPACE
             TerrainTileNode* parent,
             shared_ptr<TerrainContext> terrain) const;
 
-        void requestTileData(
+        void requestLoad(
+            TerrainTileNode* tile,
+            const IOOptions& io,
+            shared_ptr<TerrainContext> terrain) const;
+
+        void requestMerge(
             TerrainTileNode* tile,
             const IOOptions& io,
             shared_ptr<TerrainContext> terrain) const;
