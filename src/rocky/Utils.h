@@ -416,17 +416,24 @@ namespace ROCKY_NAMESPACE { namespace util
         }
     };
 
+    template<class T = std::chrono::steady_clock>
     struct scoped_chrono
     {
         std::string _me;
-        std::chrono::time_point<std::chrono::steady_clock> _a;
-        scoped_chrono(const std::string& me) : _me(me) {
-            _a = std::chrono::steady_clock::now();
-        }
+        std::chrono::time_point<T> _a;
+        std::chrono::duration<T>* _d = nullptr;
+        scoped_chrono(const std::string& me) : _me(me), _a(T::now()) { }
+        scoped_chrono(std::chrono::duration<T>& dur) : _d(&dur), _a(T::now()) { }
         ~scoped_chrono() {
-            auto b = std::chrono::steady_clock::now();
-            auto d = (float)std::chrono::duration_cast<std::chrono::microseconds>(b - _a).count();
-            rocky::Log::info() << std::this_thread::get_id() << " : " << _me << " = " << d << "us" << std::endl;
+            auto b = T::now();
+            auto dur = b - _a;
+            if (_d) {
+                *_d = dur;
+            }
+            else {
+                auto d = (float)std::chrono::duration_cast<std::chrono::microseconds>(dur).count();
+                rocky::Log::info() << std::this_thread::get_id() << " : " << _me << " = " << d << "us" << std::endl;
+            }
         }
     };
 } }

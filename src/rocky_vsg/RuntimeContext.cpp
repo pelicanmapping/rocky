@@ -106,7 +106,7 @@ namespace
 
 RuntimeContext::RuntimeContext()
 {
-    util::JobArena::get("loaders")->setConcurrency(4);
+    util::job_scheduler::get("loaders")->setConcurrency(4);
 }
 
 util::Future<bool>

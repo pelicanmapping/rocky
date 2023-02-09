@@ -171,9 +171,9 @@ int main(int argc, char** argv)
     // (they are a good candidate for DS reuse)
     // https://groups.google.com/g/vsg-users/c/JJQZ-RN7jC0/m/tyX8nT39BAAJ
     auto resourceHints = vsg::ResourceHints::create();
-    resourceHints->numDescriptorSets = 256;
+    resourceHints->numDescriptorSets = 1024;
     resourceHints->descriptorPoolSizes.push_back(
-        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 256 });
+        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024 });
 
     // configure the viewers rendering backend, initialize and compile Vulkan objects,
     // passing in ResourceHints to guide the resources allocated.
@@ -204,8 +204,6 @@ int main(int argc, char** argv)
 
         frames += 1.0f;
     }
-
-    viewer->stopThreading();
 
     auto end = std::chrono::steady_clock::now();
 

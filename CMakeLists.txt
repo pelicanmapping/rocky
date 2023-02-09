@@ -10,7 +10,7 @@ endif()
 
 project(
     rocky
-    VERSION 1.0.0
+    VERSION 0.1.0
     DESCRIPTION "Rocky by Pelican Mapping"
     HOMEPAGE_URL https://github.com/pelicanmapping/rocky
     LANGUAGES CXX C

@@ -277,69 +277,7 @@ TerrainTileNode::unloadChildren()
 void
 TerrainTileNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
 {
-#if 0
-    unsigned numUpdatedTotal = 0u;
-    unsigned numFuturesResolved = 0u;
-
-    for(auto& pass : _renderModel._passes)
-    {
-        for(auto& sampler : pass.samplers())
-        {
-            // handle "future" textures. This is a texture that was installed
-            // by an "async" image layer that is working in the background
-            // to load. Once it is available we can merge it into the real texture
-            // slot for rendering.
-            if (sampler._futureTexture)
-            {
-                FutureTexture* ft = dynamic_cast<FutureTexture*>(
-                    sampler._futureTexture->osgTexture().get());
-
-                if (ft->succeeded())
-                {
-                    sampler._texture = sampler._futureTexture;
-                    sampler._futureTexture = nullptr;
-                    sampler._matrix.makeIdentity();
-                    ++numFuturesResolved;
-                }
-                else if (ft->failed())
-                {
-                    sampler._futureTexture = nullptr;
-                    ++numFuturesResolved;
-                }
-
-                ++numUpdatedTotal;
-            }
-
-            if (sampler.ownsTexture() && sampler._texture->needsUpdates())
-            {
-                sampler._texture->update(nv);
-
-                ++numUpdatedTotal;
-            }
-        }
-    }
-
-    // if no updates were detected, don't check next time.
-    if (numUpdatedTotal == 0)
-    {
-        _imageUpdatesActive = false;
-    }
-
-    // if we resolve any future-textures, inform the children
-    // that they need to update their inherited samplers.
-    if (numFuturesResolved > 0)
-    {
-        for (int i = 0; i < 4; ++i)
-        {
-            if ((int)getNumChildren() > i)
-            {
-                TerrainTileNode* child = getSubTile(i);
-                if (child)
-                    child->refreshInheritedData(this, _context->getRenderBindings());
-            }
-        }
-    }
-#endif
+    //nop
 }
 
 void

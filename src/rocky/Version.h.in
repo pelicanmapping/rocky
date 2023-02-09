@@ -5,6 +5,9 @@
  */
 #pragma once
 
+// Do not edit me!
+// CMake generated this file from "Version.h.in" - edit that instead.
+
 #define ROCKY_PROJECT_NAME "@PROJECT_NAME@"
 #define ROCKY_PROJECT_DESCRIPTION "@PROJECT_DESCRIPTION@"
 #define ROCKY_MAJOR_VERSION @PROJECT_VERSION_MAJOR@

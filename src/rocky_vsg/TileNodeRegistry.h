@@ -28,7 +28,6 @@ namespace ROCKY_NAMESPACE
         using Ptr = std::shared_ptr<TileNodeRegistry>;
 
         using Tracker = util::SentryTracker<TerrainTileNode*>;
-        //using Tracker = util::SentryTracker<TerrainTileQuad*>;
 
         struct TableEntry
         {
@@ -50,9 +49,6 @@ namespace ROCKY_NAMESPACE
         shared_ptr<StateFactory> stateFactory;
         shared_ptr<SelectionInfo> selectionInfo;
 
-        //! Sets the frame clock to use
-        //void setFrameClock(const FrameClock* value) { _clock = value; }
-
         //! Marks all tiles intersecting the extent as dirty. If incremental
         //! update is enabled, they will automatically reload.
         //! NOTE: Input extent SRS must match the terrain's SRS exactly.
@@ -68,15 +64,13 @@ namespace ROCKY_NAMESPACE
 
         //! TerrainTileNode will call this to let us know that it's alive
         //! and that it may need something.
-        //! ONLY call suring record.
+        //! ONLY call during record.
         void ping(
             TerrainTileNode* tile0,
             TerrainTileNode* tile1,
             TerrainTileNode* tile2,
             TerrainTileNode* tile3,
             vsg::RecordTraversal& nv) override;
-
-        //void ping(const TerrainTileQuad* quad);
 
         //! Number of tiles in the registry.
         unsigned size() const { return _tiles.size(); }

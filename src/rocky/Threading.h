@@ -433,20 +433,20 @@ namespace ROCKY_NAMESPACE { namespace util
         container_t _data;
     };
 
-    class JobArena;
+    class job_scheduler;
 
     /**
      * A job group. Dispatch jobs along with a group, and you 
      * can then wait on the entire group to finish.
      */
-    class ROCKY_EXPORT JobGroup
+    class ROCKY_EXPORT job_group
     {
     public:
         //! Construct a new job group
-        JobGroup();
+        job_group();
 
         //! Construct a new named job group
-        JobGroup(const std::string& name);
+        job_group(const std::string& name);
 
         //! Block until all jobs dispatched under this group are complete.
         void join();
@@ -457,7 +457,7 @@ namespace ROCKY_NAMESPACE { namespace util
 
     private:
         std::shared_ptr<Semaphore> _sema;
-        friend class JobArena;
+        friend class job_scheduler;
     };
 
     /**
@@ -466,10 +466,8 @@ namespace ROCKY_NAMESPACE { namespace util
      * Example usage:
      *
      *   int a = 10, b = 20;
-     *
-     *   Job job;
      *   
-     *   Future<int> result = job.dispatch<int>(
+     *   Future<int> result = job::dispatch<int>(
      *      [a, b](Cancelable& p) {
      *          return (a + b);
      *      }
@@ -483,116 +481,107 @@ namespace ROCKY_NAMESPACE { namespace util
      *   else if (result.abandoned()) {
      *       // task was canceled
      *   }
-     *
-     * @notes Once you call dispatch, you can discard the job,
-     *        or you can keep it around and dispatch it again later.
-     *        Any changes you make to a Job after dispatch will
-     *        not affect the already-dispatched Job.
+     * 
+     * For more control over the job, you can also pass in settings:
+     * 
+     *   auto result = job::dispatch<int>(
+     *     [a, b](Cancelable& p) { return a+b; },
+     *     { "Job name",               // name of this job
+     *       []() { return 1.0f; },    // function returning jbo priority
+     *       job_scheduler::get("adders"),  // which arena (thread pool) to run job in
+     *       "job group name"          // group to run job in
+     *     });
+     *       
      */
-    class Job
+    struct job
     {
-    public:
-        //! Construct a new blank job
-        Job() { }
+        std::string name;
+        std::function<float()> priority = nullptr;
+        job_scheduler* scheduler = nullptr;
+        job_group* group = nullptr;
 
-        //! Construct a new job in the specified arena
-        Job(JobArena* arena) :
-            _arena(arena) { }
-
-        //! Construct a new job in the specified arena and job group
-        Job(JobArena* arena, JobGroup* group) :
-            _arena(arena), _group(group) { }
-
-        //! Name of this job
-        void setName(const std::string& value) {
-            _name = value;
+        //! Run the job and return a future result.
+        //! @param func Function to run in a thread
+        //! @param settings Optional configuration for the asynchronous function call
+        //! @return Future result of the async function call
+        template<typename T> static inline Future<T> dispatch(
+            std::function<T(Cancelable&)>&& task,
+            const job& config = { })
+        {
+            Promise<T> promise;
+            Future<T> future = promise.future();
+            job_scheduler::Delegate delegate = [task, promise]() mutable
+            {
+                bool good = !promise.abandoned();
+                if (good)
+                    promise.resolve(task(promise));
+                return good;
+            };
+            job_scheduler* arena = config.scheduler ? config.scheduler : job_scheduler::get();
+            arena->dispatch(config, delegate);
+            return std::move(future);
         }
-        const std::string& name() const {
-            return _name;
-        }
-
-        //! Set the job arena in which to run this Job.
-        void setArena(JobArena* arena) {
-            _arena = arena;
-        }
-        inline void setArena(const std::string& arenaName);
-
-        JobArena* arena() const {
-            return _arena;
-        }
-
-        //! Static priority
-        void setPriority(float value) {
-            _priority = value;
-        }
-
-        //! Function to call to get this job's priority
-        void setPriorityFunction(const std::function<float()>& func) {
-            _priorityFunc = func;
-        }
-
-        //! Get the priority of this job
-        float priority() const {
-            return _priorityFunc != nullptr ? _priorityFunc() : _priority;
-        }
-
-        //! Assign this job to a group
-        void setGroup(JobGroup* group) {
-            _group = group;
-        }
-        JobGroup* group() const {
-            return _group;
-        }
-
-        //! Dispatch this job for asynchronous execution.
-        //! @func Function to execute
-        //! @return Future result. If this objects goes out of scope,
-        //!         the job will be canceled and may not run at all.
-        template<typename T>
-        Future<T> dispatch(
-            std::function<T(Cancelable&)> func) const;
-
-        //! Dispatch the job for asynchronous execution and forget
-        //! about it. No return value.
-        inline void dispatch(
-            std::function<void(Cancelable&)> func) const;
-
-    private:
-        std::string _name;
-        float _priority = 0.0f;
-        JobArena* _arena = nullptr;
-        JobGroup* _group = nullptr;
-        std::function<float()> _priorityFunc = nullptr;
-        friend class JobArena;
     };
 
+    class job_metrics
+    {
+    public:
+        //! Per-arena metrics.
+        struct scheduler_metrics
+        {
+            std::string name;
+            std::atomic_uint concurrency = 0u;
+            std::atomic_uint pending = 0u;
+            std::atomic_uint running = 0u;
+            std::atomic_uint canceled = 0u;
+        };
+
+        std::atomic<int> max_index;
+
+        //! get or create a scheduler entry and return its index
+        scheduler_metrics& scheduler(const std::string& name);
+
+        //! metrics about the arena at index "index"
+        scheduler_metrics& scheduler(int index);
+
+        //! Total number of pending jobs across all schedulers
+        int totalJobsPending() const;
+
+        //! Total number of running jobs across all schedulers
+        int totalJobsRunning() const;
+
+        //! Total number of canceled jobs across all schedulers
+        int totalJobsCanceled() const;
+
+        //! Total number of active jobs in the system
+        int totalJobs() const {
+            return totalJobsPending() + totalJobsRunning();
+        }
+
+    private:
+        job_metrics();
+        std::vector<std::unique_ptr<scheduler_metrics>> _schedulers;
+        friend class job_scheduler;
+        static job_metrics _singleton;
+    };
 
     /**
      * Schedules asynchronous tasks on a thread pool.
      * You usually don't need to use this class directly.
      * Use Job::schedule() to queue a new job.
      */
-    class ROCKY_EXPORT JobArena
+    class ROCKY_EXPORT job_scheduler
     {
     public:
-        //! Type of Job Arena (thread pool versus traversal)
-        enum Type
-        {
-            THREAD_POOL,
-            UPDATE_TRAVERSAL
-        };
-
-        //! Construct a new JobArena
-        JobArena(
+        //! Construct a new scheduler
+        job_scheduler(
             const std::string& name = "",
-            unsigned concurrency = 2u,
-            const Type& type = THREAD_POOL);
+            unsigned concurrency = 2u);
 
         //! Destroy
-        ~JobArena();
+        ~job_scheduler();
 
-        //! Set the concurrency of this job arena
-        //! (Only applies to THREAD_POOL type arenas)
+        //! Set the concurrency of this job scheduler
         void setConcurrency(unsigned value);
 
         //! Get the target concurrency (thread count) 
@@ -603,136 +592,50 @@ namespace ROCKY_NAMESPACE { namespace util
 
         using Delegate = std::function<bool()>;
 
-        //! Schedule an asynchronous task on this arena.
-        //! Use Job::dispatch to run jobs (usually no need to call this directly)
+        //! Schedule an asynchronous task on this scheduler
+        //! Use job::dispatch to run jobs (usually no need to call this directly)
         //! @param job Job details
         //! @param delegate Function to execute
-        void dispatch(const Job& job, Delegate& delegate);
+        void dispatch(const job& config, Delegate& delegate);
 
     public: // statics
 
         //! Access a named arena
-        static JobArena* get(const std::string& name);
-
-        //! Access the first arena of type "type". Typically use this to
-        //! access an UPDATE_TRAVERSAL arena singleton.
-        static JobArena* get(const Type& type);
+        static job_scheduler* get(const std::string& name = {});
 
         //! Sets the concurrency of a named arena
         static void setConcurrency(const std::string& name, unsigned value);
 
-        //! Name of the arena to use when none is specified
-        static const std::string& defaultArenaName();
-
-    public:
-
-        /**
-         * Reflects the current state of the JobArena system
-         * This structure is designed to be accessed atomically
-         * with no lock contention
-         */
-        class ROCKY_EXPORT Metrics
-        {
-        public:
-            //! Per-arena metrics.
-            struct Arena
-            {
-                using Ptr = std::shared_ptr<Arena>;
-                std::string arenaName;
-                std::atomic_uint concurrency;
-                std::atomic_uint numJobsPending;
-                std::atomic_uint numJobsRunning;
-                std::atomic_uint numJobsCanceled;
-
-                Arena() : concurrency(0), numJobsPending(0), numJobsRunning(0), numJobsCanceled(0) { }
-            };
-
-            //! Report sent to the user reporting function if set
-            struct Report
-            {
-                Report(const Job& job_, const std::string& arena_, const std::chrono::steady_clock::duration& duration_)
-                    : job(job_), arena(arena_), duration(duration_) { }
-                const Job& job;
-                std::string arena;
-                std::chrono::steady_clock::duration duration;
-            };
-
-            std::atomic<int> maxArenaIndex;
-
-            //! create a new arena and return its index
-            Arena::Ptr getOrCreate(const std::string& name);
-
-            //! metrics about the arena at index "index"
-            const Arena::Ptr arena(int index) const;
-
-            //! Total number of pending jobs across all arenas
-            int totalJobsPending() const;
-
-            //! Total number of running jobs across all arenas
-            int totalJobsRunning() const;
-
-            //! Total number of canceled jobs across all arenas
-            int totalJobsCanceled() const;
-
-            //! Total number of active jobs in the system
-            int totalJobs() const {
-                return totalJobsPending() + totalJobsRunning();
-            }
-
-            //! Set a user reporting function and threshold
-            void setReportFunction(
-                std::function<void(const Report&)> function,
-                std::chrono::steady_clock::duration minDuration = std::chrono::steady_clock::duration(0))
-            {
-                _report = function;
-                _reportMinDuration = minDuration;
-            }
-
-        private:
-            Metrics();
-            std::vector<Arena::Ptr> _arenas;
-            std::function<void(const Report&)> _report;
-            std::chrono::steady_clock::duration _reportMinDuration;
-            friend class JobArena;
-        };
-
-        //! Access to the system-wide job arena metrics
-        static Metrics& allMetrics() { return _allMetrics; }
-
-        //! Metrics object for thie arena
-        Metrics::Arena::Ptr metrics() { return _metrics; }
-
-
-    public: // INTERNAL
-
-        //! Run one or more pending jobs.
-        //! Internal function - do not call this directly.
-        void runJobs();
-
     private:
 
+        //! Pulls queued jobs and runs them in whatever thread run() is called from.
+        //! Runs in a loop until _done is set.
+        void run();
+
+        //! Spawn all threads in this scheduler
         void startThreads();
 
+        //! Join and destroy all threads in this scheduler
         void stopThreads();
 
         static void shutdownAll();
 
         struct QueuedJob {
             QueuedJob() { }
-            QueuedJob(const Job& job, const Delegate& delegate, std::shared_ptr<Semaphore> sema) :
+            QueuedJob(const job& job, const Delegate& delegate, std::shared_ptr<Semaphore> sema) :
                 _job(job), _delegate(delegate), _groupsema(sema) { }
-            Job _job;
+            job _job;
             Delegate _delegate;
             std::shared_ptr<Semaphore> _groupsema;
-            bool operator < (const QueuedJob& rhs) const { 
-                return _job.priority() < rhs._job.priority();
+            bool operator < (const QueuedJob& rhs) const {
+                float lp = _job.priority ? _job.priority() : -FLT_MAX;
+                float rp = rhs._job.priority ? rhs._job.priority() : -FLT_MAX;
+                return lp < rp;
             }
         };
 
         // pool name
         std::string _name;
-        // type of arena
-        Type _type;
         // queued operations to run asynchronously
         using Queue = std::vector<QueuedJob>;
         Queue _queue;
@@ -748,49 +651,16 @@ namespace ROCKY_NAMESPACE { namespace util
         // threads in the pool
         std::vector<std::thread> _threads;
         // pointer to the stats structure for this arena
-        Metrics::Arena::Ptr _metrics;
+        job_metrics::scheduler_metrics* _metrics = nullptr;
 
-        static std::mutex _arenas_mutex;
-        static std::unordered_map<std::string, unsigned> _arenaSizes;
-        static std::unordered_map<std::string, std::shared_ptr<JobArena>> _arenas;
-        static std::string _defaultArenaName;
-        static Metrics _allMetrics;
+        static std::mutex _schedulers_mutex;
+        static std::unordered_map<std::string, unsigned> _schedulersizes;
+        static std::unordered_map<std::string, std::shared_ptr<job_scheduler>> _schedulers;
+        //static Metrics _allMetrics;
 
-        friend class Job; // allow access to private dispatch method
+        //friend class Job; // allow access to private dispatch method
+        friend struct job;
     };
-
-    // Job inlines
-    void Job::setArena(const std::string& arenaName)
-    {
-        setArena(JobArena::get(arenaName));
-    }
-
-    template<typename T>
-    Future<T> Job::dispatch(std::function<T(Cancelable&)> function) const
-    {
-        Promise<T> promise;
-        Future<T> future = promise.future();
-        JobArena::Delegate delegate = [function, promise]() mutable
-        {
-            bool good = !promise.abandoned();
-            if (good)
-                promise.resolve(function(promise));
-            return good;
-        };
-        JobArena* arena = _arena ? _arena : JobArena::get("");
-        arena->dispatch(*this, delegate);
-        return std::move(future);
-    }
-
-    void Job::dispatch(std::function<void(Cancelable& p)> function) const
-    {
-        JobArena* arena = _arena ? _arena : JobArena::get("");
-        JobArena::Delegate delegate = [function]() {
-            function(IOOptions());
-            return true;
-        };
-        arena->dispatch(*this, delegate);
-    }
 
 } } // namepsace rocky::Threading
 

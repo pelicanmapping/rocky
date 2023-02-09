@@ -23,6 +23,7 @@ using namespace ROCKY_NAMESPACE;
 #define LC "[MapManipulator] "
 
 #define TEST_OUT if(true) Log::info()
+#define NOT_YET_IMPLEMENTED(X) ROCKY_TODO(X)
 
 namespace
 {
@@ -771,17 +772,7 @@ MapManipulator::createLocalCoordFrame(
 {
     if (_worldSRS.valid())
     {        
-        //dvec3 mapPos;
-        //dmat4 output;
-
-        //_worldSRS.to(getMapNode()->worldSRS()).transform(worldPos, mapPos);
-        //out_frame = to_vsg(_srs.localToWorldMatrix(mapPos));
-
         out_frame = to_vsg(_worldSRS.localToWorldMatrix(to_glm(worldPos)));
-
-        //_srs.transformFromWorld(to_glm(worldPos), mapPos);
-        //_srs.createLocalToWorld(mapPos, output);
-        //out_frame = to_vsg(output);
     }
     return _worldSRS.valid();
 }
@@ -793,12 +784,6 @@ MapManipulator::setCenter(const vsg::dvec3& worldPos)
     _state.center = worldPos;
 
     dmat4 m = _worldSRS.localToWorldMatrix(to_glm(worldPos));
-    //m = _srs.localToWorldMatrix(to_glm(worldPos));
-
-    //if (_srs.isGeographic())
-    //    _srs.getGeocentricSRS()->createLocalToWorld(to_glm(worldPos), m);
-    //else
-    //    _srs.createLocalToWorld(to_glm(worldPos), m);
 
     // remove the translation component
     _state.centerRotation = to_vsg(m);
@@ -1362,8 +1347,7 @@ MapManipulator::intersect(
 }
 
 bool
-MapManipulator::intersectAlongLookVector(
-    vsg::dvec3& out_world) const
+MapManipulator::intersectAlongLookVector(vsg::dvec3& out_world) const
 {
     auto mapNode = getMapNode();
     if (mapNode)
@@ -1544,19 +1528,19 @@ MapManipulator::apply(vsg::ScrollWheelEvent& scrollEvent)
 void
 MapManipulator::apply(vsg::TouchDownEvent& touchDown)
 {
-    ROCKY_TODO("");
+    NOT_YET_IMPLEMENTED("");
 }
 
 void
 MapManipulator::apply(vsg::TouchUpEvent& touchUp)
 {
-    ROCKY_TODO("");
+    NOT_YET_IMPLEMENTED("");
 }
 
 void
 MapManipulator::apply(vsg::TouchMoveEvent& touchMove)
 {
-    ROCKY_TODO("");
+    NOT_YET_IMPLEMENTED("");
 }
 
 void
@@ -1952,7 +1936,7 @@ MapManipulator::screenToWorld(float x, float y, vsg::dvec3& out_coords) const
         //if (!_mapNode.lock(mapNode) || !mapNode->getTerrain())
         //    return false;
 
-        ROCKY_TODO("");
+        NOT_YET_IMPLEMENTED("");
         return false;
         //return mapNode->terrainNode()->getWorldCoordsUnderMouse(window, x, y, out_coords);
     }

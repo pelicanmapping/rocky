@@ -436,22 +436,22 @@ Semaphore::join(Cancelable& p)
 
 
 #undef LC
-#define LC "[JobGroup]"
+#define LC "[job_group]"
 
-JobGroup::JobGroup() :
+job_group::job_group() :
     _sema(std::make_shared<Semaphore>())
 {
     //nop
 }
 
-JobGroup::JobGroup(const std::string& name) :
+job_group::job_group(const std::string& name) :
     _sema(std::make_shared<Semaphore>(name))
 {
     //nop
 }
 
 void
-JobGroup::join()
+job_group::join()
 {
     if (_sema != nullptr && _sema.use_count() > 1)
     {
@@ -460,7 +460,7 @@ JobGroup::join()
 }
 
 void
-JobGroup::join(Cancelable& p)
+job_group::join(Cancelable& p)
 {
     if (_sema != nullptr && _sema.use_count() > 1)
     {
@@ -470,140 +470,94 @@ JobGroup::join(Cancelable& p)
 
 
 #undef LC
-#define LC "[JobArena] "
+#define LC "[job_scheduler] "
 
-// JobArena statics:
-std::mutex JobArena::_arenas_mutex;
-std::unordered_map<std::string, std::shared_ptr<JobArena>> JobArena::_arenas;
-std::unordered_map<std::string, unsigned> JobArena::_arenaSizes;
-std::string JobArena::_defaultArenaName = "oe.default";
-JobArena::Metrics JobArena::_allMetrics;
+// job_scheduler statics:
+std::mutex job_scheduler::_schedulers_mutex;
+std::unordered_map<std::string, std::shared_ptr<job_scheduler>> job_scheduler::_schedulers;
+std::unordered_map<std::string, unsigned> job_scheduler::_schedulersizes;
+job_metrics job_metrics::_singleton;
 
-#define ROCKY_ARENA_DEFAULT_SIZE 2u
+#define ROCKY_SCHEDULER_DEFAULT_SIZE 2u
 
-JobArena::JobArena(const std::string& name, unsigned concurrency, const Type& type) :
-    _name(name.empty()? defaultArenaName() : name),
+job_scheduler::job_scheduler(const std::string& name, unsigned concurrency) :
+    _name(name),
     _targetConcurrency(concurrency),
-    _type(type),
     _done(false)
 {
     // find a slot in the stats
-    _metrics = _allMetrics.getOrCreate(_name);
-
-    if (_type == THREAD_POOL)
-    {
-        startThreads();
-    }
+    _metrics = &job_metrics::_singleton.scheduler(_name);
+    startThreads();
 }
 
-JobArena::~JobArena()
+job_scheduler::~job_scheduler()
 {
-    if (_type == THREAD_POOL)
-    {
-        stopThreads();
-    }
-}
-
-const std::string&
-JobArena::defaultArenaName()
-{
-    return _defaultArenaName;
+    stopThreads();
 }
 
 void
-JobArena::shutdownAll()
+job_scheduler::shutdownAll()
 {
-    std::scoped_lock lock(_arenas_mutex);
-    ROCKY_INFO << LC << "Shutting down all job arenas." << std::endl;
-    _arenas.clear();
+    std::scoped_lock lock(_schedulers_mutex);
+    Log::info() << LC << "Shutting down all job schedulers." << std::endl;
+    _schedulers.clear();
 }
 
-JobArena*
-JobArena::get(const std::string& name_)
+job_scheduler*
+job_scheduler::get(const std::string& name)
 {
-    std::scoped_lock lock(_arenas_mutex);
+    std::scoped_lock lock(_schedulers_mutex);
 
-    if (_arenas.empty())
+    if (_schedulers.empty())
     {
-        std::atexit(JobArena::shutdownAll);
+        std::atexit(job_scheduler::shutdownAll);
     }
 
-    std::string name(name_.empty() ? "oe.default" : name_);
-
-    std::shared_ptr<JobArena>& arena = _arenas[name];
-    if (arena == nullptr)
+    std::shared_ptr<job_scheduler>& sched = _schedulers[name];
+    if (sched == nullptr)
     {
-        auto iter = _arenaSizes.find(name);
-        unsigned numThreads = iter != _arenaSizes.end() ? iter->second : ROCKY_ARENA_DEFAULT_SIZE;
+        auto iter = _schedulersizes.find(name);
+        unsigned numThreads = iter != _schedulersizes.end() ? iter->second : ROCKY_SCHEDULER_DEFAULT_SIZE;
 
-        arena = std::make_shared<JobArena>(name, numThreads);
+        sched = std::make_shared<job_scheduler>(name, numThreads);
     }
-    return arena.get();
-}
-
-JobArena*
-JobArena::get(const Type& type_)
-{
-    if (type_ == THREAD_POOL)
-    {
-        return get("oe.default");
-    }
-
-    std::scoped_lock lock(_arenas_mutex);
-
-    if (_arenas.empty())
-    {
-        std::atexit(JobArena::shutdownAll);
-    }
-
-    if (type_ == UPDATE_TRAVERSAL)
-    {
-        std::string name("oe.UPDATE");
-        std::shared_ptr<JobArena>& arena = _arenas[name];
-        if (arena == nullptr)
-        {
-            arena = std::make_shared<JobArena>(name, 0, type_);
-        }
-        return arena.get();
-    }
-
-    return nullptr;
+    return sched.get();
 }
 
 unsigned
-JobArena::getConcurrency() const
+job_scheduler::getConcurrency() const
 {
     return _targetConcurrency;
 }
 
 void
-JobArena::setConcurrency(unsigned value)
+job_scheduler::setConcurrency(unsigned value)
 {
     value = std::max(value, 1u);
 
-    if (_type == THREAD_POOL && _targetConcurrency != value)
+    if (_targetConcurrency != value)
     {
         _targetConcurrency = value;
         startThreads();
     }
 }
 void
-JobArena::setConcurrency(const std::string& name, unsigned value)
+job_scheduler::setConcurrency(const std::string& name, unsigned value)
 {
     // this method exists so you can set an arena's concurrency
     // before the arena is actually created
 
     value = std::max(value, 1u);
 
-    std::scoped_lock lock(_arenas_mutex);
-    if (_arenaSizes[name] != value)
+    std::scoped_lock lock(_schedulers_mutex);
+    if (_schedulersizes[name] != value)
     {
-        _arenaSizes[name] = value;
+        _schedulersizes[name] = value;
 
-        auto iter = _arenas.find(name);
-        if (iter != _arenas.end())
+        auto iter = _schedulers.find(name);
+        if (iter != _schedulers.end())
         {
-            std::shared_ptr<JobArena> arena = iter->second;
+            std::shared_ptr<job_scheduler> arena = iter->second;
             ROCKY_SOFT_ASSERT_AND_RETURN(arena != nullptr, void());
             arena->setConcurrency(value);
         }
@@ -611,58 +565,46 @@ JobArena::setConcurrency(const std::string& name, unsigned value)
 }
 
 void
-JobArena::cancelAll()
+job_scheduler::cancelAll()
 {
     std::unique_lock lock(_queueMutex);
     _queue.clear();
-    _metrics->numJobsCanceled += _metrics->numJobsPending;
-    _metrics->numJobsPending = 0;
+    _metrics->canceled += _metrics->pending;
+    _metrics->pending = 0;
 }
 
 void
-JobArena::dispatch(
-    const Job& job,
-    Delegate& delegate)
+job_scheduler::dispatch(const job& job, Delegate& delegate)
 {
     // If we have a group semaphore, acquire it BEFORE queuing the job
-    JobGroup* group = job.group();
+    job_group* group = job.group;
     std::shared_ptr<Semaphore> sema = group ? group->_sema : nullptr;
     if (sema)
     {
         sema->acquire();
     }
 
-    if (_type == THREAD_POOL)
-    {
-        if (_targetConcurrency > 0)
-        {
-            std::unique_lock lock(_queueMutex);
-            _queue.emplace_back(job, delegate, sema);
-            _metrics->numJobsPending++;
-            _block.notify_one();
-        }
-        else
-        {
-            // no threads? run synchronously.
-            delegate();
-
-            if (sema)
-            {
-                sema->release();
-            }
-        }
-    }
-
-    else // _type == traversal
+    if (_targetConcurrency > 0)
     {
         std::unique_lock lock(_queueMutex);
         _queue.emplace_back(job, delegate, sema);
-        _metrics->numJobsPending++;
+        _metrics->pending++;
+        _block.notify_one();
+    }
+    else
+    {
+        // no threads? run synchronously.
+        delegate();
+
+        if (sema)
+        {
+            sema->release();
+        }
     }
 }
 
 void
-JobArena::runJobs()
+job_scheduler::run()
 {
     // cap the number of jobs to run (applies to TRAVERSAL modes only)
     int jobsLeftToRun = INT_MAX;
@@ -675,24 +617,9 @@ JobArena::runJobs()
         {
             std::unique_lock lock(_queueMutex);
             
-            if (_type == THREAD_POOL)
-            {
-                _block.wait(lock, [this] {
-                    return _queue.empty() == false || _done == true;
-                    });
-            }
-            else // traversal type
-            {
-                // Prevents jobs that re-queue themselves from running 
-                // during the same traversal frame.
-                if (jobsLeftToRun == INT_MAX)
-                    jobsLeftToRun = _queue.size();
-
-                if (_queue.empty() || jobsLeftToRun == 0)
-                {
-                    return;
-                }
-            }
+            _block.wait(lock, [this] {
+                return _queue.empty() == false || _done == true;
+                });
 
             if (!_queue.empty() && !_done)
             {
@@ -730,8 +657,8 @@ JobArena::runJobs()
 
         if (have_next)
         {
-            _metrics->numJobsRunning++;
-            _metrics->numJobsPending--;
+            _metrics->running++;
+            _metrics->pending--;
 
             auto t0 = std::chrono::steady_clock::now();
 
@@ -742,18 +669,10 @@ JobArena::runJobs()
             if (job_executed)
             {
                 jobsLeftToRun--;
-
-                if (_allMetrics._report != nullptr)
-                {
-                    if (duration >= _allMetrics._reportMinDuration)
-                    {
-                        _allMetrics._report(Metrics::Report(next._job, _name, duration));
-                    }
-                }
             }
             else
             {
-                _metrics->numJobsCanceled++;
+                _metrics->canceled++;
             }
 
             // release the group semaphore if necessary
@@ -762,30 +681,27 @@ JobArena::runJobs()
                 next._groupsema->release();
             }
 
-            _metrics->numJobsRunning--;
+            _metrics->running--;
         }
 
-        if (_type == THREAD_POOL)
-        {
-            // See if we no longer need this thread because the
-            // target concurrency has been reduced
-            std::scoped_lock lock(_quitMutex);
+        // See if we no longer need this thread because the
+        // target concurrency has been reduced
+        std::scoped_lock lock(_quitMutex);
 
-            if (_targetConcurrency < _metrics->concurrency)
-            {
-                _metrics->concurrency--;
-                break;
-            }
+        if (_targetConcurrency < _metrics->concurrency)
+        {
+            _metrics->concurrency--;
+            break;
         }
     }
 }
 
 void
-JobArena::startThreads()
+job_scheduler::startThreads()
 {
     _done = false;
 
-    ROCKY_INFO << LC << "Arena \"" << _name << "\" concurrency=" << _targetConcurrency << std::endl;
+    Log::info() << LC << "Scheduler \"" << _name << "\" concurrency=" << _targetConcurrency << std::endl;
 
     // Not enough? Start up more
     while(_metrics->concurrency < _targetConcurrency)
@@ -794,19 +710,14 @@ JobArena::startThreads()
 
         _threads.push_back(std::thread([this]
             {
-                //ROCKY_INFO << LC << "Arena \"" << _name << "\" starting thread " << std::this_thread::get_id() << std::endl;
                 ROCKY_THREAD_NAME(_name.c_str());
-
-                runJobs();
-
-                // exit thread here
-                //ROCKY_INFO << LC << "Thread " << std::this_thread::get_id() << " exiting" << std::endl;
+                run();
             }
         ));
     }
 }
 
-void JobArena::stopThreads()
+void job_scheduler::stopThreads()
 {
     _done = true;
 
@@ -814,7 +725,7 @@ void JobArena::stopThreads()
     {
         std::unique_lock lock(_queueMutex);
 
-        // reset any group semaphores so that JobGroup.join()
+        // reset any group semaphores so that job_group.join()
         // will not deadlock.
         for (auto& queuedjob : _queue)
         {
@@ -842,94 +753,66 @@ void JobArena::stopThreads()
 }
 
 
-JobArena::Metrics::Metrics() :
-    maxArenaIndex(-1),
-    _report(nullptr),
-    _reportMinDuration(0)
+job_metrics::job_metrics() :
+    max_index(-1)
 {
     // to prevent thread safety issues
-    _arenas.resize(128);
-
-    const char* report_us = ::getenv("ROCKY_JOB_REPORT_THRESHOLD");
-    if (report_us)
-    {
-        _report = [](const Report& r)
-        {
-            static std::mutex _mutex;
-            std::scoped_lock lock(_mutex);
-            std::string jobname = r.job.name().empty() ? "unknown" : r.job.name();
-            rocky::Log::info()
-                << "[Job] " << jobname
-                << " (" << r.arena << ") "
-                << std::fixed << std::setprecision(1)
-                << 0.001f*(float)(std::chrono::duration_cast<std::chrono::microseconds>(r.duration).count()) << " ms" << std::endl;
-        };
-
-        _reportMinDuration = std::chrono::microseconds(util::as<int>(report_us, 132));
-
-        rocky::Log::info() << LC << "Job report min duration set to " << report_us << "us" << std::endl;
-    }
+    _schedulers.resize(128);
 }
 
-JobArena::Metrics::Arena::Ptr
-JobArena::Metrics::getOrCreate(const std::string& name)
+job_metrics::scheduler_metrics&
+job_metrics::scheduler(const std::string& name)
 {
-    for (int i = 0; i < _arenas.size(); ++i)
+    for (int i = 0; i < _schedulers.size(); ++i)
     {
-        if (_arenas[i] != nullptr && _arenas[i]->arenaName == name)
+        if (_schedulers[i] && _schedulers[i]->name == name)
         {
-            return _arenas[i];
+            return *_schedulers[i];
         }
     }
 
-    ++maxArenaIndex;
+    int m = ++max_index;
 
-    if (maxArenaIndex >= _arenas.size())
+    if (m >= _schedulers.size())
     {
-        ROCKY_SOFT_ASSERT(maxArenaIndex >= _arenas.size(),
-            "Ran out of arena space...using arena[0] :(");
-        return _arenas[0];
+        ROCKY_SOFT_ASSERT(m >= _schedulers.size(), "Ran out of scheduler space...using arena[0] :(");
+        return *_schedulers[0];
     }
 
-    auto new_arena = _arenas[maxArenaIndex] = Arena::Ptr(new Arena);
-    new_arena->arenaName = name;
-    new_arena->concurrency = 0;
-
-    return new_arena;
+    _schedulers[m] = std::make_unique<scheduler_metrics>();
+    _schedulers[m]->name = name;
+    return *_schedulers[m];
 }
 
-const JobArena::Metrics::Arena::Ptr
-JobArena::Metrics::arena(int index) const
+job_metrics::scheduler_metrics&
+job_metrics::scheduler(int index)
 {
-    return _arenas[index];
+    return index <= max_index ? *_schedulers[index] : *_schedulers[0];
 }
 
 int
-JobArena::Metrics::totalJobsPending() const
+job_metrics::totalJobsPending() const
 {
     int count = 0;
-    for (int i = 0; i <= maxArenaIndex; ++i)
-        if (arena(i))
-            count += arena(i)->numJobsPending;
+    for (int i = 0; i <= max_index; ++i)
+        count += _schedulers[i]->pending;
     return count;
 }
 
 int
-JobArena::Metrics::totalJobsRunning() const
+job_metrics::totalJobsRunning() const
 {
     int count = 0;
-    for (int i = 0; i <= maxArenaIndex; ++i)
-        if (arena(i))
-            count += arena(i)->numJobsRunning;
+    for (int i = 0; i <= max_index; ++i)
+        count += _schedulers[i]->running;
     return count;
 }
 
 int
-JobArena::Metrics::totalJobsCanceled() const
+job_metrics::totalJobsCanceled() const
 {
     int count = 0;
-    for (int i = 0; i <= maxArenaIndex; ++i)
-        if (arena(i))
-            count += arena(i)->numJobsCanceled;
+    for (int i = 0; i <= max_index; ++i)
+        count += _schedulers[i]->canceled;
     return count;
 }

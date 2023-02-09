@@ -115,8 +115,11 @@ TileNodeRegistry::ping(
                     _needsLoad.push_back(tile->key);
             }
 
-            if (tile->dataLoader.available() && tile->dataMerger.idle())
-                _needsMerge.push_back(tile->key);
+            // This will only queue one merge per frame, to prevent overloading
+            // the (synchronous) update cycle in VSG.
+            if (_needsMerge.empty())
+                if (tile->dataLoader.available() && tile->dataMerger.idle())
+                    _needsMerge.push_back(tile->key);
 
             if (tile->_needsUpdate)
                 _needsUpdate.push_back(tile->key);
@@ -390,17 +393,23 @@ TileNodeRegistry::requestLoad(
     };
 
 #if 1
+    // a callback that will return the loading priority of a tile
     vsg::observer_ptr<TerrainTileNode> tile_weak(tile);
     auto priority_func = [tile_weak]() -> float
     {
         vsg::ref_ptr<TerrainTileNode> tile(tile_weak);
-        return tile ? -tile->lastTraversalRange : 0.0f;
+        return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
     };
 
-    util::Job job;
-    job.setArena("loaders");
-    job.setPriorityFunction(priority_func);
-    tile->dataLoader = job.dispatch<TerrainTileModel>(load);
+    tile->dataLoader = util::job::dispatch<TerrainTileModel>(
+       load, {
+            "dataLoader",
+            priority_func,
+            util::job_scheduler::get("loaders"),
+            nullptr
+        }
+    );
+
 #else
     auto load_op = vsg::ref_ptr<PromiseOperation<TerrainTileModel>>(
         new PromiseOperation<TerrainTileModel>(load));
@@ -441,9 +450,6 @@ TileNodeRegistry::requestMerge(
         if (tile)
         {
             auto model = tile->dataLoader.get();
-
-            //ROCKY_INFO << "Merging data for tile " << key.str() << std::endl;
-            //tile->merge(model, manifest);
 
             auto& renderModel = tile->renderModel;
             auto compiler = terrain->runtime.compiler();
