@@ -63,6 +63,15 @@ Heightfield::Heightfield(Image* image)
     }
 }
 
+const Heightfield*
+Heightfield::cast_from(const Image* rhs)
+{
+    if (rhs && rhs->pixelFormat() == PixelFormat::R32_SFLOAT)
+        return reinterpret_cast<const Heightfield*>(rhs);
+    else
+        return nullptr;
+}
+
 float
 Heightfield::heightAtUV(
     double nx, double ny,

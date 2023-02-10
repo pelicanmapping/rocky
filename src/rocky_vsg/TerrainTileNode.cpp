@@ -7,6 +7,7 @@
 #include "TerrainContext.h"
 #include "SurfaceNode.h"
 #include "TerrainSettings.h"
+#include "RuntimeContext.h"
 
 #include <rocky/Math.h>
 #include <rocky/ImageLayer.h>
@@ -40,7 +41,8 @@ TerrainTileNode::TerrainTileNode(
     float in_childrenVisibilityRange,
     const SRS& worldSRS,
     const TerrainTileDescriptors& in_initialDescriptorModel,
-    TerrainTileHost* in_host)
+    TerrainTileHost* in_host,
+    RuntimeContext& runtime)
 {
     key = in_key;
     parent = in_parent;
@@ -57,12 +59,14 @@ TerrainTileNode::TerrainTileNode(
     lastTraversalRange = FLT_MAX;
     _needsChildren = false;
     _needsUpdate = false;
-    
+ 
+    ROCKY_HARD_ASSERT(in_geometry.valid());
+
     if (in_geometry.valid())
     {
         // scene graph is: tile->surface->stateGroup->geometry
         // construct a state group for this tile's render model
-        surface = SurfaceNode::create(key, worldSRS);
+        surface = SurfaceNode::create(key, worldSRS, runtime);
 
         // empty state group - will populate later in refreshStateGroup
         stategroup = vsg::StateGroup::create();
@@ -107,20 +111,16 @@ TerrainTileNode::recomputeBound()
     if (surface.valid())
     {
         surface->recomputeBound();
-        bound = surface->boundingSphere;
+        bound = surface->worldBoundingSphere;
     }
 }
 
 void
-TerrainTileNode::setElevation(
-    shared_ptr<Image> image,
-    const dmat4& matrix)
+TerrainTileNode::setElevation(shared_ptr<Image> image, const dmat4& matrix)
 {
     if (surface)
     {
-        if (image != getElevationRaster() ||
-            matrix != getElevationMatrix() ||
-            !this->bound.valid())
+        if (image != getElevationRaster() || matrix != getElevationMatrix() || !this->bound.valid())
         {
             surface->setElevation(image, matrix);
             recomputeBound();
@@ -224,7 +224,7 @@ TerrainTileNode::accept(vsg::RecordTraversal& nv) const
     if (hasChildren())
         _needsChildren = false;
 
-    if (surface->isVisibleFrom(nv.getState()))
+    if (surface->isVisible(nv.getState()))
     {
         // determine whether we can and should subdivide to a higher resolution:
         bool childrenInRange = shouldSubDivide(nv.getState());
@@ -233,6 +233,13 @@ TerrainTileNode::accept(vsg::RecordTraversal& nv) const
         {
             // children are available, traverse them now.
             children[1]->accept(nv);
+
+            // always ping all children at once so the system can never
+            // delete one of a quad. (A node can't ping itself because it
+            // may be bounding-sphere culled.)
+            _host->ping(
+                subTile(0), subTile(1), subTile(2), subTile(3),
+                nv);
         }
         else
         {
@@ -246,15 +253,7 @@ TerrainTileNode::accept(vsg::RecordTraversal& nv) const
         }
     }
 
-    if (hasChildren())
-    {
-        // always ping all children at once so the system can never
-        // delete one of a quad.
-        _host->ping(
-            subTile(0), subTile(1), subTile(2), subTile(3),
-            nv);
-    }
-
+    // if we don't have a parent, we need to ping ourselves to say alive
     if (!parent.valid())
     {
         _host->ping(
@@ -292,5 +291,8 @@ TerrainTileNode::inherit()
         renderModel.applyScaleBias(sb);
 
         revision = safe_parent->revision;
+
+        // prompts regeneration of the local bounds
+        setElevation(renderModel.elevation.image, renderModel.elevation.matrix);
     }
 }

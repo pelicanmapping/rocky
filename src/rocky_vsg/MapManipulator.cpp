@@ -94,41 +94,6 @@ namespace
         return r;
     }
 
-#if 0
-    vsg::dmat4 computeLocalToWorld(vsg::Node* node) {
-        vsg::dmat4 m;
-        if ( node ) {
-            vsg::NodePathList nodePaths = node->getParentalNodePaths();
-            if ( nodePaths.size() > 0 ) {
-                vsg::NodePath p;
-                unsigned start = 0;
-                for(unsigned i=0; i<nodePaths[0].size(); ++i) {
-                    if (dynamic_cast<MapNode*>(nodePaths[0][i]) != 0L) {
-                        start = i;
-                        break;
-                    }
-                }
-                for(unsigned i=start; i<nodePaths[0].size(); ++i)
-                    p.push_back(nodePaths[0][i]);
-                
-                m = osg::computeLocalToWorld(p);
-                //m = osg::computeLocalToWorld( nodePaths[0] );
-            }
-            else {
-                osg::Transform* t = dynamic_cast<osg::Transform*>(node);
-                if ( t ) {
-                    t->computeLocalToWorldMatrix( m, 0L );
-                }
-            }
-        }
-        return m;
-    }
-
-    vsg::dvec3 computeWorld(vsg::Node* node) {
-        return node ? vsg::dvec3(0,0,0) * computeLocalToWorld(node) : vsg::dvec3(0,0,0);
-    }
-#endif
-
     dvec3 computeWorld(vsg::ref_ptr<vsg::Node> node)
     {
         // TODO
@@ -143,48 +108,6 @@ namespace
         if( input > M_PI ) input -= M_PI*2.0;
         return input;
     }
-
-#if 0
-    // This replaces OSG's osg::computeLocalToWorld() function with one that
-    // passes your own NodeVisitor to the Transform::computeLocalToWorldMatrix()
-    // method. (We cannot subclass OSG's visitor because it's private.) This
-    // exists for users that have custom Transform subclasses that override
-    // Transform::computeLocalToWorldMatrix and need access to the NodeVisitor.
-    struct ComputeLocalToWorld : vsg::NodeVisitor
-    {
-        vsg::dmat4 _matrix;
-        vsg::NodeVisitor* _nv;
-        ComputeLocalToWorld(vsg::NodeVisitor* nv) : _nv(nv) { }
-        void accumulate(const vsg::NodePath& path)
-        {
-            if (path.empty()) return;
-            unsigned j = path.size();
-            for (vsg::NodePath::const_reverse_iterator i = path.rbegin();
-                i != path.rend();
-                ++i, --j)
-            {
-                const osg::Camera* cam = dynamic_cast<const osg::Camera*>(*i);
-                if (cam)
-                {
-                    if( cam->getReferenceFrame() != osg::Transform::RELATIVE_RF || cam->getParents().empty())
-                        break;
-                }
-                else if (dynamic_cast<MapNode*>(*i))
-                {
-                    break;
-                }
-            }
-            for (; j<path.size(); ++j)
-            {
-                const_cast<vsg::Node*>(path[j])->accept(*this);
-            }
-        }
-        void apply(osg::Transform& transform)
-        {
-            transform.computeLocalToWorldMatrix(_matrix, _nv);
-        }
-    };
-#endif
 }
 
 #if 0

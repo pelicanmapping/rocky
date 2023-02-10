@@ -16,7 +16,6 @@
 #include <vsg/nodes/StateGroup.h>
 #include <vsg/app/RecordTraversal.h>
 #include <vsg/ui/UIEvent.h> // time_point
-
 #include <vsg/state/Sampler.h>
 #include <vsg/state/ImageInfo.h>
 
@@ -28,6 +27,7 @@ namespace ROCKY_NAMESPACE
     class TerrainTileNode;
     class TerrainContext;
     class TerrainSettings;
+    class RuntimeContext;
 
     struct TextureData
     {
@@ -121,7 +121,8 @@ namespace ROCKY_NAMESPACE
             float childrenVisibilityRange,
             const SRS& worldSRS,
             const TerrainTileDescriptors& initialDescriptorModel,
-            TerrainTileHost* in_host);
+            TerrainTileHost* in_host,
+            RuntimeContext& runtime);
 
         virtual ~TerrainTileNode();
 

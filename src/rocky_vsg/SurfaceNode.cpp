@@ -6,12 +6,19 @@
 #include "SurfaceNode.h"
 #include "Utils.h"
 #include "GeometryPool.h"
+#include "RuntimeContext.h"
+#include <rocky/Heightfield.h>
 #include <rocky/Horizon.h>
 #include <numeric>
+#include <vsg/utils/Builder.h>
+#include <vsg/io/Options.h>
 
 using namespace ROCKY_NAMESPACE;
 
 #define LC "[SurfaceNode] "
+
+// uncomment to draw each tile's tight bounding box
+//#define RENDER_TILE_BBOX
 
 void
 HorizonTileCuller::set(
@@ -68,12 +75,11 @@ HorizonTileCuller::isVisible(const dvec3& from) const
 //..............................................................
 
 
-const bool SurfaceNode::_enableDebugNodes = ::getenv("OSGEARTH_REX_DEBUG") != 0L;
-
-SurfaceNode::SurfaceNode(const TileKey& tilekey, const SRS& worldSRS)
+SurfaceNode::SurfaceNode(const TileKey& tilekey, const SRS& worldSRS, RuntimeContext& runtime) :
+    _tileKey(tilekey),
+    _runtime(runtime),
+    _boundsDirty(true)
 {
-    _tileKey = tilekey;
-
     // Establish a local reference frame for the tile:
     GeoPoint centroid = tilekey.extent().getCentroid();
     centroid.transformInPlace(worldSRS);
@@ -101,18 +107,62 @@ SurfaceNode::setLastFramePassedCull(unsigned fn)
 }
 #endif
 
+#if 0
+void
+SurfaceNode::accept(vsg::RecordTraversal& rv) const
+{
+    auto state = rv.getState();
+
+    // bounding box visibility check; this is much tighter than the bounding
+    // sphere. _frustumStack.top() allegedly contains the frustum in world coordinates.
+    // the first 8 points in _worldPoints are the 8 corners of the bounding box
+    // in world coordinates.
+    bool visible = true;
+    auto& frustum = state->_frustumStack.top();
+    int p;
+    for (int f = 0; f < POLYTOPE_SIZE && visible; ++f)
+    {
+        for (p = 0; p < 8; ++p)
+            if (vsg::distance(frustum.face[f], _worldPoints[p]) > 0.0) // visible
+                break;
+
+        visible = (p < 8); // entire box is hidden if we found no visible points
+    }
+
+    if (visible)
+    {
+        state->modelviewMatrixStack.push(*this);
+        if (this->subgraphRequiresLocalFrustum) state->pushFrustum();
+        state->dirty = true;
+        traverse(rv);
+        if (this->subgraphRequiresLocalFrustum) state->popFrustum();
+        state->modelviewMatrixStack.pop();
+        state->dirty = true;
+    }
+}
+#endif
+
+#define corner(N) vsg::dvec3( \
+    (N & 0x1) ? _localbbox.max.x : _localbbox.min.x, \
+    (N & 0x2) ? _localbbox.max.y : _localbbox.min.y, \
+    (N & 0x4) ? _localbbox.max.z : _localbbox.min.z)
 
 void
-SurfaceNode::recomputeLocalBBox()
+SurfaceNode::recomputeBound()
 {
-    _localbbox = vsg::dbox();
+    if (!_boundsDirty)
+        return;
+    else
+        _boundsDirty = false;
+
+    _localbbox = vsg::dbox(
+        { FLT_MAX, FLT_MAX, FLT_MAX },
+        { -FLT_MAX, -FLT_MAX, -FLT_MAX });
 
     if (children.empty())
         return;
 
-    ROCKY_TODO("compute the local bounding box for a surface node (take from TileDrawable)");
-
-    auto geom = static_cast<vsg::Group*>(children[0].get())->children[0]->cast<SharedGeometry>();
+    auto geom = static_cast<vsg::Group*>(children.front().get())->children.front()->cast<SharedGeometry>();
     ROCKY_SOFT_ASSERT_AND_RETURN(geom, void());
 
     auto verts = geom->proxy_verts;
@@ -128,27 +178,33 @@ SurfaceNode::recomputeLocalBBox()
 
     if (_elevationRaster)
     {
-        float
+        // yes, this is safe...for now :)
+        auto heightfield = Heightfield::cast_from(_elevationRaster.get());
+
+        double
             scaleU = _elevationMatrix[0][0],
             scaleV = _elevationMatrix[1][1],
             biasU = _elevationMatrix[3][0],
             biasV = _elevationMatrix[3][1];
 
-        ROCKY_SOFT_ASSERT_AND_RETURN(!equiv(scaleU, 0.0f) && equiv(scaleV, 0.0f), void());
+        ROCKY_SOFT_ASSERT_AND_RETURN(!equiv(scaleU, 0.0) && !equiv(scaleV, 0.0), void());
 
         for (int i = 0; i < verts->size(); ++i)
         {
             if (((int)uvs->at(i).z & VERTEX_HAS_ELEVATION) == 0)
             {
-                float h = _elevationRaster->data<float>(
-                    clamp(uvs->at(i).x*scaleU + biasU, 0.0f, 1.0f),
-                    clamp(uvs->at(i).y*scaleV + biasV, 0.0f, 1.0f));
+                float h = heightfield->heightAtUV(
+                    clamp(uvs->at(i).x * scaleU + biasU, 0.0, 1.0),
+                    clamp(uvs->at(i).y * scaleV + biasV, 0.0, 1.0),
+                    Heightfield::NEAREST);
 
-                _proxyMesh[i] = verts->at(i) + normals->at(i) * h;
+                auto& v = verts->at(i);
+                auto& n = normals->at(i);
+                _proxyMesh[i] = v + n * h;
             }
             else
             {
-                _proxyMesh[i] = verts->at(i);
+                _proxyMesh[i] = (*verts)[i];
             }
         }
     }
@@ -158,78 +214,76 @@ SurfaceNode::recomputeLocalBBox()
         std::copy(verts->begin(), verts->end(), _proxyMesh.begin());
     }
 
-    float r2 = 0;
     for (auto& vert : _proxyMesh)
     {
         _localbbox.add(vert);
-        r2 = std::max(r2, vsg::length2(vert));
     }
-
-    //boundingSphere.set(
-    //    vsg::dvec3(0, 0, 0) * this->matrix,
-    //    sqrt((double)r2));
-
-    boundingSphere.set(
-        this->matrix * vsg::dvec3(0, 0, 0),
-        sqrt((double)r2));
-}
-
-void
-SurfaceNode::setElevation(
-    shared_ptr<Image> raster,
-    const dmat4& scaleBias)
-{
-    _elevationRaster = raster;
-    _elevationMatrix = scaleBias;
-    recomputeBound();
-}
-
-#define corner(N) vsg::dvec3( \
-    (N & 0x1) ? _localbbox.max.x : _localbbox.min.x, \
-    (N & 0x2) ? _localbbox.max.y : _localbbox.min.y, \
-    (N & 0x4) ? _localbbox.max.z : _localbbox.min.z)
-
-void
-SurfaceNode::recomputeBound()
-{
-    // next compute the bounding box in local space:
-    recomputeLocalBBox();
 
     auto& m = this->matrix;
 
+    vsg::dvec3 center = m * ((_localbbox.min + _localbbox.max) * 0.5);
+    double radius = 0.5 * vsg::length(_localbbox.max - _localbbox.min);
+
+    worldBoundingSphere.set(center, radius);
+
     // Compute the medians of each potential child node:
+    // Top points go first since these are the most likely to be visible
+    // during the isVisible check.
     _worldPoints = {
-        // bottom:
-        m * corner(0),
-        m * corner(1),
-        m * corner(2),
-        m * corner(3),
-        m * ((corner(0) + corner(1))*0.5),
-        m * ((corner(1) + corner(3))*0.5),
-        m * ((corner(3) + corner(2))*0.5),
-        m * ((corner(0) + corner(2))*0.5),
-        m * ((corner(0) + corner(3))*0.5),
 
         // top:
         m * corner(4),
         m * corner(5),
         m * corner(6),
         m * corner(7),
-        m * ((corner(4) + corner(5))*0.5),
-        m * ((corner(5) + corner(7))*0.5),
-        m * ((corner(7) + corner(6))*0.5),
-        m * ((corner(4) + corner(6))*0.5),
-        m * ((corner(4) + corner(7))*0.5)
+
+        // bottom:
+        m * corner(0),
+        m * corner(1),
+        m * corner(2),
+        m * corner(3),
+
+        // top midpoints
+        m * ((corner(4) + corner(5)) * 0.5),
+        m * ((corner(5) + corner(7)) * 0.5),
+        m * ((corner(7) + corner(6)) * 0.5),
+        m * ((corner(4) + corner(6)) * 0.5),
+        m * ((corner(4) + corner(7)) * 0.5),
+
+        // bottom midpoints
+        m * ((corner(0) + corner(1)) * 0.5),
+        m * ((corner(1) + corner(3)) * 0.5),
+        m * ((corner(3) + corner(2)) * 0.5),
+        m * ((corner(0) + corner(2)) * 0.5),
+        m * ((corner(0) + corner(3)) * 0.5)
     };
 
-#if 1
     // Update the horizon culler.
-    _horizonCuller.set(
-        _tileKey.profile().srs(),
-        this->matrix, //local2world,
-        _localbbox);
-#endif
+    _horizonCuller.set(_tileKey.profile().srs(), m, _localbbox);
 
-    // need this?
-    //dirtyBound();
+#ifdef RENDER_TILE_BBOX
+    if (children.size() == 2)
+        children.resize(1);
+
+    // Builds a debug boundingbox.
+    if (_runtime.compiler)
+    {
+        auto builder = vsg::Builder::create();
+        vsg::StateInfo stateinfo;
+        stateinfo.wireframe = true;
+        vsg::GeometryInfo geominfo;
+        geominfo.set(vsg::box(_localbbox));
+        auto debug_node = builder->createBox(geominfo, stateinfo);
+        _runtime.compiler()->compile(debug_node);
+        addChild(debug_node);
+    }
+#endif
+}
+
+void
+SurfaceNode::setElevation(shared_ptr<Image> raster, const dmat4& scaleBias)
+{
+    _elevationRaster = raster;
+    _elevationMatrix = scaleBias;
+    _boundsDirty = true;
 }

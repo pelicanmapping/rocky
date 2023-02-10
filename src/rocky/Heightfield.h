@@ -26,6 +26,11 @@ namespace ROCKY_NAMESPACE
         //! Make a heightfield, stealing data from an image.
         explicit Heightfield(Image* rhs);
 
+        //! Pointer that can be used to call heightfield functions on an Image 
+        //! object, as long as that Image object is a valid heightfield format.
+        //! usage: auto hf = Heightfield::cast_from(image);
+        static const Heightfield* cast_from(const Image* rhs);
+
         //! Access the height value at col, row
         inline float& heightAt(unsigned col, unsigned row);
         inline float heightAt(unsigned col, unsigned row) const;

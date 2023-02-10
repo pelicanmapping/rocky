@@ -193,6 +193,7 @@ int main(int argc, char** argv)
         if (!viewer->active())
             break;
 
+        // rocky update pass - management of tiles and paged data
         mapNode->update(viewer->getFrameStamp());
 
         // runs through the viewer's update operations queue; this includes update ops 

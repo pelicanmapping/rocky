@@ -16,8 +16,8 @@
 
 namespace ROCKY_NAMESPACE
 {
-    class Heightfield;
     class Horizon;
+    class RuntimeContext;
 
     class HorizonTileCuller
     {
@@ -39,13 +39,13 @@ namespace ROCKY_NAMESPACE
      * SurfaceNode holds the geometry and transform information
      * for one terrain tile surface.
      */
-    class SurfaceNode :
-        public vsg::Inherit<vsg::MatrixTransform, SurfaceNode>
+    class SurfaceNode : public vsg::Inherit<vsg::MatrixTransform, SurfaceNode>
     {
     public:
         SurfaceNode(
             const TileKey& tilekey,
-            const SRS& worldSRS);
+            const SRS& worldSRS,
+            RuntimeContext& runtime);
 
         //! Update the elevation raster associated with this tile
         void setElevation(
@@ -61,21 +61,10 @@ namespace ROCKY_NAMESPACE
         const dmat4& getElevationMatrix() const {
             return _elevationMatrix;
         }
-
-        //! aligned BBOX for culling (derived from elevation raster)
-        //const vsg::box& getAlignedBoundingBox() const {
-        //    return _drawable->bound;
-        //}
         
-        //! Horizon visibility check
-        inline bool isVisibleFrom(vsg::State* state) const {
-            auto eye = state->modelviewMatrixStack.top() * vsg::dvec3(0, 0, 0);
-            return _horizonCuller.isVisible(dvec3(eye.x, eye.y, eye.z));
-        }
-
-        //inline bool isVisibleFrom(const fvec3& viewpoint) const {
-        //    return _horizonCuller.isVisible(viewpoint);
-        //}
+        //! World-space visibility check (includes bounding box
+        //! and horizon checks)
+        inline bool isVisible(vsg::State* state) const;
      
 #if 0
         // A box can have 4 children. 
@@ -104,21 +93,45 @@ namespace ROCKY_NAMESPACE
 
         //float getPixelSizeOnScreen(osg::CullStack* cull) const;
 
-        vsg::dsphere boundingSphere;
+        vsg::dsphere worldBoundingSphere;
 
     protected:
 
         TileKey _tileKey;
-        static const bool _enableDebugNodes;
         int _lastFramePassedCull;
         HorizonTileCuller _horizonCuller;
         shared_ptr<Image> _elevationRaster;
         dmat4 _elevationMatrix;
         std::vector<vsg::dvec3> _worldPoints;
         vsg::dbox _localbbox;
-        void recomputeLocalBBox();
+        bool _boundsDirty;
+        RuntimeContext& _runtime;
+        SRS _worldSRS;
 
         std::vector<vsg::vec3> _proxyMesh;
     };
 
+
+    bool SurfaceNode::isVisible(vsg::State* state) const
+    {
+        // bounding box visibility check; this is much tighter than the bounding
+        // sphere. _frustumStack.top() contains the frustum in world coordinates.
+        // https://github.com/vsg-dev/VulkanSceneGraph/blob/master/include/vsg/vk/State.h#L267
+        // The first 8 points in _worldPoints are the 8 corners of the bounding box
+        // in world coordinates.
+        // Note: POLYTOPE_SIZE is defined in vsg plane.h
+        auto& frustum = state->_frustumStack.top();
+        int p;
+        for (int f = 0; f < POLYTOPE_SIZE; ++f) {
+            for (p = 0; p < 8; ++p)
+                if (vsg::distance(frustum.face[f], _worldPoints[p]) > 0.0) // visible?
+                    break;
+            if (p == 8)
+                return false;
+        }
+
+        // passed bbox check; do horizon check
+        auto eye = state->modelviewMatrixStack.top() * vsg::dvec3(0, 0, 0);
+        return _horizonCuller.isVisible(dvec3(eye.x, eye.y, eye.z));
+    }
 }

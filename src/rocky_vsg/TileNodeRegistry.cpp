@@ -117,9 +117,8 @@ TileNodeRegistry::ping(
 
             // This will only queue one merge per frame, to prevent overloading
             // the (synchronous) update cycle in VSG.
-            if (_needsMerge.empty())
-                if (tile->dataLoader.available() && tile->dataMerger.idle())
-                    _needsMerge.push_back(tile->key);
+            if (tile->dataLoader.available() && tile->dataMerger.idle())
+                _needsMerge.push_back(tile->key);
 
             if (tile->_needsUpdate)
                 _needsUpdate.push_back(tile->key);
@@ -134,6 +133,13 @@ TileNodeRegistry::update(
     shared_ptr<TerrainContext> terrain)
 {
     std::scoped_lock lock(_mutex);
+
+    //Log::info()
+    //    << "Frame " << fs->frameCount << ": "
+    //    << "tiles=" << _tracker._list.size() << " "
+    //    << "needsChildren=" << _needsChildren.size() << " "
+    //    << "needsLoad=" << _needsLoad.size() << " "
+    //    << "needsMerge=" << _needsMerge.size() << std::endl;
 
     // update any tiles that asked for it
     for (auto& key : _needsUpdate)
@@ -179,6 +185,7 @@ TileNodeRegistry::update(
         if (iter != _tiles.end())
         {
             requestMerge(iter->second._tile.get(), io, terrain);
+            break; // one per frame :)
         }
     }
     _needsMerge.clear();
@@ -195,15 +202,15 @@ TileNodeRegistry::update(
     {
         if (!tile->doNotExpire)
         {
-            auto parent_iter = _tiles.find(tile->key.createParentKey());
+            auto key = tile->key;
+            auto parent_iter = _tiles.find(key.createParentKey());
             if (parent_iter != _tiles.end())
             {
                 auto parent = parent_iter->second._tile;
-                //auto parent = tile->parentTile();
                 if (parent.valid())
                     parent->unloadChildren();
             }
-            _tiles.erase(tile->key);
+            _tiles.erase(key);
             return true;
         }
         return false;
@@ -255,7 +262,8 @@ TileNodeRegistry::createTile(
         childrenVisibilityRange,
         terrain->worldSRS,
         terrain->stateFactory->defaultTileDescriptors,
-        terrain->tiles->_host);
+        terrain->tiles->_host,
+        terrain->runtime);
 
     // Generate its state group:
     terrain->stateFactory->updateTerrainTileDescriptors(
@@ -468,6 +476,11 @@ TileNodeRegistry::requestMerge(
             {
                 renderModel.elevation.image = model.elevation.heightfield.heightfield();
                 renderModel.elevation.matrix = model.elevation.matrix;
+
+                // prompt the tile can update its bounds
+                tile->setElevation(
+                    renderModel.elevation.image,
+                    renderModel.elevation.matrix);
             }
 
             if (model.normalMap.image.valid())
