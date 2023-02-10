@@ -16,10 +16,19 @@
 #include <vsg/vk/State.h>
 #include <vsg/ui/FrameStamp.h>
 #include <vsg/nodes/StateGroup.h>
+#include <vsg/state/ViewDependentState.h>
 
 using namespace ROCKY_NAMESPACE;
 
 #define LC "[TerrainTileNode] "
+
+// uncomment to use SSE.
+//#define USE_SSE
+
+
+// if you define this, the engine will be more aggressive about paging out tiles
+// that are not in the frustum.
+//#define AGGRESSIVE_PAGEOUT
 
 namespace
 {
@@ -157,55 +166,66 @@ TerrainTileNode::shouldSubDivide(vsg::State* state) const
     if (childrenVisibilityRange == FLT_MAX)
         return false;
 
+#ifdef USE_SSE
+
+    float SSE = 100.0f;
+    //state->getValue("SSE", SSE);
+
+
+    auto& vp = state->_commandBuffer->viewDependentState->viewportData->at(0);
+    double width = vp[2];
+    double height = vp[3];
+    auto& P = state->projectionMatrixStack.top();
+    auto& M = state->modelviewMatrixStack.top();
+
+    // Adapted from OpenSceneGraph
+    // https://github.com/openscenegraph/OpenSceneGraph/blob/master/src/osg/CullingSet.cpp#L67
+
+    // scaling for horizontal pixels
+    float P00 = P(0, 0) *width * 0.5f;
+    float P20_00 = P(2, 0) * width * 0.5f + P(2, 3) * width * 0.5f;
+    vsg::dvec3 scale_00(M(0, 0) * P00 + M(0, 2) * P20_00,
+        M(1, 0) * P00 + M(1, 2) * P20_00,
+        M(2, 0) * P00 + M(2, 2) * P20_00);
+
+    // scaling for vertical pixels
+    float P10 = P(1, 1) * height * 0.5f;
+    float P20_10 = P(2, 1) * height * 0.5f + P(2, 3) * height * 0.5f;
+    vsg::dvec3 scale_10(M(0, 1) * P10 + M(0, 2) * P20_10,
+        M(1, 1) * P10 + M(1, 2) * P20_10,
+        M(2, 1) * P10 + M(2, 2) * P20_10);
+
+    float P23 = P(2, 3);
+    float P33 = P(3, 3);
+    vsg::vec4 pixelSizeVector(
+        M(0, 2) * P23,
+        M(1, 2) * P23,
+        M(2, 2) * P23,
+        M(3, 2) * P23 + M(3, 3) * P33);
+
+    float scaleRatio = 0.7071067811f / sqrtf(vsg::length2(scale_00) + vsg::length2(scale_10));
+    pixelSizeVector *= scaleRatio;
+
+    float dot_product =
+        bound.center.x * pixelSizeVector.x +
+        bound.center.y * pixelSizeVector.y +
+        bound.center.z * pixelSizeVector.z +
+        pixelSizeVector.w;
+
+    float pixel_size = fabs(bound.radius / dot_product);
+
+    const float TILE_SIZE = 256.0f;
+
+    return (pixel_size > (TILE_SIZE + SSE));
+
+#endif
+
     // are we inside the bounding sphere?
     //else if (distanceTo(bound.center, state) - bound.radius <= 0.0f)
     //    return true;
 
     // are the children in range?
-    else
-        return surface->anyChildBoxWithinRange(childrenVisibilityRange, state);
-
-#if 0
-        // In PSOS mode, subdivide when the on-screen size of a tile exceeds the maximum
-        // allowable on-screen tile size in pixels.
-        if (terrain.rangeMode() == osg::LOD::PIXEL_SIZE_ON_SCREEN)
-        {
-            float tileSizeInPixels = -1.0;
-
-            //if (context->getEngine()->getComputeRangeCallback())
-            //{
-            //    tileSizeInPixels = (*context->getEngine()->getComputeRangeCallback())(this, *culler->_cv);
-            //}    
-
-            if (tileSizeInPixels <= 0.0)
-            {
-                tileSizeInPixels = _surface->getPixelSizeOnScreen(terrain);
-            }
-        
-            float effectivePixelSize =
-                terrain.tilePixelSize + terrain.screenSpaceError;
-                //options().tilePixelSize().get() + options().screenSpaceError().get();
-
-            return (tileSizeInPixels > effectivePixelSize);
-        }
-
-        // In DISTANCE-TO-EYE mode, use the visibility ranges precomputed in the SelectionInfo.
-        else
-        {
-            float range = terrain.selectionInfo.getRange(_subdivideTestKey);
-#if 1
-            // slightly slower than the alternate block below, but supports a user overriding
-            // CullVisitor::getDistanceToViewPoint -gw
-            return _surface->anyChildBoxWithinRange(range, terrain); // *culler);
-#else
-            return _surface->anyChildBoxIntersectsSphere(
-                culler->getViewPointLocal(), 
-                range*range / culler->getLODScale());
-#endif
-        }
-#endif
-    //}
-    //return false;
+    return surface->anyChildBoxWithinRange(childrenVisibilityRange, state);
 }
 
 void
@@ -234,12 +254,14 @@ TerrainTileNode::accept(vsg::RecordTraversal& nv) const
             // children are available, traverse them now.
             children[1]->accept(nv);
 
+#ifdef AGGRESSIVE_PAGEOUT
             // always ping all children at once so the system can never
             // delete one of a quad. (A node can't ping itself because it
             // may be bounding-sphere culled.)
             _host->ping(
                 subTile(0), subTile(1), subTile(2), subTile(3),
                 nv);
+#endif
         }
         else
         {
@@ -252,6 +274,18 @@ TerrainTileNode::accept(vsg::RecordTraversal& nv) const
             }
         }
     }
+
+#ifndef AGGRESSIVE_PAGEOUT
+    if (hasChildren())
+    {
+        // always ping all children at once so the system can never
+        // delete one of a quad. (A node can't ping itself because it
+        // may be bounding-sphere culled.)
+        _host->ping(
+            subTile(0), subTile(1), subTile(2), subTile(3),
+            nv);
+    }
+#endif
 
     // if we don't have a parent, we need to ping ourselves to say alive
     if (!parent.valid())

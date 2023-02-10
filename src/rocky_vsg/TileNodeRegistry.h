@@ -22,7 +22,7 @@ namespace ROCKY_NAMESPACE
     /**
      * Keeps track of all the tiles resident in the terrain engine.
      */
-    class TileNodeRegistry : public TerrainTileHost
+    class TileNodeRegistry // : public TerrainTileHost
     {
     public:
         using Ptr = std::shared_ptr<TileNodeRegistry>;
@@ -70,7 +70,7 @@ namespace ROCKY_NAMESPACE
             TerrainTileNode* tile1,
             TerrainTileNode* tile2,
             TerrainTileNode* tile3,
-            vsg::RecordTraversal& nv) override;
+            vsg::RecordTraversal& nv); // override;
 
         //! Number of tiles in the registry.
         unsigned size() const { return _tiles.size(); }

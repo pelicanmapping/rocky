@@ -107,41 +107,6 @@ SurfaceNode::setLastFramePassedCull(unsigned fn)
 }
 #endif
 
-#if 0
-void
-SurfaceNode::accept(vsg::RecordTraversal& rv) const
-{
-    auto state = rv.getState();
-
-    // bounding box visibility check; this is much tighter than the bounding
-    // sphere. _frustumStack.top() allegedly contains the frustum in world coordinates.
-    // the first 8 points in _worldPoints are the 8 corners of the bounding box
-    // in world coordinates.
-    bool visible = true;
-    auto& frustum = state->_frustumStack.top();
-    int p;
-    for (int f = 0; f < POLYTOPE_SIZE && visible; ++f)
-    {
-        for (p = 0; p < 8; ++p)
-            if (vsg::distance(frustum.face[f], _worldPoints[p]) > 0.0) // visible
-                break;
-
-        visible = (p < 8); // entire box is hidden if we found no visible points
-    }
-
-    if (visible)
-    {
-        state->modelviewMatrixStack.push(*this);
-        if (this->subgraphRequiresLocalFrustum) state->pushFrustum();
-        state->dirty = true;
-        traverse(rv);
-        if (this->subgraphRequiresLocalFrustum) state->popFrustum();
-        state->modelviewMatrixStack.pop();
-        state->dirty = true;
-    }
-}
-#endif
-
 #define corner(N) vsg::dvec3( \
     (N & 0x1) ? _localbbox.max.x : _localbbox.min.x, \
     (N & 0x2) ? _localbbox.max.y : _localbbox.min.y, \

@@ -413,7 +413,7 @@ TileNodeRegistry::requestLoad(
        load, {
             "dataLoader",
             priority_func,
-            util::job_scheduler::get("loaders"),
+            util::job_scheduler::get(terrain->loadSchedulerName),
             nullptr
         }
     );

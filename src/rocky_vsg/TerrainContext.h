@@ -40,7 +40,7 @@ namespace ROCKY_NAMESPACE
         //! the map this terrain is rendering
         shared_ptr<Map> map;
 
-        //! SRS of the rendered terrain and map
+        //! SRS of the rendered terrain
         SRS worldSRS;
 
         //! creator of terrain tile triangles and attributes
@@ -56,6 +56,6 @@ namespace ROCKY_NAMESPACE
         shared_ptr<StateFactory> stateFactory;
 
         //! name of job arena used to load data
-        std::string loadArenaName = "terrain.load";
+        std::string loadSchedulerName = "terrain.load";
     };
 }

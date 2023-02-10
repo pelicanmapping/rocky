@@ -24,7 +24,6 @@
 #include <rocky/TMSElevationLayer.h>
 #endif
 
-
 int usage(const char* msg)
 {
     std::cout << msg << std::endl;
