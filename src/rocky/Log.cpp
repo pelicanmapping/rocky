@@ -8,11 +8,24 @@
 
 using namespace ROCKY_NAMESPACE;
 
+// uncomment to colorize the output levels
+//#define USE_ANSI_COLOR_CODES
+
 // statics
 LogLevel Log::level = LogLevel::WARN;
 
+
+#if defined(USE_ANSI_COLOR_CODES) && defined(WIN32)
+#include <windows.h>
+#endif
+
 namespace
 {
+    // color codes
+    const std::string COLOR_RED = "\033[31m";
+    const std::string COLOR_YELLOW = "\033[33m";
+    const std::string COLOR_DEFAULT = "\033[39m";
+
     // global user function.
     LogFunction g_userFunction = nullptr;
     bool g_logUsePrefix = true;
@@ -45,13 +58,22 @@ namespace
     // single-level stream for use by the logger
     struct LogStream
     {
-        LogStream(LogLevel level, const std::string& prefix, std::ostream& stream) :
+        LogStream(LogLevel level, const std::string& prefix, std::ostream& stream, const std::string& colorcode) :
             _level(level),
             _prefix(prefix),
-            _stream(&stream)
+            _stream(&stream),
+            _colorcode(colorcode)
         {
             _functionStream._buf._level = level;
             _nullStream.setstate(std::ios_base::badbit);
+
+#if defined(USE_ANSI_COLOR_CODES) && defined(WIN32)
+            // enables ANSI escape code processing on windows (on by default in linux)
+            auto handle = GetStdHandle(STD_OUTPUT_HANDLE);
+            DWORD mode;
+            if (GetConsoleMode(handle, &mode))
+                SetConsoleMode(handle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+#endif
         }
 
         // https://stackoverflow.com/questions/8243743/is-there-a-null-stdostream-implementation-in-c-or-libraries
@@ -60,11 +82,12 @@ namespace
         std::ostream* _stream = nullptr;
         LogLevel _level;
         std::string _prefix;
+        std::string _colorcode;
     };
 
     // static streams for each log level
-    LogStream g_infoStream(LogLevel::INFO, "[rk-info] ", std::cout);
-    LogStream g_warnStream(LogLevel::WARN, "[rk-WARN] ", std::cout);
+    LogStream g_infoStream(LogLevel::INFO, "[rk-info] ", std::cout, COLOR_DEFAULT);
+    LogStream g_warnStream(LogLevel::WARN, "[rk-WARN] ", std::cout, COLOR_YELLOW);
 }
 
 LogFunction&
@@ -90,6 +113,10 @@ Log::log(LogLevel level)
         (level > Log::level) ? ls._nullStream :
         (g_userFunction) ? ls._functionStream :
         *ls._stream;
+
+#if defined(USE_ANSI_COLOR_CODES)
+    output << ls._colorcode;
+#endif
 
     if (g_logUsePrefix)
         output << ls._prefix;

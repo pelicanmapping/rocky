@@ -122,8 +122,6 @@ namespace
             headers.insert(std::make_pair(h.name, h.value));
         }
 
-        //TODO: SSL support
-
         std::string proto_host_port;
         std::string path;
         std::string query_text;
@@ -150,7 +148,7 @@ namespace
 
             if (r.error() != httplib::Error::Success)
             {
-                return Status(Status::GeneralError, httplib::to_string(r.error()));
+                return Status(Status::ServiceUnavailable, httplib::to_string(r.error()));
             }
 
             if (r->status == 404)
