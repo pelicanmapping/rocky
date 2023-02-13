@@ -133,19 +133,19 @@ namespace
 
 #define addSkirtDataForIndex(P, INDEX, HEIGHT) \
 { \
-    verts->set(P, (*verts)[INDEX] ); \
-    normals->set(P, (*normals)[INDEX] ); \
-    uvs->set(P, (*uvs)[INDEX] ); \
+    verts->set(P, verts->at(INDEX)); \
+    normals->set(P, normals->at(INDEX)); \
+    uvs->set(P, uvs->at(INDEX)); \
     uvs->at(P).z = (float)((int)uvs->at(P).z | VERTEX_SKIRT); \
-    if ( neighbors ) neighbors->set(P, (*neighbors)[INDEX] ); \
-    if ( neighborNormals ) neighborNormals->set(P, (*neighborNormals)[INDEX] ); \
+    if ( neighbors ) neighbors->set(P, neighbors->at(INDEX)); \
+    if ( neighborNormals ) neighborNormals->set(P, neighborNormals->at(INDEX)); \
     ++P; \
-    verts->set(P, (*verts)[INDEX] - ((*normals)[INDEX])*(HEIGHT) ); \
-    normals->set(P, (*normals)[INDEX] ); \
-    uvs->set(P, (*uvs)[INDEX] ); \
+    verts->set(P, verts->at(INDEX) - (normals->at(INDEX)*(HEIGHT))); \
+    normals->set(P, normals->at(INDEX)); \
+    uvs->set(P, uvs->at(INDEX)); \
     uvs->at(P).z = (float)((int)uvs->at(P).z | VERTEX_SKIRT); \
-    if ( neighbors ) neighbors->set(P, (*neighbors)[INDEX] - ((*normals)[INDEX])*(HEIGHT) ); \
-    if ( neighborNormals ) neighborNormals->set(P, (*neighborNormals)[INDEX] ); \
+    if ( neighbors ) neighbors->set(P, neighbors->at(INDEX) - (normals->at(INDEX)*(HEIGHT))); \
+    if ( neighborNormals ) neighborNormals->set(P, neighborNormals->at(INDEX)); \
     ++P; \
 }
 
@@ -368,21 +368,20 @@ GeometryPool::createGeometry(
             float height = (float)tileBound.radius * settings.skirtRatio;
 
             // Normal tile skirt first:
-            unsigned skirtIndex = verts->size();
-            unsigned p = skirtIndex;
+            unsigned skirtIndex = numVertsInSurface; // verts->size();
 
             // first, create all the skirt verts, normals, and texcoords.
             for (int c = 0; c < (int)tileSize - 1; ++c)
-                addSkirtDataForIndex(p, c, height); //south
+                addSkirtDataForIndex(skirtIndex, c, height); //south
 
             for (int r = 0; r < (int)tileSize - 1; ++r)
-                addSkirtDataForIndex(p, r*tileSize + (tileSize - 1), height); //east
+                addSkirtDataForIndex(skirtIndex, r*tileSize + (tileSize - 1), height); //east
 
             for (int c = tileSize - 1; c > 0; --c)
-                addSkirtDataForIndex(p, (tileSize - 1)*tileSize + c, height); //north
+                addSkirtDataForIndex(skirtIndex, (tileSize - 1)*tileSize + c, height); //north
 
             for (int r = tileSize - 1; r > 0; --r)
-                addSkirtDataForIndex(p, r*tileSize, height); //west
+                addSkirtDataForIndex(skirtIndex, r*tileSize, height); //west
         }
 
         auto indices =

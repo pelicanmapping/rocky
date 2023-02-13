@@ -22,7 +22,7 @@ namespace ROCKY_NAMESPACE
     /**
      * Keeps track of all the tiles resident in the terrain engine.
      */
-    class TileNodeRegistry // : public TerrainTileHost
+    class TileNodeRegistry
     {
     public:
         using Ptr = std::shared_ptr<TileNodeRegistry>;

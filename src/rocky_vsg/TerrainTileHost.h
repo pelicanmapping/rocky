@@ -10,6 +10,7 @@
 namespace ROCKY_NAMESPACE
 {
     class TerrainTileNode;
+    class TerrainSettings;
 
     /** 
      * Interface for terrain tiles to notify their host 
@@ -18,11 +19,15 @@ namespace ROCKY_NAMESPACE
     class TerrainTileHost
     {
     public:
+        //! Tell the host that a group of tiles are still alive.
         virtual void ping(
             TerrainTileNode* tile0,
             TerrainTileNode* tile1,
             TerrainTileNode* tile2,
             TerrainTileNode* tile3,
             vsg::RecordTraversal& nv) = 0;
+
+        //! Access terrain settings.
+        virtual const TerrainSettings& settings() = 0;
     };
 }

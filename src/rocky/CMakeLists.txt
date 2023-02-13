@@ -192,13 +192,28 @@ set_property(TARGET rocky PROPERTY CXX_STANDARD 17)
 
 target_link_libraries(rocky ${LIBRARIES})
 
-install(TARGETS rocky ${INSTALL_TARGETS_DEFAULT_FLAGS})
+# install the libraries
+install(
+    TARGETS rocky
+    EXPORT rocky
+    ${INSTALL_TARGETS_DEFAULT_FLAGS}
+)
 
 if (BUILD_SHARED_LIBS)
     target_compile_definitions(rocky INTERFACE ROCKY_SHARED_LIBRARY)
 endif()
 
+# install the HEADER files
 install(FILES ${HEADERS} DESTINATION include)
+
+# create a cmake file - WIP
+install(
+    EXPORT rocky
+    FILE rocky.cmake
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/rocky/cmake
+    NAMESPACE rocky::
+)
+
 
 # if (NOT(${ROCKY_BINARY_DIR} STREQUAL ${ROCKY_SOURCE_DIR}))
     # install(DIRECTORY ${ROCKY_BINARY_DIR}/include DESTINATION include)

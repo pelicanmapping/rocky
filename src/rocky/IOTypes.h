@@ -79,6 +79,9 @@ namespace ROCKY_NAMESPACE
         inline std::string property(const std::string& name) const;
         inline std::string& property(const std::string& name);
 
+        //! Maximum number of attempts to make a network connection
+        unsigned maxNetworkAttempts = 4u;
+
         //! Was the current operation canceled?
         inline bool canceled() const override;
 

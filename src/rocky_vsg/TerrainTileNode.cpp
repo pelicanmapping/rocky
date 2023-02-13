@@ -23,7 +23,7 @@ using namespace ROCKY_NAMESPACE;
 #define LC "[TerrainTileNode] "
 
 // uncomment to use SSE.
-//#define USE_SSE
+#define USE_SSE
 
 
 // if you define this, the engine will be more aggressive about paging out tiles
@@ -168,64 +168,20 @@ TerrainTileNode::shouldSubDivide(vsg::State* state) const
 
 #ifdef USE_SSE
 
-    float SSE = 100.0f;
-    //state->getValue("SSE", SSE);
-
+    const float TILE_SIZE_PIXELS = 256.0f;
 
     auto& vp = state->_commandBuffer->viewDependentState->viewportData->at(0);
-    double width = vp[2];
-    double height = vp[3];
-    auto& P = state->projectionMatrixStack.top();
-    auto& M = state->modelviewMatrixStack.top();
+    float min_screen_height_ratio = (TILE_SIZE_PIXELS + _host->settings().screenSpaceError) / vp[3];
+    float d = state->lodDistance(bound);
+    return (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
 
-    // Adapted from OpenSceneGraph
-    // https://github.com/openscenegraph/OpenSceneGraph/blob/master/src/osg/CullingSet.cpp#L67
-
-    // scaling for horizontal pixels
-    float P00 = P(0, 0) *width * 0.5f;
-    float P20_00 = P(2, 0) * width * 0.5f + P(2, 3) * width * 0.5f;
-    vsg::dvec3 scale_00(M(0, 0) * P00 + M(0, 2) * P20_00,
-        M(1, 0) * P00 + M(1, 2) * P20_00,
-        M(2, 0) * P00 + M(2, 2) * P20_00);
-
-    // scaling for vertical pixels
-    float P10 = P(1, 1) * height * 0.5f;
-    float P20_10 = P(2, 1) * height * 0.5f + P(2, 3) * height * 0.5f;
-    vsg::dvec3 scale_10(M(0, 1) * P10 + M(0, 2) * P20_10,
-        M(1, 1) * P10 + M(1, 2) * P20_10,
-        M(2, 1) * P10 + M(2, 2) * P20_10);
-
-    float P23 = P(2, 3);
-    float P33 = P(3, 3);
-    vsg::vec4 pixelSizeVector(
-        M(0, 2) * P23,
-        M(1, 2) * P23,
-        M(2, 2) * P23,
-        M(3, 2) * P23 + M(3, 3) * P33);
-
-    float scaleRatio = 0.7071067811f / sqrtf(vsg::length2(scale_00) + vsg::length2(scale_10));
-    pixelSizeVector *= scaleRatio;
-
-    float dot_product =
-        bound.center.x * pixelSizeVector.x +
-        bound.center.y * pixelSizeVector.y +
-        bound.center.z * pixelSizeVector.z +
-        pixelSizeVector.w;
-
-    float pixel_size = fabs(bound.radius / dot_product);
-
-    const float TILE_SIZE = 256.0f;
-
-    return (pixel_size > (TILE_SIZE + SSE));
-
-#endif
-
-    // are we inside the bounding sphere?
-    //else if (distanceTo(bound.center, state) - bound.radius <= 0.0f)
-    //    return true;
+#else
 
     // are the children in range?
+    // Note - this method prefered when using morphing.
     return surface->anyChildBoxWithinRange(childrenVisibilityRange, state);
+
+#endif
 }
 
 void

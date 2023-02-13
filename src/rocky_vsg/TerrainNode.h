@@ -54,6 +54,11 @@ namespace ROCKY_NAMESPACE
             TerrainTileNode*, 
             vsg::RecordTraversal&) override;
 
+        //! Access to terrain settings
+        const TerrainSettings& settings() override {
+            return *this;
+        }
+
     private:
 
         //! Deserialize and initialize

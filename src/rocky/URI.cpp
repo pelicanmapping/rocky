@@ -19,6 +19,7 @@
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
+using namespace std::chrono_literals;
 
 bool URI::supportsHTTPS()
 {
@@ -110,7 +111,7 @@ namespace
         return true;
     }
 
-    IOResult<HTTPResponse> http_get(const HTTPRequest& request)
+    IOResult<HTTPResponse> http_get(const HTTPRequest& request, unsigned max_attempts)
     {
 #ifndef HTTPLIB_FOUND
         ROCKY_TODO("Implement HTTP GET");
@@ -144,28 +145,45 @@ namespace
             // disable cert verification
             client.enable_server_certificate_verification(false);
 
-            auto r = client.Get(path, params, headers);
+            max_attempts = std::max(1u, max_attempts);
 
-            if (r.error() != httplib::Error::Success)
+            unsigned attempts = 5;
+            for(;;)
             {
-                return Status(Status::ServiceUnavailable, httplib::to_string(r.error()));
+                auto r = client.Get(path, params, headers);
+
+                if (r.error() != httplib::Error::Success)
+                {
+                    // retry on a missing connection
+                    if (r.error() == httplib::Error::Connection && (--max_attempts > 0))
+                    {
+                        Log::info() << LC << httplib::to_string(r.error()) << " with " << proto_host_port << "; retrying.." << std::endl;
+                        std::this_thread::sleep_for(1s);
+                        continue;
+                    }
+
+                    return Status(Status::ServiceUnavailable, httplib::to_string(r.error()));
+                }
+
+                if (r->status == 404)
+                {
+                    return Status(Status::ResourceUnavailable, httplib::detail::status_message(r->status));
+                }
+                else if (r->status != 200)
+                {
+                    return Status(Status::GeneralError, httplib::detail::status_message(r->status));
+                }
+
+                response.status = r->status;
+
+                for (auto& h : r->headers)
+                    response.headers[h.first] = h.second;
+
+                response.data = std::move(r->body);
+
+                break;
             }
 
-            if (r->status == 404)
-            {
-                return Status(Status::ResourceUnavailable, httplib::detail::status_message(r->status));
-            }
-            else if (r->status != 200)
-            {
-                return Status(Status::GeneralError, httplib::detail::status_message(r->status));
-            }
-
-            response.status = r->status;
-
-            for (auto& h : r->headers)
-                response.headers[h.first] = h.second;
-
-            response.data = std::move(r->body);
         }
         catch (std::exception& ex)
         {
@@ -350,7 +368,7 @@ URI::read(const IOOptions& io) const
     if (containsServerAddress(full()))
     {
         HTTPRequest request{ full() };
-        auto r = http_get(request);
+        auto r = http_get(request, io.maxNetworkAttempts);
         if (r.status.failed())
         {
             return IOResult<Content>::propagate(r);

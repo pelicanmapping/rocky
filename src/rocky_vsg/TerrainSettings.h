@@ -25,6 +25,9 @@ namespace ROCKY_NAMESPACE
         //! The minimum tile LOD range as a factor of a tile's radius. Default = 7.0
         optional<float> minTileRangeFactor;
 
+        //! Acceptable error, in pixels, when rendering terrain tiles.
+        optional<float> screenSpaceError;
+
         //! Whether cluster culling is enabled on terrain tiles. Deafult=true
         optional<bool> clusterCulling;
 
@@ -132,8 +135,5 @@ namespace ROCKY_NAMESPACE
 
         //! Target concurrency of terrain data loading operations. Default = 4.
         optional<unsigned> concurrency;
-
-        //! Screen space error for PIXEL SIZE ON SCREEN LOD mode
-        optional<float> screenSpaceError;
     };
 }

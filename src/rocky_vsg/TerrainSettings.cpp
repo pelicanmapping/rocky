@@ -11,6 +11,7 @@ TerrainSettings::TerrainSettings(const Config& conf)
 {
     tileSize.setDefault(17);
     minTileRangeFactor.setDefault(7.0);
+    screenSpaceError.setDefault(125.0f);
     maxLOD.setDefault(19u);
     minLOD.setDefault(0u);
     firstLOD.setDefault(0u);
@@ -44,7 +45,6 @@ TerrainSettings::TerrainSettings(const Config& conf)
     textureCompressionMethod.setDefault("");
     concurrency.setDefault(4u);
     //useLandCover.setDefault(true);
-    screenSpaceError.setDefault(0.0f);
 
 
     conf.get("tile_size", tileSize);

@@ -97,6 +97,8 @@ int main(int argc, char** argv)
 
 #if defined(ROCKY_SUPPORTS_TMS)
 
+    mapNode->terrainNode()->skirtRatio = 0.1f;
+
     // add a layer to the map
     auto layer = rocky::TMSImageLayer::create();
     layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
