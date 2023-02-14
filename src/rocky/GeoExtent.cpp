@@ -1063,7 +1063,7 @@ GeoExtent::createWorldBoundingSphere(double minElev, double maxElev) const
 
         for (auto& p : samplePoints)
         {
-            double r = (p - bs.center).length();
+            double r = glm::distance(p, bs.center);
             if (r > maxRadius) maxRadius = r;
         }
 

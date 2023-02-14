@@ -381,7 +381,7 @@ StateFactory::updateTerrainTileDescriptors(
     // and creates the necessary VK data to render that model.
 
     // copy the existing one:
-    TerrainTileDescriptors dm = renderModel.descriptorModel;
+    TerrainTileDescriptors dm = renderModel.descriptors;
 
     if (renderModel.color.image)
     {

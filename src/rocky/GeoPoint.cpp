@@ -165,13 +165,13 @@ GeoPoint::distanceTo(const GeoPoint& rhs) const
     {
         if (srs().isEquivalentTo(rhs.srs()))
         {
-            return (_p - rhs._p).length();
+            return glm::distance(_p, rhs._p);
         }
         else
         {
             GeoPoint rhsT;
             rhs.transform(srs(), rhsT);
-            return (_p - rhsT._p).length();
+            return glm::distance(_p, rhsT._p);
         }
     }
     else

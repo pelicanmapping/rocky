@@ -11,6 +11,7 @@
 
 #include <rocky/TerrainTileModelFactory.h>
 
+#include <vsg/nodes/QuadGroup.h>
 #include <vsg/ui/FrameStamp.h>
 
 using namespace ROCKY_NAMESPACE;
@@ -65,67 +66,81 @@ TileNodeRegistry::releaseAll()
 }
 
 void
-TileNodeRegistry::ping(
-    const TerrainTileNode* parent,
-    TerrainTileNode* tile0,
-    TerrainTileNode* tile1,
-    TerrainTileNode* tile2,
-    TerrainTileNode* tile3,
-    vsg::RecordTraversal& nv)
+TileNodeRegistry::ping(TerrainTileNode* tile, bool parentHasData, vsg::RecordTraversal& rv)
+{
+    // first, update the tracker to keep this tile alive.
+    TileTable::iterator i = _tiles.find(tile->key);
+
+    if (i == _tiles.end())
+    {
+        // new entry:
+        auto& entry = _tiles[tile->key];
+        entry._tile = tile;
+        entry._trackerToken = _tracker.use(tile, nullptr);
+    }
+    else
+    {
+        _tracker.use(tile, i->second._trackerToken);
+    }
+
+    // next, see if the tile needs anything.
+    // 
+    // "progressive" means do not load LOD N+1 until LOD N is complete.
+    const bool progressive = true;
+
+    if (progressive)
+    {
+        auto tileHasData = tile->dataMerger.available();
+
+        if (tileHasData && tile->_needsChildren)
+            _loadChildren.push_back(tile->key);
+
+        if (parentHasData && tile->dataLoader.idle())
+            _loadData.push_back(tile->key);
+    }
+    else
+    {
+        //// free for all
+        //if (tile->_needsChildren)
+        //    _needsChildren.push_back(tile->key);
+
+        //if (tile->dataLoader.idle())
+        //    _needsLoad.push_back(tile->key);
+    }
+
+    // This will only queue one merge per frame, to prevent overloading
+    // the (synchronous) update cycle in VSG.
+    if (tile->dataLoader.available() && tile->dataMerger.idle())
+        _mergeData.push_back(tile->key);
+
+    if (tile->_needsUpdate)
+        _updateData.push_back(tile->key);
+}
+
+#if 0
+void
+TileNodeRegistry::ping(TerrainTileNode* parent, vsg::QuadGroup* quad, vsg::RecordTraversal& nv)
 {
     std::scoped_lock lock(_mutex);
 
-    for (auto tile : { tile0, tile1, tile2, tile3 })
+    if (quad == nullptr && parent != nullptr)
     {
-        if (tile)
+        // special case - ping the parent.
+        ping(nullptr, parent);
+    }
+    else if (quad != nullptr)
+    {
+        for (unsigned i = 0; i < 4; ++i)
         {
-            TileTable::iterator i = _tiles.find(tile->key);
-
-            if (i == _tiles.end())
+            TerrainTileNode* tile = static_cast<TerrainTileNode*>(quad->children[i].get());
+            if (tile)
             {
-                // new entry:
-                auto& entry = _tiles[tile->key];
-                entry._tile = tile;
-                entry._trackerToken = _tracker.use(tile, nullptr);
+                ping(parent, tile);
             }
-            else
-            {
-                _tracker.use(tile, i->second._trackerToken);
-            }
-
-            // "progressive" means do not load LOD N+1 until LOD N is complete.
-            const bool progressive = true;
-
-            if (progressive)
-            {
-                auto tile_complete = tile->dataMerger.available();
-
-                if (tile->_needsChildren && tile_complete)
-                    _loadChildren.push_back(tile->key);
-
-                if (tile->dataLoader.idle() && (!parent || parent->dataMerger.available()))
-                    _loadData.push_back(tile->key);
-            }
-            else
-            {
-                //// free for all
-                //if (tile->_needsChildren)
-                //    _needsChildren.push_back(tile->key);
-
-                //if (tile->dataLoader.idle())
-                //    _needsLoad.push_back(tile->key);
-            }
-
-            // This will only queue one merge per frame, to prevent overloading
-            // the (synchronous) update cycle in VSG.
-            if (tile->dataLoader.available() && tile->dataMerger.idle())
-                _mergeData.push_back(tile->key);
-
-            if (tile->_needsUpdate)
-                _updateData.push_back(tile->key);
         }
     }
 }
+#endif
 
 void
 TileNodeRegistry::update(
@@ -138,9 +153,9 @@ TileNodeRegistry::update(
     //Log::info()
     //    << "Frame " << fs->frameCount << ": "
     //    << "tiles=" << _tracker._list.size() << " "
-    //    << "needsChildren=" << _needsChildren.size() << " "
-    //    << "needsLoad=" << _needsLoad.size() << " "
-    //    << "needsMerge=" << _needsMerge.size() << std::endl;
+    //    << "needsChildren=" << _loadChildren.size() << " "
+    //    << "needsLoad=" << _loadData.size() << " "
+    //    << "needsMerge=" << _mergeData.size() << std::endl;
 
     // update any tiles that asked for it
     for (auto& key : _updateData)
@@ -167,33 +182,6 @@ TileNodeRegistry::update(
         }
     }
     _loadChildren.clear();
-
-#if 0
-    // launch any "new children" requests
-    for (auto& key : _createChildren)
-    {
-        auto iter = _tiles.find(key);
-        if (iter != _tiles.end())
-        {
-            requestCreateChildren(
-                iter->second._tile.get(), // parent
-                terrain);  // context
-
-            iter->second._tile->_needsChildren = false;
-        }
-    }
-    _createChildren.clear();
-
-    for (auto& key : _mergeChildren)
-    {
-        auto iter = _tiles.find(key);
-        if (iter != _tiles.end())
-        {
-            requestMergeChildren(iter->second._tile.get(), io, terrain);
-            break; // one per frame :)
-        }
-    }
-#endif
 
     // launch any data loading requests
     for (auto& key : _loadData)
@@ -335,10 +323,10 @@ TileNodeRegistry::requestLoadChildren(
     // function that will create all 4 children and compile them
     auto create_children = [terrain, parent](Cancelable& p)
     {
-        vsg::ref_ptr<vsg::Group> result;
+        vsg::ref_ptr<vsg::Node> result;
         if (parent)
         {
-            auto quad = vsg::Group::create();
+            auto quad = vsg::QuadGroup::create();
 
             for (unsigned quadrant = 0; quadrant < 4; ++quadrant)
             {
@@ -352,12 +340,12 @@ TileNodeRegistry::requestLoadChildren(
                     parent,
                     terrain);
 
-                if (tile)
-                {
-                    quad->addChild(tile);
-                }
+                ROCKY_SOFT_ASSERT_AND_RETURN(tile != nullptr, result);
+
+                quad->children[quadrant] = tile;
             }
 
+            // assign the result once all 4 children are added
             result = quad;
         }
 

@@ -12,6 +12,7 @@
 #include <rocky/TileKey.h>
 #include <rocky/Image.h>
 
+#include <vsg/nodes/QuadGroup.h>
 #include <vsg/nodes/CullGroup.h>
 #include <vsg/nodes/StateGroup.h>
 #include <vsg/app/RecordTraversal.h>
@@ -70,7 +71,7 @@ namespace ROCKY_NAMESPACE
         TextureData normal;
         TextureData colorParent;
 
-        TerrainTileDescriptors descriptorModel;
+        TerrainTileDescriptors descriptors;
 
         void applyScaleBias(const dmat4& sb)
         {
@@ -123,7 +124,7 @@ namespace ROCKY_NAMESPACE
             const fvec2& morphConstants,
             float childrenVisibilityRange,
             const SRS& worldSRS,
-            const TerrainTileDescriptors& initialDescriptorModel,
+            const TerrainTileDescriptors& initialDescriptors,
             TerrainTileHost* in_host,
             RuntimeContext& runtime);
 
@@ -156,14 +157,6 @@ namespace ROCKY_NAMESPACE
 
         const dmat4& getElevationMatrix() const {
             return surface->getElevationMatrix();
-        }
-
-        // access to subtiles
-        inline TerrainTileNode* subTile(unsigned i) const
-        {            
-            return children.size() < 2 ? nullptr :
-                static_cast<TerrainTileNode*>(
-                    static_cast<vsg::Group*>(children[1].get())->children[i].get());
         }
 
         //! Apply any thread-safe updates to the tile
@@ -219,6 +212,13 @@ namespace ROCKY_NAMESPACE
         //! Whether child tiles are present
         inline bool hasChildren() const {
             return children.size() >= 2;
+        }
+
+        //! access to subtiles. Make sure they exist before calling this.
+        inline TerrainTileNode* subTile(unsigned i) const
+        {
+            return static_cast<TerrainTileNode*>(
+                static_cast<vsg::QuadGroup*>(children[1].get())->children[i].get());
         }
 
         friend class TileNodeRegistry;

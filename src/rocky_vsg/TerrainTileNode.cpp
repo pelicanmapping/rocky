@@ -25,10 +25,9 @@ using namespace ROCKY_NAMESPACE;
 // uncomment to use SSE.
 #define USE_SSE
 
-
 // if you define this, the engine will be more aggressive about paging out tiles
 // that are not in the frustum.
-//#define AGGRESSIVE_PAGEOUT
+#define AGGRESSIVE_PAGEOUT
 
 namespace
 {
@@ -49,15 +48,14 @@ TerrainTileNode::TerrainTileNode(
     const fvec2& in_morphConstants,
     float in_childrenVisibilityRange,
     const SRS& worldSRS,
-    const TerrainTileDescriptors& in_initialDescriptorModel,
+    const TerrainTileDescriptors& in_initialDescriptors,
     TerrainTileHost* in_host,
     RuntimeContext& runtime)
 {
     key = in_key;
-    //parent = in_parent;
     morphConstants = in_morphConstants;
     childrenVisibilityRange = in_childrenVisibilityRange;
-    renderModel.descriptorModel = in_initialDescriptorModel;
+    renderModel.descriptors = in_initialDescriptors;
     _host = in_host;
 
     doNotExpire = (in_parent == nullptr);
@@ -179,46 +177,48 @@ TerrainTileNode::shouldSubDivide(vsg::State* state) const
 }
 
 void
-TerrainTileNode::accept(vsg::RecordTraversal& nv) const
+TerrainTileNode::accept(vsg::RecordTraversal& rv) const
 {
-    auto frame = nv.getFrameStamp()->frameCount;
+    auto frame = rv.getFrameStamp()->frameCount;
 
     auto new_frame = lastTraversalFrame.exchange(frame) != frame;
 
     lastTraversalRange.exchange(std::min(
         (float)(new_frame ? FLT_MAX : lastTraversalRange),
-        (float)distanceTo(bound.center, nv.getState())));
+        (float)distanceTo(bound.center, rv.getState())));
 
-    lastTraversalTime.exchange(nv.getFrameStamp()->time);
+    lastTraversalTime.exchange(rv.getFrameStamp()->time);
 
     if (hasChildren())
         _needsChildren = false;
 
-    if (surface->isVisible(nv.getState()))
+    if (surface->isVisible(rv.getState()))
     {
         // determine whether we can and should subdivide to a higher resolution:
-        bool childrenInRange = shouldSubDivide(nv.getState());
+        bool childrenInRange = shouldSubDivide(rv.getState());
 
         if (childrenInRange && hasChildren())
         {
             // children are available, traverse them now.
-            children[1]->accept(nv);
+            children[1]->accept(rv);
 
 #ifdef AGGRESSIVE_PAGEOUT
             // always ping all children at once so the system can never
             // delete one of a quad. (A node can't ping itself because it
             // may be bounding-sphere culled.)
-            _host->ping(
-                subTile(0), subTile(1), subTile(2), subTile(3),
-                nv);
+            bool parentHasData = dataMerger.available();
+            _host->ping(subTile(0), parentHasData, rv);
+            _host->ping(subTile(1), parentHasData, rv);
+            _host->ping(subTile(2), parentHasData, rv);
+            _host->ping(subTile(3), parentHasData, rv);
 #endif
         }
         else
         {
             // children do not exist or are out of range; use this tile's geometry
-            children[0]->accept(nv);
+            children[0]->accept(rv);
 
-            if (childrenInRange && childrenLoader.idle()) //!childrenLoader.working() && !childrenLoader.available())
+            if (childrenInRange && childrenLoader.idle())
             {
                 _needsChildren = true;
             }
@@ -231,21 +231,18 @@ TerrainTileNode::accept(vsg::RecordTraversal& nv) const
         // always ping all children at once so the system can never
         // delete one of a quad. (A node can't ping itself because it
         // may be bounding-sphere culled.)
-        _host->ping(
-            this,
-            subTile(0), subTile(1), subTile(2), subTile(3),
-            nv);
+        bool parentHasData = dataMerger.available();
+        _host->ping(subTile(0), parentHasData, rv);
+        _host->ping(subTile(1), parentHasData, rv);
+        _host->ping(subTile(2), parentHasData, rv);
+        _host->ping(subTile(3), parentHasData, rv);
     }
 #endif
 
-    // if we don't have a parent, we need to ping ourselves to say alive
+    // if we don't have a parent, we need to ping ourselves.
     if (doNotExpire)
     {
-        _host->ping(
-            nullptr,
-            const_cast<TerrainTileNode*>(this), 
-            nullptr, nullptr, nullptr,
-            nv);
+        _host->ping(const_cast<TerrainTileNode*>(this), true, rv);
     }
 }
 
@@ -253,10 +250,6 @@ void
 TerrainTileNode::unloadChildren()
 {
     children.resize(1);
-#if 0
-    childrenCreator.reset();
-    childrenMerger.reset();
-#endif
     childrenLoader.reset();
     dataLoader.reset();
     dataMerger.reset();

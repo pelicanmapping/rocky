@@ -55,7 +55,7 @@ namespace ROCKY_NAMESPACE
         void expandBy(const dvec3& v) {
             if (valid()) {
                 dvec3 dv = v - center;
-                double r = dv.length();
+                double r = glm::length(dv);
                 if (r > radius) {
                     double dr = 0.5*(r - radius);
                     center += dv * (dr / r);

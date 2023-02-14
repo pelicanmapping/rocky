@@ -5,7 +5,12 @@
  */
 #include "MapNode.h"
 #include "TerrainNode.h"
+#include "Utils.h"
+#include <rocky/Horizon.h>
+
 #include <vsg/io/Options.h>
+#include <vsg/app/RecordTraversal.h>
+#include <vsg/vk/State.h>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
@@ -1072,4 +1077,24 @@ MapNode::update(const vsg::FrameStamp* f)
 {
     ROCKY_HARD_ASSERT(_instance.status().ok());
     _terrain->update(f, _instance.ioOptions());
+}
+
+void
+MapNode::accept(vsg::RecordTraversal& rv) const
+{
+    if (worldSRS().isGeocentric())
+    {
+        std::shared_ptr<Horizon> horizon;
+        rv.getState()->getValue("horizon", horizon);
+        if (!horizon)
+        {
+            horizon = std::make_shared<Horizon>(worldSRS().ellipsoid());
+            rv.getState()->setValue("horizon", horizon);
+        }
+
+        auto eye = vsg::inverse(rv.getState()->modelviewMatrixStack.top()) * vsg::dvec3(0, 0, 0);
+        horizon->setEye(to_glm(eye));
+    }
+
+    Inherit::accept(rv);
 }

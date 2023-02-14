@@ -134,6 +134,10 @@ namespace ROCKY_NAMESPACE
 
         virtual ~MapNode();
 
+    public:
+
+        void accept(vsg::RecordTraversal&) const override;
+
     private:
 
         //osg::ref_ptr< MapCallback > _mapCallback;

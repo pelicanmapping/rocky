@@ -1797,7 +1797,7 @@ MapManipulator::zoom(double dx, double dy)
             // and adjust the zoom ratio to account for the difference in 
             // target distance based on the earth's curvature...approximately!
             vsg::dvec3 targetInLocalFrame = _centerRotation.conj()*target;
-            double crRatio = _center.length() / targetInLocalFrame.z();
+            double crRatio = glm::length(_center) / targetInLocalFrame.z();
             ratio *= crRatio;
 
             // Interpolate a new focal point:

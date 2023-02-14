@@ -20,58 +20,6 @@ using namespace ROCKY_NAMESPACE;
 // uncomment to draw each tile's tight bounding box
 //#define RENDER_TILE_BBOX
 
-void
-HorizonTileCuller::set(
-    const SRS& srs,
-    const vsg::dmat4& local2world,
-    const vsg::dbox& bbox)
-{
-    if (!_horizon && srs.isGeographic())
-    {
-        _horizon = std::make_shared<Horizon>();
-    }
-
-    if (_horizon)
-    {
-        _horizon->setEllipsoid(srs.ellipsoid());
-
-        // Adjust the horizon ellipsoid based on the minimum Z value of the tile;
-        // necessary because a tile that's below the ellipsoid (ocean floor, e.g.)
-        // may be visible even if it doesn't pass the horizon-cone test. In such
-        // cases we need a more conservative ellipsoid.
-        double zMin = std::min(bbox.min.z, 0.0);
-
-        zMin = std::max(zMin, -25000.0); // approx the lowest point on earth * 2
-
-        _horizon->setEllipsoid(Ellipsoid(
-            srs.ellipsoid().semiMajorAxis() + zMin,
-            srs.ellipsoid().semiMinorAxis() + zMin));
-
-        dmat4 m = to_glm(local2world);
-
-        _points[0] = m * dvec3(bbox.min.x, bbox.min.y, bbox.max.z);
-        _points[1] = m * dvec3(bbox.max.x, bbox.min.y, bbox.max.z);
-        _points[2] = m * dvec3(bbox.max.x, bbox.max.y, bbox.max.z);
-        _points[3] = m * dvec3(bbox.min.x, bbox.max.y, bbox.max.z);
-    }
-}
-
-bool
-HorizonTileCuller::isVisible(const dvec3& from) const
-{
-    if (!_horizon)
-        return true;
-
-    // alternate method (slower)
-    //return _horizon->isVisible(from, _bs.center(), _bs.radius());
-
-    for (unsigned i = 0; i < 4; ++i)
-        if (_horizon->isVisible(from, _points[i], 0.0))
-            return true;
-
-    return false;
-}
-
 //..............................................................
 
 
@@ -216,8 +164,12 @@ SurfaceNode::recomputeBound()
         m * ((corner(0) + corner(3)) * 0.5)
     };
 
-    // Update the horizon culler.
-    _horizonCuller.set(_tileKey.profile().srs(), m, _localbbox);
+    // Adjust the horizon ellipsoid based on the minimum Z value of the tile;
+    // necessary because a tile that's below the ellipsoid (ocean floor, e.g.)
+    // may be visible even if it doesn't pass the horizon-cone test. In such
+    // cases we need a more conservative ellipsoid.
+    //double zMin = std::min(_localbbox.min.z, 0.0);
+    //_horizon.setEllipsoid(Ellipsoid(_horizonCullDistance + zMin, _horizonCullDistance + zMin));
 
 #ifdef RENDER_TILE_BBOX
     if (children.size() == 2)

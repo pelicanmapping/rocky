@@ -9,6 +9,7 @@
 #include <rocky/Image.h>
 #include <rocky/SRS.h>
 #include <rocky/TileKey.h>
+#include <rocky/Horizon.h>
 #include <rocky_vsg/Utils.h>
 #include <vsg/nodes/MatrixTransform.h>
 #include <vsg/vk/State.h>
@@ -18,22 +19,6 @@ namespace ROCKY_NAMESPACE
 {
     class Horizon;
     class RuntimeContext;
-
-    class HorizonTileCuller
-    {
-    public:
-        // four points representing to upper face of the bounding box
-        dvec3 _points[4];
-
-        // Horizon object to consider for culling
-        shared_ptr<Horizon> _horizon;
-
-        //! Reconfigure the culler
-        void set(const SRS& srs, const vsg::dmat4& local2world, const vsg::dbox& bbox);
-
-        //! True if this tile may be visible relative to the horizon
-        bool isVisible(const dvec3& from) const;
-    };
 
     /**
      * SurfaceNode holds the geometry and transform information
@@ -99,15 +84,12 @@ namespace ROCKY_NAMESPACE
 
         TileKey _tileKey;
         int _lastFramePassedCull;
-        HorizonTileCuller _horizonCuller;
         shared_ptr<Image> _elevationRaster;
         dmat4 _elevationMatrix;
         std::vector<vsg::dvec3> _worldPoints;
         vsg::dbox _localbbox;
         bool _boundsDirty;
         RuntimeContext& _runtime;
-        SRS _worldSRS;
-
         std::vector<vsg::vec3> _proxyMesh;
     };
 
@@ -130,8 +112,21 @@ namespace ROCKY_NAMESPACE
                 return false;
         }
 
-        // passed bbox check; do horizon check
-        auto eye = state->modelviewMatrixStack.top() * vsg::dvec3(0, 0, 0);
-        return _horizonCuller.isVisible(dvec3(eye.x, eye.y, eye.z));
+        // still good? check against the horizon.
+        shared_ptr<Horizon> horizon;
+        if (state->getValue("horizon", horizon))
+        {
+            for (p = 0; p < 4; ++p)
+            {
+                if (horizon->isVisible(to_glm(_worldPoints[p])))
+                    return true;
+            }
+
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
 }

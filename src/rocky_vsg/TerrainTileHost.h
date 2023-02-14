@@ -5,6 +5,7 @@
  */
 #pragma once
 
+#include <vsg/nodes/QuadGroup.h>
 #include <vsg/app/RecordTraversal.h>
 
 namespace ROCKY_NAMESPACE
@@ -13,20 +14,16 @@ namespace ROCKY_NAMESPACE
     class TerrainSettings;
 
     /** 
-     * Interface for terrain tiles to notify their host 
-     * of their active state.
+     * Interface for terrain tiles to notify their host of their active state.
      */
     class TerrainTileHost
     {
     public:
-        //! Tell the host that a group of tiles are still alive.
+        //! Tell the host that a tile is alive!
         virtual void ping(
-            const TerrainTileNode* parent,
-            TerrainTileNode* tile0,
-            TerrainTileNode* tile1,
-            TerrainTileNode* tile2,
-            TerrainTileNode* tile3,
-            vsg::RecordTraversal& nv) = 0;
+            TerrainTileNode* tile,
+            bool parentHasData,
+            vsg::RecordTraversal& t) = 0;
 
         //! Access terrain settings.
         virtual const TerrainSettings& settings() = 0;

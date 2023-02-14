@@ -66,12 +66,9 @@ namespace ROCKY_NAMESPACE
         //! and that it may need something.
         //! ONLY call during record.
         void ping(
-            const TerrainTileNode* parent,
-            TerrainTileNode* tile0,
-            TerrainTileNode* tile1,
-            TerrainTileNode* tile2,
-            TerrainTileNode* tile3,
-            vsg::RecordTraversal& nv); // override;
+            TerrainTileNode* tile, 
+            bool dataLoadsPermitted,
+            vsg::RecordTraversal&);
 
         //! Number of tiles in the registry.
         unsigned size() const { return _tiles.size(); }
@@ -106,6 +103,10 @@ namespace ROCKY_NAMESPACE
         std::vector<TileKey> _updateData;
 
     private:
+
+        //! Keep a single tile alive.
+        //void ping(TerrainTileNode* parent, TerrainTileNode* tile);
+
         void requestLoadChildren(
             vsg::ref_ptr<TerrainTileNode> parent,
             shared_ptr<TerrainContext> terrain) const;
