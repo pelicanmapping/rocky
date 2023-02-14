@@ -48,6 +48,7 @@ namespace ROCKY_NAMESPACE
 
         //! TerrainTileHost interface
         void ping(
+            const TerrainTileNode*,
             TerrainTileNode*,
             TerrainTileNode*, 
             TerrainTileNode*, 
@@ -63,6 +64,8 @@ namespace ROCKY_NAMESPACE
 
         //! Deserialize and initialize
         void construct(const Config&);
+
+        Status createRootTiles(const IOOptions& io);
         
         RuntimeContext& _runtime;
         vsg::ref_ptr<vsg::Group> _tilesRoot;

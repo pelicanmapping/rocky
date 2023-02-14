@@ -10,11 +10,14 @@
 
 namespace ROCKY_NAMESPACE
 {
-    class ROCKY_EXPORT Instance : public Inherit<Object, Instance>
+    class ROCKY_EXPORT Instance
     {
     public:
-        //! Use Instance::create to construct
+        //! Construct a new application instance.
         Instance();
+
+        //! Copy constructor
+        Instance(const Instance& rhs);
 
         // destructor
         virtual ~Instance();
@@ -48,20 +51,29 @@ namespace ROCKY_NAMESPACE
 
         shared_ptr<Object> read(const Config& conf) const;
 
+        //! Global application instance status - returns an error
+        //! if the instance does not exist
+        static const Status& status();
+
     private:
-        std::unordered_map<std::string, ConfigFactory> _configFactories;
-        std::unordered_map<std::string, ContentFactory> _contentFactories;
-        CachePolicy _cachePolicy;
-        IOOptions _ioOptions;
+        struct Implementation
+        {
+            std::unordered_map<std::string, ConfigFactory> configFactories;
+            std::unordered_map<std::string, ContentFactory> contentFactories;
+            CachePolicy cachePolicy;
+            IOOptions ioOptions;
+        };
+        shared_ptr<Implementation> _impl;
+        static Status _global_status;
     };
 
 
     // inlines ...
 
     CachePolicy& Instance::cachePolicy() {
-        return _cachePolicy;
+        return _impl->cachePolicy;
     }
     IOOptions& Instance::ioOptions() {
-        return _ioOptions;
+        return _impl->ioOptions;
     }
 }

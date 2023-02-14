@@ -56,8 +56,8 @@ int main(int argc, char** argv)
     if (arguments.read({ "--help" }))
         return usage(argv[0]);
 
-    // rocky instance
-    auto rk = rocky::InstanceVSG::create(arguments);
+    // Application instance
+    rocky::InstanceVSG ri(arguments);
 
     rocky::Log::level = rocky::LogLevel::INFO;
     rocky::Log::info() << "Hello, world." << std::endl;
@@ -84,20 +84,20 @@ int main(int argc, char** argv)
     auto vsg_scene = vsg::Group::create();
 
     // TODO: read this from an earth file
-    auto mapNode = rocky::MapNode::create(rk);
+    auto mapNode = rocky::MapNode::create(ri);
 
+    // Some settings:
     mapNode->terrainNode()->concurrency = 4u;
+    mapNode->terrainNode()->skirtRatio = 0.1f;
+    mapNode->terrainNode()->firstLOD = 1;
 
     // Set up the runtime context with everything we need.
     // Eventually this should be automatic in InstanceVSG
-    rk->runtime().compiler = [viewer]() { return viewer->compileManager; };
-    rk->runtime().updates = [viewer]() { return viewer->updateOperations; };
-    rk->runtime().sharedObjects = vsg::SharedObjects::create();
-    rk->runtime().loaders = vsg::OperationThreads::create(mapNode->terrainNode()->concurrency);
+    ri.runtime().compiler = [viewer]() { return viewer->compileManager; };
+    ri.runtime().updates = [viewer]() { return viewer->updateOperations; };
+    ri.runtime().sharedObjects = vsg::SharedObjects::create();
 
 #if defined(ROCKY_SUPPORTS_TMS)
-
-    mapNode->terrainNode()->skirtRatio = 0.1f;
 
     // add a layer to the map
     auto layer = rocky::TMSImageLayer::create();

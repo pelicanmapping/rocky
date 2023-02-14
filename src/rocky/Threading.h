@@ -505,20 +505,35 @@ namespace ROCKY_NAMESPACE { namespace util
         //! @param settings Optional configuration for the asynchronous function call
         //! @return Future result of the async function call
         template<typename T> static inline Future<T> dispatch(
-            std::function<T(Cancelable&)>&& task,
+            std::function<T(Cancelable&)> task,
             const job& config = { })
         {
             Promise<T> promise;
+            return dispatch(task, promise, config);
+        }
+
+        //! Run the job and return a future result.
+        //! @param func Function to run in a thread
+        //! @param promise User-supplied promise object
+        //! @param settings Optional configuration for the asynchronous function call
+        //! @return Future result of the async function call
+        template<typename T> static inline Future<T> dispatch(
+            std::function<T(Cancelable&)> task,
+            Promise<T> promise,
+            const job& config = { })
+        {
             Future<T> future = promise.future();
+
             job_scheduler::Delegate delegate = [task, promise]() mutable
             {
                 bool good = !promise.abandoned();
-                if (good)
+                if (good && task)
                     promise.resolve(task(promise));
                 return good;
             };
-            job_scheduler* arena = config.scheduler ? config.scheduler : job_scheduler::get();
-            arena->dispatch(config, delegate);
+            job_scheduler* arena = config.scheduler ? config.scheduler : job_scheduler::get("");
+            if (arena)
+                arena->dispatch(config, delegate);
             return std::move(future);
         }
     };
@@ -606,6 +621,8 @@ namespace ROCKY_NAMESPACE { namespace util
         //! Sets the concurrency of a named arena
         static void setConcurrency(const std::string& name, unsigned value);
 
+        static void shutdownAll();
+
     private:
 
         //! Pulls queued jobs and runs them in whatever thread run() is called from.
@@ -617,8 +634,6 @@ namespace ROCKY_NAMESPACE { namespace util
 
         //! Join and destroy all threads in this scheduler
         void stopThreads();
-
-        static void shutdownAll();
 
         struct QueuedJob {
             QueuedJob() { }
@@ -656,14 +671,10 @@ namespace ROCKY_NAMESPACE { namespace util
         static std::mutex _schedulers_mutex;
         static std::unordered_map<std::string, unsigned> _schedulersizes;
         static std::unordered_map<std::string, std::shared_ptr<job_scheduler>> _schedulers;
-        //static Metrics _allMetrics;
 
-        //friend class Job; // allow access to private dispatch method
         friend struct job;
     };
 
 } } // namepsace rocky::Threading
-
-#define ROCKY_THREAD_NAME(name) rocky::util::setThreadName(name);
 
 #define ROCKY_SCOPED_THREAD_NAME(base,name) rocky::util::ScopedThreadName _scoped_threadName(base,name);

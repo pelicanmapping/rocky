@@ -43,4 +43,6 @@ TerrainContext::TerrainContext(
     tiles->geometryPool = geometryPool;
     tiles->selectionInfo = selectionInfo;
     tiles->stateFactory = stateFactory;
+
+    util::job_scheduler::get(loadSchedulerName)->setConcurrency(4);
 }

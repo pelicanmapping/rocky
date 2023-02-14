@@ -89,23 +89,13 @@ SurfaceNode::SurfaceNode(const TileKey& tilekey, const SRS& worldSRS, RuntimeCon
     this->matrix = to_vsg(local2world);
 }
 
-#if 0
-float
-SurfaceNode::getPixelSizeOnScreen(osg::CullStack* cull) const
-{     
-    // By using the width, the "apparent" pixel size will decrease as we
-    // near the poles.
-    double R = _drawable->getWidth()*0.5;
-    //double R = _drawable->getRadius() / 1.4142;
-    return cull->clampedPixelSize(getMatrix().getTrans(), R) / cull->getLODScale();
-}
-
 void
-SurfaceNode::setLastFramePassedCull(unsigned fn)
+SurfaceNode::setElevation(shared_ptr<Image> raster, const dmat4& scaleBias)
 {
-    _lastFramePassedCull = fn;
+    _elevationRaster = raster;
+    _elevationMatrix = scaleBias;
+    _boundsDirty = true;
 }
-#endif
 
 #define corner(N) vsg::dvec3( \
     (N & 0x1) ? _localbbox.max.x : _localbbox.min.x, \
@@ -115,18 +105,19 @@ SurfaceNode::setLastFramePassedCull(unsigned fn)
 void
 SurfaceNode::recomputeBound()
 {
+    // if the bounds are not dirty, do nothing
     if (!_boundsDirty)
         return;
     else
         _boundsDirty = false;
 
-    _localbbox = vsg::dbox(
-        { FLT_MAX, FLT_MAX, FLT_MAX },
-        { -FLT_MAX, -FLT_MAX, -FLT_MAX });
+    // start with a null bbox
+    _localbbox = vsg::dbox();
 
     if (children.empty())
         return;
 
+    // locate the geometry
     auto geom = static_cast<vsg::Group*>(children.front().get())->children.front()->cast<SharedGeometry>();
     ROCKY_SOFT_ASSERT_AND_RETURN(geom, void());
 
@@ -176,9 +167,11 @@ SurfaceNode::recomputeBound()
 
     else
     {
+        // no elevation? just copy the verts into the proxy
         std::copy(verts->begin(), verts->end(), _proxyMesh.begin());
     }
 
+    // build the bbox around the mesh.
     for (auto& vert : _proxyMesh)
     {
         _localbbox.add(vert);
@@ -186,9 +179,9 @@ SurfaceNode::recomputeBound()
 
     auto& m = this->matrix;
 
+    // transform the world space to create the bounding sphere
     vsg::dvec3 center = m * ((_localbbox.min + _localbbox.max) * 0.5);
     double radius = 0.5 * vsg::length(_localbbox.max - _localbbox.min);
-
     worldBoundingSphere.set(center, radius);
 
     // Compute the medians of each potential child node:
@@ -243,12 +236,4 @@ SurfaceNode::recomputeBound()
         addChild(debug_node);
     }
 #endif
-}
-
-void
-SurfaceNode::setElevation(shared_ptr<Image> raster, const dmat4& scaleBias)
-{
-    _elevationRaster = raster;
-    _elevationMatrix = scaleBias;
-    _boundsDirty = true;
 }

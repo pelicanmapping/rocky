@@ -7,6 +7,7 @@
 #include "TerrainSettings.h"
 #include "TerrainContext.h"
 #include "RuntimeContext.h"
+#include "Utils.h"
 
 #include <rocky/TerrainTileModelFactory.h>
 
@@ -57,14 +58,15 @@ TileNodeRegistry::releaseAll()
 
     _tiles.clear();
     _tracker.reset();
-    _needsChildren.clear();
-    _needsLoad.clear();
-    _needsMerge.clear();
-    _needsUpdate.clear();
+    _loadChildren.clear();
+    _loadData.clear();
+    _mergeData.clear();
+    _updateData.clear();
 }
 
 void
 TileNodeRegistry::ping(
+    const TerrainTileNode* parent,
     TerrainTileNode* tile0,
     TerrainTileNode* tile1,
     TerrainTileNode* tile2,
@@ -96,32 +98,31 @@ TileNodeRegistry::ping(
 
             if (progressive)
             {
-                auto parent = tile->parentTile();
                 auto tile_complete = tile->dataMerger.available();
 
                 if (tile->_needsChildren && tile_complete)
-                    _needsChildren.push_back(tile->key);
+                    _loadChildren.push_back(tile->key);
 
                 if (tile->dataLoader.idle() && (!parent || parent->dataMerger.available()))
-                    _needsLoad.push_back(tile->key);
+                    _loadData.push_back(tile->key);
             }
             else
             {
-                // free for all
-                if (tile->_needsChildren)
-                    _needsChildren.push_back(tile->key);
+                //// free for all
+                //if (tile->_needsChildren)
+                //    _needsChildren.push_back(tile->key);
 
-                if (tile->dataLoader.idle())
-                    _needsLoad.push_back(tile->key);
+                //if (tile->dataLoader.idle())
+                //    _needsLoad.push_back(tile->key);
             }
 
             // This will only queue one merge per frame, to prevent overloading
             // the (synchronous) update cycle in VSG.
             if (tile->dataLoader.available() && tile->dataMerger.idle())
-                _needsMerge.push_back(tile->key);
+                _mergeData.push_back(tile->key);
 
             if (tile->_needsUpdate)
-                _needsUpdate.push_back(tile->key);
+                _updateData.push_back(tile->key);
         }
     }
 }
@@ -142,7 +143,7 @@ TileNodeRegistry::update(
     //    << "needsMerge=" << _needsMerge.size() << std::endl;
 
     // update any tiles that asked for it
-    for (auto& key : _needsUpdate)
+    for (auto& key : _updateData)
     {
         auto iter = _tiles.find(key);
         if (iter != _tiles.end())
@@ -150,45 +151,72 @@ TileNodeRegistry::update(
             iter->second._tile->update(fs, io);
         }
     }
-    _needsUpdate.clear();
+    _updateData.clear();
 
     // launch any "new children" requests
-    for (auto& key : _needsChildren)
+    for (auto& key : _loadChildren)
     {
         auto iter = _tiles.find(key);
         if (iter != _tiles.end())
         {
-            createTileChildren(
+            requestLoadChildren(
+                iter->second._tile, // parent
+                terrain);  // context
+
+            iter->second._tile->_needsChildren = false;
+        }
+    }
+    _loadChildren.clear();
+
+#if 0
+    // launch any "new children" requests
+    for (auto& key : _createChildren)
+    {
+        auto iter = _tiles.find(key);
+        if (iter != _tiles.end())
+        {
+            requestCreateChildren(
                 iter->second._tile.get(), // parent
                 terrain);  // context
 
             iter->second._tile->_needsChildren = false;
         }
     }
-    _needsChildren.clear();
+    _createChildren.clear();
 
-    // launch any data loading requests
-    for (auto& key : _needsLoad)
+    for (auto& key : _mergeChildren)
     {
         auto iter = _tiles.find(key);
         if (iter != _tiles.end())
         {
-            requestLoad(iter->second._tile.get(), io, terrain);
-        }
-    }
-    _needsLoad.clear();
-
-    // schedule any data merging requests
-    for (auto& key : _needsMerge)
-    {
-        auto iter = _tiles.find(key);
-        if (iter != _tiles.end())
-        {
-            requestMerge(iter->second._tile.get(), io, terrain);
+            requestMergeChildren(iter->second._tile.get(), io, terrain);
             break; // one per frame :)
         }
     }
-    _needsMerge.clear();
+#endif
+
+    // launch any data loading requests
+    for (auto& key : _loadData)
+    {
+        auto iter = _tiles.find(key);
+        if (iter != _tiles.end())
+        {
+            requestLoadData(iter->second._tile, io, terrain);
+        }
+    }
+    _loadData.clear();
+
+    // schedule any data merging requests
+    for (auto& key : _mergeData)
+    {
+        auto iter = _tiles.find(key);
+        if (iter != _tiles.end())
+        {
+            requestMergeData(iter->second._tile, io, terrain);
+            break; // one per frame :)
+        }
+    }
+    _mergeData.clear();
 
     // Flush unused tiles (i.e., tiles that failed to ping) out of
     // the system. Tiles ping their children all at once; this
@@ -222,7 +250,7 @@ TileNodeRegistry::update(
 vsg::ref_ptr<TerrainTileNode>
 TileNodeRegistry::createTile(
     const TileKey& key,
-    TerrainTileNode* parent,
+    vsg::ref_ptr<TerrainTileNode> parent,
     shared_ptr<TerrainContext> terrain)
 {
     GeometryPool::Settings geomSettings
@@ -265,6 +293,12 @@ TileNodeRegistry::createTile(
         terrain->tiles->_host,
         terrain->runtime);
 
+    // inherit model data from the parent
+    tile->inheritFrom(parent);
+
+    // update the bounding sphere for culling
+    tile->recomputeBound();
+
     // Generate its state group:
     terrain->stateFactory->updateTerrainTileDescriptors(
         tile->renderModel,
@@ -283,29 +317,25 @@ TileNodeRegistry::getTile(const TileKey& key) const
         iter != _tiles.end() ? iter->second._tile :
         vsg::ref_ptr<TerrainTileNode>(nullptr);
 }
-
 void
-TileNodeRegistry::createTileChildren(
-    TerrainTileNode* parent,
+TileNodeRegistry::requestLoadChildren(
+    vsg::ref_ptr<TerrainTileNode> parent,
     shared_ptr<TerrainContext> terrain) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(parent, void());
 
     // make sure we're not already working on it
-    if (parent->childLoader.working() || parent->childLoader.available())
-    {
+    if (!parent->childrenLoader.idle())
         return;
-    }
 
     // prepare variables to send to the async loader
-    TileKey parent_key(parent->key);
-    vsg::ref_ptr<TerrainTileNode> parent_weakptr(parent);
+    //TileKey parent_key(parent->key);
+    //vsg::observer_ptr<TerrainTileNode> parent_weakptr(parent);
 
     // function that will create all 4 children and compile them
-    auto create_children = [terrain, parent_key, parent_weakptr](Cancelable& p)
+    auto create_children = [terrain, parent](Cancelable& p)
     {
-        vsg::ref_ptr<vsg::Node> result;
-        vsg::ref_ptr<TerrainTileNode> parent = parent_weakptr;
+        vsg::ref_ptr<vsg::Group> result;
         if (parent)
         {
             auto quad = vsg::Group::create();
@@ -315,7 +345,7 @@ TileNodeRegistry::createTileChildren(
                 if (p.canceled())
                     return result;
 
-                TileKey childkey = parent_key.createChildKey(quadrant);
+                TileKey childkey = parent->key.createChildKey(quadrant);
 
                 auto tile = terrain->tiles->createTile(
                     childkey,
@@ -334,39 +364,26 @@ TileNodeRegistry::createTileChildren(
         return result;
     };
 
-    // queue up the job.
-    parent->childLoader = terrain->runtime.compileAndAddNode(
-        parent,
-        create_children);
-}
-
-namespace
-{
-    template<class T>
-    struct PromiseOperation : public vsg::Operation
+    // a callback that will return the loading priority of a tile
+    auto priority_func = [parent]() -> float
     {
-        util::Promise<T> _promise;
-        std::function<T(Cancelable&)> _func;
-
-        PromiseOperation(std::function<T(Cancelable&)> func) :
-            _func(func) { }
-
-        void run() override {
-            if (!_promise.abandoned())
-                _promise.resolve(_func(_promise));
-            else
-                _promise.resolve();
-        }
-
-        util::Future<T> future() {
-            return _promise.future();
-        }
+        return parent ? -(sqrt(parent->lastTraversalRange) * parent->key.levelOfDetail()) : 0.0f;
     };
+
+    parent->childrenLoader = terrain->runtime.compileAndAddChild(
+        parent,
+        create_children,
+        {
+            "terrain.childLoader",
+            priority_func,
+            util::job_scheduler::get(terrain->loadSchedulerName),
+            nullptr
+        });
 }
 
 void
-TileNodeRegistry::requestLoad(
-    TerrainTileNode* tile,
+TileNodeRegistry::requestLoadData(
+    vsg::ref_ptr<TerrainTileNode> tile,
     const IOOptions& in_io,
     shared_ptr<TerrainContext> terrain) const
 {
@@ -400,37 +417,31 @@ TileNodeRegistry::requestLoad(
         return model;
     };
 
-#if 1
     // a callback that will return the loading priority of a tile
-    vsg::observer_ptr<TerrainTileNode> tile_weak(tile);
-    auto priority_func = [tile_weak]() -> float
+    //vsg::observer_ptr<TerrainTileNode> tile_weak(tile);
+    //auto priority_func = [tile_weak]() -> float
+    //{
+    //    vsg::ref_ptr<TerrainTileNode> tile = tile_weak.ref_ptr();
+    //    return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
+    //};
+    auto priority_func = [tile]() -> float
     {
-        vsg::ref_ptr<TerrainTileNode> tile(tile_weak);
         return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
     };
 
     tile->dataLoader = util::job::dispatch<TerrainTileModel>(
        load, {
-            "dataLoader",
+            "terrain.dataLoader",
             priority_func,
             util::job_scheduler::get(terrain->loadSchedulerName),
             nullptr
         }
     );
-
-#else
-    auto load_op = vsg::ref_ptr<PromiseOperation<TerrainTileModel>>(
-        new PromiseOperation<TerrainTileModel>(load));
-
-    tile->dataLoader = load_op->future();
-
-    terrain->runtime.loaders->add(load_op);
-#endif
 }
 
 void
-TileNodeRegistry::requestMerge(
-    TerrainTileNode* tile,
+TileNodeRegistry::requestMergeData(
+    vsg::ref_ptr<TerrainTileNode> tile,
     const IOOptions& in_io,
     shared_ptr<TerrainContext> terrain) const
 {
@@ -498,8 +509,7 @@ TileNodeRegistry::requestMerge(
         return true;
     };
 
-    auto merge_op = vsg::ref_ptr<PromiseOperation<bool>>(
-        new PromiseOperation<bool>(merge));
+    auto merge_op = util::PromiseOperation<bool>::create(merge);
 
     tile->dataMerger = merge_op->future();
 

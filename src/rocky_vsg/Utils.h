@@ -8,6 +8,7 @@
 #include <rocky_vsg/Common.h>
 #include <rocky/Image.h>
 #include <rocky/Math.h>
+#include <rocky/Threading.h>
 #include <vsg/maths/vec3.h>
 #include <vsg/maths/mat4.h>
 #include <vsg/vk/State.h>
@@ -60,130 +61,181 @@ namespace ROCKY_NAMESPACE
         return vsg::length(state->modelviewMatrixStack.top() * p);
     }
 
-    // adapted from vsg
-    template<typename T>
-    vsg::ref_ptr<vsg::Data> move(shared_ptr<Image> image, VkFormat format)
+    namespace util
     {
-        // NB!
-        // We copy the values out of image FIRST because once we call
-        // image->releaseData() they will all reset!
-        unsigned
-            width = image->width(),
-            height = image->height(),
-            depth = image->depth();
-
-        T* data = reinterpret_cast<T*>(image->releaseData());
-
-        vsg::ref_ptr<vsg::Data> vsg_data;
-        if (depth == 1)
+        // adapted from vsg
+        template<typename T>
+        vsg::ref_ptr<vsg::Data> move(shared_ptr<Image> image, VkFormat format)
         {
-            vsg_data = vsg::Array2D<T>::create(
-                width, height,
-                data,
-                vsg::Data::Layout{ format });
+            // NB!
+            // We copy the values out of image FIRST because once we call
+            // image->releaseData() they will all reset!
+            unsigned
+                width = image->width(),
+                height = image->height(),
+                depth = image->depth();
+
+            T* data = reinterpret_cast<T*>(image->releaseData());
+
+            vsg::ref_ptr<vsg::Data> vsg_data;
+            if (depth == 1)
+            {
+                vsg_data = vsg::Array2D<T>::create(
+                    width, height,
+                    data,
+                    vsg::Data::Layout{ format });
+            }
+            else
+            {
+                vsg_data = vsg::Array3D<T>::create(
+                    width, height, depth,
+                    data,
+                    vsg::Data::Layout{ format });
+            }
+
+            //if (image->origin() == Image::BOTTOM_LEFT)
+            //    vsg_data->properties.origin = vsg::TOP_LEFT;
+            //else
+            //    vsg_data->properties.origin = vsg::BOTTOM_LEFT;
+
+            return vsg_data;
         }
-        else
+
+        // adapted from vsg
+        inline vsg::ref_ptr<vsg::Data> moveImageData(shared_ptr<Image> image)
         {
-            vsg_data = vsg::Array3D<T>::create(
-                width, height, depth,
-                data,
-                vsg::Data::Layout{ format });
+            if (!image) return { };
+
+            switch (image->pixelFormat())
+            {
+            case Image::R8_UNORM:
+                return move<unsigned char>(image, VK_FORMAT_R8_UNORM);
+                break;
+            case Image::R8G8_UNORM:
+                return move<vsg::ubvec2>(image, VK_FORMAT_R8G8_UNORM);
+                break;
+            case Image::R8G8B8_UNORM:
+                return move<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_UNORM);
+                break;
+            case Image::R8G8B8A8_UNORM:
+                return move<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_UNORM);
+                break;
+            case Image::R16_UNORM:
+                return move<unsigned short>(image, VK_FORMAT_R16_UNORM);
+                break;
+            case Image::R32_SFLOAT:
+                return move<float>(image, VK_FORMAT_R32_SFLOAT);
+                break;
+            case Image::R64_SFLOAT:
+                return move<double>(image, VK_FORMAT_R64_SFLOAT);
+                break;
+            };
+
+            return { };
         }
 
-        //if (image->origin() == Image::BOTTOM_LEFT)
-        //    vsg_data->properties.origin = vsg::TOP_LEFT;
-        //else
-        //    vsg_data->properties.origin = vsg::BOTTOM_LEFT;
-
-        return vsg_data;
-    }
-
-    // adapted from vsg
-    inline vsg::ref_ptr<vsg::Data> moveImageData(shared_ptr<Image> image)
-    {
-        if (!image) return { };
-
-        switch (image->pixelFormat())
+        // adapted from vsg.
+        // take ownership of the input image as a VSG object.
+        // the input image becomes INVALID after this method. If that's not what
+        // you want, clone the input image first!
+        inline vsg::ref_ptr<vsg::Data> moveImageToVSG(shared_ptr<Image> image)
         {
-        case Image::R8_UNORM:
-            return move<unsigned char>(image, VK_FORMAT_R8_UNORM);
-            break;
-        case Image::R8G8_UNORM:
-            return move<vsg::ubvec2>(image, VK_FORMAT_R8G8_UNORM);
-            break;
-        case Image::R8G8B8_UNORM:
-            return move<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_UNORM);
-            break;
-        case Image::R8G8B8A8_UNORM:
-            return move<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_UNORM);
-            break;
-        case Image::R16_UNORM:
-            return move<unsigned short>(image, VK_FORMAT_R16_UNORM);
-            break;
-        case Image::R32_SFLOAT:
-            return move<float>(image, VK_FORMAT_R32_SFLOAT);
-            break;
-        case Image::R64_SFLOAT:
-            return move<double>(image, VK_FORMAT_R64_SFLOAT);
-            break;
+            if (!image)
+                return {};
+
+            auto data = moveImageData(image);
+            data->properties.origin = vsg::TOP_LEFT;
+            data->properties.maxNumMipmaps = 1;
+
+            return data;
+        }
+
+        // conver a vsg::Data structure to an Image if possible
+        inline Result<shared_ptr<Image>> makeImageFromVSG(vsg::ref_ptr<vsg::Data> data)
+        {
+            if (!data)
+                return Status(Status::ResourceUnavailable);
+
+            // TODO: move this into a utility somewhere
+            auto vkformat = data->properties.format;
+
+            Image::PixelFormat format =
+                vkformat == VK_FORMAT_R8_UNORM ? Image::R8_UNORM :
+                vkformat == VK_FORMAT_R8G8_UNORM ? Image::R8G8_UNORM :
+                vkformat == VK_FORMAT_R8G8B8_UNORM ? Image::R8G8B8_UNORM :
+                vkformat == VK_FORMAT_R8G8B8A8_UNORM ? Image::R8G8B8A8_UNORM :
+                vkformat == VK_FORMAT_R16_UNORM ? Image::R16_UNORM :
+                vkformat == VK_FORMAT_R32_SFLOAT ? Image::R32_SFLOAT :
+                vkformat == VK_FORMAT_R64_SFLOAT ? Image::R64_SFLOAT :
+                Image::UNDEFINED;
+
+            if (format == Image::UNDEFINED)
+            {
+                return Status(Status::ResourceUnavailable, "Unsupported image format");
+            }
+
+            auto image = Image::create(
+                format,
+                data->width(),
+                data->height(),
+                data->depth());
+
+            memcpy(image->data<uint8_t>(), data->dataPointer(), image->sizeInBytes());
+
+            if (data->properties.origin == vsg::TOP_LEFT)
+            {
+                image->flipVerticalInPlace();
+            }
+
+            return Result(image);
+        }
+
+        /**
+        * PromiseOperation combines a VSG operation with the Promise/Future
+        * construct for asynchronous operations.
+        * Usage:
+        *   auto op = PromiseOperation<bool>::create();
+        *   auto future_result = op->future();
+        *   some_vsg_queue->add(op);
+        *   ... later ...
+        *   auto result = future_result.get();
+        */
+        template<class T>
+        struct PromiseOperation : public vsg::Operation
+        {
+            util::Promise<T> _promise;
+            std::function<T(Cancelable&)> _func;
+
+            //! Static factory function
+            template<typename... Args>
+            static vsg::ref_ptr<PromiseOperation> create(const Args&... args) {
+                return vsg::ref_ptr<PromiseOperation>(new PromiseOperation(args...));
+            }
+
+            //! Construct a new promise operation with the function to execute
+            //! @param func Function to execute
+            PromiseOperation(std::function<T(Cancelable&)> func) :
+                _func(func) { }
+
+            //! Construct a new promise operation with the function to execute
+            //! @param promise User-supplied promise object to use
+            //! @param func Function to execute
+            PromiseOperation(util::Promise<T> promise, std::function<T(Cancelable&)> func) :
+                _promise(promise),
+                _func(func) { }
+
+            //! Return the future result assocaited with this operation
+            util::Future<T> future() {
+                return _promise.future();
+            }
+
+            //! Runs the operation (don't call this directly)
+            void run() override {
+                if (!_promise.abandoned())
+                    _promise.resolve(_func(_promise));
+                else
+                    _promise.resolve();
+            }
         };
-
-        return { };
-    }
-
-    // adapted from vsg.
-    // take ownership of the input image as a VSG object.
-    // the input image becomes INVALID after this method. If that's not what
-    // you want, clone the input image first!
-    inline vsg::ref_ptr<vsg::Data> moveImageToVSG(shared_ptr<Image> image)
-    {
-        if (!image)
-            return {};
-
-        auto data = moveImageData(image);
-        data->properties.origin = vsg::TOP_LEFT;
-        data->properties.maxNumMipmaps = 1;
-
-        return data;
-    }
-
-    // conver a vsg::Data structure to an Image if possible
-    inline Result<shared_ptr<Image>> makeImageFromVSG(vsg::ref_ptr<vsg::Data> data)
-    {
-        if (!data)
-            return Status(Status::ResourceUnavailable);
-
-        // TODO: move this into a utility somewhere
-        auto vkformat = data->properties.format;
-
-        Image::PixelFormat format =
-            vkformat == VK_FORMAT_R8_UNORM ? Image::R8_UNORM :
-            vkformat == VK_FORMAT_R8G8_UNORM ? Image::R8G8_UNORM :
-            vkformat == VK_FORMAT_R8G8B8_UNORM ? Image::R8G8B8_UNORM :
-            vkformat == VK_FORMAT_R8G8B8A8_UNORM ? Image::R8G8B8A8_UNORM :
-            vkformat == VK_FORMAT_R16_UNORM ? Image::R16_UNORM :
-            vkformat == VK_FORMAT_R32_SFLOAT ? Image::R32_SFLOAT :
-            vkformat == VK_FORMAT_R64_SFLOAT ? Image::R64_SFLOAT :
-            Image::UNDEFINED;
-
-        if (format == Image::UNDEFINED)
-        {
-            return Status(Status::ResourceUnavailable, "Unsupported image format");
-        }
-
-        auto image = Image::create(
-            format,
-            data->width(),
-            data->height(),
-            data->depth());
-
-        memcpy(image->data<uint8_t>(), data->dataPointer(), image->sizeInBytes());
-
-        if (data->properties.origin == vsg::TOP_LEFT)
-        {
-            image->flipVerticalInPlace();
-        }
-
-        return Result(image);
     }
 }

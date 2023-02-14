@@ -147,7 +147,6 @@ namespace
 
             max_attempts = std::max(1u, max_attempts);
 
-            unsigned attempts = 5;
             for(;;)
             {
                 auto r = client.Get(path, params, headers);

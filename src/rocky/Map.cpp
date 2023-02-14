@@ -62,6 +62,7 @@ Map::Options::fromConfig(const Config& conf)
 //...................................................................
 #endif
 
+#if 0
 Map::Map() :
     _instance(Instance::create())
 {
@@ -89,6 +90,26 @@ Map::Map(
 {
     construct(Config(), io);
 }
+#else
+
+Map::Map(const Instance& instance) :
+    _instance(instance)
+{
+    construct(Config(), _instance.ioOptions());
+}
+
+Map::Map(const Instance& instance, const IOOptions& io) :
+    _instance(instance)
+{
+    construct(Config(), io);
+}
+
+Map::Map(const Config& conf, const Instance& instance, const IOOptions& io) :
+    _instance(instance)
+{
+    construct(Config(), io);
+}
+#endif
 
 void
 Map::construct(const Config& conf, const IOOptions& io)
@@ -231,7 +252,8 @@ Map::attributions() const
 void
 Map::addLayer(shared_ptr<Layer> layer)
 {
-    addLayer(layer, _instance->ioOptions());
+    ROCKY_HARD_ASSERT(_instance.status().ok());
+    addLayer(layer, _instance.ioOptions());
 }
 
 void
@@ -274,7 +296,8 @@ Map::addLayer(shared_ptr<Layer> layer, const IOOptions& io)
 void
 Map::insertLayer(shared_ptr<Layer> layer, unsigned index)
 {
-    insertLayer(layer, index, _instance->ioOptions());
+    ROCKY_HARD_ASSERT(_instance.status().ok());
+    insertLayer(layer, index, _instance.ioOptions());
 }
 
 void
@@ -410,7 +433,8 @@ Map::moveLayer(shared_ptr<Layer> layerToMove, unsigned newIndex)
 void
 Map::addLayers(const std::vector<Layer::ptr>& layers)
 {
-    addLayers(layers, _instance->ioOptions());
+    ROCKY_HARD_ASSERT(_instance.status().ok());
+    addLayers(layers, _instance.ioOptions());
 }
 
 void

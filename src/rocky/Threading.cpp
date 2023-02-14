@@ -508,11 +508,6 @@ job_scheduler::get(const std::string& name)
 {
     std::scoped_lock lock(_schedulers_mutex);
 
-    if (_schedulers.empty())
-    {
-        std::atexit(job_scheduler::shutdownAll);
-    }
-
     std::shared_ptr<job_scheduler>& sched = _schedulers[name];
     if (sched == nullptr)
     {
@@ -587,9 +582,12 @@ job_scheduler::dispatch(const job& job, Delegate& delegate)
     if (_targetConcurrency > 0)
     {
         std::unique_lock lock(_queueMutex);
-        _queue.emplace_back(job, delegate, sema);
-        _metrics->pending++;
-        _block.notify_one();
+        if (!_done)
+        {
+            _queue.emplace_back(job, delegate, sema);
+            _metrics->pending++;
+            _block.notify_one();
+        }
     }
     else
     {
@@ -629,18 +627,24 @@ job_scheduler::run()
                 // is always the fastest.
                 // (Benchmark: https://stackoverflow.com/a/20365638/4218920)
                 // Also note: it is indeed possible for the results of 
-                // Job::getPriority() to change during the search. We don't care.
+                // priority() to change during the search. We don't care.
                 int index = -1;
                 float highest_priority = -FLT_MAX;
                 for (unsigned i = 0; i < _queue.size(); ++i)
                 {
-                    if (index < 0 || _queue[i]._job.priority() > highest_priority)
+                    float priority = _queue[i]._job.priority != nullptr ?
+                        _queue[i]._job.priority() :
+                        0.0f;
+
+                    if (index < 0 || priority > highest_priority)
                     {
                         index = i;
-                        highest_priority = _queue[i]._job.priority();
+                        highest_priority = priority;
                     }
                 }
-                
+                if (index < 0)
+                    index = 0;
+
                 next = std::move(_queue[index]);
                 have_next = true;
                 
@@ -710,7 +714,7 @@ job_scheduler::startThreads()
 
         _threads.push_back(std::thread([this]
             {
-                ROCKY_THREAD_NAME(_name.c_str());
+                util::setThreadName(_name.c_str());
                 run();
             }
         ));

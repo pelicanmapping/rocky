@@ -24,8 +24,7 @@ namespace ROCKY_NAMESPACE
     class MeshEditor;
     class TerrainSettings;
 
-    class /*internal*/ SharedGeometry :
-        public vsg::Inherit<vsg::Geometry, SharedGeometry>
+    class /*internal*/ SharedGeometry : public vsg::Inherit<vsg::Geometry, SharedGeometry>
     {
     public:
         SharedGeometry() :
@@ -92,16 +91,6 @@ namespace ROCKY_NAMESPACE
                 size != rhs.size ||
                 patch != rhs.patch;
         }
-
-        //// hash function for unordered_map
-        //std::size_t operator()(const GeometryKey& key) const
-        //{
-        //    return hash_value_unsigned(
-        //        (unsigned)key.lod,
-        //        (unsigned)key.tileY,
-        //        key.size,
-        //        key.patch ? 1u : 0u);
-        //}
 
         int      lod;
         int      tileY;
@@ -173,9 +162,6 @@ namespace ROCKY_NAMESPACE
         //! Clear and reset the pool
         void clear();
 
-        //void resizeGLObjectBuffers(unsigned maxsize);
-        //void releaseGLObjects(osg::State* state) const;
-
 
     public: // osg::Node
 
@@ -187,6 +173,7 @@ namespace ROCKY_NAMESPACE
         mutable std::mutex _mutex;
         SharedGeometries _sharedGeometries;
         vsg::ref_ptr<vsg::ushortArray> _defaultIndices;
+        Settings _defaultIndicesSettings;
 
         void createKeyForTileKey(
             const TileKey& tileKey,

@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "RuntimeContext.h"
+#include "Utils.h"
 #include <vsg/app/Viewer.h>
 
 using namespace ROCKY_NAMESPACE;
@@ -106,15 +107,63 @@ namespace
 
 RuntimeContext::RuntimeContext()
 {
-    util::job_scheduler::get("loaders")->setConcurrency(4);
 }
 
 util::Future<bool>
-RuntimeContext::compileAndAddNode(vsg::Group* parent, NodeFactory factory)
+RuntimeContext::compileAndAddChild(vsg::Group* parent, NodeFactory factory, const util::job& job_config)
 {
-    auto runner = AddNodeAsync::create(*this, parent, factory);
-    auto future = runner->_promise.future();
-    loaders->add(runner);
+    // This is a two-step procedure. First we have to create the child
+    // by calling the Factory function, and compile it. These things happen 
+    // in the asynchronous function. Secondly, we have to add the node to the
+    // scene graph; this happens in VSG's update operations queue in some future
+    // frame.
+    // 
+    // In order to return a future to the entire process, we will make our own
+    // Promise and pass it along to both the async part and then on to the sync
+    // update part. That way the user will be waiting on the final result of the
+    // scene graph merge.
+
+    util::Promise<bool> promise;
+    auto& runtime = *this;
+    
+    auto async_create_and_add_node = [runtime, promise, parent, factory](Cancelable& c) -> bool
+    {
+        if (c.canceled())
+            return false;
+
+        // create the child:
+        auto child = factory(c);
+        if (!child)
+            return false;
+
+        // compile the child:
+        runtime.compiler()->compile(child);
+
+        // queue an update operation to add the child safely.
+        // we pass along the original promise so these two operations appear as
+        // one to the caller.
+        auto add_child = [parent, child](Cancelable& c) -> bool
+        {
+            if (c.canceled())
+                return false;
+
+            if (parent && child)
+                parent->addChild(child);
+
+            return true;
+        };        
+        auto promise_op = util::PromiseOperation<bool>::create(promise, add_child);
+        runtime.updates()->add(promise_op);
+
+        return true;
+    };
+
+    auto future = util::job::dispatch<bool>(
+        async_create_and_add_node,
+        promise,
+        job_config
+    );
+
     return future;
 }
 
@@ -122,5 +171,5 @@ void
 RuntimeContext::removeNode(vsg::Group* parent, unsigned index)
 {
     auto remover = RemoveNodeAsync::create(parent, index);
-    loaders->add(remover);
+    updates()->add(remover);
 }

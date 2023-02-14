@@ -15,7 +15,7 @@ namespace ROCKY_NAMESPACE
     /**
      * Rocky instance to use when running a VSG-based application
      */
-    class ROCKY_VSG_EXPORT InstanceVSG : public Inherit<Instance, InstanceVSG>
+    class ROCKY_VSG_EXPORT InstanceVSG : public Instance
     {
     public:
         //! Construct a new VSG-based application instance
@@ -25,14 +25,26 @@ namespace ROCKY_NAMESPACE
         //! @param args Command line arguments to parse
         InstanceVSG(vsg::CommandLine& args);
 
+        //! Copy constructor
+        InstanceVSG(const InstanceVSG& rhs);
+
         //! Runtime context
-        RuntimeContext& runtime() { return _runtime; }
+        inline RuntimeContext& runtime();
 
         //! Whether to redirect rocky::Log messages to the vsg::Logger
         void setUseVSGLogger(bool);
 
     private:
-        vsg::ref_ptr<vsg::Options> _vsgOptions;
-        RuntimeContext _runtime;
+        struct Implementation
+        {
+            vsg::ref_ptr<vsg::Options> vsgOptions;
+            RuntimeContext runtime;
+        };
+        std::shared_ptr<Implementation> _impl;
     };
+
+
+    RuntimeContext& InstanceVSG::runtime() {
+        return _impl->runtime;
+    }
 }

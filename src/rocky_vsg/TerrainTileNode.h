@@ -101,11 +101,14 @@ namespace ROCKY_NAMESPACE
         unsigned numLODs;
         TerrainTileRenderModel renderModel;
         
-        vsg::observer_ptr<TerrainTileNode> parent;
+        //vsg::ref_ptr<TerrainTileNode> parent;
+        //vsg::observer_ptr<TerrainTileNode> parent;
         vsg::ref_ptr<SurfaceNode> surface;
         vsg::ref_ptr<vsg::StateGroup> stategroup;
         
-        mutable util::Future<bool> childLoader;
+        //mutable util::Future<vsg::ref_ptr<vsg::Group>> childrenCreator;
+        //mutable util::Future<bool> childrenMerger;
+        mutable util::Future<bool> childrenLoader;
         mutable util::Future<TerrainTileModel> dataLoader;
         mutable util::Future<bool> dataMerger;
         mutable std::atomic<uint64_t> lastTraversalFrame;
@@ -138,9 +141,9 @@ namespace ROCKY_NAMESPACE
             shared_ptr<TerrainContext> terrain);
 
         /** Returns the tile's parent; convenience function */
-        inline vsg::ref_ptr<TerrainTileNode> parentTile() const {
-            return parent.ref_ptr();
-        }
+        //inline vsg::ref_ptr<TerrainTileNode> parentTile() const {
+        //    return parent.ref_ptr();
+        //}
 
         /** Elevation data for this node along with its scale/bias matrix; needed for bounding box */
         void setElevation(
@@ -162,11 +165,6 @@ namespace ROCKY_NAMESPACE
                 static_cast<TerrainTileNode*>(
                     static_cast<vsg::Group*>(children[1].get())->children[i].get());
         }
-
-        //! Merge new Tile model data into this tile
-        //void merge(
-        //    const TerrainTileModel& model,
-        //    const CreateTileManifest& manifest);
 
         //! Apply any thread-safe updates to the tile
         void update(
@@ -191,7 +189,7 @@ namespace ROCKY_NAMESPACE
         vsg::observer_ptr<TerrainTileNode> _southNeighbor;
         fvec4 _tileKeyValue;
 
-        void inherit();
+        void inheritFrom(vsg::ref_ptr<TerrainTileNode> parent);
 
         void updateElevationRaster();
 

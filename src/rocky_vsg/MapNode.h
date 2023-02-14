@@ -40,13 +40,13 @@ namespace ROCKY_NAMESPACE
     public: // constructors
 
         //! Creates an empty map node (with a default empty Map)
-        MapNode(InstanceVSG::ptr instance = {});
+        MapNode(const InstanceVSG& instance);
 
         //! Creates a map node that will render the given Map.
         MapNode(shared_ptr<Map> map);
 
         //! Deserialize a MapNode
-        MapNode(const Config& conf, Instance::ptr instance = {});
+        MapNode(const Config& conf, const InstanceVSG& instance);
 
     public:
 
@@ -128,7 +128,7 @@ namespace ROCKY_NAMESPACE
             float mx,
             float my) const;
 
-        RuntimeContext& runtime() const;
+        RuntimeContext& runtime();
 
         void update(const vsg::FrameStamp*);
 
@@ -149,7 +149,7 @@ namespace ROCKY_NAMESPACE
         friend class ClampingTechnique;
         friend class ClampableNode;
 
-        InstanceVSG::ptr _instance;
+        InstanceVSG _instance;
         optional<bool> _enableLighting;
         optional<bool> _overlayBlending;
         optional<unsigned> _overlayTextureSize;
@@ -162,11 +162,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<TerrainNode> _terrain;
         shared_ptr<Map> _map;
         vsg::ref_ptr<vsg::Group> _layerNodes;
-        //unsigned           _lastNumBlacklistedFilenames;
-        //vsg::ref_ptr<vsg::Group> _terrainGroup;
-        //std::shared_ptr<DrapingManager> _drapingManager;
-        //ClampingManager*   _clampingManager;
-        std::atomic<bool>  _readyForUpdate;
+        std::atomic<bool> _readyForUpdate;
 
         bool _isOpen;
     };

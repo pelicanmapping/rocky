@@ -210,7 +210,7 @@ MapNode::Options::fromConfig(const Config& conf)
 
 //....................................................................
 
-MapNode::MapNode(InstanceVSG::ptr instance) :
+MapNode::MapNode(const InstanceVSG& instance) :
     _instance(instance),
     _map(Map::create(instance))
 {
@@ -218,12 +218,13 @@ MapNode::MapNode(InstanceVSG::ptr instance) :
 }
 
 MapNode::MapNode(shared_ptr<Map> map) :
-    _map(map ? map : Map::create())
+    _instance(reinterpret_cast<InstanceVSG&>(_map->instance()))
 {
     construct(Config());
 }
 
-MapNode::MapNode(const Config& conf, Instance::ptr instance) :
+MapNode::MapNode(const Config& conf, const InstanceVSG& instance) :
+    _instance(instance),
     _map(Map::create(instance))
 {
     construct(conf);
@@ -317,9 +318,10 @@ MapNode::getConfig() const
 }
 
 RuntimeContext&
-MapNode::runtime() const
+MapNode::runtime()
 {
-    return _instance->runtime();
+    ROCKY_HARD_ASSERT(_instance.status().ok());
+    return _instance.runtime();
 }
 
 vsg::ref_ptr<TerrainNode>
@@ -1068,5 +1070,6 @@ MapNode::getGeoPointUnderMouse(
 void
 MapNode::update(const vsg::FrameStamp* f)
 {
-    _terrain->update(f, _map->instance()->ioOptions());
+    ROCKY_HARD_ASSERT(_instance.status().ok());
+    _terrain->update(f, _instance.ioOptions());
 }

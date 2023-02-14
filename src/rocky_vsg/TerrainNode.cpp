@@ -61,9 +61,18 @@ TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
         *this,    // settings
         this);    // host
 
+    // erase everything so the map will reinitialize
+    this->children.clear();
+
+    return StatusOK;
+}
+
+Status
+TerrainNode::createRootTiles(const IOOptions& io)
+{
     // remove everything and start over
     this->children.clear();
-    
+
     // check that everything initialized ok
     if (_context->stateFactory->status.failed())
     {
@@ -73,13 +82,13 @@ TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
     _tilesRoot = vsg::Group::create();
 
     std::vector<TileKey> keys;
-    Profile::getAllKeysAtLOD(this->firstLOD, new_map->profile(), keys);
+    Profile::getAllKeysAtLOD(this->firstLOD, _context->map->profile(), keys);
 
     for (unsigned i = 0; i < keys.size(); ++i)
     {
         auto tile = _context->tiles->createTile(
             keys[i],
-            nullptr, // parent
+            { }, // parent
             _context);
 
         tile->doNotExpire = true;
@@ -93,22 +102,36 @@ TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
     stateGroup->addChild(_tilesRoot);
     this->addChild(stateGroup);
 
+    _context->runtime.compiler()->compile(stateGroup);
+
     return StatusOK;
 }
 
 void
 TerrainNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
 {
-    _context->tiles->update(fs, io, _context);
+    if (children.empty())
+    {
+        auto s = createRootTiles(io);
+        if (s.failed())
+        {
+            Log::warn() << "TerrainNode initialize failed: " << s.message << std::endl;
+        }
+    }
+    else
+    {
+        _context->tiles->update(fs, io, _context);
+    }
 }
 
 void
 TerrainNode::ping(
+    const TerrainTileNode* parent,
     TerrainTileNode* tile0,
     TerrainTileNode* tile1, 
     TerrainTileNode* tile2, 
     TerrainTileNode* tile3,
     vsg::RecordTraversal& nv)
 {
-    _context->tiles->ping(tile0, tile1, tile2, tile3, nv);
+    _context->tiles->ping(parent, tile0, tile1, tile2, tile3, nv);
 }

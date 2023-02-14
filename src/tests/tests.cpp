@@ -164,7 +164,7 @@ TEST_CASE("Heightfield")
 
 TEST_CASE("Map")
 {
-    auto instance = Instance::create();
+    Instance instance;
 
     auto map = Map::create(instance);
     REQUIRE(map);

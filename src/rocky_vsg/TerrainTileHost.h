@@ -21,6 +21,7 @@ namespace ROCKY_NAMESPACE
     public:
         //! Tell the host that a group of tiles are still alive.
         virtual void ping(
+            const TerrainTileNode* parent,
             TerrainTileNode* tile0,
             TerrainTileNode* tile1,
             TerrainTileNode* tile2,

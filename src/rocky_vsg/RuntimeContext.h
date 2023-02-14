@@ -38,11 +38,12 @@ namespace ROCKY_NAMESPACE
         //! Compiler for new vsg objects
         std::function<vsg::CompileManager*()> compiler;
 
-        //! Update operations queue
+        //! Queue for VSG synchronous update operations. Operations in this queue
+        //! can safely edit the scene graph.
         std::function<vsg::UpdateOperations*()> updates;
 
         //! Pool of threads used to load terrain data
-        vsg::ref_ptr<vsg::OperationThreads> loaders;
+        //vsg::ref_ptr<vsg::OperationThreads> loaders;
 
         //! VSG state sharing
         vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
@@ -53,9 +54,10 @@ namespace ROCKY_NAMESPACE
         //! Schedules data creation; the resulting node or nodes 
         //! get added to "parent" if the operation suceeds.
         //! Returns a future you can check for completion.
-        util::Future<bool> compileAndAddNode(
+        util::Future<bool> compileAndAddChild(
             vsg::Group* parent,
-            NodeFactory factory);
+            NodeFactory factory,
+            const util::job& config = { });
 
         //! Safely removes a node from the scene graph (async)
         void removeNode(

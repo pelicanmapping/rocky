@@ -66,6 +66,7 @@ namespace ROCKY_NAMESPACE
         //! and that it may need something.
         //! ONLY call during record.
         void ping(
+            const TerrainTileNode* parent,
             TerrainTileNode* tile0,
             TerrainTileNode* tile1,
             TerrainTileNode* tile2,
@@ -87,7 +88,7 @@ namespace ROCKY_NAMESPACE
         //! Create a single terrain tile.
         vsg::ref_ptr<TerrainTileNode> createTile(
             const TileKey& key,
-            TerrainTileNode* parent,
+            vsg::ref_ptr<TerrainTileNode> parent,
             shared_ptr<TerrainContext> terrain);
 
         vsg::ref_ptr<TerrainTileNode> getTile(const TileKey& key) const;
@@ -99,24 +100,23 @@ namespace ROCKY_NAMESPACE
         mutable std::mutex _mutex;
         TerrainTileHost* _host;
 
-        std::vector<TileKey> _needsChildren;
-        std::vector<TileKey> _needsLoad;
-        std::vector<TileKey> _needsMerge;
-        std::vector<TileKey> _needsUpdate;
+        std::vector<TileKey> _loadChildren;
+        std::vector<TileKey> _loadData;
+        std::vector<TileKey> _mergeData; 
+        std::vector<TileKey> _updateData;
 
     private:
-
-        void createTileChildren(
-            TerrainTileNode* parent,
+        void requestLoadChildren(
+            vsg::ref_ptr<TerrainTileNode> parent,
             shared_ptr<TerrainContext> terrain) const;
 
-        void requestLoad(
-            TerrainTileNode* tile,
+        void requestLoadData(
+            vsg::ref_ptr<TerrainTileNode> tile,
             const IOOptions& io,
             shared_ptr<TerrainContext> terrain) const;
 
-        void requestMerge(
-            TerrainTileNode* tile,
+        void requestMergeData(
+            vsg::ref_ptr<TerrainTileNode> tile,
             const IOOptions& io,
             shared_ptr<TerrainContext> terrain) const;
     };

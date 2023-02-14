@@ -97,7 +97,7 @@ StateFactory::createDefaultDescriptors()
     // no other data is available. These are 1x1 pixel placeholder images.
     auto color_image = Image::create(Image::R8G8B8A8_UNORM, 1, 1);
     color_image->write(Color::DarkGray, 0, 0);
-    textures.color.defaultData = moveImageToVSG(color_image);
+    textures.color.defaultData = util::moveImageToVSG(color_image);
     ROCKY_HARD_ASSERT(textures.color.defaultData);
     this->defaultTileDescriptors.color = vsg::DescriptorImage::create(
         textures.color.sampler,
@@ -108,7 +108,7 @@ StateFactory::createDefaultDescriptors()
 
     auto elev_image = Heightfield::create(1, 1);
     elev_image->fill(0.0f);
-    textures.elevation.defaultData = moveImageToVSG(elev_image);
+    textures.elevation.defaultData = util::moveImageToVSG(elev_image);
     ROCKY_HARD_ASSERT(textures.elevation.defaultData);
     this->defaultTileDescriptors.elevation = vsg::DescriptorImage::create(
         textures.elevation.sampler,
@@ -119,7 +119,7 @@ StateFactory::createDefaultDescriptors()
 
     auto normal_image = Image::create(Image::R8G8B8_UNORM, 1, 1);
     normal_image->fill(fvec4(.5, .5, 1, 0));
-    textures.normal.defaultData = moveImageToVSG(normal_image);
+    textures.normal.defaultData = util::moveImageToVSG(normal_image);
     ROCKY_HARD_ASSERT(textures.normal.defaultData);
     this->defaultTileDescriptors.normal = vsg::DescriptorImage::create(
         textures.normal.sampler,
@@ -385,7 +385,7 @@ StateFactory::updateTerrainTileDescriptors(
 
     if (renderModel.color.image)
     {
-        auto data = moveImageToVSG(renderModel.color.image->clone());
+        auto data = util::moveImageToVSG(renderModel.color.image->clone());
         if (data)
         {
             dm.color = vsg::DescriptorImage::create(
@@ -399,7 +399,7 @@ StateFactory::updateTerrainTileDescriptors(
 
     if (renderModel.elevation.image)
     {
-        auto data = moveImageToVSG(renderModel.elevation.image->clone());
+        auto data = util::moveImageToVSG(renderModel.elevation.image->clone());
         if (data)
         {
             dm.elevation = vsg::DescriptorImage::create(
@@ -413,7 +413,7 @@ StateFactory::updateTerrainTileDescriptors(
 
     if (renderModel.normal.image)
     {
-        auto data = moveImageToVSG(renderModel.normal.image->clone());
+        auto data = util::moveImageToVSG(renderModel.normal.image->clone());
         if (data)
         {
             dm.normal = vsg::DescriptorImage::create(

@@ -54,13 +54,13 @@ TerrainTileNode::TerrainTileNode(
     RuntimeContext& runtime)
 {
     key = in_key;
-    parent = in_parent;
+    //parent = in_parent;
     morphConstants = in_morphConstants;
     childrenVisibilityRange = in_childrenVisibilityRange;
     renderModel.descriptorModel = in_initialDescriptorModel;
     _host = in_host;
 
-    doNotExpire = false;
+    doNotExpire = (in_parent == nullptr);
     revision = 0;
     surface = nullptr;
     stategroup = nullptr;
@@ -101,12 +101,6 @@ TerrainTileNode::TerrainTileNode(
         (float)(y - th / 2), // (int)fmod(y, m),
         (float)key.levelOfDetail(),
         -1.0f);
-
-    // inherit model data from the parent
-    inherit();
-
-    // update the bounding sphere for culling
-    recomputeBound();
 }
 
 TerrainTileNode::~TerrainTileNode()
@@ -224,7 +218,7 @@ TerrainTileNode::accept(vsg::RecordTraversal& nv) const
             // children do not exist or are out of range; use this tile's geometry
             children[0]->accept(nv);
 
-            if (childrenInRange && !childLoader.working() && !childLoader.available())
+            if (childrenInRange && childrenLoader.idle()) //!childrenLoader.working() && !childrenLoader.available())
             {
                 _needsChildren = true;
             }
@@ -238,15 +232,17 @@ TerrainTileNode::accept(vsg::RecordTraversal& nv) const
         // delete one of a quad. (A node can't ping itself because it
         // may be bounding-sphere culled.)
         _host->ping(
+            this,
             subTile(0), subTile(1), subTile(2), subTile(3),
             nv);
     }
 #endif
 
     // if we don't have a parent, we need to ping ourselves to say alive
-    if (!parent.valid())
+    if (doNotExpire)
     {
         _host->ping(
+            nullptr,
             const_cast<TerrainTileNode*>(this), 
             nullptr, nullptr, nullptr,
             nv);
@@ -257,7 +253,11 @@ void
 TerrainTileNode::unloadChildren()
 {
     children.resize(1);
-    childLoader.reset();
+#if 0
+    childrenCreator.reset();
+    childrenMerger.reset();
+#endif
+    childrenLoader.reset();
     dataLoader.reset();
     dataMerger.reset();
     _needsChildren = true;
@@ -270,17 +270,16 @@ TerrainTileNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
 }
 
 void
-TerrainTileNode::inherit()
+TerrainTileNode::inheritFrom(vsg::ref_ptr<TerrainTileNode> parent)
 {
-    auto safe_parent = parent.ref_ptr();
-    if (safe_parent)
+    if (parent)
     {
         auto& sb = scaleBias[key.getQuadrant()];
 
-        renderModel = safe_parent->renderModel;
+        renderModel = parent->renderModel;
         renderModel.applyScaleBias(sb);
 
-        revision = safe_parent->revision;
+        revision = parent->revision;
 
         // prompts regeneration of the local bounds
         setElevation(renderModel.elevation.image, renderModel.elevation.matrix);

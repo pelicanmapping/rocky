@@ -26,10 +26,6 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT Map : public Inherit<Object, Map>
     {
     public:
-
-        //! Global application instance
-        shared_ptr<Instance> instance() const { return _instance; }
-
         //! This Map's unique ID
         UID uid() const { return _uid; }
 
@@ -127,19 +123,20 @@ namespace ROCKY_NAMESPACE
         //! List of attribution strings to be displayed by the application
         std::set<std::string> attributions() const;
 
+        //! Global application instance
+        Instance& instance() { return _instance; }
+        const Instance& instance() const { return _instance; }
+
     public:
 
-        //! Construct (please use Map::create)
-        Map();
-
         //! Construct
-        Map(Instance::ptr instance);
+        Map(const Instance& instance);
 
         //! Construct with custom options
-        Map(Instance::ptr, const IOOptions& io);
+        Map(const Instance& instance, const IOOptions& io);
 
         //! Deserialize
-        Map(const Config& conf, Instance::ptr, const IOOptions& io);
+        Map(const Config& conf, const Instance& instance, const IOOptions& io);
 
      public:
 
@@ -165,7 +162,7 @@ namespace ROCKY_NAMESPACE
         optional<std::string> _profileLayer;
 
     private:
-        Instance::ptr _instance;
+        Instance _instance;
         UID _uid;
         std::vector<shared_ptr<Layer>> _layers;
         mutable std::shared_mutex _mapDataMutex;
