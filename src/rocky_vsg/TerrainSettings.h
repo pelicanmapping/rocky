@@ -11,6 +11,9 @@
 
 namespace ROCKY_NAMESPACE
 {
+    /**
+    * Settings controlling the terrain surface rendering and paging.
+    */
     class TerrainSettings
     {
     public:

@@ -1,13 +1,8 @@
 message(STATUS "Welcome to rviewer")
 
-set(SOURCES
-    rviewer.cpp
-)
-
-# find_package(rocky)
+file(GLOB SOURCES *.cpp)
 
 add_executable(rviewer ${SOURCES})
-
 
 target_link_libraries(rviewer rocky rocky_vsg)
 

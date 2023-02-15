@@ -41,6 +41,7 @@ namespace ROCKY_NAMESPACE
             RuntimeContext runtime;
         };
         std::shared_ptr<Implementation> _impl;
+        friend class EngineVSG;
     };
 
 

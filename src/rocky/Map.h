@@ -37,19 +37,19 @@ namespace ROCKY_NAMESPACE
         const SRS& srs() const;
 
         //! Adds a Layer to the map.
-        void addLayer(shared_ptr<Layer> layer);
-        void addLayer(shared_ptr<Layer> layer, const IOOptions& io);
+        Status addLayer(shared_ptr<Layer> layer);
+        Status addLayer(shared_ptr<Layer> layer, const IOOptions& io);
 
         //! Adds a collection of layers to the map.
         void addLayers(const std::vector<shared_ptr<Layer>>& layers);
         void addLayers(const std::vector<shared_ptr<Layer>>& layers, const IOOptions& io);
 
         //! Insert a Layer at a specific index in the Map.
-        void insertLayer(
+        Status insertLayer(
             shared_ptr<Layer> layer,
             unsigned index);
 
-        void insertLayer(
+        Status insertLayer(
             shared_ptr<Layer> layer,
             unsigned index,
             const IOOptions& io);

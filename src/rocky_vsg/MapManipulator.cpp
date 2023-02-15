@@ -1387,6 +1387,8 @@ MapManipulator::apply(vsg::MoveEvent& moveEvent)
 {
     //std::cout << "MoveEvent, mask = " << moveEvent.mask << std::endl;
 
+    bool buttonReleased = (moveEvent.mask == 0 && _currentMove->mask != 0);
+
     _previousMove = _currentMove;
     _currentMove = moveEvent;
 
@@ -1418,7 +1420,7 @@ MapManipulator::apply(vsg::MoveEvent& moveEvent)
         moveEvent.handled = true;
     }
 
-    else
+    else if (buttonReleased)
     {
         // button was released outside the frame
         clearEvents();

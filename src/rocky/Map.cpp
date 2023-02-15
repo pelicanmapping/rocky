@@ -249,22 +249,24 @@ Map::attributions() const
     return std::move(result);
 }
 
-void
+Status
 Map::addLayer(shared_ptr<Layer> layer)
 {
-    ROCKY_HARD_ASSERT(_instance.status().ok());
-    addLayer(layer, _instance.ioOptions());
+    return addLayer(layer, _instance.ioOptions());
 }
 
-void
+Status
 Map::addLayer(shared_ptr<Layer> layer, const IOOptions& io)
 {
-    if (layer == NULL)
-        return;
+    ROCKY_HARD_ASSERT(_instance.status().ok());
+
+    ROCKY_SOFT_ASSERT_AND_RETURN(layer != nullptr, Status(Status::AssertionFailure));
 
     // ensure it's not already in the map
     if (indexOfLayer(layer.get()) != numLayers())
-        return;
+    {
+        return layer->status();
+    }
 
     if (layer->getOpenAutomatically())
     {
@@ -291,26 +293,27 @@ Map::addLayer(shared_ptr<Layer> layer, const IOOptions& io)
     }
 
     onLayerAdded.fire(layer, index, newRevision);
+
+    return layer->status();
 }
 
-void
+Status
 Map::insertLayer(shared_ptr<Layer> layer, unsigned index)
 {
     ROCKY_HARD_ASSERT(_instance.status().ok());
-    insertLayer(layer, index, _instance.ioOptions());
+    return insertLayer(layer, index, _instance.ioOptions());
 }
 
-void
-Map::insertLayer(
-    shared_ptr<Layer> layer,
-    unsigned index,
-    const IOOptions& io)
+Status
+Map::insertLayer(shared_ptr<Layer> layer, unsigned index, const IOOptions& io)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(layer != nullptr, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(layer != nullptr, Status(Status::AssertionFailure));
 
     // ensure it's not already in the map
     if (indexOfLayer(layer.get()) != numLayers())
-        return;
+    {
+        return layer->status();
+    }
 
     if (layer->getOpenAutomatically())
     {
@@ -338,6 +341,8 @@ Map::insertLayer(
     }
 
     onLayerAdded.fire(layer, index, newRevision);
+
+    return layer->status();
 }
 
 void
