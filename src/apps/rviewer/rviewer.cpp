@@ -86,10 +86,11 @@ int main(int argc, char** argv)
     // TODO: read this from an earth file
     auto mapNode = rocky::MapNode::create(ri);
 
-    // Some settings:
+    // Configure out mapnode to our liking:
     mapNode->terrainNode()->concurrency = 4u;
     mapNode->terrainNode()->skirtRatio = 0.1f;
-    mapNode->terrainNode()->firstLOD = 1;
+    mapNode->terrainNode()->minLevelOfDetail = 1;
+    mapNode->terrainNode()->screenSpaceError = 135.0f;
 
     // Set up the runtime context with everything we need.
     // Eventually this should be automatic in InstanceVSG

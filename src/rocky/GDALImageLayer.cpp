@@ -485,8 +485,8 @@ GDAL::Driver::open(
     }
 
     if (useExternalDataset == false &&        
-        (!layer->_uri.isSet() || layer->_uri->empty()) &&
-        (!layer->_connection.isSet() || layer->_connection->empty()))
+        (!layer->_uri.has_value() || layer->_uri->empty()) &&
+        (!layer->_connection.has_value() || layer->_connection->empty()))
     {
         return Status(Status::ConfigurationError, "No URL, directory, or connection string specified");
     }
@@ -495,7 +495,7 @@ GDAL::Driver::open(
     std::string source;
     bool isFile = true;
 
-    if (layer->_uri.isSet())
+    if (layer->_uri.has_value())
     {
         // Use the base instead of the full if this is a gdal virtual file system
         if (util::startsWith(layer->_uri->base(), "/vsi"))
@@ -507,9 +507,9 @@ GDAL::Driver::open(
             source = layer->_uri->full();
         }
     }
-    else if (layer->_connection.isSet())
+    else if (layer->_connection.has_value())
     {
-        source = layer->_connection.get();
+        source = layer->_connection;
         isFile = false;
     }
 
@@ -517,7 +517,7 @@ GDAL::Driver::open(
     {
         std::string input;
 
-        if (layer->_uri.isSet())
+        if (layer->_uri.has_value())
             input = layer->_uri->full();
         else
             input = source;
@@ -545,7 +545,7 @@ GDAL::Driver::open(
 
             if (numSubDatasets > 0)
             {
-                int subDataset = layer->_subDataSet.isSet() ? layer->_subDataSet.get() : 1;
+                int subDataset = layer->_subDataSet.has_value() ? layer->_subDataSet : 1;
                 if (subDataset < 1 || subDataset > numSubDatasets) subDataset = 1;
                 std::stringstream buf;
                 buf << "SUBDATASET_" << subDataset << "_NAME";
@@ -705,7 +705,7 @@ GDAL::Driver::open(
     double resolutionY = (maxY - minY) / (double)_warpedDS->GetRasterYSize();
     double maxResolution = std::min(resolutionX, resolutionY);
 
-    if (_maxDataLevel.isSet())
+    if (_maxDataLevel.has_value())
     {
         //nop
     }
@@ -776,8 +776,8 @@ GDAL::Driver::open(
         if (dataExtents.empty())
         {
             // Use the extents of the whole file.
-            if (_maxDataLevel.isSet())
-                layerDataExtents->push_back(DataExtent(profile_extent, 0, _maxDataLevel.get()));
+            if (_maxDataLevel.has_value())
+                layerDataExtents->push_back(DataExtent(profile_extent, 0, _maxDataLevel));
             else
                 layerDataExtents->push_back(DataExtent(profile_extent));
         }
@@ -831,14 +831,14 @@ GDAL::Driver::isValidValue(float v, GDALRasterBand* band)
         return false;
 
     //Check to see if the value is equal to the user specified nodata value
-    if (_noDataValue.isSetTo(v))
+    if (_noDataValue.has_value(v))
         return false;
 
     //Check to see if the user specified a custom min/max
-    if (_minValidValue.isSet() && v < _minValidValue.get())
+    if (_minValidValue.has_value() && v < _minValidValue)
         return false;
 
-    if (_maxValidValue.isSet() && v > _maxValidValue.get())
+    if (_maxValidValue.has_value() && v > _maxValidValue)
         return false;
 
     return true;
@@ -969,7 +969,7 @@ GDAL::Driver::createImage(
     bool isCoverage,
     const IOOptions& io)
 {
-    if (_maxDataLevel.isSet() && key.levelOfDetail() > _maxDataLevel.get())
+    if (_maxDataLevel.has_value() && key.levelOfDetail() > _maxDataLevel)
     {
         return nullptr;
     }
@@ -1455,7 +1455,7 @@ GDAL::Driver::createHeightfield(
     unsigned tileSize,
     const IOOptions& io)
 {
-    if (_maxDataLevel.isSet() && key.levelOfDetail() > _maxDataLevel.get())
+    if (_maxDataLevel.has_value() && key.levelOfDetail() > _maxDataLevel)
     {
         //ROCKY_NOTICE << "Reached maximum data resolution key=" << key.getLevelOfDetail() << " max=" << _maxDataLevel <<  std::endl;
         return nullptr;
@@ -1557,7 +1557,7 @@ GDAL::Driver::createHeightfieldWithVRT(
     unsigned tileSize,
     const IOOptions& io)
 {
-    if (_maxDataLevel.isSet() && key.levelOfDetail() > _maxDataLevel.get())
+    if (_maxDataLevel.has_value() && key.levelOfDetail() > _maxDataLevel)
     {
         return nullptr;
     }
@@ -1693,51 +1693,6 @@ GDAL::Driver::createHeightfieldWithVRT(
 }
 //...................................................................
 
-void
-GDAL::Options::readFrom(const Config& conf)
-{
-    interpolation.setDefault(Image::AVERAGE);
-    useVRT.setDefault(false);
-    coverageUsesPaletteIndex.setDefault(true);
-    singleThreaded.setDefault(false);
-
-    conf.get("url", url);
-    conf.get("uri", url);
-    conf.get("connection", connection);
-    conf.get("subdataset", subDataSet);
-    conf.get("interpolation", "nearest", interpolation, Image::NEAREST);
-    conf.get("interpolation", "average", interpolation, Image::AVERAGE);
-    conf.get("interpolation", "bilinear", interpolation, Image::BILINEAR);
-    conf.get("interpolation", "cubic", interpolation, Image::CUBIC);
-    conf.get("interpolation", "cubicspline", interpolation, Image::CUBICSPLINE);
-    conf.get("coverage_uses_palette_index", coverageUsesPaletteIndex);
-    conf.get("single_threaded", singleThreaded);
-
-    // report on deprecated usage
-    const std::string deprecated_keys[] = {
-        "use_vrt",
-        "warp_profile"
-    };
-    //for (const auto& key : deprecated_keys)
-    //    if (conf.hasValue(key))
-    //        ROCKY_WARN << "Deprecated property \"" << key << "\" ignored" << std::endl;
-}
-
-void
-GDAL::Options::writeTo(Config& conf) const
-{
-    conf.set("url", url);
-    conf.set("connection", connection);
-    conf.set("subdataset", subDataSet);
-    conf.set("interpolation", "nearest", interpolation, Image::NEAREST);
-    conf.set("interpolation", "average", interpolation, Image::AVERAGE);
-    conf.set("interpolation", "bilinear", interpolation, Image::BILINEAR);
-    conf.set("interpolation", "cubic", interpolation, Image::CUBIC);
-    conf.set("interpolation", "cubicspline", interpolation, Image::CUBICSPLINE);
-    conf.set("coverage_uses_palette_index", coverageUsesPaletteIndex);
-    conf.set("single_threaded", singleThreaded);
-}
-
 void GDALImageLayer::setURI(const URI& value) {
     _uri = value;
 }
@@ -1855,11 +1810,6 @@ GDALImageLayer::GDALImageLayer(const Config& conf) :
 void
 GDALImageLayer::construct(const Config& conf)
 {
-    _interpolation.setDefault(Image::AVERAGE);
-    _useVRT.setDefault(false);
-    _coverageUsesPaletteIndex.setDefault(true);
-    _singleThreaded.setDefault(false);
-
     conf.get("url", _uri);
     conf.get("uri", _uri);
     conf.get("connection", _connection);

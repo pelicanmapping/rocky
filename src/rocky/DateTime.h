@@ -137,7 +137,7 @@ namespace ROCKY_NAMESPACE
 
 
     template<> inline void Config::set<DateTime>(const std::string& key, const optional<DateTime>& opt) {
-        if (opt.isSet())
+        if (opt.has_value())
             remove(key); set(key, opt->asCompactISO8601());
     }
 

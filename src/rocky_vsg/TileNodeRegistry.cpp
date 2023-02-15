@@ -282,7 +282,8 @@ TileNodeRegistry::createTile(
         terrain->runtime);
 
     // inherit model data from the parent
-    tile->inheritFrom(parent);
+    if (parent)
+        tile->inheritFrom(parent);
 
     // update the bounding sphere for culling
     tile->recomputeBound();
@@ -315,10 +316,6 @@ TileNodeRegistry::requestLoadChildren(
     // make sure we're not already working on it
     if (!parent->childrenLoader.idle())
         return;
-
-    // prepare variables to send to the async loader
-    //TileKey parent_key(parent->key);
-    //vsg::observer_ptr<TerrainTileNode> parent_weakptr(parent);
 
     // function that will create all 4 children and compile them
     auto create_children = [terrain, parent](Cancelable& p)

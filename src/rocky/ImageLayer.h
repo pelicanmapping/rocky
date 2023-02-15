@@ -21,59 +21,8 @@ namespace ROCKY_NAMESPACE
      */
     class ROCKY_EXPORT ImageLayer : public Inherit<TileLayer, ImageLayer>
     {
-    //public: // Serialization
-    //    class ROCKY_EXPORT Options : public TileLayer::Options {
-    //    public:
-    //        ROCKY_LayerOptions(Options, TileLayer::Options);
-    //        ROCKY_OPTION(std::string, noDataImageLocation);
-    //        ROCKY_OPTION(Color, transparentColor);
-    //        //ROCKY_OPTION(ColorFilterChain, colorFilters);
-    //        ROCKY_OPTION(bool, shared);
-    //        ROCKY_OPTION(bool, coverage);
-    //        //ROCKY_OPTION(osg::Texture::FilterMode, minFilter);
-    //        //ROCKY_OPTION(osg::Texture::FilterMode, magFilter);
-    //        ROCKY_OPTION(std::string, textureCompression);
-    //        ROCKY_OPTION(double, edgeBufferRatio);
-    //        ROCKY_OPTION(unsigned, reprojectedTileSize);
-    //        ROCKY_OPTION(Distance, altitude);
-    //        ROCKY_OPTION(bool, acceptDraping);
-    //        ROCKY_OPTION(bool, async);
-    //        ROCKY_OPTION(std::string, shareTexUniformName);
-    //        ROCKY_OPTION(std::string, shareTexMatUniformName);
-    //        virtual Config getConfig() const;
-    //    private:
-    //        void fromConfig( const Config& conf );
-    //    };
-
-    //public:
-    //    ROCKY_Layer_Abstract(ImageLayer, Options);
-
-#if 0
-        //! Layer callbacks
-        class ROCKY_EXPORT Callback
-        {
-        public:
-            //! Called when a new data is created. This callback fires
-            //! before the data is cached, and does NOT fire if the data
-            //! was read from a cache.
-            //! NOTE: This may be invoked from a worker thread. Use caution.
-            virtual void onCreate(const TileKey&, GeoImage&) { }
-        };
-#endif
-
     public:
-        /** dtor */
         virtual ~ImageLayer() { }
-
-        //! Convenience function to create an ImageLayer from a ConfigOptions.
-        //static shared_ptr<ImageLayer> create(
-        //    const ConfigOptions& conf);
-
-#if 0
-        //! Sets the altitude
-        void setAltitude(const Distance& value);
-        const Distance& getAltitude() const;
-#endif
 
         //! Sets whether this layer should allow draped overlays
         //! to render on it. This is most applicable to layers with a
@@ -224,21 +173,13 @@ namespace ROCKY_NAMESPACE
 
         shared_ptr<Image> _emptyImage;
 
-        optional<std::string> _noDataImageLocation;
-        optional<Color> _transparentColor;
-        //ROCKY_OPTION(ColorFilterChain, colorFilters);
-        optional<bool> _shared;
-        optional<bool> _coverage;
-        //ROCKY_OPTION(osg::Texture::FilterMode, minFilter);
-        //ROCKY_OPTION(osg::Texture::FilterMode, magFilter);
+        optional<std::string> _noDataImageLocation = { };
+        optional<Color> _transparentColor = Color(0, 0, 0, 0);
+        optional<bool> _shared = false;
+        optional<bool> _coverage = false;
         optional<std::string> _textureCompression;
-        //optional<double> _edgeBufferRatio;
-        //optional<unsigned> _reprojectedTileSize;
-        optional<Distance> _altitude;
-        optional<bool> _acceptDraping;
-        optional<bool> _async;
-        //optional<std::string> _shareTexUniformName;
-        //optional<std::string> _shareTexMatUniformName;
+        optional<bool> _acceptDraping = false;
+        optional<bool> _async = false;
 
     private:
 

@@ -7,6 +7,7 @@
 
 #include <rocky/Color.h>
 #include <rocky_vsg/Common.h>
+#include <rocky/Config.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -19,121 +20,77 @@ namespace ROCKY_NAMESPACE
 
         //! Size of each dimension of each terrain tile, in verts.
         //! Ideally this will be a power of 2 plus 1, i.e.: a number X
-        //! such that X = (2^Y)+1 where Y is an integer >= 1. Default=17.
-        optional<unsigned> tileSize;
+        //! such that X = (2^Y)+1 where Y is an integer >= 1.
+        optional<unsigned> tileSize = 17;
 
-        //! The minimum tile LOD range as a factor of a tile's radius. Default = 7.0
-        optional<float> minTileRangeFactor;
+        //! The minimum tile LOD range as a factor of a tile's radius.
+        //! This only applies when using distance-to-tile as a LOD technique.
+        optional<float> minTileRangeFactor = 7.0;
 
         //! Acceptable error, in pixels, when rendering terrain tiles.
-        optional<float> screenSpaceError;
+        optional<float> screenSpaceError = 150.0f;
 
-        //! Whether cluster culling is enabled on terrain tiles. Deafult=true
-        optional<bool> clusterCulling;
-
-        //! (Legacy property)
         //! The maximum level of detail to which the terrain should subdivide.
-        //! If you leave this unset the terrain will subdivide until the map layers
-        //! stop providing data (default behavior). If you set a value, the terrain
-        //! will stop subdividing at the specified LOD even if higher-resolution
-        //! data is available. (It still might stop subdividing before it reaches
-        //! this level if data runs out
-        optional<unsigned> maxLOD;
+        optional<unsigned> maxLevelOfDetail = 19;
 
-        //! (Legacy property)
-        //! The minimum level of detail to which the terrain should subdivide (no matter what).
-        //! If you leave this unset, the terrain will subdivide until the map layers
-        //! stop providing data (default behavior). If you set a value, the terrain will subdivide
-        //! to the specified LOD no matter what (and may continue farther if higher-resolution
-        //! data is available).
-        optional<unsigned> minLOD;
-
-        //! (Legacy property)
-        //! The lowest LOD to display. By default, the terrain begins at LOD 0.
-        //! Set this to start the terrain tile mesh at a higher LOD.
-        //! Don't set this TOO high though or you will run into memory problems.
-        optional<unsigned> firstLOD;
+        //! The level of detail at which the terrain should begin.
+        optional<unsigned> minLevelOfDetail = 0;
 
         //! Whether the terrain engine will be using GPU tessellation shaders.
-        optional<bool> gpuTessellation;
+        optional<bool> gpuTessellation = false;
 
         //! GPU tessellation level
-        optional<float> tessellationLevel;
+        optional<float> tessellationLevel = 2.5f;
 
         //! Maximum range in meters to apply GPU tessellation
-        optional<float> tessellationRange;
-
-        //! Whether to activate debugging mode
-        optional<bool> debugMode;
-
-        //! Render bin number for the terrain
-        //void setRenderBinNumber(const int& value);
-        //const int& getRenderBinNumber() const;
+        optional<float> tessellationRange = 75.0f;
 
         //! Minimum number of frames before unused terrain data is eligible to expire
-        optional<unsigned> minFramesBeforeUnload;
+        optional<unsigned> minFramesBeforeUnload = 0;
 
         //! Minimum time (seconds) before unused terrain data is eligible to expire
-        optional<double> minSecondsBeforeUnload;
+        optional<double> minSecondsBeforeUnload = 0.0;
 
         //! Minimun range (distance from camera) beyond which unused terrain data 
         //! is eligible to expire
-        optional<float> minRangeBeforeUnload;
+        optional<float> minRangeBeforeUnload = 0.0f;
 
         //! Maximum number of terrain tiles to unload/expire each frame.
-        optional<unsigned> maxTilesToUnloadPerFrame;
+        optional<unsigned> maxTilesToUnloadPerFrame = ~0;
 
         //! Minimum number of terrain tiles to keep in memory before expiring usused data
-        optional<unsigned> minResidentTilesBeforeUnload;
+        optional<unsigned> minResidentTilesBeforeUnload = 0;
 
-        //! Whether the terrain should cast shadows - default is false
-        optional<bool> castShadows;
-
-        //! Mode to use when calculating LOD switching distances.
-        //! Choices are DISTANCE_FROM_EYE_POINT (default) or PIXEL_SIZE_ON_SCREEN
-        //void setRangeMode(const osg::LOD::RangeMode& value);
-        //const osg::LOD::RangeMode& getRangeMode() const;
+        //! Whether the terrain should cast shadows on itself
+        optional<bool> castShadows = false;
 
         //! Size of the tile, in pixels, when using rangeMode = PIXEL_SIZE_ON_SCREEN
-        optional<float> tilePixelSize;
+        optional<float> tilePixelSize = 256.0f;
 
         //! Ratio of skirt height to tile width. The "skirt" is geometry extending
         //! down from the edge of terrain tiles meant to hide cracks between adjacent
-        //! levels of detail. Default is 0 (no skirt).
-        optional<float> skirtRatio;
+        //! levels of detail. A value of 0 means no skirt.
+        optional<float> skirtRatio = 0.0f;
 
-        //! Color of the untextured globe (where no imagery is displayed) (default is white)
-        optional<Color> color;
+        //! Color of the untextured globe (where no imagery is displayed)
+        optional<Color> color = Color::White;
 
         //! Whether to generate normal map textures. Default is true
-        optional<bool> useNormalMaps;
+        optional<bool> useNormalMaps = true;
 
         //! Whether to average normal vectors on tile boundaries. Doing so reduces the
         //! the appearance of seams when using lighting, but requires extra CPU work.
-        optional<bool> normalizeEdges;
+        optional<bool> normalizeEdges = false;
 
         //! Whether to morph terrain data between terrain tile LODs.
-        //! This feature is not available when rangeMode is PIXEL_SIZE_ON_SCREEN
-        optional<bool> morphTerrain;
+        //! This feature is not available when using screen-space error LOD
+        optional<bool> morphTerrain = false;
 
         //! Whether to morph imagery between terrain tile LODs.
-        //! This feature is not available when rangeMode is PIXEL_SIZE_ON_SCREEN
-        optional<bool> morphImagery;
+        //! This feature is not available when using screen-space error LOD
+        optional<bool> morphImagery = false;
 
-        //! Maximum number of tile data merges permitted per frame. 0 = infinity.
-        //void setMergesPerFrame(const unsigned& value);
-        //const unsigned& getMergesPerFrame() const;
-
-        //! Scale factor for background loading priority of terrain tiles.
-        //! Default = 1.0. Make it higher to prioritize terrain loading over
-        //! other modules.
-        //void setPriorityScale(const float& value);
-        //const float& getPriorityScale() const;
-
-        //! Texture compression to use by default on terrain image textures
-        optional<std::string> textureCompressionMethod;
-
-        //! Target concurrency of terrain data loading operations. Default = 4.
-        optional<unsigned> concurrency;
+        //! Target concurrency of terrain data loading operations.
+        optional<unsigned> concurrency = 4;
     };
 }

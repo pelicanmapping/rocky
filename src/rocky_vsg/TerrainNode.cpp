@@ -82,7 +82,7 @@ TerrainNode::createRootTiles(const IOOptions& io)
     _tilesRoot = vsg::Group::create();
 
     std::vector<TileKey> keys;
-    Profile::getAllKeysAtLOD(this->firstLOD, _context->map->profile(), keys);
+    Profile::getAllKeysAtLOD(this->minLevelOfDetail, _context->map->profile(), keys);
 
     for (unsigned i = 0; i < keys.size(); ++i)
     {

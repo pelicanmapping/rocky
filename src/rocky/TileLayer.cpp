@@ -123,9 +123,9 @@ TileLayer::CacheBinMetadata::CacheBinMetadata(const Config& conf)
             SRS srs(srsString);
             DataExtent e(GeoExtent(srs, xmin, ymin, xmax, ymax));
             if (minLevel.has_value())
-                e.minLevel() = minLevel.get();
+                e.minLevel() = minLevel.value();
             if (maxLevel.has_value())
-                e.maxLevel() = maxLevel.get();
+                e.maxLevel() = maxLevel.value();
 
             _dataExtents.push_back(e);
         }
@@ -195,24 +195,11 @@ TileLayer::TileLayer(const Config& conf) :
 void
 TileLayer::construct(const Config& conf)
 {
-    _minLevel.setDefault(0);
-    _maxLevel.setDefault(23);
-    _maxDataLevel.setDefault(99);
-    _tileSize.setDefault(256);
-    //_noDataValue.init(-32767.0f); // SHRT_MIN
-    //_minValidValue.init(-32766.0f); // -(2^15 - 2)
-    //_maxValidValue.init(32767.0f);
-    //upsample().setDefault(false);
-
     conf.get("max_level", _maxLevel);
     conf.get("max_resolution", _maxResolution);
-    //conf.get("max_valid_value", _maxValidValue);
     conf.get("max_data_level", _maxDataLevel);
     conf.get("min_level", _minLevel);
-    //conf.get("min_valid_value", _minValidValue);
     conf.get("min_resolution", _minResolution);
-    //conf.get("no_data_value", _noDataValue);
-    //conf.get("profile", _profile);
     if (conf.hasChild("profile"))
         _profile = Profile(conf.child("profile"));
     conf.get("tile_size", _tileSize);
@@ -225,15 +212,12 @@ TileLayer::construct(const Config& conf)
 Config
 TileLayer::getConfig() const
 {
-    auto conf = VisibleLayer::getConfig();
+    auto conf = super::getConfig();
     conf.set("max_level", _maxLevel);
     conf.set("max_resolution", _maxResolution);
-    //conf.get("max_valid_value", _maxValidValue);
     conf.set("max_data_level", _maxDataLevel);
     conf.set("min_level", _minLevel);
-    //conf.get("min_valid_value", _minValidValue);
     conf.set("min_resolution", _minResolution);
-    //conf.get("no_data_value", _noDataValue);
 
     if (_profile.valid())
         conf.set("profile", _profile.getConfig());
@@ -413,7 +397,7 @@ TileLayer::setProfile(const Profile& profile)
 bool
 TileLayer::isDynamic() const
 {
-    if (hints().dynamic().isSetTo(true))
+    if (hints().dynamic().has_value(true))
         return true;
     else
         return false;
@@ -757,16 +741,16 @@ TileLayer::getDataExtentsUnion() const
                     _dataExtentsUnion.expandToInclude(_dataExtents[i]);
 
                     if (_dataExtents[i].minLevel().has_value())
-                        _dataExtentsUnion.minLevel() = std::min(_dataExtentsUnion.minLevel().get(), _dataExtents[i].minLevel().get());
+                        _dataExtentsUnion.minLevel() = std::min(_dataExtentsUnion.minLevel().value(), _dataExtents[i].minLevel().value());
 
                     if (_dataExtents[i].maxLevel().has_value())
-                        _dataExtentsUnion.maxLevel() = std::max(_dataExtentsUnion.maxLevel().get(), _dataExtents[i].maxLevel().get());
+                        _dataExtentsUnion.maxLevel() = std::max(_dataExtentsUnion.maxLevel().value(), _dataExtents[i].maxLevel().value());
                 }
 
                 // if upsampling is enabled include the MDL in the union.
                 if (_maxDataLevel.has_value() && upsample())
                 {
-                    _dataExtentsUnion.maxLevel() = std::max(_dataExtentsUnion.maxLevel().get(), _maxDataLevel.value());
+                    _dataExtentsUnion.maxLevel() = std::max(_dataExtentsUnion.maxLevel().value(), _maxDataLevel.value());
                 }
             }
         }
@@ -903,7 +887,7 @@ TileLayer::getBestAvailableTileKey(
     TileKey bestKey;
     index->Search(a_min, a_max, [&](const DataExtent& de) {
         // check that the extent isn't higher-resolution than our key:
-        if (!de.minLevel().has_value() || localLOD >= (int)de.minLevel().get())
+        if (!de.minLevel().has_value() || localLOD >= (int)de.minLevel().value())
         {
             // Got an intersetion; now test the LODs:
             intersects = true;
@@ -918,7 +902,7 @@ TileLayer::getBestAvailableTileKey(
 
             // Is our key at a lower or equal LOD than the max key in this extent?
             // If so, our key is good.
-            else if (localLOD <= (int)de.maxLevel().get())
+            else if (localLOD <= (int)de.maxLevel().value())
             {
                 bestKey = localLOD > MDL ? key.createAncestorKey(MDL) : key;
                 return false; //Stop searching, we've found a key
@@ -926,9 +910,9 @@ TileLayer::getBestAvailableTileKey(
 
             // otherwise, record the highest encountered LOD that
             // intersects our key.
-            else if (de.maxLevel().get() > highestLOD)
+            else if (de.maxLevel().value() > highestLOD)
             {
-                highestLOD = de.maxLevel().get();
+                highestLOD = de.maxLevel().value();
             }                        
         }
         return true; // Continue searching

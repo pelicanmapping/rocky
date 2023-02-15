@@ -47,7 +47,6 @@ set(HEADERS
     sha1.h
     SRS.h
     Status.h
-    TerrainOptions.h
     TerrainResolver.h
     TerrainTileModel.h
     TerrainTileModelFactory.h
@@ -91,7 +90,6 @@ set(SOURCES
     Profile.cpp
     SRS.cpp
     Status.cpp
-    TerrainOptions.cpp
     TerrainTileModel.cpp
     TerrainTileModelFactory.cpp
     Threading.cpp

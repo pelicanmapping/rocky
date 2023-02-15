@@ -62,14 +62,14 @@ namespace ROCKY_NAMESPACE
 
         void construct(const Config&);
 
-        optional<bool> _visible;
-        optional<float> _opacity;
-        optional<unsigned> _mask;
-        optional<float> _maxVisibleRange;
-        optional<float> _minVisibleRange;
-        optional<float> _attenuationRange;
-        optional<ColorBlending> _blend;
-        optional<bool> _debugView;
+        optional<bool> _visible = true;
+        optional<float> _opacity = 1.0f;
+        optional<unsigned> _mask = 0xffffffff;
+        optional<float> _maxVisibleRange = FLT_MAX;
+        optional<float> _minVisibleRange = 0.0f;
+        optional<float> _attenuationRange = 0.0f;
+        optional<ColorBlending> _blend = BLEND_INTERPOLATE;
+        optional<bool> _debugView = false;
     };
 
 } // namespace VisibleLayer

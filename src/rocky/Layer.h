@@ -36,29 +36,6 @@ namespace ROCKY_NAMESPACE
      */
     class ROCKY_EXPORT Layer : public Inherit<Object, Layer>
     {
-    //public:
-    //    /** Layer options for serialization */
-    //    class ROCKY_EXPORT Options : public ConfigOptions
-    //    {
-    //    public:
-    //        ROCKY_LayerOptions(Options, ConfigOptions);
-    //        ROCKY_OPTION(std::string, name);
-    //        ROCKY_OPTION(bool, openAutomatically);
-    //        ROCKY_OPTION(std::string, cacheId);
-    //        ROCKY_OPTION(CachePolicy, cachePolicy);
-    //        ROCKY_OPTION(std::string, shaderDefine);
-    //        ROCKY_OPTION(bool, terrainPatch);
-    //        ROCKY_OPTION(std::string, attribution);
-    //        //ROCKY_OPTION(ShaderOptions, shader);
-    //        //ROCKY_OPTION_VECTOR(ShaderOptions, shaders);
-    //        ROCKY_OPTION(ProxySettings, proxySettings);
-    //        ROCKY_OPTION(std::string, osgOptionString);
-    //        ROCKY_OPTION(unsigned int, l2CacheSize);
-    //        virtual Config getConfig() const;
-    //    private:
-    //        void fromConfig(const Config& conf);
-    //    };
-
     public:
         //! Hints that a layer can set to influence the operation of
         //! the map engine
@@ -135,17 +112,6 @@ namespace ROCKY_NAMESPACE
         void removeCallback(UID);
 
     public:
-
-#if 0
-        //! Layer's stateset, creating it is necessary
-        osg::StateSet* getOrCreateStateSet();
-
-        //! Layer's stateset, or NULL if none exists
-        osg::StateSet* getStateSet() const;
-
-        //! Stateset that should be applied to an entire terrain traversal
-        virtual osg::StateSet* getSharedStateSet(osg::NodeVisitor* nv) const { return NULL; }
-#endif
 
         //! How (and if) to use this layer when rendering terrain tiles.
         enum RenderType
@@ -227,11 +193,6 @@ namespace ROCKY_NAMESPACE
         //! Called by close() to shut down the resources associated with a layer.
         virtual Status closeImplementation();
 
-#if 0
-        //! Prepares the layer for rendering if necessary.
-        virtual void prepareForRendering(TerrainEngine*);
-#endif
-
         //! Sets the status for this layer - internal
         const Status& setStatus(const Status& status) const;
 
@@ -283,30 +244,18 @@ namespace ROCKY_NAMESPACE
 
     public:
 
-        //Layer::Options& options() { return *_options; }
-        //const Layer::Options& options() const { return *_options; }
-        //const Layer::Options& options_original() const { return *_options0; }
         virtual const char* getConfigKey() const { return "layer" ; }
 
     protected:
-        //Layer::Options * _options;
-        //Layer::Options   _optionsConcrete;
-        //const Layer::Options * _options0;
-        //const Layer::Options   _optionsConcrete0;
-
-        // no copying
-        //Layer(const Layer& rhs, const osg::CopyOp& op);
 
         // allow the map access to the addedToMap/removedFromMap methods
         friend class Map;
-        //friend class MapNode;
 
-        //optional<std::string> _name;
-        optional<bool> _openAutomatically;
-        optional<std::string> _cacheid;
-        optional<CachePolicy> _cachePolicy;
-        optional<std::string> _attribution;
-        optional<unsigned> _l2cachesize;
+        optional<bool> _openAutomatically = true;
+        optional<std::string> _cacheid = { };
+        optional<CachePolicy> _cachePolicy = CachePolicy::DEFAULT;
+        optional<std::string> _attribution = { };
+        optional<unsigned> _l2cachesize = 0;
 
         bool _reopenRequired;
     };

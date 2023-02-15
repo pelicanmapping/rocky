@@ -781,7 +781,7 @@ MapManipulator::getViewpoint() const
 
 #if 0
     // Tethering? Use the tether viewpoint.
-    if ( isTethering() && _setVP1.isSet() )
+    if ( isTethering() && _setVP1.has_value() )
     {
         vp = _setVP1.get();
 
@@ -857,17 +857,17 @@ MapManipulator::setViewpoint(const Viewpoint& vp, double duration_seconds)
         double defPitch, defAzim;
         getEulerAngles( _rotation, &defAzim, &defPitch );
 
-        if ( !_setVP1->heading.isSet() )
+        if ( !_setVP1->heading.has_value() )
             _setVP1->heading = Angle(defAzim, Units::RADIANS);
 
-        if ( !_setVP1->pitch.isSet() )
+        if ( !_setVP1->pitch.has_value() )
             _setVP1->pitch = Angle(defPitch, Units::RADIANS);
 
-        if ( !_setVP1->range.isSet() )
+        if ( !_setVP1->range.has_value() )
             _setVP1->range = Distance(_distance, Units::METERS);
 
 #if 0
-        if ( !_setVP1->nodeIsSet() && !_setVP1->focalPoint().isSet() )
+        if ( !_setVP1->nodeIsSet() && !_setVP1->focalPoint().has_value() )
         {
             osg::ref_ptr<vsg::Node> vpNode = _setVP0->getNode();
             if (vpNode.valid())
@@ -989,7 +989,7 @@ MapManipulator::setViewpoint(const Viewpoint& vp, double duration_seconds)
 double
 MapManipulator::setViewpointFrame(double time_s)
 {
-    if ( !_setVPStartTime.isSet() )
+    if ( !_setVPStartTime.has_value() )
     {
         _setVPStartTime->set( time_s, Units::SECONDS );
         return 0.0;
@@ -1153,7 +1153,7 @@ MapManipulator::resetLookAt()
 bool
 MapManipulator::isSettingViewpoint() const
 {
-    return _setVP0.isSet() && _setVP1.isSet();
+    return _setVP0.has_value() && _setVP1.has_value();
 }
 
 void
@@ -1179,7 +1179,7 @@ bool
 MapManipulator::isTethering() const
 {
     // True if setViewpoint() was called and the viewpoint has a node.
-    //return _setVP1.isSet() && _setVP1->nodeIsSet();
+    //return _setVP1.has_value() && _setVP1->nodeIsSet();
     return false;
 }
 #endif
@@ -1397,7 +1397,7 @@ MapManipulator::apply(vsg::MoveEvent& moveEvent)
         _lastAction = _settings->getAction(
             EVENT_MOUSE_DRAG,
             moveEvent.mask, // button mask
-            _keyPress.isSet() ? _keyPress->keyModifier : 0);
+            _keyPress.has_value() ? _keyPress->keyModifier : 0);
 
         bool wasContinuous = _continuous;
         _continuous = _lastAction.getBoolOption(OPTION_CONTINUOUS, false);
@@ -1440,7 +1440,7 @@ MapManipulator::apply(vsg::ScrollWheelEvent& scrollEvent)
     _lastAction = _settings->getAction(
         EVENT_SCROLL,
         dir,
-        _keyPress.isSet() ? _keyPress->keyModifier : 0);
+        _keyPress.has_value() ? _keyPress->keyModifier : 0);
 
     handleScrollAction(
         _lastAction,
@@ -1546,7 +1546,7 @@ MapManipulator::serviceTask(vsg::time_point now)
 bool
 MapManipulator::isMouseClick() const
 {
-    if (!_buttonPress.isSet() || !_buttonRelease.isSet())
+    if (!_buttonPress.has_value() || !_buttonRelease.has_value())
         return false;
 
     static const float velocity = 0.1f;
@@ -2087,7 +2087,7 @@ MapManipulator::handleAction(
     {
 #if 0
     case ACTION_HOME:
-        if ( _homeViewpoint.isSet() )
+        if ( _homeViewpoint.has_value() )
         {
             setViewpoint( _homeViewpoint.value(), _homeViewpointDuration );
         }

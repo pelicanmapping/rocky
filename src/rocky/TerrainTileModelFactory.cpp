@@ -17,7 +17,7 @@ CreateTileManifest::CreateTileManifest()
 {
     _includesElevation = false;
     _includesConstraints = false;
-    _progressive.setDefault(false);
+    _progressive.set_default(false);
 }
 
 void
@@ -32,7 +32,7 @@ CreateTileManifest::insert(shared_ptr<Layer> layer)
             _includesElevation = true;
         }
 
-        //else if (std::dynamic_pointer_cast<TerrainConstraintLayer>(layer))        
+        //else if (std::dynamic_pointer_cast<TerrainConstraintLayer>(layer))
         //{
         //    _includesConstraints = true;
         //}

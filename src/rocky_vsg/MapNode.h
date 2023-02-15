@@ -154,13 +154,14 @@ namespace ROCKY_NAMESPACE
         friend class ClampableNode;
 
         InstanceVSG _instance;
-        optional<bool> _enableLighting;
-        optional<bool> _overlayBlending;
-        optional<unsigned> _overlayTextureSize;
-        optional<bool> _overlayMipMapping;
-        optional<float> _overlayResolutionRatio;
-        optional<int> _drapingRenderBinNumber;
-        optional<float> _screenSpaceError;
+
+        optional<bool> _enableLighting = true;
+        optional<bool> _overlayBlending = true;
+        optional<unsigned> _overlayTextureSize = 4096;
+        optional<bool> _overlayMipMapping = false;
+        optional<float> _overlayResolutionRatio = 3.0f;
+        optional<int> _drapingRenderBinNumber = 1;
+        optional<float> _screenSpaceError = 25.0f;
 
         SRS _worldSRS;
         vsg::ref_ptr<TerrainNode> _terrain;

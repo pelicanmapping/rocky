@@ -102,10 +102,10 @@ namespace ROCKY_NAMESPACE
 
         virtual ~ElevationLayer() { }
 
-        optional<bool> _offset;
-        optional<float> _noDataValue;
-        optional<float> _minValidValue;
-        optional<float> _maxValidValue;
+        optional<bool> _offset = false;
+        optional<float> _noDataValue = NO_DATA_VALUE;
+        optional<float> _minValidValue = -FLT_MAX;
+        optional<float> _maxValidValue = FLT_MAX;
 
     private:
         void construct(const Config&);

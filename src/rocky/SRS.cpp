@@ -217,7 +217,7 @@ namespace
                 return empty_box;
 
             if (entry.bounds.has_value())
-                return entry.bounds.get();
+                return entry.bounds.value();
 
             double west_lon, south_lat, east_lon, north_lat;
             if (proj_get_area_of_use(ctx, entry.pj, &west_lon, &south_lat, &east_lon, &north_lat, nullptr) &&
@@ -264,7 +264,7 @@ namespace
                 }
             }
 
-            return entry.bounds.get();
+            return entry.bounds.value();
         }
 
         const std::string& get_wkt(const std::string& def)

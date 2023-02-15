@@ -98,17 +98,17 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT CachePolicy
     {
     public:
-        enum Usage
+        enum class Usage
         {
-            USAGE_READ_WRITE = 0,  // read/write to the cache if one exists.
-            USAGE_CACHE_ONLY = 1,  // treat the cache as the ONLY source of data.
-            USAGE_READ_ONLY = 2,  // read from the cache, but don't write new data to it.
-            USAGE_NO_CACHE = 3   // neither read from or write to the cache
+            READ_WRITE = 0,  // read/write to the cache if one exists.
+            CACHE_ONLY = 1,  // treat the cache as the ONLY source of data.
+            READ_ONLY = 2,  // read from the cache, but don't write new data to it.
+            NO_CACHE = 3   // neither read from or write to the cache
         };
 
-        optional<Usage> usage;
-        optional<Duration> maxAge;
-        optional<DateTime> minTime;
+        optional<Usage> usage = Usage::READ_WRITE;
+        optional<Duration> maxAge = Duration(DBL_MAX, Units::SECONDS);
+        optional<DateTime> minTime = DateTime(0);
 
 
         //! default cache policy (READ_WRITE)
@@ -152,17 +152,17 @@ namespace ROCKY_NAMESPACE
 
         bool isCacheReadable() const {
             return
-                usage.value() == USAGE_READ_WRITE ||
-                usage.value() == USAGE_CACHE_ONLY ||
-                usage.value() == USAGE_READ_ONLY;
+                usage.value() == Usage::READ_WRITE ||
+                usage.value() == Usage::CACHE_ONLY ||
+                usage.value() == Usage::READ_ONLY;
         }
 
         bool isCacheWriteable() const {
-            return usage.value() == USAGE_READ_WRITE;
+            return usage.value() == Usage::READ_WRITE;
         }
 
         bool isCacheOnly() const {
-            return usage.value() == USAGE_CACHE_ONLY;
+            return usage.value() == Usage::CACHE_ONLY;
         }
 
         bool operator == (const CachePolicy& rhs) const;

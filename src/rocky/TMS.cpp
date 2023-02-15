@@ -832,11 +832,11 @@ tileMapToXmlDocument(const TileMap* tileMap)
             e_data_extent->getAttrs()[ATTR_MINY] = toString(itr->yMin(), DOUBLE_PRECISION);
             e_data_extent->getAttrs()[ATTR_MAXX] = toString(itr->xMax(), DOUBLE_PRECISION);
             e_data_extent->getAttrs()[ATTR_MAXY] = toString(itr->yMax(), DOUBLE_PRECISION);
-            if (itr->minLevel().isSet())
+            if (itr->minLevel().has_value())
                 e_data_extent->getAttrs()[ATTR_MIN_LEVEL] = toString<unsigned int>(*itr->minLevel());
-            if (itr->maxLevel().isSet())
+            if (itr->maxLevel().has_value())
                 e_data_extent->getAttrs()[ATTR_MAX_LEVEL] = toString<unsigned int>(*itr->maxLevel());
-            if (itr->description().isSet())
+            if (itr->description().has_value())
                 e_data_extent->getAttrs()[ATTR_DESCRIPTION] = *itr->description();
             e_data_extents->getChildren().push_back(e_data_extent);
         }

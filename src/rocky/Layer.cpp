@@ -111,10 +111,6 @@ Layer::construct(const Config& conf)
     _reopenRequired = false;
     _renderType = RENDERTYPE_NONE;
 
-    _openAutomatically.setDefault(true);
-    _l2cachesize.setDefault(0);
-    _cachePolicy.setDefault(CachePolicy::DEFAULT);
-
     conf.get("name", _name);
     conf.get("open", _openAutomatically);
     conf.get("cacheid", _cacheid);
@@ -125,24 +121,6 @@ Layer::construct(const Config& conf)
     _status = Status(
         Status::ResourceUnavailable,
         getOpenAutomatically() ? "Layer closed" : "Layer disabled");
-
-#if 0
-    // For detecting scene graph changes at runtime
-    _sceneGraphCallbacks = new SceneGraphCallbacks(this);
-
-    // Copy the layer options name into the Object name.
-    // This happens here AND in open.
-    if (options().name().has_value())
-    {
-        osg::Object::setName(options().name().get());
-    }
-    else
-    {
-        osg::Object::setName("Unnamed " + std::string(className()));
-    }
-#endif
-
-//    _mutex = new util::ReadWriteMutex(name());
 }
 
 Config
@@ -150,15 +128,10 @@ Layer::getConfig() const
 {
     Config conf;
     conf.set("name", _name);
-    //conf.set("enabled", enabled());
     conf.set("open", _openAutomatically);
     conf.set("cacheid", _cacheid);
     conf.set("cachepolicy", _cachePolicy);
-    //conf.set("shader_define", shaderDefine());
     conf.set("attribution", _attribution);
-    //conf.set("terrain", terrainPatch());
-    //conf.set("proxy", _proxySettings);
-    //conf.set("osg_options", osgOptionString());
     conf.set("l2_cache_size", _l2cachesize);
     return conf;
 }
@@ -179,41 +152,6 @@ Layer::bumpRevision()
 {
     ++_revision;
 }
-
-#if 0
-void
-Layer::setReadOptions(const osgDB::Options* readOptions)
-{
-    // We are storing _cacheSettings both in the Read Options AND
-    // as a class member. This is probably not strictly necessary
-    // but we will keep the ref in the Layer just to be on the safe
-    // side - gw
-
-    _readOptions = Registry::cloneOrCreateOptions(readOptions);
-
-    // store the referrer for relative-path resolution
-    URIContext(options().referrer()).store(_readOptions.get());
-
-    //Store the proxy settings in the options structure.
-    if (options().proxySettings().has_value())
-    {
-        options().proxySettings()->apply(_readOptions.get());
-    }
-
-    if (options().osgOptionString().has_value())
-    {
-        _readOptions->setOptionString(
-            options().osgOptionString().get() + " " +
-            _readOptions->getOptionString());
-    }
-}
-
-const osgDB::Options*
-Layer::getReadOptions() const
-{
-    return _readOptions.get();
-}
-#endif
 
 void
 Layer::removeCallback(UID uid)

@@ -205,7 +205,7 @@ namespace ROCKY_NAMESPACE
         void set(const std::string& key, const optional<T>& opt) {
             remove(key);
             if (opt.has_value()) {
-                set(Config(key, opt.get()));
+                set(Config(key, opt.value()));
             }
         }
 
@@ -222,7 +222,7 @@ namespace ROCKY_NAMESPACE
         // If target is set to targetValue, set key to val.
         template<typename X, typename Y>
         void set(const std::string& key, const std::string& val, const optional<X>& target, const Y& targetValue) {
-            if (target.isSetTo(targetValue)) {
+            if (target.has_value(targetValue)) {
                 remove(key);
                 set(key, val);
             }
@@ -275,7 +275,7 @@ namespace ROCKY_NAMESPACE
             if (hasChild(key))
                 r = child(key).value();
             if (!r.empty()) {
-                output = rocky::util::as<T>(r, output.defaultValue());
+                output = rocky::util::as<T>(r, output.default_value());
                 return true;
             }
             else

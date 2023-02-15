@@ -100,11 +100,7 @@ ElevationLayer::ElevationLayer(const Config& conf) :
 void
 ElevationLayer::construct(const Config& conf)
 {
-    _tileSize.setDefault(257u);
-    _offset.setDefault(false);
-    _noDataValue.setDefault(NO_DATA_VALUE);
-    _minValidValue.setDefault(-FLT_MAX);
-    _maxValidValue.setDefault(FLT_MAX);
+    _tileSize.set_default(257u); // override the default in TileLayer
 
     conf.get("offset", _offset);
     conf.get("nodata_value", _noDataValue);
@@ -133,8 +129,6 @@ ElevationLayer::construct(const Config& conf)
     // Disable max-level support for elevation data because it makes no sense.
     _maxLevel.clear();
     _maxResolution.clear();
-    //options().maxLevel().clear();
-    //options().maxResolution().clear();
 
     // elevation layers do not render directly; rather, a composite of elevation data
     // feeds the terrain engine to permute the mesh.

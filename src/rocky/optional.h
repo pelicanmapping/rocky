@@ -8,16 +8,26 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-     * A template for defining "optional" class members. An optional member has a default value
-     * and a flag indicating whether the member is "set".
-     * This is used extensively in osgEarth's ConfigOptions subsystem.
+     * A template for defining an object that is either set or unset and 
+     * can have a default value in its unset state.
+     * 
+     * This differs from std::optional<> by supporting a "default value" in addition
+     * to the set/unset flag.
+     * 
+     * You can default-initialize an optional in a class defition like so.
+     * In this example, the "value" property is unset with a default value
+     * of 123:
+     * 
+     * struct MyClass {
+     *     optional<int> value { 123 };
+     * };
      */
-    template<typename T> struct optional {
+    template<typename T> struct optional
+    {
         optional() : _set(false), _value(T()), _defaultValue(T()) { }
-        optional(T defaultValue) : _set(false), _value(defaultValue), _defaultValue(defaultValue) { }
-        optional(T defaultValue, T value) : _set(true), _value(value), _defaultValue(defaultValue) { }
+        optional(const T& defaultValue) : _set(false), _value(defaultValue), _defaultValue(defaultValue) { }
+        optional(const T& defaultValue, const T& value) : _set(true), _value(value), _defaultValue(defaultValue) { }
         optional(const optional<T>& rhs) { operator=(rhs); }
-        virtual ~optional() { }
         optional<T>& operator =(const optional<T>& rhs) { _set=rhs._set; _value=rhs._value; _defaultValue=rhs._defaultValue; return *this; }
         const T& operator =(const T& value) { _set=true; _value=value; return _value; }
         bool operator ==(const optional<T>& rhs) const { return _set && rhs._set && _value==rhs._value; }
@@ -28,36 +38,30 @@ namespace ROCKY_NAMESPACE
         bool operator >=(const T& value) const { return _value>=value; }
         bool operator < (const T& value) const { return _value<value; }
         bool operator <=(const T& value) const { return _value<=value; }
-        bool isSetTo(const T& value) const { return _set && _value==value; } // differs from == in that the value must be explicity set
-        bool isSet() const { return _set; }
         bool has_value() const { return _set; }
-        void unset() { _set = false; _value=_defaultValue; }
-        void clear() { unset(); }
-
-        const T& get() const { return _value; }
+        bool has_value(const T& value) const { return _set && _value == value; } // differs from == in that the value must be explicity set
         const T& value() const { return _value; }
-        const T& defaultValue() const { return _defaultValue; }
+        const T& default_value() const { return _defaultValue; }
+        void clear() { _set = false; _value = _defaultValue; }
+        const T& value_or(const T& fallback) const { return _set ? _value : fallback; }
         T temp_copy() const { return _value; }
-
-        const T& getOrUse(const T& fallback) const { return _set ? _value : fallback; }
 
         // gets a mutable reference, automatically setting
         T& mutable_value() { _set = true; return _value; }
 
         // sets a default value (without altering a set value)
-        void setDefault(T defValue) { _defaultValue = defValue; if (!_set) _value = defValue; }
+        void set_default(T defValue) { _defaultValue = defValue; if (!_set) _value = defValue; }
 
+        // accessors
         operator const T*() const { return &_value; }
-
         T* operator ->() { _set=true; return &_value; }
         const T* operator ->() const { return &_value; }
-
         operator const T& () const { return _set ? _value : _defaultValue; }
 
     private:
-        bool _set;
-        T _value;
         T _defaultValue;
+        T _value;
+        bool _set;
         typedef T* optional::*unspecified_bool_type;
 
     public:

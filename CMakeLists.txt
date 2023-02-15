@@ -56,7 +56,7 @@ option(ROCKY_SUPPORTS_GDAL "Support GeoTIFF and other GDAL formats (required gda
 # option(ROCKY_SUPPORTS_WMTS "Support OGC Web Map Tile Service (requires..?)" OFF)
 # option(ROCKY_SUPPORTS_MBTILES "Support MapBox MBTiles (requires sqlite3)" OFF)
 
-#set(BUILD_WITH_JSON ON)
+set(BUILD_WITH_JSON ON)
 
 if(ROCKY_SUPPORTS_PROFILING)
     set(BUILD_WITH_TRACY ON)

@@ -28,8 +28,8 @@ TerrainContext::TerrainContext(
 {
     selectionInfo = std::make_shared<SelectionInfo>();
     selectionInfo->initialize(
-        settings.firstLOD,
-        settings.maxLOD,
+        settings.minLevelOfDetail,
+        settings.maxLevelOfDetail,
         map->profile(),
         settings.minTileRangeFactor,
         true); // restruct polar subdivision..

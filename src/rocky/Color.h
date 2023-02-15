@@ -129,7 +129,7 @@ namespace ROCKY_NAMESPACE
     // Config specializations for Color:
     template<> inline
     void Config::set<Color>( const std::string& key, const optional<Color>& opt ) {
-        if ( opt.isSet() ) {
+        if ( opt.has_value() ) {
             remove( key );
             set( key, opt->toHTML() );
         }

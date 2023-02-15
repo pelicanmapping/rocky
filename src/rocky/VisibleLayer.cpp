@@ -9,47 +9,6 @@ using namespace ROCKY_NAMESPACE;
 
 #define LC "[VisibleLayer] \"" << getName() << "\" "
 
-#if 0
-Config
-VisibleLayer::Options::getConfig() const
-{
-    Config conf = Layer::Options::getConfig();
-    conf.set( "visible", visible() );
-    conf.set( "opacity", opacity() );
-    conf.set( "mask", mask());
-    conf.set( "min_range", minVisibleRange() );
-    conf.set( "max_range", maxVisibleRange() );
-    conf.set( "attenuation_range", attenuationRange() );
-    conf.set( "blend", "interpolate", _blend, BLEND_INTERPOLATE );
-    conf.set( "blend", "modulate", _blend, BLEND_MODULATE );
-    return conf;
-}
-
-void
-VisibleLayer::Options::fromConfig(const Config& conf)
-{
-    _visible.init( true );
-    _opacity.init( 1.0f );
-    _minVisibleRange.init( 0.0 );
-    _maxVisibleRange.init( FLT_MAX );
-    _attenuationRange.init(0.0f);
-    _blend.init( BLEND_INTERPOLATE );
-    _mask.init(0xffffffff);
-    debugView().setDefault(false);
-
-    conf.get( "visible", _visible );
-    conf.get( "opacity", _opacity);
-    conf.get( "min_range", _minVisibleRange );
-    conf.get( "max_range", _maxVisibleRange );
-    conf.get( "attenuation_range", _attenuationRange );
-    conf.get( "mask", _mask );
-    conf.get( "blend", "interpolate", _blend, BLEND_INTERPOLATE );
-    conf.get( "blend", "modulate", _blend, BLEND_MODULATE );
-}
-#endif
-
-//........................................................................
-
 VisibleLayer::VisibleLayer() :
     super()
 {
@@ -65,15 +24,6 @@ VisibleLayer::VisibleLayer(const Config& conf) :
 void
 VisibleLayer::construct(const Config& conf)
 {
-    _visible.setDefault(true);
-    _opacity.setDefault(1.0f);
-    _minVisibleRange.setDefault(0.0);
-    _maxVisibleRange.setDefault(FLT_MAX);
-    _attenuationRange.setDefault(0.0f);
-    _blend.setDefault(BLEND_INTERPOLATE);
-    _mask.setDefault(0xffffffff);
-    _debugView.setDefault(false);
-
     conf.get("visible", _visible);
     conf.get("opacity", _opacity);
     conf.get("min_range", _minVisibleRange);
@@ -87,7 +37,7 @@ VisibleLayer::construct(const Config& conf)
 Config
 VisibleLayer::getConfig() const
 {
-    auto conf = Layer::getConfig();
+    auto conf = super::getConfig();
     conf.set("visible", _visible);
     conf.set("opacity", _opacity);
     conf.set("min_range", _minVisibleRange);
@@ -108,7 +58,7 @@ VisibleLayer::openImplementation(const IOOptions& io)
 
     if (_visible.has_value() || _mask.has_value())
     {
-        setVisible(_visible.get());
+        setVisible(_visible.value());
     }
 
     return StatusOK;

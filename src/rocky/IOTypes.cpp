@@ -33,36 +33,28 @@ ProxySettings::getConfig() const
 
 //statics
 CachePolicy CachePolicy::DEFAULT;
-CachePolicy CachePolicy::NO_CACHE(CachePolicy::USAGE_NO_CACHE);
-CachePolicy CachePolicy::CACHE_ONLY(CachePolicy::USAGE_CACHE_ONLY);
+CachePolicy CachePolicy::NO_CACHE(CachePolicy::Usage::NO_CACHE);
+CachePolicy CachePolicy::CACHE_ONLY(CachePolicy::Usage::CACHE_ONLY);
 
 //------------------------------------------------------------------------
 
-CachePolicy::CachePolicy() :
-    usage(USAGE_READ_WRITE),
-    maxAge(Duration(DBL_MAX, Units::SECONDS)),
-    minTime(0)
+CachePolicy::CachePolicy()
 {
     //nop
 }
 CachePolicy::CachePolicy(const Usage& u) :
-    usage(u),
-    maxAge(Duration(DBL_MAX, Units::SECONDS)),
-    minTime(0)
+    usage(u)
 {
     //nop
 }
 
-CachePolicy::CachePolicy(const Config& conf) :
-    usage(USAGE_READ_WRITE),
-    maxAge(Duration(DBL_MAX, Units::SECONDS)),
-    minTime(0)
+CachePolicy::CachePolicy(const Config& conf)
 {
-    conf.get("usage", "read_write", usage, USAGE_READ_WRITE);
-    conf.get("usage", "read_only", usage, USAGE_READ_ONLY);
-    conf.get("usage", "cache_only", usage, USAGE_CACHE_ONLY);
-    conf.get("usage", "no_cache", usage, USAGE_NO_CACHE);
-    conf.get("usage", "none", usage, USAGE_NO_CACHE);
+    conf.get("usage", "read_write", usage, Usage::READ_WRITE);
+    conf.get("usage", "read_only", usage, Usage::READ_ONLY);
+    conf.get("usage", "cache_only", usage, Usage::CACHE_ONLY);
+    conf.get("usage", "no_cache", usage, Usage::NO_CACHE);
+    conf.get("usage", "none", usage, Usage::NO_CACHE);
     conf.get("max_age", maxAge);
     conf.get("min_time", minTime);
 }
@@ -71,10 +63,10 @@ Config
 CachePolicy::getConfig() const
 {
     Config conf("cache_policy");
-    conf.set("usage", "read_write", usage, USAGE_READ_WRITE);
-    conf.set("usage", "read_only", usage, USAGE_READ_ONLY);
-    conf.set("usage", "cache_only", usage, USAGE_CACHE_ONLY);
-    conf.set("usage", "no_cache", usage, USAGE_NO_CACHE);
+    conf.set("usage", "read_write", usage, Usage::READ_WRITE);
+    conf.set("usage", "read_only", usage, Usage::READ_ONLY);
+    conf.set("usage", "cache_only", usage, Usage::CACHE_ONLY);
+    conf.set("usage", "no_cache", usage, Usage::NO_CACHE);
     conf.set("max_age", maxAge);
     conf.set("min_time", minTime);
     return conf;
@@ -84,13 +76,13 @@ void
 CachePolicy::mergeAndOverride(const CachePolicy& rhs)
 {
     if (rhs.usage.has_value())
-        usage = rhs.usage.get();
+        usage = rhs.usage.value();
 
     if (rhs.minTime.has_value())
-        minTime = rhs.minTime.get();
+        minTime = rhs.minTime.value();
 
     if (rhs.maxAge.has_value())
-        maxAge = rhs.maxAge.get();
+        maxAge = rhs.maxAge.value();
 }
 
 void
@@ -98,7 +90,7 @@ CachePolicy::mergeAndOverride(const optional<CachePolicy>& rhs)
 {
     if (rhs.has_value())
     {
-        mergeAndOverride(rhs.get());
+        mergeAndOverride(rhs.value());
     }
 }
 
@@ -106,8 +98,8 @@ DateTime
 CachePolicy::getMinAcceptTime() const
 {
     return
-        minTime.isSet() ? minTime.value() :
-        maxAge.isSet() ? DateTime().asTimeStamp() - maxAge.value() :
+        minTime.has_value() ? minTime.value() :
+        maxAge.has_value() ? DateTime().asTimeStamp() - maxAge.value() :
         0;
 }
 
@@ -121,9 +113,9 @@ bool
 CachePolicy::operator == (const CachePolicy& rhs) const
 {
     return
-        (usage.get() == rhs.usage.get()) &&
-        (maxAge.get() == rhs.maxAge.get()) &&
-        (minTime.get() == rhs.minTime.get());
+        (usage.value() == rhs.usage.value()) &&
+        (maxAge.value() == rhs.maxAge.value()) &&
+        (minTime.value() == rhs.minTime.value());
 }
 
 CachePolicy&
@@ -139,10 +131,10 @@ CachePolicy::operator = (const CachePolicy& rhs)
 std::string
 CachePolicy::usageString() const
 {
-    if (usage == USAGE_READ_WRITE) return "read-write";
-    if (usage == USAGE_READ_ONLY)  return "read-only";
-    if (usage == USAGE_CACHE_ONLY)  return "cache-only";
-    if (usage == USAGE_NO_CACHE)    return "no-cache";
+    if (usage == Usage::READ_WRITE) return "read-write";
+    if (usage == Usage::READ_ONLY)  return "read-only";
+    if (usage == Usage::CACHE_ONLY)  return "cache-only";
+    if (usage == Usage::NO_CACHE)    return "no-cache";
     return "unknown";
 }
 

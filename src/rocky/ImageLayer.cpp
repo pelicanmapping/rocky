@@ -144,63 +144,13 @@ ImageLayer::ImageLayer(const Config& conf) :
 void
 ImageLayer::construct(const Config& conf)
 {
-    _transparentColor.setDefault(Color(0, 0, 0, 0));
-    //_minFilter.setDefault( osg::Texture::LINEAR_MIPMAP_LINEAR );
-    //_magFilter.setDefault( osg::Texture::LINEAR );
-    _textureCompression.setDefault("");
-    _shared.setDefault(false);
-    _coverage.setDefault(false);
-
     conf.get("nodata_image", _noDataImageLocation);
     conf.get("shared", _shared);
     conf.get("coverage", _coverage);
-    conf.get("altitude", _altitude);
     conf.get("accept_draping", _acceptDraping);
-    //conf.get("edge_buffer_ratio", _edgeBufferRatio);
-    //conf.get("reprojected_tilesize", _reprojectedTileSize);
     conf.get("transparent_color", _transparentColor);
-
-    //if ( conf.hasChild("color_filters") )
-    //{
-    //    _colorFilters->clear();
-    //    ColorFilterRegistry::instance()->readChain( conf.child("color_filters"), _colorFilters.mutable_value() );
-    //}
-
-    //conf.get("mag_filter","LINEAR",                _magFilter,osg::Texture::LINEAR);
-    //conf.get("mag_filter","LINEAR_MIPMAP_LINEAR",  _magFilter,osg::Texture::LINEAR_MIPMAP_LINEAR);
-    //conf.get("mag_filter","LINEAR_MIPMAP_NEAREST", _magFilter,osg::Texture::LINEAR_MIPMAP_NEAREST);
-    //conf.get("mag_filter","NEAREST",               _magFilter,osg::Texture::NEAREST);
-    //conf.get("mag_filter","NEAREST_MIPMAP_LINEAR", _magFilter,osg::Texture::NEAREST_MIPMAP_LINEAR);
-    //conf.get("mag_filter","NEAREST_MIPMAP_NEAREST",_magFilter,osg::Texture::NEAREST_MIPMAP_NEAREST);
-    //conf.get("min_filter","LINEAR",                _minFilter,osg::Texture::LINEAR);
-    //conf.get("min_filter","LINEAR_MIPMAP_LINEAR",  _minFilter,osg::Texture::LINEAR_MIPMAP_LINEAR);
-    //conf.get("min_filter","LINEAR_MIPMAP_NEAREST", _minFilter,osg::Texture::LINEAR_MIPMAP_NEAREST);
-    //conf.get("min_filter","NEAREST",               _minFilter,osg::Texture::NEAREST);
-    //conf.get("min_filter","NEAREST_MIPMAP_LINEAR", _minFilter,osg::Texture::NEAREST_MIPMAP_LINEAR);
-    //conf.get("min_filter","NEAREST_MIPMAP_NEAREST",_minFilter,osg::Texture::NEAREST_MIPMAP_NEAREST);
-
     conf.get("texture_compression", _textureCompression);
-
-    // uniform names
-    //conf.get("shared_sampler", _shareTexUniformName);
-    //conf.get("shared_matrix", _shareTexMatUniformName);
-
-    // automatically set shared=true if the uniform name is set.
-    //if (_shareTexUniformName.has_value() && !_shared.has_value())
-    //    _shared = true;
-
     conf.get("async", _async);
-
-    // image layers render as a terrain texture.
-    //setRenderType(RENDERTYPE_TERRAIN_SURFACE);
-
-#if 0
-    if (options().altitude().has_value())
-    {
-        setAltitude(options().altitude().get());
-    }
-#endif
-    ROCKY_TODO("Altitude");
 
     if (_acceptDraping.has_value())
     {
@@ -213,38 +163,12 @@ ImageLayer::construct(const Config& conf)
 Config
 ImageLayer::getConfig() const
 {
-    Config conf = TileLayer::getConfig();
-
+    Config conf = super::getConfig();
     conf.set("nodata_image", _noDataImageLocation);
     conf.set("shared", _shared);
     conf.set("coverage", _coverage);
-    conf.set("altitude", _altitude);
-    conf.set("accept_draping", _acceptDraping);
-    //conf.get("edge_buffer_ratio", _edgeBufferRatio);
-    //conf.get("reprojected_tilesize", _reprojectedTileSize);
     conf.set("transparent_color", _transparentColor);
-
-    //if ( conf.hasChild("color_filters") )
-    //{
-    //    _colorFilters->clear();
-    //    ColorFilterRegistry::instance()->readChain( conf.child("color_filters"), _colorFilters.mutable_value() );
-    //}
-
-    //conf.get("mag_filter","LINEAR",                _magFilter,osg::Texture::LINEAR);
-    //conf.get("mag_filter","LINEAR_MIPMAP_LINEAR",  _magFilter,osg::Texture::LINEAR_MIPMAP_LINEAR);
-    //conf.get("mag_filter","LINEAR_MIPMAP_NEAREST", _magFilter,osg::Texture::LINEAR_MIPMAP_NEAREST);
-    //conf.get("mag_filter","NEAREST",               _magFilter,osg::Texture::NEAREST);
-    //conf.get("mag_filter","NEAREST_MIPMAP_LINEAR", _magFilter,osg::Texture::NEAREST_MIPMAP_LINEAR);
-    //conf.get("mag_filter","NEAREST_MIPMAP_NEAREST",_magFilter,osg::Texture::NEAREST_MIPMAP_NEAREST);
-    //conf.get("min_filter","LINEAR",                _minFilter,osg::Texture::LINEAR);
-    //conf.get("min_filter","LINEAR_MIPMAP_LINEAR",  _minFilter,osg::Texture::LINEAR_MIPMAP_LINEAR);
-    //conf.get("min_filter","LINEAR_MIPMAP_NEAREST", _minFilter,osg::Texture::LINEAR_MIPMAP_NEAREST);
-    //conf.get("min_filter","NEAREST",               _minFilter,osg::Texture::NEAREST);
-    //conf.get("min_filter","NEAREST_MIPMAP_LINEAR", _minFilter,osg::Texture::NEAREST_MIPMAP_LINEAR);
-    //conf.get("min_filter","NEAREST_MIPMAP_NEAREST",_minFilter,osg::Texture::NEAREST_MIPMAP_NEAREST);
-
     conf.set("texture_compression", _textureCompression);
-
     return conf;
 }
 
@@ -892,14 +816,14 @@ ImageLayer::getCompressionMethod() const
 void
 ImageLayer::modifyTileBoundingBox(const TileKey& key, Box& box) const
 {
-    if (_altitude.has_value())
-    {
-        if (_altitude->as(Units::METERS) > box.zmax)
-        {
-            box.zmax = _altitude->as(Units::METERS);
-        }
-    }
-    TileLayer::modifyTileBoundingBox(key, box);
+    //if (_altitude.has_value())
+    //{
+    //    if (_altitude->as(Units::METERS) > box.zmax)
+    //    {
+    //        box.zmax = _altitude->as(Units::METERS);
+    //    }
+    //}
+    super::modifyTileBoundingBox(key, box);
 }
 
 #if 0

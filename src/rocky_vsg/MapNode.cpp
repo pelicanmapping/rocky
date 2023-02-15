@@ -178,7 +178,7 @@ MapNode::Options::getConfig() const
     conf.set( "draping_render_bin_number",drapingRenderBinNumber() );
     conf.set("screen_space_error", screenSpaceError());
 
-    if (terrain().isSet() && !terrain()->empty())
+    if (terrain().has_value() && !terrain()->empty())
         conf.set( "terrain", terrain()->getConfig() );
 
     return conf;
@@ -238,27 +238,13 @@ MapNode::MapNode(const Config& conf, const InstanceVSG& instance) :
 void
 MapNode::construct(const Config& conf)
 {
-//    proxySettings().init(ProxySettings());
-    _enableLighting.setDefault(true);
-    _overlayBlending.setDefault(true);
-    _overlayMipMapping.setDefault(false);
-    _overlayTextureSize.setDefault(4096);
-    _overlayResolutionRatio.setDefault(3.0f);
-    //_useCascadeDraping.setDefault(false);
-    //terrain().init(TerrainOptions());
-    _drapingRenderBinNumber.setDefault(1);
-    _screenSpaceError.setDefault(25.0f);
-
-    //conf.get("proxy", proxySettings());
     conf.get("lighting", _enableLighting);
     conf.get("overlay_blending", _overlayBlending);
     conf.get("overlay_mipmapping", _overlayMipMapping);
     conf.get("overlay_texture_size", _overlayTextureSize);
     conf.get("overlay_resolution_ratio", _overlayResolutionRatio);
-    //conf.get("cascade_draping", useCascadeDraping());
     conf.get("draping_render_bin_number", _drapingRenderBinNumber);
     conf.get("screen_space_error", _screenSpaceError);
-
 
     _terrain = TerrainNode::create(runtime(), conf);
     addChild(_terrain);
@@ -293,19 +279,13 @@ MapNode::getConfig() const
 {
     Config conf("map");
 
-    //conf.set("proxy", _proxySettings);
     conf.set("lighting", _enableLighting);
     conf.set("overlay_blending", _overlayBlending);
     conf.set("overlay_texture_size", _overlayTextureSize);
     conf.set("overlay_mipmapping", _overlayMipMapping);
     conf.set("overlay_resolution_ratio", _overlayResolutionRatio);
-    //conf.set("cascade_draping", _useCascadeDraping);
     conf.set("draping_render_bin_number", _drapingRenderBinNumber);
     conf.set("screen_space_error", _screenSpaceError);
-
-    //if (terrain().isSet() && !terrain()->empty())
-    //    conf.set("terrain", terrain()->getConfig());
-
 
     // all map layers
     auto layers = _map->getLayers<Layer>();
@@ -352,7 +332,7 @@ MapNode::open()
 
     // Set the global proxy settings
     // TODO: this should probably happen elsewhere, like in the registry?
-    //if ( options().proxySettings().isSet() )
+    //if ( options().proxySettings().has_value() )
     //{
     //    HTTPClient::setProxySettings( options().proxySettings().get() );
     //}
@@ -383,7 +363,7 @@ MapNode::open()
     _mapCallback->invokeOnLayerAdded(_map.get());
 
     // initialize terrain-level lighting:
-    if ( options().terrain()->enableLighting().isSet() )
+    if ( options().terrain()->enableLighting().has_value() )
     {
         GLUtils::setLighting(
             _terrainGroup->getOrCreateStateSet(),
@@ -416,26 +396,26 @@ MapNode::open()
 
         const char* envOverlayTextureSize = ::getenv("OSGEARTH_OVERLAY_TEXTURE_SIZE");
 
-        if ( options().overlayBlending().isSet() )
+        if ( options().overlayBlending().has_value() )
             draping->setOverlayBlending( options().overlayBlending().get() );
 
         if ( envOverlayTextureSize )
             draping->setTextureSize( as<int>(envOverlayTextureSize, 1024) );
 
-        else if ( options().overlayTextureSize().isSet() )
+        else if ( options().overlayTextureSize().has_value() )
             draping->setTextureSize( options().overlayTextureSize().get() );
 
-        if ( options().overlayMipMapping().isSet() )
+        if ( options().overlayMipMapping().has_value() )
             draping->setMipMapping( options().overlayMipMapping().get() );
 
-        if ( options().overlayResolutionRatio().isSet() )
+        if ( options().overlayResolutionRatio().has_value() )
             draping->setResolutionRatio( options().overlayResolutionRatio().get() );
 
         draping->reestablish( _terrainEngine );
         overlayDecorator->addTechnique( draping );
         _drapingManager = draping->getDrapingManager();
 
-        if ( options().drapingRenderBinNumber().isSet() )
+        if ( options().drapingRenderBinNumber().has_value() )
             _drapingManager->setRenderBinNumber( options().drapingRenderBinNumber().get() );
 
         overlayDecorator->addChild(_terrainEngine);
@@ -448,7 +428,7 @@ MapNode::open()
 
     stateset->addUniform(_sseU.get());
 
-    if ( options().enableLighting().isSet() )
+    if ( options().enableLighting().has_value() )
     {
         setEnableLighting(options().enableLighting().get());
     }

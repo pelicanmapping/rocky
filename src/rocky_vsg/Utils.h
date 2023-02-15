@@ -63,7 +63,6 @@ namespace ROCKY_NAMESPACE
 
     namespace util
     {
-        // adapted from vsg
         template<typename T>
         vsg::ref_ptr<vsg::Data> move(shared_ptr<Image> image, VkFormat format)
         {
@@ -101,7 +100,8 @@ namespace ROCKY_NAMESPACE
             return vsg_data;
         }
 
-        // adapted from vsg
+        //! Moves a rocky Image object into a VSG Data object.
+        //! The source Image is cleared in the process.
         inline vsg::ref_ptr<vsg::Data> moveImageData(shared_ptr<Image> image)
         {
             if (!image) return { };
@@ -150,7 +150,7 @@ namespace ROCKY_NAMESPACE
             return data;
         }
 
-        // conver a vsg::Data structure to an Image if possible
+        // Convert a vsg::Data structure to an Image if possible
         inline Result<shared_ptr<Image>> makeImageFromVSG(vsg::ref_ptr<vsg::Data> data)
         {
             if (!data)
@@ -191,14 +191,17 @@ namespace ROCKY_NAMESPACE
         }
 
         /**
-        * PromiseOperation combines a VSG operation with the Promise/Future
-        * construct for asynchronous operations.
-        * Usage:
+        * PromiseOperation combines a VSG operation with the Promise/Future construct
+        * so that a VSG operation can return a future result.
+        * 
+        * Example: say you want to run something in VSG's update operations queue and
+        * get the result when it's done:
+        * 
         *   auto op = PromiseOperation<bool>::create();
-        *   auto future_result = op->future();
-        *   some_vsg_queue->add(op);
-        *   ... later ...
-        *   auto result = future_result.get();
+        *   auto result = op->future();
+        *   vsg_viewer->updateOperations->add(op);
+        *   ... later, maybe during the next frame ...
+        *   auto result = result.get();
         */
         template<class T>
         struct PromiseOperation : public vsg::Operation

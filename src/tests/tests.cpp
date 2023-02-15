@@ -68,8 +68,23 @@ TEST_CASE("Log")
     Log::warn() << "I am a warn-level log message." << std::endl;
 }
 
-TEST_CASE("Math")
+TEST_CASE("Internals")
+{
+    optional<int> value_with_no_init;
+    CHECK(value_with_no_init.has_value() == false);
+    value_with_no_init = 123;
+    CHECK(value_with_no_init.has_value() == true);
 
+    optional<int> value_with_brace_init{ 123 };
+    CHECK(value_with_brace_init.has_value() == false);
+    CHECK(value_with_brace_init == 123);
+
+    optional<int> value_with_equals_init = 123;
+    CHECK(value_with_equals_init.has_value() == false);
+    CHECK(value_with_equals_init == 123);
+}
+
+TEST_CASE("Math")
 {
     CHECK(is_identity(fmat4(1)));
     CHECK(!is_identity(fmat4()));

@@ -14,39 +14,11 @@
 
 namespace ROCKY_NAMESPACE
 {
-    //struct TileLayerCallback : public VisibleLayerCallback
-    //{
-    //    typedef void(TileLayerCallback::*MethodPtr)(class TileLayer*);
-    //};
-
     /**
      * A layer that comprises the terrain skin (image or elevation layer)
      */
     class ROCKY_EXPORT TileLayer : public Inherit<VisibleLayer, TileLayer>
     {
-    //public: // serialization
-    //    class ROCKY_EXPORT Options : public VisibleLayer::Options {
-    //    public:
-    //        ROCKY_LayerOptions(Options, VisibleLayer::Options);
-    //        ROCKY_OPTION(unsigned, minLevel);
-    //        ROCKY_OPTION(double, minResolution);
-    //        ROCKY_OPTION(unsigned, maxLevel);
-    //        ROCKY_OPTION(double, maxResolution);
-    //        ROCKY_OPTION(unsigned, maxDataLevel);
-    //        ROCKY_OPTION(unsigned, tileSize);
-    //        ROCKY_OPTION(float, noDataValue);
-    //        ROCKY_OPTION(float, minValidValue);
-    //        ROCKY_OPTION(float, maxValidValue);
-    //        ROCKY_OPTION(bool, upsample);
-    //        ROCKY_OPTION(ProfileOptions, profile);
-    //        virtual Config getConfig() const;
-    //    private:
-    //        void fromConfig( const Config& conf );
-    //    };
-
-    //public:
-    //    ROCKY_Layer_Abstract(TileLayer, Options);
-
     public:
 
         //! Minimum of detail for which this layer should generate data.
@@ -81,23 +53,6 @@ namespace ROCKY_NAMESPACE
         //! Number of samples in each dimension.
         void setTileSize(unsigned value);
         const optional<unsigned>& tileSize() const;
-
-#if 0
-        //! Value to treat as a "no data" marker.
-        void setNoDataValue(float value);
-        void resetNoDataValue();
-        virtual float getNoDataValue() const;
-
-        //! Treat any value less than this as a "no data" marker.
-        void setMinValidValue(float value);
-        void resetMinValidValue();
-        virtual float getMinValidValue() const;
-
-        //! Treat any value greater than this as a "no data" marker.
-        void setMaxValidValue(float value);
-        void resetMaxValidValue();
-        virtual float getMaxValidValue() const;
-#endif
 
         //! DTOR
         virtual ~TileLayer();
@@ -266,18 +221,14 @@ namespace ROCKY_NAMESPACE
         // cache key for metadata
         std::string getMetadataKey(const Profile&) const;
 
-        optional<unsigned> _minLevel;
+        optional<unsigned> _minLevel = 0;
+        optional<unsigned> _maxLevel = 23;
         optional<double> _minResolution;
-        optional<unsigned> _maxLevel;
         optional<double> _maxResolution;
-        optional<unsigned> _maxDataLevel;
-        optional<unsigned> _tileSize;
-        //optional<float> _noDataValue;
-        //optional<float> _minValidValue;
-        //optional<float> _maxValidValue;
-        optional<bool> _upsample;
+        optional<unsigned> _maxDataLevel = 99;
+        optional<unsigned> _tileSize = 256;
+        optional<bool> _upsample = false;
 
-        //osg::ref_ptr<MemCache> _memCache;
         bool _writingRequested;
 
         // profile to use

@@ -499,7 +499,7 @@ void
 job_scheduler::shutdownAll()
 {
     std::scoped_lock lock(_schedulers_mutex);
-    Log::info() << LC << "Shutting down all job schedulers." << std::endl;
+    //Log::info() << LC << "Shutting down all job schedulers." << std::endl;
     _schedulers.clear();
 }
 

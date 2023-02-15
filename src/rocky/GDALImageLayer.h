@@ -47,23 +47,6 @@ namespace ROCKY_NAMESPACE
             bool _ownsDataset;
         };
 
-        // GDAL-specific serialization data to be incorpoated by the LayerOptions below
-        class ROCKY_EXPORT Options
-        {
-        public:
-            Options() { }
-            optional<URI> url;
-            optional<std::string> connection;
-            optional<unsigned> subDataSet;
-            optional<Image::Interpolation> interpolation;
-            optional<bool> useVRT;
-            optional<bool> coverageUsesPaletteIndex;
-            optional<bool> singleThreaded;
-
-            void readFrom(const Config& conf);
-            void writeTo(Config& conf) const;
-        };
-
         /**
          * Driver for reading raster data using GDAL.
          * It is rarely necessary to use this object directly; use a
@@ -141,9 +124,7 @@ namespace ROCKY_NAMESPACE
             GeoExtent _extents;
             Box _bounds;
             Profile _profile;
-            //Options _gdalOptions;
             const GDALImageLayer* _layer;
-            //const Options& gdalOptions() const { return _gdalOptions; }
             shared_ptr<GDAL::ExternalDataset> _externalDataset;
             std::string _name;
             std::thread::id _threadId;
@@ -228,60 +209,16 @@ namespace ROCKY_NAMESPACE
         //! Called by the constructors
         void construct(const Config&);
 
-        optional<URI> _uri;
-        optional<std::string> _connection;
-        optional<unsigned> _subDataSet;
-        optional<Image::Interpolation> _interpolation;
-        optional<bool> _useVRT;
-        optional<bool> _coverageUsesPaletteIndex;
-        optional<bool> _singleThreaded;
+        optional<URI> _uri = { };
+        optional<std::string> _connection = { };
+        optional<unsigned> _subDataSet = 0;
+        optional<Image::Interpolation> _interpolation = Image::AVERAGE;
+        optional<bool> _useVRT = false;
+        optional<bool> _coverageUsesPaletteIndex = true;
+        optional<bool> _singleThreaded = false;
 
         mutable util::ThreadLocal<GDAL::Driver::Ptr> _drivers;
         friend class GDAL::Driver;
     };
-
-
-#if 0
-    //! Elevation layer connected to a GDAL facility
-    class ROCKY_EXPORT GDALElevationLayer :
-        public Inherit<ElevationLayer, GDALElevationLayer>,
-        public GDAL::LayerBase
-    {
-    //public: 
-    //    class ROCKY_EXPORT Options : public ElevationLayer::Options, public GDAL::Options {
-    //    public:
-    //        ROCKY_LayerOptions(Options, ElevationLayer::Options);
-    //        virtual Config getConfig() const;
-    //    private:
-    //        void fromConfig(const Config&);
-    //    };
-
-    public:
-        GDALElevationLayer();
-
-        GDALElevationLayer(const Config& conf);
-
-
-        virtual Config getConfig() const override;
-
-    public: // Layer
-
-        //! Establishes a connection to the repository
-        virtual Status openImplementation(const IOOptions&) override;
-
-        //! Closes down any GDAL connections
-        virtual Status closeImplementation() override;
-
-        //! Gets a heightfield for the given tile key
-        virtual Result<GeoHeightfield> createHeightfieldImplementation(
-            const TileKey& key,
-            const IOOptions& io) const override;
-
-    private:
-
-        //! Called by the constructor
-        void construct(const Config&);
-    };
-#endif
 
 } // namespace ROCKY_NAMESPACE
