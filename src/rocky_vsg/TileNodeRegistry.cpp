@@ -317,10 +317,13 @@ TileNodeRegistry::requestLoadChildren(
     if (!parent->childrenLoader.idle())
         return;
 
+    vsg::observer_ptr<TerrainTileNode> weak_parent(parent);
+
     // function that will create all 4 children and compile them
-    auto create_children = [terrain, parent](Cancelable& p)
+    auto create_children = [terrain, weak_parent](Cancelable& p)
     {
         vsg::ref_ptr<vsg::Node> result;
+        auto parent = weak_parent.ref_ptr();
         if (parent)
         {
             auto quad = vsg::QuadGroup::create();
@@ -350,16 +353,17 @@ TileNodeRegistry::requestLoadChildren(
     };
 
     // a callback that will return the loading priority of a tile
-    auto priority_func = [parent]() -> float
+    auto priority_func = [weak_parent]() -> float
     {
-        return parent ? -(sqrt(parent->lastTraversalRange) * parent->key.levelOfDetail()) : 0.0f;
+        auto tile = weak_parent.ref_ptr();
+        return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
     };
 
     parent->childrenLoader = terrain->runtime.compileAndAddChild(
         parent,
         create_children,
         {
-            "terrain.childLoader",
+            "create child " + parent->key.str(),
             priority_func,
             util::job_scheduler::get(terrain->loadSchedulerName),
             nullptr
@@ -403,20 +407,17 @@ TileNodeRegistry::requestLoadData(
     };
 
     // a callback that will return the loading priority of a tile
-    //vsg::observer_ptr<TerrainTileNode> tile_weak(tile);
-    //auto priority_func = [tile_weak]() -> float
-    //{
-    //    vsg::ref_ptr<TerrainTileNode> tile = tile_weak.ref_ptr();
-    //    return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
-    //};
-    auto priority_func = [tile]() -> float
+    // we must use a WEAK pointer to allow job cancelation to work
+    vsg::observer_ptr<TerrainTileNode> tile_weak(tile);
+    auto priority_func = [tile_weak]() -> float
     {
+        vsg::ref_ptr<TerrainTileNode> tile = tile_weak.ref_ptr();
         return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
     };
 
     tile->dataLoader = util::job::dispatch<TerrainTileModel>(
        load, {
-            "terrain.dataLoader",
+            "load data " + key.str(),
             priority_func,
             util::job_scheduler::get(terrain->loadSchedulerName),
             nullptr

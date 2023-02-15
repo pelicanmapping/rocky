@@ -524,6 +524,9 @@ namespace ROCKY_NAMESPACE { namespace util
         {
             Future<T> future = promise.future();
 
+            // This works, but you end up with two instances of the same Promise<T>
+            // (in this delegate AND in the caller) and tha prevents RAII cancelation
+            // from working. TODO FIXME.
             job_scheduler::Delegate delegate = [task, promise]() mutable
             {
                 bool good = !promise.abandoned();

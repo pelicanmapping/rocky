@@ -677,6 +677,7 @@ job_scheduler::run()
             else
             {
                 _metrics->canceled++;
+                //Log::info() << "Job " << next._job.name << " canceled" << std::endl;
             }
 
             // release the group semaphore if necessary

@@ -117,11 +117,17 @@ RuntimeContext::compileAndAddChild(vsg::Group* parent, NodeFactory factory, cons
     // in the asynchronous function. Secondly, we have to add the node to the
     // scene graph; this happens in VSG's update operations queue in some future
     // frame.
-    // 
+
     // In order to return a future to the entire process, we will make our own
     // Promise and pass it along to both the async part and then on to the sync
     // update part. That way the user will be waiting on the final result of the
     // scene graph merge.
+
+    // TODO
+    // WARNING. These jobs cannot cancel! Because the Promise object is held in
+    // both the async_create_and_add_node lambda, AND in the job delegate lambda,
+    // there are two refs to the shared future container and this prevents 
+    // cancelation. Need to fix that.
 
     util::Promise<bool> promise;
     auto& runtime = *this;
