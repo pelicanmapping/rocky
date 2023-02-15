@@ -567,12 +567,12 @@ MapManipulator::configureDefaultSettings()
     options.add(OPTION_SCALE_X, 9.0);
     options.add(OPTION_SCALE_Y, 9.0);
 
-    _settings->bindMouse(ACTION_PAN, MOUSE_LEFT_BUTTON);
+    _settings->bindMouse(ACTION_PAN, MOUSE_LEFT_BUTTON, 0L);
     _settings->bindMouse(ACTION_PAN, MOUSE_LEFT_BUTTON, vsg::MODKEY_Control, options);
 
     // rotate with either the middle button or the left+right buttons:
-    _settings->bindMouse(ACTION_ROTATE, MOUSE_MIDDLE_BUTTON);
-    _settings->bindMouse(ACTION_ROTATE, MOUSE_LEFT_BUTTON | MOUSE_RIGHT_BUTTON);
+    _settings->bindMouse(ACTION_ROTATE, MOUSE_MIDDLE_BUTTON, 0L);
+    _settings->bindMouse(ACTION_ROTATE, MOUSE_LEFT_BUTTON | MOUSE_RIGHT_BUTTON, 0L);
     _settings->bindMouse(ACTION_ROTATE, MOUSE_MIDDLE_BUTTON, vsg::MODKEY_Control, options);
     _settings->bindMouse(ACTION_ROTATE, MOUSE_LEFT_BUTTON | MOUSE_RIGHT_BUTTON, vsg::MODKEY_Control, options);
 
@@ -1696,7 +1696,7 @@ MapManipulator::rotate(double dx, double dy)
 {
     // clamp the local pitch delta; never allow the pitch to hit -90.
     double minp = deg2rad(std::min(_settings->getMinPitch(), -89.9));
-    double maxp = deg2rad(std::max(_settings->getMaxPitch(), 89.9));
+    double maxp = deg2rad(std::max(_settings->getMaxPitch(), -0.1));
 
     // clamp pitch range:
     double oldPitch;

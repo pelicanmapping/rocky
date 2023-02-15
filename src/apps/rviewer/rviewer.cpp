@@ -139,7 +139,7 @@ int main(int argc, char** argv)
     vsg_scene->addChild(mapNode);
 
     // main camera
-    double nearFarRatio = 0.0005;
+    double nearFarRatio = 0.00001;
     double R = mapNode->mapSRS().ellipsoid().semiMajorAxis();
 
     auto perspective = vsg::Perspective::create(
