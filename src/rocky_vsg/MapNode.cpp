@@ -1076,5 +1076,7 @@ MapNode::accept(vsg::RecordTraversal& rv) const
         horizon->setEye(to_glm(eye));
     }
 
+    rv.setValue("worldsrs", worldSRS());
+
     Inherit::accept(rv);
 }
