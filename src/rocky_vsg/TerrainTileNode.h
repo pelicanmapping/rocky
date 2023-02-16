@@ -11,6 +11,7 @@
 #include <rocky/Threading.h>
 #include <rocky/TileKey.h>
 #include <rocky/Image.h>
+#include <rocky/TerrainTileModel.h>
 
 #include <vsg/nodes/QuadGroup.h>
 #include <vsg/nodes/CullGroup.h>
@@ -24,7 +25,6 @@ namespace ROCKY_NAMESPACE
 {
     class CreateTileManifest;
     class SurfaceNode;
-    class TerrainTileModel;
     class TerrainTileNode;
     class TerrainContext;
     class TerrainSettings;
@@ -102,13 +102,9 @@ namespace ROCKY_NAMESPACE
         unsigned numLODs;
         TerrainTileRenderModel renderModel;
         
-        //vsg::ref_ptr<TerrainTileNode> parent;
-        //vsg::observer_ptr<TerrainTileNode> parent;
         vsg::ref_ptr<SurfaceNode> surface;
         vsg::ref_ptr<vsg::StateGroup> stategroup;
         
-        //mutable util::Future<vsg::ref_ptr<vsg::Group>> childrenCreator;
-        //mutable util::Future<bool> childrenMerger;
         mutable util::Future<bool> childrenLoader;
         mutable util::Future<TerrainTileModel> dataLoader;
         mutable util::Future<bool> dataMerger;
@@ -140,11 +136,6 @@ namespace ROCKY_NAMESPACE
         void notifyOfArrival(
             TerrainTileNode* that,
             shared_ptr<TerrainContext> terrain);
-
-        /** Returns the tile's parent; convenience function */
-        //inline vsg::ref_ptr<TerrainTileNode> parentTile() const {
-        //    return parent.ref_ptr();
-        //}
 
         /** Elevation data for this node along with its scale/bias matrix; needed for bounding box */
         void setElevation(

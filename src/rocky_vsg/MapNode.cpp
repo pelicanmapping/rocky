@@ -265,7 +265,7 @@ MapNode::construct(const Config& conf)
     _readyForUpdate = true;
 
     // Fire it up
-    //_worldSRS = SRS::PLATE_CARREE; // testing
+    //_worldSRS = SRS::SPHERICAL_MERCATOR; // testing
     Status s = _terrain->setMap(_map, worldSRS());
     
     if (s.failed())

@@ -6,6 +6,7 @@
 #pragma once
 
 #include <rocky_vsg/Common.h>
+#include <rocky_vsg/ViewLocal.h>
 #include <rocky/GeoPoint.h>
 #include <vsg/nodes/Group.h>
 #include <vsg/nodes/Transform.h>
@@ -37,13 +38,12 @@ namespace ROCKY_NAMESPACE
 
         GeoPoint _position;
 
-        struct ViewDependentData {
+        struct Data {
             bool dirty = true;
             GeoPoint worldPos;
             vsg::dmat4 matrix;
         };
-        mutable std::vector<ViewDependentData> _vdd;
-        mutable std::mutex _mutex;
+        util::ViewLocal<Data> _viewlocal;
 
     };
 

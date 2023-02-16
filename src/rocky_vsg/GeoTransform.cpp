@@ -28,45 +28,36 @@ GeoTransform::setPosition(const GeoPoint& position)
         _position = position;
 
         // do we need to mutex this?
-        for (auto& vdd : _vdd)
-            vdd.dirty = true;
+        for (auto& view : _viewlocal)
+            view.dirty = true;
     }
 }
 
 void
 GeoTransform::accept(vsg::RecordTraversal& rv) const
 {
-    // grow the VDD if necessary.
-    auto viewID = rv.getState()->_commandBuffer->viewID;
-    if (viewID >= _vdd.size())
-    {
-        std::scoped_lock lock(_mutex);
-        if (viewID >= _vdd.size())
-        {
-            _vdd.resize(viewID + 1);
-        }
-    }
+    // get the view-local data:
+    auto& view = _viewlocal[rv.getState()->_commandBuffer->viewID];
 
-    auto& vdd = _vdd[viewID];
-
-    // TODO: we will have to do this per-camera.
-    if (vdd.dirty)
+    if (view.dirty)
     {
         SRS worldSRS;
         if (rv.getValue("worldsrs", worldSRS))
         {
-            if (_position.transform(worldSRS, vdd.worldPos))
+            if (_position.transform(worldSRS, view.worldPos))
             {
-                vdd.matrix = to_vsg(worldSRS.localToWorldMatrix(vdd.worldPos.to_dvec3()));
+                view.matrix = to_vsg(worldSRS.localToWorldMatrix(view.worldPos.to_dvec3()));
             }
         }
 
-        vdd.dirty = false;
+        view.dirty = false;
     }
+    
+    // replicates RecordTraversal::accept(MatrixTransform&):
 
     auto state = rv.getState();
 
-    state->modelviewMatrixStack.push(state->modelviewMatrixStack.top() * vdd.matrix);
+    state->modelviewMatrixStack.push(state->modelviewMatrixStack.top() * view.matrix);
     state->dirty = true;
 
     state->pushFrustum();

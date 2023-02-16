@@ -123,12 +123,6 @@ RuntimeContext::compileAndAddChild(vsg::Group* parent, NodeFactory factory, cons
     // update part. That way the user will be waiting on the final result of the
     // scene graph merge.
 
-    // TODO
-    // WARNING. These jobs cannot cancel! Because the Promise object is held in
-    // both the async_create_and_add_node lambda, AND in the job delegate lambda,
-    // there are two refs to the shared future container and this prevents 
-    // cancelation. Need to fix that.
-
     util::Promise<bool> promise;
     auto& runtime = *this;
     

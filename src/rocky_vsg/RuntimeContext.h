@@ -42,9 +42,6 @@ namespace ROCKY_NAMESPACE
         //! can safely edit the scene graph.
         std::function<vsg::UpdateOperations*()> updates;
 
-        //! Pool of threads used to load terrain data
-        //vsg::ref_ptr<vsg::OperationThreads> loaders;
-
         //! VSG state sharing
         vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
 

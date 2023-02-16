@@ -1567,6 +1567,8 @@ MapManipulator::isMouseClick() const
 bool
 MapManipulator::recalculateCenterFromLookVector()
 {
+    return true;
+
     vsg::LookAt lookat;
     lookat.set(_camera->viewMatrix->inverse());
     auto look = vsg::normalize(lookat.center - lookat.eye);
