@@ -1567,8 +1567,6 @@ MapManipulator::isMouseClick() const
 bool
 MapManipulator::recalculateCenterFromLookVector()
 {
-    return true;
-
     vsg::LookAt lookat;
     lookat.set(_camera->viewMatrix->inverse());
     auto look = vsg::normalize(lookat.center - lookat.eye);
@@ -1613,7 +1611,7 @@ MapManipulator::recalculateCenterFromLookVector()
 #if 0
         setCenter(i);
 #else
-        // keep the existing center, but 
+        // keep the existing center, but change its length
         double len = vsg::length(intersection);
         _state.center = vsg::normalize(_state.center) * len;
 #endif

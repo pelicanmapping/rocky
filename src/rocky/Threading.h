@@ -16,6 +16,7 @@
 #include <thread>
 #include <type_traits>
 #include <mutex>
+#include <chrono>
 
 // to include the file and line as the mutex name
 #define ROCKY_MUTEX_NAME __FILE__ ":" ROCKY_STRINGIFY(__LINE__)
@@ -55,29 +56,58 @@ namespace ROCKY_NAMESPACE { namespace util
     {
     public:
         //! Construct a new event
-        Event();
+        Event() : _set(false) { }
 
         //! DTOR
-        ~Event();
+        ~Event() {
+            _set = false;
+            for (int i = 0; i < 255; ++i)  // workaround buggy broadcast
+                _cond.notify_all();
+        }
 
         //! Block until the event is set, then return true.
-        bool wait();
+        inline bool wait() {
+            while (!_set) {
+                std::unique_lock<std::mutex> lock(_m);
+                if (!_set)
+                    _cond.wait(lock);
+            }
+            return _set;
+        }
 
         //! Block until the event is set or the timout expires.
         //! Return true if the event has set, otherwise false.
-        bool wait(unsigned timeout_ms);
-
-        //! Like wait(), but resets the state and always returns true.
-        bool waitAndReset();
+        template<typename T>
+        inline bool wait(std::chrono::duration<T> timeout) {
+            if (!_set) {
+                std::unique_lock<std::mutex> lock(_m);
+                if (!_set)
+                    _cond.wait_for(lock, timeout);
+            }
+            return _set;
+        }
 
         //! Set the event state, causing any waiters to unblock.
-        void set();
+        inline void set() {
+            if (!_set) {
+                std::unique_lock<std::mutex> lock(_m);
+                if (!_set) {
+                    _set = true;
+                    _cond.notify_all();
+                }
+            }
+        }
 
         //! Reset (unset) the event state; new waiters will block until set() is called.
-        void reset();
+        inline void reset() {
+            std::unique_lock<std::mutex> lock(_m);
+            _set = false;
+        }
 
         //! Whether the event state is set (waiters will not block).
-        inline bool isSet() const { return _set; }
+        inline bool isSet() const {
+            return _set;
+        }
 
     protected:
         std::mutex _m; // do not use Mutex, we never want tracking
@@ -86,13 +116,14 @@ namespace ROCKY_NAMESPACE { namespace util
     };
 
     /**
-     * Future is the consumer-side interface to an asynchronous operation.
+     * Future holds the future result of an asynchronous operation.
      *
      * Usage:
-     *   Producer (usually an asynchronous function call) creates a Promise<T>
-     *   and immediately returns promise.getFuture(). The Consumer then performs other
-     *   work, and eventually (or immediately) checks isAvailable() for a result or
-     *   isAbandoned() for cancelation.
+     *   Producer (usually an asynchronous function call) creates a Future<T>
+     *   (the promise of a future result) and immediately returns it. The Consumer
+     *   then performs other work, and eventually (or immediately) checks available()
+     *   for a result or canceled() for cancelation. If availabile() is true,
+     *   Consumer called get() to fetch the valid result.
      */
     template<typename T>
     class Future : public Cancelable
@@ -103,20 +134,7 @@ namespace ROCKY_NAMESPACE { namespace util
         // objects originating from the same Promise
         struct Shared
         {
-            void set(const T& obj) { 
-                std::scoped_lock lock(_m);
-                _obj = obj;
-            }
-            void set(T&& obj) {
-                std::scoped_lock lock(_m);
-                _obj = std::move(obj);
-            }
-            const T& obj() const {
-                std::scoped_lock lock(_m);
-                return _obj;
-            }
             T _obj;
-            mutable std::mutex _m;
             mutable Event _ev;
         };
 
@@ -128,43 +146,37 @@ namespace ROCKY_NAMESPACE { namespace util
 
         Future(const Future& rhs) = default;
 
+        //! True is this Future is unused and not connected to any other Future
+        bool empty() const {
+            return !available() && _shared.use_count() == 1;
+        }
+
         //! True if the promise was resolved and a result if available.
         bool available() const {
             return _shared->_ev.isSet();
         }
 
-        //! True if the Promise that generated this Future no longer exists
-        //! and the Promise was never resolved; or if this Future was never
-        //! associated with a Promise in the first place.
-        bool abandoned() const {
-            return !available() && _shared.use_count() == 1;
-        }
-
-        //! True is this Future is unused or abandoned and contains no data.
-        bool idle() const {
-            return !available() && _shared.use_count() == 1;
-        }
-
-        //! True if a Promise exists, but has not yet been fulfilled.
+        //! True if a promise exists, but has not yet been resolved;
+        //! Presumably the asynchronous task is still working.
         bool working() const {
-            return !available() && !abandoned();
+            return !empty() && !available();
         }
 
-        //! Synonym for isAbandoned. (Canceleble interface)
+        //! Synonym for empty() - Cancelable interface
         bool canceled() const override {
-            return abandoned();
+            return empty();
         }
 
         //! Deference the result object. Make sure you check isAvailable()
         //! to check that the future was actually resolved; otherwise you
         //! will just get the default object.
         T get() const {
-            return _shared->obj();
+            return _shared->_obj;
         }
 
-        //! Alias for get()
+        //! Dereference this object to const pointer to the result.
         const T* operator -> () const {
-            return &(_shared->obj());
+            return &_shared->_obj;
         }
 
         //! Same as get(), but if the result is available will reset the
@@ -181,20 +193,17 @@ namespace ROCKY_NAMESPACE { namespace util
         //! then returns the result object.
         T join() const {
             while (
-                !abandoned() &&
-                !_shared->ev.wait(1u));
+                !empty() &&
+                !_shared->ev.wait(std::chrono::milliseconds(1)));
             return get();
         }
 
         //! Blocks until the result becomes available or the future is abandoned
         //! or a cancelation flag is set; then returns the result object.
         T join(const Cancelable& p) const {
-            while (
-                !available() &&
-                !abandoned() &&
-                !(p.canceled()))
+            while (working() && !p.canceled())
             {
-                _shared->_ev.wait(1u);
+                _shared->_ev.wait(std::chrono::milliseconds(1));
             }
             return get();
         }
@@ -209,6 +218,23 @@ namespace ROCKY_NAMESPACE { namespace util
             abandon();
         }
 
+        //! Resolve (fulfill) the promise with the provided result value.
+        void resolve(const T& value) {
+            _shared->_obj = value;
+            _shared->_ev.set();
+        }
+
+        //! Resolve (fulfill) the promise with an rvalue
+        void resolve(T&& value) {
+            _shared->_obj = std::move(value);
+            _shared->_ev.set();
+        }
+
+        //! Resolve (fulfill) the promise with a default result
+        void resolve() {
+            _shared->_ev.set();
+        }
+
         //! The number of objects, including this one, that
         //! reference the shared container. If this method
         //! returns 1, that means this is the only object with
@@ -219,59 +245,6 @@ namespace ROCKY_NAMESPACE { namespace util
 
     private:
         std::shared_ptr<Shared> _shared;
-        template<typename U> friend class Promise;
-    };
-
-    /**
-     * Promise is the producer-side interface to an asynchronous operation.
-     *
-     * Usage: The code that initiates an asychronous operation creates a Promise
-     *   object, dispatches the asynchronous code, and immediately returns
-     *   Promise.getFuture(). The caller can then call future.get() to block until
-     *   the result is available.
-     */
-    template<typename T>
-    class Promise : public Cancelable
-    {
-    public:
-        Promise() {
-            _future = std::make_shared<Future<T>>();
-        }
-
-        Promise(const Promise<T>& rhs) = default;
-
-        //! This promise's future result.
-        Future<T> future() const { return *_future; }
-
-        //! Resolve (fulfill) the promise with the provided result value.
-        void resolve(const T& value) {
-            _future->_shared->set(value);
-            _future->_shared->_ev.set();
-        }
-
-        //! Resolve (fulfill) the promise with a default result.
-        void resolve() {
-            _future->_shared->_ev.set();
-        }
-
-        //! True if the promise is resolved and the Future holds a valid result.
-        bool resolved() const {
-            return _future->_shared->_ev.isSet();
-        }
-
-        //! True is there are no Future objects waiting on this Promise.
-        bool abandoned() const {
-            return _future->_shared.use_count() == 1;
-        }
-
-        bool canceled() const override {
-            return abandoned();
-        }
-
-    private:
-        // shared so that copies made via the copy constructor will all
-        // share the same underlying future object and its container
-        std::shared_ptr<Future<T>> _future;
     };
 
     /**
@@ -283,7 +256,7 @@ namespace ROCKY_NAMESPACE { namespace util
     public:
         inline void lock(const T& key) {
             std::unique_lock lock(_m);
-            auto thread_id = std::this_thread::get_id(); // getCurrentThreadId();
+            auto thread_id = std::this_thread::get_id();
             for (;;) {
                 auto i = _keys.emplace(key, thread_id);
                 if (i.second)
@@ -461,7 +434,7 @@ namespace ROCKY_NAMESPACE { namespace util
      *   if (result.available()) {
      *       std::cout << "Answer = " << result.get() << std::endl;
      *   }
-     *   else if (result.abandoned()) {
+     *   else if (result.canceled()) {
      *       // task was canceled
      *   }
      * 
@@ -491,7 +464,7 @@ namespace ROCKY_NAMESPACE { namespace util
             std::function<T(Cancelable&)> task,
             const job& config = { })
         {
-            Promise<T> promise;
+            Future<T> promise;
             return dispatch(task, promise, config);
         }
 
@@ -502,14 +475,14 @@ namespace ROCKY_NAMESPACE { namespace util
         //! @return Future result of the async function call
         template<typename T> static inline Future<T> dispatch(
             std::function<T(Cancelable&)> task,
-            Promise<T> promise,
+            Future<T> promise,
             const job& config = { })
         {
-            Future<T> future = promise.future();
+            //Future<T> future = promise.future();
 
             job_scheduler::Delegate delegate = [task, promise]() mutable
             {
-                bool good = !promise.abandoned();
+                bool good = !promise.canceled();
                 if (good && task)
                     promise.resolve(task(promise));
                 return good;
@@ -520,7 +493,7 @@ namespace ROCKY_NAMESPACE { namespace util
             if (arena)
                 arena->dispatch(config, delegate);
 
-            return std::move(future);
+            return promise;// std::move(future);
         }
     };
 

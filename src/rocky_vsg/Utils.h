@@ -206,7 +206,7 @@ namespace ROCKY_NAMESPACE
         template<class T>
         struct PromiseOperation : public vsg::Operation
         {
-            util::Promise<T> _promise;
+            util::Future<T> _promise;
             std::function<T(Cancelable&)> _func;
 
             //! Static factory function
@@ -223,18 +223,18 @@ namespace ROCKY_NAMESPACE
             //! Construct a new promise operation with the function to execute
             //! @param promise User-supplied promise object to use
             //! @param func Function to execute
-            PromiseOperation(util::Promise<T> promise, std::function<T(Cancelable&)> func) :
+            PromiseOperation(util::Future<T> promise, std::function<T(Cancelable&)> func) :
                 _promise(promise),
                 _func(func) { }
 
             //! Return the future result assocaited with this operation
             util::Future<T> future() {
-                return _promise.future();
+                return _promise;
             }
 
             //! Runs the operation (don't call this directly)
             void run() override {
-                if (!_promise.abandoned())
+                if (!_promise.canceled())
                     _promise.resolve(_func(_promise));
                 else
                     _promise.resolve();

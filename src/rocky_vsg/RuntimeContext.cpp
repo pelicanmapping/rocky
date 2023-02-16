@@ -27,7 +27,7 @@ namespace
         vsg::ref_ptr<vsg::Node> _child;
 
         // promise that will be resolved after this operation runs
-        util::Promise<bool> _promise;
+        util::Future<bool> _promise;
            
         AddNodeAsync(
             const RuntimeContext& runtime,
@@ -123,7 +123,7 @@ RuntimeContext::compileAndAddChild(vsg::Group* parent, NodeFactory factory, cons
     // update part. That way the user will be waiting on the final result of the
     // scene graph merge.
 
-    util::Promise<bool> promise;
+    util::Future<bool> promise;
     auto& runtime = *this;
     
     auto async_create_and_add_node = [runtime, promise, parent, factory](Cancelable& c) -> bool
