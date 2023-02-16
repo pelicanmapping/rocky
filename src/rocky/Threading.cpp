@@ -258,81 +258,12 @@ unsigned rocky::util::getConcurrency()
     return value > 0 ? (unsigned)value : 4u;
 }
 
-//...................................................................
-
-Event::Event() :
-_set(false)
-{
-    //nop
-}
-
-Event::~Event()
-{
-    _set = false;
-    for(int i=0; i<255; ++i)  // workaround buggy broadcast
-        _cond.notify_all();
-}
-
-bool Event::wait()
-{
-    while(!_set)
-    {
-        std::unique_lock<std::mutex> lock(_m);
-        if (!_set)
-            _cond.wait(lock);
-    }
-    return _set;
-}
-
-bool Event::wait(unsigned timeout_ms)
-{
-    if (!_set)
-    {
-        std::unique_lock<std::mutex> lock(_m);
-        if (!_set) // double check
-        {
-            _cond.wait_for(lock, std::chrono::milliseconds(timeout_ms));
-        }
-    }
-    return _set;
-}
-
-bool Event::waitAndReset()
-{
-    std::unique_lock<std::mutex> lock(_m);
-    if (!_set)
-        _cond.wait(lock);
-    _set = false;
-    return true;
-}
-
-void Event::set()
-{
-    if (!_set)
-    {
-        std::unique_lock<std::mutex> lock(_m);
-        if (!_set) {
-            _set = true;
-            _cond.notify_all();
-        }
-    }
-}
-
-void Event::reset()
-{
-    std::lock_guard<std::mutex> lock(_m);
-    _set = false;
-}
-
-
 void
 rocky::util::setThreadName(const std::string& name)
 {
 #if (defined _WIN32 && defined _WIN32_WINNT_WIN10 && defined _WIN32_WINNT && _WIN32_WINNT >= _WIN32_WINNT_WIN10) || (defined __CYGWIN__)
     wchar_t buf[256];
     mbstowcs(buf, name.c_str(), 256);
-
-    //::SetThreadDescription(::GetCurrentThread(), buf);
 
     // Look up the address of the SetThreadDescription function rather than using it directly.
     typedef ::HRESULT(WINAPI* SetThreadDescription)(::HANDLE hThread, ::PCWSTR lpThreadDescription);
@@ -344,20 +275,24 @@ rocky::util::setThreadName(const std::string& name)
 
 #elif defined _GNU_SOURCE && !defined __EMSCRIPTEN__ && !defined __CYGWIN__
 
-    const auto sz = strlen( name.c_str() );
-    if( sz <= 15 )
+    const auto sz = strlen(name.c_str());
+    if (sz <= 15)
     {
-        pthread_setname_np( pthread_self(), name.c_str() );
+        pthread_setname_np(pthread_self(), name.c_str());
     }
     else
     {
         char buf[16];
-        memcpy( buf, name.c_str(), 15 );
+        memcpy(buf, name.c_str(), 15);
         buf[15] = '\0';
-        pthread_setname_np( pthread_self(), buf );
+        pthread_setname_np(pthread_self(), buf);
     }
 #endif
 }
+
+
+
+
 
 #undef LC
 #define LC "[Semaphore]"

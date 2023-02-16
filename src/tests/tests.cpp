@@ -68,7 +68,7 @@ TEST_CASE("Log")
     Log::warn() << "I am a warn-level log message." << std::endl;
 }
 
-TEST_CASE("Internals")
+TEST_CASE("Optional")
 {
     optional<int> value_with_no_init;
     CHECK(value_with_no_init.has_value() == false);
@@ -82,6 +82,27 @@ TEST_CASE("Internals")
     optional<int> value_with_equals_init = 123;
     CHECK(value_with_equals_init.has_value() == false);
     CHECK(value_with_equals_init == 123);
+}
+
+TEST_CASE("Threading")
+{
+    util::Future<int> f1;
+    CHECK(f1.empty() == true);
+    CHECK(f1.available() == false);
+
+    util::Future<int> f2;
+    CHECK(f2.empty() == true);
+    CHECK(f2.working() == false);
+
+    f2 = f1;
+    CHECK(f2.empty() == false);
+    CHECK(f2.working() == true);
+    CHECK(f2.available() == false);
+
+    f1.resolve(123);
+    CHECK(f2.empty() == false);
+    CHECK(f2.available() == true);
+    CHECK(f2.get() == 123);
 }
 
 TEST_CASE("Math")

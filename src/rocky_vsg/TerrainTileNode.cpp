@@ -218,7 +218,7 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
             // children do not exist or are out of range; use this tile's geometry
             children[0]->accept(rv);
 
-            if (childrenInRange && childrenLoader.idle())
+            if (childrenInRange && childrenLoader.empty())
             {
                 _needsChildren = true;
             }

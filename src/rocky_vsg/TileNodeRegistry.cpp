@@ -95,7 +95,7 @@ TileNodeRegistry::ping(TerrainTileNode* tile, bool parentHasData, vsg::RecordTra
         if (tileHasData && tile->_needsChildren)
             _loadChildren.push_back(tile->key);
 
-        if (parentHasData && tile->dataLoader.idle())
+        if (parentHasData && tile->dataLoader.empty())
             _loadData.push_back(tile->key);
     }
     else
@@ -104,13 +104,13 @@ TileNodeRegistry::ping(TerrainTileNode* tile, bool parentHasData, vsg::RecordTra
         //if (tile->_needsChildren)
         //    _needsChildren.push_back(tile->key);
 
-        //if (tile->dataLoader.idle())
+        //if (tile->dataLoader.empty())
         //    _needsLoad.push_back(tile->key);
     }
 
     // This will only queue one merge per frame, to prevent overloading
     // the (synchronous) update cycle in VSG.
-    if (tile->dataLoader.available() && tile->dataMerger.idle())
+    if (tile->dataLoader.available() && tile->dataMerger.empty())
         _mergeData.push_back(tile->key);
 
     if (tile->_needsUpdate)
@@ -314,7 +314,7 @@ TileNodeRegistry::requestLoadChildren(
     ROCKY_SOFT_ASSERT_AND_RETURN(parent, void());
 
     // make sure we're not already working on it
-    if (!parent->childrenLoader.idle())
+    if (!parent->childrenLoader.empty())
         return;
 
     vsg::observer_ptr<TerrainTileNode> weak_parent(parent);
