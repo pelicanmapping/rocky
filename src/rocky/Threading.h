@@ -97,13 +97,12 @@ namespace ROCKY_NAMESPACE { namespace util
     template<typename T>
     class Future : public Cancelable
     {
-    public:
-        using Callback = std::function<void(const T&)>;
-
     private:
-        // internal structure to track referenced to the result
-        struct Container {
-            Container() { }
+        // internal structure to track references to the result
+        // One instance of this is shared among all Promise and Future
+        // objects originating from the same Promise
+        struct Shared
+        {
             void set(const T& obj) { 
                 std::scoped_lock lock(_m);
                 _obj = obj;
@@ -118,30 +117,20 @@ namespace ROCKY_NAMESPACE { namespace util
             }
             T _obj;
             mutable std::mutex _m;
+            mutable Event _ev;
         };
 
     public:
         //! Blank CTOR
         Future() {
-            _ev = std::make_shared<Event>();
-            _shared = std::make_shared<Container>();
+            _shared = std::make_shared<Shared>();
         }
 
-        //! Copy CTOR
-        Future(const Future& rhs) :
-            _ev(rhs._ev),
-            _shared(rhs._shared) { }
-
-        //! Assignment
-        Future<T>& operator = (const Future<T>& rhs) {
-            _ev = rhs._ev;
-            _shared = rhs._shared;
-            return *this;
-        }
+        Future(const Future& rhs) = default;
 
         //! True if the promise was resolved and a result if available.
         bool available() const {
-            return _ev->isSet();
+            return _shared->_ev.isSet();
         }
 
         //! True if the Promise that generated this Future no longer exists
@@ -193,7 +182,7 @@ namespace ROCKY_NAMESPACE { namespace util
         T join() const {
             while (
                 !abandoned() &&
-                !_ev->wait(1u));
+                !_shared->ev.wait(1u));
             return get();
         }
 
@@ -205,15 +194,14 @@ namespace ROCKY_NAMESPACE { namespace util
                 !abandoned() &&
                 !(p.canceled()))
             {
-                _ev->wait(1u);
+                _shared->_ev.wait(1u);
             }
             return get();
         }
 
         //! Release reference to a promise, resetting this future to its default state
         void abandon() {
-            _shared.reset(new Container());
-            _ev.reset(new Event());
+            _shared.reset(new Shared());
         }
 
         //! synonym for abandon.
@@ -222,22 +210,15 @@ namespace ROCKY_NAMESPACE { namespace util
         }
 
         //! The number of objects, including this one, that
-        //! refernece the shared container. if this method
+        //! reference the shared container. If this method
         //! returns 1, that means this is the only object with
         //! access to the data. This method will never return zero.
         unsigned refs() const {
             return _shared.use_count();
         }
 
-        //! Function to execute upon a Promise resolving this Future.
-        void whenAvailable(const Callback& cb) {
-            _whenAvailable = cb;
-        }
-
     private:
-        std::shared_ptr<Event> _ev;
-        std::shared_ptr<Container> _shared;
-        Callback _whenAvailable;
+        std::shared_ptr<Shared> _shared;
         template<typename U> friend class Promise;
     };
 
@@ -253,34 +234,34 @@ namespace ROCKY_NAMESPACE { namespace util
     class Promise : public Cancelable
     {
     public:
-        Promise() { }
+        Promise() {
+            _future = std::make_shared<Future<T>>();
+        }
+
+        Promise(const Promise<T>& rhs) = default;
 
         //! This promise's future result.
-        Future<T> future() const { return _future; }
+        Future<T> future() const { return *_future; }
 
         //! Resolve (fulfill) the promise with the provided result value.
         void resolve(const T& value) {
-            _future._shared->set(value);
-            _future._ev->set();
-            if (_future._whenAvailable)
-                _future._whenAvailable(_future.get());
+            _future->_shared->set(value);
+            _future->_shared->_ev.set();
         }
 
         //! Resolve (fulfill) the promise with a default result.
         void resolve() {
-            _future._ev->set();
-            if (_future._whenAvailable)
-                _future._whenAvailable(_future.get());
+            _future->_shared->_ev.set();
         }
 
         //! True if the promise is resolved and the Future holds a valid result.
         bool resolved() const {
-            return _future._ev->isSet();
+            return _future->_shared->_ev.isSet();
         }
 
         //! True is there are no Future objects waiting on this Promise.
         bool abandoned() const {
-            return _future._shared.use_count() == 1;
+            return _future->_shared.use_count() == 1;
         }
 
         bool canceled() const override {
@@ -288,7 +269,9 @@ namespace ROCKY_NAMESPACE { namespace util
         }
 
     private:
-        Future<T> _future;
+        // shared so that copies made via the copy constructor will all
+        // share the same underlying future object and its container
+        std::shared_ptr<Future<T>> _future;
     };
 
     /**
@@ -524,9 +507,6 @@ namespace ROCKY_NAMESPACE { namespace util
         {
             Future<T> future = promise.future();
 
-            // This works, but you end up with two instances of the same Promise<T>
-            // (in this delegate AND in the caller) and tha prevents RAII cancelation
-            // from working. TODO FIXME.
             job_scheduler::Delegate delegate = [task, promise]() mutable
             {
                 bool good = !promise.abandoned();
@@ -534,9 +514,12 @@ namespace ROCKY_NAMESPACE { namespace util
                     promise.resolve(task(promise));
                 return good;
             };
+
             job_scheduler* arena = config.scheduler ? config.scheduler : job_scheduler::get("");
+
             if (arena)
                 arena->dispatch(config, delegate);
+
             return std::move(future);
         }
     };
