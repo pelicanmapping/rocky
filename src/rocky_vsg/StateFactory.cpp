@@ -27,6 +27,12 @@
 #define TILE_BUFFER_NAME "terrain_tile"
 #define TILE_BUFFER_BINDING 13
 
+#define ATTR_VERTEX "in_vertex"
+#define ATTR_NORMAL "in_normal"
+#define ATTR_UV "in_uvw"
+#define ATTR_VERTEX_NEIGHBOR "in_vertex_neighbor"
+#define ATTR_NORMAL_NEIGHBOR "in_normal_neighbor"
+
 using namespace ROCKY_NAMESPACE;
 
 StateFactory::StateFactory()
@@ -186,11 +192,11 @@ StateFactory::createShaderSet() const
     shaderSet = vsg::ShaderSet::create(shaderStages);
 
     // "binding" (3rd param) must match "layout(location=X) in" in the vertex shader
-    shaderSet->addAttributeBinding("inVertex", "", 0, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
-    shaderSet->addAttributeBinding("inNormal", "", 1, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
-    shaderSet->addAttributeBinding("inUV", "", 2, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
-    shaderSet->addAttributeBinding("inNeighborVertex", "", 3, VK_FORMAT_R32G32B32A32_SFLOAT, vsg::vec3Array::create(1));
-    shaderSet->addAttributeBinding("inNeighborNormal", "", 4, VK_FORMAT_R32G32B32A32_SFLOAT, vsg::vec3Array::create(1));
+    shaderSet->addAttributeBinding(ATTR_VERTEX, "", 0, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
+    shaderSet->addAttributeBinding(ATTR_NORMAL, "", 1, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
+    shaderSet->addAttributeBinding(ATTR_UV, "", 2, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
+    shaderSet->addAttributeBinding(ATTR_VERTEX_NEIGHBOR, "", 3, VK_FORMAT_R32G32B32A32_SFLOAT, vsg::vec3Array::create(1));
+    shaderSet->addAttributeBinding(ATTR_NORMAL_NEIGHBOR, "", 4, VK_FORMAT_R32G32B32A32_SFLOAT, vsg::vec3Array::create(1));
     //shaderSet->addAttributeBinding("vsg_position", "VSG_INSTANCE_POSITIONS", 4, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
 
     // "binding" (4th param) must match "layout(location=X) uniform" in the shader
@@ -219,11 +225,11 @@ StateFactory::createPipelineConfig(vsg::SharedObjects* sharedObjects) const
     auto pipelineConfig = vsg::GraphicsPipelineConfig::create(shaderSet);
 
     // activate the arrays we intend to use
-    pipelineConfig->enableArray("inVertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    pipelineConfig->enableArray("inNormal", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    pipelineConfig->enableArray("inUV", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    pipelineConfig->enableArray("inNeighborVertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    pipelineConfig->enableArray("inNeighborNormal", VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    pipelineConfig->enableArray(ATTR_VERTEX, VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    pipelineConfig->enableArray(ATTR_NORMAL, VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    pipelineConfig->enableArray(ATTR_UV, VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    pipelineConfig->enableArray(ATTR_VERTEX_NEIGHBOR, VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    pipelineConfig->enableArray(ATTR_NORMAL_NEIGHBOR, VK_VERTEX_INPUT_RATE_VERTEX, 12);
 
     // wireframe rendering:
     //pipelineConfig->rasterizationState->polygonMode = VK_POLYGON_MODE_LINE;

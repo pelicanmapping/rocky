@@ -15,48 +15,6 @@ using namespace ROCKY_NAMESPACE::util;
 
 #define LC "[ElevationLayer] \"" << name().value() << "\" : "
 
-//------------------------------------------------------------------------
-
-#if 0
-Config
-ElevationLayer::Options::getConfig() const
-{
-    Config conf = TileLayer::Options::getConfig();
-    conf.set("vdatum", verticalDatum());
-    conf.set("offset", offset());
-    conf.set("nodata_policy", "default", _noDataPolicy, NODATA_INTERPOLATE);
-    conf.set("nodata_policy", "interpolate", _noDataPolicy, NODATA_INTERPOLATE);
-    conf.set("nodata_policy", "msl", _noDataPolicy, NODATA_MSL);
-    return conf;
-}
-
-void
-ElevationLayer::Options::fromConfig(const Config& conf)
-{
-    _offset.init(false);
-    _noDataPolicy.init(NODATA_INTERPOLATE);
-
-    conf.get("vdatum", verticalDatum());
-    conf.get("vsrs", verticalDatum());    // back compat
-    conf.get("offset", offset());
-    conf.get("nodata_policy", "default", _noDataPolicy, NODATA_INTERPOLATE);
-    conf.get("nodata_policy", "interpolate", _noDataPolicy, NODATA_INTERPOLATE);
-    conf.get("nodata_policy", "msl", _noDataPolicy, NODATA_MSL);
-
-    // ElevationLayers are special in that visible really maps to whether the layer is open or closed
-    // If a layer is marked as enabled (openAutomatically) but also marked as visible=false set
-    // openAutomatically to false to prevent the layer from being opened at startup.
-    // This prevents a deadlock b/c setVisible is called during the VisibleLayer openImplementation and it
-    // will call setVisible on the Layer there which will result in trying to close the layer while it's opening.
-    // There may be a better way to sync these up but will require a bit of rework.
-    if (openAutomatically() == true && visible() == false)
-    {
-        openAutomatically() = false;
-    }
-}
-#endif
-//------------------------------------------------------------------------
-
 namespace
 {
     // perform very basic sanity-check validation on a heightfield.
@@ -373,8 +331,6 @@ ElevationLayer::createHeightfield(
         return Result(GeoHeightfield::INVALID);
     }
 
-    //NetworkMonitor::ScopedRequestLayer layerRequest(getName());
-
     return createHeightfieldInKeyProfile(key, io);
 }
 
@@ -392,208 +348,55 @@ ElevationLayer::createHeightfieldInKeyProfile(
         return Result<GeoHeightfield>(Status::ResourceUnavailable, "Layer not open or initialize");
     }
 
-    ROCKY_TODO("cache, gate");
-
-#if 0
-    // Prevents more than one thread from creating the same object
-    // at the same time. This helps a lot with elevation data since
-    // the many queries cross tile boundaries (like calculating 
-    // normal maps)
-    ScopedGate<TileKey> gate(_sentry, key, [&]() {
-        return _memCache.valid();
-    });
-
-    // Check the memory cache first
-    bool fromMemCache = false;
-
-    // cache key combines the key with the full signature (incl vdatum)
-    // the cache key combines the Key and the horizontal profile.
-    std::string cacheKey = Cache::makeCacheKey(
-        Stringify() << key.str() << "-" << std::hex << key.profile().getHorizSignature(),
-        "elevation");
-    const CachePolicy& policy = getCacheSettings()->cachePolicy().get();
-
-    char memCacheKey[64];
-
-    // Try the L2 memory cache first:
-    if ( _memCache.valid() )
+    // Check that the key is legal (in valid LOD range, etc.)
+    if ( !isKeyInLegalRange(key) )
     {
-        sprintf(memCacheKey, "%d/%s/%s",
-            getRevision(),
-            key.str().c_str(),
-            key.profile().getHorizSignature().c_str());
-
-        CacheBin* bin = _memCache->getOrCreateDefaultBin();
-        ReadResult cacheResult = bin->readObject(memCacheKey, 0L);
-        if ( cacheResult.succeeded() )
-        {
-            result = GeoHeightfield(
-                static_cast<osg::Heightfield*>(cacheResult.releaseObject()),
-                key.extent());
-
-            fromMemCache = true;
-        }
-    }
-#endif
-    // Next try the main cache:
-    if ( !result.valid() )
-    {
-#if 0
-        // See if there's a persistent cache.
-        CacheBin* cacheBin = getCacheBin( key.profile() );
-
-        // validate the existance of a valid layer profile.
-        if ( !policy.isCacheOnly() && !profile() )
-        {
-            disable("Could not establish a valid profile.. did you set one?");
-            return GeoHeightfield::INVALID;
-        }
-
-        // Now attempt to read from the cache. Since the cached data is stored in the
-        // map profile, we can try this first.
-        bool fromCache = false;
-
-        osg::ref_ptr< osg::Heightfield > cachedHF;
-
-        if ( cacheBin && policy.isCacheReadable() )
-        {
-            ReadResult r = cacheBin->readObject(cacheKey, 0L);
-            if ( r.succeeded() )
-            {
-                bool expired = policy.isExpired(r.lastModifiedTime());
-                cachedHF = r.get<osg::Heightfield>();
-                if ( cachedHF && validateHeightfield(cachedHF.get()) )
-                {
-                    if (!expired)
-                    {
-                        hf = cachedHF;
-                        fromCache = true;
-                    }
-                }
-            }
-        }
-
-        // if we're cache-only, but didn't get data from the cache, fail silently.
-        if ( !hf.valid() && policy.isCacheOnly() )
-        {
-            return GeoHeightfield::INVALID;
-        }
-#endif
-        // If we didn't get anything from cache, time to create one:
-        if ( !hf )
-        {
-            // Check that the key is legal (in valid LOD range, etc.)
-            if ( !isKeyInLegalRange(key) )
-            {
-                return Result(GeoHeightfield::INVALID);
-            }
-
-            if (key.profile() == my_profile)
-            {
-                std::shared_lock L(layerMutex());
-                auto r = createHeightfieldImplementation(key, io);
-                if (r.status.failed())
-                    return r;
-                else
-                    result = r.value;
-            }
-            else
-            {
-                // If the profiles are different, use a compositing method to assemble the tile.
-                shared_ptr<Heightfield> hf;
-                assembleHeightfield(key, hf, io);
-                result = GeoHeightfield(hf, key.extent());
-            }
-
-            // Check for cancelation before writing to a cache
-            if (io.canceled())
-            {
-                return Result(GeoHeightfield::INVALID);
-            }
-
-            // The const_cast is safe here because we just created the
-            // heightfield from scratch...not from a cache.
-            hf = result.heightfield();
-
-            // validate it to make sure it's legal.
-            if (hf && !validateHeightfield(hf.get()))
-            {
-                return Result<GeoHeightfield>(Status::GeneralError, "Generated an illegal heightfield!");
-            }
-
-            // Pre-caching operations:
-            normalizeNoDataValues(hf.get());
-
-            // Should be good now
-#if 0
-            // If the result is good, we now have a heightfield but its vertical values
-            // are still relative to the source's vertical datum. Convert them.
-            if (hf && !key.extent().srs().isVertEquivalentTo(profile.srs().get()))
-            {
-                VerticalDatum::transform(
-                    profile.srs().getVerticalDatum().get(),    // from
-                    key.extent().srs().getVerticalDatum().get(),  // to
-                    key.extent(),
-                    hf);
-            }
-#endif
-
-#if 0
-            // Invoke user callbacks
-            if (result.valid())
-            {
-                invoke_onCreate(key, result);
-            }
-
-            // If we have a cacheable heightfield, and it didn't come from the cache
-            // itself, cache it now.
-            if ( hf.valid()    &&
-                 cacheBin      &&
-                 !fromCache    &&
-                 policy.isCacheWriteable() )
-            {
-                OE_PROFILING_ZONE_NAMED("cache write");
-                cacheBin->write(cacheKey, hf.get(), 0L);
-            }
-
-            // If we have an expired heightfield from the cache and were not able to create
-            // any new data, just return the cached data.
-            if (!hf.valid() && cachedHF.valid())
-            {
-                OE_DEBUG << LC << "Using cached but expired heightfield for " << key.str() << std::endl;
-                hf = cachedHF;
-            }
-#endif
-
-            // No luck on any path:
-            if (hf == nullptr)
-            {
-                return Result(GeoHeightfield::INVALID);
-            }
-        }
-
-        if (hf)
-        {
-            result = GeoHeightfield(hf, key.extent());
-        }
+        return Result(GeoHeightfield::INVALID);
     }
 
-    // Check for cancelation before writing to a cache:
+    if (key.profile() == my_profile)
+    {
+        std::shared_lock L(layerMutex());
+        auto r = createHeightfieldImplementation(key, io);
+        if (r.status.failed())
+            return r;
+        else
+            result = r.value;
+    }
+    else
+    {
+        // If the profiles are different, use a compositing method to assemble the tile.
+        shared_ptr<Heightfield> hf;
+        assembleHeightfield(key, hf, io);
+        result = GeoHeightfield(hf, key.extent());
+    }
+
+    // Check for cancelation before writing to a cache
     if (io.canceled())
     {
         return Result(GeoHeightfield::INVALID);
     }
 
-#if 0
-    // write to mem cache if needed:
-    if ( result.valid() && !fromMemCache && _memCache.valid() )
-    {
-        CacheBin* bin = _memCache->getOrCreateDefaultBin();
-        bin->write(memCacheKey, result.getHeightfield(), 0L);
-    }
-#endif
+    // The const_cast is safe here because we just created the
+    // heightfield from scratch...not from a cache.
+    hf = result.heightfield();
 
-    return Result(result);
+    // validate it to make sure it's legal.
+    if (hf && !validateHeightfield(hf.get()))
+    {
+        return Result<GeoHeightfield>(Status::GeneralError, "Generated an illegal heightfield!");
+    }
+
+    // Pre-caching operations:
+    normalizeNoDataValues(hf.get());
+
+    // No luck on any path:
+    if (hf == nullptr)
+    {
+        return Result(GeoHeightfield::INVALID);
+    }
+
+    return GeoHeightfield(hf, key.extent());
 }
 
 Status
@@ -618,49 +421,6 @@ ElevationLayer::writeHeightfieldImplementation(
 {
     return Status(Status::ServiceUnavailable);
 }
-
-#if 0
-void
-ElevationLayer::invoke_onCreate(const TileKey& key, GeoHeightfield& data)
-{
-    if (_callbacks.empty() == false) // not thread-safe but that's ok
-    {
-        // Copy the vector to prevent thread lockup
-        Callbacks temp;
-
-        _callbacks.lock();
-        temp = _callbacks;
-        _callbacks.unlock();
-
-        for(Callbacks::const_iterator i = temp.begin();
-            i != temp.end();
-            ++i)
-        {
-            i->get()->onCreate(key, data);
-        }
-    }
-}
-
-void
-ElevationLayer::addCallback(ElevationLayer::Callback* c)
-{
-    _callbacks.lock();
-    _callbacks.push_back(c);
-    _callbacks.unlock();
-}
-
-void
-ElevationLayer::removeCallback(ElevationLayer::Callback* c)
-{
-    _callbacks.lock();
-    Callbacks::iterator i = std::find(_callbacks.begin(), _callbacks.end(), c);
-    if (i != _callbacks.end())
-        _callbacks.erase(i);
-    _callbacks.unlock();
-}
-#endif
-
-//------------------------------------------------------------------------
 
 #undef  LC
 #define LC "[ElevationLayers] "

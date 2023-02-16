@@ -210,9 +210,6 @@ namespace ROCKY_NAMESPACE
         virtual void applyProfileOverrides(
             Profile& in_out_profile) const { }
 
-        //! Gets or create a caching bin to use with data in the supplied profile
-        //CacheBin* getCacheBin(const Profile* profile);
-
         //! Call this if you call dataExtents() and modify it.
         void dirtyDataExtents();
 

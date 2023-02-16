@@ -179,10 +179,12 @@ SurfaceNode::recomputeBound()
     if (_runtime.compiler)
     {
         auto builder = vsg::Builder::create();
+        builder->sharedObjects = _runtime.sharedObjects;
         vsg::StateInfo stateinfo;
         stateinfo.wireframe = true;
         vsg::GeometryInfo geominfo;
         geominfo.set(vsg::box(_localbbox));
+        geominfo.color.set(1, 1, 0, 1); // broken.
         auto debug_node = builder->createBox(geominfo, stateinfo);
         _runtime.compiler()->compile(debug_node);
         addChild(debug_node);

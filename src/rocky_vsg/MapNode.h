@@ -85,19 +85,8 @@ namespace ROCKY_NAMESPACE
          */
         vsg::ref_ptr<vsg::Group> getLayerNodeGroup() const;
 
-        /**
-         * Gets the underlying terrain engine that renders the terrain surface of the map.
-         */
-        //vsg::ref_ptr<TerrainEngine> getTerrainEngine() const;
+        //! Gets the underlying terrain engine that renders the terrain surface of the map.
         vsg::ref_ptr<TerrainNode> terrainNode() const;
-
-        /**
-         * Gets the Config object serializing external data. External data is information
-         * that osgEarth itself does not control, but that an app can include in the
-         * MapNode for the purposes of including it in a .earth file.
-         */
-        //Config& externalConfig() { return _externalConf; }
-        //const Config& externalConfig() const { return _externalConf; }
 
         //! Opens all layers that are not already open.
         void openMapLayers();
@@ -108,26 +97,7 @@ namespace ROCKY_NAMESPACE
         //! Opens the map (installs a terrain engine and initializes all the layers)
         bool open();
 
-        //! Returns the map coordinates under the provided mouse (window) coordinates.
-        //! @param view View in which to do the query
-        //! @param mx, my Mouse coordinates
-        //! @param out_point Outputs the point under the mouse (when returning true)
-        //! @return true upon success, false upon failure
-        bool getGeoPointUnderMouse(
-            vsg::View* view,
-            float mx,
-            float my,
-            GeoPoint& out_point) const;
-
-        //! Returns the map coordinates under the provided mouse (window) coordinates.
-        //! @param view View in which to do the query
-        //! @param mx, my Mouse coordinates
-        //! @return Outputs the point under the mouse
-        GeoPoint getGeoPointUnderMouse(
-            vsg::View* view,
-            float mx,
-            float my) const;
-
+        //! Runtime tools
         RuntimeContext& runtime();
 
         void update(const vsg::FrameStamp*);
@@ -140,18 +110,7 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        //osg::ref_ptr< MapCallback > _mapCallback;
-        //osg::ref_ptr<osg::Uniform> _sseU;
-    
         void construct(const Config&);
-
-        //std::shared_ptr<DrapingManager>& getDrapingManager();
-        friend class DrapingTechnique;
-        friend class DrapeableNode;
-        
-        //ClampingManager* getClampingManager();
-        friend class ClampingTechnique;
-        friend class ClampableNode;
 
         InstanceVSG _instance;
 

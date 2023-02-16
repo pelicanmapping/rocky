@@ -18,58 +18,6 @@ namespace
 
 #define LC "[TileLayer] \"" << name().value() << "\" "
 
-//------------------------------------------------------------------------
-
-#if 0
-Config
-TileLayer::Options::getConfig() const
-{
-    Config conf = VisibleLayer::Options::getConfig();
-
-    conf.set("max_level", _maxLevel);
-    conf.set("max_resolution", _maxResolution);
-    conf.set("max_valid_value", _maxValidValue);
-    conf.set("max_data_level", _maxDataLevel);
-    conf.set("min_level", _minLevel);
-    conf.set("min_valid_value", _minValidValue);
-    conf.set("min_resolution", _minResolution);
-    conf.set("no_data_value", _noDataValue);
-    conf.set("profile", _profile);
-    conf.set("tile_size", _tileSize);
-    conf.set("upsample", upsample());
-
-    return conf;
-}
-
-void
-TileLayer::Options::fromConfig(const Config& conf)
-{
-    _minLevel.init( 0 );
-    _maxLevel.init( 23 );
-    _maxDataLevel.init( 99 );
-    _tileSize.init( 256 );
-    _noDataValue.init( -32767.0f ); // SHRT_MIN
-    _minValidValue.init( -32766.0f ); // -(2^15 - 2)
-    _maxValidValue.init( 32767.0f );
-    upsample().setDefault(false);
-
-    conf.get( "min_level", _minLevel );
-    conf.get( "max_level", _maxLevel );
-    conf.get( "min_resolution", _minResolution );
-    conf.get( "max_resolution", _maxResolution );
-    conf.get( "max_data_level", _maxDataLevel );
-    conf.get( "tile_size", _tileSize);
-    conf.get( "profile", _profile);
-    conf.get( "no_data_value", _noDataValue);
-    conf.get( "nodata_value", _noDataValue); // back compat
-    conf.get( "min_valid_value", _minValidValue);
-    conf.get( "max_valid_value", _maxValidValue);
-    conf.get("upsample", upsample());
-}
-#endif
-
-//------------------------------------------------------------------------
-
 TileLayer::CacheBinMetadata::CacheBinMetadata() :
     _valid(false)
 {
@@ -287,20 +235,6 @@ TileLayer::openImplementation(const IOOptions& io)
         //todo
     }
     return result;
-
-#if 0
-    // If the user asked for a custom profile, install it now
-    if (options().profile().has_value())
-        setProfile(Profile::create(options().profile().get()));
-#endif
-
-#if 0
-    if (isOpen())
-        _cacheBinMetadata.clear();
-
-    if (_memCache.valid())
-        _memCache->clear();
-#endif
 }
 
 #if 0
@@ -412,151 +346,11 @@ TileLayer::getMetadataKey(const Profile& profile) const
         return "_metadata";
 }
 
-#if 0
-CacheBin*
-TileLayer::getCacheBin(const Profile* profile)
-{
-    if ( !isOpen() )
-    {
-        ROCKY_WARN << LC << "Illegal- called getCacheBin() before layer is open.. did you call open()?\n";
-        return 0L;
-    }
-
-    CacheSettings* cacheSettings = getCacheSettings();
-    if (!cacheSettings)
-        return 0L;
-
-    if (cacheSettings->cachePolicy()->isCacheDisabled())
-        return 0L;
-
-    CacheBin* bin = cacheSettings->getCacheBin();
-    if (!bin)
-        return 0L;
-
-    // does the metadata need initializing?
-    std::string metaKey = getMetadataKey(profile);    
-
-    // See if the cache bin metadata is already stored.
-    {
-        ScopedReadLock lock(_data_mutex);
-        if (_cacheBinMetadata.find(metaKey) != _cacheBinMetadata.end())
-            return bin;
-    }
-
-    // We need to update the cache bin metadata
-    ScopedWriteLock lock(_data_mutex);
-
-    // read the metadata record from the cache bin:
-    ReadResult rr = bin->readString(metaKey, getReadOptions());
-
-    osg::ref_ptr<CacheBinMetadata> meta;
-    bool metadataOK = false;
-
-    if (rr.succeeded())
-    {
-        // Try to parse the metadata record:
-        Config conf;
-        conf.fromJSON(rr.getString());
-        meta = new CacheBinMetadata(conf);
-
-        if (meta->ok())
-        {
-            metadataOK = true;
-
-            if (cacheSettings->cachePolicy()->isCacheOnly() && !_profile.valid())
-            {
-                // in cacheonly mode, create a profile from the first cache bin accessed
-                // (they SHOULD all be the same...)
-                setProfile(Profile::create(meta->_sourceProfile.get()));
-                options().tileSize().init(meta->_sourceTileSize.get());
-            }
-
-            bin->setMetadata(meta.get());
-        }
-        else
-        {
-            ROCKY_WARN << LC << "Metadata appears to be corrupt.\n";
-        }
-    }
-
-    if (!metadataOK)
-    {
-        // cache metadata does not exist, so try to create it.
-        if (profile())
-        {
-            meta = new CacheBinMetadata();
-
-            // no existing metadata; create some.
-            meta->_cacheBinId = _runtimeCacheId;
-            meta->_sourceName = this->getName();
-            meta->_sourceTileSize = getTileSize();
-            meta->_sourceProfile = profile().toProfileOptions();
-            meta->_cacheProfile = profile->toProfileOptions();
-            meta->_cacheCreateTime = DateTime().asTimeStamp();
-            // Use _dataExtents directly here since the _data_mutex is already locked.
-            meta->_dataExtents = _dataExtents;
-
-            // store it in the cache bin.
-            std::string data = meta->getConfig().toJSON(false);
-            osg::ref_ptr<StringObject> temp = new StringObject(data);
-            bin->write(metaKey, temp.get(), getReadOptions());
-
-            bin->setMetadata(meta.get());
-        }
-
-        else if (cacheSettings->cachePolicy()->isCacheOnly())
-        {
-            disable(Stringify() <<
-                "Failed to open a cache for layer "
-                "because cache_only policy is in effect and bin [" << _runtimeCacheId << "] "
-                "could not be located.");
-
-            return 0L;
-        }
-
-        else
-        {
-            ROCKY_WARN << LC <<
-                "Failed to create cache bin [" << _runtimeCacheId << "] "
-                "because there is no valid profile."
-                << std::endl;
-
-            cacheSettings->cachePolicy() = CachePolicy::NO_CACHE;
-            return 0L;
-        }
-    }
-
-    // If we loaded a profile from the cache metadata, apply the overrides:
-    applyProfileOverrides(_profile);
-
-    if (meta.valid())
-    {
-        _cacheBinMetadata[metaKey] = meta.get();
-        ROCKY_DEBUG << LC << "Established metadata for cache bin [" << _runtimeCacheId << "]" << std::endl;
-    }
-
-    return bin;
-}
-#endif
-
 void
 TileLayer::disable(const std::string& msg)
 {
     setStatus(Status::Error(msg));
 }
-
-#if 0
-TileLayer::CacheBinMetadata*
-TileLayer::getCacheBinMetadata(const Profile* profile)
-{
-    if (!profile)
-        return nullptr;
-
-    ScopedReadLock lock(_data_mutex);
-    auto i = _cacheBinMetadata.find(getMetadataKey(profile));
-    return i != _cacheBinMetadata.end() ? i->second.get() : nullptr;
-}
-#endif
 
 bool
 TileLayer::isKeyInLegalRange(const TileKey& key) const
@@ -656,26 +450,6 @@ TileLayer::isKeyInVisualRange(const TileKey& key) const
     return true;
 }
 
-#if 0
-bool
-TileLayer::isCached(const TileKey& key) const
-{
-    // first consult the policy:
-    if (getCacheSettings()->isCacheDisabled())
-        return false;
-
-    else if (getCacheSettings()->cachePolicy()->isCacheOnly())
-        return true;
-
-    // next check for a bin:
-    CacheBin* bin = const_cast<TileLayer*>(this)->getCacheBin( key.profile() );
-    if ( !bin )
-        return false;
-
-    return bin->getRecordStatus( key.str() ) == CacheBin::STATUS_OK;
-}
-#endif
-
 unsigned int TileLayer::getDataExtentsSize() const
 {
     std::shared_lock READ(_dataMutex);
@@ -689,15 +463,6 @@ void TileLayer::getDataExtents(DataExtentList& dataExtents) const
     {
         dataExtents = _dataExtents;
     }
-
-#if 0
-    else if (!_cacheBinMetadata.empty())
-    {
-        // There are extents in the cache bin, so use those.
-        // The DE's are the same regardless of profile so just use the first one in there.
-        dataExtents = _cacheBinMetadata.begin()->second->_dataExtents;
-    }
-#endif
 }
 
 void TileLayer::setDataExtents(const DataExtentList& dataExtents)

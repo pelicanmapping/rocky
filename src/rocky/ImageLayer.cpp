@@ -21,114 +21,6 @@ using namespace ROCKY_NAMESPACE::util;
 
 #define LC "[ImageLayer] \"" << name().value() << "\" "
 
-// TESTING
-//#undef  ROCKY_DEBUG
-//#define ROCKY_DEBUG ROCKY_INFO
-
-//------------------------------------------------------------------------
-#if 0
-void
-ImageLayer::Options::fromConfig(const Config& conf)
-{
-    _transparentColor.setDefault(Color(0, 0, 0, 0));
-    //_minFilter.setDefault( osg::Texture::LINEAR_MIPMAP_LINEAR );
-    //_magFilter.setDefault( osg::Texture::LINEAR );
-    _textureCompression.setDefault("");
-    _shared.setDefault( false );
-    _coverage.setDefault( false );
-    _reprojectedTileSize.setDefault( 256 );
-
-    conf.get( "nodata_image", noDataImageLocation());
-    conf.get( "shared", _shared );
-    conf.get( "coverage", _coverage );
-    conf.get( "altitude", _altitude );
-    conf.get( "accept_draping", acceptDraping());
-    conf.get( "edge_buffer_ratio", _edgeBufferRatio);
-    conf.get( "reprojected_tilesize", _reprojectedTileSize);
-    conf.get("transparent_color", transparentColor());
-
-    //if ( conf.hasChild("color_filters") )
-    //{
-    //    _colorFilters->clear();
-    //    ColorFilterRegistry::instance()->readChain( conf.child("color_filters"), _colorFilters.mutable_value() );
-    //}
-
-    //conf.get("mag_filter","LINEAR",                _magFilter,osg::Texture::LINEAR);
-    //conf.get("mag_filter","LINEAR_MIPMAP_LINEAR",  _magFilter,osg::Texture::LINEAR_MIPMAP_LINEAR);
-    //conf.get("mag_filter","LINEAR_MIPMAP_NEAREST", _magFilter,osg::Texture::LINEAR_MIPMAP_NEAREST);
-    //conf.get("mag_filter","NEAREST",               _magFilter,osg::Texture::NEAREST);
-    //conf.get("mag_filter","NEAREST_MIPMAP_LINEAR", _magFilter,osg::Texture::NEAREST_MIPMAP_LINEAR);
-    //conf.get("mag_filter","NEAREST_MIPMAP_NEAREST",_magFilter,osg::Texture::NEAREST_MIPMAP_NEAREST);
-    //conf.get("min_filter","LINEAR",                _minFilter,osg::Texture::LINEAR);
-    //conf.get("min_filter","LINEAR_MIPMAP_LINEAR",  _minFilter,osg::Texture::LINEAR_MIPMAP_LINEAR);
-    //conf.get("min_filter","LINEAR_MIPMAP_NEAREST", _minFilter,osg::Texture::LINEAR_MIPMAP_NEAREST);
-    //conf.get("min_filter","NEAREST",               _minFilter,osg::Texture::NEAREST);
-    //conf.get("min_filter","NEAREST_MIPMAP_LINEAR", _minFilter,osg::Texture::NEAREST_MIPMAP_LINEAR);
-    //conf.get("min_filter","NEAREST_MIPMAP_NEAREST",_minFilter,osg::Texture::NEAREST_MIPMAP_NEAREST);
-
-    conf.get("texture_compression", textureCompression());
-
-    // uniform names
-    conf.get("shared_sampler", _shareTexUniformName);
-    conf.get("shared_matrix",  _shareTexMatUniformName);
-
-    // automatically set shared=true if the uniform name is set.
-    if (shareTexUniformName().has_value() && !shared().has_value())
-        shared() = true;
-    
-    conf.get("async", async());
-}
-
-Config
-ImageLayer::Options::getConfig() const
-{
-    Config conf = TileLayer::Options::getConfig();
-
-//    conf.set( "nodata_image",   _noDataImageFilename );
-    conf.set( "shared",         _shared );
-    conf.set( "coverage",       _coverage );
-    conf.set( "altitude",       _altitude );
-    conf.set( "accept_draping", acceptDraping());
-    conf.set( "edge_buffer_ratio", _edgeBufferRatio);
-    conf.set( "reprojected_tilesize", _reprojectedTileSize);
-    conf.set("transparent_color", transparentColor());
-
-    //if ( _colorFilters->size() > 0 )
-    //{
-    //    Config filtersConf("color_filters");
-    //    if ( ColorFilterRegistry::instance()->writeChain( _colorFilters.get(), filtersConf ) )
-    //    {
-    //        conf.set( filtersConf );
-    //    }
-    //}
-
-    //conf.set("mag_filter","LINEAR",                _magFilter,osg::Texture::LINEAR);
-    //conf.set("mag_filter","LINEAR_MIPMAP_LINEAR",  _magFilter,osg::Texture::LINEAR_MIPMAP_LINEAR);
-    //conf.set("mag_filter","LINEAR_MIPMAP_NEAREST", _magFilter,osg::Texture::LINEAR_MIPMAP_NEAREST);
-    //conf.set("mag_filter","NEAREST",               _magFilter,osg::Texture::NEAREST);
-    //conf.set("mag_filter","NEAREST_MIPMAP_LINEAR", _magFilter,osg::Texture::NEAREST_MIPMAP_LINEAR);
-    //conf.set("mag_filter","NEAREST_MIPMAP_NEAREST",_magFilter,osg::Texture::NEAREST_MIPMAP_NEAREST);
-    //conf.set("min_filter","LINEAR",                _minFilter,osg::Texture::LINEAR);
-    //conf.set("min_filter","LINEAR_MIPMAP_LINEAR",  _minFilter,osg::Texture::LINEAR_MIPMAP_LINEAR);
-    //conf.set("min_filter","LINEAR_MIPMAP_NEAREST", _minFilter,osg::Texture::LINEAR_MIPMAP_NEAREST);
-    //conf.set("min_filter","NEAREST",               _minFilter,osg::Texture::NEAREST);
-    //conf.set("min_filter","NEAREST_MIPMAP_LINEAR", _minFilter,osg::Texture::NEAREST_MIPMAP_LINEAR);
-    //conf.set("min_filter","NEAREST_MIPMAP_NEAREST",_minFilter,osg::Texture::NEAREST_MIPMAP_NEAREST);
-
-    conf.set("texture_compression", textureCompression());
-
-    // uniform names
-    conf.set("shared_sampler", _shareTexUniformName);
-    conf.set("shared_matrix",  _shareTexMatUniformName);
-
-    conf.set("async", async());
-
-    return conf;
-}
-#endif
-
-//------------------------------------------------------------------------
-
 ImageLayer::ImageLayer() :
     Inherit()
 {
@@ -196,34 +88,6 @@ ImageLayer::getCoverage() const
     return _coverage;
 }
 
-#if 0
-void
-ImageLayer::setSharedTextureUniformName(const std::string& value)
-{
-    if (options().shareTexUniformName() != value)
-        options().shareTexUniformName() = value;
-}
-
-const std::string&
-ImageLayer::getSharedTextureUniformName() const
-{
-    return options().shareTexUniformName().get();
-}
-
-void
-ImageLayer::setSharedTextureMatrixUniformName(const std::string& value)
-{
-    if (options().shareTexMatUniformName() != value)
-        options().shareTexMatUniformName() = value;
-}
-
-const std::string&
-ImageLayer::getSharedTextureMatrixUniformName() const
-{
-    return options().shareTexMatUniformName().get();
-}
-#endif
-
 void
 ImageLayer::setAsyncLoading(bool value)
 {
@@ -235,12 +99,6 @@ ImageLayer::getAsyncLoading() const
 {
     return _async;
 }
-
-//shared_ptr<ImageLayer>
-//ImageLayer::create(const ConfigOptions& options)
-//{
-//    return std::dynamic_pointer_cast<ImageLayer>(Layer::materialize(options));
-//}
 
 Status
 ImageLayer::openImplementation(const IOOptions& io)
@@ -315,35 +173,6 @@ ImageLayer::getAcceptDraping() const
     return _acceptDraping;
 }
 
-#if 0
-void
-ImageLayer::invoke_onCreate(const TileKey& key, GeoImage& data)
-{
-    if (_callbacks.empty() == false) // not thread-safe but that's ok
-    {
-        // Copy the vector to prevent thread lockup
-        Callbacks temp;
-
-        _callbacks.lock();
-        temp = _callbacks;
-        _callbacks.unlock();
-
-        for(Callbacks::const_iterator i = temp.begin();
-            i != temp.end();
-            ++i)
-        {
-            i->get()->onCreate(key, data);
-        }
-    }
-}
-
-void
-ImageLayer::setUseCreateTexture()
-{
-    _useCreateTexture = true;
-}
-#endif
-
 Result<GeoImage>
 ImageLayer::createImage(const TileKey& key) const
 {
@@ -351,9 +180,7 @@ ImageLayer::createImage(const TileKey& key) const
 }
 
 Result<GeoImage>
-ImageLayer::createImage(
-    const TileKey& key,
-    const IOOptions& io) const
+ImageLayer::createImage(const TileKey& key, const IOOptions& io) const
 {    
     ROCKY_PROFILING_ZONE;
     ROCKY_PROFILING_ZONE_TEXT(getName() + " " + key.str());
@@ -430,83 +257,6 @@ ImageLayer::createImageInKeyProfile(
 
     Result<GeoImage> result;
 
-    ROCKY_TODO("Caching");
-#if 0
-    // the cache key combines the Key and the horizontal profile.
-    std::string cacheKey = Cache::makeCacheKey(
-        strings::Stringify() << key.str() << "-" << std::hex << key.profile().getHorizSignature(),
-        "image");
-
-    // The L2 cache key includes the layer revision of course!
-    char memCacheKey[64];
-
-    const CachePolicy& policy = ioc->getCacheSettings()->cachePolicy().get();
-
-    // Check the layer L2 cache first
-    if ( _memCache.valid() )
-    {
-        sprintf(memCacheKey, "%d/%s/%s", 
-            getRevision(), 
-            key.str().c_str(), 
-            key.profile().getHorizSignature().c_str());
-
-        CacheBin* bin = _memCache->getOrCreateDefaultBin();
-        ReadResult result = bin->readObject(memCacheKey, 0L);
-        if (result.succeeded())
-        {
-            return GeoImage(static_cast<osg::Image*>(result.releaseObject()), key.extent());
-        }
-    }
-
-    // locate the cache bin for the target profile for this layer:
-    CacheBin* cacheBin = getCacheBin( key.profile() );
-
-    // validate the existance of a valid layer profile (unless we're in cache-only mode, in which
-    // case there is no layer profile)
-    if ( !policy.isCacheOnly() && !profile() )
-    {
-        disable("Could not establish a valid profile");
-        return GeoImage::INVALID;
-    }
-
-    osg::ref_ptr< osg::Image > cachedImage;
-
-    // First, attempt to read from the cache. Since the cached data is stored in the
-    // map profile, we can try this first.
-    if ( cacheBin && policy.isCacheReadable() )
-    {
-        ReadResult r = cacheBin->readImage(cacheKey, 0L);
-        if ( r.succeeded() )
-        {
-            cachedImage = r.releaseImage();
-            bool expired = policy.isExpired(r.lastModifiedTime());
-            if (!expired)
-            {
-                ROCKY_DEBUG << "Got cached image for " << key.str() << std::endl;
-                return GeoImage(cachedImage.get(), key.extent());
-            }
-            else
-            {
-                ROCKY_DEBUG << "Expired image for " << key.str() << std::endl;
-            }
-        }
-    }
-
-    // The data was not in the cache. If we are cache-only, fail sliently
-    if ( policy.isCacheOnly() )
-    {
-        // If it's cache only and we have an expired but cached image, just return it.
-        if (cachedImage.valid())
-        {
-            return GeoImage( cachedImage.get(), key.extent() );
-        }
-        else
-        {
-            return GeoImage::INVALID;
-        }
-    }
-#endif
-
     // if this layer has no profile, just go straight to the driver.
     if (!profile().valid())
     {
@@ -549,59 +299,11 @@ ImageLayer::createImageInKeyProfile(
         result = assembleImage(key, io);
     }
 
-    // Check for cancelation before writing to a cache:
-    if (io.canceled())
-    {
-        return Result(GeoImage::INVALID);
-    }
-
-#if 0
-    if (result.valid())
-    {
-        // invoke user callbacks
-        invoke_onCreate(key, result);
-
-        if (_memCache.valid())
-        {
-            CacheBin* bin = _memCache->getOrCreateDefaultBin();
-            bin->write(memCacheKey, result.getImage(), 0L);
-        }
-
-        // If we got a result, the cache is valid and we are caching in the map profile,
-        // write to the map cache.
-        if (cacheBin        &&
-            policy.isCacheWriteable())
-        {
-            if ( key.extent() != result.extent() )
-            {
-                ROCKY_INFO << LC << "WARNING! mismatched extents." << std::endl;
-            }
-
-            cacheBin->write(cacheKey, result.getImage(), 0L);
-        }
-    }
-#endif
-
-#if 0
-    else // result.valid() == false
-    {
-        ROCKY_DEBUG << LC << key.str() << "result INVALID" << std::endl;
-        // We couldn't get an image from the source.  So see if we have an expired cached image
-        if (cachedImage.valid())
-        {
-            ROCKY_DEBUG << LC << "Using cached but expired image for " << key.str() << std::endl;
-            result = GeoImage( cachedImage.get(), key.extent());
-        }
-    }
-#endif
-
     return result;
 }
 
 Result<GeoImage>
-ImageLayer::assembleImage(
-    const TileKey& key,
-    const IOOptions& io) const
+ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 {
     // If we got here, asset that there's a non-null layer profile.
     if (!profile().valid())
@@ -613,20 +315,9 @@ ImageLayer::assembleImage(
     GeoImage mosaicedImage;
     Result<GeoImage> result;
 
-#if 0
-    // Scale the extent if necessary to apply an "edge buffer"
-    GeoExtent ext = key.extent();
-    if ( options().edgeBufferRatio().has_value() )
-    {
-        double ratio = options().edgeBufferRatio().get();
-        ext.scale(ratio, ratio);
-    }
-#endif
-
     // Get a set of layer tiles that intersect the requested extent.
     std::vector<TileKey> intersectingKeys;
     key.getIntersectingKeys(profile(), intersectingKeys);
-    //profile().getIntersectingTiles( key, intersectingKeys );
 
     if ( intersectingKeys.size() > 0 )
     {
@@ -825,297 +516,3 @@ ImageLayer::modifyTileBoundingBox(const TileKey& key, Box& box) const
     //}
     super::modifyTileBoundingBox(key, box);
 }
-
-#if 0
-void
-ImageLayer::addCallback(ImageLayer::Callback* c)
-{
-    _callbacks.lock();
-    _callbacks.push_back(c);
-    _callbacks.unlock();
-}
-
-void
-ImageLayer::removeCallback(ImageLayer::Callback* c)
-{
-    _callbacks.lock();
-    Callbacks::iterator i = std::find(_callbacks.begin(), _callbacks.end(), c);
-    if (i != _callbacks.end())
-        _callbacks.erase(i);
-    _callbacks.unlock();
-}
-#endif
-
-#if 0
-void
-ImageLayer::addPostLayer(ImageLayer* layer)
-{
-    util::ScopedMutexLock lock(_postLayers);
-    _postLayers.push_back(layer);
-}
-#endif
-
-//...................................................................
-
-#if 0
-#define ARENA_ASYNC_LAYER "oe.layer.async"
-//#define FUTURE_IMAGE_COLOR_PLACEHOLDER
-
-FutureTexture2D::FutureTexture2D(
-    ImageLayer* layer,
-    const TileKey& key) :
-
-    osg::Texture2D(),
-    FutureTexture(),
-    _layer(layer),
-    _key(key)
-{
-    // since we'll be updating it mid stream
-    setDataVariance(osg::Object::DYNAMIC);
-
-    setName(_key.str() + ":" + _layer->getName());
-
-    // start loading the image
-    dispatch();
-}
-
-void
-FutureTexture2D::dispatch() const
-{
-    osg::observer_ptr<ImageLayer> layer_ptr(_layer);
-    TileKey key(_key);
-
-    Job job(JobArena::get(ARENA_ASYNC_LAYER));
-    job.setName(Stringify() << key.str() << " " << _layer->getName());
-
-    // prioritize higher LOD tiles.
-    job.setPriority(key.levelOfDetail());
-
-    _result = job.dispatch<GeoImage>(
-        [layer_ptr, key](Cancelable* progress) mutable
-        {
-            GeoImage result;
-            osg::ref_ptr<ImageLayer> safe(layer_ptr);
-            if (safe.valid())
-            {
-                osg::ref_ptr<ProgressCallback> p = new ProgressCallback(progress);
-                result = safe->createImage(key, p.get());
-            }
-            return result;
-        });
-}
-
-void
-FutureTexture2D::update()
-{
-    if (_resolved)
-    {
-        return;
-    }
-
-    else if (_result.canceled())
-    {
-        dispatch();
-        return;
-    }
-
-    else if (_result.available() == true)
-    {
-        ROCKY_DEBUG<< LC << "Async result available for " << getName() << std::endl;
-
-        // fetch the result
-        GeoImage geoImage = _result.get();
-
-        if (geoImage.getStatus().failed())
-        {
-            ROCKY_DEBUG << LC << "Error: " << geoImage.getStatus().message() << std::endl;
-            _failed = true;
-        }
-        else
-        {
-            osg::ref_ptr<osg::Image> image = geoImage.takeImage();
-
-            if (image.valid())
-            {
-                this->setImage(image);
-                this->dirtyTextureObject();
-            }
-
-            else
-            {
-                _failed = true;
-                this->dirtyTextureObject();
-            }
-        }
-
-        // reset the future so update won't be called again
-        _result.abandon();
-
-        _resolved = true;
-    }
-}
-#endif
-
-#if 0
-GeoImage
-ImageLayer::createFractalUpsampledImage(
-    const TileKey& key,
-    ProgressCallback* progress)
-{
-    ROCKY_PROFILING_ZONE;
-
-    // Input metatile grid. Always use the immediate parent for
-    // fractal enhancement.
-    MetaTile<GeoImage> input;
-    input.setCreateTileFunction(
-        [&](const TileKey& key, ProgressCallback* p) -> GeoImage
-        {
-            if (this->isKeyInLegalRange(key))
-                return this->createImage(key, p);
-            else
-                return GeoImage::INVALID;
-        }
-    );
-    TileKey parentKey = key.createParentKey();
-    dmat4 scale_bias;
-    key.extent().createScaleBias(parentKey.extent(), scale_bias);
-    input.setCenterTileKey(parentKey, scale_bias);
-
-    // validate that we have a good metatile.
-    if (input.valid() == false)
-        return GeoImage::INVALID;
-
-    // set up a workspace for creating the new image.
-    int ws_width = getTileSize() + 3;
-    int ws_height = getTileSize() + 3;
-
-    osg::ref_ptr<osg::Image> workspace = new osg::Image();
-    workspace->allocateImage(
-        ws_width, ws_height, 1,
-        input.getCenterTile().getImage()->getPixelFormat(),
-        input.getCenterTile().getImage()->getDataType(),
-        input.getCenterTile().getImage()->getPacking());
-
-    ImageUtils::PixelWriter writeToWorkspace(workspace.get());
-    ImageUtils::PixelReader readFromWorkspace(workspace.get());
-
-    // output image:
-    osg::ref_ptr<osg::Image> output = new osg::Image();
-    output->allocateImage(
-        getTileSize(), getTileSize(), 1,
-        input.getCenterTile().getImage()->getPixelFormat(),
-        input.getCenterTile().getImage()->getDataType(),
-        input.getCenterTile().getImage()->getPacking());
-
-    // Random number generator for fractal algorithm:
-    Util::Random prng(key.hash());
-
-    // temporaries:
-    GeoImage::pixel_type pixel, p0, p1, p2, p3;
-    float k0, k1, k2, k3;
-    unsigned r;
-    int s, t;
-
-    // First pass: loop over the grid and populate even-numbered
-    // pixels with values from the ancestors.
-    for (t = 0; t < ws_height; t += 2)
-    {
-        for (s = 0; s < ws_width; s += 2)
-        {
-            input.read(pixel, s - 2, t - 2);
-            writeToWorkspace(pixel, s, t);
-
-            if (progress && progress->isCanceled())
-                return GeoImage::INVALID;
-        }
-
-        if (progress && progress->isCanceled())
-            return GeoImage::INVALID;
-    }
-
-    // Second pass: diamond
-    for (t = 1; t < workspace->t() - 1; t += 2)
-    {
-        for (s = 1; s < workspace->s() - 1; s += 2)
-        {
-            r = prng.next(4u);
-
-            // Diamond: pick one of the four diagonals to copy into the
-            // center pixel, attempting to preserve curves. When there is
-            // no clear choice, go random.
-            readFromWorkspace(p0, s - 1, t - 1); k0 = p0.r();
-            readFromWorkspace(p1, s + 1, t - 1); k1 = p1.r();
-            readFromWorkspace(p2, s + 1, t + 1); k2 = p2.r();
-            readFromWorkspace(p3, s - 1, t + 1); k3 = p3.r();
-
-            // three the same
-            if (k0 == k1 && k1 == k2 && k2 != k3) pixel = p0;
-            else if (k1 == k2 && k2 == k3 && k3 != k0) pixel = p1;
-            else if (k2 == k3 && k3 == k0 && k0 != k1) pixel = p2;
-            else if (k3 == k0 && k0 == k1 && k1 != k2) pixel = p3;
-
-            // continuations
-            else if (k0 == k2 && k0 != k1 && k0 != k3) pixel = p0;
-            else if (k1 == k3 && k1 != k2 && k1 != k0) pixel = p1;
-
-            // all else, random.
-            else pixel = (r == 0) ? p0 : (r == 1) ? p1 : (r == 2) ? p2 : p3;
-
-            writeToWorkspace(pixel, s, t);
-        }
-    }
-
-    // Third pass: square
-    for (t = 2; t < workspace->t() - 1; ++t)
-    {
-        for (s = 2; s < workspace->s() - 1; ++s)
-        {
-            if (((s & 1) == 1 && (t & 1) == 0) || ((s & 1) == 0 && (t & 1) == 1))
-            {
-                r = prng.next(4u);
-
-                // Square: pick one of the four adjacents to copy into the
-                // center pixel, attempting to preserve curves. When there is
-                // no clear choice, go random.
-                readFromWorkspace(p0, s - 1, t); k0 = p0.r();
-                readFromWorkspace(p1, s, t - 1); k1 = p1.r();
-                readFromWorkspace(p2, s + 1, t); k2 = p2.r();
-                readFromWorkspace(p3, s, t + 1); k3 = p3.r();
-
-                // three the same
-                if (k0 == k1 && k1 == k2 && k2 != k3) pixel = p0;
-                else if (k1 == k2 && k2 == k3 && k3 != k0) pixel = p1;
-                else if (k2 == k3 && k3 == k0 && k0 != k1) pixel = p2;
-                else if (k3 == k0 && k0 == k1 && k1 != k2) pixel = p3;
-
-                // continuations
-                else if (k0 == k2 && k0 != k1 && k0 != k3) pixel = p0;
-                else if (k1 == k3 && k1 != k2 && k1 != k0) pixel = p1;
-
-                // all else, random.
-                else pixel = (r == 0) ? p0 : (r == 1) ? p1 : (r == 2) ? p2 : p3;
-
-                writeToWorkspace(pixel, s, t);
-            }
-        }
-    }
-
-    // finally blit from workspace interior to the output image.
-    ImageUtils::PixelWriter writeToOutput(output.get());
-    for (t = 0; t < output->t(); ++t)
-    {
-        for (s = 0; s < output->s(); ++s)
-        {
-            readFromWorkspace(pixel, s + 2, t + 2);
-            writeToOutput(pixel, s, t);
-        }
-    }
-
-    if (progress && progress->isCanceled())
-    {
-        return GeoImage::INVALID;
-    }
-
-    return GeoImage(output.get(), key.extent());
-}
-#endif
