@@ -1,4 +1,4 @@
-# Rocky
+# :mountain: rocky
 
 This is a 3D geospatial map & terrain renderer based on Vulkan.
 
