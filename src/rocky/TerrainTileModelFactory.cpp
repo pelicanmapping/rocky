@@ -13,6 +13,27 @@
 
 using namespace ROCKY_NAMESPACE;
 
+namespace
+{
+    void replace_nodata_values(GeoHeightfield& geohf)
+    {
+        auto grid = geohf.heightfield();
+        if (grid)
+        {
+            for (unsigned col = 0; col < grid->height(); ++col)
+            {
+                for (unsigned row = 0; row < grid->width(); ++row)
+                {
+                    if (grid->heightAt(col, row) == NO_DATA_VALUE)
+                    {
+                        grid->heightAt(col, row) = 0.0f;
+                    }
+                }
+            }
+        }
+    }
+}
+
 CreateTileManifest::CreateTileManifest()
 {
     _includesElevation = false;
@@ -315,6 +336,8 @@ TerrainTileModelFactory::addElevation(
 
         if (result.status.ok())
         {
+            replace_nodata_values(result.value);
+
             model.elevation.heightfield = std::move(result.value);
             model.elevation.revision = layer->revision();
         }

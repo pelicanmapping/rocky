@@ -700,7 +700,6 @@ MapManipulator::createLocalCoordFrame(
     return _worldSRS.valid();
 }
 
-
 void
 MapManipulator::setCenter(const vsg::dvec3& worldPos)
 {
@@ -1032,7 +1031,7 @@ MapManipulator::setViewpointFrame(double time_s)
             }
 
             // the more smoothsteps you do, the more pronounced the fade-in/out effect
-            tp = smoothStepInterp( tp );
+            smoothStepInterp( tp );
         }
         else if ( t > 0.0 )
         {

@@ -107,8 +107,8 @@ if (ROCKY_SUPPORTS_PROFILING)
 endif()
         
 if(ROCKY_SUPPORTS_GDAL)
-    list(APPEND HEADERS GDALImageLayer.h)
-    list(APPEND SOURCES GDALImageLayer.cpp)
+    list(APPEND HEADERS GDAL.h   GDALImageLayer.h   GDALElevationLayer.h)
+    list(APPEND SOURCES GDAL.cpp GDALImageLayer.cpp GDALElevationLayer.cpp)
 endif()
 
 if(ROCKY_SUPPORTS_TMS)

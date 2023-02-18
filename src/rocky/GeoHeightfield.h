@@ -35,42 +35,43 @@ namespace ROCKY_NAMESPACE
         //! True if this is a valid heightfield.
         bool valid() const;
 
-        //! Gets the elevation value at a specified point.
-        //!
+        //! Samples the elevation value at a specified point.
+        //! @param x, y
+        //!      Coordinates at which to query the elevation value.
         //! @param srs
         //!      Spatial reference of the query coordinates. (If you pass in NULL, the method
         //!      will assume that the SRS is equivalent to that of the GeoHeightField. Be sure
         //!      this is case of you will get incorrect results.)
-        //! @param x, y
-        //!      Coordinates at which to query the elevation value.
         //! @param interp
         //!      Interpolation method for the elevation query.
         //! @param srsWithOutputVerticalDatum
         //!      Transform the output elevation value according to the vertical datum
         //!      associated with this SRS. If the SRS is NULL, assume a geodetic vertical datum
         //!      relative to this object's reference ellipsoid.
-        //! @param out_elevation
-        //!      Output: the elevation value
-        //! @return
-        //!      True if the elevation query was succesful; false if not (e.g. if the query
-        //!      fell outside the geospatial extent of the heightfield)
-        //bool getElevation(
-        //    const SRS& inputSRS,
-        //    double x,
-        //    double y,
-        //    Image::Interpolation interp,
-        //    const SRS& srsWithOutputVerticalDatum,
-        //    float& out_elevation) const;
-
-        bool getElevation(
-            const SRS& inputSRS,
-            dvec3& in_out_point,
+        //! @return The elevation value, or NO_DATA_VALUE if the query failed
+        float heightAt(
+            double x, double y,
+            const SRS& xy_srs,
             Image::Interpolation interp) const;
 
-        //! Gets the elevation at a point (must be in the same SRS; bilinear interpolation)
-        //float getElevation(
-        //    double x, double y,
-        //    Image::Interpolation interp = Image::BILINEAR) const;
+        //! Samples the elevation value at a specified point. If you plan to do
+        //! multiple samples, this is faster than using heightAt(x, y, srs).
+        //! 
+        //! @param x, y
+        //!      Coordinates at which to query the elevation value.
+        //! @param operation
+        //!      SRS transformation from the x and y SRS to this heightfield's SRS.
+        //! @param interp
+        //!      Interpolation method for the elevation query.
+        //! @param srsWithOutputVerticalDatum
+        //!      Transform the output elevation value according to the vertical datum
+        //!      associated with this SRS. If the SRS is NULL, assume a geodetic vertical datum
+        //!      relative to this object's reference ellipsoid.
+        //! @return The elevation value, or NO_DATA_VALUE if the query failed
+        float heightAt(
+            double x, double y,
+            const SRSOperation& operation,
+            Image::Interpolation interp) const;
 
         //! Subsamples the heightfield, returning a new heightfield corresponding to
         //! the destEx extent. The destEx must be a smaller, inset area of sourceEx.
@@ -81,6 +82,9 @@ namespace ROCKY_NAMESPACE
 
         //! Gets the geospatial extent of the heightfield.
         const GeoExtent& extent() const;
+
+        //! SRS of this heightfield
+        const SRS& srs() const { return extent().srs(); }
 
         //! The minimum height in the heightfield
         float minHeight() const { return _minHeight; }

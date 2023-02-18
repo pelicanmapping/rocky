@@ -26,7 +26,7 @@ Optional dependences (these are `ON` by default; disable by setting to `OFF` eit
 * HTTP - for reading data over HTTP: `-DROCKY_SUPPORTS_HTTP=ON`
 * HTTPS - adds SSL support to HTTP: `-DROCKY_SUPPORTS_HTTPS=ON`
 * TMS - read from an OSGGeo [TileMapService](https://wiki.osgeo.org/wiki/Tile_Map_Service_Specification) endpoint: `-DROCKY_SUPPORTS_TMS=ON`
-* GDAL - read GeoTIFFs and other [GDAL-supported data formats](https://gdal.org/drivers/raster/index.html): `-DROCKY_SUPPORTS_GDAL=ON`
+* GDAL - read from GeoTIFFs, JP2Ks, WMS, WMTS, and other [GDAL-supported data formats](https://gdal.org/drivers/raster/index.html): `-DROCKY_SUPPORTS_GDAL=ON`
 
 The first bootstrap will take a long time; it needs to download and build all the dependencies.
 

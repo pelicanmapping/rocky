@@ -3,9 +3,7 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#include "GDALImageLayer.h"
-#include "Image.h"
-#include "Log.h"
+#include "GDALElevationLayer.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::GDAL;
@@ -24,6 +22,13 @@ namespace
 
         if (layer->maxDataLevel().has_value())
             driver->setMaxDataLevel(layer->maxDataLevel());
+
+        if (layer->noDataValue().has_value())
+            driver->setNoDataValue(layer->noDataValue());
+        if (layer->minValidValue().has_value())
+            driver->setMinValidValue(layer->minValidValue());
+        if (layer->maxValidValue().has_value())
+            driver->setMaxValidValue(layer->maxValidValue());
 
         Status status = driver->open(
             layer->name(),
@@ -45,20 +50,20 @@ namespace
 }
 
 
-GDALImageLayer::GDALImageLayer() :
+GDALElevationLayer::GDALElevationLayer() :
     super()
 {
     construct(Config());
 }
 
-GDALImageLayer::GDALImageLayer(const Config& conf) :
+GDALElevationLayer::GDALElevationLayer(const Config& conf) :
     super(conf)
 {
     construct(conf);
 }
 
 void
-GDALImageLayer::construct(const Config& conf)
+GDALElevationLayer::construct(const Config& conf)
 {
     conf.get("url", _uri);
     conf.get("uri", _uri);
@@ -76,9 +81,9 @@ GDALImageLayer::construct(const Config& conf)
 }
 
 Config
-GDALImageLayer::getConfig() const
+GDALElevationLayer::getConfig() const
 {
-    Config conf = ImageLayer::getConfig();
+    Config conf = super::getConfig();
     conf.set("url", _uri);
     conf.set("connection", _connection);
     conf.set("subdataset", _subDataSet);
@@ -93,9 +98,9 @@ GDALImageLayer::getConfig() const
 }
 
 Status
-GDALImageLayer::openImplementation(const IOOptions& io)
+GDALElevationLayer::openImplementation(const IOOptions& io)
 {
-    Status parent = ImageLayer::openImplementation(io);
+    Status parent = super::openImplementation(io);
     if (parent.failed())
         return parent;
 
@@ -131,16 +136,16 @@ GDALImageLayer::openImplementation(const IOOptions& io)
 }
 
 Status
-GDALImageLayer::closeImplementation()
+GDALElevationLayer::closeImplementation()
 {
     // safely shut down all per-thread handles.
     _drivers.clear();
 
-    return ImageLayer::closeImplementation();
+    return super::closeImplementation();
 }
 
-Result<GeoImage>
-GDALImageLayer::createImageImplementation(
+Result<GeoHeightfield>
+GDALElevationLayer::createHeightfieldImplementation(
     const TileKey& key,
     const IOOptions& io) const
 {
@@ -160,14 +165,9 @@ GDALImageLayer::createImageImplementation(
 
     if (driver)
     {
-        auto image = driver->createImage(
-            key,
-            _tileSize,
-            _coverage == true,
-            io);
-
-        return GeoImage(image.value, key.extent());
+        auto image = driver->createHeightfield(key, tileSize(), io);
+        return GeoHeightfield(image.value, key.extent());
     }
 
-    return GeoImage::INVALID;
+    return GeoHeightfield::INVALID;
 }

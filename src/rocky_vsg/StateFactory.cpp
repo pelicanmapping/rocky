@@ -15,6 +15,9 @@
 #include <vsg/state/BindDescriptorSet.h>
 #include <vsg/state/ViewDependentState.h>
 
+#define TERRAIN_VERT_SHADER "rocky_terrain.vert"
+#define TERRAIN_FRAG_SHADER "rocky_terrain.frag"
+
 #define ELEVATION_TEX_NAME "elevation_tex"
 #define ELEVATION_TEX_BINDING 10
 
@@ -102,7 +105,7 @@ StateFactory::createDefaultDescriptors()
     // Next make the "default" descriptor model, which is used when 
     // no other data is available. These are 1x1 pixel placeholder images.
     auto color_image = Image::create(Image::R8G8B8A8_UNORM, 1, 1);
-    color_image->write(Color::DarkGray, 0, 0);
+    color_image->write(Color::White, 0, 0);
     textures.color.defaultData = util::moveImageToVSG(color_image);
     ROCKY_HARD_ASSERT(textures.color.defaultData);
     this->defaultTileDescriptors.color = vsg::DescriptorImage::create(
@@ -161,13 +164,13 @@ StateFactory::createShaderSet() const
     auto vertexShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_VERTEX_BIT,
         "main",
-        vsg::findFile("terrain.vert", searchPaths),
+        vsg::findFile(TERRAIN_VERT_SHADER, searchPaths),
         options);
 
     auto fragmentShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_FRAGMENT_BIT,
         "main",
-        vsg::findFile("terrain.frag", searchPaths),
+        vsg::findFile(TERRAIN_FRAG_SHADER, searchPaths),
         options);
 
     if (!vertexShader || !fragmentShader)

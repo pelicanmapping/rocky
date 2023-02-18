@@ -38,7 +38,7 @@ TMSElevationLayer::openImplementation(const IOOptions& io)
     if (status.failed())
         return status;
 
-    if (!driver_profile.isEquivalentTo(profile()))
+    if (driver_profile != profile())
     {
         setProfile(driver_profile);
     }

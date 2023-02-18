@@ -320,7 +320,6 @@ namespace ROCKY_NAMESPACE
         Distance(const Config& conf) : qualified_double<Distance>(conf, Units::METERS) { } 
         Distance(const std::string& str) : qualified_double<Distance>(str, Units::METERS) { }
     };
-    typedef Distance Linear; // backwards compat
 
     struct Angle : public qualified_double<Angle> {
         Angle() : qualified_double<Angle>(0, Units::DEGREES) { }
@@ -332,7 +331,6 @@ namespace ROCKY_NAMESPACE
             else return asString();
         }
     };
-    typedef Angle Angular; // backwards compat
 
     struct Duration : public qualified_double<Duration> {
         Duration() : qualified_double<Duration>(0, Units::SECONDS) { }
@@ -340,7 +338,6 @@ namespace ROCKY_NAMESPACE
         Duration(const Config& conf) : qualified_double<Duration>(conf, Units::SECONDS) { }
         Duration(const std::string& str) : qualified_double<Duration>(str, Units::SECONDS) { }
     };
-    typedef Duration Temporal; // backwards compat
 
     struct Speed : public qualified_double<Speed> {
         Speed() : qualified_double<Speed>(0, Units::METERS_PER_SECOND) { }

@@ -171,12 +171,11 @@ ElevationLayer::normalizeNoDataValues(Heightfield* hf) const
     }
 }
 
-void
-ElevationLayer::assembleHeightfield(
-    const TileKey& key,
-    shared_ptr<Heightfield> out_hf,
-    const IOOptions& io) const
+shared_ptr<Heightfield>
+ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) const
 {
+    shared_ptr<Heightfield> output;
+
     // Collect the heightfields for each of the intersecting tiles.
     std::vector<GeoHeightfield> geohf_list;
 
@@ -246,10 +245,15 @@ ElevationLayer::assembleHeightfield(
             unsigned width = 0;
             unsigned height = 0;
 
+            auto keyExtent = key.extent();
+
+            std::vector<SRSOperation> xform_list;
+
             for(auto& geohf : geohf_list)
             {
                 width = std::max(width, geohf.heightfield()->width());
                 height = std::max(height, geohf.heightfield()->height());
+                xform_list.push_back(keyExtent.srs().to(geohf.srs()));
             }
 
             // Now sort the heightfields by resolution to make sure we're sampling
@@ -257,7 +261,7 @@ ElevationLayer::assembleHeightfield(
             std::sort(geohf_list.begin(), geohf_list.end(), GeoHeightfield::SortByResolutionFunctor());
 
             // new output HF:
-            out_hf = Heightfield::create(width, height);
+            output = Heightfield::create(width, height);
 
             //Go ahead and set up the heightfield so we don't have to worry about it later
             double minx, miny, maxx, maxy;
@@ -273,45 +277,33 @@ ElevationLayer::assembleHeightfield(
                 {
                     double y = miny + (dy * (double)r);
 
-                    //For each sample point, try each heightfield.  The first one with a valid elevation wins.
+                    // For each sample point, try each heightfield.  The first one with a valid elevation wins.
                     float elevation = NO_DATA_VALUE;
-                    fvec3 normal(0,0,1);
 
-                    for (auto& geohf : geohf_list)
+                    for(unsigned k=0; k<geohf_list.size(); ++k)
                     {
                         // get the elevation value, at the same time transforming it vertically into the
                         // requesting key's vertical datum.
-                        dvec3 point(x, y, 0);
-
-                        if (geohf.getElevation(key.extent().srs(), point, Heightfield::BILINEAR))
+                        elevation = geohf_list[k].heightAt(x, y, xform_list[k], Heightfield::BILINEAR);
+                        if (elevation != NO_DATA_VALUE)
                         {
-                            elevation = point.z;
                             break;
                         }
                     }
 
-                    out_hf->write(fvec4(elevation), c, r);
+                    output->heightAt(c, r) = elevation;
                 }
             }
         }
-        else
-        {
-            //if (progress && progress->message().empty())
-            //    progress->message() = "assemble yielded no heightfields";
-        }
     }
-    else
-    {
-        //if (progress && progress->message().empty())
-        //    progress->message() = "assemble yielded no intersecting tiles";
-    }
-
 
     // If the progress was cancelled clear out any of the output data.
     if (io.canceled())
     {
-        out_hf = nullptr;
+        output = nullptr;
     }
+
+    return output;
 }
 
 Result<GeoHeightfield>
@@ -366,8 +358,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
     else
     {
         // If the profiles are different, use a compositing method to assemble the tile.
-        shared_ptr<Heightfield> hf;
-        assembleHeightfield(key, hf, io);
+        shared_ptr<Heightfield> hf = assembleHeightfield(key, io);
         result = GeoHeightfield(hf, key.extent());
     }
 
@@ -554,7 +545,7 @@ ElevationLayerVector::populateHeightfield(
             // Find the "best available" mapped key from the tile source:
             else
             {
-                bestKey = layer->getBestAvailableTileKey(mappedKey);
+                bestKey = layer->bestAvailableTileKey(mappedKey);
                 if (bestKey.valid())
                 {
                     // If the bestKey is not the mappedKey, this layer is providing
@@ -760,23 +751,21 @@ ElevationLayerVector::populateHeightfield(
                             realData = true;
                         }
 
-                        dvec3 temp(x, y, 0);
-                        if (layerHF.getElevation(keySRS, temp, interpolation))
+                        //TODO: optimize by using SRSOperation variant
+                        float elevation = layerHF.heightAt(x, y, keySRS, interpolation);
+                        if (elevation != NO_DATA_VALUE)
                         {
-                            if (temp.z != NO_DATA_VALUE)
-                            {
-                                // remember the index so we can only apply offset layers that
-                                // sit on TOP of this layer.
-                                resolvedIndex = index;
+                            // remember the index so we can only apply offset layers that
+                            // sit on TOP of this layer.
+                            resolvedIndex = index;
 
-                                hf->write(fvec4(temp.z), c, r);
+                            hf->write(fvec4(elevation), c, r);
 
-                                resolution = actualKey.getResolutionForTileSize(hf->width()).second;
-                            }
-                            else
-                            {
-                                ++nodataCount;
-                            }
+                            resolution = actualKey.getResolutionForTileSize(hf->width()).second;
+                        }
+                        else
+                        {
+                            ++nodataCount;
                         }
                     }
 
@@ -825,12 +814,10 @@ ElevationLayerVector::populateHeightfield(
                     // If we actually got a layer then we have real data
                     realData = true;
 
-                    dvec3 temp(x, y, 0);
-                    if (layerHF.getElevation(keySRS, temp, interpolation) &&
-                        temp.z != NO_DATA_VALUE &&
-                        !equiv(temp.z, 0.0))
+                    float elevation = layerHF.heightAt(x, y, keySRS, interpolation);
+                    if (elevation != NO_DATA_VALUE && !equiv(elevation, 0.0f))
                     {
-                        hf->heightAt(c, r) += temp.z;
+                        hf->heightAt(c, r) += elevation;
 
                         // Technically this is correct, but the resultin normal maps
                         // look awful and faceted.

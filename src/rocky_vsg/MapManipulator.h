@@ -659,7 +659,7 @@ namespace ROCKY_NAMESPACE
 
         struct State
         {
-            // The world coordinate of the Viewpoint focal point.
+            // The world coordinate of the focal point.
             vsg::dvec3 center;
 
             // Reference frame for the local ENU tangent plane to the elllipoid centered

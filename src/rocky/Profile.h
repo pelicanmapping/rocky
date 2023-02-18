@@ -101,14 +101,13 @@ namespace ROCKY_NAMESPACE
 
         //! Gets whether the two profiles can be treated as equivalent.
         //! @param rhs Comparison profile
-        bool isEquivalentTo(const Profile& rhs) const;
+        //bool isEquivalentTo(const Profile& rhs) const;
 
         //! Equality is the same as equivalency
-        bool operator == (const Profile& rhs) const {
-            return isEquivalentTo(rhs);
-        }
+        bool operator == (const Profile& rhs) const;
+
         bool operator != (const Profile& rhs) const {
-            return !isEquivalentTo(rhs);
+            return !operator==(rhs);
         }
 
         //! Gets whether the two profiles can be treated as equivalent (without regard

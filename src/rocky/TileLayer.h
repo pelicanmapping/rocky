@@ -112,43 +112,31 @@ namespace ROCKY_NAMESPACE
          *    corresponding to possible real data. If you set this to true, it may
          *    also return a TileKey that may correspond to upsampled data.
          */
-        virtual TileKey getBestAvailableTileKey(
+        virtual TileKey bestAvailableTileKey(
             const TileKey& key,
             bool considerUpsampling =false) const;
 
-        /**
-         * Whether the layer possibly has real data for the provided TileKey.
-         * Best guess given available information.
-         */
+        //! Whether the layer possibly has real data for the provided TileKey.
+        //! Best guess given available information.
         virtual bool mayHaveData(const TileKey& key) const;
 
-        /**
-         * Whether the given key falls within the range limits set in the options;
-         * i.e. min/maxLevel or min/maxResolution. (This does not mean that the key
-         * will result in data.)
-         */
+        //! Whether the given key falls within the range limits set in the options;
+        //! i.e. min/maxLevel or min/maxResolution. (This does not mean that the key
+        //! will result in data.)
         virtual bool isKeyInLegalRange(const TileKey& key) const;
 
-        /**
-         * Same as isKeyInLegalRange, but ignores the "maxDataLevel" setting
-         * since that does NOT affect visibility of a tile.
-         */
+        //! Same as isKeyInLegalRange, but ignores the "maxDataLevel" setting
+        //! since that does NOT affect visibility of a tile.
         virtual bool isKeyInVisualRange(const TileKey& key) const;
 
-        /**
-         * Data Extents reported for this layer are copied into output.
-         */
-        virtual void getDataExtents(DataExtentList& dataExtents) const;
+        //! Data Extents reported for this layer are copied into output
+        virtual DataExtentList dataExtents() const;
 
-        /**
-        * Gets the number of data extents on the layer.
-        */
-        unsigned int getDataExtentsSize() const;
+        //! Number of data extents on the layer
+        unsigned dataExtentsSize() const;
 
-        /**
-         * Gets an extent that is the union of all the extents in getDataExtents().
-         */
-        const DataExtent& getDataExtentsUnion() const;
+        //! Extent that is the union of all the extents in getDataExtents().
+        const DataExtent& dataExtentsUnion() const;
 
         //! Assign a data extents collection to the layer
         virtual void setDataExtents(const DataExtentList& dataExtents);
@@ -156,48 +144,10 @@ namespace ROCKY_NAMESPACE
         //! Adds a DataExent to this layer.
         void addDataExtent(const DataExtent& dataExtent);
 
-    public: // Layer interface
+    public: // Layer
 
-        //! Extent of this layer's data.
-        virtual const GeoExtent& extent() const;
-
-        //! Called by Map when added
-        //void addedToMap(const Map*) override;
-
-    public:
-
-        /**
-         * Metadata about the terrain layer that is stored in the cache, and read
-         * when the cache is opened.
-         */
-        struct ROCKY_EXPORT CacheBinMetadata
-        {
-            CacheBinMetadata();
-
-            CacheBinMetadata( const CacheBinMetadata& rhs );
-
-            CacheBinMetadata( const Config& conf );
-
-            bool ok() const { return _valid; }
-
-            Config getConfig() const;
-
-            bool _valid;
-            optional<std::string> _cacheBinId;
-            optional<std::string> _sourceName;
-            optional<std::string> _sourceDriver;
-            optional<int> _sourceTileSize;
-            optional<Config> _sourceProfile;
-            optional<Config> _cacheProfile;
-            optional<TimeStamp> _cacheCreateTime;
-            DataExtentList _dataExtents;
-        };
-
-        //! Access to information about the cache
-        CacheBinMetadata* getCacheBinMetadata(const Profile& profile);
-
-        //! Sets up a small data cache if necessary.
-        //void setUpL2Cache(unsigned minSize =0u);
+        //! Extent of this layer
+        const GeoExtent& extent() const override;
 
     protected: // Layer
 
@@ -207,8 +157,7 @@ namespace ROCKY_NAMESPACE
 
         //! Opportunity for a subclass to alter and/or override components
         //! of the Profile
-        virtual void applyProfileOverrides(
-            Profile& in_out_profile) const { }
+        virtual void applyProfileOverrides(Profile& in_out_profile) const { }
 
         //! Call this if you call dataExtents() and modify it.
         void dirtyDataExtents();
@@ -252,16 +201,8 @@ namespace ROCKY_NAMESPACE
         // override the runtime options policy if set.
         optional<CachePolicy> _runtimeCachePolicy;
 
-        //using CacheBinMetadataMap = std::unordered_map<std::string, osg::ref_ptr<CacheBinMetadata>>;
-        //CacheBinMetadataMap _cacheBinMetadata;
-
         // methods accesible by Map:
         friend class Map;
     };
-
-
-
-    // inlines methods
-    
 
 } // namespace TileLayer

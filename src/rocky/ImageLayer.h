@@ -193,7 +193,7 @@ namespace ROCKY_NAMESPACE
         // Fetches multiple images from the TileSource; mosaics/reprojects/crops as necessary, and
         // returns a single tile. This is called by createImageFromTileSource() if the key profile
         // doesn't match the layer profile.
-        Result<GeoImage> assembleImage(
+        shared_ptr<Image> assembleImage(
             const TileKey& key,
             const IOOptions& io) const;
 

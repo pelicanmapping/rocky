@@ -10,6 +10,11 @@
 #include <rocky/TMSElevationLayer.h>
 #endif
 
+#ifdef ROCKY_SUPPORTS_GDAL
+#include <rocky/GDALImageLayer.h>
+#include <rocky/GDALElevationLayer.h>
+#endif
+
 int error(const rocky::Status& status)
 {
     rocky::Log::warn() << "Problem with layer: " << status.message << std::endl;
@@ -24,16 +29,16 @@ int main(int argc, char** argv)
     // instantiate the game engine.
     rocky::EngineVSG engine(argc, argv);
 
-#if defined(ROCKY_SUPPORTS_TMS)
-
-    // add an imagery layer
-    auto imagery = rocky::TMSImageLayer::create();
-    imagery->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
+#if defined(ROCKY_SUPPORTS_GDAL)
+    auto imagery = rocky::GDALImageLayer::create();
+    imagery->setURI("WMTS:https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml,layer=s2cloudless-2020");
     engine.map()->addLayer(imagery);
 
     if (imagery->status().failed())
         return error(imagery->status());
+#endif
 
+#if defined(ROCKY_SUPPORTS_TMS)
     // add an elevation layer
     auto elevation = rocky::TMSElevationLayer::create();
     elevation->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
@@ -41,7 +46,6 @@ int main(int argc, char** argv)
 
     if (elevation->status().failed())
         return error(elevation->status());
-
 #endif
 
     // run until the user quits.

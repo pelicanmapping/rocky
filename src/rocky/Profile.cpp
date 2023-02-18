@@ -226,6 +226,23 @@ Profile::operator=(Profile&& rhs)
     return *this;
 }
 
+bool
+Profile::operator == (const Profile& rhs) const
+{
+    if (!valid() || !rhs.valid())
+        return false;
+
+    if (_shared == rhs._shared)
+        return true;
+
+    if (_shared->_wellKnownName == rhs._shared->_wellKnownName)
+        return true;
+
+    return
+        _shared->_extent == rhs._shared->_extent &&
+        _shared->_numTilesWideAtLod0 == rhs._shared->_numTilesHighAtLod0;
+}
+
 Profile::Profile(const Config& conf)
 {
     _shared = std::make_shared<Data>();
@@ -453,12 +470,12 @@ Profile::tileExtent(unsigned lod, unsigned tileX, unsigned tileY) const
     return GeoExtent(srs(), xmin, ymin, xmax, ymax);
 }
 
-bool
-Profile::isEquivalentTo(const Profile& rhs) const
-{
-    //return getFullSignature() == rhs.getFullSignature();
-    return getHorizSignature() == rhs.getHorizSignature();
-}
+//bool
+//Profile::isEquivalentTo(const Profile& rhs) const
+//{
+//    //return getFullSignature() == rhs.getFullSignature();
+//    return getHorizSignature() == rhs.getHorizSignature();
+//}
 
 //bool
 //Profile::isHorizEquivalentTo(const Profile& rhs) const
@@ -559,25 +576,31 @@ Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) cons
             return GeoExtent::INVALID;
 
         // bail out if the extent's do not intersect at all:
-        if (!gcs_input.intersects(_shared->_latlong_extent, false))
+        if (!gcs_input.intersects(geographicExtent(), false))
             return GeoExtent::INVALID;
 
         // clamp it to the profile's extents:
         GeoExtent clamped_gcs_input = GeoExtent(
             gcs_input.srs(),
-            clamp(gcs_input.xMin(), _shared->_latlong_extent.xMin(), _shared->_latlong_extent.xMax()),
-            clamp(gcs_input.yMin(), _shared->_latlong_extent.yMin(), _shared->_latlong_extent.yMax()),
-            clamp(gcs_input.xMax(), _shared->_latlong_extent.xMin(), _shared->_latlong_extent.xMax()),
-            clamp(gcs_input.yMax(), _shared->_latlong_extent.yMin(), _shared->_latlong_extent.yMax()));
+            clamp(gcs_input.xMin(), geographicExtent().xMin(), geographicExtent().xMax()),
+            clamp(gcs_input.yMin(), geographicExtent().yMin(), geographicExtent().yMax()),
+            clamp(gcs_input.xMax(), geographicExtent().xMin(), geographicExtent().xMax()),
+            clamp(gcs_input.yMax(), geographicExtent().yMin(), geographicExtent().yMax()));
 
         if (out_clamped)
             *out_clamped = (clamped_gcs_input != gcs_input);
 
         // finally, transform the clamped extent into this profile's SRS and return it.
         GeoExtent result =
-            clamped_gcs_input.srs().isEquivalentTo(this->srs()) ?
+            clamped_gcs_input.srs() == srs() ?
             clamped_gcs_input :
-            clamped_gcs_input.transform(this->srs());
+            clamped_gcs_input.transform(srs());
+
+        if (!result.valid())
+        {
+            Log::warn() << "Oh no." << std::endl;
+            //return clampAndTransformExtent(input, out_clamped);
+        }
 
         return result;
     }    
@@ -589,13 +612,13 @@ Profile::getEquivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
     ROCKY_SOFT_ASSERT_AND_RETURN(rhsProfile.valid(), rhsLOD);
 
     //If the profiles are equivalent, just use the incoming lod
-    if (this->isEquivalentTo(rhsProfile))
+    if (*this == rhsProfile)
         return rhsLOD;
 
     // Special check for geodetic to mercator or vise versa, they should match up in LOD.
     // TODO not sure about this.. -gw
-    if ((rhsProfile.isEquivalentTo(Profile::SPHERICAL_MERCATOR) && isEquivalentTo(Profile::GLOBAL_GEODETIC)) ||
-        (rhsProfile.isEquivalentTo(Profile::GLOBAL_GEODETIC) && isEquivalentTo(Profile::SPHERICAL_MERCATOR)))
+    if (((rhsProfile == Profile::SPHERICAL_MERCATOR) && (*this == Profile::GLOBAL_GEODETIC)) ||
+        ((rhsProfile == Profile::GLOBAL_GEODETIC) && (*this == Profile::SPHERICAL_MERCATOR)))
     {
         return rhsLOD;
     }
@@ -609,9 +632,8 @@ Profile::getEquivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
         return rhsLOD;
     }
 
-    auto rhsSRS = rhsProfile.srs();
-    double rhsTargetHeight = rhsSRS.units().convertTo(srs().units(), rhsHeight);
-//    double rhsTargetHeight = rhsSRS.transformUnits(rhsHeight, srs());
+    double rhsTargetHeight = SRS::transformUnits(
+        rhsHeight, rhsProfile.srs(), srs(), Angle());
 
     int currLOD = 0;
     int destLOD = currLOD;

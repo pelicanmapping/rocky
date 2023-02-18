@@ -258,13 +258,19 @@ namespace
         // TODO: rethink this to be more generic.
         if (fromSRS.isGeographic() && !toSRS.isGeographic())
         {
+            auto to_geo = toSRS.to(fromSRS);
             Box b = toSRS.bounds(); // long,lat degrees
+            dvec3 min(b.xmin, b.ymin, 0);
+            dvec3 max(b.xmax, b.ymax, 0);
+            to_geo(min, min);
+            to_geo(max, max);
+
             if (b.valid())
             {
-                in_out_xmin = clamp(in_out_xmin, b.xmin, b.xmax);
-                in_out_xmax = clamp(in_out_xmax, b.xmin, b.xmax);
-                in_out_ymin = clamp(in_out_ymin, b.ymin, b.ymax);
-                in_out_ymax = clamp(in_out_ymax, b.ymin, b.ymax);
+                in_out_xmin = clamp(in_out_xmin, min.x, max.x);
+                in_out_xmax = clamp(in_out_xmax, min.x, max.x);
+                in_out_ymin = clamp(in_out_ymin, min.y, max.y);
+                in_out_ymax = clamp(in_out_ymax, min.y, max.y);
             }
         }
 
@@ -401,23 +407,19 @@ GeoExtent::bounds() const
 }
 
 bool
-GeoExtent::contains(double x, double y, const SRS& srs) const
+GeoExtent::contains(double x, double y, const SRS& xy_srs) const
 {
     if (!valid() || !is_valid(x) || !is_valid(y))
         return false;
 
-    dvec3 xy( x, y, 0 );
-    dvec3 local(x, y, 0);
-    const SRS& pSrs = _srs;
-
-    // See if we need to xform the input:
-    if (srs.isHorizEquivalentTo(pSrs) == false)
+    // transform if neccessary:
+    if (xy_srs.valid() && xy_srs != srs())
     {
-        // If the transform fails, bail out with error
-        if (srs.to(pSrs).transform(xy, local) == false)
-        {
+        dvec3 temp(x, y, 0);
+        if (xy_srs.to(srs()).transform(temp, temp))
+            return contains(temp.x, temp.y, SRS::EMPTY);
+        else
             return false;
-        }
     }
 
     const double epsilon = 1e-6;
@@ -426,8 +428,8 @@ GeoExtent::contains(double x, double y, const SRS& srs) const
     const double least = east();
     const double lwest = west();
     const double lwidth = width();
-    double& localx = local.x;
-    double& localy = local.y;
+    double localx = x;
+    double localy = y;
 
     // Quantize the Y coordinate to account for tiny rounding errors:
     if (fabs(lsouth - localy) < epsilon)

@@ -574,7 +574,7 @@ GeoImage::GeoImage(shared_ptr<Image> image, const GeoExtent& extent) :
 bool
 GeoImage::valid() const 
 {
-    return _extent.valid();
+    return _extent.valid() && _image != nullptr;
 }
 
 shared_ptr<Image>
@@ -740,9 +740,7 @@ GeoImage::reproject(
 }
 
 bool
-GeoImage::read(
-    fvec4& output,
-    const GeoPoint& p) const
+GeoImage::read(fvec4& output, const GeoPoint& p) const
 {
     if (!p.valid() || !valid())
     {
@@ -765,7 +763,53 @@ GeoImage::read(
         return false;
     }
 
-    _image->read(output, u, v);
+    _image->read_bilinear(output, u, v);
 
+    return true;
+}
+
+bool
+GeoImage::read(fvec4& out, double x, double y, const SRS& xy_srs) const
+{
+    if (!valid()) return false;
+    dvec3 temp(x, y, 0);
+    if (xy_srs.valid())
+    {
+        if (!srs().to(xy_srs).transform(temp, temp))
+            return false;
+    }
+
+    double u = (temp.x - _extent.xMin()) / _extent.width();
+    double v = (temp.y - _extent.yMin()) / _extent.height();
+
+    // out of bounds?
+    if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
+    {
+        return false;
+    }
+
+   _image->read_bilinear(out, u, v);
+   return true;
+}
+
+bool
+GeoImage::read(fvec4& out, double x, double y, const SRSOperation& xform) const
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(valid(), false);
+
+    dvec3 temp(x, y, 0);
+    if (!xform.transform(temp, temp))
+        return false;
+
+    double u = (temp.x - _extent.xMin()) / _extent.width();
+    double v = (temp.y - _extent.yMin()) / _extent.height();
+
+    // out of bounds?
+    if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
+    {
+        return false;
+    }
+
+    _image->read_bilinear(out, u, v);
     return true;
 }

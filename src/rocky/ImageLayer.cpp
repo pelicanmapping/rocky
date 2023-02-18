@@ -103,12 +103,9 @@ ImageLayer::getAsyncLoading() const
 Status
 ImageLayer::openImplementation(const IOOptions& io)
 {
-    Status parent = TileLayer::openImplementation(io);
+    Status parent = super::openImplementation(io);
     if (parent.failed())
         return parent;
-
-    //if (!_emptyImage.valid())
-    //    _emptyImage = ImageUtils::createEmptyImage();
 
 #if 0
     if (!options().shareTexUniformName().has_value())
@@ -202,7 +199,7 @@ ImageLayer::createImage(const TileKey& key, const IOOptions& io) const
         {
             if (!result.valid())
             {
-                TileKey bestKey = getBestAvailableTileKey(key);
+                TileKey bestKey = bestAvailableTileKey(key);
                 result = createImageInKeyProfile(bestKey, progress);
             }
 
@@ -270,10 +267,10 @@ ImageLayer::createImageInKeyProfile(
         bool createUpsampledImage = false;
         if (upsample() == true && maxDataLevel() > key.levelOfDetail())
         {
-            TileKey best = getBestAvailableTileKey(key, false);
+            TileKey best = bestAvailableTileKey(key, false);
             if (best.valid())
             {
-                TileKey best_upsampled = getBestAvailableTileKey(key, true);
+                TileKey best_upsampled = bestAvailableTileKey(key, true);
                 if (best_upsampled.valid() &&
                     best.levelOfDetail() < best_upsampled.levelOfDetail())
                 {
@@ -296,187 +293,145 @@ ImageLayer::createImageInKeyProfile(
     else
     {
         // If the profiles are different, use a compositing method to assemble the tile.
-        result = assembleImage(key, io);
+        auto image = assembleImage(key, io);
+        result = GeoImage(image, key.extent());
     }
 
     return result;
 }
 
-Result<GeoImage>
+shared_ptr<Image>
 ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 {
-    // If we got here, asset that there's a non-null layer profile.
-    if (!profile().valid())
-    {
-        setStatus(Status(Status::AssertionFailure, "assembleImage with undefined profile"));
-        return Result(GeoImage::INVALID);
-    }
+    shared_ptr<Image> output;
 
-    GeoImage mosaicedImage;
-    Result<GeoImage> result;
+    // Collect the rasters for each of the intersecting tiles.
+    std::vector<GeoImage> source_list;
 
-    // Get a set of layer tiles that intersect the requested extent.
+    // Determine the intersecting keys
     std::vector<TileKey> intersectingKeys;
-    key.getIntersectingKeys(profile(), intersectingKeys);
 
-    if ( intersectingKeys.size() > 0 )
+    if (key.levelOfDetail() > 0u)
     {
-#if 0
-        GeoExtent ee = key.extent().transform(intersectingKeys.front().profile().srs());
-        ROCKY_INFO << "Tile " << key.str() << " ... " << ee.toString() << std::endl;
-        for (auto key : intersectingKeys) {
-            ROCKY_INFO << " - " << key.str() << " ... " << key.extent().toString() << std::endl;
-        }
-#endif
-        double dst_minx, dst_miny, dst_maxx, dst_maxy;
-        key.extent().getBounds(dst_minx, dst_miny, dst_maxx, dst_maxy);
-
-        // if we find at least one "real" tile in the mosaic, then the whole result tile is
-        // "real" (i.e. not a fallback tile)
-        bool retry = false;
-        util::ImageMosaic mosaic;
-
-        // keep track of failed tiles.
-        std::vector<TileKey> failedKeys;
-
-        for(auto& k : intersectingKeys)
-        {
-            auto geoimage = createImageInKeyProfile(k, io);
-
-            if (geoimage->valid())
-            {
-#if 0
-                // use std::dynamic_pointer_cast....
-                if (dynamic_cast<const TimeSeriesImage*>(image.getImage()))
-                {
-                    ROCKY_WARN << LC << "Cannot mosaic a TimeSeriesImage. Discarding." << std::endl;
-                    return GeoImage::INVALID;
-                }
-                else if (dynamic_cast<const osg::ImageStream*>(image.getImage()))
-                {
-                    ROCKY_WARN << LC << "Cannot mosaic an osg::ImageStream. Discarding." << std::endl;
-                    return GeoImage::INVALID;
-                }
-                else
-#endif
-                {
-                    mosaic.getImages().emplace_back(geoimage->image(), k);
-                }
-            }
-            else
-            {
-                // the tile source did not return a tile, so make a note of it.
-                failedKeys.push_back(k);
-
-                if (io.canceled())
-                {
-                    retry = true;
-                    break;
-                }
-            }
-        }
-
-        // Fail is: a) we got no data and the LOD is greater than zero; or
-        // b) the operation was canceled mid-stream.
-        if ( (mosaic.getImages().empty() && key.levelOfDetail() > 0) || retry)
-        {
-            // if we didn't get any data at LOD>0, fail.
-            return Result(GeoImage::INVALID);
-        }
-
-        // We got at least one good tile, OR we got nothing but since the LOD==0 we have to
-        // fall back on a lower resolution.
-        // So now we go through the failed keys and try to fall back on lower resolution data
-        // to fill in the gaps. The entire mosaic must be populated or this qualifies as a bad tile.
-        for(auto& k : failedKeys)
-        {
-            Result<GeoImage> geoimage;
-
-            for(TileKey parentKey = k.createParentKey();
-                parentKey.valid() && !geoimage.value.valid();
-                parentKey.makeParent())
-            {
-                {
-                    std::shared_lock lock(layerMutex());
-                    geoimage = createImageImplementation(parentKey, io);
-                }
-
-                if (geoimage.value.valid())
-                {
-                    Result<GeoImage> cropped;
-
-                    if ( !isCoverage() )
-                    {
-                        cropped = geoimage.value.crop(
-                            k.extent(),
-                            false,
-                            geoimage->image()->width(),
-                            geoimage->image()->height() );
-                    }
-
-                    else
-                    {
-                        // TODO: may not work.... test; tilekey extent will <> cropped extent
-                        cropped = geoimage.value.crop(
-                            k.extent(),
-                            true,
-                            geoimage->image()->width(),
-                            geoimage->image()->height(),
-                            false );
-                    }
-
-                    if (cropped.status.ok())
-                    {
-                        // and queue it.
-                        mosaic.getImages().emplace_back(cropped->image(), k);
-                    }
-
-                }
-            }
-
-            if (!geoimage.value.valid())
-            {
-                // a tile completely failed, even with fallback. Eject.
-                // let it go. The empty areas will be filled with alpha by ImageMosaic.
-            }
-        }
-
-        // all set. Mosaic all the images together.
-        double rxmin, rymin, rxmax, rymax;
-        mosaic.getExtents( rxmin, rymin, rxmax, rymax );
-
-        mosaicedImage = GeoImage(
-            mosaic.createImage(),
-            GeoExtent( profile().srs(), rxmin, rymin, rxmax, rymax ) );
+        key.getIntersectingKeys(profile(), intersectingKeys);
     }
+
     else
     {
-        //ROCKY_DEBUG << "assembleImage: no intersections (" << key.str() << ")" << std::endl;
+        // LOD is zero - check whether the LOD mapping went out of range, and if so,
+        // fall back until we get valid tiles. This can happen when you have two
+        // profiles with very different tile schemes, and the "equivalent LOD"
+        // surpasses the max data LOD of the tile source.
+        unsigned numTilesThatMayHaveData = 0u;
+
+        int intersectionLOD = profile().getEquivalentLOD(key.profile(), key.levelOfDetail());
+
+        while (numTilesThatMayHaveData == 0u && intersectionLOD >= 0)
+        {
+            intersectingKeys.clear();
+
+            TileKey::getIntersectingKeys(
+                key.extent(),
+                intersectionLOD,
+                profile(),
+                intersectingKeys);
+
+            for (auto& layerKey : intersectingKeys)
+            {
+                if (mayHaveData(layerKey))
+                {
+                    ++numTilesThatMayHaveData;
+                }
+            }
+
+            --intersectionLOD;
+        }
     }
 
-    // Final step: transform the mosaic into the requesting key's extent.
-    if ( mosaicedImage.valid() )
+    // collect heightfield for each intersecting key. Note, we're hitting the
+    // underlying tile source here, so there's no vetical datum shifts happening yet.
+    // we will do that later.
+    if (intersectingKeys.size() > 0)
     {
-        // GeoImage::reproject() will automatically crop the image to the correct extents.
-        // so there is no need to crop after reprojection. Also note that if the SRS's are the
-        // same (even though extents are different), then this operation is technically not a
-        // reprojection but merely a resampling.
+        for (auto& layerKey : intersectingKeys)
+        {
+            if (isKeyInLegalRange(layerKey))
+            {
+                std::shared_lock L(layerMutex());
 
-        const GeoExtent& extent = key.extent();
+                auto result = createImageImplementation(layerKey, io);
 
-        result = mosaicedImage.reproject(
-            key.profile().srs(),
-            &extent,
-            tileSize(), tileSize(),
-            true);
+                if (result.status.ok() && result.value.valid())
+                {
+                    source_list.push_back(result.value);
+                }
+            }
+        }
+
+        // If we actually got data, resample/reproject it to match the incoming TileKey's extents.
+        if (source_list.size() > 0)
+        {
+            unsigned width = 0;
+            unsigned height = 0;
+
+            auto keyExtent = key.extent();
+
+            std::vector<SRSOperation> xform_list;
+
+            for (auto& source : source_list)
+            {
+                width = std::max(width, source.image()->width());
+                height = std::max(height, source.image()->height());
+                xform_list.push_back(keyExtent.srs().to(source.srs()));
+            }
+
+            // Now sort the heightfields by resolution to make sure we're sampling
+            // the highest resolution one first.
+            //std::sort(source_list.begin(), source_list.end(), GeoHeightfield::SortByResolutionFunctor());
+
+            // new output:
+            output = Image::create(Image::R8G8B8A8_UNORM, width, height);
+
+            //Go ahead and set up the heightfield so we don't have to worry about it later
+            double minx, miny, maxx, maxy;
+            key.extent().getBounds(minx, miny, maxx, maxy);
+            double dx = (maxx - minx) / (double)(width - 1);
+            double dy = (maxy - miny) / (double)(height - 1);
+
+            //Create the new heightfield by sampling all of them.
+            for (unsigned int c = 0; c < width; ++c)
+            {
+                double x = minx + (dx * (double)c);
+                for (unsigned r = 0; r < height; ++r)
+                {
+                    double y = miny + (dy * (double)r);
+
+                    // For each sample point, try each heightfield.  The first one with a valid elevation wins.
+                    fvec4 pixel(0, 0, 0, 0);
+
+                    for (unsigned k = 0; k < source_list.size(); ++k)
+                    {
+                        // get the elevation value, at the same time transforming it vertically into the
+                        // requesting key's vertical datum.
+                        if (source_list[k].read(pixel, x, y, xform_list[k]) && pixel.a > 0.0f)
+                        {
+                            break;
+                        }
+                    }
+
+                    output->write(pixel, c, r);
+                }
+            }
+        }
     }
 
+    // If the progress was cancelled clear out any of the output data.
     if (io.canceled())
     {
-        return Status(Status::ResourceUnavailable, "Canceled");
+        output = nullptr;
     }
 
-    return result;
+    return output;
 }
 
 Status

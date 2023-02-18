@@ -110,7 +110,7 @@ RuntimeContext::RuntimeContext()
 }
 
 util::Future<bool>
-RuntimeContext::compileAndAddChild(vsg::Group* parent, NodeFactory factory, const util::job& job_config)
+RuntimeContext::compileAndAddChild(vsg::ref_ptr<vsg::Group> parent, NodeFactory factory, const util::job& job_config)
 {
     // This is a two-step procedure. First we have to create the child
     // by calling the Factory function, and compile it. These things happen 
@@ -126,7 +126,10 @@ RuntimeContext::compileAndAddChild(vsg::Group* parent, NodeFactory factory, cons
     util::Future<bool> promise;
     auto& runtime = *this;
     
-    auto async_create_and_add_node = [runtime, promise, parent, factory](Cancelable& c) -> bool
+    auto compiler = runtime.compiler();
+    auto updates = runtime.updates();
+
+    auto async_create_and_add_node = [compiler, updates, promise, parent, factory](Cancelable& c) -> bool
     {
         if (c.canceled())
             return false;
@@ -137,7 +140,7 @@ RuntimeContext::compileAndAddChild(vsg::Group* parent, NodeFactory factory, cons
             return false;
 
         // compile the child:
-        runtime.compiler()->compile(child);
+        compiler->compile(child);
 
         // queue an update operation to add the child safely.
         // we pass along the original promise so these two operations appear as
@@ -153,7 +156,7 @@ RuntimeContext::compileAndAddChild(vsg::Group* parent, NodeFactory factory, cons
             return true;
         };        
         auto promise_op = util::PromiseOperation<bool>::create(promise, add_child);
-        runtime.updates()->add(promise_op);
+        updates->add(promise_op);
 
         return true;
     };

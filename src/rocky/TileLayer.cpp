@@ -11,122 +11,12 @@
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 
+#define LC "[TileLayer] \"" << name().value() << "\" "
+
 namespace
 {
     using DataExtentsIndex = RTree<DataExtent, double, 2>;
 }
-
-#define LC "[TileLayer] \"" << name().value() << "\" "
-
-TileLayer::CacheBinMetadata::CacheBinMetadata() :
-    _valid(false)
-{
-    //nop
-}
-
-TileLayer::CacheBinMetadata::CacheBinMetadata(const TileLayer::CacheBinMetadata& rhs) :
-    _valid(rhs._valid),
-    _cacheBinId(rhs._cacheBinId),
-    _sourceName(rhs._sourceName),
-    _sourceDriver(rhs._sourceDriver),
-    _sourceTileSize(rhs._sourceTileSize),
-    _sourceProfile(rhs._sourceProfile),
-    _cacheProfile(rhs._cacheProfile),
-    _cacheCreateTime(rhs._cacheCreateTime)
-{
-    //nop
-}
-
-TileLayer::CacheBinMetadata::CacheBinMetadata(const Config& conf)
-{
-    _valid = !conf.empty();
-
-    conf.get("cachebin_id", _cacheBinId);
-    conf.get("source_name", _sourceName);
-    conf.get("source_driver", _sourceDriver);
-    conf.get("source_tile_size", _sourceTileSize);
-    conf.get("source_profile", _sourceProfile);
-    conf.get("cache_profile", _cacheProfile);
-    conf.get("cache_create_time", _cacheCreateTime);
-
-    const Config* extentsRoot = conf.child_ptr("extents");
-    if ( extentsRoot )
-    {
-        const ConfigSet& extents = extentsRoot->children();
-
-        for (ConfigSet::const_iterator i = extents.begin(); i != extents.end(); ++i)
-        {
-            std::string srsString;
-            double xmin, ymin, xmax, ymax;
-            optional<unsigned> minLevel, maxLevel;
-
-            srsString = i->value("srs");
-            xmin = i->value("xmin", 0.0f);
-            ymin = i->value("ymin", 0.0f);
-            xmax = i->value("xmax", 0.0f);
-            ymax = i->value("ymax", 0.0f);
-            i->get("minlevel", minLevel);
-            i->get("maxlevel", maxLevel);
-
-            SRS srs(srsString);
-            DataExtent e(GeoExtent(srs, xmin, ymin, xmax, ymax));
-            if (minLevel.has_value())
-                e.minLevel() = minLevel.value();
-            if (maxLevel.has_value())
-                e.maxLevel() = maxLevel.value();
-
-            _dataExtents.push_back(e);
-        }
-    }
-
-    // check for validity. This will reject older caches that don't have
-    // sufficient attribution.
-    if (_valid)
-    {
-        if (!conf.hasValue("source_tile_size") ||
-            !conf.hasChild("source_profile") ||
-            !conf.hasChild("cache_profile"))
-        {
-            _valid = false;
-        }
-    }
-}
-
-Config
-TileLayer::CacheBinMetadata::getConfig() const
-{
-    Config conf("osgearth_terrainlayer_cachebin");
-    conf.set("cachebin_id", _cacheBinId);
-    conf.set("source_name", _sourceName);
-    conf.set("source_driver", _sourceDriver);
-    conf.set("source_tile_size", _sourceTileSize);
-    conf.set("source_profile", _sourceProfile);
-    conf.set("cache_profile", _cacheProfile);
-    conf.set("cache_create_time", _cacheCreateTime);
-
-    if (!_dataExtents.empty())
-    {
-        Config extents;
-        for (DataExtentList::const_iterator i = _dataExtents.begin(); i != _dataExtents.end(); ++i)
-        {
-            Config extent;
-            extent.set("srs", i->srs().definition());
-            extent.set("xmin", i->xMin());
-            extent.set("ymin", i->yMin());
-            extent.set("xmax", i->xMax());
-            extent.set("ymax", i->yMax());
-            extent.set("minlevel", i->minLevel());
-            extent.set("maxlevel", i->maxLevel());
-
-            extents.add("extent", extent);
-        }
-        conf.add("extents", extents);
-    }
-
-    return conf;
-}
-
-//------------------------------------------------------------------------
 
 TileLayer::TileLayer() :
     super()
@@ -387,7 +277,7 @@ TileLayer::isKeyInLegalRange(const TileKey& key) const
             // calculate the resolution in the layer's profile, which can
             // be different that the key's profile.
             double resKey = key.extent().width() / (double)tileSize();
-            double resLayer = key.profile().srs().units().convertTo(profile().srs().units(), resKey);
+            double resLayer = SRS::transformUnits(resKey, key.profile().srs(), profile().srs(), Angle());
 
             if (_maxResolution.has_value() && _maxResolution > resLayer)
             {
@@ -433,7 +323,7 @@ TileLayer::isKeyInVisualRange(const TileKey& key) const
             // calculate the resolution in the layer's profile, which can
             // be different that the key's profile.
             double resKey = key.extent().width() / (double)tileSize();
-            double resLayer = key.profile().srs().units().convertTo(profile().srs().units(), resKey);
+            double resLayer = SRS::transformUnits(resKey, key.profile().srs(), profile().srs(), Angle());
 
             if (_maxResolution.has_value() && _maxResolution > resLayer)
             {
@@ -450,29 +340,29 @@ TileLayer::isKeyInVisualRange(const TileKey& key) const
     return true;
 }
 
-unsigned int TileLayer::getDataExtentsSize() const
+unsigned int TileLayer::dataExtentsSize() const
 {
     std::shared_lock READ(_dataMutex);
     return _dataExtents.size();
 }
 
-void TileLayer::getDataExtents(DataExtentList& dataExtents) const
+DataExtentList
+TileLayer::dataExtents() const
 {
     std::shared_lock READ(_dataMutex);
-    if (!_dataExtents.empty())
-    {
-        dataExtents = _dataExtents;
-    }
+    return _dataExtents;
 }
 
-void TileLayer::setDataExtents(const DataExtentList& dataExtents)
+void
+TileLayer::setDataExtents(const DataExtentList& dataExtents)
 {
     std::shared_lock WRITE(_dataMutex);
     _dataExtents = dataExtents;
     dirtyDataExtents();
 }
 
-void TileLayer::addDataExtent(const DataExtent& dataExtent)
+void
+TileLayer::addDataExtent(const DataExtent& dataExtent)
 {
     std::shared_lock WRITE(_dataMutex);
     _dataExtents.push_back(dataExtent);
@@ -492,9 +382,9 @@ TileLayer::dirtyDataExtents()
 }
 
 const DataExtent&
-TileLayer::getDataExtentsUnion() const
+TileLayer::dataExtentsUnion() const
 {
-    if (!_dataExtentsUnion.valid() && getDataExtentsSize() > 0)
+    if (!_dataExtentsUnion.valid() && _dataExtents.size() > 0)
     {
         std::shared_lock WRITE(_dataMutex);
         {
@@ -526,11 +416,11 @@ TileLayer::getDataExtentsUnion() const
 const GeoExtent&
 TileLayer::extent() const
 {
-    return getDataExtentsUnion();
+    return dataExtentsUnion();
 }
 
 TileKey
-TileLayer::getBestAvailableTileKey(
+TileLayer::bestAvailableTileKey(
     const TileKey& key,
     bool considerUpsampling) const
 {
@@ -562,7 +452,7 @@ TileLayer::getBestAvailableTileKey(
             // calculate the resolution in the layer's profile, which can
             // be different that the key's profile.
             double resKey = key.extent().width() / (double)tileSize();
-            double resLayer = key.profile().srs().units().convertTo(profile().srs().units(), resKey);
+            double resLayer = SRS::transformUnits(resKey, key.profile().srs(), profile().srs(), Angle());
 
             if (_maxResolution.has_value() && _maxResolution > resLayer)
             {
@@ -577,14 +467,14 @@ TileLayer::getBestAvailableTileKey(
     }
 
     // If we have no data extents available, just return the MDL-limited input key.
-    if (getDataExtentsSize() == 0)
+    if (dataExtentsSize() == 0)
     {
         return localLOD > MDL ? key.createAncestorKey(MDL) : key;
     }
 
     // Reject if the extents don't overlap at all.
     // (Note: this does not consider min/max levels, only spatial extents)
-    if (!getDataExtentsUnion().intersects(key.extent()))
+    if (!dataExtentsUnion().intersects(key.extent()))
     {
         return TileKey::INVALID;
     }
@@ -710,6 +600,5 @@ TileLayer::getBestAvailableTileKey(
 bool
 TileLayer::mayHaveData(const TileKey& key) const
 {
-    return
-        key == getBestAvailableTileKey(key, true);
+    return key == bestAvailableTileKey(key, true);
 }

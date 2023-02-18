@@ -99,6 +99,14 @@ namespace ROCKY_NAMESPACE
         //! Read the value of a pixel at a geopoint.
         bool read(fvec4& output, const GeoPoint& p) const;
 
+        bool read(
+            fvec4& output, 
+            double x, double y, const SRS& srs) const;
+
+        bool read(
+            fvec4& output,
+            double x, double y, const SRSOperation& operation) const;
+
     private:
         GeoExtent _extent;
         shared_ptr<Image> _image;

@@ -110,9 +110,8 @@ namespace ROCKY_NAMESPACE
     private:
         void construct(const Config&);
 
-        void assembleHeightfield(
+        shared_ptr<Heightfield> assembleHeightfield(
             const TileKey& key,
-            shared_ptr<Heightfield> out_hf,
             const IOOptions& io) const;
 
         void normalizeNoDataValues(

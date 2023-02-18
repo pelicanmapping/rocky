@@ -197,22 +197,23 @@ namespace ROCKY_NAMESPACE
         //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
         bool transform(const DVEC3A& in, DVEC3B& out) const {
-            out.x = in.x, out.y = in.y, out.z = in.z;
-            return forward(get_handle(), out.x, out.y, out.z);
+            out = in;
+            return _nop? true : forward(get_handle(), out.x, out.y, out.z);
         }
 
         //! Transform a 3-vector (symonym for transform() method)
         //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
         bool operator()(const DVEC3A& in, DVEC3B& out) const {
-            out.x = in.x, out.y = in.y, out.z = in.z;
-            return forward(get_handle(), out.x, out.y, out.z);
+            out = in;
+            return _nop ? true : forward(get_handle(), out.x, out.y, out.z);
         }
 
         //! Transform a range of 3-vectors in place
         //! @return True if all transformations succeeded
         template<typename ITERATOR>
         bool transformRange(ITERATOR begin, ITERATOR end) const {
+            if (_nop) return true;
             unsigned errors = 0;
             void* handle = get_handle();
             for (auto iter = begin; iter != end; ++iter)
@@ -226,13 +227,14 @@ namespace ROCKY_NAMESPACE
         template<typename DVEC3A, typename DVEC3B>
         bool inverse(const DVEC3A& in, DVEC3B& out) const {
             out = in;
-            return inverse(get_handle(), out.x, out.y, out.z);
+            return _nop ? true : inverse(get_handle(), out.x, out.y, out.z);
         }
 
         //! Inverse-transform a range of 3-vectors in place
         //! @return True if all transformations succeeded
         template<typename ITERATOR>
         bool inverseRange(ITERATOR begin, ITERATOR end) const {
+            if (_nop) return true;
             unsigned errors = 0;
             void* handle = get_handle();
             for (auto iter = begin; iter != end; ++iter)
@@ -256,6 +258,7 @@ namespace ROCKY_NAMESPACE
     private:
         SRS _from;
         SRS _to;
+        bool _nop = false;
         mutable std::string _lastError;
 
         void* get_handle() const;

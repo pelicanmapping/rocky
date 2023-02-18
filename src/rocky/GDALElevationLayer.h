@@ -5,23 +5,25 @@
  */
 #pragma once
 
-#include <rocky/ImageLayer.h>
+#include <rocky/ElevationLayer.h>
 #include <rocky/GDAL.h>
 
 namespace ROCKY_NAMESPACE
 {
     /**
-     * Image layer connected to a GDAL raster dataset
+     * Elevation layer connected to a GDAL raster dataset
      */
-    class ROCKY_EXPORT GDALImageLayer : public Inherit<ImageLayer, GDALImageLayer>,
+    class ROCKY_EXPORT GDALElevationLayer : public Inherit<ElevationLayer, GDALElevationLayer>,
         public GDAL::LayerBase
     {
     public:
         //! Construct a GDAL image layer
-        GDALImageLayer();
+        GDALElevationLayer();
 
         //! Deserialize a GDAL image layer
-        GDALImageLayer(const Config&);
+        GDALElevationLayer(const Config&);
+
+        Config getConfig() const override;
 
     public: // Layer
 
@@ -31,12 +33,13 @@ namespace ROCKY_NAMESPACE
         //! Closes down any GDAL connections
         Status closeImplementation() override;
 
-        //! Gets a raster image for the given tile key
-        Result<GeoImage> createImageImplementation(
+
+    public: // ElevationLayer
+
+        //! Gets a raster heightfield for the given tile key
+        Result<GeoHeightfield> createHeightfieldImplementation(
             const TileKey& key,
             const IOOptions& io) const override;
-
-        Config getConfig() const override;
 
     private:
 

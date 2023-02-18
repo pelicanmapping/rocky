@@ -9,6 +9,8 @@
 
 namespace ROCKY_NAMESPACE
 {
+    constexpr float NO_DATA_VALUE = -FLT_MAX;
+
     /**
      * A grid of height values (32-bit floats).
      */

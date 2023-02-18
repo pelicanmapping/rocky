@@ -36,11 +36,11 @@ namespace ROCKY_NAMESPACE
         RuntimeContext();
 
         //! Compiler for new vsg objects
-        std::function<vsg::CompileManager*()> compiler;
+        std::function<vsg::ref_ptr<vsg::CompileManager>()> compiler;
 
         //! Queue for VSG synchronous update operations. Operations in this queue
         //! can safely edit the scene graph.
-        std::function<vsg::UpdateOperations*()> updates;
+        std::function<vsg::ref_ptr<vsg::UpdateOperations>()> updates;
 
         //! VSG state sharing
         vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
@@ -52,7 +52,7 @@ namespace ROCKY_NAMESPACE
         //! get added to "parent" if the operation suceeds.
         //! Returns a future you can check for completion.
         util::Future<bool> compileAndAddChild(
-            vsg::Group* parent,
+            vsg::ref_ptr<vsg::Group> parent,
             NodeFactory factory,
             const util::job& config = { });
 

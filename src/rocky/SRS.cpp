@@ -589,6 +589,7 @@ SRS::to(const SRS& rhs) const
     {
         result._from = *this;
         result._to = rhs;
+        result._nop = (result._from == result._to);
         return result;
     }
     return result;

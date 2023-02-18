@@ -51,32 +51,15 @@ GeoHeightfield::init()
         _resolution.x = _extent.width() / (double)(_hf->width() - 1);
         _resolution.y = _extent.height() / (double)(_hf->height() - 1);
 
-        //if (_heightField->getOrigin() != origin ||
-        //    _heightField->getXInterval() != dx ||
-        //    _heightField->getYInterval() != dy)
-        //{
-        //    osg::HeightField* hf = new osg::HeightField(*_heightField.get(), osg::CopyOp::SHALLOW_COPY);
-        //    hf->setOrigin(origin);
-        //    hf->setXInterval(dx);
-        //    hf->setYInterval(dy);
-        //    hf->setBorderWidth(0);
-        //    _heightField = hf;
-        //}
-
-        auto size = _hf->width() * _hf->height();
-        for (auto i = 0u; i < size; ++i)
+        for (unsigned row = 0; row < _hf->height(); ++row)
         {
-            float h = _hf->data<float>(i);
-            _maxHeight = std::max(_maxHeight, h);
-            _minHeight = std::min(_minHeight, h);
+            for (unsigned col = 0; col < _hf->width(); ++col)
+            {
+                float h = _hf->heightAt(col, row);
+                _maxHeight = std::max(_maxHeight, h);
+                _minHeight = std::min(_minHeight, h);
+            }
         }
-        //const osg::HeightField::HeightList& heights = _heightField->getHeightList();
-        //for( unsigned i=0; i<heights.size(); ++i )
-        //{
-        //    float h = heights[i];
-        //    if ( h > _maxHeight ) _maxHeight = h;
-        //    if ( h < _minHeight ) _minHeight = h;
-        //}
     }
 }
 
@@ -94,53 +77,68 @@ GeoHeightfield::heightAtLocation(
     return _hf->heightAtPixel(px, py, interpolation);
 }
 
-bool
-GeoHeightfield::getElevation(
-    const SRS& inputSRS,
-    dvec3& in_out_point,
-    Image::Interpolation interp) const
+float
+GeoHeightfield::heightAt(double x, double y, const SRSOperation& xform, Image::Interpolation interp) const
 {
-    const SRS& localSRS = _extent.srs();
-
-    dvec3 local;
-
-    // first xform the input point into our local SRS:
-    SRSOperation xform;
-    if (inputSRS != localSRS)
-    {
-        xform = inputSRS.to(localSRS);
-    }
-
+    dvec3 temp(x, y, 0);
     if (xform.valid())
     {
-        if (!xform(in_out_point, local))
-            return false;
-    }
-    else
-    {
-        local = in_out_point;
+        if (!xform.transform(temp, temp))
+            return NO_DATA_VALUE;
     }
 
     // check that the point falls within the heightfield bounds:
-    if (_extent.contains(local.x, local.y))
+    if (_extent.contains(temp.x, temp.y))
     {
         // sample the heightfield at the input coordinates:
-        local.z = heightAtLocation(local.x, local.y, interp);
+        temp.z = heightAtLocation(temp.x, temp.y, interp);
 
         if (xform.valid())
-            xform.inverse(local, in_out_point);
-        else
-            in_out_point = local;
+        {
+            xform.inverse(temp, temp);
+        }
 
-        if (local.z == NO_DATA_VALUE)
-            in_out_point.z = NO_DATA_VALUE;
-
-        return true;
+        return temp.z;
     }
     else
     {
-        in_out_point.z = 0.0;
-        return false;
+        return NO_DATA_VALUE;
+    }
+}
+
+float
+GeoHeightfield::heightAt(double x, double y, const SRS& xy_srs, Image::Interpolation interp) const
+{
+    const SRS& localSRS = _extent.srs();
+
+    dvec3 temp(x, y, 0);
+
+    // first xform the input point into our local SRS:
+    SRSOperation xform;
+    if (xy_srs != localSRS)
+    {
+        xform = xy_srs.to(localSRS);
+        if (xform.valid())
+        {
+            if (!xform(temp, temp))
+                return NO_DATA_VALUE;
+        }
+    }
+
+    // check that the point falls within the heightfield bounds:
+    if (_extent.contains(temp.x, temp.y))
+    {
+        // sample the heightfield at the input coordinates:
+        temp.z = heightAtLocation(temp.x, temp.y, interp);
+
+        if (xform.valid())
+            xform.inverse(temp, temp);
+
+        return temp.z;
+    }
+    else
+    {
+        return NO_DATA_VALUE;
     }
 }
 
