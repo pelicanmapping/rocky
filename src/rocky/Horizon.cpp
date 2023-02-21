@@ -98,10 +98,10 @@ Horizon::isVisible(const dvec3& target, double radius) const
     // Viewer-to-target vector
     // move the target closer to the horizon plane by "radius"
     // and transform into unit space
-    dvec3 VT = ((target + _eyeUnit * radius) - _eye) * _scale;
+    dvec3 VTplusR = ((target + _eyeUnit * radius) - _eye) * _scale;
 
     // If the target is above the eye, it's visible
-    double VTdotVC = glm::dot(VT, _VC);
+    double VTdotVC = glm::dot(VTplusR, _VC);
     if (VTdotVC <= 0.0)
     {
         return true;
@@ -128,7 +128,9 @@ Horizon::isVisible(const dvec3& target, double radius) const
     // eye->center vetor. If the sphere is entirely within the cone, it is occluded
     // by the spheroid (not ellipsoid, sorry)
     // ref: http://www.cbloom.com/3d/techdocs/culling.txt
-    VT = (target - _eye) * _scale;
+    dvec3 VT = (target - _eye) * _scale;
+    double radius_scaled = glm::distance(VT, VTplusR);
+
     auto VTmag2 = glm::dot(VT, VT);
 
     double a = glm::dot(VT, -_eyeUnit);
@@ -142,7 +144,7 @@ Horizon::isVisible(const dvec3& target, double radius) const
     double d = c - b;
     double e = d * _coneCos;
 
-    if (e > -radius)
+    if (e > -radius_scaled)
     {
         // sphere is at least partially outside the cone (visible)
         return true;
