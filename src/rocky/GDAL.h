@@ -28,6 +28,9 @@ namespace ROCKY_NAMESPACE
             bool owns_dataset = false;
         };
 
+        /**
+        * Base class for GDAL layers.
+        */
         struct ROCKY_EXPORT LayerBase
         {
         public:
@@ -146,6 +149,10 @@ namespace ROCKY_NAMESPACE
 
             const std::string& getName() const { return _name; }
         };
+
+        //! Reads an image from raw data using the specified GDAL driver.
+        extern ROCKY_EXPORT Result<shared_ptr<Image>> readImage(
+            unsigned char* data, unsigned len, const std::string& gdal_driver);
 
 #if 0
         extern ROCKY_EXPORT shared_ptr<Image> reprojectImage(

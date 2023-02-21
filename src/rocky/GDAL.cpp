@@ -98,7 +98,6 @@ namespace ROCKY_NAMESPACE
             double                 noDataValue;
         } BandProperty;
 
-
         // This is simply the method GDALAutoCreateWarpedVRT() with the GDALSuggestedWarpOutput
         // logic replaced with something that will work properly for polar projections.
         // see: http://www.mail-archive.com/gdal-dev@lists.osgeo.org/msg01491.html
@@ -436,8 +435,81 @@ namespace ROCKY_NAMESPACE
 
             return (err == CE_None);
         }
+
+        Result<shared_ptr<Image>> readImage(
+            unsigned char* data,
+            unsigned length,
+            const std::string& name)
+        {
+            shared_ptr<Image> result;
+
+            // generate a unique name for our temporary vsimem file:
+            static std::atomic_int rgen(0);
+            std::string filename = "/vsimem/temp" + std::to_string(rgen++);
+
+            // populate the "file" from our raw data
+            auto memfile = VSIFileFromMemBuffer(filename.c_str(), (GByte*)data, (vsi_l_offset)length, true);
+            if (memfile)
+            {
+                const char* const drivers[] = { name.c_str(), nullptr };
+
+                GDALDataset* ds = (GDALDataset*)GDALOpenEx(
+                    filename.c_str(),
+                    GA_ReadOnly,
+                    drivers,
+                    nullptr,
+                    nullptr);
+
+                if (ds)
+                {
+                    int width = ds->GetRasterXSize();
+                    int height = ds->GetRasterYSize();
+
+                    GDALRasterBand* R = findBandByColorInterp(ds, GCI_RedBand);
+                    GDALRasterBand* G = findBandByColorInterp(ds, GCI_GreenBand);
+                    GDALRasterBand* B = findBandByColorInterp(ds, GCI_BlueBand);
+                    GDALRasterBand* A = findBandByColorInterp(ds, GCI_AlphaBand);
+
+                    Image::PixelFormat format = Image::UNDEFINED;
+                    if (R && !G && !B && !A)
+                        format = Image::R8_UNORM;
+                    else if (R && G && !B && !A)
+                        format = Image::R8G8B8_UNORM;
+                    else if (R && G && B && !A)
+                        format = Image::R8G8B8_UNORM;
+                    else if (R && G && B && A)
+                        format = Image::R8G8B8A8_UNORM;
+
+                    if (format != Image::UNDEFINED)
+                    {
+                        result = Image::create(format, width, height);
+                        auto data = result->data<unsigned char>();
+                        GSpacing spacing = result->numComponents();
+                        
+                        int offset = 0;
+
+                        if (R)
+                            R->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                        if (G)
+                            G->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                        if (B)
+                            B->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                        if (A)
+                            A->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                    }
+
+                    GDALClose(ds);
+                }
+                VSIUnlink(filename.c_str());
+                VSIFree(memfile);
+            }
+
+            return result;
+        }
+
     }
 } // namespace ROCKY_NAMESPACE::GDAL
+
 
 //...................................................................
 

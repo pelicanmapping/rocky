@@ -102,7 +102,7 @@ int main(int argc, char** argv)
 
     // add a layer to the map
     auto layer = rocky::TMSImageLayer::create();
-    layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
+    layer->setURI("https://readymap.org/readymap/tiles/1.0.0/135/");
     mapNode->map()->addLayer(layer);
     if (layer->status().failed()) {
         rocky::Log::warn() << "Problem with layer: " << layer->status().message << std::endl;

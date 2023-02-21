@@ -641,7 +641,7 @@ job_scheduler::startThreads()
 {
     _done = false;
 
-    Log::info() << LC << "Scheduler \"" << _name << "\" concurrency=" << _targetConcurrency << std::endl;
+    //Log::info() << LC << "Scheduler \"" << _name << "\" concurrency=" << _targetConcurrency << std::endl;
 
     // Not enough? Start up more
     while(_metrics->concurrency < _targetConcurrency)

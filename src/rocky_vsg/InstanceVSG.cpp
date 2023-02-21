@@ -14,6 +14,10 @@
 #include <vsgXchange/all.h>
 #endif
 
+#ifdef ROCKY_SUPPORTS_GDAL
+#include <rocky/GDAL.h>
+#endif
+
 using namespace ROCKY_NAMESPACE;
 
 namespace
@@ -23,11 +27,11 @@ namespace
     vsg::ref_ptr<vsg::ReaderWriter> findReaderWriter(const std::string& extension, const vsg::ReaderWriters& readerWriters)
     {
         vsg::ref_ptr<vsg::ReaderWriter> output;
-        vsg::ReaderWriter::Features features;
 
         for (auto& rw : readerWriters)
         {
-            auto crw = rw->cast<vsg::CompositeReaderWriter>();
+            vsg::ReaderWriter::Features features;
+            auto crw = dynamic_cast<vsg::CompositeReaderWriter*>(rw.get());
             if (crw)
             {
                 output = findReaderWriter(extension, crw->readerWriters);
@@ -51,6 +55,57 @@ namespace
 
         return output;
     }
+
+#ifdef ROCKY_SUPPORTS_GDAL
+
+    /**
+    * VSG reader-writer that uses GDAL to read some image formats that are
+    * not supported by vsgXchange
+    */
+    class GDAL_VSG_ReaderWriter : public vsg::Inherit<vsg::ReaderWriter, GDAL_VSG_ReaderWriter>
+    {
+    public:
+        Features _features;
+
+        GDAL_VSG_ReaderWriter()
+        {
+            _features.extensionFeatureMap[vsg::Path(".webp")] = READ_ISTREAM;
+            _features.extensionFeatureMap[vsg::Path(".tif")] = READ_ISTREAM;
+            _features.extensionFeatureMap[vsg::Path(".jpg")] = READ_ISTREAM;
+            _features.extensionFeatureMap[vsg::Path(".png")] = READ_ISTREAM;
+        }
+
+        bool getFeatures(Features& out) const override
+        {
+            out = _features;
+            return true;
+        }
+
+        vsg::ref_ptr<vsg::Object> read(std::istream& in, vsg::ref_ptr<const vsg::Options> options = {}) const override
+        {
+            if (!options || _features.extensionFeatureMap.count(options->extensionHint) == 0)
+                return {};
+
+            std::stringstream buf;
+            buf << in.rdbuf() << std::flush;
+            std::string data = buf.str();
+
+            std::string gdal_driver =
+                options->extensionHint.string() == ".webp" ? "webp" :
+                options->extensionHint.string() == ".tif" ? "gtiff" :
+                options->extensionHint.string() == ".jpg" ? "jpeg" :
+                options->extensionHint.string() == ".png" ? "png" :
+                "";
+
+            auto result = GDAL::readImage((unsigned char*)data.c_str(), data.length(), gdal_driver);
+
+            if (result.status.ok())
+                return util::moveImageToVSG(result.value);
+            else
+                return { };
+        }
+    };
+#endif
 }
 
 InstanceVSG::InstanceVSG() :
@@ -58,6 +113,10 @@ InstanceVSG::InstanceVSG() :
 {
     _impl = std::make_shared<Implementation>();
     _impl->vsgOptions = vsg::Options::create();
+
+#ifdef ROCKY_SUPPORTS_GDAL
+    _impl->vsgOptions->add(GDAL_VSG_ReaderWriter::create());
+#endif
 
 #ifdef VSGXCHANGE_FOUND
     // Adds all the readerwriters in vsgxchange to the options data.
@@ -90,7 +149,8 @@ InstanceVSG::InstanceVSG() :
         { "image/png", ".png" },
         { "image/tga", ".tga" },
         { "image/tif", ".tif" },
-        { "image/tiff", ".tif" }
+        { "image/tiff", ".tif" },
+        { "image/webp", ".webp" }
     };
 
     // To read from a stream, we have to search all the VS readerwriters to
