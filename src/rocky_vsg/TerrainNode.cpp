@@ -39,7 +39,7 @@ TerrainNode::getConfig() const
     return conf;
 }
 
-Status
+const Status&
 TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(new_map,
@@ -63,8 +63,8 @@ TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
 
     // erase everything so the map will reinitialize
     this->children.clear();
-
-    return StatusOK;
+    _status = StatusOK;
+    return status();
 }
 
 Status
@@ -110,17 +110,20 @@ TerrainNode::createRootTiles(const IOOptions& io)
 void
 TerrainNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
 {
-    if (children.empty())
+    if (_status.ok())
     {
-        auto s = createRootTiles(io);
-        if (s.failed())
+        if (children.empty())
         {
-            Log::warn() << "TerrainNode initialize failed: " << s.message << std::endl;
+            _status = createRootTiles(io);
+            if (_status.failed())
+            {
+                Log::warn() << "TerrainNode initialize failed: " << _status.message << std::endl;
+            }
         }
-    }
-    else
-    {
-        _context->tiles->update(fs, io, _context);
+        else
+        {
+            _context->tiles->update(fs, io, _context);
+        }
     }
 }
 

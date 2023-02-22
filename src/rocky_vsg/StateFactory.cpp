@@ -53,7 +53,9 @@ StateFactory::StateFactory()
     shaderSet = createShaderSet();
     if (!shaderSet)
     {
-        status = Status(Status::ResourceUnavailable, "Terrain shaders missing or corrupt");
+        status = Status(Status::ResourceUnavailable,
+            "Terrain shaders are missing or corrupt. "
+            "Did you set ROCKY_FILE_PATH to point at the rocky share/shaders folder?");
         return;
     }
 
@@ -157,6 +159,8 @@ StateFactory::createShaderSet() const
 
     // set up search paths to SPIRV shaders and textures
     vsg::Paths searchPaths = vsg::getEnvPaths("VSG_FILE_PATH");
+    vsg::Paths morePaths = vsg::getEnvPaths("ROCKY_FILE_PATH");
+    searchPaths.insert(searchPaths.end(), morePaths.begin(), morePaths.end());
 
     auto options = vsg::Options::create();
 

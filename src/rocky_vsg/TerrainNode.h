@@ -34,7 +34,7 @@ namespace ROCKY_NAMESPACE
             const Config& conf);
 
         //! Map to render, and SRS to render it in
-        Status setMap(
+        const Status& setMap(
             shared_ptr<Map> new_map,
             const SRS& world_srs);
 
@@ -43,6 +43,11 @@ namespace ROCKY_NAMESPACE
 
         //! Updates the terrain periodically at a safe time
         void update(const vsg::FrameStamp*, const IOOptions& io);
+
+        //! Status of the terrain node
+        const Status& status() const {
+            return _status;
+        }
 
     protected:
 
@@ -67,5 +72,6 @@ namespace ROCKY_NAMESPACE
         RuntimeContext& _runtime;
         vsg::ref_ptr<vsg::Group> _tilesRoot;
         shared_ptr<TerrainContext> _context;
+        Status _status;
     };
 }

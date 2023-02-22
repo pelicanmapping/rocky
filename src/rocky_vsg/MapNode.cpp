@@ -182,7 +182,7 @@ MapNode::getLayerNodeGroup() const
 shared_ptr<MapNode>
 MapNode::get(const vsg::Node* graph, unsigned travmask)
 {
-    ROCKY_HARD_ASSERT(false);
+    ROCKY_HARD_ASSERT(false, "NYI");
     return nullptr;
     //return findRelativeNodeOfType<MapNode>( graph, travmask );
 }
