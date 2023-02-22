@@ -1,6 +1,7 @@
 # :mountain: Rocky
 
-Rocky is a 3D geospatial map & terrain rendering engine.
+Rocky is a 3D geospatial map & terrain rendering engine.<img align="right" width="200" alt="Screenshot 2023-02-22 124318" src="https://user-images.githubusercontent.com/326618/220712284-8a17d87a-431f-4966-a425-0f2628b23b40.png">
+
 
 Rocky will render an accurate 3D or 2D map with real geospatial imagery and elevation data. It supports thousands of map projections (thanks to the *PROJ* toolkit) and most popular geodata formats including GeoTIFF, WMTS, WMS, and TMS.
 
