@@ -4,7 +4,6 @@
 
 # give hint for cmake developers
 if(NOT _rocky_macros_included)
-    #message(STATUS "Reading 'vsg_...' macros from ${CMAKE_CURRENT_LIST_DIR}/vsgMacros.cmake - look there for documentation")
     set(_rocky_macros_included 1)
     list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 endif()
@@ -60,24 +59,10 @@ macro(setup_dir_vars)
         # set up local bin directory to place all binaries
         make_directory(${OUTPUT_BINDIR})
         make_directory(${OUTPUT_LIBDIR})
-        set(INSTALL_TARGETS_DEFAULT_FLAGS
-            EXPORT ${PROJECT_NAME}Targets
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR}
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        )
     else()
         set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_LIBDIR})
         # set up local bin directory to place all binaries
         make_directory(${OUTPUT_LIBDIR})
-        set(INSTALL_TARGETS_DEFAULT_FLAGS
-            EXPORT ${PROJECT_NAME}Targets
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    )
     endif()
 endmacro()
 

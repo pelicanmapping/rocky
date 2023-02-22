@@ -117,8 +117,9 @@ if(ROCKY_SUPPORTS_TMS)
 endif()
 
 # set up library dependencies
-set(PRIVATE_LIBS PROJ::proj)
 set(PUBLIC_LIBS glm::glm)
+
+set(PRIVATE_LIBS PROJ::proj)
     
 if(Tracy_FOUND)
     list(APPEND PRIVATE_LIBS Tracy::TracyClient)
@@ -159,20 +160,19 @@ set_property(TARGET rocky PROPERTY CXX_STANDARD 17)
 
 target_link_libraries(rocky ${LIBRARIES})
 
-# install the libraries
-install(
-    TARGETS rocky
-    EXPORT rocky
-    ${INSTALL_TARGETS_DEFAULT_FLAGS}
-)
-
 if (BUILD_SHARED_LIBS)
     target_compile_definitions(rocky INTERFACE ROCKY_SHARED_LIBRARY)
 endif()
 
-# install the HEADER files
-install(FILES ${HEADERS} DESTINATION include)
+# install the libraries
+install(
+    TARGETS rocky
+    EXPORT rockyTargets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
 
-# if (NOT(${ROCKY_BINARY_DIR} STREQUAL ${ROCKY_SOURCE_DIR}))
-    # install(DIRECTORY ${ROCKY_BINARY_DIR}/include DESTINATION include)
-# endif()
+# install the HEADER files
+install(FILES ${HEADERS} DESTINATION include/rocky)

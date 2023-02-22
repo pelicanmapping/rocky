@@ -1,0 +1,32 @@
+cmake_minimum_required(VERSION 3.10.0)
+
+@PACKAGE_INIT@
+
+set(ROCKY_VERSION @PROJECT_VERSION@)
+
+if(NOT CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+endif()
+
+set (ROCKY_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/include")
+set (ROCKY_SHARE_DIR "${PACKAGE_PREFIX_DIR}/share/rocky")
+set_and_check (ROCKY_BUILD_DIR "${PACKAGE_PREFIX_DIR}")
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(glm CONFIG REQUIRED)
+find_dependency(vsg CONFIG REQUIRED)
+find_dependency(vsgXchange CONFIG)
+
+# Don't include targets if this file is being picked up as a subproject
+if (NOT TARGET "rocky")
+  include (${PACKAGE_PREFIX_DIR}/share/rocky/rocky-targets.cmake)
+endif ()
+
+set(ROCKY_FOUND TRUE)
+
+if(ROCKY_FOUND)
+    message(STATUS "Reminder: set ROCKY_FILE_PATH=${ROCKY_SHARE_DIR}/shaders")
+endif()
