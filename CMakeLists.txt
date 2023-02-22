@@ -21,12 +21,16 @@ set(PROJECT_VERSION_ABI 100)
 
 # require C++17
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
+
+# option to build shared or static libs
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+
+
+# folder for additional cmake includes
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
-include(setup_macros)
-setup_dir_vars()
-setup_build_vars()
 
 # build all examples into the bin directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
@@ -39,6 +43,10 @@ include_directories(${ROCKY_BUILDTIME_INCLUDE_DIR})
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
+
+# set up standard install folder names
+# https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html
+include(GNUInstallDirs)
 
 # PROJ - geospatial projections library - required
 find_package(PROJ CONFIG REQUIRED)
