@@ -44,7 +44,7 @@ namespace
     struct SRSEntry
     {
         PJ* pj = nullptr;
-        PJ_TYPE type;
+        PJ_TYPE horiz_crs_type;
         optional<Box> bounds;
         std::string wkt;
         std::string proj;
@@ -111,7 +111,7 @@ namespace
 
                 // process some common aliases
                 if (ndef == "wgs84" || ndef == "global-geodetic")
-                    to_try = "epsg:4326";
+                    to_try = "epsg:4979";
                 else if (ndef == "spherical-mercator")
                     to_try = "epsg:3785";
                 else if (ndef == "geocentric" || ndef == "ecef")
@@ -160,7 +160,14 @@ namespace
                 else
                 {
                     // extract the type
-                    new_entry.type = proj_get_type(pj);
+                    PJ_TYPE type = proj_get_type(pj);
+                    if (type == PJ_TYPE_COMPOUND_CRS)
+                    {
+                        PJ* horiz = proj_crs_get_sub_crs(ctx, pj, 0);
+                        if (horiz)
+                            new_entry.horiz_crs_type = proj_get_type(horiz);
+                    }
+                    else new_entry.horiz_crs_type = type;
 
                     // extract the ellipsoid parameters.
                     // if this fails, the entry will contain the default WGS84 ellipsoid, and that is ok.
@@ -194,9 +201,9 @@ namespace
         }
 
         //! fetch the projection type
-        PJ_TYPE get_type(const std::string& def)
+        PJ_TYPE get_horiz_crs_type(const std::string& def)
         {
-            return get_or_create(def).type;
+            return get_or_create(def).horiz_crs_type;
         }
 
         //! fetch the ellipsoid associated with an SRS definition
@@ -224,7 +231,7 @@ namespace
                 west_lon > -1000)
             {
                 // always returns lat/long, so transform back to this srs
-                auto xform = get_or_create_operation("wgs84", "", def, ""); // don't call proj_destroy on this
+                auto xform = get_or_create_operation("wgs84", def); // don't call proj_destroy on this
                 PJ_COORD LL = proj_trans(xform, PJ_FWD, PJ_COORD{ west_lon, south_lat, 0.0, 0.0 });
                 PJ_COORD UR = proj_trans(xform, PJ_FWD, PJ_COORD{ east_lon, north_lat, 0.0, 0.0 });
                 entry.bounds = Box(LL.xyz.x, LL.xyz.y, UR.xyz.x, UR.xyz.y);
@@ -232,11 +239,11 @@ namespace
             else
             {
                 // We will have to make an educated guess.
-                if (entry.type == PJ_TYPE_GEOGRAPHIC_2D_CRS || entry.type == PJ_TYPE_GEOGRAPHIC_3D_CRS)
+                if (entry.horiz_crs_type == PJ_TYPE_GEOGRAPHIC_2D_CRS || entry.horiz_crs_type == PJ_TYPE_GEOGRAPHIC_3D_CRS)
                 {
                     entry.bounds = Box(-180, -90, 180, 90);
                 }
-                else if (entry.type != PJ_TYPE_GEOCENTRIC_CRS)
+                else if (entry.horiz_crs_type != PJ_TYPE_GEOCENTRIC_CRS)
                 {
                     if (contains(entry.proj, "proj=utm"))
                     {
@@ -280,6 +287,7 @@ namespace
             return iter->second.wkt;
         }
 
+#if 0
         //! process a vertical datum grid name into a proper file name for proj to load
         std::string make_grid_name(const std::string& in)
         {
@@ -290,11 +298,10 @@ namespace
             else
                 return in;
         }
+#endif
 
         //! retrieve or create a transformation object
-        PJ* get_or_create_operation(
-            const std::string& firstDef, const std::string& firstVert,
-            const std::string& secondDef, const std::string& secondVert)
+        PJ* get_or_create_operation(const std::string& firstDef, const std::string& secondDef)
         {
             auto ctx = threading_context();
 
@@ -303,7 +310,7 @@ namespace
             std::string error;
 
             // make a unique identifer for the transformation
-            std::string def = firstDef + firstVert + ">" + secondDef + secondVert;
+            std::string def = firstDef + "->" + secondDef;
 
             auto iter = find(def);
 
@@ -315,13 +322,30 @@ namespace
                 {
                     bool p1_is_crs = proj_is_crs(p1);
                     bool p2_is_crs = proj_is_crs(p2);
-
                     bool normalize_to_gis_coords = true;
+
+                    PJ_TYPE p1_type = proj_get_type(p1);
+                    PJ_TYPE p2_type = proj_get_type(p2);
 
                     if (p1_is_crs && p2_is_crs)
                     {
+                        // Check for an illegal operation (PROJ 9.1.0). We do this because
+                        // proj_create_crs_to_crs_from_pj() will succeed even though the operation will not
+                        // process the Z input.
+                        if (p1_type == PJ_TYPE_GEOGRAPHIC_2D_CRS && p2_type == PJ_TYPE_COMPOUND_CRS)
+                        {
+                            std::string warning = "Warning, \"" + def + "\" transforms from GEOGRAPHIC_2D_CRS to COMPOUND_CRS. Z values will be discarded. Use a GEOGRAPHIC_3D_CRS instead";
+                            redirect_proj_log(nullptr, 0, warning.c_str());
+                        }
+
                         // if they are both CRS's, just make a transform operation.
                         pj = proj_create_crs_to_crs_from_pj(ctx, p1, p2, nullptr, nullptr);
+
+                        if (pj && proj_get_type(pj) != PJ_TYPE_UNKNOWN)
+                        {
+                            const char* pcstr = proj_as_proj_string(ctx, pj, PJ_PROJ_5, nullptr);
+                            if (pcstr) proj = pcstr;
+                        }
                     }
 
                     else if (p1_is_crs && !p2_is_crs)
@@ -380,53 +404,14 @@ namespace
                     }
 
                     // integrate forward and backward vdatum conversions if necessary.
-                    if (pj)
+                    if (pj && normalize_to_gis_coords)
                     {
-                        if (!firstVert.empty() || !secondVert.empty())
-                        {
-                            // extract the transformation string:
-                            proj = proj_as_proj_string(ctx, pj, PJ_PROJ_5, nullptr);
-                            
-                            // if it doesn't start with pipeline, it's a noop and we need to insert a pipeline
-                            if (!starts_with(proj, "+proj=pipeline"))
-                            {
-                                proj = "+proj=pipeline +step " + proj;
-                                normalize_to_gis_coords = false;
-                            }
-
-                            // n.b., vgridshift requires radians
-                            if (!firstVert.empty())
-                            {
-                                proj +=
-                                    " +step +proj=unitconvert +xy_in=deg +xy_out=rad"
-                                    " +step +inv +proj=vgridshift +grids=" + make_grid_name(firstVert) +
-                                    " +step +proj=unitconvert +xy_in=rad +xy_out=deg";
-                            }
-
-                            if (!secondVert.empty())
-                            {
-                                proj +=
-                                    " +step +proj=unitconvert +xy_in=deg +xy_out=rad"
-                                    " +step +proj=vgridshift +grids=" + make_grid_name(secondVert) +
-                                    " +step +proj=unitconvert +xy_in=rad +xy_out=deg";
-                            }
-                            
-                            // ditch the old one
-                            proj_destroy(pj);
-
-                            // make the new one
-                            pj = proj_create(ctx, proj.c_str());
-                        }
-
-                        if (pj && normalize_to_gis_coords)
-                        {
-                            // re-order the coordinates to GIS standard long=x, lat=y
-                            pj = proj_normalize_for_visualization(ctx, pj);
-                        }
+                        // re-order the coordinates to GIS standard long=x, lat=y
+                        pj = proj_normalize_for_visualization(ctx, pj);
                     }
                 }
 
-                if (!pj)
+                if (!pj && error.empty())
                 {
                     auto err_no = proj_context_errno(ctx);
                     if (err_no != 0)
@@ -456,7 +441,7 @@ namespace
 
 #if 0
 // Note! Moved these to Instance.cpp since there's a static startup dependency!
-const SRS SRS::WGS84("wgs84");
+const SRS SRS::WGS84("epsg:4979");
 const SRS SRS::ECEF("geocentric");
 const SRS SRS::SPHERICAL_MERCATOR("spherical-mercator");
 const SRS SRS::PLATE_CARREE("plate-carree");
@@ -469,9 +454,8 @@ SRS::SRS() :
     //nop
 }
 
-SRS::SRS(const std::string& h, const std::string& v) :
+SRS::SRS(const std::string& h) :
     _definition(h),
-    _vertical(v),
     _valid(false)
 {
     PJ* pj = g_srs_factory.get_or_create(h).pj;
@@ -484,7 +468,6 @@ SRS::operator=(SRS&& rhs)
     _definition = rhs._definition;
     _valid = rhs._valid;
     rhs._definition.clear();
-    rhs._vertical.clear();
     rhs._valid = false;
     return *this;
 }
@@ -508,7 +491,7 @@ SRS::isGeographic() const
     if (!valid())
         return false;
 
-    auto type = g_srs_factory.get_type(definition());
+    auto type = g_srs_factory.get_horiz_crs_type(definition());
     return
         type == PJ_TYPE_GEOGRAPHIC_2D_CRS ||
         type == PJ_TYPE_GEOGRAPHIC_3D_CRS;
@@ -520,7 +503,7 @@ SRS::isGeocentric() const
     if (!valid())
         return false;
 
-    auto type = g_srs_factory.get_type(definition());
+    auto type = g_srs_factory.get_horiz_crs_type(definition());
     return
         type == PJ_TYPE_GEOCENTRIC_CRS;
 }
@@ -531,7 +514,7 @@ SRS::isProjected() const
     if (!valid())
         return false;
 
-    auto type = g_srs_factory.get_type(definition());
+    auto type = g_srs_factory.get_horiz_crs_type(definition());
     return
         type == PJ_TYPE_PROJECTED_CRS;
 }
@@ -539,22 +522,18 @@ SRS::isProjected() const
 bool
 SRS::isEquivalentTo(const SRS& rhs) const
 {
-    if (vertical() != rhs.vertical())
-        return false;
-    else
-        return isHorizEquivalentTo(rhs);
+    PJ* pj1 = g_srs_factory.get_or_create(definition()).pj;
+    if (!pj1) return false;
+    PJ* pj2 = g_srs_factory.get_or_create(rhs.definition()).pj;
+    if (!pj2) return false;
+    return proj_is_equivalent_to_with_ctx(
+        g_srs_factory.threading_context(), pj1, pj2, PJ_COMP_EQUIVALENT);
 }
 
 bool
 SRS::isHorizEquivalentTo(const SRS& rhs) const
 {
-    PJ* pj1 = g_srs_factory.get_or_create(definition()).pj;
-    PJ* pj2 = g_srs_factory.get_or_create(rhs.definition()).pj;
-    if (!pj1 || !pj2)
-        return false;
-    else
-        return proj_is_equivalent_to_with_ctx(
-            g_srs_factory.threading_context(), pj1, pj2, PJ_COMP_EQUIVALENT);
+    return isEquivalentTo(rhs);
 }
 
 const std::string&
@@ -607,7 +586,7 @@ SRS::geoSRS() const
         {
             std::string wkt = proj_as_wkt(ctx, pjgeo, PJ_WKT2_2019, nullptr);
             proj_destroy(pjgeo);
-            return SRS(wkt, vertical());
+            return SRS(wkt);
         }
     }
     return SRS(); // invalid
@@ -715,6 +694,14 @@ SRS::errorMessage() const
     return g_srs_factory.get_error_message(definition());
 }
 
+std::string
+SRS::string() const
+{
+    if (valid())
+        return g_srs_factory.get_or_create(definition()).proj;
+    else
+        return "";
+}
 
 SRSOperation::SRSOperation()
 {
@@ -747,9 +734,7 @@ SRSOperation::get_handle() const
 {
     return (void*)g_srs_factory.get_or_create_operation(
         _from.definition(),
-        _from.vertical(),
-        _to.definition(),
-        _to.vertical());
+        _to.definition());
 }
 
 bool
@@ -790,4 +775,11 @@ SRSOperation::inverse(void* handle, double& x, double& y, double& z) const
     }
     else
         return false;
+}
+
+std::string
+SRSOperation::string() const
+{
+    return std::string(
+        proj_as_proj_string(g_pj_thread_local_context, (PJ*)get_handle(), PJ_PROJ_5, nullptr));
 }

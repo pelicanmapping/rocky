@@ -52,15 +52,10 @@ namespace ROCKY_NAMESPACE
 
         //! Construct a new SRS from defintion strings.
         //! 
-        //! @param horizontal Main definition string may be WKT definition, 
-        //!     a PROJ init string, or an epsg code (like epsg:4326), or a
+        //! @param definition Definition string may be WKT string, 
+        //!     a PROJ init string, an epsg code (like epsg:4326), or a
         //!     well-known alias like "wgs84" or "spherical-mercator".
-        //! @param vertical Vertical datum string, typically the local filename
-        //!     of a grid file (like "us_nga_egm96_15m.tif") found in the 
-        //!     PROJ_DATA folder
-        SRS(
-            const std::string& horizontal,
-            const std::string& vertical = {});
+        SRS(const std::string& definition);
 
         //! Make an operation that will take coordinates from this SRS to another
         //! @param target Target SRS for coordinate operation
@@ -74,14 +69,12 @@ namespace ROCKY_NAMESPACE
             return _definition;
         }
 
-        //! Vertical datum definition, if it exists
-        const std::string& vertical() const {
-            return _vertical;
-        }
-
         //! Whether this is a valid SRS
         bool valid() const {
             return _valid;
+        }
+        operator bool() const {
+            return valid();
         }
 
         //! Is this a geographic (long, lat) SRS?
@@ -156,10 +149,12 @@ namespace ROCKY_NAMESPACE
         SRS& SRS::operator=(SRS&&);
         ~SRS();
 
+        //! Internal SRS representation (for debugging)
+        std::string string() const;
+
     private:
         //! Create an SRS from an initialization string.
         std::string _definition;
-        std::string _vertical;
         bool _valid;
         friend class SRSOperation;
     };
@@ -182,6 +177,9 @@ namespace ROCKY_NAMESPACE
 
         //! Whether this is a valid and legal operation
         bool valid() const;
+        operator bool() const {
+            return valid();
+        }
 
         //! Source SRS of the operation
         const SRS& from() const {
@@ -247,6 +245,10 @@ namespace ROCKY_NAMESPACE
         const std::string& lastError() const {
             return _lastError;
         }
+
+        //! Gets the internal definition string of this operation
+        //! (for debugging purposes)
+        std::string string() const;
 
         // copy/move ops
         SRSOperation(const SRSOperation& rhs) = default;

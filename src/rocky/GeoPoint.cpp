@@ -62,7 +62,7 @@ GeoPoint::GeoPoint(const Config& conf, const SRS& srs) :
     conf.get( "hat", _p.z ); // height above terrain (relative)
 
     if (!_srs.valid() && conf.hasValue("srs"))
-        _srs = SRS(conf.value("srs"), conf.value("vdatum"));
+        _srs = SRS(conf.value("srs"));
 
     if ( conf.hasValue("lat") && (!_srs.valid() || _srs.isGeographic()) )
     {
@@ -98,8 +98,6 @@ GeoPoint::getConfig() const
     if (_srs.valid())
     {
         conf.set("srs", _srs.definition());
-        if (!_srs.vertical().empty())
-            conf.set("vdatum", _srs.vertical());
     }
 
     return conf;

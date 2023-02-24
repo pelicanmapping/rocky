@@ -268,7 +268,14 @@ Profile
 TileMap::createProfile() const
 {
     Profile profile;
-    SRS new_srs(srsString, vsrsString);
+
+    std::string def = srsString;
+    if (!vsrsString.empty())
+    {
+        if (vsrsString == "egm96")
+            def += "+5773";
+    }
+    SRS new_srs(def);
 
     if (profileType == ProfileType::GEODETIC)
     {
@@ -469,7 +476,7 @@ TileMap::TileMap(
     filename = url;
 
     srsString = getHorizSRSString(profile.srs());
-    vsrsString = profile.srs().vertical();
+    //vsrsString = profile.srs().vertical();
 
     format.width = tile_width;
     format.height = tile_height;

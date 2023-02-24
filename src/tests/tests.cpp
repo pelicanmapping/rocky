@@ -350,13 +350,13 @@ TEST_CASE("SRS")
 
     SECTION("Geographic <> Geocentric")
     {
-        SRS wgs84("epsg:4326"); // geographic WGS84 (long/lat/hae)
+        SRS wgs84("wgs84"); // geographic WGS84 (long/lat)
         REQUIRE(wgs84.valid());
         CHECK(wgs84.isProjected() == false);
         CHECK(wgs84.isGeographic() == true);
         CHECK(wgs84.isGeocentric() == false);
 
-        SRS ecef("epsg:4978"); // geocentric WGS84 (ECEF)
+        SRS ecef("geocentric"); // geocentric WGS84 (ECEF)
         REQUIRE(ecef.valid());
         CHECK(ecef.isProjected() == false);
         CHECK(ecef.isGeographic() == false);
@@ -461,15 +461,24 @@ TEST_CASE("SRS")
 
     SECTION("SRS with Vertical Datum")
     {
-        SRS wgs84("epsg:4326"); // geographic WGS84
+
+        SRS wgs84("epsg:4979"); // geographic WGS84 (3D)
         REQUIRE(wgs84.valid());
 
-        SRS egm96("epsg:4326", "us_nga/us_nga_egm96_15"); // WGS84 with EGM96 vdatum
+        SRS egm96("epsg:4326+5773"); // WGS84 with EGM96 vdatum
         REQUIRE(egm96.valid());
 
+        // this is legal but will print a warning because Z values will be lost.
+        // (you should use epsg::4979 instead)
+        SRS wgs84_2d("epsg:4326"); // 2D geographic
+        REQUIRE(wgs84_2d);
+        Log::info() << "You should see a PROJ warning:" << std::endl;
+        auto xform_with_warning = wgs84_2d.to(egm96);
+        CHECK(xform_with_warning);
+
         // EGM96 test values are from:
-        // http://earth-info.nga.mil/GandG/wgs84/gravitymod/egm96/intpt.html
-        dvec3 out;
+        // https://earth-info.nga.mil/index.php?dir=wgs84&action=egm96-geoid-calc
+        dvec3 out(0, 0, 0);
 
         // geodetic to vdatum:
         {

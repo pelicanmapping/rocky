@@ -42,8 +42,7 @@ TerrainNode::getConfig() const
 const Status&
 TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(new_map,
-        Status(Status::ConfigurationError, "Null map"));
+    ROCKY_SOFT_ASSERT_AND_RETURN(new_map, _status);
 
     SRS worldSRS = new_worldSRS;
     if (!worldSRS.valid())

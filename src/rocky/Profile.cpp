@@ -11,94 +11,6 @@ using namespace ROCKY_NAMESPACE;
 
 #define LC "[Profile] "
 
-#if 0
-//------------------------------------------------------------------------
-
-ProfileOptions::ProfileOptions(const ConfigOptions& options) :
-    ConfigOptions(options)
-{
-    numTilesWideAtLod0().setDefault(0);
-    numTilesHighAtLod0().setDefault(0);
-    fromConfig(_conf);
-}
-
-ProfileOptions::ProfileOptions(const std::string& namedProfile)
-{
-    numTilesWideAtLod0().setDefault(0);
-    numTilesHighAtLod0().setDefault(0);
-    _namedProfile = namedProfile; // don't set above
-}
-
-void
-ProfileOptions::mergeConfig(const Config& conf) {
-    ConfigOptions::mergeConfig(conf);
-    fromConfig(conf);
-}
-
-void
-ProfileOptions::fromConfig(const Config& conf)
-{
-    if ( !conf.value().empty() )
-        _namedProfile = conf.value();
-
-    if (conf.hasChild("profile"))
-        fromConfig(conf.child("profile"));
-
-    conf.get( "srs", srsString() );
-    conf.get( "vdatum", vsrsString() );
-    conf.get( "vsrs", vsrsString()); // back compat
-
-    if ( conf.hasValue( "xmin" ) && conf.hasValue( "ymin" ) && conf.hasValue( "xmax" ) && conf.hasValue( "ymax" ) )
-    {
-        _bounds = Box(
-            conf.value<double>("xmin", 0),
-            conf.value<double>("ymin", 0),
-            0.0,
-            conf.value<double>("xmax", 0),
-            conf.value<double>("ymax", 0),
-            0.0);
-    }
-
-    conf.get( "num_tiles_wide_at_lod_0", _numTilesWideAtLod0 );
-    conf.get( "tx", _numTilesWideAtLod0 );
-    conf.get( "num_tiles_high_at_lod_0", _numTilesHighAtLod0 );
-    conf.get( "ty", _numTilesHighAtLod0 );
-}
-
-Config
-ProfileOptions::getConfig() const
-{
-    Config conf( "profile" );
-    if (namedProfile().has_value() )
-    {
-        conf.setValue(namedProfile().value());
-    }
-    else
-    {
-        conf.set( "srs", srsString());
-        conf.set( "vdatum", vsrsString() );
-
-        if ( _bounds.has_value() )
-        {
-            conf.set( "xmin", std::to_string(_bounds->xmin) );
-            conf.set( "ymin", std::to_string(_bounds->ymin) );
-            conf.set( "xmax", std::to_string(_bounds->xmax) );
-            conf.set( "ymax", std::to_string(_bounds->ymax) );
-        }
-
-        conf.set( "num_tiles_wide_at_lod_0", _numTilesWideAtLod0 );
-        conf.set( "num_tiles_high_at_lod_0", _numTilesHighAtLod0 );
-    }
-    return conf;
-}
-
-bool
-ProfileOptions::defined() const
-{
-    return namedProfile().has_value() || srsString().has_value();
-}
-#endif
-
 
 //Definitions for the mercator extent
 const double MERC_MINX = -20037508.34278925;
@@ -256,12 +168,11 @@ Profile::Profile(const Config& conf)
         //if (input.hasChild("profile"))
         //    input = conf.child("profile");
 
-        std::string horiz, vdatum;
+        std::string horiz;
         Box box;
         unsigned tx = 0, ty = 0;
 
         conf.get("srs", horiz);
-        conf.get("vdatum", vdatum);
 
         box = Box(
             conf.value<double>("xmin", 0),
@@ -274,7 +185,7 @@ Profile::Profile(const Config& conf)
         conf.get("num_tiles_high_at_lod_0", ty);
         conf.get("ty", ty);
 
-        SRS srs(horiz, vdatum);
+        SRS srs(horiz);
 
         if (srs.valid())
         {
@@ -297,8 +208,6 @@ Profile::getConfig() const
         else
         {
             conf.set("srs", srs().definition());
-            if (!srs().vertical().empty())
-                conf.set("vdatum", srs().vertical());
             conf.set("xmin", _shared->_extent.xmin());
             conf.set("ymin", _shared->_extent.ymin());
             conf.set("xmax", _shared->_extent.xmax());
@@ -391,33 +300,8 @@ Profile::toString() const
         << "[srs=" << srs.name() << ", min=" << _shared->_extent.xMin() << "," << _shared->_extent.yMin()
         << " max=" << _shared->_extent.xMax() << "," << _shared->_extent.yMax()
         << " ar=" << _shared->_numTilesWideAtLod0 << ":" << _shared->_numTilesHighAtLod0
-        << " vdatum=" << (!srs.vertical().empty() ? srs.vertical() : "geodetic")
         << "]";
 }
-
-#if 0
-ProfileOptions
-Profile::toProfileOptions() const
-{
-    ProfileOptions op;
-    if (_wellKnownName.empty() == false)
-    {
-        op.namedProfile() = _wellKnownName;
-    }
-    else
-    {
-        op.srsString() = srs().getHorizInitString();
-        op.vsrsString() = srs().getVertInitString();
-        op.bounds()->xmin = _extent.xMin();
-        op.bounds()->ymin = _extent.yMin();
-        op.bounds()->xmax = _extent.xMax();
-        op.bounds()->ymax = _extent.yMax();
-        op.numTilesWideAtLod0() = _numTilesWideAtLod0;
-        op.numTilesHighAtLod0() = _numTilesHighAtLod0;
-    }
-    return op;
-}
-#endif
 
 Profile
 Profile::overrideSRS(const SRS& srs) const
@@ -469,19 +353,6 @@ Profile::tileExtent(unsigned lod, unsigned tileX, unsigned tileY) const
 
     return GeoExtent(srs(), xmin, ymin, xmax, ymax);
 }
-
-//bool
-//Profile::isEquivalentTo(const Profile& rhs) const
-//{
-//    //return getFullSignature() == rhs.getFullSignature();
-//    return getHorizSignature() == rhs.getHorizSignature();
-//}
-
-//bool
-//Profile::isHorizEquivalentTo(const Profile& rhs) const
-//{
-//    return getHorizSignature() == rhs.getHorizSignature();
-//}
 
 std::pair<double,double>
 Profile::tileDimensions(unsigned int lod) const
