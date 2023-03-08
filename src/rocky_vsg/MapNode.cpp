@@ -7,6 +7,8 @@
 #include "TerrainNode.h"
 #include "Utils.h"
 #include <rocky/Horizon.h>
+#include <rocky/ImageLayer.h>
+#include <rocky/ElevationLayer.h>
 
 #include <vsg/io/Options.h>
 #include <vsg/app/RecordTraversal.h>
@@ -86,9 +88,7 @@ MapNode::getConfig() const
     conf.set("screen_space_error", _screenSpaceError);
 
     // all map layers
-    auto layers = _map->getLayers<Layer>();
-
-    for(auto& layer : layers)
+    for (auto& layer : _map->layers().all())
     {
         Config layerConf = layer->getConfig();
         if (!layerConf.empty() && !layerConf.key().empty())

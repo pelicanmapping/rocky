@@ -36,6 +36,8 @@ set(HEADERS
     Instance.h
     IOTypes.h
     Layer.h
+    LayerCollection.h
+    LayerCollection.inline.h
     LayerReference.h
     Log.h
     Map.h
@@ -83,6 +85,7 @@ set(SOURCES
     Instance.cpp
     IOTypes.cpp
     Layer.cpp
+    LayerCollection.cpp
     Log.cpp
     Map.cpp
     Math.cpp
@@ -135,6 +138,11 @@ if (tinyxml_FOUND)
 endif()
 if (nlohmann_json_FOUND)
     list(APPEND PRIVATE_LIBS nlohmann_json::nlohmann_json)
+endif()
+if (SQLITE3_FOUND)
+    list(APPEND PRIVATE_LIBS unofficial::sqlite3::sqlite3)
+    #include_directories(${SQLITE3_INCLUDE_DIR})
+    #list(APPEND PRIVATE_LIBS ${SQLITE3_LIBRARY})target_link_libraries(main PRIVATE unofficial::sqlite3::sqlite3)
 endif()
 
 set(LIBRARIES PRIVATE ${PRIVATE_LIBS} PUBLIC ${PUBLIC_LIBS})

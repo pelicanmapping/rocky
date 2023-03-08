@@ -227,19 +227,20 @@ TEST_CASE("Map")
         };
         map->onLayerRemoved(removed_cb);
 
-        map->addLayer(layer);
+        map->layers().add(layer);
         CHECK(cb_code == 100);
-        CHECK(map->numLayers() == 1);
+        CHECK(map->layers().count() == 1);
 
-        map->moveLayer(layer, 0);
+        //map->moveLayer(layer, 0);
+        map->layers().move(layer, 0);
         CHECK(cb_code == 200);
 
-        auto layers = map->getLayers<Layer>();
+        auto layers = map->layers().all();
         CHECK(layers.size() == 1);
 
-        map->removeLayer(layer);
+        map->layers().remove(layer);
         CHECK(cb_code == 300);
-        CHECK(map->numLayers() == 0);
+        CHECK(map->layers().count() == 0);
     }
 }
 

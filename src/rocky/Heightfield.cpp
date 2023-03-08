@@ -39,6 +39,13 @@ namespace
     }
 }
 
+//Heightfield::Heightfield(shared_ptr<Image> image)
+//    : _image(image)
+//{
+//    ROCKY_SOFT_ASSERT(image != nullptr);
+//    ROCKY_SOFT_ASSERT(image->pixelFormat() == Image::R32_SFLOAT);
+//}
+
 Heightfield::Heightfield() :
     super(Image::R32_SFLOAT, 0, 0, 1)
 {

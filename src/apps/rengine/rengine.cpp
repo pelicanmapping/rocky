@@ -21,6 +21,9 @@ int error(const rocky::Status& status)
     return -1;
 }
 
+namespace rocky {
+}
+
 int main(int argc, char** argv)
 {
     rocky::Log::level = rocky::LogLevel::INFO;
@@ -32,7 +35,7 @@ int main(int argc, char** argv)
 #if defined(ROCKY_SUPPORTS_GDAL)
     auto imagery = rocky::GDALImageLayer::create();
     imagery->setURI("WMTS:https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml,layer=s2cloudless-2020");
-    engine.map()->addLayer(imagery);
+    engine.map()->layers().add(imagery);
 
     if (imagery->status().failed())
         return error(imagery->status());
@@ -42,7 +45,7 @@ int main(int argc, char** argv)
     // add an elevation layer
     auto elevation = rocky::TMSElevationLayer::create();
     elevation->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
-    engine.map()->addLayer(elevation);
+    engine.map()->layers().add(elevation);
 
     if (elevation->status().failed())
         return error(elevation->status());

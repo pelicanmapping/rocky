@@ -12,6 +12,7 @@
         "glm",
         "nlohmann-json",
         "openssl",
+        "sqlite3",
         "tinyxml",
         "vsg",
         "vsgxchange"

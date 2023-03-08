@@ -22,7 +22,7 @@ int main(int argc, char** argv)
 
     auto imagery = rocky::TMSImageLayer::create();
     imagery->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
-    engine.map()->addLayer(imagery);
+    engine.map()->layers().add(imagery);
 
     if (imagery->status().failed()) 
     {

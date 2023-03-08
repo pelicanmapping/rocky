@@ -93,19 +93,25 @@ Map::Map(
 #else
 
 Map::Map(const Instance& instance) :
-    _instance(instance)
+    _instance(instance),
+    _imageLayers(this),
+    _elevationLayers(this)
 {
     construct(Config(), _instance.ioOptions());
 }
 
 Map::Map(const Instance& instance, const IOOptions& io) :
-    _instance(instance)
+    _instance(instance),
+    _imageLayers(this),
+    _elevationLayers(this)
 {
     construct(Config(), io);
 }
 
 Map::Map(const Config& conf, const Instance& instance, const IOOptions& io) :
-    _instance(instance)
+    _instance(instance),
+    _imageLayers(this),
+    _elevationLayers(this)
 {
     construct(Config(), io);
 }
@@ -182,9 +188,8 @@ Map::getElevationPool() const
 }
 #endif
 
-
 Revision
-Map::dataModelRevision() const
+Map::revision() const
 {
     return _dataModelRevision;
 }
@@ -249,6 +254,7 @@ Map::attributions() const
     return std::move(result);
 }
 
+#if 0
 Status
 Map::addLayer(shared_ptr<Layer> layer)
 {
@@ -573,6 +579,7 @@ Map::clear()
         onLayerRemoved.fire(layer, newRevision);
     }
 }
+#endif
 
 const SRS&
 Map::srs() const

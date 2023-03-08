@@ -144,25 +144,25 @@ GeoHeightfield::heightAt(double x, double y, const SRS& xy_srs, Image::Interpola
 
 GeoHeightfield
 GeoHeightfield::createSubSample(
-    const GeoExtent& destEx,
+    const GeoExtent& destExtent,
     unsigned width,
     unsigned height,
     Image::Interpolation interpolation) const
 {
-    double div = destEx.width()/_extent.width();
+    double div = destExtent.width()/_extent.width();
     if ( div >= 1.0f )
         return GeoHeightfield::INVALID;
 
-    double dx = destEx.width()/(double)(width-1);
-    double dy = destEx.height()/(double)(height-1);    
+    double dx = destExtent.width()/(double)(width-1);
+    double dy = destExtent.height()/(double)(height-1);
 
     shared_ptr<Heightfield> dest = Heightfield::create(width, height);
 
     double x, y;
     int col, row;
 
-    double x0 = (destEx.xmin()-_extent.xmin())/_extent.width();
-    double y0 = (destEx.ymin()-_extent.ymin())/_extent.height();
+    double x0 = (destExtent.xmin()-_extent.xmin())/_extent.width();
+    double y0 = (destExtent.ymin()-_extent.ymin())/_extent.height();
 
     double xstep = div / (double)(width-1);
     double ystep = div / (double)(height-1);
@@ -171,12 +171,12 @@ GeoHeightfield::createSubSample(
     {
         for( y = y0, row = 0; row < (int)height; y += ystep, row++ )
         {
-            float heightAtNL = _hf->heightAtUV(x, y, interpolation );
-            dest->data<float>(col, row) = heightAtNL;
+            float heightAtNL = _hf->heightAtUV(x, y, interpolation);
+            dest->heightAt(col, row) = heightAtNL;
         }
     }
 
-    return GeoHeightfield( dest, destEx ); // Q: is the VDATUM accounted for?
+    return GeoHeightfield(dest, destExtent);
 }
 
 const GeoExtent&

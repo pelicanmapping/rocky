@@ -54,15 +54,13 @@ find_package(PROJ CONFIG REQUIRED)
 # glm - vector and matrix math library - required
 find_package(glm CONFIG REQUIRED)
 
-
-option(ROCKY_SUPPORTS_PROFILING "Build with performance profiling" OFF)
+# optional modules
 option(ROCKY_SUPPORTS_HTTP "Support HTTP (reuqires httplib)" ON)
 option(ROCKY_SUPPORTS_HTTPS "Support HTTPS (requires openssl)" ON)
 option(ROCKY_SUPPORTS_TMS "Support OSGeo TileMapService" ON)
-option(ROCKY_SUPPORTS_GDAL "Support GeoTIFF and other GDAL formats (required gdal)" ON)
-# option(ROCKY_SUPPORTS_WMS "Support OGC WebMapService (requires httplib)" OFF)
-# option(ROCKY_SUPPORTS_WMTS "Support OGC Web Map Tile Service (requires..?)" OFF)
-# option(ROCKY_SUPPORTS_MBTILES "Support MapBox MBTiles (requires sqlite3)" OFF)
+option(ROCKY_SUPPORTS_GDAL "Support GeoTIFF, WMS, WMTS, and other GDAL formats (requires gdal)" ON)
+option(ROCKY_SUPPORTS_MBTILES "Support MBTiles databases with extended spatial profile support (requires sqlite3)" OFF)
+option(ROCKY_SUPPORTS_PROFILING "Build with performance profiling" OFF)
 
 set(BUILD_WITH_JSON ON)
 
@@ -86,7 +84,7 @@ endif()
 
 if (ROCKY_SUPPORTS_MBTILES)
     add_definitions("-DROCKY_SUPPORTS_MBTILES")
-    set(BUILD_WITH_SQLITE ON)
+    set(BUILD_WITH_SQLITE3 ON)
 endif()
 
 if (ROCKY_SUPPORTS_TMS)
@@ -94,21 +92,6 @@ if (ROCKY_SUPPORTS_TMS)
     set(BUILD_WITH_TMS ON)
     set(BUILD_WITH_TINYXML ON)
 endif()
-
-if (ROCKY_SUPPORTS_WMS)
-    add_definitions("-DROCKY_SUPPORTS_WMS")
-    set(BUILD_WITH_HTTPLIB ON)
-    set(BUILD_WITH_WMS ON)
-    set(BUILD_WITH_TINYXML ON)
-endif()
-
-if (ROCKY_SUPPORTS_WMTS)
-    add_definitions("-DROCKY_SUPPORTS_WMTS")
-    set(BUILD_WITH_HTTPLIB ON)
-    set(BUILD_WITH_TINYXML ON)
-endif()
-
-
 
 # tinyxml - xml parser
 if (BUILD_WITH_TINYXML)
@@ -153,7 +136,9 @@ endif()
 
 # sqlite3 - database - required to support some formats like mbtiles
 if (BUILD_WITH_SQLITE3)
-    find_package(SQLITE3 CONFIG REQUIRED)
+    # find_package(SQLite3 REQUIRED)
+    find_package(unofficial-sqlite3 CONFIG REQUIRED)
+    # target_link_libraries(main PRIVATE unofficial::sqlite3::sqlite3)
     if (SQLITE3_FOUND)
         add_definitions("-DSQLITE3_FOUND")
     endif()

@@ -145,7 +145,7 @@ namespace ROCKY_NAMESPACE
             std::vector<float>* resolutions,
             const TileKey& key,
             const Profile& hae_profile,
-            Heightfield::Interpolation interpolation,
+            Image::Interpolation interpolation,
             const IOOptions& io ) const;
     };
 
