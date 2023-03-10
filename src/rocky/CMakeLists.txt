@@ -37,7 +37,6 @@ set(HEADERS
     IOTypes.h
     Layer.h
     LayerCollection.h
-    LayerCollection.inline.h
     LayerReference.h
     Log.h
     Map.h
