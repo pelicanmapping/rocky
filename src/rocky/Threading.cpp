@@ -474,8 +474,8 @@ job_scheduler::setConcurrency(unsigned value)
 void
 job_scheduler::setConcurrency(const std::string& name, unsigned value)
 {
-    // this method exists so you can set an arena's concurrency
-    // before the arena is actually created
+    // this method exists so you can set an scheduler's concurrency
+    // before the scheduler is actually created
 
     value = std::max(value, 1u);
 
@@ -487,9 +487,9 @@ job_scheduler::setConcurrency(const std::string& name, unsigned value)
         auto iter = _schedulers.find(name);
         if (iter != _schedulers.end())
         {
-            std::shared_ptr<job_scheduler> arena = iter->second;
-            ROCKY_SOFT_ASSERT_AND_RETURN(arena != nullptr, void());
-            arena->setConcurrency(value);
+            std::shared_ptr<job_scheduler> scheduler = iter->second;
+            ROCKY_SOFT_ASSERT_AND_RETURN(scheduler != nullptr, void());
+            scheduler->setConcurrency(value);
         }
     }
 }
@@ -715,7 +715,7 @@ job_metrics::scheduler(const std::string& name)
 
     if (m >= _schedulers.size())
     {
-        ROCKY_SOFT_ASSERT(m >= _schedulers.size(), "Ran out of scheduler space...using arena[0] :(");
+        ROCKY_SOFT_ASSERT(m >= _schedulers.size(), "Ran out of scheduler space...using scheduler[0] :(");
         return *_schedulers[0];
     }
 

@@ -6,11 +6,76 @@
 #include "RuntimeContext.h"
 #include "Utils.h"
 #include <vsg/app/Viewer.h>
+#include <shared_mutex>
 
 using namespace ROCKY_NAMESPACE;
 
 namespace
 {
+    /**
+    * An update operation that maintains a priroity queue for update tasks.
+    * This sits in the VSG viewer's update operations queue indefinitely
+    * and runs once per frame. It chooses the highest priority task in its
+    * queue and runs it. It will run one task per frame so that we do not
+    * risk frame drops. It will automatically discard any tasks that have
+    * been abandoned (no Future exists).
+    */
+    struct PriorityUpdateQueue : public vsg::Inherit<vsg::Operation, PriorityUpdateQueue>
+    {
+        std::mutex _mutex;
+
+        struct Task {
+            vsg::ref_ptr<vsg::Operation> function;
+            std::function<float()> get_priority;
+        };
+        std::vector<Task> _queue;
+
+        // runs one task per frame.
+        void run() override
+        {
+            if (!_queue.empty())
+            {
+                Task task;
+                {
+                    std::scoped_lock lock(_mutex);
+
+                    // sort from low to high priority
+                    std::sort(_queue.begin(), _queue.end(),
+                        [](const Task& lhs, const Task& rhs)
+                        {
+                            if (lhs.get_priority == nullptr)
+                                return false;
+                            else if (rhs.get_priority == nullptr)
+                                return true;
+                            else
+                                return lhs.get_priority() < rhs.get_priority();
+                        }
+                    );
+
+                    while (!_queue.empty())
+                    {
+                        // pop the highest priority off the back.
+                        task = _queue.back();
+                        _queue.pop_back();
+
+                        // check for cancelation - if the task is already canceled, 
+                        // discard it and fetch the next one.
+                        auto po = dynamic_cast<Cancelable*>(task.function.get());
+                        if (po == nullptr || !po->canceled())
+                            break;
+                        else
+                            task = { };
+                    }
+                }
+
+                if (task.function)
+                {
+                    task.function->run();
+                }
+            }
+        }
+    };
+
     //! Operation that asynchronously creates a node (via a user lambda function)
     //! and then safely adds it to the `ene graph in the update phase.
     struct AddNodeAsync : public vsg::Inherit<vsg::Operation, AddNodeAsync>
@@ -107,6 +172,26 @@ namespace
 
 RuntimeContext::RuntimeContext()
 {
+    _priorityUpdateQueue = PriorityUpdateQueue::create();
+}
+
+void
+RuntimeContext::runDuringUpdate(
+    vsg::ref_ptr<vsg::Operation> function,
+    std::function<float()> get_priority)
+{
+    auto pq = dynamic_cast<PriorityUpdateQueue*>(_priorityUpdateQueue.get());
+    if (pq)
+    {
+        std::scoped_lock lock(pq->_mutex);
+
+        if (pq->referenceCount() == 1)
+        {
+            updates()->add(_priorityUpdateQueue, vsg::UpdateOperations::ALL_FRAMES);
+        }
+
+        pq->_queue.push_back({ function, get_priority });
+    }
 }
 
 util::Future<bool>
@@ -161,7 +246,7 @@ RuntimeContext::compileAndAddChild(vsg::ref_ptr<vsg::Group> parent, NodeFactory 
         return true;
     };
 
-    auto future = util::job::dispatch<bool>(
+    auto future = util::job::dispatch(
         async_create_and_add_node,
         promise,
         job_config

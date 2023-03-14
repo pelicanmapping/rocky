@@ -22,7 +22,7 @@ namespace ROCKY_NAMESPACE
         //! Tell the host that a tile is alive!
         virtual void ping(
             TerrainTileNode* tile,
-            bool parentHasData,
+            const TerrainTileNode* parent,
             vsg::RecordTraversal& t) = 0;
 
         //! Access terrain settings.

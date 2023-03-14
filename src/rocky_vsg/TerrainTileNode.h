@@ -106,6 +106,8 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::StateGroup> stategroup;
         
         mutable util::Future<bool> childrenLoader;
+        mutable util::Future<TerrainTileModel> elevationLoader;
+        mutable util::Future<bool> elevationMerger;
         mutable util::Future<TerrainTileModel> dataLoader;
         mutable util::Future<bool> dataMerger;
         mutable std::atomic<uint64_t> lastTraversalFrame;
@@ -124,40 +126,28 @@ namespace ROCKY_NAMESPACE
             TerrainTileHost* in_host,
             RuntimeContext& runtime);
 
-        virtual ~TerrainTileNode();
-
-        //! Tells this tile to load all its layers
-        void refreshAllLayers();
-
-        //! Tells this tile to request data for the data in the manifest
-        void refreshLayers(const CreateTileManifest& manifest);
-
-        /** Notifies this tile that another tile has come into existence. */
-        void notifyOfArrival(
-            TerrainTileNode* that,
-            shared_ptr<TerrainContext> terrain);
-
-        /** Elevation data for this node along with its scale/bias matrix; needed for bounding box */
+        //! Elevation data for this node along with its scale/bias matrix;
+        //! needed for bounding box
         void setElevation(
             shared_ptr<Image> image,
             const dmat4& matrix);
 
+        //! This node's elevation raster image
         shared_ptr<Image> getElevationRaster() const {
             return surface->getElevationRaster();
         }
 
+        //! This node's elevation matrix
         const dmat4& getElevationMatrix() const {
             return surface->getElevationMatrix();
         }
 
-        //! Apply any thread-safe updates to the tile
-        void update(
-            const vsg::FrameStamp* fs,
-            const IOOptions& io);
-
         //! Remove this tile's children and reset the child
         //! loader future.
         void unloadChildren();
+
+        //! Update this node (placeholder)
+        void update(const vsg::FrameStamp*, const IOOptions&) { }
 
     public:
 
@@ -169,29 +159,17 @@ namespace ROCKY_NAMESPACE
         mutable bool _needsChildren;
         mutable bool _needsUpdate;
         TerrainTileHost* _host;
-        vsg::observer_ptr<TerrainTileNode> _eastNeighbor;
-        vsg::observer_ptr<TerrainTileNode> _southNeighbor;
-        fvec4 _tileKeyValue;
 
+        // set the tile's render model equal to the specified parent's
+        // render model, and then apply a scale bias matrix so it
+        // inherits the textures.
         void inheritFrom(vsg::ref_ptr<TerrainTileNode> parent);
-
-        void updateElevationRaster();
 
     private:
 
-        void updateNormalMap(const TerrainSettings&);
-
         bool shouldSubDivide(vsg::State* state) const;
 
-        // whether this tile should render the given pass
-        //bool passInLegalRange(const RenderingPass&) const;
-
-        /** Load (or continue loading) content for the tiles in this quad. */
-        //void load(
-        //    vsg::State* state,
-        //    TerrainContext& terrain) const;
-
-        /** Ensure that inherited data from the parent node is up to date. */
+        // Ensure that inherited data from the parent node is up to date
         void refreshInheritedData(const TerrainTileNode* parent);
 
         // Inherit one shared sampler from parent tile if possible

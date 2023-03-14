@@ -45,6 +45,11 @@ namespace ROCKY_NAMESPACE
         //! VSG state sharing
         vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
 
+        //! Queue a function to run during the update pass
+        void runDuringUpdate(
+            vsg::ref_ptr<vsg::Operation> function,
+            std::function<float()> get_priority = nullptr);
+
         //! Function that creates a node
         using NodeFactory = std::function<vsg::ref_ptr<vsg::Node>(Cancelable&)>;
 
@@ -60,6 +65,9 @@ namespace ROCKY_NAMESPACE
         void removeNode(
             vsg::Group* parent,
             unsigned index);
+
+    private:
+        vsg::ref_ptr<vsg::Operation> _priorityUpdateQueue;
     };
 }
 

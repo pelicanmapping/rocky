@@ -48,7 +48,7 @@ CreateTileManifest::insert(shared_ptr<Layer> layer)
     {
         _layers[layer->uid()] = layer->revision();
 
-        if (std::dynamic_pointer_cast<ElevationLayer>(layer))
+        if (ElevationLayer::cast(layer))
         {
             _includesElevation = true;
         }
@@ -58,12 +58,6 @@ CreateTileManifest::insert(shared_ptr<Layer> layer)
         //    _includesConstraints = true;
         //}
     }
-}
-
-bool
-CreateTileManifest::excludes(const Layer* layer) const
-{
-    return !empty() && _layers.find(layer->uid()) == _layers.end();
 }
 
 bool
@@ -114,7 +108,7 @@ CreateTileManifest::includes(const Layer* layer) const
 bool
 CreateTileManifest::includes(UID uid) const
 {
-    return empty() || _layers.find(uid) != _layers.end();
+    return empty() || _layers.count(uid) > 0;
 }
 
 bool
@@ -267,7 +261,7 @@ TerrainTileModelFactory::addColorLayers(
             return
                 layer->isOpen() &&
                 layer->renderType() == layer->RENDERTYPE_TERRAIN_SURFACE &&
-                !manifest.excludes(layer.get());
+                manifest.includes(layer.get());
         });
 
     for(auto layer : layers)
@@ -294,6 +288,50 @@ TerrainTileModelFactory::addColorLayers(
     }
 }
 
+
+
+TerrainTileModel::Elevation
+TerrainTileModelFactory::createElevationModel(
+    const Map* map,
+    const TileKey& key,
+    const IOOptions& io) const
+{
+    ROCKY_HARD_ASSERT(map != nullptr);
+
+    TerrainTileModel::Elevation model;
+
+    auto layer = map->layers().firstOfType<ElevationLayer>();
+
+    if (layer != nullptr && 
+        layer->isOpen() &&
+        layer->isKeyInLegalRange(key) &&
+        layer->mayHaveData(key))
+    {
+        auto result = layer->createHeightfield(key, io);
+
+        if (result.status.ok())
+        {
+            replace_nodata_values(result.value);
+
+            model.heightfield = std::move(result.value);
+            model.revision = layer->revision();
+        }
+
+        // ResourceUnavailable just means the driver could not produce data
+        // for the tilekey; it is not an actual read error.
+        else if (result.status.code != Status::ResourceUnavailable)
+        {
+            Log::warn() << "Problem getting data from \"" << layer->name() << "\" : "
+                << result.status.message << std::endl;
+        }
+    }
+
+    return model;
+}
+
+
+
+
 bool
 TerrainTileModelFactory::addElevation(
     TerrainTileModel& model,
@@ -318,7 +356,7 @@ TerrainTileModelFactory::addElevation(
     {
         for (const auto& layer : layers)
         {
-            if (needElevation == false && !manifest.excludes(layer.get()))
+            if (needElevation == false && manifest.includes(layer.get()))
             {
                 needElevation = true;
             }
@@ -330,7 +368,8 @@ TerrainTileModelFactory::addElevation(
 
     auto layer = map->layers().firstOfType<ElevationLayer>();
 
-    if (layer->isOpen() &&
+    if (layer != nullptr &&
+        layer->isOpen() &&
         layer->isKeyInLegalRange(key) &&
         layer->mayHaveData(key))
     {

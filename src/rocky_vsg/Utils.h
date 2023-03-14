@@ -204,10 +204,15 @@ namespace ROCKY_NAMESPACE
         *   auto result = result.get();
         */
         template<class T>
-        struct PromiseOperation : public vsg::Operation
+        struct PromiseOperation : public vsg::Operation, public Cancelable
         {
             util::Future<T> _promise;
             std::function<T(Cancelable&)> _func;
+
+            //! Was the operation canceled or abandoned?
+            bool canceled() const override {
+                return _promise.canceled();
+            }
 
             //! Static factory function
             template<typename... Args>

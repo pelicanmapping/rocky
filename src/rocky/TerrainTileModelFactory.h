@@ -48,6 +48,11 @@ namespace ROCKY_NAMESPACE
             const CreateTileManifest& manifest,
             const IOOptions& io);
 
+        TerrainTileModel::Elevation createElevationModel(
+            const Map* map,
+            const TileKey& key,
+            const IOOptions& io) const;
+
     protected:
 
         virtual void addColorLayers(

@@ -423,8 +423,8 @@ namespace ROCKY_NAMESPACE { namespace util
      *
      *   int a = 10, b = 20;
      *   
-     *   Future<int> result = job::dispatch<int>(
-     *      [a, b](Cancelable& p) {
+     *   Future<int> result = job::dispatch(
+     *      [a, b](Cancelable& p) -> int {
      *          return (a + b);
      *      }
      *   );
@@ -440,12 +440,12 @@ namespace ROCKY_NAMESPACE { namespace util
      * 
      * For more control over the job, you can also pass in settings:
      * 
-     *   auto result = job::dispatch<int>(
-     *     [a, b](Cancelable& p) { return a+b; },
-     *     { "Job name",               // name of this job
-     *       []() { return 1.0f; },    // function returning jbo priority
-     *       job_scheduler::get("adders"),  // which arena (thread pool) to run job in
-     *       "job group name"          // group to run job in
+     *   auto result = job::dispatch(
+     *     [a, b](Cancelable& p) -> int { return a+b; },
+     *     { "Job name",                    // name of this job
+     *       []() { return 1.0f; },         // function returning job priority
+     *       job_scheduler::get("myPool"),  // which scheduler (thread pool) to run job in
+     *       "job group name"               // group to run job in
      *     });
      *       
      */
@@ -457,11 +457,12 @@ namespace ROCKY_NAMESPACE { namespace util
         job_group* group = nullptr;
 
         //! Run the job and return a future result.
-        //! @param func Function to run in a thread
+        //! @param task Function to run in a thread. Prototype is T(Cancelable&)
         //! @param settings Optional configuration for the asynchronous function call
         //! @return Future result of the async function call
-        template<typename T> static inline Future<T> dispatch(
-            std::function<T(Cancelable&)> task,
+        template<typename FUNC, typename T=std::result_of<FUNC(Cancelable&)>::type>
+        static inline Future<T> dispatch(
+            FUNC task,
             const job& config = { })
         {
             Future<T> promise;
@@ -469,38 +470,37 @@ namespace ROCKY_NAMESPACE { namespace util
         }
 
         //! Run the job and return a future result.
-        //! @param func Function to run in a thread
+        //! @param task Function to run in a thread. Prototype is T(Cancelable&)
         //! @param promise User-supplied promise object
         //! @param settings Optional configuration for the asynchronous function call
         //! @return Future result of the async function call
-        template<typename T> static inline Future<T> dispatch(
-            std::function<T(Cancelable&)> task,
+        template<typename FUNC, typename T = std::result_of<FUNC(Cancelable&)>::type>
+        static inline Future<T> dispatch(
+            FUNC task,
             Future<T> promise,
             const job& config = { })
         {
-            //Future<T> future = promise.future();
-
             job_scheduler::Delegate delegate = [task, promise]() mutable
             {
                 bool good = !promise.canceled();
-                if (good && task)
+                if (good)
                     promise.resolve(task(promise));
                 return good;
             };
 
-            job_scheduler* arena = config.scheduler ? config.scheduler : job_scheduler::get("");
+            job_scheduler* scheduler = config.scheduler ? config.scheduler : job_scheduler::get("");
 
-            if (arena)
-                arena->dispatch(config, delegate);
+            if (scheduler)
+                scheduler->dispatch(config, delegate);
 
-            return promise;// std::move(future);
+            return promise;
         }
     };
 
     class job_metrics
     {
     public:
-        //! Per-arena metrics.
+        //! Per-scheduler metrics.
         struct scheduler_metrics
         {
             std::string name;
@@ -515,7 +515,7 @@ namespace ROCKY_NAMESPACE { namespace util
         //! get or create a scheduler entry and return its index
         scheduler_metrics& scheduler(const std::string& name);
 
-        //! metrics about the arena at index "index"
+        //! metrics about the scheduler at index "index"
         scheduler_metrics& scheduler(int index);
 
         //! Total number of pending jobs across all schedulers
@@ -574,10 +574,10 @@ namespace ROCKY_NAMESPACE { namespace util
 
     public: // statics
 
-        //! Access a named arena
+        //! Access a named scheduler
         static job_scheduler* get(const std::string& name = {});
 
-        //! Sets the concurrency of a named arena
+        //! Sets the concurrency of a named scheduler
         static void setConcurrency(const std::string& name, unsigned value);
 
         static void shutdownAll();
@@ -624,7 +624,7 @@ namespace ROCKY_NAMESPACE { namespace util
         bool _done;
         // threads in the pool
         std::vector<std::thread> _threads;
-        // pointer to the stats structure for this arena
+        // pointer to the stats structure for this scheduler
         job_metrics::scheduler_metrics* _metrics = nullptr;
 
         static std::mutex _schedulers_mutex;

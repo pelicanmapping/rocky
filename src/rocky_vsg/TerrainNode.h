@@ -54,7 +54,7 @@ namespace ROCKY_NAMESPACE
         //! TerrainTileHost interface
         void ping(
             TerrainTileNode* tile,
-            bool parentHasData,
+            const TerrainTileNode* parent,
             vsg::RecordTraversal&) override;
 
         //! Access to terrain settings

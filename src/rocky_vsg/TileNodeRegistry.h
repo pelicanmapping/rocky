@@ -49,25 +49,14 @@ namespace ROCKY_NAMESPACE
         shared_ptr<StateFactory> stateFactory;
         shared_ptr<SelectionInfo> selectionInfo;
 
-        //! Marks all tiles intersecting the extent as dirty. If incremental
-        //! update is enabled, they will automatically reload.
-        //! NOTE: Input extent SRS must match the terrain's SRS exactly.
-        //!       The method does not check.
-        void setDirty(
-            const GeoExtent& extent,
-            unsigned minLevel,
-            unsigned maxLevel,
-            const CreateTileManifest& manifest,
-            shared_ptr<TerrainContext> terrain);
-
         ~TileNodeRegistry();
 
         //! TerrainTileNode will call this to let us know that it's alive
         //! and that it may need something.
         //! ONLY call during record.
         void ping(
-            TerrainTileNode* tile, 
-            bool dataLoadsPermitted,
+            TerrainTileNode* tile,
+            const TerrainTileNode* parent,
             vsg::RecordTraversal&);
 
         //! Number of tiles in the registry.
@@ -88,6 +77,9 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<TerrainTileNode> parent,
             shared_ptr<TerrainContext> terrain);
 
+        //! Fetches a tile by its key.
+        //! @param key TileKey for which to fetch a tile
+        //! @return The tile, if it exists
         vsg::ref_ptr<TerrainTileNode> getTile(const TileKey& key) const;
 
     protected:
@@ -98,17 +90,26 @@ namespace ROCKY_NAMESPACE
         TerrainTileHost* _host;
 
         std::vector<TileKey> _loadChildren;
+        std::vector<TileKey> _loadElevation;
+        std::vector<TileKey> _mergeElevation;
         std::vector<TileKey> _loadData;
         std::vector<TileKey> _mergeData; 
         std::vector<TileKey> _updateData;
 
     private:
 
-        //! Keep a single tile alive.
-        //void ping(TerrainTileNode* parent, TerrainTileNode* tile);
-
         void requestLoadChildren(
             vsg::ref_ptr<TerrainTileNode> parent,
+            shared_ptr<TerrainContext> terrain) const;
+
+        void requestLoadElevation(
+            vsg::ref_ptr<TerrainTileNode> tile,
+            const IOOptions& io,
+            shared_ptr<TerrainContext> terrain) const;
+
+        void requestMergeElevation(
+            vsg::ref_ptr<TerrainTileNode> tile,
+            const IOOptions& io,
             shared_ptr<TerrainContext> terrain) const;
 
         void requestLoadData(

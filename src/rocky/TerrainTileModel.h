@@ -34,9 +34,6 @@ namespace ROCKY_NAMESPACE
         //! Request data for a layer
         void insert(shared_ptr<Layer> layer);
 
-        //! Does the manifest exclude this layer?
-        bool excludes(const Layer* layer) const;
-
         //! Sets whether to apply the update progressively (in LOD order)
         void setProgressive(bool value);
         const optional<bool>& progressive() const { return _progressive; }

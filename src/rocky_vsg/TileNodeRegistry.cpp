@@ -9,6 +9,9 @@
 #include "RuntimeContext.h"
 #include "Utils.h"
 
+#include <rocky/ElevationLayer.h>
+#include <rocky/ImageLayer.h>
+#include <rocky/Map.h>
 #include <rocky/TerrainTileModelFactory.h>
 
 #include <vsg/nodes/QuadGroup.h>
@@ -17,6 +20,8 @@
 using namespace ROCKY_NAMESPACE;
 
 #define LC "[TileNodeRegistry] "
+
+//#define LOAD_ELEVATION_SEPARATELY
 
 //----------------------------------------------------------------------------
 
@@ -32,27 +37,6 @@ TileNodeRegistry::~TileNodeRegistry()
 }
 
 void
-TileNodeRegistry::setDirty(
-    const GeoExtent& extent,
-    unsigned minLevel,
-    unsigned maxLevel,
-    const CreateTileManifest& manifest,
-    shared_ptr<TerrainContext> terrain)
-{
-    std::scoped_lock lock(_mutex);
-    
-    for(auto& [key, entry] : _tiles)
-    {
-        if (minLevel <= key.levelOfDetail() && 
-            maxLevel >= key.levelOfDetail() &&
-            (!extent.valid() || extent.intersects(key.extent())))
-        {
-            entry._tile->refreshLayers(manifest);
-        }
-    }
-}
-
-void
 TileNodeRegistry::releaseAll()
 {
     std::scoped_lock lock(_mutex);
@@ -60,13 +44,15 @@ TileNodeRegistry::releaseAll()
     _tiles.clear();
     _tracker.reset();
     _loadChildren.clear();
+    _loadElevation.clear();
+    _mergeElevation.clear();
     _loadData.clear();
     _mergeData.clear();
     _updateData.clear();
 }
 
 void
-TileNodeRegistry::ping(TerrainTileNode* tile, bool parentHasData, vsg::RecordTraversal& rv)
+TileNodeRegistry::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg::RecordTraversal& rv)
 {
     // first, update the tracker to keep this tile alive.
     TileTable::iterator i = _tiles.find(tile->key);
@@ -90,6 +76,8 @@ TileNodeRegistry::ping(TerrainTileNode* tile, bool parentHasData, vsg::RecordTra
 
     if (progressive)
     {
+
+#if 0
         auto tileHasData = tile->dataMerger.available();
 
         if (tileHasData && tile->_needsChildren)
@@ -97,6 +85,28 @@ TileNodeRegistry::ping(TerrainTileNode* tile, bool parentHasData, vsg::RecordTra
 
         if (parentHasData && tile->dataLoader.empty())
             _loadData.push_back(tile->key);
+#else
+
+        auto tileHasData = tile->dataMerger.available();
+
+#ifdef LOAD_ELEVATION_SEPARATELY
+        auto tileHasElevation = tile->elevationMerger.available();
+#else
+        auto tileHasElevation = tileHasData;
+#endif
+        
+        if (tileHasData && tileHasElevation && tile->_needsChildren)
+            _loadChildren.push_back(tile->key);
+
+        bool parentHasElevation = (parent == nullptr || parent->elevationMerger.available());
+        if (parentHasElevation && tile->elevationLoader.empty())
+            _loadElevation.push_back(tile->key);
+
+        bool parentHasData = (parent == nullptr || parent->dataMerger.available());
+        if (parentHasData && tile->dataLoader.empty())
+            _loadData.push_back(tile->key);
+#endif
+
     }
     else
     {
@@ -108,6 +118,9 @@ TileNodeRegistry::ping(TerrainTileNode* tile, bool parentHasData, vsg::RecordTra
         //    _needsLoad.push_back(tile->key);
     }
 
+    if (tile->elevationLoader.available() && tile->elevationMerger.empty())
+        _mergeElevation.push_back(tile->key);
+
     // This will only queue one merge per frame, to prevent overloading
     // the (synchronous) update cycle in VSG.
     if (tile->dataLoader.available() && tile->dataMerger.empty())
@@ -116,31 +129,6 @@ TileNodeRegistry::ping(TerrainTileNode* tile, bool parentHasData, vsg::RecordTra
     if (tile->_needsUpdate)
         _updateData.push_back(tile->key);
 }
-
-#if 0
-void
-TileNodeRegistry::ping(TerrainTileNode* parent, vsg::QuadGroup* quad, vsg::RecordTraversal& nv)
-{
-    std::scoped_lock lock(_mutex);
-
-    if (quad == nullptr && parent != nullptr)
-    {
-        // special case - ping the parent.
-        ping(nullptr, parent);
-    }
-    else if (quad != nullptr)
-    {
-        for (unsigned i = 0; i < 4; ++i)
-        {
-            TerrainTileNode* tile = static_cast<TerrainTileNode*>(quad->children[i].get());
-            if (tile)
-            {
-                ping(parent, tile);
-            }
-        }
-    }
-}
-#endif
 
 void
 TileNodeRegistry::update(
@@ -183,6 +171,30 @@ TileNodeRegistry::update(
     }
     _loadChildren.clear();
 
+#ifdef LOAD_ELEVATION_SEPARATELY
+    // launch any data loading requests
+    for (auto& key : _loadElevation)
+    {
+        auto iter = _tiles.find(key);
+        if (iter != _tiles.end())
+        {
+            requestLoadElevation(iter->second._tile, io, terrain);
+        }
+    }
+    _loadElevation.clear();
+
+    // schedule any data merging requests
+    for (auto& key : _mergeElevation)
+    {
+        auto iter = _tiles.find(key);
+        if (iter != _tiles.end())
+        {
+            requestMergeElevation(iter->second._tile, io, terrain);
+        }
+    }
+    _mergeElevation.clear();
+#endif
+
     // launch any data loading requests
     for (auto& key : _loadData)
     {
@@ -201,7 +213,6 @@ TileNodeRegistry::update(
         if (iter != _tiles.end())
         {
             requestMergeData(iter->second._tile, io, terrain);
-            break; // one per frame :)
         }
     }
     _mergeData.clear();
@@ -385,7 +396,14 @@ TileNodeRegistry::requestLoadData(
     }
 
     auto key = tile->key;
+
     CreateTileManifest manifest;
+
+#ifdef LOAD_ELEVATION_SEPARATELY
+    for (auto& layer : terrain->map->layers().ofType<ImageLayer>())
+        manifest.insert(layer);
+#endif
+
     const IOOptions io(in_io);
 
     auto load = [key, manifest, terrain, io](Cancelable& p) -> TerrainTileModel
@@ -415,14 +433,13 @@ TileNodeRegistry::requestLoadData(
         return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
     };
 
-    tile->dataLoader = util::job::dispatch<TerrainTileModel>(
-       load, {
+    tile->dataLoader = util::job::dispatch(
+        load, {
             "load data " + key.str(),
             priority_func,
             util::job_scheduler::get(terrain->loadSchedulerName),
             nullptr
-        }
-    );
+        } );
 }
 
 void
@@ -457,7 +474,8 @@ TileNodeRegistry::requestMergeData(
             auto model = tile->dataLoader.get();
 
             auto& renderModel = tile->renderModel;
-            auto compiler = terrain->runtime.compiler();
+
+            bool updated = false;
 
             if (model.colorLayers.size() > 0)
             {
@@ -467,7 +485,155 @@ TileNodeRegistry::requestMergeData(
                     renderModel.color.image = layer.image.image();
                     renderModel.color.matrix = layer.matrix;
                 }
+                updated = true;
             }
+
+#ifndef LOAD_ELEVATION_SEPARATELY
+            if (model.elevation.heightfield.valid())
+            {
+                renderModel.elevation.image = model.elevation.heightfield.heightfield();
+                renderModel.elevation.matrix = model.elevation.matrix;
+
+                // prompt the tile can update its bounds
+                tile->setElevation(
+                    renderModel.elevation.image,
+                    renderModel.elevation.matrix);
+
+                updated = true;
+            }
+
+            if (model.normalMap.image.valid())
+            {
+                renderModel.normal.image = model.normalMap.image.image();
+                renderModel.normal.matrix = model.normalMap.matrix;
+
+                updated = true;
+            }
+#endif
+
+            if (updated)
+            {
+                terrain->stateFactory->updateTerrainTileDescriptors(
+                    renderModel,
+                    tile->stategroup,
+                    terrain->runtime);
+            }
+        }
+
+        return true;
+    };
+
+    auto merge_op = util::PromiseOperation<bool>::create(merge);
+
+    tile->dataMerger = merge_op->future();
+
+    //terrain->runtime.updates()->add(merge_op);
+
+    vsg::observer_ptr<TerrainTileNode> tile_weak(tile);
+    auto priority_func = [tile_weak]() -> float
+    {
+        vsg::ref_ptr<TerrainTileNode> tile = tile_weak.ref_ptr();
+        return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
+    };
+
+    terrain->runtime.runDuringUpdate(merge_op, priority_func);
+}
+
+void
+TileNodeRegistry::requestLoadElevation(
+    vsg::ref_ptr<TerrainTileNode> tile,
+    const IOOptions& in_io,
+    shared_ptr<TerrainContext> terrain) const
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(tile, void());
+
+    // make sure we're not already working on it
+    if (tile->elevationLoader.working() || tile->elevationLoader.available())
+    {
+        return;
+    }
+
+    auto key = tile->key;
+
+    CreateTileManifest manifest;
+    for (auto& elev : terrain->map->layers().ofType<ElevationLayer>())
+        manifest.insert(elev);
+
+    const IOOptions io(in_io);
+
+    auto load = [key, manifest, terrain, io](Cancelable& p) -> TerrainTileModel
+    {
+        if (p.canceled())
+        {
+            return { };
+        }
+
+        TerrainTileModelFactory factory;
+
+        auto model = factory.createTileModel(
+            terrain->map.get(),
+            key,
+            manifest,
+            IOOptions(io, p));
+
+        return model;
+    };
+
+    // a callback that will return the loading priority of a tile
+    // we must use a WEAK pointer to allow job cancelation to work
+    vsg::observer_ptr<TerrainTileNode> tile_weak(tile);
+    auto priority_func = [tile_weak]() -> float
+    {
+        vsg::ref_ptr<TerrainTileNode> tile = tile_weak.ref_ptr();
+        return tile ? -(sqrt(tile->lastTraversalRange) * 0.9 * tile->key.levelOfDetail()) : 0.0f;
+    };
+
+    tile->elevationLoader = util::job::dispatch(
+        load, {
+             "load elevation " + key.str(),
+             priority_func,
+             util::job_scheduler::get(terrain->loadSchedulerName),
+             nullptr
+        }
+    );
+}
+
+
+
+void
+TileNodeRegistry::requestMergeElevation(
+    vsg::ref_ptr<TerrainTileNode> tile,
+    const IOOptions& in_io,
+    shared_ptr<TerrainContext> terrain) const
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(tile, void());
+
+    // make sure we're not already working on it
+    if (tile->elevationMerger.working() || tile->elevationMerger.available())
+    {
+        return;
+    }
+
+    auto key = tile->key;
+    const IOOptions io(in_io);
+
+    auto merge = [key, terrain](Cancelable& p) -> bool
+    {
+        if (p.canceled())
+        {
+            return false;
+        }
+
+        //util::scoped_chrono timer("merge sync " + key.str());
+
+        auto tile = terrain->tiles->getTile(key);
+        if (tile)
+        {
+            auto model = tile->elevationLoader.get();
+
+            auto& renderModel = tile->renderModel;
+
+            bool updated = false;
 
             if (model.elevation.heightfield.valid())
             {
@@ -478,18 +644,26 @@ TileNodeRegistry::requestMergeData(
                 tile->setElevation(
                     renderModel.elevation.image,
                     renderModel.elevation.matrix);
+
+                updated = true;
             }
 
             if (model.normalMap.image.valid())
             {
                 renderModel.normal.image = model.normalMap.image.image();
                 renderModel.normal.matrix = model.normalMap.matrix;
+                updated = true;
             }
 
-            terrain->stateFactory->updateTerrainTileDescriptors(
-                renderModel,
-                tile->stategroup,
-                terrain->runtime);
+            if (updated)
+            {
+                terrain->stateFactory->updateTerrainTileDescriptors(
+                    renderModel,
+                    tile->stategroup,
+                    terrain->runtime);
+
+                Log::info() << "Elevation merged for " << key.str() << std::endl;
+            }
         }
 
         return true;
@@ -497,7 +671,16 @@ TileNodeRegistry::requestMergeData(
 
     auto merge_op = util::PromiseOperation<bool>::create(merge);
 
-    tile->dataMerger = merge_op->future();
+    tile->elevationMerger = merge_op->future();
 
-    terrain->runtime.updates()->add(merge_op);
+    //terrain->runtime.updates()->add(merge_op);
+
+
+    vsg::observer_ptr<TerrainTileNode> tile_weak(tile);
+    auto priority_func = [tile_weak]() -> float
+    {
+        vsg::ref_ptr<TerrainTileNode> tile = tile_weak.ref_ptr();
+        return tile ? -(sqrt(tile->lastTraversalRange) * 0.9 * tile->key.levelOfDetail()) : 0.0f;
+    };
+    terrain->runtime.runDuringUpdate(merge_op, priority_func);
 }

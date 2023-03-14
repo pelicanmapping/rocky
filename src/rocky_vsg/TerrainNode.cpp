@@ -128,9 +128,9 @@ TerrainNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
 
 void
 TerrainNode::ping(
-    TerrainTileNode* parent,
-    bool parentHasData,
+    TerrainTileNode* tile,
+    const TerrainTileNode* parent,
     vsg::RecordTraversal& nv)
 {
-    _context->tiles->ping(parent, parentHasData, nv);
+    _context->tiles->ping(tile, parent, nv);
 }

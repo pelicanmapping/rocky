@@ -75,35 +75,14 @@ TerrainTileNode::TerrainTileNode(
         // construct a state group for this tile's render model
         surface = SurfaceNode::create(key, worldSRS, runtime);
 
-        // empty state group - will populate later in refreshStateGroup
+        // empty state group - the registry will populate this later
         stategroup = vsg::StateGroup::create();
         stategroup->addChild(in_geometry);
 
         surface->addChild(stategroup);
 
-        if (children.empty())
-            this->addChild(surface);
-        else
-            children[0] = surface;
+        this->addChild(surface);
     }
-
-    // Encode the tile key in a uniform. Note! The X and Y components are presented
-    // modulo 2^16 form so they don't overrun single-precision space.
-    auto[tw, th] = key.profile().numTiles(key.levelOfDetail());
-
-    double x = (double)key.tileX();
-    double y = (double)(th - key.tileY() - 1);
-
-    _tileKeyValue = fvec4(
-        (float)(x - tw / 2), //(int)fmod(x, m),
-        (float)(y - th / 2), // (int)fmod(y, m),
-        (float)key.levelOfDetail(),
-        -1.0f);
-}
-
-TerrainTileNode::~TerrainTileNode()
-{
-    //nop
 }
 
 void
@@ -127,28 +106,6 @@ TerrainTileNode::setElevation(shared_ptr<Image> image, const dmat4& matrix)
             recomputeBound();
         }
     }
-}
-
-void
-TerrainTileNode::updateElevationRaster()
-{
-    if (renderModel.elevation.texture)
-        setElevation(renderModel.elevation.image, renderModel.elevation.matrix);
-    else
-        setElevation(nullptr, dmat4(1));
-}
-
-void
-TerrainTileNode::refreshAllLayers()
-{
-    //todo
-}
-
-void
-TerrainTileNode::refreshLayers(
-    const CreateTileManifest& manifest)
-{
-    //todo
 }
 
 bool
@@ -181,12 +138,15 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
 {
     auto frame = rv.getFrameStamp()->frameCount;
 
+    // is this a new frame (since the last time we were here)?
     auto new_frame = lastTraversalFrame.exchange(frame) != frame;
 
+    // swap out the range; used for page out
     lastTraversalRange.exchange(std::min(
         (float)(new_frame ? FLT_MAX : lastTraversalRange),
         (float)distanceTo(bound.center, rv.getState())));
 
+    // swap out the time; used for page out
     lastTraversalTime.exchange(rv.getFrameStamp()->time);
 
     if (hasChildren())
@@ -204,13 +164,11 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
 
 #ifdef AGGRESSIVE_PAGEOUT
             // always ping all children at once so the system can never
-            // delete one of a quad. (A node can't ping itself because it
-            // may be bounding-sphere culled.)
-            bool parentHasData = dataMerger.available();
-            _host->ping(subTile(0), parentHasData, rv);
-            _host->ping(subTile(1), parentHasData, rv);
-            _host->ping(subTile(2), parentHasData, rv);
-            _host->ping(subTile(3), parentHasData, rv);
+            // delete one of a quad.
+            _host->ping(subTile(0), this, rv);
+            _host->ping(subTile(1), this, rv);
+            _host->ping(subTile(2), this, rv);
+            _host->ping(subTile(3), this, rv);
 #endif
         }
         else
@@ -229,20 +187,18 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
     if (hasChildren())
     {
         // always ping all children at once so the system can never
-        // delete one of a quad. (A node can't ping itself because it
-        // may be bounding-sphere culled.)
-        bool parentHasData = dataMerger.available();
-        _host->ping(subTile(0), parentHasData, rv);
-        _host->ping(subTile(1), parentHasData, rv);
-        _host->ping(subTile(2), parentHasData, rv);
-        _host->ping(subTile(3), parentHasData, rv);
+        // delete one of a quad.
+        _host->ping(subTile(0), this, rv);
+        _host->ping(subTile(1), this, rv);
+        _host->ping(subTile(2), this, rv);
+        _host->ping(subTile(3), this, rv);
     }
 #endif
 
-    // if we don't have a parent, we need to ping ourselves.
+    // keep this tile alive if requested
     if (doNotExpire)
     {
-        _host->ping(const_cast<TerrainTileNode*>(this), true, rv);
+        _host->ping(const_cast<TerrainTileNode*>(this), nullptr, rv);
     }
 }
 
@@ -251,15 +207,11 @@ TerrainTileNode::unloadChildren()
 {
     children.resize(1);
     childrenLoader.reset();
+    elevationLoader.reset();
+    elevationMerger.reset();
     dataLoader.reset();
     dataMerger.reset();
     _needsChildren = true;
-}
-
-void
-TerrainTileNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
-{
-    //nop
 }
 
 void
