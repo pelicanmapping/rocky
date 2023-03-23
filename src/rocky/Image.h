@@ -54,6 +54,9 @@ namespace ROCKY_NAMESPACE
         //! Pixel format (see PixelFormat enum)
         PixelFormat pixelFormat() const { return _pixelFormat; }
 
+        //! Whether there's an alpha channel
+        bool hasAlphaChannel() const;
+
     public:
         //! Construct an empty (invalid) image
         Image();
@@ -335,7 +338,7 @@ namespace ROCKY_NAMESPACE
                 for (_s = 0; _s < _image->width(); ++_s)
                 {
                     _u = (double)_s / (double)(_image->width() - 1);
-                    func();
+                    func(*this);
                 }
             }
         }

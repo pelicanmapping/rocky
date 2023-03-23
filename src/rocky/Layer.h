@@ -70,7 +70,7 @@ namespace ROCKY_NAMESPACE
         Status open(const IOOptions& options);
 
         //! Close this layer.
-        Status close();
+        void close();
 
         //! Whether the layer is open
         bool isOpen() const;
@@ -174,6 +174,11 @@ namespace ROCKY_NAMESPACE
         //! invalidate caches.
         virtual void dirty();
 
+        //! Name of the layer type for serialization use
+        const std::string& getConfigKey() const {
+            return _configKey;
+        }
+
         class Options;
 
     protected:
@@ -191,13 +196,16 @@ namespace ROCKY_NAMESPACE
         virtual Status openImplementation(const IOOptions& io);
 
         //! Called by close() to shut down the resources associated with a layer.
-        virtual Status closeImplementation();
+        virtual void closeImplementation();
 
         //! Sets the status for this layer - internal
         const Status& setStatus(const Status& status) const;
 
         //! Sets the status for this layer with a message - internal
         const Status& setStatus(const Status::Code& statusCode, const std::string& message) const;
+
+        //! Sets the config name to use for serialization
+        void setConfigKey(const std::string&);
 
     private:
         UID _uid;
@@ -206,9 +214,10 @@ namespace ROCKY_NAMESPACE
         Hints _hints;
         std::atomic<Revision> _revision;
         std::string _runtimeCacheId;
-        mutable std::shared_mutex _mutex;
+        mutable std::shared_mutex _state_mutex;
         bool _isClosing;
         bool _isOpening;
+        std::string _configKey;
 
         //! post-ctor initialization
         void construct(const Config&);
@@ -217,34 +226,12 @@ namespace ROCKY_NAMESPACE
 
         void bumpRevision();
 
-        // subclass can call this to change an option that requires
-        // a re-opening of the layer.
-        template<typename T, typename V>
-        void setOptionThatRequiresReopen(T& target, const V& value);
-
-        // subclass can call this to change an option that requires
-        // a re-opening of the layer.
-        template<typename T>
-        void resetOptionThatRequiresReopen(T& target);
-
-        //! internal cache information
-        //CacheSettings* getCacheSettings() { return _cacheSettings.get(); }
-        //const CacheSettings* getCacheSettings() const { return _cacheSettings.get(); }
-
         //! subclass access to a mutex that serializes the 
         //! Layer open and close methods with respect to any asynchronous
         //! functions that require the layer to remain open
-        std::shared_mutex& layerMutex() const { return _mutex; }
-
-        //! are we in the middle of a close() call?
-        bool isClosing() const { return _isClosing; }
-
-        //! are we in the middle of a open() call?
-        bool isOpening() const { return _isOpening; }
+        std::shared_mutex& layerStateMutex() const { return _state_mutex; }
 
     public:
-
-        virtual const char* getConfigKey() const { return "layer" ; }
 
     protected:
 
@@ -262,38 +249,9 @@ namespace ROCKY_NAMESPACE
 
     using LayerVector = std::vector<shared_ptr<Layer>>;
 
-
-    template<typename T, typename V>
-    void Layer::setOptionThatRequiresReopen(T& target, const V& value) {
-        if (target != value) {
-            bool wasOpen = isOpen();
-            if (wasOpen && !isOpening() && !isClosing()) close();
-            target = value;
-            if (wasOpen && !isOpening() && !isClosing()) open();
-        }
-    }
-    template<typename T>
-    void Layer::resetOptionThatRequiresReopen(T& target) {
-        if (target.has_value()) {
-            bool wasOpen = isOpen();
-            if (wasOpen && !isOpening() && !isClosing()) close();
-            target.unset();
-            if (wasOpen && !isOpening() && !isClosing()) open();
-        }
-    }
     template<typename T>
     T Layer::userProperty(const std::string& key, T fallback) const {
         return options()._internal().value(key, fallback);
     }
 
-#if 0
-#define REGISTER_ROCKY_LAYER(NAME,CLASS) \
-    extern "C" void osgdb_##NAME(void) {} \
-    static rocky::RegisterPluginLoader< rocky::PluginLoader<CLASS, rocky::Layer> > g_proxy_##CLASS_##NAME( #NAME );
-
-#define USE_ROCKY_LAYER(NAME) \
-    extern "C" void osgdb_##NAME(void); \
-    static osgDB::PluginFunctionProxy proxy_osgearth_layer_##NAME(osgdb_##NAME);
-
-#endif
 } // namespace ROCKY_NAMESPACE

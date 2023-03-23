@@ -1607,13 +1607,16 @@ MapManipulator::recalculateCenterFromLookVector()
 
     if (ok)
     {
-#if 0
-        setCenter(i);
-#else
-        // keep the existing center, but change its length
-        double len = vsg::length(intersection);
-        _state.center = vsg::normalize(_state.center) * len;
-#endif
+        if (_worldSRS.isGeocentric())
+        {
+            // keep the existing center, but change its length
+            double len = vsg::length(intersection);
+            _state.center = vsg::normalize(_state.center) * len;
+        }
+        else
+        {
+            setCenter(intersection);
+        }
     }
 
     return ok;

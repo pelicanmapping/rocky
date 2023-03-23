@@ -60,14 +60,12 @@ ImageMosaic::createImage() const
     unsigned int tileWidth = tile->image->width();
     unsigned int tileHeight = tile->image->height();
 
-    //ROCKY_NOTICE << "TileDim " << tileWidth << ", " << tileHeight << std::endl;
-
     unsigned int minTileX = tile->tilex;
     unsigned int minTileY = tile->tiley;
     unsigned int maxTileX = tile->tilex;
     unsigned int maxTileY = tile->tiley;
 
-    //Compute the tile size.
+    // Compute the tile size.
     for(auto& c : _images)
     {
         if (c.tilex < minTileX) minTileX = c.tilex;
@@ -92,18 +90,11 @@ ImageMosaic::createImage() const
         tileDepth);
 
     Image::Pixel clear(1, 1, 1, 0);
-    auto i = result->get_iterator();
-    i.forEachPixel([&]() { result->write(clear, i.s(), i.t()); });
+    result->get_iterator().forEachPixel([&](const Image::iterator& i) { 
+        result->write(clear, i.s(), i.t());
+        });
 
-    //osg::ref_ptr<osg::Image> image = new osg::Image;
-    //image->allocateImage(pixelsWide, pixelsHigh, tileDepth, tile->_image->getPixelFormat(), tile->_image->getDataType());
-    //image->setInternalTextureFormat(tile->_image->getInternalTextureFormat());
-
-    //Initialize the image to be completely white!
-    //ImageUtils::PixelWriter write(image.get());
-    //write.assign(osg::Vec4(1,1,1,0));
-
-    //Composite the incoming images into the master image
+    // Composite the incoming images into the master image
     for (auto& comp : _images)
     {
         //Determine the indices in the master image for this image
@@ -114,25 +105,6 @@ ImageMosaic::createImage() const
 
             comp.image->copyAsSubImage(result.get(), dstX, dstY);
         }
-
-    //    auto& sourceImage = comp.image;
-    //    const osg::Image* sourceTile = i->getImage();
-    //    if (sourceTile)
-    //    {
-    //        ImageUtils::copyAsSubImage(sourceTile, image.get(), dstX, dstY);
-    //    }
-    //}
-    //for (TileImageList::iterator i = _images.begin(); i != _images.end(); ++i)
-    //{
-    //    //Determine the indices in the master image for this image
-    //    int dstX = (i->_tileX - minTileX) * tileWidth;
-    //    int dstY = (maxTileY - i->_tileY) * tileHeight;
-
-    //    const osg::Image* sourceTile = i->getImage();
-    //    if ( sourceTile )
-    //    {
-    //        ImageUtils::copyAsSubImage(sourceTile, image.get(), dstX, dstY);
-    //    }
     }
 
     return result;

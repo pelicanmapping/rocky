@@ -161,20 +161,19 @@ Config
 Map::getConfig() const
 {
     Config conf("map");
+
     conf.set("name", _name);
 
     if (profile().valid())
         conf.set("profile", profile().getConfig());
 
-    //conf.set( "cache",        cache() );
-    //conf.set( "cache_policy", cachePolicy() );
-
-    //conf.set( "elevation_interpolation", "nearest",     elevationInterpolation(), NEAREST);
-    //conf.set( "elevation_interpolation", "average",     elevationInterpolation(), AVERAGE);
-    //conf.set( "elevation_interpolation", "bilinear",    elevationInterpolation(), BILINEAR);
-    //conf.set( "elevation_interpolation", "triangulate", elevationInterpolation(), TRIANGULATE);
-
     conf.set("profile_layer", _profileLayer);
+
+    Config layers_conf;
+    for (auto& layer : layers().all())
+        layers_conf.add(layer->getConfig());
+    if (!layers_conf.empty())
+        conf.add("layers", layers_conf);
 
     return conf;
 }

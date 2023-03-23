@@ -59,7 +59,7 @@ option(ROCKY_SUPPORTS_HTTP "Support HTTP (reuqires httplib)" ON)
 option(ROCKY_SUPPORTS_HTTPS "Support HTTPS (requires openssl)" ON)
 option(ROCKY_SUPPORTS_TMS "Support OSGeo TileMapService" ON)
 option(ROCKY_SUPPORTS_GDAL "Support GeoTIFF, WMS, WMTS, and other GDAL formats (requires gdal)" ON)
-option(ROCKY_SUPPORTS_MBTILES "Support MBTiles databases with extended spatial profile support (requires sqlite3)" OFF)
+option(ROCKY_SUPPORTS_MBTILES "Support MBTiles databases with extended spatial profile support (requires sqlite3, zlib)" ON)
 option(ROCKY_SUPPORTS_PROFILING "Build with performance profiling" OFF)
 
 set(BUILD_WITH_JSON ON)
@@ -85,6 +85,7 @@ endif()
 if (ROCKY_SUPPORTS_MBTILES)
     add_definitions("-DROCKY_SUPPORTS_MBTILES")
     set(BUILD_WITH_SQLITE3 ON)
+    set(BUILD_WITH_ZLIB ON)
 endif()
 
 if (ROCKY_SUPPORTS_TMS)
@@ -136,12 +137,18 @@ endif()
 
 # sqlite3 - database - required to support some formats like mbtiles
 if (BUILD_WITH_SQLITE3)
-    # find_package(SQLite3 REQUIRED)
     find_package(unofficial-sqlite3 CONFIG REQUIRED)
-    # target_link_libraries(main PRIVATE unofficial::sqlite3::sqlite3)
-    if (SQLITE3_FOUND)
+    if (unofficial-sqlite3_FOUND)
         add_definitions("-DSQLITE3_FOUND")
     endif()
+endif()
+
+# zlib - compression
+if (BUILD_WITH_ZLIB)
+    find_package(ZLIB REQUIRED)
+    if (ZLIB_FOUND)
+        add_definitions("-DZLIB_FOUND")
+    endif()        
 endif()
 
 # tracy - profiling tools and headers

@@ -69,7 +69,7 @@ namespace ROCKY_NAMESPACE
          */
         Status writeHeightfield(
             const TileKey& key,
-            const Heightfield* hf,
+            shared_ptr<Heightfield> hf,
             const IOOptions& io) const;
 
     protected: // ElevationLayer
@@ -97,7 +97,7 @@ namespace ROCKY_NAMESPACE
         //! Subalss can override this to enable writing heightfields.
         virtual Status writeHeightfieldImplementation(
             const TileKey& key,
-            const Heightfield* hf,
+            shared_ptr<Heightfield> hf,
             const IOOptions& io) const;
 
         virtual ~ElevationLayer() { }

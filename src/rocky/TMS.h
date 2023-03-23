@@ -14,6 +14,14 @@ namespace ROCKY_NAMESPACE
 {
     namespace TMS
     {
+        struct Options
+        {
+            optional<URI> uri;
+            optional<std::string> tmsType;
+            optional<std::string> format;
+            optional<bool> coverage;
+        };
+
         struct TileFormat
         {
             unsigned width = 0u;

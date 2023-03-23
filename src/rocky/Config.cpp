@@ -13,6 +13,7 @@
 
 #ifdef NLOHMANN_JSON_FOUND
 #include <nlohmann/json.hpp>
+using json = nlohmann::json;
 #endif
 
 using namespace ROCKY_NAMESPACE;
@@ -76,7 +77,126 @@ namespace
         return conf;
     }
 #endif // TINYXML_FOUND
+
+#ifdef NLOHMANN_JSON_FOUND
+
+    //! example
+    //! {
+    //!   "key" : "layer"
+    //!   "children" : [
+    //!     { "key" : "name", "value" : "imagery" },
+    //!     { "key" : "caching", "value" : "true" }
+    //!   ]
+    //! }
+    //! 
+    //! {
+    //!   "layer" : {
+    //!       "$value" : "...",
+    //!       "name" : "imagery",
+    //!       "caching" : false,
+    //!       "attribution" : "openstreetmap",
+    //!       "policy" : {
+    //!           "usage" : "READ_WRITE",
+    //!           "min_time" : "0"
+    //!       }
+    //!   }
+    //! }
+    //! 
+    //! {
+    //!   "$key" : "layer",
+    //!   "$value" : "...",
+    //!   "$attrs" : {
+    //!       "name" : "imagery",
+    //!       "caching" : "true",
+    //!       "attribution", "openstreetmap"
+    //!   },
+    //!   "$children" : [
+    //!       "cache_policy" : {
+    //!       },
+    //!       "
+    //!   ]
+
+    json conf_to_json(const Config& conf)
+    {
+        json object;
+
+        if (conf.isSimple())
+        {
+            object[conf.key()] = conf.value();
+            return object;
+        }
+
+        if (!conf.value().empty())
+        {
+            object["$value"] = conf.value();
+        }
+
+        if (conf.children().size() > 0)
+        {
+            std::map<std::string, std::vector<Config>> sets; // sorted by key
+            for (auto& child : conf.children())
+            {
+                sets[child.key()].push_back(child);
+            }
+
+            for (auto iter : sets)
+            {
+                for (auto& child : conf.children())
+                {
+                    if (child.isSimple())
+                    {
+                        object[child.key()] = child.value();
+                    }
+                    else
+                    {
+                        object[child.key()] = conf_to_json(child);
+                    }
+                }
+            }
+        }
+
+        return object;
+    }
+
+    Config json_to_conf(const json& j)
+    {
+        Config conf;
+
+        if (j.is_object())
+        {
+            for (auto iter = j.begin(); iter != j.end(); ++iter)
+            {
+                if (iter.key() == "$value")
+                {
+                    conf.setValue(iter->get<std::string>());
+                }
+                else
+                {
+                    if (iter->is_primitive())
+                    {
+                        conf.add(iter.key(), iter->get<std::string>());
+                    }
+                    else if (iter->is_object())
+                    {
+                        conf.add(iter.key(), json_to_conf(iter.value()));
+                    }
+                }
+            }
+        }
+
+        if (conf.value().empty() && conf.children().size() == 1)
+        {
+            return conf.children().front();
+        }
+        else
+        {
+            return conf;
+        }
+    }
+
+#endif
 }
+
 
 void
 Config::setReferrer(const std::string& referrer)
@@ -247,250 +367,25 @@ ConfigOptions::getConfig() const
     return conf;
 }
 
-/****************************************************************/
-DriverConfigOptions::~DriverConfigOptions()
-{
-}
 
-#if 0
-namespace
-{
-    // Converts a Config to JSON. The "nicer" flag formats the data in a more 
-    // readable way than nicer=false. Nicer=true attempts to create JSON "objects",
-    // whereas nicer=false makes "$key" and "$children" members.
-    Json::Value conf2json(const Config& conf, bool nicer, int depth)
-    {
-        Json::Value value( Json::objectValue );
-
-        if ( conf.isSimple() )
-        {
-            value[ conf.key() ] = conf.value();
-        }
-        else
-        {
-            if ( !nicer )
-            {
-                if ( !conf.key().empty() )
-                {
-                    value["$key"] = conf.key();
-                }
-            }
-
-            if ( !conf.value().empty() )
-            {
-                value["$value"] = conf.value();
-            }
-
-            if ( conf.children().size() > 0 )
-            {
-                if ( nicer )
-                {
-                    std::map< std::string, std::vector<Config> > sets; // sorted
-
-                    // sort into bins by name:
-                    for( ConfigSet::const_iterator c = conf.children().begin(); c != conf.children().end(); ++c )
-                    {
-                        sets[c->key()].push_back( *c );
-                    }
-
-                    for( std::map<std::string,std::vector<Config> >::iterator i = sets.begin(); i != sets.end(); ++i )
-                    {
-                        if ( i->second.size() == 1 )
-                        {
-                            Config& c = i->second[0];
-                            if ( c.isSimple() )
-                            {
-                                if (c.isNumber())
-                                    value[i->first] = c.valueAs<double>(0.0);
-                                else
-                                    value[i->first] = c.value();
-                            }
-                            else
-                            {
-                                Json::Value child = conf2json(c, nicer, depth+1);
-                                if (child.isObject())
-                                {
-                                    value[i->first] = child;
-                                }   
-                            }
-                        }
-                        else
-                        {
-                            std::string array_key = Stringify() << i->first << "__array__";
-                            Json::Value array_value( Json::arrayValue );
-                            for( std::vector<Config>::iterator j = i->second.begin(); j != i->second.end(); ++j )
-                            {
-                                array_value.append( conf2json(*j, nicer, depth+1) );
-                            }
-                            value[array_key] = array_value;
-                            //value = array_value;
-                        }
-                    }
-                }
-                else
-                {
-                    Json::Value children( Json::arrayValue );
-                    unsigned i = 0;
-
-                    for( ConfigSet::const_iterator c = conf.children().begin(); c != conf.children().end(); ++c )
-                    {
-                        if ( c->isSimple() )
-                            value[c->key()] = c->value();
-                        else
-                            children[i++] = conf2json(*c, nicer, depth+1);
-                    }
-
-                    if ( !children.empty() )
-                    {
-                        value["$children"] = children;
-                    }
-                }
-            }
-
-            // At the root, embed the Config in a single JSON object.
-            if ( depth == 0 )
-            {
-                Json::Value root;
-                root[conf.key()] = value;
-                value = root;
-            }
-        }
-
-        return value;
-    }
-
-    void json2conf(const Json::Value& json, Config& conf, int depth)
-    {
-        if ( json.type() == Json::objectValue )
-        {
-            Json::Value::Members members = json.getMemberNames();
-
-            for( Json::Value::Members::const_iterator i = members.begin(); i != members.end(); ++i )
-            {
-                const Json::Value& value = json[*i];
-
-                if ( value.isObject() )
-                {
-                    if (depth == 0 && members.size() == 1)
-                    {
-                        conf.key() = *i;
-                        json2conf(value, conf, depth+1);
-                    }
-                    else
-                    {
-                        Config element( *i );
-                        json2conf( value, element, depth+1 );
-                        conf.add( element );
-                    }
-                }
-                else if ( value.isArray() )
-                {
-                    if ( endsWith(*i, "__array__") )
-                    {
-                        std::string key = i->substr(0, i->length()-9);
-                        for( Json::Value::const_iterator j = value.begin(); j != value.end(); ++j )
-                        {
-                            Config child;
-                            json2conf( *j, child, depth+1 );
-                            conf.add( key, child );
-                        }
-                    }
-                    else if ( endsWith(*i, "_$set") ) // backwards compatibility
-                    {
-                        std::string key = i->substr(0, i->length()-5);
-                        for( Json::Value::const_iterator j = value.begin(); j != value.end(); ++j )
-                        {
-                            Config child;
-                            json2conf( *j, child, depth+1 );
-                            conf.add( key, child );
-                        }
-                    }
-                    else
-                    {
-                        Config element( *i );
-                        json2conf( value, element, depth+1 );
-                        conf.add( element );
-                    }
-                }
-                else if ( (*i) == "$key" )
-                {
-                    conf.key() = value.asString();
-                }
-                else if ( (*i) == "$value" )
-                {
-                    conf.setValue(value.asString());
-                }
-                else if ( (*i) == "$children" && value.isArray() )
-                {
-                    json2conf( value, conf, depth+1 );
-                }
-                else
-                {
-                    if( value.isBool())
-                        conf.add(*i, value.asBool());
-                    else if( value.isDouble())
-                        conf.add(*i, value.asDouble());
-                    else if (value.isInt())
-                        conf.add(*i, value.asInt());
-                    else if (value.isUInt())
-                        conf.add(*i, value.asUInt());
-                    else
-                        conf.add(*i, value.asString());
-                }
-            }
-        }
-        else if ( json.type() == Json::arrayValue )
-        {          
-            for( Json::Value::const_iterator j = json.begin(); j != json.end(); ++j )
-            {
-                Config child;
-                json2conf( *j, child, depth+1 );
-                if ( !child.empty() )
-                    conf.add( child );
-            }
-        }
-        else if ( json.type() != Json::nullValue )
-        {
-            conf.setValue(json.asString());
-        }
-    }
-}
-#endif
 
 std::string
 Config::toJSON(bool pretty) const
 {
-    ROCKY_TODO("Write config-to-json using nlohmann OR replace config with json");
-    return "";
-    //Json::Value root = conf2json( *this, true, 0 );
-    //if ( pretty )
-    //    return Json::StyledWriter().write( root );
-    //else
-    //    return Json::FastWriter().write( root );
+    json object = { { key(), conf_to_json(*this) } };
+    return pretty ? object.dump(4) : object.dump();
 }
 
 bool
-Config::fromJSON( const std::string& input )
+Config::fromJSON(const std::string& input)
 {
-    ROCKY_TODO("Write json-to-config using nlohmann OR replace config with json");
-    return false;
-#if 0
-    Json::Reader reader;
-    Json::Value root( Json::objectValue );
-    if ( reader.parse( input, root ) )
-    {
-        json2conf( root, *this, 0 );
+    try {
+        *this = json_to_conf(json::parse(input));
         return true;
     }
-    else
-    {
-        ROCKY_WARN 
-            << "JSON decoding error: "
-            << reader.getFormatedErrorMessages() 
-            << std::endl;
+    catch (...) {
+        return false;
     }
-    return false;
-#endif
 }
 
 Config

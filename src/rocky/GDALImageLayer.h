@@ -23,20 +23,21 @@ namespace ROCKY_NAMESPACE
         //! Deserialize a GDAL image layer
         GDALImageLayer(const Config&);
 
-    public: // Layer
+        //! Serialize the layer
+        Config getConfig() const override;
+
+    protected: // Layer
 
         //! Establishes a connection to the GDAL data source
         Status openImplementation(const IOOptions&) override;
 
         //! Closes down any GDAL connections
-        Status closeImplementation() override;
+        void closeImplementation() override;
 
         //! Gets a raster image for the given tile key
         Result<GeoImage> createImageImplementation(
             const TileKey& key,
             const IOOptions& io) const override;
-
-        Config getConfig() const override;
 
     private:
 

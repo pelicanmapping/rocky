@@ -60,6 +60,8 @@ GDALImageLayer::GDALImageLayer(const Config& conf) :
 void
 GDALImageLayer::construct(const Config& conf)
 {
+    setConfigKey("GDALImage");
+
     conf.get("url", _uri);
     conf.get("uri", _uri);
     conf.get("connection", _connection);
@@ -78,7 +80,7 @@ GDALImageLayer::construct(const Config& conf)
 Config
 GDALImageLayer::getConfig() const
 {
-    Config conf = ImageLayer::getConfig();
+    Config conf = super::getConfig();
     conf.set("url", _uri);
     conf.set("connection", _connection);
     conf.set("subdataset", _subDataSet);
@@ -95,7 +97,7 @@ GDALImageLayer::getConfig() const
 Status
 GDALImageLayer::openImplementation(const IOOptions& io)
 {
-    Status parent = ImageLayer::openImplementation(io);
+    Status parent = super::openImplementation(io);
     if (parent.failed())
         return parent;
 
@@ -130,13 +132,13 @@ GDALImageLayer::openImplementation(const IOOptions& io)
     return s;
 }
 
-Status
+void
 GDALImageLayer::closeImplementation()
 {
     // safely shut down all per-thread handles.
     _drivers.clear();
 
-    return ImageLayer::closeImplementation();
+    super::closeImplementation();
 }
 
 Result<GeoImage>
@@ -146,9 +148,6 @@ GDALImageLayer::createImageImplementation(
 {
     if (status().failed())
         return status();
-
-    if (isClosing() || !isOpen())
-        return Status(Status::ResourceUnavailable);
 
     auto& driver = _drivers.get();
     if (driver == nullptr)
@@ -163,7 +162,7 @@ GDALImageLayer::createImageImplementation(
         auto image = driver->createImage(
             key,
             _tileSize,
-            _coverage == true,
+            coverage() == true,
             io);
 
         return GeoImage(image.value, key.extent());

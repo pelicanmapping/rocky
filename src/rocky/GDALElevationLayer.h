@@ -25,16 +25,13 @@ namespace ROCKY_NAMESPACE
 
         Config getConfig() const override;
 
-    public: // Layer
+    protected:
 
         //! Establishes a connection to the GDAL data source
         Status openImplementation(const IOOptions&) override;
 
         //! Closes down any GDAL connections
-        Status closeImplementation() override;
-
-
-    public: // ElevationLayer
+        void closeImplementation() override;
 
         //! Gets a raster heightfield for the given tile key
         Result<GeoHeightfield> createHeightfieldImplementation(

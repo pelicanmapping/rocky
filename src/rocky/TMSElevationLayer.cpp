@@ -12,9 +12,37 @@ using namespace ROCKY_NAMESPACE::TMS;
 #define LC "[TMS] "
 
 TMSElevationLayer::TMSElevationLayer() :
-    Inherit()
+    super()
 {
-    // nop
+    construct(Config());
+}
+
+TMSElevationLayer::TMSElevationLayer(const Config& conf) :
+    super(conf)
+{
+    construct(conf);
+}
+
+void
+TMSElevationLayer::construct(const Config& conf)
+{
+    setConfigKey("TMSElevation");
+
+    conf.get("uri", _options.uri);
+    conf.get("tms_type", _options.tmsType);
+    conf.get("format", _options.format);
+    conf.get("coverage", _options.coverage);
+}
+
+Config
+TMSElevationLayer::getConfig() const
+{
+    Config conf = super::getConfig();
+    conf.set("uri", _options.uri);
+    conf.set("tms_type", _options.tmsType);
+    conf.set("format", _options.format);
+    conf.set("coverage", _options.coverage);
+    return conf;
 }
 
 Status
@@ -48,11 +76,11 @@ TMSElevationLayer::openImplementation(const IOOptions& io)
     return StatusOK;
 }
 
-Status
+void
 TMSElevationLayer::closeImplementation()
 {
     _driver.close();
-    return super::closeImplementation();
+    super::closeImplementation();
 }
 
 Result<GeoHeightfield>

@@ -10,6 +10,9 @@
 #include <rocky/Heightfield.h>
 #include <rocky/TileKey.h>
 #include <rocky/URI.h>
+#include <rocky/Utils.h>
+
+#include <random>
 
 #ifdef ROCKY_SUPPORTS_GDAL
 #include <rocky/GDALImageLayer.h>
@@ -84,6 +87,15 @@ TEST_CASE("Optional")
     CHECK(value_with_equals_init == 123);
 }
 
+TEST_CASE("json")
+{
+    Config c("root");
+    c.set("key1", "value1");
+    c.set("key2", "value2");
+    auto s = c.toJSON(false);
+    Log::warn() << "conf_to_json = " << s << std::endl;
+}
+
 TEST_CASE("Threading")
 {
     util::Future<int> f1;
@@ -121,6 +133,33 @@ TEST_CASE("Math")
 
     fvec3 r = scale_bias * fvec3(1, 1, 0);
     CHECK(r == fvec3(0.75f, 0.75f, 0));
+}
+
+TEST_CASE("Compression")
+{
+    // generate a pseudo-random string of characters:
+    std::mt19937 engine(0);
+    std::uniform_int_distribution<> prng(32, 127);
+    std::stringstream buf;
+    for (unsigned i = 0; i < 4096; ++i)
+        buf << (char)prng(engine);
+    auto original_data = buf.str();
+
+    // compress:
+    std::stringstream output_stream;
+    util::ZLibCompressor comp;
+    CHECK(comp.compress(original_data, output_stream) == true);
+    std::string compressed_data = output_stream.str();
+
+    CHECK(compressed_data.size() == 3446);
+
+    // decompress:
+    std::stringstream input_stream(compressed_data);
+    std::string decompressed_data;
+    CHECK(comp.decompress(input_stream, decompressed_data) == true);
+
+    // ensure the decompressed stream matched the original data
+    CHECK(decompressed_data == original_data);
 }
 
 TEST_CASE("Image")

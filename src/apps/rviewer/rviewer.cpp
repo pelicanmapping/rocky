@@ -120,8 +120,8 @@ int main(int argc, char** argv)
 #elif defined(ROCKY_SUPPORTS_GDAL)
 
     auto layer = rocky::GDALImageLayer::create();
-    imagery->setURI("WMTS:https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml,layer=s2cloudless-2020");
-    mapNode->map()->addLayer(layer);
+    layer->setURI("WMTS:https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml,layer=s2cloudless-2018_3857,tilematrixset=g");
+    mapNode->map()->layers().add(layer);
 
     if (layer->status().failed()) {
         rocky::Log::warn() << "Problem with layer: " << layer->status().message << std::endl;

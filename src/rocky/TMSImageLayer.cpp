@@ -12,9 +12,35 @@ using namespace ROCKY_NAMESPACE::TMS;
 #define LC "[TMS] "
 
 TMSImageLayer::TMSImageLayer() :
-    Inherit()
+    super()
 {
-    // nop
+    construct(Config());
+}
+
+TMSImageLayer::TMSImageLayer(const Config& conf) :
+    super(conf)
+{
+    construct(conf);
+}
+
+void
+TMSImageLayer::construct(const Config& conf)
+{
+    setConfigKey("TMSImage");
+
+    conf.get("uri", _options.uri);
+    conf.get("tms_type", _options.tmsType);
+    conf.get("format", _options.format);
+}
+
+Config
+TMSImageLayer::getConfig() const
+{
+    Config conf = super::getConfig();
+    conf.set("uri", _options.uri);
+    conf.set("tms_type", _options.tmsType);
+    conf.set("format", _options.format);
+    return conf;
 }
 
 Status
@@ -48,11 +74,11 @@ TMSImageLayer::openImplementation(const IOOptions& io)
     return StatusOK;
 }
 
-Status
+void
 TMSImageLayer::closeImplementation()
 {
     _driver.close();
-    return super::closeImplementation();
+    super::closeImplementation();
 }
 
 Result<GeoImage>

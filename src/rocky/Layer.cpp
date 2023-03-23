@@ -126,14 +126,21 @@ Layer::construct(const Config& conf)
 Config
 Layer::getConfig() const
 {
-    Config conf;
-    conf.set("name", _name);
+    Config conf(getConfigKey());
+    if (!_name.empty())
+        conf.set("name", _name);
     conf.set("open", _openAutomatically);
     conf.set("cacheid", _cacheid);
     conf.set("cachepolicy", _cachePolicy);
     conf.set("attribution", _attribution);
     conf.set("l2_cache_size", _l2cachesize);
     return conf;
+}
+
+void
+Layer::setConfigKey(const std::string& value)
+{
+    _configKey = value;
 }
 
 Layer::~Layer()
@@ -214,7 +221,7 @@ Layer::open(const IOOptions& io)
         return status();
     }
 
-    std::unique_lock lock(_mutex);
+    std::unique_lock lock(_state_mutex);
 
     // be optimistic :)
     _status = StatusOK;
@@ -287,26 +294,24 @@ Layer::openImplementation(const IOOptions& io)
     return StatusOK;
 }
 
-Status
+void
 Layer::closeImplementation()
 {
-    return status();
+    //nop
 }
 
-Status
+void
 Layer::close()
 {    
     if (isOpen())
     {
-        std::unique_lock lock(_mutex);
+        std::unique_lock lock(_state_mutex);
         _isClosing = true;
         closeImplementation();
         _status = Status(Status::ResourceUnavailable, "Layer closed");
         _runtimeCacheId = "";
-        //fireCallback(&LayerCallback::onClose);
         _isClosing = false;
     }
-    return status();
 }
 
 bool
@@ -320,30 +325,6 @@ Layer::status() const
 {
     return _status;
 }
-
-#if 0
-void
-Layer::invoke_prepareForRendering(TerrainEngine* engine)
-{
-    prepareForRendering(engine);
-
-    // deprecation path; call this in case some older layer is still
-    // implementing it.
-    setTerrainResources(engine->getResources());
-}
-
-void
-Layer::prepareForRendering(TerrainEngine* engine)
-{
-    // Install an earth-file shader if necessary (once)
-    for (const auto& shaderOptions : options().shaders())
-    {
-        LayerShader* shader = new LayerShader(shaderOptions);
-        shader->install(this, engine->getResources());
-        _shaders.emplace_back(shader);
-    }
-}
-#endif
 
 const char*
 Layer::typeName() const

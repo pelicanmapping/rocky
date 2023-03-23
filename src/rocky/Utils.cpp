@@ -6,6 +6,7 @@
 #include "Utils.h"
 #include "Log.h"
 #include "sha1.h"
+#include <zlib.h>
 #include <cctype>
 #include <cstring>
 
@@ -668,4 +669,122 @@ rocky::util::makeCacheKey(const std::string& key, const std::string& prefix)
     // This is the same scheme that git uses
     out << val.substr(0, 2) << "/" << val.substr(2, 38);
     return out.str();
+}
+
+
+// adapted from
+// https://github.com/openscenegraph/OpenSceneGraph/blob/master/src/osgDB/Compressors.cpp
+#undef CHUNK
+#define CHUNK 32768
+
+bool
+ZLibCompressor::compress(const std::string& src, std::ostream& fout) const
+{
+    int ret, flush = Z_FINISH;
+    unsigned have;
+    z_stream strm;
+    unsigned char out[CHUNK];
+
+    int level = 6;
+    int stategy = Z_DEFAULT_STRATEGY;
+
+    /* allocate deflate state */
+    strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+    strm.opaque = Z_NULL;
+    ret = deflateInit2(&strm, level, Z_DEFLATED,
+        15 + 16, // +16 to use gzip encoding
+        8, // default
+        stategy);
+    if (ret != Z_OK) return false;
+
+    strm.avail_in = src.size();
+    strm.next_in = (Bytef*)(&(*src.begin()));
+
+    /* run deflate() on input until output buffer not full, finish
+       compression if all of source has been read in */
+    do
+    {
+        strm.avail_out = CHUNK;
+        strm.next_out = out;
+        ret = deflate(&strm, flush);    /* no bad return value */
+
+        if (ret == Z_STREAM_ERROR)
+        {
+            return false;
+        }
+
+        have = CHUNK - strm.avail_out;
+        if (have > 0)
+            fout.write((const char*)out, have);
+
+        if (fout.fail())
+        {
+            (void)deflateEnd(&strm);
+            return false;
+        }
+    } while (strm.avail_out == 0);
+
+    /* clean up and return */
+    (void)deflateEnd(&strm);
+
+    return true;
+}
+
+bool
+ZLibCompressor::decompress(std::istream& fin, std::string& target) const
+{
+    int ret;
+    unsigned have;
+    z_stream strm;
+    unsigned char in[CHUNK];
+    unsigned char out[CHUNK];
+
+    /* allocate inflate state */
+    strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+    strm.opaque = Z_NULL;
+    strm.avail_in = 0;
+    strm.next_in = Z_NULL;
+    ret = inflateInit2(&strm,
+        15 + 32); // autodetected zlib or gzip header
+
+    if (ret != Z_OK)
+    {
+        return ret != 0;
+    }
+
+    /* decompress until deflate stream ends or end of file */
+    do
+    {
+        fin.read((char*)in, CHUNK);
+        strm.avail_in = fin.gcount();
+        if (strm.avail_in == 0) break;
+
+        /* run inflate() on input until output buffer not full */
+        strm.next_in = in;
+        do
+        {
+            strm.avail_out = CHUNK;
+            strm.next_out = out;
+            ret = inflate(&strm, Z_NO_FLUSH);
+
+            switch (ret)
+            {
+            case Z_NEED_DICT:
+            case Z_DATA_ERROR:
+            case Z_MEM_ERROR:
+                (void)inflateEnd(&strm);
+                return false;
+            }
+            have = CHUNK - strm.avail_out;
+            target.append((char*)out, have);
+        } while (strm.avail_out == 0);
+
+        /* done when inflate() says it's done */
+    } while (ret != Z_STREAM_END);
+
+    /* clean up and return */
+    (void)inflateEnd(&strm);
+    return ret == Z_STREAM_END ? true : false;
 }

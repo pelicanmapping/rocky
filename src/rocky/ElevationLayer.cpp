@@ -228,8 +228,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
         {
             if ( isKeyInLegalRange(layerKey) )
             {
-                std::shared_lock L(layerMutex());
-
+                std::shared_lock L(layerStateMutex());
                 auto result = createHeightfieldImplementation(layerKey, io);
 
                 if (result.status.ok() && result.value.valid())
@@ -348,8 +347,9 @@ ElevationLayer::createHeightfieldInKeyProfile(
 
     if (key.profile() == my_profile)
     {
-        std::shared_lock L(layerMutex());
+        std::shared_lock L(layerStateMutex());
         auto r = createHeightfieldImplementation(key, io);
+
         if (r.status.failed())
             return r;
         else
@@ -393,12 +393,12 @@ ElevationLayer::createHeightfieldInKeyProfile(
 Status
 ElevationLayer::writeHeightfield(
     const TileKey& key,
-    const Heightfield* hf,
+    shared_ptr<Heightfield> hf,
     const IOOptions& io) const
 {
     if (isWritingSupported() && isWritingRequested())
     {
-        std::shared_lock L(layerMutex());
+        std::shared_lock L(layerStateMutex());
         return writeHeightfieldImplementation(key, hf, io);
     }
     return Status(Status::ServiceUnavailable);
@@ -407,7 +407,7 @@ ElevationLayer::writeHeightfield(
 Status
 ElevationLayer::writeHeightfieldImplementation(
     const TileKey& key,
-    const Heightfield* hf,
+    shared_ptr<Heightfield> hf,
     const IOOptions& io) const
 {
     return Status(Status::ServiceUnavailable);

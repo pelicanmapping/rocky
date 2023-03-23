@@ -436,4 +436,42 @@ namespace ROCKY_NAMESPACE { namespace util
             }
         }
     };
+
+    /**
+    * Virtual interface for a stream compressor
+    */
+    class StreamCompressor
+    {
+    public:
+        //! Compress data to an output stream.
+        //! @param src Data to compress
+        //! @param out Stream to which to write compressed data
+        //! @return True upon success
+        virtual bool compress(const std::string& src, std::ostream& out) const = 0;
+
+        //! Decompress data from a stream.
+        //! @param src Data to decompress
+        //! @param out Data in which to store decompressed data
+        //! @return True upon success
+        virtual bool decompress(std::istream& in, std::string& out) const = 0;
+    };
+
+    /**
+    * Stream compressor that uses INFLATE/DEFLATE compression
+    */
+    class ROCKY_EXPORT ZLibCompressor : public StreamCompressor
+    {
+    public:
+        //! Compress data to an output stream.
+        //! @param src Data to compress
+        //! @param out Stream to which to write compressed data
+        //! @return True upon success
+        bool compress(const std::string& src, std::ostream& out) const override;
+
+        //! Decompress data from a stream.
+        //! @param src Data to decompress
+        //! @param out Data in which to store decompressed data
+        //! @return True upon success
+        bool decompress(std::istream& in, std::string& out) const override;
+    };
 } }

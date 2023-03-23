@@ -116,6 +116,13 @@ Image::~Image()
         delete[] _data;
 }
 
+bool
+Image::hasAlphaChannel() const
+{
+    return
+        pixelFormat() == R8G8B8A8_UNORM;
+}
+
 shared_ptr<Image>
 Image::clone() const
 {

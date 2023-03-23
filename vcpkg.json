@@ -15,6 +15,7 @@
         "sqlite3",
         "tinyxml",
         "vsg",
-        "vsgxchange"
+        "vsgxchange",
+        "zlib"
     ]
 }

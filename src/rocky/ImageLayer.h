@@ -30,43 +30,9 @@ namespace ROCKY_NAMESPACE
         void setAcceptDraping(bool value);
         bool getAcceptDraping() const;
 
-        //! Marks this layer for asynchronous loading.
-        //! Usually all layers participating in a tile must load before the
-        //! tile is displayed. This flag defers the current layer so it can 
-        //! load asynchronously and display when it is available. This can
-        //! help keep a slow-loading layer from blocking the rest of the tile
-        //! from displaying. The trade-off is possible visual artifacts
-        //! (flashing, no mipmaps/compression) when the new data appears.
-        void setAsyncLoading(bool value);
-        bool getAsyncLoading() const;
-
-        //! Whether this layer is marked for render sharing.
-        //! Only set this before opening the layer or adding it to a map.
-        void setShared(bool value);
-        bool getShared() const;
-        bool isShared() const { return getShared(); }
-
-        //! Whether this layer represents coverage data that should not be subject
-        //! to color-space filtering, interpolation, or compression.
-        //! Only set this before opening the layer or adding it to a map.
-        void setCoverage(bool value);
-        bool getCoverage() const;
-        bool isCoverage() const { return getCoverage(); }
-
-        //! When isShared() == true, this will return the name of the uniform holding the
-        //! image's texture.
-        void setSharedTextureUniformName(const std::string& value);
-        const std::string& getSharedTextureUniformName() const;
-
-        //! When isShared() == true, this will return the name of the uniform holding the
-        //! image's texture matrix.
-        void setSharedTextureMatrixUniformName(const std::string& value);
-        const std::string& getSharedTextureMatrixUniformName() const;
-
-        //! When isShared() == true, the engine will call this function to bind the
-        //! shared layer to a texture image unit.
-        optional<int>& sharedImageUnit() { return _shareImageUnit; }
-        const optional<int>& sharedImageUnit() const { return _shareImageUnit; }
+        //! Whether the layer contains coverage data
+        void setCoverage(bool value) { _coverage = value; }
+        const optional<bool>& coverage() const { return _coverage; }
 
         shared_ptr<Image> getEmptyImage() const {
             return _emptyImage;
@@ -93,7 +59,7 @@ namespace ROCKY_NAMESPACE
         //! Returns a status value indicating whether the store succeeded.
         Status writeImage(
             const TileKey& key,
-            const Image* image,
+            shared_ptr<Image> image,
             const IOOptions& io);
 
         //! Returns the compression method prefered by this layer
@@ -111,19 +77,6 @@ namespace ROCKY_NAMESPACE
             return Result(GeoImage::INVALID);
         }
 
-#if 0
-        //! Install a user callback
-        void addCallback(Callback* callback);
-
-        //! Remove a user callback
-        void removeCallback(Callback* callback);
-#endif
-
-#if 0
-        //! Add a post-processing layer
-        void addPostLayer(ImageLayer* layer);
-#endif
-
     protected:
 
         ImageLayer();
@@ -133,7 +86,7 @@ namespace ROCKY_NAMESPACE
         //! Subclass can override this to write data for a tile key.
         virtual Status writeImageImplementation(
             const TileKey& key,
-            const Image* image,
+            shared_ptr<Image> image,
             const IOOptions& io) const;
 
         //! Modify the bbox if an altitude is set (for culling)
@@ -163,23 +116,14 @@ namespace ROCKY_NAMESPACE
     protected: // Layer
 
         //! Open the layer for reading.
-        virtual Status openImplementation(
-            const IOOptions& io) override;
-
-
-        //! Configure the layer to create textures via createTexture instead of
-        //! using a createImage driver
-        void setUseCreateTexture();
+        virtual Status openImplementation(const IOOptions& io) override;
 
         shared_ptr<Image> _emptyImage;
 
         optional<std::string> _noDataImageLocation = { };
         optional<Color> _transparentColor = Color(0, 0, 0, 0);
-        optional<bool> _shared = false;
-        optional<bool> _coverage = false;
         optional<std::string> _textureCompression;
         optional<bool> _acceptDraping = false;
-        optional<bool> _async = false;
 
     private:
 
@@ -205,7 +149,8 @@ namespace ROCKY_NAMESPACE
             IOControl* p);
 #endif
 
-        optional<int> _shareImageUnit;
+        optional<bool> _coverage = false;
+        optional<int> _shareImageUnit = -1;
       
         //bool _useCreateTexture;
 

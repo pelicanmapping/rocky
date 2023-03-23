@@ -37,12 +37,10 @@ void
 ImageLayer::construct(const Config& conf)
 {
     conf.get("nodata_image", _noDataImageLocation);
-    conf.get("shared", _shared);
-    conf.get("coverage", _coverage);
     conf.get("accept_draping", _acceptDraping);
     conf.get("transparent_color", _transparentColor);
     conf.get("texture_compression", _textureCompression);
-    conf.get("async", _async);
+    conf.get("coverage", _coverage);
 
     if (_acceptDraping.has_value())
     {
@@ -57,47 +55,10 @@ ImageLayer::getConfig() const
 {
     Config conf = super::getConfig();
     conf.set("nodata_image", _noDataImageLocation);
-    conf.set("shared", _shared);
-    conf.set("coverage", _coverage);
     conf.set("transparent_color", _transparentColor);
     conf.set("texture_compression", _textureCompression);
+    conf.set("coverage", _coverage);
     return conf;
-}
-
-void
-ImageLayer::setShared(bool value)
-{
-    setOptionThatRequiresReopen(_shared, value);
-}
-
-bool
-ImageLayer::getShared() const
-{
-    return _shared;
-}
-
-void
-ImageLayer::setCoverage(bool value)
-{
-    setOptionThatRequiresReopen(_coverage, value);
-}
-
-bool
-ImageLayer::getCoverage() const
-{
-    return _coverage;
-}
-
-void
-ImageLayer::setAsyncLoading(bool value)
-{
-    _async = value;
-}
-
-bool
-ImageLayer::getAsyncLoading() const
-{
-    return _async;
 }
 
 Status
@@ -217,19 +178,14 @@ ImageLayer::createImage(const TileKey& key, const IOOptions& io) const
 }
 
 Result<GeoImage>
-ImageLayer::createImage(
-    const GeoImage& canvas,
-    const TileKey& key,
-    const IOOptions& io)
+ImageLayer::createImage(const GeoImage& canvas, const TileKey& key, const IOOptions& io)
 {
-    std::shared_lock lock(layerMutex());
+    std::shared_lock lock(layerStateMutex());
     return createImageImplementation(canvas, key, io);
 }
 
 Result<GeoImage>
-ImageLayer::createImageInKeyProfile(
-    const TileKey& key,
-    const IOOptions& io) const
+ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) const
 {
     // If the layer is disabled, bail out.
     if ( !isOpen() )
@@ -257,7 +213,7 @@ ImageLayer::createImageInKeyProfile(
     // if this layer has no profile, just go straight to the driver.
     if (!profile().valid())
     {
-        std::shared_lock lock(layerMutex());
+        std::shared_lock lock(layerStateMutex());
         return createImageImplementation(key, io);
     }
 
@@ -286,7 +242,7 @@ ImageLayer::createImageInKeyProfile(
         }
         else
         {
-            std::shared_lock lock(layerMutex());
+            std::shared_lock lock(layerStateMutex());
             result = createImageImplementation(key, io);
         }
     }
@@ -357,8 +313,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
         {
             if (isKeyInLegalRange(layerKey))
             {
-                std::shared_lock L(layerMutex());
-
+                std::shared_lock L(layerStateMutex());
                 auto result = createImageImplementation(layerKey, io);
 
                 if (result.status.ok() && result.value.valid())
@@ -435,17 +390,17 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 }
 
 Status
-ImageLayer::writeImage(const TileKey& key, const Image* image, const IOOptions& io)
+ImageLayer::writeImage(const TileKey& key, shared_ptr<Image> image, const IOOptions& io)
 {
     if (status().failed())
         return status();
 
-    std::shared_lock lock(layerMutex());
+    std::shared_lock lock(layerStateMutex());
     return writeImageImplementation(key, image, io);
 }
 
 Status
-ImageLayer::writeImageImplementation(const TileKey& key, const Image* image, const IOOptions& io) const
+ImageLayer::writeImageImplementation(const TileKey& key, shared_ptr<Image> image, const IOOptions& io) const
 {
     return Status(Status::ServiceUnavailable);
 }
@@ -453,9 +408,6 @@ ImageLayer::writeImageImplementation(const TileKey& key, const Image* image, con
 const std::string
 ImageLayer::getCompressionMethod() const
 {
-    if (isCoverage())
-        return "none";
-
     return _textureCompression;
 }
 

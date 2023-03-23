@@ -65,6 +65,8 @@ GDALElevationLayer::GDALElevationLayer(const Config& conf) :
 void
 GDALElevationLayer::construct(const Config& conf)
 {
+    setConfigKey("GDALElevation");
+
     conf.get("url", _uri);
     conf.get("uri", _uri);
     conf.get("connection", _connection);
@@ -135,13 +137,13 @@ GDALElevationLayer::openImplementation(const IOOptions& io)
     return s;
 }
 
-Status
+void
 GDALElevationLayer::closeImplementation()
 {
     // safely shut down all per-thread handles.
     _drivers.clear();
 
-    return super::closeImplementation();
+    super::closeImplementation();
 }
 
 Result<GeoHeightfield>
@@ -151,9 +153,6 @@ GDALElevationLayer::createHeightfieldImplementation(
 {
     if (status().failed())
         return status();
-
-    if (isClosing() || !isOpen())
-        return Status(Status::ResourceUnavailable);
 
     auto& driver = _drivers.get();
     if (driver == nullptr)

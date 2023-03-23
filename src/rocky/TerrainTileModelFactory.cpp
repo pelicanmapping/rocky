@@ -204,7 +204,7 @@ TerrainTileModelFactory::addImageLayer(
             m.image = result.value;
             model.colorLayers.emplace_back(std::move(m));
 
-            if (imageLayer->isDynamic() || imageLayer->getAsyncLoading())
+            if (imageLayer->isDynamic()) // || imageLayer->getAsyncLoading())
             {
                 model.requiresUpdate = true;
             }

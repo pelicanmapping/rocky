@@ -118,6 +118,11 @@ if(ROCKY_SUPPORTS_TMS)
     list(APPEND SOURCES TMS.cpp TMSImageLayer.cpp TMSElevationLayer.cpp)
 endif()
 
+if(ROCKY_SUPPORTS_MBTILES)
+    list(APPEND HEADERS MBTiles.h   MBTilesImageLayer.h   MBTilesElevationLayer.h)
+    list(APPEND SOURCES MBTiles.cpp MBTilesImageLayer.cpp MBTilesElevationLayer.cpp)
+endif()
+
 # set up library dependencies
 set(PUBLIC_LIBS glm::glm)
 
@@ -138,10 +143,11 @@ endif()
 if (nlohmann_json_FOUND)
     list(APPEND PRIVATE_LIBS nlohmann_json::nlohmann_json)
 endif()
-if (SQLITE3_FOUND)
+if (unofficial-sqlite3_FOUND)
     list(APPEND PRIVATE_LIBS unofficial::sqlite3::sqlite3)
-    #include_directories(${SQLITE3_INCLUDE_DIR})
-    #list(APPEND PRIVATE_LIBS ${SQLITE3_LIBRARY})target_link_libraries(main PRIVATE unofficial::sqlite3::sqlite3)
+endif()
+if (ZLIB_FOUND)
+    list(APPEND PRIVATE_LIBS ZLIB::ZLIB)
 endif()
 
 set(LIBRARIES PRIVATE ${PRIVATE_LIBS} PUBLIC ${PUBLIC_LIBS})

@@ -294,13 +294,14 @@ Profile::geographicExtent() const {
 std::string
 Profile::toString() const
 {
-    auto srs = _shared->_extent.srs();
-    return util::make_string()
-        << std::setprecision(16)
-        << "[srs=" << srs.name() << ", min=" << _shared->_extent.xMin() << "," << _shared->_extent.yMin()
-        << " max=" << _shared->_extent.xMax() << "," << _shared->_extent.yMax()
-        << " ar=" << _shared->_numTilesWideAtLod0 << ":" << _shared->_numTilesHighAtLod0
-        << "]";
+    //auto srs = _shared->_extent.srs();
+    return getConfig().toJSON(false);
+    //return util::make_string()
+    //    << std::setprecision(16)
+    //    << "[srs=" << srs.name() << ", min=" << _shared->_extent.xMin() << "," << _shared->_extent.yMin()
+    //    << " max=" << _shared->_extent.xMax() << "," << _shared->_extent.yMax()
+    //    << " ar=" << _shared->_numTilesWideAtLod0 << ":" << _shared->_numTilesHighAtLod0
+    //    << "]";
 }
 
 Profile

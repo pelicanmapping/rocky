@@ -40,7 +40,10 @@ namespace ROCKY_NAMESPACE
         Result<shared_ptr<Image>>(const std::string& location, const IOOptions&)>;
 
     using ReadImageStreamService = std::function<
-        Result<shared_ptr<Image>>(std::istream& stream, const std::string& contentType, const IOOptions& io)>;
+        Result<shared_ptr<Image>>(std::istream& stream, std::string contentType, const IOOptions& io)>;
+
+    using WriteImageStreamService = std::function<
+        Status(shared_ptr<Image> image, std::ostream& stream, std::string contentType, const IOOptions& io)>;
 
     //! Service for caching data
     using CacheImpl = void*; // todo.
@@ -59,6 +62,7 @@ namespace ROCKY_NAMESPACE
         Services();
         ReadImageURIService readImageFromURI;
         ReadImageStreamService readImageFromStream;
+        WriteImageStreamService writeImageToStream;
         CacheService cache;
     };
 

@@ -19,32 +19,36 @@ namespace ROCKY_NAMESPACE
     public:
         //! Construct an empty TMS layer
         TMSElevationLayer();
+        TMSElevationLayer(const Config&);
 
         //! Destructor
         virtual ~TMSElevationLayer() { }
 
         //! Base URL for TMS requests
-        void setURI(const URI& value) { _uri = value; }
-        const URI& uri() const { return _uri; }
+        void setURI(const URI& value) { _options.uri = value; }
+        const optional<URI>& uri() const { return _options.uri; }
 
         //! Options TMS "type"; only possible setting is "google" which will
         //! invert the Y axis for tile indices
-        void setTMSType(const std::string& value) { _tmsType = value; }
-        const std::string& tmsType() const { return _tmsType; }
+        void setTMSType(const std::string& value) { _options.tmsType = value; }
+        const optional<std::string>& tmsType() const { return _options.tmsType; }
 
         //! Data format to request from the service
-        void setFormat(const std::string& value) { _format = value; }
-        const std::string& format() const { return _format; }
+        void setFormat(const std::string& value) { _options.format = value; }
+        const optional<std::string>& format() const { return _options.format; }
 
         //! Whether the layer contains coverage data
-        void setCoverage(bool value) { _coverage = value; }
-        bool coverage() const { return _coverage; }
+        void setCoverage(bool value) { _options.coverage = value; }
+        const optional<bool>& coverage() const { return _options.coverage; }
+
+        //! Serialize
+        Config getConfig() const override;
 
     public: // Layer
 
         Status openImplementation(const IOOptions& io) override;
 
-        Status closeImplementation() override;
+        void closeImplementation() override;
 
         //! Creates a raster image for the given tile key
         Result<GeoHeightfield> createHeightfieldImplementation(const TileKey& key, const IOOptions& io) const override;
@@ -62,10 +66,8 @@ namespace ROCKY_NAMESPACE
 
     private:
         TMS::Driver _driver;
-        URI _uri;
-        std::string _tmsType;
-        std::string _format;
-        bool _coverage;
+        TMS::Options _options;        
+        void construct(const Config&);
     };
 }
 
