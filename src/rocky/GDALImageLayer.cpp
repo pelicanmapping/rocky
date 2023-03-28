@@ -6,6 +6,7 @@
 #include "GDALImageLayer.h"
 #include "Image.h"
 #include "Log.h"
+#include "json.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::GDAL;
@@ -48,50 +49,45 @@ namespace
 GDALImageLayer::GDALImageLayer() :
     super()
 {
-    construct(Config());
+    construct({});
 }
 
-GDALImageLayer::GDALImageLayer(const Config& conf) :
+GDALImageLayer::GDALImageLayer(const JSON& conf) :
     super(conf)
 {
     construct(conf);
 }
 
 void
-GDALImageLayer::construct(const Config& conf)
+GDALImageLayer::construct(const JSON& conf)
 {
     setConfigKey("GDALImage");
-
-    conf.get("url", _uri);
-    conf.get("uri", _uri);
-    conf.get("connection", _connection);
-    conf.get("subdataset", _subDataSet);
-    conf.get("interpolation", "nearest", _interpolation, Image::NEAREST);
-    conf.get("interpolation", "average", _interpolation, Image::AVERAGE);
-    conf.get("interpolation", "bilinear", _interpolation, Image::BILINEAR);
-    conf.get("interpolation", "cubic", _interpolation, Image::CUBIC);
-    conf.get("interpolation", "cubicspline", _interpolation, Image::CUBICSPLINE);
-    conf.get("coverage_uses_palette_index", _coverageUsesPaletteIndex);
-    conf.get("single_threaded", _singleThreaded);
+    const auto j = parse_json(conf);
+    get_to(j, "uri", _uri);
+    get_to(j, "connection", _connection);
+    get_to(j, "subdataset", _subDataSet);
+    std::string temp;
+    get_to(j, "interpolation", temp);
+    if (temp == "nearest") _interpolation = Image::NEAREST;
+    else if (temp == "bilinear") _interpolation = Image::BILINEAR;
+    get_to(j, "single_threaded", _singleThreaded);
 
     setRenderType(RENDERTYPE_TERRAIN_SURFACE);
 }
 
-Config
-GDALImageLayer::getConfig() const
+JSON
+GDALImageLayer::to_json() const
 {
-    Config conf = super::getConfig();
-    conf.set("url", _uri);
-    conf.set("connection", _connection);
-    conf.set("subdataset", _subDataSet);
-    conf.set("interpolation", "nearest", _interpolation, Image::NEAREST);
-    conf.set("interpolation", "average", _interpolation, Image::AVERAGE);
-    conf.set("interpolation", "bilinear", _interpolation, Image::BILINEAR);
-    conf.set("interpolation", "cubic", _interpolation, Image::CUBIC);
-    conf.set("interpolation", "cubicspline", _interpolation, Image::CUBICSPLINE);
-    conf.set("coverage_uses_palette_index", _coverageUsesPaletteIndex);
-    conf.set("single_threaded", _singleThreaded);
-    return conf;
+    auto j = parse_json(super::to_json());
+    set(j, "uri", _uri);
+    set(j, "connection", _connection);
+    set(j, "subdataset", _subDataSet);
+    if (_interpolation.has_value(Image::NEAREST))
+        set(j, "interpolation", "nearest");
+    else if (_interpolation.has_value(Image::BILINEAR))
+        set(j, "interpolation", "bilinear");
+    set(j, "single_threaded", _singleThreaded);
+    return j.dump();
 }
 
 Status

@@ -16,7 +16,6 @@ set(HEADERS
     Callbacks.h
     Color.h
     Common.h
-    Config.h
     DateTime.h
     ElevationLayer.h
     # ElevationPool.h
@@ -35,6 +34,7 @@ set(HEADERS
     ImageMosaic.h
     Instance.h
     IOTypes.h
+    json.h
     Layer.h
     LayerCollection.h
     LayerReference.h
@@ -65,7 +65,6 @@ set(HEADERS
 
 set(SOURCES    
     Color.cpp
-    Config.cpp
     DateTime.cpp
     ElevationLayer.cpp
     # ElevationPool.cpp

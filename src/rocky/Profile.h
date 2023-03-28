@@ -6,7 +6,6 @@
 #pragma once
 
 #include <rocky/Common.h>
-#include <rocky/Config.h>
 #include <rocky/GeoExtent.h>
 #include <vector>
 
@@ -47,7 +46,7 @@ namespace ROCKY_NAMESPACE
             unsigned y_tiles_at_root = 0);
 
         //! Deserialize a profile
-        explicit Profile(const Config&);
+        //explicit Profile(const Config&);
 
         // copy/move ops
         Profile(const Profile& rhs) = default;
@@ -128,7 +127,7 @@ namespace ROCKY_NAMESPACE
         GeoExtent clampAndTransformExtent( const GeoExtent& input, bool* out_clamped =0L ) const;
 
         //! Returns a readable description of the profile.
-        std::string toString() const;
+        JSON to_json() const;
 
         //! Returns a signature hash code unique to this profile
         inline const std::string& getFullSignature() const;
@@ -155,11 +154,12 @@ namespace ROCKY_NAMESPACE
             const GeoExtent& input,
             std::vector<GeoExtent>& output) const;
 
-        //! Serialize
-        Config getConfig() const;
-
         //! Makes a clone of this profile but replaces the SRS with a custom one.
         Profile overrideSRS(const SRS&) const;
+
+        //! Well-known name of this profile, if it has one. These include
+        //! global-geodetic, spherical-meractor, and plate-carree.
+        const std::string& wellKnownName() const;
 
     protected:
 

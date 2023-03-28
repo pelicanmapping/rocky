@@ -6,7 +6,6 @@
 #pragma once
 
 #include <rocky/Math.h>
-#include <rocky/Config.h>
 #include <string>
 #include <vector>
 
@@ -120,44 +119,3 @@ namespace ROCKY_NAMESPACE
     };
 
 } // namespace osgEarth
-
-
-//------------------------------------------------------------------------
-
-namespace ROCKY_NAMESPACE
-{
-    // Config specializations for Color:
-    template<> inline
-    void Config::set<Color>( const std::string& key, const optional<Color>& opt ) {
-        if ( opt.has_value() ) {
-            remove( key );
-            set( key, opt->toHTML() );
-        }
-    }
-
-    template<> inline
-    void Config::set<Color>(const std::string& key, const Color& opt) {
-        remove(key);
-        set(key, opt.toHTML());
-    }
-
-    template<> inline
-    bool Config::get<Color>( const std::string& key, optional<Color>& output ) const {
-        if ( hasValue( key ) ) {
-            output = Color( value(key) );
-            return true;
-        }
-        else
-            return false;
-    }
-
-    template<> inline
-    bool Config::get<Color>(const std::string& key, Color& output) const {
-        if (hasValue(key)) {
-            output = Color(value(key));
-            return true;
-        }
-        else
-            return false;
-    }
-}

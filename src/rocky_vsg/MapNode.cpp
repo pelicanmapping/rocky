@@ -6,6 +6,7 @@
 #include "MapNode.h"
 #include "TerrainNode.h"
 #include "Utils.h"
+#include "json.h"
 #include <rocky/Horizon.h>
 #include <rocky/ImageLayer.h>
 #include <rocky/ElevationLayer.h>
@@ -24,16 +25,16 @@ MapNode::MapNode(const InstanceVSG& instance) :
     _instance(instance),
     _map(Map::create(instance))
 {
-    construct(Config());
+    construct({});
 }
 
 MapNode::MapNode(shared_ptr<Map> map) :
     _instance(reinterpret_cast<InstanceVSG&>(_map->instance()))
 {
-    construct(Config());
+    construct({});
 }
 
-MapNode::MapNode(const Config& conf, const InstanceVSG& instance) :
+MapNode::MapNode(const JSON& conf, const InstanceVSG& instance) :
     _instance(instance),
     _map(Map::create(instance))
 {
@@ -41,15 +42,10 @@ MapNode::MapNode(const Config& conf, const InstanceVSG& instance) :
 }
 
 void
-MapNode::construct(const Config& conf)
+MapNode::construct(const JSON& conf)
 {
-    conf.get("lighting", _enableLighting);
-    conf.get("overlay_blending", _overlayBlending);
-    conf.get("overlay_mipmapping", _overlayMipMapping);
-    conf.get("overlay_texture_size", _overlayTextureSize);
-    conf.get("overlay_resolution_ratio", _overlayResolutionRatio);
-    conf.get("draping_render_bin_number", _drapingRenderBinNumber);
-    conf.get("screen_space_error", _screenSpaceError);
+    const auto j = parse_json(conf);
+    get_to(j, "screen_space_error", _screenSpaceError);
 
     _terrain = TerrainNode::create(runtime(), conf);
     addChild(_terrain);
@@ -74,30 +70,25 @@ MapNode::construct(const Config& conf)
     }
 }
 
-Config
-MapNode::getConfig() const
+JSON
+MapNode::to_json() const
 {
-    Config conf("map");
-
-    conf.set("lighting", _enableLighting);
-    conf.set("overlay_blending", _overlayBlending);
-    conf.set("overlay_texture_size", _overlayTextureSize);
-    conf.set("overlay_mipmapping", _overlayMipMapping);
-    conf.set("overlay_resolution_ratio", _overlayResolutionRatio);
-    conf.set("draping_render_bin_number", _drapingRenderBinNumber);
-    conf.set("screen_space_error", _screenSpaceError);
+    auto j = json::object();
+    set(j, "screen_space_error", _screenSpaceError);
 
     // all map layers
+    auto layers_json = json::array();
     for (auto& layer : _map->layers().all())
     {
-        Config layerConf = layer->getConfig();
-        if (!layerConf.empty() && !layerConf.key().empty())
-        {
-            conf.add(layerConf);
-        }
+        layers_json.push_back(parse_json(layer->to_json()));
     }
 
-    return conf;
+    if (!layers_json.empty())
+    {
+        j["layers"] = layers_json;
+    }
+
+    return j.dump();
 }
 
 RuntimeContext&

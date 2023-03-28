@@ -6,7 +6,6 @@
 #pragma once
 
 #include <rocky/Common.h>
-#include <rocky/Config.h>
 #include <rocky/IOTypes.h>
 #include <rocky/VisibleLayer.h>
 #include <rocky/Profile.h>
@@ -44,12 +43,6 @@ namespace ROCKY_NAMESPACE
         void setMaxDataLevel(unsigned value);
         const optional<unsigned>& maxDataLevel() const;
 
-        //! Whether to algorithmically upsample data to higher resolution
-        //! as specified by maxDataLevel.
-        //! Warning: don't use this without a cache (performance)
-        void setUpsample(bool value);
-        const optional<bool>& upsample() const;
-
         //! Number of samples in each dimension.
         void setTileSize(unsigned value);
         const optional<unsigned>& tileSize() const;
@@ -57,13 +50,14 @@ namespace ROCKY_NAMESPACE
         //! DTOR
         virtual ~TileLayer();
 
-        virtual Config getConfig() const override;
+        //! seriailize
+        JSON to_json() const override;
 
     protected:
 
         TileLayer();
 
-        TileLayer(const Config&);
+        TileLayer(const JSON&);
 
         //! Tiling profile of this layer.
         //! Layer implementaions will call this to set the profile based
@@ -173,7 +167,6 @@ namespace ROCKY_NAMESPACE
         optional<double> _maxResolution;
         optional<unsigned> _maxDataLevel = 99;
         optional<unsigned> _tileSize = 256;
-        optional<bool> _upsample = false;
 
         bool _writingRequested;
 
@@ -182,7 +175,7 @@ namespace ROCKY_NAMESPACE
 
     private:
         // Post-ctor
-        void construct(const Config&);
+        void construct(const JSON&);
 
         // Figure out the cache settings for this layer.
         void establishCacheSettings();

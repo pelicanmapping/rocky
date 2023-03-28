@@ -254,38 +254,6 @@ URIContext::add(const std::string& sub) const
     //return URIContext(osgDB::concatPaths(_referrer, sub));
 }
 
-#if 0
-void
-URIContext::store(osgDB::Options* options)
-{
-    if (options)
-    {
-        if (_referrer.empty() == false)
-        {
-            options->setDatabasePath(_referrer);
-            options->setPluginStringData("rocky::URIContext::referrer", _referrer);
-        }
-    }
-}
-
-URIContext::URIContext( const osgDB::Options* options )
-{
-    if ( options )
-    {
-        _referrer = options->getPluginStringData( "rocky::URIContext::referrer" );
-
-        if ( _referrer.empty() && options->getDatabasePathList().size() > 0 )
-        {
-            const std::string& front = options->getDatabasePathList().front();
-            if ( rocky::isArchive(front) )
-            {
-                _referrer = front + "/";
-            }
-        }
-    }
-}
-#endif
-
 //------------------------------------------------------------------------
 
 URI::Stream::Stream(shared_ptr<std::istream> s) :
@@ -313,8 +281,7 @@ URI::URI()
 URI::URI(const URI& rhs) :
     _baseURI(rhs._baseURI),
     _fullURI(rhs._fullURI),
-    _context(rhs._context),
-    _cacheKey(rhs._cacheKey)
+    _context(rhs._context)
 {
     //nop
 }
@@ -323,7 +290,6 @@ URI::URI(const std::string& location)
 {
     _baseURI = location;
     _fullURI = location;
-    ctorCacheKey();
 }
 
 URI::URI(const std::string& location, const URIContext& context)
@@ -333,15 +299,12 @@ URI::URI(const std::string& location, const URIContext& context)
     _fullURI = location;
     if (!isRemote())
         _fullURI = context.getCanonicalPath(_baseURI);
-
-    ctorCacheKey();
 }
 
 URI::URI(const char* location)
 {
     _baseURI = std::string(location);
     _fullURI = _baseURI;
-    ctorCacheKey();
 }
 
 URI
@@ -351,14 +314,7 @@ URI::append(const std::string& suffix) const
     result._baseURI = _baseURI + suffix;
     result._fullURI = _fullURI + suffix;
     result._context = _context;
-    result.ctorCacheKey();
     return result;
-}
-
-void
-URI::ctorCacheKey()
-{
-    _cacheKey = util::makeCacheKey(_fullURI, "uri");
 }
 
 IOResult<URI::Content>
@@ -406,63 +362,65 @@ URI::read(const IOOptions& io) const
     }
 }
 
-#if 0
-void
-URI::ctorCacheKey()
-{
-    _cacheKey = Cache::makeCacheKey(_fullURI, "uri");
-}
-#endif
-
 bool
 URI::isRemote() const
 {
     return containsServerAddress(_fullURI);
 }
 
-Config
-URI::getConfig() const
-{
-    Config conf("uri", base());
-    conf.set("option_string", _optionString);
-    conf.setReferrer(context().referrer());
-    conf.setIsLocation(true);
-
-    const Headers& headers = context().getHeaders();
-    if (!headers.empty())
-    {
-        Config headersconf("headers");
-        for(Headers::const_iterator i = headers.begin(); i != headers.end(); ++i)
-        {
-            if (!i->first.empty() && !i->second.empty())
-            {
-                headersconf.add(Config(i->first, i->second));
-            }
-        }
-        conf.add(headersconf);
-    }
-
-    return conf;
-}
-
-void
-URI::mergeConfig(const Config& conf)
-{
-    conf.get("option_string", _optionString);
-
-    const ConfigSet headers = conf.child("headers").children();
-    for (ConfigSet::const_iterator i = headers.begin(); i != headers.end(); ++i)
-    {
-        const Config& header = *i;
-        if (!header.key().empty() && !header.value().empty())
-        {
-            _context.addHeader(header.key(), header.value());
-        }
-    }
-}
-
 std::string
 URI::urlEncode(const std::string& value)
 {
     return httplib::detail::encode_url(value);
+}
+
+
+#include "json.h"
+namespace ROCKY_NAMESPACE
+{
+    void to_json(json& j, const URI& obj) {
+        if (obj.context().referrer().empty() && obj.context().getHeaders().empty())
+        {
+            j = obj.base();
+        }
+        else
+        {
+            j = json::object();
+            set(j, "href", obj.base());
+
+            if (!obj.context().referrer().empty())
+                set(j, "referrer", obj.context().referrer());
+
+            if (obj.context().getHeaders().empty() == false) {
+                auto headers = json::array();
+                for (auto& h : obj.context().getHeaders()) {
+                    headers.push_back({ h.first, h.second });
+                }
+                j["headers"] = headers;
+            }
+        }
+    }
+
+    void from_json(const json& j, URI& obj) {
+        if (j.is_string())
+        {
+            obj = URI(get_string(j));
+        }
+        else
+        {
+            std::string base, referrer;
+            get_to(j, "href", base);
+            get_to(j, "referrer", referrer);
+            URIContext context(referrer);
+            if (j.contains("headers")) {
+                auto headers = j.at("headers");
+                if (headers.is_array()) {
+                    // correct??
+                    for (auto i = headers.begin(); i != headers.end(); ++i)
+                        context.addHeader(i.key(), i.value());
+                }
+            }
+            obj = URI(base, context);
+        }
+    }
 }

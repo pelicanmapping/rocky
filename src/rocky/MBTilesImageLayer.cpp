@@ -4,38 +4,40 @@
  * MIT License
  */
 #include "MBTilesImageLayer.h"
+#include "json.h"
 
 using namespace ROCKY_NAMESPACE;
 
 MBTilesImageLayer::MBTilesImageLayer() :
     super()
 {
-    construct(Config());
+    construct({});
 }
 
-MBTilesImageLayer::MBTilesImageLayer(const Config& conf) :
+MBTilesImageLayer::MBTilesImageLayer(const JSON& conf) :
     super(conf)
 {
     construct(conf);
 }
 
 void
-MBTilesImageLayer::construct(const Config& conf)
+MBTilesImageLayer::construct(const JSON& conf)
 {
     setConfigKey("MBTilesImage");
-    conf.get("uri", _options.uri);
-    conf.get("format", _options.format);
-    conf.get("compress", _options.compress);
+    const auto j = parse_json(conf);
+    get_to(j, "uri", _options.uri);
+    get_to(j, "format", _options.format);
+    get_to(j, "compress", _options.compress);
 }
 
-Config
-MBTilesImageLayer::getConfig() const
+JSON
+MBTilesImageLayer::to_json() const
 {
-    Config conf = super::getConfig();
-    conf.set("uri", _options.uri);
-    conf.set("format", _options.format);
-    conf.set("compress", _options.compress);
-    return conf;
+    auto j = parse_json(super::to_json());
+    set(j, "uri", _options.uri);
+    set(j, "format", _options.format);
+    set(j, "compress", _options.compress);
+    return j.dump();
 }
 
 Status

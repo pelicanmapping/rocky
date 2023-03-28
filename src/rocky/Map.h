@@ -59,18 +59,21 @@ namespace ROCKY_NAMESPACE
     public:
 
         //! Construct
-        Map(const Instance& instance);
+        explicit Map(const Instance& instance);
 
         //! Construct with custom options
-        Map(const Instance& instance, const IOOptions& io);
+        explicit Map(const Instance& instance, const IOOptions& io);
 
         //! Deserialize
-        Map(const Config& conf, const Instance& instance, const IOOptions& io);
+        explicit Map(const Instance& instance, const JSON& conf);
+
+        //! Deserialize
+        explicit Map(const Instance& instance, const JSON& conf, const IOOptions& io);
 
      public:
 
         //! Serialize
-        Config getConfig() const;
+        JSON to_json() const;
 
     public:
         //! Callback fired upon added a layer
@@ -104,7 +107,7 @@ namespace ROCKY_NAMESPACE
         LayerCollection _imageLayers;
         LayerCollection _elevationLayers;
 
-        void construct(const Config&, const IOOptions& io);
+        void construct(const JSON&, const IOOptions& io);
 
         friend class LayerCollection;
     };

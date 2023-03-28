@@ -66,6 +66,11 @@ if not exist "%SOURCE_DIR%\vcpkg.json" (
 
 :: Run CMAKE
 mkdir %BUILD_DIR%
+
+if exist %BUILD_DIR%\CMakeCache.txt (
+    del %BUILD_DIR%\CMakeCache.txt
+)
+
 cmake ^
     -S "%SOURCE_DIR%" ^
     -B "%BUILD_DIR%" ^

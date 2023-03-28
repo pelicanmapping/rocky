@@ -5,6 +5,13 @@
  */
 #include "TMS.h"
 
+#ifdef TINYXML_FOUND
+#include <tinyxml.h>
+#endif
+
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::TMS;
 
@@ -88,139 +95,157 @@ namespace
         }
     }
 
-    Result<TileMap> parseTileMapFromConfig(const Config& conf)
+    Result<TileMap> parseTileMap(const json& j)
     {
-        TileMap tileMap;
+        auto tileMap = j.find(ELEM_TILEMAP);
+    }
 
-        const Config* tileMapConf = conf.find(ELEM_TILEMAP);
-        if (!tileMapConf)
+    Result<TileMap> parseTileMapFromXML(const std::string& xml)
+    {
+        TileMap tilemap;
+
+        TiXmlDocument doc;
+        doc.Parse(xml.c_str());
+        if (doc.Error())
         {
-            return Status(Status::ConfigurationError, "Could not find root TileMap element");
+            return Status(Status::GeneralError, util::make_string()
+                << "XML parse error at row " << doc.ErrorRow()
+                << " col " << doc.ErrorCol());
         }
 
-        tileMap.version = tileMapConf->value(ATTR_VERSION);
-        tileMap.tileMapService = tileMapConf->value(ATTR_TILEMAPSERVICE);
-        tileMap.title = tileMapConf->value(ELEM_TITLE);
-        tileMap.abstract = tileMapConf->value(ELEM_ABSTRACT);
-        tileMap.srsString = tileMapConf->value(ELEM_SRS);
+        auto tilemapxml = doc.RootElement();
+        std::string name = tilemapxml->Value();
+        if (!tilemapxml || name != "TileMap")
+            return Status(Status::ConfigurationError, "XML missing TileMap element");
 
-        if (tileMapConf->hasValue(ELEM_VERTICAL_SRS))
-            tileMap.vsrsString = tileMapConf->value(ELEM_VERTICAL_SRS);
-        if (tileMapConf->hasValue(ELEM_VERTICAL_DATUM))
-            tileMap.vsrsString = tileMapConf->value(ELEM_VERTICAL_DATUM);
+        tilemapxml->QueryStringAttribute("version", &tilemap.version);
+        tilemapxml->QueryStringAttribute("tilemapservice", &tilemap.tileMapService);
 
-        const Config* bboxConf = tileMapConf->find(ELEM_BOUNDINGBOX);
-        if (bboxConf)
+        for (const TiXmlNode* childnode = tilemapxml->FirstChild(); 
+            childnode != nullptr; 
+            childnode = childnode->NextSibling())
         {
-            tileMap.minX = bboxConf->value<double>(ATTR_MINX, 0.0);
-            tileMap.minY = bboxConf->value<double>(ATTR_MINY, 0.0);
-            tileMap.maxX = bboxConf->value<double>(ATTR_MAXX, 0.0);
-            tileMap.maxY = bboxConf->value<double>(ATTR_MAXY, 0.0);
-        }
-
-        //Read the origin
-        const Config* originConf = tileMapConf->find(ELEM_ORIGIN);
-        if (originConf)
-        {
-            tileMap.originX = originConf->value<double>(ATTR_X, 0.0);
-            tileMap.originY = originConf->value<double>(ATTR_Y, 0.0);
-        }
-
-        //Read the tile format
-        const Config* formatConf = tileMapConf->find(ELEM_TILE_FORMAT);
-        if (formatConf)
-        {
-            tileMap.format.extension = (formatConf->value(ATTR_EXTENSION));
-            tileMap.format.mimeType = (formatConf->value(ATTR_MIME_TYPE));
-            tileMap.format.width = (formatConf->value<unsigned>(ATTR_WIDTH, 256));
-            tileMap.format.height = (formatConf->value<unsigned>(ATTR_HEIGHT, 256));
-        }
-        else
-        {
-            return Status(Status::ConfigurationError, "No TileFormat in TileMap");
-        }
-
-        //Read the tilesets
-        const Config* tileSetsConf = tileMapConf->find(ELEM_TILESETS);
-        if (tileSetsConf)
-        {
-            //Read the profile
-            std::string profile = tileSetsConf->value(ATTR_PROFILE);
-            if (profile == "global-geodetic")
-                tileMap.profileType = ProfileType::GEODETIC;
-            else if (profile == "global-mercator")
-                tileMap.profileType = ProfileType::MERCATOR;
-            else if (profile == "local")
-                tileMap.profileType = ProfileType::LOCAL;
-            else
-                tileMap.profileType = ProfileType::UNKNOWN;
-
-            //Read each TileSet
-            for (auto& conf : tileSetsConf->children(ELEM_TILESET));
+            auto childxml = childnode->ToElement();
+            if (childxml)
             {
-                TileSet tileset{
-                    conf.value(ATTR_HREF),
-                    conf.value<double>(ATTR_UNITSPERPIXEL, 0.0),
-                    conf.value<unsigned>(ATTR_ORDER, ~0)
-                };
-                tileMap.tileSets.push_back(std::move(tileset));
+                std::string name = childxml->Value();
+                if (name == "Abstract")
+                {
+                    tilemap.abstract = childxml->Value();
+                }
+                else if (name == "Title")
+                {
+                    tilemap.title = childxml->Value();
+                }
+                else if (name == "SRS")
+                {
+                    tilemap.srsString = childxml->Value();
+                }
+                else if (name == "BoundingBox")
+                {
+                    childxml->QueryDoubleAttribute("minx", &tilemap.minX);
+                    childxml->QueryDoubleAttribute("miny", &tilemap.minY);
+                    childxml->QueryDoubleAttribute("maxx", &tilemap.maxX);
+                    childxml->QueryDoubleAttribute("maxy", &tilemap.maxY);
+                }
+                else if (name == "Origin")
+                {
+                    childxml->QueryDoubleAttribute("x", &tilemap.originX);
+                    childxml->QueryDoubleAttribute("y", &tilemap.originY);
+                }
+                else if (name == "TileFormat")
+                {
+                    childxml->QueryUnsignedAttribute("width", &tilemap.format.width);
+                    childxml->QueryUnsignedAttribute("height", &tilemap.format.height);
+                    childxml->QueryStringAttribute("mime-type", &tilemap.format.mimeType);
+                    childxml->QueryStringAttribute("extension", &tilemap.format.extension);
+                }
+                else if (name == "TileSets")
+                {
+                    std::string temp;
+                    childxml->QueryStringAttribute("profile", &temp);
+                    tilemap.profileType =
+                        temp == "global-geodetic" ? ProfileType::GEODETIC :
+                        temp == "global-mercator" ? ProfileType::MERCATOR :
+                        temp == "local" ? ProfileType::LOCAL :
+                        ProfileType::UNKNOWN;
+
+                    for (const TiXmlNode* tilesetnode = childxml->FirstChild();
+                        tilesetnode != nullptr;
+                        tilesetnode = tilesetnode->NextSibling())
+                    {
+                        auto tilesetxml = tilesetnode->ToElement();
+                        if (tilesetxml)
+                        {
+                            TileSet tileset;
+                            tilesetxml->QueryStringAttribute("href", &tileset.href);
+                            tilesetxml->QueryDoubleAttribute("units-per-pixel", &tileset.unitsPerPixel);
+                            tilesetxml->QueryUnsignedAttribute("order", &tileset.order);
+                            tilemap.tileSets.push_back(std::move(tileset));
+                        }
+                    }
+                }
+                else if (name == "DataExtents")
+                {
+                    Profile profile = tilemap.createProfile();
+
+                    for (const TiXmlNode* denode = childxml->FirstChild();
+                        denode != nullptr;
+                        denode = denode->NextSibling())
+                    {
+                        auto dexml = denode->ToElement();
+                        if (dexml)
+                        {
+                            double minX = 0.0, minY = 0.0, maxX = 0.0, maxY = 0.0;
+                            unsigned maxLevel = 0;
+                            std::string description;
+
+                            dexml->QueryDoubleAttribute("minx", &minX);
+                            dexml->QueryDoubleAttribute("miny", &minY);
+                            dexml->QueryDoubleAttribute("maxx", &maxX);
+                            dexml->QueryDoubleAttribute("maxy", &maxY);
+                            dexml->QueryUnsignedAttribute("maxlevel", &maxLevel);
+                            dexml->QueryStringAttribute("description", &description);
+
+                            if (maxLevel > 0u)
+                            {
+                                if (description.empty())
+                                    tilemap.dataExtents.push_back(DataExtent(GeoExtent(profile.srs(), minX, minY, maxX, maxY), 0, maxLevel));
+                                else
+                                    tilemap.dataExtents.push_back(DataExtent(GeoExtent(profile.srs(), minX, minY, maxX, maxY), 0, maxLevel, description));
+                            }
+                            else
+                            {
+                                if (description.empty())
+                                    tilemap.dataExtents.push_back(DataExtent(GeoExtent(profile.srs(), minX, minY, maxX, maxY), 0));
+                                else
+                                    tilemap.dataExtents.push_back(DataExtent(GeoExtent(profile.srs(), minX, minY, maxX, maxY), 0, description));
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        //Try to compute the profile based on the SRS if there was no PROFILE tag given
-        if (tileMap.profileType == ProfileType::UNKNOWN && !tileMap.srsString.empty())
+        // Now, clean up any messes.
+         
+        // Try to compute the profile based on the SRS if there was no PROFILE tag given
+        if (tilemap.profileType == ProfileType::UNKNOWN && !tilemap.srsString.empty())
         {
-            SRS srs(tileMap.srsString);
+            SRS srs(tilemap.srsString);
 
-            tileMap.profileType =
+            tilemap.profileType =
                 srs.isGeographic() ? ProfileType::GEODETIC :
                 srs.isHorizEquivalentTo(SRS::SPHERICAL_MERCATOR) ? ProfileType::MERCATOR :
                 srs.isProjected() ? ProfileType::LOCAL :
                 ProfileType::UNKNOWN;
         }
 
-        tileMap.computeMinMaxLevel();
-        tileMap.computeNumTiles();
+        tilemap.computeMinMaxLevel();
+        tilemap.computeNumTiles();
+        tilemap.generateTileSets(20u);
 
-        //Read the data areas
-        const Config* extentsConf = tileMapConf->find(ELEM_DATA_EXTENTS);
-        if (extentsConf)
-        {
-            Profile profile = tileMap.createProfile();
-
-            for (auto& conf : extentsConf->children(ELEM_DATA_EXTENT))
-            {
-                double minX = conf.value<double>(ATTR_MINX, 0.0);
-                double minY = conf.value<double>(ATTR_MINY, 0.0);
-                double maxX = conf.value<double>(ATTR_MAXX, 0.0);
-                double maxY = conf.value<double>(ATTR_MAXY, 0.0);
-
-                unsigned int maxLevel = conf.value<unsigned>(ATTR_MAX_LEVEL, 0);
-
-                std::string description = conf.value<std::string>(ATTR_DESCRIPTION, std::string());
-
-                //OE_DEBUG << LC << "Read area " << minX << ", " << minY << ", " << maxX << ", " << maxY << ", minlevel=" << minLevel << " maxlevel=" << maxLevel << std::endl;
-
-                if (maxLevel > 0)
-                {
-                    if (description.empty())
-                        tileMap.dataExtents.push_back(DataExtent(GeoExtent(profile.srs(), minX, minY, maxX, maxY), 0, maxLevel));
-                    else
-                        tileMap.dataExtents.push_back(DataExtent(GeoExtent(profile.srs(), minX, minY, maxX, maxY), 0, maxLevel, description));
-                }
-                else
-                {
-                    if (description.empty())
-                        tileMap.dataExtents.push_back(DataExtent(GeoExtent(profile.srs(), minX, minY, maxX, maxY), 0));
-                    else
-                        tileMap.dataExtents.push_back(DataExtent(GeoExtent(profile.srs(), minX, minY, maxX, maxY), 0, description));
-                }
-            }
-        }
-
-        tileMap.generateTileSets(20u);
-
-        return tileMap;
+        return tilemap;
     }
 }
 
@@ -389,15 +414,7 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
 bool
 TileMap::intersectsKey(const TileKey& tilekey) const
 {
-    //    dvvec3 keyMin, keyMax;
-
-        //double keyMinX, keyMinY, keyMaxX, keyMaxY;
-
-        //Check to see if the key overlaps the bounding box using lat/lon.  This is necessary to check even in
-        //Mercator situations in case the BoundingBox is described using lat/lon coordinates such as those produced by GDAL2Tiles
-        //This should be considered a bug on the TMS production side, but we can work around it for now...
     Box b = tilekey.extent().bounds();
-    //tilekey.getExtent().getBounds(keyMinX, keyMinY, keyMaxX, keyMaxY);
 
     bool inter = intersects(
         minX, minY, maxX, maxY,
@@ -415,13 +432,6 @@ TileMap::intersectsKey(const TileKey& tilekey) const
         inter = intersects(
             minX, minY, maxX, maxY,
             b.xmin, b.ymin, b.xmax, b.ymax);
-
-        //tilekey.profile().srs().transform(keyMin, tilekey.profile().srs().getGeographicSRS(), keyMin );
-        //tilekey.profile().srs().transform(keyMax, tilekey.profile().srs().getGeographicSRS(), keyMax );
-        //inter = intersects(_minX, _minY, _maxX, _maxY, keyMin.x(), keyMin.y(), keyMax.x(), keyMax.y() );
-        //tilekey.profile().srs().transform2D(keyMinX, keyMinY, tilekey.profile().srs().getGeographicSRS(), keyMinX, keyMinY);
-        //tilekey.profile().srs().transform2D(keyMaxX, keyMaxY, tilekey.profile().srs().getGeographicSRS(), keyMaxX, keyMaxY);
-        //inter = intersects(_minX, _minY, _maxX, _maxY, keyMinX, keyMinY, keyMaxX, keyMaxY);
     }
 
     return inter;
@@ -538,13 +548,17 @@ ROCKY_NAMESPACE::TMS::readTileMap(const URI& location, const IOOptions& io)
     if (r.status.failed())
         return r.status;
 
+    auto tilemap = parseTileMapFromXML(r->data.to_string());
+
+#if 0
     // Read tile map into a Config:
     Config conf;
     std::stringstream buf(r->data.to_string());
-    conf.fromXML(buf);
+    conf.from_xml(buf);
 
     // parse that into a tile map:
     auto tilemap = parseTileMapFromConfig(conf);
+#endif
 
     if (tilemap.status.ok())
     {
@@ -614,7 +628,7 @@ TMS::Driver::open(
     if (profile.valid())
     {
         Log::info() << "TMS: "
-            << "Using express profile \"" << profile.toString()
+            << "Using express profile \"" << profile.to_json()
             << "\" for URI \"" << uri.base() << "\""
             << std::endl;
 

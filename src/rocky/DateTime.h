@@ -6,7 +6,6 @@
 #pragma once
 
 #include <rocky/Common.h>
-#include <rocky/Config.h>
 #include <ctime>
 #include <cstring>
 #include <string>
@@ -47,10 +46,6 @@ namespace ROCKY_NAMESPACE
 
         /** DateTime from an ISO 8601 string */
         DateTime(const std::string& iso8601);
-
-        //! DateTime from a config serialization
-        DateTime(const Config& conf);
-        Config getConfig() const;
 
         /** As a date/time string in RFC 1123 format (e.g., HTTP) */
         const std::string asRFC1123() const;
@@ -135,18 +130,21 @@ namespace ROCKY_NAMESPACE
             DateTime _end;
     };
 
-
+#if 0
     template<> inline void Config::set<DateTime>(const std::string& key, const optional<DateTime>& opt) {
         if (opt.has_value())
-            remove(key); set(key, opt->asCompactISO8601());
+            object.erase(key);
+        set(key, opt->asCompactISO8601());
     }
 
     template<> inline bool Config::get<DateTime>(const std::string& key, optional<DateTime>& output) const {
-        if (hasChild(key)) {
-            output = DateTime(child(key));
+        if (has(key)) {
+            output = DateTime(value(key));
             return true;
         }
         return false;
     }
+#endif
+
 } // namespace ROCKY_NAMESPACE
 

@@ -52,57 +52,6 @@ GeoPoint::GeoPoint(const SRS& srs) :
     //nop
 }
 
-GeoPoint::GeoPoint(const Config& conf, const SRS& srs) :
-    _srs(srs)
-{
-    conf.get( "x", _p.x );
-    conf.get( "y", _p.y );
-    conf.get( "z", _p.z );
-    conf.get( "alt", _p.z );
-    conf.get( "hat", _p.z ); // height above terrain (relative)
-
-    if (!_srs.valid() && conf.hasValue("srs"))
-        _srs = SRS(conf.value("srs"));
-
-    if ( conf.hasValue("lat") && (!_srs.valid() || _srs.isGeographic()) )
-    {
-        conf.get( "lat", _p.y );
-        if (!_srs.valid())
-            _srs = SRS::WGS84;
-    }
-    if ( conf.hasValue("long") && (!_srs.valid() || _srs.isGeographic()))
-    {
-        conf.get("long", _p.x);
-        if (!_srs.valid())
-            _srs = SRS::WGS84;
-    }
-}
-
-Config
-GeoPoint::getConfig() const
-{
-    Config conf;
-    if ( _srs.isGeographic() )
-    {
-        conf.set( "lat", _p.y );
-        conf.set( "long", _p.x );
-    }
-    else
-    {
-        conf.set( "x", _p.x );
-        conf.set( "y", _p.y );
-    }
-
-    conf.set("z", _p.z);
-
-    if (_srs.valid())
-    {
-        conf.set("srs", _srs.definition());
-    }
-
-    return conf;
-}
-
 bool
 GeoPoint::transform(const SRS& outSRS, GeoPoint& output) const
 {
@@ -218,8 +167,42 @@ GeoPoint::distanceTo(const GeoPoint& rhs) const
     }
 }
 
-std::string
-GeoPoint::toString() const
+
+#include "json.h"
+
+namespace ROCKY_NAMESPACE
 {
-    return util::make_string() << "x=" << x() << ", y=" << y() << ", z=" << z();
+    void to_json(json& j, const GeoPoint& obj) {
+        if (obj.valid()) {
+            j = json::object();
+            if (obj.srs().isGeographic()) {
+                set(j, "lat", obj.y());
+                set(j, "long", obj.x());
+            }
+            else {
+                set(j, "x", obj.x());
+                set(j, "y", obj.y());
+            }
+            set(j, "z", obj.z());
+            set(j, "srs", obj.srs());
+        }
+    }
+
+    void from_json(const json& j, GeoPoint& obj) {
+        SRS srs;
+        double x = 0, y = 0, z = 0;
+
+        get_to(j, "srs", srs);
+        if (!srs.valid())
+            srs = SRS::WGS84;
+        if (srs.isGeographic()) {
+            get_to(j, "lat", y);
+            get_to(j, "long", x);
+        }
+        get_to(j, "x", x);
+        get_to(j, "y", y);
+        get_to(j, "z", z);
+
+        obj = GeoPoint(srs, x, y, z);
+    }
 }

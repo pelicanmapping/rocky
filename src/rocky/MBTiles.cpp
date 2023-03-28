@@ -5,6 +5,7 @@
  */
 #include "MBTiles.h"
 #include "Image.h"
+#include "json.h"
 #include <sqlite3.h>
 #include <filesystem>
 
@@ -101,7 +102,7 @@ MBTiles::Driver::open(
         createTables();
 
         // write profile to metadata:
-        std::string profileJSON = profile.getConfig().toJSON(false);
+        std::string profileJSON = profile.to_json();
         putMetaData("profile", profileJSON);
 
         // write format to metadata:
@@ -176,15 +177,18 @@ MBTiles::Driver::open(
             if (!profileStr.empty())
             {
                 // try to parse it as a JSON config
-                Config pconf;
-                pconf.fromJSON(profileStr);
-                profile = Profile(pconf);
+                auto j = parse_json(profileStr);
+
+                // new style. e.g., "global-geodetic"
+                get_to(j, profile);
+
+                // old style. e.g., {"profile":"global-geodetic"}
+                if (!profile.valid())
+                    get_to(j, "profile", profile);
 
                 // if that didn't work, try parsing it directly
                 if (!profile.valid())
-                {
                     profile = Profile(profileStr);
-                }
             }
 
             if (!profile.valid())

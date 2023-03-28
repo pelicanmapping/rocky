@@ -19,13 +19,13 @@ namespace ROCKY_NAMESPACE
             optional<URI> uri;
             optional<std::string> tmsType;
             optional<std::string> format;
-            optional<bool> coverage;
+            optional<bool> coverage = false;
         };
 
         struct TileFormat
         {
-            unsigned width = 0u;
-            unsigned height = 0u;
+            unsigned width = 256u;
+            unsigned height = 256u;
             std::string mimeType;
             std::string extension;
         };
@@ -53,8 +53,8 @@ namespace ROCKY_NAMESPACE
             std::string abstract;
             std::string srsString;
             std::string vsrsString;
-            double originX, originY;
-            double minX, minY, maxX, maxY;
+            double originX = 0.0, originY = 0.0;
+            double minX = 0.0, minY = 0.0, maxX = 0.0, maxY = 0.0;
             std::vector<TileSet> tileSets;
             TileFormat format;
             std::string filename;

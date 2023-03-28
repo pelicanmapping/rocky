@@ -5,6 +5,7 @@
  */
 #include "Map.h"
 #include "VisibleLayer.h"
+#include "json.h"
 #include <tuple>
 
 using namespace ROCKY_NAMESPACE;
@@ -97,7 +98,7 @@ Map::Map(const Instance& instance) :
     _imageLayers(this),
     _elevationLayers(this)
 {
-    construct(Config(), _instance.ioOptions());
+    construct({}, _instance.ioOptions());
 }
 
 Map::Map(const Instance& instance, const IOOptions& io) :
@@ -105,25 +106,31 @@ Map::Map(const Instance& instance, const IOOptions& io) :
     _imageLayers(this),
     _elevationLayers(this)
 {
-    construct(Config(), io);
+    construct({}, io);
 }
 
-Map::Map(const Config& conf, const Instance& instance, const IOOptions& io) :
+Map::Map(const Instance& instance, const JSON& conf) :
     _instance(instance),
     _imageLayers(this),
     _elevationLayers(this)
 {
-    construct(Config(), io);
+    construct(conf, _instance.ioOptions());
+}
+
+Map::Map(const Instance& instance, const JSON& conf, const IOOptions& io) :
+    _instance(instance),
+    _imageLayers(this),
+    _elevationLayers(this)
+{
+    construct(conf, io);
 }
 #endif
 
 void
-Map::construct(const Config& conf, const IOOptions& io)
+Map::construct(const JSON& conf, const IOOptions& io)
 {
     // reset the revision:
     _dataModelRevision = 0;
-
-    //_mapDataMutex.setName("Map dataMutex(OE)");
 
     // Generate a UID.
     _uid = rocky::createUID();
@@ -134,21 +141,23 @@ Map::construct(const Config& conf, const IOOptions& io)
     _elevationPool->setMap( this );
 #endif
 
-    conf.get("name", _name);
-    //conf.get("profile", _profile);
-
-    //conf.set( "cache",        cache() );
-    //conf.set( "cache_policy", cachePolicy() );
-
-    //conf.set( "elevation_interpolation", "nearest",     elevationInterpolation(), NEAREST);
-    //conf.set( "elevation_interpolation", "average",     elevationInterpolation(), AVERAGE);
-    //conf.set( "elevation_interpolation", "bilinear",    elevationInterpolation(), BILINEAR);
-    //conf.set( "elevation_interpolation", "triangulate", elevationInterpolation(), TRIANGULATE);
-
-    conf.get("profile_layer", _profileLayer);
-
-    if (conf.hasChild("profile"))
-        setProfile(Profile(conf.child("profile"))); 
+    auto j = parse_json(conf);
+    get_to(j, "name", _name);
+    get_to(j, "profile", _profile);
+    get_to(j, "profile_layer", _profileLayer);
+    if (j.contains("layers")) {
+        auto j_layers = j.at("layers");
+        if (j_layers.is_array()) {
+            for (auto& j_layer : j_layers) {
+                std::string type;
+                get_to(j_layer, "type", type);
+                auto new_layer = Instance::createObject<Layer>(type, j_layer.dump());
+                if (new_layer) {
+                    layers().add(new_layer);
+                }
+            }
+        }
+    }
 
     // set a default profile if neccesary.
     if (!profile().valid())
@@ -157,25 +166,27 @@ Map::construct(const Config& conf, const IOOptions& io)
     }
 }
 
-Config
-Map::getConfig() const
+JSON
+Map::to_json() const
 {
-    Config conf("map");
+    auto j = json::object();
+    set(j, "name", _name);
+    set(j, "profile", profile());
+    set(j, "profile_layer", _profileLayer);
 
-    conf.set("name", _name);
-
-    if (profile().valid())
-        conf.set("profile", profile().getConfig());
-
-    conf.set("profile_layer", _profileLayer);
-
-    Config layers_conf;
+    auto layers_json = nlohmann::json::array();
     for (auto& layer : layers().all())
-        layers_conf.add(layer->getConfig());
-    if (!layers_conf.empty())
-        conf.add("layers", layers_conf);
+    {
+        auto layer_json = parse_json(layer->to_json());
+        layers_json.push_back(layer_json);
+    }
 
-    return conf;
+    if (layers_json.size() > 0)
+    {
+        j["layers"] = layers_json;
+    }
+
+    return j.dump();
 }
 
 
@@ -238,7 +249,7 @@ Map::attributions() const
         {
             auto visibleLayer = VisibleLayer::cast(layer);
 
-            if (!visibleLayer || visibleLayer->getVisible())
+            if (!visibleLayer || visibleLayer->visible())
             {
                 std::string attribution = layer->attribution();
                 if (!attribution.empty())

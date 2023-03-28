@@ -6,6 +6,7 @@
 #include "Profile.h"
 #include "TileKey.h"
 #include "Math.h"
+#include "json.h"
 
 using namespace ROCKY_NAMESPACE;
 
@@ -114,13 +115,13 @@ Profile::setup(
             _shared->_extent.transform(srs.geoSRS());
 
         // make a profile sig (sans srs) and an srs sig for quick comparisons.
-        Config temp = getConfig();
-        _shared->_fullSignature = util::Stringify() << std::hex << util::hashString(temp.toJSON());
-        temp.remove("vdatum");
+        JSON temp = to_json();
+        _shared->_fullSignature = util::Stringify() << std::hex << util::hashString(temp); // .to_json());
+        //temp.object.erase("vdatum");
         //temp.vsrsString() = "";
-        _shared->_horizSignature = util::Stringify() << std::hex << util::hashString(temp.toJSON());
+        //_shared->_horizSignature = util::Stringify() << std::hex << util::hashString(temp); // .to_json());
 
-        _shared->_hash = std::hash<std::string>()(temp.toJSON());
+        _shared->_hash = std::hash<std::string>()(temp); // .to_json());
     }
 }
 
@@ -155,70 +156,6 @@ Profile::operator == (const Profile& rhs) const
         _shared->_numTilesWideAtLod0 == rhs._shared->_numTilesHighAtLod0;
 }
 
-Profile::Profile(const Config& conf)
-{
-    _shared = std::make_shared<Data>();
-
-    if (!conf.value().empty())
-    {
-        setup(conf.value());
-    }
-    else
-    {
-        //if (input.hasChild("profile"))
-        //    input = conf.child("profile");
-
-        std::string horiz;
-        Box box;
-        unsigned tx = 0, ty = 0;
-
-        conf.get("srs", horiz);
-
-        box = Box(
-            conf.value<double>("xmin", 0),
-            conf.value<double>("ymin", 0),
-            conf.value<double>("xmax", 0),
-            conf.value<double>("ymax", 0));
-
-        conf.get("num_tiles_wide_at_lod_0", tx);
-        conf.get("tx", tx);
-        conf.get("num_tiles_high_at_lod_0", ty);
-        conf.get("ty", ty);
-
-        SRS srs(horiz);
-
-        if (srs.valid())
-        {
-            setup(srs, box, tx, ty);
-        }
-    }
-}
-
-Config
-Profile::getConfig() const
-{
-    Config conf("profile");
-
-    if (valid())
-    {
-        if (_shared->_wellKnownName.empty() == false)
-        {
-            conf.setValue(_shared->_wellKnownName);
-        }
-        else
-        {
-            conf.set("srs", srs().definition());
-            conf.set("xmin", _shared->_extent.xmin());
-            conf.set("ymin", _shared->_extent.ymin());
-            conf.set("xmax", _shared->_extent.xmax());
-            conf.set("ymax", _shared->_extent.ymax());
-            conf.set("tx", _shared->_numTilesWideAtLod0);
-            conf.set("ty", _shared->_numTilesHighAtLod0);
-        }
-    }
-
-    return conf;
-}
 
 Profile::Profile(const std::string& wellKnownName)
 {
@@ -291,17 +228,17 @@ Profile::geographicExtent() const {
     return _shared->_latlong_extent;
 }
 
-std::string
-Profile::toString() const
+const std::string&
+Profile::wellKnownName() const {
+    return _shared->_wellKnownName;
+}
+
+JSON
+Profile::to_json() const
 {
-    //auto srs = _shared->_extent.srs();
-    return getConfig().toJSON(false);
-    //return util::make_string()
-    //    << std::setprecision(16)
-    //    << "[srs=" << srs.name() << ", min=" << _shared->_extent.xMin() << "," << _shared->_extent.yMin()
-    //    << " max=" << _shared->_extent.xMax() << "," << _shared->_extent.yMax()
-    //    << " ar=" << _shared->_numTilesWideAtLod0 << ":" << _shared->_numTilesHighAtLod0
-    //    << "]";
+    json temp;
+    ROCKY_NAMESPACE::to_json(temp, *this);
+    return temp.dump();
 }
 
 Profile
@@ -601,3 +538,55 @@ Profile::transformAndExtractContiguousExtents(
 
     return true;
 }
+
+
+#include "json.h"
+namespace ROCKY_NAMESPACE
+{
+    void to_json(json& j, const Profile& obj)
+    {
+        if (obj.valid())
+        {
+            if (!obj.wellKnownName().empty())
+            {
+                j = obj.wellKnownName(); // string
+            }
+            else
+            {
+                j = json::object();
+                set(j, "extent", obj.extent());
+                auto [tx, ty] = obj.numTiles(0);
+                set(j, "tx", tx);
+                set(j, "ty", ty);
+            }
+        }
+        else j = nullptr;
+    }
+
+    void from_json(const json& j, Profile& obj)
+    {
+        if (j.is_string())
+        {
+            obj = Profile(get_string(j));
+        }
+        else if (j.is_object())
+        {
+            GeoExtent extent;
+            unsigned tx = 0, ty = 0;
+
+            get_to(j, "extent", extent);
+            get_to(j, "tx", tx);
+            get_to(j, "ty", ty);
+
+            if (extent.valid())
+            {
+                obj = Profile(extent.srs(), extent.bounds(), tx, ty);
+            }
+        }
+        else
+        {
+            obj = Profile();
+        }
+    }
+}
+

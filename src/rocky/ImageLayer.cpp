@@ -14,6 +14,8 @@
 #include "GeoImage.h"
 #include "Image.h"
 #include "TileKey.h"
+#include "json.h"
+
 #include <cinttypes>
 
 using namespace ROCKY_NAMESPACE;
@@ -22,61 +24,40 @@ using namespace ROCKY_NAMESPACE::util;
 #define LC "[ImageLayer] \"" << name().value() << "\" "
 
 ImageLayer::ImageLayer() :
-    Inherit()
+    super()
 {
-    construct(Config());
+    construct({});
 }
 
-ImageLayer::ImageLayer(const Config& conf) :
-    Inherit(conf)
+ImageLayer::ImageLayer(const JSON& conf) :
+    super(conf)
 {
     construct(conf);
 }
 
 void
-ImageLayer::construct(const Config& conf)
+ImageLayer::construct(const JSON& conf)
 {
-    conf.get("nodata_image", _noDataImageLocation);
-    conf.get("accept_draping", _acceptDraping);
-    conf.get("transparent_color", _transparentColor);
-    conf.get("texture_compression", _textureCompression);
-    conf.get("coverage", _coverage);
-
-    if (_acceptDraping.has_value())
-    {
-        setAcceptDraping(_acceptDraping);
-    }
+    const auto j = parse_json(conf);
+    get_to(j, "nodata_image", _noDataImageLocation);
+    get_to(j, "accept_draping", _acceptDraping);
+    get_to(j, "transparent_color", _transparentColor);
+    get_to(j, "texture_compression", _textureCompression);
+    get_to(j, "coverage", _coverage);
 
     setRenderType(RENDERTYPE_TERRAIN_SURFACE);
 }
 
-Config
-ImageLayer::getConfig() const
+JSON
+ImageLayer::to_json() const
 {
-    Config conf = super::getConfig();
-    conf.set("nodata_image", _noDataImageLocation);
-    conf.set("transparent_color", _transparentColor);
-    conf.set("texture_compression", _textureCompression);
-    conf.set("coverage", _coverage);
-    return conf;
-}
-
-Status
-ImageLayer::openImplementation(const IOOptions& io)
-{
-    Status parent = super::openImplementation(io);
-    if (parent.failed())
-        return parent;
-
-#if 0
-    if (!options().shareTexUniformName().has_value())
-        options().shareTexUniformName().init("layer_" + std::to_string(getUID()) + "_tex");
-
-    if (!options().shareTexMatUniformName().has_value() )
-        options().shareTexMatUniformName().init(options().shareTexUniformName().get() + "_matrix");
-#endif
-
-    return StatusOK;
+    auto j = parse_json(super::to_json());
+    set(j, "nodata_image", _noDataImageLocation);
+    set(j, "accept_draping", _acceptDraping);
+    set(j, "transparent_color", _transparentColor);
+    set(j, "texture_compression", _textureCompression);
+    set(j, "coverage", _coverage);
+    return j.dump();
 }
 
 
@@ -219,32 +200,8 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
 
     else if (key.profile() == profile())
     {
-        // test for an upsampling request:
-        bool createUpsampledImage = false;
-        if (upsample() == true && maxDataLevel() > key.levelOfDetail())
-        {
-            TileKey best = bestAvailableTileKey(key, false);
-            if (best.valid())
-            {
-                TileKey best_upsampled = bestAvailableTileKey(key, true);
-                if (best_upsampled.valid() &&
-                    best.levelOfDetail() < best_upsampled.levelOfDetail())
-                {
-                    createUpsampledImage = true;
-                }
-            }
-        }
-
-        if (createUpsampledImage == true)
-        {
-            ROCKY_TODO("upsampled image");
-            //result = createFractalUpsampledImage(key, ioc);
-        }
-        else
-        {
-            std::shared_lock lock(layerStateMutex());
-            result = createImageImplementation(key, io);
-        }
+        std::shared_lock lock(layerStateMutex());
+        result = createImageImplementation(key, io);
     }
     else
     {

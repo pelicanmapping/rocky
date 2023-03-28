@@ -7,6 +7,8 @@
 #include "Profile.h"
 #include "SRS.h"
 #include "Threading.h"
+#include "Utils.h"
+#include "json.h"
 
 #ifdef GDAL_FOUND
 #include <gdal.h>
@@ -29,6 +31,19 @@ const Profile Profile::PLATE_CARREE("plate-carree");
 
 Status Instance::_global_status(Status::GeneralError);
 const Status& Instance::status() { return _global_status; }
+
+// static object factory map:
+std::unordered_map<std::string, Instance::ObjectFactory> Instance::objectFactories;
+
+// static object creation function:
+shared_ptr<Object>
+Instance::createObjectImpl(const std::string& name, const JSON& conf)
+{
+    auto i = objectFactories.find(util::toLower(name));
+    if (i != objectFactories.end())
+        return i->second(conf);
+    return nullptr;
+}
 
 #ifdef GDAL_FOUND
 namespace
@@ -89,24 +104,7 @@ UID rocky::createUID()
     return uidgen++;
 }
 
-void
-Instance::addFactory(const std::string& name, ConfigFactory f)
+std::string rocky::json_pretty(const JSON& j)
 {
-    _impl->configFactories[name] = f;
-}
-
-void
-Instance::addFactory(const std::string& contentType, ContentFactory f)
-{
-    _impl->contentFactories[contentType] = f;
-}
-
-shared_ptr<Object>
-Instance::read(const Config& conf) const
-{
-    auto i = _impl->configFactories.find(conf.key());
-    if (i == _impl->configFactories.end())
-        return nullptr;
-
-    return i->second(conf);
+    return parse_json(j).dump(4);
 }

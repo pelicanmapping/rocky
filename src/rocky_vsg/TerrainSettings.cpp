@@ -4,50 +4,55 @@
  * MIT License
  */
 #include "TerrainSettings.h"
+#include "json.h"
 
 using namespace ROCKY_NAMESPACE;
 
-TerrainSettings::TerrainSettings(const Config& conf)
+TerrainSettings::TerrainSettings(const JSON& conf)
 {
-    conf.get("tile_size", tileSize);
-    conf.get("min_tile_range_factor", minTileRangeFactor);
-    conf.get("max_lod", maxLevelOfDetail); conf.get("max_level", maxLevelOfDetail);
-    conf.get("min_lod", minLevelOfDetail); conf.get("min_level", minLevelOfDetail);
-    conf.get("tessellation", gpuTessellation);
-    conf.get("tessellation_level", tessellationLevel);
-    conf.get("tessellation_range", tessellationRange);
-    conf.get("min_seconds_before_unload", minSecondsBeforeUnload);
-    conf.get("min_frames_before_unload", minFramesBeforeUnload);
-    conf.get("min_tiles_before_unload", minResidentTilesBeforeUnload);
-    conf.get("cast_shadows", castShadows);
-    conf.get("tile_pixel_size", tilePixelSize);
-    conf.get("skirt_ratio", skirtRatio);
-    conf.get("color", color);
-    conf.get("normalize_edges", normalizeEdges);
-    conf.get("morph_terrain", morphTerrain);
-    conf.get("morph_imagery", morphImagery);
-    conf.get("concurrency", concurrency);
+    const auto j = parse_json(conf);
+
+    get_to(j, "tile_size", tileSize);
+    get_to(j, "min_tile_range_factor", minTileRangeFactor);
+    get_to(j, "max_level", maxLevelOfDetail);
+    get_to(j, "min_level", minLevelOfDetail);
+    get_to(j, "tessellation", gpuTessellation);
+    get_to(j, "tessellation_level", tessellationLevel);
+    get_to(j, "tessellation_range", tessellationRange);
+    get_to(j, "min_seconds_before_unload", minSecondsBeforeUnload);
+    get_to(j, "min_frames_before_unload", minFramesBeforeUnload);
+    get_to(j, "min_tiles_before_unload", minResidentTilesBeforeUnload);
+    get_to(j, "cast_shadows", castShadows);
+    get_to(j, "tile_pixel_size", tilePixelSize);
+    get_to(j, "skirt_ratio", skirtRatio);
+    get_to(j, "color", color);
+    get_to(j, "normalize_edges", normalizeEdges);
+    get_to(j, "morph_terrain", morphTerrain);
+    get_to(j, "morph_imagery", morphImagery);
+    get_to(j, "concurrency", concurrency);
 }
 
-void
-TerrainSettings::saveToConfig(Config& conf) const
+JSON
+TerrainSettings::to_json() const
 {
-    conf.set("tile_size", tileSize);
-    conf.set("min_tile_range_factor", minTileRangeFactor);
-    conf.set("max_lod", maxLevelOfDetail); conf.set("max_level", maxLevelOfDetail);
-    conf.set("min_lod", minLevelOfDetail); conf.set("min_level", minLevelOfDetail);
-    conf.set("tessellation", gpuTessellation);
-    conf.set("tessellation_level", tessellationLevel);
-    conf.set("tessellation_range", tessellationRange);
-    conf.set("min_seconds_before_unload", minSecondsBeforeUnload);
-    conf.set("min_frames_before_unload", minFramesBeforeUnload);
-    conf.set("min_tiles_before_unload", minResidentTilesBeforeUnload);
-    conf.set("cast_shadows", castShadows);
-    conf.set("tile_pixel_size", tilePixelSize);
-    conf.set("skirt_ratio", skirtRatio);
-    conf.set("color", color);
-    conf.set("normalize_edges", normalizeEdges);
-    conf.set("morph_terrain", morphTerrain);
-    conf.set("morph_imagery", morphImagery);
-    conf.set("concurrency", concurrency);
+    auto j = json::object();
+    set(j, "tile_size", tileSize);
+    set(j, "min_tile_range_factor", minTileRangeFactor);
+    set(j, "max_level", maxLevelOfDetail);
+    set(j, "min_level", minLevelOfDetail);
+    set(j, "tessellation", gpuTessellation);
+    set(j, "tessellation_level", tessellationLevel);
+    set(j, "tessellation_range", tessellationRange);
+    set(j, "min_seconds_before_unload", minSecondsBeforeUnload);
+    set(j, "min_frames_before_unload", minFramesBeforeUnload);
+    set(j, "min_tiles_before_unload", minResidentTilesBeforeUnload);
+    set(j, "cast_shadows", castShadows);
+    set(j, "tile_pixel_size", tilePixelSize);
+    set(j, "skirt_ratio", skirtRatio);
+    set(j, "color", color);
+    set(j, "normalize_edges", normalizeEdges);
+    set(j, "morph_terrain", morphTerrain);
+    set(j, "morph_imagery", morphImagery);
+    set(j, "concurrency", concurrency);
+    return j.dump();
 }

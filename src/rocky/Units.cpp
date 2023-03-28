@@ -271,3 +271,43 @@ Units::unitTest()
 
     return 0;
 }
+
+
+#include "json.h"
+namespace ROCKY_NAMESPACE
+{
+    void to_json(json& j, const Distance& obj) {
+        j = obj.asParseableString();
+    }
+    void from_json(const json& j, Distance& obj) {
+        obj = Distance(get_string(j));
+    }
+
+    void to_json(json& j, const Angle& obj) {
+        j = obj.asParseableString();
+    }
+    void from_json(const json& j, Angle& obj) {
+        obj = Angle(get_string(j));
+    }
+
+    void to_json(json& j, const Duration& obj) {
+        j = obj.asParseableString();
+    }
+    void from_json(const json& j, Duration& obj) {
+        obj = Duration(get_string(j));
+    }
+
+    void to_json(json& j, const Speed& obj) {
+        j = obj.asParseableString();
+    }
+    void from_json(const json& j, Speed& obj) {
+        obj = Speed(get_string(j));
+    }
+
+    void to_json(json& j, const ScreenSize& obj) {
+        j = obj.asParseableString();
+    }
+    void from_json(const json& j, ScreenSize& obj) {
+        obj = ScreenSize(get_string(j));
+    }
+}

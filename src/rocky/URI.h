@@ -6,7 +6,6 @@
 #pragma once
 
 #include <rocky/Common.h>
-#include <rocky/Config.h>
 #include <rocky/IOTypes.h>
 
 #include <iostream>
@@ -144,6 +143,8 @@ namespace ROCKY_NAMESPACE
         //! Constructs an empty (and invalid) URI.
         URI();
 
+        URI(const URI& rhs);
+
         //! Constructs a new URI from a location (typically an absolute url)
         URI(const std::string& location);
 
@@ -174,21 +175,6 @@ namespace ROCKY_NAMESPACE
         /** Returns a copy of this URI with the suffix appended */
         URI append(const std::string& suffix) const;
 
-        /** String used for keying the cache */
-        const std::string& cacheKey() const { return !_cacheKey.empty() ? _cacheKey : _fullURI; }
-
-        /** osgDB::Options option string (plugin options) */
-        optional<std::string>& optionString() { return _optionString; }
-        const optional<std::string>& optionString() const { return _optionString; }
-
-        /** Sets a cache key. By default the cache key is the full URI, but you can override that. */
-        void setCacheKey(const std::string& key) { _cacheKey = key; }
-
-        //! Reads the URI and then tries to create a new object
-        //! from the data buffer.
-        //template<typename T>
-        //IOResult<T> read(IOControl* io) const;
-
         //! Reads the URI into a data buffer
         IOResult<URI::Content> read(const IOOptions& io) const;
 
@@ -200,14 +186,6 @@ namespace ROCKY_NAMESPACE
 
         bool operator != (const URI& rhs) const { return _fullURI.compare(rhs._fullURI) != 0; }
 
-    public:
-        URI(const URI& rhs);
-
-    public: // config methods
-
-        Config getConfig() const;
-
-        void mergeConfig(const Config& conf);
 
     public: // Static convenience methods
 
@@ -217,35 +195,6 @@ namespace ROCKY_NAMESPACE
     protected:
         std::string _baseURI;
         std::string _fullURI;
-        std::string _cacheKey;
         URIContext _context;
-        optional<std::string> _optionString;
-        //IOResult<std::string> read_to_string() const;
-        void ctorCacheKey();
     };
-
-
-    // Config specializations for URI:
-
-    template<> inline
-        void Config::set<URI>(const std::string& key, const optional<URI>& opt) {
-        if (opt.has_value()) {
-            remove(key);
-            set(key, opt->getConfig());
-        }
-    }
-
-    template<> inline
-        bool Config::get<URI>(const std::string& key, optional<URI>& output) const {
-        if (hasChild(key)) {
-            const Config& uriconf = child(key);
-            if (!uriconf.value().empty()) {
-                output = URI(uriconf.value(), uriconf.referrer());
-                output->mergeConfig(uriconf);
-                return true;
-            }
-            else return false;
-        }
-        else return false;
-    }
 }

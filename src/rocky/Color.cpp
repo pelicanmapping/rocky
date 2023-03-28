@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "Color.h"
+#include "Utils.h"
 #include "Math.h"
 #include <algorithm>
 #include <sstream>
@@ -433,5 +434,18 @@ Color::createRandomColorRamp(
         hsv[2] = valMin + (float)prng(gen)*(valMax - valMin);        
         hsv2rgb(hsv);
         output.push_back(Color(hsv));
+    }
+}
+
+
+#include "json.h"
+namespace ROCKY_NAMESPACE
+{
+    void to_json(json& j, const Color& obj) {
+        j = obj.toHTML();
+    }
+
+    void from_json(const json& j, Color& obj) {
+        obj = Color(get_string(j));
     }
 }

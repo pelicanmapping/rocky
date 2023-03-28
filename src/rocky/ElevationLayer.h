@@ -37,7 +37,7 @@ namespace ROCKY_NAMESPACE
         void setVisible(bool value) override;
 
         //! Serialize this layer
-        Config getConfig() const override;
+        JSON to_json() const override;
 
     public: // methods
 
@@ -78,7 +78,7 @@ namespace ROCKY_NAMESPACE
         ElevationLayer();
 
         //! Deserialize (from subclass)
-        ElevationLayer(const Config&);
+        explicit ElevationLayer(const JSON&);
 
         //! Entry point for createHeightfield
         Result<GeoHeightfield> createHeightfieldInKeyProfile(
@@ -108,7 +108,7 @@ namespace ROCKY_NAMESPACE
         optional<float> _maxValidValue = FLT_MAX;
 
     private:
-        void construct(const Config&);
+        void construct(const JSON&);
 
         shared_ptr<Heightfield> assembleHeightfield(
             const TileKey& key,

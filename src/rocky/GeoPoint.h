@@ -31,9 +31,6 @@ namespace ROCKY_NAMESPACE
         //! Constructs a GeoPoint
         GeoPoint(const SRS& srs, const dvec3& xyz);
 
-        //! Constructs a geopoint from serialization
-        GeoPoint(const Config& conf, const SRS& srs = {});
-
         //! Destruct
         ~GeoPoint() { }
 
@@ -99,12 +96,6 @@ namespace ROCKY_NAMESPACE
             return _srs.valid();
         }
 
-        //! Serialize
-        Config getConfig() const;
-
-        //! Represent this point as a string
-        std::string toString() const;
-
     public:
         static GeoPoint INVALID;
 
@@ -113,6 +104,8 @@ namespace ROCKY_NAMESPACE
         GeoPoint& operator=(const GeoPoint& rhs) = default;
         GeoPoint(GeoPoint&& rhs) { *this = rhs; }
         GeoPoint& operator=(GeoPoint&& rhs);
+
+        //JSON to_json() const;
 
     private:
         dvec3 _p;

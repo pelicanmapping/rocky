@@ -783,3 +783,15 @@ SRSOperation::string() const
     return std::string(
         proj_as_proj_string(g_pj_thread_local_context, (PJ*)get_handle(), PJ_PROJ_5, nullptr));
 }
+
+
+#include "json.h"
+namespace ROCKY_NAMESPACE
+{
+    void to_json(json& j, const SRS& obj) {
+        j = obj.definition();
+    }
+    void from_json(const json& j, SRS& obj) {
+        obj = SRS(get_string(j));
+    }
+}

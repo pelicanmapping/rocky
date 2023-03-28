@@ -7,6 +7,7 @@
 #include "TileKey.h"
 #include "Map.h"
 #include "rtree.h"
+#include "json.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
@@ -21,48 +22,41 @@ namespace
 TileLayer::TileLayer() :
     super()
 {
-    construct(Config());
+    construct(JSON());
 }
 
-TileLayer::TileLayer(const Config& conf) :
+TileLayer::TileLayer(const JSON& conf) :
     super(conf)
 {
     construct(conf);
 }
 
 void
-TileLayer::construct(const Config& conf)
+TileLayer::construct(const JSON& conf)
 {
-    conf.get("max_level", _maxLevel);
-    conf.get("max_resolution", _maxResolution);
-    conf.get("max_data_level", _maxDataLevel);
-    conf.get("min_level", _minLevel);
-    conf.get("min_resolution", _minResolution);
-    if (conf.hasChild("profile"))
-        _profile = Profile(conf.child("profile"));
-    conf.get("tile_size", _tileSize);
-    conf.get("upsample", _upsample);
+    const auto j = parse_json(conf);
+    get_to(j, "max_level", _maxLevel);
+    get_to(j, "max_resolution", _maxResolution);
+    get_to(j, "max_data_level", _maxDataLevel);
+    get_to(j, "min_level", _minLevel);
+    get_to(j, "profile", _profile);
+    get_to(j, "tile_size", _tileSize);
 
     _writingRequested = false;
     _dataExtentsIndex = nullptr;
 }
 
-Config
-TileLayer::getConfig() const
+JSON
+TileLayer::to_json() const
 {
-    auto conf = super::getConfig();
-    conf.set("max_level", _maxLevel);
-    conf.set("max_resolution", _maxResolution);
-    conf.set("max_data_level", _maxDataLevel);
-    conf.set("min_level", _minLevel);
-    conf.set("min_resolution", _minResolution);
-
-    if (_profile.valid())
-        conf.set("profile", _profile.getConfig());
-
-    conf.set("tile_size", _tileSize);
-    conf.set("upsample", _upsample);
-    return conf;
+    auto j = parse_json(super::to_json());
+    set(j, "max_level", _maxLevel);
+    set(j, "max_resolution", _maxResolution);
+    set(j, "max_data_level", _maxDataLevel);
+    set(j, "min_level", _minLevel);
+    set(j, "profile", _profile);
+    set(j, "tile_size", _tileSize);
+    return j.dump();
 }
 
 TileLayer::~TileLayer()
@@ -108,12 +102,6 @@ void TileLayer::setTileSize(unsigned value) {
 }
 const optional<unsigned>& TileLayer::tileSize() const {
     return _tileSize;
-}
-void TileLayer::setUpsample(bool value) {
-    _upsample = true;
-}
-const optional<bool>& TileLayer::upsample() const {
-    return _upsample;
 }
 
 Status
@@ -401,12 +389,6 @@ TileLayer::dataExtentsUnion() const
                     if (_dataExtents[i].maxLevel().has_value())
                         _dataExtentsUnion.maxLevel() = std::max(_dataExtentsUnion.maxLevel().value(), _dataExtents[i].maxLevel().value());
                 }
-
-                // if upsampling is enabled include the MDL in the union.
-                if (_maxDataLevel.has_value() && upsample())
-                {
-                    _dataExtentsUnion.maxLevel() = std::max(_dataExtentsUnion.maxLevel().value(), _maxDataLevel.value());
-                }
             }
         }
     }
@@ -580,18 +562,9 @@ TileLayer::bestAvailableTileKey(
 
     if ( intersects )
     {
-        if (considerUpsampling && (upsample() == true))
-        {
-            // for a normal dataset, MDL takes priority.
-            unsigned maxAvailableLOD = std::max(highestLOD, MDL);
-            return key.createAncestorKey(std::min(key.levelOfDetail(), maxAvailableLOD));
-        }
-        else
-        {
-            // for a normal dataset, dataset max takes priority over MDL.
-            unsigned maxAvailableLOD = std::min(highestLOD, MDL);
-            return key.createAncestorKey(std::min(key.levelOfDetail(), maxAvailableLOD));
-        }
+        // for a normal dataset, dataset max takes priority over MDL.
+        unsigned maxAvailableLOD = std::min(highestLOD, MDL);
+        return key.createAncestorKey(std::min(key.levelOfDetail(), maxAvailableLOD));
     }
 
     return TileKey::INVALID;

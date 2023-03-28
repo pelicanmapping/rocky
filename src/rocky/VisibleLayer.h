@@ -19,56 +19,32 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Whether to draw this layer.
-        virtual void setVisible(bool value);
-        bool getVisible() const;
+        virtual void setVisible(bool value) {
+            _visible = value;
+        }
+        const optional<bool>& visible() const { return _visible; }
 
         //! Opacity with which to draw this layer
-        virtual void setOpacity(float value);
-        float getOpacity() const;
+        virtual void setOpacity(float value) {
+            _opacity = value;
+        }
+        const optional<float> opacity() const { return _opacity; }
 
-        //! Minimum camera range at which this image layer is visible (if supported)
-        float getMinVisibleRange() const;
-        void setMinVisibleRange( float minVisibleRange );
-
-        //! Maximum camera range at which this image layer is visible (if supported)
-        float getMaxVisibleRange() const;
-        void setMaxVisibleRange( float maxVisibleRange );
-
-        //! Distance (m) over which to ramp min and max range blending
-        float getAttenuationRange() const;
-        void setAttenuationRange( float value );
-
-        //! Blending mode to apply when rendering this layer
-        void setColorBlending(ColorBlending value);
-        ColorBlending getColorBlending() const;
-
-        //! Enables/disables a debug view for this layer, if available.
-        void setEnableDebugView(bool value);
-        bool getEnableDebugView() const;
-
-    public: // Layer
-
-        virtual Status openImplementation(const IOOptions&) override;
-
-        virtual Config getConfig() const override;
+        //! Serialize
+        JSON to_json() const override;
 
     protected: // Layer
 
         VisibleLayer();
 
-        VisibleLayer(const Config&);
+        VisibleLayer(const JSON&);
 
     private:
 
-        void construct(const Config&);
+        void construct(const JSON&);
 
         optional<bool> _visible = true;
         optional<float> _opacity = 1.0f;
-        optional<unsigned> _mask = 0xffffffff;
-        optional<float> _maxVisibleRange = FLT_MAX;
-        optional<float> _minVisibleRange = 0.0f;
-        optional<float> _attenuationRange = 0.0f;
-        optional<ColorBlending> _blend = BLEND_INTERPOLATE;
         optional<bool> _debugView = false;
     };
 

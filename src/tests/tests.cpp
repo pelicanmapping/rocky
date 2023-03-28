@@ -22,6 +22,9 @@
 #include <rocky/TMSImageLayer.h>
 #endif
 
+#define ROCKY_EXPOSE_JSON_FUNCTIONS
+#include <rocky/json.h>
+
 using namespace ROCKY_NAMESPACE;
 
 namespace
@@ -33,6 +36,43 @@ namespace
             return StatusOK;
         }
     };
+}
+
+TEST_CASE("json")
+{
+    Profile profile("global-geodetic");
+    JSON conf = profile.to_json();
+    CHECK(conf == R"("global-geodetic")");
+    profile = Profile();
+    ROCKY_NAMESPACE::from_json(json::parse(conf), profile);
+    CHECK((profile.valid() && profile.wellKnownName() == "global-geodetic"));
+
+    GeoPoint point(SRS::WGS84, -77, 42, 0.0);
+    json j = json::object();
+    ROCKY_NAMESPACE::to_json(j, point);
+    conf = j.dump();
+    CHECK(conf == R"({"lat":42.0,"long":-77.0,"srs":"wgs84","z":0.0})");
+    point = GeoPoint();
+    ROCKY_NAMESPACE::from_json(json::parse(conf), point);
+    CHECK((point.valid() && point.srs() == SRS::WGS84 && point.x() == -77 && point.y() == 42 && point.z() == 0));
+
+    optional<URI> uri;
+    uri = URI("file.xml");
+    json j_uri = json::object();
+    ROCKY_NAMESPACE::to_json(j_uri, uri);
+    CHECK((j_uri.dump() == R"("file.xml")")); // "file.xml"
+    URI uri2;
+    ROCKY_NAMESPACE::from_json(j_uri, uri2);
+    CHECK((uri2.base() == "file.xml"));
+
+    Instance instance;
+    auto layer = rocky::TMSImageLayer::create();
+    layer->setURI("file.xml");
+    auto map = rocky::Map::create(instance);
+    map->layers().add(layer);
+    JSON serialized = map->to_json();
+    map = rocky::Map::create(instance, serialized);
+    CHECK((map->to_json() == R"({"layers":[{"name":"","type":"TMSImage","uri":"file.xml"}],"profile":"global-geodetic"})"));
 }
 
 TEST_CASE("Log")
@@ -85,15 +125,6 @@ TEST_CASE("Optional")
     optional<int> value_with_equals_init = 123;
     CHECK(value_with_equals_init.has_value() == false);
     CHECK(value_with_equals_init == 123);
-}
-
-TEST_CASE("json")
-{
-    Config c("root");
-    c.set("key1", "value1");
-    c.set("key2", "value2");
-    auto s = c.toJSON(false);
-    Log::warn() << "conf_to_json = " << s << std::endl;
 }
 
 TEST_CASE("Threading")

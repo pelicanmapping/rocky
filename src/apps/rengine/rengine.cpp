@@ -20,13 +20,12 @@
 #include <rocky/MBTilesElevationLayer.h>
 #endif
 
-int error(const rocky::Status& status)
+template<class T>
+int error(T layer)
 {
-    rocky::Log::warn() << "Problem with layer: " << status.message << std::endl;
+    rocky::Log::warn() << "Problem with layer \"" <<
+        layer->name() << "\" : " << layer->status().message << std::endl;
     return -1;
-}
-
-namespace rocky {
 }
 
 int main(int argc, char** argv)
@@ -38,13 +37,14 @@ int main(int argc, char** argv)
     rocky::EngineVSG engine(argc, argv);
 
 #if defined(ROCKY_SUPPORTS_MBTILES)
+
     auto imagery = rocky::MBTilesImageLayer::create();
     imagery->setName("mbtiles test layer");
     imagery->setURI("D:/data/simdis/readymap.mbtiles");
     engine.map()->layers().add(imagery);
 
     if (imagery->status().failed())
-        return error(imagery->status());
+        return error(imagery);
 
 #elif defined(ROCKY_SUPPORTS_GDAL)
     auto imagery = rocky::GDALImageLayer::create();
@@ -52,20 +52,26 @@ int main(int argc, char** argv)
     engine.map()->layers().add(imagery);
 
     if (imagery->status().failed())
-        return error(imagery->status());
-#endif
+        return error(imagery);
 
-#if defined(ROCKY_SUPPORTS_TMS)
+#elif defined(ROCKY_SUPPORTS_TMS)
+
+    // add a layer to the map
+    auto layer = rocky::TMSImageLayer::create();
+    layer->setURI("https://readymap.org/readymap/tiles/1.0.0/135/");
+    engine.map()->layers().add(layer);
+
+    if (layer->status().failed())
+        return error(layer);
+
     // add an elevation layer
     auto elevation = rocky::TMSElevationLayer::create();
     elevation->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
     engine.map()->layers().add(elevation);
 
     if (elevation->status().failed())
-        return error(elevation->status());
+        return error(elevation);
 #endif
-
-    rocky::Log::info() << engine.map()->getConfig().toJSON(true) << std::endl;
 
     // run until the user quits.
     return engine.run();

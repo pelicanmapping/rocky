@@ -46,7 +46,7 @@ namespace ROCKY_NAMESPACE
         MapNode(shared_ptr<Map> map);
 
         //! Deserialize a MapNode
-        MapNode(const Config& conf, const InstanceVSG& instance);
+        explicit MapNode(const JSON& conf, const InstanceVSG& instance);
 
     public:
 
@@ -56,10 +56,6 @@ namespace ROCKY_NAMESPACE
         //! Screen-space error for geometry level of detail
         void setScreenSpaceError(float sse);
         float screenSpaceError() const;
-
-        //! Whether to allow lighting when present
-        void setEnableLighting(const bool& value);
-        const bool& getEnableLighting() const;
 
         //! Spatial Reference System of the underlying map.
         const SRS& mapSRS() const;
@@ -92,7 +88,7 @@ namespace ROCKY_NAMESPACE
         void openMapLayers();
 
         //! Serializes the MapNode into a Config object
-        Config getConfig() const;
+        JSON to_json() const;
 
         //! Opens the map (installs a terrain engine and initializes all the layers)
         bool open();
@@ -110,16 +106,10 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        void construct(const Config&);
+        void construct(const JSON&);
 
         InstanceVSG _instance;
 
-        optional<bool> _enableLighting = true;
-        optional<bool> _overlayBlending = true;
-        optional<unsigned> _overlayTextureSize = 4096;
-        optional<bool> _overlayMipMapping = false;
-        optional<float> _overlayResolutionRatio = 3.0f;
-        optional<int> _drapingRenderBinNumber = 1;
         optional<float> _screenSpaceError = 25.0f;
 
         SRS _worldSRS;

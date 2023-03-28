@@ -4,6 +4,8 @@
  * MIT License
  */
 #include "TMSImageLayer.h"
+#include "Instance.h"
+#include "json.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::TMS;
@@ -11,36 +13,39 @@ using namespace ROCKY_NAMESPACE::TMS;
 #undef LC
 #define LC "[TMS] "
 
+ROCKY_ADD_OBJECT_FACTORY(TMSImage,
+    [](const JSON& conf) { return TMSImageLayer::create(conf); })
+
 TMSImageLayer::TMSImageLayer() :
     super()
 {
-    construct(Config());
+    construct(JSON());
 }
 
-TMSImageLayer::TMSImageLayer(const Config& conf) :
+TMSImageLayer::TMSImageLayer(const JSON& conf) :
     super(conf)
 {
     construct(conf);
 }
 
 void
-TMSImageLayer::construct(const Config& conf)
+TMSImageLayer::construct(const JSON& conf)
 {
     setConfigKey("TMSImage");
-
-    conf.get("uri", _options.uri);
-    conf.get("tms_type", _options.tmsType);
-    conf.get("format", _options.format);
+    const auto j = parse_json(conf);
+    get_to(j, "uri", _options.uri);
+    get_to(j, "tms_type", _options.tmsType);
+    get_to(j, "format", _options.format);
 }
 
-Config
-TMSImageLayer::getConfig() const
+JSON
+TMSImageLayer::to_json() const
 {
-    Config conf = super::getConfig();
-    conf.set("uri", _options.uri);
-    conf.set("tms_type", _options.tmsType);
-    conf.set("format", _options.format);
-    return conf;
+    auto j = parse_json(super::to_json());   
+    set(j, "uri", _options.uri);
+    set(j, "tms_type", _options.tmsType);
+    set(j, "format", _options.format);
+    return j.dump();
 }
 
 Status
@@ -82,9 +87,7 @@ TMSImageLayer::closeImplementation()
 }
 
 Result<GeoImage>
-TMSImageLayer::createImageImplementation(
-    const TileKey& key,
-    const IOOptions& io) const
+TMSImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io) const
 {
     bool invertY = (tmsType() == "google");
 

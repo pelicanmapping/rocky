@@ -19,7 +19,7 @@ namespace ROCKY_NAMESPACE
     public:
         //! Construct an empty TMS layer
         TMSElevationLayer();
-        TMSElevationLayer(const Config&);
+        TMSElevationLayer(const JSON&);
 
         //! Destructor
         virtual ~TMSElevationLayer() { }
@@ -42,7 +42,7 @@ namespace ROCKY_NAMESPACE
         const optional<bool>& coverage() const { return _options.coverage; }
 
         //! Serialize
-        Config getConfig() const override;
+        JSON to_json() const override;
 
     public: // Layer
 
@@ -66,8 +66,8 @@ namespace ROCKY_NAMESPACE
 
     private:
         TMS::Driver _driver;
-        TMS::Options _options;        
-        void construct(const Config&);
+        TMS::Options _options;
+        void construct(const JSON&);
     };
 }
 

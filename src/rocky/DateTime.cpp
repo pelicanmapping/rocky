@@ -91,18 +91,6 @@ DateTime::DateTime(const std::string& input) :
     parse(input);
 }
 
-DateTime::DateTime(const Config& conf) :
-    _time_t(0)
-{
-    parse(conf.value());
-}
-
-Config
-DateTime::getConfig() const
-{
-    return Config("DateTime", asISO8601());
-}
-
 void
 DateTime::parse(const std::string& input)
 {
@@ -339,4 +327,16 @@ DateTimeExtent::expandBy(const DateTime& value)
     if (!_valid || value > _end)
         _end = value;
     _valid = true;
+}
+
+
+#include "json.h"
+namespace ROCKY_NAMESPACE
+{
+    void to_json(json& j, const DateTime& obj) {
+        j = obj.asCompactISO8601();
+    }
+    void from_json(const json& j, DateTime& obj) {
+        obj = DateTime(get_string(j));
+    }
 }

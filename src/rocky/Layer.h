@@ -7,7 +7,6 @@
 
 #include <rocky/Common.h>
 #include <rocky/Callbacks.h>
-#include <rocky/Config.h>
 #include <rocky/DateTime.h>
 #include <rocky/IOTypes.h>
 #include <rocky/Status.h>
@@ -53,7 +52,7 @@ namespace ROCKY_NAMESPACE
         virtual ~Layer();
 
         //! Attempt to create a layer from a serialization string.
-        static shared_ptr<Layer> materialize(const ConfigOptions&);
+        //static shared_ptr<Layer> materialize(const ConfigOptions&);
 
         //! This layer's unique ID.
         //! This value is generated automatically at runtime and is not
@@ -76,7 +75,9 @@ namespace ROCKY_NAMESPACE
         bool isOpen() const;
 
         //! Serialize this layer into a Config object (if applicable)
-        virtual Config getConfig() const;
+        virtual JSON to_json() const;
+
+        //virtual Config getConfig() const;
 
         //! Whether to automatically open this layer (by calling open) when
         //! adding the layer to a Map or when opening a map containing this Layer.
@@ -185,7 +186,7 @@ namespace ROCKY_NAMESPACE
 
         Layer();
 
-        Layer(const Config& conf);
+        Layer(const JSON& conf);
 
         //! Called by open() to connect to external resources and return a status.
         //! MAKE SURE you call superclass openImplementation() if you override this!
@@ -220,7 +221,7 @@ namespace ROCKY_NAMESPACE
         std::string _configKey;
 
         //! post-ctor initialization
-        void construct(const Config&);
+        void construct(const JSON&);
 
     protected:
 

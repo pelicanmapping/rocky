@@ -6,7 +6,6 @@
 #pragma once
 
 #include <rocky/Common.h>
-#include <rocky/Config.h>
 #include <rocky/TileLayer.h>
 #include <rocky/GeoImage.h>
 #include <rocky/Color.h>
@@ -37,8 +36,9 @@ namespace ROCKY_NAMESPACE
         shared_ptr<Image> getEmptyImage() const {
             return _emptyImage;
         }
-
-        virtual Config getConfig() const override;
+        
+        //! serialize
+        JSON to_json() const override;
 
     public: // methods
 
@@ -81,7 +81,7 @@ namespace ROCKY_NAMESPACE
 
         ImageLayer();
 
-        ImageLayer(const Config&);
+        ImageLayer(const JSON&);
 
         //! Subclass can override this to write data for a tile key.
         virtual Status writeImageImplementation(
@@ -115,11 +115,7 @@ namespace ROCKY_NAMESPACE
 
     protected: // Layer
 
-        //! Open the layer for reading.
-        virtual Status openImplementation(const IOOptions& io) override;
-
         shared_ptr<Image> _emptyImage;
-
         optional<std::string> _noDataImageLocation = { };
         optional<Color> _transparentColor = Color(0, 0, 0, 0);
         optional<std::string> _textureCompression;
@@ -127,7 +123,7 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        void construct(const Config&);
+        void construct(const JSON&);
 
         // Creates an image that's in the same profile as the provided key.
         Result<GeoImage> createImageInKeyProfile(
@@ -141,31 +137,8 @@ namespace ROCKY_NAMESPACE
             const TileKey& key,
             const IOOptions& io) const;
 
-#if 0
-        // Creates an image that enhances the previous LOD's image
-        // using a fractal algorithm.
-        GeoImage createFractalUpsampledImage(
-            const TileKey& key,
-            IOControl* p);
-#endif
-
         optional<bool> _coverage = false;
-        optional<int> _shareImageUnit = -1;
-      
-        //bool _useCreateTexture;
-
-#if 0
-        void invoke_onCreate(const TileKey&, GeoImage&);
-        using Callbacks = std::vector<shared_ptr<Callback>>;
-        util::Mutexed<Callbacks> _callbacks;
-#endif
-
-        //Mutexed<std::vector<osg::ref_ptr<ImageLayer>>> _postLayers;
-
-        util::Gate<TileKey> _sentry;
     };
-
-    typedef std::vector<shared_ptr<ImageLayer>> ImageLayerVector;
 
 } // namespace ROCKY_NAMESPACE
 

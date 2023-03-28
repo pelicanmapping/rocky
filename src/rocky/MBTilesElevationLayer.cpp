@@ -4,12 +4,39 @@
  * MIT License
  */
 #include "MBTilesElevationLayer.h"
+#include "json.h"
 
 using namespace ROCKY_NAMESPACE;
 
-MBTilesElevationLayer::MBTilesElevationLayer()
+MBTilesElevationLayer::MBTilesElevationLayer() :
+    super()
 {
-    //nop
+    construct({});
+}
+MBTilesElevationLayer::MBTilesElevationLayer(const JSON& conf) :
+    super()
+{
+    construct(conf);
+}
+
+void
+MBTilesElevationLayer::construct(const JSON& conf)
+{
+    setConfigKey("MBTilesElevation");
+    const auto j = parse_json(conf);
+    get_to(j, "uri", _options.uri);
+    get_to(j, "format", _options.format);
+    get_to(j, "compress", _options.compress);
+}
+
+JSON
+MBTilesElevationLayer::to_json() const
+{
+    auto j = parse_json(super::to_json());
+    set(j, "uri", _options.uri);
+    set(j, "format", _options.format);
+    set(j, "compress", _options.compress);
+    return j.dump();
 }
 
 Status

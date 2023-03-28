@@ -1153,3 +1153,30 @@ DataExtent::DataExtent(const GeoExtent& extent) :
 {
     //nop
 }
+
+
+#include "json.h"
+namespace ROCKY_NAMESPACE
+{
+    void to_json(json& j, const GeoExtent& obj) {
+        if (obj.valid()) {
+            j = json::object();
+            set(j, "srs", obj.srs());
+            set(j, "xmin", obj.xmin());
+            set(j, "ymin", obj.ymin());
+            set(j, "xmax", obj.xmax());
+            set(j, "ymax", obj.ymax());
+        }
+    }
+
+    void from_json(const json& j, GeoExtent& obj) {
+        SRS srs;
+        double xmin = 0, ymin = 0, xmax = -1, ymax = -1;
+        get_to(j, "srs", srs);
+        get_to(j, "xmin", xmin);
+        get_to(j, "ymin", ymin);
+        get_to(j, "xmax", xmax);
+        get_to(j, "ymax", ymax);
+        obj = GeoExtent(srs, xmin, ymin, xmax, ymax);
+    }
+}

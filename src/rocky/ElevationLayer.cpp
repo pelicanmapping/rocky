@@ -7,6 +7,7 @@
 #include "Geoid.h"
 #include "Heightfield.h"
 #include "Metrics.h"
+#include "json.h"
 
 #include <cinttypes>
 
@@ -46,42 +47,31 @@ namespace
 ElevationLayer::ElevationLayer() :
     super()
 {
-    construct(Config());
+    construct({});
 }
 
-ElevationLayer::ElevationLayer(const Config& conf) :
+ElevationLayer::ElevationLayer(const JSON& conf) :
     super(conf)
 {
     construct(conf);
 }
 
 void
-ElevationLayer::construct(const Config& conf)
+ElevationLayer::construct(const JSON& conf)
 {
     _tileSize.set_default(257u); // override the default in TileLayer
 
-    conf.get("offset", _offset);
-    conf.get("nodata_value", _noDataValue);
-    conf.get("no_data_value", _noDataValue);
-    conf.get("min_valid_Value", _minValidValue);
-    conf.get("max_valid_value", _maxValidValue);
-
-    // ElevationLayers are special in that visible really maps to whether the layer is open or closed
-    // If a layer is marked as enabled (openAutomatically) but also marked as visible=false set
-    // openAutomatically to false to prevent the layer from being opened at startup.
-    // This prevents a deadlock b/c setVisible is called during the VisibleLayer openImplementation and it
-    // will call setVisible on the Layer there which will result in trying to close the layer while it's opening.
-    // There may be a better way to sync these up but will require a bit of rework.
-    if (getOpenAutomatically() == true && getVisible() == false)
-    {
-        _openAutomatically = false;
-    }
+    const auto j = parse_json(conf);
+    get_to(j, "offset", _offset);
+    get_to(j, "no_data_value", _noDataValue);
+    get_to(j, "min_valid_value", _minValidValue);
+    get_to(j, "max_valid_value", _maxValidValue);
 
     // a small L2 cache will help with things like normal map creation
     // (i.e. queries that sample neighboring tiles)
     if (!_l2cachesize.has_value())
     {
-        _l2cachesize = 4u;
+        _l2cachesize.set_default(4u);
     }
 
     // Disable max-level support for elevation data because it makes no sense.
@@ -93,15 +83,15 @@ ElevationLayer::construct(const Config& conf)
     //setRenderType(RENDERTYPE_NONE);
 }
 
-Config
-ElevationLayer::getConfig() const
+JSON
+ElevationLayer::to_json() const
 {
-    Config conf = TileLayer::getConfig();
-    conf.set("offset", _offset);
-    conf.set("no_data_value", _noDataValue);
-    conf.set("min_valid_Value", _minValidValue);
-    conf.set("max_valid_value", _maxValidValue);
-    return conf;
+    auto j = parse_json(super::to_json());
+    set(j, "offset", _offset);
+    set(j, "no_data_value", _noDataValue);
+    set(j, "min_valid_value", _minValidValue);
+    set(j, "max_valid_value", _maxValidValue);
+    return j.dump();
 }
 
 void

@@ -21,7 +21,7 @@ namespace ROCKY_NAMESPACE
     public:
         //! Construct an empty layer
         MBTilesImageLayer();
-        MBTilesImageLayer(const Config& conf);
+        explicit MBTilesImageLayer(const JSON& conf);
 
         //! Location of the mbtiles database file
         void setURI(const URI& value) { _options.uri = value; }
@@ -36,7 +36,7 @@ namespace ROCKY_NAMESPACE
         optional<bool>& compress() { return _options.compress; }
 
         //! serialize
-        Config getConfig() const override;
+        JSON to_json() const override;
 
     protected:
 
@@ -56,6 +56,6 @@ namespace ROCKY_NAMESPACE
         MBTiles::Driver _driver;
         MBTiles::Options _options;
 
-        void construct(const Config&);
+        void construct(const JSON&);
     };
 }

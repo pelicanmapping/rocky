@@ -5,104 +5,26 @@
  */
 #include "Layer.h"
 #include "GeoExtent.h"
+#include "json.h"
 
 using namespace ROCKY_NAMESPACE;
 
 #define LC "[Layer] \"" << getName() << "\" "
 
-//.................................................................
-
-#if 0
-Config
-Layer::Options::getConfig() const
-{
-    Config conf = ConfigOptions::getConfig();
-    conf.set("name", name());
-    //conf.set("enabled", enabled());
-    conf.set("open", openAutomatically());
-    conf.set("enabled", openAutomatically()); // back compat
-    conf.set("cacheid", cacheId());
-    conf.set("cachepolicy", cachePolicy());
-    conf.set("shader_define", shaderDefine());
-    conf.set("attribution", attribution());
-    conf.set("terrain", terrainPatch());
-    conf.set("proxy", _proxySettings );
-    conf.set("osg_options", osgOptionString());
-    conf.set("l2_cache_size", l2CacheSize());
-
-    //for(std::vector<ShaderOptions>::const_iterator i = shaders().begin();
-    //    i != shaders().end();
-    //    ++i)
-    //{
-    //    conf.add("shader", i->getConfig());
-    //}
-
-    return conf;
-}
-
-void
-Layer::Options::fromConfig(const Config& conf)
-{
-    // defaults:
-    openAutomatically().setDefault(true);
-    terrainPatch().setDefault(false);
-
-    conf.get("name", name());
-    conf.get("open", openAutomatically()); // back compat
-    conf.get("enabled", openAutomatically());
-    conf.get("cache_id", cacheId()); // compat
-    conf.get("cacheid", cacheId());
-    conf.get("attribution", attribution());
-    conf.get("cache_policy", cachePolicy());
-    conf.get("l2_cache_size", l2CacheSize());
-
-    // legacy support:
-    if (!cachePolicy().has_value())
-    {
-        if ( conf.value<bool>( "cache_only", false ) == true )
-            cachePolicy()->usage = CachePolicy::USAGE_CACHE_ONLY;
-        if ( conf.value<bool>( "cache_enabled", true ) == false )
-            cachePolicy()->usage = CachePolicy::USAGE_NO_CACHE;
-        if (conf.value<bool>("caching", true) == false)
-            cachePolicy()->usage = CachePolicy::USAGE_NO_CACHE;
-    }
-
-    //conf.get("shader_define", shaderDefine());
-    //const ConfigSet& shadersConf = conf.children("shader");
-    //for(ConfigSet::const_iterator i = shadersConf.begin(); i != shadersConf.end(); ++i)
-    //    shaders().push_back(ShaderOptions(*i));
-
-    conf.get("terrain", terrainPatch());
-    conf.get("patch", terrainPatch());
-    conf.get("proxy", _proxySettings );
-    conf.get("osg_options", osgOptionString());
-}
-
-//.................................................................
-#endif
-
-//void
-//Layer::TraversalCallback::traverse(osg::Node* node, osg::NodeVisitor* nv) const
-//{
-//    node->accept(*nv);
-//}
-
-//.................................................................
-
 Layer::Layer() :
     super()
 {
-    construct(Config());
+    construct(JSON());
 }
 
-Layer::Layer(const Config& conf) :
+Layer::Layer(const JSON& conf) :
     super()
 {
     construct(conf);
 }
 
 void
-Layer::construct(const Config& conf)
+Layer::construct(const JSON& conf)
 {
     _revision = 1;
     _uid = rocky::createUID();
@@ -111,30 +33,27 @@ Layer::construct(const Config& conf)
     _reopenRequired = false;
     _renderType = RENDERTYPE_NONE;
 
-    conf.get("name", _name);
-    conf.get("open", _openAutomatically);
-    conf.get("cacheid", _cacheid);
-    conf.get("cachepolicy", _cachePolicy);
-    conf.get("attribution", _attribution);
-    conf.get("l2_cache_size", _l2cachesize);
+    const auto j = parse_json(conf);
+    get_to(j, "name", _name);
+    get_to(j, "open", _openAutomatically);
+    get_to(j, "attribution", _attribution);
+    get_to(j, "l2_cache_size", _l2cachesize);
 
     _status = Status(
         Status::ResourceUnavailable,
         getOpenAutomatically() ? "Layer closed" : "Layer disabled");
 }
 
-Config
-Layer::getConfig() const
+JSON
+Layer::to_json() const
 {
-    Config conf(getConfigKey());
-    if (!_name.empty())
-        conf.set("name", _name);
-    conf.set("open", _openAutomatically);
-    conf.set("cacheid", _cacheid);
-    conf.set("cachepolicy", _cachePolicy);
-    conf.set("attribution", _attribution);
-    conf.set("l2_cache_size", _l2cachesize);
-    return conf;
+    auto j = json::object();
+    set(j, "type", getConfigKey());
+    set(j, "name", _name);
+    set(j, "open", _openAutomatically);
+    set(j, "attribution", _attribution);
+    set(j, "l2_cache_size", _l2cachesize);
+    return j.dump();
 }
 
 void
@@ -331,120 +250,6 @@ Layer::typeName() const
 {
     return typeid(*this).name();
 }
-
-std::shared_ptr<Layer>
-Layer::materialize(const ConfigOptions& options)
-{
-    ROCKY_TODO("New version of old Layer::create");
-    return nullptr;
-}
-
-#if 0
-#define LAYER_OPTIONS_TAG "rocky.LayerOptions"
-
-Layer*
-Layer::create(const ConfigOptions& options)
-{
-    std::string name = options.getConfig().key();
-
-    if (name.empty())
-        name = options.getConfig().value("driver");
-
-    if ( name.empty() )
-    {
-        // fail silently
-        ROCKY_DEBUG << "[Layer] ILLEGAL- Layer::create requires a valid driver name" << std::endl;
-        return nullptr;
-    }
-
-    // convey the configuration options:
-    osg::ref_ptr<osgDB::Options> dbopt = Registry::instance()->cloneOrCreateOptions();
-    dbopt->setPluginData( LAYER_OPTIONS_TAG, (void*)&options );
-
-    //std::string pluginExtension = std::string( ".osgearth_" ) + name;
-    std::string pluginExtension = std::string( "." ) + name;
-
-    // use this instead of osgDB::readObjectFile b/c the latter prints a warning msg.
-    osgDB::ReaderWriter::ReadResult rr = osgDB::Registry::instance()->readObject( pluginExtension, dbopt.get() );
-    if ( !rr.validObject() || rr.error() )
-    {
-        // quietly fail so we don't get tons of msgs.
-        return 0L;
-    }
-
-    Layer* layer = dynamic_cast<Layer*>( rr.getObject() );
-    if ( layer == 0L )
-    {
-        // TODO: communicate an error somehow
-        return 0L;
-    }
-
-    if (layer->getName().empty())
-        layer->setName(name);
-
-    rr.takeObject();
-    return layer;
-}
-
-const ConfigOptions&
-Layer::getConfigOptions(const osgDB::Options* options)
-{
-    static ConfigOptions s_default;
-    const void* data = options->getPluginData(LAYER_OPTIONS_TAG);
-    return data ? *static_cast<const ConfigOptions*>(data) : s_default;
-}
-#endif
-
-#if 0
-SceneGraphCallbacks*
-Layer::getSceneGraphCallbacks() const
-{
-    return _sceneGraphCallbacks.get();
-}
-#endif
-
-#if 0
-void
-Layer::addCallback(LayerCallback* cb)
-{
-    _callbacks.push_back( cb );
-}
-
-void
-Layer::removeCallback(LayerCallback* cb)
-{
-    CallbackVector::iterator i = std::find( _callbacks.begin(), _callbacks.end(), cb );
-    if ( i != _callbacks.end() )
-        _callbacks.erase( i );
-}
-#endif
-
-#if 0
-void
-Layer::apply(osg::Node* node, osg::NodeVisitor* nv) const
-{
-    if (_traversalCallback.valid())
-    {
-        _traversalCallback->operator()(node, nv);
-    }
-    else
-    {
-        node->accept(*nv);
-    }
-}
-
-void
-Layer::setCullCallback(TraversalCallback* cb)
-{
-    _traversalCallback = cb;
-}
-
-const Layer::TraversalCallback*
-Layer::getCullCallback() const
-{
-    return _traversalCallback.get();
-}
-#endif
 
 const GeoExtent&
 Layer::extent() const

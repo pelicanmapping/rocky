@@ -5,7 +5,6 @@
  */
 #pragma once
 
-#include <rocky/Config.h>
 #include <rocky/DateTime.h>
 #include <rocky/Log.h>
 #include <rocky/Status.h>
@@ -114,7 +113,6 @@ namespace ROCKY_NAMESPACE
         optional<Duration> maxAge = Duration(DBL_MAX, Units::SECONDS);
         optional<DateTime> minTime = DateTime(0);
 
-
         //! default cache policy (READ_WRITE)
         static CachePolicy DEFAULT;
 
@@ -132,7 +130,7 @@ namespace ROCKY_NAMESPACE
         CachePolicy(const Usage&);
 
         //! constructs a CachePolicy from a config options
-        CachePolicy(const Config& conf);
+        //CachePolicy(const JSON& conf);
 
         //! Merges any set properties in another CP into this one, override existing values.
         void mergeAndOverride(const CachePolicy& rhs);
@@ -179,10 +177,6 @@ namespace ROCKY_NAMESPACE
 
         // returns a readable string describing usage
         std::string usageString() const;
-
-    public: // config
-        Config getConfig() const;
-        void fromConfig(const Config& conf);
     };
 
     /**
@@ -195,9 +189,6 @@ namespace ROCKY_NAMESPACE
         int port = -1;
         std::string username;
         std::string password;
-
-        ProxySettings(const Config& conf = Config());
-        Config getConfig() const;
     };
 
     using Headers = std::unordered_map<std::string,std::string>;
@@ -236,7 +227,7 @@ namespace ROCKY_NAMESPACE
         TimeStamp lastModifiedTime = 0;
         Duration duration;
         bool fromCache = false;
-        Config metadata;
+        JSON metadata;
 
         template<typename T>
         IOResult(const T& result) :
@@ -257,12 +248,6 @@ namespace ROCKY_NAMESPACE
             lhs.duration = rhs.duration;
             return lhs;
         }
-
-        ///** Whether the read operation succeeded */
-        //bool succeeded() const { Result<T>::ok(); }
-
-        ///** Whether the read operation failed */
-        //bool failed() const { return !succeeded(); }
 
         /** Gets a string describing the read result */
         static std::string getResultCodeString(unsigned code)
@@ -286,25 +271,6 @@ namespace ROCKY_NAMESPACE
         }
     };
 
-
-
-    // inline functions
-
-#if 0
-    template<class T>
-    inline Result<shared_ptr<T>> Reader::read(const std::string& location, const IOOptions& io) const
-    {
-        auto result = read(location, io);
-        if (result.status.failed()) {
-            return Result<T>(result.status);
-        }
-        else {
-            auto obj = T::cast(result.value);
-            return Result(obj);
-        }
-    }
-#endif
-
     Services& IOOptions::services() {
         return _services;
     }
@@ -325,8 +291,4 @@ namespace ROCKY_NAMESPACE
     bool IOOptions::canceled() const {
         return _cancelable ? _cancelable->canceled() : false;
     }
-
 }
-
-ROCKY_SPECIALIZE_CONFIG(rocky::CachePolicy);
-ROCKY_SPECIALIZE_CONFIG(rocky::ProxySettings);

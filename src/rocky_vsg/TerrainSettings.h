@@ -7,7 +7,6 @@
 
 #include <rocky/Color.h>
 #include <rocky_vsg/Common.h>
-#include <rocky/Config.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -17,9 +16,9 @@ namespace ROCKY_NAMESPACE
     class TerrainSettings
     {
     public:
-        TerrainSettings(const Config& conf);
+        TerrainSettings(const JSON& conf);
 
-        void saveToConfig(Config& conf) const;
+        JSON to_json() const;
 
         //! Size of each dimension of each terrain tile, in verts.
         //! Ideally this will be a power of 2 plus 1, i.e.: a number X

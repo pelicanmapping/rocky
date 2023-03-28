@@ -17,6 +17,7 @@
 
 #ifdef ROCKY_SUPPORTS_GDAL
 #include <rocky/GDALImageLayer.h>
+#include <rocky/GDALElevationLayer.h>
 #endif
 
 #ifdef ROCKY_SUPPORTS_TMS
@@ -27,6 +28,14 @@
 int usage(const char* msg)
 {
     std::cout << msg << std::endl;
+    return -1;
+}
+
+template<class T>
+int error(T layer)
+{
+    rocky::Log::warn() << "Problem with layer \"" <<
+        layer->name() << "\" : " << layer->status().message << std::endl;
     return -1;
 }
 
@@ -98,48 +107,31 @@ int main(int argc, char** argv)
     ri.runtime().updates = [viewer]() { return viewer->updateOperations; };
     ri.runtime().sharedObjects = vsg::SharedObjects::create();
 
-#if defined(ROCKY_SUPPORTS_TMS)
+
+#if defined(ROCKY_SUPPORTS_GDAL)
 
     // add a layer to the map
     auto layer = rocky::TMSImageLayer::create();
     layer->setURI("https://readymap.org/readymap/tiles/1.0.0/135/");
     mapNode->map()->layers().add(layer);
-    if (layer->status().failed()) {
-        rocky::Log::warn() << "Problem with layer: " << layer->status().message << std::endl;
-        exit(-1);
-    }
+    if (layer->status().failed())
+        return error(layer);
 
     auto elev = rocky::TMSElevationLayer::create();
     elev->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
     mapNode->map()->layers().add(elev);
-    if (elev->status().failed()) {
-        rocky::Log::warn() << "Problem with layer: " << elev->status().message << std::endl;
-        exit(-1);
-    }
-
-#elif defined(ROCKY_SUPPORTS_GDAL)
-
-    auto layer = rocky::GDALImageLayer::create();
-    layer->setURI("WMTS:https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml,layer=s2cloudless-2018_3857,tilematrixset=g");
-    mapNode->map()->layers().add(layer);
-
-    if (layer->status().failed()) {
-        rocky::Log::warn() << "Problem with layer: " << layer->status().message << std::endl;
-        exit(-1);
-    }
+    if (elev->status().failed())
+        return error(layer);
 
 #else
 
     auto layer = rocky::TestLayer::create();
     mapNode->map()->addLayer(layer);
-
+    if (layer->status().failed())
+        return error(layer);
 #endif
 
-    if (layer->status().failed())
-    {
-        rocky::Log::warn() << "Problem with layer: " << layer->status().message << std::endl;
-        exit(-1);
-    }
+    rocky::Log::info() << "Map: " << rocky::json_pretty(mapNode->map()->to_json()) << std::endl;
 
     vsg_scene->addChild(mapNode);
 

@@ -21,6 +21,7 @@ namespace ROCKY_NAMESPACE
     public:
         //! Construct an empty layer
         MBTilesElevationLayer();
+        explicit MBTilesElevationLayer(const JSON&);
 
         //! Location of the mbtiles database file
         void setURI(const URI& value) { _options.uri = value; }
@@ -33,6 +34,9 @@ namespace ROCKY_NAMESPACE
         //! Whether to use compression on individual tile data
         void setCompress(bool value) { _options.compress = value; }
         optional<bool>& compress() { return _options.compress; }
+
+        //! serialize
+        JSON to_json() const override;
 
     protected:
 
@@ -52,5 +56,6 @@ namespace ROCKY_NAMESPACE
     private:
         MBTiles::Driver _driver;
         MBTiles::Options _options;
+        void construct(const JSON&);
     };
 }

@@ -5,7 +5,6 @@
  */
 #pragma once
 
-#include <rocky/Config.h>
 #include <rocky/GeoPoint.h>
 #include <rocky/Units.h>
 
@@ -19,11 +18,6 @@ namespace ROCKY_NAMESPACE
     public:
         //! Center position of the object
         virtual const GeoPoint& position() const = 0;
-
-        //! Serialize
-        virtual Config getConfig() const {
-            return {};
-        };
     };
 
     /**
@@ -38,16 +32,9 @@ namespace ROCKY_NAMESPACE
             return point;
         }
 
-        Config getConfig() const override {
-            return point.getConfig();
-        }
-
         SimpleMapObject() { }
         SimpleMapObject(const SimpleMapObject&) = default;
         SimpleMapObject(const GeoPoint& point_) : point(point_) { }
-        SimpleMapObject(const Config& conf) {
-            point = GeoPoint(conf);
-        }
     };
 
     /**
@@ -80,19 +67,10 @@ namespace ROCKY_NAMESPACE
 
         Viewpoint(const Viewpoint&) = default;
 
-        //! Deserialize a Config into this viewpoint object.
-        Viewpoint(const Config& conf);
-
         //! If this a valid viewpoint?
         bool valid() const {
             return target != nullptr && target->position().valid();
         }
-
-        //! Serialize this viewpoint to a config object.
-        Config getConfig() const;
-
-        //! As a readable string
-        std::string toString() const;
     };
 
 } // namespace ROCKY_NAMESPACE

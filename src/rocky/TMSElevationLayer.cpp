@@ -4,6 +4,8 @@
  * MIT License
  */
 #include "TMSElevationLayer.h"
+#include "Instance.h"
+#include "json.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::TMS;
@@ -11,38 +13,39 @@ using namespace ROCKY_NAMESPACE::TMS;
 #undef LC
 #define LC "[TMS] "
 
+ROCKY_ADD_OBJECT_FACTORY(TMSElevation, 
+    [](const JSON& conf) { return TMSElevationLayer::create(conf); })
+
 TMSElevationLayer::TMSElevationLayer() :
     super()
 {
-    construct(Config());
+    construct(JSON());
 }
 
-TMSElevationLayer::TMSElevationLayer(const Config& conf) :
+TMSElevationLayer::TMSElevationLayer(const JSON& conf) :
     super(conf)
 {
     construct(conf);
 }
 
 void
-TMSElevationLayer::construct(const Config& conf)
+TMSElevationLayer::construct(const JSON& conf)
 {
     setConfigKey("TMSElevation");
-
-    conf.get("uri", _options.uri);
-    conf.get("tms_type", _options.tmsType);
-    conf.get("format", _options.format);
-    conf.get("coverage", _options.coverage);
+    const auto j = parse_json(conf);
+    get_to(j, "uri", _options.uri);
+    get_to(j, "tms_type", _options.tmsType);
+    get_to(j, "format", _options.format);
 }
 
-Config
-TMSElevationLayer::getConfig() const
+JSON
+TMSElevationLayer::to_json() const
 {
-    Config conf = super::getConfig();
-    conf.set("uri", _options.uri);
-    conf.set("tms_type", _options.tmsType);
-    conf.set("format", _options.format);
-    conf.set("coverage", _options.coverage);
-    return conf;
+    auto j = parse_json(super::to_json());
+    set(j, "uri", _options.uri);
+    set(j, "tms_type", _options.tmsType);
+    set(j, "format", _options.format);
+    return j.dump();
 }
 
 Status

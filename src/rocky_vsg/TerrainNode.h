@@ -8,7 +8,7 @@
 #include <rocky_vsg/Common.h>
 #include <rocky_vsg/TerrainSettings.h>
 #include <rocky_vsg/TerrainTileHost.h>
-#include <rocky/Config.h>
+#include <rocky/Status.h>
 #include <vsg/nodes/Group.h>
 
 namespace ROCKY_NAMESPACE
@@ -29,17 +29,13 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Deserialize a new terrain node
-        TerrainNode(
-            RuntimeContext& runtime,
-            const Config& conf);
+        TerrainNode(RuntimeContext& runtime, const JSON& j);
 
         //! Map to render, and SRS to render it in
-        const Status& setMap(
-            shared_ptr<Map> new_map,
-            const SRS& world_srs);
+        const Status& setMap(shared_ptr<Map> new_map, const SRS& world_srs);
 
         //! Serialize
-        virtual Config getConfig() const;
+        JSON to_json() const;
 
         //! Updates the terrain periodically at a safe time
         void update(const vsg::FrameStamp*, const IOOptions& io);
@@ -65,7 +61,7 @@ namespace ROCKY_NAMESPACE
     private:
 
         //! Deserialize and initialize
-        void construct(const Config&);
+        void construct(const JSON&);
 
         Status createRootTiles(const IOOptions& io);
         
