@@ -17,6 +17,11 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT ElevationLayer :  public Inherit<TileLayer, ElevationLayer>
     {
     public:
+        enum class Encoding {
+            SingleChannel,
+            MapboxRGB
+        };
+
         //! Whether this layer contains offsets instead of absolute elevation heights
         void setOffset(bool value);
         const optional<bool>& offset() const;
@@ -32,6 +37,10 @@ namespace ROCKY_NAMESPACE
         //! Treat values greater than this as "no data"
         void setMaxValidValue(float value);
         const optional<float>& maxValidValue() const;
+
+        //! Encoding of the elevation data
+        void setEncoding(Encoding evalue);
+        const optional<Encoding>& encoding() const;
 
         //! Override from VisibleLayer
         void setVisible(bool value) override;
@@ -100,8 +109,12 @@ namespace ROCKY_NAMESPACE
             shared_ptr<Heightfield> hf,
             const IOOptions& io) const;
 
+        //! Decodes a mapbox RGB encoded heightfield image into a heightfield.
+        shared_ptr<Heightfield> decodeMapboxRGB(shared_ptr<Image> image) const;
+
         virtual ~ElevationLayer() { }
 
+        optional<Encoding> _encoding = Encoding::SingleChannel;
         optional<bool> _offset = false;
         optional<float> _noDataValue = NO_DATA_VALUE;
         optional<float> _minValidValue = -FLT_MAX;
@@ -118,6 +131,8 @@ namespace ROCKY_NAMESPACE
             Heightfield* hf) const;
 
         util::Gate<TileKey> _sentry;
+
+        mutable util::LRUCache<TileKey, Result<GeoHeightfield>> _L2cache;
     };
 
 

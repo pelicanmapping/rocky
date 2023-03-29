@@ -55,6 +55,13 @@ namespace ROCKY_NAMESPACE
     };
     using DataService = std::function<DataInterface&()>;
 
+    struct Content {
+        std::string contentType;
+        std::string data;
+    };
+
+    using ContentCache = util::LRUCache<std::string, Result<Content>>;
+
     class ROCKY_EXPORT Services
     {
     public:
@@ -63,6 +70,7 @@ namespace ROCKY_NAMESPACE
         ReadImageStreamService readImageFromStream;
         WriteImageStreamService writeImageToStream;
         CacheService cache;
+        shared_ptr<ContentCache> contentCache = std::make_shared<ContentCache>(128);
     };
 
     // User options passed along with an IO context.

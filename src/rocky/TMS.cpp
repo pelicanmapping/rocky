@@ -16,21 +16,6 @@ using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::TMS;
 
 
-namespace osgEarth {
-    namespace TMS
-    {
-        std::string toString(double value, int precision = 7)
-        {
-            std::stringstream out;
-            out << std::fixed << std::setprecision(precision) << value;
-            std::string outStr;
-            outStr = out.str();
-            return outStr;
-        }
-    }
-}
-
-
 #define ELEM_TILEMAP "tilemap"
 #define ELEM_TITLE "title"
 #define ELEM_ABSTRACT "abstract"
@@ -337,6 +322,7 @@ TileMap::createProfile() const
         profile = Profile::GLOBAL_GEODETIC;
     }
 
+#if 0
     if (!profile.valid())
     {
         // everything else is a "LOCAL" profile.
@@ -346,6 +332,7 @@ TileMap::createProfile() const
             std::max(numTilesWide, 1u),
             std::max(numTilesHigh, 1u));
     }
+#endif
 
     return std::move(profile);
 }
@@ -372,6 +359,8 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
         y = numRows - y - 1;
     }
 
+    bool sub = filename.find('$') != filename.npos;
+
     //OE_NOTICE << LC << "KEY: " << tilekey.str() << " level " << zoom << " ( " << x << ", " << y << ")" << std::endl;
 
     //Select the correct TileSet
@@ -383,17 +372,37 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
             {
                 std::stringstream ss;
                 std::string basePath = std::filesystem::path(filename).remove_filename().string();
-                if (!basePath.empty())
+                if (sub)
                 {
-                    ss << basePath << "/";
+                    auto temp = filename;
+                    util::replace_in_place(temp, "${x}", std::to_string(x));
+                    util::replace_in_place(temp, "${y}", std::to_string(y));
+                    util::replace_in_place(temp, "${z}", std::to_string(zoom));
+                    return temp;
                 }
-                ss << zoom << "/" << x << "/" << y << "." << format.extension;
-                std::string ssStr;
-                ssStr = ss.str();
-                return ssStr;
+                else
+                {
+                    if (!basePath.empty())
+                    {
+                        ss << basePath << "/";
+                    }
+                    ss << zoom << "/" << x << "/" << y << "." << format.extension;
+                    std::string ssStr;
+                    ssStr = ss.str();
+                    return ssStr;
+                }
             }
         }
     }
+    else if (sub)
+    {
+        auto temp = filename;
+        util::replace_in_place(temp, "${x}", std::to_string(x));
+        util::replace_in_place(temp, "${y}", std::to_string(y));
+        util::replace_in_place(temp, "${z}", std::to_string(zoom));
+        return temp;
+    }
+
     else // Just go with it. No way of knowing the max level.
     {
         std::stringstream ss;
@@ -470,10 +479,13 @@ TileMap::TileMap(
 {
     const GeoExtent& ex = profile.extent();
 
-    profileType =
-        profile.srs().isGeographic() ? ProfileType::GEODETIC :
-        profile.srs().isHorizEquivalentTo(SRS::SPHERICAL_MERCATOR) ? ProfileType::MERCATOR :
-        ProfileType::LOCAL;
+    if (profile.valid())
+    {
+        profileType =
+            profile.srs().isGeographic() ? ProfileType::GEODETIC :
+            profile.srs().isHorizEquivalentTo(SRS::SPHERICAL_MERCATOR) ? ProfileType::MERCATOR :
+            ProfileType::LOCAL;
+    }
 
     minX = ex.xmin();
     minY = ex.ymin();
@@ -548,7 +560,7 @@ ROCKY_NAMESPACE::TMS::readTileMap(const URI& location, const IOOptions& io)
     if (r.status.failed())
         return r.status;
 
-    auto tilemap = parseTileMapFromXML(r->data.to_string());
+    auto tilemap = parseTileMapFromXML(r->data);
 
 #if 0
     // Read tile map into a Config:
@@ -597,7 +609,7 @@ TMS::Driver::open(
     // URI is mandatory.
     if (uri.empty())
     {
-        return Status(Status::ConfigurationError, "TMS driver requires a valid \"url\" property");
+        return Status(Status::ConfigurationError, "TMS driver requires a valid \"uri\" property");
     }
 
     // A repo is writable only if it's local.
@@ -627,10 +639,8 @@ TMS::Driver::open(
     // Take the override profile if one is given
     if (profile.valid())
     {
-        Log::info() << "TMS: "
-            << "Using express profile \"" << profile.to_json()
-            << "\" for URI \"" << uri.base() << "\""
-            << std::endl;
+        //Log::info() << "TMS: " << "Using express profile \"" << profile.to_json() << "\" for URI \"" << uri.base() << "\""
+        //    << std::endl;
 
         DataExtentList dataExtents_dummy; // empty
 
@@ -713,36 +723,42 @@ TMS::Driver::open(
 Result<shared_ptr<Image>>
 TMS::Driver::read(
     const URI& uri,
-    const std::string& uri_suffix,
     const TileKey& key,
     bool invertY,
+    bool isMapboxRGB,
     const IOOptions& io) const
 {
+    shared_ptr<Image> image;
+    URI imageURI;
+
+    // create the URI from the tile map?
     if (_tileMap.valid() && key.levelOfDetail() <= _tileMap.maxLevel)
     {
-        URI imageURI(_tileMap.getURI(key, invertY), uri.context());
-
-        shared_ptr<Image> image;
-
-        if (!imageURI.empty())
+        imageURI = URI(_tileMap.getURI(key, invertY), uri.context());
+        if (!imageURI.empty() && isMapboxRGB)
         {
-            if (!uri_suffix.empty())
-                imageURI = imageURI.append(uri_suffix);
-
-            auto fetch = imageURI.read(io);
-            if (fetch.status.failed())
-            {
-                return fetch.status;
-            }
-
-            auto image_rr = io.services().readImageFromStream(fetch->data, fetch->contentType, io);
-            if (image_rr.status.failed())
-            {
-                return image_rr.status;
-            }
-
-            image = image_rr.value;
+            if (imageURI.full().find('?') == std::string::npos)
+                imageURI = URI(imageURI.full() + "?mapbox=true", uri.context());
+            else
+                imageURI = URI(imageURI.full() + "&mapbox=true", uri.context());
         }
+
+        auto fetch = imageURI.read(io);
+        if (fetch.status.failed())
+        {
+            return fetch.status;
+        }
+
+        auto image_rr = io.services().readImageFromStream(
+            std::stringstream(fetch->data),
+            fetch->contentType, io);
+
+        if (image_rr.status.failed())
+        {
+            return image_rr.status;
+        }
+
+        image = image_rr.value;
 
         if (!image)
         {
@@ -763,14 +779,31 @@ TMS::Driver::read(
                 }
             }
         }
+    }
 
+    if (image)
         return image;
-    }
     else
-    {
         return Status(Status::ResourceUnavailable);
-    }
 }
+
+
+URI
+TMS::Driver::createSubstitutionURI(const TileKey& key, const URI& uri, bool invert_y) const
+{
+    auto href = uri.full();
+    auto y = key.tileY();
+    if (!invert_y) {
+        //http://code.google.com/apis/maps/documentation/overlays.html#Google_Maps_Coordinates
+        auto [cols, rows] = key.profile().numTiles(key.levelOfDetail());
+        y = rows - y - 1;
+    }
+    util::replace_in_place(href, "${x}", std::to_string(key.tileX()));
+    util::replace_in_place(href, "${y}", std::to_string(y));
+    util::replace_in_place(href, "${z}", std::to_string(key.levelOfDetail()));
+    return URI(href, uri.context());
+}
+
 #if 0
 #define DOUBLE_PRECISION 25
 

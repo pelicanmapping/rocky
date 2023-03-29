@@ -573,5 +573,6 @@ TileLayer::bestAvailableTileKey(
 bool
 TileLayer::mayHaveData(const TileKey& key) const
 {
-    return key == bestAvailableTileKey(key, true);
+    bool yes = (key == bestAvailableTileKey(key, true));
+    return yes;
 }

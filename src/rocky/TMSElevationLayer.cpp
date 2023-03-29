@@ -92,28 +92,21 @@ TMSElevationLayer::createHeightfieldImplementation(
     const IOOptions& io) const
 {
     bool invertY = (tmsType() == "google");
-    const std::string suffix = "?mapbox=true"; // mapbox rgb elevation format
 
     // request
-    auto r = _driver.read(uri(), suffix, key, invertY, io);
+    auto r = _driver.read(uri(), key, invertY, _encoding == Encoding::MapboxRGB, io);
 
     if (r.status.ok())
     {
-        // convert the RGB Elevation into an actual heightfield
-        auto hf = Heightfield::create(r.value->width(), r.value->height());
-
-        fvec4 pixel;
-        for (unsigned y = 0; y < r.value->height(); ++y)
+        if (r.value->pixelFormat() == Image::R32_SFLOAT)
         {
-            for (unsigned x = 0; x < r.value->width(); ++x)
-            {
-                r.value->read(pixel, x, y);
-                float height = -10000.f + 
-                    ((pixel.r * 256.0f * 256.0f + pixel.g * 256.0f + pixel.b) * 256.0f * 0.1f);
-                hf->heightAt(x, y) = height;
-            }
+            return GeoHeightfield(Heightfield::create(r.value.get()), key.extent());
         }
-        return GeoHeightfield(hf, key.extent());
+        else // assume Image::R8G8B8_UNORM?
+        {
+            auto hf = decodeMapboxRGB(r.value);
+            return GeoHeightfield(hf, key.extent());
+        }
     }
     else
     {

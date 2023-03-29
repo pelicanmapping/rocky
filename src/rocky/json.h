@@ -83,15 +83,22 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    inline void get_to(const json& obj, const char* name, T& var) {
-        if (name != nullptr && obj.is_object() && !obj.is_null()) {
-            JSON_TRY {
+    inline bool get_to(const json& obj, const char* name, T& var)
+    {
+        if (name != nullptr && obj.is_object() && !obj.is_null())
+        {
+            JSON_TRY
+            {
                 auto i = obj.find(name);
                 if (i != obj.end())
+                {
                     i->get_to(var);
+                    return true;
+                }
             }
-            JSON_CATCH {}
+            JSON_CATCH{ }
         }
+        return false;
     }
 
     template<class T>

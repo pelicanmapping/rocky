@@ -769,6 +769,24 @@ GeoImage::read(fvec4& output, const GeoPoint& p) const
 }
 
 bool
+GeoImage::read(fvec4& out, double x, double y) const
+{
+    if (!valid()) return false;
+
+    double u = (x - _extent.xMin()) / _extent.width();
+    double v = (y - _extent.yMin()) / _extent.height();
+
+    // out of bounds?
+    if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
+    {
+        return false;
+    }
+
+    _image->read_bilinear(out, u, v);
+    return true;
+}
+
+bool
 GeoImage::read(fvec4& out, double x, double y, const SRS& xy_srs) const
 {
     if (!valid()) return false;
@@ -778,18 +796,7 @@ GeoImage::read(fvec4& out, double x, double y, const SRS& xy_srs) const
         if (!srs().to(xy_srs).transform(temp, temp))
             return false;
     }
-
-    double u = (temp.x - _extent.xMin()) / _extent.width();
-    double v = (temp.y - _extent.yMin()) / _extent.height();
-
-    // out of bounds?
-    if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
-    {
-        return false;
-    }
-
-   _image->read_bilinear(out, u, v);
-   return true;
+    return read(out, temp.x, temp.y);
 }
 
 bool
@@ -801,15 +808,5 @@ GeoImage::read(fvec4& out, double x, double y, const SRSOperation& xform) const
     if (!xform.transform(temp, temp))
         return false;
 
-    double u = (temp.x - _extent.xMin()) / _extent.width();
-    double v = (temp.y - _extent.yMin()) / _extent.height();
-
-    // out of bounds?
-    if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
-    {
-        return false;
-    }
-
-    _image->read_bilinear(out, u, v);
-    return true;
+    return read(out, temp.x, temp.y);
 }

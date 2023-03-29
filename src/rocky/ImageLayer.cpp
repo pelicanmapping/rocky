@@ -261,9 +261,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
         }
     }
 
-    // collect heightfield for each intersecting key. Note, we're hitting the
-    // underlying tile source here, so there's no vetical datum shifts happening yet.
-    // we will do that later.
+    // collect raster for each intersecting key
     if (intersectingKeys.size() > 0)
     {
         for (auto& layerKey : intersectingKeys)
@@ -285,38 +283,55 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
         {
             unsigned width = 0;
             unsigned height = 0;
-
             auto keyExtent = key.extent();
-
-            std::vector<SRSOperation> xform_list;
 
             for (auto& source : source_list)
             {
                 width = std::max(width, source.image()->width());
                 height = std::max(height, source.image()->height());
-                xform_list.push_back(keyExtent.srs().to(source.srs()));
             }
 
-            // Now sort the heightfields by resolution to make sure we're sampling
-            // the highest resolution one first.
-            //std::sort(source_list.begin(), source_list.end(), GeoHeightfield::SortByResolutionFunctor());
+            // assume all tiles to mosaic are in the same SRS.
+            SRSOperation xform = keyExtent.srs().to(source_list[0].srs());
 
             // new output:
             output = Image::create(Image::R8G8B8A8_UNORM, width, height);
 
-            //Go ahead and set up the heightfield so we don't have to worry about it later
+            // working set of points. it's much faster to xform an entire vector all at once.
+            std::vector<dvec3> points;
+            points.assign(width * height, { 0, 0, 0 });
+
             double minx, miny, maxx, maxy;
             key.extent().getBounds(minx, miny, maxx, maxy);
             double dx = (maxx - minx) / (double)(width - 1);
             double dy = (maxy - miny) / (double)(height - 1);
 
-            //Create the new heightfield by sampling all of them.
-            for (unsigned int c = 0; c < width; ++c)
+            // build a grid of sample points:
+            for (unsigned r = 0; r < height; ++r)
             {
-                double x = minx + (dx * (double)c);
-                for (unsigned r = 0; r < height; ++r)
+                double y = miny + (dy * (double)r);
+                for (unsigned c = 0; c < width; ++c)
                 {
-                    double y = miny + (dy * (double)r);
+                    double x = minx + (dx * (double)c);
+                    points[r * width + c].x = x;
+                    points[r * width + c].y = y;
+                }
+            }
+
+            // transform the sample points to the SRS of our source data tiles:
+            if (xform.valid())
+                xform.transformArray(&points[0], points.size());
+
+            //Create the new heightfield by sampling all of them.
+            for (unsigned r = 0; r < height; ++r)
+            {
+                double y = miny + (dy * (double)r);
+
+                for (unsigned int c = 0; c < width; ++c)
+                {
+                    double x = minx + (dx * (double)c);
+
+                    unsigned i = r * width + c;
 
                     // For each sample point, try each heightfield.  The first one with a valid elevation wins.
                     fvec4 pixel(0, 0, 0, 0);
@@ -325,7 +340,8 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                     {
                         // get the elevation value, at the same time transforming it vertically into the
                         // requesting key's vertical datum.
-                        if (source_list[k].read(pixel, x, y, xform_list[k]) && pixel.a > 0.0f)
+                        if (source_list[k].read(pixel, points[i].x, points[i].y) && 
+                            pixel.a > 0.0f)
                         {
                             break;
                         }

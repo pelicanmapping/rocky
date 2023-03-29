@@ -59,14 +59,14 @@ namespace ROCKY_NAMESPACE
 
         TileLayer(const JSON&);
 
+    public: // Layer
+            
         //! Tiling profile of this layer.
         //! Layer implementaions will call this to set the profile based
         //! on information gathered from source metadata. If your Layer
         //! needs the user to expressly set a profile, override this to
         //! make it public.
         virtual void setProfile(const Profile&);
-
-    public: // Layer
 
         //! Open the layer for writing (calls open)
         const Status& openForWriting();

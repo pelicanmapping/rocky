@@ -91,7 +91,7 @@ TMSImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io
 {
     bool invertY = (tmsType() == "google");
 
-    auto r = _driver.read(uri(), {}, key, invertY, io);
+    auto r = _driver.read(uri(), key, invertY, false, io);
 
     if (r.status.ok())
         return GeoImage(r.value, key.extent());

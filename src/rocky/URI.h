@@ -132,13 +132,6 @@ namespace ROCKY_NAMESPACE
             shared_ptr<std::istream> _in;
         };
 
-        //! Content resulting from a URI request.
-        struct Content
-        {
-            Stream data;
-            std::string contentType;
-        };
-
     public:
         //! Constructs an empty (and invalid) URI.
         URI();
@@ -176,7 +169,7 @@ namespace ROCKY_NAMESPACE
         URI append(const std::string& suffix) const;
 
         //! Reads the URI into a data buffer
-        IOResult<URI::Content> read(const IOOptions& io) const;
+        IOResult<Content> read(const IOOptions& io) const;
 
     public:
 

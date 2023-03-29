@@ -721,7 +721,7 @@ TEST_CASE("IO")
         {
             CHECK(r.value.contentType == "text/xml");
 
-            auto body = r.value.data.to_string();
+            auto body = r.value.data;
             CHECK(!body.empty());
             CHECK(rocky::util::startsWith(body, "<?xml"));
         }
@@ -740,7 +740,7 @@ TEST_CASE("IO")
             CHECKED_IF(r.status.ok())
             {
                 CHECK(r.value.contentType == "text/xml");
-                auto body = r.value.data.to_string();
+                auto body = r.value.data;
                 CHECK(!body.empty());
                 CHECK(rocky::util::startsWith(body, "<?xml"));
             }

@@ -4,9 +4,11 @@
  * MIT License
  */
 #include "URI.h"
+#include "Utils.h"
 #include <typeinfo>
 #include <fstream>
 #include <sstream>
+#include <cstdlib>
 
 #ifdef HTTPLIB_FOUND
 #ifdef OPENSSL_FOUND
@@ -18,7 +20,6 @@
 #define LC "[URI] "
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
 using namespace std::chrono_literals;
 
 bool URI::supportsHTTPS()
@@ -32,6 +33,8 @@ bool URI::supportsHTTPS()
 
 namespace
 {
+    static bool httpDebug = ::getenv("ROCKY_HTTP_DEBUG") != nullptr;
+
     bool containsServerAddress(const std::string& input)
     {
         auto temp = util::trim(util::toLower(input));
@@ -114,7 +117,6 @@ namespace
     IOResult<HTTPResponse> http_get(const HTTPRequest& request, unsigned max_attempts)
     {
 #ifndef HTTPLIB_FOUND
-        ROCKY_TODO("Implement HTTP GET");
         return Status(Status::ServiceUnavailable);
 #else        
         httplib::Headers headers;
@@ -149,6 +151,8 @@ namespace
 
             for(;;)
             {
+                util::timer timer;
+
                 auto r = client.Get(path, params, headers);
 
                 if (r.error() != httplib::Error::Success)
@@ -172,6 +176,9 @@ namespace
                 {
                     return Status(Status::GeneralError, httplib::detail::status_message(r->status));
                 }
+
+                if(httpDebug)
+                    Log::info() << LC << " HTTP GET " << request.url << " (" << timer.seconds() << "s)" <<std::endl;
 
                 response.status = r->status;
 
@@ -317,10 +324,25 @@ URI::append(const std::string& suffix) const
     return result;
 }
 
-IOResult<URI::Content>
+IOResult<Content>
 URI::read(const IOOptions& io) const
 {
-    if (containsServerAddress(full()))
+    auto cached = io.services().contentCache->get(full());
+    if (cached.status.ok())
+    {
+        if (httpDebug)
+        {
+            Log::info() << "Cache hit, ratio = "
+                << 100.0f * (float)io.services().contentCache->hits / (float)io.services().contentCache->gets
+                << "%" << std::endl;
+        }
+
+        return cached.value;
+    }
+
+    Content content;
+    bool localFile = std::filesystem::exists(full());
+    if (!localFile)
     {
         HTTPRequest request{ full() };
         auto r = http_get(request, io.maxNetworkAttempts);
@@ -340,11 +362,9 @@ URI::read(const IOOptions& io) const
         if (contentType.empty())
             contentType = inferContentTypeFromData(r.value.data);
 
-        return Content
-        {
-            std::shared_ptr<std::istream>(
-                new std::stringstream(r.value.data, std::ios_base::in)),
-            contentType
+        content = {
+            contentType,
+            r.value.data
         };
     }
     else
@@ -353,13 +373,15 @@ URI::read(const IOOptions& io) const
 
         ROCKY_TODO("worry about text or binary open mode?");
 
-        return Content
-        {
-            std::shared_ptr<std::istream>(
-                new std::ifstream(full().c_str(), std::ios_base::in)),
-            contentType
-        };
+        std::ifstream in(full().c_str(), std::ios_base::in);
+        content.contentType = contentType;
+        in >> content.data;
+        in.close();        
     }
+
+    io.services().contentCache->put(full(), Result<Content>(content));
+
+    return content;
 }
 
 bool

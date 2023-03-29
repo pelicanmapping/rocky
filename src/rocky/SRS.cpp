@@ -758,6 +758,32 @@ SRSOperation::forward(void* handle, double& x, double& y, double& z) const
 }
 
 bool
+SRSOperation::forward(void* handle, double* x, double* y, double* z, std::size_t stride, std::size_t count) const
+{
+    if (handle)
+    {
+        proj_errno_reset((PJ*)handle);
+
+        proj_trans_generic((PJ*)handle, PJ_FWD,
+            x, stride, count,
+            y, stride, count,
+            z, stride, count,
+            nullptr, stride, count);
+
+        int err = proj_errno((PJ*)handle);
+        if (err != 0)
+        {
+            _lastError = proj_errno_string(err);
+            return false;
+        }
+        return true;
+    }
+    else
+        return false;
+}
+
+
+bool
 SRSOperation::inverse(void* handle, double& x, double& y, double& z) const
 {
     if (handle)
@@ -771,6 +797,31 @@ SRSOperation::inverse(void* handle, double& x, double& y, double& z) const
             return false;
         }
         x = out.xyz.x, y = out.xyz.y, z = out.xyz.z;
+        return true;
+    }
+    else
+        return false;
+}
+
+bool
+SRSOperation::inverse(void* handle, double* x, double* y, double* z, std::size_t stride, std::size_t count) const
+{
+    if (handle)
+    {
+        proj_errno_reset((PJ*)handle);
+
+        proj_trans_generic((PJ*)handle, PJ_INV,
+            x, stride, count,
+            y, stride, count,
+            z, stride, count,
+            nullptr, stride, count);
+
+        int err = proj_errno((PJ*)handle);
+        if (err != 0)
+        {
+            _lastError = proj_errno_string(err);
+            return false;
+        }
         return true;
     }
     else

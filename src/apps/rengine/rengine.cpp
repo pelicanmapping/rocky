@@ -36,7 +36,7 @@ int main(int argc, char** argv)
     // instantiate the game engine.
     rocky::EngineVSG engine(argc, argv);
 
-#if defined(ROCKY_SUPPORTS_MBTILES)
+#if 0 //defined(ROCKY_SUPPORTS_MBTILES)
 
     auto imagery = rocky::MBTilesImageLayer::create();
     imagery->setName("mbtiles test layer");
@@ -48,11 +48,24 @@ int main(int argc, char** argv)
 
 #elif defined(ROCKY_SUPPORTS_GDAL)
     auto imagery = rocky::GDALImageLayer::create();
-    imagery->setURI("WMTS:https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml,layer=s2cloudless-2020");
+    imagery->setURI("WMTS:https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml,layer=s2cloudless-2020_3857");
     engine.map()->layers().add(imagery);
 
     if (imagery->status().failed())
         return error(imagery);
+
+    auto elevation = rocky::TMSElevationLayer::create();
+    elevation->setTileSize(256);
+    elevation->setEncoding(rocky::ElevationLayer::Encoding::MapboxRGB);
+    elevation->setProfile(rocky::Profile(
+        rocky::SRS::SPHERICAL_MERCATOR,
+        rocky::Box(-20037508.34, -20037508.34, 20037508.34, 20037508.34),
+        1, 1));
+    elevation->setURI("https://maps2.anduril.com/tiled/tileset/bathymetry-tcarta-hae/tile?x=${x}&y=${y}&z=${z}");
+    engine.map()->layers().add(elevation);
+
+    if (elevation->status().failed())
+        return error(elevation);
 
 #elif defined(ROCKY_SUPPORTS_TMS)
 

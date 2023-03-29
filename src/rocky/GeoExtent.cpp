@@ -348,6 +348,16 @@ namespace
                 in_out_ymax = std::max(v[i].y, in_out_ymax);
             }
 
+            if (toSRS.isGeographic())
+            {
+                in_out_xmin = std::max(in_out_xmin, -180.0);
+                in_out_ymin = std::max(in_out_ymin, -90.0);
+                in_out_xmax = std::min(in_out_xmax, 180.0);
+                in_out_ymax = std::min(in_out_ymax, 90.0);
+            }
+
+            volatile int ii = 0;
+
             return true;
         }
 

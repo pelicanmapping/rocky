@@ -160,8 +160,20 @@ GDALElevationLayer::createHeightfieldImplementation(
 
     if (driver)
     {
-        auto image = driver->createHeightfield(key, tileSize(), io);
-        return GeoHeightfield(image.value, key.extent());
+        auto r = driver->createImage(key, tileSize(), false, io);
+
+        if (r.status.ok())
+        {
+            if (r.value->pixelFormat() == Image::R32_SFLOAT)
+            {
+                return GeoHeightfield(Heightfield::create(r.value.get()), key.extent());
+            }
+            else // assume Image::R8G8B8_UNORM?
+            {
+                auto hf = decodeMapboxRGB(r.value);
+                return GeoHeightfield(hf, key.extent());
+            }
+        }
     }
 
     return GeoHeightfield::INVALID;

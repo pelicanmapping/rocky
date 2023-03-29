@@ -18,6 +18,7 @@
 #include <iomanip>
 #include <map>
 #include <unordered_map>
+#include <list>
 #include <set>
 #include <filesystem>
 #include <ctype.h>
@@ -437,6 +438,19 @@ namespace ROCKY_NAMESPACE { namespace util
         }
     };
 
+    template<class T = std::chrono::steady_clock>
+    struct timer
+    {
+        std::chrono::time_point<T> then;
+        timer() : then(T::now()) { }
+        double seconds() const {
+            return (double)std::chrono::duration_cast<std::chrono::milliseconds>(T::now() - then).count() * 0.001;
+        }
+        double milliseconds() const {
+            return (double)std::chrono::duration_cast<std::chrono::microseconds>(T::now()-then).count() * 0.001;
+        }
+    };
+
     /**
     * Virtual interface for a stream compressor
     */
@@ -473,5 +487,56 @@ namespace ROCKY_NAMESPACE { namespace util
         //! @param out Data in which to store decompressed data
         //! @return True upon success
         bool decompress(std::istream& in, std::string& out) const override;
+    };
+
+    // Adapted from https://www.geeksforgeeks.org/lru-cache-implementation
+    template<class K, class V>
+    class LRUCache
+    {
+    private:
+        mutable std::mutex mutex;
+        int capacity;
+        using E = typename std::pair<K, V>;
+        typename std::list<E> cache;
+        std::unordered_map<K, typename std::list<E>::iterator> map;
+
+    public:
+        int hits = 0;
+        int gets = 0;
+
+        LRUCache(int capacity = 32) : capacity(capacity) { }
+
+        inline void setCapacity(int value) {
+            std::scoped_lock L(mutex);
+            cache.clear();
+            map.clear();
+            hits = 0;
+            gets = 0;
+            capacity = std::max(0, value);
+        }
+
+        inline V get(const K& key) {
+            if (capacity == 0) return V();
+            std::scoped_lock L(mutex);
+            ++gets;
+            auto it = map.find(key);
+            if (it == map.end())
+                return V();
+            cache.splice(cache.end(), cache, it->second);
+            ++hits;
+            return it->second->second;
+        }
+
+        inline void put(const K& key, const V& value) {
+            if (capacity == 0) return;
+            std::scoped_lock L(mutex);
+            if (cache.size() == capacity) {
+                auto first_key = cache.front().first;
+                cache.pop_front();
+                map.erase(first_key);
+            }
+            cache.push_back({ key, value });
+            map[key] = --cache.end();
+        }
     };
 } }

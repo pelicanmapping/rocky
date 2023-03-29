@@ -118,9 +118,9 @@ namespace ROCKY_NAMESPACE
 
             Result<shared_ptr<Image>> read(
                 const URI& uri,
-                const std::string& uri_suffix,
                 const TileKey& key,
                 bool invertY,
+                bool isMapboxRGB,
                 const IOOptions& io) const;
 
             bool write(
@@ -134,6 +134,8 @@ namespace ROCKY_NAMESPACE
             TileMap _tileMap;
             bool _forceRGBWrites;
             bool _isCoverage;
+
+            URI createSubstitutionURI(const TileKey& key, const URI& uri, bool invert_y) const;
 
             //bool resolveWriter(const std::string& format);
         };

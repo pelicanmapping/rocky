@@ -66,13 +66,23 @@ ElevationLayer::construct(const JSON& conf)
     get_to(j, "no_data_value", _noDataValue);
     get_to(j, "min_valid_value", _minValidValue);
     get_to(j, "max_valid_value", _maxValidValue);
+    std::string encoding;
+    if (get_to(j, "encoding", encoding))
+    {
+        if (encoding == "single_channel")
+            _encoding = Encoding::SingleChannel;
+        else if (encoding == "mapboxrgb")
+            _encoding = Encoding::MapboxRGB;
+    }
 
     // a small L2 cache will help with things like normal map creation
     // (i.e. queries that sample neighboring tiles)
     if (!_l2cachesize.has_value())
     {
-        _l2cachesize.set_default(4u);
+        _l2cachesize.set_default(32u);
     }
+
+    _L2cache.setCapacity(_l2cachesize.value());
 
     // Disable max-level support for elevation data because it makes no sense.
     _maxLevel.clear();
@@ -91,6 +101,11 @@ ElevationLayer::to_json() const
     set(j, "no_data_value", _noDataValue);
     set(j, "min_valid_value", _minValidValue);
     set(j, "max_valid_value", _maxValidValue);
+    if (_encoding.has_value(Encoding::SingleChannel))
+        set(j, "encoding", "single_channel");
+    else if (_encoding.has_value(Encoding::MapboxRGB))
+        set(j, "encoding", "mapboxrgb");
+
     return j.dump();
 }
 
@@ -104,6 +119,12 @@ ElevationLayer::setVisible(bool value)
         close();
 }
 
+void ElevationLayer::setEncoding(ElevationLayer::Encoding value) {
+    _encoding = value;
+}
+const optional<ElevationLayer::Encoding>& ElevationLayer::encoding() const {
+    return _encoding;
+}
 void ElevationLayer::setOffset(bool value) {
     _offset = value, _reopenRequired = true;
 }
@@ -231,19 +252,21 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
         // If we actually got a Heightfield, resample/reproject it to match the incoming TileKey's extents.
         if (geohf_list.size() > 0)
         {
+            util::timer t;
+
             unsigned width = 0;
             unsigned height = 0;
-
             auto keyExtent = key.extent();
 
-            std::vector<SRSOperation> xform_list;
-
+            // determine the final dimensions
             for(auto& geohf : geohf_list)
             {
                 width = std::max(width, geohf.heightfield()->width());
                 height = std::max(height, geohf.heightfield()->height());
-                xform_list.push_back(keyExtent.srs().to(geohf.srs()));
             }
+
+            // assume all tiles to mosaic are in the same SRS.
+            SRSOperation xform = keyExtent.srs().to(geohf_list[0].srs());
 
             // Now sort the heightfields by resolution to make sure we're sampling
             // the highest resolution one first.
@@ -252,35 +275,51 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
             // new output HF:
             output = Heightfield::create(width, height);
 
-            //Go ahead and set up the heightfield so we don't have to worry about it later
+            // working set of points. it's much faster to xform an entire vector all at once.
+            std::vector<dvec3> points;
+            points.assign(width * height, { 0, 0, NO_DATA_VALUE });
+
             double minx, miny, maxx, maxy;
             key.extent().getBounds(minx, miny, maxx, maxy);
-            double dx = (maxx - minx)/(double)(width-1);
-            double dy = (maxy - miny)/(double)(height-1);
+            double dx = (maxx - minx) / (double)(width - 1);
+            double dy = (maxy - miny) / (double)(height - 1);
 
-            //Create the new heightfield by sampling all of them.
-            for (unsigned int c = 0; c < width; ++c)
+            // build a grid of sample points:
+            for (unsigned r = 0; r < height; ++r)
             {
-                double x = minx + (dx * (double)c);
-                for (unsigned r = 0; r < height; ++r)
+                double y = miny + (dy * (double)r);
+                for (unsigned c = 0; c < width; ++c)
                 {
-                    double y = miny + (dy * (double)r);
+                    double x = minx + (dx * (double)c);
+                    points[r * width + c].x = x;
+                    points[r * width + c].y = y;
+                }
+            }
 
-                    // For each sample point, try each heightfield.  The first one with a valid elevation wins.
-                    float elevation = NO_DATA_VALUE;
+            // transform the sample points to the SRS of our source data tiles:
+            if (xform.valid())
+                xform.transformArray(&points[0], points.size());
 
-                    for(unsigned k=0; k<geohf_list.size(); ++k)
-                    {
-                        // get the elevation value, at the same time transforming it vertically into the
-                        // requesting key's vertical datum.
-                        elevation = geohf_list[k].heightAt(x, y, xform_list[k], Heightfield::BILINEAR);
-                        if (elevation != NO_DATA_VALUE)
-                        {
-                            break;
-                        }
-                    }
+            // sample the heights:
+            for (unsigned k = 0; k < geohf_list.size(); ++k)
+            {
+                for (auto& point : points)
+                {
+                    if (point.z == NO_DATA_VALUE)
+                        point.z = geohf_list[k].heightAtLocation(point.x, point.y, Image::BILINEAR);
+                }
+            }
 
-                    output->heightAt(c, r) = elevation;
+            // transform the elevations back to the SRS of our tilekey (vdatum transform):
+            if (xform.valid())
+                xform.inverseArray(&points[0], points.size());
+
+            // assign the final heights to the heightfield.
+            for (unsigned r = 0; r < height; ++r)
+            {
+                for (unsigned c = 0; c < width; ++c)
+                {
+                    output->heightAt(c, r) = points[r * width + c].z;
                 }
             }
         }
@@ -377,7 +416,9 @@ ElevationLayer::createHeightfieldInKeyProfile(
         return Result(GeoHeightfield::INVALID);
     }
 
-    return GeoHeightfield(hf, key.extent());
+    result = GeoHeightfield(hf, key.extent());
+
+    return result;
 }
 
 Status
@@ -835,4 +876,33 @@ ElevationLayerVector::populateHeightfield(
 
     // Return whether or not we actually read any real data
     return realData;
+}
+
+shared_ptr<Heightfield>
+ElevationLayer::decodeMapboxRGB(shared_ptr<Image> image) const
+{
+    if (!image || !image->valid())
+        return nullptr;
+
+    // convert the RGB Elevation into an actual heightfield
+    auto hf = Heightfield::create(image->width(), image->height());
+
+    fvec4 pixel;
+    for (unsigned y = 0; y < image->height(); ++y)
+    {
+        for (unsigned x = 0; x < image->width(); ++x)
+        {
+            image->read(pixel, x, y);
+
+            float height = -10000.f +
+                ((pixel.r * 256.0f * 256.0f + pixel.g * 256.0f + pixel.b) * 256.0f * 0.1f);
+
+            if (height < -9999 || height > 999999)
+                height = NO_DATA_VALUE;
+
+            hf->heightAt(x, y) = height;
+        }
+    }
+
+    return hf;
 }

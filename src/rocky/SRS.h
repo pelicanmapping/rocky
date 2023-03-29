@@ -220,6 +220,14 @@ namespace ROCKY_NAMESPACE
             return errors == 0;
         }
 
+        //! Transform an array of 3-vectors in place
+        //! @return True if all transformations succeeded
+        template<typename DVEC3>
+        bool transformArray(DVEC3* inout, std::size_t count) const {
+            return _nop ? true : forward(get_handle(),
+                &inout[0].x, &inout[0].y, &inout[0].z, sizeof(DVEC3), count);
+        }
+
         //! Inverse-transform a 3-vector
         //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
@@ -239,6 +247,14 @@ namespace ROCKY_NAMESPACE
                 if (!inverse(handle, iter->x, iter->y, iter->z))
                     errors++;
             return errors == 0;
+        }
+
+        //! Inverse-transform an array of 3-vectors in place
+        //! @return True if all transformations succeeded
+        template<typename DVEC3>
+        bool inverseArray(DVEC3* inout, std::size_t count) const {
+            return _nop ? true : inverse(get_handle(),
+                &inout[0].x, &inout[0].y, &inout[0].z, sizeof(DVEC3), count);
         }
 
         //! Error message if something returns false
@@ -267,6 +283,8 @@ namespace ROCKY_NAMESPACE
         bool forward(void* handle, double& x, double& y, double& z) const;
         bool inverse(void* handle, double& x, double& y, double& z) const;
 
+        bool forward(void* handle, double* x, double* y, double* z, std::size_t stride, std::size_t count) const;
+        bool inverse(void* handle, double* x, double* y, double* z, std::size_t stride, std::size_t count) const;
         friend class SRS;
     };
 }

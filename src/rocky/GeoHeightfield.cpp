@@ -71,10 +71,16 @@ GeoHeightfield::heightAtLocation(
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(valid(), NO_DATA_VALUE);
 
-    double px = clamp((x - _extent.xmin()) / _resolution.x, 0.0, (double)(_hf->width() - 1));
-    double py = clamp((y - _extent.ymin()) / _resolution.y, 0.0, (double)(_hf->height() - 1));
-
-    return _hf->heightAtPixel(px, py, interpolation);
+    if (_extent.contains(x, y))
+    {
+        double px = clamp((x - _extent.xmin()) / _resolution.x, 0.0, (double)(_hf->width() - 1));
+        double py = clamp((y - _extent.ymin()) / _resolution.y, 0.0, (double)(_hf->height() - 1));
+        return _hf->heightAtPixel(px, py, interpolation);
+    }
+    else
+    {
+        return NO_DATA_VALUE;
+    }
 }
 
 float
@@ -87,23 +93,15 @@ GeoHeightfield::heightAt(double x, double y, const SRSOperation& xform, Image::I
             return NO_DATA_VALUE;
     }
 
-    // check that the point falls within the heightfield bounds:
-    if (_extent.contains(temp.x, temp.y))
-    {
-        // sample the heightfield at the input coordinates:
-        temp.z = heightAtLocation(temp.x, temp.y, interp);
+    // sample the heightfield at the input coordinates:
+    temp.z = heightAtLocation(temp.x, temp.y, interp);
 
-        if (xform.valid())
-        {
-            xform.inverse(temp, temp);
-        }
-
-        return temp.z;
-    }
-    else
+    if (temp.z != NO_DATA_VALUE && xform.valid())
     {
-        return NO_DATA_VALUE;
+        xform.inverse(temp, temp);
     }
+
+    return temp.z;
 }
 
 float
@@ -125,21 +123,13 @@ GeoHeightfield::heightAt(double x, double y, const SRS& xy_srs, Image::Interpola
         }
     }
 
-    // check that the point falls within the heightfield bounds:
-    if (_extent.contains(temp.x, temp.y))
-    {
-        // sample the heightfield at the input coordinates:
-        temp.z = heightAtLocation(temp.x, temp.y, interp);
+    // sample the heightfield at the input coordinates:
+    temp.z = heightAtLocation(temp.x, temp.y, interp);
 
-        if (xform.valid())
-            xform.inverse(temp, temp);
+    if (temp.z != NO_DATA_VALUE && xform.valid())
+        xform.inverse(temp, temp);
 
-        return temp.z;
-    }
-    else
-    {
-        return NO_DATA_VALUE;
-    }
+    return temp.z;
 }
 
 GeoHeightfield

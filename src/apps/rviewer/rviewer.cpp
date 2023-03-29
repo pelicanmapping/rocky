@@ -72,6 +72,9 @@ int main(int argc, char** argv)
     rocky::Log::info() << "Hello, world." << std::endl;
     rocky::Log::info() << "Welcome to " << ROCKY_PROJECT_NAME << " version " << ROCKY_VERSION_STRING << std::endl;
 
+    // An LRU cache mainly used for network data fetches.
+    ri.ioOptions().services().contentCache->setCapacity(128);
+
     // main window
     auto traits = vsg::WindowTraits::create(ROCKY_PROJECT_NAME);
     traits->debugLayer = arguments.read({ "--debug" });
@@ -118,6 +121,7 @@ int main(int argc, char** argv)
         return error(layer);
 
     auto elev = rocky::TMSElevationLayer::create();
+    elev->setEncoding(rocky::ElevationLayer::Encoding::MapboxRGB);
     elev->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
     mapNode->map()->layers().add(elev);
     if (elev->status().failed())

@@ -100,6 +100,10 @@ namespace ROCKY_NAMESPACE
         bool read(fvec4& output, const GeoPoint& p) const;
 
         bool read(
+            fvec4& output,
+            double x, double y) const;
+
+        bool read(
             fvec4& output, 
             double x, double y, const SRS& srs) const;
 
