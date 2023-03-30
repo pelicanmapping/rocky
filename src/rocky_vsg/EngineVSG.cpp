@@ -8,10 +8,12 @@
 #include <rocky_vsg/MapNode.h>
 #include <rocky_vsg/TerrainNode.h>
 #include <rocky_vsg/MapManipulator.h>
+#include <rocky/Ephemeris.h>
 
 #include <vsg/app/CloseHandler.h>
 #include <vsg/app/RenderGraph.h>
 #include <vsg/utils/CommandLine.h>
+#include <vsg/nodes/Light.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -38,6 +40,17 @@ EngineVSG::EngineVSG(int& argc, char** argv) :
 
     mainScene = vsg::Group::create();
     mainScene->addChild(mapNode);
+
+    // the sun
+    if (commandLine.read({ "--sky" }))
+    {
+        auto sun = rocky::Ephemeris().sunPosition(rocky::DateTime());
+        auto light = vsg::PointLight::create();
+        light->name = "Sol";
+        light->color = { 1, 1, 0.95 };
+        light->position = { sun.geocentric.x, sun.geocentric.y, sun.geocentric.z };
+        mainScene->addChild(light);
+    }
 }
 
 void

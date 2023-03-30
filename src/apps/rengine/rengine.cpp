@@ -10,16 +10,6 @@
 #include <rocky/TMSElevationLayer.h>
 #endif
 
-#ifdef ROCKY_SUPPORTS_GDAL
-#include <rocky/GDALImageLayer.h>
-#include <rocky/GDALElevationLayer.h>
-#endif
-
-#ifdef ROCKY_SUPPORTS_MBTILES
-#include <rocky/MBTilesImageLayer.h>
-#include <rocky/MBTilesElevationLayer.h>
-#endif
-
 template<class T>
 int error(T layer)
 {
@@ -30,22 +20,10 @@ int error(T layer)
 
 int main(int argc, char** argv)
 {
-    rocky::Log::level = rocky::LogLevel::INFO;
-    rocky::Log::info() << "Hello, world." << std::endl;
-
     // instantiate the game engine.
     rocky::EngineVSG engine(argc, argv);
 
-#if defined(ROCKY_SUPPORTS_GDAL)
-
-    auto imagery = rocky::GDALImageLayer::create();
-    imagery->setURI("WMTS:https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml,layer=s2cloudless-2020");
-    engine.map()->layers().add(imagery);
-
-    if (imagery->status().failed())
-        return error(imagery);
-
-#elif defined(ROCKY_SUPPORTS_TMS)
+#if defined(ROCKY_SUPPORTS_TMS)
 
     // add a layer to the map
     auto layer = rocky::TMSImageLayer::create();

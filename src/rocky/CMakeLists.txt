@@ -20,6 +20,7 @@ set(HEADERS
     ElevationLayer.h
     # ElevationPool.h
     Ellipsoid.h
+    Ephemeris.h
     GeoCircle.h
     GeoCommon.h
     GeoExtent.h
@@ -69,6 +70,7 @@ set(SOURCES
     ElevationLayer.cpp
     # ElevationPool.cpp
     Ellipsoid.cpp
+    Ephemeris.cpp
     GeoCircle.cpp
     GeoExtent.cpp
     GeoHeightfield.cpp

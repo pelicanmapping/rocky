@@ -6,6 +6,7 @@
 #include <rocky/Instance.h>
 #include <rocky/Version.h>
 #include <rocky/ImageLayer.h>
+#include <rocky/Ephemeris.h>
 
 #include <rocky_vsg/InstanceVSG.h>
 #include <rocky_vsg/MapNode.h>
@@ -141,12 +142,12 @@ int main(int argc, char** argv)
     // the sun
     if (arguments.read({ "--sky" }))
     {
-        const double distance_to_sun = 149.9e12;
-        auto sun = vsg::PointLight::create();
-        sun->name = "Sol";
-        sun->color = { 1, 1, 0.97 };
-        sun->position = { distance_to_sun, distance_to_sun, distance_to_sun };
-        vsg_scene->addChild(sun);
+        auto sun = rocky::Ephemeris().sunPosition(rocky::DateTime());
+        auto light = vsg::PointLight::create();
+        light->name = "Sol";
+        light->color = { 1, 1, 0.95 };
+        light->position = { sun.geocentric.x, sun.geocentric.y, sun.geocentric.z };
+        vsg_scene->addChild(light);
     }
 
     // main camera

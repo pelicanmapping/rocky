@@ -23,7 +23,8 @@ namespace ROCKY_NAMESPACE
     #  endif
 #else
     #  define ROCKY_VSG_EXPORT
-#endif  
+#endif
+
 
 // marker for non-exported classes
 #define ROCKY_VSG_INTERNAL

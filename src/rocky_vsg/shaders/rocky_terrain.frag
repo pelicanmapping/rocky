@@ -109,12 +109,13 @@ void apply_lighting(inout vec4 color)
 {
 // temp:
     pbr.ao = 1.0;
-    pbr.roughness = 0.0;
+    pbr.roughness = 0.5;
     pbr.metal = 0.0;
-    const float exposure = 3.3;
+    const float exposure = 5.0;
 // ....
 
-    vec3 albedo = color.rgb;
+    vec3 albedo = pow(color.rgb, vec3(2.2)); // SRGB to linear
+
     vec3 N = normalize(get_normal());
     vec3 V = normalize(-in_vertex_view);
 
@@ -122,7 +123,7 @@ void apply_lighting(inout vec4 color)
     F0 = mix(F0, albedo, vec3(pbr.metal));
 
     vec3 Lo = vec3(0.0);
-    vec3 ambient = vec3(0.003);
+    vec3 ambient = vec3(0.013);
 
     vec4 light_counts = lightData.values[0];
     int ambient_count = int(light_counts[0]);
@@ -186,8 +187,12 @@ void apply_lighting(inout vec4 color)
         color.rgb = Lo + (ambient * albedo * pbr.ao);
     
         color.rgb = color.rgb / (color.rgb + vec3(1.0)); // tone map
-        color.rgb = pow(color.rgb, vec3(1.0/2.2)); // gamma correction
+
         //color.rgb += sky_color; // haze
+
         color.rgb = 1.0 - exp(-exposure * color.rgb); // exposure
+
+        // linear to SRGB (last step)
+        color.rgb = pow(color.rgb, vec3(1.0 / 2.2));
     }
 }
