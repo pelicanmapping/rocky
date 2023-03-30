@@ -469,9 +469,12 @@ namespace ROCKY_NAMESPACE
                     GDALRasterBand* G = findBandByColorInterp(ds, GCI_GreenBand);
                     GDALRasterBand* B = findBandByColorInterp(ds, GCI_BlueBand);
                     GDALRasterBand* A = findBandByColorInterp(ds, GCI_AlphaBand);
+                    GDALRasterBand* M = findBandByColorInterp(ds, GCI_GrayIndex);
 
                     Image::PixelFormat format = Image::UNDEFINED;
-                    if (R && !G && !B && !A)
+                    if (M)
+                        format = Image::R32_SFLOAT;
+                    else if (R && !G && !B && !A)
                         format = Image::R8_UNORM;
                     else if (R && G && !B && !A)
                         format = Image::R8G8B8_UNORM;
@@ -488,14 +491,28 @@ namespace ROCKY_NAMESPACE
                         
                         int offset = 0;
 
-                        if (R)
-                            R->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
-                        if (G)
-                            G->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
-                        if (B)
-                            B->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
-                        if (A)
-                            A->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                        if (M)
+                        {
+                            auto value_scale = M->GetScale();
+                            auto value_offset = M->GetOffset();
+
+                            M->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Float32, 0, 0, nullptr);
+
+                            auto ptr = result->data<float>();
+                            for (int i = 0; i < width * height; ++i, ptr++)
+                                *ptr = *ptr * value_scale + value_offset;
+                        }
+                        else
+                        {
+                            if (R)
+                                R->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                            if (G)
+                                G->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                            if (B)
+                                B->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                            if (A)
+                                A->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                        }
                     }
 
                     GDALClose(ds);

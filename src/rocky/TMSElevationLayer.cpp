@@ -91,6 +91,9 @@ TMSElevationLayer::createHeightfieldImplementation(
     const TileKey& key,
     const IOOptions& io) const
 {
+    if (!isOpen())
+        return status();
+
     bool invertY = (tmsType() == "google");
 
     // request
@@ -110,6 +113,12 @@ TMSElevationLayer::createHeightfieldImplementation(
     }
     else
     {
+        if (r.status.code == Status::ServiceUnavailable)
+        {
+            setStatus(r.status);
+            Log::warn() << "Layer \"" << name() << "\" : " << r.status.message << std::endl;
+        }
+
         return r.status;
     }
 }

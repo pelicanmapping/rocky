@@ -35,6 +35,7 @@ int main(int argc, char** argv)
 
     // add an elevation layer
     auto elevation = rocky::TMSElevationLayer::create();
+    elevation->setEncoding(rocky::ElevationLayer::Encoding::MapboxRGB);
     elevation->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
     engine.map()->layers().add(elevation);
 
