@@ -33,7 +33,7 @@ add_library(${TARGET} ${HEADERS} ${SOURCES} ${SHADERS})
 #foreach(file ${SHADERS_TO_COMPILE})
 #    compile_shader(${file})
 #endforeach()
-#add_custom_target(rocky_vsg_shaders ALL DEPENDS ${SPIRV_SHADERS})
+add_custom_target(rocky_vsg_shaders ALL DEPENDS ${SPIRV_SHADERS})
 
 find_package(vsg CONFIG REQUIRED)
 

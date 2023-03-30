@@ -37,13 +37,13 @@ int main(int argc, char** argv)
     rocky::EngineVSG engine(argc, argv);
 
 #if defined(ROCKY_SUPPORTS_GDAL)
+
     auto imagery = rocky::GDALImageLayer::create();
-    imagery->setURI("WMTS:https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml,layer=s2cloudless-2020_3857");
+    imagery->setURI("WMTS:https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml,layer=s2cloudless-2020");
     engine.map()->layers().add(imagery);
 
     if (imagery->status().failed())
         return error(imagery);
-
 
 #elif defined(ROCKY_SUPPORTS_TMS)
 

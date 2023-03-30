@@ -30,6 +30,8 @@
 #define TILE_BUFFER_NAME "terrain_tile"
 #define TILE_BUFFER_BINDING 13
 
+#define LIGHT_DATA "lightData"
+
 #define ATTR_VERTEX "in_vertex"
 #define ATTR_NORMAL "in_normal"
 #define ATTR_UV "in_uvw"
@@ -46,7 +48,7 @@ StateFactory::StateFactory()
     // helps performance.
     sharedObjects = vsg::SharedObjects::create();
 
-    // set up the texture samplers and palceholder images we will use to render terrain.
+    // set up the texture samplers and placeholder images we will use to render terrain.
     createDefaultDescriptors();
 
     // shader set prototype for use with a GraphicsPipelineConfig.
@@ -213,6 +215,8 @@ StateFactory::createShaderSet() const
 
     shaderSet->addUniformBinding(TILE_BUFFER_NAME, "", 0, TILE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {}); // , vsg::vec3Array2D::create(1, 1));
 
+    shaderSet->addUniformBinding("lightData", "", 1, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, vsg::vec4Array::create(64));
+
     // Note: 128 is the maximum size required by the Vulkan spec, 
     // so don't increase it :)
     shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
@@ -244,10 +248,6 @@ StateFactory::createPipelineConfig(vsg::SharedObjects* sharedObjects) const
     // backface culling off:
     //pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
 
-    // depth settings:
-    // NOTE: reverse-Z is the default in VSG.
-    // https://groups.google.com/g/vsg-users/c/AfR2KEBX_1Q/m/a2bky6c8EgAJ
-
     // Temporary decriptors that we will use to set up the PipelineConfig.
     // Note, we only use these for setup, and then throw them away!
     // The ACTUAL descriptors we will make on a tile-by-tile basis.
@@ -258,13 +258,24 @@ StateFactory::createPipelineConfig(vsg::SharedObjects* sharedObjects) const
 
     pipelineConfig->assignUniform(descriptors, TILE_BUFFER_NAME, { });
 
-    // Register the ViewDescriptorSetLayout (for view-dependent state stuff)
-    // This is a weird way to add another descriptor set layout...
+    if (auto& lightDataBinding = shaderSet->getUniformBinding("lightData"))
+    {
+        auto data = lightDataBinding.data;
+        if (!data) data = vsg::vec4Array::create(64);
+        pipelineConfig->assignUniform(descriptors, LIGHT_DATA, data);
+    }
+
+    // Register the ViewDescriptorSetLayout (for view-dependent state stuff
+    // like viewpoint and lights data)
+    // The "set" in GLSL's "layout(set=X, binding=Y)" refers to the index of
+    // the descriptor set layout within the pipeline layout. Setting the
+    // "additional" DSL appends it to the pipline layout, giving it set=1.
     vsg::ref_ptr<vsg::ViewDescriptorSetLayout> vdsl;
     if (sharedObjects)
         vdsl = sharedObjects->shared_default<vsg::ViewDescriptorSetLayout>();
     else
         vdsl = vsg::ViewDescriptorSetLayout::create();
+
     pipelineConfig->additionalDescriptorSetLayout = vdsl;
 
     // Initialize GraphicsPipeline from the data in the configuration.
@@ -378,6 +389,15 @@ StateFactory::createTerrainStateGroup() const
         stateGroup->add(pipelineConfig->bindGraphicsPipeline);
     else if (pipeline)
         stateGroup->add(vsg::BindGraphicsPipeline::create(pipeline));
+
+    // assign any custom ArrayState that may be required.
+    stateGroup->prototypeArrayState = shaderSet->getSuitableArrayState(pipelineConfig->shaderHints->defines);
+
+    auto bindViewDescriptorSets = vsg::BindViewDescriptorSets::create(
+        VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, 1);
+
+    if (sharedObjects) sharedObjects->share(bindViewDescriptorSets);
+    stateGroup->add(bindViewDescriptorSets);
 
     return stateGroup;
 }

@@ -53,7 +53,6 @@ namespace ROCKY_NAMESPACE
             fmat4 elevation_matrix;
             fmat4 color_matrix;
             fmat4 normal_matrix;
-            fvec2 elev_texel_coeff;
         };
         vsg::ref_ptr<vsg::DescriptorImage> color;
         vsg::ref_ptr<vsg::DescriptorImage> colorParent;

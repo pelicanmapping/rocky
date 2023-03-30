@@ -111,21 +111,20 @@ int main(int argc, char** argv)
     ri.runtime().sharedObjects = vsg::SharedObjects::create();
 
 
-#if defined(ROCKY_SUPPORTS_GDAL)
+#if defined(ROCKY_SUPPORTS_TMS)
 
-    // add a layer to the map
-    auto layer = rocky::TMSImageLayer::create();
-    layer->setURI("https://readymap.org/readymap/tiles/1.0.0/135/");
-    mapNode->map()->layers().add(layer);
-    if (layer->status().failed())
-        return error(layer);
+    auto imagery = rocky::TMSImageLayer::create();
+    imagery->setURI("https://readymap.org/readymap/tiles/1.0.0/135/");
+    mapNode->map()->layers().add(imagery);
+    if (imagery->status().failed())
+        return error(imagery);
 
-    auto elev = rocky::TMSElevationLayer::create();
-    elev->setEncoding(rocky::ElevationLayer::Encoding::MapboxRGB);
-    elev->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
-    mapNode->map()->layers().add(elev);
-    if (elev->status().failed())
-        return error(layer);
+    auto elevation = rocky::TMSElevationLayer::create();
+    elevation->setEncoding(rocky::ElevationLayer::Encoding::MapboxRGB);
+    elevation->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
+    mapNode->map()->layers().add(elevation);
+    if (elevation->status().failed())
+        return error(elevation);
 
 #else
 
@@ -135,9 +134,20 @@ int main(int argc, char** argv)
         return error(layer);
 #endif
 
-    rocky::Log::info() << "Map: " << rocky::json_pretty(mapNode->map()->to_json()) << std::endl;
+    //rocky::Log::info() << "Map: " << rocky::json_pretty(mapNode->map()->to_json()) << std::endl;
 
     vsg_scene->addChild(mapNode);
+
+    // the sun
+    if (arguments.read({ "--sky" }))
+    {
+        const double distance_to_sun = 149.9e12;
+        auto sun = vsg::PointLight::create();
+        sun->name = "Sol";
+        sun->color = { 1, 1, 0.97 };
+        sun->position = { distance_to_sun, distance_to_sun, distance_to_sun };
+        vsg_scene->addChild(sun);
+    }
 
     // main camera
     double nearFarRatio = 0.00001;

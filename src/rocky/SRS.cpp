@@ -14,7 +14,6 @@
 #define LC "[SRS] "
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
 
 namespace
 {
@@ -140,7 +139,7 @@ namespace
                         // perhaps it's an EPSG string, in which case we must lower-case it so it
                         // works on case-sensitive file systems
                         // https://github.com/pyproj4/pyproj/blob/9283f962e4792da2a7f05ba3735c1ed7f3479502/pyproj/crs/crs.py#L111
-                        replace_in_place(to_try, "+init=EPSG", "+init=epsg");
+                        util::replace_in_place(to_try, "+init=EPSG", "+init=epsg");
                     }
 
                     pj = proj_create(ctx, to_try.c_str());
@@ -155,7 +154,6 @@ namespace
                     // store any error in the cache entry
                     auto err_no = proj_context_errno(ctx);
                     new_entry.error = proj_errno_string(err_no);
-                    //Instance::log().warn << new_entry.error << " (\"" << def << "\")" << std::endl;
                 }
                 else
                 {
