@@ -209,7 +209,7 @@ TileLayer::setProfile(const Profile& profile)
 bool
 TileLayer::isDynamic() const
 {
-    if (hints().dynamic().has_value(true))
+    if (hints().dynamic.has_value(true))
         return true;
     else
         return false;

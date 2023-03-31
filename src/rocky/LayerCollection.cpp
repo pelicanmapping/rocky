@@ -26,8 +26,10 @@ LayerCollection::add(shared_ptr<Layer> layer, const IOOptions& io)
     if (indexOf(layer) != count())
         return layer->status();
 
-    if (layer->getOpenAutomatically())
+    if (layer->openAutomatically())
+    {
         layer->open();
+    }
 
     Revision new_revision;
     unsigned index = -1;
@@ -57,7 +59,7 @@ LayerCollection::remove(shared_ptr<Layer> layer)
     Revision new_revision;
 
     // Close the layer if we opened it.
-    if (layer->getOpenAutomatically())
+    if (layer->openAutomatically())
     {
         layer->close();
     }
@@ -96,11 +98,9 @@ LayerCollection::move(shared_ptr<Layer> layer, unsigned new_index)
         std::unique_lock lock(_map->_mapDataMutex);
 
         // find it:
-        LayerVector::iterator i_oldIndex = _layers.end();
+        auto i_oldIndex = _layers.end();
 
-        for (LayerVector::iterator i = _layers.begin();
-            i != _layers.end();
-            i++, actualIndex++)
+        for (auto i = _layers.begin(); i != _layers.end(); i++, actualIndex++)
         {
             if (*i == layer)
             {

@@ -42,22 +42,23 @@ namespace ROCKY_NAMESPACE
     template<class T> using weak_ptr = std::weak_ptr<T>;
     template<class T> using weak_constptr = std::weak_ptr<const T>;
 
-    // application-wide unique ID.
+    //! application-wide unique ID.
     using UID = std::int32_t;
 
-    // revision type
+    //! revision type
     using Revision = std::int32_t;
 
-    // json serialization type
+    //! json serialization type
     using JSON = std::string;
 
-    // Pretty-print a json string.
+    //! Pretty-print a json string.
     extern ROCKY_EXPORT std::string json_pretty(const JSON&);
 
     //! Generate an application-wide unique identifier.
     extern ROCKY_EXPORT UID createUID();
 
     //! Base class for anything using the "Inherit" pattern
+    //! @private
     class ROCKY_EXPORT Object
     {
     protected:
@@ -71,6 +72,7 @@ namespace ROCKY_NAMESPACE
 
     //! Base class for objects implementing the create() pattern
     //! that should only be held with a shared_ptr.
+    //! @private
     template<typename PARENT, typename ME>
     class Inherit : public PARENT
     {
@@ -105,96 +107,6 @@ namespace ROCKY_NAMESPACE
         }
     };
 }
-
-
-//! public getter/setter
-#define public_prop(TYPE, NAME) \
-    private: \
-        TYPE _ ## NAME ; \
-    public: \
-        TYPE & NAME () { return _ ## NAME; } \
-        TYPE & NAME ## _mutable() { return _ ## NAME; } \
-        const TYPE & NAME () const { return _ ## NAME; }
-
-    //! property macro
-#define const_prop(TYPE, NAME) \
-    private: \
-        TYPE _ ## NAME ; \
-    protected: \
-        TYPE & NAME () { return _ ## NAME; } \
-        TYPE & NAME ## _mutable() { return _ ## NAME; } \
-    public: \
-        const TYPE & NAME () const { return _ ## NAME; }
-
-//! optional property macro
-#define optional_prop(TYPE, NAME) \
-    private: \
-      optional< TYPE > _ ## NAME ; \
-    public: \
-      optional< TYPE >& NAME () { return _ ## NAME; } \
-      const optional< TYPE >& NAME () const { return _ ## NAME; }
-
-    //! optional property macro
-#define ROCKY_OPTION(TYPE, NAME) \
-    private: \
-      optional< TYPE > _ ## NAME ; \
-      mutable std::vector<std::function<void(const TYPE&)>> _ ## NAME ## _listeners; \
-    public: \
-      optional< TYPE >& NAME () { return _ ## NAME; } \
-      const optional< TYPE >& NAME () const { return _ ## NAME; } \
-      void NAME ## Changed (std::function<void(const TYPE&)> f) const { \
-        _ ## NAME ## _listeners.push_back(f); } \
-      void set_ ## NAME (const TYPE& value) { \
-        _ ## NAME = value; \
-        for(auto& notify : _ ## NAME ## _listeners) notify(value); }
-
-//! ref_ptr property macro
-#define ROCKY_OPTION_SHAREDPTR(TYPE, NAME) \
-    private: \
-    std::shared_ptr< TYPE > _ ## NAME ; \
-    public: \
-    std::shared_ptr< TYPE >& NAME () { return _ ## NAME; } \
-    const std::shared_ptr< TYPE >& NAME () const { return _ ## NAME; }
-
-//! vector property macro
-#define ROCKY_OPTION_VECTOR(TYPE, NAME) \
-    private: \
-    std::vector< TYPE > _ ## NAME ; \
-    public: \
-    std::vector< TYPE >& NAME () { return _ ## NAME; } \
-    const std::vector< TYPE >& NAME () const { return _ ## NAME; }
-
-#define ROCKY_OPTION_IMPL(CLASS, TYPE, FUNC, OPTION) \
-    void CLASS ::set ## FUNC (const TYPE & value) { options(). set_ ## OPTION (value); }\
-    const TYPE & CLASS :: ## OPTION () const { return options(). OPTION ().get(); }
-
-//! property macro
-#define rk_property(TYPE, NAME) \
-    private: \
-    TYPE _ ## NAME ; \
-    public: \
-    TYPE & NAME () { return _ ## NAME; } \
-    TYPE & NAME ## _mutable() { return _ ## NAME; } \
-    void set_ ## NAME (const TYPE& value) { _ ## NAME = value; } \
-    const TYPE & NAME () const { return _ ## NAME; }
-
-//! const property macro
-#define rk_readonly_property(TYPE, NAME) \
-    private: \
-    TYPE _ ## NAME ; \
-    protected: \
-    TYPE & NAME () { return _ ## NAME; } \
-    TYPE & NAME ## _mutable() { return _ ## NAME; } \
-    public: \
-    const TYPE & NAME () const { return _ ## NAME; }
-
-#define ROCKY_OPTION_LESS(L,R) \
-    if (L().has_value() && !R().has_value()) return true; \
-    if (R().has_value() && !L().has_value()) return false; \
-    if (L().has_value() && R().has_value()) { \
-        if (L().get() < R().get()) return true; \
-        if (L().get() > R().get()) return false; }
-            
 
 #ifdef _MSC_VER
 // VS ignores

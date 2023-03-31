@@ -1,9 +1,5 @@
 #version 450
 
-#if 0
-#include "terrain.sdk"
-#else
-
 layout(set = 0, binding = 10) uniform sampler2D elevation_tex;
 
 // see rocky::TerrainTileDescriptors
@@ -13,8 +9,6 @@ layout(set = 0, binding = 13) uniform TileData
     mat4 color_matrix;
     mat4 normal_matrix;
 } tile;
-
-#endif
 
 layout(push_constant) uniform PushConstants
 {
@@ -33,8 +27,6 @@ layout(location = 4) in vec3 in_neighbor_normal;
 layout(location = 0) out vec3 out_color;
 layout(location = 1) out vec2 out_uv;
 layout(location = 2) out vec3 out_upvector_view;
-layout(location = 3) out vec2 normalmap_coords;
-layout(location = 4) out vec3 normalmap_binormal;
 layout(location = 5) out vec3 out_vertex_view;
 
 // GL built-ins
@@ -42,22 +34,18 @@ out gl_PerVertex {
     vec4 gl_Position;
 };
 
-// we could hard-code this, but 257 might change...
-const float elev_tile_size = 257;
-const float elev_tile_bias = 0.5;
-const vec2 elev_tile_coeff = vec2(
-    (elev_tile_size - (2.0*elev_tile_bias)) / elev_tile_size,
-    elev_tile_bias / elev_tile_size);
-
 // sample the elevation data at a UV tile coordinate
 float terrain_get_elevation(in vec2 uv)
 {
+    float size = float(textureSize(elevation_tex, 0).x);
+    vec2 coeff = vec2((size - 1.0) / size, 0.5 / size);
+
     // Texel-level scale and bias allow us to sample the elevation texture
     // on texel center instead of edge.
     vec2 elevc = uv
-        * elev_tile_coeff.x * tile.elevation_matrix[0][0] // scale
-        + elev_tile_coeff.x * tile.elevation_matrix[3].st // bias
-        + elev_tile_coeff.y;
+        * coeff.x * tile.elevation_matrix[0][0] // scale
+        + coeff.x * tile.elevation_matrix[3].st // bias
+        + coeff.y;
 
     return texture(elevation_tex, elevc).r;
 }

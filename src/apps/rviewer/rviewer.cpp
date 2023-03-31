@@ -101,7 +101,7 @@ int main(int argc, char** argv)
 
     // Configure out mapnode to our liking:
     mapNode->terrainNode()->concurrency = 4u;
-    mapNode->terrainNode()->skirtRatio = 0.1f;
+    mapNode->terrainNode()->skirtRatio = 0.025f;
     mapNode->terrainNode()->minLevelOfDetail = 1;
     mapNode->terrainNode()->screenSpaceError = 135.0f;
 

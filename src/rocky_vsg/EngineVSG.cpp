@@ -34,7 +34,7 @@ EngineVSG::EngineVSG(int& argc, char** argv) :
     mapNode = rocky::MapNode::create(instance);
 
     mapNode->terrainNode()->concurrency = 4u;
-    mapNode->terrainNode()->skirtRatio = 0.05f;
+    mapNode->terrainNode()->skirtRatio = 0.025f;
     mapNode->terrainNode()->minLevelOfDetail = 1;
     mapNode->terrainNode()->screenSpaceError = 135.0f;
 

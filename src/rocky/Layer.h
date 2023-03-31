@@ -41,9 +41,8 @@ namespace ROCKY_NAMESPACE
         class Hints
         {
         public:
-            ROCKY_OPTION(CachePolicy, cachePolicy);
-            //ROCKY_OPTION(unsigned, L2CacheSize);
-            ROCKY_OPTION(bool, dynamic);
+            optional<CachePolicy> cachePolicy;
+            optional<bool> dynamic;
         };
 
     public:
@@ -71,21 +70,19 @@ namespace ROCKY_NAMESPACE
         //! Close this layer.
         void close();
 
-        //! Whether the layer is open
+        //! Whether the layer is open without error
         bool isOpen() const;
 
-        //! Serialize this layer into a Config object (if applicable)
+        //! Serialize this layer into a JSON string
         virtual JSON to_json() const;
 
-        //virtual Config getConfig() const;
+        //! Whether to automatically open this layer (by calling open) when
+        //! adding the layer to a Map or when opening a map containing this Layer.
+        void setOpenAutomatically(bool value);
 
         //! Whether to automatically open this layer (by calling open) when
         //! adding the layer to a Map or when opening a map containing this Layer.
-        virtual void setOpenAutomatically(bool value);
-
-        //! Whether to automatically open this layer (by calling open) when
-        //! adding the layer to a Map or when opening a map containing this Layer.
-        virtual bool getOpenAutomatically() const;
+        const optional<bool>& openAutomatically() const;
 
         //! Cacheing policy. Only set this before opening the layer or adding to a map.
         void setCachePolicy(const CachePolicy& value);
@@ -137,17 +134,11 @@ namespace ROCKY_NAMESPACE
         //! Rendering type of this layer
         void setRenderType(RenderType value) { _renderType = value; }
 
-        //! Callback that modifies the layer's bounding box for a given tile key
-        virtual void modifyTileBoundingBox(const TileKey& key, const Box& box) const;
-
-        //! Class type name without namespace. For example if the leaf class type
-        const char* typeName() const;
+        //! Attribution to be displayed by the application
+        const optional<std::string>& attribution() const;
 
         //! Attribution to be displayed by the application
-        virtual std::string attribution() const;
-
-        //! Attribution to be displayed by the application
-        virtual void setAttribution(const std::string& attribution);
+        void setAttribution(const std::string& attribution);
 
         //! Set a serialized user property
         void setUserProperty(
@@ -159,6 +150,9 @@ namespace ROCKY_NAMESPACE
         inline T userProperty(
             const std::string& key,
             T fallback) const;
+
+        //! Callback that modifies the layer's bounding box for a given tile key
+        virtual void modifyTileBoundingBox(const TileKey& key, const Box& box) const;
 
     public:
 
@@ -247,8 +241,6 @@ namespace ROCKY_NAMESPACE
 
         bool _reopenRequired;
     };
-
-    using LayerVector = std::vector<shared_ptr<Layer>>;
 
     template<typename T>
     T Layer::userProperty(const std::string& key, T fallback) const {
