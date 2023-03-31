@@ -22,7 +22,7 @@ file(GLOB HEADERS *.h)
 file(GLOB SOURCES *.cpp)
 file(GLOB SHADERS shaders/*)
 
-file(GLOB SHADERS_TO_COMPILE shaders/*.vert shaders/*.frag)
+file(GLOB SHADERS_TO_COMPILE shaders/*.vert shaders/*.frag shaders/*.glsl)
 
 # create the target:
 add_library(${TARGET} ${HEADERS} ${SOURCES} ${SHADERS})
