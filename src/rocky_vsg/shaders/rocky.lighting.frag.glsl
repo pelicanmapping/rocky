@@ -1,8 +1,10 @@
 
 // from VSG's view-dependent state
 layout(set = 1, binding = 0) uniform LightData {
-    vec4 values[64];
+    vec4 v[64];
 } vsg_lights;
+
+layout(location = 15) in vec3 atmos_color;
 
 // TODO - this will eventually come from a material map
 struct PBR {
@@ -56,7 +58,7 @@ void apply_lighting(inout vec4 color, in vec3 normal)
     pbr.ao = 1.0;
     pbr.roughness = 0.5;
     pbr.metal = 0.0;
-    const float exposure = 5.0;
+    const float exposure = 3.3;
     // ....
 
     vec3 albedo = pow(color.rgb, vec3(2.2)); // SRGB to linear
@@ -70,7 +72,7 @@ void apply_lighting(inout vec4 color, in vec3 normal)
     vec3 Lo = vec3(0.0);
     vec3 ambient = vec3(0.013);
 
-    vec4 light_counts = vsg_lights.values[0];
+    vec4 light_counts = vsg_lights.v[0];
     int ambient_count = int(light_counts[0]);
     int directional_count = int(light_counts[1]);
     int point_count = int(light_counts[2]);
@@ -80,20 +82,20 @@ void apply_lighting(inout vec4 color, in vec3 normal)
 
     for (int i = 0; i < ambient_count; ++i)
     {
-        vec4 diffuse = vsg_lights.values[index++];
+        vec4 diffuse = vsg_lights.v[index++];
         ambient += diffuse.rgb * diffuse.a;
     }
 
     for (int i = 0; i < directional_count; ++i)
     {
-        vec3 diffuse = vsg_lights.values[index++].rgb;
-        vec3 direction = normalize(vsg_lights.values[index++].xyz);
+        vec3 diffuse = vsg_lights.v[index++].rgb;
+        vec3 direction = normalize(vsg_lights.v[index++].xyz);
     }
 
     for (int i = 0; i < point_count; ++i)
     {
-        vec3 diffuse = vsg_lights.values[index++].rgb;
-        vec3 position = vsg_lights.values[index++].xyz;
+        vec3 diffuse = vsg_lights.v[index++].rgb;
+        vec3 position = vsg_lights.v[index++].xyz;
 
         // per-light radiance:
         vec3 L = normalize(position - in_vertex_view);
@@ -133,11 +135,13 @@ void apply_lighting(inout vec4 color, in vec3 normal)
 
         color.rgb = color.rgb / (color.rgb + vec3(1.0)); // tone map
 
-        //color.rgb += sky_color; // haze
+        color.rgb += atmos_color; // add in the (linear) atmospheric haze
 
         color.rgb = 1.0 - exp(-exposure * color.rgb); // exposure
 
         // linear to SRGB (last step)
         color.rgb = pow(color.rgb, vec3(1.0 / 2.2));
+
+        //color.rgb = clamp(color.rgb, 0, 1);
     }
 }

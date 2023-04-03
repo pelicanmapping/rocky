@@ -462,6 +462,7 @@ StateFactory::updateTerrainTileDescriptors(
     uniforms.elevation_matrix = renderModel.elevation.matrix;
     uniforms.color_matrix = renderModel.color.matrix;
     uniforms.normal_matrix = renderModel.normal.matrix;
+    uniforms.model_matrix = renderModel.modelMatrix;
 
     vsg::ref_ptr<vsg::ubyteArray> data = vsg::ubyteArray::create(sizeof(uniforms));
     memcpy(data->dataPointer(), &uniforms, sizeof(uniforms));

@@ -511,6 +511,8 @@ TileNodeRegistry::requestMergeData(
             }
 #endif
 
+            renderModel.modelMatrix = to_glm(tile->surface->matrix);
+
             if (updated)
             {
                 terrain->stateFactory->updateTerrainTileDescriptors(

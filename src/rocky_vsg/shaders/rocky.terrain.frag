@@ -11,9 +11,7 @@ layout(push_constant) uniform PushConstants
 layout(location = 0) in vec3 in_color;
 layout(location = 1) in vec2 in_uv;
 layout(location = 2) in vec3 in_upvector_view;
-layout(location = 3) in vec2 normalmap_coords;
-layout(location = 4) in vec3 normalmap_binormal;
-layout(location = 5) in vec3 in_vertex_view;
+layout(location = 3) in vec3 in_vertex_view;
 
 // uniforms
 layout(set = 0, binding = 11) uniform sampler2D color_tex;

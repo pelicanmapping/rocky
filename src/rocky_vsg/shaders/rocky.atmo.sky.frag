@@ -1,11 +1,12 @@
 #version 450
 
 // inputs from vertex shader
-layout(location = 0) in vec3 atmos_v3Direction;
-layout(location = 1) in vec3 atmos_mieColor;
-layout(location = 2) in vec3 atmos_rayleighColor;
-layout(location = 3) in vec3 atmos_lightDir;
-layout(location = 4) in float atmos_renderFromSpace;
+layout(location = 20) in vec3 atmos_v3Direction;
+layout(location = 21) in vec3 atmos_mieColor;
+layout(location = 22) in vec3 atmos_rayleighColor;
+layout(location = 23) in vec3 atmos_lightDir;
+layout(location = 24) in float atmos_renderFromSpace;
+layout(location = 25) in vec3 atmos_groundColor;
 
 // fragment out
 layout(location = 0) out vec4 out_color;

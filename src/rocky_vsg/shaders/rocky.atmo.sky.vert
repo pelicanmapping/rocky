@@ -6,49 +6,32 @@ layout(push_constant) uniform PushConstants
     mat4 modelview;
 } pc;
 
-// from VSG's view-dependent state
-layout(set = 1, binding = 0) uniform LightData {
-    vec4 v[64];
-} vsg_lights;
-
 // input attributes
 layout(location = 0) in vec3 in_vertex;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec2 in_uv;
 
 // output varyings
-layout(location = 0) out vec3 atmos_v3Direction;
-layout(location = 1) out vec3 atmos_mieColor;
-layout(location = 2) out vec3 atmos_rayleighColor;
-layout(location = 3) out vec3 atmos_lightDir;
-layout(location = 4) out float atmos_renderFromSpace;
+layout(location = 20) out vec3 atmos_v3Direction;
+layout(location = 21) out vec3 atmos_mieColor;
+layout(location = 22) out vec3 atmos_rayleighColor;
+layout(location = 23) out vec3 atmos_lightDir;
+layout(location = 24) out float atmos_renderFromSpace;
 
 // GL built-ins
 out gl_PerVertex{
     vec4 gl_Position;
 };
+// from VSG's view-dependent state
+layout(set = 1, binding = 0) uniform LightData {
+    vec4 v[64];
+} vsg_lights;
 
 // Earth constants
 const float polarRadius = 6356752.0;
 const float atmosThickness = 96560.0;
 const float atmos_fInnerRadius = polarRadius;
 const float atmos_fOuterRadius = polarRadius + atmosThickness;
-
-vec4 position_view;
-
-void atmos_vertex_main();
-
-void main()
-{
-    position_view = pc.modelview * vec4(in_vertex, 1.0);
-
-    atmos_vertex_main();
-
-    gl_Position = pc.projection * position_view;
-}
-
-
-
 
 const float PI = 3.1415927;
 const float Kr = 0.0025;
@@ -64,13 +47,14 @@ const vec3 atmos_v3InvWavelength = vec3(5.6020447, 9.4732844, 19.6438026);
 #define F_SAMPLES 2.0
 
 // stage locals
+vec3 vertex_view;
 vec3 view_to_ecef;
+vec3 atmos_vVec;
 float atmos_fCameraHeight;
 float atmos_fCameraHeight2;
 float atmos_fOuterRadius2;
 float atmos_fScale;
 float atmos_fScaleOverScaleDepth;
-vec3 atmos_vVec;
 
 float atmos_scale(float fCos)
 {
@@ -81,7 +65,7 @@ float atmos_scale(float fCos)
 void atmos_SkyFromSpace(void)
 {
     // Get the ray from the camera to the vertex and its length (which is the far point of the ray passing through the atmosphere) 
-    vec3 v3Pos = (position_view.xyz + view_to_ecef);
+    vec3 v3Pos = (vertex_view + view_to_ecef);
     vec3 v3Ray = v3Pos - atmos_vVec;
     float fFar = length(v3Ray);
     v3Ray /= fFar;
@@ -132,7 +116,7 @@ void atmos_SkyFromAtmosphere(void)
 {
     // Get the ray from the camera to the vertex, and its length (which is the far 
     // point of the ray passing through the atmosphere) 
-    vec3 v3Pos = (position_view.xyz + view_to_ecef.xyz);
+    vec3 v3Pos = (vertex_view + view_to_ecef.xyz);
     vec3 v3Ray = v3Pos - atmos_vVec;
     float fFar = length(v3Ray);
     v3Ray /= fFar;
@@ -172,8 +156,10 @@ void atmos_SkyFromAtmosphere(void)
     atmos_v3Direction = atmos_vVec - v3Pos;
 }
 
-void atmos_vertex_main()
+void atmos_vertex_main(in vec3 in_vertex)
 {
+    vertex_view = (pc.modelview * vec4(in_vertex, 1.0)).xyz;
+
     // Get camera position and height 
     view_to_ecef = -(pc.modelview * vec4(0, 0, 0, 1)).xyz;
 
@@ -207,4 +193,10 @@ void atmos_vertex_main()
     atmos_renderFromSpace = 1.0 - clamp(
         (atmos_fOuterRadius - atmos_fCameraHeight) * atmos_fScale,
         0.0, 1.0);
+}
+
+void main()
+{
+    atmos_vertex_main(in_vertex);
+    gl_Position = pc.projection * pc.modelview * vec4(in_vertex, 1.0);
 }

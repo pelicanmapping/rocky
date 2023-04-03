@@ -53,6 +53,7 @@ namespace ROCKY_NAMESPACE
             fmat4 elevation_matrix;
             fmat4 color_matrix;
             fmat4 normal_matrix;
+            fmat4 model_matrix;
         };
         vsg::ref_ptr<vsg::DescriptorImage> color;
         vsg::ref_ptr<vsg::DescriptorImage> colorParent;
@@ -65,6 +66,7 @@ namespace ROCKY_NAMESPACE
     class TerrainTileRenderModel
     {
     public:
+        rocky::fmat4 modelMatrix;
         TextureData color;
         TextureData elevation;
         TextureData normal;
@@ -167,12 +169,6 @@ namespace ROCKY_NAMESPACE
     private:
 
         bool shouldSubDivide(vsg::State* state) const;
-
-        // Ensure that inherited data from the parent node is up to date
-        void refreshInheritedData(const TerrainTileNode* parent);
-
-        // Inherit one shared sampler from parent tile if possible
-        void inheritSharedSampler(int binding);
 
         //! Calculate the culling extent
         void recomputeBound();
