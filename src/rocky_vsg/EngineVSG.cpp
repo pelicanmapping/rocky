@@ -4,10 +4,10 @@
  * MIT License
  */
 #include "EngineVSG.h"
-
-#include <rocky_vsg/MapNode.h>
-#include <rocky_vsg/TerrainNode.h>
-#include <rocky_vsg/MapManipulator.h>
+#include "MapNode.h"
+#include "TerrainNode.h"
+#include "MapManipulator.h"
+#include "SkyNode.h"
 #include <rocky/Ephemeris.h>
 
 #include <vsg/app/CloseHandler.h>
@@ -31,26 +31,24 @@ EngineVSG::EngineVSG(int& argc, char** argv) :
     viewer = vsg::Viewer::create();
     viewer->addEventHandler(vsg::CloseHandler::create(viewer));
 
+    mainScene = vsg::Group::create();
+
     mapNode = rocky::MapNode::create(instance);
+
+    // the sun
+    if (commandLine.read({ "--sky" }))
+    {
+        auto sky = rocky::SkyNode::create();
+        sky->setWorldSRS(mapNode->worldSRS(), instance.runtime());
+        mainScene->addChild(sky);
+    }
 
     mapNode->terrainNode()->concurrency = 4u;
     mapNode->terrainNode()->skirtRatio = 0.025f;
     mapNode->terrainNode()->minLevelOfDetail = 1;
     mapNode->terrainNode()->screenSpaceError = 135.0f;
 
-    mainScene = vsg::Group::create();
     mainScene->addChild(mapNode);
-
-    // the sun
-    if (commandLine.read({ "--sky" }))
-    {
-        auto sun = rocky::Ephemeris().sunPosition(rocky::DateTime());
-        auto light = vsg::PointLight::create();
-        light->name = "Sol";
-        light->color = { 1, 1, 0.95 };
-        light->position = { sun.geocentric.x, sun.geocentric.y, sun.geocentric.z };
-        mainScene->addChild(light);
-    }
 }
 
 void
