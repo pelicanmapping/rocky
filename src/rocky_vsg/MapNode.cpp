@@ -139,7 +139,7 @@ MapNode::worldSRS() const
 {
     if (_worldSRS.valid())
         return _worldSRS;
-    else if (mapSRS().isGeographic())
+    else if (mapSRS().isGeodetic())
         return SRS::ECEF;
     else
         return mapSRS();

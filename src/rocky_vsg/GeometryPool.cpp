@@ -109,7 +109,7 @@ GeometryPool::createKeyForTileKey(
     GeometryKey& out) const
 {
     out.lod  = tileKey.levelOfDetail();
-    out.tileY = tileKey.profile().srs().isGeographic()? tileKey.tileY() : 0;
+    out.tileY = tileKey.profile().srs().isGeodetic()? tileKey.tileY() : 0;
     out.size = tileSize;
 }
 

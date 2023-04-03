@@ -77,8 +77,8 @@ namespace ROCKY_NAMESPACE
             return valid();
         }
 
-        //! Is this a geographic (long, lat) SRS?
-        bool isGeographic() const;
+        //! Is this a geodetic (long, lat) SRS?
+        bool isGeodetic() const;
 
         //! Is this projected (XY) SRS?
         bool isProjected() const;
@@ -86,8 +86,11 @@ namespace ROCKY_NAMESPACE
         //! Is this a geocentric (ECEF) SRS?
         bool isGeocentric() const;
 
-        //! Gets the underlying geographic/geodetic SRS
+        //! Gets the underlying geodetic (longitude, latitude) SRS
         SRS geoSRS() const;
+
+        //! Gets the corresponding geocentric SRS. Only applies to a geodetic SRS.
+        SRS geocentricSRS() const;
 
         //! WKT (OGC Well-Known Text) representation
         const std::string& wkt() const;
@@ -195,7 +198,7 @@ namespace ROCKY_NAMESPACE
         //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
         bool transform(const DVEC3A& in, DVEC3B& out) const {
-            out = in;
+            out = DVEC3B(in.x, in.y, in.z);
             return _nop? true : forward(get_handle(), out.x, out.y, out.z);
         }
 
@@ -203,7 +206,7 @@ namespace ROCKY_NAMESPACE
         //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
         bool operator()(const DVEC3A& in, DVEC3B& out) const {
-            out = in;
+            out = DVEC3B(in.x, in.y, in.z);
             return _nop ? true : forward(get_handle(), out.x, out.y, out.z);
         }
 
@@ -232,7 +235,7 @@ namespace ROCKY_NAMESPACE
         //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
         bool inverse(const DVEC3A& in, DVEC3B& out) const {
-            out = in;
+            out = DVEC3B(in.x, in.y, in.z);
             return _nop ? true : inverse(get_handle(), out.x, out.y, out.z);
         }
 

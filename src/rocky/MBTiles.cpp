@@ -640,7 +640,7 @@ MBTiles::Driver::setDataExtents(const DataExtentList& values)
 
         // Convert the bounds to geographic
         GeoExtent bounds;
-        if (e.srs().isGeographic())
+        if (e.srs().isGeodetic())
         {
             bounds = e;
         }

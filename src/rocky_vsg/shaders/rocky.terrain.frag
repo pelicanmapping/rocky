@@ -19,7 +19,7 @@ layout(location = 5) in vec3 in_vertex_view;
 layout(set = 0, binding = 11) uniform sampler2D color_tex;
 layout(set = 0, binding = 12) uniform sampler2D normal_tex;
 
-#include "rocky_lighting.glsl"
+#include "rocky.lighting.frag.glsl"
 
 // outputs
 
@@ -44,7 +44,9 @@ void main()
 
     apply_lighting(out_color, get_normal());
 
+#ifdef GL_NV_fragment_shader_barycentric
     // outlines - debugging
     float b = min(gl_BaryCoordNV.x, min(gl_BaryCoordNV.y, gl_BaryCoordNV.z))*32.0;
     out_color.rgb = mix(vec3(1,1,1), out_color.rgb, clamp(b,0.85,1.0));
+#endif
 }

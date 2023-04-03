@@ -78,7 +78,7 @@ bool
 GeoExtent::isWholeEarth() const
 {
     return 
-        _srs.isGeographic() &&
+        _srs.isGeodetic() &&
         width() == 360.0 &&
         height() == 180.0;
 }
@@ -104,7 +104,7 @@ GeoExtent::set(double west, double south, double east, double north)
     double width = 0.0;
     double height = 0.0;
 
-    if (_srs.isGeographic())
+    if (_srs.isGeodetic())
     {
         // ensure east >= west in a geographic frame.
         while (east < west)
@@ -206,7 +206,7 @@ GeoExtent::operator != ( const GeoExtent& rhs ) const
 bool
 GeoExtent::crossesAntimeridian() const
 {
-    return _srs.isGeographic() && east() < west();
+    return _srs.isGeodetic() && east() < west();
 }
 
 bool
@@ -224,7 +224,7 @@ GeoExtent::splitAcrossAntimeridian(GeoExtent& out_west, GeoExtent& out_east) con
         width_new = east() - (-180.0);
         out_east.setOriginAndSize(-180.0, south(), width_new, height());
     }
-    else if ( !_srs.isGeographic() )
+    else if ( !_srs.isGeodetic() )
     {
         //note: may not actually work.
         GeoExtent latlong_extent = transform(_srs.geoSRS());
@@ -256,7 +256,7 @@ namespace
 
         // Start by clamping to the out_srs' legal bounds, if possible.
         // TODO: rethink this to be more generic.
-        if (fromSRS.isGeographic() && !toSRS.isGeographic())
+        if (fromSRS.isGeodetic() && !toSRS.isGeodetic())
         {
             auto to_geo = toSRS.to(fromSRS);
             Box b = toSRS.bounds(); // long,lat degrees
@@ -333,7 +333,7 @@ namespace
             // For a geographic target, make sure the new extents contain the centroid
             // because they might have wrapped around or run into a precision failure.
             // v[0]=centroid, v[1]=LL, v[2]=UL, v[3]=UR, v[4]=LR
-            if (toSRS.isGeographic())
+            if (toSRS.isGeodetic())
             {
                 if (v[1].x > v[0].x || v[2].x > v[0].x) in_out_xmin = -180.0;
                 if (v[3].x < v[0].x || v[4].x < v[0].x) in_out_xmax = 180.0;
@@ -348,7 +348,7 @@ namespace
                 in_out_ymax = std::max(v[i].y, in_out_ymax);
             }
 
-            if (toSRS.isGeographic())
+            if (toSRS.isGeodetic())
             {
                 in_out_xmin = std::max(in_out_xmin, -180.0);
                 in_out_ymin = std::max(in_out_ymin, -90.0);
@@ -518,7 +518,7 @@ GeoExtent::intersects(const GeoExtent& rhs, bool checkSRS) const
         return false;
 
     // Trivial reject: x-dimension does not overlap in projected SRS:
-    if (!_srs.isGeographic())
+    if (!_srs.isGeodetic())
     {
         bool x_excl = west() >= rhs.east() || east() <= rhs.west();
         return x_excl == false;
@@ -621,7 +621,7 @@ GeoExtent::expandToInclude(double x, double y)
 
     if (!containsX)
     {
-        if (_srs.isGeographic())
+        if (_srs.isGeodetic())
         {
             if (x > west())
             {
@@ -709,7 +709,7 @@ GeoExtent::expandToInclude(const GeoExtent& rhs)
         // non-wrap-around new width:
         double w0 = std::max(xMax(), rhs.xMax()) - std::min(xMin(), rhs.xMin());
 
-        if (_srs.isGeographic())
+        if (_srs.isGeodetic())
         {
             // wrap-around width:
             double w1 = west() > rhs.east()? (180-west())+(rhs.east()-(-180)) : (180-rhs.west()) + (east()-(-180));
@@ -770,7 +770,7 @@ GeoExtent::intersectionSameSRS(const GeoExtent& rhs) const
 
     GeoExtent result( *this );
 
-    if (_srs.isGeographic())
+    if (_srs.isGeodetic())
     {
         if (width() == 360.0)
         {
@@ -903,7 +903,7 @@ GeoExtent::clamp()
     else if (equiv(_height, ceil(_height)))
         _height = ceil(_height);
 
-    if (_srs.isGeographic())
+    if (_srs.isGeodetic())
     {
         _width = rocky::clamp(_width, 0.0, 360.0);
         //_height = osg::clampBetween(_height, 0.0, 180.0);
@@ -931,7 +931,7 @@ GeoExtent::area() const
 double
 GeoExtent::normalizeX(double x) const
 {
-    if (is_valid(x) && _srs.isGeographic())
+    if (is_valid(x) && _srs.isGeodetic())
     {
         if (fabs(x) <= 180.0)
         {

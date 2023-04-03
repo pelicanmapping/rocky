@@ -385,13 +385,13 @@ TEST_CASE("SRS")
         SRS merc("epsg:3785"); // spherical mercator SRS
         REQUIRE(merc.valid());
         CHECK(merc.isProjected() == true);
-        CHECK(merc.isGeographic() == false);
+        CHECK(merc.isGeodetic() == false);
         CHECK(merc.isGeocentric() == false);
 
         SRS wgs84("epsg:4326"); // geographic WGS84 (long/lat/hae)
         REQUIRE(wgs84.valid());
         CHECK(wgs84.isProjected() == false);
-        CHECK(wgs84.isGeographic() == true);
+        CHECK(wgs84.isGeodetic() == true);
         CHECK(wgs84.isGeocentric() == false);
 
         auto xform = merc.to(wgs84);
@@ -413,10 +413,10 @@ TEST_CASE("SRS")
 
         SRS geo = merc.geoSRS();
         REQUIRE(geo.valid());
-        CHECK(geo.isGeographic());
+        CHECK(geo.isGeodetic());
 
         SRS utm("epsg:32632"); // UTM32/WGS84
-        CHECK(utm.geoSRS().isGeographic());
+        CHECK(utm.geoSRS().isGeodetic());
     }
 
     SECTION("Geographic <> Geocentric")
@@ -424,13 +424,13 @@ TEST_CASE("SRS")
         SRS wgs84("wgs84"); // geographic WGS84 (long/lat)
         REQUIRE(wgs84.valid());
         CHECK(wgs84.isProjected() == false);
-        CHECK(wgs84.isGeographic() == true);
+        CHECK(wgs84.isGeodetic() == true);
         CHECK(wgs84.isGeocentric() == false);
 
         SRS ecef("geocentric"); // geocentric WGS84 (ECEF)
         REQUIRE(ecef.valid());
         CHECK(ecef.isProjected() == false);
-        CHECK(ecef.isGeographic() == false);
+        CHECK(ecef.isGeodetic() == false);
         CHECK(ecef.isGeocentric() == true);
 
         dvec3 out;
@@ -450,7 +450,7 @@ TEST_CASE("SRS")
         auto pc = SRS("plate-carree");
         REQUIRE(pc == SRS::PLATE_CARREE);
         CHECK(pc.isProjected() == true);
-        CHECK(pc.isGeographic() == false);
+        CHECK(pc.isGeodetic() == false);
         CHECK(pc.isGeocentric() == false);
         auto b = pc.bounds();
         CHECK((b.valid() &&
@@ -463,14 +463,14 @@ TEST_CASE("SRS")
         SRS utm32N("epsg:32632"); // +proj=utm +zone=32 +datum=WGS84
         REQUIRE(utm32N.valid());
         CHECK(utm32N.isProjected() == true);
-        CHECK(utm32N.isGeographic() == false);
+        CHECK(utm32N.isGeodetic() == false);
         CHECK(utm32N.isGeocentric() == false);
         CHECK(utm32N.bounds().valid());
 
         SRS utm32S("+proj=utm +zone=32 +south +datum=WGS84");
         REQUIRE(utm32S.valid());
         CHECK(utm32S.isProjected() == true);
-        CHECK(utm32S.isGeographic() == false);
+        CHECK(utm32S.isGeodetic() == false);
         CHECK(utm32S.isGeocentric() == false);
         auto b = utm32S.bounds();
         CHECK((b.valid() && b.xmin == 166000 && b.xmax == 834000 && b.ymin == 1116915 && b.ymax == 10000000));
@@ -526,7 +526,7 @@ TEST_CASE("SRS")
         SRS bad("gibberish");
         CHECK(bad.valid() == false);
         CHECK(bad.isProjected() == false);
-        CHECK(bad.isGeographic() == false);
+        CHECK(bad.isGeodetic() == false);
         CHECK(bad.isGeocentric() == false);
     }
 

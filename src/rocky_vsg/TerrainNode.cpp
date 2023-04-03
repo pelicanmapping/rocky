@@ -45,7 +45,7 @@ TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
     SRS worldSRS = new_worldSRS;
     if (!worldSRS.valid())
     {
-        worldSRS = new_map->srs().isGeographic() ?
+        worldSRS = new_map->srs().isGeodetic() ?
             SRS::ECEF :
             new_map->srs();
     }

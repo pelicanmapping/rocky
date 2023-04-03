@@ -70,7 +70,7 @@ namespace
         {
             return "EPSG:900913";
         }
-        else if (srs.isGeographic())
+        else if (srs.isGeodetic())
         {
             return "EPSG:4326";
         }
@@ -220,7 +220,7 @@ namespace
             SRS srs(tilemap.srsString);
 
             tilemap.profileType =
-                srs.isGeographic() ? ProfileType::GEODETIC :
+                srs.isGeodetic() ? ProfileType::GEODETIC :
                 srs.isHorizEquivalentTo(SRS::SPHERICAL_MERCATOR) ? ProfileType::MERCATOR :
                 srs.isProjected() ? ProfileType::LOCAL :
                 ProfileType::UNKNOWN;
@@ -313,7 +313,7 @@ TileMap::createProfile() const
     }
 
     else if (
-        new_srs.isGeographic() &&
+        new_srs.isGeodetic() &&
         equiv(minX, -180.) &&
         equiv(maxX, 180.) &&
         equiv(minY, -90.) &&
@@ -482,7 +482,7 @@ TileMap::TileMap(
     if (profile.valid())
     {
         profileType =
-            profile.srs().isGeographic() ? ProfileType::GEODETIC :
+            profile.srs().isGeodetic() ? ProfileType::GEODETIC :
             profile.srs().isHorizEquivalentTo(SRS::SPHERICAL_MERCATOR) ? ProfileType::MERCATOR :
             ProfileType::LOCAL;
     }

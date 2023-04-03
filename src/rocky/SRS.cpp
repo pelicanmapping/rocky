@@ -484,7 +484,7 @@ SRS::name() const
 }
 
 bool
-SRS::isGeographic() const
+SRS::isGeodetic() const
 {
     if (!valid())
         return false;
@@ -543,7 +543,7 @@ SRS::wkt() const
 const Units&
 SRS::units() const
 {
-    return isGeographic() ? Units::DEGREES : Units::METERS;
+    return isGeodetic() ? Units::DEGREES : Units::METERS;
 }
 
 const Ellipsoid&
@@ -575,10 +575,25 @@ SRS::to(const SRS& rhs) const
 SRS
 SRS::geoSRS() const
 {
-    PJ* pj = g_srs_factory.get_or_create(_definition).pj;
+    if (isGeodetic())
+        return *this;
+
+    auto& def = g_srs_factory.get_or_create(_definition);
+
+    PJ* pj = def.pj;
     if (pj)
     {
+        if (isGeocentric())
+        {
+            // A bit hacky but it works.
+            // We do this because proj_crs_get_geodetic_crs() on a geocentric CRS
+            // just returns the same geocentric CRS. Is that a bug in proj?
+            std::string proj = def.proj;
+            util::replace_in_place(proj, "+proj=geocent", "+proj=longlat");
+            return SRS(proj);
+        }
         auto ctx = g_srs_factory.threading_context();
+
         PJ* pjgeo = proj_crs_get_geodetic_crs(ctx, pj);
         if (pjgeo)
         {
@@ -590,13 +605,32 @@ SRS::geoSRS() const
     return SRS(); // invalid
 }
 
+SRS
+SRS::geocentricSRS() const
+{
+    auto& def = g_srs_factory.get_or_create(_definition);
+    if (def.pj)
+    {
+        auto ctx = g_srs_factory.threading_context();
+        PJ* pjgeo = proj_crs_get_geodetic_crs(ctx, def.pj);
+        if (pjgeo)
+        {
+            std::string proj = proj_as_proj_string(ctx, pjgeo, PJ_PROJ_5, nullptr);
+            util::replace_in_place(proj, "+proj=longlat", "+proj=geocent");
+            proj_destroy(pjgeo);
+            return SRS(proj);
+        }
+    }
+    return SRS();
+}
+
 dmat4
 SRS::localToWorldMatrix(const dvec3& origin) const
 {
     if (!valid())
         return { };
 
-    if (isGeographic())
+    if (isGeodetic())
     {
         dvec3 ecef;
         to(SRS::ECEF).transform(origin, ecef);
@@ -621,7 +655,7 @@ SRS::transformUnits(
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(inSRS.valid() && outSRS.valid(), 0.0);
 
-    if (inSRS.isProjected() && outSRS.isGeographic())
+    if (inSRS.isProjected() && outSRS.isGeodetic())
     {
         return Units::DEGREES.convertTo(
             outSRS.units(),
@@ -629,13 +663,13 @@ SRS::transformUnits(
                 inSRS.units().convertTo(Units::METERS, input),
                 latitude.as(Units::DEGREES)));
     }
-    else if (inSRS.isGeocentric() && outSRS.isGeographic())
+    else if (inSRS.isGeocentric() && outSRS.isGeodetic())
     {
         return Units::DEGREES.convertTo(
             outSRS.units(),
             outSRS.ellipsoid().metersToLongitudinalDegrees(input, latitude.as(Units::DEGREES)));
     }
-    else if (inSRS.isGeographic() && outSRS.isProjected())
+    else if (inSRS.isGeodetic() && outSRS.isProjected())
     {
         return Units::METERS.convertTo(
             outSRS.units(),
@@ -643,7 +677,7 @@ SRS::transformUnits(
                 inSRS.units().convertTo(Units::DEGREES, input),
                 latitude.as(Units::DEGREES)));
     }
-    else if (inSRS.isGeographic() && outSRS.isGeocentric())
+    else if (inSRS.isGeodetic() && outSRS.isGeocentric())
     {
         return outSRS.ellipsoid().longitudinalDegreesToMeters(
             inSRS.units().convertTo(Units::DEGREES, input),
@@ -664,7 +698,7 @@ SRS::transformUnits(
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(outSRS.valid(), distance.value());
 
-    if (distance.units().isLinear() && outSRS.isGeographic())
+    if (distance.units().isLinear() && outSRS.isGeodetic())
     {
         return Units::DEGREES.convertTo(
             outSRS.units(),

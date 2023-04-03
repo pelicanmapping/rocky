@@ -12,6 +12,7 @@
 #include <rocky_vsg/MapNode.h>
 #include <rocky_vsg/TerrainNode.h>
 #include <rocky_vsg/MapManipulator.h>
+#include <rocky_vsg/SkyNode.h>
 
 #include <vsg/all.h>
 #include <chrono>
@@ -135,20 +136,15 @@ int main(int argc, char** argv)
         return error(layer);
 #endif
 
-    //rocky::Log::info() << "Map: " << rocky::json_pretty(mapNode->map()->to_json()) << std::endl;
-
-    vsg_scene->addChild(mapNode);
-
     // the sun
     if (arguments.read({ "--sky" }))
     {
-        auto sun = rocky::Ephemeris().sunPosition(rocky::DateTime());
-        auto light = vsg::PointLight::create();
-        light->name = "Sol";
-        light->color = { 1, 1, 0.95 };
-        light->position = { sun.geocentric.x, sun.geocentric.y, sun.geocentric.z };
-        vsg_scene->addChild(light);
+        auto sky = rocky::SkyNode::create();
+        sky->setWorldSRS(mapNode->worldSRS(), ri.runtime());
+        vsg_scene->addChild(sky);
     }
+
+    vsg_scene->addChild(mapNode);
 
     // main camera
     double nearFarRatio = 0.00001;

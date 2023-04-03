@@ -64,7 +64,7 @@ GeoCircle::intersects( const GeoCircle& rhs ) const
             dvec2 vec = dvec2(center().x(), center().y()) - dvec2(rhs.center().x(), rhs.center().y());
             return lengthSquared(vec) <= (radius() + rhs.radius())*(radius() + rhs.radius());
         }
-        else // if ( isGeographic() )
+        else // if ( isGeodetic() )
         {
             GeoPoint p0(srs(), dvec3(center().x(), center().y(), 0.0));
             GeoPoint p1(srs(), dvec3(rhs.center().x(), rhs.center().y(), 0.0));

@@ -175,7 +175,7 @@ namespace ROCKY_NAMESPACE
     void to_json(json& j, const GeoPoint& obj) {
         if (obj.valid()) {
             j = json::object();
-            if (obj.srs().isGeographic()) {
+            if (obj.srs().isGeodetic()) {
                 set(j, "lat", obj.y());
                 set(j, "long", obj.x());
             }
@@ -195,7 +195,7 @@ namespace ROCKY_NAMESPACE
         get_to(j, "srs", srs);
         if (!srs.valid())
             srs = SRS::WGS84;
-        if (srs.isGeographic()) {
+        if (srs.isGeodetic()) {
             get_to(j, "lat", y);
             get_to(j, "long", x);
         }

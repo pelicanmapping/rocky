@@ -72,7 +72,7 @@ SelectionInfo::initialize(
         // In a geographic map, this will effectively limit the maximum LOD
         // progressively starting at about +/- 72 degrees latitude.
         int startLOD = 6;
-        if (restrictPolarSubdivision && lod >= startLOD && profile.srs().isGeographic())
+        if (restrictPolarSubdivision && lod >= startLOD && profile.srs().isGeodetic())
         {            
             const double startAR = 0.1; // minimum allowable aspect ratio at startLOD
             const double endAR = 0.4;   // minimum allowable aspect ratio at maxLOD

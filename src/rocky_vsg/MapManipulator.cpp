@@ -1039,7 +1039,7 @@ MapManipulator::setViewpointFrame(double time_s)
         }
 
         vsg::dvec3 newCenter =
-            _srs.isGeographic()
+            _srs.isGeodetic()
             ? nlerp(startWorld, endWorld, tp)
             : lerp(startWorld, endWorld, tp);
 
@@ -1783,7 +1783,7 @@ MapManipulator::zoom(double dx, double dy)
     {
         _lastPointOnEarth = target;
 
-        if (_srs.valid() && _srs.isGeographic())
+        if (_srs.valid() && _srs.isGeodetic())
         {
             // globe
 

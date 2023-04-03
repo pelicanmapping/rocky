@@ -46,7 +46,7 @@ Profile::setup(
             ROCKY_TODO("");
 
 #if 0
-            if (srs.isGeographic())
+            if (srs.isGeodetic())
             {
                 b = Box(-180.0, -90.0, 180.0, 90.0);
             }
@@ -71,7 +71,7 @@ Profile::setup(
         {
             ROCKY_TODO("");
 #if 0
-            if (srs.isGeographic())
+            if (srs.isGeodetic())
             {
                 tx = 2;
                 ty = 1;
@@ -110,7 +110,7 @@ Profile::setup(
         _shared->_numTilesHighAtLod0 = ty;
 
         // automatically calculate the lat/long extents:
-        _shared->_latlong_extent = srs.isGeographic() ?
+        _shared->_latlong_extent = srs.isGeodetic() ?
             _shared->_extent :
             _shared->_extent.transform(srs.geoSRS());
 
@@ -376,7 +376,7 @@ Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) cons
 
         // get the input in lat/long:
         GeoExtent gcs_input =
-            input.srs().isGeographic() ?
+            input.srs().isGeodetic() ?
             input :
             input.transform(geo_srs);
 

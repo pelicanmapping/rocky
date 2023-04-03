@@ -479,7 +479,7 @@ TileLayer::bestAvailableTileKey(
                 // Build the index in the SRS of this layer
                 GeoExtent extentInLayerSRS = profile().clampAndTransformExtent(*de);
 
-                if (extentInLayerSRS.srs().isGeographic() && extentInLayerSRS.crossesAntimeridian())
+                if (extentInLayerSRS.srs().isGeodetic() && extentInLayerSRS.crossesAntimeridian())
                 {
                     GeoExtent west, east;
                     extentInLayerSRS.splitAcrossAntimeridian(west, east);

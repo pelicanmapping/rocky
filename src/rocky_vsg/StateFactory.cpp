@@ -15,8 +15,8 @@
 #include <vsg/state/BindDescriptorSet.h>
 #include <vsg/state/ViewDependentState.h>
 
-#define TERRAIN_VERT_SHADER "rocky_terrain.vert"
-#define TERRAIN_FRAG_SHADER "rocky_terrain.frag"
+#define TERRAIN_VERT_SHADER "rocky.terrain.vert"
+#define TERRAIN_FRAG_SHADER "rocky.terrain.frag"
 
 #define ELEVATION_TEX_NAME "elevation_tex"
 #define ELEVATION_TEX_BINDING 10
@@ -30,7 +30,7 @@
 #define TILE_BUFFER_NAME "terrain_tile"
 #define TILE_BUFFER_BINDING 13
 
-#define LIGHT_DATA "lightData"
+#define LIGHT_DATA "vsg_lights"
 
 #define ATTR_VERTEX "in_vertex"
 #define ATTR_NORMAL "in_normal"
@@ -215,7 +215,7 @@ StateFactory::createShaderSet() const
 
     shaderSet->addUniformBinding(TILE_BUFFER_NAME, "", 0, TILE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {}); // , vsg::vec3Array2D::create(1, 1));
 
-    shaderSet->addUniformBinding("lightData", "", 1, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, vsg::vec4Array::create(64));
+    shaderSet->addUniformBinding("vsg_lights", "", 1, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, vsg::vec4Array::create(64));
 
     // Note: 128 is the maximum size required by the Vulkan spec, 
     // so don't increase it :)
@@ -258,7 +258,7 @@ StateFactory::createPipelineConfig(vsg::SharedObjects* sharedObjects) const
 
     pipelineConfig->assignUniform(descriptors, TILE_BUFFER_NAME, { });
 
-    if (auto& lightDataBinding = shaderSet->getUniformBinding("lightData"))
+    if (auto& lightDataBinding = shaderSet->getUniformBinding("vsg_lights"))
     {
         auto data = lightDataBinding.data;
         if (!data) data = vsg::vec4Array::create(64);

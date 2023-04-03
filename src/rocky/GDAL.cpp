@@ -699,7 +699,7 @@ GDAL::Driver::open(
 
     // For a geographic SRS, use the whole-globe profile for performance.
     // Otherwise, collect information and make the profile later.
-    if (src_srs.isGeographic())
+    if (src_srs.isGeodetic())
     {
         _profile = Profile(src_srs);
         if (!_profile.valid())
@@ -824,7 +824,7 @@ GDAL::Driver::open(
     bool is_area = pora != nullptr && util::toLower(std::string(pora)) == "area";
 
     bool clamped = false;
-    if (srs.isGeographic())
+    if (srs.isGeodetic())
     {
         if (is_area && (_bounds.xmin < -180.0 || _bounds.xmax > 180.0))
         {
@@ -1086,7 +1086,7 @@ GDAL::Driver::createImage(
     // The extents and the intersection will be normalized between -180 and 180 longitude if they are geographic.
     // However, the georeferencing will expect the coordinates to be in the same longitude frame as the original dataset,
     // so the intersection bounds are adjusted here if necessary so that the values line up with the georeferencing.
-    if (_extents.srs().isGeographic())
+    if (_extents.srs().isGeodetic())
     {
         while (west < _bounds.xmin)
         {
