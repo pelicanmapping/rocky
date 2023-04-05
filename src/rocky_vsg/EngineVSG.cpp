@@ -11,6 +11,7 @@
 #include <rocky/Ephemeris.h>
 
 #include <vsg/app/CloseHandler.h>
+#include <vsg/app/View.h>
 #include <vsg/app/RenderGraph.h>
 #include <vsg/utils/CommandLine.h>
 #include <vsg/nodes/Light.h>
@@ -111,32 +112,38 @@ EngineVSG::run()
 
     viewer->addEventHandler(rocky::MapManipulator::create(mapNode, camera));
 
-    // associate the scene graph with a window and camera in a new render graph
-    auto renderGraph = vsg::createRenderGraphForView(
-        mainWindow,
-        camera,
-        mainScene,
-        VK_SUBPASS_CONTENTS_INLINE,
-        false); // assignHeadlight
+    // View pairs a camera with a scene graph and manages
+    // view-dependent state like lights and viewport.
+    auto view = vsg::View::create(camera);
+    view->addChild(mainScene);
+    
+    // RenderGraph encapsulates vkCmdRenderPass/vkCmdEndRenderPass and owns things
+    // like the clear color, render area, and a render target (framebuffer or window).
+    auto renderGraph = vsg::RenderGraph::create(mainWindow, view);
 
-    // Command graph holds the render graph:
+    // CommandGraph holds the command buffers that the vk record/submit task
+    // will use during record traversal.
     auto commandGraph = vsg::CommandGraph::create(mainWindow);
     commandGraph->addChild(renderGraph);
 
+    // This sets up the internal tasks that will, for each command graph, record
+    // a scene graph and submit the results to the renderer each frame. Also sets
+    // up whatever's necessary to present the resulting swapchain to the device.
     viewer->assignRecordAndSubmitTaskAndPresentation({ commandGraph });
 
     // Configure a descriptor pool size that's appropriate for paged terrains
-    // (they are a good candidate for DS reuse)
+    // (they are a good candidate for DS reuse). This is optional.
     // https://groups.google.com/g/vsg-users/c/JJQZ-RN7jC0/m/tyX8nT39BAAJ
     auto resourceHints = vsg::ResourceHints::create();
     resourceHints->numDescriptorSets = 1024;
     resourceHints->descriptorPoolSizes.push_back(
         VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024 });
 
-    // configure the viewers rendering backend, initialize and compile Vulkan objects,
-    // passing in ResourceHints to guide the resources allocated.
+    // Configure the viewer's rendering backend; and initialize and compile existing
+    // Vulkan objects (passing in ResourceHints to guide the resources allocated).
     viewer->compile(resourceHints);
 
+    // The main frame loop
     while (viewer->advanceToNextFrame())
     {
         viewer->handleEvents();

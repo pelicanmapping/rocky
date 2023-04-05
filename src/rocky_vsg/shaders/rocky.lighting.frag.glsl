@@ -52,7 +52,7 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0)
     return F0 + (1.0 - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
 }
 
-void apply_lighting(inout vec4 color, in vec3 normal)
+void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
 {
     // temp:
     pbr.ao = 1.0;
@@ -64,7 +64,7 @@ void apply_lighting(inout vec4 color, in vec3 normal)
     vec3 albedo = pow(color.rgb, vec3(2.2)); // SRGB to linear
 
     vec3 N = normalize(normal);
-    vec3 V = normalize(-in_vertex_view);
+    vec3 V = normalize(-vertex_view);
 
     vec3 F0 = vec3(0.04);
     F0 = mix(F0, albedo, vec3(pbr.metal));
@@ -98,7 +98,7 @@ void apply_lighting(inout vec4 color, in vec3 normal)
         vec3 position = vsg_lights.v[index++].xyz;
 
         // per-light radiance:
-        vec3 L = normalize(position - in_vertex_view);
+        vec3 L = normalize(position - vertex_view);
         vec3 H = normalize(V + L);
         vec3 radiance = diffuse;
 

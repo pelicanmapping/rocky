@@ -62,12 +62,12 @@ MapNode::construct(const JSON& conf)
 
     // Fire it up
     //_worldSRS = SRS::SPHERICAL_MERCATOR; // testing
-    Status s = _terrain->setMap(_map, worldSRS());
+    //Status s = _terrain->setMap(_map, worldSRS());
     
-    if (s.failed())
-    {
-        Log::warn() << s.message << std::endl;
-    }
+    //if (s.failed())
+    //{
+    //    Log::warn() << s.message << std::endl;
+    //}
 }
 
 JSON
@@ -182,6 +182,17 @@ void
 MapNode::update(const vsg::FrameStamp* f)
 {
     ROCKY_HARD_ASSERT(_instance.status().ok());
+
+    if (_terrain->map() == nullptr)
+    {
+        auto st = _terrain->setMap(map(), worldSRS());
+
+        if (st.failed())
+        {
+            Log::warn() << st.message << std::endl;
+        }
+    }
+
     _terrain->update(f, _instance.ioOptions());
 }
 

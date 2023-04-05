@@ -34,10 +34,10 @@ TerrainContext::TerrainContext(
         settings.minTileRangeFactor,
         true); // restruct polar subdivision..
 
-    stateFactory = std::make_shared<StateFactory>();
+    stateFactory = std::make_shared<TerrainStateFactory>(
+        new_settings);
 
-    geometryPool = std::make_shared<GeometryPool>(
-        worldSRS);
+    geometryPool = std::make_shared<GeometryPool>(worldSRS);
 
     tiles = std::make_shared<TileNodeRegistry>(host);
     tiles->geometryPool = geometryPool;

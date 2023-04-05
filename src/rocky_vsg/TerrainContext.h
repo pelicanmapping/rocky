@@ -9,7 +9,7 @@
 #include <rocky_vsg/GeometryPool.h>
 #include <rocky_vsg/RuntimeContext.h>
 #include <rocky_vsg/SelectionInfo.h>
-#include <rocky_vsg/StateFactory.h>
+#include <rocky_vsg/TerrainStateFactory.h>
 #include <rocky_vsg/TerrainSettings.h>
 #include <rocky_vsg/TileNodeRegistry.h>
 
@@ -53,7 +53,7 @@ namespace ROCKY_NAMESPACE
         shared_ptr<SelectionInfo> selectionInfo;
 
         //! Factory for creating rendering state commands
-        shared_ptr<StateFactory> stateFactory;
+        shared_ptr<TerrainStateFactory> stateFactory;
 
         //! name of job arena used to load data
         std::string loadSchedulerName = "terrain.load";

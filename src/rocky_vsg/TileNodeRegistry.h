@@ -8,7 +8,7 @@
 #include <rocky_vsg/Common.h>
 #include <rocky_vsg/GeometryPool.h>
 #include <rocky_vsg/SelectionInfo.h>
-#include <rocky_vsg/StateFactory.h>
+#include <rocky_vsg/TerrainStateFactory.h>
 #include <rocky_vsg/TerrainTileNode.h>
 
 //#include <rocky/Utils.h>
@@ -46,7 +46,7 @@ namespace ROCKY_NAMESPACE
         TileNodeRegistry(TerrainTileHost* host);
 
         shared_ptr<GeometryPool> geometryPool;
-        shared_ptr<StateFactory> stateFactory;
+        shared_ptr<TerrainStateFactory> stateFactory;
         shared_ptr<SelectionInfo> selectionInfo;
 
         ~TileNodeRegistry();

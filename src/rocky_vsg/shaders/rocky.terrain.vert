@@ -17,18 +17,21 @@ layout(set = 0, binding = 13) uniform TileData
     mat4 model_matrix;
 } tile;
 
-// input attributes
+// input vertex attributes
 layout(location = 0) in vec3 in_vertex;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec3 in_uvw;
-layout(location = 3) in vec3 in_neighbor_vertex;
-layout(location = 4) in vec3 in_neighbor_normal;
+
+// inter-stage interface block
+struct RkData {
+    vec4 color;
+    vec2 uv;
+    vec3 up_view;
+    vec3 vertex_view;
+};
 
 // output varyings
-layout(location = 0) out vec3 out_color;
-layout(location = 1) out vec2 out_uv;
-layout(location = 2) out vec3 out_upvector_view;
-layout(location = 3) out vec3 out_vertex_view;
+layout(location = 0) out RkData rk;
 
 #include "rocky.atmo.ground.vert.glsl"
 
@@ -63,10 +66,10 @@ void main()
 
     mat3 normal_matrix = mat3(transpose(inverse(pc.modelview)));
     
-    out_color = vec3(1); // atmos_color;
-    out_uv = (tile.color_matrix * vec4(in_uvw.st, 0, 1)).st;
-    out_upvector_view = normal_matrix * in_normal;
-    out_vertex_view = position_view.xyz / position_view.w;
+    rk.color = vec4(1); // placeholder
+    rk.uv = (tile.color_matrix * vec4(in_uvw.st, 0, 1)).st;
+    rk.up_view = normal_matrix * in_normal;
+    rk.vertex_view = position_view.xyz / position_view.w;
     
     gl_Position = pc.projection * position_view;
 }

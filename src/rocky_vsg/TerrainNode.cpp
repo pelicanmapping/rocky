@@ -42,21 +42,17 @@ TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(new_map, _status);
 
-    SRS worldSRS = new_worldSRS;
-    if (!worldSRS.valid())
+    _map = new_map;
+
+    _worldSRS = new_worldSRS;
+    if (!_worldSRS.valid())
     {
-        worldSRS = new_map->srs().isGeodetic() ?
+        _worldSRS = new_map->srs().isGeodetic() ?
             SRS::ECEF :
             new_map->srs();
     }
 
-    // create a new context for this map
-    _context = std::make_shared<TerrainContext>(
-        new_map,
-        worldSRS,
-        _runtime, // runtime API
-        *this,    // settings
-        this);    // host
+    _context = nullptr;
 
     // erase everything so the map will reinitialize
     this->children.clear();
@@ -69,6 +65,14 @@ TerrainNode::createRootTiles(const IOOptions& io)
 {
     // remove everything and start over
     this->children.clear();
+
+    // create a new context for this map
+    _context = std::make_shared<TerrainContext>(
+        _map,
+        _worldSRS,
+        _runtime,  // runtime API
+        *this,     // settings
+        this);     // host
 
     // check that everything initialized ok
     if (_context->stateFactory->status.failed())

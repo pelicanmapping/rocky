@@ -9,6 +9,7 @@
 #include <rocky_vsg/TerrainSettings.h>
 #include <rocky_vsg/TerrainTileHost.h>
 #include <rocky/Status.h>
+#include <rocky/SRS.h>
 #include <vsg/nodes/Group.h>
 
 namespace ROCKY_NAMESPACE
@@ -45,6 +46,11 @@ namespace ROCKY_NAMESPACE
             return _status;
         }
 
+        //! Map this terrain node is rendering
+        shared_ptr<Map> map() {
+            return _map;
+        }
+
     protected:
 
         //! TerrainTileHost interface
@@ -69,5 +75,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Group> _tilesRoot;
         shared_ptr<TerrainContext> _context;
         Status _status;
+        std::shared_ptr<Map> _map;
+        SRS _worldSRS;
     };
 }

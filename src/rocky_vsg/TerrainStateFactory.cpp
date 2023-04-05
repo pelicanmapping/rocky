@@ -3,7 +3,7 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#include "StateFactory.h"
+#include "TerrainStateFactory.h"
 #include "RuntimeContext.h"
 #include "TerrainTileNode.h"
 
@@ -40,7 +40,8 @@
 
 using namespace ROCKY_NAMESPACE;
 
-StateFactory::StateFactory()
+TerrainStateFactory::TerrainStateFactory(const TerrainSettings& settings) :
+    _settings(settings)
 {
     status = StatusOK;
 
@@ -64,13 +65,10 @@ StateFactory::StateFactory()
     // create the pipeline configurator for terrain; this is a helper object
     // that acts as a "template" for terrain tile rendering state.
     pipelineConfig = createPipelineConfig(sharedObjects.get());
-
-    //ALT:
-    //pipeline = createPipeline(sharedObjects.get());
 }
 
 void
-StateFactory::createDefaultDescriptors()
+TerrainStateFactory::createDefaultDescriptors()
 {
     // First create our samplers - each one is shared across all tiles.
     // In Vulkan, the sampler is separate from the image you are sampling,
@@ -143,7 +141,7 @@ StateFactory::createDefaultDescriptors()
 }
 
 vsg::ref_ptr<vsg::ShaderSet>
-StateFactory::createShaderSet() const
+TerrainStateFactory::createShaderSet() const
 {
     // Creates a ShaderSet for terrain rendering.
     //
@@ -204,9 +202,8 @@ StateFactory::createShaderSet() const
     shaderSet->addAttributeBinding(ATTR_VERTEX, "", 0, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
     shaderSet->addAttributeBinding(ATTR_NORMAL, "", 1, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
     shaderSet->addAttributeBinding(ATTR_UV, "", 2, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
-    shaderSet->addAttributeBinding(ATTR_VERTEX_NEIGHBOR, "", 3, VK_FORMAT_R32G32B32A32_SFLOAT, vsg::vec3Array::create(1));
-    shaderSet->addAttributeBinding(ATTR_NORMAL_NEIGHBOR, "", 4, VK_FORMAT_R32G32B32A32_SFLOAT, vsg::vec3Array::create(1));
-    //shaderSet->addAttributeBinding("vsg_position", "VSG_INSTANCE_POSITIONS", 4, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
+    //shaderSet->addAttributeBinding(ATTR_VERTEX_NEIGHBOR, "", 3, VK_FORMAT_R32G32B32A32_SFLOAT, vsg::vec3Array::create(1));
+    //shaderSet->addAttributeBinding(ATTR_NORMAL_NEIGHBOR, "", 4, VK_FORMAT_R32G32B32A32_SFLOAT, vsg::vec3Array::create(1));
 
     // "binding" (4th param) must match "layout(location=X) uniform" in the shader
     shaderSet->addUniformBinding(textures.elevation.name, "", 0, textures.elevation.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT, {}); // , vsg::floatArray2D::create(1, 1));
@@ -226,21 +223,29 @@ StateFactory::createShaderSet() const
 
 
 vsg::ref_ptr<vsg::GraphicsPipelineConfig>
-StateFactory::createPipelineConfig(vsg::SharedObjects* sharedObjects) const
+TerrainStateFactory::createPipelineConfig(vsg::SharedObjects* sharedObjects) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), {});
 
     // This method uses the "shaderSet" as a prototype to
     // define a graphics pipeline that will render the terrain.
-
     auto pipelineConfig = vsg::GraphicsPipelineConfig::create(shaderSet);
+
+    // add defines to this if we intend to use them
+    auto& defines = pipelineConfig->shaderHints->defines;
+
+    // did the user request a wireframe overlay?
+    if (_settings.wireframeOverlay == true)
+    {
+        defines.insert("RK_WIREFRAME_OVERLAY");
+    }
 
     // activate the arrays we intend to use
     pipelineConfig->enableArray(ATTR_VERTEX, VK_VERTEX_INPUT_RATE_VERTEX, 12);
     pipelineConfig->enableArray(ATTR_NORMAL, VK_VERTEX_INPUT_RATE_VERTEX, 12);
     pipelineConfig->enableArray(ATTR_UV, VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    pipelineConfig->enableArray(ATTR_VERTEX_NEIGHBOR, VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    pipelineConfig->enableArray(ATTR_NORMAL_NEIGHBOR, VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    //pipelineConfig->enableArray(ATTR_VERTEX_NEIGHBOR, VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    //pipelineConfig->enableArray(ATTR_NORMAL_NEIGHBOR, VK_VERTEX_INPUT_RATE_VERTEX, 12);
 
     // wireframe rendering:
     //pipelineConfig->rasterizationState->polygonMode = VK_POLYGON_MODE_LINE;
@@ -287,115 +292,21 @@ StateFactory::createPipelineConfig(vsg::SharedObjects* sharedObjects) const
     return pipelineConfig;
 }
 
-#if 0
-vsg::ref_ptr<vsg::GraphicsPipeline>
-StateFactory::createPipeline(vsg::SharedObjects* sharedObjects) const
-{
-    // Hello. This is the "manual path", which is an alternative to using
-    // the GraphicsPipelineConfig.
-    // We probably want the latter moving forward so we can use the 
-    // shader/state composition capability, but this remains here for reference.
-
-
-    //vsg::DescriptorSetLayoutBindings layerDescriptorBindings
-    //{
-    //    { 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
-    //};
-    //auto layerDescriptorSetLayout = vsg::DescriptorSetLayout::create(layerDescriptorBindings);
-
-    const uint32_t numColorLayers = 1u;
-    const VkSampleCountFlagBits sampleBits = VK_SAMPLE_COUNT_1_BIT;
-
-    vsg::DescriptorSetLayoutBindings descriptorBindings
-    {
-        {textures.elevation.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
-        {textures.color.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, numColorLayers, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
-        {textures.normal.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
-        {TILE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
-    
-        //{3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr }
-    };
-    auto descriptorSetLayout = vsg::DescriptorSetLayout::create(descriptorBindings);
-
-    vsg::PushConstantRanges pushConstantRanges
-    {
-        // projection view, and model matrices, actual push constant calls autoaatically provided by the VSG's DispatchTraversal
-        {VK_SHADER_STAGE_VERTEX_BIT, 0, 128}
-    }; 
-    
-    auto pipelineLayout = vsg::PipelineLayout::create(
-        vsg::DescriptorSetLayouts
-        {
-            descriptorSetLayout,
-            vsg::ViewDescriptorSetLayout::create()
-            //, layerDescriptorSetLayout // TODO?
-        },
-        pushConstantRanges
-    );
-
-    vsg::VertexInputState::Bindings vertexBindingsDescriptions
-    {
-        VkVertexInputBindingDescription{0, sizeof(vsg::vec3), VK_VERTEX_INPUT_RATE_VERTEX}, // vertex
-        VkVertexInputBindingDescription{1, sizeof(vsg::vec3), VK_VERTEX_INPUT_RATE_VERTEX}, // normal
-        VkVertexInputBindingDescription{2, sizeof(vsg::vec3), VK_VERTEX_INPUT_RATE_VERTEX}, // uv
-        VkVertexInputBindingDescription{3, sizeof(vsg::vec3), VK_VERTEX_INPUT_RATE_VERTEX}, // neighbor vertex
-        VkVertexInputBindingDescription{4, sizeof(vsg::vec3), VK_VERTEX_INPUT_RATE_VERTEX}, // neighbor normal
-    };
-
-    vsg::VertexInputState::Attributes vertexAttributeDescriptions
-    {
-        VkVertexInputAttributeDescription{0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0}, // vertex
-        VkVertexInputAttributeDescription{1, 1, VK_FORMAT_R32G32B32_SFLOAT, 0}, // normal
-        VkVertexInputAttributeDescription{2, 2, VK_FORMAT_R32G32B32_SFLOAT, 0}, // uv
-        VkVertexInputAttributeDescription{3, 3, VK_FORMAT_R32G32B32_SFLOAT, 0}, // neighbor vertex
-        VkVertexInputAttributeDescription{4, 4, VK_FORMAT_R32G32B32_SFLOAT, 0}, // neighbor normal
-    };
-
-    //vsg::ShaderStage::SpecializationConstants specializationConstants{
-    //    {0, vsg::uintValue::create(reverseDepth)},
-    //    {1, vsg::uintValue::create(numImageLayers)}
-    //};
-    //vertexShader->specializationConstants = specializationConstants;
-    //fragmentShader->specializationConstants = specializationConstants;
-
-    vsg::GraphicsPipelineStates fillPipelineStates
-    {
-        vsg::RasterizationState::create(),
-        vsg::VertexInputState::create(vertexBindingsDescriptions, vertexAttributeDescriptions),
-        vsg::InputAssemblyState::create(),
-        vsg::MultisampleState::create(sampleBits),
-        vsg::ColorBlendState::create(),
-        vsg::DepthStencilState::create()
-    };
-
-    return vsg::GraphicsPipeline::create(
-        pipelineLayout,
-        shaderSet->stages,
-        fillPipelineStates);
-}
-#endif
-
 vsg::ref_ptr<vsg::StateGroup>
-StateFactory::createTerrainStateGroup() const
+TerrainStateFactory::createTerrainStateGroup() const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), { });
+    ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig, { });
 
     // Just a StateGroup holding the graphics pipeline.
     // No actual descriptors here - those will appear on each tile.
-
+    // (except for the view-dependent state stuff from VSG)
     auto stateGroup = vsg::StateGroup::create();
+    stateGroup->add(pipelineConfig->bindGraphicsPipeline);
 
-    if (pipelineConfig)
-        stateGroup->add(pipelineConfig->bindGraphicsPipeline);
-    else if (pipeline)
-        stateGroup->add(vsg::BindGraphicsPipeline::create(pipeline));
-
-    // assign any custom ArrayState that may be required.
-    stateGroup->prototypeArrayState = shaderSet->getSuitableArrayState(pipelineConfig->shaderHints->defines);
-
+    // This binds the view-dependent state from VSG (lights, viewport, etc.)
     auto bindViewDescriptorSets = vsg::BindViewDescriptorSets::create(
         VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, 1);
-
     if (sharedObjects) sharedObjects->share(bindViewDescriptorSets);
     stateGroup->add(bindViewDescriptorSets);
 
@@ -403,7 +314,7 @@ StateFactory::createTerrainStateGroup() const
 }
 
 void
-StateFactory::updateTerrainTileDescriptors(
+TerrainStateFactory::updateTerrainTileDescriptors(
     const TerrainTileRenderModel& renderModel,
     vsg::ref_ptr<vsg::StateGroup> stategroup,
     RuntimeContext& runtime) const
@@ -458,6 +369,7 @@ StateFactory::updateTerrainTileDescriptors(
         }
     }
 
+    // the per-tile uniform block:
     TerrainTileDescriptors::Uniforms uniforms;
     uniforms.elevation_matrix = renderModel.elevation.matrix;
     uniforms.color_matrix = renderModel.color.matrix;
@@ -470,12 +382,8 @@ StateFactory::updateTerrainTileDescriptors(
         data,
         TILE_BUFFER_BINDING);
 
-    // we can get rid of this once we decide finally on config versus pipeline approach
-    auto pipelineLayout =
-        pipeline ? pipeline->layout :
-        pipelineConfig->layout;
-        
-    auto descriptorSetLayout = pipelineLayout->setLayouts.front();
+    // the samplers:
+    auto descriptorSetLayout = pipelineConfig->layout->setLayouts.front();
 
     auto descriptorSet = vsg::DescriptorSet::create(
         descriptorSetLayout,
@@ -485,7 +393,7 @@ StateFactory::updateTerrainTileDescriptors(
 
     dm.bindDescriptorSetCommand = vsg::BindDescriptorSet::create(
         VK_PIPELINE_BIND_POINT_GRAPHICS,
-        pipelineLayout,
+        pipelineConfig->layout,
         0, // first set
         descriptorSet
     );

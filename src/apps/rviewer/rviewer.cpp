@@ -105,6 +105,7 @@ int main(int argc, char** argv)
     mapNode->terrainNode()->skirtRatio = 0.025f;
     mapNode->terrainNode()->minLevelOfDetail = 1;
     mapNode->terrainNode()->screenSpaceError = 135.0f;
+    mapNode->terrainNode()->wireframeOverlay = arguments.read({ "--wire" });
 
     // Set up the runtime context with everything we need.
     // Eventually this should be automatic in InstanceVSG

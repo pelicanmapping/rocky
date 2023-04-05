@@ -7,6 +7,7 @@
 
 #include <rocky_vsg/Common.h>
 #include <rocky_vsg/TerrainTileNode.h>
+#include <rocky_vsg/TerrainSettings.h>
 
 #include <vsg/io/Options.h>
 #include <vsg/utils/GraphicsPipelineConfigurator.h>
@@ -21,7 +22,7 @@ namespace ROCKY_NAMESPACE
     class TerrainTileRenderModel;
 
     /**
-     * StateFactory creates all the Vulkan state necessary to
+     * TerrainStateFactory creates all the Vulkan state necessary to
      * render the terrain.
      *
      * TODO: Eventually, this will need to integrate "upwards" to the 
@@ -29,17 +30,17 @@ namespace ROCKY_NAMESPACE
      * do shader composition with some kind of uber-shader-with-defines
      * architecture.
      */
-    class ROCKY_VSG_INTERNAL StateFactory
+    class ROCKY_VSG_INTERNAL TerrainStateFactory
     {
     public:
         //! Initialize the factory
-        StateFactory();
+        TerrainStateFactory(const TerrainSettings& settings);
 
         //! Creates a state group for rendering terrain
-        virtual vsg::ref_ptr<vsg::StateGroup> createTerrainStateGroup() const;
+        vsg::ref_ptr<vsg::StateGroup> createTerrainStateGroup() const;
 
         //! Creates a state group for rendering a specific terrain tile
-        virtual void updateTerrainTileDescriptors(
+        void updateTerrainTileDescriptors(
             const TerrainTileRenderModel& renderModel,
             vsg::ref_ptr<vsg::StateGroup> stategroup,
             RuntimeContext& runtime) const;
@@ -65,11 +66,6 @@ namespace ROCKY_NAMESPACE
         //! that will populate a descriptor set when no other textures are available.
         //! Terrain tiles copy and use this until new data becomes available.
         TerrainTileDescriptors defaultTileDescriptors;
-
-        //MANUAL ALTERNATIVE to pipelineConfig approach
-        //Just for testing for now ... the pipelineConfig approach will
-        //potentially be better due to its defines handling
-        vsg::ref_ptr<vsg::GraphicsPipeline> pipeline;
 
     protected:
 
@@ -115,5 +111,7 @@ namespace ROCKY_NAMESPACE
             TextureDef normal;
         }
         textures;
+
+        TerrainSettings _settings;
     };
 }

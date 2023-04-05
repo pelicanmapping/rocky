@@ -675,9 +675,6 @@ TileNodeRegistry::requestMergeElevation(
 
     tile->elevationMerger = merge_op->future();
 
-    //terrain->runtime.updates()->add(merge_op);
-
-
     vsg::observer_ptr<TerrainTileNode> tile_weak(tile);
     auto priority_func = [tile_weak]() -> float
     {

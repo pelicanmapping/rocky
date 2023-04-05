@@ -94,5 +94,8 @@ namespace ROCKY_NAMESPACE
 
         //! Target concurrency of terrain data loading operations.
         optional<unsigned> concurrency = 4;
+
+        //! Render a wireframe overlay on the terrain skin
+        optional<bool> wireframeOverlay = false;
     };
 }

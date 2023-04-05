@@ -30,6 +30,7 @@ TerrainSettings::TerrainSettings(const JSON& conf)
     get_to(j, "morph_terrain", morphTerrain);
     get_to(j, "morph_imagery", morphImagery);
     get_to(j, "concurrency", concurrency);
+    get_to(j, "wireframe_overlay", wireframeOverlay);
 }
 
 JSON
@@ -54,5 +55,6 @@ TerrainSettings::to_json() const
     set(j, "morph_terrain", morphTerrain);
     set(j, "morph_imagery", morphImagery);
     set(j, "concurrency", concurrency);
+    set(j, "wireframe_overlay", wireframeOverlay);
     return j.dump();
 }
