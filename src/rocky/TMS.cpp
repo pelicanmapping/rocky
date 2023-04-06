@@ -85,6 +85,12 @@ namespace
         auto tileMap = j.find(ELEM_TILEMAP);
     }
 
+    std::string getChildTextValue(const TiXmlElement* node)
+    {
+        auto text = dynamic_cast<const TiXmlText*>(node->FirstChild());
+        return text ? text->Value() : "";
+    }
+
     Result<TileMap> parseTileMapFromXML(const std::string& xml)
     {
         TileMap tilemap;
@@ -116,15 +122,15 @@ namespace
                 std::string name = childxml->Value();
                 if (name == "Abstract")
                 {
-                    tilemap.abstract = childxml->Value();
+                    tilemap.abstract = getChildTextValue(childxml);
                 }
                 else if (name == "Title")
                 {
-                    tilemap.title = childxml->Value();
+                    tilemap.title = getChildTextValue(childxml);
                 }
                 else if (name == "SRS")
                 {
-                    tilemap.srsString = childxml->Value();
+                    tilemap.srsString = getChildTextValue(childxml);
                 }
                 else if (name == "BoundingBox")
                 {
