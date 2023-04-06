@@ -40,7 +40,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(myApp VERSION 0.1.0 LANGUAGES CXX C)
 
-find_package(myApp CONFIG REQUIRED)
+find_package(rocky CONFIG REQUIRED)
 
 add_executable(myApp main.cpp)
 
