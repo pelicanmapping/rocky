@@ -148,6 +148,10 @@ EngineVSG::run()
     // Vulkan objects (passing in ResourceHints to guide the resources allocated).
     viewer->compile(resourceHints);
 
+    // Use a separate thread for each CommandGraph.
+    // https://groups.google.com/g/vsg-users/c/-YRI0AxPGDQ/m/A2EDd5T0BgAJ
+    viewer->setupThreading();
+
     // The main frame loop
     while (viewer->advanceToNextFrame())
     {
