@@ -73,6 +73,7 @@ int main(int argc, char** argv)
     rocky::Log::level = rocky::LogLevel::INFO;
     rocky::Log::info() << "Hello, world." << std::endl;
     rocky::Log::info() << "Welcome to " << ROCKY_PROJECT_NAME << " version " << ROCKY_VERSION_STRING << std::endl;
+    rocky::Log::info() << "Using VSG " << VSG_VERSION_STRING << " SO " << VSG_SOVERSION_STRING << std::endl;
 
     // An LRU cache mainly used for network data fetches.
     ri.ioOptions().services().contentCache->setCapacity(128);

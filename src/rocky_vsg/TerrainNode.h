@@ -59,7 +59,7 @@ namespace ROCKY_NAMESPACE
             const TerrainTileNode* parent,
             vsg::RecordTraversal&) override;
 
-        //! Access to terrain settings
+        //! Terrain settings
         const TerrainSettings& settings() override {
             return *this;
         }

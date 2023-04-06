@@ -23,7 +23,7 @@ EngineVSG::EngineVSG(int& argc, char** argv) :
     instance()
 {
     vsg::CommandLine commandLine(&argc, argv);
-    
+
     commandLine.read(instance._impl->vsgOptions);
     _debuglayer = commandLine.read({ "--debug" });
     _apilayer = commandLine.read({ "--api" });
@@ -48,6 +48,11 @@ EngineVSG::EngineVSG(int& argc, char** argv) :
     mapNode->terrainNode()->skirtRatio = 0.025f;
     mapNode->terrainNode()->minLevelOfDetail = 1;
     mapNode->terrainNode()->screenSpaceError = 135.0f;
+
+    // wireframe overlay
+    if (commandLine.read({ "--wire" }))
+        mapNode->terrainNode()->wireframeOverlay = true;
+        
 
     mainScene->addChild(mapNode);
 }

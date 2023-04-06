@@ -50,24 +50,13 @@ MapNode::construct(const JSON& conf)
     _terrain = TerrainNode::create(runtime(), conf);
     addChild(_terrain);
 
-    _layerNodes = nullptr;
     _isOpen = false;
 
     // make a group for the model layers.  This node is a PagingManager instead of a regular Group to allow PagedNode's to be used within the layers.
-    ROCKY_TODO("PagingManager");
     _layerNodes = vsg::Group::create();
     this->addChild(_layerNodes);
 
     _readyForUpdate = true;
-
-    // Fire it up
-    //_worldSRS = SRS::SPHERICAL_MERCATOR; // testing
-    //Status s = _terrain->setMap(_map, worldSRS());
-    
-    //if (s.failed())
-    //{
-    //    Log::warn() << s.message << std::endl;
-    //}
 }
 
 JSON
