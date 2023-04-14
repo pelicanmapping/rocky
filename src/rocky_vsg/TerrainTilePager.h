@@ -6,12 +6,7 @@
 #pragma once
 
 #include <rocky_vsg/Common.h>
-#include <rocky_vsg/GeometryPool.h>
-#include <rocky_vsg/SelectionInfo.h>
-#include <rocky_vsg/TerrainStateFactory.h>
 #include <rocky_vsg/TerrainTileNode.h>
-
-//#include <rocky/Utils.h>
 #include <chrono>
 
 namespace ROCKY_NAMESPACE
@@ -22,10 +17,10 @@ namespace ROCKY_NAMESPACE
     /**
      * Keeps track of all the tiles resident in the terrain engine.
      */
-    class TileNodeRegistry
+    class TerrainTilePager
     {
     public:
-        using Ptr = std::shared_ptr<TileNodeRegistry>;
+        using Ptr = std::shared_ptr<TerrainTilePager>;
 
         using Tracker = util::SentryTracker<TerrainTileNode*>;
 
@@ -43,13 +38,13 @@ namespace ROCKY_NAMESPACE
         using TileTable = std::unordered_map<TileKey, TableEntry>;
 
     public:
-        TileNodeRegistry(TerrainTileHost* host);
+        //! Consturct the tile manager.
+        TerrainTilePager(
+            const Profile& profile,
+            const TerrainSettings& settings,
+            TerrainTileHost* host);
 
-        shared_ptr<GeometryPool> geometryPool;
-        shared_ptr<TerrainStateFactory> stateFactory;
-        shared_ptr<SelectionInfo> selectionInfo;
-
-        ~TileNodeRegistry();
+        ~TerrainTilePager();
 
         //! TerrainTileNode will call this to let us know that it's alive
         //! and that it may need something.
@@ -96,6 +91,17 @@ namespace ROCKY_NAMESPACE
         std::vector<TileKey> _mergeData; 
         std::vector<TileKey> _updateData;
 
+        //! Visibility info for a single terrain tile LOD
+        struct LOD {
+            double visibilityRange;
+            double morphStart, morphEnd;
+            unsigned minValidTY, maxValidTY;
+        };
+        unsigned _firstLOD;
+        std::vector<LOD> _lods;
+
+        void initializeLODs(const Profile&, const TerrainSettings&);
+
     private:
 
         void requestLoadChildren(
@@ -121,5 +127,13 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<TerrainTileNode> tile,
             const IOOptions& io,
             shared_ptr<TerrainContext> terrain) const;
+
+        void getRanges(
+            const TileKey& key,
+            float& out_range,
+            float& out_startMorphRange,
+            float& out_endMorphRange) const;
+
+        float getRange(const TileKey& key) const;
     };
 }

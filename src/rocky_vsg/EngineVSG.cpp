@@ -39,8 +39,7 @@ EngineVSG::EngineVSG(int& argc, char** argv) :
     // the sun
     if (commandLine.read({ "--sky" }))
     {
-        auto sky = rocky::SkyNode::create();
-        sky->setWorldSRS(mapNode->worldSRS(), instance.runtime());
+        auto sky = rocky::SkyNode::create(instance);
         mainScene->addChild(sky);
     }
 
@@ -51,8 +50,7 @@ EngineVSG::EngineVSG(int& argc, char** argv) :
 
     // wireframe overlay
     if (commandLine.read({ "--wire" }))
-        mapNode->terrainNode()->wireframeOverlay = true;
-        
+        instance.runtime().shaderCompileSettings->defines.insert("RK_WIREFRAME_OVERLAY");
 
     mainScene->addChild(mapNode);
 }
@@ -148,7 +146,7 @@ EngineVSG::run()
     // Vulkan objects (passing in ResourceHints to guide the resources allocated).
     viewer->compile(resourceHints);
 
-    // Use a separate thread for each CommandGraph.
+    // Use a separate thread for each CommandGraph?
     // https://groups.google.com/g/vsg-users/c/-YRI0AxPGDQ/m/A2EDd5T0BgAJ
     viewer->setupThreading();
 

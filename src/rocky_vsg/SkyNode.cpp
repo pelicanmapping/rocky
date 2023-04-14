@@ -266,14 +266,14 @@ namespace
     }
 }
 
-
-SkyNode::SkyNode()
+SkyNode::SkyNode(const InstanceVSG& inst) :
+    _instance(inst)
 {
-    //nop
+    setWorldSRS(SRS::ECEF);
 }
 
 void
-SkyNode::setWorldSRS(const SRS& srs, RuntimeContext& runtime)
+SkyNode::setWorldSRS(const SRS& srs)
 {
     if (srs.valid())
     {
@@ -288,13 +288,39 @@ SkyNode::setWorldSRS(const SRS& srs, RuntimeContext& runtime)
         _sun->intensity = 1.0;
         addChild(_sun);
 
+        // Tell the shaders that lighting is a go
+        _instance.runtime().shaderCompileSettings->defines.insert("RK_LIGHTING");
+        _instance.runtime().dirtyShaders();
+
         // the atmopshere:
         const float earth_atmos_thickness = 96560.0;
-        _atmosphere = makeAtmosphere(srs, earth_atmos_thickness, runtime);
-        if (_atmosphere)
-        {
-            addChild(_atmosphere);
-        }
+        _atmosphere = makeAtmosphere(srs, earth_atmos_thickness, _instance.runtime());
+        setShowAtmosphere(true);
     }
 }
 
+void
+SkyNode::setShowAtmosphere(bool show)
+{
+    if (_atmosphere)
+    {
+        auto iter = std::find(children.begin(), children.end(), _atmosphere);
+
+        if (iter == children.end() && show == true)
+        {
+            addChild(_atmosphere);
+
+            // activate in shaders
+            _instance.runtime().shaderCompileSettings->defines.insert("RK_ATMOSPHERE");
+            _instance.runtime().dirtyShaders();
+        }
+        else if (iter != children.end() && show == false)
+        {
+            children.erase(iter);
+
+            // activate in shaders
+            _instance.runtime().shaderCompileSettings->defines.erase("RK_ATMOSPHERE");
+            _instance.runtime().dirtyShaders();
+        }
+    }
+}

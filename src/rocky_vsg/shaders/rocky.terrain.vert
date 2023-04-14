@@ -1,4 +1,6 @@
 #version 450
+#pragma import_defines(RK_LIGHTING)
+#pragma import_defines(RK_ATMOSPHERE)
 
 layout(set = 0, binding = 10) uniform sampler2D elevation_tex;
 
@@ -33,7 +35,9 @@ struct RkData {
 // output varyings
 layout(location = 0) out RkData rk;
 
+#if defined(RK_ATMOSPHERE)
 #include "rocky.atmo.ground.vert.glsl"
+#endif
 
 // GL built-ins
 out gl_PerVertex {
@@ -62,13 +66,15 @@ void main()
     vec3 position = in_vertex + in_normal*elevation;
     vec4 position_view = pc.modelview * vec4(position, 1.0);
 
+#if defined(RK_ATMOSPHERE)
     atmos_vertex_main(position_view.xyz);
+#endif
 
-    mat3 normal_matrix = mat3(transpose(inverse(pc.modelview)));
+    //mat3 normal_matrix = mat3(transpose(inverse(pc.modelview)));
+    //rk.up_view = normal_matrix * in_normal;
     
     rk.color = vec4(1); // placeholder
     rk.uv = (tile.color_matrix * vec4(in_uvw.st, 0, 1)).st;
-    rk.up_view = normal_matrix * in_normal;
     rk.vertex_view = position_view.xyz / position_view.w;
     
     gl_Position = pc.projection * position_view;

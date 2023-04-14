@@ -1,5 +1,6 @@
 #version 450
 #extension GL_NV_fragment_shader_barycentric : enable
+#pragma import_defines(RK_LIGHTING)
 #pragma import_defines(RK_WIREFRAME_OVERLAY)
 
 layout(push_constant) uniform PushConstants
@@ -23,11 +24,13 @@ layout(location = 0) in RkData rk;
 layout(set = 0, binding = 11) uniform sampler2D color_tex;
 layout(set = 0, binding = 12) uniform sampler2D normal_tex;
 
+#if defined(RK_LIGHTING)
 #include "rocky.lighting.frag.glsl"
+#endif
 
 // outputs
-
 layout(location = 0) out vec4 out_color;
+
 
 vec3 get_normal()
 {
@@ -46,7 +49,9 @@ void main()
     if (gl_FrontFacing == false)
         out_color.r = 1.0;
 
+#if defined(RK_LIGHTING)
     apply_lighting(out_color, rk.vertex_view, get_normal());
+#endif
 
 #if defined(RK_WIREFRAME_OVERLAY) && defined(GL_NV_fragment_shader_barycentric)
     // outlines - debugging

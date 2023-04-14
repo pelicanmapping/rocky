@@ -27,10 +27,12 @@
 #define NORMAL_TEX_NAME "normal_tex"
 #define NORMAL_TEX_BINDING 12
 
-#define TILE_BUFFER_NAME "terrain_tile"
+#define TILE_BUFFER_NAME "tile"
 #define TILE_BUFFER_BINDING 13
 
-#define LIGHT_DATA "vsg_lights"
+#define LIGHTS_BUFFER_NAME "vsg_lights"
+#define LIGHTS_BUFFER_SET 1
+#define LIGHTS_BUFFER_BINDING 0
 
 #define ATTR_VERTEX "in_vertex"
 #define ATTR_NORMAL "in_normal"
@@ -40,14 +42,10 @@
 
 using namespace ROCKY_NAMESPACE;
 
-TerrainStateFactory::TerrainStateFactory(const TerrainSettings& settings) :
-    _settings(settings)
+TerrainStateFactory::TerrainStateFactory(RuntimeContext& runtime) :
+    _runtime(runtime)
 {
     status = StatusOK;
-
-    // cache of shared objects in the terrain state. Re-using objects
-    // helps performance.
-    sharedObjects = vsg::SharedObjects::create();
 
     // set up the texture samplers and placeholder images we will use to render terrain.
     createDefaultDescriptors();
@@ -61,10 +59,6 @@ TerrainStateFactory::TerrainStateFactory(const TerrainSettings& settings) :
             "Did you set ROCKY_FILE_PATH to point at the rocky share/shaders folder?");
         return;
     }
-
-    // create the pipeline configurator for terrain; this is a helper object
-    // that acts as a "template" for terrain tile rendering state.
-    pipelineConfig = createPipelineConfig(sharedObjects.get());
 }
 
 void
@@ -86,7 +80,8 @@ TerrainStateFactory::createDefaultDescriptors()
     textures.color.sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     textures.color.sampler->anisotropyEnable = VK_TRUE;
     textures.color.sampler->maxAnisotropy = 4.0f;
-    if (sharedObjects) sharedObjects->share(textures.color.sampler);
+    if (_runtime.sharedObjects)
+        _runtime.sharedObjects->share(textures.color.sampler);
 
     textures.elevation = { ELEVATION_TEX_NAME, ELEVATION_TEX_BINDING, vsg::Sampler::create(), {} };
     textures.elevation.sampler->maxLod = 16;
@@ -94,14 +89,16 @@ TerrainStateFactory::createDefaultDescriptors()
     textures.elevation.sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     textures.elevation.sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     textures.elevation.sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    if (sharedObjects) sharedObjects->share(textures.elevation.sampler);
+    if (_runtime.sharedObjects)
+        _runtime.sharedObjects->share(textures.elevation.sampler);
 
     textures.normal = { NORMAL_TEX_NAME, NORMAL_TEX_BINDING, vsg::Sampler::create(), {} };
     textures.normal.sampler->maxLod = 16;
     textures.normal.sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     textures.normal.sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     textures.normal.sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    if (sharedObjects) sharedObjects->share(textures.normal.sampler);
+    if (_runtime.sharedObjects)
+        _runtime.sharedObjects->share(textures.normal.sampler);
 
 
     // Next make the "default" descriptor model, which is used when 
@@ -150,10 +147,10 @@ TerrainStateFactory::createShaderSet() const
     // and push constants -- basically everything you will access in
     // the shaders.
     //
-    // Later, you can use a GraphicsPipelineConfig to make a GraphicsPipeline
-    // that "customizes" the ShaderSet by enabling just the attributes, uniforms,
-    // textures etc. that you need and using defines to figure it all out.
-    // This is the basis of the VSG state composition setup.
+    // One you have the ShaderSet you can use a GraphicsPipelineConfig to make a
+    // GraphicsPipeline that "customizes" the ShaderSet by enabling just the
+    // attributes, uniforms, textures etc. that you need and using defines to
+    // figure it all out. This is the basis of the VSG state composition setup.
 
     vsg::ref_ptr<vsg::ShaderSet> shaderSet;
 
@@ -206,13 +203,11 @@ TerrainStateFactory::createShaderSet() const
     //shaderSet->addAttributeBinding(ATTR_NORMAL_NEIGHBOR, "", 4, VK_FORMAT_R32G32B32A32_SFLOAT, vsg::vec3Array::create(1));
 
     // "binding" (4th param) must match "layout(location=X) uniform" in the shader
-    shaderSet->addUniformBinding(textures.elevation.name, "", 0, textures.elevation.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT, {}); // , vsg::floatArray2D::create(1, 1));
-    shaderSet->addUniformBinding(textures.color.name, "", 0, textures.color.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {}); // , vsg::vec3Array2D::create(1, 1));
-    shaderSet->addUniformBinding(textures.normal.name, "", 0, textures.normal.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {}); // , vsg::vec3Array2D::create(1, 1));
-
-    shaderSet->addUniformBinding(TILE_BUFFER_NAME, "", 0, TILE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {}); // , vsg::vec3Array2D::create(1, 1));
-
-    shaderSet->addUniformBinding("vsg_lights", "", 1, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, vsg::vec4Array::create(64));
+    shaderSet->addUniformBinding(textures.elevation.name, "", 0, textures.elevation.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
+    shaderSet->addUniformBinding(textures.color.name, "", 0, textures.color.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+    shaderSet->addUniformBinding(textures.normal.name, "", 0, textures.normal.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+    shaderSet->addUniformBinding(TILE_BUFFER_NAME, "", 0, TILE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
+    shaderSet->addUniformBinding(LIGHTS_BUFFER_NAME, "", LIGHTS_BUFFER_SET, LIGHTS_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, vsg::vec4Array::create(64));
 
     // Note: 128 is the maximum size required by the Vulkan spec, 
     // so don't increase it :)
@@ -223,79 +218,66 @@ TerrainStateFactory::createShaderSet() const
 
 
 vsg::ref_ptr<vsg::GraphicsPipelineConfig>
-TerrainStateFactory::createPipelineConfig(vsg::SharedObjects* sharedObjects) const
+TerrainStateFactory::createPipelineConfig() const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), {});
 
-    // This method uses the "shaderSet" as a prototype to
-    // define a graphics pipeline that will render the terrain.
-    auto pipelineConfig = vsg::GraphicsPipelineConfig::create(shaderSet);
+    // Create the pipeline configurator for terrain; this is a helper object
+    // that acts as a "template" for terrain tile rendering state.
+    auto config = vsg::GraphicsPipelineConfig::create(shaderSet);
 
-    // add defines to this if we intend to use them
-    auto& defines = pipelineConfig->shaderHints->defines;
-
-    // did the user request a wireframe overlay?
-    if (_settings.wireframeOverlay == true)
-    {
-        defines.insert("RK_WIREFRAME_OVERLAY");
-    }
+    // Apply any custom compile settings / defines:
+    config->shaderHints = _runtime.shaderCompileSettings;
 
     // activate the arrays we intend to use
-    pipelineConfig->enableArray(ATTR_VERTEX, VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    pipelineConfig->enableArray(ATTR_NORMAL, VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    pipelineConfig->enableArray(ATTR_UV, VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    //pipelineConfig->enableArray(ATTR_VERTEX_NEIGHBOR, VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    //pipelineConfig->enableArray(ATTR_NORMAL_NEIGHBOR, VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    config->enableArray(ATTR_VERTEX, VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    config->enableArray(ATTR_NORMAL, VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    config->enableArray(ATTR_UV, VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    //config->enableArray(ATTR_VERTEX_NEIGHBOR, VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    //config->enableArray(ATTR_NORMAL_NEIGHBOR, VK_VERTEX_INPUT_RATE_VERTEX, 12);
 
     // wireframe rendering:
-    //pipelineConfig->rasterizationState->polygonMode = VK_POLYGON_MODE_LINE;
+    //config->rasterizationState->polygonMode = VK_POLYGON_MODE_LINE;
 
     // backface culling off:
-    //pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
+    //config->rasterizationState->cullMode = VK_CULL_MODE_NONE;
 
     // Temporary decriptors that we will use to set up the PipelineConfig.
     // Note, we only use these for setup, and then throw them away!
     // The ACTUAL descriptors we will make on a tile-by-tile basis.
     vsg::Descriptors descriptors;
-    pipelineConfig->assignTexture(descriptors, textures.elevation.name, textures.elevation.defaultData, textures.elevation.sampler);
-    pipelineConfig->assignTexture(descriptors, textures.color.name, textures.color.defaultData, textures.color.sampler);
-    pipelineConfig->assignTexture(descriptors, textures.normal.name, textures.normal.defaultData, textures.normal.sampler);
-
-    pipelineConfig->assignUniform(descriptors, TILE_BUFFER_NAME, { });
-
-    if (auto& lightDataBinding = shaderSet->getUniformBinding("vsg_lights"))
-    {
-        auto data = lightDataBinding.data;
-        if (!data) data = vsg::vec4Array::create(64);
-        pipelineConfig->assignUniform(descriptors, LIGHT_DATA, data);
-    }
+    config->assignTexture(descriptors, textures.elevation.name, textures.elevation.defaultData, textures.elevation.sampler);
+    config->assignTexture(descriptors, textures.color.name, textures.color.defaultData, textures.color.sampler);
+    config->assignTexture(descriptors, textures.normal.name, textures.normal.defaultData, textures.normal.sampler);
+    config->assignUniform(descriptors, TILE_BUFFER_NAME, { });
+    config->assignUniform(descriptors, LIGHTS_BUFFER_NAME, { });
 
     // Register the ViewDescriptorSetLayout (for view-dependent state stuff
     // like viewpoint and lights data)
     // The "set" in GLSL's "layout(set=X, binding=Y)" refers to the index of
     // the descriptor set layout within the pipeline layout. Setting the
     // "additional" DSL appends it to the pipline layout, giving it set=1.
-    vsg::ref_ptr<vsg::ViewDescriptorSetLayout> vdsl;
-    if (sharedObjects)
-        vdsl = sharedObjects->shared_default<vsg::ViewDescriptorSetLayout>();
-    else
-        vdsl = vsg::ViewDescriptorSetLayout::create();
-
-    pipelineConfig->additionalDescriptorSetLayout = vdsl;
+    config->additionalDescriptorSetLayout =
+        _runtime.sharedObjects ? _runtime.sharedObjects->shared_default<vsg::ViewDescriptorSetLayout>() :
+        vsg::ViewDescriptorSetLayout::create();
 
     // Initialize GraphicsPipeline from the data in the configuration.
-    if (sharedObjects)
-        sharedObjects->share(pipelineConfig, [](auto gpc) { gpc->init(); });
+    if (_runtime.sharedObjects)
+        _runtime.sharedObjects->share(config, [](auto gpc) { gpc->init(); });
     else
-        pipelineConfig->init();
+        config->init();
 
-    return pipelineConfig;
+    return config;
 }
 
 vsg::ref_ptr<vsg::StateGroup>
-TerrainStateFactory::createTerrainStateGroup() const
+TerrainStateFactory::createTerrainStateGroup()
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), { });
+
+    // create the configurator object:
+    pipelineConfig = createPipelineConfig();
+
     ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig, { });
 
     // Just a StateGroup holding the graphics pipeline.
@@ -307,7 +289,8 @@ TerrainStateFactory::createTerrainStateGroup() const
     // This binds the view-dependent state from VSG (lights, viewport, etc.)
     auto bindViewDescriptorSets = vsg::BindViewDescriptorSets::create(
         VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, 1);
-    if (sharedObjects) sharedObjects->share(bindViewDescriptorSets);
+    if (_runtime.sharedObjects)
+        _runtime.sharedObjects->share(bindViewDescriptorSets);
     stateGroup->add(bindViewDescriptorSets);
 
     return stateGroup;
@@ -320,6 +303,7 @@ TerrainStateFactory::updateTerrainTileDescriptors(
     RuntimeContext& runtime) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig.valid(), void());
 
     // Takes a tile's render model (which holds the raw image and matrix data)
     // and creates the necessary VK data to render that model.

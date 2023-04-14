@@ -3,7 +3,7 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#include "TileNodeRegistry.h"
+#include "TerrainTilePager.h"
 #include "TerrainSettings.h"
 #include "TerrainContext.h"
 #include "RuntimeContext.h"
@@ -19,25 +19,29 @@
 
 using namespace ROCKY_NAMESPACE;
 
-#define LC "[TileNodeRegistry] "
+#define LC "[TerrainTilePager] "
 
 //#define LOAD_ELEVATION_SEPARATELY
 
 //----------------------------------------------------------------------------
 
-TileNodeRegistry::TileNodeRegistry(TerrainTileHost* in_host) :
+TerrainTilePager::TerrainTilePager(
+    const Profile& profile,
+    const TerrainSettings& settings,
+    TerrainTileHost* in_host) :
+
     _host(in_host)
 {
-    //nop
+    initializeLODs(profile, settings);
 }
 
-TileNodeRegistry::~TileNodeRegistry()
+TerrainTilePager::~TerrainTilePager()
 {
     releaseAll();
 }
 
 void
-TileNodeRegistry::releaseAll()
+TerrainTilePager::releaseAll()
 {
     std::scoped_lock lock(_mutex);
 
@@ -52,7 +56,7 @@ TileNodeRegistry::releaseAll()
 }
 
 void
-TileNodeRegistry::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg::RecordTraversal& rv)
+TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg::RecordTraversal& rv)
 {
     // first, update the tracker to keep this tile alive.
     TileTable::iterator i = _tiles.find(tile->key);
@@ -131,7 +135,7 @@ TileNodeRegistry::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
 }
 
 void
-TileNodeRegistry::update(
+TerrainTilePager::update(
     const vsg::FrameStamp* fs,
     const IOOptions& io,
     shared_ptr<TerrainContext> terrain)
@@ -247,7 +251,7 @@ TileNodeRegistry::update(
 }
 
 vsg::ref_ptr<TerrainTileNode>
-TileNodeRegistry::createTile(
+TerrainTilePager::createTile(
     const TileKey& key,
     vsg::ref_ptr<TerrainTileNode> parent,
     shared_ptr<TerrainContext> terrain)
@@ -260,24 +264,24 @@ TileNodeRegistry::createTile(
     };
 
     // Get a shared geometry from the pool that corresponds to this tile key:
-    auto geometry = terrain->geometryPool->getPooledGeometry(
+    auto geometry = terrain->geometryPool.getPooledGeometry(
         key,
         geomSettings,
         nullptr);
 
     // initialize all the per-tile uniforms the shaders will need:
     float range, morphStart, morphEnd;
-    terrain->selectionInfo->get(key, range, morphStart, morphEnd);
+    getRanges(key, range, morphStart, morphEnd);
     float one_over_end_minus_start = 1.0f / (morphEnd - morphStart);
     fvec2 morphConstants = fvec2(morphEnd * one_over_end_minus_start, one_over_end_minus_start);
 
     // Calculate the visibility range for this tile's children.
     float childrenVisibilityRange = FLT_MAX;
-    if (key.levelOfDetail() < (terrain->selectionInfo->getNumLODs() - 1))
+    if (key.levelOfDetail() < (_lods.size() - 1))
     {
         auto[tw, th] = key.profile().numTiles(key.levelOfDetail());
         TileKey testKey = key.createChildKey((key.tileY() <= th / 2) ? 0 : 3);
-        childrenVisibilityRange = terrain->selectionInfo->getRange(testKey);
+        childrenVisibilityRange = getRange(testKey);
     }
 
     // Make the new terrain tile
@@ -288,8 +292,8 @@ TileNodeRegistry::createTile(
         morphConstants,
         childrenVisibilityRange,
         terrain->worldSRS,
-        terrain->stateFactory->defaultTileDescriptors,
-        terrain->tiles->_host,
+        terrain->stateFactory.defaultTileDescriptors,
+        terrain->tiles._host,
         terrain->runtime);
 
     // inherit model data from the parent
@@ -300,7 +304,7 @@ TileNodeRegistry::createTile(
     tile->recomputeBound();
 
     // Generate its state group:
-    terrain->stateFactory->updateTerrainTileDescriptors(
+    terrain->stateFactory.updateTerrainTileDescriptors(
         tile->renderModel,
         tile->stategroup,
         terrain->runtime);
@@ -309,7 +313,7 @@ TileNodeRegistry::createTile(
 }
 
 vsg::ref_ptr<TerrainTileNode>
-TileNodeRegistry::getTile(const TileKey& key) const
+TerrainTilePager::getTile(const TileKey& key) const
 {
     std::scoped_lock lock(_mutex);
     auto iter = _tiles.find(key);
@@ -318,7 +322,7 @@ TileNodeRegistry::getTile(const TileKey& key) const
         vsg::ref_ptr<TerrainTileNode>(nullptr);
 }
 void
-TileNodeRegistry::requestLoadChildren(
+TerrainTilePager::requestLoadChildren(
     vsg::ref_ptr<TerrainTileNode> parent,
     shared_ptr<TerrainContext> terrain) const
 {
@@ -346,7 +350,7 @@ TileNodeRegistry::requestLoadChildren(
 
                 TileKey childkey = parent->key.createChildKey(quadrant);
 
-                auto tile = terrain->tiles->createTile(
+                auto tile = terrain->tiles.createTile(
                     childkey,
                     parent,
                     terrain);
@@ -382,7 +386,7 @@ TileNodeRegistry::requestLoadChildren(
 }
 
 void
-TileNodeRegistry::requestLoadData(
+TerrainTilePager::requestLoadData(
     vsg::ref_ptr<TerrainTileNode> tile,
     const IOOptions& in_io,
     shared_ptr<TerrainContext> terrain) const
@@ -443,7 +447,7 @@ TileNodeRegistry::requestLoadData(
 }
 
 void
-TileNodeRegistry::requestMergeData(
+TerrainTilePager::requestMergeData(
     vsg::ref_ptr<TerrainTileNode> tile,
     const IOOptions& in_io,
     shared_ptr<TerrainContext> terrain) const
@@ -468,7 +472,7 @@ TileNodeRegistry::requestMergeData(
 
         //util::scoped_chrono timer("merge sync " + key.str());
 
-        auto tile = terrain->tiles->getTile(key);
+        auto tile = terrain->tiles.getTile(key);
         if (tile)
         {
             auto model = tile->dataLoader.get();
@@ -515,7 +519,7 @@ TileNodeRegistry::requestMergeData(
 
             if (updated)
             {
-                terrain->stateFactory->updateTerrainTileDescriptors(
+                terrain->stateFactory.updateTerrainTileDescriptors(
                     renderModel,
                     tile->stategroup,
                     terrain->runtime);
@@ -542,7 +546,7 @@ TileNodeRegistry::requestMergeData(
 }
 
 void
-TileNodeRegistry::requestLoadElevation(
+TerrainTilePager::requestLoadElevation(
     vsg::ref_ptr<TerrainTileNode> tile,
     const IOOptions& in_io,
     shared_ptr<TerrainContext> terrain) const
@@ -600,10 +604,8 @@ TileNodeRegistry::requestLoadElevation(
     );
 }
 
-
-
 void
-TileNodeRegistry::requestMergeElevation(
+TerrainTilePager::requestMergeElevation(
     vsg::ref_ptr<TerrainTileNode> tile,
     const IOOptions& in_io,
     shared_ptr<TerrainContext> terrain) const
@@ -628,7 +630,7 @@ TileNodeRegistry::requestMergeElevation(
 
         //util::scoped_chrono timer("merge sync " + key.str());
 
-        auto tile = terrain->tiles->getTile(key);
+        auto tile = terrain->tiles.getTile(key);
         if (tile)
         {
             auto model = tile->elevationLoader.get();
@@ -659,7 +661,7 @@ TileNodeRegistry::requestMergeElevation(
 
             if (updated)
             {
-                terrain->stateFactory->updateTerrainTileDescriptors(
+                terrain->stateFactory.updateTerrainTileDescriptors(
                     renderModel,
                     tile->stategroup,
                     terrain->runtime);
@@ -682,4 +684,103 @@ TileNodeRegistry::requestMergeElevation(
         return tile ? -(sqrt(tile->lastTraversalRange) * 0.9 * tile->key.levelOfDetail()) : 0.0f;
     };
     terrain->runtime.runDuringUpdate(merge_op, priority_func);
+}
+
+
+void
+TerrainTilePager::initializeLODs(const Profile& profile, const TerrainSettings& settings)
+{
+    _firstLOD = settings.minLevelOfDetail;
+    unsigned numLods = settings.maxLevelOfDetail + 1u;
+
+    _lods.resize(numLods);
+
+    for (unsigned lod = 0; lod <= settings.maxLevelOfDetail; ++lod)
+    {
+        auto [tx, ty] = profile.numTiles(lod);
+        TileKey key(lod, tx / 2, ty / 2, profile);
+        GeoExtent e = key.extent();
+        GeoCircle c = e.computeBoundingGeoCircle();
+        double range = c.radius() * settings.minTileRangeFactor * 2.0 * (1.0 / 1.405);
+        _lods[lod].visibilityRange = range;
+        _lods[lod].minValidTY = 0;
+        _lods[lod].maxValidTY = 0xFFFFFFFF;
+    }
+
+    double metersPerEquatorialDegree = (profile.srs().ellipsoid().semiMajorAxis() * 2.0 * M_PI) / 360.0;
+
+    double prevPos = 0.0;
+
+    for (int lod = (int)(numLods - 1); lod >= 0; --lod)
+    {
+        double span = _lods[lod].visibilityRange - prevPos;
+
+        _lods[lod].morphEnd = _lods[lod].visibilityRange;
+        _lods[lod].morphStart = prevPos + span * (0.66); // _morphStartRatio;
+        prevPos = _lods[lod].morphEnd;
+
+        // Calc the maximum valid TY (to avoid over-subdivision at the poles)
+        // In a geographic map, this will effectively limit the maximum LOD
+        // progressively starting at about +/- 72 degrees latitude.
+        int startLOD = 6;
+        const bool restrictPolarSubdivision = true;
+        if (restrictPolarSubdivision && lod >= startLOD && profile.srs().isGeodetic())
+        {
+            const double startAR = 0.1; // minimum allowable aspect ratio at startLOD
+            const double endAR = 0.4;   // minimum allowable aspect ratio at maxLOD
+            double lodT = (double)(lod - startLOD) / (double)(numLods - 1);
+            double minAR = startAR + (endAR - startAR) * lodT;
+
+            auto [tx, ty] = profile.numTiles(lod);
+            for (int y = (int)ty / 2; y >= 0; --y)
+            {
+                TileKey k(lod, 0, y, profile);
+                const GeoExtent& e = k.extent();
+                double lat = 0.5 * (e.yMax() + e.yMin());
+                double width = e.width() * metersPerEquatorialDegree * cos(deg2rad(lat));
+                double height = e.height() * metersPerEquatorialDegree;
+                if (width / height < minAR)
+                {
+                    _lods[lod].minValidTY = std::min(y + 1, (int)(ty - 1));
+                    _lods[lod].maxValidTY = (ty - 1) - _lods[lod].minValidTY;
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void
+TerrainTilePager::getRanges(
+    const TileKey& key,
+    float& out_range,
+    float& out_startMorphRange,
+    float& out_endMorphRange) const
+{
+    out_range = 0.0f;
+    out_startMorphRange = 0.0f;
+    out_endMorphRange = 0.0f;
+
+    if (key.levelOfDetail() < _lods.size())
+    {
+        const LOD& lod = _lods[key.levelOfDetail()];
+
+        if (key.tileY() >= lod.minValidTY && key.tileY() <= lod.maxValidTY)
+        {
+            out_range = lod.visibilityRange;
+            out_startMorphRange = lod.morphStart;
+            out_endMorphRange = lod.morphEnd;
+        }
+    }
+}
+
+float
+TerrainTilePager::getRange(const TileKey& key) const
+{
+    const LOD& lod = _lods[key.levelOfDetail()];
+    if (key.tileY() >= lod.minValidTY && key.tileY() <= lod.maxValidTY)
+    {
+        return lod.visibilityRange;
+    }
+    return 0.0f;
 }

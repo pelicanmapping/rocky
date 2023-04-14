@@ -27,7 +27,7 @@ namespace ROCKY_NAMESPACE
 {
     /**
      * Interface to runtime operations like the VSG compiler, thread pools,
-     * and asynchronous scene graph functions.
+     * shared settings, and asynchronous scene graph functions.
      */
     class ROCKY_VSG_EXPORT RuntimeContext
     {
@@ -42,8 +42,17 @@ namespace ROCKY_NAMESPACE
         //! can safely edit the scene graph.
         std::function<vsg::ref_ptr<vsg::UpdateOperations>()> updates;
 
-        //! VSG state sharing
+        //! VSG object sharing
         vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
+
+        //! Shared shader compile settings. Use this to insert shader defines
+        //! that should be used throughout the application; things like enabling
+        //! lighting, debug visuals, etc.
+        vsg::ref_ptr<vsg::ShaderCompileSettings> shaderCompileSettings;
+
+        //! Revision number associated with the compile settings. A clients can
+        //! poll this to see if it needs to regenerate its pipeline.
+        Revision shaderSettingsRevision = 0;
 
         //! Queue a function to run during the update pass
         void runDuringUpdate(
@@ -65,6 +74,16 @@ namespace ROCKY_NAMESPACE
         void removeNode(
             vsg::Group* parent,
             unsigned index);
+
+        //! TODO: Signal that something has changed that requires shader regen.
+        //! When we implement this, it will probably fire off a callback that
+        //! signals listeners to recreate their graphics pipelines so they
+        //! can incorporate the new shader settings.
+        //! OR, we can just maintain a revision number and the update() pass
+        //! can check it as needed.
+        void dirtyShaders() {
+            shaderSettingsRevision++;
+        }
 
     private:
         vsg::ref_ptr<vsg::Operation> _priorityUpdateQueue;

@@ -8,10 +8,9 @@
 #include <rocky_vsg/Common.h>
 #include <rocky_vsg/GeometryPool.h>
 #include <rocky_vsg/RuntimeContext.h>
-#include <rocky_vsg/SelectionInfo.h>
 #include <rocky_vsg/TerrainStateFactory.h>
 #include <rocky_vsg/TerrainSettings.h>
-#include <rocky_vsg/TileNodeRegistry.h>
+#include <rocky_vsg/TerrainTilePager.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -43,17 +42,14 @@ namespace ROCKY_NAMESPACE
         //! SRS of the rendered terrain
         SRS worldSRS;
 
-        //! creator of terrain tile triangles and attributes
-        shared_ptr<GeometryPool> geometryPool;
+        //! Builds geometry for terrain tiles
+        GeometryPool geometryPool;
 
-        //! tracks all existing tiles
-        shared_ptr<TileNodeRegistry> tiles;
+        //! Tracks and updates state for terrain tiles
+        TerrainTilePager tiles;
 
-        //! manages visibility and morphing ranges
-        shared_ptr<SelectionInfo> selectionInfo;
-
-        //! Factory for creating rendering state commands
-        shared_ptr<TerrainStateFactory> stateFactory;
+        //! Creates the state group objects for terrain rendering
+        TerrainStateFactory stateFactory;
 
         //! name of job arena used to load data
         std::string loadSchedulerName = "terrain.load";

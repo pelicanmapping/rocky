@@ -4,7 +4,7 @@
  * MIT License
  */
 #include "TerrainContext.h"
-#include "TileNodeRegistry.h"
+#include "TerrainTilePager.h"
 #include "GeometryPool.h"
 #include <rocky/Map.h>
 #include <rocky/TerrainTileModelFactory.h>
@@ -24,25 +24,10 @@ TerrainContext::TerrainContext(
     map(new_map),
     worldSRS(new_worldSRS),
     runtime(new_runtime),
-    settings(new_settings)
+    settings(new_settings),
+    geometryPool(worldSRS),
+    tiles(new_map->profile(), new_settings, host),
+    stateFactory(new_runtime)
 {
-    selectionInfo = std::make_shared<SelectionInfo>();
-    selectionInfo->initialize(
-        settings.minLevelOfDetail,
-        settings.maxLevelOfDetail,
-        map->profile(),
-        settings.minTileRangeFactor,
-        true); // restruct polar subdivision..
-
-    stateFactory = std::make_shared<TerrainStateFactory>(
-        new_settings);
-
-    geometryPool = std::make_shared<GeometryPool>(worldSRS);
-
-    tiles = std::make_shared<TileNodeRegistry>(host);
-    tiles->geometryPool = geometryPool;
-    tiles->selectionInfo = selectionInfo;
-    tiles->stateFactory = stateFactory;
-
     util::job_scheduler::get(loadSchedulerName)->setConcurrency(4);
 }

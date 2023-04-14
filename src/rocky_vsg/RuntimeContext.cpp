@@ -170,9 +170,12 @@ namespace
     };
 }
 
+
 RuntimeContext::RuntimeContext()
 {
     _priorityUpdateQueue = PriorityUpdateQueue::create();
+
+    shaderCompileSettings = vsg::ShaderCompileSettings::create();
 }
 
 void

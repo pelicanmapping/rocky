@@ -73,7 +73,7 @@ int main(int argc, char** argv)
     rocky::Log::level = rocky::LogLevel::INFO;
     rocky::Log::info() << "Hello, world." << std::endl;
     rocky::Log::info() << "Welcome to " << ROCKY_PROJECT_NAME << " version " << ROCKY_VERSION_STRING << std::endl;
-    rocky::Log::info() << "Using VSG " << VSG_VERSION_STRING << " SO " << VSG_SOVERSION_STRING << std::endl;
+    rocky::Log::info() << "Using VSG " << VSG_VERSION_STRING << " (so " << VSG_SOVERSION_STRING << ")" << std::endl;
 
     // An LRU cache mainly used for network data fetches.
     ri.ioOptions().services().contentCache->setCapacity(128);
@@ -89,6 +89,7 @@ int main(int argc, char** argv)
         traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
     auto window = vsg::Window::create(traits);
     window->clearColor() = VkClearColorValue{ 0.0f, 0.0f, 0.0f, 1.0f };
+    bool multithreading = arguments.read({ "--mt" });
 
     // main viewer
     auto viewer = vsg::Viewer::create();
@@ -101,12 +102,11 @@ int main(int argc, char** argv)
     // TODO: read this from an earth file
     auto mapNode = rocky::MapNode::create(ri);
 
-    // Configure out mapnode to our liking:
+    // Configure the mapnode to our liking:
     mapNode->terrainNode()->concurrency = 4u;
     mapNode->terrainNode()->skirtRatio = 0.025f;
     mapNode->terrainNode()->minLevelOfDetail = 1;
     mapNode->terrainNode()->screenSpaceError = 135.0f;
-    mapNode->terrainNode()->wireframeOverlay = arguments.read({ "--wire" });
 
     // Set up the runtime context with everything we need.
     // Eventually this should be automatic in InstanceVSG
@@ -114,6 +114,8 @@ int main(int argc, char** argv)
     ri.runtime().updates = [viewer]() { return viewer->updateOperations; };
     ri.runtime().sharedObjects = vsg::SharedObjects::create();
 
+    if (arguments.read({ "--wire" }))
+        ri.runtime().shaderCompileSettings->defines.insert("RK_WIREFRAME_OVERLAY");
 
 #if defined(ROCKY_SUPPORTS_TMS)
 
@@ -141,8 +143,7 @@ int main(int argc, char** argv)
     // the sun
     if (arguments.read({ "--sky" }))
     {
-        auto sky = rocky::SkyNode::create();
-        sky->setWorldSRS(mapNode->worldSRS(), ri.runtime());
+        auto sky = rocky::SkyNode::create(ri);
         vsg_scene->addChild(sky);
     }
 
@@ -191,6 +192,8 @@ int main(int argc, char** argv)
     // passing in ResourceHints to guide the resources allocated.
     viewer->compile(resourceHints);
 
+    if (multithreading)
+        viewer->setupThreading();
 
     float frames = 0.0f;
     bool measureFrameTime = (rocky::Log::level >= rocky::LogLevel::INFO);

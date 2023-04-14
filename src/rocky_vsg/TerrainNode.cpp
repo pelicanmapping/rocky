@@ -75,19 +75,25 @@ TerrainNode::createRootTiles(const IOOptions& io)
         this);     // host
 
     // check that everything initialized ok
-    if (_context->stateFactory->status.failed())
+    if (_context->stateFactory.status.failed())
     {
-        return _context->stateFactory->status;
+        return _context->stateFactory.status;
     }
 
     _tilesRoot = vsg::Group::create();
 
+    // create the graphics pipeline to render this map
+    auto stateGroup = _context->stateFactory.createTerrainStateGroup();
+    stateGroup->addChild(_tilesRoot);
+    this->addChild(stateGroup);
+
+    // once the pipeline exists, we can start creating tiles.
     std::vector<TileKey> keys;
     Profile::getAllKeysAtLOD(this->minLevelOfDetail, _context->map->profile(), keys);
 
     for (unsigned i = 0; i < keys.size(); ++i)
     {
-        auto tile = _context->tiles->createTile(
+        auto tile = _context->tiles.createTile(
             keys[i],
             { }, // parent
             _context);
@@ -97,11 +103,6 @@ TerrainNode::createRootTiles(const IOOptions& io)
         // Add it to the scene graph
         _tilesRoot->addChild(tile);
     }
-
-    // create the graphics pipeline to render this map
-    auto stateGroup = _context->stateFactory->createTerrainStateGroup();
-    stateGroup->addChild(_tilesRoot);
-    this->addChild(stateGroup);
 
     _context->runtime.compiler()->compile(stateGroup);
 
@@ -123,7 +124,7 @@ TerrainNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
         }
         else
         {
-            _context->tiles->update(fs, io, _context);
+            _context->tiles.update(fs, io, _context);
         }
     }
 }
@@ -134,5 +135,5 @@ TerrainNode::ping(
     const TerrainTileNode* parent,
     vsg::RecordTraversal& nv)
 {
-    _context->tiles->ping(tile, parent, nv);
+    _context->tiles.ping(tile, parent, nv);
 }
