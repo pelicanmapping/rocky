@@ -52,11 +52,11 @@ install(TARGETS myApp RUNTIME DESTINATION bin)
 ### Dependencies
 Rocky requires the following additional dependencies:
 
-* glm
-* PROJ
-* vsg (VulkanSceneGraph)
-* GDAL (optional)
-* vsgXchange (optional)
+* [glm](https://github.com/g-truc/glm)
+* [PROJ](https://github.com/OSGeo/PROJ)
+* [vsg](https://github.com/vsg-dev/VulkanSceneGraph) (VulkanSceneGraph)
+* [GDAL](https://github.com/OSGeo/gdal) (optional)
+* [vsgXchange](https://github.com/vsg-dev/vsgXchange) (optional)
 
 You can install these using your favorite package manager (we recommend `vcpkg`) or you can build them yourself.
 
