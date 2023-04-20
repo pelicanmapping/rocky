@@ -9,7 +9,6 @@
 #include <rocky/Instance.h>
 #include <rocky/IOTypes.h>
 #include <rocky/Threading.h>
-
 #include <vsg/core/observer_ptr.h>
 #include <vsg/app/CompileManager.h>
 #include <vsg/app/UpdateOperations.h>
@@ -25,6 +24,8 @@ namespace vsg
 
 namespace ROCKY_NAMESPACE
 {
+    class LineStateFactory;
+
     /**
      * Interface to runtime operations like the VSG compiler, thread pools,
      * shared settings, and asynchronous scene graph functions.
@@ -44,6 +45,12 @@ namespace ROCKY_NAMESPACE
 
         //! VSG object sharing
         vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
+
+        //! VSG readerwriter options
+        vsg::ref_ptr<vsg::Options> readerWriterOptions;
+
+        //! Search paths for vsg::findFile
+        vsg::Paths searchPaths;
 
         //! Shared shader compile settings. Use this to insert shader defines
         //! that should be used throughout the application; things like enabling
@@ -85,8 +92,15 @@ namespace ROCKY_NAMESPACE
             shaderSettingsRevision++;
         }
 
+        //! Access the state generator for LineStrings
+        LineStateFactory& lineState();
+
+        //! Compile and object
+        void dirty(vsg::Object* object);
+
     private:
         vsg::ref_ptr<vsg::Operation> _priorityUpdateQueue;
+        mutable shared_ptr<LineStateFactory> _lineStateFactory;
     };
 }
 

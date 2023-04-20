@@ -24,7 +24,7 @@ namespace ROCKY_NAMESPACE
     class MeshEditor;
     class TerrainSettings;
 
-    class /*internal*/ SharedGeometry : public vsg::Inherit<vsg::Geometry, SharedGeometry>
+    class SharedGeometry : public vsg::Inherit<vsg::Geometry, SharedGeometry>
     {
     public:
         SharedGeometry() :

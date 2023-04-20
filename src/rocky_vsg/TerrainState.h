@@ -22,7 +22,7 @@ namespace ROCKY_NAMESPACE
 
 
     /**
-     * TerrainStateFactory creates all the Vulkan state necessary to
+     * TerrainState creates all the Vulkan state necessary to
      * render the terrain.
      *
      * TODO: Eventually, this will need to integrate "upwards" to the 
@@ -30,11 +30,11 @@ namespace ROCKY_NAMESPACE
      * do shader composition with some kind of uber-shader-with-defines
      * architecture.
      */
-    class ROCKY_VSG_INTERNAL TerrainStateFactory
+    class ROCKY_VSG_INTERNAL TerrainState
     {
     public:
         //! Initialize the factory
-        TerrainStateFactory(RuntimeContext&);
+        TerrainState(RuntimeContext&);
 
         //! Creates a state group for rendering terrain
         vsg::ref_ptr<vsg::StateGroup> createTerrainStateGroup();

@@ -37,7 +37,6 @@ namespace ROCKY_NAMESPACE
     private:
         struct Implementation
         {
-            vsg::ref_ptr<vsg::Options> vsgOptions;
             RuntimeContext runtime;
         };
         std::shared_ptr<Implementation> _impl;

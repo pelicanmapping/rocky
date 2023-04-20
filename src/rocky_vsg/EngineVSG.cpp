@@ -24,7 +24,7 @@ EngineVSG::EngineVSG(int& argc, char** argv) :
 {
     vsg::CommandLine commandLine(&argc, argv);
 
-    commandLine.read(instance._impl->vsgOptions);
+    commandLine.read(instance._impl->runtime.readerWriterOptions);
     _debuglayer = commandLine.read({ "--debug" });
     _apilayer = commandLine.read({ "--api" });
     _vsync = !commandLine.read({ "--novsync" });

@@ -168,19 +168,25 @@ InstanceVSG::InstanceVSG() :
     rocky::Instance()
 {
     _impl = std::make_shared<Implementation>();
-    _impl->vsgOptions = vsg::Options::create();
+    auto& runtime = _impl->runtime;
 
 #ifdef ROCKY_SUPPORTS_GDAL
-    _impl->vsgOptions->add(GDAL_VSG_ReaderWriter::create());
+    runtime.readerWriterOptions->add(GDAL_VSG_ReaderWriter::create());
 #endif
 
 #ifdef VSGXCHANGE_FOUND
     // Adds all the readerwriters in vsgxchange to the options data.
-    _impl->vsgOptions->add(vsgXchange::all::create());
+    runtime.readerWriterOptions->add(vsgXchange::all::create());
 #endif
 
+    // Default search locations for shaders and textures:
+    for (auto paths : { vsg::getEnvPaths("VSG_FILE_PATH"), vsg::getEnvPaths("ROCKY_FILE_PATH") })
+    {
+        runtime.searchPaths.insert(runtime.searchPaths.end(), paths.begin(), paths.end());
+    }
+
     // a copy of vsgOptions we can use in lamdbas
-    auto vsgOptions = _impl->vsgOptions;
+    auto readerWriterOptions = runtime.readerWriterOptions;
 
     // Install a readImage function that uses the VSG facility
     // for reading data. We may want to subclass Image with something like
@@ -189,10 +195,10 @@ InstanceVSG::InstanceVSG() :
     // it if it needs to. vsg::read_cast() might do some internal caching
     // as well -- need to look into that.
 
-    ioOptions().services().readImageFromURI = [vsgOptions](
+    ioOptions().services().readImageFromURI = [readerWriterOptions](
         const std::string& location, const rocky::IOOptions& io)
     {
-        auto result = vsg::read_cast<vsg::Data>(location, vsgOptions);
+        auto result = vsg::read_cast<vsg::Data>(location, readerWriterOptions);
         return util::makeImageFromVSG(result);
     };
 
@@ -212,7 +218,7 @@ InstanceVSG::InstanceVSG() :
     // To read from a stream, we have to search all the VS readerwriters to
     // find one that matches the 'extension' we want. We also have to put that
     // extension in the options structure as a hint.
-    ioOptions().services().readImageFromStream = [vsgOptions](
+    ioOptions().services().readImageFromStream = [readerWriterOptions](
         std::istream& location, std::string contentType, const rocky::IOOptions& io)
         -> Result<shared_ptr<Image>>
     {
@@ -224,10 +230,10 @@ InstanceVSG::InstanceVSG() :
         auto i = ext_for_mime_type.find(contentType);
         if (i != ext_for_mime_type.end())
         {
-            auto rw = findReaderWriter(i->second, vsgOptions->readerWriters);
+            auto rw = findReaderWriter(i->second, readerWriterOptions->readerWriters);
             if (rw != nullptr)
             {
-                auto local_options = vsg::Options::create(*vsgOptions);
+                auto local_options = vsg::Options::create(*readerWriterOptions);
                 local_options->extensionHint = i->second;
                 auto result = rw->read_cast<vsg::Data>(location, local_options);
                 return util::makeImageFromVSG(result);
@@ -240,7 +246,7 @@ InstanceVSG::InstanceVSG() :
 InstanceVSG::InstanceVSG(vsg::CommandLine& args) :
     InstanceVSG()
 {
-    args.read(_impl->vsgOptions);
+    args.read(_impl->runtime.readerWriterOptions);
 }
 
 InstanceVSG::InstanceVSG(const InstanceVSG& rhs) :

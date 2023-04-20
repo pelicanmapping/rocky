@@ -13,6 +13,7 @@
 #include <rocky_vsg/TerrainNode.h>
 #include <rocky_vsg/MapManipulator.h>
 #include <rocky_vsg/SkyNode.h>
+#include <rocky_vsg/LineState.h>
 
 #include <vsg/all.h>
 #include <chrono>
@@ -58,6 +59,29 @@ namespace ROCKY_NAMESPACE
                 return image.status;
         }
     };
+}
+
+// adds a simple line to the scene - testing - will prob move from here
+vsg::ref_ptr<vsg::Node> add_lines(rocky::InstanceVSG& ri)
+{
+    auto lineNode = rocky::LineStringNode::create();
+    auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
+    for (double lon = -180.0; lon <= 0.0; lon += 2.5)
+    {
+        rocky::dvec3 ecef;
+        xform(rocky::dvec3(lon, 0.0, 6500000), ecef);
+        lineNode->push_back(vsg::vec3(ecef.x, ecef.y, ecef.z));
+    }
+
+    auto styleNode = rocky::LineStringStyleNode::create(ri.runtime());
+    styleNode->setStyle(rocky::LineStyle{ { 1,0.7,0.3,1 }, 3.0f, 0xfff0, 1 });
+
+    auto stateGroup = vsg::StateGroup::create();
+    stateGroup->stateCommands = ri.runtime().lineState().createPipelineStateCommands();
+
+    stateGroup->addChild(styleNode);
+    styleNode->addChild(lineNode);
+    return stateGroup;
 }
 
 int main(int argc, char** argv)
@@ -148,6 +172,9 @@ int main(int argc, char** argv)
     }
 
     vsg_scene->addChild(mapNode);
+
+    // testing.
+    vsg_scene->addChild(add_lines(ri));
 
     // main camera
     double nearFarRatio = 0.00001;

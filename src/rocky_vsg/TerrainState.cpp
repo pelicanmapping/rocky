@@ -3,7 +3,7 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#include "TerrainStateFactory.h"
+#include "TerrainState.h"
 #include "RuntimeContext.h"
 #include "TerrainTileNode.h"
 
@@ -42,7 +42,7 @@
 
 using namespace ROCKY_NAMESPACE;
 
-TerrainStateFactory::TerrainStateFactory(RuntimeContext& runtime) :
+TerrainState::TerrainState(RuntimeContext& runtime) :
     _runtime(runtime)
 {
     status = StatusOK;
@@ -62,7 +62,7 @@ TerrainStateFactory::TerrainStateFactory(RuntimeContext& runtime) :
 }
 
 void
-TerrainStateFactory::createDefaultDescriptors()
+TerrainState::createDefaultDescriptors()
 {
     // First create our samplers - each one is shared across all tiles.
     // In Vulkan, the sampler is separate from the image you are sampling,
@@ -138,7 +138,7 @@ TerrainStateFactory::createDefaultDescriptors()
 }
 
 vsg::ref_ptr<vsg::ShaderSet>
-TerrainStateFactory::createShaderSet() const
+TerrainState::createShaderSet() const
 {
     // Creates a ShaderSet for terrain rendering.
     //
@@ -154,25 +154,18 @@ TerrainStateFactory::createShaderSet() const
 
     vsg::ref_ptr<vsg::ShaderSet> shaderSet;
 
-    // set up search paths to SPIRV shaders and textures
-    vsg::Paths searchPaths = vsg::getEnvPaths("VSG_FILE_PATH");
-    vsg::Paths morePaths = vsg::getEnvPaths("ROCKY_FILE_PATH");
-    searchPaths.insert(searchPaths.end(), morePaths.begin(), morePaths.end());
-
-    auto options = vsg::Options::create();
-
     // load shaders
     auto vertexShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_VERTEX_BIT,
         "main",
-        vsg::findFile(TERRAIN_VERT_SHADER, searchPaths),
-        options);
+        vsg::findFile(TERRAIN_VERT_SHADER, _runtime.searchPaths),
+        _runtime.readerWriterOptions);
 
     auto fragmentShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_FRAGMENT_BIT,
         "main",
-        vsg::findFile(TERRAIN_FRAG_SHADER, searchPaths),
-        options);
+        vsg::findFile(TERRAIN_FRAG_SHADER, _runtime.searchPaths),
+        _runtime.readerWriterOptions);
 
     if (!vertexShader || !fragmentShader)
     {
@@ -218,7 +211,7 @@ TerrainStateFactory::createShaderSet() const
 
 
 vsg::ref_ptr<vsg::GraphicsPipelineConfig>
-TerrainStateFactory::createPipelineConfig() const
+TerrainState::createPipelineConfig() const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), {});
 
@@ -271,7 +264,7 @@ TerrainStateFactory::createPipelineConfig() const
 }
 
 vsg::ref_ptr<vsg::StateGroup>
-TerrainStateFactory::createTerrainStateGroup()
+TerrainState::createTerrainStateGroup()
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), { });
 
@@ -297,7 +290,7 @@ TerrainStateFactory::createTerrainStateGroup()
 }
 
 void
-TerrainStateFactory::updateTerrainTileDescriptors(
+TerrainState::updateTerrainTileDescriptors(
     const TerrainTileRenderModel& renderModel,
     vsg::ref_ptr<vsg::StateGroup> stategroup,
     RuntimeContext& runtime) const

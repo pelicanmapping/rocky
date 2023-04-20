@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "RuntimeContext.h"
+#include "LineState.h"
 #include "Utils.h"
 #include <vsg/app/Viewer.h>
 #include <shared_mutex>
@@ -173,9 +174,11 @@ namespace
 
 RuntimeContext::RuntimeContext()
 {
-    _priorityUpdateQueue = PriorityUpdateQueue::create();
+    readerWriterOptions = vsg::Options::create();
 
     shaderCompileSettings = vsg::ShaderCompileSettings::create();
+
+    _priorityUpdateQueue = PriorityUpdateQueue::create();
 }
 
 void
@@ -263,4 +266,26 @@ RuntimeContext::removeNode(vsg::Group* parent, unsigned index)
 {
     auto remover = RemoveNodeAsync::create(parent, index);
     updates()->add(remover);
+}
+
+LineStateFactory&
+RuntimeContext::lineState()
+{
+    if (!_lineStateFactory)
+    {
+        _lineStateFactory = std::make_shared<LineStateFactory>(*this);
+    }
+    return *_lineStateFactory.get();
+}
+
+void
+RuntimeContext::dirty(vsg::Object* object)
+{
+    // TODO.
+    // For now, this will immediately recompile and object.
+    // We may want to instead queue it up and do it asynchronously for 
+    // objects that are already in the scene graph and are dynamic.
+    ROCKY_SOFT_ASSERT_AND_RETURN(object, void());
+    // crash
+    //compiler()->compile(vsg::ref_ptr<vsg::Object>(object));
 }

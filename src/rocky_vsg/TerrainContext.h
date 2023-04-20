@@ -8,7 +8,7 @@
 #include <rocky_vsg/Common.h>
 #include <rocky_vsg/GeometryPool.h>
 #include <rocky_vsg/RuntimeContext.h>
-#include <rocky_vsg/TerrainStateFactory.h>
+#include <rocky_vsg/TerrainState.h>
 #include <rocky_vsg/TerrainSettings.h>
 #include <rocky_vsg/TerrainTilePager.h>
 
@@ -49,7 +49,7 @@ namespace ROCKY_NAMESPACE
         TerrainTilePager tiles;
 
         //! Creates the state group objects for terrain rendering
-        TerrainStateFactory stateFactory;
+        TerrainState stateFactory;
 
         //! name of job arena used to load data
         std::string loadSchedulerName = "terrain.load";

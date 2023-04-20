@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 
     // add a layer to the map
     auto layer = rocky::TMSImageLayer::create();
-    layer->setURI("https://readymap.org/readymap/tiles/1.0.0/135/");
+    layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
     engine.map()->layers().add(layer);
 
     if (layer->status().failed())
