@@ -12,87 +12,6 @@ using namespace ROCKY_NAMESPACE;
 
 #define LC "[Map] "
 
-//...................................................................
-
-#if 0
-Config
-Map::Options::getConfig() const
-{
-    Config conf = ConfigOptions::getConfig();
-
-    conf.set( "name",         name() );
-    conf.set( "profile",      profile() );
-    //conf.set( "cache",        cache() );
-    //conf.set( "cache_policy", cachePolicy() );
-
-    //conf.set( "elevation_interpolation", "nearest",     elevationInterpolation(), NEAREST);
-    //conf.set( "elevation_interpolation", "average",     elevationInterpolation(), AVERAGE);
-    //conf.set( "elevation_interpolation", "bilinear",    elevationInterpolation(), BILINEAR);
-    //conf.set( "elevation_interpolation", "triangulate", elevationInterpolation(), TRIANGULATE);
-
-    conf.set( "profile_layer", profileLayer() );
-
-    return conf;
-}
-
-void
-Map::Options::fromConfig(const Config& conf)
-{
-    //elevationInterpolation().init(BILINEAR);
-    
-    conf.get( "name",         name() );
-    conf.get( "profile",      profile() );
-    //conf.get( "cache",        cache() );  
-    //conf.get( "cache_policy", cachePolicy() );
-
-    // legacy support:
-    //if ( conf.value<bool>( "cache_only", false ) == true )
-    //    cachePolicy()->usage = CachePolicy::USAGE_CACHE_ONLY;
-
-    //if ( conf.value<bool>( "cache_enabled", true ) == false )
-    //    cachePolicy()->usage = CachePolicy::USAGE_NO_CACHE;
-
-    //conf.get( "elevation_interpolation", "nearest",     elevationInterpolation(), NEAREST);
-    //conf.get( "elevation_interpolation", "average",     elevationInterpolation(), AVERAGE);
-    //conf.get( "elevation_interpolation", "bilinear",    elevationInterpolation(), BILINEAR);
-    //conf.get( "elevation_interpolation", "triangulate", elevationInterpolation(), TRIANGULATE);
-
-    conf.get( "profile_layer", profileLayer() );
-}
-
-//...................................................................
-#endif
-
-#if 0
-Map::Map() :
-    _instance(Instance::create())
-{
-    construct(Config(), _instance->ioOptions());
-}
-
-Map::Map(Instance::ptr instance) :
-    _instance(instance ? instance : Instance::create())
-{
-    construct(Config(), _instance->ioOptions());
-}
-
-Map::Map(Instance::ptr instance, const IOOptions& io) :
-    _instance(instance ? instance : Instance::create())
-{
-    construct(Config(), io);
-}
-
-Map::Map(
-    const Config& conf,
-    Instance::ptr instance,
-    const IOOptions& io) :
-
-    _instance(instance ? instance : Instance::create())
-{
-    construct(Config(), io);
-}
-#else
-
 Map::Map(const Instance& instance) :
     _instance(instance),
     _imageLayers(this),
@@ -124,7 +43,6 @@ Map::Map(const Instance& instance, const JSON& conf, const IOOptions& io) :
 {
     construct(conf, io);
 }
-#endif
 
 void
 Map::construct(const JSON& conf, const IOOptions& io)

@@ -5,6 +5,8 @@
  */
 #include "LayerCollection.h"
 #include "Map.h"
+#include "ImageLayer.h" // temp
+#include "ElevationLayer.h" // temp
 
 using namespace ROCKY_NAMESPACE;
 
@@ -23,6 +25,37 @@ LayerCollection::add(shared_ptr<Layer> layer)
 Status
 LayerCollection::add(shared_ptr<Layer> layer, const IOOptions& io)
 {
+    // TEMPORARY WARNING if try to add more than one image layer.
+    if (dynamic_cast<ImageLayer*>(layer.get()))
+    {
+        std::unique_lock lock(_map->_mapDataMutex);
+
+        int image_count = std::count_if(_layers.begin(), _layers.end(),
+            [](shared_ptr<Layer>& layer) {
+                return dynamic_cast<ImageLayer*>(layer.get()) != nullptr; });
+
+        if (image_count > 0)
+        {
+            Log::warn() << "Not yet implemented: Support for more than one imagery layer" << std::endl;
+            return Status(Status::ServiceUnavailable);
+        }
+    }
+    // TEMPORARY WARNING if try to add more than one elevation layer.
+    if (dynamic_cast<ElevationLayer*>(layer.get()))
+    {
+        std::unique_lock lock(_map->_mapDataMutex);
+
+        int image_count = std::count_if(_layers.begin(), _layers.end(),
+            [](shared_ptr<Layer>& layer) {
+                return dynamic_cast<ElevationLayer*>(layer.get()) != nullptr; });
+
+        if (image_count > 0)
+        {
+            Log::warn() << "Not yet implemented: Support for more than one elevation layer" << std::endl;
+            return Status(Status::ServiceUnavailable);
+        }
+    }
+
     if (indexOf(layer) != count())
         return layer->status();
 
