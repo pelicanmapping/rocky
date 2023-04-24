@@ -16,6 +16,7 @@
 #include <vsg/vk/State.h>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::engine;
 using namespace ROCKY_NAMESPACE::util;
 
 #undef LC
@@ -80,7 +81,7 @@ MapNode::to_json() const
     return j.dump();
 }
 
-RuntimeContext&
+Runtime&
 MapNode::runtime()
 {
     ROCKY_HARD_ASSERT(_instance.status().ok());

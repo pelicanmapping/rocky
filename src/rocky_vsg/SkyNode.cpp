@@ -5,7 +5,7 @@
  */
 #include "SkyNode.h"
 #include "Utils.h"
-#include "RuntimeContext.h"
+#include "Runtime.h"
 
 #include <rocky/Ellipsoid.h>
 #include <rocky/Ephemeris.h>
@@ -156,7 +156,7 @@ namespace
     }
 
 
-    vsg::ref_ptr<vsg::StateGroup> makeStateGroup(bool with_normals, bool with_tex_coords, RuntimeContext& runtime)
+    vsg::ref_ptr<vsg::StateGroup> makeStateGroup(bool with_normals, bool with_tex_coords, Runtime& runtime)
     {
         auto sharedObjects = runtime.sharedObjects;
 
@@ -246,7 +246,7 @@ namespace
     }
 
 
-    vsg::ref_ptr<vsg::Node> makeAtmosphere(const SRS& srs, float thickness, RuntimeContext& runtime)
+    vsg::ref_ptr<vsg::Node> makeAtmosphere(const SRS& srs, float thickness, Runtime& runtime)
     {
         auto stategroup = makeStateGroup(false, false, runtime);
         if (!stategroup)

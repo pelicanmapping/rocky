@@ -3,7 +3,7 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#include "EngineVSG.h"
+#include "Application.h"
 #include "MapNode.h"
 #include "TerrainNode.h"
 #include "MapManipulator.h"
@@ -17,9 +17,9 @@
 #include <vsg/nodes/Light.h>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::engine;
 
-
-EngineVSG::EngineVSG(int& argc, char** argv) :
+Application::Application(int& argc, char** argv) :
     instance()
 {
     vsg::CommandLine commandLine(&argc, argv);
@@ -56,7 +56,7 @@ EngineVSG::EngineVSG(int& argc, char** argv) :
 }
 
 void
-EngineVSG::createMainWindow(int width, int height, const std::string& name)
+Application::createMainWindow(int width, int height, const std::string& name)
 {
     auto traits = vsg::WindowTraits::create(name);
     traits->debugLayer = _debuglayer;
@@ -72,13 +72,13 @@ EngineVSG::createMainWindow(int width, int height, const std::string& name)
 }
 
 std::shared_ptr<Map>
-EngineVSG::map()
+Application::map()
 {
     return mapNode->map();
 }
 
 int
-EngineVSG::run()
+Application::run()
 {
     // Make a window if the user didn't.
     if (!mainWindow)
@@ -171,4 +171,64 @@ EngineVSG::run()
     }
 
     return 0;
+}
+
+void
+Application::add(shared_ptr<MapObject> obj)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(obj, void());
+
+    for (auto& attachment : obj->attachments)
+    {
+        attachment->add(mainScene, instance.runtime());
+    }
+
+    // TODO store the actual object somewhere?
+}
+
+
+
+MapObject::MapObject(shared_ptr<Attachment> value) :
+    super()
+{
+    attachments.push_back(value);
+}
+
+MapObject::MapObject(Attachments value) :
+    super()
+{
+    attachments = value;
+}
+
+
+LineString::LineString() :
+    super()
+{
+    _geometry = LineStringGeometry::create();
+    _styleNode = LineStringStyleNode::create();
+}
+
+void
+LineString::pushVertex(float x, float y, float z)
+{
+    _geometry->push_back({ x, y, z });
+}
+
+void
+LineString::setStyle(const LineStyle& value)
+{
+    _styleNode->setStyle(value);
+}
+
+void
+LineString::add(vsg::ref_ptr<vsg::Group>& scene_graph, Runtime& runtime)
+{
+    // TODO: simple approach. Just put everything in every LineString for now.
+    // We can optimize or group things later.
+
+    auto stateGroup = vsg::StateGroup::create();
+    stateGroup->stateCommands = LineState::createPipelineStateCommands(runtime);
+    stateGroup->addChild(_styleNode);
+    _styleNode->addChild(_geometry);
+    scene_graph->addChild(stateGroup);
 }

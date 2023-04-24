@@ -1,3 +1,2 @@
-add_subdirectory(rviewer)
+add_subdirectory(rsimple)
 add_subdirectory(rengine)
-

@@ -4,13 +4,14 @@
  * MIT License
  */
 #include "LineState.h"
-#include "RuntimeContext.h"
+#include "Runtime.h"
 
 #include <vsg/state/BindDescriptorSet.h>
 #include <vsg/state/ViewDependentState.h>
 #include <vsg/commands/DrawIndexed.h>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_ENGINE_NAMESPACE;
 
 #define LINE_VERT_SHADER "rocky.line.vert"
 #define LINE_FRAG_SHADER "rocky.line.frag"
@@ -19,9 +20,13 @@ using namespace ROCKY_NAMESPACE;
 #define VIEWPORT_BUFFER_SET 1 // hard-coded in VSG ViewDependentState
 #define VIEWPORT_BUFFER_BINDING 1 // hard-coded in VSG ViewDependentState
 
+
+vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> LineState::pipelineConfig;
+
+
 namespace
 {
-    vsg::ref_ptr<vsg::ShaderSet> createLineShaderSet(RuntimeContext& runtime)
+    vsg::ref_ptr<vsg::ShaderSet> createLineShaderSet(Runtime& runtime)
     {
         vsg::ref_ptr<vsg::ShaderSet> shaderSet;
 
@@ -66,166 +71,164 @@ namespace
     }
 }
 
-
-LineStateFactory::LineStateFactory(RuntimeContext& runtime) :
-    _runtime(runtime)
+LineState::~LineState()
 {
-    auto shaderSet = createLineShaderSet(runtime);
-
-    if (!shaderSet)
-    {
-        //todo
-        status = Status(Status::ConfigurationError, "Unable to create shader set - check for missing shaders");
-        return;
-    }
-
-    // Create the pipeline configurator for terrain; this is a helper object
-    // that acts as a "template" for terrain tile rendering state.
-    _config = vsg::GraphicsPipelineConfig::create(shaderSet);
-
-    // Apply any custom compile settings / defines:
-    _config->shaderHints = runtime.shaderCompileSettings;
-
-    // activate the arrays we intend to use
-    _config->enableArray("in_vertex"     , VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    _config->enableArray("in_vertex_prev", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    _config->enableArray("in_vertex_next", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    _config->enableArray("in_color"      , VK_VERTEX_INPUT_RATE_VERTEX, 16);
-
-    // backface culling off ... we may or may not need this.
-    _config->rasterizationState->cullMode = VK_CULL_MODE_NONE;
-
-    // Temporary decriptors that we will use to set up the PipelineConfig.
-    vsg::Descriptors descriptors;
-    _config->assignUniform(descriptors, "line", { });
-    _config->assignUniform(descriptors, "vsg_viewports", { });
-
-    // Alpha blending to support line smoothing
-    _config->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
-        true,
-        VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
-        VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
-        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
-    } };
-
-    // Register the ViewDescriptorSetLayout (for view-dependent state stuff
-    // like viewpoint and lights data)
-    // The "set" in GLSL's "layout(set=X, binding=Y)" refers to the index of
-    // the descriptor set layout within the pipeline layout. Setting the
-    // "additional" DSL appends it to the pipline layout, giving it set=1.
-    _config->additionalDescriptorSetLayout =
-        runtime.sharedObjects ? runtime.sharedObjects->shared_default<vsg::ViewDescriptorSetLayout>() :
-        vsg::ViewDescriptorSetLayout::create();
-
-    // Initialize GraphicsPipeline from the data in the configuration.
-    if (runtime.sharedObjects)
-        runtime.sharedObjects->share(_config, [](auto gpc) { gpc->init(); });
-    else
-        _config->init();
+    pipelineConfig = nullptr;
 }
 
 vsg::StateGroup::StateCommands
-LineStateFactory::createPipelineStateCommands() const
+LineState::createPipelineStateCommands(Runtime& runtime)
 {
     // Now create the pipeline and stategroup to bind it
-    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), { });
+    if (!pipelineConfig)
+    {
+        auto shaderSet = createLineShaderSet(runtime);
+
+        // Create the pipeline configurator for terrain; this is a helper object
+        // that acts as a "template" for terrain tile rendering state.
+        pipelineConfig = vsg::GraphicsPipelineConfig::create(shaderSet);
+
+        // Apply any custom compile settings / defines:
+        pipelineConfig->shaderHints = runtime.shaderCompileSettings;
+
+        // activate the arrays we intend to use
+        pipelineConfig->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
+        pipelineConfig->enableArray("in_vertex_prev", VK_VERTEX_INPUT_RATE_VERTEX, 12);
+        pipelineConfig->enableArray("in_vertex_next", VK_VERTEX_INPUT_RATE_VERTEX, 12);
+        pipelineConfig->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
+
+        // backface culling off ... we may or may not need this.
+        pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
+
+        // Temporary decriptors that we will use to set up the PipelineConfig.
+        vsg::Descriptors descriptors;
+        pipelineConfig->assignUniform(descriptors, "line", { });
+        pipelineConfig->assignUniform(descriptors, "vsg_viewports", { });
+
+        // Alpha blending to support line smoothing
+        pipelineConfig->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
+            true,
+            VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
+            VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
+        } };
+
+        // Register the ViewDescriptorSetLayout (for view-dependent state stuff
+        // like viewpoint and lights data)
+        // The "set" in GLSL's "layout(set=X, binding=Y)" refers to the index of
+        // the descriptor set layout within the pipeline layout. Setting the
+        // "additional" DSL appends it to the pipline layout, giving it set=1.
+        pipelineConfig->additionalDescriptorSetLayout =
+            runtime.sharedObjects ? runtime.sharedObjects->shared_default<vsg::ViewDescriptorSetLayout>() :
+            vsg::ViewDescriptorSetLayout::create();
+
+        // Initialize GraphicsPipeline from the data in the configuration.
+        if (runtime.sharedObjects)
+            runtime.sharedObjects->share(pipelineConfig, [](auto gpc) { gpc->init(); });
+        else
+            pipelineConfig->init();
+    }
 
     vsg::StateGroup::StateCommands commands;
 
-    commands.push_back(_config->bindGraphicsPipeline);
+    commands.push_back(pipelineConfig->bindGraphicsPipeline);
 
     // assign any custom ArrayState that may be required
     //stateGroup->prototypeArrayState = shaderSet->getSuitableArrayState(defines);
 
     // This binds the view-dependent state from VSG (lights, viewport, etc.)
-    auto bindViewDescriptorSets = vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, _config->layout, 1);
+    auto bindViewDescriptorSets = vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, 1);
     commands.push_back(bindViewDescriptorSets);
 
-    if (_runtime.sharedObjects)
-        _runtime.sharedObjects->share(bindViewDescriptorSets);
+    if (runtime.sharedObjects)
+        runtime.sharedObjects->share(bindViewDescriptorSets);
 
     return commands;
 }
 
-vsg::ref_ptr<vsg::StateCommand>
-LineStateFactory::createBindDescriptorSetCommand(const LineStyle& style) const
+
+
+
+LineStringStyleNode::LineStringStyleNode()
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), { });
+    _buffer = vsg::ubyteArray::create(sizeof(LineStyle));
+    LineStyle& style = *static_cast<LineStyle*>(_buffer->dataPointer());
+    style = LineStyle(); // set to default values
 
-    // assemble the uniform buffer object:
-    LineStyleDescriptors::Uniforms uniforms;
-    uniforms.first = 0;
-    uniforms.last = -1;
-    uniforms.color = style.color;
-    uniforms.width = style.width;
-    uniforms.stipple_factor = style.stipple_factor;
-    uniforms.stipple_pattern = style.stipple_pattern;
+    // tells VSG that the contents can change, and if they do, the data should be
+    // transfered to the GPU before or during recording.
+    _buffer->getLayout().dataVariance = vsg::DYNAMIC_DATA;
+}
 
-    // populate the buffer:
-    vsg::ref_ptr<vsg::ubyteArray> data = vsg::ubyteArray::create(sizeof(uniforms));
-    memcpy(data->dataPointer(), &uniforms, sizeof(uniforms));
-    auto ubo = vsg::DescriptorBuffer::create(data, LINE_BUFFER_BINDING);
+void
+LineStringStyleNode::setStyle(const LineStyle& value)
+{
+    LineStyle& my_style = *static_cast<LineStyle*>(_buffer->dataPointer());
+    my_style = value;
+    _buffer->dirty();
+}
 
-    // assign it to a dset:
+const LineStyle&
+LineStringStyleNode::style() const
+{
+    return *static_cast<LineStyle*>(_buffer->dataPointer());
+}
+
+void
+LineStringStyleNode::compile(vsg::Context& vsg_context)
+{
+    auto ubo = vsg::DescriptorBuffer::create(_buffer, LINE_BUFFER_BINDING);
+
     auto dset = vsg::DescriptorSet::create(
-        _config->layout->setLayouts.front(), // layout this dset complies with
-        vsg::Descriptors{ ubo }              // dset contents
-    );
-    
-    // line styles seem likely to be shared.
-    _runtime.sharedObjects->share(dset);
+        LineState::pipelineConfig->layout->setLayouts.front(),
+        vsg::Descriptors{ ubo });
 
-    // make the bind command. this will parent any actual line geometry commands
-    // that should use the style.
+    // add the command to bind this line style.
     auto bind = vsg::BindDescriptorSet::create(
         VK_PIPELINE_BIND_POINT_GRAPHICS,
-        _config->layout,
+        LineState::pipelineConfig->layout,
         0, // first set
         dset
     );
 
-    return bind;
-}
-
-
-
-LineStringStyleNode::LineStringStyleNode(RuntimeContext& runtime) :
-    _runtime(runtime)
-{
-    //nop
-}
-
-void
-LineStringStyleNode::setStyle(const LineStyle& style)
-{
-    _style = style;
-    _runtime.dirty(this);
-}
-
-void
-LineStringStyleNode::compile(vsg::Context& context)
-{
-    auto bind = _runtime.lineState().createBindDescriptorSetCommand(_style);
-    this->stateCommands.clear();
     this->add(bind);
-    vsg::StateGroup::compile(context);
+
+    vsg::StateGroup::compile(vsg_context);
 }
 
 
 
-LineStringNode::LineStringNode()
+LineStringGeometry::LineStringGeometry()
 {
-    //nop
+    _drawCommand = vsg::DrawIndexed::create(
+        0, // index count
+        1, // instance count
+        0, // first index
+        0, // vertex offset
+        0  // first instance
+    );
+}
+
+void
+LineStringGeometry::setFirst(unsigned value)
+{
+    _drawCommand->firstIndex = value * 4;
+}
+
+void
+LineStringGeometry::setCount(unsigned value)
+{
+    _drawCommand->indexCount = value;
 }
 
 unsigned
-LineStringNode::numVerts() const
+LineStringGeometry::numVerts() const
 {
     return _current.size() / 4;
 }
 
 void
-LineStringNode::push_back(const vsg::vec3& value)
+LineStringGeometry::push_back(const vsg::vec3& value)
 {
     bool first = _current.empty();
 
@@ -259,7 +262,7 @@ LineStringNode::push_back(const vsg::vec3& value)
 }
 
 void
-LineStringNode::compile(vsg::Context& context)
+LineStringGeometry::compile(vsg::Context& context)
 {
     if (_current.size() == 0)
         return;
@@ -284,13 +287,9 @@ LineStringNode::compile(vsg::Context& context)
     assignArrays({ vert_array, prev_array, next_array, colors_array });
     assignIndices(indices);
 
-    commands.push_back(
-        vsg::DrawIndexed::create(
-            indices->size(), // index count
-            1,               // instance count
-            0,               // first index
-            0,               // vertex offset
-            0));             // first instance
+    _drawCommand->indexCount = indices->size();
+
+    commands.push_back(_drawCommand);
 
     vsg::Geometry::compile(context);
 }

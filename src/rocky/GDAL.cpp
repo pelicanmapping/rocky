@@ -1306,7 +1306,7 @@ GDAL::Driver::createImage(
 
                 int success = 0;
                 short noDataValueFromBand = bandGray->GetNoDataValue(&success);
-                if (!success) noDataValueFromBand = NO_DATA_VALUE;
+                if (!success) noDataValueFromBand = (short)-32767;
 
                 for (int src_row = 0, dst_row = tile_offset_top; src_row < target_height; src_row++, dst_row++)
                 {
@@ -1329,7 +1329,7 @@ GDAL::Driver::createImage(
                 rasterIO(bandGray, GF_Read, off_x, off_y, width, height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation());
 
                 int success = 0;
-                short noDataValueFromBand = bandGray->GetNoDataValue(&success);
+                float noDataValueFromBand = bandGray->GetNoDataValue(&success);
                 if (!success) noDataValueFromBand = NO_DATA_VALUE;
 
                 for (int src_row = 0, dst_row = tile_offset_top; src_row < target_height; src_row++, dst_row++)
@@ -1517,6 +1517,7 @@ GDAL::Driver::createImage(
     return image;
 }
 
+#if 0
 Result<shared_ptr<Heightfield>>
 GDAL::Driver::createHeightfield(
     const TileKey& key,
@@ -1747,6 +1748,8 @@ GDAL::Driver::createHeightfieldWithVRT(
 
     return hf;
 }
+#endif
+
 //...................................................................
 
 void GDAL::LayerBase::setURI(const URI& value) {

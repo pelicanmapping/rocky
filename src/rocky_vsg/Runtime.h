@@ -9,6 +9,7 @@
 #include <rocky/Instance.h>
 #include <rocky/IOTypes.h>
 #include <rocky/Threading.h>
+#include <rocky_vsg/LineState.h>
 #include <vsg/core/observer_ptr.h>
 #include <vsg/app/CompileManager.h>
 #include <vsg/app/UpdateOperations.h>
@@ -24,17 +25,15 @@ namespace vsg
 
 namespace ROCKY_NAMESPACE
 {
-    class LineStateFactory;
-
     /**
      * Interface to runtime operations like the VSG compiler, thread pools,
      * shared settings, and asynchronous scene graph functions.
      */
-    class ROCKY_VSG_EXPORT RuntimeContext
+    class ROCKY_VSG_EXPORT Runtime
     {
     public:
         //! Constructor
-        RuntimeContext();
+        Runtime();
 
         //! Compiler for new vsg objects
         std::function<vsg::ref_ptr<vsg::CompileManager>()> compiler;
@@ -93,14 +92,14 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Access the state generator for LineStrings
-        LineStateFactory& lineState();
+        //LineState& lineState();
 
         //! Compile and object
         void dirty(vsg::Object* object);
 
     private:
         vsg::ref_ptr<vsg::Operation> _priorityUpdateQueue;
-        mutable shared_ptr<LineStateFactory> _lineStateFactory;
+        ROCKY_ENGINE_NAMESPACE::LineState _lineState;
     };
 }
 

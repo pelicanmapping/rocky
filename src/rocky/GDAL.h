@@ -108,6 +108,7 @@ namespace ROCKY_NAMESPACE
                 bool isCoverage,
                 const IOOptions& io);
 
+#if 0
             //! Creates a heightfield if possible
             Result<shared_ptr<Heightfield>> createHeightfield(
                 const TileKey& key,
@@ -119,6 +120,7 @@ namespace ROCKY_NAMESPACE
                 const TileKey& key,
                 unsigned tileSize,
                 const IOOptions& io);
+#endif
 
             const Profile& profile() const {
                 return _profile;

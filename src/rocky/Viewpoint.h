@@ -13,7 +13,7 @@ namespace ROCKY_NAMESPACE
     /**
     * Base class for any object that has a position on a Map.
     */
-    class ROCKY_EXPORT MapObject
+    class ROCKY_EXPORT PositionedObject
     {
     public:
         //! Center position of the object
@@ -23,7 +23,7 @@ namespace ROCKY_NAMESPACE
     /**
     * Simplest possible map object - just a position.
     */
-    class ROCKY_EXPORT SimpleMapObject : public MapObject
+    class ROCKY_EXPORT SimplePositionedObject : public PositionedObject
     {
     public:
         GeoPoint point;
@@ -32,9 +32,9 @@ namespace ROCKY_NAMESPACE
             return point;
         }
 
-        SimpleMapObject() { }
-        SimpleMapObject(const SimpleMapObject&) = default;
-        SimpleMapObject(const GeoPoint& point_) : point(point_) { }
+        SimplePositionedObject() { }
+        SimplePositionedObject(const SimplePositionedObject&) = default;
+        SimplePositionedObject(const GeoPoint& point_) : point(point_) { }
     };
 
     /**
@@ -48,7 +48,7 @@ namespace ROCKY_NAMESPACE
         optional<std::string> name;
 
         //! What the viewer is looking at.
-        std::shared_ptr<MapObject> target = nullptr;
+        std::shared_ptr<SimplePositionedObject> target = nullptr;
 
         //! Heading of the viewer relative to north
         optional<Angle> heading = Angle(0.0, Units::DEGREES);

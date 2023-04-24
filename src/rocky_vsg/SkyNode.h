@@ -13,7 +13,7 @@
 
 namespace ROCKY_NAMESPACE
 {
-    //class RuntimeContext;
+    //class Runtime;
 
     /**
     * Node that renders an atmosphere, stars, sun and moon.
@@ -26,7 +26,7 @@ namespace ROCKY_NAMESPACE
         SkyNode(const InstanceVSG& instance);
 
         //! Sets the spatial reference system of the earth (geocentric)
-        void setWorldSRS(const SRS& srs); // , RuntimeContext& runtime);
+        void setWorldSRS(const SRS& srs); // , Runtime& runtime);
 
         //! Toggle the rendering of the atmosphere
         void setShowAtmosphere(bool value);

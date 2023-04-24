@@ -3,7 +3,7 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#include "RuntimeContext.h"
+#include "Runtime.h"
 #include "LineState.h"
 #include "Utils.h"
 #include <vsg/app/Viewer.h>
@@ -81,13 +81,13 @@ namespace
     //! and then safely adds it to the `ene graph in the update phase.
     struct AddNodeAsync : public vsg::Inherit<vsg::Operation, AddNodeAsync>
     {
-        RuntimeContext _runtime;
+        Runtime _runtime;
 
         // parent to which to add the child
         vsg::observer_ptr<vsg::Group> _parent;
 
         // function that will provide the child to add
-        RuntimeContext::NodeFactory _childFactory;
+        Runtime::NodeFactory _childFactory;
 
         // ref because child probably only exists here
         vsg::ref_ptr<vsg::Node> _child;
@@ -96,9 +96,9 @@ namespace
         util::Future<bool> _promise;
            
         AddNodeAsync(
-            const RuntimeContext& runtime,
+            const Runtime& runtime,
             vsg::Group* parent,
-            RuntimeContext::NodeFactory func) :
+            Runtime::NodeFactory func) :
 
             _runtime(runtime), _parent(parent), _childFactory(func)
         {
@@ -172,7 +172,7 @@ namespace
 }
 
 
-RuntimeContext::RuntimeContext()
+Runtime::Runtime()
 {
     readerWriterOptions = vsg::Options::create();
 
@@ -182,7 +182,7 @@ RuntimeContext::RuntimeContext()
 }
 
 void
-RuntimeContext::runDuringUpdate(
+Runtime::runDuringUpdate(
     vsg::ref_ptr<vsg::Operation> function,
     std::function<float()> get_priority)
 {
@@ -201,7 +201,7 @@ RuntimeContext::runDuringUpdate(
 }
 
 util::Future<bool>
-RuntimeContext::compileAndAddChild(vsg::ref_ptr<vsg::Group> parent, NodeFactory factory, const util::job& job_config)
+Runtime::compileAndAddChild(vsg::ref_ptr<vsg::Group> parent, NodeFactory factory, const util::job& job_config)
 {
     // This is a two-step procedure. First we have to create the child
     // by calling the Factory function, and compile it. These things happen 
@@ -262,24 +262,24 @@ RuntimeContext::compileAndAddChild(vsg::ref_ptr<vsg::Group> parent, NodeFactory 
 }
 
 void
-RuntimeContext::removeNode(vsg::Group* parent, unsigned index)
+Runtime::removeNode(vsg::Group* parent, unsigned index)
 {
     auto remover = RemoveNodeAsync::create(parent, index);
     updates()->add(remover);
 }
 
-LineStateFactory&
-RuntimeContext::lineState()
-{
-    if (!_lineStateFactory)
-    {
-        _lineStateFactory = std::make_shared<LineStateFactory>(*this);
-    }
-    return *_lineStateFactory.get();
-}
+//LineState&
+//Runtime::lineState()
+//{
+//    if (!_LineState)
+//    {
+//        _LineState = std::make_shared<LineState>(*this);
+//    }
+//    return *_LineState.get();
+//}
 
 void
-RuntimeContext::dirty(vsg::Object* object)
+Runtime::dirty(vsg::Object* object)
 {
     // TODO.
     // For now, this will immediately recompile and object.

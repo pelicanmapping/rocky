@@ -5,7 +5,7 @@
  */
 #pragma once
 #include <rocky_vsg/Common.h>
-#include <rocky_vsg/RuntimeContext.h>
+#include <rocky_vsg/Runtime.h>
 #include <rocky/Instance.h>
 #include <vsg/io/Options.h>
 #include <vsg/utils/CommandLine.h>
@@ -29,7 +29,7 @@ namespace ROCKY_NAMESPACE
         InstanceVSG(const InstanceVSG& rhs);
 
         //! Runtime context
-        inline RuntimeContext& runtime();
+        inline Runtime& runtime();
 
         //! Whether to redirect rocky::Log messages to the vsg::Logger
         void setUseVSGLogger(bool);
@@ -37,14 +37,14 @@ namespace ROCKY_NAMESPACE
     private:
         struct Implementation
         {
-            RuntimeContext runtime;
+            Runtime runtime;
         };
         std::shared_ptr<Implementation> _impl;
-        friend class EngineVSG;
+        friend class Application;
     };
 
 
-    RuntimeContext& InstanceVSG::runtime() {
+    Runtime& InstanceVSG::runtime() {
         return _impl->runtime;
     }
 }

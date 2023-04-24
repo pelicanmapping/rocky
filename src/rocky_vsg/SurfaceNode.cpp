@@ -6,7 +6,7 @@
 #include "SurfaceNode.h"
 #include "Utils.h"
 #include "GeometryPool.h"
-#include "RuntimeContext.h"
+#include "Runtime.h"
 #include <rocky/Heightfield.h>
 #include <rocky/Horizon.h>
 #include <numeric>
@@ -23,7 +23,7 @@ using namespace ROCKY_NAMESPACE;
 //..............................................................
 
 
-SurfaceNode::SurfaceNode(const TileKey& tilekey, const SRS& worldSRS, RuntimeContext& runtime) :
+SurfaceNode::SurfaceNode(const TileKey& tilekey, const SRS& worldSRS, Runtime& runtime) :
     _tileKey(tilekey),
     _runtime(runtime),
     _boundsDirty(true)

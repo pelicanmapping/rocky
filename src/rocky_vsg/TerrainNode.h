@@ -16,8 +16,9 @@ namespace ROCKY_NAMESPACE
 {
     class IOOptions;
     class Map;
-    class RuntimeContext;
     class SRS;
+
+    class Runtime;
     class TerrainContext;
 
     /**
@@ -30,7 +31,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Deserialize a new terrain node
-        TerrainNode(RuntimeContext& runtime, const JSON& j);
+        TerrainNode(Runtime& runtime, const JSON& j);
 
         //! Map to render, and SRS to render it in
         const Status& setMap(shared_ptr<Map> new_map, const SRS& world_srs);
@@ -70,8 +71,8 @@ namespace ROCKY_NAMESPACE
         void construct(const JSON&);
 
         Status createRootTiles(const IOOptions& io);
-        
-        RuntimeContext& _runtime;
+
+        Runtime& _runtime;
         vsg::ref_ptr<vsg::Group> _tilesRoot;
         shared_ptr<TerrainContext> _context;
         Status _status;

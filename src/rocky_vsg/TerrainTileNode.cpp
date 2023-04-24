@@ -7,7 +7,7 @@
 #include "TerrainContext.h"
 #include "SurfaceNode.h"
 #include "TerrainSettings.h"
-#include "RuntimeContext.h"
+#include "Runtime.h"
 
 #include <rocky/Math.h>
 #include <rocky/ImageLayer.h>
@@ -50,7 +50,7 @@ TerrainTileNode::TerrainTileNode(
     const SRS& worldSRS,
     const TerrainTileDescriptors& in_initialDescriptors,
     TerrainTileHost* in_host,
-    RuntimeContext& runtime)
+    Runtime& runtime)
 {
     key = in_key;
     morphConstants = in_morphConstants;

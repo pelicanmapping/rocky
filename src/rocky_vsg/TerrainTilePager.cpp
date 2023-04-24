@@ -6,7 +6,7 @@
 #include "TerrainTilePager.h"
 #include "TerrainSettings.h"
 #include "TerrainContext.h"
-#include "RuntimeContext.h"
+#include "Runtime.h"
 #include "Utils.h"
 
 #include <rocky/ElevationLayer.h>

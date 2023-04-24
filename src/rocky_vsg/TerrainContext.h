@@ -7,7 +7,7 @@
 
 #include <rocky_vsg/Common.h>
 #include <rocky_vsg/GeometryPool.h>
-#include <rocky_vsg/RuntimeContext.h>
+#include <rocky_vsg/Runtime.h>
 #include <rocky_vsg/TerrainState.h>
 #include <rocky_vsg/TerrainSettings.h>
 #include <rocky_vsg/TerrainTilePager.h>
@@ -26,7 +26,7 @@ namespace ROCKY_NAMESPACE
         TerrainContext(
             shared_ptr<Map> map,
             const SRS& worldSRS,
-            RuntimeContext& runtime,
+            Runtime& runtime,
             const TerrainSettings& settings,
             TerrainTileHost* host);
 
@@ -34,7 +34,7 @@ namespace ROCKY_NAMESPACE
         const TerrainSettings& settings;
 
         //! runtime operations (scene graph, views, etc)
-        RuntimeContext& runtime;
+        Runtime& runtime;
 
         //! the map this terrain is rendering
         shared_ptr<Map> map;

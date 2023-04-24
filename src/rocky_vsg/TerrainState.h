@@ -16,7 +16,7 @@
 
 namespace ROCKY_NAMESPACE
 {
-    class RuntimeContext;
+    class Runtime;
     class TerrainTileNode;
     class TerrainTileRenderModel;
 
@@ -34,7 +34,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Initialize the factory
-        TerrainState(RuntimeContext&);
+        TerrainState(Runtime&);
 
         //! Creates a state group for rendering terrain
         vsg::ref_ptr<vsg::StateGroup> createTerrainStateGroup();
@@ -43,7 +43,7 @@ namespace ROCKY_NAMESPACE
         void updateTerrainTileDescriptors(
             const TerrainTileRenderModel& renderModel,
             vsg::ref_ptr<vsg::StateGroup> stategroup,
-            RuntimeContext& runtime) const;
+            Runtime& runtime) const;
 
         //! Status of the factory.
         Status status;
@@ -105,6 +105,6 @@ namespace ROCKY_NAMESPACE
         }
         textures;
 
-        RuntimeContext& _runtime;
+        Runtime& _runtime;
     };
 }

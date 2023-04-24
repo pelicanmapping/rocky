@@ -28,7 +28,7 @@ namespace ROCKY_NAMESPACE
     class TerrainTileNode;
     class TerrainContext;
     class TerrainSettings;
-    class RuntimeContext;
+    class Runtime;
 
     struct TextureData
     {
@@ -125,7 +125,7 @@ namespace ROCKY_NAMESPACE
             const SRS& worldSRS,
             const TerrainTileDescriptors& initialDescriptors,
             TerrainTileHost* in_host,
-            RuntimeContext& runtime);
+            Runtime& runtime);
 
         //! Elevation data for this node along with its scale/bias matrix;
         //! needed for bounding box

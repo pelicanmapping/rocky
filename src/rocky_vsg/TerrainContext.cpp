@@ -17,7 +17,7 @@ using namespace ROCKY_NAMESPACE;
 TerrainContext::TerrainContext(
     shared_ptr<Map> new_map,
     const SRS& new_worldSRS,
-    RuntimeContext& new_runtime,
+    Runtime& new_runtime,
     const TerrainSettings& new_settings,
     TerrainTileHost* host) :
 

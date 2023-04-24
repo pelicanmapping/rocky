@@ -1,4 +1,4 @@
-set(APP_NAME rengine)
+set(APP_NAME rsimple)
 
 file(GLOB SOURCES *.cpp)
 

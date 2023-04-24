@@ -18,7 +18,7 @@
 namespace ROCKY_NAMESPACE
 {
     class Horizon;
-    class RuntimeContext;
+    class Runtime;
 
     /**
      * SurfaceNode holds the geometry and transform information
@@ -30,7 +30,7 @@ namespace ROCKY_NAMESPACE
         SurfaceNode(
             const TileKey& tilekey,
             const SRS& worldSRS,
-            RuntimeContext& runtime);
+            Runtime& runtime);
 
         //! Update the elevation raster associated with this tile
         void setElevation(
@@ -89,7 +89,7 @@ namespace ROCKY_NAMESPACE
         std::vector<vsg::dvec3> _worldPoints;
         vsg::dbox _localbbox;
         bool _boundsDirty;
-        RuntimeContext& _runtime;
+        Runtime& _runtime;
         std::vector<vsg::vec3> _proxyMesh;
     };
 

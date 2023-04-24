@@ -11,17 +11,9 @@
 #include <vsg/nodes/Group.h>
 #include <vsg/app/CompileManager.h>
 
-namespace vsg {
-    class Viewer;
-}
-
 namespace ROCKY_NAMESPACE
 {
     class SRS;
-    class DrapableNode;
-    class ClampableNode;
-    class TerrainNode;
-    class SceneGraphContext;
 
     namespace util
     {
@@ -31,8 +23,12 @@ namespace ROCKY_NAMESPACE
         class ClampingTechnique;
     }
 
+    class DrapableNode;
+    class ClampableNode;
+    class TerrainNode;
+
     /**
-     * OSG Node that forms the root of an osgEarth map.
+     * VSG Node that forms the root of an osgEarth map.
      * This node is a "view" component that renders data from a "Map" data model.
      */
     class ROCKY_VSG_EXPORT MapNode : public vsg::Inherit<vsg::Group, MapNode>
@@ -94,7 +90,7 @@ namespace ROCKY_NAMESPACE
         bool open();
 
         //! Runtime tools
-        RuntimeContext& runtime();
+        Runtime& runtime();
 
         void update(const vsg::FrameStamp*);
 

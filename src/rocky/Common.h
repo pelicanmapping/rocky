@@ -29,6 +29,7 @@
 #endif  
 
 #define ROCKY_NAMESPACE rocky
+#define ROCKY_ENGINE_NAMESPACE rocky::engine
 
 #include <rocky/optional.h>
 #include <string>

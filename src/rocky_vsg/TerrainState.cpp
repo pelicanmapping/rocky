@@ -4,7 +4,7 @@
  * MIT License
  */
 #include "TerrainState.h"
-#include "RuntimeContext.h"
+#include "Runtime.h"
 #include "TerrainTileNode.h"
 
 #include <rocky/Color.h>
@@ -42,7 +42,7 @@
 
 using namespace ROCKY_NAMESPACE;
 
-TerrainState::TerrainState(RuntimeContext& runtime) :
+TerrainState::TerrainState(Runtime& runtime) :
     _runtime(runtime)
 {
     status = StatusOK;
@@ -293,7 +293,7 @@ void
 TerrainState::updateTerrainTileDescriptors(
     const TerrainTileRenderModel& renderModel,
     vsg::ref_ptr<vsg::StateGroup> stategroup,
-    RuntimeContext& runtime) const
+    Runtime& runtime) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), void());
     ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig.valid(), void());

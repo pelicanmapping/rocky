@@ -12,7 +12,7 @@
 namespace ROCKY_NAMESPACE
 {
     class TerrainSettings;
-    class RuntimeContext;
+    class Runtime;
 
     /**
      * Keeps track of all the tiles resident in the terrain engine.

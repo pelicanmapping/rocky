@@ -532,7 +532,6 @@ TEST_CASE("SRS")
 
     SECTION("SRS with Vertical Datum")
     {
-
         SRS wgs84("epsg:4979"); // geographic WGS84 (3D)
         REQUIRE(wgs84.valid());
 
@@ -553,6 +552,7 @@ TEST_CASE("SRS")
 
         // geodetic to vdatum:
         {
+            Log::info() << "Note: if you see SRS/VDatum errors, check that you have the NGA grid in your proj/share folder! https://github.com/OSGeo/PROJ-data/blob/master/us_nga/us_nga_egm96_15.tif" << std::endl;
             auto xform = wgs84.to(egm96);
             REQUIRE(xform.valid());
 
