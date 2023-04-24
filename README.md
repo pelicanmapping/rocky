@@ -13,16 +13,16 @@ This project is in its early stages. It is based on the data model in the osgEar
 
 ### main.cpp
 ```c++
-#include <rocky_vsg/EngineVSG.h>
+#include <rocky_vsg/Application.h>
 #include <rocky/TMSImageLayer.h>
 
 int main(int argc, char** argv)
 {
-    rocky::EngineVSG engine(argc, argv);
+    rocky::Application app(argc, argv);
 
     auto imagery = rocky::TMSImageLayer::create();
     imagery->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
-    engine.map()->layers().add(imagery);
+    app.map()->layers().add(imagery);
 
     if (imagery->status().failed()) 
     {
@@ -30,7 +30,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    return engine.run();
+    return app.run();
 }
 ```
 
