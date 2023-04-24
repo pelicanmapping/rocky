@@ -16,6 +16,7 @@
         "tinyxml",
         "vsg",
         "vsgxchange",
+        "vsgimgui",
         "zlib"
     ]
 }

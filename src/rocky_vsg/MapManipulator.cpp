@@ -1322,6 +1322,9 @@ MapManipulator::clearEvents()
 void
 MapManipulator::apply(vsg::KeyPressEvent& keyPress)
 {
+    if (keyPress.handled)
+        return;
+
     _keyPress = keyPress;
 
     //std::cout << "KeyPressEvent" << std::endl;
@@ -1340,6 +1343,9 @@ MapManipulator::apply(vsg::KeyPressEvent& keyPress)
 void
 MapManipulator::apply(vsg::KeyReleaseEvent& keyRelease)
 {
+    if (keyRelease.handled)
+        return;
+
     //std::cout << "KeyReleaseEvent" << std::endl;
 
     _keyPress.clear();
@@ -1348,6 +1354,9 @@ MapManipulator::apply(vsg::KeyReleaseEvent& keyRelease)
 void
 MapManipulator::apply(vsg::ButtonPressEvent& buttonPress)
 {
+    if (buttonPress.handled)
+        return;
+
     //std::cout << "ButtonPressEvent" << std::endl;
 
     // simply record the button press event.
@@ -1361,6 +1370,9 @@ MapManipulator::apply(vsg::ButtonPressEvent& buttonPress)
 void
 MapManipulator::apply(vsg::ButtonReleaseEvent& buttonRelease)
 {
+    if (buttonRelease.handled)
+        return;
+
     //std::cout << "ButtonReleaseEvent" << std::endl;
 
     _buttonRelease = buttonRelease;
@@ -1384,6 +1396,9 @@ MapManipulator::apply(vsg::ButtonReleaseEvent& buttonRelease)
 void
 MapManipulator::apply(vsg::MoveEvent& moveEvent)
 {
+    if (moveEvent.handled)
+        return;
+
     //std::cout << "MoveEvent, mask = " << moveEvent.mask << std::endl;
 
     bool buttonReleased = (moveEvent.mask == 0 && _currentMove->mask != 0);
@@ -1429,6 +1444,9 @@ MapManipulator::apply(vsg::MoveEvent& moveEvent)
 void
 MapManipulator::apply(vsg::ScrollWheelEvent& scrollEvent)
 {
+    if (scrollEvent.handled)
+        return;
+
     //std::cout << "ScrollWheelEvent" << std::endl;
 
     Direction dir =

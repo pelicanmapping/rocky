@@ -30,7 +30,6 @@ Application::Application(int& argc, char** argv) :
     _vsync = !commandLine.read({ "--novsync" });
 
     viewer = vsg::Viewer::create();
-    viewer->addEventHandler(vsg::CloseHandler::create(viewer));
 
     mainScene = vsg::Group::create();
 
@@ -112,6 +111,8 @@ Application::run()
         perspective,
         vsg::LookAt::create(),
         vsg::ViewportState::create(mainWindow->extent2D()));
+
+    viewer->addEventHandler(vsg::CloseHandler::create(viewer));
 
     viewer->addEventHandler(rocky::MapManipulator::create(mapNode, camera));
 
