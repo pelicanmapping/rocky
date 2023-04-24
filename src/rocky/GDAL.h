@@ -129,6 +129,7 @@ namespace ROCKY_NAMESPACE
             void geoToPixel(double, double, double&, double&);
 
             bool isValidValue(float, GDALRasterBand*);
+            float getValidElevationValue(float value, float nodataValueFromBand, float replacement);
             bool intersects(const TileKey&);
             float getInterpolatedValue(GDALRasterBand* band, double x, double y, bool applyOffset = true);
 

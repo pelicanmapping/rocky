@@ -424,9 +424,9 @@ namespace ROCKY_NAMESPACE
                         applyScaleAndOffset<float>(pData, count, scale, offset);
                     else if (eBufType == GDT_Float64)
                         applyScaleAndOffset<double>(pData, count, scale, offset);
-                    else if (eBufType == GDT_Int16)
+                    else if (eBufType == GDT_Int16 || eBufType == GDT_UInt16)
                         applyScaleAndOffset<short>(pData, count, scale, offset);
-                    else if (eBufType == GDT_Int32)
+                    else if (eBufType == GDT_Int32 || eBufType == GDT_UInt32)
                         applyScaleAndOffset<int>(pData, count, scale, offset);
                     else if (eBufType == GDT_Byte)
                         applyScaleAndOffset<char>(pData, count, scale, offset);
@@ -929,6 +929,22 @@ GDAL::Driver::isValidValue(float v, GDALRasterBand* band)
 }
 
 float
+GDAL::Driver::getValidElevationValue(float v, float noDataValueFromBand, float replacement)
+{
+    if (_noDataValue.has_value(v) || noDataValueFromBand == v)
+        return replacement;
+
+    //Check to see if the user specified a custom min/max
+    if (_minValidValue.has_value() && v < _minValidValue)
+        return replacement;
+
+    if (_maxValidValue.has_value() && v > _maxValidValue)
+        return replacement;
+
+    return v;
+}
+
+float
 GDAL::Driver::getInterpolatedValue(GDALRasterBand* band, double x, double y, bool applyOffset)
 {
     double r, c;
@@ -1198,9 +1214,7 @@ GDAL::Driver::createImage(
         }
     }
 
-
-
-    //The pixel format is always RGBA to support transparency
+    // For images, the pixel format is always RGBA to support transparency
     Image::PixelFormat pixelFormat = Image::R8G8B8A8_UNORM;
 
 
@@ -1214,16 +1228,9 @@ GDAL::Driver::createImage(
         //Initialize the alpha values to 255.
         memset(alpha, 255, target_width * target_height);
 
-        image = Image::create(
-            pixelFormat,
-            tileSize,
-            tileSize);
+        image = Image::create(pixelFormat, tileSize, tileSize);
 
         memset(image->data<char>(), 0, image->sizeInBytes());
-
-        //image = new osg::Image;
-        //image->allocateImage(tileSize, tileSize, 1, pixelFormat, GL_UNSIGNED_BYTE);
-        //memset(image->data(), 0, image->getImageSizeInBytes());
 
         rasterIO(bandRed, GF_Read, off_x, off_y, width, height, red, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
         rasterIO(bandGreen, GF_Read, off_x, off_y, width, height, green, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
@@ -1263,94 +1270,102 @@ GDAL::Driver::createImage(
         delete[] blue;
         delete[] alpha;
     }
+
     else if (bandGray)
     {
-        if (isCoverage)
+        // This might be single-channel elevation data ... try to detect that
+        // by assuming 16- or 32-bit data is elevation.
+        bool isElevation = false;
+
+        GDALDataType gdalDataType = bandGray->GetRasterDataType();
+
+        int gdalSampleSize =
+            (gdalDataType == GDT_Byte) ? 1 :
+            (gdalDataType == GDT_UInt16 || gdalDataType == GDT_Int16) ? 2 :
+            4;
+
+        if (gdalDataType == GDT_Int16 || gdalDataType == GDT_UInt16)
         {
-            GDALDataType gdalDataType = bandGray->GetRasterDataType();
+            isElevation = true;
+        }
+        else if (gdalDataType == GDT_Float32)
+        {
+            isElevation = true;
+        }
 
-            int gdalSampleSize =
-                (gdalDataType == GDT_Byte) ? 1 :
-                (gdalDataType == GDT_UInt16 || gdalDataType == GDT_Int16) ? 2 :
-                4;
-
-            // Create an un-normalized image to hold coverage values.
-            //image = LandCover::createImage(tileSize);
-            image = Image::create(
-                Image::R16_UNORM,
-                tileSize,
-                tileSize);
-
-            // initialize all coverage texels to NODATA. -gw
+        if (isElevation)
+        {
+            image = Image::create(Image::R32_SFLOAT, tileSize, tileSize);
             image->fill(fvec4(NO_DATA_VALUE));
-
-            // coverage data; one channel data that is not subject to interpolated values
-            unsigned char* data = new unsigned char[target_width * target_height * gdalSampleSize];
-            memset(data, 0, target_width * target_height * gdalSampleSize);
-
-            fvec4 temp(0.0f);
-
-            int success;
-            float nodata = bandGray->GetNoDataValue(&success);
-            if (!success)
-                nodata = NO_DATA_VALUE; //getNoDataValue(); //getOptions().noDataValue().get();
-
-            if (rasterIO(bandGray, GF_Read, off_x, off_y, width, height, data, target_width, target_height, gdalDataType, 0, 0, Image::NEAREST))
+            
+            if (gdalDataType == GDT_Int16)
             {
-                // copy from data to image.
+                short* temp = new short[target_width * target_height];
+
+                rasterIO(bandGray, GF_Read, off_x, off_y, width, height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation());
+
+                int success = 0;
+                short noDataValueFromBand = bandGray->GetNoDataValue(&success);
+                if (!success) noDataValueFromBand = NO_DATA_VALUE;
+
                 for (int src_row = 0, dst_row = tile_offset_top; src_row < target_height; src_row++, dst_row++)
                 {
                     unsigned int flippedRow = tileSize - dst_row - 1;
                     for (int src_col = 0, dst_col = tile_offset_left; src_col < target_width; ++src_col, ++dst_col)
                     {
-                        unsigned char* ptr = &data[(src_col + src_row * target_width)*gdalSampleSize];
-
-                        float value =
-                            gdalSampleSize == 1 ? (float)(*ptr) :
-                            gdalSampleSize == 2 ? (float)*(unsigned short*)ptr :
-                            gdalSampleSize == 4 ? *(float*)ptr :
-                            NO_DATA_VALUE;
-
-                        if (!isValidValue(value, bandGray))
-                            value = NO_DATA_VALUE;
-
-                        temp.r = value;
-                        image->write(temp, dst_col, flippedRow);
-                        //write(temp, dst_col, flippedRow);
+                        fvec4 c;
+                        c.r = temp[src_col + src_row * target_width];
+                        c.r = getValidElevationValue(c.r, noDataValueFromBand, NO_DATA_VALUE);
+                        image->write(c, dst_col, flippedRow);
                     }
                 }
+
+                delete[] temp;
             }
-            else // err != CE_None
+            else // if (gdalDataType == GDT_Float32)
             {
-                //ROCKY_WARN << LC << "RasterIO failed.\n";
-                // TODO - handle error condition
-                Log::warn() << "RasterIO failed" << std::endl;
+                float* temp = new float[target_width * target_height];
+
+                rasterIO(bandGray, GF_Read, off_x, off_y, width, height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation());
+
+                int success = 0;
+                short noDataValueFromBand = bandGray->GetNoDataValue(&success);
+                if (!success) noDataValueFromBand = NO_DATA_VALUE;
+
+                for (int src_row = 0, dst_row = tile_offset_top; src_row < target_height; src_row++, dst_row++)
+                {
+                    unsigned int flippedRow = tileSize - dst_row - 1;
+                    for (int src_col = 0, dst_col = tile_offset_left; src_col < target_width; ++src_col, ++dst_col)
+                    {
+                        fvec4 c;
+                        c.r = temp[src_col + src_row * target_width];
+                        c.r = getValidElevationValue(c.r, noDataValueFromBand, NO_DATA_VALUE);
+                        image->write(c, dst_col, flippedRow);
+                    }
+                }
+
+                delete[] temp;
             }
-
-            delete[] data;
         }
-
-        else // greyscale image (not a coverage)
+        
+        else // grey + alpha color
         {
-            unsigned char *gray = new unsigned char[target_width * target_height];
-            unsigned char *alpha = new unsigned char[target_width * target_height];
+            image = Image::create(Image::R8G8B8A8_UNORM, tileSize, tileSize);
+            image->fill(fvec4(0));
 
-            //Initialize the alpha values to 255.
-            memset(alpha, 255, target_width * target_height);
+            unsigned char* gray = new unsigned char[target_width * target_height];
 
-            image = Image::create(
-                pixelFormat,
-                tileSize,
-                tileSize);
-
-            memset(image->data<char>(), 0, image->sizeInBytes());
-
-            //image = new osg::Image;
-            //image->allocateImage(tileSize, tileSize, 1, pixelFormat, GL_UNSIGNED_BYTE);
-            //memset(image->data(), 0, image->getImageSizeInBytes());
+            // color only:
+            unsigned char* alpha = nullptr;
+            if (bandAlpha)
+            {
+                alpha = new unsigned char[target_width * target_height];
+                memset(alpha, 255, target_width * target_height);
+            }
 
             rasterIO(bandGray, GF_Read, off_x, off_y, width, height, gray, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
 
+            // color only:
             if (bandAlpha)
             {
                 rasterIO(bandAlpha, GF_Read, off_x, off_y, width, height, alpha, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
@@ -1361,16 +1376,15 @@ GDAL::Driver::createImage(
                 src_row++, dst_row++)
             {
                 unsigned int flippedRow = tileSize - dst_row - 1;
-                for (int src_col = 0, dst_col = tile_offset_left;
-                    src_col < target_width;
-                    ++src_col, ++dst_col)
+                for (int src_col = 0, dst_col = tile_offset_left; src_col < target_width; ++src_col, ++dst_col)
                 {
                     fvec4 c;
                     c.r = c.g = c.b = gray[src_col + src_row * target_width];
-                    c.a = alpha[src_col + src_row * target_width];
 
-                    if (!isValidValue(c.r, bandGray) ||
-                        (bandAlpha && !isValidValue(c.a, bandAlpha)))
+                    if (alpha)
+                        c.a = alpha[src_col + src_row * target_width];
+
+                    if (!isValidValue(c.r, bandGray) || (bandAlpha && !isValidValue(c.a, bandAlpha)))
                     {
                         c.a = 0.0f;
                     }
@@ -1378,20 +1392,14 @@ GDAL::Driver::createImage(
                     c /= 255.0f;
 
                     image->write(c, dst_col, flippedRow);
-
-                    //unsigned char g = gray[src_col + src_row * target_width];
-                    //unsigned char a = alpha[src_col + src_row * target_width];
-                    //*(image->data(dst_col, flippedRow) + 0) = g;
-                    //*(image->data(dst_col, flippedRow) + 1) = g;
-                    //*(image->data(dst_col, flippedRow) + 2) = g;
-                    //*(image->data(dst_col, flippedRow) + 3) = a;
                 }
             }
 
-            delete[]gray;
-            delete[]alpha;
+            if (gray) delete[] gray;
+            if (alpha) delete[] alpha;
         }
     }
+
     else if (bandPalette)
     {
         //Palette indexed imagery doesn't support interpolation currently and only uses nearest
@@ -1487,10 +1495,6 @@ GDAL::Driver::createImage(
 
                     fvec4 fcolor = fvec4(color) / 255.0f;
                     image->write(fcolor, dst_col, flippedRow);
-                    //*(image->data(dst_col, flippedRow) + 0) = color.r();
-                    //*(image->data(dst_col, flippedRow) + 1) = color.g();
-                    //*(image->data(dst_col, flippedRow) + 2) = color.b();
-                    //*(image->data(dst_col, flippedRow) + 3) = color.a();
                 }
             }
         }
