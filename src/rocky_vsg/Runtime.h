@@ -65,12 +65,15 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::Operation> function,
             std::function<float()> get_priority = nullptr);
 
+        void runDuringUpdate(
+            std::function<void()> function);
+
         //! Function that creates a node
         using NodeFactory = std::function<vsg::ref_ptr<vsg::Node>(Cancelable&)>;
 
         //! Schedules data creation; the resulting node or nodes 
         //! get added to "parent" if the operation suceeds.
-        //! Returns a future you can check for completion.
+        //! Returns a future so you can check for completion.
         util::Future<bool> compileAndAddChild(
             vsg::ref_ptr<vsg::Group> parent,
             NodeFactory factory,
@@ -91,15 +94,11 @@ namespace ROCKY_NAMESPACE
             shaderSettingsRevision++;
         }
 
-        //! Access the state generator for LineStrings
-        //LineState& lineState();
-
         //! Compile and object
         void dirty(vsg::Object* object);
 
     private:
         vsg::ref_ptr<vsg::Operation> _priorityUpdateQueue;
-        ROCKY_ENGINE_NAMESPACE::LineState _lineState;
     };
 }
 

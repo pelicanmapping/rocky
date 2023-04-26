@@ -31,7 +31,11 @@ Application::Application(int& argc, char** argv) :
 
     viewer = vsg::Viewer::create();
 
+    root = vsg::Group::create();
+
     mainScene = vsg::Group::create();
+
+    root->addChild(mainScene);
 
     mapNode = rocky::MapNode::create(instance);
 
@@ -43,7 +47,7 @@ Application::Application(int& argc, char** argv) :
     }
 
     mapNode->terrainNode()->concurrency = 4u;
-    mapNode->terrainNode()->skirtRatio = 0.025f;
+    mapNode->terrainNode()->skirtRatio = 0.025f; 
     mapNode->terrainNode()->minLevelOfDetail = 1;
     mapNode->terrainNode()->screenSpaceError = 135.0f;
 
@@ -52,6 +56,12 @@ Application::Application(int& argc, char** argv) :
         instance.runtime().shaderCompileSettings->defines.insert("RK_WIREFRAME_OVERLAY");
 
     mainScene->addChild(mapNode);
+
+    // Set up the runtime context with everything we need.
+    // Eventually this should be automatic in InstanceVSG
+    instance.runtime().compiler = [this]() { return viewer->compileManager; };
+    instance.runtime().updates = [this]() { return viewer->updateOperations; };
+    instance.runtime().sharedObjects = vsg::SharedObjects::create();
 }
 
 void
@@ -85,18 +95,6 @@ Application::run()
         createMainWindow(1920, 1080);
     }
 
-    // Configure out mapnode to our liking:
-    mapNode->terrainNode()->concurrency = 4u;
-    mapNode->terrainNode()->skirtRatio = 0.1f;
-    mapNode->terrainNode()->minLevelOfDetail = 1;
-    mapNode->terrainNode()->screenSpaceError = 135.0f;
-
-    // Set up the runtime context with everything we need.
-    // Eventually this should be automatic in InstanceVSG
-    instance.runtime().compiler = [this]() { return viewer->compileManager; };
-    instance.runtime().updates = [this]() { return viewer->updateOperations; };
-    instance.runtime().sharedObjects = vsg::SharedObjects::create();
-
     // main camera
     double nearFarRatio = 0.00001;
     double R = mapNode->mapSRS().ellipsoid().semiMajorAxis();
@@ -119,7 +117,7 @@ Application::run()
     // View pairs a camera with a scene graph and manages
     // view-dependent state like lights and viewport.
     auto view = vsg::View::create(camera);
-    view->addChild(mainScene);
+    view->addChild(root);
     
     // RenderGraph encapsulates vkCmdRenderPass/vkCmdEndRenderPass and owns things
     // like the clear color, render area, and a render target (framebuffer or window).
@@ -143,8 +141,8 @@ Application::run()
     resourceHints->descriptorPoolSizes.push_back(
         VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024 });
 
-    // Configure the viewer's rendering backend; and initialize and compile existing
-    // Vulkan objects (passing in ResourceHints to guide the resources allocated).
+    // Initialize and compile existing any Vulkan objects found in the scene
+    // (passing in ResourceHints to guide the resources allocated).
     viewer->compile(resourceHints);
 
     // Use a separate thread for each CommandGraph?
@@ -163,11 +161,21 @@ Application::run()
         // rocky update pass - management of tiles and paged data
         mapNode->update(viewer->getFrameStamp());
 
-        // runs through the viewer's update operations queue; this includes update ops 
-        // initialized by rocky (tile merges for example)
+        // user's update function
+        if (updateFunction)
+        {
+            updateFunction();
+        }
+
+        // run through the viewer's update operations queue; this includes update ops 
+        // initialized by rocky (tile merges or MapObject adds)
         viewer->update();
 
+        // handle any object additions.
+        processAdditions();
+
         viewer->recordAndSubmit();
+
         viewer->present();
     }
 
@@ -175,16 +183,60 @@ Application::run()
 }
 
 void
+Application::processAdditions()
+{
+    // Any new nodes in the scene? integrate them now.
+    if (!_additions.empty())
+    {
+        std::scoped_lock(_additions_mutex);
+        while (!_additions.empty())
+        {
+            auto& a = _additions.front();
+
+            mainScene->addChild(a.node);
+
+            // if it didn't compile earlier, compile it now:
+            if (!a.compileResult)
+                a.compileResult = viewer->compileManager->compile(a.node);
+
+            // and integrate it into the viewer:
+            if (a.compileResult)
+                vsg::updateViewer(*viewer, a.compileResult);
+
+            _additions.pop();
+        }
+    }
+}
+
+void
 Application::add(shared_ptr<MapObject> obj)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(obj, void());
 
+    std::vector<Addition> additions;
+
     for (auto& attachment : obj->attachments)
     {
-        attachment->add(mainScene, instance.runtime());
+        Addition addition;
+        addition.node = attachment->getOrCreateNode(instance.runtime());
+        if (addition.node)
+        {
+            // try to compile it now; if there's no compile manager yet, we will compile it
+            // on demand later in processAdditions.
+            if (viewer->compileManager)
+            {
+                addition.compileResult = viewer->compileManager->compile(addition.node);
+            }
+            additions.emplace_back(std::move(addition));
+        }
     }
 
-    // TODO store the actual object somewhere?
+    if (!additions.empty())
+    {
+        std::scoped_lock(_additions_mutex);
+        for (auto& a : additions)
+            _additions.push(std::move(a));
+    }
 }
 
 
@@ -206,7 +258,7 @@ LineString::LineString() :
     super()
 {
     _geometry = LineStringGeometry::create();
-    _styleNode = LineStringStyleNode::create();
+    _bindStyle = BindLineStyle::create();
 }
 
 void
@@ -218,18 +270,26 @@ LineString::pushVertex(float x, float y, float z)
 void
 LineString::setStyle(const LineStyle& value)
 {
-    _styleNode->setStyle(value);
+    _bindStyle->setStyle(value);
 }
 
-void
-LineString::add(vsg::ref_ptr<vsg::Group>& scene_graph, Runtime& runtime)
+const LineStyle&
+LineString::style() const
+{
+    return _bindStyle->style();
+}
+
+vsg::ref_ptr<vsg::Node>
+LineString::getOrCreateNode(Runtime& runtime)
 {
     // TODO: simple approach. Just put everything in every LineString for now.
     // We can optimize or group things later.
 
     auto stateGroup = vsg::StateGroup::create();
-    stateGroup->stateCommands = LineState::createPipelineStateCommands(runtime);
-    stateGroup->addChild(_styleNode);
-    _styleNode->addChild(_geometry);
-    scene_graph->addChild(stateGroup);
+    stateGroup->stateCommands = LineState::pipelineStateCommands;
+    //stateGroup->stateCommands.push_back(_bindStyle);
+    stateGroup->addChild(_bindStyle);
+    stateGroup->addChild(_geometry);
+
+    return stateGroup;
 }

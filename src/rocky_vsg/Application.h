@@ -25,7 +25,7 @@ namespace ROCKY_NAMESPACE
         bool visible = true;
 
     public:
-        virtual void add(vsg::ref_ptr<vsg::Group>& scene_graph, Runtime& runtime) { }
+        virtual vsg::ref_ptr<vsg::Node> getOrCreateNode(Runtime& runtime) = 0;
 
     protected:
         Attachment() { }
@@ -90,12 +90,15 @@ namespace ROCKY_NAMESPACE
         //! Set the rendering style for this line string
         void setStyle(const LineStyle&);
 
-    public:
-        void add(vsg::ref_ptr<vsg::Group>& scene_graph, Runtime& runtime) override;
+        //! rendering style for the geometry
+        const LineStyle& style() const;
 
-    protected:
+    public:
+        vsg::ref_ptr<vsg::Node> getOrCreateNode(Runtime& runtime) override;
+
+    public:
+        vsg::ref_ptr<engine::BindLineStyle> _bindStyle;
         vsg::ref_ptr<engine::LineStringGeometry> _geometry;
-        vsg::ref_ptr<engine::LineStringStyleNode> _styleNode;
     };
 
     template<typename T> void LineString::pushVertex(const T& vec3) {
@@ -151,12 +154,28 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<rocky::MapNode> mapNode;
         vsg::ref_ptr<vsg::Viewer> viewer;
         vsg::ref_ptr<vsg::Window> mainWindow;
+        vsg::ref_ptr<vsg::Group> root;
         vsg::ref_ptr<vsg::Group> mainScene;
+        std::function<void()> updateFunction;
+
+    public:
+        Application(const Application&) = delete;
+        Application(Application&&) = delete;
 
     protected:
         bool _apilayer = false;
         bool _debuglayer = false;
         bool _vsync = true;
         AttachmentRenderers _renderers;
+
+        struct Addition {
+            vsg::ref_ptr<vsg::Node> node;
+            vsg::CompileResult compileResult;
+        };
+
+        std::mutex _additions_mutex;
+        std::queue<Addition> _additions;
+
+        void processAdditions();
     };
 }

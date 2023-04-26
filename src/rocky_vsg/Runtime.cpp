@@ -169,6 +169,19 @@ namespace
             }
         }
     };
+
+    struct SimpleUpdateOperation : public vsg::Inherit<vsg::Operation, SimpleUpdateOperation>
+    {
+        std::function<void()> _function;
+
+        SimpleUpdateOperation(std::function<void()> function) :
+            _function(function) { }
+
+        void run() override
+        {
+            _function();
+        };
+    };
 }
 
 
@@ -198,6 +211,12 @@ Runtime::runDuringUpdate(
 
         pq->_queue.push_back({ function, get_priority });
     }
+}
+
+void
+Runtime::runDuringUpdate(std::function<void()> function)
+{
+    updates()->add(SimpleUpdateOperation::create(function));
 }
 
 util::Future<bool>

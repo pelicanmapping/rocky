@@ -185,6 +185,9 @@ InstanceVSG::InstanceVSG() :
         runtime.searchPaths.insert(runtime.searchPaths.end(), paths.begin(), paths.end());
     }
 
+    // start up the state generators.
+    _impl->lineState.initialize(runtime);
+
     // a copy of vsgOptions we can use in lamdbas
     auto readerWriterOptions = runtime.readerWriterOptions;
 

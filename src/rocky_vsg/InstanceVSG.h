@@ -10,6 +10,8 @@
 #include <vsg/io/Options.h>
 #include <vsg/utils/CommandLine.h>
 
+#include <rocky_vsg/LineState.h>
+
 namespace ROCKY_NAMESPACE
 {
     /**
@@ -38,6 +40,7 @@ namespace ROCKY_NAMESPACE
         struct Implementation
         {
             Runtime runtime;
+            engine::LineState lineState;
         };
         std::shared_ptr<Implementation> _impl;
         friend class Application;

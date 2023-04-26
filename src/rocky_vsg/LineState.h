@@ -24,8 +24,8 @@ namespace ROCKY_NAMESPACE
         // if alpha is zero, use the line's per-vertex color instead
         vsg::vec4 color = { 1, 1, 1, 0 };
         float width = 2.0f;
-        unsigned int stipple_pattern = 0xffff;
-        unsigned int stipple_factor = 1;
+        int stipple_pattern = 0xffff;
+        int stipple_factor = 1;
     };
 
     namespace engine
@@ -42,29 +42,28 @@ namespace ROCKY_NAMESPACE
 
             //! Create the state commands necessary for rendering lines.
             //! Upi should add these to an existing StateGroup.
-            static vsg::StateGroup::StateCommands createPipelineStateCommands(Runtime&);
+            static void initialize(Runtime&);
 
             //! Singleton pipeline conifig object created when the object is first constructed.
             static vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> pipelineConfig;
+            
+            static vsg::StateGroup::StateCommands pipelineStateCommands;
         };
 
         /**
         * Applies a line style to any LineStringNode children.
         */
-        class ROCKY_VSG_EXPORT LineStringStyleNode : public vsg::Inherit<vsg::StateGroup, LineStringStyleNode>
+        class ROCKY_VSG_EXPORT BindLineStyle : public vsg::Inherit<vsg::BindDescriptorSet, BindLineStyle>
         {
         public:
             //! Construct a line style node
-            LineStringStyleNode();
+            BindLineStyle();
 
             //! Style for any linestrings that are children of this node
             void setStyle(const LineStyle&);
             const LineStyle& style() const;
 
-            void compile(vsg::Context&) override;
-
-        private:
-            vsg::ref_ptr<vsg::ubyteArray> _buffer;
+            vsg::ref_ptr<vsg::ubyteArray> _styleData;
         };
 
         /**
@@ -89,6 +88,7 @@ namespace ROCKY_NAMESPACE
             void setCount(unsigned value);
 
             //! Recompile the geometry after making changes.
+            //! TODO: just make it dynamic instead
             void compile(vsg::Context&) override;
 
         protected:

@@ -47,12 +47,6 @@ int main(int argc, char** argv)
     // Make a line string.
     auto line = rocky::LineString::create();
 
-    line->setStyle(rocky::LineStyle{
-        { 1,0.7,0.3,1 }, // color
-        3.0f,            // width
-        0xfff0, 1        // stipple pattern & factor
-        });
-
     auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
     for (double lon = -180.0; lon <= 0.0; lon += 2.5)
     {
@@ -60,12 +54,33 @@ int main(int argc, char** argv)
         if (xform(rocky::dvec3(lon, 0.0, 6500000), ecef))
             line->pushVertex(ecef);
     }
+    
+    line->setStyle(rocky::LineStyle{
+        { 1,0.7,0.3,1 }, // color
+        5.0f,            // width
+        0xfff0, 1        // stipple pattern & factor
+        });
 
     // make a map object with our line as an attachment:
     auto obj = rocky::MapObject::create(line);
 
     // add it to the application.
     app.add(obj);
+
+
+
+    app.updateFunction = [&]()
+    {
+        if (app.viewer->getFrameStamp()->frameCount % 60 == 0)
+        {
+            auto style = line->style();
+            style.color.r = 1.0 - style.color.r;
+            style.color.g = 1.0 - style.color.g;
+            style.color.b = 1.0 - style.color.b;
+            line->setStyle(style);
+            rocky::Log::warn() << "Set line style frame " << app.viewer->getFrameStamp()->frameCount << std::endl;
+        }
+    };
 
 
     // run until the user quits.

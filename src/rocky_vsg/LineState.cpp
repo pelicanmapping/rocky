@@ -16,13 +16,13 @@ using namespace ROCKY_ENGINE_NAMESPACE;
 #define LINE_VERT_SHADER "rocky.line.vert"
 #define LINE_FRAG_SHADER "rocky.line.frag"
 #define LINE_BUFFER_SET 0 // must match layout(set=X) in the shader UBO
-#define LINE_BUFFER_BINDING 13 // must match the layout(binding=X) in the shader UBO
+#define LINE_BUFFER_BINDING 1 // must match the layout(binding=X) in the shader UBO (set=0)
 #define VIEWPORT_BUFFER_SET 1 // hard-coded in VSG ViewDependentState
-#define VIEWPORT_BUFFER_BINDING 1 // hard-coded in VSG ViewDependentState
+#define VIEWPORT_BUFFER_BINDING 1 // hard-coded in VSG ViewDependentState (set=1)
 
 
 vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> LineState::pipelineConfig;
-
+vsg::StateGroup::StateCommands LineState::pipelineStateCommands;
 
 namespace
 {
@@ -62,7 +62,7 @@ namespace
         shaderSet->addUniformBinding("line", "", LINE_BUFFER_SET, LINE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
 
         // VSG viewport state
-        shaderSet->addUniformBinding("vsg_viewports", "", VIEWPORT_BUFFER_SET, VIEWPORT_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {}); // vsg::vec4Array::create(64));
+        shaderSet->addUniformBinding("vsg_viewports", "", VIEWPORT_BUFFER_SET, VIEWPORT_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
 
         // Note: 128 is the maximum size required by the Vulkan spec so don't increase it
         shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
@@ -74,15 +74,22 @@ namespace
 LineState::~LineState()
 {
     pipelineConfig = nullptr;
+    pipelineStateCommands.clear();
 }
 
-vsg::StateGroup::StateCommands
-LineState::createPipelineStateCommands(Runtime& runtime)
+void
+LineState::initialize(Runtime& runtime)
 {
     // Now create the pipeline and stategroup to bind it
     if (!pipelineConfig)
     {
         auto shaderSet = createLineShaderSet(runtime);
+        
+        if (!shaderSet)
+        {
+            //return Status(Status::ConfigurationError, "Cannot create shader set");
+            return;
+        }
 
         // Create the pipeline configurator for terrain; this is a helper object
         // that acts as a "template" for terrain tile rendering state.
@@ -102,8 +109,8 @@ LineState::createPipelineStateCommands(Runtime& runtime)
 
         // Temporary decriptors that we will use to set up the PipelineConfig.
         vsg::Descriptors descriptors;
-        pipelineConfig->assignUniform(descriptors, "line", { });
-        pipelineConfig->assignUniform(descriptors, "vsg_viewports", { });
+        pipelineConfig->assignUniform(descriptors, "line");
+        pipelineConfig->assignUniform(descriptors, "vsg_viewports");
 
         // Alpha blending to support line smoothing
         pipelineConfig->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
@@ -143,57 +150,46 @@ LineState::createPipelineStateCommands(Runtime& runtime)
     if (runtime.sharedObjects)
         runtime.sharedObjects->share(bindViewDescriptorSets);
 
-    return commands;
+    pipelineStateCommands = commands;
 }
 
 
 
 
-LineStringStyleNode::LineStringStyleNode()
+BindLineStyle::BindLineStyle()
 {
-    _buffer = vsg::ubyteArray::create(sizeof(LineStyle));
-    LineStyle& style = *static_cast<LineStyle*>(_buffer->dataPointer());
-    style = LineStyle(); // set to default values
+    _styleData = vsg::ubyteArray::create(sizeof(LineStyle));
 
     // tells VSG that the contents can change, and if they do, the data should be
     // transfered to the GPU before or during recording.
-    _buffer->getLayout().dataVariance = vsg::DYNAMIC_DATA;
-}
+    _styleData->properties.dataVariance = vsg::DYNAMIC_DATA;
 
-void
-LineStringStyleNode::setStyle(const LineStyle& value)
-{
-    LineStyle& my_style = *static_cast<LineStyle*>(_buffer->dataPointer());
-    my_style = value;
-    _buffer->dirty();
-}
+    auto ubo = vsg::DescriptorBuffer::create(_styleData, LINE_BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
-const LineStyle&
-LineStringStyleNode::style() const
-{
-    return *static_cast<LineStyle*>(_buffer->dataPointer());
-}
+    this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    this->firstSet = 0;
 
-void
-LineStringStyleNode::compile(vsg::Context& vsg_context)
-{
-    auto ubo = vsg::DescriptorBuffer::create(_buffer, LINE_BUFFER_BINDING);
+    this->layout = LineState::pipelineConfig->layout;
 
-    auto dset = vsg::DescriptorSet::create(
+    this->descriptorSet = vsg::DescriptorSet::create(
         LineState::pipelineConfig->layout->setLayouts.front(),
         vsg::Descriptors{ ubo });
 
-    // add the command to bind this line style.
-    auto bind = vsg::BindDescriptorSet::create(
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        LineState::pipelineConfig->layout,
-        0, // first set
-        dset
-    );
+    setStyle(LineStyle{});
+}
 
-    this->add(bind);
+void
+BindLineStyle::setStyle(const LineStyle& value)
+{
+    LineStyle& my_style = *static_cast<LineStyle*>(_styleData->dataPointer());
+    my_style = value;
+    _styleData->dirty();
+}
 
-    vsg::StateGroup::compile(vsg_context);
+const LineStyle&
+BindLineStyle::style() const
+{
+    return *static_cast<LineStyle*>(_styleData->dataPointer());
 }
 
 
@@ -278,7 +274,7 @@ LineStringGeometry::compile(vsg::Context& context)
     {
         (*indices)[i++] = e + 3;
         (*indices)[i++] = e + 1;
-        (*indices)[i++] = e + 0; // Provoking vertex
+        (*indices)[i++] = e + 0; // provoking vertex
         (*indices)[i++] = e + 2;
         (*indices)[i++] = e + 3;
         (*indices)[i++] = e + 0; // provoking vertex
@@ -289,6 +285,7 @@ LineStringGeometry::compile(vsg::Context& context)
 
     _drawCommand->indexCount = indices->size();
 
+    commands.clear();
     commands.push_back(_drawCommand);
 
     vsg::Geometry::compile(context);
