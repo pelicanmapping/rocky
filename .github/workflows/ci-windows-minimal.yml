@@ -1,4 +1,4 @@
-name: windows-x64-Release
+name: windows-x64-Release-minimal
 
 on: [push, pull_request, workflow_dispatch]
 
