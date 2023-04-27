@@ -23,6 +23,7 @@ using namespace ROCKY_ENGINE_NAMESPACE;
 
 vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> LineState::pipelineConfig;
 vsg::StateGroup::StateCommands LineState::pipelineStateCommands;
+rocky::Status LineState::status;
 
 namespace
 {
@@ -87,7 +88,7 @@ LineState::initialize(Runtime& runtime)
         
         if (!shaderSet)
         {
-            //return Status(Status::ConfigurationError, "Cannot create shader set");
+            status = Status(Status::ConfigurationError, "Line shaders are missing or coorrupt. Check ROCKY_FILE_PATH.");
             return;
         }
 
@@ -158,6 +159,8 @@ LineState::initialize(Runtime& runtime)
 
 BindLineStyle::BindLineStyle()
 {
+    ROCKY_HARD_ASSERT(LineState::status.ok());
+
     _styleData = vsg::ubyteArray::create(sizeof(LineStyle));
 
     // tells VSG that the contents can change, and if they do, the data should be

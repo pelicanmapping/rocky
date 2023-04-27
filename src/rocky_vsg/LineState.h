@@ -6,6 +6,7 @@
 #pragma once
 
 #include <rocky_vsg/Common.h>
+#include <rocky/Status.h>
 
 #include <vsg/io/Options.h>
 #include <vsg/utils/GraphicsPipelineConfigurator.h>
@@ -43,6 +44,9 @@ namespace ROCKY_NAMESPACE
             //! Create the state commands necessary for rendering lines.
             //! Upi should add these to an existing StateGroup.
             static void initialize(Runtime&);
+
+            // Status; check before using.
+            static Status status;
 
             //! Singleton pipeline conifig object created when the object is first constructed.
             static vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> pipelineConfig;

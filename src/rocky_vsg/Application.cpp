@@ -198,6 +198,9 @@ Application::processAdditionsAndRemovals()
         {
             if (addition.available() && addition->node)
             {
+                // Add the node.
+                // TODO: for now we're just lumping everying together here. 
+                // Later we can decide to sort by pipeline, or use a spatial index, etc.
                 mainScene->addChild(addition->node);
 
                 // Update the viewer's tasks so they are aware of any new DYNAMIC data
@@ -208,10 +211,12 @@ Application::processAdditionsAndRemovals()
                     // If the node hasn't been compiled, do it now. This will usually happen
                     // if the node was created prior to the application loop starting up.
                     auto cr = viewer->compileManager->compile(addition->node);
-                    if (cr)
+                    if (cr.requiresViewerUpdate())
+                    {
                         vsg::updateViewer(*viewer, cr);
+                    }
                 }
-                else
+                else if (addition->compileResult.requiresViewerUpdate())
                 {
                     vsg::updateViewer(*viewer, addition->compileResult);
                 }
@@ -358,6 +363,7 @@ LineString::createNode(Runtime& runtime)
     // We can optimize or group things later.
     if (!node)
     {
+        ROCKY_HARD_ASSERT(LineState::status.ok());
         auto stateGroup = vsg::StateGroup::create();
         stateGroup->stateCommands = LineState::pipelineStateCommands;
         stateGroup->addChild(_bindStyle);
