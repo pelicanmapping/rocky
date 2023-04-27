@@ -111,8 +111,8 @@ namespace
         return command;
     }
 
-#define ATMOSPHERE_VERT_SHADER "rocky.atmo.sky.vert"
-#define ATMOSPHERE_FRAG_SHADER "rocky.atmo.sky.frag"
+#define ATMOSPHERE_VERT_SHADER "shaders/rocky.atmo.sky.vert"
+#define ATMOSPHERE_FRAG_SHADER "shaders/rocky.atmo.sky.frag"
 
     vsg::ref_ptr<vsg::ShaderSet> makeShaderSet()
     {

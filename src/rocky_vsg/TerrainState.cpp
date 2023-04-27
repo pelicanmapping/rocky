@@ -15,8 +15,8 @@
 #include <vsg/state/BindDescriptorSet.h>
 #include <vsg/state/ViewDependentState.h>
 
-#define TERRAIN_VERT_SHADER "rocky.terrain.vert"
-#define TERRAIN_FRAG_SHADER "rocky.terrain.frag"
+#define TERRAIN_VERT_SHADER "shaders/rocky.terrain.vert"
+#define TERRAIN_FRAG_SHADER "shaders/rocky.terrain.frag"
 
 #define ELEVATION_TEX_NAME "elevation_tex"
 #define ELEVATION_TEX_BINDING 10

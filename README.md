@@ -64,7 +64,7 @@ You can install these using your favorite package manager (we recommend `vcpkg`)
 
 Set up a couple env vars so Rocky can find its data.
 ```bat
-set ROCKY_FILE_PATH=%rocky_install_dir%/share/shaders
+set ROCKY_FILE_PATH=%rocky_install_dir%/share
 
 set PROJ_DATA=%proj_install_dir%/share/proj
 ```

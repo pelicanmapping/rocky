@@ -13,8 +13,8 @@
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_ENGINE_NAMESPACE;
 
-#define LINE_VERT_SHADER "rocky.line.vert"
-#define LINE_FRAG_SHADER "rocky.line.frag"
+#define LINE_VERT_SHADER "shaders/rocky.line.vert"
+#define LINE_FRAG_SHADER "shaders/rocky.line.frag"
 #define LINE_BUFFER_SET 0 // must match layout(set=X) in the shader UBO
 #define LINE_BUFFER_BINDING 1 // must match the layout(binding=X) in the shader UBO (set=0)
 #define VIEWPORT_BUFFER_SET 1 // hard-coded in VSG ViewDependentState
