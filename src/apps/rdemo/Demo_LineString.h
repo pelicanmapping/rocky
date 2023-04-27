@@ -18,25 +18,22 @@ auto Demo_LineString = [](Application& app)
     {
         ImGui::Text("Wait...");
 
-        auto makeLine = [&app]() mutable
+        line = LineString::create();
+
+        auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
+        for (double lon = -180.0; lon <= 0.0; lon += 2.5)
         {
-            line = LineString::create();
+            rocky::dvec3 ecef;
+            if (xform(rocky::dvec3(lon, 0.0, 6500000), ecef))
+                line->pushVertex(ecef);
+        }
 
-            auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
-            for (double lon = -180.0; lon <= 0.0; lon += 2.5)
-            {
-                rocky::dvec3 ecef;
-                if (xform(rocky::dvec3(lon, 0.0, 6500000), ecef))
-                    line->pushVertex(ecef);
-            }
+        line->setStyle(LineStyle{ { 1,1,0,1 }, 3.0f, 0xffff, 4 });
 
-            line->setStyle(LineStyle{ { 1,1,0,1 }, 3.0f, 0xffff, 4 });
-
-            object = MapObject::create(line);
-            app.add(object);
-        };
-
-        app.instance.runtime().runDuringUpdate(makeLine);
+        object = MapObject::create(line);
+        app.add(object);
+        
+        // by the next frame, the object will be alive in the scene
         return;
     }
 

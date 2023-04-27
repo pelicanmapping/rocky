@@ -18,6 +18,12 @@
 
 using namespace ROCKY_NAMESPACE;
 
+#include "Demo_LineString.h"
+#include "Demo_Polygon.h"
+#include "Demo_Icon.h"
+#include "Demo_Model.h"
+#include "Demo_MapManipulator.h"
+
 template<class T>
 int layerError(T layer)
 {
@@ -29,66 +35,62 @@ int layerError(T layer)
 struct Demo
 {
     std::string name;
-    std::function<void(Application& app)> function;
+    std::function<void(Application&)> function;
     std::vector<Demo> children;
 };
 
-#include "Demo_LineString.h"
-#include "Demo_Polygon.h"
-#include "Demo_Icon.h"
-#include "Demo_Model.h"
-#include "Demo_MapManipulator.h"
-
 std::vector<Demo> demos;
-Application* s_app;
 
 void setup_demos(rocky::Application& app)
 {
-    s_app = &app;
     demos.emplace_back(
-        Demo{ "Geometry", nullptr,
+        Demo{ "Geometry", {},
         {
-            Demo{"LineString", Demo_LineString},
-            Demo{"Polygon", Demo_Polygon },
-            Demo{"Icon", Demo_Icon },
-            Demo{"Model", Demo_Model }
+            Demo{ "LineString", Demo_LineString },
+            Demo{ "Polygon", Demo_Polygon },
+            Demo{ "Icon", Demo_Icon },
+            Demo{ "Model", Demo_Model }
         } }
     );
     demos.emplace_back(
-        Demo{ "Controls", nullptr,
-        {
-            Demo{"MapManipulator", Demo_MapManipulator}
+        Demo{ "Camera", {}, {
+            Demo{ "MapManipulator", Demo_MapManipulator }
         } }
     );
 }
 
-
-void render(const Demo& demo, Application& app)
+struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>
 {
-    if (ImGui::CollapsingHeader(demo.name.c_str()))
-    {
-        if (demo.function)
-            demo.function(app);
+    Application& app;
+    MainGUI(Application& app_) : app(app_) { }
 
-        if (!demo.children.empty())
+    void record(vsg::CommandBuffer& cb) const override
+    {
+        if (ImGui::Begin("Welcome to Rocky"))
         {
-            ImGui::Indent();
-            for (auto& child : demo.children)
-                render(child, app);
-            ImGui::Unindent();
+            for (auto& demo : demos)
+            {
+                render(demo);
+            }
         }
-    };
-}
-
-auto mainGUI = [&]()
-{
-    if (ImGui::Begin("Welcome to Rocky"))
-    {
-        for (auto& demo : demos)
-            render(demo, *s_app);
-        ImGui::End();
     }
-    return true;
+
+    void render(const Demo& demo) const
+    {
+        if (ImGui::CollapsingHeader(demo.name.c_str()))
+        {
+            if (demo.function)
+                demo.function(app);
+    
+            if (!demo.children.empty())
+            {
+                ImGui::Indent();
+                for (auto& child : demo.children)
+                    render(child);
+                ImGui::Unindent();
+            }
+        };
+    }
 };
 
 
@@ -112,7 +114,9 @@ int main(int argc, char** argv)
     app.viewer->addEventHandler(vsgImGui::SendEventsToImGui::create());
 
     // ImGui must record last (after the main scene) so add it to root.
-    app.root->addChild(vsgImGui::RenderImGui::create(app.mainWindow, mainGUI));
+    auto imgui = vsgImGui::RenderImGui::create(app.mainWindow);
+    imgui->addChild(MainGUI::create(app));
+    app.root->addChild(imgui);
 
     // run until the user quits.
     return app.run();

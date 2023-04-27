@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky_vsg/Application.h>
 #include <vsgImGui/RenderImGui.h>
+#include <vsg/commands/Command.h>
 
 // handy nice-looking table with names on the left.
 namespace ImGuiLTable
