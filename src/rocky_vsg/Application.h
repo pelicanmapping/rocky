@@ -13,6 +13,8 @@
 #include <vsg/app/Window.h>
 #include <vsg/nodes/Group.h>
 
+#include <list>
+
 namespace ROCKY_NAMESPACE
 {
     /**
@@ -23,9 +25,10 @@ namespace ROCKY_NAMESPACE
     {
     public:
         bool visible = true;
+        vsg::ref_ptr<vsg::Node> node;
 
     public:
-        virtual vsg::ref_ptr<vsg::Node> getOrCreateNode(Runtime& runtime) = 0;
+        virtual void createNode(Runtime& runtime) = 0;
 
     protected:
         Attachment() { }
@@ -53,7 +56,7 @@ namespace ROCKY_NAMESPACE
     {    
     public:
         //! Construct an empty map object.
-        MapObject() : super() { }
+        MapObject();
 
         //! Construct a map object with a single attachment.
         MapObject(shared_ptr<Attachment> attachment);
@@ -61,8 +64,8 @@ namespace ROCKY_NAMESPACE
         //! Construct a map object with zero or more attachments.
         MapObject(Attachments attachments);
 
-        //! Whether this map object (and all its attachments) will render
-        bool visible = true;
+        //! Globally unique ID for this map object (auto generated)
+        const std::uint32_t uid;
 
         //! Attachments associated with this map object
         Attachments attachments;
@@ -94,7 +97,7 @@ namespace ROCKY_NAMESPACE
         const LineStyle& style() const;
 
     public:
-        vsg::ref_ptr<vsg::Node> getOrCreateNode(Runtime& runtime) override;
+        void createNode(Runtime& runtime) override;
 
     public:
         vsg::ref_ptr<engine::BindLineStyle> _bindStyle;
@@ -145,8 +148,11 @@ namespace ROCKY_NAMESPACE
         //! Run until exit.
         int run();
 
-        //! Add a map object to the engine
+        //! Add a map object to the scene
         void add(shared_ptr<MapObject> object);
+
+        //! Remove a map object from the scene
+        void remove(shared_ptr<MapObject> object);
 
     public:
 
@@ -173,9 +179,10 @@ namespace ROCKY_NAMESPACE
             vsg::CompileResult compileResult;
         };
 
-        std::mutex _additions_mutex;
-        std::queue<Addition> _additions;
+        std::mutex _add_remove_mutex;
+        std::list<util::Future<Addition>> _additions;
+        std::list<vsg::ref_ptr<vsg::Node>> _removals;
 
-        void processAdditions();
+        void processAdditionsAndRemovals();
     };
 }

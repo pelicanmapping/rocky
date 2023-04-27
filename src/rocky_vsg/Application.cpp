@@ -110,8 +110,10 @@ Application::run()
         vsg::LookAt::create(),
         vsg::ViewportState::create(mainWindow->extent2D()));
 
+    // respond to the X or to hitting ESC
     viewer->addEventHandler(vsg::CloseHandler::create(viewer));
 
+    // default map manipulator
     viewer->addEventHandler(rocky::MapManipulator::create(mapNode, camera));
 
     // View pairs a camera with a scene graph and manages
@@ -172,7 +174,7 @@ Application::run()
         viewer->update();
 
         // handle any object additions.
-        processAdditions();
+        processAdditionsAndRemovals();
 
         viewer->recordAndSubmit();
 
@@ -183,27 +185,54 @@ Application::run()
 }
 
 void
-Application::processAdditions()
+Application::processAdditionsAndRemovals()
 {
-    // Any new nodes in the scene? integrate them now.
-    if (!_additions.empty())
+    if (!_additions.empty() || !_removals.empty())
     {
-        std::scoped_lock(_additions_mutex);
-        while (!_additions.empty())
+        std::scoped_lock(_add_remove_mutex);
+
+        std::list<util::Future<Addition>> in_progress;
+
+        // Any new nodes in the scene? integrate them now
+        for(auto& addition : _additions)
         {
-            auto& a = _additions.front();
+            if (addition.available() && addition->node)
+            {
+                mainScene->addChild(addition->node);
 
-            mainScene->addChild(a.node);
+                // Update the viewer's tasks so they are aware of any new DYNAMIC data
+                // elements present in the new nodes that they will need to transfer
+                // to the GPU.
+                if (!addition->compileResult)
+                {
+                    // If the node hasn't been compiled, do it now. This will usually happen
+                    // if the node was created prior to the application loop starting up.
+                    auto cr = viewer->compileManager->compile(addition->node);
+                    if (cr)
+                        vsg::updateViewer(*viewer, cr);
+                }
+                else
+                {
+                    vsg::updateViewer(*viewer, addition->compileResult);
+                }
+            }
+            else
+            {
+                in_progress.push_back(addition);
+            }
+        }
+        _additions.swap(in_progress);
 
-            // if it didn't compile earlier, compile it now:
-            if (!a.compileResult)
-                a.compileResult = viewer->compileManager->compile(a.node);
-
-            // and integrate it into the viewer:
-            if (a.compileResult)
-                vsg::updateViewer(*viewer, a.compileResult);
-
-            _additions.pop();
+        // Remove anything in the remove queue
+        while (!_removals.empty())
+        {
+            auto& node = _removals.front();
+            if (node)
+            {
+                mainScene->children.erase(
+                    std::remove(mainScene->children.begin(), mainScene->children.end(), node));
+            }
+            _removals.pop_front();
         }
     }
 }
@@ -213,42 +242,85 @@ Application::add(shared_ptr<MapObject> obj)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(obj, void());
 
-    std::vector<Addition> additions;
+    std::vector<util::Future<Addition>> additions;
 
+    // For each object attachment, create its node and then schedule it
+    // for compilation and merging into the scene graph.
     for (auto& attachment : obj->attachments)
-    {
-        Addition addition;
-        addition.node = attachment->getOrCreateNode(instance.runtime());
-        if (addition.node)
+    {        
+        // Tell the attachment to create a node if it doesn't already exist
+        attachment->createNode(instance.runtime());
+
+        if (attachment->node)
         {
-            // try to compile it now; if there's no compile manager yet, we will compile it
-            // on demand later in processAdditions.
-            if (viewer->compileManager)
+            auto my_viewer = viewer;
+            auto my_node = attachment->node;
+
+            auto compileNode = [my_viewer, my_node](Cancelable& c)
             {
-                addition.compileResult = viewer->compileManager->compile(addition.node);
-            }
-            additions.emplace_back(std::move(addition));
+                vsg::CompileResult cr;
+                if (my_viewer->compileManager && !c.canceled())
+                    cr = my_viewer->compileManager->compile(my_node);
+                return Addition{ my_node, cr };
+            };
+
+            // TODO: do we want a specific job pool for compiles, or
+            // perhaps a single thread that compiles things from a queue?
+            additions.emplace_back(util::job::dispatch(compileNode));
         }
     }
 
+    // Finally add all new additions to the queue so they will get added
+    // at a safe time
     if (!additions.empty())
     {
-        std::scoped_lock(_additions_mutex);
+        std::scoped_lock(_add_remove_mutex);
         for (auto& a : additions)
-            _additions.push(std::move(a));
+        {
+            _additions.push_back(a);
+        }
     }
 }
 
+void
+Application::remove(shared_ptr<MapObject> obj)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(obj, void());
 
+    std::scoped_lock(_add_remove_mutex);
+
+    for (auto& attachment : obj->attachments)
+    {
+        if (attachment->node)
+        {
+            _removals.push_back(attachment->node);
+        }
+    }
+}
+
+namespace
+{
+    // generates a unique ID for each map object
+    std::atomic_uint32_t uid_generator(0U);
+}
+
+MapObject::MapObject() :
+    super(),
+    uid(uid_generator++)
+{
+    //nop
+}
 
 MapObject::MapObject(shared_ptr<Attachment> value) :
-    super()
+    super(),
+    uid(uid_generator++)
 {
-    attachments.push_back(value);
+    attachments = { value };
 }
 
 MapObject::MapObject(Attachments value) :
-    super()
+    super(),
+    uid(uid_generator++)
 {
     attachments = value;
 }
@@ -279,17 +351,17 @@ LineString::style() const
     return _bindStyle->style();
 }
 
-vsg::ref_ptr<vsg::Node>
-LineString::getOrCreateNode(Runtime& runtime)
+void
+LineString::createNode(Runtime& runtime)
 {
     // TODO: simple approach. Just put everything in every LineString for now.
     // We can optimize or group things later.
-
-    auto stateGroup = vsg::StateGroup::create();
-    stateGroup->stateCommands = LineState::pipelineStateCommands;
-    //stateGroup->stateCommands.push_back(_bindStyle);
-    stateGroup->addChild(_bindStyle);
-    stateGroup->addChild(_geometry);
-
-    return stateGroup;
+    if (!node)
+    {
+        auto stateGroup = vsg::StateGroup::create();
+        stateGroup->stateCommands = LineState::pipelineStateCommands;
+        stateGroup->addChild(_bindStyle);
+        stateGroup->addChild(_geometry);
+        node = stateGroup;
+    }
 }
