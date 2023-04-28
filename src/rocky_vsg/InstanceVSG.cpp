@@ -187,6 +187,10 @@ InstanceVSG::InstanceVSG() :
 
     // start up the state generators.
     _impl->lineState.initialize(runtime);
+    ROCKY_HARD_ASSERT(engine::LineState::status.ok());
+
+    _impl->meshState.initialize(runtime);
+    ROCKY_HARD_ASSERT(engine::MeshState::status.ok());
 
     // a copy of vsgOptions we can use in lamdbas
     auto readerWriterOptions = runtime.readerWriterOptions;

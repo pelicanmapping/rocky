@@ -19,7 +19,7 @@
 using namespace ROCKY_NAMESPACE;
 
 #include "Demo_LineString.h"
-#include "Demo_Polygon.h"
+#include "Demo_Mesh.h"
 #include "Demo_Icon.h"
 #include "Demo_Model.h"
 #include "Demo_MapManipulator.h"
@@ -38,16 +38,15 @@ struct Demo
     std::function<void(Application&)> function;
     std::vector<Demo> children;
 };
-
 std::vector<Demo> demos;
 
 void setup_demos(rocky::Application& app)
 {
     demos.emplace_back(
-        Demo{ "Geometry", {},
+        Demo{ "MapObjects", {},
         {
             Demo{ "LineString", Demo_LineString },
-            Demo{ "Polygon", Demo_Polygon },
+            Demo{ "Mesh", Demo_Mesh },
             Demo{ "Icon", Demo_Icon },
             Demo{ "Model", Demo_Model }
         } }
@@ -99,12 +98,12 @@ int main(int argc, char** argv)
     // instantiate the application engine.
     rocky::Application app(argc, argv);
 
+    rocky::Log::level = rocky::LogLevel::ALL;
+
     // add an imagery layer to the map
     auto layer = rocky::TMSImageLayer::create();
     layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
     app.map()->layers().add(layer);
-
-    // check for error
     if (layer->status().failed())
         return layerError(layer);
 
@@ -112,11 +111,9 @@ int main(int argc, char** argv)
     setup_demos(app);
     app.createMainWindow(1920, 1080);
     app.viewer->addEventHandler(vsgImGui::SendEventsToImGui::create());
-
-    // ImGui must record last (after the main scene) so add it to root.
     auto imgui = vsgImGui::RenderImGui::create(app.mainWindow);
     imgui->addChild(MainGUI::create(app));
-    app.root->addChild(imgui);
+    app.root->addChild(imgui); // add to root so it will render last.
 
     // run until the user quits.
     return app.run();

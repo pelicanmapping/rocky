@@ -4,7 +4,6 @@
  * MIT License
  */
 #include "Runtime.h"
-#include "LineState.h"
 #include "Utils.h"
 #include <vsg/app/Viewer.h>
 #include <shared_mutex>
@@ -286,16 +285,6 @@ Runtime::removeNode(vsg::Group* parent, unsigned index)
     auto remover = RemoveNodeAsync::create(parent, index);
     updates()->add(remover);
 }
-
-//LineState&
-//Runtime::lineState()
-//{
-//    if (!_LineState)
-//    {
-//        _LineState = std::make_shared<LineState>(*this);
-//    }
-//    return *_LineState.get();
-//}
 
 void
 Runtime::dirty(vsg::Object* object)

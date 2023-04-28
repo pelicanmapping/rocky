@@ -4,7 +4,6 @@
  * MIT License
  */
 #include "GeoTransform.h"
-#include "MapNode.h"
 #include "Utils.h"
 
 using namespace ROCKY_NAMESPACE;

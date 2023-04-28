@@ -105,6 +105,15 @@ namespace ImGuiLTable
         return ImGui::ColorEdit3(label, col, flags);
     }
 
+    static bool ColorEdit4(const char* label, float col[4], ImGuiColorEditFlags flags = 0)
+    {
+        ImGui::TableNextColumn();
+        ImGui::Text(label);
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(-1);
+        return ImGui::ColorEdit4(label, col, flags);
+    }
+
     template<typename...Args>
     static void Text(const char* label, const char* format, Args...args)
     {

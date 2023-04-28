@@ -8,6 +8,7 @@
 #include <rocky_vsg/MapNode.h>
 #include <rocky_vsg/GeoTransform.h>
 #include <rocky_vsg/LineState.h>
+#include <rocky_vsg/MeshState.h>
 
 #include <vsg/app/Viewer.h>
 #include <vsg/app/Window.h>
@@ -107,6 +108,47 @@ namespace ROCKY_NAMESPACE
     template<typename T> void LineString::pushVertex(const T& vec3) {
         pushVertex(vec3.x, vec3.y, vec3.z);
     }
+
+
+    /**
+    * Triangle Mesh attachment
+    */
+    class ROCKY_VSG_EXPORT Mesh : public rocky::Inherit<Attachment, Mesh>
+    {
+    public:
+        //! Construct a mesh attachment
+        Mesh();
+
+        //! Add a triangle to the mesh
+        template<typename VEC3>
+        void addTriangle(const VEC3& v1, const VEC3& v2, const VEC3& v3);
+
+        //! Set to overall style for this mesh
+        void setStyle(const MeshStyle& value);
+
+        //! Overall style for the mesh
+        const MeshStyle& style() const;
+            
+    public:
+        void createNode(Runtime& runtime) override;
+    
+    private:
+        vsg::ref_ptr<engine::BindMeshStyle> _bindStyle;
+        vsg::ref_ptr<engine::MeshGeometry> _geometry;
+    };
+
+
+    // mesh inline functions
+
+    template<typename VEC3>
+    void Mesh::addTriangle(const VEC3& v1, const VEC3& v2, const VEC3& v3)
+    {
+        _geometry->add(
+            vsg::vec3(v1.x, v1.y, v1.z),
+            vsg::vec3(v2.x, v2.y, v2.z),
+            vsg::vec3(v3.x, v3.y, v3.z));
+    }
+
 
 
     /**

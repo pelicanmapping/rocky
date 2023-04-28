@@ -371,3 +371,38 @@ LineString::createNode(Runtime& runtime)
         node = stateGroup;
     }
 }
+
+
+
+Mesh::Mesh() :
+    super()
+{
+    _bindStyle = BindMeshStyle::create();
+    _geometry = MeshGeometry::create();
+}
+
+void
+Mesh::setStyle(const MeshStyle& value)
+{
+    _bindStyle->setStyle(value);
+}
+
+const MeshStyle&
+Mesh::style() const
+{
+    return _bindStyle->style();
+}
+
+void
+Mesh::createNode(Runtime& runtime)
+{
+    if (!node)
+    {
+        ROCKY_HARD_ASSERT(MeshState::status.ok());
+        auto stateGroup = vsg::StateGroup::create();
+        stateGroup->stateCommands = MeshState::pipelineStateCommands;
+        stateGroup->addChild(_bindStyle);
+        stateGroup->addChild(_geometry);
+        node = stateGroup;
+    }
+}

@@ -9,7 +9,6 @@
 #include <rocky/Instance.h>
 #include <rocky/IOTypes.h>
 #include <rocky/Threading.h>
-#include <rocky_vsg/LineState.h>
 #include <vsg/core/observer_ptr.h>
 #include <vsg/app/CompileManager.h>
 #include <vsg/app/UpdateOperations.h>

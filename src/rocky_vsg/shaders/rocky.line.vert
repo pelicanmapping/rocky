@@ -6,7 +6,7 @@ layout(push_constant) uniform PushConstants {
     mat4 modelview;
 } pc;
 
-// see rocky::LineDescriptors
+// see rocky::LineStyle
 layout(set = 0, binding = 1) uniform LineData {
     vec4 color;
     float width;

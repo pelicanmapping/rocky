@@ -54,10 +54,10 @@ namespace
         shaderSet = vsg::ShaderSet::create(shaderStages);
 
         // "binding" (3rd param) must match "layout(location=X) in" in the vertex shader
-        shaderSet->addAttributeBinding("in_vertex", "", 0, VK_FORMAT_R32G32B32_SFLOAT, { }); // vsg::vec3Array::create(1));
-        shaderSet->addAttributeBinding("in_vertex_prev", "", 1, VK_FORMAT_R32G32B32_SFLOAT, {}); // vsg::vec3Array::create(1));
-        shaderSet->addAttributeBinding("in_vertex_next", "", 2, VK_FORMAT_R32G32B32_SFLOAT, {}); // vsg::vec3Array::create(1));
-        shaderSet->addAttributeBinding("in_color", "", 3, VK_FORMAT_R32G32B32A32_SFLOAT, {}); // vsg::vec4Array::create(1));
+        shaderSet->addAttributeBinding("in_vertex", "", 0, VK_FORMAT_R32G32B32_SFLOAT, { });
+        shaderSet->addAttributeBinding("in_vertex_prev", "", 1, VK_FORMAT_R32G32B32_SFLOAT, {});
+        shaderSet->addAttributeBinding("in_vertex_next", "", 2, VK_FORMAT_R32G32B32_SFLOAT, {});
+        shaderSet->addAttributeBinding("in_color", "", 3, VK_FORMAT_R32G32B32A32_SFLOAT, {});
 
         // line data uniform buffer (width, stipple, etc.)
         shaderSet->addUniformBinding("line", "", LINE_BUFFER_SET, LINE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
@@ -85,7 +85,7 @@ LineState::initialize(Runtime& runtime)
     if (!pipelineConfig)
     {
         auto shaderSet = createLineShaderSet(runtime);
-        
+
         if (!shaderSet)
         {
             status = Status(Status::ConfigurationError, "Line shaders are missing or coorrupt. Check ROCKY_FILE_PATH.");
@@ -159,7 +159,7 @@ LineState::initialize(Runtime& runtime)
 
 BindLineStyle::BindLineStyle()
 {
-    ROCKY_HARD_ASSERT(LineState::status.ok());
+    ROCKY_HARD_ASSERT(LineState::pipelineConfig, "Did you call LineState::initialize()?");
 
     _styleData = vsg::ubyteArray::create(sizeof(LineStyle));
 

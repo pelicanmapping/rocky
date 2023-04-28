@@ -38,24 +38,25 @@ namespace ROCKY_NAMESPACE
         class ROCKY_VSG_EXPORT LineState
         {
         public:
-            //! Construct the Line state generator and initialize its pipeline configurator
+            //! Destructs the mesh state objects
             ~LineState();
 
             //! Create the state commands necessary for rendering lines.
-            //! Upi should add these to an existing StateGroup.
             static void initialize(Runtime&);
 
             // Status; check before using.
             static Status status;
 
-            //! Singleton pipeline conifig object created when the object is first constructed.
+            //! Singleton pipeline config object created when the object is first constructed,
+            //! for access to pipeline and desriptor set layouts.
             static vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> pipelineConfig;
             
+            //! Singleton state commands for establishing the pipeline.
             static vsg::StateGroup::StateCommands pipelineStateCommands;
         };
 
         /**
-        * Applies a line style to any LineStringNode children.
+        * Applies a line style.
         */
         class ROCKY_VSG_EXPORT BindLineStyle : public vsg::Inherit<vsg::BindDescriptorSet, BindLineStyle>
         {

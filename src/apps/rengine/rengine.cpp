@@ -13,7 +13,6 @@
 #include <rocky_vsg/TerrainNode.h>
 #include <rocky_vsg/MapManipulator.h>
 #include <rocky_vsg/SkyNode.h>
-#include <rocky_vsg/LineState.h>
 
 #include <vsg/all.h>
 #include <chrono>
