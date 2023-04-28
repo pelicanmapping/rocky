@@ -84,7 +84,7 @@ MapNode::to_json() const
 Runtime&
 MapNode::runtime()
 {
-    ROCKY_HARD_ASSERT(_instance.status().ok());
+    ROCKY_HARD_ASSERT_STATUS(_instance.status());
     return _instance.runtime();
 }
 
@@ -171,7 +171,7 @@ MapNode::get(const vsg::Node* graph, unsigned travmask)
 void
 MapNode::update(const vsg::FrameStamp* f)
 {
-    ROCKY_HARD_ASSERT(_instance.status().ok());
+    ROCKY_HARD_ASSERT_STATUS(_instance.status());
 
     if (_terrain->map() == nullptr)
     {

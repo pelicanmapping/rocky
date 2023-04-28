@@ -56,7 +56,7 @@ TerrainState::TerrainState(Runtime& runtime) :
     {
         status = Status(Status::ResourceUnavailable,
             "Terrain shaders are missing or corrupt. "
-            "Did you set ROCKY_FILE_PATH to point at the rocky share/shaders folder?");
+            "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
         return;
     }
 }

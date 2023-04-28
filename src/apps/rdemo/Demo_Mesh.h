@@ -24,9 +24,9 @@ auto Demo_Mesh = [](Application& app)
         auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
         const double step = 2.5;
         const double alt = 50000;
-        for (double lon = 0.0; lon < 45.0; lon += step)
+        for (double lon = 0.0; lon < 35.0; lon += step)
         {
-            for(double lat = 0.0; lat < 45.0; lat += step)
+            for(double lat = 15.0; lat < 35.0; lat += step)
             {
                 dvec3 v1, v2, v3, v4;
                 xform(dvec3{ lon, lat, alt }, v1);

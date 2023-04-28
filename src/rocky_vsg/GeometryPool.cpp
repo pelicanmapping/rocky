@@ -162,11 +162,9 @@ namespace
 vsg::ref_ptr<vsg::ushortArray>
 GeometryPool::createIndices(const Settings& settings) const
 {
-    ROCKY_HARD_ASSERT(settings.tileSize > 0u);
-
     // Attempt to calculate the number of verts in the surface geometry.
     bool needsSkirt = settings.skirtRatio > 0.0f;
-    uint32_t tileSize = settings.tileSize;
+    uint32_t tileSize = std::max(settings.tileSize, 2u);
 
     unsigned numVertsInSurface = (tileSize*tileSize);
     unsigned numVertsInSkirt = needsSkirt ? (tileSize - 1) * 2u * 4u : 0;

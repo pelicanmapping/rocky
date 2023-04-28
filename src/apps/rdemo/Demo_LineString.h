@@ -21,10 +21,11 @@ auto Demo_LineString = [](Application& app)
         line = LineString::create();
 
         auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
+        const double alt = 125000;
         for (double lon = -180.0; lon <= 0.0; lon += 2.5)
         {
             rocky::dvec3 ecef;
-            if (xform(rocky::dvec3(lon, 0.0, 6500000), ecef))
+            if (xform(rocky::dvec3(lon, 0.0, alt), ecef))
                 line->pushVertex(ecef);
         }
 

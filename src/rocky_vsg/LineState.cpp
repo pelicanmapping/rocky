@@ -88,7 +88,9 @@ LineState::initialize(Runtime& runtime)
 
         if (!shaderSet)
         {
-            status = Status(Status::ConfigurationError, "Line shaders are missing or coorrupt. Check ROCKY_FILE_PATH.");
+            status = Status(Status::ResourceUnavailable,
+                "Line shaders are missing or corrupt. "
+                "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
             return;
         }
 
@@ -159,7 +161,7 @@ LineState::initialize(Runtime& runtime)
 
 BindLineStyle::BindLineStyle()
 {
-    ROCKY_HARD_ASSERT(LineState::pipelineConfig, "Did you call LineState::initialize()?");
+    ROCKY_HARD_ASSERT_STATUS(LineState::status);
 
     _styleData = vsg::ubyteArray::create(sizeof(LineStyle));
 
