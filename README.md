@@ -68,11 +68,15 @@ bootstrap-vcpkg.bat
 ```
 That will download and build all the dependencies (takes a while) and generate your CMake project and Visual Studio solution file.
 
-## Environment variables
+## Running
 
-Set up a couple env vars so Rocky can find its data.
+Set up a couple environment variables so Rocky can find its data.
 ```bat
 set ROCKY_FILE_PATH=%rocky_install_dir%/share
-
+set ROCKY_DEFAULT_FONT=C:/windows/fonts/arialbd.ttf
 set PROJ_DATA=%proj_install_dir%/share/proj
+```
+And run the demo application!
+```
+rdemo.exe
 ```
