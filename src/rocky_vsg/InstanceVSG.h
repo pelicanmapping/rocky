@@ -5,13 +5,13 @@
  */
 #pragma once
 #include <rocky_vsg/Common.h>
-#include <rocky_vsg/Runtime.h>
 #include <rocky/Instance.h>
 #include <vsg/io/Options.h>
 #include <vsg/utils/CommandLine.h>
 
-#include <rocky_vsg/LineState.h>
-#include <rocky_vsg/MeshState.h>
+#include <rocky_vsg/engine/Runtime.h>
+#include <rocky_vsg/engine/LineState.h>
+#include <rocky_vsg/engine/MeshState.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -41,8 +41,8 @@ namespace ROCKY_NAMESPACE
         struct Implementation
         {
             Runtime runtime;
-            engine::LineState lineState;
-            engine::MeshState meshState;
+            LineState lineState;
+            MeshState meshState;
         };
         std::shared_ptr<Implementation> _impl;
         friend class Application;

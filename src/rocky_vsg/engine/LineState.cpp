@@ -5,13 +5,13 @@
  */
 #include "LineState.h"
 #include "Runtime.h"
+#include "../LineString.h" // for LineStyle
 
 #include <vsg/state/BindDescriptorSet.h>
 #include <vsg/state/ViewDependentState.h>
 #include <vsg/commands/DrawIndexed.h>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_ENGINE_NAMESPACE;
 
 #define LINE_VERT_SHADER "shaders/rocky.line.vert"
 #define LINE_FRAG_SHADER "shaders/rocky.line.frag"
@@ -20,7 +20,7 @@ using namespace ROCKY_ENGINE_NAMESPACE;
 #define VIEWPORT_BUFFER_SET 1 // hard-coded in VSG ViewDependentState
 #define VIEWPORT_BUFFER_BINDING 1 // hard-coded in VSG ViewDependentState (set=1)
 
-
+// statics
 vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> LineState::pipelineConfig;
 vsg::StateGroup::StateCommands LineState::pipelineStateCommands;
 rocky::Status LineState::status;

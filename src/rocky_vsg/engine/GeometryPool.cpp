@@ -4,7 +4,7 @@
  * MIT License
  */
 #include "GeometryPool.h"
-#include "TerrainSettings.h"
+#include <rocky_vsg/TerrainSettings.h>
 #include <vsg/commands/DrawIndexed.h>
 
 #undef LC

@@ -4,10 +4,11 @@
  * MIT License
  */
 #include "TerrainTilePager.h"
-#include "TerrainSettings.h"
 #include "TerrainContext.h"
 #include "Runtime.h"
 #include "Utils.h"
+
+#include <rocky_vsg/TerrainSettings.h>
 
 #include <rocky/ElevationLayer.h>
 #include <rocky/ImageLayer.h>

@@ -6,7 +6,7 @@
 #pragma once
 
 #include <rocky_vsg/Common.h>
-#include <rocky_vsg/ViewLocal.h>
+#include <rocky_vsg/engine/ViewLocal.h>
 #include <rocky/GeoPoint.h>
 #include <vsg/nodes/CullGroup.h>
 #include <vsg/nodes/Transform.h>

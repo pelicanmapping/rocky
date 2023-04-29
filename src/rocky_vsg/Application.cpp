@@ -5,30 +5,17 @@
  */
 #include "Application.h"
 #include "MapNode.h"
-#include "TerrainNode.h"
 #include "MapManipulator.h"
 #include "SkyNode.h"
 #include "json.h"
-#include <rocky/Ephemeris.h>
-#include <rocky/Horizon.h>
 
 #include <vsg/app/CloseHandler.h>
 #include <vsg/app/View.h>
 #include <vsg/app/RenderGraph.h>
 #include <vsg/utils/CommandLine.h>
-#include <vsg/nodes/Light.h>
-#include <vsg/nodes/CullGroup.h>
 #include <vsg/vk/State.h>
 
-#include <vsg/text/StandardLayout.h>
-#include <vsg/text/CpuLayoutTechnique.h>
-#include <vsg/text/GpuLayoutTechnique.h>
-#include <vsg/text/Font.h>
-#include <vsg/io/read.h>
-
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::engine;
-
 
 Application::Application(int& argc, char** argv) :
     instance()
@@ -57,10 +44,10 @@ Application::Application(int& argc, char** argv) :
         mainScene->addChild(sky);
     }
 
-    mapNode->terrainNode()->concurrency = 4u;
-    mapNode->terrainNode()->skirtRatio = 0.025f; 
-    mapNode->terrainNode()->minLevelOfDetail = 1;
-    mapNode->terrainNode()->screenSpaceError = 135.0f;
+    mapNode->terrainSettings().concurrency = 4u;
+    mapNode->terrainSettings().skirtRatio = 0.025f;
+    mapNode->terrainSettings().minLevelOfDetail = 1;
+    mapNode->terrainSettings().screenSpaceError = 135.0f;
 
     // wireframe overlay
     if (commandLine.read({ "--wire" }))
@@ -269,7 +256,7 @@ Application::add(shared_ptr<MapObject> obj)
 
         if (attachment->node)
         {
-            if (attachment->referenceFrame == Attachment::ReferenceFrame::Relative)
+            if (attachment->relativeToGeoTransform)
             {
                 if (attachment->horizonCulling)
                 {
@@ -320,217 +307,4 @@ Application::remove(shared_ptr<MapObject> obj)
 
     std::scoped_lock(_add_remove_mutex);
     _removals.push_back(obj->root);
-}
-
-namespace
-{
-    // generates a unique ID for each map object
-    std::atomic_uint32_t uid_generator(0U);
-}
-
-MapObject::MapObject() :
-    super(),
-    uid(uid_generator++)
-{
-    root = vsg::Group::create();
-
-    xform = GeoTransform::create();
-    root->addChild(xform);
-}
-
-MapObject::MapObject(shared_ptr<Attachment> value) :
-    MapObject()
-{
-    attachments = { value };
-}
-
-MapObject::MapObject(Attachments value) :
-    MapObject()
-{
-    attachments = value;
-}
-
-
-LineString::LineString() :
-    super()
-{
-    _geometry = LineStringGeometry::create();
-    _bindStyle = BindLineStyle::create();
-}
-
-void
-LineString::pushVertex(float x, float y, float z)
-{
-    _geometry->push_back({ x, y, z });
-}
-
-void
-LineString::setStyle(const LineStyle& value)
-{
-    _bindStyle->setStyle(value);
-}
-
-const LineStyle&
-LineString::style() const
-{
-    return _bindStyle->style();
-}
-
-void
-LineString::createNode(Runtime& runtime)
-{
-    // TODO: simple approach. Just put everything in every LineString for now.
-    // We can optimize or group things later.
-    if (!node)
-    {
-        ROCKY_HARD_ASSERT(LineState::status.ok());
-        auto stateGroup = vsg::StateGroup::create();
-        stateGroup->stateCommands = LineState::pipelineStateCommands;
-        stateGroup->addChild(_bindStyle);
-        stateGroup->addChild(_geometry);
-        node = stateGroup;
-    }
-}
-
-JSON
-LineString::to_json() const
-{
-    ROCKY_SOFT_ASSERT(false, "Not yet implemented");
-    auto j = json::object();
-    set(j, "name", name);
-    return j.dump();
-}
-
-
-
-Mesh::Mesh() :
-    super()
-{
-    _bindStyle = BindMeshStyle::create();
-    _geometry = MeshGeometry::create();
-}
-
-void
-Mesh::setStyle(const MeshStyle& value)
-{
-    _bindStyle->setStyle(value);
-}
-
-const MeshStyle&
-Mesh::style() const
-{
-    return _bindStyle->style();
-}
-
-void
-Mesh::createNode(Runtime& runtime)
-{
-    if (!node)
-    {
-        ROCKY_HARD_ASSERT(MeshState::status.ok());
-        auto stateGroup = vsg::StateGroup::create();
-        stateGroup->stateCommands = MeshState::pipelineStateCommands;
-        stateGroup->addChild(_bindStyle);
-        stateGroup->addChild(_geometry);
-        node = stateGroup;
-    }
-}
-
-JSON
-Mesh::to_json() const
-{
-    ROCKY_SOFT_ASSERT(false, "Not yet implemented");
-    auto j = json::object();
-    set(j, "name", name);
-    return j.dump();
-}
-
-
-
-Label::Label() :
-    super()
-{
-    referenceFrame = ReferenceFrame::Relative;
-    horizonCulling = true;
-    _text = "Label!";
-}
-
-void
-Label::setText(const std::string& value)
-{
-    _text = value;
-    ROCKY_TODO();
-}
-
-const std::string&
-Label::text() const
-{
-    return _text;
-}
-
-void
-Label::createNode(Runtime& runtime)
-{
-    if (!_textNode)
-    {
-        const char* font_filename = ::getenv("ROCKY_DEFAULT_FONT");
-        if (!font_filename) {
-            Log::warn() << "No default font set in envvar ROCKY_DEFAULT_FONT" << std::endl;
-            return;
-        }
-
-        auto font = vsg::read_cast<vsg::Font>(font_filename, runtime.readerWriterOptions);
-        if (!font) {
-            Log::warn() << "Cannot load font \"" << font_filename << "\"" << std::endl;
-            return;
-        }
-
-        // NOTE: this will (later) happen in a LabelState class and only happen once.
-        // In fact we will more likely create a custom shader/shaderset for text so we can do 
-        // screen-space rendering and occlusion culling.
-        {
-            // assign a custom StateSet to options->shaderSets so that subsequent TextGroup::setup(0, options) call will pass in our custom ShaderSet.
-            auto shaderSet = runtime.readerWriterOptions->shaderSets["text"] = vsg::createTextShaderSet(runtime.readerWriterOptions);
-            auto depthStencilState = vsg::DepthStencilState::create();
-            depthStencilState->depthTestEnable = VK_FALSE;
-            shaderSet->defaultGraphicsPipelineStates.push_back(depthStencilState);
-        }
-
-        auto layout = vsg::StandardLayout::create();
-        _textNode = vsg::Text::create();
-
-        // currently vsg::GpuLayoutTechnique is the only technique that supports dynamic update of the text parameters
-        _textNode->technique = vsg::GpuLayoutTechnique::create();
-
-        const double size = 240000.0;
-        layout->billboard = true;
-        layout->billboardAutoScaleDistance = size;
-        layout->position = vsg::vec3(0.0, 0.0, 0.0);
-        layout->horizontal = vsg::vec3(size, 0.0, 0.0);
-        layout->vertical = layout->billboard ? vsg::vec3(0.0, size, 0.0) : vsg::vec3(0.0, 0.0, size);
-        layout->color = vsg::vec4(1.0, 0.9, 1.0, 1.0);
-        layout->outlineWidth = 0.1;
-        layout->horizontalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;
-        layout->verticalAlignment = vsg::StandardLayout::BOTTOM_ALIGNMENT;
-
-        _textNode->text = vsg::stringValue::create(_text);
-        _textNode->font = font;
-        _textNode->layout = layout;
-        _textNode->setup(255, runtime.readerWriterOptions); // allocate enough space for max possible characters?
-
-        auto h = HorizonCullGroup::create();
-        h->addChild(_textNode);
-        node = h;
-        //node = _textNode;
-    }
-}
-
-
-JSON
-Label::to_json() const
-{
-    ROCKY_SOFT_ASSERT(false, "Not yet implemented");
-    auto j = json::object();
-    set(j, "name", name);
-    return j.dump();
 }

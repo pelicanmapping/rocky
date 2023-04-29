@@ -5,10 +5,12 @@
  */
 #include "SurfaceNode.h"
 #include "Utils.h"
-#include "GeometryPool.h"
 #include "Runtime.h"
+#include "GeometryPool.h"
+
 #include <rocky/Heightfield.h>
 #include <rocky/Horizon.h>
+
 #include <numeric>
 #include <vsg/utils/Builder.h>
 #include <vsg/io/Options.h>

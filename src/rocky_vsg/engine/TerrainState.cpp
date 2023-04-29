@@ -6,11 +6,11 @@
 #include "TerrainState.h"
 #include "Runtime.h"
 #include "TerrainTileNode.h"
+#include "Utils.h"
 
 #include <rocky/Color.h>
 #include <rocky/Heightfield.h>
 #include <rocky/Image.h>
-#include <rocky_vsg/Utils.h>
 
 #include <vsg/state/BindDescriptorSet.h>
 #include <vsg/state/ViewDependentState.h>

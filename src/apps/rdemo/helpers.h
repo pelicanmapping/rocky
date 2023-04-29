@@ -96,6 +96,15 @@ namespace ImGuiLTable
         return ImGui::InputFloat(s.c_str(), v);
     }
 
+    static bool InputText(const char* label, char* buf, std::size_t bufSize, ImGuiInputTextFlags flags = 0)
+    {
+        ImGui::TableNextColumn();
+        ImGui::Text(label);
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(-1);
+        return ImGui::InputText(label, buf, bufSize, flags);
+    }
+
     static bool ColorEdit3(const char* label, float col[3], ImGuiColorEditFlags flags = 0)
     {
         ImGui::TableNextColumn();

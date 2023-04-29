@@ -6,8 +6,8 @@
 #pragma once
 
 #include <rocky_vsg/Common.h>
-#include <rocky_vsg/SurfaceNode.h>
-#include <rocky_vsg/TerrainTileHost.h>
+#include <rocky_vsg/engine/SurfaceNode.h>
+#include <rocky_vsg/engine/TerrainTileHost.h>
 #include <rocky/Threading.h>
 #include <rocky/TileKey.h>
 #include <rocky/Image.h>

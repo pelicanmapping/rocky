@@ -10,7 +10,6 @@
 
 #include <rocky_vsg/InstanceVSG.h>
 #include <rocky_vsg/MapNode.h>
-#include <rocky_vsg/TerrainNode.h>
 #include <rocky_vsg/MapManipulator.h>
 #include <rocky_vsg/SkyNode.h>
 
@@ -103,10 +102,10 @@ int main(int argc, char** argv)
     auto mapNode = rocky::MapNode::create(ri);
 
     // Configure the mapnode to our liking:
-    mapNode->terrainNode()->concurrency = 4u;
-    mapNode->terrainNode()->skirtRatio = 0.025f;
-    mapNode->terrainNode()->minLevelOfDetail = 1;
-    mapNode->terrainNode()->screenSpaceError = 135.0f;
+    mapNode->terrainSettings().concurrency = 4u;
+    mapNode->terrainSettings().skirtRatio = 0.025f;
+    mapNode->terrainSettings().minLevelOfDetail = 1;
+    mapNode->terrainSettings().screenSpaceError = 135.0f;
 
     // Set up the runtime context with everything we need.
     // Eventually this should be automatic in InstanceVSG

@@ -6,11 +6,12 @@
 #pragma once
 
 #include <rocky_vsg/Common.h>
-#include <rocky_vsg/GeometryPool.h>
-#include <rocky_vsg/Runtime.h>
-#include <rocky_vsg/TerrainState.h>
 #include <rocky_vsg/TerrainSettings.h>
-#include <rocky_vsg/TerrainTilePager.h>
+
+#include <rocky_vsg/engine/Runtime.h>
+#include <rocky_vsg/engine/GeometryPool.h>
+#include <rocky_vsg/engine/TerrainState.h>
+#include <rocky_vsg/engine/TerrainTilePager.h>
 
 namespace ROCKY_NAMESPACE
 {

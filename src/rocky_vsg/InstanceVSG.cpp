@@ -4,7 +4,7 @@
  * MIT License
  */
 #include "InstanceVSG.h"
-#include "Utils.h"
+#include "engine/Utils.h"
 #include <rocky/Image.h>
 #include <vsg/io/read.h>
 #include <vsg/io/Logger.h>
@@ -187,10 +187,10 @@ InstanceVSG::InstanceVSG() :
 
     // start up the state generators.
     _impl->lineState.initialize(runtime);
-    ROCKY_HARD_ASSERT_STATUS(engine::LineState::status);
+    ROCKY_HARD_ASSERT_STATUS(LineState::status);
 
     _impl->meshState.initialize(runtime);
-    ROCKY_HARD_ASSERT_STATUS(engine::MeshState::status);
+    ROCKY_HARD_ASSERT_STATUS(MeshState::status);
 
     // a copy of vsgOptions we can use in lamdbas
     auto readerWriterOptions = runtime.readerWriterOptions;

@@ -7,6 +7,8 @@
 
 #include <rocky_vsg/Common.h>
 #include <rocky_vsg/InstanceVSG.h>
+#include <rocky_vsg/TerrainSettings.h>
+#include <rocky_vsg/engine/TerrainNode.h>
 #include <rocky/Map.h>
 #include <vsg/nodes/Group.h>
 #include <vsg/app/CompileManager.h>
@@ -15,20 +17,8 @@ namespace ROCKY_NAMESPACE
 {
     class SRS;
 
-    namespace util
-    {
-        class DrapingManager;
-        class ClampingManager;
-        class DrapingTechnique;
-        class ClampingTechnique;
-    }
-
-    class DrapableNode;
-    class ClampableNode;
-    class TerrainNode;
-
     /**
-     * VSG Node that forms the root of an osgEarth map.
+     * VSG Node that renders a map.
      * This node is a "view" component that renders data from a "Map" data model.
      */
     class ROCKY_VSG_EXPORT MapNode : public vsg::Inherit<vsg::Group, MapNode>
@@ -72,18 +62,16 @@ namespace ROCKY_NAMESPACE
             const vsg::Node* graph,
             unsigned travMask = ~0);
 
-        /**
-         * Accesses the group node that contains all the nodes added by Layers.
-         */
+        //! Access the group node that contains all the nodes added by Layers.
         vsg::ref_ptr<vsg::Group> getLayerNodeGroup() const;
 
-        //! Gets the underlying terrain engine that renders the terrain surface of the map.
-        vsg::ref_ptr<TerrainNode> terrainNode() const;
+        //! Mutable access to the terrain settings
+        TerrainSettings& terrainSettings();
 
-        //! Opens all layers that are not already open.
-        void openMapLayers();
+        //! Immutable access to the terrain settings
+        const TerrainSettings& terrainSettings() const;
 
-        //! Serializes the MapNode into a Config object
+        //! Serializes the MapNode
         JSON to_json() const;
 
         //! Opens the map (installs a terrain engine and initializes all the layers)
@@ -93,6 +81,11 @@ namespace ROCKY_NAMESPACE
         Runtime& runtime();
 
         void update(const vsg::FrameStamp*);
+
+        //! Access to the underlying terrain node graph
+        vsg::ref_ptr<vsg::Node> terrainNode() const {
+            return _terrain;
+        }
 
         virtual ~MapNode();
 

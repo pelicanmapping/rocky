@@ -4,6 +4,7 @@
  * MIT License
  */
 #pragma once
+#include <rocky_vsg/LineString.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
@@ -33,7 +34,7 @@ auto Demo_LineString = [](Application& app)
         // LineString relative to the GeoTransform:
         const double size = 400000;
         relative = LineString::create();
-        relative->referenceFrame = LineString::ReferenceFrame::Relative;
+        relative->relativeToGeoTransform = true;
         relative->pushVertex(-size, -size, 0);
         relative->pushVertex(size, -size, 0);
         relative->pushVertex(0, size, 0);

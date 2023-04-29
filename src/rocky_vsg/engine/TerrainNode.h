@@ -7,7 +7,7 @@
 
 #include <rocky_vsg/Common.h>
 #include <rocky_vsg/TerrainSettings.h>
-#include <rocky_vsg/TerrainTileHost.h>
+#include <rocky_vsg/engine/TerrainTileHost.h>
 #include <rocky/Status.h>
 #include <rocky/SRS.h>
 #include <vsg/nodes/Group.h>

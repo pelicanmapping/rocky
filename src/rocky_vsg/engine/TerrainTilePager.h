@@ -6,7 +6,7 @@
 #pragma once
 
 #include <rocky_vsg/Common.h>
-#include <rocky_vsg/TerrainTileNode.h>
+#include <rocky_vsg/engine/TerrainTileNode.h>
 #include <chrono>
 
 namespace ROCKY_NAMESPACE

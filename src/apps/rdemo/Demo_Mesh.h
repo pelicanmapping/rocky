@@ -4,10 +4,10 @@
  * MIT License
  */
 #pragma once
+#include <rocky_vsg/Mesh.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
-
 
 auto Demo_Mesh = [](Application& app)
 {

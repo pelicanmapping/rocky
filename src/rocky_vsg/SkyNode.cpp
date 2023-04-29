@@ -4,8 +4,8 @@
  * MIT License
  */
 #include "SkyNode.h"
-#include "Utils.h"
-#include "Runtime.h"
+#include "engine/Utils.h"
+#include "engine/Runtime.h"
 
 #include <rocky/Ellipsoid.h>
 #include <rocky/Ephemeris.h>

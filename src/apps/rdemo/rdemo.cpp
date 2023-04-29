@@ -11,7 +11,6 @@
 
 #include <rocky/TMSImageLayer.h>
 #include <rocky/TMSElevationLayer.h>
-#include <rocky_vsg/Utils.h>
 
 #include <vsgImGui/RenderImGui.h>
 #include <vsgImGui/SendEventsToImGui.h>

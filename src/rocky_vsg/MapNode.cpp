@@ -4,8 +4,7 @@
  * MIT License
  */
 #include "MapNode.h"
-#include "TerrainNode.h"
-#include "Utils.h"
+#include "engine/Utils.h"
 #include "json.h"
 #include <rocky/Horizon.h>
 #include <rocky/ImageLayer.h>
@@ -16,7 +15,6 @@
 #include <vsg/vk/State.h>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::engine;
 using namespace ROCKY_NAMESPACE::util;
 
 #undef LC
@@ -88,10 +86,16 @@ MapNode::runtime()
     return _instance.runtime();
 }
 
-vsg::ref_ptr<TerrainNode>
-MapNode::terrainNode() const
+const TerrainSettings&
+MapNode::terrainSettings() const
 {
-    return _terrain;
+    return *_terrain.get();
+}
+
+TerrainSettings&
+MapNode::terrainSettings()
+{
+    return *_terrain.get();
 }
 
 bool

@@ -19,13 +19,18 @@ endif()
 
 # collect all the headers in the source directory
 file(GLOB HEADERS *.h)
+file(GLOB HEADERS_ENGINE engine/*.h)
 file(GLOB SOURCES *.cpp)
+file(GLOB SOURCES_ENGINE engine/*.cpp)
 file(GLOB SHADERS shaders/*)
 
 file(GLOB SHADERS_TO_COMPILE shaders/*.vert shaders/*.frag shaders/*.glsl)
 
 # create the target:
-add_library(${TARGET} ${HEADERS} ${SOURCES} ${SHADERS})
+add_library(${TARGET} 
+    ${HEADERS} ${HEADERS_ENGINE} 
+    ${SOURCES} ${SOURCES_ENGINE}
+    ${SHADERS})
 
 #set(INLINE_GLSL_FILES ${CMAKE_CURRENT_SOURCE_DIR}/shaders/terrain.sdk.glsl)
 
@@ -81,6 +86,10 @@ endif()
 install(
     FILES ${HEADERS}
     DESTINATION include/rocky_vsg )
+    
+install(
+    FILES ${HEADERS_ENGINE}
+    DESTINATION include/rocky_vsg/engine)
 
 install(
     FILES ${SHADERS} ${SPIRV_SHADERS}

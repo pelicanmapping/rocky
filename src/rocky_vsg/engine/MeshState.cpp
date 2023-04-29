@@ -6,13 +6,13 @@
  */
 #include "MeshState.h"
 #include "Runtime.h"
+#include "../Mesh.h" // for MeshStyle
 
 #include <vsg/state/BindDescriptorSet.h>
 #include <vsg/state/ViewDependentState.h>
 #include <vsg/commands/DrawIndexed.h>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_ENGINE_NAMESPACE;
 
 #define MESH_VERT_SHADER "shaders/rocky.mesh.vert"
 #define MESH_FRAG_SHADER "shaders/rocky.mesh.frag"

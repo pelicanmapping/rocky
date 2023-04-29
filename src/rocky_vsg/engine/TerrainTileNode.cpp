@@ -4,10 +4,11 @@
  * MIT License
  */
 #include "TerrainTileNode.h"
-#include "TerrainContext.h"
 #include "SurfaceNode.h"
-#include "TerrainSettings.h"
 #include "Runtime.h"
+#include "TerrainContext.h"
+
+#include <rocky_vsg/TerrainSettings.h>
 
 #include <rocky/Math.h>
 #include <rocky/ImageLayer.h>

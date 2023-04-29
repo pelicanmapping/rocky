@@ -10,7 +10,7 @@
 #include <rocky/SRS.h>
 #include <rocky/TileKey.h>
 #include <rocky/Horizon.h>
-#include <rocky_vsg/Utils.h>
+#include <rocky_vsg/engine/Utils.h>
 #include <vsg/nodes/MatrixTransform.h>
 #include <vsg/vk/State.h>
 #include <vsg/maths/vec3.h>

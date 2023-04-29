@@ -4,10 +4,10 @@
  * MIT License
  */
 #pragma once
+#include <rocky_vsg/Label.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
-
 
 auto Demo_Label = [](Application& app)
 {
@@ -41,7 +41,7 @@ auto Demo_Label = [](Application& app)
 
         char buf[256];
         strcpy(&buf[0], label->text().c_str());
-        if (ImGui::InputText("Text", buf, 255))
+        if (ImGuiLTable::InputText("Text", buf, 255))
         {
             label->setText(std::string(buf));
         }
