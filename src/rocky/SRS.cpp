@@ -520,10 +520,15 @@ SRS::isProjected() const
 bool
 SRS::isEquivalentTo(const SRS& rhs) const
 {
+    if (definition().empty() || rhs.definition().empty())
+        return false;
+
     PJ* pj1 = g_srs_factory.get_or_create(definition()).pj;
     if (!pj1) return false;
+
     PJ* pj2 = g_srs_factory.get_or_create(rhs.definition()).pj;
     if (!pj2) return false;
+
     return proj_is_equivalent_to_with_ctx(
         g_srs_factory.threading_context(), pj1, pj2, PJ_COMP_EQUIVALENT);
 }

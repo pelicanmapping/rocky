@@ -8,7 +8,7 @@
 #include <rocky_vsg/Common.h>
 #include <rocky_vsg/ViewLocal.h>
 #include <rocky/GeoPoint.h>
-#include <vsg/nodes/Group.h>
+#include <vsg/nodes/CullGroup.h>
 #include <vsg/nodes/Transform.h>
 
 namespace ROCKY_NAMESPACE
@@ -16,7 +16,7 @@ namespace ROCKY_NAMESPACE
     /**
      * Transform node that accepts geospatial coordinates.
      */
-    class ROCKY_VSG_EXPORT GeoTransform : public vsg::Inherit<vsg::Group, GeoTransform>
+    class ROCKY_VSG_EXPORT GeoTransform : public vsg::Inherit<vsg::CullGroup, GeoTransform>
     {
     public:
         //! Construct an invalid geotransform
@@ -45,6 +45,17 @@ namespace ROCKY_NAMESPACE
         };
         util::ViewLocal<Data> _viewlocal;
 
+    };
+
+
+    /**
+    * Group that uses the matrix set by a GeoTransform to 
+    * cull against the visible horizon.
+    */
+    class ROCKY_VSG_EXPORT HorizonCullGroup : public vsg::Inherit<vsg::Group, HorizonCullGroup>
+    {
+    public:
+        void accept(vsg::RecordTraversal& rv) const override;
     };
 
 } // namespace

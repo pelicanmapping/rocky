@@ -13,6 +13,7 @@
 #include <vsg/app/Viewer.h>
 #include <vsg/app/Window.h>
 #include <vsg/nodes/Group.h>
+#include <vsg/text/Text.h>
 
 #include <list>
 
@@ -25,14 +26,27 @@ namespace ROCKY_NAMESPACE
     class ROCKY_VSG_EXPORT Attachment : public rocky::Inherit<Object, Attachment>
     {
     public:
-        bool visible = true;
-        vsg::ref_ptr<vsg::Node> node;
+        enum class ReferenceFrame
+        {
+            Absolute,
+            Relative
+        };
 
     public:
-        virtual void createNode(Runtime& runtime) = 0;
+        optional<std::string> name;
+        vsg::ref_ptr<vsg::Node> node;
+        ReferenceFrame referenceFrame = ReferenceFrame::Absolute;
+        bool horizonCulling = false;
+
+        //! seialize to JSON
+        virtual JSON to_json() const = 0;
 
     protected:
         Attachment() { }
+
+        virtual void createNode(Runtime& runtime) = 0;
+
+        friend class Application;
     };
 
     using Attachments = std::vector<shared_ptr<Attachment>>;
@@ -40,6 +54,7 @@ namespace ROCKY_NAMESPACE
 
     /**
     * Interface for the mechanism that will render a particular attachment type.
+    * This is a possible avenue for sorting things by state/pipeline?
     */
     class AttachmentRenderer
     {
@@ -71,8 +86,14 @@ namespace ROCKY_NAMESPACE
         //! Attachments associated with this map object
         Attachments attachments;
 
-        //! Top-level transform for this object (optional)
+        //! Top-level group for this object
+        vsg::ref_ptr<vsg::Group> root;
+
+        //! Geotransform for this object if it has any Relative attachments
         vsg::ref_ptr<GeoTransform> xform;
+
+        //! Horizon culler for this object if it needs one
+        vsg::ref_ptr<HorizonCullGroup> horizoncull;
     };
 
 
@@ -97,10 +118,13 @@ namespace ROCKY_NAMESPACE
         //! rendering style for the geometry
         const LineStyle& style() const;
 
-    public:
+        //! serialize as JSON string
+        JSON to_json() const override;
+
+    protected:
         void createNode(Runtime& runtime) override;
 
-    public:
+    private:
         vsg::ref_ptr<engine::BindLineStyle> _bindStyle;
         vsg::ref_ptr<engine::LineStringGeometry> _geometry;
     };
@@ -111,7 +135,7 @@ namespace ROCKY_NAMESPACE
 
 
     /**
-    * Triangle Mesh attachment
+    * Triangle mesh attachment
     */
     class ROCKY_VSG_EXPORT Mesh : public rocky::Inherit<Attachment, Mesh>
     {
@@ -128,8 +152,11 @@ namespace ROCKY_NAMESPACE
 
         //! Overall style for the mesh
         const MeshStyle& style() const;
-            
-    public:
+
+        //! serialize as JSON string
+        JSON to_json() const override;
+
+    protected:
         void createNode(Runtime& runtime) override;
     
     private:
@@ -151,16 +178,6 @@ namespace ROCKY_NAMESPACE
 
 
 
-    /**
-    * Polygon attachment
-    */
-    class ROCKY_VSG_EXPORT Polygon : public rocky::Inherit<Attachment, Polygon>
-    {
-    public:
-        Polygon() { }
-    };
-
-
     class ROCKY_VSG_EXPORT Icon : public rocky::Inherit<Attachment, Icon>
     {
     public:
@@ -172,6 +189,30 @@ namespace ROCKY_NAMESPACE
     {
     public:
         Model() { }
+    };
+
+
+    class ROCKY_VSG_EXPORT Label : public rocky::Inherit<Attachment, Label>
+    {
+    public:
+        Label();
+
+        //! Set the text of the label
+        void setText(const std::string& value);
+
+        //! Label text
+        const std::string& text() const;
+
+        //! serialize as JSON string
+        JSON to_json() const override;
+
+    protected:
+        void createNode(Runtime&) override;
+
+    private:
+        std::string _text;
+        vsg::ref_ptr<vsg::Group> _culler;
+        vsg::ref_ptr<vsg::Text> _textNode;
     };
 
 

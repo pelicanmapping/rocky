@@ -8,16 +8,27 @@
 #include "TerrainNode.h"
 #include "MapManipulator.h"
 #include "SkyNode.h"
+#include "json.h"
 #include <rocky/Ephemeris.h>
+#include <rocky/Horizon.h>
 
 #include <vsg/app/CloseHandler.h>
 #include <vsg/app/View.h>
 #include <vsg/app/RenderGraph.h>
 #include <vsg/utils/CommandLine.h>
 #include <vsg/nodes/Light.h>
+#include <vsg/nodes/CullGroup.h>
+#include <vsg/vk/State.h>
+
+#include <vsg/text/StandardLayout.h>
+#include <vsg/text/CpuLayoutTechnique.h>
+#include <vsg/text/GpuLayoutTechnique.h>
+#include <vsg/text/Font.h>
+#include <vsg/io/read.h>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::engine;
+
 
 Application::Application(int& argc, char** argv) :
     instance()
@@ -201,7 +212,7 @@ Application::processAdditionsAndRemovals()
                 // Add the node.
                 // TODO: for now we're just lumping everying together here. 
                 // Later we can decide to sort by pipeline, or use a spatial index, etc.
-                mainScene->addChild(addition->node);
+                mapNode->addChild(addition->node);
 
                 // Update the viewer's tasks so they are aware of any new DYNAMIC data
                 // elements present in the new nodes that they will need to transfer
@@ -234,8 +245,10 @@ Application::processAdditionsAndRemovals()
             auto& node = _removals.front();
             if (node)
             {
-                mainScene->children.erase(
-                    std::remove(mainScene->children.begin(), mainScene->children.end(), node));
+                mapNode->children.erase(
+                    std::remove(mapNode->children.begin(), mapNode->children.end(), node),
+                    mapNode->children.end());
+                    
             }
             _removals.pop_front();
         }
@@ -247,8 +260,6 @@ Application::add(shared_ptr<MapObject> obj)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(obj, void());
 
-    std::vector<util::Future<Addition>> additions;
-
     // For each object attachment, create its node and then schedule it
     // for compilation and merging into the scene graph.
     for (auto& attachment : obj->attachments)
@@ -258,32 +269,47 @@ Application::add(shared_ptr<MapObject> obj)
 
         if (attachment->node)
         {
-            auto my_viewer = viewer;
-            auto my_node = attachment->node;
-
-            auto compileNode = [my_viewer, my_node](Cancelable& c)
+            if (attachment->referenceFrame == Attachment::ReferenceFrame::Relative)
             {
-                vsg::CompileResult cr;
-                if (my_viewer->compileManager && !c.canceled())
-                    cr = my_viewer->compileManager->compile(my_node);
-                return Addition{ my_node, cr };
-            };
-
-            // TODO: do we want a specific job pool for compiles, or
-            // perhaps a single thread that compiles things from a queue?
-            additions.emplace_back(util::job::dispatch(compileNode));
+                if (attachment->horizonCulling)
+                {
+                    if (!obj->horizoncull)
+                    {
+                        obj->horizoncull = HorizonCullGroup::create();
+                        obj->xform->addChild(attachment->node);
+                    }
+                    obj->horizoncull->addChild(attachment->node);
+                }
+                else
+                {
+                    obj->xform->addChild(attachment->node);
+                }
+            }
+            else
+            {
+                obj->root->addChild(attachment->node);
+            }
         }
     }
 
-    // Finally add all new additions to the queue so they will get added
-    // at a safe time
-    if (!additions.empty())
+    auto my_viewer = viewer;
+    auto my_node = obj->root;
+
+    auto compileNode = [my_viewer, my_node](Cancelable& c)
     {
-        std::scoped_lock(_add_remove_mutex);
-        for (auto& a : additions)
+        vsg::CompileResult cr;
+        if (my_viewer->compileManager && !c.canceled())
         {
-            _additions.push_back(a);
+            cr = my_viewer->compileManager->compile(my_node);
         }
+        return Addition{ my_node, cr };
+    };
+
+    // TODO: do we want a specific job pool for compiles, or
+    // perhaps a single thread that compiles things from a queue?
+    {
+        std::scoped_lock L(_add_remove_mutex);
+        _additions.emplace_back(util::job::dispatch(compileNode));
     }
 }
 
@@ -293,14 +319,7 @@ Application::remove(shared_ptr<MapObject> obj)
     ROCKY_SOFT_ASSERT_AND_RETURN(obj, void());
 
     std::scoped_lock(_add_remove_mutex);
-
-    for (auto& attachment : obj->attachments)
-    {
-        if (attachment->node)
-        {
-            _removals.push_back(attachment->node);
-        }
-    }
+    _removals.push_back(obj->root);
 }
 
 namespace
@@ -313,19 +332,20 @@ MapObject::MapObject() :
     super(),
     uid(uid_generator++)
 {
-    //nop
+    root = vsg::Group::create();
+
+    xform = GeoTransform::create();
+    root->addChild(xform);
 }
 
 MapObject::MapObject(shared_ptr<Attachment> value) :
-    super(),
-    uid(uid_generator++)
+    MapObject()
 {
     attachments = { value };
 }
 
 MapObject::MapObject(Attachments value) :
-    super(),
-    uid(uid_generator++)
+    MapObject()
 {
     attachments = value;
 }
@@ -372,6 +392,15 @@ LineString::createNode(Runtime& runtime)
     }
 }
 
+JSON
+LineString::to_json() const
+{
+    ROCKY_SOFT_ASSERT(false, "Not yet implemented");
+    auto j = json::object();
+    set(j, "name", name);
+    return j.dump();
+}
+
 
 
 Mesh::Mesh() :
@@ -405,4 +434,103 @@ Mesh::createNode(Runtime& runtime)
         stateGroup->addChild(_geometry);
         node = stateGroup;
     }
+}
+
+JSON
+Mesh::to_json() const
+{
+    ROCKY_SOFT_ASSERT(false, "Not yet implemented");
+    auto j = json::object();
+    set(j, "name", name);
+    return j.dump();
+}
+
+
+
+Label::Label() :
+    super()
+{
+    referenceFrame = ReferenceFrame::Relative;
+    horizonCulling = true;
+    _text = "Label!";
+}
+
+void
+Label::setText(const std::string& value)
+{
+    _text = value;
+    ROCKY_TODO();
+}
+
+const std::string&
+Label::text() const
+{
+    return _text;
+}
+
+void
+Label::createNode(Runtime& runtime)
+{
+    if (!_textNode)
+    {
+        const char* font_filename = ::getenv("ROCKY_DEFAULT_FONT");
+        if (!font_filename) {
+            Log::warn() << "No default font set in envvar ROCKY_DEFAULT_FONT" << std::endl;
+            return;
+        }
+
+        auto font = vsg::read_cast<vsg::Font>(font_filename, runtime.readerWriterOptions);
+        if (!font) {
+            Log::warn() << "Cannot load font \"" << font_filename << "\"" << std::endl;
+            return;
+        }
+
+        // NOTE: this will (later) happen in a LabelState class and only happen once.
+        // In fact we will more likely create a custom shader/shaderset for text so we can do 
+        // screen-space rendering and occlusion culling.
+        {
+            // assign a custom StateSet to options->shaderSets so that subsequent TextGroup::setup(0, options) call will pass in our custom ShaderSet.
+            auto shaderSet = runtime.readerWriterOptions->shaderSets["text"] = vsg::createTextShaderSet(runtime.readerWriterOptions);
+            auto depthStencilState = vsg::DepthStencilState::create();
+            depthStencilState->depthTestEnable = VK_FALSE;
+            shaderSet->defaultGraphicsPipelineStates.push_back(depthStencilState);
+        }
+
+        auto layout = vsg::StandardLayout::create();
+        _textNode = vsg::Text::create();
+
+        // currently vsg::GpuLayoutTechnique is the only technique that supports dynamic update of the text parameters
+        _textNode->technique = vsg::GpuLayoutTechnique::create();
+
+        const double size = 240000.0;
+        layout->billboard = true;
+        layout->billboardAutoScaleDistance = size;
+        layout->position = vsg::vec3(0.0, 0.0, 0.0);
+        layout->horizontal = vsg::vec3(size, 0.0, 0.0);
+        layout->vertical = layout->billboard ? vsg::vec3(0.0, size, 0.0) : vsg::vec3(0.0, 0.0, size);
+        layout->color = vsg::vec4(1.0, 0.9, 1.0, 1.0);
+        layout->outlineWidth = 0.1;
+        layout->horizontalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;
+        layout->verticalAlignment = vsg::StandardLayout::BOTTOM_ALIGNMENT;
+
+        _textNode->text = vsg::stringValue::create(_text);
+        _textNode->font = font;
+        _textNode->layout = layout;
+        _textNode->setup(255, runtime.readerWriterOptions); // allocate enough space for max possible characters?
+
+        auto h = HorizonCullGroup::create();
+        h->addChild(_textNode);
+        node = h;
+        //node = _textNode;
+    }
+}
+
+
+JSON
+Label::to_json() const
+{
+    ROCKY_SOFT_ASSERT(false, "Not yet implemented");
+    auto j = json::object();
+    set(j, "name", name);
+    return j.dump();
 }

@@ -22,6 +22,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Mesh.h"
 #include "Demo_Icon.h"
 #include "Demo_Model.h"
+#include "Demo_Label.h"
 #include "Demo_MapManipulator.h"
 
 template<class T>
@@ -45,6 +46,7 @@ void setup_demos(rocky::Application& app)
     demos.emplace_back(
         Demo{ "MapObjects", {},
         {
+            Demo{ "Label", Demo_Label },
             Demo{ "LineString", Demo_LineString },
             Demo{ "Mesh", Demo_Mesh },
             Demo{ "Icon", Demo_Icon },

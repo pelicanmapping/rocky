@@ -118,7 +118,8 @@ namespace ROCKY_NAMESPACE
         {
             for (p = 0; p < 4; ++p)
             {
-                if (horizon->isVisible(to_glm(_worldPoints[p])))
+                auto& wp = _worldPoints[p];
+                if (horizon->isVisible(wp.x, wp.y, wp.z))
                     return true;
             }
 

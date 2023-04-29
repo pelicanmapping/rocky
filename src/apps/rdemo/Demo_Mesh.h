@@ -48,7 +48,7 @@ auto Demo_Mesh = [](Application& app)
         return;
     }
 
-    if (ImGuiLTable::Begin("TriangleMesh"))
+    if (ImGuiLTable::Begin("Mesh"))
     {
         if (ImGuiLTable::Checkbox("Visible", &visible))
         {

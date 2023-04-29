@@ -43,7 +43,7 @@ namespace ROCKY_NAMESPACE
         //! @param point Point in geocetric coordinates
         //! @param radius Optional radius (meters) around the point
         //! @return true if the point is visible
-        bool isVisible(const dvec3& point, double radius = 0.0) const;
+        bool isVisible(double x, double y, double z, double radius = 0.0) const;
 
         //! Sets the output variable to the horizon plane plane with its
         //! normal pointing at the eye.

@@ -45,6 +45,13 @@ GeoPoint::GeoPoint(const SRS& srs, const dvec3& xyz) :
     //nop
 }
 
+GeoPoint::GeoPoint(const SRS& srs, const fvec3& xyz) :
+    _srs(srs),
+    _p(xyz)
+{
+    //nop
+}
+
 GeoPoint::GeoPoint(const SRS& srs) :
     _srs(srs),
     _p(0.0, 0.0, 0.0)

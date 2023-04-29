@@ -198,7 +198,6 @@ BindLineStyle::style() const
 }
 
 
-
 LineStringGeometry::LineStringGeometry()
 {
     _drawCommand = vsg::DrawIndexed::create(

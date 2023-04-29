@@ -253,11 +253,11 @@ MeshGeometry::compile(vsg::Context& context)
     _colors.assign(_verts.size(), vsg::vec4(1, 1, 1, 1));
 
     auto vert_array = vsg::vec3Array::create(_verts.size(), _verts.data());
-    //auto normal_array = vsg::vec3Array::create(_normals.size(), _normals.data());
-    //auto color_array = vsg::vec4Array::create(_colors.size(), _colors.data());
+    auto normal_array = vsg::vec3Array::create(_normals.size(), _normals.data());
+    auto color_array = vsg::vec4Array::create(_colors.size(), _colors.data());
     auto index_array = vsg::ushortArray::create(_indices.size(), _indices.data());
 
-    assignArrays({ vert_array }); // , normal_array, color_array });
+    assignArrays({ vert_array, normal_array, color_array });
     assignIndices(index_array);
 
     _drawCommand->indexCount = index_array->size();

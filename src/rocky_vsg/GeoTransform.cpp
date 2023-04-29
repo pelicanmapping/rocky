@@ -5,6 +5,7 @@
  */
 #include "GeoTransform.h"
 #include "Utils.h"
+#include <rocky/Horizon.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -51,18 +52,39 @@ GeoTransform::accept(vsg::RecordTraversal& rv) const
 
         view.dirty = false;
     }
-    
-    // replicates RecordTraversal::accept(MatrixTransform&):
 
     auto state = rv.getState();
+
+    // pass the LTP matrix down to children in case they need it
+    state->setValue("local_to_world", view.matrix);
+
+    // replicates RecordTraversal::accept(MatrixTransform&):
 
     state->modelviewMatrixStack.push(state->modelviewMatrixStack.top() * view.matrix);
     state->dirty = true;
 
     state->pushFrustum();
-    vsg::Group::accept(rv);
+    vsg::CullGroup::accept(rv);
     state->popFrustum();
 
     state->modelviewMatrixStack.pop();
     state->dirty = true;
+}
+
+
+
+void
+HorizonCullGroup::accept(vsg::RecordTraversal& rv) const
+{
+    shared_ptr<Horizon> horizon;
+    if (rv.getState()->getValue("horizon", horizon))
+    {
+        vsg::dmat4 m;
+        if (rv.getState()->getValue("local_to_world", m))
+        {
+            if (!horizon->isVisible(m[3][0], m[3][1], m[3][2]))
+                return;
+        }
+    }
+    vsg::Group::accept(rv);
 }

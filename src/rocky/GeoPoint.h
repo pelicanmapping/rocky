@@ -29,6 +29,9 @@ namespace ROCKY_NAMESPACE
         GeoPoint(const SRS& srs, double x, double y, double z);
 
         //! Constructs a GeoPoint
+        GeoPoint(const SRS& srs, const fvec3& xyz);
+
+        //! Constructs a GeoPoint
         GeoPoint(const SRS& srs, const dvec3& xyz);
 
         //! Destruct

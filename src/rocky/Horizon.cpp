@@ -85,10 +85,12 @@ Horizon::getRadius() const
 }
 
 bool
-Horizon::isVisible(const dvec3& target, double radius) const
+Horizon::isVisible(double x, double y, double z, double radius) const
 {
     if (_valid == false || radius >= _scaleInv.x || radius >= _scaleInv.y || radius >= _scaleInv.z)
         return true;
+
+    dvec3 target(x, y, z);
 
     // First check the object against the horizon plane, a plane that intersects the
     // ellipsoid, whose normal is the vector from the eyepoint to the center of the

@@ -172,18 +172,6 @@ TerrainState::createShaderSet() const
         return { };
     }
 
-#if 0
-    const uint32_t reverseDepth = 0;
-    const uint32_t numLayers = 0;
-    vsg::ShaderStage::SpecializationConstants specializationConstants
-    {
-        {0, vsg::uintValue::create(reverseDepth)},
-        {1, vsg::uintValue::create(numLayers)}
-    };
-    vertexShader->specializationConstants = specializationConstants;
-    fragmentShader->specializationConstants = specializationConstants;
-#endif
-
     vsg::ShaderStages shaderStages{ vertexShader, fragmentShader };
 
     shaderSet = vsg::ShaderSet::create(shaderStages);
