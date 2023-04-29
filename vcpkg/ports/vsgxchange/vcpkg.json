@@ -13,6 +13,7 @@
             "host": true
         },
         "vsg",
-        "assimp"
+        "assimp",
+        "freetype"
     ]
 }
