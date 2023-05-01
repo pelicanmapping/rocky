@@ -179,10 +179,21 @@ InstanceVSG::InstanceVSG() :
     runtime.readerWriterOptions->add(vsgXchange::all::create());
 #endif
 
-    // Default search locations for shaders and textures:
-    for (auto paths : { vsg::getEnvPaths("VSG_FILE_PATH"), vsg::getEnvPaths("ROCKY_FILE_PATH") })
+    auto vsgPaths = vsg::getEnvPaths("VSG_FILE_PATH");
+    auto rockyPaths = vsg::getEnvPaths("ROCKY_FILE_PATH");
+
+    if (vsgPaths.empty() && rockyPaths.empty())
     {
-        runtime.searchPaths.insert(runtime.searchPaths.end(), paths.begin(), paths.end());
+        Log::warn() << "Neither envivonment variable VSG_FILE_PATH nor ROCKY_FILE_PATH is set."
+            " This is trouble - Rocky may not be able to find its shaders." << std::endl;
+    }
+    else
+    {
+        // Default search locations for shaders and textures:
+        for (auto paths : { vsgPaths, rockyPaths })
+        {
+            runtime.searchPaths.insert(runtime.searchPaths.end(), paths.begin(), paths.end());
+        }
     }
 
     // start up the state generators.

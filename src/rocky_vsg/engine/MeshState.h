@@ -72,6 +72,8 @@ namespace ROCKY_NAMESPACE
         //! Recompile the geometry after making changes.
         //! TODO: just make it dynamic instead
         void compile(vsg::Context&) override;
+        
+        void record(vsg::CommandBuffer&) const override;
 
     protected:
         vsg::vec4 _defaultColor = { 1,1,1,1 };

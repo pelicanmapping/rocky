@@ -46,8 +46,10 @@ void setup_demos(rocky::Application& app)
         Demo{ "MapObjects", {},
         {
             Demo{ "Label", Demo_Label },
-            Demo{ "LineString", Demo_LineString },
-            Demo{ "Mesh", Demo_Mesh },
+            Demo{ "LineString - absolute", Demo_LineString_Absolute },
+            Demo{ "LineString - relative", Demo_LineString_Relative },
+            Demo{ "Mesh - absolute", Demo_Mesh_Absolute },
+            Demo{ "Mesh - relative", Demo_Mesh_Relative },
             Demo{ "Icon", Demo_Icon },
             Demo{ "Model", Demo_Model }
         } }
@@ -99,7 +101,7 @@ int main(int argc, char** argv)
     // instantiate the application engine.
     rocky::Application app(argc, argv);
 
-    rocky::Log::level = rocky::LogLevel::ALL;
+    rocky::Log::level = rocky::LogLevel::INFO;
 
     // add an imagery layer to the map
     auto layer = rocky::TMSImageLayer::create();
@@ -114,7 +116,9 @@ int main(int argc, char** argv)
     app.viewer->addEventHandler(vsgImGui::SendEventsToImGui::create());
     auto imgui = vsgImGui::RenderImGui::create(app.mainWindow);
     imgui->addChild(MainGUI::create(app));
-    app.root->addChild(imgui); // add to root so it will render last.
+    app.additionalRenderStages.push_back(imgui);
+
+    //app.root->addChild(imgui); // add to root so it will render last.
 
     // run until the user quits.
     return app.run();

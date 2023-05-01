@@ -266,3 +266,9 @@ MeshGeometry::compile(vsg::Context& context)
 
     vsg::Geometry::compile(context);
 }
+
+void
+MeshGeometry::record(vsg::CommandBuffer& buf) const
+{
+    vsg::Geometry::record(buf);
+}

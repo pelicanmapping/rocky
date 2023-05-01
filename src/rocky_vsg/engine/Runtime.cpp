@@ -6,6 +6,8 @@
 #include "Runtime.h"
 #include "Utils.h"
 #include <vsg/app/Viewer.h>
+#include <vsg/text/Font.h>
+#include <vsg/io/read.h>
 #include <shared_mutex>
 
 using namespace ROCKY_NAMESPACE;
@@ -191,6 +193,19 @@ Runtime::Runtime()
     shaderCompileSettings = vsg::ShaderCompileSettings::create();
 
     _priorityUpdateQueue = PriorityUpdateQueue::create();
+
+    const char* font_file = getenv("ROCKY_DEFAULT_FONT");
+    if (font_file)
+    {
+        std::string filename(font_file);
+        defaultFont = util::job::dispatch([this, filename](Cancelable&)
+            {
+                auto font = vsg::read_cast<vsg::Font>(filename, readerWriterOptions);
+                if (!font)
+                    Log::warn() << "Cannot load font \"" << filename << "\"" << std::endl;
+                return font;
+            });
+    }
 }
 
 void

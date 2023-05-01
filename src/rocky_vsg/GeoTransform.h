@@ -16,7 +16,7 @@ namespace ROCKY_NAMESPACE
     /**
      * Transform node that accepts geospatial coordinates.
      */
-    class ROCKY_VSG_EXPORT GeoTransform : public vsg::Inherit<vsg::CullGroup, GeoTransform>
+    class ROCKY_VSG_EXPORT GeoTransform : public vsg::Inherit<vsg::Group, GeoTransform>
     {
     public:
         //! Construct an invalid geotransform
@@ -49,12 +49,16 @@ namespace ROCKY_NAMESPACE
 
 
     /**
-    * Group that uses the matrix set by a GeoTransform to 
-    * cull against the visible horizon.
+    * Group that uses the matrix set by a GeoTransform to
+    * frustum-cull against a bounding sphere, and then cull against
+    * the visible horizon.
     */
     class ROCKY_VSG_EXPORT HorizonCullGroup : public vsg::Inherit<vsg::Group, HorizonCullGroup>
     {
     public:
+        //! bounding sphere for frustum culling
+        vsg::dsphere bound;
+
         void accept(vsg::RecordTraversal& rv) const override;
     };
 

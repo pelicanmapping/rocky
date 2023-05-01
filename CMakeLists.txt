@@ -61,6 +61,7 @@ option(ROCKY_SUPPORTS_TMS "Support OSGeo TileMapService" ON)
 option(ROCKY_SUPPORTS_GDAL "Support GeoTIFF, WMS, WMTS, and other GDAL formats (requires gdal)" ON)
 option(ROCKY_SUPPORTS_MBTILES "Support MBTiles databases with extended spatial profile support (requires sqlite3, zlib)" ON)
 option(ROCKY_SUPPORTS_PROFILING "Build with performance profiling" OFF)
+option(ROCKY_SUPPORTS_IMGUI "Build ImGui demos" ON)
 
 set(BUILD_WITH_JSON ON)
 

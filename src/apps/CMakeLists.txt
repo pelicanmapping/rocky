@@ -1,3 +1,7 @@
 add_subdirectory(rsimple)
 add_subdirectory(rengine)
-add_subdirectory(rdemo)
+
+if(ROCKY_SUPPORTS_IMGUI)
+    add_subdirectory(rdemo)
+endif()
+

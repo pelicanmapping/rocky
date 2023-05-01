@@ -5,6 +5,7 @@
  */
 #include "LineString.h"
 #include "json.h"
+#include <vsg/nodes/DepthSorted.h>
 
 using namespace ROCKY_NAMESPACE;
 

@@ -47,17 +47,26 @@ Label::createNode(Runtime& runtime)
 {
     if (!_textNode)
     {
-        const char* font_filename = ::getenv("ROCKY_DEFAULT_FONT");
-        if (!font_filename) {
-            Log::warn() << "No default font set in envvar ROCKY_DEFAULT_FONT" << std::endl;
+        auto font = runtime.defaultFont.get();
+        if (!font)
+        {
+            Log::warn() << "No font loaded" << std::endl;
             return;
         }
 
-        auto font = vsg::read_cast<vsg::Font>(font_filename, runtime.readerWriterOptions);
-        if (!font) {
-            Log::warn() << "Cannot load font \"" << font_filename << "\"" << std::endl;
-            return;
-        }
+        //if (runtime.defaultFont.available())
+        //{
+        //const char* font_filename = ::getenv("ROCKY_DEFAULT_FONT");
+        //if (!font_filename) {
+        //    Log::warn() << "No default font set in envvar ROCKY_DEFAULT_FONT" << std::endl;
+        //    return;
+        //}
+
+        //auto font = vsg::read_cast<vsg::Font>(font_filename, runtime.readerWriterOptions);
+        //if (!font) {
+        //    Log::warn() << "Cannot load font \"" << font_filename << "\"" << std::endl;
+        //    return;
+        //}
 
         // NOTE: this will (later) happen in a LabelState class and only happen once.
         // In fact we will more likely create a custom shader/shaderset for text so we can do 

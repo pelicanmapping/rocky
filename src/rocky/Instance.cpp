@@ -83,6 +83,12 @@ Instance::Instance()
     GDALSetCacheMax(40 * 1024 * 1024);
 #endif // GDAL_FOUND
 
+    // Check for some environment variables that are important to rocky apps
+    if (::getenv("PROJ_DATA") == nullptr)
+    {
+        Log::warn() << "Environment variable PROJ_DATA is not set" << std::endl;
+    }
+
     _global_status = StatusOK;
 }
 

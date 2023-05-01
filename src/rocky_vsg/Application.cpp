@@ -13,7 +13,11 @@
 #include <vsg/app/View.h>
 #include <vsg/app/RenderGraph.h>
 #include <vsg/utils/CommandLine.h>
+#include <vsg/utils/ComputeBounds.h>
 #include <vsg/vk/State.h>
+#include <vsg/io/read.h>
+#include <vsg/text/Font.h>
+#include <vsg/nodes/DepthSorted.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -127,6 +131,10 @@ Application::run()
     // will use during record traversal.
     auto commandGraph = vsg::CommandGraph::create(mainWindow);
     commandGraph->addChild(renderGraph);
+
+    // add any additional render stages configured by the user (e.g., an ImGui graph)
+    for (auto& stage : additionalRenderStages)
+        renderGraph->addChild(stage);
 
     // This sets up the internal tasks that will, for each command graph, record
     // a scene graph and submit the results to the renderer each frame. Also sets
@@ -256,6 +264,15 @@ Application::add(shared_ptr<MapObject> obj)
 
         if (attachment->node)
         {
+            // calculate the bounds for a depthsorting node and possibly a cull group.
+            vsg::ComputeBounds cb;
+            attachment->node->accept(cb);
+            auto bs = vsg::dsphere((cb.bounds.min + cb.bounds.max) * 0.5, vsg::length(cb.bounds.max - cb.bounds.min) * 0.5);
+            auto node = vsg::DepthSorted::create();
+            node->binNumber = 10; // the bin number must be >1 for sorting to activate. I am using 10 for no particular reason.
+            node->bound = bs;
+            node->child = attachment->node;
+
             if (attachment->relativeToGeoTransform)
             {
                 if (attachment->horizonCulling)
@@ -263,18 +280,27 @@ Application::add(shared_ptr<MapObject> obj)
                     if (!obj->horizoncull)
                     {
                         obj->horizoncull = HorizonCullGroup::create();
-                        obj->xform->addChild(attachment->node);
+                        obj->horizoncull->bound = bs;
+                        obj->xform->addChild(obj->horizoncull);
                     }
-                    obj->horizoncull->addChild(attachment->node);
+                    obj->horizoncull->addChild(node);
                 }
                 else
                 {
-                    obj->xform->addChild(attachment->node);
+                    auto cullGroup = vsg::CullGroup::create();
+                    cullGroup->bound = bs;
+                    cullGroup->addChild(node);
+
+                    obj->xform->addChild(cullGroup);
                 }
             }
             else
             {
-                obj->root->addChild(attachment->node);
+                auto cullGroup = vsg::CullGroup::create();
+                cullGroup->bound = bs;
+                cullGroup->addChild(node);
+
+                obj->root->addChild(cullGroup);
             }
         }
     }

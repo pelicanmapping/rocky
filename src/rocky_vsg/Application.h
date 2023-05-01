@@ -10,8 +10,8 @@
 
 #include <vsg/app/Viewer.h>
 #include <vsg/app/Window.h>
+#include <vsg/app/RenderGraph.h>
 #include <vsg/nodes/Group.h>
-#include <vsg/text/Text.h>
 
 #include <list>
 
@@ -39,14 +39,15 @@ namespace ROCKY_NAMESPACE
         void remove(shared_ptr<MapObject> object);
 
     public:
-
         rocky::InstanceVSG instance;
         vsg::ref_ptr<rocky::MapNode> mapNode;
         vsg::ref_ptr<vsg::Viewer> viewer;
+        vsg::ref_ptr<vsg::RenderGraph> renderGraph;
         vsg::ref_ptr<vsg::Window> mainWindow;
         vsg::ref_ptr<vsg::Group> root;
         vsg::ref_ptr<vsg::Group> mainScene;
         std::function<void()> updateFunction;
+        std::vector<vsg::ref_ptr<vsg::Node>> additionalRenderStages;
 
     public:
         Application(const Application&) = delete;

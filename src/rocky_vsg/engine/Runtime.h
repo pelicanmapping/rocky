@@ -20,6 +20,7 @@ namespace vsg
     class Viewer;
     class Group;
     class Node;
+    class Font;
 }
 
 namespace ROCKY_NAMESPACE
@@ -49,6 +50,9 @@ namespace ROCKY_NAMESPACE
 
         //! Search paths for vsg::findFile
         vsg::Paths searchPaths;
+
+        //! Default font
+        util::Future<vsg::ref_ptr<vsg::Font>> defaultFont;
 
         //! Shared shader compile settings. Use this to insert shader defines
         //! that should be used throughout the application; things like enabling

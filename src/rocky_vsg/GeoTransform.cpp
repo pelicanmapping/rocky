@@ -64,7 +64,7 @@ GeoTransform::accept(vsg::RecordTraversal& rv) const
     state->dirty = true;
 
     state->pushFrustum();
-    vsg::CullGroup::accept(rv);
+    vsg::Group::accept(rv);
     state->popFrustum();
 
     state->modelviewMatrixStack.pop();
@@ -76,11 +76,18 @@ GeoTransform::accept(vsg::RecordTraversal& rv) const
 void
 HorizonCullGroup::accept(vsg::RecordTraversal& rv) const
 {
+    auto state = rv.getState();
+
+    // first do a simple frustum cull
+    if (!state->intersect(bound))
+        return;
+
+    // then do a more complicated horizon cull
     shared_ptr<Horizon> horizon;
-    if (rv.getState()->getValue("horizon", horizon))
+    if (state->getValue("horizon", horizon))
     {
         vsg::dmat4 m;
-        if (rv.getState()->getValue("local_to_world", m))
+        if (state->getValue("local_to_world", m))
         {
             if (!horizon->isVisible(m[3][0], m[3][1], m[3][2]))
                 return;

@@ -9,7 +9,7 @@
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
 
-auto Demo_Mesh = [](Application& app)
+auto Demo_Mesh_Absolute = [](Application& app)
 {
     static shared_ptr<MapObject> object;
     static shared_ptr<Mesh> mesh;
@@ -69,6 +69,102 @@ auto Demo_Mesh = [](Application& app)
         if (ImGuiLTable::SliderFloat("Wireframe", &style.wireframe, 0.0f, 32.0f, "%.0f"))
         {
             mesh->setStyle(style);
+        }
+
+        ImGuiLTable::End();
+    }
+};
+
+
+
+auto Demo_Mesh_Relative = [](Application& app)
+{
+    static shared_ptr<MapObject> object;
+    static shared_ptr<Mesh> mesh;
+    static bool visible = true;
+
+    if (!mesh)
+    {
+        ImGui::Text("Wait...");
+
+        mesh = Mesh::create();
+
+        const float s = 250000.0;
+        std::vector<vsg::vec3> v = {
+            { -s, -s, -s },
+            {  s, -s, -s },
+            {  s,  s, -s },
+            { -s,  s, -s },
+            { -s, -s,  s },
+            {  s, -s,  s },
+            {  s,  s,  s },
+            { -s,  s,  s }
+        };
+
+        mesh->addTriangle(v[2], v[1], v[0]);
+        mesh->addTriangle(v[3], v[2], v[0]);
+        mesh->addTriangle(v[4], v[5], v[6]);
+        mesh->addTriangle(v[4], v[6], v[7]);
+        mesh->addTriangle(v[1], v[2], v[6]);
+        mesh->addTriangle(v[1], v[6], v[5]);
+        mesh->addTriangle(v[3], v[0], v[4]);
+        mesh->addTriangle(v[3], v[4], v[7]);
+        mesh->addTriangle(v[0], v[1], v[5]);
+        mesh->addTriangle(v[0], v[5], v[4]);
+        mesh->addTriangle(v[2], v[3], v[7]);
+        mesh->addTriangle(v[2], v[7], v[6]);
+
+        mesh->setStyle(MeshStyle{ { 0.5, 0.0, 0.5, 1.0 }, 32.0f });
+
+        mesh->relativeToGeoTransform = true;
+
+        object = MapObject::create(mesh);
+        object->xform->setPosition(GeoPoint(SRS::WGS84, 24.0, 24.0, s * 3.0));
+        app.add(object);
+
+        // by the next frame, the object will be alive in the scene
+        return;
+    }
+
+    if (ImGuiLTable::Begin("Mesh"))
+    {
+        if (ImGuiLTable::Checkbox("Visible", &visible))
+        {
+            if (visible)
+                app.add(object);
+            else
+                app.remove(object);
+        }
+
+        MeshStyle style = mesh->style();
+
+        float* col = (float*)&style.color;
+        if (ImGuiLTable::ColorEdit4("Color", col))
+        {
+            mesh->setStyle(style);
+        }
+
+        if (ImGuiLTable::SliderFloat("Wireframe", &style.wireframe, 0.0f, 32.0f, "%.0f"))
+        {
+            mesh->setStyle(style);
+        }
+
+        auto& pos = object->xform->position();
+        fvec3 vec = pos.to_dvec3();
+
+        if (ImGuiLTable::SliderFloat("Latitude", &vec.y, -85.0, 85.0, "%.1f"))
+        {
+            object->xform->setPosition(GeoPoint(pos.srs(), vec));
+        }
+
+        if (ImGuiLTable::SliderFloat("Longitude", &vec.x, -180.0, 180.0, "%.1f"))
+        {
+            object->xform->setPosition(GeoPoint(pos.srs(), vec));
+        }
+
+        if (ImGuiLTable::SliderFloat("Altitude", &vec.z, 0.0, 2500000.0, "%.1f"))
+        {
+            object->xform->setPosition(GeoPoint(pos.srs(), vec));
         }
 
         ImGuiLTable::End();

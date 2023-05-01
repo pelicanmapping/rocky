@@ -9,40 +9,93 @@
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
 
-auto Demo_LineString = [](Application& app)
+auto Demo_LineString_Absolute = [](Application& app)
 {
     static shared_ptr<MapObject> object;
-    static shared_ptr<LineString> absolute, relative;
+    static shared_ptr<LineString> line;
     static bool visible = true;
 
-    if (!absolute)
+    if (!line)
     {
         ImGui::Text("Wait...");
 
-        absolute = LineString::create();
+        line = LineString::create();
         auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
         const double alt = 125000;
         for (double lon = -180.0; lon <= 0.0; lon += 2.5)
         {
             rocky::dvec3 ecef;
             if (xform(rocky::dvec3(lon, -20.0, alt), ecef))
-                absolute->pushVertex(ecef);
+                line->pushVertex(ecef);
         }
-        absolute->setStyle(LineStyle{ { 1,1,0,1 }, 3.0f, 0xffff, 4 });
+        line->setStyle(LineStyle{ { 1,1,0,1 }, 3.0f, 0xffff, 4 });
 
+        // Add an object with both attachments
+        object = MapObject::create(line);
+        app.add(object);
 
-        // LineString relative to the GeoTransform:
-        const double size = 400000;
-        relative = LineString::create();
-        relative->relativeToGeoTransform = true;
-        relative->pushVertex(-size, -size, 0);
-        relative->pushVertex(size, -size, 0);
-        relative->pushVertex(0, size, 0);
-        relative->pushVertex(-size, -size, 0);
-        relative->setStyle(LineStyle{ {1,0,0,1}, 4.0f });
+        return;
+    }
+
+    if (ImGui::Checkbox("Visible", &visible))
+    {
+        if (visible)
+            app.add(object);
+        else
+            app.remove(object);
+    }
+
+    if (ImGuiLTable::Begin("absolute linestring"))
+    {
+        LineStyle style = line->style();
+
+        float* col = (float*)&style.color;
+        if (ImGuiLTable::ColorEdit3("Color", col))
+        {
+            style.color.a = 1.0f;
+            line->setStyle(style);
+        }
+
+        if (ImGuiLTable::SliderFloat("Width", &style.width, 1.0f, 15.0f, "%.0f"))
+        {
+            line->setStyle(style);
+        }
+
+        if (ImGuiLTable::SliderInt("Stipple pattern", &style.stipple_pattern, 0x0001, 0xffff, "%04x", ImGuiSliderFlags_Logarithmic))
+        {
+            line->setStyle(style);
+        }
+
+        if (ImGuiLTable::SliderInt("Stipple factor", &style.stipple_factor, 1, 4))
+        {
+            line->setStyle(style);
+        }
+
+        ImGuiLTable::End();
+    }
+};
+
+auto Demo_LineString_Relative = [](Application& app)
+{
+    static shared_ptr<MapObject> object;
+    static shared_ptr<LineString> line;
+    static bool visible = true;
+
+    if (!line)
+    {
+        ImGui::Text("Wait...");
+
+        const double size = 500000;
+        line = LineString::create();
+        line->relativeToGeoTransform = true;
+        line->pushVertex(-size, -size, 0);
+        line->pushVertex(size, -size, 0);
+        line->pushVertex(0, size, 0);
+        line->pushVertex(-size, -size, 0);
+        line->setStyle(LineStyle{ {1,0,0,1}, 4.0f });
         
         // Add an object with both attachments
-        object = MapObject::create(Attachments{ absolute, relative });
+        object = MapObject::create(line);
         app.add(object);
 
         // Position the transform (will only apply to the relative attachment)
@@ -60,43 +113,17 @@ auto Demo_LineString = [](Application& app)
             app.remove(object);
     }
 
-    ImGui::Separator();
-    ImGui::TextColored(ImVec4(1, 1, 0, 1), "Absolute position (rhumb line)");
-
-    if (ImGuiLTable::Begin("absolute linestring"))
+    if (ImGuiLTable::Begin("relative linestring"))
     {
-        LineStyle style = absolute->style();
+        LineStyle style = line->style();
 
         float* col = (float*)&style.color;
         if (ImGuiLTable::ColorEdit3("Color", col))
         {
             style.color.a = 1.0f;
-            absolute->setStyle(style);
+            line->setStyle(style);
         }
 
-        if (ImGuiLTable::SliderFloat("Width", &style.width, 1.0f, 15.0f, "%.0f"))
-        {
-            absolute->setStyle(style);
-        }
-
-        if (ImGuiLTable::SliderInt("Stipple pattern", &style.stipple_pattern, 0x0001, 0xffff, "%04x", ImGuiSliderFlags_Logarithmic))
-        {
-            absolute->setStyle(style);
-        }
-
-        if (ImGuiLTable::SliderInt("Stipple factor", &style.stipple_factor, 1, 4))
-        {
-            absolute->setStyle(style);
-        }
-
-        ImGuiLTable::End();
-    }
-
-    ImGui::Separator();
-    ImGui::TextColored(ImVec4(1, 1, 0, 1), "Relative position (triangle)");
-
-    if (ImGuiLTable::Begin("relative linestring"))
-    {
         auto& pos = object->xform->position();
         fvec3 vec = pos.to_dvec3();
 
@@ -110,7 +137,7 @@ auto Demo_LineString = [](Application& app)
             object->xform->setPosition(GeoPoint(pos.srs(), vec));
         }
         
-        if (ImGuiLTable::SliderFloat("Altitude", &vec.z, 0.0, 1000000.0, "%.1f"))
+        if (ImGuiLTable::SliderFloat("Altitude", &vec.z, 0.0, 2500000.0, "%.1f"))
         {
             object->xform->setPosition(GeoPoint(pos.srs(), vec));
         }
