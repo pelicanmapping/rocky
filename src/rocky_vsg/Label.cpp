@@ -20,7 +20,7 @@ using namespace ROCKY_NAMESPACE;
 Label::Label() :
     super()
 {
-    relativeToGeoTransform = true;
+    underGeoTransform = true;
     horizonCulling = true;
     _text = "Label!";
 }
@@ -53,20 +53,6 @@ Label::createNode(Runtime& runtime)
             Log::warn() << "No font loaded" << std::endl;
             return;
         }
-
-        //if (runtime.defaultFont.available())
-        //{
-        //const char* font_filename = ::getenv("ROCKY_DEFAULT_FONT");
-        //if (!font_filename) {
-        //    Log::warn() << "No default font set in envvar ROCKY_DEFAULT_FONT" << std::endl;
-        //    return;
-        //}
-
-        //auto font = vsg::read_cast<vsg::Font>(font_filename, runtime.readerWriterOptions);
-        //if (!font) {
-        //    Log::warn() << "Cannot load font \"" << font_filename << "\"" << std::endl;
-        //    return;
-        //}
 
         // NOTE: this will (later) happen in a LabelState class and only happen once.
         // In fact we will more likely create a custom shader/shaderset for text so we can do 
@@ -102,10 +88,7 @@ Label::createNode(Runtime& runtime)
         _textNode->layout = layout;
         _textNode->setup(255, runtime.readerWriterOptions); // allocate enough space for max possible characters?
 
-        auto h = HorizonCullGroup::create();
-        h->addChild(_textNode);
-        node = h;
-        //node = _textNode;
+        node = _textNode;
     }
 }
 

@@ -14,15 +14,15 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-     * Transform node that accepts geospatial coordinates.
+     * Transform node that accepts geospatial coordinates and creates
+     * a local ENU (X=east, Y=north, Z=up) coordinate frame for its children
+     * that is tangent to the earth at the transform's geo position.
      */
     class ROCKY_VSG_EXPORT GeoTransform : public vsg::Inherit<vsg::Group, GeoTransform>
     {
     public:
         //! Construct an invalid geotransform
         GeoTransform();
-
-        GeoTransform(const GeoTransform& rhs) = delete;
 
         //! Geospatial position
         void setPosition(const GeoPoint& p);
@@ -31,6 +31,8 @@ namespace ROCKY_NAMESPACE
         const GeoPoint& position() const;
 
     public:
+
+        GeoTransform(const GeoTransform& rhs) = delete;
 
         void accept(vsg::RecordTraversal&) const override;
 

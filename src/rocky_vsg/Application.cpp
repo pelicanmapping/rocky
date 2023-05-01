@@ -268,12 +268,15 @@ Application::add(shared_ptr<MapObject> obj)
             vsg::ComputeBounds cb;
             attachment->node->accept(cb);
             auto bs = vsg::dsphere((cb.bounds.min + cb.bounds.max) * 0.5, vsg::length(cb.bounds.max - cb.bounds.min) * 0.5);
+
+            // activate depth sorting.
+            // the bin number must be >1 for sorting to activate. I am using 10 for no particular reason.
             auto node = vsg::DepthSorted::create();
-            node->binNumber = 10; // the bin number must be >1 for sorting to activate. I am using 10 for no particular reason.
+            node->binNumber = 10;
             node->bound = bs;
             node->child = attachment->node;
 
-            if (attachment->relativeToGeoTransform)
+            if (attachment->underGeoTransform)
             {
                 if (attachment->horizonCulling)
                 {
@@ -287,19 +290,15 @@ Application::add(shared_ptr<MapObject> obj)
                 }
                 else
                 {
-                    auto cullGroup = vsg::CullGroup::create();
-                    cullGroup->bound = bs;
+                    auto cullGroup = vsg::CullGroup::create(bs);
                     cullGroup->addChild(node);
-
                     obj->xform->addChild(cullGroup);
                 }
             }
             else
             {
-                auto cullGroup = vsg::CullGroup::create();
-                cullGroup->bound = bs;
+                auto cullGroup = vsg::CullGroup::create(bs);
                 cullGroup->addChild(node);
-
                 obj->root->addChild(cullGroup);
             }
         }

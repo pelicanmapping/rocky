@@ -101,8 +101,8 @@ auto Demo_Mesh_Relative = [](Application& app)
             { -s,  s,  s }
         };
 
-        mesh->addTriangle(v[2], v[1], v[0]);
-        mesh->addTriangle(v[3], v[2], v[0]);
+        mesh->addTriangle(v[0], v[3], v[2]);
+        mesh->addTriangle(v[0], v[2], v[1]);
         mesh->addTriangle(v[4], v[5], v[6]);
         mesh->addTriangle(v[4], v[6], v[7]);
         mesh->addTriangle(v[1], v[2], v[6]);
@@ -116,7 +116,7 @@ auto Demo_Mesh_Relative = [](Application& app)
 
         mesh->setStyle(MeshStyle{ { 0.5, 0.0, 0.5, 1.0 }, 32.0f });
 
-        mesh->relativeToGeoTransform = true;
+        mesh->underGeoTransform = true;
 
         object = MapObject::create(mesh);
         object->xform->setPosition(GeoPoint(SRS::WGS84, 24.0, 24.0, s * 3.0));

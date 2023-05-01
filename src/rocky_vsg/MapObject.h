@@ -24,7 +24,7 @@ namespace ROCKY_NAMESPACE
         optional<std::string> name;
 
         //! Whether the attachment should position under the MapObject's GeoTranform
-        bool relativeToGeoTransform = false;
+        bool underGeoTransform = false;
 
         //! Whether the attachment should cull to the visible horizon
         bool horizonCulling = false;

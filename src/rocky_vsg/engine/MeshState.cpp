@@ -107,7 +107,7 @@ MeshState::initialize(Runtime& runtime)
         pipelineConfig->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
 
         // backface culling off ... we may or may not need this.
-        pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
+        //pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
 
         // Temporary decriptors that we will use to set up the PipelineConfig.
         vsg::Descriptors descriptors;

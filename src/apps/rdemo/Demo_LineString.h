@@ -37,16 +37,16 @@ auto Demo_LineString_Absolute = [](Application& app)
         return;
     }
 
-    if (ImGui::Checkbox("Visible", &visible))
-    {
-        if (visible)
-            app.add(object);
-        else
-            app.remove(object);
-    }
-
     if (ImGuiLTable::Begin("absolute linestring"))
     {
+        if (ImGuiLTable::Checkbox("Visible", &visible))
+        {
+            if (visible)
+                app.add(object);
+            else
+                app.remove(object);
+        }
+
         LineStyle style = line->style();
 
         float* col = (float*)&style.color;
@@ -87,7 +87,7 @@ auto Demo_LineString_Relative = [](Application& app)
 
         const double size = 500000;
         line = LineString::create();
-        line->relativeToGeoTransform = true;
+        line->underGeoTransform = true;
         line->pushVertex(-size, -size, 0);
         line->pushVertex(size, -size, 0);
         line->pushVertex(0, size, 0);
@@ -105,16 +105,16 @@ auto Demo_LineString_Relative = [](Application& app)
         return;
     }
 
-    if (ImGui::Checkbox("Visible", &visible))
-    {
-        if (visible)
-            app.add(object);
-        else
-            app.remove(object);
-    }
-
     if (ImGuiLTable::Begin("relative linestring"))
     {
+        if (ImGuiLTable::Checkbox("Visible", &visible))
+        {
+            if (visible)
+                app.add(object);
+            else
+                app.remove(object);
+        }
+
         LineStyle style = line->style();
 
         float* col = (float*)&style.color;
