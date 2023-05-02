@@ -80,6 +80,11 @@ Application::addWindow(int width, int height, const std::string& name)
     if (!_vsync)
         traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 
+    if (viewer->windows().size() > 0)
+    {
+        traits->shareWindow = viewer->windows().front();
+    }
+
     auto window = vsg::Window::create(traits);
     window->clearColor() = VkClearColorValue{ 0.0f, 0.0f, 0.0f, 1.0f };
 
@@ -270,7 +275,8 @@ Application::run()
 
     // Use a separate thread for each CommandGraph?
     // https://groups.google.com/g/vsg-users/c/-YRI0AxPGDQ/m/A2EDd5T0BgAJ
-    viewer->setupThreading();
+    // NOTE: this doesn't work (YET) with more than one window!!!
+    //viewer->setupThreading();
 
     // mark the viewer ready so that subsequent changes will know to
     // use an asynchronous path.

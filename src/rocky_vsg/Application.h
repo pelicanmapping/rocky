@@ -25,11 +25,11 @@ namespace ROCKY_NAMESPACE
         //! Construct a new application object
         Application(int& argc, char** argv);
 
-        //! Access the map.
-        shared_ptr<Map> map();
-
         //! Run until exit.
         int run();
+
+        //! Access the map.
+        shared_ptr<Map> map();
 
         //! Add a map object to the scene
         void add(shared_ptr<MapObject> object);
