@@ -32,7 +32,7 @@ vcpkg_from_github(
 # )
 
 
-
+#disabled paralell config because vsg uses git clone for glslang and can't do that in parallel
 vcpkg_configure_cmake(
     SOURCE_PATH "${SOURCE_PATH}"
     DISABLE_PARALLEL_CONFIGURE	
