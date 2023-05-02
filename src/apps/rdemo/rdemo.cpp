@@ -23,6 +23,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Model.h"
 #include "Demo_Label.h"
 #include "Demo_MapManipulator.h"
+#include "Demo_Views.h"
 
 template<class T>
 int layerError(T layer)
@@ -59,6 +60,11 @@ void setup_demos(rocky::Application& app)
             Demo{ "MapManipulator", Demo_MapManipulator }
         } }
     );
+    demos.emplace_back(
+        Demo{ "Windows & Views", {}, {
+            Demo{ "Add/remove a view", Demo_Views }
+        } }
+    );
 }
 
 struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>
@@ -91,7 +97,7 @@ struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>
                     render(child);
                 ImGui::Unindent();
             }
-        };
+        }
     }
 };
 
@@ -112,13 +118,11 @@ int main(int argc, char** argv)
 
     // start up the gui
     setup_demos(app);
-    app.createMainWindow(1920, 1080);
     app.viewer->addEventHandler(vsgImGui::SendEventsToImGui::create());
-    auto imgui = vsgImGui::RenderImGui::create(app.mainWindow);
+    auto window = app.addWindow(1920, 1080);
+    auto imgui = vsgImGui::RenderImGui::create(window);
     imgui->addChild(MainGUI::create(app));
-    app.additionalRenderStages.push_back(imgui);
-
-    //app.root->addChild(imgui); // add to root so it will render last.
+    app.addPostRenderNode(window, imgui);
 
     // run until the user quits.
     return app.run();

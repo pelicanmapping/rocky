@@ -19,6 +19,8 @@
 #include <vsg/text/Font.h>
 #include <vsg/nodes/DepthSorted.h>
 
+#include <vector>
+
 using namespace ROCKY_NAMESPACE;
 
 Application::Application(int& argc, char** argv) :
@@ -66,20 +68,165 @@ Application::Application(int& argc, char** argv) :
     instance.runtime().sharedObjects = vsg::SharedObjects::create();
 }
 
-void
-Application::createMainWindow(int width, int height, const std::string& name)
+vsg::ref_ptr<vsg::Window>
+Application::addWindow(int width, int height, const std::string& name)
 {
     auto traits = vsg::WindowTraits::create(name);
     traits->debugLayer = _debuglayer;
     traits->apiDumpLayer = _apilayer;
     traits->samples = 1;
-    traits->width = 1920;
-    traits->height = 1080;
+    traits->width = width;
+    traits->height = height;
     if (!_vsync)
         traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-    mainWindow = vsg::Window::create(traits);
-    mainWindow->clearColor() = VkClearColorValue{ 0.0f, 0.0f, 0.0f, 1.0f };
-    viewer->addWindow(mainWindow);
+
+    auto window = vsg::Window::create(traits);
+    window->clearColor() = VkClearColorValue{ 0.0f, 0.0f, 0.0f, 1.0f };
+
+    // Each window gets its own CommandGraph. We will store it here and then
+    // set it up later when the frame loop starts.
+    auto command_graph = vsg::CommandGraph::create(window);
+    _commandGraphByWindow[window] = command_graph;
+
+    // main camera
+    double nearFarRatio = 0.00001;
+    double R = mapNode->mapSRS().ellipsoid().semiMajorAxis();
+
+    auto camera = vsg::Camera::create(
+        vsg::Perspective::create(30.0, (double)width / (double)height, R * nearFarRatio, R * 20.0),
+        vsg::LookAt::create(),
+        vsg::ViewportState::create(0, 0, width, height));
+
+    auto view = vsg::View::create(camera, mainScene);
+
+    // add out new view to the window:
+    addView(window, view);
+
+    // add the new window to our viewer
+    viewer->addWindow(window);
+
+    // a default manipulator
+    viewer->addEventHandler(rocky::MapManipulator::create(mapNode, camera));
+
+    return window;
+}
+
+void
+Application::addView(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(window != nullptr, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(view != nullptr, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(view->camera != nullptr, void());
+
+    if (_viewerRealized)
+    {
+        auto add_view = [=]()
+        {
+            // Each view gets its own render pass:
+            auto rendergraph = vsg::RenderGraph::create(window, view);
+
+            if (view->children.empty())
+            {
+                view->addChild(root);
+            }
+
+            if (auto iter = _commandGraphByWindow.find(window); iter != _commandGraphByWindow.end())
+            {
+                auto commandgraph = iter->second;
+                commandgraph->addChild(rendergraph);
+
+                // Add this new view to the viewer's compile manager:
+                viewer->compileManager->add(*window, view);
+
+                // Compile the new render pass for this view.
+                // The lambda idiom is taken from vsgexamples/dynamicviews
+                auto result = viewer->compileManager->compile(rendergraph, [&view](vsg::Context& context)
+                    {
+                        return context.view == view.get();
+                    });
+
+                if (result.requiresViewerUpdate())
+                {
+                    vsg::updateViewer(*viewer, result);
+                }
+
+                // Add a manipulator - we might not do this by default - check back.
+                viewer->addEventHandler(MapManipulator::create(mapNode, view->camera));
+            }
+
+            // remember so we can remove it later
+            _renderGraphByView[view] = rendergraph;
+            _viewsByWindow[window].insert(view);
+        };
+
+        instance.runtime().runDuringUpdate(add_view);
+    }
+
+    else
+    {
+        // use this before realization:
+
+        if (auto iter = _commandGraphByWindow.find(window); iter != _commandGraphByWindow.end())
+        {
+            auto commandgraph = iter->second;
+
+            if (view->children.empty())
+            {
+                view->addChild(root);
+            }
+
+            auto render_pass = vsg::RenderGraph::create(window, view);
+
+            commandgraph->addChild(render_pass);
+
+            // remember so we can remove it later
+            _renderGraphByView[view] = render_pass;
+            _viewsByWindow[window].insert(view);
+        }
+    }
+}
+
+void
+Application::removeView(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(window != nullptr, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(view != nullptr, void());
+
+    auto remove = [=]()
+    {
+        auto ci = _commandGraphByWindow.find(window);
+        ROCKY_SOFT_ASSERT_AND_RETURN(ci != _commandGraphByWindow.end(), void());
+        auto& commandgraph = ci->second;
+
+        auto ri = _renderGraphByView.find(view);
+        ROCKY_SOFT_ASSERT_AND_RETURN(ri != _renderGraphByView.end(), void());
+        auto& rendergraph = ri->second;
+
+        // remove the render pass from the command graph.
+        auto& rps = commandgraph->children;
+        rps.erase(std::remove(rps.begin(), rps.end(), rendergraph), rps.end());
+
+        _renderGraphByView.erase(view);
+        _viewsByWindow[window].erase(view);
+    };
+
+    if (_viewerRealized)
+        instance.runtime().runDuringUpdate(remove);
+    else
+        remove();
+}
+
+void
+Application::addPostRenderNode(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Node> node)
+{
+    auto& commandGraph = _commandGraphByWindow[window];
+
+    ROCKY_SOFT_ASSERT_AND_RETURN(commandGraph, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(commandGraph->children.size() > 0, void());
+
+    //auto new_renderpass = vsg::RenderGraph::create(window, node);
+    //commandGraph->addChild(new_renderpass);
+    commandGraph->addChild(node);
 }
 
 std::shared_ptr<Map>
@@ -92,54 +239,22 @@ int
 Application::run()
 {
     // Make a window if the user didn't.
-    if (!mainWindow)
+    if (viewer->windows().empty())
     {
-        createMainWindow(1920, 1080);
+        addWindow(1920, 1080);
     }
-
-    // main camera
-    double nearFarRatio = 0.00001;
-    double R = mapNode->mapSRS().ellipsoid().semiMajorAxis();
-
-    auto perspective = vsg::Perspective::create(
-        30.0,
-        (double)(mainWindow->extent2D().width) / (double)(mainWindow->extent2D().height),
-        R * nearFarRatio,
-        R * 10.0);
-
-    auto camera = vsg::Camera::create(
-        perspective,
-        vsg::LookAt::create(),
-        vsg::ViewportState::create(mainWindow->extent2D()));
 
     // respond to the X or to hitting ESC
     viewer->addEventHandler(vsg::CloseHandler::create(viewer));
 
-    // default map manipulator
-    viewer->addEventHandler(rocky::MapManipulator::create(mapNode, camera));
-
-    // View pairs a camera with a scene graph and manages
-    // view-dependent state like lights and viewport.
-    auto view = vsg::View::create(camera);
-    view->addChild(root);
-    
-    // RenderGraph encapsulates vkCmdRenderPass/vkCmdEndRenderPass and owns things
-    // like the clear color, render area, and a render target (framebuffer or window).
-    auto renderGraph = vsg::RenderGraph::create(mainWindow, view);
-
-    // CommandGraph holds the command buffers that the vk record/submit task
-    // will use during record traversal.
-    auto commandGraph = vsg::CommandGraph::create(mainWindow);
-    commandGraph->addChild(renderGraph);
-
-    // add any additional render stages configured by the user (e.g., an ImGui graph)
-    for (auto& stage : additionalRenderStages)
-        renderGraph->addChild(stage);
-
     // This sets up the internal tasks that will, for each command graph, record
     // a scene graph and submit the results to the renderer each frame. Also sets
     // up whatever's necessary to present the resulting swapchain to the device.
-    viewer->assignRecordAndSubmitTaskAndPresentation({ commandGraph });
+    vsg::CommandGraphs commandGraphs;
+    for (auto iter : _commandGraphByWindow)
+        commandGraphs.push_back(iter.second);
+
+    viewer->assignRecordAndSubmitTaskAndPresentation(commandGraphs);
 
     // Configure a descriptor pool size that's appropriate for paged terrains
     // (they are a good candidate for DS reuse). This is optional.
@@ -156,6 +271,10 @@ Application::run()
     // Use a separate thread for each CommandGraph?
     // https://groups.google.com/g/vsg-users/c/-YRI0AxPGDQ/m/A2EDd5T0BgAJ
     viewer->setupThreading();
+
+    // mark the viewer ready so that subsequent changes will know to
+    // use an asynchronous path.
+    _viewerRealized = true;
 
     // The main frame loop
     while (viewer->advanceToNextFrame())
@@ -179,8 +298,7 @@ Application::run()
         // initialized by rocky (tile merges or MapObject adds)
         viewer->update();
 
-        // handle any object additions.
-        processAdditionsAndRemovals();
+        addAndRemoveObjects();
 
         viewer->recordAndSubmit();
 
@@ -191,16 +309,16 @@ Application::run()
 }
 
 void
-Application::processAdditionsAndRemovals()
+Application::addAndRemoveObjects()
 {
-    if (!_additions.empty() || !_removals.empty())
+    if (!_objectsToAdd.empty() || !_objectsToRemove.empty())
     {
         std::scoped_lock(_add_remove_mutex);
 
         std::list<util::Future<Addition>> in_progress;
 
         // Any new nodes in the scene? integrate them now
-        for(auto& addition : _additions)
+        for(auto& addition : _objectsToAdd)
         {
             if (addition.available() && addition->node)
             {
@@ -232,12 +350,12 @@ Application::processAdditionsAndRemovals()
                 in_progress.push_back(addition);
             }
         }
-        _additions.swap(in_progress);
+        _objectsToAdd.swap(in_progress);
 
         // Remove anything in the remove queue
-        while (!_removals.empty())
+        while (!_objectsToRemove.empty())
         {
-            auto& node = _removals.front();
+            auto& node = _objectsToRemove.front();
             if (node)
             {
                 mapNode->children.erase(
@@ -245,7 +363,7 @@ Application::processAdditionsAndRemovals()
                     mapNode->children.end());
                     
             }
-            _removals.pop_front();
+            _objectsToRemove.pop_front();
         }
     }
 }
@@ -321,7 +439,7 @@ Application::add(shared_ptr<MapObject> obj)
     // perhaps a single thread that compiles things from a queue?
     {
         std::scoped_lock L(_add_remove_mutex);
-        _additions.emplace_back(util::job::dispatch(compileNode));
+        _objectsToAdd.emplace_back(util::job::dispatch(compileNode));
     }
 }
 
@@ -331,5 +449,5 @@ Application::remove(shared_ptr<MapObject> obj)
     ROCKY_SOFT_ASSERT_AND_RETURN(obj, void());
 
     std::scoped_lock(_add_remove_mutex);
-    _removals.push_back(obj->root);
+    _objectsToRemove.push_back(obj->root);
 }
