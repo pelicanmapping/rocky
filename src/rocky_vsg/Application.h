@@ -73,6 +73,7 @@ namespace ROCKY_NAMESPACE
         bool _apilayer = false;
         bool _debuglayer = false;
         bool _vsync = true;
+        bool _multithreaded = true;
         bool _viewerRealized = false;
         AttachmentRenderers _renderers;
 

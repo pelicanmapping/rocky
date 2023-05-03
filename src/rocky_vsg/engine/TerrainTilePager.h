@@ -83,6 +83,7 @@ namespace ROCKY_NAMESPACE
         Tracker _tracker;
         mutable std::mutex _mutex;
         TerrainTileHost* _host;
+        const TerrainSettings& _settings;
 
         std::vector<TileKey> _loadChildren;
         std::vector<TileKey> _loadElevation;

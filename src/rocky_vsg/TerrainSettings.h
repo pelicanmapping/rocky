@@ -94,5 +94,12 @@ namespace ROCKY_NAMESPACE
 
         //! Target concurrency of terrain data loading operations.
         optional<unsigned> concurrency = 4;
+
+    public: // internal runtime settings, not serialized.
+
+        //! TEMPORARY.
+        //! To deal with multi-threaded Record (b/c of multiple command graphs)
+        //! without using an unnecessary lock in the single-threaded case
+        bool supportMultiThreadedRecord = false;
     };
 }

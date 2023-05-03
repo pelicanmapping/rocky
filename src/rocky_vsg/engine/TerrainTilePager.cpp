@@ -31,7 +31,8 @@ TerrainTilePager::TerrainTilePager(
     const TerrainSettings& settings,
     TerrainTileHost* in_host) :
 
-    _host(in_host)
+    _host(in_host),
+    _settings(settings)
 {
     initializeLODs(profile, settings);
 }
@@ -59,6 +60,9 @@ TerrainTilePager::releaseAll()
 void
 TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg::RecordTraversal& rv)
 {
+    if (_settings.supportMultiThreadedRecord)
+        _mutex.lock();
+
     // first, update the tracker to keep this tile alive.
     TileTable::iterator i = _tiles.find(tile->key);
 
@@ -133,6 +137,10 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
 
     if (tile->_needsUpdate)
         _updateData.push_back(tile->key);
+
+
+    if (_settings.supportMultiThreadedRecord)
+        _mutex.unlock();
 }
 
 void

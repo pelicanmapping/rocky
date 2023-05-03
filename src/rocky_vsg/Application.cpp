@@ -32,6 +32,7 @@ Application::Application(int& argc, char** argv) :
     _debuglayer = commandLine.read({ "--debug" });
     _apilayer = commandLine.read({ "--api" });
     _vsync = !commandLine.read({ "--novsync" });
+    //_multithreaded = commandLine.read({ "--mt" });
 
     viewer = vsg::Viewer::create();
 
@@ -106,6 +107,10 @@ Application::addWindow(int width, int height, const std::string& name)
 
     // add out new view to the window:
     addView(window, view);
+
+    // Tell Rocky it needs to mutex-protect the terrain engine
+    // now that we have more than one window.
+    mapNode->terrainSettings().supportMultiThreadedRecord = true;
 
     // add the new window to our viewer
     viewer->addWindow(window);
@@ -250,6 +255,7 @@ Application::run()
     }
 
     // respond to the X or to hitting ESC
+    // TODO: refactor this so it responds to individual windows and not the whole app?
     viewer->addEventHandler(vsg::CloseHandler::create(viewer));
 
     // This sets up the internal tasks that will, for each command graph, record
@@ -273,10 +279,12 @@ Application::run()
     // (passing in ResourceHints to guide the resources allocated).
     viewer->compile(resourceHints);
 
-    // Use a separate thread for each CommandGraph?
+    // Use a separate thread for each CommandGraph.
     // https://groups.google.com/g/vsg-users/c/-YRI0AxPGDQ/m/A2EDd5T0BgAJ
-    // NOTE: this doesn't work (YET) with more than one window!!!
-    //viewer->setupThreading();
+    if (_multithreaded)
+    {
+        viewer->setupThreading();
+    }
 
     // mark the viewer ready so that subsequent changes will know to
     // use an asynchronous path.
