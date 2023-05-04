@@ -36,6 +36,7 @@ namespace ROCKY_NAMESPACE
         //! Construct a new manipulator
         MapManipulator(
             vsg::ref_ptr<MapNode> mapNode,
+            vsg::ref_ptr<vsg::Window> window,
             vsg::ref_ptr<vsg::Camera> camera);
 
         virtual ~MapManipulator();
@@ -687,11 +688,12 @@ namespace ROCKY_NAMESPACE
             { }
         };
 
-        vsg::observer_ptr<MapNode> _mapNode;
-        vsg::ref_ptr<vsg::Camera> _camera;
+        vsg::observer_ptr<MapNode> _mapNode_weakptr;
+        vsg::observer_ptr<vsg::Window> _window_weakptr;
+        vsg::observer_ptr<vsg::Camera> _camera_weakptr;
         SRS _worldSRS;
 
-        optional<vsg::MoveEvent> _currentMove, _previousMove;
+        optional<vsg::PointerEvent> _currentMove, _previousMove;
         optional<vsg::ButtonPressEvent> _buttonPress;
         optional<vsg::ButtonReleaseEvent> _buttonRelease;
         optional<vsg::KeyPressEvent> _keyPress;
@@ -726,6 +728,10 @@ namespace ROCKY_NAMESPACE
         bool withinRenderArea(const vsg::PointerEvent& pointerEvent) const;
 
         vsg::dvec2 ndc(const vsg::PointerEvent&) const;
+
+        bool forMe(vsg::PointerEvent& ev) const;
+        bool forMe(vsg::KeyEvent& ev) const;
+        bool forMe(vsg::ScrollWheelEvent& ev) const;
     };
 
 }

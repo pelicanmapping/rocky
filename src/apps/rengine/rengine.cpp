@@ -163,7 +163,7 @@ int main(int argc, char** argv)
         vsg::LookAt::create(),
         vsg::ViewportState::create(window->extent2D()));
 
-    viewer->addEventHandler(rocky::MapManipulator::create(mapNode, camera));
+    viewer->addEventHandler(rocky::MapManipulator::create(mapNode, window, camera));
 
     // associate the scene graph with a window and camera in a new render graph
     auto renderGraph = vsg::createRenderGraphForView(

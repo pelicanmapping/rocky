@@ -69,56 +69,83 @@ Application::Application(int& argc, char** argv) :
     instance.runtime().sharedObjects = vsg::SharedObjects::create();
 }
 
-vsg::ref_ptr<vsg::Window>
-Application::addWindow(int width, int height, const std::string& name)
+util::Future<vsg::ref_ptr<vsg::Window>>
+Application::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
 {
-    auto traits = vsg::WindowTraits::create(name);
-    traits->debugLayer = _debuglayer;
-    traits->apiDumpLayer = _apilayer;
-    traits->samples = 1;
-    traits->width = width;
-    traits->height = height;
-    if (!_vsync)
-        traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+    ROCKY_SOFT_ASSERT_AND_RETURN(traits, { });
 
-    if (viewer->windows().size() > 0)
+    util::Future<vsg::ref_ptr<vsg::Window>> future_window;
+
+    auto add_window = [=]() mutable
     {
-        traits->shareWindow = viewer->windows().front();
-    }
+        auto result = future_window;
 
-    auto window = vsg::Window::create(traits);
-    window->clearColor() = VkClearColorValue{ 0.0f, 0.0f, 0.0f, 1.0f };
+        //viewer->stopThreading();
 
-    // Each window gets its own CommandGraph. We will store it here and then
-    // set it up later when the frame loop starts.
-    auto command_graph = vsg::CommandGraph::create(window);
-    _commandGraphByWindow[window] = command_graph;
+        traits->debugLayer = _debuglayer;
+        traits->apiDumpLayer = _apilayer;
+        if (!_vsync)
+            traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 
-    // main camera
-    double nearFarRatio = 0.00001;
-    double R = mapNode->mapSRS().ellipsoid().semiMajorAxis();
+        if (viewer->windows().size() > 0)
+        {
+            traits->shareWindow = viewer->windows().front();
+        }
 
-    auto camera = vsg::Camera::create(
-        vsg::Perspective::create(30.0, (double)width / (double)height, R * nearFarRatio, R * 20.0),
-        vsg::LookAt::create(),
-        vsg::ViewportState::create(0, 0, width, height));
+        auto window = vsg::Window::create(traits);
 
-    auto view = vsg::View::create(camera, mainScene);
+        // Each window gets its own CommandGraph. We will store it here and then
+        // set it up later when the frame loop starts.
+        auto commandgraph = vsg::CommandGraph::create(window);
+        _commandGraphByWindow[window] = commandgraph;
 
-    // add out new view to the window:
-    addView(window, view);
+        // main camera
+        double nearFarRatio = 0.00001;
+        double R = mapNode->mapSRS().ellipsoid().semiMajorAxis();
+        double ar = (double)traits->width / (double)traits->height;
 
-    // Tell Rocky it needs to mutex-protect the terrain engine
-    // now that we have more than one window.
-    mapNode->terrainSettings().supportMultiThreadedRecord = true;
+        auto camera = vsg::Camera::create(
+            vsg::Perspective::create(30.0, ar, R * nearFarRatio, R * 20.0),
+            vsg::LookAt::create(),
+            vsg::ViewportState::create(0, 0, traits->width, traits->height));
 
-    // add the new window to our viewer
-    viewer->addWindow(window);
+        auto view = vsg::View::create(camera, mainScene);
 
-    // a default manipulator
-    viewer->addEventHandler(rocky::MapManipulator::create(mapNode, camera));
+        // add the new view to the window:
+        if (_viewerRealized)
+            addViewAfterViewerIsRealized(window, view);
+        else
+            addView(window, view);
 
-    return window;
+        // Tell Rocky it needs to mutex-protect the terrain engine
+        // now that we have more than one window.
+        mapNode->terrainSettings().supportMultiThreadedRecord = true;
+
+        // add the new window to our viewer
+        viewer->addWindow(window);
+
+        // install a manipulator for the new view:
+        addManipulator(window, view);
+
+        result.resolve(window);
+
+        //if (_multithreaded)
+        //{
+        //    viewer->setupThreading();
+        //}
+
+        if (_viewerRealized)
+        {
+            _viewerDirty = true;
+        }
+    };
+
+    if (_viewerRealized)
+        instance.runtime().runDuringUpdate(add_window);
+    else
+        add_window();
+
+    return future_window;
 }
 
 void
@@ -130,46 +157,9 @@ Application::addView(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> v
 
     if (_viewerRealized)
     {
-        auto add_view = [=]()
-        {
-            // Each view gets its own render pass:
-            auto rendergraph = vsg::RenderGraph::create(window, view);
-
-            if (view->children.empty())
-            {
-                view->addChild(root);
-            }
-
-            if (auto iter = _commandGraphByWindow.find(window); iter != _commandGraphByWindow.end())
-            {
-                auto commandgraph = iter->second;
-                commandgraph->addChild(rendergraph);
-
-                // Add this new view to the viewer's compile manager:
-                viewer->compileManager->add(*window, view);
-
-                // Compile the new render pass for this view.
-                // The lambda idiom is taken from vsgexamples/dynamicviews
-                auto result = viewer->compileManager->compile(rendergraph, [&view](vsg::Context& context)
-                    {
-                        return context.view == view.get();
-                    });
-
-                if (result.requiresViewerUpdate())
-                {
-                    vsg::updateViewer(*viewer, result);
-                }
-
-                // Add a manipulator - we might not do this by default - check back.
-                viewer->addEventHandler(MapManipulator::create(mapNode, view->camera));
-            }
-
-            // remember so we can remove it later
-            _renderGraphByView[view] = rendergraph;
-            _viewsByWindow[window].insert(view);
-        };
-
-        instance.runtime().runDuringUpdate(add_view);
+        instance.runtime().runDuringUpdate([=]() {
+            addViewAfterViewerIsRealized(window, view);
+            });
     }
 
     else
@@ -185,15 +175,55 @@ Application::addView(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> v
                 view->addChild(root);
             }
 
-            auto render_pass = vsg::RenderGraph::create(window, view);
+            auto rendergraph = vsg::RenderGraph::create(window, view);
 
-            commandgraph->addChild(render_pass);
+            commandgraph->addChild(rendergraph);
 
             // remember so we can remove it later
-            _renderGraphByView[view] = render_pass;
-            _viewsByWindow[window].insert(view);
+            _renderGraphByView[view] = rendergraph;
+            displayConfiguration.windows[window].emplace_back(view);
         }
     }
+}
+
+void
+Application::addViewAfterViewerIsRealized(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view)
+{
+    // Each view gets its own render pass:
+    auto rendergraph = vsg::RenderGraph::create(window, view);
+
+    if (view->children.empty())
+    {
+        view->addChild(root);
+    }
+
+    if (auto iter = _commandGraphByWindow.find(window); iter != _commandGraphByWindow.end())
+    {
+        auto commandgraph = iter->second;
+        commandgraph->addChild(rendergraph);
+
+        // Add this new view to the viewer's compile manager:
+        viewer->compileManager->add(*window, view);
+
+        // Compile the new render pass for this view.
+        // The lambda idiom is taken from vsgexamples/dynamicviews
+        auto result = viewer->compileManager->compile(rendergraph, [&view](vsg::Context& context)
+            {
+                return context.view == view.get();
+            });
+
+        if (result.requiresViewerUpdate())
+        {
+            vsg::updateViewer(*viewer, result);
+        }
+    }
+
+    // remember so we can remove it later
+    _renderGraphByView[view] = rendergraph;
+    displayConfiguration.windows[window].emplace_back(view);
+
+    // Add a manipulator - we might not do this by default - check back.
+    addManipulator(window, view);
 }
 
 void
@@ -217,7 +247,8 @@ Application::removeView(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View
         rps.erase(std::remove(rps.begin(), rps.end(), rendergraph), rps.end());
 
         _renderGraphByView.erase(view);
-        _viewsByWindow[window].erase(view);
+        auto& views = displayConfiguration.windows[vsg::observer_ptr<vsg::Window>(window)];
+        views.erase(std::remove(views.begin(), views.end(), view), views.end());
     };
 
     if (_viewerRealized)
@@ -234,8 +265,6 @@ Application::addPostRenderNode(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vs
     ROCKY_SOFT_ASSERT_AND_RETURN(commandGraph, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(commandGraph->children.size() > 0, void());
 
-    //auto new_renderpass = vsg::RenderGraph::create(window, node);
-    //commandGraph->addChild(new_renderpass);
     commandGraph->addChild(node);
 }
 
@@ -245,15 +274,9 @@ Application::map()
     return mapNode->map();
 }
 
-int
-Application::run()
+void
+Application::realizeViewer(vsg::ref_ptr<vsg::Viewer> viewer)
 {
-    // Make a window if the user didn't.
-    if (viewer->windows().empty())
-    {
-        addWindow(1920, 1080);
-    }
-
     // respond to the X or to hitting ESC
     // TODO: refactor this so it responds to individual windows and not the whole app?
     viewer->addEventHandler(vsg::CloseHandler::create(viewer));
@@ -263,7 +286,9 @@ Application::run()
     // up whatever's necessary to present the resulting swapchain to the device.
     vsg::CommandGraphs commandGraphs;
     for (auto iter : _commandGraphByWindow)
+    {
         commandGraphs.push_back(iter.second);
+    }
 
     viewer->assignRecordAndSubmitTaskAndPresentation(commandGraphs);
 
@@ -278,13 +303,36 @@ Application::run()
     // Initialize and compile existing any Vulkan objects found in the scene
     // (passing in ResourceHints to guide the resources allocated).
     viewer->compile(resourceHints);
+}
 
-    // Use a separate thread for each CommandGraph.
-    // https://groups.google.com/g/vsg-users/c/-YRI0AxPGDQ/m/A2EDd5T0BgAJ
-    if (_multithreaded)
+void
+Application::recreateViewer()
+{
+    // Makes a new viewer, copying settings from the old viewer.
+
+    vsg::EventHandlers handlers = viewer->getEventHandlers();
+
+    viewer = vsg::Viewer::create();
+    
+    for (auto i : displayConfiguration.windows)
+        viewer->addWindow(i.first);
+
+    for (auto& j : handlers)
+        viewer->addEventHandler(j);
+
+    realizeViewer(viewer);
+}
+
+int
+Application::run()
+{
+    // Make a window if the user didn't.
+    if (viewer->windows().empty())
     {
-        viewer->setupThreading();
+        addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
     }
+
+    realizeViewer(viewer);
 
     // mark the viewer ready so that subsequent changes will know to
     // use an asynchronous path.
@@ -311,6 +359,13 @@ Application::run()
         // run through the viewer's update operations queue; this includes update ops 
         // initialized by rocky (tile merges or MapObject adds)
         viewer->update();
+
+        if (_viewerDirty)
+        {
+            _viewerDirty = false;
+            recreateViewer();
+            continue;
+        }
 
         addAndRemoveObjects();
 
@@ -464,4 +519,32 @@ Application::remove(shared_ptr<MapObject> obj)
 
     std::scoped_lock(_add_remove_mutex);
     _objectsToRemove.push_back(obj->root);
+}
+
+void
+Application::addManipulator(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view)
+{
+    auto manip = rocky::MapManipulator::create(mapNode, window, view->camera);
+    view->setObject("manip", manip);
+
+    auto& ehs = viewer->getEventHandlers();
+
+    // remove all the MapManipulators using the dumb remove-erase idiom
+    ehs.erase(
+        std::remove_if(
+            ehs.begin(), ehs.end(),
+            [](const vsg::ref_ptr<vsg::Visitor>& v) { return dynamic_cast<MapManipulator*>(v.get()); }),
+        ehs.end()
+    );
+
+    // re-add them in the right order:
+    for (auto& window : displayConfiguration.windows)
+    {
+        for(auto vi = window.second.rbegin(); vi != window.second.rend(); ++vi)
+        {
+            auto& view = *vi;
+            auto manip = view->getRefObject<MapManipulator>("manip");
+            ehs.push_back(manip);
+        }
+    }
 }

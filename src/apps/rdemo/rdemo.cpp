@@ -61,9 +61,7 @@ void setup_demos(rocky::Application& app)
         } }
     );
     demos.emplace_back(
-        Demo{ "Windows & Views", {}, {
-            Demo{ "Add/remove a view", Demo_Views }
-        } }
+        Demo{ "Windows & Views", Demo_Views }
     );
 }
 
@@ -119,10 +117,10 @@ int main(int argc, char** argv)
     // start up the gui
     setup_demos(app);
     app.viewer->addEventHandler(vsgImGui::SendEventsToImGui::create());
-    auto window = app.addWindow(1920, 1080);
-    auto imgui = vsgImGui::RenderImGui::create(window);
+    auto window = app.addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
+    auto imgui = vsgImGui::RenderImGui::create(window.get());
     imgui->addChild(MainGUI::create(app));
-    app.addPostRenderNode(window, imgui);
+    app.addPostRenderNode(window.get(), imgui);
 
     // run until the user quits.
     return app.run();

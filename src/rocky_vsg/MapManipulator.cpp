@@ -511,10 +511,15 @@ MapManipulator::Settings::setAutoViewpointDurationLimits(double minSeconds, doub
 
 /************************************************************************/
 
-MapManipulator::MapManipulator(vsg::ref_ptr<MapNode> mapNode, vsg::ref_ptr<vsg::Camera> camera) :
+MapManipulator::MapManipulator(
+    vsg::ref_ptr<MapNode> mapNode,
+    vsg::ref_ptr<vsg::Window> window,
+    vsg::ref_ptr<vsg::Camera> camera) :
+
     Inherit(),
-    _mapNode(mapNode),
-    _camera(camera),
+    _mapNode_weakptr(mapNode),
+    _window_weakptr(window),
+    _camera_weakptr(camera),
     _lastAction(ACTION_NULL)
 {
     if (mapNode.valid())
@@ -1230,8 +1235,7 @@ void MapManipulator::collisionDetect()
 vsg::ref_ptr<MapNode>
 MapManipulator::getMapNode() const
 {
-    vsg::ref_ptr<MapNode> safe = _mapNode;
-    return safe;
+    return _mapNode_weakptr.ref_ptr();
 }
 
 bool
@@ -1240,7 +1244,7 @@ MapManipulator::intersect(
     const vsg::dvec3& end,
     vsg::dvec3& out_intersection) const
 {
-    vsg::ref_ptr<MapNode> mapNode = _mapNode;
+    auto mapNode = _mapNode_weakptr.ref_ptr();
     if (mapNode)
     {
         vsg::LineSegmentIntersector lsi(start, end);
@@ -1319,10 +1323,28 @@ MapManipulator::clearEvents()
     _dirty = true;
 }
 
+bool
+MapManipulator::forMe(vsg::PointerEvent& e) const
+{
+    return !e.handled && withinRenderArea(e);
+}
+
+bool
+MapManipulator::forMe(vsg::KeyEvent& e) const
+{
+    return !e.handled && withinRenderArea(_previousMove);
+}
+
+bool
+MapManipulator::forMe(vsg::ScrollWheelEvent& e) const
+{
+    return !e.handled && withinRenderArea(_previousMove);
+}
+
 void
 MapManipulator::apply(vsg::KeyPressEvent& keyPress)
 {
-    if (keyPress.handled)
+    if (!forMe(keyPress)) 
         return;
 
     _keyPress = keyPress;
@@ -1343,7 +1365,7 @@ MapManipulator::apply(vsg::KeyPressEvent& keyPress)
 void
 MapManipulator::apply(vsg::KeyReleaseEvent& keyRelease)
 {
-    if (keyRelease.handled)
+    if (!forMe(keyRelease))
         return;
 
     //std::cout << "KeyReleaseEvent" << std::endl;
@@ -1354,7 +1376,7 @@ MapManipulator::apply(vsg::KeyReleaseEvent& keyRelease)
 void
 MapManipulator::apply(vsg::ButtonPressEvent& buttonPress)
 {
-    if (buttonPress.handled)
+    if (!forMe(buttonPress))
         return;
 
     //std::cout << "ButtonPressEvent" << std::endl;
@@ -1396,7 +1418,7 @@ MapManipulator::apply(vsg::ButtonReleaseEvent& buttonRelease)
 void
 MapManipulator::apply(vsg::MoveEvent& moveEvent)
 {
-    if (moveEvent.handled)
+    if (!forMe(moveEvent))
         return;
 
     //std::cout << "MoveEvent, mask = " << moveEvent.mask << std::endl;
@@ -1444,7 +1466,7 @@ MapManipulator::apply(vsg::MoveEvent& moveEvent)
 void
 MapManipulator::apply(vsg::ScrollWheelEvent& scrollEvent)
 {
-    if (scrollEvent.handled)
+    if (!forMe(scrollEvent))
         return;
 
     //std::cout << "ScrollWheelEvent" << std::endl;
@@ -1500,22 +1522,26 @@ MapManipulator::apply(vsg::FrameEvent& frame)
 
     serviceTask(frame.time);
 
-    _viewMatrix =
-        vsg::translate(_state.center) *
-        _state.centerRotation *
-        vsg::rotate(_state.localRotation) *
-        vsg::translate(0.0, 0.0, _state.distance);
-
-    auto lookat = _camera->viewMatrix.cast<vsg::LookAt>();
-    if (!lookat)
+    auto camera = _camera_weakptr.ref_ptr();
+    if (camera)
     {
-        lookat = vsg::LookAt::create();
-        _camera->viewMatrix = lookat;
+        _viewMatrix =
+            vsg::translate(_state.center) *
+            _state.centerRotation *
+            vsg::rotate(_state.localRotation) *
+            vsg::translate(0.0, 0.0, _state.distance);
+
+        auto lookat = camera->viewMatrix.cast<vsg::LookAt>();
+        if (!lookat)
+        {
+            lookat = vsg::LookAt::create();
+            camera->viewMatrix = lookat;
+        }
+
+        lookat->set(_viewMatrix);
+
+        _dirty = false;
     }
-
-    lookat->set(_viewMatrix);
-
-    _dirty = false;
 }
 
 bool
@@ -1584,8 +1610,12 @@ MapManipulator::isMouseClick() const
 bool
 MapManipulator::recalculateCenterFromLookVector()
 {
+    auto camera = _camera_weakptr.ref_ptr();
+    if (!camera)
+        return false;
+
     vsg::LookAt lookat;
-    lookat.set(_camera->viewMatrix->inverse());
+    lookat.set(camera->viewMatrix->inverse());
     auto look = vsg::normalize(lookat.center - lookat.eye);
     
     bool ok = false;
@@ -1647,10 +1677,14 @@ MapManipulator::pan(double dx, double dy)
     if ( !recalculateCenterFromLookVector() )
         return;
 
+    auto camera = _camera_weakptr.ref_ptr();
+    if (!camera)
+        return;
+
     double scale = -0.3 * _state.distance;
 
     // the view-space coordinate frame:
-    auto lookat = _camera->viewMatrix->inverse();
+    auto lookat = camera->viewMatrix->inverse();
     auto x_axis = vsg::normalize(getXAxis(lookat));
     auto y_axis = vsg::normalize(cross(getZAxis(_state.centerRotation), x_axis));
 
@@ -2262,7 +2296,14 @@ MapManipulator::cameraRenderAreaCoordinates(const vsg::PointerEvent& pointerEven
 bool
 MapManipulator::withinRenderArea(const vsg::PointerEvent& pointerEvent) const
 {
-    auto renderArea = _camera->getRenderArea();
+    if (_window_weakptr != pointerEvent.window)
+        return false;
+
+    auto camera = _camera_weakptr.ref_ptr();
+    if (!camera)
+        return false;
+
+    auto renderArea = camera->getRenderArea();
     auto [x, y] = cameraRenderAreaCoordinates(pointerEvent);
 
     return
@@ -2270,18 +2311,23 @@ MapManipulator::withinRenderArea(const vsg::PointerEvent& pointerEvent) const
         (y >= renderArea.offset.y && y < static_cast<int32_t>(renderArea.offset.y + renderArea.extent.height));
 }
 
-
 /// compute non dimensional window coordinate (-1,1) from event coords
 /// code adopted from VSG
 vsg::dvec2
 MapManipulator::ndc(const vsg::PointerEvent& event) const
 {
-    auto renderArea = _camera->getRenderArea();
+    auto camera = _camera_weakptr.ref_ptr();
+    if (!camera)
+        false;
+
+    auto renderArea = camera->getRenderArea();
+
     auto [x, y] = cameraRenderAreaCoordinates(event);
 
     double aspectRatio = static_cast<double>(renderArea.extent.width) / static_cast<double>(renderArea.extent.height);
     vsg::dvec2 v(
         (renderArea.extent.width > 0) ? (static_cast<double>(x - renderArea.offset.x) / static_cast<double>(renderArea.extent.width) * 2.0 - 1.0) * aspectRatio : 0.0,
         (renderArea.extent.height > 0) ? static_cast<double>(y - renderArea.offset.y) / static_cast<double>(renderArea.extent.height) * 2.0 - 1.0 : 0.0);
+
     return v;
 }

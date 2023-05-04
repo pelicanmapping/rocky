@@ -37,10 +37,20 @@ namespace ROCKY_NAMESPACE
         //! Remove a map object from the scene
         void remove(shared_ptr<MapObject> object);
 
+
     public: // Windows and Views
 
-        //! Create a window with a default view that covers the entire window surface.
-        vsg::ref_ptr<vsg::Window> addWindow(int width, int height, const std::string& name = {});
+        struct DisplayConfiguration
+        {
+            using Windows = std::map<
+                vsg::ref_ptr<vsg::Window>,
+                std::list<vsg::ref_ptr<vsg::View>>>;
+
+            Windows windows;
+        };
+
+        //! Adds a window to the application.
+        util::Future<vsg::ref_ptr<vsg::Window>> addWindow(vsg::ref_ptr<vsg::WindowTraits> traits);
 
         //! Adds a view to an existing window
         void addView(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view);
@@ -60,6 +70,8 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Group> root;
         vsg::ref_ptr<vsg::Group> mainScene;
         std::function<void()> updateFunction;
+        DisplayConfiguration displayConfiguration;
+
 
         //! Find the render pass for a view:
         //! TODO: replace with a findRenderGraphForView() utility function.
@@ -69,13 +81,15 @@ namespace ROCKY_NAMESPACE
         Application(const Application&) = delete;
         Application(Application&&) = delete;
 
-    protected:
+    private:
         bool _apilayer = false;
         bool _debuglayer = false;
         bool _vsync = true;
         bool _multithreaded = true;
         bool _viewerRealized = false;
         AttachmentRenderers _renderers;
+
+        bool _viewerDirty = false;
 
         struct Addition {
             vsg::ref_ptr<vsg::Node> node;
@@ -86,10 +100,17 @@ namespace ROCKY_NAMESPACE
         std::list<util::Future<Addition>> _objectsToAdd;
         std::list<vsg::ref_ptr<vsg::Node>> _objectsToRemove;
         std::map<vsg::ref_ptr<vsg::Window>, vsg::ref_ptr<vsg::CommandGraph>> _commandGraphByWindow;
-        std::map<vsg::ref_ptr<vsg::Window>, std::set<vsg::ref_ptr<vsg::View>>> _viewsByWindow;
         std::map<vsg::ref_ptr<vsg::View>, vsg::ref_ptr<vsg::RenderGraph>> _renderGraphByView;
         
+        void realizeViewer(vsg::ref_ptr<vsg::Viewer> viewer);
+
+        void recreateViewer();
+
         void addAndRemoveObjects();
+
+        void addViewAfterViewerIsRealized(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view);
+
+        void addManipulator(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View>);
     };
 
     // inlines.
