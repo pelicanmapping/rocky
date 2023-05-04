@@ -1,6 +1,6 @@
 # :mountain: Rocky
 
-Rocky is a 3D geospatial map & terrain rendering engine.<img align="right" width="200" alt="Screenshot 2023-02-22 124318" src="https://user-images.githubusercontent.com/326618/220712284-8a17d87a-431f-4966-a425-0f2628b23b40.png">
+Rocky is a 3D Geospatial Application Engine.<img align="right" width="200" alt="Screenshot 2023-02-22 124318" src="https://user-images.githubusercontent.com/326618/220712284-8a17d87a-431f-4966-a425-0f2628b23b40.png">
 
 
 Rocky will render an accurate 3D or 2D map with real geospatial imagery and elevation data. It supports thousands of map projections and many popular geodata formats including GeoTIFF, WMTS, WMS, and TMS. Rocky's data model is inspired by the osgEarth SDK, a 3D GIS toolkit created in 2008 and still in wide use today.
@@ -61,7 +61,7 @@ install(TARGETS myApp RUNTIME DESTINATION bin)
 * [vsgXchange](https://github.com/vsg-dev/vsgXchange) (optional)
 
 ## Building
-
+<img align="right" width="350" alt="Screenshot 2023-02-22 124318" src="https://user-images.githubusercontent.com/326618/236200807-73567789-a5a3-46d5-a98d-e9c1f24a0f62.png">
 Rocky comes with a handy Windows batch file to automatically configure the project using `vcpkg`:
 ```bat
 bootstrap-vcpkg.bat
@@ -71,6 +71,7 @@ That will download and build all the dependencies (takes a while) and generate y
 ## Running
 
 Set up a couple environment variables so Rocky can find its data.
+
 ```bat
 set ROCKY_FILE_PATH=%rocky_install_dir%/share
 set ROCKY_DEFAULT_FONT=C:/windows/fonts/arialbd.ttf
