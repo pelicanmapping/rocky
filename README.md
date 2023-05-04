@@ -61,7 +61,7 @@ install(TARGETS myApp RUNTIME DESTINATION bin)
 * [vsgXchange](https://github.com/vsg-dev/vsgXchange) (optional)
 
 ## Building
-<img align="right" width="350" alt="Screenshot 2023-02-22 124318" src="https://user-images.githubusercontent.com/326618/236200807-73567789-a5a3-46d5-a98d-e9c1f24a0f62.png">
+
 Rocky comes with a handy Windows batch file to automatically configure the project using `vcpkg`:
 ```bat
 bootstrap-vcpkg.bat
@@ -81,3 +81,5 @@ And run the demo application!
 ```
 rdemo.exe
 ```
+
+<img width="500" alt="Screenshot 2023-02-22 124318" src="https://user-images.githubusercontent.com/326618/236200807-73567789-a5a3-46d5-a98d-e9c1f24a0f62.png">
