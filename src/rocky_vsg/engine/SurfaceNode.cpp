@@ -31,16 +31,16 @@ SurfaceNode::SurfaceNode(const TileKey& tilekey, const SRS& worldSRS, Runtime& r
     _boundsDirty(true)
 {
     // Establish a local reference frame for the tile:
-    GeoPoint centroid = tilekey.extent().getCentroid();
+    GeoPoint centroid = tilekey.extent().centroid();
     centroid.transformInPlace(worldSRS);
 
-    dmat4 local2world = worldSRS.localToWorldMatrix(centroid.to_dvec3());
+    glm::dmat4 local2world = worldSRS.localToWorldMatrix(glm::dvec3(centroid.x, centroid.y, centroid.z));
 
     this->matrix = to_vsg(local2world);
 }
 
 void
-SurfaceNode::setElevation(shared_ptr<Image> raster, const dmat4& scaleBias)
+SurfaceNode::setElevation(shared_ptr<Image> raster, const glm::dmat4& scaleBias)
 {
     _elevationRaster = raster;
     _elevationMatrix = scaleBias;

@@ -22,8 +22,8 @@ namespace ROCKY_NAMESPACE
         Angle latitude;
         Angle longitude;
         Distance altitude;
-        dvec3 geocentric;
-        dvec3 eci;
+        glm::dvec3 geocentric;
+        glm::dvec3 eci;
     };
 
     /**

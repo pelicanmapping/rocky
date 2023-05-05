@@ -228,15 +228,15 @@ namespace
             tile_to_world = tile_extent.srs().to(worldSRS);
         }
 
-        inline dvec3 unitToWorld(const dvec3& unit) const
+        inline glm::dvec3 unitToWorld(const glm::dvec3& unit) const
         {
             // unit to tile:
-            dvec3 tile(
+            glm::dvec3 tile(
                 unit.x * tile_extent.width() + tile_extent.xmin(),
                 unit.y * tile_extent.height() + tile_extent.ymin(),
                 unit.z);
 
-            dvec3 world;
+            glm::dvec3 world;
             tile_to_world(tile, world);
 
             return world;
@@ -264,9 +264,10 @@ GeometryPool::createGeometry(
     Cancelable* progress) const
 {
     // Establish a local reference frame for the tile:
-    GeoPoint centroid = tileKey.extent().getCentroid();
+    GeoPoint centroid = tileKey.extent().centroid();
     centroid.transformInPlace(_worldSRS);
-    dmat4 world2local = glm::inverse(_worldSRS.localToWorldMatrix(centroid.to_dvec3()));
+    glm::dmat4 world2local = glm::inverse(_worldSRS.localToWorldMatrix(
+        glm::dvec3(centroid.x, centroid.y, centroid.z)));
 
     // Attempt to calculate the number of verts in the surface geometry.
     bool needsSkirt = settings.skirtRatio > 0.0f;
@@ -313,11 +314,11 @@ GeometryPool::createGeometry(
     else // default mesh - no constraintsv
 #endif
     {
-        dvec3 unit;
-        dvec3 world;
-        dvec3 local;
-        dvec3 world_plus_one;
-        dvec3 normal;
+        glm::dvec3 unit;
+        glm::dvec3 world;
+        glm::dvec3 local;
+        glm::dvec3 world_plus_one;
+        glm::dvec3 normal;
 
         Locator locator(tileKey.extent(), _worldSRS);
 

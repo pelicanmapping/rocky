@@ -16,7 +16,7 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    void rgb2hsv(fvec4& c)
+    void rgb2hsv(glm::fvec4& c)
     {
         float minval = std::min(c.r, std::min(c.g, c.b));
         float maxval = std::max(c.r, std::max(c.g, c.b));
@@ -34,10 +34,10 @@ namespace
             if (h < 0.0f) h += 1.0f;
             if (h > 1.0f) h -= 1.0f;
         }
-        c = fvec4(h, s, v, c.a);
+        c = glm::fvec4(h, s, v, c.a);
     }
 
-    void hsv2rgb(fvec4& c)
+    void hsv2rgb(glm::fvec4& c)
     {
         float h = c[0], s = c[1], v = c[2];
         if (s == 0.0f) {
@@ -56,7 +56,7 @@ namespace
             else if (vi == 3.0f) { vr = v1, vg = v2, vb = v; }
             else if (vi == 4.0f) { vr = v3, vg = v1, vb = v; }
             else { vr = v, vg = v1, vb = v2; }
-            c = fvec4(vr, vg, vb, c.a);
+            c = glm::fvec4(vr, vg, vb, c.a);
         }
     }
 
@@ -70,7 +70,7 @@ namespace
         return (v1);
     }
 
-    void hsl2rgb(fvec4& c)
+    void hsl2rgb(glm::fvec4& c)
     {
         float H = c.x;
         float S = c.y;
@@ -146,7 +146,7 @@ Color::Color(unsigned v, Format format)
 }
 
 Color::Color(const Color& rhs, float alpha) :
-    fvec4(rhs)
+    glm::fvec4(rhs)
 {
     a = alpha;
 }
@@ -254,7 +254,7 @@ Color::Color(const std::string& input, Format format)
     }
     else
     {
-        u8vec4 c(0, 0, 0, 255);
+        glm::u8vec4 c(0, 0, 0, 255);
 
         unsigned e =
             t.size() >= 2 && t[0] == '0' && t[1] == 'x' ? 2 :
@@ -348,19 +348,19 @@ Color::as(Format format) const
     }
 }
 
-fvec4
+glm::fvec4
 Color::asHSL() const
 {
-    static const fvec4 K(0.0f, -1.0f / 3.0f, 2.0f / 3.0f, -1.0f);
-    fvec4 A(b, g, K.w, K.z);
-    fvec4 B(g, b, K.x, K.y);
-    fvec4 p = glm::mix(A, B, step(b, g));
-    A = fvec4(p.x, p.y, p.w, r);
-    B = fvec4(r, p.y, p.z, p.x);
-    fvec4 q = glm::mix(A, B, step(p.x, r));
+    static const glm::fvec4 K(0.0f, -1.0f / 3.0f, 2.0f / 3.0f, -1.0f);
+    glm::fvec4 A(b, g, K.w, K.z);
+    glm::fvec4 B(g, b, K.x, K.y);
+    glm::fvec4 p = glm::mix(A, B, step(b, g));
+    A = glm::fvec4(p.x, p.y, p.w, r);
+    B = glm::fvec4(r, p.y, p.z, p.x);
+    glm::fvec4 q = glm::mix(A, B, step(p.x, r));
     float d = q.x - std::min(q.w, q.y);
     const float e = 1.0e-10;
-    return fvec4(
+    return glm::fvec4(
         fabs(q.z + (q.w - q.y) / (6.0f*d + e)),
         d / (q.x + e),
         q.x,
@@ -368,7 +368,7 @@ Color::asHSL() const
 }
 
 void
-Color::fromHSL(const fvec4& hsl)
+Color::fromHSL(const glm::fvec4& hsl)
 {
     set(hsl[0], hsl[1], hsl[2], a);
     float H = x, S = y, V = z;
@@ -392,10 +392,10 @@ Color::fromHSL(const fvec4& hsl)
     }
 }
 
-u8vec4
+glm::u8vec4
 Color::asNormalizedRGBA() const
 {
-    return u8vec4(
+    return glm::u8vec4(
         (char)(r * 255.0),
         (char)(g * 255.0),
         (char)(b * 255.0),
@@ -424,7 +424,7 @@ Color::createRandomColorRamp(
     std::uniform_int_distribution<> prng(0, 360);
     
     double hueAngle = (double)prng(gen);// prng.next(360);
-    fvec4 hsv(0, 0, 0, 1);
+    glm::fvec4 hsv(0, 0, 0, 1);
 
     for (unsigned i = 0; i < count; ++i)
     {

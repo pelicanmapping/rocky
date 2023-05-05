@@ -16,45 +16,44 @@
 
 namespace ROCKY_NAMESPACE
 {
-    using dvec2 = glm::dvec2;
-    using dvec3 = glm::dvec3;
-    using dvec4 = glm::dvec4;
-    using dmat3 = glm::dmat3;
-    using dmat4 = glm::dmat4;
+    //using dvec2 = glm::dvec2;
+    //using dvec3 = glm::dvec3;
+    //using dvec4 = glm::dvec4;
+    //using dmat3 = glm::dmat3;
+    //using dmat4 = glm::dmat4;
 
-    using fvec2 = glm::fvec2;
-    using fvec3 = glm::fvec3;
-    using fvec4 = glm::fvec4;
-    using fmat4 = glm::fmat4;
+    //using fvec2 = glm::fvec2;
+    //using fvec3 = glm::fvec3;
+    //using fvec4 = glm::fvec4;
+    //using fmat4 = glm::fmat4;
 
-    using u8vec4 = glm::u8vec4;
-
+    //using u8vec4 = glm::u8vec4;
 
     // mult a vec3 x mat4
-    inline dvec3 operator * (const dvec3& a, const dmat4& b)
+    inline glm::dvec3 operator * (const glm::dvec3& a, const glm::dmat4& b)
     {
-        return dvec3(dvec4(a, 1) * b);
+        return glm::dvec3(glm::dvec4(a, 1) * b);
     }    
-    inline fvec3 operator * (const fvec3& a, const fmat4& b)
+    inline glm::fvec3 operator * (const glm::fvec3& a, const glm::fmat4& b)
     {
-        return fvec3(fvec4(a, 1) * b);
+        return glm::fvec3(glm::fvec4(a, 1) * b);
     }
 
 #if 1
     class ROCKY_EXPORT Sphere
     {
     public:
-        dvec3 center;
+        glm::dvec3 center;
         double radius;
 
         Sphere() : center(0, 0, 0), radius(-1) { }
 
-        Sphere(const dvec3& a, double b) :
+        Sphere(const glm::dvec3& a, double b) :
             center(a), radius(b) { }
 
-        void expandBy(const dvec3& v) {
+        void expandBy(const glm::dvec3& v) {
             if (valid()) {
-                dvec3 dv = v - center;
+                auto dv = v - center;
                 double r = glm::length(dv);
                 if (r > radius) {
                     double dr = 0.5*(r - radius);
@@ -88,8 +87,8 @@ namespace ROCKY_NAMESPACE
         inline double area2d() const {
             return width()*height();
         }
-        inline dvec3 center() const {
-            return dvec3(
+        inline glm::dvec3 center() const {
+            return glm::dvec3(
                 xmin + 0.5*(xmax - xmin),
                 ymin + 0.5*(ymax - ymin),
                 zmin + 0.5*(zmax - zmin));
@@ -107,7 +106,7 @@ namespace ROCKY_NAMESPACE
 
         bool contains(const Box&) const;
 
-        void expandBy(const dvec3& p) {
+        void expandBy(const glm::dvec3& p) {
             xmin = std::min(xmin, p.x);
             xmax = std::max(xmax, p.x);
             ymin = std::min(ymin, p.y);
@@ -125,8 +124,8 @@ namespace ROCKY_NAMESPACE
             zmax = std::max(zmax, rhs.zmax);
         }
 
-        dvec3 corner(unsigned i) const {
-            return dvec3(
+        glm::dvec3 corner(unsigned i) const {
+            return glm::dvec3(
                 (i & 0x1) ? xmax : xmin,
                 (i & 0x2) ? ymax : ymin,
                 (i & 0x4) ? zmax : zmin);
@@ -323,14 +322,14 @@ namespace ROCKY_NAMESPACE
 
     // equal within a default threshold
     template<>
-    inline bool equiv<dvec3>(dvec3 a, dvec3 b, double E)
+    inline bool equiv<glm::dvec3>(glm::dvec3 a, glm::dvec3 b, double E)
     {
         return equiv(a.x, b.x, E) && equiv(a.y, b.y, E) && equiv(a.z, b.z, E);
     }
 
     // equal within a default threshold
     template<>
-    inline bool equiv<dvec3>(dvec3 a, dvec3 b) 
+    inline bool equiv<glm::dvec3>(glm::dvec3 a, glm::dvec3 b)
     {
         return equiv(a.x, b.x) && equiv(a.y, b.y) && equiv(a.z, b.z);
     }
@@ -448,13 +447,13 @@ namespace ROCKY_NAMESPACE
     }
 
     //! Convenience function to transform a 3D vector using a 4D matrix
-    inline fvec3 operator * (const fmat4& mat, const fvec3& v) {
-        return fvec3(mat * fvec4(v, 1));
+    inline glm::fvec3 operator * (const glm::fmat4& mat, const glm::fvec3& v) {
+        return glm::fvec3(mat * glm::fvec4(v, 1));
     }
 
     //! Convenience function to transform a 3D vector using a 4D matrix
-    inline dvec3 operator * (const dmat4& mat, const dvec3& v) {
-        return dvec3(mat * dvec4(v, 1));
+    inline glm::dvec3 operator * (const glm::dmat4& mat, const glm::dvec3& v) {
+        return glm::dvec3(mat * glm::dvec4(v, 1));
     }
 #endif
 

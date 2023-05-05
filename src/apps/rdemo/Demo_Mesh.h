@@ -28,11 +28,11 @@ auto Demo_Mesh_Absolute = [](Application& app)
         {
             for(double lat = 15.0; lat < 35.0; lat += step)
             {
-                dvec3 v1, v2, v3, v4;
-                xform(dvec3{ lon, lat, alt }, v1);
-                xform(dvec3{ lon + step, lat, alt }, v2);
-                xform(dvec3{ lon + step, lat + step, alt }, v3);
-                xform(dvec3{ lon, lat + step, alt }, v4);
+                glm::dvec3 v1, v2, v3, v4;
+                xform(glm::dvec3{ lon, lat, alt }, v1);
+                xform(glm::dvec3{ lon + step, lat, alt }, v2);
+                xform(glm::dvec3{ lon + step, lat + step, alt }, v3);
+                xform(glm::dvec3{ lon, lat + step, alt }, v4);
 
                 mesh->addTriangle(v1, v2, v3);
                 mesh->addTriangle(v1, v3, v4);
@@ -150,21 +150,21 @@ auto Demo_Mesh_Relative = [](Application& app)
         }
 
         auto& pos = object->xform->position();
-        fvec3 vec = pos.to_dvec3();
+        glm::fvec3 vec{ pos.x, pos.y, pos.z };
 
         if (ImGuiLTable::SliderFloat("Latitude", &vec.y, -85.0, 85.0, "%.1f"))
         {
-            object->xform->setPosition(GeoPoint(pos.srs(), vec));
+            object->xform->setPosition(GeoPoint(pos.srs(), vec.x, vec.y, vec.z));
         }
 
         if (ImGuiLTable::SliderFloat("Longitude", &vec.x, -180.0, 180.0, "%.1f"))
         {
-            object->xform->setPosition(GeoPoint(pos.srs(), vec));
+            object->xform->setPosition(GeoPoint(pos.srs(), vec.x, vec.y, vec.z));
         }
 
         if (ImGuiLTable::SliderFloat("Altitude", &vec.z, 0.0, 2500000.0, "%.1f"))
         {
-            object->xform->setPosition(GeoPoint(pos.srs(), vec));
+            object->xform->setPosition(GeoPoint(pos.srs(), vec.x, vec.y, vec.z));
         }
 
         ImGuiLTable::End();

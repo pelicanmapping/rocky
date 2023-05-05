@@ -183,9 +183,9 @@ Profile::setup(const std::string& name)
         util::ciEquals(name, "eqc-wgs84"))
     {
         // Yes I know this is not really Plate Carre but it will stand in for now.
-        dvec3 ex;
+        glm::dvec3 ex;
 
-        SRS::WGS84.to(SRS::PLATE_CARREE).transform(dvec3(180, 90, 0), ex);
+        SRS::WGS84.to(SRS::PLATE_CARREE).transform(glm::dvec3(180, 90, 0), ex);
 
         setup(
             SRS::PLATE_CARREE,

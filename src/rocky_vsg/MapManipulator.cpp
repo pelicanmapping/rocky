@@ -94,10 +94,10 @@ namespace
         return r;
     }
 
-    dvec3 computeWorld(vsg::ref_ptr<vsg::Node> node)
+    glm::dvec3 computeWorld(vsg::ref_ptr<vsg::Node> node)
     {
         // TODO
-        return dvec3(0, 0, 0);
+        return glm::dvec3(0, 0, 0);
     }
 
     double normalizeAzimRad( double input )
@@ -710,7 +710,7 @@ MapManipulator::setCenter(const vsg::dvec3& worldPos)
 {
     _state.center = worldPos;
 
-    dmat4 m = _worldSRS.localToWorldMatrix(to_glm(worldPos));
+    glm::dmat4 m = _worldSRS.localToWorldMatrix(to_glm(worldPos));
 
     // remove the translation component
     _state.centerRotation = to_vsg(m);
@@ -1629,7 +1629,7 @@ MapManipulator::recalculateCenterFromLookVector()
     // backup plan, intersect the ellipsoid or the ground plane
     else if (_worldSRS.isGeocentric())
     {
-        dvec3 i;
+        glm::dvec3 i;
         auto target = lookat.eye + look * 1e10;
         if (_worldSRS.ellipsoid().intersectGeocentricLine(to_glm(lookat.eye), to_glm(target), i))
         {

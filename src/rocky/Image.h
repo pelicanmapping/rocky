@@ -39,7 +39,7 @@ namespace ROCKY_NAMESPACE
             UNDEFINED
         };
 
-        using Pixel = fvec4;
+        using Pixel = glm::fvec4;
 
     public:
         //! number of colums

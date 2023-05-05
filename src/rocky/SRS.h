@@ -127,7 +127,7 @@ namespace ROCKY_NAMESPACE
         //! the SRS is geographic; projected if the SRS is projected).
         //! (Note: in this is a geographic SRS, the LTP will
         //! be in geocentric cartesian space.)
-        dmat4 localToWorldMatrix(const dvec3& origin) const;
+        glm::dmat4 localToWorldMatrix(const glm::dvec3& origin) const;
 
         //! Units transformation accounting for latitude if necessary
         static double transformUnits(
@@ -198,16 +198,16 @@ namespace ROCKY_NAMESPACE
         //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
         bool transform(const DVEC3A& in, DVEC3B& out) const {
-            out = DVEC3B(in.x, in.y, in.z);
-            return _nop? true : forward(get_handle(), out.x, out.y, out.z);
+            out[0] = in[0], out[1] = in[1], out[2] = in[2];
+            return _nop? true : forward(get_handle(), out[0], out[1], out[2]);
         }
 
         //! Transform a 3-vector (symonym for transform() method)
         //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
         bool operator()(const DVEC3A& in, DVEC3B& out) const {
-            out = DVEC3B(in.x, in.y, in.z);
-            return _nop ? true : forward(get_handle(), out.x, out.y, out.z);
+            out[0] = in[0], out[1] = in[1], out[2] = in[2];
+            return _nop ? true : forward(get_handle(), out[0], out[1], out[2]);
         }
 
         //! Transform a range of 3-vectors in place
@@ -228,15 +228,15 @@ namespace ROCKY_NAMESPACE
         template<typename DVEC3>
         bool transformArray(DVEC3* inout, std::size_t count) const {
             return _nop ? true : forward(get_handle(),
-                &inout[0].x, &inout[0].y, &inout[0].z, sizeof(DVEC3), count);
+                &inout[0][0], &inout[0][1], &inout[0][2], sizeof(DVEC3), count);
         }
 
         //! Inverse-transform a 3-vector
         //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
         bool inverse(const DVEC3A& in, DVEC3B& out) const {
-            out = DVEC3B(in.x, in.y, in.z);
-            return _nop ? true : inverse(get_handle(), out.x, out.y, out.z);
+            out = { in[0], in[1], in[2] };
+            return _nop ? true : inverse(get_handle(), out[0], out[1], out[2]);
         }
 
         //! Inverse-transform a range of 3-vectors in place
@@ -257,7 +257,7 @@ namespace ROCKY_NAMESPACE
         template<typename DVEC3>
         bool inverseArray(DVEC3* inout, std::size_t count) const {
             return _nop ? true : inverse(get_handle(),
-                &inout[0].x, &inout[0].y, &inout[0].z, sizeof(DVEC3), count);
+                &inout[0][0], &inout[0][1], &inout[0][2], sizeof(DVEC3), count);
         }
 
         //! Error message if something returns false

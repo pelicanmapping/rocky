@@ -251,7 +251,7 @@ MBTiles::Driver::open(
     // make an empty image.
     int size = 256;
     _emptyImage = Image::create(Image::R8G8B8A8_UNORM, size, size);
-    _emptyImage->fill(fvec4(0.0));
+    _emptyImage->fill(glm::fvec4(0.0));
 
     return StatusOK;
 }
@@ -393,7 +393,7 @@ MBTiles::Driver::write(const TileKey& key, shared_ptr<Image> input, const IOOpti
         image_to_write = Image::create(Image::R8G8B8_UNORM, input->width(), input->height(), input->depth());
         input->get_iterator().forEachPixel([&](const Image::iterator& i)
             {
-                fvec4 pixel;
+                glm::fvec4 pixel;
                 input->read(pixel, i.s(), i.t(), i.r());
                 image_to_write->write(pixel, i.s(), i.t(), i.r());
             }

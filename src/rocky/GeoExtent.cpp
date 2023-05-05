@@ -128,7 +128,7 @@ GeoExtent::setOriginAndSize(double west, double south, double width, double heig
 }
 
 GeoPoint
-GeoExtent::getCentroid() const
+GeoExtent::centroid() const
 {
     if (valid())
     {
@@ -143,8 +143,8 @@ GeoExtent::getCentroid() const
 bool
 GeoExtent::getCentroid(double& out_x, double& out_y) const
 {
-    GeoPoint p = getCentroid();
-    out_x = p.x(), out_y = p.y();
+    GeoPoint p = centroid();
+    out_x = p.x, out_y = p.y;
     return p.valid();
 }
 
@@ -252,7 +252,7 @@ namespace
         ROCKY_SOFT_ASSERT_AND_RETURN(fromSRS.valid() && toSRS.valid(), false);
 
         // Transform all points and take the maximum bounding rectangle the resulting points
-        std::vector<dvec3> v;
+        std::vector<glm::dvec3> v;
 
         // Start by clamping to the out_srs' legal bounds, if possible.
         // TODO: rethink this to be more generic.
@@ -260,8 +260,8 @@ namespace
         {
             auto to_geo = toSRS.to(fromSRS);
             Box b = toSRS.bounds(); // long,lat degrees
-            dvec3 min(b.xmin, b.ymin, 0);
-            dvec3 max(b.xmax, b.ymax, 0);
+            glm::dvec3 min(b.xmin, b.ymin, 0);
+            glm::dvec3 max(b.xmax, b.ymax, 0);
             to_geo(min, min);
             to_geo(max, max);
 
@@ -279,13 +279,13 @@ namespace
 
         // first point is a centroid. This we will use to make sure none of the corner points
         // wraps around if the target SRS is geographic.
-        v.push_back(dvec3(in_out_xmin + width * 0.5, in_out_ymin + height * 0.5, 0)); // centroid.
+        v.push_back(glm::dvec3(in_out_xmin + width * 0.5, in_out_ymin + height * 0.5, 0)); // centroid.
 
         // add the four corners
-        v.push_back(dvec3(in_out_xmin, in_out_ymin, 0)); // ll
-        v.push_back(dvec3(in_out_xmin, in_out_ymax, 0)); // ul
-        v.push_back(dvec3(in_out_xmax, in_out_ymax, 0)); // ur
-        v.push_back(dvec3(in_out_xmax, in_out_ymin, 0)); // lr
+        v.push_back(glm::dvec3(in_out_xmin, in_out_ymin, 0)); // ll
+        v.push_back(glm::dvec3(in_out_xmin, in_out_ymax, 0)); // ul
+        v.push_back(glm::dvec3(in_out_xmax, in_out_ymax, 0)); // ur
+        v.push_back(glm::dvec3(in_out_xmax, in_out_ymin, 0)); // lr
 
         //We also sample along the edges of the bounding box and include them in the 
         //MBR computation in case you are dealing with a projection that will cause the edges
@@ -300,25 +300,25 @@ namespace
         //Left edge
         for (unsigned int i = 0; i < numSamples; i++)
         {
-            v.push_back(dvec3(in_out_xmin, in_out_ymin + dHeight * (double)i, 0));
+            v.push_back(glm::dvec3(in_out_xmin, in_out_ymin + dHeight * (double)i, 0));
         }
 
         //Right edge
         for (unsigned int i = 0; i < numSamples; i++)
         {
-            v.push_back(dvec3(in_out_xmax, in_out_ymin + dHeight * (double)i, 0));
+            v.push_back(glm::dvec3(in_out_xmax, in_out_ymin + dHeight * (double)i, 0));
         }
 
         //Top edge
         for (unsigned int i = 0; i < numSamples; i++)
         {
-            v.push_back(dvec3(in_out_xmin + dWidth * (double)i, in_out_ymax, 0));
+            v.push_back(glm::dvec3(in_out_xmin + dWidth * (double)i, in_out_ymax, 0));
         }
 
         //Bottom edge
         for (unsigned int i = 0; i < numSamples; i++)
         {
-            v.push_back(dvec3(in_out_xmin + dWidth * (double)i, in_out_ymin, 0));
+            v.push_back(glm::dvec3(in_out_xmin + dWidth * (double)i, in_out_ymin, 0));
         }
 
         auto xform = fromSRS.to(toSRS);
@@ -425,7 +425,7 @@ GeoExtent::contains(double x, double y, const SRS& xy_srs) const
     // transform if neccessary:
     if (xy_srs.valid() && xy_srs != srs())
     {
-        dvec3 temp(x, y, 0);
+        glm::dvec3 temp(x, y, 0);
         if (xy_srs.to(srs()).transform(temp, temp))
             return contains(temp.x, temp.y, SRS::EMPTY);
         else
@@ -469,7 +469,7 @@ GeoExtent::contains(double x, double y, const SRS& xy_srs) const
 bool
 GeoExtent::contains(const GeoPoint& rhs) const
 {
-    return contains(rhs.x(), rhs.y(), rhs.srs());
+    return contains(rhs.x, rhs.y, rhs.srs());
 }
 
 bool
@@ -480,7 +480,7 @@ GeoExtent::contains(const Box& rhs) const
         rhs.valid() &&
         contains(rhs.xmin, rhs.ymin) &&
         contains(rhs.xmax, rhs.ymax) &&
-        contains(rhs.center());
+        contains(rhs.center().x, rhs.center().y);
 }
 
 bool
@@ -491,7 +491,7 @@ GeoExtent::contains(const GeoExtent& rhs) const
         rhs.valid() &&
         contains(rhs.west(), rhs.south(), rhs.srs()) &&
         contains(rhs.east(), rhs.north(), rhs.srs()) &&
-        contains(rhs.getCentroid().to_dvec3(), rhs.srs());   // this accounts for the antimeridian
+        contains(rhs.centroid().x, rhs.centroid().y, rhs.srs());   // this accounts for the antimeridian
 }
 
 #undef  OVERLAPS
@@ -549,7 +549,7 @@ GeoExtent::computeBoundingGeoCircle() const
     }
     else 
     {
-        GeoPoint centroid = getCentroid();
+        GeoPoint the_centroid = centroid();
 
         if ( srs().isProjected() )
         {
@@ -559,13 +559,13 @@ GeoExtent::computeBoundingGeoCircle() const
         else // isGeographic
         {
             // calculate the radius in meters using the ECEF coordinate system
-            std::vector<dvec3> p =
+            std::vector<glm::dvec3> p =
             {
-                dvec3(centroid.x(), centroid.y(), 0.0),
-                dvec3(west(), south(), 0.0),
-                dvec3(east(), south(), 0.0),
-                dvec3(east(), north(), 0.0),
-                dvec3(west(), north(), 0.0)
+                glm::dvec3(the_centroid.x, the_centroid.y, 0.0),
+                glm::dvec3(west(), south(), 0.0),
+                glm::dvec3(east(), south(), 0.0),
+                glm::dvec3(east(), north(), 0.0),
+                glm::dvec3(west(), north(), 0.0)
             };
             
             srs().to(SRS::ECEF).transformRange(p.begin(), p.end());
@@ -578,7 +578,7 @@ GeoExtent::computeBoundingGeoCircle() const
             circle.setRadius(sqrt(radius2));
         }
 
-        circle.setCenter(centroid);
+        circle.setCenter(the_centroid);
     }
 
     return circle;
@@ -601,9 +601,9 @@ GeoExtent::expandToInclude(double x, double y)
     }
 
     // Check each coordinate separately:
-    GeoPoint centroid = getCentroid();
-    bool containsX = contains(x, centroid.y());
-    bool containsY = contains(centroid.x(), y);
+    GeoPoint the_centroid = centroid();
+    bool containsX = contains(x, the_centroid.y);
+    bool containsY = contains(the_centroid.x, y);
 
     // Expand along the Y axis:
     if (!containsY)
@@ -1024,15 +1024,13 @@ GeoExtent::createWorldBoundingSphere(double minElev, double maxElev) const
 
     if (srs().isProjected())
     {
-        bs.expandBy(dvec3(xmin(), ymin(), minElev));
-        bs.expandBy(dvec3(xmax(), ymax(), maxElev));
-        //GeoPoint(srs(), xMin(), yMin(), minElev, ALTMODE_ABSOLUTE).toWorld(w); bs.expandBy(w);
-        //GeoPoint(srs(), xMax(), yMax(), maxElev, ALTMODE_ABSOLUTE).toWorld(w); bs.expandBy(w);
+        bs.expandBy(glm::dvec3(xmin(), ymin(), minElev));
+        bs.expandBy(glm::dvec3(xmax(), ymax(), maxElev));
     }
     else // geocentric
     {
         // Sample points along the extent
-        std::vector< dvec3 > samplePoints;
+        std::vector<glm::dvec3> samplePoints;
 
         int samples = 7;
 
@@ -1086,7 +1084,7 @@ GeoExtent::createWorldBoundingSphere(double minElev, double maxElev) const
 }
 
 bool
-GeoExtent::createScaleBias(const GeoExtent& rhs, dmat4& output) const
+GeoExtent::createScaleBias(const GeoExtent& rhs, glm::dmat4& output) const
 {
     double scalex = width() / rhs.width();
     double scaley = height() / rhs.height();
@@ -1101,7 +1099,7 @@ GeoExtent::createScaleBias(const GeoExtent& rhs, dmat4& output) const
     //    0, 0, 1, 0,
     //    biasx, biasy, 0, 1);
 
-    output = dmat4(1);
+    output = glm::dmat4(1);
     output[0][0] = scalex;
     output[1][1] = scaley;
     output[3][0] = biasx;  // [0][3]?

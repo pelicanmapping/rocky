@@ -320,16 +320,14 @@ namespace ROCKY_NAMESPACE
     class Distance : public qualified_double<Distance> {
     public:
         Distance() : qualified_double<Distance>(0, Units::METERS) { }
-        Distance(double value, const Units& units) : qualified_double<Distance>(value, units) { }
-        //Distance(const Config& conf) : qualified_double<Distance>(conf, Units::METERS) { } 
+        Distance(double value, const Units& units =Units::METERS) : qualified_double<Distance>(value, units) { }
         Distance(const std::string& str) : qualified_double<Distance>(str, Units::METERS) { }
     };
 
     class Angle : public qualified_double<Angle> {
     public:
         Angle() : qualified_double<Angle>(0, Units::DEGREES) { }
-        Angle(double value, const Units& units) : qualified_double<Angle>(value, units) { }
-        //Angle(const Config& conf) : qualified_double<Angle>(conf, Units::DEGREES) { }
+        Angle(double value, const Units& units =Units::DEGREES) : qualified_double<Angle>(value, units) { }
         Angle(const std::string& str) : qualified_double<Angle>(str, Units::DEGREES) { }
         std::string asParseableString() const {
             if (_units == Units::DEGREES) return std::to_string(_value);
@@ -341,7 +339,6 @@ namespace ROCKY_NAMESPACE
     public:
         Duration() : qualified_double<Duration>(0, Units::SECONDS) { }
         Duration(double value, const Units& units) : qualified_double<Duration>(value, units) { }
-        //Duration(const Config& conf) : qualified_double<Duration>(conf, Units::SECONDS) { }
         Duration(const std::string& str) : qualified_double<Duration>(str, Units::SECONDS) { }
     };
 
@@ -349,94 +346,15 @@ namespace ROCKY_NAMESPACE
     public:
         Speed() : qualified_double<Speed>(0, Units::METERS_PER_SECOND) { }
         Speed(double value, const Units& units) : qualified_double<Speed>(value, units) { }
-        //Speed(const Config& conf) : qualified_double<Speed>(conf, Units::METERS_PER_SECOND) { }
         Speed(const std::string& str) : qualified_double<Speed>(str, Units::METERS_PER_SECOND) { }
     };
 
     class ScreenSize : public qualified_double<ScreenSize> {
     public:
         ScreenSize() : qualified_double<ScreenSize>(0, Units::PIXELS) { }
-        ScreenSize(double value, const Units& units) : qualified_double<ScreenSize>(value, units) { }
-        //ScreenSize(const Config& conf) : qualified_double<ScreenSize>(conf, Units::PIXELS) { }
+        ScreenSize(double value, const Units& units =Units::PIXELS) : qualified_double<ScreenSize>(value, units) { }
         ScreenSize(const std::string& str) : qualified_double<ScreenSize>(str, Units::PIXELS) { }
     };
-    
-#if 0
-
-    // Config specializations:
-    
-    template<> inline
-    void Config::set<Distance>(const std::string& key, const Distance& obj) {
-        set(key, obj.asParseableString());
-    }
-    template<> inline
-    void Config::set<Distance>(const std::string& key, const optional<Distance>& opt) {
-        if (opt.has_value()) { set(key, opt.value()); }
-    }
-    template<> inline
-    bool Config::get<Distance>(const std::string& key, optional<Distance>& output) const {
-        if (has(key)) { output = Distance(value(key)); return true; }
-        else return false;
-    }
-
-    template<> inline
-    void Config::set<Angle>(const std::string& key, const Angle& opt) {
-        set(key, opt.asParseableString());
-    }
-    template<> inline
-    void Config::set<Angle>(const std::string& key, const optional<Angle>& opt) {
-        if (opt.has_value()) { set(key, opt.value()); }
-    }
-    template<> inline
-    bool Config::get<Angle>(const std::string& key, optional<Angle>& output) const {
-        if (has(key)) { output = Angle(value(key)); return true; }
-        else return false;
-    }
-
-
-    template<> inline
-        void Config::set<Duration>(const std::string& key, const Duration& opt) {
-        set(key, opt.asParseableString());
-    }
-    template<> inline
-        void Config::set<Duration>(const std::string& key, const optional<Duration>& opt) {
-        if (opt.has_value()) { set(key, opt.value()); }
-    }
-
-    template<> inline
-        bool Config::get<Duration>(const std::string& key, optional<Duration>& output) const {
-        if (has(key)) { output = Duration(value(key)); return true; }
-        else return false;
-    }
-
-    template<> inline
-        void Config::set<Speed>(const std::string& key, const Speed& opt) {
-        set(key, opt.asParseableString());
-    }
-    template<> inline
-        void Config::set<Speed>(const std::string& key, const optional<Speed>& opt) {
-        if (opt.has_value()) { set(key, opt.value()); }
-    }
-    template<> inline
-        bool Config::get<Speed>(const std::string& key, optional<Speed>& output) const {
-        if (has(key)) { output = Speed(value(key)); return true; }
-        else return false;
-    }
-
-    template<> inline
-        void Config::set<ScreenSize>(const std::string& key, const ScreenSize& opt) {
-        set(key, opt.asParseableString());
-    }
-    template<> inline
-        void Config::set<ScreenSize>(const std::string& key, const optional<ScreenSize>& opt) {
-        if (opt.has_value()) { set(key, opt.value()); }
-    }
-    template<> inline
-        bool Config::get<ScreenSize>(const std::string& key, optional<ScreenSize>& output) const {
-        if (has(key)) { output = ScreenSize(value(key)); return true; }
-        else return false;
-    }
-#endif
 
     // rocky::strings specializations
     namespace util

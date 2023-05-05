@@ -72,7 +72,7 @@ namespace ROCKY_NAMESPACE
         struct ROCKY_EXPORT Tile
         {
             Revision revision = -1;
-            fmat4 matrix = fmat4(1.0f); // identity
+            glm::fmat4 matrix = glm::fmat4(1.0f); // identity
         };
 
         struct ROCKY_EXPORT ColorLayer : public Tile

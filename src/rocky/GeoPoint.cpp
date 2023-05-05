@@ -19,25 +19,27 @@ GeoPoint&
 GeoPoint::operator=(GeoPoint&& rhs)
 {
     _srs = rhs._srs;
-    _p = rhs._p;
+    x = rhs.x, y = rhs.y, z = rhs.z;
+    //_p = rhs._p;
     rhs._srs = { }; // invalidate rhs
     return *this;
 }
 
-GeoPoint::GeoPoint(const SRS& srs, double x, double y) :
+GeoPoint::GeoPoint(const SRS& srs, double in_x, double in_y) :
     _srs(srs),
-    _p(x, y, 0.0)
+    x(in_x), y(in_y), z(0.0)
 {
     //nop
 }
 
-GeoPoint::GeoPoint(const SRS& srs, double x, double y, double z) :
+GeoPoint::GeoPoint(const SRS& srs, double in_x, double in_y, double in_z) :
     _srs(srs),
-    _p(x, y, z)
+    x(in_x), y(in_y), z(in_z)
 {
     //nop
 }
 
+#if 0
 GeoPoint::GeoPoint(const SRS& srs, const dvec3& xyz) :
     _srs(srs),
     _p(xyz)
@@ -51,10 +53,11 @@ GeoPoint::GeoPoint(const SRS& srs, const fvec3& xyz) :
 {
     //nop
 }
+#endif
 
 GeoPoint::GeoPoint(const SRS& srs) :
     _srs(srs),
-    _p(0.0, 0.0, 0.0)
+    x(0.0), y(0.0), z(0.0)
 {
     //nop
 }
@@ -64,10 +67,11 @@ GeoPoint::transform(const SRS& outSRS, GeoPoint& output) const
 {
     if (valid() && outSRS.valid())
     {
-        dvec3 out;
-        if (_srs.to(outSRS).transform(_p, out))
+        double xyz[3] = { x, y, z };
+        //ec3 out;
+        if (_srs.to(outSRS).transform(xyz, xyz))
         {
-            output = GeoPoint(outSRS, out);
+            output = GeoPoint(outSRS, xyz[0], xyz[1], xyz[2]);
             return true;
         }
     }
@@ -79,10 +83,10 @@ GeoPoint::transformInPlace(const SRS& srs)
 {
     if (valid() && srs.valid())
     {
-        dvec3 out;
-        if (_srs.to(srs).transform(_p, out))
+        double xyz[3] = { x, y, z };
+        if (_srs.to(srs).transform(xyz, xyz))
         {
-            _p = out;
+            x = xyz[0], y = xyz[1], z = xyz[2];
             return true;
         }
     }
@@ -102,8 +106,8 @@ GeoPoint::geodesicDistanceTo(const GeoPoint& rhs) const
     {
         return Distance(
             srs().ellipsoid().geodesicDistance(
-                dvec2(p1.x(), p1.y()),
-                dvec2(p2.x(), p2.y())),
+                glm::dvec2(p1.x, p1.y),
+                glm::dvec2(p2.x, p2.y)),
             Units::METERS);
     }
     else return { };
@@ -119,13 +123,13 @@ GeoPoint::distanceTo(const GeoPoint& rhs) const
     {
         if (srs().isEquivalentTo(rhs.srs()))
         {
-            return glm::distance(_p, rhs._p);
+            return glm::distance(glm::dvec3{ x,y,z }, glm::dvec3{ rhs.x, rhs.y, rhs.z });
         }
         else
         {
             GeoPoint rhsT;
             rhs.transform(srs(), rhsT);
-            return glm::distance(_p, rhsT._p);
+            return glm::distance(glm::dvec3{ x,y,z }, glm::dvec3{ rhsT.x, rhsT.y, rhsT.z });
         }
     }
     else
@@ -145,10 +149,10 @@ GeoPoint::distanceTo(const GeoPoint& rhs) const
         double F = (Re - Rp) / Re; // flattening
 
         double
-            lat1 = deg2rad(p1.y()),
-            lon1 = deg2rad(p1.x()),
-            lat2 = deg2rad(p2.y()),
-            lon2 = deg2rad(p2.x());
+            lat1 = deg2rad(p1.y),
+            lon1 = deg2rad(p1.x),
+            lat2 = deg2rad(p2.y),
+            lon2 = deg2rad(p2.x);
 
         double B1 = atan( (1.0-F)*tan(lat1) );
         double B2 = atan( (1.0-F)*tan(lat2) );
@@ -183,14 +187,14 @@ namespace ROCKY_NAMESPACE
         if (obj.valid()) {
             j = json::object();
             if (obj.srs().isGeodetic()) {
-                set(j, "lat", obj.y());
-                set(j, "long", obj.x());
+                set(j, "lat", obj.y);
+                set(j, "long", obj.x);
             }
             else {
-                set(j, "x", obj.x());
-                set(j, "y", obj.y());
+                set(j, "x", obj.x);
+                set(j, "y", obj.y);
             }
-            set(j, "z", obj.z());
+            set(j, "z", obj.z);
             set(j, "srs", obj.srs());
         }
     }

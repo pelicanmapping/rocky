@@ -54,7 +54,7 @@ TEST_CASE("json")
     CHECK(conf == R"({"lat":42.0,"long":-77.0,"srs":"wgs84","z":0.0})");
     point = GeoPoint();
     ROCKY_NAMESPACE::from_json(json::parse(conf), point);
-    CHECK((point.valid() && point.srs() == SRS::WGS84 && point.x() == -77 && point.y() == 42 && point.z() == 0));
+    CHECK((point.valid() && point.srs() == SRS::WGS84 && point.x == -77 && point.y == 42 && point.z == 0));
 
     optional<URI> uri;
     uri = URI("file.xml");
@@ -150,20 +150,20 @@ TEST_CASE("Threading")
 
 TEST_CASE("Math")
 {
-    CHECK(is_identity(fmat4(1)));
-    CHECK(!is_identity(fmat4()));
+    CHECK(is_identity(glm::fmat4(1)));
+    CHECK(!is_identity(glm::fmat4()));
 
-    fmat4 scale_bias{ 1 };
-    scale_bias = glm::translate(fmat4(1), fvec3(0.25, 0.25, 0.0));
-    scale_bias = glm::scale(scale_bias, fvec3(0.5, 0.5, 1.0));
+    glm::fmat4 scale_bias{ 1 };
+    scale_bias = glm::translate(glm::fmat4(1), glm::fvec3(0.25, 0.25, 0.0));
+    scale_bias = glm::scale(scale_bias, glm::fvec3(0.5, 0.5, 1.0));
     CHECK(!is_identity(scale_bias));
     CHECK(scale_bias[0][0] == 0.5f);
     CHECK(scale_bias[1][1] == 0.5f);
     CHECK(scale_bias[3][0] == 0.25f);
     CHECK(scale_bias[3][1] == 0.25f);
 
-    fvec3 r = scale_bias * fvec3(1, 1, 0);
-    CHECK(r == fvec3(0.75f, 0.75f, 0));
+    glm::fvec3 r = scale_bias * glm::fvec3(1, 1, 0);
+    CHECK(r == glm::fvec3(0.75f, 0.75f, 0));
 }
 
 TEST_CASE("Compression")
@@ -397,12 +397,12 @@ TEST_CASE("SRS")
         auto xform = merc.to(wgs84);
         REQUIRE(xform.valid());
 
-        dvec3 out;
-        REQUIRE(xform(dvec3(-20037508.34278925, 0, 0), out));
-        CHECK(equiv(out, dvec3(-180, 0, 0), E));
+        glm::dvec3 out;
+        REQUIRE(xform(glm::dvec3(-20037508.34278925, 0, 0), out));
+        CHECK(equiv(out, glm::dvec3(-180, 0, 0), E));
         
         // NB: succeeds despite the 90 degrees N being out of bounds for Mercator.
-        CHECK(xform.inverse(dvec3(0, 90, 0), out));
+        CHECK(xform.inverse(glm::dvec3(0, 90, 0), out));
         CHECK(out.y > merc.bounds().ymax);
     }
 
@@ -433,16 +433,16 @@ TEST_CASE("SRS")
         CHECK(ecef.isGeodetic() == false);
         CHECK(ecef.isGeocentric() == true);
 
-        dvec3 out;
+        glm::dvec3 out;
 
         auto xform_wgs84_to_ecef = wgs84.to(ecef);
         REQUIRE(xform_wgs84_to_ecef.valid());
 
-        REQUIRE(xform_wgs84_to_ecef(dvec3(0, 0, 0), out));
-        CHECK(equiv(out, dvec3(6378137, 0, 0)));
+        REQUIRE(xform_wgs84_to_ecef(glm::dvec3(0, 0, 0), out));
+        CHECK(equiv(out, glm::dvec3(6378137, 0, 0)));
 
         REQUIRE(xform_wgs84_to_ecef.inverse(out, out));
-        CHECK(equiv(out, dvec3(0, 0, 0)));
+        CHECK(equiv(out, glm::dvec3(0, 0, 0)));
     }
 
     SECTION("Plate Carree SRS")
@@ -494,19 +494,19 @@ TEST_CASE("SRS")
         double semi_major = wgs84.ellipsoid().semiMajorAxis();
         double semi_minor = wgs84.ellipsoid().semiMinorAxis();
 
-        dvec3 c;
-        REQUIRE(xform(dvec3(0, 0, 0), c));
-        CHECK(equiv(c, dvec3(0, 0, 0), E));
+        glm::dvec3 c;
+        REQUIRE(xform(glm::dvec3(0, 0, 0), c));
+        CHECK(equiv(c, glm::dvec3(0, 0, 0), E));
         // long and lat are out of range for face 0, but doesn't fail
         //CHECK(xform(dvec3(90, 46, 0), c) == false);
 
-        REQUIRE(xform(dvec3(45, 0, 0), c));
-        CHECK(equiv(c, dvec3(semi_major, 0, 0), E));
+        REQUIRE(xform(glm::dvec3(45, 0, 0), c));
+        CHECK(equiv(c, glm::dvec3(semi_major, 0, 0), E));
 
-        REQUIRE(xform.inverse(dvec3(semi_major, 0, 0), c));
-        CHECK(equiv(c, dvec3(45, 0, 0), E));
+        REQUIRE(xform.inverse(glm::dvec3(semi_major, 0, 0), c));
+        CHECK(equiv(c, glm::dvec3(45, 0, 0), E));
 
-        REQUIRE(xform(dvec3(0, 45, 0), c));
+        REQUIRE(xform(glm::dvec3(0, 45, 0), c));
         // FAILS - not sure what is up here:
         // 45 degrees transforms to 6352271.2440m
         // but the semi-minor axis is 6356752.3142m
@@ -516,8 +516,8 @@ TEST_CASE("SRS")
         xform = qsc_face_0.to(wgs84);
         REQUIRE(xform.valid());
 
-        REQUIRE(xform(dvec3(semi_major, 0, 0), c));
-        CHECK(equiv(c, dvec3(45, 0, 0), E));
+        REQUIRE(xform(glm::dvec3(semi_major, 0, 0), c));
+        CHECK(equiv(c, glm::dvec3(45, 0, 0), E));
     }
 
     SECTION("Invalid SRS")
@@ -548,7 +548,7 @@ TEST_CASE("SRS")
 
         // EGM96 test values are from:
         // https://earth-info.nga.mil/index.php?dir=wgs84&action=egm96-geoid-calc
-        dvec3 out(0, 0, 0);
+        glm::dvec3 out(0, 0, 0);
 
         // geodetic to vdatum:
         {
@@ -556,23 +556,23 @@ TEST_CASE("SRS")
             auto xform = wgs84.to(egm96);
             REQUIRE(xform.valid());
 
-            REQUIRE(xform(dvec3(0, 0, 17.16), out));
+            REQUIRE(xform(glm::dvec3(0, 0, 17.16), out));
             CHECK(equiv(out.z, 0.0, E));
-            REQUIRE(xform(dvec3(90, 0, -63.24), out));
+            REQUIRE(xform(glm::dvec3(90, 0, -63.24), out));
             CHECK(equiv(out.z, 0.0, E));
-            REQUIRE(xform(dvec3(180, 0, 21.15), out));
+            REQUIRE(xform(glm::dvec3(180, 0, 21.15), out));
             CHECK(equiv(out.z, 0.0, E));
-            REQUIRE(xform(dvec3(-90, 0, -4.29), out));
+            REQUIRE(xform(glm::dvec3(-90, 0, -4.29), out));
             CHECK(equiv(out.z, 0.0, E));
 
             // inverse
-            REQUIRE(xform.inverse(dvec3(0, 0, 0), out));
+            REQUIRE(xform.inverse(glm::dvec3(0, 0, 0), out));
             CHECK(equiv(out.z, 17.16, E));
-            REQUIRE(xform.inverse(dvec3(90, 0, 0), out));
+            REQUIRE(xform.inverse(glm::dvec3(90, 0, 0), out));
             CHECK(equiv(out.z, -63.24, E));
-            REQUIRE(xform.inverse(dvec3(180, 0, 0), out));
+            REQUIRE(xform.inverse(glm::dvec3(180, 0, 0), out));
             CHECK(equiv(out.z, 21.15, E));
-            REQUIRE(xform.inverse(dvec3(-90, 0, 0), out));
+            REQUIRE(xform.inverse(glm::dvec3(-90, 0, 0), out));
             CHECK(equiv(out.z, -4.29, E));
         }
 
@@ -581,23 +581,23 @@ TEST_CASE("SRS")
             auto xform = egm96.to(wgs84);
             REQUIRE(xform.valid());
 
-            REQUIRE(xform(dvec3(0, 0, 0), out));
+            REQUIRE(xform(glm::dvec3(0, 0, 0), out));
             CHECK(equiv(out.z, 17.16, E));
-            REQUIRE(xform(dvec3(90, 0, 0), out));
+            REQUIRE(xform(glm::dvec3(90, 0, 0), out));
             CHECK(equiv(out.z, -63.24, E));
-            REQUIRE(xform(dvec3(180, 0, 0), out));
+            REQUIRE(xform(glm::dvec3(180, 0, 0), out));
             CHECK(equiv(out.z, 21.15, E));
-            REQUIRE(xform(dvec3(-90, 0, 0), out));
+            REQUIRE(xform(glm::dvec3(-90, 0, 0), out));
             CHECK(equiv(out.z, -4.29, E));
 
             // inverse
-            REQUIRE(xform.inverse(dvec3(0, 0, 17.16), out));
+            REQUIRE(xform.inverse(glm::dvec3(0, 0, 17.16), out));
             CHECK(equiv(out.z, 0.0, E));
-            REQUIRE(xform.inverse(dvec3(90, 0, -63.24), out));
+            REQUIRE(xform.inverse(glm::dvec3(90, 0, -63.24), out));
             CHECK(equiv(out.z, 0.0, E));
-            REQUIRE(xform.inverse(dvec3(180, 0, 21.15), out));
+            REQUIRE(xform.inverse(glm::dvec3(180, 0, 21.15), out));
             CHECK(equiv(out.z, 0.0, E));
-            REQUIRE(xform.inverse(dvec3(-90, 0, -4.29), out));
+            REQUIRE(xform.inverse(glm::dvec3(-90, 0, -4.29), out));
             CHECK(equiv(out.z, 0.0, E));
         }
 
@@ -606,8 +606,8 @@ TEST_CASE("SRS")
             auto xform = egm96.to(egm96);
             REQUIRE(xform.valid());
 
-            dvec3 out;
-            REQUIRE(xform(dvec3(0, 0, 17.16), out));
+            glm::dvec3 out;
+            REQUIRE(xform(glm::dvec3(0, 0, 17.16), out));
             CHECK(equiv(out.z, 17.16, E));
         }
     }
@@ -645,9 +645,9 @@ TEST_CASE("SRS")
             SRS a("wgs84");
             SRS b("spherical-mercator");
             auto xform = a.to(b);
-            dvec3 out;
-            REQUIRE(xform(dvec3(-180, 0, 0), out));
-            CHECK(equiv(out, dvec3(-20037508.34278925, 0, 0)));
+            glm::dvec3 out;
+            REQUIRE(xform(glm::dvec3(-180, 0, 0), out));
+            CHECK(equiv(out, glm::dvec3(-20037508.34278925, 0, 0)));
         };
 
         std::vector<std::thread> threads;

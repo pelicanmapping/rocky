@@ -298,7 +298,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             output = Image::create(Image::R8G8B8A8_UNORM, width, height);
 
             // working set of points. it's much faster to xform an entire vector all at once.
-            std::vector<dvec3> points;
+            std::vector<glm::dvec3> points;
             points.assign(width * height, { 0, 0, 0 });
 
             double minx, miny, maxx, maxy;
@@ -334,7 +334,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                     unsigned i = r * width + c;
 
                     // For each sample point, try each heightfield.  The first one with a valid elevation wins.
-                    fvec4 pixel(0, 0, 0, 0);
+                    glm::fvec4 pixel(0, 0, 0, 0);
 
                     for (unsigned k = 0; k < source_list.size(); ++k)
                     {

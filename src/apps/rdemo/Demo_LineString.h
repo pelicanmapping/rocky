@@ -24,8 +24,8 @@ auto Demo_LineString_Absolute = [](Application& app)
         const double alt = 125000;
         for (double lon = -180.0; lon <= 0.0; lon += 2.5)
         {
-            rocky::dvec3 ecef;
-            if (xform(rocky::dvec3(lon, -20.0, alt), ecef))
+            glm::dvec3 ecef;
+            if (xform(glm::dvec3(lon, -20.0, alt), ecef))
                 line->pushVertex(ecef);
         }
         line->setStyle(LineStyle{ { 1,1,0,1 }, 3.0f, 0xffff, 4 });
@@ -124,22 +124,22 @@ auto Demo_LineString_Relative = [](Application& app)
             line->setStyle(style);
         }
 
-        auto& pos = object->xform->position();
-        fvec3 vec = pos.to_dvec3();
+        GeoPoint pos = object->xform->position();
+        glm::fvec3 v{ pos.x, pos.y, pos.z };
 
-        if (ImGuiLTable::SliderFloat("Latitude", &vec.y, -85.0, 85.0, "%.1f"))
+        if (ImGuiLTable::SliderFloat("Latitude", &v.y, -85.0, 85.0, "%.1f"))
         {
-            object->xform->setPosition(GeoPoint(pos.srs(), vec));
+            object->xform->setPosition(GeoPoint(pos.srs(), v.x, v.y, v.z));
         }
 
-        if (ImGuiLTable::SliderFloat("Longitude", &vec.x, -180.0, 180.0, "%.1f"))
+        if (ImGuiLTable::SliderFloat("Longitude", &v.x, -180.0, 180.0, "%.1f"))
         {
-            object->xform->setPosition(GeoPoint(pos.srs(), vec));
+            object->xform->setPosition(GeoPoint(pos.srs(), v.x, v.y, v.z));
         }
         
-        if (ImGuiLTable::SliderFloat("Altitude", &vec.z, 0.0, 2500000.0, "%.1f"))
+        if (ImGuiLTable::SliderFloat("Altitude", &v.z, 0.0, 2500000.0, "%.1f"))
         {
-            object->xform->setPosition(GeoPoint(pos.srs(), vec));
+            object->xform->setPosition(GeoPoint(pos.srs(), v.x, v.y, v.z));
         }
 
         ImGuiLTable::End();

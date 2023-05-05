@@ -36,8 +36,8 @@ namespace ROCKY_NAMESPACE
         //! Sets the eye position to use when testing for occlusion.
         //! @param eyeECEF eye point in world geocentric coordinates
         //! Returns true if the value changed; false if it was the same
-        bool setEye(const dvec3& eyeECEF);
-        const dvec3& getEye() const { return _eye; }
+        bool setEye(const glm::dvec3& eyeECEF);
+        const glm::dvec3& getEye() const { return _eye; }
 
         //! Whether a point is visible over the horizon.
         //! @param point Point in geocetric coordinates
@@ -60,16 +60,16 @@ namespace ROCKY_NAMESPACE
     protected:
         Ellipsoid _em;
         bool _valid;
-        dvec3 _eye;       // world eyepoint
-        dvec3 _eyeUnit;   // unit eye vector (scaled)
-        dvec3 _VC;        // eye->center vector (scaled)
+        glm::dvec3 _eye;       // world eyepoint
+        glm::dvec3 _eyeUnit;   // unit eye vector (scaled)
+        glm::dvec3 _VC;        // eye->center vector (scaled)
         double _VCmag;    // distance from eye to center (scaled)
         double _VCmag2;   // distance from eye to center squared (scaled)
         double _VHmag2;   // distance from eye to horizon squared (scaled)
         double _coneCos;  // cosine of half-cone
         double _coneTan;  // tangent of half-cone
-        dvec3 _scale;     // transforms from world to unit space
-        dvec3 _scaleInv;  // transforms from unit to world space
+        glm::dvec3 _scale;     // transforms from world to unit space
+        glm::dvec3 _scaleInv;  // transforms from unit to world space
         double _minHAE;   // minumum height above ellipsoid to test
         double _minVCmag; // derived from minHAE
     };

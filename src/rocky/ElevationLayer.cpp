@@ -276,7 +276,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
             output = Heightfield::create(width, height);
 
             // working set of points. it's much faster to xform an entire vector all at once.
-            std::vector<dvec3> points;
+            std::vector<glm::dvec3> points;
             points.assign(width * height, { 0, 0, NO_DATA_VALUE });
 
             double minx, miny, maxx, maxy;
@@ -728,7 +728,7 @@ ElevationLayerVector::populateHeightfield(
 
                 float resolution = FLT_MAX;
 
-                fvec3 normal_sum(0, 0, 0);
+                glm::fvec3 normal_sum(0, 0, 0);
 
                 for (int i = 0; i < contenders.size() && resolvedIndex < 0; ++i)
                 {
@@ -790,7 +790,7 @@ ElevationLayerVector::populateHeightfield(
                             // sit on TOP of this layer.
                             resolvedIndex = index;
 
-                            hf->write(fvec4(elevation), c, r);
+                            hf->write(glm::fvec4(elevation), c, r);
 
                             resolution = actualKey.getResolutionForTileSize(hf->width()).second;
                         }
@@ -887,7 +887,7 @@ ElevationLayer::decodeMapboxRGB(shared_ptr<Image> image) const
     // convert the RGB Elevation into an actual heightfield
     auto hf = Heightfield::create(image->width(), image->height());
 
-    fvec4 pixel;
+    glm::fvec4 pixel;
     for (unsigned y = 0; y < image->height(); ++y)
     {
         for (unsigned x = 0; x < image->width(); ++x)

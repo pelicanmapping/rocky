@@ -33,12 +33,12 @@ using namespace ROCKY_NAMESPACE;
 namespace
 {
     // Scale and bias matrices, one for each TileKey quadrant.
-    const dmat4 scaleBias[4] =
+    const glm::dmat4 scaleBias[4] =
     {
-        dmat4(0.5,0,0,0, 0,0.5,0,0, 0,0,1.0,0, 0.0,0.5,0,1.0),
-        dmat4(0.5,0,0,0, 0,0.5,0,0, 0,0,1.0,0, 0.5,0.5,0,1.0),
-        dmat4(0.5,0,0,0, 0,0.5,0,0, 0,0,1.0,0, 0.0,0.0,0,1.0),
-        dmat4(0.5,0,0,0, 0,0.5,0,0, 0,0,1.0,0, 0.5,0.0,0,1.0)
+        glm::dmat4(0.5,0,0,0, 0,0.5,0,0, 0,0,1.0,0, 0.0,0.5,0,1.0),
+        glm::dmat4(0.5,0,0,0, 0,0.5,0,0, 0,0,1.0,0, 0.5,0.5,0,1.0),
+        glm::dmat4(0.5,0,0,0, 0,0.5,0,0, 0,0,1.0,0, 0.0,0.0,0,1.0),
+        glm::dmat4(0.5,0,0,0, 0,0.5,0,0, 0,0,1.0,0, 0.5,0.0,0,1.0)
     }; 
 }
 
@@ -46,7 +46,7 @@ TerrainTileNode::TerrainTileNode(
     const TileKey& in_key,
     TerrainTileNode* in_parent,
     vsg::ref_ptr<vsg::Node> in_geometry,
-    const fvec2& in_morphConstants,
+    const glm::fvec2& in_morphConstants,
     float in_childrenVisibilityRange,
     const SRS& worldSRS,
     const TerrainTileDescriptors& in_initialDescriptors,
@@ -97,7 +97,7 @@ TerrainTileNode::recomputeBound()
 }
 
 void
-TerrainTileNode::setElevation(shared_ptr<Image> image, const dmat4& matrix)
+TerrainTileNode::setElevation(shared_ptr<Image> image, const glm::dmat4& matrix)
 {
     if (surface)
     {

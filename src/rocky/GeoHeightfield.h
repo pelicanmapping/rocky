@@ -98,7 +98,7 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Gets the X interval of this GeoHeightField
-        inline dvec2 resolution() const;
+        inline glm::dvec2 resolution() const;
 
         //! Gets the height at a geographic location (in this object's SRS)
         float heightAtLocation(
@@ -118,17 +118,13 @@ namespace ROCKY_NAMESPACE
         GeoExtent _extent;
         shared_ptr<Heightfield> _hf;
         float _minHeight, _maxHeight;
-        dvec2 _resolution;
+        glm::dvec2 _resolution;
 
         void init();
     };
 
 
-    //inline shared_ptr<Heightfield> GeoHeightfield::getHeightfield() const {
-    //    return _hf;
-    //}
-
-    inline dvec2 GeoHeightfield::resolution() const {
+    inline glm::dvec2 GeoHeightfield::resolution() const {
         return _resolution;
     }
 }

@@ -48,21 +48,21 @@ namespace ROCKY_NAMESPACE
         //! Matrix to transform from LTP at a point to geocentric
         //! @param xyz Input geocentric point
         //! @return Matrix that transforms points from geocentric space to the tangent place XYZ space
-        dmat4 geocentricToLocalToWorld(const dvec3& geocPoint) const;
+        glm::dmat4 geocentricToLocalToWorld(const glm::dvec3& geocPoint) const;
 
         //! Get local up vector at a geocentric point
-        dvec3 geocentricToUpVector(const dvec3& geocPoint) const;
+        glm::dvec3 geocentricToUpVector(const glm::dvec3& geocPoint) const;
 
         //! Convert geocentric coords to geodetic
         //! @param geocPoint Input geocentric point (x, y, z meters)
         //! @return output geodetic (degrees longitude, degrees latitude, meters altitude) point
-        dvec3 geocentricToGeodetic(const dvec3& geocPoint) const;
+        glm::dvec3 geocentricToGeodetic(const glm::dvec3& geocPoint) const;
 
         //! Convert geodetic coords to geocentric coord
-        dvec3 geodeticToGeocentric(const dvec3& geodPoint) const;
+        glm::dvec3 geodeticToGeocentric(const glm::dvec3& geodPoint) const;
 
         //! Get the coordinate frame at the geocentric point
-        dmat4 geodeticToCoordFrame(const dvec3& geodPoint) const;
+        glm::dmat4 geodeticToCoordFrame(const glm::dvec3& geodPoint) const;
 
         //! Converts degrees to meters at a given latitide
         double longitudinalDegreesToMeters(double value, double lat_deg = 0.0) const;
@@ -72,23 +72,23 @@ namespace ROCKY_NAMESPACE
 
         //! Geodesic distance in meters from one lat/long to another
         double geodesicDistance(
-            const dvec2& longlat1_deg, 
-            const dvec2& longlat2_deg) const;
+            const glm::dvec2& longlat1_deg,
+            const glm::dvec2& longlat2_deg) const;
 
         //! Geodesic interpolation between two lat/long points
         void geodesicInterpolate(
-            const dvec3& longlat1_deg,
-            const dvec3& longlat2_deg,
+            const glm::dvec3& longlat1_deg,
+            const glm::dvec3& longlat2_deg,
             double t,
-            dvec3& out_longlat_deg) const;
+            glm::dvec3& out_longlat_deg) const;
 
         //! Intersects a geocentric line with the ellipsoid.
         //! Upon success return true and place the first intersection
         //! point in "out".
         bool intersectGeocentricLine(
-            const dvec3& p0,
-            const dvec3& p1,
-            dvec3& out) const;
+            const glm::dvec3& p0,
+            const glm::dvec3& p1,
+            glm::dvec3& out) const;
 
         //! dtor
         ~Ellipsoid();
@@ -98,8 +98,8 @@ namespace ROCKY_NAMESPACE
 
         double _re, _rp, _ecc2;
         std::string _name;
-        dmat3 _ellipsoidToUnitSphere;
-        dmat3 _unitSphereToEllipsoid;
+        glm::dmat3 _ellipsoidToUnitSphere;
+        glm::dmat3 _unitSphereToEllipsoid;
     };
 }
 

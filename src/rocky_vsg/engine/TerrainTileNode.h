@@ -33,7 +33,7 @@ namespace ROCKY_NAMESPACE
     struct TextureData
     {
         shared_ptr<Image> image;
-        dmat4 matrix{ 1 };
+        glm::dmat4 matrix{ 1 };
         vsg::ref_ptr<vsg::ImageInfo> texture;
     };
 
@@ -50,10 +50,10 @@ namespace ROCKY_NAMESPACE
     {
         struct Uniforms
         {
-            fmat4 elevation_matrix;
-            fmat4 color_matrix;
-            fmat4 normal_matrix;
-            fmat4 model_matrix;
+            glm::fmat4 elevation_matrix;
+            glm::fmat4 color_matrix;
+            glm::fmat4 normal_matrix;
+            glm::fmat4 model_matrix;
         };
         vsg::ref_ptr<vsg::DescriptorImage> color;
         vsg::ref_ptr<vsg::DescriptorImage> colorParent;
@@ -66,7 +66,7 @@ namespace ROCKY_NAMESPACE
     class TerrainTileRenderModel
     {
     public:
-        rocky::fmat4 modelMatrix;
+        glm::fmat4 modelMatrix;
         TextureData color;
         TextureData elevation;
         TextureData normal;
@@ -74,7 +74,7 @@ namespace ROCKY_NAMESPACE
 
         TerrainTileDescriptors descriptors;
 
-        void applyScaleBias(const dmat4& sb)
+        void applyScaleBias(const glm::dmat4& sb)
         {
             if (color.image)
                 color.matrix *= sb;
@@ -98,7 +98,7 @@ namespace ROCKY_NAMESPACE
         TileKey key;
         bool doNotExpire;
         Revision revision;
-        fvec2 morphConstants;
+        glm::fvec2 morphConstants;
         float childrenVisibilityRange;
         unsigned numLODs;
         TerrainTileRenderModel renderModel;
@@ -120,7 +120,7 @@ namespace ROCKY_NAMESPACE
             const TileKey& key,
             TerrainTileNode* parent,
             vsg::ref_ptr<vsg::Node> geometry,
-            const fvec2& morphConstants,
+            const glm::fvec2& morphConstants,
             float childrenVisibilityRange,
             const SRS& worldSRS,
             const TerrainTileDescriptors& initialDescriptors,
@@ -131,7 +131,7 @@ namespace ROCKY_NAMESPACE
         //! needed for bounding box
         void setElevation(
             shared_ptr<Image> image,
-            const dmat4& matrix);
+            const glm::dmat4& matrix);
 
         //! This node's elevation raster image
         shared_ptr<Image> getElevationRaster() const {
@@ -139,7 +139,7 @@ namespace ROCKY_NAMESPACE
         }
 
         //! This node's elevation matrix
-        const dmat4& getElevationMatrix() const {
+        const glm::dmat4& getElevationMatrix() const {
             return surface->getElevationMatrix();
         }
 

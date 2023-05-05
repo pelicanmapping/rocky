@@ -126,7 +126,7 @@ TerrainState::createDefaultDescriptors()
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
     auto normal_image = Image::create(Image::R8G8B8_UNORM, 1, 1);
-    normal_image->fill(fvec4(.5, .5, 1, 0));
+    normal_image->fill(glm::fvec4(.5, .5, 1, 0));
     textures.normal.defaultData = util::moveImageToVSG(normal_image);
     ROCKY_HARD_ASSERT(textures.normal.defaultData);
     this->defaultTileDescriptors.normal = vsg::DescriptorImage::create(

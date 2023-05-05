@@ -51,8 +51,8 @@ int main(int argc, char** argv)
     auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
     for (double lon = -180.0; lon <= 180.0; lon += 2.5)
     {
-        rocky::dvec3 ecef;
-        if (xform(rocky::dvec3(lon, 0.0, 100000), ecef))
+        glm::dvec3 ecef;
+        if (xform(glm::dvec3(lon, 0.0, 100000), ecef))
             line->pushVertex(ecef);
     }
     

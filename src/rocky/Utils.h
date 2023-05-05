@@ -107,7 +107,7 @@ namespace ROCKY_NAMESPACE { namespace util
     //! Extract the "i-th" token from a delimited string
     extern ROCKY_EXPORT std::string getToken(const std::string& input, unsigned i, const std::string& delims=",");
 
-    extern ROCKY_EXPORT u8vec4 toColor(const std::string& str, const u8vec4& default_value);
+    extern ROCKY_EXPORT glm::u8vec4 toColor(const std::string& str, const glm::u8vec4& default_value);
 
     extern ROCKY_EXPORT std::string makeCacheKey(const std::string& key, const std::string& prefix);
     //------------------------------------------------------------------------

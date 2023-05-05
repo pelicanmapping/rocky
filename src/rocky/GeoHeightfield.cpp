@@ -86,7 +86,7 @@ GeoHeightfield::heightAtLocation(
 float
 GeoHeightfield::heightAt(double x, double y, const SRSOperation& xform, Image::Interpolation interp) const
 {
-    dvec3 temp(x, y, 0);
+    glm::dvec3 temp(x, y, 0);
     if (xform.valid())
     {
         if (!xform.transform(temp, temp))
@@ -109,7 +109,7 @@ GeoHeightfield::heightAt(double x, double y, const SRS& xy_srs, Image::Interpola
 {
     const SRS& localSRS = _extent.srs();
 
-    dvec3 temp(x, y, 0);
+    glm::dvec3 temp(x, y, 0);
 
     // first xform the input point into our local SRS:
     SRSOperation xform;

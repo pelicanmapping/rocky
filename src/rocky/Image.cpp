@@ -165,7 +165,7 @@ Image::allocate(
 
     // simple init for one-byte images
     if (sizeInBytes() > 0)
-        write(fvec4(0, 0, 0, 0), 0, 0);
+        write(glm::fvec4(0, 0, 0, 0), 0, 0);
 }
 
 unsigned char*

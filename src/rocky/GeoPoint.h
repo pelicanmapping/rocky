@@ -28,17 +28,20 @@ namespace ROCKY_NAMESPACE
         //! Constructs a GeoPoint
         GeoPoint(const SRS& srs, double x, double y, double z);
 
-        //! Constructs a GeoPoint
-        GeoPoint(const SRS& srs, const fvec3& xyz);
+        ////! Constructs a GeoPoint
+        //GeoPoint(const SRS& srs, const fvec3& xyz);
 
-        //! Constructs a GeoPoint
-        GeoPoint(const SRS& srs, const dvec3& xyz);
+        ////! Constructs a GeoPoint
+        //GeoPoint(const SRS& srs, const dvec3& xyz);
 
         //! Destruct
         ~GeoPoint() { }
 
         // component getter/setters
 
+        double x, y, z;
+
+#if 0
         double& x() { return _p.x; }
         double  x() const { return _p.x; }
 
@@ -52,8 +55,9 @@ namespace ROCKY_NAMESPACE
         double  alt() const { return _p.z; }
 
         double* ptr() { return &_p.x; }
+#endif
 
-        const dvec3& to_dvec3() const { return _p; }
+        //const dvec3& to_dvec3() const { return _p; }
 
         const SRS& srs() const { return _srs; }
 
@@ -87,7 +91,7 @@ namespace ROCKY_NAMESPACE
          //Units getXYUnits() const;
 
         bool operator == (const GeoPoint& rhs) const {
-            return _srs == rhs._srs && _p == rhs._p;
+            return _srs == rhs._srs && x == rhs.x && y == rhs.y && z == rhs.z;
         }
 
         bool operator != (const GeoPoint& rhs) const {
@@ -111,7 +115,6 @@ namespace ROCKY_NAMESPACE
         //JSON to_json() const;
 
     private:
-        dvec3 _p;
         SRS _srs;
     };
 }

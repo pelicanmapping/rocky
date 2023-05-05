@@ -47,16 +47,16 @@ auto Demo_Label = [](Application& app)
         }
 
         auto& pos = object->xform->position();
-        fvec3 vec = pos.to_dvec3();
+        glm::fvec3 vec{ pos.x, pos.y, pos.z };
 
         if (ImGuiLTable::SliderFloat("Latitude", &vec.y, -85.0, 85.0, "%.1f"))
         {
-            object->xform->setPosition(GeoPoint(pos.srs(), vec));
+            object->xform->setPosition(GeoPoint(pos.srs(), vec.x, vec.y, vec.z));
         }
 
         if (ImGuiLTable::SliderFloat("Longitude", &vec.x, -180.0, 180.0, "%.1f"))
         {
-            object->xform->setPosition(GeoPoint(pos.srs(), vec));
+            object->xform->setPosition(GeoPoint(pos.srs(), vec.x, vec.y, vec.z));
         }
 
         ImGuiLTable::End();

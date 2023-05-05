@@ -264,7 +264,7 @@ TileKey::createTileKeyContainingPoint(
     if (point.srs().isHorizEquivalentTo(profile.srs()))
     {
         return createTileKeyContainingPoint(
-            point.x(), point.y(), level, profile);
+            point.x, point.y, level, profile);
     }
     else
     {

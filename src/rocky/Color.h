@@ -14,7 +14,7 @@ namespace ROCKY_NAMESPACE
     /**
      * Pre-set colors (convenience class).
      */
-    class ROCKY_EXPORT Color : public fvec4
+    class ROCKY_EXPORT Color : public glm::fvec4
     {
     public:
         enum Format {
@@ -24,29 +24,29 @@ namespace ROCKY_NAMESPACE
 
         /** Creates a new default color */
         Color() : 
-            fvec4(1, 1, 1, 1) { }
+            glm::fvec4(1, 1, 1, 1) { }
 
         /** Copy constructor */
         Color(const Color& rhs) : 
-            fvec4(rhs) { }
+            glm::fvec4(rhs) { }
 
         /** Make from vec4 */
-        Color(const fvec4& rgba) : fvec4(rgba) { }
+        Color(const glm::fvec4& rgba) : glm::fvec4(rgba) { }
 
         /** Make from vec3 */
-        Color(const fvec3& rgb) :
-            fvec4(rgb[0], rgb[1], rgb[2], 1.0f) { }
+        Color(const glm::fvec3& rgb) :
+            glm::fvec4(rgb[0], rgb[1], rgb[2], 1.0f) { }
 
         /** Copy constructor with modified alpha value */
         Color(const Color& rhs, float a);
 
         /** Component constructor */
         Color(float r, float g, float b, float a = 1.0f) :
-            fvec4(r, g, b, a) { }
+            glm::fvec4(r, g, b, a) { }
 
         /** Vector constructor */
         explicit Color(float v) :
-            fvec4(v, v, v, v) { }
+            glm::fvec4(v, v, v, v) { }
 
         /** RGBA/ABGR constructor */
         explicit Color(
@@ -72,13 +72,13 @@ namespace ROCKY_NAMESPACE
         Color brightness(float factor) const;
 
         //! gets the color as HSL (and alpha)
-        fvec4 asHSL() const;
+        glm::fvec4 asHSL() const;
 
         //! populates the RGB from HSL
-        void fromHSL(const fvec4& hsla);
+        void fromHSL(const glm::fvec4& hsla);
 
         //! as normalized ubyte4
-        u8vec4 asNormalizedRGBA() const;
+        glm::u8vec4 asNormalizedRGBA() const;
 
         //! set all four values
         void set(float r, float g, float b, float a);

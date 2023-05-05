@@ -629,15 +629,15 @@ SRS::geocentricSRS() const
     return SRS();
 }
 
-dmat4
-SRS::localToWorldMatrix(const dvec3& origin) const
+glm::dmat4
+SRS::localToWorldMatrix(const glm::dvec3& origin) const
 {
     if (!valid())
         return { };
 
     if (isGeodetic())
     {
-        dvec3 ecef;
+        glm::dvec3 ecef;
         to(SRS::ECEF).transform(origin, ecef);
         return ellipsoid().geocentricToLocalToWorld(ecef);
     }
@@ -647,7 +647,7 @@ SRS::localToWorldMatrix(const dvec3& origin) const
     }
     else // projected
     {
-        return glm::translate(dmat4(1.0), origin);
+        return glm::translate(glm::dmat4(1.0), origin);
     }
 }
 

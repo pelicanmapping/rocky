@@ -282,7 +282,7 @@ TerrainTilePager::createTile(
     float range, morphStart, morphEnd;
     getRanges(key, range, morphStart, morphEnd);
     float one_over_end_minus_start = 1.0f / (morphEnd - morphStart);
-    fvec2 morphConstants = fvec2(morphEnd * one_over_end_minus_start, one_over_end_minus_start);
+    auto morphConstants = glm::fvec2(morphEnd * one_over_end_minus_start, one_over_end_minus_start);
 
     // Calculate the visibility range for this tile's children.
     float childrenVisibilityRange = FLT_MAX;

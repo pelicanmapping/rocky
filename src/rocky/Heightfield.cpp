@@ -243,7 +243,7 @@ Heightfield::heightAtPixel(
         //The "right" triangle is ll, lr, ur
 
         //Determine which triangle the point falls in.
-        dvec3 v0, v1, v2;
+        glm::dvec3 v0, v1, v2;
 
         double dx = c - (double)colMin;
         double dy = r - (double)rowMin;
@@ -251,20 +251,20 @@ Heightfield::heightAtPixel(
         if (dx > dy)
         {
             //The point lies in the right triangle
-            v0 = dvec3(colMin, rowMin, llHeight);
-            v1 = dvec3(colMax, rowMin, lrHeight);
-            v2 = dvec3(colMax, rowMax, urHeight);
+            v0 = glm::dvec3(colMin, rowMin, llHeight);
+            v1 = glm::dvec3(colMax, rowMin, lrHeight);
+            v2 = glm::dvec3(colMax, rowMax, urHeight);
         }
         else
         {
             //The point lies in the left triangle
-            v0 = dvec3(colMin, rowMin, llHeight);
-            v1 = dvec3(colMax, rowMax, urHeight);
-            v2 = dvec3(colMin, rowMax, ulHeight);
+            v0 = glm::dvec3(colMin, rowMin, llHeight);
+            v1 = glm::dvec3(colMax, rowMax, urHeight);
+            v2 = glm::dvec3(colMin, rowMax, ulHeight);
         }
 
         //Compute the normal
-        dvec3 n = glm::cross((v1 - v0), (v2 - v0));
+        glm::dvec3 n = glm::cross((v1 - v0), (v2 - v0));
 
         result = (n.x * (c - v0.x) + n.y*(r - v0.y)) / -n.z + v0.z;
         //result = (n.x() * (c - v0.x()) + n.y() * (r - v0.y())) / -n.z() + v0.z();

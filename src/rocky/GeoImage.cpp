@@ -281,7 +281,7 @@ namespace
         if (!xform.valid())
             return false;
 
-        std::vector<dvec3> points;
+        std::vector<glm::dvec3> points;
 
         const double dx = (in_xmax - in_xmin) / (numx - 1);
         const double dy = (in_ymax - in_ymin) / (numy - 1);
@@ -740,7 +740,7 @@ GeoImage::reproject(
 }
 
 bool
-GeoImage::read(fvec4& output, const GeoPoint& p) const
+GeoImage::read(glm::fvec4& output, const GeoPoint& p) const
 {
     if (!p.valid() || !valid())
     {
@@ -754,8 +754,8 @@ GeoImage::read(fvec4& output, const GeoPoint& p) const
         return p.transform(srs(), c) && read(output, c);
     }
 
-    double u = (p.x() - _extent.xMin()) / _extent.width();
-    double v = (p.y() - _extent.yMin()) / _extent.height();
+    double u = (p.x - _extent.xMin()) / _extent.width();
+    double v = (p.y - _extent.yMin()) / _extent.height();
 
     // out of bounds?
     if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
@@ -769,7 +769,7 @@ GeoImage::read(fvec4& output, const GeoPoint& p) const
 }
 
 bool
-GeoImage::read(fvec4& out, double x, double y) const
+GeoImage::read(glm::fvec4& out, double x, double y) const
 {
     if (!valid()) return false;
 
@@ -787,10 +787,10 @@ GeoImage::read(fvec4& out, double x, double y) const
 }
 
 bool
-GeoImage::read(fvec4& out, double x, double y, const SRS& xy_srs) const
+GeoImage::read(glm::fvec4& out, double x, double y, const SRS& xy_srs) const
 {
     if (!valid()) return false;
-    dvec3 temp(x, y, 0);
+    glm::dvec3 temp(x, y, 0);
     if (xy_srs.valid())
     {
         if (!srs().to(xy_srs).transform(temp, temp))
@@ -800,11 +800,11 @@ GeoImage::read(fvec4& out, double x, double y, const SRS& xy_srs) const
 }
 
 bool
-GeoImage::read(fvec4& out, double x, double y, const SRSOperation& xform) const
+GeoImage::read(glm::fvec4& out, double x, double y, const SRSOperation& xform) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(valid(), false);
 
-    dvec3 temp(x, y, 0);
+    glm::dvec3 temp(x, y, 0);
     if (!xform.transform(temp, temp))
         return false;
 

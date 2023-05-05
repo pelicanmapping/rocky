@@ -26,12 +26,12 @@ Horizon::setEllipsoid(const Ellipsoid& em)
 {
     _em = em;
 
-    _scaleInv = dvec3(
+    _scaleInv = glm::dvec3(
         em.semiMajorAxis(),
         em.semiMajorAxis(),
         em.semiMinorAxis());
 
-    _scale = dvec3(
+    _scale = glm::dvec3(
         1.0 / em.semiMajorAxis(),
         1.0 / em.semiMajorAxis(),
         1.0 / em.semiMinorAxis());
@@ -40,7 +40,7 @@ Horizon::setEllipsoid(const Ellipsoid& em)
     _minVCmag = 1.0 + glm::length(_scale * _minHAE);
 
     // just so we don't have gargabe values
-    setEye(dvec3(1e7, 0, 0));
+    setEye(glm::dvec3(1e7, 0, 0));
 
     _valid = true;
 }
@@ -53,7 +53,7 @@ Horizon::setMinHAE(double value)
 }
 
 bool
-Horizon::setEye(const dvec3& eye)
+Horizon::setEye(const glm::dvec3& eye)
 {
     if (eye == _eye)
         return false;
@@ -61,7 +61,7 @@ Horizon::setEye(const dvec3& eye)
     _eye = eye;
     _eyeUnit = glm::normalize(eye);
 
-    _VC = dvec3(
+    _VC = glm::dvec3(
         -_eye.x * _scale.x,
         -_eye.y * _scale.y,
         -_eye.z * _scale.z);  // viewer->center (scaled)
@@ -90,7 +90,7 @@ Horizon::isVisible(double x, double y, double z, double radius) const
     if (_valid == false || radius >= _scaleInv.x || radius >= _scaleInv.y || radius >= _scaleInv.z)
         return true;
 
-    dvec3 target(x, y, z);
+    glm::dvec3 target(x, y, z);
 
     // First check the object against the horizon plane, a plane that intersects the
     // ellipsoid, whose normal is the vector from the eyepoint to the center of the
@@ -100,7 +100,7 @@ Horizon::isVisible(double x, double y, double z, double radius) const
     // Viewer-to-target vector
     // move the target closer to the horizon plane by "radius"
     // and transform into unit space
-    dvec3 VTplusR = ((target + _eyeUnit * radius) - _eye) * _scale;
+    glm::dvec3 VTplusR = ((target + _eyeUnit * radius) - _eye) * _scale;
 
     // If the target is above the eye, it's visible
     double VTdotVC = glm::dot(VTplusR, _VC);
@@ -130,7 +130,7 @@ Horizon::isVisible(double x, double y, double z, double radius) const
     // eye->center vetor. If the sphere is entirely within the cone, it is occluded
     // by the spheroid (not ellipsoid, sorry)
     // ref: http://www.cbloom.com/3d/techdocs/culling.txt
-    dvec3 VT = (target - _eye) * _scale;
+    glm::dvec3 VT = (target - _eye) * _scale;
     double radius_scaled = glm::distance(VT, VTplusR);
 
     auto VTmag2 = glm::dot(VT, VT);

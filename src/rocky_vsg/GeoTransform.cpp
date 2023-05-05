@@ -46,7 +46,8 @@ GeoTransform::accept(vsg::RecordTraversal& rv) const
         {
             if (_position.transform(worldSRS, view.worldPos))
             {
-                view.matrix = to_vsg(worldSRS.localToWorldMatrix(view.worldPos.to_dvec3()));
+                view.matrix = to_vsg(worldSRS.localToWorldMatrix(glm::dvec3(
+                    view.worldPos.x, view.worldPos.y, view.worldPos.z)));
             }
         }
 

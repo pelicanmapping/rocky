@@ -16,16 +16,16 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    inline void computeCoordinateFrame(double latitude, double longitude, dmat4& localToWorld)
+    inline void computeCoordinateFrame(double latitude, double longitude, glm::dmat4& localToWorld)
     {
         // Compute up vector
-        dvec3 up(cos(longitude)*cos(latitude), sin(longitude)*cos(latitude), sin(latitude));
+        glm::dvec3 up(cos(longitude)*cos(latitude), sin(longitude)*cos(latitude), sin(latitude));
 
         // Compute east vector
-        dvec3 east(-sin(longitude), cos(longitude), 0);
+        glm::dvec3 east(-sin(longitude), cos(longitude), 0);
 
         // Compute north vector = outer product up x east
-        dvec3 north = glm::cross(up, east);
+        glm::dvec3 north = glm::cross(up, east);
 
         localToWorld[0][0] = east[0];
         localToWorld[0][1] = east[1];
@@ -115,12 +115,12 @@ namespace
         double latitude,
         double longitude,
         double height,
-        dmat4& localToWorld)
+        glm::dmat4& localToWorld)
     {
         double X, Y, Z;
         convertLatLongHeightToXYZ(RE, RP, ECC2, latitude, longitude, height, X, Y, Z);
 
-        localToWorld = glm::translate(dmat4(1.0), dvec3(X, Y, Z));
+        localToWorld = glm::translate(glm::dmat4(1.0), glm::dvec3(X, Y, Z));
         //localToWorld.makeTranslate(X, Y, Z);
         computeCoordinateFrame(latitude, longitude, localToWorld);
     }
@@ -128,17 +128,17 @@ namespace
     inline void computeLocalToWorldTransformFromXYZ(
         double RE, double RP, double ECC2,
         double X, double Y, double Z,
-        dmat4& localToWorld)
+        glm::dmat4& localToWorld)
     {
         double  latitude, longitude, height;
         convertXYZToLatLongHeight(RE, RP, ECC2, X, Y, Z, latitude, longitude, height);
 
-        localToWorld = glm::translate(dmat4(1.0), dvec3(X, Y, Z));
+        localToWorld = glm::translate(glm::dmat4(1.0), glm::dvec3(X, Y, Z));
         //localToWorld.makeTranslate(X, Y, Z);
         computeCoordinateFrame(latitude, longitude, localToWorld);
     }
 
-    inline dvec3 computeLocalUpVector(
+    inline glm::dvec3 computeLocalUpVector(
         double RE, double RP, double ECC2,
         double X, double Y, double Z)
     {
@@ -149,7 +149,7 @@ namespace
         convertXYZToLatLongHeight(RE, RP, ECC2, X, Y, Z, latitude, longitude, altitude);
 
         // Compute up vector
-        return dvec3(
+        return glm::dvec3(
             cos(longitude) * cos(latitude),
             sin(longitude) * cos(latitude),
             sin(latitude));
@@ -195,38 +195,38 @@ Ellipsoid::semiMinorAxis() const
     return _rp;
 }
 
-dmat4
-Ellipsoid::geocentricToLocalToWorld(const dvec3& geoc) const
+glm::dmat4
+Ellipsoid::geocentricToLocalToWorld(const glm::dvec3& geoc) const
 {
-    dmat4 local2world;
+    glm::dmat4 local2world;
     double latitude, longitude, height;
     convertXYZToLatLongHeight(_re, _rp, _ecc2, geoc.x, geoc.y, geoc.z, latitude, longitude, height);
 
-    local2world = glm::translate(dmat4(1.0), geoc);
+    local2world = glm::translate(glm::dmat4(1.0), geoc);
     //localToWorld.makeTranslate(geoc.x, geoc.y, geoc.z);
     computeCoordinateFrame(latitude, longitude, local2world);
     return local2world;
 }
 
-dvec3
-Ellipsoid::geocentricToUpVector(const dvec3& geoc) const
+glm::dvec3
+Ellipsoid::geocentricToUpVector(const glm::dvec3& geoc) const
 {
     return computeLocalUpVector(
         _re, _rp, _ecc2, geoc.x, geoc.y, geoc.z);
 }
 
-dmat4
-Ellipsoid::geodeticToCoordFrame(const dvec3& lla) const
+glm::dmat4
+Ellipsoid::geodeticToCoordFrame(const glm::dvec3& lla) const
 {
-    dmat4 m(1);
+    glm::dmat4 m(1);
     computeCoordinateFrame(deg2rad(lla.y), deg2rad(lla.x), m);
     return m;
 }
 
-dvec3
-Ellipsoid::geodeticToGeocentric(const dvec3& lla) const
+glm::dvec3
+Ellipsoid::geodeticToGeocentric(const glm::dvec3& lla) const
 {
-    dvec3 out;
+    glm::dvec3 out;
     convertLatLongHeightToXYZ(
         _re, _rp, _ecc2,
         deg2rad(lla.y), deg2rad(lla.x), lla.z,
@@ -234,8 +234,8 @@ Ellipsoid::geodeticToGeocentric(const dvec3& lla) const
     return out;
 }
 
-dvec3
-Ellipsoid::geocentricToGeodetic(const dvec3& xyz) const
+glm::dvec3
+Ellipsoid::geocentricToGeodetic(const glm::dvec3& xyz) const
 {
     double lat_rad, lon_rad, height_m;
     convertXYZToLatLongHeight(
@@ -243,7 +243,7 @@ Ellipsoid::geocentricToGeodetic(const dvec3& xyz) const
         xyz.x, xyz.y, xyz.z,
         lat_rad, lon_rad, height_m);
 
-    dvec3 out(rad2deg(lon_rad), rad2deg(lat_rad), height_m);
+    glm::dvec3 out(rad2deg(lon_rad), rad2deg(lat_rad), height_m);
 
     for (int i = 0; i < 3; ++i)
         if (std::isnan(out[i]))
@@ -262,12 +262,12 @@ Ellipsoid::set(double re, double rp)
     double f = (_re - _rp) / _re;
     _ecc2 = (2.0 * f) - (f * f);
 
-    _ellipsoidToUnitSphere = dmat3(
+    _ellipsoidToUnitSphere = glm::dmat3(
         1.0 / re, 0, 0,
         0, 1.0 / re, 0,
         0, 0, 1.0 / rp);
 
-    _unitSphereToEllipsoid = dmat3(
+    _unitSphereToEllipsoid = glm::dmat3(
         re, 0, 0,
         0, re, 0,
         0, 0, rp);
@@ -290,20 +290,20 @@ Ellipsoid::metersToLongitudinalDegrees(double value, double lat_deg) const
 
 bool
 Ellipsoid::intersectGeocentricLine(
-    const dvec3& p0_world,
-    const dvec3& p1_world,
-    dvec3& out_world) const
+    const glm::dvec3& p0_world,
+    const glm::dvec3& p1_world,
+    glm::dvec3& out_world) const
 {
     double dist2 = 0.0;
-    dvec3 v;
-    dvec3 p0 = p0_world * _ellipsoidToUnitSphere;
-    dvec3 p1 = p1_world * _ellipsoidToUnitSphere;
+    glm::dvec3 v;
+    glm::dvec3 p0 = p0_world * _ellipsoidToUnitSphere;
+    glm::dvec3 p1 = p1_world * _ellipsoidToUnitSphere;
 
     constexpr double R = 1.0; // for unit sphere.
 
     // http://paulbourke.net/geometry/circlesphere/index.html#linesphere
 
-    dvec3 d = p1 - p0;
+    glm::dvec3 d = p1 - p0;
 
     double A = glm::dot(d, d); //d * d;
     double B = 2.0 * glm::dot(d, p0); // (d * p0);
@@ -348,8 +348,8 @@ Ellipsoid::intersectGeocentricLine(
 
 double
 Ellipsoid::geodesicDistance(
-    const dvec2& p1,
-    const dvec2& p2) const
+    const glm::dvec2& p1,
+    const glm::dvec2& p2) const
 {
     double
         lat1 = deg2rad(p1.y),
@@ -386,18 +386,18 @@ Ellipsoid::geodesicDistance(
 
 void
 Ellipsoid::geodesicInterpolate(
-    const dvec3& lla1_deg,
-    const dvec3& lla2_deg,
+    const glm::dvec3& lla1_deg,
+    const glm::dvec3& lla2_deg,
     double t,
-    dvec3& output) const
+    glm::dvec3& output) const
 {
     double deltaZ = lla2_deg.z - lla1_deg.z;
 
-    dvec3 w1 = geodeticToGeocentric(lla1_deg) * _ellipsoidToUnitSphere;
+    glm::dvec3 w1 = geodeticToGeocentric(lla1_deg) * _ellipsoidToUnitSphere;
     w1 = glm::normalize(w1);
     //w1.normalize();
 
-    dvec3 w2 = geodeticToGeocentric(lla2_deg) * _ellipsoidToUnitSphere;
+    glm::dvec3 w2 = geodeticToGeocentric(lla2_deg) * _ellipsoidToUnitSphere;
     w2 = glm::normalize(w2);
     //w2.normalize();
 
@@ -422,7 +422,7 @@ Ellipsoid::geodesicInterpolate(
     double c1 = sin((1.0 - t)*angle) / s;
     double c2 = sin(t*angle) / s;
 
-    dvec3 n = w1 * c1 + w2 * c2;
+    glm::dvec3 n = w1 * c1 + w2 * c2;
 
     // convert back to world space and apply altitude lerp
     n = n * _unitSphereToEllipsoid;

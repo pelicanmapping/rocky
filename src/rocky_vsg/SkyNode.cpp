@@ -72,7 +72,7 @@ namespace
                 double lon = -180.0 + segmentSize * (double)x;
 
                 vsg::dvec3 g;
-                geodeticToGeocentric.transform(dvec3(lon, lat, thickness), g);
+                geodeticToGeocentric.transform(glm::dvec3(lon, lat, thickness), g);
                 verts->set(vptr, vsg::vec3(g.x, g.y, g.z));
 
                 if (with_tex_coords)

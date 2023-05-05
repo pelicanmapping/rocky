@@ -265,7 +265,7 @@ namespace ROCKY_NAMESPACE
             return 0;
         }
 
-        bool getPalleteIndexColor(GDALRasterBand* band, int index, u8vec4& color)
+        bool getPalleteIndexColor(GDALRasterBand* band, int index, glm::u8vec4& color)
         {
             const GDALColorEntry *colorEntry = band->GetColorTable()->GetColorEntry(index);
             GDALPaletteInterp interp = band->GetColorTable()->GetPaletteInterpretation();
@@ -1251,7 +1251,7 @@ GDAL::Driver::createImage(
                 ++src_col, ++dst_col)
             {
                 int i = src_col + src_row * target_width;
-                fvec4 c = fvec4(red[i], green[i], blue[i], alpha[i]) / 255.0f;
+                glm::fvec4 c = glm::fvec4(red[i], green[i], blue[i], alpha[i]) / 255.0f;
 
                 if (!isValidValue(c.r, bandRed) ||
                     !isValidValue(c.g, bandGreen) ||
@@ -1296,7 +1296,7 @@ GDAL::Driver::createImage(
         if (isElevation)
         {
             image = Image::create(Image::R32_SFLOAT, tileSize, tileSize);
-            image->fill(fvec4(NO_DATA_VALUE));
+            image->fill(glm::fvec4(NO_DATA_VALUE));
             
             if (gdalDataType == GDT_Int16)
             {
@@ -1313,7 +1313,7 @@ GDAL::Driver::createImage(
                     unsigned int flippedRow = tileSize - dst_row - 1;
                     for (int src_col = 0, dst_col = tile_offset_left; src_col < target_width; ++src_col, ++dst_col)
                     {
-                        fvec4 c;
+                        glm::fvec4 c;
                         c.r = temp[src_col + src_row * target_width];
                         c.r = getValidElevationValue(c.r, noDataValueFromBand, NO_DATA_VALUE);
                         image->write(c, dst_col, flippedRow);
@@ -1337,7 +1337,7 @@ GDAL::Driver::createImage(
                     unsigned int flippedRow = tileSize - dst_row - 1;
                     for (int src_col = 0, dst_col = tile_offset_left; src_col < target_width; ++src_col, ++dst_col)
                     {
-                        fvec4 c;
+                        glm::fvec4 c;
                         c.r = temp[src_col + src_row * target_width];
                         c.r = getValidElevationValue(c.r, noDataValueFromBand, NO_DATA_VALUE);
                         image->write(c, dst_col, flippedRow);
@@ -1351,7 +1351,7 @@ GDAL::Driver::createImage(
         else // grey + alpha color
         {
             image = Image::create(Image::R8G8B8A8_UNORM, tileSize, tileSize);
-            image->fill(fvec4(0));
+            image->fill(glm::fvec4(0));
 
             unsigned char* gray = new unsigned char[target_width * target_height];
 
@@ -1378,7 +1378,7 @@ GDAL::Driver::createImage(
                 unsigned int flippedRow = tileSize - dst_row - 1;
                 for (int src_col = 0, dst_col = tile_offset_left; src_col < target_width; ++src_col, ++dst_col)
                 {
-                    fvec4 c;
+                    glm::fvec4 c;
                     c.r = c.g = c.b = gray[src_col + src_row * target_width];
 
                     if (alpha)
@@ -1416,7 +1416,7 @@ GDAL::Driver::createImage(
                 tileSize,
                 tileSize);
 
-            image->fill(fvec4(NO_DATA_VALUE));
+            image->fill(glm::fvec4(NO_DATA_VALUE));
 
             // initialize all coverage texels to NODATA. -gw
             //ImageUtils::PixelWriter write(image.get());
@@ -1465,7 +1465,7 @@ GDAL::Driver::createImage(
                     }
                     else
                     {
-                        u8vec4 color;
+                        glm::u8vec4 color;
                         if (getPalleteIndexColor(bandPalette, p, color) &&
                             isValidValue((float)color.r, bandPalette)) // need this?
                         {
@@ -1477,13 +1477,13 @@ GDAL::Driver::createImage(
                         }
                     }
 
-                    fvec4 fpixel = fvec4(pixel) / 255.0f;
+                    glm::fvec4 fpixel = glm::fvec4(pixel) / 255.0f;
 
                     image->write(fpixel, dst_col, flippedRow);
                 }
                 else
                 {
-                    u8vec4 color;
+                    glm::u8vec4 color;
                     if (!getPalleteIndexColor(bandPalette, p, color))
                     {
                         color.a = 0.0f;
@@ -1493,7 +1493,7 @@ GDAL::Driver::createImage(
                         color.a = 0.0f;
                     }
 
-                    fvec4 fcolor = fvec4(color) / 255.0f;
+                    glm::fvec4 fcolor = glm::fvec4(color) / 255.0f;
                     image->write(fcolor, dst_col, flippedRow);
                 }
             }

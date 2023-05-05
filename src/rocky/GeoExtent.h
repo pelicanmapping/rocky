@@ -81,7 +81,7 @@ namespace ROCKY_NAMESPACE
         double height(const Units& units) const;
 
         //! Gets the centroid of the bounds
-        GeoPoint getCentroid() const;
+        GeoPoint centroid() const;
 
         //! Legacy @deprecated
         bool getCentroid(double& out_x, double& out_y) const;
@@ -92,49 +92,33 @@ namespace ROCKY_NAMESPACE
         //! Raw bounds of the extent (unnormalized)
         void getBounds(double& xmin, double& ymin, double& xmax, double& ymax) const;
 
-        /** True if this object defines a real, valid extent with positive area */
+        //! True if this object defines a real, valid extent with positive area
         inline bool valid() const
         {
             return _srs.valid() && _width >= 0.0 && _height >= 0.0;
         }
 
-        /**
-         * If this extent crosses the international date line, populates two extents, one for
-         * each side, and returns true. Otherwise returns false and leaves the reference
-         * parameters untouched.
-         */
+        //! If this extent crosses the international date line, populates two extents, one for
+        //! each side, and returns true. Otherwise returns false and leaves the reference
+        //! parameters untouched.
         bool splitAcrossAntimeridian(GeoExtent& first, GeoExtent& second) const;
 
-        /**
-         * Returns this extent transformed into another spatial reference.
-         *
-         * NOTE! It is possible that the target SRS will not be able to accomadate the
-         * extents of the source SRS. (For example, transforming a full WGS84 extent
-         * to Mercator will resultin an error since Mercator does not cover the entire
-         * globe.) Consider using Profile:clampAndTransformExtent() instead of using
-         * this method directly.
-         */
+        //! Returns this extent transformed into another spatial reference.
+        //! NOTE: It is possible that the target SRS will not be able to accomadate the
+        //! extents of the source SRS. (For example, transforming a full WGS84 extent
+        //! to Mercator will resultin an error since Mercator does not cover the entire
+        //! globe.) Consider using Profile:clampAndTransformExtent() instead of using
+        //! this method directly.
         GeoExtent transform(const SRS& to_srs) const;
 
-        /**
-         * Same as transform(srs) but puts the result in the output extent
-         */
+        //! Same as transform(srs) but puts the result in the output extent
         bool transform(const SRS& to_srs, GeoExtent& output) const;
 
-        /**
-         * Returns true if the specified point falls within the bounds of the extent.
-         *
-         * @param x, y
-         *      Coordinates to test
-         * @param xy_srs
-         *      SRS of input x and y coordinates; if null, the method assumes x and y
-         *      are in the same SRS as this object.
-         */
+        //! Returns true if the specified point falls within the bounds of the extent.
+        //! @param x, y Coordinates to test
+        //! @param xy_srs SRS of input x and y coordinates; if null, the method assumes x and y
+        //!    are in the same SRS as this object.
         bool contains(double x, double y, const SRS& srs = { }) const;
-
-        bool contains(const dvec3& xy, const SRS& srs = { }) const {
-            return contains(xy.x, xy.y, srs);
-        }
 
         //! Returns true if the point falls within this extent.
         bool contains(const GeoPoint& rhs) const;
@@ -153,94 +137,55 @@ namespace ROCKY_NAMESPACE
         //! Copy of the anonymous bounding box
         Box bounds() const;
 
-        /**
-         * Gets a geo circle bounding this extent.
-         */
+        //! Gets a geo circle bounding this extent.
         GeoCircle computeBoundingGeoCircle() const;
 
-        /**
-         * Grow this extent to include the specified point (which is assumed to be
-         * in the extent's SRS.
-         */
+        //! Grow this extent to include the specified point (which is assumed to be
+        //! in the extent's SRS.
         void expandToInclude(double x, double y);
 
-        void expandToInclude(const dvec3& v) {
-            expandToInclude(v.x, v.y);
-        }
-
-        /**
-         * Expand this extent to include the bounds of another extent.
-         */
+        //! Expand this extent to include the bounds of another extent.
         bool expandToInclude(const GeoExtent& rhs);
 
-        /**
-         * Intersect this extent with another extent in the same SRS and return the
-         * result.
-         */
-        GeoExtent intersectionSameSRS(const GeoExtent& rhs) const; //const Bounds& rhs ) const;
+        //! Intersect this extent with another extent in the same SRS and return the result.
+        GeoExtent intersectionSameSRS(const GeoExtent& rhs) const;
 
-        /**
-         * Returns a human-readable string containing the extent data (without the SRS)
-         */
+        //! Returns a human-readable string containing the extent data (without the SRS)
         std::string toString() const;
 
-        /**
-         *Inflates this GeoExtent by the given ratios
-         */
+        //! Inflates this GeoExtent by the given ratios
         void scale(double x_scale, double y_scale);
 
-        /**
-         * Expands the extent by x and y.
-         */
+        //! Expands the extent by x and y.
         void expand(double x, double y);
 
-        /**
-        * Expands the extent by x and y.
-        */
+        //! Expands the extent by x and y.
         void expand(const Distance& x, const Distance& y);
 
-        /**
-         *Gets the area of this GeoExtent
-         */
+        //! Gets the area of this GeoExtent
         double area() const;
 
-        /**
-         * Generate a polytope in world coordinates that bounds the extent.
-         * Return false if the extent it invalid.
-         */
-        //bool createPolytope(osg::Polytope& out) const;
-
-        /**
-         * Computes a scale/bias matrix that transforms parametric coordinates [0..1]
-         * from this extent into the target extent. Return false if the extents are
-         * incompatible (different SRS, etc.)
-         *
-         * For example, if this extent is 100m wide, and the target extent is
-         * 200m wide, the output matrix will have an x_scale = 0.5.
-         *
-         * Note! For the sake of efficiency, this method does NOT check for
-         * validity nor for SRS equivalence -- so be sure to validate those beforehand.
-         * It also assumes the output matrix is preset to the identity.
-         */
+        //! Computes a scale/bias matrix that transforms parametric coordinates [0..1]
+        //! from this extent into the target extent. Return false if the extents are
+        //! incompatible (different SRS, etc.)
+        //! 
+        //! For example, if this extent is 100m wide, and the target extent is
+        //! 200m wide, the output matrix will have an x_scale = 0.5.
+        //! 
+        //! Note! For the sake of efficiency, this method does NOT check for
+        //! validity nor for SRS equivalence -- so be sure to validate those beforehand.
+        //! It also assumes the output matrix is preset to the identity.
         bool createScaleBias(
             const GeoExtent& target,
-            dmat4& output) const;
+            glm::dmat4& output) const;
 
-        bool createScaleBias(
-            const GeoExtent& target,
-            glm::fmat4& output) const;
-
-        /**
-         * Generates a Sphere encompassing the extent and a vertical
-         * volume, in world coordinates.
-         */
+        //! Generates a Sphere encompassing the extent and a vertical volume, in world coordinates.
         Sphere createWorldBoundingSphere(double minElev, double maxElev) const;
 
-        /**
-         * Returns true if the extent is the entire Earth, for geographic
-         * extents. Otherwise returns false.
-         */
+        //! Returns true if the extent is the entire Earth, for geographic
+        //! extents. Otherwise returns false.
         bool isWholeEarth() const;
+
     public:
         static GeoExtent INVALID;
 

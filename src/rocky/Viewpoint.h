@@ -60,7 +60,7 @@ namespace ROCKY_NAMESPACE
         optional<Distance> range = Distance(10.0, Units::KILOMETERS);
 
         //! Offset in cartesian space from the focal point
-        optional<dvec3> positionOffset = dvec3(0, 0, 0);
+        optional<glm::dvec3> positionOffset = glm::dvec3(0, 0, 0);
 
     public:
         Viewpoint() { }

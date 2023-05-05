@@ -97,18 +97,18 @@ namespace ROCKY_NAMESPACE
         bool getCoord(int s, int t, double& out_x, double& out_y) const;
 
         //! Read the value of a pixel at a geopoint.
-        bool read(fvec4& output, const GeoPoint& p) const;
+        bool read(glm::fvec4& output, const GeoPoint& p) const;
 
         bool read(
-            fvec4& output,
+            glm::fvec4& output,
             double x, double y) const;
 
         bool read(
-            fvec4& output, 
+            glm::fvec4& output,
             double x, double y, const SRS& srs) const;
 
         bool read(
-            fvec4& output,
+            glm::fvec4& output,
             double x, double y, const SRSOperation& operation) const;
 
     private:
