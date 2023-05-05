@@ -9,7 +9,7 @@
 find_program(GIT git)
 
 set(GIT_URL "https://github.com/vsg-dev/vsgImGui.git")
-set(GIT_REV "e2b6a8f5b3f1874188ed34dca8ccc0d74a935634")
+set(GIT_REV "e8d161655bc9f095252c1ff97a769f964a2300a7")
 
 set(SOURCE_PATH ${CURRENT_BUILDTREES_DIR}/src/${PORT})
 
@@ -40,4 +40,6 @@ vcpkg_install_cmake()
 vcpkg_cmake_config_fixup(PACKAGE_NAME "vsgimgui" CONFIG_PATH "lib/cmake/vsgimgui")
 vcpkg_copy_pdbs()
 
+file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
+file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
 file(INSTALL ${SOURCE_PATH}/LICENSE.md DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
