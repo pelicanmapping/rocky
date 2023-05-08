@@ -12,6 +12,7 @@
 #include <rocky_vsg/engine/Runtime.h>
 #include <rocky_vsg/engine/LineState.h>
 #include <rocky_vsg/engine/MeshState.h>
+#include <rocky_vsg/engine/IconState.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -43,6 +44,7 @@ namespace ROCKY_NAMESPACE
             Runtime runtime;
             LineState lineState;
             MeshState meshState;
+            IconState iconState;
         };
         std::shared_ptr<Implementation> _impl;
         friend class Application;

@@ -715,14 +715,6 @@ namespace ROCKY_NAMESPACE
         // rendering required b/c something changed.
         bool _dirty;
 
-
-        // This stuff is borrowed from vsg manips, but it's not implemented here (yet):
-        /// list of windows and theire xy offsets
-        std::map<vsg::observer_ptr<vsg::Window>, vsg::ivec2> _windowOffsets;
-
-        /// add a Window to respond events for, with mouse coordinate offset to treat all associated windows
-        void addWindow(vsg::ref_ptr<vsg::Window> window, const vsg::ivec2& offset = {});
-
         std::pair<int32_t, int32_t> cameraRenderAreaCoordinates(const vsg::PointerEvent&) const;
 
         bool withinRenderArea(const vsg::PointerEvent& pointerEvent) const;

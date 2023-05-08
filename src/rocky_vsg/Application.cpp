@@ -299,7 +299,7 @@ Application::realizeViewer(vsg::ref_ptr<vsg::Viewer> viewer)
     resourceHints->numDescriptorSets = 1024;
     resourceHints->descriptorPoolSizes.push_back(
         VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024 });
-
+    
     // Initialize and compile existing any Vulkan objects found in the scene
     // (passing in ResourceHints to guide the resources allocated).
     viewer->compile(resourceHints);
@@ -311,6 +311,10 @@ Application::recreateViewer()
     // Makes a new viewer, copying settings from the old viewer.
 
     vsg::EventHandlers handlers = viewer->getEventHandlers();
+
+    // before we destroy it,
+    // wait until the device is idle to avoid changing state while it's being used.
+    viewer->deviceWaitIdle();
 
     viewer = vsg::Viewer::create();
     
@@ -525,8 +529,13 @@ void
 Application::addManipulator(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view)
 {
     auto manip = rocky::MapManipulator::create(mapNode, window, view->camera);
-    view->setObject("manip", manip);
 
+    // stow this away in the view object so it's easy to find later.
+    view->setObject("rocky.manip", manip);
+
+    // The manipulators (one for each view) need to be in the right order (top to bottom)
+    // so that overlapping views don't get mixed up. To accomplish this we'll just
+    // remove them all and re-insert them in the new proper order:
     auto& ehs = viewer->getEventHandlers();
 
     // remove all the MapManipulators using the dumb remove-erase idiom
@@ -537,13 +546,13 @@ Application::addManipulator(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::
         ehs.end()
     );
 
-    // re-add them in the right order:
+    // re-add them in the right order (last to first)
     for (auto& window : displayConfiguration.windows)
     {
         for(auto vi = window.second.rbegin(); vi != window.second.rend(); ++vi)
         {
             auto& view = *vi;
-            auto manip = view->getRefObject<MapManipulator>("manip");
+            auto manip = view->getRefObject<MapManipulator>("rocky.manip");
             ehs.push_back(manip);
         }
     }

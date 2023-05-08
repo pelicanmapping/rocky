@@ -87,9 +87,8 @@ namespace ROCKY_NAMESPACE
         bool _vsync = true;
         bool _multithreaded = true;
         bool _viewerRealized = false;
-        AttachmentRenderers _renderers;
-
         bool _viewerDirty = false;
+        AttachmentRenderers _renderers;
 
         struct Addition {
             vsg::ref_ptr<vsg::Node> node;

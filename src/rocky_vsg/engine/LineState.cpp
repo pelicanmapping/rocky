@@ -110,10 +110,9 @@ LineState::initialize(Runtime& runtime)
         // backface culling off ... we may or may not need this.
         pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
 
-        // Temporary decriptors that we will use to set up the PipelineConfig.
-        vsg::Descriptors descriptors;
-        pipelineConfig->assignUniform(descriptors, "line");
-        pipelineConfig->assignUniform(descriptors, "vsg_viewports");
+        // Uniforms we will need:
+        pipelineConfig->enableUniform("line");
+        pipelineConfig->enableUniform("vsg_viewports");
 
         // Alpha blending to support line smoothing
         pipelineConfig->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
@@ -163,22 +162,21 @@ BindLineStyle::BindLineStyle()
 {
     ROCKY_HARD_ASSERT_STATUS(LineState::status);
 
-    _styleData = vsg::ubyteArray::create(sizeof(LineStyle));
+    this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    this->firstSet = 0;
+    this->layout = LineState::pipelineConfig->layout;
+
+    vsg::Descriptors descriptors;
 
     // tells VSG that the contents can change, and if they do, the data should be
     // transfered to the GPU before or during recording.
+    _styleData = vsg::ubyteArray::create(sizeof(LineStyle));
     _styleData->properties.dataVariance = vsg::DYNAMIC_DATA;
+    LineState::pipelineConfig->assignUniform(descriptors, "line", _styleData);
 
-    auto ubo = vsg::DescriptorBuffer::create(_styleData, LINE_BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-
-    this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    this->firstSet = 0;
-
-    this->layout = LineState::pipelineConfig->layout;
-
+    // assemble our ds:
     this->descriptorSet = vsg::DescriptorSet::create(
-        LineState::pipelineConfig->layout->setLayouts.front(),
-        vsg::Descriptors{ ubo });
+        LineState::pipelineConfig->layout->setLayouts.front(), descriptors);
 
     setStyle(LineStyle{});
 }

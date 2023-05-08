@@ -203,6 +203,9 @@ InstanceVSG::InstanceVSG() :
     _impl->meshState.initialize(runtime);
     ROCKY_HARD_ASSERT_STATUS(MeshState::status);
 
+    _impl->iconState.initialize(runtime);
+    ROCKY_HARD_ASSERT_STATUS(IconState::status);
+
     // a copy of vsgOptions we can use in lamdbas
     auto readerWriterOptions = runtime.readerWriterOptions;
 

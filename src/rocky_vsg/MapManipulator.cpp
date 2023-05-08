@@ -1419,7 +1419,10 @@ void
 MapManipulator::apply(vsg::MoveEvent& moveEvent)
 {
     if (!forMe(moveEvent))
+    {
+        _previousMove = moveEvent;
         return;
+    }
 
     //std::cout << "MoveEvent, mask = " << moveEvent.mask << std::endl;
 
@@ -2277,22 +2280,6 @@ MapManipulator::getQuaternion(double azim, double pitch) const
 }
 
 /// code adopted from VSG
-std::pair<int32_t, int32_t>
-MapManipulator::cameraRenderAreaCoordinates(const vsg::PointerEvent& pointerEvent) const
-{
-    if (!_windowOffsets.empty())
-    {
-        auto itr = _windowOffsets.find(pointerEvent.window);
-        if (itr != _windowOffsets.end())
-        {
-            auto& offset = itr->second;
-            return { pointerEvent.x + offset.x, pointerEvent.y + offset.y };
-        }
-    }
-    return { pointerEvent.x, pointerEvent.y };
-}
-
-/// code adopted from VSG
 bool
 MapManipulator::withinRenderArea(const vsg::PointerEvent& pointerEvent) const
 {
@@ -2304,11 +2291,12 @@ MapManipulator::withinRenderArea(const vsg::PointerEvent& pointerEvent) const
         return false;
 
     auto renderArea = camera->getRenderArea();
-    auto [x, y] = cameraRenderAreaCoordinates(pointerEvent);
 
     return
-        (x >= renderArea.offset.x && x < static_cast<int32_t>(renderArea.offset.x + renderArea.extent.width)) &&
-        (y >= renderArea.offset.y && y < static_cast<int32_t>(renderArea.offset.y + renderArea.extent.height));
+        pointerEvent.x >= renderArea.offset.x && 
+        pointerEvent.x < static_cast<int32_t>(renderArea.offset.x + renderArea.extent.width) &&
+        pointerEvent.y >= renderArea.offset.y &&
+        pointerEvent.y < static_cast<int32_t>(renderArea.offset.y + renderArea.extent.height);
 }
 
 /// compute non dimensional window coordinate (-1,1) from event coords
@@ -2322,12 +2310,10 @@ MapManipulator::ndc(const vsg::PointerEvent& event) const
 
     auto renderArea = camera->getRenderArea();
 
-    auto [x, y] = cameraRenderAreaCoordinates(event);
-
     double aspectRatio = static_cast<double>(renderArea.extent.width) / static_cast<double>(renderArea.extent.height);
     vsg::dvec2 v(
-        (renderArea.extent.width > 0) ? (static_cast<double>(x - renderArea.offset.x) / static_cast<double>(renderArea.extent.width) * 2.0 - 1.0) * aspectRatio : 0.0,
-        (renderArea.extent.height > 0) ? static_cast<double>(y - renderArea.offset.y) / static_cast<double>(renderArea.extent.height) * 2.0 - 1.0 : 0.0);
+        (renderArea.extent.width > 0) ? (static_cast<double>(event.x - renderArea.offset.x) / static_cast<double>(renderArea.extent.width) * 2.0 - 1.0) * aspectRatio : 0.0,
+        (renderArea.extent.height > 0) ? static_cast<double>(event.y - renderArea.offset.y) / static_cast<double>(renderArea.extent.height) * 2.0 - 1.0 : 0.0);
 
     return v;
 }

@@ -109,10 +109,8 @@ MeshState::initialize(Runtime& runtime)
         // backface culling off ... we may or may not need this.
         //pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
 
-        // Temporary decriptors that we will use to set up the PipelineConfig.
-        vsg::Descriptors descriptors;
-        pipelineConfig->assignUniform(descriptors, "mesh");
-        pipelineConfig->assignUniform(descriptors, "vsg_viewports");
+        pipelineConfig->enableUniform("mesh");
+        pipelineConfig->enableUniform("vsg_viewports");
 
         // Alpha blending to support line smoothing
         pipelineConfig->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
