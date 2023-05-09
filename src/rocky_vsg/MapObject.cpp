@@ -15,6 +15,24 @@ namespace
     std::atomic_uint32_t uid_generator(0U);
 }
 
+void
+Attachment::setVisible(bool value)
+{
+    if (node && !node->children.empty())
+    {
+        node->children.front().mask = value ? vsg::MASK_ALL : vsg::MASK_OFF;
+    }
+}
+
+bool
+Attachment::visible() const
+{
+    return
+        node &&
+        !node->children.empty() &&
+        node->children.front().mask != vsg::MASK_OFF;
+}
+
 MapObject::MapObject() :
     super(),
     uid(uid_generator++)

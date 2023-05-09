@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky_vsg/GeoTransform.h>
 #include <vsg/nodes/Group.h>
+#include <vsg/nodes/Switch.h>
 #include <vsg/text/Text.h>
 #include <list>
 
@@ -29,12 +30,19 @@ namespace ROCKY_NAMESPACE
         //! Whether the attachment should cull to the visible horizon
         bool horizonCulling = false;
 
-        //! Root node of the attachment; created by createNode()
-        vsg::ref_ptr<vsg::Node> node;
+    public:
+        //! Whether this attachment should render
+        void setVisible(bool value);
+
+        //! Whether this attachment should render
+        bool visible() const;
 
     public:
         //! seialize to JSON
         virtual JSON to_json() const = 0;
+
+        //! Root node of the attachment; created by createNode()
+        vsg::ref_ptr<vsg::Switch> node;
 
     protected:
         Attachment() { }

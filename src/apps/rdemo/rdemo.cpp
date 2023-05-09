@@ -52,14 +52,14 @@ void setup_demos(rocky::Application& app)
             Demo{ "Mesh - absolute", Demo_Mesh_Absolute },
             Demo{ "Mesh - relative", Demo_Mesh_Relative },
             Demo{ "Icon", Demo_Icon },
-            Demo{ "Model", Demo_Model }
+            Demo{ "User Model", Demo_Model }
         } }
     );
-    demos.emplace_back(
-        Demo{ "Camera", {}, {
-            Demo{ "MapManipulator", Demo_MapManipulator }
-        } }
-    );
+    //demos.emplace_back(
+    //    Demo{ "Camera", {}, {
+    //        Demo{ "MapManipulator", Demo_MapManipulator }
+    //    } }
+    //);
     demos.emplace_back(
         Demo{ "Windows & Views", Demo_Views }
     );
@@ -118,9 +118,9 @@ int main(int argc, char** argv)
     setup_demos(app);
     app.viewer->addEventHandler(vsgImGui::SendEventsToImGui::create());
     auto window = app.addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
-    auto imgui = vsgImGui::RenderImGui::create(window.get());
+    auto imgui = vsgImGui::RenderImGui::create(window.value());
     imgui->addChild(MainGUI::create(app));
-    app.addPostRenderNode(window.get(), imgui);
+    app.addPostRenderNode(window.value(), imgui);
 
     // run until the user quits.
     return app.run();

@@ -123,15 +123,20 @@ namespace ROCKY_NAMESPACE { namespace util
      *   (the promise of a future result) and immediately returns it. The Consumer
      *   then performs other work, and eventually (or immediately) checks available()
      *   for a result or canceled() for cancelation. If availabile() is true,
-     *   Consumer called get() to fetch the valid result.
+     *   Consumer calls value() to fetch the valid result.
+     * 
+     *   As long as at least two equivalent Future object (i.e. Futures pointing to the
+     *   same internal shared data) exist, the Future is considered valid. Once
+     *   that count goes to one, the Future is either available (the value is ready)
+     *   or empty (i.e., canceled or abandoned).
      */
     template<typename T>
     class Future : public Cancelable
     {
     private:
         // internal structure to track references to the result
-        // One instance of this is shared among all Promise and Future
-        // objects originating from the same Promise
+        // One instance of this is shared among all Future instances
+        // created from the copy constructor.
         struct Shared
         {
             T _obj;
@@ -170,7 +175,7 @@ namespace ROCKY_NAMESPACE { namespace util
         //! Deference the result object. Make sure you check isAvailable()
         //! to check that the future was actually resolved; otherwise you
         //! will just get the default object.
-        T get() const {
+        T value() const {
             return _shared->_obj;
         }
 
@@ -179,11 +184,11 @@ namespace ROCKY_NAMESPACE { namespace util
             return &_shared->_obj;
         }
 
-        //! Same as get(), but if the result is available will reset the
+        //! Same as value(), but if the result is available will reset the
         //! future before returning the result object.
         T release() {
             bool avail = available();
-            T result = get();
+            T result = value();
             if (avail)
                 reset();
             return result;
@@ -195,7 +200,7 @@ namespace ROCKY_NAMESPACE { namespace util
             while (
                 !empty() &&
                 !_shared->ev.wait(std::chrono::milliseconds(1)));
-            return get();
+            return value();
         }
 
         //! Blocks until the result becomes available or the future is abandoned
@@ -205,7 +210,7 @@ namespace ROCKY_NAMESPACE { namespace util
             {
                 _shared->_ev.wait(std::chrono::milliseconds(1));
             }
-            return get();
+            return value();
         }
 
         //! Release reference to a promise, resetting this future to its default state
@@ -368,7 +373,7 @@ namespace ROCKY_NAMESPACE { namespace util
     template<class T>
     struct ThreadLocal : public std::mutex
     {
-        T& get() {
+        T& value() {
             std::scoped_lock lock(*this);
             return _data[std::this_thread::get_id()];
         }
@@ -432,7 +437,7 @@ namespace ROCKY_NAMESPACE { namespace util
      *   // later...
      *
      *   if (result.available()) {
-     *       std::cout << "Answer = " << result.get() << std::endl;
+     *       std::cout << "Answer = " << result.value() << std::endl;
      *   }
      *   else if (result.canceled()) {
      *       // task was canceled

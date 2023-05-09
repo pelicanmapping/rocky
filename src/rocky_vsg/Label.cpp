@@ -23,16 +23,29 @@ Label::Label() :
     underGeoTransform = true;
     horizonCulling = true;
     _text = "Label!";
+    textNode = vsg::Text::create();
+
+    layout = vsg::StandardLayout::create();
+    const double size = 240000.0;
+    layout->billboard = true;
+    layout->billboardAutoScaleDistance = size;
+    layout->position = vsg::vec3(0.0, 0.0, 0.0);
+    layout->horizontal = vsg::vec3(size, 0.0, 0.0);
+    layout->vertical = layout->billboard ? vsg::vec3(0.0, size, 0.0) : vsg::vec3(0.0, 0.0, size);
+    layout->color = vsg::vec4(1.0, 0.9, 1.0, 1.0);
+    layout->outlineWidth = 0.1;
+    layout->horizontalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;
+    layout->verticalAlignment = vsg::StandardLayout::BOTTOM_ALIGNMENT;
 }
 
 void
 Label::setText(const std::string& value)
 {
     _text = value;
-    if (_value)
+    if (valueBuffer)
     {
-        _value->value() = _text;
-        _textNode->setup(0, {});
+        valueBuffer->value() = _text;
+        textNode->setup(0, {});
     }
 }
 
@@ -42,16 +55,30 @@ Label::text() const
     return _text;
 }
 
+#if 0
+void
+Label::setFont(vsg::ref_ptr<vsg::Font> value)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(value, void());
+    textNode->font = value;
+}
+
+vsg::ref_ptr<vsg::Font>
+Label::font() const
+{
+    return textNode->font;
+}
+#endif
+
 void
 Label::createNode(Runtime& runtime)
 {
-    if (!_textNode)
+    if (!valueBuffer)
     {
-        auto font = runtime.defaultFont.get();
-        if (!font)
+        if (!textNode->font)
         {
-            Log::warn() << "No font loaded" << std::endl;
-            return;
+            textNode->font = runtime.defaultFont.value();
+            ROCKY_SOFT_ASSERT_AND_RETURN(textNode->font, void(), "No font available for the Label");
         }
 
         // NOTE: this will (later) happen in a LabelState class and only happen once.
@@ -65,30 +92,18 @@ Label::createNode(Runtime& runtime)
             shaderSet->defaultGraphicsPipelineStates.push_back(depthStencilState);
         }
 
-        auto layout = vsg::StandardLayout::create();
-        _textNode = vsg::Text::create();
-
         // currently vsg::GpuLayoutTechnique is the only technique that supports dynamic update of the text parameters
-        _textNode->technique = vsg::GpuLayoutTechnique::create();
+        textNode->technique = vsg::GpuLayoutTechnique::create();
 
-        const double size = 240000.0;
-        layout->billboard = true;
-        layout->billboardAutoScaleDistance = size;
-        layout->position = vsg::vec3(0.0, 0.0, 0.0);
-        layout->horizontal = vsg::vec3(size, 0.0, 0.0);
-        layout->vertical = layout->billboard ? vsg::vec3(0.0, size, 0.0) : vsg::vec3(0.0, 0.0, size);
-        layout->color = vsg::vec4(1.0, 0.9, 1.0, 1.0);
-        layout->outlineWidth = 0.1;
-        layout->horizontalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;
-        layout->verticalAlignment = vsg::StandardLayout::BOTTOM_ALIGNMENT;
+        valueBuffer = vsg::stringValue::create(_text);
+        textNode->text = valueBuffer;
+        //_textNode->font = font;
+        textNode->layout = layout;
+        textNode->setup(255, runtime.readerWriterOptions); // allocate enough space for max possible characters?
 
-        _value = vsg::stringValue::create(_text);
-        _textNode->text = _value;
-        _textNode->font = font;
-        _textNode->layout = layout;
-        _textNode->setup(255, runtime.readerWriterOptions); // allocate enough space for max possible characters?
-
-        node = _textNode;
+        auto sw = vsg::Switch::create();
+        sw->addChild(true, textNode);
+        node = sw;
     }
 }
 

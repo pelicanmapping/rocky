@@ -39,7 +39,9 @@ Mesh::createNode(Runtime& runtime)
         stateGroup->stateCommands = MeshState::pipelineStateCommands;
         stateGroup->addChild(_bindStyle);
         stateGroup->addChild(_geometry);
-        node = stateGroup;
+        auto sw = vsg::Switch::create();
+        sw->addChild(true, stateGroup);
+        node = sw;
     }
 }
 

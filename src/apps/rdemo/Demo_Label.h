@@ -15,12 +15,25 @@ auto Demo_Label = [](Application& app)
     static shared_ptr<Label> label;
     static bool visible = true;
 
+    auto font = app.instance.runtime().defaultFont;
+
+    if (font.working())
+    {
+        ImGui::Text("Loading font, please wait...");
+        return;
+    }
+
+    if (!font.available())
+    {
+        ImGui::TextWrapped("No font available - did you set the ROCKY_DEFAULT_FONT environment variable?");
+        return;
+    }
+
     if (!label)
     {
-        ImGui::Text("Wait...");
-
         label = Label::create();
         label->setText("Hello, world.");
+        label->textNode->font = font.value();
 
         object = MapObject::create(label);
         object->xform->setPosition(GeoPoint(SRS::WGS84, -35.0, 15.0));

@@ -108,7 +108,7 @@ GDALElevationLayer::openImplementation(const IOOptions& io)
     // So we just encapsulate the entire setup once per thread.
     // https://trac.osgeo.org/gdal/wiki/FAQMiscellaneous#IstheGDALlibrarythread-safe
 
-    auto& driver = _drivers.get();
+    auto& driver = _drivers.value();
 
     DataExtentList dataExtents;
 
@@ -150,7 +150,7 @@ GDALElevationLayer::createHeightfieldImplementation(
     if (status().failed())
         return status();
 
-    auto& driver = _drivers.get();
+    auto& driver = _drivers.value();
     if (driver == nullptr)
     {
         // calling openImpl with NULL params limits the setup

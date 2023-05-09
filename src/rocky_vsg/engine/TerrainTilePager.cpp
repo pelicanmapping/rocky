@@ -484,7 +484,7 @@ TerrainTilePager::requestMergeData(
         auto tile = terrain->tiles.getTile(key);
         if (tile)
         {
-            auto model = tile->dataLoader.get();
+            auto model = tile->dataLoader.value();
 
             auto& renderModel = tile->renderModel;
 
@@ -642,7 +642,7 @@ TerrainTilePager::requestMergeElevation(
         auto tile = terrain->tiles.getTile(key);
         if (tile)
         {
-            auto model = tile->elevationLoader.get();
+            auto model = tile->elevationLoader.value();
 
             auto& renderModel = tile->renderModel;
 

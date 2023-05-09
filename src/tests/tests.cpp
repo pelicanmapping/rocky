@@ -145,7 +145,7 @@ TEST_CASE("Threading")
     f1.resolve(123);
     CHECK(f2.empty() == false);
     CHECK(f2.available() == true);
-    CHECK(f2.get() == 123);
+    CHECK(f2.value() == 123);
 }
 
 TEST_CASE("Math")
