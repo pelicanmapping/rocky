@@ -12,6 +12,7 @@
 
 #include <rocky/TMSImageLayer.h>
 #include <rocky/TMSElevationLayer.h>
+#include <rocky/contrib/EarthFileImporter.h>
 
 template<class T>
 int error(T layer)
@@ -26,24 +27,26 @@ int main(int argc, char** argv)
     // instantiate the application engine.
     rocky::Application app(argc, argv);
 
-    // add an imagery layer to the map
-    auto layer = rocky::TMSImageLayer::create();
-    layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
-    app.map()->layers().add(layer);
+    if (app.map()->layers().empty())
+    {
+        // add an imagery layer to the map
+        auto layer = rocky::TMSImageLayer::create();
+        layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
+        app.map()->layers().add(layer);
 
-    // check for error
-    if (layer->status().failed())
-        return error(layer);
+        // check for error
+        if (layer->status().failed())
+            return error(layer);
 
-    // add an elevation layer to the map
-    auto elevation = rocky::TMSElevationLayer::create();
-    elevation->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
-    app.map()->layers().add(elevation);
+        // add an elevation layer to the map
+        auto elevation = rocky::TMSElevationLayer::create();
+        elevation->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
+        app.map()->layers().add(elevation);
 
-    // check for error
-    if (elevation->status().failed())
-        return error(elevation);
-
+        // check for error
+        if (elevation->status().failed())
+            return error(elevation);
+    }
 
     // Make a line string.
     auto line = rocky::LineString::create();

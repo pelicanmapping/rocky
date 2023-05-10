@@ -124,6 +124,9 @@ if(ROCKY_SUPPORTS_MBTILES)
     list(APPEND SOURCES MBTiles.cpp MBTilesImageLayer.cpp MBTilesElevationLayer.cpp)
 endif()
 
+file(GLOB HEADERS_CONTRIB contrib/*.h)
+file(GLOB SOURCES_CONTRIB contrib/*.cpp)
+
 # set up library dependencies
 set(PUBLIC_LIBS glm::glm)
 
@@ -154,7 +157,9 @@ endif()
 set(LIBRARIES PRIVATE ${PRIVATE_LIBS} PUBLIC ${PUBLIC_LIBS})
 
 
-add_library(rocky ${HEADERS} ${SOURCES})
+add_library(rocky
+    ${HEADERS} ${SOURCES}
+    ${HEADERS_CONTRIB} ${SOURCES_CONTRIB})
 
 set_target_properties(rocky PROPERTIES FOLDER "rocky")
 
@@ -164,8 +169,8 @@ endif()
 
 # enable folders for IDEs
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-assign_source_groups("Source Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${SOURCES})
-assign_source_groups("Header Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${HEADERS})
+assign_source_groups("Source Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${SOURCES} ${SOURCES_CONTRIB})
+assign_source_groups("Header Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${HEADERS} ${HEADERS_CONTRIB})
 
 # set up versions and position independent code that is required for unix platforms
 set_property(TARGET rocky PROPERTY SOVERSION ${ROCKY_SOVERSION})
@@ -190,3 +195,5 @@ install(
 
 # install the HEADER files
 install(FILES ${HEADERS} DESTINATION include/rocky)
+install(FILES ${HEADERS_CONTRIB} DESTINATION include/contrib/rocky)
+

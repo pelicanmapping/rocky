@@ -58,8 +58,8 @@ endif()
 
 # IDE settings
 set_target_properties(${TARGET} PROPERTIES FOLDER "rocky")
-rocky_assign_folders("Headers" "${CMAKE_CURRENT_SOURCE_DIR}" ${HEADERS})
-rocky_assign_folders("Sources" "${CMAKE_CURRENT_SOURCE_DIR}" ${SOURCES})
+rocky_assign_folders("Headers" "${CMAKE_CURRENT_SOURCE_DIR}" ${HEADERS} ${HEADERS_ENGINE})
+rocky_assign_folders("Sources" "${CMAKE_CURRENT_SOURCE_DIR}" ${SOURCES} ${SOURCES_ENGINE})
 rocky_assign_folders("Shaders" "${CMAKE_CURRENT_SOURCE_DIR}" ${SHADERS})
 
 # Versioning and Language

@@ -11,6 +11,7 @@
 #include <rocky/TileKey.h>
 #include <rocky/URI.h>
 #include <rocky/Utils.h>
+#include <rocky/contrib/EarthFileImporter.h>
 
 #include <random>
 
@@ -299,7 +300,7 @@ TEST_CASE("Map")
 
         map->layers().add(layer);
         CHECK(cb_code == 100);
-        CHECK(map->layers().count() == 1);
+        CHECK(map->layers().size() == 1);
 
         //map->moveLayer(layer, 0);
         map->layers().move(layer, 0);
@@ -310,7 +311,7 @@ TEST_CASE("Map")
 
         map->layers().remove(layer);
         CHECK(cb_code == 300);
-        CHECK(map->layers().count() == 0);
+        CHECK(map->layers().size() == 0);
     }
 }
 
@@ -748,6 +749,57 @@ TEST_CASE("IO")
         else
         {
             WARN("HTTPS support is not available - skipping HTTP tests");
+        }
+    }
+
+    SECTION("URI")
+    {
+        URI file("C:/folder/filename.ext");
+        CHECK(file.base() == "C:/folder/filename.ext");
+        CHECK(file.full() == "C:/folder/filename.ext");
+
+        URI relative_to_folder("filename.ext", "C:/folder/");
+        CHECK(relative_to_folder.base() == "filename.ext");
+        CHECK(relative_to_folder.full() == "C:/folder/filename.ext");
+
+        URI relative_to_file("filename.ext", "C:/folder/another_file.ext");
+        CHECK(relative_to_file.base() == "filename.ext");
+        CHECK(relative_to_file.full() == "C:/folder/filename.ext");
+
+        URI relative_with_subfolder("subfolder/filename.ext", "C:/folder/another_file.ext");
+        CHECK(relative_with_subfolder.base() == "subfolder/filename.ext");
+        CHECK(relative_with_subfolder.full() == "C:/folder/subfolder/filename.ext");
+
+        URI relative_with_parentfolder("../filename.ext", "C:/folder/another_file.ext");
+        CHECK(relative_with_parentfolder.base() == "../filename.ext");
+        CHECK(relative_with_parentfolder.full() == "C:/filename.ext");
+
+        URI relative_to_url_folder("filename.ext", "https://server.tld/folder/");
+        CHECK(relative_to_url_folder.base() == "filename.ext");
+        CHECK(relative_to_url_folder.full() == "https://server.tld/folder/filename.ext");
+
+        URI relative_to_url_file("filename.ext", "https://server.tld/folder/another_file.ext");
+        CHECK(relative_to_url_file.base() == "filename.ext");
+        CHECK(relative_to_url_file.full() == "https://server.tld/folder/filename.ext");
+    }
+}
+
+TEST_CASE("Earth File")
+{
+    EarthFileImporter importer;
+    auto result = importer.read("https://raw.githubusercontent.com/gwaldron/osgearth/master/tests/readymap.earth", {});
+    CHECKED_IF(result.status.ok())
+    {
+        Instance instance;
+        auto map = Map::create(instance);
+        map->from_json(result.value);
+
+        auto layer1 = map->layers().withName("ReadyMap 15m Imagery");
+        CHECKED_IF(layer1)
+        {
+            auto tms_layer = TMSImageLayer::cast(layer1);
+            CHECK(tms_layer);
+            CHECK(tms_layer->uri().value() == "http://readymap.org/readymap/tiles/1.0.0/7/");
         }
     }
 }

@@ -201,66 +201,6 @@ namespace
     }
 }
 
-
-//------------------------------------------------------------------------
-
-URIContext::URIContext()
-{
-}
-
-URIContext::URIContext(const std::string& referrer) :
-    _referrer(referrer)
-{
-}
-
-URIContext::URIContext(const URIContext& rhs) :
-    _referrer(rhs._referrer),
-    _headers(rhs._headers)
-{
-}
-
-std::string
-URIContext::getCanonicalPath(const std::string& target) const
-{
-    ROCKY_TODO("nyi - resolve relative path into full absolute path");
-    return target;
-}
-
-void
-URIContext::addHeader(const std::string& name, const std::string& value)
-{
-    _headers[name] = value;
-}
-
-const Headers&
-URIContext::getHeaders() const
-{
-    return _headers;
-}
-
-Headers&
-URIContext::getHeaders()
-{
-    return _headers;
-}
-
-
-URIContext
-URIContext::add(const URIContext& sub) const
-{
-    ROCKY_TODO("NYI");
-    return *this;
-    //return URIContext(rocky::getFullPath(_referrer, sub._referrer));
-}
-
-URIContext
-URIContext::add(const std::string& sub) const
-{
-    ROCKY_TODO("NYI");
-    return *this;
-    //return URIContext(osgDB::concatPaths(_referrer, sub));
-}
-
 //------------------------------------------------------------------------
 
 URI::Stream::Stream(shared_ptr<std::istream> s) :
@@ -301,11 +241,49 @@ URI::URI(const std::string& location)
 
 URI::URI(const std::string& location, const URIContext& context)
 {
+    std::string location_to_use = location;
+
+    if (util::startsWith(location, "file://", false))
+        _baseURI = location.substr(7);
+    else
+        _baseURI = location;
+
     _context = context;
-    _baseURI = location;
-    _fullURI = location;
-    if (!isRemote())
-        _fullURI = context.getCanonicalPath(_baseURI);
+    _fullURI = _baseURI;
+
+    bool absolute_location =
+        std::filesystem::path(_baseURI).is_absolute() ||
+        util::toLower(_baseURI).substr(0, 7) == "http://" ||
+        util::toLower(_baseURI).substr(0, 8) == "https://";
+
+    // resolve a relative path using the referrer
+    if (!absolute_location && !context.referrer.empty())
+    {
+        std::string referrer = context.referrer;
+
+        // strip the network protocol if there is one
+        std::string protocol;
+        if (URI(referrer).isRemote())
+        {
+            auto pos = referrer.find_first_of('/');
+            if (pos != std::string::npos)
+            {
+                protocol = referrer.substr(0, pos + 1);
+                referrer = referrer.substr(pos + 1);
+            }
+        }
+
+        std::filesystem::path p(referrer, std::filesystem::path::generic_format);
+        p = p.remove_filename() / _baseURI;
+        p = weakly_canonical(p);
+        _fullURI = p.generic_string();
+
+        // re-prepend the network protocol if necessary
+        if (!protocol.empty())
+        {
+            _fullURI = protocol + _fullURI;
+        }
+    }
 }
 
 URI::URI(const char* location)
@@ -374,9 +352,11 @@ URI::read(const IOOptions& io) const
         ROCKY_TODO("worry about text or binary open mode?");
 
         std::ifstream in(full().c_str(), std::ios_base::in);
+        std::stringstream buf;
+        buf << in.rdbuf() << std::flush;
+        content.data = buf.str();
         content.contentType = contentType;
-        in >> content.data;
-        in.close();        
+        in.close();
     }
 
     io.services().contentCache->put(full(), Result<Content>(content));
@@ -401,7 +381,7 @@ URI::urlEncode(const std::string& value)
 namespace ROCKY_NAMESPACE
 {
     void to_json(json& j, const URI& obj) {
-        if (obj.context().referrer().empty() && obj.context().getHeaders().empty())
+        if (obj.context().referrer.empty() && obj.context().headers.empty())
         {
             j = obj.base();
         }
@@ -410,12 +390,12 @@ namespace ROCKY_NAMESPACE
             j = json::object();
             set(j, "href", obj.base());
 
-            if (!obj.context().referrer().empty())
-                set(j, "referrer", obj.context().referrer());
+            if (!obj.context().referrer.empty())
+                set(j, "referrer", obj.context().referrer);
 
-            if (obj.context().getHeaders().empty() == false) {
+            if (obj.context().headers.empty() == false) {
                 auto headers = json::array();
-                for (auto& h : obj.context().getHeaders()) {
+                for (auto& h : obj.context().headers) {
                     headers.push_back({ h.first, h.second });
                 }
                 j["headers"] = headers;
@@ -433,13 +413,13 @@ namespace ROCKY_NAMESPACE
             std::string base, referrer;
             get_to(j, "href", base);
             get_to(j, "referrer", referrer);
-            URIContext context(referrer);
+            URIContext context{ referrer };
             if (j.contains("headers")) {
                 auto headers = j.at("headers");
                 if (headers.is_array()) {
                     // correct??
                     for (auto i = headers.begin(); i != headers.end(); ++i)
-                        context.addHeader(i.key(), i.value());
+                        context.headers[i.key()] = i.value();
                 }
             }
             obj = URI(base, context);

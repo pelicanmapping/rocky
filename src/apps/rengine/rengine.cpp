@@ -3,6 +3,15 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
+
+/**
+* RENGINE is an example application that demonstrates how to render 
+* a Rocky MapNode using the low-level engine API directly.
+* 
+* Normally you will use the Application API, but if you need finer
+* control you can do something like this.
+*/
+
 #include <rocky/Instance.h>
 #include <rocky/Version.h>
 #include <rocky/ImageLayer.h>

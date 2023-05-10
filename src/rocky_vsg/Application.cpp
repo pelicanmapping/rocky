@@ -8,6 +8,7 @@
 #include "MapManipulator.h"
 #include "SkyNode.h"
 #include "json.h"
+#include <rocky/contrib/EarthFileImporter.h>
 
 #include <vsg/app/CloseHandler.h>
 #include <vsg/app/View.h>
@@ -43,6 +44,30 @@ Application::Application(int& argc, char** argv) :
     root->addChild(mainScene);
 
     mapNode = rocky::MapNode::create(instance);
+
+    // earth file support
+    std::string earthFile;
+    if (commandLine.read({ "--earthfile" }, earthFile))
+    {
+        std::string msg;
+        EarthFileImporter importer;
+        auto result = importer.read(earthFile, instance.ioOptions());
+        if (result.status.ok())
+        {
+            auto count = mapNode->map()->layers().size();
+            mapNode->map()->from_json(result.value);
+            if (count == mapNode->map()->layers().size())
+                msg = "Unable to import any layers from the earth file";
+
+            Log::warn() << json_pretty(result.value) << std::endl;
+        }
+        else
+        {
+            msg = "Failed to read earth file - " + result.status.message;
+        }
+        if (!msg.empty())
+            Log::warn() << msg << std::endl;
+    }
 
     // the sun
     if (commandLine.read({ "--sky" }))

@@ -121,6 +121,10 @@ namespace ROCKY_NAMESPACE
         }
         return temp;
     }
+
+    inline std::string to_string(const json& obj) {
+        return obj.dump(-1, 32, false, nlohmann::json::error_handler_t::replace);
+    }
             
 
 

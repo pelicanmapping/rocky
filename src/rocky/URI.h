@@ -30,59 +30,10 @@ namespace ROCKY_NAMESPACE
      * it not itself a location (like a folder); rather it's the object that referred to the URI
      * being contextualized.
      */
-    class ROCKY_EXPORT URIContext
+    struct URIContext
     {
-    public:
-        /** Creates an empty context. */
-        URIContext();
-
-        /** Creates a context that specifies a referring object. */
-        URIContext(const std::string& referrer);
-
-        /** Copy constructor. */
-        URIContext(const URIContext& rhs);
-
-        /** dtor */
-        virtual ~URIContext() { }
-
-        /** Serializes this context to an Options structure. This is useful when passing context information
-            to an osgDB::ReaderWriter that takes a stream as input -- the stream is anonymous, therefore this
-            is the preferred way to communicate the context information. */
-        void store(IOOptions* options);
-
-        /** Creates a context from the serialized version in an Options structure (see above) */
-        URIContext(const IOOptions* options);
-
-        /** Returns the referring object. */
-        const std::string& referrer() const { return _referrer; }
-
-        /** True if the context is empty */
-        bool empty() const { return _referrer.empty(); }
-
-        /** Parents the input context with the current object, placing the subContext's information
-            under it. Used to re-parent relative locations with a higher-level referrer object. */
-        URIContext add(const URIContext& subContext) const;
-
-        /** Returns a new context with the sub path appended to the current referrer path. */
-        URIContext add(const std::string& subPath) const;
-
-        /** creates a string suitable for passing to an implementation */
-        std::string getCanonicalPath(const std::string& target) const;
-
-        //! Add a header name/value pair to use when requesting a remote URL
-        void addHeader(const std::string& name, const std::string& value);
-
-        //! Headers in this URIContext
-        const Headers& getHeaders() const;
-
-        //! Headers in this URIContext
-        Headers& getHeaders();
-
-
-    private:
-        friend class URI;
-        std::string _referrer;
-        Headers _headers;
+        std::string referrer;
+        Headers headers;
     };
 
 
@@ -143,6 +94,10 @@ namespace ROCKY_NAMESPACE
 
         //! Constructs a new URI from a location and an existing context.
         URI(const std::string& location, const URIContext& context);
+
+        //! Constructs a new URI from a location and a referring location.
+        URI(const std::string& location, const std::string& referrer) :
+            URI(location, URIContext{ referrer }) { }
 
         //! Constructs a new URI from a string.
         URI(const char* location);

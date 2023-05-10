@@ -56,6 +56,10 @@ namespace ROCKY_NAMESPACE
         Instance& instance() { return _instance; }
         const Instance& instance() const { return _instance; }
 
+        //! Import map properties and layers from JSON data
+        //! @param value JSON string to import
+        void from_json(const JSON& value);
+
     public:
 
         //! Construct

@@ -59,7 +59,19 @@ Map::construct(const JSON& conf, const IOOptions& io)
     _elevationPool->setMap( this );
 #endif
 
-    auto j = parse_json(conf);
+    from_json(conf);
+
+    // set a default profile if neccesary.
+    if (!profile().valid())
+    {
+        setProfile(Profile::GLOBAL_GEODETIC);
+    }
+}
+
+void
+Map::from_json(const JSON& input)
+{
+    auto j = parse_json(input);
     get_to(j, "name", _name);
     get_to(j, "profile", _profile);
     get_to(j, "profile_layer", _profileLayer);
@@ -75,12 +87,6 @@ Map::construct(const JSON& conf, const IOOptions& io)
                 }
             }
         }
-    }
-
-    // set a default profile if neccesary.
-    if (!profile().valid())
-    {
-        setProfile(Profile::GLOBAL_GEODETIC);
     }
 }
 

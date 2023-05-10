@@ -31,7 +31,10 @@ namespace ROCKY_NAMESPACE
         void move(shared_ptr<Layer> layer, unsigned index);
 
         //! Number of layers in the map
-        unsigned count() const;
+        unsigned size() const;
+
+        //! Size == 0
+        bool empty() const { return size() == 0; }
 
         //! Vector (snapshot in time) of all layers
         std::vector<shared_ptr<Layer>> all() const;

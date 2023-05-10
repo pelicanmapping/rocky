@@ -56,7 +56,7 @@ LayerCollection::add(shared_ptr<Layer> layer, const IOOptions& io)
         }
     }
 
-    if (indexOf(layer) != count())
+    if (indexOf(layer) != size())
         return layer->status();
 
     if (layer->openAutomatically())
@@ -84,7 +84,7 @@ LayerCollection::remove(shared_ptr<Layer> layer)
         return;
 
     // ensure it's in the map
-    if (indexOf(layer) == count())
+    if (indexOf(layer) == size())
         return;
 
     unsigned int index = -1;
@@ -161,7 +161,7 @@ LayerCollection::move(shared_ptr<Layer> layer, unsigned new_index)
 }
 
 unsigned
-LayerCollection::count() const
+LayerCollection::size() const
 {
     return _layers.size();
 }
@@ -170,7 +170,7 @@ unsigned
 LayerCollection::indexOf(shared_ptr<Layer> layer) const
 {
     if (!layer)
-        return count();
+        return size();
 
     std::shared_lock lock(_map->_mapDataMutex);
     unsigned index = 0;
