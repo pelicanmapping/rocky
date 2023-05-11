@@ -31,10 +31,14 @@ vcpkg_execute_required_process(
   LOGNAME checkout
 )
 
-
+vcpkg_apply_patches(
+    SOURCE_PATH "${SOURCE_PATH}"
+    PATCHES "vsgImGui.patch"
+)
 vcpkg_configure_cmake(
     SOURCE_PATH "${SOURCE_PATH}"
 )
+
 
 vcpkg_install_cmake()
 vcpkg_cmake_config_fixup(PACKAGE_NAME "vsgimgui" CONFIG_PATH "lib/cmake/vsgimgui")

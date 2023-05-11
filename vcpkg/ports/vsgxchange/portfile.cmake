@@ -4,6 +4,7 @@ vcpkg_from_github(
     SHA512 2d88c37e962a46de09997a1b0aac9adda91eff8adeb6ae0a4d36364019fbf1c5769034bb2a9e122174e33d940ecb5d43d7cd03e020e748b4470a52a932897829
 	REF 883f88744148fe2b446a4fadcaffc08b7506e879
 	HEAD_REF master
+	PATCHES vsgXchange.patch
 )
 
 vcpkg_configure_cmake(
