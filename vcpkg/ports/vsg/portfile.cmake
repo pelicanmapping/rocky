@@ -1,47 +1,17 @@
 vcpkg_from_github(
-	OUT_SOURCE_PATH SOURCE_PATH
-	REPO vsg-dev/VulkanSceneGraph
-	SHA512 0404840599f1c023b9f5f15e067df5f59c63c87857980cbe6609c1f30c58786a1a4534bb6dbb16558f79f6be115ae3856c03411e6721e4be076cda6ff06f268c
-	REF 4d59471d14e34d172d024aeb456568b1ae13f50f
-	HEAD_REF master
+    OUT_SOURCE_PATH SOURCE_PATH
+    REPO vsg-dev/VulkanSceneGraph
+    REF e775af7f08a1890ef7b5ba402474dce687790835
+    SHA512 fcdabc1bca3bdf663a125d70efe5d6f1cf57304af325d4262e9343cb30246ae35ad88b4acd3fc3ae6bc9b60326c68be6fd6b138bb6e8a9e17aaf890495b4c5cc
+    HEAD_REF master
+	PATCHES devendor-glslang.patch
 )
 
-# find_program(GIT git)
-
-# set(GIT_URL "https://github.com/vsg-dev/VulkanSceneGraph.git")
-# set(GIT_REV "95ae7957264de7b9016021c661865e157685fd35") # 1.0.5
-
-# set(SOURCE_PATH ${CURRENT_BUILDTREES_DIR}/src/${PORT})
-
-
-# message(STATUS "Cloning and fetching submodules")
-
-# file(REMOVE_RECURSE ${SOURCE_PATH})
-
-# vcpkg_execute_required_process(
-  # COMMAND ${GIT} clone --recurse-submodules ${GIT_URL} "${SOURCE_PATH}"
-  # WORKING_DIRECTORY ${CURRENT_BUILDTREES_DIR}
-  # LOGNAME clone
-# )
-
-# message(STATUS "Checkout revision ${GIT_REV}")
-# vcpkg_execute_required_process(
-  # COMMAND ${GIT} checkout ${GIT_REV}
-  # WORKING_DIRECTORY ${SOURCE_PATH}
-  # LOGNAME checkout
-# )
-
-
-#disabled paralell config because vsg uses git clone for glslang and can't do that in parallel
-vcpkg_configure_cmake(
-    SOURCE_PATH "${SOURCE_PATH}"
-    DISABLE_PARALLEL_CONFIGURE	
-)
-
-vcpkg_install_cmake()
+vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}")
+vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(PACKAGE_NAME "vsg" CONFIG_PATH "lib/cmake/vsg")
 vcpkg_copy_pdbs()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/share")
-file(INSTALL ${SOURCE_PATH}/LICENSE.md DESTINATION ${CURRENT_PACKAGES_DIR}/share/${PORT} RENAME copyright)
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE.md")

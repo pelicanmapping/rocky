@@ -1,0 +1,12 @@
+diff --git a/CMakeLists.txt "b/CMakeLists.txt"
+index dc550a5..af9b4b8 100644
+--- a/CMakeLists.txt
++++ "b/CMakeLists.txt"
+@@ -22,6 +22,7 @@ if (VULKAN_SDK)
+     set(ENV{VULKAN_SDK} ${VULKAN_SDK})
+ endif()
+ 
++find_package(glslang)
+ find_package(vsg 1.0.5)
+ 
+ vsg_setup_dir_vars()

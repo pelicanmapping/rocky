@@ -41,6 +41,7 @@ add_library(${TARGET}
 #add_custom_target(rocky_vsg_shaders ALL DEPENDS ${SPIRV_SHADERS})
 
 find_package(vsg CONFIG REQUIRED)
+find_package(glslang CONFIG REQUIRED)
 
 # Lib dependencies
 set(LIBRARIES PUBLIC

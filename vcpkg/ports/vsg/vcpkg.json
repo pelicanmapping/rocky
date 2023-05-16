@@ -4,6 +4,7 @@
   "homepage": "",
   "description": "",
   "dependencies": [
+    "glslang",
     {
       "name": "vcpkg-cmake",
       "host": true

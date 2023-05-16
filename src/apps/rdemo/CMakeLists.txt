@@ -1,5 +1,6 @@
 set(APP_NAME rdemo)
 
+find_package(glslang CONFIG REQUIRED)
 find_package(vsgImGui REQUIRED)
 
 file(GLOB SOURCES *.cpp)
