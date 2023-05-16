@@ -99,8 +99,8 @@ namespace ROCKY_NAMESPACE
         URI(const std::string& location, const std::string& referrer) :
             URI(location, URIContext{ referrer }) { }
 
-        //! Constructs a new URI from a string.
-        URI(const char* location);
+        URI(const char* location) :
+            URI(std::string(location)) { }
 
         /** The base (possibly relative) location string. */
         const std::string& base() const { return _baseURI; }
@@ -119,9 +119,6 @@ namespace ROCKY_NAMESPACE
 
         /** Whether the object of the URI is cacheable. */
         bool isRemote() const;
-
-        /** Returns a copy of this URI with the suffix appended */
-        URI append(const std::string& suffix) const;
 
         //! Reads the URI into a data buffer
         IOResult<Content> read(const IOOptions& io) const;

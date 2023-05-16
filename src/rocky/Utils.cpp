@@ -9,6 +9,11 @@
 #include <zlib.h>
 #include <cctype>
 #include <cstring>
+#include <filesystem>
+
+#ifdef WIN32
+#include <Windows.h>
+#endif
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
@@ -607,53 +612,6 @@ rocky::util::getToken(const std::string& input, unsigned i, const std::string& d
     return i < tokens.size() ? tokens[i] : "";    
 }
 
-#if 0
-bool
-rocky::util::isURL(const std::string& input)
-{
-    auto temp = util::trim(util::toLower(input));
-    return
-        util::startsWith(temp, "http://") ||
-        util::startsWith(temp, "https://");
-}
-
-bool
-rocky::util::isAbsolutePath(const std::string& path)
-{   
-    // Test for URL
-    if (isURL(path)) return true;
-    // https://github.com/openscenegraph/OpenSceneGraph/blob/master/src/osgDB/FileNameUtils.cpp#L436
-    // Test for unix root
-    if (path.empty()) return false;
-    if (path[0] == '/') return true;
-    // Now test for Windows root
-    if (path.length() < 2) return false;
-    if (path[0] == '\\' && path[1] == '\\') return true;
-    return path[1] == ':';
-}
-
-bool
-rocky::util::isRelativePath(const std::string& path)
-{
-    return !isAbsolutePath(path);
-}
-
-std::string
-rocky::util::getAbsolutePath(const std::string& path)
-{
-    ROCKY_TODO("nyi");
-    return path;
-}
-#endif
-
-void
-Path::normalize()
-{
-    //https://stackoverflow.com/a/73632272/4218920
-    std::filesystem::path canonicalPath = std::filesystem::weakly_canonical(*this);
-    assign(canonicalPath.make_preferred());
-}
-
 std::string
 rocky::util::makeCacheKey(const std::string& key, const std::string& prefix)
 {
@@ -669,6 +627,27 @@ rocky::util::makeCacheKey(const std::string& key, const std::string& prefix)
     // This is the same scheme that git uses
     out << val.substr(0, 2) << "/" << val.substr(2, 38);
     return out.str();
+}
+
+std::string
+rocky::util::getExecutableLocation()
+{
+#if defined(_WIN32)
+
+    char buf[4096];
+    if (::GetModuleFileName(0L, buf, 4096))
+    {
+        auto path = std::filesystem::path(std::string(buf));
+        return path.remove_filename().generic_string();
+    }
+
+#elif defined(__linux__)
+
+    return std::filesystem::canonical("/proc/self/exe").remove_filename().generic_string();
+
+#endif
+
+    return {};
 }
 
 

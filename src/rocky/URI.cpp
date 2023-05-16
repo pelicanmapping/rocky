@@ -286,22 +286,6 @@ URI::URI(const std::string& location, const URIContext& context)
     }
 }
 
-URI::URI(const char* location)
-{
-    _baseURI = std::string(location);
-    _fullURI = _baseURI;
-}
-
-URI
-URI::append(const std::string& suffix) const
-{
-    URI result;
-    result._baseURI = _baseURI + suffix;
-    result._fullURI = _fullURI + suffix;
-    result._context = _context;
-    return result;
-}
-
 IOResult<Content>
 URI::read(const IOOptions& io) const
 {

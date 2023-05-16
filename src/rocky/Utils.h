@@ -110,6 +110,10 @@ namespace ROCKY_NAMESPACE { namespace util
     extern ROCKY_EXPORT glm::u8vec4 toColor(const std::string& str, const glm::u8vec4& default_value);
 
     extern ROCKY_EXPORT std::string makeCacheKey(const std::string& key, const std::string& prefix);
+    
+    //! Full pathname of the currently running executable
+    extern ROCKY_EXPORT std::string getExecutableLocation();
+
     //------------------------------------------------------------------------
     // conversion templates
 
@@ -272,31 +276,6 @@ namespace ROCKY_NAMESPACE { namespace util
         bool     _allowEmpties;
         bool     _trimTokens;
     };
-
-#if 0
-    extern ROCKY_EXPORT bool isURL(const std::string&);
-
-    extern ROCKY_EXPORT bool isAbsolutePath(const std::string&);
-
-    extern ROCKY_EXPORT bool isRelativePath(const std::string&);
-
-    extern ROCKY_EXPORT std::string getAbsolutePath(const std::string&);
-#endif
-
-    /**
-     * A filesystem Path that automatically normalizes
-     * pathnames
-     */
-    class ROCKY_EXPORT Path : public std::filesystem::path
-    {
-    public:
-        Path(const std::string& str) :
-            std::filesystem::path(str) { normalize(); }
-
-    private:
-        void normalize();
-    };
-
 
     /**
      * Tracks usage data by maintaining a sentry-blocked linked list.

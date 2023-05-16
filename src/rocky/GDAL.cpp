@@ -671,7 +671,11 @@ GDAL::Driver::open(
     if (!src_srs.valid())
     {
         // not found in the dataset; try loading a .prj file
-        std::string prjLocation = util::Path(source).replace_extension("prj").string();
+        auto prjLocation =
+            std::filesystem::path(source)
+            .replace_extension("prj")
+            .lexically_normal()
+            .generic_string();
 
         auto rr = URI(prjLocation).read(io); // TODO io
         if (rr.status.ok() && !rr.value.data.empty())
