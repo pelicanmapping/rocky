@@ -94,6 +94,24 @@ auto Demo_Model = [](Application& app)
                 app.remove(object);
         }
 
+        GeoPoint pos = object->xform->position();
+        glm::fvec3 v{ pos.x, pos.y, pos.z };
+
+        if (ImGuiLTable::SliderFloat("Latitude", &v.y, -85.0, 85.0, "%.1f"))
+        {
+            object->xform->setPosition(GeoPoint(pos.srs(), v.x, v.y, v.z));
+        }
+
+        if (ImGuiLTable::SliderFloat("Longitude", &v.x, -180.0, 180.0, "%.1f"))
+        {
+            object->xform->setPosition(GeoPoint(pos.srs(), v.x, v.y, v.z));
+        }
+
+        if (ImGuiLTable::SliderFloat("Altitude", &v.z, 0.0, 2500000.0, "%.1f"))
+        {
+            object->xform->setPosition(GeoPoint(pos.srs(), v.x, v.y, v.z));
+        }
+
         ImGuiLTable::End();
     }
 };

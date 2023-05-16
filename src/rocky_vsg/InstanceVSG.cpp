@@ -162,6 +162,14 @@ namespace
 
         return { };
     }
+
+    bool foundShaders(const vsg::Paths& searchPaths)
+    {
+        auto options = vsg::Options::create();
+        options->paths = searchPaths;
+        auto found = vsg::findFile(vsg::Path("shaders/rocky.terrain.vert"), options);
+        return !found.empty();
+    }
 }
 
 InstanceVSG::InstanceVSG() :
@@ -179,20 +187,29 @@ InstanceVSG::InstanceVSG() :
     runtime.readerWriterOptions->add(vsgXchange::all::create());
 #endif
 
+    // establish search paths for shaders and data:
     auto vsgPaths = vsg::getEnvPaths("VSG_FILE_PATH");
-    auto rockyPaths = vsg::getEnvPaths("ROCKY_FILE_PATH");
+    runtime.searchPaths.insert(runtime.searchPaths.end(), vsgPaths.begin(), vsgPaths.end());
 
-    if (vsgPaths.empty() && rockyPaths.empty())
+    auto rockyPaths = vsg::getEnvPaths("ROCKY_FILE_PATH");
+    runtime.searchPaths.insert(runtime.searchPaths.end(), rockyPaths.begin(), rockyPaths.end());
+
+    // make sure we can find the shaders:
+    if (!foundShaders(runtime.searchPaths))
     {
-        Log::warn() << "Neither envivonment variable VSG_FILE_PATH nor ROCKY_FILE_PATH is set."
-            " This is trouble - Rocky may not be able to find its shaders." << std::endl;
-    }
-    else
-    {
-        // Default search locations for shaders and textures:
-        for (auto paths : { vsgPaths, rockyPaths })
+        // attempt to resolve the location of the rocky shaders relative
+        // to the location of the executable.
+        auto path = std::filesystem::path(util::getExecutableLocation());
+        path = (path.remove_filename() / "../share").lexically_normal();
+        if (!path.empty())
         {
-            runtime.searchPaths.insert(runtime.searchPaths.end(), paths.begin(), paths.end());
+            runtime.searchPaths.push_back(vsg::Path(path.generic_string()));
+        }
+
+        if (!foundShaders(runtime.searchPaths))
+        {
+            Log::warn() << "Trouble: Rocky may not be able to find its shaders. "
+                "Consider setting one of the environment variables VSG_FILE_PATH or ROCKY_FILE_PATH." << std::endl;
         }
     }
 
