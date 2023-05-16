@@ -16,6 +16,11 @@
 #error This example requires TMS support. Check CMake.
 #endif
 
+#if defined(ROCKY_SUPPORTS_GDAL)
+#include <gdal_version.h>
+#endif
+
+#include <rocky/Version.h>
 #include <rocky/TMSImageLayer.h>
 #include <rocky/TMSElevationLayer.h>
 
@@ -40,6 +45,17 @@ int layerError(T layer)
     return -1;
 }
 
+auto Demo_About = [&](Application& app)
+{
+    ImGui::Text("Rocky " ROCKY_VERSION_STRING);
+    ImGui::Separator();
+    ImGui::Text("VSG " VSG_VERSION_STRING);
+#ifdef GDAL_FOUND
+    ImGui::Text("GDAL " GDAL_RELEASE_NAME);
+#endif
+    ImGui::Text("PROJ %s", rocky::SRS::projVersion().c_str());
+};
+
 struct Demo
 {
     std::string name;
@@ -62,14 +78,13 @@ void setup_demos(rocky::Application& app)
             Demo{ "User Model", Demo_Model }
         } }
     );
-    //demos.emplace_back(
-    //    Demo{ "Camera", {}, {
-    //        Demo{ "MapManipulator", Demo_MapManipulator }
-    //    } }
-    //);
+
     demos.emplace_back(
         Demo{ "Windows & Views", Demo_Views }
     );
+
+    demos.emplace_back(
+        Demo{ "About", Demo_About });
 }
 
 struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>

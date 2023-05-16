@@ -155,6 +155,9 @@ namespace ROCKY_NAMESPACE
         //! Internal SRS representation (for debugging)
         std::string string() const;
 
+        //! Version of PROJ we use
+        static std::string projVersion();
+
     private:
         //! Create an SRS from an initialization string.
         std::string _definition;

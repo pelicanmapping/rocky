@@ -446,6 +446,12 @@ const SRS SRS::PLATE_CARREE("plate-carree");
 const SRS SRS::EMPTY;
 #endif
 
+std::string
+SRS::projVersion()
+{
+    return std::to_string(PROJ_VERSION_MAJOR) + "." + std::to_string(PROJ_VERSION_MINOR);
+}
+
 SRS::SRS() :
     _valid(false)
 {
