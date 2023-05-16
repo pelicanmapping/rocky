@@ -1,0 +1,21 @@
+{
+    "name": "rocky",
+    "version-string": "0.1-minimal",
+    "port-version": 1,
+    "description": "Rocky by Pelican Mapping",
+    "homepage": "https://github.com/pelicanmapping/rocky",
+    "supports": "!(x86 | wasm32)",
+    "dependencies": [
+        "cpp-httplib",
+        "proj",
+        "glm",
+        "nlohmann-json",
+        "openssl",
+        "sqlite3",
+        "tinyxml",
+        "vsg",
+        "vsgxchange",
+        "vsgimgui",
+        "zlib"
+    ]
+}
