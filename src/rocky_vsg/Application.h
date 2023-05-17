@@ -14,6 +14,7 @@
 #include <vsg/app/CommandGraph.h>
 #include <vsg/app/View.h>
 #include <vsg/nodes/Group.h>
+#include <vsg/commands/ClearAttachments.h>
 
 #include <list>
 
@@ -40,6 +41,7 @@ namespace ROCKY_NAMESPACE
 
     public: // Windows and Views
 
+        //! Collection of windows and views managed by the application.
         struct DisplayConfiguration
         {
             using Windows = std::map<
@@ -49,11 +51,20 @@ namespace ROCKY_NAMESPACE
             Windows windows;
         };
 
+        //! Information about each view.
+        struct ViewData
+        {
+            vsg::ref_ptr<vsg::RenderGraph> parentRenderGraph;
+        };
+
         //! Adds a window to the application.
         util::Future<vsg::ref_ptr<vsg::Window>> addWindow(vsg::ref_ptr<vsg::WindowTraits> traits);
 
         //! Adds a view to an existing window
-        void addView(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view);
+        util::Future<vsg::ref_ptr<vsg::View>> addView(
+            vsg::ref_ptr<vsg::Window> window,
+            vsg::ref_ptr<vsg::View> view,
+            std::function<void()> on_create = {});
 
         //! Removes a view from a window
         void removeView(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view);
@@ -62,6 +73,12 @@ namespace ROCKY_NAMESPACE
         //! a "stage" and these stages render in their order of appearance. This is is
         //! good way to e.g. render a GUI overlay after rendering the 3D scnee.
         void addPostRenderNode(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Node> node);
+
+        //! Refreshes a view after changing its parameters like viewport, clear color, etc.
+        void refreshView(vsg::ref_ptr<vsg::View> view);
+
+        //! Return commands and data pertaining to a view.
+        inline ViewData& viewData(vsg::ref_ptr<vsg::View> view);
 
     public:
         rocky::InstanceVSG instance;
@@ -72,10 +89,6 @@ namespace ROCKY_NAMESPACE
         std::function<void()> updateFunction;
         DisplayConfiguration displayConfiguration;
 
-
-        //! Find the render pass for a view:
-        //! TODO: replace with a findRenderGraphForView() utility function.
-        inline vsg::ref_ptr<vsg::RenderGraph> renderGraph(vsg::ref_ptr<vsg::View> view) const;
 
         //! About the application.
         std::string about() const;
@@ -102,7 +115,8 @@ namespace ROCKY_NAMESPACE
         std::list<util::Future<Addition>> _objectsToAdd;
         std::list<vsg::ref_ptr<vsg::Node>> _objectsToRemove;
         std::map<vsg::ref_ptr<vsg::Window>, vsg::ref_ptr<vsg::CommandGraph>> _commandGraphByWindow;
-        std::map<vsg::ref_ptr<vsg::View>, vsg::ref_ptr<vsg::RenderGraph>> _renderGraphByView;
+        
+        std::map<vsg::ref_ptr<vsg::View>, ViewData> _viewData;
         
         void realizeViewer(vsg::ref_ptr<vsg::Viewer> viewer);
 
@@ -110,14 +124,17 @@ namespace ROCKY_NAMESPACE
 
         void addAndRemoveObjects();
 
-        void addViewAfterViewerIsRealized(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view);
+        void addViewAfterViewerIsRealized(
+            vsg::ref_ptr<vsg::Window> window,
+            vsg::ref_ptr<vsg::View> view,
+            std::function<void()> on_create,
+            util::Future<vsg::ref_ptr<vsg::View>> result);
 
         void addManipulator(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View>);
     };
 
     // inlines.
-    vsg::ref_ptr<vsg::RenderGraph> Application::renderGraph(vsg::ref_ptr<vsg::View>view) const {
-        auto i = _renderGraphByView.find(view);
-        return i != _renderGraphByView.end() ? i->second : vsg::ref_ptr<vsg::RenderGraph>();
+    Application::ViewData& Application::viewData(vsg::ref_ptr<vsg::View> view) {
+        return _viewData[view];
     }
 }

@@ -11,6 +11,7 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_Views = [=](Application& app)
 {
+    // iterate over all managed windows:
     int window_id = 0;
     for (auto windows_iter : app.displayConfiguration.windows)
     {
@@ -20,6 +21,7 @@ auto Demo_Views = [=](Application& app)
         ImGui::PushID(window_id++);
         if (ImGui::TreeNodeEx(window->traits()->windowTitle.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
         {
+            // for each window, iterate over all managed views in that window:
             int num = 0;
             for (auto& view : views)
             {
@@ -27,18 +29,56 @@ auto Demo_Views = [=](Application& app)
                 if (ImGui::TreeNodeEx("view", ImGuiTreeNodeFlags_DefaultOpen, "View %d", num++))
                 {
                     ImGuiLTable::Begin("view");
-                    auto rendergraph = app.renderGraph(view);
-                    if (rendergraph)
+                    
+                    auto viewdata = app.viewData(view);
+
+                    // the clear color, which resides in a renderpass attachment:
+                    if (viewdata.parentRenderGraph->clearValues.size() > 0 &&
+                        viewdata.parentRenderGraph->getRenderPass()->attachments.size() > 0 &&
+                        viewdata.parentRenderGraph->getRenderPass()->attachments[0].format == VK_FORMAT_B8G8R8A8_UNORM)
                     {
-                        auto& cv = rendergraph->clearValues[0];
-                        float col[3] = { cv.color.float32[0], cv.color.float32[1], cv.color.float32[2] };
-                        if (ImGuiLTable::ColorEdit3("Clear", &col[0]))
+                        auto& color = viewdata.parentRenderGraph->clearValues[0].color.float32;
+                        if (ImGuiLTable::ColorEdit3("Clear", color))
                         {
-                            // just assume the first clear value is the color attachment :)
-                            rendergraph->setClearValues({ { col[0], col[1], col[2], 1.0f } });
-                        }
+                            // just works - nothing to do
+                        }                        
                     }
+
+                    // the viewport - changing this requires a bunch of updates and a call to  app.refreshView
+                    bool vp_dirty = false;
+                    auto old_vp = view->camera->getViewport();
+                    auto vp = view->camera->getViewport();
+                    if (ImGuiLTable::SliderFloat("X", &vp.x, 0, window->traits()->width))
+                    {
+                        vp_dirty = true;
+                    }
+                    if (ImGuiLTable::SliderFloat("Y", &vp.y, 0, window->traits()->height))
+                    {
+                        vp_dirty = true;
+                    }
+                    if (ImGuiLTable::SliderFloat("Width", &vp.width, 0, window->traits()->width))
+                    {
+                        vp_dirty = true;
+                    }
+                    if (ImGuiLTable::SliderFloat("Height", &vp.height, 0, window->traits()->height))
+                    {
+                        vp_dirty = true;
+                    }
+
+                    if (vp_dirty)
+                    {
+                        view->camera->projectionMatrix->changeExtent(VkExtent2D{(unsigned)old_vp.width, (unsigned)old_vp.height}, VkExtent2D{ (unsigned)vp.width, (unsigned)vp.height });
+                        view->camera->viewportState->set(vp.x, vp.y, vp.width, vp.height);
+                        app.refreshView(view);
+                    }
+
+                    if (ImGui::Button("Remove"))
+                    {
+                        app.removeView(window, view);
+                    }
+
                     ImGuiLTable::End();
+                    ImGui::Separator();
                     ImGui::TreePop();
                 }
                 ImGui::PopID();
@@ -47,11 +87,11 @@ auto Demo_Views = [=](Application& app)
 
             ImGui::Indent();
             {
-                if (ImGui::Button("New view"))
+                if (ImGui::Button("Add view"))
                 {
-                    // first make a camera for the new view:
+                    // First make a camera for the new view, placed at a random location.
                     const double nearFarRatio = 0.00001;
-                    const double hfov = 30.0;
+                    const double vfov = 30.0;
                     const int width = 320, height = 200;
                     double R = app.mapNode->mapSRS().ellipsoid().semiMajorAxis();
                     int win_width = window->extent2D().width, win_height = window->extent2D().height;
@@ -60,12 +100,25 @@ auto Demo_Views = [=](Application& app)
                     double ar = (double)width / (double)height;
 
                     auto camera = vsg::Camera::create(
-                        vsg::Perspective::create(hfov, ar, R * nearFarRatio, R * 20.0),
+                        vsg::Perspective::create(vfov, ar, R * nearFarRatio, R * 20.0),
                         vsg::LookAt::create(),
                         vsg::ViewportState::create(x, y, width, height));
 
+                    // create the new view:
                     auto new_view = vsg::View::create(camera, app.root);
-                    app.addView(window, new_view);
+
+                    // add it to a window - and set a random clear color once it's created.
+                    auto on_create = [&app, new_view]()
+                    {
+                        auto viewdata = app.viewData(new_view);
+                        auto& color = viewdata.parentRenderGraph->clearValues[0].color.float32;
+                        color[0] = float(rand() % 255) / 255.0f;
+                        color[1] = float(rand() % 255) / 255.0f;
+                        color[2] = float(rand() % 255) / 255.0f;
+                    };
+
+                    auto future = app.addView(window, new_view, on_create);
+
                 }
                 ImGui::Unindent();
             }

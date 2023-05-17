@@ -103,6 +103,9 @@ Application::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
 
     auto add_window = [=]() mutable
     {
+        // wait until the device is idle to avoid changing state while it's being used.
+        viewer->deviceWaitIdle();
+
         auto result = future_window;
 
         //viewer->stopThreading();
@@ -138,9 +141,9 @@ Application::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
 
         // add the new view to the window:
         if (_viewerRealized)
-            addViewAfterViewerIsRealized(window, view);
+            addViewAfterViewerIsRealized(window, view, {}, {});
         else
-            addView(window, view);
+            addView(window, view, {});
 
         // Tell Rocky it needs to mutex-protect the terrain engine
         // now that we have more than one window.
@@ -173,18 +176,24 @@ Application::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     return future_window;
 }
 
-void
-Application::addView(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view)
+util::Future<vsg::ref_ptr<vsg::View>>
+Application::addView(
+    vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view,
+    std::function<void()> on_create)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(window != nullptr, void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(view != nullptr, void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(view->camera != nullptr, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(window != nullptr, {});
+    ROCKY_SOFT_ASSERT_AND_RETURN(view != nullptr, {});
+    ROCKY_SOFT_ASSERT_AND_RETURN(view->camera != nullptr, {});
 
     if (_viewerRealized)
     {
+        util::Future<vsg::ref_ptr<vsg::View>> result;
+
         instance.runtime().runDuringUpdate([=]() {
-            addViewAfterViewerIsRealized(window, view);
+            addViewAfterViewerIsRealized(window, view, on_create, result);
             });
+
+        return result;
     }
 
     else
@@ -201,21 +210,33 @@ Application::addView(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> v
             }
 
             auto rendergraph = vsg::RenderGraph::create(window, view);
-
             commandgraph->addChild(rendergraph);
 
-            // remember so we can remove it later
-            _renderGraphByView[view] = rendergraph;
+            auto& viewdata = _viewData[view];
+            viewdata.parentRenderGraph = rendergraph;
+
             displayConfiguration.windows[window].emplace_back(view);
         }
+
+        // return a resolved future since we are immediately good to go
+        util::Future<vsg::ref_ptr<vsg::View>> result;
+        result.resolve(view);
+
+        if (on_create)
+            on_create();
+
+        return result;
     }
 }
 
 void
-Application::addViewAfterViewerIsRealized(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view)
+Application::addViewAfterViewerIsRealized(
+    vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view,
+    std::function<void()> on_create,
+    util::Future<vsg::ref_ptr<vsg::View>> result)
 {
-    // Each view gets its own render pass:
-    auto rendergraph = vsg::RenderGraph::create(window, view);
+    // wait until the device is idle to avoid changing state while it's being used.
+    viewer->deviceWaitIdle();
 
     if (view->children.empty())
     {
@@ -225,6 +246,8 @@ Application::addViewAfterViewerIsRealized(vsg::ref_ptr<vsg::Window> window, vsg:
     if (auto iter = _commandGraphByWindow.find(window); iter != _commandGraphByWindow.end())
     {
         auto commandgraph = iter->second;
+
+        auto rendergraph = vsg::RenderGraph::create(window, view);
         commandgraph->addChild(rendergraph);
 
         // Add this new view to the viewer's compile manager:
@@ -241,14 +264,22 @@ Application::addViewAfterViewerIsRealized(vsg::ref_ptr<vsg::Window> window, vsg:
         {
             vsg::updateViewer(*viewer, result);
         }
+
+        // remember so we can remove it later
+        auto& viewdata = _viewData[view];
+        viewdata.parentRenderGraph = rendergraph;
+
+        displayConfiguration.windows[window].emplace_back(view);
+
+        // Add a manipulator - we might not do this by default - check back.
+        addManipulator(window, view);
     }
 
-    // remember so we can remove it later
-    _renderGraphByView[view] = rendergraph;
-    displayConfiguration.windows[window].emplace_back(view);
+    if (on_create)
+        on_create();
 
-    // Add a manipulator - we might not do this by default - check back.
-    addManipulator(window, view);
+    // report that we are ready to rock
+    result.resolve(view);
 }
 
 void
@@ -259,19 +290,23 @@ Application::removeView(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View
 
     auto remove = [=]()
     {
+        // wait until the device is idle to avoid changing state while it's being used.
+        viewer->deviceWaitIdle();
+
         auto ci = _commandGraphByWindow.find(window);
         ROCKY_SOFT_ASSERT_AND_RETURN(ci != _commandGraphByWindow.end(), void());
         auto& commandgraph = ci->second;
 
-        auto ri = _renderGraphByView.find(view);
-        ROCKY_SOFT_ASSERT_AND_RETURN(ri != _renderGraphByView.end(), void());
-        auto& rendergraph = ri->second;
+        auto vd = _viewData.find(view);
+        ROCKY_SOFT_ASSERT_AND_RETURN(vd != _viewData.end(), void());
+        auto& rendergraph = vd->second.parentRenderGraph;
 
-        // remove the render pass from the command graph.
+        // remove the rendergraph from the command graph.
         auto& rps = commandgraph->children;
         rps.erase(std::remove(rps.begin(), rps.end(), rendergraph), rps.end());
 
-        _renderGraphByView.erase(view);
+        _viewData.erase(view);
+
         auto& views = displayConfiguration.windows[vsg::observer_ptr<vsg::Window>(window)];
         views.erase(std::remove(views.begin(), views.end(), view), views.end());
     };
@@ -280,6 +315,38 @@ Application::removeView(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View
         instance.runtime().runDuringUpdate(remove);
     else
         remove();
+}
+
+void
+Application::refreshView(vsg::ref_ptr<vsg::View> view)
+{
+    auto refresh = [=]()
+    {
+        ROCKY_SOFT_ASSERT_AND_RETURN(view, void());
+
+        auto& viewdata = _viewData[view];
+        ROCKY_SOFT_ASSERT_AND_RETURN(viewdata.parentRenderGraph, void());
+
+        // wait until the device is idle to avoid changing state while it's being used.
+        viewer->deviceWaitIdle();
+
+        auto& vp = view->camera->getViewport();
+        viewdata.parentRenderGraph->renderArea.offset.x = (std::uint32_t)vp.x;
+        viewdata.parentRenderGraph->renderArea.offset.y = (std::uint32_t)vp.y;
+        viewdata.parentRenderGraph->renderArea.extent.width = (std::uint32_t)vp.width;
+        viewdata.parentRenderGraph->renderArea.extent.height = (std::uint32_t)vp.height;
+
+        // rebuild the graphics pipelines to reflect new camera/view params.
+        vsg::UpdateGraphicsPipelines u;
+        u.context = vsg::Context::create(viewdata.parentRenderGraph->getRenderPass()->device);
+        u.context->renderPass = viewdata.parentRenderGraph->getRenderPass();
+        viewdata.parentRenderGraph->accept(u);
+    };
+
+    if (_viewerRealized)
+        instance.runtime().runDuringUpdate(refresh);
+    else
+        refresh();
 }
 
 void
