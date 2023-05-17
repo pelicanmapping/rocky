@@ -6,6 +6,7 @@
 #include "Utils.h"
 #include "Log.h"
 #include "sha1.h"
+#include "Instance.h"
 #include <zlib.h>
 #include <cctype>
 #include <cstring>
@@ -14,6 +15,8 @@
 #ifdef WIN32
 #include <Windows.h>
 #endif
+
+ROCKY_ABOUT(zlib, ZLIB_VERSION)
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
@@ -649,7 +652,6 @@ rocky::util::getExecutableLocation()
 
     return {};
 }
-
 
 // adapted from
 // https://github.com/openscenegraph/OpenSceneGraph/blob/master/src/osgDB/Compressors.cpp

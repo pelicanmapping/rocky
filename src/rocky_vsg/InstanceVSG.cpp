@@ -10,8 +10,11 @@
 #include <vsg/io/Logger.h>
 #include <vsg/state/Image.h>
 
+ROCKY_ABOUT(VulkanSceneGraph, VSG_VERSION_STRING)
+
 #ifdef VSGXCHANGE_FOUND
 #include <vsgXchange/all.h>
+ROCKY_ABOUT(vsgXchange, VSGXCHANGE_VERSION_STRING)
 #endif
 
 #ifdef ROCKY_SUPPORTS_GDAL

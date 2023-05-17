@@ -8,12 +8,24 @@
 #include "SRS.h"
 #include "Threading.h"
 #include "Utils.h"
+#include "Version.h"
 #include "json.h"
+
+ROCKY_ABOUT(Rocky, ROCKY_VERSION_STRING)
+ROCKY_ABOUT(glm, std::to_string(GLM_VERSION_MAJOR) + "." + std::to_string(GLM_VERSION_MINOR) + "." + std::to_string(GLM_VERSION_PATCH) + "." + std::to_string(GLM_VERSION_REVISION))
+ROCKY_ABOUT(nlohmann_json, std::to_string(NLOHMANN_JSON_VERSION_MAJOR) + "." + std::to_string(NLOHMANN_JSON_VERSION_MINOR));
 
 #ifdef GDAL_FOUND
 #include <gdal.h>
 #include <cpl_conv.h>
+ROCKY_ABOUT(GDAL, GDAL_RELEASE_NAME)
 #endif
+
+#ifdef TINYXML_FOUND
+#include <tinyxml.h>
+ROCKY_ABOUT(tinyxml, std::to_string(TIXML_MAJOR_VERSION) + "." + std::to_string(TIXML_MINOR_VERSION))
+#endif
+
 
 using namespace ROCKY_NAMESPACE;
 
@@ -55,6 +67,15 @@ namespace
 }
 #endif
 
+std::set<std::string>&
+Instance::about()
+{
+    using About = std::set<std::string>;
+    static About about;
+    return about;
+}
+
+
 Instance::Instance()
 {
     _impl = std::make_shared<Implementation>();
@@ -81,6 +102,7 @@ Instance::Instance()
     // Set the GDAL shared block cache size. This defaults to 5% of
     // available memory which is too high.
     GDALSetCacheMax(40 * 1024 * 1024);
+
 #endif // GDAL_FOUND
 
     // Check for some environment variables that are important to rocky apps

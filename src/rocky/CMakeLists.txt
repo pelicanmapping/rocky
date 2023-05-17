@@ -167,6 +167,8 @@ if(MSVC)
     target_compile_options(rocky PRIVATE "/MP")
 endif()
 
+include_directories(${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky)
+
 # enable folders for IDEs
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 assign_source_groups("Source Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${SOURCES} ${SOURCES_CONTRIB})

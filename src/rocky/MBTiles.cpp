@@ -6,13 +6,18 @@
 #include "MBTiles.h"
 #include "Image.h"
 #include "json.h"
-#include <sqlite3.h>
+#include "Instance.h"
 #include <filesystem>
+
+#include <sqlite3.h>
+ROCKY_ABOUT(sqlite, SQLITE_VERSION);
 
 using namespace ROCKY_NAMESPACE;
 
 #undef LC
 #define LC "[MBTiles] "
+
+
 
 MBTiles::Driver::Driver() :
     _minLevel(0),

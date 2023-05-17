@@ -7,6 +7,7 @@
 #include <rocky/Common.h>
 #include <rocky/IOTypes.h>
 #include <unordered_map>
+#include <set>
 
 namespace ROCKY_NAMESPACE
 {
@@ -56,6 +57,9 @@ namespace ROCKY_NAMESPACE
         //! Global object factory map
         //! Use the ROCKY_ADD_OBJECT_FACTORY macro for bootstrap-time registration
         static std::unordered_map<std::string, ObjectFactory> objectFactories;
+
+        //! Informational
+        static std::set<std::string>& about();
 
     private:
         struct Implementation

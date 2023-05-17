@@ -27,6 +27,8 @@
 #include <vsgImGui/RenderImGui.h>
 #include <vsgImGui/SendEventsToImGui.h>
 
+ROCKY_ABOUT(imgui, IMGUI_VERSION)
+
 using namespace ROCKY_NAMESPACE;
 
 #include "Demo_LineString.h"
@@ -47,13 +49,10 @@ int layerError(T layer)
 
 auto Demo_About = [&](Application& app)
 {
-    ImGui::Text("Rocky " ROCKY_VERSION_STRING);
-    ImGui::Separator();
-    ImGui::Text("VSG " VSG_VERSION_STRING);
-#ifdef GDAL_FOUND
-    ImGui::Text("GDAL " GDAL_RELEASE_NAME);
-#endif
-    ImGui::Text("PROJ %s", rocky::SRS::projVersion().c_str());
+    for (auto& about : rocky::Instance::about())
+    {
+        ImGui::Text(about.c_str());
+    }
 };
 
 struct Demo

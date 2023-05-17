@@ -77,6 +77,9 @@ namespace ROCKY_NAMESPACE
         //! TODO: replace with a findRenderGraphForView() utility function.
         inline vsg::ref_ptr<vsg::RenderGraph> renderGraph(vsg::ref_ptr<vsg::View> view) const;
 
+        //! About the application.
+        std::string about() const;
+
     public:
         Application(const Application&) = delete;
         Application(Application&&) = delete;

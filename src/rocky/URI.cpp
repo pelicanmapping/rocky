@@ -5,6 +5,7 @@
  */
 #include "URI.h"
 #include "Utils.h"
+#include "Instance.h"
 #include <typeinfo>
 #include <fstream>
 #include <sstream>
@@ -15,6 +16,10 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #endif
 #include <httplib.h>
+ROCKY_ABOUT(cpp_httplib, CPPHTTPLIB_VERSION)
+#ifdef OPENSSL_FOUND
+ROCKY_ABOUT(openssl, OPENSSL_VERSION_STR)
+#endif
 #endif
 
 #define LC "[URI] "

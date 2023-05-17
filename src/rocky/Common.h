@@ -108,6 +108,8 @@ namespace ROCKY_NAMESPACE
     };
 }
 
+#define ROCKY_ABOUT(NAME, VER) namespace { struct __about_##NAME { __about_##NAME() { rocky::Instance::about().insert(std::string(#NAME) + " " + VER); } }; __about_##NAME about_##NAME; }
+
 #ifdef _MSC_VER
 // VS ignores
 #pragma warning (disable: 4224)

@@ -582,3 +582,12 @@ Application::addManipulator(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::
         }
     }
 }
+
+std::string
+Application::about() const
+{
+    std::stringstream buf;
+    for (auto& a : instance.about())
+        buf << a << std::endl;
+    return buf.str();
+}

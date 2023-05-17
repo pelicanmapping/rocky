@@ -15,6 +15,8 @@
 
 using namespace ROCKY_NAMESPACE;
 
+ROCKY_ABOUT(PROJ, std::to_string(PROJ_VERSION_MAJOR) + "." + std::to_string(PROJ_VERSION_MINOR));
+
 namespace
 {
     void redirect_proj_log(void* user, int level, const char* msg)
