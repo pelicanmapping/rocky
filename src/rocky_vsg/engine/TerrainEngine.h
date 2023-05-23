@@ -21,10 +21,10 @@ namespace ROCKY_NAMESPACE
      * Access to all terrain-specific logic, data, and settings
      * associated with a Map.
      */
-    class TerrainContext
+    class TerrainEngine
     {
     public:
-        TerrainContext(
+        TerrainEngine(
             shared_ptr<Map> map,
             const SRS& worldSRS,
             Runtime& runtime,

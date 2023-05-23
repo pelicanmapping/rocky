@@ -6,7 +6,7 @@
 #include "TerrainTileNode.h"
 #include "SurfaceNode.h"
 #include "Runtime.h"
-#include "TerrainContext.h"
+#include "TerrainEngine.h"
 
 #include <rocky_vsg/TerrainSettings.h>
 

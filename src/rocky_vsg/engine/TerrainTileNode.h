@@ -26,7 +26,7 @@ namespace ROCKY_NAMESPACE
     class CreateTileManifest;
     class SurfaceNode;
     class TerrainTileNode;
-    class TerrainContext;
+    class TerrainEngine;
     class TerrainSettings;
     class Runtime;
 

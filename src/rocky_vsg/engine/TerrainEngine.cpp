@@ -3,7 +3,7 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#include "TerrainContext.h"
+#include "TerrainEngine.h"
 #include "TerrainTilePager.h"
 #include "GeometryPool.h"
 #include <rocky/Map.h>
@@ -14,7 +14,7 @@
 using namespace ROCKY_NAMESPACE;
 
 
-TerrainContext::TerrainContext(
+TerrainEngine::TerrainEngine(
     shared_ptr<Map> new_map,
     const SRS& new_worldSRS,
     Runtime& new_runtime,

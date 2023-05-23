@@ -4,7 +4,7 @@
  * MIT License
  */
 #include "TerrainTilePager.h"
-#include "TerrainContext.h"
+#include "TerrainEngine.h"
 #include "Runtime.h"
 #include "Utils.h"
 
@@ -154,7 +154,7 @@ void
 TerrainTilePager::update(
     const vsg::FrameStamp* fs,
     const IOOptions& io,
-    shared_ptr<TerrainContext> terrain)
+    shared_ptr<TerrainEngine> terrain)
 {
     std::scoped_lock lock(_mutex);
 
@@ -273,7 +273,7 @@ vsg::ref_ptr<TerrainTileNode>
 TerrainTilePager::createTile(
     const TileKey& key,
     vsg::ref_ptr<TerrainTileNode> parent,
-    shared_ptr<TerrainContext> terrain)
+    shared_ptr<TerrainEngine> terrain)
 {
     GeometryPool::Settings geomSettings
     {
@@ -343,7 +343,7 @@ TerrainTilePager::getTile(const TileKey& key) const
 void
 TerrainTilePager::requestLoadSubtiles(
     vsg::ref_ptr<TerrainTileNode> parent,
-    shared_ptr<TerrainContext> terrain) const
+    shared_ptr<TerrainEngine> engine) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(parent, void());
 
@@ -356,7 +356,7 @@ TerrainTilePager::requestLoadSubtiles(
     vsg::observer_ptr<TerrainTileNode> weak_parent(parent);
 
     // function that will create all 4 children and compile them
-    auto create_children = [terrain, weak_parent](Cancelable& p)
+    auto create_children = [engine, weak_parent](Cancelable& p)
     {
         vsg::ref_ptr<vsg::Node> result;
         auto parent = weak_parent.ref_ptr();
@@ -371,10 +371,10 @@ TerrainTilePager::requestLoadSubtiles(
 
                 TileKey childkey = parent->key.createChildKey(quadrant);
 
-                auto tile = terrain->tiles.createTile(
+                auto tile = engine->tiles.createTile(
                     childkey,
                     parent,
-                    terrain);
+                    engine);
 
                 ROCKY_SOFT_ASSERT_AND_RETURN(tile != nullptr, result);
 
@@ -395,13 +395,13 @@ TerrainTilePager::requestLoadSubtiles(
         return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
     };
 
-    parent->subtilesLoader = terrain->runtime.compileAndAddChild(
+    parent->subtilesLoader = engine->runtime.compileAndAddChild(
         parent,
         create_children,
         {
             "create child " + parent->key.str(),
             priority_func,
-            util::job_scheduler::get(terrain->loadSchedulerName),
+            util::job_scheduler::get(engine->loadSchedulerName),
             nullptr
         });
 }
@@ -410,7 +410,7 @@ void
 TerrainTilePager::requestLoadData(
     vsg::ref_ptr<TerrainTileNode> tile,
     const IOOptions& in_io,
-    shared_ptr<TerrainContext> terrain) const
+    shared_ptr<TerrainEngine> engine) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(tile, void());
 
@@ -427,13 +427,13 @@ TerrainTilePager::requestLoadData(
     CreateTileManifest manifest;
 
 #ifdef LOAD_ELEVATION_SEPARATELY
-    for (auto& layer : terrain->map->layers().ofType<ImageLayer>())
+    for (auto& layer : engine->map->layers().ofType<ImageLayer>())
         manifest.insert(layer);
 #endif
 
     const IOOptions io(in_io);
 
-    auto load = [key, manifest, terrain, io](Cancelable& p) -> TerrainTileModel
+    auto load = [key, manifest, engine, io](Cancelable& p) -> TerrainTileModel
     {
         if (p.canceled())
         {
@@ -444,7 +444,7 @@ TerrainTilePager::requestLoadData(
         TerrainTileModelFactory factory;
 
         auto model = factory.createTileModel(
-            terrain->map.get(),
+            engine->map.get(),
             key,
             manifest,
             IOOptions(io, p));
@@ -465,7 +465,7 @@ TerrainTilePager::requestLoadData(
         load, {
             "load data " + key.str(),
             priority_func,
-            util::job_scheduler::get(terrain->loadSchedulerName),
+            util::job_scheduler::get(engine->loadSchedulerName),
             nullptr
         } );
 }
@@ -474,7 +474,7 @@ void
 TerrainTilePager::requestMergeData(
     vsg::ref_ptr<TerrainTileNode> tile,
     const IOOptions& in_io,
-    shared_ptr<TerrainContext> terrain) const
+    shared_ptr<TerrainEngine> engine) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(tile, void());
 
@@ -489,7 +489,7 @@ TerrainTilePager::requestMergeData(
 
     RP_DEBUG << "requestMergeData -> " << key.str() << std::endl;
 
-    auto merge = [key, terrain](Cancelable& p) -> bool
+    auto merge = [key, engine](Cancelable& p) -> bool
     {
         if (p.canceled())
         {
@@ -499,7 +499,7 @@ TerrainTilePager::requestMergeData(
 
         //util::scoped_chrono timer("merge sync " + key.str());
 
-        auto tile = terrain->tiles.getTile(key);
+        auto tile = engine->tiles.getTile(key);
         if (!tile)
         {
             RP_DEBUG << "merge TILE LOST -> " << key.str() << std::endl;
@@ -550,10 +550,10 @@ TerrainTilePager::requestMergeData(
 
         if (updated)
         {
-            terrain->stateFactory.updateTerrainTileDescriptors(
+            engine->stateFactory.updateTerrainTileDescriptors(
                 renderModel,
                 tile->stategroup,
-                terrain->runtime);
+                engine->runtime);
 
             RP_DEBUG << "mergeData -> " << key.str() << std::endl;
         }
@@ -576,14 +576,14 @@ TerrainTilePager::requestMergeData(
         return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
     };
 
-    terrain->runtime.runDuringUpdate(merge_op, priority_func);
+    engine->runtime.runDuringUpdate(merge_op, priority_func);
 }
 
 void
 TerrainTilePager::requestLoadElevation(
     vsg::ref_ptr<TerrainTileNode> tile,
     const IOOptions& in_io,
-    shared_ptr<TerrainContext> terrain) const
+    shared_ptr<TerrainEngine> engine) const
 {
 #ifdef LOAD_ELEVATION_SEPARATELY
     ROCKY_SOFT_ASSERT_AND_RETURN(tile, void());
@@ -597,12 +597,12 @@ TerrainTilePager::requestLoadElevation(
     auto key = tile->key;
 
     CreateTileManifest manifest;
-    for (auto& elev : terrain->map->layers().ofType<ElevationLayer>())
+    for (auto& elev : engine->map->layers().ofType<ElevationLayer>())
         manifest.insert(elev);
 
     const IOOptions io(in_io);
 
-    auto load = [key, manifest, terrain, io](Cancelable& p) -> TerrainTileModel
+    auto load = [key, manifest, engine, io](Cancelable& p) -> TerrainTileModel
     {
         if (p.canceled())
         {
@@ -612,7 +612,7 @@ TerrainTilePager::requestLoadElevation(
         TerrainTileModelFactory factory;
 
         auto model = factory.createTileModel(
-            terrain->map.get(),
+            engine->map.get(),
             key,
             manifest,
             IOOptions(io, p));
@@ -633,7 +633,7 @@ TerrainTilePager::requestLoadElevation(
         load, {
              "load elevation " + key.str(),
              priority_func,
-             util::job_scheduler::get(terrain->loadSchedulerName),
+             util::job_scheduler::get(engine->loadSchedulerName),
              nullptr
         }
     );
@@ -644,7 +644,7 @@ void
 TerrainTilePager::requestMergeElevation(
     vsg::ref_ptr<TerrainTileNode> tile,
     const IOOptions& in_io,
-    shared_ptr<TerrainContext> terrain) const
+    shared_ptr<TerrainEngine> engine) const
 {
 #ifdef LOAD_ELEVATION_SEPARATELY
     ROCKY_SOFT_ASSERT_AND_RETURN(tile, void());
@@ -658,7 +658,7 @@ TerrainTilePager::requestMergeElevation(
     auto key = tile->key;
     const IOOptions io(in_io);
 
-    auto merge = [key, terrain](Cancelable& p) -> bool
+    auto merge = [key, engine](Cancelable& p) -> bool
     {
         if (p.canceled())
         {
@@ -667,7 +667,7 @@ TerrainTilePager::requestMergeElevation(
 
         //util::scoped_chrono timer("merge sync " + key.str());
 
-        auto tile = terrain->tiles.getTile(key);
+        auto tile = engine->tiles.getTile(key);
         if (tile)
         {
             auto model = tile->elevationLoader.value();
@@ -698,10 +698,10 @@ TerrainTilePager::requestMergeElevation(
 
             if (updated)
             {
-                terrain->stateFactory.updateTerrainTileDescriptors(
+                engine->stateFactory.updateTerrainTileDescriptors(
                     renderModel,
                     tile->stategroup,
-                    terrain->runtime);
+                    engine->runtime);
 
                 Log::info() << "Elevation merged for " << key.str() << std::endl;
             }
@@ -720,7 +720,7 @@ TerrainTilePager::requestMergeElevation(
         vsg::ref_ptr<TerrainTileNode> tile = tile_weak.ref_ptr();
         return tile ? -(sqrt(tile->lastTraversalRange) * 0.9 * tile->key.levelOfDetail()) : 0.0f;
     };
-    terrain->runtime.runDuringUpdate(merge_op, priority_func);
+    engine->runtime.runDuringUpdate(merge_op, priority_func);
 #endif
 }
 
