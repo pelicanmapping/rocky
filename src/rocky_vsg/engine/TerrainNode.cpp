@@ -104,7 +104,11 @@ TerrainNode::createRootTiles(const IOOptions& io)
         _tilesRoot->addChild(tile);
     }
 
-    _context->runtime.compiler()->compile(stateGroup);
+    _context->runtime.compile(stateGroup);
+
+    //auto cr = _context->runtime.viewer()->compileManager->compile(stateGroup);
+    //if (cr && cr.requiresViewerUpdate())
+    //    vsg::updateViewer(*_context->runtime.viewer(), cr);
 
     return StatusOK;
 }

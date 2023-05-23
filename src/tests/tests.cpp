@@ -128,6 +128,21 @@ TEST_CASE("Optional")
     CHECK(value_with_equals_init == 123);
 }
 
+TEST_CASE("TileKey")
+{
+    auto p = Profile::GLOBAL_GEODETIC;
+
+    CHECK(TileKey(0, 0, 0, p).str() == "0/0/0");
+    CHECK(TileKey(0, 0, 0, p).quadKey() == "0");
+    CHECK(TileKey(0, 0, 0, p).createChildKey(0) == TileKey(1, 0, 0, p));
+    CHECK(TileKey(1, 0, 0, p).createParentKey() == TileKey(0, 0, 0, p));
+
+    CHECK(TileKey(2, 0, 0, p).str() == "2/0/0");
+    CHECK(TileKey(2, 0, 0, p).quadKey() == "000");
+    CHECK(TileKey(2, 1, 0, p).quadKey() == "001");
+    CHECK(TileKey(2, 5, 1, p).quadKey() == "103");
+}
+
 TEST_CASE("Threading")
 {
     util::Future<int> f1;

@@ -176,9 +176,30 @@ TileKey::createNeighborKey( int xoffset, int yoffset ) const
         sy >= (int)ty ? (unsigned)sy - ty :
         (unsigned)sy;
 
-    //ROCKY_NOTICE << "Returning neighbor " << x << ", " << y << " for tile " << str() << " offset=" << xoffset << ", " << yoffset << std::endl;
-
     return TileKey(_lod, x % tx, y % ty, _profile);
+}
+
+std::string
+TileKey::quadKey() const
+{
+    std::string buf;
+    buf.reserve(_lod + 1);
+    for (int i = _lod; i >= 0; i--)
+    {
+        char digit = '0';
+        int mask = 1 << i;
+        if ((_x & mask) != 0)
+        {
+            digit++;
+        }
+        if ((_y & mask) != 0)
+        {
+            digit++;
+            digit++;
+        }
+        buf.push_back(digit);
+    }
+    return buf;
 }
 
 TileKey

@@ -10,6 +10,7 @@
 #include <rocky/IOTypes.h>
 #include <rocky/Threading.h>
 #include <vsg/core/observer_ptr.h>
+#include <vsg/app/Viewer.h>
 #include <vsg/app/CompileManager.h>
 #include <vsg/app/UpdateOperations.h>
 #include <vsg/threading/OperationThreads.h>
@@ -35,12 +36,15 @@ namespace ROCKY_NAMESPACE
         //! Constructor
         Runtime();
 
+        //! Viewer instance
+        vsg::ref_ptr<vsg::Viewer> viewer;
+
         //! Compiler for new vsg objects
-        std::function<vsg::ref_ptr<vsg::CompileManager>()> compiler;
+        //std::function<vsg::ref_ptr<vsg::CompileManager>()> compiler;
 
         //! Queue for VSG synchronous update operations. Operations in this queue
         //! can safely edit the scene graph.
-        std::function<vsg::ref_ptr<vsg::UpdateOperations>()> updates;
+        //std::function<vsg::ref_ptr<vsg::UpdateOperations>()> updates;
 
         //! VSG object sharing
         vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
@@ -74,6 +78,9 @@ namespace ROCKY_NAMESPACE
         //! Function that creates a node
         using NodeFactory = std::function<vsg::ref_ptr<vsg::Node>(Cancelable&)>;
 
+        //! Compiles an object and 
+        void compile(vsg::ref_ptr<vsg::Object> object);
+
         //! Schedules data creation; the resulting node or nodes 
         //! get added to "parent" if the operation suceeds.
         //! Returns a future so you can check for completion.
@@ -97,11 +104,14 @@ namespace ROCKY_NAMESPACE
             shaderSettingsRevision++;
         }
 
-        //! Compile and object
-        void dirty(vsg::Object* object);
+        //! Update any pending compile results.
+        void update();
 
     private:
         vsg::ref_ptr<vsg::Operation> _priorityUpdateQueue;
+
+        std::mutex _compileResultsMutex;
+        std::vector<vsg::CompileResult> _compileResults;
     };
 }
 

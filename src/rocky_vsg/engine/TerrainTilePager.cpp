@@ -24,6 +24,9 @@ using namespace ROCKY_NAMESPACE;
 
 //#define LOAD_ELEVATION_SEPARATELY
 
+//#define RP_DEBUG Log::warn()
+#define RP_DEBUG if(false) Log::warn()
+
 //----------------------------------------------------------------------------
 
 TerrainTilePager::TerrainTilePager(
@@ -49,7 +52,7 @@ TerrainTilePager::releaseAll()
 
     _tiles.clear();
     _tracker.reset();
-    _loadChildren.clear();
+    _loadSubtiles.clear();
     _loadElevation.clear();
     _mergeElevation.clear();
     _loadData.clear();
@@ -104,8 +107,8 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
         auto tileHasElevation = tileHasData;
 #endif
         
-        if (tileHasData && tileHasElevation && tile->_needsChildren)
-            _loadChildren.push_back(tile->key);
+        if (tileHasData && tileHasElevation && tile->_needsSubtiles)
+            _loadSubtiles.push_back(tile->key);
 
         bool parentHasElevation = (parent == nullptr || parent->elevationMerger.available());
         if (parentHasElevation && tile->elevationLoader.empty())
@@ -153,8 +156,8 @@ TerrainTilePager::update(
 
     //Log::info()
     //    << "Frame " << fs->frameCount << ": "
-    //    << "tiles=" << _tracker._list.size() << " "
-    //    << "needsChildren=" << _loadChildren.size() << " "
+    //    << "tiles=" << _tracker._list.size()-1 << " "
+    //    << "needsSubtiles=" << _loadSubtiles.size() << " "
     //    << "needsLoad=" << _loadData.size() << " "
     //    << "needsMerge=" << _mergeData.size() << std::endl;
 
@@ -169,20 +172,20 @@ TerrainTilePager::update(
     }
     _updateData.clear();
 
-    // launch any "new children" requests
-    for (auto& key : _loadChildren)
+    // launch any "new subtiles" requests
+    for (auto& key : _loadSubtiles)
     {
         auto iter = _tiles.find(key);
         if (iter != _tiles.end())
         {
-            requestLoadChildren(
+            requestLoadSubtiles(
                 iter->second._tile, // parent
                 terrain);  // context
 
-            iter->second._tile->_needsChildren = false;
+            iter->second._tile->_needsSubtiles = false;
         }
     }
-    _loadChildren.clear();
+    _loadSubtiles.clear();
 
 #ifdef LOAD_ELEVATION_SEPARATELY
     // launch any data loading requests
@@ -248,7 +251,10 @@ TerrainTilePager::update(
             {
                 auto parent = parent_iter->second._tile;
                 if (parent.valid())
-                    parent->unloadChildren();
+                {
+                    RP_DEBUG << "Unloading subtiles of " << key.str() << std::endl;
+                    parent->unloadSubtiles();
+                }
             }
             _tiles.erase(key);
             return true;
@@ -331,15 +337,17 @@ TerrainTilePager::getTile(const TileKey& key) const
         vsg::ref_ptr<TerrainTileNode>(nullptr);
 }
 void
-TerrainTilePager::requestLoadChildren(
+TerrainTilePager::requestLoadSubtiles(
     vsg::ref_ptr<TerrainTileNode> parent,
     shared_ptr<TerrainContext> terrain) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(parent, void());
 
     // make sure we're not already working on it
-    if (!parent->childrenLoader.empty())
+    if (!parent->subtilesLoader.empty())
         return;
+
+    RP_DEBUG << "requestLoadSubtiles -> " << parent->key.str() << std::endl;
 
     vsg::observer_ptr<TerrainTileNode> weak_parent(parent);
 
@@ -383,7 +391,7 @@ TerrainTilePager::requestLoadChildren(
         return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
     };
 
-    parent->childrenLoader = terrain->runtime.compileAndAddChild(
+    parent->subtilesLoader = terrain->runtime.compileAndAddChild(
         parent,
         create_children,
         {
@@ -410,6 +418,8 @@ TerrainTilePager::requestLoadData(
 
     auto key = tile->key;
 
+    RP_DEBUG << "requestLoadData -> " << key.str() << std::endl;
+
     CreateTileManifest manifest;
 
 #ifdef LOAD_ELEVATION_SEPARATELY
@@ -423,6 +433,7 @@ TerrainTilePager::requestLoadData(
     {
         if (p.canceled())
         {
+            RP_DEBUG << "Data load " << key.str() << " CANCELED!" << std::endl;
             return { };
         }
 
@@ -471,6 +482,8 @@ TerrainTilePager::requestMergeData(
 
     auto key = tile->key;
     const IOOptions io(in_io);
+
+    RP_DEBUG << "requestMergeData -> " << key.str() << std::endl;
 
     auto merge = [key, terrain](Cancelable& p) -> bool
     {
@@ -725,7 +738,7 @@ TerrainTilePager::initializeLODs(const Profile& profile, const TerrainSettings& 
         double span = _lods[lod].visibilityRange - prevPos;
 
         _lods[lod].morphEnd = _lods[lod].visibilityRange;
-        _lods[lod].morphStart = prevPos + span * (0.66); // _morphStartRatio;
+        _lods[lod].morphStart = prevPos + span * (0.66);
         prevPos = _lods[lod].morphEnd;
 
         // Calc the maximum valid TY (to avoid over-subdivision at the poles)

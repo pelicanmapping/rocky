@@ -106,7 +106,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<SurfaceNode> surface;
         vsg::ref_ptr<vsg::StateGroup> stategroup;
         
-        mutable util::Future<bool> childrenLoader;
+        mutable util::Future<bool> subtilesLoader;
         mutable util::Future<TerrainTileModel> elevationLoader;
         mutable util::Future<bool> elevationMerger;
         mutable util::Future<TerrainTileModel> dataLoader;
@@ -145,7 +145,7 @@ namespace ROCKY_NAMESPACE
 
         //! Remove this tile's children and reset the child
         //! loader future.
-        void unloadChildren();
+        void unloadSubtiles();
 
         //! Update this node (placeholder)
         void update(const vsg::FrameStamp*, const IOOptions&) { }
@@ -157,7 +157,7 @@ namespace ROCKY_NAMESPACE
         
     protected:
 
-        mutable bool _needsChildren;
+        mutable bool _needsSubtiles;
         mutable bool _needsUpdate;
         TerrainTileHost* _host;
 
@@ -174,7 +174,7 @@ namespace ROCKY_NAMESPACE
         void recomputeBound();
 
         //! Whether child tiles are present
-        inline bool hasChildren() const {
+        inline bool subtilesExist() const {
             return children.size() >= 2;
         }
 

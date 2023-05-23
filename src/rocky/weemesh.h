@@ -1,13 +1,23 @@
-#ifndef ROCKY_WEE_MESH
-#define ROCKY_WEE_MESH 1
-
+/**
+ * rocky c++
+ * Copyright 2023 Pelican Mapping
+ * MIT License
+ */
+#pragma once
 #include "rtree.h"
 #include "Math.h"
-#include <cmath>
 #include <map>
+#include <vector>
+#include <set>
+#include <unordered_set>
 
 namespace weemesh
 {
+#define marker_is_set(INDEX, BITS) ((_markers[INDEX] & BITS) != 0)
+#define marker_not_set(INDEX, BITS) ((_markers[INDEX] & BITS) == 0)
+#define set_marker(INDEX, BITS) _markers[INDEX] |= BITS;
+
+#define equivalent equiv
     using namespace ROCKY_NAMESPACE;
 
     // MESHING SDK
@@ -74,16 +84,16 @@ namespace weemesh
 
     const vert_t::value_type zero(0.0);
 
-    constexpr vert_t::value_type EPSILON = 1e-6;
+    constexpr vert_t::value_type EPSILON = 0.00005; // 1e-3; // 6;
 
     inline bool same_vert(const vert_t& a, const vert_t& b, vert_t::value_type epsilon = EPSILON)
     {
         return
-            equiv(a.x(), b.x(), epsilon) &&
-            equiv(a.y(), b.y(), epsilon);
+            equivalent(a.x(), b.x(), epsilon) &&
+            equivalent(a.y(), b.y(), epsilon);
 
         // use this if we move to 3D one day
-        // && equiv(a.z(), b.z(), epsilon);
+        // && equivalent(a.z(), b.z(), epsilon);
     }
 
 
@@ -100,17 +110,17 @@ namespace weemesh
             std::pair<vert_t, vert_t>(a, b) { }
 
         // true if 2 segments intersect; intersection point in "out"
-        bool intersect(const segment_t& rhs, vert_t& out) const
+        bool intersect(const segment_t& rhs, vert_t& out, vert_t::value_type& u) const
         {
             vert_t r = second - first;
             vert_t s = rhs.second - rhs.first;
             vert_t::value_type det = r.cross2d(s);
 
-            if (equiv(det, zero))
+            if (equivalent(det, zero))
                 return false;
 
             vert_t diff = rhs.first - first;
-            vert_t::value_type u = diff.cross2d(s) / det;
+            u = diff.cross2d(s) / det;
             vert_t::value_type v = diff.cross2d(r) / det;
 
             out = first + (r * u);
@@ -141,20 +151,40 @@ namespace weemesh
                 clamp(bary[2], 0.0, 1.0) == bary[2];
         }
 
+        // true is index I is in this triangle.
+        inline bool is_vertex(int i) const {
+            return i == i0 || i == i1 || i == i2;
+        }
+
         // true if point P is one of the triangle's verts
         inline bool is_vertex(const vert_t& p, vert_t::value_type e = EPSILON) const
         {
-            if (equiv(p.x(), p0.x(), e) &&
-                equiv(p.y(), p0.y(), e))
+            if (equivalent(p.x(), p0.x(), e) &&
+                equivalent(p.y(), p0.y(), e))
                 return true;
-            if (equiv(p.x(), p1.x(), e) &&
-                equiv(p.y(), p1.y(), e))
+            if (equivalent(p.x(), p1.x(), e) &&
+                equivalent(p.y(), p1.y(), e))
                 return true;
-            if (equiv(p.x(), p2.x(), e) &&
-                equiv(p.y(), p2.y(), e))
+            if (equivalent(p.x(), p2.x(), e) &&
+                equivalent(p.y(), p2.y(), e))
                 return true;
 
             return false;
+        }
+
+        inline int get_vertex(const vert_t& p, vert_t::value_type e = EPSILON) const
+        {
+            if (equivalent(p.x(), p0.x(), e) &&
+                equivalent(p.y(), p0.y(), e))
+                return i0;
+            if (equivalent(p.x(), p1.x(), e) &&
+                equivalent(p.y(), p1.y(), e))
+                return i1;
+            if (equivalent(p.x(), p2.x(), e) &&
+                equivalent(p.y(), p2.y(), e))
+                return i2;
+
+            return -1;
         }
 
         inline bool get_barycentric(const vert_t& p, vert_t& out) const
@@ -168,7 +198,7 @@ namespace weemesh
             vert_t::value_type denom = d00 * d11 - d01 * d01;
 
             // means that one of more of the triangles points are coincident:
-            if (equiv(denom, 0.0))
+            if (equivalent(denom, 0.0))
                 return false;
 
             out.y() = (d11*d20 - d01 * d21) / denom;
@@ -179,7 +209,7 @@ namespace weemesh
         }
     };
 
-    using spatial_index_t = RTree<UID, vert_t::value_type, 2>;
+    using spatial_index_t = util::RTree<UID, vert_t::value_type, 2>;
 
     // a mesh edge connecting to verts
     struct edge_t
@@ -215,12 +245,14 @@ namespace weemesh
         int _num_edits;
         int _boundary_marker;
         int _constraint_marker;
+        int _has_elevation_marker;
 
         mesh_t() : 
             uidgen(0),
             _num_edits(0),
-            _boundary_marker(1<<0),
-            _constraint_marker(1<<2)
+            _boundary_marker(1),
+            _constraint_marker(16),
+            _has_elevation_marker(4)
         {
             //nop
         }
@@ -233,6 +265,11 @@ namespace weemesh
         void set_constraint_marker(int value)
         {
             _constraint_marker = value;
+        }
+
+        void set_has_elevation_marker(int value)
+        {
+            _has_elevation_marker = value;
         }
 
         // delete triangle from the mesh
@@ -308,7 +345,8 @@ namespace weemesh
             return _markers[i];
         }
 
-        // add a new vertex (or lookup a matching one) and return its index
+        // Add a new vertex (or lookup a matching one) and return its index.
+        // If the vertex already exists, update its marker if necessary.
         int get_or_create_vertex(const vert_t& input, int marker)
         {
             int index;
@@ -316,7 +354,7 @@ namespace weemesh
             if (i != _vert_lut.end())
             {
                 index = i->second;
-                _markers[i->second] = marker;
+                _markers[i->second] |= marker;
             }
             else if (_verts.size() + 1 < 0xFFFF)
             {
@@ -358,7 +396,7 @@ namespace weemesh
                 if (tri.is_2d_degenerate)
                     continue;
 
-                if (tri.contains_2d(vert) && !tri.is_vertex(vert))
+                if (tri.contains_2d(vert))
                 {
                     inside_split(tri, vert, nullptr, marker);
                     // dont't break -- could split two triangles if on edge.
@@ -393,7 +431,7 @@ namespace weemesh
             // splits will just happen on the new triangles later. (That's why
             // every split operation is followed by a "continue" to short-circuit
             // to loop)
-            vert_t::value_type E = 1e-3;
+            vert_t::value_type E = EPSILON; // E = 1e-3;
             std::list<UID> uid_list;
             std::copy(uids.begin(), uids.end(), std::back_inserter(uid_list));
             for (auto uid : uid_list)
@@ -409,16 +447,16 @@ namespace weemesh
                 // if so, split the triangle into 2 or 3 new ones, and mark
                 // all of its verts as CONSTRAINT so they will not be subject
                 // to morphing.
-                if (tri.contains_2d(seg.first) && !tri.is_vertex(seg.first))
+                if (tri.contains_2d(seg.first))
                 {
-                    inside_split(tri, seg.first, &uid_list, marker);
-                    continue;
+                    if (inside_split(tri, seg.first, &uid_list, marker))
+                        continue;
                 }
 
-                if (tri.contains_2d(seg.second) && !tri.is_vertex(seg.second))
+                if (tri.contains_2d(seg.second))
                 {
-                    inside_split(tri, seg.second, &uid_list, marker);
-                    continue;
+                    if (inside_split(tri, seg.second, &uid_list, marker))
+                        continue;
                 }
 
                 // Next try to intersect the segment with a triangle edge.
@@ -429,12 +467,17 @@ namespace weemesh
                 // any BOUNDARY markers to the new vert so we can maintain boundaries
                 // for skirt generation.
                 vert_t out;
+                vert_t::value_type u;
                 UID new_uid;
                 int new_i;
 
+                //... WE SHOULD do the whole "update the marker" thing here too, I think ...
+                //... But it's causing an infinite loop ... gw
+
+
                 // does the segment cross first triangle edge?
                 segment_t edge0(tri.p0, tri.p1);
-                if (seg.intersect(edge0, out) && !tri.is_vertex(out, E))
+                if (seg.intersect(edge0, out, u) && !tri.is_vertex(out, E))
                 {
                     int new_marker = marker;
                     if ((_markers[tri.i0] & _boundary_marker) && (_markers[tri.i1] & _boundary_marker))
@@ -464,6 +507,14 @@ namespace weemesh
 
                     if (new_tris > 0)
                     {
+                        if (marker_not_set(new_i, _has_elevation_marker) &&
+                            marker_is_set(tri.i0, _has_elevation_marker) && marker_is_set(tri.i1, _has_elevation_marker))
+                        {
+                            auto z0 = get_vertex(tri.i0).z(), z1 = get_vertex(tri.i1).z();
+                            get_vertex(new_i).z() = z0 + u * (z1 - z0);
+                            set_marker(new_i, _has_elevation_marker);
+                        }
+
                         remove_triangle(tri);
                         continue;
                     }
@@ -471,7 +522,7 @@ namespace weemesh
 
                 // does the segment cross second triangle edge?
                 segment_t edge1(tri.p1, tri.p2);
-                if (seg.intersect(edge1, out) && !tri.is_vertex(out, E))
+                if (seg.intersect(edge1, out, u) && !tri.is_vertex(out, E))
                 {
                     int new_marker = marker;
                     if ((_markers[tri.i1] & _boundary_marker) && (_markers[tri.i2] & _boundary_marker))
@@ -501,6 +552,14 @@ namespace weemesh
 
                     if (new_tris > 0)
                     {
+                        if (marker_not_set(new_i, _has_elevation_marker) &&
+                            marker_is_set(tri.i1, _has_elevation_marker) && marker_is_set(tri.i2, _has_elevation_marker))
+                        {
+                            auto z0 = get_vertex(tri.i1).z(), z1 = get_vertex(tri.i2).z();
+                            get_vertex(new_i).z() = z0 + u * (z1 - z0);
+                            set_marker(new_i, _has_elevation_marker);
+                        }
+
                         remove_triangle(tri);
                         continue;
                     }
@@ -508,7 +567,7 @@ namespace weemesh
 
                 // does the segment cross third triangle edge?
                 segment_t edge2(tri.p2, tri.p0);
-                if (seg.intersect(edge2, out) && !tri.is_vertex(out, E))
+                if (seg.intersect(edge2, out, u) && !tri.is_vertex(out, E))
                 {
                     int new_marker = marker;
                     if ((_markers[tri.i2] & _boundary_marker) && (_markers[tri.i0] & _boundary_marker))
@@ -538,6 +597,14 @@ namespace weemesh
 
                     if (new_tris > 0)
                     {
+                        if (marker_not_set(new_i, _has_elevation_marker) &&
+                            marker_is_set(tri.i2, _has_elevation_marker) && marker_is_set(tri.i0, _has_elevation_marker))
+                        {
+                            auto z0 = get_vertex(tri.i2).z(), z1 = get_vertex(tri.i0).z();
+                            get_vertex(new_i).z() = z0 + u * (z1 - z0);
+                            set_marker(new_i, _has_elevation_marker);
+                        }
+
                         remove_triangle(tri);
                         continue;
                     }
@@ -547,11 +614,17 @@ namespace weemesh
 
         // inserts point "p" into the interior of triangle "tri",
         // adds three new triangles, and removes the original triangle.
-        void inside_split(triangle_t& tri, const vert_t& p, std::list<UID>* uid_list, int new_marker)
+        // return true if a split actual happened
+        bool inside_split(triangle_t& tri, const vert_t& p, std::list<UID>* uid_list, int new_marker)
         {
             int new_i = get_or_create_vertex(p, new_marker);
             if (new_i < 0)
-                return;
+                return false;
+
+            // if this vertex is already one of the triangle's verts, no split is necessary
+            // and we are done.
+            if (tri.is_vertex(new_i))
+                return false;
 
             UID new_uid;
             int new_tris = 0;
@@ -562,9 +635,9 @@ namespace weemesh
             // a degenerate triangle.
             vert_t bary(1, 1, 1);
             if (tri.get_barycentric(p, bary) == false)
-                return;
+                return false;
 
-            if (!equiv(bary[2], 0.0, EPSILON)) {
+            if (!equivalent(bary[2], 0.0, EPSILON)) {
                 new_uid = add_triangle(tri.i0, tri.i1, new_i);
                 if (new_uid >= 0 && uid_list) {
                     _markers[tri.i0] |= _constraint_marker;
@@ -574,7 +647,7 @@ namespace weemesh
                 }
             }
 
-            if (!equiv(bary[0], 0.0, EPSILON)) {
+            if (!equivalent(bary[0], 0.0, EPSILON)) {
                 new_uid = add_triangle(tri.i1, tri.i2, new_i);
                 if (new_uid >= 0 && uid_list) {
                     _markers[tri.i1] |= _constraint_marker;
@@ -584,7 +657,7 @@ namespace weemesh
                 }
             }
 
-            if (!equiv(bary[1], 0.0, EPSILON)) {
+            if (!equivalent(bary[1], 0.0, EPSILON)) {
                 new_uid = add_triangle(tri.i2, tri.i0, new_i);
                 if (new_uid >= 0 && uid_list) {
                     _markers[tri.i2] |= _constraint_marker;
@@ -595,7 +668,38 @@ namespace weemesh
             }
 
             if (new_tris > 0)
+            {
+                // if all verts in the surrounding triangle have elevation data,
+                // but this new one doesn't, set it via interpolation.
+                if (marker_not_set(new_i, _has_elevation_marker) &&
+                    marker_is_set(tri.i0, _has_elevation_marker) &&
+                    marker_is_set(tri.i1, _has_elevation_marker) &&
+                    marker_is_set(tri.i2, _has_elevation_marker))
+                {
+                    // interpolate the Z value from the triangle:
+                    get_vertex(new_i).z() =
+                        get_vertex(tri.i0).z() * bary[0] +
+                        get_vertex(tri.i1).z() * bary[1] +
+                        get_vertex(tri.i2).z() * bary[2];
+
+                    set_marker(new_i, _has_elevation_marker);
+                }
+
                 remove_triangle(tri);
+            }
+
+            return (new_tris > 0);
+        }
+
+        vert_t point_on_edge_closest_to(const edge_t& edge, const vert_t& p) const {
+            const vert_t& e1 = get_vertex(edge._i0);
+            const vert_t& e2 = get_vertex(edge._i1);
+            vert_t qp = e2 - e1;
+            vert_t xp = p - e1;
+            double u = xp.dot2d(qp) / qp.dot2d(qp);
+            if (u < 0.0) return e1;
+            else if (u > 1.0) return e2;
+            else return e1 + qp * u;
         }
     };
 
@@ -637,6 +741,23 @@ namespace weemesh
                 _edges.emplace(tri.i1, tri.i2);
             if (m2 && m0)
                 _edges.emplace(tri.i2, tri.i0);
+        }
+
+        bool point_on_any_edge_closest_to(const vert_t& p, const mesh_t& mesh, vert_t& closest) const
+        {
+            double min_distance2 = DBL_MAX;
+
+            for (auto& edge : _edges)
+            {
+                vert_t c = mesh.point_on_edge_closest_to(edge, p);
+                auto d2 = (c - p).length2d_squared();
+                if (d2 < min_distance2)
+                {
+                    min_distance2 = d2;
+                    closest = c;
+                }
+            }
+            return min_distance2 < DBL_MAX;
         }
     };
 
@@ -802,7 +923,7 @@ namespace weemesh
 
                 if (best_edge == nullptr)
                 {
-                    OE_WARN << "got stuck! :(" << std::endl;
+                    ROCKY_WARN << "got stuck! :(" << std::endl;
                     break;
                 }
 
@@ -830,5 +951,3 @@ namespace weemesh
         return 1;
     }
 }
-
-#endif // ROCKY_WEE_MESH

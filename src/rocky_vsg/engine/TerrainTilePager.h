@@ -84,8 +84,9 @@ namespace ROCKY_NAMESPACE
         mutable std::mutex _mutex;
         TerrainTileHost* _host;
         const TerrainSettings& _settings;
+        bool _updateViewerRequired = false;
 
-        std::vector<TileKey> _loadChildren;
+        std::vector<TileKey> _loadSubtiles;
         std::vector<TileKey> _loadElevation;
         std::vector<TileKey> _mergeElevation;
         std::vector<TileKey> _loadData;
@@ -105,7 +106,7 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        void requestLoadChildren(
+        void requestLoadSubtiles(
             vsg::ref_ptr<TerrainTileNode> parent,
             shared_ptr<TerrainContext> terrain) const;
 

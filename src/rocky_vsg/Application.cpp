@@ -88,9 +88,7 @@ Application::Application(int& argc, char** argv) :
     mainScene->addChild(mapNode);
 
     // Set up the runtime context with everything we need.
-    // Eventually this should be automatic in InstanceVSG
-    instance.runtime().compiler = [this]() { return viewer->compileManager; };
-    instance.runtime().updates = [this]() { return viewer->updateOperations; };
+    instance.runtime().viewer = viewer;
     instance.runtime().sharedObjects = vsg::SharedObjects::create();
 }
 
@@ -210,6 +208,7 @@ Application::addView(
             }
 
             auto rendergraph = vsg::RenderGraph::create(window, view);
+            rendergraph->setClearValues({ {0.1f, 0.12f, 0.15f, 1.0f} });
             commandgraph->addChild(rendergraph);
 
             auto& viewdata = _viewData[view];
@@ -243,11 +242,13 @@ Application::addViewAfterViewerIsRealized(
         view->addChild(root);
     }
 
-    if (auto iter = _commandGraphByWindow.find(window); iter != _commandGraphByWindow.end())
+    auto iter = _commandGraphByWindow.find(window);
+    if (iter != _commandGraphByWindow.end())
     {
         auto commandgraph = iter->second;
 
         auto rendergraph = vsg::RenderGraph::create(window, view);
+        rendergraph->setClearValues({ {0.1f, 0.12f, 0.15f, 1.0f} });
         commandgraph->addChild(rendergraph);
 
         // Add this new view to the viewer's compile manager:
@@ -255,15 +256,15 @@ Application::addViewAfterViewerIsRealized(
 
         // Compile the new render pass for this view.
         // The lambda idiom is taken from vsgexamples/dynamicviews
-        auto result = viewer->compileManager->compile(rendergraph, [&view](vsg::Context& context)
-            {
-                return context.view == view.get();
-            });
-
-        if (result.requiresViewerUpdate())
-        {
-            vsg::updateViewer(*viewer, result);
-        }
+        instance.runtime().compile(rendergraph);
+        //auto result = viewer->compileManager->compile(rendergraph, [&view](vsg::Context& context)
+        //    {
+        //        return context.view == view.get();
+        //    });
+        //if (result.requiresViewerUpdate())
+        //{
+        //    vsg::updateViewer(*viewer, result);
+        //}
 
         // remember so we can remove it later
         auto& viewdata = _viewData[view];
@@ -455,6 +456,9 @@ Application::run()
         // run through the viewer's update operations queue; this includes update ops 
         // initialized by rocky (tile merges or MapObject adds)
         viewer->update();
+
+        // integrate any compile results that may be pending
+        instance.runtime().update();
 
         if (_viewerDirty)
         {

@@ -119,6 +119,9 @@ namespace ROCKY_NAMESPACE
 
         unsigned tileY() const { return _y; }
 
+        //! A string that encodes the tile key's lod, x, and y 
+        std::string quadKey() const;
+
         //! Maps this tile key to another tile key in order to account in
         //! a resolution difference. For example: we are requesting data for
         //! a TileKey at LOD 4, at a tile size of 32. The source data's tile

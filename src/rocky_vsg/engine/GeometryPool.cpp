@@ -260,7 +260,6 @@ vsg::ref_ptr<SharedGeometry>
 GeometryPool::createGeometry(
     const TileKey& tileKey,
     const Settings& settings,
-    //MeshEditor& editor,
     Cancelable* progress) const
 {
     // Establish a local reference frame for the tile:

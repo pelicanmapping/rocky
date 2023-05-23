@@ -117,9 +117,7 @@ int main(int argc, char** argv)
     mapNode->terrainSettings().screenSpaceError = 135.0f;
 
     // Set up the runtime context with everything we need.
-    // Eventually this should be automatic in InstanceVSG
-    ri.runtime().compiler = [viewer]() { return viewer->compileManager; };
-    ri.runtime().updates = [viewer]() { return viewer->updateOperations; };
+    ri.runtime().viewer = viewer;
     ri.runtime().sharedObjects = vsg::SharedObjects::create();
 
     if (arguments.read({ "--wire" }))

@@ -65,7 +65,7 @@ TerrainTileNode::TerrainTileNode(
     stategroup = nullptr;
     lastTraversalFrame = 0;
     lastTraversalRange = FLT_MAX;
-    _needsChildren = false;
+    _needsSubtiles = false;
     _needsUpdate = false;
  
     ROCKY_HARD_ASSERT(in_geometry.valid());
@@ -150,15 +150,15 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
     // swap out the time; used for page out
     lastTraversalTime.exchange(rv.getFrameStamp()->time);
 
-    if (hasChildren())
-        _needsChildren = false;
+    if (subtilesExist())
+        _needsSubtiles = false;
 
     if (surface->isVisible(rv.getState()))
     {
         // determine whether we can and should subdivide to a higher resolution:
-        bool childrenInRange = shouldSubDivide(rv.getState());
+        bool subtilesInRange = shouldSubDivide(rv.getState());
 
-        if (childrenInRange && hasChildren())
+        if (subtilesInRange && subtilesExist())
         {
             // children are available, traverse them now.
             children[1]->accept(rv);
@@ -177,15 +177,15 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
             // children do not exist or are out of range; use this tile's geometry
             children[0]->accept(rv);
 
-            if (childrenInRange && childrenLoader.empty())
+            if (subtilesInRange && subtilesLoader.empty())
             {
-                _needsChildren = true;
+                _needsSubtiles = true;
             }
         }
     }
 
 #ifndef AGGRESSIVE_PAGEOUT
-    if (hasChildren())
+    if (subtilesExist())
     {
         // always ping all children at once so the system can never
         // delete one of a quad.
@@ -204,15 +204,11 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
 }
 
 void
-TerrainTileNode::unloadChildren()
+TerrainTileNode::unloadSubtiles()
 {
     children.resize(1);
-    childrenLoader.reset();
-    elevationLoader.reset();
-    elevationMerger.reset();
-    dataLoader.reset();
-    dataMerger.reset();
-    _needsChildren = true;
+    subtilesLoader.reset();
+    _needsSubtiles = false;
 }
 
 void

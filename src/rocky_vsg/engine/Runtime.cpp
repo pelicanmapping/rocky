@@ -78,79 +78,6 @@ namespace
         }
     };
 
-    //! Operation that asynchronously creates a node (via a user lambda function)
-    //! and then safely adds it to the `ene graph in the update phase.
-    struct AddNodeAsync : public vsg::Inherit<vsg::Operation, AddNodeAsync>
-    {
-        Runtime _runtime;
-
-        // parent to which to add the child
-        vsg::observer_ptr<vsg::Group> _parent;
-
-        // function that will provide the child to add
-        Runtime::NodeFactory _childFactory;
-
-        // ref because child probably only exists here
-        vsg::ref_ptr<vsg::Node> _child;
-
-        // promise that will be resolved after this operation runs
-        util::Future<bool> _promise;
-           
-        AddNodeAsync(
-            const Runtime& runtime,
-            vsg::Group* parent,
-            Runtime::NodeFactory func) :
-
-            _runtime(runtime), _parent(parent), _childFactory(func)
-        {
-            //nop
-        }
-
-        void run() override
-        {
-            bool error = true;
-
-            if (_promise.canceled())
-                return;
-
-            if (!_child)
-            {
-                // resolve the observer pointers:
-                auto compiler = _runtime.compiler();
-                auto updates = _runtime.updates();
-
-                if (compiler && updates)
-                {
-                    // generate the child node:
-                    _child = _childFactory(_promise);
-                    if (_child)
-                    {
-                        compiler->compile(_child);
-
-                        // re-queue this operation on the viewer's update queue
-                        updates->add(vsg::ref_ptr<vsg::Operation>(this));
-                        error = false;
-                    }
-                }
-            }
-            else
-            {
-                vsg::ref_ptr<vsg::Group> parent = _parent;
-                if (parent)
-                {
-                    parent->addChild(_child);
-                    _promise.resolve(true);
-                    error = false;
-                }
-            }
-
-            if (error)
-            {
-                _promise.resolve(false);
-            }
-        }
-    };
-
     //! Operation that removes a node from the scene graph.
     struct RemoveNodeAsync : public vsg::Inherit<vsg::Operation, RemoveNodeAsync>
     {
@@ -220,7 +147,7 @@ Runtime::runDuringUpdate(
 
         if (pq->referenceCount() == 1)
         {
-            updates()->add(_priorityUpdateQueue, vsg::UpdateOperations::ALL_FRAMES);
+            viewer->updateOperations->add(_priorityUpdateQueue, vsg::UpdateOperations::ALL_FRAMES);
         }
 
         pq->_queue.push_back({ function, get_priority });
@@ -230,7 +157,31 @@ Runtime::runDuringUpdate(
 void
 Runtime::runDuringUpdate(std::function<void()> function)
 {
-    updates()->add(SimpleUpdateOperation::create(function));
+    viewer->updateOperations->add(SimpleUpdateOperation::create(function));
+}
+
+void
+Runtime::compile(vsg::ref_ptr<vsg::Object> compilable)
+{
+    auto cr = viewer->compileManager->compile(compilable);
+    if (cr && cr.requiresViewerUpdate())
+    {
+        std::scoped_lock L(_compileResultsMutex);
+        _compileResults.push_back(cr);
+    }
+}
+
+void
+Runtime::update()
+{
+    if (_compileResults.size() > 0)
+    {
+        std::scoped_lock L(_compileResultsMutex);
+        Log::info() << "Updating viewer with " << _compileResults.size() << " results" << std::endl;
+        for (auto& cr : _compileResults)
+            vsg::updateViewer(*viewer, cr);
+        _compileResults.clear();
+    }
 }
 
 util::Future<bool>
@@ -250,10 +201,11 @@ Runtime::compileAndAddChild(vsg::ref_ptr<vsg::Group> parent, NodeFactory factory
     util::Future<bool> promise;
     auto& runtime = *this;
     
-    auto compiler = runtime.compiler();
-    auto updates = runtime.updates();
+    auto viewer = runtime.viewer;
+    //auto compiler = runtime.compiler();
+    //auto updates = runtime.updates();
 
-    auto async_create_and_add_node = [compiler, updates, promise, parent, factory](Cancelable& c) -> bool
+    auto async_create_and_add_node = [viewer, promise, parent, factory](Cancelable& c) -> bool
     {
         if (c.canceled())
             return false;
@@ -264,12 +216,12 @@ Runtime::compileAndAddChild(vsg::ref_ptr<vsg::Group> parent, NodeFactory factory
             return false;
 
         // compile the child:
-        compiler->compile(child);
+        auto cr = viewer->compileManager->compile(child);
 
         // queue an update operation to add the child safely.
         // we pass along the original promise so these two operations appear as
         // one to the caller.
-        auto add_child = [parent, child](Cancelable& c) -> bool
+        auto add_child = [parent, child, viewer, cr](Cancelable& c) -> bool
         {
             if (c.canceled())
                 return false;
@@ -277,10 +229,13 @@ Runtime::compileAndAddChild(vsg::ref_ptr<vsg::Group> parent, NodeFactory factory
             if (parent && child)
                 parent->addChild(child);
 
+            if (cr && cr.requiresViewerUpdate())
+                vsg::updateViewer(*viewer, cr);
+
             return true;
         };        
         auto promise_op = util::PromiseOperation<bool>::create(promise, add_child);
-        updates->add(promise_op);
+        viewer->updateOperations->add(promise_op);
 
         return true;
     };
@@ -298,17 +253,5 @@ void
 Runtime::removeNode(vsg::Group* parent, unsigned index)
 {
     auto remover = RemoveNodeAsync::create(parent, index);
-    updates()->add(remover);
-}
-
-void
-Runtime::dirty(vsg::Object* object)
-{
-    // TODO.
-    // For now, this will immediately recompile and object.
-    // We may want to instead queue it up and do it asynchronously for 
-    // objects that are already in the scene graph and are dynamic.
-    ROCKY_SOFT_ASSERT_AND_RETURN(object, void());
-    // crash
-    //compiler()->compile(vsg::ref_ptr<vsg::Object>(object));
+    viewer->updateOperations->add(remover);
 }

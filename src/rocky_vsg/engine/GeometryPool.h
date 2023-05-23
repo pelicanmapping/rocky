@@ -189,10 +189,6 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::ushortArray> createIndices(
             const Settings& settings) const;
 
-        void tessellateSurface(
-            unsigned tileSize,
-            vsg::ref_ptr<vsg::ushortArray> primSet) const;
-
         bool _enabled;
         bool _debug;
     };
