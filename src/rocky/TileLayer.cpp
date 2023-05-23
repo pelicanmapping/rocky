@@ -344,7 +344,7 @@ TileLayer::dataExtents() const
 void
 TileLayer::setDataExtents(const DataExtentList& dataExtents)
 {
-    std::shared_lock WRITE(_dataMutex);
+    std::unique_lock WRITE(_dataMutex);
     _dataExtents = dataExtents;
     dirtyDataExtents();
 }
@@ -352,7 +352,7 @@ TileLayer::setDataExtents(const DataExtentList& dataExtents)
 void
 TileLayer::addDataExtent(const DataExtent& dataExtent)
 {
-    std::shared_lock WRITE(_dataMutex);
+    std::unique_lock WRITE(_dataMutex);
     _dataExtents.push_back(dataExtent);
     dirtyDataExtents();
 }
@@ -374,7 +374,7 @@ TileLayer::dataExtentsUnion() const
 {
     if (!_dataExtentsUnion.valid() && _dataExtents.size() > 0)
     {
-        std::shared_lock WRITE(_dataMutex);
+        std::unique_lock WRITE(_dataMutex);
         {
             if (!_dataExtentsUnion.valid() && _dataExtents.size() > 0) // double-check
             {
@@ -468,7 +468,7 @@ TileLayer::bestAvailableTileKey(
     // Build the index if needed.
     if (!_dataExtentsIndex)
     {
-        std::shared_lock WRITE(_dataMutex);
+        std::unique_lock WRITE(_dataMutex);
 
         if (!_dataExtentsIndex) // Double check
         {

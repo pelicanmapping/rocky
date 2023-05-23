@@ -107,8 +107,8 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::StateGroup> stategroup;
         
         mutable util::Future<bool> subtilesLoader;
-        mutable util::Future<TerrainTileModel> elevationLoader;
-        mutable util::Future<bool> elevationMerger;
+        //mutable util::Future<TerrainTileModel> elevationLoader;
+        //mutable util::Future<bool> elevationMerger;
         mutable util::Future<TerrainTileModel> dataLoader;
         mutable util::Future<bool> dataMerger;
         mutable std::atomic<uint64_t> lastTraversalFrame;

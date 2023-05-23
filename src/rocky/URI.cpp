@@ -160,6 +160,11 @@ namespace
 
                 auto r = client.Get(path, params, headers);
 
+                if (httpDebug)
+                {
+                    Log::info() << LC << "(" << r->status << ") HTTP GET " << request.url << " (" << timer.seconds() << "s)" << std::endl;
+                }
+
                 if (r.error() != httplib::Error::Success)
                 {
                     // retry on a missing connection
@@ -181,9 +186,6 @@ namespace
                 {
                     return Status(Status::GeneralError, httplib::detail::status_message(r->status));
                 }
-
-                if(httpDebug)
-                    Log::info() << LC << " HTTP GET " << request.url << " (" << timer.seconds() << "s)" <<std::endl;
 
                 response.status = r->status;
 

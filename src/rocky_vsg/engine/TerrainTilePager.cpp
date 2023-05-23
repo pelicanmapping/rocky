@@ -24,8 +24,8 @@ using namespace ROCKY_NAMESPACE;
 
 //#define LOAD_ELEVATION_SEPARATELY
 
-//#define RP_DEBUG Log::warn()
-#define RP_DEBUG if(false) Log::warn()
+//#define RP_DEBUG Log::info()
+#define RP_DEBUG if(false) Log::info()
 
 //----------------------------------------------------------------------------
 
@@ -110,9 +110,11 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
         if (tileHasData && tileHasElevation && tile->_needsSubtiles)
             _loadSubtiles.push_back(tile->key);
 
+#ifdef LOAD_ELEVATION_SEPARATELY
         bool parentHasElevation = (parent == nullptr || parent->elevationMerger.available());
         if (parentHasElevation && tile->elevationLoader.empty())
             _loadElevation.push_back(tile->key);
+#endif
 
         bool parentHasData = (parent == nullptr || parent->dataMerger.available());
         if (parentHasData && tile->dataLoader.empty())
@@ -130,8 +132,10 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
         //    _needsLoad.push_back(tile->key);
     }
 
+#ifdef LOAD_ELEVATION_SEPARATELY
     if (tile->elevationLoader.available() && tile->elevationMerger.empty())
         _mergeElevation.push_back(tile->key);
+#endif
 
     // This will only queue one merge per frame, to prevent overloading
     // the (synchronous) update cycle in VSG.
@@ -489,63 +493,73 @@ TerrainTilePager::requestMergeData(
     {
         if (p.canceled())
         {
+            RP_DEBUG << "merge CANCELED -> " << key.str() << std::endl;
             return false;
         }
 
         //util::scoped_chrono timer("merge sync " + key.str());
 
         auto tile = terrain->tiles.getTile(key);
-        if (tile)
+        if (!tile)
         {
-            auto model = tile->dataLoader.value();
+            RP_DEBUG << "merge TILE LOST -> " << key.str() << std::endl;
+            return false;
+        }
 
-            auto& renderModel = tile->renderModel;
+        auto model = tile->dataLoader.value();
 
-            bool updated = false;
+        auto& renderModel = tile->renderModel;
 
-            if (model.colorLayers.size() > 0)
+        bool updated = false;
+
+        if (model.colorLayers.size() > 0)
+        {
+            auto& layer = model.colorLayers[0];
+            if (layer.image.valid())
             {
-                auto& layer = model.colorLayers[0];
-                if (layer.image.valid())
-                {
-                    renderModel.color.image = layer.image.image();
-                    renderModel.color.matrix = layer.matrix;
-                }
-                updated = true;
+                renderModel.color.image = layer.image.image();
+                renderModel.color.matrix = layer.matrix;
             }
+            updated = true;
+        }
 
 #ifndef LOAD_ELEVATION_SEPARATELY
-            if (model.elevation.heightfield.valid())
-            {
-                renderModel.elevation.image = model.elevation.heightfield.heightfield();
-                renderModel.elevation.matrix = model.elevation.matrix;
+        if (model.elevation.heightfield.valid())
+        {
+            renderModel.elevation.image = model.elevation.heightfield.heightfield();
+            renderModel.elevation.matrix = model.elevation.matrix;
 
-                // prompt the tile can update its bounds
-                tile->setElevation(
-                    renderModel.elevation.image,
-                    renderModel.elevation.matrix);
+            // prompt the tile can update its bounds
+            tile->setElevation(
+                renderModel.elevation.image,
+                renderModel.elevation.matrix);
 
-                updated = true;
-            }
+            updated = true;
+        }
 
-            if (model.normalMap.image.valid())
-            {
-                renderModel.normal.image = model.normalMap.image.image();
-                renderModel.normal.matrix = model.normalMap.matrix;
+        if (model.normalMap.image.valid())
+        {
+            renderModel.normal.image = model.normalMap.image.image();
+            renderModel.normal.matrix = model.normalMap.matrix;
 
-                updated = true;
-            }
+            updated = true;
+        }
 #endif
 
-            renderModel.modelMatrix = to_glm(tile->surface->matrix);
+        renderModel.modelMatrix = to_glm(tile->surface->matrix);
 
-            if (updated)
-            {
-                terrain->stateFactory.updateTerrainTileDescriptors(
-                    renderModel,
-                    tile->stategroup,
-                    terrain->runtime);
-            }
+        if (updated)
+        {
+            terrain->stateFactory.updateTerrainTileDescriptors(
+                renderModel,
+                tile->stategroup,
+                terrain->runtime);
+
+            RP_DEBUG << "mergeData -> " << key.str() << std::endl;
+        }
+        else
+        {
+            RP_DEBUG << "merge EMPTY TILE MODEL -> " << key.str() << std::endl;
         }
 
         return true;
@@ -554,8 +568,6 @@ TerrainTilePager::requestMergeData(
     auto merge_op = util::PromiseOperation<bool>::create(merge);
 
     tile->dataMerger = merge_op->future();
-
-    //terrain->runtime.updates()->add(merge_op);
 
     vsg::observer_ptr<TerrainTileNode> tile_weak(tile);
     auto priority_func = [tile_weak]() -> float
@@ -573,6 +585,7 @@ TerrainTilePager::requestLoadElevation(
     const IOOptions& in_io,
     shared_ptr<TerrainContext> terrain) const
 {
+#ifdef LOAD_ELEVATION_SEPARATELY
     ROCKY_SOFT_ASSERT_AND_RETURN(tile, void());
 
     // make sure we're not already working on it
@@ -624,6 +637,7 @@ TerrainTilePager::requestLoadElevation(
              nullptr
         }
     );
+#endif
 }
 
 void
@@ -632,6 +646,7 @@ TerrainTilePager::requestMergeElevation(
     const IOOptions& in_io,
     shared_ptr<TerrainContext> terrain) const
 {
+#ifdef LOAD_ELEVATION_SEPARATELY
     ROCKY_SOFT_ASSERT_AND_RETURN(tile, void());
 
     // make sure we're not already working on it
@@ -706,6 +721,7 @@ TerrainTilePager::requestMergeElevation(
         return tile ? -(sqrt(tile->lastTraversalRange) * 0.9 * tile->key.levelOfDetail()) : 0.0f;
     };
     terrain->runtime.runDuringUpdate(merge_op, priority_func);
+#endif
 }
 
 
