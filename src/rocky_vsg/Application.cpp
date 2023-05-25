@@ -256,15 +256,14 @@ Application::addViewAfterViewerIsRealized(
 
         // Compile the new render pass for this view.
         // The lambda idiom is taken from vsgexamples/dynamicviews
-        instance.runtime().compile(rendergraph);
-        //auto result = viewer->compileManager->compile(rendergraph, [&view](vsg::Context& context)
-        //    {
-        //        return context.view == view.get();
-        //    });
-        //if (result.requiresViewerUpdate())
-        //{
-        //    vsg::updateViewer(*viewer, result);
-        //}
+        auto result = viewer->compileManager->compile(rendergraph, [&view](vsg::Context& context)
+            {
+                return context.view == view.get();
+            });
+        if (result.requiresViewerUpdate())
+        {
+            vsg::updateViewer(*viewer, result);
+        }
 
         // remember so we can remove it later
         auto& viewdata = _viewData[view];

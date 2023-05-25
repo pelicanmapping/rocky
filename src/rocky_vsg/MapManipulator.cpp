@@ -1318,33 +1318,15 @@ MapManipulator::clearEvents()
     _continuous = false;
     _keyPress.clear();
     _buttonPress.clear();
-    _buttonRelease.clear();
+    // Note: never clear the _previousMove event!
     _task.reset();
     _dirty = true;
-}
-
-bool
-MapManipulator::forMe(vsg::PointerEvent& e) const
-{
-    return !e.handled && withinRenderArea(e);
-}
-
-bool
-MapManipulator::forMe(vsg::KeyEvent& e) const
-{
-    return !e.handled && withinRenderArea(_previousMove);
-}
-
-bool
-MapManipulator::forMe(vsg::ScrollWheelEvent& e) const
-{
-    return !e.handled && withinRenderArea(_previousMove);
 }
 
 void
 MapManipulator::apply(vsg::KeyPressEvent& keyPress)
 {
-    if (!forMe(keyPress)) 
+    if (keyPress.handled || !withinRenderArea(_previousMove))
         return;
 
     _keyPress = keyPress;
@@ -1365,9 +1347,6 @@ MapManipulator::apply(vsg::KeyPressEvent& keyPress)
 void
 MapManipulator::apply(vsg::KeyReleaseEvent& keyRelease)
 {
-    if (!forMe(keyRelease))
-        return;
-
     //std::cout << "KeyReleaseEvent" << std::endl;
 
     _keyPress.clear();
@@ -1376,7 +1355,7 @@ MapManipulator::apply(vsg::KeyReleaseEvent& keyRelease)
 void
 MapManipulator::apply(vsg::ButtonPressEvent& buttonPress)
 {
-    if (!forMe(buttonPress))
+    if (buttonPress.handled || !withinRenderArea(buttonPress))
         return;
 
     //std::cout << "ButtonPressEvent" << std::endl;
@@ -1392,21 +1371,16 @@ MapManipulator::apply(vsg::ButtonPressEvent& buttonPress)
 void
 MapManipulator::apply(vsg::ButtonReleaseEvent& buttonRelease)
 {
-    if (buttonRelease.handled)
-        return;
-
     //std::cout << "ButtonReleaseEvent" << std::endl;
 
-    _buttonRelease = buttonRelease;
-
-    if (isMouseClick())
+    if (isMouseClick(buttonRelease))
     {
         _lastAction = _settings->getAction(
             EVENT_MOUSE_CLICK,
             _buttonPress->button,
             _buttonPress->mask);
 
-        if (handlePointAction(_lastAction, _buttonRelease->x, _buttonRelease->y, buttonRelease.time))
+        if (handlePointAction(_lastAction, buttonRelease.x, buttonRelease.y, buttonRelease.time))
             _dirty = true;
     }
 
@@ -1418,58 +1392,57 @@ MapManipulator::apply(vsg::ButtonReleaseEvent& buttonRelease)
 void
 MapManipulator::apply(vsg::MoveEvent& moveEvent)
 {
-    if (!forMe(moveEvent))
+    // Note: always record the move event (into _previousMove) regardless
+    // of whether we process the new move event.
+    
+    // If there's no button press, bail out.
+    if (!_buttonPress.has_value())
     {
         _previousMove = moveEvent;
         return;
     }
 
-    //std::cout << "MoveEvent, mask = " << moveEvent.mask << std::endl;
-
-    bool buttonReleased = (moveEvent.mask == 0 && _currentMove->mask != 0);
-
-    _previousMove = _currentMove;
-    _currentMove = moveEvent;
-
-    if (moveEvent.mask != 0) // if a button is pressed
+    // Check if the button got released outside the window (and did not generate an event)
+    if (moveEvent.mask == 0 && _previousMove->mask != 0)
     {
-        vsg::ref_ptr<vsg::Window> window = moveEvent.window;
-
-        _lastAction = _settings->getAction(
-            EVENT_MOUSE_DRAG,
-            moveEvent.mask, // button mask
-            _keyPress.has_value() ? _keyPress->keyModifier : 0);
-
-        bool wasContinuous = _continuous;
-        _continuous = _lastAction.getBoolOption(OPTION_CONTINUOUS, false);
-
-        if (handleMouseAction(_lastAction, moveEvent.time))
-            _dirty = true;
-
-        if (_continuous && !wasContinuous)
-        {
-            _continuousAction = _lastAction;
-            _last_continuous_action_time = moveEvent.time;
-        }
-
-        if (_continuous)
-            _dirty = true;
-
-        _thrown = false;
-        moveEvent.handled = true;
-    }
-
-    else if (buttonReleased)
-    {
-        // button was released outside the frame
+        _previousMove = moveEvent;
         clearEvents();
+        return;
     }
+
+    // Good to go, process the move:
+    vsg::ref_ptr<vsg::Window> window = moveEvent.window;
+
+    _lastAction = _settings->getAction(
+        EVENT_MOUSE_DRAG,
+        moveEvent.mask, // button mask
+        _keyPress.has_value() ? _keyPress->keyModifier : 0);
+
+    bool wasContinuous = _continuous;
+    _continuous = _lastAction.getBoolOption(OPTION_CONTINUOUS, false);
+
+    if (handleMouseAction(_lastAction, _previousMove.value(), moveEvent))
+        _dirty = true;
+
+    if (_continuous && !wasContinuous)
+    {
+        _continuousAction = _lastAction;
+        _last_continuous_action_time = moveEvent.time;
+    }
+
+    if (_continuous)
+        _dirty = true;
+
+    _thrown = false;
+    moveEvent.handled = true;
+
+    _previousMove = moveEvent;
 }
 
 void
 MapManipulator::apply(vsg::ScrollWheelEvent& scrollEvent)
 {
-    if (!forMe(scrollEvent))
+    if (scrollEvent.handled || !withinRenderArea(_previousMove))
         return;
 
     //std::cout << "ScrollWheelEvent" << std::endl;
@@ -1592,20 +1565,20 @@ MapManipulator::serviceTask(vsg::time_point now)
 
 
 bool
-MapManipulator::isMouseClick() const
+MapManipulator::isMouseClick(vsg::ButtonReleaseEvent& buttonRelease) const
 {
-    if (!_buttonPress.has_value() || !_buttonRelease.has_value())
+    if (!_buttonPress.has_value()) // || !_buttonRelease.has_value())
         return false;
 
     static const float velocity = 0.1f;
 
     auto down = ndc(_buttonPress.value());
-    auto up = ndc(_buttonRelease.value());
+    auto up = ndc(buttonRelease);
 
     float dx = up.x - down.x;
     float dy = up.y - down.y;
     float len = sqrtf(dx * dx + dy * dy);
-    auto dtmillis = std::chrono::duration_cast<std::chrono::milliseconds>(_buttonRelease->time - _buttonPress->time);
+    auto dtmillis = std::chrono::duration_cast<std::chrono::milliseconds>(buttonRelease.time - _buttonPress->time);
     float dt = (float)dtmillis.count() * 0.001f;
     return (len < dt* velocity);
 }
@@ -2032,13 +2005,14 @@ MapManipulator::applyOptionsToDeltas(const Action& action, vsg::dvec2& d)
 bool
 MapManipulator::handleMouseAction(
     const Action& action,
-    vsg::time_point time)
+    const vsg::MoveEvent& previousMove,
+    const vsg::MoveEvent& currentMove)
 {
-    if (!_currentMove.has_value() || !_previousMove.has_value())
-        return false;
+    //if (!_currentMove.has_value() || !_previousMove.has_value())
+    //    return false;
 
-    auto prev = ndc(_previousMove);
-    auto curr = ndc(_currentMove);
+    auto prev = ndc(previousMove);
+    auto curr = ndc(currentMove);
 
     vsg::dvec2 delta(
         curr.x - prev.x,
@@ -2062,7 +2036,7 @@ MapManipulator::handleMouseAction(
     else
     {
         _delta = delta;
-        handleMovementAction(action._type, delta, time);
+        handleMovementAction(action._type, delta, currentMove.time); // time);
     }
 
     return true;

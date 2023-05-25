@@ -25,7 +25,7 @@ auto Demo_Views = [=](Application& app)
             int num = 0;
             for (auto& view : views)
             {
-                ImGui::PushID(view->viewID);
+                ImGui::PushID(view->viewID*100);
                 if (ImGui::TreeNodeEx("view", ImGuiTreeNodeFlags_DefaultOpen, "View %d", num++))
                 {
                     ImGuiLTable::Begin("view");
@@ -41,40 +41,45 @@ auto Demo_Views = [=](Application& app)
                         if (ImGuiLTable::ColorEdit3("Clear", color))
                         {
                             // just works - nothing to do
-                        }                        
+                        }
                     }
 
-                    // the viewport - changing this requires a bunch of updates and a call to  app.refreshView
-                    bool vp_dirty = false;
-                    auto old_vp = view->camera->getViewport();
-                    auto vp = view->camera->getViewport();
-                    if (ImGuiLTable::SliderFloat("X", &vp.x, 0, window->traits()->width))
+                    if (num > 1)  // dont' allow editing the first view
                     {
-                        vp_dirty = true;
-                    }
-                    if (ImGuiLTable::SliderFloat("Y", &vp.y, 0, window->traits()->height))
-                    {
-                        vp_dirty = true;
-                    }
-                    if (ImGuiLTable::SliderFloat("Width", &vp.width, 0, window->traits()->width))
-                    {
-                        vp_dirty = true;
-                    }
-                    if (ImGuiLTable::SliderFloat("Height", &vp.height, 0, window->traits()->height))
-                    {
-                        vp_dirty = true;
-                    }
+                        // the viewport - changing this requires a bunch of updates and a call to  app.refreshView
+                        bool vp_dirty = false;
+                        auto old_vp = view->camera->getViewport();
+                        auto vp = view->camera->getViewport();
+                        if (ImGuiLTable::SliderFloat("X", &vp.x, 0, window->traits()->width))
+                        {
+                            vp_dirty = true;
+                        }
+                        if (ImGuiLTable::SliderFloat("Y", &vp.y, 0, window->traits()->height))
+                        {
+                            vp_dirty = true;
+                        }
+                        if (ImGuiLTable::SliderFloat("Width", &vp.width, 0, window->traits()->width))
+                        {
+                            vp_dirty = true;
+                        }
+                        if (ImGuiLTable::SliderFloat("Height", &vp.height, 0, window->traits()->height))
+                        {
+                            vp_dirty = true;
+                        }
 
-                    if (vp_dirty)
-                    {
-                        view->camera->projectionMatrix->changeExtent(VkExtent2D{(unsigned)old_vp.width, (unsigned)old_vp.height}, VkExtent2D{ (unsigned)vp.width, (unsigned)vp.height });
-                        view->camera->viewportState->set(vp.x, vp.y, vp.width, vp.height);
-                        app.refreshView(view);
-                    }
+                        if (vp_dirty)
+                        {
+                            if (vp.x + vp.width >= window->traits()->width) vp.x = window->traits()->width - vp.width - 1;
+                            if (vp.y + vp.height >= window->traits()->height) vp.y = window->traits()->height - vp.height - 1;
+                            view->camera->projectionMatrix->changeExtent(VkExtent2D{ (unsigned)old_vp.width, (unsigned)old_vp.height }, VkExtent2D{ (unsigned)vp.width, (unsigned)vp.height });
+                            view->camera->viewportState->set(vp.x, vp.y, vp.width, vp.height);
+                            app.refreshView(view);
+                        }
 
-                    if (ImGui::Button("Remove"))
-                    {
-                        app.removeView(window, view);
+                        if (ImGui::Button("Remove view"))
+                        {
+                            app.removeView(window, view);
+                        }
                     }
 
                     ImGuiLTable::End();
@@ -129,7 +134,7 @@ auto Demo_Views = [=](Application& app)
     ImGui::Indent();
     {
         ImGui::Separator();
-        if (ImGui::Button("New window"))
+        if (ImGui::Button("Add window"))
         {
             auto name = std::string("Window ") + std::to_string(window_id);
             app.addWindow(vsg::WindowTraits::create(800, 600, name));

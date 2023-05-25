@@ -627,7 +627,7 @@ namespace ROCKY_NAMESPACE
 
         vsg::dmat4 getWorldLookAtMatrix(const vsg::dvec3& center) const;
 
-        bool isMouseClick() const;
+        bool isMouseClick(vsg::ButtonReleaseEvent&) const;
 
         void applyOptionsToDeltas(const Action& action, vsg::dvec2& delta);
 
@@ -647,7 +647,7 @@ namespace ROCKY_NAMESPACE
         // Applies an action using the raw input parameters.
         bool handleAction(const Action& action, const vsg::dvec2& delta, vsg::time_point now, double duration);
 
-        virtual bool handleMouseAction(const Action& action, vsg::time_point time);
+        virtual bool handleMouseAction(const Action& action, const vsg::MoveEvent& previous, const vsg::MoveEvent& current);
         virtual bool handleMouseClickAction(const Action& action, vsg::time_point time);
         virtual bool handleKeyboardAction(const Action& action, vsg::time_point time, double duration_s = DBL_MAX);
         virtual bool handleScrollAction(const Action& action, vsg::time_point time, double duration_s = DBL_MAX);
@@ -693,9 +693,8 @@ namespace ROCKY_NAMESPACE
         vsg::observer_ptr<vsg::Camera> _camera_weakptr;
         SRS _worldSRS;
 
-        optional<vsg::PointerEvent> _currentMove, _previousMove;
+        optional<vsg::MoveEvent> _previousMove;
         optional<vsg::ButtonPressEvent> _buttonPress;
-        optional<vsg::ButtonReleaseEvent> _buttonRelease;
         optional<vsg::KeyPressEvent> _keyPress;
 
         bool _thrown;
@@ -720,10 +719,6 @@ namespace ROCKY_NAMESPACE
         bool withinRenderArea(const vsg::PointerEvent& pointerEvent) const;
 
         vsg::dvec2 ndc(const vsg::PointerEvent&) const;
-
-        bool forMe(vsg::PointerEvent& ev) const;
-        bool forMe(vsg::KeyEvent& ev) const;
-        bool forMe(vsg::ScrollWheelEvent& ev) const;
     };
 
 }
