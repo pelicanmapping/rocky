@@ -38,6 +38,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Label.h"
 #include "Demo_MapManipulator.h"
 #include "Demo_Views.h"
+#include "Demo_Stats.h"
 
 template<class T>
 int layerError(T layer)
@@ -82,6 +83,8 @@ void setup_demos(rocky::Application& app)
         Demo{ "Windows & Views", Demo_Views }
     );
 
+    demos.emplace_back(
+        Demo{ "Stats", Demo_Stats });
     demos.emplace_back(
         Demo{ "About", Demo_About });
 }

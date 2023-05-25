@@ -641,9 +641,6 @@ namespace ROCKY_NAMESPACE
         // creates a "local-to-world" transform relative to the input point.
         bool createLocalCoordFrame(const vsg::dvec3& worldPos, vsg::dmat4& out_frame) const;
 
-        // returns an ActionType that would be initiated by the OSG UI event
-        ActionType getActionTypeForEvent(const vsg::WindowEvent& ea) const;
-
         // Applies an action using the raw input parameters.
         bool handleAction(const Action& action, const vsg::dvec2& delta, vsg::time_point now, double duration);
 
@@ -713,8 +710,6 @@ namespace ROCKY_NAMESPACE
 
         // rendering required b/c something changed.
         bool _dirty;
-
-        std::pair<int32_t, int32_t> cameraRenderAreaCoordinates(const vsg::PointerEvent&) const;
 
         bool withinRenderArea(const vsg::PointerEvent& pointerEvent) const;
 

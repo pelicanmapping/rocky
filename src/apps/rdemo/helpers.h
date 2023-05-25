@@ -21,6 +21,16 @@ namespace ImGuiLTable
         return ok;
     }
 
+    static void PlotLines(const char* label, float(*getter)(void*, int), void* data, int values_count, int values_offset, const char* overlay =nullptr,
+        float scale_min = FLT_MAX, float scale_max = FLT_MAX)
+    {
+        ImGui::TableNextColumn();
+        ImGui::Text(label);
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(-1);
+        ImGui::PlotLines("", getter, data, values_count, values_offset, overlay, scale_min, scale_max);
+    }
+
     static bool SliderFloat(const char* label, float* v, float v_min, float v_max, const char* format = nullptr)
     {
         ImGui::TableNextColumn();

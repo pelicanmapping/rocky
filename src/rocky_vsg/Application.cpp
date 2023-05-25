@@ -437,11 +437,15 @@ Application::run()
     // The main frame loop
     while (viewer->advanceToNextFrame())
     {
+        auto t_start = std::chrono::steady_clock::now();
+
         viewer->handleEvents();
 
         // since an event handler could deactivate the viewer:
         if (!viewer->active())
             break;
+
+        auto t_update = std::chrono::steady_clock::now();
 
         // rocky update pass - management of tiles and paged data
         mapNode->update(viewer->getFrameStamp());
@@ -468,9 +472,19 @@ Application::run()
 
         addAndRemoveObjects();
 
+        auto t_record = std::chrono::steady_clock::now();
+
         viewer->recordAndSubmit();
 
+        auto t_present = std::chrono::steady_clock::now();
+
         viewer->present();
+
+        auto t_end = std::chrono::steady_clock::now();
+        stats.frame = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start);
+        stats.events = std::chrono::duration_cast<std::chrono::microseconds>(t_update - t_start);
+        stats.update = std::chrono::duration_cast<std::chrono::microseconds>(t_record - t_update);
+        stats.record = std::chrono::duration_cast<std::chrono::microseconds>(t_present - t_record);
     }
 
     return 0;

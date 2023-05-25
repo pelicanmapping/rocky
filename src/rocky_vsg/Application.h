@@ -16,6 +16,7 @@
 #include <vsg/nodes/Group.h>
 #include <vsg/commands/ClearAttachments.h>
 
+#include <chrono>
 #include <list>
 
 namespace ROCKY_NAMESPACE
@@ -89,6 +90,14 @@ namespace ROCKY_NAMESPACE
         std::function<void()> updateFunction;
         DisplayConfiguration displayConfiguration;
 
+        struct Stats
+        {
+            std::chrono::microseconds frame;
+            std::chrono::microseconds events;
+            std::chrono::microseconds update;
+            std::chrono::microseconds record;
+        };
+        Stats stats;
 
         //! About the application.
         std::string about() const;
