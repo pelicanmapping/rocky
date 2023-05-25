@@ -9,7 +9,8 @@ layout(push_constant) uniform PushConstants {
 // rocky::IconStyle
 layout(set = 0, binding = 1) uniform IconStyle {
     float size;
-    float padding[3];
+    float rotation;
+    float padding[2];
 } icon;
 
 // vsg viewport data
@@ -32,15 +33,19 @@ void main()
 {
     vec4 clip = pc.projection * pc.modelview * vec4(0, 0, 0, 1);
 
+    // extrude the vertex based on its index to form a clip-space billboard
     vec2 signs = vec2(
         gl_VertexIndex == 0 || gl_VertexIndex == 3 || gl_VertexIndex == 5 ? -1 : 1,
         gl_VertexIndex == 0 || gl_VertexIndex == 1 || gl_VertexIndex == 3 ? -1 : 1);
 
     vec2 viewport_size = vsg_viewports.viewport[0].zw;
     vec2 pixel_size = 2.0 / viewport_size;
-    vec2 dims_clip = icon.size * pixel_size * signs;
 
-    clip.xy += (dims_clip * clip.w) * 0.5;
+    // scale and rotate:
+    float sr = sin(icon.rotation), cr = cos(icon.rotation);
+    vec2 offset = mat2(cr, sr, -sr, cr) * (icon.size * signs * 0.5);
+
+    clip.xy += (offset * pixel_size * clip.w);
 
     uv = vec2(signs.x + 1.0, -signs.y + 1.0) * 0.5;
 

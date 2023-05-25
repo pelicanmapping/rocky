@@ -120,9 +120,6 @@ IconState::initialize(Runtime& runtime)
         pipelineConfig->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
 
         // Temporary decriptors that we will use to set up the PipelineConfig.
-        //vsg::Descriptors descriptors;
-        //pipelineConfig->assignUniform(descriptors, "icon");
-        //pipelineConfig->assignUniform(descriptors, "vsg_viewports");
         pipelineConfig->enableUniform("icon");
         pipelineConfig->enableUniform("vsg_viewports");
 
@@ -268,7 +265,6 @@ BindIconStyle::style() const
 
 IconGeometry::IconGeometry()
 {
-    //_drawCommand = vsg::DrawIndexed::create( 6, 1, 0, 0, 0 );
     _drawCommand = vsg::Draw::create(6, 1, 0, 0);
 }
 
@@ -279,10 +275,7 @@ IconGeometry::compile(vsg::Context& context)
 
     std::vector<vsg::vec3> dummy_data(6);
     auto vert_array = vsg::vec3Array::create(6, dummy_data.data());
-    //static std::uint16_t indices[6] = { 0,1,2,0,2,3 };
-    //auto index_array = vsg::ushortArray::create(6, indices);
     assignArrays({ vert_array });
-    //assignIndices({ index_array });
     commands.push_back(_drawCommand);
 
     vsg::Geometry::compile(context);

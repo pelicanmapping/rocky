@@ -15,8 +15,9 @@ namespace ROCKY_NAMESPACE
      */
     struct IconStyle
     {
-        float size_pixels;
-        float padding[3];
+        float size_pixels = 256.0f;
+        float rotation_radians = 0.0f;
+        float padding[2];
     };
 
     /**

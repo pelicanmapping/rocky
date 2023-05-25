@@ -68,6 +68,11 @@ auto Demo_Icon = [](Application& app)
             icon->setStyle(style);
         }
 
+        if (ImGuiLTable::SliderFloat("Rotation", &style.rotation_radians, 0.0f, 6.28f))
+        {
+            icon->setStyle(style);
+        }
+
         ImGuiLTable::End();
     }
 };
