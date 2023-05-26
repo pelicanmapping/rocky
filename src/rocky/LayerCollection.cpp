@@ -25,6 +25,7 @@ LayerCollection::add(shared_ptr<Layer> layer)
 Status
 LayerCollection::add(shared_ptr<Layer> layer, const IOOptions& io)
 {
+#if 0
     // TEMPORARY WARNING if try to add more than one image layer.
     if (dynamic_cast<ImageLayer*>(layer.get()))
     {
@@ -55,15 +56,22 @@ LayerCollection::add(shared_ptr<Layer> layer, const IOOptions& io)
             return Status(Status::ServiceUnavailable);
         }
     }
+#endif
 
+    // check if it's already in the collection
     if (indexOf(layer) != size())
+    {
         return layer->status();
+    }
 
+    // open if necessary
     if (layer->openAutomatically())
     {
+        // not checking the return value here since we are returning it from this method
         layer->open();
     }
 
+    // insert the new layer into the map safely
     Revision new_revision;
     unsigned index = -1;
     {
@@ -73,7 +81,10 @@ LayerCollection::add(shared_ptr<Layer> layer, const IOOptions& io)
         new_revision = ++_map->_dataModelRevision;
     }
 
+    // invoke the callback
     _map->onLayerAdded.fire(layer, index, new_revision);
+
+    // return the layer's open status
     return layer->status();
 }
 

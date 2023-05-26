@@ -449,6 +449,35 @@ TerrainTilePager::requestLoadData(
             manifest,
             IOOptions(io, p));
 
+        // do we need to composite?
+        if (model.colorLayers.size() > 1)
+        {
+            auto& base_image = model.colorLayers.front().image;
+            TerrainTileModel::Tile tile = model.colorLayers.front();
+            
+            auto comp_image = Image::create(
+                Image::R8G8B8A8_UNORM,
+                base_image.image()->width(),
+                base_image.image()->height());
+
+            comp_image->fill(glm::fvec4(0, 0, 0, 0));
+
+            GeoImage image(comp_image, key.extent());
+            std::vector<GeoImage> sources;
+            for (auto& i : model.colorLayers)
+                sources.push_back(std::move(i.image));
+
+            image.composite(sources);
+
+            TerrainTileModel::ColorLayer layer;
+            layer.revision = tile.revision;
+            layer.matrix = tile.matrix;
+            layer.image = image;
+
+            model.colorLayers.clear();
+            model.colorLayers.emplace_back(std::move(layer));
+        }
+
         return model;
     };
 

@@ -739,6 +739,41 @@ GeoImage::reproject(
     return GeoImage(resultImage, destExtent);
 }
 
+void
+GeoImage::composite(const std::vector<GeoImage>& sources)
+{
+    double x, y;
+    glm::fvec4 pixel;
+    for (unsigned t = 0; t < _image->width(); ++t)
+    {
+        for(unsigned s = 0; s < _image->height(); ++s)
+        {
+            // read the existing pixel
+            _image->read(pixel, s, t);
+
+            // see if we need to overwrite it
+            if ((_image->hasAlphaChannel() && pixel.a == 0.0f) ||
+                (pixel.r == 0.0f && pixel.g == 0.0f && pixel.b == 0.0f))
+            {
+                getCoord(s, t, x, y);
+                for (int i = (int)sources.size() - 1; i >= 0; --i)
+                {
+                    auto& source = sources[i];
+                    source.read(pixel, x, y, srs());
+
+                    if ((i == 0) ||
+                        (source.image()->hasAlphaChannel() && pixel.a > 0.0f) ||
+                        (pixel.r > 0.0f || pixel.g > 0.0f || pixel.b > 0.0f))
+                    {
+                        _image->write(pixel, s, t);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
 bool
 GeoImage::read(glm::fvec4& output, const GeoPoint& p) const
 {

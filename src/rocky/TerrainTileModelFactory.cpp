@@ -193,9 +193,16 @@ TerrainTileModelFactory::addImageLayer(
 
     if (imageLayer->isOpen() &&
         imageLayer->isKeyInLegalRange(key) &&
-        imageLayer->mayHaveData(key))
+        imageLayer->intersects(key))
+        //&& imageLayer->mayHaveData(key))
     {
-        auto result = imageLayer->createImage(key, io);
+        Result<GeoImage> result;
+
+        for(TileKey k = key; k.valid() && !result.value.valid(); k.makeParent())
+        {
+            result = imageLayer->createImage(k, io);
+        }
+
         if (result.value.valid())
         {
             TerrainTileModel::ColorLayer m;
@@ -204,7 +211,7 @@ TerrainTileModelFactory::addImageLayer(
             m.image = result.value;
             model.colorLayers.emplace_back(std::move(m));
 
-            if (imageLayer->isDynamic()) // || imageLayer->getAsyncLoading())
+            if (imageLayer->isDynamic())
             {
                 model.requiresUpdate = true;
             }

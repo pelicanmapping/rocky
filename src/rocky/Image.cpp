@@ -20,6 +20,8 @@ namespace
         static void read(Image::Pixel& pixel, unsigned char* ptr, int n) {
             for (int i = 0; i < n; ++i)
                 pixel[i] = (float)(*ptr++) * denorm_8;
+            for (int i = n; i < 4; ++i)
+                pixel[i] = 1.0f; // fills in alpha if source doesn't have it
         }
         static void write(const Image::Pixel& pixel, unsigned char* ptr, int n) {
             for (int i = 0; i < n; ++i)

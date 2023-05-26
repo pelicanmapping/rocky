@@ -71,24 +71,25 @@ namespace ROCKY_NAMESPACE
             unsigned int height = 0,
             bool useBilinearInterpolation = true) const;
 
-        /**
-         * Warps the image into a new spatial reference system.
-         *
-         * @param to_srs
-         *      SRS into which to warp the image.
-         * @param to_extent
-         *      Supply this extent if you wish to warp AND crop the image in one step. This is
-         *      faster than calling reproject() and then crop().
-         * @param width, height
-         *      New pixel size for the output image. Be default, the method will automatically
-         *      calculate a new pixel size.
-         */
+        //! Warps the image into a new spatial reference system.
+        //!
+        //! @param to_srs SRS into which to warp the image.
+        //! @param to_extent Supply this extent if you wish to warp AND crop the image
+        //!   in one step. This is faster than calling reproject() and then crop().
+        //! @param width, height New pixel size for the output image. Be default,
+        //!   the method will automatically calculate a new pixel size.
         Result<GeoImage> reproject(
             const SRS& to_srs,
             const GeoExtent* to_extent = nullptr,
             unsigned width = 0,
             unsigned height = 0,
             bool useBilinearInterpolation = true) const;
+
+        //! Composites one or more source images into this image.
+        //! This will only write to RGBA pixels that have an alpha of zero,
+        //! or to RGB pixels that all all black.
+        //! @param sources GeoImages to composite, from bottom to top.
+        void composite(const std::vector<GeoImage>& sources);
 
         //! Gets the units per pixel of this geoimage
         double getUnitsPerPixel() const;
@@ -99,14 +100,21 @@ namespace ROCKY_NAMESPACE
         //! Read the value of a pixel at a geopoint.
         bool read(glm::fvec4& output, const GeoPoint& p) const;
 
+        //! Read the value of a pixel at the coordinate (x, y) which is
+        //! assumed to be in this GeoImage's SRS.
         bool read(
             glm::fvec4& output,
             double x, double y) const;
 
+        //! Read the value of a pixel at the coordinate (x, y) which
+        //! is expressed in the provided SRS.
         bool read(
             glm::fvec4& output,
             double x, double y, const SRS& srs) const;
 
+        //! Read the value of a pixel at the coordinate (x, y) which
+        //! will be transformed using the provided operation before
+        //! reading.
         bool read(
             glm::fvec4& output,
             double x, double y, const SRSOperation& operation) const;

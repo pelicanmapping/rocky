@@ -93,6 +93,9 @@ namespace ROCKY_NAMESPACE
 
     public: // Data availability methods
 
+        //! True is the tile key intersects the data extents of this layer.
+        bool intersects(const TileKey& key) const;
+
         /**
          * Given a TileKey, returns a TileKey representing the best known available.
          * For example, if the input TileKey exceeds the layer's max LOD, the return
@@ -179,6 +182,8 @@ namespace ROCKY_NAMESPACE
 
         // Figure out the cache settings for this layer.
         void establishCacheSettings();
+
+        void buildDataExtentsIfNeeded() const;
 
         // general purpose data protector
         mutable std::shared_mutex _dataMutex;
