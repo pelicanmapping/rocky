@@ -18,6 +18,7 @@
 
 #if defined(ROCKY_SUPPORTS_GDAL)
 #include <gdal_version.h>
+#include <rocky/GDALImageLayer.h>
 #endif
 
 #include <rocky/Version.h>
@@ -138,14 +139,18 @@ int main(int argc, char** argv)
     // add an imagery layer to the map
     auto layer = rocky::TMSImageLayer::create();
     layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
-    //layer->setName("ReadyMap 15m Imagery");
     app.map()->layers().add(layer);
     if (layer->status().failed())
         return layerError(layer);
 
+    auto layer2 = rocky::GDALImageLayer::create();
+    layer2->setName("Boston inset");
+    layer2->setURI("H:/devel/osgearth/master/repo/data/boston-inset-wgs84.tif");
+    //layer2->setMaxDataLevel(99);
+    app.map()->layers().add(layer2);
+
     auto elev = rocky::TMSElevationLayer::create();
     elev->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
-    //elev->setName("ReadyMap 90m Elevation");
     app.map()->layers().add(elev);
     if (elev->status().failed())
         return layerError(elev);

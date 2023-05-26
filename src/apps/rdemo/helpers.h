@@ -143,6 +143,16 @@ namespace ImGuiLTable
         ImGui::Text(format, args...);
     }
 
+    template<typename...Args>
+    static void TextWrapped(const char* label, const char* format, Args...args)
+    {
+        ImGui::TableNextColumn();
+        ImGui::Text(label);
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(-1);
+        ImGui::TextWrapped(format, args...);
+    }
+
     static void Section(const char* label)
     {
         ImGui::TableNextColumn();

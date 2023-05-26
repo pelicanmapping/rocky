@@ -68,11 +68,21 @@ auto Demo_Map = [](Application& app)
             if (layerExpanded[i])
             {
                 ImGui::Indent();
-                ImGui::Text("Type: %s", layer->getConfigKey());
-                auto tileLayer = TileLayer::cast(layer);
-                if (tileLayer)
+                if (ImGuiLTable::Begin("layerdeets"))
                 {
-                    ImGui::Text("SRS: %s", tileLayer->profile().srs().name());
+                    ImGuiLTable::Text("Type:", layer->getConfigKey().c_str());
+                    auto tileLayer = TileLayer::cast(layer);
+                    if (tileLayer)
+                    {
+                        ImGuiLTable::Text("SRS:", tileLayer->profile().srs().name());
+                    }
+                    const GeoExtent& extent = layer->extent();
+                    if (extent.valid())
+                    {
+                        ImGuiLTable::TextWrapped("Extent:", "W:%.1f E:%.1f S:%.1f N:%.1f",
+                            extent.west(), extent.east(), extent.south(), extent.north());
+                    }
+                    ImGuiLTable::End();
                 }
                 ImGui::Unindent();
             }
