@@ -74,6 +74,12 @@ TMSElevationLayer::openImplementation(const IOOptions& io)
         setProfile(driver_profile);
     }
 
+    // If the layer name is unset, try to set it from the tileMap title.
+    if (name().empty() && !_driver.tileMap.title.empty())
+    {
+        setName(_driver.tileMap.title);
+    }
+
     setDataExtents(dataExtents);
 
     return StatusOK;

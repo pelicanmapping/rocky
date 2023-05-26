@@ -31,6 +31,7 @@ ROCKY_ABOUT(imgui, IMGUI_VERSION)
 
 using namespace ROCKY_NAMESPACE;
 
+#include "Demo_Map.h"
 #include "Demo_LineString.h"
 #include "Demo_Mesh.h"
 #include "Demo_Icon.h"
@@ -66,6 +67,9 @@ std::vector<Demo> demos;
 
 void setup_demos(rocky::Application& app)
 {
+    demos.emplace_back(
+        Demo{ "Map", Demo_Map });
+
     demos.emplace_back(
         Demo{ "MapObjects", {},
         {
@@ -134,12 +138,14 @@ int main(int argc, char** argv)
     // add an imagery layer to the map
     auto layer = rocky::TMSImageLayer::create();
     layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
+    //layer->setName("ReadyMap 15m Imagery");
     app.map()->layers().add(layer);
     if (layer->status().failed())
         return layerError(layer);
 
     auto elev = rocky::TMSElevationLayer::create();
     elev->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
+    //elev->setName("ReadyMap 90m Elevation");
     app.map()->layers().add(elev);
     if (elev->status().failed())
         return layerError(elev);

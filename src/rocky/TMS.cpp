@@ -596,7 +596,7 @@ ROCKY_NAMESPACE::TMS::readTileMap(const URI& location, const IOOptions& io)
 void
 TMS::Driver::close()
 {
-    _tileMap = TileMap();
+    tileMap = TileMap();
     //_writer = nullptr;
     //_forceRGBWrites = false;
 }
@@ -650,7 +650,7 @@ TMS::Driver::open(
 
         DataExtentList dataExtents_dummy; // empty
 
-        _tileMap = TileMap(
+        tileMap = TileMap(
             uri.full(),
             profile,
             dataExtents_dummy,
@@ -682,9 +682,9 @@ TMS::Driver::open(
         if (tileMapRead.status.failed())
             return tileMapRead.status;
 
-        _tileMap = tileMapRead.value;
+        tileMap = tileMapRead.value;
 
-        Profile profileFromTileMap = _tileMap.createProfile();
+        Profile profileFromTileMap = tileMap.createProfile();
         if (profileFromTileMap.valid())
         {
             profile = profileFromTileMap;
@@ -707,11 +707,11 @@ TMS::Driver::open(
 
     // TileMap and profile are valid at this point. Build the tile sets.
     // Automatically set the min and max level of the TileMap
-    if (!_tileMap.tileSets.empty())
+    if (!tileMap.tileSets.empty())
     {
-        if (!_tileMap.dataExtents.empty())
+        if (!tileMap.dataExtents.empty())
         {
-            for (auto& de : _tileMap.dataExtents)
+            for (auto& de : tileMap.dataExtents)
             {
                 dataExtents.push_back(de);
             }
@@ -720,7 +720,7 @@ TMS::Driver::open(
 
     if (dataExtents.empty() && profile.valid())
     {
-        dataExtents.push_back(DataExtent(profile.extent(), 0, _tileMap.maxLevel));
+        dataExtents.push_back(DataExtent(profile.extent(), 0, tileMap.maxLevel));
     }
 
     return StatusOK;
@@ -738,9 +738,9 @@ TMS::Driver::read(
     URI imageURI;
 
     // create the URI from the tile map?
-    if (_tileMap.valid() && key.levelOfDetail() <= _tileMap.maxLevel)
+    if (tileMap.valid() && key.levelOfDetail() <= tileMap.maxLevel)
     {
-        imageURI = URI(_tileMap.getURI(key, invertY), uri.context());
+        imageURI = URI(tileMap.getURI(key, invertY), uri.context());
         if (!imageURI.empty() && isMapboxRGB)
         {
             if (imageURI.full().find('?') == std::string::npos)
@@ -768,12 +768,12 @@ TMS::Driver::read(
 
         if (!image)
         {
-            if (imageURI.empty() || !_tileMap.intersectsKey(key))
+            if (imageURI.empty() || !tileMap.intersectsKey(key))
             {
                 // We couldn't read the image from the URL or the cache, so check to see
                 // whether the given key is less than the max level of the tilemap
                 // and create a transparent image.
-                if (key.levelOfDetail() <= _tileMap.maxLevel)
+                if (key.levelOfDetail() <= tileMap.maxLevel)
                 {
                     ROCKY_TODO("");
                     return Image::create(Image::R8G8B8A8_UNORM, 1, 1);

@@ -130,8 +130,10 @@ namespace ROCKY_NAMESPACE
                 bool invertY,
                 IOOptions& io) const;
 
+            //! Source information structure
+            TileMap tileMap;
+
         private:
-            TileMap _tileMap;
             bool _forceRGBWrites;
             bool _isCoverage;
 
