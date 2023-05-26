@@ -78,7 +78,7 @@ auto Demo_Views = [=](Application& app)
 
                         if (ImGui::Button("Remove view"))
                         {
-                            app.removeView(window, view);
+                            app.removeView(view);
                         }
                     }
 

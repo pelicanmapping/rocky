@@ -176,7 +176,8 @@ Application::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
 
 util::Future<vsg::ref_ptr<vsg::View>>
 Application::addView(
-    vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view,
+    vsg::ref_ptr<vsg::Window> window,
+    vsg::ref_ptr<vsg::View> view,
     std::function<void()> on_create)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(window != nullptr, {});
@@ -197,8 +198,8 @@ Application::addView(
     else
     {
         // use this before realization:
-
-        if (auto iter = _commandGraphByWindow.find(window); iter != _commandGraphByWindow.end())
+        auto iter = _commandGraphByWindow.find(window);
+        if (iter != _commandGraphByWindow.end())
         {
             auto commandgraph = iter->second;
 
@@ -283,15 +284,29 @@ Application::addViewAfterViewerIsRealized(
 }
 
 void
-Application::removeView(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view)
+Application::removeView(vsg::ref_ptr<vsg::View> view)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(window != nullptr, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(view != nullptr, void());
 
     auto remove = [=]()
     {
         // wait until the device is idle to avoid changing state while it's being used.
         viewer->deviceWaitIdle();
+
+        vsg::ref_ptr<vsg::Window> window;
+        for (auto iter : displayConfiguration.windows)
+        {
+            for (auto& a_view : iter.second)
+            {
+                if (a_view == view)
+                {
+                    window = iter.first;
+                    break;
+                }
+            }
+            if (window) break;
+        }
+        ROCKY_SOFT_ASSERT_AND_RETURN(window != nullptr, void());
 
         auto ci = _commandGraphByWindow.find(window);
         ROCKY_SOFT_ASSERT_AND_RETURN(ci != _commandGraphByWindow.end(), void());
@@ -313,6 +328,7 @@ Application::removeView(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View
 
     if (_viewerRealized)
         instance.runtime().runDuringUpdate(remove);
+
     else
         remove();
 }
@@ -470,6 +486,7 @@ Application::run()
             continue;
         }
 
+        // if any map objects are queued for add or remove, process them now
         addAndRemoveObjects();
 
         auto t_record = std::chrono::steady_clock::now();

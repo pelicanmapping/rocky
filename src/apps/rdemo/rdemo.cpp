@@ -138,6 +138,12 @@ int main(int argc, char** argv)
     if (layer->status().failed())
         return layerError(layer);
 
+    auto elev = rocky::TMSElevationLayer::create();
+    elev->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
+    app.map()->layers().add(elev);
+    if (elev->status().failed())
+        return layerError(elev);
+
     // start up the gui
     setup_demos(app);
     app.viewer->addEventHandler(vsgImGui::SendEventsToImGui::create());

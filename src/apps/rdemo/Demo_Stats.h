@@ -52,13 +52,13 @@ auto Demo_Stats = [&](Application& app)
     sprintf(buf, "%.1f ms", 0.001f * (float)app.stats.frame.count());
     ImGuiLTable::PlotLines("Frame", get_timings, &frames, frame_count, f, buf, 0.0f, 17.0f);
 
-    sprintf(buf, "%lld us", average(&events, over, f));
+    sprintf(buf, u8"%lld \x00B5s", average(&events, over, f));
     ImGuiLTable::PlotLines("Event", get_timings, &events, frame_count, f, buf, 0.0f, 10.0f);
 
-    sprintf(buf, "%lld us", average(&update, over, f));
+    sprintf(buf, u8"%lld \x00B5s", average(&update, over, f));
     ImGuiLTable::PlotLines("Update", get_timings, &update, frame_count, f, buf, 0.0f, 10.0f);
 
-    sprintf(buf, "%lld us", average(&record, over, f));
+    sprintf(buf, u8"%lld \x00B5s", average(&record, over, f));
     ImGuiLTable::PlotLines("Record", get_timings, &record, frame_count, f, buf, 0.0f, 10.0f);
 
     ImGuiLTable::End();

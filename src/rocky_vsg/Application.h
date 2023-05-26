@@ -25,18 +25,24 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Construct a new application object
+        //! @param argc Number of command line arguments, including the exe name
+        //! @param argv Command line arguments
         Application(int& argc, char** argv);
 
         //! Run until exit.
+        //! @return exit code, 0 = no error
         int run();
 
         //! Access the map.
+        //! @return Pointer to the map
         shared_ptr<Map> map();
 
         //! Add a map object to the scene
+        //! @param object Map object to add to the scene
         void add(shared_ptr<MapObject> object);
 
         //! Remove a map object from the scene
+        //! @param object Map object to remove from the scene
         void remove(shared_ptr<MapObject> object);
 
 
@@ -58,28 +64,45 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::RenderGraph> parentRenderGraph;
         };
 
-        //! Adds a window to the application.
-        util::Future<vsg::ref_ptr<vsg::Window>> addWindow(vsg::ref_ptr<vsg::WindowTraits> traits);
+        //! Adds a window to the application. This may happen asynchronously
+        //! depending on when you invoke it.
+        //! 
+        //! @param traits Window traits used to create the new window
+        //! @return Pointer to the new window (when available)
+        util::Future<vsg::ref_ptr<vsg::Window>> addWindow(
+            vsg::ref_ptr<vsg::WindowTraits> traits);
 
-        //! Adds a view to an existing window
+        //! Adds a view to an existing window. This may happen asynchronously
+        //! depending on when you invoke it.
+        //! 
+        //! @param window Window to which to add the new view
+        //! @param view New view to add
+        //! @param on_create Function to run after the view is added
+        //! @return Pointer to the new view (when available)
         util::Future<vsg::ref_ptr<vsg::View>> addView(
             vsg::ref_ptr<vsg::Window> window,
             vsg::ref_ptr<vsg::View> view,
             std::function<void()> on_create = {});
 
         //! Removes a view from a window
-        void removeView(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view);
-
-        //! Adds a child to a window's main render pass. Each render pass child works as 
-        //! a "stage" and these stages render in their order of appearance. This is is
-        //! good way to e.g. render a GUI overlay after rendering the 3D scnee.
-        void addPostRenderNode(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Node> node);
+        //! @param view View to remove from its window
+        void removeView(vsg::ref_ptr<vsg::View> view);
 
         //! Refreshes a view after changing its parameters like viewport, clear color, etc.
+        //! @param View view to refresh
         void refreshView(vsg::ref_ptr<vsg::View> view);
 
         //! Return commands and data pertaining to a view.
+        //! @param view View for which to retrieve data
+        //! @return Reference to the view's supplementary data
         inline ViewData& viewData(vsg::ref_ptr<vsg::View> view);
+
+        //! Adds a child to a window's main render pass. Each render pass child works as 
+        //! a "stage" and these stages render in their order of appearance. This is is
+        //! good way to e.g. render a GUI overlay after rendering the 3D scene.
+        //! @param window Window to which to add the post-render node.
+        //! @param node Node to add.
+        void addPostRenderNode(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Node> node);
 
     public:
         rocky::InstanceVSG instance;
@@ -99,11 +122,14 @@ namespace ROCKY_NAMESPACE
         };
         Stats stats;
 
-        //! About the application.
+        //! About the application. Lists all the dependencies and their versions.
         std::string about() const;
 
     public:
+        //! Copy construction is disabled.
         Application(const Application&) = delete;
+
+        //! Move construction is disabled.
         Application(Application&&) = delete;
 
     private:

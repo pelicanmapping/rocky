@@ -54,6 +54,7 @@ namespace ROCKY_NAMESPACE
         void setStyle(const IconStyle&);
         const IconStyle& style() const;
 
+        //! Image to render to the icon
         void setImage(std::shared_ptr<Image> image);
         std::shared_ptr<Image> image() const;
 
