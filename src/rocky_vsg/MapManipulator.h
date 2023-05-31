@@ -53,11 +53,11 @@ namespace ROCKY_NAMESPACE
         //! Zoom the camera using deltas (dy only)
         virtual void zoom(double dx, double dy);
 
-        //! Converts screen coordinates (relative to the view's viewpoint) to world
+        //! Converts view coordinates (relative to the view's viewpoint) to world
         //! coordinates. Note, this method will use the mask set by setTraversalMask().
         //! @param x,y Viewport coordinates
         //! @param out_coords Output world coordinates (only valid if the method returns true)
-        bool screenToWorld(float x, float y, vsg::dvec3& out_coords) const;
+        bool viewportToWorld(float x, float y, vsg::dvec3& out_coords) const;
 
         //! Distance from the focal point in world coordiantes
         double getDistance() const { return _state.distance; }

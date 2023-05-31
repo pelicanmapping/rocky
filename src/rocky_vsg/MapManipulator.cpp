@@ -616,7 +616,7 @@ MapManipulator::configureDefaultSettings()
     //_settings->setThrowingEnabled( false );
     _settings->setLockAzimuthWhilePanning(true);
 
-    _settings->setZoomToMouse(false);
+    _settings->setZoomToMouse(true);
 }
 
 void
@@ -718,31 +718,6 @@ MapManipulator::setCenter(const vsg::dvec3& worldPos)
     _state.centerRotation[3][1] = 0;
     _state.centerRotation[3][2] = 0;
 }
-
-#if 0
-void
-MapManipulator::setNode(vsg::Node* node)
-{
-    // you can only set the node if it has not already been set, OR if you are setting
-    // it to NULL. (So to change it, you must first set it to NULL.) This is to prevent
-    // OSG from overwriting the node after you have already set on manually.
-    if ( node == 0L || !_node.valid() )
-    {
-        _node     = node;
-        _mapNode = 0L;
-        _srs     = 0L;
-
-        reinitialize();
-        established();
-    }
-}
-
-vsg::Node*
-MapManipulator::getNode()
-{
-    return _node;
-}
-#endif
 
 
 vsg::dmat4
@@ -1382,6 +1357,9 @@ MapManipulator::apply(vsg::ButtonReleaseEvent& buttonRelease)
 
         if (handlePointAction(_lastAction, buttonRelease.x, buttonRelease.y, buttonRelease.time))
             _dirty = true;
+
+        vsg::dvec3 world;
+        viewportToWorld(buttonRelease.x, buttonRelease.y, world);
     }
 
     clearEvents();
@@ -1749,6 +1727,51 @@ MapManipulator::rotate(double dx, double dy)
     //collisionDetect();
 }
 
+namespace
+{
+    // adapted from openscenegraph
+    template<typename Q>
+    vsg::dquat slerp(double t, const Q& from, const Q& to)
+    {
+        const double epsilon = 0.00001;
+        double omega, cosomega, sinomega, scale_from, scale_to;
+
+        Q quatTo(to);
+        
+        // this is a dot product
+        glm::dvec4 a(from[0], from[1], from[2], from[3]);
+        glm::dvec4 b(to[0], to[1], to[2], to[3]);
+        cosomega = glm::dot(a, b);
+
+        if (cosomega < 0.0)
+        {
+            cosomega = -cosomega;
+            quatTo = -to;
+        }
+
+        if ((1.0 - cosomega) > epsilon)
+        {
+            omega = acos(cosomega);  // 0 <= omega <= Pi (see man acos)
+            sinomega = sin(omega);  // this sinomega should always be +ve so
+            // could try sinomega=sqrt(1-cosomega*cosomega) to avoid a sin()?
+            scale_from = sin((1.0 - t) * omega) / sinomega;
+            scale_to = sin(t * omega) / sinomega;
+        }
+        else
+        {
+            /* --------------------------------------------------
+               The ends of the vectors are very close
+               we can use simple linear interpolation - no need
+               to worry about the "spherical" interpolation
+               -------------------------------------------------- */
+            scale_from = 1.0 - t;
+            scale_to = t;
+        }
+
+        return (from * scale_from) + (quatTo * scale_to);
+    }
+}
+
 void
 MapManipulator::zoom(double dx, double dy)
 {
@@ -1760,14 +1783,50 @@ MapManipulator::zoom(double dx, double dy)
     //    return;
     //}
 
-    if (_settings->getZoomToMouse() == false)
+    if (_settings->getZoomToMouse() == true && dy < 0.0)
     {
-        recalculateCenterFromLookVector();
-        double scale = 1.0f + dy;
-        setDistance(_state.distance * scale);
-        //collisionDetect();
-        return;
+        vsg::dvec3 target;
+
+        std::int32_t x = _buttonPress.has_value() ? _buttonPress->x : _previousMove->x;
+        std::int32_t y = _buttonPress.has_value() ? _buttonPress->y : _previousMove->y;
+
+        if (viewportToWorld(x, y, target))
+        {
+            recalculateCenterFromLookVector();
+
+            // Calcuate a rotation that we'll use to interpolate from our center point to the target
+            vsg::dquat rotCenterToTarget;
+            rotCenterToTarget.set(_state.center, target);
+
+            // Factor by which to scale the distance:
+            double scale = 1.0f + dy;
+            double newDistance = _state.distance * scale;
+            double delta = _state.distance - newDistance;
+            double ratio = delta / _state.distance;
+
+            // xform target point into the current focal point's local frame,
+            // and adjust the zoom ratio to account for the difference in 
+            // target distance based on the earth's curvature...approximately!
+            vsg::dvec3 targetInLocalFrame = vsg::inverse(_state.centerRotation) * target;
+            double crRatio = vsg::length(_state.center) / targetInLocalFrame.z;
+            ratio *= crRatio;
+
+            // Interpolate a new focal point:
+            vsg::dquat rot = slerp(ratio, vsg::dquat(0,0,0,1), rotCenterToTarget);
+            setCenter(rot * _state.center);
+
+            // and set the new zoomed distance.
+            setDistance(newDistance);
+
+            return;
+        }
     }
+
+    recalculateCenterFromLookVector();
+    double scale = 1.0f + dy;
+    setDistance(_state.distance * scale);
+    //collisionDetect();
+    return;
 
 #if 0
     // Zoom to mouseish
@@ -1870,35 +1929,42 @@ MapManipulator::zoom(double dx, double dy)
     {
         // if the user's mouse isn't over the earth, just zoom in to the center of the screen
         double scale = 1.0f + dy;
-        setDistance( _distance * scale );
-        collisionDetect();
+        setDistance( _state.distance * scale );
+        //collisionDetect();
     }
 #endif
 }
 
 
 bool
-MapManipulator::screenToWorld(float x, float y, vsg::dvec3& out_coords) const
+MapManipulator::viewportToWorld(float x, float y, vsg::dvec3& out_world) const
 {
-    //osgViewer::View* view = dynamic_cast<osgViewer::View*>(theView);
-    //if (!view || !view->getCamera())
-    //    return false;
-
-    auto mapNode = getMapNode();
-    if (mapNode)
+    vsg::ref_ptr<vsg::Camera> camera = _camera_weakptr;
+    if (camera)
     {
-        //osg::ref_ptr<MapNode> mapNode;
-        //if (!_mapNode.lock(mapNode) || !mapNode->getTerrain())
-        //    return false;
+        auto vp = camera->getRenderArea();
 
-        NOT_YET_IMPLEMENTED("");
-        return false;
-        //return mapNode->terrainNode()->getWorldCoordsUnderMouse(window, x, y, out_coords);
+        // matrix that transforms a point from window space to world space
+        vsg::dmat4 inv_VPW =
+            camera->viewMatrix->inverse() * 
+            camera->projectionMatrix->inverse() *
+            vsg::translate(-1.0, -1.0, 0.0) *
+            vsg::scale(2.0 / (double)vp.extent.width, 2.0 / (double)vp.extent.height, 1.0) *
+            vsg::translate(-(double)vp.offset.x, -(double)vp.offset.y, 0.0);
+
+        auto w0 = inv_VPW * vsg::dvec3(x, y, 1);
+        auto w1 = inv_VPW * vsg::dvec3(x, y, 0);
+
+        glm::dvec3 i;
+        auto& srs = getMapNode()->mapSRS();
+        if (srs.ellipsoid().intersectGeocentricLine(glm::dvec3{ w0.x,w0.y,w0.z }, glm::dvec3{ w1.x,w1.y,w1.z }, i))
+        {
+            out_world = to_vsg(i);
+        }
+
+        return true;
     }
-    else
-        return false;
-
-    //return mapNode->getTerrain()->getWorldCoordsUnderMouse(view, x, y, out_coords);
+    return false;
 }
 
 
@@ -1951,7 +2017,7 @@ MapManipulator::handlePointAction(
         return true;
 
     vsg::dvec3 point;
-    if (screenToWorld(mx, my, point))
+    if (viewportToWorld(mx, my, point))
     {
         switch (action._type)
         {
