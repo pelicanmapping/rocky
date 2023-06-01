@@ -752,7 +752,7 @@ GeoImage::composite(const std::vector<GeoImage>& sources)
             _image->read(pixel, s, t);
 
             // see if we need to overwrite it
-            if ((_image->hasAlphaChannel() && pixel.a == 0.0f) ||
+            if ((_image->hasAlphaChannel() && pixel.a < 1.0f) ||
                 (pixel.r == 0.0f && pixel.g == 0.0f && pixel.b == 0.0f))
             {
                 getCoord(s, t, x, y);
@@ -762,8 +762,8 @@ GeoImage::composite(const std::vector<GeoImage>& sources)
                     source.read(pixel, x, y, srs());
 
                     if ((i == 0) ||
-                        (source.image()->hasAlphaChannel() && pixel.a > 0.0f) ||
-                        (pixel.r > 0.0f || pixel.g > 0.0f || pixel.b > 0.0f))
+                        (source.image()->hasAlphaChannel() && pixel.a > 0.5f) ||
+                        (pixel.r > 0.05f || pixel.g > 0.05f || pixel.b > 0.05f))
                     {
                         _image->write(pixel, s, t);
                         break;

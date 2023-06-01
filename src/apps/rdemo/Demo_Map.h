@@ -50,12 +50,13 @@ auto Demo_Map = [](Application& app)
                 bool layerClicked = false;
                 if (layer->name().empty())
                 {
-                    std::string name = std::string("Unnamed ") + layer->getConfigKey() + " layer";
+                    std::string name = std::string("- Unnamed ") + layer->getConfigKey() + " layer";
                     ImGui::Selectable(name.c_str(), &layerClicked);
                 }
                 else
                 {
-                    ImGui::Selectable(layer->name().c_str(), &layerClicked);
+                    std::string name = std::string("- ") + layer->name();
+                    ImGui::Selectable(name.c_str(), &layerClicked);
                 }
 
                 if (layerClicked)

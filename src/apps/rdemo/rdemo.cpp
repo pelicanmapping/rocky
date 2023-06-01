@@ -165,6 +165,13 @@ int main(int argc, char** argv)
         if (layer4->status().failed())
             return layerError(layer4);
 
+        auto layer5 = rocky::TMSImageLayer::create();
+        layer5->setName("Florida inset");
+        layer5->setURI("https://readymap.org/readymap/tiles/1.0.0/82/");
+        app.map()->layers().add(layer5);
+        if (layer5->status().failed())
+            return layerError(layer5);
+
         auto elev = rocky::TMSElevationLayer::create();
         elev->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
         app.map()->layers().add(elev);
