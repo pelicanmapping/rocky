@@ -136,24 +136,45 @@ int main(int argc, char** argv)
 
     rocky::Log::level = rocky::LogLevel::INFO;
 
-    // add an imagery layer to the map
-    auto layer = rocky::TMSImageLayer::create();
-    layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
-    app.map()->layers().add(layer);
-    if (layer->status().failed())
-        return layerError(layer);
+    if (app.map()->layers().empty())
+    {
+        // add an imagery layer to the map
+        auto layer = rocky::TMSImageLayer::create();
+        layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
+        app.map()->layers().add(layer);
+        if (layer->status().failed())
+            return layerError(layer);
 
-    auto layer2 = rocky::GDALImageLayer::create();
-    layer2->setName("Boston inset");
-    layer2->setURI("H:/devel/osgearth/master/repo/data/boston-inset-wgs84.tif");
-    //layer2->setMaxDataLevel(99);
-    app.map()->layers().add(layer2);
+        auto layer2 = rocky::TMSImageLayer::create();
+        layer2->setName("Hawaii inset");
+        layer2->setURI("https://readymap.org/readymap/tiles/1.0.0/79/");
+        app.map()->layers().add(layer2);
+        if (layer2->status().failed())
+            return layerError(layer2);
 
-    auto elev = rocky::TMSElevationLayer::create();
-    elev->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
-    app.map()->layers().add(elev);
-    if (elev->status().failed())
-        return layerError(elev);
+        auto layer3 = rocky::TMSImageLayer::create();
+        layer3->setName("Florida inset");
+        layer3->setURI("https://readymap.org/readymap/tiles/1.0.0/73/");
+        app.map()->layers().add(layer3);
+        if (layer3->status().failed())
+            return layerError(layer3);
+
+        auto layer4 = rocky::TMSImageLayer::create();
+        layer4->setName("Washington DC");
+        layer4->setURI("https://readymap.org/readymap/tiles/1.0.0/98/");
+        app.map()->layers().add(layer4);
+        if (layer4->status().failed())
+            return layerError(layer4);
+
+        auto elev = rocky::TMSElevationLayer::create();
+        elev->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
+        app.map()->layers().add(elev);
+        if (elev->status().failed())
+            return layerError(elev);
+
+        JSON map_json = app.map()->to_json();
+        rocky::util::writeToFile(rocky::json_pretty(map_json), "out.map.json");
+    }
 
     // start up the gui
     setup_demos(app);

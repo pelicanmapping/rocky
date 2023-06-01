@@ -46,12 +46,12 @@ Application::Application(int& argc, char** argv) :
     mapNode = rocky::MapNode::create(instance);
 
     // earth file support
-    std::string earthFile;
-    if (commandLine.read({ "--earthfile" }, earthFile))
+    std::string infile;
+    if (commandLine.read({ "--earthfile" }, infile))
     {
         std::string msg;
         EarthFileImporter importer;
-        auto result = importer.read(earthFile, instance.ioOptions());
+        auto result = importer.read(infile, instance.ioOptions());
         if (result.status.ok())
         {
             auto count = mapNode->map()->layers().size();
@@ -67,6 +67,19 @@ Application::Application(int& argc, char** argv) :
         }
         if (!msg.empty())
             Log::warn() << msg << std::endl;
+    }
+
+    else if (commandLine.read({ "--map" }, infile))
+    {
+        JSON json;
+        if (rocky::util::readFromFile(json, infile))
+        {
+            mapNode->map()->from_json(json);
+        }
+        else
+        {
+            Log::warn() << "Failed to read map from \"" << infile << "\"" << std::endl;
+        }
     }
 
     // the sun

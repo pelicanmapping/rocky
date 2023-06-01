@@ -682,6 +682,7 @@ namespace ROCKY_NAMESPACE
             State() :
                 localRotation(0, 0, 0, 1),
                 distance(1.0)
+
             { }
         };
 

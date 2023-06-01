@@ -159,93 +159,44 @@ TerrainTileModelFactory::createTileModel(
     return std::move(model);
 }
 
-TerrainTileModel
-TerrainTileModelFactory::createStandaloneTileModel(
-    const Map* map,
-    const TileKey& key,
-    const CreateTileManifest& manifest,
-    const IOOptions& io)
+namespace
 {
-    ROCKY_PROFILING_ZONE;
-
-    // Make a new model:
-    TerrainTileModel model;
-    model.key = key;
-    model.revision = map->revision();
-
-    // assemble all the components:
-    addColorLayers(model, map, key, manifest, io, true);
-
-    addStandaloneElevation(model, map, key, manifest, 0u, io);
-
-    return std::move(model);
-}
-
-bool
-TerrainTileModelFactory::addImageLayer(
-    TerrainTileModel& model,
-    shared_ptr<const ImageLayer> imageLayer,
-    const TileKey& key,
-    const IOOptions& io)
-{
-    ROCKY_PROFILING_ZONE;
-    ROCKY_PROFILING_ZONE_TEXT(imageLayer->getName());
-
-    if (imageLayer->isOpen() &&
-        imageLayer->isKeyInLegalRange(key) &&
-        imageLayer->intersects(key))
-        //&& imageLayer->mayHaveData(key))
+    void addImageLayer(const TileKey& key, std::shared_ptr<ImageLayer> layer, bool fallback, TerrainTileModel& model, const IOOptions& io)
     {
         Result<GeoImage> result;
 
-        for(TileKey k = key; k.valid() && !result.value.valid(); k.makeParent())
+        if (fallback)
         {
-            result = imageLayer->createImage(k, io);
+            for (TileKey k = key; k.valid() && !result.value.valid(); k.makeParent())
+            {
+                result = layer->createImage(k, io);
+            }
+        }
+        else
+        {
+            result = layer->createImage(key, io);
         }
 
         if (result.value.valid())
         {
             TerrainTileModel::ColorLayer m;
-            m.layer = imageLayer;
-            m.revision = imageLayer->revision();
+            m.layer = layer;
+            m.revision = layer->revision();
             m.image = result.value;
             model.colorLayers.emplace_back(std::move(m));
-
-            if (imageLayer->isDynamic())
+            if (layer->isDynamic())
             {
                 model.requiresUpdate = true;
             }
-
-            return true;
         }
 
         // ResourceUnavailable just means the driver could not produce data
         // for the tilekey; it is not an actual read error.
         else if (result.status.failed() && result.status.code != Status::ResourceUnavailable)
         {
-            Log::warn() << "Problem getting data from \"" << imageLayer->name() << "\" : "
+            Log::warn() << "Problem getting data from \"" << layer->name() << "\" : "
                 << result.status.message << std::endl;
         }
-    }
-    return false;
-}
-
-void
-TerrainTileModelFactory::addStandaloneImageLayer(
-    TerrainTileModel& model,
-    shared_ptr<const ImageLayer> imageLayer,
-    const TileKey& key,
-    const IOOptions& io)
-{
-    TileKey key_to_use = key;
-
-    bool added = false;
-    while (key_to_use.valid() & !added)
-    {
-        if (addImageLayer(model, imageLayer, key_to_use, io))
-            added = true;
-        else
-            key_to_use.makeParent();
     }
 }
 
@@ -271,26 +222,78 @@ TerrainTileModelFactory::addColorLayers(
                 manifest.includes(layer.get());
         });
 
-    for(auto layer : layers)
+    // first collect the image layers that have intersecting data.
+    std::vector<std::shared_ptr<ImageLayer>> intersecting_layers;
+    for (auto layer : layers)
     {
         auto imageLayer = ImageLayer::cast(layer);
         if (imageLayer)
         {
-            if (standalone)
+            if (imageLayer->isKeyInLegalRange(key) &&
+                imageLayer->intersects(key))
             {
-                addStandaloneImageLayer(model, imageLayer, key, io);
-            }
-            else
-            {
-                addImageLayer(model, imageLayer, key, io);
+                intersecting_layers.push_back(imageLayer);
             }
         }
-        else // non-image kind of TILE layer (e.g., splatting)
+    }
+
+    if (intersecting_layers.size() == 1 && intersecting_layers.front()->mayHaveData(key))
+    {
+        // if only one layer intersects we will not need to composite
+        // so just get the raw data for this key if there is any.
+        addImageLayer(key, intersecting_layers.front(), false, model, io);
+    }
+
+    else if (intersecting_layers.size() > 1)
+    {
+        // More than one layer intersects so we will need to composite.
+        // First count the number of layers that MIGHT have data.
+        // If any of them do, we must fetch them all for composition.
+        bool data_maybe = false;
+        for (auto layer : intersecting_layers)
         {
-            TerrainTileModel::ColorLayer colorModel;
-            colorModel.layer = layer;
-            colorModel.revision = layer->revision();
-            model.colorLayers.push_back(std::move(colorModel));
+            if (layer->mayHaveData(key))
+            {
+                data_maybe = true;
+                break;
+            }
+        }
+
+        if (data_maybe)
+        {
+            for (auto layer : intersecting_layers)
+            {
+                addImageLayer(key, layer, true, model, io);
+            }
+
+            // now composite them.
+            if (compositeColorLayers && model.colorLayers.size() > 1)
+            {
+                auto& base_image = model.colorLayers.front().image;
+                TerrainTileModel::Tile tile = model.colorLayers.front();
+
+                auto comp_image = Image::create(
+                    Image::R8G8B8A8_UNORM,
+                    base_image.image()->width(),
+                    base_image.image()->height());
+
+                comp_image->fill(glm::fvec4(0, 0, 0, 0));
+
+                GeoImage image(comp_image, key.extent());
+                std::vector<GeoImage> sources;
+                for (auto& i : model.colorLayers)
+                    sources.push_back(std::move(i.image));
+
+                image.composite(sources);
+
+                TerrainTileModel::ColorLayer layer;
+                layer.revision = tile.revision;
+                layer.matrix = tile.matrix;
+                layer.image = image;
+
+                model.colorLayers.clear();
+                model.colorLayers.emplace_back(std::move(layer));
+            }
         }
     }
 }
@@ -402,25 +405,3 @@ TerrainTileModelFactory::addElevation(
     return model.elevation.heightfield.valid();
 }
 
-bool
-TerrainTileModelFactory::addStandaloneElevation(
-    TerrainTileModel& model,
-    const Map* map,
-    const TileKey& key,
-    const CreateTileManifest& manifest,
-    unsigned border,
-    const IOOptions& io)
-{
-    TileKey key_to_use = key;
-
-    bool added = false;
-    while (key_to_use.valid() & !added)
-    {
-        if (addElevation(model, map, key_to_use, manifest, border, io))
-            added = true;
-        else
-            key_to_use.makeParent();
-    }
-
-    return added;
-}

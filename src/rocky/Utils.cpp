@@ -653,6 +653,30 @@ rocky::util::getExecutableLocation()
     return {};
 }
 
+bool
+rocky::util::writeToFile(const std::string& data, const std::string& filename)
+{
+    std::ofstream out(filename);
+    if (out.fail())
+        return false;
+    out << data;
+    out.close();
+    return true;
+}
+
+bool
+rocky::util::readFromFile(std::string& data, const std::string& filename)
+{
+    std::ifstream in(filename, std::ios_base::binary);
+    if (in.fail())
+        return false;
+    std::stringstream buf;
+    buf << in.rdbuf();
+    data = buf.str();
+    in.close();
+    return true;
+}
+
 // adapted from
 // https://github.com/openscenegraph/OpenSceneGraph/blob/master/src/osgDB/Compressors.cpp
 #undef CHUNK

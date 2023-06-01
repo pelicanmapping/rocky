@@ -49,7 +49,6 @@ set(HEADERS
     sha1.h
     SRS.h
     Status.h
-    TerrainResolver.h
     TerrainTileModel.h
     TerrainTileModelFactory.h
     Threading.h
@@ -167,6 +166,7 @@ if(MSVC)
     target_compile_options(rocky PRIVATE "/MP")
 endif()
 
+# allows the use cmake-generated include files when building (e.g. Version.h)
 include_directories(${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky)
 
 # enable folders for IDEs
@@ -197,5 +197,5 @@ install(
 
 # install the HEADER files
 install(FILES ${HEADERS} DESTINATION include/rocky)
-install(FILES ${HEADERS_CONTRIB} DESTINATION include/contrib/rocky)
+install(FILES ${HEADERS_CONTRIB} DESTINATION include/rocky/contrib)
 

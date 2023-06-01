@@ -114,6 +114,12 @@ namespace ROCKY_NAMESPACE { namespace util
     //! Full pathname of the currently running executable
     extern ROCKY_EXPORT std::string getExecutableLocation();
 
+    //! Writes a string to a text file on disk.
+    extern ROCKY_EXPORT bool writeToFile(const std::string& data, const std::string& filename);
+    
+    //! Reads a disk file into a string.
+    extern ROCKY_EXPORT bool readFromFile(std::string& data, const std::string& filename);
+
     //------------------------------------------------------------------------
     // conversion templates
 

@@ -41,49 +41,11 @@ Profile::setup(
         else
         {
             b = srs.bounds();
-
-            //TODO: CHECK THIS
-            ROCKY_TODO("");
-
-#if 0
-            if (srs.isGeodetic())
-            {
-                b = Box(-180.0, -90.0, 180.0, 90.0);
-            }
-
-            else if (srs.isMercator())
-            {
-                // automatically figure out proper mercator extents:
-                dvec3 point(180.0, 0.0, 0.0);
-                srs.getGeographicSRS()->transform(point, srs.get(), point);
-                double e = point.x;
-                b = Box(-e, -e, e, e);
-            }
-            else
-            {
-                ROCKY_INFO << LC << "No extents given, making some up.\n";
-                b = srs.bounds();
-            }
-#endif
         }
 
         if (tx == 0 || ty == 0)
         {
-            ROCKY_TODO("");
-#if 0
-            if (srs.isGeodetic())
-            {
-                tx = 2;
-                ty = 1;
-            }
-            else if (srs.isMercator())
-            {
-                tx = 1;
-                ty = 1;
-            }
-            else
-#endif
-                if (b.valid())
+            if (b.valid())
             {
                 double ar = b.width() / b.height();
                 if (ar >= 1.0) {
@@ -116,12 +78,8 @@ Profile::setup(
 
         // make a profile sig (sans srs) and an srs sig for quick comparisons.
         JSON temp = to_json();
-        _shared->_fullSignature = util::Stringify() << std::hex << util::hashString(temp); // .to_json());
-        //temp.object.erase("vdatum");
-        //temp.vsrsString() = "";
-        //_shared->_horizSignature = util::Stringify() << std::hex << util::hashString(temp); // .to_json());
-
-        _shared->_hash = std::hash<std::string>()(temp); // .to_json());
+        _shared->_fullSignature = util::Stringify() << std::hex << util::hashString(temp);
+        _shared->_hash = std::hash<std::string>()(temp);
     }
 }
 
