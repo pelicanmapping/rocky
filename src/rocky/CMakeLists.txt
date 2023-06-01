@@ -12,115 +12,33 @@ set(version_h ${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky/Version.h)
 configure_file(Version.h.in ${version_h})
 
 # collect all the headers in the source directory
-set(HEADERS
-    Callbacks.h
-    Color.h
-    Common.h
-    DateTime.h
-    ElevationLayer.h
-    # ElevationPool.h
-    Ellipsoid.h
-    Ephemeris.h
-    GeoCircle.h
-    GeoCommon.h
-    GeoExtent.h
-    GeoHeightfield.h
-    Geoid.h
-    GeoImage.h
-    GeoPoint.h
-    Heightfield.h
-    Horizon.h
-    Image.h
-    ImageLayer.h
-    ImageMosaic.h
-    Instance.h
-    IOTypes.h
-    json.h
-    Layer.h
-    LayerCollection.h
-    LayerReference.h
-    Log.h
-    Map.h
-    Math.h
-    Metrics.h
-    optional.h
-    Profile.h
-    rtree.h
-    sha1.h
-    SRS.h
-    Status.h
-    TerrainTileModel.h
-    TerrainTileModelFactory.h
-    Threading.h
-    TileKey.h
-    TileLayer.h
-    Units.h
-    URI.h
-    Utils.h
-    Viewpoint.h
-    VisibleLayer.h
-    weemesh.h
-    ${version_h}
-)
+file(GLOB HEADERS *.h)
+list(APPEND HEADERS ${version_h})
+file(GLOB SOURCES *.cpp)
 
-set(SOURCES    
-    Color.cpp
-    DateTime.cpp
-    ElevationLayer.cpp
-    # ElevationPool.cpp
-    Ellipsoid.cpp
-    Ephemeris.cpp
-    GeoCircle.cpp
-    GeoExtent.cpp
-    GeoHeightfield.cpp
-    Geoid.cpp
-    GeoImage.cpp
-    GeoPoint.cpp
-    Heightfield.cpp
-    Horizon.cpp
-    Image.cpp
-    ImageLayer.cpp
-    ImageMosaic.cpp
-    Instance.cpp
-    IOTypes.cpp
-    Layer.cpp
-    LayerCollection.cpp
-    Log.cpp
-    Map.cpp
-    Math.cpp
-    Metrics.cpp
-    Profile.cpp
-    SRS.cpp
-    Status.cpp
-    TerrainTileModel.cpp
-    TerrainTileModelFactory.cpp
-    Threading.cpp
-    TileKey.cpp
-    TileLayer.cpp
-    Units.cpp
-    URI.cpp
-    Utils.cpp
-    Viewpoint.cpp
-    VisibleLayer.cpp
-)
+macro(remove_items from_list)
+    foreach(item ${ARGN})
+        list(REMOVE_ITEM ${from_list} ${CMAKE_CURRENT_SOURCE_DIR}/${item})
+    endforeach()
+endmacro()
 
-if (ROCKY_SUPPORTS_PROFILING)
-    list(APPEND HEADERS Profiling.h)
+if (NOT ROCKY_SUPPORTS_PROFILING)
+    remove_items(HEADERS "Profiling.h")
 endif()
         
-if(ROCKY_SUPPORTS_GDAL)
-    list(APPEND HEADERS GDAL.h   GDALImageLayer.h   GDALElevationLayer.h)
-    list(APPEND SOURCES GDAL.cpp GDALImageLayer.cpp GDALElevationLayer.cpp)
+if(NOT ROCKY_SUPPORTS_GDAL)
+    remove_items(HEADERS "GDAL.h;GDALImageLayer.h;GDALElevationLayer.h")
+    remove_items(SOURCES "GDAL.cpp;GDALImageLayer.cpp;GDALElevationLayer.cpp")
 endif()
 
-if(ROCKY_SUPPORTS_TMS)
-    list(APPEND HEADERS TMS.h   TMSImageLayer.h   TMSElevationLayer.h)
-    list(APPEND SOURCES TMS.cpp TMSImageLayer.cpp TMSElevationLayer.cpp)
+if(NOT ROCKY_SUPPORTS_TMS)
+    remove_items(HEADERS "TMS.h;TMSImageLayer.h;TMSElevationLayer.h")
+    remove_items(SOURCES "TMS.cpp;TMSImageLayer.cpp;TMSElevationLayer.cpp")
 endif()
 
-if(ROCKY_SUPPORTS_MBTILES)
-    list(APPEND HEADERS MBTiles.h   MBTilesImageLayer.h   MBTilesElevationLayer.h)
-    list(APPEND SOURCES MBTiles.cpp MBTilesImageLayer.cpp MBTilesElevationLayer.cpp)
+if(NOT ROCKY_SUPPORTS_MBTILES)
+    remove_items(HEADERS "MBTiles.h;MBTilesImageLayer.h;MBTilesElevationLayer.h")
+    remove_items(SOURCES "MBTiles.cpp;MBTilesImageLayer.cpp;MBTilesElevationLayer.cpp")
 endif()
 
 file(GLOB HEADERS_CONTRIB contrib/*.h)

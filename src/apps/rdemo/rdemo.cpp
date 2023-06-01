@@ -11,19 +11,17 @@
 */
 
 #include <rocky_vsg/Application.h>
-
-#if !defined(ROCKY_SUPPORTS_TMS)
-#error This example requires TMS support. Check CMake.
-#endif
+#include <rocky/Version.h>
 
 #if defined(ROCKY_SUPPORTS_GDAL)
 #include <gdal_version.h>
 #include <rocky/GDALImageLayer.h>
 #endif
 
-#include <rocky/Version.h>
+#if defined(ROCKY_SUPPORTS_TMS)
 #include <rocky/TMSImageLayer.h>
 #include <rocky/TMSElevationLayer.h>
+#endif
 
 #include <vsgImGui/RenderImGui.h>
 #include <vsgImGui/SendEventsToImGui.h>
@@ -138,6 +136,7 @@ int main(int argc, char** argv)
 
     if (app.map()->layers().empty())
     {
+#ifdef ROCKY_SUPPORTS_TMS
         // add an imagery layer to the map
         auto layer = rocky::TMSImageLayer::create();
         layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
@@ -171,6 +170,7 @@ int main(int argc, char** argv)
         app.map()->layers().add(elev);
         if (elev->status().failed())
             return layerError(elev);
+#endif
 
         JSON map_json = app.map()->to_json();
         rocky::util::writeToFile(rocky::json_pretty(map_json), "out.map.json");
