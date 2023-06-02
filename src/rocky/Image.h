@@ -220,9 +220,6 @@ namespace ROCKY_NAMESPACE
 
         inline unsigned sizeof_miplevel(unsigned level) const;
         inline unsigned char* data_at_miplevel(unsigned level);
-
-        template<typename UV_TYPE, typename ST_TYPE>
-        void nnUVtoST(UV_TYPE u, UV_TYPE v, ST_TYPE& s, ST_TYPE& t);
     };
 
 
@@ -303,16 +300,6 @@ namespace ROCKY_NAMESPACE
     unsigned Image::sizeof_miplevel(unsigned level) const
     {
         return (width() * height() * depth()) >> level;
-    }
-
-    template<typename UV_TYPE, typename ST_TYPE>
-    void Image::nnUVtoST(UV_TYPE u, UV_TYPE v, ST_TYPE& s, ST_TYPE& t)
-    {
-        const UV_TYPE umin = 1.0 / (2.0 * width);
-        const UV_TYPE vmin = 1.0 / (2.0 * height);
-        s = u<umin ? 0 : u>(1.0 - umin) ? width - 1 : (int)floor(u*(double)width);
-        t = v<vmin ? 0 : v>(1.0 - vmin) ? height - 1 : (int)floor(v*(double)height);
-
     }
 
     unsigned Image::numComponents() const

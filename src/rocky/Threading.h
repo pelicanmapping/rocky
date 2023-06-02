@@ -485,7 +485,7 @@ namespace ROCKY_NAMESPACE { namespace util
             Future<T> promise,
             const job& config = { })
         {
-            job_scheduler::Delegate delegate = [task, promise]() mutable
+            std::function<bool()> delegate = [task, promise]() mutable
             {
                 bool good = !promise.canceled();
                 if (good)
@@ -571,13 +571,11 @@ namespace ROCKY_NAMESPACE { namespace util
         //! Discard all queued jobs
         void cancelAll();
 
-        using Delegate = std::function<bool()>;
-
         //! Schedule an asynchronous task on this scheduler
         //! Use job::dispatch to run jobs (usually no need to call this directly)
         //! @param job Job details
         //! @param delegate Function to execute
-        void dispatch(const job& config, Delegate& delegate);
+        void dispatch(const job& config, std::function<bool()>& delegate);
 
     public: // statics
 
@@ -603,10 +601,10 @@ namespace ROCKY_NAMESPACE { namespace util
 
         struct QueuedJob {
             QueuedJob() { }
-            QueuedJob(const job& job, const Delegate& delegate, std::shared_ptr<Semaphore> sema) :
+            QueuedJob(const job& job, const std::function<bool()>& delegate, std::shared_ptr<Semaphore> sema) :
                 _job(job), _delegate(delegate), _groupsema(sema) { }
             job _job;
-            Delegate _delegate;
+            std::function<bool()> _delegate;
             std::shared_ptr<Semaphore> _groupsema;
             bool operator < (const QueuedJob& rhs) const {
                 float lp = _job.priority ? _job.priority() : -FLT_MAX;

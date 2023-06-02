@@ -140,17 +140,6 @@ namespace ROCKY_NAMESPACE
         //! Attribution to be displayed by the application
         void setAttribution(const std::string& attribution);
 
-        //! Set a serialized user property
-        void setUserProperty(
-            const std::string& key, 
-            const std::string& value);
-
-        //! Get a serialized user property
-        template<typename T>
-        inline T userProperty(
-            const std::string& key,
-            T fallback) const;
-
         //! Callback that modifies the layer's bounding box for a given tile key
         virtual void modifyTileBoundingBox(const TileKey& key, const Box& box) const;
 
@@ -241,10 +230,5 @@ namespace ROCKY_NAMESPACE
 
         bool _reopenRequired;
     };
-
-    template<typename T>
-    T Layer::userProperty(const std::string& key, T fallback) const {
-        return options()._internal().value(key, fallback);
-    }
 
 } // namespace ROCKY_NAMESPACE

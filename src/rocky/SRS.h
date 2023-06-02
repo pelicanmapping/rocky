@@ -20,13 +20,6 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT SRS
     {
     public:
-        // Commonly used SRS's.
-        static const SRS WGS84;
-        static const SRS ECEF;
-        static const SRS SPHERICAL_MERCATOR;
-        static const SRS PLATE_CARREE;
-        static const SRS EMPTY;
-
         //! Latitude and Longitude on the WGS84 ellipsoid
         //! https://en.wikipedia.org/wiki/World_Geodetic_System
         static const SRS WGS84;
@@ -149,7 +142,7 @@ namespace ROCKY_NAMESPACE
         SRS(const SRS& rhs) = default;
         SRS& operator=(const SRS& rhs) = default;
         SRS(SRS&& rhs) { *this = rhs; }
-        SRS& SRS::operator=(SRS&&);
+        SRS& operator=(SRS&&);
         ~SRS();
 
         //! Internal SRS representation (for debugging)

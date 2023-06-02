@@ -504,7 +504,7 @@ job_scheduler::cancelAll()
 }
 
 void
-job_scheduler::dispatch(const job& job, Delegate& delegate)
+job_scheduler::dispatch(const job& job, std::function<bool()>& delegate)
 {
     // If we have a group semaphore, acquire it BEFORE queuing the job
     job_group* group = job.group;
