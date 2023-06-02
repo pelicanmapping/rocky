@@ -45,23 +45,37 @@ auto Demo_Stats = [&](Application& app)
     update[f] = app.stats.update;
     record[f] = app.stats.record;
 
-    ImGuiLTable::Begin("Stats");
-
     const int over = 60;
 
-    sprintf(buf, "%.1f ms", 0.001f * (float)app.stats.frame.count());
-    ImGuiLTable::PlotLines("Frame", get_timings, &frames, frame_count, f, buf, 0.0f, 17.0f);
+    ImGui::SeparatorText("Timings");
+    ImGuiLTable::Begin("Timings");
+    {
+        sprintf(buf, "%.1f ms", 0.001f * (float)app.stats.frame.count());
+        ImGuiLTable::PlotLines("Frame", get_timings, &frames, frame_count, f, buf, 0.0f, 17.0f);
 
-    sprintf(buf, u8"%lld \x00B5s", average(&events, over, f));
-    ImGuiLTable::PlotLines("Event", get_timings, &events, frame_count, f, buf, 0.0f, 10.0f);
+        sprintf(buf, u8"%lld \x00B5s", average(&events, over, f));
+        ImGuiLTable::PlotLines("Event", get_timings, &events, frame_count, f, buf, 0.0f, 10.0f);
 
-    sprintf(buf, u8"%lld \x00B5s", average(&update, over, f));
-    ImGuiLTable::PlotLines("Update", get_timings, &update, frame_count, f, buf, 0.0f, 10.0f);
+        sprintf(buf, u8"%lld \x00B5s", average(&update, over, f));
+        ImGuiLTable::PlotLines("Update", get_timings, &update, frame_count, f, buf, 0.0f, 10.0f);
 
-    sprintf(buf, u8"%lld \x00B5s", average(&record, over, f));
-    ImGuiLTable::PlotLines("Record", get_timings, &record, frame_count, f, buf, 0.0f, 10.0f);
-
+        sprintf(buf, u8"%lld \x00B5s", average(&record, over, f));
+        ImGuiLTable::PlotLines("Record", get_timings, &record, frame_count, f, buf, 0.0f, 10.0f);
+    }
     ImGuiLTable::End();
 
+    ImGui::SeparatorText("Thread Pools");
+    auto& metrics = util::job_metrics::get();
+    ImGuiLTable::Begin("Thread Pools");
+    for (auto& m : metrics)
+    {
+        if (m) {
+            std::string name = m->name.empty() ? "default" : m->name;
+            sprintf(buf, "(%d) %d / %d", (int)m->concurrency, (int)m->running, (int)m->pending);
+            ImGuiLTable::Text(name.c_str(), buf);
+        }
+    }
+    ImGuiLTable::End();
+        
     frame_num++;
 };

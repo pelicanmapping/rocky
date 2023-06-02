@@ -45,9 +45,45 @@ Application::Application(int& argc, char** argv) :
 
     mapNode = rocky::MapNode::create(instance);
 
-    // earth file support
-    std::string infile;
-    if (commandLine.read({ "--earthfile" }, infile))
+    // the sun
+    if (commandLine.read({ "--sky" }))
+    {
+        auto sky = rocky::SkyNode::create(instance);
+        mainScene->addChild(sky);
+    }
+
+    mapNode->terrainSettings().concurrency = 6u;
+    mapNode->terrainSettings().skirtRatio = 0.025f;
+    mapNode->terrainSettings().minLevelOfDetail = 1;
+    mapNode->terrainSettings().screenSpaceError = 135.0f;
+
+    // wireframe overlay
+    if (commandLine.read({ "--wire" }))
+        instance.runtime().shaderCompileSettings->defines.insert("RK_WIREFRAME_OVERLAY");
+
+    mainScene->addChild(mapNode);
+
+    // Set up the runtime context with everything we need.
+    instance.runtime().viewer = viewer;
+    instance.runtime().sharedObjects = vsg::SharedObjects::create();
+
+    // read map from file:
+    std::string infile; 
+    if (commandLine.read({ "--map" }, infile))
+    {
+        JSON json;
+        if (rocky::util::readFromFile(json, infile))
+        {
+            mapNode->map()->from_json(json);
+        }
+        else
+        {
+            Log::warn() << "Failed to read map from \"" << infile << "\"" << std::endl;
+        }
+    }
+
+    // or read map from earth file:
+    else if (commandLine.read({ "--earthfile" }, infile))
     {
         std::string msg;
         EarthFileImporter importer;
@@ -68,41 +104,6 @@ Application::Application(int& argc, char** argv) :
         if (!msg.empty())
             Log::warn() << msg << std::endl;
     }
-
-    else if (commandLine.read({ "--map" }, infile))
-    {
-        JSON json;
-        if (rocky::util::readFromFile(json, infile))
-        {
-            mapNode->map()->from_json(json);
-        }
-        else
-        {
-            Log::warn() << "Failed to read map from \"" << infile << "\"" << std::endl;
-        }
-    }
-
-    // the sun
-    if (commandLine.read({ "--sky" }))
-    {
-        auto sky = rocky::SkyNode::create(instance);
-        mainScene->addChild(sky);
-    }
-
-    mapNode->terrainSettings().concurrency = 4u;
-    mapNode->terrainSettings().skirtRatio = 0.025f;
-    mapNode->terrainSettings().minLevelOfDetail = 1;
-    mapNode->terrainSettings().screenSpaceError = 135.0f;
-
-    // wireframe overlay
-    if (commandLine.read({ "--wire" }))
-        instance.runtime().shaderCompileSettings->defines.insert("RK_WIREFRAME_OVERLAY");
-
-    mainScene->addChild(mapNode);
-
-    // Set up the runtime context with everything we need.
-    instance.runtime().viewer = viewer;
-    instance.runtime().sharedObjects = vsg::SharedObjects::create();
 }
 
 util::Future<vsg::ref_ptr<vsg::Window>>

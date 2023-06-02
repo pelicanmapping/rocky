@@ -26,7 +26,7 @@ auto Demo_Map = [](Application& app)
         }
     }
 
-    ImGui::TextColored(ImVec4(1, 1, 0, 1), "Layers:");
+    ImGui::SeparatorText("Layers");
     auto& layers = app.map()->layers().all();
     layerExpanded.resize(layers.size(), false);
     int i = 0;

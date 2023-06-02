@@ -692,6 +692,11 @@ void job_scheduler::stopThreads()
     _threads.clear();
 }
 
+const std::vector<std::shared_ptr<job_metrics::scheduler_metrics>>&
+job_metrics::get()
+{
+    return _singleton._schedulers;
+}
 
 job_metrics::job_metrics() :
     max_index(-1)
@@ -719,7 +724,7 @@ job_metrics::scheduler(const std::string& name)
         return *_schedulers[0];
     }
 
-    _schedulers[m] = std::make_unique<scheduler_metrics>();
+    _schedulers[m] = std::make_shared<scheduler_metrics>();
     _schedulers[m]->name = name;
     return *_schedulers[m];
 }

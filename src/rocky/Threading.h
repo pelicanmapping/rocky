@@ -502,7 +502,7 @@ namespace ROCKY_NAMESPACE { namespace util
         }
     };
 
-    class job_metrics
+    class ROCKY_EXPORT job_metrics
     {
     public:
         //! Per-scheduler metrics.
@@ -537,9 +537,11 @@ namespace ROCKY_NAMESPACE { namespace util
             return totalJobsPending() + totalJobsRunning();
         }
 
+        static const std::vector<std::shared_ptr<scheduler_metrics>>& get();
+
     private:
         job_metrics();
-        std::vector<std::unique_ptr<scheduler_metrics>> _schedulers;
+        std::vector<std::shared_ptr<scheduler_metrics>> _schedulers;
         friend class job_scheduler;
         static job_metrics _singleton;
     };

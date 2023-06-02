@@ -39,13 +39,6 @@ namespace ROCKY_NAMESPACE
         //! Viewer instance
         vsg::ref_ptr<vsg::Viewer> viewer;
 
-        //! Compiler for new vsg objects
-        //std::function<vsg::ref_ptr<vsg::CompileManager>()> compiler;
-
-        //! Queue for VSG synchronous update operations. Operations in this queue
-        //! can safely edit the scene graph.
-        //std::function<vsg::ref_ptr<vsg::UpdateOperations>()> updates;
-
         //! VSG object sharing
         vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
 
