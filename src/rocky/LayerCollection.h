@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky/Layer.h>
 #include <rocky/Status.h>
+#include <mutex>
 #include <vector>
 
 namespace ROCKY_NAMESPACE
@@ -69,6 +70,7 @@ namespace ROCKY_NAMESPACE
         shared_ptr<Layer> _withName(const std::string& name) const;
         shared_ptr<Layer> _withUID(const UID& uid) const;
         Map* _map;
+        std::shared_mutex& _map_mutex;
     };
 
 
@@ -85,7 +87,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class L> shared_ptr<L> LayerCollection::firstOfType() const {
-        std::shared_lock lock(_map->_mapDataMutex);
+        std::shared_lock lock(_map_mutex);
         for (auto& layer : _layers) {
             shared_ptr<L> r = L::cast(layer);
             if (r) return r;
@@ -95,7 +97,7 @@ namespace ROCKY_NAMESPACE
 
     template<class L> std::vector<shared_ptr<L>> LayerCollection::ofType() const {
         std::vector<shared_ptr<L>> output;
-        std::shared_lock lock(_map->_mapDataMutex);
+        std::shared_lock lock(_map_mutex);
         for (auto& layer : _layers) {
             auto r = L::cast(layer);
             if (r) output.emplace_back(r);
@@ -105,7 +107,7 @@ namespace ROCKY_NAMESPACE
 
     template<class FUNC> std::vector<shared_ptr<Layer>> LayerCollection::get(FUNC func) const {
         std::vector<shared_ptr<Layer>> output;
-        std::shared_lock lock(_map->_mapDataMutex);
+        std::shared_lock lock(_map_mutex);
         for (auto& layer : _layers) {
             if (func(layer))
                 output.emplace_back(layer);

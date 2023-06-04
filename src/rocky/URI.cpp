@@ -17,7 +17,7 @@
 #endif
 #include <httplib.h>
 ROCKY_ABOUT(cpp_httplib, CPPHTTPLIB_VERSION)
-#ifdef OPENSSL_FOUND
+#ifdef OPENSSL_VERSION_STR
 ROCKY_ABOUT(openssl, OPENSSL_VERSION_STR)
 #endif
 #endif

@@ -11,7 +11,8 @@
 using namespace ROCKY_NAMESPACE;
 
 LayerCollection::LayerCollection(Map* map) :
-    _map(map)
+    _map(map),
+    _map_mutex(map->_mapDataMutex)
 {
     //nop
 }

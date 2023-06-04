@@ -405,6 +405,19 @@ job_group::join(Cancelable& p)
 
 
 #undef LC
+#define LC "[job] "
+
+
+void
+job::scheduler_dispatch(std::function<bool()> delegate, const job& config)
+{
+    job_scheduler* scheduler = config.scheduler ? config.scheduler : job_scheduler::get("");
+
+    if (scheduler)
+        scheduler->dispatch(config, delegate);
+}
+
+#undef LC
 #define LC "[job_scheduler] "
 
 // job_scheduler statics:

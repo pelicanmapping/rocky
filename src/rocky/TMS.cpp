@@ -755,9 +755,8 @@ TMS::Driver::read(
             return fetch.status;
         }
 
-        auto image_rr = io.services().readImageFromStream(
-            std::stringstream(fetch->data),
-            fetch->contentType, io);
+        std::istringstream buf(fetch->data);
+        auto image_rr = io.services().readImageFromStream(buf, fetch->contentType, io);
 
         if (image_rr.status.failed())
         {

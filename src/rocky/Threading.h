@@ -454,7 +454,7 @@ namespace ROCKY_NAMESPACE { namespace util
      *     });
      *       
      */
-    struct job
+    struct ROCKY_EXPORT job
     {
         std::string name;
         std::function<float()> priority = nullptr;
@@ -493,13 +493,13 @@ namespace ROCKY_NAMESPACE { namespace util
                 return good;
             };
 
-            job_scheduler* scheduler = config.scheduler ? config.scheduler : job_scheduler::get("");
-
-            if (scheduler)
-                scheduler->dispatch(config, delegate);
+            scheduler_dispatch(delegate, config);
 
             return promise;
         }
+
+    private:
+        static void scheduler_dispatch(std::function<bool()> del, const job& config);
     };
 
     class ROCKY_EXPORT job_metrics
