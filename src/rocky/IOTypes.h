@@ -237,7 +237,6 @@ namespace ROCKY_NAMESPACE
         bool fromCache = false;
         JSON metadata;
 
-        template<typename T>
         IOResult(const T& result) :
             Result<T>(result) { }
 
