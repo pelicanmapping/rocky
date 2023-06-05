@@ -461,12 +461,11 @@ namespace ROCKY_NAMESPACE { namespace util
         job_scheduler* scheduler = nullptr;
         job_group* group = nullptr;
 
-        job(){}
         //! Run the job and return a future result.
         //! @param task Function to run in a thread. Prototype is T(Cancelable&)
         //! @param settings Optional configuration for the asynchronous function call
         //! @return Future result of the async function call
-        template<typename FUNC, typename T=typename std::result_of<FUNC(Cancelable&)>::type>
+        template<typename FUNC, typename T = typename std::result_of<FUNC(Cancelable&)>::type>
         static inline Future<T> dispatch(
             FUNC task,
             const job& config = { })
