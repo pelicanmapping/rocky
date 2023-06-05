@@ -466,11 +466,20 @@ namespace ROCKY_NAMESPACE { namespace util
         //! @param settings Optional configuration for the asynchronous function call
         //! @return Future result of the async function call
         template<typename FUNC, typename T = typename std::result_of<FUNC(Cancelable&)>::type>
-        static inline Future<T> dispatch(
-            FUNC task,
-            const job& config = { })
+        static inline Future<T> dispatch(FUNC task, const job& config)
         {
             Future<T> promise;
+            return dispatch(task, promise, config);
+        }
+
+        //! Same as above but without the job parameter.
+        //! Due to a clang/gcc bug, we cannot use a default parameter like 'const job& config = {}'
+        //! https://stackoverflow.com/a/73248547
+        template<typename FUNC, typename T = typename std::result_of<FUNC(Cancelable&)>::type>
+        static inline Future<T> dispatch(FUNC task)
+        {
+            Future<T> promise;
+            job config;
             return dispatch(task, promise, config);
         }
 
@@ -480,10 +489,7 @@ namespace ROCKY_NAMESPACE { namespace util
         //! @param settings Optional configuration for the asynchronous function call
         //! @return Future result of the async function call
         template<typename FUNC, typename T = typename std::result_of<FUNC(Cancelable&)>::type>
-        static inline Future<T> dispatch(
-            FUNC task,
-            Future<T> promise,
-            const job& config = { })
+        static inline Future<T> dispatch(FUNC task, Future<T> promise, const job& config)
         {
             std::function<bool()> delegate = [task, promise]() mutable
             {
@@ -496,6 +502,16 @@ namespace ROCKY_NAMESPACE { namespace util
             scheduler_dispatch(delegate, config);
 
             return promise;
+        }
+
+        //! Same as above but without the job parameter.
+        //! Due to a clang/gcc bug, we cannot use a default parameter like 'const job& config = {}'
+        //! https://stackoverflow.com/a/73248547
+        template<typename FUNC, typename T = typename std::result_of<FUNC(Cancelable&)>::type>
+        static inline Future<T> dispatch(FUNC task, Future<T> promise)
+        {
+            job config;
+            return dispatch(task, promise, config);
         }
 
     private:
@@ -639,6 +655,5 @@ namespace ROCKY_NAMESPACE { namespace util
         friend struct job;
     };
 
-} } // namepsace rocky::Threading
+} } // namepsace rocky::util
 
-#define ROCKY_SCOPED_THREAD_NAME(base,name) rocky::util::ScopedThreadName _scoped_threadName(base,name);

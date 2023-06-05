@@ -600,15 +600,14 @@ namespace ROCKY_NAMESPACE
         {
             Task() : _type(TASK_NONE) { }
             void set(TaskType type, const vsg::dvec2& delta, double duration, vsg::time_point now) {
-                _type = type; _delta = delta; _duration_s = duration; _time_last_service = now;
+                _type = type; _delta = delta; _duration_s = duration;
             }
             void reset() {
                 _type = TASK_NONE;
             }
             TaskType _type;
             vsg::dvec2 _delta;
-            double _duration_s;
-            vsg::time_point  _time_last_service;
+            double _duration_s = DBL_MAX;
         };
 
         // "ticks" the resident Task, which allows for multi-frame animation of navigation
@@ -694,6 +693,7 @@ namespace ROCKY_NAMESPACE
         optional<vsg::MoveEvent> _previousMove;
         optional<vsg::ButtonPressEvent> _buttonPress;
         optional<vsg::KeyPressEvent> _keyPress;
+        vsg::time_point _previousTime;
 
         bool _thrown;
         vsg::dvec2 _throwDelta;

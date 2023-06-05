@@ -1496,6 +1496,8 @@ MapManipulator::apply(vsg::FrameEvent& frame)
 
         _dirty = false;
     }
+
+    _previousTime = frame.time;
 }
 
 bool
@@ -1503,11 +1505,11 @@ MapManipulator::serviceTask(vsg::time_point now)
 {
     if (_task._type != TASK_NONE)
     {
-        auto dt = to_seconds(now - _task._time_last_service);
+        auto dt = to_seconds(now - _previousTime);
         if (dt > 0.0)
         {
             // cap the DT so we don't exceed the expected delta.
-            dt = std::min(dt, _task._duration_s);
+            //dt = std::min(dt, _task._duration_s);
 
             double dx = _task._delta.x * dt;
             double dy = _task._delta.y * dt;
@@ -1528,7 +1530,6 @@ MapManipulator::serviceTask(vsg::time_point now)
             }
 
             _task._duration_s -= dt;
-            _task._time_last_service = now;
 
             if (_task._duration_s <= 0.0)
             {
