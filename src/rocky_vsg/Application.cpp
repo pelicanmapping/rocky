@@ -526,7 +526,7 @@ Application::addAndRemoveObjects()
 {
     if (!_objectsToAdd.empty() || !_objectsToRemove.empty())
     {
-        std::scoped_lock(_add_remove_mutex);
+        std::scoped_lock L(_add_remove_mutex);
 
         std::list<util::Future<Addition>> in_progress;
 
@@ -661,7 +661,7 @@ Application::remove(shared_ptr<MapObject> obj)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(obj, void());
 
-    std::scoped_lock(_add_remove_mutex);
+    std::scoped_lock L(_add_remove_mutex);
     _objectsToRemove.push_back(obj->root);
 }
 

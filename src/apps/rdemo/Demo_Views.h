@@ -9,7 +9,7 @@
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
 
-auto Demo_Views = [=](Application& app)
+auto Demo_Views = [](Application& app)
 {
     // iterate over all managed windows:
     int window_id = 0;

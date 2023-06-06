@@ -63,7 +63,7 @@ namespace ROCKY_NAMESPACE
 
     private:
         friend class Map;
-        inline LayerCollection(Map* map);
+        LayerCollection(Map* map);
         inline LayerCollection(const LayerCollection&) = delete;
         std::vector<shared_ptr<Layer>> _layers;
         shared_ptr<Layer> _at(unsigned index) const;

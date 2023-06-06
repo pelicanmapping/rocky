@@ -376,23 +376,6 @@ TEST_CASE("TMS")
 }
 #endif // ROCKY_SUPPORTS_TMS
 
-TEST_CASE("Deserialize layer")
-{
-#if 0 // TODO for later.
-    auto instance = Instance::create();
-    Config conf("gdalimage");
-    conf.set("name", "World imagery");
-    conf.set("url", "D:/data/imagery/world.tif");
-    auto layer = Layer::cast(instance->read(conf));
-    CHECKED_IF(layer != nullptr)
-    {
-        auto s = layer->open();
-        CHECK(s.ok());
-        if (s.failed()) ROCKY_WARN << s.toString() << std::endl;
-    }
-#endif
-}
-
 TEST_CASE("SRS")
 {
     // epsilon

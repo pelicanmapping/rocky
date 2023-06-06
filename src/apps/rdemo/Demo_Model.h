@@ -30,7 +30,7 @@ public:
             // this is a bit awkward but it works when the URI has an extension
             auto options = vsg::Options::create(*runtime.readerWriterOptions);
             auto extension = std::filesystem::path(uri.full()).extension();
-            options->extensionHint = extension.empty() ? result.value.contentType : extension;
+            options->extensionHint = extension.empty() ? std::filesystem::path(result.value.contentType) : extension;
             std::stringstream in(result.value.data);
             auto model = vsg::read_cast<vsg::Node>(in, options);
 

@@ -144,7 +144,7 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
 
     // swap out the range; used for page out
     lastTraversalRange.exchange(std::min(
-        (float)(new_frame ? FLT_MAX : lastTraversalRange),
+        (float)(new_frame ? FLT_MAX : (float)lastTraversalRange),
         (float)distanceTo(bound.center, rv.getState())));
 
     // swap out the time; used for page out
