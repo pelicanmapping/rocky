@@ -7,7 +7,6 @@
 #include "Log.h"
 #include "sha1.h"
 #include "Instance.h"
-#include <zlib.h>
 #include <cctype>
 #include <cstring>
 #include <filesystem>
@@ -16,7 +15,10 @@
 #include <Windows.h>
 #endif
 
+#if defined(ZLIB_FOUND)
+#include <zlib.h>
 ROCKY_ABOUT(zlib, ZLIB_VERSION)
+#endif
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
@@ -677,6 +679,9 @@ rocky::util::readFromFile(std::string& data, const std::string& filename)
     return true;
 }
 
+
+#if defined(ZLIB_FOUND)
+
 // adapted from
 // https://github.com/openscenegraph/OpenSceneGraph/blob/master/src/osgDB/Compressors.cpp
 #undef CHUNK
@@ -793,3 +798,5 @@ ZLibCompressor::decompress(std::istream& fin, std::string& target) const
     (void)inflateEnd(&strm);
     return ret == Z_STREAM_END ? true : false;
 }
+
+#endif // ZLIB_FOUND

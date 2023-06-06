@@ -182,6 +182,7 @@ TEST_CASE("Math")
     CHECK(r == glm::fvec3(0.75f, 0.75f, 0));
 }
 
+#if defined(ZLIB_FOUND)
 TEST_CASE("Compression")
 {
     // generate a pseudo-random string of characters:
@@ -208,6 +209,7 @@ TEST_CASE("Compression")
     // ensure the decompressed stream matched the original data
     CHECK(decompressed_data == original_data);
 }
+#endif
 
 TEST_CASE("Image")
 {

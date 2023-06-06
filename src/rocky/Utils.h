@@ -455,6 +455,7 @@ namespace ROCKY_NAMESPACE { namespace util
         virtual bool decompress(std::istream& in, std::string& out) const = 0;
     };
 
+#if defined(ZLIB_FOUND)
     /**
     * Stream compressor that uses INFLATE/DEFLATE compression
     */
@@ -473,6 +474,7 @@ namespace ROCKY_NAMESPACE { namespace util
         //! @return True upon success
         bool decompress(std::istream& in, std::string& out) const override;
     };
+#endif
 
     // Adapted from https://www.geeksforgeeks.org/lru-cache-implementation
     template<class K, class V>
