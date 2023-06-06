@@ -47,6 +47,7 @@ find_package(glslang CONFIG REQUIRED)
 set(LIBRARIES PUBLIC
     vsg::vsg
     rocky
+    nlohmann_json::nlohmann_json
 )
 
 # link in vsgXchange if we have it

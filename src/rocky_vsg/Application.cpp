@@ -360,7 +360,7 @@ Application::refreshView(vsg::ref_ptr<vsg::View> view)
         // wait until the device is idle to avoid changing state while it's being used.
         viewer->deviceWaitIdle();
 
-        auto& vp = view->camera->getViewport();
+        const auto& vp = view->camera->getViewport();
         viewdata.parentRenderGraph->renderArea.offset.x = (std::uint32_t)vp.x;
         viewdata.parentRenderGraph->renderArea.offset.y = (std::uint32_t)vp.y;
         viewdata.parentRenderGraph->renderArea.extent.width = (std::uint32_t)vp.width;
@@ -526,7 +526,7 @@ Application::addAndRemoveObjects()
 {
     if (!_objectsToAdd.empty() || !_objectsToRemove.empty())
     {
-        std::scoped_lock(_add_remove_mutex);
+        std::scoped_lock lock(_add_remove_mutex);
 
         std::list<util::Future<Addition>> in_progress;
 
@@ -661,7 +661,7 @@ Application::remove(shared_ptr<MapObject> obj)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(obj, void());
 
-    std::scoped_lock(_add_remove_mutex);
+    std::scoped_lock lock(_add_remove_mutex);
     _objectsToRemove.push_back(obj->root);
 }
 

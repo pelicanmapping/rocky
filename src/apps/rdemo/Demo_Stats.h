@@ -36,7 +36,7 @@ namespace
         return total / count;
     }
 }
-auto Demo_Stats = [&](Application& app)
+auto Demo_Stats = [](Application& app)
 {
     int f = frame_num % frame_count;
 

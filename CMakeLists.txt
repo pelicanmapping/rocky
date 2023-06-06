@@ -6,6 +6,7 @@ if (${CMAKE_TOOLCHAIN_FILE} MATCHES ".*vcpkg.cmake.*")
     message(STATUS "Building with vcpkg toolchain.")
     set(USING_VCPKG ON)
     set(VCPKG_OVERLAY_PORTS ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/ports)
+    set(VCPKG_MANIFEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/full)
 endif()
 
 project(
@@ -64,6 +65,7 @@ option(ROCKY_SUPPORTS_PROFILING "Build with performance profiling" OFF)
 option(ROCKY_SUPPORTS_IMGUI "Build ImGui demos" ON)
 
 set(BUILD_WITH_JSON ON)
+set(BUILD_WITH_ZLIB ON)
 
 if(ROCKY_SUPPORTS_PROFILING)
     set(BUILD_WITH_TRACY ON)

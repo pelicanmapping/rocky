@@ -6,7 +6,7 @@ set(SOURCES
 
 add_executable(rtests ${SOURCES})
 
-target_link_libraries(rtests rocky)
+target_link_libraries(rtests rocky nlohmann_json::nlohmann_json)
 
 install(TARGETS rtests RUNTIME DESTINATION bin)
 

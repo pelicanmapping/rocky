@@ -19,15 +19,15 @@ auto Demo_Map = [](Application& app)
     if (profile.valid())
     {
         if (!profile.wellKnownName().empty())
-            ImGui::Text("Profile: %s", profile.wellKnownName());
+            ImGui::Text("Profile: %s", profile.wellKnownName().c_str());
         else {
             ImGui::Text("Profile:");
-            ImGui::Text("%s", profile.to_json());
+            ImGui::Text("%s", profile.to_json().c_str());
         }
     }
 
     ImGui::SeparatorText("Layers");
-    auto& layers = app.map()->layers().all();
+    const auto& layers = app.map()->layers().all();
     layerExpanded.resize(layers.size(), false);
     int i = 0;
 
