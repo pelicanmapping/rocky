@@ -28,9 +28,8 @@ jobs:
         submodules: recursive
         
     - name: Cache Vulkan SDK
-      shell: 'bash'
       id: cache-vulkan-sdk
-      uses: actions/cache@v1
+      uses: actions/cache@v3
       with:
         path: "C:\\VulkanSDK\\1.3.231.1"
         key: vulkan-sdk-1.3.231.1
