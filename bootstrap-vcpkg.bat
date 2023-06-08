@@ -7,7 +7,14 @@ set VCPKG_TOOLCHAIN_FILE=%VCPKG_DIR%\scripts\buildsystems\vcpkg.cmake
 
 if not exist %VCPKG_TOOLCHAIN_FILE% (
     set ERROR_MSG=Please set the VCPKG_DIR environment variable to your vcpkg install location
-    goto usage
+    goto :usage
+)
+
+:: Verify that the Vulkan SDK is installed
+if not defined VULKAN_SDK (
+    echo Please install the Vulkan SDK and set the VULKAN_SDK enviroment variable to its location:
+    echo https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/VulkanSDK-1.3.231.1-Installer.exe
+    goto :end
 )
 
 :: Argument parser from: https://stackoverflow.com/a/8162578
