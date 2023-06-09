@@ -310,8 +310,22 @@ URI::read(const IOOptions& io) const
     }
 
     Content content;
-    bool localFile = std::filesystem::exists(full());
-    if (!localFile)
+
+    if (std::filesystem::exists(full()))
+    {
+        auto contentType = inferContentTypeFromFileExtension(full());
+
+        ROCKY_TODO("worry about text or binary open mode?");
+
+        std::ifstream in(full().c_str(), std::ios_base::in);
+        std::stringstream buf;
+        buf << in.rdbuf() << std::flush;
+        content.data = buf.str();
+        content.contentType = contentType;
+        in.close();
+    }
+
+    else if (containsServerAddress(full()))
     {
         HTTPRequest request{ full() };
         auto r = http_get(request, io.maxNetworkAttempts);
@@ -338,16 +352,9 @@ URI::read(const IOOptions& io) const
     }
     else
     {
-        auto contentType = inferContentTypeFromFileExtension(full());
-
-        ROCKY_TODO("worry about text or binary open mode?");
-
-        std::ifstream in(full().c_str(), std::ios_base::in);
-        std::stringstream buf;
-        buf << in.rdbuf() << std::flush;
-        content.data = buf.str();
-        content.contentType = contentType;
-        in.close();
+        return IOResult<Content>(Status(
+            Status::ResourceUnavailable,
+            util::make_string() << "Cannot open \"" << full() << "\""));
     }
 
     io.services().contentCache->put(full(), Result<Content>(content));

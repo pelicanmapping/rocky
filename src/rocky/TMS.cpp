@@ -91,6 +91,26 @@ namespace
         return text ? text->Value() : "";
     }
 
+    const TiXmlElement* find(const std::string& tag, const TiXmlElement* node)
+    {
+        if (!node)
+            return nullptr;
+
+        if (util::toLower(node->ValueStr()) == util::toLower(tag))
+            return node;
+
+        for (const TiXmlNode* childnode = node->FirstChild();
+            childnode != nullptr;
+            childnode = childnode->NextSibling())
+        {
+            auto match = find(tag, childnode->ToElement());
+            if (match)
+                return match;
+        }
+
+        return nullptr;
+    }
+
     Result<TileMap> parseTileMapFromXML(const std::string& xml)
     {
         TileMap tilemap;
@@ -104,9 +124,8 @@ namespace
                 << " col " << doc.ErrorCol());
         }
 
-        auto tilemapxml = doc.RootElement();
-        std::string name = tilemapxml->Value();
-        if (!tilemapxml || name != "TileMap")
+        auto tilemapxml = find("tilemap", doc.RootElement());
+        if (!tilemapxml)
             return Status(Status::ConfigurationError, "XML missing TileMap element");
 
         tilemapxml->QueryStringAttribute("version", &tilemap.version);
@@ -119,39 +138,39 @@ namespace
             auto childxml = childnode->ToElement();
             if (childxml)
             {
-                std::string name = childxml->Value();
-                if (name == "Abstract")
+                std::string name = util::toLower(childxml->Value());
+                if (name == "abstract")
                 {
                     tilemap.abstract = getChildTextValue(childxml);
                 }
-                else if (name == "Title")
+                else if (name == "title")
                 {
                     tilemap.title = getChildTextValue(childxml);
                 }
-                else if (name == "SRS")
+                else if (name == "srs")
                 {
                     tilemap.srsString = getChildTextValue(childxml);
                 }
-                else if (name == "BoundingBox")
+                else if (name == "boundingbox")
                 {
                     childxml->QueryDoubleAttribute("minx", &tilemap.minX);
                     childxml->QueryDoubleAttribute("miny", &tilemap.minY);
                     childxml->QueryDoubleAttribute("maxx", &tilemap.maxX);
                     childxml->QueryDoubleAttribute("maxy", &tilemap.maxY);
                 }
-                else if (name == "Origin")
+                else if (name == "origin")
                 {
                     childxml->QueryDoubleAttribute("x", &tilemap.originX);
                     childxml->QueryDoubleAttribute("y", &tilemap.originY);
                 }
-                else if (name == "TileFormat")
+                else if (name == "tileformat")
                 {
                     childxml->QueryUnsignedAttribute("width", &tilemap.format.width);
                     childxml->QueryUnsignedAttribute("height", &tilemap.format.height);
                     childxml->QueryStringAttribute("mime-type", &tilemap.format.mimeType);
                     childxml->QueryStringAttribute("extension", &tilemap.format.extension);
                 }
-                else if (name == "TileSets")
+                else if (name == "tilesets")
                 {
                     std::string temp;
                     childxml->QueryStringAttribute("profile", &temp);
@@ -176,7 +195,7 @@ namespace
                         }
                     }
                 }
-                else if (name == "DataExtents")
+                else if (name == "dataextents")
                 {
                     Profile profile = tilemap.createProfile();
 
