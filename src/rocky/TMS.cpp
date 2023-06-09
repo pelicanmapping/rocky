@@ -328,7 +328,6 @@ TileMap::createProfile() const
         profile = Profile::GLOBAL_GEODETIC;
     }
 
-#if 0
     if (!profile.valid())
     {
         // everything else is a "LOCAL" profile.
@@ -338,7 +337,6 @@ TileMap::createProfile() const
             std::max(numTilesWide, 1u),
             std::max(numTilesHigh, 1u));
     }
-#endif
 
     return std::move(profile);
 }
@@ -568,24 +566,9 @@ ROCKY_NAMESPACE::TMS::readTileMap(const URI& location, const IOOptions& io)
 
     auto tilemap = parseTileMapFromXML(r->data);
 
-#if 0
-    // Read tile map into a Config:
-    Config conf;
-    std::stringstream buf(r->data.to_string());
-    conf.from_xml(buf);
-
-    // parse that into a tile map:
-    auto tilemap = parseTileMapFromConfig(conf);
-#endif
-
     if (tilemap.status.ok())
     {
         tilemap.value.filename = location.full();
-
-        // record the timestamp (if there is one) in the tilemap. It's not a persistent field
-        // but will help with things like per-session caching.
-        //tileMap->setTimeStamp( r.lastModifiedTime() );
-        //TODO
     }
 
     return tilemap;
@@ -677,7 +660,6 @@ TMS::Driver::open(
     {
         // Attempt to read the tile map parameters from a TMS TileMap XML tile on the server:
         auto tileMapRead = readTileMap(uri, io);
-        //_tileMap = TMS::TileMapReaderWriter::read( uri, readOptions );
 
         if (tileMapRead.status.failed())
             return tileMapRead.status;
