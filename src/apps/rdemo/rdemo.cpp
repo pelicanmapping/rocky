@@ -139,11 +139,12 @@ int main(int argc, char** argv)
 #ifdef ROCKY_SUPPORTS_TMS
         // add an imagery layer to the map
         auto layer = rocky::TMSImageLayer::create();
-        layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
+        layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7");
         app.map()->layers().add(layer);
         if (layer->status().failed())
             return layerError(layer);
 
+  #if 0 // test multi-layer compositing
         auto layer2 = rocky::TMSImageLayer::create();
         layer2->setName("Hawaii inset");
         layer2->setURI("https://readymap.org/readymap/tiles/1.0.0/79/");
@@ -177,6 +178,7 @@ int main(int argc, char** argv)
         app.map()->layers().add(elev);
         if (elev->status().failed())
             return layerError(elev);
+  #endif
 #endif
 
         JSON map_json = app.map()->to_json();

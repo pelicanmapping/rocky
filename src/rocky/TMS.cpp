@@ -588,6 +588,11 @@ ROCKY_NAMESPACE::TMS::readTileMap(const URI& location, const IOOptions& io)
     if (tilemap.status.ok())
     {
         tilemap.value.filename = location.full();
+        
+        if (location.isRemote() && !util::endsWith(tilemap.value.filename, "/"))
+        {
+            tilemap.value.filename += '/';
+        }
     }
 
     return tilemap;
