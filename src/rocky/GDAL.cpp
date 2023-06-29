@@ -361,10 +361,10 @@ namespace ROCKY_NAMESPACE
         bool rasterIO(
             GDALRasterBand *band,
             GDALRWFlag eRWFlag,
-            int nXOff,
-            int nYOff,
-            int nXSize,
-            int nYSize,
+            double nXOff,
+            double nYOff,
+            double nXSize,
+            double nYSize,
             void *pData,
             int nBufXSize,
             int nBufYSize,
@@ -374,7 +374,6 @@ namespace ROCKY_NAMESPACE
             Image::Interpolation interpolation = Image::NEAREST
         )
         {
-#if GDAL_VERSION_2_0_OR_NEWER
             GDALRasterIOExtraArg psExtraArg;
 
             // defaults to GRIORA_NearestNeighbour
@@ -399,14 +398,14 @@ namespace ROCKY_NAMESPACE
                 break;
             }
 
-            CPLErr err = band->RasterIO(eRWFlag, nXOff, nYOff, nXSize, nYSize, pData, nBufXSize, nBufYSize, eBufType, nPixelSpace, nLineSpace, &psExtraArg);
-#else
-            if (interpolation != Image::NEAREST)
-            {
-                ROCKY_DEBUG << "RasterIO falling back to NEAREST.\n";
-            }
-            CPLErr err = band->RasterIO(eRWFlag, nXOff, nYOff, nXSize, nYSize, pData, nBufXSize, nBufYSize, eBufType, nPixelSpace, nLineSpace);
-#endif
+            psExtraArg.bFloatingPointWindowValidity = TRUE;
+            psExtraArg.dfXOff = nXOff;
+            psExtraArg.dfYOff = nYOff;
+            psExtraArg.dfXSize = nXSize;
+            psExtraArg.dfYSize = nYSize;
+
+            CPLErr err = band->RasterIO(eRWFlag, floor(nXOff), floor(nYOff), ceil(nXSize), ceil(nYSize), pData, nBufXSize, nBufYSize, eBufType, nPixelSpace, nLineSpace, &psExtraArg);
+
             if (err != CE_None)
             {
                 //ROCKY_WARN << LC << "RasterIO failed.\n";
@@ -1126,34 +1125,20 @@ GDAL::Driver::createImage(
     geoToPixel(west, intersection.yMax(), src_min_x, src_min_y);
     geoToPixel(east, intersection.yMin(), src_max_x, src_max_y);
 
-    // Convert the doubles to integers.  We floor the mins and ceil the maximums to give the widest window possible.
-    src_min_x = floor(src_min_x);
-    src_min_y = floor(src_min_y);
-    src_max_x = ceil(src_max_x);
-    src_max_y = ceil(src_max_y);
-
-    int off_x = (int)(src_min_x);
-    int off_y = (int)(src_min_y);
-    int width = (int)(src_max_x - src_min_x);
-    int height = (int)(src_max_y - src_min_y);
-
+    double src_width = src_max_x - src_min_x;
+    double src_height = src_max_y - src_min_y;
 
     int rasterWidth = _warpedDS->GetRasterXSize();
     int rasterHeight = _warpedDS->GetRasterYSize();
 
-    // clamp the rasterio bounds so they don't go out of bounds
-    if (off_x + width > rasterWidth)
-        width = rasterWidth - off_x;
-
-    if (off_y + height > rasterHeight)
-        height = rasterHeight - off_x;
-
-    if (off_x + width > rasterWidth || off_y + height > rasterHeight)
+    if (src_min_x + src_width > (double)rasterWidth)
     {
-        Log::warn() <<
-            "Read window outside of bounds of dataset.  Source Dimensions=" 
-            << rasterWidth << "x" << rasterHeight 
-            << " Read Window=" << off_x << ", " << off_y << " " << width << "x" << height << std::endl;
+        src_width = (double)rasterWidth - src_min_x;
+    }
+
+    if (src_min_y + src_height > (double)rasterHeight)
+    {
+        src_height = (double)rasterHeight - src_min_y;
     }
 
     // Determine the destination window
@@ -1173,7 +1158,7 @@ GDAL::Driver::createImage(
     double dy = (ymax - ymin) / (double)(tileSize - 1);
 
     // Return if parameters are out of range.
-    if (width <= 0 || height <= 0 || target_width <= 0 || target_height <= 0)
+    if (src_width <= 0 || src_height <= 0 || target_width <= 0 || target_height <= 0)
     {
         return Status(Status::ResourceUnavailable);
     }
@@ -1236,13 +1221,13 @@ GDAL::Driver::createImage(
 
         memset(image->data<char>(), 0, image->sizeInBytes());
 
-        rasterIO(bandRed, GF_Read, off_x, off_y, width, height, red, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
-        rasterIO(bandGreen, GF_Read, off_x, off_y, width, height, green, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
-        rasterIO(bandBlue, GF_Read, off_x, off_y, width, height, blue, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
+        rasterIO(bandRed, GF_Read, src_min_x, src_min_y, src_width, src_height, red, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
+        rasterIO(bandGreen, GF_Read, src_min_x, src_min_y, src_width, src_height, green, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
+        rasterIO(bandBlue, GF_Read, src_min_x, src_min_y, src_width, src_height, blue, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
 
         if (bandAlpha)
         {
-            rasterIO(bandAlpha, GF_Read, off_x, off_y, width, height, alpha, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
+            rasterIO(bandAlpha, GF_Read, src_min_x, src_min_y, src_width, src_height, alpha, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
         }
 
         for (int src_row = 0, dst_row = tile_offset_top;
@@ -1306,7 +1291,7 @@ GDAL::Driver::createImage(
             {
                 short* temp = new short[target_width * target_height];
 
-                rasterIO(bandGray, GF_Read, off_x, off_y, width, height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation());
+                rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation());
 
                 int success = 0;
                 short noDataValueFromBand = bandGray->GetNoDataValue(&success);
@@ -1330,7 +1315,7 @@ GDAL::Driver::createImage(
             {
                 float* temp = new float[target_width * target_height];
 
-                rasterIO(bandGray, GF_Read, off_x, off_y, width, height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation());
+                rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation());
 
                 int success = 0;
                 float noDataValueFromBand = bandGray->GetNoDataValue(&success);
@@ -1367,12 +1352,12 @@ GDAL::Driver::createImage(
                 memset(alpha, 255, target_width * target_height);
             }
 
-            rasterIO(bandGray, GF_Read, off_x, off_y, width, height, gray, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
+            rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, gray, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
 
             // color only:
             if (bandAlpha)
             {
-                rasterIO(bandAlpha, GF_Read, off_x, off_y, width, height, alpha, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
+                rasterIO(bandAlpha, GF_Read, src_min_x, src_min_y, src_width, src_height, alpha, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
             }
 
             for (int src_row = 0, dst_row = tile_offset_top;
@@ -1439,8 +1424,7 @@ GDAL::Driver::createImage(
         rasterIO(
             bandPalette, 
             GF_Read,
-            off_x, off_y,
-            width, height, 
+            src_min_x, src_min_y, src_width, src_height,
             palette,
             target_width, target_height,
             GDT_Byte, 0, 0, 
@@ -1521,238 +1505,6 @@ GDAL::Driver::createImage(
     return image;
 }
 
-#if 0
-Result<shared_ptr<Heightfield>>
-GDAL::Driver::createHeightfield(
-    const TileKey& key,
-    unsigned tileSize,
-    const IOOptions& io)
-{
-    if (_maxDataLevel.has_value() && key.levelOfDetail() > _maxDataLevel)
-    {
-        return Status(Status::ResourceUnavailable);
-    }
-
-    if (!intersects(key))
-    {
-        return Status(Status::ResourceUnavailable);
-    }
-
-    //Allocate the heightfield
-    auto hf = Heightfield::create(tileSize, tileSize);
-
-    //Get the meter extents of the tile
-    double xmin, ymin, xmax, ymax;
-    key.extent().getBounds(xmin, ymin, xmax, ymax);
-
-    // Try to find a FLOAT band
-    GDALRasterBand* band = findBandByDataType(_warpedDS, GDT_Float32);
-    if (band == NULL)
-    {
-        // Just get first band
-        band = _warpedDS->GetRasterBand(1);
-    }
-
-    if (_layer->interpolation() == Image::NEAREST)
-    {
-        double colMin, colMax;
-        double rowMin, rowMax;
-        geoToPixel(xmin, ymin, colMin, rowMax);
-        geoToPixel(xmax, ymax, colMax, rowMin);
-        std::vector<float> buffer(tileSize * tileSize, NO_DATA_VALUE);
-
-        int iColMin = floor(colMin);
-        int iColMax = ceil(colMax);
-        int iRowMin = floor(rowMin);
-        int iRowMax = ceil(rowMax);
-        int iNumCols = iColMax - iColMin + 1;
-        int iNumRows = iRowMax - iRowMin + 1;
-
-        int iWinColMin = std::max(0, iColMin);
-        int iWinColMax = std::min(_warpedDS->GetRasterXSize() - 1, iColMax);
-        int iWinRowMin = std::max(0, iRowMin);
-        int iWinRowMax = std::min(_warpedDS->GetRasterYSize() - 1, iRowMax);
-        int iNumWinCols = iWinColMax - iWinColMin + 1;
-        int iNumWinRows = iWinRowMax - iWinRowMin + 1;
-
-        int iBufColMin = std::round((iWinColMin - iColMin) / double(iNumCols - 1) * (tileSize - 1));
-        int iBufColMax = std::round((iWinColMax - iColMin) / double(iNumCols - 1) * (tileSize - 1));
-        int iBufRowMin = std::round((iWinRowMin - iRowMin) / double(iNumRows - 1) * (tileSize - 1));
-        int iBufRowMax = std::round((iWinRowMax - iRowMin) / double(iNumRows - 1) * (tileSize - 1));
-        int iNumBufCols = iBufColMax - iBufColMin + 1;
-        int iNumBufRows = iBufRowMax - iBufRowMin + 1;
-
-        int startOffset = iBufRowMin * tileSize + iBufColMin;
-        int lineSpace = tileSize * sizeof(float);
-
-        rasterIO(band, GF_Read, iWinColMin, iWinRowMin, iNumWinCols, iNumWinRows, &buffer[startOffset], iNumBufCols, iNumBufRows, GDT_Float32, 0, lineSpace);
-
-        for (unsigned r = 0, ir = tileSize - 1; r < tileSize; ++r, --ir)
-        {
-            for (unsigned c = 0; c < tileSize; ++c)
-            {
-                hf->heightAt(c, ir) = _linearUnits * buffer[r * tileSize + c];
-            }
-        }
-    }
-    else
-    {
-        double dx = (xmax - xmin) / (tileSize - 1);
-        double dy = (ymax - ymin) / (tileSize - 1);
-        for (unsigned r = 0; r < tileSize; ++r)
-        {
-            double geoY = ymin + (dy * (double)r);
-            for (unsigned c = 0; c < tileSize; ++c)
-            {
-                double geoX = xmin + (dx * (double)c);
-                float h = getInterpolatedValue(band, geoX, geoY) * _linearUnits;
-                hf->heightAt(c, r) = h;
-            }
-        }
-    }
-
-    return hf;
-}
-
-Result<shared_ptr<Heightfield>>
-GDAL::Driver::createHeightfieldWithVRT(
-    const TileKey& key,
-    unsigned tileSize,
-    const IOOptions& io)
-{
-    if (_maxDataLevel.has_value() && key.levelOfDetail() > _maxDataLevel)
-    {
-        return Status(Status::ResourceUnavailable);
-    }
-
-    if (!intersects(key))
-    {
-        return Status(Status::ResourceUnavailable);
-    }
-
-
-    //Allocate the heightfield
-    auto hf = Heightfield::create(tileSize, tileSize);
-    hf->fill(NO_DATA_VALUE);
-
-    GDALResampleAlg resampleAlg = GRA_CubicSpline;
-    switch (_layer->interpolation())
-    {
-    case Image::NEAREST:
-        resampleAlg = GRA_NearestNeighbour;
-        break;
-    case Image::AVERAGE:
-        resampleAlg = GRA_Average;
-        break;
-    case Image::BILINEAR:
-        resampleAlg = GRA_Bilinear;
-        break;
-    case Image::CUBIC:
-        resampleAlg = GRA_Cubic;
-        break;
-    case Image::CUBICSPLINE:
-        resampleAlg = GRA_CubicSpline;
-        break;
-    }
-
-    // Create warp options
-    GDALWarpOptions* psWarpOptions = GDALCreateWarpOptions();
-    psWarpOptions->eResampleAlg = resampleAlg;
-    psWarpOptions->hSrcDS = _srcDS;
-    psWarpOptions->nBandCount = _srcDS->GetRasterCount();
-    psWarpOptions->panSrcBands =
-        (int*)CPLMalloc(sizeof(int) * psWarpOptions->nBandCount);
-    psWarpOptions->panDstBands =
-        (int*)CPLMalloc(sizeof(int) * psWarpOptions->nBandCount);
-
-    for (short unsigned int i = 0; i < psWarpOptions->nBandCount; ++i) {
-        psWarpOptions->panDstBands[i] = psWarpOptions->panSrcBands[i] = i + 1;
-    }
-
-    // Create the image to image transformer
-    void* transformerArg = GDALCreateGenImgProjTransformer2(_srcDS, NULL, NULL);
-    if (transformerArg == NULL) {
-        GDALDestroyWarpOptions(psWarpOptions);
-        // ERROR;
-        return 0;
-    }
-
-    // Expanded
-    double resolution = key.extent().width() / ((double)tileSize - 1);
-    double adfGeoTransform[6];
-    adfGeoTransform[0] = key.extent().xMin() - resolution;
-    adfGeoTransform[1] = resolution;
-    adfGeoTransform[2] = 0;
-    adfGeoTransform[3] = key.extent().yMax() + resolution;
-    adfGeoTransform[4] = 0;
-    adfGeoTransform[5] = -resolution;
-
-    // Specify the destination geotransform
-    GDALSetGenImgProjTransformerDstGeoTransform(transformerArg, adfGeoTransform);
-
-    psWarpOptions->pTransformerArg = transformerArg;
-    psWarpOptions->pfnTransformer = GDALGenImgProjTransform;
-
-    GDALDatasetH tileDS = GDALCreateWarpedVRT(_srcDS, tileSize, tileSize, adfGeoTransform, psWarpOptions);
-
-    GDALSetProjection(tileDS, key.profile().srs().wkt().c_str());
-
-    resolution = key.extent().width() / ((double)tileSize);
-    adfGeoTransform[0] = key.extent().xMin();
-    adfGeoTransform[1] = resolution;
-    adfGeoTransform[2] = 0;
-    adfGeoTransform[3] = key.extent().yMax();
-    adfGeoTransform[4] = 0;
-    adfGeoTransform[5] = -resolution;
-
-    // Set the geotransform back to what it should actually be.
-    GDALSetGeoTransform(tileDS, adfGeoTransform);
-
-    float* heights = new float[tileSize * tileSize];
-    for (unsigned int i = 0; i < tileSize * tileSize; i++)
-    {
-        heights[i] = NO_DATA_VALUE;
-    }
-    GDALRasterBand* band = static_cast<GDALRasterBand*>(GDALGetRasterBand(tileDS, 1));
-    band->RasterIO(GF_Read, 0, 0, tileSize, tileSize, heights, tileSize, tileSize, GDT_Float32, 0, 0);
-
-    hf = Heightfield::create(tileSize, tileSize);
-    //hf = new osg::HeightField();
-    //hf->allocate(tileSize, tileSize);
-    for (unsigned int c = 0; c < tileSize; c++)
-    {
-        for (unsigned int r = 0; r < tileSize; r++)
-        {
-            unsigned inv_r = tileSize - r - 1;
-            float h = heights[r * tileSize + c];
-            if (!isValidValue(h, band))
-            {
-                h = NO_DATA_VALUE;
-            }
-            hf->heightAt(c, inv_r) = h;
-            //hf->setHeight(c, inv_r, h);
-        }
-    }
-
-    delete[] heights;
-
-    // Close the dataset
-    if (tileDS != NULL)
-    {
-        GDALClose(tileDS);
-    }
-
-    // Destroy the warp options
-    if (psWarpOptions != NULL)
-    {
-        GDALDestroyWarpOptions(psWarpOptions);
-    }
-
-    // Note:  The transformer is closed in the warped dataset so we don't need to free it ourselves.
-
-    return hf;
-}
-#endif
 
 //...................................................................
 
