@@ -51,10 +51,28 @@ namespace ROCKY_NAMESPACE
         virtual void createNode(Runtime& runtime) = 0;
 
         friend class Application;
+        friend class AttachmentGroup;
     };
 
     //! Collection of attachments
     using Attachments = std::vector<shared_ptr<Attachment>>;
+
+
+    /**
+    * Groups multiple attachments together under one attachment.
+    */
+    class ROCKY_VSG_EXPORT AttachmentGroup : public rocky::Inherit<Attachment, AttachmentGroup>
+    {
+    public:
+        //! Attachments in the group
+        Attachments attachments;
+
+        //! Serialize to JSON
+        JSON to_json() const override;
+
+    protected:
+        void createNode(Runtime& runtime) override;
+    };
 
 
     /**

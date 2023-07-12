@@ -33,6 +33,47 @@ Attachment::visible() const
         node->children.front().mask != vsg::MASK_OFF;
 }
 
+void
+AttachmentGroup::createNode(Runtime& runtime)
+{
+    if (!node)
+    {
+        auto group = vsg::Group::create();
+        
+        for (auto& attachment : attachments)
+        {
+            attachment->createNode(runtime);
+            if (attachment->node)
+            {
+                group->addChild(attachment->node);
+            }
+        }
+
+        node = vsg::Switch::create();
+        node->addChild(true, group);
+    }
+}
+
+JSON
+AttachmentGroup::to_json() const
+{
+    json j = json::object();
+    set(j, "name", name);
+
+    json children = json::array();
+    for (auto& att : attachments)
+    {
+        json c = json::parse(att->to_json());
+        if (!c.empty())
+            children.push_back(c);
+    }
+    if (!children.empty())
+        set(j, "attachments", children);
+
+    return j.dump();
+}
+
+
 MapObject::MapObject() :
     super(),
     uid(uid_generator++)

@@ -27,7 +27,6 @@ using namespace ROCKY_NAMESPACE;
 
 vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> IconState::pipelineConfig;
 vsg::StateGroup::StateCommands IconState::pipelineStateCommands;
-//vsg::ref_ptr<vsg::Sampler> IconState::sampler;
 rocky::Status IconState::status;
 
 namespace
@@ -123,7 +122,7 @@ IconState::initialize(Runtime& runtime)
         pipelineConfig->enableUniform("icon");
         pipelineConfig->enableUniform("vsg_viewports");
 
-        pipelineConfig->enableTexture("icon_texture"); // descriptors, "icon_texture", {}, sampler);
+        pipelineConfig->enableTexture("icon_texture");
 
         // Alpha blending to support line smoothing
         pipelineConfig->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {

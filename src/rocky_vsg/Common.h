@@ -13,6 +13,8 @@ namespace ROCKY_NAMESPACE
     using clock = std::chrono::steady_clock;
 }
 
+#define ROCKY_VSG_NAMESPACE ROCKY_NAMESPACE
+
 #if defined(_MSC_VER) || defined(__CYGWIN__) || defined(__MINGW32__) || defined( __BCPLUSPLUS__)  || defined( __MWERKS__)
     #  if defined( ROCKY_VSG_LIBRARY_STATIC )
     #    define ROCKY_VSG_EXPORT

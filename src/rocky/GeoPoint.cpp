@@ -105,9 +105,9 @@ GeoPoint::geodesicDistanceTo(const GeoPoint& rhs) const
     if (transform(geoSRS, p1) && rhs.transform(geoSRS, p2))
     {
         return Distance(
-            srs().ellipsoid().geodesicDistance(
-                glm::dvec2(p1.x, p1.y),
-                glm::dvec2(p2.x, p2.y)),
+            srs().ellipsoid().geodesicGroundDistance(
+                glm::dvec3(p1.x, p1.y, p1.z),
+                glm::dvec3(p2.x, p2.y, p2.z)),
             Units::METERS);
     }
     else return { };

@@ -22,12 +22,14 @@ auto Demo_LineString_Absolute = [](Application& app)
         line = LineString::create();
         auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
         const double alt = 125000;
+        std::vector<glm::dvec3> points;
         for (double lon = -180.0; lon <= 0.0; lon += 2.5)
         {
             glm::dvec3 ecef;
             if (xform(glm::dvec3(lon, -20.0, alt), ecef))
-                line->pushVertex(ecef);
+                points.push_back(ecef);
         }
+        line->setGeometry(points.begin(), points.end());
         line->setStyle(LineStyle{ { 1,1,0,1 }, 3.0f, 0xffff, 4 });
 
         // Add an object with both attachments
@@ -88,10 +90,12 @@ auto Demo_LineString_Relative = [](Application& app)
         const double size = 500000;
         line = LineString::create();
         line->underGeoTransform = true;
-        line->pushVertex(-size, -size, 0);
-        line->pushVertex(size, -size, 0);
-        line->pushVertex(0, size, 0);
-        line->pushVertex(-size, -size, 0);
+        std::vector<vsg::vec3> points = {
+            {-size, -size, 0},
+            { size, -size, 0},
+            {    0,  size, 0},
+            {-size, -size, 0} };
+        line->setGeometry(points.begin(), points.end());
         line->setStyle(LineStyle{ {1,0,0,1}, 4.0f });
         
         // Add an object with both attachments

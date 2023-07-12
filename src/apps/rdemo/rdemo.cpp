@@ -36,8 +36,10 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Icon.h"
 #include "Demo_Model.h"
 #include "Demo_Label.h"
+#include "Demo_LineFeatures.h"
 #include "Demo_MapManipulator.h"
 #include "Demo_Views.h"
+#include "Demo_RTT.h"
 #include "Demo_Stats.h"
 
 template<class T>
@@ -83,7 +85,17 @@ void setup_demos(rocky::Application& app)
     );
 
     demos.emplace_back(
+        Demo{ "Features", {},
+        {
+            Demo{ "Line features", Demo_LineFeatures }
+        } }
+    );
+
+    demos.emplace_back(
         Demo{ "Windows & Views", Demo_Views }
+    );
+    demos.emplace_back(
+        Demo{ "RTT", Demo_RTT }
     );
 
     demos.emplace_back(

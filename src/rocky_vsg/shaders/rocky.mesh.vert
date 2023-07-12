@@ -16,13 +16,15 @@ layout(set = 0, binding = 1) uniform MeshData {
 layout(location = 0) in vec3 in_vertex;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec4 in_color;
+layout(location = 3) in vec2 in_uv;
 
 // inter-stage interface block
 struct Varyings {
     vec4 color;
     float wireframe;
 };
-layout(location = 1) flat out Varyings rk;
+layout(location = 1) out vec2 uv;
+layout(location = 2) flat out Varyings rk;
 
 // GL built-ins
 out gl_PerVertex {
@@ -33,8 +35,9 @@ void main()
 {
     rk.color = mesh.color.a > 0.0 ? mesh.color : in_color;
     rk.wireframe = mesh.wireframe;
+    uv = in_uv;
 
-    // TODO: lighting
+    // TODO: lighting (optional)
 
     gl_Position = pc.projection * pc.modelview * vec4(in_vertex, 1);
 }

@@ -45,6 +45,10 @@ namespace ROCKY_NAMESPACE
         //! @param object Map object to remove from the scene
         void remove(shared_ptr<MapObject> object);
 
+        //! Process and render one frame. If you call run(), this will
+        //! happen automatically in a continuous loop.
+        //! @return True upon success; false to quit the application.
+        bool frame();
 
     public: // Windows and Views
 
@@ -82,7 +86,7 @@ namespace ROCKY_NAMESPACE
         util::Future<vsg::ref_ptr<vsg::View>> addView(
             vsg::ref_ptr<vsg::Window> window,
             vsg::ref_ptr<vsg::View> view,
-            std::function<void()> on_create = {});
+            std::function<void(vsg::CommandGraph*)> on_create = {});
 
         //! Removes a view from a window
         //! @param view View to remove from its window
@@ -103,6 +107,8 @@ namespace ROCKY_NAMESPACE
         //! @param window Window to which to add the post-render node.
         //! @param node Node to add.
         void addPostRenderNode(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Node> node);
+
+        void addPreRenderGraph(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::RenderGraph> rg);
 
     public:
         rocky::InstanceVSG instance;
@@ -146,6 +152,8 @@ namespace ROCKY_NAMESPACE
             vsg::CompileResult compileResult;
         };
 
+        void realize();
+
         std::mutex _add_remove_mutex;
         std::list<util::Future<Addition>> _objectsToAdd;
         std::list<vsg::ref_ptr<vsg::Node>> _objectsToRemove;
@@ -153,7 +161,7 @@ namespace ROCKY_NAMESPACE
         
         std::map<vsg::ref_ptr<vsg::View>, ViewData> _viewData;
         
-        void realizeViewer(vsg::ref_ptr<vsg::Viewer> viewer);
+        void setupViewer(vsg::ref_ptr<vsg::Viewer> viewer);
 
         void recreateViewer();
 
@@ -162,7 +170,7 @@ namespace ROCKY_NAMESPACE
         void addViewAfterViewerIsRealized(
             vsg::ref_ptr<vsg::Window> window,
             vsg::ref_ptr<vsg::View> view,
-            std::function<void()> on_create,
+            std::function<void(vsg::CommandGraph*)> on_create,
             util::Future<vsg::ref_ptr<vsg::View>> result);
 
         void addManipulator(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View>);

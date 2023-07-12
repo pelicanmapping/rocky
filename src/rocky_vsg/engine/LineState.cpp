@@ -110,6 +110,9 @@ LineState::initialize(Runtime& runtime)
         // backface culling off ... we may or may not need this.
         pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
 
+        // disable depth writes (yes? no?)
+        pipelineConfig->depthStencilState->depthWriteEnable = false;
+
         // Uniforms we will need:
         pipelineConfig->enableUniform("line");
         pipelineConfig->enableUniform("vsg_viewports");

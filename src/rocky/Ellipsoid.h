@@ -71,9 +71,9 @@ namespace ROCKY_NAMESPACE
         double metersToLongitudinalDegrees(double value, double lat_deg =0.0) const;
 
         //! Geodesic distance in meters from one lat/long to another
-        double geodesicDistance(
-            const glm::dvec2& longlat1_deg,
-            const glm::dvec2& longlat2_deg) const;
+        double geodesicGroundDistance(
+            const glm::dvec3& longlat1_deg,
+            const glm::dvec3& longlat2_deg) const;
 
         //! Geodesic interpolation between two lat/long points
         void geodesicInterpolate(

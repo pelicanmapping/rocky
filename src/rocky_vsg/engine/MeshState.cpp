@@ -21,10 +21,20 @@ using namespace ROCKY_NAMESPACE;
 #define VIEWPORT_BUFFER_SET 1 // hard-coded in VSG ViewDependentState
 #define VIEWPORT_BUFFER_BINDING 1 // hard-coded in VSG ViewDependentState (set=1)
 
+#define SUPPORTS_TEXTURE
 
-vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> MeshState::pipelineConfig;
-vsg::StateGroup::StateCommands MeshState::pipelineStateCommands;
+#ifdef SUPPORTS_TEXTURE
+#define TEXTURE_SET 0
+#define TEXTURE_BINDING 6
+#endif
+
+//vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> MeshState::pipelineConfig;
+//vsg::StateGroup::StateCommands MeshState::pipelineStateCommands;
+
 rocky::Status MeshState::status;
+vsg::ref_ptr<vsg::ShaderSet> MeshState::shaderSet;
+rocky::Runtime* MeshState::runtime = nullptr;
+std::unordered_map<std::string, MeshState::Config> MeshState::configs;
 
 namespace
 {
@@ -58,12 +68,23 @@ namespace
         shaderSet->addAttributeBinding("in_vertex", "", 0, VK_FORMAT_R32G32B32_SFLOAT, { });
         shaderSet->addAttributeBinding("in_normal", "", 1, VK_FORMAT_R32G32B32_SFLOAT, {});
         shaderSet->addAttributeBinding("in_color", "", 2, VK_FORMAT_R32G32B32A32_SFLOAT, {});
+        shaderSet->addAttributeBinding("in_uv", "", 3, VK_FORMAT_R32G32_SFLOAT, {});
 
         // line data uniform buffer (width, stipple, etc.)
-        shaderSet->addUniformBinding("mesh", "", MESH_BUFFER_SET, MESH_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
+        shaderSet->addUniformBinding("mesh", "", MESH_BUFFER_SET, MESH_BUFFER_BINDING,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
+
+#ifdef SUPPORTS_TEXTURE
+        // Optional texture
+        shaderSet->addUniformBinding("mesh_texture", "USE_MESH_TEXTURE", TEXTURE_SET, TEXTURE_BINDING, 
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+
+        shaderSet->optionalDefines.insert("USE_MESH_TEXTURE");
+#endif
 
         // VSG viewport state
-        shaderSet->addUniformBinding("vsg_viewports", "", VIEWPORT_BUFFER_SET, VIEWPORT_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
+        shaderSet->addUniformBinding("vsg_viewports", "", VIEWPORT_BUFFER_SET, VIEWPORT_BUFFER_BINDING,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
         // Note: 128 is the maximum size required by the Vulkan spec so don't increase it
         shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
@@ -74,46 +95,63 @@ namespace
 
 MeshState::~MeshState()
 {
-    pipelineConfig = nullptr;
-    pipelineStateCommands.clear();
+    shaderSet = nullptr;
+    runtime = nullptr;
+    configs.clear();
 }
 
 void
-MeshState::initialize(Runtime& runtime)
+MeshState::initialize(Runtime& in_runtime)
 {
-    // Now create the pipeline and stategroup to bind it
-    if (!pipelineConfig)
+    runtime = &in_runtime;
+    shaderSet = createShaderSet(in_runtime);
+
+    if (!shaderSet)
     {
-        auto shaderSet = createShaderSet(runtime);
+        status = Status(Status::ResourceUnavailable,
+            "Mesh shaders are missing or corrupt. "
+            "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
+        return;
+    }
+}
 
-        if (!shaderSet)
-        {
-            status = Status(Status::ResourceUnavailable,
-                "Mesh shaders are missing or corrupt. "
-                "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
-            return;
-        }
+MeshState::Config&
+MeshState::get(const std::string& name, vsg::ref_ptr<vsg::ShaderCompileSettings> settings)
+{
+    Config& c = configs[name];
 
+    if (!status.ok())
+        return c;
+
+    // Now create the pipeline and stategroup to bind it
+    if (!c.pipelineConfig)
+    {
         // Create the pipeline configurator for terrain; this is a helper object
         // that acts as a "template" for terrain tile rendering state.
-        pipelineConfig = vsg::GraphicsPipelineConfig::create(shaderSet);
+        c.pipelineConfig = vsg::GraphicsPipelineConfig::create(shaderSet);
 
         // Apply any custom compile settings / defines:
-        pipelineConfig->shaderHints = runtime.shaderCompileSettings;
+        c.pipelineConfig->shaderHints = settings ? settings : runtime->shaderCompileSettings;
 
         // activate the arrays we intend to use
-        pipelineConfig->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-        pipelineConfig->enableArray("in_normal", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-        pipelineConfig->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
+        c.pipelineConfig->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
+        c.pipelineConfig->enableArray("in_normal", VK_VERTEX_INPUT_RATE_VERTEX, 12);
+        c.pipelineConfig->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
+        c.pipelineConfig->enableArray("in_uv", VK_VERTEX_INPUT_RATE_VERTEX, 8);
 
         // backface culling off ... we may or may not need this.
         //pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
 
-        pipelineConfig->enableUniform("mesh");
-        pipelineConfig->enableUniform("vsg_viewports");
+        c.pipelineConfig->enableUniform("mesh");
+        c.pipelineConfig->enableUniform("vsg_viewports");
+
+        // TESTING*****************************
+#ifdef SUPPORTS_TEXTURE
+        c.pipelineConfig->enableTexture("mesh_texture");
+#endif
 
         // Alpha blending to support line smoothing
-        pipelineConfig->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
+        c.pipelineConfig->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
             true,
             VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
             VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
@@ -125,32 +163,34 @@ MeshState::initialize(Runtime& runtime)
         // The "set" in GLSL's "layout(set=X, binding=Y)" refers to the index of
         // the descriptor set layout within the pipeline layout. Setting the
         // "additional" DSL appends it to the pipline layout, giving it set=1.
-        pipelineConfig->additionalDescriptorSetLayout =
-            runtime.sharedObjects ? runtime.sharedObjects->shared_default<vsg::ViewDescriptorSetLayout>() :
+        c.pipelineConfig->additionalDescriptorSetLayout =
+            runtime->sharedObjects ? runtime->sharedObjects->shared_default<vsg::ViewDescriptorSetLayout>() :
             vsg::ViewDescriptorSetLayout::create();
 
         // Initialize GraphicsPipeline from the data in the configuration.
-        if (runtime.sharedObjects)
-            runtime.sharedObjects->share(pipelineConfig, [](auto gpc) { gpc->init(); });
+        if (runtime->sharedObjects)
+            runtime->sharedObjects->share(c.pipelineConfig, [](auto gpc) { gpc->init(); });
         else
-            pipelineConfig->init();
+            c.pipelineConfig->init();
     }
 
     vsg::StateGroup::StateCommands commands;
 
-    commands.push_back(pipelineConfig->bindGraphicsPipeline);
+    commands.push_back(c.pipelineConfig->bindGraphicsPipeline);
 
     // assign any custom ArrayState that may be required
     //stateGroup->prototypeArrayState = shaderSet->getSuitableArrayState(defines);
 
     // This binds the view-dependent state from VSG (lights, viewport, etc.)
-    auto bindViewDescriptorSets = vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, 1);
+    auto bindViewDescriptorSets = vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, c.pipelineConfig->layout, 1);
     commands.push_back(bindViewDescriptorSets);
 
-    if (runtime.sharedObjects)
-        runtime.sharedObjects->share(bindViewDescriptorSets);
+    if (runtime->sharedObjects)
+        runtime->sharedObjects->share(bindViewDescriptorSets);
 
-    pipelineStateCommands = commands;
+    c.pipelineStateCommands = commands;
+
+    return c;
 }
 
 
@@ -166,18 +206,25 @@ BindMeshStyle::BindMeshStyle()
     // transfered to the GPU before or during recording.
     _styleData->properties.dataVariance = vsg::DYNAMIC_DATA;
 
+#if 0
     auto ubo = vsg::DescriptorBuffer::create(_styleData, MESH_BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
     this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     this->firstSet = 0;
 
-    this->layout = MeshState::pipelineConfig->layout;
+    // todo: depends on whether we have a texture
+    auto config = MeshState::get().pipelineConfig;
+
+    this->layout = config->layout;
 
     this->descriptorSet = vsg::DescriptorSet::create(
-        MeshState::pipelineConfig->layout->setLayouts.front(),
+        config->layout->setLayouts.front(),
         vsg::Descriptors{ ubo });
+#endif
 
     setStyle(MeshStyle{});
+
+    dirty();
 }
 
 void
@@ -194,6 +241,36 @@ BindMeshStyle::style() const
     return *static_cast<MeshStyle*>(_styleData->dataPointer());
 }
 
+void
+BindMeshStyle::dirty()
+{
+    vsg::Descriptors descriptors;
+
+    // the style buffer:
+    auto ubo = vsg::DescriptorBuffer::create(_styleData, MESH_BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    descriptors.push_back(ubo);
+
+#ifdef SUPPORTS_TEXTURE
+    // the texture, if present:
+    if (_imageInfo)
+    {
+        auto texture = vsg::DescriptorImage::create(_imageInfo, TEXTURE_BINDING, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        descriptors.push_back(texture);
+    }
+#endif
+
+    this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    this->firstSet = 0;
+
+    // TODO: depends on whether we have a texture
+    auto config = MeshState::get().pipelineConfig;
+
+    this->layout = config->layout;
+
+    this->descriptorSet = vsg::DescriptorSet::create(
+        config->layout->setLayouts.front(),
+        descriptors);
+}
 
 
 MeshGeometry::MeshGeometry()
@@ -208,13 +285,16 @@ MeshGeometry::MeshGeometry()
 }
 
 void
-MeshGeometry::add(const vsg::vec3& v1, const vsg::vec3& v2, const vsg::vec3& v3)
+MeshGeometry::add(
+    const vsg::vec3& v1, const vsg::vec3& v2, const vsg::vec3& v3,
+    const vsg::vec2& uv1, const vsg::vec2& uv2, const vsg::vec2& uv3)
 {
     auto iter1 = _lut.find(v1);
     index_type i1 = iter1 != _lut.end() ? iter1->second : _verts.size();
     if (i1 == _verts.size())
     {
         _verts.push_back(v1);
+        _uvs.push_back(uv1);
         _lut[v1] = i1;
     }
 
@@ -223,6 +303,7 @@ MeshGeometry::add(const vsg::vec3& v1, const vsg::vec3& v2, const vsg::vec3& v3)
     if (i2 == _verts.size())
     {
         _verts.push_back(v2);
+        _uvs.push_back(uv2);
         _lut[v2] = i2;
     }
 
@@ -231,6 +312,7 @@ MeshGeometry::add(const vsg::vec3& v1, const vsg::vec3& v2, const vsg::vec3& v3)
     if (i3 == _verts.size())
     {
         _verts.push_back(v3);
+        _uvs.push_back(uv3);
         _lut[v3] = i3;
     }
 
@@ -253,9 +335,10 @@ MeshGeometry::compile(vsg::Context& context)
     auto vert_array = vsg::vec3Array::create(_verts.size(), _verts.data());
     auto normal_array = vsg::vec3Array::create(_normals.size(), _normals.data());
     auto color_array = vsg::vec4Array::create(_colors.size(), _colors.data());
+    auto uv_array = vsg::vec2Array::create(_uvs.size(), _uvs.data());
     auto index_array = vsg::ushortArray::create(_indices.size(), _indices.data());
 
-    assignArrays({ vert_array, normal_array, color_array });
+    assignArrays({ vert_array, normal_array, color_array, uv_array });
     assignIndices(index_array);
 
     _drawCommand->indexCount = index_array->size();

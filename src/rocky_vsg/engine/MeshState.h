@@ -17,6 +17,24 @@ namespace ROCKY_NAMESPACE
     struct MeshStyle;
     class Runtime;
 
+    class ROCKY_VSG_EXPORT PrimitiveState
+    {
+    public:
+        // Status; check before using.
+
+        struct Config
+        {
+            //! Singleton pipeline config object created when the object is first constructed,
+            //! for access to pipeline and desriptor set layouts.
+            vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> pipelineConfig;
+
+            //! Singleton state commands for establishing the pipeline.
+            vsg::StateGroup::StateCommands pipelineStateCommands;
+        };
+
+        static std::unordered_map<std::string, Config> configs;
+    };
+
     /**
      * Creates commands for rendering mesh primitives and holds the singleton pipeline
      * configurator for their drawing state.
@@ -32,13 +50,26 @@ namespace ROCKY_NAMESPACE
 
         // Status; check before using.
         static Status status;
+        static vsg::ref_ptr<vsg::ShaderSet> shaderSet;
+        static Runtime* runtime;
 
-        //! Singleton pipeline config object created when the object is first constructed,
-        //! for access to pipeline and desriptor set layouts.
-        static vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> pipelineConfig;
+        struct Config
+        {
+            //! Singleton pipeline config object created when the object is first constructed,
+            //! for access to pipeline and desriptor set layouts.
+            vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> pipelineConfig;
 
-        //! Singleton state commands for establishing the pipeline.
-        static vsg::StateGroup::StateCommands pipelineStateCommands;
+            //! Singleton state commands for establishing the pipeline.
+            vsg::StateGroup::StateCommands pipelineStateCommands;
+        };
+
+        static std::unordered_map<std::string, Config> configs;
+
+        //! Access the default state objects
+        static Config& get() { return get({}); }
+
+        //! Access a named state object build with the specified settings
+        static Config& get(const std::string&, vsg::ref_ptr<vsg::ShaderCompileSettings> settings = {});
     };
 
     /**
@@ -55,6 +86,9 @@ namespace ROCKY_NAMESPACE
         const MeshStyle& style() const;
 
         vsg::ref_ptr<vsg::ubyteArray> _styleData;
+        vsg::ref_ptr<vsg::ImageInfo> _imageInfo;
+
+        void dirty();
     };
 
     /**
@@ -67,7 +101,9 @@ namespace ROCKY_NAMESPACE
         MeshGeometry();
 
         //! Adds a triangle to the mesh.
-        void add(const vsg::vec3& v1, const vsg::vec3& v2, const vsg::vec3& v3);
+        void add(
+            const vsg::vec3& vert1, const vsg::vec3& vert2, const vsg::vec3& vert3,
+            const vsg::vec2& uv1, const vsg::vec2& uv2, const vsg::vec2& uv3);
 
         //! Recompile the geometry after making changes.
         //! TODO: just make it dynamic instead
@@ -75,14 +111,15 @@ namespace ROCKY_NAMESPACE
         
         void record(vsg::CommandBuffer&) const override;
 
-    protected:
         vsg::vec4 _defaultColor = { 1,1,1,1 };
         std::vector<vsg::vec3> _verts;
         std::vector<vsg::vec3> _normals;
         std::vector<vsg::vec4> _colors;
+        std::vector<vsg::vec2> _uvs;
         vsg::ref_ptr<vsg::DrawIndexed> _drawCommand;
         using index_type = unsigned short;
         std::map<vsg::vec3, index_type> _lut;
         std::vector<index_type> _indices;
+
     };
 }

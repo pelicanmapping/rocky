@@ -1447,11 +1447,11 @@ GDAL::Driver::createImage(
 
                 if (isCoverage)
                 {
-                    if (_layer->coverageUsesPaletteIndex() == true)
-                    {
-                        pixel.r = (float)p;
-                    }
-                    else
+                    //if (_layer->coverageUsesPaletteIndex() == true)
+                    //{
+                    //    pixel.r = (float)p;
+                    //}
+                    //else
                     {
                         glm::u8vec4 color;
                         if (getPalleteIndexColor(bandPalette, p, color) &&
@@ -1531,18 +1531,6 @@ void GDAL::LayerBase::setInterpolation(const Image::Interpolation& value) {
 }
 const optional<Image::Interpolation>& GDAL::LayerBase::interpolation() const {
     return _interpolation;
-}
-void GDAL::LayerBase::setUseVRT(bool value) {
-    _useVRT = value;
-}
-const optional<bool>& GDAL::LayerBase::useVRT() const {
-    return _useVRT;
-}
-void GDAL::LayerBase::setCoverageUsesPaletteIndex(bool value) {
-    _coverageUsesPaletteIndex = value;
-}
-const optional<bool>& GDAL::LayerBase::coverageUsesPaletteIndex() const {
-    return _coverageUsesPaletteIndex;
 }
 
 //......................................................................

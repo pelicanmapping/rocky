@@ -16,19 +16,6 @@
 
 namespace ROCKY_NAMESPACE
 {
-    //using dvec2 = glm::dvec2;
-    //using dvec3 = glm::dvec3;
-    //using dvec4 = glm::dvec4;
-    //using dmat3 = glm::dmat3;
-    //using dmat4 = glm::dmat4;
-
-    //using fvec2 = glm::fvec2;
-    //using fvec3 = glm::fvec3;
-    //using fvec4 = glm::fvec4;
-    //using fmat4 = glm::fmat4;
-
-    //using u8vec4 = glm::u8vec4;
-
     // mult a vec3 x mat4
     inline glm::dvec3 operator * (const glm::dvec3& a, const glm::dmat4& b)
     {

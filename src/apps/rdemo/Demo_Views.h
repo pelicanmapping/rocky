@@ -113,7 +113,7 @@ auto Demo_Views = [](Application& app)
                     auto new_view = vsg::View::create(camera, app.root);
 
                     // add it to a window - and set a random clear color once it's created.
-                    auto on_create = [&app, new_view]()
+                    auto on_create = [&app, new_view](vsg::CommandGraph*)
                     {
                         auto viewdata = app.viewData(new_view);
                         auto& color = viewdata.parentRenderGraph->clearValues[0].color.float32;

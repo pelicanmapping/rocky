@@ -160,6 +160,13 @@ namespace ImGuiLTable
         ImGui::TableNextColumn();
     }
 
+    static bool Button(const char* label)
+    {
+        ImGui::TableNextColumn();
+        ImGui::TableNextColumn();
+        return ImGui::Button(label);
+    }
+
     static void End()
     {
         ImGui::EndTable();

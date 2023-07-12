@@ -192,7 +192,7 @@ util::Future<vsg::ref_ptr<vsg::View>>
 Application::addView(
     vsg::ref_ptr<vsg::Window> window,
     vsg::ref_ptr<vsg::View> view,
-    std::function<void()> on_create)
+    std::function<void(vsg::CommandGraph*)> on_create)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(window != nullptr, {});
     ROCKY_SOFT_ASSERT_AND_RETURN(view != nullptr, {});
@@ -212,10 +212,12 @@ Application::addView(
     else
     {
         // use this before realization:
+        vsg::ref_ptr<vsg::CommandGraph> commandgraph;
+
         auto iter = _commandGraphByWindow.find(window);
         if (iter != _commandGraphByWindow.end())
         {
-            auto commandgraph = iter->second;
+            commandgraph = iter->second;
 
             if (view->children.empty())
             {
@@ -237,7 +239,7 @@ Application::addView(
         result.resolve(view);
 
         if (on_create)
-            on_create();
+            on_create(commandgraph.get());
 
         return result;
     }
@@ -246,7 +248,7 @@ Application::addView(
 void
 Application::addViewAfterViewerIsRealized(
     vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view,
-    std::function<void()> on_create,
+    std::function<void(vsg::CommandGraph*)> on_create,
     util::Future<vsg::ref_ptr<vsg::View>> result)
 {
     // wait until the device is idle to avoid changing state while it's being used.
@@ -257,10 +259,12 @@ Application::addViewAfterViewerIsRealized(
         view->addChild(root);
     }
 
+    vsg::ref_ptr<vsg::CommandGraph> commandgraph;
+
     auto iter = _commandGraphByWindow.find(window);
     if (iter != _commandGraphByWindow.end())
     {
-        auto commandgraph = iter->second;
+        commandgraph = iter->second;
 
         auto rendergraph = vsg::RenderGraph::create(window, view);
         rendergraph->setClearValues({ {0.1f, 0.12f, 0.15f, 1.0f} });
@@ -291,7 +295,7 @@ Application::addViewAfterViewerIsRealized(
     }
 
     if (on_create)
-        on_create();
+        on_create(commandgraph.get());
 
     // report that we are ready to rock
     result.resolve(view);
@@ -390,6 +394,45 @@ Application::addPostRenderNode(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vs
     commandGraph->addChild(node);
 }
 
+void
+Application::addPreRenderGraph(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::RenderGraph> rg)
+{
+    auto func = [=]()
+    {
+        auto& commandGraph = _commandGraphByWindow[window];
+
+        ROCKY_SOFT_ASSERT_AND_RETURN(commandGraph, void());
+        ROCKY_SOFT_ASSERT_AND_RETURN(commandGraph->children.size() > 0, void());
+
+        // Insert the pre-render graph into the command graph.
+        commandGraph->children.insert(commandGraph->children.begin(), rg);
+
+        // Add this new view to the viewer's compile manager:
+        vsg::ref_ptr<vsg::View> view;
+        if (!rg->children.empty()) view = rg->children[0].cast<vsg::View>();
+        if (view)
+        {
+            viewer->compileManager->add(*window, view);
+
+            // Compile the new render pass for this view.
+            // The lambda idiom is taken from vsgexamples/dynamicviews
+            auto result = viewer->compileManager->compile(rg, [&view](vsg::Context& context)
+                {
+                    return context.view == view.get();
+                });
+            if (result.requiresViewerUpdate())
+            {
+                vsg::updateViewer(*viewer, result);
+            }
+        }
+    };
+
+    if (_viewerRealized)
+        instance.runtime().runDuringUpdate(func);
+    else
+        func();
+}
+
 std::shared_ptr<Map>
 Application::map()
 {
@@ -397,7 +440,7 @@ Application::map()
 }
 
 void
-Application::realizeViewer(vsg::ref_ptr<vsg::Viewer> viewer)
+Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
 {
     // respond to the X or to hitting ESC
     // TODO: refactor this so it responds to individual windows and not the whole app?
@@ -446,79 +489,96 @@ Application::recreateViewer()
     for (auto& j : handlers)
         viewer->addEventHandler(j);
 
-    realizeViewer(viewer);
+    setupViewer(viewer);
+}
+
+void
+Application::realize()
+{
+    if (!_viewerRealized)
+    {
+        // Make a window if the user didn't.
+        if (viewer->windows().empty())
+        {
+            addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
+        }
+
+        setupViewer(viewer);
+
+        // mark the viewer ready so that subsequent changes will know to
+        // use an asynchronous path.
+        _viewerRealized = true;
+    }
 }
 
 int
 Application::run()
 {
-    // Make a window if the user didn't.
-    if (viewer->windows().empty())
-    {
-        addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
-    }
-
-    realizeViewer(viewer);
-
-    // mark the viewer ready so that subsequent changes will know to
-    // use an asynchronous path.
-    _viewerRealized = true;
-
     // The main frame loop
-    while (viewer->advanceToNextFrame())
+    while (frame() == true);
+    return 0;
+}
+
+bool
+Application::frame()
+{
+    if (!_viewerRealized)
+        realize();
+
+    auto t_start = std::chrono::steady_clock::now();
+
+    if (!viewer->advanceToNextFrame())
+        return false;
+
+    viewer->handleEvents();
+
+    // since an event handler could deactivate the viewer:
+    if (!viewer->active())
+        return false;
+
+    auto t_update = std::chrono::steady_clock::now();
+
+    // rocky update pass - management of tiles and paged data
+    mapNode->update(viewer->getFrameStamp());
+
+    // user's update function
+    if (updateFunction)
     {
-        auto t_start = std::chrono::steady_clock::now();
-
-        viewer->handleEvents();
-
-        // since an event handler could deactivate the viewer:
-        if (!viewer->active())
-            break;
-
-        auto t_update = std::chrono::steady_clock::now();
-
-        // rocky update pass - management of tiles and paged data
-        mapNode->update(viewer->getFrameStamp());
-
-        // user's update function
-        if (updateFunction)
-        {
-            updateFunction();
-        }
-
-        // run through the viewer's update operations queue; this includes update ops 
-        // initialized by rocky (tile merges or MapObject adds)
-        viewer->update();
-
-        // integrate any compile results that may be pending
-        instance.runtime().update();
-
-        if (_viewerDirty)
-        {
-            _viewerDirty = false;
-            recreateViewer();
-            continue;
-        }
-
-        // if any map objects are queued for add or remove, process them now
-        addAndRemoveObjects();
-
-        auto t_record = std::chrono::steady_clock::now();
-
-        viewer->recordAndSubmit();
-
-        auto t_present = std::chrono::steady_clock::now();
-
-        viewer->present();
-
-        auto t_end = std::chrono::steady_clock::now();
-        stats.frame = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start);
-        stats.events = std::chrono::duration_cast<std::chrono::microseconds>(t_update - t_start);
-        stats.update = std::chrono::duration_cast<std::chrono::microseconds>(t_record - t_update);
-        stats.record = std::chrono::duration_cast<std::chrono::microseconds>(t_present - t_record);
+        updateFunction();
     }
 
-    return 0;
+    // run through the viewer's update operations queue; this includes update ops 
+    // initialized by rocky (tile merges or MapObject adds)
+    viewer->update();
+
+    // integrate any compile results that may be pending
+    instance.runtime().update();
+
+    if (_viewerDirty)
+    {
+        _viewerDirty = false;
+        recreateViewer();
+        return true;
+    }
+
+    // if any map objects are queued for add or remove, process them now
+    addAndRemoveObjects();
+
+    auto t_record = std::chrono::steady_clock::now();
+
+    viewer->recordAndSubmit();
+
+    auto t_present = std::chrono::steady_clock::now();
+
+    viewer->present();
+
+    auto t_end = std::chrono::steady_clock::now();
+    stats.frame = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start);
+    stats.events = std::chrono::duration_cast<std::chrono::microseconds>(t_update - t_start);
+    stats.update = std::chrono::duration_cast<std::chrono::microseconds>(t_record - t_update);
+    stats.record = std::chrono::duration_cast<std::chrono::microseconds>(t_present - t_record);
+
+    return true;
 }
 
 void

@@ -29,6 +29,13 @@ Mesh::style() const
 }
 
 void
+Mesh::setTexture(vsg::ref_ptr<vsg::ImageInfo> value)
+{
+    _bindStyle->_imageInfo = value;
+    _bindStyle->dirty();
+}
+
+void
 Mesh::createNode(Runtime& runtime)
 {
     if (!node)
@@ -36,7 +43,7 @@ Mesh::createNode(Runtime& runtime)
         ROCKY_HARD_ASSERT(MeshState::status.ok());
 
         auto stateGroup = vsg::StateGroup::create();
-        stateGroup->stateCommands = MeshState::pipelineStateCommands;
+        stateGroup->stateCommands = MeshState::get().pipelineStateCommands;
         stateGroup->addChild(_bindStyle);
         stateGroup->addChild(_geometry);
         auto sw = vsg::Switch::create();

@@ -347,9 +347,9 @@ Ellipsoid::intersectGeocentricLine(
 }
 
 double
-Ellipsoid::geodesicDistance(
-    const glm::dvec2& p1,
-    const glm::dvec2& p2) const
+Ellipsoid::geodesicGroundDistance(
+    const glm::dvec3& p1,
+    const glm::dvec3& p2) const
 {
     double
         lat1 = deg2rad(p1.y),

@@ -16,6 +16,7 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
+    vsg::ref_ptr<vsg::DeviceMemory> memory;
     const int frame_count = 300;
     using Timings = std::vector<std::chrono::microseconds>;
     Timings frames(frame_count);

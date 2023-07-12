@@ -51,13 +51,16 @@ int main(int argc, char** argv)
     // Make a line string.
     auto line = rocky::LineString::create();
 
+    std::vector<glm::dvec3> points;
     auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
     for (double lon = -180.0; lon <= 180.0; lon += 2.5)
     {
         glm::dvec3 ecef;
         if (xform(glm::dvec3(lon, 0.0, 100000), ecef))
-            line->pushVertex(ecef);
+            points.push_back(ecef);
     }
+
+    line->setGeometry(points.begin(), points.end());
     
     line->setStyle(rocky::LineStyle{
         { 1,0.7,0.3,1 }, // color

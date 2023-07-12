@@ -50,21 +50,11 @@ namespace ROCKY_NAMESPACE
             void setInterpolation(const Image::Interpolation& value);
             const optional<Image::Interpolation>& interpolation() const;
 
-            //! Use the new VRT read approach
-            void setUseVRT(bool value);
-            const optional<bool>& useVRT() const;
-
-            //! Whether coverate data uses a palette index
-            void setCoverageUsesPaletteIndex(bool value);
-            const optional<bool>& coverageUsesPaletteIndex() const;
-
         protected:
             optional<URI> _uri = { };
             optional<std::string> _connection = { };
             optional<unsigned> _subDataSet = 0;
             optional<Image::Interpolation> _interpolation = Image::AVERAGE;
-            optional<bool> _useVRT = false;
-            optional<bool> _coverageUsesPaletteIndex = true;
             optional<bool> _singleThreaded = false;
         };
 
@@ -156,18 +146,6 @@ namespace ROCKY_NAMESPACE
         //! Reads an image from raw data using the specified GDAL driver.
         extern ROCKY_EXPORT Result<shared_ptr<Image>> readImage(
             unsigned char* data, unsigned len, const std::string& gdal_driver);
-
-#if 0
-        extern ROCKY_EXPORT shared_ptr<Image> reprojectImage(
-            const Image* srcImage,
-            const std::string srcWKT,
-            double srcMinX, double srcMinY, double srcMaxX, double srcMaxY,
-            const std::string destWKT,
-            double destMinX, double destMinY, double destMaxX, double destMaxY,
-            int width = 0,
-            int height = 0,
-            bool useBilinearInterpolation = true);
-#endif
 
     } // namespace GDAL
 

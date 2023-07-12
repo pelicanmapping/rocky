@@ -32,8 +32,15 @@ namespace ROCKY_NAMESPACE
         template<typename VEC3>
         void addTriangle(const VEC3& v1, const VEC3& v2, const VEC3& v3);
 
+        template<typename VEC3, typename UV2>
+        void addTriangle(const VEC3& v1, const VEC3& v2, const VEC3& v3,
+            const UV2& uv1, const UV2& uv2, const UV2& uv3);
+
         //! Set to overall style for this mesh
         void setStyle(const MeshStyle& value);
+
+        //! Sets a texture
+        void setTexture(vsg::ref_ptr<vsg::ImageInfo> texture);
 
         //! Overall style for the mesh
         const MeshStyle& style() const;
@@ -58,6 +65,20 @@ namespace ROCKY_NAMESPACE
         _geometry->add(
             vsg::vec3(v1.x, v1.y, v1.z),
             vsg::vec3(v2.x, v2.y, v2.z),
-            vsg::vec3(v3.x, v3.y, v3.z));
+            vsg::vec3(v3.x, v3.y, v3.z),
+            { 0,0 }, { 0,0 }, { 0,0 });
+    }
+
+    template<typename VEC3, typename UV2>
+    void Mesh::addTriangle(const VEC3& v1, const VEC3& v2, const VEC3& v3,
+        const UV2& uv1, const UV2& uv2, const UV2& uv3)
+    {
+        _geometry->add(
+            vsg::vec3(v1.x, v1.y, v1.z),
+            vsg::vec3(v2.x, v2.y, v2.z),
+            vsg::vec3(v3.x, v3.y, v3.z),
+            vsg::vec2(uv1.s, uv1.t),
+            vsg::vec2(uv2.s, uv2.t),
+            vsg::vec2(uv3.s, uv3.t));
     }
 }

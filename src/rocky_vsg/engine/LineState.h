@@ -94,10 +94,5 @@ namespace ROCKY_NAMESPACE
         std::vector<vsg::vec3> _next;
         std::vector<vsg::vec4> _colors;
         vsg::ref_ptr<vsg::DrawIndexed> _drawCommand;
-
-        //unsigned actualVertsPerVirtualVert(unsigned) const;
-        //unsigned numVirtualVerts(const vsg::Array*) const;
-        //unsigned getRealIndex(unsigned) const;
-        //void updateFirstCount();
     };
 }

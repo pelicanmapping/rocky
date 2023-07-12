@@ -45,6 +45,10 @@ namespace ROCKY_NAMESPACE
             LineState lineState;
             MeshState meshState;
             IconState iconState;
+
+            std::unordered_map<std::string, LineState> lineStates;
+            std::unordered_map<std::string, MeshState> meshStates;
+            std::unordered_map<std::string, IconState> iconStates;
         };
         std::shared_ptr<Implementation> _impl;
         friend class Application;
