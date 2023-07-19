@@ -35,15 +35,15 @@ namespace ROCKY_NAMESPACE
 
         //! Access the map.
         //! @return Pointer to the map
-        shared_ptr<Map> map();
+        std::shared_ptr<Map> map();
 
         //! Add a map object to the scene
         //! @param object Map object to add to the scene
-        void add(shared_ptr<MapObject> object);
+        void add(std::shared_ptr<MapObject> object);
 
         //! Remove a map object from the scene
         //! @param object Map object to remove from the scene
-        void remove(shared_ptr<MapObject> object);
+        void remove(std::shared_ptr<MapObject> object);
 
         //! Process and render one frame. If you call run(), this will
         //! happen automatically in a continuous loop.
@@ -96,9 +96,10 @@ namespace ROCKY_NAMESPACE
         //! @param View view to refresh
         void refreshView(vsg::ref_ptr<vsg::View> view);
 
-        //! Return commands and data pertaining to a view.
+        //! Access additional information pertaining to a View
         //! @param view View for which to retrieve data
         //! @return Reference to the view's supplementary data
+        //! TODO: evaluate whether we need this function or whether it should be exposed
         inline ViewData& viewData(vsg::ref_ptr<vsg::View> view);
 
         //! Adds a child to a window's main render pass. Each render pass child works as 
@@ -106,9 +107,16 @@ namespace ROCKY_NAMESPACE
         //! good way to e.g. render a GUI overlay after rendering the 3D scene.
         //! @param window Window to which to add the post-render node.
         //! @param node Node to add.
+        //! TODO: add a way to remove or deactivate it
         void addPostRenderNode(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Node> node);
 
-        void addPreRenderGraph(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::RenderGraph> rg);
+        //! Adds a new render graph that should render before the rest of the scene.
+        //! (Typical use is an RTT camera that is later used as a texture somewhere
+        //! in the main scene graph.)
+        //! @param window Window under which to add the new graph
+        //! @param renderGraph RenderGraph to add
+        //! TODO: add a way to remove or deactivate it
+        void addPreRenderGraph(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::RenderGraph> renderGraph);
 
     public:
         rocky::InstanceVSG instance;
@@ -125,6 +133,7 @@ namespace ROCKY_NAMESPACE
             std::chrono::microseconds events;
             std::chrono::microseconds update;
             std::chrono::microseconds record;
+
         };
         Stats stats;
 
@@ -145,7 +154,6 @@ namespace ROCKY_NAMESPACE
         bool _multithreaded = true;
         bool _viewerRealized = false;
         bool _viewerDirty = false;
-        AttachmentRenderers _renderers;
 
         struct Addition {
             vsg::ref_ptr<vsg::Node> node;
@@ -172,6 +180,9 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::View> view,
             std::function<void(vsg::CommandGraph*)> on_create,
             util::Future<vsg::ref_ptr<vsg::View>> result);
+
+        vsg::ref_ptr<vsg::CommandGraph> getCommandGraph(vsg::ref_ptr<vsg::Window> window);
+        vsg::ref_ptr<vsg::Window> getWindow(vsg::ref_ptr<vsg::View> view);
 
         void addManipulator(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View>);
     };

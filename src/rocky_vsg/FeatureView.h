@@ -14,7 +14,7 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-    * Conveys geometry compile hints to the FeatureView attachment
+    * Style information for compiling and displaying Features
     */
     struct StyleSheet
     {
@@ -37,8 +37,13 @@ namespace ROCKY_NAMESPACE
         StyleSheet styles;
 
     public:
+        //! Default construct - no data
         FeatureView();
+
+        //! Construct a view to display a single feature
         FeatureView(const Feature& value);
+
+        //! Construct a view to display a single moved feature)
         FeatureView(Feature&& value);
 
     protected:

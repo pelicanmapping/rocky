@@ -79,6 +79,8 @@ namespace ROCKY_NAMESPACE
     * TODO
     * Interface for the mechanism that will render a particular attachment type.
     * This is a possible avenue for sorting things by state/pipeline?
+    * It may be better to simply sort things into groups based on an object "type"
+    * that the end application can decide upon.
     */
     class AttachmentRenderer
     {

@@ -27,12 +27,11 @@ namespace
         }
         else
         {
-            Log::warn() << "FAILED TO LOAD MODEL." << std::endl;
-            return vsg::Group::create();
+            return {};
         }
     }
 
-    vsg::ref_ptr<vsg::Camera> make_rtt_camera(vsg::ref_ptr<vsg::Node> node)
+    vsg::ref_ptr<vsg::Camera> make_rtt_camera(vsg::ref_ptr<vsg::Node> node, const VkExtent2D size)
     {
         vsg::ComputeBounds computeBounds;
         node->accept(computeBounds);
@@ -46,7 +45,7 @@ namespace
 
         auto perspective = vsg::Perspective::create(45.0, 1.0, nearFarRatio* radius, radius * 10.0);
 
-        return vsg::Camera::create(perspective, lookAt, vsg::ViewportState::create(VkExtent2D{512,512}));
+        return vsg::Camera::create(perspective, lookAt, vsg::ViewportState::create(size));
     }
 }
 
@@ -60,6 +59,12 @@ auto Demo_RTT = [](Application& app)
     static vsg::ref_ptr<vsg::MatrixTransform> mt;
     static float rotation = 0.0f;
 
+    if (status.failed())
+    {
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), status.message.c_str());
+        return;
+    }
+
     if (!object)
     {
         // Find the main window and view:
@@ -70,31 +75,38 @@ auto Demo_RTT = [](Application& app)
         // this is the model we will see in the texture:
         URI uri("https://raw.githubusercontent.com/vsg-dev/vsgExamples/master/data/models/teapot.vsgt");
         auto rtt_node = load_rtt_model(uri, app.instance.runtime());
-        if (rtt_node)
+        if (!rtt_node)
         {
-            mt = vsg::MatrixTransform::create();
-            mt->addChild(rtt_node);
-            rtt_node = mt;
-
-            // RTT camera and view:
-            auto rtt_cam = make_rtt_camera(rtt_node);
-            auto rtt_view = vsg::View::create(rtt_cam, rtt_node);
-
-            // and this is the render graph that will execute the RTT:
-            auto vsg_context = vsg::Context::create(main_window->getOrCreateDevice());
-            texture = vsg::ImageInfo::create();
-            depth = vsg::ImageInfo::create();
-            auto rtt_graph = RTT::createOffScreenRenderGraph(*vsg_context, { 512, 512 }, *texture, *depth);
-            rtt_graph->addChild(rtt_view);
-            app.addPreRenderGraph(main_window, rtt_graph);
+            status = Status(Status::ResourceUnavailable, "Unable to load the model from " + uri.full());
+            return;
         }
+
+        // Make a transform so we can spin the model.
+        mt = vsg::MatrixTransform::create();
+        mt->addChild(rtt_node);
+        rtt_node = mt;
+
+        // RTT camera and view:
+        VkExtent2D size{ 256, 256 };
+        auto rtt_cam = make_rtt_camera(rtt_node, size);
+        auto rtt_view = vsg::View::create(rtt_cam, rtt_node);
+
+        // This is the render graph that will execute the RTT:
+        auto vsg_context = vsg::Context::create(main_window->getOrCreateDevice());
+        texture = vsg::ImageInfo::create();
+        depth = vsg::ImageInfo::create();
+        auto rtt_graph = RTT::createOffScreenRenderGraph(*vsg_context, size, texture, depth);
+        rtt_graph->addChild(rtt_view);
+
+        // Add the RTT graph to our application window.
+        app.addPreRenderGraph(main_window, rtt_graph);
 
         // This is the geometry that we will apply the texture to. 
         // We have to add UVs (texture coordinates).
         auto mesh = Mesh::create();
         auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
         const double step = 2.5;
-        const double alt = 50000;
+        const double alt = 500000;
         const double lon0 = -35.0, lon1 = 0.0, lat0 = -35.0, lat1 = 0.0;
         vsg::vec2 uv[4];
         for(double lon = lon0; lon < lon1; lon += step)

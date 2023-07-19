@@ -24,6 +24,40 @@
 
 using namespace ROCKY_NAMESPACE;
 
+namespace
+{
+    // Call this when adding a new rendergraph to the scene.
+    void activateRenderGraph(
+        vsg::ref_ptr<vsg::RenderGraph> renderGraph,
+        vsg::ref_ptr<vsg::Window> window,
+        vsg::ref_ptr<vsg::Viewer> viewer)
+    {
+        vsg::ref_ptr<vsg::View> view;
+
+        if (!renderGraph->children.empty())
+            view = renderGraph->children[0].cast<vsg::View>();
+
+        if (view)
+        {
+            // add this rendergraph's view to the viewer's compile manager.
+            viewer->compileManager->add(*window, view);
+
+            // Compile the new render pass for this view.
+            // The lambda idiom is taken from vsgexamples/dynamicviews
+            auto result = viewer->compileManager->compile(renderGraph, [&view](vsg::Context& context)
+                {
+                    return context.view == view.get();
+                });
+
+            // if something was compiled, we need to update the viewer:
+            if (result.requiresViewerUpdate())
+            {
+                vsg::updateViewer(*viewer, result);
+            }
+        }
+    }
+}
+
 Application::Application(int& argc, char** argv) :
     instance()
 {
@@ -245,49 +279,63 @@ Application::addView(
     }
 }
 
+vsg::ref_ptr<vsg::CommandGraph>
+Application::getCommandGraph(vsg::ref_ptr<vsg::Window> window)
+{
+    auto iter = _commandGraphByWindow.find(window);
+    if (iter != _commandGraphByWindow.end())
+        return iter->second;
+    else
+        return {};
+}
+
+vsg::ref_ptr<vsg::Window>
+Application::getWindow(vsg::ref_ptr<vsg::View> view)
+{
+    for (auto iter : displayConfiguration.windows)
+    {
+        for (auto& a_view : iter.second)
+        {
+            if (a_view == view)
+            {
+                return iter.first;
+                break;
+            }
+        }
+    }
+    return {};
+}
+
 void
 Application::addViewAfterViewerIsRealized(
-    vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view,
+    vsg::ref_ptr<vsg::Window> window,
+    vsg::ref_ptr<vsg::View> view,
     std::function<void(vsg::CommandGraph*)> on_create,
     util::Future<vsg::ref_ptr<vsg::View>> result)
 {
     // wait until the device is idle to avoid changing state while it's being used.
     viewer->deviceWaitIdle();
 
+    // attach our scene to the new view:
     if (view->children.empty())
     {
         view->addChild(root);
     }
 
-    vsg::ref_ptr<vsg::CommandGraph> commandgraph;
-
-    auto iter = _commandGraphByWindow.find(window);
-    if (iter != _commandGraphByWindow.end())
+    // find the command graph for this window:
+    auto commandgraph = getCommandGraph(window);
+    if (commandgraph)
     {
-        commandgraph = iter->second;
-
+        // new view needs a new rendergraph:
         auto rendergraph = vsg::RenderGraph::create(window, view);
         rendergraph->setClearValues({ {0.1f, 0.12f, 0.15f, 1.0f} });
         commandgraph->addChild(rendergraph);
 
-        // Add this new view to the viewer's compile manager:
-        viewer->compileManager->add(*window, view);
-
-        // Compile the new render pass for this view.
-        // The lambda idiom is taken from vsgexamples/dynamicviews
-        auto result = viewer->compileManager->compile(rendergraph, [&view](vsg::Context& context)
-            {
-                return context.view == view.get();
-            });
-        if (result.requiresViewerUpdate())
-        {
-            vsg::updateViewer(*viewer, result);
-        }
+        activateRenderGraph(rendergraph, window, viewer);
 
         // remember so we can remove it later
         auto& viewdata = _viewData[view];
         viewdata.parentRenderGraph = rendergraph;
-
         displayConfiguration.windows[window].emplace_back(view);
 
         // Add a manipulator - we might not do this by default - check back.
@@ -311,25 +359,13 @@ Application::removeView(vsg::ref_ptr<vsg::View> view)
         // wait until the device is idle to avoid changing state while it's being used.
         viewer->deviceWaitIdle();
 
-        vsg::ref_ptr<vsg::Window> window;
-        for (auto iter : displayConfiguration.windows)
-        {
-            for (auto& a_view : iter.second)
-            {
-                if (a_view == view)
-                {
-                    window = iter.first;
-                    break;
-                }
-            }
-            if (window) break;
-        }
+        auto window = getWindow(view);
         ROCKY_SOFT_ASSERT_AND_RETURN(window != nullptr, void());
 
-        auto ci = _commandGraphByWindow.find(window);
-        ROCKY_SOFT_ASSERT_AND_RETURN(ci != _commandGraphByWindow.end(), void());
-        auto& commandgraph = ci->second;
+        auto commandgraph = getCommandGraph(window);
+        ROCKY_SOFT_ASSERT_AND_RETURN(commandgraph, void());
 
+        // find the rendergraph hosting the view:
         auto vd = _viewData.find(view);
         ROCKY_SOFT_ASSERT_AND_RETURN(vd != _viewData.end(), void());
         auto& rendergraph = vd->second.parentRenderGraph;
@@ -338,8 +374,8 @@ Application::removeView(vsg::ref_ptr<vsg::View> view)
         auto& rps = commandgraph->children;
         rps.erase(std::remove(rps.begin(), rps.end(), rendergraph), rps.end());
 
+        // remove it from our tracking tables.
         _viewData.erase(view);
-
         auto& views = displayConfiguration.windows[vsg::observer_ptr<vsg::Window>(window)];
         views.erase(std::remove(views.begin(), views.end(), view), views.end());
     };
@@ -386,7 +422,7 @@ Application::refreshView(vsg::ref_ptr<vsg::View> view)
 void
 Application::addPostRenderNode(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Node> node)
 {
-    auto& commandGraph = _commandGraphByWindow[window];
+    auto commandGraph = getCommandGraph(window);
 
     ROCKY_SOFT_ASSERT_AND_RETURN(commandGraph, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(commandGraph->children.size() > 0, void());
@@ -395,36 +431,20 @@ Application::addPostRenderNode(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vs
 }
 
 void
-Application::addPreRenderGraph(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::RenderGraph> rg)
+Application::addPreRenderGraph(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::RenderGraph> renderGraph)
 {
     auto func = [=]()
     {
-        auto& commandGraph = _commandGraphByWindow[window];
+        auto commandGraph = getCommandGraph(window);
 
         ROCKY_SOFT_ASSERT_AND_RETURN(commandGraph, void());
         ROCKY_SOFT_ASSERT_AND_RETURN(commandGraph->children.size() > 0, void());
 
         // Insert the pre-render graph into the command graph.
-        commandGraph->children.insert(commandGraph->children.begin(), rg);
+        commandGraph->children.insert(commandGraph->children.begin(), renderGraph);
 
-        // Add this new view to the viewer's compile manager:
-        vsg::ref_ptr<vsg::View> view;
-        if (!rg->children.empty()) view = rg->children[0].cast<vsg::View>();
-        if (view)
-        {
-            viewer->compileManager->add(*window, view);
-
-            // Compile the new render pass for this view.
-            // The lambda idiom is taken from vsgexamples/dynamicviews
-            auto result = viewer->compileManager->compile(rg, [&view](vsg::Context& context)
-                {
-                    return context.view == view.get();
-                });
-            if (result.requiresViewerUpdate())
-            {
-                vsg::updateViewer(*viewer, result);
-            }
-        }
+        // hook it up.
+        activateRenderGraph(renderGraph, window, viewer);
     };
 
     if (_viewerRealized)
@@ -474,7 +494,6 @@ void
 Application::recreateViewer()
 {
     // Makes a new viewer, copying settings from the old viewer.
-
     vsg::EventHandlers handlers = viewer->getEventHandlers();
 
     // before we destroy it,
