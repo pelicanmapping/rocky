@@ -7,6 +7,7 @@
 #include <rocky_vsg/MapObject.h>
 #include <rocky/Feature.h>
 #include <optional>
+#include <functional>
 #include <rocky_vsg/LineString.h>
 #include <rocky_vsg/Mesh.h>
 #include <rocky_vsg/Icon.h>
@@ -21,6 +22,8 @@ namespace ROCKY_NAMESPACE
         std::optional<LineStyle> line;
         std::optional<MeshStyle> mesh;
         std::optional<IconStyle> icon;
+
+        std::function<MeshStyle(const Feature&)> mesh_function;
     };
 
     /**

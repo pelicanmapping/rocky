@@ -10,7 +10,7 @@
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
 
-auto Demo_LineFeatures= [](Application& app)
+auto Demo_PolygonFeatures= [](Application& app)
 {
     static shared_ptr<MapObject> object;
     static shared_ptr<FeatureView> feature_view;
@@ -34,21 +34,19 @@ auto Demo_LineFeatures= [](Application& app)
             auto feature = iter->next();
             if (feature.valid())
             {
-                // convert anything we find to lines:
-                feature.geometry.convertToType(Geometry::Type::LineString);
-
                 feature.interpolation = GeodeticInterpolation::RhumbLine;
                 feature_view->features.emplace_back(std::move(feature));
             }
         }
 
-        // apply a style:
-        feature_view->styles.line = LineStyle{ 
-            { 1,1,0.3,1 }, // color
-            2.0f,          // width
-            0xffff,        // stipple pattern
-            1,             // stipple factor
-            100000.0f };   // resolution (geometric error)
+        feature_view->styles.mesh_function = [&](const Feature& f)
+        {
+            return MeshStyle{ {
+                (float)(std::rand() % 192 + 63) / 255.0f,
+                (float)(std::rand() % 192 + 63) / 255.0f,
+                (float)(std::rand() % 192 + 63) / 255.0f,
+                1.0f }, 64.0f };
+        };
 
         // Finally, create an object with our attachment.
         app.add(object = MapObject::create(feature_view));

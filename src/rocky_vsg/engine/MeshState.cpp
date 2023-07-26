@@ -21,7 +21,8 @@ using namespace ROCKY_NAMESPACE;
 #define VIEWPORT_BUFFER_SET 1 // hard-coded in VSG ViewDependentState
 #define VIEWPORT_BUFFER_BINDING 1 // hard-coded in VSG ViewDependentState (set=1)
 
-#define SUPPORTS_TEXTURE
+//TODO: this can't be a define, it needs to be an option.
+//#define SUPPORTS_TEXTURE
 
 #ifdef SUPPORTS_TEXTURE
 #define TEXTURE_SET 0

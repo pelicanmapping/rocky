@@ -37,6 +37,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Model.h"
 #include "Demo_Label.h"
 #include "Demo_LineFeatures.h"
+#include "Demo_PolygonFeatures.h"
 #include "Demo_MapManipulator.h"
 #include "Demo_Views.h"
 #include "Demo_RTT.h"
@@ -87,7 +88,8 @@ void setup_demos(rocky::Application& app)
     demos.emplace_back(
         Demo{ "Features", {},
         {
-            Demo{ "Line features", Demo_LineFeatures }
+            Demo{ "Line features", Demo_LineFeatures },
+            Demo{ "Polygon features", Demo_PolygonFeatures }
         } }
     );
 

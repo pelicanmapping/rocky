@@ -163,6 +163,7 @@ Application::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
 
         if (viewer->windows().size() > 0)
         {
+            //TODO: after VSG 1.0.7 I believe this changed to traits->device?
             traits->shareWindow = viewer->windows().front();
         }
 

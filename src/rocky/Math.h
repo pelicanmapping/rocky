@@ -111,6 +111,12 @@ namespace ROCKY_NAMESPACE
             zmax = std::max(zmax, rhs.zmax);
         }
 
+        template<class ITER>
+        void expandBy(ITER begin, ITER end) {
+            for (ITER i = begin; i != end; ++i)
+                expandBy({ i->x, i->y, i->z });
+        }
+
         glm::dvec3 corner(unsigned i) const {
             return glm::dvec3(
                 (i & 0x1) ? xmax : xmin,

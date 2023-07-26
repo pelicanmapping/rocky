@@ -13,9 +13,9 @@
 
 namespace weemesh
 {
-#define marker_is_set(INDEX, BITS) ((_markers[INDEX] & BITS) != 0)
-#define marker_not_set(INDEX, BITS) ((_markers[INDEX] & BITS) == 0)
-#define set_marker(INDEX, BITS) _markers[INDEX] |= BITS;
+#define marker_is_set(INDEX, BITS) ((markers[INDEX] & BITS) != 0)
+#define marker_not_set(INDEX, BITS) ((markers[INDEX] & BITS) == 0)
+#define set_marker(INDEX, BITS) markers[INDEX] |= BITS;
 
 #define equivalent equiv
     using namespace ROCKY_NAMESPACE;
@@ -26,59 +26,53 @@ namespace weemesh
     struct vert_t
     {
         using value_type = double;
-        double _x, _y, _z;
-        double& x() { return _x; }
-        const double& x() const { return _x; }
-        double& y() { return _y; }
-        const double& y() const { return _y; }
-        double& z() { return _z; }
-        const double& z() const { return _z; }
+        double x, y, z;
         vert_t() { }
-        vert_t(value_type a, value_type b, value_type c) : _x(a), _y(b), _z(c) { }
-        vert_t(value_type* ptr) : _x(ptr[0]), _y(ptr[1]), _z(ptr[2]) { }
-        vert_t(const vert_t& rhs) : _x(rhs.x()), _y(rhs.y()), _z(rhs.z()) { }
+        vert_t(value_type a, value_type b, value_type c) : x(a), y(b), z(c) { }
+        vert_t(value_type* ptr) : x(ptr[0]), y(ptr[1]), z(ptr[2]) { }
+        vert_t(const vert_t& rhs) : x(rhs.x), y(rhs.y), z(rhs.z) { }
         bool operator < (const vert_t& rhs) const {
-            if (x() < rhs.x()) return true;
-            if (x() > rhs.x()) return false;
-            return y() < rhs.y();
+            if (x < rhs.x) return true;
+            if (x > rhs.x) return false;
+            return y < rhs.y;
             // use this if we move to 3D someday
-            //if (y() < rhs.y()) return true;
-            //if (y() > rhs.y()) return false;
-            //return z() < rhs.z();
+            //if (y < rhs.y) return true;
+            //if (y > rhs.y) return false;
+            //return z < rhs.z;
         }
         const value_type& operator[](int i) const {
-            return i == 0 ? _x : i == 1 ? _y : _z;
+            return i == 0 ? x : i == 1 ? y : z;
         }
         value_type& operator[](int i) {
-            return i == 0 ? _x : i == 1 ? _y : _z;
+            return i == 0 ? x : i == 1 ? y : z;
         }
         vert_t operator - (const vert_t& rhs) const {
-            return vert_t(x() - rhs.x(), y() - rhs.y(), z() - rhs.z());
+            return vert_t(x - rhs.x, y - rhs.y, z - rhs.z);
         }
         vert_t operator + (const vert_t& rhs) const {
-            return vert_t(x() + rhs.x(), y() + rhs.y(), z() + rhs.z());
+            return vert_t(x + rhs.x, y + rhs.y, z + rhs.z);
         }
         vert_t operator * (value_type a) const {
-            return vert_t(x()*a, y()*a, z()*a);
+            return vert_t(x*a, y*a, z*a);
         }
         value_type dot2d(const vert_t& rhs) const {
-            return x()*rhs.x() + y() * rhs.y();
+            return x*rhs.x + y * rhs.y;
         }
         value_type cross2d(const vert_t& rhs) const {
-            return x()*rhs.y() - rhs.x()*y();
+            return x*rhs.y - rhs.x*y;
         }
         vert_t normalize2d() const {
             double len = length2d();
-            return vert_t(x() / len, y() / len, z());
+            return vert_t(x / len, y / len, z);
         }
         void set(value_type a, value_type b, value_type c) {
-            _x = a, _y = b, _z = c;
+            x = a, y = b, z = c;
         }
         value_type length2d() const {
-            return sqrt((_x*_x) + (_y*_y));
+            return sqrt((x*x) + (y*y));
         }
         value_type length2d_squared() const {
-            return (_x*_x) + (_y*_y);
+            return (x*x) + (y*y);
         }
     };
 
@@ -89,11 +83,11 @@ namespace weemesh
     inline bool same_vert(const vert_t& a, const vert_t& b, vert_t::value_type epsilon = EPSILON)
     {
         return
-            equivalent(a.x(), b.x(), epsilon) &&
-            equivalent(a.y(), b.y(), epsilon);
+            equivalent(a.x, b.x, epsilon) &&
+            equivalent(a.y, b.y, epsilon);
 
         // use this if we move to 3D one day
-        // && equivalent(a.z(), b.z(), epsilon);
+        // && equivalent(a.z, b.z, epsilon);
     }
 
 
@@ -106,8 +100,12 @@ namespace weemesh
     // line segment connecting two verts
     struct segment_t : std::pair<vert_t, vert_t>
     {
-        segment_t(const vert_t& a, const vert_t& b) :
+        explicit segment_t(const vert_t& a, const vert_t& b) :
             std::pair<vert_t, vert_t>(a, b) { }
+
+        template<class T>
+        segment_t(const T& a, const T& b) :
+            std::pair<vert_t, vert_t>({ a.x, a.y, a.z }, { b.x, b.y, b.z }) { }
 
         // true if 2 segments intersect; intersection point in "out"
         bool intersect(const segment_t& rhs, vert_t& out, vert_t::value_type& u) const
@@ -159,14 +157,14 @@ namespace weemesh
         // true if point P is one of the triangle's verts
         inline bool is_vertex(const vert_t& p, vert_t::value_type e = EPSILON) const
         {
-            if (equivalent(p.x(), p0.x(), e) &&
-                equivalent(p.y(), p0.y(), e))
+            if (equivalent(p.x, p0.x, e) &&
+                equivalent(p.y, p0.y, e))
                 return true;
-            if (equivalent(p.x(), p1.x(), e) &&
-                equivalent(p.y(), p1.y(), e))
+            if (equivalent(p.x, p1.x, e) &&
+                equivalent(p.y, p1.y, e))
                 return true;
-            if (equivalent(p.x(), p2.x(), e) &&
-                equivalent(p.y(), p2.y(), e))
+            if (equivalent(p.x, p2.x, e) &&
+                equivalent(p.y, p2.y, e))
                 return true;
 
             return false;
@@ -174,14 +172,14 @@ namespace weemesh
 
         inline int get_vertex(const vert_t& p, vert_t::value_type e = EPSILON) const
         {
-            if (equivalent(p.x(), p0.x(), e) &&
-                equivalent(p.y(), p0.y(), e))
+            if (equivalent(p.x, p0.x, e) &&
+                equivalent(p.y, p0.y, e))
                 return i0;
-            if (equivalent(p.x(), p1.x(), e) &&
-                equivalent(p.y(), p1.y(), e))
+            if (equivalent(p.x, p1.x, e) &&
+                equivalent(p.y, p1.y, e))
                 return i1;
-            if (equivalent(p.x(), p2.x(), e) &&
-                equivalent(p.y(), p2.y(), e))
+            if (equivalent(p.x, p2.x, e) &&
+                equivalent(p.y, p2.y, e))
                 return i2;
 
             return -1;
@@ -201,9 +199,9 @@ namespace weemesh
             if (equivalent(denom, 0.0))
                 return false;
 
-            out.y() = (d11*d20 - d01 * d21) / denom;
-            out.z() = (d00*d21 - d01 * d20) / denom;
-            out.x() = 1.0 - out.y() - out.z();
+            out.y = (d11*d20 - d01 * d21) / denom;
+            out.z = (d00*d21 - d01 * d20) / denom;
+            out.x = 1.0 - out.y - out.z;
 
             return true;
         }
@@ -237,11 +235,12 @@ namespace weemesh
     struct mesh_t
     {
         int uidgen;
-        std::unordered_map<UID, triangle_t> _triangles;
+        std::unordered_map<UID, triangle_t> triangles;
+        vert_array_t verts;
+        std::vector<int> markers;
+
         spatial_index_t _spatial_index;
         vert_table_t _vert_lut;
-        vert_array_t _verts;
-        std::vector<int> _markers;
         int _num_edits;
         int _boundary_marker;
         int _constraint_marker;
@@ -277,7 +276,7 @@ namespace weemesh
         {
             UID uid = tri.uid;
             _spatial_index.Remove(tri.a_min, tri.a_max, uid);
-            _triangles.erase(uid);
+            triangles.erase(uid);
 
             ++_num_edits;
         }
@@ -297,10 +296,10 @@ namespace weemesh
             tri.p0 = get_vertex(i0);
             tri.p1 = get_vertex(i1);
             tri.p2 = get_vertex(i2);
-            tri.a_min[0] = std::min(tri.p0.x(), std::min(tri.p1.x(), tri.p2.x()));
-            tri.a_min[1] = std::min(tri.p0.y(), std::min(tri.p1.y(), tri.p2.y()));
-            tri.a_max[0] = std::max(tri.p0.x(), std::max(tri.p1.x(), tri.p2.x()));
-            tri.a_max[1] = std::max(tri.p0.y(), std::max(tri.p1.y(), tri.p2.y()));
+            tri.a_min[0] = std::min(tri.p0.x, std::min(tri.p1.x, tri.p2.x));
+            tri.a_min[1] = std::min(tri.p0.y, std::min(tri.p1.y, tri.p2.y));
+            tri.a_max[0] = std::max(tri.p0.x, std::max(tri.p1.x, tri.p2.x));
+            tri.a_max[1] = std::max(tri.p0.y, std::max(tri.p1.y, tri.p2.y));
 
             // "2d_degenerate" means that either a) at least 2 points are coincident, or
             // b) at least two edges are basically coincident (in the XY plane)
@@ -313,7 +312,7 @@ namespace weemesh
                 same_vert((tri.p2 - tri.p1).normalize2d(), (tri.p0 - tri.p1).normalize2d(), E) ||
                 same_vert((tri.p0 - tri.p2).normalize2d(), (tri.p1 - tri.p2).normalize2d(), E);
 
-            _triangles.emplace(uid, tri);
+            triangles.emplace(uid, tri);
             _spatial_index.Insert(tri.a_min, tri.a_max, uid);
 
             ++_num_edits;
@@ -324,25 +323,25 @@ namespace weemesh
         // find a vertex by its index
         const vert_t& get_vertex(unsigned i) const
         {
-            return _verts[i];
+            return verts[i];
         }
 
         // find a vertex by its index
         vert_t& get_vertex(unsigned i)
         {
-            return _verts[i];
+            return verts[i];
         }
 
         // find the marker for a vertex
         int& get_marker(const vert_t& vert)
         {
-            return _markers[_vert_lut[vert]];
+            return markers[_vert_lut[vert]];
         }
 
         // find the marker for a vertex index
         int get_marker(int i)
         {
-            return _markers[i];
+            return markers[i];
         }
 
         // Add a new vertex (or lookup a matching one) and return its index.
@@ -354,14 +353,14 @@ namespace weemesh
             if (i != _vert_lut.end())
             {
                 index = i->second;
-                _markers[i->second] |= marker;
+                markers[i->second] |= marker;
             }
-            else if (_verts.size() + 1 < 0xFFFF)
+            else if (verts.size() + 1 < 0xFFFF)
             {
-                _verts.push_back(input);
-                _markers.push_back(marker);
-                _vert_lut[input] = _verts.size() - 1;
-                index = _verts.size() - 1;
+                verts.push_back(input);
+                markers.push_back(marker);
+                _vert_lut[input] = verts.size() - 1;
+                index = verts.size() - 1;
             }
             else
             {
@@ -371,14 +370,19 @@ namespace weemesh
             return index;
         }
 
+        template<class T>
+        int get_or_create_vertex_from_vec3(const T& vec, int marker) {
+            return get_or_create_vertex(vert_t(vec.x, vec.y, vec.z), marker);
+        }
+
         // insert a point into the mesh, cutting triangles as necessary
         void insert(const vert_t& vert, int marker)
         {
             // search for possible intersecting triangles (should only be one)
             vert_t::value_type a_min[2];
             vert_t::value_type a_max[2];
-            a_min[0] = a_max[0] = vert.x();
-            a_min[1] = a_max[1] = vert.y();
+            a_min[0] = a_max[0] = vert.x;
+            a_min[1] = a_max[1] = vert.y;
 
             std::vector<UID> uids;
 
@@ -391,7 +395,7 @@ namespace weemesh
 
             for (auto uid : uids)
             {
-                triangle_t& tri = _triangles[uid];
+                triangle_t& tri = triangles[uid];
 
                 if (tri.is_2d_degenerate)
                     continue;
@@ -411,10 +415,10 @@ namespace weemesh
             // search for possible intersecting triangles:
             vert_t::value_type a_min[2];
             vert_t::value_type a_max[2];
-            a_min[0] = std::min(seg.first.x(), seg.second.x());
-            a_min[1] = std::min(seg.first.y(), seg.second.y());
-            a_max[0] = std::max(seg.first.x(), seg.second.x());
-            a_max[1] = std::max(seg.first.y(), seg.second.y());
+            a_min[0] = std::min(seg.first.x, seg.second.x);
+            a_min[1] = std::min(seg.first.y, seg.second.y);
+            a_max[0] = std::max(seg.first.x, seg.second.x);
+            a_max[1] = std::max(seg.first.y, seg.second.y);
             std::vector<UID> uids;
 
             _spatial_index.Search(
@@ -436,7 +440,7 @@ namespace weemesh
             std::copy(uids.begin(), uids.end(), std::back_inserter(uid_list));
             for (auto uid : uid_list)
             {
-                triangle_t& tri = _triangles[uid];
+                triangle_t& tri = triangles[uid];
 
                 // skip triangles that are "degenerate" in 2D. We will keep them
                 // because they may NOT be degenerate in 3D (e.g. steep slopes).
@@ -480,7 +484,7 @@ namespace weemesh
                 if (seg.intersect(edge0, out, u) && !tri.is_vertex(out, E))
                 {
                     int new_marker = marker;
-                    if ((_markers[tri.i0] & _boundary_marker) && (_markers[tri.i1] & _boundary_marker))
+                    if ((markers[tri.i0] & _boundary_marker) && (markers[tri.i1] & _boundary_marker))
                         new_marker |= _boundary_marker;
 
                     new_i = get_or_create_vertex(out, new_marker);
@@ -491,16 +495,16 @@ namespace weemesh
 
                     new_uid = add_triangle(new_i, tri.i2, tri.i0);
                     if (new_uid >= 0) {
-                        _markers[tri.i2] |= _constraint_marker;
-                        _markers[tri.i0] |= _constraint_marker;
+                        markers[tri.i2] |= _constraint_marker;
+                        markers[tri.i0] |= _constraint_marker;
                         uid_list.push_back(new_uid);
                         ++new_tris;
                     }
 
                     new_uid = add_triangle(new_i, tri.i1, tri.i2);
                     if (new_uid >= 0) {
-                        _markers[tri.i1] |= _constraint_marker;
-                        _markers[tri.i2] |= _constraint_marker;
+                        markers[tri.i1] |= _constraint_marker;
+                        markers[tri.i2] |= _constraint_marker;
                         uid_list.push_back(new_uid);
                         ++new_tris;
                     }
@@ -510,8 +514,8 @@ namespace weemesh
                         if (marker_not_set(new_i, _has_elevation_marker) &&
                             marker_is_set(tri.i0, _has_elevation_marker) && marker_is_set(tri.i1, _has_elevation_marker))
                         {
-                            auto z0 = get_vertex(tri.i0).z(), z1 = get_vertex(tri.i1).z();
-                            get_vertex(new_i).z() = z0 + u * (z1 - z0);
+                            auto z0 = get_vertex(tri.i0).z, z1 = get_vertex(tri.i1).z;
+                            get_vertex(new_i).z = z0 + u * (z1 - z0);
                             set_marker(new_i, _has_elevation_marker);
                         }
 
@@ -525,7 +529,7 @@ namespace weemesh
                 if (seg.intersect(edge1, out, u) && !tri.is_vertex(out, E))
                 {
                     int new_marker = marker;
-                    if ((_markers[tri.i1] & _boundary_marker) && (_markers[tri.i2] & _boundary_marker))
+                    if ((markers[tri.i1] & _boundary_marker) && (markers[tri.i2] & _boundary_marker))
                         new_marker |= _boundary_marker;
 
                     new_i = get_or_create_vertex(out, new_marker);
@@ -536,16 +540,16 @@ namespace weemesh
 
                     new_uid = add_triangle(new_i, tri.i0, tri.i1);
                     if (new_uid >= 0) {
-                        _markers[tri.i0] |= _constraint_marker;
-                        _markers[tri.i1] |= _constraint_marker;
+                        markers[tri.i0] |= _constraint_marker;
+                        markers[tri.i1] |= _constraint_marker;
                         uid_list.push_back(new_uid);
                         ++new_tris;
                     }
 
                     new_uid = add_triangle(new_i, tri.i2, tri.i0);
                     if (new_uid >= 0) {
-                        _markers[tri.i2] |= _constraint_marker;
-                        _markers[tri.i0] |= _constraint_marker;
+                        markers[tri.i2] |= _constraint_marker;
+                        markers[tri.i0] |= _constraint_marker;
                         uid_list.push_back(new_uid);
                         ++new_tris;
                     }
@@ -555,8 +559,8 @@ namespace weemesh
                         if (marker_not_set(new_i, _has_elevation_marker) &&
                             marker_is_set(tri.i1, _has_elevation_marker) && marker_is_set(tri.i2, _has_elevation_marker))
                         {
-                            auto z0 = get_vertex(tri.i1).z(), z1 = get_vertex(tri.i2).z();
-                            get_vertex(new_i).z() = z0 + u * (z1 - z0);
+                            auto z0 = get_vertex(tri.i1).z, z1 = get_vertex(tri.i2).z;
+                            get_vertex(new_i).z = z0 + u * (z1 - z0);
                             set_marker(new_i, _has_elevation_marker);
                         }
 
@@ -570,7 +574,7 @@ namespace weemesh
                 if (seg.intersect(edge2, out, u) && !tri.is_vertex(out, E))
                 {
                     int new_marker = marker;
-                    if ((_markers[tri.i2] & _boundary_marker) && (_markers[tri.i0] & _boundary_marker))
+                    if ((markers[tri.i2] & _boundary_marker) && (markers[tri.i0] & _boundary_marker))
                         new_marker |= _boundary_marker;
 
                     new_i = get_or_create_vertex(out, new_marker);
@@ -581,16 +585,16 @@ namespace weemesh
 
                     new_uid = add_triangle(new_i, tri.i1, tri.i2);
                     if (new_uid >= 0) {
-                        _markers[tri.i1] |= _constraint_marker;
-                        _markers[tri.i2] |= _constraint_marker;
+                        markers[tri.i1] |= _constraint_marker;
+                        markers[tri.i2] |= _constraint_marker;
                         uid_list.push_back(new_uid);
                         ++new_tris;
                     }
 
                     new_uid = add_triangle(new_i, tri.i0, tri.i1);
                     if (new_uid >= 0) {
-                        _markers[tri.i0] |= _constraint_marker;
-                        _markers[tri.i1] |= _constraint_marker;
+                        markers[tri.i0] |= _constraint_marker;
+                        markers[tri.i1] |= _constraint_marker;
                         uid_list.push_back(new_uid);
                         ++new_tris;
                     }
@@ -600,8 +604,8 @@ namespace weemesh
                         if (marker_not_set(new_i, _has_elevation_marker) &&
                             marker_is_set(tri.i2, _has_elevation_marker) && marker_is_set(tri.i0, _has_elevation_marker))
                         {
-                            auto z0 = get_vertex(tri.i2).z(), z1 = get_vertex(tri.i0).z();
-                            get_vertex(new_i).z() = z0 + u * (z1 - z0);
+                            auto z0 = get_vertex(tri.i2).z, z1 = get_vertex(tri.i0).z;
+                            get_vertex(new_i).z = z0 + u * (z1 - z0);
                             set_marker(new_i, _has_elevation_marker);
                         }
 
@@ -640,8 +644,8 @@ namespace weemesh
             if (!equivalent(bary[2], 0.0, EPSILON)) {
                 new_uid = add_triangle(tri.i0, tri.i1, new_i);
                 if (new_uid >= 0 && uid_list) {
-                    _markers[tri.i0] |= _constraint_marker;
-                    _markers[tri.i1] |= _constraint_marker;
+                    markers[tri.i0] |= _constraint_marker;
+                    markers[tri.i1] |= _constraint_marker;
                     uid_list->push_back(new_uid);
                     ++new_tris;
                 }
@@ -650,8 +654,8 @@ namespace weemesh
             if (!equivalent(bary[0], 0.0, EPSILON)) {
                 new_uid = add_triangle(tri.i1, tri.i2, new_i);
                 if (new_uid >= 0 && uid_list) {
-                    _markers[tri.i1] |= _constraint_marker;
-                    _markers[tri.i2] |= _constraint_marker;
+                    markers[tri.i1] |= _constraint_marker;
+                    markers[tri.i2] |= _constraint_marker;
                     uid_list->push_back(new_uid);
                     ++new_tris;
                 }
@@ -660,8 +664,8 @@ namespace weemesh
             if (!equivalent(bary[1], 0.0, EPSILON)) {
                 new_uid = add_triangle(tri.i2, tri.i0, new_i);
                 if (new_uid >= 0 && uid_list) {
-                    _markers[tri.i2] |= _constraint_marker;
-                    _markers[tri.i0] |= _constraint_marker;
+                    markers[tri.i2] |= _constraint_marker;
+                    markers[tri.i0] |= _constraint_marker;
                     uid_list->push_back(new_uid);
                     ++new_tris;
                 }
@@ -677,10 +681,10 @@ namespace weemesh
                     marker_is_set(tri.i2, _has_elevation_marker))
                 {
                     // interpolate the Z value from the triangle:
-                    get_vertex(new_i).z() =
-                        get_vertex(tri.i0).z() * bary[0] +
-                        get_vertex(tri.i1).z() * bary[1] +
-                        get_vertex(tri.i2).z() * bary[2];
+                    get_vertex(new_i).z =
+                        get_vertex(tri.i0).z * bary[0] +
+                        get_vertex(tri.i1).z * bary[1] +
+                        get_vertex(tri.i2).z * bary[2];
 
                     set_marker(new_i, _has_elevation_marker);
                 }
@@ -722,7 +726,7 @@ namespace weemesh
 
         edgeset_t(const mesh_t& mesh, int marker_mask)
         {
-            for (auto& tri_iter : mesh._triangles)
+            for (auto& tri_iter : mesh.triangles)
             {
                 const triangle_t& tri = tri_iter.second;
                 add_triangle(tri, mesh, marker_mask);
@@ -731,9 +735,9 @@ namespace weemesh
 
         void add_triangle(const triangle_t& tri, const mesh_t& mesh, int marker_mask)
         {
-            bool m0 = (mesh._markers[tri.i0] & marker_mask) != 0;
-            bool m1 = (mesh._markers[tri.i1] & marker_mask) != 0;
-            bool m2 = (mesh._markers[tri.i2] & marker_mask) != 0;
+            bool m0 = (mesh.markers[tri.i0] & marker_mask) != 0;
+            bool m1 = (mesh.markers[tri.i1] & marker_mask) != 0;
+            bool m2 = (mesh.markers[tri.i2] & marker_mask) != 0;
 
             if (m0 && m1)
                 _edges.emplace(tri.i0, tri.i1);
@@ -793,7 +797,7 @@ namespace weemesh
 
         graph_t(const mesh_t& mesh)
         {
-            for (auto& tri_iter : mesh._triangles)
+            for (auto& tri_iter : mesh.triangles)
             {
                 const triangle_t& tri = tri_iter.second;
                 add_triangle(tri);
@@ -871,10 +875,10 @@ namespace weemesh
                 if (node._graphid == graphid)
                 {
                     const vert_t& vert = mesh.get_vertex(node._vertex_index);
-                    if (start == nullptr || vert.y() < min_y)
+                    if (start == nullptr || vert.y < min_y)
                     {
                         start = &node;
-                        min_y = vert.y();
+                        min_y = vert.y;
                     }
                 }
             }

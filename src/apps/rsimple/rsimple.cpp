@@ -4,7 +4,6 @@
  * MIT License
  */
 #include <rocky_vsg/Application.h>
-#include <rocky_vsg/LineString.h>
 
 #if !defined(ROCKY_SUPPORTS_TMS)
 #error This example requires TMS support. Check CMake.
@@ -47,32 +46,6 @@ int main(int argc, char** argv)
         if (elevation->status().failed())
             return error(elevation);
     }
-
-    // Make a line string.
-    auto line = rocky::LineString::create();
-
-    std::vector<glm::dvec3> points;
-    auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
-    for (double lon = -180.0; lon <= 180.0; lon += 2.5)
-    {
-        glm::dvec3 ecef;
-        if (xform(glm::dvec3(lon, 0.0, 100000), ecef))
-            points.push_back(ecef);
-    }
-
-    line->setGeometry(points.begin(), points.end());
-    
-    line->setStyle(rocky::LineStyle{
-        { 1,0.7,0.3,1 }, // color
-        5.0f,            // width
-        0xfff0, 1        // stipple pattern & factor
-        });
-
-    // make a map object with our line as an attachment:
-    auto obj = rocky::MapObject::create(line);
-
-    // add it to the application.
-    app.add(obj);
 
     // run until the user quits.
     return app.run();

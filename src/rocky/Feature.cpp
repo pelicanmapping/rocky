@@ -15,6 +15,96 @@ Geometry::Geometry(Type in_type) :
     //nop
 }
 
+void
+Geometry::convertToType(Type in_type)
+{
+    if (in_type != type)
+    {
+        Type multi_variation =
+            in_type == Type::Points ? Type::MultiPoints :
+            in_type == Type::LineString ? Type::MultiLineString :
+            Type::MultiPoints;
+
+        std::stack<Geometry*> stack;
+        stack.push(this);
+        while(!stack.empty())
+        {
+            auto& geom = *stack.top();
+            stack.pop();
+
+            if (geom.type >= Type::MultiPoints)
+            {
+                geom.type = multi_variation;
+            }
+            else
+            {
+                geom.type = in_type;
+            }
+
+            if (geom.parts.size() > 0)
+            {
+                for (auto& part : geom.parts)
+                {
+                    stack.push(&part);
+                }
+            }
+        }
+    }
+}
+
+namespace
+{
+    template<class T>
+    bool ring_contains(const T& points, double x, double y)
+    {
+        bool result = false;
+        bool is_open = (points.size() > 1 && points.front() != points.back());
+        unsigned i = is_open ? 0 : 1;
+        unsigned j = is_open ? points.size() - 1 : 0;
+        for (; i < points.size(); j = i++)
+        {
+            if ((((points[i].y <= y) && (y < points[j].y)) ||
+                ((points[j].y <= y) && (y < points[i].y))) &&
+                (x < (points[j].x - points[i].x) * (y - points[i].y) / (points[j].y - points[i].y) + points[i].x))
+            {
+                result = !result;
+            }
+        }
+        return result;
+    }
+}
+
+bool
+Geometry::contains(double x, double y) const
+{
+    if (type == Type::Polygon)
+    {
+        if (!ring_contains(points, x, y))
+            return false;
+
+        for (auto& hole : parts)
+            if (ring_contains(hole.points, x, y))
+                return false;
+
+        return true;
+    }
+    else if (type == Type::MultiPolygon)
+    {
+        Geometry::const_iterator iter(*this, false);
+        while (iter.hasMore())
+        {
+            if (iter.next().contains(x, y))
+                return true;
+        }
+        return false;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+#if 0
 Geometry::const_iterator::const_iterator(const Geometry& geom)
 {
     _stack.push(&geom);
@@ -68,6 +158,7 @@ Geometry::const_iterator::fetch()
         }
     }
 }
+#endif
 
 bool
 Feature::FieldNameComparator::operator()(const std::string& L, const std::string& R) const
@@ -81,6 +172,21 @@ Feature::FieldNameComparator::operator()(const std::string& L, const std::string
     return L.length() < R.length();
 }
 
+void
+Feature::dirtyExtent()
+{
+    Box box;
+    Geometry::const_iterator iter(geometry);
+    while (iter.hasMore())
+    {
+        auto& part = iter.next();
+        for (auto& point : part.points)
+        {
+            box.expandBy(point);
+        }
+    }
+    extent = GeoExtent(srs, box);
+}
 
 #ifdef GDAL_FOUND
 
@@ -278,11 +384,24 @@ namespace
             if (out_geom.parts.size() > 0)
             {
                 if (out_geom.parts[0].type == Geometry::Type::Points)
+                {
                     out_geom.type = Geometry::Type::MultiPoints;
+                }
                 else if (out_geom.parts[0].type == Geometry::Type::LineString)
+                {
                     out_geom.type = Geometry::Type::MultiLineString;
+                }
                 else if (out_geom.parts[0].type == Geometry::Type::Polygon)
-                    out_geom.type = Geometry::Type::Polygon;
+                {
+                    if (out_geom.points.empty())
+                    {
+                        out_geom.type = Geometry::Type::MultiPolygon;
+                    }
+                    else
+                    {
+                        out_geom.type = Geometry::Type::Polygon;
+                    }
+                }
             }
             break;
         }
@@ -298,6 +417,7 @@ namespace
         if (geom_handle)
         {
             create_geometry(geom_handle, out_feature.geometry);
+            out_feature.dirtyExtent();
         }
 
         int numAttrs = OGR_F_GetFieldCount(handle);
@@ -714,6 +834,12 @@ OGRFeatureSource::open()
         {
             _source = util::make_string() << "/vsizip/" << _source;
         }
+
+        //// ..remote?
+        //if (util::startsWith(_source, "http://") || util::startsWith(_source, "https://"))
+        //{
+        //    _source = util::make_string() << "/vsicurl/" << _source;
+        //}
     }
 
 #if 0

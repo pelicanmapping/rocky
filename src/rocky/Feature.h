@@ -79,20 +79,76 @@ namespace ROCKY_NAMESPACE
 
         //! Iterates over geometry parts.
         //! Includes "this" if not empty.
-        struct ROCKY_EXPORT const_iterator
+        template<class T = Geometry>
+        class iterator
         {
-            const_iterator(const Geometry& g);
-            bool hasMore() const;
-            const Geometry& next();
+        public:
+            inline iterator(T& g, bool traverse_polygon_holes = true);
+            bool hasMore() const { return _next != nullptr; }
+            inline T& next();
 
         private:
-            std::stack<const Geometry*> _stack;
-            const Geometry* _next = nullptr;
+            std::stack<T*> _stack;
+            T* _next = nullptr;
             bool _traverse_multi = true;
             bool _traverse_polygon_holes = true;
-            void fetch();
+            inline void fetch();
         };
+
+        using const_iterator = iterator<const Geometry>;
+
+        //! Attempt to convert this geometry to a different type
+        void convertToType(Type type);
+
+        //! Weather the point is contained in the 2D geometry.
+        //! Only applicable to polygons
+        bool contains(double x, double y) const;
     };
+
+    // template inlines
+    template<class T>
+    Geometry::iterator<T>::iterator(T& geom, bool trav_holes) {
+        _traverse_polygon_holes = trav_holes;
+        _stack.push(&geom);
+        fetch();
+    }
+
+    template<class T>
+    T& Geometry::iterator<T>::next() {
+        T* n = _next;
+        fetch();
+        return *n;
+    }
+
+    template<class T>
+    void Geometry::iterator<T>::fetch() {
+        _next = nullptr;
+        if (_stack.size() == 0)
+            return;
+        T* current = _stack.top();
+        _stack.pop();
+        bool is_multi =
+            current->type == Geometry::Type::MultiLineString ||
+            current->type == Geometry::Type::MultiPoints ||
+            current->type == Geometry::Type::MultiPolygon;
+
+        if (is_multi && _traverse_multi)
+        {
+            for (auto& part : current->parts)
+                _stack.push(&part);
+            fetch();
+        }
+        else
+        {
+            _next = current;
+            if (current->type == Type::Polygon && _traverse_polygon_holes)
+            {
+                for (auto& ring : current->parts)
+                    _stack.push(&ring);
+            }
+        }
+    }
+
 
     /**
     * How to interpolate points along a line segment on a geodetic map
@@ -116,7 +172,6 @@ namespace ROCKY_NAMESPACE
             double doubleValue = 0.0;
             long long intValue = 0;
             bool boolValue = false;
-
         };
 
         //! attribute field type
@@ -146,6 +201,7 @@ namespace ROCKY_NAMESPACE
         Geometry geometry;
         Fields fields;
         SRS srs = SRS::WGS84;
+        GeoExtent extent;
         GeodeticInterpolation interpolation = GeodeticInterpolation::GreatCircle;
 
         //! Construct an empty feature object.
@@ -155,6 +211,8 @@ namespace ROCKY_NAMESPACE
         bool valid() const {
             return srs.valid(); // && !geometry.empty();
         }
+
+        void dirtyExtent();
     };
 
 
