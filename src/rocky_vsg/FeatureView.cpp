@@ -32,6 +32,8 @@ namespace mapbox {
 
 namespace
 {
+    // Transforms a range of points from geographic (long lat) to gnomonic coordinates
+    // around a centroid with an optional scale.
     template<class T, class ITER>
     void geo_to_gnomonic(typename ITER begin, typename ITER end, const T& centroid, double scale = 1.0)
     {
@@ -47,31 +49,9 @@ namespace
             p->y = scale * (cos(lat0) * sin(lat) - sin(lat0) * cos(lat) * cos(lon - lon0)) / d;
         }
     }
-#if 0
-    template<class T>
-    void gnomonic_to_geo(
-        typename std::vector<T>::iterator begin,
-        typename std::vector<T>::iterator end,
-        const T& centroid,
-        double scale = 1.0)
-    {
-        double lon0 = deg2rad(centroid.x);
-        double lat0 = deg2rad(centroid.y);
 
-        for (typename std::vector<T>::iterator p = begin; p != end; ++p)
-        {
-            double x = p->x / scale, y = p->y / scale;
-            double rho = sqrt(x*x + y*y);
-            double c = atan(rho);
-
-            double lat = asin(cos(c) * sin(lat0) + (y * sin(c) * cos(lat0) / rho));
-            double lon = lon0 + atan((x * sin(c)) / (rho * cos(lat0) * cos(c) - y * sin(lat0) * sin(c)));
-
-            p->x = rad2deg(lon);
-            p->y = rad2deg(lat);
-        }
-    }
-#endif
+    // Transforms a range of points from gnomonic coordinates around a centroid with a
+    // given scale to geographic (long lat) coordinates.
     template<class T, class ITER>
     void gnomonic_to_geo(typename ITER begin, typename ITER end, const T& centroid, double scale = 1.0)
     {
@@ -95,6 +75,9 @@ namespace
     template<class T>
     void tessellate_line(const T& from, const T& to, const SRS& srs, const GeodeticInterpolation interp, float max_span, std::vector<T>& output, bool add_last_point)
     {
+        //TODO: make it work for projected SRS?
+        ROCKY_SOFT_ASSERT_AND_RETURN(srs.isGeodetic(), void());
+
         auto& ellipsoid = srs.ellipsoid();
         std::list<T> list{ from, to };
         auto iter = list.begin();

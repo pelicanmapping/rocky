@@ -5,6 +5,7 @@
  */
 #include "Mesh.h"
 #include "json.h"
+#include "engine/Runtime.h"
 #include <vsg/nodes/DepthSorted.h>
 
 using namespace ROCKY_NAMESPACE;
@@ -43,7 +44,15 @@ Mesh::createNode(Runtime& runtime)
         ROCKY_HARD_ASSERT(MeshState::status.ok());
 
         auto stateGroup = vsg::StateGroup::create();
-        stateGroup->stateCommands = MeshState::get().pipelineStateCommands;
+
+        int features = MeshState::NONE;
+
+        if (_bindStyle->_imageInfo)
+        {
+            features |= MeshState::TEXTURE;
+        }
+
+        stateGroup->stateCommands = MeshState::get(features).pipelineStateCommands;
         stateGroup->addChild(_bindStyle);
         stateGroup->addChild(_geometry);
         auto sw = vsg::Switch::create();

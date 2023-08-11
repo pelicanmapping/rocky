@@ -23,11 +23,8 @@ using namespace ROCKY_NAMESPACE;
 
 //TODO: this can't be a define, it needs to be an option.
 //#define SUPPORTS_TEXTURE
-
-#ifdef SUPPORTS_TEXTURE
 #define TEXTURE_SET 0
 #define TEXTURE_BINDING 6
-#endif
 
 //vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> MeshState::pipelineConfig;
 //vsg::StateGroup::StateCommands MeshState::pipelineStateCommands;
@@ -35,7 +32,7 @@ using namespace ROCKY_NAMESPACE;
 rocky::Status MeshState::status;
 vsg::ref_ptr<vsg::ShaderSet> MeshState::shaderSet;
 rocky::Runtime* MeshState::runtime = nullptr;
-std::unordered_map<std::string, MeshState::Config> MeshState::configs;
+std::vector<MeshState::Config> MeshState::configs;
 
 namespace
 {
@@ -75,13 +72,9 @@ namespace
         shaderSet->addUniformBinding("mesh", "", MESH_BUFFER_SET, MESH_BUFFER_BINDING,
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
 
-#ifdef SUPPORTS_TEXTURE
         // Optional texture
         shaderSet->addUniformBinding("mesh_texture", "USE_MESH_TEXTURE", TEXTURE_SET, TEXTURE_BINDING, 
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
-
-        shaderSet->optionalDefines.insert("USE_MESH_TEXTURE");
-#endif
 
         // VSG viewport state
         shaderSet->addUniformBinding("vsg_viewports", "", VIEWPORT_BUFFER_SET, VIEWPORT_BUFFER_BINDING,
@@ -114,12 +107,19 @@ MeshState::initialize(Runtime& in_runtime)
             "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
         return;
     }
+
+    configs.resize(2);
+
+    configs[NONE].settings = nullptr;
+
+    configs[TEXTURE].settings = vsg::ShaderCompileSettings::create();
+    configs[TEXTURE].settings->defines.insert("MESH_TEXTURE");
 }
 
 MeshState::Config&
-MeshState::get(const std::string& name, vsg::ref_ptr<vsg::ShaderCompileSettings> settings)
+MeshState::get(int which)
 {
-    Config& c = configs[name];
+    Config& c = configs[which];
 
     if (!status.ok())
         return c;
@@ -132,7 +132,7 @@ MeshState::get(const std::string& name, vsg::ref_ptr<vsg::ShaderCompileSettings>
         c.pipelineConfig = vsg::GraphicsPipelineConfig::create(shaderSet);
 
         // Apply any custom compile settings / defines:
-        c.pipelineConfig->shaderHints = settings ? settings : runtime->shaderCompileSettings;
+        c.pipelineConfig->shaderHints = c.settings ? c.settings : runtime->shaderCompileSettings;
 
         // activate the arrays we intend to use
         c.pipelineConfig->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
@@ -146,10 +146,10 @@ MeshState::get(const std::string& name, vsg::ref_ptr<vsg::ShaderCompileSettings>
         c.pipelineConfig->enableUniform("mesh");
         c.pipelineConfig->enableUniform("vsg_viewports");
 
-        // TESTING*****************************
-#ifdef SUPPORTS_TEXTURE
-        c.pipelineConfig->enableTexture("mesh_texture");
-#endif
+        if (which & TEXTURE)
+        {
+            c.pipelineConfig->enableTexture("mesh_texture");
+        }
 
         // Alpha blending to support line smoothing
         c.pipelineConfig->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
@@ -207,22 +207,6 @@ BindMeshStyle::BindMeshStyle()
     // transfered to the GPU before or during recording.
     _styleData->properties.dataVariance = vsg::DYNAMIC_DATA;
 
-#if 0
-    auto ubo = vsg::DescriptorBuffer::create(_styleData, MESH_BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-
-    this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    this->firstSet = 0;
-
-    // todo: depends on whether we have a texture
-    auto config = MeshState::get().pipelineConfig;
-
-    this->layout = config->layout;
-
-    this->descriptorSet = vsg::DescriptorSet::create(
-        config->layout->setLayouts.front(),
-        vsg::Descriptors{ ubo });
-#endif
-
     setStyle(MeshStyle{});
 
     dirty();
@@ -251,14 +235,12 @@ BindMeshStyle::dirty()
     auto ubo = vsg::DescriptorBuffer::create(_styleData, MESH_BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     descriptors.push_back(ubo);
 
-#ifdef SUPPORTS_TEXTURE
     // the texture, if present:
     if (_imageInfo)
     {
         auto texture = vsg::DescriptorImage::create(_imageInfo, TEXTURE_BINDING, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
         descriptors.push_back(texture);
     }
-#endif
 
     this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     this->firstSet = 0;

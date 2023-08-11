@@ -55,6 +55,8 @@ namespace ROCKY_NAMESPACE
 
         struct Config
         {
+            vsg::ref_ptr<vsg::ShaderCompileSettings> settings;
+
             //! Singleton pipeline config object created when the object is first constructed,
             //! for access to pipeline and desriptor set layouts.
             vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> pipelineConfig;
@@ -63,13 +65,16 @@ namespace ROCKY_NAMESPACE
             vsg::StateGroup::StateCommands pipelineStateCommands;
         };
 
-        static std::unordered_map<std::string, Config> configs;
+        enum Features
+        {
+            NONE = 0x0,
+            TEXTURE = 0x1
+        };
 
-        //! Access the default state objects
-        static Config& get() { return get({}); }
+        static std::vector<Config> configs;
 
-        //! Access a named state object build with the specified settings
-        static Config& get(const std::string&, vsg::ref_ptr<vsg::ShaderCompileSettings> settings = {});
+        //! Access a state config permutation
+        static Config& get(int features = NONE);
     };
 
     /**
