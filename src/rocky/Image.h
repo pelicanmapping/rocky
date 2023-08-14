@@ -245,13 +245,13 @@ namespace ROCKY_NAMESPACE
 
         float sizeS = (float)(width() - 1);
         float s = u * sizeS;
-        float s0 = std::max(floor(s), 0.0f);
+        float s0 = std::max(std::floor(s), 0.0f);
         float s1 = std::min(s0 + 1.0f, sizeS);
         float smix = s0 < s1 ? (s - s0) / (s1 - s0) : 0.0f;
 
         float sizeT = (float)(height() - 1);
         float t = v * sizeT;
-        float t0 = std::max(floor(t), 0.0f);
+        float t0 = std::max(std::floor(t), 0.0f);
         float t1 = std::min(t0 + 1.0f, sizeT);
         float tmix = t0 < t1 ? (t - t0) / (t1 - t0) : 0.0f;
 

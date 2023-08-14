@@ -401,7 +401,7 @@ Application::refreshView(vsg::ref_ptr<vsg::View> view)
         // wait until the device is idle to avoid changing state while it's being used.
         viewer->deviceWaitIdle();
 
-        auto& vp = view->camera->getViewport();
+        auto vp = view->camera->getViewport();
         viewdata.parentRenderGraph->renderArea.offset.x = (std::uint32_t)vp.x;
         viewdata.parentRenderGraph->renderArea.offset.y = (std::uint32_t)vp.y;
         viewdata.parentRenderGraph->renderArea.extent.width = (std::uint32_t)vp.width;

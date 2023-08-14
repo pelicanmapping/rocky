@@ -628,7 +628,7 @@ GDAL::Driver::open(
 
             if (numSubDatasets > 0)
             {
-                int subDataset = layer->subDataSet().has_value() ? layer->subDataSet() : 1;
+                int subDataset = layer->subDataSet().has_value() ? static_cast<int>(layer->subDataSet()) : 1;
                 if (subDataset < 1 || subDataset > numSubDatasets) subDataset = 1;
                 std::stringstream buf;
                 buf << "SUBDATASET_" << subDataset << "_NAME";
