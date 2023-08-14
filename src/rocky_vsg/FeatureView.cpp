@@ -5,30 +5,9 @@
  */
 #include "FeatureView.h"
 #include "engine/Runtime.h"
-#include "engine/earcut.h"
 #include <rocky/weemesh.h>
 
 using namespace ROCKY_NAMESPACE;
-
-ROCKY_ABOUT(earcut_hpp, "2.2.4")
-
-namespace mapbox {
-    namespace util {
-        template <>
-        struct nth<0, glm::dvec3> {
-            inline static float get(const glm::dvec3& t) {
-                return t.x;
-            };
-        };
-
-        template <>
-        struct nth<1, glm::dvec3> {
-            inline static float get(const glm::dvec3& t) {
-                return t.y;
-            };
-        };
-    }
-}
 
 namespace
 {
@@ -177,13 +156,23 @@ namespace
         return multiline;
     }
 
-    // EXPERIMENT: using mapbox earcut to triangulate and then using weemesh to slice.
-    // ... TODO: probably delete - .._with_weemesh works better.
-    std::shared_ptr<Attachment> compile_polygon_feature_with_earcut(const Feature& feature, const Geometry& geom, const StyleSheet& styles)
+    std::shared_ptr<Attachment> compile_polygon_feature_with_weemesh(const Feature& feature, const Geometry& geom, const StyleSheet& styles)
     {
+        // scales our local gnomonic coordinates so they are the same order of magnitude as
+        // weemesh's default epsilon values:
+        const double gnomonic_scale = 1000.0;
+
+        // Meshed triangles will be at a maximum this many degrees across in size,
+        // to help follow the curvature of the earth.
+        const double resolution_degrees = 0.25;
+
+        // apply a fake Z for testing purposes before we attempt depth offsetting
+        const double fake_z_offset = 1000.0;
+
+
         Attachments attachments;
 
-        // some conversion we will need:
+        // some conversions we will need:
         auto feature_geo = feature.srs.geoSRS();
         auto feature_to_geo = feature.srs.to(feature_geo);
         auto feature_to_ecef = feature.srs.to(feature.srs.geocentricSRS());
@@ -193,82 +182,108 @@ namespace
         feature.extent.getCentroid(centroid.x, centroid.y);
         feature_to_geo.transform(centroid, centroid);
 
-        // copy the geometry into something earcut expects:
-        unsigned total_size = geom.points.size();
-        std::vector<std::vector<glm::dvec3>> polygon;
-        polygon.emplace_back(geom.points);
-        for (auto& hole : geom.parts)
-        {
-            polygon.emplace_back(hole.points);
-            total_size += hole.points.size();
-        }
-
         // transform to gnomonic. We are not using SRS/PROJ for the gnomonic projection
-        // because it would require creating a new SRS for each and every feature, which
-        // is way too slow.
-        for (auto& vec : polygon)
+        // because it would require creating a new SRS for each and every feature (because
+        // of the centroid) and that is way too slow.
+        Geometry local_geom = geom; // working copy
+        Box local_ex;
+        Geometry::iterator iter(local_geom);
+        while (iter.hasMore())
         {
-            feature_to_geo.transformRange(vec.begin(), vec.end());
-            geo_to_gnomonic(vec.begin(), vec.end(), centroid);
+            auto& part = iter.next();
+            if (!part.points.empty())
+            {
+                feature_to_geo.transformRange(part.points.begin(), part.points.end());
+                geo_to_gnomonic(part.points.begin(), part.points.end(), centroid, gnomonic_scale);
+                local_ex.expandBy(part.points.begin(), part.points.end());
+            }
         }
 
-        // triangulate in 2D space using the ear-cut algorithm:
-        auto indices = mapbox::earcut(polygon);
-        if (indices.size() < 3)
-            return nullptr;
-
-        // re-copy the original points into a single array to match up with earcut's generated indices:
-        polygon[0].clear();
-        polygon[0].reserve(total_size);
-        polygon[0].insert(polygon[0].end(), geom.points.begin(), geom.points.end());
-        for (auto& hole : geom.parts)
-            polygon[0].insert(polygon[0].end(), hole.points.begin(), hole.points.end());
-
-#if 1
-        // refine the mesh so it can confirm to ECEF curvature with some error metric.
-        Box local_extent;
-        for (auto& p : polygon[0])
-            local_extent.expandBy(p);
-
+        // start with a weemesh covering the feature extent.
         weemesh::mesh_t m;
         int marker = 0;
-        for (unsigned i = 0; i < indices.size() - 2; i += 3)
+        double xspan = gnomonic_scale * resolution_degrees * 3.14159 / 180.0;
+        double yspan = gnomonic_scale * resolution_degrees * 3.14159 / 180.0;
+        int cols = std::max(2, (int)(local_ex.width() / xspan));
+        int rows = std::max(2, (int)(local_ex.height() / yspan));
+        for (int row = 0; row < rows; ++row)
         {
-            auto i1 = m.get_or_create_vertex_from_vec3(polygon[0][indices[i]], marker);
-            auto i2 = m.get_or_create_vertex_from_vec3(polygon[0][indices[i + 1]], marker);
-            auto i3 = m.get_or_create_vertex_from_vec3(polygon[0][indices[i + 2]], marker);
-            m.add_triangle(i1, i2, i3);
+            double v = (double)row / (double)(rows - 1);
+            double y = local_ex.ymin + v * local_ex.height();
+
+            for (int col = 0; col < cols; ++col)
+            {
+                double u = (double)col / (double)(cols - 1);
+                double x = local_ex.xmin + u * local_ex.width();
+
+                m.get_or_create_vertex_from_vec3(glm::dvec3{ x, y, 0.0 }, marker);
+            }
         }
 
-        double x_span = 1.0;
-        double y_span = 1.0;
-        for(double x = -180.0; x < 180.0; x += x_span)
-            m.insert(weemesh::segment_t{ {x, local_extent.ymin, 0}, {x, local_extent.ymax, 0} }, marker);
-        for (double y = -90.0; y < 90.0; y += y_span)
-            m.insert(weemesh::segment_t{ {local_extent.xmin, y, 0}, {local_extent.xmax, y, 0} }, marker);
+        for (int row = 0; row < rows - 1; ++row)
+        {
+            for (int col = 0; col < cols - 1; ++col)
+            {
+                int k = row * cols + col;
+                m.add_triangle(k, k + 1, k + cols);
+                m.add_triangle(k + 1, k + cols + 1, k + cols);
+            }
+        }
 
-        // Into the final projection:
+        // next, apply the segments of the polygon to slice the mesh into triangles.
+        Geometry::const_iterator segment_iter(local_geom);
+        while (segment_iter.hasMore())
+        {
+            auto& part = segment_iter.next();
+            for (unsigned i = 0; i < part.points.size(); ++i)
+            {
+                unsigned j = (i == part.points.size() - 1) ? 0 : i + 1;
+                m.insert(weemesh::segment_t{ part.points[i], part.points[j] }, marker);
+            }
+        }
+
+        // next we need to remove all the exterior triangles.
+        std::unordered_set<weemesh::triangle_t*> insiders;
+        std::unordered_set<weemesh::triangle_t*> outsiders;
+        Geometry::const_iterator remove_iter(local_geom, false);
+        while (remove_iter.hasMore())
+        {
+            auto& part = remove_iter.next();
+
+            for (auto& tri_iter : m.triangles)
+            {
+                weemesh::triangle_t& tri = tri_iter.second;
+                auto c = (tri.p0 + tri.p1 + tri.p2) * (1.0 / 3.0); // centroid
+                bool inside = part.contains(c.x, c.y);
+                if (inside)
+                    insiders.insert(&tri);
+                else
+                    outsiders.insert(&tri);
+            }
+        }
+        for (auto tri : outsiders)
+        {
+            if (insiders.count(tri) == 0)
+            {
+                m.remove_triangle(*tri);
+            }
+        }
+
+        for (auto& v : m.verts)
+            v.z += fake_z_offset;
+
+        // Back to geographic:
+        gnomonic_to_geo(m.verts.begin(), m.verts.end(), centroid, gnomonic_scale);
+
+        // And into the final projection:
         feature_to_ecef.transformRange(m.verts.begin(), m.verts.end());
 
+        // Finally, make out attachment and apply the style.
         auto mesh = Mesh::create();
         for (auto& tri : m.triangles)
         {
             mesh->addTriangle(m.verts[tri.second.i0], m.verts[tri.second.i1], m.verts[tri.second.i2]);
         }
-#else
-        // Into the final projection:
-        feature_to_ecef.transformRange(polygon[0].begin(), polygon[0].end());
-
-        // Create the mesh attachment:
-        auto mesh = Mesh::create();
-        for (unsigned i = 0; i < indices.size()-2; i += 3)
-        {
-            mesh->addTriangle(
-                polygon[0][indices[i]],
-                polygon[0][indices[i + 1]],
-                polygon[0][indices[i + 2]]);
-        }
-#endif
 
         if (styles.mesh_function)
         {
@@ -283,151 +298,6 @@ namespace
         return mesh;
     }
 }
-
-
-std::shared_ptr<Attachment> compile_polygon_feature_with_weemesh(const Feature& feature, const Geometry& geom, const StyleSheet& styles)
-{
-    // scales our local gnomonic coordinates so they are the same order of magnitude as
-    // weemesh's default epsilon values:
-    const double gnomonic_scale = 1000.0;
-
-    // Meshed triangles will be at a maximum this many degrees across in size,
-    // to help follow the curvature of the earth.
-    const double resolution_degrees = 0.25;
-
-    // apply a fake Z for testing purposes before we attempt depth offsetting
-    const double fake_z_offset = 1000.0;
-
-
-
-    Attachments attachments;
-
-    // some conversion we will need:
-    auto feature_geo = feature.srs.geoSRS();
-    auto feature_to_geo = feature.srs.to(feature_geo);
-    auto feature_to_ecef = feature.srs.to(feature.srs.geocentricSRS());
-
-    // centroid for use with the gnomonic projection:
-    glm::dvec3 centroid;
-    feature.extent.getCentroid(centroid.x, centroid.y);
-    feature_to_geo.transform(centroid, centroid);
-
-    // transform to gnomonic. We are not using SRS/PROJ for the gnomonic projection
-    // because it would require creating a new SRS for each and every feature, which
-    // is way too slow.
-    Geometry local_geom = geom; // working copy
-    Box local_ex;
-    Geometry::iterator iter(local_geom);
-    while(iter.hasMore())
-    {
-        auto& part = iter.next();
-        if (!part.points.empty())
-        {
-            feature_to_geo.transformRange(part.points.begin(), part.points.end());
-            geo_to_gnomonic(part.points.begin(), part.points.end(), centroid, gnomonic_scale);
-            local_ex.expandBy(part.points.begin(), part.points.end());
-        }
-    }
-
-    // start with a weemesh covering the feature extent.
-    weemesh::mesh_t m;
-    int marker = 0;
-    double xspan = gnomonic_scale * resolution_degrees * 3.14159 / 180.0;
-    double yspan = gnomonic_scale * resolution_degrees * 3.14159 / 180.0;
-    int cols = std::max(2, (int)(local_ex.width() / xspan));
-    int rows = std::max(2, (int)(local_ex.height() / yspan));
-    for (int row = 0; row < rows; ++row)
-    {
-        double v = (double)row / (double)(rows - 1);
-        double y = local_ex.ymin + v * local_ex.height();
-
-        for (int col = 0; col < cols; ++col)
-        {
-            double u = (double)col / (double)(cols - 1);
-            double x = local_ex.xmin + u * local_ex.width();
-
-            m.get_or_create_vertex_from_vec3(glm::dvec3{ x, y, 0.0 }, marker);
-        }
-    }
-
-    for (int row = 0; row < rows - 1; ++row)
-    {
-        for (int col = 0; col < cols - 1; ++col)
-        {
-            int k = row * cols + col;
-            m.add_triangle(k, k + 1, k + cols);
-            m.add_triangle(k + 1, k + cols + 1, k + cols);
-        }
-    }
-
-    // next, apply the segments of the polygon to slice the mesh into triangles.
-    Geometry::const_iterator segment_iter(local_geom);
-    while (segment_iter.hasMore())
-    {
-        auto& part = segment_iter.next();
-        for (unsigned i = 0; i < part.points.size(); ++i)
-        {
-            unsigned j = (i == part.points.size() - 1) ? 0 : i + 1;
-            m.insert(weemesh::segment_t{ part.points[i], part.points[j] }, marker);
-        }
-    }
-
-    // next we need to remove all the exterior triangles.
-    std::unordered_set<weemesh::triangle_t*> insiders;
-    std::unordered_set<weemesh::triangle_t*> outsiders;
-    Geometry::const_iterator remove_iter(local_geom, false);
-    while (remove_iter.hasMore())
-    {
-        auto& part = remove_iter.next();
-
-        for (auto& tri_iter : m.triangles)
-        {
-            weemesh::triangle_t& tri = tri_iter.second;
-            auto c = (tri.p0 + tri.p1 + tri.p2) * (1.0 / 3.0); // centroid
-            bool inside = part.contains(c.x, c.y);
-            if (inside)
-                insiders.insert(&tri);
-            else
-                outsiders.insert(&tri);
-        }
-    }
-    for (auto tri : outsiders)
-    {
-        if (insiders.count(tri) == 0)
-        {
-            m.remove_triangle(*tri);
-        }
-    }
-
-    for (auto& v : m.verts)
-        v.z += fake_z_offset;
-
-    // Back to geographic:
-    gnomonic_to_geo(m.verts.begin(), m.verts.end(), centroid, gnomonic_scale);
-
-    // And into the final projection:
-    feature_to_ecef.transformRange(m.verts.begin(), m.verts.end());
-
-    // Finally, make out attachment and apply the style.
-    auto mesh = Mesh::create();
-    for (auto& tri : m.triangles)
-    {
-        mesh->addTriangle(m.verts[tri.second.i0], m.verts[tri.second.i1], m.verts[tri.second.i2]);
-    }
-
-    if (styles.mesh_function)
-    {
-        auto style = styles.mesh_function(feature);
-        mesh->setStyle(style);
-    }
-    else if (styles.mesh.has_value())
-    {
-        mesh->setStyle(styles.mesh.value());
-    }
-
-    return mesh;
-}
-
 
 
 FeatureView::FeatureView()
@@ -479,6 +349,11 @@ FeatureView::createNode(Runtime& runtime)
                         attachments.emplace_back(att);
                     }
                 }
+            }
+            else
+            {
+                Log::warn() << "FeatureView no support for "
+                    << Geometry::typeToString(feature.geometry.type) << std::endl;
             }
         }
 

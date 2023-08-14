@@ -103,6 +103,9 @@ namespace ROCKY_NAMESPACE
         //! Weather the point is contained in the 2D geometry.
         //! Only applicable to polygons
         bool contains(double x, double y) const;
+
+        //! Readable name of the geometry type
+        static std::string typeToString(Type type);
     };
 
     // template inlines

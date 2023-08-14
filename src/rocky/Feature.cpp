@@ -52,6 +52,19 @@ Geometry::convertToType(Type in_type)
     }
 }
 
+std::string
+Geometry::typeToString(Geometry::Type type)
+{
+    return
+        type == Geometry::Type::Points ? "Points" :
+        type == Geometry::Type::LineString ? "LineString" :
+        type == Geometry::Type::Polygon ? "Polygon" :
+        type == Geometry::Type::MultiPoints ? "MultiPoints" :
+        type == Geometry::Type::MultiLineString ? "MultiLineString" :
+        type == Geometry::Type::MultiPolygon ? "MultiPolygon" :
+        "Unknown";
+}
+
 namespace
 {
     template<class T>
