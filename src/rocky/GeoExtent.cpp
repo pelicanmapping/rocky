@@ -469,7 +469,7 @@ GeoExtent::contains(double x, double y, const SRS& xy_srs) const
 bool
 GeoExtent::contains(const GeoPoint& rhs) const
 {
-    return contains(rhs.x, rhs.y, rhs.srs());
+    return contains(rhs.x, rhs.y, rhs.srs);
 }
 
 bool

@@ -304,12 +304,12 @@ namespace ROCKY_NAMESPACE
         //    return conf;
         //}
 
-        std::string asString() const {
+        std::string to_string() const {
             return std::to_string(_value) + _units.getAbbr();
         }
 
-        virtual std::string asParseableString() const {
-            return asString();
+        virtual std::string to_parseable_string() const {
+            return to_string();
         }
 
     protected:
@@ -331,7 +331,7 @@ namespace ROCKY_NAMESPACE
         Angle(const std::string& str) : qualified_double<Angle>(str, Units::DEGREES) { }
         std::string asParseableString() const {
             if (_units == Units::DEGREES) return std::to_string(_value);
-            else return asString();
+            else return to_string();
         }
     };
 

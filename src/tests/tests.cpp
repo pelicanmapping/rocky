@@ -55,7 +55,7 @@ TEST_CASE("json")
     CHECK(conf == R"({"lat":42.0,"long":-77.0,"srs":"wgs84","z":0.0})");
     point = GeoPoint();
     ROCKY_NAMESPACE::from_json(json::parse(conf), point);
-    CHECK((point.valid() && point.srs() == SRS::WGS84 && point.x == -77 && point.y == 42 && point.z == 0));
+    CHECK((point.valid() && point.srs == SRS::WGS84 && point.x == -77 && point.y == 42 && point.z == 0));
 
     optional<URI> uri;
     uri = URI("file.xml");

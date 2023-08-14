@@ -101,6 +101,10 @@ void setup_demos(rocky::Application& app)
     );
 
     demos.emplace_back(
+        Demo{ "Manipulator", Demo_MapManipulator }
+    );
+
+    demos.emplace_back(
         Demo{ "Stats", Demo_Stats });
     demos.emplace_back(
         Demo{ "About", Demo_About });
@@ -158,6 +162,13 @@ int main(int argc, char** argv)
         if (layer->status().failed())
             return layerError(layer);
 
+        // add an elevation layer to the map
+        auto elev = rocky::TMSElevationLayer::create();
+        elev->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
+        app.map()->layers().add(elev);
+        if (elev->status().failed())
+            return layerError(elev);
+
   #if 0 // test multi-layer compositing
         auto layer2 = rocky::TMSImageLayer::create();
         layer2->setName("Hawaii inset");
@@ -186,12 +197,6 @@ int main(int argc, char** argv)
         app.map()->layers().add(layer5);
         if (layer5->status().failed())
             return layerError(layer5);
-
-        auto elev = rocky::TMSElevationLayer::create();
-        elev->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
-        app.map()->layers().add(elev);
-        if (elev->status().failed())
-            return layerError(elev);
   #endif
 #endif
 

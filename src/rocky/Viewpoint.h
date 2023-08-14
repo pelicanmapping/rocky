@@ -48,7 +48,7 @@ namespace ROCKY_NAMESPACE
         optional<std::string> name;
 
         //! What the viewer is looking at.
-        std::shared_ptr<SimplePositionedObject> target = nullptr;
+        std::shared_ptr<SimplePositionedObject> target;
 
         //! Heading of the viewer relative to north
         optional<Angle> heading = Angle(0.0, Units::DEGREES);
@@ -63,7 +63,8 @@ namespace ROCKY_NAMESPACE
         optional<glm::dvec3> positionOffset = glm::dvec3(0, 0, 0);
 
     public:
-        Viewpoint() { }
+        //! Construct an empty viewpoint
+        Viewpoint();
 
         Viewpoint(const Viewpoint&) = default;
 

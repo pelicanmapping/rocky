@@ -224,10 +224,13 @@ namespace ROCKY_NAMESPACE
         GeoExtent extent;
     };
 
-
+    /**
+    * Interface/base class for factories for Feature objects.
+    */
     class ROCKY_EXPORT FeatureSource : public rocky::Inherit<Object, FeatureSource>
     {
     public:
+        //! Iterator that returns features
         class iterator
         {
         public:
@@ -235,12 +238,16 @@ namespace ROCKY_NAMESPACE
             virtual const Feature& next() = 0;
         };
 
+        //! Creates a feature iterator
         virtual std::shared_ptr<iterator> iterate(IOOptions& io) = 0;
     };
 
 
 #ifdef GDAL_FOUND
 
+    /**
+    * Reads Feature objects from various sources using the GDAL OGR library.
+    */
     class ROCKY_EXPORT OGRFeatureSource : public rocky::Inherit<FeatureSource, OGRFeatureSource>
     {
     public:
@@ -255,13 +262,11 @@ namespace ROCKY_NAMESPACE
         optional<std::string> ogrDriver;
         std::string layerName;
         bool writable = false;
-        //Profile profile;
 
     private:
         void* _dsHandle;
         void* _layerHandle;
         std::thread::id _dsHandleThreadId;
-        //Geometry::Type _geometryType;
         FeatureProfile _featureProfile;
         std::string _source;
 
@@ -297,11 +302,13 @@ namespace ROCKY_NAMESPACE
         type(in_type),
         points(begin, end)
     {
+        //nop
     }
     template<class VEC3_CONTAINER>
     Geometry::Geometry(Type in_type, const VEC3_CONTAINER& container) :
         type(in_type),
         points(container.begin(), container.end())
     {
+        //nop
     }
 }

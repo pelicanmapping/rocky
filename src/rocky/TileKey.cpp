@@ -282,7 +282,7 @@ TileKey::createTileKeyContainingPoint(
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(point.valid() && profile.valid(), TileKey::INVALID);
 
-    if (point.srs().isHorizEquivalentTo(profile.srs()))
+    if (point.srs.isHorizEquivalentTo(profile.srs()))
     {
         return createTileKeyContainingPoint(
             point.x, point.y, level, profile);

@@ -4,6 +4,7 @@
  * MIT License
  */
 #pragma once
+
 #include <rocky_vsg/Common.h>
 
 #include <rocky/GeoPoint.h>
@@ -16,6 +17,9 @@
 #include <vsg/ui/KeyEvent.h>
 #include <vsg/ui/UIEvent.h>
 #include <vsg/ui/PointerEvent.h>
+
+#include <optional>
+#include <vector>
 
 namespace vsg
 {
@@ -64,6 +68,12 @@ namespace ROCKY_NAMESPACE
 
         //! Distance from the focal point in world coordinates.
         void setDistance(double distance);
+
+        //! Sets the viewpoint with optional transition time
+        void setViewpoint(const Viewpoint& vp, std::chrono::duration<float> duration_s);
+
+        //! Fetches the current viewpoint
+        Viewpoint getViewpoint() const;
 
     public: // vsg::Visitor
         void apply(vsg::KeyPressEvent& keyPress) override;
@@ -218,7 +228,7 @@ namespace ROCKY_NAMESPACE
             /** dtor */
             virtual ~Settings() { }
 
-            void dirty() { } 
+            void dirty() { }
 
             /**
              * Assigns behavior to the action of dragging the mouse while depressing one or
@@ -678,10 +688,21 @@ namespace ROCKY_NAMESPACE
             // the view heading.
             vsg::dvec2 viewOffset;
 
+            vsg::dquat tetherRotation;
+
+            std::optional<Viewpoint> setVP0;
+            std::optional<Viewpoint> setVP1; // Final viewpoint
+            optional<vsg::time_point> setVPStartTime; // Time of call to setViewpoint
+            std::chrono::duration<float> setVPDuration; // Transition time for setViewpoint
+            double setVPAccel, setVPAccel2; // Acceleration factors for setViewpoint
+            double setVPArcHeight; // Altitude arcing height for setViewpoint
+            vsg::dquat tetherRotationVP0;
+            vsg::dquat tetherRotationVP1;
+
             State() :
                 localRotation(0, 0, 0, 1),
-                distance(1.0)
-
+                distance(1.0),
+                tetherRotation(0, 0, 0, 1)
             { }
         };
 
@@ -715,6 +736,11 @@ namespace ROCKY_NAMESPACE
         bool withinRenderArea(const vsg::PointerEvent& pointerEvent) const;
 
         vsg::dvec2 ndc(const vsg::PointerEvent&) const;
-    };
 
+        inline bool isSettingViewpoint() const {
+            return _state.setVP0.has_value() && _state.setVP1.has_value();
+        }
+
+        double setViewpointFrame(const vsg::time_point&);
+    };
 }

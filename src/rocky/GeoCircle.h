@@ -39,7 +39,7 @@ namespace ROCKY_NAMESPACE
         void setRadius( double value ) { _radius = value; }
 
         /** SRS of the center point */
-        const SRS& srs() const { return _center.srs(); }
+        const SRS& srs() const { return _center.srs; }
 
         /** equality test */
         bool operator == ( const GeoCircle& rhs ) const;

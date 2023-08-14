@@ -16,6 +16,9 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT GeoPoint
     {
     public:
+        SRS srs;
+        double x, y, z;
+
         //! Constructs an empty (and invalid) geopoint.
         GeoPoint();
 
@@ -28,41 +31,26 @@ namespace ROCKY_NAMESPACE
         //! Constructs a GeoPoint
         GeoPoint(const SRS& srs, double x, double y, double z);
 
-        ////! Constructs a GeoPoint
-        //GeoPoint(const SRS& srs, const fvec3& xyz);
-
-        ////! Constructs a GeoPoint
-        //GeoPoint(const SRS& srs, const dvec3& xyz);
+        //! Constructs a GeoPoint
+        template<class T>
+        GeoPoint(const SRS& srs, const T& dvec) :
+            GeoPoint(srs, dvec.x, dvec.y, dvec.z) { }
 
         //! Destruct
         ~GeoPoint() { }
 
-        // component getter/setters
-
-        double x, y, z;
-
-#if 0
-        double& x() { return _p.x; }
-        double  x() const { return _p.x; }
-
-        double& y() { return _p.y; }
-        double  y() const { return _p.y; }
-
-        double& z() { return _p.z; }
-        double  z() const { return _p.z; }
-
-        double& alt() { return _p.z; }
-        double  alt() const { return _p.z; }
-
-        double* ptr() { return &_p.x; }
-#endif
-
-        //const dvec3& to_dvec3() const { return _p; }
-
-        const SRS& srs() const { return _srs; }
+        //const SRS& srs() const { return _srs; }
 
         //! Gets copy of this geopoint transformed into another SRS
         bool transform(const SRS& outSRS, GeoPoint& output) const;
+
+        template<class VEC3>
+        inline bool transform(const SRS& outSRS, VEC3& output) const {
+            GeoPoint temp;
+            if (!transform(outSRS, temp)) return false;
+            output = { temp.x, temp.y, temp.z };
+            return true;
+        }
 
         //! Transforms this point in place to another SRS
         bool transformInPlace(const SRS& srs);
@@ -75,23 +63,9 @@ namespace ROCKY_NAMESPACE
         //! @return Geodesic distance between the two points
         Distance geodesicDistanceTo(const GeoPoint& rhs) const;
 
-        /**
-         * @deprecated - ambiguous, will be removed. Use geodesicDistanceTo() or toWorld()/length instead.
-         * Calculates the distance in meters from this geopoint to another.
-         */
-        double distanceTo(const GeoPoint& rhs) const;
-
-        /**
-         * Interpolates a point between this point and another point
-         * using the parameter t [0..1].
-         */
-         //GeoPoint interpolate(const GeoPoint& rhs, double t) const;
-
-         //! Convenience function to return xy units
-         //Units getXYUnits() const;
 
         bool operator == (const GeoPoint& rhs) const {
-            return _srs == rhs._srs && x == rhs.x && y == rhs.y && z == rhs.z;
+            return srs == rhs.srs && x == rhs.x && y == rhs.y && z == rhs.z;
         }
 
         bool operator != (const GeoPoint& rhs) const {
@@ -100,7 +74,7 @@ namespace ROCKY_NAMESPACE
 
         //! Does this object contain a valid geo point?
         bool valid() const {
-            return _srs.valid();
+            return srs.valid();
         }
 
     public:
@@ -115,6 +89,6 @@ namespace ROCKY_NAMESPACE
         //JSON to_json() const;
 
     private:
-        SRS _srs;
+        //SRS _srs;
     };
 }

@@ -64,12 +64,12 @@ auto Demo_Label = [](Application& app)
 
         if (ImGuiLTable::SliderFloat("Latitude", &vec.y, -85.0, 85.0, "%.1f"))
         {
-            object->xform->setPosition(GeoPoint(pos.srs(), vec.x, vec.y, vec.z));
+            object->xform->setPosition(GeoPoint(pos.srs, vec.x, vec.y, vec.z));
         }
 
         if (ImGuiLTable::SliderFloat("Longitude", &vec.x, -180.0, 180.0, "%.1f"))
         {
-            object->xform->setPosition(GeoPoint(pos.srs(), vec.x, vec.y, vec.z));
+            object->xform->setPosition(GeoPoint(pos.srs, vec.x, vec.y, vec.z));
         }
 
         ImGuiLTable::End();

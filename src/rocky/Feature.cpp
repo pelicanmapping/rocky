@@ -117,62 +117,6 @@ Geometry::contains(double x, double y) const
     }
 }
 
-#if 0
-Geometry::const_iterator::const_iterator(const Geometry& geom)
-{
-    _stack.push(&geom);
-    fetch();
-}
-
-bool
-Geometry::const_iterator::hasMore() const
-{
-    return _next != nullptr;
-}
-
-const Geometry&
-Geometry::const_iterator::next()
-{
-    auto n = _next;
-    fetch();
-    return *n;
-}
-
-void
-Geometry::const_iterator::fetch()
-{
-    _next = nullptr;
-
-    if (_stack.size() == 0)
-        return;
-
-    const Geometry* current = _stack.top();
-    _stack.pop();
-
-    bool is_multi =
-        current->type == Geometry::Type::MultiLineString ||
-        current->type == Geometry::Type::MultiPoints ||
-        current->type == Geometry::Type::MultiPolygon;
-
-    if (is_multi && _traverse_multi)
-    {
-        for (auto& part : current->parts)
-            _stack.push(&part);
-        fetch();
-    }
-    else
-    {
-        _next = current;
-        
-        if (current->type == Type::Polygon && _traverse_polygon_holes)
-        {
-            for (auto& ring : current->parts)
-                _stack.push(&ring);
-        }
-    }
-}
-#endif
-
 bool
 Feature::FieldNameComparator::operator()(const std::string& L, const std::string& R) const
 {

@@ -783,7 +783,7 @@ GeoImage::read(glm::fvec4& output, const GeoPoint& p) const
     }
 
     // transform if necessary
-    if (!p.srs().isHorizEquivalentTo(srs()))
+    if (!p.srs.isHorizEquivalentTo(srs()))
     {
         GeoPoint c;
         return p.transform(srs(), c) && read(output, c);

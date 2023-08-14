@@ -370,10 +370,6 @@ TerrainState::updateTerrainTileDescriptors(
     {
         // Need to compile the descriptors
         runtime.compile(dm.bindDescriptorSetCommand);
-        //if (runtime.viewer() && runtime.viewer()->compileManager)
-        //{
-        //    runtime.viewer()->compileManager->compile(dm.bindDescriptorSetCommand);
-        //}
 
         // And update the tile's state group
         stategroup->stateCommands.clear();

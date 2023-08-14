@@ -527,15 +527,7 @@ MapManipulator::MapManipulator(
         //_srs = mapNode->mapSRS();
 
     reinitialize();
-
     configureDefaultSettings();
-
-
-    // compute the bounds of the scene graph to help position camera
-    //auto center = vsg::dvec3(0, 0, 0); // (cb.bounds.min + cb.bounds.max) * 0.5;
-    //auto radius = _worldSRS.ellipsoid().semiMajorAxis();
-    //setCenter(vsg::dvec3(radius, 0, 0));
-    //setDistance(radius * 3.5);
     home();
 
     //if (_settings)
@@ -752,7 +744,7 @@ MapManipulator::getWorldLookAtMatrix(const vsg::dvec3& point) const
     return vsg::lookAt(point - (lookVector * offset), point, up);
 }
 
-#if 0
+#if 1
 Viewpoint
 MapManipulator::getViewpoint() const
 {
@@ -771,46 +763,39 @@ MapManipulator::getViewpoint() const
     }
 #endif
 
-    // Transitioning? Capture the last calculated intermediate position.
-    //else 
-    if (isSettingViewpoint())
-    {
-        vp.point->fromWorld(_srs, _center);
-    }
-
-    // If we are stationary:
-    else
-    {
-        vp.point->fromWorld(_srs, _center);
-    }
+    // the focal point:
+    vp.target->point = GeoPoint(_worldSRS, _state.center);
 
     // Always update the local offsets.
     double localAzim, localPitch;
-    getEulerAngles( _rotation, &localAzim, &localPitch );
+    getEulerAngles(_state.localRotation, &localAzim, &localPitch );
 
     vp.heading = Angle(localAzim, Units::RADIANS).to(Units::DEGREES);
     vp.pitch = Angle(localPitch, Units::RADIANS).to(Units::DEGREES);
-    vp.range->set(_distance, Units::METERS);
+    vp.range->set(_state.distance, Units::METERS);
 
-    if ( _posOffset.x != 0.0 || _posOffset.y != 0.0 || _posOffset.z != 0.0 )
+    if ( _state.localPositionOffset.x != 0.0 || _state.localPositionOffset.y != 0.0 || _state.localPositionOffset.z != 0.0 )
     {
-        vp.positionOffset = to_glm(_posOffset);
+        vp.positionOffset = to_glm(_state.localPositionOffset);
     }
 
     return vp;
 }
+#endif
 
+#if 1
 void
-MapManipulator::setViewpoint(const Viewpoint& vp, double duration_seconds)
+MapManipulator::setViewpoint(const Viewpoint& vp, std::chrono::duration<float> duration_seconds)
 {
-    // If the manip is not set up, save the viewpoint for later.
-    if ( !established() )
-    {
-        _pendingViewpoint = vp;
-        _pendingViewpointDuration.set(duration_seconds, Units::SECONDS);
-    }
+    //// If the manip is not set up, save the viewpoint for later.
+    //if ( !established() )
+    //{
+    //    _pendingViewpoint = vp;
+    //    _pendingViewpointDuration.set(duration_seconds, Units::SECONDS);
+    //}
 
-    else
+    //else
+
     {
 #if 0
         // Save any existing tether node so we can properly invoke the callback.
@@ -822,47 +807,48 @@ MapManipulator::setViewpoint(const Viewpoint& vp, double duration_seconds)
 #endif
 
         // starting viewpoint; all fields will be set:
-        _setVP0 = getViewpoint();
+        _state.setVP0 = getViewpoint();
 
         // ending viewpoint
-        _setVP1 = vp;
+        _state.setVP1 = vp;
 
         // Reset the tethering offset quat.
-        _tetherRotationVP0 = _tetherRotation;
-        _tetherRotationVP1 = vsg::dquat();
+        _state.tetherRotationVP0 = _state.tetherRotation;
+        _state.tetherRotationVP1 = vsg::dquat();
 
         // Fill in any missing end-point data with defaults matching the current camera setup.
         // Then all fields are guaranteed to contain usable data during transition.
         double defPitch, defAzim;
-        getEulerAngles( _rotation, &defAzim, &defPitch );
+        getEulerAngles(_state.localRotation, &defAzim, &defPitch );
 
-        if ( !_setVP1->heading.has_value() )
-            _setVP1->heading = Angle(defAzim, Units::RADIANS);
+        if ( !_state.setVP1->heading.has_value() )
+            _state.setVP1->heading = Angle(defAzim, Units::RADIANS);
 
-        if ( !_setVP1->pitch.has_value() )
-            _setVP1->pitch = Angle(defPitch, Units::RADIANS);
+        if ( !_state.setVP1->pitch.has_value() )
+            _state.setVP1->pitch = Angle(defPitch, Units::RADIANS);
 
-        if ( !_setVP1->range.has_value() )
-            _setVP1->range = Distance(_distance, Units::METERS);
+        if ( !_state.setVP1->range.has_value() )
+            _state.setVP1->range = Distance(_state.distance, Units::METERS);
 
-#if 0
-        if ( !_setVP1->nodeIsSet() && !_setVP1->focalPoint().has_value() )
+//#if 0
+//        if ( !_setVP1->nodeIsSet() && !_setVP1->focalPoint().has_value() )
+//        {
+//            osg::ref_ptr<vsg::Node> vpNode = _setVP0->getNode();
+//            if (vpNode.valid())
+//                _setVP1->setNode(vpNode.get());
+//            else
+//                _setVP1->focalPoint() = _setVP0->focalPoint().get();
+//        }
+//#else
+//        _state.setVP1->target = _state.setVP0->target;
+//#endif
+
+        if (duration_seconds.count() <= 0.0f)
         {
-            osg::ref_ptr<vsg::Node> vpNode = _setVP0->getNode();
-            if (vpNode.valid())
-                _setVP1->setNode(vpNode.get());
-            else
-                _setVP1->focalPoint() = _setVP0->focalPoint().get();
+            duration_seconds = std::chrono::duration<float>(0.0f);
         }
-#else
-        _setVP1->point = _setVP0->point;
-#endif
 
-        _setVPDuration.set(std::max(duration_seconds, 0.0), Units::SECONDS);
-
-        ROCKY_DEBUG << LC << "setViewpoint:\n"
-            << "    from " << _setVP0->toString() << "\n"
-            << "    to   " << _setVP1->toString() << "\n";
+        _state.setVPDuration = duration_seconds;
 
 #if 0
         // access the new tether node if it exists:
@@ -870,29 +856,26 @@ MapManipulator::setViewpoint(const Viewpoint& vp, double duration_seconds)
 #endif
 
         // Timed transition, we need to calculate some things:
-        if ( duration_seconds > 0.0 )
+        if ( duration_seconds.count() > 0.0f )
         {
             // Start point is the current manipulator center:
             vsg::dvec3 startWorld;
             vsg::ref_ptr<vsg::Node> startNode = {}; // _setVP0->getNode();
-            startWorld = (_center); // startNode ? computeWorld(startNode) : _center;
+            startWorld = (_state.center); // startNode ? computeWorld(startNode) : _center;
 
-            _setVPStartTime.unset();
+            _state.setVPStartTime.clear();
 
             // End point is the world coordinates of the target viewpoint:
             vsg::dvec3 endWorld;
-            //if ( endNode )
-            //    endWorld = computeWorld(endNode.get());
-            //else
-                _setVP1->point->transform(_srs).toWorld(endWorld);
+            _state.setVP1->target->position().transform(_worldSRS, endWorld);
 
             // calculate an acceleration factor based on the Z differential.
-            _setVPArcHeight = 0.0;
-            double range0 = _setVP0->range->as(Units::METERS);
-            double range1 = _setVP1->range->as(Units::METERS);
+            _state.setVPArcHeight = 0.0;
+            double range0 = _state.setVP0->range->as(Units::METERS);
+            double range1 = _state.setVP1->range->as(Units::METERS);
 
-            double pitch0 = _setVP0->pitch->as(Units::RADIANS);
-            double pitch1 = _setVP1->pitch->as(Units::RADIANS);
+            double pitch0 = _state.setVP0->pitch->as(Units::RADIANS);
+            double pitch1 = _state.setVP1->pitch->as(Units::RADIANS);
 
             double h0 = range0 * sin( -pitch0 );
             double h1 = range1 * sin( -pitch1 );
@@ -904,44 +887,47 @@ MapManipulator::setViewpoint(const Viewpoint& vp, double duration_seconds)
             // maximum height during viewpoint transition
             if ( _settings->getArcViewpointTransitions() )
             {
-                _setVPArcHeight = std::max( de - fabs(dh), 0.0 );
+                _state.setVPArcHeight = std::max( de - fabs(dh), 0.0 );
             }
 
             // calculate acceleration coefficients
-            if ( _setVPArcHeight > 0.0 )
+            if (_state.setVPArcHeight > 0.0 )
             {
                 // if we're arcing, we need separate coefficients for the up and down stages
-                double h_apex = 2.0*(h0+h1) + _setVPArcHeight;
+                double h_apex = 2.0*(h0+h1) + _state.setVPArcHeight;
                 double dh2_up = fabs(h_apex - h0)/100000.0;
-                _setVPAccel = log10( dh2_up );
+                _state.setVPAccel = log10( dh2_up );
                 double dh2_down = fabs(h_apex - h1)/100000.0;
-                _setVPAccel2 = -log10( dh2_down );
+                _state.setVPAccel2 = -log10( dh2_down );
             }
             else
             {
                 // on arc => simple unidirectional acceleration:
                 double dh2 = (h1 - h0)/100000.0;
-                _setVPAccel = fabs(dh2) <= 1.0? 0.0 : dh2 > 0.0? log10( dh2 ) : -log10( -dh2 );
-                if ( fabs( _setVPAccel ) < 1.0 ) _setVPAccel = 0.0;
+                _state.setVPAccel = fabs(dh2) <= 1.0? 0.0 : dh2 > 0.0? log10( dh2 ) : -log10( -dh2 );
+                if ( fabs(_state.setVPAccel ) < 1.0 ) _state.setVPAccel = 0.0;
             }
 
+#if 0
             // Adjust the duration if necessary.
             if ( _settings->getAutoViewpointDurationEnabled() )
             {
-                double maxDistance = _srs.ellipsoid().semiMajorAxis();
+                double maxDistance = _worldSRS.ellipsoid().semiMajorAxis();
                 double ratio = clamp(de / maxDistance, 0.0, 1.0);
                 ratio = accelerationInterp(ratio, -4.5);
                 double minDur, maxDur;
                 _settings->getAutoViewpointDurationLimits(minDur, maxDur);
-                _setVPDuration.set(minDur + ratio * (maxDur - minDur), Units::SECONDS);
+                _state.setVPDuration.set(minDur + ratio * (maxDur - minDur), Units::SECONDS);
             }
+#endif
         }
 
         else
         {
             // Immediate transition? Just do it now.
-            _setVPStartTime->set( _time_s_now, Units::SECONDS );
-            setViewpointFrame( _time_s_now );
+            _state.setVPStartTime = _previousTime;
+            //_state.setVPStartTime->set( _time_s_now, Units::SECONDS );
+            setViewpointFrame(_previousTime);
         }
 
 #if 0
@@ -966,38 +952,38 @@ MapManipulator::setViewpoint(const Viewpoint& vp, double duration_seconds)
 
 // returns "t" [0..1], the interpolation coefficient.
 double
-MapManipulator::setViewpointFrame(double time_s)
+MapManipulator::setViewpointFrame(const vsg::time_point& now)
 {
-    if ( !_setVPStartTime.has_value() )
+    if ( !_state.setVPStartTime.has_value() )
     {
-        _setVPStartTime->set( time_s, Units::SECONDS );
+        _state.setVPStartTime = now; // ->set(time_s.time_since_epoch().count(), Units::SECONDS);
         return 0.0;
     }
     else
     {
         // Start point is the current manipulator center:
-        dvec3 startWorld;
-        vsg::ref_ptr<vsg::Node> startNode = {}; // _setVP0->getNode();
-        if (startNode)
-            startWorld = computeWorld(startNode);
-        else
-            _setVP0->point->transform(_srs).toWorld(startWorld);
+        vsg::dvec3 startWorld;
+        _state.setVP0->target->position().transform(_worldSRS, startWorld);
 
         // End point is the world coordinates of the target viewpoint:
-        dvec3 endWorld;
-        vsg::ref_ptr<vsg::Node> endNode = { }; // _setVP1->getNode();
-        if (endNode)
-            endWorld = computeWorld(endNode);
-        else
-            _setVP1->point->transform(_srs).toWorld(endWorld);
+        vsg::dvec3 endWorld;
+        _state.setVP1->target->position().transform(_worldSRS, endWorld);
 
         // Remaining time is the full duration minus the time since initiation:
-        double elapsed = time_s - _setVPStartTime->as(Units::SECONDS);
-        double duration = _setVPDuration.as(Units::SECONDS);
-        double t = std::min(1.0, duration > 0.0 ? elapsed/duration : 1.0);
+        auto elapsed = std::chrono::duration_cast<std::chrono::duration<float>>(
+            now - _state.setVPStartTime.value());
+
+        auto duration = _state.setVPDuration;
+
+        //double duration = _state.setVPDuration.as(Units::SECONDS);
+        //const unsigned min_duration = 1e9; // nanos
+
+        double t = (double)elapsed.count() / (double)duration.count();
+        t = std::min(t, 1.0);
+
         double tp = t;
 
-        if ( _setVPArcHeight > 0.0 )
+        if (_state.setVPArcHeight > 0.0 )
         {
             if ( tp <= 0.5 )
             {
@@ -1019,50 +1005,56 @@ MapManipulator::setViewpointFrame(double time_s)
         }
 
         vsg::dvec3 newCenter =
-            _srs.isGeodetic()
-            ? nlerp(startWorld, endWorld, tp)
-            : lerp(startWorld, endWorld, tp);
+            _worldSRS.isGeocentric() ? nlerp(startWorld, endWorld, tp) :
+            lerp(startWorld, endWorld, tp);
 
         // Calculate the delta-heading, and make sure we are going in the shortest direction:
-        Angle d_azim = _setVP1->heading.get() - _setVP0->heading.get();
+        Angle d_azim = _state.setVP1->heading.value() - _state.setVP0->heading.value();
         if ( d_azim.as(Units::RADIANS) > M_PI )
             d_azim = d_azim - Angle(2.0*M_PI, Units::RADIANS);
         else if ( d_azim.as(Units::RADIANS) < -M_PI )
             d_azim = d_azim + Angle(2.0*M_PI, Units::RADIANS);
-        double newAzim = _setVP0->heading->as(Units::RADIANS) + tp*d_azim.as(Units::RADIANS);
+        double newAzim = _state.setVP0->heading->as(Units::RADIANS) + tp*d_azim.as(Units::RADIANS);
 
         // Calculate the new pitch:
-        Angle d_pitch = _setVP1->pitch.get() - _setVP0->pitch.get();
-        double newPitch = _setVP0->pitch->as(Units::RADIANS) + tp*d_pitch.as(Units::RADIANS);
+        Angle d_pitch = _state.setVP1->pitch.value() - _state.setVP0->pitch.value();
+        double newPitch = _state.setVP0->pitch->as(Units::RADIANS) + tp*d_pitch.as(Units::RADIANS);
 
         // Calculate the new range:
-        Distance d_range = _setVP1->range.get() - _setVP0->range.get();
+        Distance d_range = _state.setVP1->range.value() - _state.setVP0->range.value();
         double newRange =
-            _setVP0->range->as(Units::METERS) +
-            d_range.as(Units::METERS)*tp + sin(M_PI*tp)*_setVPArcHeight;
+            _state.setVP0->range->as(Units::METERS) +
+            d_range.as(Units::METERS)*tp + sin(M_PI*tp)* _state.setVPArcHeight;
 
         // Calculate the offsets
-        vsg::dvec3 offset0 = to_vsg(_setVP0->positionOffset.getOrUse(dvec3(0, 0, 0)));
-        vsg::dvec3 offset1 = to_vsg(_setVP1->positionOffset.getOrUse(dvec3(0, 0, 0)));
+        vsg::dvec3 offset0 = to_vsg(_state.setVP0->positionOffset.value_or(glm::dvec3{ 0,0,0 }));
+        vsg::dvec3 offset1 = to_vsg(_state.setVP1->positionOffset.value_or(glm::dvec3{ 0,0,0 }));
         vsg::dvec3 newOffset = offset0 + (offset1-offset0)*tp;
 
         // Activate.
-        setLookAt( newCenter, newAzim, newPitch, newRange, newOffset );
+        //setLookAt(newCenter, newAzim, newPitch, newRange, newOffset);
+        setCenter(newCenter);
+        setDistance(newRange);
+        //_state.center = newCenter;
+        //_state.distance = newRange;
+        _state.localRotation = getQuaternion(newAzim, newPitch);
+        _state.localPositionOffset = newOffset;
 
         // interpolate tether rotation:
-        _tetherRotation = vsg::mix(_tetherRotationVP0, _tetherRotationVP1, tp);
-        //_tetherRotation.slerp(tp, _tetherRotationVP0, _tetherRotationVP1);
+        _state.tetherRotation = vsg::mix(_state.tetherRotationVP0, _state.tetherRotationVP1, tp);
 
         // At t=1 the transition is complete.
         if ( t >= 1.0 )
         {
-            _setVP0.unset();
+            _state.setVP0.reset();
 
+#if 0
             // If this was a transition into a tether, keep the endpoint around so we can
             // continue tracking it.
             if ( !isTethering() )
+#endif
             {
-                _setVP1.unset();
+                _state.setVP1.reset();
             }
         }
 
@@ -1476,6 +1468,11 @@ MapManipulator::apply(vsg::FrameEvent& frame)
 
     serviceTask(frame.time);
 
+    if (isSettingViewpoint())
+    {
+        setViewpointFrame(frame.time);
+    }
+
     auto camera = _camera_weakptr.ref_ptr();
     if (camera)
     {
@@ -1760,11 +1757,6 @@ namespace
         }
         else
         {
-            /* --------------------------------------------------
-               The ends of the vectors are very close
-               we can use simple linear interpolation - no need
-               to worry about the "spherical" interpolation
-               -------------------------------------------------- */
             scale_from = 1.0 - t;
             scale_to = t;
         }
