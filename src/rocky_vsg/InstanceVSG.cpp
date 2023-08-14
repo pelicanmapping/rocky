@@ -9,6 +9,8 @@
 #include <vsg/io/read.h>
 #include <vsg/io/Logger.h>
 #include <vsg/state/Image.h>
+#include <vsg/io/ReaderWriter.h>
+
 
 ROCKY_ABOUT(VulkanSceneGraph, VSG_VERSION_STRING)
 

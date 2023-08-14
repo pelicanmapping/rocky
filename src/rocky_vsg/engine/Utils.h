@@ -12,6 +12,7 @@
 #include <vsg/maths/vec3.h>
 #include <vsg/maths/mat4.h>
 #include <vsg/vk/State.h>
+#include <vsg/threading/OperationThreads.h>
 
 namespace ROCKY_NAMESPACE
 {

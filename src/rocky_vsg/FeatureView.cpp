@@ -14,12 +14,12 @@ namespace
     // Transforms a range of points from geographic (long lat) to gnomonic coordinates
     // around a centroid with an optional scale.
     template<class T, class ITER>
-    void geo_to_gnomonic(typename ITER begin, typename ITER end, const T& centroid, double scale = 1.0)
+    void geo_to_gnomonic(ITER begin, ITER end, const T& centroid, double scale = 1.0)
     {
         double lon0 = deg2rad(centroid.x);
         double lat0 = deg2rad(centroid.y);
 
-        for (typename ITER p = begin; p != end; ++p)
+        for (ITER p = begin; p != end; ++p)
         {
             double lon = deg2rad(p->x);
             double lat = deg2rad(p->y);
@@ -32,12 +32,12 @@ namespace
     // Transforms a range of points from gnomonic coordinates around a centroid with a
     // given scale to geographic (long lat) coordinates.
     template<class T, class ITER>
-    void gnomonic_to_geo(typename ITER begin, typename ITER end, const T& centroid, double scale = 1.0)
+    void gnomonic_to_geo(ITER begin, ITER end, const T& centroid, double scale = 1.0)
     {
         double lon0 = deg2rad(centroid.x);
         double lat0 = deg2rad(centroid.y);
 
-        for (typename ITER p = begin; p != end; ++p)
+        for (ITER p = begin; p != end; ++p)
         {
             double x = p->x / scale, y = p->y / scale;
             double rho = sqrt(x * x + y * y);
