@@ -55,8 +55,6 @@ namespace ROCKY_NAMESPACE
 
         struct Config
         {
-            vsg::ref_ptr<vsg::ShaderCompileSettings> settings;
-
             //! Singleton pipeline config object created when the object is first constructed,
             //! for access to pipeline and desriptor set layouts.
             vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> pipelineConfig;
@@ -68,13 +66,14 @@ namespace ROCKY_NAMESPACE
         enum Features
         {
             NONE = 0x0,
-            TEXTURE = 0x1
+            WRITE_DEPTH = 0x1,
+            APPLY_TEXTURE = 0x2
         };
 
         static std::vector<Config> configs;
 
         //! Access a state config permutation
-        static Config& get(int features = NONE);
+        static Config& get(int features = WRITE_DEPTH);
     };
 
     /**
@@ -92,6 +91,8 @@ namespace ROCKY_NAMESPACE
 
         vsg::ref_ptr<vsg::ubyteArray> _styleData;
         vsg::ref_ptr<vsg::ImageInfo> _imageInfo;
+        bool _writeDepth = true;
+        int _features = MeshState::WRITE_DEPTH;
 
         void dirty();
     };

@@ -30,8 +30,8 @@ auto Demo_MapManipulator = [](Application& app)
                 if (vp.target)
                 {
                     ImGuiLTable::Text("ECEF X:", "%.1lf", vp.target->point.x);
-                    ImGuiLTable::Text("ECEF Y:", "%.1lf", vp.target->point.z);
-                    ImGuiLTable::Text("ECEF Z:", "%.1lf", vp.target->point.x);
+                    ImGuiLTable::Text("ECEF Y:", "%.1lf", vp.target->point.y);
+                    ImGuiLTable::Text("ECEF Z:", "%.1lf", vp.target->point.z);
 
                     GeoPoint LL;
                     if (vp.target->point.transform(vp.target->point.srs.geoSRS(), LL))
@@ -66,7 +66,7 @@ auto Demo_MapManipulator = [](Application& app)
             vp2.name = "Barcelona";
             vp2.heading = -56.0;
             vp2.pitch = -25.0;
-            vp2.range = 25000.0;
+            vp2.range = 125000.0;
             vp2.target->point = GeoPoint{ SRS::WGS84, 2.16, 41.384, 0.0 };
 
             ImGui::SameLine();

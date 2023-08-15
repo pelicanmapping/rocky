@@ -25,7 +25,7 @@ struct Varyings {
     float wireframe;
 };
 layout(location = 1) out vec2 uv;
-layout(location = 2) flat out Varyings rk;
+layout(location = 2) flat out Varyings vary;
 
 // GL built-ins
 out gl_PerVertex {
@@ -34,8 +34,8 @@ out gl_PerVertex {
 
 void main()
 {
-    rk.color = mesh.color.a > 0.0 ? mesh.color : in_color;
-    rk.wireframe = mesh.wireframe;
+    vary.color = mesh.color.a > 0.0 ? mesh.color : in_color;
+    vary.wireframe = mesh.wireframe;
     uv = in_uv;
 
     // TODO: lighting (optional)

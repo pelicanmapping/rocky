@@ -32,7 +32,7 @@ using namespace ROCKY_NAMESPACE;
 rocky::Status MeshState::status;
 vsg::ref_ptr<vsg::ShaderSet> MeshState::shaderSet;
 rocky::Runtime* MeshState::runtime = nullptr;
-std::vector<MeshState::Config> MeshState::configs;
+std::vector<MeshState::Config> MeshState::configs(4); // number of permutations
 
 namespace
 {
@@ -107,13 +107,6 @@ MeshState::initialize(Runtime& in_runtime)
             "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
         return;
     }
-
-    configs.resize(2);
-
-    configs[NONE].settings = nullptr;
-
-    configs[TEXTURE].settings = vsg::ShaderCompileSettings::create();
-    configs[TEXTURE].settings->defines.insert("MESH_TEXTURE");
 }
 
 MeshState::Config&
@@ -132,7 +125,7 @@ MeshState::get(int which)
         c.pipelineConfig = vsg::GraphicsPipelineConfig::create(shaderSet);
 
         // Apply any custom compile settings / defines:
-        c.pipelineConfig->shaderHints = c.settings ? c.settings : runtime->shaderCompileSettings;
+        c.pipelineConfig->shaderHints = runtime->shaderCompileSettings;
 
         // activate the arrays we intend to use
         c.pipelineConfig->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
@@ -146,9 +139,12 @@ MeshState::get(int which)
         c.pipelineConfig->enableUniform("mesh");
         c.pipelineConfig->enableUniform("vsg_viewports");
 
-        if (which & TEXTURE)
+        if (which & APPLY_TEXTURE)
         {
             c.pipelineConfig->enableTexture("mesh_texture");
+            if (!c.pipelineConfig->shaderHints)
+                c.pipelineConfig->shaderHints = vsg::ShaderCompileSettings::create();
+            c.pipelineConfig->shaderHints->defines.insert("MESH_TEXTURE");
         }
 
         // Alpha blending to support line smoothing
@@ -158,6 +154,9 @@ MeshState::get(int which)
             VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
         } };
+
+        // Enable or disable depth writes
+        c.pipelineConfig->depthStencilState->depthWriteEnable = (which & WRITE_DEPTH)? VK_TRUE : VK_FALSE;
 
         // Register the ViewDescriptorSetLayout (for view-dependent state stuff
         // like viewpoint and lights data)
@@ -245,8 +244,7 @@ BindMeshStyle::dirty()
     this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     this->firstSet = 0;
 
-    // TODO: depends on whether we have a texture
-    auto config = MeshState::get().pipelineConfig;
+    auto config = MeshState::get(_features).pipelineConfig;
 
     this->layout = config->layout;
 

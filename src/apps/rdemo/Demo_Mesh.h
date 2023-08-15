@@ -23,7 +23,7 @@ auto Demo_Mesh_Absolute = [](Application& app)
 
         auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
         const double step = 2.5;
-        const double alt = 0.0; // 50000;
+        const double alt = 0.0; 
         for (double lon = 0.0; lon < 35.0; lon += step)
         {
             for(double lat = 15.0; lat < 35.0; lat += step)
@@ -40,6 +40,10 @@ auto Demo_Mesh_Absolute = [](Application& app)
         }
 
         mesh->setStyle(MeshStyle{ { 1,0.4,0.1,0.75 }, 32.0f });
+
+        // Turn off depth buffer writes. If you do this, you must do it
+        // before adding it to the application.
+        mesh->setWriteDepth(false);
 
         object = MapObject::create(mesh);
         app.add(object);
@@ -71,7 +75,7 @@ auto Demo_Mesh_Absolute = [](Application& app)
             mesh->setStyle(style);
         }
 
-        if (ImGuiLTable::SliderFloat("Depth Offset", &style.depth_offset, 0.0f, 0.00001f, "%.7f"))
+        if (ImGuiLTable::SliderFloat("Depth offset", &style.depth_offset, 0.0f, 0.00001f, "%.7f"))
         {
             mesh->setStyle(style);
         }

@@ -12,19 +12,25 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_PolygonFeatures= [](Application& app)
 {
-    static shared_ptr<MapObject> object;
-    static shared_ptr<FeatureView> feature_view;
+    static std::shared_ptr<MapObject> object;
+    static std::shared_ptr<FeatureView> feature_view;
     static bool visible = true;
+    static Status status;
+    
+    if (status.failed())
+    {
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), "Failed to open feature source");
+        return;
+    }
 
     if (!object)
     {
-        ImGui::Text("Wait...");
-
         // open a feature source:
         auto fs = rocky::OGRFeatureSource::create();
         fs->uri = "https://readymap.org/readymap/filemanager/download/public/countries.geojson";
-        auto fs_status = fs->open();
-        ROCKY_HARD_ASSERT(fs_status.ok());
+        status = fs->open();
+        if (status.failed())
+            return;
 
         // create a feature view and add features to it:
         feature_view = FeatureView::create();
@@ -53,7 +59,7 @@ auto Demo_PolygonFeatures= [](Application& app)
         return;
     }
 
-    if (ImGuiLTable::Begin("Line features"))
+    if (ImGuiLTable::Begin("Polygon features"))
     {
         if (ImGuiLTable::Checkbox("Visible", &visible))
         {
@@ -61,50 +67,6 @@ auto Demo_PolygonFeatures= [](Application& app)
                 app.add(object);
             else
                 app.remove(object);
-        }
-
-        if (!feature_view->attachments.empty())
-        {
-            auto line = MultiLineString::cast(feature_view->attachments.front());
-            if (line)
-            {
-                LineStyle style = line->style();
-                if (ImGuiLTable::SliderFloat("Width", &style.width, 1.0f, 15.0f, "%.0f"))
-                {
-                    for (auto& a : feature_view->attachments) {
-                        auto temp = MultiLineString::cast(a);
-                        if (temp) temp->setStyle(style);
-                    }
-                }
-            }
-
-#if 0
-            if (ImGuiLTable::SliderFloat("Depth offset", &style.depth_offset, 0.0, 0.001, "%.8f", ImGuiSliderFlags_Logarithmic))
-            {
-                line->setStyle(style);
-            }
-
-            if (ImGuiLTable::Button("Sample DO"))
-            {
-                auto view = app.displayConfiguration.windows.begin()->second.front();
-                auto lookat = view->camera->viewMatrix.cast<vsg::LookAt>();
-                double mag = vsg::length(lookat->eye);
-                auto down_unit = -vsg::normalize(lookat->eye);
-                auto look_unit = vsg::normalize(lookat->center - lookat->eye);
-                double dot = vsg::dot(down_unit, look_unit);
-                std::cout
-                    << std::setprecision(8) << mag << ", "
-                    << dot << ", "
-                    << std::fixed << style.depth_offset << ", "
-                    << std::endl;
-            }
-
-            static bool auto_do = false;
-            if (ImGuiLTable::Checkbox("Auto DO", &auto_do))
-            {
-                std::cout << "Auto-DO is not yet implemented" << std::endl;
-            }
-#endif
         }
 
         ImGuiLTable::End();

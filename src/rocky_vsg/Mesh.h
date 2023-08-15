@@ -39,8 +39,10 @@ namespace ROCKY_NAMESPACE
         template<typename VEC3>
         void addTriangle(const VEC3& v1, const VEC3& v2, const VEC3& v3);
 
+        //! Add a triangle with texture coordinates to the mesh
         template<typename VEC3, typename UV2>
-        void addTriangle(const VEC3& v1, const VEC3& v2, const VEC3& v3,
+        void addTriangle(
+            const VEC3& v1, const VEC3& v2, const VEC3& v3,
             const UV2& uv1, const UV2& uv2, const UV2& uv3);
 
         //! Set to overall style for this mesh
@@ -48,6 +50,11 @@ namespace ROCKY_NAMESPACE
 
         //! Sets a texture
         void setTexture(vsg::ref_ptr<vsg::ImageInfo> texture);
+
+        //! Whether to write to the depth buffer.
+        //! NB: You may only set this once before adding the mesh to the scene.
+        void setWriteDepth(bool value);
+        bool writeDepth() const;
 
         //! Overall style for the mesh
         const MeshStyle& style() const;

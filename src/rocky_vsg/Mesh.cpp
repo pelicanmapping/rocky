@@ -33,7 +33,30 @@ void
 Mesh::setTexture(vsg::ref_ptr<vsg::ImageInfo> value)
 {
     _bindStyle->_imageInfo = value;
+
+    if (value)
+        _bindStyle->_features |= MeshState::APPLY_TEXTURE;
+    else
+        _bindStyle->_features &= ~MeshState::APPLY_TEXTURE;
+
     _bindStyle->dirty();
+}
+
+void
+Mesh::setWriteDepth(bool value)
+{
+    _bindStyle->_writeDepth = value;
+
+    if (value)
+        _bindStyle->_features |= MeshState::WRITE_DEPTH;
+    else
+        _bindStyle->_features &= ~MeshState::WRITE_DEPTH;
+}
+
+bool
+Mesh::writeDepth() const
+{
+    return _bindStyle->_writeDepth;
 }
 
 void
@@ -45,14 +68,8 @@ Mesh::createNode(Runtime& runtime)
 
         auto stateGroup = vsg::StateGroup::create();
 
-        int features = MeshState::NONE;
+        stateGroup->stateCommands = MeshState::get(_bindStyle->_features).pipelineStateCommands;
 
-        if (_bindStyle->_imageInfo)
-        {
-            features |= MeshState::TEXTURE;
-        }
-
-        stateGroup->stateCommands = MeshState::get(features).pipelineStateCommands;
         stateGroup->addChild(_bindStyle);
         stateGroup->addChild(_geometry);
         auto sw = vsg::Switch::create();

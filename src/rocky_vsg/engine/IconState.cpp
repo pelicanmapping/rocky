@@ -103,7 +103,7 @@ IconState::initialize(Runtime& runtime)
         if (!shaderSet)
         {
             status = Status(Status::ResourceUnavailable,
-                "Mesh shaders are missing or corrupt. "
+                "Icon shaders are missing or corrupt. "
                 "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
             return;
         }
