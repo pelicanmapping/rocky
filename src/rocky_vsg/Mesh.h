@@ -16,7 +16,14 @@ namespace ROCKY_NAMESPACE
     {
         // if alpha is zero, use the line's per-vertex color instead
         vsg::vec4 color = { 1, 1, 1, 0 };
+
+        // a non-zero value will overlay a wireframe on the mesh
+        // for visualization purposes
         float wireframe = 0.0f;
+
+        // depth buffer adjustment (in clip space) to apply to the mesh verts
+        // as a simple method or avoiding depth fighting with terrain
+        float depth_offset = 1e-7f;
     };
 
     /**

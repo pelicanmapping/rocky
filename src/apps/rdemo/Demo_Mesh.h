@@ -23,7 +23,7 @@ auto Demo_Mesh_Absolute = [](Application& app)
 
         auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
         const double step = 2.5;
-        const double alt = 50000;
+        const double alt = 0.0; // 50000;
         for (double lon = 0.0; lon < 35.0; lon += step)
         {
             for(double lat = 15.0; lat < 35.0; lat += step)
@@ -67,6 +67,11 @@ auto Demo_Mesh_Absolute = [](Application& app)
         }
 
         if (ImGuiLTable::SliderFloat("Wireframe", &style.wireframe, 0.0f, 32.0f, "%.0f"))
+        {
+            mesh->setStyle(style);
+        }
+
+        if (ImGuiLTable::SliderFloat("Depth Offset", &style.depth_offset, 0.0f, 0.00001f, "%.7f"))
         {
             mesh->setStyle(style);
         }

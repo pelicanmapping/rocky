@@ -12,8 +12,8 @@ layout(set = 0, binding = 1) uniform LineData {
     float width;
     int stipple_pattern;
     int stipple_factor;
-    float depth_offset;
     float resolution;
+    float depth_offset;
 } line;
 
 // vsg viewport data
@@ -185,9 +185,8 @@ void main()
         rk.stipple_dir = vec2(cos(qangle), sin(qangle));
     }
 
-#ifndef DEPTH_OFFSET_TEST_OE
+    // apply the depth offset
     curr_clip.z += line.depth_offset * curr_clip.w;
-#endif
 
     gl_Position = curr_clip;
 }

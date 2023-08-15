@@ -18,8 +18,8 @@ namespace ROCKY_NAMESPACE
         float width = 2.0f; // pixels
         int stipple_pattern = 0xffff;
         int stipple_factor = 1;
-        float depth_offset = 0.0f; // tbd
         float resolution = 100000.0f; // meters
+        float depth_offset = 1e-7f; // tbd
     };
 
     /**

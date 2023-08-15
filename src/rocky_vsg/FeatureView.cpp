@@ -118,7 +118,7 @@ namespace
 
     shared_ptr<Attachment> compile_feature_to_lines(const Feature& feature, const StyleSheet& styles)
     {
-        float max_span = 100000.0;
+        float max_span = 100000.0f;
 
         if (styles.line.has_value())
             max_span = styles.line->resolution;
@@ -167,7 +167,7 @@ namespace
         const double resolution_degrees = 0.25;
 
         // apply a fake Z for testing purposes before we attempt depth offsetting
-        const double fake_z_offset = 1000.0;
+        const double fake_z_offset = 0.0;
 
 
         Attachments attachments;

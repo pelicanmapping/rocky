@@ -10,6 +10,7 @@ layout(push_constant) uniform PushConstants {
 layout(set = 0, binding = 1) uniform MeshData {
     vec4 color;
     float wireframe;
+    float depth_offset;
 } mesh;
 
 // input vertex attributes
@@ -39,5 +40,14 @@ void main()
 
     // TODO: lighting (optional)
 
-    gl_Position = pc.projection * pc.modelview * vec4(in_vertex, 1);
+    // Meters/view approach:
+    //vec4 view = pc.modelview * vec4(in_vertex, 1);
+    //vec3 look = -normalize(view.xyz);
+    //view.xyz += look * mesh.depth_offset;
+    //gl_Position = pc.projection * view;
+    
+    // Depth/clip approach:
+    vec4 clip = pc.projection * pc.modelview * vec4(in_vertex, 1);
+    clip.z += mesh.depth_offset * clip.w;
+    gl_Position = clip;
 }

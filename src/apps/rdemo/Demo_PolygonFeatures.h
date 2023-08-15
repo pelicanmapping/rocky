@@ -44,8 +44,8 @@ auto Demo_PolygonFeatures= [](Application& app)
             return MeshStyle{ {
                 (float)(std::rand() % 192 + 63) / 255.0f,
                 (float)(std::rand() % 192 + 63) / 255.0f,
-                (float)(std::rand() % 192 + 63) / 255.0f,
-                1.0f }, 64.0f };
+                (float)(std::rand() % 192 + 63) / 255.0f, 1.0f },
+                64.0f };
         };
 
         // Finally, create an object with our attachment.
