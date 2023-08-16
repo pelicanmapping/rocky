@@ -95,3 +95,10 @@ MapObject::MapObject(Attachments value) :
 {
     attachments = value;
 }
+
+const GeoPoint&
+MapObject::position() const
+{
+    static GeoPoint empty;
+    return xform ? xform->position() : empty;
+}

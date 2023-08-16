@@ -51,7 +51,7 @@ auto Demo_Stats = [](Application& app)
     ImGui::SeparatorText("Timings");
     ImGuiLTable::Begin("Timings");
     {
-        sprintf(buf, "%.1f ms", 0.001f * (float)app.stats.frame.count());
+        sprintf(buf, "%.2f ms", 0.001f * (float)app.stats.frame.count());
         ImGuiLTable::PlotLines("Frame", get_timings, &frames, frame_count, f, buf, 0.0f, 17.0f);
 
         sprintf(buf, u8"%lld \x00B5s", average(&events, over, f));

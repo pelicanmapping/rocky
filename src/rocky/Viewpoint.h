@@ -11,33 +11,6 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-    * Base class for any object that has a position on a Map.
-    */
-    class ROCKY_EXPORT PositionedObject
-    {
-    public:
-        //! Center position of the object
-        virtual const GeoPoint& position() const = 0;
-    };
-
-    /**
-    * Simplest possible map object - just a position.
-    */
-    class ROCKY_EXPORT SimplePositionedObject : public PositionedObject
-    {
-    public:
-        GeoPoint point;
-
-        const GeoPoint& position() const override {
-            return point;
-        }
-
-        SimplePositionedObject() { }
-        SimplePositionedObject(const SimplePositionedObject&) = default;
-        SimplePositionedObject(const GeoPoint& point_) : point(point_) { }
-    };
-
-    /**
      * Viewpoint stores a focal point (or a focal node) and camera parameters
      * relative to that point.
      */
@@ -47,14 +20,17 @@ namespace ROCKY_NAMESPACE
         //! Readable name
         optional<std::string> name;
 
-        //! What the viewer is looking at.
-        std::shared_ptr<SimplePositionedObject> target;
+        //! Static focal point (if set)
+        GeoPoint point;
+
+        //! Dynamic focal point (if set)
+        std::shared_ptr<PositionedObject> target;
 
         //! Heading of the viewer relative to north
         optional<Angle> heading = Angle(0.0, Units::DEGREES);
 
         //! Pitch of the viewer relative to the ground
-        optional<Angle> pitch = Angle(-30, Units::DEGREES);
+        optional<Angle> pitch = Angle(-90, Units::DEGREES);
 
         //! Distance of the viewer to the target
         optional<Distance> range = Distance(10.0, Units::KILOMETERS);
@@ -64,13 +40,20 @@ namespace ROCKY_NAMESPACE
 
     public:
         //! Construct an empty viewpoint
-        Viewpoint();
+        Viewpoint() { }
 
         Viewpoint(const Viewpoint&) = default;
 
+        //! The focal point
+        inline const GeoPoint& position() const {
+            return (target ? target->position() : point);
+        }
+
         //! If this a valid viewpoint?
-        bool valid() const {
-            return target != nullptr && target->position().valid();
+        inline bool valid() const {
+            return
+                point.valid() ||
+                (target != nullptr && target->position().valid());
         }
     };
 

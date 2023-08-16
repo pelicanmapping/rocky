@@ -18,7 +18,9 @@ namespace ROCKY_NAMESPACE
      * a local ENU (X=east, Y=north, Z=up) coordinate frame for its children
      * that is tangent to the earth at the transform's geo position.
      */
-    class ROCKY_VSG_EXPORT GeoTransform : public vsg::Inherit<vsg::Group, GeoTransform>
+    class ROCKY_VSG_EXPORT GeoTransform :
+        public vsg::Inherit<vsg::Group, GeoTransform>,
+        PositionedObject
     {
     public:
         //! Construct an invalid geotransform
@@ -28,7 +30,7 @@ namespace ROCKY_NAMESPACE
         void setPosition(const GeoPoint& p);
 
         //! Geospatial position
-        const GeoPoint& position() const;
+        const GeoPoint& position() const override;
 
     public:
 

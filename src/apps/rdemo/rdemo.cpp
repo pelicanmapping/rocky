@@ -39,6 +39,8 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_LineFeatures.h"
 #include "Demo_PolygonFeatures.h"
 #include "Demo_MapManipulator.h"
+#include "Demo_Tethering.h"
+#include "Demo_Environment.h"
 #include "Demo_Views.h"
 #include "Demo_RTT.h"
 #include "Demo_Stats.h"
@@ -94,16 +96,19 @@ void setup_demos(rocky::Application& app)
     );
 
     demos.emplace_back(
-        Demo{ "Windows & Views", Demo_Views }
-    );
-    demos.emplace_back(
-        Demo{ "RTT", Demo_RTT }
-    );
-
-    demos.emplace_back(
-        Demo{ "Manipulator", Demo_MapManipulator }
+        Demo{ "Camera", {},
+        {
+            Demo{ "Manipulator", Demo_MapManipulator },
+            Demo{ "Tethering", Demo_Tethering }
+        } }
     );
 
+    demos.emplace_back(
+        Demo{ "Environment", Demo_Environment });    
+    demos.emplace_back(
+        Demo{ "RTT", Demo_RTT });
+    demos.emplace_back(
+        Demo{ "Windows & Views", Demo_Views });
     demos.emplace_back(
         Demo{ "Stats", Demo_Stats });
     demos.emplace_back(

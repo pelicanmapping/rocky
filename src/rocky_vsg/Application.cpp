@@ -82,8 +82,8 @@ Application::Application(int& argc, char** argv) :
     // the sun
     if (commandLine.read({ "--sky" }))
     {
-        auto sky = rocky::SkyNode::create(instance);
-        mainScene->addChild(sky);
+        skyNode = rocky::SkyNode::create(instance);
+        mainScene->addChild(skyNode);
     }
 
     mapNode->terrainSettings().concurrency = 6u;
@@ -100,6 +100,14 @@ Application::Application(int& argc, char** argv) :
     // Set up the runtime context with everything we need.
     instance.runtime().viewer = viewer;
     instance.runtime().sharedObjects = vsg::SharedObjects::create();
+
+    // TODO:
+    // The SkyNode does this, but then it's awkward to add a SkyNode at runtime
+    // because various other shaders depend on the define to activate lighting,
+    // and those will have to be recompiled.
+    // So instead we will just activate the lighting globally and rely on the 
+    // light counts in the shader. Is this ok?
+    instance.runtime().shaderCompileSettings->defines.insert("RK_LIGHTING");
 
     // read map from file:
     std::string infile; 

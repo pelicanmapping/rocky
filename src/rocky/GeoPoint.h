@@ -91,4 +91,15 @@ namespace ROCKY_NAMESPACE
     private:
         //SRS _srs;
     };
+
+
+    /**
+    * Base class for any object that has a position on a Map.
+    */
+    class PositionedObject
+    {
+    public:
+        //! Center position of the object
+        virtual const GeoPoint& position() const = 0;
+    };
 }

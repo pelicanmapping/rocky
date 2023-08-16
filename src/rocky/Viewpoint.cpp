@@ -8,12 +8,6 @@
 using namespace ROCKY_NAMESPACE;
 
 
-Viewpoint::Viewpoint()
-{
-    target = std::make_shared<SimplePositionedObject>();
-}
-
-
 #include "json.h"
 namespace ROCKY_NAMESPACE
 {

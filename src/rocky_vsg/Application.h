@@ -7,6 +7,7 @@
 #include <rocky_vsg/InstanceVSG.h>
 #include <rocky_vsg/MapNode.h>
 #include <rocky_vsg/MapObject.h>
+#include <rocky_vsg/SkyNode.h>
 
 #include <vsg/app/Viewer.h>
 #include <vsg/app/Window.h>
@@ -121,6 +122,7 @@ namespace ROCKY_NAMESPACE
     public:
         rocky::InstanceVSG instance;
         vsg::ref_ptr<rocky::MapNode> mapNode;
+        vsg::ref_ptr<rocky::SkyNode> skyNode;
         vsg::ref_ptr<vsg::Viewer> viewer;
         vsg::ref_ptr<vsg::Group> root;
         vsg::ref_ptr<vsg::Group> mainScene;

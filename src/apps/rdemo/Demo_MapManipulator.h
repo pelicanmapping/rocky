@@ -27,20 +27,18 @@ auto Demo_MapManipulator = [](Application& app)
             {
                 ImGui::SeparatorText("Current viewpoint");
                 ImGuiLTable::Begin("Viewpoint");
-                if (vp.target)
-                {
-                    ImGuiLTable::Text("ECEF X:", "%.1lf", vp.target->point.x);
-                    ImGuiLTable::Text("ECEF Y:", "%.1lf", vp.target->point.y);
-                    ImGuiLTable::Text("ECEF Z:", "%.1lf", vp.target->point.z);
 
-                    GeoPoint LL;
-                    if (vp.target->point.transform(vp.target->point.srs.geoSRS(), LL))
-                    {
-                        ImGuiLTable::Text("Longitude:", "%.3lf", LL.x);
-                        ImGuiLTable::Text("Latitude:", "%.3lf", LL.y);
-                        //ImGuiLTable::Text("Altitude HAE", "%.1lf", LL.z);
-                    }
+                ImGuiLTable::Text("ECEF X:", "%.1lf", vp.position().x);
+                ImGuiLTable::Text("ECEF Y:", "%.1lf", vp.position().y);
+                ImGuiLTable::Text("ECEF Z:", "%.1lf", vp.position().z);
+
+                GeoPoint LL;
+                if (vp.position().transform(vp.position().srs.geoSRS(), LL))
+                {
+                    ImGuiLTable::Text("Longitude:", "%.3lf", LL.x);
+                    ImGuiLTable::Text("Latitude:", "%.3lf", LL.y);
                 }
+
                 ImGuiLTable::Text("Heading:", "%.1lf", (double)vp.heading.value());
                 ImGuiLTable::Text("Pitch:", "%.1lf", (double)vp.pitch.value());
                 ImGuiLTable::Text("Range:", "%.1lf", (double)vp.range.value());
@@ -55,7 +53,7 @@ auto Demo_MapManipulator = [](Application& app)
             vp1.heading = 0.0;
             vp1.pitch = -45.0;
             vp1.range = 250000.0;
-            vp1.target->point = GeoPoint{ SRS::WGS84, -77.0, 38.9, 0.0 };
+            vp1.point = GeoPoint{ SRS::WGS84, -77.0, 38.9, 0.0 };
 
             if (ImGui::Button(vp1.name->c_str()))
             {
@@ -67,7 +65,7 @@ auto Demo_MapManipulator = [](Application& app)
             vp2.heading = -56.0;
             vp2.pitch = -25.0;
             vp2.range = 125000.0;
-            vp2.target->point = GeoPoint{ SRS::WGS84, 2.16, 41.384, 0.0 };
+            vp2.point = GeoPoint{ SRS::WGS84, 2.16, 41.384, 0.0 };
 
             ImGui::SameLine();
             if (ImGui::Button(vp2.name->c_str()))
@@ -80,7 +78,7 @@ auto Demo_MapManipulator = [](Application& app)
             vp3.heading = 0.0;
             vp3.pitch = -67;
             vp3.range = 30000.0;
-            vp3.target->point = GeoPoint{ SRS::WGS84, 115.8, -32, 0.0 };
+            vp3.point = GeoPoint{ SRS::WGS84, 115.8, -32, 0.0 };
 
             ImGui::SameLine();
             if (ImGui::Button(vp3.name->c_str()))

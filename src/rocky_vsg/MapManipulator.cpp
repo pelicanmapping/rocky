@@ -764,7 +764,7 @@ MapManipulator::getViewpoint() const
 #endif
 
     // the focal point:
-    vp.target->point = GeoPoint(_worldSRS, _state.center);
+    vp.point = GeoPoint(_worldSRS, _state.center);
 
     // Always update the local offsets.
     double localAzim, localPitch;
@@ -783,7 +783,12 @@ MapManipulator::getViewpoint() const
 }
 #endif
 
-#if 1
+void
+MapManipulator::setViewpoint(const Viewpoint& vp)
+{
+    setViewpoint(vp, std::chrono::duration<float>(0.0f));
+}
+
 void
 MapManipulator::setViewpoint(const Viewpoint& vp, std::chrono::duration<float> duration_seconds)
 {
@@ -850,11 +855,6 @@ MapManipulator::setViewpoint(const Viewpoint& vp, std::chrono::duration<float> d
 
         _state.setVPDuration = duration_seconds;
 
-#if 0
-        // access the new tether node if it exists:
-        osg::ref_ptr<vsg::Node> endNode = _setVP1->getNode();
-#endif
-
         // Timed transition, we need to calculate some things:
         if ( duration_seconds.count() > 0.0f )
         {
@@ -867,7 +867,7 @@ MapManipulator::setViewpoint(const Viewpoint& vp, std::chrono::duration<float> d
 
             // End point is the world coordinates of the target viewpoint:
             vsg::dvec3 endWorld;
-            _state.setVP1->target->position().transform(_worldSRS, endWorld);
+            _state.setVP1->position().transform(_worldSRS, endWorld);
 
             // calculate an acceleration factor based on the Z differential.
             _state.setVPArcHeight = 0.0;
@@ -956,27 +956,24 @@ MapManipulator::setViewpointFrame(const vsg::time_point& now)
 {
     if ( !_state.setVPStartTime.has_value() )
     {
-        _state.setVPStartTime = now; // ->set(time_s.time_since_epoch().count(), Units::SECONDS);
+        _state.setVPStartTime = now;
         return 0.0;
     }
     else
     {
         // Start point is the current manipulator center:
         vsg::dvec3 startWorld;
-        _state.setVP0->target->position().transform(_worldSRS, startWorld);
+        _state.setVP0->position().transform(_worldSRS, startWorld);
 
         // End point is the world coordinates of the target viewpoint:
         vsg::dvec3 endWorld;
-        _state.setVP1->target->position().transform(_worldSRS, endWorld);
+        _state.setVP1->position().transform(_worldSRS, endWorld);
 
         // Remaining time is the full duration minus the time since initiation:
         auto elapsed = std::chrono::duration_cast<std::chrono::duration<float>>(
             now - _state.setVPStartTime.value());
 
         auto duration = _state.setVPDuration;
-
-        //double duration = _state.setVPDuration.as(Units::SECONDS);
-        //const unsigned min_duration = 1e9; // nanos
 
         double t = (double)elapsed.count() / (double)duration.count();
         t = std::min(t, 1.0);
@@ -1048,11 +1045,9 @@ MapManipulator::setViewpointFrame(const vsg::time_point& now)
         {
             _state.setVP0.reset();
 
-#if 0
             // If this was a transition into a tether, keep the endpoint around so we can
             // continue tracking it.
             if ( !isTethering() )
-#endif
             {
                 _state.setVP1.reset();
             }
@@ -1061,83 +1056,18 @@ MapManipulator::setViewpointFrame(const vsg::time_point& now)
         return tp;
     }
 }
-#endif
-
-
-#if 0
-void
-MapManipulator::setLookAt(
-    const vsg::dvec3& center,
-    double azim,
-    double pitch,
-    double range,
-    const vsg::dvec3& posOffset)
-{
-    setCenter(center);
-    setDistance(range);
-
-    //_previousUp = getUpVector(_centerReferenceFrame);
-    //_centerRotation = computeCenterRotation(center);
-
-    _localPositionOffset = posOffset;
-
-    azim = normalizeAzimRad(azim);
-
-    pitch = clamp(
-        pitch,
-        deg2rad(_settings->getMinPitch()),
-        deg2rad(_settings->getMaxPitch()));
-
-    _localRotation = getQuaternion(azim, pitch);
-}
-
-void
-MapManipulator::resetLookAt()
-{
-    double pitch;
-    getEulerAngles(_localRotation, 0L, &pitch );
-
-    double maxPitch = deg2rad(-10.0);
-    if ( pitch > maxPitch )
-        rotate( 0.0, -(pitch-maxPitch) );
-
-    vsg::dvec3 eye = getTrans(getWorldMatrix());
-
-    // calculate the center point in front of the eye. The reference frame here
-    // is the view plane of the camera.
-    //vsg::dmat4 m = quat_to_mat4(_localRotation * _centerRotation);
-    //recalculateCenter(m);
-
-    double newDistance = length(eye - _center);
-    setDistance(newDistance);
-
-    _localPositionOffset.set(0, 0, 0);
-    _viewOffset.set(0, 0);
-
-    //_tetherRotation = vsg::dquat();
-    //_tetherRotationVP0 = vsg::dquat();
-    //_tetherRotationVP1 = vsg::dquat();
-}
-#endif
-
-#if 0
-bool
-MapManipulator::isSettingViewpoint() const
-{
-    return _setVP0.has_value() && _setVP1.has_value();
-}
 
 void
 MapManipulator::clearViewpoint()
 {
-    bool breakingTether = isTethering();
-
     // Cancel any ongoing transition or tethering:
-    _setVP0.unset();
-    _setVP1.unset();
+    _state.setVP0.reset();
+    _state.setVP1.reset();
 
-    // Restore the matrix values in a neutral state.
-    recalculateCenterFromLookVector();
+    if (!recalculateCenterAndDistanceFromLookVector())
+    {
+        home();
+    }
 
 #if 0
     // Fire the callback to indicate a tethering break.
@@ -1145,59 +1075,6 @@ MapManipulator::clearViewpoint()
         (*_tetherCallback)( 0L );
 #endif
 }
-
-bool
-MapManipulator::isTethering() const
-{
-    // True if setViewpoint() was called and the viewpoint has a node.
-    //return _setVP1.has_value() && _setVP1->nodeIsSet();
-    return false;
-}
-#endif
-
-#if 0
-void MapManipulator::collisionDetect()
-{
-    if (!getSettings()->getTerrainAvoidanceEnabled() || !_srs )
-    {
-        return;
-    }
-    // The camera has changed, so make sure we aren't under the ground.
-
-    vsg::dvec3 eye = getTrans(getWorldMatrix());
-    vsg::dmat4 eyeCoordFrame;
-    createLocalCoordFrame(eye, eyeCoordFrame);
-    vsg::dvec3 eyeUp = getUpVector(eyeCoordFrame);
-
-    // Try to intersect the terrain with a vector going straight up and down.
-    double r = std::min(_srs.ellipsoid().semiMajorAxis(), _srs.ellipsoid().semiMinorAxis());
-    vsg::dvec3 ip, normal;
-
-    if (intersect(eye + eyeUp * r, eye - eyeUp * r, ip, normal))
-    {
-        double eps = _settings->getTerrainAvoidanceMinimumDistance();
-        // Now determine if the point is above the ground or not
-        vsg::dvec3 v0 = vsg::normalize(eyeUp);
-        //v0.normalize();
-        vsg::dvec3 v1 = vsg::normalize(eye - (ip + eyeUp * eps));
-        //v1.normalize();
-
-        // save rotation so we can restore it later - the setraw method
-        // may alter it and we don't want that.
-        vsg::dquat rotation = _localRotation;
-
-        //vsg::dvec3 adjVector = normal;
-        vsg::dvec3 adjVector = eyeUp;
-        if (vsg::dot(v0, v1) <= 0)
-        {
-            setByLookAtRaw(ip + adjVector * eps, _center, eyeUp);
-            _localRotation = rotation;
-        }
-
-        //ROCKY_INFO << "hit at " << ip.x() << ", " << ip.y() << ", " << ip.z() << "\n";
-    }
-}
-#endif
 
 vsg::ref_ptr<MapNode>
 MapManipulator::getMapNode() const
@@ -1220,19 +1097,16 @@ MapManipulator::intersect(
 
         if (!lsi.intersections.empty())
         {
-            if (lsi.intersections.size() > 1)
+            int closest = 0;
+            for (int i = 1; i < lsi.intersections.size(); ++i)
             {
-                // sort from closest to farthest
-                std::sort(lsi.intersections.begin(), lsi.intersections.end(),
-                    [](const vsg::ref_ptr<vsg::LineSegmentIntersector::Intersection>& lhs,
-                        const vsg::ref_ptr<vsg::LineSegmentIntersector::Intersection>& rhs)
-                    {
-                        return lhs->ratio < rhs->ratio;
-                    });
+                if (lsi.intersections[i]->ratio < lsi.intersections[closest]->ratio)
+                {
+                    closest = i;
+                }
             }
 
-            out_intersection = lsi.intersections.front()->worldIntersection;
-            //std::cout << out_intersection.x << ", " << out_intersection.y << ", " << out_intersection.z << std::endl;
+            out_intersection = lsi.intersections[closest]->worldIntersection;
             return true;
         }
     }
@@ -1260,6 +1134,8 @@ MapManipulator::intersectAlongLookVector(vsg::dvec3& out_world) const
 void
 MapManipulator::home()
 {
+    clearViewpoint();
+
     _state.localRotation.set(0, 0, 0, 1);
 
     double radius;
@@ -1473,12 +1349,29 @@ MapManipulator::apply(vsg::FrameEvent& frame)
         setViewpointFrame(frame.time);
     }
 
+    if (isTethering())
+    {
+        updateTether(frame.time);
+    }
+
+    updateCamera();
+
+    _dirty = false;
+
+    _previousTime = frame.time;
+}
+
+void
+MapManipulator::updateCamera()
+{
     auto camera = _camera_weakptr.ref_ptr();
     if (camera)
     {
         _viewMatrix =
             vsg::translate(_state.center) *
             _state.centerRotation *
+            vsg::translate(_state.localPositionOffset) *
+            vsg::rotate(_state.tetherRotation) *
             vsg::rotate(_state.localRotation) *
             vsg::translate(0.0, 0.0, _state.distance);
 
@@ -1490,11 +1383,7 @@ MapManipulator::apply(vsg::FrameEvent& frame)
         }
 
         lookat->set(_viewMatrix);
-
-        _dirty = false;
     }
-
-    _previousTime = frame.time;
 }
 
 bool
@@ -1573,7 +1462,7 @@ MapManipulator::recalculateCenterFromLookVector()
     bool ok = false;
     vsg::dvec3 intersection;
 
-    if (intersect(lookat.eye, look * _state.distance * 1.5, intersection))
+    if (intersect(lookat.eye, lookat.eye + look * _state.distance * 1.5, intersection))
     {
         ok = true;
     }
@@ -1617,6 +1506,62 @@ MapManipulator::recalculateCenterFromLookVector()
         {
             setCenter(intersection);
         }
+    }
+
+    return ok;
+}
+
+bool
+MapManipulator::recalculateCenterAndDistanceFromLookVector()
+{
+    auto camera = _camera_weakptr.ref_ptr();
+    if (!camera)
+        return false;
+
+    vsg::LookAt lookat;
+    lookat.set(camera->viewMatrix->inverse());
+    auto look = vsg::normalize(lookat.center - lookat.eye);
+
+    bool ok = false;
+    vsg::dvec3 intersection;
+    double dist = length(lookat.eye);
+
+    if (intersect(lookat.eye, lookat.eye + look * dist, intersection))
+    {
+        ok = true;
+    }
+
+    // backup plan, intersect the ellipsoid or the ground plane
+    else if (_worldSRS.isGeocentric())
+    {
+        glm::dvec3 i;
+        auto target = lookat.eye + look * 1e10;
+        if (_worldSRS.ellipsoid().intersectGeocentricLine(to_glm(lookat.eye), to_glm(target), i))
+        {
+            intersection = to_vsg(i);
+            ok = true;
+        }
+    }
+
+    else
+    {
+        // simple line/plane intersection
+        vsg::dvec3 P0(0, 0, 0); // point on the plane
+        vsg::dvec3 N(0, 0, 1); // normal to the plane
+        vsg::dvec3 L = look; // unit direction of the line
+        vsg::dvec3 L0 = lookat.eye; // point on the line
+        auto LdotN = vsg::dot(L, N);
+        if (equiv(LdotN, 0)) return false; // parallel
+        auto D = vsg::dot((P0 - L0), N) / LdotN;
+        if (D < 0) return false; // behind the camera
+        intersection = L0 + L * D;
+        ok = true;
+    }
+
+    if (ok)
+    {
+        setCenter(intersection);
+        setDistance(vsg::length(intersection - lookat.eye));
     }
 
     return ok;
@@ -2349,4 +2294,71 @@ MapManipulator::ndc(const vsg::PointerEvent& event) const
         (renderArea.extent.height > 0) ? static_cast<double>(event.y - renderArea.offset.y) / static_cast<double>(renderArea.extent.height) * 2.0 - 1.0 : 0.0);
 
     return v;
+}
+
+
+
+void
+MapManipulator::updateTether(const vsg::time_point& t)
+{
+    // Initial transition is complete, so update the camera for tether.
+    if (_state.setVP1->target)
+    {
+        auto& pos = _state.setVP1->position();
+
+        vsg::dvec3 world;
+        pos.transform(_worldSRS, world);
+
+        // If we just called setViewpointFrame, no need to calculate the center again.
+        if (!isSettingViewpoint())
+        {
+            setCenter(world);
+            //setCenter(osg::Vec3d(0, 0, 0) * L2W);
+            //_centerRotation = computeCenterRotation(_center);
+            //_previousUp = getUpVector(_centerLocalToWorld);
+        };
+
+        if (_settings->getTetherMode() == TETHER_CENTER)
+        {
+            if (_state.lastTetherMode == TETHER_CENTER_AND_ROTATION)
+            {
+                //TODO
+                //// level out the camera so we don't leave the camera is weird state.
+                //osg::Matrixd localToFrame(L2W * osg::Matrixd::inverse(_centerLocalToWorld));
+                //double azim = atan2(-localToFrame(0, 1), localToFrame(0, 0));
+                //_tetherRotation.makeRotate(-azim, 0.0, 0.0, 1.0);
+            }
+        }
+#if 0
+        else
+        {
+            // remove any scaling introduced by the model
+            double sx = 1.0 / sqrt(L2W(0, 0) * L2W(0, 0) + L2W(1, 0) * L2W(1, 0) + L2W(2, 0) * L2W(2, 0));
+            double sy = 1.0 / sqrt(L2W(0, 1) * L2W(0, 1) + L2W(1, 1) * L2W(1, 1) + L2W(2, 1) * L2W(2, 1));
+            double sz = 1.0 / sqrt(L2W(0, 2) * L2W(0, 2) + L2W(1, 2) * L2W(1, 2) + L2W(2, 2) * L2W(2, 2));
+            L2W = L2W * osg::Matrixd::scale(sx, sy, sz);
+
+            if (_settings->getTetherMode() == TETHER_CENTER_AND_HEADING)
+            {
+                // Back out the tetheree's rotation, then discard all but the heading component:
+                osg::Matrixd localToFrame(L2W * osg::Matrixd::inverse(_centerLocalToWorld));
+                double azim = atan2(-localToFrame(0, 1), localToFrame(0, 0));
+
+                osg::Quat finalTetherRotation;
+                finalTetherRotation.makeRotate(-azim, 0.0, 0.0, 1.0);
+                _tetherRotation.slerp(t, _tetherRotationVP0, finalTetherRotation);
+            }
+
+            // Track all rotations
+            else if (_settings->getTetherMode() == TETHER_CENTER_AND_ROTATION)
+            {
+                osg::Quat finalTetherRotation;
+                finalTetherRotation = L2W.getRotate() * _centerRotation.inverse();
+                _tetherRotation.slerp(t, _tetherRotationVP0, finalTetherRotation);
+            }
+        }
+#endif
+
+        _state.lastTetherMode = _settings->getTetherMode();
+    }
 }

@@ -39,16 +39,19 @@ namespace ROCKY_NAMESPACE
 
     public:
         //! seialize to JSON
-        virtual JSON to_json() const = 0;
+        virtual JSON to_json() const {
+            return JSON();
+        }
 
         //! Root node of the attachment; created by createNode()
         vsg::ref_ptr<vsg::Switch> node;
 
-    protected:
         Attachment() { }
 
+    protected:
+
         //! Creates the root node of this attachment
-        virtual void createNode(Runtime& runtime) = 0;
+        virtual void createNode(Runtime& runtime) { };
 
         friend class Application;
         friend class AttachmentGroup;
@@ -94,7 +97,9 @@ namespace ROCKY_NAMESPACE
     * A MapObject itself has no visual represetation. You can add attachments
     * to render different things like icons, models, geometries, or text.
     */
-    class ROCKY_VSG_EXPORT MapObject : public rocky::Inherit<Object, MapObject>
+    class ROCKY_VSG_EXPORT MapObject : 
+        public rocky::Inherit<Object, MapObject>,
+        public PositionedObject
     {
     public:
         //! Construct an empty map object.
@@ -120,5 +125,9 @@ namespace ROCKY_NAMESPACE
 
         //! Horizon culler for this object if it requests one
         vsg::ref_ptr<HorizonCullGroup> horizoncull;
+
+    public: // PositionedObject
+
+        const GeoPoint& position() const override;
     };
 }

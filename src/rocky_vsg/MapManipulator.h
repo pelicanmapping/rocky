@@ -69,11 +69,23 @@ namespace ROCKY_NAMESPACE
         //! Distance from the focal point in world coordinates.
         void setDistance(double distance);
 
+        //! Sets the viewpoint immediately
+        void setViewpoint(const Viewpoint& vp);
+
         //! Sets the viewpoint with optional transition time
         void setViewpoint(const Viewpoint& vp, std::chrono::duration<float> duration_s);
 
         //! Fetches the current viewpoint
         Viewpoint getViewpoint() const;
+
+        //! Clears the current viewpoint (if tethered or transitioning)
+        void clearViewpoint();
+
+        //! True if the user set a Viewpoint with a tethering target
+        inline bool isTethering() const {
+            return _state.setVP1.has_value() && _state.setVP1->target;
+        }
+
 
     public: // vsg::Visitor
         void apply(vsg::KeyPressEvent& keyPress) override;
@@ -634,6 +646,8 @@ namespace ROCKY_NAMESPACE
         //! intersect the terrain at the closest point, and make that the new focal point.
         bool recalculateCenterFromLookVector();
 
+        bool recalculateCenterAndDistanceFromLookVector();
+
         vsg::dmat4 getWorldLookAtMatrix(const vsg::dvec3& center) const;
 
         bool isMouseClick(vsg::ButtonReleaseEvent&) const;
@@ -698,6 +712,7 @@ namespace ROCKY_NAMESPACE
             double setVPArcHeight; // Altitude arcing height for setViewpoint
             vsg::dquat tetherRotationVP0;
             vsg::dquat tetherRotationVP1;
+            TetherMode lastTetherMode = TETHER_CENTER;
 
             State() :
                 localRotation(0, 0, 0, 1),
@@ -742,5 +757,9 @@ namespace ROCKY_NAMESPACE
         }
 
         double setViewpointFrame(const vsg::time_point&);
+
+        void updateTether(const vsg::time_point& t);
+
+        void updateCamera();
     };
 }
