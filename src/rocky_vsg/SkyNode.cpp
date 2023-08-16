@@ -279,14 +279,20 @@ SkyNode::setWorldSRS(const SRS& srs)
     {
         children.clear();
 
+        // some ambient light:
+        ambient = vsg::AmbientLight::create();
+        ambient->name = "Sky Ambient";
+        ambient->color = { 0.013, 0.013, 0.013 };
+        addChild(ambient);
+
         // the sun:
         auto sun_data = rocky::Ephemeris().sunPosition(rocky::DateTime());
-        _sun = new vsg::PointLight();
-        _sun->name = "Sol";
-        _sun->position = { sun_data.geocentric.x, sun_data.geocentric.y, sun_data.geocentric.z };
-        _sun->color = { 1, 1, 1 };
-        _sun->intensity = 1.0;
-        addChild(_sun);
+        sun = new vsg::PointLight();
+        sun->name = "Sol";
+        sun->position = { sun_data.geocentric.x, sun_data.geocentric.y, sun_data.geocentric.z };
+        sun->color = { 1, 1, 1 };
+        sun->intensity = 1.0;
+        addChild(sun);
 
         // Tell the shaders that lighting is a go
         _instance.runtime().shaderCompileSettings->defines.insert("RK_LIGHTING");
@@ -323,4 +329,11 @@ SkyNode::setShowAtmosphere(bool show)
             _instance.runtime().dirtyShaders();
         }
     }
+}
+
+void
+SkyNode::setDateTime(const DateTime& value)
+{
+    auto sun_data = rocky::Ephemeris().sunPosition(value);
+    sun->position = { sun_data.geocentric.x, sun_data.geocentric.y, sun_data.geocentric.z };
 }

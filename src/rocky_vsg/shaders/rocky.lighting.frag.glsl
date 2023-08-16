@@ -71,7 +71,7 @@ void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
     F0 = mix(F0, albedo, vec3(pbr.metal));
 
     vec3 Lo = vec3(0.0);
-    vec3 ambient = vec3(0.013);
+    vec3 ambient = vec3(0.0); // vec3(0.013);
 
     vec4 light_counts = vsg_lights.v[0];
     int ambient_count = int(light_counts[0]);
@@ -83,25 +83,25 @@ void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
 
     for (int i = 0; i < ambient_count; ++i)
     {
-        vec4 diffuse = vsg_lights.v[index++];
-        ambient += diffuse.rgb * diffuse.a;
+        vec4 light_color = vsg_lights.v[index++];
+        ambient += light_color.rgb * light_color.a;
     }
 
     for (int i = 0; i < directional_count; ++i)
     {
-        vec3 diffuse = vsg_lights.v[index++].rgb;
+        vec3 light_color = vsg_lights.v[index++].rgb;
         vec3 direction = normalize(vsg_lights.v[index++].xyz);
     }
 
     for (int i = 0; i < point_count; ++i)
     {
-        vec3 diffuse = vsg_lights.v[index++].rgb;
+        vec3 light_color = vsg_lights.v[index++].rgb;
         vec3 position = vsg_lights.v[index++].xyz;
 
         // per-light radiance:
         vec3 L = normalize(position - vertex_view);
         vec3 H = normalize(V + L);
-        vec3 radiance = diffuse;
+        vec3 radiance = light_color;
 
         // cook-torrance BRDF:
         float NDF = DistributionGGX(N, H, pbr.roughness);

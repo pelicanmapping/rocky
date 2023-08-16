@@ -26,13 +26,19 @@ namespace ROCKY_NAMESPACE
         SkyNode(const InstanceVSG& instance);
 
         //! Sets the spatial reference system of the earth (geocentric)
-        void setWorldSRS(const SRS& srs); // , Runtime& runtime);
+        void setWorldSRS(const SRS& srs);
 
         //! Toggle the rendering of the atmosphere
         void setShowAtmosphere(bool value);
 
-    private:
-        vsg::ref_ptr<vsg::PointLight> _sun;
+        //! Set the date and time
+        void setDateTime(const DateTime& value);
+
+    public:
+        vsg::ref_ptr<vsg::AmbientLight> ambient;
+        vsg::ref_ptr<vsg::PointLight> sun;
+
+    protected:
         vsg::ref_ptr<vsg::Node> _atmosphere;
         InstanceVSG _instance;
     };
