@@ -62,7 +62,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Data> imageData;
 
     private:
-        void rebuildDescriptorSet();
+        void dirty();
         std::shared_ptr<Image> my_image;
     };
 

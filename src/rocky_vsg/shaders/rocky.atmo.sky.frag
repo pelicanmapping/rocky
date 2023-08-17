@@ -6,7 +6,6 @@ layout(location = 21) in vec3 atmos_mieColor;
 layout(location = 22) in vec3 atmos_rayleighColor;
 layout(location = 23) in vec3 atmos_lightDir;
 layout(location = 24) in float atmos_renderFromSpace;
-layout(location = 25) in vec3 atmos_groundColor;
 
 // fragment out
 layout(location = 0) out vec4 out_color;

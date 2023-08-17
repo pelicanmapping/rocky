@@ -9,7 +9,7 @@
 find_program(GIT git)
 
 set(GIT_URL "https://github.com/vsg-dev/vsgImGui.git")
-set(GIT_REV "e8d161655bc9f095252c1ff97a769f964a2300a7")
+set(GIT_REV "7472d39d94f0bb989f3b3adfe5f5ff2e8f2ebe92")
 
 set(SOURCE_PATH ${CURRENT_BUILDTREES_DIR}/src/${PORT})
 
@@ -32,9 +32,10 @@ vcpkg_execute_required_process(
 )
 
 vcpkg_apply_patches(
-    SOURCE_PATH "${SOURCE_PATH}"
-    PATCHES "vsgImGui.patch"
+   SOURCE_PATH "${SOURCE_PATH}"
+   PATCHES "vsgImGui.patch"
 )
+
 vcpkg_configure_cmake(
     SOURCE_PATH "${SOURCE_PATH}"
 )

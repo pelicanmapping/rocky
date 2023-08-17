@@ -7,6 +7,7 @@
 #include "IconState.h"
 #include "Runtime.h"
 #include "Utils.h"
+#include "PipelineState.h"
 #include "../Icon.h" // for IconStyle
 
 #include <vsg/state/BindDescriptorSet.h>
@@ -17,12 +18,11 @@ using namespace ROCKY_NAMESPACE;
 
 #define VERT_SHADER "shaders/rocky.icon.vert"
 #define FRAG_SHADER "shaders/rocky.icon.frag"
+
 #define BUFFER_SET 0 // must match layout(set=X) in the shader UBO
 #define BUFFER_BINDING 1 // must match the layout(binding=X) in the shader UBO (set=0)
 #define TEXTURE_SET 0 // must match layout(set=X) in the shader uniform
 #define TEXTURE_BINDING 2 // must match the layout(binding=X) in the shader uniform
-#define VIEWPORT_BUFFER_SET 1 // hard-coded in VSG ViewDependentState
-#define VIEWPORT_BUFFER_BINDING 1 // hard-coded in VSG ViewDependentState (set=1)
 
 
 vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> IconState::pipelineConfig;
@@ -72,15 +72,11 @@ namespace
             TEXTURE_SET, TEXTURE_BINDING,
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-        // VSG viewport state
-        shaderSet->addUniformBinding(
-            "vsg_viewports", "",
-            VIEWPORT_BUFFER_SET, VIEWPORT_BUFFER_BINDING,
-            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
+        // We need VSG's view-dependent data:
+        PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_VERTEX_BIT);
 
         // Note: 128 is the maximum size required by the Vulkan spec so don't increase it
         shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
-
 
         return shaderSet;
     }
@@ -118,11 +114,10 @@ IconState::initialize(Runtime& runtime)
         // activate the arrays we intend to use
         pipelineConfig->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
 
-        // Temporary decriptors that we will use to set up the PipelineConfig.
         pipelineConfig->enableUniform("icon");
-        pipelineConfig->enableUniform("vsg_viewports");
-
         pipelineConfig->enableTexture("icon_texture");
+
+        PipelineUtils::enableViewDependentData(pipelineConfig);
 
         // Alpha blending to support line smoothing
         pipelineConfig->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
@@ -139,37 +134,12 @@ IconState::initialize(Runtime& runtime)
         pipelineConfig->depthStencilState->depthTestEnable = VK_FALSE;
         pipelineConfig->depthStencilState->depthWriteEnable = VK_FALSE;
 
-        // Register the ViewDescriptorSetLayout (for view-dependent state stuff
-        // like viewpoint and lights data)
-        // The "set" in GLSL's "layout(set=X, binding=Y)" refers to the index of
-        // the descriptor set layout within the pipeline layout. Setting the
-        // "additional" DSL appends it to the pipline layout, giving it set=1.
-        pipelineConfig->additionalDescriptorSetLayout =
-            runtime.sharedObjects ? runtime.sharedObjects->shared_default<vsg::ViewDescriptorSetLayout>() :
-            vsg::ViewDescriptorSetLayout::create();
-
-        // Initialize GraphicsPipeline from the data in the configuration.
-        if (runtime.sharedObjects)
-            runtime.sharedObjects->share(pipelineConfig, [](auto gpc) { gpc->init(); });
-        else
-            pipelineConfig->init();
+        pipelineConfig->init();
     }
 
-    vsg::StateGroup::StateCommands commands;
-
-    commands.push_back(pipelineConfig->bindGraphicsPipeline);
-
-    // assign any custom ArrayState that may be required
-    //stateGroup->prototypeArrayState = shaderSet->getSuitableArrayState(defines);
-
-    // This binds the view-dependent state from VSG (lights, viewport, etc.)
-    auto bindViewDescriptorSets = vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, 1);
-    commands.push_back(bindViewDescriptorSets);
-
-    if (runtime.sharedObjects)
-        runtime.sharedObjects->share(bindViewDescriptorSets);
-
-    pipelineStateCommands = commands;
+    pipelineStateCommands.clear();
+    pipelineStateCommands.push_back(pipelineConfig->bindGraphicsPipeline);
+    pipelineStateCommands.push_back(PipelineUtils::createViewDependentBindCommand(pipelineConfig));
 }
 
 
@@ -179,12 +149,6 @@ BindIconStyle::BindIconStyle()
 {
     ROCKY_HARD_ASSERT_STATUS(IconState::status);
 
-    this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    this->firstSet = 0;
-    this->layout = IconState::pipelineConfig->layout;
-
-    //vsg::Descriptors descriptors;
-
     // tell VSG that the contents can change, and if they do, the data should be
     // transfered to the GPU before or during recording.
     styleData = vsg::ubyteArray::create(sizeof(IconStyle));
@@ -192,7 +156,7 @@ BindIconStyle::BindIconStyle()
 
     setStyle(IconStyle{});
 
-    rebuildDescriptorSet();
+    dirty();
 }
 
 void
@@ -201,7 +165,7 @@ BindIconStyle::setImage(std::shared_ptr<Image> in_image)
     my_image = in_image;
 
     // UNTESTED! might break, crash, and destroy
-    rebuildDescriptorSet();
+    dirty();
 }
 
 
@@ -212,7 +176,7 @@ BindIconStyle::image() const
 }
 
 void
-BindIconStyle::rebuildDescriptorSet()
+BindIconStyle::dirty()
 {
     auto ubo = vsg::DescriptorBuffer::create(styleData, BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
@@ -229,8 +193,6 @@ BindIconStyle::rebuildDescriptorSet()
     sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     sampler->anisotropyEnable = VK_TRUE; // don't need this for a billboarded icon
     sampler->maxAnisotropy = 4.0f;
-    //if (runtime.sharedObjects)
-    //    runtime.sharedObjects->share(sampler);
 
     auto tex = vsg::DescriptorImage::create(
         sampler, // IconState::sampler,
@@ -240,6 +202,8 @@ BindIconStyle::rebuildDescriptorSet()
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
     this->layout = IconState::pipelineConfig->layout;
+    this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    this->firstSet = 0;
 
     this->descriptorSet = vsg::DescriptorSet::create(
         IconState::pipelineConfig->layout->setLayouts.front(),
@@ -275,6 +239,7 @@ IconGeometry::compile(vsg::Context& context)
     std::vector<vsg::vec3> dummy_data(6);
     auto vert_array = vsg::vec3Array::create(6, dummy_data.data());
     assignArrays({ vert_array });
+
     commands.push_back(_drawCommand);
 
     vsg::Geometry::compile(context);

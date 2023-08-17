@@ -41,16 +41,15 @@ namespace ROCKY_NAMESPACE
 
         //const SRS& srs() const { return _srs; }
 
-        //! Gets copy of this geopoint transformed into another SRS
+        //! Transforms this geopoint into another SRS and puts the
+        //! output in the "output"
+        //! @return true upon success, false upon failure
         bool transform(const SRS& outSRS, GeoPoint& output) const;
 
+        //! Transforms this geopoint into another SRS and puts the 
+        //! output into the provided xyz object
         template<class VEC3>
-        inline bool transform(const SRS& outSRS, VEC3& output) const {
-            GeoPoint temp;
-            if (!transform(outSRS, temp)) return false;
-            output = { temp.x, temp.y, temp.z };
-            return true;
-        }
+        inline bool transform(const SRS& outSRS, VEC3& output) const;
 
         //! Transforms this point in place to another SRS
         bool transformInPlace(const SRS& srs);
@@ -85,11 +84,6 @@ namespace ROCKY_NAMESPACE
         GeoPoint& operator=(const GeoPoint& rhs) = default;
         GeoPoint(GeoPoint&& rhs) { *this = rhs; }
         GeoPoint& operator=(GeoPoint&& rhs);
-
-        //JSON to_json() const;
-
-    private:
-        //SRS _srs;
     };
 
 
@@ -102,4 +96,15 @@ namespace ROCKY_NAMESPACE
         //! Center position of the object
         virtual const GeoPoint& position() const = 0;
     };
+
+
+    // inlines
+
+    template<class VEC3>
+    bool GeoPoint::transform(const SRS& outSRS, VEC3& output) const {
+        GeoPoint temp;
+        if (!transform(outSRS, temp)) return false;
+        output = { temp.x, temp.y, temp.z };
+        return true;
+    }
 }

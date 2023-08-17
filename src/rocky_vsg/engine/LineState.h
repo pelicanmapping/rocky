@@ -57,6 +57,8 @@ namespace ROCKY_NAMESPACE
         const LineStyle& style() const;
 
         vsg::ref_ptr<vsg::ubyteArray> _styleData;
+
+        void dirty();
     };
 
     /**

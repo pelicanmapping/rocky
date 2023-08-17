@@ -80,6 +80,8 @@ namespace
         shaderSet->addUniformBinding("vsg_viewports", "", VIEWPORT_BUFFER_SET, VIEWPORT_BUFFER_BINDING,
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
+        shaderSet->customDescriptorSetBindings.push_back(vsg::ViewDependentStateBinding::create(VIEWPORT_BUFFER_SET));
+
         // Note: 128 is the maximum size required by the Vulkan spec so don't increase it
         shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
 
@@ -163,9 +165,13 @@ MeshState::get(int which)
         // The "set" in GLSL's "layout(set=X, binding=Y)" refers to the index of
         // the descriptor set layout within the pipeline layout. Setting the
         // "additional" DSL appends it to the pipline layout, giving it set=1.
+#if 0
         c.pipelineConfig->additionalDescriptorSetLayout =
             runtime->sharedObjects ? runtime->sharedObjects->shared_default<vsg::ViewDescriptorSetLayout>() :
             vsg::ViewDescriptorSetLayout::create();
+#else
+        Log::warn() << "pipelineConfig->additionalDescriptorSetLayout" << std::endl;
+#endif
 
         // Initialize GraphicsPipeline from the data in the configuration.
         if (runtime->sharedObjects)

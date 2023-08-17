@@ -8,8 +8,6 @@ layout(push_constant) uniform PushConstants
 
 // input attributes
 layout(location = 0) in vec3 in_vertex;
-layout(location = 1) in vec3 in_normal;
-layout(location = 2) in vec2 in_uv;
 
 // output varyings
 layout(location = 20) out vec3 atmos_v3Direction;
@@ -22,14 +20,15 @@ layout(location = 24) out float atmos_renderFromSpace;
 out gl_PerVertex{
     vec4 gl_Position;
 };
+
 // from VSG's view-dependent state
-layout(set = 1, binding = 0) uniform LightData {
-    vec4 v[64];
+layout(set = 1, binding = 0) uniform VSG_Lights {
+    vec4 pack[64];
 } vsg_lights;
 
 // Earth constants
 const float polarRadius = 6356752.0;
-const float atmosThickness = 96560.0;
+const float atmosThickness = 50000.0; // 96560.0;
 const float atmos_fInnerRadius = polarRadius;
 const float atmos_fOuterRadius = polarRadius + atmosThickness;
 
@@ -170,10 +169,10 @@ void atmos_vertex_main(in vec3 in_vertex)
     atmos_vVec = vec3(0, 0, 0) + view_to_ecef;
 
     // calculate the light direction in view space:
-    vec4 light_counts = vsg_lights.v[0];
+    vec4 light_counts = vsg_lights.pack[0];
     int sun = 1 + (int(light_counts[0]) * 1) + (int(light_counts[1]) * 2); // first point light
     // vec4 diffuse = vsg_light.v[sun + 0];
-    vec4 light_pos_view = vsg_lights.v[sun + 1];
+    vec4 light_pos_view = vsg_lights.pack[sun + 1];
     atmos_lightDir = normalize(light_pos_view.xyz + view_to_ecef);
 
     atmos_fOuterRadius2 = atmos_fOuterRadius * atmos_fOuterRadius;

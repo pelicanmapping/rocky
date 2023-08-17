@@ -5,6 +5,7 @@
  */
 #include "LineState.h"
 #include "Runtime.h"
+#include "PipelineState.h"
 #include "../LineString.h" // for LineStyle
 
 #include <vsg/state/BindDescriptorSet.h>
@@ -15,10 +16,9 @@ using namespace ROCKY_NAMESPACE;
 
 #define LINE_VERT_SHADER "shaders/rocky.line.vert"
 #define LINE_FRAG_SHADER "shaders/rocky.line.frag"
+
 #define LINE_BUFFER_SET 0 // must match layout(set=X) in the shader UBO
 #define LINE_BUFFER_BINDING 1 // must match the layout(binding=X) in the shader UBO (set=0)
-#define VIEWPORT_BUFFER_SET 1 // hard-coded in VSG ViewDependentState
-#define VIEWPORT_BUFFER_BINDING 1 // hard-coded in VSG ViewDependentState (set=1)
 
 // statics
 vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> LineState::pipelineConfig;
@@ -60,10 +60,11 @@ namespace
         shaderSet->addAttributeBinding("in_color", "", 3, VK_FORMAT_R32G32B32A32_SFLOAT, {});
 
         // line data uniform buffer (width, stipple, etc.)
-        shaderSet->addUniformBinding("line", "", LINE_BUFFER_SET, LINE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
+        shaderSet->addUniformBinding("line", "", LINE_BUFFER_SET, LINE_BUFFER_BINDING,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
 
-        // VSG viewport state
-        shaderSet->addUniformBinding("vsg_viewports", "", VIEWPORT_BUFFER_SET, VIEWPORT_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
+        // We need VSG's view-dependent data:
+        PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_VERTEX_BIT);
 
         // Note: 128 is the maximum size required by the Vulkan spec so don't increase it
         shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
@@ -115,7 +116,9 @@ LineState::initialize(Runtime& runtime)
 
         // Uniforms we will need:
         pipelineConfig->enableUniform("line");
-        pipelineConfig->enableUniform("vsg_viewports");
+
+        // always both
+        PipelineUtils::enableViewDependentData(pipelineConfig);
 
         // Alpha blending to support line smoothing
         pipelineConfig->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
@@ -125,35 +128,15 @@ LineState::initialize(Runtime& runtime)
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
         } };
 
-        // Register the ViewDescriptorSetLayout (for view-dependent state stuff
-        // like viewpoint and lights data)
-        // The "set" in GLSL's "layout(set=X, binding=Y)" refers to the index of
-        // the descriptor set layout within the pipeline layout. Setting the
-        // "additional" DSL appends it to the pipline layout, giving it set=1.
-        pipelineConfig->additionalDescriptorSetLayout =
-            runtime.sharedObjects ? runtime.sharedObjects->shared_default<vsg::ViewDescriptorSetLayout>() :
-            vsg::ViewDescriptorSetLayout::create();
-
-        // Initialize GraphicsPipeline from the data in the configuration.
-        if (runtime.sharedObjects)
-            runtime.sharedObjects->share(pipelineConfig, [](auto gpc) { gpc->init(); });
-        else
-            pipelineConfig->init();
+        pipelineConfig->init();
     }
 
+    // Assemble the commands required to activate this pipeline:
     vsg::StateGroup::StateCommands commands;
 
+    // Bind the pipeline itself:
     commands.push_back(pipelineConfig->bindGraphicsPipeline);
-
-    // assign any custom ArrayState that may be required
-    //stateGroup->prototypeArrayState = shaderSet->getSuitableArrayState(defines);
-
-    // This binds the view-dependent state from VSG (lights, viewport, etc.)
-    auto bindViewDescriptorSets = vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, 1);
-    commands.push_back(bindViewDescriptorSets);
-
-    if (runtime.sharedObjects)
-        runtime.sharedObjects->share(bindViewDescriptorSets);
+    commands.push_back(PipelineUtils::createViewDependentBindCommand(pipelineConfig));
 
     pipelineStateCommands = commands;
 }
@@ -165,23 +148,14 @@ BindLineStyle::BindLineStyle()
 {
     ROCKY_HARD_ASSERT_STATUS(LineState::status);
 
-    this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    this->firstSet = 0;
-    this->layout = LineState::pipelineConfig->layout;
-
-    vsg::Descriptors descriptors;
-
     // tells VSG that the contents can change, and if they do, the data should be
     // transfered to the GPU before or during recording.
     _styleData = vsg::ubyteArray::create(sizeof(LineStyle));
     _styleData->properties.dataVariance = vsg::DYNAMIC_DATA;
-    LineState::pipelineConfig->assignUniform(descriptors, "line", _styleData);
-
-    // assemble our ds:
-    this->descriptorSet = vsg::DescriptorSet::create(
-        LineState::pipelineConfig->layout->setLayouts.front(), descriptors);
 
     setStyle(LineStyle{});
+
+    dirty();
 }
 
 void
@@ -196,6 +170,27 @@ const LineStyle&
 BindLineStyle::style() const
 {
     return *static_cast<LineStyle*>(_styleData->dataPointer());
+}
+
+void
+BindLineStyle::dirty()
+{
+    vsg::Descriptors descriptors;
+
+    // the style buffer:
+    auto ubo = vsg::DescriptorBuffer::create(_styleData, LINE_BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    descriptors.push_back(ubo);
+
+    this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    this->firstSet = 0;
+
+    auto config = LineState::pipelineConfig;
+
+    this->layout = config->layout;
+
+    this->descriptorSet = vsg::DescriptorSet::create(
+        config->layout->setLayouts.front(),
+        descriptors);
 }
 
 

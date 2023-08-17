@@ -7,6 +7,7 @@
 #include "Runtime.h"
 #include "TerrainTileNode.h"
 #include "Utils.h"
+#include "PipelineState.h"
 
 #include <rocky/Color.h>
 #include <rocky/Heightfield.h>
@@ -29,10 +30,6 @@
 
 #define TILE_BUFFER_NAME "tile"
 #define TILE_BUFFER_BINDING 13
-
-#define LIGHTS_BUFFER_NAME "vsg_lights"
-#define LIGHTS_BUFFER_SET 1
-#define LIGHTS_BUFFER_BINDING 0
 
 #define ATTR_VERTEX "in_vertex"
 #define ATTR_NORMAL "in_normal"
@@ -188,7 +185,8 @@ TerrainState::createShaderSet() const
     shaderSet->addUniformBinding(textures.color.name, "", 0, textures.color.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
     shaderSet->addUniformBinding(textures.normal.name, "", 0, textures.normal.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
     shaderSet->addUniformBinding(TILE_BUFFER_NAME, "", 0, TILE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
-    shaderSet->addUniformBinding(LIGHTS_BUFFER_NAME, "", LIGHTS_BUFFER_SET, LIGHTS_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, vsg::vec4Array::create(64));
+    
+    PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_FRAGMENT_BIT);
 
     // Note: 128 is the maximum size required by the Vulkan spec, 
     // so don't increase it :)
@@ -226,21 +224,22 @@ TerrainState::createPipelineConfig() const
     // Temporary decriptors that we will use to set up the PipelineConfig.
     // Note, we only use these for setup, and then throw them away!
     // The ACTUAL descriptors we will make on a tile-by-tile basis.
+#if 0
     vsg::Descriptors descriptors;
     config->assignTexture(descriptors, textures.elevation.name, textures.elevation.defaultData, textures.elevation.sampler);
     config->assignTexture(descriptors, textures.color.name, textures.color.defaultData, textures.color.sampler);
     config->assignTexture(descriptors, textures.normal.name, textures.normal.defaultData, textures.normal.sampler);
     config->assignUniform(descriptors, TILE_BUFFER_NAME, { });
     config->assignUniform(descriptors, LIGHTS_BUFFER_NAME, { });
+#else
+    config->assignTexture(textures.elevation.name, textures.elevation.defaultData, textures.elevation.sampler);
+    config->assignTexture(textures.color.name, textures.color.defaultData, textures.color.sampler);
+    config->assignTexture(textures.normal.name, textures.normal.defaultData, textures.normal.sampler);
 
-    // Register the ViewDescriptorSetLayout (for view-dependent state stuff
-    // like viewpoint and lights data)
-    // The "set" in GLSL's "layout(set=X, binding=Y)" refers to the index of
-    // the descriptor set layout within the pipeline layout. Setting the
-    // "additional" DSL appends it to the pipline layout, giving it set=1.
-    config->additionalDescriptorSetLayout =
-        _runtime.sharedObjects ? _runtime.sharedObjects->shared_default<vsg::ViewDescriptorSetLayout>() :
-        vsg::ViewDescriptorSetLayout::create();
+    config->enableUniform(TILE_BUFFER_NAME);
+
+    PipelineUtils::enableViewDependentData(config);
+#endif
 
     // Initialize GraphicsPipeline from the data in the configuration.
     if (_runtime.sharedObjects)
@@ -266,13 +265,7 @@ TerrainState::createTerrainStateGroup()
     // (except for the view-dependent state stuff from VSG)
     auto stateGroup = vsg::StateGroup::create();
     stateGroup->add(pipelineConfig->bindGraphicsPipeline);
-
-    // This binds the view-dependent state from VSG (lights, viewport, etc.)
-    auto bindViewDescriptorSets = vsg::BindViewDescriptorSets::create(
-        VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, 1);
-    if (_runtime.sharedObjects)
-        _runtime.sharedObjects->share(bindViewDescriptorSets);
-    stateGroup->add(bindViewDescriptorSets);
+    stateGroup->add(PipelineUtils::createViewDependentBindCommand(pipelineConfig));
 
     return stateGroup;
 }

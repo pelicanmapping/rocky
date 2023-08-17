@@ -1,6 +1,6 @@
 // from VSG's view-dependent state
-layout(set = 1, binding = 0) uniform LightData {
-    vec4 v[64];
+layout(set = 1, binding = 0) uniform VSG_Lights {
+    vec4 pack[64];
 } vsg_lights;
 
 // The output:
@@ -142,10 +142,10 @@ void atmos_vertex_main(inout vec3 vertex_view)
     atmos_fScaleOverScaleDepth = atmos_fScale / RaleighScaleDepth;
 
     // calculate the light direction in view space:
-    vec4 light_counts = vsg_lights.v[0];
+    vec4 light_counts = vsg_lights.pack[0];
     int sun = 1 + (int(light_counts[0]) * 1) + (int(light_counts[1]) * 2); // first point light
     // vec4 diffuse = vsg_light.v[sun + 0];
-    vec4 light_pos_view = vsg_lights.v[sun + 1];
+    vec4 light_pos_view = vsg_lights.pack[sun + 1];
     atmos_lightDir = normalize(light_pos_view.xyz);
 
     if (atmos_fCameraHeight >= atmos_fOuterRadius)

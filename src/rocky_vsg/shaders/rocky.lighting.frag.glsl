@@ -1,8 +1,8 @@
 #pragma import_defines(RK_ATMOSPHERE)
 
 // from VSG's view-dependent state
-layout(set = 1, binding = 0) uniform LightData {
-    vec4 v[64];
+layout(set = 1, binding = 0) uniform VSG_Lights {
+    vec4 pack[64];
 } vsg_lights;
 
 layout(location = 15) in vec3 atmos_color;
@@ -73,7 +73,7 @@ void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
     vec3 Lo = vec3(0.0);
     vec3 ambient = vec3(0.0); // vec3(0.013);
 
-    vec4 light_counts = vsg_lights.v[0];
+    vec4 light_counts = vsg_lights.pack[0];
     int ambient_count = int(light_counts[0]);
     int directional_count = int(light_counts[1]);
     int point_count = int(light_counts[2]);
@@ -83,20 +83,20 @@ void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
 
     for (int i = 0; i < ambient_count; ++i)
     {
-        vec4 light_color = vsg_lights.v[index++];
+        vec4 light_color = vsg_lights.pack[index++];
         ambient += light_color.rgb * light_color.a;
     }
 
     for (int i = 0; i < directional_count; ++i)
     {
-        vec3 light_color = vsg_lights.v[index++].rgb;
-        vec3 direction = normalize(vsg_lights.v[index++].xyz);
+        vec3 light_color = vsg_lights.pack[index++].rgb;
+        vec3 direction = normalize(vsg_lights.pack[index++].xyz);
     }
 
     for (int i = 0; i < point_count; ++i)
     {
-        vec3 light_color = vsg_lights.v[index++].rgb;
-        vec3 position = vsg_lights.v[index++].xyz;
+        vec3 light_color = vsg_lights.pack[index++].rgb;
+        vec3 position = vsg_lights.pack[index++].xyz;
 
         // per-light radiance:
         vec3 L = normalize(position - vertex_view);
@@ -124,9 +124,9 @@ void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
 #if 0
     for (int i = 0; i < spot_count; ++i)
     {
-        vec4 light_color = vsg_lights.values[index++];
-        vec4 position_cosInnerAngle = vsg_lights.values[index++];
-        vec4 lightDirection_cosOuterAngle = vsg_lights.values[index++];
+        vec4 light_color = vsg_lights.pack[index++];
+        vec4 position_cosInnerAngle = vsg_lights.pack[index++];
+        vec4 lightDirection_cosOuterAngle = vsg_lights.pack[index++];
     }
 #endif
 

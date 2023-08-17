@@ -6,6 +6,7 @@
 #include "SkyNode.h"
 #include "engine/Utils.h"
 #include "engine/Runtime.h"
+#include "engine/PipelineState.h"
 
 #include <rocky/Ellipsoid.h>
 #include <rocky/Ephemeris.h>
@@ -114,7 +115,7 @@ namespace
 #define ATMOSPHERE_VERT_SHADER "shaders/rocky.atmo.sky.vert"
 #define ATMOSPHERE_FRAG_SHADER "shaders/rocky.atmo.sky.frag"
 
-    vsg::ref_ptr<vsg::ShaderSet> makeShaderSet()
+    vsg::ref_ptr<vsg::ShaderSet> makeAtmoShaderSet()
     {
         // set up search paths to SPIRV shaders and textures
         vsg::Paths searchPaths = vsg::getEnvPaths("VSG_FILE_PATH");
@@ -143,11 +144,9 @@ namespace
         auto shaderSet = vsg::ShaderSet::create(vsg::ShaderStages{ vertexShader, fragmentShader });
 
         shaderSet->addAttributeBinding("in_vertex", "", 0, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
-        shaderSet->addAttributeBinding("in_normal", "HAS_IN_NORMAL", 1, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
-        shaderSet->addAttributeBinding("in_uv", "HAS_IN_UV", 2, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
 
-        // vsg packed lights data
-        shaderSet->addUniformBinding("vsg_lights", "", 1, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, vsg::vec4Array::create(64));
+        // need VSG view-dependent data (lights)
+        PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_VERTEX_BIT);
 
         // vsg modelview and projection matrix
         shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
@@ -156,11 +155,11 @@ namespace
     }
 
 
-    vsg::ref_ptr<vsg::StateGroup> makeStateGroup(bool with_normals, bool with_tex_coords, Runtime& runtime)
+    vsg::ref_ptr<vsg::StateGroup> makeAtmoStateGroup(Runtime& runtime)
     {
         auto sharedObjects = runtime.sharedObjects;
 
-        auto shaderSet = makeShaderSet();
+        auto shaderSet = makeAtmoShaderSet();
         if (!shaderSet)
         {
             Log::warn() << LC << "Failed to create shader set!" << std::endl;
@@ -173,33 +172,9 @@ namespace
 
         // enable the arrays we think we need
         pipelineConfig->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-        if (with_normals)
-        {
-            pipelineConfig->enableArray("in_normal", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-            defines.insert("HAS_IN_NORMAL");
-        }
-        if (with_tex_coords)
-        {
-            pipelineConfig->enableArray("in_uv", VK_VERTEX_INPUT_RATE_VERTEX, 8);
-            defines.insert("HAS_IN_UV");
-        }
 
         // activate the packed lights uniform
-        vsg::Descriptors descriptors;
-        if (auto& lightDataBinding = shaderSet->getUniformBinding("vsg_lights"))
-        {
-            auto data = lightDataBinding.data;
-            if (!data) data = vsg::vec4Array::create(64);
-            pipelineConfig->assignUniform(descriptors, "vsg_lights", data);
-        }
-
-        // packed lights are in a secondary DS so we must add that..
-        vsg::ref_ptr<vsg::ViewDescriptorSetLayout> vdsl;
-        if (sharedObjects)
-            vdsl = sharedObjects->shared_default<vsg::ViewDescriptorSetLayout>();
-        else
-            vdsl = vsg::ViewDescriptorSetLayout::create();
-        pipelineConfig->additionalDescriptorSetLayout = vdsl;
+        PipelineUtils::enableViewDependentData(pipelineConfig);
 
         // only render back faces
         pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_FRONT_BIT;
@@ -220,7 +195,6 @@ namespace
 
         //pipelineConfig->rasterizationState->polygonMode = VK_POLYGON_MODE_LINE;
 
-        // initialize
         if (sharedObjects)
             sharedObjects->share(pipelineConfig, [](auto gpc) { gpc->init(); });
         else
@@ -231,16 +205,8 @@ namespace
 
         // set up the state group that will select the new pipeline:
         auto stategroup = vsg::StateGroup::create();
-
-        // attach the pipeline:
         stategroup->add(pipelineConfig->bindGraphicsPipeline);
-
-        // assign any custom ArrayState that may be required
-        stategroup->prototypeArrayState = shaderSet->getSuitableArrayState(defines);
-
-        // activate the descriptor set:
-        auto bindViewDescriptorSets = vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, 1);
-        stategroup->add(bindViewDescriptorSets);
+        stategroup->add(PipelineUtils::createViewDependentBindCommand(pipelineConfig));
 
         return stategroup;
     }
@@ -248,16 +214,17 @@ namespace
 
     vsg::ref_ptr<vsg::Node> makeAtmosphere(const SRS& srs, float thickness, Runtime& runtime)
     {
-        auto stategroup = makeStateGroup(false, false, runtime);
+        // attach the actual atmospheric geometry
+        const bool with_texcoords = false;
+        const bool with_normals = false;
+
+        auto stategroup = makeAtmoStateGroup(runtime);
         if (!stategroup)
         {
             Log::warn() << LC << "Failed to make state group!" << std::endl;
             return { };
         }
 
-        // attach the actual atmospheric geometry
-        const bool with_texcoords = false;
-        const bool with_normals = false;
         auto geometry = makeEllipsoid(srs, thickness, with_texcoords, with_normals);
 
         stategroup->addChild(geometry);
@@ -299,7 +266,7 @@ SkyNode::setWorldSRS(const SRS& srs)
         _instance.runtime().dirtyShaders();
 
         // the atmopshere:
-        const float earth_atmos_thickness = 96560.0;
+        const float earth_atmos_thickness = 50000.0; // 96560.0;
         _atmosphere = makeAtmosphere(srs, earth_atmos_thickness, _instance.runtime());
         setShowAtmosphere(true);
     }
