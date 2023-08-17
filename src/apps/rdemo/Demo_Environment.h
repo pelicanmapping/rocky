@@ -41,7 +41,7 @@ auto Demo_Environment = [](Application& app)
         }
 
         float ambient = app.skyNode->ambient->color.r;
-        if (ImGuiLTable::SliderFloat("Ambient level", &ambient, 0.0f, 1.0f, "%.3f"))
+        if (ImGuiLTable::SliderFloat("Ambient level", &ambient, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic))
         {
             app.skyNode->ambient->color = { ambient, ambient, ambient };
         }

@@ -5,7 +5,9 @@ layout(set = 1, binding = 0) uniform VSG_Lights {
     vec4 pack[64];
 } vsg_lights;
 
+#ifdef RK_ATMOSPHERE
 layout(location = 15) in vec3 atmos_color;
+#endif
 
 // TODO - this will eventually come from a material map
 struct PBR {
@@ -57,7 +59,7 @@ void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
 {
     // temp:
     pbr.ao = 1.0;
-    pbr.roughness = 0.5;
+    pbr.roughness = 0.75;
     pbr.metal = 0.0;
     const float exposure = 3.3;
     // ....

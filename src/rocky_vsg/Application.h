@@ -103,14 +103,6 @@ namespace ROCKY_NAMESPACE
         //! TODO: evaluate whether we need this function or whether it should be exposed
         inline ViewData& viewData(vsg::ref_ptr<vsg::View> view);
 
-        //! Adds a child to a window's main render pass. Each render pass child works as 
-        //! a "stage" and these stages render in their order of appearance. This is is
-        //! good way to e.g. render a GUI overlay after rendering the 3D scene.
-        //! @param window Window to which to add the post-render node.
-        //! @param node Node to add.
-        //! TODO: add a way to remove or deactivate it
-        void addPostRenderNode(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Node> node);
-
         //! Adds a new render graph that should render before the rest of the scene.
         //! (Typical use is an RTT camera that is later used as a texture somewhere
         //! in the main scene graph.)

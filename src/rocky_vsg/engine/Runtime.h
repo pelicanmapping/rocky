@@ -61,17 +61,23 @@ namespace ROCKY_NAMESPACE
         Revision shaderSettingsRevision = 0;
 
         //! Queue a function to run during the update pass
+        //! This is a safe way to do things that require modifying the scene
+        //! or compiling vulkan objects
         void runDuringUpdate(
             vsg::ref_ptr<vsg::Operation> function,
             std::function<float()> get_priority = nullptr);
 
+        //! Queue a function to run during the update pass.
+        //! This is a safe way to do things that require modifying the scene
+        //! or compiling vulkan objects
         void runDuringUpdate(
             std::function<void()> function);
 
         //! Function that creates a node
         using NodeFactory = std::function<vsg::ref_ptr<vsg::Node>(Cancelable&)>;
 
-        //! Compiles an object and 
+        //! Compiles an object now.
+        //! Be careful to only call this from a safe thead
         void compile(vsg::ref_ptr<vsg::Object> object);
 
         //! Schedules data creation; the resulting node or nodes 

@@ -148,6 +148,35 @@ Application::Application(int& argc, char** argv) :
     }
 }
 
+namespace
+{
+    // https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/debug_utils
+    VKAPI_ATTR VkBool32 VKAPI_CALL debug_utils_messenger_callback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+        VkDebugUtilsMessageTypeFlagsEXT message_type,
+        const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+        void* user_data)
+    {
+        if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+        {
+            Log::warn() << "----------"
+                //<< std::endl << callback_data->messageIdNumber << ": " << callback_data->pMessageIdName
+                << std::endl << callback_data->pMessage
+                << std::endl;
+        }
+        else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+        {
+            Log::warn() << "----------"
+                //<< std::endl << callback_data->messageIdNumber << ": " << callback_data->pMessageIdName
+                << std::endl << callback_data->pMessage
+                << std::endl;
+
+            //std::exit(-1);
+        }
+        return VK_FALSE;
+    }
+}
+
 util::Future<vsg::ref_ptr<vsg::Window>>
 Application::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
 {
@@ -168,6 +197,8 @@ Application::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
         traits->apiDumpLayer = _apilayer;
         if (!_vsync)
             traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+
+        traits->instanceExtensionNames.push_back("VK_EXT_debug_utils");
 
         if (viewer->windows().size() > 0)
         {
@@ -221,6 +252,23 @@ Application::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
         if (_viewerRealized)
         {
             _viewerDirty = true;
+        }
+
+        if (_debuglayer)
+        {
+            VkDebugUtilsMessengerCreateInfoEXT debug_utils_create_info = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
+            debug_utils_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
+            debug_utils_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+            debug_utils_create_info.pfnUserCallback = debug_utils_messenger_callback;
+
+            static VkDebugUtilsMessengerEXT debug_utils_messenger;
+
+            auto vki = window->getDevice()->getInstance();
+
+            using PFN_vkCreateDebugUtilsMessengerEXT = VkResult(VKAPI_PTR*)(VkInstance, const VkDebugUtilsMessengerCreateInfoEXT*, const VkAllocationCallbacks*, VkDebugUtilsMessengerEXT*);
+            PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
+            if (vki->getProcAddr(vkCreateDebugUtilsMessengerEXT, "vkCreateDebugUtilsMessenger", "vkCreateDebugUtilsMessengerEXT"))
+                vkCreateDebugUtilsMessengerEXT(vki->vk(), &debug_utils_create_info, nullptr, &debug_utils_messenger);
         }
     };
 
@@ -427,17 +475,6 @@ Application::refreshView(vsg::ref_ptr<vsg::View> view)
         instance.runtime().runDuringUpdate(refresh);
     else
         refresh();
-}
-
-void
-Application::addPostRenderNode(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Node> node)
-{
-    auto commandGraph = getCommandGraph(window);
-
-    ROCKY_SOFT_ASSERT_AND_RETURN(commandGraph, void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(commandGraph->children.size() > 0, void());
-
-    commandGraph->addChild(node);
 }
 
 void

@@ -31,7 +31,6 @@ layout(set = 0, binding = 12) uniform sampler2D normal_tex;
 // outputs
 layout(location = 0) out vec4 out_color;
 
-
 vec3 get_normal()
 {
     // temporary! until we support normal maps

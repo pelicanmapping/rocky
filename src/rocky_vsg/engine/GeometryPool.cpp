@@ -411,83 +411,9 @@ GeometryPool::createGeometry(
     }
 }
 
-#if 0
-void
-GeometryPool::traverse(osg::NodeVisitor& nv)
-{
-    if (nv.getVisitorType() == nv.UPDATE_VISITOR && _enabled)
-    {
-        Threading::ScopedMutexLock lock(_geometryMapMutex);
-
-        std::vector<GeometryKey> keys;
-
-        for(auto& iter : _geometryMap)
-        {
-            if (iter.second.get()->referenceCount() == 1)
-            {
-                keys.push_back(iter.first);
-                //iter.second->releaseGLObjects(nullptr);
-                OE_DEBUG << "Releasing: " << iter.second.get() << std::endl;
-            }
-        }
-
-        for(auto& key : keys)
-        {
-            _geometryMap.erase(key);
-        }
-    }
-
-    osg::Group::traverse(nv);
-}
-#endif
-
 void
 GeometryPool::clear()
 {
     std::scoped_lock lock(_mutex);
     _sharedGeometries.clear();
 }
-
-#if 0
-void
-GeometryPool::resizeGLObjectBuffers(unsigned maxsize)
-{
-    if (!_enabled)
-        return;
-
-    // collect all objects in a thread safe manner
-    util::ScopedLock lock(_geometryMapMutex);
-
-    for (GeometryMap::const_iterator i = _geometryMap.begin(); i != _geometryMap.end(); ++i)
-    {
-        i->second->resizeGLObjectBuffers(maxsize);
-    }
-
-    // the shared primitive set
-    if (_defaultPrimSet.valid())
-    {
-        _defaultPrimSet->resizeGLObjectBuffers(maxsize);
-    }
-}
-
-void
-GeometryPool::releaseGLObjects(osg::State* state) const
-{
-    if (!_enabled)
-        return;
-
-    // collect all objects in a thread safe manner
-    util::ScopedLock lock(_geometryMapMutex);
-
-    for (auto& entry : _geometryMap)
-    {
-        entry.second->releaseGLObjects(state);
-    }
-
-    // the shared primitive set
-    if (_defaultPrimSet.valid())
-    {
-        _defaultPrimSet->releaseGLObjects(state);
-    }
-}
-#endif

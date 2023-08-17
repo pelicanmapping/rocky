@@ -211,11 +211,18 @@ int main(int argc, char** argv)
 
     // start up the gui
     setup_demos(app);
-    app.viewer->addEventHandler(vsgImGui::SendEventsToImGui::create());
+
     auto window = app.addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
     auto imgui = vsgImGui::RenderImGui::create(window.value());
     imgui->addChild(MainGUI::create(app));
-    app.addPostRenderNode(window.value(), imgui);
+
+    // ImGui likes to live under the main rendergraph, but outside the main view.
+    // https://github.com/vsg-dev/vsgExamples/blob/master/examples/ui/vsgimgui_example/vsgimgui_example.cpp#L276
+    auto main_view = app.displayConfiguration.windows[window.value()].front();
+    auto view_data = app.viewData(main_view);
+    view_data.parentRenderGraph->addChild(imgui);
+
+    app.viewer->addEventHandler(vsgImGui::SendEventsToImGui::create());
 
     // run until the user quits.
     return app.run();
