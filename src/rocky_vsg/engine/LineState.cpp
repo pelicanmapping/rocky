@@ -129,16 +129,12 @@ LineState::initialize(Runtime& runtime)
         } };
 
         pipelineConfig->init();
+
+        // Assemble the commands required to activate this pipeline:
+        pipelineStateCommands.clear();
+        pipelineStateCommands.push_back(pipelineConfig->bindGraphicsPipeline);
+        pipelineStateCommands.push_back(PipelineUtils::createViewDependentBindCommand(pipelineConfig));
     }
-
-    // Assemble the commands required to activate this pipeline:
-    vsg::StateGroup::StateCommands commands;
-
-    // Bind the pipeline itself:
-    commands.push_back(pipelineConfig->bindGraphicsPipeline);
-    commands.push_back(PipelineUtils::createViewDependentBindCommand(pipelineConfig));
-
-    pipelineStateCommands = commands;
 }
 
 

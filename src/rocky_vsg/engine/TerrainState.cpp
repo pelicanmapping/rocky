@@ -225,21 +225,18 @@ TerrainState::createPipelineConfig() const
     // Note, we only use these for setup, and then throw them away!
     // The ACTUAL descriptors we will make on a tile-by-tile basis.
 #if 0
-    vsg::Descriptors descriptors;
-    config->assignTexture(descriptors, textures.elevation.name, textures.elevation.defaultData, textures.elevation.sampler);
-    config->assignTexture(descriptors, textures.color.name, textures.color.defaultData, textures.color.sampler);
-    config->assignTexture(descriptors, textures.normal.name, textures.normal.defaultData, textures.normal.sampler);
-    config->assignUniform(descriptors, TILE_BUFFER_NAME, { });
-    config->assignUniform(descriptors, LIGHTS_BUFFER_NAME, { });
-#else
     config->assignTexture(textures.elevation.name, textures.elevation.defaultData, textures.elevation.sampler);
     config->assignTexture(textures.color.name, textures.color.defaultData, textures.color.sampler);
     config->assignTexture(textures.normal.name, textures.normal.defaultData, textures.normal.sampler);
+#else
+    config->enableTexture(textures.elevation.name);
+    config->enableTexture(textures.color.name);
+    config->enableTexture(textures.normal.name);
+#endif
 
     config->enableUniform(TILE_BUFFER_NAME);
 
     PipelineUtils::enableViewDependentData(config);
-#endif
 
     // Initialize GraphicsPipeline from the data in the configuration.
     if (_runtime.sharedObjects)

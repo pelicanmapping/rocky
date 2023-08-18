@@ -39,6 +39,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_LineFeatures.h"
 #include "Demo_PolygonFeatures.h"
 #include "Demo_MapManipulator.h"
+#include "Demo_Serialization.h"
 #include "Demo_Tethering.h"
 #include "Demo_Environment.h"
 #include "Demo_Views.h"
@@ -75,7 +76,7 @@ void setup_demos(rocky::Application& app)
         Demo{ "Map", Demo_Map });
 
     demos.emplace_back(
-        Demo{ "MapObjects", {},
+        Demo{ "Primitives", {},
         {
             Demo{ "Label", Demo_Label },
             Demo{ "LineString - absolute", Demo_LineString_Absolute },
@@ -88,7 +89,7 @@ void setup_demos(rocky::Application& app)
     );
 
     demos.emplace_back(
-        Demo{ "Features", {},
+        Demo{ "GIS Features", {},
         {
             Demo{ "Line features", Demo_LineFeatures },
             Demo{ "Polygon features", Demo_PolygonFeatures }
@@ -98,17 +99,19 @@ void setup_demos(rocky::Application& app)
     demos.emplace_back(
         Demo{ "Camera", {},
         {
-            Demo{ "Manipulator", Demo_MapManipulator },
+            Demo{ "Viewpoints", Demo_Viewpoints },
             Demo{ "Tethering", Demo_Tethering }
         } }
     );
 
     demos.emplace_back(
-        Demo{ "Environment", Demo_Environment });    
+        Demo{ "Environment", Demo_Environment });
     demos.emplace_back(
         Demo{ "RTT", Demo_RTT });
     demos.emplace_back(
         Demo{ "Windows & Views", Demo_Views });
+    demos.emplace_back(
+        Demo{ "Serialization", Demo_Serialization });
     demos.emplace_back(
         Demo{ "Stats", Demo_Stats });
     demos.emplace_back(
@@ -173,40 +176,7 @@ int main(int argc, char** argv)
         app.map()->layers().add(elev);
         if (elev->status().failed())
             return layerError(elev);
-
-  #if 0 // test multi-layer compositing
-        auto layer2 = rocky::TMSImageLayer::create();
-        layer2->setName("Hawaii inset");
-        layer2->setURI("https://readymap.org/readymap/tiles/1.0.0/79/");
-        app.map()->layers().add(layer2);
-        if (layer2->status().failed())
-            return layerError(layer2);
-
-        auto layer3 = rocky::TMSImageLayer::create();
-        layer3->setName("Florida inset");
-        layer3->setURI("https://readymap.org/readymap/tiles/1.0.0/73/");
-        app.map()->layers().add(layer3);
-        if (layer3->status().failed())
-            return layerError(layer3);
-
-        auto layer4 = rocky::TMSImageLayer::create();
-        layer4->setName("Washington DC");
-        layer4->setURI("https://readymap.org/readymap/tiles/1.0.0/98/");
-        app.map()->layers().add(layer4);
-        if (layer4->status().failed())
-            return layerError(layer4);
-
-        auto layer5 = rocky::TMSImageLayer::create();
-        layer5->setName("Florida inset");
-        layer5->setURI("https://readymap.org/readymap/tiles/1.0.0/82/");
-        app.map()->layers().add(layer5);
-        if (layer5->status().failed())
-            return layerError(layer5);
-  #endif
 #endif
-
-        JSON map_json = app.map()->to_json();
-        rocky::util::writeToFile(rocky::json_pretty(map_json), "out.map.json");
     }
 
     // start up the gui

@@ -1,4 +1,5 @@
 #version 450
+#pragma import_defines(USE_MESH_STYLE)
 
 // vsg push constants
 layout(push_constant) uniform PushConstants {
@@ -6,18 +7,21 @@ layout(push_constant) uniform PushConstants {
     mat4 modelview;
 } pc;
 
+#ifdef USE_MESH_STYLE
 // see rocky::MeshStyle
 layout(set = 0, binding = 1) uniform MeshData {
     vec4 color;
     float wireframe;
-    float depth_offset;
+    float depthoffset;
 } mesh;
+#endif
 
 // input vertex attributes
 layout(location = 0) in vec3 in_vertex;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec4 in_color;
 layout(location = 3) in vec2 in_uv;
+layout(location = 4) in float in_depthoffset;
 
 // inter-stage interface block
 struct Varyings {
@@ -34,20 +38,27 @@ out gl_PerVertex {
 
 void main()
 {
+    float depthoffset = in_depthoffset;
+
+#ifdef USE_MESH_STYLE
     vary.color = mesh.color.a > 0.0 ? mesh.color : in_color;
     vary.wireframe = mesh.wireframe;
+    if (mesh.depthoffset != 0.0)
+        depthoffset = mesh.depthoffset;
+#else
+    vary.color = in_color;
+    vary.wireframe = 0.0;
+#endif
+
     uv = in_uv;
 
-    // TODO: lighting (optional)
-
-    // Meters/view approach:
-    //vec4 view = pc.modelview * vec4(in_vertex, 1);
-    //vec3 look = -normalize(view.xyz);
-    //view.xyz += look * mesh.depth_offset;
-    //gl_Position = pc.projection * view;
+    // TODO: lighting
     
     // Depth/clip approach:
     vec4 clip = pc.projection * pc.modelview * vec4(in_vertex, 1);
-    clip.z += mesh.depth_offset * clip.w;
+
+    // Apply the depth offset in clip space
+    clip.z += depthoffset * clip.w;
+
     gl_Position = clip;
 }

@@ -21,29 +21,29 @@ auto Demo_Mesh_Absolute = [](Application& app)
 
         mesh = Mesh::create();
 
-        auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
+        auto xform = SRS::WGS84.to(SRS::WGS84.geocentricSRS());
         const double step = 2.5;
         const double alt = 0.0; 
         for (double lon = 0.0; lon < 35.0; lon += step)
         {
             for(double lat = 15.0; lat < 35.0; lat += step)
             {
-                glm::dvec3 v1, v2, v3, v4;
-                xform(glm::dvec3{ lon, lat, alt }, v1);
-                xform(glm::dvec3{ lon + step, lat, alt }, v2);
-                xform(glm::dvec3{ lon + step, lat + step, alt }, v3);
-                xform(glm::dvec3{ lon, lat + step, alt }, v4);
+                vsg::dvec3 v1, v2, v3, v4;
+                xform(vsg::dvec3{ lon, lat, alt }, v1);
+                xform(vsg::dvec3{ lon + step, lat, alt }, v2);
+                xform(vsg::dvec3{ lon + step, lat + step, alt }, v3);
+                xform(vsg::dvec3{ lon, lat + step, alt }, v4);
 
-                mesh->addTriangle(v1, v2, v3);
-                mesh->addTriangle(v1, v3, v4);
+                mesh->add({ {v1, v2, v3} });
+                mesh->add({ {v1, v3, v4} });
             }
         }
 
-        mesh->setStyle(MeshStyle{ { 1,0.4,0.1,0.75 }, 32.0f });
+        // Set a dynamic style that we can change at runtime.
+        mesh->style = MeshStyle{ { 1,0.4,0.1,0.75 }, 32.0f, 1e-7f };
 
-        // Turn off depth buffer writes. If you do this, you must do it
-        // before adding it to the application.
-        mesh->setWriteDepth(false);
+        // Turn off depth buffer writes. (You can only do this when creating the mesh)
+        mesh->writeDepth = false;
 
         object = MapObject::create(mesh);
         app.add(object);
@@ -62,22 +62,25 @@ auto Demo_Mesh_Absolute = [](Application& app)
                 app.remove(object);
         }
 
-        MeshStyle style = mesh->style();
-
-        float* col = (float*)&style.color;
-        if (ImGuiLTable::ColorEdit4("Color", col))
+        if (mesh->style.has_value())
         {
-            mesh->setStyle(style);
-        }
+            MeshStyle& style = mesh->style.value();
 
-        if (ImGuiLTable::SliderFloat("Wireframe", &style.wireframe, 0.0f, 32.0f, "%.0f"))
-        {
-            mesh->setStyle(style);
-        }
+            float* col = (float*)&style.color;
+            if (ImGuiLTable::ColorEdit4("Color", col))
+            {
+                mesh->dirty();
+            }
 
-        if (ImGuiLTable::SliderFloat("Depth offset", &style.depth_offset, 0.0f, 0.00001f, "%.7f"))
-        {
-            mesh->setStyle(style);
+            if (ImGuiLTable::SliderFloat("Wireframe", &style.wireframe, 0.0f, 32.0f, "%.0f"))
+            {
+                mesh->dirty();
+            }
+
+            if (ImGuiLTable::SliderFloat("Depth offset", &style.depth_offset, 0.0f, 0.00001f, "%.7f"))
+            {
+                mesh->dirty();
+            }
         }
 
         ImGuiLTable::End();
@@ -99,7 +102,7 @@ auto Demo_Mesh_Relative = [](Application& app)
         mesh = Mesh::create();
 
         const float s = 250000.0;
-        std::vector<vsg::vec3> v = {
+        vsg::vec3 verts[8] = {
             { -s, -s, -s },
             {  s, -s, -s },
             {  s,  s, -s },
@@ -109,21 +112,25 @@ auto Demo_Mesh_Relative = [](Application& app)
             {  s,  s,  s },
             { -s,  s,  s }
         };
+        unsigned indices[48] = {
+            0,3,2, 0,2,1, 4,5,6, 4,6,7,
+            1,2,6, 1,6,5, 3,0,4, 3,4,7,
+            0,1,5, 0,5,4, 2,3,7, 2,7,6
+        };
 
-        mesh->addTriangle(v[0], v[3], v[2]);
-        mesh->addTriangle(v[0], v[2], v[1]);
-        mesh->addTriangle(v[4], v[5], v[6]);
-        mesh->addTriangle(v[4], v[6], v[7]);
-        mesh->addTriangle(v[1], v[2], v[6]);
-        mesh->addTriangle(v[1], v[6], v[5]);
-        mesh->addTriangle(v[3], v[0], v[4]);
-        mesh->addTriangle(v[3], v[4], v[7]);
-        mesh->addTriangle(v[0], v[1], v[5]);
-        mesh->addTriangle(v[0], v[5], v[4]);
-        mesh->addTriangle(v[2], v[3], v[7]);
-        mesh->addTriangle(v[2], v[7], v[6]);
+        vsg::vec4 color{ 1, 0, 1, 0.85 };
 
-        mesh->setStyle(MeshStyle{ { 0.5, 0.0, 0.5, 1.0 }, 32.0f });
+        for (unsigned i = 0; i < 48; )
+        {
+            mesh->add({
+                {verts[indices[i++]], verts[indices[i++]], verts[indices[i++]]},
+                {color, color, color} });
+
+            if ((i % 6) == 0)
+                color.r *= 0.8, color.b *= 0.8;
+        }
+
+        //mesh->style = MeshStyle{ { 0.5, 0.0, 0.5, 1.0 }, 32.0f };
 
         mesh->underGeoTransform = true;
 
@@ -145,17 +152,19 @@ auto Demo_Mesh_Relative = [](Application& app)
                 app.remove(object);
         }
 
-        MeshStyle style = mesh->style();
-
-        float* col = (float*)&style.color;
-        if (ImGuiLTable::ColorEdit4("Color", col))
+        if (mesh->style.has_value())
         {
-            mesh->setStyle(style);
-        }
+            MeshStyle& style = mesh->style.value();
 
-        if (ImGuiLTable::SliderFloat("Wireframe", &style.wireframe, 0.0f, 32.0f, "%.0f"))
-        {
-            mesh->setStyle(style);
+            float* col = (float*)&style.color;
+            if (ImGuiLTable::ColorEdit4("Color", col))
+            {
+                mesh->dirty();
+            }
+            if (ImGuiLTable::SliderFloat("Wireframe", &style.wireframe, 0.0f, 32.0f, "%.0f"))
+            {
+                mesh->dirty();
+            }
         }
 
         auto& pos = object->xform->position();

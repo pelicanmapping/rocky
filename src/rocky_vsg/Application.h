@@ -134,6 +134,11 @@ namespace ROCKY_NAMESPACE
         //! About the application. Lists all the dependencies and their versions.
         std::string about() const;
 
+        //! True is the debug validation layer is active, which will affect performance
+        bool debugLayerOn() const {
+            return _debuglayer;
+        }
+
     public:
         //! Copy construction is disabled.
         Application(const Application&) = delete;

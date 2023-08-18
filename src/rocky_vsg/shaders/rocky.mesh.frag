@@ -2,12 +2,13 @@
 #extension GL_NV_fragment_shader_barycentric : enable
 #pragma import_defines(USE_MESH_TEXTURE)
 
+layout(location = 1) in vec2 uv;
+
 // inter-stage interface block
 struct Varyings {
     vec4 color;
     float wireframe;
 };
-layout(location = 1) in vec2 uv;
 layout(location = 2) flat in Varyings vary;
 
 // outputs

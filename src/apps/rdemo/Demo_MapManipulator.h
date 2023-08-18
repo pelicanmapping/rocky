@@ -12,7 +12,7 @@
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
 
-auto Demo_MapManipulator = [](Application& app)
+auto Demo_Viewpoints = [](Application& app)
 {
     auto view = app.displayConfiguration.windows.begin()->second.front();
     if (view)

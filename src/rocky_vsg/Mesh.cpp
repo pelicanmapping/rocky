@@ -13,50 +13,20 @@ using namespace ROCKY_NAMESPACE;
 Mesh::Mesh() :
     super()
 {
-    _bindStyle = BindMeshStyle::create();
     _geometry = MeshGeometry::create();
 }
 
 void
-Mesh::setStyle(const MeshStyle& value)
+Mesh::dirty()
 {
-    _bindStyle->setStyle(value);
-}
-
-const MeshStyle&
-Mesh::style() const
-{
-    return _bindStyle->style();
-}
-
-void
-Mesh::setTexture(vsg::ref_ptr<vsg::ImageInfo> value)
-{
-    _bindStyle->_imageInfo = value;
-
-    if (value)
-        _bindStyle->_features |= MeshState::APPLY_TEXTURE;
-    else
-        _bindStyle->_features &= ~MeshState::APPLY_TEXTURE;
-
-    _bindStyle->dirty();
-}
-
-void
-Mesh::setWriteDepth(bool value)
-{
-    _bindStyle->_writeDepth = value;
-
-    if (value)
-        _bindStyle->_features |= MeshState::WRITE_DEPTH;
-    else
-        _bindStyle->_features &= ~MeshState::WRITE_DEPTH;
-}
-
-bool
-Mesh::writeDepth() const
-{
-    return _bindStyle->_writeDepth;
+    if (_bindStyle)
+    {
+        // update the UBO with the new style data.
+        if (style.has_value())
+        {
+            _bindStyle->updateStyle(style.value());
+        }
+    }
 }
 
 void
@@ -66,11 +36,29 @@ Mesh::createNode(Runtime& runtime)
     {
         ROCKY_HARD_ASSERT(MeshState::status.ok());
 
+        if (texture || style.has_value())
+        {
+            _bindStyle = BindMeshStyle::create();
+            _bindStyle->_imageInfo = texture;
+            dirty();
+        }
+
         auto stateGroup = vsg::StateGroup::create();
 
-        stateGroup->stateCommands = MeshState::get(_bindStyle->_features).pipelineStateCommands;
+        int features = 0;
+        if (texture) features |= MeshState::TEXTURE;
+        if (writeDepth) features |= MeshState::WRITE_DEPTH;
+        if (_bindStyle) features |= MeshState::DYNAMIC_STYLE;
 
-        stateGroup->addChild(_bindStyle);
+        auto& config = MeshState::get(features);
+        stateGroup->stateCommands = config.pipelineStateCommands;
+
+        if (_bindStyle)
+        {
+            _bindStyle->build(config.pipelineConfig->layout);
+            stateGroup->addChild(_bindStyle);
+        }
+
         stateGroup->addChild(_geometry);
         auto sw = vsg::Switch::create();
         sw->addChild(true, stateGroup);

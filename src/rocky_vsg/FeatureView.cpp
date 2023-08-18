@@ -156,7 +156,7 @@ namespace
         return multiline;
     }
 
-    std::shared_ptr<Attachment> compile_polygon_feature_with_weemesh(const Feature& feature, const Geometry& geom, const StyleSheet& styles)
+    std::shared_ptr<Mesh> compile_polygon_feature_with_weemesh(const Feature& feature, const Geometry& geom, const StyleSheet& styles, std::shared_ptr<Mesh> mesh)
     {
         // scales our local gnomonic coordinates so they are the same order of magnitude as
         // weemesh's default epsilon values:
@@ -169,8 +169,6 @@ namespace
         // apply a fake Z for testing purposes before we attempt depth offsetting
         const double fake_z_offset = 0.0;
 
-
-        Attachments attachments;
 
         // some conversions we will need:
         auto feature_geo = feature.srs.geoSRS();
@@ -279,20 +277,33 @@ namespace
         feature_to_ecef.transformRange(m.verts.begin(), m.verts.end());
 
         // Finally, make out attachment and apply the style.
-        auto mesh = Mesh::create();
-        for (auto& tri : m.triangles)
+        // Here we going to add colors and other attributes directly to the mesh
+        // and forgo the dynamic MeshStyle. This will render faster.
+        //auto mesh = Mesh::create();
+        if (!mesh)
         {
-            mesh->addTriangle(m.verts[tri.second.i0], m.verts[tri.second.i1], m.verts[tri.second.i2]);
+            mesh = Mesh::create();
         }
 
-        if (styles.mesh_function)
+        auto color = styles.mesh_function(feature).color;
+
+        Triangle32 temp = {
+            {},
+            {color, color, color},
+            {},
+            { 1e-7f, 1e-7f, 1e-7f } };
+
+        for (auto& tri : m.triangles)
         {
-            auto style = styles.mesh_function(feature);
-            mesh->setStyle(style);
-        }
-        else if (styles.mesh.has_value())
-        {
-            mesh->setStyle(styles.mesh.value());
+            auto& v1 = m.verts[tri.second.i0];
+            auto& v2 = m.verts[tri.second.i1];
+            auto& v3 = m.verts[tri.second.i2];
+
+            temp.verts[0] = vsg::dvec3(v1.x, v1.y, v1.z);
+            temp.verts[1] = vsg::dvec3(v2.x, v2.y, v2.z);
+            temp.verts[2] = vsg::dvec3(v3.x, v3.y, v3.z);
+
+            mesh->add(temp);
         }
 
         return mesh;
@@ -320,6 +331,8 @@ FeatureView::createNode(Runtime& runtime)
 {
     if (attachments.empty())
     {
+        std::shared_ptr<Mesh> mesh;
+
         for (auto& feature : features)
         {
             if (feature.geometry.type == Geometry::Type::LineString ||
@@ -333,21 +346,13 @@ FeatureView::createNode(Runtime& runtime)
             }
             else if (feature.geometry.type == Geometry::Type::Polygon)
             {
-                auto att = compile_polygon_feature_with_weemesh(feature, feature.geometry, styles);
-                if (att)
-                {
-                    attachments.emplace_back(att);
-                }
+                mesh = compile_polygon_feature_with_weemesh(feature, feature.geometry, styles, mesh);
             }
             else if (feature.geometry.type == Geometry::Type::MultiPolygon)
             {
-                for(auto& part : feature.geometry.parts)
+                for (auto& part : feature.geometry.parts)
                 {
-                    auto att = compile_polygon_feature_with_weemesh(feature, part, styles);
-                    if (att)
-                    {
-                        attachments.emplace_back(att);
-                    }
+                    mesh = compile_polygon_feature_with_weemesh(feature, part, styles, mesh);
                 }
             }
             else
@@ -355,6 +360,11 @@ FeatureView::createNode(Runtime& runtime)
                 Log::warn() << "FeatureView no support for "
                     << Geometry::typeToString(feature.geometry.type) << std::endl;
             }
+        }
+
+        if (mesh)
+        {
+            attachments.push_back(mesh);
         }
 
         // invoke the super to bring it together.

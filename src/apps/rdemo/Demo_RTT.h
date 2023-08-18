@@ -113,7 +113,7 @@ auto Demo_RTT = [](Application& app)
         {
             for(double lat = lat0; lat < lat1; lat += step)
             {
-                glm::dvec3 v[4] = {
+                vsg::dvec3 v[4] = {
                     {lon, lat, alt},
                     {lon + step, lat, alt},
                     {lon + step, lat + step, alt},
@@ -125,12 +125,12 @@ auto Demo_RTT = [](Application& app)
                     xform(v[i], v[i]);
                 }
 
-                mesh->addTriangle(v[0], v[1], v[2], uv[0], uv[1], uv[2]);
-                mesh->addTriangle(v[0], v[2], v[3], uv[0], uv[2], uv[3]);
+                mesh->add({ {v[0], v[1], v[2]}, {}, {uv[0], uv[1], uv[2]} });
+                mesh->add({ {v[0], v[2], v[3]}, {}, {uv[0], uv[2], uv[3]} });
             }
         }
-        mesh->setTexture(texture);
-        mesh->setStyle(MeshStyle{ { 1,1,1,0.5 }, 64.0f });
+        mesh->texture = texture;
+        mesh->style = MeshStyle{ { 1,1,1,0.5 }, 64.0f };
 
         object = MapObject::create(mesh);
         app.add(object);

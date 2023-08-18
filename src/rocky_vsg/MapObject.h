@@ -44,7 +44,7 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Root node of the attachment; created by createNode()
-        vsg::ref_ptr<vsg::Switch> node;
+        vsg::ref_ptr<vsg::Node> node;
 
         Attachment() { }
 

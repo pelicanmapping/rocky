@@ -18,19 +18,21 @@ namespace
 void
 Attachment::setVisible(bool value)
 {
-    if (node && !node->children.empty())
+    auto sw = node ? node->cast<vsg::Switch>() : nullptr;
+    if (sw && !sw->children.empty())
     {
-        node->children.front().mask = value ? vsg::MASK_ALL : vsg::MASK_OFF;
+        sw->children.front().mask = value ? vsg::MASK_ALL : vsg::MASK_OFF;
     }
 }
 
 bool
 Attachment::visible() const
 {
+    auto sw = node ? node->cast<vsg::Switch>() : nullptr;
     return
-        node &&
-        !node->children.empty() &&
-        node->children.front().mask != vsg::MASK_OFF;
+        sw &&
+        !sw->children.empty() &&
+        sw->children.front().mask != vsg::MASK_OFF;
 }
 
 void
@@ -49,8 +51,9 @@ AttachmentGroup::createNode(Runtime& runtime)
             }
         }
 
-        node = vsg::Switch::create();
-        node->addChild(true, group);
+        auto sw = vsg::Switch::create();
+        sw->addChild(true, group);
+        node = sw;
     }
 }
 

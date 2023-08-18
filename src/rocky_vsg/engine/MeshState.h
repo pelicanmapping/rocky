@@ -17,24 +17,6 @@ namespace ROCKY_NAMESPACE
     struct MeshStyle;
     class Runtime;
 
-    class ROCKY_VSG_EXPORT PrimitiveState
-    {
-    public:
-        // Status; check before using.
-
-        struct Config
-        {
-            //! Singleton pipeline config object created when the object is first constructed,
-            //! for access to pipeline and desriptor set layouts.
-            vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> pipelineConfig;
-
-            //! Singleton state commands for establishing the pipeline.
-            vsg::StateGroup::StateCommands pipelineStateCommands;
-        };
-
-        static std::unordered_map<std::string, Config> configs;
-    };
-
     /**
      * Creates commands for rendering mesh primitives and holds the singleton pipeline
      * configurator for their drawing state.
@@ -67,17 +49,18 @@ namespace ROCKY_NAMESPACE
         {
             NONE = 0x0,
             WRITE_DEPTH = 0x1,
-            APPLY_TEXTURE = 0x2
+            TEXTURE = 0x2,
+            DYNAMIC_STYLE = 0x4
         };
 
         static std::vector<Config> configs;
 
         //! Access a state config permutation
-        static Config& get(int features = WRITE_DEPTH);
+        static Config& get(int features);
     };
 
     /**
-    * Applies a mesh style.
+    * Command to bind any descriptors associated with Mesh.
     */
     class ROCKY_VSG_EXPORT BindMeshStyle : public vsg::Inherit<vsg::BindDescriptorSet, BindMeshStyle>
     {
@@ -86,19 +69,16 @@ namespace ROCKY_NAMESPACE
         BindMeshStyle();
 
         //! Style for any linestrings that are children of this node
-        void setStyle(const MeshStyle&);
-        const MeshStyle& style() const;
+        void updateStyle(const MeshStyle&);
 
         vsg::ref_ptr<vsg::ubyteArray> _styleData;
         vsg::ref_ptr<vsg::ImageInfo> _imageInfo;
-        bool _writeDepth = true;
-        int _features = MeshState::WRITE_DEPTH;
 
-        void dirty();
+        void build(vsg::ref_ptr<vsg::PipelineLayout> layout);
     };
 
     /**
-    * Renders a mesh geometry.
+    * Command to render a Mesh's triangles.
     */
     class ROCKY_VSG_EXPORT MeshGeometry : public vsg::Inherit<vsg::Geometry, MeshGeometry>
     {
@@ -107,25 +87,40 @@ namespace ROCKY_NAMESPACE
         MeshGeometry();
 
         //! Adds a triangle to the mesh.
+        //! Each array MUST be 3 elements long
         void add(
-            const vsg::vec3& vert1, const vsg::vec3& vert2, const vsg::vec3& vert3,
-            const vsg::vec2& uv1, const vsg::vec2& uv2, const vsg::vec2& uv3);
+            const vsg::vec3* verts,
+            const vsg::vec2* uvs,
+            const vsg::vec4* colors,
+            const float* depthoffsets);
+
+        inline void add(
+            const vsg::dvec3* verts,
+            const vsg::vec2* uvs,
+            const vsg::vec4* colors,
+            const float* depthoffsets);
 
         //! Recompile the geometry after making changes.
         //! TODO: just make it dynamic instead
         void compile(vsg::Context&) override;
-        
-        void record(vsg::CommandBuffer&) const override;
 
         vsg::vec4 _defaultColor = { 1,1,1,1 };
         std::vector<vsg::vec3> _verts;
         std::vector<vsg::vec3> _normals;
         std::vector<vsg::vec4> _colors;
         std::vector<vsg::vec2> _uvs;
+        std::vector<float> _depthoffsets;
         vsg::ref_ptr<vsg::DrawIndexed> _drawCommand;
-        using index_type = unsigned short;
-        std::map<vsg::vec3, index_type> _lut;
+        using index_type = unsigned int; // short;
+        using key = std::tuple<vsg::vec3, vsg::vec4>; // vert, color (add normal?)
+        std::map<key, index_type> _lut;
         std::vector<index_type> _indices;
-
     };
+
+    // inline
+    void MeshGeometry::add(const vsg::dvec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors, const float* depthoffsets)
+    {
+        vsg::vec3 verts32[3] = { vsg::vec3(verts[0]), vsg::vec3(verts[1]), vsg::vec3(verts[2]) };
+        add(verts32, uvs, colors, depthoffsets);
+    }
 }

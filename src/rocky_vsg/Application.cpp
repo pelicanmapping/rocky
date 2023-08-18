@@ -159,19 +159,11 @@ namespace
     {
         if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
         {
-            Log::warn() << "----------"
-                //<< std::endl << callback_data->messageIdNumber << ": " << callback_data->pMessageIdName
-                << std::endl << callback_data->pMessage
-                << std::endl;
+            Log::warn() << std::endl << callback_data->pMessage << std::endl;
         }
         else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
         {
-            Log::warn() << "----------"
-                //<< std::endl << callback_data->messageIdNumber << ": " << callback_data->pMessageIdName
-                << std::endl << callback_data->pMessage
-                << std::endl;
-
-            //std::exit(-1);
+            Log::warn() << std::endl << callback_data->pMessage << std::endl;
         }
         return VK_FALSE;
     }

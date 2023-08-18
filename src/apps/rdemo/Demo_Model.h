@@ -40,9 +40,11 @@ public:
                 auto xform = vsg::MatrixTransform::create();
                 xform->matrix = vsg::scale(150000.0);
 
-                node = vsg::Switch::create();
-                node->addChild(true, xform);
+                auto sw = vsg::Switch::create();
+                sw->addChild(true, xform);
                 xform->addChild(model);
+
+                node = sw;
             }
         }
     }

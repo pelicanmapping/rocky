@@ -33,12 +33,13 @@ auto Demo_Tethering = [](Application& app)
         gi.dy = { 0, s, 0 };
         gi.dz = { 0, 0, s };
 
-        auto mesh = Attachment::create();
-        mesh->node = vsg::Switch::create();
-        mesh->node->addChild(true, vsg::Builder().createSphere(gi));
-        mesh->underGeoTransform = true;
+        auto attachment = Attachment::create();
+        auto sw = vsg::Switch::create();
+        sw->addChild(true, vsg::Builder().createSphere(gi));
+        attachment->node = sw;
+        attachment->underGeoTransform = true;
 
-        entity = MapObject::create(mesh);
+        entity = MapObject::create(attachment);
         entity->xform->setPosition(GeoPoint(SRS::WGS84, -121, 38, 25000.0));
 
         app.add(entity);

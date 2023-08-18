@@ -49,6 +49,13 @@ auto Demo_Stats = [](Application& app)
     const int over = 60;
 
     ImGui::SeparatorText("Timings");
+
+    if (app.debugLayerOn())
+    {
+        ImGui::TextColored(ImVec4(1, .8, .3, 1), "Note: Debug validation is ON");
+        ImGui::TextColored(ImVec4(1, .8, .3, 1), "Timings will be affected");
+    }
+
     ImGuiLTable::Begin("Timings");
     {
         sprintf(buf, "%.2f ms", 0.001f * (float)app.stats.frame.count());
