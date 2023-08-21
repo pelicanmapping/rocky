@@ -238,6 +238,9 @@ namespace ROCKY_NAMESPACE
             virtual const Feature& next() = 0;
         };
 
+        //! Number of features, or -1 if the count isn't available
+        virtual int featureCount() const = 0;
+
         //! Creates a feature iterator
         virtual std::shared_ptr<iterator> iterate(IOOptions& io) = 0;
     };
@@ -258,14 +261,18 @@ namespace ROCKY_NAMESPACE
         Status open();
         void close();
 
+        //! Number of features, or -1 if the count isn't available
+        int featureCount() const override;
+
         optional<URI> uri;
         optional<std::string> ogrDriver;
         std::string layerName;
         bool writable = false;
 
     private:
-        void* _dsHandle;
-        void* _layerHandle;
+        void* _dsHandle = nullptr;
+        void* _layerHandle = nullptr;
+        int _featureCount = -1;
         std::thread::id _dsHandleThreadId;
         FeatureProfile _featureProfile;
         std::string _source;

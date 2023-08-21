@@ -74,11 +74,16 @@ namespace weemesh
         value_type length2d_squared() const {
             return (x*x) + (y*y);
         }
+        // cast to another vec3 type
+        template<class VEC3>
+        inline operator VEC3() const {
+            return VEC3(x, y, z);
+        }
     };
 
     const vert_t::value_type zero(0.0);
 
-    constexpr vert_t::value_type EPSILON = 0.00005; // 1e-3; // 6;
+    constexpr vert_t::value_type EPSILON = 0.00005;
 
     inline bool same_vert(const vert_t& a, const vert_t& b, vert_t::value_type epsilon = EPSILON)
     {

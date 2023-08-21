@@ -69,6 +69,7 @@ namespace ROCKY_NAMESPACE
         //! serialize as JSON string
         JSON to_json() const override;
 
+        //! If using style, call this after changing a style to apply it
         void dirty();
 
     protected:

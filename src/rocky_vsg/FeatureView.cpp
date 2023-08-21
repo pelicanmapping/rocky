@@ -288,21 +288,16 @@ namespace
         auto color = styles.mesh_function(feature).color;
 
         Triangle32 temp = {
-            {},
+            {}, // we'll fill in the verts below
             {color, color, color},
-            {},
-            { 1e-7f, 1e-7f, 1e-7f } };
+            {}, // uvs - don't need them
+            { 1e-7f, 1e-7f, 1e-7f } }; // depth offset values
 
         for (auto& tri : m.triangles)
         {
-            auto& v1 = m.verts[tri.second.i0];
-            auto& v2 = m.verts[tri.second.i1];
-            auto& v3 = m.verts[tri.second.i2];
-
-            temp.verts[0] = vsg::dvec3(v1.x, v1.y, v1.z);
-            temp.verts[1] = vsg::dvec3(v2.x, v2.y, v2.z);
-            temp.verts[2] = vsg::dvec3(v3.x, v3.y, v3.z);
-
+            temp.verts[0] = m.verts[tri.second.i0];
+            temp.verts[1] = m.verts[tri.second.i1];
+            temp.verts[2] = m.verts[tri.second.i2];
             mesh->add(temp);
         }
 

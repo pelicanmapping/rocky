@@ -639,18 +639,9 @@ OGRFeatureSource::iterator::~iterator()
 {
 
     if (_nextHandleToQueue)
+    {
         OGR_F_Destroy(_nextHandleToQueue);
-
-#if 0
-    if (_dsHandle && _resultSetHandle != _layerHandle)
-        OGR_DS_ReleaseResultSet(_dsHandle, _resultSetHandle);
-
-    if (_spatialFilter)
-        OGR_G_DestroyGeometry(_spatialFilter);
-
-    if (_dsHandle)
-        OGRReleaseDataSource(_dsHandle);
-#endif
+    }
 }
 
 void
@@ -666,6 +657,7 @@ OGRFeatureSource::iterator::readChunk()
         {
             Feature feature;
             const SRS& srs = _source->_featureProfile.extent.srs();
+
             create_feature_from_OGR_handle(handle, srs, feature);
 
             if (feature.valid())
@@ -681,70 +673,10 @@ OGRFeatureSource::iterator::readChunk()
         }
     }
 
-#if 0
-                    if (_source == nullptr || !_source->isBlacklisted(feature->getFID()))
-                    {
-                        if (validateGeometry(feature->getGeometry()))
-                        {
-                            filterList.push_back(feature.release());
-                        }
-                        else
-                        {
-                            OE_DEBUG << LC << "Invalid geometry found at feature " << feature->getFID() << std::endl;
-                        }
-                    }
-                    else
-                    {
-                        OE_DEBUG << LC << "Blacklisted feature " << feature->getFID() << " skipped" << std::endl;
-                    }
-                }
-                else
-                {
-                    Log::info() << "OGR feature iterator: Skipping invalid feature" << std::endl;
-                }
-
-                OGR_F_Destroy(handle);
-            }
-            else
-            {
-                _resultSetEndReached = true;
-            }
-        }
-#endif
-
-#if 0
-        // preprocess the features using the filter list:
-        if (_filters.valid() && !_filters->empty())
-        {
-            FilterContext cx;
-            cx.setProfile(_profile.get());
-            if (_query.bounds().isSet())
-            {
-                cx.extent() = GeoExtent(_profile->getSRS(), _query.bounds().get());
-            }
-            else
-            {
-                cx.extent() = _profile->getExtent();
-            }
-
-            for (FeatureFilterChain::const_iterator i = _filters->begin(); i != _filters->end(); ++i)
-            {
-                FeatureFilter* filter = i->get();
-                cx = filter->push(filterList, cx);
-            }
-        }
-
-        for (FeatureList::const_iterator i = filterList.begin(); i != filterList.end(); ++i)
-        {
-            _queue.push(i->get());
-        }
-    }
-
     if (_chunkSize == ~0)
     {
         OGR_L_ResetReading(_resultSetHandle);
     }
-#endif
 }
 
 bool
@@ -908,6 +840,8 @@ OGRFeatureSource::open()
                 << "Failed to open layer \"" << layerName << "\" from \"" << _source << "\"");
         }
 
+        _featureCount = OGR_L_GetFeatureCount(_layerHandle, 1);
+
 #if 0
         // if the user provided a profile, use that:
         if (profile.valid())
@@ -966,54 +900,6 @@ OGRFeatureSource::open()
         // establish the feature schema:
         initSchema();
 #endif
-
-#if 0
-        // establish the geometry type for this feature layer:
-        OGRwkbGeometryType wkbType = OGR_FD_GetGeomType(OGR_L_GetLayerDefn(_layerHandle));
-        if (
-            wkbType == wkbPolygon ||
-            wkbType == wkbPolygon25D)
-        {
-            _geometryType = Geometry::Type::Polygon;
-        }
-        else if (
-            wkbType == wkbLineString ||
-            wkbType == wkbLineString25D)
-        {
-            _geometryType = Geometry::Type::LineString;
-        }
-        else if (
-            wkbType == wkbLinearRing)
-        {
-            _geometryType = Geometry::Type::LineString;
-        }
-        else if (
-            wkbType == wkbPoint ||
-            wkbType == wkbPoint25D)
-        {
-            _geometryType = Geometry::Type::Points;
-        }
-        else if (
-            wkbType == wkbMultiPoint ||
-            wkbType == wkbMultiPoint25D)
-        {
-            _geometryType = Geometry::Type::MultiPoints;
-        }
-        else if (
-            //wkbType == wkbGeometryCollection ||
-            //wkbType == wkbGeometryCollection25D ||
-            wkbType == wkbMultiLineString ||
-            wkbType == wkbMultiLineString25D)
-        {
-            _geometryType = Geometry::Type::MultiLineString;
-        }
-        else if (
-            wkbType == wkbMultiPolygon ||
-            wkbType == wkbMultiPolygon25D)
-        {
-            _geometryType = Geometry::Type::MultiPolygon;
-        }
-#endif
     }
 
 #if 0
@@ -1036,6 +922,12 @@ OGRFeatureSource::open()
     Log::info() << "OGR feature source " << _source << " opened OK" << std::endl;
 
     return { };
+}
+
+int
+OGRFeatureSource::featureCount() const
+{
+    return _featureCount;
 }
 
 void

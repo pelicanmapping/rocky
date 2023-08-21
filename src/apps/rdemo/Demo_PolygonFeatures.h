@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky_vsg/LineString.h>
 #include <rocky_vsg/FeatureView.h>
+#include <random>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
@@ -34,6 +35,10 @@ auto Demo_PolygonFeatures= [](Application& app)
 
         // create a feature view and add features to it:
         feature_view = FeatureView::create();
+
+        if (fs->featureCount() > 0)
+            feature_view->features.reserve(fs->featureCount());
+
         auto iter = fs->iterate(app.instance.ioOptions());
         while (iter->hasMore())
         {
@@ -45,12 +50,14 @@ auto Demo_PolygonFeatures= [](Application& app)
             }
         }
 
+        // generate random colors
+        std::default_random_engine re(0);
+        std::uniform_real_distribution<float> frand(0.25f, 1.0f);
+
         feature_view->styles.mesh_function = [&](const Feature& f)
         {
-            return MeshStyle{ {
-                (float)(std::rand() % 192 + 63) / 255.0f,
-                (float)(std::rand() % 192 + 63) / 255.0f,
-                (float)(std::rand() % 192 + 63) / 255.0f, 1.0f },
+            return MeshStyle{
+                { frand(re), frand(re), frand(re), 1.0f },
                 64.0f };
         };
 
