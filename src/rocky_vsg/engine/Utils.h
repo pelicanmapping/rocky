@@ -12,6 +12,10 @@
 #include <vsg/maths/vec3.h>
 #include <vsg/maths/mat4.h>
 #include <vsg/vk/State.h>
+#include <vsg/vk/Context.h>
+#include <vsg/commands/Commands.h>
+#include <vsg/nodes/StateGroup.h>
+#include <vsg/nodes/Geometry.h>
 #include <vsg/threading/OperationThreads.h>
 
 namespace ROCKY_NAMESPACE
@@ -283,5 +287,32 @@ namespace ROCKY_NAMESPACE
             return sampler;
         }
 #endif
+
+        /**
+        * Like vsg::CompileTraversal, but only for simple nodes and commands.
+        */
+        class SimpleCompiler : public vsg::Inherit<vsg::Visitor, SimpleCompiler>
+        {
+        public:
+            vsg::Context& context;
+            SimpleCompiler(vsg::Context& context_) : context(context_) { }
+
+            void apply(vsg::Compilable& node) override {
+                node.compile(context);
+                node.traverse(*this);
+            }
+            void apply(vsg::Commands& commands) override {
+                commands.compile(context);
+                commands.traverse(*this);
+            }
+            void apply(vsg::StateGroup& stateGroup) override {
+                stateGroup.compile(context);
+                stateGroup.traverse(*this);
+            }
+            void apply(vsg::Geometry& geometry) {
+                geometry.compile(context);
+                geometry.traverse(*this);
+            }
+        };
     }
 }

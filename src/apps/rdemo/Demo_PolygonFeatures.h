@@ -4,18 +4,15 @@
  * MIT License
  */
 #pragma once
-#include <rocky_vsg/LineString.h>
 #include <rocky_vsg/FeatureView.h>
 #include <random>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
 
-auto Demo_PolygonFeatures= [](Application& app)
+auto Demo_PolygonFeatures = [](Application& app)
 {
-    static std::shared_ptr<MapObject> object;
-    static std::shared_ptr<FeatureView> feature_view;
-    static bool visible = true;
+    static entt::entity entity = entt::null;
     static Status status;
     
     if (status.failed())
@@ -24,7 +21,7 @@ auto Demo_PolygonFeatures= [](Application& app)
         return;
     }
 
-    if (!object)
+    if (entity == entt::null)
     {
         // open a feature source:
         auto fs = rocky::OGRFeatureSource::create();
@@ -34,10 +31,11 @@ auto Demo_PolygonFeatures= [](Application& app)
             return;
 
         // create a feature view and add features to it:
-        feature_view = FeatureView::create();
+        entity = app.entities.create();
+        FeatureView& feature_view = app.entities.emplace<FeatureView>(entity);
 
         if (fs->featureCount() > 0)
-            feature_view->features.reserve(fs->featureCount());
+            feature_view.features.reserve(fs->featureCount());
 
         auto iter = fs->iterate(app.instance.ioOptions());
         while (iter->hasMore())
@@ -46,35 +44,31 @@ auto Demo_PolygonFeatures= [](Application& app)
             if (feature.valid())
             {
                 feature.interpolation = GeodeticInterpolation::RhumbLine;
-                feature_view->features.emplace_back(std::move(feature));
+                feature_view.features.emplace_back(std::move(feature));
             }
         }
 
         // generate random colors
         std::default_random_engine re(0);
-        std::uniform_real_distribution<float> frand(0.25f, 1.0f);
+        std::uniform_real_distribution<float> frand(0.15f, 1.0f);
 
-        feature_view->styles.mesh_function = [&](const Feature& f)
+        feature_view.styles.mesh_function = [&](const Feature& f)
         {
             return MeshStyle{
                 { frand(re), frand(re), frand(re), 1.0f },
                 64.0f };
         };
 
-        // Finally, create an object with our attachment.
-        app.add(object = MapObject::create(feature_view));
+        // make our entity and generate the geometry
+        feature_view.generate(app.entities, app.instance.runtime());
+
         return;
     }
 
     if (ImGuiLTable::Begin("Polygon features"))
     {
-        if (ImGuiLTable::Checkbox("Visible", &visible))
-        {
-            if (visible)
-                app.add(object);
-            else
-                app.remove(object);
-        }
+        auto& component = app.entities.get<FeatureView>(entity);
+        ImGuiLTable::Checkbox("Visible", &component.active);
 
         ImGuiLTable::End();
     }

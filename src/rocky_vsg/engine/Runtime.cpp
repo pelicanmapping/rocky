@@ -177,7 +177,6 @@ Runtime::update()
     if (_compileResults.size() > 0)
     {
         std::scoped_lock L(_compileResultsMutex);
-        Log::info() << "Updating viewer with " << _compileResults.size() << " results" << std::endl;
         for (auto& cr : _compileResults)
             vsg::updateViewer(*viewer, cr);
         _compileResults.clear();
@@ -202,8 +201,6 @@ Runtime::compileAndAddChild(vsg::ref_ptr<vsg::Group> parent, NodeFactory factory
     auto& runtime = *this;
     
     auto viewer = runtime.viewer;
-    //auto compiler = runtime.compiler();
-    //auto updates = runtime.updates();
 
     auto async_create_and_add_node = [viewer, promise, parent, factory](Cancelable& c) -> bool
     {

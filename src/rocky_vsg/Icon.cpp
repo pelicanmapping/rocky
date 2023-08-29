@@ -5,59 +5,43 @@
  */
 #include "Icon.h"
 #include "json.h"
-#include <vsg/nodes/DepthSorted.h>
+#include "engine/IconSystem.h"
 
 using namespace ROCKY_NAMESPACE;
 
-Icon::Icon() :
-    super()
+Icon::Icon()
 {
-    _bindStyle = BindIconStyle::create();
-    _geometry = IconGeometry::create();
-
-    this->horizonCulling = true;
-    this->underGeoTransform = true;
+    geometry = IconGeometry::create();
 }
 
 void
-Icon::setStyle(const IconStyle& value)
+Icon::dirty()
 {
-    _bindStyle->setStyle(value);
-}
-
-const IconStyle&
-Icon::style() const
-{
-    return _bindStyle->style();
-}
-
-void
-Icon::setImage(std::shared_ptr<Image> image)
-{
-    _bindStyle->setImage(image);
-}
-
-std::shared_ptr<Image>
-Icon::image() const
-{
-    return _bindStyle->image();
-}
-
-void
-Icon::createNode(Runtime& runtime)
-{
-    if (!node)
+    if (bindCommand)
     {
-        ROCKY_HARD_ASSERT(IconState::status.ok());
-
-        auto stateGroup = vsg::StateGroup::create();
-        stateGroup->stateCommands = IconState::pipelineStateCommands;
-        stateGroup->addChild(_bindStyle);
-        stateGroup->addChild(_geometry);
-        auto sw = vsg::Switch::create();
-        sw->addChild(true, stateGroup);
-        node = sw;
+        // update the UBO with the new style data.
+        bindCommand->updateStyle(style);
     }
+}
+
+void
+Icon::initializeNode(const ECS::NodeComponent::Params& params)
+{
+    bindCommand = BindIconStyle::create();
+    bindCommand->_image = image;
+    dirty();
+    bindCommand->init(params.layout);
+
+    auto stateGroup = vsg::StateGroup::create();
+    stateGroup->stateCommands.push_back(bindCommand);
+    stateGroup->addChild(geometry);
+    node = stateGroup;
+}
+
+int
+Icon::featureMask() const
+{
+    return IconSystem::featureMask(*this);
 }
 
 JSON

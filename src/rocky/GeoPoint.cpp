@@ -39,22 +39,6 @@ GeoPoint::GeoPoint(const SRS& in_srs, double in_x, double in_y, double in_z) :
     //nop
 }
 
-#if 0
-GeoPoint::GeoPoint(const SRS& srs, const dvec3& xyz) :
-    _srs(srs),
-    _p(xyz)
-{
-    //nop
-}
-
-GeoPoint::GeoPoint(const SRS& srs, const fvec3& xyz) :
-    _srs(srs),
-    _p(xyz)
-{
-    //nop
-}
-#endif
-
 GeoPoint::GeoPoint(const SRS& in_srs) :
     srs(in_srs),
     x(0.0), y(0.0), z(0.0)

@@ -4,11 +4,10 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#include "IconState.h"
+#include "IconSystem.h"
 #include "Runtime.h"
 #include "Utils.h"
 #include "PipelineState.h"
-#include "../Icon.h" // for IconStyle
 
 #include <vsg/state/BindDescriptorSet.h>
 #include <vsg/state/ViewDependentState.h>
@@ -23,11 +22,6 @@ using namespace ROCKY_NAMESPACE;
 #define BUFFER_BINDING 1 // must match the layout(binding=X) in the shader UBO (set=0)
 #define TEXTURE_SET 0 // must match layout(set=X) in the shader uniform
 #define TEXTURE_BINDING 2 // must match the layout(binding=X) in the shader uniform
-
-
-vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> IconState::pipelineConfig;
-vsg::StateGroup::StateCommands IconState::pipelineStateCommands;
-rocky::Status IconState::status;
 
 namespace
 {
@@ -82,105 +76,106 @@ namespace
     }
 }
 
-IconState::~IconState()
+IconSystem::IconSystem(entt::registry& registry) :
+    vsg::Inherit<ECS::SystemNode, IconSystem>(registry),
+    helper(registry)
 {
-    pipelineConfig = nullptr;
-    pipelineStateCommands.clear();
+    //nop
 }
 
 void
-IconState::initialize(Runtime& runtime)
+IconSystem::initialize(Runtime& runtime)
 {
-    // Now create the pipeline and stategroup to bind it
-    if (!pipelineConfig)
-    {
-        auto shaderSet = createShaderSet(runtime);
+    auto shaderSet = createShaderSet(runtime);
 
-        if (!shaderSet)
-        {
-            status = Status(Status::ResourceUnavailable,
-                "Icon shaders are missing or corrupt. "
-                "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
-            return;
-        }
+    if (!shaderSet)
+    {
+        status = Status(Status::ResourceUnavailable,
+            "Icon shaders are missing or corrupt. "
+            "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
+        return;
+    }
+
+    helper.pipelines.resize(NUM_PIPELINES);
+
+    // create all pipeline permutations.
+    for (int feature_mask = 0; feature_mask < NUM_PIPELINES; ++feature_mask)
+    {
+        auto& c = helper.pipelines[feature_mask];
 
         // Create the pipeline configurator for terrain; this is a helper object
         // that acts as a "template" for terrain tile rendering state.
-        pipelineConfig = vsg::GraphicsPipelineConfig::create(shaderSet);
+        c.config = vsg::GraphicsPipelineConfig::create(shaderSet);
 
         // Apply any custom compile settings / defines:
-        pipelineConfig->shaderHints = runtime.shaderCompileSettings;
+        c.config->shaderHints = runtime.shaderCompileSettings;
 
         // activate the arrays we intend to use
-        pipelineConfig->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
+        c.config->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
 
-        pipelineConfig->enableUniform("icon");
-        pipelineConfig->enableTexture("icon_texture");
+        c.config->enableUniform("icon");
+        c.config->enableTexture("icon_texture");
 
-        PipelineUtils::enableViewDependentData(pipelineConfig);
+        PipelineUtils::enableViewDependentData(c.config);
 
         // Alpha blending to support line smoothing
-        pipelineConfig->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
+        c.config->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
             true,
             VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
             VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
         } };
 
-        pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
+        c.config->rasterizationState->cullMode = VK_CULL_MODE_NONE;
 
         // No depth testing please
-        pipelineConfig->depthStencilState->depthCompareOp = VK_COMPARE_OP_ALWAYS;
-        pipelineConfig->depthStencilState->depthTestEnable = VK_FALSE;
-        pipelineConfig->depthStencilState->depthWriteEnable = VK_FALSE;
+        c.config->depthStencilState->depthCompareOp = VK_COMPARE_OP_ALWAYS;
+        c.config->depthStencilState->depthTestEnable = VK_FALSE;
+        c.config->depthStencilState->depthWriteEnable = VK_FALSE;
 
-        pipelineConfig->init();
+        c.config->init();
+
+        c.commands = vsg::Commands::create();
+        c.commands->addChild(c.config->bindGraphicsPipeline);
+        c.commands->addChild(PipelineUtils::createViewDependentBindCommand(c.config));
     }
-
-    pipelineStateCommands.clear();
-    pipelineStateCommands.push_back(pipelineConfig->bindGraphicsPipeline);
-    pipelineStateCommands.push_back(PipelineUtils::createViewDependentBindCommand(pipelineConfig));
 }
 
+int IconSystem::featureMask(const Icon& component)
+{
+    return 0;
+}
 
 
 
 BindIconStyle::BindIconStyle()
 {
-    ROCKY_HARD_ASSERT_STATUS(IconState::status);
-
-    // tell VSG that the contents can change, and if they do, the data should be
-    // transfered to the GPU before or during recording.
-    styleData = vsg::ubyteArray::create(sizeof(IconStyle));
-    styleData->properties.dataVariance = vsg::DYNAMIC_DATA;
-
-    setStyle(IconStyle{});
-
-    dirty();
+    // nop
 }
 
 void
-BindIconStyle::setImage(std::shared_ptr<Image> in_image)
+BindIconStyle::updateStyle(const IconStyle& value)
 {
-    my_image = in_image;
+    if (!_styleData)
+    {
+        _styleData = vsg::ubyteArray::create(sizeof(IconStyle));
 
-    // UNTESTED! might break, crash, and destroy
-    dirty();
-}
+        // tells VSG that the contents can change, and if they do, the data should be
+        // transfered to the GPU before or during recording.
+        _styleData->properties.dataVariance = vsg::DYNAMIC_DATA;
+    }
 
-
-std::shared_ptr<Image>
-BindIconStyle::image() const
-{
-    return my_image;
+    IconStyle& my_style = *static_cast<IconStyle*>(_styleData->dataPointer());
+    my_style = value;
+    _styleData->dirty();
 }
 
 void
-BindIconStyle::dirty()
+BindIconStyle::init(vsg::ref_ptr<vsg::PipelineLayout> layout)
 {
-    auto ubo = vsg::DescriptorBuffer::create(styleData, BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    auto ubo = vsg::DescriptorBuffer::create(_styleData, BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
-    auto tex_data = util::moveImageToVSG(my_image);
+    auto tex_data = util::moveImageToVSG(_image);
 
     // A sampler for the texture:
     auto sampler = vsg::Sampler::create();
@@ -201,29 +196,13 @@ BindIconStyle::dirty()
         0, // array element (TODO: increment when we change to an array)
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
-    this->layout = IconState::pipelineConfig->layout;
     this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    this->layout = layout;
     this->firstSet = 0;
-
     this->descriptorSet = vsg::DescriptorSet::create(
-        IconState::pipelineConfig->layout->setLayouts.front(),
+        layout->setLayouts.front(),
         vsg::Descriptors{ ubo, tex });
 }
-
-void
-BindIconStyle::setStyle(const IconStyle& value)
-{
-    IconStyle& my_style = *static_cast<IconStyle*>(styleData->dataPointer());
-    my_style = value;
-    styleData->dirty();
-}
-
-const IconStyle&
-BindIconStyle::style() const
-{
-    return *static_cast<IconStyle*>(styleData->dataPointer());
-}
-
 
 
 IconGeometry::IconGeometry()
@@ -234,13 +213,14 @@ IconGeometry::IconGeometry()
 void
 IconGeometry::compile(vsg::Context& context)
 {
-    commands.clear();
+    if (commands.empty())
+    {
+        std::vector<vsg::vec3> dummy_data(6);
+        auto vert_array = vsg::vec3Array::create(6, dummy_data.data());
+        assignArrays({ vert_array });
 
-    std::vector<vsg::vec3> dummy_data(6);
-    auto vert_array = vsg::vec3Array::create(6, dummy_data.data());
-    assignArrays({ vert_array });
-
-    commands.push_back(_drawCommand);
+        commands.push_back(_drawCommand);
+    }
 
     vsg::Geometry::compile(context);
 }

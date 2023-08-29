@@ -147,6 +147,8 @@ GDALElevationLayer::createHeightfieldImplementation(
     const TileKey& key,
     const IOOptions& io) const
 {
+    ROCKY_PROFILE_FUNCTION();
+
     if (status().failed())
         return status();
 

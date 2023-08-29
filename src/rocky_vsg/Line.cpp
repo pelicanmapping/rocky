@@ -3,23 +3,23 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#include "Mesh.h"
+#include "Line.h"
+#include "engine/LineSystem.h"
 #include "json.h"
-#include "engine/MeshSystem.h"
-#include "engine/Runtime.h"
-#include <vsg/Nodes/CullNode.h>
-#include <vsg/nodes/DepthSorted.h>
+#include <vsg/nodes/CullNode.h>
 #include <vsg/utils/ComputeBounds.h>
+#include <vsg/nodes/DepthSorted.h>
+#include <vsg/nodes/StateGroup.h>
 
 using namespace ROCKY_NAMESPACE;
 
-Mesh::Mesh()
+Line::Line()
 {
-    geometry = MeshGeometry::create();
+    bindCommand = BindLineDescriptors::create();
 }
 
 void
-Mesh::dirty()
+Line::dirty()
 {
     if (bindCommand)
     {
@@ -31,34 +31,33 @@ Mesh::dirty()
     }
 }
 
-int
-Mesh::featureMask() const
-{
-    return MeshSystem::featureMask(*this);
-}
-
 void
-Mesh::initializeNode(const ECS::NodeComponent::Params& params)
+Line::initializeNode(const ECS::NodeComponent::Params& params)
 {
     auto cull = vsg::CullNode::create();
 
-    if (style.has_value() || texture)
+    if (style.has_value())
     {
-        bindCommand = BindMeshDescriptors::create();
-        if (texture)
-            bindCommand->_imageInfo = texture;
+        bindCommand = BindLineDescriptors::create();
         dirty();
         bindCommand->init(params.layout);
 
         auto sg = vsg::StateGroup::create();
         sg->stateCommands.push_back(bindCommand);
-        sg->addChild(geometry);
-
+        for (auto& g : geometries)
+            sg->addChild(g);
         cull->child = sg;
+    }
+    else if (geometries.size() == 1)
+    {
+        cull->child = geometries[0];
     }
     else
     {
-        cull->child = geometry;
+        auto group = vsg::Group::create();
+        for (auto& g : geometries)
+            group->addChild(g);
+        cull->child = group;
     }
 
     vsg::ComputeBounds cb;
@@ -68,8 +67,14 @@ Mesh::initializeNode(const ECS::NodeComponent::Params& params)
     node = cull;
 }
 
+int
+Line::featureMask() const
+{
+    return LineSystem::featureMask(*this);
+}
+
 JSON
-Mesh::to_json() const
+Line::to_json() const
 {
     ROCKY_SOFT_ASSERT(false, "Not yet implemented");
 
@@ -77,3 +82,4 @@ Mesh::to_json() const
     // todo
     return j.dump();
 }
+

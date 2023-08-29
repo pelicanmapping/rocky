@@ -4,10 +4,9 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#include "MeshState.h"
+#include "MeshSystem.h"
 #include "Runtime.h"
 #include "PipelineState.h"
-#include "../Mesh.h" // for MeshStyle
 
 #include <vsg/state/BindDescriptorSet.h>
 #include <vsg/state/ViewDependentState.h>
@@ -21,11 +20,6 @@ using namespace ROCKY_NAMESPACE;
 #define MESH_UNIFORM_SET 0 // must match layout(set=X) in the shader UBO
 #define MESH_STYLE_BUFFER_BINDING 1 // must match the layout(binding=X) in the shader UBO (set=0)
 #define MESH_TEXTURE_BINDING 6
-
-rocky::Status MeshState::status;
-vsg::ref_ptr<vsg::ShaderSet> MeshState::shaderSet;
-rocky::Runtime* MeshState::runtime = nullptr;
-std::vector<MeshState::Config> MeshState::configs(8); // number of permutations
 
 namespace
 {
@@ -79,18 +73,17 @@ namespace
     }
 }
 
-MeshState::~MeshState()
+MeshSystem::MeshSystem(entt::registry& registry) :
+    vsg::Inherit<ECS::SystemNode,MeshSystem>(registry),
+    helper(registry)
 {
-    shaderSet = nullptr;
-    runtime = nullptr;
-    configs.clear();
+    //nop
 }
 
 void
-MeshState::initialize(Runtime& in_runtime)
+MeshSystem::initialize(Runtime& runtime)
 {
-    runtime = &in_runtime;
-    shaderSet = createShaderSet(in_runtime);
+    auto shaderSet = createShaderSet(runtime);
 
     if (!shaderSet)
     {
@@ -99,86 +92,86 @@ MeshState::initialize(Runtime& in_runtime)
             "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
         return;
     }
-}
 
-MeshState::Config&
-MeshState::get(int which)
-{
-    Config& c = configs[which];
+    helper.pipelines.resize(NUM_PIPELINES);
 
-    if (!status.ok())
-        return c;
-
-    // Now create the pipeline and stategroup to bind it
-    if (!c.pipelineConfig)
+    // create all pipeline permutations.
+    for (int feature_mask = 0; feature_mask < NUM_PIPELINES; ++feature_mask)
     {
-        Log::info() << "MeshState: creating config " << which << std::endl;
+        auto& c = helper.pipelines[feature_mask];
 
         // Create the pipeline configurator for terrain; this is a helper object
         // that acts as a "template" for terrain tile rendering state.
-        c.pipelineConfig = vsg::GraphicsPipelineConfig::create(shaderSet);
+        c.config = vsg::GraphicsPipelineConfig::create(shaderSet);
 
         // Compile settings / defines. We need to clone this since it may be
         // different defines for each configuration permutation.
-        c.pipelineConfig->shaderHints = runtime->shaderCompileSettings ?
-            vsg::ShaderCompileSettings::create(*runtime->shaderCompileSettings) :
+        c.config->shaderHints = runtime.shaderCompileSettings ?
+            vsg::ShaderCompileSettings::create(*runtime.shaderCompileSettings) :
             vsg::ShaderCompileSettings::create();
 
         // activate the arrays we intend to use
-        c.pipelineConfig->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-        c.pipelineConfig->enableArray("in_normal", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-        c.pipelineConfig->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
-        c.pipelineConfig->enableArray("in_uv", VK_VERTEX_INPUT_RATE_VERTEX, 8);
-        c.pipelineConfig->enableArray("in_depthoffset", VK_VERTEX_INPUT_RATE_VERTEX, 4);
+        c.config->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
+        c.config->enableArray("in_normal", VK_VERTEX_INPUT_RATE_VERTEX, 12);
+        c.config->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
+        c.config->enableArray("in_uv", VK_VERTEX_INPUT_RATE_VERTEX, 8);
+        c.config->enableArray("in_depthoffset", VK_VERTEX_INPUT_RATE_VERTEX, 4);
 
         // backface culling off ... we may or may not need this.
         //pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
 
         //c.pipelineConfig->enableUniform("vsg_viewports");
 
-        if (which & DYNAMIC_STYLE)
+        if ((feature_mask & WRITE_DEPTH) == 0)
         {
-            c.pipelineConfig->enableUniform("mesh");
-            c.pipelineConfig->shaderHints->defines.insert("USE_MESH_STYLE");
+            c.config->depthStencilState->depthWriteEnable = VK_FALSE;
         }
 
-        if (which & TEXTURE)
+        if (feature_mask & DYNAMIC_STYLE)
         {
-            c.pipelineConfig->enableTexture("mesh_texture");
-            c.pipelineConfig->shaderHints->defines.insert("USE_MESH_TEXTURE");
+            c.config->enableUniform("mesh");
+            c.config->shaderHints->defines.insert("USE_MESH_STYLE");
+        }
+
+        if (feature_mask & TEXTURE)
+        {
+            c.config->enableTexture("mesh_texture");
+            c.config->shaderHints->defines.insert("USE_MESH_TEXTURE");
         }
 
         // Alpha blending to support line smoothing
-        c.pipelineConfig->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
+        c.config->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
             true,
             VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
             VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
         } };
 
-        // Enable or disable depth writes
-        c.pipelineConfig->depthStencilState->depthWriteEnable = (which & WRITE_DEPTH) ? VK_TRUE : VK_FALSE;
-
         // Initialize GraphicsPipeline from the data in the configuration.
-        c.pipelineConfig->init();
+        c.config->init();
 
-        c.pipelineStateCommands.clear();
-        c.pipelineStateCommands.push_back(c.pipelineConfig->bindGraphicsPipeline);
+        c.commands = vsg::Commands::create();
+        c.commands->addChild(c.config->bindGraphicsPipeline);
     }
+}
 
-    return c;
+int MeshSystem::featureMask(const Mesh& mesh)
+{
+    int feature_set = 0;
+    if (mesh.texture) feature_set |= MeshSystem::TEXTURE;
+    if (mesh.style.has_value()) feature_set |= MeshSystem::DYNAMIC_STYLE;
+    if (mesh.writeDepth) feature_set |= MeshSystem::WRITE_DEPTH;
+    return feature_set;
 }
 
 
-
-
-BindMeshStyle::BindMeshStyle()
+BindMeshDescriptors::BindMeshDescriptors()
 {
-    ROCKY_HARD_ASSERT_STATUS(MeshState::status);
+    //nop
 }
 
 void
-BindMeshStyle::updateStyle(const MeshStyle& value)
+BindMeshDescriptors::updateStyle(const MeshStyle& value)
 {
     if (!_styleData)
     {
@@ -195,7 +188,7 @@ BindMeshStyle::updateStyle(const MeshStyle& value)
 }
 
 void
-BindMeshStyle::build(vsg::ref_ptr<vsg::PipelineLayout> layout)
+BindMeshDescriptors::init(vsg::ref_ptr<vsg::PipelineLayout> layout)
 {
     vsg::Descriptors descriptors;
 
@@ -224,7 +217,6 @@ BindMeshStyle::build(vsg::ref_ptr<vsg::PipelineLayout> layout)
             descriptors);
     }
 }
-
 
 
 MeshGeometry::MeshGeometry()
@@ -268,28 +260,28 @@ MeshGeometry::add(
 void
 MeshGeometry::compile(vsg::Context& context)
 {
-    commands.clear();
+    if (commands.empty())
+    {
+        if (_verts.size() == 0)
+            return;
 
-    if (_verts.size() == 0)
-        return;
+        if (_normals.empty())
+            _normals.assign(_verts.size(), vsg::vec3(0, 0, 1));
 
-    if (_normals.empty())
-        _normals.assign(_verts.size(), vsg::vec3(0, 0, 1));
+        auto vert_array = vsg::vec3Array::create(_verts.size(), _verts.data());
+        auto normal_array = vsg::vec3Array::create(_normals.size(), _normals.data());
+        auto color_array = vsg::vec4Array::create(_colors.size(), _colors.data());
+        auto uv_array = vsg::vec2Array::create(_uvs.size(), _uvs.data());
+        auto depthoffset_array = vsg::floatArray::create(_depthoffsets.size(), _depthoffsets.data());
+        auto index_array = vsg::uintArray::create(_indices.size(), _indices.data());
 
-    auto vert_array = vsg::vec3Array::create(_verts.size(), _verts.data());
-    auto normal_array = vsg::vec3Array::create(_normals.size(), _normals.data());
-    auto color_array = vsg::vec4Array::create(_colors.size(), _colors.data());
-    auto uv_array = vsg::vec2Array::create(_uvs.size(), _uvs.data());
-    auto depthoffset_array = vsg::floatArray::create(_depthoffsets.size(), _depthoffsets.data());
-    //auto index_array = vsg::ushortArray::create(_indices.size(), _indices.data());
-    auto index_array = vsg::uintArray::create(_indices.size(), _indices.data());
+        assignArrays({ vert_array, normal_array, color_array, uv_array, depthoffset_array });
+        assignIndices(index_array);
 
-    assignArrays({ vert_array, normal_array, color_array, uv_array, depthoffset_array });
-    assignIndices(index_array);
+        _drawCommand->indexCount = index_array->size();
 
-    _drawCommand->indexCount = index_array->size();
-
-    commands.push_back(_drawCommand);
+        commands.push_back(_drawCommand);
+    }
 
     vsg::Geometry::compile(context);
 }

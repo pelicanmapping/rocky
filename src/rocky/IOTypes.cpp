@@ -31,11 +31,6 @@ namespace ROCKY_NAMESPACE
 }
 
 
-//statics
-CachePolicy CachePolicy::DEFAULT;
-CachePolicy CachePolicy::NO_CACHE(CachePolicy::Usage::NO_CACHE);
-CachePolicy CachePolicy::CACHE_ONLY(CachePolicy::Usage::CACHE_ONLY);
-
 //------------------------------------------------------------------------
 
 CachePolicy::CachePolicy()

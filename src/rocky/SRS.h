@@ -154,7 +154,9 @@ namespace ROCKY_NAMESPACE
     private:
         //! Create an SRS from an initialization string.
         std::string _definition;
-        bool _valid;
+        bool _valid = false;
+        bool _isGeodetic = false;
+        bool _isGeocentric = false;
         friend class SRSOperation;
     };
 

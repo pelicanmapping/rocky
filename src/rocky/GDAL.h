@@ -104,12 +104,6 @@ namespace ROCKY_NAMESPACE
                 const TileKey& key,
                 unsigned tileSize,
                 const IOOptions& io);
-
-            //! Creates a heightfield if possible using a faster path that creates a temporary warped VRT.
-            Result<shared_ptr<Heightfield>> createHeightfieldWithVRT(
-                const TileKey& key,
-                unsigned tileSize,
-                const IOOptions& io);
 #endif
 
             const Profile& profile() const {

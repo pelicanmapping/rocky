@@ -23,6 +23,7 @@ namespace
     Timings events(frame_count);
     Timings update(frame_count);
     Timings record(frame_count);
+    Timings present(frame_count);
     int frame_num = 0;
     char buf[256];
     float get_timings(void* data, int index) {
@@ -45,6 +46,7 @@ auto Demo_Stats = [](Application& app)
     events[f] = app.stats.events;
     update[f] = app.stats.update;
     record[f] = app.stats.record;
+    present[f] = app.stats.present;
 
     const int over = 60;
 
@@ -69,6 +71,9 @@ auto Demo_Stats = [](Application& app)
 
         sprintf(buf, u8"%lld \x00B5s", average(&record, over, f));
         ImGuiLTable::PlotLines("Record", get_timings, &record, frame_count, f, buf, 0.0f, 10.0f);
+
+        sprintf(buf, u8"%lld \x00B5s", average(&present, over, f));
+        ImGuiLTable::PlotLines("Present", get_timings, &present, frame_count, f, buf, 0.0f, 10.0f);
     }
     ImGuiLTable::End();
 

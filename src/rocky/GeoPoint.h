@@ -94,7 +94,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Center position of the object
-        virtual const GeoPoint& position() const = 0;
+        virtual const GeoPoint& objectPosition() const = 0;
     };
 
 

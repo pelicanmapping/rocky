@@ -5,6 +5,7 @@
  */
 #include "InstanceVSG.h"
 #include "engine/Utils.h"
+
 #include <rocky/Image.h>
 #include <vsg/io/read.h>
 #include <vsg/io/Logger.h>
@@ -218,16 +219,6 @@ InstanceVSG::InstanceVSG() :
         }
     }
 
-    // start up the state generators.
-    _impl->lineState.initialize(runtime);
-    ROCKY_HARD_ASSERT_STATUS(LineState::status);
-
-    _impl->meshState.initialize(runtime);
-    ROCKY_HARD_ASSERT_STATUS(MeshState::status);
-
-    _impl->iconState.initialize(runtime);
-    ROCKY_HARD_ASSERT_STATUS(IconState::status);
-
     // a copy of vsgOptions we can use in lamdbas
     auto readerWriterOptions = runtime.readerWriterOptions;
 
@@ -316,4 +307,13 @@ InstanceVSG::setUseVSGLogger(bool value)
     {
         Log::userFunction() = nullptr;
     }
+}
+
+void
+InstanceVSG::compile()
+{
+    //for (auto& system : _impl->entitySystems)
+    //{
+    //    system->compile(_impl->runtime);
+    //}
 }

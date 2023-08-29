@@ -180,11 +180,11 @@ namespace
 
                 if (r->status == 404)
                 {
-                    return Status(Status::ResourceUnavailable, httplib::detail::status_message(r->status));
+                    return Status(Status::ResourceUnavailable, httplib::status_message(r->status));
                 }
                 else if (r->status != 200)
                 {
-                    return Status(Status::GeneralError, httplib::detail::status_message(r->status));
+                    return Status(Status::GeneralError, httplib::status_message(r->status));
                 }
 
                 response.status = r->status;

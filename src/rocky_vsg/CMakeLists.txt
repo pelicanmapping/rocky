@@ -42,9 +42,11 @@ add_library(${TARGET}
 
 find_package(vsg CONFIG REQUIRED)
 find_package(glslang CONFIG REQUIRED)
+find_package(EnTT CONFIG REQUIRED)
 
 # Lib dependencies
 set(LIBRARIES PUBLIC
+    EnTT::EnTT
     vsg::vsg
     rocky
 )

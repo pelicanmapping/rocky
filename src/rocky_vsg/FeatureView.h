@@ -4,11 +4,10 @@
  * MIT License
  */
 #pragma once
-#include <rocky_vsg/MapObject.h>
 #include <rocky/Feature.h>
 #include <optional>
 #include <functional>
-#include <rocky_vsg/LineString.h>
+#include <rocky_vsg/Line.h>
 #include <rocky_vsg/Mesh.h>
 #include <rocky_vsg/Icon.h>
 
@@ -30,7 +29,7 @@ namespace ROCKY_NAMESPACE
     * FeatureView is an attachment that compiles a collection of Feature objects
     * for visualization.
     */
-    class ROCKY_VSG_EXPORT FeatureView : public rocky::Inherit<AttachmentGroup, FeatureView>
+    class ROCKY_VSG_EXPORT FeatureView : public ECS::Component
     {
     public:
         //! Collection of features to view
@@ -38,6 +37,19 @@ namespace ROCKY_NAMESPACE
 
         //! Styles to use when compiling features
         StyleSheet styles;
+
+        //! Create VSG geometry from the feature list
+        //! @param registry Entity registry
+        //! @param runtime Runtime operations interface
+        //! @param keep_features Whether to keep the "features" vector intact;
+        //!   by default it is cleared after calling generate
+        void generate(
+            ECS::Entities& registry,
+            Runtime& runtime,
+            bool keep_features = false);
+
+        //! Whether to render this component
+        bool active = true;
 
     public:
         //! Default construct - no data
@@ -48,10 +60,5 @@ namespace ROCKY_NAMESPACE
 
         //! Construct a view to display a single moved feature)
         FeatureView(Feature&& value);
-
-    protected:
-        void createNode(Runtime& runtime) override;
-
-    private:
     };
 }

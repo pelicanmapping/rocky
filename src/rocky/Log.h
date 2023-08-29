@@ -46,5 +46,30 @@ namespace ROCKY_NAMESPACE
         static bool& usePrefix();
 
         Log() = delete;
+
+    public:
+        struct RedirectingStreamBuf : public std::basic_stringbuf<char, std::char_traits<char>> {
+            LogLevel _level = LogLevel::INFO;
+            int sync() override;
+        };
+        struct RedirectingStream : public std::basic_ostream<char, std::char_traits<char>> {
+            RedirectingStreamBuf _buf;
+            RedirectingStream();
+        };
+        struct LogStream {
+            LogStream(LogLevel level, const std::string& prefix, std::ostream& stream, const std::string& colorcode);        // https://stackoverflow.com/questions/8243743/is-there-a-null-stdostream-implementation-in-c-or-libraries
+            mutable std::ofstream _nullStream;
+            mutable RedirectingStream _functionStream;
+            std::ostream* _stream = nullptr;
+            LogLevel _level;
+            std::string _prefix;
+            std::string _colorcode;
+        };
+
+    private:
+        static LogFunction g_userFunction;
+        static bool g_logUsePrefix;
+        static LogStream g_infoStream;
+        static LogStream g_warnStream;
     };
 }

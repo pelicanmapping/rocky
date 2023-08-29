@@ -29,19 +29,6 @@ ROCKY_ABOUT(tinyxml, std::to_string(TIXML_MAJOR_VERSION) + "." + std::to_string(
 
 using namespace ROCKY_NAMESPACE;
 
-// declare static globals from Profile and SRS, so the dependency order is correct
-
-const SRS SRS::WGS84("wgs84");
-const SRS SRS::ECEF("geocentric");
-const SRS SRS::SPHERICAL_MERCATOR("spherical-mercator");
-const SRS SRS::PLATE_CARREE("plate-carree");
-const SRS SRS::EMPTY;
-
-const Profile Profile::GLOBAL_GEODETIC("global-geodetic");
-const Profile Profile::SPHERICAL_MERCATOR("spherical-mercator");
-const Profile Profile::PLATE_CARREE("plate-carree");
-
-Status Instance::_global_status(Status::GeneralError);
 const Status& Instance::status() { return _global_status; }
 
 // static object factory map:

@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <vsg/all.h>
+#include <rocky/URI.h>
 #include <rocky_vsg/engine/RTT.h>
 #include <rocky_vsg/engine/Utils.h>
 #include "helpers.h"
@@ -51,11 +52,10 @@ namespace
 
 auto Demo_RTT = [](Application& app)
 {
-    static bool visible = true;
     static Status status;
-    static shared_ptr<MapObject> object;
-    static vsg::ref_ptr<vsg::View> view;
-    static vsg::ref_ptr<vsg::ImageInfo> texture, depth;
+    static entt::entity entity = entt::null;
+    //static vsg::ref_ptr<vsg::View> view;
+    //static vsg::ref_ptr<vsg::ImageInfo> texture, depth;
     static vsg::ref_ptr<vsg::MatrixTransform> mt;
     static float rotation = 0.0f;
 
@@ -65,7 +65,7 @@ auto Demo_RTT = [](Application& app)
         return;
     }
 
-    if (!object)
+    if (entity == entt::null)
     {
         // Find the main window and view:
         auto main = app.displayConfiguration.windows.begin();
@@ -93,8 +93,8 @@ auto Demo_RTT = [](Application& app)
 
         // This is the render graph that will execute the RTT:
         auto vsg_context = vsg::Context::create(main_window->getOrCreateDevice());
-        texture = vsg::ImageInfo::create();
-        depth = vsg::ImageInfo::create();
+        auto texture = vsg::ImageInfo::create();
+        auto depth = vsg::ImageInfo::create();
         auto rtt_graph = RTT::createOffScreenRenderGraph(*vsg_context, size, texture, depth);
         rtt_graph->addChild(rtt_view);
 
@@ -103,12 +103,16 @@ auto Demo_RTT = [](Application& app)
 
         // This is the geometry that we will apply the texture to. 
         // We have to add UVs (texture coordinates).
-        auto mesh = Mesh::create();
+        entity = app.entities.create();
+        auto& mesh = app.entities.emplace<Mesh>(entity);
+
+        //auto mesh = Mesh::create();
         auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
         const double step = 2.5;
         const double alt = 500000;
         const double lon0 = -35.0, lon1 = 0.0, lat0 = -35.0, lat1 = 0.0;
         vsg::vec2 uv[4];
+        vsg::vec4 bg{ 1,1,1,1 };
         for(double lon = lon0; lon < lon1; lon += step)
         {
             for(double lat = lat0; lat < lat1; lat += step)
@@ -125,15 +129,12 @@ auto Demo_RTT = [](Application& app)
                     xform(v[i], v[i]);
                 }
 
-                mesh->add({ {v[0], v[1], v[2]}, {}, {uv[0], uv[1], uv[2]} });
-                mesh->add({ {v[0], v[2], v[3]}, {}, {uv[0], uv[2], uv[3]} });
+                mesh.add({ {v[0], v[1], v[2]}, { bg,bg,bg }, {uv[0], uv[1], uv[2]} });
+                mesh.add({ {v[0], v[2], v[3]}, { bg,bg,bg }, {uv[0], uv[2], uv[3]} });
             }
         }
-        mesh->texture = texture;
-        mesh->style = MeshStyle{ { 1,1,1,0.5 }, 64.0f };
-
-        object = MapObject::create(mesh);
-        app.add(object);
+        mesh.texture = texture;
+        mesh.style = MeshStyle{ { 1,1,1,0.5 }, 64.0f };
 
         // by the next frame, the object will be alive in the scene
         return;
@@ -148,13 +149,10 @@ auto Demo_RTT = [](Application& app)
 
     if (ImGuiLTable::Begin("model"))
     {
-        if (ImGuiLTable::Checkbox("Visible", &visible))
-        {
-            if (visible)
-                app.add(object);
-            else
-                app.remove(object);
-        }
+        auto& mesh = app.entities.get<Mesh>(entity);
+
+        ImGuiLTable::Checkbox("Visible", &mesh.active);
+
         ImGuiLTable::End();
     }
 };

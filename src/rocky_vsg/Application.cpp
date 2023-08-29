@@ -8,6 +8,11 @@
 #include "MapManipulator.h"
 #include "SkyNode.h"
 #include "json.h"
+#include "engine/MeshSystem.h"
+#include "engine/LineSystem.h"
+#include "engine/IconSystem.h"
+#include "engine/LabelSystem.h"
+
 #include <rocky/contrib/EarthFileImporter.h>
 
 #include <vsg/app/CloseHandler.h>
@@ -95,6 +100,7 @@ Application::Application(int& argc, char** argv) :
     if (commandLine.read({ "--wire" }))
         instance.runtime().shaderCompileSettings->defines.insert("RK_WIREFRAME_OVERLAY");
 
+    // a node to render the map/terrain
     mainScene->addChild(mapNode);
 
     // Set up the runtime context with everything we need.
@@ -146,6 +152,23 @@ Application::Application(int& argc, char** argv) :
         if (!msg.empty())
             Log::warn() << msg << std::endl;
     }
+
+    // install the ECS.
+
+    // The ECS graph. ECSNode is the "root" that holds all SystemNodes.
+    // We like these in the scene graph since they need to respond to
+    // various VSG visitors and traversals.
+    ecs = ECS::ECSNode::create(entities);
+    
+    ecs->addChild(MeshSystem::create(entities));
+    ecs->addChild(LineSystem::create(entities));
+    ecs->addChild(SelfContainedNodeSystem::create(entities));
+    ecs->addChild(IconSystem::create(entities));
+    ecs->addChild(LabelSystem::create(entities));
+
+    ecs->addChild(EntityMotionSystem::create(entities));
+
+    mainScene->addChild(ecs);
 }
 
 namespace
@@ -194,9 +217,7 @@ Application::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
 
         if (viewer->windows().size() > 0)
         {
-            //TODO: after VSG 1.0.7 I believe this changed to traits->device?
             traits->device = viewer->windows().front()->getDevice();
-            //traits->shareWindow = viewer->windows().front();
         }
 
         auto window = vsg::Window::create(traits);
@@ -501,6 +522,9 @@ Application::map()
 void
 Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
 {
+    // Initialize the ECS subsystem:
+    ecs->initialize(instance.runtime());
+
     // respond to the X or to hitting ESC
     // TODO: refactor this so it responds to individual windows and not the whole app?
     viewer->addEventHandler(vsg::CloseHandler::create(viewer));
@@ -580,6 +604,8 @@ Application::run()
 bool
 Application::frame()
 {
+    ROCKY_PROFILE_FUNCTION();
+
     if (!_viewerRealized)
         realize();
 
@@ -588,25 +614,28 @@ Application::frame()
     if (!viewer->advanceToNextFrame())
         return false;
 
+    auto t_update = std::chrono::steady_clock::now();
+
+    // rocky map update pass - management of tiles and paged data
+    mapNode->update(viewer->getFrameStamp());
+
+    // ECS update
+    ecs->update(instance.runtime(), viewer->getFrameStamp()->time);
+
+    // User update
+    if (updateFunction)
+        updateFunction();
+
+    // Event handling happens after updating the scene, otherwise
+    // things like tethering to a moving node will be one frame behind
     viewer->handleEvents();
 
     // since an event handler could deactivate the viewer:
     if (!viewer->active())
         return false;
 
-    auto t_update = std::chrono::steady_clock::now();
-
-    // rocky update pass - management of tiles and paged data
-    mapNode->update(viewer->getFrameStamp());
-
-    // user's update function
-    if (updateFunction)
-    {
-        updateFunction();
-    }
-
-    // run through the viewer's update operations queue; this includes update ops 
-    // initialized by rocky (tile merges or MapObject adds)
+    // run through the viewer's update operations queue; this includes
+    // update ops initialized by rocky (e.g. terrain tile merges)
     viewer->update();
 
     // integrate any compile results that may be pending
@@ -618,9 +647,6 @@ Application::frame()
         recreateViewer();
         return true;
     }
-
-    // if any map objects are queued for add or remove, process them now
-    addAndRemoveObjects();
 
     auto t_record = std::chrono::steady_clock::now();
 
@@ -635,152 +661,9 @@ Application::frame()
     stats.events = std::chrono::duration_cast<std::chrono::microseconds>(t_update - t_start);
     stats.update = std::chrono::duration_cast<std::chrono::microseconds>(t_record - t_update);
     stats.record = std::chrono::duration_cast<std::chrono::microseconds>(t_present - t_record);
+    stats.present = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_present);
 
     return true;
-}
-
-void
-Application::addAndRemoveObjects()
-{
-    if (!_objectsToAdd.empty() || !_objectsToRemove.empty())
-    {
-        std::scoped_lock L(_add_remove_mutex);
-
-        std::list<util::Future<Addition>> in_progress;
-
-        // Any new nodes in the scene? integrate them now
-        for(auto& addition : _objectsToAdd)
-        {
-            if (addition.available() && addition->node)
-            {
-                // Add the node.
-                // TODO: for now we're just lumping everying together here. 
-                // Later we can decide to sort by pipeline, or use a spatial index, etc.
-                mapNode->addChild(addition->node);
-
-                // Update the viewer's tasks so they are aware of any new DYNAMIC data
-                // elements present in the new nodes that they will need to transfer
-                // to the GPU.
-                if (!addition->compileResult)
-                {
-                    // If the node hasn't been compiled, do it now. This will usually happen
-                    // if the node was created prior to the application loop starting up.
-                    auto cr = viewer->compileManager->compile(addition->node);
-                    if (cr.requiresViewerUpdate())
-                    {
-                        vsg::updateViewer(*viewer, cr);
-                    }
-                }
-                else if (addition->compileResult.requiresViewerUpdate())
-                {
-                    vsg::updateViewer(*viewer, addition->compileResult);
-                }
-            }
-            else
-            {
-                in_progress.push_back(addition);
-            }
-        }
-        _objectsToAdd.swap(in_progress);
-
-        // Remove anything in the remove queue
-        while (!_objectsToRemove.empty())
-        {
-            auto& node = _objectsToRemove.front();
-            if (node)
-            {
-                mapNode->children.erase(
-                    std::remove(mapNode->children.begin(), mapNode->children.end(), node),
-                    mapNode->children.end());
-                    
-            }
-            _objectsToRemove.pop_front();
-        }
-    }
-}
-
-void
-Application::add(shared_ptr<MapObject> obj)
-{
-    ROCKY_SOFT_ASSERT_AND_RETURN(obj, void());
-
-    // For each object attachment, create its node and then schedule it
-    // for compilation and merging into the scene graph.
-    for (auto& attachment : obj->attachments)
-    {        
-        // Tell the attachment to create a node if it doesn't already exist
-        attachment->createNode(instance.runtime());
-
-        if (attachment->node)
-        {
-            // calculate the bounds for a depthsorting node and possibly a cull group.
-            vsg::ComputeBounds cb;
-            attachment->node->accept(cb);
-            auto bs = vsg::dsphere((cb.bounds.min + cb.bounds.max) * 0.5, vsg::length(cb.bounds.max - cb.bounds.min) * 0.5);
-
-            // activate depth sorting.
-            // the bin number must be >1 for sorting to activate. I am using 10 for no particular reason.
-            auto node = vsg::DepthSorted::create();
-            node->binNumber = 10;
-            node->bound = bs;
-            node->child = attachment->node;
-
-            if (attachment->underGeoTransform)
-            {
-                if (attachment->horizonCulling)
-                {
-                    if (!obj->horizoncull)
-                    {
-                        obj->horizoncull = HorizonCullGroup::create();
-                        obj->horizoncull->bound = bs;
-                        obj->xform->addChild(obj->horizoncull);
-                    }
-                    obj->horizoncull->addChild(node);
-                }
-                else
-                {
-                    auto cullGroup = vsg::CullGroup::create(bs);
-                    cullGroup->addChild(node);
-                    obj->xform->addChild(cullGroup);
-                }
-            }
-            else
-            {
-                auto cullGroup = vsg::CullGroup::create(bs);
-                cullGroup->addChild(node);
-                obj->root->addChild(cullGroup);
-            }
-        }
-    }
-
-    auto my_viewer = viewer;
-    auto my_node = obj->root;
-
-    auto compileNode = [my_viewer, my_node](Cancelable& c)
-    {
-        vsg::CompileResult cr;
-        if (my_viewer->compileManager && !c.canceled())
-        {
-            cr = my_viewer->compileManager->compile(my_node);
-        }
-        return Addition{ my_node, cr };
-    };
-
-    // TODO: do we want a specific job pool for compiles, or
-    // perhaps a single thread that compiles things from a queue?
-    {
-        std::scoped_lock L(_add_remove_mutex);
-        _objectsToAdd.emplace_back(util::job::dispatch(compileNode));
-    }
-}
-
-void
-Application::remove(shared_ptr<MapObject> obj)
-{
-    ROCKY_SOFT_ASSERT_AND_RETURN(obj, void());
-
-    std::scoped_lock L(_add_remove_mutex);
-    _objectsToRemove.push_back(obj->root);
 }
 
 void

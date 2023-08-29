@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "FeatureView.h"
+#include "Mesh.h"
 #include "engine/Runtime.h"
 #include <rocky/weemesh.h>
 
@@ -116,14 +117,12 @@ namespace
         return m;
     }
 
-    shared_ptr<Attachment> compile_feature_to_lines(const Feature& feature, const StyleSheet& styles)
+    void compile_feature_to_lines(const Feature& feature, const StyleSheet& styles, Line& line)
     {
         float max_span = 100000.0f;
 
         if (styles.line.has_value())
             max_span = styles.line->resolution;
-
-        auto multiline = rocky::MultiLineString::create();
 
         float final_max_span = max_span;
 
@@ -140,7 +139,7 @@ namespace
             feature_to_world.transformRange(tessellated.begin(), tessellated.end());
 
             // make the line attachment:
-            multiline->pushGeometry(tessellated.begin(), tessellated.end());
+            line.push(tessellated.begin(), tessellated.end());
 
             final_max_span = std::max(final_max_span, get_max_segment_length(tessellated));
         }
@@ -150,13 +149,11 @@ namespace
 
         if (styles.line.has_value())
         {
-            multiline->setStyle(styles.line.value());
+            line.style = styles.line.value();
         }
-
-        return multiline;
     }
 
-    std::shared_ptr<Mesh> compile_polygon_feature_with_weemesh(const Feature& feature, const Geometry& geom, const StyleSheet& styles, std::shared_ptr<Mesh> mesh)
+    void compile_polygon_feature_with_weemesh(const Feature& feature, const Geometry& geom, const StyleSheet& styles, Mesh& mesh)
     {
         // scales our local gnomonic coordinates so they are the same order of magnitude as
         // weemesh's default epsilon values:
@@ -276,15 +273,6 @@ namespace
         // And into the final projection:
         feature_to_ecef.transformRange(m.verts.begin(), m.verts.end());
 
-        // Finally, make out attachment and apply the style.
-        // Here we going to add colors and other attributes directly to the mesh
-        // and forgo the dynamic MeshStyle. This will render faster.
-        //auto mesh = Mesh::create();
-        if (!mesh)
-        {
-            mesh = Mesh::create();
-        }
-
         auto color = styles.mesh_function(feature).color;
 
         Triangle32 temp = {
@@ -298,10 +286,8 @@ namespace
             temp.verts[0] = m.verts[tri.second.i0];
             temp.verts[1] = m.verts[tri.second.i1];
             temp.verts[2] = m.verts[tri.second.i2];
-            mesh->add(temp);
+            mesh.add(temp);
         }
-
-        return mesh;
     }
 }
 
@@ -322,47 +308,44 @@ FeatureView::FeatureView(Feature&& f)
 }
 
 void
-FeatureView::createNode(Runtime& runtime)
+FeatureView::generate(ECS::Entities& registry, Runtime& runtime, bool keep_features)
 {
-    if (attachments.empty())
+    entt::entity entity = registry.create();
+
+    for (auto& feature : features)
     {
-        std::shared_ptr<Mesh> mesh;
-
-        for (auto& feature : features)
+        if (feature.geometry.type == Geometry::Type::LineString ||
+            feature.geometry.type == Geometry::Type::MultiLineString)
         {
-            if (feature.geometry.type == Geometry::Type::LineString ||
-                feature.geometry.type == Geometry::Type::MultiLineString)
+            auto& geom = registry.get_or_emplace<Line>(entity);
+            compile_feature_to_lines(feature, styles, geom);
+            geom.active_ptr = &active;
+        }
+        else
+        if (feature.geometry.type == Geometry::Type::Polygon)
+        {
+            auto& geom = registry.get_or_emplace<Mesh>(entity);
+            compile_polygon_feature_with_weemesh(feature, feature.geometry, styles, geom);
+            geom.active_ptr = &active;
+        }
+        else if (feature.geometry.type == Geometry::Type::MultiPolygon)
+        {
+            auto& geom = registry.get_or_emplace<Mesh>(entity);
+            for (auto& part : feature.geometry.parts)
             {
-                auto att = compile_feature_to_lines(feature, styles);
-                if (att)
-                {
-                    attachments.emplace_back(att);
-                }
-            }
-            else if (feature.geometry.type == Geometry::Type::Polygon)
-            {
-                mesh = compile_polygon_feature_with_weemesh(feature, feature.geometry, styles, mesh);
-            }
-            else if (feature.geometry.type == Geometry::Type::MultiPolygon)
-            {
-                for (auto& part : feature.geometry.parts)
-                {
-                    mesh = compile_polygon_feature_with_weemesh(feature, part, styles, mesh);
-                }
-            }
-            else
-            {
-                Log::warn() << "FeatureView no support for "
-                    << Geometry::typeToString(feature.geometry.type) << std::endl;
+                compile_polygon_feature_with_weemesh(feature, part, styles, geom);
+                geom.active_ptr = &active;
             }
         }
-
-        if (mesh)
+        else
         {
-            attachments.push_back(mesh);
+            Log::warn() << "FeatureView no support for "
+                << Geometry::typeToString(feature.geometry.type) << std::endl;
         }
-
-        // invoke the super to bring it together.
-        super::createNode(runtime);
     }
+
+    next_entity = entity;
+  
+    if (!keep_features)
+        features.clear();
 }

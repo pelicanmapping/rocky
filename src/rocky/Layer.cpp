@@ -145,15 +145,6 @@ Layer::open(const IOOptions& io)
     // be optimistic :)
     _status = StatusOK;
 
-#if 0
-    // Install any shader #defines
-    if (options().shaderDefine().has_value() && !options().shaderDefine()->empty())
-    {
-        ROCKY_INFO << LC << "Setting shader define " << options().shaderDefine().get() << "\n";
-        getOrCreateStateSet()->setDefine(options().shaderDefine().get());
-    }
-#endif
-
     _isOpening = true;
     setStatus(openImplementation(io));
     if (isOpen())

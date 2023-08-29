@@ -5,14 +5,9 @@
  */
 #pragma once
 #include <rocky_vsg/Common.h>
-#include <rocky/Instance.h>
+#include <rocky_vsg/engine/Runtime.h>
 #include <vsg/io/Options.h>
 #include <vsg/utils/CommandLine.h>
-
-#include <rocky_vsg/engine/Runtime.h>
-#include <rocky_vsg/engine/LineState.h>
-#include <rocky_vsg/engine/MeshState.h>
-#include <rocky_vsg/engine/IconState.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -37,14 +32,13 @@ namespace ROCKY_NAMESPACE
 
         //! Whether to redirect rocky::Log messages to the vsg::Logger
         void setUseVSGLogger(bool);
+        
+        void compile();
 
     private:
         struct Implementation
         {
             Runtime runtime;
-            LineState lineState;
-            MeshState meshState;
-            IconState iconState;
         };
         std::shared_ptr<Implementation> _impl;
         friend class Application;

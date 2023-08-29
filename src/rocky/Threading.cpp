@@ -421,10 +421,10 @@ job::scheduler_dispatch(std::function<bool()> delegate, const job& config)
 #define LC "[job_scheduler] "
 
 // job_scheduler statics:
-std::mutex job_scheduler::_schedulers_mutex;
-std::unordered_map<std::string, std::shared_ptr<job_scheduler>> job_scheduler::_schedulers;
-std::unordered_map<std::string, unsigned> job_scheduler::_schedulersizes;
-job_metrics job_metrics::_singleton;
+//std::mutex job_scheduler::_schedulers_mutex;
+//std::unordered_map<std::string, std::shared_ptr<job_scheduler>> job_scheduler::_schedulers;
+//std::unordered_map<std::string, unsigned> job_scheduler::_schedulersizes;
+//job_metrics job_metrics::_singleton;
 
 #define ROCKY_SCHEDULER_DEFAULT_SIZE 2u
 

@@ -14,37 +14,47 @@ GeoTransform::GeoTransform()
    //nop
 }
 
-const GeoPoint&
-GeoTransform::position() const
-{
-    return _position;
-}
-
 void
-GeoTransform::setPosition(const GeoPoint& position)
+GeoTransform::setPosition(const GeoPoint& position_)
 {
-    if (position != _position)
+    if (position != position_)
     {
-        _position = position;
-
-        // do we need to mutex this?
-        for (auto& view : _viewlocal)
-            view.dirty = true;
+        position = position_;
+        dirty();
     }
 }
 
 void
-GeoTransform::accept(vsg::RecordTraversal& rv) const
+GeoTransform::dirty()
 {
-    // get the view-local data:
-    auto& view = _viewlocal[rv.getState()->_commandBuffer->viewID];
+    for (auto& view : _viewlocal)
+        view.dirty = true;
+}
 
+void
+GeoTransform::accept(vsg::RecordTraversal& record) const
+{
+    // traverse the transform
+    if (push(record))
+    {
+        vsg::Group::accept(record);
+        pop(record);
+    }
+}
+
+bool
+GeoTransform::push(vsg::RecordTraversal& record) const
+{
+    auto state = record.getState();
+
+    // update the view-local data if necessary:
+    auto& view = _viewlocal[record.getState()->_commandBuffer->viewID];
     if (view.dirty)
     {
         SRS worldSRS;
-        if (rv.getValue("worldsrs", worldSRS))
+        if (record.getValue("worldsrs", worldSRS))
         {
-            if (_position.transform(worldSRS, view.worldPos))
+            if (position.transform(worldSRS, view.worldPos))
             {
                 view.matrix = to_vsg(worldSRS.localToWorldMatrix(glm::dvec3(
                     view.worldPos.x, view.worldPos.y, view.worldPos.z)));
@@ -54,45 +64,30 @@ GeoTransform::accept(vsg::RecordTraversal& rv) const
         view.dirty = false;
     }
 
-    auto state = rv.getState();
-
-    // pass the LTP matrix down to children in case they need it
-    state->setValue("local_to_world", view.matrix);
-
-    // replicates RecordTraversal::accept(MatrixTransform&):
-
-    state->modelviewMatrixStack.push(state->modelviewMatrixStack.top() * view.matrix);
-    state->dirty = true;
-
-    state->pushFrustum();
-    vsg::Group::accept(rv);
-    state->popFrustum();
-
-    state->modelviewMatrixStack.pop();
-    state->dirty = true;
-}
-
-
-
-void
-HorizonCullGroup::accept(vsg::RecordTraversal& rv) const
-{
-    auto state = rv.getState();
-
-    // first do a simple frustum cull
-    if (!state->intersect(bound))
-        return;
-
-    // then do a more complicated horizon cull
-    shared_ptr<Horizon> horizon;
-    if (state->getValue("horizon", horizon))
+    // horizon cull, if active:
+    if (horizonCulling)
     {
-        vsg::dmat4 m;
-        if (state->getValue("local_to_world", m))
+        std::shared_ptr<Horizon> horizon;
+        if (state->getValue("horizon", horizon))
         {
-            if (!horizon->isVisible(m[3][0], m[3][1], m[3][2]))
-                return;
+            if (!horizon->isVisible(view.matrix[3][0], view.matrix[3][1], view.matrix[3][2], bound.radius))
+                return false;
         }
     }
-    vsg::Group::accept(rv);
+
+    // replicates RecordTraversal::accept(MatrixTransform&):
+    state->modelviewMatrixStack.push(state->modelviewMatrixStack.top() * view.matrix);
+    state->dirty = true;
+    state->pushFrustum();
+
+    return true;
+}
+
+void
+GeoTransform::pop(vsg::RecordTraversal& record) const
+{
+    auto state = record.getState();
+    state->popFrustum();
+    state->modelviewMatrixStack.pop();
+    state->dirty = true;
 }

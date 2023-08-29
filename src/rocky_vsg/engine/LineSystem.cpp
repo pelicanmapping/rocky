@@ -3,10 +3,9 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#include "LineState.h"
+#include "LineSystem.h"
 #include "Runtime.h"
 #include "PipelineState.h"
-#include "../LineString.h" // for LineStyle
 
 #include <vsg/state/BindDescriptorSet.h>
 #include <vsg/state/ViewDependentState.h>
@@ -19,11 +18,6 @@ using namespace ROCKY_NAMESPACE;
 
 #define LINE_BUFFER_SET 0 // must match layout(set=X) in the shader UBO
 #define LINE_BUFFER_BINDING 1 // must match the layout(binding=X) in the shader UBO (set=0)
-
-// statics
-vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> LineState::pipelineConfig;
-vsg::StateGroup::StateCommands LineState::pipelineStateCommands;
-rocky::Status LineState::status;
 
 namespace
 {
@@ -73,103 +67,108 @@ namespace
     }
 }
 
-LineState::~LineState()
+LineSystem::LineSystem(entt::registry& registry_) :
+    vsg::Inherit<ECS::SystemNode, LineSystem>(registry_),
+    helper(registry_)
 {
-    pipelineConfig = nullptr;
-    pipelineStateCommands.clear();
+    //nop
 }
 
 void
-LineState::initialize(Runtime& runtime)
+LineSystem::initialize(Runtime& runtime)
 {
     // Now create the pipeline and stategroup to bind it
-    if (!pipelineConfig)
-    {
-        auto shaderSet = createLineShaderSet(runtime);
+    auto shaderSet = createLineShaderSet(runtime);
 
-        if (!shaderSet)
-        {
-            status = Status(Status::ResourceUnavailable,
-                "Line shaders are missing or corrupt. "
-                "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
-            return;
-        }
+    if (!shaderSet)
+    {
+        status = Status(Status::ResourceUnavailable,
+            "Line shaders are missing or corrupt. "
+            "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
+        return;
+    }
+
+    helper.pipelines.resize(NUM_PIPELINES);
+
+    for (int feature_mask = 0; feature_mask < NUM_PIPELINES; ++feature_mask)
+    {
+        auto& c = helper.pipelines[feature_mask];
 
         // Create the pipeline configurator for terrain; this is a helper object
         // that acts as a "template" for terrain tile rendering state.
-        pipelineConfig = vsg::GraphicsPipelineConfig::create(shaderSet);
+        c.config = vsg::GraphicsPipelineConfig::create(shaderSet);
 
         // Apply any custom compile settings / defines:
-        pipelineConfig->shaderHints = runtime.shaderCompileSettings;
+        c.config->shaderHints = runtime.shaderCompileSettings;
 
         // activate the arrays we intend to use
-        pipelineConfig->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-        pipelineConfig->enableArray("in_vertex_prev", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-        pipelineConfig->enableArray("in_vertex_next", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-        pipelineConfig->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
+        c.config->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
+        c.config->enableArray("in_vertex_prev", VK_VERTEX_INPUT_RATE_VERTEX, 12);
+        c.config->enableArray("in_vertex_next", VK_VERTEX_INPUT_RATE_VERTEX, 12);
+        c.config->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
 
         // backface culling off ... we may or may not need this.
-        pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
+        c.config->rasterizationState->cullMode = VK_CULL_MODE_NONE;
 
         // disable depth writes (yes? no?)
-        pipelineConfig->depthStencilState->depthWriteEnable = false;
+        c.config->depthStencilState->depthWriteEnable =
+            (feature_mask & WRITE_DEPTH) ? VK_TRUE : VK_FALSE;
 
         // Uniforms we will need:
-        pipelineConfig->enableUniform("line");
+        c.config->enableUniform("line");
 
         // always both
-        PipelineUtils::enableViewDependentData(pipelineConfig);
+        PipelineUtils::enableViewDependentData(c.config);
 
         // Alpha blending to support line smoothing
-        pipelineConfig->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
+        c.config->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
             true,
             VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
             VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
         } };
 
-        pipelineConfig->init();
+        c.config->init();
 
         // Assemble the commands required to activate this pipeline:
-        pipelineStateCommands.clear();
-        pipelineStateCommands.push_back(pipelineConfig->bindGraphicsPipeline);
-        pipelineStateCommands.push_back(PipelineUtils::createViewDependentBindCommand(pipelineConfig));
+        c.commands = vsg::Commands::create();
+        c.commands->children.push_back(c.config->bindGraphicsPipeline);
+        c.commands->children.push_back(PipelineUtils::createViewDependentBindCommand(c.config));
     }
 }
 
-
-
-
-BindLineStyle::BindLineStyle()
+int LineSystem::featureMask(const Line& c)
 {
-    ROCKY_HARD_ASSERT_STATUS(LineState::status);
+    int mask = 0;
+    if (c.write_depth) mask |= WRITE_DEPTH;
+    return mask;
+}
 
-    // tells VSG that the contents can change, and if they do, the data should be
-    // transfered to the GPU before or during recording.
-    _styleData = vsg::ubyteArray::create(sizeof(LineStyle));
-    _styleData->properties.dataVariance = vsg::DYNAMIC_DATA;
 
-    setStyle(LineStyle{});
-
-    dirty();
+BindLineDescriptors::BindLineDescriptors()
+{
+    //nop
 }
 
 void
-BindLineStyle::setStyle(const LineStyle& value)
+BindLineDescriptors::updateStyle(const LineStyle& value)
 {
+    if (!_styleData)
+    {
+        _styleData = vsg::ubyteArray::create(sizeof(LineStyle));
+
+        // tells VSG that the contents can change, and if they do, the data should be
+        // transfered to the GPU before or during recording.
+        _styleData->properties.dataVariance = vsg::DYNAMIC_DATA;
+    }
+
     LineStyle& my_style = *static_cast<LineStyle*>(_styleData->dataPointer());
     my_style = value;
     _styleData->dirty();
 }
 
-const LineStyle&
-BindLineStyle::style() const
-{
-    return *static_cast<LineStyle*>(_styleData->dataPointer());
-}
-
 void
-BindLineStyle::dirty()
+BindLineDescriptors::init(vsg::ref_ptr<vsg::PipelineLayout> layout)
 {
     vsg::Descriptors descriptors;
 
@@ -177,20 +176,19 @@ BindLineStyle::dirty()
     auto ubo = vsg::DescriptorBuffer::create(_styleData, LINE_BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     descriptors.push_back(ubo);
 
-    this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    this->firstSet = 0;
-
-    auto config = LineState::pipelineConfig;
-
-    this->layout = config->layout;
-
-    this->descriptorSet = vsg::DescriptorSet::create(
-        config->layout->setLayouts.front(),
-        descriptors);
+    if (!descriptors.empty())
+    {
+        this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        this->firstSet = 0;
+        this->layout = layout;
+        this->descriptorSet = vsg::DescriptorSet::create(
+            layout->setLayouts.front(),
+            descriptors);
+    }
 }
 
 
-LineStringGeometry::LineStringGeometry()
+LineGeometry::LineGeometry()
 {
     _drawCommand = vsg::DrawIndexed::create(
         0, // index count
@@ -202,25 +200,25 @@ LineStringGeometry::LineStringGeometry()
 }
 
 void
-LineStringGeometry::setFirst(unsigned value)
+LineGeometry::setFirst(unsigned value)
 {
     _drawCommand->firstIndex = value * 4;
 }
 
 void
-LineStringGeometry::setCount(unsigned value)
+LineGeometry::setCount(unsigned value)
 {
     _drawCommand->indexCount = value;
 }
 
 unsigned
-LineStringGeometry::numVerts() const
+LineGeometry::numVerts() const
 {
     return _current.size() / 4;
 }
 
 void
-LineStringGeometry::push_back(const vsg::vec3& value)
+LineGeometry::push_back(const vsg::vec3& value)
 {
     bool first = _current.empty();
 
@@ -254,35 +252,38 @@ LineStringGeometry::push_back(const vsg::vec3& value)
 }
 
 void
-LineStringGeometry::compile(vsg::Context& context)
+LineGeometry::compile(vsg::Context& context)
 {
-    if (_current.size() == 0)
-        return;
-
-    auto vert_array = vsg::vec3Array::create(_current.size(), _current.data());
-    auto prev_array = vsg::vec3Array::create(_previous.size(), _previous.data());
-    auto next_array = vsg::vec3Array::create(_next.size(), _next.data());
-    auto colors_array = vsg::vec4Array::create(_colors.size(), _colors.data());
-
-    unsigned numIndices = (numVerts() - 1) * 6;
-    auto indices = vsg::ushortArray::create(numIndices);
-    for (int e = 2, i = 0; e < _current.size() - 2; e += 4)
+    if (commands.empty())
     {
-        (*indices)[i++] = e + 3;
-        (*indices)[i++] = e + 1;
-        (*indices)[i++] = e + 0; // provoking vertex
-        (*indices)[i++] = e + 2;
-        (*indices)[i++] = e + 3;
-        (*indices)[i++] = e + 0; // provoking vertex
+        if (_current.size() == 0)
+            return;
+
+        auto vert_array = vsg::vec3Array::create(_current.size(), _current.data());
+        auto prev_array = vsg::vec3Array::create(_previous.size(), _previous.data());
+        auto next_array = vsg::vec3Array::create(_next.size(), _next.data());
+        auto colors_array = vsg::vec4Array::create(_colors.size(), _colors.data());
+
+        unsigned numIndices = (numVerts() - 1) * 6;
+        auto indices = vsg::ushortArray::create(numIndices);
+        for (int e = 2, i = 0; e < _current.size() - 2; e += 4)
+        {
+            (*indices)[i++] = e + 3;
+            (*indices)[i++] = e + 1;
+            (*indices)[i++] = e + 0; // provoking vertex
+            (*indices)[i++] = e + 2;
+            (*indices)[i++] = e + 3;
+            (*indices)[i++] = e + 0; // provoking vertex
+        }
+
+        assignArrays({ vert_array, prev_array, next_array, colors_array });
+        assignIndices(indices);
+
+        _drawCommand->indexCount = indices->size();
+
+        commands.clear();
+        commands.push_back(_drawCommand);
     }
-
-    assignArrays({ vert_array, prev_array, next_array, colors_array });
-    assignIndices(indices);
-
-    _drawCommand->indexCount = indices->size();
-
-    commands.clear();
-    commands.push_back(_drawCommand);
 
     vsg::Geometry::compile(context);
 }

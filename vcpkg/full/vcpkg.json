@@ -8,6 +8,7 @@
     "dependencies": [
         "cpp-httplib",
         "proj",
+        "entt",
         "gdal",
         "glm",
         "nlohmann-json",

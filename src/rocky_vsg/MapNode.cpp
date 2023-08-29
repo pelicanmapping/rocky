@@ -175,6 +175,7 @@ MapNode::get(const vsg::Node* graph, unsigned travmask)
 void
 MapNode::update(const vsg::FrameStamp* f)
 {
+    ROCKY_PROFILE_FUNCTION();
     ROCKY_HARD_ASSERT_STATUS(_instance.status());
 
     if (_terrain->map() == nullptr)
@@ -193,6 +194,8 @@ MapNode::update(const vsg::FrameStamp* f)
 void
 MapNode::accept(vsg::RecordTraversal& rv) const
 {
+    ROCKY_PROFILE_FUNCTION();
+
     if (worldSRS().isGeocentric())
     {
         std::shared_ptr<Horizon> horizon;

@@ -11,108 +11,78 @@
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
 
-class Model : public rocky::Inherit<Attachment, Model>
-{
-public:
-    Model()
-    {
-        underGeoTransform = true;
-        horizonCulling = true;
-    }
-
-    URI uri;
-
-    void createNode(Runtime& runtime) override
-    {
-        auto result = uri.read(IOOptions());
-        if (result.status.ok())
-        {
-            // this is a bit awkward but it works when the URI has an extension
-            auto options = vsg::Options::create(*runtime.readerWriterOptions);
-            auto extension = std::filesystem::path(uri.full()).extension();
-            options->extensionHint = extension.empty() ? std::filesystem::path(result.value.contentType) : extension;
-            std::stringstream in(result.value.data);
-            auto model = vsg::read_cast<vsg::Node>(in, options);
-
-            if (model)
-            {
-                // make it bigger so we can see it
-                auto xform = vsg::MatrixTransform::create();
-                xform->matrix = vsg::scale(150000.0);
-
-                auto sw = vsg::Switch::create();
-                sw->addChild(true, xform);
-                xform->addChild(model);
-
-                node = sw;
-            }
-        }
-    }
-
-    JSON to_json() const override {
-        return "";
-    }
-};
-
-
 auto Demo_Model = [](Application& app)
 {
-    //ImGui::Text("Not yet implemented");
-
-    static shared_ptr<MapObject> object;
-    static shared_ptr<Model> model;
-    static bool visible = true;
+    static entt::entity entity = entt::null;
     static Status status;
 
-    if (model && model->node == nullptr)
+    if (status.failed())
     {
         ImGui::TextColored(ImVec4(1, 0, 0, 1), "Model load failed!");
         return;
     }
 
-    if (!model)
+    if (entity == entt::null)
     {
         ImGui::Text("Wait...");
-    
-        model = Model::create();
-        model->uri = URI("https://raw.githubusercontent.com/vsg-dev/vsgExamples/master/data/models/teapot.vsgt");
 
-        object = MapObject::create(model);
-        object->xform->setPosition(GeoPoint(SRS::WGS84, 0, 0, 50000));
+        // Load model data from a URI
+        URI uri("https://raw.githubusercontent.com/vsg-dev/vsgExamples/master/data/models/teapot.vsgt");
+        auto result = uri.read(IOOptions());
+        status = result.status;
+        if (status.failed())
+            return;
 
-        app.add(object);
+        // Parse the model
+        // this is a bit awkward but it works when the URI has an extension
+        auto options = vsg::Options::create(*app.instance.runtime().readerWriterOptions);
+        auto extension = std::filesystem::path(uri.full()).extension();
+        options->extensionHint = extension.empty() ? std::filesystem::path(result.value.contentType) : extension;
+        std::stringstream in(result.value.data);
+        auto model = vsg::read_cast<vsg::Node>(in, options);
+        if (!model)
+        {
+            status = Status(Status::ResourceUnavailable, "Failed to parse model");
+            return;
+        }
 
-        // by the next frame, the object will be alive in the scene
-        return;
+        // make it bigger so we can see it
+        auto scaler = vsg::MatrixTransform::create();
+        scaler->matrix = vsg::scale(250000.0);
+        scaler->addChild(model);
+
+        // New entity to host our model
+        entity = app.entities.create();
+
+        // The model component
+        auto& component = app.entities.emplace<ECS::NodeComponent>(entity);
+        component.name = "Demo Model";
+        component.node = scaler;
+
+        // Since we're supplying our own node, we need to compile it manually
+        app.instance.runtime().compile(component.node);
+
+        // A transform component to place it
+        auto& transform = app.entities.emplace<EntityTransform>(entity);
+        transform.node->setPosition(GeoPoint(SRS::WGS84, 50, 0, 250000));
     }
 
     if (ImGuiLTable::Begin("model"))
     {
-        if (ImGuiLTable::Checkbox("Visible", &visible))
-        {
-            if (visible)
-                app.add(object);
-            else
-                app.remove(object);
-        }
+        auto& component = app.entities.get<ECS::NodeComponent>(entity);
+        ImGuiLTable::Checkbox("Visible", &component.active);
 
-        GeoPoint pos = object->xform->position();
-        glm::fvec3 v{ pos.x, pos.y, pos.z };
+        auto& transform = app.entities.get<EntityTransform>(entity);
+        auto& xform = transform.node;
 
-        if (ImGuiLTable::SliderFloat("Latitude", &v.y, -85.0, 85.0, "%.1f"))
-        {
-            object->xform->setPosition(GeoPoint(pos.srs, v.x, v.y, v.z));
-        }
+        if (ImGuiLTable::SliderDouble("Latitude", &xform->position.y, -85.0, 85.0, "%.1lf"))
+            xform->dirty();
 
-        if (ImGuiLTable::SliderFloat("Longitude", &v.x, -180.0, 180.0, "%.1f"))
-        {
-            object->xform->setPosition(GeoPoint(pos.srs, v.x, v.y, v.z));
-        }
+        if (ImGuiLTable::SliderDouble("Longitude", &xform->position.x, -180.0, 180.0, "%.1lf"))
+            xform->dirty();
 
-        if (ImGuiLTable::SliderFloat("Altitude", &v.z, 0.0, 2500000.0, "%.1f"))
-        {
-            object->xform->setPosition(GeoPoint(pos.srs, v.x, v.y, v.z));
-        }
+        if (ImGuiLTable::SliderDouble("Altitude", &xform->position.z, 0.0, 2500000.0, "%.1lf"))
+            xform->dirty();
 
         ImGuiLTable::End();
     }

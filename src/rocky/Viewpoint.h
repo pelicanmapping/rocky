@@ -46,14 +46,14 @@ namespace ROCKY_NAMESPACE
 
         //! The focal point
         inline const GeoPoint& position() const {
-            return (target ? target->position() : point);
+            return (target ? target->objectPosition() : point);
         }
 
         //! If this a valid viewpoint?
         inline bool valid() const {
             return
                 point.valid() ||
-                (target != nullptr && target->position().valid());
+                (target != nullptr && target->objectPosition().valid());
         }
     };
 

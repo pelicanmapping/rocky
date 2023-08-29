@@ -152,3 +152,6 @@ namespace ROCKY_NAMESPACE
     }
 
 #define ROCKY_TODO(...) if (false) std::cerr << "TODO (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ")..." << __VA_ARGS__ "" << std::endl
+
+// Stubs for profiling
+#define ROCKY_PROFILE_FUNCTION()

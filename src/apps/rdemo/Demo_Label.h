@@ -11,11 +11,10 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_Label = [](Application& app)
 {
-    static shared_ptr<MapObject> object;
-    static shared_ptr<Label> label;
-    static bool visible = true;
+    static entt::entity entity = entt::null;
+    static Status status;
 
-    auto font = app.instance.runtime().defaultFont;
+    auto& font = app.instance.runtime().defaultFont;
 
     if (font.working())
     {
@@ -25,52 +24,48 @@ auto Demo_Label = [](Application& app)
 
     if (!font.available())
     {
-        ImGui::TextWrapped("No font available - did you set the ROCKY_DEFAULT_FONT environment variable?");
+        ImGui::TextWrapped(status.message.c_str());
+        status = Status(Status::ResourceUnavailable,
+            "No font available - did you set the ROCKY_DEFAULT_FONT environment variable?");
         return;
     }
 
-    if (!label)
+    if (entity == entt::null)
     {
-        label = Label::create();
-        label->setText("Hello, world.");
-        label->textNode->font = font.value();
+        entity = app.entities.create();
 
-        object = MapObject::create(label);
-        object->xform->setPosition(GeoPoint(SRS::WGS84, -35.0, 15.0));
-        app.add(object);
-
-        return;
+        auto& label = app.entities.emplace<Label>(entity);
+        label.text = "Hello, world";
+        label.font = font.value();
+        
+        auto& transform = app.entities.emplace<EntityTransform>(entity);
+        transform.node->setPosition({ SRS::WGS84, -35.0, 15.0, 25000.0 });
     }
 
     if (ImGuiLTable::Begin("text"))
     {
-        if (ImGuiLTable::Checkbox("Visible", &visible))
-        {
-            if (visible)
-                app.add(object);
-            else
-                app.remove(object);
-        }
+        auto& label = app.entities.get<Label>(entity);
+        ImGuiLTable::Checkbox("Visible", &label.active);
 
         char buf[256];
-        strcpy(&buf[0], label->text().c_str());
+        strcpy(&buf[0], label.text.c_str());
         if (ImGuiLTable::InputText("Text", buf, 255))
         {
-            label->setText(std::string(buf));
+            label.text = std::string(buf);
+            label.dirty();
         }
 
-        auto& pos = object->xform->position();
-        glm::fvec3 vec{ pos.x, pos.y, pos.z };
+        auto& transform = app.entities.get<EntityTransform>(entity);
+        auto& xform = transform.node;
 
-        if (ImGuiLTable::SliderFloat("Latitude", &vec.y, -85.0, 85.0, "%.1f"))
-        {
-            object->xform->setPosition(GeoPoint(pos.srs, vec.x, vec.y, vec.z));
-        }
+        if (ImGuiLTable::SliderDouble("Latitude", &xform->position.y, -85.0, 85.0, "%.1lf"))
+            xform->dirty();
 
-        if (ImGuiLTable::SliderFloat("Longitude", &vec.x, -180.0, 180.0, "%.1f"))
-        {
-            object->xform->setPosition(GeoPoint(pos.srs, vec.x, vec.y, vec.z));
-        }
+        if (ImGuiLTable::SliderDouble("Longitude", &xform->position.x, -180.0, 180.0, "%.1lf"))
+            xform->dirty();
+
+        if (ImGuiLTable::SliderDouble("Altitude", &xform->position.z, 0.0, 2500000.0, "%.1lf"))
+            xform->dirty();
 
         ImGuiLTable::End();
     }

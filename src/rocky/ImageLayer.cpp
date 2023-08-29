@@ -60,38 +60,6 @@ ImageLayer::to_json() const
     return j.dump();
 }
 
-
-#if 0
-void
-ImageLayer::setAltitude(const Distance& value)
-{
-    options().altitude() = value;
-
-    if (value != 0.0)
-    {
-        osg::StateSet* stateSet = getOrCreateStateSet();
-
-        stateSet->addUniform(
-            new osg::Uniform("oe_terrain_altitude", (float)options().altitude()->as(Units::METERS)),
-            osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
-
-        stateSet->setMode(GL_CULL_FACE, 0);
-    }
-    else
-    {
-        osg::StateSet* stateSet = getOrCreateStateSet();
-        getOrCreateStateSet()->removeUniform("oe_terrain_altitude");
-        stateSet->removeMode(GL_CULL_FACE);
-    }
-}
-
-const Distance&
-ImageLayer::getAltitude() const
-{
-    return options().altitude().get();
-}
-#endif
-
 void
 ImageLayer::setAcceptDraping(bool value)
 {

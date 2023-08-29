@@ -100,6 +100,7 @@ Horizon::isVisible(double x, double y, double z, double radius) const
     // Viewer-to-target vector
     // move the target closer to the horizon plane by "radius"
     // and transform into unit space
+    radius = std::max(0.0, radius); // clamp to 0.0
     glm::dvec3 VTplusR = ((target + _eyeUnit * radius) - _eye) * _scale;
 
     // If the target is above the eye, it's visible

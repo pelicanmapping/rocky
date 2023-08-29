@@ -95,6 +95,8 @@ TMSImageLayer::closeImplementation()
 Result<GeoImage>
 TMSImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io) const
 {
+    ROCKY_PROFILE_FUNCTION();
+
     bool invertY = (tmsType() == "google");
 
     auto r = _driver.read(uri(), key, invertY, false, io);

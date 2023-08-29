@@ -316,8 +316,8 @@ namespace
 #ifdef GDAL_HAS_M_TYPES
         case wkbGeometryCollectionM:
         case wkbGeometryCollectionZM:
-        case wkbMultiLineStringM:
-        case wkbMultiLineStringZM:
+        case wkbLineStringM:
+        case wkbLineStringZM:
         case wkbMultiPolygonM:
         case wkbMultiPolygonZM:
 #endif

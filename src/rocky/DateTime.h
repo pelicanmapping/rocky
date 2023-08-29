@@ -130,21 +130,5 @@ namespace ROCKY_NAMESPACE
             DateTime _end;
     };
 
-#if 0
-    template<> inline void Config::set<DateTime>(const std::string& key, const optional<DateTime>& opt) {
-        if (opt.has_value())
-            object.erase(key);
-        set(key, opt->asCompactISO8601());
-    }
-
-    template<> inline bool Config::get<DateTime>(const std::string& key, optional<DateTime>& output) const {
-        if (has(key)) {
-            output = DateTime(value(key));
-            return true;
-        }
-        return false;
-    }
-#endif
-
 } // namespace ROCKY_NAMESPACE
 

@@ -29,15 +29,9 @@ namespace ROCKY_NAMESPACE
         //! Global caching policy
         inline CachePolicy& cachePolicy();
 
-        using ContentFactory = std::function<
-            shared_ptr<Object>(
-                const std::string& contentType,
-                const std::string& content)>;
-
         //! Global application instance status - returns an error
         //! if the instance does not exist
         static const Status& status();
-
 
     public: // Object factory functions
 
@@ -64,7 +58,6 @@ namespace ROCKY_NAMESPACE
     private:
         struct Implementation
         {
-            std::unordered_map<std::string, ContentFactory> contentFactories;
             CachePolicy cachePolicy;
             IOOptions ioOptions;
         };
