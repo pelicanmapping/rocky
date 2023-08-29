@@ -45,14 +45,10 @@ namespace ROCKY_NAMESPACE
             unsigned x_tiles_at_root = 0,
             unsigned y_tiles_at_root = 0);
 
-        //! Deserialize a profile
-        //explicit Profile(const Config&);
-
         // copy/move ops
         Profile(const Profile& rhs) = default;
-        Profile& operator=(const Profile & rhs) = default;
-        Profile(Profile && rhs) { *this = rhs; }
-        Profile& operator=(Profile && rhs);
+        Profile& operator=(const Profile& rhs) = default;
+        // NO move constructors since we use global instances of Profile
 
         //! @return True if the profile is properly initialized.
         bool valid() const;

@@ -89,14 +89,6 @@ Profile::Profile()
     _shared = std::make_shared<Data>();
 }
 
-Profile&
-Profile::operator=(Profile&& rhs)
-{
-    *this = (const Profile&)rhs;
-    rhs._shared = nullptr;
-    return *this;
-}
-
 bool
 Profile::operator == (const Profile& rhs) const
 {
@@ -168,7 +160,7 @@ Profile::setup(const std::string& name)
 
 bool
 Profile::valid() const {
-    return _shared->_extent.valid();
+    return _shared && _shared->_extent.valid();
 }
 
 const SRS&

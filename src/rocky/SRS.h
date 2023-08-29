@@ -141,8 +141,7 @@ namespace ROCKY_NAMESPACE
         // copy/move operations
         SRS(const SRS& rhs) = default;
         SRS& operator=(const SRS& rhs) = default;
-        SRS(SRS&& rhs) { *this = rhs; }
-        SRS& operator=(SRS&&);
+        // no move operators since we use global instances
         ~SRS();
 
         //! Internal SRS representation (for debugging)

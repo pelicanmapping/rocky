@@ -475,20 +475,6 @@ SRS::SRS(const std::string& h) :
     }
 }
 
-SRS&
-SRS::operator=(SRS&& rhs)
-{
-    _definition = rhs._definition;
-    _valid = rhs._valid;
-    _isGeodetic = rhs._isGeodetic;
-    _isGeocentric = rhs._isGeocentric;
-    rhs._definition.clear();
-    rhs._valid = false;
-    rhs._isGeodetic = false;
-    rhs._isGeocentric = false;
-    return *this;
-}
-
 SRS::~SRS()
 {
     //nop
