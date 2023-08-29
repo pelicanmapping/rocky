@@ -16,8 +16,6 @@ auto Demo_LineFeatures= [](Application& app)
 
     if (entity == entt::null)
     {
-        ImGui::Text("Wait...");
-
         // open a feature source:
         auto fs = rocky::OGRFeatureSource::create();
         fs->uri = "https://readymap.org/readymap/filemanager/download/public/countries.geojson";
@@ -37,23 +35,23 @@ auto Demo_LineFeatures= [](Application& app)
                 // convert anything we find to lines:
                 feature.geometry.convertToType(Geometry::Type::LineString);
 
+                // use rhumb-line interpolation for linear features:
                 feature.interpolation = GeodeticInterpolation::RhumbLine;
+
                 feature_view.features.emplace_back(std::move(feature));
             }
         }
 
-        // apply a style:
+        // apply a style for geometry creation:
         feature_view.styles.line = LineStyle{
             { 1,1,0.3,1 }, // color
             2.0f,          // width
             0xffff,        // stipple pattern
             1,             // stipple factor
-            100000.0f };     // resolution (geometric error)
-            //0.0f };        // depth offset
+            100000.0f };   // resolution (geometric error)
 
+        // generate our renderable geometry
         feature_view.generate(app.entities, app.instance.runtime());
-
-        return;
     }
 
     if (ImGuiLTable::Begin("Line features"))

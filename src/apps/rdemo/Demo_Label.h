@@ -32,12 +32,15 @@ auto Demo_Label = [](Application& app)
 
     if (entity == entt::null)
     {
+        // Create a host entity
         entity = app.entities.create();
 
+        // Attach a label to the host and configure it
         auto& label = app.entities.emplace<Label>(entity);
         label.text = "Hello, world";
         label.font = font.value();
         
+        // Attach a transform to place and move the label:
         auto& transform = app.entities.emplace<EntityTransform>(entity);
         transform.node->setPosition({ SRS::WGS84, -35.0, 15.0, 25000.0 });
     }

@@ -17,9 +17,11 @@ auto Demo_Mesh_Absolute = [](Application& app)
     {
         // Make an entity to hold our mesh:
         entity = app.entities.create();
+
+        // Attach a mesh component:
         auto& mesh = app.entities.emplace<Mesh>(entity);
 
-        // Make some geometry:
+        // Make some geometry in ECEF coordinates
         auto xform = SRS::WGS84.to(SRS::WGS84.geocentricSRS());
         const double step = 2.5;
         const double alt = 0.0; 
@@ -56,19 +58,13 @@ auto Demo_Mesh_Absolute = [](Application& app)
             auto& style = mesh.style.value();
             float* col = (float*)&style.color;
             if (ImGuiLTable::ColorEdit4("Color", col))
-            {
                 mesh.dirty();
-            }
 
             if (ImGuiLTable::SliderFloat("Wireframe", &style.wireframe, 0.0f, 32.0f, "%.0f"))
-            {
                 mesh.dirty();
-            }
 
             if (ImGuiLTable::SliderFloat("Depth offset", &style.depth_offset, 0.0f, 0.00001f, "%.7f"))
-            {
                 mesh.dirty();
-            }
         }
 
         ImGuiLTable::End();
@@ -83,12 +79,14 @@ auto Demo_Mesh_Relative = [](Application& app)
 
     if (entity == entt::null)
     {
-        ImGui::Text("Wait...");
-
+        // Create a new entity to host our mesh
         entity = app.entities.create();
+
+        // Attach the new mesh:
         Mesh& mesh = app.entities.emplace<Mesh>(entity);
         mesh.name = "Relative Mesh";
 
+        // Make some geometry that will be relative to a geolocation:
         const float s = 250000.0;
         vsg::vec3 verts[8] = {
             { -s, -s, -s },

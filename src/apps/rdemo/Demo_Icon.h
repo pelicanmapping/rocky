@@ -25,8 +25,7 @@ auto Demo_Icon = [](Application& app)
 
     if (entity == entt::null)
     {
-        ImGui::Text("Wait...");
-
+        // Load an icon image
         auto io = app.instance.ioOptions();
         auto image = io.services().readImageFromURI("https://user-images.githubusercontent.com/326618/236923465-c85eb0c2-4d31-41a7-8ef1-29d34696e3cb.png", io);
         if (image.status.failed())
@@ -35,8 +34,10 @@ auto Demo_Icon = [](Application& app)
             return;
         }
 
+        // Make an entity to host our icon:
         entity = app.entities.create();
 
+        // Attach the new Icon and set up its properties:
         auto& icon = app.entities.emplace<Icon>(entity);
         icon.image = image.value;
         icon.style = IconStyle{ 75, 0.0f }; // pixel size, rotation(radians)

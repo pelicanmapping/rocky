@@ -24,8 +24,6 @@ auto Demo_Model = [](Application& app)
 
     if (entity == entt::null)
     {
-        ImGui::Text("Wait...");
-
         // Load model data from a URI
         URI uri("https://raw.githubusercontent.com/vsg-dev/vsgExamples/master/data/models/teapot.vsgt");
         auto result = uri.read(IOOptions());
@@ -54,7 +52,7 @@ auto Demo_Model = [](Application& app)
         // New entity to host our model
         entity = app.entities.create();
 
-        // The model component
+        // The model component; we just set the node directly.
         auto& component = app.entities.emplace<ECS::NodeComponent>(entity);
         component.name = "Demo Model";
         component.node = scaler;
@@ -62,7 +60,7 @@ auto Demo_Model = [](Application& app)
         // Since we're supplying our own node, we need to compile it manually
         app.instance.runtime().compile(component.node);
 
-        // A transform component to place it
+        // A transform component to place and move it on the map
         auto& transform = app.entities.emplace<EntityTransform>(entity);
         transform.node->setPosition(GeoPoint(SRS::WGS84, 50, 0, 250000));
     }

@@ -14,9 +14,9 @@ auto Demo_Environment = [](Application& app)
 {
     if (app.skyNode == nullptr)
     {
-        ImGui::TextColored(ImVec4(1, 0, 0, 1), "Sky is not installed...");
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), "Sky is not installed");
 
-        if (ImGui::Button("Activate sky"))
+        if (ImGui::Button("Install sky"))
         {
             app.instance.runtime().runDuringUpdate([&app]()
                 {

@@ -39,6 +39,7 @@ auto Demo_Tethering = [](Application& app)
     // Make an entity to tether to.
     if (entity == entt::null)
     {
+        // Create a host entity:
         entity = app.entities.create();
 
         // add an icon:

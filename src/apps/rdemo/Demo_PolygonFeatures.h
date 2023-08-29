@@ -48,7 +48,7 @@ auto Demo_PolygonFeatures = [](Application& app)
             }
         }
 
-        // generate random colors
+        // generate random colors for the feature geometry:
         std::default_random_engine re(0);
         std::uniform_real_distribution<float> frand(0.15f, 1.0f);
 
@@ -59,10 +59,8 @@ auto Demo_PolygonFeatures = [](Application& app)
                 64.0f };
         };
 
-        // make our entity and generate the geometry
+        // compile the features into renderable geometry
         feature_view.generate(app.entities, app.instance.runtime());
-
-        return;
     }
 
     if (ImGuiLTable::Begin("Polygon features"))

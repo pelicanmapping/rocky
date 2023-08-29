@@ -16,11 +16,13 @@ auto Demo_Line_Absolute = [](Application& app)
 
     if (entity == entt::null)
     {
-        ImGui::Text("Wait...");
-
+        // Create a new entity to host our line.
         entity = app.entities.create();
+
+        // Attach a new Line component to the entity:
         auto& line = app.entities.emplace<Line>(entity);
 
+        // Build the line's geometry:
         auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
         const double alt = 125000;
         std::vector<glm::dvec3> points;
@@ -31,7 +33,15 @@ auto Demo_Line_Absolute = [](Application& app)
                 points.push_back(ecef);
         }
         line.push(points.begin(), points.end());
-        line.style = LineStyle{ { 1,1,0,1 }, 3.0f, 0xffff, 4 };
+
+        // Create a style that we can change dynamically:
+        line.style = LineStyle{
+            { 1,1,0,1 },    // color
+            3.0f,           // width
+            0xffff,         // stipple pattern (16 bit)
+            4 };            // stipple factor
+
+        // Write to the depth buffer:
         line.write_depth = true;
     }
 
@@ -68,11 +78,13 @@ auto Demo_Line_Relative = [](Application& app)
 
     if (entity == entt::null)
     {
-        ImGui::Text("Wait...");
-
+        // Create a new entity to host our line.
         entity = app.entities.create();
+
+        // Attach a line component to our new entity:
         auto& line = app.entities.emplace<Line>(entity);
 
+        // Create the line geometry, which will be relative to a geolocation
         const double size = 500000;
         std::vector<vsg::vec3> points = {
             {-size, -size, 0},
@@ -80,10 +92,12 @@ auto Demo_Line_Relative = [](Application& app)
             {    0,  size, 0},
             {-size, -size, 0} };
         line.push(points.begin(), points.end());
+
+        // Make a style with color and line width
         line.style = LineStyle{ {1,0,0,1}, 4.0f };
         line.write_depth = true;
 
-        // Position the transform
+        // Add a transform that will place the line on the map
         auto& transform = app.entities.emplace<EntityTransform>(entity);
         transform.node->setPosition(GeoPoint(SRS::WGS84, -30.0, 10.0, 25000.0));
         transform.node->bound.radius = size; // for horizon culling

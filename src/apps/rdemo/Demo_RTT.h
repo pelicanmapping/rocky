@@ -14,6 +14,7 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
+    // Loads an external model to display in the RTT scene
     vsg::ref_ptr<vsg::Node> load_rtt_model(const URI& uri, Runtime& runtime)
     {
         auto result = uri.read(IOOptions());
@@ -32,6 +33,7 @@ namespace
         }
     }
 
+    // Makes a VSG camera to render the RTT scene
     vsg::ref_ptr<vsg::Camera> make_rtt_camera(vsg::ref_ptr<vsg::Node> node, const VkExtent2D size)
     {
         vsg::ComputeBounds computeBounds;
@@ -54,8 +56,6 @@ auto Demo_RTT = [](Application& app)
 {
     static Status status;
     static entt::entity entity = entt::null;
-    //static vsg::ref_ptr<vsg::View> view;
-    //static vsg::ref_ptr<vsg::ImageInfo> texture, depth;
     static vsg::ref_ptr<vsg::MatrixTransform> mt;
     static float rotation = 0.0f;
 
@@ -72,7 +72,7 @@ auto Demo_RTT = [](Application& app)
         auto main_window = main->first;
         auto main_view = main->second.front();
 
-        // this is the model we will see in the texture:
+        // this is the model we will see in the RTT:
         URI uri("https://raw.githubusercontent.com/vsg-dev/vsgExamples/master/data/models/teapot.vsgt");
         auto rtt_node = load_rtt_model(uri, app.instance.runtime());
         if (!rtt_node)
@@ -98,15 +98,17 @@ auto Demo_RTT = [](Application& app)
         auto rtt_graph = RTT::createOffScreenRenderGraph(*vsg_context, size, texture, depth);
         rtt_graph->addChild(rtt_view);
 
-        // Add the RTT graph to our application window.
+        // Add the RTT graph to our application's main window.
         app.addPreRenderGraph(main_window, rtt_graph);
 
+
+        // Now, create an entity to host our mesh.
         // This is the geometry that we will apply the texture to. 
-        // We have to add UVs (texture coordinates).
         entity = app.entities.create();
         auto& mesh = app.entities.emplace<Mesh>(entity);
 
-        //auto mesh = Mesh::create();
+        // Cenerate the mesh geometry We have to add UVs (texture coordinates)
+        // in order to map the RTT texture.
         auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
         const double step = 2.5;
         const double alt = 500000;
@@ -135,8 +137,7 @@ auto Demo_RTT = [](Application& app)
         }
         mesh.texture = texture;
         mesh.style = MeshStyle{ { 1,1,1,0.5 }, 64.0f };
-
-        // by the next frame, the object will be alive in the scene
+        
         return;
     }
 

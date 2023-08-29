@@ -134,7 +134,7 @@ auto Demo_Views = [](Application& app)
     ImGui::Indent();
     {
         ImGui::Separator();
-        if (ImGui::Button("Add window"))
+        if (ImGui::Button("Add window (EXPERIMENTAL)"))
         {
             auto name = std::string("Window ") + std::to_string(window_id);
             app.addWindow(vsg::WindowTraits::create(800, 600, name));
