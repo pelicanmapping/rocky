@@ -37,28 +37,24 @@ int main(int argc, char** argv)
 ### CMakeLists.txt
 ```cmake
 cmake_minimum_required(VERSION 3.10)
-
 project(myApp VERSION 0.1.0 LANGUAGES CXX C)
-
 find_package(rocky CONFIG REQUIRED)
-
 add_executable(myApp main.cpp)
-
 target_link_libraries(myApp PRIVATE rocky::rocky rocky::rocky_vsg)
-
 install(TARGETS myApp RUNTIME DESTINATION bin)
 ```
 
 ## Dependencies
 
 * [cpp-httplib](https://github.com/yhirose/cpp-httplib)
+* [entt](https://github.com/skypjack/entt)
+* [GDAL](https://github.com/OSGeo/gdal) (optional)
 * [glm](https://github.com/g-truc/glm)
 * [nlohmann-json](https://github.com/nlohmann/json)
 * [proj](https://github.com/OSGeo/PROJ)
-* [VulkanSceneGraph](https://github.com/vsg-dev/VulkanSceneGraph)
-* [GDAL](https://github.com/OSGeo/gdal) (optional)
 * [sqlite3](https://github.com/sqlite/sqlite) (optional)
 * [vsgXchange](https://github.com/vsg-dev/vsgXchange) (optional)
+* [VulkanSceneGraph](https://github.com/vsg-dev/VulkanSceneGraph)
 
 ## Building
 
