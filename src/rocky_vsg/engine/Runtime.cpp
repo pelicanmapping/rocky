@@ -163,35 +163,62 @@ Runtime::runDuringUpdate(std::function<void()> function)
 void
 Runtime::compile(vsg::ref_ptr<vsg::Object> compilable)
 {
+    ROCKY_PROFILE_FUNCTION();
     ROCKY_SOFT_ASSERT_AND_RETURN(compilable.valid(), void());
 
-    auto cr = viewer->compileManager->compile(compilable);
-    if (cr && cr.requiresViewerUpdate())
+    if (asyncCompile)
     {
-        std::scoped_lock L(_compileResultsMutex);
-        _compileResults.push_back(cr);
+        auto cr = viewer->compileManager->compile(compilable);
+        if (cr && cr.requiresViewerUpdate())
+        {
+            std::scoped_lock lock(_compileMutex);
+            _compileResults.push_back(cr);
+        }
+    }
+    else
+    {
+        std::shared_lock lock(_compileMutex);
+        _toCompile.push(compilable);
     }
 }
-
-//void
-//Runtime::compile_simple(vsg::ref_ptr<vsg::Object> compilable)
-//{
-//    ROCKY_SOFT_ASSERT_AND_RETURN(compilable.valid(), void());
-//
-//    for(auto& context : viewer->conte
-//    util::SimpleCompiler compiler(
-//    
-//}
 
 void
 Runtime::update()
 {
-    if (_compileResults.size() > 0)
+    if (asyncCompile)
     {
-        std::scoped_lock L(_compileResultsMutex);
-        for (auto& cr : _compileResults)
-            vsg::updateViewer(*viewer, cr);
-        _compileResults.clear();
+        if (_compileResults.size() > 0)
+        {
+            std::shared_lock lock(_compileMutex);
+
+            for (auto& cr : _compileResults)
+            {
+                // no need to check cr, we did that before pushing
+                vsg::updateViewer(*viewer, cr);
+            }
+
+            _compileResults.clear();
+        }
+    }
+
+    else if (_toCompile.size() > 0)
+    {
+        // make sure the queues are empty..
+        viewer->deviceWaitIdle();
+
+        std::shared_lock lock(_compileMutex);
+
+        while(!_toCompile.empty())
+        {
+            auto object = _toCompile.front();
+            _toCompile.pop();
+
+            auto cr = viewer->compileManager->compile(object);
+            if (cr && cr.requiresViewerUpdate())
+            {
+                vsg::updateViewer(*viewer, cr);
+            }
+        }
     }
 }
 
@@ -214,7 +241,7 @@ Runtime::compileAndAddChild(vsg::ref_ptr<vsg::Group> parent, NodeFactory factory
     
     auto viewer = runtime.viewer;
 
-    auto async_create_and_add_node = [viewer, promise, parent, factory](Cancelable& c) -> bool
+    auto async_create_and_add_node = [this, viewer, promise, parent, factory](Cancelable& c) -> bool
     {
         if (c.canceled())
             return false;
@@ -225,23 +252,18 @@ Runtime::compileAndAddChild(vsg::ref_ptr<vsg::Group> parent, NodeFactory factory
             return false;
 
         // compile the child:
-        auto cr = viewer->compileManager->compile(child);
+        compile(child);
 
         // queue an update operation to add the child safely.
         // we pass along the original promise so these two operations appear as
         // one to the caller.
-        auto add_child = [parent, child, viewer, cr](Cancelable& c) -> bool
+        auto add_child = [parent, child, viewer](Cancelable& c) -> bool
         {
             if (c.canceled())
                 return false;
 
             if (parent && child)
                 parent->addChild(child);
-
-            if (cr && cr.requiresViewerUpdate())
-            {
-                vsg::updateViewer(*viewer, cr);
-            }
 
             return true;
         };

@@ -258,6 +258,7 @@ TerrainTilePager::update(
                 {
                     //Log::info() << "Unloading subtiles of " << key.str() << std::endl;
                     parent->unloadSubtiles();
+                    
                 }
             }
             _tiles.erase(key);

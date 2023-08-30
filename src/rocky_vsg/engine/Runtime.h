@@ -15,6 +15,7 @@
 #include <vsg/app/UpdateOperations.h>
 #include <vsg/threading/OperationThreads.h>
 #include <vsg/utils/SharedObjects.h>
+#include <shared_mutex>
 
 namespace vsg
 {
@@ -108,10 +109,18 @@ namespace ROCKY_NAMESPACE
         //! Update any pending compile results.
         void update();
 
+        // Once VSG can safely handle async compilation we will
+        // change this to true. See:
+        // https://github.com/vsg-dev/VulkanSceneGraph/discussions/949
+        bool asyncCompile = false;
+
     private:
         vsg::ref_ptr<vsg::Operation> _priorityUpdateQueue;
 
-        std::mutex _compileResultsMutex;
+        std::shared_mutex _compileMutex;
+        std::queue<vsg::ref_ptr<vsg::Object>> _toCompile;
+
+        //std::mutex _compileResultsMutex;
         std::vector<vsg::CompileResult> _compileResults;
     };
 }

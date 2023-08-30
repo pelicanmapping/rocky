@@ -218,7 +218,15 @@ Application::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
         if (!_vsync)
             traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 
+        // This will install the debug messaging callback so we can capture validation errors
         traits->instanceExtensionNames.push_back("VK_EXT_debug_utils");
+
+        // This is required to use the NVIDIA barycentric extension without validation errors
+        if (!traits->deviceFeatures)
+            traits->deviceFeatures = vsg::DeviceFeatures::create();
+        traits->deviceExtensionNames.push_back(VK_NV_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
+        auto& bary = traits->deviceFeatures->get<VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR>();
+        bary.fragmentShaderBarycentric = true;
 
         if (viewer->windows().size() > 0)
         {
@@ -637,10 +645,6 @@ Application::frame()
     // Event handling happens after updating the scene, otherwise
     // things like tethering to a moving node will be one frame behind
     viewer->handleEvents();
-
-    // since an event handler could deactivate the viewer:
-    //if (!viewer->active())
-    //    return false;
 
     // run through the viewer's update operations queue; this includes
     // update ops initialized by rocky (e.g. terrain tile merges)

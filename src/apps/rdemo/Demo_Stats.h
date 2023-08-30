@@ -57,8 +57,11 @@ auto Demo_Stats = [](Application& app)
 
     if (app.debugLayerOn())
     {
-        ImGui::TextColored(ImVec4(1, .3, .3, 1), "Note: Debug validation is ON");
-        ImGui::TextColored(ImVec4(1, .3, .3, 1), "Timings will be affected");
+        ImGui::TextColored(ImVec4(1, .3, .3, 1), "Warning: debug validation is ON");
+    }
+    if (app.instance.runtime().asyncCompile == false)
+    {
+        ImGui::TextColored(ImVec4(1, .3, .3, 1), "Warning: async compilation is OFF");
     }
 
     if (ImGuiLTable::Begin("Timings"))
