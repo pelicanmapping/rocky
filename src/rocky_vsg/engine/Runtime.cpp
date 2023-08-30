@@ -163,6 +163,8 @@ Runtime::runDuringUpdate(std::function<void()> function)
 void
 Runtime::compile(vsg::ref_ptr<vsg::Object> compilable)
 {
+    ROCKY_SOFT_ASSERT_AND_RETURN(compilable.valid(), void());
+
     auto cr = viewer->compileManager->compile(compilable);
     if (cr && cr.requiresViewerUpdate())
     {
@@ -170,6 +172,16 @@ Runtime::compile(vsg::ref_ptr<vsg::Object> compilable)
         _compileResults.push_back(cr);
     }
 }
+
+//void
+//Runtime::compile_simple(vsg::ref_ptr<vsg::Object> compilable)
+//{
+//    ROCKY_SOFT_ASSERT_AND_RETURN(compilable.valid(), void());
+//
+//    for(auto& context : viewer->conte
+//    util::SimpleCompiler compiler(
+//    
+//}
 
 void
 Runtime::update()
@@ -227,10 +239,12 @@ Runtime::compileAndAddChild(vsg::ref_ptr<vsg::Group> parent, NodeFactory factory
                 parent->addChild(child);
 
             if (cr && cr.requiresViewerUpdate())
+            {
                 vsg::updateViewer(*viewer, cr);
+            }
 
             return true;
-        };        
+        };
         auto promise_op = util::PromiseOperation<bool>::create(promise, add_child);
         viewer->updateOperations->add(promise_op);
 

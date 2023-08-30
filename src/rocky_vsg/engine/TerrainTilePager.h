@@ -77,7 +77,7 @@ namespace ROCKY_NAMESPACE
         //! @return The tile, if it exists
         vsg::ref_ptr<TerrainTileNode> getTile(const TileKey& key) const;
 
-    protected:
+    //protected:
 
         TileTable _tiles;
         Tracker _tracker;

@@ -60,7 +60,6 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::DescriptorImage> elevation;
         vsg::ref_ptr<vsg::DescriptorImage> normal;
         vsg::ref_ptr<vsg::DescriptorBuffer> uniforms;
-        vsg::ref_ptr<vsg::BindDescriptorSet> bindDescriptorSetCommand;
     };
 
     class TerrainTileRenderModel
@@ -73,6 +72,7 @@ namespace ROCKY_NAMESPACE
         TextureData colorParent;
 
         TerrainTileDescriptors descriptors;
+        //vsg::ref_ptr<vsg::BindDescriptorSet> bindDescriptorSetCommand;
 
         void applyScaleBias(const glm::dmat4& sb)
         {
@@ -126,6 +126,8 @@ namespace ROCKY_NAMESPACE
             const TerrainTileDescriptors& initialDescriptors,
             TerrainTileHost* in_host,
             Runtime& runtime);
+
+        virtual ~TerrainTileNode();
 
         //! Elevation data for this node along with its scale/bias matrix;
         //! needed for bounding box

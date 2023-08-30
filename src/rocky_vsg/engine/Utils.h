@@ -81,20 +81,24 @@ namespace ROCKY_NAMESPACE
 
             T* data = reinterpret_cast<T*>(image->releaseData());
 
+            vsg::Data::Properties props;
+            props.format = format;
+            props.allocatorType = vsg::ALLOCATOR_TYPE_NEW_DELETE;
+
             vsg::ref_ptr<vsg::Data> vsg_data;
             if (depth == 1)
             {
                 vsg_data = vsg::Array2D<T>::create(
                     width, height,
                     data,
-                    vsg::Data::Layout{ format });
+                    props);
             }
             else
             {
                 vsg_data = vsg::Array3D<T>::create(
                     width, height, depth,
                     data,
-                    vsg::Data::Layout{ format });
+                    props);
             }
 
             //if (image->origin() == Image::BOTTOM_LEFT)

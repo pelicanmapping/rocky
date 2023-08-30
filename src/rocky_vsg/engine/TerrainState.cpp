@@ -275,6 +275,7 @@ TerrainState::updateTerrainTileDescriptors(
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), void());
     ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig.valid(), void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(stategroup.valid(), void());
 
     // Takes a tile's render model (which holds the raw image and matrix data)
     // and creates the necessary VK data to render that model.
@@ -333,9 +334,7 @@ TerrainState::updateTerrainTileDescriptors(
 
     vsg::ref_ptr<vsg::ubyteArray> data = vsg::ubyteArray::create(sizeof(uniforms));
     memcpy(data->dataPointer(), &uniforms, sizeof(uniforms));
-    dm.uniforms = vsg::DescriptorBuffer::create(
-        data,
-        TILE_BUFFER_BINDING);
+    dm.uniforms = vsg::DescriptorBuffer::create(data, TILE_BUFFER_BINDING);
 
     // the samplers:
     auto descriptorSetLayout = pipelineConfig->layout->setLayouts.front();
@@ -346,23 +345,19 @@ TerrainState::updateTerrainTileDescriptors(
     );
     //if (sharedObjects) sharedObjects->share(descriptorSet);
 
-    dm.bindDescriptorSetCommand = vsg::BindDescriptorSet::create(
+    auto bind = vsg::BindDescriptorSet::create(
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         pipelineConfig->layout,
         0, // first set
         descriptorSet
     );
 
-    // No...?
-    //if (sharedObjects) sharedObjects->share(dm.bindDescriptorSetCommand);
+    //ROCKY_HARD_ASSERT(bind->vdata().value._vkDescriptorSet == 0);
 
-    if (stategroup)
-    {
-        // Need to compile the descriptors
-        runtime.compile(dm.bindDescriptorSetCommand);
+    // Need to compile the descriptors
+    runtime.compile(bind);
 
-        // And update the tile's state group
-        stategroup->stateCommands.clear();
-        stategroup->add(dm.bindDescriptorSetCommand);
-    }
+    // And update the tile's state group
+    stategroup->stateCommands.clear();
+    stategroup->add(bind);
 }

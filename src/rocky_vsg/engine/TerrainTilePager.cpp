@@ -256,7 +256,7 @@ TerrainTilePager::update(
                 auto parent = parent_iter->second._tile;
                 if (parent.valid())
                 {
-                    RP_DEBUG << "Unloading subtiles of " << key.str() << std::endl;
+                    //Log::info() << "Unloading subtiles of " << key.str() << std::endl;
                     parent->unloadSubtiles();
                 }
             }

@@ -1093,7 +1093,7 @@ MapManipulator::intersect(
     {
         vsg::LineSegmentIntersector lsi(start, end);
 
-        mapNode->terrainNode()->accept(lsi);
+        mapNode->terrain->accept(lsi);
 
         if (!lsi.intersections.empty())
         {

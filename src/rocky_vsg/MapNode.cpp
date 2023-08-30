@@ -46,8 +46,8 @@ MapNode::construct(const JSON& conf)
     const auto j = parse_json(conf);
     get_to(j, "screen_space_error", _screenSpaceError);
 
-    _terrain = TerrainNode::create(runtime(), conf);
-    addChild(_terrain);
+    terrain = TerrainNode::create(runtime(), conf);
+    addChild(terrain);
 
     _isOpen = false;
 
@@ -89,13 +89,13 @@ MapNode::runtime()
 const TerrainSettings&
 MapNode::terrainSettings() const
 {
-    return *_terrain.get();
+    return *terrain.get();
 }
 
 TerrainSettings&
 MapNode::terrainSettings()
 {
-    return *_terrain.get();
+    return *terrain.get();
 }
 
 bool
@@ -178,9 +178,9 @@ MapNode::update(const vsg::FrameStamp* f)
     ROCKY_PROFILE_FUNCTION();
     ROCKY_HARD_ASSERT_STATUS(_instance.status());
 
-    if (_terrain->map() == nullptr)
+    if (terrain->map() == nullptr)
     {
-        auto st = _terrain->setMap(map(), worldSRS());
+        auto st = terrain->setMap(map(), worldSRS());
 
         if (st.failed())
         {
@@ -188,7 +188,7 @@ MapNode::update(const vsg::FrameStamp* f)
         }
     }
 
-    _terrain->update(f, _instance.ioOptions());
+    terrain->update(f, _instance.ioOptions());
 }
 
 void

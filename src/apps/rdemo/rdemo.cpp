@@ -157,6 +157,8 @@ struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>
 
 int main(int argc, char** argv)
 {
+    //vsg::Allocator::instance()->allocatorType = vsg::ALLOCATOR_TYPE_NEW_DELETE;
+
     // instantiate the application engine.
     rocky::Application app(argc, argv);
 

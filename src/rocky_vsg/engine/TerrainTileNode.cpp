@@ -86,6 +86,11 @@ TerrainTileNode::TerrainTileNode(
     }
 }
 
+TerrainTileNode::~TerrainTileNode()
+{
+    //Log::info() << "Destructing " << key.str() << std::endl;
+}
+
 void
 TerrainTileNode::recomputeBound()
 {

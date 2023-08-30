@@ -73,6 +73,7 @@ namespace ROCKY_NAMESPACE
             std::chrono::microseconds update;
             std::chrono::microseconds record;
             std::chrono::microseconds present;
+            double memory;
 
         };
         Stats stats;
@@ -142,6 +143,9 @@ namespace ROCKY_NAMESPACE
 
         //! Move construction is disabled.
         Application(Application&&) = delete;
+
+        //! Destructor
+        ~Application();
 
     private:
         bool _apilayer = false;

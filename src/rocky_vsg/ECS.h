@@ -63,8 +63,7 @@ namespace ROCKY_NAMESPACE
 
         /**
         * Base class for all ECS systems.
-        * A "system" is a module that performs operations on a
-        * specific Component type.
+        * A "system" is a module that performs operations on a specific Component type.
         */
         class ROCKY_VSG_EXPORT System
         {
@@ -215,12 +214,14 @@ namespace ROCKY_NAMESPACE
             // list of entities whose components require some kind of VSG initialization
             mutable std::vector<entt::entity> entities_to_initialize;
 
+            // looks for any new components that need VSG initialization
+            inline void initializeComponents(Runtime&);
+
             // Hooks to expose systems and components to VSG visitors.
             inline void accept(vsg::Visitor& v);
             inline void accept(vsg::ConstVisitor& v) const;
             inline void compile(vsg::Context&);
             inline void record(vsg::RecordTraversal&) const;
-            inline void initializeComponents(Runtime&);
         };
     }
 
@@ -247,6 +248,7 @@ namespace ROCKY_NAMESPACE
     struct EntityMotion : public ECS::Component
     {
         glm::dvec3 velocity;
+        glm::dvec3 acceleration;
 
     private:
         SRSOperation world2pos;

@@ -70,6 +70,7 @@ EntityMotionSystem::tick(Runtime& runtime, ECS::time_point time)
                 auto& pos = transform.node->position;
                 auto l2w = pos.srs.localToWorldMatrix({ pos.x, pos.y, pos.z });
                 auto world = l2w * (motion.velocity * dt);
+                motion.velocity += motion.acceleration * dt;
 
                 if (!motion.world2pos.valid())
                     motion.world2pos = pos.srs.geocentricSRS().to(pos.srs);

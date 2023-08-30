@@ -77,8 +77,10 @@ namespace ROCKY_NAMESPACE
         using NodeFactory = std::function<vsg::ref_ptr<vsg::Node>(Cancelable&)>;
 
         //! Compiles an object now.
-        //! Be careful to only call this from a safe thead
+        //! Be careful to only call this from a safe thread
         void compile(vsg::ref_ptr<vsg::Object> object);
+
+        //void compile_simple(vsg::ref_ptr<vsg::Object> object);
 
         //! Schedules data creation; the resulting node or nodes 
         //! get added to "parent" if the operation suceeds.

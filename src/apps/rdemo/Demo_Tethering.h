@@ -77,6 +77,7 @@ auto Demo_Tethering = [](Application& app)
         // Add a motion component to animate the entity:
         auto& motion = app.entities.emplace<EntityMotion>(entity);
         motion.velocity = { 1000, 0, 0 };
+        motion.acceleration = { 0, 0, 0 };
     }
 
     if (ImGuiLTable::Begin("tethering"))
@@ -102,6 +103,7 @@ auto Demo_Tethering = [](Application& app)
 
         auto& motion = app.entities.get<EntityMotion>(entity);
         ImGuiLTable::SliderDouble("Speed", &motion.velocity.x, 0.0, 10000.0, "%.0lf");
+        ImGuiLTable::SliderDouble("Acceleration", &motion.acceleration.x, -100.0, 100.0, "%.1lf");
 
         ImGuiLTable::End();
     }

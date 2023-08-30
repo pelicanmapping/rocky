@@ -13,9 +13,7 @@
 using namespace ROCKY_NAMESPACE;
 
 GeometryPool::GeometryPool(const SRS& worldSRS) :
-    _worldSRS(worldSRS),
-    _enabled(true),
-    _debug(false)
+    _worldSRS(worldSRS)
 {
     //ROCKY_TODO("ADJUST_UPDATE_TRAV_COUNT(this, +1)");
 

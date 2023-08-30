@@ -51,6 +51,8 @@ namespace ROCKY_NAMESPACE
             return _map;
         }
 
+        std::shared_ptr<TerrainEngine> _engine;
+
     protected:
 
         //! TerrainTileHost interface
@@ -73,7 +75,6 @@ namespace ROCKY_NAMESPACE
 
         Runtime& _runtime;
         vsg::ref_ptr<vsg::Group> _tilesRoot;
-        shared_ptr<TerrainEngine> _engine;
         Status _status;
         std::shared_ptr<Map> _map;
         SRS _worldSRS;

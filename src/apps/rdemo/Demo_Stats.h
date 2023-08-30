@@ -10,6 +10,9 @@
  * both a unit test for that feature, and a reference or writing your own code.
  */
 #include <rocky_vsg/Application.h>
+#include <rocky_vsg/engine/TerrainEngine.h>
+#include <rocky/Memory.h>
+#include <vsg/core/Allocator.h>
 #include "helpers.h"
 
 using namespace ROCKY_NAMESPACE;
@@ -54,11 +57,11 @@ auto Demo_Stats = [](Application& app)
 
     if (app.debugLayerOn())
     {
-        ImGui::TextColored(ImVec4(1, .8, .3, 1), "Note: Debug validation is ON");
-        ImGui::TextColored(ImVec4(1, .8, .3, 1), "Timings will be affected");
+        ImGui::TextColored(ImVec4(1, .3, .3, 1), "Note: Debug validation is ON");
+        ImGui::TextColored(ImVec4(1, .3, .3, 1), "Timings will be affected");
     }
 
-    ImGuiLTable::Begin("Timings");
+    if (ImGuiLTable::Begin("Timings"))
     {
         sprintf(buf, "%.2f ms", 0.001f * (float)app.stats.frame.count());
         ImGuiLTable::PlotLines("Frame", get_timings, &frames, frame_count, f, buf, 0.0f, 17.0f);
@@ -74,21 +77,46 @@ auto Demo_Stats = [](Application& app)
 
         sprintf(buf, u8"%lld \x00B5s", average(&present, over, f));
         ImGuiLTable::PlotLines("Present", get_timings, &present, frame_count, f, buf, 0.0f, 10.0f);
+        ImGuiLTable::End();
     }
-    ImGuiLTable::End();
+
+    ImGui::SeparatorText("Memory");
+    if (ImGuiLTable::Begin("Memory"))
+    {
+        auto& alloc = vsg::Allocator::instance();
+        ImGuiLTable::Text("Process private", "%.1lf MB", (double)Memory::getProcessPhysicalUsage() / 1048576.0);
+        if (alloc->allocatorType == vsg::ALLOCATOR_TYPE_VSG_ALLOCATOR)
+        {
+            ImGuiLTable::Text("VSG alloc total", "%.1lf MB", (double)alloc->totalMemorySize() / 1048576.0);
+            ImGuiLTable::Text("VSG alloc available", "%.1lf MB", (double)alloc->totalAvailableSize() / 1048576.0);
+            ImGuiLTable::Text("VSG alloc reserved", "%.1lf MB", (double)alloc->totalReservedSize() / 1048576.0);
+        }
+        ImGuiLTable::End();
+    }
 
     ImGui::SeparatorText("Thread Pools");
     auto& metrics = util::job_metrics::get();
-    ImGuiLTable::Begin("Thread Pools");
-    for (auto& m : metrics)
+    if (ImGuiLTable::Begin("Thread Pools"))
     {
-        if (m) {
-            std::string name = m->name.empty() ? "default" : m->name;
-            sprintf(buf, "(%d) %d / %d", (int)m->concurrency, (int)m->running, (int)m->pending);
-            ImGuiLTable::Text(name.c_str(), buf);
+        for (auto& m : metrics)
+        {
+            if (m) {
+                std::string name = m->name.empty() ? "default" : m->name;
+                sprintf(buf, "(%d) %d / %d", (int)m->concurrency, (int)m->running, (int)m->pending);
+                ImGuiLTable::Text(name.c_str(), buf);
+            }
         }
+        ImGuiLTable::End();
     }
-    ImGuiLTable::End();
-        
+
+    ImGui::SeparatorText("Terrain Engine");
+    if (ImGuiLTable::Begin("Terrain Engine"))
+    {
+        auto& engine = app.mapNode->terrain->_engine;
+        ImGuiLTable::Text("Active tiles", std::to_string(engine->tiles.size()).c_str());
+        ImGuiLTable::Text("Geometry pool cache", std::to_string(engine->geometryPool._sharedGeometries.size()).c_str());
+        ImGuiLTable::End();
+    }
+
     frame_num++;
 };

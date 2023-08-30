@@ -171,6 +171,11 @@ Application::Application(int& argc, char** argv) :
     mainScene->addChild(ecs);
 }
 
+Application::~Application()
+{
+    entities.clear();
+}
+
 namespace
 {
     // https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/debug_utils
@@ -543,14 +548,15 @@ Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
     // Configure a descriptor pool size that's appropriate for paged terrains
     // (they are a good candidate for DS reuse). This is optional.
     // https://groups.google.com/g/vsg-users/c/JJQZ-RN7jC0/m/tyX8nT39BAAJ
-    auto resourceHints = vsg::ResourceHints::create();
-    resourceHints->numDescriptorSets = 1024;
-    resourceHints->descriptorPoolSizes.push_back(
-        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024 });
+    //auto resourceHints = vsg::ResourceHints::create();
+    //resourceHints->numDescriptorSets = 1024;
+    //resourceHints->descriptorPoolSizes.push_back(
+    //    VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024 });
     
     // Initialize and compile existing any Vulkan objects found in the scene
     // (passing in ResourceHints to guide the resources allocated).
-    viewer->compile(resourceHints);
+    //viewer->compile(resourceHints);
+    viewer->compile();
 }
 
 void
@@ -597,7 +603,7 @@ int
 Application::run()
 {
     // The main frame loop
-    while (frame() == true);
+    while (frame() == true);    
     return 0;
 }
 
@@ -616,6 +622,8 @@ Application::frame()
 
     auto t_update = std::chrono::steady_clock::now();
 
+    //viewer->deviceWaitIdle();
+
     // rocky map update pass - management of tiles and paged data
     mapNode->update(viewer->getFrameStamp());
 
@@ -631,8 +639,8 @@ Application::frame()
     viewer->handleEvents();
 
     // since an event handler could deactivate the viewer:
-    if (!viewer->active())
-        return false;
+    //if (!viewer->active())
+    //    return false;
 
     // run through the viewer's update operations queue; this includes
     // update ops initialized by rocky (e.g. terrain tile merges)
@@ -663,7 +671,8 @@ Application::frame()
     stats.record = std::chrono::duration_cast<std::chrono::microseconds>(t_present - t_record);
     stats.present = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_present);
 
-    return true;
+    return viewer->active();
+    //return true;
 }
 
 void

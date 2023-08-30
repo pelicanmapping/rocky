@@ -83,9 +83,10 @@ namespace ROCKY_NAMESPACE
         void update(const vsg::FrameStamp*);
 
         //! Access to the underlying terrain node graph
-        vsg::ref_ptr<vsg::Node> terrainNode() const {
-            return _terrain;
-        }
+        //vsg::ref_ptr<vsg::Node> terrainNode() const {
+        //    return _terrain;
+        //}
+        vsg::ref_ptr<TerrainNode> terrain;
 
         virtual ~MapNode();
 
@@ -102,7 +103,7 @@ namespace ROCKY_NAMESPACE
         optional<float> _screenSpaceError = 25.0f;
 
         SRS _worldSRS;
-        vsg::ref_ptr<TerrainNode> _terrain;
+        //vsg::ref_ptr<TerrainNode> _terrain;
         shared_ptr<Map> _map;
         vsg::ref_ptr<vsg::Group> _layerNodes;
         std::atomic<bool> _readyForUpdate;

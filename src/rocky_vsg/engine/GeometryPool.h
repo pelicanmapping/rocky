@@ -189,8 +189,8 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::ushortArray> createIndices(
             const Settings& settings) const;
 
-        bool _enabled;
-        bool _debug;
+        bool _enabled = false;
+        bool _debug = false;
     };
 
 }
