@@ -34,12 +34,15 @@ jobs:
         path: "C:\\VulkanSDK\\1.3.231.1"
         key: vulkan-sdk-1.3.231.1
       
-    - name: Download and Install Vulkan SDK
+    - name: Download Vulkan SDK
       if: steps.cache-vulkan-sdk.outputs.cache-hit != 'true'
       uses: engineerd/configurator@v0.0.1
       with:
         name: "Vulkan.exe"
         url: "https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/VulkanSDK-1.3.231.1-Installer.exe"
+
+    - name: Install Vulkan SDK
+      if: steps.cache-vulkan-sdk.outputs.cache-hit != 'true'
       run : |
         Vulkan.exe /S
 
