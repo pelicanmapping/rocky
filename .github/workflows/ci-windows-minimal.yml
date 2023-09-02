@@ -36,18 +36,12 @@ jobs:
       
     - name: Download and Install Vulkan SDK
       if: steps.cache-vulkan-sdk.outputs.cache-hit != 'true'
-      uses: iamazy/download-action@main
+      uses: engineerd/configurator@v0.0.1
       with:
-        url: 'https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/VulkanSDK-1.3.231.1-Installer.exe'
-        actor: ${{ github.actor }}
-        repo: ${{ github.repository }}
-
-    - name: Install Vulkan SDK
-      if: steps.cache-vulkan-sdk.outputs.cache-hit != 'true'
-      shell: 'powershell'
-      run: |
-        $installer = Start-Process -FilePath VulkanSDK-1.3.231.1-Installer.exe -Wait -PassThru -ArgumentList @("/S");
-        $installer.WaitForExit();
+        name: "Vulkan.exe"
+        url: "https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/VulkanSDK-1.3.231.1-Installer.exe"
+      run : |
+        Vulkan.exe /S
 
     - name: Installing vcpkg (windows)
       shell: 'bash'
