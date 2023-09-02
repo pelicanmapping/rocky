@@ -44,6 +44,7 @@ jobs:
 
     - name: Install Vulkan SDK
       if: steps.cache-vulkan-sdk.outputs.cache-hit != 'true'
+      shell: 'powershell'
       run : |
         ${{ steps.download-vulkan.outputs.file-path }}
 
