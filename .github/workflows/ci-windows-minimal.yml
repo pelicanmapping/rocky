@@ -36,15 +36,15 @@ jobs:
       
     - name: Download Vulkan SDK
       if: steps.cache-vulkan-sdk.outputs.cache-hit != 'true'
-      uses: valitydev/action-download-file@v1
+      uses: carlosperate/download-file-action@v2
       with:
-        url: "https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/VulkanSDK-1.3.231.1-Installer.exe"
-        target-path: .
+        file-url: "https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/VulkanSDK-1.3.231.1-Installer.exe"
+        file-name: "vulkan.exe"
 
     - name: Install Vulkan SDK
       if: steps.cache-vulkan-sdk.outputs.cache-hit != 'true'
       run : |
-        VulkanSDK-1.3.231.1-Installer.exe /S
+        vulkan.exe /S
 
     - name: Installing vcpkg (windows)
       shell: 'bash'
