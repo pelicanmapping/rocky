@@ -38,7 +38,7 @@ jobs:
       shell: 'powershell'
       if: steps.cache-vulkan-sdk.outputs.cache-hit != 'true'
       run: |
-        Invoke-WebRequest -Uri "https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/VulkanSDK-1.3.231.1-Installer.exe" -OutFile VulkanSDK.exe
+        Invoke-WebRequest "https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/VulkanSDK-1.3.231.1-Installer.exe" -OutFile VulkanSDK.exe
         $installer = Start-Process -FilePath VulkanSDK.exe -Wait -PassThru -ArgumentList @("/S");
         $installer.WaitForExit();
 
