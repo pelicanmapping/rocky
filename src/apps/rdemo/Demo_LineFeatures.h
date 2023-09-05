@@ -6,16 +6,17 @@
 #pragma once
 #include <rocky_vsg/Line.h>
 #include <rocky_vsg/FeatureView.h>
-
 #include "helpers.h"
+
 using namespace ROCKY_NAMESPACE;
 
-auto Demo_LineFeatures= [](Application& app)
+auto Demo_LineFeatures = [](Application& app)
 {
     static entt::entity entity = entt::null;
 
     if (entity == entt::null)
     {
+#ifdef GDAL_FOUND
         // open a feature source:
         auto fs = rocky::OGRFeatureSource::create();
         fs->uri = "https://readymap.org/readymap/filemanager/download/public/countries.geojson";
@@ -61,4 +62,7 @@ auto Demo_LineFeatures= [](Application& app)
 
         ImGuiLTable::End();
     }
+#else
+        ImGui::TextColored(ImVec4(1, .3, .3, 1), "Unavailable - not built with GDAL");
+#endif
 };

@@ -6,12 +6,13 @@
 #pragma once
 #include <rocky_vsg/FeatureView.h>
 #include <random>
-
 #include "helpers.h"
+
 using namespace ROCKY_NAMESPACE;
 
 auto Demo_PolygonFeatures = [](Application& app)
 {
+#ifdef GDAL_FOUND
     static entt::entity entity = entt::null;
     static Status status;
     
@@ -70,4 +71,8 @@ auto Demo_PolygonFeatures = [](Application& app)
 
         ImGuiLTable::End();
     }
+
+#else
+    ImGui::TextColored(ImVec4(1, .3, .3, 1), "Unavailable - not built with GDAL");
+#endif
 };

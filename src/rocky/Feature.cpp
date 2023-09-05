@@ -4,8 +4,11 @@
  * MIT License
  */
 #include "Feature.h"
+
+#ifdef GDAL_FOUND
 #include <gdal.h> // OGR API
 #include <ogr_spatialref.h>
+#endif
 
 using namespace ROCKY_NAMESPACE;
 
