@@ -13,7 +13,7 @@ if not exist %VCPKG_TOOLCHAIN_FILE% (
 :: Verify that the Vulkan SDK is installed
 if not defined VULKAN_SDK (
     echo Please install the Vulkan SDK and set the VULKAN_SDK enviroment variable to its location:
-    echo https://sdk.lunarg.com/sdk/download/1.3.231.1/windows/VulkanSDK-1.3.231.1-Installer.exe
+    echo https://sdk.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe
     goto :end
 )
 
