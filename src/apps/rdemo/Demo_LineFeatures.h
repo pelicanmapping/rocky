@@ -12,11 +12,11 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_LineFeatures = [](Application& app)
 {
+#ifdef GDAL_FOUND
     static entt::entity entity = entt::null;
 
     if (entity == entt::null)
     {
-#ifdef GDAL_FOUND
         // open a feature source:
         auto fs = rocky::OGRFeatureSource::create();
         fs->uri = "https://readymap.org/readymap/filemanager/download/public/countries.geojson";
