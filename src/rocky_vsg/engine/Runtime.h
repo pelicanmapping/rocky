@@ -61,12 +61,19 @@ namespace ROCKY_NAMESPACE
         //! poll this to see if it needs to regenerate its pipeline.
         Revision shaderSettingsRevision = 0;
 
+        //! If true, compile() will operate immediately regardless
+        //! of the calling thread. If false, compilation is deferred
+        //! until the next call to update().
+        bool asyncCompile = true;
+
+    public:
+
         //! Queue a function to run during the update pass
         //! This is a safe way to do things that require modifying the scene
         //! or compiling vulkan objects
         void runDuringUpdate(
             vsg::ref_ptr<vsg::Operation> function,
-            std::function<float()> get_priority = nullptr);
+            std::function<float()> get_priority = {});
 
         //! Queue a function to run during the update pass.
         //! This is a safe way to do things that require modifying the scene
@@ -74,21 +81,25 @@ namespace ROCKY_NAMESPACE
         void runDuringUpdate(
             std::function<void()> function);
 
-        //! Function that creates a node
-        using NodeFactory = std::function<vsg::ref_ptr<vsg::Node>(Cancelable&)>;
-
         //! Compiles an object now.
         //! Be careful to only call this from a safe thread
         void compile(vsg::ref_ptr<vsg::Object> object);
 
-        //void compile_simple(vsg::ref_ptr<vsg::Object> object);
+        //! Destroys a VSG object, eventually. 
+        //! Call this to get rid of descriptor sets you plan to replace.
+        //! You can't just let them go since they recycle internally and 
+        //! you could end up trying to destroy a vulkan object while
+        //! compiling new objects, which will result in a validation error
+        //! and leaked memory.
+        //! https://github.com/vsg-dev/VulkanSceneGraph/discussions/949
+        void destroy(vsg::ref_ptr<vsg::Object> object);
 
         //! Schedules data creation; the resulting node or nodes 
         //! get added to "parent" if the operation suceeds.
         //! Returns a future so you can check for completion.
         util::Future<bool> compileAndAddChild(
             vsg::ref_ptr<vsg::Group> parent,
-            NodeFactory factory,
+            std::function<vsg::ref_ptr<vsg::Node>(Cancelable&)> factory,
             const util::job& config = { });
 
         //! Safely removes a node from the scene graph (async)
@@ -109,18 +120,17 @@ namespace ROCKY_NAMESPACE
         //! Update any pending compile results.
         void update();
 
-        // Once VSG can safely handle async compilation we will
-        // change this to true. See:
-        // https://github.com/vsg-dev/VulkanSceneGraph/discussions/949
-        bool asyncCompile = false;
+        // deferred deletion container
+        mutable std::shared_mutex _deferred_unref_mutex;
+        std::list<std::vector<vsg::ref_ptr<vsg::Object>>> _deferred_unref_queue;
 
     private:
+        // for (some) update operations
         vsg::ref_ptr<vsg::Operation> _priorityUpdateQueue;
 
-        std::shared_mutex _compileMutex;
+        // containers for compilation and integrating the results
+        mutable std::shared_mutex _compileMutex;
         std::queue<vsg::ref_ptr<vsg::Object>> _toCompile;
-
-        //std::mutex _compileResultsMutex;
         std::vector<vsg::CompileResult> _compileResults;
     };
 }

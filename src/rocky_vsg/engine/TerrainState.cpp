@@ -68,68 +68,68 @@ TerrainState::createDefaultDescriptors()
     // color channel
     // TODO: more than one - make this an array?
     // TODO: activate mipmapping
-    textures.color = { COLOR_TEX_NAME, COLOR_TEX_BINDING, vsg::Sampler::create(), {} };
-    textures.color.sampler->minFilter = VK_FILTER_LINEAR;
-    textures.color.sampler->magFilter = VK_FILTER_LINEAR;
-    textures.color.sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    textures.color.sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    textures.color.sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    textures.color.sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    textures.color.sampler->anisotropyEnable = VK_TRUE;
-    textures.color.sampler->maxAnisotropy = 4.0f;
+    texturedefs.color = { COLOR_TEX_NAME, COLOR_TEX_BINDING, vsg::Sampler::create(), {} };
+    texturedefs.color.sampler->minFilter = VK_FILTER_LINEAR;
+    texturedefs.color.sampler->magFilter = VK_FILTER_LINEAR;
+    texturedefs.color.sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    texturedefs.color.sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    texturedefs.color.sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    texturedefs.color.sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    texturedefs.color.sampler->anisotropyEnable = VK_TRUE;
+    texturedefs.color.sampler->maxAnisotropy = 4.0f;
     if (_runtime.sharedObjects)
-        _runtime.sharedObjects->share(textures.color.sampler);
+        _runtime.sharedObjects->share(texturedefs.color.sampler);
 
-    textures.elevation = { ELEVATION_TEX_NAME, ELEVATION_TEX_BINDING, vsg::Sampler::create(), {} };
-    textures.elevation.sampler->maxLod = 16;
-    textures.elevation.sampler->minFilter = VK_FILTER_LINEAR;
-    textures.elevation.sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    textures.elevation.sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    textures.elevation.sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    texturedefs.elevation = { ELEVATION_TEX_NAME, ELEVATION_TEX_BINDING, vsg::Sampler::create(), {} };
+    texturedefs.elevation.sampler->maxLod = 16;
+    texturedefs.elevation.sampler->minFilter = VK_FILTER_LINEAR;
+    texturedefs.elevation.sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    texturedefs.elevation.sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    texturedefs.elevation.sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     if (_runtime.sharedObjects)
-        _runtime.sharedObjects->share(textures.elevation.sampler);
+        _runtime.sharedObjects->share(texturedefs.elevation.sampler);
 
-    textures.normal = { NORMAL_TEX_NAME, NORMAL_TEX_BINDING, vsg::Sampler::create(), {} };
-    textures.normal.sampler->maxLod = 16;
-    textures.normal.sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    textures.normal.sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    textures.normal.sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    texturedefs.normal = { NORMAL_TEX_NAME, NORMAL_TEX_BINDING, vsg::Sampler::create(), {} };
+    texturedefs.normal.sampler->maxLod = 16;
+    texturedefs.normal.sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    texturedefs.normal.sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    texturedefs.normal.sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     if (_runtime.sharedObjects)
-        _runtime.sharedObjects->share(textures.normal.sampler);
+        _runtime.sharedObjects->share(texturedefs.normal.sampler);
 
 
     // Next make the "default" descriptor model, which is used when 
     // no other data is available. These are 1x1 pixel placeholder images.
     auto color_image = Image::create(Image::R8G8B8A8_UNORM, 1, 1);
     color_image->write(Color::Orange, 0, 0);
-    textures.color.defaultData = util::moveImageToVSG(color_image);
-    ROCKY_HARD_ASSERT(textures.color.defaultData);
+    texturedefs.color.defaultData = util::moveImageToVSG(color_image);
+    ROCKY_HARD_ASSERT(texturedefs.color.defaultData);
     this->defaultTileDescriptors.color = vsg::DescriptorImage::create(
-        textures.color.sampler,
-        textures.color.defaultData,
-        textures.color.uniform_binding,
+        texturedefs.color.sampler,
+        texturedefs.color.defaultData,
+        texturedefs.color.uniform_binding,
         0, // array element (TODO: increment when we change to an array)
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
     auto elev_image = Heightfield::create(1, 1);
     elev_image->fill(0.0f);
-    textures.elevation.defaultData = util::moveImageToVSG(elev_image);
-    ROCKY_HARD_ASSERT(textures.elevation.defaultData);
+    texturedefs.elevation.defaultData = util::moveImageToVSG(elev_image);
+    ROCKY_HARD_ASSERT(texturedefs.elevation.defaultData);
     this->defaultTileDescriptors.elevation = vsg::DescriptorImage::create(
-        textures.elevation.sampler,
-        textures.elevation.defaultData,
-        textures.elevation.uniform_binding,
+        texturedefs.elevation.sampler,
+        texturedefs.elevation.defaultData,
+        texturedefs.elevation.uniform_binding,
         0, // array element
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
     auto normal_image = Image::create(Image::R8G8B8_UNORM, 1, 1);
     normal_image->fill(glm::fvec4(.5, .5, 1, 0));
-    textures.normal.defaultData = util::moveImageToVSG(normal_image);
-    ROCKY_HARD_ASSERT(textures.normal.defaultData);
+    texturedefs.normal.defaultData = util::moveImageToVSG(normal_image);
+    ROCKY_HARD_ASSERT(texturedefs.normal.defaultData);
     this->defaultTileDescriptors.normal = vsg::DescriptorImage::create(
-        textures.normal.sampler,
-        textures.normal.defaultData,
-        textures.normal.uniform_binding,
+        texturedefs.normal.sampler,
+        texturedefs.normal.defaultData,
+        texturedefs.normal.uniform_binding,
         0, // array element
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 }
@@ -181,9 +181,9 @@ TerrainState::createShaderSet() const
     //shaderSet->addAttributeBinding(ATTR_NORMAL_NEIGHBOR, "", 4, VK_FORMAT_R32G32B32A32_SFLOAT, vsg::vec3Array::create(1));
 
     // "binding" (4th param) must match "layout(location=X) uniform" in the shader
-    shaderSet->addUniformBinding(textures.elevation.name, "", 0, textures.elevation.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
-    shaderSet->addUniformBinding(textures.color.name, "", 0, textures.color.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
-    shaderSet->addUniformBinding(textures.normal.name, "", 0, textures.normal.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+    shaderSet->addUniformBinding(texturedefs.elevation.name, "", 0, texturedefs.elevation.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
+    shaderSet->addUniformBinding(texturedefs.color.name, "", 0, texturedefs.color.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+    shaderSet->addUniformBinding(texturedefs.normal.name, "", 0, texturedefs.normal.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
     shaderSet->addUniformBinding(TILE_BUFFER_NAME, "", 0, TILE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
     
     PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -229,9 +229,9 @@ TerrainState::createPipelineConfig() const
     config->assignTexture(textures.color.name, textures.color.defaultData, textures.color.sampler);
     config->assignTexture(textures.normal.name, textures.normal.defaultData, textures.normal.sampler);
 #else
-    config->enableTexture(textures.elevation.name);
-    config->enableTexture(textures.color.name);
-    config->enableTexture(textures.normal.name);
+    config->enableTexture(texturedefs.elevation.name);
+    config->enableTexture(texturedefs.color.name);
+    config->enableTexture(texturedefs.normal.name);
 #endif
 
     config->enableUniform(TILE_BUFFER_NAME);
@@ -288,12 +288,16 @@ TerrainState::updateTerrainTileDescriptors(
         auto data = util::moveImageToVSG(renderModel.color.image->clone());
         if (data)
         {
+            runtime.destroy(dm.color);
+
             dm.color = vsg::DescriptorImage::create(
-                textures.color.sampler,
+                texturedefs.color.sampler,
                 data,
-                textures.color.uniform_binding,
+                texturedefs.color.uniform_binding,
                 0, // array element (TODO: increment if we change to an array)
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+
+            dm.color->setValue("name", renderModel.color.name);
         }
     }
 
@@ -302,12 +306,16 @@ TerrainState::updateTerrainTileDescriptors(
         auto data = util::moveImageToVSG(renderModel.elevation.image->clone());
         if (data)
         {
+            runtime.destroy(dm.elevation);
+
             dm.elevation = vsg::DescriptorImage::create(
-                textures.elevation.sampler,
+                texturedefs.elevation.sampler,
                 data,
-                textures.elevation.uniform_binding,
+                texturedefs.elevation.uniform_binding,
                 0, // array element
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+
+            dm.elevation->setValue("name", renderModel.elevation.name);
         }
     }
 
@@ -316,12 +324,16 @@ TerrainState::updateTerrainTileDescriptors(
         auto data = util::moveImageToVSG(renderModel.normal.image->clone());
         if (data)
         {
+            runtime.destroy(dm.normal);
+
             dm.normal = vsg::DescriptorImage::create(
-                textures.normal.sampler,
+                texturedefs.normal.sampler,
                 data,
-                textures.normal.uniform_binding,
+                texturedefs.normal.uniform_binding,
                 0, // array element
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+
+            dm.normal->setValue("name", renderModel.normal.name);
         }
     }
 
@@ -354,10 +366,18 @@ TerrainState::updateTerrainTileDescriptors(
 
     //ROCKY_HARD_ASSERT(bind->vdata().value._vkDescriptorSet == 0);
 
+    // Destroy the old descriptor set(s) safely; don't just replace them
+    // or it could cause a validataion error during compilation due to 
+    // vsg descriptorset internal recycling.
+    for (auto& command : stategroup->stateCommands)
+        runtime.destroy(command);
+    
+    stategroup->stateCommands.clear();
+
     // Need to compile the descriptors
     runtime.compile(bind);
 
     // And update the tile's state group
-    stategroup->stateCommands.clear();
+    //stategroup->stateCommands.clear();
     stategroup->add(bind);
 }

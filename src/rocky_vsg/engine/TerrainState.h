@@ -103,7 +103,7 @@ namespace ROCKY_NAMESPACE
             TextureDef elevation;
             TextureDef normal;
         }
-        textures;
+        texturedefs;
 
         Runtime& _runtime;
     };

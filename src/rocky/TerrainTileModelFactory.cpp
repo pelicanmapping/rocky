@@ -161,15 +161,16 @@ TerrainTileModelFactory::createTileModel(
 
 namespace
 {
-    void addImageLayer(const TileKey& key, std::shared_ptr<ImageLayer> layer, bool fallback, TerrainTileModel& model, const IOOptions& io)
+    void addImageLayer(const TileKey& requested_key, std::shared_ptr<ImageLayer> layer, bool fallback, TerrainTileModel& model, const IOOptions& io)
     {
         Result<GeoImage> result;
 
+        TileKey key = requested_key;
         if (fallback)
         {
-            for (TileKey k = key; k.valid() && !result.value.valid(); k.makeParent())
+            for (; key.valid() && !result.value.valid(); key.makeParent())
             {
-                result = layer->createImage(k, io);
+                result = layer->createImage(key, io);
             }
         }
         else
@@ -179,10 +180,11 @@ namespace
 
         if (result.value.valid())
         {
-            TerrainTileModel::ColorLayer m;
+            TerrainTileModel::ColorLayer m;            
             m.layer = layer;
             m.revision = layer->revision();
             m.image = result.value;
+            m.key = key;
             model.colorLayers.emplace_back(std::move(m));
             if (layer->isDynamic())
             {
@@ -287,6 +289,7 @@ TerrainTileModelFactory::addColorLayers(
                 image.composite(sources);
 
                 TerrainTileModel::ColorLayer layer;
+                layer.key = key;
                 layer.revision = tile.revision;
                 layer.matrix = tile.matrix;
                 layer.image = image;
@@ -325,6 +328,7 @@ TerrainTileModelFactory::createElevationModel(
 
             model.heightfield = std::move(result.value);
             model.revision = layer->revision();
+            model.key = key;
         }
 
         // ResourceUnavailable just means the driver could not produce data
@@ -391,6 +395,7 @@ TerrainTileModelFactory::addElevation(
 
             model.elevation.heightfield = std::move(result.value);
             model.elevation.revision = layer->revision();
+            model.elevation.key = key;
         }
 
         // ResourceUnavailable just means the driver could not produce data

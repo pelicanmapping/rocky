@@ -252,12 +252,6 @@ RecursiveMutex::try_lock()
 
 //...................................................................
 
-unsigned rocky::util::getConcurrency()
-{
-    int value = std::thread::hardware_concurrency();
-    return value > 0 ? (unsigned)value : 4u;
-}
-
 void
 rocky::util::setThreadName(const std::string& name)
 {

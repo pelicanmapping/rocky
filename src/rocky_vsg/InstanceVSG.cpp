@@ -13,11 +13,11 @@
 #include <vsg/io/ReaderWriter.h>
 
 
-ROCKY_ABOUT(VulkanSceneGraph, VSG_VERSION_STRING)
+ROCKY_ABOUT(vulkanscenegraph, VSG_VERSION_STRING)
 
 #ifdef VSGXCHANGE_FOUND
 #include <vsgXchange/all.h>
-ROCKY_ABOUT(vsgXchange, VSGXCHANGE_VERSION_STRING)
+ROCKY_ABOUT(vsgxchange, VSGXCHANGE_VERSION_STRING)
 #endif
 
 #ifdef ROCKY_SUPPORTS_GDAL

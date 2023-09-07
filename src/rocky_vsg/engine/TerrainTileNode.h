@@ -32,9 +32,10 @@ namespace ROCKY_NAMESPACE
 
     struct TextureData
     {
+        std::string name;
         shared_ptr<Image> image;
         glm::dmat4 matrix{ 1 };
-        vsg::ref_ptr<vsg::ImageInfo> texture;
+        //vsg::ref_ptr<vsg::ImageInfo> texture;
     };
 
     enum TextureType
@@ -72,7 +73,6 @@ namespace ROCKY_NAMESPACE
         TextureData colorParent;
 
         TerrainTileDescriptors descriptors;
-        //vsg::ref_ptr<vsg::BindDescriptorSet> bindDescriptorSetCommand;
 
         void applyScaleBias(const glm::dmat4& sb)
         {
@@ -147,7 +147,7 @@ namespace ROCKY_NAMESPACE
 
         //! Remove this tile's children and reset the child
         //! loader future.
-        void unloadSubtiles();
+        void unloadSubtiles(Runtime&);
 
         //! Update this node (placeholder)
         void update(const vsg::FrameStamp*, const IOOptions&) { }

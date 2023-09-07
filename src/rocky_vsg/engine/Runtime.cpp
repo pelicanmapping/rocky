@@ -133,6 +133,11 @@ Runtime::Runtime()
                 return font;
             });
     }
+
+    // initialize the deferred deletion collection.
+    // a large number of frames ensures objects will be safely destroyed and
+    // and we won't have too many deletions per frame.
+    _deferred_unref_queue.resize(8);
 }
 
 void
@@ -183,6 +188,16 @@ Runtime::compile(vsg::ref_ptr<vsg::Object> compilable)
 }
 
 void
+Runtime::destroy(vsg::ref_ptr<vsg::Object> object)
+{
+    if (object)
+    {
+        std::unique_lock lock(_deferred_unref_mutex);
+        _deferred_unref_queue.back().emplace_back(object);
+    }
+}
+
+void
 Runtime::update()
 {
     if (asyncCompile)
@@ -220,10 +235,24 @@ Runtime::update()
             }
         }
     }
+
+    // process the deferred unref list
+    //if (viewer->getFrameStamp()->frameCount % 5 == 0)
+    {
+        std::unique_lock lock(_deferred_unref_mutex);
+        // unref everything in the oldest collection:
+        _deferred_unref_queue.front().clear();
+        // move the empty collection to the back:
+        _deferred_unref_queue.emplace_back(std::move(_deferred_unref_queue.front()));
+        _deferred_unref_queue.pop_front();
+    }
 }
 
 util::Future<bool>
-Runtime::compileAndAddChild(vsg::ref_ptr<vsg::Group> parent, NodeFactory factory, const util::job& job_config)
+Runtime::compileAndAddChild(
+    vsg::ref_ptr<vsg::Group> parent,
+    std::function<vsg::ref_ptr<vsg::Node>(Cancelable&)> factory,
+    const util::job& job_config)
 {
     // This is a two-step procedure. First we have to create the child
     // by calling the Factory function, and compile it. These things happen 

@@ -11,14 +11,14 @@
 #include "Version.h"
 #include "json.h"
 
-ROCKY_ABOUT(Rocky, ROCKY_VERSION_STRING)
+ROCKY_ABOUT(rocky, ROCKY_VERSION_STRING)
 ROCKY_ABOUT(glm, std::to_string(GLM_VERSION_MAJOR) + "." + std::to_string(GLM_VERSION_MINOR) + "." + std::to_string(GLM_VERSION_PATCH) + "." + std::to_string(GLM_VERSION_REVISION))
 ROCKY_ABOUT(nlohmann_json, std::to_string(NLOHMANN_JSON_VERSION_MAJOR) + "." + std::to_string(NLOHMANN_JSON_VERSION_MINOR));
 
 #ifdef GDAL_FOUND
 #include <gdal.h>
 #include <cpl_conv.h>
-ROCKY_ABOUT(GDAL, GDAL_RELEASE_NAME)
+ROCKY_ABOUT(gdal, GDAL_RELEASE_NAME)
 #endif
 
 #ifdef TINYXML_FOUND

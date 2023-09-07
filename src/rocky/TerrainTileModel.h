@@ -71,6 +71,7 @@ namespace ROCKY_NAMESPACE
     public:
         struct ROCKY_EXPORT Tile
         {
+            TileKey key;
             Revision revision = -1;
             glm::fmat4 matrix = glm::fmat4(1.0f); // identity
         };

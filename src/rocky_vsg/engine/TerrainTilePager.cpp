@@ -256,9 +256,7 @@ TerrainTilePager::update(
                 auto parent = parent_iter->second._tile;
                 if (parent.valid())
                 {
-                    //Log::info() << "Unloading subtiles of " << key.str() << std::endl;
-                    parent->unloadSubtiles();
-                    
+                    parent->unloadSubtiles(terrain->runtime);
                 }
             }
             _tiles.erase(key);
@@ -520,6 +518,7 @@ TerrainTilePager::requestMergeData(
             auto& layer = model.colorLayers[0];
             if (layer.image.valid())
             {
+                renderModel.color.name = "color " + layer.key.str();
                 renderModel.color.image = layer.image.image();
                 renderModel.color.matrix = layer.matrix;
             }
@@ -529,6 +528,7 @@ TerrainTilePager::requestMergeData(
 #ifndef LOAD_ELEVATION_SEPARATELY
         if (model.elevation.heightfield.valid())
         {
+            renderModel.elevation.name = "elevation " + model.elevation.key.str();
             renderModel.elevation.image = model.elevation.heightfield.heightfield();
             renderModel.elevation.matrix = model.elevation.matrix;
 
@@ -542,6 +542,7 @@ TerrainTilePager::requestMergeData(
 
         if (model.normalMap.image.valid())
         {
+            renderModel.elevation.name = "normal " + model.normalMap.key.str();
             renderModel.normal.image = model.normalMap.image.image();
             renderModel.normal.matrix = model.normalMap.matrix;
 

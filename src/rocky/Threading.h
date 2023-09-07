@@ -27,17 +27,6 @@
 namespace ROCKY_NAMESPACE { namespace util
 {
     /**
-     * Gets the approximate number of available threading contexts.
-     * Result is guaranteed to be greater than zero
-     */
-    extern ROCKY_EXPORT unsigned getConcurrency();
-
-    /**
-     * Gets the unique ID of the running thread.
-     */
-    //extern ROCKY_EXPORT unsigned getCurrentThreadId();
-
-    /**
      * Event with a binary signaled state, for multi-threaded sychronization.
      *
      * The event has two states:

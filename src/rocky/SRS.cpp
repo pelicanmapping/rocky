@@ -15,7 +15,7 @@
 
 using namespace ROCKY_NAMESPACE;
 
-ROCKY_ABOUT(PROJ, std::to_string(PROJ_VERSION_MAJOR) + "." + std::to_string(PROJ_VERSION_MINOR));
+ROCKY_ABOUT(proj, std::to_string(PROJ_VERSION_MAJOR) + "." + std::to_string(PROJ_VERSION_MINOR));
 
 namespace
 {

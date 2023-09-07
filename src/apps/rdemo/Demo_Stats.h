@@ -94,6 +94,13 @@ auto Demo_Stats = [](Application& app)
             ImGuiLTable::Text("VSG alloc available", "%.1lf MB", (double)alloc->totalAvailableSize() / 1048576.0);
             ImGuiLTable::Text("VSG alloc reserved", "%.1lf MB", (double)alloc->totalReservedSize() / 1048576.0);
         }
+        {
+            std::stringstream buf;
+            std::unique_lock lock(app.instance.runtime()._deferred_unref_mutex);
+            for (auto& v : app.instance.runtime()._deferred_unref_queue)
+                buf << std::to_string(v.size()) << ' ';
+            ImGuiLTable::Text("Deferred deletes", buf.str().c_str());
+        }
         ImGuiLTable::End();
     }
 
