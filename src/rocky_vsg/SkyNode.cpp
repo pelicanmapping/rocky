@@ -176,24 +176,29 @@ namespace
         // activate the packed lights uniform
         PipelineUtils::enableViewDependentData(pipelineConfig);
 
-        // only render back faces
-        pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_FRONT_BIT;
 
-        // no depth testing
-        pipelineConfig->depthStencilState->depthCompareOp = VK_COMPARE_OP_ALWAYS;
-
-        // no depth writing
-        pipelineConfig->depthStencilState->depthWriteEnable = VK_FALSE;
-
-        // 1/1 blending:
-        pipelineConfig->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
-            true,
-            VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-            VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
-            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
-        } };
-
-        //pipelineConfig->rasterizationState->polygonMode = VK_POLYGON_MODE_LINE;
+        struct SetPipelineStates : public vsg::Visitor
+        {
+            void apply(vsg::Object& object) override {
+                object.traverse(*this);
+            }
+            void apply(vsg::RasterizationState& state) override {
+                state.cullMode = VK_CULL_MODE_FRONT_BIT;
+            }
+            void apply(vsg::DepthStencilState& state) override {
+                state.depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                state.depthWriteEnable = VK_FALSE;
+            }
+            void apply(vsg::ColorBlendState& state) override {
+                state.attachments = vsg::ColorBlendState::ColorBlendAttachments{
+                    { true,
+                      VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+                      VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
+                      VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT }
+                };
+            }
+        };
+        vsg::visit<SetPipelineStates>(pipelineConfig);
 
         if (sharedObjects)
             sharedObjects->share(pipelineConfig, [](auto gpc) { gpc->init(); });

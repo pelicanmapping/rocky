@@ -118,20 +118,31 @@ IconSystem::initialize(Runtime& runtime)
 
         PipelineUtils::enableViewDependentData(c.config);
 
-        // Alpha blending to support line smoothing
-        c.config->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
-            true,
-            VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
-            VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
-            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
-        } };
-
-        c.config->rasterizationState->cullMode = VK_CULL_MODE_NONE;
-
-        // No depth testing please
-        c.config->depthStencilState->depthCompareOp = VK_COMPARE_OP_ALWAYS;
-        c.config->depthStencilState->depthTestEnable = VK_FALSE;
-        c.config->depthStencilState->depthWriteEnable = VK_FALSE;
+        struct SetPipelineStates : public vsg::Visitor
+        {
+            int feature_mask;
+            SetPipelineStates(int feature_mask_) : feature_mask(feature_mask_) { }
+            void apply(vsg::Object& object) override {
+                object.traverse(*this);
+            }
+            void apply(vsg::RasterizationState& state) override {
+                state.cullMode = VK_CULL_MODE_NONE;
+            }
+            void apply(vsg::DepthStencilState& state) override {
+                state.depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                state.depthTestEnable = VK_FALSE;
+                state.depthWriteEnable = VK_FALSE;
+            }
+            void apply(vsg::ColorBlendState& state) override {
+                state.attachments = vsg::ColorBlendState::ColorBlendAttachments{
+                    { true,
+                      VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
+                      VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
+                      VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT }
+                };
+            }
+        };
+        c.config->accept(SetPipelineStates(feature_mask));
 
         c.config->init();
 

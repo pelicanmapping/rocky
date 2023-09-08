@@ -128,6 +128,10 @@ namespace ROCKY_NAMESPACE
         //! TODO: evaluate whether we need this function or whether it should be exposed
         inline ViewData& viewData(vsg::ref_ptr<vsg::View> view);
 
+        //! TODO:
+        //! REFACTOR or REPLACE this based on the new functionality described here:
+        //! https://github.com/vsg-dev/VulkanSceneGraph/discussions/928
+        //! 
         //! Adds a new render graph that should render before the rest of the scene.
         //! (Typical use is an RTT camera that is later used as a texture somewhere
         //! in the main scene graph.)

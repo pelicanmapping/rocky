@@ -212,14 +212,6 @@ TerrainState::createPipelineConfig() const
     config->enableArray(ATTR_VERTEX, VK_VERTEX_INPUT_RATE_VERTEX, 12);
     config->enableArray(ATTR_NORMAL, VK_VERTEX_INPUT_RATE_VERTEX, 12);
     config->enableArray(ATTR_UV, VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    //config->enableArray(ATTR_VERTEX_NEIGHBOR, VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    //config->enableArray(ATTR_NORMAL_NEIGHBOR, VK_VERTEX_INPUT_RATE_VERTEX, 12);
-
-    // wireframe rendering:
-    //config->rasterizationState->polygonMode = VK_POLYGON_MODE_LINE;
-
-    // backface culling off:
-    //config->rasterizationState->cullMode = VK_CULL_MODE_NONE;
 
     // Temporary decriptors that we will use to set up the PipelineConfig.
     // Note, we only use these for setup, and then throw them away!

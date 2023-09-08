@@ -122,11 +122,6 @@ MeshSystem::initialize(Runtime& runtime)
 
         //c.pipelineConfig->enableUniform("vsg_viewports");
 
-        if ((feature_mask & WRITE_DEPTH) == 0)
-        {
-            c.config->depthStencilState->depthWriteEnable = VK_FALSE;
-        }
-
         if (feature_mask & DYNAMIC_STYLE)
         {
             c.config->enableUniform("mesh");
@@ -138,14 +133,29 @@ MeshSystem::initialize(Runtime& runtime)
             c.config->enableTexture("mesh_texture");
             c.config->shaderHints->defines.insert("USE_MESH_TEXTURE");
         }
-
-        // Alpha blending to support line smoothing
-        c.config->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
-            true,
-            VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
-            VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
-            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
-        } };
+        
+        struct SetPipelineStates : public vsg::Visitor
+        {
+            int feature_mask;
+            SetPipelineStates(int feature_mask_) : feature_mask(feature_mask_) { }
+            void apply(vsg::Object& object) override {
+                object.traverse(*this);
+            }
+            void apply(vsg::DepthStencilState& state) override {
+                if ((feature_mask & WRITE_DEPTH) == 0) {
+                    state.depthWriteEnable = VK_FALSE;
+                }
+            }
+            void apply(vsg::ColorBlendState& state) override {
+                state.attachments = vsg::ColorBlendState::ColorBlendAttachments{
+                    { true,
+                      VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
+                      VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
+                      VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT }
+                };
+            }
+        };
+        c.config->accept(SetPipelineStates(feature_mask));
 
         // Initialize GraphicsPipeline from the data in the configuration.
         c.config->init();

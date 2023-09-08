@@ -107,26 +107,40 @@ LineSystem::initialize(Runtime& runtime)
         c.config->enableArray("in_vertex_next", VK_VERTEX_INPUT_RATE_VERTEX, 12);
         c.config->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
 
-        // backface culling off ... we may or may not need this.
-        c.config->rasterizationState->cullMode = VK_CULL_MODE_NONE;
-
-        // disable depth writes (yes? no?)
-        c.config->depthStencilState->depthWriteEnable =
-            (feature_mask & WRITE_DEPTH) ? VK_TRUE : VK_FALSE;
-
         // Uniforms we will need:
         c.config->enableUniform("line");
 
         // always both
         PipelineUtils::enableViewDependentData(c.config);
 
-        // Alpha blending to support line smoothing
-        c.config->colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ {
-            true,
-            VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
-            VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
-            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
-        } };
+
+
+        struct SetPipelineStates : public vsg::Visitor
+        {
+            int feature_mask;
+            SetPipelineStates(int feature_mask_) : feature_mask(feature_mask_) { }
+            void apply(vsg::Object& object) override {
+                object.traverse(*this);
+            }
+            void apply(vsg::RasterizationState& state) override {
+                state.cullMode = VK_CULL_MODE_NONE;
+            }
+            void apply(vsg::DepthStencilState& state) override {
+                if ((feature_mask & WRITE_DEPTH) == 0) {
+                    state.depthWriteEnable = (feature_mask & WRITE_DEPTH) ? VK_TRUE : VK_FALSE;
+                }
+            }
+            void apply(vsg::ColorBlendState& state) override {
+                state.attachments = vsg::ColorBlendState::ColorBlendAttachments
+                {
+                    { true,
+                      VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
+                      VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
+                      VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT }
+                };
+            }
+        };
+        c.config->accept(SetPipelineStates(feature_mask));
 
         c.config->init();
 
