@@ -188,12 +188,22 @@ Runtime::compile(vsg::ref_ptr<vsg::Object> compilable)
 }
 
 void
-Runtime::destroy(vsg::ref_ptr<vsg::Object> object)
+Runtime::dispose(vsg::ref_ptr<vsg::Object> object)
 {
     if (object)
     {
-        std::unique_lock lock(_deferred_unref_mutex);
-        _deferred_unref_queue.back().emplace_back(object);
+        // if the user installed a custom disposer, use it
+        if (disposer)
+        {
+            disposer(object);
+        }
+        
+        // otherwise use our own
+        else
+        {
+            std::unique_lock lock(_deferred_unref_mutex);
+            _deferred_unref_queue.back().emplace_back(object);
+        }
     }
 }
 

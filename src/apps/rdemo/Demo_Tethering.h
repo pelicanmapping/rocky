@@ -20,7 +20,7 @@ using namespace std::chrono_literals;
 auto Demo_Tethering = [](Application& app)
 {
     auto view = app.displayConfiguration.windows.begin()->second.front();
-    auto manip = view ? view->getObject<MapManipulator>("rocky.manip") : nullptr;
+    auto manip = view ? view->getObject<MapManipulator>(MapManipulator::tag) : nullptr;
     if (!manip) return;
 
     // Make an entity for us to tether to and set it in motion

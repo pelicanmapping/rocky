@@ -36,8 +36,16 @@ namespace ROCKY_NAMESPACE
 
     public:
 
-        //! Map this node is rendering.
-        shared_ptr<Map> map() const;
+        //! Map backing this map node
+        std::shared_ptr<Map> map;
+
+        //! Instance object assocated with this map node
+        InstanceVSG instance;
+
+        //! Node rendering the terrain surface
+        vsg::ref_ptr<TerrainNode> terrain;
+
+    public:
 
         //! Screen-space error for geometry level of detail
         void setScreenSpaceError(float sse);
@@ -48,22 +56,6 @@ namespace ROCKY_NAMESPACE
 
         //! Spatial reference system of the rendered map.
         const SRS& worldSRS() const;
-
-        /**
-         * Finds the topmost Map node in the specified scene graph, or returns NULL if
-         * no Map node exists in the graph.
-         *
-         * @param graph
-         *      Node graph in which to search for a MapNode
-         * @param travMask
-         *      Traversal mask to apply while searching
-         */
-        static shared_ptr<MapNode> get(
-            const vsg::Node* graph,
-            unsigned travMask = ~0);
-
-        //! Access the group node that contains all the nodes added by Layers.
-        vsg::ref_ptr<vsg::Group> getLayerNodeGroup() const;
 
         //! Mutable access to the terrain settings
         TerrainSettings& terrainSettings();
@@ -77,18 +69,7 @@ namespace ROCKY_NAMESPACE
         //! Opens the map (installs a terrain engine and initializes all the layers)
         bool open();
 
-        //! Runtime tools
-        Runtime& runtime();
-
         void update(const vsg::FrameStamp*);
-
-        //! Access to the underlying terrain node graph
-        //vsg::ref_ptr<vsg::Node> terrainNode() const {
-        //    return _terrain;
-        //}
-        vsg::ref_ptr<TerrainNode> terrain;
-
-        virtual ~MapNode();
 
     public:
 
@@ -98,13 +79,9 @@ namespace ROCKY_NAMESPACE
 
         void construct(const JSON&);
 
-        InstanceVSG _instance;
 
         optional<float> _screenSpaceError = 25.0f;
-
         SRS _worldSRS;
-        //vsg::ref_ptr<TerrainNode> _terrain;
-        shared_ptr<Map> _map;
         vsg::ref_ptr<vsg::Group> _layerNodes;
         std::atomic<bool> _readyForUpdate;
 

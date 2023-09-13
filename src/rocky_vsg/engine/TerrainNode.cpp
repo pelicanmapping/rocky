@@ -40,9 +40,9 @@ TerrainNode::to_json() const
 const Status&
 TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(new_map, _status);
+    ROCKY_SOFT_ASSERT_AND_RETURN(new_map, status);
 
-    _map = new_map;
+    map = new_map;
 
     _worldSRS = new_worldSRS;
     if (!_worldSRS.valid())
@@ -52,12 +52,12 @@ TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
             new_map->srs();
     }
 
-    _engine = nullptr;
+    engine = nullptr;
 
     // erase everything so the map will reinitialize
     this->children.clear();
-    _status = StatusOK;
-    return status();
+    status = StatusOK;
+    return status;
 }
 
 Status
@@ -67,36 +67,36 @@ TerrainNode::createRootTiles(const IOOptions& io)
     this->children.clear();
 
     // create a new context for this map
-    _engine = std::make_shared<TerrainEngine>(
-        _map,
+    engine = std::make_shared<TerrainEngine>(
+        map,
         _worldSRS,
         _runtime,  // runtime API
         *this,     // settings
         this);     // host
 
     // check that everything initialized ok
-    if (_engine->stateFactory.status.failed())
+    if (engine->stateFactory.status.failed())
     {
-        return _engine->stateFactory.status;
+        return engine->stateFactory.status;
     }
 
     _tilesRoot = vsg::Group::create();
 
     // create the graphics pipeline to render this map
-    auto stateGroup = _engine->stateFactory.createTerrainStateGroup();
+    auto stateGroup = engine->stateFactory.createTerrainStateGroup();
     stateGroup->addChild(_tilesRoot);
     this->addChild(stateGroup);
 
     // once the pipeline exists, we can start creating tiles.
     std::vector<TileKey> keys;
-    Profile::getAllKeysAtLOD(this->minLevelOfDetail, _engine->map->profile(), keys);
+    Profile::getAllKeysAtLOD(this->minLevelOfDetail, engine->map->profile(), keys);
 
     for (unsigned i = 0; i < keys.size(); ++i)
     {
-        auto tile = _engine->tiles.createTile(
+        auto tile = engine->tiles.createTile(
             keys[i],
             { }, // parent
-            _engine);
+            engine);
 
         tile->doNotExpire = true;
 
@@ -104,11 +104,11 @@ TerrainNode::createRootTiles(const IOOptions& io)
         _tilesRoot->addChild(tile);
     }
 
-    _engine->runtime.compile(stateGroup);
+    engine->runtime.compile(stateGroup);
 
-    //auto cr = _engine->runtime.viewer()->compileManager->compile(stateGroup);
+    //auto cr = engine->runtime.viewer()->compileManager->compile(stateGroup);
     //if (cr && cr.requiresViewerUpdate())
-    //    vsg::updateViewer(*_engine->runtime.viewer(), cr);
+    //    vsg::updateViewer(*engine->runtime.viewer(), cr);
 
     return StatusOK;
 }
@@ -116,19 +116,19 @@ TerrainNode::createRootTiles(const IOOptions& io)
 void
 TerrainNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
 {
-    if (_status.ok())
+    if (status.ok())
     {
         if (children.empty())
         {
-            _status = createRootTiles(io);
-            if (_status.failed())
+            status = createRootTiles(io);
+            if (status.failed())
             {
-                Log::warn() << "TerrainNode initialize failed: " << _status.message << std::endl;
+                Log::warn() << "TerrainNode initialize failed: " << status.message << std::endl;
             }
         }
         else
         {
-            _engine->tiles.update(fs, io, _engine);
+            engine->tiles.update(fs, io, engine);
         }
     }
 }
@@ -139,5 +139,5 @@ TerrainNode::ping(
     const TerrainTileNode* parent,
     vsg::RecordTraversal& nv)
 {
-    _engine->tiles.ping(tile, parent, nv);
+    engine->tiles.ping(tile, parent, nv);
 }

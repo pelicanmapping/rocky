@@ -86,6 +86,7 @@ namespace ROCKY_NAMESPACE
             return _state.setVP1.has_value() && _state.setVP1->target;
         }
 
+        static const char* tag;
 
     public: // vsg::Visitor
         void apply(vsg::KeyPressEvent& keyPress) override;

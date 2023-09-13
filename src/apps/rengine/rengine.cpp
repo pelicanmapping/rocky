@@ -127,14 +127,14 @@ int main(int argc, char** argv)
 
     auto imagery = rocky::TMSImageLayer::create();
     imagery->setURI("https://readymap.org/readymap/tiles/1.0.0/135/");
-    mapNode->map()->layers().add(imagery);
+    mapNode->map->layers().add(imagery);
     if (imagery->status().failed())
         return error(imagery);
 
     auto elevation = rocky::TMSElevationLayer::create();
     elevation->setEncoding(rocky::ElevationLayer::Encoding::MapboxRGB);
     elevation->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
-    mapNode->map()->layers().add(elevation);
+    mapNode->map->layers().add(elevation);
     if (elevation->status().failed())
         return error(elevation);
 

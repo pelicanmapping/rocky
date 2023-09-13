@@ -280,7 +280,11 @@ TerrainState::updateTerrainTileDescriptors(
         auto data = util::moveImageToVSG(renderModel.color.image->clone());
         if (data)
         {
-            runtime.destroy(dm.color);
+            // queue the old data for safe disposal
+            runtime.dispose(dm.color);
+
+            // tell vsg to remove the image from CPU memory after sending it to the GPU
+            data->properties.dataVariance = vsg::STATIC_DATA_UNREF_AFTER_TRANSFER;
 
             dm.color = vsg::DescriptorImage::create(
                 texturedefs.color.sampler,
@@ -298,7 +302,11 @@ TerrainState::updateTerrainTileDescriptors(
         auto data = util::moveImageToVSG(renderModel.elevation.image->clone());
         if (data)
         {
-            runtime.destroy(dm.elevation);
+            // queue the old data for safe disposal
+            runtime.dispose(dm.elevation);
+
+            // tell vsg to remove the image from CPU memory after sending it to the GPU
+            data->properties.dataVariance = vsg::STATIC_DATA_UNREF_AFTER_TRANSFER;
 
             dm.elevation = vsg::DescriptorImage::create(
                 texturedefs.elevation.sampler,
@@ -316,7 +324,11 @@ TerrainState::updateTerrainTileDescriptors(
         auto data = util::moveImageToVSG(renderModel.normal.image->clone());
         if (data)
         {
-            runtime.destroy(dm.normal);
+            // queue the old data for safe disposal
+            runtime.dispose(dm.normal);
+
+            // tell vsg to remove the image from CPU memory after sending it to the GPU
+            data->properties.dataVariance = vsg::STATIC_DATA_UNREF_AFTER_TRANSFER;
 
             dm.normal = vsg::DescriptorImage::create(
                 texturedefs.normal.sampler,
@@ -362,12 +374,30 @@ TerrainState::updateTerrainTileDescriptors(
     // or it could cause a validataion error during compilation due to 
     // vsg descriptorset internal recycling.
     for (auto& command : stategroup->stateCommands)
-        runtime.destroy(command);
+        runtime.dispose(command);
     
     stategroup->stateCommands.clear();
 
     // Need to compile the descriptors
     runtime.compile(bind);
+
+    // Temporary:
+    // Delete the CPU memory assocaited with the rasters
+    // now that they are compiled to the GPU.
+    for (auto& dd : bind->descriptorSet->descriptors)
+    {
+        auto di = dd->cast<vsg::DescriptorImage>();
+        if (di)
+        {
+            for (auto& ii : di->imageInfoList)
+            {
+                if (ii->imageView->image->data->properties.dataVariance == vsg::STATIC_DATA_UNREF_AFTER_TRANSFER)
+                {
+                    ii->imageView->image->data = nullptr;
+                }
+            }
+        }
+    }
 
     // And update the tile's state group
     //stategroup->stateCommands.clear();

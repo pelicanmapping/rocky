@@ -41,7 +41,7 @@ namespace ROCKY_NAMESPACE
         /**
         * Extends the entt::registry to add some useful functions
         */
-        class ROCKY_VSG_EXPORT Entities : public entt::registry
+        class ROCKY_VSG_EXPORT Registry : public entt::registry
         {
         public:
             //! Provides a simple way to add multiple components of the same type

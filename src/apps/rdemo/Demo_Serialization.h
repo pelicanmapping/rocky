@@ -18,7 +18,7 @@ auto Demo_Serialization = [](Application& app)
 {
     if (ImGui::Button("Serialize Map to stdout (JSON)"))
     {
-        JSON map_json = app.map()->to_json();
+        JSON map_json = app.mapNode->map->to_json();
         std::cout << rocky::json_pretty(map_json) << std::endl;
     }
 };

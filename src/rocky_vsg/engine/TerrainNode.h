@@ -41,17 +41,14 @@ namespace ROCKY_NAMESPACE
         //! Updates the terrain periodically at a safe time
         void update(const vsg::FrameStamp*, const IOOptions& io);
 
-        //! Status of the terrain node
-        const Status& status() const {
-            return _status;
-        }
+        //! Status of this node; check that's it OK before using
+        Status status;
 
-        //! Map this terrain node is rendering
-        shared_ptr<Map> map() {
-            return _map;
-        }
+        //! Map containing data model for the terrain
+        std::shared_ptr<Map> map;
 
-        std::shared_ptr<TerrainEngine> _engine;
+        //! Engine that renders the terrain
+        std::shared_ptr<TerrainEngine> engine;
 
     protected:
 
@@ -75,8 +72,6 @@ namespace ROCKY_NAMESPACE
 
         Runtime& _runtime;
         vsg::ref_ptr<vsg::Group> _tilesRoot;
-        Status _status;
-        std::shared_ptr<Map> _map;
         SRS _worldSRS;
     };
 }

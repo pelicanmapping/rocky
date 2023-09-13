@@ -38,14 +38,10 @@ namespace ROCKY_NAMESPACE
         //! @return True upon success; false to quit the application.
         bool frame();
 
-        //! Access the map.
-        //! @return Pointer to the map
-        std::shared_ptr<Map> map();
-
     public: // public properties
 
         rocky::InstanceVSG instance;
-        ECS::Entities entities;
+        ECS::Registry entities;
         vsg::ref_ptr<rocky::MapNode> mapNode;
         vsg::ref_ptr<rocky::SkyNode> skyNode;
         vsg::ref_ptr<vsg::Viewer> viewer;

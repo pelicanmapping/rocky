@@ -122,7 +122,7 @@ Application::Application(int& argc, char** argv) :
         JSON json;
         if (rocky::util::readFromFile(json, infile))
         {
-            mapNode->map()->from_json(json);
+            mapNode->map->from_json(json);
         }
         else
         {
@@ -138,9 +138,9 @@ Application::Application(int& argc, char** argv) :
         auto result = importer.read(infile, instance.ioOptions());
         if (result.status.ok())
         {
-            auto count = mapNode->map()->layers().size();
-            mapNode->map()->from_json(result.value);
-            if (count == mapNode->map()->layers().size())
+            auto count = mapNode->map->layers().size();
+            mapNode->map->from_json(result.value);
+            if (count == mapNode->map->layers().size())
                 msg = "Unable to import any layers from the earth file";
 
             Log::warn() << json_pretty(result.value) << std::endl;
@@ -526,12 +526,6 @@ Application::addPreRenderGraph(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vs
         func();
 }
 
-std::shared_ptr<Map>
-Application::map()
-{
-    return mapNode->map();
-}
-
 void
 Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
 {
@@ -553,22 +547,30 @@ Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
 
     viewer->assignRecordAndSubmitTaskAndPresentation(commandGraphs);
 
-    // Configure a descriptor pool size that's appropriate for paged terrains
-    // (they are a good candidate for DS reuse). This is optional.
+    // Configure a descriptor pool size that's appropriate for terrain
     // https://groups.google.com/g/vsg-users/c/JJQZ-RN7jC0/m/tyX8nT39BAAJ
-    //auto resourceHints = vsg::ResourceHints::create();
-    //resourceHints->numDescriptorSets = 1024;
-    //resourceHints->descriptorPoolSizes.push_back(
-    //    VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1024 });
-    
-    // Initialize and compile existing any Vulkan objects found in the scene
-    // (passing in ResourceHints to guide the resources allocated).
-    //viewer->compile(resourceHints);
-    viewer->compile();
+    // https://www.reddit.com/r/vulkan/comments/8u9zqr/having_trouble_understanding_descriptor_pool/    
+    // Since VSG dynamic allocates descriptor pools as it needs them,
+    // this is not strictly necessary. But if you know something about the
+    // types of descriptor sets you are going to use it will increase 
+    // performance (?) to pre-allocate some pools like this.
+    // There is a big trade-off since pre-allocating these pools takes up
+    // a significant amount of memory.
+
+    auto resourceHints = vsg::ResourceHints::create();
+
+    // max number of descriptor sets per pool, regardless of type:
+    resourceHints->numDescriptorSets = 64;
+
+    // max number of descriptor sets of a specific type per pool:
+    resourceHints->descriptorPoolSizes.push_back(
+        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 64 });
+
+    viewer->compile(resourceHints);
 }
 
 void
-Application::recreateViewer()
+Application::recreateViewer() 
 {
     // Makes a new viewer, copying settings from the old viewer.
     vsg::EventHandlers handlers = viewer->getEventHandlers();
@@ -630,8 +632,6 @@ Application::frame()
 
     auto t_update = std::chrono::steady_clock::now();
 
-    //viewer->deviceWaitIdle();
-
     // rocky map update pass - management of tiles and paged data
     mapNode->update(viewer->getFrameStamp());
 
@@ -676,16 +676,15 @@ Application::frame()
     stats.present = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_present);
 
     return viewer->active();
-    //return true;
 }
 
 void
 Application::addManipulator(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view)
 {
-    auto manip = rocky::MapManipulator::create(mapNode, window, view->camera);
+    auto manip = MapManipulator::create(mapNode, window, view->camera);
 
     // stow this away in the view object so it's easy to find later.
-    view->setObject("rocky.manip", manip);
+    view->setObject(MapManipulator::tag, manip);
 
     // The manipulators (one for each view) need to be in the right order (top to bottom)
     // so that overlapping views don't get mixed up. To accomplish this we'll just
@@ -706,7 +705,7 @@ Application::addManipulator(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::
         for(auto vi = window.second.rbegin(); vi != window.second.rend(); ++vi)
         {
             auto& view = *vi;
-            auto manip = view->getRefObject<MapManipulator>("rocky.manip");
+            auto manip = view->getRefObject<MapManipulator>(MapManipulator::tag);
             ehs.push_back(manip);
         }
     }

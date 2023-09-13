@@ -17,7 +17,7 @@ auto Demo_Viewpoints = [](Application& app)
     auto view = app.displayConfiguration.windows.begin()->second.front();
     if (view)
     {
-        auto manip = view->getObject<MapManipulator>("rocky.manip");
+        auto manip = view->getObject<MapManipulator>(MapManipulator::tag);
         if (manip)
         {
             Viewpoint vp;

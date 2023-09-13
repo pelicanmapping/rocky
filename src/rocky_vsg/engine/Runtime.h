@@ -28,8 +28,7 @@ namespace vsg
 namespace ROCKY_NAMESPACE
 {
     /**
-     * Interface to runtime operations like the VSG compiler, thread pools,
-     * shared settings, and asynchronous scene graph functions.
+     * Properties and operations needed for interfacing with VSG.
      */
     class ROCKY_VSG_EXPORT Runtime
     {
@@ -66,6 +65,10 @@ namespace ROCKY_NAMESPACE
         //! until the next call to update().
         bool asyncCompile = true;
 
+        //! Custom vsg object disposer (optional)
+        //! By default Runtime uses its own round-robin object disposer
+        std::function<void(vsg::ref_ptr<vsg::Object>)> disposer;
+
     public:
 
         //! Queue a function to run during the update pass
@@ -92,7 +95,7 @@ namespace ROCKY_NAMESPACE
         //! compiling new objects, which will result in a validation error
         //! and leaked memory.
         //! https://github.com/vsg-dev/VulkanSceneGraph/discussions/949
-        void destroy(vsg::ref_ptr<vsg::Object> object);
+        void dispose(vsg::ref_ptr<vsg::Object> object);
 
         //! Schedules data creation; the resulting node or nodes 
         //! get added to "parent" if the operation suceeds.
@@ -120,10 +123,6 @@ namespace ROCKY_NAMESPACE
         //! Update any pending compile results.
         void update();
 
-        // deferred deletion container
-        mutable std::shared_mutex _deferred_unref_mutex;
-        std::list<std::vector<vsg::ref_ptr<vsg::Object>>> _deferred_unref_queue;
-
     private:
         // for (some) update operations
         vsg::ref_ptr<vsg::Operation> _priorityUpdateQueue;
@@ -132,6 +131,10 @@ namespace ROCKY_NAMESPACE
         mutable std::shared_mutex _compileMutex;
         std::queue<vsg::ref_ptr<vsg::Object>> _toCompile;
         std::vector<vsg::CompileResult> _compileResults;
+
+        // deferred deletion container
+        mutable std::shared_mutex _deferred_unref_mutex;
+        std::list<std::vector<vsg::ref_ptr<vsg::Object>>> _deferred_unref_queue;
     };
 }
 

@@ -25,6 +25,9 @@ using namespace ROCKY_NAMESPACE;
 #define TEST_OUT if(true) Log::info()
 #define NOT_YET_IMPLEMENTED(X) ROCKY_TODO(X)
 
+// static
+const char* MapManipulator::tag = "rocky.manipulator";
+
 namespace
 {
     // a reasonable approximation of cosine interpolation

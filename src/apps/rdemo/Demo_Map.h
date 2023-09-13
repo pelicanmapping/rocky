@@ -16,7 +16,7 @@ auto Demo_Map = [](Application& app)
     static std::vector<bool> layerExpanded;
 
     // Display the map's profile
-    auto& profile = app.map()->profile();
+    auto& profile = app.mapNode->map->profile();
     if (profile.valid())
     {
         if (!profile.wellKnownName().empty())
@@ -29,7 +29,7 @@ auto Demo_Map = [](Application& app)
 
     // Enumerate all the map's layers and display information about them
     ImGui::SeparatorText("Layers");
-    auto layers = app.map()->layers().all();
+    auto layers = app.mapNode->map->layers().all();
     layerExpanded.resize(layers.size(), false);
     int i = 0;
 

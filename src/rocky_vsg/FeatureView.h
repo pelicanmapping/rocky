@@ -44,7 +44,7 @@ namespace ROCKY_NAMESPACE
         //! @param keep_features Whether to keep the "features" vector intact;
         //!   by default it is cleared after calling generate
         void generate(
-            ECS::Entities& registry,
+            ECS::Registry& registry,
             Runtime& runtime,
             bool keep_features = false);
 

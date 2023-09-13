@@ -21,21 +21,21 @@ using namespace ROCKY_NAMESPACE::util;
 #define LC "[MapNode] "
 
 MapNode::MapNode(const InstanceVSG& instance) :
-    _instance(instance),
-    _map(Map::create(instance))
+    instance(instance),
+    map(Map::create(instance))
 {
     construct({});
 }
 
 MapNode::MapNode(shared_ptr<Map> map) :
-    _instance(reinterpret_cast<InstanceVSG&>(_map->instance()))
+    instance(reinterpret_cast<InstanceVSG&>(map->instance()))
 {
     construct({});
 }
 
 MapNode::MapNode(const JSON& conf, const InstanceVSG& instance) :
-    _instance(instance),
-    _map(Map::create(instance))
+    instance(instance),
+    map(Map::create(instance))
 {
     construct(conf);
 }
@@ -46,7 +46,7 @@ MapNode::construct(const JSON& conf)
     const auto j = parse_json(conf);
     get_to(j, "screen_space_error", _screenSpaceError);
 
-    terrain = TerrainNode::create(runtime(), conf);
+    terrain = TerrainNode::create(instance.runtime(), conf);
     addChild(terrain);
 
     _isOpen = false;
@@ -66,7 +66,7 @@ MapNode::to_json() const
 
     // all map layers
     auto layers_json = json::array();
-    for (auto& layer : _map->layers().all())
+    for (auto& layer : map->layers().all())
     {
         layers_json.push_back(parse_json(layer->to_json()));
     }
@@ -77,13 +77,6 @@ MapNode::to_json() const
     }
 
     return j.dump();
-}
-
-Runtime&
-MapNode::runtime()
-{
-    ROCKY_HARD_ASSERT_STATUS(_instance.status());
-    return _instance.runtime();
 }
 
 const TerrainSettings&
@@ -109,22 +102,11 @@ MapNode::open()
     return true;
 }
 
-MapNode::~MapNode()
-{
-    //nop
-}
-
-shared_ptr<Map>
-MapNode::map() const
-{
-    return _map;
-}
-
 const SRS&
 MapNode::mapSRS() const
 {
-    return map() && map()->profile().valid() ?
-        map()->profile().srs() :
+    return map && map->profile().valid() ?
+        map->profile().srs() :
         SRS::EMPTY;
 }
 
@@ -158,29 +140,15 @@ MapNode::screenSpaceError() const
     return _screenSpaceError;
 }
 
-vsg::ref_ptr<vsg::Group>
-MapNode::getLayerNodeGroup() const
-{
-    return _layerNodes;
-}
-
-shared_ptr<MapNode>
-MapNode::get(const vsg::Node* graph, unsigned travmask)
-{
-    ROCKY_HARD_ASSERT(false, "NYI");
-    return nullptr;
-    //return findRelativeNodeOfType<MapNode>( graph, travmask );
-}
-
 void
 MapNode::update(const vsg::FrameStamp* f)
 {
     ROCKY_PROFILE_FUNCTION();
-    ROCKY_HARD_ASSERT_STATUS(_instance.status());
+    ROCKY_HARD_ASSERT_STATUS(instance.status());
 
-    if (terrain->map() == nullptr)
+    if (terrain->map == nullptr)
     {
-        auto st = terrain->setMap(map(), worldSRS());
+        auto st = terrain->setMap(map, worldSRS());
 
         if (st.failed())
         {
@@ -188,7 +156,7 @@ MapNode::update(const vsg::FrameStamp* f)
         }
     }
 
-    terrain->update(f, _instance.ioOptions());
+    terrain->update(f, instance.ioOptions());
 }
 
 void

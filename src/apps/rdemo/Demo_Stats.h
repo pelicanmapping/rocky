@@ -26,7 +26,6 @@ namespace
     Timings events(frame_count);
     Timings update(frame_count);
     Timings record(frame_count);
-    Timings present(frame_count);
     int frame_num = 0;
     char buf[256];
     float get_timings(void* data, int index) {
@@ -49,7 +48,6 @@ auto Demo_Stats = [](Application& app)
     events[f] = app.stats.events;
     update[f] = app.stats.update;
     record[f] = app.stats.record;
-    present[f] = app.stats.present;
 
     const int over = 60;
 
@@ -78,8 +76,6 @@ auto Demo_Stats = [](Application& app)
         sprintf(buf, u8"%lld \x00B5s", average(&record, over, f));
         ImGuiLTable::PlotLines("Record", get_timings, &record, frame_count, f, buf, 0.0f, 10.0f);
 
-        sprintf(buf, u8"%lld \x00B5s", average(&present, over, f));
-        ImGuiLTable::PlotLines("Present", get_timings, &present, frame_count, f, buf, 0.0f, 10.0f);
         ImGuiLTable::End();
     }
 
@@ -87,19 +83,12 @@ auto Demo_Stats = [](Application& app)
     if (ImGuiLTable::Begin("Memory"))
     {
         auto& alloc = vsg::Allocator::instance();
-        ImGuiLTable::Text("Process private", "%.1lf MB", (double)Memory::getProcessPhysicalUsage() / 1048576.0);
+        ImGuiLTable::Text("Working set", "%.1lf MB", (double)Memory::getProcessPhysicalUsage() / 1048576.0);
         if (alloc->allocatorType == vsg::ALLOCATOR_TYPE_VSG_ALLOCATOR)
         {
             ImGuiLTable::Text("VSG alloc total", "%.1lf MB", (double)alloc->totalMemorySize() / 1048576.0);
             ImGuiLTable::Text("VSG alloc available", "%.1lf MB", (double)alloc->totalAvailableSize() / 1048576.0);
             ImGuiLTable::Text("VSG alloc reserved", "%.1lf MB", (double)alloc->totalReservedSize() / 1048576.0);
-        }
-        {
-            std::stringstream buf;
-            std::unique_lock lock(app.instance.runtime()._deferred_unref_mutex);
-            for (auto& v : app.instance.runtime()._deferred_unref_queue)
-                buf << std::to_string(v.size()) << ' ';
-            ImGuiLTable::Text("Deferred deletes", buf.str().c_str());
         }
         ImGuiLTable::End();
     }
@@ -122,7 +111,7 @@ auto Demo_Stats = [](Application& app)
     ImGui::SeparatorText("Terrain Engine");
     if (ImGuiLTable::Begin("Terrain Engine"))
     {
-        auto& engine = app.mapNode->terrain->_engine;
+        auto& engine = app.mapNode->terrain->engine;
         ImGuiLTable::Text("Active tiles", std::to_string(engine->tiles.size()).c_str());
         ImGuiLTable::Text("Geometry pool cache", std::to_string(engine->geometryPool._sharedGeometries.size()).c_str());
         ImGuiLTable::End();

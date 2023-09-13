@@ -26,12 +26,12 @@ int main(int argc, char** argv)
     // instantiate the application engine.
     rocky::Application app(argc, argv);
 
-    if (app.map()->layers().empty())
+    if (app.mapNode->map->layers().empty())
     {
         // add an imagery layer to the map
         auto layer = rocky::TMSImageLayer::create();
         layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
-        app.map()->layers().add(layer);
+        app.mapNode->map->layers().add(layer);
 
         // check for error
         if (layer->status().failed())
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
         // add an elevation layer to the map
         auto elevation = rocky::TMSElevationLayer::create();
         elevation->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
-        app.map()->layers().add(elevation);
+        app.mapNode->map->layers().add(elevation);
 
         // check for error
         if (elevation->status().failed())

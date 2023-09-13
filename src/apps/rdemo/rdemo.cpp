@@ -157,27 +157,25 @@ struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>
 
 int main(int argc, char** argv)
 {
-    //vsg::Allocator::instance()->allocatorType = vsg::ALLOCATOR_TYPE_NEW_DELETE;
-
     // instantiate the application engine.
     rocky::Application app(argc, argv);
 
     rocky::Log::level = rocky::LogLevel::INFO;
 
-    if (app.map()->layers().empty())
+    if (app.mapNode->map->layers().empty())
     {
 #ifdef ROCKY_SUPPORTS_TMS
         // add an imagery layer to the map
         auto layer = rocky::TMSImageLayer::create();
         layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7");
-        app.map()->layers().add(layer);
+        app.mapNode->map->layers().add(layer);
         if (layer->status().failed())
             return layerError(layer);
 
         // add an elevation layer to the map
         auto elev = rocky::TMSElevationLayer::create();
         elev->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
-        app.map()->layers().add(elev);
+        app.mapNode->map->layers().add(elev);
         if (elev->status().failed())
             return layerError(elev);
 #endif

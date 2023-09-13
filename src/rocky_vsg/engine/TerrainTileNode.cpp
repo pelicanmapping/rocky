@@ -211,10 +211,10 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
 void
 TerrainTileNode::unloadSubtiles(Runtime& runtime)
 {
-    // Feed the children to the deferred deleter before removing them
+    // Feed the children to the garbage disposal before removing them
     // so any vulkan objects are safely destroyed
     if (children.size() > 1)
-        runtime.destroy(children[1]);
+        runtime.dispose(children[1]);
 
     children.resize(1);
     subtilesLoader.reset();
