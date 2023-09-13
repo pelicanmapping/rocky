@@ -19,7 +19,7 @@ if not defined VULKAN_SDK (
 
 :: Argument parser from: https://stackoverflow.com/a/8162578
 setlocal enableDelayedExpansion
-set "options=-S:. -B:..\build -I:..\install -G:"Visual Studio 16 2019" -A:x64"
+set "options=-S:. -B:..\build -I:..\install -G:"Visual Studio 17 2022" -A:x64"
 for %%O in (%options%) do for /f "tokens=1,* delims=:" %%A in ("%%O") do set "%%A=%%~B"
 :loopArgs
     if not "%~1"=="" (
@@ -98,7 +98,7 @@ goto end
   )
   echo Usage: vcpkg-bootstrap.bat -S source_folder -B build_folder -I install_folder -G compiler -A architecture
   echo Example: 
-  echo    vcpkg-bootstrap.bat -S . -B ..\build -I ..\install -G "Visual Studio 16 2019" -A x64 
+  echo    vcpkg-bootstrap.bat -S . -B ..\build -I ..\install -G "Visual Studio 17 2022" -A x64 
 
 :end
   endlocal
