@@ -11,7 +11,8 @@ using namespace ROCKY_NAMESPACE;
 
 GeoTransform::GeoTransform()
 {
-   //nop
+    // force creation of the first viewlocal data structure
+    _viewlocal[0].dirty = true;
 }
 
 void
@@ -35,7 +36,7 @@ void
 GeoTransform::accept(vsg::RecordTraversal& record) const
 {
     // traverse the transform
-    if (push(record))
+    if (push(record, vsg::dmat4(1.0)))
     {
         vsg::Group::accept(record);
         pop(record);
@@ -43,24 +44,26 @@ GeoTransform::accept(vsg::RecordTraversal& record) const
 }
 
 bool
-GeoTransform::push(vsg::RecordTraversal& record) const
+GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix) const
 {
     auto state = record.getState();
 
     // update the view-local data if necessary:
     auto& view = _viewlocal[record.getState()->_commandBuffer->viewID];
-    if (view.dirty)
+    if (view.dirty || local_matrix != view.local_matrix)
     {
         SRS worldSRS;
         if (record.getValue("worldsrs", worldSRS))
         {
             if (position.transform(worldSRS, view.worldPos))
             {
-                view.matrix = to_vsg(worldSRS.localToWorldMatrix(glm::dvec3(
-                    view.worldPos.x, view.worldPos.y, view.worldPos.z)));
+                view.matrix =
+                    to_vsg(worldSRS.localToWorldMatrix(glm::dvec3(view.worldPos.x, view.worldPos.y, view.worldPos.z))) *
+                    local_matrix;
             }
         }
 
+        view.local_matrix = local_matrix;
         view.dirty = false;
     }
 

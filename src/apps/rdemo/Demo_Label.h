@@ -38,11 +38,13 @@ auto Demo_Label = [](Application& app)
         // Attach a label to the host and configure it
         auto& label = app.entities.emplace<Label>(entity);
         label.text = "Hello, world";
-        label.font = font.value();
+        label.style.font = font.value();
+        label.style.pointSize = 36.0f;
+        label.style.outlineSize = 0.05f;
         
         // Attach a transform to place and move the label:
-        auto& transform = app.entities.emplace<EntityTransform>(entity);
-        transform.node->setPosition({ SRS::WGS84, -35.0, 15.0, 25000.0 });
+        auto& transform = app.entities.emplace<Transform>(entity);
+        transform.setPosition({ SRS::WGS84, -35.0, 15.0, 15000.0 });
     }
 
     if (ImGuiLTable::Begin("text"))
@@ -58,7 +60,13 @@ auto Demo_Label = [](Application& app)
             label.dirty();
         }
 
-        auto& transform = app.entities.get<EntityTransform>(entity);
+        if (ImGuiLTable::SliderFloat("Point size", &label.style.pointSize, 8.0f, 144.0f, "%.1f"))
+            label.dirty();
+
+        if (ImGuiLTable::SliderFloat("Outline size", &label.style.outlineSize, 0.0f, 0.5f, "%.2f"))
+            label.dirty();
+
+        auto& transform = app.entities.get<Transform>(entity);
         auto& xform = transform.node;
 
         if (ImGuiLTable::SliderDouble("Latitude", &xform->position.y, -85.0, 85.0, "%.1lf"))

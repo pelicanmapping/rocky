@@ -127,7 +127,7 @@ IOOptions::IOOptions(Cancelable& c) :
 }
 
 IOOptions::IOOptions(const IOOptions& rhs, Cancelable& c) :
-    _services(rhs._services),
+    services(rhs.services),
     _properties(rhs._properties),
     _cancelable(&c)
 {
@@ -137,8 +137,8 @@ IOOptions::IOOptions(const IOOptions& rhs, Cancelable& c) :
 IOOptions&
 IOOptions::operator = (const IOOptions& rhs)
 {
+    services = rhs.services;
     _cancelable = rhs._cancelable;
-    _services = rhs._services;
     _properties = rhs._properties;
     return *this;
 }

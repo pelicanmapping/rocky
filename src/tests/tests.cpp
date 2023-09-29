@@ -68,7 +68,7 @@ TEST_CASE("json")
 
     Instance instance;
     auto layer = rocky::TMSImageLayer::create();
-    layer->setURI("file.xml");
+    layer->uri = "file.xml";
     auto map = rocky::Map::create(instance);
     map->layers().add(layer);
     JSON serialized = map->to_json();
@@ -352,7 +352,7 @@ TEST_CASE("TMS")
     auto layer = TMSImageLayer::create();
     CHECKED_IF(layer != nullptr)
     {
-        layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
+        layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
         auto s = layer->open();
         CHECKED_IF(s.ok())
         {
@@ -799,7 +799,7 @@ TEST_CASE("Earth File")
         {
             auto tms_layer = TMSImageLayer::cast(layer1);
             CHECK(tms_layer);
-            CHECK(tms_layer->uri().value() == "http://readymap.org/readymap/tiles/1.0.0/7/");
+            CHECK(tms_layer->uri == "http://readymap.org/readymap/tiles/1.0.0/7/");
         }
     }
 }

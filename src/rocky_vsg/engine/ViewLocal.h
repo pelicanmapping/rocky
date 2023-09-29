@@ -41,6 +41,7 @@ namespace ROCKY_NAMESPACE
             using iterator = typename std::vector<T>::iterator;
             iterator begin() { return _vdd.begin(); }
             iterator end() { return _vdd.end(); }
+            std::size_t size() const { return _vdd.size(); }
 
         private:
             mutable std::mutex _mutex;

@@ -79,6 +79,8 @@ namespace ROCKY_NAMESPACE
         //! Call after changing the style or image
         void dirty();
 
+        void dirtyImage();
+
     public: // NodeComponent
 
         void initializeNode(const ECS::NodeComponent::Params&) override;

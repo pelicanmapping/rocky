@@ -61,8 +61,8 @@ auto Demo_Model = [](Application& app)
         app.instance.runtime().compile(component.node);
 
         // A transform component to place and move it on the map
-        auto& transform = app.entities.emplace<EntityTransform>(entity);
-        transform.node->setPosition(GeoPoint(SRS::WGS84, 50, 0, 250000));
+        auto& transform = app.entities.emplace<Transform>(entity);
+        transform.setPosition(GeoPoint(SRS::WGS84, 50, 0, 250000));
     }
 
     if (ImGuiLTable::Begin("model"))
@@ -70,17 +70,34 @@ auto Demo_Model = [](Application& app)
         auto& component = app.entities.get<ECS::NodeComponent>(entity);
         ImGuiLTable::Checkbox("Visible", &component.active);
 
-        auto& transform = app.entities.get<EntityTransform>(entity);
-        auto& xform = transform.node;
+        auto& transform = app.entities.get<Transform>(entity);
+        auto& geo = transform.node;
 
-        if (ImGuiLTable::SliderDouble("Latitude", &xform->position.y, -85.0, 85.0, "%.1lf"))
-            xform->dirty();
+        if (ImGuiLTable::SliderDouble("Latitude", &geo->position.y, -85.0, 85.0, "%.1lf"))
+            geo->dirty();
 
-        if (ImGuiLTable::SliderDouble("Longitude", &xform->position.x, -180.0, 180.0, "%.1lf"))
-            xform->dirty();
+        if (ImGuiLTable::SliderDouble("Longitude", &geo->position.x, -180.0, 180.0, "%.1lf"))
+            geo->dirty();
 
-        if (ImGuiLTable::SliderDouble("Altitude", &xform->position.z, 0.0, 2500000.0, "%.1lf"))
-            xform->dirty();
+        if (ImGuiLTable::SliderDouble("Altitude", &geo->position.z, 0.0, 2500000.0, "%.1lf"))
+            geo->dirty();
+
+        double heading, pitch, roll;
+        vsg::dquat rot;
+        get_rotation_from_matrix(transform.local_matrix, rot);
+        rocky::quaternion_to_euler_degrees(rot, pitch, roll, heading);
+
+        if (ImGuiLTable::SliderDouble("Heading", &heading, -180.0, 180.0, "%.1lf"))
+        {
+            rocky::euler_degrees_to_quaternion(pitch, roll, heading, rot);
+            transform.local_matrix = vsg::rotate(rot);
+        }
+
+        if (ImGuiLTable::SliderDouble("Pitch", &pitch, -90.0, 90.0, "%.1lf"))
+        {
+            rocky::euler_degrees_to_quaternion(pitch, roll, heading, rot);
+            transform.local_matrix = vsg::rotate(rot);
+        }
 
         ImGuiLTable::End();
     }

@@ -164,6 +164,7 @@ Application::Application(int& argc, char** argv) :
     ecs->addChild(LineSystem::create(entities));
     ecs->addChild(SelfContainedNodeSystem::create(entities));
     ecs->addChild(IconSystem::create(entities));
+
     ecs->addChild(LabelSystem::create(entities));
 
     ecs->addChild(EntityMotionSystem::create(entities));

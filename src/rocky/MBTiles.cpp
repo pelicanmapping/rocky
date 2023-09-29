@@ -362,7 +362,7 @@ MBTiles::Driver::read(const TileKey& key, const IOOptions& io) const
         if (valid)
         {
             std::istringstream inputStream(dataBuffer);
-            result = io.services().readImageFromStream(inputStream, {}, io);
+            result = io.services.readImageFromStream(inputStream, {}, io);
         }
     }
 
@@ -383,7 +383,7 @@ MBTiles::Driver::write(const TileKey& key, shared_ptr<Image> input, const IOOpti
     if (!key.valid() || !input)
         return Status(Status::AssertionFailure);
 
-    if (!io.services().writeImageToStream)
+    if (!io.services.writeImageToStream)
         return Status(Status::ServiceUnavailable);
 
     std::scoped_lock lock(_mutex);
@@ -405,7 +405,7 @@ MBTiles::Driver::write(const TileKey& key, shared_ptr<Image> input, const IOOpti
         );
     }
 
-    Status wr = io.services().writeImageToStream(image_to_write, buf, _options.format, io);
+    Status wr = io.services.writeImageToStream(image_to_write, buf, _options.format, io);
 
     if (wr.failed())
     {

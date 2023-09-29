@@ -160,7 +160,7 @@ GDALImageLayer::createImageImplementation(
         auto image = driver->createImage(
             key,
             _tileSize,
-            coverage() == true,
+            false,
             io);
 
         return GeoImage(image.value, key.extent());

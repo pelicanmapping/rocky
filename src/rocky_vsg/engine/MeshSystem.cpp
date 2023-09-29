@@ -117,11 +117,6 @@ MeshSystem::initialize(Runtime& runtime)
         c.config->enableArray("in_uv", VK_VERTEX_INPUT_RATE_VERTEX, 8);
         c.config->enableArray("in_depthoffset", VK_VERTEX_INPUT_RATE_VERTEX, 4);
 
-        // backface culling off ... we may or may not need this.
-        //pipelineConfig->rasterizationState->cullMode = VK_CULL_MODE_NONE;
-
-        //c.pipelineConfig->enableUniform("vsg_viewports");
-
         if (feature_mask & DYNAMIC_STYLE)
         {
             c.config->enableUniform("mesh");
@@ -140,6 +135,11 @@ MeshSystem::initialize(Runtime& runtime)
             SetPipelineStates(int feature_mask_) : feature_mask(feature_mask_) { }
             void apply(vsg::Object& object) override {
                 object.traverse(*this);
+            }
+            void apply(vsg::RasterizationState& state) override {
+                state.cullMode =
+                    (feature_mask & CULL_BACKFACES) ? VK_CULL_MODE_BACK_BIT :
+                    VK_CULL_MODE_NONE;
             }
             void apply(vsg::DepthStencilState& state) override {
                 if ((feature_mask & WRITE_DEPTH) == 0) {
@@ -168,9 +168,10 @@ MeshSystem::initialize(Runtime& runtime)
 int MeshSystem::featureMask(const Mesh& mesh)
 {
     int feature_set = 0;
-    if (mesh.texture) feature_set |= MeshSystem::TEXTURE;
-    if (mesh.style.has_value()) feature_set |= MeshSystem::DYNAMIC_STYLE;
-    if (mesh.writeDepth) feature_set |= MeshSystem::WRITE_DEPTH;
+    if (mesh.texture) feature_set |= TEXTURE;
+    if (mesh.style.has_value()) feature_set |= DYNAMIC_STYLE;
+    if (mesh.writeDepth) feature_set |= WRITE_DEPTH;
+    if (mesh.cullBackfaces) feature_set |= CULL_BACKFACES;
     return feature_set;
 }
 

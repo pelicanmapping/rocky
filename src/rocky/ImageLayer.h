@@ -23,16 +23,6 @@ namespace ROCKY_NAMESPACE
     public:
         virtual ~ImageLayer() { }
 
-        //! Sets whether this layer should allow draped overlays
-        //! to render on it. This is most applicable to layers with a
-        //! non-zero altitude (setAltitude). Default is true.
-        void setAcceptDraping(bool value);
-        bool getAcceptDraping() const;
-
-        //! Whether the layer contains coverage data
-        void setCoverage(bool value) { _coverage = value; }
-        const optional<bool>& coverage() const { return _coverage; }
-
         shared_ptr<Image> getEmptyImage() const {
             return _emptyImage;
         }
@@ -119,7 +109,6 @@ namespace ROCKY_NAMESPACE
         optional<std::string> _noDataImageLocation = { };
         optional<Color> _transparentColor = Color(0, 0, 0, 0);
         optional<std::string> _textureCompression;
-        optional<bool> _acceptDraping = false;
 
     private:
 
@@ -136,8 +125,6 @@ namespace ROCKY_NAMESPACE
         shared_ptr<Image> assembleImage(
             const TileKey& key,
             const IOOptions& io) const;
-
-        optional<bool> _coverage = false;
     };
 
 } // namespace ROCKY_NAMESPACE

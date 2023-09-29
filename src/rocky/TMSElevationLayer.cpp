@@ -33,18 +33,18 @@ TMSElevationLayer::construct(const JSON& conf)
 {
     setConfigKey("TMSElevation");
     const auto j = parse_json(conf);
-    get_to(j, "uri", _options.uri);
-    get_to(j, "tms_type", _options.tmsType);
-    get_to(j, "format", _options.format);
+    get_to(j, "uri", uri);
+    get_to(j, "tms_type", tmsType);
+    get_to(j, "format", format);
 }
 
 JSON
 TMSElevationLayer::to_json() const
 {
     auto j = parse_json(super::to_json());
-    set(j, "uri", _options.uri);
-    set(j, "tms_type", _options.tmsType);
-    set(j, "format", _options.format);
+    set(j, "uri", uri);
+    set(j, "tms_type", tmsType);
+    set(j, "format", format);
     return j.dump();
 }
 
@@ -59,10 +59,10 @@ TMSElevationLayer::openImplementation(const IOOptions& io)
 
     DataExtentList dataExtents;
     Status status = _driver.open(
-        uri(),
+        uri,
         driver_profile,
-        format(),
-        coverage(),
+        format,
+        coverage,
         dataExtents,
         io);
 
@@ -102,10 +102,10 @@ TMSElevationLayer::createHeightfieldImplementation(
     if (!isOpen())
         return status();
 
-    bool invertY = (tmsType() == "google");
+    bool invertY = (tmsType == "google");
 
     // request
-    auto r = _driver.read(uri(), key, invertY, _encoding == Encoding::MapboxRGB, io);
+    auto r = _driver.read(uri, key, invertY, _encoding == Encoding::MapboxRGB, io);
 
     if (r.status.ok())
     {

@@ -23,11 +23,12 @@ namespace ROCKY_NAMESPACE
 
         enum Features
         {
-            NONE = 0x0,
-            TEXTURE = 0x1,
-            DYNAMIC_STYLE = 0x2,
-            WRITE_DEPTH = 0x4,
-            NUM_PIPELINES = 8
+            NONE           = 0,
+            TEXTURE        = 1 << 0,
+            DYNAMIC_STYLE  = 1 << 1,
+            WRITE_DEPTH    = 1 << 2,
+            CULL_BACKFACES = 1 << 3,
+            NUM_PIPELINES  = 16
         };
 
         static int featureMask(const Mesh& mesh);

@@ -12,7 +12,6 @@
 #include <vsg/state/Image.h>
 #include <vsg/io/ReaderWriter.h>
 
-
 ROCKY_ABOUT(vulkanscenegraph, VSG_VERSION_STRING)
 
 #ifdef VSGXCHANGE_FOUND
@@ -20,7 +19,7 @@ ROCKY_ABOUT(vulkanscenegraph, VSG_VERSION_STRING)
 ROCKY_ABOUT(vsgxchange, VSGXCHANGE_VERSION_STRING)
 #endif
 
-#ifdef ROCKY_SUPPORTS_GDAL
+#ifdef GDAL_FOUND
 #include <rocky/GDAL.h>
 #endif
 
@@ -62,8 +61,7 @@ namespace
         return output;
     }
 
-#ifdef ROCKY_SUPPORTS_GDAL
-
+#ifdef GDAL_FOUND
     /**
     * VSG reader-writer that uses GDAL to read some image formats that are
     * not supported by vsgXchange
@@ -184,7 +182,7 @@ InstanceVSG::InstanceVSG() :
     _impl = std::make_shared<Implementation>();
     auto& runtime = _impl->runtime;
 
-#ifdef ROCKY_SUPPORTS_GDAL
+#ifdef GDAL_FOUND
     runtime.readerWriterOptions->add(GDAL_VSG_ReaderWriter::create());
 #endif
 
@@ -192,6 +190,9 @@ InstanceVSG::InstanceVSG() :
     // Adds all the readerwriters in vsgxchange to the options data.
     runtime.readerWriterOptions->add(vsgXchange::all::create());
 #endif
+
+    // For system fonts
+    runtime.readerWriterOptions->paths.push_back("C:/windows/fonts");
 
     // establish search paths for shaders and data:
     auto vsgPaths = vsg::getEnvPaths("VSG_FILE_PATH");
@@ -228,12 +229,18 @@ InstanceVSG::InstanceVSG() :
     // stripping it out and later converting it back; or that only transcodes
     // it if it needs to. vsg::read_cast() might do some internal caching
     // as well -- need to look into that.
-
-    ioOptions().services().readImageFromURI = [readerWriterOptions](
+    ioOptions().services.readImageFromURI = [readerWriterOptions](
         const std::string& location, const rocky::IOOptions& io)
     {
-        auto result = vsg::read_cast<vsg::Data>(location, readerWriterOptions);
-        return util::makeImageFromVSG(result);
+        auto result = URI(location).read(io);
+        if (result.status.ok())
+        {
+            std::stringstream buf(result.value.data);
+            return io.services.readImageFromStream(buf, result.value.contentType, io);
+        }
+        return Result<std::shared_ptr<Image>>(Status(Status::ResourceUnavailable, "Data is null"));
+        //auto result = vsg::read_cast<vsg::Data>(location, readerWriterOptions);
+        //return util::makeImageFromVSG(result);
     };
 
     // map of mime-types to extensions that VSG can understand
@@ -252,7 +259,7 @@ InstanceVSG::InstanceVSG() :
     // To read from a stream, we have to search all the VS readerwriters to
     // find one that matches the 'extension' we want. We also have to put that
     // extension in the options structure as a hint.
-    ioOptions().services().readImageFromStream = [readerWriterOptions](
+    ioOptions().services.readImageFromStream = [readerWriterOptions](
         std::istream& location, std::string contentType, const rocky::IOOptions& io)
         -> Result<shared_ptr<Image>>
     {
@@ -312,8 +319,5 @@ InstanceVSG::setUseVSGLogger(bool value)
 void
 InstanceVSG::compile()
 {
-    //for (auto& system : _impl->entitySystems)
-    //{
-    //    system->compile(_impl->runtime);
-    //}
+    //nop
 }

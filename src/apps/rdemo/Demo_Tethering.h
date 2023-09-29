@@ -44,7 +44,7 @@ auto Demo_Tethering = [](Application& app)
 
         // add an icon:
         auto io = app.instance.ioOptions();
-        auto image = io.services().readImageFromURI("https://github.com/gwaldron/osgearth/blob/master/data/airport.png?raw=true", io);
+        auto image = io.services.readImageFromURI("https://github.com/gwaldron/osgearth/blob/master/data/airport.png?raw=true", io);
         if (image.status.ok()) {
             auto& icon = app.entities.emplace<Icon>(entity);
             icon.image = image.value;
@@ -71,11 +71,11 @@ auto Demo_Tethering = [](Application& app)
         arrow.style = LineStyle{ {1,0.5,0,1}, 4.0f };
 
         // Add a transform:
-        auto& xform = app.entities.emplace<EntityTransform>(entity);
-        xform.node->setPosition(GeoPoint(SRS::WGS84, -121, 55, 50000));
+        auto& xform = app.entities.emplace<Transform>(entity);
+        xform.setPosition(GeoPoint(SRS::WGS84, -121, 55, 50000));
 
         // Add a motion component to animate the entity:
-        auto& motion = app.entities.emplace<EntityMotion>(entity);
+        auto& motion = app.entities.emplace<Motion>(entity);
         motion.velocity = { 1000, 0, 0 };
         motion.acceleration = { 0, 0, 0 };
     }
@@ -87,7 +87,7 @@ auto Demo_Tethering = [](Application& app)
         {
             if (tethering)
             {
-                auto& xform = app.entities.get<EntityTransform>(entity);
+                auto& xform = app.entities.get<Transform>(entity);
                 auto vp = manip->getViewpoint();
                 vp.target = PositionedObjectAdapter<GeoTransform>::create(xform.node);
                 vp.range = s * 12.0;
@@ -101,7 +101,7 @@ auto Demo_Tethering = [](Application& app)
             }
         }
 
-        auto& motion = app.entities.get<EntityMotion>(entity);
+        auto& motion = app.entities.get<Motion>(entity);
         ImGuiLTable::SliderDouble("Speed", &motion.velocity.x, 0.0, 10000.0, "%.0lf");
         ImGuiLTable::SliderDouble("Acceleration", &motion.acceleration.x, -100.0, 100.0, "%.1lf");
 

@@ -163,7 +163,7 @@ namespace ROCKY_NAMESPACE
         inline Result<shared_ptr<Image>> makeImageFromVSG(vsg::ref_ptr<vsg::Data> data)
         {
             if (!data)
-                return Status(Status::ResourceUnavailable);
+                return Status(Status::ResourceUnavailable, "Data is empty");
 
             // TODO: move this into a utility somewhere
             auto vkformat = data->properties.format;

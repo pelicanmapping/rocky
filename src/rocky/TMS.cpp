@@ -707,7 +707,7 @@ TMS::Driver::open(
     // resolve the writer
     if (!uri.isRemote() && !resolveWriter(format))
     {
-        io.services().log().warn << "Cannot create writer; writing disabled" << std::endl;
+        io.services.log().warn << "Cannot create writer; writing disabled" << std::endl;
     }
 #endif
 
@@ -762,7 +762,7 @@ TMS::Driver::read(
         }
 
         std::istringstream buf(fetch->data);
-        auto image_rr = io.services().readImageFromStream(buf, fetch->contentType, io);
+        auto image_rr = io.services.readImageFromStream(buf, fetch->contentType, io);
 
         if (image_rr.status.failed())
         {

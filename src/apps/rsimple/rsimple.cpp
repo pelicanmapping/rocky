@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     {
         // add an imagery layer to the map
         auto layer = rocky::TMSImageLayer::create();
-        layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
+        layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
         app.mapNode->map->layers().add(layer);
 
         // check for error
@@ -39,7 +39,7 @@ int main(int argc, char** argv)
 
         // add an elevation layer to the map
         auto elevation = rocky::TMSElevationLayer::create();
-        elevation->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
+        elevation->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
         app.mapNode->map->layers().add(elevation);
 
         // check for error

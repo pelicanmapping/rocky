@@ -17,7 +17,10 @@ using namespace ROCKY_NAMESPACE;
 
 LabelSystem::LabelSystem(entt::registry& registry) :
     vsg::Inherit<ECS::SystemNode, LabelSystem>(registry),
-    helper(registry) { }
+    helper(registry)
+{
+    //nop
+}
 
 void
 LabelSystem::initialize(Runtime& runtime)

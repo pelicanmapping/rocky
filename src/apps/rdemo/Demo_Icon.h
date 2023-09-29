@@ -27,7 +27,7 @@ auto Demo_Icon = [](Application& app)
     {
         // Load an icon image
         auto io = app.instance.ioOptions();
-        auto image = io.services().readImageFromURI("https://user-images.githubusercontent.com/326618/236923465-c85eb0c2-4d31-41a7-8ef1-29d34696e3cb.png", io);
+        auto image = io.services.readImageFromURI("https://user-images.githubusercontent.com/326618/236923465-c85eb0c2-4d31-41a7-8ef1-29d34696e3cb.png", io);
         if (image.status.failed())
         {
             status = image.status;
@@ -43,8 +43,8 @@ auto Demo_Icon = [](Application& app)
         icon.style = IconStyle{ 75, 0.0f }; // pixel size, rotation(radians)
 
         // Transform to place the icon:
-        auto& xform = app.entities.emplace<EntityTransform>(entity);
-        xform.node->setPosition(GeoPoint(SRS::WGS84, 0, 0, 50000));
+        auto& xform = app.entities.emplace<Transform>(entity);
+        xform.setPosition(GeoPoint(SRS::WGS84, 0, 0, 50000));
     }
 
     if (ImGuiLTable::Begin("icon"))

@@ -122,6 +122,9 @@ namespace ROCKY_NAMESPACE
         //! Whether to write the the depth buffer
         bool writeDepth = true;
 
+        //! Whether to cull backfaces
+        bool cullBackfaces = true;
+
         //! Optional dynamic style data
         std::optional<MeshStyle> style;
 

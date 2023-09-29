@@ -25,6 +25,12 @@ Icon::dirty()
 }
 
 void
+Icon::dirtyImage()
+{
+    node = nullptr;
+}
+
+void
 Icon::initializeNode(const ECS::NodeComponent::Params& params)
 {
     bindCommand = BindIconStyle::create();

@@ -134,10 +134,19 @@ namespace ROCKY_NAMESPACE
             //! Whether to draw this component
             bool active = true;
 
+            //! Whether to reinitialize this component's node
+            bool nodeDirty = false;
+
             //! Component developers can use this to tie this component's
             //! visiblity to another component. When this is set, "visible"
             //! is ignored.
             bool* active_ptr = &active;
+
+            //! Developer may override this to customize refresh behavior
+            virtual void dirty()
+            {
+                nodeDirty = true;
+            }
         };
 
         /**
@@ -228,24 +237,52 @@ namespace ROCKY_NAMESPACE
     /**
     * ECS Component that provides an entity with a geotransform.
     */
-    struct ROCKY_VSG_EXPORT EntityTransform : public ECS::Component
+    struct ROCKY_VSG_EXPORT Transform : public ECS::Component
     {
-        EntityTransform() {
-            node = GeoTransform::create();
-        }
+        vsg::ref_ptr<GeoTransform> node;
+        vsg::dmat4 local_matrix = vsg::dmat4(1.0);
+        Transform* parent = nullptr;
 
-        //! Sets the transform's geoposition
-        void setPosition(const GeoPoint& p) {
+        //! Sets the transform's geoposition, creating the node on demand
+        void setPosition(const GeoPoint& p)
+        {
+            if (!node)
+                node = GeoTransform::create();
+
             node->setPosition(p);
         }
 
-        vsg::ref_ptr<GeoTransform> node;
+        //! Returns true if the push succeeded (and a pop will be required)
+        inline bool push(vsg::RecordTraversal& rt, const vsg::dmat4& m) 
+        {
+            if (node)
+            {
+                return node->push(rt, m * local_matrix);
+            }
+            else if (parent)
+            {
+                return parent->push(rt, m * local_matrix);
+            }
+            else return false;
+        }
+
+        inline void pop(vsg::RecordTraversal& rt)
+        {
+            if (node)
+            {
+                node->pop(rt);
+            }
+            else if (parent)
+            {
+                parent->pop(rt);
+            }
+        }
     };
 
     /**
     * ECS Component representing a moving entity
     */
-    struct EntityMotion : public ECS::Component
+    struct Motion : public ECS::Component
     {
         glm::dvec3 velocity;
         glm::dvec3 acceleration;
@@ -256,7 +293,7 @@ namespace ROCKY_NAMESPACE
     };
 
     /**
-    * ECS System to process EntityMotion components
+    * ECS System to process Motion components
     */
     class ROCKY_VSG_EXPORT EntityMotionSystem : public vsg::Inherit<ECS::SystemNode, EntityMotionSystem>
     {
@@ -288,7 +325,8 @@ namespace ROCKY_NAMESPACE
 
         registry.view<T>().each([&](const auto e, auto& component)
             {
-                component.node->accept(v);
+                if (component.node)
+                    component.node->accept(v);
             });
     }
     
@@ -305,7 +343,8 @@ namespace ROCKY_NAMESPACE
 
         registry.view<T>().each([&](const auto e, auto& component)
             {
-                component.node->accept(v);
+                if (component.node)
+                    component.node->accept(v);
             });
     }
 
@@ -334,6 +373,8 @@ namespace ROCKY_NAMESPACE
     {
         ROCKY_PROFILE_FUNCTION();
 
+        const vsg::dmat4 identity_matrix = vsg::dmat4(1.0);
+
         // Get an optimized view of all this system's components:
         auto view = registry.view<T>();
 
@@ -360,8 +401,7 @@ namespace ROCKY_NAMESPACE
                         rs.emplace_back(Entry{ component, entity });
                     }
 
-                    // Otherwise, it's new and needs intialization, so queue it up for that.
-                    else
+                    if (!component.node || component.nodeDirty)
                     {
                         entities_to_initialize.push_back(entity);
                     }
@@ -384,13 +424,13 @@ namespace ROCKY_NAMESPACE
                 // If the component has a transform apply it too.
                 for (auto& e : render_set[p])
                 {
-                    auto* xform = registry.try_get<EntityTransform>(e.entity);
+                    auto* xform = registry.try_get<Transform>(e.entity);
                     if (xform)
                     {
-                        if (xform->node->push(rt))
+                        if (xform->push(rt, identity_matrix))
                         {
                             e.component.node->accept(rt);
-                            xform->node->pop(rt);
+                            xform->pop(rt);
                         }
                     }
                     else
@@ -418,6 +458,14 @@ namespace ROCKY_NAMESPACE
             for (auto& entity : entities_to_initialize)
             {
                 auto& component = registry.get<T>(entity);
+
+                // If it's marked dirty, dispose of it properly
+                if (component.node && component.nodeDirty)
+                {
+                    runtime.dispose(component.node);
+                    component.node = nullptr;
+                }
+
                 if (!component.node)
                 {
                     // if we're using pipelines, find the one matching this
@@ -439,6 +487,8 @@ namespace ROCKY_NAMESPACE
                 {
                     runtime.compile(component.node);
                 }
+
+                component.nodeDirty = false;
             }
 
             // reset the list for the next frame

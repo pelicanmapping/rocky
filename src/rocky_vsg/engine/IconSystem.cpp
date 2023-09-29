@@ -8,6 +8,7 @@
 #include "Runtime.h"
 #include "Utils.h"
 #include "PipelineState.h"
+#include <rocky/Color.h>
 
 #include <vsg/state/BindDescriptorSet.h>
 #include <vsg/state/ViewDependentState.h>
@@ -184,35 +185,48 @@ BindIconStyle::updateStyle(const IconStyle& value)
 void
 BindIconStyle::init(vsg::ref_ptr<vsg::PipelineLayout> layout)
 {
+    vsg::Descriptors descriptors;
+
     auto ubo = vsg::DescriptorBuffer::create(_styleData, BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    descriptors.emplace_back(ubo);
 
-    auto tex_data = util::moveImageToVSG(_image);
+    std::shared_ptr<Image> image = _image;
+    if (!image)
+    {
+        image = Image::create(Image::R8G8B8A8_UNORM, 1, 1);
+        image->write(Color::Red, 0, 0);
+    }
 
-    // A sampler for the texture:
-    auto sampler = vsg::Sampler::create();
-    sampler->maxLod = 5; // this alone will prompt mipmap generation!
-    sampler->minFilter = VK_FILTER_LINEAR;
-    sampler->magFilter = VK_FILTER_LINEAR;
-    sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    sampler->anisotropyEnable = VK_TRUE; // don't need this for a billboarded icon
-    sampler->maxAnisotropy = 4.0f;
+    if (image)
+    {
+        auto tex_data = util::moveImageToVSG(image);
 
-    auto tex = vsg::DescriptorImage::create(
-        sampler, // IconState::sampler,
-        tex_data,
-        TEXTURE_BINDING,
-        0, // array element (TODO: increment when we change to an array)
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        // A sampler for the texture:
+        auto sampler = vsg::Sampler::create();
+        sampler->maxLod = 5; // this alone will prompt mipmap generation!
+        sampler->minFilter = VK_FILTER_LINEAR;
+        sampler->magFilter = VK_FILTER_LINEAR;
+        sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler->anisotropyEnable = VK_TRUE; // don't need this for a billboarded icon
+        sampler->maxAnisotropy = 4.0f;
+
+        auto tex = vsg::DescriptorImage::create(
+            sampler, // IconState::sampler,
+            tex_data,
+            TEXTURE_BINDING,
+            0, // array element (TODO: increment when we change to an array)
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+
+        descriptors.emplace_back(tex);
+    }
 
     this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     this->layout = layout;
     this->firstSet = 0;
-    this->descriptorSet = vsg::DescriptorSet::create(
-        layout->setLayouts.front(),
-        vsg::Descriptors{ ubo, tex });
+    this->descriptorSet = vsg::DescriptorSet::create(layout->setLayouts.front(), descriptors);
 }
 
 

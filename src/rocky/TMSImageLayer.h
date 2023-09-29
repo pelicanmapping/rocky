@@ -14,7 +14,7 @@ namespace ROCKY_NAMESPACE
     /**
      * Image layer reading from a TMS (Tile Map Service) endpoint
      */
-    class ROCKY_EXPORT TMSImageLayer : public Inherit<ImageLayer, TMSImageLayer>
+    class ROCKY_EXPORT TMSImageLayer : public Inherit<ImageLayer, TMSImageLayer>, public TMS::Options
     {
     public:
         //! Construct an empty TMS layer
@@ -24,6 +24,7 @@ namespace ROCKY_NAMESPACE
         //! Destructor
         virtual ~TMSImageLayer() { }
 
+#if 0
         //! Base URL for TMS requests
         void setURI(const URI& value) { _options.uri = value; }
         const optional<URI>& uri() const { return _options.uri; }
@@ -36,6 +37,7 @@ namespace ROCKY_NAMESPACE
         //! Data format to request from the service
         void setFormat(const std::string& value) { _options.format = value; }
         const optional<std::string>& format() const { return _options.format; }
+#endif
 
         //! serialize
         JSON to_json() const override;
@@ -55,7 +57,7 @@ namespace ROCKY_NAMESPACE
 
     private:
         TMS::Driver _driver;
-        TMS::Options _options;
+        //TMS::Options _options;
 
         void construct(const JSON&);
     };

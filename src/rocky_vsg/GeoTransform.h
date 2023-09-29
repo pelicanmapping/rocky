@@ -66,7 +66,7 @@ namespace ROCKY_NAMESPACE
 
         void accept(vsg::RecordTraversal&) const override;
 
-        bool push(vsg::RecordTraversal&) const;
+        bool push(vsg::RecordTraversal&, const vsg::dmat4& m) const;
 
         void pop(vsg::RecordTraversal&) const;
 
@@ -77,6 +77,7 @@ namespace ROCKY_NAMESPACE
             bool dirty = true;
             GeoPoint worldPos;
             vsg::dmat4 matrix;
+            vsg::dmat4 local_matrix;
         };
         util::ViewLocal<Data> _viewlocal;
 

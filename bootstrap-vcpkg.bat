@@ -17,6 +17,17 @@ if not defined VULKAN_SDK (
     goto :end
 )
 
+:: Detect visual studio version
+set VS_VERSION=Visual Studio 17 2022
+reg query "HKEY_CLASSES_ROOT\VisualStudio.DTE.14" >> nul 2>&1
+if %ERRORLEVEL% EQU 0 ( set VS_VERSION=Visual Studio 14 2015 )
+reg query "HKEY_CLASSES_ROOT\VisualStudio.DTE.15" >> nul 2>&1
+if %ERRORLEVEL% EQU 0 ( set VS_VERSION=Visual Studio 15 2017 )
+reg query "HKEY_CLASSES_ROOT\VisualStudio.DTE.16" >> nul 2>&1
+if %ERRORLEVEL% EQU 0 ( set VS_VERSION=Visual Studio 16 2019 )
+reg query "HKEY_CLASSES_ROOT\VisualStudio.DTE.17" >> nul 2>&1
+if %ERRORLEVEL% EQU 0 ( set VS_VERSION=Visual Studio 17 2022 )
+
 :: Argument parser from: https://stackoverflow.com/a/8162578
 setlocal enableDelayedExpansion
 set "options=-S:. -B:..\build -I:..\install -G:"Visual Studio 17 2022" -A:x64"
@@ -58,11 +69,11 @@ call :realpath !-I!
 set INSTALL_DIR=%RETVAL%
 
 :: Ask for confirmation:
-echo Source location = %SOURCE_DIR%
-echo Build location = %BUILD_DIR%
+echo Source location  = %SOURCE_DIR%
+echo Build location   = %BUILD_DIR%
 echo Install location = %INSTALL_DIR%
-echo Compiler = %COMPILER%
-echo Architecture = %ARCHITECTURE%
+echo Compiler         = %COMPILER%
+echo Architecture     = %ARCHITECTURE%
 choice /C:YN /M Continue?
 if ERRORLEVEL == 2 goto :usage
 

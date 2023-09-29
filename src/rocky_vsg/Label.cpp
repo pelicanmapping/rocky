@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "Label.h"
+#include "PixelScaleTransform.h"
 #include "json.h"
 #include "engine/Runtime.h"
 
@@ -27,50 +28,68 @@ Label::Label()
 void
 Label::dirty()
 {
-    if (valueBuffer)
+    if (node)
     {
-        valueBuffer->value() = text;
-    }
-
-    if (textNode)
-    {
-        if (font.valid() && textNode->font != font)
+        if (style.font != appliedStyle.font ||
+            style.pointSize != appliedStyle.pointSize ||
+            style.outlineSize != appliedStyle.outlineSize)
         {
-            textNode->font = font;
+            nodeDirty = true;
+            appliedStyle = style;
         }
-        textNode->setup(LABEL_MAX_NUM_CHARS, options);
+        else if (text != appliedText)
+        {
+            ROCKY_SOFT_ASSERT_AND_RETURN(text.length() < LABEL_MAX_NUM_CHARS, void(), "Text string is too long");
+            appliedText = text;
+            if (valueBuffer)
+            {
+                valueBuffer->value() = vsg::make_string(text);
+                valueBuffer->dirty();
+                textNode->setup(LABEL_MAX_NUM_CHARS, options);
+            }
+        }
     }
 }
 
 void
 Label::initializeNode(const ECS::NodeComponent::Params& params)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(font.valid(), void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(style.font.valid(), void());
 
     options = params.readerWriterOptions;
 
+    double size = style.pointSize;
+
+    // Billboard = false because of https://github.com/vsg-dev/VulkanSceneGraph/discussions/985
+    // Workaround: use a PixelScaleTransform with unrotate=true
     layout = vsg::StandardLayout::create();
-    const double size = 240000.0;
-    layout->billboard = true;
-    layout->billboardAutoScaleDistance = size;
+    layout->billboard = false;
+    layout->billboardAutoScaleDistance = 0.0;
     layout->position = vsg::vec3(0.0, 0.0, 0.0);
     layout->horizontal = vsg::vec3(size, 0.0, 0.0);
-    layout->vertical = layout->billboard ? vsg::vec3(0.0, size, 0.0) : vsg::vec3(0.0, 0.0, size);
+    layout->vertical = vsg::vec3(0.0, size, 0.0); // layout->billboard ? vsg::vec3(0.0, size, 0.0) : vsg::vec3(0.0, 0.0, size);
     layout->color = vsg::vec4(1.0, 0.9, 1.0, 1.0);
-    layout->outlineWidth = 0.1;
+    layout->outlineWidth = style.outlineSize;
     layout->horizontalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;
-    layout->verticalAlignment = vsg::StandardLayout::BOTTOM_ALIGNMENT;
+    layout->verticalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;
 
     valueBuffer = vsg::stringValue::create(text);
 
     textNode = vsg::Text::create();
-    textNode->font = font;
+    textNode->font = style.font;
     textNode->text = valueBuffer;
     textNode->layout = layout;
     textNode->technique = vsg::GpuLayoutTechnique::create();
     textNode->setup(LABEL_MAX_NUM_CHARS, options); // allocate enough space for max possible characters?
 
+#if 0
     node = textNode;
+#else
+    auto pst = PixelScaleTransform::create();
+    pst->unrotate = true;
+    pst->addChild(textNode);
+    node = pst;
+#endif
 }
 
 JSON

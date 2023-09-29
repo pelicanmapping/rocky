@@ -296,13 +296,13 @@ URI::URI(const std::string& location, const URIContext& context)
 IOResult<Content>
 URI::read(const IOOptions& io) const
 {
-    auto cached = io.services().contentCache->get(full());
+    auto cached = io.services.contentCache->get(full());
     if (cached.status.ok())
     {
         if (httpDebug)
         {
             Log::info() << "Cache hit, ratio = "
-                << 100.0f * (float)io.services().contentCache->hits / (float)io.services().contentCache->gets
+                << 100.0f * (float)io.services.contentCache->hits / (float)io.services.contentCache->gets
                 << "%" << std::endl;
         }
 
@@ -357,7 +357,7 @@ URI::read(const IOOptions& io) const
             util::make_string() << "Cannot open \"" << full() << "\""));
     }
 
-    io.services().contentCache->put(full(), Result<Content>(content));
+    io.services.contentCache->put(full(), Result<Content>(content));
 
     return content;
 }

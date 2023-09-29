@@ -11,6 +11,13 @@
 
 namespace ROCKY_NAMESPACE
 {
+    struct LabelStyle
+    {
+        vsg::ref_ptr<vsg::Font> font;
+        float pointSize = 14.0f;
+        float outlineSize = 0.05f;
+    };
+
     /**
     * Text label component
     */
@@ -23,11 +30,11 @@ namespace ROCKY_NAMESPACE
         //! Label content; call dirty() to apply
         std::string text;
 
-        //! Font (required); call dirty() to apply
-        vsg::ref_ptr<vsg::Font> font;
+        //! Label style; call dirty() to apply
+        LabelStyle style;
 
-        //! Apply property changes
-        void dirty();
+        //! Apply changes
+        void dirty() override;
 
         //! serialize as JSON string
         JSON to_json() const override;
@@ -41,5 +48,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::stringValue> valueBuffer;
         vsg::ref_ptr<vsg::StandardLayout> layout;
         vsg::ref_ptr<vsg::Options> options;
+        LabelStyle appliedStyle;
+        std::string appliedText;
     };
 }

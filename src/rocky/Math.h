@@ -423,17 +423,6 @@ namespace ROCKY_NAMESPACE
         return true;
     }
 
-#if 1
-    // vec3 * mat4
-    //template<typename A, typename B>
-    //A pre_mult(const A& v, const B& _mat) {
-    //    double d = 1.0f / (_mat[0][3] * v.x + _mat[1][3] * v.y + _mat[2][3] * v.z + _mat[3][3]);
-    //    return A(
-    //        (_mat[0][0] * v.x + _mat[1][0] * v.y + _mat[2][0] * v.z + _mat[3][0])*d,
-    //        (_mat[0][1] * v.x + _mat[1][1] * v.y + _mat[2][1] * v.z + _mat[3][1])*d,
-    //        (_mat[0][2] * v.x + _mat[1][2] * v.y + _mat[2][2] * v.z + _mat[3][2])*d);
-    //}
-
     template<typename M>
     M pre_mult(const M& a, const M& b) {
         return a * b;
@@ -448,66 +437,116 @@ namespace ROCKY_NAMESPACE
     inline glm::dvec3 operator * (const glm::dmat4& mat, const glm::dvec3& v) {
         return glm::dvec3(mat * glm::dvec4(v, 1));
     }
-#endif
 
-#if 0
-    /**
-     * Utilities to manipulate a projection matrix.
-     * These functions will automatically handle standard OGL versus Reverse-Z
-     * projection matrices.
-     */
-    struct ROCKY_EXPORT ProjectionMatrix
+    //! Convert Euler angles, in radians, to a quaternion.
+    //! https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+    template<typename Q>
+    inline void euler_radians_to_quaternion(double xaxis, double yaxis, double zaxis, Q& q)
     {
-        //! Projection matrix type
-        using Type = enum {
-            STANDARD,
-            REVERSE_Z,
-            UNKNOWN
-        };
+        // x-axis rotation:
+        double cx = cos(xaxis * 0.5);
+        double sx = sin(xaxis * 0.5);
+        // y-axis rotation:
+        double cy = cos(yaxis * 0.5);
+        double sy = sin(yaxis * 0.5);
+        // z-axis rotation:
+        double cz = cos(zaxis * 0.5);
+        double sz = sin(zaxis * 0.5);
 
-        //! True for an orthographic projection matrix
-        static bool isOrtho(
-            const dmat4& m);
+        q.w = cx * cy * cz + sx * sy * sz;
+        q.x = sx * cy * cz - cx * sy * sz;
+        q.y = cx * sy * cz + sx * cy * sz;
+        q.z = cx * cy * sz - sx * sy * cz;
+    }
 
-        //! True for a perspective projection matrix
-        static bool isPerspective(
-            const dmat4& m);
+    //! Convert Euler angles, in degrees, to a quaternion.
+    template<typename Q>
+    inline void euler_degrees_to_quaternion(double xaxis, double yaxis, double zaxis, Q& q)
+    {
+        euler_radians_to_quaternion(deg2rad(xaxis), deg2rad(yaxis), deg2rad(zaxis), q);
+    }
 
-        //! Detected type of the projection matrix
-        static Type getType(
-            const dmat4& m);
+    //! Convert a quat to Euler angles in radians.
+    //! https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+    template<typename Q>
+    inline void quaternion_to_euler_radians(const Q& q, double& xaxis, double& yaxis, double& zaxis)
+    {
+        // x-axis rotation
+        double sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
+        double cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+        xaxis = std::atan2(sinr_cosp, cosr_cosp);
+        // y-axis rotation
+        double sinp = std::sqrt(1 + 2 * (q.w * q.y - q.x * q.z));
+        double cosp = std::sqrt(1 - 2 * (q.w * q.y - q.x * q.z));
+        yaxis = (2 * std::atan2(sinp, cosp) - M_PI / 2);
+        // z-axis rotation
+        double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
+        double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+        zaxis = std::atan2(siny_cosp, cosy_cosp);
+    }
 
-        //! Construct a perspective matrix, deriving the type from the
-        //! existing values in the matrix if possible
-        static void setPerspective(
-            dmat4& m,
-            double vfov, double ar, double N, double F,
-            Type = UNKNOWN);
+    //! Convert a quat to Euler angles in degrees.
+    template<typename Q>
+    inline void quaternion_to_euler_degrees(const Q& q, double& xaxis, double& yaxis, double& zaxis)
+    {
+        quaternion_to_euler_radians(q, xaxis, yaxis, zaxis);
+        xaxis = rad2deg(xaxis), yaxis = rad2deg(yaxis), zaxis = rad2deg(zaxis);
+    }
 
-        //! Extract values from a perspective matrix
-        static bool getPerspective(
-            const dmat4& m,
-            double& vfov, double& ar, double& N, double& F);
 
-        //! Extract raw frustum values from a perspective matrix
-        static bool getPerspective(
-            const dmat4& m,
-            double& L, double& R, double& B, double& T, double& N, double& F);
+    // from OpenSceneGraph
+    template<typename M, typename Q>
+    inline void get_rotation_from_matrix(const M& _mat, Q& q)
+    {
+        double s;
+        double tq[4];
+        int i, j;
 
-        //! Construct an orthographc matrix, deriving the type from the
-        //! existing values in the matrix if possible
-        static void setOrtho(
-            dmat4& m,
-            double L, double R, double B, double T, double N, double F,
-            Type = UNKNOWN);
+        // Use tq to store the largest trace
+        tq[0] = 1 + _mat[0][0] + _mat[1][1] + _mat[2][2];
+        tq[1] = 1 + _mat[0][0] - _mat[1][1] - _mat[2][2];
+        tq[2] = 1 - _mat[0][0] + _mat[1][1] - _mat[2][2];
+        tq[3] = 1 - _mat[0][0] - _mat[1][1] + _mat[2][2];
 
-        //! Extract frustum values from an orthographic matrix
-        static bool getOrtho(
-            const dmat4& m,
-            double& L, double& R, double& B, double& T, double& N, double& F);
-    };
-#endif
+        // Find the maximum (could also use stacked if's later)
+        j = 0;
+        for (i = 1; i < 4; i++) j = (tq[i] > tq[j]) ? i : j;
 
+        // check the diagonal
+        if (j == 0)
+        {
+            /* perform instant calculation */
+            q.w = tq[0];
+            q.x = _mat[1][2] - _mat[2][1];
+            q.y = _mat[2][0] - _mat[0][2];
+            q.z = _mat[0][1] - _mat[1][0];
+        }
+        else if (j == 1)
+        {
+            q.w = _mat[1][2] - _mat[2][1];
+            q.x = tq[1];
+            q.y = _mat[0][1] + _mat[1][0];
+            q.z = _mat[2][0] + _mat[0][2];
+        }
+        else if (j == 2)
+        {
+            q.w = _mat[2][0] - _mat[0][2];
+            q.x = _mat[0][1] + _mat[1][0];
+            q.y = tq[2];
+            q.z = _mat[1][2] + _mat[2][1];
+        }
+        else /* if (j==3) */
+        {
+            q.w = _mat[0][1] - _mat[1][0];
+            q.x = _mat[2][0] + _mat[0][2];
+            q.y = _mat[1][2] + _mat[2][1];
+            q.z = tq[3];
+        }
+
+        s = sqrt(0.25 / tq[j]);
+        q.w *= s;
+        q.x *= s;
+        q.y *= s;
+        q.z *= s;
+    }
 }
-
-

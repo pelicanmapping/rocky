@@ -118,7 +118,7 @@ auto Demo_Mesh_Relative = [](Application& app)
 
         // Add a transform component so we can position our mesh relative
         // to some geospatial coordinates.
-        auto& xform = app.entities.emplace<EntityTransform>(entity);
+        auto& xform = app.entities.emplace<Transform>(entity);
         xform.node->position = GeoPoint(SRS::WGS84, 24.0, 24.0, s * 3.0);
         xform.node->bound.radius = s * sqrt(2);
     }
@@ -139,7 +139,7 @@ auto Demo_Mesh_Relative = [](Application& app)
                 mesh.dirty();
         }
 
-        auto& xform = app.entities.get<EntityTransform>(entity).node;
+        auto& xform = app.entities.get<Transform>(entity).node;
 
         if (ImGuiLTable::SliderDouble("Latitude", &xform->position.y, -85.0, 85.0, "%.1lf"))
             xform->dirty();
@@ -197,8 +197,8 @@ auto Demo_Mesh_Multi = [](Application& app)
 
         // Add a transform component so we can position our mesh relative
         // to some geospatial coordinates.
-        auto& xform = app.entities.emplace<EntityTransform>(entity);
-        xform.node->setPosition(GeoPoint(SRS::WGS84, 24.0, 24.0, s * 3.0));
+        auto& xform = app.entities.emplace<Transform>(entity);
+        xform.setPosition(GeoPoint(SRS::WGS84, 24.0, 24.0, s * 3.0));
     }
 
     if (ImGuiLTable::Begin("Mesh"))
@@ -221,7 +221,7 @@ auto Demo_Mesh_Multi = [](Application& app)
             }
         }
 
-        auto& transform = app.entities.get<EntityTransform>(entity);
+        auto& transform = app.entities.get<Transform>(entity);
         auto& xform = transform.node;
 
         if (ImGuiLTable::SliderDouble("Latitude", &xform->position.y, -85.0, 85.0, "%.1lf"))

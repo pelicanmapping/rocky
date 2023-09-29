@@ -50,7 +50,6 @@ ECS::ECSNode::update(Runtime& runtime, vsg::time_point p)
 }
 
 
-
 void
 EntityMotionSystem::tick(Runtime& runtime, ECS::time_point time)
 {
@@ -62,7 +61,7 @@ EntityMotionSystem::tick(Runtime& runtime, ECS::time_point time)
         double dt = 1e-9 * (double)(time - last_time).count();
 
         // Join query all motions + transform pairs:
-        auto view = registry.group<EntityMotion, EntityTransform>();
+        auto view = registry.group<Motion, Transform>();
 
         view.each([dt](const auto entity, auto& motion, auto& transform)
             {

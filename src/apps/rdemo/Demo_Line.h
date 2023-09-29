@@ -98,8 +98,8 @@ auto Demo_Line_Relative = [](Application& app)
         line.write_depth = true;
 
         // Add a transform that will place the line on the map
-        auto& transform = app.entities.emplace<EntityTransform>(entity);
-        transform.node->setPosition(GeoPoint(SRS::WGS84, -30.0, 10.0, 25000.0));
+        auto& transform = app.entities.emplace<Transform>(entity);
+        transform.setPosition(GeoPoint(SRS::WGS84, -30.0, 10.0, 25000.0));
         transform.node->bound.radius = size; // for horizon culling
     }
 
@@ -115,7 +115,7 @@ auto Demo_Line_Relative = [](Application& app)
                 line.dirty();
         }
 
-        auto& transform = app.entities.get<EntityTransform>(entity);
+        auto& transform = app.entities.get<Transform>(entity);
         auto& xform = transform.node;
 
         if (ImGuiLTable::SliderDouble("Latitude", &xform->position.y, -85.0, 85.0, "%.1lf"))

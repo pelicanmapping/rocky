@@ -58,7 +58,7 @@ namespace ROCKY_NAMESPACE
             const TileKey& key,
             const IOOptions& io) const override
         {
-            auto image = io.services().readImageFromURI("D:/data/images/BENDER.png", io);
+            auto image = io.services.readImageFromURI("D:/data/images/BENDER.png", io);
 
             if (image.status.ok())
                 return GeoImage(image.value, key.extent());
@@ -84,7 +84,7 @@ int main(int argc, char** argv)
     rocky::Log::info() << "Using VSG " << VSG_VERSION_STRING << " (so " << VSG_SOVERSION_STRING << ")" << std::endl;
 
     // An LRU cache mainly used for network data fetches.
-    ri.ioOptions().services().contentCache->setCapacity(128);
+    ri.ioOptions().services.contentCache->setCapacity(128);
 
     // main window
     auto traits = vsg::WindowTraits::create(ROCKY_PROJECT_NAME);
@@ -126,14 +126,14 @@ int main(int argc, char** argv)
 #if defined(ROCKY_SUPPORTS_TMS)
 
     auto imagery = rocky::TMSImageLayer::create();
-    imagery->setURI("https://readymap.org/readymap/tiles/1.0.0/135/");
+    imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/135/";
     mapNode->map->layers().add(imagery);
     if (imagery->status().failed())
         return error(imagery);
 
     auto elevation = rocky::TMSElevationLayer::create();
-    elevation->setEncoding(rocky::ElevationLayer::Encoding::MapboxRGB);
-    elevation->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
+    elevation->encoding = rocky::ElevationLayer::Encoding::MapboxRGB;
+    elevation->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
     mapNode->map->layers().add(elevation);
     if (elevation->status().failed())
         return error(elevation);

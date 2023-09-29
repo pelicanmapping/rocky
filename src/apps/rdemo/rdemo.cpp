@@ -167,14 +167,14 @@ int main(int argc, char** argv)
 #ifdef ROCKY_SUPPORTS_TMS
         // add an imagery layer to the map
         auto layer = rocky::TMSImageLayer::create();
-        layer->setURI("https://readymap.org/readymap/tiles/1.0.0/7");
+        layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7";
         app.mapNode->map->layers().add(layer);
         if (layer->status().failed())
             return layerError(layer);
 
         // add an elevation layer to the map
         auto elev = rocky::TMSElevationLayer::create();
-        elev->setURI("https://readymap.org/readymap/tiles/1.0.0/116/");
+        elev->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
         app.mapNode->map->layers().add(elev);
         if (elev->status().failed())
             return layerError(elev);

@@ -40,10 +40,8 @@ ImageLayer::construct(const JSON& conf)
 {
     const auto j = parse_json(conf);
     get_to(j, "nodata_image", _noDataImageLocation);
-    get_to(j, "accept_draping", _acceptDraping);
     get_to(j, "transparent_color", _transparentColor);
     get_to(j, "texture_compression", _textureCompression);
-    get_to(j, "coverage", _coverage);
 
     setRenderType(RENDERTYPE_TERRAIN_SURFACE);
 }
@@ -53,31 +51,9 @@ ImageLayer::to_json() const
 {
     auto j = parse_json(super::to_json());
     set(j, "nodata_image", _noDataImageLocation);
-    set(j, "accept_draping", _acceptDraping);
     set(j, "transparent_color", _transparentColor);
     set(j, "texture_compression", _textureCompression);
-    set(j, "coverage", _coverage);
     return j.dump();
-}
-
-void
-ImageLayer::setAcceptDraping(bool value)
-{
-    _acceptDraping = value;
-
-#if 0
-    if (value == true && getStateSet() != nullptr)
-        getStateSet()->removeDefine("ROCKY_DISABLE_DRAPING");
-    else
-        getOrCreateStateSet()->setDefine("ROCKY_DISABLE_DRAPING");
-#endif
-    ROCKY_TODO("Draping");
-}
-
-bool
-ImageLayer::getAcceptDraping() const
-{
-    return _acceptDraping;
 }
 
 Result<GeoImage>
