@@ -14,8 +14,10 @@ namespace ROCKY_NAMESPACE
     struct LabelStyle
     {
         vsg::ref_ptr<vsg::Font> font;
+        vsg::StandardLayout::Alignment horizontalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;
+        vsg::StandardLayout::Alignment verticalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;
         float pointSize = 14.0f;
-        float outlineSize = 0.05f;
+        float outlineSize = 0.0f;
     };
 
     /**

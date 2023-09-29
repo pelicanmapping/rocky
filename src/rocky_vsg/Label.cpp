@@ -32,7 +32,9 @@ Label::dirty()
     {
         if (style.font != appliedStyle.font ||
             style.pointSize != appliedStyle.pointSize ||
-            style.outlineSize != appliedStyle.outlineSize)
+            style.outlineSize != appliedStyle.outlineSize ||
+            style.horizontalAlignment != appliedStyle.horizontalAlignment ||
+            style.verticalAlignment != appliedStyle.verticalAlignment)
         {
             nodeDirty = true;
             appliedStyle = style;
@@ -70,8 +72,8 @@ Label::initializeNode(const ECS::NodeComponent::Params& params)
     layout->vertical = vsg::vec3(0.0, size, 0.0); // layout->billboard ? vsg::vec3(0.0, size, 0.0) : vsg::vec3(0.0, 0.0, size);
     layout->color = vsg::vec4(1.0, 0.9, 1.0, 1.0);
     layout->outlineWidth = style.outlineSize;
-    layout->horizontalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;
-    layout->verticalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;
+    layout->horizontalAlignment = style.horizontalAlignment;
+    layout->verticalAlignment = style.verticalAlignment;
 
     valueBuffer = vsg::stringValue::create(text);
 
