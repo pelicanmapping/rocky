@@ -162,7 +162,7 @@ namespace
 
                 if (httpDebug)
                 {
-                    Log::info() << LC << "(" << r->status << ") HTTP GET " << request.url << " (" << timer.seconds() << "s)" << std::endl;
+                    Log()->info(LC "(" + std::to_string(r->status) + ") HTTP GET " + request.url + " (" + std::to_string(timer.seconds()) + "s)");
                 }
 
                 if (r.error() != httplib::Error::Success)
@@ -170,7 +170,7 @@ namespace
                     // retry on a missing connection
                     if (r.error() == httplib::Error::Connection && (--max_attempts > 0))
                     {
-                        Log::info() << LC << httplib::to_string(r.error()) << " with " << proto_host_port << "; retrying.." << std::endl;
+                        Log()->info(LC + httplib::to_string(r.error()) + " with " + proto_host_port + "; retrying..");
                         std::this_thread::sleep_for(1s);
                         continue;
                     }
@@ -301,9 +301,9 @@ URI::read(const IOOptions& io) const
     {
         if (httpDebug)
         {
-            Log::info() << "Cache hit, ratio = "
-                << 100.0f * (float)io.services.contentCache->hits / (float)io.services.contentCache->gets
-                << "%" << std::endl;
+            Log()->info("Cache hit, ratio = "
+                + std::to_string(100.0f * (float)io.services.contentCache->hits / (float)io.services.contentCache->gets)
+                + "%");
         }
 
         return cached.value;

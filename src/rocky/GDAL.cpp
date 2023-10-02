@@ -14,7 +14,7 @@ using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::GDAL;
 
 #undef LC
-#define LC "[GDAL] \"" << getName() << "\" "
+#define LC "[GDAL] \"" + getName() + "\" "
 
 #define INDENT ""
 
@@ -1492,10 +1492,10 @@ GDAL::Driver::createImage(
     }
     else
     {
-        Log::warn()
-            << LC << "Could not find red, green and blue bands or gray bands in "
-            << _layer->uri()->full()
-            << ".  Cannot create image. " << std::endl;
+        Log()->warn(
+            LC "Could not find red, green and blue bands or gray bands in "
+            + _layer->uri()->full()
+            + ".  Cannot create image. ");
 
         return Status(
             Status::ResourceUnavailable,
@@ -1536,7 +1536,7 @@ const optional<Image::Interpolation>& GDAL::LayerBase::interpolation() const {
 //......................................................................
 
 #undef LC
-#define LC "[GDAL] \"" << getName() << "\" "
+#define LC "[GDAL] \"" + getName() + "\" "
 
 namespace
 {

@@ -932,7 +932,7 @@ namespace weemesh
 
                 if (best_edge == nullptr)
                 {
-                    ROCKY_WARN << "got stuck! :(" << std::endl;
+                    //ROCKY_WARN << "got stuck! :(" << std::endl;
                     break;
                 }
 

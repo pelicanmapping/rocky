@@ -126,7 +126,7 @@ Application::Application(int& argc, char** argv) :
         }
         else
         {
-            Log::warn() << "Failed to read map from \"" << infile << "\"" << std::endl;
+            Log()->warn("Failed to read map from \"" + infile + "\"");
         }
     }
 
@@ -143,14 +143,16 @@ Application::Application(int& argc, char** argv) :
             if (count == mapNode->map->layers().size())
                 msg = "Unable to import any layers from the earth file";
 
-            Log::warn() << json_pretty(result.value) << std::endl;
+            Log()->warn(json_pretty(result.value));
         }
         else
         {
             msg = "Failed to read earth file - " + result.status.message;
         }
         if (!msg.empty())
-            Log::warn() << msg << std::endl;
+        {
+            Log()->warn(msg);
+        }
     }
 
     // install the ECS.
@@ -164,7 +166,6 @@ Application::Application(int& argc, char** argv) :
     ecs->addChild(LineSystem::create(entities));
     ecs->addChild(SelfContainedNodeSystem::create(entities));
     ecs->addChild(IconSystem::create(entities));
-
     ecs->addChild(LabelSystem::create(entities));
 
     ecs->addChild(EntityMotionSystem::create(entities));
@@ -188,11 +189,11 @@ namespace
     {
         if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
         {
-            Log::warn() << std::endl << callback_data->pMessage << std::endl;
+            Log()->warn("\n" + std::string(callback_data->pMessage));
         }
         else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
         {
-            Log::warn() << std::endl << callback_data->pMessage << std::endl;
+            Log()->warn("\n" + std::string(callback_data->pMessage));
         }
         return VK_FALSE;
     }

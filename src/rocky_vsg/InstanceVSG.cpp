@@ -7,10 +7,13 @@
 #include "engine/Utils.h"
 
 #include <rocky/Image.h>
+#include <rocky/URI.h>
 #include <vsg/io/read.h>
 #include <vsg/io/Logger.h>
 #include <vsg/state/Image.h>
 #include <vsg/io/ReaderWriter.h>
+
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 ROCKY_ABOUT(vulkanscenegraph, VSG_VERSION_STRING)
 
@@ -27,6 +30,37 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
+    // custom VSG logger that redirects to spdlog.
+    /// default Logger that sends debug and info messages to std:cout, and warn and error messages to std::cerr
+    class SpdlogLogger : public Inherit<vsg::Logger, SpdlogLogger>
+    {
+    public:
+        std::shared_ptr<spdlog::logger> vsg_logger;
+
+        SpdlogLogger()
+        {
+            vsg_logger = spdlog::stdout_color_mt("vsg");
+            vsg_logger->set_pattern("%^[%n %l]%$ %v");
+        }
+
+    protected:
+        void debug_implementation(const std::string_view& message) override {
+            vsg_logger->debug(message);
+        }
+        void info_implementation(const std::string_view& message) override {
+            vsg_logger->info(message);
+        }
+        void warn_implementation(const std::string_view& message) override {
+            vsg_logger->warn(message);
+        }
+        void error_implementation(const std::string_view& message) override {
+            vsg_logger->error(message);
+        }
+        void fatal_implementation(const std::string_view& message) override {
+            vsg_logger->critical(message);
+        }
+    };
+
     // recursive search for a vsg::ReaderWriters that matches the extension
     // TODO: expand to include 'protocols' I guess
     vsg::ref_ptr<vsg::ReaderWriter> findReaderWriter(const std::string& extension, const vsg::ReaderWriters& readerWriters)
@@ -182,6 +216,9 @@ InstanceVSG::InstanceVSG() :
     _impl = std::make_shared<Implementation>();
     auto& runtime = _impl->runtime;
 
+    // redirect the VSG logger to our spdlog
+    vsg::Logger::instance() = new SpdlogLogger();
+
 #ifdef GDAL_FOUND
     runtime.readerWriterOptions->add(GDAL_VSG_ReaderWriter::create());
 #endif
@@ -193,6 +230,17 @@ InstanceVSG::InstanceVSG() :
 
     // For system fonts
     runtime.readerWriterOptions->paths.push_back("C:/windows/fonts");
+
+    // Load a default font if there is one
+    const char* font_file = getenv("ROCKY_DEFAULT_FONT");
+    if (!font_file)
+        font_file = "arial.ttf";
+
+    runtime.defaultFont = vsg::read_cast<vsg::Font>(font_file, runtime.readerWriterOptions);
+    if (!runtime.defaultFont)
+    {
+        Log()->warn("Cannot load font \"" + std::string(font_file) + "\"");
+    }
 
     // establish search paths for shaders and data:
     auto vsgPaths = vsg::getEnvPaths("VSG_FILE_PATH");
@@ -215,8 +263,8 @@ InstanceVSG::InstanceVSG() :
 
         if (!foundShaders(runtime.searchPaths))
         {
-            Log::warn() << "Trouble: Rocky may not be able to find its shaders. "
-                "Consider setting one of the environment variables VSG_FILE_PATH or ROCKY_FILE_PATH." << std::endl;
+            Log()->warn("Trouble: Rocky may not be able to find its shaders. "
+                "Consider setting one of the environment variables VSG_FILE_PATH or ROCKY_FILE_PATH.");
         }
     }
 
@@ -239,8 +287,6 @@ InstanceVSG::InstanceVSG() :
             return io.services.readImageFromStream(buf, result.value.contentType, io);
         }
         return Result<std::shared_ptr<Image>>(Status(Status::ResourceUnavailable, "Data is null"));
-        //auto result = vsg::read_cast<vsg::Data>(location, readerWriterOptions);
-        //return util::makeImageFromVSG(result);
     };
 
     // map of mime-types to extensions that VSG can understand
@@ -297,27 +343,3 @@ InstanceVSG::InstanceVSG(const InstanceVSG& rhs) :
     //nop
 }
 
-void
-InstanceVSG::setUseVSGLogger(bool value)
-{
-    if (value)
-    {
-        Log::userFunction() = [](LogLevel level, const std::string& s)
-        {
-            if (level == LogLevel::INFO)
-                vsg::Logger::instance()->info(s);
-            else if (level == LogLevel::WARN)
-                vsg::Logger::instance()->warn(s);
-        };
-    }
-    else
-    {
-        Log::userFunction() = nullptr;
-    }
-}
-
-void
-InstanceVSG::compile()
-{
-    //nop
-}

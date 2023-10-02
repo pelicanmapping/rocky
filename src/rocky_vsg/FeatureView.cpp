@@ -339,8 +339,7 @@ FeatureView::generate(ECS::Registry& registry, Runtime& runtime, bool keep_featu
         }
         else
         {
-            Log::warn() << "FeatureView no support for "
-                << Geometry::typeToString(feature.geometry.type) << std::endl;
+            Log()->warn("FeatureView no support for " + Geometry::typeToString(feature.geometry.type));
         }
     }
 

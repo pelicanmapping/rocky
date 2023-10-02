@@ -1051,12 +1051,7 @@ GeoExtent::createScaleBias(const GeoExtent& rhs, glm::dmat4& output) const
     double biasy = (south() - rhs.south()) / rhs.height();
 
     // TODO: is the row/column right for GLM?
-    ROCKY_WARN << "Check the dmat4" << std::endl;
-    //output = dmat4(
-    //    scalex, 0, 0, 0,
-    //    0, scaley, 0, 0,
-    //    0, 0, 1, 0,
-    //    biasx, biasy, 0, 1);
+    Log()->warn("Check the dmat4");
 
     output = glm::dmat4(1);
     output[0][0] = scalex;

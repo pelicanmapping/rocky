@@ -49,8 +49,7 @@ using namespace ROCKY_NAMESPACE;
 template<class T>
 int layerError(T layer)
 {
-    rocky::Log::warn() << "Problem with layer \"" <<
-        layer->name() << "\" : " << layer->status().message << std::endl;
+    rocky::Log()->warn("Problem with layer \"" + layer->name() + "\" : " + layer->status().message);
     return -1;
 }
 
@@ -160,7 +159,7 @@ int main(int argc, char** argv)
     // instantiate the application engine.
     rocky::Application app(argc, argv);
 
-    rocky::Log::level = rocky::LogLevel::INFO;
+    rocky::Log()->set_level(rocky::log::level::info);
 
     if (app.mapNode->map->layers().empty())
     {

@@ -30,11 +30,6 @@ namespace ROCKY_NAMESPACE
         //! Runtime context
         inline Runtime& runtime();
 
-        //! Whether to redirect rocky::Log messages to the vsg::Logger
-        void setUseVSGLogger(bool);
-        
-        void compile();
-
     private:
         struct Implementation
         {

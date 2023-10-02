@@ -16,8 +16,7 @@
 template<class T>
 int error(T layer)
 {
-    rocky::Log::warn() << "Problem with layer \"" <<
-        layer->name() << "\" : " << layer->status().message << std::endl;
+    rocky::Log()->warn("Problem with layer \"" + layer->name() + "\" : " + layer->status().message);
     return -1;
 }
 

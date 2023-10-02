@@ -162,7 +162,7 @@ namespace
         auto shaderSet = makeAtmoShaderSet();
         if (!shaderSet)
         {
-            Log::warn() << LC << "Failed to create shader set!" << std::endl;
+            Log()->warn(LC "Failed to create shader set!");
             return { };
         }
 
@@ -226,7 +226,7 @@ namespace
         auto stategroup = makeAtmoStateGroup(runtime);
         if (!stategroup)
         {
-            Log::warn() << LC << "Failed to make state group!" << std::endl;
+            Log()->warn(LC "Failed to make state group!");
             return { };
         }
 

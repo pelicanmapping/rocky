@@ -76,42 +76,6 @@ TEST_CASE("json")
     CHECK((map->to_json() == R"({"layers":[{"name":"","type":"TMSImage","uri":"file.xml"}],"profile":"global-geodetic"})"));
 }
 
-TEST_CASE("Log")
-{
-    static LogLevel out_level;
-    static std::string out_string;
-
-    Log::userFunction() = [&](LogLevel level, const std::string& txt)
-    {
-        out_level = level;
-        out_string = txt;
-    };
-    Log::usePrefix() = false;
-
-    Log::level = LogLevel::WARN;
-    Log::info() << "Hello, world." << std::endl;
-    CHECK(out_string.empty());
-
-    Log::level = LogLevel::INFO;
-    Log::info() << "Hello, world.";
-    CHECK(out_string.empty());
-
-    Log::info() << std::flush;
-    CHECK(out_string == "Hello, world.");
-    CHECK(out_level == LogLevel::INFO);
-
-    out_string = "";
-    Log::warn() << "Goodbye" << std::endl;
-    CHECK(out_string == "Goodbye\n");
-    CHECK(out_level == LogLevel::WARN);
-
-    Log::userFunction() = nullptr;
-    Log::usePrefix() = true;
-
-    Log::info() << "I am an info-level log message." << std::endl;
-    Log::warn() << "I am a warn-level log message." << std::endl;
-}
-
 TEST_CASE("Optional")
 {
     optional<int> value_with_no_init;
@@ -523,7 +487,7 @@ TEST_CASE("SRS")
 
     SECTION("Invalid SRS")
     {
-        Log::info() << "You should see a PROJ info message:" << std::endl;
+        Log()->info("You should see a PROJ info message:");
         SRS bad("gibberish");
         CHECK(bad.valid() == false);
         CHECK(bad.isProjected() == false);
@@ -543,7 +507,7 @@ TEST_CASE("SRS")
         // (you should use epsg::4979 instead)
         SRS wgs84_2d("epsg:4326"); // 2D geographic
         REQUIRE(wgs84_2d);
-        Log::info() << "You should see a PROJ warning:" << std::endl;
+        Log()->info("You should see a PROJ warning:");
         auto xform_with_warning = wgs84_2d.to(egm96);
         CHECK(xform_with_warning);
 
@@ -553,7 +517,7 @@ TEST_CASE("SRS")
 
         // geodetic to vdatum:
         {
-            Log::info() << "Note: if you see SRS/VDatum errors, check that you have the NGA grid in your proj/share folder! https://github.com/OSGeo/PROJ-data/blob/master/us_nga/us_nga_egm96_15.tif" << std::endl;
+            Log()->info("Note: if you see SRS/VDatum errors, check that you have the NGA grid in your proj/share folder! https://github.com/OSGeo/PROJ-data/blob/master/us_nga/us_nga_egm96_15.tif");
             auto xform = wgs84.to(egm96);
             REQUIRE(xform.valid());
 

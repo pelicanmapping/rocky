@@ -357,7 +357,7 @@ Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) cons
 
         if (!result.valid())
         {
-            Log::warn() << "Oh no." << std::endl;
+            Log()->warn("Oh no.");
             //return clampAndTransformExtent(input, out_clamped);
         }
 

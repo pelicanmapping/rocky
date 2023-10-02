@@ -15,6 +15,7 @@
 #include <vsg/app/UpdateOperations.h>
 #include <vsg/threading/OperationThreads.h>
 #include <vsg/utils/SharedObjects.h>
+#include <vsg/text/Font.h>
 #include <shared_mutex>
 
 namespace vsg
@@ -49,7 +50,7 @@ namespace ROCKY_NAMESPACE
         vsg::Paths searchPaths;
 
         //! Default font
-        util::Future<vsg::ref_ptr<vsg::Font>> defaultFont;
+        vsg::ref_ptr<vsg::Font> defaultFont;
 
         //! Shared shader compile settings. Use this to insert shader defines
         //! that should be used throughout the application; things like enabling

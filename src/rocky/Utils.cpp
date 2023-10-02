@@ -4,12 +4,12 @@
  * MIT License
  */
 #include "Utils.h"
-#include "Log.h"
 #include "sha1.h"
 #include "Instance.h"
 #include <cctype>
 #include <cstring>
 #include <filesystem>
+#include <fstream>
 
 #ifdef WIN32
 #include <Windows.h>

@@ -32,7 +32,7 @@ namespace ROCKY_NAMESPACE
     };
 
     //! Service providing a Log
-    using LogService = std::function<Log&()>;
+    //using LogService = std::function<Log&()>;
 
     //! Service for reading an image from a URL
     using ReadImageURIService = std::function<

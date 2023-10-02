@@ -350,7 +350,7 @@ TerrainTilePager::requestLoadSubtiles(
     if (!parent->subtilesLoader.empty())
         return;
 
-    RP_DEBUG << "requestLoadSubtiles -> " << parent->key.str() << std::endl;
+    //RP_DEBUG << "requestLoadSubtiles -> " << parent->key.str() << std::endl;
 
     vsg::observer_ptr<TerrainTileNode> weak_parent(parent);
 
@@ -421,7 +421,7 @@ TerrainTilePager::requestLoadData(
 
     auto key = tile->key;
 
-    RP_DEBUG << "requestLoadData -> " << key.str() << std::endl;
+    Log()->debug("requestLoadData -> " + key.str());
 
     CreateTileManifest manifest;
 
@@ -436,7 +436,7 @@ TerrainTilePager::requestLoadData(
     {
         if (p.canceled())
         {
-            RP_DEBUG << "Data load " << key.str() << " CANCELED!" << std::endl;
+            //RP_DEBUG << "Data load " << key.str() << " CANCELED!" << std::endl;
             return { };
         }
 
@@ -488,13 +488,13 @@ TerrainTilePager::requestMergeData(
     auto key = tile->key;
     const IOOptions io(in_io);
 
-    RP_DEBUG << "requestMergeData -> " << key.str() << std::endl;
+    //RP_DEBUG << "requestMergeData -> " << key.str() << std::endl;
 
     auto merge = [key, engine](Cancelable& p) -> bool
     {
         if (p.canceled())
         {
-            RP_DEBUG << "merge CANCELED -> " << key.str() << std::endl;
+            //RP_DEBUG << "merge CANCELED -> " << key.str() << std::endl;
             return false;
         }
 
@@ -503,7 +503,7 @@ TerrainTilePager::requestMergeData(
         auto tile = engine->tiles.getTile(key);
         if (!tile)
         {
-            RP_DEBUG << "merge TILE LOST -> " << key.str() << std::endl;
+            //RP_DEBUG << "merge TILE LOST -> " << key.str() << std::endl;
             return false;
         }
 
@@ -559,11 +559,11 @@ TerrainTilePager::requestMergeData(
                 tile->stategroup,
                 engine->runtime);
 
-            RP_DEBUG << "mergeData -> " << key.str() << std::endl;
+            //RP_DEBUG << "mergeData -> " << key.str() << std::endl;
         }
         else
         {
-            RP_DEBUG << "merge EMPTY TILE MODEL -> " << key.str() << std::endl;
+            //RP_DEBUG << "merge EMPTY TILE MODEL -> " << key.str() << std::endl;
         }
 
         return true;

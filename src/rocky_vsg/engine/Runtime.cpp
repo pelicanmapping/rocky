@@ -121,19 +121,6 @@ Runtime::Runtime()
 
     _priorityUpdateQueue = PriorityUpdateQueue::create();
 
-    const char* font_file = getenv("ROCKY_DEFAULT_FONT");
-    if (font_file)
-    {
-        std::string filename(font_file);
-        defaultFont = util::job::dispatch([this, filename](Cancelable&)
-            {
-                auto font = vsg::read_cast<vsg::Font>(filename, readerWriterOptions);
-                if (!font)
-                    Log::warn() << "Cannot load font \"" << filename << "\"" << std::endl;
-                return font;
-            });
-    }
-
     // initialize the deferred deletion collection.
     // a large number of frames ensures objects will be safely destroyed and
     // and we won't have too many deletions per frame.

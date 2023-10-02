@@ -21,7 +21,7 @@ namespace ROCKY_NAMESPACE
         struct Options
         {
             optional<URI> uri;
-            optional<std::string> format = "image/png";
+            optional<std::string> format = std::string("image/png");
             optional<bool> compress = false;
         };
 

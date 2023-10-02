@@ -15,7 +15,15 @@ auto Demo_Label = [](Application& app)
     static Status status;
 
     auto& font = app.instance.runtime().defaultFont;
+    if (!font)
+    {
+        ImGui::TextWrapped(status.message.c_str());
+        status = Status(Status::ResourceUnavailable,
+            "No font available - did you set the ROCKY_DEFAULT_FONT environment variable?");
+        return;
+    }
 
+#if 0
     if (font.working())
     {
         ImGui::Text("Loading font, please wait...");
@@ -29,6 +37,7 @@ auto Demo_Label = [](Application& app)
             "No font available - did you set the ROCKY_DEFAULT_FONT environment variable?");
         return;
     }
+#endif
 
     if (entity == entt::null)
     {
@@ -38,7 +47,7 @@ auto Demo_Label = [](Application& app)
         // Attach a label to the host and configure it
         auto& label = app.entities.emplace<Label>(entity);
         label.text = "Hello, world";
-        label.style.font = font.value();
+        label.style.font = font;
         label.style.pointSize = 36.0f;
         label.style.outlineSize = 0.05f;
         

@@ -54,6 +54,9 @@ find_package(PROJ CONFIG REQUIRED)
 # glm - vector and matrix math library - required
 find_package(glm CONFIG REQUIRED)
 
+# spdlog - logging utility
+find_package(spdlog CONFIG REQUIRED)
+
 # optional modules
 option(ROCKY_SUPPORTS_HTTP "Support HTTP (reuqires httplib)" ON)
 option(ROCKY_SUPPORTS_HTTPS "Support HTTPS (requires openssl)" ON)

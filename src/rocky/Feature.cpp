@@ -812,7 +812,7 @@ OGRFeatureSource::open()
 #endif
             openFlags |= GDAL_OF_READONLY;
 
-        if (Log::level >= LogLevel::INFO)
+        if (Log()->level() >= log::level::info)
             openFlags |= GDAL_OF_VERBOSE_ERROR;
 
         // this handle may ONLY be used from this thread!
@@ -922,7 +922,7 @@ OGRFeatureSource::open()
     }
 #endif
 
-    Log::info() << "OGR feature source " << _source << " opened OK" << std::endl;
+    Log()->info("OGR feature source " + _source + " opened OK");
 
     return { };
 }

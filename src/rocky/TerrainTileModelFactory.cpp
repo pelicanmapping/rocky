@@ -196,8 +196,7 @@ namespace
         // for the tilekey; it is not an actual read error.
         else if (result.status.failed() && result.status.code != Status::ResourceUnavailable)
         {
-            Log::warn() << "Problem getting data from \"" << layer->name() << "\" : "
-                << result.status.message << std::endl;
+            Log()->warn("Problem getting data from \"" + layer->name() + "\" : " + result.status.message);
         }
     }
 }
@@ -335,8 +334,7 @@ TerrainTileModelFactory::createElevationModel(
         // for the tilekey; it is not an actual read error.
         else if (result.status.code != Status::ResourceUnavailable)
         {
-            Log::warn() << "Problem getting data from \"" << layer->name() << "\" : "
-                << result.status.message << std::endl;
+            Log()->warn("Problem getting data from \"" + layer->name() + "\" : " + result.status.message);
         }
     }
 
@@ -402,8 +400,7 @@ TerrainTileModelFactory::addElevation(
         // for the tilekey; it is not an actual read error.
         else if (result.status.code != Status::ResourceUnavailable)
         {
-            Log::warn() << "Problem getting data from \"" << layer->name() << "\" : "
-                << result.status.message << std::endl;
+            Log()->warn("Problem getting data from \"" + layer->name() + "\" : " + result.status.message);
         }
     }
 

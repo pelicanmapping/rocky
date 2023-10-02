@@ -84,6 +84,7 @@ auto Demo_Stats = [](Application& app)
     {
         auto& alloc = vsg::Allocator::instance();
         ImGuiLTable::Text("Working set", "%.1lf MB", (double)Memory::getProcessPhysicalUsage() / 1048576.0);
+        ImGuiLTable::Text("Private bytes", "%.1lf MB", (double)Memory::getProcessPrivateUsage() / 1048576.0);
         if (alloc->allocatorType == vsg::ALLOCATOR_TYPE_VSG_ALLOCATOR)
         {
             ImGuiLTable::Text("VSG alloc total", "%.1lf MB", (double)alloc->totalMemorySize() / 1048576.0);

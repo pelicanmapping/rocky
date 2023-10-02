@@ -155,9 +155,8 @@ MBTiles::Driver::open(
             // warn the user if the options format differs from the database format
             if (options.format.has_value() && options.format != _tileFormat)
             {
-                Log::warn() << LC
-                    << "Database tile format (" << _tileFormat << ") will override the layer options format ("
-                    << options.format.value() << ")" << std::endl;
+                Log()->warn(LC "Database tile format (" + _tileFormat + ") will override the layer options format ("
+                    + options.format.value() + ")");
             }
         }
 
@@ -199,13 +198,12 @@ MBTiles::Driver::open(
             if (!profile.valid())
             {
                 if (profileStr.empty() == false)
-                    Log::warn() << LC << "Profile \"" << profileStr << "\" not recognized; defaulting to spherical-mercator\n";
+                {
+                    Log()->warn(LC "Profile \"" + profileStr + "\" not recognized; defaulting to spherical-mercator");
+                }
 
                 profile = Profile::SPHERICAL_MERCATOR;
             }
-
-            //Log::info() << LC << "Profile = " << profile.toString() << std::endl;
-            //Log::info() << LC << "Min=" << _minLevel << ", Max=" << _maxLevel << ", format=" << _tileFormat << std::endl;
         }
 
         // Check for bounds and populate DataExtents.
@@ -232,11 +230,10 @@ MBTiles::Driver::open(
                     // Using 0 for the minLevel is not technically correct, but we use it instead of the proper minLevel to force osgEarth to subdivide
                     // since we don't really handle DataExtents with minLevels > 0 just yet.
                     out_dataExtents.push_back(DataExtent(extent, 0, _maxLevel));
-                    //Log::info() << LC << "Bounds = " << extent.toString() << std::endl;
                 }
                 else
                 {
-                    Log::warn() << LC << "MBTiles has invalid bounds " << extent.toString() << std::endl;
+                    Log()->warn(LC "MBTiles has invalid bounds " + extent.toString());
                 }
             }
         }
@@ -274,7 +271,7 @@ MBTiles::Driver::readMaxLevel()
     int rc = sqlite3_prepare_v2(database, query.c_str(), -1, &select, 0L);
     if (rc != SQLITE_OK)
     {
-        Log::warn() << LC << "Failed to prepare SQL: " << query << "; " << sqlite3_errmsg(database) << std::endl;
+        Log()->warn(LC "Failed to prepare SQL: " + query + "; " + sqlite3_errmsg(database));
         return Status::GeneralError;
     }
 
@@ -498,7 +495,7 @@ MBTiles::Driver::getMetaData(const std::string& key, std::string& value)
     int rc = sqlite3_prepare_v2(database, query.c_str(), -1, &select, 0L);
     if (rc != SQLITE_OK)
     {
-        Log::warn() << LC << "Failed to prepare SQL: " << query << "; " << sqlite3_errmsg(database) << std::endl;
+        Log()->warn(LC "Failed to prepare SQL: " + query + "; " + sqlite3_errmsg(database));
         return false;
     }
 
@@ -508,7 +505,7 @@ MBTiles::Driver::getMetaData(const std::string& key, std::string& value)
     rc = sqlite3_bind_text(select, 1, keyStr.c_str(), keyStr.length(), SQLITE_STATIC);
     if (rc != SQLITE_OK)
     {
-        Log::warn() << LC << "Failed to bind text: " << query << "; " << sqlite3_errmsg(database) << std::endl;
+        Log()->warn(LC "Failed to bind text: " + query + "; " + sqlite3_errmsg(database));
         return false;
     }
 
@@ -534,19 +531,19 @@ MBTiles::Driver::putMetaData(const std::string& key, const std::string& value)
     std::string query = "INSERT OR REPLACE INTO metadata (name,value) VALUES (?,?)";
     if (SQLITE_OK != sqlite3_prepare_v2(database, query.c_str(), -1, &insert, 0L))
     {
-        Log::warn() << LC << "Failed to prepare SQL: " << query << "; " << sqlite3_errmsg(database) << std::endl;
+        Log()->warn(LC "Failed to prepare SQL: " + query + "; " + sqlite3_errmsg(database));
         return false;
     }
 
     // bind the values:
     if (SQLITE_OK != sqlite3_bind_text(insert, 1, key.c_str(), key.length(), SQLITE_STATIC))
     {
-        Log::warn() << LC << "Failed to bind text: " << query << "; " << sqlite3_errmsg(database) << std::endl;
+        Log()->warn(LC "Failed to bind text: " + query + "; " + sqlite3_errmsg(database));
         return false;
     }
     if (SQLITE_OK != sqlite3_bind_text(insert, 2, value.c_str(), value.length(), SQLITE_STATIC))
     {
-        Log::warn() << LC << "Failed to bind text: " << query << "; " << sqlite3_errmsg(database) << std::endl;
+        Log()->warn(LC "Failed to bind text: " + query + "; " + sqlite3_errmsg(database));
         return false;
     }
 
@@ -566,7 +563,7 @@ MBTiles::Driver::computeLevels()
     int rc = sqlite3_prepare_v2(database, query.c_str(), -1, &select, 0L);
     if (rc != SQLITE_OK)
     {
-        Log::warn() << LC << "Failed to prepare SQL: " << query << "; " << sqlite3_errmsg(database) << std::endl;
+        Log()->warn(LC "Failed to prepare SQL: " + query + "; " + sqlite3_errmsg(database));
     }
 
     rc = sqlite3_step(select);
@@ -593,7 +590,7 @@ MBTiles::Driver::createTables()
 
     if (SQLITE_OK != sqlite3_exec(database, query.c_str(), 0L, 0L, 0L))
     {
-        Log::warn() << LC << "Failed to create table [metadata]" << std::endl;
+        Log()->warn(LC "Failed to create table [metadata]");
         return false;
     }
 
@@ -608,7 +605,7 @@ MBTiles::Driver::createTables()
 
     if (SQLITE_OK != sqlite3_exec(database, query.c_str(), 0L, 0L, &errorMsg))
     {
-        Log::warn() << LC << "Failed to create table [tiles]: " << errorMsg << std::endl;
+        Log()->warn(LC "Failed to create table [tiles]: " + std::string(errorMsg));
         sqlite3_free(errorMsg);
         return false;
     }
@@ -620,7 +617,7 @@ MBTiles::Driver::createTables()
 
     if (SQLITE_OK != sqlite3_exec(database, query.c_str(), 0L, 0L, &errorMsg))
     {
-        Log::warn() << LC << "Failed to create index on table [tiles]: " << errorMsg << std::endl;
+        Log()->warn(LC "Failed to create index on table [tiles]: " + std::string(errorMsg));
         sqlite3_free(errorMsg);
         // keep going... non-fatal
         // return false;

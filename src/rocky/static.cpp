@@ -25,11 +25,11 @@ namespace
     const std::string COLOR_DEFAULT = "\033[39m";
 }
 
-LogLevel Log::level = LogLevel::WARN;
-LogFunction Log::g_userFunction = nullptr;
-bool Log::g_logUsePrefix = true;
-Log::LogStream Log::g_infoStream(LogLevel::INFO, "[rk-info] ", std::cout, COLOR_DEFAULT);
-Log::LogStream Log::g_warnStream(LogLevel::WARN, "[rk-WARN] ", std::cout, COLOR_YELLOW);
+//LogLevel Log::level = LogLevel::WARN;
+//LogFunction Log::g_userFunction = nullptr;
+//bool Log::g_logUsePrefix = true;
+//Log::LogStream Log::g_infoStream(LogLevel::INFO, "[rk-info] ", std::cout, COLOR_DEFAULT);
+//Log::LogStream Log::g_warnStream(LogLevel::WARN, "[rk-WARN] ", std::cout, COLOR_YELLOW);
 
 const SRS SRS::WGS84("wgs84");
 const SRS SRS::ECEF("geocentric");

@@ -118,6 +118,7 @@ namespace ROCKY_NAMESPACE
             {
                 vsg::ref_ptr<vsg::PipelineLayout> layout;
                 vsg::ref_ptr<vsg::Options> readerWriterOptions;
+                vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
             };
 
         public:
@@ -454,6 +455,7 @@ namespace ROCKY_NAMESPACE
         {
             NodeComponent::Params params;
             params.readerWriterOptions = runtime.readerWriterOptions;
+            params.sharedObjects = runtime.sharedObjects;
 
             for (auto& entity : entities_to_initialize)
             {

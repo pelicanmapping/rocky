@@ -44,8 +44,7 @@ int usage(const char* msg)
 template<class T>
 int error(T layer)
 {
-    rocky::Log::warn() << "Problem with layer \"" <<
-        layer->name() << "\" : " << layer->status().message << std::endl;
+    rocky::Log()->warn("Problem with layer \"" + layer->name() + "\" : " + layer->status().message);
     return -1;
 }
 
@@ -78,10 +77,10 @@ int main(int argc, char** argv)
     // Application instance
     rocky::InstanceVSG ri(arguments);
 
-    rocky::Log::level = rocky::LogLevel::INFO;
-    rocky::Log::info() << "Hello, world." << std::endl;
-    rocky::Log::info() << "Welcome to " << ROCKY_PROJECT_NAME << " version " << ROCKY_VERSION_STRING << std::endl;
-    rocky::Log::info() << "Using VSG " << VSG_VERSION_STRING << " (so " << VSG_SOVERSION_STRING << ")" << std::endl;
+    rocky::Log()->set_level(rocky::log::level::info);
+    rocky::Log()->info("Hello, world.");
+    rocky::Log()->info("Welcome to " ROCKY_PROJECT_NAME " version " ROCKY_VERSION_STRING);
+    rocky::Log()->info("Using VSG " VSG_VERSION_STRING " (so " VSG_SOVERSION_STRING ")");
 
     // An LRU cache mainly used for network data fetches.
     ri.ioOptions().services.contentCache->setCapacity(128);
@@ -202,7 +201,7 @@ int main(int argc, char** argv)
         viewer->setupThreading();
 
     float frames = 0.0f;
-    bool measureFrameTime = (rocky::Log::level >= rocky::LogLevel::INFO);
+    bool measureFrameTime = (rocky::Log()->level() >= rocky::log::level::info);
 
     // rendering main loop
     auto start = std::chrono::steady_clock::now();
@@ -233,11 +232,13 @@ int main(int argc, char** argv)
     {
         auto ms = 0.001f * (float)std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
 
-        rocky::Log::info()
-            << "frames = " << frames << ", "
+        std::stringstream buf;
+        buf << "frames = " << frames << ", "
             << std::setprecision(3) << "ms per frame = " << (ms / frames) << ", "
             << std::setprecision(6) << "frames per second = " << 1000.f * (frames / ms)
             << std::endl;
+        rocky::Log()->info(buf.str());
+
     }
 
     return 0;

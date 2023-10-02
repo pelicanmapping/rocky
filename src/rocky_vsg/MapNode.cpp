@@ -152,7 +152,7 @@ MapNode::update(const vsg::FrameStamp* f)
 
         if (st.failed())
         {
-            Log::warn() << st.message << std::endl;
+            Log()->warn(st.message);
         }
     }
 

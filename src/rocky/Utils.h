@@ -25,6 +25,7 @@
 #include <functional>
 #include <chrono>
 #include <thread>
+#include <mutex>
 
 class TiXmlDocument;
 
@@ -418,7 +419,7 @@ namespace ROCKY_NAMESPACE { namespace util
             }
             else {
                 auto d = (float)std::chrono::duration_cast<std::chrono::microseconds>(dur).count();
-                rocky::Log::info() << std::this_thread::get_id() << " : " << _me << " = " << d << "us" << std::endl;
+                Log()->info(std::to_string(std::this_thread::get_id()) + " : " + _me + " = " + std::to_string(d) + "us");
             }
         }
     };

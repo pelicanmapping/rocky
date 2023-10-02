@@ -49,7 +49,7 @@ namespace
 {
     void CPL_STDCALL myCPLErrorHandler(CPLErr errClass, int errNum, const char* msg)
     {
-        Log::info() << "GDAL says: " << msg << " (error " << errNum << ")" << std::endl;
+        Log()->info("GDAL says: " + std::string(msg) + std::string(" (error ") + std::to_string(errNum) + ")");
     }
 }
 #endif
@@ -95,7 +95,7 @@ Instance::Instance()
     // Check for some environment variables that are important to rocky apps
     if (::getenv("PROJ_DATA") == nullptr)
     {
-        Log::warn() << "Environment variable PROJ_DATA is not set" << std::endl;
+        Log()->warn("Environment variable PROJ_DATA is not set");
     }
 
     _global_status = StatusOK;

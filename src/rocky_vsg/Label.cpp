@@ -74,14 +74,18 @@ Label::initializeNode(const ECS::NodeComponent::Params& params)
     layout->outlineWidth = style.outlineSize;
     layout->horizontalAlignment = style.horizontalAlignment;
     layout->verticalAlignment = style.verticalAlignment;
+    params.sharedObjects->share(layout);
 
     valueBuffer = vsg::stringValue::create(text);
+
+    auto technique = vsg::GpuLayoutTechnique::create();
+    params.sharedObjects->share(technique);
 
     textNode = vsg::Text::create();
     textNode->font = style.font;
     textNode->text = valueBuffer;
     textNode->layout = layout;
-    textNode->technique = vsg::GpuLayoutTechnique::create();
+    textNode->technique = technique;
     textNode->setup(LABEL_MAX_NUM_CHARS, options); // allocate enough space for max possible characters?
 
 #if 0

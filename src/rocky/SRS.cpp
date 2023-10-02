@@ -22,7 +22,9 @@ namespace
     void redirect_proj_log(void* user, int level, const char* msg)
     {
         if (msg)
-            Log::info() << "PROJ says: " << msg << std::endl;
+        {
+            Log()->info("PROJ says: " + std::string(msg));
+        }
     }
 
     inline bool starts_with(const std::string& s, const char* pattern) {

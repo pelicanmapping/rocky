@@ -124,7 +124,7 @@ TMSElevationLayer::createHeightfieldImplementation(
         if (r.status.code == Status::ServiceUnavailable)
         {
             setStatus(r.status);
-            Log::warn() << "Layer \"" << name() << "\" : " << r.status.message << std::endl;
+            Log()->warn(LC "Layer \"" + name() + "\" : " + r.status.message);
         }
 
         return r.status;

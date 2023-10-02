@@ -123,7 +123,7 @@ TerrainNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
             status = createRootTiles(io);
             if (status.failed())
             {
-                Log::warn() << "TerrainNode initialize failed: " << status.message << std::endl;
+                Log()->warn("TerrainNode initialize failed: " + status.message);
             }
         }
         else

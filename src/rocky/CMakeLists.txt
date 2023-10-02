@@ -45,7 +45,7 @@ file(GLOB HEADERS_CONTRIB contrib/*.h)
 file(GLOB SOURCES_CONTRIB contrib/*.cpp)
 
 # set up library dependencies
-set(PUBLIC_LIBS glm::glm)
+set(PUBLIC_LIBS glm::glm  spdlog::spdlog)
 
 set(PRIVATE_LIBS PROJ::proj)
     
