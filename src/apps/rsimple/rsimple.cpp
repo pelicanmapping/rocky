@@ -13,6 +13,8 @@
 #include <rocky/TMSElevationLayer.h>
 #include <rocky/contrib/EarthFileImporter.h>
 
+#include <vsg/text/GpuLayoutTechnique.h>
+
 template<class T>
 int error(T layer)
 {

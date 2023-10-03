@@ -20,9 +20,21 @@ using namespace ROCKY_NAMESPACE;
 
 #define LABEL_MAX_NUM_CHARS 255
 
+namespace
+{
+    // 2-OCT-2023 GpuLayoutTechnique leaks memory when a Label's node
+    // gets destructed, so temporarily we will create a singleton and share it.
+    vsg::ref_ptr<vsg::GpuLayoutTechnique> text_technique_shared;
+}
+
 Label::Label()
 {
     text = "Hello, world";
+
+    if (!text_technique_shared)
+    {
+        text_technique_shared = vsg::GpuLayoutTechnique::create();
+    }
 }
 
 void
@@ -53,6 +65,8 @@ Label::dirty()
     }
 }
 
+vsg::ref_ptr< vsg::GpuLayoutTechnique> technique;
+
 void
 Label::initializeNode(const ECS::NodeComponent::Params& params)
 {
@@ -78,14 +92,11 @@ Label::initializeNode(const ECS::NodeComponent::Params& params)
 
     valueBuffer = vsg::stringValue::create(text);
 
-    auto technique = vsg::GpuLayoutTechnique::create();
-    params.sharedObjects->share(technique);
-
     textNode = vsg::Text::create();
     textNode->font = style.font;
     textNode->text = valueBuffer;
     textNode->layout = layout;
-    textNode->technique = technique;
+    textNode->technique = text_technique_shared;
     textNode->setup(LABEL_MAX_NUM_CHARS, options); // allocate enough space for max possible characters?
 
 #if 0

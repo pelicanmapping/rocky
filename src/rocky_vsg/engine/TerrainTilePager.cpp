@@ -237,14 +237,9 @@ TerrainTilePager::update(
     }
     _mergeData.clear();
 
-    // Flush unused tiles (i.e., tiles that failed to ping) out of
-    // the system. Tiles ping their children all at once; this
-    // should in theory prevent a child from expiring without its
-    // siblings.
-    // TODO: track frames, times, and resident requirements so we 
-    // are not thrashing tiles in and out of memory. Perhaps a simple
-    // L2 cache of disposed tiles would be appropriate instead of
-    // all these limits.
+    // Flush unused tiles (i.e., tiles that failed to ping) out of the system.
+    // Tiles ping their children all at once; this should in theory prevent
+    // a child from expiring without its siblings.
     const auto dispose = [&](TerrainTileNode* tile)
     {
         if (!tile->doNotExpire)

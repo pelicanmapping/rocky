@@ -549,6 +549,8 @@ Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
 
     viewer->assignRecordAndSubmitTaskAndPresentation(commandGraphs);
 
+
+#if 1
     // Configure a descriptor pool size that's appropriate for terrain
     // https://groups.google.com/g/vsg-users/c/JJQZ-RN7jC0/m/tyX8nT39BAAJ
     // https://www.reddit.com/r/vulkan/comments/8u9zqr/having_trouble_understanding_descriptor_pool/    
@@ -562,13 +564,17 @@ Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
     auto resourceHints = vsg::ResourceHints::create();
 
     // max number of descriptor sets per pool, regardless of type:
-    resourceHints->numDescriptorSets = 64;
+    resourceHints->numDescriptorSets = 1;
 
     // max number of descriptor sets of a specific type per pool:
-    resourceHints->descriptorPoolSizes.push_back(
-        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 64 });
+    //resourceHints->descriptorPoolSizes.push_back(
+    //    VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 });
 
     viewer->compile(resourceHints);
+
+#else
+    viewer->compile();
+#endif
 }
 
 void
