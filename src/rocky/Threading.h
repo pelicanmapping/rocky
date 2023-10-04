@@ -413,6 +413,14 @@ namespace ROCKY_NAMESPACE { namespace util
     /**
      * API for scheduling a task to run in the background.
      *
+     * NOTE: We wanted to use async++ but it is lacking a couple key features we need:
+     * automatic cancelation and task prioritization.
+     * 
+     * (This system acheives automatic cancelation by tracking the reference count of the
+     * shared result object contained in the Future; if that reference count goes to
+     * one, it means that ONLY the scheduler knows about the job, and no one else is around
+     * to fetch its result. In this case, Future.canceled() returns true.)
+     *
      * Example usage:
      *
      *   int a = 10, b = 20;

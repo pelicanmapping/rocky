@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RTREE_H
+#define RTREE_H
 
 // NOTE This file compiles under MSVC 6 SP5 and MSVC .Net 2003 it may not work on other compilers without modification.
 
@@ -24,8 +25,6 @@
 //
 // RTree.h
 //
-namespace ROCKY_NAMESPACE { namespace util 
-{
 
 #define RTREE_TEMPLATE template<class DATATYPE, class ELEMTYPE, int NUMDIMS, class ELEMTYPEREAL, int TMAXNODES, int TMINNODES>
 #define RTREE_QUAL RTree<DATATYPE, ELEMTYPE, NUMDIMS, ELEMTYPEREAL, TMAXNODES, TMINNODES>
@@ -55,7 +54,7 @@ class RTFileStream;  // File I/O helper class, look below for implementation and
 ///
 template<class DATATYPE, class ELEMTYPE, int NUMDIMS,
     class ELEMTYPEREAL = ELEMTYPE, int TMAXNODES = 8, int TMINNODES = TMAXNODES / 2>
-    class RTree
+class RTree
 {
     static_assert(std::numeric_limits<ELEMTYPEREAL>::is_iec559, "'ELEMTYPEREAL' accepts floating-point types only");
 
@@ -98,7 +97,10 @@ public:
     /// \param a_resultCallback Callback function to return result.  Callback should return 'true' to continue searching
     /// \param a_context User context to pass as parameter to a_resultCallback
     /// \return Returns the number of entries found
-    int Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], std::function<bool(const DATATYPE&)> callback) const;
+    using DefaultCallbackType = std::function<bool(const DATATYPE&)>;
+    template<typename CALLBACK_TYPE = DefaultCallbackType>
+    int Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS],
+        CALLBACK_TYPE callback = [&](const DATATYPE&) { return true; }) const;
 
     /// Remove all entries from tree
     void RemoveAll();
@@ -360,7 +362,8 @@ protected:
     void FreeListNode(ListNode* a_listNode);
     bool Overlap(Rect* a_rectA, Rect* a_rectB) const;
     void ReInsert(Node* a_node, ListNode** a_listNode);
-    bool Search(Node* a_node, Rect* a_rect, int& a_foundCount, std::function<bool(const DATATYPE&)> callback) const;
+    template<typename CALLBACK_TYPE>
+    bool Search(Node* a_node, Rect* a_rect, int& a_foundCount, CALLBACK_TYPE callback) const;
     void RemoveAllRec(Node* a_node);
     void Reset();
     void CountRec(Node* a_node, int& a_count);
@@ -540,7 +543,8 @@ void RTREE_QUAL::Remove(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMD
 
 
 RTREE_TEMPLATE
-int RTREE_QUAL::Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], std::function<bool(const DATATYPE&)> callback) const
+template<typename CALLBACK_TYPE>
+int RTREE_QUAL::Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], CALLBACK_TYPE callback) const
 {
 #ifdef _DEBUG
     for (int index = 0; index < NUMDIMS; ++index)
@@ -1611,7 +1615,8 @@ void RTREE_QUAL::ReInsert(Node* a_node, ListNode** a_listNode)
 
 // Search in an index tree or subtree for all data retangles that overlap the argument rectangle.
 RTREE_TEMPLATE
-bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, std::function<bool(const DATATYPE&)> callback) const
+template<typename CALLBACK_TYPE>
+bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, CALLBACK_TYPE callback) const
 {
     ASSERT(a_node);
     ASSERT(a_node->m_level >= 0);
@@ -1642,7 +1647,7 @@ bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, std::func
                 DATATYPE& id = a_node->m_branch[index].m_data;
                 ++a_foundCount;
 
-                if (callback && !callback(id))
+                if (!callback(id))
                 {
                     return false; // Don't continue searching
                 }
@@ -1690,7 +1695,8 @@ std::vector<typename RTREE_QUAL::Rect> RTREE_QUAL::ListTree() const
     return treeList;
 }
 
-} } // namespace
 
 #undef RTREE_TEMPLATE
 #undef RTREE_QUAL
+
+#endif //RTREE_H

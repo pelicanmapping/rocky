@@ -1,26 +1,46 @@
-/**
- * rocky c++
- * Copyright 2023 Pelican Mapping
- * MIT License
- */
 #pragma once
 #include "rtree.h"
-#include "Math.h"
+#include <cmath>
+#include <climits>
 #include <map>
-#include <vector>
-#include <set>
-#include <unordered_set>
+#include <unordered_map>
 
-namespace weemesh
-{
 #define marker_is_set(INDEX, BITS) ((markers[INDEX] & BITS) != 0)
 #define marker_not_set(INDEX, BITS) ((markers[INDEX] & BITS) == 0)
 #define set_marker(INDEX, BITS) markers[INDEX] |= BITS;
 
-#define equivalent equiv
-    using namespace ROCKY_NAMESPACE;
-
+namespace weemesh
+{
     // MESHING SDK
+
+    using UID = std::uint32_t;
+
+    template<typename T>
+    inline bool equivalent(T a, T b, T epsilon = 1e-6)
+    {
+        double d = b - a;
+        return d < static_cast<T>(0.0) ? d >= -epsilon : d <= epsilon;
+    }
+
+    template<typename T>
+    inline T clamp(T x, T lo, T hi)
+    {
+        return x < lo ? lo : x > hi ? hi : x;
+    }
+
+    // Adapted from Boost - see boost license
+    // https://www.boost.org/users/license.html
+    template <typename T>
+    inline std::size_t hash_value_unsigned(T val)
+    {
+        const int size_t_bits = std::numeric_limits<std::size_t>::digits;
+        const int length = (std::numeric_limits<T>::digits - 1) / size_t_bits;
+        std::size_t seed = 0;
+        for (unsigned int i = length * size_t_bits; i > 0; i -= size_t_bits)
+            seed ^= (std::size_t)(val >> i) + (seed << 6) + (seed >> 2);
+        seed ^= (std::size_t)val + (seed << 6) + (seed >> 2);
+        return seed;
+    }
 
     // 2.5D vertex. Holds a Z, but most operations only use X/Y
     struct vert_t
@@ -53,13 +73,13 @@ namespace weemesh
             return vert_t(x + rhs.x, y + rhs.y, z + rhs.z);
         }
         vert_t operator * (value_type a) const {
-            return vert_t(x*a, y*a, z*a);
+            return vert_t(x * a, y * a, z * a);
         }
         value_type dot2d(const vert_t& rhs) const {
-            return x*rhs.x + y * rhs.y;
+            return x * rhs.x + y * rhs.y;
         }
         value_type cross2d(const vert_t& rhs) const {
-            return x*rhs.y - rhs.x*y;
+            return x * rhs.y - rhs.x * y;
         }
         vert_t normalize2d() const {
             double len = length2d();
@@ -69,10 +89,10 @@ namespace weemesh
             x = a, y = b, z = c;
         }
         value_type length2d() const {
-            return sqrt((x*x) + (y*y));
+            return sqrt((x * x) + (y * y));
         }
         value_type length2d_squared() const {
-            return (x*x) + (y*y);
+            return (x * x) + (y * y);
         }
         // cast to another vec3 type
         template<class VEC3>
@@ -83,7 +103,7 @@ namespace weemesh
 
     const vert_t::value_type zero(0.0);
 
-    constexpr vert_t::value_type EPSILON = 0.00005;
+    constexpr vert_t::value_type EPSILON = 0.00005; // 1e-3; // 6;
 
     inline bool same_vert(const vert_t& a, const vert_t& b, vert_t::value_type epsilon = EPSILON)
     {
@@ -105,7 +125,7 @@ namespace weemesh
     // line segment connecting two verts
     struct segment_t : std::pair<vert_t, vert_t>
     {
-        explicit segment_t(const vert_t& a, const vert_t& b) :
+        segment_t(const vert_t& a, const vert_t& b) :
             std::pair<vert_t, vert_t>(a, b) { }
 
         template<class T>
@@ -135,6 +155,7 @@ namespace weemesh
     {
         UID uid; // unique id
         vert_t p0, p1, p2; // vertices
+        vert_t centroid;
         unsigned i0, i1, i2; // indices
         vert_t::value_type a_min[2]; // bbox min
         vert_t::value_type a_max[2]; // bbox max
@@ -204,15 +225,15 @@ namespace weemesh
             if (equivalent(denom, 0.0))
                 return false;
 
-            out.y = (d11*d20 - d01 * d21) / denom;
-            out.z = (d00*d21 - d01 * d20) / denom;
+            out.y = (d11 * d20 - d01 * d21) / denom;
+            out.z = (d00 * d21 - d01 * d20) / denom;
             out.x = 1.0 - out.y - out.z;
 
             return true;
         }
     };
 
-    using spatial_index_t = util::RTree<UID, vert_t::value_type, 2>;
+    using spatial_index_t = RTree<UID, vert_t::value_type, 2>;
 
     // a mesh edge connecting to verts
     struct edge_t
@@ -251,7 +272,7 @@ namespace weemesh
         int _constraint_marker;
         int _has_elevation_marker;
 
-        mesh_t() : 
+        mesh_t() :
             uidgen(0),
             _num_edits(0),
             _boundary_marker(1),
@@ -286,6 +307,8 @@ namespace weemesh
             ++_num_edits;
         }
 
+        const double one_third = 1.0 / 3.0;
+
         // add new triangle to the mesh from 3 indices
         UID add_triangle(int i0, int i1, int i2)
         {
@@ -305,6 +328,7 @@ namespace weemesh
             tri.a_min[1] = std::min(tri.p0.y, std::min(tri.p1.y, tri.p2.y));
             tri.a_max[0] = std::max(tri.p0.x, std::max(tri.p1.x, tri.p2.x));
             tri.a_max[1] = std::max(tri.p0.y, std::max(tri.p1.y, tri.p2.y));
+            tri.centroid = (tri.p0 + tri.p1 + tri.p2) * one_third;
 
             // "2d_degenerate" means that either a) at least 2 points are coincident, or
             // b) at least two edges are basically coincident (in the XY plane)
@@ -375,6 +399,18 @@ namespace weemesh
             return index;
         }
 
+        // fetch a pointer to each triangle that intersects the bounding box
+        unsigned get_triangles(vert_t::value_type xmin, vert_t::value_type ymin, vert_t::value_type xmax, vert_t::value_type ymax,
+            std::vector<triangle_t*>& output)
+        {
+            output.clear();
+            vert_t::value_type a_min[2] = { xmin, ymin };
+            vert_t::value_type a_max[2] = { xmax, ymax };
+            _spatial_index.Search(a_min, a_max, [&](const UID& uid) {
+                output.emplace_back(&triangles[uid]); return true;  });
+            return output.size();
+        }
+
         template<class T>
         int get_or_create_vertex_from_vec3(const T& vec, int marker) {
             return get_or_create_vertex(vert_t(vec.x, vec.y, vec.z), marker);
@@ -392,7 +428,7 @@ namespace weemesh
             std::vector<UID> uids;
 
             _spatial_index.Search(
-                a_min, a_max, 
+                a_min, a_max,
                 [&uids](const UID& u) {
                     uids.push_back(u);
                     return true;
@@ -427,7 +463,7 @@ namespace weemesh
             std::vector<UID> uids;
 
             _spatial_index.Search(
-                a_min, a_max, 
+                a_min, a_max,
                 [&uids](const UID& u) {
                     uids.push_back(u);
                     return true;
@@ -920,7 +956,7 @@ namespace weemesh
                     vert_t outvec = (next_vert - curr_vert).normalize2d();
 
                     double turn = invec.cross2d(outvec) > 0.0 ? -1.0 : 1.0;
-                    double dot = 1.0 - (0.5*(invec.dot2d(outvec) + 1.0));
+                    double dot = 1.0 - (0.5 * (invec.dot2d(outvec) + 1.0));
                     double score = turn * dot;
 
                     if (score < best_score)
@@ -932,7 +968,6 @@ namespace weemesh
 
                 if (best_edge == nullptr)
                 {
-                    //ROCKY_WARN << "got stuck! :(" << std::endl;
                     break;
                 }
 

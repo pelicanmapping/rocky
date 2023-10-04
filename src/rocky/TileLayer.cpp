@@ -646,29 +646,7 @@ TileLayer::intersects(const TileKey& key) const
 
     DataExtentsIndex* index = static_cast<DataExtentsIndex*>(_dataExtentsIndex);
 
-    return index->Search(a_min, a_max, {}) > 0;
-
-#if 0
-    [&](const DataExtent& de)
-        {
-            got_intersection = true;
-            return false;
-        });
-            // Check against the max level
-            if (!de.maxLevel().has_value() || localLOD <= (int)de.maxLevel())
-            {
-                got_intersection = true;
-                return false; //Stop searching, we've found a key
-            }
-            else
-            {
-                return true; // continue
-            }
-        }
-    );
-
-    return got_intersection;
-#endif
+    return index->Search(a_min, a_max) > 0;
 }
 
 bool

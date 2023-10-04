@@ -84,8 +84,6 @@ namespace ROCKY_NAMESPACE
 
         //! Access to useful services
         Services services;
-        //inline Services& services();
-        //inline const Services& services() const;
 
         //! Custom options for reading/writing data
         inline std::string property(const std::string& name) const;
@@ -102,7 +100,6 @@ namespace ROCKY_NAMESPACE
 
     private:
         Cancelable* _cancelable;
-        //Services _services;
         std::unordered_map<std::string, std::string> _properties;
     };
 
@@ -278,14 +275,6 @@ namespace ROCKY_NAMESPACE
             return getResultCodeString(ioCode);
         }
     };
-
-    /*Services& IOOptions::services() {
-        return _services;
-    }
-
-    const Services& IOOptions::services() const {
-        return _services;
-    }*/
 
     std::string IOOptions::property(const std::string& name) const {
         auto i = _properties.find(name);
