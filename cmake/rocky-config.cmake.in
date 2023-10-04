@@ -16,7 +16,9 @@ set_and_check (ROCKY_BUILD_DIR "${PACKAGE_PREFIX_DIR}")
 
 include(CMakeFindDependencyMacro)
 
+find_dependency(PROJ CONFIG REQUIRED)
 find_dependency(glm CONFIG REQUIRED)
+find_dependency(spdlog CONFIG REQUIRED)
 find_dependency(vsg CONFIG REQUIRED)
 find_dependency(vsgXchange CONFIG)
 
