@@ -103,6 +103,9 @@ if (BUILD_SHARED_LIBS)
     target_compile_definitions(rocky INTERFACE ROCKY_SHARED_LIBRARY)
 endif()
 
+# install the export cmake files so other projects can import us
+rocky_install_export_files(rocky)
+
 # install the libraries
 install(
     TARGETS rocky
@@ -116,4 +119,3 @@ install(
 # install the HEADER files
 install(FILES ${HEADERS} DESTINATION include/rocky)
 install(FILES ${HEADERS_CONTRIB} DESTINATION include/rocky/contrib)
-

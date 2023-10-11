@@ -48,6 +48,9 @@ endif(NOT CMAKE_BUILD_TYPE)
 # https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html
 include(GNUInstallDirs)
 
+# load utilities
+include("cmake/install-export-files.cmake")
+
 # PROJ - geospatial projections library - required
 find_package(PROJ CONFIG REQUIRED)
 
@@ -165,36 +168,3 @@ endif()
 
 # source code
 add_subdirectory(src)
-
-
-# export packaging   
-include(CMakePackageConfigHelpers)
-
-set(PACKAGE_INSTALL_DIR share/rocky)
-set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
-set(LIBRARY_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
-
-configure_package_config_file(
-    "cmake/rocky-config.cmake.in"
-    "rocky-config.cmake"
-    INSTALL_DESTINATION ${PACKAGE_INSTALL_DIR}
-    PATH_VARS INCLUDE_INSTALL_DIR LIBRARY_INSTALL_DIR) 
-
-write_basic_package_version_file(
-    "rocky-config-version.cmake"
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY AnyNewerVersion)
-
-install(
-    EXPORT rockyTargets
-    FILE rocky-targets.cmake
-    NAMESPACE rocky::
-    DESTINATION ${PACKAGE_INSTALL_DIR} )
-    
-install(
-    FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/rocky-config.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/rocky-config-version.cmake"
-    DESTINATION
-         ${PACKAGE_INSTALL_DIR} )
-         

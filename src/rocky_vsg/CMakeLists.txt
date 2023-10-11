@@ -74,9 +74,12 @@ target_compile_definitions(${TARGET} PRIVATE ${EXTRA_DEFINES})
 
 target_link_libraries(${TARGET} ${LIBRARIES})
 
+# install the export cmake files so other projects can import us
+rocky_install_export_files(rocky_vsg)
+
 install(
     TARGETS ${TARGET}
-    EXPORT rockyTargets
+    EXPORT rocky_vsgTargets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_BINDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
