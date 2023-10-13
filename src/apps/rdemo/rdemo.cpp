@@ -75,7 +75,7 @@ void setup_demos(rocky::Application& app)
         Demo{ "Map", Demo_Map });
 
     demos.emplace_back(
-        Demo{ "Components", {},
+        Demo{ "Primitives", {},
         {
             Demo{ "Label", Demo_Label },
             Demo{ "Line - absolute", Demo_Line_Absolute },
@@ -88,7 +88,7 @@ void setup_demos(rocky::Application& app)
     );
 
     demos.emplace_back(
-        Demo{ "GIS Features", {},
+        Demo{ "GIS Data", {},
         {
             Demo{ "Polygon features", Demo_PolygonFeatures },
             Demo{ "Line features", Demo_LineFeatures }
@@ -108,7 +108,7 @@ void setup_demos(rocky::Application& app)
     demos.emplace_back(
         Demo{ "RTT", Demo_RTT });
     demos.emplace_back(
-        Demo{ "Windows & Views", Demo_Views });
+        Demo{ "Views", Demo_Views });
     demos.emplace_back(
         Demo{ "Serialization", Demo_Serialization });
     demos.emplace_back(

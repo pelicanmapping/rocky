@@ -4,8 +4,11 @@
  * MIT License
  */
 #include "Log.h"
+#include "Instance.h"
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+
+ROCKY_ABOUT(spdlog, std::to_string(SPDLOG_VER_MAJOR) + "." + std::to_string(SPDLOG_VER_MINOR) + "." + std::to_string(SPDLOG_VER_PATCH));
 
 using namespace ROCKY_NAMESPACE;
 
