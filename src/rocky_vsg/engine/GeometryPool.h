@@ -9,6 +9,7 @@
 #include <rocky/TileKey.h>
 #include <rocky/Threading.h>
 #include <rocky/IOTypes.h>
+#include <rocky_vsg/engine/Runtime.h>
 #include <vsg/nodes/Geometry.h>
 #include <vsg/nodes/Group.h>
 
@@ -151,22 +152,18 @@ namespace ROCKY_NAMESPACE
             Cancelable* state);
 
         //! The number of elements (incides) in the terrain skirt if applicable
-        int getNumSkirtElements(
-            const Settings& settings) const;
-
-        //! Are we doing pooling?
-        bool isEnabled() const {
-            return _enabled;
-        }
+        int getNumSkirtElements(const Settings& settings) const;
 
         //! Clear and reset the pool
         void clear();
 
+        //! Remove unused entries from the pool
+        void sweep(Runtime& runtime);
 
-    public: // osg::Node
+        //! Number of geometries in the pool
+        inline std::size_t size() const;
 
-        /** Perform an update traversal to check for unused resources. */
-        //void traverse(osg::NodeVisitor& nv);
+    private:
 
         SRS _worldSRS;
         mutable util::Gate<GeometryKey> _keygate;
@@ -189,9 +186,14 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::ushortArray> createIndices(
             const Settings& settings) const;
 
-        bool _enabled = false;
+        bool _enabled = true;
         bool _debug = false;
     };
+
+    // inlines
+    std::size_t GeometryPool::size() const {
+        return _sharedGeometries.size();
+    }
 
 }
 

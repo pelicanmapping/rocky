@@ -15,15 +15,8 @@
 
 using namespace ROCKY_NAMESPACE;
 
-LabelSystem::LabelSystem(entt::registry& registry) :
-    vsg::Inherit<ECS::SystemNode, LabelSystem>(registry),
-    helper(registry)
-{
-    //nop
-}
-
 void
-LabelSystem::initialize(Runtime& runtime)
+LabelSystemNode::initialize(Runtime& runtime)
 {
     // NOTE. This is temporary - replace with one or more TextGroup objects
     // to optimize rendering.

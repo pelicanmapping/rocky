@@ -95,7 +95,7 @@ TerrainNode::createRootTiles(const IOOptions& io)
     {
         auto tile = engine->tiles.createTile(
             keys[i],
-            { }, // parent
+            { }, // parent is empty
             engine);
 
         tile->doNotExpire = true;
@@ -105,10 +105,6 @@ TerrainNode::createRootTiles(const IOOptions& io)
     }
 
     engine->runtime.compile(stateGroup);
-
-    //auto cr = engine->runtime.viewer()->compileManager->compile(stateGroup);
-    //if (cr && cr.requiresViewerUpdate())
-    //    vsg::updateViewer(*engine->runtime.viewer(), cr);
 
     return StatusOK;
 }
@@ -129,15 +125,13 @@ TerrainNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
         else
         {
             engine->tiles.update(fs, io, engine);
+            engine->geometryPool.sweep(engine->runtime);
         }
     }
 }
 
 void
-TerrainNode::ping(
-    TerrainTileNode* tile,
-    const TerrainTileNode* parent,
-    vsg::RecordTraversal& nv)
+TerrainNode::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg::RecordTraversal& nv)
 {
     engine->tiles.ping(tile, parent, nv);
 }

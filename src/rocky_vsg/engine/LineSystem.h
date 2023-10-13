@@ -14,11 +14,12 @@ namespace ROCKY_NAMESPACE
     /**
      * ECS system that handles LineString components
      */
-    class ROCKY_VSG_EXPORT LineSystem :  public vsg::Inherit<ECS::SystemNode, LineSystem>
+    class ROCKY_VSG_EXPORT LineSystemNode :  public vsg::Inherit<ECS::VSG_SystemNode, LineSystemNode>
     {
     public:
         //! Construct the system
-        LineSystem(entt::registry&);
+        LineSystemNode(entt::registry& registry) :
+            helper(registry) { }
 
         enum Features
         {
@@ -32,5 +33,18 @@ namespace ROCKY_NAMESPACE
         void initialize(Runtime&) override;
 
         ROCKY_VSG_SYSTEM_HELPER(Line, helper);
+    };
+
+    class ROCKY_VSG_EXPORT LineSystem : public ECS::VSG_System
+    {
+    public:
+        LineSystem(entt::registry& registry) :
+            ECS::VSG_System(registry) { }
+
+        vsg::ref_ptr<ECS::VSG_SystemNode> getOrCreateNode() override {
+            if (!node)
+                node = LineSystemNode::create(registry);
+            return node;
+        }
     };
 }

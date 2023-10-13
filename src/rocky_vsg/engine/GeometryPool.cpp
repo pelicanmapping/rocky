@@ -15,8 +15,6 @@ using namespace ROCKY_NAMESPACE;
 GeometryPool::GeometryPool(const SRS& worldSRS) :
     _worldSRS(worldSRS)
 {
-    //ROCKY_TODO("ADJUST_UPDATE_TRAV_COUNT(this, +1)");
-
     // activate debugging mode
     if ( getenv("ROCKY_DEBUG_REX_GEOMETRY_POOL") != 0L )
     {
@@ -31,10 +29,7 @@ GeometryPool::GeometryPool(const SRS& worldSRS) :
 }
 
 vsg::ref_ptr<SharedGeometry>
-GeometryPool::getPooledGeometry(
-    const TileKey& tileKey,
-    const Settings& settings,
-    Cancelable* progress)
+GeometryPool::getPooledGeometry(const TileKey& tileKey, const Settings& settings, Cancelable* progress)
 {
     vsg::ref_ptr<SharedGeometry> out;
 
@@ -255,10 +250,7 @@ namespace
 }
 
 vsg::ref_ptr<SharedGeometry>
-GeometryPool::createGeometry(
-    const TileKey& tileKey,
-    const Settings& settings,
-    Cancelable* progress) const
+GeometryPool::createGeometry(const TileKey& tileKey, const Settings& settings, Cancelable* progress) const
 {
     // Establish a local reference frame for the tile:
     GeoPoint centroid = tileKey.extent().centroid();
@@ -308,7 +300,7 @@ GeometryPool::createGeometry(
             return nullptr;
     }
 
-    else // default mesh - no constraintsv
+    else // default mesh - no constraints
 #endif
     {
         glm::dvec3 unit;
@@ -414,4 +406,20 @@ GeometryPool::clear()
 {
     std::scoped_lock lock(_mutex);
     _sharedGeometries.clear();
+}
+
+void
+GeometryPool::sweep(Runtime& runtime)
+{
+    std::scoped_lock lock(_mutex);
+    SharedGeometries temp;
+    for (auto& entry : _sharedGeometries)
+    {
+        if (entry.second->referenceCount() > 1)
+            temp.emplace(entry.first, entry.second);
+        else
+            runtime.dispose(entry.second);
+
+    }
+    _sharedGeometries.swap(temp);
 }

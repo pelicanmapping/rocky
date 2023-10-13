@@ -22,6 +22,8 @@ namespace ROCKY_NAMESPACE
     //! Entity Component System support
     namespace ECS
     {
+        using time_point = std::chrono::steady_clock::time_point;
+
         /**
         * Base class for all ECS components.
         */
@@ -39,29 +41,6 @@ namespace ROCKY_NAMESPACE
         };
 
         /**
-        * Extends the entt::registry to add some useful functions
-        */
-        class ROCKY_VSG_EXPORT Registry : public entt::registry
-        {
-        public:
-            //! Provides a simple way to add multiple components of the same type
-            //! to an entity, at least from the API's perspective.
-            //! T must be an ECS::Component type.
-            template<class T>
-            inline T& append(entt::entity entity)
-            {
-                T* comp = try_get<T>(entity);
-                if (comp)
-                {
-                    if (comp->next == entt::null)
-                        comp->next = create();
-                    return append<T>(comp->next);
-                }
-                return emplace<T>(entity);
-            }
-        };
-
-        /**
         * Base class for all ECS systems.
         * A "system" is a module that performs operations on a specific Component type.
         */
@@ -73,11 +52,26 @@ namespace ROCKY_NAMESPACE
 
             //! Status of the system; check this before using it
             //! to make sure it is properly initialized
-            Status status;
+            virtual const Status& status() const { return StatusOK; }
+
+            //! Update the system with a time stamp.
+            virtual void update(time_point time) { }
 
         protected:
             System(entt::registry& registry_) :
                 registry(registry_) { }
+        };
+
+        /**
+        * Container for a collection of ECS systems.
+        */
+        class ROCKY_VSG_EXPORT SystemsManager
+        {
+        public:
+            //! Update all systems with a time stamp.
+            void update(time_point time);
+
+            std::vector<std::shared_ptr<System>> systems;
         };
     }
 
@@ -86,23 +80,95 @@ namespace ROCKY_NAMESPACE
         using time_point = std::chrono::steady_clock::time_point;
 
         /**
-        * Node that holds all active ECS Systems as children, so that they
-        * can properly respond to VSG visitors.
+        * Base class for an ECS System that can live in the scene graph and
+        * respond to VSG traversals. It will process all components associated
+        * with the system type.
         */
-        class ROCKY_VSG_EXPORT ECSNode : public vsg::Inherit<vsg::Group, ECSNode>
+        class ROCKY_VSG_EXPORT VSG_SystemNode : public vsg::Inherit<vsg::Compilable, VSG_SystemNode>
         {
         public:
-            ECSNode(entt::registry& registry_) :
-                registry(registry_) { }
+            Status status;
 
-            //! Entity registry reference
-            entt::registry& registry;
+            //! Initialize the ECS system (once at startup)
+            virtual void initialize(Runtime& runtime) { }
 
-            //! Initialize all child systems; call once at startup
-            void initialize(Runtime&);
-            
-            //! Update any child systems that need updating; call once per frame
-            void update(Runtime&, time_point);
+            //! Update the ECS system (once per frame)
+            virtual void update(Runtime& runtime)
+            {
+                initializeNewComponents(runtime);
+            }
+
+        protected:
+
+            //! Override this to handle any components that need
+            //! initial setup
+            virtual void initializeNewComponents(Runtime& rutime) { }
+        };
+
+        /**
+        * Base class for an ECS System that owns a correspond node in the scene graph,
+        * which is responsible for rendering the system's components.
+        */
+        class VSG_System : public ECS::System
+        {
+        public:
+            //! Create a VSG node for this system, or return the existing one
+            virtual vsg::ref_ptr<VSG_SystemNode> getOrCreateNode() = 0;
+
+            //! Status of this system
+            const Status& status() const override {
+                return node ? node->status : StatusError;
+            }
+
+            //! Whether to render this system's components
+            bool active = true;
+
+            vsg::ref_ptr<VSG_SystemNode> node;
+
+
+        protected:
+            VSG_System(entt::registry& registry_) :
+                ECS::System(registry_) { }
+        };
+
+        class VSG_SystemsGroup : public vsg::Inherit<vsg::Group, VSG_SystemsGroup>
+        {
+        public:
+            void connect(SystemsManager& manager)
+            {
+                children.clear();
+
+                for (auto& system : manager.systems)
+                {
+                    auto vsg_system = dynamic_cast<VSG_System*>(system.get());
+                    if (vsg_system)
+                    {
+                        auto node = vsg_system->getOrCreateNode();
+                        if (node)
+                        {
+                            addChild(node);
+                        }
+                    }
+                }
+            }
+
+            void initialize(Runtime& runtime)
+            {
+                for (auto& child : children)
+                {
+                    auto node = static_cast<VSG_SystemNode*>(child.get());
+                    node->initialize(runtime);
+                }
+            }
+
+            void update(Runtime& runtime)
+            {
+                for (auto& child : children)
+                {
+                    auto node = static_cast<VSG_SystemNode*>(child.get());
+                    node->update(runtime);
+                }
+            } 
         };
 
         /**
@@ -150,38 +216,6 @@ namespace ROCKY_NAMESPACE
             }
         };
 
-        /**
-        * Base class for an ECS System that can live in the scene graph and
-        * respond to VSG traversals. It will process all components associated
-        * with the system type.
-        */
-        class ROCKY_VSG_EXPORT SystemNode : 
-            public vsg::Inherit<vsg::Compilable, SystemNode>,
-            public ECS::System
-        {
-        public:
-            //! Initialize the ECS system (once at startup)
-            virtual void initialize(Runtime& runtime) { }
-
-            //! Update the ECS system (once per frame)
-            virtual void update(Runtime& runtime, time_point time)
-            {
-                initializeComponents(runtime);
-                tick(runtime, time);
-            }
-
-            //! Subclass this to perform per-frame operations on components
-            virtual void tick(Runtime& runtime, time_point time) { }
-
-        protected:
-            //! Constructor
-            SystemNode(entt::registry& registry) :
-                ECS::System(registry) { }
-
-            //! Override this to handle any components that need
-            //! initial setup
-            virtual void initializeComponents(Runtime& rutime) { }
-        };
 
         /**
         * Helper class for making systems that operate on Component types
@@ -225,7 +259,7 @@ namespace ROCKY_NAMESPACE
             mutable std::vector<entt::entity> entities_to_initialize;
 
             // looks for any new components that need VSG initialization
-            inline void initializeComponents(Runtime&);
+            inline void initializeNewComponents(Runtime&);
 
             // Hooks to expose systems and components to VSG visitors.
             inline void accept(vsg::Visitor& v);
@@ -296,15 +330,15 @@ namespace ROCKY_NAMESPACE
     /**
     * ECS System to process Motion components
     */
-    class ROCKY_VSG_EXPORT EntityMotionSystem : public vsg::Inherit<ECS::SystemNode, EntityMotionSystem>
+    class ROCKY_VSG_EXPORT EntityMotionSystem : public ECS::System
     {
     public:
         //! Constructor
         EntityMotionSystem(entt::registry& r) : 
-            vsg::Inherit<ECS::SystemNode, EntityMotionSystem>(r) { }
+            ECS::System(r) { }
 
-        //! Called every frame to update transforms
-        void tick(Runtime& runtime, ECS::time_point time) override;
+        //! Called to update the transforms
+        void update(ECS::time_point time) override;
 
     private:
         ECS::time_point last_time = ECS::time_point::min();
@@ -444,7 +478,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    inline void ECS::VSG_SystemHelper<T>::initializeComponents(Runtime& runtime)
+    inline void ECS::VSG_SystemHelper<T>::initializeNewComponents(Runtime& runtime)
     {
         ROCKY_PROFILE_FUNCTION();
 
@@ -505,4 +539,4 @@ namespace ROCKY_NAMESPACE
     void accept(vsg::ConstVisitor& v) const override { MEMBER.accept(v); } \
     void compile(vsg::Context& context) override { MEMBER.compile(context); } \
     void traverse(vsg::RecordTraversal& rt) const override { MEMBER.record(rt); } \
-    void initializeComponents(Runtime& runtime) override { MEMBER.initializeComponents(runtime); }
+    void initializeNewComponents(Runtime& runtime) override { MEMBER.initializeNewComponents(runtime); }

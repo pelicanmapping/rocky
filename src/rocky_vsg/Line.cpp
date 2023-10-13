@@ -70,7 +70,7 @@ Line::initializeNode(const ECS::NodeComponent::Params& params)
 int
 Line::featureMask() const
 {
-    return LineSystem::featureMask(*this);
+    return LineSystemNode::featureMask(*this);
 }
 
 JSON

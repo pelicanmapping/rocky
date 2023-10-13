@@ -113,8 +113,8 @@ auto Demo_Stats = [](Application& app)
     if (ImGuiLTable::Begin("Terrain Engine"))
     {
         auto& engine = app.mapNode->terrain->engine;
-        ImGuiLTable::Text("Active tiles", std::to_string(engine->tiles.size()).c_str());
-        ImGuiLTable::Text("Geometry pool cache", std::to_string(engine->geometryPool._sharedGeometries.size()).c_str());
+        ImGuiLTable::Text("Resident tiles", std::to_string(engine->tiles.size()).c_str());
+        ImGuiLTable::Text("Geometry pool cache", std::to_string(engine->geometryPool.size()).c_str());
         ImGuiLTable::End();
     }
 

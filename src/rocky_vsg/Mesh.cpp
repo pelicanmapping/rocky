@@ -34,7 +34,7 @@ Mesh::dirty()
 int
 Mesh::featureMask() const
 {
-    return MeshSystem::featureMask(*this);
+    return MeshSystemNode::featureMask(*this);
 }
 
 void

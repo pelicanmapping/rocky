@@ -46,6 +46,7 @@ namespace ROCKY_NAMESPACE
     };
 
     extern ROCKY_EXPORT const Status StatusOK;
+    extern ROCKY_EXPORT const Status StatusError;
 
     /**
      * Generic return value that wraps a value type and a Status.

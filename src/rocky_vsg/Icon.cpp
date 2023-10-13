@@ -47,7 +47,7 @@ Icon::initializeNode(const ECS::NodeComponent::Params& params)
 int
 Icon::featureMask() const
 {
-    return IconSystem::featureMask(*this);
+    return IconSystemNode::featureMask(*this);
 }
 
 JSON

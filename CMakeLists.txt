@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.7)
 
-
 # if using vcpkg, configure overlay ports (that are not available in vcpkg prime)
 if (${CMAKE_TOOLCHAIN_FILE} MATCHES ".*vcpkg.cmake.*")
     message(STATUS "Building with vcpkg toolchain.")
@@ -8,6 +7,7 @@ if (${CMAKE_TOOLCHAIN_FILE} MATCHES ".*vcpkg.cmake.*")
     set(VCPKG_OVERLAY_PORTS ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/ports)
 endif()
 
+# Main PROJECT definition
 project(
     rocky
     VERSION 0.1.0
@@ -24,25 +24,15 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-
 # option to build shared or static libs
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-
 
 # folder for additional cmake includes
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-# build all examples into the bin directory
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-
 # temporary folder to hold build-time header compilation (.in files built with compile_files)
 set(ROCKY_BUILDTIME_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/build_include")
 include_directories(${ROCKY_BUILDTIME_INCLUDE_DIR})
-
-# Change the default build type to Release
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
-endif(NOT CMAKE_BUILD_TYPE)
 
 # set up standard install folder names
 # https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html

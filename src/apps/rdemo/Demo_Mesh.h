@@ -117,9 +117,10 @@ auto Demo_Mesh_Relative = [](Application& app)
         }
 
         // Add a transform component so we can position our mesh relative
-        // to some geospatial coordinates.
+        // to some geospatial coordinates. We then set the bound on the node
+        // to control horizon culling a little better
         auto& xform = app.entities.emplace<Transform>(entity);
-        xform.node->position = GeoPoint(SRS::WGS84, 24.0, 24.0, s * 3.0);
+        xform.setPosition(GeoPoint(SRS::WGS84, 24.0, 24.0, s * 3.0));
         xform.node->bound.radius = s * sqrt(2);
     }
 

@@ -40,14 +40,16 @@ namespace ROCKY_NAMESPACE
 
     public: // public properties
 
+        entt::registry entities;
+        ECS::SystemsManager ecs;
+
         rocky::InstanceVSG instance;
-        ECS::Registry entities;
         vsg::ref_ptr<rocky::MapNode> mapNode;
         vsg::ref_ptr<rocky::SkyNode> skyNode;
         vsg::ref_ptr<vsg::Viewer> viewer;
         vsg::ref_ptr<vsg::Group> root;
         vsg::ref_ptr<vsg::Group> mainScene;
-        vsg::ref_ptr<ECS::ECSNode> ecs;
+        vsg::ref_ptr<ECS::VSG_SystemsGroup> ecs_node;
         std::function<void()> updateFunction;
 
         //! Collection of windows and views managed by the application.

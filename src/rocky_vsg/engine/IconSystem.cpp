@@ -77,15 +77,8 @@ namespace
     }
 }
 
-IconSystem::IconSystem(entt::registry& registry) :
-    vsg::Inherit<ECS::SystemNode, IconSystem>(registry),
-    helper(registry)
-{
-    //nop
-}
-
 void
-IconSystem::initialize(Runtime& runtime)
+IconSystemNode::initialize(Runtime& runtime)
 {
     auto shaderSet = createShaderSet(runtime);
 
@@ -153,7 +146,7 @@ IconSystem::initialize(Runtime& runtime)
     }
 }
 
-int IconSystem::featureMask(const Icon& component)
+int IconSystemNode::featureMask(const Icon& component)
 {
     return 0;
 }

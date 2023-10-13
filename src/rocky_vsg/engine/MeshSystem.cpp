@@ -73,15 +73,8 @@ namespace
     }
 }
 
-MeshSystem::MeshSystem(entt::registry& registry) :
-    vsg::Inherit<ECS::SystemNode,MeshSystem>(registry),
-    helper(registry)
-{
-    //nop
-}
-
 void
-MeshSystem::initialize(Runtime& runtime)
+MeshSystemNode::initialize(Runtime& runtime)
 {
     auto shaderSet = createShaderSet(runtime);
 
@@ -165,7 +158,7 @@ MeshSystem::initialize(Runtime& runtime)
     }
 }
 
-int MeshSystem::featureMask(const Mesh& mesh)
+int MeshSystemNode::featureMask(const Mesh& mesh)
 {
     int feature_set = 0;
     if (mesh.texture) feature_set |= TEXTURE;

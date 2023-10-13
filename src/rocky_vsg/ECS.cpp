@@ -20,38 +20,17 @@ ECS::Component::to_json() const
     return j.dump();
 }
 
-
 void
-ECS::ECSNode::initialize(Runtime& runtime)
+ECS::SystemsManager::update(ECS::time_point time)
 {
-    for (auto& child : children)
+    for (auto& system : systems)
     {
-        auto system = static_cast<SystemNode*>(child.get());
-        if (system->status.ok())
-        {
-            system->initialize(runtime);
-        }
+        system->update(time);
     }
 }
 
 void
-ECS::ECSNode::update(Runtime& runtime, vsg::time_point p)
-{
-    ROCKY_PROFILE_FUNCTION();
-
-    for (auto& child : children)
-    {
-        auto system = static_cast<SystemNode*>(child.get());
-        if (system->status.ok())
-        {
-            system->update(runtime, p);
-        }
-    }
-}
-
-
-void
-EntityMotionSystem::tick(Runtime& runtime, ECS::time_point time)
+EntityMotionSystem::update(ECS::time_point time)
 {
     ROCKY_PROFILE_FUNCTION();
 

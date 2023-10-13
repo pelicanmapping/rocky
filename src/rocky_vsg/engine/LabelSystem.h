@@ -12,11 +12,12 @@ namespace ROCKY_NAMESPACE
     /**
      * Creates commands for rendering icon primitives.
      */
-    class ROCKY_VSG_EXPORT LabelSystem : public vsg::Inherit<ECS::SystemNode, LabelSystem>
+    class ROCKY_VSG_EXPORT LabelSystemNode : public vsg::Inherit<ECS::VSG_SystemNode, LabelSystemNode>
     {
     public:
         //! Construct the mesh renderer
-        LabelSystem(entt::registry& registry);
+        LabelSystemNode(entt::registry& registry) :
+            helper(registry) { }
 
         enum Features
         {
@@ -30,5 +31,18 @@ namespace ROCKY_NAMESPACE
         void initialize(Runtime&) override;
 
         ROCKY_VSG_SYSTEM_HELPER(Label, helper);
+    };
+
+    class ROCKY_VSG_EXPORT LabelSystem : public ECS::VSG_System
+    {
+    public:
+        LabelSystem(entt::registry& registry) :
+            ECS::VSG_System(registry) { }
+
+        vsg::ref_ptr<ECS::VSG_SystemNode> getOrCreateNode() override {
+            if (!node)
+                node = LabelSystemNode::create(registry);
+            return node;
+        }
     };
 }

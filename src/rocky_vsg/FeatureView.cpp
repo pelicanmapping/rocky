@@ -308,7 +308,7 @@ FeatureView::FeatureView(Feature&& f)
 }
 
 void
-FeatureView::generate(ECS::Registry& registry, Runtime& runtime, bool keep_features)
+FeatureView::generate(entt::registry& registry, Runtime& runtime, bool keep_features)
 {
     entt::entity entity = registry.create();
 

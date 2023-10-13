@@ -67,15 +67,8 @@ namespace
     }
 }
 
-LineSystem::LineSystem(entt::registry& registry_) :
-    vsg::Inherit<ECS::SystemNode, LineSystem>(registry_),
-    helper(registry_)
-{
-    //nop
-}
-
 void
-LineSystem::initialize(Runtime& runtime)
+LineSystemNode::initialize(Runtime& runtime)
 {
     // Now create the pipeline and stategroup to bind it
     auto shaderSet = createLineShaderSet(runtime);
@@ -151,7 +144,7 @@ LineSystem::initialize(Runtime& runtime)
     }
 }
 
-int LineSystem::featureMask(const Line& c)
+int LineSystemNode::featureMask(const Line& c)
 {
     int mask = 0;
     if (c.write_depth) mask |= WRITE_DEPTH;

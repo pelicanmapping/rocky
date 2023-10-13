@@ -155,22 +155,22 @@ Application::Application(int& argc, char** argv) :
         }
     }
 
-    // install the ECS.
+    // install the ECS systems that will render components.
+    ecs.systems.emplace_back(std::make_shared<MeshSystem>(entities));
+    ecs.systems.emplace_back(std::make_shared<LineSystem>(entities));
+    ecs.systems.emplace_back(std::make_shared<NodeSystem>(entities));
+    ecs.systems.emplace_back(std::make_shared<IconSystem>(entities));
+    ecs.systems.emplace_back(std::make_shared<LabelSystem>(entities));
 
-    // The ECS graph. ECSNode is the "root" that holds all SystemNodes.
-    // We like these in the scene graph since they need to respond to
-    // various VSG visitors and traversals.
-    ecs = ECS::ECSNode::create(entities);
-    
-    ecs->addChild(MeshSystem::create(entities));
-    ecs->addChild(LineSystem::create(entities));
-    ecs->addChild(SelfContainedNodeSystem::create(entities));
-    ecs->addChild(IconSystem::create(entities));
-    ecs->addChild(LabelSystem::create(entities));
+    // install other ECS systems.
+    ecs.systems.emplace_back(std::make_shared<EntityMotionSystem>(entities));
 
-    ecs->addChild(EntityMotionSystem::create(entities));
+    // make a scene graph and connect all the renderer systems to it.
+    // This way they will all receive the typical VSG traversals (accept, record, compile, etc.)
+    ecs_node = ECS::VSG_SystemsGroup::create();
+    ecs_node->connect(ecs);
 
-    mainScene->addChild(ecs);
+    mainScene->addChild(ecs_node);
 }
 
 Application::~Application()
@@ -532,7 +532,7 @@ void
 Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
 {
     // Initialize the ECS subsystem:
-    ecs->initialize(instance.runtime());
+    ecs_node->initialize(instance.runtime());
 
     // respond to the X or to hitting ESC
     // TODO: refactor this so it responds to individual windows and not the whole app?
@@ -643,8 +643,9 @@ Application::frame()
     // rocky map update pass - management of tiles and paged data
     mapNode->update(viewer->getFrameStamp());
 
-    // ECS update
-    ecs->update(instance.runtime(), viewer->getFrameStamp()->time);
+    // ECS updates
+    ecs.update(viewer->getFrameStamp()->time);
+    ecs_node->update(instance.runtime());
 
     // User update
     if (updateFunction)
