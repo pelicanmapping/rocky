@@ -125,7 +125,7 @@ int main(int argc, char** argv)
 #if defined(ROCKY_SUPPORTS_TMS)
 
     auto imagery = rocky::TMSImageLayer::create();
-    imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/135/";
+    imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
     mapNode->map->layers().add(imagery);
     if (imagery->status().failed())
         return error(imagery);
