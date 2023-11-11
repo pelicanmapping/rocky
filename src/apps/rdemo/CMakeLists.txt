@@ -1,20 +1,23 @@
 set(APP_NAME rdemo)
 
-find_package(glslang CONFIG REQUIRED)
-find_package(vsgImGui REQUIRED)
+find_package(vsgImGui)
 
-file(GLOB SOURCES *.cpp)
-file(GLOB HEADERS *.h)
+if(vsgImGui_FOUND)
+    find_package(glslang CONFIG REQUIRED)
 
-# enable folders for IDEs
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-assign_source_groups("Source Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${SOURCES})
-assign_source_groups("Header Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${HEADERS})
+    file(GLOB SOURCES *.cpp)
+    file(GLOB HEADERS *.h)
 
-add_executable(${APP_NAME} ${SOURCES} ${HEADERS})
+    # enable folders for IDEs
+    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+    assign_source_groups("Source Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${SOURCES})
+    assign_source_groups("Header Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${HEADERS})
 
-target_link_libraries(${APP_NAME} rocky rocky_vsg vsgImGui::vsgImGui)
+    add_executable(${APP_NAME} ${SOURCES} ${HEADERS})
 
-install(TARGETS ${APP_NAME} RUNTIME DESTINATION bin)
+    target_link_libraries(${APP_NAME} rocky rocky_vsg vsgImGui::vsgImGui)
 
-set_target_properties(${APP_NAME} PROPERTIES FOLDER "apps")
+    install(TARGETS ${APP_NAME} RUNTIME DESTINATION bin)
+
+    set_target_properties(${APP_NAME} PROPERTIES FOLDER "apps")
+endif()

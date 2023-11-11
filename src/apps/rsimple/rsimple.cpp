@@ -4,49 +4,38 @@
  * MIT License
  */
 #include <rocky_vsg/Application.h>
-
-#if !defined(ROCKY_SUPPORTS_TMS)
-#error This example requires TMS support. Check CMake.
-#endif
-
 #include <rocky/TMSImageLayer.h>
-#include <rocky/TMSElevationLayer.h>
-#include <rocky/contrib/EarthFileImporter.h>
-
-#include <vsg/text/GpuLayoutTechnique.h>
-
-template<class T>
-int error(T layer)
-{
-    rocky::Log()->warn("Problem with layer \"" + layer->name() + "\" : " + layer->status().message);
-    return -1;
-}
+#include <rocky_vsg/Icon.h>
 
 int main(int argc, char** argv)
 {
     // instantiate the application engine.
     rocky::Application app(argc, argv);
 
-    if (app.mapNode->map->layers().empty())
-    {
-        // add an imagery layer to the map
-        auto layer = rocky::TMSImageLayer::create();
-        layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
-        app.mapNode->map->layers().add(layer);
+    // add an imagery layer to the map
+    auto layer = rocky::TMSImageLayer::create();
+    layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
+    app.mapNode->map->layers().add(layer);
 
-        // check for error
-        if (layer->status().failed())
-            return error(layer);
+    // check for error
+    if (layer->status().failed())
+        return -1;
 
-        // add an elevation layer to the map
-        auto elevation = rocky::TMSElevationLayer::create();
-        elevation->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
-        app.mapNode->map->layers().add(elevation);
+    // Load an image:
+    auto& io = app.instance.ioOptions();
+    auto image = io.services.readImageFromURI("https://user-images.githubusercontent.com/326618/236923465-c85eb0c2-4d31-41a7-8ef1-29d34696e3cb.png", io);
 
-        // check for error
-        if (elevation->status().failed())
-            return error(elevation);
-    }
+    // Create a new entity:
+    auto entity = app.entities.create();
+
+    // Add an icon to it:
+    auto& icon = app.entities.emplace<rocky::Icon>(entity);
+    icon.image = image.value;
+    icon.style = rocky::IconStyle{ 75, 0.0f }; // size, rotation
+
+    // Add a transform to it:
+    auto& xform = app.entities.emplace<rocky::Transform>(entity);
+    xform.setPosition(rocky::GeoPoint(rocky::SRS::WGS84, 0, 0, 50000));
 
     // run until the user quits.
     return app.run();

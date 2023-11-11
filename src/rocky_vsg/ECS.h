@@ -77,12 +77,11 @@ namespace ROCKY_NAMESPACE
 
     namespace ECS
     {
-        using time_point = std::chrono::steady_clock::time_point;
-
         /**
-        * Base class for an ECS System that can live in the scene graph and
-        * respond to VSG traversals. It will process all components associated
-        * with the system type.
+        * Base class for VSG node that mirrors an ECS System.
+        * This node will live in the VSG scene graph and will be able to receive and
+        * respond to VSG traversals, and be responsible for rendering graphics
+        * assoicated with the system's components.
         */
         class ROCKY_VSG_EXPORT VSG_SystemNode : public vsg::Inherit<vsg::Compilable, VSG_SystemNode>
         {
@@ -131,9 +130,14 @@ namespace ROCKY_NAMESPACE
                 ECS::System(registry_) { }
         };
 
+        /**
+        * VSG Group node whose children are VSG_System objects.
+        */
         class VSG_SystemsGroup : public vsg::Inherit<vsg::Group, VSG_SystemsGroup>
         {
         public:
+            //! Given a collection of ECS systems, find each VSG_System and add its node
+            //! to the scene graph.
             void connect(SystemsManager& manager)
             {
                 children.clear();
@@ -152,6 +156,8 @@ namespace ROCKY_NAMESPACE
                 }
             }
 
+            //! Initialize of all connected system nodes. This should be invoked
+            //! any time a new viewer is created.
             void initialize(Runtime& runtime)
             {
                 for (auto& child : children)
@@ -161,6 +167,7 @@ namespace ROCKY_NAMESPACE
                 }
             }
 
+            //! Update all connected system nodes. This should be invoked once per frame.
             void update(Runtime& runtime)
             {
                 for (auto& child : children)

@@ -67,7 +67,7 @@ namespace ROCKY_NAMESPACE { namespace util
         //! Block until the event is set or the timout expires.
         //! Return true if the event has set, otherwise false.
         template<typename T>
-        inline bool wait(std::chrono::duration<T> timeout) {
+        inline bool wait(T timeout) {
             if (!_set) {
                 std::unique_lock<std::mutex> lock(_m);
                 if (!_set)
@@ -161,10 +161,10 @@ namespace ROCKY_NAMESPACE { namespace util
             return empty();
         }
 
-        //! Deference the result object. Make sure you check isAvailable()
+        //! Deference the result object. Make sure you check available()
         //! to check that the future was actually resolved; otherwise you
         //! will just get the default object.
-        T value() const {
+        const T& value() const {
             return _shared->_obj;
         }
 
