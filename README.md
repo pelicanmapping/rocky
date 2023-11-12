@@ -13,7 +13,7 @@ This project is in its early stages so expect a lot of API and architectural cha
 
 ### main.cpp
 ```c++
-#include <rocky_vsg/Application.h>
+#include <rocky/vsg/Application.h>
 #include <rocky/TMSImageLayer.h>
 
 int main(int argc, char** argv)
@@ -40,7 +40,7 @@ cmake_minimum_required(VERSION 3.10)
 project(myApp VERSION 0.1.0 LANGUAGES CXX C)
 find_package(rocky CONFIG REQUIRED)
 add_executable(myApp main.cpp)
-target_link_libraries(myApp PRIVATE rocky::rocky rocky::rocky_vsg)
+target_link_libraries(myApp PRIVATE rocky::rocky)
 install(TARGETS myApp RUNTIME DESTINATION bin)
 ```
 
