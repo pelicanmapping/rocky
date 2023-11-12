@@ -4,7 +4,7 @@
  * MIT License
  */
 #pragma once
-#include <rocky_vsg/FeatureView.h>
+#include <rocky/vsg/FeatureView.h>
 #include <random>
 #include "helpers.h"
 

@@ -7,7 +7,7 @@
 
 #include <rocky/Viewpoint.h>
 #include <rocky/SRS.h>
-#include <rocky_vsg/MapManipulator.h>
+#include <rocky/vsg/MapManipulator.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;

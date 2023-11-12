@@ -6,9 +6,9 @@
 #pragma once
 #include "Common.h"
 
-#if !defined(ROCKY_LIBRARY) && !defined(ROCKY_EXPOSE_JSON_FUNCTIONS)
-#error json.h is an internal header file; do not include it directly :)
-#endif
+//#if !defined(ROCKY_LIBRARY) && !defined(ROCKY_EXPOSE_JSON_FUNCTIONS)
+//#error json.h is an internal header file; do not include it directly :)
+//#endif
 
 #include "optional.h"
 #include <nlohmann/json.hpp>

@@ -15,7 +15,7 @@ if(vsgImGui_FOUND)
 
     add_executable(${APP_NAME} ${SOURCES} ${HEADERS})
 
-    target_link_libraries(${APP_NAME} rocky rocky_vsg vsgImGui::vsgImGui)
+    target_link_libraries(${APP_NAME} rocky vsgImGui::vsgImGui)
 
     install(TARGETS ${APP_NAME} RUNTIME DESTINATION bin)
 

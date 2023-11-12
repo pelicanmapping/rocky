@@ -9,7 +9,7 @@
  * of the Rocky Application API. We intend each "Demo_*" include file to be
  * both a unit test for that feature, and a reference or writing your own code.
  */
-#include <rocky_vsg/Application.h>
+#include <rocky/vsg/Application.h>
 #include "helpers.h"
 
 using namespace ROCKY_NAMESPACE;

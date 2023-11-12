@@ -4,7 +4,7 @@
  * MIT License
  */
 #pragma once
-#include <rocky_vsg/Label.h>
+#include <rocky/vsg/Label.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;

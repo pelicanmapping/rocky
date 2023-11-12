@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include <rocky_vsg/Icon.h>
+#include <rocky/vsg/Icon.h>
 
 
 #include "helpers.h"

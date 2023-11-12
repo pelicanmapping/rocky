@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include <rocky_vsg/SkyNode.h>
+#include <rocky/vsg/SkyNode.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;

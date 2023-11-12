@@ -4,8 +4,8 @@
  * MIT License
  */
 #pragma once
-#include <rocky_vsg/Line.h>
-#include <rocky_vsg/FeatureView.h>
+#include <rocky/vsg/Line.h>
+#include <rocky/vsg/FeatureView.h>
 #include "helpers.h"
 
 using namespace ROCKY_NAMESPACE;

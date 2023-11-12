@@ -3,9 +3,9 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#include <rocky_vsg/Application.h>
+#include <rocky/vsg/Application.h>
 #include <rocky/TMSImageLayer.h>
-#include <rocky_vsg/Icon.h>
+#include <rocky/vsg/Icon.h>
 
 int main(int argc, char** argv)
 {

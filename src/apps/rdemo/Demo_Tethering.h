@@ -7,10 +7,10 @@
 
 #include <rocky/Viewpoint.h>
 #include <rocky/SRS.h>
-#include <rocky_vsg/MapManipulator.h>
-#include <rocky_vsg/Mesh.h>
-#include <rocky_vsg/Line.h>
-#include <rocky_vsg/Icon.h>
+#include <rocky/vsg/MapManipulator.h>
+#include <rocky/vsg/Mesh.h>
+#include <rocky/vsg/Line.h>
+#include <rocky/vsg/Icon.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;

@@ -10,7 +10,7 @@
 * both a unit test for that feature, and a reference or writing your own code.
 */
 
-#include <rocky_vsg/Application.h>
+#include <rocky/vsg/Application.h>
 #include <rocky/Version.h>
 
 #if defined(ROCKY_SUPPORTS_GDAL)

@@ -17,10 +17,10 @@
 #include <rocky/ImageLayer.h>
 #include <rocky/Ephemeris.h>
 
-#include <rocky_vsg/InstanceVSG.h>
-#include <rocky_vsg/MapNode.h>
-#include <rocky_vsg/MapManipulator.h>
-#include <rocky_vsg/SkyNode.h>
+#include <rocky/vsg/InstanceVSG.h>
+#include <rocky/vsg/MapNode.h>
+#include <rocky/vsg/MapManipulator.h>
+#include <rocky/vsg/SkyNode.h>
 
 #include <vsg/all.h>
 #include <chrono>

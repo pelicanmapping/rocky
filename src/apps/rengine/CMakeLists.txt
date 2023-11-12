@@ -4,7 +4,7 @@ file(GLOB SOURCES *.cpp)
 
 add_executable(${APP_NAME} ${SOURCES})
 
-target_link_libraries(${APP_NAME} rocky rocky_vsg)
+target_link_libraries(${APP_NAME} rocky)
 
 install(TARGETS ${APP_NAME} RUNTIME DESTINATION bin)
 
