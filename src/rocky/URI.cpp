@@ -160,9 +160,15 @@ namespace
 
                 auto r = client.Get(path, params, headers);
 
-                if (httpDebug)
+                if (httpDebug && r == true)
                 {
-                    Log()->info(LC "(" + std::to_string(r->status) + ") HTTP GET " + request.url + " (" + std::to_string(timer.seconds()) + "s)");
+                    auto cti = r->headers.find("Content-Type");
+                    auto ct = cti != r->headers.end() ? cti->second : "unknown";
+                    Log()->info(LC "(" + std::to_string(r->status)
+                        + ") HTTP GET " + request.url
+                        + " (" + std::to_string(timer.seconds()) + "s "
+                        + std::to_string(r->body.size()) + "b "
+                        + ct + ")");
                 }
 
                 if (r.error() != httplib::Error::Success)
@@ -301,7 +307,7 @@ URI::read(const IOOptions& io) const
     {
         if (httpDebug)
         {
-            Log()->info("Cache hit, ratio = "
+            Log()->info(LC "Cache hit, ratio = "
                 + std::to_string(100.0f * (float)io.services.contentCache->hits / (float)io.services.contentCache->gets)
                 + "%");
         }

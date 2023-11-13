@@ -34,8 +34,8 @@ TMSElevationLayer::construct(const JSON& conf)
     setConfigKey("TMSElevation");
     const auto j = parse_json(conf);
     get_to(j, "uri", uri);
-    get_to(j, "tms_type", tmsType);
     get_to(j, "format", format);
+    get_to(j, "invert_y", invertY);
 }
 
 JSON
@@ -43,8 +43,8 @@ TMSElevationLayer::to_json() const
 {
     auto j = parse_json(super::to_json());
     set(j, "uri", uri);
-    set(j, "tms_type", tmsType);
     set(j, "format", format);
+    set(j, "invert_y", invertY);
     return j.dump();
 }
 
@@ -62,7 +62,6 @@ TMSElevationLayer::openImplementation(const IOOptions& io)
         uri,
         driver_profile,
         format,
-        coverage,
         dataExtents,
         io);
 
@@ -93,16 +92,12 @@ TMSElevationLayer::closeImplementation()
 }
 
 Result<GeoHeightfield>
-TMSElevationLayer::createHeightfieldImplementation(
-    const TileKey& key,
-    const IOOptions& io) const
+TMSElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOOptions& io) const
 {
     ROCKY_PROFILE_FUNCTION();
 
     if (!isOpen())
         return status();
-
-    bool invertY = (tmsType == "google");
 
     // request
     auto r = _driver.read(uri, key, invertY, _encoding == Encoding::MapboxRGB, io);

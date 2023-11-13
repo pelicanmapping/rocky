@@ -71,7 +71,7 @@ namespace
             if (doc.Error() || !doc.RootElement())
             {
                 return Status(Status::GeneralError, util::make_string()
-                    << "INclude file - XML parse error at row " << doc.ErrorRow()
+                    << "Include file - XML parse error at row " << doc.ErrorRow()
                     << " col " << doc.ErrorCol());
             }
 

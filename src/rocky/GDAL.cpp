@@ -265,7 +265,8 @@ namespace ROCKY_NAMESPACE
             return 0;
         }
 
-        bool getPalleteIndexColor(GDALRasterBand* band, int index, glm::u8vec4& color)
+        template<typename COLOR>
+        bool getPalleteIndexColor(GDALRasterBand* band, int index, COLOR& color)
         {
             const GDALColorEntry *colorEntry = band->GetColorTable()->GetColorEntry(index);
             GDALPaletteInterp interp = band->GetColorTable()->GetPaletteInterpretation();
@@ -469,9 +470,12 @@ namespace ROCKY_NAMESPACE
                     GDALRasterBand* B = findBandByColorInterp(ds, GCI_BlueBand);
                     GDALRasterBand* A = findBandByColorInterp(ds, GCI_AlphaBand);
                     GDALRasterBand* M = findBandByColorInterp(ds, GCI_GrayIndex);
+                    GDALRasterBand* P = findBandByColorInterp(ds, GCI_PaletteIndex);
 
                     Image::PixelFormat format = Image::UNDEFINED;
-                    if (M)
+                    if (P)
+                        format = Image::R8G8B8A8_UNORM;
+                    else if (M)
                         format = Image::R32_SFLOAT;
                     else if (R && !G && !B && !A)
                         format = Image::R8_UNORM;
@@ -490,7 +494,22 @@ namespace ROCKY_NAMESPACE
                         
                         int offset = 0;
 
-                        if (M)
+                        if (P)
+                        {
+                            auto temp = new unsigned char[width * height];
+                            P->RasterIO(GF_Read, 0, 0, width, height, temp, width, height, GDT_Byte, 0, 0, nullptr);
+                            glm::u8vec4 color;
+                            for (int i = 0; i < width * height; ++i)
+                            {
+                                getPalleteIndexColor(P, temp[i], color);
+                                data[offset++] = color.r;
+                                data[offset++] = color.g;
+                                data[offset++] = color.b;
+                                data[offset++] = color.a;
+                            }
+                            delete[] temp;
+                        }
+                        else if (M)
                         {
                             auto value_scale = M->GetScale();
                             auto value_offset = M->GetOffset();

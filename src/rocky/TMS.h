@@ -17,9 +17,8 @@ namespace ROCKY_NAMESPACE
         struct Options
         {
             optional<URI> uri;
-            optional<std::string> tmsType;
             optional<std::string> format;
-            optional<bool> coverage = false;
+            optional<bool> invertY = false;
         };
 
         struct TileFormat
@@ -83,6 +82,10 @@ namespace ROCKY_NAMESPACE
                 const std::string& format,
                 int tile_width,
                 int tile_height);
+
+            // working
+            mutable std::size_t rotateIter = 0;
+            std::string rotateString;
         };
 
         struct TileMapEntry
@@ -110,7 +113,6 @@ namespace ROCKY_NAMESPACE
                 const URI& uri,
                 Profile& profile,
                 const std::string& format,
-                bool isCoverage,
                 DataExtentList& out_dataExtents,
                 const IOOptions& io);
 
@@ -135,9 +137,6 @@ namespace ROCKY_NAMESPACE
 
         private:
             bool _forceRGBWrites;
-            bool _isCoverage;
-
-            URI createSubstitutionURI(const TileKey& key, const URI& uri, bool invert_y) const;
 
             //bool resolveWriter(const std::string& format);
         };

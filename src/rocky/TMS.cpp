@@ -370,21 +370,31 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
         return "";
     }
 
-    unsigned int zoom = tilekey.levelOfDetail();
-    unsigned int x = tilekey.tileX(), y = tilekey.tileY();
+    unsigned zoom = tilekey.levelOfDetail();
+    unsigned x = tilekey.tileX();
+
+    auto [numCols, numRows] = tilekey.profile().numTiles(tilekey.levelOfDetail());
+    unsigned y = numRows - tilekey.tileY() - 1;
+    unsigned y_inverted = tilekey.tileY();
 
     //Some TMS like services swap the Y coordinate so 0,0 is the upper left rather than the lower left.  The normal TMS
     //specification has 0,0 at the bottom left, so inverting Y will make 0,0 in the upper left.
     //http://code.google.com/apis/maps/documentation/overlays.html#Google_Maps_Coordinates
-    if (!invertY)
+    if (invertY)
     {
-        auto [numCols, numRows] = tilekey.profile().numTiles(tilekey.levelOfDetail());
-        y = numRows - y - 1;
+        std::swap(y, y_inverted);
     }
 
-    bool sub = filename.find('$') != filename.npos;
+    std::string working = filename;
 
-    //OE_NOTICE << LC << "KEY: " << tilekey.str() << " level " << zoom << " ( " << x << ", " << y << ")" << std::endl;
+    if (!rotateString.empty())
+    {
+        std::size_t index = (++rotateIter) % (rotateString.size() - 2);
+        util::replace_in_place(working, rotateString, rotateString.substr(index + 1, 1));
+    }
+
+    bool sub = working.find('$') != working.npos;
+
 
     //Select the correct TileSet
     if (tileSets.size() > 0)
@@ -394,12 +404,13 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
             if (tileSet.order == zoom)
             {
                 std::stringstream ss;
-                std::string basePath = std::filesystem::path(filename).remove_filename().string();
+                std::string basePath = std::filesystem::path(working).remove_filename().string();
                 if (sub)
                 {
-                    auto temp = filename;
+                    auto temp = working;
                     util::replace_in_place(temp, "${x}", std::to_string(x));
                     util::replace_in_place(temp, "${y}", std::to_string(y));
+                    util::replace_in_place(temp, "${-y}", std::to_string(y_inverted));
                     util::replace_in_place(temp, "${z}", std::to_string(zoom));
                     return temp;
                 }
@@ -419,9 +430,10 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
     }
     else if (sub)
     {
-        auto temp = filename;
+        auto temp = working;
         util::replace_in_place(temp, "${x}", std::to_string(x));
         util::replace_in_place(temp, "${y}", std::to_string(y));
+        util::replace_in_place(temp, "${-y}", std::to_string(y_inverted));
         util::replace_in_place(temp, "${z}", std::to_string(zoom));
         return temp;
     }
@@ -429,7 +441,7 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
     else // Just go with it. No way of knowing the max level.
     {
         std::stringstream ss;
-        std::string basePath = std::filesystem::path(filename).remove_filename().string();
+        std::string basePath = std::filesystem::path(working).remove_filename().string();
         if (!basePath.empty())
         {
             ss << basePath << "/";
@@ -519,6 +531,14 @@ TileMap::TileMap(
     originY = ex.ymin();
 
     filename = url;
+
+    // Set up a rotating element in the template
+    auto rotateStart = filename.find('[');
+    auto rotateEnd = filename.find(']');
+    if (rotateStart != std::string::npos && rotateEnd != std::string::npos && rotateEnd - rotateStart > 1)
+    {
+        rotateString = filename.substr(rotateStart, rotateEnd - rotateStart + 1);
+    }
 
     srsString = getHorizSRSString(profile.srs());
     //vsrsString = profile.srs().vertical();
@@ -613,12 +633,9 @@ TMS::Driver::open(
     const URI& uri,
     Profile& profile,
     const std::string& format,
-    bool isCoverage,
     DataExtentList& dataExtents,
     const IOOptions& io)
 {
-    _isCoverage = isCoverage;
-
     // URI is mandatory.
     if (uri.empty())
     {
@@ -657,13 +674,7 @@ TMS::Driver::open(
 
         DataExtentList dataExtents_dummy; // empty
 
-        tileMap = TileMap(
-            uri.full(),
-            profile,
-            dataExtents_dummy,
-            format,
-            256,
-            256);
+        tileMap = TileMap(uri.full(), profile, dataExtents_dummy, format, 256, 256);
 
 #if 0
         // If this is a new repo, write the tilemap file to disk now.
@@ -733,12 +744,7 @@ TMS::Driver::open(
 }
 
 Result<shared_ptr<Image>>
-TMS::Driver::read(
-    const URI& uri,
-    const TileKey& key,
-    bool invertY,
-    bool isMapboxRGB,
-    const IOOptions& io) const
+TMS::Driver::read(const URI& uri, const TileKey& key, bool invertY, bool isMapboxRGB, const IOOptions& io) const
 {
     shared_ptr<Image> image;
     URI imageURI;
@@ -796,21 +802,4 @@ TMS::Driver::read(
         return image;
     else
         return Status(Status::ResourceUnavailable);
-}
-
-
-URI
-TMS::Driver::createSubstitutionURI(const TileKey& key, const URI& uri, bool invert_y) const
-{
-    auto href = uri.full();
-    auto y = key.tileY();
-    if (!invert_y) {
-        //http://code.google.com/apis/maps/documentation/overlays.html#Google_Maps_Coordinates
-        auto [cols, rows] = key.profile().numTiles(key.levelOfDetail());
-        y = rows - y - 1;
-    }
-    util::replace_in_place(href, "${x}", std::to_string(key.tileX()));
-    util::replace_in_place(href, "${y}", std::to_string(y));
-    util::replace_in_place(href, "${z}", std::to_string(key.levelOfDetail()));
-    return URI(href, uri.context());
 }

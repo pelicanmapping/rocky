@@ -24,24 +24,8 @@ namespace ROCKY_NAMESPACE
         //! Destructor
         virtual ~TMSImageLayer() { }
 
-#if 0
-        //! Base URL for TMS requests
-        void setURI(const URI& value) { _options.uri = value; }
-        const optional<URI>& uri() const { return _options.uri; }
-
-        //! Options TMS "type"; only possible setting is "google" which will
-        //! invert the Y axis for tile indices
-        void setTMSType(const std::string& value) { _options.tmsType = value; }
-        const optional<std::string>& tmsType() const { return _options.tmsType; }
-
-        //! Data format to request from the service
-        void setFormat(const std::string& value) { _options.format = value; }
-        const optional<std::string>& format() const { return _options.format; }
-#endif
-
         //! serialize
         JSON to_json() const override;
-        //Config getConfig() const override;
 
     protected: // Layer
 
@@ -57,7 +41,6 @@ namespace ROCKY_NAMESPACE
 
     private:
         TMS::Driver _driver;
-        //TMS::Options _options;
 
         void construct(const JSON&);
     };

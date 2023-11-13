@@ -34,9 +34,8 @@ TMSImageLayer::construct(const JSON& conf)
     setConfigKey("TMSImage");
     const auto j = parse_json(conf);
     get_to(j, "uri", uri);
-    get_to(j, "tms_type", tmsType);
     get_to(j, "format", format);
-    get_to(j, "coverage", coverage);
+    get_to(j, "invert_y", invertY);
 }
 
 JSON
@@ -44,9 +43,8 @@ TMSImageLayer::to_json() const
 {
     auto j = parse_json(super::to_json());   
     set(j, "uri", uri);
-    set(j, "tms_type", tmsType);
     set(j, "format", format);
-    set(j, "coverage", coverage);
+    set(j, "invert_y", invertY);
     return j.dump();
 }
 
@@ -64,7 +62,6 @@ TMSImageLayer::openImplementation(const IOOptions& io)
         uri,
         driver_profile,
         format,
-        coverage,
         dataExtents,
         io);
 
@@ -98,8 +95,6 @@ Result<GeoImage>
 TMSImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io) const
 {
     ROCKY_PROFILE_FUNCTION();
-
-    bool invertY = (tmsType == "google");
 
     auto r = _driver.read(uri, key, invertY, false, io);
 
