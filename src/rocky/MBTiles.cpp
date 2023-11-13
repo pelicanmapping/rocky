@@ -338,6 +338,7 @@ MBTiles::Driver::read(const TileKey& key, const IOOptions& io) const
 
         std::string dataBuffer(data, dataLen);
 
+#if defined(ZLIB_FOUND)
         // decompress if necessary:
         if (_options.compress == true)
         {
@@ -354,6 +355,7 @@ MBTiles::Driver::read(const TileKey& key, const IOOptions& io) const
                 dataBuffer = value;
             }
         }
+#endif
 
         // decode the raw image data:
         if (valid)
@@ -411,6 +413,7 @@ MBTiles::Driver::write(const TileKey& key, shared_ptr<Image> input, const IOOpti
 
     std::string value = buf.str();
 
+#if defined(ZLIB_FOUND)
     // compress the buffer if necessary
     if (_options.compress == true)
     {
@@ -421,6 +424,7 @@ MBTiles::Driver::write(const TileKey& key, shared_ptr<Image> input, const IOOpti
         }
         value = output.str();
     }
+#endif
 
     int z = key.levelOfDetail();
     int x = key.tileX();
