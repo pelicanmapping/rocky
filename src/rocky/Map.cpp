@@ -64,7 +64,8 @@ Map::construct(const JSON& conf, const IOOptions& io)
     // set a default profile if neccesary.
     if (!profile().valid())
     {
-        setProfile(Profile::GLOBAL_GEODETIC);
+        // call set_default so it doesn't serialize.
+        _profile.set_default(Profile::GLOBAL_GEODETIC);
     }
 }
 
@@ -95,7 +96,7 @@ Map::to_json() const
 {
     auto j = json::object();
     set(j, "name", _name);
-    set(j, "profile", profile());
+    set(j, "profile", _profile);
     set(j, "profile_layer", _profileLayer);
 
     auto layers_json = nlohmann::json::array();
@@ -131,27 +132,7 @@ Map::revision() const
 void
 Map::setProfile(const Profile& value)
 {
-    bool notifyLayers = (!_profile.valid());
-
-    if (value.valid())
-    {
-        _profile = value;
-    }
-
-#if 0
-    // If we just set the profile, tell all our layers they are now added
-    // to a valid map.
-    if (_profile.valid() && notifyLayers)
-    {
-        for(auto& layer : _layers)
-        {
-            if (layer->isOpen())
-            {
-                layer->addedToMap(this);
-            }
-        }
-    }
-#endif
+    _profile = value;
 }
 
 const Profile&
@@ -184,14 +165,14 @@ Map::attributions() const
         }
     }
     
-    return std::move(result);
+    return result;
 }
 
 const SRS&
 Map::srs() const
 {
     static SRS emptySRS;
-    return _profile.valid() ? _profile.srs() : emptySRS;
+    return _profile.has_value() && _profile->valid() ? _profile->srs() : emptySRS;
 }
 
 void

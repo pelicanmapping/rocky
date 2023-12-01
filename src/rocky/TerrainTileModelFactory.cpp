@@ -186,7 +186,7 @@ namespace
             m.image = result.value;
             m.key = key;
             model.colorLayers.emplace_back(std::move(m));
-            if (layer->isDynamic())
+            if (layer->dynamic())
             {
                 model.requiresUpdate = true;
             }

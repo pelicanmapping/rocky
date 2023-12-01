@@ -655,6 +655,9 @@ Application::frame()
     // things like tethering to a moving node will be one frame behind
     viewer->handleEvents();
 
+    if (!viewer->active())
+        return false;
+
     // run through the viewer's update operations queue; this includes
     // update ops initialized by rocky (e.g. terrain tile merges)
     viewer->update();

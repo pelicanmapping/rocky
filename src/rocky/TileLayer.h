@@ -66,7 +66,7 @@ namespace ROCKY_NAMESPACE
         //! on information gathered from source metadata. If your Layer
         //! needs the user to expressly set a profile, override this to
         //! make it public.
-        virtual void setProfile(const Profile&);
+        void setProfile(const Profile&);
 
         //! Open the layer for writing (calls open)
         const Status& openForWriting();
@@ -82,10 +82,7 @@ namespace ROCKY_NAMESPACE
 
         //! Whether the layer represents dynamic data, i.e. it generates data
         //! that requires period updates
-        virtual bool isDynamic() const;
-
-        //! Whether the data for the specified tile key is in the cache.
-        //virtual bool isCached(const TileKey& key) const;
+        virtual bool dynamic() const;
 
         //! Disable this layer, setting an error status.
         void disable(const std::string& msg);
@@ -152,12 +149,11 @@ namespace ROCKY_NAMESPACE
 
     protected:
 
-        //! Opportunity for a subclass to alter and/or override components
-        //! of the Profile
-        virtual void applyProfileOverrides(Profile& in_out_profile) const { }
-
         //! Call this if you call dataExtents() and modify it.
         void dirtyDataExtents();
+
+        //! Sets the layer profile as a default value (won't be serialized).
+        void setProfileDefault(const Profile&);
 
     protected:
 
@@ -174,7 +170,7 @@ namespace ROCKY_NAMESPACE
         bool _writingRequested;
 
         // profile to use
-        mutable Profile _profile;
+        mutable optional<Profile> _profile;
 
     private:
         // Post-ctor

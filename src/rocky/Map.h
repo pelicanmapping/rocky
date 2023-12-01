@@ -13,7 +13,6 @@
 #include <rocky/Callbacks.h>
 #include <rocky/IOTypes.h>
 #include <rocky/LayerCollection.h>
-//#include <rocky/ElevationPool.h>
 #include <functional>
 #include <set>
 #include <shared_mutex>
@@ -104,8 +103,7 @@ namespace ROCKY_NAMESPACE
         UID _uid;
         std::vector<shared_ptr<Layer>> _layers;
         mutable std::shared_mutex _mapDataMutex;
-        Profile _profile;
-        //shared_ptr<ElevationPool> _elevationPool;
+        optional<Profile> _profile;
         Revision _dataModelRevision;
 
         LayerCollection _imageLayers;

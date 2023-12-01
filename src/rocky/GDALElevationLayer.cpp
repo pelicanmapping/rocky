@@ -125,7 +125,7 @@ GDALElevationLayer::openImplementation(const IOOptions& io)
     // if the driver generated a valid profile, set it.
     if (profile.valid())
     {
-        setProfile(profile);
+        setProfileDefault(profile);
     }
 
     setDataExtents(dataExtents);

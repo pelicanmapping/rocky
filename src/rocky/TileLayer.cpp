@@ -201,13 +201,16 @@ void
 TileLayer::setProfile(const Profile& profile)
 {
     _profile = profile;
+}
 
-    // augment the final profile with any overrides:
-    applyProfileOverrides(_profile);
+void
+TileLayer::setProfileDefault(const Profile& profile)
+{
+    _profile.set_default(profile);
 }
 
 bool
-TileLayer::isDynamic() const
+TileLayer::dynamic() const
 {
     if (hints().dynamic.has_value(true))
         return true;
