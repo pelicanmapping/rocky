@@ -4,14 +4,18 @@
  * MIT License
  */
 #include <rocky/vsg/Application.h>
-#include <rocky/TMSImageLayer.h>
 #include <rocky/vsg/Icon.h>
+
+#ifdef ROCKY_HAS_TMS
+#include <rocky/TMSImageLayer.h>
+#endif
 
 int main(int argc, char** argv)
 {
     // instantiate the application engine.
     rocky::Application app(argc, argv);
 
+#ifdef ROCKY_HAS_TMS
     // add an imagery layer to the map
     auto layer = rocky::TMSImageLayer::create();
     layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
@@ -20,6 +24,7 @@ int main(int argc, char** argv)
     // check for error
     if (layer->status().failed())
         return -1;
+#endif
 
     // Load an image:
     auto& io = app.instance.ioOptions();

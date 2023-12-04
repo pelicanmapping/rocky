@@ -30,6 +30,7 @@
 
 #define ROCKY_NAMESPACE rocky
 
+#include <rocky/Version.h>
 #include <rocky/optional.h>
 #include <string>
 #include <memory>

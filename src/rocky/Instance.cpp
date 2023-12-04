@@ -15,13 +15,13 @@ ROCKY_ABOUT(rocky, ROCKY_VERSION_STRING)
 ROCKY_ABOUT(glm, std::to_string(GLM_VERSION_MAJOR) + "." + std::to_string(GLM_VERSION_MINOR) + "." + std::to_string(GLM_VERSION_PATCH) + "." + std::to_string(GLM_VERSION_REVISION))
 ROCKY_ABOUT(nlohmann_json, std::to_string(NLOHMANN_JSON_VERSION_MAJOR) + "." + std::to_string(NLOHMANN_JSON_VERSION_MINOR));
 
-#ifdef GDAL_FOUND
+#ifdef ROCKY_HAS_GDAL
 #include <gdal.h>
 #include <cpl_conv.h>
 ROCKY_ABOUT(gdal, GDAL_RELEASE_NAME)
 #endif
 
-#ifdef TINYXML_FOUND
+#ifdef ROCKY_HAS_TINYXML
 #include <tinyxml.h>
 ROCKY_ABOUT(tinyxml, std::to_string(TIXML_MAJOR_VERSION) + "." + std::to_string(TIXML_MINOR_VERSION))
 #endif
@@ -44,7 +44,7 @@ Instance::createObjectImpl(const std::string& name, const JSON& conf)
     return nullptr;
 }
 
-#ifdef GDAL_FOUND
+#ifdef ROCKY_HAS_GDAL
 namespace
 {
     void CPL_STDCALL myCPLErrorHandler(CPLErr errClass, int errNum, const char* msg)
@@ -67,7 +67,7 @@ Instance::Instance()
 {
     _impl = std::make_shared<Implementation>();
 
-#ifdef GDAL_FOUND
+#ifdef ROCKY_HAS_GDAL
     OGRRegisterAll();
     GDALAllRegister();
 
@@ -90,7 +90,7 @@ Instance::Instance()
     // available memory which is too high.
     GDALSetCacheMax(40 * 1024 * 1024);
 
-#endif // GDAL_FOUND
+#endif // ROCKY_HAS_GDAL
 
     // Check for some environment variables that are important to rocky apps
     if (::getenv("PROJ_DATA") == nullptr)

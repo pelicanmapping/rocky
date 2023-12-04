@@ -25,12 +25,12 @@
 #include <vsg/all.h>
 #include <chrono>
 
-#ifdef ROCKY_SUPPORTS_GDAL
+#ifdef ROCKY_HAS_GDAL
 #include <rocky/GDALImageLayer.h>
 #include <rocky/GDALElevationLayer.h>
 #endif
 
-#ifdef ROCKY_SUPPORTS_TMS
+#ifdef ROCKY_HAS_TMS
 #include <rocky/TMSImageLayer.h>
 #include <rocky/TMSElevationLayer.h>
 #endif
@@ -122,7 +122,7 @@ int main(int argc, char** argv)
     if (arguments.read({ "--wire" }))
         ri.runtime().shaderCompileSettings->defines.insert("RK_WIREFRAME_OVERLAY");
 
-#if defined(ROCKY_SUPPORTS_TMS)
+#ifdef ROCKY_HAS_TMS
 
     auto imagery = rocky::TMSImageLayer::create();
     imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";

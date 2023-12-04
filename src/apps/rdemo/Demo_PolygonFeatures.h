@@ -12,7 +12,7 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_PolygonFeatures = [](Application& app)
 {
-#ifdef GDAL_FOUND
+#ifdef ROCKY_HAS_GDAL
     static entt::entity entity = entt::null;
     static Status status;
     

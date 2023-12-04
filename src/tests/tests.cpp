@@ -15,11 +15,11 @@
 
 #include <random>
 
-#ifdef ROCKY_SUPPORTS_GDAL
+#ifdef ROCKY_HAS_GDAL
 #include <rocky/GDALImageLayer.h>
 #endif
 
-#ifdef ROCKY_SUPPORTS_TMS
+#ifdef ROCKY_HAS_TMS
 #include <rocky/TMSImageLayer.h>
 #endif
 
@@ -146,7 +146,7 @@ TEST_CASE("Math")
     CHECK(r == glm::fvec3(0.75f, 0.75f, 0));
 }
 
-#if defined(ZLIB_FOUND)
+#ifdef ROCKY_HAS_ZLIB
 TEST_CASE("Compression")
 {
     // generate a pseudo-random string of characters:
@@ -296,7 +296,7 @@ TEST_CASE("Map")
     }
 }
 
-#ifdef ROCKY_SUPPORTS_GDAL
+#ifdef ROCKY_HAS_GDAL
 TEST_CASE("GDAL")
 {
     auto layer = GDALImageLayer::create();
@@ -308,9 +308,9 @@ TEST_CASE("GDAL")
         CHECK(s.ok());
     }
 }
-#endif // ROCKY_SUPPORTS_GDAL
+#endif // ROCKY_HAS_GDAL
 
-#ifdef ROCKY_SUPPORTS_TMS
+#ifdef ROCKY_HAS_TMS
 TEST_CASE("TMS")
 {
     auto layer = TMSImageLayer::create();
@@ -338,7 +338,7 @@ TEST_CASE("TMS")
         }
     }
 }
-#endif // ROCKY_SUPPORTS_TMS
+#endif // ROCKY_HAS_TMS
 
 TEST_CASE("SRS")
 {

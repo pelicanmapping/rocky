@@ -13,12 +13,12 @@
 #include <rocky/vsg/Application.h>
 #include <rocky/Version.h>
 
-#if defined(ROCKY_SUPPORTS_GDAL)
+#ifdef ROCKY_HAS_GDAL
 #include <gdal_version.h>
 #include <rocky/GDALImageLayer.h>
 #endif
 
-#if defined(ROCKY_SUPPORTS_TMS)
+#ifdef ROCKY_HAS_TMS
 #include <rocky/TMSImageLayer.h>
 #include <rocky/TMSElevationLayer.h>
 #endif
@@ -163,7 +163,7 @@ int main(int argc, char** argv)
 
     if (app.mapNode->map->layers().empty())
     {
-#ifdef ROCKY_SUPPORTS_TMS
+#ifdef ROCKY_HAS_TMS
         // add an imagery layer to the map
         auto layer = rocky::TMSImageLayer::create();
         layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7";

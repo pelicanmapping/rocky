@@ -6,7 +6,7 @@
 #include "EarthFileImporter.h"
 #include "../json.h"
 
-#ifdef TINYXML_FOUND
+#ifdef ROCKY_HAS_TINYXML
 #include <tinyxml.h>
 #endif
 
@@ -14,7 +14,7 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-#ifdef TINYXML_FOUND
+#ifdef ROCKY_HAS_TINYXML
     std::string get_text_value(TiXmlNode* parent)
     {
         if (parent)
@@ -80,7 +80,7 @@ namespace
         return Status(Status::ResourceUnavailable, "Failed to load include file");
     }
 
-#endif // TINYXML_FOUND
+#endif // ROCKY_HAS_TINYXML
 }
 
 EarthFileImporter::EarthFileImporter()
@@ -91,7 +91,7 @@ EarthFileImporter::EarthFileImporter()
 Result<JSON>
 EarthFileImporter::read(const std::string& location, const IOOptions& io) const
 {
-#ifdef TINYXML_FOUND
+#ifdef ROCKY_HAS_TINYXML
     
     // try to load the earth file into a string:
     URI uri(location);

@@ -3,7 +3,7 @@
 #include "Image.h"
 #include "Metrics.h"
 
-#ifdef GDAL_FOUND
+#ifdef ROCKY_HAS_GDAL
 #include <gdal.h>
 #include <gdalwarper.h>
 #include <ogr_spatialref.h>
@@ -16,7 +16,7 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-#ifdef GDAL_FOUND
+#ifdef ROCKY_HAS_GDAL
     shared_ptr<Image> createImageFromDataset(GDALDataset* ds)
     {
         // called internally -- GDAL lock not required
@@ -701,7 +701,7 @@ GeoImage::reproject(
 
     bool reproject_with_gdal = false;
 
-#ifndef GDAL_FOUND
+#ifndef ROCKY_HAS_GDAL
     reproject_with_gdal = image()->depth() == 1;
 #endif
 
@@ -720,7 +720,7 @@ GeoImage::reproject(
             height);
     }
 
-#ifdef GDAL_FOUND
+#ifdef ROCKY_HAS_GDAL
     else
     {
         // otherwise use GDAL.

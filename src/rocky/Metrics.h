@@ -21,7 +21,7 @@ namespace ROCKY_NAMESPACE { namespace util
     };
 } }
 
-#ifdef ROCKY_PROFILING
+#ifdef ROCKY_HAS_TRACY
 
 // uncomment this to attempt GPU profiling blocks
 //#define ROCKY_GPU_PROFILING

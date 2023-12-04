@@ -17,7 +17,7 @@ project(
 )
 
 # please update this with each ABI change!!
-set(PROJECT_VERSION_ABI 101)
+set(PROJECT_VERSION_ABI 102)
 
 # require C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -43,12 +43,15 @@ include("cmake/install-export-files.cmake")
 
 # PROJ - geospatial projections library - required
 find_package(PROJ CONFIG REQUIRED)
+set(ROCKY_HAS_PROJ TRUE)
 
 # glm - vector and matrix math library - required
 find_package(glm CONFIG REQUIRED)
+set(ROCKY_HAS_GLM TRUE)
 
 # spdlog - logging utility
 find_package(spdlog CONFIG REQUIRED)
+set(ROCKY_HAS_SPDLOG TRUE)
 
 # optional modules
 option(ROCKY_RENDERER_VSG "Build the VSG/Vulkan Rendering" ON)
@@ -77,27 +80,25 @@ if (ROCKY_SUPPORTS_HTTPS)
 endif()
 
 if(ROCKY_SUPPORTS_GDAL)
-    add_definitions("-DROCKY_SUPPORTS_GDAL")
     set(BUILD_WITH_GDAL ON)
 endif()
 
 if (ROCKY_SUPPORTS_MBTILES)
-    add_definitions("-DROCKY_SUPPORTS_MBTILES")
     set(BUILD_WITH_SQLITE3 ON)
     set(BUILD_WITH_ZLIB ON)
 endif()
 
 if (ROCKY_SUPPORTS_TMS)
-    add_definitions("-DROCKY_SUPPORTS_TMS")
     set(BUILD_WITH_TMS ON)
     set(BUILD_WITH_TINYXML ON)
+    set(ROCKY_HAS_TMS TRUE)
 endif()
 
 # tinyxml - xml parser
 if (BUILD_WITH_TINYXML)
     find_package(tinyxml CONFIG REQUIRED)
     if (tinyxml_FOUND)
-        add_definitions("-DTINYXML_FOUND")
+        set(ROCKY_HAS_TINYXML TRUE)
     endif()
 endif()
 
@@ -105,7 +106,7 @@ endif()
 if (BUILD_WITH_JSON)
     find_package(nlohmann_json CONFIG REQUIRED)
     if (nlohmann_json_FOUND)
-        add_definitions("-DNLOHMANN_JSON_FOUND")
+        set(ROCKY_HAS_JSON TRUE)
     endif()
 endif()
 
@@ -114,13 +115,13 @@ if (BUILD_WITH_HTTPLIB)
     find_path(CPP_HTTPLIB_INCLUDE_DIRS "httplib.h")
     if(CPP_HTTPLIB_INCLUDE_DIRS)
         include_directories(${CPP_HTTPLIB_INCLUDE_DIRS})
-        add_definitions("-DHTTPLIB_FOUND")
+        set(ROCKY_HAS_HTTPLIB TRUE)
         # OpenSSL - for HTTPS support - optional
         # option(BUILD_WITH_OPENSSL "Use OpenSSL to support HTTPS protocol" ON)
         if (BUILD_WITH_OPENSSL)
             find_package(OpenSSL REQUIRED)
             if (OPENSSL_FOUND)
-                add_definitions("-DOPENSSL_FOUND")
+                set(ROCKY_HAS_OPENSSL TRUE)
             endif()
         endif()
     endif()
@@ -130,7 +131,7 @@ endif()
 if(BUILD_WITH_GDAL)
     find_package(GDAL CONFIG REQUIRED)
     if (GDAL_FOUND)
-        add_definitions("-DGDAL_FOUND")
+        set(ROCKY_HAS_GDAL TRUE)
     endif()
 endif()
 
@@ -138,7 +139,7 @@ endif()
 if (BUILD_WITH_SQLITE3)
     find_package(unofficial-sqlite3 CONFIG REQUIRED)
     if (unofficial-sqlite3_FOUND)
-        add_definitions("-DSQLITE3_FOUND")
+        set(ROCKY_HAS_SQLITE TRUE)
     endif()
 endif()
 
@@ -146,7 +147,7 @@ endif()
 if (BUILD_WITH_ZLIB)
     find_package(ZLIB REQUIRED)
     if (ZLIB_FOUND)
-        add_definitions("-DZLIB_FOUND")
+        set(ROCKY_HAS_ZLIB TRUE)
     endif()        
 endif()
 
@@ -154,7 +155,7 @@ endif()
 if (BUILD_WITH_TRACY)
     find_package(Tracy CONFIG REQUIRED)
     if (Tracy_FOUND)
-        add_definitions("-DTRACY_FOUND")
+        set(ROCKY_HAS_TRACY TRUE)
     endif()
 endif()
 

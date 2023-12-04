@@ -246,7 +246,7 @@ namespace ROCKY_NAMESPACE
     };
 
 
-#ifdef GDAL_FOUND
+#ifdef ROCKY_HAS_GDAL
 
     /**
     * Reads Feature objects from various sources using the GDAL OGR library.
@@ -301,7 +301,7 @@ namespace ROCKY_NAMESPACE
         };
     };
 
-#endif // GDAL_FOUND
+#endif // ROCKY_HAS_GDAL
 
     // inline implementation
     template<class VEC3_ITER>

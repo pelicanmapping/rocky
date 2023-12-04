@@ -11,8 +11,8 @@
 #include <sstream>
 #include <cstdlib>
 
-#ifdef HTTPLIB_FOUND
-#ifdef OPENSSL_FOUND
+#ifdef ROCKY_HAS_HTTPLIB
+#ifdef ROCKY_HAS_OPENSSL
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #endif
 #include <httplib.h>
@@ -121,7 +121,7 @@ namespace
 
     IOResult<HTTPResponse> http_get(const HTTPRequest& request, unsigned max_attempts)
     {
-#ifndef HTTPLIB_FOUND
+#ifndef ROCKY_HAS_HTTPLIB
         return Status(Status::ServiceUnavailable);
 #else        
         httplib::Headers headers;

@@ -15,7 +15,7 @@
 #include <Windows.h>
 #endif
 
-#if defined(ZLIB_FOUND)
+#ifdef ROCKY_HAS_ZLIB
 #include <zlib.h>
 ROCKY_ABOUT(zlib, ZLIB_VERSION)
 #endif
@@ -680,7 +680,7 @@ rocky::util::readFromFile(std::string& data, const std::string& filename)
 }
 
 
-#if defined(ZLIB_FOUND)
+#ifdef ROCKY_HAS_ZLIB
 
 // adapted from
 // https://github.com/openscenegraph/OpenSceneGraph/blob/master/src/osgDB/Compressors.cpp
@@ -799,4 +799,4 @@ ZLibCompressor::decompress(std::istream& fin, std::string& target) const
     return ret == Z_STREAM_END ? true : false;
 }
 
-#endif // ZLIB_FOUND
+#endif // ROCKY_HAS_ZLIB

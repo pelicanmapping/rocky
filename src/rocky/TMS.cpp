@@ -5,7 +5,7 @@
  */
 #include "TMS.h"
 
-#ifdef TINYXML_FOUND
+#ifdef ROCKY_HAS_TINYXML
 #include <tinyxml.h>
 #endif
 

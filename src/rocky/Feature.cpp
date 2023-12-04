@@ -5,7 +5,7 @@
  */
 #include "Feature.h"
 
-#ifdef GDAL_FOUND
+#ifdef ROCKY_HAS_GDAL
 #include <gdal.h> // OGR API
 #include <ogr_spatialref.h>
 #endif
@@ -148,7 +148,7 @@ Feature::dirtyExtent()
     extent = GeoExtent(srs, box);
 }
 
-#ifdef GDAL_FOUND
+#ifdef ROCKY_HAS_GDAL
 
 namespace
 {
@@ -964,4 +964,4 @@ OGRFeatureSource::close()
     //return FeatureSource::closeImplementation();
 }
 
-#endif // GDAL_FOUND
+#endif // ROCKY_HAS_GDAL

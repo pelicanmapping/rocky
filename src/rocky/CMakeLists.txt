@@ -9,7 +9,6 @@ endif()
 # Create a "Version.h" header that automatically reflects the
 # version variables found in the CMake configuration.
 set(version_h ${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky/Version.h)
-configure_file(Version.h.in ${version_h})
 
 # collect all the headers in the source directory
 file(GLOB HEADERS_CORE *.h)
@@ -22,21 +21,21 @@ macro(remove_items from_list)
     endforeach()
 endmacro()
 
-if (NOT ROCKY_SUPPORTS_PROFILING)
+if(NOT ROCKY_SUPPORTS_PROFILING)
     remove_items(HEADERS_CORE "Profiling.h")
 endif()
         
-if(NOT ROCKY_SUPPORTS_GDAL)
+if(NOT ROCKY_HAS_GDAL)
     remove_items(HEADERS_CORE "GDAL.h;GDALImageLayer.h;GDALElevationLayer.h")
     remove_items(SOURCES_CORE "GDAL.cpp;GDALImageLayer.cpp;GDALElevationLayer.cpp")
 endif()
 
-if(NOT ROCKY_SUPPORTS_TMS)
+if(NOT ROCKY_HAS_TMS)
     remove_items(HEADERS_CORE "TMS.h;TMSImageLayer.h;TMSElevationLayer.h")
     remove_items(SOURCES_CORE "TMS.cpp;TMSImageLayer.cpp;TMSElevationLayer.cpp")
 endif()
 
-if(NOT ROCKY_SUPPORTS_MBTILES)
+if(NOT ROCKY_HAS_MBTILES)
     remove_items(HEADERS_CORE "MBTiles.h;MBTilesImageLayer.h;MBTilesElevationLayer.h")
     remove_items(SOURCES_CORE "MBTiles.cpp;MBTilesImageLayer.cpp;MBTilesElevationLayer.cpp")
 endif()
@@ -85,6 +84,10 @@ if(ROCKY_RENDERER_VSG)
     find_package(EnTT CONFIG REQUIRED)
     find_package(vsgXchange CONFIG) # not REQUIRED
     list(APPEND PUBLIC_LIBS EnTT::EnTT vsg::vsg)
+    
+    set(ROCKY_HAS_VSG TRUE)
+    set(ROCKY_HAS_ENTT TRUE)
+    set(ROCKY_HAS_GLSLANG TRUE)
 endif()
 
 # Compile shaders into SPIRV - revisit this later.
@@ -100,8 +103,7 @@ set(LIBRARIES PRIVATE ${PRIVATE_LIBS} PUBLIC ${PUBLIC_LIBS})
 
 add_library(rocky
     ${HEADERS_CORE} ${SOURCES_CORE}
-    ${HEADERS_CONTRIB} ${SOURCES_CONTRIB}
-    
+    ${HEADERS_CONTRIB} ${SOURCES_CONTRIB}    
     ${HEADERS_VSG} ${SOURCES_VSG}
     ${HEADERS_VSG_ENGINE} ${SOURCES_VSG_ENGINE}
     ${SHADERS_VSG}
@@ -110,7 +112,12 @@ add_library(rocky
 if (vsgXchange_FOUND)
      target_compile_definitions(rocky PRIVATE VSGXCHANGE_FOUND)
      list(APPEND LIBRARIES vsgXchange::vsgXchange)
+     set(ROCKY_HAS_VSGXCHANGE TRUE)
 endif()
+
+# generate the version and support header
+configure_file(Version.h.in ${version_h})
+
 
 set_target_properties(rocky PROPERTIES FOLDER "rocky")
 

@@ -17,12 +17,12 @@
 
 ROCKY_ABOUT(vulkanscenegraph, VSG_VERSION_STRING)
 
-#ifdef VSGXCHANGE_FOUND
+#ifdef ROCKY_HAS_VSGXCHANGE
 #include <vsgXchange/all.h>
 ROCKY_ABOUT(vsgxchange, VSGXCHANGE_VERSION_STRING)
 #endif
 
-#ifdef GDAL_FOUND
+#ifdef ROCKY_HAS_GDAL
 #include <rocky/GDAL.h>
 #endif
 
@@ -95,7 +95,7 @@ namespace
         return output;
     }
 
-#ifdef GDAL_FOUND
+#ifdef ROCKY_HAS_GDAL
     /**
     * VSG reader-writer that uses GDAL to read some image formats that are
     * not supported by vsgXchange
@@ -219,11 +219,11 @@ InstanceVSG::InstanceVSG() :
     // redirect the VSG logger to our spdlog
     vsg::Logger::instance() = new SpdlogLogger();
 
-#ifdef GDAL_FOUND
+#ifdef ROCKY_HAS_GDAL
     runtime.readerWriterOptions->add(GDAL_VSG_ReaderWriter::create());
 #endif
 
-#ifdef VSGXCHANGE_FOUND
+#ifdef ROCKY_HAS_VSGXCHANGE
     // Adds all the readerwriters in vsgxchange to the options data.
     runtime.readerWriterOptions->add(vsgXchange::all::create());
 #endif
