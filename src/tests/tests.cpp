@@ -73,7 +73,7 @@ TEST_CASE("json")
     map->layers().add(layer);
     JSON serialized = map->to_json();
     map = rocky::Map::create(instance, serialized);
-    CHECK((map->to_json() == R"({"layers":[{"name":"","type":"TMSImage","uri":"file.xml"}],"profile":"global-geodetic"})"));
+    CHECK((map->to_json() == R"({"layers":[{"name":"","type":"TMSImage","uri":"file.xml"}]})"));
 }
 
 TEST_CASE("Optional")
@@ -163,7 +163,7 @@ TEST_CASE("Compression")
     CHECK(comp.compress(original_data, output_stream) == true);
     std::string compressed_data = output_stream.str();
 
-    CHECK(compressed_data.size() == 3446);
+    CHECK(compressed_data.size() == 3442);
 
     // decompress:
     std::stringstream input_stream(compressed_data);
@@ -517,7 +517,7 @@ TEST_CASE("SRS")
 
         // geodetic to vdatum:
         {
-            Log()->info("Note: if you see SRS/VDatum errors, check that you have the NGA grid in your proj/share folder! https://github.com/OSGeo/PROJ-data/blob/master/us_nga/us_nga_egm96_15.tif");
+            Log()->info("Note: if you see SRS/VDatum errors, check that you have the NGA grid in your share/proj or PROJ_DATA folder! https://github.com/OSGeo/PROJ-data/blob/master/us_nga/us_nga_egm96_15.tif");
             auto xform = wgs84.to(egm96);
             REQUIRE(xform.valid());
 

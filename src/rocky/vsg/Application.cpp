@@ -123,6 +123,10 @@ Application::Application(int& argc, char** argv) :
         if (rocky::util::readFromFile(json, infile))
         {
             mapNode->map->from_json(json);
+            if (mapNode->map->layers().empty())
+            {
+                Log()->warn("No layers found in map file \"" + infile + "\"");
+            }
         }
         else
         {

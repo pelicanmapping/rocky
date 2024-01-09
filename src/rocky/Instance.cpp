@@ -93,10 +93,10 @@ Instance::Instance()
 #endif // ROCKY_HAS_GDAL
 
     // Check for some environment variables that are important to rocky apps
-    if (::getenv("PROJ_DATA") == nullptr)
-    {
-        Log()->warn("Environment variable PROJ_DATA is not set");
-    }
+    //if (::getenv("PROJ_DATA") == nullptr)
+    //{
+    //    Log()->warn("Environment variable PROJ_DATA is not set");
+    //}
 
     _global_status = StatusOK;
 }
