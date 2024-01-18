@@ -38,6 +38,8 @@ namespace ROCKY_NAMESPACE
         //! @return True upon success; false to quit the application.
         bool frame();
 
+        void setViewer(vsg::ref_ptr<vsg::Viewer> viewer);
+
     public: // public properties
 
         entt::registry entities;
@@ -51,6 +53,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Group> mainScene;
         vsg::ref_ptr<ECS::VSG_SystemsGroup> ecs_node;
         std::function<void()> updateFunction;
+        bool autoCreateWindow = true;
 
         //! Collection of windows and views managed by the application.
         struct DisplayConfiguration
@@ -100,6 +103,8 @@ namespace ROCKY_NAMESPACE
         util::Future<vsg::ref_ptr<vsg::Window>> addWindow(
             vsg::ref_ptr<vsg::WindowTraits> traits);
 
+        void addWindow(vsg::ref_ptr<vsg::Window> window);
+
         //! Adds a view to an existing window. This may happen asynchronously
         //! depending on when you invoke it.
         //! 
@@ -148,6 +153,15 @@ namespace ROCKY_NAMESPACE
 
         //! Destructor
         ~Application();
+
+    protected:
+        Application() { }
+
+        void initialize(int& argc, char** argv);
+
+        std::function<vsg::ref_ptr<vsg::Viewer>()> createViewer = []() {
+            return vsg::Viewer::create();
+        };
 
     private:
         bool _apilayer = false;

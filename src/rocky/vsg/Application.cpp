@@ -63,8 +63,13 @@ namespace
     }
 }
 
-Application::Application(int& argc, char** argv) :
-    instance()
+Application::Application(int& argc, char** argv)
+{
+    initialize(argc, argv);
+}
+
+void
+Application::initialize(int& argc, char** argv)
 {
     vsg::CommandLine commandLine(&argc, argv);
 
@@ -73,8 +78,6 @@ Application::Application(int& argc, char** argv) :
     _apilayer = commandLine.read({ "--api" });
     _vsync = !commandLine.read({ "--novsync" });
     //_multithreaded = commandLine.read({ "--mt" });
-
-    viewer = vsg::Viewer::create();
 
     root = vsg::Group::create();
 
@@ -104,7 +107,8 @@ Application::Application(int& argc, char** argv) :
     mainScene->addChild(mapNode);
 
     // Set up the runtime context with everything we need.
-    instance.runtime().viewer = viewer;
+    setViewer(vsg::Viewer::create());
+
     instance.runtime().sharedObjects = vsg::SharedObjects::create();
 
     // TODO:
@@ -200,6 +204,67 @@ namespace
             Log()->warn("\n" + std::string(callback_data->pMessage));
         }
         return VK_FALSE;
+    }
+}
+
+void
+Application::addWindow(vsg::ref_ptr<vsg::Window> window)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
+
+    // Each window gets its own CommandGraph. We will store it here and then
+    // set it up later when the frame loop starts.
+    auto commandgraph = vsg::CommandGraph::create(window);
+    _commandGraphByWindow[window] = commandgraph;
+
+    // main camera
+    double nearFarRatio = 0.00001;
+    double R = mapNode->mapSRS().ellipsoid().semiMajorAxis();
+    double ar = (double)window->extent2D().width / (double)window->extent2D().height;
+
+    auto camera = vsg::Camera::create(
+        vsg::Perspective::create(30.0, ar, R * nearFarRatio, R * 20.0),
+        vsg::LookAt::create(),
+        vsg::ViewportState::create(0, 0, window->extent2D().width, window->extent2D().height));
+
+    auto view = vsg::View::create(camera, mainScene);
+
+    // add the new view to the window:
+    if (_viewerRealized)
+        addViewAfterViewerIsRealized(window, view, {}, {});
+    else
+        addView(window, view, {});
+
+    // Tell Rocky it needs to mutex-protect the terrain engine
+    // now that we have more than one window.
+    mapNode->terrainSettings().supportMultiThreadedRecord = true;
+
+    // add the new window to our viewer
+    viewer->addWindow(window);
+
+    // install a manipulator for the new view:
+    addManipulator(window, view);
+
+    if (_viewerRealized)
+    {
+        _viewerDirty = true;
+    }
+
+    if (_debuglayer)
+    {
+        VkDebugUtilsMessengerCreateInfoEXT debug_utils_create_info = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
+        debug_utils_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
+        debug_utils_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+        debug_utils_create_info.pfnUserCallback = debug_utils_messenger_callback;
+
+        static VkDebugUtilsMessengerEXT debug_utils_messenger;
+
+        auto vki = window->getDevice()->getInstance();
+
+        using PFN_vkCreateDebugUtilsMessengerEXT = VkResult(VKAPI_PTR*)(VkInstance, const VkDebugUtilsMessengerCreateInfoEXT*, const VkAllocationCallbacks*, VkDebugUtilsMessengerEXT*);
+        PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
+        if (vki->getProcAddr(vkCreateDebugUtilsMessengerEXT, "vkCreateDebugUtilsMessenger", "vkCreateDebugUtilsMessengerEXT"))
+            vkCreateDebugUtilsMessengerEXT(vki->vk(), &debug_utils_create_info, nullptr, &debug_utils_messenger);
     }
 }
 
@@ -584,6 +649,8 @@ Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
 void
 Application::recreateViewer() 
 {
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer, void());
+
     // Makes a new viewer, copying settings from the old viewer.
     vsg::EventHandlers handlers = viewer->getEventHandlers();
 
@@ -591,7 +658,9 @@ Application::recreateViewer()
     // wait until the device is idle to avoid changing state while it's being used.
     viewer->deviceWaitIdle();
 
-    viewer = vsg::Viewer::create();
+    viewer = createViewer();
+
+    instance.runtime().viewer = viewer;
     
     for (auto i : displayConfiguration.windows)
         viewer->addWindow(i.first);
@@ -608,7 +677,7 @@ Application::realize()
     if (!_viewerRealized)
     {
         // Make a window if the user didn't.
-        if (viewer->windows().empty())
+        if (viewer->windows().empty() && autoCreateWindow)
         {
             addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
         }
@@ -734,4 +803,11 @@ Application::about() const
     for (auto& a : instance.about())
         buf << a << std::endl;
     return buf.str();
+}
+
+void
+Application::setViewer(vsg::ref_ptr<vsg::Viewer> in_viewer)
+{
+    viewer = in_viewer;
+    instance.runtime().viewer = viewer;
 }

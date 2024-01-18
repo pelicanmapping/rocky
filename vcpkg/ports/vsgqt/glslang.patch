@@ -1,0 +1,14 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a49e426..0ede9ef 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -17,7 +17,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ 
+ set(QT_PACKAGE_NAME Qt5 CACHE STRING "Set Qt package name, i.e. Qt5 or Qt6.")
+ 
+-find_package(vsg 1.0.8)
++find_package(glslang)
++find_package(vsg 1.1.0)
+ 
+ vsg_setup_dir_vars()
+ vsg_setup_build_vars()

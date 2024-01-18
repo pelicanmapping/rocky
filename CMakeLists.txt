@@ -63,11 +63,16 @@ option(ROCKY_SUPPORTS_GDAL "Support GeoTIFF, WMS, WMTS, and other GDAL formats (
 option(ROCKY_SUPPORTS_MBTILES "Support MBTiles databases with extended spatial profile support (requires sqlite3, zlib)" ON)
 option(ROCKY_SUPPORTS_PROFILING "Build with performance profiling" OFF)
 option(ROCKY_SUPPORTS_IMGUI "Build ImGui demos" ON)
+option(ROCKY_SUPPORTS_QT "Build Qt demos" OFF)
 
 set(BUILD_WITH_JSON ON)
 
 if(ROCKY_SUPPORTS_PROFILING)
     set(BUILD_WITH_TRACY ON)
+endif()
+
+if(ROCKY_SUPPORTS_QT)
+    set(BUILD_WITH_QT ON)
 endif()
 
 if(ROCKY_SUPPORTS_HTTP)
@@ -158,6 +163,7 @@ if (BUILD_WITH_TRACY)
         set(ROCKY_HAS_TRACY TRUE)
     endif()
 endif()
+
 
 # source code
 add_subdirectory(src)

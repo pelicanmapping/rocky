@@ -15,6 +15,7 @@
         "glm",
         "nlohmann-json",
         "openssl",
+        "qt5",
         "spdlog",
         "sqlite3",
         "tinyxml",
@@ -22,6 +23,7 @@
         { "name" : "vsgxchange",
           "features": [ "assimp", "freetype" ] },
         "vsgimgui",
+        "vsgqt",
         "zlib"
     ]
 }
