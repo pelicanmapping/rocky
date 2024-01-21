@@ -82,21 +82,25 @@ int main(int argc, char** argv)
     vsg::ref_ptr<vsg::WindowTraits> traits = vsg::WindowTraits::create();
     traits->windowTitle = "Rocky Qt Example";
     traits->width = 1920, traits->height = 1080;
-    auto qt_window = new vsgQt::Window(traits);
-    qt_window->initializeWindow();
-    app.addWindow(qt_window->windowAdapter);
+    auto vsg_window = new vsgQt::Window(traits);
+    vsg_window->initializeWindow();
+    if (!traits->device) traits->device = vsg_window->windowAdapter->getOrCreateDevice(); // sharing
+    app.displayManager->addWindow(vsg_window->windowAdapter);
 
-    // Set up the main Qt display:
-    auto qt_mainWindow = new QMainWindow();
-    qt_mainWindow->setCentralWidget(QWidget::createWindowContainer(qt_window));
-    qt_mainWindow->setGeometry(traits->x, traits->y, traits->width, traits->height);
-    qt_mainWindow->setWindowTitle(traits->windowTitle.c_str());
+    // Set up the main Qt window:
+    QMainWindow mainWindow;
+    mainWindow.setGeometry(traits->x, traits->y, traits->width, traits->height);
+    mainWindow.setWindowTitle(traits->windowTitle.c_str());
 
-    // A simple menu:
-    auto menu = qt_mainWindow->menuBar()->addMenu("&File");
-    menu->addAction("E&xit", &qt_app, &QApplication::quit);
+    // Embed the VSG/rocky window as a widget:
+    auto vsg_widget = QWidget::createWindowContainer(vsg_window, &mainWindow);
+    mainWindow.setCentralWidget(vsg_widget);
 
-    qt_mainWindow->show();
+    // Add a simple menu. Why does VSG overdraw it?
+    auto fileMenu = mainWindow.menuBar()->addMenu("&File");
+    fileMenu->addAction("E&xit", &qt_app, &QApplication::quit);
+
+    mainWindow.show();
 
     // Add some data to the map:
     if (app.mapNode->map->layers().empty())

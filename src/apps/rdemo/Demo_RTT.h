@@ -68,7 +68,7 @@ auto Demo_RTT = [](Application& app)
     if (entity == entt::null)
     {
         // Find the main window and view:
-        auto main = app.displayConfiguration.windows.begin();
+        auto main = app.displayManager->windows.begin();
         auto main_window = main->first;
         auto main_view = main->second.front();
 
@@ -99,7 +99,7 @@ auto Demo_RTT = [](Application& app)
         rtt_graph->addChild(rtt_view);
 
         // Add the RTT graph to our application's main window.
-        app.addPreRenderGraph(main_window, rtt_graph);
+        app.displayManager->addPreRenderGraph(main_window, rtt_graph);
 
 
         // Now, create an entity to host our mesh.

@@ -14,7 +14,7 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_Viewpoints = [](Application& app)
 {
-    auto view = app.displayConfiguration.windows.begin()->second.front();
+    auto view = app.displayManager->windows.begin()->second.front();
     if (view)
     {
         auto manip = view->getObject<MapManipulator>(MapManipulator::tag);
