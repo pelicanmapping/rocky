@@ -78,14 +78,20 @@ int main(int argc, char** argv)
     viewer->continuousUpdate = true;
     app.setViewer(viewer);
 
-    // Create a Qt window and add it to the App:
+    // Create a Qt window:
     vsg::ref_ptr<vsg::WindowTraits> traits = vsg::WindowTraits::create();
     traits->windowTitle = "Rocky Qt Example";
     traits->width = 1920, traits->height = 1080;
     auto vsg_window = new vsgQt::Window(traits);
     vsg_window->initializeWindow();
-    if (!traits->device) traits->device = vsg_window->windowAdapter->getOrCreateDevice(); // sharing
+
+    // Add it to our display manager:
     app.displayManager->addWindow(vsg_window->windowAdapter);
+
+    // Not strictly necessary for this demo, but if you are going to open multiple 
+    // windows this will allow them to all share the same Vulkan device
+    if (!traits->device) 
+        traits->device = vsg_window->windowAdapter->getOrCreateDevice();
 
     // Set up the main Qt window:
     QMainWindow mainWindow;
@@ -96,7 +102,8 @@ int main(int argc, char** argv)
     auto vsg_widget = QWidget::createWindowContainer(vsg_window, &mainWindow);
     mainWindow.setCentralWidget(vsg_widget);
 
-    // Add a simple menu. Why does VSG overdraw it?
+    // Add a simple menu.
+    // TODO: The menu functions, but the VSG window overdraws it for some reason.
     auto fileMenu = mainWindow.menuBar()->addMenu("&File");
     fileMenu->addAction("E&xit", &qt_app, &QApplication::quit);
 

@@ -57,7 +57,8 @@ namespace ROCKY_NAMESPACE
             const TileKey& key,
             const IOOptions& io) const override
         {
-            auto image = io.services.readImageFromURI("D:/data/images/BENDER.png", io);
+            auto image = io.services.readImageFromURI("https://user-images.githubusercontent.com/326618/236923465-c85eb0c2-4d31-41a7-8ef1-29d34696e3cb.png", io);
+
 
             if (image.status.ok())
                 return GeoImage(image.value, key.extent());
