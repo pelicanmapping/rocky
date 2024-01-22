@@ -9,7 +9,7 @@
 find_program(GIT git)
 
 set(GIT_URL "https://github.com/vsg-dev/vsgImGui.git")
-set(GIT_REV "ba24c5776414129d8631d8b6fe05f8860bb8566f")
+set(GIT_REV "f32467462850eb38ce0d003dbd6960259e09b16e")
 
 set(SOURCE_PATH ${CURRENT_BUILDTREES_DIR}/src/${PORT})
 
