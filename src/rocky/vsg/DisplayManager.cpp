@@ -351,3 +351,10 @@ DisplayManager::addManipulator(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vs
         }
     }
 }
+
+vsg::ref_ptr<MapManipulator>
+DisplayManager::getMapManipulator(vsg::ref_ptr<vsg::View> view)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(view, {});
+    return view->getRefObject<MapManipulator>(MapManipulator::tag);
+}

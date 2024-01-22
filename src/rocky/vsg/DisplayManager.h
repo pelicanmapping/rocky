@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <rocky/vsg/InstanceVSG.h>
+#include <rocky/vsg/MapManipulator.h>
 
 #include <vsg/app/Viewer.h>
 #include <vsg/app/Window.h>
@@ -77,18 +78,25 @@ namespace ROCKY_NAMESPACE
         //! TODO: add a way to remove or deactivate it
         void addPreRenderGraph(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::RenderGraph> renderGraph);
 
+        //! Adds a stock map manipulator to a view.
         void addManipulator(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View>);
 
+        //! Gets the map manipulator associated with a view, or nullptr if non exists.
+        vsg::ref_ptr<MapManipulator> getMapManipulator(vsg::ref_ptr<vsg::View> view);
+
+        //! Gets the VSG command graph associated with the provided window.
         vsg::ref_ptr<vsg::CommandGraph> getCommandGraph(vsg::ref_ptr<vsg::Window> window);
 
+        //! Gets the window hosting the provided view.
         vsg::ref_ptr<vsg::Window> getWindow(vsg::ref_ptr<vsg::View> view);
+
+    public:
+        Application& app;
 
         using Windows = std::map<
             vsg::ref_ptr<vsg::Window>,
             std::list<vsg::ref_ptr<vsg::View>>>;
 
-    public:
-        Application& app;
         Windows windows;
 
     protected:
