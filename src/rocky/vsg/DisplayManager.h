@@ -21,38 +21,36 @@ namespace ROCKY_NAMESPACE
 {
     class Application;
 
+    /**
+    * DisplayManager is a helper class that manages the creation and destruction of
+    * windows and views. It also provides some utility methods for working with
+    * render graphcs an manipulators.
+    */
     class ROCKY_EXPORT DisplayManager
     {
     public:
+        //! Construct a display manager that is connected to a rocky Application object.
         DisplayManager(Application& in_app);
 
-        //! Information about each view.
-        struct ViewData
-        {
-            vsg::ref_ptr<vsg::RenderGraph> parentRenderGraph;
-        };
+        //! Construct a display manager connected to a user-created Viewer.
+        //! Use this if your app doesn't use the rocky Application object.
+        DisplayManager(vsg::ref_ptr<vsg::Viewer> viewer);
 
-        //! Adds a pre-existing window to the display.
-        //! @param window Window to add
-        void addWindow(vsg::ref_ptr<vsg::Window> window);
-
-        //! Adds a new window to the display.
+        //! Creates a new window and adds it to the display.
         //! @param traits Window traits used to create the new window
         vsg::ref_ptr<vsg::Window> addWindow(vsg::ref_ptr<vsg::WindowTraits> traits);
 
-        //! Adds a view to an existing window. This may happen asynchronously
-        //! depending on when you invoke it.
-        //! 
-        //! @param window Window to which to add the new view
-        //! @param view New view to add
-        //! @param on_create Function to run after the view is added
-        //! @return Pointer to the new view (when available)
-        void addViewToWindow(
-            vsg::ref_ptr<vsg::View> view,
-            vsg::ref_ptr<vsg::Window> window,
-            std::function<void(vsg::CommandGraph*)> on_create = {});
+        //! Adds a pre-existing window to the display.
+        //! @param window Window to add
+        //! @param view View to use for the window (optional - if not provided, a default view will be created)
+        void addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view = {});
 
-        //! Removes a view from a window
+        //! Adds a view to an existing window.
+        //! @param view New view to add
+        //! @param window Window to which to add the new view
+        void addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::Window> window);
+
+        //! Removes a view from its host window.
         //! @param view View to remove from its window
         void removeView(vsg::ref_ptr<vsg::View> view);
 
@@ -60,47 +58,43 @@ namespace ROCKY_NAMESPACE
         //! @param View view to refresh
         void refreshView(vsg::ref_ptr<vsg::View> view);
 
-        //! Access additional information pertaining to a View
-        //! @param view View for which to retrieve data
-        //! @return Reference to the view's supplementary data
-        //! TODO: evaluate whether we need this function or whether it should be exposed
-        ViewData& viewData(vsg::ref_ptr<vsg::View> view);
+        //! Adds a manipulator to a view.
+        //! @param manip Manipulator to set
+        //! @view View on which to set the manipulator
+        void setManipulatorForView(vsg::ref_ptr<MapManipulator> manip, vsg::ref_ptr<vsg::View> view);
 
-        //! TODO:
-        //! REFACTOR or REPLACE this based on the new functionality described here:
-        //! https://github.com/vsg-dev/VulkanSceneGraph/discussions/928
-        //! 
-        //! Adds a new render graph that should render before the rest of the scene.
-        //! (Typical use is an RTT camera that is later used as a texture somewhere
-        //! in the main scene graph.)
-        //! @param window Window under which to add the new graph
-        //! @param renderGraph RenderGraph to add
-        //! TODO: add a way to remove or deactivate it
-        void addPreRenderGraph(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::RenderGraph> renderGraph);
-
-        //! Adds a stock map manipulator to a view.
-        void addManipulator(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View>);
-
-        //! Gets the map manipulator associated with a view, or nullptr if non exists.
-        vsg::ref_ptr<MapManipulator> getMapManipulator(vsg::ref_ptr<vsg::View> view);
-
-        //! Gets the VSG command graph associated with the provided window.
+        //! Gets the VSG command graph associated with a window.
         vsg::ref_ptr<vsg::CommandGraph> getCommandGraph(vsg::ref_ptr<vsg::Window> window);
+
+        //! Gets the VSG render graph associated with a view.
+        vsg::ref_ptr<vsg::RenderGraph> getRenderGraph(vsg::ref_ptr<vsg::View> view);
 
         //! Gets the window hosting the provided view.
         vsg::ref_ptr<vsg::Window> getWindow(vsg::ref_ptr<vsg::View> view);
 
-    public:
-        Application& app;
+        //! Compile and hook up a render graph that you have manually installed
+        //! on a command graph.
+        void compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, vsg::ref_ptr<vsg::Window> window);
 
-        using Windows = std::map<
+    public:
+
+        using WindowsAndViews = std::map<
             vsg::ref_ptr<vsg::Window>,
             std::list<vsg::ref_ptr<vsg::View>>>;
 
-        Windows windows;
+        WindowsAndViews windowsAndViews;
+
+        vsg::ref_ptr<vsg::Viewer> viewer;
 
     protected:
+        Application* app = nullptr;
+
+        struct ViewData
+        {
+            vsg::ref_ptr<vsg::RenderGraph> parentRenderGraph;
+        };
         std::map<vsg::ref_ptr<vsg::View>, ViewData> _viewData;
+
         bool _debugCallbackInstalled = false;
         std::map<vsg::ref_ptr<vsg::Window>, vsg::ref_ptr<vsg::CommandGraph>> _commandGraphByWindow;
         friend class Application;

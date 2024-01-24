@@ -25,8 +25,21 @@
 
 using namespace ROCKY_NAMESPACE;
 
+Application::Application()
+{
+    int argc = 0;
+    char* argv[1] = { "rocky" };
+    ctor(argc, argv);
+}
+
 
 Application::Application(int& argc, char** argv)
+{
+    ctor(argc, argv);
+}
+
+void
+Application::ctor(int& argc, char** argv)
 {
     vsg::CommandLine commandLine(&argc, argv);
 
@@ -136,8 +149,6 @@ Application::Application(int& argc, char** argv)
     ecs_node->connect(ecs);
 
     mainScene->addChild(ecs_node);
-
-    displayManager = std::make_shared<DisplayManager>(*this);
 }
 
 Application::~Application()
@@ -259,8 +270,10 @@ Application::frame()
 {
     ROCKY_PROFILE_FUNCTION();
 
-    if (!_viewerRealized)
+    if (!viewer->compileManager)
+    {
         realize();
+    }
 
     auto t_start = std::chrono::steady_clock::now();
 
@@ -335,4 +348,5 @@ Application::setViewer(vsg::ref_ptr<vsg::Viewer> in_viewer)
 {
     viewer = in_viewer;
     instance.runtime().viewer = viewer;
+    displayManager = std::make_shared<DisplayManager>(*this);
 }

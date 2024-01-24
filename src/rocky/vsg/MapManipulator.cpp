@@ -25,9 +25,6 @@ using namespace ROCKY_NAMESPACE;
 #define TEST_OUT if(true) Log::info()
 #define NOT_YET_IMPLEMENTED(X) ROCKY_TODO(X)
 
-// static
-const char* MapManipulator::tag = "rocky.manipulator";
-
 namespace
 {
     // a reasonable approximation of cosine interpolation
@@ -135,6 +132,23 @@ namespace
     };
 }
 #endif
+
+
+void
+MapManipulator::put(vsg::ref_ptr<vsg::Object> object)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(object, void());
+    object->setObject("rocky.mapmanipulator", vsg::ref_ptr<MapManipulator>(this));
+}
+
+vsg::ref_ptr<MapManipulator>
+MapManipulator::get(vsg::ref_ptr<vsg::Object> object)
+{   
+    if (object)
+        return object->getRefObject<MapManipulator>("rocky.mapmanipulator");
+    else
+        return { };
+}
 
 
 MapManipulator::Action::Action(ActionType type, const ActionOptions& options) :

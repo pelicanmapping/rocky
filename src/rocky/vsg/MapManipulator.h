@@ -86,7 +86,11 @@ namespace ROCKY_NAMESPACE
             return _state.setVP1.has_value() && _state.setVP1->target;
         }
 
-        static const char* tag;
+        //! Store a reference to this manipulator in another object
+        void put(vsg::ref_ptr<vsg::Object> object);
+
+        //! Retrieve a reference to a mapmanipulator from and object
+        static vsg::ref_ptr<MapManipulator> get(vsg::ref_ptr<vsg::Object> object);
 
     public: // vsg::Visitor
         void apply(vsg::KeyPressEvent& keyPress) override;

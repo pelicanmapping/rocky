@@ -99,11 +99,6 @@ int main(int argc, char** argv)
     window->clearColor() = VkClearColorValue{ 0.0f, 0.0f, 0.0f, 1.0f };
     bool multithreading = arguments.read({ "--mt" });
 
-    // main viewer
-    auto viewer = vsg::Viewer::create();
-    viewer->addWindow(window);
-    viewer->addEventHandler(vsg::CloseHandler::create(viewer));
-
     // the scene graph
     auto vsg_scene = vsg::Group::create();
 
@@ -115,10 +110,6 @@ int main(int argc, char** argv)
     mapNode->terrainSettings().skirtRatio = 0.025f;
     mapNode->terrainSettings().minLevelOfDetail = 1;
     mapNode->terrainSettings().screenSpaceError = 135.0f;
-
-    // Set up the runtime context with everything we need.
-    ri.runtime().viewer = viewer;
-    ri.runtime().sharedObjects = vsg::SharedObjects::create();
 
     if (arguments.read({ "--wire" }))
         ri.runtime().shaderCompileSettings->defines.insert("RK_WIREFRAME_OVERLAY");
@@ -152,6 +143,15 @@ int main(int argc, char** argv)
         auto sky = rocky::SkyNode::create(ri);
         vsg_scene->addChild(sky);
     }
+
+    // main viewer
+    auto viewer = vsg::Viewer::create();
+    viewer->addWindow(window);
+    viewer->addEventHandler(vsg::CloseHandler::create(viewer));
+
+    // Set up the runtime context with everything we need.
+    ri.runtime().viewer = viewer;
+    ri.runtime().sharedObjects = vsg::SharedObjects::create();
 
     vsg_scene->addChild(mapNode);
 

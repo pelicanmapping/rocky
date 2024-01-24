@@ -9,6 +9,7 @@
 #include <rocky/vsg/SkyNode.h>
 #include <rocky/vsg/ECS.h>
 #include <rocky/vsg/DisplayManager.h>
+#include <rocky/Threading.h>
 
 #include <vsg/app/Viewer.h>
 #include <vsg/app/Window.h>
@@ -25,6 +26,9 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT Application
     {
     public:
+        //! Construct a new application object
+        Application();
+
         //! Construct a new application object
         //! @param argc Number of command line arguments, including the exe name
         //! @param argv Command line arguments
@@ -101,6 +105,8 @@ namespace ROCKY_NAMESPACE
         bool _multithreaded = true;
         bool _viewerRealized = false;
         bool _viewerDirty = false;
+
+        void ctor(int& argc, char** argv);
 
         void realize();
 

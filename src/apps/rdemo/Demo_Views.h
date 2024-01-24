@@ -13,7 +13,7 @@ auto Demo_Views = [](Application& app)
 {
     // iterate over all managed windows:
     int window_id = 0;
-    for (auto windows_iter : app.displayManager->windows)
+    for (auto windows_iter : app.displayManager->windowsAndViews)
     {
         auto window = windows_iter.first;
         auto& views = windows_iter.second;
@@ -30,14 +30,15 @@ auto Demo_Views = [](Application& app)
                 {
                     ImGuiLTable::Begin("view");
                     
-                    auto viewdata = app.displayManager->viewData(view);
+                    auto rg = app.displayManager->getRenderGraph(view);
 
                     // the clear color, which resides in a renderpass attachment:
-                    if (viewdata.parentRenderGraph->clearValues.size() > 0 &&
-                        viewdata.parentRenderGraph->getRenderPass()->attachments.size() > 0 &&
-                        viewdata.parentRenderGraph->getRenderPass()->attachments[0].format == VK_FORMAT_B8G8R8A8_UNORM)
+                    if (rg &&
+                        rg->clearValues.size() > 0 &&
+                        rg->getRenderPass()->attachments.size() > 0 &&
+                        rg->getRenderPass()->attachments[0].format == VK_FORMAT_B8G8R8A8_UNORM)
                     {
-                        auto& color = viewdata.parentRenderGraph->clearValues[0].color.float32;
+                        auto& color = rg->clearValues[0].color.float32;
                         if (ImGuiLTable::ColorEdit3("Clear", color))
                         {
                             // just works - nothing to do
@@ -114,19 +115,17 @@ auto Demo_Views = [](Application& app)
                     // create the new view:
                     auto new_view = vsg::View::create(camera, app.root);
 
-                    // add it to a window - and set a random clear color once it's created.
-                    auto on_create = [&app, new_view](vsg::CommandGraph*)
-                    {
-                        auto viewdata = app.displayManager->viewData(new_view);
-                        auto& color = viewdata.parentRenderGraph->clearValues[0].color.float32;
-                        color[0] = float(rand() % 255) / 255.0f;
-                        color[1] = float(rand() % 255) / 255.0f;
-                        color[2] = float(rand() % 255) / 255.0f;
-                    };
-
                     auto dm = app.displayManager;
-                    app.queue([=]() { dm->addViewToWindow(new_view, window, on_create); });
-
+                    auto add = [=]()
+                        {
+                            dm->addViewToWindow(new_view, window);
+                            auto rg = dm->getRenderGraph(new_view);
+                            auto& color = rg->clearValues[0].color.float32;
+                            color[0] = float(rand() % 255) / 255.0f;
+                            color[1] = float(rand() % 255) / 255.0f;
+                            color[2] = float(rand() % 255) / 255.0f;
+                        };
+                    app.queue(add);
                 }
                 ImGui::Unindent();
             }
@@ -137,10 +136,15 @@ auto Demo_Views = [](Application& app)
     ImGui::Indent();
     {
         ImGui::Separator();
-        if (ImGui::Button("Add window (EXPERIMENTAL)"))
+        if (ImGui::Button("Add window (DISABLED for NOW)"))
         {
-            auto name = std::string("Window ") + std::to_string(window_id);
-            app.displayManager->addWindow(vsg::WindowTraits::create(800, 600, name));
+#if 0
+            auto dm = app.displayManager;
+            app.queue([=]() {
+                auto name = std::string("Window ") + std::to_string(window_id);
+                dm->addWindow(vsg::WindowTraits::create(800, 600, name));
+            });
+#endif
         }
         ImGui::Unindent();
     }

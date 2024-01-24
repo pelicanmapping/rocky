@@ -68,7 +68,7 @@ auto Demo_RTT = [](Application& app)
     if (entity == entt::null)
     {
         // Find the main window and view:
-        auto main = app.displayManager->windows.begin();
+        auto main = app.displayManager->windowsAndViews.begin();
         auto main_window = main->first;
         auto main_view = main->second.front();
 
@@ -99,7 +99,21 @@ auto Demo_RTT = [](Application& app)
         rtt_graph->addChild(rtt_view);
 
         // Add the RTT graph to our application's main window.
-        app.displayManager->addPreRenderGraph(main_window, rtt_graph);
+        // TODO: possibly replace this with the functionality described here:
+        // https://github.com/vsg-dev/VulkanSceneGraph/discussions/928
+        auto dm = app.displayManager;
+        auto install = [=]()
+            {
+                auto commandGraph = dm->getCommandGraph(main_window);
+                if (commandGraph)
+                {
+                    // Insert the pre-render graph into the command graph and compile it.
+                    // This seems a bit awkward but it works.
+                    commandGraph->children.insert(commandGraph->children.begin(), rtt_graph);
+                    dm->compileRenderGraph(rtt_graph, main_window);
+                }
+            };
+        app.queue(install);
 
 
         // Now, create an entity to host our mesh.

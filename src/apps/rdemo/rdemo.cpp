@@ -191,9 +191,8 @@ int main(int argc, char** argv)
 
     // ImGui likes to live under the main rendergraph, but outside the main view.
     // https://github.com/vsg-dev/vsgExamples/blob/master/examples/ui/vsgimgui_example/vsgimgui_example.cpp#L276
-    auto main_view = app.displayManager->windows[window].front();
-    auto view_data = app.displayManager->viewData(main_view);
-    view_data.parentRenderGraph->addChild(imgui);
+    auto main_view = app.displayManager->windowsAndViews[window].front();
+    app.displayManager->getRenderGraph(main_view)->addChild(imgui);
 
     // run until the user quits.
     return app.run();

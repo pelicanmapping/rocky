@@ -14,10 +14,10 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_Viewpoints = [](Application& app)
 {
-    auto view = app.displayManager->windows.begin()->second.front();
-    if (view)
+    auto first_view = app.displayManager->windowsAndViews.begin()->second.front();
+    if (first_view)
     {
-        auto manip = view->getObject<MapManipulator>(MapManipulator::tag);
+        auto manip = MapManipulator::get(first_view);
         if (manip)
         {
             Viewpoint vp;
