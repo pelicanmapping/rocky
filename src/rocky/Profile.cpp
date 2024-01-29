@@ -78,7 +78,7 @@ Profile::setup(
 
         // make a profile sig (sans srs) and an srs sig for quick comparisons.
         JSON temp = to_json();
-        _shared->_fullSignature = util::Stringify() << std::hex << util::hashString(temp);
+        _shared->_fullSignature = util::make_string() << std::hex << util::hashString(temp);
         _shared->_hash = std::hash<std::string>()(temp);
     }
 }

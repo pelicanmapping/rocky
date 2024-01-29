@@ -257,7 +257,7 @@ rocky::util::hashString( const std::string& input )
 std::string
 rocky::util::hashToString(const std::string& input)
 {
-    return Stringify() << std::hex << std::setw(8) << std::setfill('0') << hashString(input);
+    return make_string() << std::hex << std::setw(8) << std::setfill('0') << hashString(input);
 }
 
 #if 0

@@ -78,9 +78,7 @@ namespace ROCKY_NAMESPACE
 
     public:
 
-        using WindowsAndViews = std::map<
-            vsg::ref_ptr<vsg::Window>,
-            std::list<vsg::ref_ptr<vsg::View>>>;
+        using WindowsAndViews = std::map<vsg::ref_ptr<vsg::Window>, std::list<vsg::ref_ptr<vsg::View>>>;
 
         WindowsAndViews windowsAndViews;
 

@@ -466,7 +466,7 @@ MBTiles::Driver::write(const TileKey& key, shared_ptr<Image> input, const IOOpti
 #if SQLITE_VERSION_NUMBER >= 3007015
         return Status(Status::GeneralError, util::make_string() << "Failed query: " << query << "(" << rc << ")" << sqlite3_errstr(rc) << "; " << sqlite3_errmsg(database));
 #else
-        return Status(Status::GeneralError, Stringify() << "Failed query: " << query << "(" << rc << ")" << rc << "; " << sqlite3_errmsg(database));
+        return Status(Status::GeneralError, make_string() << "Failed query: " << query << "(" << rc << ")" << rc << "; " << sqlite3_errmsg(database));
 #endif
         ok = false;
     }

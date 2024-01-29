@@ -183,7 +183,7 @@ DateTime::hours() const
 const std::string
 DateTime::asRFC1123() const
 {
-    return util::Stringify()
+    return util::make_string()
         << rfc_wkday[_tm.tm_wday] << ", "
         << std::setfill('0') << std::setw(2) << _tm.tm_mday << ' '
         << rfc_month[_tm.tm_mon] << ' '
@@ -197,7 +197,7 @@ DateTime::asRFC1123() const
 const std::string
 DateTime::asISO8601() const
 {
-    return util::Stringify()
+    return util::make_string()
         << std::setw(4) << (_tm.tm_year + 1900) << '-'
         << std::setfill('0') << std::setw(2) << (_tm.tm_mon + 1) << '-'
         << std::setfill('0') << std::setw(2) << (_tm.tm_mday)
@@ -211,7 +211,7 @@ DateTime::asISO8601() const
 const std::string
 DateTime::asCompactISO8601() const
 {
-    return util::Stringify()
+    return util::make_string()
         << std::setw(4) << (_tm.tm_year + 1900)
         << std::setfill('0') << std::setw(2) << (_tm.tm_mon + 1)
         << std::setfill('0') << std::setw(2) << (_tm.tm_mday)

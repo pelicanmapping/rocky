@@ -318,8 +318,8 @@
 #  define INTERNAL_CATCH_UNIQUE_NAME( name ) INTERNAL_CATCH_UNIQUE_NAME_LINE( name, __LINE__ )
 #endif
 
-#define INTERNAL_CATCH_STRINGIFY2( expr ) #expr
-#define INTERNAL_CATCH_STRINGIFY( expr ) INTERNAL_CATCH_STRINGIFY2( expr )
+#define INTERNAL_CATCH_make_string2( expr ) #expr
+#define INTERNAL_CATCH_make_string( expr ) INTERNAL_CATCH_make_string2( expr )
 
 #include <sstream>
 #include <stdexcept>

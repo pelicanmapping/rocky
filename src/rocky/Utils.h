@@ -208,9 +208,9 @@ namespace ROCKY_NAMESPACE { namespace util
     /**
      * Assembles and returns an inline string using a stream-like << operator.
      * Example:
-     *     std::string str = Stringify() << "Hello, world " << variable;
+     *     std::string str = make_string() << "Hello, world " << variable;
      */
-    struct Stringify
+    struct make_string
     {
         operator std::string () const
         {
@@ -220,18 +220,16 @@ namespace ROCKY_NAMESPACE { namespace util
         }
 
         template<typename T>
-        Stringify& operator << (const T& val) { buf << val; return (*this); }
+        make_string& operator << (const T& val) { buf << val; return (*this); }
 
-        Stringify& operator << (const Stringify& val) { buf << (std::string)val; return (*this); }
+        make_string& operator << (const make_string& val) { buf << (std::string)val; return (*this); }
 
     protected:
         std::stringstream buf;
     };
 
-    using make_string = Stringify;
-
     template<> inline
-    Stringify& Stringify::operator << <bool>(const bool& val) { buf << (val ? "true" : "false"); return (*this); }
+    make_string& make_string::operator << <bool>(const bool& val) { buf << (val ? "true" : "false"); return (*this); }
 
     /**
      * Splits a string up into a vector of strings based on a set of
@@ -419,7 +417,7 @@ namespace ROCKY_NAMESPACE { namespace util
             }
             else {
                 auto d = (float)std::chrono::duration_cast<std::chrono::microseconds>(dur).count();
-                Log()->info(std::to_string(std::this_thread::get_id()) + " : " + _me + " = " + std::to_string(d) + "us");
+                Log()->info(make_string{} << std::this_thread::get_id() << " : " << _me << " = " << std::to_string(d) << "us");
             }
         }
     };

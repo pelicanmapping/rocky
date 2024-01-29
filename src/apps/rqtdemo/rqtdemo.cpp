@@ -18,13 +18,7 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QVBoxLayout>
 
-#include <vsg/ui/PointerEvent.h> // for vsg::ButtonMask
 #include <vsgQt/Window.h>
-
-#ifdef ROCKY_HAS_GDAL
-#include <gdal_version.h>
-#include <rocky/GDALImageLayer.h>
-#endif
 
 #ifdef ROCKY_HAS_TMS
 #include <rocky/TMSImageLayer.h>
