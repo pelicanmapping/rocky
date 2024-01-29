@@ -73,7 +73,8 @@ set ROCKY_FILE_PATH=%rocky_install_dir%/share
 set ROCKY_DEFAULT_FONT=C:/windows/fonts/arialbd.ttf
 set PROJ_DATA=%proj_install_dir%/share/proj
 ```
-And run the demo application!
+
+If you built with `vcpkg` you will also need to add the dependencies folder to your path; this will normally be found in `vcpkg_installed/x64-windows` (or whatever platform you are using).
 ```
 rdemo.exe
 ```
