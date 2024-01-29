@@ -5,9 +5,7 @@
  */
 
 /**
-* THE DEMO APPLICATION is an ImGui-based app that shows off all the features
-* of the Rocky Application API. We intend each "Demo_*" include file to be
-* both a unit test for that feature, and a reference or writing your own code.
+* This is an example of embedding Rocky in a Qt application.
 */
 
 #include <rocky/vsg/Application.h>
@@ -17,6 +15,7 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QPushButton>
 
 #include <vsgQt/Window.h>
 
@@ -66,44 +65,41 @@ int main(int argc, char** argv)
 
     rocky::Log()->set_level(rocky::log::level::info);
 
-    // Create a customized Qt-based viewer and configure it to render through the App:
+    // First, create a customized Qt-based viewer and integrate it with our Rocky Application object.
     auto viewer = MyQtViewer::create();
     viewer->frame = [&app]() { return app.frame(); };
     viewer->continuousUpdate = true;
     app.setViewer(viewer);
 
-    // Create a Qt window:
-    vsg::ref_ptr<vsg::WindowTraits> traits = vsg::WindowTraits::create();
-    traits->windowTitle = "Rocky Qt Example";
-    traits->width = 1920, traits->height = 1080;
-    auto vsg_window = new vsgQt::Window(traits);
-    vsg_window->initializeWindow();
-
-    // Add it to our display manager:
-    app.displayManager->addWindow(vsg_window->windowAdapter);
-
-    // Not strictly necessary for this demo, but if you are going to open multiple 
-    // windows this will allow them to all share the same Vulkan device
-    if (!traits->device) 
-        traits->device = vsg_window->windowAdapter->getOrCreateDevice();
-
-    // Set up the main Qt window:
+    // Set up the main window and its central container widget as you normally would in Qt.
+    // We also set the content margins for a nicer window-filling look.
     QMainWindow mainWindow;
-    mainWindow.setGeometry(traits->x, traits->y, traits->width, traits->height);
-    mainWindow.setWindowTitle(traits->windowTitle.c_str());
+    mainWindow.setGeometry(0, 0, 800, 600);
+    mainWindow.setWindowTitle("Rocky Qt Example");
+    auto centralWidget = new QWidget(&mainWindow);
+    mainWindow.setCentralWidget(centralWidget);
+    auto layout = new QVBoxLayout(centralWidget);
+    layout->setContentsMargins(1,0,1,1);
 
-    // Embed the VSG/rocky window as a widget:
-    auto vsg_widget = QWidget::createWindowContainer(vsg_window, &mainWindow);
-    mainWindow.setCentralWidget(vsg_widget);
+    // Add a simple menu bar.
+    auto menubar = mainWindow.menuBar();
+    auto filemenu = menubar->addMenu("&File");
+    filemenu->addAction("E&xit", &qt_app, &QApplication::quit);
 
-    // Add a simple menu.
-    // TODO: The menu functions, but the VSG window overdraws it for some reason.
-    auto fileMenu = mainWindow.menuBar()->addMenu("&File");
-    fileMenu->addAction("E&xit", &qt_app, &QApplication::quit);
+    // Create a Qt container for our Rocky widget, and add it to the layout.
+    auto rocky_window = new vsgQt::Window();
+    auto rocky_widget = QWidget::createWindowContainer(rocky_window);
+    layout->addWidget(rocky_widget);
 
-    mainWindow.show();
+    // Initialize the Vulkan widget.
+    // NB: You must call this AFTER calling QWidget::createWindowContainer
+    // otherwise the Qt layout will not work properly.
+    rocky_window->initializeWindow();
 
-    // Add some data to the map:
+    // Finally add it to the Rocky display manager.
+    app.displayManager->addWindow(rocky_window->windowAdapter);
+
+    // Add some data to the map if necessary.
     if (app.mapNode->map->layers().empty())
     {
 #ifdef ROCKY_HAS_TMS
@@ -113,16 +109,10 @@ int main(int argc, char** argv)
         app.mapNode->map->layers().add(layer);
         if (layer->status().failed())
             return layerError(layer);
-
-        // add an elevation layer to the map
-        auto elev = rocky::TMSElevationLayer::create();
-        elev->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
-        app.mapNode->map->layers().add(elev);
-        if (elev->status().failed())
-            return layerError(elev);
 #endif
     }
 
-    // run until the user quits.
+    // Run until the user quits.
+    mainWindow.show();
     return qt_app.exec();
 }
