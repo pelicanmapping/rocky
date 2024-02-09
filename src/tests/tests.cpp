@@ -109,11 +109,11 @@ TEST_CASE("TileKey")
 
 TEST_CASE("Threading")
 {
-    util::Future<int> f1;
+    jobs::future<int> f1;
     CHECK(f1.empty() == true);
     CHECK(f1.available() == false);
 
-    util::Future<int> f2;
+    jobs::future<int> f2;
     CHECK(f2.empty() == true);
     CHECK(f2.working() == false);
 

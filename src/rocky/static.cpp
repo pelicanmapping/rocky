@@ -47,8 +47,5 @@ CachePolicy CachePolicy::CACHE_ONLY(CachePolicy::Usage::CACHE_ONLY);
 
 Status Instance::_global_status(Status::GeneralError);
 
-// job_scheduler statics:
-std::mutex job_scheduler::_schedulers_mutex;
-std::unordered_map<std::string, std::shared_ptr<job_scheduler>> job_scheduler::_schedulers;
-std::unordered_map<std::string, unsigned> job_scheduler::_schedulersizes;
-job_metrics job_metrics::_singleton;
+// job system statics:
+WEETHREADS_INSTANCE;

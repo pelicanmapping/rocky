@@ -392,10 +392,10 @@ TerrainTilePager::requestLoadSubtiles(
     parent->subtilesLoader = engine->runtime.compileAndAddChild(
         parent,
         create_children,
-        {
+        jobs::context {
             "create child " + parent->key.str(),
+            jobs::get_pool(engine->loadSchedulerName),
             priority_func,
-            util::job_scheduler::get(engine->loadSchedulerName),
             nullptr
         });
 }
@@ -457,11 +457,12 @@ TerrainTilePager::requestLoadData(
         return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
     };
 
-    tile->dataLoader = util::job::dispatch(
-        load, {
+    tile->dataLoader = jobs::dispatch(
+        load, 
+        jobs::context {
             "load data " + key.str(),
+            jobs::get_pool(engine->loadSchedulerName),
             priority_func,
-            util::job_scheduler::get(engine->loadSchedulerName),
             nullptr
         } );
 }

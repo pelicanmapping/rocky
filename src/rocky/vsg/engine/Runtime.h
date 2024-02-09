@@ -17,6 +17,7 @@
 #include <vsg/utils/SharedObjects.h>
 #include <vsg/text/Font.h>
 #include <shared_mutex>
+#include <queue>
 
 namespace vsg
 {
@@ -101,10 +102,10 @@ namespace ROCKY_NAMESPACE
         //! Schedules data creation; the resulting node or nodes 
         //! get added to "parent" if the operation suceeds.
         //! Returns a future so you can check for completion.
-        util::Future<bool> compileAndAddChild(
+        jobs::future<bool> compileAndAddChild(
             vsg::ref_ptr<vsg::Group> parent,
             std::function<vsg::ref_ptr<vsg::Node>(Cancelable&)> factory,
-            const util::job& config = { });
+            const jobs::context& config = { });
 
         //! Safely removes a node from the scene graph (async)
         void removeNode(

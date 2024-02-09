@@ -95,12 +95,13 @@ auto Demo_Stats = [](Application& app)
     }
 
     ImGui::SeparatorText("Thread Pools");
-    auto& metrics = util::job_metrics::get();
+    auto* metrics = jobs::get_metrics();
     if (ImGuiLTable::Begin("Thread Pools"))
     {
-        for (auto& m : metrics)
+        for (auto m : metrics->all())
         {
-            if (m) {
+            if (m)
+            {
                 std::string name = m->name.empty() ? "default" : m->name;
                 sprintf(buf, "(%d) %d / %d", (int)m->concurrency, (int)m->running, (int)m->pending);
                 ImGuiLTable::Text(name.c_str(), buf);

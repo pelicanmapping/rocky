@@ -29,5 +29,5 @@ TerrainEngine::TerrainEngine(
     tiles(new_map->profile(), new_settings, host),
     stateFactory(new_runtime)
 {
-    util::job_scheduler::get(loadSchedulerName)->setConcurrency(4);
+    jobs::get_pool(loadSchedulerName)->set_concurrency(4);
 }

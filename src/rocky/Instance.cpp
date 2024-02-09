@@ -109,7 +109,7 @@ Instance::Instance(const Instance& rhs) :
 
 Instance::~Instance()
 {
-    util::job_scheduler::shutdownAll();
+    jobs::shutdown();
     _global_status = Status(Status::GeneralError);
 }
 

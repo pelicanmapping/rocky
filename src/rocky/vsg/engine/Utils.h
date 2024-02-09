@@ -6,9 +6,9 @@
 #pragma once
 
 #include <rocky/vsg/Common.h>
+#include <rocky/Threading.h>
 #include <rocky/Image.h>
 #include <rocky/Math.h>
-#include <rocky/Threading.h>
 #include <vsg/maths/vec3.h>
 #include <vsg/maths/mat4.h>
 #include <vsg/vk/State.h>
@@ -215,7 +215,7 @@ namespace ROCKY_NAMESPACE
         template<class T>
         struct PromiseOperation : public vsg::Operation, public Cancelable
         {
-            util::Future<T> _promise;
+            jobs::promise<T> _promise;
             std::function<T(Cancelable&)> _func;
 
             //! Was the operation canceled or abandoned?
@@ -237,12 +237,12 @@ namespace ROCKY_NAMESPACE
             //! Construct a new promise operation with the function to execute
             //! @param promise User-supplied promise object to use
             //! @param func Function to execute
-            PromiseOperation(util::Future<T> promise, std::function<T(Cancelable&)> func) :
+            PromiseOperation(jobs::future<T> promise, std::function<T(Cancelable&)> func) :
                 _promise(promise),
                 _func(func) { }
 
             //! Return the future result assocaited with this operation
-            util::Future<T> future() {
+            jobs::future<T> future() {
                 return _promise;
             }
 

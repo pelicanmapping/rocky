@@ -245,11 +245,11 @@ Runtime::update()
     }
 }
 
-util::Future<bool>
+jobs::future<bool>
 Runtime::compileAndAddChild(
     vsg::ref_ptr<vsg::Group> parent,
     std::function<vsg::ref_ptr<vsg::Node>(Cancelable&)> factory,
-    const util::job& job_config)
+    const jobs::context& job_config)
 {
     // This is a two-step procedure. First we have to create the child
     // by calling the Factory function, and compile it. These things happen 
@@ -262,7 +262,7 @@ Runtime::compileAndAddChild(
     // update part. That way the user will be waiting on the final result of the
     // scene graph merge.
 
-    util::Future<bool> promise;
+    jobs::future<bool> promise;
     auto& runtime = *this;
     
     auto viewer = runtime.viewer;
@@ -299,11 +299,7 @@ Runtime::compileAndAddChild(
         return true;
     };
 
-    auto future = util::job::dispatch(
-        async_create_and_add_node,
-        promise,
-        job_config
-    );
+    auto future = jobs::dispatch(async_create_and_add_node, job_config, promise);
 
     return future;
 }

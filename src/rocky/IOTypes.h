@@ -9,6 +9,7 @@
 #include <rocky/Log.h>
 #include <rocky/Status.h>
 #include <rocky/Units.h>
+#include <rocky/Threading.h>
 
 /**
  * A collection of types used by the various I/O systems.
@@ -19,20 +20,10 @@ namespace ROCKY_NAMESPACE
     class Image;
     class Layer;
 
-    //! General purpose interface things that can be canceled
-    class Cancelable
-    {
-    public:
-        virtual bool canceled() const = 0;
-    };
-
     //! Base class for a cache
     class Cache : public Inherit<Object, Cache>
     {
     };
-
-    //! Service providing a Log
-    //using LogService = std::function<Log&()>;
 
     //! Service for reading an image from a URL
     using ReadImageURIService = std::function<
