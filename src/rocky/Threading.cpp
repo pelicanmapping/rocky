@@ -13,6 +13,7 @@
 #include <climits>
 #include <mutex>
 #include <iomanip>
+#include <cstring>
 
 #ifdef _WIN32
 #   include <Windows.h>
