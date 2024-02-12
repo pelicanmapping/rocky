@@ -164,6 +164,10 @@ if (BUILD_WITH_TRACY)
     endif()
 endif()
 
+# pthreads - for linux
+if (UNIX)
+    find_package(Threads REQUIRED)
+endif()
 
 # source code
 add_subdirectory(src)

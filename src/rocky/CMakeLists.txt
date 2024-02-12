@@ -70,6 +70,9 @@ if (ZLIB_FOUND)
     list(APPEND PRIVATE_LIBS ZLIB::ZLIB)
 endif()
 
+if(UNIX)
+    list(APPEND PUBLIC_LIBS Threads::Threads)
+endif()
 
 # VSG - rendering implementation
 if(ROCKY_RENDERER_VSG)
