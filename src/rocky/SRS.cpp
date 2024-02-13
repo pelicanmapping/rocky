@@ -61,9 +61,6 @@ namespace
         //! destroy cache entries and threading context upon descope
         ~SRSFactory()
         {
-            //Instance::log().debug << "SRSRepo: destructor in thread " << util::getCurrentThreadId()
-            //    << " destroying " << size() << " objects" << std::endl;
-
             for (auto iter = begin(); iter != end(); ++iter)
             {
                 if (iter->second.pj)

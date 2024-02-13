@@ -25,12 +25,6 @@ namespace
     const std::string COLOR_DEFAULT = "\033[39m";
 }
 
-//LogLevel Log::level = LogLevel::WARN;
-//LogFunction Log::g_userFunction = nullptr;
-//bool Log::g_logUsePrefix = true;
-//Log::LogStream Log::g_infoStream(LogLevel::INFO, "[rk-info] ", std::cout, COLOR_DEFAULT);
-//Log::LogStream Log::g_warnStream(LogLevel::WARN, "[rk-WARN] ", std::cout, COLOR_YELLOW);
-
 const SRS SRS::WGS84("wgs84");
 const SRS SRS::ECEF("geocentric");
 const SRS SRS::SPHERICAL_MERCATOR("spherical-mercator");
@@ -47,5 +41,5 @@ CachePolicy CachePolicy::CACHE_ONLY(CachePolicy::Usage::CACHE_ONLY);
 
 Status Instance::_global_status(Status::GeneralError);
 
-// job system statics:
-WEETHREADS_INSTANCE;
+// job system definition
+WEEJOBS_INSTANCE;

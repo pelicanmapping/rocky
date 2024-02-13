@@ -1,3 +1,9 @@
+/**
+ * weejobs
+ * Copyright 2024 Pelican Mapping
+ * https://github.com/pelicanmapping/weejobs
+ * MIT License
+ */
 #pragma once
 #include <atomic>
 #include <mutex>
@@ -11,84 +17,21 @@
 #include <cstdlib>
 #include <cfloat>
 
-// MANDATORY: Somewhere in one of your .cpp files, use this macro to instantiate the singleton:
-// WEETHREADS_INSTANCE;
-
-// OPTIONAL: Define WEETHREADS_EXPORT if you want to use this library from multiple modules (DLLs)
-#ifndef WEETHREADS_EXPORT
-#define WEETHREADS_EXPORT
+// OPTIONAL: Define WEEJOBS_EXPORT if you want to use this library from multiple modules (DLLs)
+#ifndef WEEJOBS_EXPORT
+#define WEEJOBS_EXPORT
 #endif
 
-// OPTIONAL: Customize the namespace by defining WEETHREADS_NAMESPACE before including this file.
-#ifndef WEETHREADS_NAMESPACE
-#define WEETHREADS_NAMESPACE jobs
+// OPTIONAL: Customize the namespace by defining WEEJOBS_NAMESPACE before including this file.
+#ifndef WEEJOBS_NAMESPACE
+#define WEEJOBS_NAMESPACE jobs
 #endif
 
 /**
-* WeeThreads is an API for scheduling a task to run in the background.
-* 
-* WeeThreads is header-only and has no dependencies aside from the STL.
-*
-* Usage:
-* 
-*    Use this macro somewhere in your app. Put it in a .cpp file if you plan
-     to use multiple modules, DLLs, etc.:
-* 
-*    WEETHREADS_INSTANCE;
-*
-* Example: Spawn a job with no return value (fire and forget):
-* 
-*    auto job = []() { std::cout << "Hello, world!" << std::endl; };
-*    jobs::dispatch(job);
-* 
-* Example: Spawn a job and get a future result:
-* 
-*    auto job = [](jobs::cancelable&) { return 7; };
-*    jobs::future<int> result = jobs::dispatch(job);
-*    // later...
-*    if (result.available())
-*       std::cout << "Result = " << result.value() << std::endl;
-*    else if (result.canceled())
-*       std::cout << "Job was canceled" << std::endl;
-*    else
-*       // still running.... come back later
-* 
-* Example: Spawn a job and wait for it to complete:
-* 
-*    auto job = [url](jobs::cancelable&) { return fetch_data_from_network(url); };
-*    auto result = jobs::dispatch(job);
-*    auto value = result.join();
-* 
-* Example: Spwan a job with some context information:
-* 
-*    auto job = []() { std::cout << "Hello, world!" << std::endl; };
-*    jobs::context context;
-*    context.name = "My Job";
-*    context.pool = jobs::get_pool("My Job Pool");
-*    context.priority = []() { return 1.0f; };
-*    jobs::dispatch(job, context);
-* 
-* Example: Check for cancelation within a job:
-* 
-*   auto job = [url](jobs::cancelable& state) { 
-*       std::string data;
-*       if (!state.canceled())
-*           data = fetch_data_from_network(url);
-*       return data;
-*   };
-*
-*   auto result = jobs::dispatch(job);
-*   // if "result" goes out of scope, "state.canceled()" in the job will return true 
-* 
-* This SDK exists because existing solutions do not support two things we need:
-* automatic job cancelation, and job prioritization. This system acheives
-* cancelation by tracking the reference count of the shared result object contained
-* in the Future object; if that reference count goes to one, it means that ONLY the
-* scheduler knows about the job, and no one else is around to fetch its result.
-* In this case, future.canceled() returns true. It's up to the task itself to 
-* check the cancelable& object if it wants to quit early.
+* weejobs is an API for scheduling a task to run in the background.
+* Please read the README.md file for more information.
 */
-namespace WEETHREADS_NAMESPACE
+namespace WEEJOBS_NAMESPACE
 {
     /**
     * Interface for something that can be canceled
@@ -738,7 +681,7 @@ namespace WEETHREADS_NAMESPACE
 
     /**
     * Runtime singleton object;
-    * Declare with WEETHREADS_INSTANCE in one of your .cpp files.
+    * Declare with WEEJOBS_INSTANCE in one of your .cpp files.
     */
     namespace detail
     {
@@ -768,14 +711,14 @@ namespace WEETHREADS_NAMESPACE
         };
     }
 
-    extern WEETHREADS_EXPORT detail::runtime& instance();
+    extern WEEJOBS_EXPORT detail::runtime& instance();
 
     //! Returns the job pool with the given name, creating a new one if it doesn't 
     //! already exist. If you don't specify a name, a default pool is used.
     inline jobpool* get_pool(const std::string& name = {})
     {
         std::lock_guard<std::mutex> lock(instance()._mutex);
-        for(auto pool : instance()._pools)
+        for (auto pool : instance()._pools)
         {
             if (pool->name() == name)
                 return pool;
@@ -900,7 +843,7 @@ namespace WEETHREADS_NAMESPACE
         instance().kill();
     }
 
-    //! Whether the weethreads runtime is still alive (has not been shutdown)
+    //! Whether the weejobs runtime is still alive (has not been shutdown)
     inline bool alive()
     {
         return instance()._alive;
@@ -920,9 +863,9 @@ namespace WEETHREADS_NAMESPACE
     }
 
     // Use this macro ONCE in your application in a .cpp file to 
-    // instaniate the weethreads runtime singleton.
-#define WEETHREADS_INSTANCE \
-    namespace WEETHREADS_NAMESPACE { \
+    // instaniate the weejobs runtime singleton.
+#define WEEJOBS_INSTANCE \
+    namespace WEEJOBS_NAMESPACE { \
         static detail::runtime runtime_singleton_instance; \
         detail::runtime& instance() { return runtime_singleton_instance; } \
     }

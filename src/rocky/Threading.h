@@ -5,11 +5,11 @@
  */
 #pragma once
 #include <rocky/Common.h>
-#include <unordered_map>
+#include <unordered_set>
 
-#define WEETHREADS_NAMESPACE jobs
-#define WEETHREADS_EXPORT ROCKY_EXPORT
-#include <rocky/weethreads.h>
+#define WEEJOBS_NAMESPACE jobs
+#define WEEJOBS_EXPORT ROCKY_EXPORT
+#include <rocky/weejobs.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -17,9 +17,7 @@ namespace ROCKY_NAMESPACE
 
     namespace util
     {
-        //! Gets the unique ID of the running thread.
-        extern ROCKY_EXPORT unsigned getCurrentThreadId();
-
+        //! Sets the name of the current thread
         extern ROCKY_EXPORT void setThreadName(const std::string& name);
 
         /** Per-thread data store */
@@ -47,33 +45,37 @@ namespace ROCKY_NAMESPACE
             container_t _data;
         };
 
+        /** Primitive that only allows one thread at a time access to a keyed resourse */
         template<typename T>
         class Gate
         {
         public:
             Gate() { }
 
-            inline void lock(const T& key) {
+            //! Lock key's gate
+            inline void lock(const T& key)
+            {
                 std::unique_lock<std::mutex> lock(_m);
-                auto thread_id = getCurrentThreadId();
                 for (;;) {
-                    auto i = _keys.emplace(key, thread_id);
+                    auto i = _keys.emplace(key);
                     if (i.second)
                         return;
-                    _unlocked.wait(lock);
+                    _block.wait(lock);
                 }
             }
 
-            inline void unlock(const T& key) {
+            //! Unlock the key's gate
+            inline void unlock(const T& key)
+            {
                 std::unique_lock<std::mutex> lock(_m);
                 _keys.erase(key);
-                _unlocked.notify_all();
+                _block.notify_all();
             }
 
         private:
             std::mutex _m;
-            std::condition_variable_any _unlocked;
-            std::unordered_map<T, unsigned> _keys;
+            std::condition_variable_any _block;
+            std::unordered_set<T> _keys;
         };
 
         //! Gate the locks for the duration of this object's scope
