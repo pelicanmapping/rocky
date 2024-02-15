@@ -128,9 +128,7 @@ Runtime::Runtime()
 }
 
 void
-Runtime::runDuringUpdate(
-    vsg::ref_ptr<vsg::Operation> function,
-    std::function<float()> get_priority)
+Runtime::runDuringUpdate(vsg::ref_ptr<vsg::Operation> function, std::function<float()> get_priority)
 {
     auto pq = dynamic_cast<PriorityUpdateQueue*>(_priorityUpdateQueue.get());
     if (pq)

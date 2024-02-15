@@ -15,8 +15,6 @@
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 
-#define ARENA_LOAD_TILE "terrain.load_tile"
-
 TerrainNode::TerrainNode(Runtime& new_runtime, const JSON& conf) :
     vsg::Inherit<vsg::Group, TerrainNode>(),
     TerrainSettings(conf),

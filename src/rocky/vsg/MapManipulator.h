@@ -677,8 +677,7 @@ namespace ROCKY_NAMESPACE
         virtual bool handleKeyboardAction(const Action& action, vsg::time_point time, double duration_s = DBL_MAX);
         virtual bool handleScrollAction(const Action& action, vsg::time_point time, double duration_s = DBL_MAX);
         virtual bool handlePointAction(const Action& type, float mx, float my, vsg::time_point time);
-        virtual void handleMovementAction(const ActionType& type, vsg::dvec2 delta, vsg::time_point time);
-        virtual void handleContinuousAction(const Action& action, vsg::time_point time);
+        virtual void handleMovementAction(const ActionType& type, vsg::dvec2 delta);
 
         void clearEvents();
         vsg::ref_ptr<MapNode> getMapNode() const;
@@ -744,7 +743,6 @@ namespace ROCKY_NAMESPACE
         Task _task;
         bool _continuous;
         vsg::dvec2 _continuousDelta;
-        vsg::time_point _last_continuous_action_time;
         vsg::dvec2 _singleAxis;
         vsg::dmat4 _mapNodeFrame, _mapNodeFrameInverse;
         Action _lastAction;

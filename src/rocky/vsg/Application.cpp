@@ -157,7 +157,7 @@ Application::~Application()
 }
 
 void
-Application::queue(std::function<void()> func)
+Application::onNextUpdate(std::function<void()> func)
 {
     instance.runtime().runDuringUpdate(func);
 }
@@ -293,28 +293,31 @@ Application::frame()
     if (updateFunction)
         updateFunction();
 
+    auto num_windows = viewer->windows().size();
+
+    // run through the viewer's update operations queue; this includes
+    // update ops initialized by rocky (e.g. terrain tile merges) and
+    // anything dispatched by calling runtime().runDuringUpdate().
+    viewer->update();
+
+    // integrate any compile results that may be pending
+    instance.runtime().update();
+
+    // if the number of windows has changed, skip to the next frame immediately
+    if (num_windows != viewer->windows().size())
+    {
+        Log()->warn("Number of windows changed; skipping to next frame");
+        return true;
+    }
+
+    auto t_events = std::chrono::steady_clock::now();
+
     // Event handling happens after updating the scene, otherwise
     // things like tethering to a moving node will be one frame behind
     viewer->handleEvents();
 
     if (!viewer->active())
         return false;
-
-    // run through the viewer's update operations queue; this includes
-    // update ops initialized by rocky (e.g. terrain tile merges)
-    viewer->update();
-
-    // integrate any compile results that may be pending
-    instance.runtime().update();
-
-#if 0
-    if (_viewerDirty)
-    {
-        _viewerDirty = false;
-        recreateViewer();
-        return true;
-    }
-#endif
 
     auto t_record = std::chrono::steady_clock::now();
 
@@ -326,8 +329,8 @@ Application::frame()
 
     auto t_end = std::chrono::steady_clock::now();
     stats.frame = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start);
-    stats.events = std::chrono::duration_cast<std::chrono::microseconds>(t_update - t_start);
-    stats.update = std::chrono::duration_cast<std::chrono::microseconds>(t_record - t_update);
+    stats.update = std::chrono::duration_cast<std::chrono::microseconds>(t_events - t_update);
+    stats.events = std::chrono::duration_cast<std::chrono::microseconds>(t_record - t_events);
     stats.record = std::chrono::duration_cast<std::chrono::microseconds>(t_present - t_record);
     stats.present = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_present);
 

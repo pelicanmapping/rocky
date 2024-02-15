@@ -57,6 +57,12 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
     ROCKY_SOFT_ASSERT_AND_RETURN(viewer, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
 
+    // Share device with existing windows.
+    if (!window->getDevice() && !windowsAndViews.empty())
+    {
+        window->setDevice(viewer->windows().front()->getDevice());
+    }
+
     // Each window gets its own CommandGraph. We will store it here and then
     // set it up later when the frame loop starts.
     auto commandgraph = vsg::CommandGraph::create(window);
@@ -91,6 +97,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
 
     // add the new window to our viewer
     viewer->addWindow(window);
+    viewer->addRecordAndSubmitTaskAndPresentation({ commandgraph });
 
     // install a manipulator for the new view:
     if (!user_provied_view && app)
@@ -98,11 +105,6 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
         auto manip = MapManipulator::create(app->mapNode, window, camera);
         setManipulatorForView(manip, view);
     }
-
-    //if (compiled(viewer))
-    //{
-    //    app._viewerDirty = true;
-    //}
 
     // install the debug layer if requested
     if (app && app->_debuglayer && !_debugCallbackInstalled)
@@ -138,8 +140,6 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
         viewer->deviceWaitIdle();
     }
 
-    //viewer->stopThreading();
-
     if (app)
     {
         traits->debugLayer = app->_debuglayer;
@@ -173,6 +173,26 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     addWindow(window);
 
     return window;
+}
+
+void
+DisplayManager::removeWindow(vsg::ref_ptr<vsg::Window> window)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
+
+    // wait until the device is idle to avoid changing state while it's being used.
+    viewer->deviceWaitIdle();
+
+    // remove the window from the viewer
+    viewer->removeWindow(window);
+
+    // remove the window from our tracking tables
+    auto& views = windowsAndViews[window];
+    for (auto& view : views)
+        _viewData.erase(view);
+    _commandGraphByWindow.erase(window);
+    windowsAndViews.erase(window);
 }
 
 void
@@ -348,9 +368,7 @@ DisplayManager::setManipulatorForView(vsg::ref_ptr<MapManipulator> manip, vsg::r
 
 // Call this when adding a new rendergraph to the scene.
 void
-DisplayManager::compileRenderGraph(
-    vsg::ref_ptr<vsg::RenderGraph> renderGraph,
-    vsg::ref_ptr<vsg::Window> window)
+DisplayManager::compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, vsg::ref_ptr<vsg::Window> window)
 {
     vsg::ref_ptr<vsg::View> view;
 

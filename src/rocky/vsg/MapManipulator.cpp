@@ -84,7 +84,7 @@ namespace
     template<class DURATION>
     double to_seconds(const DURATION& d) {
         auto temp = std::chrono::duration_cast<std::chrono::nanoseconds>(d);
-        return (double)temp.count() * 0.000000001;
+        return 1e-9 * (double)temp.count();
     }
 
     template<class DMAT4>
@@ -541,23 +541,15 @@ MapManipulator::MapManipulator(
 {
     if (mapNode.valid())
         _worldSRS = mapNode->worldSRS();
-        //_srs = mapNode->mapSRS();
 
     reinitialize();
     configureDefaultSettings();
     home();
-
-    //if (_settings)
-    //    _lastTetherMode = _settings->getTetherMode();
 }
 
 MapManipulator::~MapManipulator()
 {
-    //vsg::ref_ptr<MapNode> mapNode = _mapNode;
-    //if (mapNode.valid() && _terrainCallback && mapNode->getTerrain())
-    //{
-    //    mapNode->getTerrain()->removeTerrainCallback( _terrainCallback.get() );
-    //}
+    //nop
 }
 
 void
@@ -1290,7 +1282,6 @@ MapManipulator::apply(vsg::MoveEvent& moveEvent)
     if (_continuous && !wasContinuous)
     {
         _continuousAction = _lastAction;
-        _last_continuous_action_time = moveEvent.time;
     }
 
     if (_continuous)
@@ -1349,10 +1340,12 @@ MapManipulator::apply(vsg::TouchMoveEvent& touchMove)
 void
 MapManipulator::apply(vsg::FrameEvent& frame)
 {
-    //TEST_OUT << "FrameEvent-------------------------- " << frame.time.time_since_epoch().count() << std::endl;
+    //Log()->warn(util::make_string() << "FrameEvent-------------------------- " << frame.time.time_since_epoch().count());
+
     if (_continuous)
     {
-        handleContinuousAction(_continuousAction, frame.time);
+        double t_factor = to_seconds(frame.time - _previousTime) * 60.0;
+        handleMovementAction(_continuousAction._type, _continuousDelta * t_factor);
     }
     else
     {
@@ -1930,10 +1923,7 @@ MapManipulator::setDistance(double distance)
 }
 
 void
-MapManipulator::handleMovementAction(
-    const ActionType& type,
-    vsg::dvec2 d,
-    vsg::time_point time)
+MapManipulator::handleMovementAction(const ActionType& type, vsg::dvec2 d)
 {
     switch (type)
     {
@@ -1998,17 +1988,6 @@ MapManipulator::handlePointAction(
 }
 
 void
-MapManipulator::handleContinuousAction(const Action& action, vsg::time_point time)
-{
-    double t_factor = to_seconds(time - _last_continuous_action_time) * 60.0;
-    _last_continuous_action_time = time;
-    handleMovementAction(
-        action._type,
-        _continuousDelta * t_factor,
-        time);
-}
-
-void
 MapManipulator::applyOptionsToDeltas(const Action& action, vsg::dvec2& d)
 {
     d.x *= action.getDoubleOption(OPTION_SCALE_X, 1.0);
@@ -2029,9 +2008,6 @@ MapManipulator::handleMouseAction(
     const vsg::MoveEvent& previousMove,
     const vsg::MoveEvent& currentMove)
 {
-    //if (!_currentMove.has_value() || !_previousMove.has_value())
-    //    return false;
-
     auto prev = ndc(previousMove);
     auto curr = ndc(currentMove);
 
@@ -2057,7 +2033,7 @@ MapManipulator::handleMouseAction(
     else
     {
         _delta = delta;
-        handleMovementAction(action._type, delta, currentMove.time); // time);
+        handleMovementAction(action._type, delta);
     }
 
     return true;

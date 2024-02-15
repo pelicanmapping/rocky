@@ -44,9 +44,9 @@ namespace ROCKY_NAMESPACE
         bool frame();
 
         //! Queues a function to run during the next update cycle,
-        //! during which it's safe to modify the scene graph and the
+        //! during which it's safe to modify the scene qgraph and the
         //! display manager.
-        void queue(std::function<void()> func);
+        void onNextUpdate(std::function<void()> func);
 
         //! Sets a custom view to use for this application.
         void setViewer(vsg::ref_ptr<vsg::Viewer> viewer);

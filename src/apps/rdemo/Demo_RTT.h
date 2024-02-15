@@ -113,7 +113,7 @@ auto Demo_RTT = [](Application& app)
                     dm->compileRenderGraph(rtt_graph, main_window);
                 }
             };
-        app.queue(install);
+        app.onNextUpdate(install);
 
 
         // Now, create an entity to host our mesh.

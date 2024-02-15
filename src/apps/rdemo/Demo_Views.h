@@ -80,7 +80,7 @@ auto Demo_Views = [](Application& app)
                         if (ImGui::Button("Remove view"))
                         {
                             auto dm = app.displayManager;
-                            app.queue([=]() { dm->removeView(view); });
+                            app.onNextUpdate([dm, view]() { dm->removeView(view); });
                         }
                     }
 
@@ -94,7 +94,7 @@ auto Demo_Views = [](Application& app)
 
             ImGui::Indent();
             {
-                if (ImGui::Button("Add view"))
+                if (ImGui::Button("Add an inset view"))
                 {
                     // First make a camera for the new view, placed at a random location.
                     const double nearFarRatio = 0.00001;
@@ -125,8 +125,15 @@ auto Demo_Views = [](Application& app)
                             color[1] = float(rand() % 255) / 255.0f;
                             color[2] = float(rand() % 255) / 255.0f;
                         };
-                    app.queue(add);
+                    app.onNextUpdate(add);
                 }
+
+                if (window_id > 1 && ImGui::Button("Close this window"))
+                {
+                    auto dm = app.displayManager;
+                    app.onNextUpdate([dm, window]() { dm->removeWindow(window); });
+                }
+
                 ImGui::Unindent();
             }
         }
@@ -136,16 +143,15 @@ auto Demo_Views = [](Application& app)
     ImGui::Indent();
     {
         ImGui::Separator();
-        if (ImGui::Button("Add window (DISABLED for NOW)"))
+        if (ImGui::Button("Add a window"))
         {
-#if 0
             auto dm = app.displayManager;
-            app.queue([=]() {
+            app.onNextUpdate([dm, window_id]() {
                 auto name = std::string("Window ") + std::to_string(window_id);
                 dm->addWindow(vsg::WindowTraits::create(800, 600, name));
             });
-#endif
         }
+
         ImGui::Unindent();
     }
 };

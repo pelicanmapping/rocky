@@ -56,6 +56,29 @@ public:
     std::function<bool()> frame;
 };
 
+void newWindow(rocky::Application& app)
+{
+    auto dm = app.displayManager;
+    app.onNextUpdate([dm]()
+        {
+            QWidget* window = new QWidget();
+            window->setGeometry(50, 50, 800, 600);
+            window->setWindowTitle("Rocky - New Window");
+
+            auto layout = new QVBoxLayout(window);
+            layout->setContentsMargins(1, 0, 1, 1);
+
+            auto rocky_window = new vsgQt::Window();
+            auto rocky_widget = QWidget::createWindowContainer(rocky_window);
+            layout->addWidget(rocky_widget);
+
+            rocky_window->initializeWindow();
+
+            dm->addWindow(rocky_window->windowAdapter);
+
+            window->show();
+        });
+}
 
 int main(int argc, char** argv)
 {
@@ -84,6 +107,7 @@ int main(int argc, char** argv)
     // Add a simple menu bar.
     auto menubar = mainWindow.menuBar();
     auto filemenu = menubar->addMenu("&File");
+    filemenu->addAction("&New Window", [&app]() { newWindow(app); });
     filemenu->addAction("E&xit", &qt_app, &QApplication::quit);
 
     // Create a Qt container for our Rocky widget, and add it to the layout.

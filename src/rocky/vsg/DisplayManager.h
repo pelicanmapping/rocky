@@ -45,6 +45,10 @@ namespace ROCKY_NAMESPACE
         //! @param view View to use for the window (optional - if not provided, a default view will be created)
         void addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view = {});
 
+        //! Removes a window from the display.
+        //! #param window Window to remove
+        void removeWindow(vsg::ref_ptr<vsg::Window> window);
+
         //! Adds a view to an existing window.
         //! @param view New view to add
         //! @param window Window to which to add the new view

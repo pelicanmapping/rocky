@@ -153,6 +153,37 @@ struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>
     }
 };
 
+//! wrapper for vsgImGui::SendEventsToImGui that restricts ImGui events to a single window.
+class SendEventsToImGuiWrapper : public vsg::Inherit<vsgImGui::SendEventsToImGui, SendEventsToImGuiWrapper>
+{
+public:
+    SendEventsToImGuiWrapper(vsg::ref_ptr<vsg::Window> window) :
+        _window(window) { }
+
+    void apply(vsg::ButtonPressEvent& e) override {
+        if (e.window.ref_ptr() == _window) vsgImGui::SendEventsToImGui::apply(e);
+    }
+    void apply(vsg::ButtonReleaseEvent& e) override {
+        if (e.window.ref_ptr() == _window) vsgImGui::SendEventsToImGui::apply(e);
+    }
+    void apply(vsg::MoveEvent& e) override {
+        if (e.window.ref_ptr() == _window) vsgImGui::SendEventsToImGui::apply(e);
+    }
+    void apply(vsg::ScrollWheelEvent& e) override {
+        if (e.window.ref_ptr() == _window) vsgImGui::SendEventsToImGui::apply(e);
+    }
+    void apply(vsg::KeyPressEvent& e) override {
+        if (e.window.ref_ptr() == _window) vsgImGui::SendEventsToImGui::apply(e);
+    }
+    void apply(vsg::KeyReleaseEvent& e) override {
+        if (e.window.ref_ptr() == _window) vsgImGui::SendEventsToImGui::apply(e);
+    }
+    void apply(vsg::ConfigureWindowEvent& e) override {
+        if (e.window.ref_ptr() == _window) vsgImGui::SendEventsToImGui::apply(e);
+    }
+private:
+    vsg::ref_ptr<vsg::Window> _window;
+};
 
 int main(int argc, char** argv)
 {
@@ -183,8 +214,6 @@ int main(int argc, char** argv)
     // start up the gui
     setup_demos(app);
 
-    app.viewer->addEventHandler(vsgImGui::SendEventsToImGui::create());
-
     auto window = app.displayManager->addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
     auto imgui = vsgImGui::RenderImGui::create(window);
     imgui->addChild(MainGUI::create(app));
@@ -193,6 +222,9 @@ int main(int argc, char** argv)
     // https://github.com/vsg-dev/vsgExamples/blob/master/examples/ui/vsgimgui_example/vsgimgui_example.cpp#L276
     auto main_view = app.displayManager->windowsAndViews[window].front();
     app.displayManager->getRenderGraph(main_view)->addChild(imgui);
+
+    auto& handlers = app.viewer->getEventHandlers();
+    handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(window));
 
     // run until the user quits.
     return app.run();
