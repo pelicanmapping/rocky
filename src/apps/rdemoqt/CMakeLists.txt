@@ -1,4 +1,4 @@
-set(APP_NAME rqtdemo)
+set(APP_NAME rdemoqt)
 
 find_package(vsgQt CONFIG REQUIRED)
 

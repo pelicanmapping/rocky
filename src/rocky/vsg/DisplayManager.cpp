@@ -51,6 +51,12 @@ DisplayManager::DisplayManager(vsg::ref_ptr<vsg::Viewer> in_viewer) :
     ROCKY_SOFT_ASSERT(viewer);
 }
 
+vsg::ref_ptr<vsg::Device>
+DisplayManager::sharedDevice()
+{
+    return !viewer->windows().empty() ? viewer->windows().front()->getDevice() : vsg::ref_ptr<vsg::Device>{ };
+}
+
 void
 DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view)
 {

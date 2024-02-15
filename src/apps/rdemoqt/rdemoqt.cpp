@@ -56,25 +56,63 @@ public:
     std::function<bool()> frame;
 };
 
+//! Custom event filter to remove a window from the display manager when the Qt window is closed
+class CloseQtWindowEventFilter : public QObject
+{
+public:
+    CloseQtWindowEventFilter(
+        std::shared_ptr<rocky::DisplayManager> dm_,
+        vsg::ref_ptr<vsg::Window> window_,
+        QObject* parent =nullptr) : dm(dm_), window(window_), QObject(parent) { }
+
+protected:
+    bool eventFilter(QObject* obj, QEvent* event) override
+    {
+        if (event->type() == QEvent::Close && dm && window)
+        {
+            Log()->info("Captured close event for window " + window->traits()->windowTitle);
+            dm->removeWindow(window);
+        }
+        return QObject::eventFilter(obj, event);
+    }
+
+    std::shared_ptr<rocky::DisplayManager> dm;
+    vsg::ref_ptr<vsg::Window> window;
+};
+
+//! Add a new window to the application
 void newWindow(rocky::Application& app)
 {
     auto dm = app.displayManager;
     app.onNextUpdate([dm]()
         {
-            QWidget* window = new QWidget();
-            window->setGeometry(50, 50, 800, 600);
-            window->setWindowTitle("Rocky - New Window");
+            int i = dm->windowsAndViews.size();
 
+            // the window:
+            auto window = new QWidget();
+            std::string name = "RockyQt - Window #" + std::to_string(i + 1);
+            window->setWindowTitle(name.c_str());
+            window->setGeometry(50, 50, 800, 600);
+
+            // share the vk device with the main window:
+            auto traits = vsg::WindowTraits::create();
+            traits->device = dm->sharedDevice();
+            auto rocky_window = new vsgQt::Window(traits);
+
+            // wrap the rocky view in a widget:
+            auto rocky_widget = QWidget::createWindowContainer(rocky_window);
             auto layout = new QVBoxLayout(window);
             layout->setContentsMargins(1, 0, 1, 1);
-
-            auto rocky_window = new vsgQt::Window();
-            auto rocky_widget = QWidget::createWindowContainer(rocky_window);
             layout->addWidget(rocky_widget);
 
+            // fire it up:
             rocky_window->initializeWindow();
 
+            // register with our display manager:
             dm->addWindow(rocky_window->windowAdapter);
+
+            // intercept the close event to remove the window from the display manager:
+            window->installEventFilter(new CloseQtWindowEventFilter(dm, rocky_window->windowAdapter));
 
             window->show();
         });

@@ -76,6 +76,9 @@ namespace ROCKY_NAMESPACE
         //! Gets the window hosting the provided view.
         vsg::ref_ptr<vsg::Window> getWindow(vsg::ref_ptr<vsg::View> view);
 
+        //! Gets the vulkan device shared by all windows
+        vsg::ref_ptr<vsg::Device> sharedDevice();
+
         //! Compile and hook up a render graph that you have manually installed
         //! on a command graph.
         void compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, vsg::ref_ptr<vsg::Window> window);
