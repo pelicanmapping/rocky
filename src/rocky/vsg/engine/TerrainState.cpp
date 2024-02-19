@@ -71,6 +71,7 @@ TerrainState::createDefaultDescriptors()
     texturedefs.color = { COLOR_TEX_NAME, COLOR_TEX_BINDING, vsg::Sampler::create(), {} };
     texturedefs.color.sampler->minFilter = VK_FILTER_LINEAR;
     texturedefs.color.sampler->magFilter = VK_FILTER_LINEAR;
+    texturedefs.color.sampler->maxLod = 5;
     texturedefs.color.sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
     texturedefs.color.sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     texturedefs.color.sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
