@@ -126,9 +126,9 @@ namespace WEEJOBS_NAMESPACE
             }
 
         protected:
-            std::mutex _m; // do not use Mutex, we never want tracking
-            std::condition_variable_any _cond;
             bool _set;
+            std::condition_variable_any _cond;
+            std::mutex _m; // do not use Mutex, we never want tracking
         };
 
 
@@ -213,7 +213,31 @@ namespace WEEJOBS_NAMESPACE
 #endif
     }
 
-    struct context;
+    /**
+    * Include a jobgroup in a context to group together multiple jobs.
+    * You can then call jobgroup::join() to wait for the whole group
+    * to finish.
+    */
+    struct jobgroup : public detail::semaphore
+    {
+        static std::shared_ptr<jobgroup> create()
+        {
+            return std::make_shared<jobgroup>();
+        }
+    };
+
+    /**
+    * Context object you can pass to dispatch(...) to control aspects of
+    * how the background task is run.
+    */
+    struct context
+    {
+        std::string name; // readable name of the job
+        class jobpool* pool = nullptr; // job pool to run in
+        std::function<float()> priority = {}; // priority of the job
+        std::shared_ptr<jobgroup> group = nullptr; // join group for this job
+        bool can_cancel = true; // if true, the job will cancel if its future goes out of scope
+    };
 
     /**
      * Future holds the future result of an asynchronous operation.
@@ -386,9 +410,10 @@ namespace WEEJOBS_NAMESPACE
             return _shared.use_count();
         }
 
-        //! Add a continuation to this future. The continuation will be
-        //! dispatched when the result becomes available and called with the return
-        //! value of this future.
+        //! Add a continuation to this future. The continuation will be dispatched
+        //! when this object's result becomes available; that result will be the input
+        //! value to the continuation function. The continuation function in turn must
+        //! return a value (cannot be void).
         template<typename FUNC, typename R = typename detail::result_of_t<FUNC(const T&, cancelable&)>>
         inline future<R> then_dispatch(FUNC func, const context& con = {});
 
@@ -398,15 +423,11 @@ namespace WEEJOBS_NAMESPACE
         //! Note: for some reason when you use this variant you must specific the template
         //! argument, e.g. result.then<int>(auto i, promise<int> p)
         template<typename R>
-        inline future<R> then_dispatch(std::function<void(const T&, future<R>)> func, const context& con = {});
+        inline future<R> then_dispatch(std::function<void(const T&, future<R>&)> func, const context& con = {});
 
-        //! Add a continuation to this future. The functor only takes an input value, and it is
-        //! expected that the application resolve the returned future on its own at some point
-        //! This is useful for operations that have their own way of running asynchronous code.
-        //! Note: for some reason when you use this variant you must specific the template
-        //! argument, e.g. result.then<int>(auto i)
-        template<typename R>
-        inline future<R> then_dispatch(std::function<void(const T&)> func, const context& con = {});
+        //! Add a continuation to this future. The functor only takes an input value and has no
+        //! return value (fire and forget).
+        inline void then_dispatch(std::function<void(const T&)> func, const context& con = {});
 
     private:
         std::shared_ptr<shared_t> _shared;
@@ -414,8 +435,14 @@ namespace WEEJOBS_NAMESPACE
         void fire_continuation()
         {
             std::lock_guard<std::mutex> lock(_shared->_continuation_mutex);
+
             if (_shared->_continuation && !_shared->_continuation_ran.exchange(true))
                 _shared->_continuation();
+
+            // Zero out the continuation function immediately after running it.
+            // This is important because the continuation might hold a reference to a promise
+            // that might hamper cancelation.
+            _shared->_continuation = nullptr;
         }
     };
 
@@ -423,31 +450,23 @@ namespace WEEJOBS_NAMESPACE
     //! but here's an alias for clarity.
     template<class T> using promise = future<T>;
 
-    /**
-    * Include a jobgroup in a context to group together multiple jobs.
-    * You can then call jobgroup::join() to wait for the whole group
-    * to finish.
-    */
-    struct jobgroup : public detail::semaphore
+    namespace detail
     {
-        static std::shared_ptr<jobgroup> create()
+        struct job
         {
-            return std::make_shared<jobgroup>();
-        }
-    };
+            context ctx;
+            std::function<bool()> _delegate;
 
-    /**
-    * Context object you can pass to dispatch(...) to control aspects of
-    * how the background task is run.
-    */
-    struct context
-    {
-        std::string name; // readable name of the job
-        class jobpool* pool = nullptr; // job pool to run in
-        std::function<float()> priority = {}; // priority of the job
-        std::shared_ptr<jobgroup> group = nullptr; // join group for this job
-        bool can_cancel = true; // if true, the job will cancel if its future goes out of scope
-    };
+            bool operator < (const job& rhs) const
+            {
+                float lp = ctx.priority ? ctx.priority() : -FLT_MAX;
+                float rp = rhs.ctx.priority ? rhs.ctx.priority() : -FLT_MAX;
+                return lp < rp;
+            }
+        };
+
+        inline bool steal_job(class jobpool* thief, detail::job& stolen);
+    }
 
     /**
     * A priority-sorted collection of jobs that are running or waiting
@@ -492,9 +511,9 @@ namespace WEEJOBS_NAMESPACE
         void set_concurrency(unsigned value)
         {
             value = std::max(value, 1u);
-            if (_targetConcurrency != value)
+            if (_target_concurrency != value)
             {
-                _targetConcurrency = value;
+                _target_concurrency = value;
                 start_threads();
             }
         }
@@ -502,14 +521,22 @@ namespace WEEJOBS_NAMESPACE
         //! Get the target concurrency (thread count) 
         unsigned concurrency() const
         {
-            return _targetConcurrency;
+            return _target_concurrency;
+        }
+
+        //! Whether this job pool is allowed to steal work from other job pools
+        //! when it is idle. Default = true.
+        void set_can_steal_work(bool value)
+        {
+            _can_steal_work = value;
         }
 
         //! Discard all queued jobs
         void cancel_all()
         {
-            std::unique_lock<std::mutex> lock(_queueMutex);
+            std::lock_guard<std::mutex> lock(_queue_mutex);
             _queue.clear();
+            _queue_size = 0;
             _metrics.canceled += _metrics.pending;
             _metrics.pending = 0;
         }
@@ -518,41 +545,83 @@ namespace WEEJOBS_NAMESPACE
         //! Use job::dispatch to run jobs (usually no need to call this directly)
         //! @param delegate Function to execute
         //! @param context Job details
-        void dispatch_delegate(std::function<bool()>& delegate, const context& context)
+        void _dispatch_delegate(std::function<bool()>& delegate, const context& context)
         {
-            // If we have a group semaphore, acquire it BEFORE queuing the job
-            if (context.group)
+            if (!_done)
             {
-                context.group->acquire();
-            }
-
-            if (_targetConcurrency > 0)
-            {
-                std::unique_lock<std::mutex> lock(_queueMutex);
-                if (!_done)
+                // If we have a group semaphore, acquire it BEFORE queuing the job
+                if (context.group)
                 {
-                    _queue.emplace_back(job{ context, delegate });
+                    context.group->acquire();
+                }
+
+                if (_target_concurrency > 0)
+                {
+                    std::lock_guard<std::mutex> lock(_queue_mutex);
+
+                    _queue.emplace_back(detail::job{ context, delegate });
+                    _queue_size++;
+
                     _metrics.pending++;
                     _metrics.total++;
                     _block.notify_one();
                 }
-            }
-            else
-            {
-                // no threads? run synchronously.
-                delegate();
-
-                if (context.group)
+                else
                 {
-                    context.group->release();
+                    // no threads? run synchronously.
+                    delegate();
+
+                    if (context.group)
+                    {
+                        context.group->release();
+                    }
                 }
             }
+        }
+
+        //! removes the highest priority job from the queue and places it
+        //! in output. Returns true if a job was taken, false if the queue
+        //! was empty.
+        inline bool _take_job(detail::job& output, bool lock)
+        {
+            if (lock)
+            {
+                std::lock_guard<std::mutex> lock(_queue_mutex);
+                return _take_job(output, false);
+            }
+            else if (!_done && _queue_size > 0)
+            {
+                auto ptr = _queue.end();
+                float highest_priority = -FLT_MAX;
+                for (auto iter = _queue.begin(); iter != _queue.end(); ++iter)
+                {
+                    float priority = iter->ctx.priority != nullptr ?
+                        iter->ctx.priority() :
+                        0.0f;
+
+                    if (ptr == _queue.end() || priority > highest_priority)
+                    {
+                        ptr = iter;
+                        highest_priority = priority;
+                    }
+                }
+
+                if (ptr == _queue.end())
+                    ptr = _queue.begin();
+
+                output = std::move(*ptr);
+                _queue.erase(ptr);
+                _queue_size--;
+                _metrics.pending--;
+                return true;
+            }
+            return false;
         }
 
         //! Construct a new job pool.
         //! Do not call this directly - call getPool(name) instead.
         jobpool(const std::string& name, unsigned concurrency) :
-            _targetConcurrency(concurrency)
+            _target_concurrency(concurrency)
         {
             _metrics.name = name;
             _metrics.concurrency = 0;
@@ -560,90 +629,7 @@ namespace WEEJOBS_NAMESPACE
 
         //! Pulls queued jobs and runs them in whatever thread run() is called from.
         //! Runs in a loop until _done is set.
-        void run()
-        {
-            while (!_done)
-            {
-                job next;
-                bool have_next = false;
-                {
-                    std::unique_lock<std::mutex> lock(_queueMutex);
-
-                    _block.wait(lock, [this] {
-                        return _queue.empty() == false || _done == true;
-                        });
-
-                    if (!_queue.empty() && !_done)
-                    {
-                        // Find the highest priority item in the queue.
-                        // Note: We could use std::partial_sort or std::nth_element,
-                        // but benchmarking proves that a simple brute-force search
-                        // is always the fastest.
-                        // (Benchmark: https://stackoverflow.com/a/20365638/4218920)
-                        // Also note: it is indeed possible for the results of 
-                        // priority() to change during the search. We don't care.
-                        //int index = -1;
-                        std::list<job>::iterator ptr = _queue.end();
-                        float highest_priority = -FLT_MAX;
-                        for (auto iter = _queue.begin(); iter != _queue.end(); ++iter)
-                        {
-                            float priority = iter->ctx.priority != nullptr ?
-                                iter->ctx.priority() :
-                                0.0f;
-
-                            if (ptr == _queue.end() || priority > highest_priority)
-                            {
-                                ptr = iter;
-                                highest_priority = priority;
-                            }
-                        }
-
-                        if (ptr == _queue.end())
-                            ptr = _queue.begin();
-
-                        next = std::move(*ptr);
-                        have_next = true;
-
-                        _queue.erase(ptr);
-                    }
-                }
-
-                if (have_next)
-                {
-                    _metrics.running++;
-                    _metrics.pending--;
-
-                    auto t0 = std::chrono::steady_clock::now();
-
-                    bool job_executed = next._delegate();
-
-                    auto duration = std::chrono::steady_clock::now() - t0;
-
-                    if (job_executed == false)
-                    {
-                        _metrics.canceled++;
-                    }
-
-                    // release the group semaphore if necessary
-                    if (next.ctx.group != nullptr)
-                    {
-                        next.ctx.group->release();
-                    }
-
-                    _metrics.running--;
-                }
-
-                // See if we no longer need this thread because the
-                // target concurrency has been reduced
-                std::lock_guard<std::mutex> lock(_quitMutex);
-
-                if (_targetConcurrency < _metrics.concurrency)
-                {
-                    _metrics.concurrency--;
-                    break;
-                }
-            }
-        }
+        inline void run();
 
         //! Spawn all threads in this scheduler
         inline void start_threads();
@@ -654,25 +640,12 @@ namespace WEEJOBS_NAMESPACE
         //! Wait for all threads to exit (after calling stop_threads)
         inline void join_threads();
 
-
-        struct job
-        {
-            context ctx;
-            std::function<bool()> _delegate;
-
-            bool operator < (const job& rhs) const
-            {
-                float lp = ctx.priority ? ctx.priority() : -FLT_MAX;
-                float rp = rhs.ctx.priority ? rhs.ctx.priority() : -FLT_MAX;
-                return lp < rp;
-            }
-        };
-
-        std::string _name; // pool name
-        std::list<job> _queue;
-        mutable std::mutex _queueMutex; // protect access to the queue
-        mutable std::mutex _quitMutex; // protects access to _done
-        std::atomic<unsigned> _targetConcurrency; // target number of concurrent threads in the pool
+        bool _can_steal_work = true;
+        std::list<detail::job> _queue;
+        std::atomic_int _queue_size = { 0 }; // don't use list::size(), it's slow and not atomic
+        mutable std::mutex _queue_mutex; // protect access to the queue
+        mutable std::mutex _quit_mutex; // protects access to _done
+        std::atomic<unsigned> _target_concurrency; // target number of concurrent threads in the pool
         std::condition_variable_any _block; // thread waiter block
         bool _done = false; // set to true when threads should exit
         std::vector<std::thread> _threads; // threads in the pool
@@ -683,46 +656,19 @@ namespace WEEJOBS_NAMESPACE
     {
     public:
         //! Total number of pending jobs across all schedulers
-        int totalJobsPending() const
-        {
-            int count = 0;
-            for (auto pool : _pools)
-                count += pool->pending;
-            return count;
-        }
+        int total_pending() const;
 
         //! Total number of running jobs across all schedulers
-        int totalJobsRunning() const
-        {
-            int count = 0;
-            for (auto pool : _pools)
-                count += pool->running;
-            return count;
-        }
+        int total_running() const;
 
         //! Total number of running jobs across all schedulers
-        int totalJobsPostprocessing() const
-        {
-            int count = 0;
-            for (auto pool : _pools)
-                count += pool->postprocessing;
-            return count;
-        }
+        int total_postprocessing() const;
 
         //! Total number of canceled jobs across all schedulers
-        int totalJobsCanceled() const
-        {
-            int count = 0;
-            for (auto pool : _pools)
-                count += pool->canceled;
-            return count;
-        }
+        int total_canceled() const;
 
         //! Total number of active jobs in the system
-        int totalJobs() const
-        {
-            return totalJobsPending() + totalJobsRunning() + totalJobsPostprocessing();
-        }
+        int total() const;
 
         //! Gets a vector of all jobpool metrics structures.
         inline const std::vector<struct jobpool::metrics_t*> all()
@@ -742,27 +688,27 @@ namespace WEEJOBS_NAMESPACE
         struct runtime
         {
             inline runtime();
-
             inline ~runtime();
-
             inline void shutdown();
 
             bool _alive = true;
-            std::mutex _mutex;
-            std::vector<std::string> _pool_names;
+            bool _stealing_allowed = true;
+            std::mutex _pools_mutex;
             std::vector<jobpool*> _pools;
             metrics _metrics;
-            std::function<void(const char*)> _setThreadName;
+            std::function<void(const char*)> _set_thread_name;
         };
     }
 
+    //! Access to the runtime singleton - users need not call this
     extern WEEJOBS_EXPORT detail::runtime& instance();
 
     //! Returns the job pool with the given name, creating a new one if it doesn't 
     //! already exist. If you don't specify a name, a default pool is used.
     inline jobpool* get_pool(const std::string& name = {})
     {
-        std::lock_guard<std::mutex> lock(instance()._mutex);
+        std::lock_guard<std::mutex> lock(instance()._pools_mutex);
+
         for (auto pool : instance()._pools)
         {
             if (pool->name() == name)
@@ -777,11 +723,25 @@ namespace WEEJOBS_NAMESPACE
 
     namespace detail
     {
+        // dispatches a function to the appropriate job pool.
         inline void pool_dispatch(std::function<bool()> delegate, const context& context)
         {
             auto pool = context.pool ? context.pool : get_pool({});
             if (pool)
-                pool->dispatch_delegate(delegate, context);
+            {
+                pool->_dispatch_delegate(delegate, context);
+
+                // if work stealing is enabled, wake up all pools
+                if (instance()._stealing_allowed)
+                {
+                    std::lock_guard<std::mutex> lock(instance()._pools_mutex);
+
+                    for (auto pool : instance()._pools)
+                    {
+                        pool->_block.notify_all();
+                    }
+                }
+            }
         }
     }
 
@@ -797,11 +757,11 @@ namespace WEEJOBS_NAMESPACE
     //! Dispatches a job and immediately returns a future result.
     //! @param task Function to run in a thread. Prototype is T(cancelable&)
     //! @param context Optional configuration for the asynchronous function call
-    //! @param promise Optional user-supplied promise object
     //! @return Future result of the async function call
     template<typename FUNC, typename T = typename detail::result_of_t<FUNC(cancelable&)>>
-    inline future<T> dispatch(FUNC task, const context& context = {}, future<T> promise = {})
+    inline future<T> dispatch(FUNC task, const context& context = {})
     {
+        future<T> promise;
         bool can_cancel = context.can_cancel;
 
         std::function<bool()> delegate = [task, promise, can_cancel]() mutable
@@ -826,65 +786,29 @@ namespace WEEJOBS_NAMESPACE
         return promise;
     }
 
-
-    inline void jobpool::start_threads()
+    //! Dispatches a job and immediately returns a future result.
+    //! @param task Function to run in a thread. Prototype is T(cancelable&)
+    //! @param promise Optional user-supplied promise object
+    //! @param context Optional configuration for the asynchronous function call
+    //! @return Future result of the async function call
+    template<typename FUNC, typename T = typename detail::result_of_t<FUNC(cancelable&)>>
+    inline future<T> dispatch(FUNC task, future<T> promise, const context& context = {})
     {
-        _done = false;
+        bool can_cancel = context.can_cancel;
 
-        // Not enough? Start up more
-        while (_metrics.concurrency < _targetConcurrency)
-        {
-            _metrics.concurrency++;
-
-            _threads.push_back(std::thread([this]
-                {
-                    if (instance()._setThreadName)
-                    {
-                        instance()._setThreadName(_name.c_str());
-                    }
-                    run();
-                }
-            ));
-        }
-    }
-
-    inline void jobpool::stop_threads()
-    {
-        _done = true;
-
-        // Clear out the queue
-        {
-            std::unique_lock<std::mutex> lock(_queueMutex);
-
-            // reset any group semaphores so that JobGroup.join()
-            // will not deadlock.
-            for (auto& queuedjob : _queue)
+        std::function<bool()> delegate = [task, promise, can_cancel]() mutable
             {
-                if (queuedjob.ctx.group != nullptr)
+                bool run = !can_cancel || !promise.canceled();
+                if (run)
                 {
-                    queuedjob.ctx.group->release();
+                    task(promise);
                 }
-            }
-            _queue.clear();
+                return run;
+            };
 
-            // wake up all threads so they can exit
-            _block.notify_all();
-        }
-    }
+        detail::pool_dispatch(delegate, context);
 
-    //! Wait for all threads to exit (after calling stop_threads)
-    inline void jobpool::join_threads()
-    {
-        // wait for them to exit
-        for (unsigned i = 0; i < _threads.size(); ++i)
-        {
-            if (_threads[i].joinable())
-            {
-                _threads[i].join();
-            }
-        }
-
-        _threads.clear();
+        return promise;
     }
 
     //! Metrics for all job pool
@@ -909,7 +833,13 @@ namespace WEEJOBS_NAMESPACE
     //! when it spawns them.
     inline void set_thread_name_function(std::function<void(const char*)> f)
     {
-        instance()._setThreadName = f;
+        instance()._set_thread_name = f;
+    }
+
+    //! Whether to allow jobpools to steal work from other jobpools when they are idle.
+    inline void set_allow_work_stealing(bool value)
+    {
+        instance()._stealing_allowed = value;
     }
 
     inline detail::runtime::runtime()
@@ -937,10 +867,176 @@ namespace WEEJOBS_NAMESPACE
                 pool->join_threads();
     }
 
+    inline void jobpool::run()
+    {
+        while (!_done)
+        {
+            detail::job next;
+            bool have_next = false;
+            {
+                if (_can_steal_work && instance()._stealing_allowed)
+                {
+                    {
+                        std::unique_lock<std::mutex> lock(_queue_mutex);
+
+                        // work-stealing enabled: wait until any queue is non-empty
+                        _block.wait(lock, [this]() { return get_metrics()->total_pending() > 0 || _done; });
+
+                        if (!_done && _queue_size > 0)
+                        {
+                            have_next = _take_job(next, false);
+                        }
+                    }
+
+                    if (!_done && !have_next)
+                    {
+                        have_next = detail::steal_job(this, next);
+                    }
+                }
+                else
+                {
+                    std::unique_lock<std::mutex> lock(_queue_mutex);
+
+                    // wait until just our local queue is non-empty
+                    _block.wait(lock, [this] { return (_queue_size > 0) || _done; });
+
+                    if (!_done && _queue_size > 0)
+                    {
+                        have_next = _take_job(next, false);
+                    }
+                }
+            }
+
+            if (have_next)
+            {
+                _metrics.running++;
+
+                auto t0 = std::chrono::steady_clock::now();
+
+                bool job_executed = next._delegate();
+
+                auto duration = std::chrono::steady_clock::now() - t0;
+
+                if (job_executed == false)
+                {
+                    _metrics.canceled++;
+                }
+
+                // release the group semaphore if necessary
+                if (next.ctx.group != nullptr)
+                {
+                    next.ctx.group->release();
+                }
+
+                _metrics.running--;
+            }
+
+            // See if we no longer need this thread because the
+            // target concurrency has been reduced
+            std::lock_guard<std::mutex> lock(_quit_mutex);
+
+            if (_target_concurrency < _metrics.concurrency)
+            {
+                _metrics.concurrency--;
+                break;
+            }
+        }
+    }
+
+    inline void jobpool::start_threads()
+    {
+        _done = false;
+
+        // Not enough? Start up more
+        while (_metrics.concurrency < _target_concurrency)
+        {
+            _metrics.concurrency++;
+
+            _threads.push_back(std::thread([this]
+                {
+                    if (instance()._set_thread_name)
+                    {
+                        instance()._set_thread_name(_metrics.name.c_str());
+                    }
+                    run();
+                }
+            ));
+        }
+    }
+
+    inline void jobpool::stop_threads()
+    {
+        _done = true;
+
+        // Clear out the queue
+        std::lock_guard<std::mutex> lock(_queue_mutex);
+
+        // reset any group semaphores so that JobGroup.join()
+        // will not deadlock.
+        for (auto& queuedjob : _queue)
+        {
+            if (queuedjob.ctx.group != nullptr)
+            {
+                queuedjob.ctx.group->release();
+            }
+        }
+        _queue.clear();
+        _queue_size = 0;
+
+        // wake up all threads so they can exit
+        _block.notify_all();
+    }
+
+    //! Wait for all threads to exit (after calling stop_threads)
+    inline void jobpool::join_threads()
+    {
+        // wait for them to exit
+        for (unsigned i = 0; i < _threads.size(); ++i)
+        {
+            if (_threads[i].joinable())
+            {
+                _threads[i].join();
+            }
+        }
+
+        _threads.clear();
+    }
+
+    // steal a job from another jobpool's queue (other than "thief").
+    inline bool detail::steal_job(jobpool* thief, detail::job& stolen)
+    {
+        jobpool* pool_with_most_jobs = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(instance()._pools_mutex);
+
+            std::size_t max_num_jobs = 0u;
+            for (auto pool : instance()._pools)
+            {
+                if (pool != thief)
+                {
+                    if (static_cast<std::size_t>(pool->_queue_size) > max_num_jobs)
+                    {
+                        max_num_jobs = pool->_queue_size;
+                        pool_with_most_jobs = pool;
+                    }
+                }
+            }
+        }
+
+        if (pool_with_most_jobs)
+        {
+            return pool_with_most_jobs->_take_job(stolen, true);
+        }
+
+        return false;
+    }
+
     template<typename T>
     template<typename FUNC, typename R>
     inline future<R> future<T>::then_dispatch(FUNC func, const context& con)
     {
+        // The future result of FUNC. 
+        // In this case, the continuation task will return a value that the system will use to resolve the promise.
         future<R> continuation_promise;
 
         // lock the continuation and set it:
@@ -968,13 +1064,15 @@ namespace WEEJOBS_NAMESPACE
                         // copy it and dispatch it as the input to a new job:
                         T copy_of_value = shared->_obj;
 
-                        auto wrapper = [func, copy_of_value](cancelable& c) -> R
+                        // Once this wrapper gets created, note that we now have 2 refereces to the continuation_promise.
+                        // To prevent this from hampering cancelation, the continuation fuction is set to nullptr
+                        // immediately after being called.
+                        auto wrapper = [func, copy_of_value, continuation_promise]() mutable
                             {
-                                return func(copy_of_value, c);
+                                continuation_promise.resolve(func(copy_of_value, continuation_promise));
                             };
 
-                        // supply our own promise (the one returned to the user).
-                        jobs::dispatch(wrapper, copy_of_con, continuation_promise);
+                        jobs::dispatch(wrapper, copy_of_con);
                     }
                 };
         }
@@ -990,8 +1088,10 @@ namespace WEEJOBS_NAMESPACE
 
     template<typename T>
     template<typename R>
-    inline future<R> future<T>::then_dispatch(std::function<void(const T&, future<R>)> func, const context& con)
+    inline future<R> future<T>::then_dispatch(std::function<void(const T&, future<R>&)> func, const context& con)
     {
+        // The future we will return to the caller.
+        // Note, the user function "func" is responsible for resolving this promise.
         future<R> continuation_promise;
 
         // lock the continuation and set it:
@@ -1007,9 +1107,10 @@ namespace WEEJOBS_NAMESPACE
             // have access to its result.
             std::weak_ptr<shared_t> weak_shared = _shared;
 
-            // fix the race condition here
-            // perhaps a set_on_resolve that mutexes to ensure on_resolve actually gets called?
-
+            // The user task is responsible for resolving the promise.
+            // This continuation executes the user function directly instead of dispatching it
+            // to the job pool. This is because we expect the user function to use some external
+            // asynchronous mechanism to resolve the promise.
             _shared->_continuation = [func, weak_shared, continuation_promise]() mutable
                 {
                     auto shared = weak_shared.lock();
@@ -1029,33 +1130,35 @@ namespace WEEJOBS_NAMESPACE
     }
 
     template<typename T>
-    template<typename R>
-    inline future<R> future<T>::then_dispatch(std::function<void(const T&)> func, const context& con)
+    inline void future<T>::then_dispatch(std::function<void(const T&)> func, const context& con)
     {
-        future<R> continuation_promise;
-
         // lock the continuation and set it:
         {
             std::lock_guard<std::mutex> lock(_shared->_continuation_mutex);
 
             if (_shared->_continuation)
             {
-                return {}; // only one continuation allowed
+                return; // only one continuation allowed
             }
 
             // take a weak ptr to this future's shared data. If this future goes away we'll still
             // have access to its result.
             std::weak_ptr<shared_t> weak_shared = _shared;
+            auto copy_of_con = con;
 
-            // fix the race condition here
-            // perhaps a set_on_resolve that mutexes to ensure on_resolve actually gets called?
-
-            _shared->_continuation = [func, weak_shared]() mutable
+            _shared->_continuation = [func, weak_shared, copy_of_con]() mutable
                 {
                     auto shared = weak_shared.lock();
                     if (shared)
                     {
-                        func(shared->_obj);
+                        auto copy_of_value = shared->_obj;
+                        auto fire_and_forget_delegate = [func, copy_of_value]() mutable
+                            {
+                                func(copy_of_value);
+                                return true;
+                            };
+
+                        detail::pool_dispatch(fire_and_forget_delegate, copy_of_con);
                     }
                 };
         }
@@ -1064,8 +1167,56 @@ namespace WEEJOBS_NAMESPACE
         {
             fire_continuation();
         }
+    }
 
-        return continuation_promise;
+    //! Total number of pending jobs across all schedulers
+    inline int metrics::total_pending() const
+    {
+        std::lock_guard<std::mutex> lock(instance()._pools_mutex);
+        int count = 0;
+        for (auto pool : _pools)
+            count += pool->pending;
+        return count;
+    }
+
+    //! Total number of running jobs across all schedulers
+    inline int metrics::total_running() const
+    {
+        std::lock_guard<std::mutex> lock(instance()._pools_mutex);
+        int count = 0;
+        for (auto pool : _pools)
+            count += pool->running;
+        return count;
+    }
+
+    //! Total number of running jobs across all schedulers
+    inline int metrics::total_postprocessing() const
+    {
+        std::lock_guard<std::mutex> lock(instance()._pools_mutex);
+        int count = 0;
+        for (auto pool : _pools)
+            count += pool->postprocessing;
+        return count;
+    }
+
+    //! Total number of canceled jobs across all schedulers
+    inline int metrics::total_canceled() const
+    {
+        std::lock_guard<std::mutex> lock(instance()._pools_mutex);
+        int count = 0;
+        for (auto pool : _pools)
+            count += pool->canceled;
+        return count;
+    }
+
+    //! Total number of active jobs in the system
+    inline int metrics::total() const
+    {
+        std::lock_guard<std::mutex> lock(instance()._pools_mutex);
+        int count = 0;
+        for (auto pool : _pools)
+            count += pool->pending + pool->running + pool->postprocessing;
+        return count;
     }
 
     // Use this macro ONCE in your application in a .cpp file to 
