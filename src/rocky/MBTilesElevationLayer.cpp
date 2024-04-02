@@ -4,6 +4,8 @@
  * MIT License
  */
 #include "MBTilesElevationLayer.h"
+#ifdef ROCKY_HAS_MBTILES
+
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
@@ -103,3 +105,5 @@ MBTilesElevationLayer::writeHeightfieldImplementation(const TileKey& key, shared
 
     return _driver.write(key, image, io);
 }
+
+#endif // ROCKY_HAS_MBTILES

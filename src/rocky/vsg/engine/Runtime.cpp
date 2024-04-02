@@ -297,7 +297,7 @@ Runtime::compileAndAddChild(
         return true;
     };
 
-    auto future = jobs::dispatch(async_create_and_add_node, job_config, promise);
+    auto future = jobs::dispatch(async_create_and_add_node, promise, job_config);
 
     return future;
 }

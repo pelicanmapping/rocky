@@ -4,9 +4,10 @@
  * MIT License
  */
 #pragma once
+#include <rocky/GDAL.h>
+#ifdef ROCKY_HAS_GDAL
 
 #include <rocky/ImageLayer.h>
-#include <rocky/GDAL.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -49,3 +50,5 @@ namespace ROCKY_NAMESPACE
     };
 
 } // namespace ROCKY_NAMESPACE
+
+#endif // ROCKY_HAS_GDAL

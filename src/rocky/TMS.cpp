@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "TMS.h"
+#ifdef ROCKY_HAS_TMS
 
 #ifdef ROCKY_HAS_TINYXML
 #include <tinyxml.h>
@@ -803,3 +804,5 @@ TMS::Driver::read(const URI& uri, const TileKey& key, bool invertY, bool isMapbo
     else
         return Status(Status::ResourceUnavailable);
 }
+
+#endif // ROCKY_HAS_TMS

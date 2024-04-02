@@ -4,6 +4,8 @@
  * MIT License
  */
 #include "GDALElevationLayer.h"
+#ifdef ROCKY_HAS_GDAL
+
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
@@ -180,3 +182,5 @@ GDALElevationLayer::createHeightfieldImplementation(
 
     return GeoHeightfield::INVALID;
 }
+
+#endif // GDAL_HAS_ROCKY

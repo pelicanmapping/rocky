@@ -10,8 +10,10 @@
 #include "Utils.h"
 #include "Version.h"
 #include "json.h"
+#include "weejobs.h"
 
 ROCKY_ABOUT(rocky, ROCKY_VERSION_STRING)
+ROCKY_ABOUT(weejobs, WEEJOBS_VERSION_STRING)
 ROCKY_ABOUT(glm, std::to_string(GLM_VERSION_MAJOR) + "." + std::to_string(GLM_VERSION_MINOR) + "." + std::to_string(GLM_VERSION_PATCH) + "." + std::to_string(GLM_VERSION_REVISION))
 ROCKY_ABOUT(nlohmann_json, std::to_string(NLOHMANN_JSON_VERSION_MAJOR) + "." + std::to_string(NLOHMANN_JSON_VERSION_MINOR));
 

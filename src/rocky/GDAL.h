@@ -4,8 +4,9 @@
  * MIT License
  */
 #pragma once
-
 #include <rocky/Common.h>
+#ifdef ROCKY_HAS_GDAL
+
 #include <rocky/URI.h>
 #include <rocky/Heightfield.h>
 #include <rocky/Image.h>
@@ -144,3 +145,10 @@ namespace ROCKY_NAMESPACE
     } // namespace GDAL
 
 } // namespace ROCKY_NAMESPACE
+
+
+#else // if !ROCKY_HAS_GDAL
+#ifndef ROCKY_BUILDING_SDK
+#error GDAL support is not enabled in Rocky.
+#endif
+#endif // ROCKY_HAS_GDAL

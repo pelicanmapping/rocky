@@ -170,7 +170,7 @@ Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
 
     // respond to the X or to hitting ESC
     // TODO: refactor this so it responds to individual windows and not the whole app?
-    viewer->addEventHandler(vsg::CloseHandler::create(viewer));
+    //viewer->addEventHandler(vsg::CloseHandler::create(viewer));
 
     // This sets up the internal tasks that will, for each command graph, record
     // a scene graph and submit the results to the renderer each frame. Also sets
@@ -306,7 +306,7 @@ Application::frame()
     // if the number of windows has changed, skip to the next frame immediately
     if (num_windows != viewer->windows().size())
     {
-        Log()->info("Number of windows changed; skipping to next frame");
+        Log()->debug("Number of windows changed; skipping to next frame");
         return true;
     }
 

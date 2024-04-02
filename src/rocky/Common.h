@@ -88,7 +88,7 @@ namespace ROCKY_NAMESPACE
         using constweakptr = weak_ptr<const ME>;
         template<typename... Args>
         static shared_ptr<ME> create(Args&&... args) {
-            return std::make_shared<ME>(args...);
+            return std::make_shared<ME>(std::forward<Args>(args)...);
         }
         template<typename T>
         static shared_ptr<ME> cast(shared_ptr<T>& rhs) {
@@ -117,22 +117,7 @@ namespace ROCKY_NAMESPACE
 #pragma warning (disable: 4180)
 #endif
 
-// Sringification
-#define ROCKY_STRINGIFY_0(x) #x
-#define ROCKY_STRINGIFY(x) ROCKY_STRINGIFY_0(x)
-
-#define ROCKY_USE_STATIC_INSTANCE_LOG
-
-#ifdef ROCKY_USE_STATIC_INSTANCE_LOG
-#define ROCKY_INFO rocky::Log::info()
-#define ROCKY_WARN rocky::Log::warn()
-#else
-#define ROCKY_INFO std::cout << "<rk> "
-#define ROCKY_WARN std::cout << "<rk> *** WARNING *** "
-#define ROCKY_NULL if (false) std::cout
-#endif
-
-#define ROCKY_DEPRECATED(A, B) ROCKY_WARN << #A << " is deprecated; please use " << #B << std::endl
+#define ROCKY_DEPRECATED(A, B) rocky::Log::warn() << #A << " is deprecated; please use " << #B << std::endl
 
 #if defined(_MSC_VER)
 #define ROCKY_FILE (std::strrchr(__FILE__, '\\') ? std::strrchr(__FILE__, '\\') + 1 : __FILE__)

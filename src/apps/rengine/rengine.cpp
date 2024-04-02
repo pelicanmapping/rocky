@@ -129,13 +129,14 @@ int main(int argc, char** argv)
     if (elevation->status().failed())
         return error(elevation);
 
-#else
+#else // if !ROCKY_HAS_TMS
 
     auto layer = rocky::TestLayer::create();
-    mapNode->map()->addLayer(layer);
+    mapNode->map->layers().add(layer);
     if (layer->status().failed())
         return error(layer);
-#endif
+
+#endif // ROCKY_HAS_TMS
 
     // the sun
     if (arguments.read({ "--sky" }))

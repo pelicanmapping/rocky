@@ -4,8 +4,9 @@
  * MIT License
  */
 #pragma once
-
 #include <rocky/MBTiles.h>
+#ifdef ROCKY_HAS_MBTILES
+
 #include <rocky/ElevationLayer.h>
 
 namespace ROCKY_NAMESPACE
@@ -59,3 +60,5 @@ namespace ROCKY_NAMESPACE
         void construct(const JSON&);
     };
 }
+
+#endif // ROCKY_HAS_MBTILES

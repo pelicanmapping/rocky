@@ -7,6 +7,7 @@
 
 #include <rocky/Map.h>
 #include <rocky/VisibleLayer.h>
+#include <rocky/TileLayer.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;

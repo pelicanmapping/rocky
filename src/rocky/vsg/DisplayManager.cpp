@@ -34,6 +34,34 @@ namespace
         }
         return VK_FALSE;
     }
+
+    struct CloseWindowEventHandler : public vsg::Inherit<vsg::Visitor, CloseWindowEventHandler>
+    {
+        CloseWindowEventHandler(rocky::Application* app) : _app(app) { }
+
+        void apply(vsg::CloseWindowEvent& e) override
+        {
+            auto window = e.window.ref_ptr();
+            if (window)
+            {
+                _app->onNextUpdate([window, this]()
+                    {
+                        Log()->info("Removing window...");
+                        _app->displayManager->removeWindow(window);
+
+                        if (_app->viewer->windows().empty())
+                        {
+                            Log()->info("All windows closed... shutting down.");
+                            _app->viewer->close();
+                        }
+                    });
+
+                e.handled = true;
+            }
+        }
+
+        rocky::Application* _app;
+    };
 }
 
 
@@ -41,14 +69,30 @@ namespace
 DisplayManager::DisplayManager(Application& in_app) :
     app(&in_app)
 {
-    viewer = app->viewer;
-    ROCKY_SOFT_ASSERT(viewer);
+    setViewer(in_app.viewer);
 }
 
-DisplayManager::DisplayManager(vsg::ref_ptr<vsg::Viewer> in_viewer) :
-    viewer(in_viewer)
+DisplayManager::DisplayManager(vsg::ref_ptr<vsg::Viewer> in_viewer)
 {
-    ROCKY_SOFT_ASSERT(viewer);
+    setViewer(in_viewer);
+}
+
+void
+DisplayManager::setViewer(vsg::ref_ptr<vsg::Viewer> in_viewer)
+{
+    ROCKY_SOFT_ASSERT(in_viewer);
+
+    if (viewer != in_viewer)
+    {
+        viewer = in_viewer;
+
+        if (viewer)
+        {
+            // intercept the window-close event so we can remove the window from our tracking tables.
+            auto& handlers = viewer->getEventHandlers();
+            handlers.insert(handlers.begin(), CloseWindowEventHandler::create(app));
+        }
+    }
 }
 
 vsg::ref_ptr<vsg::Device>
@@ -64,9 +108,9 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
     ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
 
     // Share device with existing windows.
-    if (!window->getDevice() && !windowsAndViews.empty())
+    if (window->getDevice() == nullptr)
     {
-        window->setDevice(viewer->windows().front()->getDevice());
+        window->setDevice(sharedDevice());
     }
 
     // Each window gets its own CommandGraph. We will store it here and then
@@ -169,10 +213,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     bary.fragmentShaderBarycentric = true;
 
     // share the device across all windows
-    if (viewer->windows().size() > 0)
-    {
-        traits->device = viewer->windows().front()->getDevice();
-    }
+    traits->device = sharedDevice();
 
     auto window = vsg::Window::create(traits);
 

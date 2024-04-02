@@ -17,12 +17,15 @@ project(
 )
 
 # please update this with each ABI change!!
-set(PROJECT_VERSION_ABI 102)
+set(PROJECT_VERSION_ABI 103)
 
 # require C++17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# define that we can use when checking for conditional features in the SDK build
+add_definitions(-DROCKY_BUILDING_SDK)
 
 # option to build shared or static libs
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
@@ -61,15 +64,10 @@ option(ROCKY_SUPPORTS_HTTPS "Support HTTPS (requires openssl)" ON)
 option(ROCKY_SUPPORTS_TMS "Support OSGeo TileMapService" ON)
 option(ROCKY_SUPPORTS_GDAL "Support GeoTIFF, WMS, WMTS, and other GDAL formats (requires gdal)" ON)
 option(ROCKY_SUPPORTS_MBTILES "Support MBTiles databases with extended spatial profile support (requires sqlite3, zlib)" ON)
-option(ROCKY_SUPPORTS_PROFILING "Build with performance profiling" OFF)
 option(ROCKY_SUPPORTS_IMGUI "Build ImGui demos" ON)
 option(ROCKY_SUPPORTS_QT "Build Qt demos" OFF)
 
 set(BUILD_WITH_JSON ON)
-
-if(ROCKY_SUPPORTS_PROFILING)
-    set(BUILD_WITH_TRACY ON)
-endif()
 
 if(ROCKY_SUPPORTS_QT)
     set(BUILD_WITH_QT ON)
@@ -86,15 +84,16 @@ endif()
 
 if(ROCKY_SUPPORTS_GDAL)
     set(BUILD_WITH_GDAL ON)
+    set(ROCKY_HAS_GDAL TRUE)
 endif()
 
 if (ROCKY_SUPPORTS_MBTILES)
     set(BUILD_WITH_SQLITE3 ON)
     set(BUILD_WITH_ZLIB ON)
+    set(ROCKY_HAS_MBTILES ON)
 endif()
 
 if (ROCKY_SUPPORTS_TMS)
-    set(BUILD_WITH_TMS ON)
     set(BUILD_WITH_TINYXML ON)
     set(ROCKY_HAS_TMS TRUE)
 endif()
@@ -135,9 +134,6 @@ endif()
 # GDAL - geospatial data abstraction library
 if(BUILD_WITH_GDAL)
     find_package(GDAL CONFIG REQUIRED)
-    if (GDAL_FOUND)
-        set(ROCKY_HAS_GDAL TRUE)
-    endif()
 endif()
 
 # sqlite3 - database - required to support some formats like mbtiles
@@ -154,14 +150,6 @@ if (BUILD_WITH_ZLIB)
     if (ZLIB_FOUND)
         set(ROCKY_HAS_ZLIB TRUE)
     endif()        
-endif()
-
-# tracy - profiling tools and headers
-if (BUILD_WITH_TRACY)
-    find_package(Tracy CONFIG REQUIRED)
-    if (Tracy_FOUND)
-        set(ROCKY_HAS_TRACY TRUE)
-    endif()
 endif()
 
 # pthreads - for linux

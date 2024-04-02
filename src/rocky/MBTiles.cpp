@@ -4,6 +4,8 @@
  * MIT License
  */
 #include "MBTiles.h"
+#ifdef ROCKY_HAS_MBTILES
+
 #include "Image.h"
 #include "json.h"
 #include "Instance.h"
@@ -659,3 +661,5 @@ MBTiles::Driver::setDataExtents(const DataExtentList& values)
         putMetaData("bounds", boundsStr.str());
     }
 }
+
+#endif // ROCKY_HAS_MBTILES

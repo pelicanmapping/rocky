@@ -4,6 +4,8 @@
  * MIT License
  */
 #include "GDAL.h"
+#ifdef ROCKY_HAS_GDAL
+
 #include "ElevationLayer.h" // for NO_DATA_VALUE
 #include <gdal.h>
 #include <gdalwarper.h>
@@ -1601,3 +1603,5 @@ namespace
         return StatusOK;
     }
 }
+
+#endif // ROCKY_HAS_GDAL

@@ -4,6 +4,8 @@
  * MIT License
  */
 #include "MBTilesImageLayer.h"
+#ifdef ROCKY_HAS_MBITLES
+
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
@@ -104,3 +106,5 @@ MBTilesImageLayer::writeImageImplementation(const TileKey& key, shared_ptr<Image
 
     return _driver.write(key, image, io);
 }
+
+#endif // ROCKY_HAS_MBTILES

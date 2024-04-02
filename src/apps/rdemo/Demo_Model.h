@@ -7,6 +7,7 @@
 
 #include <vsg/io/read.h>
 #include <vsg/nodes/MatrixTransform.h>
+#include <rocky/URI.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;

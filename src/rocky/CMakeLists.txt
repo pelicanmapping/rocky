@@ -12,6 +12,7 @@ set(version_h ${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky/Version.h)
 
 # collect all the headers in the source directory
 file(GLOB HEADERS_CORE *.h)
+list(APPEND HEADERS_CORE Version.h.in)
 list(APPEND HEADERS_CORE ${version_h})
 file(GLOB SOURCES_CORE *.cpp)
 
@@ -21,24 +22,6 @@ macro(remove_items from_list)
     endforeach()
 endmacro()
 
-if(NOT ROCKY_SUPPORTS_PROFILING)
-    remove_items(HEADERS_CORE "Profiling.h")
-endif()
-        
-if(NOT ROCKY_HAS_GDAL)
-    remove_items(HEADERS_CORE "GDAL.h;GDALImageLayer.h;GDALElevationLayer.h")
-    remove_items(SOURCES_CORE "GDAL.cpp;GDALImageLayer.cpp;GDALElevationLayer.cpp")
-endif()
-
-if(NOT ROCKY_HAS_TMS)
-    remove_items(HEADERS_CORE "TMS.h;TMSImageLayer.h;TMSElevationLayer.h")
-    remove_items(SOURCES_CORE "TMS.cpp;TMSImageLayer.cpp;TMSElevationLayer.cpp")
-endif()
-
-if(NOT ROCKY_HAS_MBTILES)
-    remove_items(HEADERS_CORE "MBTiles.h;MBTilesImageLayer.h;MBTilesElevationLayer.h")
-    remove_items(SOURCES_CORE "MBTiles.cpp;MBTilesImageLayer.cpp;MBTilesElevationLayer.cpp")
-endif()
 
 file(GLOB HEADERS_CONTRIB contrib/*.h)
 file(GLOB SOURCES_CONTRIB contrib/*.cpp)
@@ -118,12 +101,13 @@ if (vsgXchange_FOUND)
      set(ROCKY_HAS_VSGXCHANGE TRUE)
 endif()
 
-# generate the version and support header
+# generates the version and support header
 configure_file(Version.h.in ${version_h})
 
-
+# makes files appear under a "rocky" folder in the IDE.
 set_target_properties(rocky PROPERTIES FOLDER "rocky")
 
+# enables multi-processor builds in MSVC.
 if(MSVC)
     target_compile_options(rocky PRIVATE "/MP")
 endif()
@@ -131,13 +115,13 @@ endif()
 # allows the use cmake-generated include files when building (e.g. Version.h)
 include_directories(${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky)
 
-# enable folders for IDEs
+# enables folders for IDEs
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 assign_source_groups("Sources" "${CMAKE_CURRENT_SOURCE_DIR}" ${SOURCES_CORE} ${SOURCES_CONTRIB} ${SOURCES_VSG} ${SOURCES_VSG_ENGINE})
 assign_source_groups("Headers" "${CMAKE_CURRENT_SOURCE_DIR}" ${HEADERS_CORE} ${HEADERS_CONTRIB} ${HEADERS_VSG} ${HEADERS_VSG_ENGINE})
 assign_source_groups("Shaders" "${CMAKE_CURRENT_SOURCE_DIR}" ${SHADERS_VSG})
 
-# set up versions and position independent code that is required for unix platforms
+# sets up versions and position independent code that is required for unix platforms
 set_property(TARGET rocky PROPERTY SOVERSION ${ROCKY_SOVERSION})
 set_property(TARGET rocky PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_property(TARGET rocky PROPERTY CXX_STANDARD 17)
@@ -151,7 +135,9 @@ endif()
 # install the export cmake files so other projects can import us
 rocky_install_export_files(rocky)
 
-# install the libraries
+# install the libraries, and export to a targets-file that will be
+# used to make the *config.cmake file that others can use to bring
+# Rocky into their projects.
 install(
     TARGETS rocky
     EXPORT rockyTargets
@@ -161,10 +147,11 @@ install(
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-# install the headers files
+# installs the default headers.
 install(FILES ${HEADERS_CORE} DESTINATION include/rocky)
 install(FILES ${HEADERS_CONTRIB} DESTINATION include/rocky/contrib)
 
+# installs the VSG headers and shaders.
 if(ROCKY_RENDERER_VSG)
     install(FILES ${HEADERS_VSG} DESTINATION include/rocky/vsg)
     install(FILES ${HEADERS_VSG_ENGINE} DESTINATION include/rocky/vsg/engine)

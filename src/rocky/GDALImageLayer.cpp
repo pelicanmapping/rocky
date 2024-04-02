@@ -4,6 +4,8 @@
  * MIT License
  */
 #include "GDALImageLayer.h"
+#ifdef ROCKY_HAS_GDAL
+
 #include "Image.h"
 #include "Log.h"
 #include "json.h"
@@ -168,3 +170,5 @@ GDALImageLayer::createImageImplementation(
 
     return GeoImage::INVALID;
 }
+
+#endif // ROCKY_HAS_GDAL

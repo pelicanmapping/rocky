@@ -5,6 +5,8 @@
  */
 #pragma once
 #include <rocky/Common.h>
+#ifdef ROCKY_HAS_MBTILES
+
 #include <rocky/Status.h>
 #include <rocky/URI.h>
 #include <rocky/TileKey.h>
@@ -76,3 +78,9 @@ namespace ROCKY_NAMESPACE
         };
     }
 }
+
+#else // if !ROCKY_HAS_MBTILES
+#ifndef ROCKY_BUILDING_SDK
+#error MBTILES support is not enabled in Rocky.
+#endif
+#endif // ROCKY_HAS_MBTILES

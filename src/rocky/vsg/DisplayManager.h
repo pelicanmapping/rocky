@@ -94,6 +94,8 @@ namespace ROCKY_NAMESPACE
     protected:
         Application* app = nullptr;
 
+        void setViewer(vsg::ref_ptr<vsg::Viewer> viewer);
+
         struct ViewData
         {
             vsg::ref_ptr<vsg::RenderGraph> parentRenderGraph;

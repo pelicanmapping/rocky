@@ -66,6 +66,7 @@ TEST_CASE("json")
     ROCKY_NAMESPACE::from_json(j_uri, uri2);
     CHECK((uri2.base() == "file.xml"));
 
+#ifdef ROCKY_HAS_TMS
     Instance instance;
     auto layer = rocky::TMSImageLayer::create();
     layer->uri = "file.xml";
@@ -74,6 +75,7 @@ TEST_CASE("json")
     JSON serialized = map->to_json();
     map = rocky::Map::create(instance, serialized);
     CHECK((map->to_json() == R"({"layers":[{"name":"","type":"TMSImage","uri":"file.xml"}]})"));
+#endif
 }
 
 TEST_CASE("Optional")
@@ -748,6 +750,7 @@ TEST_CASE("IO")
     }
 }
 
+#ifdef ROCKY_HAS_TMS
 TEST_CASE("Earth File")
 {
     EarthFileImporter importer;
@@ -767,3 +770,4 @@ TEST_CASE("Earth File")
         }
     }
 }
+#endif
