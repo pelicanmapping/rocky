@@ -310,7 +310,7 @@ namespace ROCKY_NAMESPACE
                 commands.traverse(*this);
             }
             void apply(vsg::StateGroup& stateGroup) override {
-                stateGroup.compile(context);
+                //stateGroup.compile(context);
                 stateGroup.traverse(*this);
             }
             void apply(vsg::Geometry& geometry) {

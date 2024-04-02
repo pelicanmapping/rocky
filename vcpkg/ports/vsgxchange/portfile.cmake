@@ -1,9 +1,9 @@
-# vsgxchange 1.0.5
+# vsgxchange 1.1.0
 vcpkg_from_github(
 	OUT_SOURCE_PATH SOURCE_PATH
 	REPO vsg-dev/vsgXchange
-	REF 3bbba124702168b0676c25c8a2441b41c6e7b591
-    SHA512 6eb5bb1a5ddecb49e24212e027c4c5b839004a5040c1fd2cdc8de8a51565174a15b2d3c37f38dbd0d5feb94c1f32ad9c31f1000e0d7d313006bbf689e39fce8b
+	REF 2fb081efcf4fe96ab8c31d78934ece9dcbe77bf8
+    SHA512 aa4f2d9fff15e2e23d8c28c292237176966302550f818996288f45963eddb1a0c7b590cfcf67ad67fda05c3472ead78f50e26639684532d6fcc40f9f4c7da54e
 	HEAD_REF master
 	PATCHES vsgXchange.patch require-features.patch
 )

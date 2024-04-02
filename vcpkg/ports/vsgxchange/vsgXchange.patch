@@ -1,12 +1,12 @@
-diff --git "a/CMakeLists.txt" b/CMakeLists.txt
-index 3e0ecbd..0881d52 100644
---- "a/CMakeLists.txt"
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 79d3a43..4abdccf 100644
+--- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -20,6 +20,7 @@ if (VULKAN_SDK)
      set(ENV{VULKAN_SDK} ${VULKAN_SDK})
  endif()
  
 +find_package(glslang)
- set(VSG_MIN_VERSION 1.1.0)
+ set(VSG_MIN_VERSION 1.1.2)
  find_package(vsg ${VSG_MIN_VERSION})
  
