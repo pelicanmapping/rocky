@@ -67,55 +67,36 @@ struct Demo
     std::function<void(Application&)> function;
     std::vector<Demo> children;
 };
-std::vector<Demo> demos;
-
-void setup_demos(rocky::Application& app)
+std::vector<Demo> demos =
 {
-    demos.emplace_back(
-        Demo{ "Map", Demo_Map });
-
-    demos.emplace_back(
-        Demo{ "Primitives", {},
-        {
-            Demo{ "Label", Demo_Label },
-            Demo{ "Line - absolute", Demo_Line_Absolute },
-            Demo{ "Line - relative", Demo_Line_Relative },
-            Demo{ "Mesh - absolute", Demo_Mesh_Absolute },
-            Demo{ "Mesh - relative", Demo_Mesh_Relative },
-            Demo{ "Icon", Demo_Icon },
-            Demo{ "User Model", Demo_Model }
-        } }
-    );
-
-    demos.emplace_back(
-        Demo{ "GIS Data", {},
-        {
-            Demo{ "Polygon features", Demo_PolygonFeatures },
-            Demo{ "Line features", Demo_LineFeatures }
-        } }
-    );
-
-    demos.emplace_back(
-        Demo{ "Camera", {},
-        {
-            Demo{ "Viewpoints", Demo_Viewpoints },
-            Demo{ "Tethering", Demo_Tethering }
-        } }
-    );
-
-    demos.emplace_back(
-        Demo{ "Environment", Demo_Environment });
-    demos.emplace_back(
-        Demo{ "RTT", Demo_RTT });
-    demos.emplace_back(
-        Demo{ "Views", Demo_Views });
-    demos.emplace_back(
-        Demo{ "Serialization", Demo_Serialization });
-    demos.emplace_back(
-        Demo{ "Stats", Demo_Stats });
-    demos.emplace_back(
-        Demo{ "About", Demo_About });
-}
+    Demo{ "Map", Demo_Map },
+    Demo{ "Primitives", {},
+    {
+        Demo{ "Label", Demo_Label },
+        Demo{ "Line - absolute", Demo_Line_Absolute },
+        Demo{ "Line - relative", Demo_Line_Relative },
+        Demo{ "Mesh - absolute", Demo_Mesh_Absolute },
+        Demo{ "Mesh - relative", Demo_Mesh_Relative },
+        Demo{ "Icon", Demo_Icon },
+        Demo{ "User Model", Demo_Model }
+    } },
+    Demo{ "GIS Data", {},
+    {
+        Demo{ "Polygon features", Demo_PolygonFeatures },
+        Demo{ "Line features", Demo_LineFeatures }
+    } },
+    Demo{ "Camera", {},
+    {
+        Demo{ "Viewpoints", Demo_Viewpoints },
+        Demo{ "Tethering", Demo_Tethering }
+    } },
+    Demo{ "Environment", Demo_Environment },
+    Demo{ "RTT", Demo_RTT },
+    Demo{ "Views", Demo_Views },
+    Demo{ "Serialization", Demo_Serialization },
+    Demo{ "Stats", Demo_Stats },
+    Demo{ "About", Demo_About }
+};
 
 struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>
 {
@@ -210,9 +191,6 @@ int main(int argc, char** argv)
             return layerError(elev);
 #endif
     }
-
-    // start up the gui
-    setup_demos(app);
 
     auto window = app.displayManager->addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
     auto imgui = vsgImGui::RenderImGui::create(window);
