@@ -36,7 +36,7 @@ StringTokenizer::StringTokenizer(
 
 StringTokenizer::StringTokenizer(
     const std::string& input,
-    StringVector&      output,
+    std::vector<std::string>& output,
     const std::string& delims,
     const std::string& quotes,
     bool               allowEmpties,
@@ -52,7 +52,7 @@ StringTokenizer::StringTokenizer(
 
 StringTokenizer::StringTokenizer(
     const std::string& input,
-    StringTable&       output,
+    std::unordered_map<std::string, std::string>& output,
     const std::string& delims,
     const std::string& seps,
     const std::string& quotes,
@@ -64,14 +64,14 @@ StringTokenizer::StringTokenizer(
 {
     addDelims(delims);
     addQuotes(quotes);
-    StringVector pairs;
+    std::vector<std::string> pairs;
     tokenize(input, pairs);
 
     for (auto& pair : pairs)
     {
         _delims.clear();
         addDelims(seps);
-        StringVector keyvalue;
+        std::vector<std::string> keyvalue;
         tokenize(pair, keyvalue);
         if (keyvalue.size() == 2)
             output[keyvalue[0]] = keyvalue[1];
@@ -105,7 +105,7 @@ StringTokenizer::addQuotes( const std::string& quotes, bool keep )
 }
 
 void
-StringTokenizer::tokenize( const std::string& input, StringVector& output ) const
+StringTokenizer::tokenize( const std::string& input, std::vector<std::string>& output ) const
 {
     output.clear();
 
@@ -153,7 +153,7 @@ StringTokenizer::tokenize( const std::string& input, StringVector& output ) cons
                 {
                     std::string token = buf.str();
                     if ( _trimTokens )
-                        trimInPlace( token );
+                        trim_in_place( token );
 
                     if ( _allowEmpties || !token.empty() )
                         output.push_back( token );
@@ -171,14 +171,12 @@ StringTokenizer::tokenize( const std::string& input, StringVector& output ) cons
 
     std::string bufstr = buf.str();
     if ( _trimTokens )
-        trimInPlace( bufstr );
+        trim_in_place( bufstr );
     if ( !bufstr.empty() )
         output.push_back( bufstr );
 }
 
 //--------------------------------------------------------------------------
-
-const std::string rocky::util::EMPTY_STRING;
 
 std::string
 rocky::util::toLegalFileName(const std::string& input, bool allowSubdirs, const char* replacementChar)
@@ -254,110 +252,6 @@ rocky::util::hashString( const std::string& input )
     return h;
 }
 
-std::string
-rocky::util::hashToString(const std::string& input)
-{
-    return make_string() << std::hex << std::setw(8) << std::setfill('0') << hashString(input);
-}
-
-#if 0
-/** Parses an HTML color ("#rrggbb" or "#rrggbbaa") into an OSG color. */
-fvec4
-rocky::util::htmlColorToVec4f(const std::string& html)
-{
-    std::string t = rocky::util::toLower(html);
-    osg::Vec4ub c(0,0,0,255);
-    if ( t.length() >= 7 ) {
-        c.r() |= t[1]<='9' ? (t[1]-'0')<<4 : (10+(t[1]-'a'))<<4;
-        c.r() |= t[2]<='9' ? (t[2]-'0')    : (10+(t[2]-'a'));
-        c.g() |= t[3]<='9' ? (t[3]-'0')<<4 : (10+(t[3]-'a'))<<4;
-        c.g() |= t[4]<='9' ? (t[4]-'0')    : (10+(t[4]-'a'));
-        c.b() |= t[5]<='9' ? (t[5]-'0')<<4 : (10+(t[5]-'a'))<<4;
-        c.b() |= t[6]<='9' ? (t[6]-'0')    : (10+(t[6]-'a'));
-        if ( t.length() == 9 ) {
-            c.a() = 0;
-            c.a() |= t[7]<='9' ? (t[7]-'0')<<4 : (10+(t[7]-'a'))<<4;
-            c.a() |= t[8]<='9' ? (t[8]-'0')    : (10+(t[8]-'a'));
-        }
-    }
-    return osg::Vec4f( ((float)c.r())/255.0f, ((float)c.g())/255.0f, ((float)c.b())/255.0f, ((float)c.a())/255.0f );
-}
-
-/** Makes an HTML color ("#rrggbb" or "#rrggbbaa") from an OSG color. */
-std::string
-rocky::util::vec4fToHtmlColor( const osg::Vec4f& c )
-{
-    std::stringstream buf;
-    buf << "#";
-    buf << std::hex << std::setw(2) << std::setfill('0') << (int)(c.r()*255.0f);
-    buf << std::hex << std::setw(2) << std::setfill('0') << (int)(c.g()*255.0f);
-    buf << std::hex << std::setw(2) << std::setfill('0') << (int)(c.b()*255.0f);
-    if ( c.a() < 1.0f )
-        buf << std::hex << std::setw(2) << std::setfill('0') << (int)(c.a()*255.0f);
-    std::string ssStr;
-    ssStr = buf.str();
-    return ssStr;
-}
-
-/** Parses a color string in the form "255 255 255 255" (r g b a [0..255]) into an OSG color. */
-u8vec4
-rocky::util::stringToColor(const std::string& str, const u8vec4& default_value)
-{
-    u8vec4 color = default_value;
-    std::istringstream strin(str);
-    int r, g, b, a;
-    if (strin >> r && strin >> g && strin >> b && strin >> a)
-    {
-        color.r = (unsigned char)r;
-        color.g = (unsigned char)g;
-        color.b = (unsigned char)b;
-        color.a = (unsigned char)a;
-    }
-    return color;
-}
-
-/** Creates a string in the form "255 255 255 255" (r g b a [0..255]) from a color */
-std::string
-rocky::util::colorToString( const osg::Vec4ub& c )
-{
-    std::stringstream ss;
-    ss << (int)c.r() << " " << (int)c.g() << " " << (int)c.b() << " " << (int)c.a();
-    std::string ssStr;
-    ssStr = ss.str();
-    return ssStr;
-}
-
-/** Converts a string to a vec3f */
-osg::Vec3f
-rocky::util::stringToVec3f( const std::string& str, const osg::Vec3f& default_value )
-{
-    std::stringstream buf(str);
-    osg::Vec3f out = default_value;
-    buf >> out.x();
-    if ( !buf.eof() ) {
-        buf >> out.y() >> out.z();
-    }
-    else {
-        out.y() = out.x();
-        out.z() = out.x();
-    }
-    return out;
-}
-
-/** Converts a vec3f to a string */
-std::string
-rocky::util::vec3fToString( const osg::Vec3f& v )
-{
-    std::stringstream buf;
-    buf << std::setprecision(6)
-        << v.x() << " " << v.y() << " " << v.z()
-        << std::endl;
-    std::string result;
-    result = buf.str();
-    return result;
-}
-#endif
-
 /** Replaces all the instances of "sub" with "other" in "s". */
 std::string&
 rocky::util::replace_in_place(
@@ -409,7 +303,7 @@ rocky::util::replace_in_place_case_insensitive(
 * http://www.codeproject.com/KB/stl/stdstringtrim.aspx
 */
 void
-rocky::util::trimInPlace( std::string& str )
+rocky::util::trim_in_place( std::string& str )
 {
     static const std::string whitespace (" \t\f\v\n\r");
     std::string::size_type pos = str.find_last_not_of( whitespace );
@@ -429,50 +323,8 @@ std::string
 rocky::util::trim( const std::string& in )
 {
     std::string str = in;
-    trimInPlace( str );
+    trim_in_place( str );
     return str;
-}
-
-std::string
-rocky::util::trimAndCompress(const std::string& in)
-{
-    bool inwhite = true;
-    std::stringstream buf;
-    for (unsigned i = 0; i < in.length(); ++i)
-    {
-        char c = in[i];
-        if (::isspace(c))
-        {
-            if (!inwhite)
-            {
-                buf << ' ';
-                inwhite = true;
-            }
-        }
-        else
-        {
-            inwhite = false;
-            buf << c;
-        }
-    }
-    std::string r;
-    r = buf.str();
-    trimInPlace(r);
-    return r;
-}
-
-std::string
-rocky::util::joinStrings( const StringVector& input, char delim )
-{
-    std::stringstream buf;
-    for( StringVector::const_iterator i = input.begin(); i != input.end(); ++i )
-    {
-        buf << *i;
-        if ( (i+1) != input.end() ) buf << delim;
-    }
-    std::string result;
-    result = buf.str();
-    return result;
 }
 
 /** Returns a lower-case version of the input string. */
@@ -483,41 +335,6 @@ rocky::util::toLower( const std::string& input )
     std::transform( output.begin(), output.end(), output.begin(), ::tolower );
     return output;
 }
-
-std::string
-rocky::util::prettyPrintTime( double seconds )
-{
-    int hours = (int)floor(seconds / (3600.0) );
-    seconds -= hours * 3600.0;
-
-    int minutes = (int)floor(seconds/60.0);
-    seconds -= minutes * 60.0;
-
-    std::stringstream buf;
-    buf << hours << ":" << minutes << ":" << seconds;
-    return buf.str();
-}
-
-std::string
-rocky::util::prettyPrintSize( double mb )
-{
-    std::stringstream buf;
-    // Convert to terabytes
-    if ( mb > 1024 * 1024 )
-    {
-        buf << (mb / (1024.0*1024.0)) << " TB";
-    }
-    else if (mb > 1024)
-    {
-        buf << (mb / 1024.0) << " GB";
-    }
-    else
-    {
-        buf << mb << " MB";
-    }
-    return buf.str();
-}
-
 
 namespace
 {
@@ -551,11 +368,6 @@ rocky::util::ciEquals(const std::string& lhs, const std::string& rhs, const std:
 #else
 #  define STRICMP ::strcasecmp
 #endif
-
-bool CIStringComp::operator()(const std::string& lhs, const std::string& rhs) const
-{
-    return STRICMP( lhs.c_str(), rhs.c_str() ) < 0;
-}
 
 bool
 rocky::util::startsWith( const std::string& ref, const std::string& pattern, bool caseSensitive, const std::locale& loc )
@@ -609,32 +421,6 @@ rocky::util::endsWith( const std::string& ref, const std::string& pattern, bool 
 }
 
 std::string
-rocky::util::getToken(const std::string& input, unsigned i, const std::string& delims)
-{
-    std::vector<std::string> tokens;
-    StringTokenizer t(delims);
-    t.tokenize(input, tokens);
-    return i < tokens.size() ? tokens[i] : "";    
-}
-
-std::string
-rocky::util::makeCacheKey(const std::string& key, const std::string& prefix)
-{
-    char hex[SHA1_HEX_SIZE];
-    sha1(key.c_str()).finalize().print_hex(hex);
-    std::string val(hex);
-    std::stringstream out;
-    if (!prefix.empty())
-    {
-        out << prefix << "/";
-    }
-    // Use the first 2 characters as a directory name and the remainder as the filename
-    // This is the same scheme that git uses
-    out << val.substr(0, 2) << "/" << val.substr(2, 38);
-    return out.str();
-}
-
-std::string
 rocky::util::getExecutableLocation()
 {
 #if defined(_WIN32)
@@ -678,7 +464,6 @@ rocky::util::readFromFile(std::string& data, const std::string& filename)
     in.close();
     return true;
 }
-
 
 #ifdef ROCKY_HAS_ZLIB
 

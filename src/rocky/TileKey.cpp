@@ -8,6 +8,7 @@
 #include "GeoPoint.h"
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 TileKey TileKey::INVALID(0, 0, 0, Profile());
 
@@ -26,7 +27,7 @@ void
 TileKey::rehash()
 {
     _hash = valid() ?
-        rocky::hash_value_unsigned(
+        rocky::util::hash_value_unsigned(
             (std::size_t)_lod, 
             (std::size_t)_x,
             (std::size_t)_y,

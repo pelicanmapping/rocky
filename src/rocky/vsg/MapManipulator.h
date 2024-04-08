@@ -542,7 +542,7 @@ namespace ROCKY_NAMESPACE
             void setThrowingEnabled(bool throwingEnabled) { _throwingEnabled = throwingEnabled; }
             bool getThrowingEnabled() const { return _throwingEnabled; }
 
-            void setThrowDecayRate(double throwDecayRate) { _throwDecayRate = clamp(throwDecayRate, 0.0, 1.0); }
+            void setThrowDecayRate(double throwDecayRate) { _throwDecayRate = util::clamp(throwDecayRate, 0.0, 1.0); }
             double getThrowDecayRate() const { return _throwDecayRate; }
 
             void setZoomToMouse(bool value) { _zoomToMouse = value; }

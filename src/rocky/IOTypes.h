@@ -10,6 +10,7 @@
 #include <rocky/Status.h>
 #include <rocky/Units.h>
 #include <rocky/Threading.h>
+#include <rocky/LRUCache.h>
 
 /**
  * A collection of types used by the various I/O systems.
@@ -51,7 +52,7 @@ namespace ROCKY_NAMESPACE
         std::string data;
     };
 
-    using ContentCache = util::LRUCache<std::string, Result<Content>>;
+    using ContentCache = rocky::util::LRUCache<std::string, Result<Content>>;
 
     class ROCKY_EXPORT Services
     {

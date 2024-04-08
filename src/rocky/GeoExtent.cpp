@@ -3,6 +3,7 @@
 #include "Instance.h"
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 #undef  LC
 #define LC "[GeoExtent] "
@@ -905,7 +906,7 @@ GeoExtent::clamp()
 
     if (_srs.isGeodetic())
     {
-        _width = rocky::clamp(_width, 0.0, 360.0);
+        _width = rocky::util::clamp(_width, 0.0, 360.0);
         //_height = osg::clampBetween(_height, 0.0, 180.0);
 
         if (south() < -90.0)
@@ -918,7 +919,7 @@ GeoExtent::clamp()
             _height -= (north()-90.0);
         }
 
-        _height = rocky::clamp(_height, 0.0, 180.0);
+        _height = rocky::util::clamp(_height, 0.0, 180.0);
     }
 }
 

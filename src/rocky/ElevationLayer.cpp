@@ -252,8 +252,6 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
         // If we actually got a Heightfield, resample/reproject it to match the incoming TileKey's extents.
         if (geohf_list.size() > 0)
         {
-            util::timer t;
-
             unsigned width = 0;
             unsigned height = 0;
             auto keyExtent = key.extent();

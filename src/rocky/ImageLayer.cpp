@@ -7,7 +7,6 @@
 #include "ImageLayer.h"
 
 #include "Color.h"
-#include "ImageMosaic.h"
 #include "IOTypes.h"
 #include "Metrics.h"
 #include "Utils.h"

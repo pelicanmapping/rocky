@@ -104,7 +104,7 @@ namespace std {
     // std::hash specialization for GeometryKey
     template<> struct hash<rocky::GeometryKey> {
         inline size_t operator()(const rocky::GeometryKey& key) const {
-            return rocky::hash_value_unsigned(
+            return rocky::util::hash_value_unsigned(
                 (unsigned)key.lod,
                 (unsigned)key.tileY,
                 key.size, key.patch ? 1u : 0u);

@@ -494,8 +494,6 @@ TerrainTilePager::requestMergeData(
             return false;
         }
 
-        //util::scoped_chrono timer("merge sync " + key.str());
-
         auto tile = engine->tiles.getTile(key);
         if (!tile)
         {
@@ -664,8 +662,6 @@ TerrainTilePager::requestMergeElevation(
         {
             return false;
         }
-
-        //util::scoped_chrono timer("merge sync " + key.str());
 
         auto tile = engine->tiles.getTile(key);
         if (tile)

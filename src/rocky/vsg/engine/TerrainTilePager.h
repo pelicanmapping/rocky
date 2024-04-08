@@ -7,6 +7,7 @@
 
 #include <rocky/vsg/Common.h>
 #include <rocky/vsg/engine/TerrainTileNode.h>
+#include <rocky/SentryTracker.h>
 #include <chrono>
 
 namespace ROCKY_NAMESPACE

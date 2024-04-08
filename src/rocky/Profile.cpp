@@ -9,6 +9,7 @@
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 #define LC "[Profile] "
 

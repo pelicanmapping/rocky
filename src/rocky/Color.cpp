@@ -13,6 +13,7 @@
 #include <ctype.h>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 namespace
 {
@@ -160,7 +161,7 @@ Color::Color(const std::string& input, Format format)
     {
         std::string sub = t.substr(4, t.size() - 5);
         util::StringTokenizer tok(",");
-        util::StringVector components;
+        std::vector<std::string> components;
         tok.tokenize(sub, components);
         if (components.size() == 3)
         {
@@ -174,7 +175,7 @@ Color::Color(const std::string& input, Format format)
     {
         std::string sub = t.substr(5, t.size() - 6);
         util::StringTokenizer tok(",");
-        util::StringVector components;
+        std::vector<std::string> components;
         tok.tokenize(sub, components);
         if (components.size() == 4)
         {
@@ -189,7 +190,7 @@ Color::Color(const std::string& input, Format format)
     {
         std::string sub = t.substr(4, t.size() - 5);
         util::StringTokenizer tok(",");
-        util::StringVector components;
+        std::vector<std::string> components;
         tok.tokenize(sub, components);
         if (components.size() == 3)
         {
@@ -222,7 +223,7 @@ Color::Color(const std::string& input, Format format)
     {
         std::string sub = t.substr(5, t.size() - 6);
         util::StringTokenizer tok(",");
-        util::StringVector components;
+        std::vector<std::string> components;
         tok.tokenize(sub, components);
         if (components.size() == 4)
         {
