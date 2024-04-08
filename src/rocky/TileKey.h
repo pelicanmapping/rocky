@@ -21,8 +21,11 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT TileKey
     {
     public: 
-        //! Constructs an invalid TileKey.
-        TileKey() { }
+        TileKey() = default;
+        TileKey(const TileKey& rhs) = default;
+        TileKey& operator = (const TileKey& rhs) = default;
+        TileKey(TileKey&& rhs);
+        TileKey& operator = (TileKey&& rhs);
 
         //! Creates a new TileKey with the given tile xy at the specified level of detail
         //! @param lod

@@ -12,6 +12,22 @@ using namespace ROCKY_NAMESPACE::util;
 
 TileKey TileKey::INVALID(0, 0, 0, Profile());
 
+TileKey::TileKey(TileKey&& rhs)
+{
+    *this = std::move(rhs);
+}
+
+TileKey& TileKey::operator = (TileKey&& rhs)
+{
+    _x = rhs._x;
+    _y = rhs._y;
+    _lod = rhs._lod;
+    _profile = std::move(rhs._profile);
+    _hash = rhs._hash;
+    rhs._profile = {};
+    return *this;
+}
+
 TileKey::TileKey(
     unsigned int lod, unsigned int tile_x, unsigned int tile_y,
     const Profile& profile)

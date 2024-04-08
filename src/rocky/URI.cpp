@@ -156,17 +156,18 @@ namespace
 
             for(;;)
             {
-                util::timer timer;
-
+                auto t0 = std::chrono::steady_clock::now();
                 auto r = client.Get(path, params, headers);
+                auto t1 = std::chrono::steady_clock::now();
 
                 if (httpDebug && r == true)
                 {
+                    auto dur_s = 1e-9 * (double)(t1 - t0).count();
                     auto cti = r->headers.find("Content-Type");
                     auto ct = cti != r->headers.end() ? cti->second : "unknown";
                     Log()->info(LC "(" + std::to_string(r->status)
                         + ") HTTP GET " + request.url
-                        + " (" + std::to_string(timer.seconds()) + "s "
+                        + " (" + std::to_string(dur_s) + "s "
                         + std::to_string(r->body.size()) + "b "
                         + ct + ")");
                 }
