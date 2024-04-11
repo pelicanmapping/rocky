@@ -23,6 +23,9 @@
 #include <vsg/vk/State.h>
 #include <vsg/io/read.h>
 
+#include <vsg/lighting/PointLight.h>
+#include <vsg/lighting/AmbientLight.h>
+
 using namespace ROCKY_NAMESPACE;
 
 Application::Application()

@@ -6,6 +6,8 @@
 #include "DisplayManager.h"
 #include "Application.h"
 #include "MapManipulator.h"
+#include <vsg/lighting/PointLight.h>
+#include <vsg/lighting/AmbientLight.h>
 
 using namespace ROCKY_NAMESPACE;
 

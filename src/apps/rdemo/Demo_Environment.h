@@ -6,6 +6,8 @@
 #pragma once
 
 #include <rocky/vsg/SkyNode.h>
+#include <vsg/lighting/PointLight.h>
+#include <vsg/lighting/AmbientLight.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
