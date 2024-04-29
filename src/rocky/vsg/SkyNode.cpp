@@ -259,7 +259,7 @@ SkyNode::setWorldSRS(const SRS& srs)
 
         // the sun:
         auto sun_data = rocky::Ephemeris().sunPosition(rocky::DateTime());
-        sun = new vsg::PointLight();
+        sun = vsg::PointLight::create();
         sun->name = "Sol";
         sun->position = { sun_data.geocentric.x, sun_data.geocentric.y, sun_data.geocentric.z };
         sun->color = { 1, 1, 1 };
