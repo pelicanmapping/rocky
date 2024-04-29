@@ -49,6 +49,18 @@ Application::ctor(int& argc, char** argv)
     _vsync = !commandLine.read({ "--novsync" });
     //_multithreaded = commandLine.read({ "--mt" });
 
+    if (commandLine.read({ "--version" }))
+    {
+        std::cout << "rocky " << ROCKY_VERSION_STRING << std::endl;
+        exit(0);
+    }
+
+    if (commandLine.read({ "--version-all" }))
+    {
+        std::cout << about() << std::endl;
+        exit(0);
+    }
+
     root = vsg::Group::create();
 
     mainScene = vsg::Group::create();
