@@ -6,47 +6,65 @@
 #pragma once
 
 #include <rocky/Common.h>
-#include <rocky/Threading.h>
-#include <unordered_map>
+
+#include <atomic>
+#include <mutex>
+#include <functional>
+#include <vector>
 
 namespace ROCKY_NAMESPACE
 {
     /**
      * Easy way to add a thread-safe callback to a class.
-     * usage:
-     *   Callback<Function> onClick;
+     * 
+     * Developer defines a callback, usually as a class member:
+     *   Callback<void(int)> onClick;
      *
      * User adds a callback:
-     *   instance->onClick([](...) { respond; });
+     *   instance->onClick([](int a) { ... });
      *
      * Class fires a callback:
-     *   onClick(a, b, ...);
+     *   onClick(a);
      */
     template<typename F>
-    struct Callback {
+    class Callback
+    {
+    private:
+        using Entry = typename std::pair<int, std::function<F>>;
+        mutable int uidgen = 0;
+        mutable std::vector<Entry> entries;
         mutable std::mutex mutex;
-        mutable std::unordered_map<UID, F> functions;
+        mutable std::atomic_bool firing = { false };
 
+    public:
         //! Adds a callback function
-        UID operator()(const F& func) const {
-            std::scoped_lock lock(mutex);
-            auto uid = createUID();
-            functions[uid] = func;
+        int operator()(std::function<F>&& func) const {
+            std::lock_guard<std::mutex> lock(mutex);
+            auto uid = ++uidgen;
+            entries.emplace_back(uid, func);
             return uid;
         }
 
         //! Removed a callback function with the UID returned from ()
-        void remove(UID uid) {
-            std::scoped_lock lock(mutex);
-            functions.erase(uid);
+        void remove(int uid) const {
+            std::lock_guard<std::mutex> lock(mutex);
+            for (auto iter = entries.begin(); iter != entries.end(); ++iter) {
+                if (iter->first == uid) {
+                    entries.erase(iter);
+                    break;
+                }
+            }
         }
 
         //! Executes all callback functions with the provided args
         template<typename... Args>
         void fire(Args&&... args) const {
-            std::scoped_lock lock(mutex);
-            for (auto& function : functions)
-                function.second(args...);
+            if (firing.exchange(true) == false) {
+                std::lock_guard<std::mutex> lock(mutex);
+                for (auto& e : entries)
+                    e.second(args...);
+                firing = false;
+            }
         }
     };
 }

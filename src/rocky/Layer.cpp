@@ -82,8 +82,8 @@ Layer::bumpRevision()
 void
 Layer::removeCallback(UID uid)
 {
-    onLayerOpened.functions.erase(uid);
-    onLayerClosed.functions.erase(uid);
+    onLayerOpened.remove(uid);
+    onLayerClosed.remove(uid);
 }
 
 const optional<bool>&

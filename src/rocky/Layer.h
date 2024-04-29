@@ -100,12 +100,10 @@ namespace ROCKY_NAMESPACE
         const Hints& hints() const;
 
         //! Register a callback for layer open
-        using LayerOpened = std::function<void(shared_ptr<Layer>)>;
-        Callback<LayerOpened> onLayerOpened;
+        Callback<void(shared_ptr<Layer>)> onLayerOpened;
 
         //! Register a callback for layer close
-        using LayerClosed = std::function<void(shared_ptr<Layer>)>;
-        Callback<LayerClosed> onLayerClosed;
+        Callback<void(shared_ptr<Layer>)> onLayerClosed;
 
         void removeCallback(UID);
 

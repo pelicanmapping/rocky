@@ -80,15 +80,15 @@ namespace ROCKY_NAMESPACE
 
     public:
         //! Callback fired upon added a layer
-        using LayerAdded = std::function<void(shared_ptr<Layer>, unsigned index, Revision)>;
+        using LayerAdded = void(shared_ptr<Layer>, unsigned index, Revision);
         Callback<LayerAdded> onLayerAdded;
 
         //! Callback fired upon removing a layer
-        using LayerRemoved = std::function<void(shared_ptr<Layer>, Revision)>;
+        using LayerRemoved = void(shared_ptr<Layer>, Revision);
         Callback<LayerRemoved> onLayerRemoved;
 
         //! Callback fired upon reordering a layer
-        using LayerMoved = std::function<void(shared_ptr<Layer>, unsigned oldIndex, unsigned newIndex, Revision)>;
+        using LayerMoved = void(shared_ptr<Layer>, unsigned oldIndex, unsigned newIndex, Revision);
         Callback<LayerMoved> onLayerMoved;
 
         //! Remove a callback added to thie object

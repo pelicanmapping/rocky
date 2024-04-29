@@ -178,7 +178,7 @@ Map::srs() const
 void
 Map::removeCallback(UID uid)
 {
-    onLayerAdded.functions.erase(uid);
-    onLayerRemoved.functions.erase(uid);
-    onLayerMoved.functions.erase(uid);
+    onLayerAdded.remove(uid);
+    onLayerRemoved.remove(uid);
+    onLayerMoved.remove(uid);
 }
