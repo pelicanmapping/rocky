@@ -1,5 +1,4 @@
 #version 450
-#extension GL_NV_fragment_shader_barycentric : enable
 
 // uniforms
 layout(set = 0, binding = 2) uniform sampler2D icon_texture;
