@@ -13,6 +13,9 @@
           "default-features": false, 
           "features": [ "recommended-features" ] },
         "glm",
+        { "name" : "imgui",
+          "features": [ "vulkan-binding" ] },
+        "imgui",
         "nlohmann-json",
         "openssl",
         "qt5",
@@ -22,7 +25,6 @@
         "vsg",
         { "name" : "vsgxchange",
           "features": [ "assimp", "freetype" ] },
-        "vsgimgui",
         "vsgqt",
         "zlib"
     ]

@@ -1,12 +1,12 @@
 set(APP_NAME rdemo)
 
-find_package(vsgImGui)
+find_package(imgui)
 
-if(vsgImGui_FOUND)
+if(imgui_FOUND)
     find_package(glslang CONFIG REQUIRED)
 
-    file(GLOB SOURCES *.cpp)
-    file(GLOB HEADERS *.h)
+    file(GLOB SOURCES *.cpp vsgImGui/*.cpp)
+    file(GLOB HEADERS *.h vsgImGui/*.h)
 
     # enable folders for IDEs
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -15,7 +15,7 @@ if(vsgImGui_FOUND)
 
     add_executable(${APP_NAME} ${SOURCES} ${HEADERS})
 
-    target_link_libraries(${APP_NAME} rocky vsgImGui::vsgImGui)
+    target_link_libraries(${APP_NAME} rocky imgui::imgui)
 
     install(TARGETS ${APP_NAME} RUNTIME DESTINATION bin)
 

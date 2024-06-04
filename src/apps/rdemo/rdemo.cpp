@@ -23,8 +23,8 @@
 #include <rocky/TMSElevationLayer.h>
 #endif
 
-#include <vsgImGui/RenderImGui.h>
-#include <vsgImGui/SendEventsToImGui.h>
+#include "vsgImGui/RenderImGui.h"
+#include "vsgImGui/SendEventsToImGui.h"
 
 ROCKY_ABOUT(imgui, IMGUI_VERSION)
 
