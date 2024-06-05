@@ -18,6 +18,8 @@
 #include <vsg/utils/GraphicsPipelineConfigurator.h>
 #include <vsg/state/BindDescriptorSet.h>
 #include <vsg/state/ViewDependentState.h>
+#include <vsg/lighting/PointLight.h>
+#include <vsg/lighting/AmbientLight.h>
 #include <vsg/io/Options.h>
 
 using namespace ROCKY_NAMESPACE;

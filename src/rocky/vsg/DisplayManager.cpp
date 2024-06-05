@@ -6,6 +6,8 @@
 #include "DisplayManager.h"
 #include "Application.h"
 #include "MapManipulator.h"
+#include <vsg/lighting/PointLight.h>
+#include <vsg/lighting/AmbientLight.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -208,7 +210,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     {
         traits->deviceFeatures = vsg::DeviceFeatures::create();
     }
-    traits->deviceExtensionNames.push_back(VK_NV_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
+    traits->deviceExtensionNames.push_back(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
     auto& bary = traits->deviceFeatures->get<VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR>();
     bary.fragmentShaderBarycentric = true;
 

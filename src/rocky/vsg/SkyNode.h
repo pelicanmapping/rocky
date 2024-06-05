@@ -9,7 +9,7 @@
 #include <rocky/DateTime.h>
 #include <rocky/SRS.h>
 #include <vsg/nodes/Group.h>
-#include <vsg/nodes/Light.h>
+#include <vsg/Lighting/Light.h>
 
 namespace ROCKY_NAMESPACE
 {

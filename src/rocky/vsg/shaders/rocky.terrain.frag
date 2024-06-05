@@ -1,5 +1,5 @@
 #version 450
-#extension GL_NV_fragment_shader_barycentric : enable
+#extension GL_EXT_fragment_shader_barycentric : enable
 #pragma import_defines(RK_LIGHTING)
 #pragma import_defines(RK_WIREFRAME_OVERLAY)
 
@@ -52,9 +52,9 @@ void main()
     apply_lighting(out_color, rk.vertex_view, get_normal());
 #endif
 
-#if defined(RK_WIREFRAME_OVERLAY) && defined(GL_NV_fragment_shader_barycentric)
+#if defined(RK_WIREFRAME_OVERLAY) && defined(GL_EXT_fragment_shader_barycentric)
     // outlines - debugging
-    float b = min(gl_BaryCoordNV.x, min(gl_BaryCoordNV.y, gl_BaryCoordNV.z))*32.0;
+    float b = min(gl_BaryCoordEXT.x, min(gl_BaryCoordEXT.y, gl_BaryCoordEXT.z))*32.0;
     out_color.rgb = mix(vec3(1,1,1), out_color.rgb, clamp(b,0.85,1.0));
 #endif
 }
