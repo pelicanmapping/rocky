@@ -1,7 +1,9 @@
 #version 450
 #extension GL_NV_fragment_shader_barycentric : enable
+
 #pragma import_defines(RK_LIGHTING)
 #pragma import_defines(RK_WIREFRAME_OVERLAY)
+
 
 layout(push_constant) uniform PushConstants
 {
