@@ -203,14 +203,17 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     // This will install the debug messaging callback so we can capture validation errors
     traits->instanceExtensionNames.push_back("VK_EXT_debug_utils");
 
-    // This is required to use the NVIDIA barycentric extension without validation errors
-    if (!traits->deviceFeatures)
+    if (vsg::isExtensionSupported(VK_NV_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME))
     {
-        traits->deviceFeatures = vsg::DeviceFeatures::create();
+        // This is required to use the NVIDIA barycentric extension without validation errors
+        if (!traits->deviceFeatures)
+        {
+            traits->deviceFeatures = vsg::DeviceFeatures::create();
+        }
+        traits->deviceExtensionNames.push_back(VK_NV_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
+        auto& bary = traits->deviceFeatures->get<VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR>();
+        bary.fragmentShaderBarycentric = true;
     }
-    traits->deviceExtensionNames.push_back(VK_NV_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
-    auto& bary = traits->deviceFeatures->get<VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR>();
-    bary.fragmentShaderBarycentric = true;
 
     // share the device across all windows
     traits->device = sharedDevice();
