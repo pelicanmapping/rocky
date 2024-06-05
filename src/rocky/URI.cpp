@@ -6,6 +6,7 @@
 #include "URI.h"
 #include "Utils.h"
 #include "Instance.h"
+#include "Version.h"
 #include <typeinfo>
 #include <fstream>
 #include <sstream>
@@ -125,9 +126,16 @@ namespace
         return Status(Status::ServiceUnavailable);
 #else        
         httplib::Headers headers;
+
         for (auto& h : request.headers)
         {
             headers.insert(std::make_pair(h.name, h.value));
+        }
+
+        // insert a default User-Agent unless the user passed one in.
+        if (headers.count("User-Agent") == 0)
+        {
+            headers.insert(std::make_pair("User-Agent", "rocky/" ROCKY_VERSION_STRING));
         }
 
         std::string proto_host_port;
