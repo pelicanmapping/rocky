@@ -61,6 +61,79 @@ namespace
         }
     }
 
+    json find_profile_recursively(TiXmlNode* parent_xml)
+    {
+        for (auto child = parent_xml->FirstChild(); child; child = child->NextSibling())
+        {
+            // first see if this element has a text child, and if so
+            // skip it.
+            auto text_value = util::trim(get_text_value(child));
+            if (!text_value.empty())
+            {
+                continue;
+            }
+
+            // otherwise inspect the child.
+            else if (child->ToElement() && !child->ValueStr().empty())
+            {
+                if (util::ciEquals(child->ValueStr(), "profile"))
+                {
+                    json profile = json::object();
+                    const char* attribute = child->ToElement()->Attribute("num_tiles_wide_at_lod_0");
+                    if (attribute)
+                    {
+                        profile["tx"] = std::stoi(attribute);
+                    }
+                    attribute = child->ToElement()->Attribute("num_tiles_high_at_lod_0");
+                    if (attribute)
+                    {
+                        profile["ty"] = std::stoi(attribute);
+                    }
+                    json extent = json::object();
+                    attribute = child->ToElement()->Attribute("srs");
+                    if (attribute)
+                    {
+                        extent["srs"] = attribute;
+                    }
+                    attribute = child->ToElement()->Attribute("xmin");
+                    if (attribute)
+                    {
+                        extent["xmin"] = std::stod(attribute);
+                    }
+                    attribute = child->ToElement()->Attribute("xmax");
+                    if (attribute)
+                    {
+                        extent["xmax"] = std::stod(attribute);
+                    }
+                    attribute = child->ToElement()->Attribute("ymin");
+                    if (attribute)
+                    {
+                        extent["ymin"] = std::stod(attribute);
+                    }
+                    attribute = child->ToElement()->Attribute("ymax");
+                    if (attribute)
+                    {
+                        extent["ymax"] = std::stod(attribute);
+                    }
+                    if (!extent.empty())
+                    {
+                        profile["extent"] = extent;
+                    }
+                    return profile;
+                }
+                else
+                {
+                    json maybe_profile = find_profile_recursively(child);
+                    if (!maybe_profile.is_null())
+                    {
+                        return maybe_profile;
+                    }
+                }
+            }
+        }
+        return json();
+    }
+
     Result<TiXmlDocument> load_include_file(const URI& href, const IOOptions& io)
     {
         auto result = href.read(io);
@@ -157,6 +230,11 @@ EarthFileImporter::read(const std::string& location, const IOOptions& io) const
                     auto options_json = json::object();
                     collect_children_recursively(child_el, options_json);
                     map["options"] = options_json;
+                    auto profile_json = find_profile_recursively(child_el);
+                    if (!profile_json.is_null())
+                    {
+                        map["profile"] = profile_json;
+                    }
                 }
 
                 else // it's a layer
