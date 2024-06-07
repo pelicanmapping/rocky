@@ -4,7 +4,7 @@
  * MIT License
  */
 #include "MBTilesImageLayer.h"
-#ifdef ROCKY_HAS_MBITLES
+#ifdef ROCKY_HAS_MBTILES
 
 #include "json.h"
 
