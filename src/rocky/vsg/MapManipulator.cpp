@@ -1143,7 +1143,9 @@ MapManipulator::intersectAlongLookVector(vsg::dvec3& out_world) const
 void
 MapManipulator::home()
 {
-    clearViewpoint();
+    // emulate clearViewpoint() without calling it (possible recursion)
+    _state.setVP0.reset();
+    _state.setVP1.reset();
 
     _state.localRotation.set(0, 0, 0, 1);
 
