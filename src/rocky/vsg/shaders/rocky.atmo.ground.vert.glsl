@@ -100,7 +100,7 @@ void atmos_GroundFromAtmosphere(in vec3 vertex_view)
     vec3 normal = normalize(v3Pos - earth_center);
 
     // Calculate the ray's starting position, then calculate its scattering offset 
-    float fDepth = exp((atmos_fInnerRadius - atmos_fCameraHeight) / RaleighScaleDepth);
+    float fDepth = exp(min(atmos_fInnerRadius - atmos_fCameraHeight, 0.0) / RaleighScaleDepth);
     float fCameraAngle = max(0.0, dot(-v3Ray, normal));
     float fLightAngle = dot(atmos_lightDir, normal);
     float fCameraScale = atmos_scale(fCameraAngle);
