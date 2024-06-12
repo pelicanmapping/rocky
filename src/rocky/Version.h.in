@@ -30,7 +30,6 @@
 #cmakedefine ROCKY_HAS_GLM
 #cmakedefine ROCKY_HAS_PROJ
 #cmakedefine ROCKY_HAS_SPDLOG
-#cmakedefine ROCKY_HAS_TINYXML
 #cmakedefine ROCKY_HAS_JSON
 #cmakedefine ROCKY_HAS_HTTPLIB
 #cmakedefine ROCKY_HAS_OPENSSL

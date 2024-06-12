@@ -94,17 +94,17 @@ if (ROCKY_SUPPORTS_MBTILES)
 endif()
 
 if (ROCKY_SUPPORTS_TMS)
-    set(BUILD_WITH_TINYXML ON)
+    #set(BUILD_WITH_TINYXML ON)
     set(ROCKY_HAS_TMS TRUE)
 endif()
 
 # tinyxml - xml parser
-if (BUILD_WITH_TINYXML)
-    find_package(tinyxml CONFIG REQUIRED)
-    if (tinyxml_FOUND)
-        set(ROCKY_HAS_TINYXML TRUE)
-    endif()
-endif()
+#if (BUILD_WITH_TINYXML)
+#    find_package(tinyxml CONFIG REQUIRED)
+#    if (tinyxml_FOUND)
+#        set(ROCKY_HAS_TINYXML TRUE)
+#    endif()
+#endif()
 
 # json parser
 if (BUILD_WITH_JSON)

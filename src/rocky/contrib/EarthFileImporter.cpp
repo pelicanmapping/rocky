@@ -5,16 +5,12 @@
  */
 #include "EarthFileImporter.h"
 #include "../json.h"
-
-#ifdef ROCKY_HAS_TINYXML
-#include <tinyxml.h>
-#endif
+#include "../tinyxml/tinyxml.h"
 
 using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-#ifdef ROCKY_HAS_TINYXML
     std::string get_text_value(TiXmlNode* parent)
     {
         if (parent)
@@ -152,8 +148,6 @@ namespace
         }
         return Status(Status::ResourceUnavailable, "Failed to load include file");
     }
-
-#endif // ROCKY_HAS_TINYXML
 }
 
 EarthFileImporter::EarthFileImporter()
@@ -163,9 +157,7 @@ EarthFileImporter::EarthFileImporter()
 
 Result<JSON>
 EarthFileImporter::read(const std::string& location, const IOOptions& io) const
-{
-#ifdef ROCKY_HAS_TINYXML
-    
+{    
     // try to load the earth file into a string:
     URI uri(location);
 
@@ -259,8 +251,4 @@ EarthFileImporter::read(const std::string& location, const IOOptions& io) const
 
     map["layers"] = layers_json;
     return to_string(map);
-
-#else
-    return Status(Status::ServiceUnavailable, "XML support is not available");
-#endif
 }

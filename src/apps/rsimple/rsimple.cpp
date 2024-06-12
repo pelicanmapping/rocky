@@ -1,47 +1,57 @@
-/**
- * rocky c++
- * Copyright 2023 Pelican Mapping
- * MIT License
- */
 #include <rocky/vsg/Application.h>
-#include <rocky/vsg/Icon.h>
+#include <rocky/vsg/Mesh.h>
 
-#ifdef ROCKY_HAS_TMS
-#include <rocky/TMSImageLayer.h>
+#ifdef ROCKY_HAS_MBTILES
+#include <rocky/MBTilesImageLayer.h>
 #endif
+
+#include <iostream>
 
 int main(int argc, char** argv)
 {
-    // instantiate the application engine.
-    rocky::Application app(argc, argv);
+    rocky::Application app;
 
-#ifdef ROCKY_HAS_TMS
-    // add an imagery layer to the map
-    auto layer = rocky::TMSImageLayer::create();
-    layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
+#if 0
+    auto layer = rocky::MBTilesImageLayer::create();
+    layer->setURI("OAM-World-1-8-min-J80.mbtiles");
     app.mapNode->map->layers().add(layer);
 
-    // check for error
     if (layer->status().failed())
-        return -1;
+    {
+        std::cerr << layer->status().toString() << std::endl;
+    }
 #endif
 
-    // Load an image:
-    auto& io = app.instance.ioOptions();
-    auto image = io.services.readImageFromURI("https://user-images.githubusercontent.com/326618/236923465-c85eb0c2-4d31-41a7-8ef1-29d34696e3cb.png", io);
-
-    // Create a new entity:
+    // World
     auto entity = app.entities.create();
 
-    // Add an icon to it:
-    auto& icon = app.entities.emplace<rocky::Icon>(entity);
-    icon.image = image.value;
-    icon.style = rocky::IconStyle{ 75, 0.0f }; // size, rotation
-
-    // Add a transform to it:
     auto& xform = app.entities.emplace<rocky::Transform>(entity);
     xform.setPosition(rocky::GeoPoint(rocky::SRS::WGS84, 0, 0, 50000));
 
-    // run until the user quits.
+    // Mesh
+    auto mesh_entity = app.entities.create();
+    auto& mesh = app.entities.emplace<rocky::Mesh>(mesh_entity);
+
+    auto mesh_xform = rocky::SRS::WGS84.to(rocky::SRS::WGS84.geocentricSRS());
+    const double step = 2.5;
+    const double alt_mesh = 0.0;
+    for (double lon = 0.0; lon < 35.0; lon += step)
+    {
+        for (double lat = 15.0; lat < 35.0; lat += step)
+        {
+            vsg::dvec3 v1, v2, v3, v4;
+            mesh_xform(vsg::dvec3{ lon, lat, alt_mesh }, v1);
+            mesh_xform(vsg::dvec3{ lon + step, lat, alt_mesh }, v2);
+            mesh_xform(vsg::dvec3{ lon + step, lat + step, alt_mesh }, v3);
+            mesh_xform(vsg::dvec3{ lon, lat + step, alt_mesh }, v4);
+
+            mesh.add({ {v1, v2, v3} });
+            mesh.add({ {v1, v3, v4} });
+        }
+    }
+
+    mesh.style = { {1, 0.4, 0.1, 0.75}, 32.0f, 1e-7f };
+    mesh.writeDepth = true;
+
     return app.run();
 }

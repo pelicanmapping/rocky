@@ -6,9 +6,7 @@
 #include "TMS.h"
 #ifdef ROCKY_HAS_TMS
 
-#ifdef ROCKY_HAS_TINYXML
-#include <tinyxml.h>
-#endif
+#include "tinyxml/tinyxml.h"
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;

@@ -21,7 +21,6 @@
         "qt5",
         "spdlog",
         "sqlite3",
-        "tinyxml",
         "vsg",
         { "name" : "vsgxchange",
           "features": [ "assimp", "freetype" ] },
