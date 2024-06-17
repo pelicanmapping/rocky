@@ -169,7 +169,14 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 
     if (key.levelOfDetail() > 0u)
     {
-        key.getIntersectingKeys(profile(), intersectingKeys);
+        TileKey currentKey = key;
+        while (currentKey.levelOfDetail() > 0u)
+        {
+            std::vector<TileKey> intermediate;
+            currentKey.getIntersectingKeys(profile(), intermediate);
+            intersectingKeys.insert(intersectingKeys.end(), intermediate.begin(), intermediate.end());
+            currentKey.makeParent();
+        }
     }
 
     else
