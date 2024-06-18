@@ -59,6 +59,11 @@ namespace ROCKY_NAMESPACE
             return _debuglayer;
         }
 
+        //! Creates the default window. This is called automatically by run() if you
+        //! don't call it yourself. You may need to call this yourself if you plan to
+        //! access windows, views, or manipulators before starting the frame loop.
+        void realize();
+
     public: // public properties
 
         entt::registry entities;
@@ -107,8 +112,6 @@ namespace ROCKY_NAMESPACE
         bool _viewerDirty = false;
 
         void ctor(int& argc, char** argv);
-
-        void realize();
 
         void setupViewer(vsg::ref_ptr<vsg::Viewer> viewer);
 
