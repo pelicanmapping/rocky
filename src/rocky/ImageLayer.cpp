@@ -167,6 +167,11 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
     // Determine the intersecting keys
     std::vector<TileKey> intersectingKeys;
 
+    // TODO: This will ensure that enough data is availble to fill any gaps in the tile
+    // at the requested LOD by "falling back" to lower LODs. This is a temporary solution
+    // thought b/c although it works, it will end up creating a lot of extra image tiles
+    // that don't get used. A better approach will be to request data on demand as we go
+    // or to maange a spatial index of sources to ensure full coverage. -gw 6/17/24
     if (key.levelOfDetail() > 0u)
     {
         TileKey currentKey = key;
