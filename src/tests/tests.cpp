@@ -305,7 +305,7 @@ TEST_CASE("GDAL")
     CHECKED_IF(layer != nullptr)
     {
         layer->setName("World imagery");
-        layer->setURI("D:/data/imagery/world.tif");
+        layer->setConnection("WMTS:https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml,layer=s2cloudless-2020");
         auto s = layer->open();
         CHECK(s.ok());
     }
@@ -766,7 +766,8 @@ TEST_CASE("Earth File")
         {
             auto tms_layer = TMSImageLayer::cast(layer1);
             CHECK(tms_layer);
-            CHECK(tms_layer->uri == "http://readymap.org/readymap/tiles/1.0.0/7/");
+            CHECK(tms_layer->uri.has_value());
+            CHECK(tms_layer->uri.value() == "https://readymap.org/readymap/tiles/1.0.0/7/");
         }
     }
 }
