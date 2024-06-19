@@ -180,5 +180,7 @@ MapNode::accept(vsg::RecordTraversal& rv) const
 
     rv.setValue("worldsrs", worldSRS());
 
+    rv.setValue("terrainengine", terrain->engine.get());
+
     Inherit::accept(rv);
 }
