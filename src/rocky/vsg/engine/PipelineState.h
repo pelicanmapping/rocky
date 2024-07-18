@@ -31,7 +31,7 @@ namespace ROCKY_NAMESPACE
             shaderSet->customDescriptorSetBindings.push_back(
                 vsg::ViewDependentStateBinding::create(VSG_VIEW_DEPENDENT_DATA_SET));
 
-            shaderSet->addUniformBinding(
+            shaderSet->addDescriptorBinding(
                 "vsg_lights", "",
                 VSG_VIEW_DEPENDENT_DATA_SET,
                 VSG_VIEW_DEPENDENT_LIGHTS_BINDING,
@@ -39,7 +39,7 @@ namespace ROCKY_NAMESPACE
                 stageFlags, {});
 
             // VSG viewport state
-            shaderSet->addUniformBinding(
+            shaderSet->addDescriptorBinding(
                 "vsg_viewports", "",
                 VSG_VIEW_DEPENDENT_DATA_SET,
                 VSG_VIEW_DEPENDENT_VIEWPORTS_BINDING,
@@ -49,8 +49,8 @@ namespace ROCKY_NAMESPACE
 
         static void enableViewDependentData(vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> pipelineConfig)
         {
-            pipelineConfig->enableUniform("vsg_lights");
-            pipelineConfig->enableUniform("vsg_viewports");
+            pipelineConfig->enableDescriptor("vsg_lights");
+            pipelineConfig->enableDescriptor("vsg_viewports");
         }
 
         static vsg::ref_ptr<vsg::StateCommand> createViewDependentBindCommand(vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> pipelineConfig)

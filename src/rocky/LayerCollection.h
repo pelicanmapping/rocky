@@ -32,7 +32,7 @@ namespace ROCKY_NAMESPACE
         void move(shared_ptr<Layer> layer, unsigned index);
 
         //! Number of layers in the map
-        unsigned size() const;
+        std::size_t size() const;
 
         //! Size == 0
         bool empty() const { return size() == 0; }

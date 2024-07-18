@@ -51,29 +51,31 @@ auto Demo_Views = [](Application& app)
                         bool vp_dirty = false;
                         auto old_vp = view->camera->getViewport();
                         auto vp = view->camera->getViewport();
-                        if (ImGuiLTable::SliderFloat("X", &vp.x, 0, window->traits()->width))
+                        if (ImGuiLTable::SliderFloat("X", &vp.x, 0, (float)window->traits()->width))
                         {
                             vp_dirty = true;
                         }
-                        if (ImGuiLTable::SliderFloat("Y", &vp.y, 0, window->traits()->height))
+                        if (ImGuiLTable::SliderFloat("Y", &vp.y, 0, (float)window->traits()->height))
                         {
                             vp_dirty = true;
                         }
-                        if (ImGuiLTable::SliderFloat("Width", &vp.width, 0, window->traits()->width))
+                        if (ImGuiLTable::SliderFloat("Width", &vp.width, 0, (float)window->traits()->width))
                         {
                             vp_dirty = true;
                         }
-                        if (ImGuiLTable::SliderFloat("Height", &vp.height, 0, window->traits()->height))
+                        if (ImGuiLTable::SliderFloat("Height", &vp.height, 0, (float)window->traits()->height))
                         {
                             vp_dirty = true;
                         }
 
                         if (vp_dirty)
                         {
-                            if (vp.x + vp.width >= window->traits()->width) vp.x = window->traits()->width - vp.width - 1;
-                            if (vp.y + vp.height >= window->traits()->height) vp.y = window->traits()->height - vp.height - 1;
+                            if (vp.x + vp.width >= (float)window->traits()->width) vp.x = (float)window->traits()->width - (float)vp.width - 1;
+                            if (vp.y + vp.height >= (float)window->traits()->height) vp.y = (float)window->traits()->height - (float)vp.height - 1;
                             view->camera->projectionMatrix->changeExtent(VkExtent2D{ (unsigned)old_vp.width, (unsigned)old_vp.height }, VkExtent2D{ (unsigned)vp.width, (unsigned)vp.height });
-                            view->camera->viewportState->set(vp.x, vp.y, vp.width, vp.height);
+                            view->camera->viewportState->set(
+                                (std::uint32_t)vp.x, (std::uint32_t)vp.y,
+                                (std::uint32_t)vp.width, (std::uint32_t)vp.height);
                             app.displayManager->refreshView(view);
                         }
 

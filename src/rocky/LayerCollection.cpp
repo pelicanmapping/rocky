@@ -74,11 +74,11 @@ LayerCollection::add(shared_ptr<Layer> layer, const IOOptions& io)
 
     // insert the new layer into the map safely
     Revision new_revision;
-    unsigned index = -1;
+    int index = -1;
     {
         std::unique_lock lock(_map->_mapDataMutex);
         _layers.push_back(layer);
-        index = _layers.size() - 1;
+        index = (int)_layers.size() - 1;
         new_revision = ++_map->_dataModelRevision;
     }
 
@@ -172,7 +172,7 @@ LayerCollection::move(shared_ptr<Layer> layer, unsigned new_index)
     }
 }
 
-unsigned
+std::size_t
 LayerCollection::size() const
 {
     return _layers.size();
@@ -182,7 +182,7 @@ unsigned
 LayerCollection::indexOf(shared_ptr<Layer> layer) const
 {
     if (!layer)
-        return size();
+        return (unsigned)size();
 
     std::shared_lock lock(_map->_mapDataMutex);
     unsigned index = 0;

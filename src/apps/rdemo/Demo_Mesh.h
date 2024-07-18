@@ -41,7 +41,7 @@ auto Demo_Mesh_Absolute = [](Application& app)
         }
 
         // Set a dynamic style that we can change at runtime.
-        mesh.style = { { 1,0.4,0.1,0.75 }, 32.0f, 1e-7f };
+        mesh.style = { { 1.0f, 0.4f, 0.1f, 0.75f }, 32.0f, 1e-7f };
 
         // Turn off depth buffer writes
         mesh.writeDepth = false;
@@ -104,7 +104,7 @@ auto Demo_Mesh_Relative = [](Application& app)
             0,1,5, 0,5,4, 2,3,7, 2,7,6
         };
 
-        vsg::vec4 color{ 1, 0, 1, 0.85 };
+        vsg::vec4 color{ 1, 0, 1, 0.85f };
 
         for (unsigned i = 0; i < 48; )
         {
@@ -113,7 +113,7 @@ auto Demo_Mesh_Relative = [](Application& app)
                 {color, color, color} });
 
             if ((i % 6) == 0)
-                color.r *= 0.8, color.b *= 0.8;
+                color.r *= 0.8f, color.b *= 0.8f;
         }
 
         // Add a transform component so we can position our mesh relative
@@ -184,7 +184,7 @@ auto Demo_Mesh_Multi = [](Application& app)
             0,1,5, 0,5,4, 2,3,7, 2,7,6
         };
 
-        vsg::vec4 color{ 1, 0, 1, 0.85 };
+        vsg::vec4 color{ 1, 0, 1, 0.85f };
 
         for (unsigned i = 0; i < 48; )
         {
@@ -193,7 +193,7 @@ auto Demo_Mesh_Multi = [](Application& app)
                 {color, color, color} });
 
             if ((i % 6) == 0)
-                color.r *= 0.8, color.b *= 0.8;
+                color.r *= 0.8f, color.b *= 0.8f;
         }
 
         // Add a transform component so we can position our mesh relative

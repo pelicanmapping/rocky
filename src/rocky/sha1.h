@@ -199,14 +199,14 @@ namespace ROCKY_NAMESPACE {
             }
 
             sha1& add(const char* text) {
-                return add(text, strlen(text));
+                return add(text, (std::uint32_t)strlen(text));
             }
 
             sha1& finalize() {
                 // hashed text ends with 0x80, some padding 0x00 and the length in bits
                 add_byte_dont_count_bits(0x80);
                 while (i % 64 != 56) add_byte_dont_count_bits(0x00);
-                for (int j = 7; j >= 0; j--) add_byte_dont_count_bits(n_bits >> j * 8);
+                for (int j = 7; j >= 0; j--) add_byte_dont_count_bits((uint8_t)(n_bits >> j * 8U));
 
                 return *this;
             }

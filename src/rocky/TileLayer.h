@@ -127,7 +127,7 @@ namespace ROCKY_NAMESPACE
         virtual DataExtentList dataExtents() const;
 
         //! Number of data extents on the layer
-        unsigned dataExtentsSize() const;
+        std::size_t dataExtentsSize() const;
 
         //! Extent that is the union of all the extents in getDataExtents().
         const DataExtent& dataExtentsUnion() const;

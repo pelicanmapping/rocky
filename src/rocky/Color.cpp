@@ -261,7 +261,7 @@ Color::Color(const std::string& input, Format format)
             t.size() >= 2 && t[0] == '0' && t[1] == 'x' ? 2 :
             t.size() >= 1 && t[0] == '#' ? 1 :
             0;
-        unsigned len = t.length() - e;
+        unsigned len = (unsigned)t.length() - e;
         if (len == 3)
         {
             // This is a 3 digit hex code, so turn it into a 6 digit hex code
@@ -360,7 +360,7 @@ Color::asHSL() const
     B = glm::fvec4(r, p.y, p.z, p.x);
     glm::fvec4 q = glm::mix(A, B, step(p.x, r));
     float d = q.x - std::min(q.w, q.y);
-    const float e = 1.0e-10;
+    const float e = 1.0e-10f;
     return glm::fvec4(
         fabs(q.z + (q.w - q.y) / (6.0f*d + e)),
         d / (q.x + e),
@@ -424,13 +424,13 @@ Color::createRandomColorRamp(
     std::mt19937 gen(seed >= 0 ? seed : 0);
     std::uniform_int_distribution<> prng(0, 360);
     
-    double hueAngle = (double)prng(gen);// prng.next(360);
+    float hueAngle = (float)prng(gen);// prng.next(360);
     glm::fvec4 hsv(0, 0, 0, 1);
 
     for (unsigned i = 0; i < count; ++i)
     {
-        hueAngle = fmod(hueAngle + 137.50776, 360.0);
-        hsv[0] = hueAngle / 360.0;
+        hueAngle = fmodf(hueAngle + 137.50776f, 360.0f);
+        hsv[0] = hueAngle / 360.0f;
         hsv[1] = satMin + (float)prng(gen)*(satMax - satMin);
         hsv[2] = valMin + (float)prng(gen)*(valMax - valMin);        
         hsv2rgb(hsv);

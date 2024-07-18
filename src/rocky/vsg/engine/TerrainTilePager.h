@@ -32,8 +32,7 @@ namespace ROCKY_NAMESPACE
             // this Tile into an orphan. As an orphan it will expire and eventually
             // be removed anyway, but we need to keep it alive in the meantime...
             vsg::ref_ptr<TerrainTileNode> _tile;
-            void* _trackerToken;
-            TableEntry() : _trackerToken(nullptr) { }
+            void* _trackerToken = nullptr;
         };
 
         using TileTable = std::unordered_map<TileKey, TableEntry>;
@@ -56,7 +55,7 @@ namespace ROCKY_NAMESPACE
             vsg::RecordTraversal&);
 
         //! Number of tiles in the registry.
-        unsigned size() const { return _tiles.size(); }
+        std::size_t size() const { return _tiles.size(); }
 
         //! Empty the registry, releasing all tiles.
         void releaseAll();
@@ -96,8 +95,8 @@ namespace ROCKY_NAMESPACE
 
         //! Visibility info for a single terrain tile LOD
         struct LOD {
-            double visibilityRange;
-            double morphStart, morphEnd;
+            float visibilityRange;
+            float morphStart, morphEnd;
             unsigned minValidTY, maxValidTY;
         };
         unsigned _firstLOD;

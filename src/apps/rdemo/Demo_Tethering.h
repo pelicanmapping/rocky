@@ -57,7 +57,7 @@ auto Demo_Tethering = [](Application& app)
         auto& mesh = app.entities.emplace<Mesh>(entity);
         vsg::vec3 verts[4] = { { -s, -s, 0 }, {  s, -s, 0 }, {  s,  s, 0 }, { -s,  s, 0 } };
         unsigned indices[6] = { 0,1,2, 0,2,3 };
-        vsg::vec4 color{ 1, 1, 0, 0.55 };
+        vsg::vec4 color{ 1, 1, 0, 0.55f };
         for (unsigned i = 0; i < 6; ) {
             mesh.add({
                 {verts[indices[i++]], verts[indices[i++]], verts[indices[i++]]},

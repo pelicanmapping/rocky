@@ -140,8 +140,8 @@ auto Demo_RTT = [](Application& app)
                     {lon, lat + step, alt} };
 
                 for (int i = 0; i < 4; ++i) {
-                    uv[i].s = (v[i].x - lon0) / (lon1 - lon0);
-                    uv[i].t = (v[i].y - lat0) / (lat1 - lat0);
+                    uv[i].s = (float)((v[i].x - lon0) / (lon1 - lon0));
+                    uv[i].t = (float)((v[i].y - lat0) / (lat1 - lat0));
                     xform(v[i], v[i]);
                 }
 

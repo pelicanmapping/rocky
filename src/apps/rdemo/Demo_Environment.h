@@ -33,7 +33,7 @@ auto Demo_Environment = [](Application& app)
 
     if (ImGuiLTable::Begin("environment"))
     {
-        float hours = dt.hours();
+        float hours = (float)dt.hours();
         if (ImGuiLTable::SliderFloat("Time of day (UTC)", &hours, 0.0f, 23.999f, "%.1f"))
         {
             dt = DateTime(dt.year(), dt.month(), dt.day(), hours);

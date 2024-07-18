@@ -219,9 +219,9 @@ rocky::util::toLegalFileName(const std::string& input, bool allowSubdirs, const 
 unsigned
 rocky::util::hashString( const std::string& input )
 {
-    const unsigned int m = 0x5bd1e995;
+    const unsigned m = 0x5bd1e995;
     const int r = 24;
-    unsigned int len = input.length();
+    unsigned len = (unsigned)input.length();
     const char* data = input.c_str();
     unsigned int h = m ^ len; // using "m" as the seed.
 
@@ -400,10 +400,10 @@ rocky::util::endsWith( const std::string& ref, const std::string& pattern, bool 
     if ( pattern.length() > ref.length() )
         return false;
 
-    unsigned offset = ref.size()-pattern.length();
+    auto offset = ref.size()-pattern.length();
     if ( caseSensitive )
     {
-        for( unsigned i=0; i < pattern.length(); ++i )
+        for( unsigned i=0; i < (unsigned)pattern.length(); ++i )
         {
             if ( ref[i+offset] != pattern[i] )
                 return false;
@@ -411,7 +411,7 @@ rocky::util::endsWith( const std::string& ref, const std::string& pattern, bool 
     }
     else
     {
-        for( unsigned i=0; i < pattern.length(); ++i )
+        for( auto i=0; i < pattern.length(); ++i )
         {
             if ( std::toupper(ref[i+offset], loc) != std::toupper(pattern[i],loc) )
                 return false;
@@ -465,6 +465,25 @@ rocky::util::readFromFile(std::string& data, const std::string& filename)
     return true;
 }
 
+std::string
+rocky::util::getEnvVar(const char* name)
+{
+    std::string result;
+    char value[256];
+    size_t value_len = 0;
+    if (::getenv_s(&value_len, value, name) == 0)
+    {
+        result = value;
+    }
+    return result;
+}
+
+bool
+rocky::util::isEnvVarSet(const char* name)
+{
+    return !getEnvVar(name).empty();
+}
+
 #ifdef ROCKY_HAS_ZLIB
 
 // adapted from
@@ -493,7 +512,7 @@ ZLibCompressor::compress(const std::string& src, std::ostream& fout) const
         stategy);
     if (ret != Z_OK) return false;
 
-    strm.avail_in = src.size();
+    strm.avail_in = (uInt)src.size();
     strm.next_in = (Bytef*)(&(*src.begin()));
 
     /* run deflate() on input until output buffer not full, finish
@@ -553,7 +572,7 @@ ZLibCompressor::decompress(std::istream& fin, std::string& target) const
     do
     {
         fin.read((char*)in, CHUNK);
-        strm.avail_in = fin.gcount();
+        strm.avail_in = (uInt)fin.gcount();
         if (strm.avail_in == 0) break;
 
         /* run inflate() on input until output buffer not full */

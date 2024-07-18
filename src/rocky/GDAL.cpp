@@ -285,10 +285,10 @@ namespace ROCKY_NAMESPACE
             {
                 if (interp == GPI_RGB)
                 {
-                    color.r = colorEntry->c1;
-                    color.g = colorEntry->c2;
-                    color.b = colorEntry->c3;
-                    color.a = colorEntry->c4;
+                    color.r = (COLOR::value_type)colorEntry->c1;
+                    color.g = (COLOR::value_type)colorEntry->c2;
+                    color.b = (COLOR::value_type)colorEntry->c3;
+                    color.a = (COLOR::value_type)colorEntry->c4;
                 }
                 else if (interp == GPI_CMYK)
                 {
@@ -407,7 +407,7 @@ namespace ROCKY_NAMESPACE
             psExtraArg.dfXSize = nXSize;
             psExtraArg.dfYSize = nYSize;
 
-            CPLErr err = band->RasterIO(eRWFlag, floor(nXOff), floor(nYOff), ceil(nXSize), ceil(nYSize), pData, nBufXSize, nBufYSize, eBufType, nPixelSpace, nLineSpace, &psExtraArg);
+            CPLErr err = band->RasterIO(eRWFlag, (int)nXOff, (int)nYOff, (int)ceil(nXSize), (int)ceil(nYSize), pData, nBufXSize, nBufYSize, eBufType, nPixelSpace, nLineSpace, &psExtraArg);
 
             if (err != CE_None)
             {
@@ -440,7 +440,7 @@ namespace ROCKY_NAMESPACE
 
         Result<shared_ptr<Image>> readImage(
             unsigned char* data,
-            unsigned length,
+            std::size_t length,
             const std::string& name)
         {
             shared_ptr<Image> result;
@@ -513,8 +513,8 @@ namespace ROCKY_NAMESPACE
                         }
                         else if (M)
                         {
-                            auto value_scale = M->GetScale();
-                            auto value_offset = M->GetOffset();
+                            float value_scale = (float)M->GetScale();
+                            float value_offset = (float)M->GetOffset();
 
                             M->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Float32, 0, 0, nullptr);
 
@@ -928,7 +928,7 @@ GDAL::Driver::isValidValue(float v, GDALRasterBand* band)
 {
     float bandNoData = -32767.0f;
     int success;
-    float value = band->GetNoDataValue(&success);
+    float value = (float)band->GetNoDataValue(&success);
     if (success)
     {
         bandNoData = value;
@@ -971,34 +971,35 @@ GDAL::Driver::getValidElevationValue(float v, float noDataValueFromBand, float r
 float
 GDAL::Driver::getInterpolatedValue(GDALRasterBand* band, double x, double y, bool applyOffset)
 {
-    double r, c;
-    geoToPixel(x, y, c, r);
+    double rd, cd;
+    geoToPixel(x, y, cd, rd);
+    float r = (float)rd, c = (float)cd;
 
     if (applyOffset)
     {
         //Apply half pixel offset
-        r -= 0.5;
-        c -= 0.5;
+        r -= 0.5f;
+        c -= 0.5f;
 
         //Account for the half pixel offset in the geotransform.  If the pixel value is -0.5 we are still technically in the dataset
         //since 0,0 is now the center of the pixel.  So, if are within a half pixel above or a half pixel below the dataset just use
         //the edge values
-        if (c < 0 && c >= -0.5)
+        if (c < 0 && c >= -0.5f)
         {
-            c = 0;
+            c = 0.0f;
         }
         else if (c > _warpedDS->GetRasterXSize() - 1 && c <= _warpedDS->GetRasterXSize() - 0.5)
         {
-            c = _warpedDS->GetRasterXSize() - 1;
+            c = (float)(_warpedDS->GetRasterXSize() - 1);
         }
 
-        if (r < 0 && r >= -0.5)
+        if (r < 0 && r >= -0.5f)
         {
-            r = 0;
+            r = 0.0f;
         }
         else if (r > _warpedDS->GetRasterYSize() - 1 && r <= _warpedDS->GetRasterYSize() - 0.5)
         {
-            r = _warpedDS->GetRasterYSize() - 1;
+            r = (float)(_warpedDS->GetRasterYSize() - 1);
         }
     }
 
@@ -1315,7 +1316,7 @@ GDAL::Driver::createImage(
                 rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation());
 
                 int success = 0;
-                short noDataValueFromBand = bandGray->GetNoDataValue(&success);
+                short noDataValueFromBand = (short)bandGray->GetNoDataValue(&success);
                 if (!success) noDataValueFromBand = (short)-32767;
 
                 for (int src_row = 0, dst_row = tile_offset_top; src_row < target_height; src_row++, dst_row++)
@@ -1339,7 +1340,7 @@ GDAL::Driver::createImage(
                 rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation());
 
                 int success = 0;
-                float noDataValueFromBand = bandGray->GetNoDataValue(&success);
+                float noDataValueFromBand = (float)bandGray->GetNoDataValue(&success);
                 if (!success) noDataValueFromBand = NO_DATA_VALUE;
 
                 for (int src_row = 0, dst_row = tile_offset_top; src_row < target_height; src_row++, dst_row++)
@@ -1495,11 +1496,11 @@ GDAL::Driver::createImage(
                     glm::u8vec4 color;
                     if (!getPalleteIndexColor(bandPalette, p, color))
                     {
-                        color.a = 0.0f;
+                        color.a = 0;
                     }
                     else if (!isValidValue((float)color.r, bandPalette)) // is this applicable for palettized data?
                     {
-                        color.a = 0.0f;
+                        color.a = 0;
                     }
 
                     glm::fvec4 fcolor = glm::fvec4(color) / 255.0f;

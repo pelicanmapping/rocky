@@ -736,21 +736,21 @@ TerrainTilePager::initializeLODs(const Profile& profile, const TerrainSettings& 
         GeoExtent e = key.extent();
         GeoCircle c = e.computeBoundingGeoCircle();
         double range = c.radius() * settings.minTileRangeFactor * 2.0 * (1.0 / 1.405);
-        _lods[lod].visibilityRange = range;
+        _lods[lod].visibilityRange = (float)range;
         _lods[lod].minValidTY = 0;
         _lods[lod].maxValidTY = 0xFFFFFFFF;
     }
 
     double metersPerEquatorialDegree = (profile.srs().ellipsoid().semiMajorAxis() * 2.0 * M_PI) / 360.0;
 
-    double prevPos = 0.0;
+    float prevPos = 0.0;
 
     for (int lod = (int)(numLods - 1); lod >= 0; --lod)
     {
-        double span = _lods[lod].visibilityRange - prevPos;
+        float span = _lods[lod].visibilityRange - prevPos;
 
         _lods[lod].morphEnd = _lods[lod].visibilityRange;
-        _lods[lod].morphStart = prevPos + span * (0.66);
+        _lods[lod].morphStart = prevPos + span * (0.66f);
         prevPos = _lods[lod].morphEnd;
 
         // Calc the maximum valid TY (to avoid over-subdivision at the poles)

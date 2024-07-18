@@ -98,7 +98,7 @@ namespace weemesh
         // cast to another vec3 type
         template<class VEC3>
         inline operator VEC3() const {
-            return VEC3(x, y, z);
+            return VEC3((VEC3::value_type)x, (VEC3::value_type)y, (VEC3::value_type)z);
         }
     };
 
@@ -387,8 +387,8 @@ namespace weemesh
             {
                 verts.push_back(input);
                 markers.push_back(marker);
-                _vert_lut[input] = verts.size() - 1;
-                index = verts.size() - 1;
+                _vert_lut[input] = (int)verts.size() - 1;
+                index = (int)verts.size() - 1;
             }
             else
             {
@@ -407,7 +407,7 @@ namespace weemesh
             vert_t::value_type a_max[2] = { xmax, ymax };
             _spatial_index.Search(a_min, a_max, [&](const UID& uid) {
                 output.emplace_back(&triangles[uid]); return true;  });
-            return output.size();
+            return (unsigned)output.size();
         }
 
         template<class T>

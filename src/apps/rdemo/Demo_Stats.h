@@ -27,9 +27,8 @@ namespace
     Timings update(frame_count);
     Timings record(frame_count);
     int frame_num = 0;
-    char buf[256];
     float get_timings(void* data, int index) {
-        return 0.001 * (float)(*(Timings*)data)[index].count();
+        return 0.001f * (float)(*(Timings*)data)[index].count();
     };
     unsigned long long average(void* data, int count, int start) {
         Timings& t = *(Timings*)(data);
@@ -55,26 +54,28 @@ auto Demo_Stats = [](Application& app)
 
     if (app.debugLayerOn())
     {
-        ImGui::TextColored(ImVec4(1, .3, .3, 1), "Warning: debug validation is ON");
+        ImGui::TextColored(ImVec4(1, .3f, .3f, 1), "Warning: debug validation is ON");
     }
     if (app.instance.runtime().asyncCompile == false)
     {
-        ImGui::TextColored(ImVec4(1, .3, .3, 1), "Warning: async compilation is OFF");
+        ImGui::TextColored(ImVec4(1, .3f, .3f, 1), "Warning: async compilation is OFF");
     }
 
     if (ImGuiLTable::Begin("Timings"))
     {
-        sprintf(buf, "%.2f ms", 0.001f * (float)app.stats.frame.count());
-        ImGuiLTable::PlotLines("Frame", get_timings, &frames, frame_count, f, buf, 0.0f, 17.0f);
+        std::string buf;
 
-        sprintf(buf, u8"%lld \x00B5s", average(&events, over, f));
-        ImGuiLTable::PlotLines("Event", get_timings, &events, frame_count, f, buf, 0.0f, 10.0f);
+        buf = util::format("%.2f ms", 0.001f * (float)app.stats.frame.count());
+        ImGuiLTable::PlotLines("Frame", get_timings, &frames, frame_count, f, buf.c_str(), 0.0f, 17.0f);
 
-        sprintf(buf, u8"%lld \x00B5s", average(&update, over, f));
-        ImGuiLTable::PlotLines("Update", get_timings, &update, frame_count, f, buf, 0.0f, 10.0f);
+        buf = util::format(u8"%lld \x00B5s", average(&events, over, f));
+        ImGuiLTable::PlotLines("Event", get_timings, &events, frame_count, f, buf.c_str(), 0.0f, 10.0f);
 
-        sprintf(buf, u8"%lld \x00B5s", average(&record, over, f));
-        ImGuiLTable::PlotLines("Record", get_timings, &record, frame_count, f, buf, 0.0f, 10.0f);
+        buf = util::format(u8"%lld \x00B5s", average(&update, over, f));
+        ImGuiLTable::PlotLines("Update", get_timings, &update, frame_count, f, buf.c_str(), 0.0f, 10.0f);
+
+        buf = util::format(u8"%lld \x00B5s", average(&record, over, f));
+        ImGuiLTable::PlotLines("Record", get_timings, &record, frame_count, f, buf.c_str(), 0.0f, 10.0f);
 
         ImGuiLTable::End();
     }
@@ -103,8 +104,8 @@ auto Demo_Stats = [](Application& app)
             if (m)
             {
                 std::string name = m->name.empty() ? "default" : m->name;
-                sprintf(buf, "(%d) %d / %d", (int)m->concurrency, (int)m->running, (int)m->pending);
-                ImGuiLTable::Text(name.c_str(), buf);
+                auto buf = util::format("(%d) %d / %d", (int)m->concurrency, (int)m->running, (int)m->pending);
+                ImGuiLTable::Text(name.c_str(), buf.c_str());
             }
         }
         ImGuiLTable::End();

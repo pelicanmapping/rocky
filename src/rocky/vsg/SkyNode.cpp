@@ -254,7 +254,7 @@ SkyNode::setWorldSRS(const SRS& srs)
         // some ambient light:
         ambient = vsg::AmbientLight::create();
         ambient->name = "Sky Ambient";
-        ambient->color = { 0.013, 0.013, 0.013 };
+        ambient->color = { 0.013f, 0.013f, 0.013f };
         addChild(ambient);
 
         // the sun:

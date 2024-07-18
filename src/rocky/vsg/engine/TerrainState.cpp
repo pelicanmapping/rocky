@@ -182,10 +182,10 @@ TerrainState::createShaderSet() const
     //shaderSet->addAttributeBinding(ATTR_NORMAL_NEIGHBOR, "", 4, VK_FORMAT_R32G32B32A32_SFLOAT, vsg::vec3Array::create(1));
 
     // "binding" (4th param) must match "layout(location=X) uniform" in the shader
-    shaderSet->addUniformBinding(texturedefs.elevation.name, "", 0, texturedefs.elevation.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
-    shaderSet->addUniformBinding(texturedefs.color.name, "", 0, texturedefs.color.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
-    shaderSet->addUniformBinding(texturedefs.normal.name, "", 0, texturedefs.normal.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
-    shaderSet->addUniformBinding(TILE_BUFFER_NAME, "", 0, TILE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
+    shaderSet->addDescriptorBinding(texturedefs.elevation.name, "", 0, texturedefs.elevation.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
+    shaderSet->addDescriptorBinding(texturedefs.color.name, "", 0, texturedefs.color.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+    shaderSet->addDescriptorBinding(texturedefs.normal.name, "", 0, texturedefs.normal.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+    shaderSet->addDescriptorBinding(TILE_BUFFER_NAME, "", 0, TILE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
     
     PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_FRAGMENT_BIT);
 
@@ -227,7 +227,7 @@ TerrainState::createPipelineConfig() const
     config->enableTexture(texturedefs.normal.name);
 #endif
 
-    config->enableUniform(TILE_BUFFER_NAME);
+    config->enableDescriptor(TILE_BUFFER_NAME);
 
     PipelineUtils::enableViewDependentData(config);
 

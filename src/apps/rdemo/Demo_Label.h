@@ -61,12 +61,15 @@ auto Demo_Label = [](Application& app)
         auto& label = app.entities.get<Label>(entity);
         ImGuiLTable::Checkbox("Visible", &label.active);
 
-        char buf[256];
-        strcpy(&buf[0], label.text.c_str());
-        if (ImGuiLTable::InputText("Text", buf, 255))
+        if (label.text.length() <= 255)
         {
-            label.text = std::string(buf);
-            label.dirty();
+            char buf[256];
+            std::copy(label.text.begin(), label.text.end(), buf);
+            if (ImGuiLTable::InputText("Text", &buf[0], 255))
+            {
+                label.text = std::string(buf);
+                label.dirty();
+            }
         }
 
         if (ImGuiLTable::SliderFloat("Point size", &label.style.pointSize, 8.0f, 144.0f, "%.1f"))

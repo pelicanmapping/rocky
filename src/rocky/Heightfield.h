@@ -21,9 +21,7 @@ namespace ROCKY_NAMESPACE
         Heightfield();
 
         //! Construct a heightfield with the given dimensions
-        Heightfield(
-            unsigned cols,
-            unsigned rows);
+        Heightfield(unsigned cols, unsigned rows);
 
         //! Make a heightfield, stealing data from an image.
         explicit Heightfield(Image* rhs);

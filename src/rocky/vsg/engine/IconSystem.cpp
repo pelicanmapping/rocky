@@ -56,13 +56,13 @@ namespace
         shaderSet->addAttributeBinding("in_vertex", "", 0, VK_FORMAT_R32G32B32_SFLOAT, { });
 
         // data uniform buffer (object style)
-        shaderSet->addUniformBinding(
+        shaderSet->addDescriptorBinding(
             "icon", "", 
             BUFFER_SET, BUFFER_BINDING, 
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
 
         // Icon texture image
-        shaderSet->addUniformBinding(
+        shaderSet->addDescriptorBinding(
             "icon_texture", "",
             TEXTURE_SET, TEXTURE_BINDING,
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
@@ -107,7 +107,7 @@ IconSystemNode::initialize(Runtime& runtime)
         // activate the arrays we intend to use
         c.config->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
 
-        c.config->enableUniform("icon");
+        c.config->enableDescriptor("icon");
         c.config->enableTexture("icon_texture");
 
         PipelineUtils::enableViewDependentData(c.config);

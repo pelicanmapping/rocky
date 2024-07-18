@@ -6,6 +6,10 @@
 #include "DateTime.h"
 #include "Utils.h"
 #include <stdio.h> 
+#include <time.h>
+
+// to get the TIXML_SSCANF macro
+#include "tinyxml/tinyxml.h"
 
 using namespace ROCKY_NAMESPACE;
 
@@ -24,6 +28,19 @@ namespace
     const char* rfc_month[12] = {
         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     };
+
+    bool timet_to_tm(const ::time_t& t, ::tm& result)
+    {
+#ifdef _WIN32
+        int err = ::gmtime_s(&result, &t);
+#else
+        int err = ::gmtime_r(&t, &result);
+#endif
+        if (err)
+            ::memset(&result, 0, sizeof(tm));
+
+        return err == 0;
+    }
 }
 
 //------------------------------------------------------------------------
@@ -31,26 +48,20 @@ namespace
 DateTime::DateTime()
 {
     ::time( &_time_t );
-    tm* temp = ::gmtime( &_time_t );
-    if ( temp ) _tm = *temp;
-    else memset( &_tm, 0, sizeof(tm) );
+    timet_to_tm(_time_t, _tm);
 }
 
 DateTime::DateTime(TimeStamp utc)
 {
     _time_t = utc;
-    tm* temp = ::gmtime( &_time_t );
-    if ( temp ) _tm = *temp;
-    else memset( &_tm, 0, sizeof(tm) );
+    timet_to_tm(_time_t, _tm);
 }
 
 DateTime::DateTime(const ::tm& in_tm)
 {
     tm temptm = in_tm;
     _time_t = ::mktime( &temptm ); // assumes in_tm is in local time
-    tm* temp = ::gmtime( &_time_t );
-    if ( temp ) _tm = *temp;
-    else memset( &_tm, 0, sizeof(tm) );
+    timet_to_tm(_time_t, _tm);
     _time_t = this->timegm(&_tm); // back to UTC
 }
 
@@ -70,19 +81,14 @@ DateTime::DateTime(int year, int month, int day, double hour)
 
     // now go to time_t, and back to tm, to populate the rest of the fields.
     _time_t =  this->timegm( &_tm );
-    //_time_t =  ::mktime( &_tm );
-    tm* temp = ::gmtime( &_time_t );
-    if ( temp ) _tm = *temp;
-    else memset( &_tm, 0, sizeof(tm) );
+    timet_to_tm(_time_t, _tm);
 }
 
 DateTime::DateTime(int year, double dayOfYear)
 {
     TimeStamp utc = DateTime(year,1,1,0).asTimeStamp() + (int)((dayOfYear-1.0)*24.0*3600.0);
     _time_t = utc;
-    tm* temp = ::gmtime( &_time_t );
-    if ( temp ) _tm = *temp;
-    else memset( &_tm, 0, sizeof(tm) );    
+    timet_to_tm(_time_t, _tm);
 }
 
 DateTime::DateTime(const std::string& input) :
@@ -99,7 +105,7 @@ DateTime::parse(const std::string& input)
     
     ::memset( &_tm, 0, sizeof(tm) );
 
-    if (sscanf(input.c_str(), "%4d-%2d-%2dT%2d:%2d:%2d", &year, &month, &day, &hour, &min, &sec) == 6)
+    if (TIXML_SSCANF(input.c_str(), "%4d-%2d-%2dT%2d:%2d:%2d", &year, &month, &day, &hour, &min, &sec) == 6)
     {
         _tm.tm_year = year - 1900;
         _tm.tm_mon  = month - 1;
@@ -109,7 +115,7 @@ DateTime::parse(const std::string& input)
         _tm.tm_sec  = sec;
         ok = true;
     }
-    else if (sscanf(input.c_str(), "%4d-%2d-%2d %2d:%2d:%2d", &year, &month, &day, &hour, &min, &sec) == 6)
+    else if (TIXML_SSCANF(input.c_str(), "%4d-%2d-%2d %2d:%2d:%2d", &year, &month, &day, &hour, &min, &sec) == 6)
     {
         _tm.tm_year = year - 1900;
         _tm.tm_mon  = month - 1;
@@ -119,7 +125,7 @@ DateTime::parse(const std::string& input)
         _tm.tm_sec  = sec;
         ok = true;
     }
-    else if (sscanf(input.c_str(), "%4d%2d%2dT%2d%2d%2d", &year, &month, &day, &hour, &min, &sec) == 6)
+    else if (TIXML_SSCANF(input.c_str(), "%4d%2d%2dT%2d%2d%2d", &year, &month, &day, &hour, &min, &sec) == 6)
     {
         _tm.tm_year = year - 1900;
         _tm.tm_mon  = month - 1;
@@ -129,7 +135,7 @@ DateTime::parse(const std::string& input)
         _tm.tm_sec  = sec;
         ok = true;
     }
-    else if (sscanf(input.c_str(), "%4d%2d%2d%2d%2d%2d", &year, &month, &day, &hour, &min, &sec) == 6)
+    else if (TIXML_SSCANF(input.c_str(), "%4d%2d%2d%2d%2d%2d", &year, &month, &day, &hour, &min, &sec) == 6)
     {
         _tm.tm_year = year - 1900;
         _tm.tm_mon  = month - 1;
@@ -144,14 +150,13 @@ DateTime::parse(const std::string& input)
     {
         // now go to time_t, and back to tm, to populate the rest of the fields.
         _time_t =  this->timegm( &_tm );
-        tm* temp = ::gmtime( &_time_t );
-        if ( temp ) _tm = *temp;
+        timet_to_tm(_time_t, _tm);
     }
 }
 
 DateTime::DateTime(const DateTime& rhs) :
-_tm    ( rhs._tm ),
-_time_t( rhs._time_t )
+    _tm(rhs._tm),
+    _time_t(rhs._time_t)
 {
     //nop
 }

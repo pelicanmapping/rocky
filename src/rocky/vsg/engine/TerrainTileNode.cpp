@@ -126,8 +126,8 @@ TerrainTileNode::shouldSubDivide(vsg::State* state) const
     const float TILE_SIZE_PIXELS = 256.0f;
 
     auto& vp = state->_commandBuffer->viewDependentState->viewportData->at(0);
-    float min_screen_height_ratio = (TILE_SIZE_PIXELS + _host->settings().screenSpaceError) / vp[3];
-    float d = state->lodDistance(bound);
+    auto min_screen_height_ratio = (TILE_SIZE_PIXELS + _host->settings().screenSpaceError) / vp[3];
+    auto d = state->lodDistance(bound);
     return (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
 
 #else

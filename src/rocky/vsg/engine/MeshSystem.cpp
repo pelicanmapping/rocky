@@ -57,12 +57,12 @@ namespace
         shaderSet->addAttributeBinding("in_depthoffset", "", 4, VK_FORMAT_R32_SFLOAT, {});
 
         // line data uniform buffer (width, stipple, etc.)
-        shaderSet->addUniformBinding("mesh", "USE_MESH_STYLE",
+        shaderSet->addDescriptorBinding("mesh", "USE_MESH_STYLE",
             MESH_UNIFORM_SET, MESH_STYLE_BUFFER_BINDING,
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
 
         // Optional texture
-        shaderSet->addUniformBinding("mesh_texture", "USE_MESH_TEXTURE",
+        shaderSet->addDescriptorBinding("mesh_texture", "USE_MESH_TEXTURE",
             MESH_UNIFORM_SET, MESH_TEXTURE_BINDING,
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
@@ -112,7 +112,7 @@ MeshSystemNode::initialize(Runtime& runtime)
 
         if (feature_mask & DYNAMIC_STYLE)
         {
-            c.config->enableUniform("mesh");
+            c.config->enableDescriptor("mesh");
             c.config->shaderHints->defines.insert("USE_MESH_STYLE");
         }
 
@@ -243,7 +243,7 @@ MeshGeometry::add(
 {
     for (int v = 0; v < 3; ++v)
     {
-        index_type i = _verts.size();
+        auto i = _verts.size();
         auto key = std::make_tuple(verts[v], colors[v]);
         auto iter1 = _lut.find(key);
         i = iter1 != _lut.end() ? iter1->second : _verts.size();
@@ -254,10 +254,10 @@ MeshGeometry::add(
             _uvs.push_back(uvs[v]);
             _colors.push_back(colors[v]);
             _depthoffsets.push_back(depthoffsets[v]);
-            _lut[key] = i;
+            _lut[key] = (index_type)i;
         }
 
-        _indices.push_back(i);
+        _indices.push_back((index_type)i);
     }
 }
 
@@ -282,7 +282,7 @@ MeshGeometry::compile(vsg::Context& context)
         assignArrays({ vert_array, normal_array, color_array, uv_array, depthoffset_array });
         assignIndices(index_array);
 
-        _drawCommand->indexCount = index_array->size();
+        _drawCommand->indexCount = (uint32_t)index_array->size();
 
         commands.push_back(_drawCommand);
     }

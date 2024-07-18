@@ -70,7 +70,7 @@ CachePolicy::getMinAcceptTime() const
 {
     return
         minTime.has_value() ? minTime.value() :
-        maxAge.has_value() ? DateTime().asTimeStamp() - maxAge.value() :
+        maxAge.has_value() ? DateTime().asTimeStamp() - (TimeStamp)maxAge.value() :
         0;
 }
 

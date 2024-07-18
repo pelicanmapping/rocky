@@ -58,7 +58,7 @@ namespace ImGuiLTable
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         std::string s("##" + std::string(label));
-        float temp = *v;
+        float temp = (float)*v;
         bool ok = ImGui::SliderFloat(s.c_str(), &temp, (float)v_min, (float)v_max, format);
         if (ok) *v = (double)temp;
         return ok;
@@ -71,7 +71,7 @@ namespace ImGuiLTable
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         std::string s("##" + std::string(label));
-        float temp = *v;
+        float temp = (float)*v;
         bool ok = ImGui::SliderFloat(s.c_str(), &temp, (float)v_min, (float)v_max, format, flags);
         if (ok) *v = (double)temp;
         return ok;

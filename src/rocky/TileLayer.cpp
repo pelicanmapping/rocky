@@ -150,8 +150,8 @@ TileLayer::setUpL2Cache(unsigned minSize)
     unsigned l2CacheSize = layerHints().L2CacheSize().getOrUse(minSize);
 
     // See if it was overridden with an env var.
-    char const* l2env = ::getenv("ROCKY_L2_CACHE_SIZE");
-    if (l2env)
+    auto l2env = util::getEnvVar("ROCKY_L2_CACHE_SIZE");
+    if (!l2env.empty())
     {
         l2CacheSize = util::as<int>(std::string(l2env), 0);
         //ROCKY_INFO << LC << "L2 cache size set from environment = " << l2CacheSize << "\n";
@@ -331,7 +331,8 @@ TileLayer::isKeyInVisualRange(const TileKey& key) const
     return true;
 }
 
-unsigned int TileLayer::dataExtentsSize() const
+std::size_t 
+TileLayer::dataExtentsSize() const
 {
     std::shared_lock READ(_dataMutex);
     return _dataExtents.size();

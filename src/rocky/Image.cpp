@@ -13,7 +13,7 @@ namespace
     using ushort = unsigned short;
 
     constexpr float norm_8 = 255.0f;
-    constexpr float denorm_8 = 1.0 / norm_8;
+    constexpr float denorm_8 = 1.0f / norm_8;
 
     template<typename T>
     struct NORM8 {
@@ -30,7 +30,7 @@ namespace
     };
 
     constexpr float norm_16 = 65535.0f;
-    constexpr float denorm_16 = 1.0 / norm_16;
+    constexpr float denorm_16 = 1.0f / norm_16;
 
     template<typename T>
     struct NORM16 {

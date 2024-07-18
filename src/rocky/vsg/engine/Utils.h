@@ -62,8 +62,9 @@ namespace ROCKY_NAMESPACE
             a[3][0], a[3][1], a[3][2], a[3][3]);
     }
 
-    inline float distanceTo(const vsg::dvec3& p, vsg::State* state) {
-        return vsg::length(state->modelviewMatrixStack.top() * p);
+    inline float distanceTo(const vsg::dvec3& p, vsg::State* state)
+    {
+        return (float)vsg::length(state->modelviewMatrixStack.top() * p);
     }
 
     namespace util

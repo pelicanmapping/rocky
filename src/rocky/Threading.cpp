@@ -18,8 +18,9 @@ void
 rocky::util::setThreadName(const std::string& name)
 {
 #if (defined _WIN32 && defined _WIN32_WINNT_WIN10 && defined _WIN32_WINNT && _WIN32_WINNT >= _WIN32_WINNT_WIN10) || (defined __CYGWIN__)
+    size_t bufsize = 0;
     wchar_t buf[256];
-    mbstowcs(buf, name.c_str(), 256);
+    mbstowcs_s(&bufsize, buf, name.c_str(), 256);
 
     // Look up the address of the SetThreadDescription function rather than using it directly.
     typedef ::HRESULT(WINAPI* SetThreadDescription)(::HANDLE hThread, ::PCWSTR lpThreadDescription);

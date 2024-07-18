@@ -76,8 +76,8 @@ namespace
         bool result = false;
         bool is_open = (points.size() > 1 && points.front() != points.back());
         unsigned i = is_open ? 0 : 1;
-        unsigned j = is_open ? points.size() - 1 : 0;
-        for (; i < points.size(); j = i++)
+        unsigned j = is_open ? (unsigned)points.size() - 1 : 0;
+        for (; i < (unsigned)points.size(); j = i++)
         {
             if ((((points[i].y <= y) && (y < points[j].y)) ||
                 ((points[j].y <= y) && (y < points[i].y))) &&
@@ -843,7 +843,7 @@ OGRFeatureSource::open()
                 << "Failed to open layer \"" << layerName << "\" from \"" << _source << "\"");
         }
 
-        _featureCount = OGR_L_GetFeatureCount(_layerHandle, 1);
+        _featureCount = (int)OGR_L_GetFeatureCount(_layerHandle, 1);
 
 #if 0
         // if the user provided a profile, use that:
@@ -897,7 +897,7 @@ OGRFeatureSource::open()
         }
 
         // Get the feature count
-        unsigned featureCount = OGR_L_GetFeatureCount(_layerHandle, 1);
+        //unsigned featureCount = OGR_L_GetFeatureCount(_layerHandle, 1);
 
 #if 0
         // establish the feature schema:

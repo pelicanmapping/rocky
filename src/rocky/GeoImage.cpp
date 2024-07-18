@@ -396,8 +396,8 @@ namespace
                         continue;
                     }
 
-                    float px = (src_x - src_extent.xMin()) * xfac;
-                    float py = (src_y - src_extent.yMin()) * yfac;
+                    float px = (float)((src_x - src_extent.xMin()) * xfac);
+                    float py = (float)((src_y - src_extent.yMin()) * yfac);
 
                     int px_i = clamp((int)round(px), 0, (int)image->width() - 1);
                     int py_i = clamp((int)round(py), 0, (int)image->height() - 1);
@@ -798,7 +798,7 @@ GeoImage::read(glm::fvec4& output, const GeoPoint& p) const
         return false;
     }
 
-    _image->read_bilinear(output, u, v);
+    _image->read_bilinear(output, (float)u, (float)v);
 
     return true;
 }
@@ -817,7 +817,7 @@ GeoImage::read(glm::fvec4& out, double x, double y) const
         return false;
     }
 
-    _image->read_bilinear(out, u, v);
+    _image->read_bilinear(out, (float)u, (float)v);
     return true;
 }
 

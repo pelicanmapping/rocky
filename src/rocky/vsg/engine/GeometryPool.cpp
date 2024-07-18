@@ -16,12 +16,12 @@ GeometryPool::GeometryPool(const SRS& worldSRS) :
     _worldSRS(worldSRS)
 {
     // activate debugging mode
-    if ( getenv("ROCKY_DEBUG_REX_GEOMETRY_POOL") != 0L )
+    if (util::isEnvVarSet("ROCKY_DEBUG_REX_GEOMETRY_POOL"))
     {
         _debug = true;
     }
 
-    if ( ::getenv("ROCKY_REX_NO_POOL") )
+    if (util::isEnvVarSet("ROCKY_NO_GEOMETRY_POOL"))
     {
         _enabled = false;
         Log()->info(LC "Geometry pool disabled (environment)");

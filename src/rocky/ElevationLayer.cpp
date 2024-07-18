@@ -317,7 +317,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
             {
                 for (unsigned c = 0; c < width; ++c)
                 {
-                    output->heightAt(c, r) = points[r * width + c].z;
+                    output->heightAt(c, r) = (float)(points[r * width + c].z);
                 }
             }
         }
@@ -541,7 +541,7 @@ ElevationLayerVector::populateHeightfield(
     unsigned numFallbackLayers = 0;
 
     // Check them in reverse order since the highest priority is last.
-    for (i = size()-1; i>=0; --i)
+    for (i = (int)size()-1; i>=0; --i)
     {
         auto layer = (*this)[i];
 
@@ -679,7 +679,7 @@ ElevationLayerVector::populateHeightfield(
                 {
                     auto [resx, resy] = contenders[0].key.getResolutionForTileSize(hf->width());
                     for (unsigned i = 0; i < hf->width()*hf->height(); ++i)
-                        (*resolutions)[i] = resy;
+                        (*resolutions)[i] = (float)resy;
                 }
             }
         }
@@ -790,7 +790,7 @@ ElevationLayerVector::populateHeightfield(
 
                             hf->write(glm::fvec4(elevation), c, r);
 
-                            resolution = actualKey.getResolutionForTileSize(hf->width()).second;
+                            resolution = (float)actualKey.getResolutionForTileSize(hf->width()).second;
                         }
                         else
                         {
@@ -812,7 +812,7 @@ ElevationLayerVector::populateHeightfield(
                     }
                 }
 
-                for (int i = offsets.size() - 1; i >= 0; --i)
+                for (int i = (int)offsets.size() - 1; i >= 0; --i)
                 {
                     if (io.canceled())
                         return false;

@@ -74,17 +74,17 @@ Label::initializeNode(const ECS::NodeComponent::Params& params)
 
     options = params.readerWriterOptions;
 
-    double size = style.pointSize;
+    float size = style.pointSize;
 
     // Billboard = false because of https://github.com/vsg-dev/VulkanSceneGraph/discussions/985
     // Workaround: use a PixelScaleTransform with unrotate=true
     layout = vsg::StandardLayout::create();
     layout->billboard = false;
-    layout->billboardAutoScaleDistance = 0.0;
-    layout->position = vsg::vec3(0.0, 0.0, 0.0);
-    layout->horizontal = vsg::vec3(size, 0.0, 0.0);
-    layout->vertical = vsg::vec3(0.0, size, 0.0); // layout->billboard ? vsg::vec3(0.0, size, 0.0) : vsg::vec3(0.0, 0.0, size);
-    layout->color = vsg::vec4(1.0, 0.9, 1.0, 1.0);
+    layout->billboardAutoScaleDistance = 0.0f;
+    layout->position = vsg::vec3(0.0f, 0.0f, 0.0f);
+    layout->horizontal = vsg::vec3(size, 0.0f, 0.0f);
+    layout->vertical = vsg::vec3(0.0f, size, 0.0f); // layout->billboard ? vsg::vec3(0.0, size, 0.0) : vsg::vec3(0.0, 0.0, size);
+    layout->color = vsg::vec4(1.0f, 0.9f, 1.0f, 1.0f);
     layout->outlineWidth = style.outlineSize;
     layout->horizontalAlignment = style.horizontalAlignment;
     layout->verticalAlignment = style.verticalAlignment;

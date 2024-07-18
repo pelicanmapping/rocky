@@ -50,7 +50,7 @@ int main(int argc, char** argv)
         }
     }
 
-    mesh.style = { {1, 0.4, 0.1, 0.75}, 32.0f, 1e-7f };
+    mesh.style = { {1, 0.4f, 0.1f, 0.75f}, 32.0f, 1e-7f };
     mesh.writeDepth = true;
 
     return app.run();

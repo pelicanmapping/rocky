@@ -232,14 +232,14 @@ InstanceVSG::InstanceVSG() :
     runtime.readerWriterOptions->paths.push_back("C:/windows/fonts");
 
     // Load a default font if there is one
-    const char* font_file = getenv("ROCKY_DEFAULT_FONT");
-    if (!font_file)
+    auto font_file = util::getEnvVar("ROCKY_DEFAULT_FONT");
+    if (font_file.empty())
         font_file = "arial.ttf";
 
     runtime.defaultFont = vsg::read_cast<vsg::Font>(font_file, runtime.readerWriterOptions);
     if (!runtime.defaultFont)
     {
-        Log()->warn("Cannot load font \"" + std::string(font_file) + "\"");
+        Log()->warn("Cannot load font \"" + font_file + "\"");
     }
 
     // establish search paths for shaders and data:

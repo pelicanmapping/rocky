@@ -454,7 +454,7 @@ MBTiles::Driver::write(const TileKey& key, shared_ptr<Image> input, const IOOpti
     sqlite3_bind_int(insert, 3, y);
 
     // bind the data blob:
-    sqlite3_bind_blob(insert, 4, value.c_str(), value.length(), SQLITE_STATIC);
+    sqlite3_bind_blob(insert, 4, value.c_str(), (int)value.length(), SQLITE_STATIC);
 
     // run the sql.
     bool ok = true;
@@ -508,7 +508,7 @@ MBTiles::Driver::getMetaData(const std::string& key, std::string& value)
 
     bool valid = true;
     std::string keyStr = std::string(key);
-    rc = sqlite3_bind_text(select, 1, keyStr.c_str(), keyStr.length(), SQLITE_STATIC);
+    rc = sqlite3_bind_text(select, 1, keyStr.c_str(), (int)keyStr.length(), SQLITE_STATIC);
     if (rc != SQLITE_OK)
     {
         Log()->warn(LC "Failed to bind text: " + query + "; " + sqlite3_errmsg(database));
@@ -542,12 +542,12 @@ MBTiles::Driver::putMetaData(const std::string& key, const std::string& value)
     }
 
     // bind the values:
-    if (SQLITE_OK != sqlite3_bind_text(insert, 1, key.c_str(), key.length(), SQLITE_STATIC))
+    if (SQLITE_OK != sqlite3_bind_text(insert, 1, key.c_str(), (int)key.length(), SQLITE_STATIC))
     {
         Log()->warn(LC "Failed to bind text: " + query + "; " + sqlite3_errmsg(database));
         return false;
     }
-    if (SQLITE_OK != sqlite3_bind_text(insert, 2, value.c_str(), value.length(), SQLITE_STATIC))
+    if (SQLITE_OK != sqlite3_bind_text(insert, 2, value.c_str(), (int)value.length(), SQLITE_STATIC))
     {
         Log()->warn(LC "Failed to bind text: " + query + "; " + sqlite3_errmsg(database));
         return false;

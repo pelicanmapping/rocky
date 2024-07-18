@@ -101,7 +101,7 @@ GeoHeightfield::heightAt(double x, double y, const SRSOperation& xform, Image::I
         xform.inverse(temp, temp);
     }
 
-    return temp.z;
+    return (float)temp.z;
 }
 
 float
@@ -129,7 +129,7 @@ GeoHeightfield::heightAt(double x, double y, const SRS& xy_srs, Image::Interpola
     if (temp.z != NO_DATA_VALUE && xform.valid())
         xform.inverse(temp, temp);
 
-    return temp.z;
+    return (float)temp.z;
 }
 
 GeoHeightfield

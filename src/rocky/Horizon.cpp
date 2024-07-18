@@ -70,7 +70,7 @@ Horizon::setEye(const glm::dvec3& eye)
     _VHmag2 = _VCmag2 - 1.0;  // viewer->horizon line (scaled)
 
     double VPmag = _VCmag - 1.0 / _VCmag; // viewer->horizon plane dist (scaled)
-    double VHmag = sqrtf(_VHmag2);
+    double VHmag = sqrt(_VHmag2);
 
     _coneCos = VPmag / VHmag; // cos of half-angle of horizon cone
     _coneTan = tan(acos(_coneCos));

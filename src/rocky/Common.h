@@ -6,14 +6,8 @@
 #pragma once
 
 #if defined(_MSC_VER)
-#pragma warning( disable : 4244 )
-#pragma warning( disable : 4251 )
-#pragma warning( disable : 4267 )
-#pragma warning( disable : 4275 )
-#pragma warning( disable : 4290 )
-#pragma warning( disable : 4786 )
-#pragma warning( disable : 4305 )
-#pragma warning( disable : 4996 )
+//#pragma warning(disable : 4996) // disable warnings about deprecated functions
+#pragma warning(disable:4244) // disable precision loss warnings (e.g., double to float)
 #endif
 
 #if defined(_MSC_VER) || defined(__CYGWIN__) || defined(__MINGW32__) || defined( __BCPLUSPLUS__)  || defined( __MWERKS__)
@@ -35,6 +29,7 @@
 #include <string>
 #include <memory>
 #include <iostream>
+#include <cstdlib>
 
 namespace ROCKY_NAMESPACE
 {
@@ -110,12 +105,6 @@ namespace ROCKY_NAMESPACE
 }
 
 #define ROCKY_ABOUT(NAME, VER) namespace { struct __about_##NAME { __about_##NAME() { rocky::Instance::about().insert(std::string(#NAME) + " " + VER); } }; __about_##NAME about_##NAME; }
-
-#ifdef _MSC_VER
-// VS ignores
-#pragma warning (disable: 4224)
-#pragma warning (disable: 4180)
-#endif
 
 #define ROCKY_DEPRECATED(A, B) rocky::Log::warn() << #A << " is deprecated; please use " << #B << std::endl
 

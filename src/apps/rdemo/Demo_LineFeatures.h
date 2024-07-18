@@ -62,7 +62,7 @@ auto Demo_LineFeatures = [](Application& app)
 
             // apply a style for geometry creation:
             feature_view.styles.line = LineStyle{
-                { 1,1,0.3,1 }, // color
+                { 1,1,0.3f,1 }, // color
                 2.0f,          // width
                 0xffff,        // stipple pattern
                 1,             // stipple factor

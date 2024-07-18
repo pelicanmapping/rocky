@@ -54,7 +54,7 @@ namespace
         shaderSet->addAttributeBinding("in_color", "", 3, VK_FORMAT_R32G32B32A32_SFLOAT, {});
 
         // line data uniform buffer (width, stipple, etc.)
-        shaderSet->addUniformBinding("line", "", LINE_BUFFER_SET, LINE_BUFFER_BINDING,
+        shaderSet->addDescriptorBinding("line", "", LINE_BUFFER_SET, LINE_BUFFER_BINDING,
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
 
         // We need VSG's view-dependent data:
@@ -101,7 +101,7 @@ LineSystemNode::initialize(Runtime& runtime)
         c.config->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
 
         // Uniforms we will need:
-        c.config->enableUniform("line");
+        c.config->enableDescriptor("line");
 
         // always both
         PipelineUtils::enableViewDependentData(c.config);
@@ -221,7 +221,7 @@ LineGeometry::setCount(unsigned value)
 unsigned
 LineGeometry::numVerts() const
 {
-    return _current.size() / 4;
+    return (unsigned)_current.size() / 4;
 }
 
 void
@@ -286,7 +286,7 @@ LineGeometry::compile(vsg::Context& context)
         assignArrays({ vert_array, prev_array, next_array, colors_array });
         assignIndices(indices);
 
-        _drawCommand->indexCount = indices->size();
+        _drawCommand->indexCount = (uint32_t)indices->size();
 
         commands.clear();
         commands.push_back(_drawCommand);

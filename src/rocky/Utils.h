@@ -10,22 +10,25 @@
 #include <rocky/Status.h>
 #include <rocky/Log.h>
 
-#include <string>
 #include <algorithm>
-#include <vector>
-#include <sstream>
-#include <locale>
-#include <iomanip>
-#include <map>
-#include <unordered_map>
-#include <list>
-#include <set>
-#include <filesystem>
-#include <ctype.h>
-#include <functional>
+#include <cctype>
 #include <chrono>
-#include <thread>
+#include <filesystem>
+#include <functional>
+#include <iomanip>
+#include <list>
+#include <locale>
+#include <map>
+#include <memory>
 #include <mutex>
+#include <set>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <unordered_map>
+#include <vector>
+
 
 class TiXmlDocument;
 
@@ -35,13 +38,31 @@ namespace ROCKY_NAMESPACE
     {
         const std::string EMPTY_STRING = {};
 
-        /** Replaces all the instances of "pattern" with "replacement" in "in_out" */
+        //! Gets the value of an environment variable (safely)
+        extern ROCKY_EXPORT std::string getEnvVar(const char* name);
+
+        //! Whther and environment variable is set at all
+        extern ROCKY_EXPORT bool isEnvVarSet(const char* name);
+
+        //! Replacement for sprintf
+        //! https://stackoverflow.com/a/26221725/4218920
+        template<typename ... Args>
+        std::string format( const std::string& format, Args... args) {
+            int size_s = std::snprintf( nullptr, 0, format.c_str(), args... ) + 1; // Extra space for '\0'
+            if( size_s <= 0 ) { throw std::runtime_error( "Error during formatting." ); }
+            auto size = static_cast<size_t>( size_s );
+            std::unique_ptr<char[]> buf( new char[ size ] );
+            std::snprintf( buf.get(), size, format.c_str(), args ... );
+            return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
+        }
+
+        //! Replaces all the instances of "pattern" with "replacement" in "in_out"
         extern ROCKY_EXPORT std::string& replace_in_place(
             std::string& in_out,
             const std::string& pattern,
             const std::string& replacement);
 
-        /** Replaces all the instances of "pattern" with "replacement" in "in_out" (case-insensitive) */
+        //! Replaces all the instances of "pattern" with "replacement" in "in_out" (case-insensitive)
         extern ROCKY_EXPORT std::string& replace_in_place_case_insensitive(
             std::string& in_out,
             const std::string& pattern,

@@ -262,7 +262,7 @@ Profile::numTiles(unsigned lod) const
     unsigned out_tiles_wide = _shared->_numTilesWideAtLod0;
     unsigned out_tiles_high = _shared->_numTilesHighAtLod0;
 
-    double factor = double(1u << lod);
+    auto factor = 1u << lod;
     out_tiles_wide *= factor;
     out_tiles_high *= factor;
 

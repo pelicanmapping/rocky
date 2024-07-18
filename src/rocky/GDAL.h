@@ -140,7 +140,9 @@ namespace ROCKY_NAMESPACE
 
         //! Reads an image from raw data using the specified GDAL driver.
         extern ROCKY_EXPORT Result<shared_ptr<Image>> readImage(
-            unsigned char* data, unsigned len, const std::string& gdal_driver);
+            unsigned char* data,
+            std::size_t len,
+            const std::string& gdal_driver);
 
     } // namespace GDAL
 

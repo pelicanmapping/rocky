@@ -39,13 +39,6 @@ namespace
     }
 }
 
-//Heightfield::Heightfield(shared_ptr<Image> image)
-//    : _image(image)
-//{
-//    ROCKY_SOFT_ASSERT(image != nullptr);
-//    ROCKY_SOFT_ASSERT(image->pixelFormat() == Image::R32_SFLOAT);
-//}
-
 Heightfield::Heightfield() :
     super(Image::R32_SFLOAT, 0, 0, 1)
 {
@@ -132,13 +125,13 @@ Heightfield::heightAtPixel(
         {
             //OE_NOTICE << "Vertically" << std::endl;
             //Linear interpolate vertically
-            result = ((double)rowMax - r) * llHeight + (r - (double)rowMin) * ulHeight;
+            result = (float)(((double)rowMax - r) * (double)llHeight + (r - (double)rowMin) * (double)ulHeight);
         }
         else if (rowMax == rowMin)
         {
             //OE_NOTICE << "Horizontally" << std::endl;
             //Linear interpolate horizontally
-            result = ((double)colMax - c) * llHeight + (c - (double)colMin) * lrHeight;
+            result = (float)(((double)colMax - c) * (double)llHeight + (c - (double)colMin) * (double)lrHeight);
         }
         else
         {
@@ -146,7 +139,7 @@ Heightfield::heightAtPixel(
             //Bilinear interpolate
             double r1 = ((double)colMax - c) * (double)llHeight + (c - (double)colMin) * (double)lrHeight;
             double r2 = ((double)colMax - c) * (double)ulHeight + (c - (double)colMin) * (double)urHeight;
-            result = ((double)rowMax - r) * (double)r1 + (r - (double)rowMin) * (double)r2;
+            result = (float)(((double)rowMax - r) * (double)r1 + (r - (double)rowMin) * (double)r2);
         }
         break;
     }
@@ -266,8 +259,7 @@ Heightfield::heightAtPixel(
         //Compute the normal
         glm::dvec3 n = glm::cross((v1 - v0), (v2 - v0));
 
-        result = (n.x * (c - v0.x) + n.y*(r - v0.y)) / -n.z + v0.z;
-        //result = (n.x() * (c - v0.x()) + n.y() * (r - v0.y())) / -n.z() + v0.z();
+        result = (float)((n.x * (c - v0.x) + n.y * (r - v0.y)) / -n.z + v0.z);
         break;
     }
     }
