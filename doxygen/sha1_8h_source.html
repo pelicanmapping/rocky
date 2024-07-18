@@ -272,14 +272,14 @@ $(function() {
 <div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;            }</div>
 <div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160; </div>
 <div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;            sha1&amp; add(<span class="keyword">const</span> <span class="keywordtype">char</span>* text) {</div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;                <span class="keywordflow">return</span> add(text, strlen(text));</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;                <span class="keywordflow">return</span> add(text, (std::uint32_t)strlen(text));</div>
 <div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;            }</div>
 <div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160; </div>
 <div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;            sha1&amp; finalize() {</div>
 <div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;                <span class="comment">// hashed text ends with 0x80, some padding 0x00 and the length in bits</span></div>
 <div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;                add_byte_dont_count_bits(0x80);</div>
 <div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;                <span class="keywordflow">while</span> (i % 64 != 56) add_byte_dont_count_bits(0x00);</div>
-<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> j = 7; j &gt;= 0; j--) add_byte_dont_count_bits(n_bits &gt;&gt; j * 8);</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> j = 7; j &gt;= 0; j--) add_byte_dont_count_bits((uint8_t)(n_bits &gt;&gt; j * 8U));</div>
 <div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160; </div>
 <div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;                <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
 <div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;            }</div>

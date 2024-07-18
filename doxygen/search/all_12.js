@@ -15,8 +15,8 @@ var searchData=
   ['release_534',['release',['../class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1detail_1_1semaphore.html#a44fd0368e3252fd8de30e2bec0da7220',1,'WEEJOBS_NAMESPACE::detail::semaphore::release()'],['../class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1future.html#a21f26a366d6092504153172d6934f922',1,'WEEJOBS_NAMESPACE::future::release()']]],
   ['releaseall_535',['releaseAll',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a7f8ec6f8dd925af2f4739f995e5411d1',1,'ROCKY_NAMESPACE::TerrainTilePager']]],
   ['releasedata_536',['releaseData',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a2cc633df03e7f610dd048c5e21677e6a',1,'ROCKY_NAMESPACE::Image']]],
-  ['remove_537',['remove',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_callback.html#a0c9eefe4d006aef0632652dfe52300a4',1,'ROCKY_NAMESPACE::Callback::remove()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_collection.html#a8e737c60573b7f1d648aaa4ec2958652',1,'ROCKY_NAMESPACE::LayerCollection::remove()']]],
-  ['remove_538',['Remove',['../class_r_tree.html#a1b4b6b4c73bc47029ba696c49265c043',1,'RTree']]],
+  ['remove_537',['Remove',['../class_r_tree.html#a1b4b6b4c73bc47029ba696c49265c043',1,'RTree']]],
+  ['remove_538',['remove',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_callback.html#a0c9eefe4d006aef0632652dfe52300a4',1,'ROCKY_NAMESPACE::Callback::remove()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_collection.html#a8e737c60573b7f1d648aaa4ec2958652',1,'ROCKY_NAMESPACE::LayerCollection::remove()']]],
   ['removeall_539',['RemoveAll',['../class_r_tree.html#a396f1031eb2c8224715741fd0b77349d',1,'RTree']]],
   ['removeattribute_540',['RemoveAttribute',['../class_ti_xml_element.html#a56979767deca794376b1dfa69a525b2a',1,'TiXmlElement::RemoveAttribute(const char *name)'],['../class_ti_xml_element.html#a1afa6aea716511326a608e4c05df4f3a',1,'TiXmlElement::RemoveAttribute(const std::string &amp;name)']]],
   ['removecallback_541',['removeCallback',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html#af03b5a43423bab01082b392bb83e6cd3',1,'ROCKY_NAMESPACE::Map']]],
@@ -51,6 +51,7 @@ var searchData=
   ['rtt_570',['RTT',['../class_r_o_c_k_y___v_s_g___n_a_m_e_s_p_a_c_e_1_1_r_t_t.html',1,'ROCKY_VSG_NAMESPACE']]],
   ['run_571',['run',['../class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1jobpool.html#adc20faebd3bc7d7e2095bcea18dfe842',1,'WEEJOBS_NAMESPACE::jobpool']]],
   ['runduringupdate_572',['runDuringUpdate',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#ab88627297b6a01acc0db000f7e576fde',1,'ROCKY_NAMESPACE::Runtime::runDuringUpdate(vsg::ref_ptr&lt; vsg::Operation &gt; function, std::function&lt; float()&gt; get_priority={})'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a6f5c20d095c36517f760b7c1f7a8c3db',1,'ROCKY_NAMESPACE::Runtime::runDuringUpdate(std::function&lt; void()&gt; function)']]],
-  ['runtime_573',['Runtime',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html',1,'ROCKY_NAMESPACE::Runtime'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a522dc4b36f2a770bbe3e62c451f38841',1,'ROCKY_NAMESPACE::Runtime::Runtime()']]],
-  ['runtime_574',['runtime',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_engine.html#ab93462ed24c29dec249b73a456f4d773',1,'ROCKY_NAMESPACE::TerrainEngine::runtime()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_instance_v_s_g.html#a5ced6bf064fc63d63b0a43316185a4c0',1,'ROCKY_NAMESPACE::InstanceVSG::runtime()']]]
+  ['runtime_573',['Runtime',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html',1,'ROCKY_NAMESPACE']]],
+  ['runtime_574',['runtime',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_engine.html#ab93462ed24c29dec249b73a456f4d773',1,'ROCKY_NAMESPACE::TerrainEngine::runtime()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_instance_v_s_g.html#a5ced6bf064fc63d63b0a43316185a4c0',1,'ROCKY_NAMESPACE::InstanceVSG::runtime()']]],
+  ['runtime_575',['Runtime',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a522dc4b36f2a770bbe3e62c451f38841',1,'ROCKY_NAMESPACE::Runtime']]]
 ];

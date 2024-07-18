@@ -99,7 +99,7 @@ $(function() {
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;            shaderSet-&gt;customDescriptorSetBindings.push_back(</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;                vsg::ViewDependentStateBinding::create(VSG_VIEW_DEPENDENT_DATA_SET));</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;            shaderSet-&gt;addUniformBinding(</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;            shaderSet-&gt;addDescriptorBinding(</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;                <span class="stringliteral">&quot;vsg_lights&quot;</span>, <span class="stringliteral">&quot;&quot;</span>,</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;                VSG_VIEW_DEPENDENT_DATA_SET,</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;                VSG_VIEW_DEPENDENT_LIGHTS_BINDING,</div>
@@ -107,7 +107,7 @@ $(function() {
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;                stageFlags, {});</div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160; </div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;            <span class="comment">// VSG viewport state</span></div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;            shaderSet-&gt;addUniformBinding(</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;            shaderSet-&gt;addDescriptorBinding(</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;                <span class="stringliteral">&quot;vsg_viewports&quot;</span>, <span class="stringliteral">&quot;&quot;</span>,</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;                VSG_VIEW_DEPENDENT_DATA_SET,</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;                VSG_VIEW_DEPENDENT_VIEWPORTS_BINDING,</div>
@@ -117,8 +117,8 @@ $(function() {
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160; </div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        <span class="keyword">static</span> <span class="keywordtype">void</span> enableViewDependentData(vsg::ref_ptr&lt;vsg::GraphicsPipelineConfigurator&gt; pipelineConfig)</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        {</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;            pipelineConfig-&gt;enableUniform(<span class="stringliteral">&quot;vsg_lights&quot;</span>);</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;            pipelineConfig-&gt;enableUniform(<span class="stringliteral">&quot;vsg_viewports&quot;</span>);</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;            pipelineConfig-&gt;enableDescriptor(<span class="stringliteral">&quot;vsg_lights&quot;</span>);</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;            pipelineConfig-&gt;enableDescriptor(<span class="stringliteral">&quot;vsg_viewports&quot;</span>);</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        }</div>
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160; </div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <span class="keyword">static</span> vsg::ref_ptr&lt;vsg::StateCommand&gt; createViewDependentBindCommand(vsg::ref_ptr&lt;vsg::GraphicsPipelineConfigurator&gt; pipelineConfig)</div>
