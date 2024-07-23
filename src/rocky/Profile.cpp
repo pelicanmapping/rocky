@@ -99,7 +99,7 @@ Profile::operator == (const Profile& rhs) const
     if (_shared == rhs._shared)
         return true;
 
-    if (_shared->_wellKnownName == rhs._shared->_wellKnownName)
+    if (!_shared->_wellKnownName.empty() && _shared->_wellKnownName == rhs._shared->_wellKnownName)
         return true;
 
     return
