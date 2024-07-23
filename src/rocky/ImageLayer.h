@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2023-2024 Pelican Mapping, Chris Djali
  * MIT License
  */
 #pragma once
@@ -14,6 +14,50 @@ namespace ROCKY_NAMESPACE
 {
     class Color;
     class Profile;
+
+    template<class Key, class Value>
+    class DependencyCache
+    {
+    public:
+        std::shared_ptr<Value> operator[](const Key& key)
+        {
+            const std::lock_guard lock{ _mutex };
+            auto itr = _map.find(key);
+            if (itr != _map.end())
+                return itr->second.lock();
+            return nullptr;
+        }
+
+        std::shared_ptr<Value> put(const Key& key, const std::shared_ptr<Value>& value)
+        {
+            const std::lock_guard lock{ _mutex };
+            auto itr = _map.find(key);
+            if (itr != _map.end())
+            {
+                std::shared_ptr<Value> preexisting = itr->second.lock();
+                if (preexisting)
+                    return preexisting;
+            }
+            _map[key] = value;
+            return value;
+        }
+        
+        void clean()
+        {
+            const std::lock_guard lock{ _mutex };
+            for (auto itr = _map.begin(), end = _map.end(); itr != end;)
+            {
+                if (!itr->second.lock())
+                    itr = _map.erase(itr);
+                else
+                    ++itr;
+            }
+        }
+
+    private:
+        std::unordered_map<Key, std::weak_ptr<Value>> _map;
+        std::mutex _mutex;
+    };
 
     /**
      * A map terrain layer containing bitmap image data.
@@ -125,6 +169,8 @@ namespace ROCKY_NAMESPACE
         shared_ptr<Image> assembleImage(
             const TileKey& key,
             const IOOptions& io) const;
+
+        std::shared_ptr<DependencyCache<TileKey, Image>> _dependencyCache;
     };
 
 } // namespace ROCKY_NAMESPACE
