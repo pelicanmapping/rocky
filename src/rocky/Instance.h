@@ -50,7 +50,7 @@ namespace ROCKY_NAMESPACE
 
         //! Global object factory map
         //! Use the ROCKY_ADD_OBJECT_FACTORY macro for bootstrap-time registration
-        static std::unordered_map<std::string, ObjectFactory> objectFactories;
+        static std::unordered_map<std::string, ObjectFactory>& objectFactories();
 
         //! Informational
         static std::set<std::string>& about();
@@ -80,7 +80,7 @@ namespace ROCKY_NAMESPACE
     #define ROCKY_ADD_OBJECT_FACTORY(NAME, FUNC) \
         struct __ROCKY_OBJECTFACTORY_##NAME##_INSTALLER { \
             __ROCKY_OBJECTFACTORY_##NAME##_INSTALLER () { \
-                ROCKY_NAMESPACE::Instance::objectFactories[util::toLower(#NAME)] = FUNC; \
+                ROCKY_NAMESPACE::Instance::objectFactories()[util::toLower(#NAME)] = FUNC; \
         } }; \
         __ROCKY_OBJECTFACTORY_##NAME##_INSTALLER __rocky_objectFactory_##NAME ;
 }
