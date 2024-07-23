@@ -38,6 +38,8 @@
 #cmakedefine ROCKY_HAS_ZLIB
 #cmakedefine ROCKY_HAS_TMS
 #cmakedefine ROCKY_HAS_MBTILES
+#cmakedefine ROCKY_HAS_AZURE
+#cmakedefine ROCKY_HAS_BING
 
 #cmakedefine ROCKY_HAS_VSG
 #cmakedefine ROCKY_HAS_VSGXCHANGE
