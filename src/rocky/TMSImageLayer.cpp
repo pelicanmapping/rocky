@@ -60,12 +60,7 @@ TMSImageLayer::openImplementation(const IOOptions& io)
     Profile driver_profile = profile();
 
     DataExtentList dataExtents;
-    Status status = _driver.open(
-        uri,
-        driver_profile,
-        format,
-        dataExtents,
-        io);
+    Status status = _driver.open(uri, driver_profile, format, dataExtents, io);
 
     if (status.failed())
         return status;

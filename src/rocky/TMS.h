@@ -67,6 +67,7 @@ namespace ROCKY_NAMESPACE
             ProfileType profileType = ProfileType::UNKNOWN;
             TimeStamp timestamp;
             DataExtentList dataExtents;
+            bool invertYaxis = false;
 
             bool valid() const;
             void computeMinMaxLevel();
@@ -76,7 +77,7 @@ namespace ROCKY_NAMESPACE
             bool intersectsKey(const TileKey& key) const;
             void generateTileSets(unsigned numLevels);
 
-            TileMap() { }
+            TileMap() = default;
 
             TileMap(
                 const std::string& url,

@@ -392,7 +392,7 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
         util::replace_in_place(working, rotateString, rotateString.substr(index + 1, 1));
     }
 
-    bool sub = working.find('$') != working.npos;
+    bool sub = working.find('{') != working.npos;
 
 
     //Select the correct TileSet
@@ -411,6 +411,10 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
                     util::replace_in_place(temp, "${y}", std::to_string(y));
                     util::replace_in_place(temp, "${-y}", std::to_string(y_inverted));
                     util::replace_in_place(temp, "${z}", std::to_string(zoom));
+                    util::replace_in_place(temp, "{x}", std::to_string(x));
+                    util::replace_in_place(temp, "{y}", std::to_string(y));
+                    util::replace_in_place(temp, "{-y}", std::to_string(y_inverted));
+                    util::replace_in_place(temp, "{z}", std::to_string(zoom));
                     return temp;
                 }
                 else
@@ -434,6 +438,10 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
         util::replace_in_place(temp, "${y}", std::to_string(y));
         util::replace_in_place(temp, "${-y}", std::to_string(y_inverted));
         util::replace_in_place(temp, "${z}", std::to_string(zoom));
+        util::replace_in_place(temp, "{x}", std::to_string(x));
+        util::replace_in_place(temp, "{y}", std::to_string(y));
+        util::replace_in_place(temp, "{-y}", std::to_string(y_inverted));
+        util::replace_in_place(temp, "{z}", std::to_string(zoom));
         return temp;
     }
 
@@ -641,58 +649,22 @@ TMS::Driver::open(
         return Status(Status::ConfigurationError, "TMS driver requires a valid \"uri\" property");
     }
 
-    // A repo is writable only if it's local.
-    if (uri.isRemote())
-    {
-        //OE_DEBUG << LC << "Repo is remote; opening in read-only mode" << std::endl;
-    }
-
-    // Is this a new repo? (You can only create a new repo at a local non-archive URI.)
-    bool isNewRepo = false;
-
-#if 0
-    if (!uri.isRemote() &&
-        !osgEarth::isPathToArchivedFile(uri.full()) &&
-        !osgDB::fileExists(uri.full()))
-    {
-        isNewRepo = true;
-
-        // new repo REQUIRES a profile:
-        if (!profile.valid())
-        {
-            return Status(Status::ConfigurationError, "Fail: profile required to create new TMS repo");
-        }
-    }
-#endif
-
-    // Take the override profile if one is given
+    // If the user supplied a profile, this means we are NOT querying a TMS manifest
+    // and instead this is likely a normal XYZ data source. For these we want to
+    // invert the Y axis by default.
     if (profile.valid())
     {
-        //Log::info() << "TMS: " << "Using express profile \"" << profile.to_json() << "\" for URI \"" << uri.base() << "\""
-        //    << std::endl;
-
-        DataExtentList dataExtents_dummy; // empty
+        DataExtentList dataExtents_dummy; // empty.
 
         tileMap = TileMap(uri.full(), profile, dataExtents_dummy, format, 256, 256);
 
-#if 0
-        // If this is a new repo, write the tilemap file to disk now.
-        if (isNewRepo)
-        {
-            if (format.empty())
-            {
-                return Status(Status::ConfigurationError, "Missing required \"format\" property: e.g. png, jpg");
-            }
-
-            TMS::TileMapReaderWriter::write(_tileMap.get(), uri.full());
-            OE_INFO << LC << "Created new TMS repo at " << uri.full() << std::endl;
-        }
-#endif
+        // Non-TMS "XYZ" data sources usually have an inverted Y component:
+        tileMap.invertYaxis = true;
     }
 
     else
     {
-        // Attempt to read the tile map parameters from a TMS TileMap XML tile on the server:
+        // Attempt to read the tile map parameters from a TMS TileMap manifest:
         auto tileMapRead = readTileMap(uri, io);
 
         if (tileMapRead.status.failed())
@@ -712,14 +684,6 @@ TMS::Driver::open(
     {
         return Status::Error("Failed to establish a profile for " + uri.full());
     }
-
-#if 0
-    // resolve the writer
-    if (!uri.isRemote() && !resolveWriter(format))
-    {
-        io.services.log().warn << "Cannot create writer; writing disabled" << std::endl;
-    }
-#endif
 
     // TileMap and profile are valid at this point. Build the tile sets.
     // Automatically set the min and max level of the TileMap
@@ -751,7 +715,10 @@ TMS::Driver::read(const URI& uri, const TileKey& key, bool invertY, bool isMapbo
     // create the URI from the tile map?
     if (tileMap.valid() && key.levelOfDetail() <= tileMap.maxLevel)
     {
-        imageURI = URI(tileMap.getURI(key, invertY), uri.context());
+        bool y_inverted = tileMap.invertYaxis;
+        if (invertY) y_inverted = !y_inverted;
+
+        imageURI = URI(tileMap.getURI(key, y_inverted), uri.context());
         if (!imageURI.empty() && isMapboxRGB)
         {
             if (imageURI.full().find('?') == std::string::npos)
@@ -787,11 +754,6 @@ TMS::Driver::read(const URI& uri, const TileKey& key, bool invertY, bool isMapbo
                 {
                     ROCKY_TODO("");
                     return Image::create(Image::R8G8B8A8_UNORM, 1, 1);
-
-                    //if (_isCoverage)
-                    //    return LandCover::createEmptyImage();
-                    //else
-                    //    return ImageUtils::createEmptyImage();
                 }
             }
         }
