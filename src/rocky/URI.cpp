@@ -165,51 +165,55 @@ namespace
             for(;;)
             {
                 auto t0 = std::chrono::steady_clock::now();
-                auto r = client.Get(path, params, headers);
+                auto res = client.Get(path, params, headers);
                 auto t1 = std::chrono::steady_clock::now();
 
-                if (httpDebug && r == true)
+                if (res)
                 {
-                    auto dur_s = 1e-9 * (double)(t1 - t0).count();
-                    auto cti = r->headers.find("Content-Type");
-                    auto ct = cti != r->headers.end() ? cti->second : "unknown";
-                    Log()->info(LC "(" + std::to_string(r->status)
-                        + ") HTTP GET " + request.url
-                        + " (" + std::to_string(dur_s) + "s "
-                        + std::to_string(r->body.size()) + "b "
-                        + ct + ")");
+                    if (httpDebug)
+                    {
+                        auto dur_ms = 1e-6 * (double)(t1 - t0).count();
+                        auto cti = res->headers.find("Content-Type");
+                        auto ct = cti != res->headers.end() ? cti->second : "unknown";
+                        Log()->info(LC "({}) HTTP GET {} ({}ms {}b {})", res->status, request.url, (int)dur_ms, res->body.size(), ct);
+                    }
+
+                    if (res->status == 404)
+                    {
+                        return Status(Status::ResourceUnavailable, httplib::status_message(res->status));
+                    }
+                    else if (res->status != 200)
+                    {
+                        return Status(Status::GeneralError, httplib::status_message(res->status));
+                    }
+
+                    response.status = res->status;
+
+                    for (auto& h : res->headers)
+                        response.headers[h.first] = h.second;
+
+                    response.data = std::move(res->body);
+
+                    break;
                 }
 
-                if (r.error() != httplib::Error::Success)
+                else
                 {
-                    // retry on a missing connection
-                    if (r.error() == httplib::Error::Connection && (--max_attempts > 0))
+                    if (httpDebug)
                     {
-                        Log()->info(LC + httplib::to_string(r.error()) + " with " + proto_host_port + "; retrying..");
+                        Log()->info(LC "(---) HTTP GET {:.2} ({})", request.url, httplib::to_string(res.error()));
+                    }
+
+                    // retry on a missing connection
+                    if (res.error() == httplib::Error::Connection && (--max_attempts > 0))
+                    {
+                        Log()->info(LC + httplib::to_string(res.error()) + " with " + proto_host_port + "; retrying..");
                         std::this_thread::sleep_for(1s);
                         continue;
                     }
 
-                    return Status(Status::ServiceUnavailable, httplib::to_string(r.error()));
+                    return Status(Status::ServiceUnavailable, httplib::to_string(res.error()));
                 }
-
-                if (r->status == 404)
-                {
-                    return Status(Status::ResourceUnavailable, httplib::status_message(r->status));
-                }
-                else if (r->status != 200)
-                {
-                    return Status(Status::GeneralError, httplib::status_message(r->status));
-                }
-
-                response.status = r->status;
-
-                for (auto& h : r->headers)
-                    response.headers[h.first] = h.second;
-
-                response.data = std::move(r->body);
-
-                break;
             }
 
         }

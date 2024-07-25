@@ -485,46 +485,38 @@ std::shared_ptr<FeatureSource::iterator>
 OGRFeatureSource::iterate(IOOptions& io)
 {
     OGRDataSourceH dsHandle = nullptr;
-    OGRLayerH layerHandle = nullptr;
+    OGRLayerH layerHandle = externallayerHandle;
 
-    const char* openOptions[2] = {
-        "OGR_GPKG_INTEGRITY_CHECK=NO",
-        nullptr
-    };
-
-    dsHandle = GDALOpenEx(
-        _source.c_str(),
-        GDAL_OF_VECTOR | GDAL_OF_READONLY,
-        nullptr,
-        nullptr, //openOptions,
-        nullptr);
-
-    // open the handles safely:
-    // Each cursor requires its own DS handle so that multi-threaded access will work.
-    // The cursor impl will dispose of the new DS handle.
-    if (dsHandle)
+    if (!layerHandle)
     {
-        layerHandle = open_OGR_layer(dsHandle, layerName);
+        const char* openOptions[2] = {
+            "OGR_GPKG_INTEGRITY_CHECK=NO",
+            nullptr
+        };
+
+        dsHandle = GDALOpenEx(
+            _source.c_str(),
+            GDAL_OF_VECTOR | GDAL_OF_READONLY,
+            nullptr,
+            nullptr, //openOptions,
+            nullptr);
+
+        // open the handles safely:
+        // Each cursor requires its own DS handle so that multi-threaded access will work.
+        // The cursor impl will dispose of the new DS handle.
+        if (dsHandle)
+        {
+            layerHandle = open_OGR_layer(dsHandle, layerName);
+        }
     }
 
-    if (dsHandle && layerHandle)
+    if (layerHandle)
     {
         auto i = std::make_shared<iterator>();
         i->_source = this;
         i->_dsHandle = dsHandle;
         i->_layerHandle = layerHandle;
         i->init();
-
-#if 0
-        Query newQuery(query);
-        if (options().query().isSet())
-        {
-            newQuery = options().query()->combineWith(query);
-        }
-
-        OE_DEBUG << newQuery.getConfig().toJSON(true) << std::endl;
-#endif
-
         return i;
     }
     else
@@ -546,91 +538,99 @@ OGRFeatureSource::iterator::iterator()
 void
 OGRFeatureSource::iterator::init()
 {
-    std::string expr;
-    std::string from = OGR_FD_GetName(OGR_L_GetLayerDefn(_layerHandle));
-    std::string driverName = OGR_Dr_GetName(OGR_DS_GetDriver(_dsHandle));
-
-    // Quote the layer name if it is a shapefile, so we can handle any weird filenames like those with spaces or hyphens.
-    // Or quote any layers containing spaces for PostgreSQL
-    if (driverName == "ESRI Shapefile" || driverName == "VRT" ||
-        from.find(' ') != std::string::npos)
+    if (_dsHandle)
     {
-        std::string delim = "\"";
-        from = delim + from + delim;
-    }
+        std::string expr;
+        std::string from = OGR_FD_GetName(OGR_L_GetLayerDefn(_layerHandle));
+        std::string driverName = OGR_Dr_GetName(OGR_DS_GetDriver(_dsHandle));
 
-    std::stringstream buf;
-    buf << "SELECT * FROM " << from;
-    expr = buf.str();
-
-#if 0
-    if (_query.expression().isSet())
-    {
-        // build the SQL: allow the Query to include either a full SQL statement or
-        // just the WHERE clause.
-        expr = _query.expression().value();
-
-        // if the expression is just a where clause, expand it into a complete SQL expression.
-        std::string temp = osgEarth::toLower(expr);
-
-        if (temp.find("select") != 0)
+        // Quote the layer name if it is a shapefile, so we can handle any weird filenames like those with spaces or hyphens.
+        // Or quote any layers containing spaces for PostgreSQL
+        if (driverName == "ESRI Shapefile" || driverName == "VRT" ||
+            from.find(' ') != std::string::npos)
         {
-            std::stringstream buf;
-            buf << "SELECT * FROM " << from << " WHERE " << expr;
-            std::string bufStr;
-            bufStr = buf.str();
-            expr = bufStr;
+            std::string delim = "\"";
+            from = delim + from + delim;
         }
-    }
-    else
-    {
+
         std::stringstream buf;
         buf << "SELECT * FROM " << from;
         expr = buf.str();
-    }
 
-    //Include the order by clause if it's set
-    if (_query.orderby().isSet())
-    {
-        std::string orderby = _query.orderby().value();
+#if 0
+        if (_query.expression().isSet())
+        {
+            // build the SQL: allow the Query to include either a full SQL statement or
+            // just the WHERE clause.
+            expr = _query.expression().value();
 
-        std::string temp = osgEarth::toLower(orderby);
+            // if the expression is just a where clause, expand it into a complete SQL expression.
+            std::string temp = osgEarth::toLower(expr);
 
-        if (temp.find("order by") != 0)
+            if (temp.find("select") != 0)
+            {
+                std::stringstream buf;
+                buf << "SELECT * FROM " << from << " WHERE " << expr;
+                std::string bufStr;
+                bufStr = buf.str();
+                expr = bufStr;
+            }
+        }
+        else
         {
             std::stringstream buf;
-            buf << "ORDER BY " << orderby;
-            std::string bufStr;
-            bufStr = buf.str();
-            orderby = buf.str();
+            buf << "SELECT * FROM " << from;
+            expr = buf.str();
         }
-        expr += (" " + orderby);
-    }
 
-    // if the tilekey is set, convert it to feature profile coords
-    if (_query.tileKey().isSet() && !_query.bounds().isSet() && profile)
-    {
-        GeoExtent localEx = _query.tileKey()->getExtent().transform(profile->getSRS());
-        _query.bounds() = localEx.bounds();
-    }
+        //Include the order by clause if it's set
+        if (_query.orderby().isSet())
+        {
+            std::string orderby = _query.orderby().value();
 
-    // if there's a spatial extent in the query, build the spatial filter:
-    if (_query.bounds().isSet())
-    {
-        OGRGeometryH ring = OGR_G_CreateGeometry(wkbLinearRing);
-        OGR_G_AddPoint(ring, _query.bounds()->xMin(), _query.bounds()->yMin(), 0);
-        OGR_G_AddPoint(ring, _query.bounds()->xMin(), _query.bounds()->yMax(), 0);
-        OGR_G_AddPoint(ring, _query.bounds()->xMax(), _query.bounds()->yMax(), 0);
-        OGR_G_AddPoint(ring, _query.bounds()->xMax(), _query.bounds()->yMin(), 0);
-        OGR_G_AddPoint(ring, _query.bounds()->xMin(), _query.bounds()->yMin(), 0);
+            std::string temp = osgEarth::toLower(orderby);
 
-        _spatialFilter = OGR_G_CreateGeometry(wkbPolygon);
-        OGR_G_AddGeometryDirectly(_spatialFilter, ring);
-        // note: "Directly" above means _spatialFilter takes ownership if ring handle
-    }
+            if (temp.find("order by") != 0)
+            {
+                std::stringstream buf;
+                buf << "ORDER BY " << orderby;
+                std::string bufStr;
+                bufStr = buf.str();
+                orderby = buf.str();
+            }
+            expr += (" " + orderby);
+        }
+
+        // if the tilekey is set, convert it to feature profile coords
+        if (_query.tileKey().isSet() && !_query.bounds().isSet() && profile)
+        {
+            GeoExtent localEx = _query.tileKey()->getExtent().transform(profile->getSRS());
+            _query.bounds() = localEx.bounds();
+        }
+
+        // if there's a spatial extent in the query, build the spatial filter:
+        if (_query.bounds().isSet())
+        {
+            OGRGeometryH ring = OGR_G_CreateGeometry(wkbLinearRing);
+            OGR_G_AddPoint(ring, _query.bounds()->xMin(), _query.bounds()->yMin(), 0);
+            OGR_G_AddPoint(ring, _query.bounds()->xMin(), _query.bounds()->yMax(), 0);
+            OGR_G_AddPoint(ring, _query.bounds()->xMax(), _query.bounds()->yMax(), 0);
+            OGR_G_AddPoint(ring, _query.bounds()->xMax(), _query.bounds()->yMin(), 0);
+            OGR_G_AddPoint(ring, _query.bounds()->xMin(), _query.bounds()->yMin(), 0);
+
+            _spatialFilter = OGR_G_CreateGeometry(wkbPolygon);
+            OGR_G_AddGeometryDirectly(_spatialFilter, ring);
+            // note: "Directly" above means _spatialFilter takes ownership if ring handle
+        }
 #endif
 
-    _resultSetHandle = GDALDatasetExecuteSQL(_dsHandle, expr.c_str(), _spatialFilterHandle, 0L);
+        _resultSetHandle = GDALDatasetExecuteSQL(_dsHandle, expr.c_str(), _spatialFilterHandle, 0L);
+    }
+    else
+    {
+        // pre-existing layer with no dataset; iterate it directly.
+        _resultSetHandle = _layerHandle;
+    }
 
     if (_resultSetHandle)
         OGR_L_ResetReading(_resultSetHandle);
@@ -653,13 +653,16 @@ OGRFeatureSource::iterator::readChunk()
     if (!_resultSetHandle)
         return;
 
+    const SRS& srs = _source->_featureProfile.extent.valid() ?
+        _source->_featureProfile.extent.srs() :
+        _source->externalSRS;
+
     while (_queue.size() < _chunkSize && !_resultSetEndReached)
     {
         OGRFeatureH handle = OGR_L_GetNextFeature(_resultSetHandle);
         if (handle)
         {
             Feature feature;
-            const SRS& srs = _source->_featureProfile.extent.srs();
 
             create_feature_from_OGR_handle(handle, srs, feature);
 
@@ -712,79 +715,33 @@ OGRFeatureSource::iterator::next()
 Status
 OGRFeatureSource::open()
 {
-    //Status parent = FeatureSource::openImplementation();
-    //if (parent.isError())
-    //    return parent;
+    // Pre-existing layer handle?
+    if (externallayerHandle)
+    {
+        _layerHandle = externallayerHandle;
+    }
 
     // Data source at a URL?
-    if (uri.has_value())
+    else
     {
-        _source = uri->full();
-
-        // ..inside a zip file?
-        if (util::endsWith(_source, ".zip", false) || _source.find(".zip/") != std::string::npos)
+        if (uri.has_value())
         {
-            _source = util::make_string() << "/vsizip/" << _source;
+            _source = uri->full();
+
+            // ..inside a zip file?
+            if (util::endsWith(_source, ".zip", false) || _source.find(".zip/") != std::string::npos)
+            {
+                _source = util::make_string() << "/vsizip/" << _source;
+            }
         }
 
-        //// ..remote?
-        //if (util::startsWith(_source, "http://") || util::startsWith(_source, "https://"))
-        //{
-        //    _source = util::make_string() << "/vsicurl/" << _source;
-        //}
-    }
-
-#if 0
-    else if (!_geometry.valid())
-    {
-        // ..or inline geometry?
-        _geometry =
-            options().geometryConfig().isSet() ? parseGeometry(*options().geometryConfig()) :
-            options().geometryUrl().isSet() ? parseGeometryUrl(*options().geometryUrl(), getReadOptions()) :
-            0L;
-    }
-#endif
-
-    // If nothing was set, we're done
-    if (_source.empty()) // && !_geometry.valid())
-    {
-        return Status(Status::ConfigurationError, "No URL, connection, or inline geometry provided");
-    }
-
-    // Try to open the datasource and establish a feature profile.        
-    //FeatureProfile featureProfile;
-
-#if 0
-    // see if we have a custom profile.
-    if (options().profile().isSet() && !_profile.valid())
-    {
-        _profile = Profile::create(*options().profile());
-    }
-
-    if (_geometry.valid())
-    {
-        // if the user specified explicit geometry, use that and the calculated
-        // extent of the geometry to derive a profile.
-        GeoExtent ex;
-        if (_profile.valid())
+        // If nothing was set, we're done
+        if (_source.empty())
         {
-            ex = GeoExtent(_profile->getSRS(), _geometry->getBounds());
+            return Status(Status::ConfigurationError, "No URL, connection, or inline geometry provided");
         }
 
-        if (!ex.valid())
-        {
-            // default to WGS84 Lat/Long
-            ex = GeoExtent(SRS::WGS84, _geometry->getBounds());
-        }
-
-        featureProfile = FeatureProfile{ ex };
-    }
-
-    else if (!source.empty())
-#endif
-    {
-        // otherwise, assume we're loading from the URL/connection:
-
+        // assume we're loading from the URL/connection:
         // remember the thread so we don't use the handles illegaly.
         _dsHandleThreadId = std::thread::id();
 
@@ -895,32 +852,7 @@ OGRFeatureSource::open()
             // Made it!
             _featureProfile.extent = extent;
         }
-
-        // Get the feature count
-        //unsigned featureCount = OGR_L_GetFeatureCount(_layerHandle, 1);
-
-#if 0
-        // establish the feature schema:
-        initSchema();
-#endif
     }
-
-#if 0
-    // finally, if we established a profile, set it for this source.
-    if (_featureProfile)
-    {
-        if (options().geoInterp().isSet())
-        {
-            featureProfile->geoInterp() = options().geoInterp().get();
-        }
-        setFeatureProfile(featureProfile);
-    }
-
-    else
-    {
-        return Status(Status::ResourceUnavailable, "Failed to establish a valid feature profile");
-    }
-#endif
 
     Log()->info("OGR feature source " + _source + " opened OK");
 
@@ -938,19 +870,6 @@ OGRFeatureSource::close()
 {
     if (_layerHandle)
     {
-#if 0
-        if (_needsSync)
-        {
-            OGR_L_SyncToDisk(_layerHandle); // for writing only
-            const char* name = OGR_FD_GetName(OGR_L_GetLayerDefn(_layerHandle));
-            std::stringstream buf;
-            buf << "REPACK " << name;
-            std::string bufStr;
-            bufStr = buf.str();
-            OE_DEBUG << LC << "SQL: " << bufStr << std::endl;
-            OGR_DS_ExecuteSQL(_dsHandle, bufStr.c_str(), 0L, 0L);
-        }
-#endif
         _layerHandle = nullptr;
     }
 
@@ -959,9 +878,6 @@ OGRFeatureSource::close()
         OGRReleaseDataSource(_dsHandle);
         _dsHandle = nullptr;
     }
-
-    //init();
-    //return FeatureSource::closeImplementation();
 }
 
 #endif // ROCKY_HAS_GDAL

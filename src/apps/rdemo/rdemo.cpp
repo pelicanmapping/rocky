@@ -173,22 +173,18 @@ int main(int argc, char** argv)
 
     rocky::Log()->set_level(rocky::log::level::info);
 
-    if (app.mapNode->map->layers().empty())
+    auto& layers = app.mapNode->map->layers();
+    if (layers.empty())
     {
 #ifdef ROCKY_HAS_TMS
-        // add an imagery layer to the map
-        auto layer = rocky::TMSImageLayer::create();
-        layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7";
-        app.mapNode->map->layers().add(layer);
-        if (layer->status().failed())
-            return layerError(layer);
+        auto imagery = rocky::TMSImageLayer::create();
+        imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7";
+        layers.add(imagery);
 
         // add an elevation layer to the map
         auto elev = rocky::TMSElevationLayer::create();
         elev->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
-        app.mapNode->map->layers().add(elev);
-        if (elev->status().failed())
-            return layerError(elev);
+        layers.add(elev);
 #endif
     }
 

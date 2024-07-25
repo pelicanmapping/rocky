@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "Instance.h"
+#include "GeoExtent.h"
 #include "Profile.h"
 #include "SRS.h"
 #include "Threading.h"
@@ -26,6 +27,10 @@ ROCKY_ABOUT(gdal, GDAL_RELEASE_NAME)
 #ifdef ROCKY_HAS_TINYXML
 #include <tinyxml.h>
 ROCKY_ABOUT(tinyxml, std::to_string(TIXML_MAJOR_VERSION) + "." + std::to_string(TIXML_MINOR_VERSION))
+#endif
+
+#ifdef ROCKY_HAS_GEOCODER
+#include <ogr_geocoding.h>
 #endif
 
 

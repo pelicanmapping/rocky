@@ -130,10 +130,11 @@ Application::ctor(int& argc, char** argv)
         {
             auto count = mapNode->map->layers().size();
             mapNode->map->from_json(result.value);
+
             if (count == mapNode->map->layers().size())
                 msg = "Unable to import any layers from the earth file";
 
-            Log()->warn(json_pretty(result.value));
+            Log()->info(json_pretty(result.value));
         }
         else
         {

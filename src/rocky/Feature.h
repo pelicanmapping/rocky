@@ -267,6 +267,8 @@ namespace ROCKY_NAMESPACE
         optional<URI> uri;
         optional<std::string> ogrDriver;
         std::string layerName;
+        void* externallayerHandle = nullptr;
+        SRS externalSRS = SRS::WGS84;
         bool writable = false;
 
     private:

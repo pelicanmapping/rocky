@@ -40,7 +40,13 @@ auto Demo_Map = [](Application& app)
         if (visibleLayer)
         {
             ImGui::PushID(layer->uid());
+
+            bool stylePushed = false;
+            if (layer->status().failed())
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 72, 72))), stylePushed = true;
+
             {
+
                 ImGui::PushID("selectable");
                 bool layerClicked = false;
                 if (layer->name().empty())
@@ -66,6 +72,10 @@ auto Demo_Map = [](Application& app)
                 ImGui::Indent();
                 if (ImGuiLTable::Begin("layerdeets"))
                 {
+                    if (layer->status().failed())
+                    {
+                        ImGuiLTable::Text("ERROR:", layer->status().message.c_str());
+                    }
                     ImGuiLTable::Text("Type:", layer->getConfigKey().c_str());
                     auto tileLayer = TileLayer::cast(layer);
                     if (tileLayer)
@@ -82,6 +92,9 @@ auto Demo_Map = [](Application& app)
                 }
                 ImGui::Unindent();
             }
+
+            if (stylePushed)
+                ImGui::PopStyleColor();
 
             ImGui::PopID();
             ImGui::Separator();
