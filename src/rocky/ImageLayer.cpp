@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2023-2024 Pelican Mapping, Chris Djali
  * MIT License
  */
 #pragma once
@@ -21,6 +21,36 @@ using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 
 #define LC "[ImageLayer] \"" << name().value() << "\" "
+
+namespace
+{
+    class CompositeImage : public Inherit<Image, CompositeImage>
+    {
+    public:
+        CompositeImage(
+            PixelFormat format,
+            unsigned s,
+            unsigned t,
+            unsigned r = 1) :
+            super(format, s, t, r),
+            dependencies(),
+            cleanupOperation()
+        {}
+
+        CompositeImage(const CompositeImage& rhs) :
+            super(rhs),
+            dependencies(rhs.dependencies)
+        {}
+
+        virtual ~CompositeImage()
+        {
+            cleanupOperation();
+        }
+
+        std::vector<std::shared_ptr<Image>> dependencies;
+        std::function<void()> cleanupOperation;
+    };
+}
 
 ImageLayer::ImageLayer() :
     super()
@@ -43,6 +73,8 @@ ImageLayer::construct(const JSON& conf)
     get_to(j, "texture_compression", _textureCompression);
 
     setRenderType(RENDERTYPE_TERRAIN_SURFACE);
+
+    _dependencyCache = std::make_shared<DependencyCache<TileKey, Image>>();
 }
 
 JSON
@@ -159,7 +191,7 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
 shared_ptr<Image>
 ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 {
-    shared_ptr<Image> output;
+    shared_ptr<CompositeImage> output;
 
     // Collect the rasters for each of the intersecting tiles.
     std::vector<GeoImage> source_list;
@@ -223,12 +255,19 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
         {
             if (isKeyInLegalRange(layerKey))
             {
-                std::shared_lock L(layerStateMutex());
-                auto result = createImageImplementation(layerKey, io);
-
-                if (result.status.ok() && result.value.valid())
+                auto cached = (*_dependencyCache)[layerKey];
+                if (cached)
+                    source_list.emplace_back(cached, layerKey.extent());
+                else
                 {
-                    source_list.push_back(result.value);
+                    std::shared_lock L(layerStateMutex());
+                    auto result = createImageImplementation(layerKey, io);
+
+                    if (result.status.ok() && result.value.valid())
+                    {
+                        cached = _dependencyCache->put(layerKey, result.value.image());
+                        source_list.push_back(result.value);
+                    }
                 }
             }
         }
@@ -250,7 +289,15 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             SRSOperation xform = keyExtent.srs().to(source_list[0].srs());
 
             // new output:
-            output = Image::create(Image::R8G8B8A8_UNORM, width, height);
+            output = CompositeImage::create(Image::R8G8B8A8_UNORM, width, height);
+            output->dependencies.reserve(source_list.size());
+            for (auto& source : source_list)
+                output->dependencies.push_back(source.image());
+            output->cleanupOperation = [captured{ std::weak_ptr(_dependencyCache) }]() {
+                auto cache = captured.lock();
+                if (cache)
+                    cache->clean();
+                };
 
             // working set of points. it's much faster to xform an entire vector all at once.
             std::vector<glm::dvec3> points;

@@ -64,6 +64,8 @@ option(ROCKY_SUPPORTS_HTTPS "Support HTTPS (requires openssl)" ON)
 option(ROCKY_SUPPORTS_TMS "Support OSGeo TileMapService" ON)
 option(ROCKY_SUPPORTS_GDAL "Support GeoTIFF, WMS, WMTS, and other GDAL formats (requires gdal)" ON)
 option(ROCKY_SUPPORTS_MBTILES "Support MBTiles databases with extended spatial profile support (requires sqlite3, zlib)" ON)
+option(ROCKY_SUPPORTS_AZURE "Support Azure Maps" ON)
+option(ROCKY_SUPPORTS_BING "Support Bing Maps" ON)
 option(ROCKY_SUPPORTS_IMGUI "Build ImGui demos" ON)
 option(ROCKY_SUPPORTS_QT "Build Qt demos" OFF)
 
@@ -91,6 +93,14 @@ if (ROCKY_SUPPORTS_MBTILES)
     set(BUILD_WITH_SQLITE3 ON)
     set(BUILD_WITH_ZLIB ON)
     set(ROCKY_HAS_MBTILES ON)
+endif()
+
+if (ROCKY_SUPPORTS_AZURE)
+    set(ROCKY_HAS_AZURE ON)
+endif()
+
+if (ROCKY_SUPPORTS_BING)
+    set(ROCKY_HAS_BING ON)
 endif()
 
 if (ROCKY_SUPPORTS_TMS)

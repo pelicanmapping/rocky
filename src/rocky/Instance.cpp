@@ -34,14 +34,18 @@ using namespace ROCKY_NAMESPACE;
 const Status& Instance::status() { return _global_status; }
 
 // static object factory map:
-std::unordered_map<std::string, Instance::ObjectFactory> Instance::objectFactories;
+std::unordered_map<std::string, Instance::ObjectFactory>& Instance::objectFactories()
+{
+    static std::unordered_map<std::string, Instance::ObjectFactory> factories;
+    return factories;
+}
 
 // static object creation function:
 shared_ptr<Object>
 Instance::createObjectImpl(const std::string& name, const JSON& conf)
 {
-    auto i = objectFactories.find(util::toLower(name));
-    if (i != objectFactories.end())
+    auto i = objectFactories().find(util::toLower(name));
+    if (i != objectFactories().end())
         return i->second(conf);
     return nullptr;
 }
