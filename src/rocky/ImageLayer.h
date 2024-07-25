@@ -12,22 +12,31 @@
 
 namespace ROCKY_NAMESPACE
 {
-    class Color;
-    class Profile;
-
+    /**
+    * A "cache" of weak pointers to images, keyed by tile key. This will keep
+    * references to images that are still in use elsewhere in the system in
+    * order to prevent re-fetching or re-mosacing the same data over and over.
+    */
     template<class Key, class Value>
     class DependencyCache
     {
     public:
+        //! Fetch a value from teh cache or nullptr if it's not there
         std::shared_ptr<Value> operator[](const Key& key)
         {
             const std::lock_guard lock{ _mutex };
+            ++_gets;
             auto itr = _map.find(key);
             if (itr != _map.end())
-                return itr->second.lock();
+            {
+                auto result = itr->second.lock();
+                if (result) ++_hits;
+                return result;
+            }
             return nullptr;
         }
 
+        //! Enter a value into the cache, returning an existing value if there is one
         std::shared_ptr<Value> put(const Key& key, const std::shared_ptr<Value>& value)
         {
             const std::lock_guard lock{ _mutex };
@@ -42,6 +51,7 @@ namespace ROCKY_NAMESPACE
             return value;
         }
         
+        //! Clean the cache by purging entries whose weak pointers have expired
         void clean()
         {
             const std::lock_guard lock{ _mutex };
@@ -54,8 +64,15 @@ namespace ROCKY_NAMESPACE
             }
         }
 
+        float hitRatio() const
+        {
+            return _gets > 0.0f ? _hits / _gets : 0.0f;
+        }
+
     private:
         std::unordered_map<Key, std::weak_ptr<Value>> _map;
+        float _gets = 0.0f;
+        float _hits = 0.0f;
         std::mutex _mutex;
     };
 
@@ -153,6 +170,10 @@ namespace ROCKY_NAMESPACE
         optional<std::string> _noDataImageLocation = { };
         optional<Color> _transparentColor = Color(0, 0, 0, 0);
         optional<std::string> _textureCompression;
+
+        Result<GeoImage> createImageImplementation_internal(
+            const TileKey& key,
+            const IOOptions& io) const;
 
     private:
 

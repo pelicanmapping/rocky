@@ -60,6 +60,15 @@ AzureImageLayer::openImplementation(const IOOptions& io)
     _profile = Profile::SPHERICAL_MERCATOR;
     setDataExtents({ _profile->extent() });
 
+    // test fetch to make sure the API key is valid
+    TileKey test(0, 0, 0, _profile);
+    auto result = createImageImplementation(test, io);
+    if (result.status.failed())
+    {
+        return Status(Status::ResourceUnavailable, result.status.message);
+    }
+
+
     ROCKY_TODO("When disk cache is implemented, disable it here (or come up with a mechanism to ensure it only lasts six months/the period specified in the response header) to comply with ToS.");
 
     ROCKY_TODO("update attribution - it's a separate API call and depends on the visible region and zoom level, or can be queried for individual tiles, or there's an API to get a big JSON object with strings for each region of the world all at once");
@@ -96,7 +105,9 @@ AzureImageLayer::createImageImplementation(const TileKey& key, const IOOptions& 
 
     auto fetch = imageURI.read(io);
     if (fetch.status.failed())
+    {
         return fetch.status;
+    }
 
     std::istringstream buf(fetch->data);
     auto image_rr = io.services.readImageFromStream(buf, fetch->contentType, io);

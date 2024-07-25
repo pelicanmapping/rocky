@@ -96,39 +96,12 @@ ImageLayer::createImage(const TileKey& key) const
 Result<GeoImage>
 ImageLayer::createImage(const TileKey& key, const IOOptions& io) const
 {    
-    ROCKY_PROFILING_ZONE;
-    ROCKY_PROFILING_ZONE_TEXT(getName() + " " + key.str());
-
     if (!isOpen())
     {
         return Result(GeoImage::INVALID);
     }
 
-    //NetworkMonitor::ScopedRequestLayer layerRequest(getName());
-
     auto result = createImageInKeyProfile(key, io);
-
-#if 0
-    // Post-cache operations:
-    if (!_postLayers.empty())
-    {
-        for (auto& post : _postLayers)
-        {
-            if (!result.valid())
-            {
-                TileKey bestKey = bestAvailableTileKey(key);
-                result = createImageInKeyProfile(bestKey, progress);
-            }
-
-            result = post->createImage(result, key, progress);
-        }
-    }
-
-    if (result.valid())
-    {
-        postCreateImageImplementation(result, key, progress);
-    }
-#endif
 
     return result;
 }
@@ -138,6 +111,18 @@ ImageLayer::createImage(const GeoImage& canvas, const TileKey& key, const IOOpti
 {
     std::shared_lock lock(layerStateMutex());
     return createImageImplementation(canvas, key, io);
+}
+
+Result<GeoImage>
+ImageLayer::createImageImplementation_internal(const TileKey& key, const IOOptions& io) const
+{
+    std::shared_lock lock(layerStateMutex());
+    auto result = createImageImplementation(key, io);
+    if (result.status.failed())
+    {
+        Log()->debug("Failed to create image for key {0} : {1}", key.str(), result.status.message);
+    }
+    return result;
 }
 
 Result<GeoImage>
@@ -169,14 +154,12 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
     // if this layer has no profile, just go straight to the driver.
     if (!profile().valid())
     {
-        std::shared_lock lock(layerStateMutex());
-        return createImageImplementation(key, io);
+        return createImageImplementation_internal(key, io);
     }
 
     else if (key.profile() == profile())
     {
-        std::shared_lock lock(layerStateMutex());
-        result = createImageImplementation(key, io);
+        result = createImageImplementation_internal(key, io);
     }
     else
     {
@@ -257,11 +240,12 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             {
                 auto cached = (*_dependencyCache)[layerKey];
                 if (cached)
+                {
                     source_list.emplace_back(cached, layerKey.extent());
+                }
                 else
                 {
-                    std::shared_lock L(layerStateMutex());
-                    auto result = createImageImplementation(layerKey, io);
+                    auto result = createImageImplementation_internal(layerKey, io);
 
                     if (result.status.ok() && result.value.valid())
                     {
@@ -293,7 +277,9 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             output->dependencies.reserve(source_list.size());
             for (auto& source : source_list)
                 output->dependencies.push_back(source.image());
-            output->cleanupOperation = [captured{ std::weak_ptr(_dependencyCache) }]() {
+
+            // Clean up orphaned entries any time a tile destructs.
+            output->cleanupOperation = [captured{ std::weak_ptr(_dependencyCache) }, key]() {
                 auto cache = captured.lock();
                 if (cache)
                     cache->clean();
