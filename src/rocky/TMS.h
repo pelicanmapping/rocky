@@ -54,7 +54,7 @@ namespace ROCKY_NAMESPACE
             std::string title;
             std::string abstract;
             std::string srsString;
-            std::string vsrsString;
+            std::string vsrsString = "egm96";
             double originX = 0.0, originY = 0.0;
             double minX = 0.0, minY = 0.0, maxX = 0.0, maxY = 0.0;
             std::vector<TileSet> tileSets;

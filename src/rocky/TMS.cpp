@@ -19,8 +19,6 @@ using namespace ROCKY_NAMESPACE::TMS;
 #define ELEM_TITLE "title"
 #define ELEM_ABSTRACT "abstract"
 #define ELEM_SRS "srs"
-#define ELEM_VERTICAL_SRS "vsrs"
-#define ELEM_VERTICAL_DATUM "vdatum"
 #define ELEM_BOUNDINGBOX "boundingbox"
 #define ELEM_ORIGIN "origin"
 #define ELEM_TILE_FORMAT "tileformat"
@@ -548,7 +546,6 @@ TileMap::TileMap(
     }
 
     srsString = getHorizSRSString(profile.srs());
-    //vsrsString = profile.srs().vertical();
 
     format.width = tile_width;
     format.height = tile_height;

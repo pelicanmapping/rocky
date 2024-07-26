@@ -170,7 +170,7 @@ namespace
             for(;;)
             {
                 if (io.canceled())
-                    return Status(Status::Canceled);
+                    return StatusOK;
                 
                 auto t0 = std::chrono::steady_clock::now();
                 auto res = client.Get(path, params, headers);
@@ -383,11 +383,18 @@ URI::read(const IOOptions& io) const
         auto i = r.value.headers.find("Content-Type");
         if (i != r.value.headers.end())
             contentType = i->second;
-        else
-            contentType = inferContentTypeFromFileExtension(full());
 
         if (contentType.empty())
+        {
+            auto p = full().find_first_of('?');
+            auto url_path = p != std::string::npos ? full().substr(0, p) : full();
+            contentType = inferContentTypeFromFileExtension(url_path);
+        }
+
+        if (contentType.empty())
+        {
             contentType = inferContentTypeFromData(r.value.data);
+        }
 
         content = {
             contentType,
