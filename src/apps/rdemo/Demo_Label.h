@@ -23,22 +23,6 @@ auto Demo_Label = [](Application& app)
         return;
     }
 
-#if 0
-    if (font.working())
-    {
-        ImGui::Text("Loading font, please wait...");
-        return;
-    }
-
-    if (!font.available())
-    {
-        ImGui::TextWrapped(status.message.c_str());
-        status = Status(Status::ResourceUnavailable,
-            "No font available - did you set the ROCKY_DEFAULT_FONT environment variable?");
-        return;
-    }
-#endif
-
     if (entity == entt::null)
     {
         // Create a host entity

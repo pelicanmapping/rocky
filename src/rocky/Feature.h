@@ -211,8 +211,20 @@ namespace ROCKY_NAMESPACE
         Feature() = default;
         Feature(const Feature& rhs) = default;
 
+        //! Whether the feature is valid
         bool valid() const {
-            return srs.valid(); // && !geometry.empty();
+            return srs.valid();
+        }
+
+        //! Whether the feature contains the named field
+        bool hasField(const std::string& name) const {
+            return fields.find(name) != fields.end();
+        }
+
+        const FieldValueUnion& field(const std::string& name) const {
+            static FieldValueUnion empty;
+            auto i = fields.find(name);
+            return i != fields.end() ? i->second : empty;
         }
 
         void dirtyExtent();

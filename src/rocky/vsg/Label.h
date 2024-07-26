@@ -18,6 +18,7 @@ namespace ROCKY_NAMESPACE
         vsg::StandardLayout::Alignment verticalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;
         float pointSize = 14.0f;
         float outlineSize = 0.0f;
+        vsg::vec3 pixelOffset = { 0.0f, 0.0f, 0.0f };
     };
 
     /**

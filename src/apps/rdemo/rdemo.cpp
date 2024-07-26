@@ -45,6 +45,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Views.h"
 #include "Demo_RTT.h"
 #include "Demo_Stats.h"
+#include "Demo_Geocoder.h"
 
 template<class T>
 int layerError(T layer)
@@ -90,6 +91,7 @@ std::vector<Demo> demos =
         Demo{ "Viewpoints", Demo_Viewpoints },
         Demo{ "Tethering", Demo_Tethering }
     } },
+    Demo{ "Geocoding", Demo_Geocoder },
     Demo{ "Environment", Demo_Environment },
     Demo{ "RTT", Demo_RTT },
     Demo{ "Views", Demo_Views },

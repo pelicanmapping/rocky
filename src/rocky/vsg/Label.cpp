@@ -81,7 +81,7 @@ Label::initializeNode(const ECS::NodeComponent::Params& params)
     layout = vsg::StandardLayout::create();
     layout->billboard = false;
     layout->billboardAutoScaleDistance = 0.0f;
-    layout->position = vsg::vec3(0.0f, 0.0f, 0.0f);
+    layout->position = style.pixelOffset; // vsg::vec3(0.0f, 0.0f, 0.0f);
     layout->horizontal = vsg::vec3(size, 0.0f, 0.0f);
     layout->vertical = vsg::vec3(0.0f, size, 0.0f); // layout->billboard ? vsg::vec3(0.0, size, 0.0) : vsg::vec3(0.0, 0.0, size);
     layout->color = vsg::vec4(1.0f, 0.9f, 1.0f, 1.0f);
