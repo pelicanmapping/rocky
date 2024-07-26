@@ -272,7 +272,7 @@ LineGeometry::compile(vsg::Context& context)
         auto colors_array = vsg::vec4Array::create(_colors.size(), _colors.data());
 
         unsigned numIndices = (numVerts() - 1) * 6;
-        auto indices = vsg::ushortArray::create(numIndices);
+        auto indices = vsg::uintArray::create(numIndices);
         for (int e = 2, i = 0; e < _current.size() - 2; e += 4)
         {
             (*indices)[i++] = e + 3;
