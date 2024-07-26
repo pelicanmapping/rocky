@@ -120,7 +120,7 @@ namespace
         return true;
     }
 
-    IOResult<HTTPResponse> http_get(const HTTPRequest& request, unsigned max_attempts)
+    IOResult<HTTPResponse> http_get(const HTTPRequest& request, const IOOptions& io)
     {
 #ifndef ROCKY_HAS_HTTPLIB
         return Status(Status::ServiceUnavailable);
@@ -160,7 +160,7 @@ namespace
             // disable cert verification
             client.enable_server_certificate_verification(false);
 
-            max_attempts = std::max(1u, max_attempts);
+            unsigned max_attempts = std::max(1u, io.maxNetworkAttempts);
 
             unsigned tooManyRequestsCount = 0;
             std::random_device device;
@@ -169,6 +169,9 @@ namespace
 
             for(;;)
             {
+                if (io.canceled())
+                    return Status(Status::Canceled);
+                
                 auto t0 = std::chrono::steady_clock::now();
                 auto res = client.Get(path, params, headers);
                 auto t1 = std::chrono::steady_clock::now();
@@ -183,24 +186,25 @@ namespace
                         Log()->info(LC "({}) HTTP GET {} ({}ms {}b {})", res->status, request.url, (int)dur_ms, res->body.size(), ct);
                     }
 
-                    if (res->status == 404)
+                    if (res->status == 404) // NOT FOUND (permanent)
                     {
                         return Status(Status::ResourceUnavailable, httplib::status_message(res->status));
                     }
-                    else if (res->status == 429)
+                    else if (res->status == 429) // TOO MANY REQUESTS (rate limiting)
                     {
                         if (--max_attempts > 0)
                         {
                             // random delay should avoid many requests failing at once, then waiting and retrying all at the same time and failing again
                             auto delay = 1000ms * std::pow(2, tooManyRequestsCount++ + distribution(engine));
-                            Log()->info(LC + std::string(httplib::status_message(res->status)) + " with " + proto_host_port + "; retrying with delay of " + std::to_string(delay.count()) + "ms... ");
-                            std::this_thread::sleep_for(delay);
+                            Log()->debug(LC + std::string(httplib::status_message(res->status)) + " with " + proto_host_port + "; retrying with delay of " + std::to_string(delay.count()) + "ms... ");
+                            if (!io.canceled())
+                                std::this_thread::sleep_for(delay);
                             continue;
                         }
                         else
                         {
                             Log()->info(LC + std::string("Retries exhausted with ") + proto_host_port + path);
-                            return Status(Status::GeneralError, httplib::status_message(res->status));
+                            return Status(Status::ResourceUnavailable, httplib::status_message(res->status));
                         }
                     }
                     else if (res->status != 200)
@@ -368,7 +372,7 @@ URI::read(const IOOptions& io) const
     else if (containsServerAddress(full()))
     {
         HTTPRequest request{ full() };
-        auto r = http_get(request, io.maxNetworkAttempts);
+        auto r = http_get(request, io);
         if (r.status.failed())
         {
             return IOResult<Content>::propagate(r);

@@ -20,6 +20,7 @@ namespace ROCKY_NAMESPACE
             ServiceUnavailable,   // e.g. failure to connect to a site, load a plugin, extension, or other module
             ConfigurationError,   // required data or properties missing
             AssertionFailure,     // an illegal software state was detected
+            Canceled,             // operation was canceled by user or system
             GeneralError          // something else went wrong
         };
 
@@ -39,10 +40,10 @@ namespace ROCKY_NAMESPACE
         bool const operator ! () const { return failed(); }
         static Status Error(const std::string& m) { return Status(m); }
         std::string toString() const {
-            return _errorCodeText[(int)code < 6 ? (int)code : 5] + ": " + message;
+            return _errorCodeText[(int)code < 7 ? (int)code : 6] + ": " + message;
         }
     private:
-        static std::string _errorCodeText[6];
+        static std::string _errorCodeText[7];
     };
 
     extern ROCKY_EXPORT const Status StatusOK;
