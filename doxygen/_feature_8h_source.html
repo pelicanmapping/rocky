@@ -128,7 +128,7 @@ $(function() {
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;            <span class="keyword">inline</span> T&amp; next();</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160; </div>
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;            std::stack&lt;T*&gt; _stack;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;            std::queue&lt;T*&gt; _queue;</div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;            T* _next = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;            <span class="keywordtype">bool</span> _traverse_multi = <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;            <span class="keywordtype">bool</span> _traverse_polygon_holes = <span class="keyword">true</span>;</div>
@@ -148,7 +148,7 @@ $(function() {
 <div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</div>
 <div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_1_1iterator.html">Geometry::iterator&lt;T&gt;::iterator</a>(T&amp; geom, <span class="keywordtype">bool</span> trav_holes) {</div>
 <div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;        _traverse_polygon_holes = trav_holes;</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;        _stack.push(&amp;geom);</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;        _queue.push(&amp;geom);</div>
 <div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;        fetch();</div>
 <div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    }</div>
 <div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160; </div>
@@ -162,10 +162,10 @@ $(function() {
 <div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</div>
 <div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    <span class="keywordtype">void</span> Geometry::iterator&lt;T&gt;::fetch() {</div>
 <div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;        _next = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;        <span class="keywordflow">if</span> (_stack.size() == 0)</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;        <span class="keywordflow">if</span> (_queue.empty())</div>
 <div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;            <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;        T* current = _stack.top();</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;        _stack.pop();</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;        T* current = _queue.front();</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;        _queue.pop();</div>
 <div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;        <span class="keywordtype">bool</span> is_multi =</div>
 <div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;            current-&gt;type == <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#a236f01ed442e26a87265212a53c09ea1a6d0b0e1d146d35399060c10baabed5d6">Geometry::Type::MultiLineString</a> ||</div>
 <div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;            current-&gt;type == <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#a236f01ed442e26a87265212a53c09ea1af0cf48edf882dce0841af076a842f1dd">Geometry::Type::MultiPoints</a> ||</div>
@@ -174,7 +174,7 @@ $(function() {
 <div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;        <span class="keywordflow">if</span> (is_multi &amp;&amp; _traverse_multi)</div>
 <div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;        {</div>
 <div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; part : current-&gt;parts)</div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;                _stack.push(&amp;part);</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;                _queue.push(&amp;part);</div>
 <div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;            fetch();</div>
 <div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;        }</div>
 <div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;        <span class="keywordflow">else</span></div>
@@ -183,7 +183,7 @@ $(function() {
 <div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;            <span class="keywordflow">if</span> (current-&gt;type == Type::Polygon &amp;&amp; _traverse_polygon_holes)</div>
 <div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;            {</div>
 <div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;                <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; ring : current-&gt;parts)</div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;                    _stack.push(&amp;ring);</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;                    _queue.push(&amp;ring);</div>
 <div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;            }</div>
 <div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;        }</div>
 <div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;    }</div>
@@ -282,72 +282,77 @@ $(function() {
 <div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    <span class="keyword">class </span>ROCKY_EXPORT OGRFeatureSource : <span class="keyword">public</span> rocky::Inherit&lt;FeatureSource, OGRFeatureSource&gt;</div>
 <div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;    {</div>
 <div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;        ~OGRFeatureSource();</div>
-<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160; </div>
-<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;        std::shared_ptr&lt;FeatureSource::iterator&gt; iterate(IOOptions&amp; io) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160; </div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;        <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;URI&gt;</a> uri;</div>
 <div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160; </div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> open();</div>
-<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;        <span class="keywordtype">void</span> close();</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;        <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;std::string&gt;</a> ogrDriver;</div>
 <div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160; </div>
-<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;        <span class="keywordtype">int</span> featureCount() <span class="keyword">const override</span>;</div>
-<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160; </div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;        <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;URI&gt;</a> uri;</div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;        <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;std::string&gt;</a> ogrDriver;</div>
-<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;        std::string layerName;</div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;        <span class="keywordtype">void</span>* externallayerHandle = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> externalSRS = <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#a88832d325145876bca1ed11962c9cf76">SRS::WGS84</a>;</div>
-<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;        <span class="keywordtype">bool</span> writable = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;        <span class="keywordtype">void</span>* externalLayerHandle = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> externalSRS = <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#a88832d325145876bca1ed11962c9cf76">SRS::WGS84</a>;</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160; </div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> open();</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160; </div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;        <span class="keywordtype">void</span> close();</div>
 <div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160; </div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;        <span class="keywordtype">void</span>* _dsHandle = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;        <span class="keywordtype">void</span>* _layerHandle = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;        <span class="keywordtype">int</span> _featureCount = -1;</div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;        std::thread::id _dsHandleThreadId;</div>
-<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;        FeatureProfile _featureProfile;</div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;        std::string _source;</div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;        std::shared_ptr&lt;FeatureSource::iterator&gt; iterate(IOOptions&amp; io) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160; </div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;        <span class="keywordtype">int</span> featureCount() <span class="keyword">const override</span>;</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160; </div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;        std::string layerName;</div>
 <div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160; </div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;        <span class="keyword">class </span>ROCKY_EXPORT iterator : <span class="keyword">public</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_source_1_1iterator.html">FeatureSource::iterator</a></div>
-<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;        {</div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;        <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;            iterator();</div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;            <span class="keywordtype">void</span> init();</div>
-<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;            ~iterator();</div>
-<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;            <span class="keywordtype">bool</span> hasMore() <span class="keyword">const override</span>;</div>
-<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature.html">Feature</a>&amp; next() <span class="keyword">override</span>;</div>
-<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;        <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;            std::queue&lt;Feature&gt; _queue;</div>
-<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature.html">Feature</a> _lastFeatureReturned;</div>
-<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;            <span class="keywordtype">void</span> readChunk();</div>
-<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;            <span class="keyword">friend</span> <span class="keyword">class </span>OGRFeatureSource;</div>
-<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;            OGRFeatureSource* _source = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;            <span class="keywordtype">void</span>* _dsHandle = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;            <span class="keywordtype">void</span>* _layerHandle = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;            <span class="keywordtype">void</span>* _resultSetHandle = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;            <span class="keywordtype">void</span>* _spatialFilterHandle = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;            <span class="keywordtype">void</span>* _nextHandleToQueue = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;            <span class="keywordtype">bool</span> _resultSetEndReached = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;            <span class="keyword">const</span> std::size_t _chunkSize = 500;</div>
-<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;        };</div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;    };</div>
-<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160; </div>
-<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// ROCKY_HAS_GDAL</span></div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160; </div>
-<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;    <span class="comment">// inline implementation</span></div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> VEC3_ITER&gt;</div>
-<div class="line"><a name="l00322"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#aca02bee1a1b8549224fdcd5bce5cdad0">  322</a></span>&#160;    <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#adf3f94960b8b7bd645d27fb91a564382">Geometry::Geometry</a>(<a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#a236f01ed442e26a87265212a53c09ea1">Type</a> in_type, VEC3_ITER begin, VEC3_ITER end) :</div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;        type(in_type),</div>
-<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;        points(begin, end)</div>
-<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;    {</div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;        <span class="comment">//nop</span></div>
-<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;    }</div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> VEC3_CONTAINER&gt;</div>
-<div class="line"><a name="l00329"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#a56cbc6e25a8fb175e02811c65516fb5d">  329</a></span>&#160;    <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#adf3f94960b8b7bd645d27fb91a564382">Geometry::Geometry</a>(<a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#a236f01ed442e26a87265212a53c09ea1">Type</a> in_type, <span class="keyword">const</span> VEC3_CONTAINER&amp; container) :</div>
-<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;        type(in_type),</div>
-<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;        points(container.begin(), container.end())</div>
-<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;    {</div>
-<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;        <span class="comment">//nop</span></div>
-<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;    }</div>
-<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;}</div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;        <span class="comment">// destructor</span></div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;        <span class="keyword">virtual</span> ~OGRFeatureSource();</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160; </div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;        <span class="keywordtype">void</span>* _dsHandle = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;        <span class="keywordtype">void</span>* _layerHandle = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;        <span class="keywordtype">int</span> _featureCount = -1;</div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;        std::thread::id _dsHandleThreadId;</div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;        FeatureProfile _featureProfile;</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;        std::string _source;</div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160; </div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;        <span class="keyword">class </span>ROCKY_EXPORT iterator : <span class="keyword">public</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_source_1_1iterator.html">FeatureSource::iterator</a></div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;        {</div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;        <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;            iterator();</div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;            <span class="keywordtype">void</span> init();</div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;            ~iterator();</div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;            <span class="keywordtype">bool</span> hasMore() <span class="keyword">const override</span>;</div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature.html">Feature</a>&amp; next() <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;        <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;            std::queue&lt;Feature&gt; _queue;</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature.html">Feature</a> _lastFeatureReturned;</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;            <span class="keywordtype">void</span> readChunk();</div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;            <span class="keyword">friend</span> <span class="keyword">class </span>OGRFeatureSource;</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;            OGRFeatureSource* _source = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;            <span class="keywordtype">void</span>* _dsHandle = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;            <span class="keywordtype">void</span>* _layerHandle = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;            <span class="keywordtype">void</span>* _resultSetHandle = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;            <span class="keywordtype">void</span>* _spatialFilterHandle = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;            <span class="keywordtype">void</span>* _nextHandleToQueue = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;            <span class="keywordtype">bool</span> _resultSetEndReached = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;            <span class="keyword">const</span> std::size_t _chunkSize = 500;</div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;        };</div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;    };</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160; </div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// ROCKY_HAS_GDAL</span></div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160; </div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;    <span class="comment">// inline implementation</span></div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> VEC3_ITER&gt;</div>
+<div class="line"><a name="l00333"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#aca02bee1a1b8549224fdcd5bce5cdad0">  333</a></span>&#160;    <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#adf3f94960b8b7bd645d27fb91a564382">Geometry::Geometry</a>(<a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#a236f01ed442e26a87265212a53c09ea1">Type</a> in_type, VEC3_ITER begin, VEC3_ITER end) :</div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;        type(in_type),</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;        points(begin, end)</div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;    {</div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;        <span class="comment">//nop</span></div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;    }</div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> VEC3_CONTAINER&gt;</div>
+<div class="line"><a name="l00340"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#a56cbc6e25a8fb175e02811c65516fb5d">  340</a></span>&#160;    <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#adf3f94960b8b7bd645d27fb91a564382">Geometry::Geometry</a>(<a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#a236f01ed442e26a87265212a53c09ea1">Type</a> in_type, <span class="keyword">const</span> VEC3_CONTAINER&amp; container) :</div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;        type(in_type),</div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;        points(container.begin(), container.end())</div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;    {</div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;        <span class="comment">//nop</span></div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;    }</div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;}</div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature.html">ROCKY_NAMESPACE::Feature</a></div><div class="ttdef"><b>Definition:</b> Feature.h:169</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_html_a4cff3056084b57e18f7d284401368390"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature.html#a4cff3056084b57e18f7d284401368390">ROCKY_NAMESPACE::Feature::Feature</a></div><div class="ttdeci">Feature()=default</div><div class="ttdoc">Construct an empty feature object.</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_html_a8040fa8c6cd34395817c197339b0aa01"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature.html#a8040fa8c6cd34395817c197339b0aa01">ROCKY_NAMESPACE::Feature::hasField</a></div><div class="ttdeci">bool hasField(const std::string &amp;name) const</div><div class="ttdoc">Whether the feature contains the named field.</div><div class="ttdef"><b>Definition:</b> Feature.h:220</div></div>
