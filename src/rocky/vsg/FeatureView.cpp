@@ -53,7 +53,7 @@ namespace
     }
 
     template<class T>
-    void tessellate_line(const T& from, const T& to, const SRS& srs, const GeodeticInterpolation interp, float max_span, std::vector<T>& output, bool add_last_point)
+    void tessellate_line_segment(const T& from, const T& to, const SRS& srs, const GeodeticInterpolation interp, float max_span, std::vector<T>& output, bool add_last_point)
     {
         //TODO: make it work for projected SRS?
         ROCKY_SOFT_ASSERT_AND_RETURN(srs.isGeodetic(), void());
@@ -100,7 +100,7 @@ namespace
         {
             for (unsigned i = 1; i < input.size(); ++i)
             {
-                tessellate_line(input[i - 1], input[i], srs, interp, max_span, output, false);
+                tessellate_line_segment(input[i - 1], input[i], srs, interp, max_span, output, false);
             }
             output.push_back(input.back());
         }
@@ -273,7 +273,10 @@ namespace
         // And into the final projection:
         feature_to_ecef.transformRange(m.verts.begin(), m.verts.end());
 
-        auto color = styles.mesh_function(feature).color;
+        auto color =
+            styles.mesh_function ? styles.mesh_function(feature).color :
+            styles.mesh.has_value() ? styles.mesh->color :
+            vsg::vec4(1, 1, 1, 1);
 
         Triangle32 temp = {
             {}, // we'll fill in the verts below
@@ -308,29 +311,41 @@ FeatureView::FeatureView(Feature&& f)
 }
 
 void
+FeatureView::clear(entt::registry& registry)
+{
+    if (_entity != entt::null)
+    {
+        registry.remove<Line>(_entity);
+        registry.remove<Mesh>(_entity);
+    }
+}
+
+void
 FeatureView::generate(entt::registry& registry, Runtime& runtime, bool keep_features)
 {
-    entt::entity entity = registry.create();
+    if (_entity == entt::null)
+    {
+        _entity = registry.create();
+    }
 
     for (auto& feature : features)
     {
         if (feature.geometry.type == Geometry::Type::LineString ||
             feature.geometry.type == Geometry::Type::MultiLineString)
         {
-            auto& geom = registry.get_or_emplace<Line>(entity);
+            auto& geom = registry.get_or_emplace<Line>(_entity);
             compile_feature_to_lines(feature, styles, geom);
             geom.active_ptr = &active;
         }
-        else
-        if (feature.geometry.type == Geometry::Type::Polygon)
+        else if (feature.geometry.type == Geometry::Type::Polygon)
         {
-            auto& geom = registry.get_or_emplace<Mesh>(entity);
+            auto& geom = registry.get_or_emplace<Mesh>(_entity);
             compile_polygon_feature_with_weemesh(feature, feature.geometry, styles, geom);
             geom.active_ptr = &active;
         }
         else if (feature.geometry.type == Geometry::Type::MultiPolygon)
         {
-            auto& geom = registry.get_or_emplace<Mesh>(entity);
+            auto& geom = registry.get_or_emplace<Mesh>(_entity);
             for (auto& part : feature.geometry.parts)
             {
                 compile_polygon_feature_with_weemesh(feature, part, styles, geom);
@@ -343,8 +358,10 @@ FeatureView::generate(entt::registry& registry, Runtime& runtime, bool keep_feat
         }
     }
 
-    next_entity = entity;
+    next_entity = _entity;
   
     if (!keep_features)
+    {
         features.clear();
+    }
 }

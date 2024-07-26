@@ -7,6 +7,7 @@
 
 #include <rocky/vsg/Icon.h>
 #include <rocky/vsg/Label.h>
+#include <rocky/vsg/Mesh.h>
 #include <rocky/Geocoder.h>
 
 #include "helpers.h"
@@ -18,6 +19,8 @@ auto Demo_Geocoder = [](Application& app)
     static Status status;
     static jobs::future<Result<std::vector<Feature>>> geocoding_task;
     static char input_buf[256];
+    static LabelStyle label_style_point;
+    static LabelStyle label_style_area;
 
     if (status.failed())
     {
@@ -47,13 +50,25 @@ auto Demo_Geocoder = [](Application& app)
         icon.active = false;
 
         // Attach a label:
+        label_style_point.font = app.instance.runtime().defaultFont;
+        label_style_point.horizontalAlignment = vsg::StandardLayout::LEFT_ALIGNMENT;
+        label_style_point.pointSize = 26.0f;
+        label_style_point.outlineSize = 0.5f;
+        label_style_point.pixelOffset = { icon.style.size_pixels, 0.0f, 0.0f };
+
+        label_style_area.font = app.instance.runtime().defaultFont;
+        label_style_area.horizontalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;
+        label_style_area.pointSize = 26.0f;
+        label_style_area.outlineSize = 0.5f;
+
         auto& label = app.entities.emplace<Label>(entity);
-        label.style.font = app.instance.runtime().defaultFont;
-        label.style.horizontalAlignment = vsg::StandardLayout::LEFT_ALIGNMENT;
-        label.style.pointSize = 26.0f;
-        label.style.outlineSize = 0.2f;  
-        label.style.pixelOffset = { icon.style.size_pixels, 0.0f, 0.0f };
         label.active = false;
+
+        // Outline for location boundary:
+        auto& feature_view = app.entities.emplace<FeatureView>(entity);
+        feature_view.styles.line = LineStyle();
+        feature_view.styles.line->color = vsg::vec4{ 1, 1, 0, 1 };
+        feature_view.active = false;
 
         // Transform to place the entity:
         auto& xform = app.entities.emplace<Transform>(entity);
@@ -101,33 +116,58 @@ auto Demo_Geocoder = [](Application& app)
                 ImGui::Selectable(display_name.c_str(), &selected);
                 if (selected)
                 {
-                    auto extent = feature.extent;
-                    if (extent.area() == 0.0)
-                        extent.expand(Distance(10, Units::KILOMETERS), Distance(10, Units::KILOMETERS));
+                    app.onNextUpdate([&, display_name]()
+                        {
+                            auto extent = feature.extent;
+                            if (extent.area() == 0.0)
+                                extent.expand(Distance(10, Units::KILOMETERS), Distance(10, Units::KILOMETERS));
 
-                    auto view = app.displayManager->windowsAndViews.begin()->second.front();
-                    auto manip = MapManipulator::get(view);
-                    if (manip)
-                    {
-                        Viewpoint vp = manip->getViewpoint();
-                        vp.point = extent.centroid();
-                        manip->setViewpoint(vp, std::chrono::seconds(2));
-                    }
+                            auto view = app.displayManager->windowsAndViews.begin()->second.front();
+                            auto manip = MapManipulator::get(view);
+                            if (manip)
+                            {
+                                Viewpoint vp = manip->getViewpoint();
+                                vp.point = extent.centroid();
+                                manip->setViewpoint(vp, std::chrono::seconds(2));
+                            }
 
-                    // show the placemark:
-                    auto& icon = app.entities.get<Icon>(entity);
-                    icon.active = true;
+                            auto& icon = app.entities.get<Icon>(entity);
+                            FeatureView& feature_view = app.entities.get<FeatureView>(entity);
+                            auto& label = app.entities.get<Label>(entity);
 
-                    replace_in_place(display_name, ", ", "\n");
+                            // show the placemark:
+                            if (feature.geometry.type == Geometry::Type::Points)
+                            {
+                                icon.active = true;
+                                feature_view.active = false;
+                                label.style = label_style_point;
+                            }
+                            else
+                            {
+                                // update the mesh:
+                                auto copy_of_feature = feature;
+                                copy_of_feature.geometry.convertToType(Geometry::Type::LineString);
+                                Geometry::iterator i(copy_of_feature.geometry);
+                                while(i.hasMore()) for (auto& point : i.next().points) point.z = 500.0;
+                                feature_view.clear(app.entities);
+                                feature_view.features = { copy_of_feature };
+                                feature_view.generate(app.entities, app.instance.runtime());
+                                feature_view.active = true;
+                                icon.active = false;
+                                label.style = label_style_area;
+                            }
 
-                    auto& label = app.entities.get<Label>(entity);
-                    label.text = display_name;
-                    label.active = true;
-                    label.dirty(); // to apply the new text.
+                            // update the label:
+                            auto text = display_name;
+                            replace_in_place(text, ", ", "\n");
+                            label.text = text;
+                            label.active = true;
+                            label.dirty(); // to apply the new text.
 
-                    // position it:
-                    auto& xform = app.entities.get<Transform>(entity);
-                    xform.setPosition(extent.centroid());
+                            // position it:
+                            auto& xform = app.entities.get<Transform>(entity);
+                            xform.setPosition(extent.centroid());
+                        });
                 }
             }
             ImGui::Separator();
@@ -135,10 +175,16 @@ auto Demo_Geocoder = [](Application& app)
             {
                 geocoding_task.reset();
                 input_buf[0] = (char)0;
-                auto& icon = app.entities.get<Icon>(entity);
-                icon.active = false;
-                auto& label = app.entities.get<Label>(entity);
-                label.active = false;
+
+                app.onNextUpdate([&]()
+                    {
+                        auto& icon = app.entities.get<Icon>(entity);
+                        icon.active = false;
+                        auto& label = app.entities.get<Label>(entity);
+                        label.active = false;
+                        FeatureView& feature_view = app.entities.get<FeatureView>(entity);
+                        feature_view.active = false;
+                    });
             }
         }
         else

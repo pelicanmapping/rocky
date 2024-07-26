@@ -26,7 +26,7 @@ Geometry::convertToType(Type in_type)
         Type multi_variation =
             in_type == Type::Points ? Type::MultiPoints :
             in_type == Type::LineString ? Type::MultiLineString :
-            Type::MultiPoints;
+            Type::MultiPolygon;
 
         std::stack<Geometry*> stack;
         stack.push(this);
@@ -263,7 +263,6 @@ namespace
         case wkbLinearRing:
             numPoints = OGR_G_GetPointCount(geomHandle);
             out_geom.type = Geometry::Type::LineString;
-            //output = new Ring(numPoints);
             populate(geomHandle, out_geom, numPoints);
             // ringify:
             if (out_geom.points.size() >= 3 && out_geom.points.front() != out_geom.points.back())
@@ -336,8 +335,6 @@ namespace
                     create_geometry(subGeomRef, subgeom);
                     if (subgeom.points.empty())
                         out_geom.parts.resize(out_geom.parts.size() - 1);
-                    //Geometry* geom = createGeometry(subGeomRef, rewindPolygons);
-                    //if (geom) multi->getComponents().push_back(geom);
                 }
             }
 
@@ -485,7 +482,7 @@ std::shared_ptr<FeatureSource::iterator>
 OGRFeatureSource::iterate(IOOptions& io)
 {
     OGRDataSourceH dsHandle = nullptr;
-    OGRLayerH layerHandle = externallayerHandle;
+    OGRLayerH layerHandle = externalLayerHandle;
 
     if (!layerHandle)
     {
@@ -540,7 +537,6 @@ OGRFeatureSource::iterator::init()
 {
     if (_dsHandle)
     {
-        std::string expr;
         std::string from = OGR_FD_GetName(OGR_L_GetLayerDefn(_layerHandle));
         std::string driverName = OGR_Dr_GetName(OGR_DS_GetDriver(_dsHandle));
 
@@ -553,78 +549,8 @@ OGRFeatureSource::iterator::init()
             from = delim + from + delim;
         }
 
-        std::stringstream buf;
-        buf << "SELECT * FROM " << from;
-        expr = buf.str();
-
-#if 0
-        if (_query.expression().isSet())
-        {
-            // build the SQL: allow the Query to include either a full SQL statement or
-            // just the WHERE clause.
-            expr = _query.expression().value();
-
-            // if the expression is just a where clause, expand it into a complete SQL expression.
-            std::string temp = osgEarth::toLower(expr);
-
-            if (temp.find("select") != 0)
-            {
-                std::stringstream buf;
-                buf << "SELECT * FROM " << from << " WHERE " << expr;
-                std::string bufStr;
-                bufStr = buf.str();
-                expr = bufStr;
-            }
-        }
-        else
-        {
-            std::stringstream buf;
-            buf << "SELECT * FROM " << from;
-            expr = buf.str();
-        }
-
-        //Include the order by clause if it's set
-        if (_query.orderby().isSet())
-        {
-            std::string orderby = _query.orderby().value();
-
-            std::string temp = osgEarth::toLower(orderby);
-
-            if (temp.find("order by") != 0)
-            {
-                std::stringstream buf;
-                buf << "ORDER BY " << orderby;
-                std::string bufStr;
-                bufStr = buf.str();
-                orderby = buf.str();
-            }
-            expr += (" " + orderby);
-        }
-
-        // if the tilekey is set, convert it to feature profile coords
-        if (_query.tileKey().isSet() && !_query.bounds().isSet() && profile)
-        {
-            GeoExtent localEx = _query.tileKey()->getExtent().transform(profile->getSRS());
-            _query.bounds() = localEx.bounds();
-        }
-
-        // if there's a spatial extent in the query, build the spatial filter:
-        if (_query.bounds().isSet())
-        {
-            OGRGeometryH ring = OGR_G_CreateGeometry(wkbLinearRing);
-            OGR_G_AddPoint(ring, _query.bounds()->xMin(), _query.bounds()->yMin(), 0);
-            OGR_G_AddPoint(ring, _query.bounds()->xMin(), _query.bounds()->yMax(), 0);
-            OGR_G_AddPoint(ring, _query.bounds()->xMax(), _query.bounds()->yMax(), 0);
-            OGR_G_AddPoint(ring, _query.bounds()->xMax(), _query.bounds()->yMin(), 0);
-            OGR_G_AddPoint(ring, _query.bounds()->xMin(), _query.bounds()->yMin(), 0);
-
-            _spatialFilter = OGR_G_CreateGeometry(wkbPolygon);
-            OGR_G_AddGeometryDirectly(_spatialFilter, ring);
-            // note: "Directly" above means _spatialFilter takes ownership if ring handle
-        }
-#endif
-
-        _resultSetHandle = GDALDatasetExecuteSQL(_dsHandle, expr.c_str(), _spatialFilterHandle, 0L);
+        std::string expr = "SELECT * FROM " + from;
+        _resultSetHandle = GDALDatasetExecuteSQL(_dsHandle, expr.c_str(), _spatialFilterHandle, nullptr);
     }
     else
     {
@@ -716,9 +642,9 @@ Status
 OGRFeatureSource::open()
 {
     // Pre-existing layer handle?
-    if (externallayerHandle)
+    if (externalLayerHandle)
     {
-        _layerHandle = externallayerHandle;
+        _layerHandle = externalLayerHandle;
     }
 
     // Data source at a URL?
@@ -759,15 +685,7 @@ OGRFeatureSource::open()
         };
 
         // always opening a vector source:
-        int openFlags = GDAL_OF_VECTOR;
-
-        // whether it's read-only or writable:
-#if 0
-        if (options().openWrite().isSetTo(true))
-            openFlags |= GDAL_OF_UPDATE;
-        else
-#endif
-            openFlags |= GDAL_OF_READONLY;
+        int openFlags = GDAL_OF_VECTOR | GDAL_OF_READONLY;
 
         if (Log()->level() >= log::level::info)
             openFlags |= GDAL_OF_VERBOSE_ERROR;
@@ -786,11 +704,6 @@ OGRFeatureSource::open()
             return Status(Status::ResourceUnavailable, util::make_string() << "Failed to open \"" << _source << "\"");
         }
 
-        if (openFlags & GDAL_OF_UPDATE)
-        {
-            writable = true;
-        }
-
         // Open a specific layer within the data source, if applicable:
         _layerHandle = open_OGR_layer(_dsHandle, layerName);
 
@@ -802,56 +715,44 @@ OGRFeatureSource::open()
 
         _featureCount = (int)OGR_L_GetFeatureCount(_layerHandle, 1);
 
-#if 0
-        // if the user provided a profile, use that:
-        if (profile.valid())
+        // extract the SRS and Extent:
+        OGRSpatialReferenceH srHandle = OGR_L_GetSpatialRef(_layerHandle);
+        if (!srHandle)
         {
-            featureProfile.extent = profile.extent();
+            return Status(Status::ResourceUnavailable, util::make_string()
+                << "No spatial reference found in \"" << _source << "\"");
         }
 
-        // otherwise extract one from the layer:
-        else
-#endif
+        SRS srs;
+        char* wktbuf;
+        if (OSRExportToWkt(srHandle, &wktbuf) == OGRERR_NONE)
         {
-            // extract the SRS and Extent:
-            OGRSpatialReferenceH srHandle = OGR_L_GetSpatialRef(_layerHandle);
-            if (!srHandle)
+            srs = SRS(wktbuf);
+            CPLFree(wktbuf);
+            if (!srs.valid())
             {
                 return Status(Status::ResourceUnavailable, util::make_string()
-                    << "No spatial reference found in \"" << _source << "\"");
+                    << "Unrecognized SRS found in \"" << _source << "\"");
             }
-
-            SRS srs;
-            char* wktbuf;
-            if (OSRExportToWkt(srHandle, &wktbuf) == OGRERR_NONE)
-            {
-                srs = SRS(wktbuf);
-                CPLFree(wktbuf);
-                if (!srs.valid())
-                {
-                    return Status(Status::ResourceUnavailable, util::make_string()
-                        << "Unrecognized SRS found in \"" << _source << "\"");
-                }
-            }
-
-            // extract the full extent of the layer:
-            OGREnvelope env;
-            if (OGR_L_GetExtent(_layerHandle, &env, 1) != OGRERR_NONE)
-            {
-                return Status(Status::ResourceUnavailable, util::make_string()
-                    << "Invalid extent returned from \"" << _source << "\"");
-            }
-
-            GeoExtent extent(srs, env.MinX, env.MinY, env.MaxX, env.MaxY);
-            if (!extent.valid())
-            {
-                return Status(Status::ResourceUnavailable, util::make_string()
-                    << "Invalid extent returned from \"" << _source << "\"");
-            }
-
-            // Made it!
-            _featureProfile.extent = extent;
         }
+
+        // extract the full extent of the layer:
+        OGREnvelope env;
+        if (OGR_L_GetExtent(_layerHandle, &env, 1) != OGRERR_NONE)
+        {
+            return Status(Status::ResourceUnavailable, util::make_string()
+                << "Invalid extent returned from \"" << _source << "\"");
+        }
+
+        GeoExtent extent(srs, env.MinX, env.MinY, env.MaxX, env.MaxY);
+        if (!extent.valid())
+        {
+            return Status(Status::ResourceUnavailable, util::make_string()
+                << "Invalid extent returned from \"" << _source << "\"");
+        }
+
+        // Made it!
+        _featureProfile.extent = extent;
     }
 
     Log()->info("OGR feature source " + _source + " opened OK");

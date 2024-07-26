@@ -88,7 +88,7 @@ namespace ROCKY_NAMESPACE
             inline T& next();
 
         private:
-            std::stack<T*> _stack;
+            std::queue<T*> _queue;
             T* _next = nullptr;
             bool _traverse_multi = true;
             bool _traverse_polygon_holes = true;
@@ -112,7 +112,7 @@ namespace ROCKY_NAMESPACE
     template<class T>
     Geometry::iterator<T>::iterator(T& geom, bool trav_holes) {
         _traverse_polygon_holes = trav_holes;
-        _stack.push(&geom);
+        _queue.push(&geom);
         fetch();
     }
 
@@ -126,10 +126,10 @@ namespace ROCKY_NAMESPACE
     template<class T>
     void Geometry::iterator<T>::fetch() {
         _next = nullptr;
-        if (_stack.size() == 0)
+        if (_queue.empty())
             return;
-        T* current = _stack.top();
-        _stack.pop();
+        T* current = _queue.front();
+        _queue.pop();
         bool is_multi =
             current->type == Geometry::Type::MultiLineString ||
             current->type == Geometry::Type::MultiPoints ||
@@ -138,7 +138,7 @@ namespace ROCKY_NAMESPACE
         if (is_multi && _traverse_multi)
         {
             for (auto& part : current->parts)
-                _stack.push(&part);
+                _queue.push(&part);
             fetch();
         }
         else
@@ -147,7 +147,7 @@ namespace ROCKY_NAMESPACE
             if (current->type == Type::Polygon && _traverse_polygon_holes)
             {
                 for (auto& ring : current->parts)
-                    _stack.push(&ring);
+                    _queue.push(&ring);
             }
         }
     }
@@ -266,22 +266,33 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT OGRFeatureSource : public rocky::Inherit<FeatureSource, OGRFeatureSource>
     {
     public:
-        ~OGRFeatureSource();
 
-        std::shared_ptr<FeatureSource::iterator> iterate(IOOptions& io) override;
+        //! URI of source data, like a shapefile or connection string
+        optional<URI> uri;
 
+        //! Optional name of the specific OGR driver to load.
+        optional<std::string> ogrDriver;
+
+        //! Use these to create a feature source from an existing OGR layer handle and SRS.
+        //! Leave URI empty if you use this method.
+        void* externalLayerHandle = nullptr;
+        SRS externalSRS = SRS::WGS84;
+
+        //! Opens the source and returns a status indicating success or failure.
         Status open();
+
         void close();
+
+        //! Create an interator to read features from the source
+        std::shared_ptr<FeatureSource::iterator> iterate(IOOptions& io) override;
 
         //! Number of features, or -1 if the count isn't available
         int featureCount() const override;
 
-        optional<URI> uri;
-        optional<std::string> ogrDriver;
         std::string layerName;
-        void* externallayerHandle = nullptr;
-        SRS externalSRS = SRS::WGS84;
-        bool writable = false;
+
+        // destructor
+        virtual ~OGRFeatureSource();
 
     private:
         void* _dsHandle = nullptr;

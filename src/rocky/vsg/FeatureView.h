@@ -48,6 +48,9 @@ namespace ROCKY_NAMESPACE
             Runtime& runtime,
             bool keep_features = false);
 
+        //! Deletes any geometries previously created by generate()
+        void clear(entt::registry& registry);
+
         //! Whether to render this component
         bool active = true;
 
@@ -60,5 +63,8 @@ namespace ROCKY_NAMESPACE
 
         //! Construct a view to display a single moved feature)
         FeatureView(Feature&& value);
+
+    private:
+        entt::entity _entity = entt::null;
     };
 }
