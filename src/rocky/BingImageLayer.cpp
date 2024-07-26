@@ -110,7 +110,7 @@ BingImageLayer::createImageImplementation(const TileKey& key, const IOOptions& i
             if (!vintage.empty() && !jsonURI.empty())
                 imageURI = URI(jsonURI.get<std::string>(), imageryMetadataUrl->context());
             else
-                imageURI = StatusError;
+                imageURI = Status(Status::ResourceUnavailable, "No data at this level");
         }
         else
         {

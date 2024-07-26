@@ -181,6 +181,8 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 
     // Determine the intersecting keys
     std::vector<TileKey> intersectingKeys;
+    unsigned targetLOD;
+    bool anyDataAtTargetLOD = false;
 
     // TODO: This will ensure that enough data is availble to fill any gaps in the tile
     // at the requested LOD by "falling back" to lower LODs. This is a temporary solution
@@ -189,6 +191,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
     // or to maange a spatial index of sources to ensure full coverage. -gw 6/17/24
     if (key.levelOfDetail() > 0u)
     {
+        targetLOD = profile().getEquivalentLOD(key.profile(), key.levelOfDetail());
         TileKey currentKey = key;
         while (currentKey.levelOfDetail() > 0u)
         {
@@ -229,6 +232,8 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 
             --intersectionLOD;
         }
+
+        targetLOD = intersectionLOD;
     }
 
     // collect raster for each intersecting key
@@ -251,13 +256,15 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                     {
                         cached = _dependencyCache->put(layerKey, result.value.image());
                         source_list.push_back(result.value);
+                        if (layerKey.levelOfDetail() == targetLOD)
+                            anyDataAtTargetLOD = true;
                     }
                 }
             }
         }
 
         // If we actually got data, resample/reproject it to match the incoming TileKey's extents.
-        if (source_list.size() > 0)
+        if (anyDataAtTargetLOD)
         {
             unsigned width = 0;
             unsigned height = 0;

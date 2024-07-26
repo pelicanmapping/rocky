@@ -162,6 +162,11 @@ namespace
 
             max_attempts = std::max(1u, max_attempts);
 
+            unsigned tooManyRequestsCount = 0;
+            std::random_device device;
+            std::default_random_engine engine(device());
+            std::uniform_real_distribution distribution;
+
             for(;;)
             {
                 auto t0 = std::chrono::steady_clock::now();
@@ -181,6 +186,22 @@ namespace
                     if (res->status == 404)
                     {
                         return Status(Status::ResourceUnavailable, httplib::status_message(res->status));
+                    }
+                    else if (res->status == 429)
+                    {
+                        if (--max_attempts > 0)
+                        {
+                            // random delay should avoid many requests failing at once, then waiting and retrying all at the same time and failing again
+                            auto delay = 1000ms * std::pow(2, tooManyRequestsCount++ + distribution(engine));
+                            Log()->info(LC + std::string(httplib::status_message(res->status)) + " with " + proto_host_port + "; retrying with delay of " + std::to_string(delay.count()) + "ms... ");
+                            std::this_thread::sleep_for(delay);
+                            continue;
+                        }
+                        else
+                        {
+                            Log()->info(LC + std::string("Retries exhausted with ") + proto_host_port + path);
+                            return Status(Status::GeneralError, httplib::status_message(res->status));
+                        }
                     }
                     else if (res->status != 200)
                     {
