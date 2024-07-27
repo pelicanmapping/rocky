@@ -69,10 +69,13 @@ Map::construct(const JSON& conf, const IOOptions& io)
     }
 }
 
-void
+Status
 Map::from_json(const JSON& input)
 {
     auto j = parse_json(input);
+    if (j.status.failed())
+        return j.status;
+
     get_to(j, "name", _name);
     get_to(j, "profile", _profile);
     get_to(j, "profile_layer", _profileLayer);
@@ -89,6 +92,8 @@ Map::from_json(const JSON& input)
             }
         }
     }
+
+    return {};
 }
 
 JSON

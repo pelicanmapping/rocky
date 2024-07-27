@@ -116,7 +116,7 @@ namespace ROCKY_NAMESPACE
 
             //! Status of this system
             const Status& status() const override {
-                return node ? node->status : StatusError;
+                return node ? node->status : Status_ServiceUnavailable;
             }
 
             //! Whether to render this system's components

@@ -8,6 +8,7 @@
 
 #include "Instance.h"
 #include "json.h"
+#include "Utils.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::Bing;
@@ -34,10 +35,20 @@ void
 BingImageLayer::construct(const JSON& conf)
 {
     setConfigKey("BingImage");
+
     const auto j = parse_json(conf);
     get_to(j, "key", apiKey);
     get_to(j, "imagery_set", imagerySet);
     get_to(j, "imagery_metadata_api_url", imageryMetadataUrl);
+
+    // environment variable key overrides a key set in code
+    auto key = util::getEnvVar("BING_KEY");
+    if (!key.empty())
+    {
+        Log()->info(LC "Overriding API key from environment variable");
+        apiKey.clear();
+        apiKey.set_default(key);
+    }
 }
 
 JSON
@@ -96,8 +107,7 @@ BingImageLayer::createImageImplementation(const TileKey& key, const IOOptions& i
         relative << "/" << centre.y << "," << centre.x;
         relative << "?zl=" << zoom;
         relative << "&o=json";
-        if (apiKey.has_value())
-            relative << "&key=" << apiKey.value();
+        relative << "&key=" << apiKey.value();
 
         URI metadataURI(imageryMetadataUrl->full() + relative.str(), imageryMetadataUrl->context());
 
@@ -138,7 +148,7 @@ BingImageLayer::createImageImplementation(const TileKey& key, const IOOptions& i
     if (image)
         return GeoImage(image, key.extent());
     else
-        return StatusError;
+        return Status(Status::ResourceUnavailable);
 }
 
 #endif // ROCKY_HAS_BING

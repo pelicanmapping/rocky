@@ -120,7 +120,7 @@ AzureImageLayer::createImageImplementation(const TileKey& key, const IOOptions& 
     if (image)
         return GeoImage(image, key.extent());
     else
-        return StatusError;
+        return Status(Status::ResourceUnavailable);
 }
 
 #endif // ROCKY_HAS_AZURE

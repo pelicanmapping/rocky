@@ -679,7 +679,7 @@ TMS::Driver::open(
     // Make sure we've established a profile by this point:
     if (!profile.valid())
     {
-        return Status::Error("Failed to establish a profile for " + uri.full());
+        return Status("Failed to establish a profile for " + uri.full());
     }
 
     // TileMap and profile are valid at this point. Build the tile sets.

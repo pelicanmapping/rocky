@@ -5,12 +5,12 @@
  */
 #pragma once
 #include "Common.h"
+#include "Status.h"
 
 //#if !defined(ROCKY_LIBRARY) && !defined(ROCKY_EXPOSE_JSON_FUNCTIONS)
 //#error json.h is an internal header file; do not include it directly :)
 //#endif
 
-#include "optional.h"
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
@@ -42,7 +42,7 @@ namespace ROCKY_NAMESPACE
     // NOTE: try/catch is disabled here so we can make sure all our
     // json code is safe. If it throws exceptions that means we are
     // doing something wrong
-#if 0
+#if 1
 #define JSON_TRY try
 #define JSON_CATCH catch(...)
 #else
@@ -50,12 +50,25 @@ namespace ROCKY_NAMESPACE
 #define JSON_CATCH else
 #endif
 
-    inline json parse_json(const std::string& input) {
+    //! extent json with a status so we can check for parsing errors
+    struct json_parse_result : public json
+    {
+        Status status;
+        json_parse_result() : json(), status(StatusOK) {}
+        json_parse_result(const json& j) : json(j), status(StatusOK) {}
+        json_parse_result(const Status& s) : json(), status(s) {}
+        json_parse_result(const json& j, const Status& s) : json(j), status(s) {}
+    };
+
+
+    inline json_parse_result parse_json(const std::string& input) {
         if (!input.empty()) {
             JSON_TRY {
                 return json::parse(input);
             }
-            JSON_CATCH{ }
+            JSON_CATCH {
+                return Status("JSON parsing error");
+            }
         }
         return json::object();
     }

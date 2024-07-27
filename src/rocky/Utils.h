@@ -253,7 +253,7 @@ namespace ROCKY_NAMESPACE
         extern ROCKY_EXPORT bool writeToFile(const std::string& data, const std::string& filename);
 
         //! Reads a disk file into a string.
-        extern ROCKY_EXPORT bool readFromFile(std::string& data, const std::string& filename);
+        extern ROCKY_EXPORT Result<std::string> readFromFile(const std::string& filename);
 
         /**
         * Virtual interface for a stream compressor

@@ -34,9 +34,19 @@ void
 BingElevationLayer::construct(const JSON& conf)
 {
     setConfigKey("BingElevation");
+
     const auto j = parse_json(conf);
     get_to(j, "key", apiKey);
     get_to(j, "url", url);
+
+    // environment variable key overrides a key set in code
+    auto key = util::getEnvVar("BING_KEY");
+    if (!key.empty())
+    {
+        Log()->info(LC "Overriding API key from environment variable");
+        apiKey.clear();
+        apiKey.set_default(key);
+    }
 }
 
 JSON
@@ -87,8 +97,7 @@ BingElevationLayer::createHeightfieldImplementation(const TileKey& key, const IO
     query << "&rows=" << tileSize;
     query << "&cols=" << tileSize;
     query << "&heights=ellipsoid";
-    if (apiKey.has_value())
-        query << "&key=" << apiKey.value();
+    query << "&key=" << apiKey.value();
 
     URI dataURI(url->full() + query.str(), url->context());
 
@@ -110,8 +119,6 @@ BingElevationLayer::createHeightfieldImplementation(const TileKey& key, const IO
     heightfield->forEachHeight([&](float& point) {point = (jsonItr++)->get<float>(); });
 
     return GeoHeightfield(heightfield, key.extent());
-
-    return StatusError;
 }
 
 #endif // ROCKY_HAS_BING

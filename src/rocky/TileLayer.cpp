@@ -230,7 +230,7 @@ TileLayer::getMetadataKey(const Profile& profile) const
 void
 TileLayer::disable(const std::string& msg)
 {
-    setStatus(Status::Error(msg));
+    setStatus(Status(msg));
 }
 
 bool

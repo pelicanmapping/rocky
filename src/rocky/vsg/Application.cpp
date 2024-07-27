@@ -105,13 +105,20 @@ Application::ctor(int& argc, char** argv)
     std::string infile; 
     if (commandLine.read({ "--map" }, infile))
     {
-        JSON json;
-        if (rocky::util::readFromFile(json, infile))
+        auto map_file = rocky::util::readFromFile(infile);
+        if (map_file.status.ok())
         {
-            mapNode->map->from_json(json);
-            if (mapNode->map->layers().empty())
+            auto parse = mapNode->map->from_json(map_file.value);
+            if (parse.ok())
             {
-                Log()->warn("No layers found in map file \"" + infile + "\"");
+                if (mapNode->map->layers().empty())
+                {
+                    Log()->warn("No layers found in map file \"" + infile + "\"");
+                }
+            }
+            else
+            {
+                Log()->warn("Failed to parse JSON from file \"" + infile + "\"");
             }
         }
         else

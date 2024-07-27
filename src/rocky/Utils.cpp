@@ -452,28 +452,39 @@ rocky::util::writeToFile(const std::string& data, const std::string& filename)
     return true;
 }
 
-bool
-rocky::util::readFromFile(std::string& data, const std::string& filename)
+Result<std::string>
+rocky::util::readFromFile(const std::string& filename)
 {
     std::ifstream in(filename, std::ios_base::binary);
     if (in.fail())
-        return false;
+        return Status(Status::ResourceUnavailable);
     std::stringstream buf;
     buf << in.rdbuf();
-    data = buf.str();
+    auto data = buf.str();
     in.close();
-    return true;
+    return data;
+}
+
+namespace
+{
+    inline std::string _getEnvVar(const std::string& name)
+    {
+        char value[256];
+        size_t value_len = 0;
+        if (::getenv_s(&value_len, value, name.c_str()) == 0)
+            return value;
+        else
+            return {};
+    }
 }
 
 std::string
 rocky::util::getEnvVar(const char* name)
 {
-    std::string result;
-    char value[256];
-    size_t value_len = 0;
-    if (::getenv_s(&value_len, value, name) == 0)
+    auto result = _getEnvVar(name);
+    if (result.empty())
     {
-        result = value;
+        result = _getEnvVar("ROCKY_" + std::string(name));
     }
     return result;
 }

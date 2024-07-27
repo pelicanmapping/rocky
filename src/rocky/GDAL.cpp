@@ -801,8 +801,7 @@ GDAL::Driver::open(
 
         if (!_profile.valid())
         {
-            return Status::Error(
-                "Cannot create projected Profile from dataset's warped spatial reference WKT: " + warpedSRSWKT);
+            return Status("Cannot create projected Profile from dataset's warped spatial reference WKT: " + warpedSRSWKT);
         }
     }
 
