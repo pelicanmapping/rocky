@@ -71,6 +71,7 @@ $(function() {
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_u_r_i-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -145,6 +146,12 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="memitem:a56c2389cc0401b7960afbfd448b22a8a"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_u_r_i.html#a56c2389cc0401b7960afbfd448b22a8a">urlEncode</a> (const std::string &amp;value)</td></tr>
 <tr class="separator:a56c2389cc0401b7960afbfd448b22a8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:a7e539c1f010715925c70fade147039b3"><td class="memItemLeft" align="right" valign="top"><a id="a7e539c1f010715925c70fade147039b3"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>findRotation</b> ()</td></tr>
+<tr class="separator:a7e539c1f010715925c70fade147039b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:a6826225500057d07111c8cad387a82d1"><td class="memItemLeft" align="right" valign="top"><a id="a6826225500057d07111c8cad387a82d1"></a>
@@ -153,18 +160,18 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_baseURI</b></
 <tr class="memitem:ac1a54fb01535469ffcc032e2ffdff387"><td class="memItemLeft" align="right" valign="top"><a id="ac1a54fb01535469ffcc032e2ffdff387"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>_fullURI</b></td></tr>
 <tr class="separator:ac1a54fb01535469ffcc032e2ffdff387"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a411bb01aa61f78d88228cee58d0f10a9"><td class="memItemLeft" align="right" valign="top"><a id="a411bb01aa61f78d88228cee58d0f10a9"></a>
+std::string::size_type&#160;</td><td class="memItemRight" valign="bottom"><b>_r0</b> = std::string::npos</td></tr>
+<tr class="separator:a411bb01aa61f78d88228cee58d0f10a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1fa1bd3d13712eb25d44b1aab02f5c6"><td class="memItemLeft" align="right" valign="top"><a id="ab1fa1bd3d13712eb25d44b1aab02f5c6"></a>
+std::string::size_type&#160;</td><td class="memItemRight" valign="bottom"><b>_r1</b> = std::string::npos</td></tr>
+<tr class="separator:ab1fa1bd3d13712eb25d44b1aab02f5c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3afa67b1644431299bd060112ee0ca77"><td class="memItemLeft" align="right" valign="top"><a id="a3afa67b1644431299bd060112ee0ca77"></a>
 <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_u_r_i_context.html">URIContext</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_context</b></td></tr>
 <tr class="separator:a3afa67b1644431299bd060112ee0ca77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Represents the location of a resource, providing the raw (original, possibly relative) and absolute forms.</p>
-<p><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_u_r_i.html">URI</a> is serializable and may be used in an earth file, like in the following example. Note that in earth files, the <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_u_r_i.html">URI</a> is actually called "url"; this is simply because of an old convention and we wish to avoid breaking backwards compatibility.</p>
-<p>&lt;url&gt;../path/relative/to/earth/file&lt;/url&gt;</p>
-<p>Note also that a relative <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_u_r_i.html">URI</a> will be relative to the location of the parent resource (usually the earth file itself).</p>
-<p>You can also specify osgDB plugin options; for example:</p>
-<p>&lt;url options_string="JPEG_QUALITY 60"&gt;../path/to/image.jpg&lt;/url&gt;</p>
-<p>Of course, options are particular to OSG plugins, so please consult the code for your plugin for more information. </p>
+<div class="textblock"><p>Represents the location of a resource, providing the raw (original, possibly relative) and absolute forms. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a0a46da1063512f40cd09aec21d1fc99c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0a46da1063512f40cd09aec21d1fc99c">&#9670;&nbsp;</a></span>base()</h2>
