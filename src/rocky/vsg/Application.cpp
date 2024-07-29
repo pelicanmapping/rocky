@@ -61,6 +61,23 @@ Application::ctor(int& argc, char** argv)
         exit(0);
     }
 
+    if (commandLine.read({ "--help" }))
+    {
+        std::cout
+            << "rocky " << ROCKY_VERSION_STRING << std::endl
+            << argv[0] << std::endl
+            << "    [--map <filename>]       // load a JSON map file" << std::endl
+            << "    [--earthfile <filename>] // import an osgEarth earth file" << std::endl
+            << "    [--sky]                  // install a sky lighting model" << std::endl
+            << "    [--version]              // print the version" << std::endl
+            << "    [--verison-all]          // print all dependency versions" << std::endl
+            << "    [--debug]                // activate the Vulkan debug validation layer" << std::endl
+            << "    [--api]                  // activate the Vulkan API validation layer (mega-verbose)" << std::endl
+            ;
+
+        exit(0);
+    }
+
     root = vsg::Group::create();
 
     mainScene = vsg::Group::create();
@@ -317,8 +334,11 @@ Application::frame()
 
     // run through the viewer's update operations queue; this includes
     // update ops initialized by rocky (e.g. terrain tile merges) and
-    // anything dispatched by calling runtime().runDuringUpdate().
+    // anything dispatched by calling onNextUpdate()
     viewer->update();
+
+    if (!viewer->active())
+        return false;
 
     // integrate any compile results that may be pending
     instance.runtime().update();

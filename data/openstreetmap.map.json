@@ -1,0 +1,11 @@
+{
+    "name" : "OpenStreetMap Example",
+    "layers": [
+        {
+            "name": "OpenStreetMap Imagery",
+            "profile": "spherical-mercator",
+            "uri" : "https://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png",
+            "type": "TMSImage"
+        }
+    ]
+}

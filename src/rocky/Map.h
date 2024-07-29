@@ -95,7 +95,6 @@ namespace ROCKY_NAMESPACE
         void removeCallback(UID uid);
 
     protected:
-        optional<std::string> _name;
         optional<std::string> _profileLayer;
 
     private:

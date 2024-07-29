@@ -1,0 +1,22 @@
+{
+    "name" : "Bing Maps Example",
+    "layers": [
+        {
+            "imagery_set": "Aerial",
+            "key": "<your key here>",
+            "name": "Bing Imagery",
+            "profile": {
+                "extent": {
+                    "srs": "spherical-mercator",
+                    "xmax": 20037508.34278925,
+                    "xmin": -20037508.34278925,
+                    "ymax": 20037508.34278925,
+                    "ymin": -20037508.34278925
+                },
+                "tx": 2,
+                "ty": 2
+            },
+            "type": "BingImage"
+        }
+    ]
+}

@@ -33,7 +33,7 @@ auto Demo_Geocoder = [](Application& app)
     {
         // Load an icon image
         auto io = app.instance.ioOptions();
-        auto image = io.services.readImageFromURI("https://github.com/gwaldron/osgearth/blob/master/data/placemark64.png?raw=true", io);
+        auto image = io.services.readImageFromURI("https://raw.githubusercontent.com/gwaldron/osgearth/master/data/placemark64.png", io);
         if (image.status.failed())
         {
             status = image.status;

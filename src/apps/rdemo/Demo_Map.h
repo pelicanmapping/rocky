@@ -17,15 +17,23 @@ auto Demo_Map = [](Application& app)
     static std::vector<bool> layerExpanded;
 
     // Display the map's profile
-    auto& profile = app.mapNode->map->profile();
-    if (profile.valid())
+    if (ImGuiLTable::Begin("map"))
     {
-        if (!profile.wellKnownName().empty())
-            ImGui::Text("Profile: %s", profile.wellKnownName().c_str());
-        else {
-            ImGui::Text("Profile:");
-            ImGui::Text("%s", profile.to_json().c_str());
+        if (!app.mapNode->map->name().empty())
+        {
+            ImGuiLTable::Text("Name:", app.mapNode->map->name().c_str());
         }
+
+        auto& profile = app.mapNode->map->profile();
+        if (profile.valid())
+        {
+            if (!profile.wellKnownName().empty())
+                ImGuiLTable::Text("Profile:", profile.wellKnownName().c_str());
+            else
+                ImGuiLTable::TextWrapped("Profile:", profile.to_json().c_str());
+        }
+
+        ImGuiLTable::End();
     }
 
     // Enumerate all the map's layers and display information about them
