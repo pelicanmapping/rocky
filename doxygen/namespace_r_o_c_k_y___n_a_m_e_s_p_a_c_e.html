@@ -145,6 +145,9 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_result.html">IOResult</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1json__parse__result.html">json_parse_result</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">extent json with a status so we can check for parsing errors  <a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1json__parse__result.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">Layer</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_collection.html">LayerCollection</a></td></tr>
@@ -161,7 +164,7 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_result.html">Result</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -322,7 +325,7 @@ using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="nam
 using&#160;</td><td class="memItemRight" valign="bottom"><b>ReadImageStreamService</b> = std::function&lt; <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_result.html">Result</a>&lt; shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt; &gt;(std::istream &amp;stream, std::string contentType, const IOOptions &amp;io)&gt;</td></tr>
 <tr class="separator:a6b1c609b56d8bfa28f43dfa3fbb9014d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1b675f9829c42c647f3d531ac81b31eb"><td class="memItemLeft" align="right" valign="top"><a id="a1b675f9829c42c647f3d531ac81b31eb"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><b>WriteImageStreamService</b> = std::function&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>(shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt; image, std::ostream &amp;stream, std::string contentType, const IOOptions &amp;io)&gt;</td></tr>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>WriteImageStreamService</b> = std::function&lt; <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>(shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt; image, std::ostream &amp;stream, std::string contentType, const IOOptions &amp;io)&gt;</td></tr>
 <tr class="separator:a1b675f9829c42c647f3d531ac81b31eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a678eeba20b9133d4d53560f0a48d8162"><td class="memItemLeft" align="right" valign="top"><a id="a678eeba20b9133d4d53560f0a48d8162"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a678eeba20b9133d4d53560f0a48d8162">CacheImpl</a> = void *</td></tr>
@@ -415,9 +418,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>to_json</b> (json &am
 <tr class="memitem:a3780bd8128befd993ace8d51d135026c"><td class="memItemLeft" align="right" valign="top"><a id="a3780bd8128befd993ace8d51d135026c"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>from_json</b> (const json &amp;j, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_proxy_settings.html">ProxySettings</a> &amp;obj)</td></tr>
 <tr class="separator:a3780bd8128befd993ace8d51d135026c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a23224ea174b2ea9bdb1c03cae5a33fb0"><td class="memItemLeft" align="right" valign="top"><a id="a23224ea174b2ea9bdb1c03cae5a33fb0"></a>
-json&#160;</td><td class="memItemRight" valign="bottom"><b>parse_json</b> (const std::string &amp;input)</td></tr>
-<tr class="separator:a23224ea174b2ea9bdb1c03cae5a33fb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50ca11aa8dbfce10ae6fd208734acaa7"><td class="memItemLeft" align="right" valign="top"><a id="a50ca11aa8dbfce10ae6fd208734acaa7"></a>
+<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1json__parse__result.html">json_parse_result</a>&#160;</td><td class="memItemRight" valign="bottom"><b>parse_json</b> (const std::string &amp;input)</td></tr>
+<tr class="separator:a50ca11aa8dbfce10ae6fd208734acaa7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65b848e1caa16b73c883f95fd74cdda5"><td class="memTemplParams" colspan="2"><a id="a65b848e1caa16b73c883f95fd74cdda5"></a>
 template&lt;class T &gt; </td></tr>
 <tr class="memitem:a65b848e1caa16b73c883f95fd74cdda5"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>set</b> (json &amp;obj, const char *name, const T &amp;var)</td></tr>
@@ -514,6 +517,21 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>to_json</b> (json &am
 <tr class="memitem:aa03e325a2b9ec97016427fb2f50e1f22"><td class="memItemLeft" align="right" valign="top"><a id="aa03e325a2b9ec97016427fb2f50e1f22"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>from_json</b> (const json &amp;j, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> &amp;obj)</td></tr>
 <tr class="separator:aa03e325a2b9ec97016427fb2f50e1f22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa5fcf1cf6955da9d6eb67030958e582c"><td class="memItemLeft" align="right" valign="top"><a id="aa5fcf1cf6955da9d6eb67030958e582c"></a>
+const <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Status_ServiceUnavailable</b> (Status::ServiceUnavailable)</td></tr>
+<tr class="separator:aa5fcf1cf6955da9d6eb67030958e582c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a46c7ddd2166c219a8c8c88f1550a0c10"><td class="memItemLeft" align="right" valign="top"><a id="a46c7ddd2166c219a8c8c88f1550a0c10"></a>
+const <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Status_ResourceUnavailable</b> (Status::ResourceUnavailable)</td></tr>
+<tr class="separator:a46c7ddd2166c219a8c8c88f1550a0c10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac7728a7f64316ddd6cace71c7d559c13"><td class="memItemLeft" align="right" valign="top"><a id="ac7728a7f64316ddd6cace71c7d559c13"></a>
+const <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Status_ConfigurationError</b> (Status::ConfigurationError)</td></tr>
+<tr class="separator:ac7728a7f64316ddd6cace71c7d559c13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f8aa8d0074ea0c668f0d598ddb665fe"><td class="memItemLeft" align="right" valign="top"><a id="a0f8aa8d0074ea0c668f0d598ddb665fe"></a>
+const <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Status_AssertionFailure</b> (Status::AssertionFailure)</td></tr>
+<tr class="separator:a0f8aa8d0074ea0c668f0d598ddb665fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51db8b113fda70870ed821903693cb9d"><td class="memItemLeft" align="right" valign="top"><a id="a51db8b113fda70870ed821903693cb9d"></a>
+const <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Status_GeneralError</b> (Status::GeneralError)</td></tr>
+<tr class="separator:a51db8b113fda70870ed821903693cb9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:accff5600656583324ffa42bebb6acbc0"><td class="memItemLeft" align="right" valign="top"><a id="accff5600656583324ffa42bebb6acbc0"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>to_json</b> (json &amp;j, const Distance &amp;obj)</td></tr>
 <tr class="separator:accff5600656583324ffa42bebb6acbc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -592,12 +610,15 @@ Variables</h2></td></tr>
 <tr class="memitem:ac0c80bb84731ffa5ae9b525a0badebc6"><td class="memItemLeft" align="right" valign="top"><a id="ac0c80bb84731ffa5ae9b525a0badebc6"></a>
 constexpr float&#160;</td><td class="memItemRight" valign="bottom"><b>NO_DATA_VALUE</b> = -FLT_MAX</td></tr>
 <tr class="separator:ac0c80bb84731ffa5ae9b525a0badebc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6566ecbde9008f8b259ecb42f9a12c8c"><td class="memItemLeft" align="right" valign="top"><a id="a6566ecbde9008f8b259ecb42f9a12c8c"></a>
-ROCKY_EXPORT const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><b>StatusOK</b></td></tr>
-<tr class="separator:a6566ecbde9008f8b259ecb42f9a12c8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a35e0b994c4c24f6becce3aa21fe2e126"><td class="memItemLeft" align="right" valign="top"><a id="a35e0b994c4c24f6becce3aa21fe2e126"></a>
-ROCKY_EXPORT const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><b>StatusError</b> { rocky::Status::GeneralError }</td></tr>
-<tr class="separator:a35e0b994c4c24f6becce3aa21fe2e126"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93ca9f500d6d7274a5a5f8aebace8a85"><td class="memItemLeft" align="right" valign="top">const std::string&#160;</td><td class="memItemRight" valign="bottom"><b>StatusText</b> []</td></tr>
+<tr class="separator:a93ca9f500d6d7274a5a5f8aebace8a85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac536fb6271554c64879f43568baba1dc"><td class="memItemLeft" align="right" valign="top"><a id="ac536fb6271554c64879f43568baba1dc"></a>
+const <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#ac536fb6271554c64879f43568baba1dc">Status_OK</a></td></tr>
+<tr class="memdesc:ac536fb6271554c64879f43568baba1dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global convenience objects. <br /></td></tr>
+<tr class="separator:ac536fb6271554c64879f43568baba1dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac197ec682c366792c19b4913799a3823"><td class="memItemLeft" align="right" valign="top"><a id="ac197ec682c366792c19b4913799a3823"></a>
+const <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><b>StatusOK</b></td></tr>
+<tr class="separator:ac197ec682c366792c19b4913799a3823"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2cdc382cb3fe948b17c14c368aa316c0"><td class="memItemLeft" align="right" valign="top"><a id="a2cdc382cb3fe948b17c14c368aa316c0"></a>
 constexpr int&#160;</td><td class="memItemRight" valign="bottom"><b>VSG_VIEW_DEPENDENT_DATA_SET</b> = 1</td></tr>
 <tr class="separator:a2cdc382cb3fe948b17c14c368aa316c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -665,6 +686,29 @@ constexpr int&#160;</td><td class="memItemRight" valign="bottom"><b>VSG_VIEW_DEP
 </div><div class="memdoc">
 <p>How to interpolate points along a line segment on a geodetic map </p>
 
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="a93ca9f500d6d7274a5a5f8aebace8a85"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a93ca9f500d6d7274a5a5f8aebace8a85">&#9670;&nbsp;</a></span>StatusText</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::string ROCKY_NAMESPACE::StatusText[]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">        <span class="stringliteral">&quot;No error&quot;</span>,</div>
+<div class="line">        <span class="stringliteral">&quot;Resource unavailable&quot;</span>,</div>
+<div class="line">        <span class="stringliteral">&quot;Service unavailable&quot;</span>,</div>
+<div class="line">        <span class="stringliteral">&quot;Configuration error&quot;</span>,</div>
+<div class="line">        <span class="stringliteral">&quot;Assertion failure&quot;</span>,</div>
+<div class="line">        <span class="stringliteral">&quot;General error&quot;</span></div>
+<div class="line">    }</div>
+</div><!-- fragment -->
 </div>
 </div>
 </div><!-- contents -->

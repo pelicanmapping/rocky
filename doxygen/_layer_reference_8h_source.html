@@ -115,7 +115,7 @@ $(function() {
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;                &amp;&amp; !_externalLayerName.has_value();</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        }</div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; </div>
-<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#a083bb7d0b96d09dc7b57f7fe68811211">   59</a></span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#a083bb7d0b96d09dc7b57f7fe68811211">open</a>(<span class="keyword">const</span> IOOptions* io)</div>
+<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#a083bb7d0b96d09dc7b57f7fe68811211">   59</a></span>&#160;        <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#a083bb7d0b96d09dc7b57f7fe68811211">open</a>(<span class="keyword">const</span> IOOptions* io)</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        {</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;            <span class="keywordflow">if</span> (_embeddedOptions.has_value())</div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;            {</div>
@@ -123,7 +123,7 @@ $(function() {
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;                shared_ptr&lt;T&gt; typedLayer = std::dynamic_pointer_cast&lt;T&gt;(layer);</div>
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;                <span class="keywordflow">if</span> (typedLayer)</div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;                {</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;                    <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&amp; layerStatus = typedLayer-&gt;open(io);</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;                    <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&amp; layerStatus = typedLayer-&gt;open(io);</div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;                    <span class="keywordflow">if</span> (layerStatus.failed())</div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;                    {</div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;                        <span class="keywordflow">return</span> layerStatus;</div>
@@ -133,7 +133,7 @@ $(function() {
 <div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;            }</div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;            <span class="keywordflow">else</span> <span class="keywordflow">if</span> (_layer &amp;&amp; !_layer-&gt;isOpen())</div>
 <div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;            {</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;                <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&amp; layerStatus = _layer-&gt;open(io);</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;                <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&amp; layerStatus = _layer-&gt;open(io);</div>
 <div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;                <span class="keywordflow">if</span> (layerStatus.failed())</div>
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;                {</div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;                    <span class="keywordflow">return</span> layerStatus;</div>
@@ -259,8 +259,8 @@ $(function() {
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference_html_aeb7edfbc842111370b5ef82aa165a76f"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#aeb7edfbc842111370b5ef82aa165a76f">ROCKY_NAMESPACE::LayerReference::getLayer</a></div><div class="ttdeci">shared_ptr&lt; T &gt; getLayer() const</div><div class="ttdoc">Contained layer object.</div><div class="ttdef"><b>Definition:</b> LayerReference.h:43</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference_html_aee5c4e5d3f54a3e7702dcbc55a7bced9"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#aee5c4e5d3f54a3e7702dcbc55a7bced9">ROCKY_NAMESPACE::LayerReference::isSetByUser</a></div><div class="ttdeci">bool isSetByUser() const</div><div class="ttdef"><b>Definition:</b> LayerReference.h:50</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">ROCKY_NAMESPACE::Map</a></div><div class="ttdef"><b>Definition:</b> Map.h:28</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">ROCKY_NAMESPACE::Status</a></div><div class="ttdef"><b>Definition:</b> Status.h:15</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">ROCKY_NAMESPACE::Status</a></div><div class="ttdef"><b>Definition:</b> Status.h:24</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">ROCKY_NAMESPACE::optional&lt; TypedOptions &gt;</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
