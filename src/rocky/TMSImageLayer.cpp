@@ -101,28 +101,5 @@ TMSImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io
         return r.status;
 }
 
-#if 0
-Status
-TMSImageLayer::writeImageImplementation(const TileKey& key, const osg::Image* image, ProgressCallback* progress) const
-{
-    if (!isWritingRequested())
-        return Status::ServiceUnavailable;
-
-    bool ok = _driver.write(
-        options().url().get(),
-        key,
-        image,
-        options().tmsType().get() == "google",
-        progress,
-        getReadOptions());
-
-    if (!ok)
-    {
-        return Status::ServiceUnavailable;
-    }
-
-    return STATUS_OK;
-}
-#endif
 
 #endif // ROCKY_HAS_TMS

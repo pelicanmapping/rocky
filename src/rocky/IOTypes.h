@@ -63,6 +63,7 @@ namespace ROCKY_NAMESPACE
         WriteImageStreamService writeImageToStream;
         CacheService cache;
         shared_ptr<ContentCache> contentCache = std::make_shared<ContentCache>(128);
+        std::shared_ptr<util::Gate<std::string>> uriGate = std::make_shared<util::Gate<std::string>>();
     };
 
     // User options passed along with an IO context.

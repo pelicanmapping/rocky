@@ -40,23 +40,6 @@ namespace ROCKY_NAMESPACE
     /**
      * Represents the location of a resource, providing the raw (original, possibly
      * relative) and absolute forms.
-     *
-     * URI is serializable and may be used in an earth file, like in the following
-     * example. Note that in earth files, the URI is actually called "url"; this is
-     * simply because of an old convention and we wish to avoid breaking backwards
-     * compatibility.
-     *
-     *   <url>../path/relative/to/earth/file</url>
-     *
-     * Note also that a relative URI will be relative to the location of the
-     * parent resource (usually the earth file itself).
-     *
-     * You can also specify osgDB plugin options; for example:
-     *
-     *   <url options_string="JPEG_QUALITY 60">../path/to/image.jpg</url>
-     *
-     * Of course, options are particular to OSG plugins, so please consult the
-     * code for your plugin for more information.
      */
     class ROCKY_EXPORT URI
     {
@@ -125,11 +108,17 @@ namespace ROCKY_NAMESPACE
 
     public:
 
-        bool operator < (const URI& rhs) const { return _fullURI < rhs._fullURI; }
+        bool operator < (const URI& rhs) const { 
+            return _fullURI < rhs._fullURI;
+        }
 
-        bool operator == (const URI& rhs) const { return _fullURI.compare(rhs._fullURI) == 0; }
+        bool operator == (const URI& rhs) const {
+            return _fullURI.compare(rhs._fullURI) == 0;
+        }
 
-        bool operator != (const URI& rhs) const { return _fullURI.compare(rhs._fullURI) != 0; }
+        bool operator != (const URI& rhs) const {
+            return _fullURI.compare(rhs._fullURI) != 0;
+        }
 
 
     public: // Static convenience methods
@@ -140,6 +129,9 @@ namespace ROCKY_NAMESPACE
     protected:
         std::string _baseURI;
         std::string _fullURI;
+        std::string::size_type _r0 = std::string::npos, _r1 = std::string::npos;
         URIContext _context;
+
+        void findRotation();
     };
 }

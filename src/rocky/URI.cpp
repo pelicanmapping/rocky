@@ -279,15 +279,37 @@ URI::URI()
 URI::URI(const URI& rhs) :
     _baseURI(rhs._baseURI),
     _fullURI(rhs._fullURI),
+    _r0(rhs._r0),
+    _r1(rhs._r1),
     _context(rhs._context)
 {
     //nop
+}
+
+void
+URI::findRotation()
+{
+    if (isRemote())
+    {
+        auto i0 = _fullURI.find_first_of('[');
+        if (i0 != std::string::npos)
+        {
+            auto i1 = _fullURI.find_first_of(']', i0);
+            if (i1 != std::string::npos)
+            {
+                _r0 = i0;
+                _r1 = i1;
+            }
+        }
+    }
 }
 
 URI::URI(const std::string& location)
 {
     _baseURI = location;
     _fullURI = location;
+
+    findRotation();
 }
 
 URI::URI(const std::string& location, const URIContext& context)
@@ -335,11 +357,16 @@ URI::URI(const std::string& location, const URIContext& context)
             _fullURI = protocol + _fullURI;
         }
     }
+
+    findRotation();
 }
 
 IOResult<Content>
 URI::read(const IOOptions& io) const
 {
+    // protect against multiple threads trying to read the same URI at the same time
+    util::ScopedGate<std::string> gate(*io.services.uriGate.get(), full());
+
     auto cached = io.services.contentCache->get(full());
     if (cached.status.ok())
     {
@@ -371,7 +398,18 @@ URI::read(const IOOptions& io) const
 
     else if (containsServerAddress(full()))
     {
-        HTTPRequest request{ full() };
+        // resolve a rotation:
+        static int rotator = 0;
+        std::string actual_url = full();
+        if (_r0 != std::string::npos && _r1 != std::string::npos)
+        {
+            util::replace_in_place(
+                actual_url,
+                actual_url.substr(_r0, _r1 - _r0 + 1),
+                actual_url.substr(_r0 + 1 + (rotator++ % (_r1 - _r0 - 1)), 1));
+        }
+
+        HTTPRequest request{ actual_url };
         auto r = http_get(request, io);
         if (r.status.failed())
         {
@@ -386,8 +424,8 @@ URI::read(const IOOptions& io) const
 
         if (contentType.empty())
         {
-            auto p = full().find_first_of('?');
-            auto url_path = p != std::string::npos ? full().substr(0, p) : full();
+            auto p = actual_url.find_first_of('?');
+            auto url_path = p != std::string::npos ? actual_url.substr(0, p) : actual_url;
             contentType = inferContentTypeFromFileExtension(url_path);
         }
 
@@ -424,7 +462,6 @@ URI::urlEncode(const std::string& value)
 {
     return httplib::detail::encode_url(value);
 }
-
 
 #include "json.h"
 namespace ROCKY_NAMESPACE

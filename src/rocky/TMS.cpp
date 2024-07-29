@@ -384,11 +384,11 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
 
     std::string working = filename;
 
-    if (!rotateString.empty())
-    {
-        std::size_t index = (++rotateIter) % (rotateString.size() - 2);
-        util::replace_in_place(working, rotateString, rotateString.substr(index + 1, 1));
-    }
+    //if (!rotateString.empty())
+    //{
+    //    std::size_t index = (++rotateIter) % (rotateString.size() - 2);
+    //    util::replace_in_place(working, rotateString, rotateString.substr(index + 1, 1));
+    //}
 
     bool sub = working.find('{') != working.npos;
 
