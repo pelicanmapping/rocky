@@ -68,8 +68,8 @@ BingImageLayer::openImplementation(const IOOptions& io)
     if (parent.failed())
         return parent;
 
-    _profile = Profile(SRS::SPHERICAL_MERCATOR, Profile::SPHERICAL_MERCATOR.extent().bounds(), 2, 2);
-    setDataExtents({ _profile->extent() });
+    setProfile(Profile(SRS::SPHERICAL_MERCATOR, Profile::SPHERICAL_MERCATOR.extent().bounds(), 2, 2));
+    setDataExtents({ profile().extent() });
 
     _tileURICache = std::make_unique<TileURICache>();
 
@@ -90,8 +90,6 @@ BingImageLayer::closeImplementation()
 Result<GeoImage>
 BingImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io) const
 {
-    ROCKY_PROFILE_FUNCTION();
-
     auto imageURI = _tileURICache->get(key);
 
     if (!imageURI.has_value())
@@ -131,7 +129,13 @@ BingImageLayer::createImageImplementation(const TileKey& key, const IOOptions& i
     }
 
     if (imageURI->status.failed())
+    {
+        if (imageURI->status.message == "Unauthorized")
+        {
+            setStatus(imageURI->status);
+        }
         return imageURI->status;
+    }
 
     auto fetch = imageURI->value.read(io);
     if (fetch.status.failed())
