@@ -174,34 +174,16 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
 shared_ptr<Image>
 ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 {
-    shared_ptr<CompositeImage> output;
+    std::shared_ptr<CompositeImage> output;
 
-    // Collect the rasters for each of the intersecting tiles.
-    std::vector<GeoImage> source_list;
+    // Map the key's LOD to the target profile's LOD.
+    unsigned targetLOD = profile().getEquivalentLOD(key.profile(), key.levelOfDetail());
 
-    // Determine the intersecting keys
+    // Find the set of keys that covers the same area as in input key in our target profile.
     std::vector<TileKey> intersectingKeys;
-    unsigned targetLOD;
-    bool anyDataAtTargetLOD = false;
+    key.getIntersectingKeys(profile(), intersectingKeys);
 
-    // TODO: This will ensure that enough data is availble to fill any gaps in the tile
-    // at the requested LOD by "falling back" to lower LODs. This is a temporary solution
-    // thought b/c although it works, it will end up creating a lot of extra image tiles
-    // that don't get used. A better approach will be to request data on demand as we go
-    // or to maange a spatial index of sources to ensure full coverage. -gw 6/17/24
-    if (key.levelOfDetail() > 0u)
-    {
-        targetLOD = profile().getEquivalentLOD(key.profile(), key.levelOfDetail());
-        TileKey currentKey = key;
-        while (currentKey.levelOfDetail() > 0u)
-        {
-            std::vector<TileKey> intermediate;
-            currentKey.getIntersectingKeys(profile(), intermediate);
-            intersectingKeys.insert(intersectingKeys.end(), intermediate.begin(), intermediate.end());
-            currentKey.makeParent();
-        }
-    }
-
+#if 0 // Re-evaluate this later if needed (gw)
     else
     {
         // LOD is zero - check whether the LOD mapping went out of range, and if so,
@@ -214,13 +196,12 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 
         while (numTilesThatMayHaveData == 0u && intersectionLOD >= 0)
         {
-            intersectingKeys.clear();
-
+            std::vector<TileKey> temp;
             TileKey::getIntersectingKeys(
                 key.extent(),
                 intersectionLOD,
                 profile(),
-                intersectingKeys);
+                temp);
 
             for (auto& layerKey : intersectingKeys)
             {
@@ -235,55 +216,75 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 
         targetLOD = intersectionLOD;
     }
+#endif
 
-    // collect raster for each intersecting key
+    // collect raster data for each intersecting key, falling back on ancestor images
+    // if none are available at the target LOD.
+    using KeyedImage = std::pair<TileKey, GeoImage>;
+    std::vector<KeyedImage> sources;
+
     if (intersectingKeys.size() > 0)
     {
-        for (auto& layerKey : intersectingKeys)
-        {
-            if (isKeyInLegalRange(layerKey))
-            {
-                auto cached = (*_dependencyCache)[layerKey];
-                if (cached)
-                {
-                    source_list.emplace_back(cached, layerKey.extent());
-                }
-                else
-                {
-                    auto result = createImageImplementation_internal(layerKey, io);
+        bool hasAtLeastOneSourceAtTargetLOD = false;
 
-                    if (result.status.ok() && result.value.valid())
-                    {
-                        cached = _dependencyCache->put(layerKey, result.value.image());
-                        source_list.push_back(result.value);
-                        if (layerKey.levelOfDetail() == targetLOD)
-                            anyDataAtTargetLOD = true;
-                    }
+        for (auto& intersectingKey : intersectingKeys)
+        {
+            TileKey subKey = intersectingKey;
+            Result<GeoImage> subImage;
+            while (subKey.valid() && !subImage.status.ok())
+            {
+                subImage = createImageImplementation_internal(subKey, io);
+                if (subImage.status.failed())
+                    subKey.makeParent();
+
+                if (io.canceled())
+                    return {};
+            }
+
+            if (subImage.status.ok())
+            {
+                // got a valid image, so add it to our sources collection:
+                sources.emplace_back(subKey, subImage.value);
+
+                if (subKey.levelOfDetail() == targetLOD)
+                {
+                    hasAtLeastOneSourceAtTargetLOD = true;
                 }
             }
         }
 
-        // If we actually got data, resample/reproject it to match the incoming TileKey's extents.
-        if (anyDataAtTargetLOD)
+        // If we actually got at least one piece of usable data,
+        // move ahead and build a mosaic of all sources.
+        if (hasAtLeastOneSourceAtTargetLOD)
         {
             unsigned width = 0;
             unsigned height = 0;
-            auto keyExtent = key.extent();
 
-            for (auto& source : source_list)
+            // sort the sources by LOD (highest first).
+            std::sort(
+                sources.begin(), sources.end(),
+                [](const KeyedImage& lhs, const KeyedImage& rhs) {
+                    return lhs.first.levelOfDetail() > rhs.first.levelOfDetail();
+                });
+
+            // output size is the max of all the source sizes.
+            for (auto iter : sources)
             {
+                auto& source = iter.second;
                 width = std::max(width, source.image()->width());
                 height = std::max(height, source.image()->height());
             }
 
             // assume all tiles to mosaic are in the same SRS.
-            SRSOperation xform = keyExtent.srs().to(source_list[0].srs());
+            SRSOperation xform = key.extent().srs().to(sources[0].second.srs());
 
             // new output:
             output = CompositeImage::create(Image::R8G8B8A8_UNORM, width, height);
-            output->dependencies.reserve(source_list.size());
-            for (auto& source : source_list)
-                output->dependencies.push_back(source.image());
+
+            // Cache pointers to the source images that mosaic to create this image.
+            output->dependencies.reserve(sources.size());
+            for (auto& source : sources)
+                output->dependencies.push_back(source.second.image());
 
             // Clean up orphaned entries any time a tile destructs.
             output->cleanupOperation = [captured{ std::weak_ptr(_dependencyCache) }, key]() {
@@ -292,7 +293,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                     cache->clean();
                 };
 
-            // working set of points. it's much faster to xform an entire vector all at once.
+            // Working set of points. it's much faster to xform an entire vector all at once.
             std::vector<glm::dvec3> points;
             points.assign(width * height, { 0, 0, 0 });
 
@@ -315,9 +316,11 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 
             // transform the sample points to the SRS of our source data tiles:
             if (xform.valid())
+            {
                 xform.transformArray(&points[0], points.size());
+            }
 
-            //Create the new heightfield by sampling all of them.
+            // Mosaic our sources into a single output image.
             for (unsigned r = 0; r < height; ++r)
             {
                 double y = miny + (dy * (double)r);
@@ -331,12 +334,14 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                     // For each sample point, try each heightfield.  The first one with a valid elevation wins.
                     glm::fvec4 pixel(0, 0, 0, 0);
 
-                    for (unsigned k = 0; k < source_list.size(); ++k)
+                    // sources are ordered from low to high LOD, so iterater backwards.
+                    for (unsigned k = 0; k < sources.size(); ++k)
                     {
+                        auto& image = sources[k].second;
+
                         // get the elevation value, at the same time transforming it vertically into the
                         // requesting key's vertical datum.
-                        if (source_list[k].read(pixel, points[i].x, points[i].y) && 
-                            pixel.a > 0.0f)
+                        if (image.read(pixel, points[i].x, points[i].y) && pixel.a > 0.0f)
                         {
                             break;
                         }
