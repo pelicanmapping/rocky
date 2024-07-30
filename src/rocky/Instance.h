@@ -39,13 +39,12 @@ namespace ROCKY_NAMESPACE
         //! Typical use is for deserializing polymorphic objects from JSON, like
         //! map layers.
         using ObjectFactory = std::function<
-            shared_ptr<Object>(
-                const std::string& JSON)>;
+            shared_ptr<Object>(const std::string& JSON, const IOOptions& io)>;
 
         //! Create an object based on a name and a JSON-serialized configuration
         template<class T>
-        static shared_ptr<T> createObject(const std::string& name, const JSON& conf) {
-            return std::dynamic_pointer_cast<T>(createObjectImpl(name, conf));
+        static shared_ptr<T> createObject(const std::string& name, const std::string& JSON, const IOOptions& io) {
+            return std::dynamic_pointer_cast<T>(createObjectImpl(name, JSON, io));
         }
 
         //! Global object factory map
@@ -63,7 +62,7 @@ namespace ROCKY_NAMESPACE
         };
         shared_ptr<Implementation> _impl;
         static Status _global_status;
-        static shared_ptr<Object> createObjectImpl(const std::string& name, const JSON& conf);
+        static shared_ptr<Object> createObjectImpl(const std::string& name, const std::string& JSON, const IOOptions& io);
     };
 
 

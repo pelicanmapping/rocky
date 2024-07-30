@@ -11,6 +11,7 @@
 #include <rocky/Units.h>
 #include <rocky/Threading.h>
 #include <rocky/LRUCache.h>
+#include <optional>
 
 /**
  * A collection of types used by the various I/O systems.
@@ -26,13 +27,15 @@ namespace ROCKY_NAMESPACE
     {
     };
 
-    //! Service for reading an image from a URL
+    //! Service for reading an image from a URI
     using ReadImageURIService = std::function<
         Result<shared_ptr<Image>>(const std::string& location, const IOOptions&)>;
 
+    //! Service fro reading an image from a stream
     using ReadImageStreamService = std::function<
         Result<shared_ptr<Image>>(std::istream& stream, std::string contentType, const IOOptions& io)>;
 
+    //! Service for writing an image to a stream
     using WriteImageStreamService = std::function<
         Status(shared_ptr<Image> image, std::ostream& stream, std::string contentType, const IOOptions& io)>;
 
@@ -70,10 +73,11 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT IOOptions : public Cancelable
     {
     public:
-        IOOptions();
+        IOOptions() = default;
         IOOptions(const IOOptions& rhs);
         IOOptions(Cancelable& p);
         IOOptions(const IOOptions& rhs, Cancelable& p);
+        IOOptions(const std::string& referrer);
 
         //! Access to useful services
         Services services;
@@ -85,6 +89,9 @@ namespace ROCKY_NAMESPACE
         //! Maximum number of attempts to make a network connection
         unsigned maxNetworkAttempts = 4u;
 
+        //! Referring location for an operation using these options
+        std::optional<std::string> referrer;
+
         //! Was the current operation canceled?
         inline bool canceled() const override;
 
@@ -92,7 +99,7 @@ namespace ROCKY_NAMESPACE
         IOOptions& operator = (const IOOptions& rhs);
 
     private:
-        Cancelable* _cancelable;
+        Cancelable* _cancelable = nullptr;
         std::unordered_map<std::string, std::string> _properties;
     };
 
@@ -189,8 +196,6 @@ namespace ROCKY_NAMESPACE
         std::string username;
         std::string password;
     };
-
-    using Headers = std::unordered_map<std::string,std::string>;
 
     /**
      * Convenience metadata tags

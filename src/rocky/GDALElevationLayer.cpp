@@ -13,7 +13,8 @@ using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::GDAL;
 
 ROCKY_ADD_OBJECT_FACTORY(GDALElevation,
-    [](const JSON& conf) { return GDALElevationLayer::create(conf); })
+    [](const std::string& JSON, const IOOptions& io) {
+        return GDALElevationLayer::create(JSON, io); })
 
 namespace
 {
@@ -60,21 +61,21 @@ namespace
 GDALElevationLayer::GDALElevationLayer() :
     super()
 {
-    construct({});
+    construct({}, {});
 }
 
-GDALElevationLayer::GDALElevationLayer(const JSON& conf) :
-    super(conf)
+GDALElevationLayer::GDALElevationLayer(const std::string& JSON, const IOOptions& io) :
+    super(JSON, io)
 {
-    construct(conf);
+    construct(JSON, io);
 }
 
 void
-GDALElevationLayer::construct(const JSON& conf)
+GDALElevationLayer::construct(const std::string& JSON, const IOOptions& io)
 {
     setConfigKey("GDALElevation");
-    const auto j = parse_json(conf);
-    get_to(j, "uri", _uri);
+    const auto j = parse_json(JSON);
+    get_to(j, "uri", _uri, io);
     get_to(j, "connection", _connection);
     get_to(j, "subdataset", _subDataSet);
     std::string temp;

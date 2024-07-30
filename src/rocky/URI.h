@@ -7,6 +7,7 @@
 
 #include <rocky/Common.h>
 #include <rocky/IOTypes.h>
+#include <rocky/json.h>
 
 #include <iostream>
 #include <string>
@@ -15,6 +16,8 @@ namespace ROCKY_NAMESPACE
 {
     class URI;
     class IOControl;
+
+    using Headers = std::unordered_map<std::string, std::string>;
 
     /**
      * Context for resolving relative URIs.
@@ -94,6 +97,9 @@ namespace ROCKY_NAMESPACE
         /** The dereference operator also returns the fully qualified URI, since it's a common operation. */
         const std::string& operator * () const { return _fullURI; }
 
+        //! Sets a referrer string for relative path URIs
+        void setReferrer(const std::string& value);
+
         /** Context with which this URI was created. */
         const URIContext& context() const { return _context; }
 
@@ -132,6 +138,24 @@ namespace ROCKY_NAMESPACE
         std::string::size_type _r0 = std::string::npos, _r1 = std::string::npos;
         URIContext _context;
 
+        void set(const std::string& location, const URIContext& context);
         void findRotation();
     };
+
+
+    // json specializations.
+    inline bool get_to(const json& obj, const char* name, URI& var, const IOOptions& io)
+    {
+        bool ok = get_to(obj, name, var);
+        if (ok && io.referrer.has_value())
+            var.setReferrer(io.referrer.value());
+        return ok;
+    }
+    inline bool get_to(const json& obj, const char* name, rocky::optional<URI>& var, const IOOptions& io)
+    {
+        bool ok = get_to(obj, name, var);
+        if (ok && io.referrer.has_value())
+            var->setReferrer(io.referrer.value());
+        return ok;
+    }
 }

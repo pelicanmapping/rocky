@@ -4,30 +4,37 @@
  * MIT License
  */
 #include "MBTilesImageLayer.h"
+
 #ifdef ROCKY_HAS_MBTILES
 
+#include "Instance.h"
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
 
+ROCKY_ADD_OBJECT_FACTORY(MBTilesImage,
+    [](const std::string& JSON, const IOOptions& io) {
+        return MBTilesImageLayer::create(JSON, io); })
+
+
 MBTilesImageLayer::MBTilesImageLayer() :
     super()
 {
-    construct({});
+    construct({}, {});
 }
 
-MBTilesImageLayer::MBTilesImageLayer(const JSON& conf) :
-    super(conf)
+MBTilesImageLayer::MBTilesImageLayer(const std::string& JSON, const IOOptions& io) :
+    super(JSON, io)
 {
-    construct(conf);
+    construct(JSON, io);
 }
 
 void
-MBTilesImageLayer::construct(const JSON& conf)
+MBTilesImageLayer::construct(const std::string& JSON, const IOOptions& io)
 {
     setConfigKey("MBTilesImage");
-    const auto j = parse_json(conf);
-    get_to(j, "uri", _options.uri);
+    const auto j = parse_json(JSON);
+    get_to(j, "uri", _options.uri, io);
     get_to(j, "format", _options.format);
     get_to(j, "compress", _options.compress);
 }

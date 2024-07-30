@@ -28,24 +28,24 @@ Map::Map(const Instance& instance, const IOOptions& io) :
     construct({}, io);
 }
 
-Map::Map(const Instance& instance, const JSON& conf) :
+Map::Map(const Instance& instance, const std::string& JSON) :
     _instance(instance),
     _imageLayers(this),
     _elevationLayers(this)
 {
-    construct(conf, _instance.ioOptions());
+    construct(JSON, _instance.ioOptions());
 }
 
-Map::Map(const Instance& instance, const JSON& conf, const IOOptions& io) :
+Map::Map(const Instance& instance, const std::string& JSON, const IOOptions& io) :
     _instance(instance),
     _imageLayers(this),
     _elevationLayers(this)
 {
-    construct(conf, io);
+    construct(JSON, io);
 }
 
 void
-Map::construct(const JSON& conf, const IOOptions& io)
+Map::construct(const std::string& JSON, const IOOptions& io)
 {
     // reset the revision:
     _dataModelRevision = 0;
@@ -59,7 +59,7 @@ Map::construct(const JSON& conf, const IOOptions& io)
     _elevationPool->setMap( this );
 #endif
 
-    from_json(conf);
+    from_json(JSON, io);
 
     // set a default profile if neccesary.
     if (!profile().valid())
@@ -70,7 +70,7 @@ Map::construct(const JSON& conf, const IOOptions& io)
 }
 
 Status
-Map::from_json(const JSON& input)
+Map::from_json(const JSON& input, const IOOptions& io)
 {
     auto j = parse_json(input);
     if (j.status.failed())
@@ -85,7 +85,7 @@ Map::from_json(const JSON& input)
             for (auto& j_layer : j_layers) {
                 std::string type;
                 get_to(j_layer, "type", type);
-                auto new_layer = Instance::createObject<Layer>(type, j_layer.dump());
+                auto new_layer = Instance::createObject<Layer>(type, j_layer.dump(), io);
                 if (new_layer) {
                     layers().add(new_layer);
                 }

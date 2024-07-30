@@ -753,13 +753,16 @@ TEST_CASE("IO")
 #ifdef ROCKY_HAS_TMS
 TEST_CASE("Earth File")
 {
+    std::string earthFile = "https://raw.githubusercontent.com/gwaldron/osgearth/master/tests/readymap.earth";
     EarthFileImporter importer;
-    auto result = importer.read("https://raw.githubusercontent.com/gwaldron/osgearth/master/tests/readymap.earth", {});
+    auto result = importer.read(earthFile, {});
     CHECKED_IF(result.status.ok())
     {
         Instance instance;
         auto map = Map::create(instance);
-        map->from_json(result.value);
+        IOOptions io;
+        io.referrer = earthFile;
+        map->from_json(result.value, io);
 
         auto layer1 = map->layers().withName("ReadyMap 15m Imagery");
         CHECKED_IF(layer1)

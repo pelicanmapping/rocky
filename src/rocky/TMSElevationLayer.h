@@ -22,7 +22,7 @@ namespace ROCKY_NAMESPACE
     public:
         //! Construct an empty TMS layer
         TMSElevationLayer();
-        TMSElevationLayer(const JSON&);
+        TMSElevationLayer(const std::string& JSON, const IOOptions& io);
 
         //! Destructor
         virtual ~TMSElevationLayer() { }
@@ -54,7 +54,7 @@ namespace ROCKY_NAMESPACE
 
     private:
         TMS::Driver _driver;
-        void construct(const JSON&);
+        void construct(const std::string& JSON, const IOOptions& io);
     };
 }
 

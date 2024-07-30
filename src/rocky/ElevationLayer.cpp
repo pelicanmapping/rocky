@@ -76,21 +76,21 @@ namespace
 ElevationLayer::ElevationLayer() :
     super()
 {
-    construct({});
+    construct({}, {});
 }
 
-ElevationLayer::ElevationLayer(const JSON& conf) :
-    super(conf)
+ElevationLayer::ElevationLayer(const std::string& JSON, const IOOptions& io) :
+    super(JSON)
 {
-    construct(conf);
+    construct(JSON, io);
 }
 
 void
-ElevationLayer::construct(const JSON& conf)
+ElevationLayer::construct(const std::string& JSON, const IOOptions& io)
 {
     _tileSize.set_default(257u); // override the default in TileLayer
 
-    const auto j = parse_json(conf);
+    const auto j = parse_json(JSON);
     get_to(j, "offset", _offset);
     get_to(j, "no_data_value", _noDataValue);
     get_to(j, "min_valid_value", _minValidValue);

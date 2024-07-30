@@ -16,26 +16,27 @@ using namespace ROCKY_NAMESPACE::TMS;
 #define LC "[TMS] "
 
 ROCKY_ADD_OBJECT_FACTORY(TMSImage,
-    [](const JSON& conf) { return TMSImageLayer::create(conf); })
+    [](const std::string& JSON, const IOOptions& io) {
+        return TMSImageLayer::create(JSON, io); })
 
 TMSImageLayer::TMSImageLayer() :
     super()
 {
-    construct(JSON());
+    construct({}, {});
 }
 
-TMSImageLayer::TMSImageLayer(const JSON& conf) :
-    super(conf)
+TMSImageLayer::TMSImageLayer(const std::string& JSON, const IOOptions& io) :
+    super(JSON, io)
 {
-    construct(conf);
+    construct(JSON, io);
 }
 
 void
-TMSImageLayer::construct(const JSON& conf)
+TMSImageLayer::construct(const std::string& JSON, const IOOptions& io)
 {
     setConfigKey("TMSImage");
-    const auto j = parse_json(conf);
-    get_to(j, "uri", uri);
+    const auto j = parse_json(JSON);
+    get_to(j, "uri", uri, io);
     get_to(j, "format", format);
     get_to(j, "invert_y", invertY);
 }

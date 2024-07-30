@@ -22,7 +22,7 @@ namespace ROCKY_NAMESPACE
     public:
         //! Construct an empty layer
         MBTilesElevationLayer();
-        explicit MBTilesElevationLayer(const JSON&);
+        explicit MBTilesElevationLayer(const std::string& JSON, const IOOptions& io);
 
         //! Location of the mbtiles database file
         void setURI(const URI& value) { _options.uri = value; }
@@ -57,7 +57,7 @@ namespace ROCKY_NAMESPACE
     private:
         MBTiles::Driver _driver;
         MBTiles::Options _options;
-        void construct(const JSON&);
+        void construct(const std::string& JSON, const IOOptions& io);
     };
 }
 

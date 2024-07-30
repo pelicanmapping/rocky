@@ -16,28 +16,29 @@ using namespace ROCKY_NAMESPACE::Bing;
 #define LC "[Bing] "
 
 ROCKY_ADD_OBJECT_FACTORY(BingElevation, 
-    [](const JSON& conf) { return BingElevationLayer::create(conf); })
+    [](const std::string& JSON, const IOOptions& io) { 
+        return BingElevationLayer::create(JSON, io); })
 
 BingElevationLayer::BingElevationLayer() :
     super()
 {
-    construct(JSON());
+    construct({}, {});
 }
 
-BingElevationLayer::BingElevationLayer(const JSON& conf) :
-    super(conf)
+BingElevationLayer::BingElevationLayer(const std::string& JSON, const IOOptions& io) :
+    super(JSON, io)
 {
-    construct(conf);
+    construct(JSON, io);
 }
 
 void
-BingElevationLayer::construct(const JSON& conf)
+BingElevationLayer::construct(const std::string& JSON, const IOOptions& io)
 {
     setConfigKey("BingElevation");
 
-    const auto j = parse_json(conf);
+    const auto j = parse_json(JSON);
     get_to(j, "key", apiKey);
-    get_to(j, "url", url);
+    get_to(j, "url", url, io);
 
     // environment variable key overrides a key set in code
     auto key = util::getEnvVar("BING_KEY");

@@ -20,7 +20,7 @@ namespace ROCKY_NAMESPACE
     public:
         //! Construct an empty Azure layer
         AzureImageLayer();
-        AzureImageLayer(const JSON&);
+        AzureImageLayer(const std::string& JSON, const IOOptions& io);
 
         //! Destructor
         virtual ~AzureImageLayer() { }
@@ -39,7 +39,7 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        void construct(const JSON&);
+        void construct(const std::string& JSON, const IOOptions& io);
     };
 }
 

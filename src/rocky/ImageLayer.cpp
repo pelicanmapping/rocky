@@ -55,19 +55,19 @@ namespace
 ImageLayer::ImageLayer() :
     super()
 {
-    construct({});
+    construct({}, {});
 }
 
-ImageLayer::ImageLayer(const JSON& conf) :
-    super(conf)
+ImageLayer::ImageLayer(const std::string& JSON, const IOOptions& io) :
+    super(JSON)
 {
-    construct(conf);
+    construct(JSON, io);
 }
 
 void
-ImageLayer::construct(const JSON& conf)
+ImageLayer::construct(const std::string& JSON, const IOOptions& io)
 {
-    const auto j = parse_json(conf);
+    const auto j = parse_json(JSON);
     get_to(j, "nodata_image", _noDataImageLocation);
     get_to(j, "transparent_color", _transparentColor);
     get_to(j, "texture_compression", _textureCompression);

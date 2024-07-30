@@ -17,29 +17,29 @@ using namespace ROCKY_NAMESPACE::Bing;
 #define LC "[Bing] "
 
 ROCKY_ADD_OBJECT_FACTORY(BingImage,
-    [](const JSON& conf) { return BingImageLayer::create(conf); })
+    [](const std::string& JSON, const IOOptions& io) { return BingImageLayer::create(JSON, io); })
 
 BingImageLayer::BingImageLayer() :
     super()
 {
-    construct(JSON());
+    construct({}, {});
 }
 
-BingImageLayer::BingImageLayer(const JSON& conf) :
-    super(conf)
+BingImageLayer::BingImageLayer(const std::string& JSON, const IOOptions& io) :
+    super(JSON, io)
 {
-    construct(conf);
+    construct(JSON, io);
 }
 
 void
-BingImageLayer::construct(const JSON& conf)
+BingImageLayer::construct(const std::string& JSON, const IOOptions& io)
 {
     setConfigKey("BingImage");
 
-    const auto j = parse_json(conf);
+    const auto j = parse_json(JSON);
     get_to(j, "key", apiKey);
     get_to(j, "imagery_set", imagerySet);
-    get_to(j, "imagery_metadata_api_url", imageryMetadataUrl);
+    get_to(j, "imagery_metadata_api_url", imageryMetadataUrl, io);
 
     // environment variable key overrides a key set in code
     auto key = util::getEnvVar("BING_KEY");

@@ -21,7 +21,7 @@ namespace ROCKY_NAMESPACE
     public:
         //! Construct an empty Bing layer
         BingImageLayer();
-        BingImageLayer(const JSON&);
+        BingImageLayer(const std::string& JSON, const IOOptions& io);
 
         //! Destructor
         virtual ~BingImageLayer() { }
@@ -44,7 +44,7 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        void construct(const JSON&);
+        void construct(const std::string& JSON, const IOOptions& io);
     };
 }
 

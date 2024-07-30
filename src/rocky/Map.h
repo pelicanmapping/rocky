@@ -57,7 +57,7 @@ namespace ROCKY_NAMESPACE
 
         //! Import map properties and layers from JSON data
         //! @param value JSON string to import
-        Status from_json(const JSON& value);
+        Status from_json(const JSON& value, const IOOptions& io);
 
     public:
 

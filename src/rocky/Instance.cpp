@@ -47,11 +47,11 @@ std::unordered_map<std::string, Instance::ObjectFactory>& Instance::objectFactor
 
 // static object creation function:
 shared_ptr<Object>
-Instance::createObjectImpl(const std::string& name, const JSON& conf)
+Instance::createObjectImpl(const std::string& name, const std::string& JSON, const IOOptions& io)
 {
     auto i = objectFactories().find(util::toLower(name));
     if (i != objectFactories().end())
-        return i->second(conf);
+        return i->second(JSON, io);
     return nullptr;
 }
 

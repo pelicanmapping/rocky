@@ -87,7 +87,7 @@ namespace ROCKY_NAMESPACE
         ElevationLayer();
 
         //! Deserialize (from subclass)
-        explicit ElevationLayer(const JSON&);
+        explicit ElevationLayer(const std::string& JSON, const IOOptions& io);
 
         //! Entry point for createHeightfield
         Result<GeoHeightfield> createHeightfieldInKeyProfile(
@@ -121,7 +121,7 @@ namespace ROCKY_NAMESPACE
         optional<float> _maxValidValue = FLT_MAX;
 
     private:
-        void construct(const JSON&);
+        void construct(const std::string& JSON, const IOOptions& io);
 
         shared_ptr<Heightfield> assembleHeightfield(
             const TileKey& key,

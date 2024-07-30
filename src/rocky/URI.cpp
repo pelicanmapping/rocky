@@ -286,24 +286,6 @@ URI::URI(const URI& rhs) :
     //nop
 }
 
-void
-URI::findRotation()
-{
-    if (isRemote())
-    {
-        auto i0 = _fullURI.find_first_of('[');
-        if (i0 != std::string::npos)
-        {
-            auto i1 = _fullURI.find_first_of(']', i0);
-            if (i1 != std::string::npos)
-            {
-                _r0 = i0;
-                _r1 = i1;
-            }
-        }
-    }
-}
-
 URI::URI(const std::string& location)
 {
     _baseURI = location;
@@ -313,6 +295,12 @@ URI::URI(const std::string& location)
 }
 
 URI::URI(const std::string& location, const URIContext& context)
+{
+    set(location, context);
+}
+
+void
+URI::set(const std::string& location, const URIContext& context)
 {
     std::string location_to_use = location;
 
@@ -359,6 +347,24 @@ URI::URI(const std::string& location, const URIContext& context)
     }
 
     findRotation();
+}
+
+void
+URI::findRotation()
+{
+    if (isRemote())
+    {
+        auto i0 = _fullURI.find_first_of('[');
+        if (i0 != std::string::npos)
+        {
+            auto i1 = _fullURI.find_first_of(']', i0);
+            if (i1 != std::string::npos)
+            {
+                _r0 = i0;
+                _r1 = i1;
+            }
+        }
+    }
 }
 
 IOResult<Content>
@@ -463,10 +469,18 @@ URI::urlEncode(const std::string& value)
     return httplib::detail::encode_url(value);
 }
 
+void
+URI::setReferrer(const std::string& value)
+{
+    _context.referrer = value;
+    set(_baseURI, _context);
+}
+
 #include "json.h"
 namespace ROCKY_NAMESPACE
 {
-    void to_json(json& j, const URI& obj) {
+    void to_json(json& j, const URI& obj)
+    {
         if (obj.context().referrer.empty() && obj.context().headers.empty())
         {
             j = obj.base();
@@ -489,7 +503,8 @@ namespace ROCKY_NAMESPACE
         }
     }
 
-    void from_json(const json& j, URI& obj) {
+    void from_json(const json& j, URI& obj)
+    {
         if (j.is_string())
         {
             obj = URI(get_string(j));

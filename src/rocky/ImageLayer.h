@@ -68,7 +68,7 @@ namespace ROCKY_NAMESPACE
 
         ImageLayer();
 
-        ImageLayer(const JSON&);
+        ImageLayer(const std::string& JSON, const IOOptions& io);
 
         //! Subclass can override this to write data for a tile key.
         virtual Status writeImageImplementation(
@@ -113,7 +113,7 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        void construct(const JSON&);
+        void construct(const std::string& JSON, const IOOptions& io);
 
         // Creates an image that's in the same profile as the provided key.
         Result<GeoImage> createImageInKeyProfile(

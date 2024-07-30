@@ -6,27 +6,33 @@
 #include "MBTilesElevationLayer.h"
 #ifdef ROCKY_HAS_MBTILES
 
+#include "Instance.h"
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
 
+ROCKY_ADD_OBJECT_FACTORY(MBTilesElevation,
+    [](const std::string& JSON, const IOOptions& io) {
+        return MBTilesElevationLayer::create(JSON, io); })
+
+
 MBTilesElevationLayer::MBTilesElevationLayer() :
     super()
 {
-    construct({});
+    construct({}, {});
 }
-MBTilesElevationLayer::MBTilesElevationLayer(const JSON& conf) :
-    super()
+MBTilesElevationLayer::MBTilesElevationLayer(const std::string& JSON, const IOOptions& io) :
+    super(JSON, io)
 {
-    construct(conf);
+    construct(JSON, io);
 }
 
 void
-MBTilesElevationLayer::construct(const JSON& conf)
+MBTilesElevationLayer::construct(const std::string& JSON, const IOOptions& io)
 {
     setConfigKey("MBTilesElevation");
-    const auto j = parse_json(conf);
-    get_to(j, "uri", _options.uri);
+    const auto j = parse_json(JSON);
+    get_to(j, "uri", _options.uri, io);
     get_to(j, "format", _options.format);
     get_to(j, "compress", _options.compress);
 }

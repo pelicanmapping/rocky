@@ -122,10 +122,11 @@ Application::ctor(int& argc, char** argv)
     std::string infile; 
     if (commandLine.read({ "--map" }, infile))
     {
-        auto map_file = rocky::util::readFromFile(infile);
+        auto map_file = URI(infile).read({});
+
         if (map_file.status.ok())
         {
-            auto parse = mapNode->map->from_json(map_file.value);
+            auto parse = mapNode->map->from_json(map_file.value.data, IOOptions(infile));
             if (parse.ok())
             {
                 if (mapNode->map->layers().empty())
@@ -153,7 +154,11 @@ Application::ctor(int& argc, char** argv)
         if (result.status.ok())
         {
             auto count = mapNode->map->layers().size();
-            mapNode->map->from_json(result.value);
+
+            IOOptions io;
+            io.referrer = infile;
+
+            mapNode->map->from_json(result.value, io);
 
             if (count == mapNode->map->layers().size())
             {

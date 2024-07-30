@@ -109,15 +109,15 @@ CachePolicy::usageString() const
     return "unknown";
 }
 
-IOOptions::IOOptions() :
-    _cancelable(nullptr)
-{
-    // nop
-}
-
 IOOptions::IOOptions(const IOOptions& rhs)
 {
     this->operator=(rhs);
+}
+
+IOOptions::IOOptions(const IOOptions& rhs, Cancelable& c) :
+    IOOptions(rhs)
+{
+    _cancelable = &c;
 }
 
 IOOptions::IOOptions(Cancelable& c) :
@@ -126,10 +126,8 @@ IOOptions::IOOptions(Cancelable& c) :
     //nop
 }
 
-IOOptions::IOOptions(const IOOptions& rhs, Cancelable& c) :
-    services(rhs.services),
-    _properties(rhs._properties),
-    _cancelable(&c)
+IOOptions::IOOptions(const std::string& in_referrer) :
+    referrer(in_referrer)
 {
     //nop
 }
@@ -138,6 +136,8 @@ IOOptions&
 IOOptions::operator = (const IOOptions& rhs)
 {
     services = rhs.services;
+    referrer = rhs.referrer;
+    maxNetworkAttempts = rhs.maxNetworkAttempts;
     _cancelable = rhs._cancelable;
     _properties = rhs._properties;
     return *this;

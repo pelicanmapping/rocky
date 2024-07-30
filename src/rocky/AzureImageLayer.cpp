@@ -16,25 +16,26 @@ using namespace ROCKY_NAMESPACE::Azure;
 #define LC "[Azure] "
 
 ROCKY_ADD_OBJECT_FACTORY(AzureImage,
-    [](const JSON& conf) { return AzureImageLayer::create(conf); })
+    [](const std::string& JSON, const IOOptions& io) {
+        return AzureImageLayer::create(JSON, io); })
 
 AzureImageLayer::AzureImageLayer() :
     super()
 {
-    construct(JSON());
+    construct({}, {});
 }
 
-AzureImageLayer::AzureImageLayer(const JSON& conf) :
-    super(conf)
+AzureImageLayer::AzureImageLayer(const std::string& JSON, const IOOptions& io) :
+    super(JSON, io)
 {
-    construct(conf);
+    construct(JSON, io);
 }
 
 void
-AzureImageLayer::construct(const JSON& conf)
+AzureImageLayer::construct(const std::string& JSON, const IOOptions& io)
 {
     setConfigKey("AzureImage");
-    const auto j = parse_json(conf);
+    const auto j = parse_json(JSON);
     get_to(j, "subscription_key", subscriptionKey);
     get_to(j, "tileset_id", tilesetId);
     get_to(j, "map_tile_api_url", mapTileApiUrl);
