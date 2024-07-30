@@ -6,12 +6,16 @@
 #include "GDALImageLayer.h"
 #ifdef ROCKY_HAS_GDAL
 
+#include "Instance.h"
 #include "Image.h"
 #include "Log.h"
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::GDAL;
+
+ROCKY_ADD_OBJECT_FACTORY(GDALImage,
+    [](const JSON& conf) { return GDALImageLayer::create(conf); })
 
 namespace
 {
@@ -159,16 +163,12 @@ GDALImageLayer::createImageImplementation(
 
     if (driver)
     {
-        auto image = driver->createImage(
-            key,
-            _tileSize,
-            false,
-            io);
-
-        return GeoImage(image.value, key.extent());
+        auto image = driver->createImage(key, _tileSize, false, io);
+        if (image.value)
+            return GeoImage(image.value, key.extent());
     }
 
-    return GeoImage::INVALID;
+    return Status_ResourceUnavailable;
 }
 
 #endif // ROCKY_HAS_GDAL

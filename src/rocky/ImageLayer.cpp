@@ -234,14 +234,14 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             while (subKey.valid() && !subTile.status.ok())
             {
                 subTile = createImageImplementation_internal(subKey, io);
-                if (subTile.status.failed())
+                if (subTile.status.failed() || subTile.value.image() == nullptr)
                     subKey.makeParent();
 
                 if (io.canceled())
                     return {};
             }
 
-            if (subTile.status.ok())
+            if (subTile.status.ok() && subTile.value.image())
             {
                 if (subKey.levelOfDetail() == targetLOD)
                 {

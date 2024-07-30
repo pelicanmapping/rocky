@@ -6,10 +6,14 @@
 #include "GDALElevationLayer.h"
 #ifdef ROCKY_HAS_GDAL
 
+#include "Instance.h"
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::GDAL;
+
+ROCKY_ADD_OBJECT_FACTORY(GDALElevation,
+    [](const JSON& conf) { return GDALElevationLayer::create(conf); })
 
 namespace
 {
@@ -180,7 +184,8 @@ GDALElevationLayer::createHeightfieldImplementation(
         }
     }
 
-    return GeoHeightfield::INVALID;
+    return Status_ResourceUnavailable;
+    //return GeoHeightfield::INVALID;
 }
 
 #endif // GDAL_HAS_ROCKY

@@ -1087,11 +1087,7 @@ GDAL::Driver::intersects(const TileKey& key)
 }
 
 Result<shared_ptr<Image>>
-GDAL::Driver::createImage(
-    const TileKey& key,
-    unsigned tileSize,
-    bool isCoverage,
-    const IOOptions& io)
+GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, bool isCoverage, const IOOptions& io)
 {
     if (_maxDataLevel.has_value() && key.levelOfDetail() > _maxDataLevel)
     {

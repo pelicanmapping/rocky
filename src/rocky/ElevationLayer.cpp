@@ -272,7 +272,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
         {
             TileKey subKey = intersectingKey;
             Result<GeoHeightfield> subTile;
-            while (subKey.valid() && !subTile.status.ok())
+            while (subKey.valid() && (!subTile.status.ok() || !subTile.value.heightfield()))
             {
                 subTile = createHeightfieldImplementation_internal(subKey, io);
                 if (subTile.status.failed())
@@ -282,7 +282,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
                     return {};
             }
 
-            if (subTile.status.ok())
+            if (subTile.status.ok() && subTile.value.heightfield())
             {
                 if (subKey.levelOfDetail() == targetLOD)
                 {
