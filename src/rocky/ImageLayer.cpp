@@ -257,8 +257,8 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
         // move ahead and build a mosaic of all sources.
         if (hasAtLeastOneSourceAtTargetLOD)
         {
-            unsigned width = 0;
-            unsigned height = 0;
+            unsigned cols = 0;
+            unsigned rows = 0;
 
             // sort the sources by LOD (highest first).
             std::sort(
@@ -271,15 +271,15 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             for (auto iter : sources)
             {
                 auto& source = iter.second;
-                width = std::max(width, source.image()->width());
-                height = std::max(height, source.image()->height());
+                cols = std::max(cols, source.image()->width());
+                rows = std::max(rows, source.image()->height());
             }
 
             // assume all tiles to mosaic are in the same SRS.
             SRSOperation xform = key.extent().srs().to(sources[0].second.srs());
 
             // new output:
-            output = CompositeImage::create(Image::R8G8B8A8_UNORM, width, height);
+            output = CompositeImage::create(Image::R8G8B8A8_UNORM, cols, rows);
 
             // Cache pointers to the source images that mosaic to create this image.
             output->dependencies.reserve(sources.size());
@@ -295,22 +295,21 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 
             // Working set of points. it's much faster to xform an entire vector all at once.
             std::vector<glm::dvec3> points;
-            points.assign(width * height, { 0, 0, 0 });
+            points.assign(cols*rows, { 0, 0, 0 });
 
             double minx, miny, maxx, maxy;
             key.extent().getBounds(minx, miny, maxx, maxy);
-            double dx = (maxx - minx) / (double)(width - 1);
-            double dy = (maxy - miny) / (double)(height - 1);
+            double dx = (maxx - minx) / (double)(cols);
+            double dy = (maxy - miny) / (double)(rows);
 
             // build a grid of sample points:
-            for (unsigned r = 0; r < height; ++r)
+            for (unsigned r = 0; r < rows; ++r)
             {
-                double y = miny + (dy * (double)r);
-                for (unsigned c = 0; c < width; ++c)
+                double y = miny + (0.5*dy) + (dy * (double)r);
+                for (unsigned c = 0; c < cols; ++c)
                 {
-                    double x = minx + (dx * (double)c);
-                    points[r * width + c].x = x;
-                    points[r * width + c].y = y;
+                    double x = minx + (0.5*dx) + (dx * (double)c);
+                    points[r * cols + c] = { x, y, 0.0 };
                 }
             }
 
@@ -321,15 +320,11 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             }
 
             // Mosaic our sources into a single output image.
-            for (unsigned r = 0; r < height; ++r)
+            for (unsigned r = 0; r < rows; ++r)
             {
-                double y = miny + (dy * (double)r);
-
-                for (unsigned int c = 0; c < width; ++c)
+                for (unsigned int c = 0; c < cols; ++c)
                 {
-                    double x = minx + (dx * (double)c);
-
-                    unsigned i = r * width + c;
+                    unsigned i = r * cols + c;
 
                     // For each sample point, try each heightfield.  The first one with a valid elevation wins.
                     glm::fvec4 pixel(0, 0, 0, 0);
@@ -339,8 +334,6 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                     {
                         auto& image = sources[k].second;
 
-                        // get the elevation value, at the same time transforming it vertically into the
-                        // requesting key's vertical datum.
                         if (image.read(pixel, points[i].x, points[i].y) && pixel.a > 0.0f)
                         {
                             break;
