@@ -230,26 +230,27 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
         for (auto& intersectingKey : intersectingKeys)
         {
             TileKey subKey = intersectingKey;
-            Result<GeoImage> subImage;
-            while (subKey.valid() && !subImage.status.ok())
+            Result<GeoImage> subTile;
+            while (subKey.valid() && !subTile.status.ok())
             {
-                subImage = createImageImplementation_internal(subKey, io);
-                if (subImage.status.failed())
+                subTile = createImageImplementation_internal(subKey, io);
+                if (subTile.status.failed())
                     subKey.makeParent();
 
                 if (io.canceled())
                     return {};
             }
 
-            if (subImage.status.ok())
+            if (subTile.status.ok())
             {
-                // got a valid image, so add it to our sources collection:
-                sources.emplace_back(subKey, subImage.value);
-
                 if (subKey.levelOfDetail() == targetLOD)
                 {
                     hasAtLeastOneSourceAtTargetLOD = true;
                 }
+
+                // got a valid image, so add it to our sources collection:
+                sources.emplace_back(subKey, subTile.value);
+
             }
         }
 
@@ -281,7 +282,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             // new output:
             output = CompositeImage::create(Image::R8G8B8A8_UNORM, cols, rows);
 
-            // Cache pointers to the source images that mosaic to create this image.
+            // Cache pointers to the source images that mosaic to create this tile.
             output->dependencies.reserve(sources.size());
             for (auto& source : sources)
                 output->dependencies.push_back(source.second.image());
@@ -320,21 +321,19 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             }
 
             // Mosaic our sources into a single output image.
+            glm::fvec4 pixel;
             for (unsigned r = 0; r < rows; ++r)
             {
-                for (unsigned int c = 0; c < cols; ++c)
+                for (unsigned c = 0; c < cols; ++c)
                 {
                     unsigned i = r * cols + c;
 
-                    // For each sample point, try each heightfield.  The first one with a valid elevation wins.
-                    glm::fvec4 pixel(0, 0, 0, 0);
+                    // check each source (high to low LOD) until we get a valid pixel.
+                    pixel = { 0,0,0,0 };
 
-                    // sources are ordered from low to high LOD, so iterater backwards.
                     for (unsigned k = 0; k < sources.size(); ++k)
                     {
-                        auto& image = sources[k].second;
-
-                        if (image.read(pixel, points[i].x, points[i].y) && pixel.a > 0.0f)
+                        if (sources[k].second.read(pixel, points[i].x, points[i].y) && pixel.a > 0.0f)
                         {
                             break;
                         }

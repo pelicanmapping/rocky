@@ -68,7 +68,7 @@ BingImageLayer::openImplementation(const IOOptions& io)
     if (parent.failed())
         return parent;
 
-    setProfile(Profile(SRS::SPHERICAL_MERCATOR, Profile::SPHERICAL_MERCATOR.extent().bounds(), 2, 2));
+    setProfileDefault(Profile(SRS::SPHERICAL_MERCATOR, Profile::SPHERICAL_MERCATOR.extent().bounds(), 2, 2));
     setDataExtents({ profile().extent() });
 
     _tileURICache = std::make_unique<TileURICache>();

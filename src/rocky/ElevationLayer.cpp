@@ -42,6 +42,35 @@ namespace
     }
 }
 
+
+namespace
+{
+    class HeightfieldMosaic : public Inherit<Heightfield, HeightfieldMosaic>
+    {
+    public:
+        HeightfieldMosaic(unsigned s, unsigned t) :
+            super(s, t)
+        {
+            //nop
+        }
+
+        HeightfieldMosaic(const HeightfieldMosaic& rhs) :
+            super(rhs),
+            dependencies(rhs.dependencies)
+        {
+            //nop
+        }
+
+        virtual ~HeightfieldMosaic()
+        {
+            cleanupOperation();
+        }
+
+        std::vector<std::shared_ptr<Heightfield>> dependencies;
+        std::function<void()> cleanupOperation;
+    };
+}
+
 //------------------------------------------------------------------------
 
 ElevationLayer::ElevationLayer() :
@@ -91,6 +120,8 @@ ElevationLayer::construct(const JSON& conf)
     // elevation layers do not render directly; rather, a composite of elevation data
     // feeds the terrain engine to permute the mesh.
     //setRenderType(RENDERTYPE_NONE);
+
+    _dependencyCache = std::make_shared<DependencyCache<TileKey, Heightfield>>();
 }
 
 JSON
@@ -185,19 +216,16 @@ ElevationLayer::normalizeNoDataValues(Heightfield* hf) const
 shared_ptr<Heightfield>
 ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) const
 {
-    shared_ptr<Heightfield> output;
-
-    // Collect the heightfields for each of the intersecting tiles.
-    std::vector<GeoHeightfield> geohf_list;
+    std::shared_ptr<HeightfieldMosaic> output;
 
     // Determine the intersecting keys
     std::vector<TileKey> intersectingKeys;
+    unsigned targetLOD;
 
-    if (key.levelOfDetail() > 0u)
-    {
-        key.getIntersectingKeys(profile(), intersectingKeys);
-    }
+    targetLOD = key.LOD();
+    key.getIntersectingKeys(profile(), intersectingKeys);
 
+#if 0
     else
     {
         // LOD is zero - check whether the LOD mapping went out of range, and if so,
@@ -206,15 +234,15 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
         // surpasses the max data LOD of the tile source.
         unsigned numTilesThatMayHaveData = 0u;
 
-        int intersectionLOD = profile().getEquivalentLOD(key.profile(), key.levelOfDetail());
+        targetLOD = profile().getEquivalentLOD(key.profile(), key.levelOfDetail());
 
-        while (numTilesThatMayHaveData == 0u && intersectionLOD >= 0)
+        while (numTilesThatMayHaveData == 0u && targetLOD >= 0)
         {
             intersectingKeys.clear();
 
             TileKey::getIntersectingKeys(
                 key.extent(),
-                intersectionLOD,
+                targetLOD,
                 profile(),
                 intersectingKeys);
 
@@ -226,98 +254,129 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
                 }
             }
 
-            --intersectionLOD;
+            --targetLOD;
         }
     }
+#endif
 
     // collect heightfield for each intersecting key. Note, we're hitting the
     // underlying tile source here, so there's no vetical datum shifts happening yet.
     // we will do that later.
+    std::vector<GeoHeightfield> sources;
+
     if (intersectingKeys.size() > 0)
     {
-        for(auto& layerKey : intersectingKeys)
-        {
-            if ( isKeyInLegalRange(layerKey) )
-            {
-                std::shared_lock L(layerStateMutex());
-                auto result = createHeightfieldImplementation(layerKey, io);
+        bool hasAtLeastOneSourceAtTargetLOD = false;
 
-                if (result.status.ok() && result.value.valid())
+        for (auto& intersectingKey : intersectingKeys)
+        {
+            TileKey subKey = intersectingKey;
+            Result<GeoHeightfield> subTile;
+            while (subKey.valid() && !subTile.status.ok())
+            {
+                subTile = createHeightfieldImplementation_internal(subKey, io);
+                if (subTile.status.failed())
+                    subKey.makeParent();
+
+                if (io.canceled())
+                    return {};
+            }
+
+            if (subTile.status.ok())
+            {
+                if (subKey.levelOfDetail() == targetLOD)
                 {
-                    geohf_list.push_back(result.value);
+                    hasAtLeastOneSourceAtTargetLOD = true;
                 }
+
+                // got a valid image, so add it to our sources collection:
+                sources.emplace_back(subTile.value);
             }
         }
 
-        // If we actually got a Heightfield, resample/reproject it to match the incoming TileKey's extents.
-        if (geohf_list.size() > 0)
+        // If we actually got at least one piece of usable data,
+        // move ahead and build a mosaic of all sources.
+        if (hasAtLeastOneSourceAtTargetLOD)
         {
-            unsigned width = 0;
-            unsigned height = 0;
-            auto keyExtent = key.extent();
+            unsigned cols = 0;
+            unsigned rows = 0;
 
-            // determine the final dimensions
-            for(auto& geohf : geohf_list)
+            // output size is the max of all the source sizes.
+            for (auto& source : sources)
             {
-                width = std::max(width, geohf.heightfield()->width());
-                height = std::max(height, geohf.heightfield()->height());
+                cols = std::max(cols, source.heightfield()->width());
+                rows = std::max(rows, source.heightfield()->height());
             }
 
             // assume all tiles to mosaic are in the same SRS.
-            SRSOperation xform = keyExtent.srs().to(geohf_list[0].srs());
+            SRSOperation xform = key.extent().srs().to(sources[0].srs());
 
             // Now sort the heightfields by resolution to make sure we're sampling
             // the highest resolution one first.
-            std::sort(geohf_list.begin(), geohf_list.end(), GeoHeightfield::SortByResolutionFunctor());
+            std::sort(sources.begin(), sources.end(), GeoHeightfield::SortByResolutionFunctor());
 
             // new output HF:
-            output = Heightfield::create(width, height);
+            output = HeightfieldMosaic::create(cols, rows);
+
+            // Cache pointers to the source images that mosaic to create this tile.
+            output->dependencies.reserve(sources.size());
+            for (auto& source : sources)
+                output->dependencies.push_back(source.heightfield());
+
+            // Clean up orphaned entries any time a tile destructs.
+            output->cleanupOperation = [captured{ std::weak_ptr(_dependencyCache) }, key]() {
+                auto cache = captured.lock();
+                if (cache)
+                    cache->clean();
+                };
 
             // working set of points. it's much faster to xform an entire vector all at once.
             std::vector<glm::dvec3> points;
-            points.assign(width * height, { 0, 0, NO_DATA_VALUE });
+            points.reserve(cols * rows); // .assign(cols* rows, { 0, 0, NO_DATA_VALUE });
 
             double minx, miny, maxx, maxy;
             key.extent().getBounds(minx, miny, maxx, maxy);
-            double dx = (maxx - minx) / (double)(width - 1);
-            double dy = (maxy - miny) / (double)(height - 1);
+            double dx = (maxx - minx) / (double)(cols);
+            double dy = (maxy - miny) / (double)(rows);
 
             // build a grid of sample points:
-            for (unsigned r = 0; r < height; ++r)
+            for (unsigned r = 0; r < rows; ++r)
             {
-                double y = miny + (dy * (double)r);
-                for (unsigned c = 0; c < width; ++c)
+                double y = miny + (0.5*dy) + (dy * (double)r);
+                for (unsigned c = 0; c < cols; ++c)
                 {
-                    double x = minx + (dx * (double)c);
-                    points[r * width + c].x = x;
-                    points[r * width + c].y = y;
+                    double x = minx + (0.5*dx) + (dx * (double)c);
+                    points[r * cols + c] = { x, y, NO_DATA_VALUE };
                 }
             }
 
             // transform the sample points to the SRS of our source data tiles:
             if (xform.valid())
+            {
                 xform.transformArray(&points[0], points.size());
+            }
 
             // sample the heights:
-            for (unsigned k = 0; k < geohf_list.size(); ++k)
+            for (auto& point : points)
             {
-                for (auto& point : points)
+                for(unsigned i = 0; point.z == NO_DATA_VALUE && i < sources.size(); ++i)
                 {
-                    if (point.z == NO_DATA_VALUE)
-                        point.z = geohf_list[k].heightAtLocation(point.x, point.y, Image::BILINEAR);
+                    point.z = sources[i].heightAtLocation(point.x, point.y, Image::BILINEAR);
                 }
             }
 
             // transform the elevations back to the SRS of our tilekey (vdatum transform):
             if (xform.valid())
+            {
                 xform.inverseArray(&points[0], points.size());
+            }
 
             // assign the final heights to the heightfield.
-            for (unsigned r = 0; r < height; ++r)
+            for (unsigned r = 0; r < rows; ++r)
             {
-                for (unsigned c = 0; c < width; ++c)
+                for (unsigned c = 0; c < cols; ++c)
                 {
-                    output->heightAt(c, r) = (float)(points[r * width + c].z);
+                    output->heightAt(c, r) = (float)(points[r * cols + c].z);
                 }
             }
         }
@@ -353,6 +412,20 @@ ElevationLayer::createHeightfield(
 }
 
 Result<GeoHeightfield>
+ElevationLayer::createHeightfieldImplementation_internal(
+    const TileKey& key,
+    const IOOptions& io) const
+{
+    std::shared_lock lock(layerStateMutex());
+    auto result = createHeightfieldImplementation(key, io);
+    if (result.status.failed())
+    {
+        Log()->debug("Failed to create heightfield for key {0} : {1}", key.str(), result.status.message);
+    }
+    return result;
+}
+
+Result<GeoHeightfield>
 ElevationLayer::createHeightfieldInKeyProfile(
     const TileKey& key,
     const IOOptions& io) const
@@ -374,8 +447,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
 
     if (key.profile() == my_profile)
     {
-        std::shared_lock L(layerStateMutex());
-        auto r = createHeightfieldImplementation(key, io);
+        auto r = createHeightfieldImplementation_internal(key, io);
 
         if (r.status.failed())
             return r;
