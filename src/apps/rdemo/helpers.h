@@ -8,6 +8,8 @@
 #include <vsg/commands/Command.h>
 #include "vsgImGui/RenderImGui.h"
 
+const ImVec4 ImGuiErrorColor = ImVec4(1, 0.35f, 0.35f, 1);
+
 // handy nice-looking table with names on the left.
 namespace ImGuiLTable
 {

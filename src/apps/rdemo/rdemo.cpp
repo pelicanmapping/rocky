@@ -175,19 +175,26 @@ int main(int argc, char** argv)
 
     rocky::Log()->set_level(rocky::log::level::info);
 
-    auto& layers = app.mapNode->map->layers();
-    if (layers.empty())
+    if (app.commandLineStatus.ok())
     {
+        auto& layers = app.mapNode->map->layers();
+        if (layers.empty())
+        {
 #ifdef ROCKY_HAS_TMS
-        auto imagery = rocky::TMSImageLayer::create();
-        imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7";
-        layers.add(imagery);
+            auto imagery = rocky::TMSImageLayer::create();
+            imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7";
+            layers.add(imagery);
 
-        // add an elevation layer to the map
-        auto elev = rocky::TMSElevationLayer::create();
-        elev->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
-        layers.add(elev);
+            // add an elevation layer to the map
+            auto elev = rocky::TMSElevationLayer::create();
+            elev->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
+            layers.add(elev);
 #endif
+        }
+    }
+    else
+    {
+        Log()->warn(app.commandLineStatus.message);
     }
 
     auto window = app.displayManager->addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));

@@ -130,17 +130,17 @@ Application::ctor(int& argc, char** argv)
             {
                 if (mapNode->map->layers().empty())
                 {
-                    Log()->warn("No layers found in map file \"" + infile + "\"");
+                    commandLineStatus = Status(Status::ConfigurationError, "Empty map file \"" + infile + "\"");
                 }
             }
             else
             {
-                Log()->warn("Failed to parse JSON from file \"" + infile + "\"");
+                commandLineStatus = Status(Status::ResourceUnavailable, "Failed to parse JSON from file \"" + infile + "\"");
             }
         }
         else
         {
-            Log()->warn("Failed to read map from \"" + infile + "\"");
+            commandLineStatus = Status(Status::ResourceUnavailable, "Failed to read map from \"" + infile + "\"");
         }
     }
 
@@ -156,17 +156,13 @@ Application::ctor(int& argc, char** argv)
             mapNode->map->from_json(result.value);
 
             if (count == mapNode->map->layers().size())
-                msg = "Unable to import any layers from the earth file";
-
-            Log()->info(json_pretty(result.value));
+            {
+                commandLineStatus = Status(Status::ConfigurationError, "No layers imported from earth file \"" + infile + "\"");
+            }
         }
         else
         {
-            msg = "Failed to read earth file - " + result.status.message;
-        }
-        if (!msg.empty())
-        {
-            Log()->warn(msg);
+            commandLineStatus = Status(Status::ResourceUnavailable, "Failed to read earth file \"" + infile + "\" - " + result.status.message);
         }
     }
 

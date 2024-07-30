@@ -79,6 +79,7 @@ namespace ROCKY_NAMESPACE
         std::function<void()> updateFunction;
         std::shared_ptr<DisplayManager> displayManager;
         bool autoCreateWindow = true;
+        Status commandLineStatus;
 
         //! Runtime timing statistics
         struct Stats
