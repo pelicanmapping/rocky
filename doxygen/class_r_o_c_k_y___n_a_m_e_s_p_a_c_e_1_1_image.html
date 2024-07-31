@@ -139,10 +139,10 @@ PixelFormat&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a98abc8210a91a4364fa92cf791e52648">hasAlphaChannel</a> () const</td></tr>
 <tr class="memdesc:a98abc8210a91a4364fa92cf791e52648"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether there's an alpha channel. <br /></td></tr>
 <tr class="separator:a98abc8210a91a4364fa92cf791e52648"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a58edd1c45b4faeb5f789b0d036d02313"><td class="memItemLeft" align="right" valign="top"><a id="a58edd1c45b4faeb5f789b0d036d02313"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a58edd1c45b4faeb5f789b0d036d02313">Image</a> ()</td></tr>
-<tr class="memdesc:a58edd1c45b4faeb5f789b0d036d02313"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct an empty (invalid) image. <br /></td></tr>
-<tr class="separator:a58edd1c45b4faeb5f789b0d036d02313"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d80c378364e41b842ba038dc2936dbe"><td class="memItemLeft" align="right" valign="top"><a id="a2d80c378364e41b842ba038dc2936dbe"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a2d80c378364e41b842ba038dc2936dbe">Image</a> ()=default</td></tr>
+<tr class="memdesc:a2d80c378364e41b842ba038dc2936dbe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct an empty (invalid) image. <br /></td></tr>
+<tr class="separator:a2d80c378364e41b842ba038dc2936dbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab14d61117bea307514b6ea08fa1fbbe1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#ab14d61117bea307514b6ea08fa1fbbe1">Image</a> (PixelFormat format, unsigned s, unsigned t, unsigned r=1)</td></tr>
 <tr class="separator:ab14d61117bea307514b6ea08fa1fbbe1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac5545bfc8402fa871278bf2d56549ed4"><td class="memItemLeft" align="right" valign="top"><a id="ac5545bfc8402fa871278bf2d56549ed4"></a>
@@ -215,17 +215,21 @@ unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <tr class="memdesc:aba3adf7529dbcf90de8848ef52797371"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size of each pixel component in bytes. <br /></td></tr>
 <tr class="separator:aba3adf7529dbcf90de8848ef52797371"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af51d9d7f9743f24e715296d68d884f38"><td class="memItemLeft" align="right" valign="top"><a id="af51d9d7f9743f24e715296d68d884f38"></a>
-shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#af51d9d7f9743f24e715296d68d884f38">clone</a> () const</td></tr>
+virtual std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#af51d9d7f9743f24e715296d68d884f38">clone</a> () const</td></tr>
 <tr class="memdesc:af51d9d7f9743f24e715296d68d884f38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a deep copy of this image. <br /></td></tr>
 <tr class="separator:af51d9d7f9743f24e715296d68d884f38"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a363f903a69cc9a1457815727eab58a81"><td class="memItemLeft" align="right" valign="top"><a id="a363f903a69cc9a1457815727eab58a81"></a>
-shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a363f903a69cc9a1457815727eab58a81">crop</a> (double src_minx, double src_miny, double src_maxx, double src_maxy, double &amp;dst_minx, double &amp;dst_miny, double &amp;dst_maxx, double &amp;dst_maxy) const</td></tr>
-<tr class="memdesc:a363f903a69cc9a1457815727eab58a81"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a cropped copy of this image. <br /></td></tr>
-<tr class="separator:a363f903a69cc9a1457815727eab58a81"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ace8ea0c685db5adb46d26c6b87bca00e"><td class="memItemLeft" align="right" valign="top"><a id="ace8ea0c685db5adb46d26c6b87bca00e"></a>
-shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#ace8ea0c685db5adb46d26c6b87bca00e">resize</a> (unsigned <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#afae75706ce9f5d5b28faebe8d54fbf3d">width</a>, unsigned <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a1b9374c1230900b3f2157037b64d20f9">height</a>) const</td></tr>
-<tr class="memdesc:ace8ea0c685db5adb46d26c6b87bca00e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a resized clone of this image. <br /></td></tr>
-<tr class="separator:ace8ea0c685db5adb46d26c6b87bca00e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0fa94cd7652e805fd7228e244f2155b"><td class="memItemLeft" align="right" valign="top"><a id="ae0fa94cd7652e805fd7228e244f2155b"></a>
+std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#ae0fa94cd7652e805fd7228e244f2155b">crop</a> (double src_minx, double src_miny, double src_maxx, double src_maxy, double &amp;dst_minx, double &amp;dst_miny, double &amp;dst_maxx, double &amp;dst_maxy) const</td></tr>
+<tr class="memdesc:ae0fa94cd7652e805fd7228e244f2155b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a cropped copy of this image. <br /></td></tr>
+<tr class="separator:ae0fa94cd7652e805fd7228e244f2155b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a064cdef70245e9e83ddf29a3652ff9eb"><td class="memItemLeft" align="right" valign="top"><a id="a064cdef70245e9e83ddf29a3652ff9eb"></a>
+std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a064cdef70245e9e83ddf29a3652ff9eb">resize</a> (unsigned <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#afae75706ce9f5d5b28faebe8d54fbf3d">width</a>, unsigned <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a1b9374c1230900b3f2157037b64d20f9">height</a>) const</td></tr>
+<tr class="memdesc:a064cdef70245e9e83ddf29a3652ff9eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a resized clone of this image. <br /></td></tr>
+<tr class="separator:a064cdef70245e9e83ddf29a3652ff9eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a753deafffe527528a4995720bf2be90c"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a753deafffe527528a4995720bf2be90c">sharpen</a> (float strength=2.5f) const</td></tr>
+<tr class="separator:a753deafffe527528a4995720bf2be90c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6abcc96ac7aaaa6107105dec654e34c0"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a6abcc96ac7aaaa6107105dec654e34c0">convolve</a> (const float *kernel) const</td></tr>
+<tr class="separator:a6abcc96ac7aaaa6107105dec654e34c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65e4064412d547468090224f576a2869"><td class="memItemLeft" align="right" valign="top"><a id="a65e4064412d547468090224f576a2869"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a65e4064412d547468090224f576a2869">flipVerticalInPlace</a> ()</td></tr>
 <tr class="memdesc:a65e4064412d547468090224f576a2869"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inverts the pixels in the T dimension. <br /></td></tr>
@@ -263,19 +267,19 @@ unsigned char *&#160;</td><td class="memItemRight" valign="bottom"><b>data_at_mi
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:a65f723dae0b65fb559db42ea2d84fae6"><td class="memItemLeft" align="right" valign="top"><a id="a65f723dae0b65fb559db42ea2d84fae6"></a>
-unsigned&#160;</td><td class="memItemRight" valign="bottom"><b>_width</b></td></tr>
+unsigned&#160;</td><td class="memItemRight" valign="bottom"><b>_width</b> = 0</td></tr>
 <tr class="separator:a65f723dae0b65fb559db42ea2d84fae6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5892e17eb613717466d3f985ed85050d"><td class="memItemLeft" align="right" valign="top"><a id="a5892e17eb613717466d3f985ed85050d"></a>
-unsigned&#160;</td><td class="memItemRight" valign="bottom"><b>_height</b></td></tr>
+unsigned&#160;</td><td class="memItemRight" valign="bottom"><b>_height</b> = 0</td></tr>
 <tr class="separator:a5892e17eb613717466d3f985ed85050d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad884d3ef737f8e2185b310081153b3df"><td class="memItemLeft" align="right" valign="top"><a id="ad884d3ef737f8e2185b310081153b3df"></a>
-unsigned&#160;</td><td class="memItemRight" valign="bottom"><b>_depth</b></td></tr>
+unsigned&#160;</td><td class="memItemRight" valign="bottom"><b>_depth</b> = 0</td></tr>
 <tr class="separator:ad884d3ef737f8e2185b310081153b3df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a714055bfb62a5dd211582c6a889382e8"><td class="memItemLeft" align="right" valign="top"><a id="a714055bfb62a5dd211582c6a889382e8"></a>
-PixelFormat&#160;</td><td class="memItemRight" valign="bottom"><b>_pixelFormat</b></td></tr>
+PixelFormat&#160;</td><td class="memItemRight" valign="bottom"><b>_pixelFormat</b> = R8G8B8A8_UNORM</td></tr>
 <tr class="separator:a714055bfb62a5dd211582c6a889382e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad96b931d26bc9a9399fb93d91d111e84"><td class="memItemLeft" align="right" valign="top"><a id="ad96b931d26bc9a9399fb93d91d111e84"></a>
-unsigned char *&#160;</td><td class="memItemRight" valign="bottom"><b>_data</b></td></tr>
+unsigned char *&#160;</td><td class="memItemRight" valign="bottom"><b>_data</b> = nullptr</td></tr>
 <tr class="separator:ad96b931d26bc9a9399fb93d91d111e84"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-attribs"></a>
@@ -328,6 +332,30 @@ Static Protected Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a6abcc96ac7aaaa6107105dec654e34c0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6abcc96ac7aaaa6107105dec654e34c0">&#9670;&nbsp;</a></span>convolve()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt; Image::convolve </td>
+          <td>(</td>
+          <td class="paramtype">const float *&#160;</td>
+          <td class="paramname"><em>kernel</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Creates a convolved clone of this image. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">kernel</td><td>convolution kernel (9 floats that add up to 1.0f) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a2cc633df03e7f610dd048c5e21677e6a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2cc633df03e7f610dd048c5e21677e6a">&#9670;&nbsp;</a></span>releaseData()</h2>
 
@@ -343,6 +371,30 @@ Static Protected Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Releases this image's data without deleting it. Use this to transfer ownership of the raw data to someone else. The inheritor is responsible to deleting the data. This object becomes invalid unless you call allocate() on it again. </p>
+
+</div>
+</div>
+<a id="a753deafffe527528a4995720bf2be90c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a753deafffe527528a4995720bf2be90c">&#9670;&nbsp;</a></span>sharpen()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt; Image::sharpen </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>strength</em> = <code>2.5f</code></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Creates a sharpened clone of this image. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">strength</td><td>sharpening kernel strength, 1-5 is typically a reasonable range </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

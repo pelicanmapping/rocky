@@ -86,37 +86,50 @@ $(function() {
 <div class="line"><a name="l00018"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html">   18</a></span>&#160;    <span class="keyword">class </span>ROCKY_EXPORT <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html">VisibleLayer</a> : <span class="keyword">public</span> Inherit&lt;Layer, VisibleLayer&gt;</div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    {</div>
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00022"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html#a2504f040dad7f6e809a772a070603141">   22</a></span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html#a2504f040dad7f6e809a772a070603141">setVisible</a>(<span class="keywordtype">bool</span> value) {</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;            _visible = value;</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;        }</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;        <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;bool&gt;</a>&amp; visible()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _visible; }</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
-<div class="line"><a name="l00028"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html#a39371a13ea5085f78725b28a69aace1c">   28</a></span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html#a39371a13ea5085f78725b28a69aace1c">setOpacity</a>(<span class="keywordtype">float</span> value) {</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;            _opacity = value;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;        }</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;        <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;float&gt;</a> opacity()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _opacity; }</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a> to_json() <span class="keyword">const override</span>;</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">void</span> setVisible(<span class="keywordtype">bool</span> value);</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;        <span class="keyword">inline</span> <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;bool&gt;</a>&amp; visible() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160; </div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">void</span> setOpacity(<span class="keywordtype">float</span> value);</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;        <span class="keyword">inline</span> <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;float&gt;</a>&amp; opacity() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;        <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a> to_json() <span class="keyword">const override</span>;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    <span class="keyword">protected</span>: <span class="comment">// Layer</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html">VisibleLayer</a>();</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="keyword">protected</span>: <span class="comment">// Layer</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html">VisibleLayer</a>(<span class="keyword">const</span> <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a>&amp;);</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;        VisibleLayer();</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keyword">private</span>:</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        VisibleLayer(<span class="keyword">const</span> <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a>&amp;);</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        <span class="keywordtype">void</span> construct(<span class="keyword">const</span> <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a>&amp;);</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160; </div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <span class="keywordtype">void</span> construct(<span class="keyword">const</span> <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a>&amp;);</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        optional&lt;bool&gt; _visible = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        optional&lt;float&gt; _opacity = 1.0f;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        optional&lt;bool&gt; _debugView = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    };</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;} <span class="comment">// namespace VisibleLayer</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;bool&gt;</a> _visible = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;float&gt;</a> _opacity = 1.0f;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;bool&gt;</a> _debugView = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    };</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="comment">// inlines</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html#a2b4d297c95cd6d6a55a4783371f4848b">   49</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html#a2b4d297c95cd6d6a55a4783371f4848b">VisibleLayer::setVisible</a>(<span class="keywordtype">bool</span> value) {</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        _visible = value;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;    }</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;bool&gt;</a>&amp; VisibleLayer::visible()<span class="keyword"> const </span>{</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        <span class="keywordflow">return</span> _visible;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    }</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160; </div>
+<div class="line"><a name="l00057"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html#a915aecfc29cef7bb7f7af68cedc2b047">   57</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html#a915aecfc29cef7bb7f7af68cedc2b047">VisibleLayer::setOpacity</a>(<span class="keywordtype">float</span> value) {</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        _opacity = value;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    }</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;float&gt;</a>&amp; VisibleLayer::opacity()<span class="keyword"> const </span>{</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <span class="keywordflow">return</span> _opacity;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    }</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;} <span class="comment">// namespace VisibleLayer</span></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html">ROCKY_NAMESPACE::VisibleLayer</a></div><div class="ttdoc">Base class for a layer supporting visibility and opacity controls.</div><div class="ttdef"><b>Definition:</b> VisibleLayer.h:19</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer_html_a2504f040dad7f6e809a772a070603141"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html#a2504f040dad7f6e809a772a070603141">ROCKY_NAMESPACE::VisibleLayer::setVisible</a></div><div class="ttdeci">virtual void setVisible(bool value)</div><div class="ttdoc">Whether to draw this layer.</div><div class="ttdef"><b>Definition:</b> VisibleLayer.h:22</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer_html_a39371a13ea5085f78725b28a69aace1c"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html#a39371a13ea5085f78725b28a69aace1c">ROCKY_NAMESPACE::VisibleLayer::setOpacity</a></div><div class="ttdeci">virtual void setOpacity(float value)</div><div class="ttdoc">Opacity with which to draw this layer.</div><div class="ttdef"><b>Definition:</b> VisibleLayer.h:28</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer_html_a2b4d297c95cd6d6a55a4783371f4848b"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html#a2b4d297c95cd6d6a55a4783371f4848b">ROCKY_NAMESPACE::VisibleLayer::setVisible</a></div><div class="ttdeci">void setVisible(bool value)</div><div class="ttdoc">Whether to draw this layer.</div><div class="ttdef"><b>Definition:</b> VisibleLayer.h:49</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer_html_a915aecfc29cef7bb7f7af68cedc2b047"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html#a915aecfc29cef7bb7f7af68cedc2b047">ROCKY_NAMESPACE::VisibleLayer::setOpacity</a></div><div class="ttdeci">void setOpacity(float value)</div><div class="ttdoc">Opacity with which to draw this layer.</div><div class="ttdef"><b>Definition:</b> VisibleLayer.h:57</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a47a3157b68495813746976f5649f0577"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">ROCKY_NAMESPACE::JSON</a></div><div class="ttdeci">std::string JSON</div><div class="ttdoc">json serialization type</div><div class="ttdef"><b>Definition:</b> Common.h:48</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">ROCKY_NAMESPACE::optional&lt; bool &gt;</a></div></div>

@@ -94,8 +94,6 @@ shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image
 <tr class="separator:afe2a93e95641f27f81b68cc3492acb2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a25d5d1b68c174c05446f01b1057ec8c6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_result.html">Result</a>&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html">GeoImage</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_layer.html#a25d5d1b68c174c05446f01b1057ec8c6">createImage</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key, const IOOptions &amp;io) const</td></tr>
 <tr class="separator:a25d5d1b68c174c05446f01b1057ec8c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a86a70a20ed9d2b921d7bb4ef12557a30"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_layer.html#a86a70a20ed9d2b921d7bb4ef12557a30">writeImage</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key, shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt; image, const IOOptions &amp;io)</td></tr>
-<tr class="separator:a86a70a20ed9d2b921d7bb4ef12557a30"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf9924332d90f3b69588c5b47df8061f"><td class="memItemLeft" align="right" valign="top">const std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_layer.html#adf9924332d90f3b69588c5b47df8061f">getCompressionMethod</a> () const</td></tr>
 <tr class="separator:adf9924332d90f3b69588c5b47df8061f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a378fb098b46047672571ff089d97a09d"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_result.html">Result</a>&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html">GeoImage</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_layer.html#a378fb098b46047672571ff089d97a09d">createImageImplementation</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key, const IOOptions &amp;io) const</td></tr>
@@ -106,10 +104,6 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a2495bf93f394ef95126993f3fbb6ad00"><td class="memItemLeft" align="right" valign="top"><a id="a2495bf93f394ef95126993f3fbb6ad00"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>ImageLayer</b> (const std::string &amp;<a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a>, const IOOptions &amp;io)</td></tr>
 <tr class="separator:a2495bf93f394ef95126993f3fbb6ad00"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a85e648f85e948cff7d9dc3c70eabf40e"><td class="memItemLeft" align="right" valign="top"><a id="a85e648f85e948cff7d9dc3c70eabf40e"></a>
-virtual <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_layer.html#a85e648f85e948cff7d9dc3c70eabf40e">writeImageImplementation</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key, shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt; image, const IOOptions &amp;io) const</td></tr>
-<tr class="memdesc:a85e648f85e948cff7d9dc3c70eabf40e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Subclass can override this to write data for a tile key. <br /></td></tr>
-<tr class="separator:a85e648f85e948cff7d9dc3c70eabf40e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a116b78e3d02b6282b42209b7c7bbc020"><td class="memItemLeft" align="right" valign="top"><a id="a116b78e3d02b6282b42209b7c7bbc020"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_layer.html#a116b78e3d02b6282b42209b7c7bbc020">modifyTileBoundingBox</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key, Box &amp;box) const</td></tr>
 <tr class="memdesc:a116b78e3d02b6282b42209b7c7bbc020"><td class="mdescLeft">&#160;</td><td class="mdescRight">Modify the bbox if an altitude is set (for culling) <br /></td></tr>
@@ -142,6 +136,9 @@ shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image
 <tr class="memitem:aa769be34b72cc198cda1bf286e24138f"><td class="memItemLeft" align="right" valign="top"><a id="aa769be34b72cc198cda1bf286e24138f"></a>
 <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional</a>&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_textureCompression</b></td></tr>
 <tr class="separator:aa769be34b72cc198cda1bf286e24138f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa26ed4671ee3e1100a555b172402e951"><td class="memItemLeft" align="right" valign="top"><a id="aa26ed4671ee3e1100a555b172402e951"></a>
+<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional</a>&lt; float &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_sharpness</b></td></tr>
+<tr class="separator:aa26ed4671ee3e1100a555b172402e951"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A map terrain layer containing bitmap image data. </p>
@@ -301,41 +298,6 @@ shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image
 </table>
 </div><div class="memdoc">
 <p>Override to do something to an image before returning it from createImage (including a <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html">GeoImage</a> read from the cache) </p>
-
-</div>
-</div>
-<a id="a86a70a20ed9d2b921d7bb4ef12557a30"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a86a70a20ed9d2b921d7bb4ef12557a30">&#9670;&nbsp;</a></span>writeImage()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> ImageLayer::writeImage </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;&#160;</td>
-          <td class="paramname"><em>key</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt;&#160;</td>
-          <td class="paramname"><em>image</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const IOOptions &amp;&#160;</td>
-          <td class="paramname"><em>io</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Stores an image in this layer (if writing is enabled). Returns a status value indicating whether the store succeeded. </p>
 
 </div>
 </div>

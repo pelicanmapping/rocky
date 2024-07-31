@@ -114,10 +114,6 @@ virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c
 const <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a65f1de4d409255607fed7edfa80e973a">status</a> () const</td></tr>
 <tr class="memdesc:a65f1de4d409255607fed7edfa80e973a"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> of this layer. <br /></td></tr>
 <tr class="separator:a65f1de4d409255607fed7edfa80e973a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1a158654e87f164eb8ae03e982f7f47d"><td class="memItemLeft" align="right" valign="top"><a id="a1a158654e87f164eb8ae03e982f7f47d"></a>
-<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1a158654e87f164eb8ae03e982f7f47d">open</a> ()</td></tr>
-<tr class="memdesc:a1a158654e87f164eb8ae03e982f7f47d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Open a layer. <br /></td></tr>
-<tr class="separator:a1a158654e87f164eb8ae03e982f7f47d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2610e90b48d44bc3752a418197fa9e9f"><td class="memItemLeft" align="right" valign="top"><a id="a2610e90b48d44bc3752a418197fa9e9f"></a>
 <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a2610e90b48d44bc3752a418197fa9e9f">open</a> (const IOOptions &amp;options)</td></tr>
 <tr class="memdesc:a2610e90b48d44bc3752a418197fa9e9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Open a layer. <br /></td></tr>
@@ -254,7 +250,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>_reopenRequired</b></
 <p>Subclass <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">Layer</a> to create a new layer type. Use the META_Layer macro to establish the standard options framework.</p>
 <p>When you create a <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">Layer</a>, init() is called. Do all one-time construction activity where.</p>
 <p>When you add a <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">Layer</a> to a <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">Map</a>, the follow methods are called in order:</p>
-<p>setReadOptions() sets OSG options for IO activity; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1a158654e87f164eb8ae03e982f7f47d" title="Open a layer.">open()</a> to initialize any underlying data sources; addedToMap() to signal to the layer that it is now a member of a <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">Map</a>. </p>
+<p>setReadOptions() sets OSG options for IO activity; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a2610e90b48d44bc3752a418197fa9e9f" title="Open a layer.">open()</a> to initialize any underlying data sources; addedToMap() to signal to the layer that it is now a member of a <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">Map</a>. </p>
 </div><h2 class="groupheader">Member Enumeration Documentation</h2>
 <a id="a81f42475cc4fa775fb9b86381a14edd1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a81f42475cc4fa775fb9b86381a14edd1">&#9670;&nbsp;</a></span>RenderType</h2>
@@ -402,7 +398,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>_reopenRequired</b></
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Called by <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1a158654e87f164eb8ae03e982f7f47d" title="Open a layer.">open()</a> to connect to external resources and return a status. MAKE SURE you call superclass <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a0261d55c01716e446dd446731dbd83a2">openImplementation()</a> if you override this! This is where you will connect to back-end data sources if appropriate. When added to a map, init() is called before <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1a158654e87f164eb8ae03e982f7f47d" title="Open a layer.">open()</a> and addedToMap() is called after <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1a158654e87f164eb8ae03e982f7f47d" title="Open a layer.">open()</a> if it succeeds. By default, returns STATUS_OK. </p>
+<p>Called by <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a2610e90b48d44bc3752a418197fa9e9f" title="Open a layer.">open()</a> to connect to external resources and return a status. MAKE SURE you call superclass <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a0261d55c01716e446dd446731dbd83a2">openImplementation()</a> if you override this! This is where you will connect to back-end data sources if appropriate. When added to a map, init() is called before <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a2610e90b48d44bc3752a418197fa9e9f" title="Open a layer.">open()</a> and addedToMap() is called after <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a2610e90b48d44bc3752a418197fa9e9f" title="Open a layer.">open()</a> if it succeeds. By default, returns STATUS_OK. </p>
 
 </div>
 </div>
