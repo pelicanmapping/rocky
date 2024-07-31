@@ -60,7 +60,7 @@ MBTilesElevationLayer::openImplementation(const IOOptions& io)
     Status status = _driver.open(
         name(),
         _options,
-        isWritingRequested(),
+        false, // isWritingRequested(),
         new_profile,
         dataExtents,
         io);
@@ -99,17 +99,6 @@ MBTilesElevationLayer::createHeightfieldImplementation(const TileKey& key, const
         return GeoHeightfield(Heightfield::create(result.value.get()), key.extent());
     else
         return result.status;
-}
-
-Status
-MBTilesElevationLayer::writeHeightfieldImplementation(const TileKey& key, shared_ptr<Heightfield> image, const IOOptions& io) const
-{
-    if (status().failed()) return status();
-
-    if (!isWritingRequested())
-        return Status(Status::ServiceUnavailable);
-
-    return _driver.write(key, image, io);
 }
 
 #endif // ROCKY_HAS_MBTILES

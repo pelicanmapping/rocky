@@ -64,9 +64,8 @@ namespace ROCKY_NAMESPACE
         ReadImageURIService readImageFromURI;
         ReadImageStreamService readImageFromStream;
         WriteImageStreamService writeImageToStream;
-        CacheService cache;
-        shared_ptr<ContentCache> contentCache = std::make_shared<ContentCache>(128);
-        std::shared_ptr<util::Gate<std::string>> uriGate = std::make_shared<util::Gate<std::string>>();
+        CacheService cache = nullptr;
+        shared_ptr<ContentCache> contentCache;
     };
 
     // User options passed along with an IO context.
@@ -78,13 +77,13 @@ namespace ROCKY_NAMESPACE
         IOOptions(Cancelable& p);
         IOOptions(const IOOptions& rhs, Cancelable& p);
         IOOptions(const std::string& referrer);
+        IOOptions(const IOOptions& rhs, const std::string& referrer);
 
-        //! Access to useful services
+        //! Was the current operation canceled?
+        inline bool canceled() const override;
+
+        //! Access to pluggable services
         Services services;
-
-        //! Custom options for reading/writing data
-        inline std::string property(const std::string& name) const;
-        inline std::string& property(const std::string& name);
 
         //! Maximum number of attempts to make a network connection
         unsigned maxNetworkAttempts = 4u;
@@ -92,8 +91,12 @@ namespace ROCKY_NAMESPACE
         //! Referring location for an operation using these options
         std::optional<std::string> referrer;
 
-        //! Was the current operation canceled?
-        inline bool canceled() const override;
+        //! Gate for seriaizing duplicate URI requests
+        mutable std::shared_ptr<util::Gate<std::string>> uriGate;
+
+        //! Custom options for reading/writing data
+        //inline std::string property(const std::string& name) const;
+        //inline std::string& property(const std::string& name);
 
     public:
         IOOptions& operator = (const IOOptions& rhs);
@@ -274,6 +277,7 @@ namespace ROCKY_NAMESPACE
         }
     };
 
+#if 0
     std::string IOOptions::property(const std::string& name) const {
         auto i = _properties.find(name);
         return i != _properties.end() ? i->second : "";
@@ -282,6 +286,7 @@ namespace ROCKY_NAMESPACE
     std::string& IOOptions::property(const std::string& name) {
         return _properties[name];
     }
+#endif
 
     bool IOOptions::canceled() const {
         return _cancelable ? _cancelable->canceled() : false;

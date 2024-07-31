@@ -24,56 +24,66 @@ MapNode::MapNode(const InstanceVSG& instance) :
     instance(instance),
     map(Map::create(instance))
 {
-    construct({});
+    construct();
 }
 
 MapNode::MapNode(shared_ptr<Map> map) :
     instance(reinterpret_cast<InstanceVSG&>(map->instance()))
 {
-    construct({});
+    construct();
 }
 
 MapNode::MapNode(const JSON& conf, const InstanceVSG& instance) :
     instance(instance),
     map(Map::create(instance))
 {
-    construct(conf);
+    construct();
 }
 
 void
-MapNode::construct(const JSON& conf)
+MapNode::construct()
 {
-    const auto j = parse_json(conf);
-    get_to(j, "screen_space_error", _screenSpaceError);
-
-    terrain = TerrainNode::create(instance.runtime(), conf);
+    terrain = TerrainNode::create(instance.runtime());
     addChild(terrain);
-
-    _isOpen = false;
 
     // make a group for the model layers.  This node is a PagingManager instead of a regular Group to allow PagedNode's to be used within the layers.
     _layerNodes = vsg::Group::create();
     this->addChild(_layerNodes);
-
-    _readyForUpdate = true;
 }
 
-JSON
+Status
+MapNode::from_json(const std::string& JSON, const IOOptions& io)
+{
+    const auto j = parse_json(JSON);
+
+    Status status;
+
+    if (status.ok() && map)
+    {
+        status = map->from_json(j["map"].dump(), io);
+    }
+
+    if (status.ok() && terrain)
+    {
+        status = terrain->from_json(j["terrain"].dump(), io);
+    }
+
+    return status;
+}
+
+std::string
 MapNode::to_json() const
 {
     auto j = json::object();
-    set(j, "screen_space_error", _screenSpaceError);
 
-    // all map layers
-    auto layers_json = json::array();
-    for (auto& layer : map->layers().all())
+    if (map)
     {
-        layers_json.push_back(parse_json(layer->to_json()));
+        j["map"] = json::parse(map->to_json());
     }
 
-    if (!layers_json.empty())
+    if (terrain)
     {
-        j["layers"] = layers_json;
+        j["terrain"] = json::parse(terrain->to_json());
     }
 
     return j.dump();
@@ -122,25 +132,6 @@ MapNode::worldSRS() const
 }
 
 void
-MapNode::setScreenSpaceError(float value)
-{
-    _screenSpaceError = value;
-
-    ROCKY_TODO("SSE");
-    //// update the corresponding terrain option:
-    //getTerrainOptions().setScreenSpaceError(value);
-
-    //// update the uniform:
-    //_sseU->set(value);
-}
-
-float
-MapNode::screenSpaceError() const
-{
-    return _screenSpaceError;
-}
-
-void
 MapNode::update(const vsg::FrameStamp* f)
 {
     ROCKY_PROFILE_FUNCTION();
@@ -156,7 +147,7 @@ MapNode::update(const vsg::FrameStamp* f)
         }
     }
 
-    terrain->update(f, instance.ioOptions());
+    terrain->update(f, instance.io());
 }
 
 void

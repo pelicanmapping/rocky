@@ -24,7 +24,7 @@ namespace ROCKY_NAMESPACE
         virtual ~Instance();
 
         //! Default IO options
-        inline IOOptions& ioOptions();
+        inline IOOptions& io();
 
         //! Global caching policy
         inline CachePolicy& cachePolicy();
@@ -71,7 +71,7 @@ namespace ROCKY_NAMESPACE
     CachePolicy& Instance::cachePolicy() {
         return _impl->cachePolicy;
     }
-    IOOptions& Instance::ioOptions() {
+    IOOptions& Instance::io() {
         return _impl->ioOptions;
     }
 

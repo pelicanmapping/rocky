@@ -371,19 +371,22 @@ IOResult<Content>
 URI::read(const IOOptions& io) const
 {
     // protect against multiple threads trying to read the same URI at the same time
-    util::ScopedGate<std::string> gate(*io.services.uriGate.get(), full());
+    util::ScopedGate<std::string> gate(io.uriGate, full());
 
-    auto cached = io.services.contentCache->get(full());
-    if (cached.status.ok())
+    if (io.services.contentCache)
     {
-        if (httpDebug)
+        auto cached = io.services.contentCache->get(full());
+        if (cached.status.ok())
         {
-            Log()->info(LC "Cache hit, ratio = "
-                + std::to_string(100.0f * (float)io.services.contentCache->hits / (float)io.services.contentCache->gets)
-                + "%");
-        }
+            if (httpDebug)
+            {
+                Log()->info(LC "Cache hit, ratio = "
+                    + std::to_string(100.0f * (float)io.services.contentCache->hits / (float)io.services.contentCache->gets)
+                    + "%");
+            }
 
-        return cached.value;
+            return cached.value;
+        }
     }
 
     Content content;
@@ -452,7 +455,10 @@ URI::read(const IOOptions& io) const
             util::make_string() << "Cannot open \"" << full() << "\""));
     }
 
-    io.services.contentCache->put(full(), Result<Content>(content));
+    if (io.services.contentCache)
+    {
+        io.services.contentCache->put(full(), Result<Content>(content));
+    }
 
     return content;
 }
@@ -490,8 +496,8 @@ namespace ROCKY_NAMESPACE
             j = json::object();
             set(j, "href", obj.base());
 
-            if (!obj.context().referrer.empty())
-                set(j, "referrer", obj.context().referrer);
+            //if (!obj.context().referrer.empty())
+            //    set(j, "referrer", obj.context().referrer);
 
             if (obj.context().headers.empty() == false) {
                 auto headers = json::array();

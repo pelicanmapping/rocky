@@ -50,9 +50,6 @@ namespace ROCKY_NAMESPACE
         //! Creates a raster image for the given tile key
         Result<GeoImage> createImageImplementation(const TileKey& key, const IOOptions& io) const override;
 
-        //! Writes a raster image for he given tile key (if open for writing)
-        Status writeImageImplementation(const TileKey& key, shared_ptr<Image> image, const IOOptions& io) const override;
-
     private:
         MBTiles::Driver _driver;
         MBTiles::Options _options;

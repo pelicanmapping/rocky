@@ -140,16 +140,6 @@ ElevationLayer::to_json() const
     return j.dump();
 }
 
-void
-ElevationLayer::setVisible(bool value)
-{
-    VisibleLayer::setVisible(value);
-    if (value)
-        open();
-    else
-        close();
-}
-
 void ElevationLayer::setEncoding(ElevationLayer::Encoding value) {
     _encoding = value;
 }
@@ -489,29 +479,6 @@ ElevationLayer::createHeightfieldInKeyProfile(
     result = GeoHeightfield(hf, key.extent());
 
     return result;
-}
-
-Status
-ElevationLayer::writeHeightfield(
-    const TileKey& key,
-    shared_ptr<Heightfield> hf,
-    const IOOptions& io) const
-{
-    if (isWritingSupported() && isWritingRequested())
-    {
-        std::shared_lock L(layerStateMutex());
-        return writeHeightfieldImplementation(key, hf, io);
-    }
-    return Status(Status::ServiceUnavailable);
-}
-
-Status
-ElevationLayer::writeHeightfieldImplementation(
-    const TileKey& key,
-    shared_ptr<Heightfield> hf,
-    const IOOptions& io) const
-{
-    return Status(Status::ServiceUnavailable);
 }
 
 #undef  LC

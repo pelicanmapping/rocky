@@ -30,13 +30,16 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Deserialize a new terrain node
-        TerrainNode(Runtime& runtime, const JSON& j);
+        TerrainNode(Runtime& runtime);
 
         //! Map to render, and SRS to render it in
         const Status& setMap(shared_ptr<Map> new_map, const SRS& world_srs);
 
-        //! Serialize
-        JSON to_json() const;
+        //! Deserialize from JSON
+        Status from_json(const std::string& JSON, const IOOptions& io);
+
+        //! Serialize to JSON
+        std::string to_json() const;
 
         //! Updates the terrain periodically at a safe time
         void update(const vsg::FrameStamp*, const IOOptions& io);
@@ -65,8 +68,7 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        //! Deserialize and initialize
-        void construct(const JSON&);
+        void construct();
 
         Status createRootTiles(const IOOptions& io);
 

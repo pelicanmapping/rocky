@@ -156,12 +156,6 @@ Layer::open(const IOOptions& io)
     return status();
 }
 
-Status
-Layer::open()
-{
-    return open(IOOptions());
-}
-
 void
 Layer::close()
 {

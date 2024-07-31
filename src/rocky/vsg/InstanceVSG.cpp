@@ -274,7 +274,7 @@ InstanceVSG::InstanceVSG() :
     // stripping it out and later converting it back; or that only transcodes
     // it if it needs to. vsg::read_cast() might do some internal caching
     // as well -- need to look into that.
-    ioOptions().services.readImageFromURI = [](const std::string& location, const rocky::IOOptions& io)
+    io().services.readImageFromURI = [](const std::string& location, const rocky::IOOptions& io)
     {
         auto result = URI(location).read(io);
         if (result.status.ok())
@@ -301,7 +301,7 @@ InstanceVSG::InstanceVSG() :
     // To read from a stream, we have to search all the VS readerwriters to
     // find one that matches the 'extension' we want. We also have to put that
     // extension in the options structure as a hint.
-    ioOptions().services.readImageFromStream = [options(runtime.readerWriterOptions)](
+    io().services.readImageFromStream = [options(runtime.readerWriterOptions)](
         std::istream& location, std::string contentType, const rocky::IOOptions& io)
         -> Result<shared_ptr<Image>>
     {
@@ -343,6 +343,10 @@ InstanceVSG::InstanceVSG() :
 
         return Status(Status::ServiceUnavailable, "No image reader for \"" + contentType + "\"");
     };
+
+    io().services.contentCache = std::make_shared<ContentCache>(128);
+
+    io().uriGate = std::make_shared<util::Gate<std::string>>();
 }
 
 InstanceVSG::InstanceVSG(vsg::CommandLine& args) :

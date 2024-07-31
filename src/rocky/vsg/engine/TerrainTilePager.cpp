@@ -574,7 +574,7 @@ TerrainTilePager::requestMergeData(
         return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
     };
 
-    engine->runtime.runDuringUpdate(merge_op, priority_func);
+    engine->runtime.onNextUpdate(merge_op, priority_func);
 }
 
 void
@@ -716,7 +716,7 @@ TerrainTilePager::requestMergeElevation(
         vsg::ref_ptr<TerrainTileNode> tile = tile_weak.ref_ptr();
         return tile ? -(sqrt(tile->lastTraversalRange) * 0.9 * tile->key.levelOfDetail()) : 0.0f;
     };
-    engine->runtime.runDuringUpdate(merge_op, priority_func);
+    engine->runtime.onNextUpdate(merge_op, priority_func);
 #endif
 }
 

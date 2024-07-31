@@ -74,7 +74,7 @@ auto Demo_RTT = [](Application& app)
 
         // this is the model we will see in the RTT:
         URI uri("https://raw.githubusercontent.com/vsg-dev/vsgExamples/master/data/models/teapot.vsgt");
-        auto rtt_node = load_rtt_model(uri, app.instance.runtime());
+        auto rtt_node = load_rtt_model(uri, app.runtime());
         if (!rtt_node)
         {
             status = Status(Status::ResourceUnavailable, "Unable to load the model from " + uri.full());

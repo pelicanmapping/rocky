@@ -44,7 +44,7 @@ auto Demo_LineFeatures = [](Application& app)
             entity = app.entities.create();
             FeatureView& feature_view = app.entities.emplace<FeatureView>(entity);
 
-            auto iter = data->fs->iterate(app.instance.ioOptions());
+            auto iter = data->fs->iterate(app.instance.io());
             while (iter->hasMore())
             {
                 auto feature = iter->next();
@@ -69,7 +69,7 @@ auto Demo_LineFeatures = [](Application& app)
                 100000.0f };   // resolution (geometric error)
 
             // generate our renderable geometry
-            feature_view.generate(app.entities, app.instance.runtime());
+            feature_view.generate(app.entities, app.runtime());
         }
         else
         {

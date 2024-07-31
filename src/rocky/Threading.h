@@ -85,35 +85,43 @@ namespace ROCKY_NAMESPACE
         public:
             //! Lock a gate based on key "key"
             ScopedGate(Gate<T>& gate, const T& key) :
-                _gate(gate),
-                _key(key),
-                _active(true)
+                _gate(&gate),
+                _key(key)
             {
-                _gate.lock(key);
+                if (_gate)
+                    _gate->lock(key);
             }
 
             //! Lock a gate based on key "key" IFF the predicate is true,
             //! else it's a nop.
-            ScopedGate(Gate<T>& gate, const T& key, std::function<bool()> pred) :
-                _gate(gate),
-                _key(key),
-                _active(pred())
+            template<typename CALLABLE>
+            ScopedGate(Gate<T>& gate, const T& key, CALLABLE&& pred) :
+                _gate(pred() ? &gate : nullptr),
+                _key(key)
             {
-                if (_active)
-                    _gate.lock(_key);
+                if (_gate)
+                    _gate->lock(_key);
+            }
+
+            //! Lock a gate if the pointer to the gate is valid; else NOOP.
+            ScopedGate(std::shared_ptr<Gate<T>>& gate, const T& key) :
+                _gate(gate.get()),
+                _key(key)
+            {
+                if (_gate)
+                    _gate->lock(_key);
             }
 
             //! End-of-scope destructor unlocks the gate
             ~ScopedGate()
             {
-                if (_active)
-                    _gate.unlock(_key);
+                if (_gate)
+                    _gate->unlock(_key);
             }
 
         private:
-            Gate<T>& _gate;
+            Gate<T>* _gate = nullptr;
             T _key;
-            bool _active;
         };
     }
 

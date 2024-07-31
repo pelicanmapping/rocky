@@ -6,6 +6,7 @@
 #pragma once
 
 #include <rocky/Color.h>
+#include <rocky/Status.h>
 #include <rocky/vsg/Common.h>
 
 namespace ROCKY_NAMESPACE
@@ -16,7 +17,9 @@ namespace ROCKY_NAMESPACE
     class TerrainSettings
     {
     public:
-        TerrainSettings(const JSON& conf);
+        TerrainSettings() = default;
+
+        Status from_json(const std::string& JSON);
 
         JSON to_json() const;
 
@@ -36,7 +39,7 @@ namespace ROCKY_NAMESPACE
         optional<unsigned> maxLevelOfDetail = 19;
 
         //! The level of detail at which the terrain should begin.
-        optional<unsigned> minLevelOfDetail = 0;
+        optional<unsigned> minLevelOfDetail = 1;
 
         //! Whether the terrain engine will be using GPU tessellation shaders.
         optional<bool> gpuTessellation = false;

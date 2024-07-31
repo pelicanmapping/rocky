@@ -128,7 +128,7 @@ Runtime::Runtime()
 }
 
 void
-Runtime::runDuringUpdate(vsg::ref_ptr<vsg::Operation> function, std::function<float()> get_priority)
+Runtime::onNextUpdate(vsg::ref_ptr<vsg::Operation> function, std::function<float()> get_priority)
 {
     auto pq = dynamic_cast<PriorityUpdateQueue*>(_priorityUpdateQueue.get());
     if (pq)
@@ -145,7 +145,7 @@ Runtime::runDuringUpdate(vsg::ref_ptr<vsg::Operation> function, std::function<fl
 }
 
 void
-Runtime::runDuringUpdate(std::function<void()> function)
+Runtime::onNextUpdate(std::function<void()> function)
 {
     viewer->updateOperations->add(SimpleUpdateOperation::create(function));
 }

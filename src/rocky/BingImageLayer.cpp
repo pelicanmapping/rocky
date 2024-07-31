@@ -152,7 +152,7 @@ BingImageLayer::createImageImplementation(const TileKey& key, const IOOptions& i
     if (image)
         return GeoImage(image, key.extent());
     else
-        return Status(Status::ResourceUnavailable);
+        return Status_ResourceUnavailable;
 }
 
 #endif // ROCKY_HAS_BING

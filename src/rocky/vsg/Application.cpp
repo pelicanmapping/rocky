@@ -32,7 +32,6 @@ Application::Application()
     ctor(argc, argv);
 }
 
-
 Application::Application(int& argc, char** argv)
 {
     ctor(argc, argv);
@@ -43,7 +42,7 @@ Application::ctor(int& argc, char** argv)
 {
     vsg::CommandLine commandLine(&argc, argv);
 
-    commandLine.read(instance._impl->runtime.readerWriterOptions);
+    commandLine.read(instance.runtime().readerWriterOptions);
     _debuglayer = commandLine.read({ "--debug" });
     _apilayer = commandLine.read({ "--api" });
     _vsync = !commandLine.read({ "--novsync" });
@@ -81,7 +80,6 @@ Application::ctor(int& argc, char** argv)
     root = vsg::Group::create();
 
     mainScene = vsg::Group::create();
-
     root->addChild(mainScene);
 
     mapNode = rocky::MapNode::create(instance);
@@ -92,11 +90,6 @@ Application::ctor(int& argc, char** argv)
         skyNode = rocky::SkyNode::create(instance);
         mainScene->addChild(skyNode);
     }
-
-    mapNode->terrainSettings().concurrency = 6u;
-    mapNode->terrainSettings().skirtRatio = 0.025f;
-    mapNode->terrainSettings().minLevelOfDetail = 1;
-    mapNode->terrainSettings().screenSpaceError = 135.0f;
 
     // wireframe overlay
     if (commandLine.read({ "--wire" }))
@@ -126,7 +119,7 @@ Application::ctor(int& argc, char** argv)
 
         if (map_file.status.ok())
         {
-            auto parse = mapNode->map->from_json(map_file.value.data, IOOptions(infile));
+            auto parse = mapNode->from_json(map_file.value.data, IOOptions(io(), infile));
             if (parse.ok())
             {
                 if (mapNode->map->layers().empty())
@@ -148,17 +141,14 @@ Application::ctor(int& argc, char** argv)
     // or read map from earth file:
     else if (commandLine.read({ "--earthfile" }, infile))
     {
-        std::string msg;
         EarthFileImporter importer;
-        auto result = importer.read(infile, instance.ioOptions());
+        auto result = importer.read(infile, io());
+
         if (result.status.ok())
         {
             auto count = mapNode->map->layers().size();
 
-            IOOptions io;
-            io.referrer = infile;
-
-            mapNode->map->from_json(result.value, io);
+            mapNode->from_json(result.value, IOOptions(io(), infile));
 
             if (count == mapNode->map->layers().size())
             {
@@ -197,7 +187,7 @@ Application::~Application()
 void
 Application::onNextUpdate(std::function<void()> func)
 {
-    instance.runtime().runDuringUpdate(func);
+    instance.runtime().onNextUpdate(func);
 }
 
 void

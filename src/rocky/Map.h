@@ -76,7 +76,7 @@ namespace ROCKY_NAMESPACE
      public:
 
         //! Serialize
-        JSON to_json() const;
+        std::string to_json() const;
 
     public:
         //! Callback fired upon added a layer

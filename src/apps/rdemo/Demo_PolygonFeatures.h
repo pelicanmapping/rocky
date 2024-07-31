@@ -47,7 +47,7 @@ auto Demo_PolygonFeatures = [](Application& app)
             if (data->fs->featureCount() > 0)
                 feature_view.features.reserve(data->fs->featureCount());
 
-            auto iter = data->fs->iterate(app.instance.ioOptions());
+            auto iter = data->fs->iterate(app.instance.io());
             while (iter->hasMore())
             {
                 auto feature = iter->next();
@@ -70,7 +70,7 @@ auto Demo_PolygonFeatures = [](Application& app)
                 };
 
             // compile the features into renderable geometry
-            feature_view.generate(app.entities, app.instance.runtime());
+            feature_view.generate(app.entities, app.runtime());
         }
         else
         {

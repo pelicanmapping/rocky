@@ -8,9 +8,10 @@
 
 using namespace ROCKY_NAMESPACE;
 
-TerrainSettings::TerrainSettings(const JSON& conf)
+Status
+TerrainSettings::from_json(const std::string& JSON)
 {
-    const auto j = parse_json(conf);
+    const auto j = parse_json(JSON);
 
     get_to(j, "tile_size", tileSize);
     get_to(j, "min_tile_range_factor", minTileRangeFactor);
@@ -23,6 +24,7 @@ TerrainSettings::TerrainSettings(const JSON& conf)
     get_to(j, "min_frames_before_unload", minFramesBeforeUnload);
     get_to(j, "min_tiles_before_unload", minResidentTilesBeforeUnload);
     get_to(j, "cast_shadows", castShadows);
+    get_to(j, "screen_space_error", screenSpaceError);
     get_to(j, "tile_pixel_size", tilePixelSize);
     get_to(j, "skirt_ratio", skirtRatio);
     get_to(j, "color", color);
@@ -30,6 +32,8 @@ TerrainSettings::TerrainSettings(const JSON& conf)
     get_to(j, "morph_terrain", morphTerrain);
     get_to(j, "morph_imagery", morphImagery);
     get_to(j, "concurrency", concurrency);
+
+    return Status_OK;
 }
 
 JSON
@@ -47,6 +51,7 @@ TerrainSettings::to_json() const
     set(j, "min_frames_before_unload", minFramesBeforeUnload);
     set(j, "min_tiles_before_unload", minResidentTilesBeforeUnload);
     set(j, "cast_shadows", castShadows);
+    set(j, "screen_space_error", screenSpaceError);
     set(j, "tile_pixel_size", tilePixelSize);
     set(j, "skirt_ratio", skirtRatio);
     set(j, "color", color);

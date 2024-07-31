@@ -20,45 +20,12 @@ LayerCollection::LayerCollection(Map* map) :
 Status
 LayerCollection::add(shared_ptr<Layer> layer)
 {
-    return add(layer, _map->_instance.ioOptions());
+    return add(layer, _map->_instance.io());
 }
 
 Status
 LayerCollection::add(shared_ptr<Layer> layer, const IOOptions& io)
 {
-#if 0
-    // TEMPORARY WARNING if try to add more than one image layer.
-    if (dynamic_cast<ImageLayer*>(layer.get()))
-    {
-        std::unique_lock lock(_map->_mapDataMutex);
-
-        int image_count = std::count_if(_layers.begin(), _layers.end(),
-            [](shared_ptr<Layer>& layer) {
-                return dynamic_cast<ImageLayer*>(layer.get()) != nullptr; });
-
-        if (image_count > 0)
-        {
-            Log::warn() << "Not yet implemented: Support for more than one imagery layer" << std::endl;
-            return Status(Status::ServiceUnavailable);
-        }
-    }
-    // TEMPORARY WARNING if try to add more than one elevation layer.
-    if (dynamic_cast<ElevationLayer*>(layer.get()))
-    {
-        std::unique_lock lock(_map->_mapDataMutex);
-
-        int image_count = std::count_if(_layers.begin(), _layers.end(),
-            [](shared_ptr<Layer>& layer) {
-                return dynamic_cast<ElevationLayer*>(layer.get()) != nullptr; });
-
-        if (image_count > 0)
-        {
-            Log::warn() << "Not yet implemented: Support for more than one elevation layer" << std::endl;
-            return Status(Status::ServiceUnavailable);
-        }
-    }
-#endif
-
     // check if it's already in the collection
     if (indexOf(layer) != size())
     {
@@ -69,7 +36,7 @@ LayerCollection::add(shared_ptr<Layer> layer, const IOOptions& io)
     if (layer->openAutomatically())
     {
         // not checking the return value here since we are returning it from this method
-        layer->open();
+        layer->open(io);
     }
 
     // insert the new layer into the map safely

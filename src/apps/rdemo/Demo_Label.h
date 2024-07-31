@@ -14,7 +14,7 @@ auto Demo_Label = [](Application& app)
     static entt::entity entity = entt::null;
     static Status status;
 
-    auto& font = app.instance.runtime().defaultFont;
+    auto& font = app.runtime().defaultFont;
     if (!font)
     {
         ImGui::TextWrapped(status.message.c_str());

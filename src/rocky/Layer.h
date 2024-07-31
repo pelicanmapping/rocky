@@ -62,9 +62,6 @@ namespace ROCKY_NAMESPACE
         const Status& status() const;
 
         //! Open a layer.
-        Status open();
-
-        //! Open a layer.
         Status open(const IOOptions& options);
 
         //! Close this layer.

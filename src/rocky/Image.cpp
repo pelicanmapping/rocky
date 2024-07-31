@@ -73,15 +73,6 @@ Image::Layout Image::_layouts[7] =
     { &FLOAT<double>::read, &FLOAT<double>::write, 1, 8, R64_SFLOAT }
 };
 
-Image::Image() :
-    super(),
-    _width(0), _height(0), _depth(0),
-    _pixelFormat(R8G8B8A8_UNORM),
-    _data(nullptr)
-{
-    // nop
-}
-
 Image::Image(
     PixelFormat format,
     unsigned cols,
@@ -241,4 +232,74 @@ Image::fill(const Image::Pixel& value)
         for (unsigned t = 0; t < height(); ++t)
             for (unsigned s = 0; s < width(); ++s)
                 write(value, s, t, r);
+}
+
+
+std::shared_ptr<Image>
+Image::convolve(const float* kernel) const
+{
+    glm::fvec4 samples[9];
+
+    auto output = clone();
+
+    for (unsigned r = 0; r < depth(); ++r)
+    {
+        for (unsigned t = 0; t < height(); ++t)
+        {
+            for (unsigned s = 0; s < width(); ++s)
+            {
+                unsigned t_minus_1 = t > 0 ? t - 1 : t;
+                unsigned t_plus_1 = t < height() - 1 ? t + 1 : t;
+                unsigned s_minus_1 = s > 0 ? s - 1 : s;
+                unsigned s_plus_1 = s < width() - 1 ? s + 1 : s;
+
+                read(samples[0], s_minus_1, t_minus_1, r);
+                read(samples[1], s, t_minus_1, r);
+                read(samples[2], s_plus_1, t_minus_1, r);
+
+                read(samples[3], s_minus_1, t, r);
+                read(samples[4], s, t, r);
+                read(samples[5], s_plus_1, t, r);
+
+                read(samples[6], s_minus_1, t_plus_1, r);
+                read(samples[7], s, t_plus_1, r);
+                read(samples[8], s_plus_1, t_plus_1, r);
+
+                glm::fvec4 pixel(0, 0, 0, 0);
+                for (int i = 0; i < 9; ++i)
+                {
+                    pixel += (samples[i] * kernel[i]);
+                }
+                output->write(clamp(pixel, 0.0f, 1.0f), s, t, r);
+            }
+        }
+    }
+
+    return output;
+}
+
+std::shared_ptr<Image>
+Image::sharpen(float k) const
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(k > 0.0f, {});
+
+#if 1
+    // box kernel (looks better than gaussian for OSM)
+    float a = -k / 9.0f;
+    float b = 1.0f - (8.0f * a);
+    const float kernel[9] = {
+        a, a, a,
+        a, b, a,
+        a, a, a };
+#else
+    // guassian kernel
+    float a = -k / 16.0f;
+    float b = 1.0f - (4.0f * a);
+    const float kernel[9] = {
+        0, a, 0,
+        a, b, a,
+        0, a, 0 };
+#endif
+
+    return convolve(kernel);
 }

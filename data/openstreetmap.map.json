@@ -1,11 +1,16 @@
 {
-    "name" : "OpenStreetMap Example",
-    "layers": [
-        {
-            "name": "OpenStreetMap Imagery",
-            "profile": "spherical-mercator",
-            "uri" : "https://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png",
-            "type": "TMSImage"
-        }
-    ]
+    "terrain" : {
+        "screen_space_error" : 0.0
+    },
+    "map" : {
+        "name" : "OpenStreetMap Example",
+        "layers": [
+            {
+                "name": "OpenStreetMap Imagery",
+                "profile": "spherical-mercator",
+                "uri" : "https://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png",
+                "type": "TMSImage"
+            }
+        ]
+    }
 }

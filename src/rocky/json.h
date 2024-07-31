@@ -54,9 +54,9 @@ namespace ROCKY_NAMESPACE
     struct json_parse_result : public json
     {
         Status status;
-        json_parse_result() : json(), status(StatusOK) {}
+        json_parse_result() : json(json::object()), status(StatusOK) {}
         json_parse_result(const json& j) : json(j), status(StatusOK) {}
-        json_parse_result(const Status& s) : json(), status(s) {}
+        json_parse_result(const Status& s) : json(json::object()), status(s) {}
         json_parse_result(const json& j, const Status& s) : json(j), status(s) {}
     };
 

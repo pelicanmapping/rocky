@@ -61,7 +61,7 @@ namespace ROCKY_NAMESPACE
 
     public:
         //! Construct an empty (invalid) image
-        Image();
+        Image() = default;
 
         //! Construct an image an allocate memory for it,
         //! unless data is non-null, in which case use that memory
@@ -142,19 +142,29 @@ namespace ROCKY_NAMESPACE
         inline unsigned componentSizeInBytes() const;
 
         //! Creates a deep copy of this image
-        shared_ptr<Image> clone() const;
+        virtual std::shared_ptr<Image> clone() const;
 
         //! Creates a cropped copy of this image
-        shared_ptr<Image> crop(
+        std::shared_ptr<Image> crop(
             double src_minx, double src_miny,
             double src_maxx, double src_maxy,
             double &dst_minx, double &dst_miny,
             double &dst_maxx, double &dst_maxy) const;
 
         //! Creates a resized clone of this image
-        shared_ptr<Image> resize(
+        std::shared_ptr<Image> resize(
             unsigned width,
             unsigned height) const;
+
+        //! Creates a sharpened clone of this image.
+        //! @param strength sharpening kernel strength, 1-5 is typically a reasonable range
+        std::shared_ptr<Image> sharpen(
+            float strength = 2.5f) const;
+
+        //! Creates a convolved clone of this image.
+        //! @param kernel convolution kernel (9 floats that add up to 1.0f)
+        std::shared_ptr<Image> convolve(
+            const float* kernel) const;
 
         //! Inverts the pixels in the T dimension
         void flipVerticalInPlace();
@@ -201,9 +211,9 @@ namespace ROCKY_NAMESPACE
         unsigned char* releaseData();
 
     protected:
-        unsigned _width, _height, _depth;
-        PixelFormat _pixelFormat;
-        unsigned char* _data;
+        unsigned _width = 0, _height = 0, _depth = 0;
+        PixelFormat _pixelFormat = R8G8B8A8_UNORM;
+        unsigned char* _data = nullptr;
 
         void allocate(
             PixelFormat format,

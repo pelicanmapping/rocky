@@ -306,7 +306,7 @@ TEST_CASE("GDAL")
     {
         layer->setName("World imagery");
         layer->setConnection("WMTS:https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml,layer=s2cloudless-2020");
-        auto s = layer->open();
+        auto s = layer->open({});
         CHECK(s.ok());
     }
 }
@@ -319,7 +319,7 @@ TEST_CASE("TMS")
     CHECKED_IF(layer != nullptr)
     {
         layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
-        auto s = layer->open();
+        auto s = layer->open({});
         CHECKED_IF(s.ok())
         {
             // NOTE: we cannot test this here because the JPG reader is in InstanceVSG.
@@ -327,7 +327,7 @@ TEST_CASE("TMS")
 #if 0
             InstanceVSG instance;
             TileKey key(0, 0, 0, Profile::GLOBAL_GEODETIC);
-            Result<GeoImage> tile = layer->createImage(key, instance.ioOptions());
+            Result<GeoImage> tile = layer->createImage(key, instance.io());
             CHECK(tile.status.ok());
             CHECK(tile.value.valid());
             CHECKED_IF(tile.value.image())

@@ -6,6 +6,8 @@
 #include "TerrainNode.h"
 #include "TerrainTileNode.h"
 #include "TerrainEngine.h"
+
+#include <rocky/json.h>
 #include <rocky/IOTypes.h>
 #include <rocky/Map.h>
 #include <rocky/TileKey.h>
@@ -15,21 +17,26 @@
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 
-TerrainNode::TerrainNode(Runtime& new_runtime, const JSON& conf) :
+TerrainNode::TerrainNode(Runtime& new_runtime) :
     vsg::Inherit<vsg::Group, TerrainNode>(),
-    TerrainSettings(conf),
     _runtime(new_runtime)
 {
-    construct(conf);
+    construct();
 }
 
 void
-TerrainNode::construct(const JSON& conf)
+TerrainNode::construct()
 {
     //nop
 }
 
-JSON
+Status
+TerrainNode::from_json(const std::string& JSON, const IOOptions& io)
+{
+    return TerrainSettings::from_json(JSON);
+}
+
+std::string
 TerrainNode::to_json() const
 {
     return TerrainSettings::to_json();

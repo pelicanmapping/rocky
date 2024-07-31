@@ -47,10 +47,6 @@ namespace ROCKY_NAMESPACE
 
     public:
 
-        //! Screen-space error for geometry level of detail
-        void setScreenSpaceError(float sse);
-        float screenSpaceError() const;
-
         //! Spatial Reference System of the underlying map.
         const SRS& mapSRS() const;
 
@@ -62,6 +58,8 @@ namespace ROCKY_NAMESPACE
 
         //! Immutable access to the terrain settings
         const TerrainSettings& terrainSettings() const;
+
+        Status from_json(const std::string& JSON, const IOOptions& io);
 
         //! Serializes the MapNode
         JSON to_json() const;
@@ -77,14 +75,11 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        void construct(const JSON&);
+        void construct();
 
-
-        optional<float> _screenSpaceError = 25.0f;
         SRS _worldSRS;
         vsg::ref_ptr<vsg::Group> _layerNodes;
-        std::atomic<bool> _readyForUpdate;
-
-        bool _isOpen;
+        std::atomic<bool> _readyForUpdate = { true };
+        bool _isOpen = false;
     };
 }

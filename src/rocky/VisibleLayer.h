@@ -19,16 +19,12 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Whether to draw this layer.
-        virtual void setVisible(bool value) {
-            _visible = value;
-        }
-        const optional<bool>& visible() const { return _visible; }
+        inline void setVisible(bool value);
+        inline const optional<bool>& visible() const;
 
         //! Opacity with which to draw this layer
-        virtual void setOpacity(float value) {
-            _opacity = value;
-        }
-        const optional<float> opacity() const { return _opacity; }
+        inline void setOpacity(float value);
+        inline const optional<float>& opacity() const;
 
         //! Serialize
         JSON to_json() const override;
@@ -47,5 +43,23 @@ namespace ROCKY_NAMESPACE
         optional<float> _opacity = 1.0f;
         optional<bool> _debugView = false;
     };
+
+
+    // inlines
+    void VisibleLayer::setVisible(bool value) {
+        _visible = value;
+    }
+    const optional<bool>& VisibleLayer::visible() const {
+        return _visible;
+    }
+
+    //! Opacity with which to draw this layer
+    void VisibleLayer::setOpacity(float value) {
+        _opacity = value;
+    }
+
+    const optional<float>& VisibleLayer::opacity() const {
+        return _opacity;
+    }
 
 } // namespace VisibleLayer

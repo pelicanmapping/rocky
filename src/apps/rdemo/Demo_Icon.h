@@ -26,7 +26,7 @@ auto Demo_Icon = [](Application& app)
     if (entity == entt::null)
     {
         // Load an icon image
-        auto io = app.instance.ioOptions();
+        auto io = app.instance.io();
         auto image = io.services.readImageFromURI("https://user-images.githubusercontent.com/326618/236923465-c85eb0c2-4d31-41a7-8ef1-29d34696e3cb.png", io);
         if (image.status.failed())
         {

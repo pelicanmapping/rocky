@@ -17,7 +17,7 @@ Map::Map(const Instance& instance) :
     _imageLayers(this),
     _elevationLayers(this)
 {
-    construct({}, _instance.ioOptions());
+    construct({}, _instance.io());
 }
 
 Map::Map(const Instance& instance, const IOOptions& io) :
@@ -33,7 +33,7 @@ Map::Map(const Instance& instance, const std::string& JSON) :
     _imageLayers(this),
     _elevationLayers(this)
 {
-    construct(JSON, _instance.ioOptions());
+    construct(JSON, _instance.io());
 }
 
 Map::Map(const Instance& instance, const std::string& JSON, const IOOptions& io) :
@@ -70,7 +70,7 @@ Map::construct(const std::string& JSON, const IOOptions& io)
 }
 
 Status
-Map::from_json(const JSON& input, const IOOptions& io)
+Map::from_json(const std::string& input, const IOOptions& io)
 {
     auto j = parse_json(input);
     if (j.status.failed())
@@ -93,13 +93,14 @@ Map::from_json(const JSON& input, const IOOptions& io)
         }
     }
 
-    return {};
+    return Status_OK;
 }
 
-JSON
+std::string
 Map::to_json() const
 {
     auto j = json::object();
+
     set(j, "name", _name);
     set(j, "profile", _profile);
     set(j, "profile_layer", _profileLayer);
@@ -118,15 +119,6 @@ Map::to_json() const
 
     return j.dump();
 }
-
-
-#if 0
-ElevationPool*
-Map::getElevationPool() const
-{
-    return _elevationPool.get();
-}
-#endif
 
 Revision
 Map::revision() const

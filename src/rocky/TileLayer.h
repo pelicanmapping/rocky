@@ -68,15 +68,6 @@ namespace ROCKY_NAMESPACE
         //! make it public.
         void setProfile(const Profile&);
 
-        //! Open the layer for writing (calls open)
-        const Status& openForWriting();
-
-        //! Does the layer support writing?
-        virtual bool isWritingSupported() const { return false; }
-
-        //! Did the user open this layer for writing?
-        bool isWritingRequested() const { return _writingRequested; }
-
         //! Tiling profile for this layer
         const Profile& profile() const;
 
@@ -175,9 +166,6 @@ namespace ROCKY_NAMESPACE
     private:
         // Post-ctor
         void construct(const JSON&);
-
-        // Figure out the cache settings for this layer.
-        void establishCacheSettings();
 
         void buildDataExtentsIfNeeded() const;
 

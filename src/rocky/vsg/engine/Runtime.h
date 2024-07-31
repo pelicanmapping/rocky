@@ -76,14 +76,14 @@ namespace ROCKY_NAMESPACE
         //! Queue a function to run during the update pass
         //! This is a safe way to do things that require modifying the scene
         //! or compiling vulkan objects
-        void runDuringUpdate(
+        void onNextUpdate(
             vsg::ref_ptr<vsg::Operation> function,
             std::function<float()> get_priority = {});
 
         //! Queue a function to run during the update pass.
         //! This is a safe way to do things that require modifying the scene
         //! or compiling vulkan objects
-        void runDuringUpdate(
+        void onNextUpdate(
             std::function<void()> function);
 
         //! Compiles an object now.

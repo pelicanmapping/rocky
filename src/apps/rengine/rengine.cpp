@@ -83,9 +83,6 @@ int main(int argc, char** argv)
     rocky::Log()->info("Welcome to " ROCKY_PROJECT_NAME " version " ROCKY_VERSION_STRING);
     rocky::Log()->info("Using VSG " VSG_VERSION_STRING " (so " VSG_SOVERSION_STRING ")");
 
-    // An LRU cache mainly used for network data fetches.
-    ri.ioOptions().services.contentCache->setCapacity(128);
-
     // main window
     auto traits = vsg::WindowTraits::create(ROCKY_PROJECT_NAME);
     traits->debugLayer = arguments.read({ "--debug" });

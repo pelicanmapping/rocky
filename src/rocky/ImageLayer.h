@@ -42,13 +42,6 @@ namespace ROCKY_NAMESPACE
             const TileKey& key,
             const IOOptions& io) const;
 
-        //! Stores an image in this layer (if writing is enabled).
-        //! Returns a status value indicating whether the store succeeded.
-        Status writeImage(
-            const TileKey& key,
-            shared_ptr<Image> image,
-            const IOOptions& io);
-
         //! Returns the compression method prefered by this layer
         //! that you can pass to ImageUtils::compressImage.
         const std::string getCompressionMethod() const;
@@ -69,12 +62,6 @@ namespace ROCKY_NAMESPACE
         ImageLayer();
 
         ImageLayer(const std::string& JSON, const IOOptions& io);
-
-        //! Subclass can override this to write data for a tile key.
-        virtual Status writeImageImplementation(
-            const TileKey& key,
-            shared_ptr<Image> image,
-            const IOOptions& io) const;
 
         //! Modify the bbox if an altitude is set (for culling)
         virtual void modifyTileBoundingBox(
@@ -106,6 +93,7 @@ namespace ROCKY_NAMESPACE
         optional<std::string> _noDataImageLocation = { };
         optional<Color> _transparentColor = Color(0, 0, 0, 0);
         optional<std::string> _textureCompression;
+        optional<float> _sharpness;
 
         Result<GeoImage> createImageImplementation_internal(
             const TileKey& key,

@@ -62,7 +62,7 @@ MBTilesImageLayer::openImplementation(const IOOptions& io)
     Status status = _driver.open(
         name(),
         _options,
-        isWritingRequested(),
+        false, // isWritingRequested(),
         new_profile,
         dataExtents,
         io);
@@ -101,17 +101,6 @@ MBTilesImageLayer::createImageImplementation(const TileKey& key, const IOOptions
         return GeoImage(result.value, key.extent());
     else
         return result.status;
-}
-
-Status
-MBTilesImageLayer::writeImageImplementation(const TileKey& key, shared_ptr<Image> image, const IOOptions& io) const
-{
-    if (status().failed()) return status();
-
-    if (!isWritingRequested())
-        return Status(Status::ServiceUnavailable);
-
-    return _driver.write(key, image, io);
 }
 
 #endif // ROCKY_HAS_MBTILES

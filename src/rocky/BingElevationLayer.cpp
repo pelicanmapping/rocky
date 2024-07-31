@@ -120,7 +120,10 @@ BingElevationLayer::createHeightfieldImplementation(const TileKey& key, const IO
     auto jsonItr = elevations.begin();
     heightfield->forEachHeight([&](float& point) {point = (jsonItr++)->get<float>(); });
 
-    return GeoHeightfield(heightfield, key.extent());
+    if (heightfield)
+        return GeoHeightfield(heightfield, key.extent());
+    else
+        return Status_ResourceUnavailable;
 }
 
 #endif // ROCKY_HAS_BING

@@ -132,29 +132,26 @@ IOOptions::IOOptions(const std::string& in_referrer) :
     //nop
 }
 
+IOOptions::IOOptions(const IOOptions& rhs, const std::string& in_referrer) :
+    IOOptions(rhs)
+{
+    referrer = in_referrer;
+}
+
 IOOptions&
 IOOptions::operator = (const IOOptions& rhs)
 {
     services = rhs.services;
     referrer = rhs.referrer;
     maxNetworkAttempts = rhs.maxNetworkAttempts;
+    uriGate = rhs.uriGate;
     _cancelable = rhs._cancelable;
     _properties = rhs._properties;
     return *this;
 }
 
-namespace
+Services::Services()
 {
-    ReadImageURIService default_read_image_from_uri = [](const std::string&, const IOOptions&) { return Status(Status::ServiceUnavailable); };
-    ReadImageStreamService default_read_image_from_stream = [](std::istream&, const std::string&, const IOOptions&) { return Status(Status::ServiceUnavailable); };
-    CacheService default_cache = []() { return nullptr; };
+    readImageFromURI = [](const std::string& location, const IOOptions&) { return Status_ServiceUnavailable; };
+    readImageFromStream = [](std::istream& stream, std::string contentType, const IOOptions& io) { return Status_ServiceUnavailable; };
 }
-
-Services::Services() :
-    readImageFromURI(default_read_image_from_uri),
-    readImageFromStream(default_read_image_from_stream),
-    cache(default_cache)
-{
-    //nop
-}
-

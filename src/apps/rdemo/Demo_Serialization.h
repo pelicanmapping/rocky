@@ -17,9 +17,9 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_Serialization = [](Application& app)
 {
-    if (ImGui::Button("Serialize Map to stdout (JSON)"))
+    if (ImGui::Button("Serialize MapNode to stdout (JSON)"))
     {
-        JSON map_json = app.mapNode->map->to_json();
+        auto map_json = app.mapNode->to_json();
         auto serialized = rocky::json_pretty(map_json);
 
         std::ofstream outfile("out.json");

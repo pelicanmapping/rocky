@@ -42,9 +42,6 @@ namespace ROCKY_NAMESPACE
         void setEncoding(Encoding evalue);
         const optional<Encoding>& encoding() const;
 
-        //! Override from VisibleLayer
-        void setVisible(bool value) override;
-
         //! Serialize this layer
         JSON to_json() const override;
 
@@ -72,15 +69,6 @@ namespace ROCKY_NAMESPACE
             const TileKey& key,
             const IOOptions& io) const;
 
-        /**
-         * Writes a height field for the specified key, if writing is
-         * supported and the layer was opened with openForWriting.
-         */
-        Status writeHeightfield(
-            const TileKey& key,
-            shared_ptr<Heightfield> hf,
-            const IOOptions& io) const;
-
     protected: // ElevationLayer
 
         //! Construct (from subclass)
@@ -102,12 +90,6 @@ namespace ROCKY_NAMESPACE
         {
             return Result(GeoHeightfield::INVALID);
         }
-
-        //! Subalss can override this to enable writing heightfields.
-        virtual Status writeHeightfieldImplementation(
-            const TileKey& key,
-            shared_ptr<Heightfield> hf,
-            const IOOptions& io) const;
 
         //! Decodes a mapbox RGB encoded heightfield image into a heightfield.
         shared_ptr<Heightfield> decodeMapboxRGB(shared_ptr<Image> image) const;

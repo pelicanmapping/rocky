@@ -32,7 +32,7 @@ auto Demo_Geocoder = [](Application& app)
     if (entity == entt::null)
     {
         // Load an icon image
-        auto io = app.instance.ioOptions();
+        auto& io = app.io();
         auto image = io.services.readImageFromURI("https://raw.githubusercontent.com/gwaldron/osgearth/master/data/placemark64.png", io);
         if (image.status.failed())
         {
@@ -50,13 +50,13 @@ auto Demo_Geocoder = [](Application& app)
         icon.active = false;
 
         // Attach a label:
-        label_style_point.font = app.instance.runtime().defaultFont;
+        label_style_point.font = app.runtime().defaultFont;
         label_style_point.horizontalAlignment = vsg::StandardLayout::LEFT_ALIGNMENT;
         label_style_point.pointSize = 26.0f;
         label_style_point.outlineSize = 0.5f;
         label_style_point.pixelOffset = { icon.style.size_pixels, 0.0f, 0.0f };
 
-        label_style_area.font = app.instance.runtime().defaultFont;
+        label_style_area.font = app.runtime().defaultFont;
         label_style_area.horizontalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;
         label_style_area.pointSize = 26.0f;
         label_style_area.outlineSize = 0.5f;
@@ -89,7 +89,7 @@ auto Demo_Geocoder = [](Application& app)
                     if (!c.canceled())
                     {
                         Geocoder geocoder;
-                        result = geocoder.geocode(input, app.instance.ioOptions());
+                        result = geocoder.geocode(input, app.io());
                     }
                     return result;
                 });
@@ -151,7 +151,7 @@ auto Demo_Geocoder = [](Application& app)
                                 while(i.hasMore()) for (auto& point : i.next().points) point.z = 500.0;
                                 feature_view.clear(app.entities);
                                 feature_view.features = { copy_of_feature };
-                                feature_view.generate(app.entities, app.instance.runtime());
+                                feature_view.generate(app.entities, app.runtime());
                                 feature_view.active = true;
                                 icon.active = false;
                                 label.style = label_style_area;

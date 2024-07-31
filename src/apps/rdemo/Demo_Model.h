@@ -34,7 +34,7 @@ auto Demo_Model = [](Application& app)
 
         // Parse the model
         // this is a bit awkward but it works when the URI has an extension
-        auto options = vsg::Options::create(*app.instance.runtime().readerWriterOptions);
+        auto options = vsg::Options::create(*app.runtime().readerWriterOptions);
         auto extension = std::filesystem::path(uri.full()).extension();
         options->extensionHint = extension.empty() ? std::filesystem::path(result.value.contentType) : extension;
         std::stringstream in(result.value.data);
@@ -59,7 +59,7 @@ auto Demo_Model = [](Application& app)
         component.node = scaler;
 
         // Since we're supplying our own node, we need to compile it manually
-        app.instance.runtime().compile(component.node);
+        app.runtime().compile(component.node);
 
         // A transform component to place and move it on the map
         auto& transform = app.entities.emplace<Transform>(entity);

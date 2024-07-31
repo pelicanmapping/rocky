@@ -1,14 +1,16 @@
 {
-    "name" : "Bing Maps Example",
-    "layers": [
-        {
-            "name": "Bing Imagery",
-            "type": "BingImage",
-            "imagery_set": "Aerial",
-            "key": "<your key here>"
-        },
-        {
-            "type": "BingElevation"
-        }
-    ]
+    "map" : {
+        "name" : "Bing Maps Example",
+        "layers": [
+            {
+                "name": "Bing Imagery",
+                "type": "BingImage",
+                "imagery_set": "Aerial",
+                "key": "<your key here>"
+            },
+            {
+                "type": "BingElevation"
+            }
+        ]
+    }
 }

@@ -45,7 +45,7 @@ auto Demo_Tethering = [](Application& app)
         entity = app.entities.create();
 
         // add an icon:
-        auto io = app.instance.ioOptions();
+        auto io = app.instance.io();
         auto image = io.services.readImageFromURI("https://github.com/gwaldron/osgearth/blob/master/data/airport.png?raw=true", io);
         if (image.status.ok()) {
             auto& icon = app.entities.emplace<Icon>(entity);

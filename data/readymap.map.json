@@ -1,15 +1,17 @@
 {
-    "name" : "ReadyMap(R) Example",
-    "layers": [
-        {
-            "name": "ReadyMap 15m Base Imagery",
-            "type": "TMSImage",
-            "uri": "https://readymap.org/readymap/tiles/1.0.0/7"
-        },
-        {
-            "name": "ReadyMap 90m Elevation",
-            "type": "TMSElevation",
-            "uri": "https://readymap.org/readymap/tiles/1.0.0/116/"
-        }
-    ]
+    "map" : {
+        "name" : "ReadyMap(R) Example",
+        "layers": [
+            {
+                "name": "ReadyMap 15m Base Imagery",
+                "type": "TMSImage",
+                "uri": "https://readymap.org/readymap/tiles/1.0.0/7"
+            },
+            {
+                "name": "ReadyMap 90m Elevation",
+                "type": "TMSElevation",
+                "uri": "https://readymap.org/readymap/tiles/1.0.0/116/"
+            }
+        ]
+    }
 }

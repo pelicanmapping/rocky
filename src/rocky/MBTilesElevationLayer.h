@@ -50,10 +50,6 @@ namespace ROCKY_NAMESPACE
         //! Closes the layer and returns its status
         void closeImplementation() override;
 
-        //! Writes a raster image for he given tile key (if open for writing)
-        Status writeHeightfieldImplementation(const TileKey& key, shared_ptr<Heightfield> image, const IOOptions& io) const override;
-
-
     private:
         MBTiles::Driver _driver;
         MBTiles::Options _options;

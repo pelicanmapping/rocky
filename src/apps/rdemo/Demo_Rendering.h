@@ -14,7 +14,7 @@ auto Demo_Rendering = [](Application& app)
 {
     if (ImGuiLTable::Begin("rendering"))
     {
-        ImGuiLTable::SliderFloat("SSE", &app.mapNode->terrainSettings().screenSpaceError.mutable_value(), 1.0f, 512.0f, "%.0f");
+        ImGuiLTable::SliderFloat("SSE", &app.mapNode->terrainSettings().screenSpaceError.mutable_value(), 0.0f, 512.0f, "%.0f");
 
         ImGuiLTable::SliderFloat("Tile pixels", &app.mapNode->terrainSettings().tilePixelSize.mutable_value(), 1.0f, 512.0f, "%.0f");
 

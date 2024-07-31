@@ -64,6 +64,16 @@ namespace ROCKY_NAMESPACE
         //! access windows, views, or manipulators before starting the frame loop.
         void realize();
 
+        //! Shortcut to the instance's IOOptions
+        IOOptions& io() {
+            return instance.io();
+        }
+        
+        //! Shortcut to the Runtime interface
+        Runtime& runtime() {
+            return instance.runtime();
+        }
+
     public: // public properties
 
         entt::registry entities;

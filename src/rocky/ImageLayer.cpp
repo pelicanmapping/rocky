@@ -39,12 +39,19 @@ namespace
 
         CompositeImage(const CompositeImage& rhs) :
             super(rhs),
-            dependencies(rhs.dependencies)
+            dependencies(rhs.dependencies),
+            cleanupOperation(rhs.cleanupOperation)
         {}
 
         virtual ~CompositeImage()
         {
-            cleanupOperation();
+            if (cleanupOperation)
+                cleanupOperation();
+        }
+
+        std::shared_ptr<Image> clone() const override
+        {
+            return std::make_shared<CompositeImage>(*this);
         }
 
         std::vector<std::shared_ptr<Image>> dependencies;
@@ -71,6 +78,7 @@ ImageLayer::construct(const std::string& JSON, const IOOptions& io)
     get_to(j, "nodata_image", _noDataImageLocation);
     get_to(j, "transparent_color", _transparentColor);
     get_to(j, "texture_compression", _textureCompression);
+    get_to(j, "sharpness", _sharpness);
 
     setRenderType(RENDERTYPE_TERRAIN_SURFACE);
 
@@ -84,6 +92,7 @@ ImageLayer::to_json() const
     set(j, "nodata_image", _noDataImageLocation);
     set(j, "transparent_color", _transparentColor);
     set(j, "texture_compression", _textureCompression);
+    set(j, "sharpness", _sharpness);
     return j.dump();
 }
 
@@ -141,20 +150,13 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
         return Result(GeoImage::INVALID);
     }
 
-    // Tile gate prevents two threads from requesting the same key
-    // at the same time, which would be unnecessary work. Only lock
-    // the gate if there is an L2 cache active
-    ROCKY_TODO("Sentry");
-    //util::ScopedGate<TileKey> scopedGate(_sentry, key, [&]() {
-    //    return _memCache.valid();
-    //});
-
     Result<GeoImage> result;
+    float sharpness = _sharpness.has_value() ? _sharpness.value() : 0.0f;
 
     // if this layer has no profile, just go straight to the driver.
     if (!profile().valid())
     {
-        return createImageImplementation_internal(key, io);
+        result = createImageImplementation_internal(key, io);
     }
 
     else if (key.profile() == profile())
@@ -166,6 +168,20 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
         // If the profiles are different, use a compositing method to assemble the tile.
         auto image = assembleImage(key, io);
         result = GeoImage(image, key.extent());
+
+        // automatically re-sharpen a reprojected image to account for quality loss.
+        // Do we like this idea?
+        if (sharpness == 0.0f)
+            sharpness = 2.2f;
+    }
+
+    // developer assert - if a status is OK, the image must exist.
+    // address this later if necessary.
+    //ROCKY_SOFT_ASSERT(result.status.failed() || result.value.image());
+
+    if (sharpness > 0.0f && result.status.ok() && result.value.image())
+    {
+        result = GeoImage(result.value.image()->sharpen(sharpness), key.extent());
     }
 
     return result;
@@ -352,22 +368,6 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
     }
 
     return output;
-}
-
-Status
-ImageLayer::writeImage(const TileKey& key, shared_ptr<Image> image, const IOOptions& io)
-{
-    if (status().failed())
-        return status();
-
-    std::shared_lock lock(layerStateMutex());
-    return writeImageImplementation(key, image, io);
-}
-
-Status
-ImageLayer::writeImageImplementation(const TileKey& key, shared_ptr<Image> image, const IOOptions& io) const
-{
-    return Status(Status::ServiceUnavailable);
 }
 
 const std::string
