@@ -172,33 +172,35 @@ private:
 
 int main(int argc, char** argv)
 {
+    rocky::Log()->set_level(rocky::log::level::info);
+
     // instantiate the application engine.
     rocky::Application app(argc, argv);
 
-    rocky::Log()->set_level(rocky::log::level::info);
-
-    if (app.commandLineStatus.ok())
+    // Exit if the user tries to load a file and failed:
+    if (app.commandLineStatus.failed())
     {
-        auto& layers = app.mapNode->map->layers();
-        if (layers.empty())
-        {
+        Log()->error(app.commandLineStatus.toString());
+        exit(-1);
+    }
+
+    // Add some default layers if the user didn't load a file:
+    auto& layers = app.mapNode->map->layers();
+    if (layers.empty())
+    {
 #ifdef ROCKY_HAS_TMS
-            auto imagery = rocky::TMSImageLayer::create();
-            imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7";
-            layers.add(imagery);
+        auto imagery = rocky::TMSImageLayer::create();
+        imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7";
+        layers.add(imagery);
 
-            // add an elevation layer to the map
-            auto elev = rocky::TMSElevationLayer::create();
-            elev->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
-            layers.add(elev);
+        // add an elevation layer to the map
+        auto elev = rocky::TMSElevationLayer::create();
+        elev->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
+        layers.add(elev);
 #endif
-        }
-    }
-    else
-    {
-        Log()->warn(app.commandLineStatus.message);
     }
 
+    // Create the main window and the main GUI:
     auto window = app.displayManager->addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
     auto imgui = vsgImGui::RenderImGui::create(window);
     imgui->addChild(MainGUI::create(app));
@@ -208,6 +210,7 @@ int main(int argc, char** argv)
     auto main_view = app.displayManager->windowsAndViews[window].front();
     app.displayManager->getRenderGraph(main_view)->addChild(imgui);
 
+    // Make sure ImGui is the first event handler:
     auto& handlers = app.viewer->getEventHandlers();
     handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(window));
 

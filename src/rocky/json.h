@@ -7,9 +7,9 @@
 #include "Common.h"
 #include "Status.h"
 
-//#if !defined(ROCKY_LIBRARY) && !defined(ROCKY_EXPOSE_JSON_FUNCTIONS)
-//#error json.h is an internal header file; do not include it directly :)
-//#endif
+#if !defined(ROCKY_LIBRARY) && !defined(ROCKY_EXPOSE_JSON_FUNCTIONS)
+#error json.h is an internal header file; do not include it directly :)
+#endif
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
@@ -161,5 +161,10 @@ namespace ROCKY_NAMESPACE
     ROCKY_DEFINE_JSON_SERIALIZERS(GeoPoint);
     ROCKY_DEFINE_JSON_SERIALIZERS(URI);
     ROCKY_DEFINE_JSON_SERIALIZERS(Viewpoint);
+
+    // specializations.
+    class IOOptions;
+    extern ROCKY_EXPORT bool get_to(const json& obj, const char* name, URI& var, const IOOptions& io);
+    extern ROCKY_EXPORT bool get_to(const json& obj, const char* name, rocky::optional<URI>& var, const IOOptions& io);
 }
 

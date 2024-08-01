@@ -7,7 +7,6 @@
 
 #include <rocky/Common.h>
 #include <rocky/IOTypes.h>
-#include <rocky/json.h>
 
 #include <iostream>
 #include <string>
@@ -141,21 +140,4 @@ namespace ROCKY_NAMESPACE
         void set(const std::string& location, const URIContext& context);
         void findRotation();
     };
-
-
-    // json specializations.
-    inline bool get_to(const json& obj, const char* name, URI& var, const IOOptions& io)
-    {
-        bool ok = get_to(obj, name, var);
-        if (ok && io.referrer.has_value())
-            var.setReferrer(io.referrer.value());
-        return ok;
-    }
-    inline bool get_to(const json& obj, const char* name, rocky::optional<URI>& var, const IOOptions& io)
-    {
-        bool ok = get_to(obj, name, var);
-        if (ok && io.referrer.has_value())
-            var->setReferrer(io.referrer.value());
-        return ok;
-    }
 }

@@ -53,6 +53,7 @@ namespace ROCKY_NAMESPACE
     struct Content {
         std::string contentType;
         std::string data;
+        std::chrono::system_clock::time_point timestamp;
     };
 
     using ContentCache = rocky::util::LRUCache<std::string, Result<Content>>;
@@ -91,7 +92,7 @@ namespace ROCKY_NAMESPACE
         //! Referring location for an operation using these options
         std::optional<std::string> referrer;
 
-        //! Gate for seriaizing duplicate URI requests
+        //! Gate for seriaizing duplicate URI requests (shared)
         mutable std::shared_ptr<util::Gate<std::string>> uriGate;
 
         //! Custom options for reading/writing data
@@ -137,9 +138,6 @@ namespace ROCKY_NAMESPACE
 
         //! constructs a CachePolicy from a usage
         CachePolicy(const Usage&);
-
-        //! constructs a CachePolicy from a config options
-        //CachePolicy(const JSON& conf);
 
         //! Merges any set properties in another CP into this one, override existing values.
         void mergeAndOverride(const CachePolicy& rhs);

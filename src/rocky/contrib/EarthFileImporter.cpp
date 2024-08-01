@@ -164,7 +164,7 @@ EarthFileImporter::read(const std::string& location, const IOOptions& io) const
     auto result = uri.read(io);
     if (result.status.failed())
     {
-        return Status(Status::ResourceUnavailable);
+        return result.status;
     }
 
     // try to parse the string into an XML document:
@@ -181,7 +181,7 @@ EarthFileImporter::read(const std::string& location, const IOOptions& io) const
     auto mapxml = doc.RootElement();
     if (!util::ciEquals(mapxml->Value(), "map"))
     {
-        return Status(Status::ConfigurationError, "XML missing top-level Map element");
+        return Status(Status::ConfigurationError, "XML missing top-level 'map' element");
     }
 
     json map = json::object();

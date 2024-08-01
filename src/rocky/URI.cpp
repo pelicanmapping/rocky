@@ -7,6 +7,8 @@
 #include "Utils.h"
 #include "Instance.h"
 #include "Version.h"
+#include "json.h"
+
 #include <typeinfo>
 #include <fstream>
 #include <sstream>
@@ -385,7 +387,9 @@ URI::read(const IOOptions& io) const
                     + "%");
             }
 
-            return cached.value;
+            IOResult<Content> result(cached.value);
+            result.fromCache = true;
+            return result;
         }
     }
 
@@ -405,20 +409,21 @@ URI::read(const IOOptions& io) const
         in.close();
     }
 
-    else if (containsServerAddress(full()))
+    else if (isRemote())
     {
+        HTTPRequest request{ full() };
+
         // resolve a rotation:
         static int rotator = 0;
-        std::string actual_url = full();
         if (_r0 != std::string::npos && _r1 != std::string::npos)
         {
             util::replace_in_place(
-                actual_url,
-                actual_url.substr(_r0, _r1 - _r0 + 1),
-                actual_url.substr(_r0 + 1 + (rotator++ % (_r1 - _r0 - 1)), 1));
+                request.url,
+                request.url.substr(_r0, _r1 - _r0 + 1),
+                request.url.substr(_r0 + 1 + (rotator++ % (_r1 - _r0 - 1)), 1));
         }
 
-        HTTPRequest request{ actual_url };
+        // make the actual request:
         auto r = http_get(request, io);
         if (r.status.failed())
         {
@@ -433,8 +438,8 @@ URI::read(const IOOptions& io) const
 
         if (contentType.empty())
         {
-            auto p = actual_url.find_first_of('?');
-            auto url_path = p != std::string::npos ? actual_url.substr(0, p) : actual_url;
+            auto p = request.url.find_first_of('?');
+            auto url_path = p != std::string::npos ? request.url.substr(0, p) : request.url;
             contentType = inferContentTypeFromFileExtension(url_path);
         }
 
@@ -450,9 +455,7 @@ URI::read(const IOOptions& io) const
     }
     else
     {
-        return IOResult<Content>(Status(
-            Status::ResourceUnavailable,
-            util::make_string() << "Cannot open \"" << full() << "\""));
+        return Status(Status::ResourceUnavailable, full());
     }
 
     if (io.services.contentCache)
@@ -532,4 +535,21 @@ namespace ROCKY_NAMESPACE
             obj = URI(base, context);
         }
     }
+}
+
+// specializations from json.h
+
+bool ROCKY_NAMESPACE::get_to(const json& obj, const char* name, URI& var, const IOOptions& io)
+{
+    bool ok = get_to(obj, name, var);
+    if (ok && io.referrer.has_value())
+        var.setReferrer(io.referrer.value());
+    return ok;
+}
+bool ROCKY_NAMESPACE::get_to(const json& obj, const char* name, rocky::optional<URI>& var, const IOOptions& io)
+{
+    bool ok = get_to(obj, name, var);
+    if (ok && io.referrer.has_value())
+        var->setReferrer(io.referrer.value());
+    return ok;
 }

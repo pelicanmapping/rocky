@@ -99,10 +99,10 @@ int main(int argc, char** argv)
     // the scene graph
     auto vsg_scene = vsg::Group::create();
 
-    // TODO: read this from an earth file
+    // the map node - renders the terrain
     auto mapNode = rocky::MapNode::create(ri);
 
-    // Configure the mapnode to our liking:
+    // Configure the terrain engine to our liking:
     mapNode->terrainSettings().concurrency = 4u;
     mapNode->terrainSettings().skirtRatio = 0.025f;
     mapNode->terrainSettings().minLevelOfDetail = 1;
