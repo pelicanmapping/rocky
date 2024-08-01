@@ -76,9 +76,9 @@ $(function() {
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &quot;Common.h&quot;</span></div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;Status.h&quot;</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="comment">//#if !defined(ROCKY_LIBRARY) &amp;&amp; !defined(ROCKY_EXPOSE_JSON_FUNCTIONS)</span></div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment">//#error json.h is an internal header file; do not include it directly :)</span></div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="comment">//#endif</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#if !defined(ROCKY_LIBRARY) &amp;&amp; !defined(ROCKY_EXPOSE_JSON_FUNCTIONS)</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#error json.h is an internal header file; do not include it directly :)</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160; </div>
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;nlohmann/json.hpp&gt;</span></div>
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="keyword">using</span> json = nlohmann::json;</div>
@@ -229,8 +229,13 @@ $(function() {
 <div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(GeoPoint);</div>
 <div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(URI);</div>
 <div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(Viewpoint);</div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;}</div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160; </div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160; </div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    <span class="comment">// specializations.</span></div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;    <span class="keyword">class </span>IOOptions;</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    <span class="keyword">extern</span> ROCKY_EXPORT <span class="keywordtype">bool</span> get_to(<span class="keyword">const</span> json&amp; obj, <span class="keyword">const</span> <span class="keywordtype">char</span>* name, URI&amp; var, <span class="keyword">const</span> IOOptions&amp; io);</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;    <span class="keyword">extern</span> ROCKY_EXPORT <span class="keywordtype">bool</span> get_to(<span class="keyword">const</span> json&amp; obj, <span class="keyword">const</span> <span class="keywordtype">char</span>* name, rocky::optional&lt;URI&gt;&amp; var, <span class="keyword">const</span> IOOptions&amp; io);</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;}</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160; </div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">ROCKY_NAMESPACE::Status</a></div><div class="ttdef"><b>Definition:</b> Status.h:24</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1json__parse__result_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1json__parse__result.html">ROCKY_NAMESPACE::json_parse_result</a></div><div class="ttdoc">extent json with a status so we can check for parsing errors</div><div class="ttdef"><b>Definition:</b> json.h:55</div></div>
