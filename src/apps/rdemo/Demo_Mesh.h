@@ -41,7 +41,7 @@ auto Demo_Mesh_Absolute = [](Application& app)
         }
 
         // Set a dynamic style that we can change at runtime.
-        mesh.style = { { 1.0f, 0.4f, 0.1f, 0.75f }, 32.0f, 1e-7f };
+        mesh.style = { { 1.0f, 0.4f, 0.1f, 0.75f }, 32.0f, 2500.0f };
 
         // Turn off depth buffer writes
         mesh.writeDepth = false;
@@ -63,7 +63,7 @@ auto Demo_Mesh_Absolute = [](Application& app)
             if (ImGuiLTable::SliderFloat("Wireframe", &style.wireframe, 0.0f, 32.0f, "%.0f"))
                 mesh.dirty();
 
-            if (ImGuiLTable::SliderFloat("Depth offset", &style.depth_offset, 0.0f, 0.00001f, "%.7f"))
+            if (ImGuiLTable::SliderFloat("Depth offset", &style.depth_offset, 0.0f, 10000.0f, "%.0f"))
                 mesh.dirty();
         }
 

@@ -106,6 +106,13 @@ namespace ROCKY_NAMESPACE
             glm::fvec4& output,
             double x, double y) const;
 
+        //! Clamp the input coordinate to the image's valid extent and then
+        //! read the value of a pixel at the coordinate (x, y) which is
+        //! assumed to be in the GeoImage's SRS.
+        bool read_clamped(
+            glm::fvec4& output,
+            double x, double y) const;
+
         //! Read the value of a pixel at the coordinate (x, y) which
         //! is expressed in the provided SRS.
         bool read(

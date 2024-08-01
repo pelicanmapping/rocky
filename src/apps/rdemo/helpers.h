@@ -33,6 +33,16 @@ namespace ImGuiLTable
         ImGui::PlotLines("", getter, data, values_count, values_offset, overlay, scale_min, scale_max);
     }
 
+    static bool DragFloat(const char* label, float* v, float step, float v_min, float v_max, const char* format = nullptr)
+    {
+        ImGui::TableNextColumn();
+        ImGui::Text(label);
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(-1);
+        std::string s("##" + std::string(label));
+        return ImGui::DragFloat(s.c_str(), v, step, v_min, v_max, format);
+    }
+
     static bool SliderFloat(const char* label, float* v, float v_min, float v_max, const char* format = nullptr)
     {
         ImGui::TableNextColumn();

@@ -231,49 +231,58 @@ namespace
             if (entry.bounds.has_value())
                 return entry.bounds.value();
 
-            double west_lon, south_lat, east_lon, north_lat;
-            if (proj_get_area_of_use(ctx, entry.pj, &west_lon, &south_lat, &east_lon, &north_lat, nullptr) &&
-                west_lon > -1000)
+            // Well known stuff:
+            if (entry.horiz_crs_type == PJ_TYPE_GEOGRAPHIC_2D_CRS || entry.horiz_crs_type == PJ_TYPE_GEOGRAPHIC_3D_CRS)
             {
-                // always returns lat/long, so transform back to this srs
-                auto xform = get_or_create_operation("wgs84", def); // don't call proj_destroy on this
-                PJ_COORD LL = proj_trans(xform, PJ_FWD, PJ_COORD{ west_lon, south_lat, 0.0, 0.0 });
-                PJ_COORD UR = proj_trans(xform, PJ_FWD, PJ_COORD{ east_lon, north_lat, 0.0, 0.0 });
-                entry.bounds = Box(LL.xyz.x, LL.xyz.y, UR.xyz.x, UR.xyz.y);
+                entry.bounds = Box(-180, -90, 180, 90);
             }
-            else
+
+            else if (entry.horiz_crs_type != PJ_TYPE_GEOCENTRIC_CRS)
             {
-                // We will have to make an educated guess.
-                if (entry.horiz_crs_type == PJ_TYPE_GEOGRAPHIC_2D_CRS || entry.horiz_crs_type == PJ_TYPE_GEOGRAPHIC_3D_CRS)
+                if (contains(entry.proj, "proj=utm"))
                 {
-                    entry.bounds = Box(-180, -90, 180, 90);
+                    if (contains(entry.proj, "+south"))
+                        entry.bounds = Box(166000, 1116915, 834000, 10000000);
+                    else
+                        entry.bounds = Box(166000, 0, 834000, 9330000);
                 }
-                else if (entry.horiz_crs_type != PJ_TYPE_GEOCENTRIC_CRS)
+
+                else if (contains(entry.proj, "proj=merc"))
                 {
-                    if (contains(entry.proj, "proj=utm"))
-                    {
-                        if (contains(entry.proj, "+south"))
-                            entry.bounds = Box(166000, 1116915, 834000, 10000000);
-                        else
-                            entry.bounds = Box(166000, 0, 834000, 9330000);
-                    }
-
-                    else if (contains(entry.proj, "proj=merc"))
-                    {
-                        // values found empirically 
-                        entry.bounds = Box(-20037508.342789244, -20048966.104014594, 20037508.342789244, 20048966.104014594);
-                    }
-
-                    else if (contains(entry.proj, "proj=qsc"))
-                    {
-                        // maximum possible values, I think
-                        entry.bounds = Box(
-                            -entry.ellipsoid.semiMajorAxis(),
-                            -entry.ellipsoid.semiMinorAxis(),
-                            entry.ellipsoid.semiMajorAxis(),
-                            entry.ellipsoid.semiMinorAxis());
-                    }
+                    // values found empirically 
+                    //entry.bounds = Box(-20037508.342789244, -20048966.104014594, 20037508.342789244, 20048966.104014594);
+                    entry.bounds = Box(-20037508.34278925, -20037508.34278925, 20037508.34278925, 20037508.34278925);
                 }
+
+                else if (contains(entry.proj, "proj=qsc"))
+                {
+                    // maximum possible values, I think
+                    entry.bounds = Box(
+                        -entry.ellipsoid.semiMajorAxis(),
+                        -entry.ellipsoid.semiMinorAxis(),
+                        entry.ellipsoid.semiMajorAxis(),
+                        entry.ellipsoid.semiMinorAxis());
+                }
+            }
+
+            // no good? try querying it instead:
+            if (!entry.bounds.has_value())
+            {
+                double west_lon, south_lat, east_lon, north_lat;
+                if (proj_get_area_of_use(ctx, entry.pj, &west_lon, &south_lat, &east_lon, &north_lat, nullptr) &&
+                    west_lon > -1000)
+                {
+                    // always returns lat/long, so transform back to this srs
+                    auto xform = get_or_create_operation("wgs84", def); // don't call proj_destroy on this
+                    PJ_COORD LL = proj_trans(xform, PJ_FWD, PJ_COORD{ west_lon, south_lat, 0.0, 0.0 });
+                    PJ_COORD UR = proj_trans(xform, PJ_FWD, PJ_COORD{ east_lon, north_lat, 0.0, 0.0 });
+                    entry.bounds = Box(LL.xyz.x, LL.xyz.y, UR.xyz.x, UR.xyz.y);
+                }
+            }
+
+            if (!entry.bounds.has_value())
+            {
+                entry.bounds = empty_box; // :(
             }
 
             return entry.bounds.value();

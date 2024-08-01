@@ -59,14 +59,16 @@ auto Demo_PolygonFeatures = [](Application& app)
             }
 
             // generate random colors for the feature geometry:
-            std::default_random_engine re(0);
+            ////std::default_random_engine re(0);
             std::uniform_real_distribution<float> frand(0.15f, 1.0f);
 
-            feature_view.styles.mesh_function = [&](const Feature& f)
+            feature_view.styles.mesh_function = [&frand](const Feature& f)
                 {
-                    return MeshStyle{
-                        { frand(re), frand(re), frand(re), 1.0f },
-                        64.0f };
+                    std::default_random_engine re(f.id);
+                    MeshStyle ms;
+                    ms.color = vsg::vec4{ frand(re), frand(re), frand(re), 1.0f };
+                    ms.depth_offset = 9000.0f; // highest point on earth
+                    return ms;
                 };
 
             // compile the features into renderable geometry

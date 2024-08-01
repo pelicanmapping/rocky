@@ -61,12 +61,15 @@ auto Demo_LineFeatures = [](Application& app)
             }
 
             // apply a style for geometry creation:
-            feature_view.styles.line = LineStyle{
-                { 1,1,0.3f,1 }, // color
-                2.0f,          // width
-                0xffff,        // stipple pattern
-                1,             // stipple factor
-                100000.0f };   // resolution (geometric error)
+            feature_view.styles.line = LineStyle
+            {
+                { 1, 1, 0.3f, 1 }, // color
+                2.0f,              // width (pixels)
+                0xffff,            // stipple pattern (bitmask)
+                1,                 // stipple factor
+                100000.0f,         // resolution (geometric error)
+                5000.0f            // depth offset (meters)
+            };
 
             // generate our renderable geometry
             feature_view.generate(app.entities, app.runtime());
@@ -80,7 +83,18 @@ auto Demo_LineFeatures = [](Application& app)
     else if (ImGuiLTable::Begin("Line features"))
     {
         auto& component = app.entities.get<FeatureView>(entity);
+        
         ImGuiLTable::Checkbox("Visible", &component.active);
+
+        if (component.styles.line.has_value())
+        {
+            float* col = (float*)&component.styles.line->color;
+            if (ImGuiLTable::ColorEdit3("Color", col))
+                component.dirtyStyles(app.entities);
+
+            if (ImGuiLTable::SliderFloat("Depth offset", &component.styles.line->depth_offset, 0.0f, 20000.0f, "%.0f"))
+                component.dirtyStyles(app.entities);
+        }
 
         ImGuiLTable::End();
     }

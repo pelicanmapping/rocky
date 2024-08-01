@@ -56,7 +56,7 @@ MapNode::from_json(const std::string& JSON, const IOOptions& io)
 {
     const auto j = parse_json(JSON);
 
-    Status status;
+    Status status = j.status;
 
     if (status.ok() && map)
     {

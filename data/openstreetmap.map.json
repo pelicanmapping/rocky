@@ -1,5 +1,6 @@
 {
     "terrain" : {
+        "color" : "#A9D2DF",
         "screen_space_error" : 0.0
     },
     "map" : {

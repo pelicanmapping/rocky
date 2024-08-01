@@ -17,7 +17,7 @@ using namespace ROCKY_NAMESPACE::util;
 
 namespace
 {
-    void rgb2hsv(glm::fvec4& c)
+    glm::fvec4& rgb2hsv_in_place(glm::fvec4& c)
     {
         float minval = std::min(c.r, std::min(c.g, c.b));
         float maxval = std::max(c.r, std::max(c.g, c.b));
@@ -36,9 +36,10 @@ namespace
             if (h > 1.0f) h -= 1.0f;
         }
         c = glm::fvec4(h, s, v, c.a);
+        return c;
     }
 
-    void hsv2rgb(glm::fvec4& c)
+    glm::fvec4& hsv2rgb_in_place(glm::fvec4& c)
     {
         float h = c[0], s = c[1], v = c[2];
         if (s == 0.0f) {
@@ -59,6 +60,7 @@ namespace
             else { vr = v, vg = v1, vb = v2; }
             c = glm::fvec4(vr, vg, vb, c.a);
         }
+        return c;
     }
 
     float hue2rgb(float v1, float v2, float vH)
@@ -71,7 +73,7 @@ namespace
         return (v1);
     }
 
-    void hsl2rgb(glm::fvec4& c)
+    glm::fvec4& hsl2rgb_in_place(glm::fvec4& c)
     {
         float H = c.x;
         float S = c.y;
@@ -101,6 +103,8 @@ namespace
         c.r = R;
         c.g = G;
         c.b = B;
+
+        return c;
     }
 }
 
@@ -216,7 +220,7 @@ Color::Color(const std::string& input, Format format)
                 L = util::as<float>(components[2], 0.0f);
             }
             set(H / 255.0f, S / 100.0f, L / 100.0f, 1.0f);
-            hsl2rgb(*this);
+            hsl2rgb_in_place(*this);
         }
     }
     else if (util::startsWith(t, "hsla("))
@@ -250,7 +254,7 @@ Color::Color(const std::string& input, Format format)
             }
             float A = util::as<float>(components[3], 1.0f);
             set(H / 255.0f, S / 100.0f, L / 100.0f, A);
-            hsl2rgb(*this);
+            hsl2rgb_in_place(*this);
         }
     }
     else
@@ -427,14 +431,15 @@ Color::createRandomColorRamp(
     float hueAngle = (float)prng(gen);// prng.next(360);
     glm::fvec4 hsv(0, 0, 0, 1);
 
+    output.reserve(count);
+
     for (unsigned i = 0; i < count; ++i)
     {
         hueAngle = fmodf(hueAngle + 137.50776f, 360.0f);
         hsv[0] = hueAngle / 360.0f;
         hsv[1] = satMin + (float)prng(gen)*(satMax - satMin);
         hsv[2] = valMin + (float)prng(gen)*(valMax - valMin);        
-        hsv2rgb(hsv);
-        output.push_back(Color(hsv));
+        output.emplace_back(hsv2rgb_in_place(hsv));
     }
 }
 

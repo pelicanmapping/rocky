@@ -121,6 +121,17 @@ namespace ROCKY_NAMESPACE
             zmax = std::max(zmax, rhs.zmax);
         }
 
+        inline bool clamp(double& x, double& y, double& z) const {
+            bool clamped = false;
+            if (x < xmin) { x = xmin; clamped = true; }
+            else if (x > xmax) { x = xmax; clamped = true; }
+            if (y < ymin) { y = ymin; clamped = true; }
+            else if (y > ymax) { y = ymax; clamped = true; }
+            if (z < zmin) { z = zmin; clamped = true; }
+            else if (z > zmax) { z = zmax; clamped = true; }
+            return clamped;
+        }
+
         template<class ITER>
         void expandBy(ITER begin, ITER end) {
             for (ITER i = begin; i != end; ++i)

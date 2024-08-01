@@ -323,6 +323,7 @@ namespace ROCKY_NAMESPACE
             void* _nextHandleToQueue = nullptr;
             bool _resultSetEndReached = false;
             const std::size_t _chunkSize = 500;
+            Feature::ID _idGenerator = 1;
         };
     };
 

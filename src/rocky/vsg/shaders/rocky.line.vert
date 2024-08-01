@@ -42,8 +42,6 @@ out gl_PerVertex {
     vec4 gl_Position;
 };
 
-#define DEPTH_OFFSET_TEST_OE 1
-
 void main()
 {
     rk.color = line.color.a > 0.0 ? line.color : in_color;
@@ -72,37 +70,19 @@ void main()
 
     vec2 viewport_size = vsg_viewports.viewport[0].zw;
 
+    float bias = line.depth_offset;
 
-#ifdef DEPTH_OFFSET_TEST_OE // testing depth offset from OE
     vec4 curr_view = pc.modelview * vec4(in_vertex, 1);
-    //vec4 prev_view = pc.modelview * vec3(in_vertex_prev, 1);
-    //vec4 next_view = pc.modelview * vec3(in_vertex_next, 1);
-
-    float range = length(curr_view.xyz);
-
-    // extract params for clarity.
-    float minBias = 100.0; // oe_DepthOffset_params[0];
-    float maxBias = 10000.0; // oe_DepthOffset_params[1];
-    float minRange = sqrt(line.depth_offset) * 19.0; // 1000.0; // oe_DepthOffset_params[2];
-    float maxRange = 10000000.0; //  oe_DepthOffset_params[3];
-
-    // calculate the depth offset bias for this range:
-    float ratio = (clamp(range, minRange, maxRange) - minRange) / (maxRange - minRange);
-    float bias = minBias + ratio * (maxBias - minBias);
-    bias = min(bias, range * 0.5);
-    bias = min(bias, maxBias);
-    vec3 pullVec = normalize(curr_view.xyz);
-    curr_view.xyz = curr_view.xyz - pullVec * bias;
-
+    curr_view.xyz -= normalize(curr_view.xyz) * bias;
     vec4 curr_clip = pc.projection * curr_view;
 
-#else
+    vec4 prev_view = pc.modelview * vec4(in_vertex_prev, 1);
+    prev_view.xyz -= normalize(prev_view.xyz) * bias;
+    vec4 prev_clip = pc.projection * prev_view;
 
-    vec4 curr_clip = pc.projection * pc.modelview * vec4(in_vertex, 1);
-
-#endif
-    vec4 prev_clip = pc.projection * pc.modelview * vec4(in_vertex_prev, 1);
-    vec4 next_clip = pc.projection * pc.modelview * vec4(in_vertex_next, 1);
+    vec4 next_view = pc.modelview * vec4(in_vertex_next, 1);
+    next_view.xyz -= normalize(next_view.xyz) * bias;
+    vec4 next_clip = pc.projection * next_view;
 
     vec2 curr_pixel = (curr_clip.xy / curr_clip.w) * viewport_size;
     vec2 prev_pixel = (prev_clip.xy / prev_clip.w) * viewport_size;
@@ -185,8 +165,9 @@ void main()
         rk.stipple_dir = vec2(cos(qangle), sin(qangle));
     }
 
-    // apply the depth offset
-    curr_clip.z += line.depth_offset * curr_clip.w;
+    // apply a static clip-space offset for z-flight mitigation.
+    const float clip_offset = 1e-7;
+    curr_clip.z += clip_offset * curr_clip.w;
 
     gl_Position = curr_clip;
 }

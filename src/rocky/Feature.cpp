@@ -366,7 +366,7 @@ namespace
 
     void create_feature_from_OGR_handle(void* handle, const SRS& srs, Feature& out_feature)
     {
-        Feature::ID fid = OGR_F_GetFID(handle);
+        out_feature.id = OGR_F_GetFID(handle);
         OGRGeometryH geom_handle = OGR_F_GetGeometryRef(handle);
 
         out_feature.srs = srs;
@@ -594,6 +594,11 @@ OGRFeatureSource::iterator::readChunk()
 
             if (feature.valid())
             {
+                if (feature.id == OGRNullFID)
+                {
+                    feature.id = _idGenerator++;
+                }
+
                 _queue.push(std::move(feature));
             }
 

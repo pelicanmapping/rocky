@@ -822,6 +822,18 @@ GeoImage::read(glm::fvec4& out, double x, double y) const
 }
 
 bool
+GeoImage::read_clamped(glm::fvec4& out, double x, double y) const
+{
+    if (!valid()) return false;
+
+    double u = (x - _extent.xMin()) / _extent.width();
+    double v = (y - _extent.yMin()) / _extent.height();
+
+    _image->read_bilinear(out, (float)clamp(u, 0.0, 1.0), (float)clamp(v, 0.0, 1.0));
+    return true;
+}
+
+bool
 GeoImage::read(glm::fvec4& out, double x, double y, const SRS& xy_srs) const
 {
     if (!valid()) return false;

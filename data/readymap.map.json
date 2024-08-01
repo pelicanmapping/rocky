@@ -1,6 +1,6 @@
 {
     "map" : {
-        "name" : "ReadyMap(R) Example",
+        "name" : "ReadyMap(R) Tiles",
         "layers": [
             {
                 "name": "ReadyMap 15m Base Imagery",

@@ -54,11 +54,10 @@ void main()
 
     // TODO: lighting
     
-    // Depth/clip approach:
-    vec4 clip = pc.projection * pc.modelview * vec4(in_vertex, 1);
-
-    // Apply the depth offset in clip space
-    clip.z += depthoffset * clip.w;
+    // Depth offset (view-space approach):
+    vec4 view = pc.modelview * vec4(in_vertex, 1);
+    view.xyz -= normalize(view.xyz) * depthoffset;
+    vec4 clip = pc.projection * view;
 
     gl_Position = clip;
 }

@@ -255,6 +255,12 @@ namespace ROCKY_NAMESPACE
         //! Reads a disk file into a string.
         extern ROCKY_EXPORT Result<std::string> readFromFile(const std::string& filename);
 
+        //! GLSL-style randomizer [0..1]
+        inline float glsl_random(float seed) {
+            constexpr float A = 12.9898f, B = 43758.5453f;
+            return 0.5 * (1.0 + std::sin(seed * A + seed * B));
+        }
+
         /**
         * Virtual interface for a stream compressor
         */

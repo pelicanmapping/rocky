@@ -54,6 +54,9 @@ namespace ROCKY_NAMESPACE
         //! Whether to render this component
         bool active = true;
 
+        //! Call if the change the stylesheet after generating.
+        void dirtyStyles(entt::registry& entities);
+
     public:
         //! Default construct - no data
         FeatureView();

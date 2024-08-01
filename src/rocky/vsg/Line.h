@@ -22,7 +22,7 @@ namespace ROCKY_NAMESPACE
         int stipple_pattern = 0xffff;
         int stipple_factor = 1;
         float resolution = 100000.0f; // meters
-        float depth_offset = 1e-7f; // tbd
+        float depth_offset = 0.0f; // meters
     };
 
     /**

@@ -23,9 +23,9 @@ namespace ROCKY_NAMESPACE
         // for visualization purposes
         float wireframe = 0.0f;
 
-        // depth buffer adjustment (in clip space) to apply to the mesh verts
-        // as a simple method or avoiding depth fighting with terrain
-        float depth_offset = 1e-7f;
+        // vertex adjustment (in meters) to apply to the mesh verts
+        // as a simple method or avoiding depth fighting
+        float depth_offset = 0.0f;
     };
 
     //! A triangle

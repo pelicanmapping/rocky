@@ -278,11 +278,16 @@ namespace
             styles.mesh.has_value() ? styles.mesh->color :
             vsg::vec4(1, 1, 1, 1);
 
+        auto depth_offset =
+            styles.mesh_function ? styles.mesh_function(feature).depth_offset :
+            styles.mesh.has_value() ? styles.mesh->depth_offset :
+            0.0f;
+
         Triangle32 temp = {
             {}, // we'll fill in the verts below
             {color, color, color},
             {}, // uvs - don't need them
-            { 1e-7f, 1e-7f, 1e-7f } }; // depth offset values
+            {depth_offset, depth_offset, depth_offset} }; // depth offset values
 
         for (auto& tri : m.triangles)
         {
@@ -363,5 +368,21 @@ FeatureView::generate(entt::registry& registry, Runtime& runtime, bool keep_feat
     if (!keep_features)
     {
         features.clear();
+    }
+}
+
+void
+FeatureView::dirtyStyles(entt::registry& entities)
+{
+    if (_entity == entt::null)
+        return;
+
+    if (styles.line.has_value())
+    {
+        if (auto* line = entities.try_get<Line>(_entity))
+        {
+            line->style = styles.line.value();
+            line->dirty();
+        }
     }
 }
