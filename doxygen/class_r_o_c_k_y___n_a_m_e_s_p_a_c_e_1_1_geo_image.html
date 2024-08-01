@@ -138,6 +138,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="separator:ac3e719f633322ba875992ae42efbe984"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a84f40b103f5fc9ec6c1fd2ffe3a7ec1f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html#a84f40b103f5fc9ec6c1fd2ffe3a7ec1f">read</a> (glm::fvec4 &amp;output, double x, double y) const</td></tr>
 <tr class="separator:a84f40b103f5fc9ec6c1fd2ffe3a7ec1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24e6e5f4bfc58ec35a70411ad4592795"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html#a24e6e5f4bfc58ec35a70411ad4592795">read_clamped</a> (glm::fvec4 &amp;output, double x, double y) const</td></tr>
+<tr class="separator:a24e6e5f4bfc58ec35a70411ad4592795"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9358501c7f0e5f877a3c187aaad28a38"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html#a9358501c7f0e5f877a3c187aaad28a38">read</a> (glm::fvec4 &amp;output, double x, double y, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> &amp;<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html#a1851c0996ff67a99dafdfb9aa3382e97">srs</a>) const</td></tr>
 <tr class="separator:a9358501c7f0e5f877a3c187aaad28a38"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a93722550ef33570880fd29de68573086"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html#a93722550ef33570880fd29de68573086">read</a> (glm::fvec4 &amp;output, double x, double y, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a> &amp;operation) const</td></tr>
@@ -345,6 +347,41 @@ static <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.htm
       </table>
 </div><div class="memdoc">
 <p>Read the value of a pixel at the coordinate (x, y) which will be transformed using the provided operation before reading. </p>
+
+</div>
+</div>
+<a id="a24e6e5f4bfc58ec35a70411ad4592795"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24e6e5f4bfc58ec35a70411ad4592795">&#9670;&nbsp;</a></span>read_clamped()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool GeoImage::read_clamped </td>
+          <td>(</td>
+          <td class="paramtype">glm::fvec4 &amp;&#160;</td>
+          <td class="paramname"><em>output</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>y</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Clamp the input coordinate to the image's valid extent and then read the value of a pixel at the coordinate (x, y) which is assumed to be in the <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html">GeoImage</a>'s <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a>. </p>
 
 </div>
 </div>
