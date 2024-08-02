@@ -2,6 +2,11 @@
 setlocal
 set ERROR_MSG=
 
+:: Try to find VCPKG_DIR if it's not set
+if "%VCPKG_DIR%" == "" (
+    FOR /F "tokens=*" %%X IN ('where vcpkg.exe') do (SET VCPKG_DIR=%%~dpX)
+)
+
 :: Verify vcpkg is available
 set VCPKG_TOOLCHAIN_FILE=%VCPKG_DIR%\scripts\buildsystems\vcpkg.cmake
 
@@ -69,6 +74,7 @@ call :realpath !-I!
 set INSTALL_DIR=%RETVAL%
 
 :: Ask for confirmation:
+echo VCPKG_DIR        = %VCPKG_DIR%
 echo Source location  = %SOURCE_DIR%
 echo Build location   = %BUILD_DIR%
 echo Install location = %INSTALL_DIR%
