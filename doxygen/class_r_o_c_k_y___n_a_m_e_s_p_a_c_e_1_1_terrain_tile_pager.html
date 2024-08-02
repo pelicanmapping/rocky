@@ -68,7 +68,6 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
@@ -80,12 +79,6 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="_terrain_tile_pager_8h_source.html">TerrainTilePager.h</a>&gt;</code></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
-Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_1_1_l_o_d.html">LOD</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Visibility info for a single terrain tile <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_1_1_l_o_d.html" title="Visibility info for a single terrain tile LOD.">LOD</a>.  <a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_1_1_l_o_d.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
 <tr class="memitem:a2a51441ded47d715c5ec2ae62429b7a1"><td class="memItemLeft" align="right" valign="top"><a id="a2a51441ded47d715c5ec2ae62429b7a1"></a>
@@ -124,9 +117,6 @@ vsg::ref_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ter
 <tr class="separator:ae757e92157217fdeeb0dbd4ec6158a7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae6f4e9469e439c1cdb82175f6e549b5b"><td class="memItemLeft" align="right" valign="top">vsg::ref_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html">TerrainTileNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#ae6f4e9469e439c1cdb82175f6e549b5b">getTile</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key) const</td></tr>
 <tr class="separator:ae6f4e9469e439c1cdb82175f6e549b5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a537d01a27c9ec1692577e7abfecbf296"><td class="memItemLeft" align="right" valign="top"><a id="a537d01a27c9ec1692577e7abfecbf296"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>initializeLODs</b> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html">Profile</a> &amp;, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html">TerrainSettings</a> &amp;)</td></tr>
-<tr class="separator:a537d01a27c9ec1692577e7abfecbf296"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -167,11 +157,8 @@ std::vector&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile
 std::vector&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_updateData</b></td></tr>
 <tr class="separator:a1c7dcf50224d37b6501af48c2da7c796"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1acfb7ae7f9993807729c97a351688c8"><td class="memItemLeft" align="right" valign="top"><a id="a1acfb7ae7f9993807729c97a351688c8"></a>
-unsigned&#160;</td><td class="memItemRight" valign="bottom"><b>_firstLOD</b></td></tr>
+unsigned&#160;</td><td class="memItemRight" valign="bottom"><b>_firstLOD</b> = 0u</td></tr>
 <tr class="separator:a1acfb7ae7f9993807729c97a351688c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24d34ad445d172827952aa7438816997"><td class="memItemLeft" align="right" valign="top"><a id="a24d34ad445d172827952aa7438816997"></a>
-std::vector&lt; <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_1_1_l_o_d.html">LOD</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_lods</b></td></tr>
-<tr class="separator:a24d34ad445d172827952aa7438816997"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Keeps track of all the tiles resident in the terrain engine. </p>
