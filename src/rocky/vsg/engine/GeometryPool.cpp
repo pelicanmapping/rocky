@@ -286,22 +286,7 @@ GeometryPool::createGeometry(const TileKey& tileKey, const Settings& settings, C
         neighborNormals = vsg::vec3Array::create(numVerts);
     }
 
-#if 0
-    if (editor.hasEdits())
-    {
-        bool tileHasData = editor.createTileMesh(
-            geom.get(),
-            tileSize,
-            skirtRatio,
-            mode,
-            progress);
-
-        if (geom->empty())
-            return nullptr;
-    }
-
-    else // default mesh - no constraints
-#endif
+    if (true) // no mesh constraints
     {
         glm::dvec3 unit;
         glm::dvec3 world;

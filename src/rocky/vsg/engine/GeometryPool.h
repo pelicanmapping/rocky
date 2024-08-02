@@ -138,14 +138,13 @@ namespace ROCKY_NAMESPACE
             GeometryKey, vsg::ref_ptr<SharedGeometry>>;
 
         struct Settings {
-            uint32_t tileSize;
-            float skirtRatio;
-            bool morphing;
+            uint32_t tileSize = 17u;
+            float skirtRatio = 0.0f;
+            bool morphing = false;
         };
 
         //! Gets the Geometry associated with a tile key, creating a new one if
         //! necessary and storing it in the pool.
-        //!
         vsg::ref_ptr<SharedGeometry> getPooledGeometry(
             const TileKey& tileKey,
             const Settings& settings,

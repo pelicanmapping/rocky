@@ -46,16 +46,12 @@ TerrainTileNode::TerrainTileNode(
     const TileKey& in_key,
     TerrainTileNode* in_parent,
     vsg::ref_ptr<vsg::Node> in_geometry,
-    const glm::fvec2& in_morphConstants,
-    float in_childrenVisibilityRange,
     const SRS& worldSRS,
     const TerrainTileDescriptors& in_initialDescriptors,
     TerrainTileHost* in_host,
     Runtime& runtime)
 {
     key = in_key;
-    morphConstants = in_morphConstants;
-    childrenVisibilityRange = in_childrenVisibilityRange;
     renderModel.descriptors = in_initialDescriptors;
     _host = in_host;
 
@@ -117,24 +113,10 @@ TerrainTileNode::setElevation(shared_ptr<Image> image, const glm::dmat4& matrix)
 bool
 TerrainTileNode::shouldSubDivide(vsg::State* state) const
 {
-    // can we subdivide at all?
-    if (childrenVisibilityRange == FLT_MAX)
-        return false;
-
-#ifdef USE_SSE
-
     auto& vp = state->_commandBuffer->viewDependentState->viewportData->at(0);
     auto min_screen_height_ratio = (_host->settings().tilePixelSize + _host->settings().screenSpaceError) / vp[3];
     auto d = state->lodDistance(bound);
     return (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
-
-#else
-
-    // are the children in range?
-    // Note - this method prefered when using morphing.
-    return surface->anyChildBoxWithinRange(childrenVisibilityRange, state);
-
-#endif
 }
 
 void

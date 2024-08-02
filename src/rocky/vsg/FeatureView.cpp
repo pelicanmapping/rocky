@@ -385,4 +385,13 @@ FeatureView::dirtyStyles(entt::registry& entities)
             line->dirty();
         }
     }
+
+    if (styles.mesh.has_value())
+    {
+        if  (auto* mesh = entities.try_get<Mesh>(_entity))
+        {
+            mesh->style = styles.mesh.value();
+            mesh->dirty();
+        }
+    }
 }

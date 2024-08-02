@@ -9,12 +9,17 @@
 #include <rocky/DateTime.h>
 #include <rocky/SRS.h>
 #include <vsg/nodes/Group.h>
+#include <vsg/core/Version.h>
+
+#if VSG_API_VERSION_GREATER_EQUAL(1,1,3)
+#include <vsg/lighting/AmbientLight.h>
+#include <vsg/lighting/PointLight.h>
+#else
 #include <vsg/nodes/Light.h>
+#endif
 
 namespace ROCKY_NAMESPACE
 {
-    //class Runtime;
-
     /**
     * Node that renders an atmosphere, stars, sun and moon.
     * (Note: this only works with a geocentric world SRS.)

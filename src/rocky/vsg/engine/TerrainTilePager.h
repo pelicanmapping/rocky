@@ -93,16 +93,7 @@ namespace ROCKY_NAMESPACE
         std::vector<TileKey> _mergeData; 
         std::vector<TileKey> _updateData;
 
-        //! Visibility info for a single terrain tile LOD
-        struct LOD {
-            float visibilityRange;
-            float morphStart, morphEnd;
-            unsigned minValidTY, maxValidTY;
-        };
-        unsigned _firstLOD;
-        std::vector<LOD> _lods;
-
-        void initializeLODs(const Profile&, const TerrainSettings&);
+        unsigned _firstLOD = 0u;
 
     private:
 

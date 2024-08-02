@@ -37,7 +37,7 @@ TerrainTilePager::TerrainTilePager(
     _host(in_host),
     _settings(settings)
 {
-    initializeLODs(profile, settings);
+    _firstLOD = settings.minLevelOfDetail;
 }
 
 TerrainTilePager::~TerrainTilePager()
@@ -264,46 +264,23 @@ TerrainTilePager::update(
 }
 
 vsg::ref_ptr<TerrainTileNode>
-TerrainTilePager::createTile(
-    const TileKey& key,
-    vsg::ref_ptr<TerrainTileNode> parent,
-    shared_ptr<TerrainEngine> terrain)
+TerrainTilePager::createTile(const TileKey& key, vsg::ref_ptr<TerrainTileNode> parent, shared_ptr<TerrainEngine> terrain)
 {
     GeometryPool::Settings geomSettings
     {
         terrain->settings.tileSize,
         terrain->settings.skirtRatio,
-        terrain->settings.morphTerrain
+        false // morphing
     };
 
     // Get a shared geometry from the pool that corresponds to this tile key:
-    auto geometry = terrain->geometryPool.getPooledGeometry(
-        key,
-        geomSettings,
-        nullptr);
-
-    // initialize all the per-tile uniforms the shaders will need:
-    float range, morphStart, morphEnd;
-    getRanges(key, range, morphStart, morphEnd);
-    float one_over_end_minus_start = 1.0f / (morphEnd - morphStart);
-    auto morphConstants = glm::fvec2(morphEnd * one_over_end_minus_start, one_over_end_minus_start);
-
-    // Calculate the visibility range for this tile's children.
-    float childrenVisibilityRange = FLT_MAX;
-    if (key.levelOfDetail() < (_lods.size() - 1))
-    {
-        auto[tw, th] = key.profile().numTiles(key.levelOfDetail());
-        TileKey testKey = key.createChildKey((key.tileY() <= th / 2) ? 0 : 3);
-        childrenVisibilityRange = getRange(testKey);
-    }
+    auto geometry = terrain->geometryPool.getPooledGeometry(key, geomSettings, nullptr);
 
     // Make the new terrain tile
     auto tile = TerrainTileNode::create(
         key,
         parent,
         geometry,
-        morphConstants,
-        childrenVisibilityRange,
         terrain->worldSRS,
         terrain->stateFactory.defaultTileDescriptors,
         terrain->tiles._host,
@@ -627,7 +604,7 @@ TerrainTilePager::requestLoadElevation(
         return tile ? -(sqrt(tile->lastTraversalRange) * 0.9 * tile->key.levelOfDetail()) : 0.0f;
     };
 
-    tile->elevationLoader = util::job::dispatch(
+    tile->elevationLoader = jobs::dispatch(
         load, {
              "load elevation " + key.str(),
              priority_func,
@@ -718,103 +695,4 @@ TerrainTilePager::requestMergeElevation(
     };
     engine->runtime.onNextUpdate(merge_op, priority_func);
 #endif
-}
-
-
-void
-TerrainTilePager::initializeLODs(const Profile& profile, const TerrainSettings& settings)
-{
-    _firstLOD = settings.minLevelOfDetail;
-    unsigned numLods = settings.maxLevelOfDetail + 1u;
-
-    _lods.resize(numLods);
-
-    for (unsigned lod = 0; lod <= settings.maxLevelOfDetail; ++lod)
-    {
-        auto [tx, ty] = profile.numTiles(lod);
-        TileKey key(lod, tx / 2, ty / 2, profile);
-        GeoExtent e = key.extent();
-        GeoCircle c = e.computeBoundingGeoCircle();
-        double range = c.radius() * settings.minTileRangeFactor * 2.0 * (1.0 / 1.405);
-        _lods[lod].visibilityRange = (float)range;
-        _lods[lod].minValidTY = 0;
-        _lods[lod].maxValidTY = 0xFFFFFFFF;
-    }
-
-    double metersPerEquatorialDegree = (profile.srs().ellipsoid().semiMajorAxis() * 2.0 * M_PI) / 360.0;
-
-    float prevPos = 0.0;
-
-    for (int lod = (int)(numLods - 1); lod >= 0; --lod)
-    {
-        float span = _lods[lod].visibilityRange - prevPos;
-
-        _lods[lod].morphEnd = _lods[lod].visibilityRange;
-        _lods[lod].morphStart = prevPos + span * (0.66f);
-        prevPos = _lods[lod].morphEnd;
-
-        // Calc the maximum valid TY (to avoid over-subdivision at the poles)
-        // In a geographic map, this will effectively limit the maximum LOD
-        // progressively starting at about +/- 72 degrees latitude.
-        int startLOD = 6;
-        const bool restrictPolarSubdivision = true;
-        if (restrictPolarSubdivision && lod >= startLOD && profile.srs().isGeodetic())
-        {
-            const double startAR = 0.1; // minimum allowable aspect ratio at startLOD
-            const double endAR = 0.4;   // minimum allowable aspect ratio at maxLOD
-            double lodT = (double)(lod - startLOD) / (double)(numLods - 1);
-            double minAR = startAR + (endAR - startAR) * lodT;
-
-            auto [tx, ty] = profile.numTiles(lod);
-            for (int y = (int)ty / 2; y >= 0; --y)
-            {
-                TileKey k(lod, 0, y, profile);
-                const GeoExtent& e = k.extent();
-                double lat = 0.5 * (e.yMax() + e.yMin());
-                double width = e.width() * metersPerEquatorialDegree * cos(deg2rad(lat));
-                double height = e.height() * metersPerEquatorialDegree;
-                if (width / height < minAR)
-                {
-                    _lods[lod].minValidTY = std::min(y + 1, (int)(ty - 1));
-                    _lods[lod].maxValidTY = (ty - 1) - _lods[lod].minValidTY;
-                    break;
-                }
-            }
-        }
-    }
-}
-
-void
-TerrainTilePager::getRanges(
-    const TileKey& key,
-    float& out_range,
-    float& out_startMorphRange,
-    float& out_endMorphRange) const
-{
-    out_range = 0.0f;
-    out_startMorphRange = 0.0f;
-    out_endMorphRange = 0.0f;
-
-    if (key.levelOfDetail() < _lods.size())
-    {
-        const LOD& lod = _lods[key.levelOfDetail()];
-
-        if (key.tileY() >= lod.minValidTY && key.tileY() <= lod.maxValidTY)
-        {
-            out_range = lod.visibilityRange;
-            out_startMorphRange = lod.morphStart;
-            out_endMorphRange = lod.morphEnd;
-        }
-    }
-}
-
-float
-TerrainTilePager::getRange(const TileKey& key) const
-{
-    const LOD& lod = _lods[key.levelOfDetail()];
-    if (key.tileY() >= lod.minValidTY && key.tileY() <= lod.maxValidTY)
-    {
-        return lod.visibilityRange;
-    }
-    return 0.0f;
 }

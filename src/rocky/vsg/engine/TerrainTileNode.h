@@ -35,7 +35,6 @@ namespace ROCKY_NAMESPACE
         std::string name;
         shared_ptr<Image> image;
         glm::dmat4 matrix{ 1 };
-        //vsg::ref_ptr<vsg::ImageInfo> texture;
     };
 
     enum TextureType
@@ -98,8 +97,6 @@ namespace ROCKY_NAMESPACE
         TileKey key;
         bool doNotExpire;
         Revision revision;
-        glm::fvec2 morphConstants;
-        float childrenVisibilityRange;
         unsigned numLODs;
         TerrainTileRenderModel renderModel;
         
@@ -107,8 +104,6 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::StateGroup> stategroup;
         
         mutable jobs::future<bool> subtilesLoader;
-        //mutable jobs::future<TerrainTileModel> elevationLoader;
-        //mutable jobs::future<bool> elevationMerger;
         mutable jobs::future<TerrainTileModel> dataLoader;
         mutable jobs::future<bool> dataMerger;
         mutable std::atomic<uint64_t> lastTraversalFrame;
@@ -120,8 +115,6 @@ namespace ROCKY_NAMESPACE
             const TileKey& key,
             TerrainTileNode* parent,
             vsg::ref_ptr<vsg::Node> geometry,
-            const glm::fvec2& morphConstants,
-            float childrenVisibilityRange,
             const SRS& worldSRS,
             const TerrainTileDescriptors& initialDescriptors,
             TerrainTileHost* in_host,

@@ -19,8 +19,6 @@ const double MERC_MINX = -20037508.34278925;
 const double MERC_MINY = -20037508.34278925;
 const double MERC_MAXX = 20037508.34278925;
 const double MERC_MAXY = 20037508.34278925;
-const double MERC_WIDTH = MERC_MAXX - MERC_MINX;
-const double MERC_HEIGHT = MERC_MAXY - MERC_MINY;
 
 void
 Profile::setup(
