@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <rocky/vsg/Common.h>
+#include <rocky/vsg/EntityTransform.h>
 #include <rocky/vsg/GeoTransform.h>
 #include <rocky/vsg/engine/Runtime.h>
 #include <rocky/vsg/engine/Utils.h>
@@ -322,6 +323,51 @@ namespace ROCKY_NAMESPACE
     };
 
     /**
+    * ECS Component that provides an entity with a geotransform.
+    */
+    struct ROCKY_EXPORT TerrainRelativeTransform : public ECS::Component
+    {
+        vsg::ref_ptr<EntityTransform> node;
+        vsg::dmat4 local_matrix = vsg::dmat4(1.0);
+        TerrainRelativeTransform* parent = nullptr;
+
+        //! Sets the transform's geoposition, creating the node on demand
+        void setPosition(const EntityPosition& p)
+        {
+            if (!node)
+                node = EntityTransform::create();
+
+            node->setPosition(p);
+        }
+
+        //! Returns true if the push succeeded (and a pop will be required)
+        inline bool push(vsg::RecordTraversal& rt, const vsg::dmat4& m)
+        {
+            if (node)
+            {
+                return node->push(rt, m * local_matrix);
+            }
+            else if (parent)
+            {
+                return parent->push(rt, m * local_matrix);
+            }
+            else return false;
+        }
+
+        inline void pop(vsg::RecordTraversal& rt)
+        {
+            if (node)
+            {
+                node->pop(rt);
+            }
+            else if (parent)
+            {
+                parent->pop(rt);
+            }
+        }
+    };
+
+    /**
     * ECS Component representing a moving entity
     */
     struct Motion : public ECS::Component
@@ -477,7 +523,19 @@ namespace ROCKY_NAMESPACE
                     }
                     else
                     {
-                        e.component.node->accept(rt);
+                        auto* trxform = registry.try_get<TerrainRelativeTransform>(e.entity);
+                        if (trxform)
+                        {
+                            if (trxform->push(rt, identity_matrix))
+                            {
+                                e.component.node->accept(rt);
+                                trxform->pop(rt);
+                            }
+                        }
+                        else
+                        {
+                            e.component.node->accept(rt);
+                        }
                     }
                 }
             }

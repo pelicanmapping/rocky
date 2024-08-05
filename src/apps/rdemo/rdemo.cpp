@@ -79,6 +79,7 @@ std::vector<Demo> demos =
         Demo{ "Line - relative", Demo_Line_Relative },
         Demo{ "Mesh - absolute", Demo_Mesh_Absolute },
         Demo{ "Mesh - relative", Demo_Mesh_Relative },
+        Demo{ "Mesh - terrain-relative", Demo_Mesh_TerrainRelative },
         Demo{ "Icon", Demo_Icon },
         Demo{ "User Model", Demo_Model }
     } },

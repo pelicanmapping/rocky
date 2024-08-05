@@ -155,6 +155,88 @@ auto Demo_Mesh_Relative = [](Application& app)
     }
 };
 
+auto Demo_Mesh_TerrainRelative = [](Application& app)
+    {
+        static entt::entity entity = entt::null;
+
+        if (entity == entt::null)
+        {
+            // Create a new entity to host our mesh
+            entity = app.entities.create();
+
+            // Attach the new mesh:
+            Mesh& mesh = app.entities.emplace<Mesh>(entity);
+            mesh.name = "Terrain-Relative Mesh";
+
+            // Make some geometry that will be relative to a geolocation:
+            const float s = 250.0;
+            vsg::vec3 verts[8] = {
+                { -s, -s, -s },
+                {  s, -s, -s },
+                {  s,  s, -s },
+                { -s,  s, -s },
+                { -s, -s,  s },
+                {  s, -s,  s },
+                {  s,  s,  s },
+                { -s,  s,  s }
+            };
+            unsigned indices[48] = {
+                0,3,2, 0,2,1, 4,5,6, 4,6,7,
+                1,2,6, 1,6,5, 3,0,4, 3,4,7,
+                0,1,5, 0,5,4, 2,3,7, 2,7,6
+            };
+
+            vsg::vec4 color{ 1, 0, 1, 0.85 };
+
+            for (unsigned i = 0; i < 48; )
+            {
+                mesh.add({
+                    {verts[indices[i++]], verts[indices[i++]], verts[indices[i++]]},
+                    {color, color, color} });
+
+                if ((i % 6) == 0)
+                    color.r *= 0.8, color.b *= 0.8;
+            }
+
+            // Add a transform component so we can position our mesh relative
+            // to some geospatial coordinates. We then set the bound on the node
+            // to control horizon culling a little better
+            auto& xform = app.entities.emplace<TerrainRelativeTransform>(entity);
+            xform.setPosition(EntityPosition(GeoPoint(SRS::WGS84, -0.270710, 39.708408, 0), s));
+            xform.node->bound.radius = s * sqrt(2);
+        }
+
+        if (ImGuiLTable::Begin("Mesh"))
+        {
+            auto& mesh = app.entities.get<Mesh>(entity);
+
+            ImGuiLTable::Checkbox("Visible", &mesh.active);
+
+            auto* style = app.entities.try_get<MeshStyle>(entity);
+            if (style)
+            {
+                if (ImGuiLTable::ColorEdit4("Color", (float*)&style->color))
+                    mesh.dirty();
+
+                if (ImGuiLTable::SliderFloat("Wireframe", &style->wireframe, 0.0f, 32.0f, "%.0f"))
+                    mesh.dirty();
+            }
+
+            auto& xform = app.entities.get<TerrainRelativeTransform>(entity).node;
+
+            if (ImGuiLTable::SliderDouble("Latitude", &xform->position.basePosition.y, 38.813321, 39.736707, "%.3lf"))
+                xform->dirty();
+
+            if (ImGuiLTable::SliderDouble("Longitude", &xform->position.basePosition.x, -1.271772, -0.083614, "%.3lf"))
+                xform->dirty();
+
+            if (ImGuiLTable::SliderDouble("Relative Altitude", &xform->position.altitude, 0.0, 2500.0, "%.1lf"))
+                xform->dirty();
+
+            ImGuiLTable::End();
+        }
+    };
+
 
 auto Demo_Mesh_Multi = [](Application& app)
 {
