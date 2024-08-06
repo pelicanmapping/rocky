@@ -93,6 +93,16 @@ namespace ROCKY_NAMESPACE
         //! dtor
         ~Ellipsoid();
 
+        inline bool operator == (const Ellipsoid& rhs) const
+        {
+            return _re == rhs._re && _rp == rhs._rp;
+        }
+
+        inline bool operator != (const Ellipsoid& rhs) const
+        {
+            return _re != rhs._re || _rp != rhs._rp;
+        }
+
     private:
         void set(double er, double pr);
 

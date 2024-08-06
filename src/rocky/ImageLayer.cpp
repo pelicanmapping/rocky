@@ -172,7 +172,7 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
         // automatically re-sharpen a reprojected image to account for quality loss.
         // Do we like this idea?
         if (sharpness == 0.0f)
-            sharpness = 2.2f;
+            sharpness = 2.0f;
     }
 
     // developer assert - if a status is OK, the image must exist.

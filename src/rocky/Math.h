@@ -161,6 +161,26 @@ namespace ROCKY_NAMESPACE
                 zmin <= zmax;
         }
 
+        bool operator == (const Box& rhs) const {
+            return
+                xmin == rhs.xmin &&
+                ymin == rhs.ymin &&
+                zmin == rhs.zmin &&
+                xmax == rhs.xmax &&
+                ymax == rhs.ymax &&
+                zmax == rhs.zmax;
+        }
+
+        bool operator != (const Box& rhs) const {
+            return
+                xmin != rhs.xmin ||
+                ymin != rhs.ymin ||
+                zmin != rhs.zmin ||
+                xmax != rhs.xmax ||
+                ymax != rhs.ymax ||
+                zmax != rhs.zmax;
+        }
+
         Box() :
             xmin(DBL_MAX), ymin(DBL_MAX), zmin(DBL_MAX),
             xmax(-DBL_MAX), ymax(-DBL_MAX), zmax(-DBL_MAX) { }

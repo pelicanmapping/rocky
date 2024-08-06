@@ -531,8 +531,15 @@ SRS::isEquivalentTo(const SRS& rhs) const
     PJ* pj2 = g_srs_factory.get_or_create(rhs.definition()).pj;
     if (!pj2) return false;
 
+    if (_isGeodetic && rhs._isGeodetic && ellipsoid() == rhs.ellipsoid())
+        return true;
+
+    PJ_COMPARISON_CRITERION criterion =
+        _isGeodetic ? PJ_COMP_EQUIVALENT_EXCEPT_AXIS_ORDER_GEOGCRS :
+        PJ_COMP_EQUIVALENT;
+
     return proj_is_equivalent_to_with_ctx(
-        g_srs_factory.threading_context(), pj1, pj2, PJ_COMP_EQUIVALENT);
+        g_srs_factory.threading_context(), pj1, pj2, criterion);
 }
 
 bool

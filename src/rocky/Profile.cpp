@@ -100,9 +100,13 @@ Profile::operator == (const Profile& rhs) const
     if (!_shared->_wellKnownName.empty() && _shared->_wellKnownName == rhs._shared->_wellKnownName)
         return true;
 
-    return
-        _shared->_extent == rhs._shared->_extent &&
-        _shared->_numTilesWideAtLod0 == rhs._shared->_numTilesHighAtLod0;
+    if (_shared->_numTilesHighAtLod0 != rhs._shared->_numTilesHighAtLod0)
+        return false;
+
+    if (_shared->_numTilesWideAtLod0 != rhs._shared->_numTilesWideAtLod0)
+        return false;
+
+    return _shared->_extent == rhs._shared->_extent;
 }
 
 
