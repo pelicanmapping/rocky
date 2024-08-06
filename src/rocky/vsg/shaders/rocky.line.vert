@@ -17,7 +17,7 @@ layout(set = 0, binding = 1) uniform LineData {
 } line;
 
 // vsg viewport data
-layout(set = 1, binding = 1) uniform VSG_Viewports {
+layout(set = 1, binding = 1) buffer VSG_Viewports {
     vec4 viewport[1]; // x, y, width, height
 } vsg_viewports;
 

@@ -68,6 +68,7 @@ auto Demo_Geocoder = [](Application& app)
         auto& feature_view = app.entities.emplace<FeatureView>(entity);
         feature_view.styles.line = LineStyle();
         feature_view.styles.line->color = vsg::vec4{ 1, 1, 0, 1 };
+        feature_view.styles.line->depth_offset = 9000.0f; //meters
         feature_view.active = false;
 
         // Transform to place the entity:

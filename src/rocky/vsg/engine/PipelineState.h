@@ -4,6 +4,7 @@
  * MIT License
  */
 #pragma once
+#include <rocky/vsg/Common.h>
 #include <vsg/utils/ShaderSet.h>
 #include <vsg/utils/GraphicsPipelineConfigurator.h>
 #include <vsg/state/ViewDependentState.h>
@@ -15,6 +16,7 @@ namespace ROCKY_NAMESPACE
     constexpr int VSG_VIEW_DEPENDENT_DATA_SET = 1;
     constexpr int VSG_VIEW_DEPENDENT_LIGHTS_BINDING = 0;
     constexpr int VSG_VIEW_DEPENDENT_VIEWPORTS_BINDING = 1;
+    
 
     //! Utilities for helping to set up a graphics pipeline.
     struct PipelineUtils
@@ -35,7 +37,7 @@ namespace ROCKY_NAMESPACE
                 "vsg_lights", "",
                 VSG_VIEW_DEPENDENT_DATA_SET,
                 VSG_VIEW_DEPENDENT_LIGHTS_BINDING,
-                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1,
                 stageFlags, {});
 
             // VSG viewport state
@@ -43,8 +45,10 @@ namespace ROCKY_NAMESPACE
                 "vsg_viewports", "",
                 VSG_VIEW_DEPENDENT_DATA_SET,
                 VSG_VIEW_DEPENDENT_VIEWPORTS_BINDING,
-                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1,
                 stageFlags, {});
+
+            //shaderSet->defines
         }
 
         static void enableViewDependentData(vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> pipelineConfig)
