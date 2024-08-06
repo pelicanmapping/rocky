@@ -9,8 +9,6 @@ This project is in its early stages so expect a lot of API and architectural cha
 
 # A simple Rocky application
 
-**Quick Start** : Head over to the [rocky-demo](https://github.com/pelicanmapping/rocky-demo) repository for a template project much like the one below! It includes a `vcpkg.json` manifest to get `vcpkg` users up and running quickly.
-
 ### main.cpp
 ```c++
 #include <rocky/vsg/Application.h>
@@ -51,10 +49,13 @@ install(TARGETS myApp RUNTIME DESTINATION bin)
 * [GDAL](https://github.com/OSGeo/gdal) (optional)
 * [glm](https://github.com/g-truc/glm)
 * [nlohmann-json](https://github.com/nlohmann/json)
+* [openssl](https://github.com/openssl/openssl) (optional)
 * [proj](https://github.com/OSGeo/PROJ)
+* [spdlog](https://github.com/gabime/spdlog)
 * [sqlite3](https://github.com/sqlite/sqlite) (optional)
 * [vsgXchange](https://github.com/vsg-dev/vsgXchange) (optional)
 * [VulkanSceneGraph](https://github.com/vsg-dev/VulkanSceneGraph)
+* [weejobs](https://github.com/pelicanmapping/weejobs)
 
 ## Building
 
@@ -76,7 +77,16 @@ set PROJ_DATA=%proj_install_dir%/share/proj
 
 If you built with `vcpkg` you will also need to add the dependencies folder to your path; this will normally be found in `vcpkg_installed/x64-windows` (or whatever platform you are using).
 ```
-rdemo.exe
+rdemo
+```
+There are some example JSON map files in the `data` folder. Load them with the `--map` option.
+```
+rdemo --map data\readymap.map.json
 ```
 
 <img width="500" alt="Screenshot 2023-02-22 124318" src="https://user-images.githubusercontent.com/326618/236200807-73567789-a5a3-46d5-a98d-e9c1f24a0f62.png">
+
+Use `--help` to see all command line options.
+```
+rdemo --help
+```
