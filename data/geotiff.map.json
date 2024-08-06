@@ -1,0 +1,12 @@
+{
+    "map" : {
+        "name" : "Local GeoTIFF Map",
+        "layers": [
+            {
+                "name": "Local GeoTIFF",
+                "type": "GDALImage",
+                "uri": "imagery/world.tif"
+            }
+        ]
+    }
+}
