@@ -44,8 +44,8 @@ namespace ROCKY_NAMESPACE
             const optional<std::string>& connection() const;
 
             //! GDAL sub-dataset index (optional)
-            void setSubDataSet(unsigned value);
-            const optional<unsigned>& subDataSet() const;
+            void setSubDataset(unsigned value);
+            const optional<unsigned>& subDataset() const;
 
             //! Interpolation method for resampling (default is bilinear)
             void setInterpolation(const Image::Interpolation& value);
@@ -54,7 +54,7 @@ namespace ROCKY_NAMESPACE
         protected:
             optional<URI> _uri = { };
             optional<std::string> _connection = { };
-            optional<unsigned> _subDataSet = 0;
+            optional<unsigned> _subDataset = 0;
             optional<Image::Interpolation> _interpolation = Image::AVERAGE;
             optional<bool> _singleThreaded = false;
         };
@@ -67,22 +67,14 @@ namespace ROCKY_NAMESPACE
         class ROCKY_EXPORT Driver
         {
         public:
+            optional<float> noDataValue;
+            optional<float> minValidValue;
+            optional<float> maxValidValue;
+            optional<unsigned> maxDataLevel = 30;
+
             //! Constructs a new driver
             Driver();
-
             virtual ~Driver();
-
-            //! Value to interpet as "no data"
-            void setNoDataValue(float value) { _noDataValue = value; }
-
-            //! Minimum valid data value (anything less is "no data")
-            void setMinValidValue(float value) { _minValidValue = value; }
-
-            //! Maximum valid data value (anything more is "no data")
-            void setMaxValidValue(float value) { _maxValidValue = value; }
-
-            //! Maximum LOD at which to return real data
-            void setMaxDataLevel(unsigned value) { _maxDataLevel = value; }
 
             //! Opens and initializes the connection to the dataset
             Status open(
@@ -96,16 +88,7 @@ namespace ROCKY_NAMESPACE
             Result<shared_ptr<Image>> createImage(
                 const TileKey& key,
                 unsigned tileSize,
-                bool isCoverage,
                 const IOOptions& io);
-
-#if 0
-            //! Creates a heightfield if possible
-            Result<shared_ptr<Heightfield>> createHeightfield(
-                const TileKey& key,
-                unsigned tileSize,
-                const IOOptions& io);
-#endif
 
             const Profile& profile() const {
                 return _profile;
@@ -120,11 +103,9 @@ namespace ROCKY_NAMESPACE
             bool intersects(const TileKey&);
             float getInterpolatedValue(GDALRasterBand* band, double x, double y, bool applyOffset = true);
 
-            optional<float> _noDataValue, _minValidValue, _maxValidValue;
-            optional<unsigned> _maxDataLevel;
-            GDALDataset* _srcDS;
-            GDALDataset* _warpedDS;
-            double _linearUnits;
+            GDALDataset* _srcDS = nullptr;
+            GDALDataset* _warpedDS = nullptr;
+            double _linearUnits = 1.0;
             double _geotransform[6];
             double _invtransform[6];
             GeoExtent _extents;

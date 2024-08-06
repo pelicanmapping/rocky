@@ -31,7 +31,7 @@ namespace
         driver = std::make_shared<GDAL::Driver>();
 
         if (layer->maxDataLevel().has_value())
-            driver->setMaxDataLevel(layer->maxDataLevel());
+            driver->maxDataLevel = layer->maxDataLevel();
 
         Status status = driver->open(
             layer->name(),
@@ -72,7 +72,7 @@ GDALImageLayer::construct(const std::string& JSON, const IOOptions& io)
     const auto j = parse_json(JSON);
     get_to(j, "uri", _uri, io);
     get_to(j, "connection", _connection);
-    get_to(j, "subdataset", _subDataSet);
+    get_to(j, "subdataset", _subDataset);
     std::string temp;
     get_to(j, "interpolation", temp);
     if (temp == "nearest") _interpolation = Image::NEAREST;
@@ -88,7 +88,7 @@ GDALImageLayer::to_json() const
     auto j = parse_json(super::to_json());
     set(j, "uri", _uri);
     set(j, "connection", _connection);
-    set(j, "subdataset", _subDataSet);
+    set(j, "subdataset", _subDataset);
     if (_interpolation.has_value(Image::NEAREST))
         set(j, "interpolation", "nearest");
     else if (_interpolation.has_value(Image::BILINEAR))
@@ -164,7 +164,7 @@ GDALImageLayer::createImageImplementation(
 
     if (driver)
     {
-        auto image = driver->createImage(key, _tileSize, false, io);
+        auto image = driver->createImage(key, _tileSize, io);
         if (image.value)
             return GeoImage(image.value, key.extent());
     }

@@ -29,14 +29,14 @@ namespace
         driver = std::make_shared<GDAL::Driver>();
 
         if (layer->maxDataLevel().has_value())
-            driver->setMaxDataLevel(layer->maxDataLevel());
+            driver->maxDataLevel = layer->maxDataLevel();
 
         if (layer->noDataValue().has_value())
-            driver->setNoDataValue(layer->noDataValue());
+            driver->noDataValue = layer->noDataValue();
         if (layer->minValidValue().has_value())
-            driver->setMinValidValue(layer->minValidValue());
+            driver->minValidValue = layer->minValidValue();
         if (layer->maxValidValue().has_value())
-            driver->setMaxValidValue(layer->maxValidValue());
+            driver->maxValidValue = layer->maxValidValue();
 
         Status status = driver->open(
             layer->name(),
@@ -77,7 +77,7 @@ GDALElevationLayer::construct(const std::string& JSON, const IOOptions& io)
     const auto j = parse_json(JSON);
     get_to(j, "uri", _uri, io);
     get_to(j, "connection", _connection);
-    get_to(j, "subdataset", _subDataSet);
+    get_to(j, "subdataset", _subDataset);
     std::string temp;
     get_to(j, "interpolation", temp);
     if (temp == "nearest") _interpolation = Image::NEAREST;
@@ -93,7 +93,7 @@ GDALElevationLayer::to_json() const
     auto j = parse_json(super::to_json());
     set(j, "uri", _uri);
     set(j, "connection", _connection);
-    set(j, "subdataset", _subDataSet);
+    set(j, "subdataset", _subDataset);
     if (_interpolation.has_value(Image::NEAREST))
         set(j, "interpolation", "nearest");
     else if (_interpolation.has_value(Image::BILINEAR))
@@ -150,9 +150,7 @@ GDALElevationLayer::closeImplementation()
 }
 
 Result<GeoHeightfield>
-GDALElevationLayer::createHeightfieldImplementation(
-    const TileKey& key,
-    const IOOptions& io) const
+GDALElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOOptions& io) const
 {
     ROCKY_PROFILE_FUNCTION();
 
@@ -169,7 +167,7 @@ GDALElevationLayer::createHeightfieldImplementation(
 
     if (driver)
     {
-        auto r = driver->createImage(key, tileSize(), false, io);
+        auto r = driver->createImage(key, tileSize(), io);
 
         if (r.status.ok())
         {
@@ -186,7 +184,6 @@ GDALElevationLayer::createHeightfieldImplementation(
     }
 
     return Status_ResourceUnavailable;
-    //return GeoHeightfield::INVALID;
 }
 
 #endif // GDAL_HAS_ROCKY

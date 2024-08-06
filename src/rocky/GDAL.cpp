@@ -7,9 +7,14 @@
 #ifdef ROCKY_HAS_GDAL
 
 #include "ElevationLayer.h" // for NO_DATA_VALUE
+
 #include <gdal.h>
 #include <gdalwarper.h>
+#include <gdal_proxy.h>
+#include <gdal_vrt.h>
+#include <cpl_string.h>
 #include <ogr_spatialref.h>
+
 #include <filesystem>
 
 using namespace ROCKY_NAMESPACE;
@@ -18,47 +23,12 @@ using namespace ROCKY_NAMESPACE::GDAL;
 #undef LC
 #define LC "[GDAL] \"" + getName() + "\" "
 
-#define INDENT ""
-
-#if (GDAL_VERSION_MAJOR > 1 || (GDAL_VERSION_MAJOR >= 1 && GDAL_VERSION_MINOR >= 5))
-#  define GDAL_VERSION_1_5_OR_NEWER 1
-#endif
-
-#if (GDAL_VERSION_MAJOR > 1 || (GDAL_VERSION_MAJOR >= 1 && GDAL_VERSION_MINOR >= 6))
-#  define GDAL_VERSION_1_6_OR_NEWER 1
-#endif
-
-#ifndef GDAL_VERSION_1_5_OR_NEWER
-#  error "**** GDAL 1.5 or newer required ****"
-#endif
-
-//GDAL proxy is only available after GDAL 1.6
-#if GDAL_VERSION_1_6_OR_NEWER
-#  include <gdal_proxy.h>
-#endif
-
-#if (GDAL_VERSION_MAJOR >= 2)
-#  define GDAL_VERSION_2_0_OR_NEWER 1
-#endif
-
-#include <cpl_string.h>
-
-//GDAL VRT api is only available after 1.5.0
-#include <gdal_vrt.h>
-
-#define GEOTRSFRM_TOPLEFT_X            0
-#define GEOTRSFRM_WE_RES               1
-#define GEOTRSFRM_ROTATION_PARAM1      2
-#define GEOTRSFRM_TOPLEFT_Y            3
-#define GEOTRSFRM_ROTATION_PARAM2      4
-#define GEOTRSFRM_NS_RES               5
-
 namespace ROCKY_NAMESPACE
 {
-    namespace GDAL
+    namespace detail
     {
         // From easyrgb.com
-        float Hue_2_RGB(float v1, float v2, float vH)
+        inline float Hue_2_RGB(float v1, float v2, float vH)
         {
             if (vH < 0.0f) vH += 1.0f;
             if (vH > 1.0f) vH -= 1.0f;
@@ -68,188 +38,10 @@ namespace ROCKY_NAMESPACE
             return (v1);
         }
 
-#ifndef GDAL_VERSION_2_0_OR_NEWER
-        // RasterIO was substantially improved in 2.0
-        // See https://trac.osgeo.org/gdal/wiki/rfc51_rasterio_resampling_progress
-        typedef int GSpacing;
-#endif
-
-        typedef enum
-        {
-            LOWEST_RESOLUTION,
-            HIGHEST_RESOLUTION,
-            AVERAGE_RESOLUTION
-        } ResolutionStrategy;
-
-        typedef struct
-        {
-            int    isFileOK;
-            int    nRasterXSize;
-            int    nRasterYSize;
-            double adfGeoTransform[6];
-            int    nBlockXSize;
-            int    nBlockYSize;
-        } DatasetProperty;
-
-        typedef struct
-        {
-            GDALColorInterp        colorInterpretation;
-            GDALDataType           dataType;
-            GDALColorTableH        colorTable;
-            int                    bHasNoData;
-            double                 noDataValue;
-        } BandProperty;
-
-        // This is simply the method GDALAutoCreateWarpedVRT() with the GDALSuggestedWarpOutput
-        // logic replaced with something that will work properly for polar projections.
-        // see: http://www.mail-archive.com/gdal-dev@lists.osgeo.org/msg01491.html
-        GDALDatasetH GDALAutoCreateWarpedVRTforPolarStereographic(
-            GDALDatasetH hSrcDS,
-            const char *pszSrcWKT,
-            const char *pszDstWKT,
-            GDALResampleAlg eResampleAlg,
-            double dfMaxError,
-            const GDALWarpOptions *psOptionsIn)
-        {
-            GDALWarpOptions *psWO;
-            int i;
-
-            VALIDATE_POINTER1(hSrcDS, "GDALAutoCreateWarpedVRTForPolarStereographic", NULL);
-
-            /* -------------------------------------------------------------------- */
-            /*      Populate the warp options.                                      */
-            /* -------------------------------------------------------------------- */
-            if (psOptionsIn != NULL)
-                psWO = GDALCloneWarpOptions(psOptionsIn);
-            else
-                psWO = GDALCreateWarpOptions();
-
-            psWO->eResampleAlg = eResampleAlg;
-
-            psWO->hSrcDS = hSrcDS;
-
-            psWO->nBandCount = GDALGetRasterCount(hSrcDS);
-            psWO->panSrcBands = (int *)CPLMalloc(sizeof(int) * psWO->nBandCount);
-            psWO->panDstBands = (int *)CPLMalloc(sizeof(int) * psWO->nBandCount);
-
-            for (i = 0; i < psWO->nBandCount; i++)
-            {
-                psWO->panSrcBands[i] = i + 1;
-                psWO->panDstBands[i] = i + 1;
-            }
-
-            /* TODO: should fill in no data where available */
-
-            /* -------------------------------------------------------------------- */
-            /*      Create the transformer.                                         */
-            /* -------------------------------------------------------------------- */
-            psWO->pfnTransformer = GDALGenImgProjTransform;
-            psWO->pTransformerArg =
-                GDALCreateGenImgProjTransformer(psWO->hSrcDS, pszSrcWKT,
-                    NULL, pszDstWKT,
-                    TRUE, 1.0, 0);
-
-            if (psWO->pTransformerArg == NULL)
-            {
-                GDALDestroyWarpOptions(psWO);
-                return NULL;
-            }
-
-            /* -------------------------------------------------------------------- */
-            /*      Figure out the desired output bounds and resolution.            */
-            /* -------------------------------------------------------------------- */
-            double adfDstGeoTransform[6];
-            int    nDstPixels, nDstLines;
-            CPLErr eErr;
-
-            eErr =
-                GDALSuggestedWarpOutput(hSrcDS, psWO->pfnTransformer,
-                    psWO->pTransformerArg,
-                    adfDstGeoTransform, &nDstPixels, &nDstLines);
-
-            // override the suggestions:
-            nDstPixels = GDALGetRasterXSize(hSrcDS) * 4;
-            nDstLines = GDALGetRasterYSize(hSrcDS) / 2;
-            adfDstGeoTransform[0] = -180.0;
-            adfDstGeoTransform[1] = 360.0 / (double)nDstPixels;
-            //adfDstGeoTransform[2] = 0.0;
-            //adfDstGeoTransform[4] = 0.0;
-            //adfDstGeoTransform[5] = (-90 -adfDstGeoTransform[3])/(double)nDstLines;
-
-            /* -------------------------------------------------------------------- */
-            /*      Update the transformer to include an output geotransform        */
-            /*      back to pixel/line coordinates.                                 */
-            /*                                                                      */
-            /* -------------------------------------------------------------------- */
-            GDALSetGenImgProjTransformerDstGeoTransform(
-                psWO->pTransformerArg, adfDstGeoTransform);
-
-            /* -------------------------------------------------------------------- */
-            /*      Do we want to apply an approximating transformation?            */
-            /* -------------------------------------------------------------------- */
-            if (dfMaxError > 0.0)
-            {
-                psWO->pTransformerArg =
-                    GDALCreateApproxTransformer(psWO->pfnTransformer,
-                        psWO->pTransformerArg,
-                        dfMaxError);
-                psWO->pfnTransformer = GDALApproxTransform;
-            }
-
-            /* -------------------------------------------------------------------- */
-            /*      Create the VRT file.                                            */
-            /* -------------------------------------------------------------------- */
-            GDALDatasetH hDstDS;
-
-            hDstDS = GDALCreateWarpedVRT(hSrcDS, nDstPixels, nDstLines,
-                adfDstGeoTransform, psWO);
-
-            GDALDestroyWarpOptions(psWO);
-
-            if (pszDstWKT != NULL)
-                GDALSetProjection(hDstDS, pszDstWKT);
-            else if (pszSrcWKT != NULL)
-                GDALSetProjection(hDstDS, pszDstWKT);
-            else if (GDALGetGCPCount(hSrcDS) > 0)
-                GDALSetProjection(hDstDS, GDALGetGCPProjection(hSrcDS));
-            else
-                GDALSetProjection(hDstDS, GDALGetProjectionRef(hSrcDS));
-
-            return hDstDS;
-        }
-
-        /**
-         * Gets the GeoExtent of the given filename.
-         */
-        GeoExtent getGeoExtent(std::string& filename)
-        {
-            GDALDataset* ds = (GDALDataset*)GDALOpen(filename.c_str(), GA_ReadOnly);
-            if (!ds)
-            {
-                return GeoExtent::INVALID;
-            }
-
-            // Get the geotransforms
-            double geotransform[6];
-            ds->GetGeoTransform(geotransform);
-
-            double minX, minY, maxX, maxY;
-
-            GDALApplyGeoTransform(geotransform, 0.0, ds->GetRasterYSize(), &minX, &minY);
-            GDALApplyGeoTransform(geotransform, ds->GetRasterXSize(), 0.0, &maxX, &maxY);
-
-            std::string srsString = ds->GetProjectionRef();
-            SRS srs(srsString);
-
-            GDALClose(ds);
-
-            GeoExtent ext(srs, minX, minY, maxX, maxY);
-            return ext;
-        }
         /**
         * Finds a raster band based on color interpretation
         */
-        GDALRasterBand* findBandByColorInterp(GDALDataset *ds, GDALColorInterp colorInterp)
+        inline GDALRasterBand* findBandByColorInterp(GDALDataset *ds, GDALColorInterp colorInterp)
         {
             for (int i = 1; i <= ds->GetRasterCount(); ++i)
             {
@@ -258,23 +50,14 @@ namespace ROCKY_NAMESPACE
             return 0;
         }
 
-        GDALRasterBand* findBandByDataType(GDALDataset *ds, GDALDataType dataType)
-        {
-            for (int i = 1; i <= ds->GetRasterCount(); ++i)
-            {
-                if (ds->GetRasterBand(i)->GetRasterDataType() == dataType) return ds->GetRasterBand(i);
-            }
-            return 0;
-        }
-
         template<typename COLOR>
-        bool getPalleteIndexColor(GDALRasterBand* band, int index, COLOR& color)
+        inline bool getPalleteIndexColor(GDALRasterBand* band, int index, COLOR& color)
         {
             const GDALColorEntry *colorEntry = band->GetColorTable()->GetColorEntry(index);
             GDALPaletteInterp interp = band->GetColorTable()->GetPaletteInterpretation();
             if (!colorEntry)
             {
-                //FIXME: What to do here?
+                // What to do here? Let's return a red pixel for now.
                 color.r = 255;
                 color.g = 0;
                 color.b = 0;
@@ -350,7 +133,7 @@ namespace ROCKY_NAMESPACE
         }
         
         template<typename T>
-        void applyScaleAndOffset(void* data, int count, double scale, double offset)
+        inline void applyScaleAndOffset(void* data, int count, double scale, double offset)
         {
             T* f = (T*)data;
             for (int i = 0; i < count; ++i)
@@ -361,7 +144,7 @@ namespace ROCKY_NAMESPACE
         }
 
         // GDALRasterBand::RasterIO helper method
-        bool rasterIO(
+        inline bool rasterIO(
             GDALRasterBand *band,
             GDALRWFlag eRWFlag,
             double nXOff,
@@ -374,8 +157,7 @@ namespace ROCKY_NAMESPACE
             GDALDataType eBufType,
             GSpacing nPixelSpace,
             GSpacing nLineSpace,
-            Image::Interpolation interpolation = Image::NEAREST
-        )
+            Image::Interpolation interpolation = Image::NEAREST)
         {
             GDALRasterIOExtraArg psExtraArg;
 
@@ -437,11 +219,12 @@ namespace ROCKY_NAMESPACE
 
             return (err == CE_None);
         }
+    }
 
-        Result<shared_ptr<Image>> readImage(
-            unsigned char* data,
-            std::size_t length,
-            const std::string& name)
+    namespace GDAL
+    {
+
+        Result<shared_ptr<Image>> readImage(unsigned char* data, std::size_t length, const std::string& name)
         {
             shared_ptr<Image> result;
 
@@ -459,20 +242,20 @@ namespace ROCKY_NAMESPACE
                     filename.c_str(),
                     GA_ReadOnly,
                     drivers,
-                    nullptr,
-                    nullptr);
+                    nullptr,  // open_options
+                    nullptr); // sibling files
 
                 if (ds)
                 {
                     int width = ds->GetRasterXSize();
                     int height = ds->GetRasterYSize();
 
-                    GDALRasterBand* R = findBandByColorInterp(ds, GCI_RedBand);
-                    GDALRasterBand* G = findBandByColorInterp(ds, GCI_GreenBand);
-                    GDALRasterBand* B = findBandByColorInterp(ds, GCI_BlueBand);
-                    GDALRasterBand* A = findBandByColorInterp(ds, GCI_AlphaBand);
-                    GDALRasterBand* M = findBandByColorInterp(ds, GCI_GrayIndex);
-                    GDALRasterBand* P = findBandByColorInterp(ds, GCI_PaletteIndex);
+                    GDALRasterBand* R = detail::findBandByColorInterp(ds, GCI_RedBand);
+                    GDALRasterBand* G = detail::findBandByColorInterp(ds, GCI_GreenBand);
+                    GDALRasterBand* B = detail::findBandByColorInterp(ds, GCI_BlueBand);
+                    GDALRasterBand* A = detail::findBandByColorInterp(ds, GCI_AlphaBand);
+                    GDALRasterBand* M = detail::findBandByColorInterp(ds, GCI_GrayIndex);
+                    GDALRasterBand* P = detail::findBandByColorInterp(ds, GCI_PaletteIndex);
 
                     Image::PixelFormat format = Image::UNDEFINED;
                     if (P)
@@ -493,7 +276,7 @@ namespace ROCKY_NAMESPACE
                         result = Image::create(format, width, height);
                         auto data = result->data<unsigned char>();
                         GSpacing spacing = result->numComponents();
-                        
+
                         int offset = 0;
 
                         if (P)
@@ -503,7 +286,7 @@ namespace ROCKY_NAMESPACE
                             glm::u8vec4 color;
                             for (int i = 0; i < width * height; ++i)
                             {
-                                getPalleteIndexColor(P, temp[i], color);
+                                detail::getPalleteIndexColor(P, temp[i], color);
                                 data[offset++] = color.r;
                                 data[offset++] = color.g;
                                 data[offset++] = color.b;
@@ -543,18 +326,13 @@ namespace ROCKY_NAMESPACE
 
             return result;
         }
-
     }
-} // namespace ROCKY_NAMESPACE::GDAL
+}
 
 
 //...................................................................
 
-GDAL::Driver::Driver() :
-    _srcDS(NULL),
-    _warpedDS(NULL),
-    _maxDataLevel(30),
-    _linearUnits(1.0)
+GDAL::Driver::Driver()
 {
     _threadId = std::this_thread::get_id();
 }
@@ -649,7 +427,7 @@ GDAL::Driver::open(
 
             if (numSubDatasets > 0)
             {
-                int subDataset = layer->subDataSet().has_value() ? static_cast<int>(layer->subDataSet()) : 1;
+                int subDataset = layer->subDataset().has_value() ? static_cast<int>(layer->subDataset()) : 1;
                 if (subDataset < 1 || subDataset > numSubDatasets) subDataset = 1;
                 std::stringstream buf;
                 buf << "SUBDATASET_" << subDataset << "_NAME";
@@ -812,25 +590,18 @@ GDAL::Driver::open(
     double resolutionY = (maxY - minY) / (double)_warpedDS->GetRasterYSize();
     double maxResolution = std::min(resolutionX, resolutionY);
 
-    if (_maxDataLevel.has_value())
+    if (maxDataLevel.has_value())
     {
         //nop
     }
     else
     {
-        unsigned int max_level = 30;
-        for (unsigned int i = 0; i < max_level; ++i)
-        {
-            _maxDataLevel = i;
-            auto[w, h] = _profile.tileDimensions(i);
-            double resX = w / (double)tileSize;
-            double resY = h / (double)tileSize;
-
-            if (resX < maxResolution || resY < maxResolution)
-            {
-                break;
-            }
-        }
+        // calculate the maximum LOD at which to use GDAL to read data
+        auto nx = _warpedDS->GetRasterXSize() / (int)tileSize;
+        auto ny = _warpedDS->GetRasterYSize() / (int)tileSize;
+        maxDataLevel = std::max(
+            std::max((int)ceil(log2(nx)) - 1, 0),
+            std::max((int)ceil(log2(ny)) - 1, 0));
     }
 
     // If the input dataset is a VRT, then get the individual files in the dataset and use THEM for the DataExtents.
@@ -883,8 +654,8 @@ GDAL::Driver::open(
         if (dataExtents.empty())
         {
             // Use the extents of the whole file.
-            if (_maxDataLevel.has_value())
-                layerDataExtents->push_back(DataExtent(profile_extent, 0, _maxDataLevel));
+            if (maxDataLevel.has_value())
+                layerDataExtents->push_back(DataExtent(profile_extent, 0, maxDataLevel));
             else
                 layerDataExtents->push_back(DataExtent(profile_extent));
         }
@@ -938,14 +709,14 @@ GDAL::Driver::isValidValue(float v, GDALRasterBand* band)
         return false;
 
     //Check to see if the value is equal to the user specified nodata value
-    if (_noDataValue.has_value(v))
+    if (noDataValue.has_value(v))
         return false;
 
     //Check to see if the user specified a custom min/max
-    if (_minValidValue.has_value() && v < _minValidValue)
+    if (minValidValue.has_value() && v < minValidValue)
         return false;
 
-    if (_maxValidValue.has_value() && v > _maxValidValue)
+    if (maxValidValue.has_value() && v > maxValidValue)
         return false;
 
     return true;
@@ -954,14 +725,14 @@ GDAL::Driver::isValidValue(float v, GDALRasterBand* band)
 float
 GDAL::Driver::getValidElevationValue(float v, float noDataValueFromBand, float replacement)
 {
-    if (_noDataValue.has_value(v) || noDataValueFromBand == v)
+    if (noDataValue.has_value(v) || noDataValueFromBand == v)
         return replacement;
 
     //Check to see if the user specified a custom min/max
-    if (_minValidValue.has_value() && v < _minValidValue)
+    if (minValidValue.has_value() && v < minValidValue)
         return replacement;
 
-    if (_maxValidValue.has_value() && v > _maxValidValue)
+    if (maxValidValue.has_value() && v > maxValidValue)
         return replacement;
 
     return v;
@@ -1010,7 +781,7 @@ GDAL::Driver::getInterpolatedValue(GDALRasterBand* band, double x, double y, boo
 
     if (_layer->interpolation() == Image::NEAREST)
     {
-        rasterIO(band, GF_Read, (int)round(c), (int)round(r), 1, 1, &result, 1, 1, GDT_Float32, 0, 0);
+        detail::rasterIO(band, GF_Read, (int)round(c), (int)round(r), 1, 1, &result, 1, 1, GDT_Float32, 0, 0);
         if (!isValidValue(result, band))
         {
             return NO_DATA_VALUE;
@@ -1028,10 +799,10 @@ GDAL::Driver::getInterpolatedValue(GDALRasterBand* band, double x, double y, boo
 
         float urHeight, llHeight, ulHeight, lrHeight;
 
-        rasterIO(band, GF_Read, colMin, rowMin, 1, 1, &llHeight, 1, 1, GDT_Float32, 0, 0);
-        rasterIO(band, GF_Read, colMin, rowMax, 1, 1, &ulHeight, 1, 1, GDT_Float32, 0, 0);
-        rasterIO(band, GF_Read, colMax, rowMin, 1, 1, &lrHeight, 1, 1, GDT_Float32, 0, 0);
-        rasterIO(band, GF_Read, colMax, rowMax, 1, 1, &urHeight, 1, 1, GDT_Float32, 0, 0);
+        detail::rasterIO(band, GF_Read, colMin, rowMin, 1, 1, &llHeight, 1, 1, GDT_Float32, 0, 0);
+        detail::rasterIO(band, GF_Read, colMin, rowMax, 1, 1, &ulHeight, 1, 1, GDT_Float32, 0, 0);
+        detail::rasterIO(band, GF_Read, colMax, rowMin, 1, 1, &lrHeight, 1, 1, GDT_Float32, 0, 0);
+        detail::rasterIO(band, GF_Read, colMax, rowMax, 1, 1, &urHeight, 1, 1, GDT_Float32, 0, 0);
 
         if ((!isValidValue(urHeight, band)) || (!isValidValue(llHeight, band)) || (!isValidValue(ulHeight, band)) || (!isValidValue(lrHeight, band)))
         {
@@ -1087,9 +858,9 @@ GDAL::Driver::intersects(const TileKey& key)
 }
 
 Result<shared_ptr<Image>>
-GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, bool isCoverage, const IOOptions& io)
+GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions& io)
 {
-    if (_maxDataLevel.has_value() && key.levelOfDetail() > _maxDataLevel)
+    if (maxDataLevel.has_value() && key.levelOfDetail() > maxDataLevel)
     {
         return Status(Status::ResourceUnavailable);
     }
@@ -1180,14 +951,14 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, bool isCoverage
         return Status(Status::ResourceUnavailable);
     }
 
-    GDALRasterBand* bandRed = findBandByColorInterp(_warpedDS, GCI_RedBand);
-    GDALRasterBand* bandGreen = findBandByColorInterp(_warpedDS, GCI_GreenBand);
-    GDALRasterBand* bandBlue = findBandByColorInterp(_warpedDS, GCI_BlueBand);
-    GDALRasterBand* bandAlpha = findBandByColorInterp(_warpedDS, GCI_AlphaBand);
+    GDALRasterBand* bandRed = detail::findBandByColorInterp(_warpedDS, GCI_RedBand);
+    GDALRasterBand* bandGreen = detail::findBandByColorInterp(_warpedDS, GCI_GreenBand);
+    GDALRasterBand* bandBlue = detail::findBandByColorInterp(_warpedDS, GCI_BlueBand);
+    GDALRasterBand* bandAlpha = detail::findBandByColorInterp(_warpedDS, GCI_AlphaBand);
 
-    GDALRasterBand* bandGray = findBandByColorInterp(_warpedDS, GCI_GrayIndex);
+    GDALRasterBand* bandGray = detail::findBandByColorInterp(_warpedDS, GCI_GrayIndex);
 
-    GDALRasterBand* bandPalette = findBandByColorInterp(_warpedDS, GCI_PaletteIndex);
+    GDALRasterBand* bandPalette = detail::findBandByColorInterp(_warpedDS, GCI_PaletteIndex);
 
     if (!bandRed && !bandGreen && !bandBlue && !bandAlpha && !bandGray && !bandPalette)
     {
@@ -1238,13 +1009,13 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, bool isCoverage
 
         memset(image->data<char>(), 0, image->sizeInBytes());
 
-        rasterIO(bandRed, GF_Read, src_min_x, src_min_y, src_width, src_height, red, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
-        rasterIO(bandGreen, GF_Read, src_min_x, src_min_y, src_width, src_height, green, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
-        rasterIO(bandBlue, GF_Read, src_min_x, src_min_y, src_width, src_height, blue, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
+        detail::rasterIO(bandRed, GF_Read, src_min_x, src_min_y, src_width, src_height, red, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
+        detail::rasterIO(bandGreen, GF_Read, src_min_x, src_min_y, src_width, src_height, green, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
+        detail::rasterIO(bandBlue, GF_Read, src_min_x, src_min_y, src_width, src_height, blue, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
 
         if (bandAlpha)
         {
-            rasterIO(bandAlpha, GF_Read, src_min_x, src_min_y, src_width, src_height, alpha, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
+            detail::rasterIO(bandAlpha, GF_Read, src_min_x, src_min_y, src_width, src_height, alpha, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
         }
 
         for (int src_row = 0, dst_row = tile_offset_top;
@@ -1308,7 +1079,7 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, bool isCoverage
             {
                 short* temp = new short[target_width * target_height];
 
-                rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation());
+                detail::rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation());
 
                 int success = 0;
                 short noDataValueFromBand = (short)bandGray->GetNoDataValue(&success);
@@ -1332,7 +1103,7 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, bool isCoverage
             {
                 float* temp = new float[target_width * target_height];
 
-                rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation());
+                detail::rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation());
 
                 int success = 0;
                 float noDataValueFromBand = (float)bandGray->GetNoDataValue(&success);
@@ -1369,12 +1140,12 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, bool isCoverage
                 memset(alpha, 255, target_width * target_height);
             }
 
-            rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, gray, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
+            detail::rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, gray, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
 
             // color only:
             if (bandAlpha)
             {
-                rasterIO(bandAlpha, GF_Read, src_min_x, src_min_y, src_width, src_height, alpha, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
+                detail::rasterIO(bandAlpha, GF_Read, src_min_x, src_min_y, src_width, src_height, alpha, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
             }
 
             for (int src_row = 0, dst_row = tile_offset_top;
@@ -1411,34 +1182,10 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, bool isCoverage
         //Palette indexed imagery doesn't support interpolation currently and only uses nearest
         //b/c interpolating palette indexes doesn't make sense.
         unsigned char *palette = new unsigned char[target_width * target_height];
+        image = Image::create(pixelFormat, tileSize, tileSize);
+        memset(image->data<unsigned char>(), 0, image->sizeInBytes());
 
-        //image = new osg::Image;
-
-        if (isCoverage == true)
-        {
-            //image = LandCover::createImage(tileSize);
-            image = Image::create(
-                Image::R32_SFLOAT,
-                tileSize,
-                tileSize);
-
-            image->fill(glm::fvec4(NO_DATA_VALUE));
-
-            // initialize all coverage texels to NODATA. -gw
-            //ImageUtils::PixelWriter write(image.get());
-            //write.assign(Color(NO_DATA_VALUE));
-        }
-        else
-        {
-            image = Image::create(
-                pixelFormat,
-                tileSize,
-                tileSize);
-
-            memset(image->data<unsigned char>(), 0, image->sizeInBytes());
-        }
-
-        rasterIO(
+        detail::rasterIO(
             bandPalette, 
             GF_Read,
             src_min_x, src_min_y, src_width, src_height,
@@ -1446,10 +1193,6 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, bool isCoverage
             target_width, target_height,
             GDT_Byte, 0, 0, 
             Image::NEAREST);
-
-        //ImageUtils::PixelWriter write(image.get());
-
-        Image::Pixel pixel;
 
         for (int src_row = 0, dst_row = tile_offset_top;
             src_row < target_height;
@@ -1462,45 +1205,19 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, bool isCoverage
             {
                 unsigned char p = palette[src_col + src_row * target_width];
 
-                if (isCoverage)
+
+                glm::u8vec4 color;
+                if (!detail::getPalleteIndexColor(bandPalette, p, color))
                 {
-                    //if (_layer->coverageUsesPaletteIndex() == true)
-                    //{
-                    //    pixel.r = (float)p;
-                    //}
-                    //else
-                    {
-                        glm::u8vec4 color;
-                        if (getPalleteIndexColor(bandPalette, p, color) &&
-                            isValidValue((float)color.r, bandPalette)) // need this?
-                        {
-                            pixel.r = (float)color.r;
-                        }
-                        else
-                        {
-                            pixel.r = NO_DATA_VALUE;
-                        }
-                    }
-
-                    glm::fvec4 fpixel = glm::fvec4(pixel) / 255.0f;
-
-                    image->write(fpixel, dst_col, flippedRow);
+                    color.a = 0;
                 }
-                else
+                else if (!isValidValue((float)color.r, bandPalette)) // is this applicable for palettized data?
                 {
-                    glm::u8vec4 color;
-                    if (!getPalleteIndexColor(bandPalette, p, color))
-                    {
-                        color.a = 0;
-                    }
-                    else if (!isValidValue((float)color.r, bandPalette)) // is this applicable for palettized data?
-                    {
-                        color.a = 0;
-                    }
-
-                    glm::fvec4 fcolor = glm::fvec4(color) / 255.0f;
-                    image->write(fcolor, dst_col, flippedRow);
+                    color.a = 0;
                 }
+
+                glm::fvec4 fcolor = glm::fvec4(color) / 255.0f;
+                image->write(fcolor, dst_col, flippedRow);
             }
         }
 
@@ -1537,11 +1254,11 @@ void GDAL::LayerBase::setConnection(const std::string& value) {
 const optional<std::string>& GDAL::LayerBase::connection() const {
     return _connection;
 }
-void GDAL::LayerBase::setSubDataSet(unsigned value) {
-    _subDataSet = value;
+void GDAL::LayerBase::setSubDataset(unsigned value) {
+    _subDataset = value;
 }
-const optional<unsigned>& GDAL::LayerBase::subDataSet() const {
-    return _subDataSet;
+const optional<unsigned>& GDAL::LayerBase::subDataset() const {
+    return _subDataset;
 }
 void GDAL::LayerBase::setInterpolation(const Image::Interpolation& value) {
     _interpolation = value;
@@ -1571,15 +1288,17 @@ namespace
         if (elevationLayer)
         {
             if (elevationLayer->noDataValue().has_value())
-                driver->setNoDataValue(elevationLayer->noDataValue());
+                driver->noDataValue = elevationLayer->noDataValue();
             if (elevationLayer->minValidValue().has_value())
-                driver->setMinValidValue(elevationLayer->minValidValue());
+                driver->minValidValue = elevationLayer->minValidValue();
             if (elevationLayer->maxValidValue().has_value())
-                driver->setMaxValidValue(elevationLayer->maxValidValue());
+                driver->maxValidValue = elevationLayer->maxValidValue();
         }
 
         if (layer->maxDataLevel().has_value())
+        {
             driver->setMaxDataLevel(layer->maxDataLevel());
+        }
 
         Status status = driver->open(
             layer->name(),
