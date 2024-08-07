@@ -47,7 +47,9 @@ namespace
     struct SRSEntry
     {
         PJ* pj = nullptr;
-        PJ_TYPE horiz_crs_type;
+        PJ_TYPE crs_type = PJ_TYPE_UNKNOWN;
+        PJ_TYPE horiz_crs_type = PJ_TYPE_UNKNOWN;
+        PJ_TYPE vert_crs_type = PJ_TYPE_UNKNOWN;
         optional<Box> bounds;
         std::string wkt;
         std::string proj;
@@ -161,14 +163,24 @@ namespace
                 else
                 {
                     // extract the type
-                    PJ_TYPE type = proj_get_type(pj);
-                    if (type == PJ_TYPE_COMPOUND_CRS)
+                    new_entry.crs_type = proj_get_type(pj);
+
+                    if (new_entry.crs_type == PJ_TYPE_COMPOUND_CRS)
                     {
-                        PJ* horiz = proj_crs_get_sub_crs(ctx, pj, 0);
+                        constexpr int HORIZONTAL = 0, VERTICAL = 1;
+
+                        PJ* horiz = proj_crs_get_sub_crs(ctx, pj, HORIZONTAL);
                         if (horiz)
                             new_entry.horiz_crs_type = proj_get_type(horiz);
+
+                        PJ* vert = proj_crs_get_sub_crs(ctx, pj, VERTICAL);
+                        if (vert)
+                            new_entry.vert_crs_type = proj_get_type(vert);
                     }
-                    else new_entry.horiz_crs_type = type;
+                    else
+                    {
+                        new_entry.horiz_crs_type = new_entry.crs_type;
+                    }
 
                     // extract the ellipsoid parameters.
                     // if this fails, the entry will contain the default WGS84 ellipsoid, and that is ok.
@@ -520,19 +532,27 @@ SRS::isProjected() const
 }
 
 bool
-SRS::isEquivalentTo(const SRS& rhs) const
+SRS::hasVerticalDatumShift() const
+{
+    if (!valid())
+        return false;
+
+    return g_srs_factory.get_or_create(definition()).vert_crs_type != PJ_TYPE_UNKNOWN;
+}
+
+bool
+SRS::equivalentTo(const SRS& rhs) const
 {
     if (definition().empty() || rhs.definition().empty())
         return false;
 
     PJ* pj1 = g_srs_factory.get_or_create(definition()).pj;
-    if (!pj1) return false;
+    if (!pj1)
+        return false;
 
     PJ* pj2 = g_srs_factory.get_or_create(rhs.definition()).pj;
-    if (!pj2) return false;
-
-    if (_isGeodetic && rhs._isGeodetic && ellipsoid() == rhs.ellipsoid())
-        return true;
+    if (!pj2)
+        return false;
 
     PJ_COMPARISON_CRITERION criterion =
         _isGeodetic ? PJ_COMP_EQUIVALENT_EXCEPT_AXIS_ORDER_GEOGCRS :
@@ -543,9 +563,43 @@ SRS::isEquivalentTo(const SRS& rhs) const
 }
 
 bool
-SRS::isHorizEquivalentTo(const SRS& rhs) const
+SRS::horizontallyEquivalentTo(const SRS& rhs) const
 {
-    return isEquivalentTo(rhs);
+    if (definition().empty() || rhs.definition().empty())
+        return false;
+
+    if (_isGeodetic && rhs._isGeodetic && ellipsoid() == rhs.ellipsoid())
+        return true;
+
+    auto& lhs_entry = g_srs_factory.get_or_create(definition());
+    PJ* pj1 = lhs_entry.pj;
+    if (!pj1)
+        return false;
+
+    auto& rhs_entry = g_srs_factory.get_or_create(rhs.definition());
+    PJ* pj2 = rhs_entry.pj;
+    if (!pj2)
+        return false;
+
+    if (lhs_entry.crs_type != rhs_entry.crs_type)
+        return false;
+
+    // compare only the horizontal CRS components:
+    PJ* lhs_pj = nullptr;
+    PJ* rhs_pj = nullptr;
+
+    lhs_pj = lhs_entry.crs_type == PJ_TYPE_COMPOUND_CRS ?
+        proj_crs_get_sub_crs(g_srs_factory.threading_context(), pj1, 0) : pj1;
+
+    rhs_pj = rhs_entry.crs_type == PJ_TYPE_COMPOUND_CRS ?
+        proj_crs_get_sub_crs(g_srs_factory.threading_context(), pj2, 0) : pj2;
+
+    PJ_COMPARISON_CRITERION criterion =
+        _isGeodetic ? PJ_COMP_EQUIVALENT_EXCEPT_AXIS_ORDER_GEOGCRS :
+        PJ_COMP_EQUIVALENT;
+
+    return proj_is_equivalent_to_with_ctx(
+        g_srs_factory.threading_context(), lhs_pj, rhs_pj, criterion);
 }
 
 const std::string&

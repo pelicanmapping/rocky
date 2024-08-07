@@ -435,7 +435,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
         return Result(GeoHeightfield::INVALID);
     }
 
-    if (key.profile() == my_profile)
+    if (key.profile().equivalentTo(my_profile))
     {
         auto r = createHeightfieldImplementation_internal(key, io);
 
@@ -513,8 +513,8 @@ namespace
             GeoExtent geodeticExtent = 
                 ex.srs().isGeodetic() ? ex :
                 ex.transform(ex.srs().geoSRS());
-            double latMin = geodeticExtent.yMin();
-            double lonMin = geodeticExtent.xMin();
+            double latMin = geodeticExtent.ymin();
+            double lonMin = geodeticExtent.xmin();
             double lonInterval = geodeticExtent.width() / (double)(numCols - 1);
             double latInterval = geodeticExtent.height() / (double)(numRows - 1);
 
@@ -672,8 +672,8 @@ ElevationLayerVector::populateHeightfield(
     // Sample the layers into our target.
     unsigned numColumns = hf->width();
     unsigned numRows = hf->height();
-    double   xmin = key.extent().xMin();
-    double   ymin = key.extent().yMin();
+    double   xmin = key.extent().xmin();
+    double   ymin = key.extent().ymin();
     double   dx = key.extent().width() / (double)(numColumns - 1);
     double   dy = key.extent().height() / (double)(numRows - 1);
 

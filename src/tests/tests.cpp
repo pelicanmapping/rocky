@@ -74,7 +74,7 @@ TEST_CASE("json")
     map->layers().add(layer);
     JSON serialized = map->to_json();
     map = rocky::Map::create(instance, serialized);
-    CHECK((map->to_json() == R"({"layers":[{"name":"","type":"TMSImage","uri":"file.xml"}]})"));
+    CHECK((map->to_json() == R"({"layers":[{"name":"","type":"TMSImage","uri":"file.xml"}],"name":""})"));
 #endif
 }
 
@@ -501,9 +501,11 @@ TEST_CASE("SRS")
     {
         SRS wgs84("epsg:4979"); // geographic WGS84 (3D)
         REQUIRE(wgs84.valid());
+        REQUIRE(wgs84.hasVerticalDatumShift() == false);
 
         SRS egm96("epsg:4326+5773"); // WGS84 with EGM96 vdatum
         REQUIRE(egm96.valid());
+        REQUIRE(egm96.hasVerticalDatumShift() == true);
 
         // this is legal but will print a warning because Z values will be lost.
         // (you should use epsg::4979 instead)
@@ -512,6 +514,13 @@ TEST_CASE("SRS")
         Log()->info("You should see a PROJ warning:");
         auto xform_with_warning = wgs84_2d.to(egm96);
         CHECK(xform_with_warning);
+
+        // total equivalency:
+        REQUIRE(egm96.equivalentTo(wgs84_2d) == false);
+
+        // horizontal equivalency:
+        REQUIRE(egm96.horizontallyEquivalentTo(wgs84_2d) == true);
+        REQUIRE(wgs84.horizontallyEquivalentTo(wgs84_2d) == true);
 
         // EGM96 test values are from:
         // https://earth-info.nga.mil/index.php?dir=wgs84&action=egm96-geoid-calc
@@ -591,8 +600,8 @@ TEST_CASE("SRS")
         b = SRS::SPHERICAL_MERCATOR.bounds();
         CHECK(equiv(b.xmin, -20037508.342789244, E));
         CHECK(equiv(b.xmax, 20037508.342789244, E));
-        CHECK(equiv(b.ymin, -20048966.104014594, E));
-        CHECK(equiv(b.ymax, 20048966.104014594, E));
+        CHECK(equiv(b.ymin, -20037508.342789244, E));
+        CHECK(equiv(b.ymax, 20037508.342789244, E));
 
         auto ellipsoid = SRS::WGS84.ellipsoid();
         REQUIRE(ellipsoid.semiMajorAxis() == 6378137.0);

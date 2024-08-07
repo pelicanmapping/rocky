@@ -79,6 +79,9 @@ namespace ROCKY_NAMESPACE
         //! Is this a geocentric (ECEF) SRS?
         bool isGeocentric() const;
 
+        //! Has a vertical datum shift?
+        bool hasVerticalDatumShift() const;
+
         //! Gets the underlying geodetic (longitude, latitude) SRS
         SRS geoSRS() const;
 
@@ -99,19 +102,17 @@ namespace ROCKY_NAMESPACE
 
         //! Whether this SRS is mathematically equivalent to another SRS
         //! without taking vertical datums into account.
-        bool isHorizEquivalentTo(const SRS& rhs) const;
+        bool horizontallyEquivalentTo(const SRS& rhs) const;
 
         //! Whether this SRS is mathematically equivalent to another SRS
-        bool isEquivalentTo(const SRS& rhs) const;
+        bool equivalentTo(const SRS& rhs) const;
 
-        //! Equality is the same as equivalency
+        //! Whether this SRS is mathematically equivalent to another SRS
         bool operator == (const SRS& rhs) const {
-            return isEquivalentTo(rhs);
+            return equivalentTo(rhs);
         }
-
-        //! Equality is the same as equivalency
         bool operator != (const SRS& rhs) const {
-            return !operator==(rhs);
+            return !equivalentTo(rhs);
         }
 
         //! Make a matrix that will transform coordinates from a topocentric

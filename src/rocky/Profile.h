@@ -96,20 +96,21 @@ namespace ROCKY_NAMESPACE
 
         //! Gets whether the two profiles can be treated as equivalent.
         //! @param rhs Comparison profile
-        //bool isEquivalentTo(const Profile& rhs) const;
+        bool equivalentTo(const Profile& rhs) const;
 
-        //! Equality is the same as equivalency
-        bool operator == (const Profile& rhs) const;
-
+        //! Whether two profiles are equivalent.
+        bool operator == (const Profile& rhs) const {
+            return equivalentTo(rhs);
+        }
         bool operator != (const Profile& rhs) const {
-            return !operator==(rhs);
+            return !equivalentTo(rhs);
         }
 
         //! Gets whether the two profiles can be treated as equivalent (without regard
         //! for any vertical datum information - i.e., still returns true if the SRS
         //! vertical datums are different)
         //! @param rhs Comparison profile
-        //bool isHorizEquivalentTo(const Profile& rhs) const;
+        bool horizontallyEquivalentTo(const Profile& rhs) const;
 
         //! Gets the tile dimensions at the given lod.
         std::pair<double, double> tileDimensions(unsigned lod) const;

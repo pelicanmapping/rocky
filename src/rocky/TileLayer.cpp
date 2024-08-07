@@ -416,8 +416,8 @@ TileLayer::bestAvailableTileKey(
                         DataExtent new_de(west);
                         new_de.minLevel() = de->minLevel();
                         new_de.maxLevel() = de->maxLevel();
-                        a_min[0] = new_de.xMin(), a_min[1] = new_de.yMin();
-                        a_max[0] = new_de.xMax(), a_max[1] = new_de.yMax();
+                        a_min[0] = new_de.xmin(), a_min[1] = new_de.ymin();
+                        a_max[0] = new_de.xmax(), a_max[1] = new_de.ymax();
                         dataExtentsIndex->Insert(a_min, a_max, new_de);
                     }
                     if (east.valid())
@@ -425,15 +425,15 @@ TileLayer::bestAvailableTileKey(
                         DataExtent new_de(east);
                         new_de.minLevel() = de->minLevel();
                         new_de.maxLevel() = de->maxLevel();
-                        a_min[0] = new_de.xMin(), a_min[1] = new_de.yMin();
-                        a_max[0] = new_de.xMax(), a_max[1] = new_de.yMax();
+                        a_min[0] = new_de.xmin(), a_min[1] = new_de.ymin();
+                        a_max[0] = new_de.xmax(), a_max[1] = new_de.ymax();
                         dataExtentsIndex->Insert(a_min, a_max, new_de);
                     }
                 }
                 else
                 {
-                    a_min[0] = extentInLayerSRS.xMin(), a_min[1] = extentInLayerSRS.yMin();
-                    a_max[0] = extentInLayerSRS.xMax(), a_max[1] = extentInLayerSRS.yMax();
+                    a_min[0] = extentInLayerSRS.xmin(), a_min[1] = extentInLayerSRS.ymin();
+                    a_max[0] = extentInLayerSRS.xmax(), a_max[1] = extentInLayerSRS.ymax();
                     dataExtentsIndex->Insert(a_min, a_max, *de);
                 }
             }
@@ -444,8 +444,8 @@ TileLayer::bestAvailableTileKey(
     // Transform the key extent to the SRS of this layer to do the index search
     GeoExtent keyExtentInLayerSRS = profile().clampAndTransformExtent(key.extent());
 
-    a_min[0] = keyExtentInLayerSRS.xMin(); a_min[1] = keyExtentInLayerSRS.yMin();
-    a_max[0] = keyExtentInLayerSRS.xMax(); a_max[1] = keyExtentInLayerSRS.yMax();
+    a_min[0] = keyExtentInLayerSRS.xmin(); a_min[1] = keyExtentInLayerSRS.ymin();
+    a_max[0] = keyExtentInLayerSRS.xmax(); a_max[1] = keyExtentInLayerSRS.ymax();
 
     DataExtentsIndex* index = static_cast<DataExtentsIndex*>(_dataExtentsIndex);
 
@@ -526,8 +526,8 @@ TileLayer::buildDataExtentsIfNeeded() const
                         DataExtent new_de(west);
                         new_de.minLevel() = de->minLevel();
                         new_de.maxLevel() = de->maxLevel();
-                        a_min[0] = new_de.xMin(), a_min[1] = new_de.yMin();
-                        a_max[0] = new_de.xMax(), a_max[1] = new_de.yMax();
+                        a_min[0] = new_de.xmin(), a_min[1] = new_de.ymin();
+                        a_max[0] = new_de.xmax(), a_max[1] = new_de.ymax();
                         dataExtentsIndex->Insert(a_min, a_max, new_de);
                     }
                     if (east.valid())
@@ -535,15 +535,15 @@ TileLayer::buildDataExtentsIfNeeded() const
                         DataExtent new_de(east);
                         new_de.minLevel() = de->minLevel();
                         new_de.maxLevel() = de->maxLevel();
-                        a_min[0] = new_de.xMin(), a_min[1] = new_de.yMin();
-                        a_max[0] = new_de.xMax(), a_max[1] = new_de.yMax();
+                        a_min[0] = new_de.xmin(), a_min[1] = new_de.ymin();
+                        a_max[0] = new_de.xmax(), a_max[1] = new_de.ymax();
                         dataExtentsIndex->Insert(a_min, a_max, new_de);
                     }
                 }
                 else
                 {
-                    a_min[0] = extentInLayerSRS.xMin(), a_min[1] = extentInLayerSRS.yMin();
-                    a_max[0] = extentInLayerSRS.xMax(), a_max[1] = extentInLayerSRS.yMax();
+                    a_min[0] = extentInLayerSRS.xmin(), a_min[1] = extentInLayerSRS.ymin();
+                    a_max[0] = extentInLayerSRS.xmax(), a_max[1] = extentInLayerSRS.ymax();
                     dataExtentsIndex->Insert(a_min, a_max, *de);
                 }
             }
@@ -569,8 +569,8 @@ TileLayer::intersects(const TileKey& key) const
     // Transform the key extent to the SRS of this layer to do the index search
     GeoExtent keyExtentInLayerSRS = profile().clampAndTransformExtent(key.extent());
 
-    a_min[0] = keyExtentInLayerSRS.xMin(); a_min[1] = keyExtentInLayerSRS.yMin();
-    a_max[0] = keyExtentInLayerSRS.xMax(); a_max[1] = keyExtentInLayerSRS.yMax();
+    a_min[0] = keyExtentInLayerSRS.xmin(); a_min[1] = keyExtentInLayerSRS.ymin();
+    a_max[0] = keyExtentInLayerSRS.xmax(); a_max[1] = keyExtentInLayerSRS.ymax();
 
     DataExtentsIndex* index = static_cast<DataExtentsIndex*>(_dataExtentsIndex);
 

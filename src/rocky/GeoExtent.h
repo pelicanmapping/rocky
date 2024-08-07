@@ -45,7 +45,12 @@ namespace ROCKY_NAMESPACE
         //! Set from the SW and NE corners.
         void set(double west, double south, double east, double north);
 
+        //! Whether extents are equal. Since the extent is a 2D concept,
+        //! the SRS vertical datum is NOT considered.
         bool operator == (const GeoExtent& rhs) const;
+
+        //! Whether extents are unequal. Since the extent is a 2D concept,
+        //! the SRS vertical datum is NOT considered.
         bool operator != (const GeoExtent& rhs) const;
 
         /** Gets the spatial reference system underlying this extent. */
@@ -62,11 +67,6 @@ namespace ROCKY_NAMESPACE
         inline double xmax() const { return _west + _width; }
         inline double ymin() const { return _south; }
         inline double ymax() const { return _south + _height; }
-
-        inline double xMin() const { return _west; }
-        inline double xMax() const { return _west + _width; }
-        inline double yMin() const { return _south; }
-        inline double yMax() const { return _south + _height; }
 
         //! East-to-west span of the extent
         inline double width() const { return _width; }

@@ -160,8 +160,8 @@ GeoExtent::width(const Units& units) const
     else {
         Distance d(width(), srs().units());
         double m_per_deg = 2.0 * srs().ellipsoid().semiMajorAxis() * M_PI / 360.0;
-        double d0 = m_per_deg * fabs(cos(yMin())) * width();
-        double d1 = m_per_deg * fabs(cos(yMax())) * height();
+        double d0 = m_per_deg * fabs(cos(ymin())) * width();
+        double d1 = m_per_deg * fabs(cos(ymax())) * height();
         return Distance(std::max(d0, d1), Units::METERS).as(units);
     }
 }
@@ -190,12 +190,13 @@ GeoExtent::operator == ( const GeoExtent& rhs ) const
     if ( !valid() || !rhs.valid() )
         return false;
 
+    // note, ignore the vertical datum since extent is a 2D concept
     return
         equiv(west(), rhs.west()) &&
         equiv(south(), rhs.south()) &&
         equiv(width(), rhs.width()) &&
         equiv(height(), rhs.height()) &&
-        _srs == rhs._srs;
+        _srs.horizontallyEquivalentTo(rhs._srs);
 }
 
 bool
@@ -374,7 +375,7 @@ GeoExtent::transform(const SRS& to_srs) const
         return GeoExtent::INVALID;
 
     // check for equivalence
-    if (srs().isHorizEquivalentTo(to_srs))
+    if (srs().horizontallyEquivalentTo(to_srs))
         return *this;
 
     //TODO: this may not work across the antimeridian - unit test required
@@ -505,7 +506,7 @@ GeoExtent::intersects(const GeoExtent& rhs, bool checkSRS) const
         return false;
 
     // Transform the incoming extent if necessary:
-    if (checkSRS && !_srs.isHorizEquivalentTo(rhs.srs()))
+    if (checkSRS && !_srs.horizontallyEquivalentTo(rhs.srs()))
     {
         // non-contiguous projection? convert to a contiguous one:
         GeoExtent thisGeo = transform(srs().geoSRS());
@@ -687,7 +688,7 @@ GeoExtent::expandToInclude(const GeoExtent& rhs)
         return true;
     }
 
-    if (!rhs.srs().isHorizEquivalentTo(_srs))
+    if (!rhs.srs().horizontallyEquivalentTo(_srs))
     {
         return expandToInclude(rhs.transform(_srs));
     }
@@ -708,7 +709,7 @@ GeoExtent::expandToInclude(const GeoExtent& rhs)
         _height = h;
         
         // non-wrap-around new width:
-        double w0 = std::max(xMax(), rhs.xMax()) - std::min(xMin(), rhs.xMin());
+        double w0 = std::max(xmax(), rhs.xmax()) - std::min(xmin(), rhs.xmin());
 
         if (_srs.isGeodetic())
         {
@@ -761,7 +762,7 @@ namespace
 GeoExtent
 GeoExtent::intersectionSameSRS(const GeoExtent& rhs) const
 {
-    if ( !valid() || !rhs.valid() || !_srs.isHorizEquivalentTo( rhs.srs() ) )
+    if ( !valid() || !rhs.valid() || !_srs.horizontallyEquivalentTo( rhs.srs() ) )
         return GeoExtent::INVALID;
 
     if ( !intersects(rhs) )
@@ -874,7 +875,7 @@ GeoExtent::expand(const Distance& x, const Distance& y)
     if (!_srs.valid())
         return;
 
-    double latitude = valid() ? (yMin() >= 0.0 ? yMin() : yMax()) : 0.0;
+    double latitude = valid() ? (ymin() >= 0.0 ? ymin() : ymax()) : 0.0;
     double xp = SRS::transformUnits(x, _srs, Angle(latitude, Units::DEGREES));
     double yp = SRS::transformUnits(y, _srs, Angle());
 
@@ -999,10 +1000,10 @@ GeoExtent::createWorldBoundingSphere(double minElev, double maxElev) const
 
         for (int c = 0; c < samples; c++)
         {
-            double x = xMin() + (double)c * xSample;
+            double x = xmin() + (double)c * xSample;
             for (int r = 0; r < samples; r++)
             {
-                double y = yMin() + (double)r * ySample;
+                double y = ymin() + (double)r * ySample;
                 
                 samplePoints.emplace_back(x, y, minElev);
                 samplePoints.emplace_back(x, y, maxElev);

@@ -33,7 +33,7 @@ namespace ROCKY_NAMESPACE
         optional<float> minTileRangeFactor = 7.0;
 
         //! Acceptable error, in pixels, when rendering terrain tiles.
-        optional<float> screenSpaceError = 150.0f;
+        optional<float> screenSpaceError = 64.0f;
 
         //! The maximum level of detail to which the terrain should subdivide.
         optional<unsigned> maxLevelOfDetail = 19;

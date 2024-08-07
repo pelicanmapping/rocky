@@ -89,7 +89,7 @@ Profile::Profile()
 }
 
 bool
-Profile::operator == (const Profile& rhs) const
+Profile::equivalentTo(const Profile& rhs) const
 {
     if (!valid() || !rhs.valid())
         return false;
@@ -106,9 +106,23 @@ Profile::operator == (const Profile& rhs) const
     if (_shared->_numTilesWideAtLod0 != rhs._shared->_numTilesWideAtLod0)
         return false;
 
-    return _shared->_extent == rhs._shared->_extent;
+    if (_shared->_extent != rhs._shared->_extent)
+        return false;
+
+    return _shared->_extent.srs().equivalentTo(rhs._shared->_extent.srs());
 }
 
+bool
+Profile::horizontallyEquivalentTo(const Profile& rhs) const
+{
+    if (equivalentTo(rhs))
+        return true;
+
+    if (!valid() || !rhs.valid())
+        return false;
+
+    return _shared->_extent.srs().horizontallyEquivalentTo(rhs._shared->_extent.srs());
+}
 
 Profile::Profile(const std::string& wellKnownName)
 {
@@ -199,7 +213,7 @@ Profile::overrideSRS(const SRS& srs) const
 {
     return Profile(
         srs,
-        Box(_shared->_extent.xMin(), _shared->_extent.yMin(), _shared->_extent.xMax(), _shared->_extent.yMax()),
+        Box(_shared->_extent.xmin(), _shared->_extent.ymin(), _shared->_extent.xmax(), _shared->_extent.ymax()),
         _shared->_numTilesWideAtLod0, _shared->_numTilesHighAtLod0);
 }
 
@@ -237,8 +251,8 @@ Profile::tileExtent(unsigned lod, unsigned tileX, unsigned tileY) const
 {
     auto [width, height] = tileDimensions(lod);
 
-    double xmin = extent().xMin() + (width * (double)tileX);
-    double ymax = extent().yMax() - (height * (double)tileY);
+    double xmin = extent().xmin() + (width * (double)tileX);
+    double ymax = extent().ymax() - (height * (double)tileY);
     double xmax = xmin + width;
     double ymin = ymax - height;
 
@@ -344,10 +358,10 @@ Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) cons
         // clamp it to the profile's extents:
         GeoExtent clamped_gcs_input = GeoExtent(
             gcs_input.srs(),
-            clamp(gcs_input.xMin(), geographicExtent().xMin(), geographicExtent().xMax()),
-            clamp(gcs_input.yMin(), geographicExtent().yMin(), geographicExtent().yMax()),
-            clamp(gcs_input.xMax(), geographicExtent().xMin(), geographicExtent().xMax()),
-            clamp(gcs_input.yMax(), geographicExtent().yMin(), geographicExtent().yMax()));
+            clamp(gcs_input.xmin(), geographicExtent().xmin(), geographicExtent().xmax()),
+            clamp(gcs_input.ymin(), geographicExtent().ymin(), geographicExtent().ymax()),
+            clamp(gcs_input.xmax(), geographicExtent().xmin(), geographicExtent().xmax()),
+            clamp(gcs_input.ymax(), geographicExtent().ymin(), geographicExtent().ymax()));
 
         if (out_clamped)
             *out_clamped = (clamped_gcs_input != gcs_input);
@@ -374,16 +388,15 @@ Profile::getEquivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
     ROCKY_SOFT_ASSERT_AND_RETURN(rhsProfile.valid(), rhsLOD);
 
     //If the profiles are equivalent, just use the incoming lod
-    if (*this == rhsProfile)
+    if (horizontallyEquivalentTo(rhsProfile))
         return rhsLOD;
 
     // Special check for geodetic to mercator or vise versa, they should match up in LOD.
-    // TODO not sure about this.. -gw
-    if (((rhsProfile == Profile::SPHERICAL_MERCATOR) && (*this == Profile::GLOBAL_GEODETIC)) ||
-        ((rhsProfile == Profile::GLOBAL_GEODETIC) && (*this == Profile::SPHERICAL_MERCATOR)))
-    {
+    if (rhsProfile.horizontallyEquivalentTo(Profile::SPHERICAL_MERCATOR) && horizontallyEquivalentTo(Profile::GLOBAL_GEODETIC))
         return rhsLOD;
-    }
+
+    if (rhsProfile.horizontallyEquivalentTo(Profile::GLOBAL_GEODETIC) && horizontallyEquivalentTo(Profile::SPHERICAL_MERCATOR))
+        return rhsLOD;
 
     auto[rhsWidth, rhsHeight] = rhsProfile.tileDimensions(rhsLOD);
 
@@ -467,7 +480,7 @@ Profile::transformAndExtractContiguousExtents(
     GeoExtent target_extent = input;
 
     // reproject into the profile's SRS if necessary:
-    if (!srs().isHorizEquivalentTo(input.srs()))
+    if (!srs().horizontallyEquivalentTo(input.srs()))
     {
         // localize the extents and clamp them to legal values
         target_extent = clampAndTransformExtent(input);

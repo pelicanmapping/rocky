@@ -360,8 +360,8 @@ namespace
         transformGrid(
             dest_extent.srs(),
             src_extent.srs(),
-            dest_extent.xMin() + .5 * dx, dest_extent.yMin() + .5 * dy,
-            dest_extent.xMax() - .5 * dx, dest_extent.yMax() - .5 * dy,
+            dest_extent.xmin() + .5 * dx, dest_extent.ymin() + .5 * dy,
+            dest_extent.xmax() - .5 * dx, dest_extent.ymax() - .5 * dy,
             srcPointsX, srcPointsY, width, height);
 
         //ImageUtils::PixelReader ia(image);
@@ -388,7 +388,7 @@ namespace
                     double src_x = srcPointsX[pixel];
                     double src_y = srcPointsY[pixel];
 
-                    if (src_x < src_extent.xMin() || src_x > src_extent.xMax() || src_y < src_extent.yMin() || src_y > src_extent.yMax())
+                    if (src_x < src_extent.xmin() || src_x > src_extent.xmax() || src_y < src_extent.ymin() || src_y > src_extent.ymax())
                     {
                         //If the sample point is outside of the bound of the source extent, increment the pixel and keep looping through.
                         //ROCKY_WARN << LC << "ERROR: sample point out of bounds: " << src_x << ", " << src_y << std::endl;
@@ -396,8 +396,8 @@ namespace
                         continue;
                     }
 
-                    float px = (float)((src_x - src_extent.xMin()) * xfac);
-                    float py = (float)((src_y - src_extent.yMin()) * yfac);
+                    float px = (float)((src_x - src_extent.xmin()) * xfac);
+                    float py = (float)((src_y - src_extent.ymin()) * yfac);
 
                     int px_i = clamp((int)round(px), 0, (int)image->width() - 1);
                     int py_i = clamp((int)round(py), 0, (int)image->height() - 1);
@@ -615,8 +615,8 @@ GeoImage::getCoord(int s, int t, double& out_x, double& out_y) const
 
     double u = (double)s / (double)(_image->width() - 1);
     double v = (double)t / (double)(_image->height() - 1);
-    out_x = _extent.xMin() + u * _extent.width();
-    out_y = _extent.yMin() + v * _extent.height();
+    out_x = _extent.xmin() + u * _extent.width();
+    out_y = _extent.ymin() + v * _extent.height();
     return true;
 }
 
@@ -634,8 +634,8 @@ GeoImage::crop(
     if (!image())
         return Status(Status::ResourceUnavailable);
 
-    //Check for equivalence
-    if (e.srs().isEquivalentTo(srs()))
+    // Check for equivalence
+    if (e.srs().horizontallyEquivalentTo(srs()))
     {
         //If we want an exact crop or they want to specify the output size of the image, use GDAL
         if (exact || width != 0 || height != 0)
@@ -656,14 +656,14 @@ GeoImage::crop(
         else
         {
             //If an exact crop is not desired, we can use the faster image cropping code that does no resampling.
-            double destXMin = e.xMin();
-            double destYMin = e.yMin();
-            double destXMax = e.xMax();
-            double destYMax = e.yMax();
+            double destXMin = e.xmin();
+            double destYMin = e.ymin();
+            double destXMax = e.xmax();
+            double destYMax = e.ymax();
 
             shared_ptr<Image> new_image = cropImage(
                 image().get(),
-                _extent.xMin(), _extent.yMin(), _extent.xMax(), _extent.yMax(),
+                _extent.xmin(), _extent.ymin(), _extent.xmax(), _extent.ymax(),
                 destXMin, destYMin, destXMax, destYMax);
 
             //The destination extents may be different than the input extents due to not being able to crop along pixel boundaries.
@@ -727,9 +727,9 @@ GeoImage::reproject(
         resultImage = GDAL_reprojectImage(
             image().get(),
             srs().wkt(),
-            extent().xMin(), extent().yMin(), extent().xMax(), extent().yMax(),
+            extent().xmin(), extent().ymin(), extent().xmax(), extent().ymax(),
             to_srs.wkt(),
-            destExtent.xMin(), destExtent.yMin(), destExtent.xMax(), destExtent.yMax(),
+            destExtent.xmin(), destExtent.ymin(), destExtent.xmax(), destExtent.ymax(),
             width,
             height,
             useBilinearInterpolation);
@@ -783,14 +783,14 @@ GeoImage::read(glm::fvec4& output, const GeoPoint& p) const
     }
 
     // transform if necessary
-    if (!p.srs.isHorizEquivalentTo(srs()))
+    if (!p.srs.horizontallyEquivalentTo(srs()))
     {
         GeoPoint c;
         return p.transform(srs(), c) && read(output, c);
     }
 
-    double u = (p.x - _extent.xMin()) / _extent.width();
-    double v = (p.y - _extent.yMin()) / _extent.height();
+    double u = (p.x - _extent.xmin()) / _extent.width();
+    double v = (p.y - _extent.ymin()) / _extent.height();
 
     // out of bounds?
     if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
@@ -808,8 +808,8 @@ GeoImage::read(glm::fvec4& out, double x, double y) const
 {
     if (!valid()) return false;
 
-    double u = (x - _extent.xMin()) / _extent.width();
-    double v = (y - _extent.yMin()) / _extent.height();
+    double u = (x - _extent.xmin()) / _extent.width();
+    double v = (y - _extent.ymin()) / _extent.height();
 
     // out of bounds?
     if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
@@ -826,8 +826,8 @@ GeoImage::read_clamped(glm::fvec4& out, double x, double y) const
 {
     if (!valid()) return false;
 
-    double u = (x - _extent.xMin()) / _extent.width();
-    double v = (y - _extent.yMin()) / _extent.height();
+    double u = (x - _extent.xmin()) / _extent.width();
+    double v = (y - _extent.ymin()) / _extent.height();
 
     _image->read_bilinear(out, (float)clamp(u, 0.0, 1.0), (float)clamp(v, 0.0, 1.0));
     return true;

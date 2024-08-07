@@ -514,10 +514,10 @@ GDAL::Driver::open(
         // no xform an geographic? Match the profile.
         if (!hasGeoTransform)
         {
-            _geotransform[0] = _profile.extent().xMin();
+            _geotransform[0] = _profile.extent().xmin();
             _geotransform[1] = _profile.extent().width() / (double)_srcDS->GetRasterXSize();
             _geotransform[2] = 0;
-            _geotransform[3] = _profile.extent().yMax();
+            _geotransform[3] = _profile.extent().ymax();
             _geotransform[4] = 0;
             _geotransform[5] = -_profile.extent().height() / (double)_srcDS->GetRasterYSize();
             hasGeoTransform = true;
@@ -527,7 +527,7 @@ GDAL::Driver::open(
     // Handle some special cases.
     std::string warpedSRSWKT;
 
-    if (requiresReprojection || (_profile.valid() && !_profile.srs().isEquivalentTo(src_srs)))
+    if (requiresReprojection || (_profile.valid() && !_profile.srs().equivalentTo(src_srs)))
     {
         std::string destWKT = _profile.valid() ? _profile.srs().wkt() : src_srs.wkt();
         _warpedDS = (GDALDataset*)GDALAutoCreateWarpedVRT(
@@ -885,10 +885,10 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
         return Status(Status::ResourceUnavailable);
     }
 
-    double west = intersection.xMin();
-    double east = intersection.xMax();
-    double north = intersection.yMax();
-    double south = intersection.yMin();
+    double west = intersection.xmin();
+    double east = intersection.xmax();
+    double north = intersection.ymax();
+    double south = intersection.ymin();
 
     // The extents and the intersection will be normalized between -180 and 180 longitude if they are geographic.
     // However, the georeferencing will expect the coordinates to be in the same longitude frame as the original dataset,
@@ -910,8 +910,8 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
     // Determine the read window
     double src_min_x, src_min_y, src_max_x, src_max_y;
     // Get the pixel coordiantes of the intersection
-    geoToPixel(west, intersection.yMax(), src_min_x, src_min_y);
-    geoToPixel(east, intersection.yMin(), src_max_x, src_max_y);
+    geoToPixel(west, intersection.ymax(), src_min_x, src_min_y);
+    geoToPixel(east, intersection.ymin(), src_max_x, src_max_y);
 
     double src_width = src_max_x - src_min_x;
     double src_height = src_max_y - src_min_y;
@@ -932,8 +932,8 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
     // Determine the destination window
 
     // Compute the offsets in geo coordinates of the intersection from the TileKey
-    double offset_left = intersection.xMin() - xmin;
-    double offset_top = ymax - intersection.yMax();
+    double offset_left = intersection.xmin() - xmin;
+    double offset_top = ymax - intersection.ymax();
 
 
     int target_width = (int)ceil((intersection.width() / key.extent().width())*(double)tileSize);

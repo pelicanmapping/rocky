@@ -657,7 +657,7 @@ MBTiles::Driver::setDataExtents(const DataExtentList& values)
             bounds = Profile::GLOBAL_GEODETIC.clampAndTransformExtent(e);
         }
         std::stringstream boundsStr;
-        boundsStr << bounds.xMin() << "," << bounds.yMin() << "," << bounds.xMax() << "," << bounds.yMax();
+        boundsStr << bounds.xmin() << "," << bounds.ymin() << "," << bounds.xmax() << "," << bounds.ymax();
         putMetaData("bounds", boundsStr.str());
     }
 }

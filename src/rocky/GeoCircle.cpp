@@ -53,7 +53,7 @@ GeoCircle::intersects( const GeoCircle& rhs ) const
     if ( !valid() || !rhs.valid() )
         return false;
 
-    if ( !srs().isHorizEquivalentTo( rhs.srs() ) )
+    if ( !srs().horizontallyEquivalentTo( rhs.srs() ) )
     {
         GeoCircle c;
         return rhs.transform(SRS(), c) && intersects(c);

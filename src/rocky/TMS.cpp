@@ -63,13 +63,13 @@ namespace
 
     std::string getHorizSRSString(const SRS& srs)
     {
-        if (srs.isHorizEquivalentTo(SRS::SPHERICAL_MERCATOR))
+        if (srs.horizontallyEquivalentTo(SRS::SPHERICAL_MERCATOR))
         {
-            return "EPSG:900913";
+            return "epsg:3785";
         }
         else if (srs.isGeodetic())
         {
-            return "EPSG:4326";
+            return "epsg:4326";
         }
         else
         {
@@ -243,7 +243,7 @@ namespace
 
             tilemap.profileType =
                 srs.isGeodetic() ? ProfileType::GEODETIC :
-                srs.isHorizEquivalentTo(SRS::SPHERICAL_MERCATOR) ? ProfileType::MERCATOR :
+                srs.horizontallyEquivalentTo(SRS::SPHERICAL_MERCATOR) ? ProfileType::MERCATOR :
                 srs.isProjected() ? ProfileType::LOCAL :
                 ProfileType::UNKNOWN;
         }
@@ -317,7 +317,7 @@ TileMap::createProfile() const
     {
         profile = Profile::SPHERICAL_MERCATOR;
     }
-    else if (new_srs.isHorizEquivalentTo(SRS::SPHERICAL_MERCATOR))
+    else if (new_srs.horizontallyEquivalentTo(SRS::SPHERICAL_MERCATOR))
     {
         //HACK:  Some TMS sources, most notably TileCache, use a global mercator extent that is very slightly different than
         //       the automatically computed mercator bounds which can cause rendering issues due to the some texture coordinates
@@ -325,10 +325,10 @@ TileMap::createProfile() const
         double eps = 1.0;
         Profile merc(Profile::SPHERICAL_MERCATOR);
         if (numTilesWide == 1 && numTilesHigh == 1 &&
-            equiv(merc.extent().xMin(), minX, eps) &&
-            equiv(merc.extent().yMin(), minY, eps) &&
-            equiv(merc.extent().xMax(), maxX, eps) &&
-            equiv(merc.extent().yMax(), maxY, eps))
+            equiv(merc.extent().xmin(), minX, eps) &&
+            equiv(merc.extent().ymin(), minY, eps) &&
+            equiv(merc.extent().xmax(), maxX, eps) &&
+            equiv(merc.extent().ymax(), maxY, eps))
         {
             profile = merc;
         }
@@ -469,7 +469,7 @@ TileMap::intersectsKey(const TileKey& tilekey) const
         minX, minY, maxX, maxY,
         b.xmin, b.ymin, b.xmax, b.ymax);
 
-    if (!inter && tilekey.profile().srs().isHorizEquivalentTo(SRS::SPHERICAL_MERCATOR))
+    if (!inter && tilekey.profile().srs().horizontallyEquivalentTo(SRS::SPHERICAL_MERCATOR))
     {
         glm::dvec3 keyMin(b.xmin, b.ymin, b.zmin);
         glm::dvec3 keyMax(b.xmax, b.ymax, b.zmax);
@@ -523,7 +523,7 @@ TileMap::TileMap(
     {
         profileType =
             profile.srs().isGeodetic() ? ProfileType::GEODETIC :
-            profile.srs().isHorizEquivalentTo(SRS::SPHERICAL_MERCATOR) ? ProfileType::MERCATOR :
+            profile.srs().horizontallyEquivalentTo(SRS::SPHERICAL_MERCATOR) ? ProfileType::MERCATOR :
             ProfileType::LOCAL;
     }
 

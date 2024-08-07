@@ -95,7 +95,7 @@ BingElevationLayer::createHeightfieldImplementation(const TileKey& key, const IO
     unsigned tileSize = 32;
     std::stringstream query;
     query << std::setprecision(12);
-    query << "?bounds=" << latLongExtent.yMin() << "," << latLongExtent.xMin() << "," << latLongExtent.yMax() << "," << latLongExtent.xMax();
+    query << "?bounds=" << latLongExtent.ymin() << "," << latLongExtent.xmin() << "," << latLongExtent.ymax() << "," << latLongExtent.xmax();
     query << "&rows=" << tileSize;
     query << "&cols=" << tileSize;
     query << "&heights=ellipsoid";

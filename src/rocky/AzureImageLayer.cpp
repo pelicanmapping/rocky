@@ -39,6 +39,15 @@ AzureImageLayer::construct(const std::string& JSON, const IOOptions& io)
     get_to(j, "subscription_key", subscriptionKey);
     get_to(j, "tileset_id", tilesetId);
     get_to(j, "map_tile_api_url", mapTileApiUrl);
+
+    // environment variable key overrides a key set in code
+    auto key = util::getEnvVar("AZURE_KEY");
+    if (!key.empty())
+    {
+        Log()->info(LC "Overriding API key from environment variable");
+        subscriptionKey.clear();
+        subscriptionKey.set_default(key);
+    }
 }
 
 JSON
@@ -62,11 +71,11 @@ AzureImageLayer::openImplementation(const IOOptions& io)
     setDataExtents({ _profile->extent() });
 
     // test fetch to make sure the API key is valid
-    TileKey test(0, 0, 0, _profile);
+    TileKey test(1, 0, 0, _profile);
     auto result = createImageImplementation(test, io);
     if (result.status.failed())
     {
-        return Status(Status::ResourceUnavailable, result.status.message);
+        Log()->warn(LC "Failed to fetch test tile: {}", result.status.message);
     }
 
 
@@ -97,10 +106,9 @@ AzureImageLayer::createImageImplementation(const TileKey& key, const IOOptions& 
     query << "&tilesetId=" << tilesetId.value();
     query << "&zoom=" << zoom << "&x=" << x << "&y=" << y;
     // can be 256 or 512 - possibly worth making configurable
-    query << "&tileSize=512";
+    query << "&tileSize=256";
     // can also authenticate with headers set in mapTileApiUrl
-    if (subscriptionKey.has_value())
-        query << "&subscription-key=" << subscriptionKey.value();
+    query << "&subscription-key=" << subscriptionKey.value();
 
     URI imageURI(mapTileApiUrl->full() + query.str(), mapTileApiUrl->context());
 
