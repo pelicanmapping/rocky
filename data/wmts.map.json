@@ -1,0 +1,13 @@
+{
+    "map" : {
+        "name" : "WMTS Map",
+        "comment" : "See https://gdal.org/drivers/raster/wmts.html",
+        "layers": [
+            {
+                "name": "Global Imagery",
+                "type": "GDALImage",
+                "uri": "<GDAL_WMTS> <GetCapabilitiesUrl>http://s2maps-tiles.eu/wmts/1.0.0/WMTSCapabilities.xml</GetCapabilitiesUrl> <Layer>s2cloudless-2020</Layer> </GDAL_WMTS>"
+            }
+        ]
+    }
+}
