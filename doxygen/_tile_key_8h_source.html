@@ -104,7 +104,7 @@ $(function() {
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;                _lod == rhs._lod &amp;&amp;</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;                _x == rhs._x &amp;&amp;</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;                _y == rhs._y &amp;&amp;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;                _profile == rhs._profile;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;                _profile.equivalentTo(rhs._profile);</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        }</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160; </div>
 <div class="line"><a name="l00056"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html#a7c63b814c2ee2ba637b13766b4e56a3f">   56</a></span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">bool</span> operator != (<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; rhs)<span class="keyword"> const </span>{</div>
@@ -113,7 +113,7 @@ $(function() {
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;                _lod != rhs._lod ||</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;                _x != rhs._x ||</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;                _y != rhs._y ||</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;                _profile != rhs._profile;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;                !_profile.equivalentTo(rhs._profile);</div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        }</div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
 <div class="line"><a name="l00066"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html#ae9702af9d32f3388973e898e834a87cc">   66</a></span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">bool</span> operator &lt; (<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; rhs)<span class="keyword"> const </span>{</div>
@@ -123,7 +123,7 @@ $(function() {
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;            <span class="keywordflow">if</span> (_x &gt; rhs._x) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;            <span class="keywordflow">if</span> (_y &lt; rhs._y) <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;            <span class="keywordflow">if</span> (_y &gt; rhs._y) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;            <span class="keywordflow">return</span> _profile.<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a736b3b341dc74f3ccbc315a6dc1eb730">getHorizSignature</a>() &lt; rhs._profile.<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a736b3b341dc74f3ccbc315a6dc1eb730">getHorizSignature</a>();</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;            <span class="keywordflow">return</span> _profile.getHorizSignature() &lt; rhs._profile.<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a736b3b341dc74f3ccbc315a6dc1eb730">getHorizSignature</a>();</div>
 <div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        }</div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
 <div class="line"><a name="l00077"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html#a64985cd8a5ad12099bec3b996206e289">   77</a></span>&#160;        <span class="keyword">static</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html#a64985cd8a5ad12099bec3b996206e289">INVALID</a>;</div>
@@ -212,7 +212,7 @@ $(function() {
 <div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;    };</div>
 <div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;}</div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html">ROCKY_NAMESPACE::Profile</a></div><div class="ttdef"><b>Definition:</b> Profile.h:22</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile_html_a736b3b341dc74f3ccbc315a6dc1eb730"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a736b3b341dc74f3ccbc315a6dc1eb730">ROCKY_NAMESPACE::Profile::getHorizSignature</a></div><div class="ttdeci">const std::string &amp; getHorizSignature() const</div><div class="ttdef"><b>Definition:</b> Profile.h:190</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile_html_a736b3b341dc74f3ccbc315a6dc1eb730"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a736b3b341dc74f3ccbc315a6dc1eb730">ROCKY_NAMESPACE::Profile::getHorizSignature</a></div><div class="ttdeci">const std::string &amp; getHorizSignature() const</div><div class="ttdef"><b>Definition:</b> Profile.h:191</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">ROCKY_NAMESPACE::TileKey</a></div><div class="ttdef"><b>Definition:</b> TileKey.h:22</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key_html_a039bfe6eeda3ef1d9fcc1c753eefa8ba"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html#a039bfe6eeda3ef1d9fcc1c753eefa8ba">ROCKY_NAMESPACE::TileKey::levelOfDetail</a></div><div class="ttdeci">unsigned levelOfDetail() const</div><div class="ttdoc">Gets the level of detail of the tile represented by this key.</div><div class="ttdef"><b>Definition:</b> TileKey.h:115</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key_html_a03c3420a6d8f6cdd0aedcef11e1bdd76"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html#a03c3420a6d8f6cdd0aedcef11e1bdd76">ROCKY_NAMESPACE::TileKey::TileKey</a></div><div class="ttdeci">TileKey(unsigned lod, unsigned tile_x, unsigned tile_y, const Profile &amp;profile)</div></div>
