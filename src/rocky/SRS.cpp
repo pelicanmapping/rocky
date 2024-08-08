@@ -47,6 +47,7 @@ namespace
     struct SRSEntry
     {
         PJ* pj = nullptr;
+        PJ* pj_geodetic = nullptr;
         PJ_TYPE crs_type = PJ_TYPE_UNKNOWN;
         PJ_TYPE horiz_crs_type = PJ_TYPE_UNKNOWN;
         PJ_TYPE vert_crs_type = PJ_TYPE_UNKNOWN;
@@ -205,6 +206,11 @@ namespace
                         new_entry.proj = proj;
                 }
 
+                if (new_entry.pj)
+                {
+                    new_entry.pj_geodetic = proj_crs_get_geodetic_crs(ctx, new_entry.pj);
+                }
+
                 return new_entry;
             }
             else
@@ -261,8 +267,6 @@ namespace
 
                 else if (contains(entry.proj, "proj=merc"))
                 {
-                    // values found empirically 
-                    //entry.bounds = Box(-20037508.342789244, -20048966.104014594, 20037508.342789244, 20048966.104014594);
                     entry.bounds = Box(-20037508.34278925, -20037508.34278925, 20037508.34278925, 20037508.34278925);
                 }
 
@@ -285,7 +289,8 @@ namespace
                     west_lon > -1000)
                 {
                     // always returns lat/long, so transform back to this srs
-                    auto xform = get_or_create_operation("wgs84", def); // don't call proj_destroy on this
+                    std::string geo_def = proj_as_proj_string(ctx, entry.pj_geodetic, PJ_PROJ_5, nullptr);
+                    auto xform = get_or_create_operation(geo_def, def); // don't call proj_destroy on this
                     PJ_COORD LL = proj_trans(xform, PJ_FWD, PJ_COORD{ west_lon, south_lat, 0.0, 0.0 });
                     PJ_COORD UR = proj_trans(xform, PJ_FWD, PJ_COORD{ east_lon, north_lat, 0.0, 0.0 });
                     entry.bounds = Box(LL.xyz.x, LL.xyz.y, UR.xyz.x, UR.xyz.y);
@@ -333,8 +338,10 @@ namespace
 
             if (iter == end())
             {
-                PJ* p1 = get_or_create(firstDef).pj;
-                PJ* p2 = get_or_create(secondDef).pj;
+                auto& p1_def = get_or_create(firstDef);
+                auto& p2_def = get_or_create(secondDef);
+                PJ* p1 = p1_def.pj;
+                PJ* p2 = p2_def.pj;
                 if (p1 && p2)
                 {
                     bool p1_is_crs = proj_is_crs(p1);
@@ -384,7 +391,8 @@ namespace
                         {
                             proj =
                                 "+proj=pipeline"
-                                " +step +proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0"
+                                //" +step +proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs +towgs84=0,0,0"
+                                " +step " + std::string(proj_as_proj_string(ctx, p1_def.pj_geodetic, PJ_PROJ_5, nullptr)) +
                                 " +step +proj=unitconvert +xy_in=deg +xy_out=rad"
                                 " +step " + std::string(proj_as_proj_string(ctx, p2, PJ_PROJ_5, nullptr)) +
                                 " +step +proj=unitconvert +xy_in=rad +xy_out=deg";

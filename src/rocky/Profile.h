@@ -124,7 +124,10 @@ namespace ROCKY_NAMESPACE
         GeoExtent clampAndTransformExtent( const GeoExtent& input, bool* out_clamped =0L ) const;
 
         //! Returns a readable description of the profile.
-        JSON to_json() const;
+        std::string to_json() const;
+
+        //! Populate from a json string
+        void from_json(const std::string& json);
 
         //! Returns a signature hash code unique to this profile
         inline const std::string& getFullSignature() const;

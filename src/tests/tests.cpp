@@ -685,6 +685,25 @@ TEST_CASE("SRS")
         CHECK(keys[0] == TileKey(0, 0, 0, GG));
         CHECK(keys[1] == TileKey(0, 1, 0, GG));
     }
+
+    SECTION("Profile serialization")
+    {
+        const char* json = R"("
+            {
+                "extent": {
+                    "srs": "+proj=longlat +R=1737400",
+                    "xmin": -180,
+                    "ymin": -90,
+                    "xmax": 180,
+                    "ymax": 90
+                },
+                "tx": 2,
+                "ty": 1
+            }
+        ")";
+        Profile profile;
+        profile.from_json(json);
+    }
 }
 
 TEST_CASE("IO")

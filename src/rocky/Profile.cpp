@@ -200,12 +200,19 @@ Profile::wellKnownName() const {
     return _shared->_wellKnownName;
 }
 
-JSON
+std::string
 Profile::to_json() const
 {
     json temp;
     ROCKY_NAMESPACE::to_json(temp, *this);
     return temp.dump();
+}
+
+void
+Profile::from_json(const std::string& input)
+{
+    auto j = parse_json(input);
+    ROCKY_NAMESPACE::from_json(j, *this);
 }
 
 Profile
