@@ -382,9 +382,9 @@ URI::read(const IOOptions& io) const
         {
             if (httpDebug)
             {
-                Log()->info(LC "Cache hit, ratio = "
+                Log()->debug(LC "Cache hit, ratio = "
                     + std::to_string(100.0f * (float)io.services.contentCache->hits / (float)io.services.contentCache->gets)
-                    + "%");
+                    + "% (" + full() + ")");
             }
 
             IOResult<Content> result(cached.value);
@@ -412,6 +412,11 @@ URI::read(const IOOptions& io) const
     else if (isRemote())
     {
         HTTPRequest request{ full() };
+
+        for(auto& header : _context.headers)
+        {
+            request.headers.push_back({ header.first, header.second });
+        }
 
         // resolve a rotation:
         static int rotator = 0;

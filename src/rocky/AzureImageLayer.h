@@ -13,20 +13,20 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-     * Image layer reading from Microsoft's Azure Maps API
+     * Image layer reading from Microsoft's Azure Maps REST API
+     * https://learn.microsoft.com/en-us/rest/api/maps/render/get-map-tile?view=rest-maps-2024-04-01
      */
     class ROCKY_EXPORT AzureImageLayer : public Inherit<ImageLayer, AzureImageLayer>, public Azure::Options
     {
     public:
         //! Construct an empty Azure layer
         AzureImageLayer();
+
+        //! Deserialize an Azure Maps layer
         AzureImageLayer(const std::string& JSON, const IOOptions& io);
 
-        //! Destructor
-        virtual ~AzureImageLayer() { }
-
         //! serialize
-        JSON to_json() const override;
+        std::string to_json() const override;
 
     protected: // Layer
 
@@ -34,12 +34,13 @@ namespace ROCKY_NAMESPACE
 
         void closeImplementation() override;
 
-        //! Creates a raster image for the given tile key
         Result<GeoImage> createImageImplementation(const TileKey& key, const IOOptions& io) const override;
 
     private:
 
         void construct(const std::string& JSON, const IOOptions& io);
+
+        URIContext _uriContext;
     };
 }
 

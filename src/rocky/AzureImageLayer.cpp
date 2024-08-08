@@ -44,7 +44,7 @@ AzureImageLayer::construct(const std::string& JSON, const IOOptions& io)
     auto key = util::getEnvVar("AZURE_KEY");
     if (!key.empty())
     {
-        Log()->info(LC "Overriding API key from environment variable");
+        Log()->info(LC "Loading subscription key from an environment variable");
         subscriptionKey.clear();
         subscriptionKey.set_default(key);
     }
@@ -69,6 +69,10 @@ AzureImageLayer::openImplementation(const IOOptions& io)
 
     _profile = Profile::SPHERICAL_MERCATOR;
     setDataExtents({ _profile->extent() });
+
+    // copy this so we can add headers
+    _uriContext = mapTileApiUrl->context();
+    _uriContext.headers.emplace("subscription-key", subscriptionKey.value());
 
     // test fetch to make sure the API key is valid
     TileKey test(1, 0, 0, _profile);
@@ -102,15 +106,13 @@ AzureImageLayer::createImageImplementation(const TileKey& key, const IOOptions& 
     auto y = key.tileY();
 
     std::stringstream query;
-    query << "?api-version=2024-04-01";
+    query << "?api-version=" << apiVersion.value();
     query << "&tilesetId=" << tilesetId.value();
     query << "&zoom=" << zoom << "&x=" << x << "&y=" << y;
-    // can be 256 or 512 - possibly worth making configurable
-    query << "&tileSize=256";
-    // can also authenticate with headers set in mapTileApiUrl
-    query << "&subscription-key=" << subscriptionKey.value();
+    query << "&tileSize=" << tileSize();
 
-    URI imageURI(mapTileApiUrl->full() + query.str(), mapTileApiUrl->context());
+    // note: _uriContext holds our authentication headers
+    URI imageURI(mapTileApiUrl->full() + query.str(), _uriContext);
 
     auto fetch = imageURI.read(io);
     if (fetch.status.failed())
