@@ -17,8 +17,8 @@ var searchData=
   ['release_534',['release',['../class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1detail_1_1semaphore.html#a44fd0368e3252fd8de30e2bec0da7220',1,'WEEJOBS_NAMESPACE::detail::semaphore::release()'],['../class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1future.html#a21f26a366d6092504153172d6934f922',1,'WEEJOBS_NAMESPACE::future::release()']]],
   ['releaseall_535',['releaseAll',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a7f8ec6f8dd925af2f4739f995e5411d1',1,'ROCKY_NAMESPACE::TerrainTilePager']]],
   ['releasedata_536',['releaseData',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a2cc633df03e7f610dd048c5e21677e6a',1,'ROCKY_NAMESPACE::Image']]],
-  ['remove_537',['Remove',['../class_r_tree.html#a1b4b6b4c73bc47029ba696c49265c043',1,'RTree']]],
-  ['remove_538',['remove',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_callback.html#a0c9eefe4d006aef0632652dfe52300a4',1,'ROCKY_NAMESPACE::Callback::remove()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_collection.html#a8e737c60573b7f1d648aaa4ec2958652',1,'ROCKY_NAMESPACE::LayerCollection::remove()']]],
+  ['remove_537',['remove',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_callback.html#a0c9eefe4d006aef0632652dfe52300a4',1,'ROCKY_NAMESPACE::Callback::remove()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_collection.html#a8e737c60573b7f1d648aaa4ec2958652',1,'ROCKY_NAMESPACE::LayerCollection::remove()']]],
+  ['remove_538',['Remove',['../class_r_tree.html#a1b4b6b4c73bc47029ba696c49265c043',1,'RTree']]],
   ['removeall_539',['RemoveAll',['../class_r_tree.html#a396f1031eb2c8224715741fd0b77349d',1,'RTree']]],
   ['removeattribute_540',['RemoveAttribute',['../class_ti_xml_element.html#a56979767deca794376b1dfa69a525b2a',1,'TiXmlElement::RemoveAttribute(const char *name)'],['../class_ti_xml_element.html#a1afa6aea716511326a608e4c05df4f3a',1,'TiXmlElement::RemoveAttribute(const std::string &amp;name)']]],
   ['removecallback_541',['removeCallback',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html#af03b5a43423bab01082b392bb83e6cd3',1,'ROCKY_NAMESPACE::Map']]],
@@ -27,8 +27,8 @@ var searchData=
   ['removenode_544',['removeNode',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aa16de15e7e83c6f44ce8261df1bae0e6',1,'ROCKY_NAMESPACE::Runtime']]],
   ['removeview_545',['removeView',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_display_manager.html#a6d4da64dfd6b01d46ba900f0f7789a53',1,'ROCKY_NAMESPACE::DisplayManager']]],
   ['removewindow_546',['removeWindow',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_display_manager.html#a0391efc291a8769bdee1a6607c4d4cd0',1,'ROCKY_NAMESPACE::DisplayManager']]],
-  ['rendertype_547',['RenderType',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1',1,'ROCKY_NAMESPACE::Layer']]],
-  ['rendertype_548',['renderType',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a9ba5c50675206531e4ce441b19880418',1,'ROCKY_NAMESPACE::Layer']]],
+  ['rendertype_547',['renderType',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a9ba5c50675206531e4ce441b19880418',1,'ROCKY_NAMESPACE::Layer']]],
+  ['rendertype_548',['RenderType',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1',1,'ROCKY_NAMESPACE::Layer']]],
   ['rendertype_5fcustom_549',['RENDERTYPE_CUSTOM',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1a5f3dae5e1a8d56a1bf1d32e83dc88f9f',1,'ROCKY_NAMESPACE::Layer']]],
   ['rendertype_5fnone_550',['RENDERTYPE_NONE',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1a399c934fff14ca7be7d88282068f62d8',1,'ROCKY_NAMESPACE::Layer']]],
   ['rendertype_5fterrain_5fpatch_551',['RENDERTYPE_TERRAIN_PATCH',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1af48d13a41de57d11135ce7309f2495da',1,'ROCKY_NAMESPACE::Layer']]],
@@ -52,7 +52,6 @@ var searchData=
   ['rtree_569',['RTree',['../class_r_tree.html',1,'']]],
   ['rtt_570',['RTT',['../class_r_o_c_k_y___v_s_g___n_a_m_e_s_p_a_c_e_1_1_r_t_t.html',1,'ROCKY_VSG_NAMESPACE']]],
   ['run_571',['run',['../class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1jobpool.html#adc20faebd3bc7d7e2095bcea18dfe842',1,'WEEJOBS_NAMESPACE::jobpool']]],
-  ['runtime_572',['Runtime',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html',1,'ROCKY_NAMESPACE']]],
-  ['runtime_573',['runtime',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_engine.html#ab93462ed24c29dec249b73a456f4d773',1,'ROCKY_NAMESPACE::TerrainEngine::runtime()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_instance_v_s_g.html#a5ced6bf064fc63d63b0a43316185a4c0',1,'ROCKY_NAMESPACE::InstanceVSG::runtime()']]],
-  ['runtime_574',['Runtime',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a522dc4b36f2a770bbe3e62c451f38841',1,'ROCKY_NAMESPACE::Runtime']]]
+  ['runtime_572',['Runtime',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html',1,'ROCKY_NAMESPACE::Runtime'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a522dc4b36f2a770bbe3e62c451f38841',1,'ROCKY_NAMESPACE::Runtime::Runtime()']]],
+  ['runtime_573',['runtime',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_engine.html#ab93462ed24c29dec249b73a456f4d773',1,'ROCKY_NAMESPACE::TerrainEngine::runtime()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_instance_v_s_g.html#a5ced6bf064fc63d63b0a43316185a4c0',1,'ROCKY_NAMESPACE::InstanceVSG::runtime()']]]
 ];
