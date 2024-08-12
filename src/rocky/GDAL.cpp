@@ -594,14 +594,21 @@ GDAL::Driver::open(
     {
         //nop
     }
-    else
+    else if (maxResolution > 0.0)
     {
         // calculate the maximum LOD at which to use GDAL to read data
-        auto nx = _warpedDS->GetRasterXSize() / (int)tileSize;
-        auto ny = _warpedDS->GetRasterYSize() / (int)tileSize;
-        maxDataLevel = std::max(
-            std::max((int)ceil(log2(nx)) - 1, 0),
-            std::max((int)ceil(log2(ny)) - 1, 0));
+        maxDataLevel = 0u;
+        auto[w, h] = _profile.tileDimensions(0);
+        w /= (double)tileSize, h /= (double)tileSize;
+        while (w >= maxResolution && h >= maxResolution)
+        {
+            maxDataLevel = maxDataLevel.value() + 1;
+            w *= 0.5, h *= 0.5;
+        }
+    }
+    else
+    {
+        maxDataLevel = 1u;
     }
 
     // If the input dataset is a VRT, then get the individual files in the dataset and use THEM for the DataExtents.
