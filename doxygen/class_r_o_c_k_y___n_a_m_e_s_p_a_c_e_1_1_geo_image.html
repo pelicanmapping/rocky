@@ -122,8 +122,8 @@ const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent.htm
 <tr class="separator:aebaffa225cbcc88e775673c04846b28f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a379055c5a835826ea0f73b5a112620a4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_result.html">Result</a>&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html">GeoImage</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html#a379055c5a835826ea0f73b5a112620a4">reproject</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> &amp;to_srs, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent.html">GeoExtent</a> *to_extent=nullptr, unsigned width=0, unsigned height=0, bool useBilinearInterpolation=true) const</td></tr>
 <tr class="separator:a379055c5a835826ea0f73b5a112620a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a01f06b1bd27d9b3a4498685742dd3fad"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html#a01f06b1bd27d9b3a4498685742dd3fad">composite</a> (const std::vector&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html">GeoImage</a> &gt; &amp;sources)</td></tr>
-<tr class="separator:a01f06b1bd27d9b3a4498685742dd3fad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1cbac0eab688ced136ed3426221d6da"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html#af1cbac0eab688ced136ed3426221d6da">composite</a> (const std::vector&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html">GeoImage</a> &gt; &amp;sources, const std::vector&lt; float &gt; &amp;opacities={})</td></tr>
+<tr class="separator:af1cbac0eab688ced136ed3426221d6da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad2af54b70f16e9920554338aebce8637"><td class="memItemLeft" align="right" valign="top"><a id="ad2af54b70f16e9920554338aebce8637"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html#ad2af54b70f16e9920554338aebce8637">getUnitsPerPixel</a> () const</td></tr>
 <tr class="memdesc:ad2af54b70f16e9920554338aebce8637"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the units per pixel of this geoimage. <br /></td></tr>
@@ -132,6 +132,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cl
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html#af6daa6a9fd1ad1b16445bdf3ca2e657f">getCoord</a> (int s, int t, double &amp;out_x, double &amp;out_y) const</td></tr>
 <tr class="memdesc:af6daa6a9fd1ad1b16445bdf3ca2e657f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the coordinate at the image's s,t. <br /></td></tr>
 <tr class="separator:af6daa6a9fd1ad1b16445bdf3ca2e657f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a22606ee8533542750902cab59bccdec4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html#a22606ee8533542750902cab59bccdec4">getPixel</a> (double x, double y, int &amp;s, int &amp;t) const</td></tr>
+<tr class="separator:a22606ee8533542750902cab59bccdec4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac3e719f633322ba875992ae42efbe984"><td class="memItemLeft" align="right" valign="top"><a id="ac3e719f633322ba875992ae42efbe984"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html#ac3e719f633322ba875992ae42efbe984">read</a> (glm::fvec4 &amp;output, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">GeoPoint</a> &amp;p) const</td></tr>
 <tr class="memdesc:ac3e719f633322ba875992ae42efbe984"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the value of a pixel at a geopoint. <br /></td></tr>
@@ -154,8 +156,8 @@ static <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.htm
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A georeferenced image; i.e. an <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> coupled with a <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent.html">GeoExtent</a>. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a01f06b1bd27d9b3a4498685742dd3fad"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a01f06b1bd27d9b3a4498685742dd3fad">&#9670;&nbsp;</a></span>composite()</h2>
+<a id="af1cbac0eab688ced136ed3426221d6da"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af1cbac0eab688ced136ed3426221d6da">&#9670;&nbsp;</a></span>composite()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -164,14 +166,25 @@ static <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.htm
           <td class="memname">void GeoImage::composite </td>
           <td>(</td>
           <td class="paramtype">const std::vector&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html">GeoImage</a> &gt; &amp;&#160;</td>
-          <td class="paramname"><em>sources</em></td><td>)</td>
+          <td class="paramname"><em>sources</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const std::vector&lt; float &gt; &amp;&#160;</td>
+          <td class="paramname"><em>opacities</em> = <code>{}</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Composites one or more source images into this image. This will only write to RGBA pixels that have an alpha of zero, or to RGB pixels that all all black. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Composites one or more source images into this image, overwriting the existing image. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">sources</td><td>GeoImages to composite, from bottom to top. </td></tr>
+    <tr><td class="paramname">opacities</td><td>Opacities to apply to each source image (defaults to 1.0f if vector sizes don't match) </td></tr>
   </table>
   </dd>
 </dl>
@@ -230,6 +243,47 @@ static <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.htm
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a22606ee8533542750902cab59bccdec4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a22606ee8533542750902cab59bccdec4">&#9670;&nbsp;</a></span>getPixel()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool GeoImage::getPixel </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int &amp;&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int &amp;&#160;</td>
+          <td class="paramname"><em>t</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Gets the pixel at the image's x,y (must be in <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html">GeoImage</a>'s <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a>) s and t will return -1 if x and y are out of bounds respectively </p>
 
 </div>
 </div>

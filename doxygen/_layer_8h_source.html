@@ -79,175 +79,177 @@ $(function() {
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;rocky/DateTime.h&gt;</span></div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;rocky/IOTypes.h&gt;</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;rocky/Status.h&gt;</span></div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;shared_mutex&gt;</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160; </div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;{</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <span class="keyword">class </span>GeoExtent;</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <span class="keyword">class </span>TileKey;</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160; </div>
-<div class="line"><a name="l00036"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">   36</a></span>&#160;    <span class="keyword">class </span>ROCKY_EXPORT <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">Layer</a> : <span class="keyword">public</span> Inherit&lt;Object, Layer&gt;</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    {</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00041"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_1_1_hints.html">   41</a></span>&#160;        <span class="keyword">class </span><a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_1_1_hints.html">Hints</a></div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        {</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;            <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;CachePolicy&gt;</a> cachePolicy;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;            <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;bool&gt;</a> dynamic;</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        };</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160; </div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        <span class="keyword">virtual</span> ~<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">Layer</a>();</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        <span class="comment">//static shared_ptr&lt;Layer&gt; materialize(const ConfigOptions&amp;);</span></div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160; </div>
-<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a498141ed12d0093889cf4bc38fdbddc5">   59</a></span>&#160;        <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">UID</a> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a498141ed12d0093889cf4bc38fdbddc5">uid</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _uid; }</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&amp; status() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> open(<span class="keyword">const</span> IOOptions&amp; options);</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160; </div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        <span class="keywordtype">void</span> close();</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        <span class="keywordtype">bool</span> isOpen() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        <span class="keyword">virtual</span> <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a> to_json() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        <span class="keywordtype">void</span> setOpenAutomatically(<span class="keywordtype">bool</span> value);</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;bool&gt;</a>&amp; openAutomatically() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160; </div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        <span class="keywordtype">void</span> setCachePolicy(<span class="keyword">const</span> CachePolicy&amp; value);</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        <span class="keyword">const</span> CachePolicy&amp; cachePolicy() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160; </div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        <span class="keyword">virtual</span> <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent.html">GeoExtent</a>&amp; extent() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        <span class="keyword">virtual</span> DateTimeExtent dateTimeExtent() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        <span class="keyword">const</span> Hints&amp; hints() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160; </div>
-<div class="line"><a name="l00100"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a29b4fe5f93e1ee36a663bdf30cdff948">  100</a></span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_callback.html">Callback</a>&lt;void(shared_ptr&lt;Layer&gt;)&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a29b4fe5f93e1ee36a663bdf30cdff948">onLayerOpened</a>;</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
-<div class="line"><a name="l00103"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a0374147f68a639de4dddc821e638dcdd">  103</a></span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_callback.html">Callback</a>&lt;void(shared_ptr&lt;Layer&gt;)&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a0374147f68a639de4dddc821e638dcdd">onLayerClosed</a>;</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160; </div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;        <span class="keywordtype">void</span> removeCallback(<a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">UID</a>);</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160; </div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
-<div class="line"><a name="l00110"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1">  110</a></span>&#160;        <span class="keyword">enum</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1">RenderType</a></div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;        {</div>
-<div class="line"><a name="l00113"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1a399c934fff14ca7be7d88282068f62d8">  113</a></span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1a399c934fff14ca7be7d88282068f62d8">RENDERTYPE_NONE</a>,</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
-<div class="line"><a name="l00116"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1a041d2b5df5b31f6afc7942f119c3054a">  116</a></span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1a041d2b5df5b31f6afc7942f119c3054a">RENDERTYPE_TERRAIN_SURFACE</a>,</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160; </div>
-<div class="line"><a name="l00120"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1af48d13a41de57d11135ce7309f2495da">  120</a></span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1af48d13a41de57d11135ce7309f2495da">RENDERTYPE_TERRAIN_PATCH</a>,</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160; </div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;            RENDERTYPE_CUSTOM = RENDERTYPE_NONE</div>
-<div class="line"><a name="l00124"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1a5f3dae5e1a8d56a1bf1d32e83dc88f9f">  124</a></span>&#160;        };</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160; </div>
-<div class="line"><a name="l00127"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a9ba5c50675206531e4ce441b19880418">  127</a></span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1">RenderType</a> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a9ba5c50675206531e4ce441b19880418">renderType</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _renderType; }</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160; </div>
-<div class="line"><a name="l00130"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#abdc2b3f283118dbcf08c53d99d60b2e6">  130</a></span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#abdc2b3f283118dbcf08c53d99d60b2e6">setRenderType</a>(<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1">RenderType</a> value) { _renderType = value; }</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160; </div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;        <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;std::string&gt;</a>&amp; attribution() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160; </div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;        <span class="keywordtype">void</span> setAttribution(<span class="keyword">const</span> std::string&amp; attribution);</div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160; </div>
-<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> modifyTileBoundingBox(<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; key, <span class="keyword">const</span> Box&amp; box) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160; </div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160; </div>
-<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;        <span class="comment">//virtual void addedToMap(const class Map*) { }</span></div>
-<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160; </div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;        <span class="comment">//virtual void removedFromMap(const class Map*) { }</span></div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160; </div>
-<div class="line"><a name="l00150"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1afd945115af3dd08b96d224ba363388">  150</a></span>&#160;        <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">Revision</a> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1afd945115af3dd08b96d224ba363388">revision</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _revision; }</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160; </div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> dirty();</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160; </div>
-<div class="line"><a name="l00157"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1e423f99dce12164a6fabb764a44ed34">  157</a></span>&#160;        <span class="keyword">const</span> std::string&amp; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1e423f99dce12164a6fabb764a44ed34">getConfigKey</a>()<span class="keyword"> const </span>{</div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;            <span class="keywordflow">return</span> _configKey;</div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;        }</div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160; </div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;        <span class="keyword">class </span>Options;</div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160; </div>
-<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    <span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160; </div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">Layer</a>();</div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160; </div>
-<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">Layer</a>(<span class="keyword">const</span> <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a>&amp; conf);</div>
-<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160; </div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;        <span class="keyword">virtual</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> openImplementation(<span class="keyword">const</span> IOOptions&amp; io);</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160; </div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> closeImplementation();</div>
-<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160; </div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;        <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&amp; setStatus(<span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&amp; status) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160; </div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;        <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&amp; setStatus(<span class="keyword">const</span> Status::Code&amp; statusCode, <span class="keyword">const</span> std::string&amp; message) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160; </div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;        <span class="keywordtype">void</span> setConfigKey(<span class="keyword">const</span> std::string&amp;);</div>
-<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160; </div>
-<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;        <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">UID</a> _uid;</div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;        RenderType _renderType;</div>
-<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;        <span class="keyword">mutable</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> _status;</div>
-<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;        Hints _hints;</div>
-<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;        std::atomic&lt;Revision&gt; _revision;</div>
-<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;        std::string _runtimeCacheId;</div>
-<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;        <span class="keyword">mutable</span> std::shared_mutex _state_mutex;</div>
-<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;        <span class="keywordtype">bool</span> _isClosing;</div>
-<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;        <span class="keywordtype">bool</span> _isOpening;</div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;        std::string _configKey;</div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160; </div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;        <span class="keywordtype">void</span> construct(<span class="keyword">const</span> <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a>&amp;);</div>
-<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160; </div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;    <span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160; </div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;        <span class="keywordtype">void</span> bumpRevision();</div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160; </div>
-<div class="line"><a name="l00211"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a14160d4ff89594ebd99cc29efc163639">  211</a></span>&#160;        std::shared_mutex&amp; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a14160d4ff89594ebd99cc29efc163639">layerStateMutex</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _state_mutex; }</div>
-<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160; </div>
-<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160; </div>
-<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;    <span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160; </div>
-<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;        <span class="comment">// allow the map access to the addedToMap/removedFromMap methods</span></div>
-<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;        <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">Map</a>;</div>
-<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160; </div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;        <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;bool&gt;</a> _openAutomatically = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;        <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;std::string&gt;</a> _cacheid = { };</div>
-<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;        optional&lt;CachePolicy&gt; _cachePolicy = CachePolicy::DEFAULT;</div>
-<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;        optional&lt;std::string&gt; _attribution = { };</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;rocky/URI.h&gt;</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &lt;shared_mutex&gt;</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160; </div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;{</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <span class="keyword">class </span>GeoExtent;</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    <span class="keyword">class </span>TileKey;</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
+<div class="line"><a name="l00037"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">   37</a></span>&#160;    <span class="keyword">class </span>ROCKY_EXPORT <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">Layer</a> : <span class="keyword">public</span> Inherit&lt;Object, Layer&gt;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    {</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00042"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_1_1_hints.html">   42</a></span>&#160;        <span class="keyword">class </span><a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_1_1_hints.html">Hints</a></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        {</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;            <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;CachePolicy&gt;</a> cachePolicy;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;            <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;bool&gt;</a> dynamic;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        };</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="keyword">virtual</span> ~<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">Layer</a>();</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <span class="comment">//static shared_ptr&lt;Layer&gt; materialize(const ConfigOptions&amp;);</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
+<div class="line"><a name="l00060"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a498141ed12d0093889cf4bc38fdbddc5">   60</a></span>&#160;        <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">UID</a> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a498141ed12d0093889cf4bc38fdbddc5">uid</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _uid; }</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&amp; status() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> open(<span class="keyword">const</span> IOOptions&amp; options);</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        <span class="keywordtype">void</span> close();</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        <span class="keywordtype">bool</span> isOpen() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keyword">virtual</span> <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a> to_json() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        <span class="keywordtype">void</span> setOpenAutomatically(<span class="keywordtype">bool</span> value);</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;bool&gt;</a>&amp; openAutomatically() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        <span class="keywordtype">void</span> setCachePolicy(<span class="keyword">const</span> CachePolicy&amp; value);</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        <span class="keyword">const</span> CachePolicy&amp; cachePolicy() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160; </div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        <span class="keyword">virtual</span> <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent.html">GeoExtent</a>&amp; extent() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160; </div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        <span class="keyword">virtual</span> DateTimeExtent dateTimeExtent() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160; </div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        <span class="keyword">const</span> Hints&amp; hints() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160; </div>
+<div class="line"><a name="l00101"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a29b4fe5f93e1ee36a663bdf30cdff948">  101</a></span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_callback.html">Callback</a>&lt;void(shared_ptr&lt;Layer&gt;)&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a29b4fe5f93e1ee36a663bdf30cdff948">onLayerOpened</a>;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
+<div class="line"><a name="l00104"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a0374147f68a639de4dddc821e638dcdd">  104</a></span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_callback.html">Callback</a>&lt;void(shared_ptr&lt;Layer&gt;)&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a0374147f68a639de4dddc821e638dcdd">onLayerClosed</a>;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160; </div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;        <span class="keywordtype">void</span> removeCallback(<a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">UID</a>);</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160; </div>
+<div class="line"><a name="l00111"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1">  111</a></span>&#160;        <span class="keyword">enum</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1">RenderType</a></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;        {</div>
+<div class="line"><a name="l00114"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1a399c934fff14ca7be7d88282068f62d8">  114</a></span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1a399c934fff14ca7be7d88282068f62d8">RENDERTYPE_NONE</a>,</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160; </div>
+<div class="line"><a name="l00117"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1a041d2b5df5b31f6afc7942f119c3054a">  117</a></span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1a041d2b5df5b31f6afc7942f119c3054a">RENDERTYPE_TERRAIN_SURFACE</a>,</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160; </div>
+<div class="line"><a name="l00121"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1af48d13a41de57d11135ce7309f2495da">  121</a></span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1af48d13a41de57d11135ce7309f2495da">RENDERTYPE_TERRAIN_PATCH</a>,</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160; </div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;            RENDERTYPE_CUSTOM = RENDERTYPE_NONE</div>
+<div class="line"><a name="l00125"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1a5f3dae5e1a8d56a1bf1d32e83dc88f9f">  125</a></span>&#160;        };</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160; </div>
+<div class="line"><a name="l00128"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a9ba5c50675206531e4ce441b19880418">  128</a></span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1">RenderType</a> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a9ba5c50675206531e4ce441b19880418">renderType</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _renderType; }</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160; </div>
+<div class="line"><a name="l00131"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#abdc2b3f283118dbcf08c53d99d60b2e6">  131</a></span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#abdc2b3f283118dbcf08c53d99d60b2e6">setRenderType</a>(<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1">RenderType</a> value) { _renderType = value; }</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160; </div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;        <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;Hyperlink&gt;</a>&amp; attribution() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160; </div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;        <span class="keywordtype">void</span> setAttribution(<span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_hyperlink.html">Hyperlink</a>&amp; attribution);</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160; </div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> modifyTileBoundingBox(<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; key, <span class="keyword">const</span> Box&amp; box) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160; </div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160; </div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;        <span class="comment">//virtual void addedToMap(const class Map*) { }</span></div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160; </div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;        <span class="comment">//virtual void removedFromMap(const class Map*) { }</span></div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160; </div>
+<div class="line"><a name="l00151"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1afd945115af3dd08b96d224ba363388">  151</a></span>&#160;        <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">Revision</a> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1afd945115af3dd08b96d224ba363388">revision</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _revision; }</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160; </div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> dirty();</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160; </div>
+<div class="line"><a name="l00158"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1e423f99dce12164a6fabb764a44ed34">  158</a></span>&#160;        <span class="keyword">const</span> std::string&amp; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1e423f99dce12164a6fabb764a44ed34">getConfigKey</a>()<span class="keyword"> const </span>{</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;            <span class="keywordflow">return</span> _configKey;</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;        }</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160; </div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;        <span class="keyword">class </span>Options;</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160; </div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    <span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160; </div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">Layer</a>();</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160; </div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">Layer</a>(<span class="keyword">const</span> <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a>&amp; conf);</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160; </div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;        <span class="keyword">virtual</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> openImplementation(<span class="keyword">const</span> IOOptions&amp; io);</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160; </div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;        <span class="keyword">virtual</span> <span class="keywordtype">void</span> closeImplementation();</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160; </div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;        <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&amp; setStatus(<span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&amp; status) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160; </div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;        <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&amp; setStatus(<span class="keyword">const</span> Status::Code&amp; statusCode, <span class="keyword">const</span> std::string&amp; message) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160; </div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;        <span class="keywordtype">void</span> setConfigKey(<span class="keyword">const</span> std::string&amp;);</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160; </div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;        <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">UID</a> _uid;</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;        RenderType _renderType;</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;        <span class="keyword">mutable</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> _status;</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;        Hints _hints;</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;        std::atomic&lt;Revision&gt; _revision;</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;        std::string _runtimeCacheId;</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;        <span class="keyword">mutable</span> std::shared_mutex _state_mutex;</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;        <span class="keywordtype">bool</span> _isClosing;</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;        <span class="keywordtype">bool</span> _isOpening;</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;        std::string _configKey;</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160; </div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;        <span class="keywordtype">void</span> construct(<span class="keyword">const</span> <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a>&amp;);</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160; </div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;    <span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160; </div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;        <span class="keywordtype">void</span> bumpRevision();</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160; </div>
+<div class="line"><a name="l00212"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a14160d4ff89594ebd99cc29efc163639">  212</a></span>&#160;        std::shared_mutex&amp; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a14160d4ff89594ebd99cc29efc163639">layerStateMutex</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _state_mutex; }</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160; </div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160; </div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;    <span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160; </div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;        <span class="comment">// allow the map access to the addedToMap/removedFromMap methods</span></div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;        <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">Map</a>;</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160; </div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;        <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;bool&gt;</a> _openAutomatically = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;        <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;std::string&gt;</a> _cacheid = { };</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;        optional&lt;CachePolicy&gt; _cachePolicy = CachePolicy::DEFAULT;</div>
 <div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;        optional&lt;unsigned&gt; _l2cachesize = 0;</div>
-<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160; </div>
-<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;        <span class="keywordtype">bool</span> _reopenRequired;</div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;    };</div>
-<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160; </div>
-<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;} <span class="comment">// namespace ROCKY_NAMESPACE</span></div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;        optional&lt;Hyperlink&gt; _attribution = { };</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160; </div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;        <span class="keywordtype">bool</span> _reopenRequired;</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;    };</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160; </div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;} <span class="comment">// namespace ROCKY_NAMESPACE</span></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_callback_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_callback.html">ROCKY_NAMESPACE::Callback</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:31</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent.html">ROCKY_NAMESPACE::GeoExtent</a></div><div class="ttdef"><b>Definition:</b> GeoExtent.h:19</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_1_1_hints_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_1_1_hints.html">ROCKY_NAMESPACE::Layer::Hints</a></div><div class="ttdef"><b>Definition:</b> Layer.h:42</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">ROCKY_NAMESPACE::Layer</a></div><div class="ttdef"><b>Definition:</b> Layer.h:37</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a0374147f68a639de4dddc821e638dcdd"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a0374147f68a639de4dddc821e638dcdd">ROCKY_NAMESPACE::Layer::onLayerClosed</a></div><div class="ttdeci">Callback&lt; void(shared_ptr&lt; Layer &gt;)&gt; onLayerClosed</div><div class="ttdoc">Register a callback for layer close.</div><div class="ttdef"><b>Definition:</b> Layer.h:103</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a14160d4ff89594ebd99cc29efc163639"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a14160d4ff89594ebd99cc29efc163639">ROCKY_NAMESPACE::Layer::layerStateMutex</a></div><div class="ttdeci">std::shared_mutex &amp; layerStateMutex() const</div><div class="ttdef"><b>Definition:</b> Layer.h:211</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a1afd945115af3dd08b96d224ba363388"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1afd945115af3dd08b96d224ba363388">ROCKY_NAMESPACE::Layer::revision</a></div><div class="ttdeci">Revision revision() const</div><div class="ttdoc">Map will call this function when this Layer is added to a Map.</div><div class="ttdef"><b>Definition:</b> Layer.h:150</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a1e423f99dce12164a6fabb764a44ed34"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1e423f99dce12164a6fabb764a44ed34">ROCKY_NAMESPACE::Layer::getConfigKey</a></div><div class="ttdeci">const std::string &amp; getConfigKey() const</div><div class="ttdoc">Name of the layer type for serialization use.</div><div class="ttdef"><b>Definition:</b> Layer.h:157</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a29b4fe5f93e1ee36a663bdf30cdff948"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a29b4fe5f93e1ee36a663bdf30cdff948">ROCKY_NAMESPACE::Layer::onLayerOpened</a></div><div class="ttdeci">Callback&lt; void(shared_ptr&lt; Layer &gt;)&gt; onLayerOpened</div><div class="ttdoc">Register a callback for layer open.</div><div class="ttdef"><b>Definition:</b> Layer.h:100</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a498141ed12d0093889cf4bc38fdbddc5"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a498141ed12d0093889cf4bc38fdbddc5">ROCKY_NAMESPACE::Layer::uid</a></div><div class="ttdeci">UID uid() const</div><div class="ttdoc">Attempt to create a layer from a serialization string.</div><div class="ttdef"><b>Definition:</b> Layer.h:59</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a81f42475cc4fa775fb9b86381a14edd1"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1">ROCKY_NAMESPACE::Layer::RenderType</a></div><div class="ttdeci">RenderType</div><div class="ttdoc">How (and if) to use this layer when rendering terrain tiles.</div><div class="ttdef"><b>Definition:</b> Layer.h:111</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a81f42475cc4fa775fb9b86381a14edd1a041d2b5df5b31f6afc7942f119c3054a"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1a041d2b5df5b31f6afc7942f119c3054a">ROCKY_NAMESPACE::Layer::RENDERTYPE_TERRAIN_SURFACE</a></div><div class="ttdeci">@ RENDERTYPE_TERRAIN_SURFACE</div><div class="ttdoc">Layer requires a terrain rendering pass that draws terrain tiles with texturing.</div><div class="ttdef"><b>Definition:</b> Layer.h:116</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a81f42475cc4fa775fb9b86381a14edd1a399c934fff14ca7be7d88282068f62d8"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1a399c934fff14ca7be7d88282068f62d8">ROCKY_NAMESPACE::Layer::RENDERTYPE_NONE</a></div><div class="ttdeci">@ RENDERTYPE_NONE</div><div class="ttdoc">Layer does not draw anything (directly)</div><div class="ttdef"><b>Definition:</b> Layer.h:113</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a81f42475cc4fa775fb9b86381a14edd1af48d13a41de57d11135ce7309f2495da"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1af48d13a41de57d11135ce7309f2495da">ROCKY_NAMESPACE::Layer::RENDERTYPE_TERRAIN_PATCH</a></div><div class="ttdeci">@ RENDERTYPE_TERRAIN_PATCH</div><div class="ttdef"><b>Definition:</b> Layer.h:120</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a9ba5c50675206531e4ce441b19880418"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a9ba5c50675206531e4ce441b19880418">ROCKY_NAMESPACE::Layer::renderType</a></div><div class="ttdeci">RenderType renderType() const</div><div class="ttdoc">Rendering type of this layer.</div><div class="ttdef"><b>Definition:</b> Layer.h:127</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_abdc2b3f283118dbcf08c53d99d60b2e6"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#abdc2b3f283118dbcf08c53d99d60b2e6">ROCKY_NAMESPACE::Layer::setRenderType</a></div><div class="ttdeci">void setRenderType(RenderType value)</div><div class="ttdoc">Rendering type of this layer.</div><div class="ttdef"><b>Definition:</b> Layer.h:130</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_1_1_hints_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_1_1_hints.html">ROCKY_NAMESPACE::Layer::Hints</a></div><div class="ttdef"><b>Definition:</b> Layer.h:43</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">ROCKY_NAMESPACE::Layer</a></div><div class="ttdef"><b>Definition:</b> Layer.h:38</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a0374147f68a639de4dddc821e638dcdd"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a0374147f68a639de4dddc821e638dcdd">ROCKY_NAMESPACE::Layer::onLayerClosed</a></div><div class="ttdeci">Callback&lt; void(shared_ptr&lt; Layer &gt;)&gt; onLayerClosed</div><div class="ttdoc">Register a callback for layer close.</div><div class="ttdef"><b>Definition:</b> Layer.h:104</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a14160d4ff89594ebd99cc29efc163639"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a14160d4ff89594ebd99cc29efc163639">ROCKY_NAMESPACE::Layer::layerStateMutex</a></div><div class="ttdeci">std::shared_mutex &amp; layerStateMutex() const</div><div class="ttdef"><b>Definition:</b> Layer.h:212</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a1afd945115af3dd08b96d224ba363388"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1afd945115af3dd08b96d224ba363388">ROCKY_NAMESPACE::Layer::revision</a></div><div class="ttdeci">Revision revision() const</div><div class="ttdoc">Map will call this function when this Layer is added to a Map.</div><div class="ttdef"><b>Definition:</b> Layer.h:151</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a1e423f99dce12164a6fabb764a44ed34"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1e423f99dce12164a6fabb764a44ed34">ROCKY_NAMESPACE::Layer::getConfigKey</a></div><div class="ttdeci">const std::string &amp; getConfigKey() const</div><div class="ttdoc">Name of the layer type for serialization use.</div><div class="ttdef"><b>Definition:</b> Layer.h:158</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a29b4fe5f93e1ee36a663bdf30cdff948"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a29b4fe5f93e1ee36a663bdf30cdff948">ROCKY_NAMESPACE::Layer::onLayerOpened</a></div><div class="ttdeci">Callback&lt; void(shared_ptr&lt; Layer &gt;)&gt; onLayerOpened</div><div class="ttdoc">Register a callback for layer open.</div><div class="ttdef"><b>Definition:</b> Layer.h:101</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a498141ed12d0093889cf4bc38fdbddc5"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a498141ed12d0093889cf4bc38fdbddc5">ROCKY_NAMESPACE::Layer::uid</a></div><div class="ttdeci">UID uid() const</div><div class="ttdoc">Attempt to create a layer from a serialization string.</div><div class="ttdef"><b>Definition:</b> Layer.h:60</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a81f42475cc4fa775fb9b86381a14edd1"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1">ROCKY_NAMESPACE::Layer::RenderType</a></div><div class="ttdeci">RenderType</div><div class="ttdoc">How (and if) to use this layer when rendering terrain tiles.</div><div class="ttdef"><b>Definition:</b> Layer.h:112</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a81f42475cc4fa775fb9b86381a14edd1a041d2b5df5b31f6afc7942f119c3054a"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1a041d2b5df5b31f6afc7942f119c3054a">ROCKY_NAMESPACE::Layer::RENDERTYPE_TERRAIN_SURFACE</a></div><div class="ttdeci">@ RENDERTYPE_TERRAIN_SURFACE</div><div class="ttdoc">Layer requires a terrain rendering pass that draws terrain tiles with texturing.</div><div class="ttdef"><b>Definition:</b> Layer.h:117</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a81f42475cc4fa775fb9b86381a14edd1a399c934fff14ca7be7d88282068f62d8"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1a399c934fff14ca7be7d88282068f62d8">ROCKY_NAMESPACE::Layer::RENDERTYPE_NONE</a></div><div class="ttdeci">@ RENDERTYPE_NONE</div><div class="ttdoc">Layer does not draw anything (directly)</div><div class="ttdef"><b>Definition:</b> Layer.h:114</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a81f42475cc4fa775fb9b86381a14edd1af48d13a41de57d11135ce7309f2495da"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1af48d13a41de57d11135ce7309f2495da">ROCKY_NAMESPACE::Layer::RENDERTYPE_TERRAIN_PATCH</a></div><div class="ttdeci">@ RENDERTYPE_TERRAIN_PATCH</div><div class="ttdef"><b>Definition:</b> Layer.h:121</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_a9ba5c50675206531e4ce441b19880418"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a9ba5c50675206531e4ce441b19880418">ROCKY_NAMESPACE::Layer::renderType</a></div><div class="ttdeci">RenderType renderType() const</div><div class="ttdoc">Rendering type of this layer.</div><div class="ttdef"><b>Definition:</b> Layer.h:128</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_html_abdc2b3f283118dbcf08c53d99d60b2e6"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#abdc2b3f283118dbcf08c53d99d60b2e6">ROCKY_NAMESPACE::Layer::setRenderType</a></div><div class="ttdeci">void setRenderType(RenderType value)</div><div class="ttdoc">Rendering type of this layer.</div><div class="ttdef"><b>Definition:</b> Layer.h:131</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">ROCKY_NAMESPACE::Map</a></div><div class="ttdef"><b>Definition:</b> Map.h:28</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">ROCKY_NAMESPACE::TileKey</a></div><div class="ttdef"><b>Definition:</b> TileKey.h:22</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a2e83fa7a0f75f3995bbe258156464182"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">ROCKY_NAMESPACE::UID</a></div><div class="ttdeci">std::int32_t UID</div><div class="ttdoc">application-wide unique ID.</div><div class="ttdef"><b>Definition:</b> Common.h:42</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a47a3157b68495813746976f5649f0577"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">ROCKY_NAMESPACE::JSON</a></div><div class="ttdeci">std::string JSON</div><div class="ttdoc">json serialization type</div><div class="ttdef"><b>Definition:</b> Common.h:48</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_af01f4eb53e72c4be729979cd946c295d"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">ROCKY_NAMESPACE::Revision</a></div><div class="ttdeci">std::int32_t Revision</div><div class="ttdoc">revision type</div><div class="ttdef"><b>Definition:</b> Common.h:45</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_hyperlink_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_hyperlink.html">ROCKY_NAMESPACE::Hyperlink</a></div><div class="ttdef"><b>Definition:</b> URI.h:148</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">ROCKY_NAMESPACE::Status</a></div><div class="ttdef"><b>Definition:</b> Status.h:24</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">ROCKY_NAMESPACE::optional&lt; CachePolicy &gt;</a></div></div>
 </div><!-- fragment --></div><!-- contents -->

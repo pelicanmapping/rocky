@@ -28,7 +28,6 @@ var searchData=
   ['asynccompile_27',['asyncCompile',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aeedc54d1c8fb0519cc10d0cafaea0b9f',1,'ROCKY_NAMESPACE::Runtime']]],
   ['at_28',['at',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_collection.html#af9d55c381c8f3cc9930e59acf2233828',1,'ROCKY_NAMESPACE::LayerCollection']]],
   ['attribute_29',['Attribute',['../class_ti_xml_element.html#a6042f518748f475a7ac4b4e0b509eb05',1,'TiXmlElement::Attribute(const char *name) const'],['../class_ti_xml_element.html#a8005d0b808fd02bd1246710cdf95e5f6',1,'TiXmlElement::Attribute(const char *name, int *i) const'],['../class_ti_xml_element.html#a09df893402d0ab1402c8725e6d30ec04',1,'TiXmlElement::Attribute(const char *name, double *d) const']]],
-  ['attribution_30',['attribution',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a1f2eba926970d40586cdd82eb868c226',1,'ROCKY_NAMESPACE::Layer']]],
-  ['attributions_31',['attributions',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html#ac8cfd87e51726b635ac02fe88cbfd985',1,'ROCKY_NAMESPACE::Map']]],
-  ['available_32',['available',['../class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1future.html#a2342fc90520e6f65d9ba67d5f57889a4',1,'WEEJOBS_NAMESPACE::future']]]
+  ['attribution_30',['attribution',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a7a7aacef1a4d91dccd331c6dc86a032a',1,'ROCKY_NAMESPACE::Layer']]],
+  ['available_31',['available',['../class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1future.html#a2342fc90520e6f65d9ba67d5f57889a4',1,'WEEJOBS_NAMESPACE::future']]]
 ];

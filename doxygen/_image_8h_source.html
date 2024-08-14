@@ -220,8 +220,8 @@ $(function() {
 <div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;            <span class="keyword">inline</span> <span class="keywordtype">double</span> u()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _u; }</div>
 <div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;            <span class="keyword">inline</span> <span class="keywordtype">double</span> v()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _v; }</div>
 <div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160; </div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> Func&gt;</div>
-<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;            <span class="keyword">inline</span> <span class="keywordtype">void</span> forEachPixel(<span class="keyword">const</span> Func&amp; func);</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;            <span class="keyword">template</span>&lt;<span class="keyword">typename</span> CALLABLE&gt;</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;            <span class="keyword">inline</span> <span class="keywordtype">void</span> forEachPixel(CALLABLE&amp;&amp; func);</div>
 <div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160; </div>
 <div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;        <span class="keyword">private</span>:</div>
 <div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;            <span class="keyword">const</span> Image* _image;</div>
@@ -352,8 +352,8 @@ $(function() {
 <div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;            _layouts[pixelFormat()].num_components;</div>
 <div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;    }</div>
 <div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160; </div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> Func&gt;</div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> Image::iterator::forEachPixel(<span class="keyword">const</span> Func&amp; func)</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> CALLABLE&gt;</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> Image::iterator::forEachPixel(CALLABLE&amp;&amp; func)</div>
 <div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;    {</div>
 <div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;        <span class="keywordflow">for</span> (_r = 0; _r &lt; _image-&gt;depth(); ++_r)</div>
 <div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;        {</div>

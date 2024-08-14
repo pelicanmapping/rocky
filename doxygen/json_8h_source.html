@@ -210,32 +210,33 @@ $(function() {
 <div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160; </div>
 <div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160; </div>
 <div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;<span class="preprocessor">#define ROCKY_DEFINE_JSON_SERIALIZERS(TYPE) \</span></div>
-<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;<span class="preprocessor">    class TYPE ; \</span></div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;<span class="preprocessor">    TYPE ; \</span></div>
 <div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;<span class="preprocessor">    extern ROCKY_EXPORT void to_json(json&amp; j, const TYPE&amp; obj); \</span></div>
 <div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;<span class="preprocessor">    extern ROCKY_EXPORT void from_json(const json&amp; j, TYPE&amp; obj)</span></div>
 <div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160; </div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(CachePolicy);</div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(Color);</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(Angle);</div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(Distance);</div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(Duration);</div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(Speed);</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(ScreenSize);</div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(Profile);</div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(ProxySettings);</div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(DateTime);</div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(SRS);</div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(GeoExtent);</div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(GeoPoint);</div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(URI);</div>
-<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(Viewpoint);</div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160; </div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    <span class="comment">// specializations.</span></div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;    <span class="keyword">class </span>IOOptions;</div>
-<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    <span class="keyword">extern</span> ROCKY_EXPORT <span class="keywordtype">bool</span> get_to(<span class="keyword">const</span> json&amp; obj, <span class="keyword">const</span> <span class="keywordtype">char</span>* name, URI&amp; var, <span class="keyword">const</span> IOOptions&amp; io);</div>
-<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;    <span class="keyword">extern</span> ROCKY_EXPORT <span class="keywordtype">bool</span> get_to(<span class="keyword">const</span> json&amp; obj, <span class="keyword">const</span> <span class="keywordtype">char</span>* name, rocky::optional&lt;URI&gt;&amp; var, <span class="keyword">const</span> IOOptions&amp; io);</div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;}</div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160; </div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(<span class="keyword">class</span> CachePolicy);</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(<span class="keyword">class</span> Color);</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(<span class="keyword">class</span> Angle);</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(<span class="keyword">class</span> Distance);</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(<span class="keyword">class</span> Duration);</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(<span class="keyword">struct</span> Hyperlink);</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(<span class="keyword">class</span> Speed);</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(<span class="keyword">class</span> ScreenSize);</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(<span class="keyword">class</span> Profile);</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(<span class="keyword">class</span> ProxySettings);</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(<span class="keyword">class</span> DateTime);</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(<span class="keyword">class</span> SRS);</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(<span class="keyword">class</span> GeoExtent);</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(<span class="keyword">class</span> GeoPoint);</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(<span class="keyword">class</span> URI);</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    ROCKY_DEFINE_JSON_SERIALIZERS(<span class="keyword">class</span> Viewpoint);</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160; </div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;    <span class="comment">// specializations.</span></div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    <span class="keyword">class </span>IOOptions;</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;    <span class="keyword">extern</span> ROCKY_EXPORT <span class="keywordtype">bool</span> get_to(<span class="keyword">const</span> json&amp; obj, <span class="keyword">const</span> <span class="keywordtype">char</span>* name, URI&amp; var, <span class="keyword">const</span> IOOptions&amp; io);</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;    <span class="keyword">extern</span> ROCKY_EXPORT <span class="keywordtype">bool</span> get_to(<span class="keyword">const</span> json&amp; obj, <span class="keyword">const</span> <span class="keywordtype">char</span>* name, rocky::optional&lt;URI&gt;&amp; var, <span class="keyword">const</span> IOOptions&amp; io);</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;}</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160; </div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">ROCKY_NAMESPACE::Status</a></div><div class="ttdef"><b>Definition:</b> Status.h:24</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1json__parse__result_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1json__parse__result.html">ROCKY_NAMESPACE::json_parse_result</a></div><div class="ttdoc">extent json with a status so we can check for parsing errors</div><div class="ttdef"><b>Definition:</b> json.h:55</div></div>

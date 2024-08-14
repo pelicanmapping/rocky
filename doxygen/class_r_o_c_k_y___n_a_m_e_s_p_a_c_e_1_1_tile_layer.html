@@ -145,8 +145,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a9310fa972d17b01ddc4eec7e6d14dbc8">intersects</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key) const</td></tr>
 <tr class="memdesc:a9310fa972d17b01ddc4eec7e6d14dbc8"><td class="mdescLeft">&#160;</td><td class="mdescRight">True is the tile key intersects the data extents of this layer. <br /></td></tr>
 <tr class="separator:a9310fa972d17b01ddc4eec7e6d14dbc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3d60163ed9ca926bcc85353058698465"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a3d60163ed9ca926bcc85353058698465">bestAvailableTileKey</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key, bool considerUpsampling=false) const</td></tr>
-<tr class="separator:a3d60163ed9ca926bcc85353058698465"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89b510d97e9bb6af7361ec4dd2e2da79"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a89b510d97e9bb6af7361ec4dd2e2da79">bestAvailableTileKey</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key) const</td></tr>
+<tr class="separator:a89b510d97e9bb6af7361ec4dd2e2da79"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a681e51972304184039753783b5877681"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a681e51972304184039753783b5877681">mayHaveData</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key) const</td></tr>
 <tr class="separator:a681e51972304184039753783b5877681"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2043747628408d34a27fdb1729eda4e0"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a2043747628408d34a27fdb1729eda4e0">isKeyInLegalRange</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key) const</td></tr>
@@ -165,14 +165,6 @@ std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_data_extent.html">DataExtent</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a5553ac196256524a627a32f7634da3b0">dataExtentsUnion</a> () const</td></tr>
 <tr class="memdesc:a5553ac196256524a627a32f7634da3b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extent that is the union of all the extents in getDataExtents(). <br /></td></tr>
 <tr class="separator:a5553ac196256524a627a32f7634da3b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab5376cdaa9e59e25b998dccd2d19ebff"><td class="memItemLeft" align="right" valign="top"><a id="ab5376cdaa9e59e25b998dccd2d19ebff"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#ab5376cdaa9e59e25b998dccd2d19ebff">setDataExtents</a> (const DataExtentList &amp;<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#abc887700f5d4f60b22d415796caa47a3">dataExtents</a>)</td></tr>
-<tr class="memdesc:ab5376cdaa9e59e25b998dccd2d19ebff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign a data extents collection to the layer. <br /></td></tr>
-<tr class="separator:ab5376cdaa9e59e25b998dccd2d19ebff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a91490b1005427f8012155a587f288b6d"><td class="memItemLeft" align="right" valign="top"><a id="a91490b1005427f8012155a587f288b6d"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a91490b1005427f8012155a587f288b6d">addDataExtent</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_data_extent.html">DataExtent</a> &amp;dataExtent)</td></tr>
-<tr class="memdesc:a91490b1005427f8012155a587f288b6d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a DataExent to this layer. <br /></td></tr>
-<tr class="separator:a91490b1005427f8012155a587f288b6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab25e3f9f4978e6becedef53f2611400c"><td class="memItemLeft" align="right" valign="top"><a id="ab25e3f9f4978e6becedef53f2611400c"></a>
 const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent.html">GeoExtent</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#ab25e3f9f4978e6becedef53f2611400c">extent</a> () const override</td></tr>
 <tr class="memdesc:ab25e3f9f4978e6becedef53f2611400c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extent of this layer. <br /></td></tr>
@@ -190,10 +182,18 @@ Protected Member Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a8704cd5d52b358fe27ff1f64dbf65c5e">dirtyDataExtents</a> ()</td></tr>
 <tr class="memdesc:a8704cd5d52b358fe27ff1f64dbf65c5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Call this if you call <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#abc887700f5d4f60b22d415796caa47a3" title="Data Extents reported for this layer are copied into output.">dataExtents()</a> and modify it. <br /></td></tr>
 <tr class="separator:a8704cd5d52b358fe27ff1f64dbf65c5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1fea28b42fd7e88c82d046f4a92544e1"><td class="memItemLeft" align="right" valign="top"><a id="a1fea28b42fd7e88c82d046f4a92544e1"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a1fea28b42fd7e88c82d046f4a92544e1">setProfileDefault</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html">Profile</a> &amp;)</td></tr>
-<tr class="memdesc:a1fea28b42fd7e88c82d046f4a92544e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the layer profile as a default value (won't be serialized). <br /></td></tr>
-<tr class="separator:a1fea28b42fd7e88c82d046f4a92544e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abfbc07938741d212b0b01d473c3d6671"><td class="memItemLeft" align="right" valign="top"><a id="abfbc07938741d212b0b01d473c3d6671"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#abfbc07938741d212b0b01d473c3d6671">setProfileAsDefault</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html">Profile</a> &amp;)</td></tr>
+<tr class="memdesc:abfbc07938741d212b0b01d473c3d6671"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the layer profile as a default value (won't be serialized). <br /></td></tr>
+<tr class="separator:abfbc07938741d212b0b01d473c3d6671"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab5376cdaa9e59e25b998dccd2d19ebff"><td class="memItemLeft" align="right" valign="top"><a id="ab5376cdaa9e59e25b998dccd2d19ebff"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#ab5376cdaa9e59e25b998dccd2d19ebff">setDataExtents</a> (const DataExtentList &amp;<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#abc887700f5d4f60b22d415796caa47a3">dataExtents</a>)</td></tr>
+<tr class="memdesc:ab5376cdaa9e59e25b998dccd2d19ebff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign a data extents collection to the layer. <br /></td></tr>
+<tr class="separator:ab5376cdaa9e59e25b998dccd2d19ebff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91490b1005427f8012155a587f288b6d"><td class="memItemLeft" align="right" valign="top"><a id="a91490b1005427f8012155a587f288b6d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a91490b1005427f8012155a587f288b6d">addDataExtent</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_data_extent.html">DataExtent</a> &amp;dataExtent)</td></tr>
+<tr class="memdesc:a91490b1005427f8012155a587f288b6d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a DataExent to this layer. <br /></td></tr>
+<tr class="separator:a91490b1005427f8012155a587f288b6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc1ecf5915b653d784267ffdf594bff8"><td class="memItemLeft" align="right" valign="top"><a id="adc1ecf5915b653d784267ffdf594bff8"></a>
 std::string&#160;</td><td class="memItemRight" valign="bottom"><b>getMetadataKey</b> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html">Profile</a> &amp;) const</td></tr>
 <tr class="separator:adc1ecf5915b653d784267ffdf594bff8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -218,6 +218,9 @@ Protected Attributes</h2></td></tr>
 <tr class="memitem:a3b3f60b40bf15f1ecbc1eb335db7133d"><td class="memItemLeft" align="right" valign="top"><a id="a3b3f60b40bf15f1ecbc1eb335db7133d"></a>
 <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional</a>&lt; unsigned &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_tileSize</b> = 256</td></tr>
 <tr class="separator:a3b3f60b40bf15f1ecbc1eb335db7133d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbb1cc124c4169a03f66a69fdcdc7a87"><td class="memItemLeft" align="right" valign="top"><a id="adbb1cc124c4169a03f66a69fdcdc7a87"></a>
+<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional</a>&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent.html">GeoExtent</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_crop</b></td></tr>
+<tr class="separator:adbb1cc124c4169a03f66a69fdcdc7a87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aebe09388b45c0561f15574c3f05aa846"><td class="memItemLeft" align="right" valign="top"><a id="aebe09388b45c0561f15574c3f05aa846"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>_writingRequested</b></td></tr>
 <tr class="separator:aebe09388b45c0561f15574c3f05aa846"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -228,8 +231,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>_writingRequested</b>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A layer that comprises the terrain skin (image or elevation layer) </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a3d60163ed9ca926bcc85353058698465"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3d60163ed9ca926bcc85353058698465">&#9670;&nbsp;</a></span>bestAvailableTileKey()</h2>
+<a id="a89b510d97e9bb6af7361ec4dd2e2da79"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a89b510d97e9bb6af7361ec4dd2e2da79">&#9670;&nbsp;</a></span>bestAvailableTileKey()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -241,18 +244,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>_writingRequested</b>
           <td class="memname"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> TileLayer::bestAvailableTileKey </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;&#160;</td>
-          <td class="paramname"><em>key</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>considerUpsampling</em> = <code>false</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td> const</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td> const</td>
         </tr>
       </table>
   </td>
@@ -266,7 +259,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>_writingRequested</b>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">key</td><td>Tile key to check </td></tr>
-    <tr><td class="paramname">considerUpsampling</td><td>Normally this method will only return a key corresponding to possible real data. If you set this to true, it may also return a <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> that may correspond to upsampled data. </td></tr>
   </table>
   </dd>
 </dl>
