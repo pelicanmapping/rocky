@@ -326,7 +326,14 @@ TileLayer::dataExtentsUnion() const
 const GeoExtent&
 TileLayer::extent() const
 {
-    return dataExtentsUnion();
+    if (_crop.has_value())
+    {
+        return _crop.value();
+    }
+    else
+    {
+        return dataExtentsUnion();
+    }
 }
 
 TileKey

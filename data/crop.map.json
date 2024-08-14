@@ -1,0 +1,30 @@
+{
+    "map" : {
+        "name" : "Cropping demo",
+        "layers": [
+            {
+                "name": "Local GeoTIFF",
+                "type": "GDALImage",
+                "uri": "imagery/world.tif"
+            },
+            {
+                "name": "OpenStreetMap Imagery - cropped",
+                "profile": "spherical-mercator",
+                "crop" : {
+                    "srs" : "spherical-mercator",
+                    "xmin" : 250000,
+                    "ymin" : 250000,
+                    "xmax" : 1750000,
+                    "ymax" : 1750000
+                },
+                "uri" : "https://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png",
+                "type": "TMSImage",
+                "opacity": 0.5,
+                "attribution": {
+                    "text": "Copyright OpenStreetMap contributers",
+                    "href": "https://openstreetmap.org/copyright"
+                }
+            }
+        ]
+    }
+}

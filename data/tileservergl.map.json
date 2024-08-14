@@ -1,0 +1,18 @@
+{
+    "terrain" : {
+        "screen_space_error" : 0.0
+    },
+    "map" : {
+        "name" : "TileServer Example",
+        "layers": [
+            {
+                "name": "ReadyMap Street Map",
+                "profile": "spherical-mercator",
+                "uri" : "https://tileservergl.readymap.org/styles/basic/{z}/{x}/{y}.png",
+                "type": "TMSImage",
+                "attribution": "(C) OpenStreetMap contributors",
+                "attribution_href": "https://openstreetmap.org/copyright"
+            }
+        ]
+    }
+}
