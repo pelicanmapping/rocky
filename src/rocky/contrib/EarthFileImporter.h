@@ -5,7 +5,6 @@
  */
 #pragma once
 #include <rocky/Common.h>
-#include <rocky/URI.h>
 #include <rocky/IOTypes.h>
 
 namespace ROCKY_NAMESPACE
@@ -23,6 +22,6 @@ namespace ROCKY_NAMESPACE
         //! This JSON string is suitable for reading into a Map object. 
         //! While the importer will read everything in the earthfile, not all contents
         //! are supported by Rocky.
-        Result<JSON> read(const std::string& location, const IOOptions& io) const;
+        Result<std::string> read(const std::string& location, const IOOptions& io) const;
     };
 }

@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "EarthFileImporter.h"
+#include <rocky/URI.h>
 #include "../json.h"
 #include "../tinyxml/tinyxml.h"
 
@@ -165,7 +166,7 @@ EarthFileImporter::EarthFileImporter()
     //nop
 }
 
-Result<JSON>
+Result<std::string>
 EarthFileImporter::read(const std::string& location, const IOOptions& io) const
 {    
     // try to load the earth file into a string:
@@ -260,5 +261,9 @@ EarthFileImporter::read(const std::string& location, const IOOptions& io) const
     }
 
     map["layers"] = layers_json;
-    return to_string(map);
+
+    auto top = json::object();
+    top["map"] = map;
+
+    return to_string(top);
 }

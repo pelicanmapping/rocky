@@ -145,7 +145,7 @@ Application::ctor(int& argc, char** argv)
 
             if (count == mapNode->map->layers().size())
             {
-                Log()->warn("No layers imported from earth file \"{}\"", infile);
+                commandLineStatus = Status(Status::ResourceUnavailable, "No layers imported from earth file");
             }
         }
         else
