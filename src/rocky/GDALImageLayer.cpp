@@ -127,7 +127,7 @@ GDALImageLayer::openImplementation(const IOOptions& io)
     // if the driver generated a valid profile, set it.
     if (profile.valid())
     {
-        setProfileDefault(profile);
+        setProfileAsDefault(profile);
     }
 
     setDataExtents(dataExtents);

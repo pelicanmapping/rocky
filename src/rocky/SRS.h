@@ -182,6 +182,11 @@ namespace ROCKY_NAMESPACE
             return valid();
         }
 
+        //! Whether this operation is a no-op.
+        bool noop() const {
+            return _nop;
+        }
+
         //! Source SRS of the operation
         const SRS& from() const {
             return _from;

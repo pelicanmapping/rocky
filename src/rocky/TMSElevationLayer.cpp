@@ -73,7 +73,7 @@ TMSElevationLayer::openImplementation(const IOOptions& io)
 
     if (driver_profile != profile())
     {
-        setProfileDefault(driver_profile);
+        setProfileAsDefault(driver_profile);
     }
 
     // If the layer name is unset, try to set it from the tileMap title.

@@ -1,6 +1,5 @@
 {
     "terrain" : {
-        "color" : "#A9D2DF",
         "screen_space_error" : 0.0
     },
     "map" : {
@@ -9,8 +8,12 @@
             {
                 "name": "OpenStreetMap Imagery",
                 "profile": "spherical-mercator",
-                "uri" : "https://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png",
-                "type": "TMSImage"
+                "uri": "https://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png",
+                "type": "TMSImage",
+                "attribution": {
+                    "text": "\u00a9 OpenStreetMap contributors",
+                    "href": "https://openstreetmap.org/copyright"
+                }
             }
         ]
     }

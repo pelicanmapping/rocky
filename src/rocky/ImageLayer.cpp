@@ -79,6 +79,7 @@ ImageLayer::construct(const std::string& JSON, const IOOptions& io)
     get_to(j, "transparent_color", _transparentColor);
     get_to(j, "texture_compression", _textureCompression);
     get_to(j, "sharpness", _sharpness);
+    get_to(j, "crop", _crop);
 
     setRenderType(RENDERTYPE_TERRAIN_SURFACE);
 
@@ -93,6 +94,7 @@ ImageLayer::to_json() const
     set(j, "transparent_color", _transparentColor);
     set(j, "texture_compression", _textureCompression);
     set(j, "sharpness", _sharpness);
+    set(j, "crop", _crop);
     return j.dump();
 }
 
@@ -153,6 +155,22 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
     Result<GeoImage> result;
     float sharpness = _sharpness.has_value() ? _sharpness.value() : 0.0f;
 
+    GeoExtent cropIntersection;
+
+    // if we are cropping, and the key doesn't intersect the crop extent, bail out.
+    if (_crop.has_value() && _crop.value().valid())
+    {
+        auto cropInKeyProfile = key.profile().clampAndTransformExtent(_crop.value());
+        if (cropInKeyProfile.valid())
+        {
+            cropIntersection = cropInKeyProfile.intersectionSameSRS(key.extent());
+            if (!cropIntersection.valid())
+            {
+                return GeoImage::INVALID;
+            }
+        }
+    }
+
     // if this layer has no profile, just go straight to the driver.
     if (!profile().valid())
     {
@@ -179,9 +197,37 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
     // address this later if necessary.
     //ROCKY_SOFT_ASSERT(result.status.failed() || result.value.image());
 
-    if (sharpness > 0.0f && result.status.ok() && result.value.image())
+    if (result.status.ok() && result.value.image())
     {
-        result = GeoImage(result.value.image()->sharpen(sharpness), key.extent());
+        if (cropIntersection.valid())
+        {
+            auto& b = key.extent().bounds();
+            if (!cropIntersection.contains(b))
+            {
+                int s0, t0, s1, t1;
+                result.value.getPixel(cropIntersection.xmin(), cropIntersection.ymin(), s0, t0);
+                result.value.getPixel(cropIntersection.xmax(), cropIntersection.ymax(), s1, t1);
+                s0 = clamp(s0, 0, (int)result.value.image()->width() - 1);
+                s1 = clamp(s1, 0, (int)result.value.image()->width() - 1);
+                t0 = clamp(t0, 0, (int)result.value.image()->height() - 1);
+                t1 = clamp(t1, 0, (int)result.value.image()->height() - 1);
+
+                auto& image = result.value.image();
+                image->get_iterator().forEachPixel([&](auto& i)
+                    {
+                        if ((int)i.s() < s0 || (int)i.s() > s1 || (int)i.t() < t0 || (int)i.t() > t1)
+                        {
+                            image->write({ 0,0,0,0 }, i.s(), i.t());
+                        }
+                    }
+                );
+            }
+        }
+
+        if (sharpness > 0.0f)
+        {
+            result = GeoImage(result.value.image()->sharpen(sharpness), key.extent());
+        }
     }
 
     return result;

@@ -188,8 +188,8 @@ namespace ROCKY_NAMESPACE
             inline double u() const { return _u; }
             inline double v() const { return _v; }
 
-            template<typename Func>
-            inline void forEachPixel(const Func& func);
+            template<typename CALLABLE>
+            inline void forEachPixel(CALLABLE&& func);
 
         private:
             const Image* _image;
@@ -325,8 +325,8 @@ namespace ROCKY_NAMESPACE
             _layouts[pixelFormat()].num_components;
     }
 
-    template<typename Func>
-    inline void Image::iterator::forEachPixel(const Func& func)
+    template<typename CALLABLE>
+    inline void Image::iterator::forEachPixel(CALLABLE&& func)
     {
         for (_r = 0; _r < _image->depth(); ++_r)
         {

@@ -333,15 +333,9 @@ namespace
             image->pixelFormat(),
             width, height, image->depth());
 
-        //result->allocateImage(width, height, image->r(), image->getPixelFormat(), image->getDataType()); //GL_UNSIGNED_BYTE);
-        //result->setInternalTextureFormat(image->getInternalTextureFormat());
-
         //Initialize the image to be completely transparent/black
-        //memset(result->data(), 0, result->getImageSizeInBytes());
         memset(result->data<std::byte>(), 0, result->sizeInBytes());
 
-        //ImageUtils::PixelReader ra(result);
-        //ImageUtils::PixelWriter writer(result);
         const double dx = dest_extent.width() / (double)width;
         const double dy = dest_extent.height() / (double)height;
 
@@ -620,6 +614,21 @@ GeoImage::getCoord(int s, int t, double& out_x, double& out_y) const
     return true;
 }
 
+bool
+GeoImage::getPixel(double x, double y, int& s, int& t) const
+{
+    if (!valid()) return false;
+    if (!_image) return false;
+
+    double u = (x - _extent.xmin()) / _extent.width();
+    s = (u >= 0.0 && u <= 1.0) ? (int)(u * (double)(_image->width() - 1)) : -1;
+
+    double v = (y - _extent.ymin()) / _extent.height();
+    t = (v >= 0.0 && v <= 1.0) ? (int)(v * (double)(_image->height() - 1)) : -1;
+
+    return true;
+}
+
 Result<GeoImage>
 GeoImage::crop(
     const GeoExtent& e,
@@ -740,36 +749,45 @@ GeoImage::reproject(
 }
 
 void
-GeoImage::composite(const std::vector<GeoImage>& sources)
+GeoImage::composite(const std::vector<GeoImage>& sources, const std::vector<float>& opacities)
 {
     double x, y;
-    glm::fvec4 pixel;
-    for (unsigned t = 0; t < _image->width(); ++t)
+    glm::fvec4 pixel, temp;
+    bool have_opacities = opacities.size() == sources.size();
+    
+    std::vector<SRSOperation> xforms;
+    xforms.reserve(sources.size());
+    for(auto& source : sources)
+        xforms.emplace_back(srs().to(source.srs()));
+
+    for (unsigned s = 0; s < _image->width(); ++s)
     {
-        for(unsigned s = 0; s < _image->height(); ++s)
+        for (unsigned t = 0; t < _image->height(); ++t)
         {
-            // read the existing pixel
-            _image->read(pixel, s, t);
+            getCoord(s, t, x, y);
 
-            // see if we need to overwrite it
-            if ((_image->hasAlphaChannel() && pixel.a < 1.0f) ||
-                (pixel.r == 0.0f && pixel.g == 0.0f && pixel.b == 0.0f))
+            bool pixel_valid = false;
+
+            for (int i = 0; i < (int)sources.size(); ++i)
             {
-                getCoord(s, t, x, y);
-                for (int i = (int)sources.size() - 1; i >= 0; --i)
-                {
-                    auto& source = sources[i];
-                    source.read(pixel, x, y, srs());
+                auto& source = sources[i];
+                float opacity = have_opacities ? opacities[i] : 1.0f;
 
-                    if ((i == 0) ||
-                        (source.image()->hasAlphaChannel() && pixel.a > 0.5f) ||
-                        (pixel.r > 0.05f || pixel.g > 0.05f || pixel.b > 0.05f))
+                if (!pixel_valid)
+                {
+                    if (source.read(pixel, x, y, xforms[i]) && pixel.a > 0.0f)
                     {
-                        _image->write(pixel, s, t);
-                        break;
+                        pixel.a *= opacity;
+                        pixel_valid = true;
                     }
                 }
+                else if (source.read(temp, x, y, xforms[i]))
+                {
+                    pixel = glm::mix(pixel, temp, temp.a * opacity);
+                }
             }
+
+            _image->write(pixel, s, t);
         }
     }
 }
@@ -836,13 +854,16 @@ GeoImage::read_clamped(glm::fvec4& out, double x, double y) const
 bool
 GeoImage::read(glm::fvec4& out, double x, double y, const SRS& xy_srs) const
 {
-    if (!valid()) return false;
+    if (!valid())
+        return false;
+
+    if (!xy_srs.valid())
+        return false;
+
     glm::dvec3 temp(x, y, 0);
-    if (xy_srs.valid())
-    {
-        if (!srs().to(xy_srs).transform(temp, temp))
-            return false;
-    }
+    if (!srs().to(xy_srs).transform(temp, temp))
+        return false;
+
     return read(out, temp.x, temp.y);
 }
 
@@ -850,6 +871,9 @@ bool
 GeoImage::read(glm::fvec4& out, double x, double y, const SRSOperation& xform) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(valid(), false);
+
+    if (xform.noop())
+        return read(out, x, y);
 
     glm::dvec3 temp(x, y, 0);
     if (!xform.transform(temp, temp))

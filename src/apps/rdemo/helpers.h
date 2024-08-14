@@ -191,6 +191,18 @@ namespace ImGuiLTable
         ImGui::TextWrapped(format, args...);
     }
 
+    //template<typename...Args>
+    static void TextLinkOpenURL(const char* label, const char* text, const char* href)
+    {
+        ImGui::TableNextColumn();
+        ImGui::Text(label);
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(-1);
+        ImGui::Text(text);
+        // coming soon in imgui 1.91.0!
+        //ImGui::TextLinkOpenURL(label, href);
+    }
+
     static void Section(const char* label)
     {
         ImGui::TableNextColumn();

@@ -19,6 +19,11 @@ ROCKY_ADD_OBJECT_FACTORY(TMSImage,
     [](const std::string& JSON, const IOOptions& io) {
         return TMSImageLayer::create(JSON, io); })
 
+
+ROCKY_ADD_OBJECT_FACTORY(XYZImage,
+    [](const std::string& JSON, const IOOptions& io) {
+        return TMSImageLayer::create(JSON, io); })
+
 TMSImageLayer::TMSImageLayer() :
     super()
 {
@@ -68,7 +73,7 @@ TMSImageLayer::openImplementation(const IOOptions& io)
 
     if (driver_profile != profile())
     {
-        setProfileDefault(driver_profile);
+        setProfileAsDefault(driver_profile);
     }
 
     // If the layer name is unset, try to set it from the tileMap title.

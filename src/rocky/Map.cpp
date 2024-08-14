@@ -138,33 +138,6 @@ Map::profile() const
     return _profile;
 }
 
-std::set<std::string>
-Map::attributions() const
-{
-    std::set<std::string> result;
-
-    std::shared_lock lock(_mapDataMutex);
-
-    for(auto& layer : _layers)
-    {
-        if (layer->isOpen())
-        {
-            auto visibleLayer = VisibleLayer::cast(layer);
-
-            if (!visibleLayer || visibleLayer->visible())
-            {
-                std::string attribution = layer->attribution();
-                if (!attribution.empty())
-                {
-                    result.insert(attribution);
-                }
-            }
-        }
-    }
-    
-    return result;
-}
-
 const SRS&
 Map::srs() const
 {

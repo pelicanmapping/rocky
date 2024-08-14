@@ -29,6 +29,5 @@ TerrainEngine::TerrainEngine(
     tiles(new_map->profile(), new_settings, host),
     stateFactory(new_runtime)
 {
-    auto total_threads = std::thread::hardware_concurrency();
-    jobs::get_pool(loadSchedulerName)->set_concurrency(total_threads/2);
+    jobs::get_pool(loadSchedulerName)->set_concurrency(settings.concurrency);
 }

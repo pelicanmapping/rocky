@@ -93,13 +93,8 @@ namespace ROCKY_NAMESPACE
          * then any key passed in that falls outside of the valid range for the layer will return TileKey::INVALID.
          *
          * @param key Tile key to check
-         * @param considerUpsampling Normally this method will only return a key
-         *    corresponding to possible real data. If you set this to true, it may
-         *    also return a TileKey that may correspond to upsampled data.
          */
-        virtual TileKey bestAvailableTileKey(
-            const TileKey& key,
-            bool considerUpsampling =false) const;
+        virtual TileKey bestAvailableTileKey(const TileKey& key) const;
 
         //! Whether the layer possibly has real data for the provided TileKey.
         //! Best guess given available information.
@@ -123,12 +118,6 @@ namespace ROCKY_NAMESPACE
         //! Extent that is the union of all the extents in getDataExtents().
         const DataExtent& dataExtentsUnion() const;
 
-        //! Assign a data extents collection to the layer
-        virtual void setDataExtents(const DataExtentList& dataExtents);
-
-        //! Adds a DataExent to this layer.
-        void addDataExtent(const DataExtent& dataExtent);
-
     public: // Layer
 
         //! Extent of this layer
@@ -144,7 +133,13 @@ namespace ROCKY_NAMESPACE
         void dirtyDataExtents();
 
         //! Sets the layer profile as a default value (won't be serialized).
-        void setProfileDefault(const Profile&);
+        void setProfileAsDefault(const Profile&);
+
+        //! Assign a data extents collection to the layer
+        virtual void setDataExtents(const DataExtentList& dataExtents);
+
+        //! Adds a DataExent to this layer.
+        void addDataExtent(const DataExtent& dataExtent);
 
     protected:
 
@@ -157,6 +152,7 @@ namespace ROCKY_NAMESPACE
         optional<double> _maxResolution;
         optional<unsigned> _maxDataLevel = 99;
         optional<unsigned> _tileSize = 256;
+        optional<GeoExtent> _crop;
 
         bool _writingRequested;
 

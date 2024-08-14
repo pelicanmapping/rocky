@@ -85,17 +85,20 @@ namespace ROCKY_NAMESPACE
             unsigned height = 0,
             bool useBilinearInterpolation = true) const;
 
-        //! Composites one or more source images into this image.
-        //! This will only write to RGBA pixels that have an alpha of zero,
-        //! or to RGB pixels that all all black.
+        //! Composites one or more source images into this image, overwriting the existing image.
         //! @param sources GeoImages to composite, from bottom to top.
-        void composite(const std::vector<GeoImage>& sources);
+        //! @param opacities Opacities to apply to each source image (defaults to 1.0f if vector sizes don't match)
+        void composite(const std::vector<GeoImage>& sources, const std::vector<float>& opacities = {});
 
         //! Gets the units per pixel of this geoimage
         double getUnitsPerPixel() const;
 
         //! Gets the coordinate at the image's s,t
         bool getCoord(int s, int t, double& out_x, double& out_y) const;
+
+        //! Gets the pixel at the image's x,y (must be in GeoImage's SRS)
+        //! s and t will return -1 if x and y are out of bounds respectively
+        bool getPixel(double x, double y, int& s, int& t) const;
 
         //! Read the value of a pixel at a geopoint.
         bool read(glm::fvec4& output, const GeoPoint& p) const;

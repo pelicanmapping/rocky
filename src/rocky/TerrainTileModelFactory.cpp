@@ -168,9 +168,11 @@ namespace
         TileKey key = requested_key;
         if (fallback)
         {
-            for (; key.valid() && !result.value.valid(); key.makeParent())
+            while(key.valid() && !result.value.valid())
             {
                 result = layer->createImage(key, io);
+                if (!result.value.valid())
+                    key.makeParent();
             }
         }
         else
@@ -282,10 +284,15 @@ TerrainTileModelFactory::addColorLayers(
 
                 GeoImage image(comp_image, key.extent());
                 std::vector<GeoImage> sources;
+                std::vector<float> opacities;
                 for (auto& i : model.colorLayers)
-                    sources.push_back(std::move(i.image));
+                {
+                    sources.emplace_back(std::move(i.image));
+                    auto* imagelayer = dynamic_cast<const ImageLayer*>(i.layer.get());
+                    opacities.emplace_back(imagelayer ? imagelayer->opacity() : 1.0f);
+                }
 
-                image.composite(sources);
+                image.composite(sources, opacities);
 
                 TerrainTileModel::ColorLayer layer;
                 layer.key = key;
@@ -295,6 +302,14 @@ TerrainTileModelFactory::addColorLayers(
 
                 model.colorLayers.clear();
                 model.colorLayers.emplace_back(std::move(layer));
+            }
+
+            else if (model.colorLayers.size() == 1 &&
+                model.colorLayers.front().key != key)
+            {
+                // on the off chance that we fell back on a layer, and it ended up
+                // being the only layer, throw it out.
+                model.colorLayers.clear();
             }
         }
     }

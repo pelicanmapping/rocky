@@ -5,12 +5,20 @@
             {
                 "name": "ReadyMap 15m Base Imagery",
                 "type": "TMSImage",
-                "uri": "https://readymap.org/readymap/tiles/1.0.0/7"
+                "uri": "https://readymap.org/readymap/tiles/1.0.0/7",
+                "attribution": {
+                    "text": "\u00a9 Pelican Mapping",
+                    "href": "https://www.pelicanmapping.com/readymap-data"
+                }
             },
             {
                 "name": "ReadyMap 90m Elevation",
                 "type": "TMSElevation",
-                "uri": "https://readymap.org/readymap/tiles/1.0.0/116/"
+                "uri": "https://readymap.org/readymap/tiles/1.0.0/116/",
+                "attribution": {
+                    "text": "\u00a9 Pelican Mapping",
+                    "href": "https://www.pelicanmapping.com/readymap-data"
+                }
             }
         ]
     }

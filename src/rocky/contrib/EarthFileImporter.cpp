@@ -80,7 +80,17 @@ namespace
                     {
                         profile["tx"] = std::stoi(attribute);
                     }
+                    attribute = child->ToElement()->Attribute("tx");
+                    if (attribute)
+                    {
+                        profile["tx"] = std::stoi(attribute);
+                    }
                     attribute = child->ToElement()->Attribute("num_tiles_high_at_lod_0");
+                    if (attribute)
+                    {
+                        profile["ty"] = std::stoi(attribute);
+                    }
+                    attribute = child->ToElement()->Attribute("ty");
                     if (attribute)
                     {
                         profile["ty"] = std::stoi(attribute);

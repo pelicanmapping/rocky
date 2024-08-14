@@ -48,9 +48,6 @@ namespace ROCKY_NAMESPACE
         //! in the map model (as a alternative to installing a MapCallback).
         Revision revision() const;
 
-        //! List of attribution strings to be displayed by the application
-        std::set<std::string> attributions() const;
-
         //! Global application instance
         Instance& instance() { return _instance; }
         const Instance& instance() const { return _instance; }

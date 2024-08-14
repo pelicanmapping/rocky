@@ -27,7 +27,10 @@ TerrainNode::TerrainNode(Runtime& new_runtime) :
 void
 TerrainNode::construct()
 {
-    //nop
+    if (!concurrency.has_value())
+    {
+        concurrency = std::thread::hardware_concurrency() / 2;
+    }
 }
 
 Status
@@ -71,7 +74,7 @@ TerrainNode::createRootTiles(const IOOptions& io)
     // remove everything and start over
     this->children.clear();
 
-    // create a new context for this map
+    // create a new engine to render this map
     engine = std::make_shared<TerrainEngine>(
         map,
         _worldSRS,
@@ -98,11 +101,10 @@ TerrainNode::createRootTiles(const IOOptions& io)
 
     for (unsigned i = 0; i < keys.size(); ++i)
     {
-        auto tile = engine->tiles.createTile(
-            keys[i],
-            { }, // parent is empty
-            engine);
+        // create a tile with no parent:
+        auto tile = engine->tiles.createTile(keys[i], {}, engine);
 
+        // ensure it can't page out:
         tile->doNotExpire = true;
 
         // Add it to the scene graph

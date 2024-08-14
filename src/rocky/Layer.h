@@ -10,6 +10,7 @@
 #include <rocky/DateTime.h>
 #include <rocky/IOTypes.h>
 #include <rocky/Status.h>
+#include <rocky/URI.h>
 #include <vector>
 #include <shared_mutex>
 
@@ -130,10 +131,10 @@ namespace ROCKY_NAMESPACE
         void setRenderType(RenderType value) { _renderType = value; }
 
         //! Attribution to be displayed by the application
-        const optional<std::string>& attribution() const;
+        const optional<Hyperlink>& attribution() const;
 
         //! Attribution to be displayed by the application
-        void setAttribution(const std::string& attribution);
+        void setAttribution(const Hyperlink& attribution);
 
         //! Callback that modifies the layer's bounding box for a given tile key
         virtual void modifyTileBoundingBox(const TileKey& key, const Box& box) const;
@@ -220,8 +221,8 @@ namespace ROCKY_NAMESPACE
         optional<bool> _openAutomatically = true;
         optional<std::string> _cacheid = { };
         optional<CachePolicy> _cachePolicy = CachePolicy::DEFAULT;
-        optional<std::string> _attribution = { };
         optional<unsigned> _l2cachesize = 0;
+        optional<Hyperlink> _attribution = { };
 
         bool _reopenRequired;
     };

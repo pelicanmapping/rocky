@@ -88,7 +88,6 @@ namespace ROCKY_NAMESPACE
             float minHeight = FLT_MAX;
             float maxHeight = -FLT_MAX;
             GeoHeightfield heightfield;
-            //shared_ptr<Heightfield> heightfield;
         };
 
         struct ROCKY_EXPORT NormalMap : public Tile

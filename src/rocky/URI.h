@@ -140,4 +140,13 @@ namespace ROCKY_NAMESPACE
         void set(const std::string& location, const URIContext& context);
         void findRotation();
     };
+
+    /**
+    * A hyperlink is a text string with an associated URI.
+    */
+    struct Hyperlink
+    {
+        std::string text;
+        URI href;
+    };
 }

@@ -128,7 +128,7 @@ TileLayer::setProfile(const Profile& profile)
 }
 
 void
-TileLayer::setProfileDefault(const Profile& profile)
+TileLayer::setProfileAsDefault(const Profile& profile)
 {
     _profile.set_default(profile);
 }
@@ -330,9 +330,7 @@ TileLayer::extent() const
 }
 
 TileKey
-TileLayer::bestAvailableTileKey(
-    const TileKey& key,
-    bool considerUpsampling) const
+TileLayer::bestAvailableTileKey(const TileKey& key) const
 {
     // trivial reject
     if (!key.valid())
@@ -385,6 +383,12 @@ TileLayer::bestAvailableTileKey(
     // Reject if the extents don't overlap at all.
     // (Note: this does not consider min/max levels, only spatial extents)
     if (!dataExtentsUnion().intersects(key.extent()))
+    {
+        return TileKey::INVALID;
+    }
+
+    // Consider a user-crop:
+    if (_crop.has_value() && !_crop->intersects(key.extent()))
     {
         return TileKey::INVALID;
     }
@@ -580,6 +584,5 @@ TileLayer::intersects(const TileKey& key) const
 bool
 TileLayer::mayHaveData(const TileKey& key) const
 {
-    bool yes = (key == bestAvailableTileKey(key, true));
-    return yes;
+    return (key == bestAvailableTileKey(key));
 }

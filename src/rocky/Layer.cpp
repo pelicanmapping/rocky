@@ -207,7 +207,7 @@ Layer::dateTimeExtent() const
     return DateTimeExtent();
 }
 
-const optional<std::string>&
+const optional<Hyperlink>&
 Layer::attribution() const
 {
     // Get the attribution from the layer if it's set.
@@ -215,7 +215,7 @@ Layer::attribution() const
 }
 
 void
-Layer::setAttribution(const std::string& value)
+Layer::setAttribution(const Hyperlink& value)
 {
     _attribution = value;
 }

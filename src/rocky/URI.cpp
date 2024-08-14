@@ -185,7 +185,7 @@ namespace
                         auto dur_ms = 1e-6 * (double)(t1 - t0).count();
                         auto cti = res->headers.find("Content-Type");
                         auto ct = cti != res->headers.end() ? cti->second : "unknown";
-                        Log()->info(LC "({}) HTTP GET {} ({}ms {}b {})", res->status, request.url, (int)dur_ms, res->body.size(), ct);
+                        Log()->info(LC "({} {}ms {}b {}) HTTP GET {}", res->status, (int)dur_ms, res->body.size(), ct, request.url);
                     }
 
                     if (res->status == 404) // NOT FOUND (permanent)
@@ -504,9 +504,6 @@ namespace ROCKY_NAMESPACE
             j = json::object();
             set(j, "href", obj.base());
 
-            //if (!obj.context().referrer.empty())
-            //    set(j, "referrer", obj.context().referrer);
-
             if (obj.context().headers.empty() == false) {
                 auto headers = json::array();
                 for (auto& h : obj.context().headers) {
@@ -539,6 +536,19 @@ namespace ROCKY_NAMESPACE
             }
             obj = URI(base, context);
         }
+    }
+
+    void to_json(json& j, const Hyperlink& obj)
+    {
+        j = json::object();
+        set(j, "href", obj.href);
+        set(j, "text", obj.text);    
+    }
+
+    void from_json(const json& j, Hyperlink& obj)
+    {
+        get_to(j, "href", obj.href);
+        get_to(j, "text", obj.text);
     }
 }
 

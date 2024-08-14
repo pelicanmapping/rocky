@@ -762,15 +762,25 @@ namespace
 GeoExtent
 GeoExtent::intersectionSameSRS(const GeoExtent& rhs) const
 {
-    if ( !valid() || !rhs.valid() || !_srs.horizontallyEquivalentTo( rhs.srs() ) )
-        return GeoExtent::INVALID;
-
-    if ( !intersects(rhs) )
+    if (!valid() || !rhs.valid())
     {
         return GeoExtent::INVALID;
     }
 
-    GeoExtent result( *this );
+    // check for basic intersection. Note, we do NOT validate
+    // that they are the same SRS!
+    if (!intersects(rhs, false))
+    {
+        return GeoExtent::INVALID;
+    }
+
+    // first check Y.
+    if (ymin() > rhs.ymax() || ymax() < rhs.ymin())
+    {
+        return GeoExtent::INVALID; // they don't overlap in Y.
+    }
+
+    GeoExtent result(*this);
 
     if (_srs.isGeodetic())
     {
@@ -786,53 +796,40 @@ GeoExtent::intersectionSameSRS(const GeoExtent& rhs) const
         }
         else
         {
-            // Sort the four X coordinates, remembering whether each one is west or east edge:
-            double x[4];
-            bool iswest[4];
-            x[0] = west(), x[1] = east(), x[2] = rhs.west(), x[3] = rhs.east();
-            iswest[0] = true, iswest[1] = false, iswest[2] = true, iswest[3] = false;
-            sort4(x, iswest);
-
-            // find the western-most west coord:
-            int iw = -1;
-            for (int i=0; i<4 && iw<0; ++i)
+            if (west() < east() && rhs.west() < rhs.east())
             {
-                if (iswest[i])
-                    iw = i;
+                // simple case, no antimeridian crossing
+                result._west = std::max(west(), rhs.west());
+                result._width = std::min(east(), rhs.east()) - result._west;
             }
-
-            // iterate from there, finding the LAST west coord and stopping on the 
-            // FIRST east coord found.
-            int q = iw+4;
-            int ie = -1;
-            for (int i = iw; i < q && ie < 0; ++i)
-            {
-                int j = i;
-                if (j >= 4) j-=4;
-                if (iswest[j])
-                    iw = j; // found a better west coord; remember it.
-                else
-                    ie = j; // found the western-most east coord; done.
-            }
-
-            result._west = x[iw];
-            if (ie >= iw)
-                result._width = x[ie] - x[iw];
             else
-                result._width = (180.0 - x[iw]) + (x[ie] - (-180.0)); // crosses the antimeridian
+            {
+                double lhs_west = west();
+                double rhs_west = rhs.west();
+
+                if (fabs(west() - rhs.west()) >= 180.0)
+                {
+                    if (west() < rhs.west())
+                        lhs_west += 360.0;
+                    else
+                        rhs_west += 360.0;
+                }
+
+                double new_west = std::max(lhs_west, rhs_west);
+                result._west = normalizeX(new_west);
+                result._width = std::min(lhs_west + width(), rhs_west + rhs.width()) - new_west;
+            }
         }
     }
     else
     {
         // projected mode is simple
-        result._west = std::max(west(), rhs.west());
-        double eastTemp = std::min(east(), rhs.east());
-        result._width = eastTemp - result._west;
+        result._west = std::max(xmin(), rhs.xmin());
+        result._width = std::min(xmax(), rhs.xmax()) - result._west;
     }
 
     result._south = std::max(south(), rhs.south());
-    double northTemp = std::min(north(), rhs.north());
-    result._height = northTemp - result._south;
+    result._height = std::min(north(), rhs.north()) - result._south;
 
     result.clamp();
 
