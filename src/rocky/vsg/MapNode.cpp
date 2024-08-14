@@ -27,8 +27,9 @@ MapNode::MapNode(const InstanceVSG& instance) :
     construct();
 }
 
-MapNode::MapNode(shared_ptr<Map> map) :
-    instance(reinterpret_cast<InstanceVSG&>(map->instance()))
+MapNode::MapNode(shared_ptr<Map> in_map) :
+    instance(reinterpret_cast<InstanceVSG&>(in_map->instance())),
+    map(in_map)
 {
     construct();
 }

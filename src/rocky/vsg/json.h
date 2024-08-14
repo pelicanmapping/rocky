@@ -10,6 +10,6 @@
 
 namespace ROCKY_NAMESPACE
 {
-    ROCKY_DEFINE_JSON_SERIALIZERS(class MapNode);
+    //ROCKY_DEFINE_JSON_SERIALIZERS(class MapNode);
 }
 

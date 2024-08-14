@@ -12,6 +12,7 @@
 #include <rocky/URI.h>
 #include <rocky/Utils.h>
 #include <rocky/contrib/EarthFileImporter.h>
+#include <rocky/vsg/MapNode.h>
 
 #include <random>
 
@@ -786,13 +787,11 @@ TEST_CASE("Earth File")
     auto result = importer.read(earthFile, {});
     CHECKED_IF(result.status.ok())
     {
-        Instance instance;
-        auto map = Map::create(instance);
-        IOOptions io;
-        io.referrer = earthFile;
-        map->from_json(result.value, io);
+        InstanceVSG instance;
+        auto mapNode = MapNode::create(instance);
+        mapNode->from_json(result.value, IOOptions(instance.io(), earthFile));
 
-        auto layer1 = map->layers().withName("ReadyMap 15m Imagery");
+        auto layer1 = mapNode->map->layers().withName("ReadyMap 15m Imagery");
         CHECKED_IF(layer1)
         {
             auto tms_layer = TMSImageLayer::cast(layer1);

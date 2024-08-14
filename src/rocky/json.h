@@ -60,7 +60,6 @@ namespace ROCKY_NAMESPACE
         json_parse_result(const json& j, const Status& s) : json(j), status(s) {}
     };
 
-
     inline json_parse_result parse_json(const std::string& input) {
         if (!input.empty()) {
             JSON_TRY {
