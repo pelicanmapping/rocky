@@ -142,10 +142,13 @@ namespace
                     }
                     else
                     {
+                        // +init= is no longer supported in PROJ 7+
+                        util::replace_in_place(to_try, "+init=", "");
+
                         // perhaps it's an EPSG string, in which case we must lower-case it so it
                         // works on case-sensitive file systems
                         // https://github.com/pyproj4/pyproj/blob/9283f962e4792da2a7f05ba3735c1ed7f3479502/pyproj/crs/crs.py#L111
-                        util::replace_in_place(to_try, "+init=EPSG", "+init=epsg");
+                        util::replace_in_place(to_try, "EPSG", "epsg");
                     }
 
                     pj = proj_create(ctx, to_try.c_str());
