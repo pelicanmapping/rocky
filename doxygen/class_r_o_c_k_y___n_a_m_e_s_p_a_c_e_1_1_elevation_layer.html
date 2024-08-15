@@ -130,8 +130,6 @@ const <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html"
 <a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_elevation_layer.html#a5187124fe54b403acc75e15c1490d191">to_json</a> () const override</td></tr>
 <tr class="memdesc:a5187124fe54b403acc75e15c1490d191"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize this layer. <br /></td></tr>
 <tr class="separator:a5187124fe54b403acc75e15c1490d191"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a13634692ecf8de66a54734aa0589c9b7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_result.html">Result</a>&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_heightfield.html">GeoHeightfield</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_elevation_layer.html#a13634692ecf8de66a54734aa0589c9b7">createHeightfield</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key) const</td></tr>
-<tr class="separator:a13634692ecf8de66a54734aa0589c9b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5731128b8f79b5adaa1117220d83a7d9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_result.html">Result</a>&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_heightfield.html">GeoHeightfield</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_elevation_layer.html#a5731128b8f79b5adaa1117220d83a7d9">createHeightfield</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a> &amp;io) const</td></tr>
 <tr class="separator:a5731128b8f79b5adaa1117220d83a7d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -177,33 +175,8 @@ Protected Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A map terrain layer producing elevation grid heightfields. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a13634692ecf8de66a54734aa0589c9b7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a13634692ecf8de66a54734aa0589c9b7">&#9670;&nbsp;</a></span>createHeightfield() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_result.html">Result</a>&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_heightfield.html">GeoHeightfield</a> &gt; ElevationLayer::createHeightfield </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;&#160;</td>
-          <td class="paramname"><em>key</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Creates a GeoHeightField for this layer that corresponds to the extents and LOD in the specified <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>. The returned HeightField will always match the geospatial extents of that <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">key</td><td><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> for which to create a heightfield. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a id="a5731128b8f79b5adaa1117220d83a7d9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5731128b8f79b5adaa1117220d83a7d9">&#9670;&nbsp;</a></span>createHeightfield() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a5731128b8f79b5adaa1117220d83a7d9">&#9670;&nbsp;</a></span>createHeightfield()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -231,7 +204,7 @@ Protected Attributes</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">key</td><td><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> for which to create a heightfield. </td></tr>
-    <tr><td class="paramname">progress</td><td><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_callback.html">Callback</a> for tracking progress and cancelation </td></tr>
+    <tr><td class="paramname">io</td><td>IO options </td></tr>
   </table>
   </dd>
 </dl>

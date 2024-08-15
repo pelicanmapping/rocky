@@ -203,75 +203,81 @@ $(function() {
 <div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;        <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">Map</a>;</div>
 <div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;    };</div>
 <div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160; </div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> Key, <span class="keyword">class</span> Value&gt;</div>
-<div class="line"><a name="l00192"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache.html">  192</a></span>&#160;    <span class="keyword">class </span><a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache.html">DependencyCache</a></div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> Value&gt;</div>
+<div class="line"><a name="l00192"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache.html">  192</a></span>&#160;    <span class="keyword">class </span><a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache.html">TileMosaicWeakCache</a></div>
 <div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;    {</div>
 <div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00196"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache.html#aeca9baafd76342078e7aeb17a59fca34">  196</a></span>&#160;        std::shared_ptr&lt;Value&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache.html#aeca9baafd76342078e7aeb17a59fca34">operator[]</a>(<span class="keyword">const</span> Key&amp; key)</div>
-<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;        {</div>
-<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;            <span class="keyword">const</span> std::lock_guard lock{ _mutex };</div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;            ++_gets;</div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;            <span class="keyword">auto</span> itr = _map.find(key);</div>
-<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;            <span class="keywordflow">if</span> (itr != _map.end())</div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;            {</div>
-<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;                <span class="keyword">auto</span> result = itr-&gt;second.lock();</div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;                <span class="keywordflow">if</span> (result) ++_hits;</div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;                <span class="keywordflow">return</span> result;</div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;            }</div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;        }</div>
-<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160; </div>
-<div class="line"><a name="l00211"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache.html#aae8eab735b4fdd16a2ecb2be6797864a">  211</a></span>&#160;        std::shared_ptr&lt;Value&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache.html#aae8eab735b4fdd16a2ecb2be6797864a">put</a>(<span class="keyword">const</span> Key&amp; key, <span class="keyword">const</span> std::shared_ptr&lt;Value&gt;&amp; value)</div>
-<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;        {</div>
-<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;            <span class="keyword">const</span> std::lock_guard lock{ _mutex };</div>
-<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;            <span class="keyword">auto</span> itr = _map.find(key);</div>
-<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;            <span class="keywordflow">if</span> (itr != _map.end())</div>
-<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;            {</div>
-<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;                std::shared_ptr&lt;Value&gt; preexisting = itr-&gt;second.lock();</div>
-<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;                <span class="keywordflow">if</span> (preexisting)</div>
-<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;                    <span class="keywordflow">return</span> preexisting;</div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;            }</div>
-<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;            _map[key] = value;</div>
-<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;            <span class="keywordflow">return</span> value;</div>
-<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;        }</div>
-<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160; </div>
-<div class="line"><a name="l00226"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache.html#a3b10c83fb9ee44224c5da16f0222413d">  226</a></span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache.html#a3b10c83fb9ee44224c5da16f0222413d">clean</a>()</div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;        {</div>
-<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;            <span class="keyword">const</span> std::lock_guard lock{ _mutex };</div>
-<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">auto</span> itr = _map.begin(), end = _map.end(); itr != end;)</div>
-<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;            {</div>
-<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;                <span class="keywordflow">if</span> (!itr-&gt;second.lock())</div>
-<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;                    itr = _map.erase(itr);</div>
-<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;                <span class="keywordflow">else</span></div>
-<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;                    ++itr;</div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;            }</div>
-<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;        }</div>
-<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160; </div>
-<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;        <span class="keywordtype">float</span> hitRatio()<span class="keyword"> const</span></div>
-<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;<span class="keyword">        </span>{</div>
-<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;            <span class="keywordflow">return</span> _gets &gt; 0.0f ? _hits / _gets : 0.0f;</div>
-<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;        }</div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160; </div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;        std::unordered_map&lt;Key, std::weak_ptr&lt;Value&gt;&gt; _map;</div>
-<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;        <span class="keywordtype">float</span> _gets = 0.0f;</div>
-<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;        <span class="keywordtype">float</span> _hits = 0.0f;</div>
-<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;        std::mutex _mutex;</div>
-<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    };</div>
-<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160; </div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160; </div>
-<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;} <span class="comment">// namespace TileLayer</span></div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;        <span class="keyword">struct </span>Entry</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;        {</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> valueKey;</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;            std::weak_ptr&lt;Value&gt; value;</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;        };</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160; </div>
+<div class="line"><a name="l00202"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache.html#a357556f501d2434f354cce0834b2d2c0">  202</a></span>&#160;        Entry <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache.html#a357556f501d2434f354cce0834b2d2c0">get</a>(<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; key)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;<span class="keyword">        </span>{</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;            <span class="keyword">const</span> std::lock_guard lock{ _mutex };</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;            ++_gets;</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;            <span class="keyword">auto</span> iter = _map.find(key);</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;            <span class="keywordflow">if</span> (iter != _map.end())</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;            {</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;                <span class="keyword">auto</span> result = iter-&gt;second.value.lock();</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;                <span class="keywordflow">if</span> (result) ++_hits;</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;                <span class="keywordflow">return</span> iter-&gt;second;</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;            }</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;            <span class="keywordflow">return</span> {};</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;        }</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160; </div>
+<div class="line"><a name="l00217"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache.html#af92adb080186b22c234eb2206636d7de">  217</a></span>&#160;        <span class="keyword">const</span> Entry&amp; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache.html#af92adb080186b22c234eb2206636d7de">put</a>(<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; key, <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; actualKey, <span class="keyword">const</span> std::shared_ptr&lt;Value&gt;&amp; value)</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;        {</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;            <span class="keyword">const</span> std::lock_guard lock{ _mutex };</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;            <span class="keyword">auto</span> iter = _map.find(key);</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;            <span class="keywordflow">if</span> (iter != _map.end())</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;            {</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;                <span class="keywordflow">if</span> (iter-&gt;second.value.lock())</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;                    <span class="keywordflow">return</span> iter-&gt;second;</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;            }</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;            <span class="keyword">auto</span>&amp; e = _map[key];</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;            e = { actualKey, value };</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;            <span class="keywordflow">return</span> e;</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;        }</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160; </div>
+<div class="line"><a name="l00232"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache.html#a986964d5ac27d6f0f7e09b804dd1bd48">  232</a></span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache.html#a986964d5ac27d6f0f7e09b804dd1bd48">clean</a>()</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;        {</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;            <span class="keyword">const</span> std::lock_guard lock{ _mutex };</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">auto</span> itr = _map.begin(), end = _map.end(); itr != end;)</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;            {</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;                <span class="keywordflow">if</span> (!itr-&gt;second.value.lock())</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;                    itr = _map.erase(itr);</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;                <span class="keywordflow">else</span></div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;                    ++itr;</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;            }</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;        }</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160; </div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;        <span class="keywordtype">float</span> hitRatio()<span class="keyword"> const</span></div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;<span class="keyword">        </span>{</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;            <span class="keywordflow">return</span> _gets &gt; 0.0f ? _hits / _gets : 0.0f;</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;        }</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160; </div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;        <span class="keyword">mutable</span> std::unordered_map&lt;TileKey, Entry&gt; _map;</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;        <span class="keyword">mutable</span> <span class="keywordtype">float</span> _gets = 0.0f;</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;        <span class="keyword">mutable</span> <span class="keywordtype">float</span> _hits = 0.0f;</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;        <span class="keyword">mutable</span> std::mutex _mutex;</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;    };</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160; </div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160; </div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;} <span class="comment">// namespace TileLayer</span></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_data_extent_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_data_extent.html">ROCKY_NAMESPACE::DataExtent</a></div><div class="ttdef"><b>Definition:</b> GeoExtent.h:208</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache.html">ROCKY_NAMESPACE::DependencyCache</a></div><div class="ttdef"><b>Definition:</b> TileLayer.h:193</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache_html_a3b10c83fb9ee44224c5da16f0222413d"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache.html#a3b10c83fb9ee44224c5da16f0222413d">ROCKY_NAMESPACE::DependencyCache::clean</a></div><div class="ttdeci">void clean()</div><div class="ttdoc">Clean the cache by purging entries whose weak pointers have expired.</div><div class="ttdef"><b>Definition:</b> TileLayer.h:226</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache_html_aae8eab735b4fdd16a2ecb2be6797864a"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache.html#aae8eab735b4fdd16a2ecb2be6797864a">ROCKY_NAMESPACE::DependencyCache::put</a></div><div class="ttdeci">std::shared_ptr&lt; Value &gt; put(const Key &amp;key, const std::shared_ptr&lt; Value &gt; &amp;value)</div><div class="ttdoc">Enter a value into the cache, returning an existing value if there is one.</div><div class="ttdef"><b>Definition:</b> TileLayer.h:211</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache_html_aeca9baafd76342078e7aeb17a59fca34"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache.html#aeca9baafd76342078e7aeb17a59fca34">ROCKY_NAMESPACE::DependencyCache::operator[]</a></div><div class="ttdeci">std::shared_ptr&lt; Value &gt; operator[](const Key &amp;key)</div><div class="ttdoc">Fetch a value from teh cache or nullptr if it's not there.</div><div class="ttdef"><b>Definition:</b> TileLayer.h:196</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent.html">ROCKY_NAMESPACE::GeoExtent</a></div><div class="ttdef"><b>Definition:</b> GeoExtent.h:19</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">ROCKY_NAMESPACE::IOOptions</a></div><div class="ttdef"><b>Definition:</b> IOTypes.h:76</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">ROCKY_NAMESPACE::Map</a></div><div class="ttdef"><b>Definition:</b> Map.h:28</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html">ROCKY_NAMESPACE::Profile</a></div><div class="ttdef"><b>Definition:</b> Profile.h:22</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">ROCKY_NAMESPACE::TileKey</a></div><div class="ttdef"><b>Definition:</b> TileKey.h:22</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html">ROCKY_NAMESPACE::TileLayer</a></div><div class="ttdef"><b>Definition:</b> TileLayer.h:20</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache.html">ROCKY_NAMESPACE::TileMosaicWeakCache</a></div><div class="ttdef"><b>Definition:</b> TileLayer.h:193</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache_html_a357556f501d2434f354cce0834b2d2c0"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache.html#a357556f501d2434f354cce0834b2d2c0">ROCKY_NAMESPACE::TileMosaicWeakCache::get</a></div><div class="ttdeci">Entry get(const TileKey &amp;key) const</div><div class="ttdoc">Fetch a value from teh cache or nullptr if it's not there.</div><div class="ttdef"><b>Definition:</b> TileLayer.h:202</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache_html_a986964d5ac27d6f0f7e09b804dd1bd48"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache.html#a986964d5ac27d6f0f7e09b804dd1bd48">ROCKY_NAMESPACE::TileMosaicWeakCache::clean</a></div><div class="ttdeci">void clean()</div><div class="ttdoc">Clean the cache by purging entries whose weak pointers have expired.</div><div class="ttdef"><b>Definition:</b> TileLayer.h:232</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache_html_af92adb080186b22c234eb2206636d7de"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache.html#af92adb080186b22c234eb2206636d7de">ROCKY_NAMESPACE::TileMosaicWeakCache::put</a></div><div class="ttdeci">const Entry &amp; put(const TileKey &amp;key, const TileKey &amp;actualKey, const std::shared_ptr&lt; Value &gt; &amp;value)</div><div class="ttdoc">Enter a value into the cache, returning an existing value if there is one.</div><div class="ttdef"><b>Definition:</b> TileLayer.h:217</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a47a3157b68495813746976f5649f0577"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">ROCKY_NAMESPACE::JSON</a></div><div class="ttdeci">std::string JSON</div><div class="ttdoc">json serialization type</div><div class="ttdef"><b>Definition:</b> Common.h:48</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">ROCKY_NAMESPACE::Status</a></div><div class="ttdef"><b>Definition:</b> Status.h:24</div></div>

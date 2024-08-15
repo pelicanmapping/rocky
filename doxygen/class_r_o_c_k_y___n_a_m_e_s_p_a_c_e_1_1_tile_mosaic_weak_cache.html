@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Rocky: ROCKY_NAMESPACE::DependencyCache&lt; Key, Value &gt; Class Template Reference</title>
+<title>Rocky: ROCKY_NAMESPACE::TileMosaicWeakCache&lt; Value &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,15 +63,15 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></li><li class="navelem"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache.html">DependencyCache</a></li>  </ul>
+<li class="navelem"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></li><li class="navelem"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache.html">TileMosaicWeakCache</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache-members.html">List of all members</a>  </div>
+<a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">ROCKY_NAMESPACE::DependencyCache&lt; Key, Value &gt; Class Template Reference</div>  </div>
+<div class="title">ROCKY_NAMESPACE::TileMosaicWeakCache&lt; Value &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
@@ -79,25 +79,25 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aeca9baafd76342078e7aeb17a59fca34"><td class="memItemLeft" align="right" valign="top"><a id="aeca9baafd76342078e7aeb17a59fca34"></a>
-std::shared_ptr&lt; Value &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache.html#aeca9baafd76342078e7aeb17a59fca34">operator[]</a> (const Key &amp;key)</td></tr>
-<tr class="memdesc:aeca9baafd76342078e7aeb17a59fca34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fetch a value from teh cache or nullptr if it's not there. <br /></td></tr>
-<tr class="separator:aeca9baafd76342078e7aeb17a59fca34"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aae8eab735b4fdd16a2ecb2be6797864a"><td class="memItemLeft" align="right" valign="top"><a id="aae8eab735b4fdd16a2ecb2be6797864a"></a>
-std::shared_ptr&lt; Value &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache.html#aae8eab735b4fdd16a2ecb2be6797864a">put</a> (const Key &amp;key, const std::shared_ptr&lt; Value &gt; &amp;value)</td></tr>
-<tr class="memdesc:aae8eab735b4fdd16a2ecb2be6797864a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter a value into the cache, returning an existing value if there is one. <br /></td></tr>
-<tr class="separator:aae8eab735b4fdd16a2ecb2be6797864a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3b10c83fb9ee44224c5da16f0222413d"><td class="memItemLeft" align="right" valign="top"><a id="a3b10c83fb9ee44224c5da16f0222413d"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_dependency_cache.html#a3b10c83fb9ee44224c5da16f0222413d">clean</a> ()</td></tr>
-<tr class="memdesc:a3b10c83fb9ee44224c5da16f0222413d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clean the cache by purging entries whose weak pointers have expired. <br /></td></tr>
-<tr class="separator:a3b10c83fb9ee44224c5da16f0222413d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae1b08071f2cd22b9f3475ae334c1d1cb"><td class="memItemLeft" align="right" valign="top"><a id="ae1b08071f2cd22b9f3475ae334c1d1cb"></a>
+<tr class="memitem:a357556f501d2434f354cce0834b2d2c0"><td class="memItemLeft" align="right" valign="top"><a id="a357556f501d2434f354cce0834b2d2c0"></a>
+Entry&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache.html#a357556f501d2434f354cce0834b2d2c0">get</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key) const</td></tr>
+<tr class="memdesc:a357556f501d2434f354cce0834b2d2c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fetch a value from teh cache or nullptr if it's not there. <br /></td></tr>
+<tr class="separator:a357556f501d2434f354cce0834b2d2c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af92adb080186b22c234eb2206636d7de"><td class="memItemLeft" align="right" valign="top"><a id="af92adb080186b22c234eb2206636d7de"></a>
+const Entry &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache.html#af92adb080186b22c234eb2206636d7de">put</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;actualKey, const std::shared_ptr&lt; Value &gt; &amp;value)</td></tr>
+<tr class="memdesc:af92adb080186b22c234eb2206636d7de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter a value into the cache, returning an existing value if there is one. <br /></td></tr>
+<tr class="separator:af92adb080186b22c234eb2206636d7de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a986964d5ac27d6f0f7e09b804dd1bd48"><td class="memItemLeft" align="right" valign="top"><a id="a986964d5ac27d6f0f7e09b804dd1bd48"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_mosaic_weak_cache.html#a986964d5ac27d6f0f7e09b804dd1bd48">clean</a> ()</td></tr>
+<tr class="memdesc:a986964d5ac27d6f0f7e09b804dd1bd48"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clean the cache by purging entries whose weak pointers have expired. <br /></td></tr>
+<tr class="separator:a986964d5ac27d6f0f7e09b804dd1bd48"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4430006702affa3ba7f7708b45f39c07"><td class="memItemLeft" align="right" valign="top"><a id="a4430006702affa3ba7f7708b45f39c07"></a>
 float&#160;</td><td class="memItemRight" valign="bottom"><b>hitRatio</b> () const</td></tr>
-<tr class="separator:ae1b08071f2cd22b9f3475ae334c1d1cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a4430006702affa3ba7f7708b45f39c07"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><h3>template&lt;class Key, class Value&gt;<br />
-class ROCKY_NAMESPACE::DependencyCache&lt; Key, Value &gt;</h3>
+<div class="textblock"><h3>template&lt;class Value&gt;<br />
+class ROCKY_NAMESPACE::TileMosaicWeakCache&lt; Value &gt;</h3>
 
 <p>A "cache" of weak pointers to values, keyed by tile key. This will keep references to data that are still in use elsewhere in the system in order to prevent re-fetching or re-mosacing the same data over and over. </p>
 </div><hr/>The documentation for this class was generated from the following file:<ul>
