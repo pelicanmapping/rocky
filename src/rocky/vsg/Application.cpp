@@ -25,6 +25,60 @@
 
 using namespace ROCKY_NAMESPACE;
 
+namespace
+{
+    Status loadMapFile(const std::string& location, MapNode& mapNode, Instance& instance)
+    {
+        Status status;
+
+        auto map_file = URI(location).read(instance.io());
+
+        if (map_file.status.ok())
+        {
+            auto parse_result = mapNode.from_json(map_file->data, instance.io().from(location));
+            if (parse_result.failed())
+            {
+                status = parse_result;
+            }
+        }
+        else
+        {
+            // return the error
+            status = map_file.status;
+        }
+
+        return status;
+    }
+
+    Status importEarthFile(const std::string& infile, MapNode& mapNode, Instance& instance)
+    {
+        Status status;
+
+        auto io = instance.io().from(infile);
+
+        EarthFileImporter importer;
+        auto result = importer.read(infile, io);
+
+        if (result.status.ok())
+        {
+            auto count = mapNode.map->layers().size();
+
+            mapNode.from_json(result.value, io);
+
+            if (count == mapNode.map->layers().size())
+            {
+                status = Status(Status::ResourceUnavailable, "No layers imported from earth file");
+            }
+        }
+        else
+        {
+            status = result.status;
+        }
+
+        return status;
+    }
+}
+
 Application::Application()
 {
     int argc = 0;
@@ -46,7 +100,6 @@ Application::ctor(int& argc, char** argv)
     _debuglayer = commandLine.read({ "--debug" });
     _apilayer = commandLine.read({ "--api" });
     _vsync = !commandLine.read({ "--novsync" });
-    //_multithreaded = commandLine.read({ "--mt" });
 
     if (commandLine.read({ "--version" }))
     {
@@ -115,43 +168,19 @@ Application::ctor(int& argc, char** argv)
     std::string infile; 
     if (commandLine.read({ "--map" }, infile))
     {
-        auto map_file = URI(infile).read({});
-
-        if (map_file.status.ok())
-        {
-            auto parse_result = mapNode->from_json(map_file->data, IOOptions(io(), infile));
-            if (parse_result.failed())
-            {
-                commandLineStatus = parse_result;
-            }
-        }
-        else
-        {
-            commandLineStatus = map_file.status;
-        }
+        commandLineStatus = loadMapFile(infile, *mapNode, instance);
     }
 
-    // or read map from earth file:
-    else if (commandLine.read({ "--earthfile" }, infile))
+    // import map from an osgEarth earth file:
+    if (commandLine.read({ "--earthfile" }, infile) && commandLineStatus.ok())
     {
-        EarthFileImporter importer;
-        auto result = importer.read(infile, io());
+        commandLineStatus = importEarthFile(infile, *mapNode, instance);
+    }
 
-        if (result.status.ok())
-        {
-            auto count = mapNode->map->layers().size();
-
-            mapNode->from_json(result.value, IOOptions(io(), infile));
-
-            if (count == mapNode->map->layers().size())
-            {
-                commandLineStatus = Status(Status::ResourceUnavailable, "No layers imported from earth file");
-            }
-        }
-        else
-        {
-            commandLineStatus = result.status;
-        }
+    // if there are any command-line arguments remaining, assume the first is a map file.
+    if (commandLine.argc() > 1 && commandLineStatus.ok())
+    {
+        commandLineStatus = loadMapFile(commandLine[1], *mapNode, instance);
     }
 
     // install the ECS systems that will render components.

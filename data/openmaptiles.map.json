@@ -3,15 +3,17 @@
         "screen_space_error" : 0.0
     },
     "map" : {
-        "name" : "TileServer Example",
+        "name" : "OpenMapTiles Example",
         "layers": [
             {
-                "name": "ReadyMap Street Map",
+                "name": "ReadyMap OpenMapTiles Street Map",
                 "profile": "spherical-mercator",
                 "uri" : "https://tileservergl.readymap.org/styles/basic/{z}/{x}/{y}.png",
                 "type": "TMSImage",
-                "attribution": "(C) OpenStreetMap contributors",
-                "attribution_href": "https://openstreetmap.org/copyright"
+                "attribution": {
+                    "text": "\u00a9 OpenStreetMap contributors",
+                    "href": "https://openstreetmap.org/copyright"
+                }
             }
         ]
     }

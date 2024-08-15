@@ -69,7 +69,9 @@ namespace ROCKY_NAMESPACE
         shared_ptr<ContentCache> contentCache;
     };
 
-    // User options passed along with an IO context.
+    /**
+     * Options and services passed along to IO operations.
+     */
     class ROCKY_EXPORT IOOptions : public Cancelable
     {
     public:
@@ -79,6 +81,11 @@ namespace ROCKY_NAMESPACE
         IOOptions(const IOOptions& rhs, Cancelable& p);
         IOOptions(const std::string& referrer);
         IOOptions(const IOOptions& rhs, const std::string& referrer);
+
+        //! Copy this options structure and set a new referrer.
+        IOOptions from(const std::string& referrer) {
+            return IOOptions(*this, referrer);
+        }
 
         //! Was the current operation canceled?
         inline bool canceled() const override;
