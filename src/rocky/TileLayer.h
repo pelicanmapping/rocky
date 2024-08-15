@@ -188,38 +188,44 @@ namespace ROCKY_NAMESPACE
     * references to data that are still in use elsewhere in the system in
     * order to prevent re-fetching or re-mosacing the same data over and over.
     */
-    template<class Key, class Value>
-    class DependencyCache
+    template<class Value>
+    class TileMosaicWeakCache
     {
     public:
+        struct Entry
+        {
+            TileKey valueKey;
+            std::weak_ptr<Value> value;
+        };
+
         //! Fetch a value from teh cache or nullptr if it's not there
-        std::shared_ptr<Value> operator[](const Key& key)
+        Entry get(const TileKey& key) const
         {
             const std::lock_guard lock{ _mutex };
             ++_gets;
-            auto itr = _map.find(key);
-            if (itr != _map.end())
+            auto iter = _map.find(key);
+            if (iter != _map.end())
             {
-                auto result = itr->second.lock();
+                auto result = iter->second.value.lock();
                 if (result) ++_hits;
-                return result;
+                return iter->second;
             }
-            return nullptr;
+            return {};
         }
 
         //! Enter a value into the cache, returning an existing value if there is one
-        std::shared_ptr<Value> put(const Key& key, const std::shared_ptr<Value>& value)
+        const Entry& put(const TileKey& key, const TileKey& actualKey, const std::shared_ptr<Value>& value)
         {
             const std::lock_guard lock{ _mutex };
-            auto itr = _map.find(key);
-            if (itr != _map.end())
+            auto iter = _map.find(key);
+            if (iter != _map.end())
             {
-                std::shared_ptr<Value> preexisting = itr->second.lock();
-                if (preexisting)
-                    return preexisting;
+                if (iter->second.value.lock())
+                    return iter->second;
             }
-            _map[key] = value;
-            return value;
+            auto& e = _map[key];
+            e = { actualKey, value };
+            return e;
         }
 
         //! Clean the cache by purging entries whose weak pointers have expired
@@ -228,7 +234,7 @@ namespace ROCKY_NAMESPACE
             const std::lock_guard lock{ _mutex };
             for (auto itr = _map.begin(), end = _map.end(); itr != end;)
             {
-                if (!itr->second.lock())
+                if (!itr->second.value.lock())
                     itr = _map.erase(itr);
                 else
                     ++itr;
@@ -241,10 +247,10 @@ namespace ROCKY_NAMESPACE
         }
 
     private:
-        std::unordered_map<Key, std::weak_ptr<Value>> _map;
-        float _gets = 0.0f;
-        float _hits = 0.0f;
-        std::mutex _mutex;
+        mutable std::unordered_map<TileKey, Entry> _map;
+        mutable float _gets = 0.0f;
+        mutable float _hits = 0.0f;
+        mutable std::mutex _mutex;
     };
 
 

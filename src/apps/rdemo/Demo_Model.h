@@ -27,7 +27,7 @@ auto Demo_Model = [](Application& app)
     {
         // Load model data from a URI
         URI uri("https://raw.githubusercontent.com/vsg-dev/vsgExamples/master/data/models/teapot.vsgt");
-        auto result = uri.read(IOOptions());
+        auto result = uri.read(app.instance.io());
         status = result.status;
         if (status.failed())
             return;

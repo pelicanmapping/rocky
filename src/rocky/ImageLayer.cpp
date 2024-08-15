@@ -75,33 +75,21 @@ void
 ImageLayer::construct(const std::string& JSON, const IOOptions& io)
 {
     const auto j = parse_json(JSON);
-    get_to(j, "nodata_image", _noDataImageLocation);
-    get_to(j, "transparent_color", _transparentColor);
-    get_to(j, "texture_compression", _textureCompression);
     get_to(j, "sharpness", _sharpness);
     get_to(j, "crop", _crop);
 
     setRenderType(RENDERTYPE_TERRAIN_SURFACE);
 
-    _dependencyCache = std::make_shared<DependencyCache<TileKey, Image>>();
+    _dependencyCache = std::make_shared<TileMosaicWeakCache<Image>>();
 }
 
 JSON
 ImageLayer::to_json() const
 {
     auto j = parse_json(super::to_json());
-    set(j, "nodata_image", _noDataImageLocation);
-    set(j, "transparent_color", _transparentColor);
-    set(j, "texture_compression", _textureCompression);
     set(j, "sharpness", _sharpness);
     set(j, "crop", _crop);
     return j.dump();
-}
-
-Result<GeoImage>
-ImageLayer::createImage(const TileKey& key) const
-{
-    return createImage(key, IOOptions());
 }
 
 Result<GeoImage>
@@ -115,13 +103,6 @@ ImageLayer::createImage(const TileKey& key, const IOOptions& io) const
     auto result = createImageInKeyProfile(key, io);
 
     return result;
-}
-
-Result<GeoImage>
-ImageLayer::createImage(const GeoImage& canvas, const TileKey& key, const IOOptions& io)
-{
-    std::shared_lock lock(layerStateMutex());
-    return createImageImplementation(canvas, key, io);
 }
 
 Result<GeoImage>
@@ -282,8 +263,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 
     // collect raster data for each intersecting key, falling back on ancestor images
     // if none are available at the target LOD.
-    using KeyedImage = std::pair<TileKey, GeoImage>;
-    std::vector<KeyedImage> sources;
+    std::vector<GeoImage> sources;
 
     if (intersectingKeys.size() > 0)
     {
@@ -291,28 +271,48 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 
         for (auto& intersectingKey : intersectingKeys)
         {
-            TileKey subKey = intersectingKey;
-            Result<GeoImage> subTile;
-            while (subKey.valid() && !subTile.status.ok())
+            // first try the weak dependency cache.
+            auto& cached = _dependencyCache->get(intersectingKey);
+            auto cached_value = cached.value.lock();
+            if (cached_value)
             {
-                subTile = createImageImplementation_internal(subKey, io);
-                if (subTile.status.failed() || subTile.value.image() == nullptr)
-                    subKey.makeParent();
+                sources.emplace_back(cached_value, cached.valueKey.extent());
 
-                if (io.canceled())
-                    return {};
-            }
-
-            if (subTile.status.ok() && subTile.value.image())
-            {
-                if (subKey.levelOfDetail() == targetLOD)
+                if (cached.valueKey.levelOfDetail() == targetLOD)
                 {
                     hasAtLeastOneSourceAtTargetLOD = true;
                 }
+            }
 
-                // got a valid image, so add it to our sources collection:
-                sources.emplace_back(subKey, subTile.value);
+            else
+            {
+                // create the sub tile, falling back until we get real data
+                TileKey subKey = intersectingKey;
+                Result<GeoImage> subTile;
+                while (subKey.valid() && !subTile.status.ok())
+                {
+                    subTile = createImageImplementation_internal(subKey, io);
 
+                    if (subTile.status.failed() || subTile.value.image() == nullptr)
+                        subKey.makeParent();
+
+                    if (io.canceled())
+                        return {};
+                }
+
+                if (subTile.status.ok() && subTile.value.image())
+                {
+                    // save it in the weak cache:
+                    _dependencyCache->put(intersectingKey, subKey, subTile.value.image());
+
+                    // add it to our sources collection:
+                    sources.emplace_back(subTile.value);
+
+                    if (subKey.levelOfDetail() == targetLOD)
+                    {
+                        hasAtLeastOneSourceAtTargetLOD = true;
+                    }
+                }
             }
         }
 
@@ -323,28 +323,27 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             unsigned cols = 0;
             unsigned rows = 0;
 
-            // sort the sources by LOD (highest first).
+            // sort the sources by resolution (highest first)
             std::sort(
                 sources.begin(), sources.end(),
-                [](const KeyedImage& lhs, const KeyedImage& rhs) {
-                    return lhs.first.levelOfDetail() > rhs.first.levelOfDetail();
+                [](const GeoImage& lhs, const GeoImage& rhs) {
+                    return lhs.extent().width() < rhs.extent().width();
                 });
 
             // output size is the max of all the source sizes.
-            for (auto iter : sources)
+            for(auto& source : sources)
             {
-                auto& source = iter.second;
                 cols = std::max(cols, source.image()->width());
                 rows = std::max(rows, source.image()->height());
             }
 
             // assume all tiles to mosaic are in the same SRS.
-            SRSOperation xform = key.extent().srs().to(sources[0].second.srs());
+            SRSOperation xform = key.extent().srs().to(sources[0].srs());
             
             // Working bounds of the SRS itself so we can clamp out-of-bounds points.
             // This is especially important when going from Mercator to Geographic
             // where there's no data beyond +/- 85 degrees.
-            auto sourceBounds = sources[0].second.srs().bounds();
+            auto sourceBounds = sources[0].srs().bounds();
 
             // new output:
             output = CompositeImage::create(Image::R8G8B8A8_UNORM, cols, rows);
@@ -352,7 +351,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             // Cache pointers to the source images that mosaic to create this tile.
             output->dependencies.reserve(sources.size());
             for (auto& source : sources)
-                output->dependencies.push_back(source.second.image());
+                output->dependencies.push_back(source.image());
 
             // Clean up orphaned entries any time a tile destructs.
             output->cleanupOperation = [captured{ std::weak_ptr(_dependencyCache) }, key]() {
@@ -418,7 +417,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 
                     for (unsigned k = 0; k < sources.size(); ++k)
                     {
-                        if (sources[k].second.read(pixel, points[i].x, points[i].y) && pixel.a > 0.0f)
+                        if (sources[k].read(pixel, points[i].x, points[i].y) && pixel.a > 0.0f)
                         {
                             break;
                         }
@@ -437,23 +436,4 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
     }
 
     return output;
-}
-
-const std::string
-ImageLayer::getCompressionMethod() const
-{
-    return _textureCompression;
-}
-
-void
-ImageLayer::modifyTileBoundingBox(const TileKey& key, Box& box) const
-{
-    //if (_altitude.has_value())
-    //{
-    //    if (_altitude->as(Units::METERS) > box.zmax)
-    //    {
-    //        box.zmax = _altitude->as(Units::METERS);
-    //    }
-    //}
-    super::modifyTileBoundingBox(key, box);
 }

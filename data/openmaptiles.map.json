@@ -8,10 +8,10 @@
             {
                 "name": "ReadyMap OpenMapTiles Street Map",
                 "profile": "spherical-mercator",
-                "uri" : "https://tileservergl.readymap.org/styles/basic/{z}/{x}/{y}.png",
+                "uri" : "https://openmaptiles.readymap.org/styles/basic/{z}/{x}/{y}.png",
                 "type": "TMSImage",
                 "attribution": {
-                    "text": "\u00a9 OpenStreetMap contributors",
+                    "text": "\u00a9 MapTiler \u00a9 OpenStreetMap contributors",
                     "href": "https://openstreetmap.org/copyright"
                 }
             }

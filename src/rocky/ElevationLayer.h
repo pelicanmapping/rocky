@@ -53,17 +53,7 @@ namespace ROCKY_NAMESPACE
          * extents of that TileKey.
          *
          * @param key TileKey for which to create a heightfield.
-         */
-        Result<GeoHeightfield> createHeightfield(
-            const TileKey& key) const;
-
-        /**
-         * Creates a GeoHeightField for this layer that corresponds to the extents and LOD
-         * in the specified TileKey. The returned HeightField will always match the geospatial
-         * extents of that TileKey.
-         *
-         * @param key TileKey for which to create a heightfield.
-         * @param progress Callback for tracking progress and cancelation
+         * @param io IO options
          */
         Result<GeoHeightfield> createHeightfield(
             const TileKey& key,
@@ -120,7 +110,7 @@ namespace ROCKY_NAMESPACE
             const TileKey& key,
             const IOOptions& io) const;
 
-        std::shared_ptr<DependencyCache<TileKey, Heightfield>> _dependencyCache;
+        std::shared_ptr<TileMosaicWeakCache<Heightfield>> _dependencyCache;
     };
 
 

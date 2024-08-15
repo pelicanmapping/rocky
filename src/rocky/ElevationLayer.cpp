@@ -121,7 +121,7 @@ ElevationLayer::construct(const std::string& JSON, const IOOptions& io)
     // feeds the terrain engine to permute the mesh.
     //setRenderType(RENDERTYPE_NONE);
 
-    _dependencyCache = std::make_shared<DependencyCache<TileKey, Heightfield>>();
+    _dependencyCache = std::make_shared<TileMosaicWeakCache<Heightfield>>();
 }
 
 JSON
@@ -172,16 +172,6 @@ const optional<float>& ElevationLayer::maxValidValue() const {
     return _maxValidValue;
 }
 
-
-//void
-//ElevationLayer::setNoDataPolicy(const ElevationNoDataPolicy& value) {
-//    _noDataPolicy = value, _reopenRequired = true;
-//}
-//const ElevationNoDataPolicy&
-//ElevationLayer::getNoDataPolicy() const {
-//    return _noDataPolicy;
-//}
-
 void
 ElevationLayer::normalizeNoDataValues(Heightfield* hf) const
 {
@@ -210,44 +200,8 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
 
     // Determine the intersecting keys
     std::vector<TileKey> intersectingKeys;
-    unsigned targetLOD;
-
-    targetLOD = key.LOD();
+    unsigned targetLOD = key.LOD();
     key.getIntersectingKeys(profile(), intersectingKeys);
-
-#if 0
-    else
-    {
-        // LOD is zero - check whether the LOD mapping went out of range, and if so,
-        // fall back until we get valid tiles. This can happen when you have two
-        // profiles with very different tile schemes, and the "equivalent LOD"
-        // surpasses the max data LOD of the tile source.
-        unsigned numTilesThatMayHaveData = 0u;
-
-        targetLOD = profile().getEquivalentLOD(key.profile(), key.levelOfDetail());
-
-        while (numTilesThatMayHaveData == 0u && targetLOD >= 0)
-        {
-            intersectingKeys.clear();
-
-            TileKey::getIntersectingKeys(
-                key.extent(),
-                targetLOD,
-                profile(),
-                intersectingKeys);
-
-            for (auto& layerKey : intersectingKeys)
-            {
-                if (mayHaveData(layerKey))
-                {
-                    ++numTilesThatMayHaveData;
-                }
-            }
-
-            --targetLOD;
-        }
-    }
-#endif
 
     // collect heightfield for each intersecting key. Note, we're hitting the
     // underlying tile source here, so there's no vetical datum shifts happening yet.
@@ -260,27 +214,46 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
 
         for (auto& intersectingKey : intersectingKeys)
         {
-            TileKey subKey = intersectingKey;
-            Result<GeoHeightfield> subTile;
-            while (subKey.valid() && (!subTile.status.ok() || !subTile.value.heightfield()))
+            // first try the weak dependency cache.
+            auto& cached = _dependencyCache->get(intersectingKey);
+            auto cached_value = cached.value.lock();
+            if (cached_value)
             {
-                subTile = createHeightfieldImplementation_internal(subKey, io);
-                if (subTile.status.failed())
-                    subKey.makeParent();
+                sources.emplace_back(cached_value, cached.valueKey.extent());
 
-                if (io.canceled())
-                    return {};
-            }
-
-            if (subTile.status.ok() && subTile.value.heightfield())
-            {
-                if (subKey.levelOfDetail() == targetLOD)
+                if (cached.valueKey.levelOfDetail() == targetLOD)
                 {
                     hasAtLeastOneSourceAtTargetLOD = true;
                 }
+            }
 
-                // got a valid image, so add it to our sources collection:
-                sources.emplace_back(subTile.value);
+            else
+            {
+                TileKey subKey = intersectingKey;
+                Result<GeoHeightfield> subTile;
+                while (subKey.valid() && (!subTile.status.ok() || !subTile.value.heightfield()))
+                {
+                    subTile = createHeightfieldImplementation_internal(subKey, io);
+                    if (subTile.status.failed())
+                        subKey.makeParent();
+
+                    if (io.canceled())
+                        return {};
+                }
+
+                if (subTile.status.ok() && subTile.value.heightfield())
+                {
+                    // save it in the weak cache:
+                    _dependencyCache->put(intersectingKey, subKey, subTile.value.heightfield());
+
+                    // add it to our sources collection:
+                    sources.emplace_back(subTile.value);
+
+                    if (subKey.levelOfDetail() == targetLOD)
+                    {
+                        hasAtLeastOneSourceAtTargetLOD = true;
+                    }
+                }
             }
         }
 
@@ -322,7 +295,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
 
             // working set of points. it's much faster to xform an entire vector all at once.
             std::vector<glm::dvec3> points;
-            points.reserve(cols * rows); // .assign(cols* rows, { 0, 0, NO_DATA_VALUE });
+            points.reserve(cols * rows);
 
             double minx, miny, maxx, maxy;
             key.extent().getBounds(minx, miny, maxx, maxy);
@@ -382,15 +355,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
 }
 
 Result<GeoHeightfield>
-ElevationLayer::createHeightfield(const TileKey& key) const
-{
-    return createHeightfield(key, IOOptions());
-}
-
-Result<GeoHeightfield>
-ElevationLayer::createHeightfield(
-    const TileKey& key,
-    const IOOptions& io) const
+ElevationLayer::createHeightfield(const TileKey& key, const IOOptions& io) const
 {    
     // If the layer is disabled, bail out
     if (!isOpen())

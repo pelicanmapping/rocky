@@ -17,7 +17,7 @@ namespace
     // Loads an external model to display in the RTT scene
     vsg::ref_ptr<vsg::Node> load_rtt_model(const URI& uri, Runtime& runtime)
     {
-        auto result = uri.read(IOOptions());
+        auto result = uri.read({});
         if (result.status.ok())
         {
             // this is a bit awkward but it works when the URI has an extension
