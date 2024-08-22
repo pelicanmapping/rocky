@@ -1,6 +1,6 @@
 # :mountain: Rocky
 
-Rocky is a 3D Geospatial Application Engine.<img align="right" width="200" alt="Screenshot 2023-02-22 124318" src="https://user-images.githubusercontent.com/326618/220712284-8a17d87a-431f-4966-a425-0f2628b23b40.png">
+Rocky is a 3D Geospatial C++ SDK. <img align="right" width="200" alt="Screenshot 2023-02-22 124318" src="https://user-images.githubusercontent.com/326618/220712284-8a17d87a-431f-4966-a425-0f2628b23b40.png">
 
 Rocky will render an accurate 3D or 2D map with real geospatial imagery and elevation data. It supports thousands of map projections and many popular geodata sources including GeoTIFF, TMS, OpenStreetMap, WMTS, WMS, and Azure Maps. Rocky's data model is inspired by the osgEarth SDK, a 3D GIS toolkit created in 2008 and still in wide use today.
 
@@ -23,12 +23,6 @@ int main(int argc, char** argv)
     auto imagery = rocky::TMSImageLayer::create();
     imagery->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
     app.map()->layers().add(imagery);
-
-    if (imagery->status().failed()) 
-    {
-        rocky::Log::warn() << imagery->status().message << std::endl;
-        return -1;
-    }
 
     return app.run();
 }
@@ -83,7 +77,7 @@ rdemo
 ```
 There are some example JSON map files in the `data` folder. Load them with the `--map` option.
 ```
-rdemo --map data\readymap.map.json
+rdemo --map data\openstreetmap.map.json
 ```
 
 <img width="500" alt="Screenshot 2023-02-22 124318" src="https://user-images.githubusercontent.com/326618/236200807-73567789-a5a3-46d5-a98d-e9c1f24a0f62.png">
