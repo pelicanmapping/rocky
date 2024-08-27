@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['points_1697',['Points',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#a236f01ed442e26a87265212a53c09ea1a75dd5f1160a3f02b6fae89c54361a1b3',1,'ROCKY_NAMESPACE::Geometry']]],
-  ['polygon_1698',['Polygon',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#a236f01ed442e26a87265212a53c09ea1a4c0a11247d92f73fb84baa51e37a3263',1,'ROCKY_NAMESPACE::Geometry']]]
+  ['none_1680',['NONE',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1ab50339a10e1de285ac99d4c3990b8693',1,'ROCKY_NAMESPACE::Layer']]]
 ];

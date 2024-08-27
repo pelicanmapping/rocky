@@ -69,6 +69,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_collection-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">ROCKY_NAMESPACE::LayerCollection Class Reference</div>  </div>
@@ -141,6 +142,17 @@ template&lt;class FUNC &gt; </td></tr>
 <tr class="memitem:a56a91457f8fddcd9a18beecbbe52cc0a"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html">Layer</a> &gt; &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_collection.html#a56a91457f8fddcd9a18beecbbe52cc0a">get</a> (FUNC func) const</td></tr>
 <tr class="memdesc:a56a91457f8fddcd9a18beecbbe52cc0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Vector of all layers that pass the functor (signature takes a shared_ptr&lt;Layer&gt;) <br /></td></tr>
 <tr class="separator:a56a91457f8fddcd9a18beecbbe52cc0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:ad38299bcd8b18a6cde8b268ac0aa378b"><td class="memItemLeft" align="right" valign="top"><a id="ad38299bcd8b18a6cde8b268ac0aa378b"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_collection.html#ad38299bcd8b18a6cde8b268ac0aa378b">openOnAdd</a> = false</td></tr>
+<tr class="memdesc:ad38299bcd8b18a6cde8b268ac0aa378b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to call layer-&gt;open() when adding a layer to the collection. <br /></td></tr>
+<tr class="separator:ad38299bcd8b18a6cde8b268ac0aa378b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f03d61f1849951d96d875f2172db194"><td class="memItemLeft" align="right" valign="top"><a id="a7f03d61f1849951d96d875f2172db194"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_collection.html#a7f03d61f1849951d96d875f2172db194">closeOnRemove</a> = true</td></tr>
+<tr class="memdesc:a7f03d61f1849951d96d875f2172db194"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to call layer-&gt;close() when removing a layer from the collection. <br /></td></tr>
+<tr class="separator:a7f03d61f1849951d96d875f2172db194"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Collection of layers tied to a <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">Map</a>. </p>
