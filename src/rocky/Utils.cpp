@@ -8,6 +8,7 @@
 #include "Instance.h"
 #include <cctype>
 #include <cstring>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 
@@ -469,12 +470,8 @@ namespace
 {
     inline std::string _getEnvVar(const std::string& name)
     {
-        char value[256];
-        size_t value_len = 0;
-        if (::getenv_s(&value_len, value, name.c_str()) == 0)
-            return value;
-        else
-            return {};
+        const char* value = std::getenv(name.c_str());
+        return value ? std::string(value) : std::string();
     }
 }
 

@@ -289,7 +289,7 @@ TerrainTileModelFactory::addColorLayers(
                 {
                     sources.emplace_back(std::move(i.image));
                     auto* imagelayer = dynamic_cast<const ImageLayer*>(i.layer.get());
-                    opacities.emplace_back(imagelayer ? imagelayer->opacity() : 1.0f);
+                    opacities.emplace_back(imagelayer ? imagelayer->opacity().value() : 1.0f);
                 }
 
                 image.composite(sources, opacities);

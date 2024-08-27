@@ -68,10 +68,10 @@ namespace ROCKY_NAMESPACE
             {
                 if (interp == GPI_RGB)
                 {
-                    color.r = (COLOR::value_type)colorEntry->c1;
-                    color.g = (COLOR::value_type)colorEntry->c2;
-                    color.b = (COLOR::value_type)colorEntry->c3;
-                    color.a = (COLOR::value_type)colorEntry->c4;
+                    color.r = (typename COLOR::value_type)colorEntry->c1;
+                    color.g = (typename COLOR::value_type)colorEntry->c2;
+                    color.b = (typename COLOR::value_type)colorEntry->c3;
+                    color.a = (typename COLOR::value_type)colorEntry->c4;
                 }
                 else if (interp == GPI_CMYK)
                 {
@@ -1272,58 +1272,6 @@ void GDAL::LayerBase::setInterpolation(const Image::Interpolation& value) {
 }
 const optional<Image::Interpolation>& GDAL::LayerBase::interpolation() const {
     return _interpolation;
-}
-
-//......................................................................
-
-#undef LC
-#define LC "[GDAL] \"" + getName() + "\" "
-
-namespace
-{
-    template<typename T>
-    Status openOnThisThread(
-        const T* layer,
-        shared_ptr<GDAL::Driver>& driver,
-        Profile* profile,
-        DataExtentList* out_dataExtents,
-        const IOOptions& io)
-    {
-        driver = std::make_shared<GDAL::Driver>();
-
-        auto elevationLayer = dynamic_cast<const ElevationLayer*>(layer);
-        if (elevationLayer)
-        {
-            if (elevationLayer->noDataValue().has_value())
-                driver->noDataValue = elevationLayer->noDataValue();
-            if (elevationLayer->minValidValue().has_value())
-                driver->minValidValue = elevationLayer->minValidValue();
-            if (elevationLayer->maxValidValue().has_value())
-                driver->maxValidValue = elevationLayer->maxValidValue();
-        }
-
-        if (layer->maxDataLevel().has_value())
-        {
-            driver->setMaxDataLevel(layer->maxDataLevel());
-        }
-
-        Status status = driver->open(
-            layer->name(),
-            layer,
-            layer->tileSize(),
-            out_dataExtents,
-            io);
-
-        if (status.failed())
-            return status;
-
-        if (driver->profile().valid() && profile != nullptr)
-        {
-            *profile = driver->profile();
-        }
-
-        return StatusOK;
-    }
 }
 
 #endif // ROCKY_HAS_GDAL

@@ -55,7 +55,7 @@ int layerError(T layer)
     return -1;
 }
 
-auto Demo_About = [&](Application& app)
+auto Demo_About = [](Application& app)
 {
     for (auto& about : rocky::Instance::about())
     {

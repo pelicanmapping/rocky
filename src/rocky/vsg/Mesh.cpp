@@ -7,7 +7,7 @@
 #include "json.h"
 #include "engine/MeshSystem.h"
 #include "engine/Runtime.h"
-#include <vsg/Nodes/CullNode.h>
+#include <vsg/nodes/CullNode.h>
 #include <vsg/nodes/DepthSorted.h>
 #include <vsg/utils/ComputeBounds.h>
 

@@ -182,7 +182,7 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
     {
         if (cropIntersection.valid())
         {
-            auto& b = key.extent().bounds();
+            auto b = key.extent().bounds();
             if (!cropIntersection.contains(b))
             {
                 int s0, t0, s1, t1;
@@ -193,7 +193,7 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
                 t0 = clamp(t0, 0, (int)result.value.image()->height() - 1);
                 t1 = clamp(t1, 0, (int)result.value.image()->height() - 1);
 
-                auto& image = result.value.image();
+                auto image = result.value.image();
                 image->get_iterator().forEachPixel([&](auto& i)
                     {
                         if ((int)i.s() < s0 || (int)i.s() > s1 || (int)i.t() < t0 || (int)i.t() > t1)
@@ -272,7 +272,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
         for (auto& intersectingKey : intersectingKeys)
         {
             // first try the weak dependency cache.
-            auto& cached = _dependencyCache->get(intersectingKey);
+            auto cached = _dependencyCache->get(intersectingKey);
             auto cached_value = cached.value.lock();
             if (cached_value)
             {

@@ -148,7 +148,8 @@ MeshSystemNode::initialize(Runtime& runtime)
                 };
             }
         };
-        c.config->accept(SetPipelineStates(feature_mask));
+        SetPipelineStates visitor(feature_mask);
+        c.config->accept(visitor);
 
         // Initialize GraphicsPipeline from the data in the configuration.
         c.config->init();

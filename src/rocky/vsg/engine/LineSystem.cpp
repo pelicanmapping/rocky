@@ -133,7 +133,8 @@ LineSystemNode::initialize(Runtime& runtime)
                 };
             }
         };
-        c.config->accept(SetPipelineStates(feature_mask));
+        SetPipelineStates visitor(feature_mask);
+        c.config->accept(visitor);
 
         c.config->init();
 

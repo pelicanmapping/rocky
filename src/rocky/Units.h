@@ -279,12 +279,12 @@ namespace ROCKY_NAMESPACE
         double asDistance(const Units& convertTo, double refLatDegrees) const {
             if (_units.isAngle() && convertTo.isLinear()) {
                 double angleDeg = Units::convert(_units, Units::DEGREES, _value);
-                double meters = angleDeg * 111000.0 * cos(deg2rad(refLatDegrees));
+                double meters = angleDeg * 111000.0 * cos(util::deg2rad(refLatDegrees));
                 return Units::convert(Units::METERS, convertTo, meters);
             }
             else if (_units.isLinear() && convertTo.isAngle()) {
                 double valueMeters = Units::convert(_units, Units::METERS, _value);
-                double angleDeg = valueMeters / (111000.0 * cos(deg2rad(refLatDegrees)));
+                double angleDeg = valueMeters / (111000.0 * cos(util::deg2rad(refLatDegrees)));
                 return Units::convert(Units::DEGREES, convertTo, angleDeg);
             }
             else return as(convertTo);

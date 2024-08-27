@@ -88,11 +88,13 @@ TEST_CASE("Optional")
 
     optional<int> value_with_brace_init{ 123 };
     CHECK(value_with_brace_init.has_value() == false);
-    CHECK(value_with_brace_init == 123);
+    CHECK(value_with_brace_init.value() == 123);
+    CHECK(value_with_brace_init.default_value() == 123);
 
     optional<int> value_with_equals_init = 123;
     CHECK(value_with_equals_init.has_value() == false);
-    CHECK(value_with_equals_init == 123);
+    CHECK(value_with_equals_init.value() == 123);
+    CHECK(value_with_brace_init.default_value() == 123);
 }
 
 TEST_CASE("TileKey")

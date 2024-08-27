@@ -215,7 +215,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
         for (auto& intersectingKey : intersectingKeys)
         {
             // first try the weak dependency cache.
-            auto& cached = _dependencyCache->get(intersectingKey);
+            auto cached = _dependencyCache->get(intersectingKey);
             auto cached_value = cached.value.lock();
             if (cached_value)
             {
