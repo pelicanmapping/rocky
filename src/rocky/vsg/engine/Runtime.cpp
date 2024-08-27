@@ -130,6 +130,8 @@ Runtime::Runtime()
 void
 Runtime::onNextUpdate(vsg::ref_ptr<vsg::Operation> function, std::function<float()> get_priority)
 {
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer.valid(), void());
+
     auto pq = dynamic_cast<PriorityUpdateQueue*>(_priorityUpdateQueue.get());
     if (pq)
     {
@@ -147,13 +149,15 @@ Runtime::onNextUpdate(vsg::ref_ptr<vsg::Operation> function, std::function<float
 void
 Runtime::onNextUpdate(std::function<void()> function)
 {
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer.valid(), void());
+
     viewer->updateOperations->add(SimpleUpdateOperation::create(function));
 }
 
 void
 Runtime::compile(vsg::ref_ptr<vsg::Object> compilable)
 {
-    ROCKY_PROFILE_FUNCTION();
+    ROCKY_HARD_ASSERT(viewer.valid(), "Developer: failure to set InstanceVSG->runtime().viewer");
     ROCKY_SOFT_ASSERT_AND_RETURN(compilable.valid(), void());
 
     if (asyncCompile)
@@ -195,6 +199,8 @@ Runtime::dispose(vsg::ref_ptr<vsg::Object> object)
 void
 Runtime::update()
 {
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer.valid(), void());
+
     if (asyncCompile)
     {
         if (_compileResults.size() > 0)
@@ -249,6 +255,8 @@ Runtime::compileAndAddChild(
     std::function<vsg::ref_ptr<vsg::Node>(Cancelable&)> factory,
     const jobs::context& job_config)
 {
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer.valid(), {});
+
     // This is a two-step procedure. First we have to create the child
     // by calling the Factory function, and compile it. These things happen 
     // in the asynchronous function. Secondly, we have to add the node to the
@@ -305,6 +313,8 @@ Runtime::compileAndAddChild(
 void
 Runtime::removeNode(vsg::Group* parent, unsigned index)
 {
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer.valid(), void());
+
     auto remover = RemoveNodeAsync::create(parent, index);
     viewer->updateOperations->add(remover);
 }

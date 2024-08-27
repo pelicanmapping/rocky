@@ -26,7 +26,7 @@ namespace ROCKY_NAMESPACE
             const IOOptions& io) const;
 
         //! serialize
-        JSON to_json() const override;
+        std::string to_json() const override;
 
     protected:
 

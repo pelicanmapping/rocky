@@ -5,6 +5,7 @@
  */
 #include "InstanceVSG.h"
 #include "engine/Utils.h"
+#include "engine/Runtime.h"
 
 #include <rocky/Image.h>
 #include <rocky/URI.h>
@@ -27,6 +28,11 @@ ROCKY_ABOUT(vsgxchange, VSGXCHANGE_VERSION_STRING)
 #endif
 
 using namespace ROCKY_NAMESPACE;
+
+struct ROCKY_NAMESPACE::InstanceVSG::Implementation
+{
+    Runtime runtime;
+};
 
 namespace
 {
@@ -360,5 +366,10 @@ InstanceVSG::InstanceVSG(const InstanceVSG& rhs) :
     _impl(rhs._impl)
 {
     //nop
+}
+
+Runtime& InstanceVSG::runtime()
+{
+    return _impl->runtime;
 }
 

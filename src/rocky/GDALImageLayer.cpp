@@ -68,7 +68,7 @@ GDALImageLayer::GDALImageLayer(const std::string& JSON, const IOOptions& io) :
 void
 GDALImageLayer::construct(const std::string& JSON, const IOOptions& io)
 {
-    setConfigKey("GDALImage");
+    setLayerTypeName("GDALImage");
     const auto j = parse_json(JSON);
     get_to(j, "uri", _uri, io);
     get_to(j, "connection", _connection);
@@ -79,7 +79,7 @@ GDALImageLayer::construct(const std::string& JSON, const IOOptions& io)
     else if (temp == "bilinear") _interpolation = Image::BILINEAR;
     get_to(j, "single_threaded", _singleThreaded);
 
-    setRenderType(RENDERTYPE_TERRAIN_SURFACE);
+    setRenderType(RenderType::TERRAIN_SURFACE);
 }
 
 JSON
@@ -145,12 +145,8 @@ GDALImageLayer::closeImplementation()
 }
 
 Result<GeoImage>
-GDALImageLayer::createImageImplementation(
-    const TileKey& key,
-    const IOOptions& io) const
+GDALImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io) const
 {
-    ROCKY_PROFILE_FUNCTION();
-
     if (status().failed())
         return status();
 

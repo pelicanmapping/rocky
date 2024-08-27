@@ -47,11 +47,8 @@ namespace ROCKY_NAMESPACE
         void setTileSize(unsigned value);
         const optional<unsigned>& tileSize() const;
 
-        //! DTOR
-        virtual ~TileLayer();
-
         //! seriailize
-        JSON to_json() const override;
+        std::string to_json() const override;
 
     protected:
 
@@ -71,29 +68,21 @@ namespace ROCKY_NAMESPACE
         //! Tiling profile for this layer
         const Profile& profile() const;
 
-        //! Whether the layer represents dynamic data, i.e. it generates data
-        //! that requires period updates
-        virtual bool dynamic() const;
-
-        //! Disable this layer, setting an error status.
-        void disable(const std::string& msg);
-
-
     public: // Data availability methods
 
         //! True is the tile key intersects the data extents of this layer.
         bool intersects(const TileKey& key) const;
 
-        /**
-         * Given a TileKey, returns a TileKey representing the best known available.
-         * For example, if the input TileKey exceeds the layer's max LOD, the return
-         * value will be an ancestor key at that max LOD.
-         *
-         * If a setting that effects the visible range of this layer is set (minLevel, maxLevel, minResolution or maxResolution)
-         * then any key passed in that falls outside of the valid range for the layer will return TileKey::INVALID.
-         *
-         * @param key Tile key to check
-         */
+        //! Given a TileKey, returns a TileKey representing the best potentially available data
+        //! at that location. This will return either:
+        //!   (a) the input key, meaning data is available for that exact key
+        //!   (b) an ancestor key, meaning a lower resolution tile is available
+        //!   (c) TileKey::INVALID, meaning data is NOT available for the input key's location.
+        //! Properties affecting the result include dataExtents, minLevel, maxLevel, minResolution, and maxResolution.
+        //! Note: there is never a guarantee that data will be available anywhere, especially for network
+        //! resources. This method is a best guess based on the information available to the layer.
+        //! @param key Tile key to check
+        //! @return Best available tile key
         virtual TileKey bestAvailableTileKey(const TileKey& key) const;
 
         //! Whether the layer possibly has real data for the provided TileKey.
@@ -104,10 +93,6 @@ namespace ROCKY_NAMESPACE
         //! i.e. min/maxLevel or min/maxResolution. (This does not mean that the key
         //! will result in data.)
         virtual bool isKeyInLegalRange(const TileKey& key) const;
-
-        //! Same as isKeyInLegalRange, but ignores the "maxDataLevel" setting
-        //! since that does NOT affect visibility of a tile.
-        virtual bool isKeyInVisualRange(const TileKey& key) const;
 
         //! Data Extents reported for this layer are copied into output
         virtual DataExtentList dataExtents() const;
@@ -143,9 +128,6 @@ namespace ROCKY_NAMESPACE
 
     protected:
 
-        // cache key for metadata
-        std::string getMetadataKey(const Profile&) const;
-
         optional<unsigned> _minLevel = 0;
         optional<unsigned> _maxLevel = 23;
         optional<double> _minResolution;
@@ -153,11 +135,9 @@ namespace ROCKY_NAMESPACE
         optional<unsigned> _maxDataLevel = 99;
         optional<unsigned> _tileSize = 256;
         optional<GeoExtent> _crop;
+        optional<Profile> _profile;
 
-        bool _writingRequested;
-
-        // profile to use
-        mutable optional<Profile> _profile;
+        virtual ~TileLayer();
 
     private:
         // Post-ctor
@@ -169,15 +149,8 @@ namespace ROCKY_NAMESPACE
         mutable std::shared_mutex _dataMutex;
         DataExtentList _dataExtents;
         mutable DataExtent _dataExtentsUnion;
-        mutable void* _dataExtentsIndex;
-
-        // The cache ID used at runtime. This will either be the cacheId found in
-        // the TileLayerOptions, or a dynamic cacheID generated at runtime.
-        std::string _runtimeCacheId;
-
-        // cache policy that may be automatically set by the layer and will
-        // override the runtime options policy if set.
-        optional<CachePolicy> _runtimeCachePolicy;
+        struct DataExtentsIndex;
+        mutable DataExtentsIndex* _dataExtentsIndex = nullptr;
 
         // methods accesible by Map:
         friend class Map;
@@ -192,13 +165,16 @@ namespace ROCKY_NAMESPACE
     class TileMosaicWeakCache
     {
     public:
+        //! Entry in the cache. When mosaicing tiles, the value might correspond
+        //! to a different key than the entry itself because of fallback; so we
+        //! store the value's actual key here.
         struct Entry
         {
             TileKey valueKey;
             std::weak_ptr<Value> value;
         };
 
-        //! Fetch a value from teh cache or nullptr if it's not there
+        //! Fetch a value from the cache or an empty if it's not there
         Entry get(const TileKey& key) const
         {
             const std::lock_guard lock{ _mutex };
@@ -213,8 +189,9 @@ namespace ROCKY_NAMESPACE
             return {};
         }
 
-        //! Enter a value into the cache, returning an existing value if there is one
-        const Entry& put(const TileKey& key, const TileKey& actualKey, const std::shared_ptr<Value>& value)
+        //! Add a value to the cache, or return the existing value if
+        //! it's already there.
+        const Entry& put(const TileKey& key, const TileKey& valueKey, const std::shared_ptr<Value>& value)
         {
             const std::lock_guard lock{ _mutex };
             auto iter = _map.find(key);
@@ -224,11 +201,11 @@ namespace ROCKY_NAMESPACE
                     return iter->second;
             }
             auto& e = _map[key];
-            e = { actualKey, value };
+            e = { valueKey, value };
             return e;
         }
 
-        //! Clean the cache by purging entries whose weak pointers have expired
+        //! Purge entries whose weak pointers have expired
         void clean()
         {
             const std::lock_guard lock{ _mutex };
@@ -252,6 +229,4 @@ namespace ROCKY_NAMESPACE
         mutable float _hits = 0.0f;
         mutable std::mutex _mutex;
     };
-
-
-} // namespace TileLayer
+}

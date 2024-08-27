@@ -188,10 +188,10 @@ namespace
             m.image = result.value;
             m.key = key;
             model.colorLayers.emplace_back(std::move(m));
-            if (layer->dynamic())
-            {
-                model.requiresUpdate = true;
-            }
+            //if (layer->dynamic())
+            //{
+            //    model.requiresUpdate = true;
+            //}
         }
 
         // ResourceUnavailable just means the driver could not produce data
@@ -221,7 +221,7 @@ TerrainTileModelFactory::addColorLayers(
         {
             return
                 layer->isOpen() &&
-                layer->renderType() == layer->RENDERTYPE_TERRAIN_SURFACE &&
+                layer->renderType() == Layer::RenderType::TERRAIN_SURFACE &&
                 manifest.includes(layer.get());
         });
 

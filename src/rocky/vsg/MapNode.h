@@ -59,14 +59,13 @@ namespace ROCKY_NAMESPACE
         //! Immutable access to the terrain settings
         const TerrainSettings& terrainSettings() const;
 
+        //! deserialize from JSON
         Status from_json(const std::string& JSON, const IOOptions& io);
 
         //! Serializes the MapNode
-        JSON to_json() const;
+        std::string to_json() const;
 
-        //! Opens the map (installs a terrain engine and initializes all the layers)
-        bool open();
-
+        //! Call periodically to update the map node and terrain engine
         void update(const vsg::FrameStamp*);
 
     public:
@@ -79,7 +78,6 @@ namespace ROCKY_NAMESPACE
 
         SRS _worldSRS;
         vsg::ref_ptr<vsg::Group> _layerNodes;
-        std::atomic<bool> _readyForUpdate = { true };
-        bool _isOpen = false;
+        bool _openedLayers = false;
     };
 }

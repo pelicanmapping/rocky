@@ -41,7 +41,7 @@ bool URI::supportsHTTPS()
 
 namespace
 {
-    static bool httpDebug = !ROCKY_NAMESPACE::util::getEnvVar("ROCKY_HTTP_DEBUG").empty();
+    static bool httpDebug = !ROCKY_NAMESPACE::util::getEnvVar("HTTP_DEBUG").empty();
 
     bool containsServerAddress(const std::string& input)
     {

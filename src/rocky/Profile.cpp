@@ -76,7 +76,7 @@ Profile::setup(
             _shared->_extent.transform(srs.geoSRS());
 
         // make a profile sig (sans srs) and an srs sig for quick comparisons.
-        JSON temp = to_json();
+        std::string temp = to_json();
         _shared->_fullSignature = util::make_string() << std::hex << util::hashString(temp);
         _shared->_hash = std::hash<std::string>()(temp);
     }

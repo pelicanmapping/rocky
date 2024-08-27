@@ -103,7 +103,7 @@ namespace ROCKY_NAMESPACE
         void dirty();
 
         //! serialize as JSON string
-        JSON to_json() const override;
+        std::string to_json() const override;
 
     public: // NodeComponent
 

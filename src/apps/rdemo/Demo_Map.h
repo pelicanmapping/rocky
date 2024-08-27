@@ -60,27 +60,24 @@ auto Demo_Map = [](Application& app)
             if (layer->status().failed())
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 72, 72))), stylePushed = true;
 
+            ImGui::PushID("selectable");
+            bool layerClicked = false;
+            if (layer->name().empty())
             {
-
-                ImGui::PushID("selectable");
-                bool layerClicked = false;
-                if (layer->name().empty())
-                {
-                    std::string name = std::string("- Unnamed ") + layer->getConfigKey() + " layer";
-                    ImGui::Selectable(name.c_str(), &layerClicked);
-                }
-                else
-                {
-                    std::string name = std::string("- ") + layer->name();
-                    ImGui::Selectable(name.c_str(), &layerClicked);
-                }
-
-                if (layerClicked)
-                {
-                    layerExpanded[i] = !layerExpanded[i];
-                }
-                ImGui::PopID();
+                std::string name = std::string("- Unnamed ") + layer->getLayerTypeName() + " layer";
+                ImGui::Selectable(name.c_str(), &layerClicked);
             }
+            else
+            {
+                std::string name = std::string("- ") + layer->name();
+                ImGui::Selectable(name.c_str(), &layerClicked);
+            }
+
+            if (layerClicked)
+            {
+                layerExpanded[i] = !layerExpanded[i];
+            }
+            ImGui::PopID();
 
             if (layerExpanded[i])
             {
@@ -91,7 +88,7 @@ auto Demo_Map = [](Application& app)
                     {
                         ImGuiLTable::Text("ERROR:", layer->status().message.c_str());
                     }
-                    ImGuiLTable::Text("Type:", layer->getConfigKey().c_str());
+                    ImGuiLTable::Text("Type:", layer->getLayerTypeName().c_str());
                     auto tileLayer = TileLayer::cast(layer);
                     if (tileLayer)
                     {

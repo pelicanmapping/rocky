@@ -43,7 +43,7 @@ namespace ROCKY_NAMESPACE
         const optional<Encoding>& encoding() const;
 
         //! Serialize this layer
-        JSON to_json() const override;
+        std::string to_json() const override;
 
     public: // methods
 

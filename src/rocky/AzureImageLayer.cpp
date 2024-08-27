@@ -34,7 +34,8 @@ AzureImageLayer::AzureImageLayer(const std::string& JSON, const IOOptions& io) :
 void
 AzureImageLayer::construct(const std::string& JSON, const IOOptions& io)
 {
-    setConfigKey("AzureImage");
+    setLayerTypeName("AzureImage");
+
     const auto j = parse_json(JSON);
     get_to(j, "subscription_key", subscriptionKey);
     get_to(j, "tileset_id", tilesetId);
@@ -99,8 +100,6 @@ AzureImageLayer::closeImplementation()
 Result<GeoImage>
 AzureImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io) const
 {
-    ROCKY_PROFILE_FUNCTION();
-
     auto zoom = key.levelOfDetail();
     auto x = key.tileX();
     auto y = key.tileY();

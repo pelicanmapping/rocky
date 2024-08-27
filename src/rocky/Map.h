@@ -43,6 +43,12 @@ namespace ROCKY_NAMESPACE
         //! Layers comprising this map
         inline const LayerCollection& layers() const;
 
+        //! Open all layers that are marked for openAutomatically.
+        //! Note, this method will be called automatically by the MapNode, but you 
+        //! are free to call it manually if you want to force all layers to open 
+        //! and check for errors.
+        Status openAllLayers(const IOOptions& options);
+
         //! Gets the revision # of the map. The revision # changes every time
         //! you add, remove, or move layers. You can use this to track changes
         //! in the map model (as a alternative to installing a MapCallback).

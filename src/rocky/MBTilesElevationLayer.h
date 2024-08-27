@@ -37,7 +37,7 @@ namespace ROCKY_NAMESPACE
         optional<bool>& compress() { return _options.compress; }
 
         //! serialize
-        JSON to_json() const override;
+        std::string to_json() const override;
 
     protected:
 

@@ -26,12 +26,7 @@ Layer::Layer(const JSON& conf) :
 void
 Layer::construct(const JSON& conf)
 {
-    _revision = 1;
     _uid = rocky::createUID();
-    _isClosing = false;
-    _isOpening = false;
-    _reopenRequired = false;
-    _renderType = RENDERTYPE_NONE;
 
     const auto j = parse_json(conf);
     get_to(j, "name", _name);
@@ -48,7 +43,7 @@ JSON
 Layer::to_json() const
 {
     auto j = json::object();
-    set(j, "type", getConfigKey());
+    set(j, "type", getLayerTypeName());
     set(j, "name", _name);
     set(j, "open", _openAutomatically);
     set(j, "attribution", _attribution);
@@ -57,9 +52,9 @@ Layer::to_json() const
 }
 
 void
-Layer::setConfigKey(const std::string& value)
+Layer::setLayerTypeName(const std::string& value)
 {
-    _configKey = value;
+    _layerTypeName = value;
 }
 
 Layer::~Layer()
@@ -111,26 +106,6 @@ Layer::setStatus(const Status::Code& code, const std::string& message) const
     return setStatus(Status(code, message));
 }
 
-void
-Layer::setCachePolicy(const CachePolicy& value)
-{
-    _cachePolicy = value;
-
-#if 0
-    if (_cacheSettings.valid())
-    {
-        _cacheSettings->integrateCachePolicy(options().cachePolicy());
-    }
-#endif
-}
-
-const CachePolicy&
-Layer::cachePolicy() const
-{
-    return _cachePolicy.value();
-    //return options().cachePolicy().get();
-}
-
 Status
 Layer::open(const IOOptions& io)
 {
@@ -143,15 +118,9 @@ Layer::open(const IOOptions& io)
     std::unique_lock lock(_state_mutex);
 
     // be optimistic :)
-    _status = StatusOK;
+    _status = Status_OK;
 
-    _isOpening = true;
     setStatus(openImplementation(io));
-    if (isOpen())
-    {
-        //fireCallback(&LayerCallback::onOpen);
-    }
-    _isOpening = false;
 
     return status();
 }
@@ -162,18 +131,15 @@ Layer::close()
     if (isOpen())
     {
         std::unique_lock lock(_state_mutex);
-        _isClosing = true;
         closeImplementation();
         _status = Status(Status::ResourceUnavailable, "Layer closed");
-        _runtimeCacheId = "";
-        _isClosing = false;
     }
 }
 
 Status
 Layer::openImplementation(const IOOptions& io)
 {
-    return StatusOK;
+    return Status_OK;
 }
 
 void
@@ -210,7 +176,6 @@ Layer::dateTimeExtent() const
 const optional<Hyperlink>&
 Layer::attribution() const
 {
-    // Get the attribution from the layer if it's set.
     return _attribution;
 }
 
@@ -218,16 +183,4 @@ void
 Layer::setAttribution(const Hyperlink& value)
 {
     _attribution = value;
-}
-
-void
-Layer::modifyTileBoundingBox(const TileKey& key, const Box& box) const
-{
-    //NOP
-}
-
-const Layer::Hints&
-Layer::hints() const
-{
-    return _hints;
 }

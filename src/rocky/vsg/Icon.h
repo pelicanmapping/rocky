@@ -74,7 +74,7 @@ namespace ROCKY_NAMESPACE
         std::shared_ptr<Image> image;
 
         //! serialize as JSON string
-        JSON to_json() const override;
+        std::string to_json() const override;
 
         //! Call after changing the style or image
         void dirty();

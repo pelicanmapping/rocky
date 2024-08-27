@@ -3,14 +3,23 @@
         "name" : "Bing Maps Example",
         "layers": [
             {
-                "name": "Bing Imagery",
+                "name": "Bing Maps imagery",
                 "type": "BingImage",
                 "imagery_set": "Aerial",
-                "key": "<your key here>"
+                "key": "<your key here>",
+                "attribution" : {
+                    "text" :"\u00a9 Microsoft Corporation, \u00a9 TomTom",
+                    "href" :"https://www.microsoft.com/en-us/maps/bing-maps/product"
+                }
             },
             {
-                "type": "BingElevation"
+                "name" :"Bing Maps elevation",
+                "type" :"BingElevation",
+                "attribution" : {
+                    "text" :"\u00a9 Microsoft Corporation",
+                    "href" :"https://www.microsoft.com/en-us/maps/bing-maps/product"
+                }
             }
-        ]
+            ]
     }
 }

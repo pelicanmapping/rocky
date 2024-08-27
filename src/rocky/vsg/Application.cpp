@@ -318,8 +318,6 @@ Application::run()
 bool
 Application::frame()
 {
-    ROCKY_PROFILE_FUNCTION();
-
     if (!viewer->compileManager)
     {
         realize();

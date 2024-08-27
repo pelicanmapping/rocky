@@ -35,9 +35,9 @@ const Profile Profile::GLOBAL_GEODETIC("global-geodetic");
 const Profile Profile::SPHERICAL_MERCATOR("spherical-mercator");
 const Profile Profile::PLATE_CARREE("plate-carree");
 
-CachePolicy CachePolicy::DEFAULT;
-CachePolicy CachePolicy::NO_CACHE(CachePolicy::Usage::NO_CACHE);
-CachePolicy CachePolicy::CACHE_ONLY(CachePolicy::Usage::CACHE_ONLY);
+//CachePolicy CachePolicy::DEFAULT;
+//CachePolicy CachePolicy::NO_CACHE(CachePolicy::Usage::NO_CACHE);
+//CachePolicy CachePolicy::CACHE_ONLY(CachePolicy::Usage::CACHE_ONLY);
 
 Status Instance::_global_status(Status::GeneralError);
 

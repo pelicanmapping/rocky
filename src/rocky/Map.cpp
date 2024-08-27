@@ -53,12 +53,7 @@ Map::construct(const std::string& JSON, const IOOptions& io)
     // Generate a UID.
     _uid = rocky::createUID();
 
-#if 0
-    // elevation sampling
-    _elevationPool = ElevationPool::create(_instance);
-    _elevationPool->setMap( this );
-#endif
-
+    // deserialize
     from_json(JSON, io);
 
     // set a default profile if neccesary.
@@ -151,4 +146,22 @@ Map::removeCallback(UID uid)
     onLayerAdded.remove(uid);
     onLayerRemoved.remove(uid);
     onLayerMoved.remove(uid);
+}
+
+Status
+Map::openAllLayers(const IOOptions& io)
+{
+    Status status;
+    for (auto& layer : layers().all())
+    {
+        if (layer->openAutomatically() && !layer->isOpen())
+        {
+            auto layer_status = layer->open(io);
+            if (layer_status.failed())
+            {
+                status = Status_GeneralError;
+            }
+        }
+    }
+    return status;
 }

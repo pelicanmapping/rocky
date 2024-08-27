@@ -102,17 +102,6 @@ MapNode::terrainSettings()
     return *terrain.get();
 }
 
-bool
-MapNode::open()
-{
-    if (_isOpen)
-        return _isOpen;
-
-    _isOpen = true;
-
-    return true;
-}
-
 const SRS&
 MapNode::mapSRS() const
 {
@@ -135,8 +124,8 @@ MapNode::worldSRS() const
 void
 MapNode::update(const vsg::FrameStamp* f)
 {
-    ROCKY_PROFILE_FUNCTION();
     ROCKY_HARD_ASSERT_STATUS(instance.status());
+    ROCKY_HARD_ASSERT(map != nullptr && terrain != nullptr);
 
     if (terrain->map == nullptr)
     {
@@ -148,14 +137,19 @@ MapNode::update(const vsg::FrameStamp* f)
         }
     }
 
+    // on our first update, open any layers that are marked to automatic opening.
+    if (!_openedLayers)
+    {
+        map->openAllLayers(instance.io());
+        _openedLayers = true;
+    }
+
     terrain->update(f, instance.io());
 }
 
 void
 MapNode::accept(vsg::RecordTraversal& rv) const
 {
-    ROCKY_PROFILE_FUNCTION();
-
     if (worldSRS().isGeocentric())
     {
         std::shared_ptr<Horizon> horizon;

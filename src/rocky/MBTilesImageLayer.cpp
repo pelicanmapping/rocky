@@ -32,7 +32,7 @@ MBTilesImageLayer::MBTilesImageLayer(const std::string& JSON, const IOOptions& i
 void
 MBTilesImageLayer::construct(const std::string& JSON, const IOOptions& io)
 {
-    setConfigKey("MBTilesImage");
+    setLayerTypeName("MBTilesImage");
     const auto j = parse_json(JSON);
     get_to(j, "uri", _options.uri, io);
     get_to(j, "format", _options.format);

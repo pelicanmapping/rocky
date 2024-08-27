@@ -34,7 +34,7 @@ BingElevationLayer::BingElevationLayer(const std::string& JSON, const IOOptions&
 void
 BingElevationLayer::construct(const std::string& JSON, const IOOptions& io)
 {
-    setConfigKey("BingElevation");
+    setLayerTypeName("BingElevation");
 
     const auto j = parse_json(JSON);
     get_to(j, "key", apiKey);
@@ -85,8 +85,6 @@ BingElevationLayer::closeImplementation()
 Result<GeoHeightfield>
 BingElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOOptions& io) const
 {
-    ROCKY_PROFILE_FUNCTION();
-
     if (!isOpen())
         return status();
 

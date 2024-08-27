@@ -37,22 +37,8 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT Layer : public Inherit<Object, Layer>
     {
     public:
-        //! Hints that a layer can set to influence the operation of
-        //! the map engine
-        class Hints
-        {
-        public:
-            optional<CachePolicy> cachePolicy;
-            optional<bool> dynamic;
-        };
-
-    public:
-
         //! Destructor
         virtual ~Layer();
-
-        //! Attempt to create a layer from a serialization string.
-        //static shared_ptr<Layer> materialize(const ConfigOptions&);
 
         //! This layer's unique ID.
         //! This value is generated automatically at runtime and is not
@@ -72,7 +58,7 @@ namespace ROCKY_NAMESPACE
         bool isOpen() const;
 
         //! Serialize this layer into a JSON string
-        virtual JSON to_json() const;
+        virtual std::string to_json() const;
 
         //! Whether to automatically open this layer (by calling open) when
         //! adding the layer to a Map or when opening a map containing this Layer.
@@ -82,10 +68,6 @@ namespace ROCKY_NAMESPACE
         //! adding the layer to a Map or when opening a map containing this Layer.
         const optional<bool>& openAutomatically() const;
 
-        //! Cacheing policy. Only set this before opening the layer or adding to a map.
-        void setCachePolicy(const CachePolicy& value);
-        const CachePolicy& cachePolicy() const;
-
         //! Extent of this layer's data.
         //! This method may return GeoExtent::INVALID which means that the
         //! extent is unavailable (not necessarily that there is no data).
@@ -93,9 +75,6 @@ namespace ROCKY_NAMESPACE
 
         //! Temporal extent of this layer's data.
         virtual DateTimeExtent dateTimeExtent() const;
-
-        //! Hints that a subclass can set to influence the engine
-        const Hints& hints() const;
 
         //! Register a callback for layer open
         Callback<void(shared_ptr<Layer>)> onLayerOpened;
@@ -108,20 +87,13 @@ namespace ROCKY_NAMESPACE
     public:
 
         //! How (and if) to use this layer when rendering terrain tiles.
-        enum RenderType
+        enum class RenderType
         {
             //! Layer does not draw anything (directly)
-            RENDERTYPE_NONE,
+            NONE,
 
             //! Layer requires a terrain rendering pass that draws terrain tiles with texturing
-            RENDERTYPE_TERRAIN_SURFACE,
-
-            //! Layer requires a terrain rendering pass that emits terrian patches or
-            //! invokes a custom drawing function
-            RENDERTYPE_TERRAIN_PATCH,
-
-            //! Layer that renders its own node graph or other geometry (no terrain)
-            RENDERTYPE_CUSTOM = RENDERTYPE_NONE
+            TERRAIN_SURFACE
         };
 
         //! Rendering type of this layer
@@ -136,27 +108,17 @@ namespace ROCKY_NAMESPACE
         //! Attribution to be displayed by the application
         void setAttribution(const Hyperlink& attribution);
 
-        //! Callback that modifies the layer's bounding box for a given tile key
-        virtual void modifyTileBoundingBox(const TileKey& key, const Box& box) const;
-
     public:
-
-        //! Map will call this function when this Layer is added to a Map.
-        //virtual void addedToMap(const class Map*) { }
-
-        //! Map will call this function when this Layer is removed from a Map.
-        //virtual void removedFromMap(const class Map*) { }
 
         //! Revision number of this layer
         Revision revision() const { return _revision; }
 
-        //! Increment the revision number for this layer, which will
-        //! invalidate caches.
+        //! Increment the revision number for this layer, which will invalidate caches.
         virtual void dirty();
 
         //! Name of the layer type for serialization use
-        const std::string& getConfigKey() const {
-            return _configKey;
+        const std::string& getLayerTypeName() const {
+            return _layerTypeName;
         }
 
         class Options;
@@ -184,20 +146,16 @@ namespace ROCKY_NAMESPACE
         //! Sets the status for this layer with a message - internal
         const Status& setStatus(const Status::Code& statusCode, const std::string& message) const;
 
-        //! Sets the config name to use for serialization
-        void setConfigKey(const std::string&);
+        //! Sets the name to use for serialization
+        void setLayerTypeName(const std::string&);
 
     private:
-        UID _uid;
-        RenderType _renderType;
-        mutable Status _status;
-        Hints _hints;
-        std::atomic<Revision> _revision;
-        std::string _runtimeCacheId;
+        UID _uid = -1;
+        RenderType _renderType = RenderType::NONE;
+        mutable Status _status = Status_OK;
+        std::atomic<Revision> _revision = { 1 };
         mutable std::shared_mutex _state_mutex;
-        bool _isClosing;
-        bool _isOpening;
-        std::string _configKey;
+        std::string _layerTypeName;
 
         //! post-ctor initialization
         void construct(const JSON&);
@@ -220,11 +178,9 @@ namespace ROCKY_NAMESPACE
 
         optional<bool> _openAutomatically = true;
         optional<std::string> _cacheid = { };
-        optional<CachePolicy> _cachePolicy = CachePolicy::DEFAULT;
         optional<unsigned> _l2cachesize = 0;
         optional<Hyperlink> _attribution = { };
-
-        bool _reopenRequired;
+        bool _reopenRequired = false;
     };
 
 } // namespace ROCKY_NAMESPACE

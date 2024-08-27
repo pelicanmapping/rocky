@@ -30,7 +30,7 @@ MBTilesElevationLayer::MBTilesElevationLayer(const std::string& JSON, const IOOp
 void
 MBTilesElevationLayer::construct(const std::string& JSON, const IOOptions& io)
 {
-    setConfigKey("MBTilesElevation");
+    setLayerTypeName("MBTilesElevation");
     const auto j = parse_json(JSON);
     get_to(j, "uri", _options.uri, io);
     get_to(j, "format", _options.format);

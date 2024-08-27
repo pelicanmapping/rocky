@@ -33,7 +33,7 @@ LayerCollection::add(shared_ptr<Layer> layer, const IOOptions& io)
     }
 
     // open if necessary
-    if (layer->openAutomatically())
+    if (openOnAdd && layer->openAutomatically())
     {
         // not checking the return value here since we are returning it from this method
         layer->open(io);
@@ -53,7 +53,7 @@ LayerCollection::add(shared_ptr<Layer> layer, const IOOptions& io)
     _map->onLayerAdded.fire(layer, index, new_revision);
 
     // return the layer's open status
-    return layer->status();
+    return openOnAdd ? layer->status() : Status_OK;
 }
 
 void
@@ -68,10 +68,10 @@ LayerCollection::remove(shared_ptr<Layer> layer)
 
     unsigned int index = -1;
     shared_ptr<Layer> layerToRemove(layer);
-    Revision new_revision;
+    Revision new_revision = -1;
 
-    // Close the layer if we opened it.
-    if (layer->openAutomatically())
+    // Close the layer when we remove it from the map.
+    if (closeOnRemove && layer->openAutomatically())
     {
         layer->close();
     }
@@ -92,7 +92,7 @@ LayerCollection::remove(shared_ptr<Layer> layer)
     }
 
     // a separate block b/c we don't need the mutex
-    if (new_revision >= 0)
+    if (layerToRemove && new_revision >= 0)
     {
         _map->onLayerRemoved.fire(layerToRemove, new_revision);
     }
@@ -103,7 +103,7 @@ LayerCollection::move(shared_ptr<Layer> layer, unsigned new_index)
 {
     unsigned oldIndex = 0;
     unsigned actualIndex = 0;
-    Revision newRevision;
+    Revision newRevision = -1;
 
     if (layer)
     {

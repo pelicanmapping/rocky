@@ -14,10 +14,10 @@ using namespace ROCKY_NAMESPACE::util;
 
 #define LC "[TileLayer] \"" << name().value() << "\" "
 
-namespace
+struct ROCKY_NAMESPACE::TileLayer::DataExtentsIndex : public RTree<DataExtent, double, 2>
 {
-    using DataExtentsIndex = RTree<DataExtent, double, 2>;
-}
+    //nop
+};
 
 TileLayer::TileLayer() :
     super()
@@ -31,6 +31,11 @@ TileLayer::TileLayer(const JSON& conf) :
     construct(conf);
 }
 
+TileLayer::~TileLayer()
+{
+    dirtyDataExtents();
+}
+
 void
 TileLayer::construct(const JSON& conf)
 {
@@ -41,9 +46,6 @@ TileLayer::construct(const JSON& conf)
     get_to(j, "min_level", _minLevel);
     get_to(j, "profile", _profile);
     get_to(j, "tile_size", _tileSize);
-
-    _writingRequested = false;
-    _dataExtentsIndex = nullptr;
 }
 
 JSON
@@ -57,14 +59,6 @@ TileLayer::to_json() const
     set(j, "profile", _profile);
     set(j, "tile_size", _tileSize);
     return j.dump();
-}
-
-TileLayer::~TileLayer()
-{
-    if (_dataExtentsIndex)
-    {
-        delete static_cast<DataExtentsIndex*>(_dataExtentsIndex);
-    }    
 }
 
 void TileLayer::setMinLevel(unsigned value) {
@@ -134,30 +128,6 @@ TileLayer::setProfileAsDefault(const Profile& profile)
 }
 
 bool
-TileLayer::dynamic() const
-{
-    if (hints().dynamic.has_value(true))
-        return true;
-    else
-        return false;
-}
-
-std::string
-TileLayer::getMetadataKey(const Profile& profile) const
-{
-    if (profile.valid())
-        return make_string() << std::hex << profile.getHorizSignature() << "_metadata";
-    else
-        return "_metadata";
-}
-
-void
-TileLayer::disable(const std::string& msg)
-{
-    setStatus(Status(msg));
-}
-
-bool
 TileLayer::isKeyInLegalRange(const TileKey& key) const
 {
     if ( !key.valid() )
@@ -209,51 +179,6 @@ TileLayer::isKeyInLegalRange(const TileKey& key) const
     return true;
 }
 
-bool
-TileLayer::isKeyInVisualRange(const TileKey& key) const
-{
-    if (!key.valid())
-    {
-        return false;
-    }
-
-    // We must use the equivalent lod b/c the input key can be in any profile.
-    unsigned localLOD = profile().valid() ?
-        profile().getEquivalentLOD(key.profile(), key.levelOfDetail()) :
-        key.levelOfDetail();
-
-
-    // First check the key against the min/max level limits, it they are set.
-    if ((_maxLevel.has_value() && localLOD > _maxLevel) ||
-        (_minLevel.has_value() && localLOD < _minLevel))
-    {
-        return false;
-    }
-
-    // Next, check against resolution limits (based on the source tile size).
-    if (_minResolution.has_value() || _maxResolution.has_value())
-    {
-        if (profile().valid())
-        {
-            // calculate the resolution in the layer's profile, which can
-            // be different that the key's profile.
-            double resKey = key.extent().width() / (double)tileSize();
-            double resLayer = SRS::transformUnits(resKey, key.profile().srs(), profile().srs(), Angle());
-
-            if (_maxResolution.has_value() && _maxResolution > resLayer)
-            {
-                return false;
-            }
-
-            if (_minResolution.has_value() && _minResolution < resLayer)
-            {
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
 
 std::size_t 
 TileLayer::dataExtentsSize() const
@@ -289,10 +214,9 @@ void
 TileLayer::dirtyDataExtents()
 {
     _dataExtentsUnion = GeoExtent::INVALID;
-
     if (_dataExtentsIndex)
     {
-        delete static_cast<DataExtentsIndex*>(_dataExtentsIndex);
+        delete _dataExtentsIndex;
         _dataExtentsIndex = nullptr;
     }
 }
@@ -400,57 +324,11 @@ TileLayer::bestAvailableTileKey(const TileKey& key) const
         return TileKey::INVALID;
     }
 
-    bool     intersects = false;
-    unsigned highestLOD = 0;
+    buildDataExtentsIfNeeded();
 
+    bool intersects = false;
+    unsigned highestLOD = 0u;
     double a_min[2], a_max[2];
-    // Build the index if needed.
-    if (!_dataExtentsIndex)
-    {
-        std::unique_lock WRITE(_dataMutex);
-
-        if (!_dataExtentsIndex) // Double check
-        {
-            //ROCKY_INFO << LC << "Building data extents index with " << _dataExtents.size() << " extents" << std::endl;
-            DataExtentsIndex* dataExtentsIndex = new DataExtentsIndex();
-            for (auto de = _dataExtents.begin(); de != _dataExtents.end(); ++de)
-            {
-                // Build the index in the SRS of this layer
-                GeoExtent extentInLayerSRS = profile().clampAndTransformExtent(*de);
-
-                if (extentInLayerSRS.srs().isGeodetic() && extentInLayerSRS.crossesAntimeridian())
-                {
-                    GeoExtent west, east;
-                    extentInLayerSRS.splitAcrossAntimeridian(west, east);
-                    if (west.valid())
-                    {
-                        DataExtent new_de(west);
-                        new_de.minLevel() = de->minLevel();
-                        new_de.maxLevel() = de->maxLevel();
-                        a_min[0] = new_de.xmin(), a_min[1] = new_de.ymin();
-                        a_max[0] = new_de.xmax(), a_max[1] = new_de.ymax();
-                        dataExtentsIndex->Insert(a_min, a_max, new_de);
-                    }
-                    if (east.valid())
-                    {
-                        DataExtent new_de(east);
-                        new_de.minLevel() = de->minLevel();
-                        new_de.maxLevel() = de->maxLevel();
-                        a_min[0] = new_de.xmin(), a_min[1] = new_de.ymin();
-                        a_max[0] = new_de.xmax(), a_max[1] = new_de.ymax();
-                        dataExtentsIndex->Insert(a_min, a_max, new_de);
-                    }
-                }
-                else
-                {
-                    a_min[0] = extentInLayerSRS.xmin(), a_min[1] = extentInLayerSRS.ymin();
-                    a_max[0] = extentInLayerSRS.xmax(), a_max[1] = extentInLayerSRS.ymax();
-                    dataExtentsIndex->Insert(a_min, a_max, *de);
-                }
-            }
-            _dataExtentsIndex = dataExtentsIndex;
-        }
-    }
 
     // Transform the key extent to the SRS of this layer to do the index search
     GeoExtent keyExtentInLayerSRS = profile().clampAndTransformExtent(key.extent());
@@ -458,10 +336,8 @@ TileLayer::bestAvailableTileKey(const TileKey& key) const
     a_min[0] = keyExtentInLayerSRS.xmin(); a_min[1] = keyExtentInLayerSRS.ymin();
     a_max[0] = keyExtentInLayerSRS.xmax(); a_max[1] = keyExtentInLayerSRS.ymax();
 
-    DataExtentsIndex* index = static_cast<DataExtentsIndex*>(_dataExtentsIndex);
-
     TileKey bestKey;
-    index->Search(a_min, a_max, [&](const DataExtent& de) {
+    _dataExtentsIndex->Search(a_min, a_max, [&](const DataExtent& de) {
         // check that the extent isn't higher-resolution than our key:
         if (!de.minLevel().has_value() || localLOD >= (int)de.minLevel().value())
         {
@@ -522,7 +398,8 @@ TileLayer::buildDataExtentsIfNeeded() const
             double a_min[2], a_max[2];
 
             //ROCKY_INFO << LC << "Building data extents index with " << _dataExtents.size() << " extents" << std::endl;
-            DataExtentsIndex* dataExtentsIndex = new DataExtentsIndex();
+            _dataExtentsIndex = new DataExtentsIndex();
+
             for (auto de = _dataExtents.begin(); de != _dataExtents.end(); ++de)
             {
                 // Build the index in the SRS of this layer
@@ -539,7 +416,7 @@ TileLayer::buildDataExtentsIfNeeded() const
                         new_de.maxLevel() = de->maxLevel();
                         a_min[0] = new_de.xmin(), a_min[1] = new_de.ymin();
                         a_max[0] = new_de.xmax(), a_max[1] = new_de.ymax();
-                        dataExtentsIndex->Insert(a_min, a_max, new_de);
+                        _dataExtentsIndex->Insert(a_min, a_max, new_de);
                     }
                     if (east.valid())
                     {
@@ -548,18 +425,16 @@ TileLayer::buildDataExtentsIfNeeded() const
                         new_de.maxLevel() = de->maxLevel();
                         a_min[0] = new_de.xmin(), a_min[1] = new_de.ymin();
                         a_max[0] = new_de.xmax(), a_max[1] = new_de.ymax();
-                        dataExtentsIndex->Insert(a_min, a_max, new_de);
+                        _dataExtentsIndex->Insert(a_min, a_max, new_de);
                     }
                 }
                 else
                 {
                     a_min[0] = extentInLayerSRS.xmin(), a_min[1] = extentInLayerSRS.ymin();
                     a_max[0] = extentInLayerSRS.xmax(), a_max[1] = extentInLayerSRS.ymax();
-                    dataExtentsIndex->Insert(a_min, a_max, *de);
+                    _dataExtentsIndex->Insert(a_min, a_max, *de);
                 }
             }
-
-            _dataExtentsIndex = dataExtentsIndex;
         }
     }
 }
@@ -583,9 +458,7 @@ TileLayer::intersects(const TileKey& key) const
     a_min[0] = keyExtentInLayerSRS.xmin(); a_min[1] = keyExtentInLayerSRS.ymin();
     a_max[0] = keyExtentInLayerSRS.xmax(); a_max[1] = keyExtentInLayerSRS.ymax();
 
-    DataExtentsIndex* index = static_cast<DataExtentsIndex*>(_dataExtentsIndex);
-
-    return index->Search(a_min, a_max) > 0;
+    return _dataExtentsIndex->Search(a_min, a_max) > 0;
 }
 
 bool

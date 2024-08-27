@@ -4,13 +4,15 @@
  * MIT License
  */
 #pragma once
+#include <rocky/Instance.h>
 #include <rocky/vsg/Common.h>
-#include <rocky/vsg/engine/Runtime.h>
 #include <vsg/io/Options.h>
 #include <vsg/utils/CommandLine.h>
 
 namespace ROCKY_NAMESPACE
 {
+    class Runtime;
+
     /**
      * Rocky instance to use when running a VSG-based application
      */
@@ -31,16 +33,8 @@ namespace ROCKY_NAMESPACE
         inline Runtime& runtime();
 
     private:
-        struct Implementation
-        {
-            Runtime runtime;
-        };
+        struct Implementation;
         std::shared_ptr<Implementation> _impl;
         friend class Application;
     };
-
-
-    Runtime& InstanceVSG::runtime() {
-        return _impl->runtime;
-    }
 }

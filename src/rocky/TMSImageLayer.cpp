@@ -39,7 +39,7 @@ TMSImageLayer::TMSImageLayer(const std::string& JSON, const IOOptions& io) :
 void
 TMSImageLayer::construct(const std::string& JSON, const IOOptions& io)
 {
-    setConfigKey("TMSImage");
+    setLayerTypeName("TMSImage");
     const auto j = parse_json(JSON);
     get_to(j, "uri", uri, io);
     get_to(j, "format", format);
@@ -97,8 +97,6 @@ TMSImageLayer::closeImplementation()
 Result<GeoImage>
 TMSImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io) const
 {
-    ROCKY_PROFILE_FUNCTION();
-
     auto r = _driver.read(uri, key, invertY, false, io);
 
     if (r.status.ok())

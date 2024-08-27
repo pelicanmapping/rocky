@@ -32,8 +32,6 @@ ECS::SystemsManager::update(ECS::time_point time)
 void
 EntityMotionSystem::update(ECS::time_point time)
 {
-    ROCKY_PROFILE_FUNCTION();
-
     if (last_time != ECS::time_point::min())
     {
         // delta seconds since last tick:

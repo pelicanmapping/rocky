@@ -21,17 +21,14 @@ namespace ROCKY_NAMESPACE
     public:
         //! Construct an empty Bing layer
         BingImageLayer();
+
+        //! Deserialize a Bing maps image layer
         BingImageLayer(const std::string& JSON, const IOOptions& io);
 
-        //! Destructor
-        virtual ~BingImageLayer() { }
-
         //! serialize
-        JSON to_json() const override;
+        std::string to_json() const override;
 
     protected: // Layer
-
-        using TileURICache = util::LRUCache<TileKey, optional<Result<URI>>>;
 
         Status openImplementation(const IOOptions& io) override;
 
@@ -39,8 +36,6 @@ namespace ROCKY_NAMESPACE
 
         //! Creates a raster image for the given tile key
         Result<GeoImage> createImageImplementation(const TileKey& key, const IOOptions& io) const override;
-
-        std::unique_ptr<TileURICache> _tileURICache;
 
     private:
 

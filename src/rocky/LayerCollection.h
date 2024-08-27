@@ -61,6 +61,14 @@ namespace ROCKY_NAMESPACE
         //! Vector of all layers that pass the functor (signature takes a shared_ptr<Layer>)
         template<class FUNC> inline std::vector<shared_ptr<Layer>> get(FUNC func) const;
 
+    public: // public properties
+
+        //! Whether to call layer->open() when adding a layer to the collection
+        bool openOnAdd = false;
+
+        //! Whether to call layer->close() when removing a layer from the collection
+        bool closeOnRemove = true;
+
     private:
         friend class Map;
         LayerCollection(Map* map);

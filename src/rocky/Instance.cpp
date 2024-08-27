@@ -36,9 +36,16 @@ ROCKY_ABOUT(tinyxml, std::to_string(TIXML_MAJOR_VERSION) + "." + std::to_string(
 
 using namespace ROCKY_NAMESPACE;
 
+struct ROCKY_NAMESPACE::Instance::Implementation
+{
+    IOOptions ioOptions;
+};
+
 const Status& Instance::status() { return _global_status; }
 
-// static object factory map:
+// Static object factory map.
+// Normally this would go in static.cpp, but since the registration macro (ROCKY_ADD_OBJECT_FACTORY)
+// runs at static initialization time itself, we need to construct the factories map on demand.
 std::unordered_map<std::string, Instance::ObjectFactory>& Instance::objectFactories()
 {
     static std::unordered_map<std::string, Instance::ObjectFactory> factories;
@@ -72,7 +79,6 @@ Instance::about()
     static About about;
     return about;
 }
-
 
 Instance::Instance()
 {
@@ -109,7 +115,7 @@ Instance::Instance()
     //    Log()->warn("Environment variable PROJ_DATA is not set");
     //}
 
-    _global_status = StatusOK;
+    _global_status = Status_OK;
 }
 
 Instance::Instance(const Instance& rhs) :
@@ -121,7 +127,13 @@ Instance::Instance(const Instance& rhs) :
 Instance::~Instance()
 {
     jobs::shutdown();
-    _global_status = Status(Status::GeneralError);
+    _global_status = Status_ServiceUnavailable;
+}
+
+IOOptions&
+Instance::io()
+{
+    return _impl->ioOptions;
 }
 
 UID rocky::createUID()

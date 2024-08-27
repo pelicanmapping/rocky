@@ -100,8 +100,6 @@ namespace
         //! like "spherical-mercator" or "wgs84".
         SRSEntry& get_or_create(const std::string& def)
         {
-            ROCKY_PROFILE_FUNCTION();
-
             auto ctx = threading_context();
 
             auto iter = find(def);
@@ -225,7 +223,6 @@ namespace
         //! fetch the projection type
         PJ_TYPE get_horiz_crs_type(const std::string& def)
         {
-            ROCKY_PROFILE_FUNCTION();
             return get_or_create(def).horiz_crs_type;
         }
 
@@ -233,15 +230,12 @@ namespace
         //! that was previously created
         const Ellipsoid& get_ellipsoid(const std::string& def)
         {
-            ROCKY_PROFILE_FUNCTION();
             return get_or_create(def).ellipsoid;
         };
 
         //! Get the computed bounds of a projection (or guess at them)
         const Box& get_bounds(const std::string& def)
         {
-            ROCKY_PROFILE_FUNCTION();
-
             auto ctx = threading_context();
 
             SRSEntry& entry = get_or_create(def);
@@ -310,8 +304,6 @@ namespace
 
         const std::string& get_wkt(const std::string& def)
         {
-            ROCKY_PROFILE_FUNCTION();
-
             auto iter = find(def);
             if (iter == end())
             {
@@ -326,8 +318,6 @@ namespace
         //! retrieve or create a transformation object
         PJ* get_or_create_operation(const std::string& firstDef, const std::string& secondDef)
         {
-            ROCKY_PROFILE_FUNCTION();
-
             auto ctx = threading_context();
 
             PJ* pj = nullptr;
@@ -654,8 +644,6 @@ SRS::to(const SRS& rhs) const
 SRS
 SRS::geoSRS() const
 {
-    ROCKY_PROFILE_FUNCTION();
-
     if (isGeodetic())
         return *this;
 
@@ -689,8 +677,6 @@ SRS::geoSRS() const
 SRS
 SRS::geocentricSRS() const
 {
-    ROCKY_PROFILE_FUNCTION();
-
     auto& def = g_srs_factory.get_or_create(_definition);
     if (def.pj)
     {

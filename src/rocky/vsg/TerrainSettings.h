@@ -19,9 +19,11 @@ namespace ROCKY_NAMESPACE
     public:
         TerrainSettings() = default;
 
+        //! deserialize from JSON
         Status from_json(const std::string& JSON);
 
-        JSON to_json() const;
+        //! serialize to JSON
+        std::string to_json() const;
 
         //! Size of each dimension of each terrain tile, in verts.
         //! Ideally this will be a power of 2 plus 1, i.e.: a number X

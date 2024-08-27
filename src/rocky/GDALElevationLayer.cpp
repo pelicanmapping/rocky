@@ -73,7 +73,7 @@ GDALElevationLayer::GDALElevationLayer(const std::string& JSON, const IOOptions&
 void
 GDALElevationLayer::construct(const std::string& JSON, const IOOptions& io)
 {
-    setConfigKey("GDALElevation");
+    setLayerTypeName("GDALElevation");
     const auto j = parse_json(JSON);
     get_to(j, "uri", _uri, io);
     get_to(j, "connection", _connection);
@@ -84,7 +84,7 @@ GDALElevationLayer::construct(const std::string& JSON, const IOOptions& io)
     else if (temp == "bilinear") _interpolation = Image::BILINEAR;
     get_to(j, "single_threaded", _singleThreaded);
 
-    setRenderType(RENDERTYPE_TERRAIN_SURFACE);
+    setRenderType(RenderType::TERRAIN_SURFACE);
 }
 
 JSON
@@ -152,8 +152,6 @@ GDALElevationLayer::closeImplementation()
 Result<GeoHeightfield>
 GDALElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOOptions& io) const
 {
-    ROCKY_PROFILE_FUNCTION();
-
     if (status().failed())
         return status();
 

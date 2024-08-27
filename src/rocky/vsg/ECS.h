@@ -37,7 +37,7 @@ namespace ROCKY_NAMESPACE
             entt::entity next_entity = entt::null;
 
             //! Serialize this component to a JSON string
-            virtual JSON to_json() const;
+            virtual std::string to_json() const;
         };
 
         /**
@@ -358,8 +358,6 @@ namespace ROCKY_NAMESPACE
     template<class T>
     inline void ECS::VSG_SystemHelper<T>::accept(vsg::Visitor& v)
     {
-        ROCKY_PROFILE_FUNCTION();
-
         for (auto& pipeline : pipelines)
         {
             pipeline.commands->accept(v);
@@ -376,8 +374,6 @@ namespace ROCKY_NAMESPACE
     template<class T>
     inline void ECS::VSG_SystemHelper<T>::accept(vsg::ConstVisitor& v) const
     {
-        ROCKY_PROFILE_FUNCTION();
-
         for (auto& pipeline : pipelines)
         {
             pipeline.commands->accept(v);
@@ -393,8 +389,6 @@ namespace ROCKY_NAMESPACE
     template<class T>
     inline void ECS::VSG_SystemHelper<T>::compile(vsg::Context& context)
     {
-        ROCKY_PROFILE_FUNCTION();
-
         // Compile the pipelines
         for (auto& pipeline : pipelines)
         {
@@ -413,8 +407,6 @@ namespace ROCKY_NAMESPACE
     template<class T>
     inline void ECS::VSG_SystemHelper<T>::record(vsg::RecordTraversal& rt) const
     {
-        ROCKY_PROFILE_FUNCTION();
-
         const vsg::dmat4 identity_matrix = vsg::dmat4(1.0);
 
         // Get an optimized view of all this system's components:
@@ -487,8 +479,6 @@ namespace ROCKY_NAMESPACE
     template<class T>
     inline void ECS::VSG_SystemHelper<T>::initializeNewComponents(Runtime& runtime)
     {
-        ROCKY_PROFILE_FUNCTION();
-
         // Components with VSG elements need to create and compile those
         // elements before we can render them. These get put on the 
         // initialization list by the record traversal.

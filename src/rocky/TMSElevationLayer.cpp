@@ -34,7 +34,7 @@ TMSElevationLayer::TMSElevationLayer(const std::string& JSON, const IOOptions& i
 void
 TMSElevationLayer::construct(const std::string& JSON, const IOOptions& io)
 {
-    setConfigKey("TMSElevation");
+    setLayerTypeName("TMSElevation");
     const auto j = parse_json(JSON);
     get_to(j, "uri", uri, io);
     get_to(j, "format", format);
@@ -97,8 +97,6 @@ TMSElevationLayer::closeImplementation()
 Result<GeoHeightfield>
 TMSElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOOptions& io) const
 {
-    ROCKY_PROFILE_FUNCTION();
-
     if (!isOpen())
         return status();
 

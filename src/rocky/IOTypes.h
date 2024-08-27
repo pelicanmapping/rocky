@@ -12,6 +12,7 @@
 #include <rocky/Threading.h>
 #include <rocky/LRUCache.h>
 #include <optional>
+#include <string>
 
 /**
  * A collection of types used by the various I/O systems.
@@ -102,10 +103,6 @@ namespace ROCKY_NAMESPACE
         //! Gate for seriaizing duplicate URI requests (shared)
         mutable std::shared_ptr<util::Gate<std::string>> uriGate;
 
-        //! Custom options for reading/writing data
-        //inline std::string property(const std::string& name) const;
-        //inline std::string& property(const std::string& name);
-
     public:
         IOOptions& operator = (const IOOptions& rhs);
 
@@ -114,104 +111,13 @@ namespace ROCKY_NAMESPACE
         std::unordered_map<std::string, std::string> _properties;
     };
 
-
-    class ROCKY_EXPORT CachePolicy
-    {
-    public:
-        enum class Usage
-        {
-            READ_WRITE = 0,  // read/write to the cache if one exists.
-            CACHE_ONLY = 1,  // treat the cache as the ONLY source of data.
-            READ_ONLY = 2,  // read from the cache, but don't write new data to it.
-            NO_CACHE = 3   // neither read from or write to the cache
-        };
-
-        optional<Usage> usage = Usage::READ_WRITE;
-        optional<Duration> maxAge = Duration(DBL_MAX, Units::SECONDS);
-        optional<DateTime> minTime = DateTime(0);
-
-        //! default cache policy (READ_WRITE)
-        static CachePolicy DEFAULT;
-
-        //! policy indicating to never use a cache
-        static CachePolicy NO_CACHE;
-
-        //! policy indicating to only use a cache
-        static CachePolicy CACHE_ONLY;
-
-    public:
-        //! constructs an invalid CachePolicy
-        CachePolicy();
-
-        //! constructs a CachePolicy from a usage
-        CachePolicy(const Usage&);
-
-        //! Merges any set properties in another CP into this one, override existing values.
-        void mergeAndOverride(const CachePolicy& rhs);
-        void mergeAndOverride(const optional<CachePolicy>& rhs);
-
-        //! Gets the oldest timestamp for which to accept a cache record
-        DateTime getMinAcceptTime() const;
-
-        //! Whether the given timestamp is considered to be expired based on this CachePolicy
-        bool isExpired(TimeStamp lastModified) const;
-
-    public: // convenience functions.
-
-        bool isCacheEnabled() const {
-            return isCacheReadable() || isCacheWriteable();
-        }
-
-        bool isCacheDisabled() const {
-            return !isCacheEnabled();
-        }
-
-        bool isCacheReadable() const {
-            return
-                usage.value() == Usage::READ_WRITE ||
-                usage.value() == Usage::CACHE_ONLY ||
-                usage.value() == Usage::READ_ONLY;
-        }
-
-        bool isCacheWriteable() const {
-            return usage.value() == Usage::READ_WRITE;
-        }
-
-        bool isCacheOnly() const {
-            return usage.value() == Usage::CACHE_ONLY;
-        }
-
-        bool operator == (const CachePolicy& rhs) const;
-
-        bool operator != (const CachePolicy& rhs) const {
-            return !operator==(rhs);
-        }
-
-        CachePolicy& operator = (const CachePolicy& rhs);
-
-        // returns a readable string describing usage
-        std::string usageString() const;
-    };
-
-    /**
-    * Proxy server configuration.
-    */
-    class ROCKY_EXPORT ProxySettings
-    {
-    public:
-        std::string hostname;
-        int port = -1;
-        std::string username;
-        std::string password;
-    };
-
     /**
      * Convenience metadata tags
      */
-    struct ROCKY_EXPORT IOMetadata
+    namespace IOMetadata
     {
-        static const std::string CONTENT_TYPE;
-    };
+        const std::string CONTENT_TYPE = "Content-Type";
+    }
 
     /**
      * Return value from a read* method
@@ -281,17 +187,6 @@ namespace ROCKY_NAMESPACE
             return getResultCodeString(ioCode);
         }
     };
-
-#if 0
-    std::string IOOptions::property(const std::string& name) const {
-        auto i = _properties.find(name);
-        return i != _properties.end() ? i->second : "";
-    }
-
-    std::string& IOOptions::property(const std::string& name) {
-        return _properties[name];
-    }
-#endif
 
     bool IOOptions::canceled() const {
         return _cancelable ? _cancelable->canceled() : false;

@@ -78,7 +78,7 @@ ImageLayer::construct(const std::string& JSON, const IOOptions& io)
     get_to(j, "sharpness", _sharpness);
     get_to(j, "crop", _crop);
 
-    setRenderType(RENDERTYPE_TERRAIN_SURFACE);
+    setRenderType(RenderType::TERRAIN_SURFACE);
 
     _dependencyCache = std::make_shared<TileMosaicWeakCache<Image>>();
 }

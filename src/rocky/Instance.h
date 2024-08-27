@@ -24,10 +24,7 @@ namespace ROCKY_NAMESPACE
         virtual ~Instance();
 
         //! Default IO options
-        inline IOOptions& io();
-
-        //! Global caching policy
-        inline CachePolicy& cachePolicy();
+        IOOptions& io();
 
         //! Global application instance status - returns an error
         //! if the instance does not exist
@@ -55,31 +52,20 @@ namespace ROCKY_NAMESPACE
         static std::set<std::string>& about();
 
     private:
-        struct Implementation
-        {
-            CachePolicy cachePolicy;
-            IOOptions ioOptions;
-        };
-        shared_ptr<Implementation> _impl;
+        struct Implementation;
+        std::shared_ptr<Implementation> _impl;
+
         static Status _global_status;
         static shared_ptr<Object> createObjectImpl(const std::string& name, const std::string& JSON, const IOOptions& io);
     };
+}
 
 
-    // inlines ...
 
-    CachePolicy& Instance::cachePolicy() {
-        return _impl->cachePolicy;
-    }
-    IOOptions& Instance::io() {
-        return _impl->ioOptions;
-    }
-
-    // macro to install an object factory at startup time from a .cpp file.
-    #define ROCKY_ADD_OBJECT_FACTORY(NAME, FUNC) \
+// macro to install an object factory at startup time from a .cpp file.
+#define ROCKY_ADD_OBJECT_FACTORY(NAME, FUNC) \
         struct __ROCKY_OBJECTFACTORY_##NAME##_INSTALLER { \
             __ROCKY_OBJECTFACTORY_##NAME##_INSTALLER () { \
-                ROCKY_NAMESPACE::Instance::objectFactories()[util::toLower(#NAME)] = FUNC; \
+                ROCKY_NAMESPACE::Instance::objectFactories()[ROCKY_NAMESPACE::util::toLower(#NAME)] = FUNC; \
         } }; \
         __ROCKY_OBJECTFACTORY_##NAME##_INSTALLER __rocky_objectFactory_##NAME ;
-}

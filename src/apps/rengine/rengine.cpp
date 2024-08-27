@@ -21,6 +21,7 @@
 #include <rocky/vsg/MapNode.h>
 #include <rocky/vsg/MapManipulator.h>
 #include <rocky/vsg/SkyNode.h>
+#include <rocky/vsg/engine/Runtime.h>
 
 #include <vsg/all.h>
 #include <chrono>
@@ -53,12 +54,10 @@ namespace ROCKY_NAMESPACE
     //! Simplest possible image layer.
     struct TestLayer : public Inherit<ImageLayer, TestLayer>
     {
-        Result<GeoImage> createImageImplementation(
-            const TileKey& key,
-            const IOOptions& io) const override
+        Result<GeoImage> createImageImplementation(const TileKey& key, const IOOptions& io) const override
         {
-            auto image = io.services.readImageFromURI("https://user-images.githubusercontent.com/326618/236923465-c85eb0c2-4d31-41a7-8ef1-29d34696e3cb.png", io);
-
+            const char* url = "https://user-images.githubusercontent.com/326618/236923465-c85eb0c2-4d31-41a7-8ef1-29d34696e3cb.png";
+            auto image = io.services.readImageFromURI(url, io);
 
             if (image.status.ok())
                 return GeoImage(image.value, key.extent());
@@ -147,9 +146,12 @@ int main(int argc, char** argv)
     viewer->addWindow(window);
     viewer->addEventHandler(vsg::CloseHandler::create(viewer));
 
-    // Set up the runtime context with everything we need.
+    // You MUST tell the rocky runtime context about your viewer:
     ri.runtime().viewer = viewer;
+
+    // Optionally you can install a shared objects instance as well:
     ri.runtime().sharedObjects = vsg::SharedObjects::create();
+
 
     vsg_scene->addChild(mapNode);
 

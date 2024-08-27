@@ -24,11 +24,8 @@ namespace ROCKY_NAMESPACE
         TMSElevationLayer();
         TMSElevationLayer(const std::string& JSON, const IOOptions& io);
 
-        //! Destructor
-        virtual ~TMSElevationLayer() { }
-
         //! Serialize
-        JSON to_json() const override;
+        std::string to_json() const override;
 
         optional<Encoding> encoding;
 

@@ -43,7 +43,7 @@ namespace
 TEST_CASE("json")
 {
     Profile profile("global-geodetic");
-    JSON conf = profile.to_json();
+    auto conf = profile.to_json();
     CHECK(conf == R"("global-geodetic")");
     profile = Profile();
     ROCKY_NAMESPACE::from_json(json::parse(conf), profile);
@@ -73,7 +73,7 @@ TEST_CASE("json")
     layer->uri = "file.xml";
     auto map = rocky::Map::create(instance);
     map->layers().add(layer);
-    JSON serialized = map->to_json();
+    auto serialized = map->to_json();
     map = rocky::Map::create(instance, serialized);
     CHECK((map->to_json() == R"({"layers":[{"name":"","type":"TMSImage","uri":"file.xml"}],"name":""})"));
 #endif
