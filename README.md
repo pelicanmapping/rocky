@@ -73,16 +73,16 @@ set PROJ_DATA=%proj_install_dir%/share/proj
 
 If you built with `vcpkg` you will also need to add the dependencies folder to your path; this will normally be found in `vcpkg_installed/x64-windows` (or whatever platform you are using).
 ```
-rdemo
+rocky_demo
 ```
 There are some example JSON map files in the `data` folder. Load them with the `--map` option.
 ```
-rdemo --map data\openstreetmap.map.json
+rocky_demo --map data\openstreetmap.map.json
 ```
 
 <img width="500" alt="Screenshot 2023-02-22 124318" src="https://user-images.githubusercontent.com/326618/236200807-73567789-a5a3-46d5-a98d-e9c1f24a0f62.png">
 
 Use `--help` to see all command line options.
 ```
-rdemo --help
+rocky_demo --help
 ```
