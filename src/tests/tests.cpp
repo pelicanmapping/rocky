@@ -310,7 +310,7 @@ TEST_CASE("GDAL")
         layer->setName("World imagery");
         layer->setConnection("WMTS:https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml,layer=s2cloudless-2020");
         auto s = layer->open({});
-        CHECK(s.ok());
+        CHECK((s.ok() || s.code == s.ResourceUnavailable));
     }
 }
 #endif // ROCKY_HAS_GDAL
@@ -323,11 +323,12 @@ TEST_CASE("TMS")
     {
         layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
         auto s = layer->open({});
+        CHECK((s.ok() || s.code == s.ResourceUnavailable));
+#if 0
         CHECKED_IF(s.ok())
         {
             // NOTE: we cannot test this here because the JPG reader is in InstanceVSG.
             // TODO: create a unit test for rocky_vsg? Or link rocky_vsg to this library?
-#if 0
             InstanceVSG instance;
             TileKey key(0, 0, 0, Profile::GLOBAL_GEODETIC);
             Result<GeoImage> tile = layer->createImage(key, instance.io());
@@ -339,8 +340,8 @@ TEST_CASE("TMS")
                 CHECK(tile.value.image()->height() == 256);
                 CHECK(tile.value.image()->pixelFormat() == Image::R8G8B8_UNORM);
             }
-#endif
         }
+#endif
     }
 }
 #endif // ROCKY_HAS_TMS

@@ -25,7 +25,6 @@ find_dependency(vsg CONFIG REQUIRED)
 find_dependency(vsgXchange CONFIG REQUIRED)
 find_dependency(glslang CONFIG REQUIRED)
 
-# find_dependency(vsg CONFIG REQUIREDis being picked up as a subproject
 if (NOT TARGET "rocky")
   include ("${CMAKE_CURRENT_LIST_DIR}/rocky-targets.cmake")
 endif ()

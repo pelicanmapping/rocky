@@ -1,26 +1,21 @@
-set(APP_NAME rdemoqt)
+set(APP_NAME rocky_demo)
 
-find_package(vsgQt CONFIG REQUIRED)
+find_package(imgui)
 
-if(vsgQt_FOUND)
-    find_package(vsg CONFIG REQUIRED)
+if(imgui_FOUND)
     find_package(glslang CONFIG REQUIRED)
-    find_package(Qt5 COMPONENTS Widgets CONFIG REQUIRED)
 
-    file(GLOB SOURCES *.cpp)
-    file(GLOB HEADERS *.h)
+    file(GLOB SOURCES *.cpp vsgImGui/*.cpp)
+    file(GLOB HEADERS *.h vsgImGui/*.h)
 
     # enable folders for IDEs
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
     assign_source_groups("Source Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${SOURCES})
     assign_source_groups("Header Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${HEADERS})
-    
-    message(STATUS "QT DIR = ${QT_DIR}")    
-    include_directories(${QT_DIR}/qt5)
 
     add_executable(${APP_NAME} ${SOURCES} ${HEADERS})
 
-    target_link_libraries(${APP_NAME} rocky vsgQt::vsgQt)
+    target_link_libraries(${APP_NAME} rocky imgui::imgui)
 
     install(TARGETS ${APP_NAME} RUNTIME DESTINATION bin)
 

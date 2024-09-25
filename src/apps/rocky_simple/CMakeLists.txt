@@ -1,4 +1,4 @@
-set(APP_NAME rsimple)
+set(APP_NAME rocky_simple)
 
 file(GLOB SOURCES *.cpp)
 

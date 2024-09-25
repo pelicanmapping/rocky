@@ -1,13 +1,11 @@
+set(APP_NAME rocky_tests)
 
-set(SOURCES
-    tests.cpp
-    catch.hpp
-)
+set(SOURCES tests.cpp catch.hpp)
 
-add_executable(rtests ${SOURCES})
+add_executable(${APP_NAME} ${SOURCES})
 
-target_link_libraries(rtests rocky)
+target_link_libraries(${APP_NAME} rocky)
 
-install(TARGETS rtests RUNTIME DESTINATION bin)
+install(TARGETS ${APP_NAME} RUNTIME DESTINATION bin)
 
-set_target_properties(rtests PROPERTIES FOLDER "tests")
+set_target_properties(${APP_NAME} PROPERTIES FOLDER "tests")

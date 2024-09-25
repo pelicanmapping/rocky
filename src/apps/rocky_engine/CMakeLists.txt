@@ -1,4 +1,4 @@
-set(APP_NAME rengine)
+set(APP_NAME rocky_engine)
 
 file(GLOB SOURCES *.cpp)
 
