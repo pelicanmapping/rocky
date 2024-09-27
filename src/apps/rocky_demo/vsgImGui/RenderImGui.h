@@ -70,6 +70,10 @@ namespace vsgImGui
 
         void accept(vsg::RecordTraversal& rt) const override;
 
+        //! Execute an ImGui frame natively (bypassing VSG).
+        //! @renderFunction Function that will submit ImGui commands.
+        static void frame(std::function<void()> renderFunction);
+
     private:
         virtual ~RenderImGui();
 

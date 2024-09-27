@@ -86,6 +86,9 @@ namespace ROCKY_NAMESPACE
             return _state.setVP1.has_value() && _state.setVP1->target;
         }
 
+        //! Whether the manipulator is in the middle of any multi-frame operation
+        //bool isWorking() const;
+
         //! Store a reference to this manipulator in another object
         void put(vsg::ref_ptr<vsg::Object> object);
 
@@ -176,11 +179,11 @@ namespace ROCKY_NAMESPACE
         };
 
         struct ActionOption {
-            ActionOption() { }
+            ActionOption() = default;
             ActionOption(int o, bool value) : option(o), boolValue(value) { }
             ActionOption(int o, int value) : option(o), intValue(value) { }
             ActionOption(int o, double value) : option(o), doubleValue(value) { }
-            int option;
+            int option = 0;
             union {
                 bool boolValue;
                 int intValue;
@@ -500,9 +503,7 @@ namespace ROCKY_NAMESPACE
             /** Sets the min and max distance from the focal point in world coordinates */
             void setMinMaxDistance(double min_distance, double max_distance);
 
-            /**
-            * Sets the maximum allowable offsets for the x and y camera offsets in world coordinates
-            */
+            /** Sets the maximum allowable offsets for the x and y camera offsets in world coordinates */
             void setMaxOffset(double max_x_offset, double max_y_offset);
 
             /** Mode used for tethering to a node. */
@@ -763,6 +764,7 @@ namespace ROCKY_NAMESPACE
 
         void updateTether(const vsg::time_point& t);
 
-        void updateCamera();
+        //! returns true if the camera changed.
+        bool updateCamera();
     };
 }

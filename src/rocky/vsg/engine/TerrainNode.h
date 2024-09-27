@@ -41,8 +41,9 @@ namespace ROCKY_NAMESPACE
         //! Serialize to JSON
         std::string to_json() const;
 
-        //! Updates the terrain periodically at a safe time
-        void update(const vsg::FrameStamp*, const IOOptions& io);
+        //! Updates the terrain periodically at a safe time.
+        //! @return true if any updates were applied
+        bool update(const vsg::FrameStamp*, const IOOptions& io);
 
         //! Status of this node; check that's it OK before using
         Status status;

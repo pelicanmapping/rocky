@@ -196,10 +196,12 @@ Runtime::dispose(vsg::ref_ptr<vsg::Object> object)
     }
 }
 
-void
+bool
 Runtime::update()
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(viewer.valid(), void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer.valid(), false);
+
+    bool updates_occurred = false;
 
     if (asyncCompile)
     {
@@ -211,6 +213,7 @@ Runtime::update()
             {
                 // no need to check cr, we did that before pushing
                 vsg::updateViewer(*viewer, cr);
+                updates_occurred = true;
             }
 
             _compileResults.clear();
@@ -233,6 +236,7 @@ Runtime::update()
             if (cr && cr.requiresViewerUpdate())
             {
                 vsg::updateViewer(*viewer, cr);
+                updates_occurred = true;
             }
         }
     }
@@ -247,6 +251,8 @@ Runtime::update()
         _deferred_unref_queue.emplace_back(std::move(_deferred_unref_queue.front()));
         _deferred_unref_queue.pop_front();
     }
+
+    return updates_occurred;
 }
 
 jobs::future<bool>
@@ -289,13 +295,15 @@ Runtime::compileAndAddChild(
         // queue an update operation to add the child safely.
         // we pass along the original promise so these two operations appear as
         // one to the caller.
-        auto add_child = [parent, child, viewer](Cancelable& c) -> bool
+        auto add_child = [this, parent, child, viewer](Cancelable& c) -> bool
         {
             if (c.canceled())
                 return false;
 
             if (parent && child)
                 parent->addChild(child);
+
+            requestFrame();
 
             return true;
         };

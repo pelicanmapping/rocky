@@ -121,11 +121,13 @@ MapNode::worldSRS() const
         return mapSRS();
 }
 
-void
+bool
 MapNode::update(const vsg::FrameStamp* f)
 {
     ROCKY_HARD_ASSERT_STATUS(instance.status());
     ROCKY_HARD_ASSERT(map != nullptr && terrain != nullptr);
+
+    bool changes = false;
 
     if (terrain->map == nullptr)
     {
@@ -144,7 +146,7 @@ MapNode::update(const vsg::FrameStamp* f)
         _openedLayers = true;
     }
 
-    terrain->update(f, instance.io());
+    return terrain->update(f, instance.io());
 }
 
 void
@@ -165,6 +167,8 @@ MapNode::accept(vsg::RecordTraversal& rv) const
     }
 
     rv.setValue("worldsrs", worldSRS());
+
+    rv.setObject("TerrainTileHost", terrain);
 
     Inherit::accept(rv);
 }

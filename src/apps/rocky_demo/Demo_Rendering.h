@@ -18,6 +18,8 @@ auto Demo_Rendering = [](Application& app)
 
         ImGuiLTable::SliderFloat("Tile pixels", &app.mapNode->terrainSettings().tilePixelSize.mutable_value(), 1.0f, 512.0f, "%.0f");
 
+        ImGuiLTable::Checkbox("Render on demand", &app.instance.renderOnDemand());
+
         ImGuiLTable::End();
     }
 };

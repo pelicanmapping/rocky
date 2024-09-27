@@ -21,6 +21,7 @@
 #include <vsg/utils/CommandLine.h>
 #include <vsg/utils/ComputeBounds.h>
 #include <vsg/vk/State.h>
+#include <vsg/vk/CommandBuffer.h>
 #include <vsg/io/read.h>
 
 using namespace ROCKY_NAMESPACE;
@@ -288,6 +289,39 @@ Application::recreateViewer()
 }
 #endif
 
+namespace
+{
+    /**
+    * Framely operation that runs all of our update logic.
+    */
+    class AppUpdateOperation : public vsg::Inherit<vsg::Operation, AppUpdateOperation>
+    {
+    public:
+        Application& app;
+
+        AppUpdateOperation(Application& in_app) : app(in_app) {}
+
+        void run() override
+        {
+            // MapNode updates - paging tiles in an out
+            app.mapNode->update(app.viewer->getFrameStamp());
+            
+            // ECS updates - rendering or modifying entities
+            app.ecs.update(app.viewer->getFrameStamp()->time);
+            app.ecs_node->update(app.instance.runtime());
+
+            // User update
+            if (app.updateFunction)
+            {
+                app.updateFunction();
+            }
+
+            // integrate any pending compile results or disposals
+            app.instance.runtime().update();
+        }
+    };
+}
+
 void
 Application::realize()
 {
@@ -300,6 +334,9 @@ Application::realize()
         }
 
         setupViewer(viewer);
+
+        // install our frame update operation
+        viewer->updateOperations->add(AppUpdateOperation::create(*this), vsg::UpdateOperations::ALL_FRAMES);
 
         // mark the viewer ready so that subsequent changes will know to
         // use an asynchronous path.
@@ -318,75 +355,123 @@ Application::run()
 bool
 Application::frame()
 {
+    // for stats collection
+    std::chrono::steady_clock::time_point t_start, t_update, t_events, t_record, t_present, t_end;
+
+    // realize on first frame if not already realized
     if (!viewer->compileManager)
     {
         realize();
     }
 
-    auto t_start = std::chrono::steady_clock::now();
+    t_start = std::chrono::steady_clock::now();
 
-    if (!viewer->advanceToNextFrame())
-        return false;
+    bool renderFrame = false;
 
-    auto t_update = std::chrono::steady_clock::now();
-
-    // rocky map update pass - management of tiles and paged data
-    mapNode->update(viewer->getFrameStamp());
-
-    // ECS updates
-    ecs.update(viewer->getFrameStamp()->time);
-    ecs_node->update(instance.runtime());
-
-    // User update
-    if (updateFunction)
-        updateFunction();
-
-    auto num_windows = viewer->windows().size();
-
-    // run through the viewer's update operations queue; this includes
-    // update ops initialized by rocky (e.g. terrain tile merges) and
-    // anything dispatched by calling onNextUpdate()
-    viewer->update();
-
-    if (!viewer->active())
-        return false;
-
-    // integrate any compile results that may be pending
-    instance.runtime().update();
-
-    // if the number of windows has changed, skip to the next frame immediately
-    if (num_windows != viewer->windows().size())
+    if (instance.renderOnDemand() == false || instance.runtime().renderRequests > 0)
     {
-        Log()->debug("Number of windows changed; skipping to next frame");
-        return true;
+        instance.runtime().renderRequests--;
+        renderFrame = true;
     }
 
-    auto t_events = std::chrono::steady_clock::now();
+    if (renderFrame)
+    {
+        if (!viewer->advanceToNextFrame())
+            return false;
 
-    // Event handling happens after updating the scene, otherwise
-    // things like tethering to a moving node will be one frame behind
-    viewer->handleEvents();
+        t_update = std::chrono::steady_clock::now();
 
-    if (!viewer->active())
-        return false;
+        auto num_windows = viewer->windows().size();
 
-    auto t_record = std::chrono::steady_clock::now();
+        // Update the scene graph (see AppUpdateOperation)
+        viewer->update();
 
-    viewer->recordAndSubmit();
+        // it's possible that an update operation will shut down the viewer:
+        if (!viewer->active())
+        {
+            return false;
+        }
 
-    auto t_present = std::chrono::steady_clock::now();
+        // if the number of windows has changed, skip to the next frame immediately
+        if (num_windows != viewer->windows().size())
+        {
+            Log()->debug("Number of windows changed; skipping to next frame");
+            return true;
+        }
 
-    viewer->present();
+        t_events = std::chrono::steady_clock::now();
 
-    auto t_end = std::chrono::steady_clock::now();
-    stats.frame = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start);
-    stats.update = std::chrono::duration_cast<std::chrono::microseconds>(t_events - t_update);
-    stats.events = std::chrono::duration_cast<std::chrono::microseconds>(t_record - t_events);
-    stats.record = std::chrono::duration_cast<std::chrono::microseconds>(t_present - t_record);
-    stats.present = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_present);
+        // Event handling happens after updating the scene, otherwise
+        // things like tethering to a moving node will be one frame behind
+        viewer->handleEvents();
+
+        if (!viewer->active())
+            return false;
+
+        t_record = std::chrono::steady_clock::now();
+
+        viewer->recordAndSubmit();
+
+        t_present = std::chrono::steady_clock::now();
+
+        viewer->present();
+
+        auto t_end = std::chrono::steady_clock::now();
+        stats.frame = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start);
+        stats.update = std::chrono::duration_cast<std::chrono::microseconds>(t_events - t_update);
+        stats.events = std::chrono::duration_cast<std::chrono::microseconds>(t_record - t_events);
+        stats.record = std::chrono::duration_cast<std::chrono::microseconds>(t_present - t_record);
+        stats.present = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_present);
+
+        _framesSinceLastRender = 0;
+    }
+
+    else // no render
+    {
+        // manually poll the events and install a frame event
+        // (normally called by advanceToNextFrame)
+        viewer->pollEvents(false);
+        viewer->getEvents().emplace_back(new vsg::FrameEvent(vsg::ref_ptr<vsg::FrameStamp>(viewer->getFrameStamp())));
+
+        // update traversal (see AppUpateOperation)
+        viewer->update();
+
+        // it's possible that an update operation will shut down the viewer:
+        if (!viewer->active())
+        {
+            return false;
+        }
+
+        // Event handling happens after updating the scene, otherwise
+        // things like tethering to a moving node will be one frame behind
+        viewer->handleEvents();
+
+        // Call the user-supplied "no render" function
+        if (noRenderFunction)
+        {
+            noRenderFunction();
+        }
+
+        _framesSinceLastRender++;
+
+        // After not rendering for a few frames, start applying a sleep to
+        // "simulate" vsync so we don't tax the CPU by running full-out.
+        if (_framesSinceLastRender >= 60)
+        {
+            auto max_frame_time = std::chrono::milliseconds(10);
+            auto now = vsg::clock::now();
+            auto elapsed = now - t_start;
+            if (elapsed < max_frame_time)
+            {
+                auto dur_us = std::chrono::duration_cast<std::chrono::microseconds>(max_frame_time - elapsed);
+                std::this_thread::sleep_for(dur_us);
+            }
+        }
+    }
 
     return viewer->active();
 }
+
 
 std::string
 Application::about() const

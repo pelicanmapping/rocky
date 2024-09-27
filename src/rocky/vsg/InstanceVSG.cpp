@@ -373,3 +373,12 @@ Runtime& InstanceVSG::runtime()
     return _impl->runtime;
 }
 
+bool& InstanceVSG::renderOnDemand()
+{
+    return runtime().renderOnDemand;
+}
+
+void InstanceVSG::requestFrame()
+{
+    runtime().requestFrame();
+}

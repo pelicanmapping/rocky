@@ -116,9 +116,11 @@ TerrainNode::createRootTiles(const IOOptions& io)
     return StatusOK;
 }
 
-void
+bool
 TerrainNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
 {
+    bool changes = false;
+
     if (status.ok())
     {
         if (children.empty())
@@ -128,13 +130,18 @@ TerrainNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
             {
                 Log()->warn("TerrainNode initialize failed: " + status.message);
             }
+            changes = true;
         }
         else
         {
-            engine->tiles.update(fs, io, engine);
+            if (engine->tiles.update(fs, io, engine))
+                changes = true;
+
             engine->geometryPool.sweep(engine->runtime);
         }
     }
+
+    return changes;
 }
 
 void

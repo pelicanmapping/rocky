@@ -200,7 +200,7 @@ void RenderImGui::accept(vsg::RecordTraversal& rt) const
     // traverse children
     traverse(rt);
 
-    ImGui::EndFrame();
+    //ImGui::EndFrame(); // called automatically by Render() below
     ImGui::Render();
 
     // if ImDrawData has been recorded then we need to clear the frame buffer and do the final record to Vulkan command buffer.
@@ -211,5 +211,16 @@ void RenderImGui::accept(vsg::RecordTraversal& rt) const
 
         if (draw_data)
             ImGui_ImplVulkan_RenderDrawData(draw_data, &(*commandBuffer));
+    }
+}
+
+void RenderImGui::frame(std::function<void()> renderFunction)
+{
+    if (renderFunction)
+    {
+        ImGui_ImplVulkan_NewFrame();
+        ImGui::NewFrame();
+        renderFunction();
+        ImGui::Render();
     }
 }

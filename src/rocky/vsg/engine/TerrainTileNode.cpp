@@ -138,6 +138,8 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
     if (subtilesExist())
         _needsSubtiles = false;
 
+    auto* host = rv.getObject<TerrainTileHost>("TerrainTileHost");
+
     if (surface->isVisible(rv.getState()))
     {
         // determine whether we can and should subdivide to a higher resolution:
@@ -151,10 +153,10 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
 #ifdef AGGRESSIVE_PAGEOUT
             // always ping all children at once so the system can never
             // delete one of a quad.
-            _host->ping(subTile(0), this, rv);
-            _host->ping(subTile(1), this, rv);
-            _host->ping(subTile(2), this, rv);
-            _host->ping(subTile(3), this, rv);
+            host->ping(subTile(0), this, rv);
+            host->ping(subTile(1), this, rv);
+            host->ping(subTile(2), this, rv);
+            host->ping(subTile(3), this, rv);
 #endif
         }
         else
@@ -174,17 +176,17 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
     {
         // always ping all children at once so the system can never
         // delete one of a quad.
-        _host->ping(subTile(0), this, rv);
-        _host->ping(subTile(1), this, rv);
-        _host->ping(subTile(2), this, rv);
-        _host->ping(subTile(3), this, rv);
+        host->ping(subTile(0), this, rv);
+        host->ping(subTile(1), this, rv);
+        host->ping(subTile(2), this, rv);
+        host->ping(subTile(3), this, rv);
     }
 #endif
 
     // keep this tile alive if requested
     if (doNotExpire)
     {
-        _host->ping(const_cast<TerrainTileNode*>(this), nullptr, rv);
+        host->ping(const_cast<TerrainTileNode*>(this), nullptr, rv);
     }
 }
 

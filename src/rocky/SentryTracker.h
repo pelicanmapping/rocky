@@ -87,9 +87,8 @@ namespace ROCKY_NAMESPACE
                 }
             }
 
-            inline void flush(
-                unsigned maxCount,
-                std::function<bool(T& obj)> dispose)
+            template<typename CALLABLE>
+            inline void flush(unsigned maxCount, CALLABLE&& dispose) //std::function<bool(T& obj)> dispose)
             {
                 // After cull, all visited tiles are in front of the sentry, and all
                 // non-visited tiles are behind it. Start at the sentry position and
@@ -105,8 +104,8 @@ namespace ROCKY_NAMESPACE
                     bool disposed = true;
 
                     // user disposal function
-                    if (dispose != nullptr)
-                        disposed = dispose(le._data);
+                    //if (dispose != nullptr)
+                    disposed = dispose(le._data);
 
                     if (disposed)
                     {

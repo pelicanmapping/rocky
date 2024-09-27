@@ -26,6 +26,9 @@
 #include "vsgImGui/RenderImGui.h"
 #include "vsgImGui/SendEventsToImGui.h"
 
+#include <imgui_impl_vulkan.h>
+#include <imgui_internal.h>
+
 ROCKY_ABOUT(imgui, IMGUI_VERSION)
 
 using namespace ROCKY_NAMESPACE;
@@ -69,6 +72,7 @@ struct Demo
     std::function<void(Application&)> function;
     std::vector<Demo> children;
 };
+
 std::vector<Demo> demos =
 {
     Demo{ "Map", Demo_Map },
@@ -109,6 +113,11 @@ struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>
 
     void record(vsg::CommandBuffer& cb) const override
     {
+        render();
+    }
+
+    void render() const
+    {
         if (ImGui::Begin("Welcome to Rocky"))
         {
             for (auto& demo : demos)
@@ -142,32 +151,38 @@ struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>
 class SendEventsToImGuiWrapper : public vsg::Inherit<vsgImGui::SendEventsToImGui, SendEventsToImGuiWrapper>
 {
 public:
-    SendEventsToImGuiWrapper(vsg::ref_ptr<vsg::Window> window) :
-        _window(window) { }
+    SendEventsToImGuiWrapper(vsg::ref_ptr<vsg::Window> window, rocky::InstanceVSG& instance) :
+        _window(window), _instance(instance) { }
 
-    void apply(vsg::ButtonPressEvent& e) override {
-        if (e.window.ref_ptr() == _window) vsgImGui::SendEventsToImGui::apply(e);
+    template<typename E>
+    void propagate(E& e, bool forceRefresh = false)
+    {
+        if (e.window.ref_ptr() == _window)
+        {
+            vsgImGui::SendEventsToImGui::apply(e);
+            if (e.handled || forceRefresh)
+            {
+                _instance.requestFrame();
+                //Log()->info("{} Event {} handled by ImGui", e.time.time_since_epoch().count(), e.className());
+            }
+            else
+            {
+                //Log()->info("{} Event {} NOT handled by ImGui", e.time.time_since_epoch().count(), e.className());
+            }
+        }
     }
-    void apply(vsg::ButtonReleaseEvent& e) override {
-        if (e.window.ref_ptr() == _window) vsgImGui::SendEventsToImGui::apply(e);
-    }
-    void apply(vsg::MoveEvent& e) override {
-        if (e.window.ref_ptr() == _window) vsgImGui::SendEventsToImGui::apply(e);
-    }
-    void apply(vsg::ScrollWheelEvent& e) override {
-        if (e.window.ref_ptr() == _window) vsgImGui::SendEventsToImGui::apply(e);
-    }
-    void apply(vsg::KeyPressEvent& e) override {
-        if (e.window.ref_ptr() == _window) vsgImGui::SendEventsToImGui::apply(e);
-    }
-    void apply(vsg::KeyReleaseEvent& e) override {
-        if (e.window.ref_ptr() == _window) vsgImGui::SendEventsToImGui::apply(e);
-    }
-    void apply(vsg::ConfigureWindowEvent& e) override {
-        if (e.window.ref_ptr() == _window) vsgImGui::SendEventsToImGui::apply(e);
-    }
+
+    void apply(vsg::ButtonPressEvent& e) override { propagate(e); }
+    void apply(vsg::ButtonReleaseEvent& e) override { propagate(e); }
+    void apply(vsg::ScrollWheelEvent& e) override { propagate(e); }
+    void apply(vsg::KeyPressEvent& e) override { propagate(e); }
+    void apply(vsg::KeyReleaseEvent& e) override { propagate(e); }
+    void apply(vsg::MoveEvent& e) override { propagate(e); }
+    void apply(vsg::ConfigureWindowEvent& e) override { propagate(e, true); }
+
 private:
     vsg::ref_ptr<vsg::Window> _window;
+    InstanceVSG _instance;
 };
 
 int main(int argc, char** argv)
@@ -203,7 +218,8 @@ int main(int argc, char** argv)
     // Create the main window and the main GUI:
     auto window = app.displayManager->addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
     auto imgui = vsgImGui::RenderImGui::create(window);
-    imgui->addChild(MainGUI::create(app));
+    auto maingui = MainGUI::create(app);
+    imgui->addChild(maingui);
 
     // ImGui likes to live under the main rendergraph, but outside the main view.
     // https://github.com/vsg-dev/vsgExamples/blob/master/examples/ui/vsgimgui_example/vsgimgui_example.cpp#L276
@@ -212,7 +228,12 @@ int main(int argc, char** argv)
 
     // Make sure ImGui is the first event handler:
     auto& handlers = app.viewer->getEventHandlers();
-    handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(window));
+    handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(window, app.instance));
+
+    app.noRenderFunction = [&]()
+        {
+            vsgImGui::RenderImGui::frame([&]() { maingui->render(); });
+        };
 
     // run until the user quits.
     return app.run();

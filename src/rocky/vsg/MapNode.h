@@ -66,7 +66,8 @@ namespace ROCKY_NAMESPACE
         std::string to_json() const;
 
         //! Call periodically to update the map node and terrain engine
-        void update(const vsg::FrameStamp*);
+        //! @return true if updates happened
+        bool update(const vsg::FrameStamp*);
 
     public:
 

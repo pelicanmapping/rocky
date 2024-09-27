@@ -53,6 +53,17 @@ namespace ROCKY_NAMESPACE
         //! Default font
         vsg::ref_ptr<vsg::Font> defaultFont;
 
+        //! Render on demand mode
+        bool renderOnDemand = false;
+
+        //! Number of render-on-demand requests
+        std::atomic_int renderRequests = { 0 };
+
+        //! Request a frame render
+        void requestFrame() {
+            ++renderRequests;
+        }
+
         //! Shared shader compile settings. Use this to insert shader defines
         //! that should be used throughout the application; things like enabling
         //! lighting, debug visuals, etc.
@@ -122,8 +133,8 @@ namespace ROCKY_NAMESPACE
             shaderSettingsRevision++;
         }
 
-        //! Update any pending compile results.
-        void update();
+        //! Update any pending compile results. Returns true if updates occurred.
+        bool update();
 
     private:
         // for (some) update operations

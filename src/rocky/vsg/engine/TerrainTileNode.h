@@ -142,8 +142,9 @@ namespace ROCKY_NAMESPACE
         //! loader future.
         void unloadSubtiles(Runtime&);
 
-        //! Update this node (placeholder)
-        void update(const vsg::FrameStamp*, const IOOptions&) { }
+        //! Update this node (placeholder).
+        //! @return true if any changes occur.
+        bool update(const vsg::FrameStamp*, const IOOptions&) { return false; }
 
     public:
 

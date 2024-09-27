@@ -30,7 +30,14 @@ namespace ROCKY_NAMESPACE
         InstanceVSG(const InstanceVSG& rhs);
 
         //! Runtime context
-        inline Runtime& runtime();
+        Runtime& runtime();
+
+        //! Whether to render only when a frame is requested by calling requestFrame()
+        bool& renderOnDemand();
+
+        //! Request that the system render a new frame.
+        //! This only applies when renderOnDemand() == true.
+        void requestFrame();
 
     private:
         struct Implementation;

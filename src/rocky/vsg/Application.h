@@ -86,10 +86,15 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Group> root;
         vsg::ref_ptr<vsg::Group> mainScene;
         vsg::ref_ptr<ECS::VSG_SystemsGroup> ecs_node;
-        std::function<void()> updateFunction;
         std::shared_ptr<DisplayManager> displayManager;
         bool autoCreateWindow = true;
         Status commandLineStatus;
+
+        // user function to call during update and before event handling
+        std::function<void()> updateFunction;
+
+        // in renderOnDemand mode, user function to call when not rendering a frame
+        std::function<void()> noRenderFunction;
 
         //! Runtime timing statistics
         struct Stats
@@ -120,7 +125,7 @@ namespace ROCKY_NAMESPACE
         bool _vsync = true;
         bool _multithreaded = true;
         bool _viewerRealized = false;
-        bool _viewerDirty = false;
+        int _framesSinceLastRender = 0; // for renderOnDemand
 
         void ctor(int& argc, char** argv);
 

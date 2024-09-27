@@ -32,10 +32,12 @@ using namespace ROCKY_NAMESPACE;
 TerrainTilePager::TerrainTilePager(
     const Profile& profile,
     const TerrainSettings& settings,
+    Runtime& runtime,
     TerrainTileHost* in_host) :
 
     _host(in_host),
-    _settings(settings)
+    _settings(settings),
+    _runtime(runtime)
 {
     _firstLOD = settings.minLevelOfDetail;
 }
@@ -145,18 +147,16 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
     if (tile->_needsUpdate)
         _updateData.push_back(tile->key);
 
-
     if (_settings.supportMultiThreadedRecord)
         _mutex.unlock();
 }
 
-void
-TerrainTilePager::update(
-    const vsg::FrameStamp* fs,
-    const IOOptions& io,
-    shared_ptr<TerrainEngine> terrain)
+bool
+TerrainTilePager::update(const vsg::FrameStamp* fs, const IOOptions& io, shared_ptr<TerrainEngine> terrain)
 {
     std::scoped_lock lock(_mutex);
+
+    bool changes = false;
 
     //Log::info()
     //    << "Frame " << fs->frameCount << ": "
@@ -171,7 +171,8 @@ TerrainTilePager::update(
         auto iter = _tiles.find(key);
         if (iter != _tiles.end())
         {
-            iter->second._tile->update(fs, io);
+            if (iter->second._tile->update(fs, io))
+                changes = true;
         }
     }
     _updateData.clear();
@@ -188,6 +189,8 @@ TerrainTilePager::update(
 
             iter->second._tile->_needsSubtiles = false;
         }
+
+        changes = true;
     }
     _loadSubtiles.clear();
 
@@ -200,6 +203,8 @@ TerrainTilePager::update(
         {
             requestLoadElevation(iter->second._tile, io, terrain);
         }
+
+        changes = true;
     }
     _loadElevation.clear();
 
@@ -211,6 +216,8 @@ TerrainTilePager::update(
         {
             requestMergeElevation(iter->second._tile, io, terrain);
         }
+
+        changes = true;
     }
     _mergeElevation.clear();
 #endif
@@ -223,6 +230,8 @@ TerrainTilePager::update(
         {
             requestLoadData(iter->second._tile, io, terrain);
         }
+
+        changes = true;
     }
     _loadData.clear();
 
@@ -234,33 +243,42 @@ TerrainTilePager::update(
         {
             requestMergeData(iter->second._tile, io, terrain);
         }
+
+        changes = true;
     }
     _mergeData.clear();
 
     // Flush unused tiles (i.e., tiles that failed to ping) out of the system.
     // Tiles ping their children all at once; this should in theory prevent
     // a child from expiring without its siblings.
+    bool disposeOrphanedTiles = (fs->frameCount - _lastTrackerFlushFrame) >= 2;
+
     const auto dispose = [&](TerrainTileNode* tile)
-    {
-        if (!tile->doNotExpire)
         {
-            auto key = tile->key;
-            auto parent_iter = _tiles.find(key.createParentKey());
-            if (parent_iter != _tiles.end())
+            if (disposeOrphanedTiles && !tile->doNotExpire)
             {
-                auto parent = parent_iter->second._tile;
-                if (parent.valid())
+                auto key = tile->key;
+                auto parent_iter = _tiles.find(key.createParentKey());
+                if (parent_iter != _tiles.end())
                 {
-                    parent->unloadSubtiles(terrain->runtime);
+                    auto parent = parent_iter->second._tile;
+                    if (parent.valid())
+                    {
+                        parent->unloadSubtiles(terrain->runtime);
+                    }
                 }
+                _tiles.erase(key);
+                return true;
             }
-            _tiles.erase(key);
-            return true;
-        }
-        return false;
-    };
+            return false;
+        };
 
     _tracker.flush(~0, dispose);
+
+    // synchronize
+    _lastTrackerFlushFrame = fs->frameCount;
+
+    return changes;
 }
 
 vsg::ref_ptr<TerrainTileNode>
@@ -356,6 +374,8 @@ TerrainTilePager::requestLoadSubtiles(
             result = quad;
         }
 
+        engine->runtime.requestFrame();
+
         return result;
     };
 
@@ -421,6 +441,8 @@ TerrainTilePager::requestLoadData(
             key,
             manifest,
             IOOptions(io, p));
+
+        engine->runtime.requestFrame();
 
         return model;
     };
@@ -536,6 +558,8 @@ TerrainTilePager::requestMergeData(
         {
             //RP_DEBUG << "merge EMPTY TILE MODEL -> " << key.str() << std::endl;
         }
+
+        engine->runtime.requestFrame();
 
         return true;
     };

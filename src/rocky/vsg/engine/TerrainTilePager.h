@@ -42,6 +42,7 @@ namespace ROCKY_NAMESPACE
         TerrainTilePager(
             const Profile& profile,
             const TerrainSettings& settings,
+            Runtime& runtime,
             TerrainTileHost* host);
 
         ~TerrainTilePager();
@@ -60,8 +61,9 @@ namespace ROCKY_NAMESPACE
         //! Empty the registry, releasing all tiles.
         void releaseAll();
 
-        //! Update traversal
-        void update(
+        //! Update traversal.
+        //! @return true if any changes occurred.
+        bool update(
             const vsg::FrameStamp* fs,
             const IOOptions& io,
             shared_ptr<TerrainEngine> terrain);
@@ -81,9 +83,11 @@ namespace ROCKY_NAMESPACE
 
         TileTable _tiles;
         Tracker _tracker;
+        int _lastTrackerFlushFrame = -1;
         mutable std::mutex _mutex;
         TerrainTileHost* _host;
         const TerrainSettings& _settings;
+        Runtime& _runtime;
         bool _updateViewerRequired = false;
 
         std::vector<TileKey> _loadSubtiles;

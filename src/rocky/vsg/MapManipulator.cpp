@@ -1085,6 +1085,19 @@ MapManipulator::clearViewpoint()
 #endif
 }
 
+//bool
+//MapManipulator::isWorking() const
+//{
+//    return
+//        _dirty;
+//        //_continuous ||
+//        //_thrown ||
+//        //_dirty ||
+//        //_task._type != TASK_NONE ||
+//        //isSettingViewpoint() ||
+//        //isTethering();
+//}
+
 vsg::ref_ptr<MapNode>
 MapManipulator::getMapNode() const
 {
@@ -1092,10 +1105,7 @@ MapManipulator::getMapNode() const
 }
 
 bool
-MapManipulator::intersect(
-    const vsg::dvec3& start,
-    const vsg::dvec3& end,
-    vsg::dvec3& out_intersection) const
+MapManipulator::intersect(const vsg::dvec3& start, const vsg::dvec3& end, vsg::dvec3& out_intersection) const
 {
     auto mapNode = _mapNode_weakptr.ref_ptr();
     if (mapNode)
@@ -1344,10 +1354,14 @@ MapManipulator::apply(vsg::FrameEvent& frame)
 {
     //Log()->warn(util::make_string() << "FrameEvent-------------------------- " << frame.time.time_since_epoch().count());
 
+    // clear the dirty flag that indicates whether a new frame is required by the renderer
+    _dirty = false;
+
     if (_continuous)
     {
         double t_factor = to_seconds(frame.time - _previousTime) * 60.0;
         handleMovementAction(_continuousAction._type, _continuousDelta * t_factor);
+        _dirty = true;
     }
     else
     {
@@ -1366,19 +1380,31 @@ MapManipulator::apply(vsg::FrameEvent& frame)
         updateTether(frame.time);
     }
 
-    updateCamera();
-
-    _dirty = false;
+    bool camera_changed = updateCamera();
 
     _previousTime = frame.time;
+
+    // if anything caused the camera's matrix to change, dirty the instance to
+    // request a new frame.
+    if (camera_changed || _dirty)
+    {
+        auto mapNode = getMapNode();
+        if (mapNode)
+        {
+            mapNode->instance.requestFrame();
+        }
+    }
 }
 
-void
+bool
 MapManipulator::updateCamera()
 {
+    bool changed = false;
     auto camera = _camera_weakptr.ref_ptr();
     if (camera)
     {
+        auto oldMatrix = _viewMatrix;
+
         _viewMatrix =
             vsg::translate(_state.center) *
             _state.centerRotation *
@@ -1395,7 +1421,10 @@ MapManipulator::updateCamera()
         }
 
         lookat->set(_viewMatrix);
+
+        changed = oldMatrix != _viewMatrix;
     }
+    return changed;
 }
 
 bool

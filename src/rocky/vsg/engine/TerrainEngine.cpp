@@ -26,7 +26,7 @@ TerrainEngine::TerrainEngine(
     runtime(new_runtime),
     settings(new_settings),
     geometryPool(worldSRS),
-    tiles(new_map->profile(), new_settings, host),
+    tiles(new_map->profile(), new_settings, new_runtime, host),
     stateFactory(new_runtime)
 {
     jobs::get_pool(loadSchedulerName)->set_concurrency(settings.concurrency);
