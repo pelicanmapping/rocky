@@ -101,7 +101,7 @@ TMSElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOO
         return status();
 
     // request
-    auto r = _driver.read(uri, key, invertY, _encoding == Encoding::MapboxRGB, io);
+    auto r = _driver.read(key, invertY, _encoding == Encoding::MapboxRGB, uri->context(), io);
 
     if (r.status.ok())
     {

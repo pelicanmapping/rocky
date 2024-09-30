@@ -94,13 +94,10 @@ namespace ROCKY_NAMESPACE
         //! will result in data.)
         virtual bool isKeyInLegalRange(const TileKey& key) const;
 
-        //! Data Extents reported for this layer are copied into output
-        virtual DataExtentList dataExtents() const;
+        //! Data extents reported for this layer
+        virtual const DataExtentList& dataExtents() const;
 
-        //! Number of data extents on the layer
-        std::size_t dataExtentsSize() const;
-
-        //! Extent that is the union of all the extents in getDataExtents().
+        //! Extent that is the union of all the extents in dataExtents().
         const DataExtent& dataExtentsUnion() const;
 
     public: // Layer
@@ -116,17 +113,12 @@ namespace ROCKY_NAMESPACE
 
     protected:
 
-        //! Call this if you call dataExtents() and modify it.
-        void dirtyDataExtents();
-
         //! Sets the layer profile to use now (will not be serialized)
         void setProfile(const Profile&);
 
-        //! Assign a data extents collection to the layer
-        virtual void setDataExtents(const DataExtentList& dataExtents);
-
-        //! Adds a DataExent to this layer.
-        void addDataExtent(const DataExtent& dataExtent);
+        //! Assign a data extents collection to the layer.
+        //! A subclass should only call this during openImplementation().
+        void setDataExtents(const DataExtentList& dataExtents);
 
     protected:
 
@@ -137,24 +129,19 @@ namespace ROCKY_NAMESPACE
         optional<unsigned> _maxDataLevel = 99;
         optional<unsigned> _tileSize = 256;
         optional<GeoExtent> _crop;
-        optional<Profile> _originalProfile;
+        optional<Profile> _originalProfile; // profile specified in the options
         
-        optional<Profile> _runtimeProfile;
-
-        virtual ~TileLayer();
+        optional<Profile> _runtimeProfile; // profile set at runtime by an implementation
 
     private:
         // Post-ctor
         void construct(const JSON&);
 
-        void buildDataExtentsIfNeeded() const;
-
-        // general purpose data protector
-        mutable std::shared_mutex _dataMutex;
+        // available data extents.
         DataExtentList _dataExtents;
-        mutable DataExtent _dataExtentsUnion;
+        DataExtent _dataExtentsUnion;
         struct DataExtentsIndex;
-        mutable DataExtentsIndex* _dataExtentsIndex = nullptr;
+        std::shared_ptr<DataExtentsIndex> _dataExtentsIndex;
 
         // methods accesible by Map:
         friend class Map;

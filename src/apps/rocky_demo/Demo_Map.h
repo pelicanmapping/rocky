@@ -99,7 +99,7 @@ auto Demo_Map = [](Application& app)
             }
             ImGui::PopID();
 
-            if (layerExpanded[i] && layer->isOpen())
+            if (layerExpanded[i])
             {
                 ImGui::Indent();
                 if (ImGuiLTable::Begin("layerdeets"))

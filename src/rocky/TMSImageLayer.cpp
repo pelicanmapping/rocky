@@ -97,7 +97,7 @@ TMSImageLayer::closeImplementation()
 Result<GeoImage>
 TMSImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io) const
 {
-    auto r = _driver.read(uri, key, invertY, false, io);
+    auto r = _driver.read(key, invertY, false, uri->context(), io);
 
     if (r.status.ok())
         return GeoImage(r.value, key.extent());

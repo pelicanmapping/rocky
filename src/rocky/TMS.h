@@ -123,18 +123,11 @@ namespace ROCKY_NAMESPACE
             void close();
 
             Result<shared_ptr<Image>> read(
-                const URI& uri,
                 const TileKey& key,
                 bool invertY,
                 bool isMapboxRGB,
+                const URIContext& context,
                 const IOOptions& io) const;
-
-            bool write(
-                const URI& uri,
-                const TileKey& key,
-                shared_ptr<Image> image,
-                bool invertY,
-                IOOptions& io) const;
 
             //! Source information structure
             TileMap tileMap;

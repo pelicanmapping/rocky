@@ -364,7 +364,7 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
     if (!intersectsKey(tilekey))
     {
         //OE_NOTICE << LC << "No key intersection for tile key " << tilekey.str() << std::endl;
-        return "";
+        return {};
     }
 
     unsigned zoom = tilekey.levelOfDetail();
@@ -384,16 +384,10 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
 
     std::string working = filename;
 
-    //if (!rotateString.empty())
-    //{
-    //    std::size_t index = (++rotateIter) % (rotateString.size() - 2);
-    //    util::replace_in_place(working, rotateString, rotateString.substr(index + 1, 1));
-    //}
-
+    // are we doing variable substitution?
     bool sub = working.find('{') != working.npos;
 
-
-    //Select the correct TileSet
+    // Select the correct TileSet
     if (tileSets.size() > 0)
     {
         for (auto& tileSet : tileSets)
@@ -401,7 +395,7 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
             if (tileSet.order == zoom)
             {
                 std::stringstream ss;
-                std::string basePath = std::filesystem::path(working).remove_filename().string();
+                std::string path = std::filesystem::path(working).remove_filename().string();
                 if (sub)
                 {
                     auto temp = working;
@@ -417,19 +411,19 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
                 }
                 else
                 {
-                    if (!basePath.empty())
-                    {
-                        ss << basePath << "/";
-                    }
-                    ss << zoom << "/" << x << "/" << y << "." << format.extension;
-                    std::string ssStr;
-                    ssStr = ss.str();
-                    return ssStr;
+                    return path +
+                        std::to_string(zoom) + '/' +
+                        std::to_string(x) + '/' +
+                        std::to_string(y) + "." +
+                        format.extension;
+
+                    return path;
                 }
             }
         }
     }
-    else if (sub)
+
+    if (sub)
     {
         auto temp = working;
         util::replace_in_place(temp, "${x}", std::to_string(x));
@@ -442,22 +436,16 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
         util::replace_in_place(temp, "{z}", std::to_string(zoom));
         return temp;
     }
-
-    else // Just go with it. No way of knowing the max level.
+   
+    else
     {
-        std::stringstream ss;
-        std::string basePath = std::filesystem::path(working).remove_filename().string();
-        if (!basePath.empty())
-        {
-            ss << basePath << "/";
-        }
-        ss << zoom << "/" << x << "/" << y << "." << format.extension;
-        std::string ssStr;
-        ssStr = ss.str();
-        return ssStr;
+        // Just go with it. No way of knowing the max level.
+        return std::filesystem::path(working).remove_filename().string() +
+            std::to_string(zoom) + '/' +
+            std::to_string(x) + '/' +
+            std::to_string(y) + "." +
+            format.extension;
     }
-
-    return "";
 }
 
 bool
@@ -612,7 +600,8 @@ ROCKY_NAMESPACE::TMS::readTileMap(const URI& location, const IOOptions& io)
     {
         tilemap.value.filename = location.full();
         
-        if (location.isRemote() && !util::endsWith(tilemap.value.filename, "/"))
+        // remote locations should have a trailing slash
+        if (location.isRemote() && tilemap.value.filename.back() != '/')
         {
             tilemap.value.filename += '/';
         }
@@ -701,7 +690,7 @@ TMS::Driver::open(
 }
 
 Result<shared_ptr<Image>>
-TMS::Driver::read(const URI& uri, const TileKey& key, bool invertY, bool isMapboxRGB, const IOOptions& io) const
+TMS::Driver::read(const TileKey& key, bool invertY, bool isMapboxRGB, const URIContext& context, const IOOptions& io) const
 {
     shared_ptr<Image> image;
     URI imageURI;
@@ -712,13 +701,14 @@ TMS::Driver::read(const URI& uri, const TileKey& key, bool invertY, bool isMapbo
         bool y_inverted = tileMap.invertYaxis;
         if (invertY) y_inverted = !y_inverted;
 
-        imageURI = URI(tileMap.getURI(key, y_inverted), uri.context());
+        imageURI = URI(tileMap.getURI(key, y_inverted), context);
+
         if (!imageURI.empty() && isMapboxRGB)
         {
             if (imageURI.full().find('?') == std::string::npos)
-                imageURI = URI(imageURI.full() + "?mapbox=true", uri.context());
+                imageURI = URI(imageURI.full() + "?mapbox=true", context);
             else
-                imageURI = URI(imageURI.full() + "&mapbox=true", uri.context());
+                imageURI = URI(imageURI.full() + "&mapbox=true", context);
         }
 
         auto fetch = imageURI.read(io);

@@ -24,8 +24,7 @@ using namespace ROCKY_NAMESPACE;
 
 //#define LOAD_ELEVATION_SEPARATELY
 
-//#define RP_DEBUG Log::info()
-#define RP_DEBUG if(false) Log::info()
+#define RP_DEBUG if(false) Log()->info
 
 //----------------------------------------------------------------------------
 
@@ -413,7 +412,7 @@ TerrainTilePager::requestLoadData(
 
     auto key = tile->key;
 
-    //Log()->debug("requestLoadData -> " + key.str());
+    //RP_DEBUG("requestLoadData -> {}", key.str());
 
     CreateTileManifest manifest;
 
@@ -428,7 +427,7 @@ TerrainTilePager::requestLoadData(
     {
         if (p.canceled())
         {
-            //RP_DEBUG << "Data load " << key.str() << " CANCELED!" << std::endl;
+            //RP_DEBUG("Data load {} Canceled!", key.str());
             return { };
         }
 
@@ -483,20 +482,20 @@ TerrainTilePager::requestMergeData(
     auto key = tile->key;
     const IOOptions io(in_io);
 
-    //RP_DEBUG << "requestMergeData -> " << key.str() << std::endl;
+    //RP_DEBUG("requestMergeData -> {}", key.str());
 
     auto merge = [key, engine](Cancelable& p) -> bool
     {
         if (p.canceled())
         {
-            //RP_DEBUG << "merge CANCELED -> " << key.str() << std::endl;
+            //Log()->info("  merge canceled -> {}", key.str());
             return false;
         }
 
         auto tile = engine->tiles.getTile(key);
         if (!tile)
         {
-            //RP_DEBUG << "merge TILE LOST -> " << key.str() << std::endl;
+            //Log()->info("  merge tile lost -> {}", key.str());
             return false;
         }
 
@@ -552,11 +551,11 @@ TerrainTilePager::requestMergeData(
                 tile->stategroup,
                 engine->runtime);
 
-            //RP_DEBUG << "mergeData -> " << key.str() << std::endl;
+            RP_DEBUG("  merge ok -> {}", key.str());
         }
         else
         {
-            //RP_DEBUG << "merge EMPTY TILE MODEL -> " << key.str() << std::endl;
+            RP_DEBUG("  merge empty -> {}", key.str());
         }
 
         engine->runtime.requestFrame();

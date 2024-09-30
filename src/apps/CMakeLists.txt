@@ -7,7 +7,7 @@ if(ROCKY_RENDERER_VSG)
     endif()
     
     if(ROCKY_SUPPORTS_QT)
-        add_subdirectory(rocky_demoqt)
+        add_subdirectory(rocky_demo_qt)
     endif()
 endif()
 

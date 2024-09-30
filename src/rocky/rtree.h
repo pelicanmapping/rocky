@@ -102,6 +102,9 @@ public:
     int Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS],
         CALLBACK_TYPE callback = [](const DATATYPE&) { return true; }) const;
 
+    /// True if the input intersects any data in the tree
+    bool Intersects(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS]) const;
+
     /// Remove all entries from tree
     void RemoveAll();
 
@@ -569,6 +572,11 @@ int RTREE_QUAL::Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDI
     return foundCount;
 }
 
+RTREE_TEMPLATE
+bool RTREE_QUAL::Intersects(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS]) const
+{
+    return Search(a_min, a_max, [](const DATATYPE&) { return false; }) > 0;
+}
 
 RTREE_TEMPLATE
 int RTREE_QUAL::Count()

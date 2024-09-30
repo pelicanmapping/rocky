@@ -227,17 +227,30 @@ TerrainTileModelFactory::addColorLayers(
 
     // first collect the image layers that have intersecting data.
     std::vector<std::shared_ptr<ImageLayer>> intersecting_layers;
+    bool inLegalRange = false;
+    bool intersects = false;
     for (auto layer : layers)
     {
         auto imageLayer = ImageLayer::cast(layer);
         if (imageLayer)
         {
+            inLegalRange = imageLayer->isKeyInLegalRange(key);
+            intersects = imageLayer->intersects(key);
+
             if (imageLayer->isKeyInLegalRange(key) &&
                 imageLayer->intersects(key))
             {
                 intersecting_layers.push_back(imageLayer);
             }
         }
+    }
+
+    if (intersecting_layers.size() == 0)
+    {
+        Log()->warn("1) layers={} key={} legalrange={} intersects={}", layers.size(), key.str(), inLegalRange, intersects);
+        intersects = ImageLayer::cast(layers.front())->intersects(key);
+        Log()->warn("2) layers={} key={} legalrange={} intersects={}", layers.size(), key.str(), inLegalRange, intersects);
+        return;
     }
 
     if (intersecting_layers.size() == 1 && intersecting_layers.front()->mayHaveData(key))

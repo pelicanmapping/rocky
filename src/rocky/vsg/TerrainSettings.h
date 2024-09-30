@@ -41,7 +41,7 @@ namespace ROCKY_NAMESPACE
         optional<unsigned> maxLevelOfDetail = 19;
 
         //! The level of detail at which the terrain should begin.
-        optional<unsigned> minLevelOfDetail = 1;
+        optional<unsigned> minLevelOfDetail = 0;
 
         //! Size of the tile, in pixels, when using rangeMode = PIXEL_SIZE_ON_SCREEN
         optional<float> tilePixelSize = 256.0f;

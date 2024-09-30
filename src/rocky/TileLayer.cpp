@@ -31,11 +31,6 @@ TileLayer::TileLayer(const JSON& conf) :
     construct(conf);
 }
 
-TileLayer::~TileLayer()
-{
-    dirtyDataExtents();
-}
-
 void
 TileLayer::construct(const JSON& conf)
 {
@@ -118,7 +113,7 @@ TileLayer::closeImplementation()
     _dataExtentsUnion = {};
     if (_dataExtentsIndex)
     {
-        delete _dataExtentsIndex;
+        //delete _dataExtentsIndex;
         _dataExtentsIndex = nullptr;
     }
 
@@ -196,71 +191,78 @@ TileLayer::isKeyInLegalRange(const TileKey& key) const
     return true;
 }
 
-
-std::size_t 
-TileLayer::dataExtentsSize() const
-{
-    std::shared_lock READ(_dataMutex);
-    return _dataExtents.size();
-}
-
-DataExtentList
+const DataExtentList&
 TileLayer::dataExtents() const
 {
-    std::shared_lock READ(_dataMutex);
     return _dataExtents;
 }
 
 void
 TileLayer::setDataExtents(const DataExtentList& dataExtents)
 {
-    std::unique_lock WRITE(_dataMutex);
     _dataExtents = dataExtents;
-    dirtyDataExtents();
-}
 
-void
-TileLayer::addDataExtent(const DataExtent& dataExtent)
-{
-    std::unique_lock WRITE(_dataMutex);
-    _dataExtents.push_back(dataExtent);
-    dirtyDataExtents();
-}
-
-void
-TileLayer::dirtyDataExtents()
-{
-    _dataExtentsUnion = GeoExtent::INVALID;
-    if (_dataExtentsIndex)
+    // rebuild the union:
+    _dataExtentsUnion = {};
+    if (_dataExtents.size() > 0)
     {
-        delete _dataExtentsIndex;
-        _dataExtentsIndex = nullptr;
+        _dataExtentsUnion = _dataExtents[0];
+        for (unsigned int i = 1; i < _dataExtents.size(); i++)
+        {
+            _dataExtentsUnion.expandToInclude(_dataExtents[i]);
+
+            if (_dataExtents[i].minLevel().has_value())
+                _dataExtentsUnion.minLevel() = std::min(_dataExtentsUnion.minLevel().value(), _dataExtents[i].minLevel().value());
+
+            if (_dataExtents[i].maxLevel().has_value())
+                _dataExtentsUnion.maxLevel() = std::max(_dataExtentsUnion.maxLevel().value(), _dataExtents[i].maxLevel().value());
+        }
+    }
+
+    // rebuild the index:
+    double a_min[2], a_max[2];
+    _dataExtentsIndex = std::make_shared<DataExtentsIndex>(); // new DataExtentsIndex();
+
+    for (auto de = _dataExtents.begin(); de != _dataExtents.end(); ++de)
+    {
+        // Build the index in the SRS of this layer
+        GeoExtent extentInLayerSRS = profile().clampAndTransformExtent(*de);
+
+        if (extentInLayerSRS.srs().isGeodetic() && extentInLayerSRS.crossesAntimeridian())
+        {
+            GeoExtent west, east;
+            extentInLayerSRS.splitAcrossAntimeridian(west, east);
+            if (west.valid())
+            {
+                DataExtent new_de(west);
+                new_de.minLevel() = de->minLevel();
+                new_de.maxLevel() = de->maxLevel();
+                a_min[0] = new_de.xmin(), a_min[1] = new_de.ymin();
+                a_max[0] = new_de.xmax(), a_max[1] = new_de.ymax();
+                _dataExtentsIndex->Insert(a_min, a_max, new_de);
+            }
+            if (east.valid())
+            {
+                DataExtent new_de(east);
+                new_de.minLevel() = de->minLevel();
+                new_de.maxLevel() = de->maxLevel();
+                a_min[0] = new_de.xmin(), a_min[1] = new_de.ymin();
+                a_max[0] = new_de.xmax(), a_max[1] = new_de.ymax();
+                _dataExtentsIndex->Insert(a_min, a_max, new_de);
+            }
+        }
+        else
+        {
+            a_min[0] = extentInLayerSRS.xmin(), a_min[1] = extentInLayerSRS.ymin();
+            a_max[0] = extentInLayerSRS.xmax(), a_max[1] = extentInLayerSRS.ymax();
+            _dataExtentsIndex->Insert(a_min, a_max, *de);
+        }
     }
 }
 
 const DataExtent&
 TileLayer::dataExtentsUnion() const
 {
-    if (!_dataExtentsUnion.valid() && _dataExtents.size() > 0)
-    {
-        std::unique_lock WRITE(_dataMutex);
-        {
-            if (!_dataExtentsUnion.valid() && _dataExtents.size() > 0) // double-check
-            {
-                _dataExtentsUnion = _dataExtents[0];
-                for (unsigned int i = 1; i < _dataExtents.size(); i++)
-                {
-                    _dataExtentsUnion.expandToInclude(_dataExtents[i]);
-
-                    if (_dataExtents[i].minLevel().has_value())
-                        _dataExtentsUnion.minLevel() = std::min(_dataExtentsUnion.minLevel().value(), _dataExtents[i].minLevel().value());
-
-                    if (_dataExtents[i].maxLevel().has_value())
-                        _dataExtentsUnion.maxLevel() = std::max(_dataExtentsUnion.maxLevel().value(), _dataExtents[i].maxLevel().value());
-                }
-            }
-        }
-    }
     return _dataExtentsUnion;
 }
 
@@ -323,7 +325,7 @@ TileLayer::bestAvailableTileKey(const TileKey& key) const
     }
 
     // If we have no data extents available, just return the MDL-limited input key.
-    if (dataExtentsSize() == 0)
+    if (_dataExtents.size() == 0)
     {
         return localLOD > MDL ? key.createAncestorKey(MDL) : key;
     }
@@ -341,8 +343,6 @@ TileLayer::bestAvailableTileKey(const TileKey& key) const
         return TileKey::INVALID;
     }
 
-    buildDataExtentsIfNeeded();
-
     bool intersects = false;
     unsigned highestLOD = 0u;
     double a_min[2], a_max[2];
@@ -354,38 +354,39 @@ TileLayer::bestAvailableTileKey(const TileKey& key) const
     a_max[0] = keyExtentInLayerSRS.xmax(); a_max[1] = keyExtentInLayerSRS.ymax();
 
     TileKey bestKey;
-    _dataExtentsIndex->Search(a_min, a_max, [&](const DataExtent& de) {
-        // check that the extent isn't higher-resolution than our key:
-        if (!de.minLevel().has_value() || localLOD >= (int)de.minLevel().value())
+    _dataExtentsIndex->Search(a_min, a_max, [&](const DataExtent& de)
         {
-            // Got an intersetion; now test the LODs:
-            intersects = true;
-
-            // If the maxLevel is not set, there's not enough information
-            // so just assume our key might be good.
-            if (!de.maxLevel().has_value())
+            // check that the extent isn't higher-resolution than our key:
+            if (!de.minLevel().has_value() || localLOD >= (int)de.minLevel().value())
             {
-                bestKey = localLOD > MDL ? key.createAncestorKey(MDL) : key;
-                return false; //Stop searching, we've found a key
+                // Got an intersetion; now test the LODs:
+                intersects = true;
+
+                // If the maxLevel is not set, there's not enough information
+                // so just assume our key might be good.
+                if (!de.maxLevel().has_value())
+                {
+                    bestKey = localLOD > MDL ? key.createAncestorKey(MDL) : key;
+                    return false; //Stop searching, we've found a key
+                }
+
+                // Is our key at a lower or equal LOD than the max key in this extent?
+                // If so, our key is good.
+                else if (localLOD <= (int)de.maxLevel().value())
+                {
+                    bestKey = localLOD > MDL ? key.createAncestorKey(MDL) : key;
+                    return false; //Stop searching, we've found a key
+                }
+
+                // otherwise, record the highest encountered LOD that
+                // intersects our key.
+                else if (de.maxLevel().value() > highestLOD)
+                {
+                    highestLOD = de.maxLevel().value();
+                }
             }
-
-            // Is our key at a lower or equal LOD than the max key in this extent?
-            // If so, our key is good.
-            else if (localLOD <= (int)de.maxLevel().value())
-            {
-                bestKey = localLOD > MDL ? key.createAncestorKey(MDL) : key;
-                return false; //Stop searching, we've found a key
-            }
-
-            // otherwise, record the highest encountered LOD that
-            // intersects our key.
-            else if (de.maxLevel().value() > highestLOD)
-            {
-                highestLOD = de.maxLevel().value();
-            }                        
-        }
-        return true; // Continue searching
-    });
+            return true; // Continue searching
+        });
 
     if (bestKey.valid())
     {
@@ -402,67 +403,10 @@ TileLayer::bestAvailableTileKey(const TileKey& key) const
     return TileKey::INVALID;
 }
 
-void
-TileLayer::buildDataExtentsIfNeeded() const
-{
-    // Build the index if needed.
-    if (!_dataExtentsIndex)
-    {
-        std::unique_lock WRITE(_dataMutex);
-
-        if (!_dataExtentsIndex) // Double check
-        {
-            double a_min[2], a_max[2];
-
-            //ROCKY_INFO << LC << "Building data extents index with " << _dataExtents.size() << " extents" << std::endl;
-            _dataExtentsIndex = new DataExtentsIndex();
-
-            for (auto de = _dataExtents.begin(); de != _dataExtents.end(); ++de)
-            {
-                // Build the index in the SRS of this layer
-                GeoExtent extentInLayerSRS = profile().clampAndTransformExtent(*de);
-
-                if (extentInLayerSRS.srs().isGeodetic() && extentInLayerSRS.crossesAntimeridian())
-                {
-                    GeoExtent west, east;
-                    extentInLayerSRS.splitAcrossAntimeridian(west, east);
-                    if (west.valid())
-                    {
-                        DataExtent new_de(west);
-                        new_de.minLevel() = de->minLevel();
-                        new_de.maxLevel() = de->maxLevel();
-                        a_min[0] = new_de.xmin(), a_min[1] = new_de.ymin();
-                        a_max[0] = new_de.xmax(), a_max[1] = new_de.ymax();
-                        _dataExtentsIndex->Insert(a_min, a_max, new_de);
-                    }
-                    if (east.valid())
-                    {
-                        DataExtent new_de(east);
-                        new_de.minLevel() = de->minLevel();
-                        new_de.maxLevel() = de->maxLevel();
-                        a_min[0] = new_de.xmin(), a_min[1] = new_de.ymin();
-                        a_max[0] = new_de.xmax(), a_max[1] = new_de.ymax();
-                        _dataExtentsIndex->Insert(a_min, a_max, new_de);
-                    }
-                }
-                else
-                {
-                    a_min[0] = extentInLayerSRS.xmin(), a_min[1] = extentInLayerSRS.ymin();
-                    a_max[0] = extentInLayerSRS.xmax(), a_max[1] = extentInLayerSRS.ymax();
-                    _dataExtentsIndex->Insert(a_min, a_max, *de);
-                }
-            }
-        }
-    }
-}
-
 bool
 TileLayer::intersects(const TileKey& key) const
 {
-    bool got_intersection = false;
     double a_min[2], a_max[2];
-
-    buildDataExtentsIfNeeded();
 
     // We must use the equivalent lod b/c the input key can be in any profile.
     unsigned localLOD = profile().valid() ?
@@ -475,7 +419,7 @@ TileLayer::intersects(const TileKey& key) const
     a_min[0] = keyExtentInLayerSRS.xmin(); a_min[1] = keyExtentInLayerSRS.ymin();
     a_max[0] = keyExtentInLayerSRS.xmax(); a_max[1] = keyExtentInLayerSRS.ymax();
 
-    return _dataExtentsIndex->Search(a_min, a_max) > 0;
+    return _dataExtentsIndex->Intersects(a_min, a_max);
 }
 
 bool

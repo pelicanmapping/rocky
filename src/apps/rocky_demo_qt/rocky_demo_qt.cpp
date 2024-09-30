@@ -169,8 +169,6 @@ int main(int argc, char** argv)
         auto layer = rocky::TMSImageLayer::create();
         layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7";
         app.mapNode->map->layers().add(layer);
-        if (layer->status().failed())
-            return layerError(layer);
 #endif
     }
 
