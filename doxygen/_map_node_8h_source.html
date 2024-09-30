@@ -102,7 +102,7 @@ $(function() {
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
 <div class="line"><a name="l00043"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#ab832fad1de31c8075207d1e103f55dac">   43</a></span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_instance_v_s_g.html">InstanceVSG</a> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#ab832fad1de31c8075207d1e103f55dac">instance</a>;</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160; </div>
-<div class="line"><a name="l00046"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a5b34ce3e714d044443d1cd612d99c418">   46</a></span>&#160;        vsg::ref_ptr&lt;TerrainNode&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a5b34ce3e714d044443d1cd612d99c418">terrain</a>;</div>
+<div class="line"><a name="l00046"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a503a25280ca82e690a6942ea2cec2bda">   46</a></span>&#160;        vsg::ref_ptr&lt;TerrainNode&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a503a25280ca82e690a6942ea2cec2bda">terrainNode</a>;</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160; </div>
@@ -118,26 +118,26 @@ $(function() {
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        std::string to_json() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        <span class="keywordtype">void</span> update(<span class="keyword">const</span> vsg::FrameStamp*);</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        <span class="keywordtype">void</span> accept(vsg::RecordTraversal&amp;) <span class="keyword">const override</span>;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        <span class="keywordtype">void</span> construct();</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> _worldSRS;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        vsg::ref_ptr&lt;vsg::Group&gt; _layerNodes;</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        <span class="keywordtype">bool</span> _openedLayers = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    };</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;}</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        <span class="keywordtype">bool</span> update(<span class="keyword">const</span> vsg::FrameStamp*);</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160; </div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        <span class="keywordtype">void</span> accept(vsg::RecordTraversal&amp;) <span class="keyword">const override</span>;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160; </div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        <span class="keywordtype">void</span> construct();</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> _worldSRS;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        vsg::ref_ptr&lt;vsg::Group&gt; _layerNodes;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <span class="keywordtype">bool</span> _openedLayers = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    };</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;}</div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">ROCKY_NAMESPACE::IOOptions</a></div><div class="ttdef"><b>Definition:</b> IOTypes.h:77</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_instance_v_s_g_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_instance_v_s_g.html">ROCKY_NAMESPACE::InstanceVSG</a></div><div class="ttdef"><b>Definition:</b> InstanceVSG.h:20</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html">ROCKY_NAMESPACE::MapNode</a></div><div class="ttdef"><b>Definition:</b> MapNode.h:25</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node_html_a168a62ea9da0d2c6f22c37981e3352eb"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a168a62ea9da0d2c6f22c37981e3352eb">ROCKY_NAMESPACE::MapNode::map</a></div><div class="ttdeci">std::shared_ptr&lt; Map &gt; map</div><div class="ttdoc">Map backing this map node.</div><div class="ttdef"><b>Definition:</b> MapNode.h:40</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node_html_a5b34ce3e714d044443d1cd612d99c418"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a5b34ce3e714d044443d1cd612d99c418">ROCKY_NAMESPACE::MapNode::terrain</a></div><div class="ttdeci">vsg::ref_ptr&lt; TerrainNode &gt; terrain</div><div class="ttdoc">Node rendering the terrain surface.</div><div class="ttdef"><b>Definition:</b> MapNode.h:46</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node_html_a503a25280ca82e690a6942ea2cec2bda"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a503a25280ca82e690a6942ea2cec2bda">ROCKY_NAMESPACE::MapNode::terrainNode</a></div><div class="ttdeci">vsg::ref_ptr&lt; TerrainNode &gt; terrainNode</div><div class="ttdoc">Node rendering the terrain surface.</div><div class="ttdef"><b>Definition:</b> MapNode.h:46</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node_html_ab832fad1de31c8075207d1e103f55dac"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#ab832fad1de31c8075207d1e103f55dac">ROCKY_NAMESPACE::MapNode::instance</a></div><div class="ttdeci">InstanceVSG instance</div><div class="ttdoc">Instance object assocated with this map node.</div><div class="ttdef"><b>Definition:</b> MapNode.h:43</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">ROCKY_NAMESPACE::SRS</a></div><div class="ttdef"><b>Definition:</b> SRS.h:21</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html">ROCKY_NAMESPACE::TerrainSettings</a></div><div class="ttdef"><b>Definition:</b> TerrainSettings.h:18</div></div>

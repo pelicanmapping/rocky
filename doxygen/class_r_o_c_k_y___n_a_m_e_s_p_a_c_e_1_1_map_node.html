@@ -118,10 +118,8 @@ const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settin
 std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a332c678d135c745a69f03fd0343ce4e1">to_json</a> () const</td></tr>
 <tr class="memdesc:a332c678d135c745a69f03fd0343ce4e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serializes the <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html">MapNode</a>. <br /></td></tr>
 <tr class="separator:a332c678d135c745a69f03fd0343ce4e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a45075cb3ce41230d17df37211940d64e"><td class="memItemLeft" align="right" valign="top"><a id="a45075cb3ce41230d17df37211940d64e"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a45075cb3ce41230d17df37211940d64e">update</a> (const vsg::FrameStamp *)</td></tr>
-<tr class="memdesc:a45075cb3ce41230d17df37211940d64e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Call periodically to update the map node and terrain engine. <br /></td></tr>
-<tr class="separator:a45075cb3ce41230d17df37211940d64e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a848e6d3407fab98726449501f044e693"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a848e6d3407fab98726449501f044e693">update</a> (const vsg::FrameStamp *)</td></tr>
+<tr class="separator:a848e6d3407fab98726449501f044e693"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a99ad516f085c7149b14d9c08ab60f7ac"><td class="memItemLeft" align="right" valign="top"><a id="a99ad516f085c7149b14d9c08ab60f7ac"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>accept</b> (vsg::RecordTraversal &amp;) const override</td></tr>
 <tr class="separator:a99ad516f085c7149b14d9c08ab60f7ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -136,14 +134,34 @@ std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_
 <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_instance_v_s_g.html">InstanceVSG</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#ab832fad1de31c8075207d1e103f55dac">instance</a></td></tr>
 <tr class="memdesc:ab832fad1de31c8075207d1e103f55dac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Instance object assocated with this map node. <br /></td></tr>
 <tr class="separator:ab832fad1de31c8075207d1e103f55dac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b34ce3e714d044443d1cd612d99c418"><td class="memItemLeft" align="right" valign="top"><a id="a5b34ce3e714d044443d1cd612d99c418"></a>
-vsg::ref_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html">TerrainNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a5b34ce3e714d044443d1cd612d99c418">terrain</a></td></tr>
-<tr class="memdesc:a5b34ce3e714d044443d1cd612d99c418"><td class="mdescLeft">&#160;</td><td class="mdescRight">Node rendering the terrain surface. <br /></td></tr>
-<tr class="separator:a5b34ce3e714d044443d1cd612d99c418"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a503a25280ca82e690a6942ea2cec2bda"><td class="memItemLeft" align="right" valign="top"><a id="a503a25280ca82e690a6942ea2cec2bda"></a>
+vsg::ref_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html">TerrainNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a503a25280ca82e690a6942ea2cec2bda">terrainNode</a></td></tr>
+<tr class="memdesc:a503a25280ca82e690a6942ea2cec2bda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Node rendering the terrain surface. <br /></td></tr>
+<tr class="separator:a503a25280ca82e690a6942ea2cec2bda"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>VSG Node that renders a map. This node is a "view" component that renders data from a "Map" data model. </p>
-</div><hr/>The documentation for this class was generated from the following files:<ul>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a848e6d3407fab98726449501f044e693"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a848e6d3407fab98726449501f044e693">&#9670;&nbsp;</a></span>update()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool MapNode::update </td>
+          <td>(</td>
+          <td class="paramtype">const vsg::FrameStamp *&#160;</td>
+          <td class="paramname"><em>f</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Call periodically to update the map node and terrain engine </p><dl class="section return"><dt>Returns</dt><dd>true if updates happened </dd></dl>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following files:<ul>
 <li>src/rocky/vsg/<a class="el" href="_map_node_8h_source.html">MapNode.h</a></li>
 <li>src/rocky/vsg/MapNode.cpp</li>
 </ul>

@@ -104,100 +104,104 @@ $(function() {
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;        <span class="keyword">using</span> TileTable = std::unordered_map&lt;TileKey, TableEntry&gt;;</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a4841a4db0df58e318c9135da8eddde6c">TerrainTilePager</a>(</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#ad0ab10bb0cfa2bf647fbb4312e62734c">TerrainTilePager</a>(</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html">Profile</a>&amp; profile,</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html">TerrainSettings</a>&amp; settings,</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host.html">TerrainTileHost</a>* host);</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        ~<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html">TerrainTilePager</a>();</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a4bafb8b5355f29043dadd7feca785862">ping</a>(</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html">TerrainTileNode</a>* tile,</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html">TerrainTileNode</a>* parent,</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;            vsg::RecordTraversal&amp;);</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
-<div class="line"><a name="l00058"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a9bb95f5e2cc8ed34d60de9260c73f5ad">   58</a></span>&#160;        std::size_t <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a9bb95f5e2cc8ed34d60de9260c73f5ad">size</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _tiles.size(); }</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a7f8ec6f8dd925af2f4739f995e5411d1">releaseAll</a>();</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; </div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a0070442253cf7e3c2ebb67317c206a7d">update</a>(</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;            <span class="keyword">const</span> vsg::FrameStamp* fs,</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a>&amp; io,</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;            shared_ptr&lt;TerrainEngine&gt; terrain);</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        vsg::ref_ptr&lt;TerrainTileNode&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#ae757e92157217fdeeb0dbd4ec6158a7a">createTile</a>(</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; key,</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;            vsg::ref_ptr&lt;TerrainTileNode&gt; parent,</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;            shared_ptr&lt;TerrainEngine&gt; terrain);</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        vsg::ref_ptr&lt;TerrainTileNode&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#ae6f4e9469e439c1cdb82175f6e549b5b">getTile</a>(<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; key) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    <span class="comment">//protected:</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a>&amp; runtime,</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host.html">TerrainTileHost</a>* host);</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        ~<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html">TerrainTilePager</a>();</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160; </div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a4bafb8b5355f29043dadd7feca785862">ping</a>(</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html">TerrainTileNode</a>* tile,</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html">TerrainTileNode</a>* parent,</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;            vsg::RecordTraversal&amp;);</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; </div>
+<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a9bb95f5e2cc8ed34d60de9260c73f5ad">   59</a></span>&#160;        std::size_t <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a9bb95f5e2cc8ed34d60de9260c73f5ad">size</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _tiles.size(); }</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a7f8ec6f8dd925af2f4739f995e5411d1">releaseAll</a>();</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        <span class="keywordtype">bool</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#adf3949573975775e543852c5f6e2d8dc">update</a>(</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;            <span class="keyword">const</span> vsg::FrameStamp* fs,</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a>&amp; io,</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;            shared_ptr&lt;TerrainEngine&gt; terrain);</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        vsg::ref_ptr&lt;TerrainTileNode&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#ae757e92157217fdeeb0dbd4ec6158a7a">createTile</a>(</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; key,</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;            vsg::ref_ptr&lt;TerrainTileNode&gt; parent,</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;            shared_ptr&lt;TerrainEngine&gt; terrain);</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        vsg::ref_ptr&lt;TerrainTileNode&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#ae6f4e9469e439c1cdb82175f6e549b5b">getTile</a>(<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; key) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        TileTable _tiles;</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        Tracker _tracker;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        <span class="keyword">mutable</span> std::mutex _mutex;</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host.html">TerrainTileHost</a>* _host;</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html">TerrainSettings</a>&amp; _settings;</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        <span class="keywordtype">bool</span> _updateViewerRequired = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160; </div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        std::vector&lt;TileKey&gt; _loadSubtiles;</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        std::vector&lt;TileKey&gt; _loadElevation;</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        std::vector&lt;TileKey&gt; _mergeElevation;</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        std::vector&lt;TileKey&gt; _loadData;</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        std::vector&lt;TileKey&gt; _mergeData; </div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        std::vector&lt;TileKey&gt; _updateData;</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        <span class="keywordtype">unsigned</span> _firstLOD = 0u;</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160; </div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="comment">//protected:</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160; </div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        TileTable _tiles;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        Tracker _tracker;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        <span class="keywordtype">int</span> _lastTrackerFlushFrame = -1;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        <span class="keyword">mutable</span> std::mutex _mutex;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host.html">TerrainTileHost</a>* _host;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html">TerrainSettings</a>&amp; _settings;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a>&amp; _runtime;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        <span class="keywordtype">bool</span> _updateViewerRequired = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        std::vector&lt;TileKey&gt; _loadSubtiles;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        std::vector&lt;TileKey&gt; _loadElevation;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        std::vector&lt;TileKey&gt; _mergeElevation;</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        std::vector&lt;TileKey&gt; _loadData;</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        std::vector&lt;TileKey&gt; _mergeData; </div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        std::vector&lt;TileKey&gt; _updateData;</div>
 <div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160; </div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;        <span class="keywordtype">void</span> requestLoadSubtiles(</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;            vsg::ref_ptr&lt;TerrainTileNode&gt; parent,</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;            shared_ptr&lt;TerrainEngine&gt; terrain) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;        <span class="keywordtype">unsigned</span> _firstLOD = 0u;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="keyword">private</span>:</div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160; </div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        <span class="keywordtype">void</span> requestLoadElevation(</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;            vsg::ref_ptr&lt;TerrainTileNode&gt; tile,</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a>&amp; io,</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;            shared_ptr&lt;TerrainEngine&gt; terrain) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;        <span class="keywordtype">void</span> requestMergeElevation(</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;            vsg::ref_ptr&lt;TerrainTileNode&gt; tile,</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a>&amp; io,</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;            shared_ptr&lt;TerrainEngine&gt; terrain) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160; </div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;        <span class="keywordtype">void</span> requestLoadData(</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;            vsg::ref_ptr&lt;TerrainTileNode&gt; tile,</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a>&amp; io,</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;            shared_ptr&lt;TerrainEngine&gt; terrain) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160; </div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;        <span class="keywordtype">void</span> requestMergeData(</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;            vsg::ref_ptr&lt;TerrainTileNode&gt; tile,</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a>&amp; io,</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;            shared_ptr&lt;TerrainEngine&gt; terrain) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160; </div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;        <span class="keywordtype">void</span> getRanges(</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; key,</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;            <span class="keywordtype">float</span>&amp; out_range,</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;            <span class="keywordtype">float</span>&amp; out_startMorphRange,</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;            <span class="keywordtype">float</span>&amp; out_endMorphRange) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160; </div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;        <span class="keywordtype">float</span> getRange(<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; key) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;    };</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;}</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        <span class="keywordtype">void</span> requestLoadSubtiles(</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;            vsg::ref_ptr&lt;TerrainTileNode&gt; parent,</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;            shared_ptr&lt;TerrainEngine&gt; terrain) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;        <span class="keywordtype">void</span> requestLoadElevation(</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;            vsg::ref_ptr&lt;TerrainTileNode&gt; tile,</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a>&amp; io,</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;            shared_ptr&lt;TerrainEngine&gt; terrain) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;        <span class="keywordtype">void</span> requestMergeElevation(</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;            vsg::ref_ptr&lt;TerrainTileNode&gt; tile,</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a>&amp; io,</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;            shared_ptr&lt;TerrainEngine&gt; terrain) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160; </div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;        <span class="keywordtype">void</span> requestLoadData(</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;            vsg::ref_ptr&lt;TerrainTileNode&gt; tile,</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a>&amp; io,</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;            shared_ptr&lt;TerrainEngine&gt; terrain) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160; </div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;        <span class="keywordtype">void</span> requestMergeData(</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;            vsg::ref_ptr&lt;TerrainTileNode&gt; tile,</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a>&amp; io,</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;            shared_ptr&lt;TerrainEngine&gt; terrain) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160; </div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;        <span class="keywordtype">void</span> getRanges(</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; key,</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;            <span class="keywordtype">float</span>&amp; out_range,</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;            <span class="keywordtype">float</span>&amp; out_startMorphRange,</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;            <span class="keywordtype">float</span>&amp; out_endMorphRange) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160; </div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;        <span class="keywordtype">float</span> getRange(<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; key) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    };</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;}</div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">ROCKY_NAMESPACE::IOOptions</a></div><div class="ttdef"><b>Definition:</b> IOTypes.h:77</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html">ROCKY_NAMESPACE::Profile</a></div><div class="ttdef"><b>Definition:</b> Profile.h:22</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">ROCKY_NAMESPACE::Runtime</a></div><div class="ttdef"><b>Definition:</b> Runtime.h:36</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html">ROCKY_NAMESPACE::TerrainSettings</a></div><div class="ttdef"><b>Definition:</b> TerrainSettings.h:18</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host.html">ROCKY_NAMESPACE::TerrainTileHost</a></div><div class="ttdef"><b>Definition:</b> TerrainTileHost.h:20</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html">ROCKY_NAMESPACE::TerrainTileNode</a></div><div class="ttdef"><b>Definition:</b> TerrainTileNode.h:95</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html">ROCKY_NAMESPACE::TerrainTilePager</a></div><div class="ttdef"><b>Definition:</b> TerrainTilePager.h:22</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_html_a0070442253cf7e3c2ebb67317c206a7d"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a0070442253cf7e3c2ebb67317c206a7d">ROCKY_NAMESPACE::TerrainTilePager::update</a></div><div class="ttdeci">void update(const vsg::FrameStamp *fs, const IOOptions &amp;io, shared_ptr&lt; TerrainEngine &gt; terrain)</div><div class="ttdoc">Update traversal.</div><div class="ttdef"><b>Definition:</b> TerrainTilePager.cpp:154</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_html_a4841a4db0df58e318c9135da8eddde6c"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a4841a4db0df58e318c9135da8eddde6c">ROCKY_NAMESPACE::TerrainTilePager::TerrainTilePager</a></div><div class="ttdeci">TerrainTilePager(const Profile &amp;profile, const TerrainSettings &amp;settings, TerrainTileHost *host)</div><div class="ttdoc">Consturct the tile manager.</div><div class="ttdef"><b>Definition:</b> TerrainTilePager.cpp:32</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_html_a4bafb8b5355f29043dadd7feca785862"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a4bafb8b5355f29043dadd7feca785862">ROCKY_NAMESPACE::TerrainTilePager::ping</a></div><div class="ttdeci">void ping(TerrainTileNode *tile, const TerrainTileNode *parent, vsg::RecordTraversal &amp;)</div><div class="ttdef"><b>Definition:</b> TerrainTilePager.cpp:64</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_html_a7f8ec6f8dd925af2f4739f995e5411d1"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a7f8ec6f8dd925af2f4739f995e5411d1">ROCKY_NAMESPACE::TerrainTilePager::releaseAll</a></div><div class="ttdeci">void releaseAll()</div><div class="ttdoc">Empty the registry, releasing all tiles.</div><div class="ttdef"><b>Definition:</b> TerrainTilePager.cpp:49</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_html_a9bb95f5e2cc8ed34d60de9260c73f5ad"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a9bb95f5e2cc8ed34d60de9260c73f5ad">ROCKY_NAMESPACE::TerrainTilePager::size</a></div><div class="ttdeci">std::size_t size() const</div><div class="ttdoc">Number of tiles in the registry.</div><div class="ttdef"><b>Definition:</b> TerrainTilePager.h:58</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_html_ae6f4e9469e439c1cdb82175f6e549b5b"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#ae6f4e9469e439c1cdb82175f6e549b5b">ROCKY_NAMESPACE::TerrainTilePager::getTile</a></div><div class="ttdeci">vsg::ref_ptr&lt; TerrainTileNode &gt; getTile(const TileKey &amp;key) const</div><div class="ttdef"><b>Definition:</b> TerrainTilePager.cpp:306</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_html_ae757e92157217fdeeb0dbd4ec6158a7a"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#ae757e92157217fdeeb0dbd4ec6158a7a">ROCKY_NAMESPACE::TerrainTilePager::createTile</a></div><div class="ttdeci">vsg::ref_ptr&lt; TerrainTileNode &gt; createTile(const TileKey &amp;key, vsg::ref_ptr&lt; TerrainTileNode &gt; parent, shared_ptr&lt; TerrainEngine &gt; terrain)</div><div class="ttdoc">Create a single terrain tile.</div><div class="ttdef"><b>Definition:</b> TerrainTilePager.cpp:267</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_html_a4bafb8b5355f29043dadd7feca785862"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a4bafb8b5355f29043dadd7feca785862">ROCKY_NAMESPACE::TerrainTilePager::ping</a></div><div class="ttdeci">void ping(TerrainTileNode *tile, const TerrainTileNode *parent, vsg::RecordTraversal &amp;)</div><div class="ttdef"><b>Definition:</b> TerrainTilePager.cpp:66</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_html_a7f8ec6f8dd925af2f4739f995e5411d1"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a7f8ec6f8dd925af2f4739f995e5411d1">ROCKY_NAMESPACE::TerrainTilePager::releaseAll</a></div><div class="ttdeci">void releaseAll()</div><div class="ttdoc">Empty the registry, releasing all tiles.</div><div class="ttdef"><b>Definition:</b> TerrainTilePager.cpp:51</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_html_a9bb95f5e2cc8ed34d60de9260c73f5ad"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a9bb95f5e2cc8ed34d60de9260c73f5ad">ROCKY_NAMESPACE::TerrainTilePager::size</a></div><div class="ttdeci">std::size_t size() const</div><div class="ttdoc">Number of tiles in the registry.</div><div class="ttdef"><b>Definition:</b> TerrainTilePager.h:59</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_html_ad0ab10bb0cfa2bf647fbb4312e62734c"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#ad0ab10bb0cfa2bf647fbb4312e62734c">ROCKY_NAMESPACE::TerrainTilePager::TerrainTilePager</a></div><div class="ttdeci">TerrainTilePager(const Profile &amp;profile, const TerrainSettings &amp;settings, Runtime &amp;runtime, TerrainTileHost *host)</div><div class="ttdoc">Consturct the tile manager.</div><div class="ttdef"><b>Definition:</b> TerrainTilePager.cpp:32</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_html_adf3949573975775e543852c5f6e2d8dc"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#adf3949573975775e543852c5f6e2d8dc">ROCKY_NAMESPACE::TerrainTilePager::update</a></div><div class="ttdeci">bool update(const vsg::FrameStamp *fs, const IOOptions &amp;io, shared_ptr&lt; TerrainEngine &gt; terrain)</div><div class="ttdef"><b>Definition:</b> TerrainTilePager.cpp:155</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_html_ae6f4e9469e439c1cdb82175f6e549b5b"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#ae6f4e9469e439c1cdb82175f6e549b5b">ROCKY_NAMESPACE::TerrainTilePager::getTile</a></div><div class="ttdeci">vsg::ref_ptr&lt; TerrainTileNode &gt; getTile(const TileKey &amp;key) const</div><div class="ttdef"><b>Definition:</b> TerrainTilePager.cpp:324</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager_html_ae757e92157217fdeeb0dbd4ec6158a7a"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#ae757e92157217fdeeb0dbd4ec6158a7a">ROCKY_NAMESPACE::TerrainTilePager::createTile</a></div><div class="ttdeci">vsg::ref_ptr&lt; TerrainTileNode &gt; createTile(const TileKey &amp;key, vsg::ref_ptr&lt; TerrainTileNode &gt; parent, shared_ptr&lt; TerrainEngine &gt; terrain)</div><div class="ttdoc">Create a single terrain tile.</div><div class="ttdef"><b>Definition:</b> TerrainTilePager.cpp:285</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">ROCKY_NAMESPACE::TileKey</a></div><div class="ttdef"><b>Definition:</b> TileKey.h:22</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
 </div><!-- fragment --></div><!-- contents -->

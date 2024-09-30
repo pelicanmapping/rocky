@@ -213,9 +213,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator.html#a50d910882f4ba880c2d85c75ac649192">isTethering</a> () const</td></tr>
 <tr class="memdesc:a50d910882f4ba880c2d85c75ac649192"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if the user set a <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_viewpoint.html">Viewpoint</a> with a tethering target. <br /></td></tr>
 <tr class="separator:a50d910882f4ba880c2d85c75ac649192"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abc2be95a353c857e705b609775b3d086"><td class="memItemLeft" align="right" valign="top"><a id="abc2be95a353c857e705b609775b3d086"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator.html#abc2be95a353c857e705b609775b3d086">put</a> (vsg::ref_ptr&lt; vsg::Object &gt; object)</td></tr>
-<tr class="memdesc:abc2be95a353c857e705b609775b3d086"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store a reference to this manipulator in another object. <br /></td></tr>
+<tr class="memitem:abc2be95a353c857e705b609775b3d086"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator.html#abc2be95a353c857e705b609775b3d086">put</a> (vsg::ref_ptr&lt; vsg::Object &gt; object)</td></tr>
+<tr class="memdesc:abc2be95a353c857e705b609775b3d086"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the manipulator is in the middle of any multi-frame operation.  <a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator.html#abc2be95a353c857e705b609775b3d086">More...</a><br /></td></tr>
 <tr class="separator:abc2be95a353c857e705b609775b3d086"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a095abedfc782498afc0e0445be0f7009"><td class="memItemLeft" align="right" valign="top"><a id="a095abedfc782498afc0e0445be0f7009"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>apply</b> (vsg::KeyPressEvent &amp;keyPress) override</td></tr>
@@ -380,9 +379,10 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>setViewpointFrame</
 <tr class="memitem:ad4f9aafd4bf29a6ff9ee25d05fdb7216"><td class="memItemLeft" align="right" valign="top"><a id="ad4f9aafd4bf29a6ff9ee25d05fdb7216"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>updateTether</b> (const vsg::time_point &amp;t)</td></tr>
 <tr class="separator:ad4f9aafd4bf29a6ff9ee25d05fdb7216"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a58a8a17a0ca68cb52ff3061c8fe28644"><td class="memItemLeft" align="right" valign="top"><a id="a58a8a17a0ca68cb52ff3061c8fe28644"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>updateCamera</b> ()</td></tr>
-<tr class="separator:a58a8a17a0ca68cb52ff3061c8fe28644"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7e3c105f9e2c222e9669438a0ad62550"><td class="memItemLeft" align="right" valign="top"><a id="a7e3c105f9e2c222e9669438a0ad62550"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator.html#a7e3c105f9e2c222e9669438a0ad62550">updateCamera</a> ()</td></tr>
+<tr class="memdesc:a7e3c105f9e2c222e9669438a0ad62550"><td class="mdescLeft">&#160;</td><td class="mdescRight">returns true if the camera changed. <br /></td></tr>
+<tr class="separator:a7e3c105f9e2c222e9669438a0ad62550"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -502,6 +502,27 @@ static Action&#160;</td><td class="memItemRight" valign="bottom"><b>NullAction</
 </table>
 </div><div class="memdoc">
 <p>compute non dimensional window coordinate (-1,1) from event coords code adopted from VSG </p>
+
+</div>
+</div>
+<a id="abc2be95a353c857e705b609775b3d086"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abc2be95a353c857e705b609775b3d086">&#9670;&nbsp;</a></span>put()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MapManipulator::put </td>
+          <td>(</td>
+          <td class="paramtype">vsg::ref_ptr&lt; vsg::Object &gt;&#160;</td>
+          <td class="paramname"><em>object</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Whether the manipulator is in the middle of any multi-frame operation. </p>
+<p>Store a reference to this manipulator in another object </p>
 
 </div>
 </div>

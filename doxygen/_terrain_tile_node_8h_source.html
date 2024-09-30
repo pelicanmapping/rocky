@@ -199,50 +199,50 @@ $(function() {
 <div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160; </div>
 <div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;        <span class="keywordtype">void</span> unloadSubtiles(<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a>&amp;);</div>
 <div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160; </div>
-<div class="line"><a name="l00146"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html#a6a8b733021fc8cf1eb99cf27db3152bb">  146</a></span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html#a6a8b733021fc8cf1eb99cf27db3152bb">update</a>(<span class="keyword">const</span> vsg::FrameStamp*, <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a>&amp;) { }</div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160; </div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160; </div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;        <span class="keywordtype">void</span> accept(vsg::RecordTraversal&amp; visitor) <span class="keyword">const override</span>;</div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;        </div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;    <span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160; </div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;        <span class="keyword">mutable</span> <span class="keywordtype">bool</span> _needsSubtiles;</div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;        <span class="keyword">mutable</span> <span class="keywordtype">bool</span> _needsUpdate;</div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host.html">TerrainTileHost</a>* _host;</div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160; </div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;        <span class="comment">// set the tile&#39;s render model equal to the specified parent&#39;s</span></div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;        <span class="comment">// render model, and then apply a scale bias matrix so it</span></div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;        <span class="comment">// inherits the textures.</span></div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;        <span class="keywordtype">void</span> inheritFrom(vsg::ref_ptr&lt;TerrainTileNode&gt; parent);</div>
-<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160; </div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160; </div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;        <span class="keywordtype">bool</span> shouldSubDivide(vsg::State* state) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160; </div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;        <span class="keywordtype">void</span> recomputeBound();</div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160; </div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">bool</span> subtilesExist()<span class="keyword"> const </span>{</div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;            <span class="keywordflow">return</span> children.size() &gt;= 2;</div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;        }</div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160; </div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;        <span class="keyword">inline</span> TerrainTileNode* subTile(<span class="keywordtype">unsigned</span> i)<span class="keyword"> const</span></div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;<span class="keyword">        </span>{</div>
-<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">static_cast&lt;</span>TerrainTileNode*<span class="keyword">&gt;</span>(</div>
-<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;                <span class="keyword">static_cast&lt;</span>vsg::QuadGroup*<span class="keyword">&gt;</span>(children[1].get())-&gt;children[i].get());</div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;        }</div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160; </div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;        <span class="keyword">friend</span> <span class="keyword">class </span>TerrainTilePager;</div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;    };</div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;}</div>
+<div class="line"><a name="l00147"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html#aacf5640f899188fc112078511ee2b600">  147</a></span>&#160;        <span class="keywordtype">bool</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html#aacf5640f899188fc112078511ee2b600">update</a>(<span class="keyword">const</span> vsg::FrameStamp*, <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a>&amp;) { <span class="keywordflow">return</span> <span class="keyword">false</span>; }</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160; </div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160; </div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;        <span class="keywordtype">void</span> accept(vsg::RecordTraversal&amp; visitor) <span class="keyword">const override</span>;</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;        </div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    <span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160; </div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;        <span class="keyword">mutable</span> <span class="keywordtype">bool</span> _needsSubtiles;</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;        <span class="keyword">mutable</span> <span class="keywordtype">bool</span> _needsUpdate;</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host.html">TerrainTileHost</a>* _host;</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160; </div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;        <span class="comment">// set the tile&#39;s render model equal to the specified parent&#39;s</span></div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;        <span class="comment">// render model, and then apply a scale bias matrix so it</span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;        <span class="comment">// inherits the textures.</span></div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;        <span class="keywordtype">void</span> inheritFrom(vsg::ref_ptr&lt;TerrainTileNode&gt; parent);</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160; </div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160; </div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;        <span class="keywordtype">bool</span> shouldSubDivide(vsg::State* state) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160; </div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;        <span class="keywordtype">void</span> recomputeBound();</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160; </div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">bool</span> subtilesExist()<span class="keyword"> const </span>{</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;            <span class="keywordflow">return</span> children.size() &gt;= 2;</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;        }</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160; </div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;        <span class="keyword">inline</span> TerrainTileNode* subTile(<span class="keywordtype">unsigned</span> i)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;<span class="keyword">        </span>{</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">static_cast&lt;</span>TerrainTileNode*<span class="keyword">&gt;</span>(</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;                <span class="keyword">static_cast&lt;</span>vsg::QuadGroup*<span class="keyword">&gt;</span>(children[1].get())-&gt;children[i].get());</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;        }</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160; </div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;        <span class="keyword">friend</span> <span class="keyword">class </span>TerrainTilePager;</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;    };</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;}</div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">ROCKY_NAMESPACE::IOOptions</a></div><div class="ttdef"><b>Definition:</b> IOTypes.h:77</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">ROCKY_NAMESPACE::Runtime</a></div><div class="ttdef"><b>Definition:</b> Runtime.h:36</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">ROCKY_NAMESPACE::SRS</a></div><div class="ttdef"><b>Definition:</b> SRS.h:21</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host.html">ROCKY_NAMESPACE::TerrainTileHost</a></div><div class="ttdef"><b>Definition:</b> TerrainTileHost.h:20</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html">ROCKY_NAMESPACE::TerrainTileNode</a></div><div class="ttdef"><b>Definition:</b> TerrainTileNode.h:95</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node_html_a4ae365249b50005c6a086c1d2ffafd30"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html#a4ae365249b50005c6a086c1d2ffafd30">ROCKY_NAMESPACE::TerrainTileNode::getElevationMatrix</a></div><div class="ttdeci">const glm::dmat4 &amp; getElevationMatrix() const</div><div class="ttdoc">This node's elevation matrix.</div><div class="ttdef"><b>Definition:</b> TerrainTileNode.h:137</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node_html_a6a8b733021fc8cf1eb99cf27db3152bb"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html#a6a8b733021fc8cf1eb99cf27db3152bb">ROCKY_NAMESPACE::TerrainTileNode::update</a></div><div class="ttdeci">void update(const vsg::FrameStamp *, const IOOptions &amp;)</div><div class="ttdoc">Update this node (placeholder)</div><div class="ttdef"><b>Definition:</b> TerrainTileNode.h:146</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node_html_a8c256e0b5b6122ce57463e26beb85165"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html#a8c256e0b5b6122ce57463e26beb85165">ROCKY_NAMESPACE::TerrainTileNode::getElevationRaster</a></div><div class="ttdeci">shared_ptr&lt; Image &gt; getElevationRaster() const</div><div class="ttdoc">This node's elevation raster image.</div><div class="ttdef"><b>Definition:</b> TerrainTileNode.h:132</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node_html_aacf5640f899188fc112078511ee2b600"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html#aacf5640f899188fc112078511ee2b600">ROCKY_NAMESPACE::TerrainTileNode::update</a></div><div class="ttdeci">bool update(const vsg::FrameStamp *, const IOOptions &amp;)</div><div class="ttdef"><b>Definition:</b> TerrainTileNode.h:147</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">ROCKY_NAMESPACE::TileKey</a></div><div class="ttdef"><b>Definition:</b> TileKey.h:22</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_af01f4eb53e72c4be729979cd946c295d"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">ROCKY_NAMESPACE::Revision</a></div><div class="ttdeci">std::int32_t Revision</div><div class="ttdoc">revision type</div><div class="ttdef"><b>Definition:</b> Common.h:45</div></div>
