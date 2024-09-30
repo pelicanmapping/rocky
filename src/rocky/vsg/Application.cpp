@@ -366,13 +366,10 @@ Application::frame()
 
     t_start = std::chrono::steady_clock::now();
 
-    bool renderFrame = false;
-
-    if (instance.renderOnDemand() == false || instance.runtime().renderRequests > 0)
-    {
-        instance.runtime().renderRequests--;
-        renderFrame = true;
-    }
+    // whether we need to render a new frame based on the renderOnDemand state:
+    bool renderFrame =
+        instance.renderOnDemand() == false ||
+        instance.runtime().renderRequests.exchange(0) > 0;
 
     if (renderFrame)
     {
@@ -467,6 +464,12 @@ Application::frame()
                 std::this_thread::sleep_for(dur_us);
             }
         }
+
+        auto t_end = std::chrono::steady_clock::now();
+
+        stats.record = std::chrono::microseconds(0);
+        stats.present = std::chrono::microseconds(0);
+        stats.frame = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start);
     }
 
     return viewer->active();
