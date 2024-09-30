@@ -43,7 +43,7 @@ namespace ROCKY_NAMESPACE
         InstanceVSG instance;
 
         //! Node rendering the terrain surface
-        vsg::ref_ptr<TerrainNode> terrain;
+        vsg::ref_ptr<TerrainNode> terrainNode;
 
     public:
 

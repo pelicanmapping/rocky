@@ -120,17 +120,11 @@ ImageLayer::createImageImplementation_internal(const TileKey& key, const IOOptio
 Result<GeoImage>
 ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) const
 {
-    // If the layer is disabled, bail out.
-    if ( !isOpen() )
-    {
-        return Result(GeoImage::INVALID);
-    }
-
     // Make sure the request is in range.
     // TODO: perhaps this should be a call to mayHaveData(key) instead.
     if ( !isKeyInLegalRange(key) )
     {
-        return Result(GeoImage::INVALID);
+        return GeoImage::INVALID;
     }
 
     Result<GeoImage> result;

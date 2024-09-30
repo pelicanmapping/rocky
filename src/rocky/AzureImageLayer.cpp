@@ -68,15 +68,15 @@ AzureImageLayer::openImplementation(const IOOptions& io)
     if (parent.failed())
         return parent;
 
-    _profile = Profile::SPHERICAL_MERCATOR;
-    setDataExtents({ _profile->extent() });
+    setProfile(Profile::SPHERICAL_MERCATOR);
+    setDataExtents({ profile().extent() });
 
     // copy this so we can add headers
     _uriContext = mapTileApiUrl->context();
     _uriContext.headers.emplace("subscription-key", subscriptionKey.value());
 
     // test fetch to make sure the API key is valid
-    TileKey test(1, 0, 0, _profile);
+    TileKey test(1, 0, 0, profile());
     auto result = createImageImplementation(test, io);
     if (result.status.failed())
     {

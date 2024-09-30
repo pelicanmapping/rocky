@@ -205,7 +205,7 @@ int main(int argc, char** argv)
     {
 #ifdef ROCKY_HAS_TMS
         auto imagery = rocky::TMSImageLayer::create();
-        imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7";
+        imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
         layers.add(imagery);
 
         // add an elevation layer to the map

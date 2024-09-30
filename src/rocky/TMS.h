@@ -138,11 +138,6 @@ namespace ROCKY_NAMESPACE
 
             //! Source information structure
             TileMap tileMap;
-
-        private:
-            bool _forceRGBWrites;
-
-            //bool resolveWriter(const std::string& format);
         };
     }
 }

@@ -44,8 +44,8 @@ MapNode::MapNode(const JSON& conf, const InstanceVSG& instance) :
 void
 MapNode::construct()
 {
-    terrain = TerrainNode::create(instance.runtime());
-    addChild(terrain);
+    terrainNode = TerrainNode::create(instance.runtime());
+    addChild(terrainNode);
 
     // make a group for the model layers.  This node is a PagingManager instead of a regular Group to allow PagedNode's to be used within the layers.
     _layerNodes = vsg::Group::create();
@@ -64,9 +64,9 @@ MapNode::from_json(const std::string& JSON, const IOOptions& io)
         status = map->from_json(j["map"].dump(), io);
     }
 
-    if (status.ok() && terrain)
+    if (status.ok() && terrainNode)
     {
-        status = terrain->from_json(j["terrain"].dump(), io);
+        status = terrainNode->from_json(j["terrain"].dump(), io);
     }
 
     return status;
@@ -82,9 +82,9 @@ MapNode::to_json() const
         j["map"] = json::parse(map->to_json());
     }
 
-    if (terrain)
+    if (terrainNode)
     {
-        j["terrain"] = json::parse(terrain->to_json());
+        j["terrain"] = json::parse(terrainNode->to_json());
     }
 
     return j.dump();
@@ -93,13 +93,13 @@ MapNode::to_json() const
 const TerrainSettings&
 MapNode::terrainSettings() const
 {
-    return *terrain.get();
+    return *terrainNode.get();
 }
 
 TerrainSettings&
 MapNode::terrainSettings()
 {
-    return *terrain.get();
+    return *terrainNode.get();
 }
 
 const SRS&
@@ -125,13 +125,13 @@ bool
 MapNode::update(const vsg::FrameStamp* f)
 {
     ROCKY_HARD_ASSERT_STATUS(instance.status());
-    ROCKY_HARD_ASSERT(map != nullptr && terrain != nullptr);
+    ROCKY_HARD_ASSERT(map != nullptr && terrainNode != nullptr);
 
     bool changes = false;
 
-    if (terrain->map == nullptr)
+    if (terrainNode->map == nullptr)
     {
-        auto st = terrain->setMap(map, worldSRS());
+        auto st = terrainNode->setMap(map, worldSRS());
 
         if (st.failed())
         {
@@ -146,7 +146,7 @@ MapNode::update(const vsg::FrameStamp* f)
         _openedLayers = true;
     }
 
-    return terrain->update(f, instance.io());
+    return terrainNode->update(f, instance.io());
 }
 
 void
@@ -168,7 +168,7 @@ MapNode::accept(vsg::RecordTraversal& rv) const
 
     rv.setValue("worldsrs", worldSRS());
 
-    rv.setObject("TerrainTileHost", terrain);
+    rv.setObject("TerrainTileHost", terrainNode);
 
     Inherit::accept(rv);
 }

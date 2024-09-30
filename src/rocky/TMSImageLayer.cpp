@@ -73,7 +73,7 @@ TMSImageLayer::openImplementation(const IOOptions& io)
 
     if (driver_profile != profile())
     {
-        setProfileAsDefault(driver_profile);
+        setProfile(driver_profile);
     }
 
     // If the layer name is unset, try to set it from the tileMap title.

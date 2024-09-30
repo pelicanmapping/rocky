@@ -63,7 +63,7 @@ namespace ROCKY_NAMESPACE
         //! on information gathered from source metadata. If your Layer
         //! needs the user to expressly set a profile, override this to
         //! make it public.
-        void setProfile(const Profile&);
+        void setPermanentProfile(const Profile&);
 
         //! Tiling profile for this layer
         const Profile& profile() const;
@@ -111,14 +111,16 @@ namespace ROCKY_NAMESPACE
     protected: // Layer
 
         Status openImplementation(const IOOptions&) override;
+        
+        void closeImplementation() override;
 
     protected:
 
         //! Call this if you call dataExtents() and modify it.
         void dirtyDataExtents();
 
-        //! Sets the layer profile as a default value (won't be serialized).
-        void setProfileAsDefault(const Profile&);
+        //! Sets the layer profile to use now (will not be serialized)
+        void setProfile(const Profile&);
 
         //! Assign a data extents collection to the layer
         virtual void setDataExtents(const DataExtentList& dataExtents);
@@ -135,7 +137,9 @@ namespace ROCKY_NAMESPACE
         optional<unsigned> _maxDataLevel = 99;
         optional<unsigned> _tileSize = 256;
         optional<GeoExtent> _crop;
-        optional<Profile> _profile;
+        optional<Profile> _originalProfile;
+        
+        optional<Profile> _runtimeProfile;
 
         virtual ~TileLayer();
 

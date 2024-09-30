@@ -44,8 +44,8 @@ TileLayer::construct(const JSON& conf)
     get_to(j, "max_resolution", _maxResolution);
     get_to(j, "max_data_level", _maxDataLevel);
     get_to(j, "min_level", _minLevel);
-    get_to(j, "profile", _profile);
     get_to(j, "tile_size", _tileSize);
+    get_to(j, "profile", _originalProfile);
 }
 
 JSON
@@ -56,8 +56,8 @@ TileLayer::to_json() const
     set(j, "max_resolution", _maxResolution);
     set(j, "max_data_level", _maxDataLevel);
     set(j, "min_level", _minLevel);
-    set(j, "profile", _profile);
     set(j, "tile_size", _tileSize);
+    set(j, "profile", _originalProfile);
     return j.dump();
 }
 
@@ -104,27 +104,44 @@ TileLayer::openImplementation(const IOOptions& io)
     auto result = super::openImplementation(io);
     if (result.ok())
     {
-        //todo
+        _runtimeProfile = _originalProfile;
     }
     return result;
+}
+
+void
+TileLayer::closeImplementation()
+{
+    _runtimeProfile = _originalProfile;
+
+    _dataExtents.clear();
+    _dataExtentsUnion = {};
+    if (_dataExtentsIndex)
+    {
+        delete _dataExtentsIndex;
+        _dataExtentsIndex = nullptr;
+    }
+
+    super::closeImplementation();
 }
 
 const Profile&
 TileLayer::profile() const
 {
-    return _profile;
+    return _runtimeProfile;
+}
+
+void
+TileLayer::setPermanentProfile(const Profile& profile)
+{
+    _originalProfile = profile;
+    setProfile(profile);
 }
 
 void
 TileLayer::setProfile(const Profile& profile)
 {
-    _profile = profile;
-}
-
-void
-TileLayer::setProfileAsDefault(const Profile& profile)
-{
-    _profile.set_default(profile);
+    _runtimeProfile = profile;
 }
 
 bool

@@ -585,7 +585,6 @@ TileMap::TileMap(
 
         // Convert the bounds to the output profile
         GeoExtent bounds = profile.clampAndTransformExtent(e);
-        //GeoExtent bounds = e.transform(profile.srs());
         minX = bounds.xmin();
         minY = bounds.ymin();
         maxX = bounds.xmax();
@@ -627,9 +626,7 @@ ROCKY_NAMESPACE::TMS::readTileMap(const URI& location, const IOOptions& io)
 void
 TMS::Driver::close()
 {
-    tileMap = TileMap();
-    //_writer = nullptr;
-    //_forceRGBWrites = false;
+    tileMap = {};
 }
 
 Status

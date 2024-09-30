@@ -35,6 +35,9 @@ namespace ROCKY_NAMESPACE
         //! Map to render, and SRS to render it in
         const Status& setMap(shared_ptr<Map> new_map, const SRS& world_srs);
 
+        //! Clear out the terrain and rebuild it from the map model
+        void reset();
+
         //! Deserialize from JSON
         Status from_json(const std::string& JSON, const IOOptions& io);
 

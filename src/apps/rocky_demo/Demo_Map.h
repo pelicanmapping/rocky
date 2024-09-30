@@ -57,21 +57,41 @@ auto Demo_Map = [](Application& app)
             ImGui::PushID(layer->uid());
 
             bool stylePushed = false;
-            if (layer->status().failed())
+            if (layer->status().failed() && layer->status().message != "Layer closed")
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 72, 72))), stylePushed = true;
+            else if (!layer->isOpen())
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(127, 127, 127))), stylePushed = true;
 
             ImGui::PushID("selectable");
             bool layerClicked = false;
-            if (layer->name().empty())
+            bool open = layer->isOpen();
+            if (ImGui::Checkbox("##selectable", &open))
             {
-                std::string name = std::string("- Unnamed ") + layer->getLayerTypeName() + " layer";
-                ImGui::Selectable(name.c_str(), &layerClicked);
+                bool resetTerrain = false;
+                if (open)
+                {
+                    resetTerrain = layer->open(app.io()).ok();
+                }
+                else
+                {
+                    layer->close();
+                    resetTerrain = true;
+                }
+
+                if (resetTerrain)
+                    app.mapNode->terrainNode->reset();
             }
+
+            ImGui::SameLine();
+
+            std::string name =
+                layer->name().empty() ? std::string(" Unnamed ") + layer->getLayerTypeName() + " layer" :
+                layer->name();
+
+            if (layer->isOpen())
+                ImGui::Selectable(name.c_str(), &layerClicked);
             else
-            {
-                std::string name = std::string("- ") + layer->name();
-                ImGui::Selectable(name.c_str(), &layerClicked);
-            }
+                ImGui::Text(name.c_str());
 
             if (layerClicked)
             {
@@ -79,7 +99,7 @@ auto Demo_Map = [](Application& app)
             }
             ImGui::PopID();
 
-            if (layerExpanded[i])
+            if (layerExpanded[i] && layer->isOpen())
             {
                 ImGui::Indent();
                 if (ImGuiLTable::Begin("layerdeets"))
@@ -117,5 +137,10 @@ auto Demo_Map = [](Application& app)
         }
 
         ++i;
+    }
+
+    if (ImGui::Button("Refresh"))
+    {
+        app.mapNode->terrainNode->reset();
     }
 };

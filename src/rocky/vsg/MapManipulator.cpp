@@ -1112,7 +1112,7 @@ MapManipulator::intersect(const vsg::dvec3& start, const vsg::dvec3& end, vsg::d
     {
         vsg::LineSegmentIntersector lsi(start, end);
 
-        mapNode->terrain->accept(lsi);
+        mapNode->terrainNode->accept(lsi);
 
         if (!lsi.intersections.empty())
         {

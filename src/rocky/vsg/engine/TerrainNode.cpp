@@ -50,6 +50,13 @@ TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(new_map, status);
 
+    // remove old hooks:
+    if (map)
+    {
+        map->onLayerAdded.remove(std::uintptr_t(this));
+        map->onLayerRemoved.remove(std::uintptr_t(this));
+    }
+
     map = new_map;
 
     _worldSRS = new_worldSRS;
@@ -60,12 +67,31 @@ TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
             new_map->srs();
     }
 
+    if (map)
+    {
+        map->onLayerAdded([this](shared_ptr<Layer>, unsigned, Revision) {
+            reset();
+            });
+
+        map->onLayerRemoved([this](shared_ptr<Layer>, Revision) {
+            reset();
+            });
+    }
+
     engine = nullptr;
 
     // erase everything so the map will reinitialize
     this->children.clear();
     status = StatusOK;
     return status;
+}
+
+void
+TerrainNode::reset()
+{
+    engine = nullptr;
+    children.clear(); // wait, do we need to dispose stuff?
+    status = Status_OK;
 }
 
 Status
@@ -134,6 +160,8 @@ TerrainNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
         }
         else
         {
+            ROCKY_HARD_ASSERT(engine);
+
             if (engine->tiles.update(fs, io, engine))
                 changes = true;
 
