@@ -50,14 +50,17 @@ jobs:
     - name: 'Setup NuGet Credentials'
       working-directory: ${{ matrix.VCPKG_WORKSPACE }}
       shell: 'bash'
-      run: >
-        ${{ matrix.mono }} `./vcpkg/vcpkg fetch nuget | tail -n 1`
-        sources add
-        -source "https://nuget.pkg.github.com/pelicanmapping/index.json"
-        -storepasswordincleartext
-        -name "GitHub"
-        -username "pelicanmapping"
-        -password "${{ secrets.GITHUB_TOKEN }}"
+      run: |
+        ${{ matrix.mono }} `./vcpkg/vcpkg fetch nuget | tail -n 1` \
+        sources add \
+        -source "https://nuget.pkg.github.com/${{ github.actor }}/index.json" \
+        -storepasswordincleartext \
+        -name "GitHub" \
+        -username "${{ github.actor }}" \
+        -password "${{ secrets.GITHUB_TOKEN }}" 
+        ${{ matrix.mono }} `./vcpkg/vcpkg fetch nuget | tail -n 1` \
+          setapikey "${{ secrets.GITHUB_TOKEN }}" \
+          -source "https://nuget.pkg.github.com/${{ github.actor }}/index.json"
 
     - name: Create Build Environment
       run: |
@@ -73,8 +76,7 @@ jobs:
       if: ${{ failure() }}
       with:
         name: cmake-log
-        path: |
-          ${{ runner.workspace }}/build/CMakeCache.txt
+        path: ${{ runner.workspace }}/build/CMakeCache.txt
         retention-days: 1
 
     - name: Build
