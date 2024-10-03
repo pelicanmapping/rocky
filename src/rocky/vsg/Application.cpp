@@ -367,11 +367,11 @@ Application::frame()
     t_start = std::chrono::steady_clock::now();
 
     // whether we need to render a new frame based on the renderOnDemand state:
-    bool renderFrame =
+    runtime().renderingEnabled =
         instance.renderOnDemand() == false ||
         instance.runtime().renderRequests.exchange(0) > 0;
 
-    if (renderFrame)
+    if (runtime().renderingEnabled)
     {
         if (!viewer->advanceToNextFrame())
             return false;

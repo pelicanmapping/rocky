@@ -250,32 +250,34 @@ TerrainTilePager::update(const vsg::FrameStamp* fs, const IOOptions& io, shared_
     // Flush unused tiles (i.e., tiles that failed to ping) out of the system.
     // Tiles ping their children all at once; this should in theory prevent
     // a child from expiring without its siblings.
-    bool disposeOrphanedTiles = (fs->frameCount - _lastTrackerFlushFrame) >= 2;
-
-    const auto dispose = [&](TerrainTileNode* tile)
-        {
-            if (disposeOrphanedTiles && !tile->doNotExpire)
+    // Only do this is the frame advanced - otherwise just leave it be.
+    if (fs->frameCount > _lastUpdate)
+    {
+        const auto dispose = [&](TerrainTileNode* tile)
             {
-                auto key = tile->key;
-                auto parent_iter = _tiles.find(key.createParentKey());
-                if (parent_iter != _tiles.end())
+                if (!tile->doNotExpire)
                 {
-                    auto parent = parent_iter->second._tile;
-                    if (parent.valid())
+                    auto key = tile->key;
+                    auto parent_iter = _tiles.find(key.createParentKey());
+                    if (parent_iter != _tiles.end())
                     {
-                        parent->unloadSubtiles(terrain->runtime);
+                        auto parent = parent_iter->second._tile;
+                        if (parent.valid())
+                        {
+                            parent->unloadSubtiles(terrain->runtime);
+                        }
                     }
+                    _tiles.erase(key);
+                    return true;
                 }
-                _tiles.erase(key);
-                return true;
-            }
-            return false;
-        };
+                return false;
+            };
 
-    _tracker.flush(~0, dispose);
+        _tracker.flush(~0, dispose);
+    }
 
     // synchronize
-    _lastTrackerFlushFrame = fs->frameCount;
+    _lastUpdate = fs->frameCount;
 
     return changes;
 }

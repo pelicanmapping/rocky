@@ -164,7 +164,7 @@ TerrainNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
 
             if (engine->tiles.update(fs, io, engine))
                 changes = true;
-
+            
             engine->geometryPool.sweep(engine->runtime);
         }
     }

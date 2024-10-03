@@ -163,7 +163,8 @@ MapNode::accept(vsg::RecordTraversal& rv) const
         }
 
         auto eye = vsg::inverse(rv.getState()->modelviewMatrixStack.top()) * vsg::dvec3(0, 0, 0);
-        horizon->setEye(to_glm(eye));
+        bool is_ortho = rv.getState()->projectionMatrixStack.top()(3, 3) != 0.0;
+        horizon->setEye(to_glm(eye), is_ortho);
     }
 
     rv.setValue("worldsrs", worldSRS());

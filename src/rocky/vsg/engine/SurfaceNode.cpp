@@ -166,12 +166,17 @@ SurfaceNode::recomputeBound()
         m * ((corner(0) + corner(3)) * 0.5)
     };
 
-    // Adjust the horizon ellipsoid based on the minimum Z value of the tile;
-    // necessary because a tile that's below the ellipsoid (ocean floor, e.g.)
-    // may be visible even if it doesn't pass the horizon-cone test. In such
-    // cases we need a more conservative ellipsoid.
-    //double zMin = std::min(_localbbox.min.z, 0.0);
-    //_horizon.setEllipsoid(Ellipsoid(_horizonCullDistance + zMin, _horizonCullDistance + zMin));
+    // finally, calculate a horizon culling point for the tile.
+    std::vector<glm::dvec3> world_mesh;
+    world_mesh.reserve(_proxyMesh.size());
+    for (auto& v : _proxyMesh) {
+        auto world = m * vsg::dvec4(v.x, v.y, v.z, 1.0);
+        world_mesh.emplace_back(world.x, world.y, world.z);
+    }
+    auto& ellipsoid = _tileKey.profile().srs().ellipsoid();
+    _horizonCullingPoint = to_vsg(ellipsoid.calculateHorizonPoint(world_mesh));
+    _horizonCullingPoint_valid = _horizonCullingPoint != vsg::dvec3(0, 0, 0);
+
 
 #ifdef RENDER_TILE_BBOX
     if (children.size() == 2)

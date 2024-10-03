@@ -35,7 +35,7 @@ namespace ROCKY_NAMESPACE
         optional<float> minTileRangeFactor = 7.0;
 
         //! Acceptable error, in pixels, when rendering terrain tiles.
-        optional<float> screenSpaceError = 64.0f;
+        optional<float> screenSpaceError = 128.0f;
 
         //! The maximum level of detail to which the terrain should subdivide.
         optional<unsigned> maxLevelOfDetail = 19;
@@ -43,7 +43,7 @@ namespace ROCKY_NAMESPACE
         //! The level of detail at which the terrain should begin.
         optional<unsigned> minLevelOfDetail = 0;
 
-        //! Size of the tile, in pixels, when using rangeMode = PIXEL_SIZE_ON_SCREEN
+        //! Size of the highest resolution imagery tile, in pixels
         optional<float> tilePixelSize = 256.0f;
 
         //! Ratio of skirt height to tile width. The "skirt" is geometry extending
@@ -54,8 +54,8 @@ namespace ROCKY_NAMESPACE
         //! Color of the untextured globe (where no imagery is displayed)
         optional<Color> color = Color::White;
 
-        //! Target concurrency of terrain data loading operations.
-        optional<unsigned> concurrency = 1; // 4;
+        //! Number of threads dedicated to loading terrain data
+        optional<unsigned> concurrency = 4;
 
     public: // internal runtime settings, not serialized.
 

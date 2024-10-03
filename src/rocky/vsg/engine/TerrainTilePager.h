@@ -83,7 +83,7 @@ namespace ROCKY_NAMESPACE
 
         TileTable _tiles;
         Tracker _tracker;
-        int _lastTrackerFlushFrame = -1;
+        std::uint64_t _lastUpdate = 0;
         mutable std::mutex _mutex;
         TerrainTileHost* _host;
         const TerrainSettings& _settings;

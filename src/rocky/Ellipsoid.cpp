@@ -263,18 +263,8 @@ Ellipsoid::set(double re, double rp)
     double f = (_re - _rp) / _re;
     _ecc2 = (2.0 * f) - (f * f);
 
-    _ellipsoidToUnitSphere = glm::dmat3(
-        1.0 / re, 0, 0,
-        0, 1.0 / re, 0,
-        0, 0, 1.0 / rp);
-
-    _unitSphereToEllipsoid = glm::dmat3(
-        re, 0, 0,
-        0, re, 0,
-        0, 0, rp);
-
-    //_ellipsoidToUnitSphere.makeScale(1.0 / er, 1.0 / er, 1.0 / pr);
-    //_unitSphereToEllipsoid.makeScale(er, er, pr);
+    _ellipsoidToUnitSphere = glm::dvec3(1.0 / re, 1.0 / re, 1.0 / rp);
+    _unitSphereToEllipsoid = glm::dvec3(re, re, rp);
 }
 
 double
@@ -396,11 +386,9 @@ Ellipsoid::geodesicInterpolate(
 
     glm::dvec3 w1 = geodeticToGeocentric(lla1_deg) * _ellipsoidToUnitSphere;
     w1 = glm::normalize(w1);
-    //w1.normalize();
 
     glm::dvec3 w2 = geodeticToGeocentric(lla2_deg) * _ellipsoidToUnitSphere;
     w2 = glm::normalize(w2);
-    //w2.normalize();
 
     // Geometric slerp in unit sphere space
     // https://en.wikipedia.org/wiki/Slerp#Geometric_Slerp
@@ -430,4 +418,45 @@ Ellipsoid::geodesicInterpolate(
 
     output = geocentricToGeodetic(n);
     output.z = lla1_deg.z + t * deltaZ;
+}
+
+
+
+glm::dvec3
+Ellipsoid::calculateHorizonPoint(const std::vector<glm::dvec3>& points) const
+{
+    double max_magnitude = 0.0;
+
+    glm::dvec3 unit_culling_point_dir; // vector along which to calculate the horizon point
+    std::vector<glm::dvec3> unit_points;
+    unit_points.reserve(points.size());
+    for (auto& point : points)
+    {
+        unit_points.emplace_back(point * _ellipsoidToUnitSphere);
+        unit_culling_point_dir += unit_points.back();
+    }
+    unit_culling_point_dir = glm::normalize(unit_culling_point_dir);
+
+    for (auto& unit_point : unit_points)
+    {
+        auto mag2 = util::lengthSquared(unit_point);
+        auto mag = sqrt(mag2);
+        auto point_dir = unit_point / mag;
+
+        // clamp to ellipsoid
+        mag2 = std::max(1.0, mag2);
+        mag = std::max(1.0, mag);
+
+        auto cos_alpha = glm::dot(point_dir, unit_culling_point_dir);
+        auto sin_alpha = glm::length(glm::cross(point_dir, unit_culling_point_dir));
+        auto cos_beta = 1.0 / mag;
+        auto sin_beta = sqrt(mag2 - 1.0) * cos_beta;
+
+        auto culling_point_mag = 1.0 / (cos_alpha * cos_beta - sin_alpha * sin_beta);
+
+        max_magnitude = std::max(max_magnitude, culling_point_mag);
+    }
+
+    auto unit_culling_point = unit_culling_point_dir * max_magnitude;
+    return unit_culling_point * _unitSphereToEllipsoid;
 }

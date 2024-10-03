@@ -64,6 +64,9 @@ namespace ROCKY_NAMESPACE
             ++renderRequests;
         }
 
+        //! Whether rendering is enabled in the current frame.
+        bool renderingEnabled = true;
+
         //! Shared shader compile settings. Use this to insert shader defines
         //! that should be used throughout the application; things like enabling
         //! lighting, debug visuals, etc.

@@ -7,6 +7,7 @@
 
 #include <rocky/Common.h>
 #include <rocky/Math.h>
+#include <vector>
 
 namespace ROCKY_NAMESPACE
 {
@@ -90,6 +91,8 @@ namespace ROCKY_NAMESPACE
             const glm::dvec3& p1,
             glm::dvec3& out) const;
 
+        glm::dvec3 calculateHorizonPoint(const std::vector<glm::dvec3>& points) const;
+
         //! dtor
         ~Ellipsoid();
 
@@ -108,8 +111,8 @@ namespace ROCKY_NAMESPACE
 
         double _re, _rp, _ecc2;
         std::string _name;
-        glm::dmat3 _ellipsoidToUnitSphere;
-        glm::dmat3 _unitSphereToEllipsoid;
+        glm::dvec3 _ellipsoidToUnitSphere;
+        glm::dvec3 _unitSphereToEllipsoid;
     };
 }
 

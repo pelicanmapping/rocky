@@ -50,22 +50,8 @@ namespace ROCKY_NAMESPACE
         //! World-space visibility check (includes bounding box
         //! and horizon checks)
         inline bool isVisible(vsg::State* state) const;
-     
-#if 0
-        // A box can have 4 children. 
-        // Returns true if any child box intersects the sphere of radius centered around point
-        inline bool anyChildBoxIntersectsSphere(const vsg::dvec3& point, float radiusSquared) {
-            for(int c=0; c<4; ++c) {
-                for(int j=0; j<8; ++j) {
-                    if ( length2(_childrenCorners[c][j]-point) < radiusSquared )
-                        return true;
-                }
-            }
-            return false;
-        }
-#endif
 
-        bool anyChildBoxWithinRange(float range, vsg::State* state) const
+        inline bool anyChildBoxWithinRange(float range, vsg::State* state) const
         {
             for (unsigned i = 0u; i < 18u; ++i) {
                 if (distanceTo(_worldPoints[i], state) <= range)
@@ -91,6 +77,8 @@ namespace ROCKY_NAMESPACE
         bool _boundsDirty;
         Runtime& _runtime;
         std::vector<vsg::vec3> _proxyMesh;
+        vsg::dvec3 _horizonCullingPoint;
+        bool _horizonCullingPoint_valid = false;
     };
 
 
@@ -116,18 +104,22 @@ namespace ROCKY_NAMESPACE
         shared_ptr<Horizon> horizon;
         if (state->getValue("horizon", horizon))
         {
-            for (p = 0; p < 4; ++p)
+            if (_horizonCullingPoint_valid)
             {
-                auto& wp = _worldPoints[p];
-                if (horizon->isVisible(wp.x, wp.y, wp.z))
-                    return true;
+                return horizon->isVisible(_horizonCullingPoint);
             }
+            else
+            {
+                for (p = 0; p < 4; ++p)
+                {
+                    auto& wp = _worldPoints[p];
+                    if (horizon->isVisible(wp.x, wp.y, wp.z))
+                        return true;
+                }
+                return false;
+            }
+        }
 
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        return true;
     }
 }
