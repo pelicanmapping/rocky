@@ -88,18 +88,17 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a13da910586a3a8aac139f5f3de0d6717"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a32f05ace9d77feb0f8b0c9975a02f73c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_horizon.html#a32f05ace9d77feb0f8b0c9975a02f73c">setEllipsoid</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html">Ellipsoid</a> &amp;ellipsoid)</td></tr>
 <tr class="separator:a32f05ace9d77feb0f8b0c9975a02f73c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad85a934919e3a7be95dc65c33734ce78"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_horizon.html#ad85a934919e3a7be95dc65c33734ce78">setMinHAE</a> (double meters)</td></tr>
-<tr class="separator:ad85a934919e3a7be95dc65c33734ce78"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f3ce07ca861f52b0a0c71b5b8329b13"><td class="memItemLeft" align="right" valign="top"><a id="a0f3ce07ca861f52b0a0c71b5b8329b13"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><b>getMinHAE</b> () const</td></tr>
-<tr class="separator:a0f3ce07ca861f52b0a0c71b5b8329b13"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3eea6e93485b602b372139fc4859032e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_horizon.html#a3eea6e93485b602b372139fc4859032e">setEye</a> (const glm::dvec3 &amp;eyeECEF)</td></tr>
-<tr class="separator:a3eea6e93485b602b372139fc4859032e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab5f90acd84f5334753177c159482dc9a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_horizon.html#ab5f90acd84f5334753177c159482dc9a">setEye</a> (const glm::dvec3 &amp;eyeECEF, bool isOrtho=false)</td></tr>
+<tr class="separator:ab5f90acd84f5334753177c159482dc9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6ea125583649ca17580908ef107460d1"><td class="memItemLeft" align="right" valign="top"><a id="a6ea125583649ca17580908ef107460d1"></a>
 const glm::dvec3 &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getEye</b> () const</td></tr>
 <tr class="separator:a6ea125583649ca17580908ef107460d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b328e3c789e4353fbbb0cc7d0c3b37b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_horizon.html#a5b328e3c789e4353fbbb0cc7d0c3b37b">isVisible</a> (double x, double y, double z, double radius=0.0) const</td></tr>
 <tr class="separator:a5b328e3c789e4353fbbb0cc7d0c3b37b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acfaec1e4eece62f7b715f707ff7898ba"><td class="memTemplParams" colspan="2"><a id="acfaec1e4eece62f7b715f707ff7898ba"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:acfaec1e4eece62f7b715f707ff7898ba"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><b>isVisible</b> (const T &amp;vec3, double radius=0.0) const</td></tr>
+<tr class="separator:acfaec1e4eece62f7b715f707ff7898ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a328e0eb731413398310078ffe1c27baa"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_horizon.html#a328e0eb731413398310078ffe1c27baa">getDistanceToVisibleHorizon</a> () const</td></tr>
 <tr class="separator:a328e0eb731413398310078ffe1c27baa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab417a55985b21276a2721ffd2a3f0992"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_horizon.html#ab417a55985b21276a2721ffd2a3f0992">getRadius</a> () const</td></tr>
@@ -111,8 +110,11 @@ Protected Attributes</h2></td></tr>
 <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html">Ellipsoid</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_em</b></td></tr>
 <tr class="separator:a70d51d344c90299dff935d99e610999d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab95de912e0795e2dad65cae21d15c9e7"><td class="memItemLeft" align="right" valign="top"><a id="ab95de912e0795e2dad65cae21d15c9e7"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>_valid</b></td></tr>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>_valid</b> = false</td></tr>
 <tr class="separator:ab95de912e0795e2dad65cae21d15c9e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa64d0f5beb79354b83fb70031262fe19"><td class="memItemLeft" align="right" valign="top"><a id="aa64d0f5beb79354b83fb70031262fe19"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>_orthographic</b> = false</td></tr>
+<tr class="separator:aa64d0f5beb79354b83fb70031262fe19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a44c038f2f164bc2a415e235ef2cbd34b"><td class="memItemLeft" align="right" valign="top"><a id="a44c038f2f164bc2a415e235ef2cbd34b"></a>
 glm::dvec3&#160;</td><td class="memItemRight" valign="bottom"><b>_eye</b></td></tr>
 <tr class="separator:a44c038f2f164bc2a415e235ef2cbd34b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -123,19 +125,19 @@ glm::dvec3&#160;</td><td class="memItemRight" valign="bottom"><b>_eyeUnit</b></t
 glm::dvec3&#160;</td><td class="memItemRight" valign="bottom"><b>_VC</b></td></tr>
 <tr class="separator:a0871e36dcddd33ea363be9760e8044ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a505b6cd9d69bf6534423d1fd3f4c5762"><td class="memItemLeft" align="right" valign="top"><a id="a505b6cd9d69bf6534423d1fd3f4c5762"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><b>_VCmag</b></td></tr>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>_VCmag</b> = 0.0</td></tr>
 <tr class="separator:a505b6cd9d69bf6534423d1fd3f4c5762"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afb5368c9dd8b1c94b2f53431a7a05f3a"><td class="memItemLeft" align="right" valign="top"><a id="afb5368c9dd8b1c94b2f53431a7a05f3a"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><b>_VCmag2</b></td></tr>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>_VCmag2</b> = 0.0</td></tr>
 <tr class="separator:afb5368c9dd8b1c94b2f53431a7a05f3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af10fedb3b22fc33ce3076127af3ed68b"><td class="memItemLeft" align="right" valign="top"><a id="af10fedb3b22fc33ce3076127af3ed68b"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><b>_VHmag2</b></td></tr>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>_VHmag2</b> = 0.0</td></tr>
 <tr class="separator:af10fedb3b22fc33ce3076127af3ed68b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a13781e7669eb0a86e8a7c8a7cf1eb513"><td class="memItemLeft" align="right" valign="top"><a id="a13781e7669eb0a86e8a7c8a7cf1eb513"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><b>_coneCos</b></td></tr>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>_coneCos</b> = 0.0</td></tr>
 <tr class="separator:a13781e7669eb0a86e8a7c8a7cf1eb513"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1592a7935d1abc39a45cb8d0a7797193"><td class="memItemLeft" align="right" valign="top"><a id="a1592a7935d1abc39a45cb8d0a7797193"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><b>_coneTan</b></td></tr>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>_coneTan</b> = 0.0</td></tr>
 <tr class="separator:a1592a7935d1abc39a45cb8d0a7797193"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d835873b7ec34f885740c2776d48757"><td class="memItemLeft" align="right" valign="top"><a id="a6d835873b7ec34f885740c2776d48757"></a>
 glm::dvec3&#160;</td><td class="memItemRight" valign="bottom"><b>_scale</b></td></tr>
@@ -144,10 +146,10 @@ glm::dvec3&#160;</td><td class="memItemRight" valign="bottom"><b>_scale</b></td>
 glm::dvec3&#160;</td><td class="memItemRight" valign="bottom"><b>_scaleInv</b></td></tr>
 <tr class="separator:a498577a46a003f2da3d5530f834859e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a47d0fee97c3737ca9d46789d60c7f938"><td class="memItemLeft" align="right" valign="top"><a id="a47d0fee97c3737ca9d46789d60c7f938"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><b>_minHAE</b></td></tr>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>_minHAE</b> = 0.0</td></tr>
 <tr class="separator:a47d0fee97c3737ca9d46789d60c7f938"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af77f0783b0adcd57591f9617b2e50f04"><td class="memItemLeft" align="right" valign="top"><a id="af77f0783b0adcd57591f9617b2e50f04"></a>
-double&#160;</td><td class="memItemRight" valign="bottom"><b>_minVCmag</b></td></tr>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>_minVCmag</b> = 0.0</td></tr>
 <tr class="separator:af77f0783b0adcd57591f9617b2e50f04"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -192,7 +194,7 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>_minVCmag</b></td><
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Sets the output variable to the horizon plane plane with its normal pointing at the eye. Caclulate distance from eye to visible horizon </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Caclulate distance from eye to visible horizon </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">Distance</td><td>(meters) to the visible horizon </td></tr>
   </table>
@@ -291,8 +293,8 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>_minVCmag</b></td><
 
 </div>
 </div>
-<a id="a3eea6e93485b602b372139fc4859032e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3eea6e93485b602b372139fc4859032e">&#9670;&nbsp;</a></span>setEye()</h2>
+<a id="ab5f90acd84f5334753177c159482dc9a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab5f90acd84f5334753177c159482dc9a">&#9670;&nbsp;</a></span>setEye()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -301,36 +303,28 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>_minVCmag</b></td><
           <td class="memname">bool Horizon::setEye </td>
           <td>(</td>
           <td class="paramtype">const glm::dvec3 &amp;&#160;</td>
-          <td class="paramname"><em>eyeECEF</em></td><td>)</td>
+          <td class="paramname"><em>eyeECEF</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>isOrtho</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p>Sets the eye position to use when testing for occlusion. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">eyeECEF</td><td>eye point in world geocentric coordinates Returns true if the value changed; false if it was the same </td></tr>
+    <tr><td class="paramname">eyeECEF</td><td>eye point in world geocentric coordinates </td></tr>
+    <tr><td class="paramname">isOrtho</td><td>true if the camera is using an orthographic projection Returns true if the value changed; false if it was the same </td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="ad85a934919e3a7be95dc65c33734ce78"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad85a934919e3a7be95dc65c33734ce78">&#9670;&nbsp;</a></span>setMinHAE()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void Horizon::setMinHAE </td>
-          <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>meters</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Set the minimum allowable height-above-ellipsoid to consider when doing horizon visibility testing. </p>
 
 </div>
 </div>

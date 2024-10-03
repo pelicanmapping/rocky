@@ -121,67 +121,69 @@ $(function() {
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;            ++renderRequests;</div>
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        }</div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160; </div>
-<div class="line"><a name="l00070"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aef76367fc28a2b4cf720029593ed5719">   70</a></span>&#160;        vsg::ref_ptr&lt;vsg::ShaderCompileSettings&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aef76367fc28a2b4cf720029593ed5719">shaderCompileSettings</a>;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160; </div>
-<div class="line"><a name="l00074"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#ab062912583bd17db99cd32c7b3bd08c8">   74</a></span>&#160;        <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">Revision</a> shaderSettingsRevision = 0;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
-<div class="line"><a name="l00079"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aeedc54d1c8fb0519cc10d0cafaea0b9f">   79</a></span>&#160;        <span class="keywordtype">bool</span> asyncCompile = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
-<div class="line"><a name="l00083"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aaf300a439df1f27df59e752351fe1759">   83</a></span>&#160;        std::function&lt;void(vsg::ref_ptr&lt;vsg::Object&gt;)&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aaf300a439df1f27df59e752351fe1759">disposer</a>;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160; </div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        <span class="keywordtype">void</span> onNextUpdate(</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;            vsg::ref_ptr&lt;vsg::Operation&gt; <span class="keyword">function</span>,</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;            std::function&lt;<span class="keywordtype">float</span>()&gt; get_priority = {});</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160; </div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        <span class="keywordtype">void</span> onNextUpdate(</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;            std::function&lt;<span class="keywordtype">void</span>()&gt; <span class="keyword">function</span>);</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160; </div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;        <span class="keywordtype">void</span> compile(vsg::ref_ptr&lt;vsg::Object&gt; <span class="keywordtype">object</span>);</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160; </div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;        <span class="keywordtype">void</span> dispose(vsg::ref_ptr&lt;vsg::Object&gt; <span class="keywordtype">object</span>);</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;        jobs::future&lt;bool&gt; compileAndAddChild(</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;            vsg::ref_ptr&lt;vsg::Group&gt; parent,</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;            std::function&lt;vsg::ref_ptr&lt;vsg::Node&gt;(Cancelable&amp;)&gt; factory,</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;            <span class="keyword">const</span> jobs::context&amp; config = { });</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160; </div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;        <span class="keywordtype">void</span> removeNode(</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;            vsg::Group* parent,</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;            <span class="keywordtype">unsigned</span> index);</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160; </div>
-<div class="line"><a name="l00132"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a269f5b61c4e532503e1c446fa495c739">  132</a></span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a269f5b61c4e532503e1c446fa495c739">dirtyShaders</a>() {</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;            shaderSettingsRevision++;</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;        }</div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160; </div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;        <span class="keywordtype">bool</span> update();</div>
+<div class="line"><a name="l00068"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a39a5c266287a5d30e386a2b931730bdc">   68</a></span>&#160;        <span class="keywordtype">bool</span> renderingEnabled = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
+<div class="line"><a name="l00073"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aef76367fc28a2b4cf720029593ed5719">   73</a></span>&#160;        vsg::ref_ptr&lt;vsg::ShaderCompileSettings&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aef76367fc28a2b4cf720029593ed5719">shaderCompileSettings</a>;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
+<div class="line"><a name="l00077"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#ab062912583bd17db99cd32c7b3bd08c8">   77</a></span>&#160;        <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">Revision</a> shaderSettingsRevision = 0;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
+<div class="line"><a name="l00082"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aeedc54d1c8fb0519cc10d0cafaea0b9f">   82</a></span>&#160;        <span class="keywordtype">bool</span> asyncCompile = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160; </div>
+<div class="line"><a name="l00086"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aaf300a439df1f27df59e752351fe1759">   86</a></span>&#160;        std::function&lt;void(vsg::ref_ptr&lt;vsg::Object&gt;)&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aaf300a439df1f27df59e752351fe1759">disposer</a>;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160; </div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160; </div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        <span class="keywordtype">void</span> onNextUpdate(</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;            vsg::ref_ptr&lt;vsg::Operation&gt; <span class="keyword">function</span>,</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;            std::function&lt;<span class="keywordtype">float</span>()&gt; get_priority = {});</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160; </div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;        <span class="keywordtype">void</span> onNextUpdate(</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;            std::function&lt;<span class="keywordtype">void</span>()&gt; <span class="keyword">function</span>);</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;        <span class="keywordtype">void</span> compile(vsg::ref_ptr&lt;vsg::Object&gt; <span class="keywordtype">object</span>);</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160; </div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;        <span class="keywordtype">void</span> dispose(vsg::ref_ptr&lt;vsg::Object&gt; <span class="keywordtype">object</span>);</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160; </div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;        jobs::future&lt;bool&gt; compileAndAddChild(</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;            vsg::ref_ptr&lt;vsg::Group&gt; parent,</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;            std::function&lt;vsg::ref_ptr&lt;vsg::Node&gt;(Cancelable&amp;)&gt; factory,</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;            <span class="keyword">const</span> jobs::context&amp; config = { });</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160; </div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;        <span class="keywordtype">void</span> removeNode(</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;            vsg::Group* parent,</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;            <span class="keywordtype">unsigned</span> index);</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160; </div>
+<div class="line"><a name="l00135"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a269f5b61c4e532503e1c446fa495c739">  135</a></span>&#160;        <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a269f5b61c4e532503e1c446fa495c739">dirtyShaders</a>() {</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;            shaderSettingsRevision++;</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;        }</div>
 <div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160; </div>
-<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;        <span class="comment">// for (some) update operations</span></div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;        vsg::ref_ptr&lt;vsg::Operation&gt; _priorityUpdateQueue;</div>
-<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160; </div>
-<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;        <span class="comment">// containers for compilation and integrating the results</span></div>
-<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;        <span class="keyword">mutable</span> std::shared_mutex _compileMutex;</div>
-<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;        std::queue&lt;vsg::ref_ptr&lt;vsg::Object&gt;&gt; _toCompile;</div>
-<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;        std::vector&lt;vsg::CompileResult&gt; _compileResults;</div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160; </div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;        <span class="comment">// deferred deletion container</span></div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;        <span class="keyword">mutable</span> std::shared_mutex _deferred_unref_mutex;</div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;        std::list&lt;std::vector&lt;vsg::ref_ptr&lt;vsg::Object&gt;&gt;&gt; _deferred_unref_queue;</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;    };</div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;}</div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160; </div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;        <span class="keywordtype">bool</span> update();</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160; </div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;        <span class="comment">// for (some) update operations</span></div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;        vsg::ref_ptr&lt;vsg::Operation&gt; _priorityUpdateQueue;</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160; </div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;        <span class="comment">// containers for compilation and integrating the results</span></div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;        <span class="keyword">mutable</span> std::shared_mutex _compileMutex;</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;        std::queue&lt;vsg::ref_ptr&lt;vsg::Object&gt;&gt; _toCompile;</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;        std::vector&lt;vsg::CompileResult&gt; _compileResults;</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160; </div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;        <span class="comment">// deferred deletion container</span></div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;        <span class="keyword">mutable</span> std::shared_mutex _deferred_unref_mutex;</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;        std::list&lt;std::vector&lt;vsg::ref_ptr&lt;vsg::Object&gt;&gt;&gt; _deferred_unref_queue;</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    };</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;}</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160; </div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">ROCKY_NAMESPACE::Runtime</a></div><div class="ttdef"><b>Definition:</b> Runtime.h:36</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html_a269f5b61c4e532503e1c446fa495c739"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a269f5b61c4e532503e1c446fa495c739">ROCKY_NAMESPACE::Runtime::dirtyShaders</a></div><div class="ttdeci">void dirtyShaders()</div><div class="ttdef"><b>Definition:</b> Runtime.h:132</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html_a269f5b61c4e532503e1c446fa495c739"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a269f5b61c4e532503e1c446fa495c739">ROCKY_NAMESPACE::Runtime::dirtyShaders</a></div><div class="ttdeci">void dirtyShaders()</div><div class="ttdef"><b>Definition:</b> Runtime.h:135</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html_a949958a900464f64a9ebff485bed3cc7"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a949958a900464f64a9ebff485bed3cc7">ROCKY_NAMESPACE::Runtime::searchPaths</a></div><div class="ttdeci">vsg::Paths searchPaths</div><div class="ttdoc">Search paths for vsg::findFile.</div><div class="ttdef"><b>Definition:</b> Runtime.h:51</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html_aa525689a8b3ed1f7940b8a239fb88446"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aa525689a8b3ed1f7940b8a239fb88446">ROCKY_NAMESPACE::Runtime::viewer</a></div><div class="ttdeci">vsg::ref_ptr&lt; vsg::Viewer &gt; viewer</div><div class="ttdoc">Viewer instance.</div><div class="ttdef"><b>Definition:</b> Runtime.h:42</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html_aacf4f5f7b8a84f748f98be59230ac41b"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aacf4f5f7b8a84f748f98be59230ac41b">ROCKY_NAMESPACE::Runtime::sharedObjects</a></div><div class="ttdeci">vsg::ref_ptr&lt; vsg::SharedObjects &gt; sharedObjects</div><div class="ttdoc">VSG object sharing.</div><div class="ttdef"><b>Definition:</b> Runtime.h:45</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html_aaf300a439df1f27df59e752351fe1759"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aaf300a439df1f27df59e752351fe1759">ROCKY_NAMESPACE::Runtime::disposer</a></div><div class="ttdeci">std::function&lt; void(vsg::ref_ptr&lt; vsg::Object &gt;)&gt; disposer</div><div class="ttdef"><b>Definition:</b> Runtime.h:83</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html_aaf300a439df1f27df59e752351fe1759"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aaf300a439df1f27df59e752351fe1759">ROCKY_NAMESPACE::Runtime::disposer</a></div><div class="ttdeci">std::function&lt; void(vsg::ref_ptr&lt; vsg::Object &gt;)&gt; disposer</div><div class="ttdef"><b>Definition:</b> Runtime.h:86</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html_abb1be2e2d6fbefcc8d43045592cdc2e7"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#abb1be2e2d6fbefcc8d43045592cdc2e7">ROCKY_NAMESPACE::Runtime::requestFrame</a></div><div class="ttdeci">void requestFrame()</div><div class="ttdoc">Request a frame render.</div><div class="ttdef"><b>Definition:</b> Runtime.h:63</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html_ac26d1c0c94947cf207bb39239b822156"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#ac26d1c0c94947cf207bb39239b822156">ROCKY_NAMESPACE::Runtime::readerWriterOptions</a></div><div class="ttdeci">vsg::ref_ptr&lt; vsg::Options &gt; readerWriterOptions</div><div class="ttdoc">VSG readerwriter options.</div><div class="ttdef"><b>Definition:</b> Runtime.h:48</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html_aea978fa9d7b19bf5d134ac4e72cf1053"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aea978fa9d7b19bf5d134ac4e72cf1053">ROCKY_NAMESPACE::Runtime::defaultFont</a></div><div class="ttdeci">vsg::ref_ptr&lt; vsg::Font &gt; defaultFont</div><div class="ttdoc">Default font.</div><div class="ttdef"><b>Definition:</b> Runtime.h:54</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html_aef76367fc28a2b4cf720029593ed5719"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aef76367fc28a2b4cf720029593ed5719">ROCKY_NAMESPACE::Runtime::shaderCompileSettings</a></div><div class="ttdeci">vsg::ref_ptr&lt; vsg::ShaderCompileSettings &gt; shaderCompileSettings</div><div class="ttdef"><b>Definition:</b> Runtime.h:70</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html_aef76367fc28a2b4cf720029593ed5719"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aef76367fc28a2b4cf720029593ed5719">ROCKY_NAMESPACE::Runtime::shaderCompileSettings</a></div><div class="ttdeci">vsg::ref_ptr&lt; vsg::ShaderCompileSettings &gt; shaderCompileSettings</div><div class="ttdef"><b>Definition:</b> Runtime.h:73</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_af01f4eb53e72c4be729979cd946c295d"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">ROCKY_NAMESPACE::Revision</a></div><div class="ttdeci">std::int32_t Revision</div><div class="ttdoc">revision type</div><div class="ttdef"><b>Definition:</b> Common.h:45</div></div>
 <div class="ttc" id="anamespacevsg_html"><div class="ttname"><a href="namespacevsg.html">vsg</a></div><div class="ttdef"><b>Definition:</b> Runtime.h:23</div></div>
