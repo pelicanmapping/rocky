@@ -117,6 +117,11 @@ TerrainTileNode::shouldSubDivide(vsg::State* state) const
     auto min_screen_height_ratio = (_host->settings().tilePixelSize + _host->settings().screenSpaceError) / vp[3];
     auto d = state->lodDistance(bound);
     return (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
+
+    // TODO: someday, when we support orthographic cameras, look at this approach 
+    // that would theoritically keep the same LOD across the visible scene:
+    //double tile_height = surface->localbbox.max.y - surface->localbbox.min.y;
+    //return (d > 0.0) && (tile_height > (d * min_screen_height_ratio));
 }
 
 void

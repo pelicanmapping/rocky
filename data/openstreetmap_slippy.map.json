@@ -1,0 +1,21 @@
+{
+    "terrain" : {
+        "screen_space_error" : 128
+    },
+    "map" : {
+        "profile" : "spherical-mercator",
+        "name" : "OpenStreetMap Slippy Map",
+        "layers": [
+            {
+                "name": "OpenStreetMap Imagery",
+                "profile": "spherical-mercator",
+                "uri": "https://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png",
+                "type": "TMSImage",
+                "attribution": {
+                    "text": "\u00a9 OpenStreetMap contributors",
+                    "href": "https://openstreetmap.org/copyright"
+                }
+            }
+        ]
+    }
+}

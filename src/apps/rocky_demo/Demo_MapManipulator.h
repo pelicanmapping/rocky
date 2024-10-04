@@ -28,9 +28,10 @@ auto Demo_Viewpoints = [](Application& app)
                 ImGui::SeparatorText("Current viewpoint");
                 ImGuiLTable::Begin("Viewpoint");
 
-                ImGuiLTable::Text("ECEF X:", "%.1lf", vp.position().x);
-                ImGuiLTable::Text("ECEF Y:", "%.1lf", vp.position().y);
-                ImGuiLTable::Text("ECEF Z:", "%.1lf", vp.position().z);
+                ImGuiLTable::Text("SRS: %s", vp.position().srs.name());
+                ImGuiLTable::Text("X:", "%.1lf", vp.position().x);
+                ImGuiLTable::Text("Y:", "%.1lf", vp.position().y);
+                ImGuiLTable::Text("Z:", "%.1lf", vp.position().z);
 
                 GeoPoint LL;
                 if (vp.position().transform(vp.position().srs.geoSRS(), LL))

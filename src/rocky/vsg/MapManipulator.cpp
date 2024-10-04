@@ -711,13 +711,16 @@ MapManipulator::setCenter(const vsg::dvec3& worldPos)
 {
     _state.center = worldPos;
 
-    glm::dmat4 m = _worldSRS.localToWorldMatrix(to_glm(worldPos));
+    if (_worldSRS.isGeocentric())
+    {
+        glm::dmat4 m = _worldSRS.localToWorldMatrix(to_glm(worldPos));
 
-    // remove the translation component
-    _state.centerRotation = to_vsg(m);
-    _state.centerRotation[3][0] = 0;
-    _state.centerRotation[3][1] = 0;
-    _state.centerRotation[3][2] = 0;
+        // remove the translation component
+        _state.centerRotation = to_vsg(m);
+        _state.centerRotation[3][0] = 0;
+        _state.centerRotation[3][1] = 0;
+        _state.centerRotation[3][2] = 0;
+    }
 }
 
 
@@ -1783,16 +1786,24 @@ MapManipulator::zoom(double dx, double dy)
             double delta = _state.distance - newDistance;
             double ratio = delta / _state.distance;
 
-            // xform target point into the current focal point's local frame,
-            // and adjust the zoom ratio to account for the difference in 
-            // target distance based on the earth's curvature...approximately!
-            vsg::dvec3 targetInLocalFrame = vsg::inverse(_state.centerRotation) * target;
-            double crRatio = vsg::length(_state.center) / targetInLocalFrame.z;
-            ratio *= crRatio;
+            if (_worldSRS.isGeocentric())
+            {
+                // xform target point into the current focal point's local frame,
+                // and adjust the zoom ratio to account for the difference in 
+                // target distance based on the earth's curvature...approximately!
+                vsg::dvec3 targetInLocalFrame = vsg::inverse(_state.centerRotation) * target;
+                double crRatio = vsg::length(_state.center) / targetInLocalFrame.z;
+                ratio *= crRatio;
 
-            // Interpolate a new focal point:
-            vsg::dquat rot = slerp(ratio, vsg::dquat(0,0,0,1), rotCenterToTarget);
-            setCenter(rot * _state.center);
+                // Interpolate a new focal point:
+                vsg::dquat rot = slerp(ratio, vsg::dquat(0, 0, 0, 1), rotCenterToTarget);
+                setCenter(rot * _state.center);
+            }
+            else
+            {
+                // linear interp.
+                setCenter(_state.center + (target - _state.center) * ratio);
+            }
 
             // and set the new zoomed distance.
             setDistance(newDistance);
@@ -1936,9 +1947,24 @@ MapManipulator::viewportToWorld(float x, float y, vsg::dvec3& out_world) const
 
         glm::dvec3 i;
         auto& srs = getMapNode()->mapSRS();
-        if (srs.ellipsoid().intersectGeocentricLine(glm::dvec3{ w0.x,w0.y,w0.z }, glm::dvec3{ w1.x,w1.y,w1.z }, i))
+
+        if (srs.isGeodetic())
         {
-            out_world = to_vsg(i);
+            if (srs.ellipsoid().intersectGeocentricLine(glm::dvec3{ w0.x,w0.y,w0.z }, glm::dvec3{ w1.x,w1.y,w1.z }, i))
+            {
+                out_world = to_vsg(i);
+            }
+        }
+        else
+        {
+            // projected; just find the point on the segment with z=0.
+            const vsg::dvec3 plane_normal(0, 0, 1);
+            auto dir = w1 - w0;
+            float denom = vsg::dot(plane_normal, dir);
+            if (abs(denom) < 1e-6)
+                return false;
+            double t = vsg::dot(plane_normal, -w0) / denom;
+            out_world = w0 + dir * t;
         }
 
         return true;

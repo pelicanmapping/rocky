@@ -27,8 +27,7 @@ using namespace ROCKY_NAMESPACE;
 
 SurfaceNode::SurfaceNode(const TileKey& tilekey, const SRS& worldSRS, Runtime& runtime) :
     _tileKey(tilekey),
-    _runtime(runtime),
-    _boundsDirty(true)
+    _runtime(runtime)
 {
     // Establish a local reference frame for the tile:
     GeoPoint centroid = tilekey.extent().centroid();
@@ -48,9 +47,9 @@ SurfaceNode::setElevation(shared_ptr<Image> raster, const glm::dmat4& scaleBias)
 }
 
 #define corner(N) vsg::dvec3( \
-    (N & 0x1) ? _localbbox.max.x : _localbbox.min.x, \
-    (N & 0x2) ? _localbbox.max.y : _localbbox.min.y, \
-    (N & 0x4) ? _localbbox.max.z : _localbbox.min.z)
+    (N & 0x1) ? localbbox.max.x : localbbox.min.x, \
+    (N & 0x2) ? localbbox.max.y : localbbox.min.y, \
+    (N & 0x4) ? localbbox.max.z : localbbox.min.z)
 
 void
 SurfaceNode::recomputeBound()
@@ -62,7 +61,7 @@ SurfaceNode::recomputeBound()
         _boundsDirty = false;
 
     // start with a null bbox
-    _localbbox = vsg::dbox();
+    localbbox = { };
 
     if (children.empty())
         return;
@@ -124,14 +123,14 @@ SurfaceNode::recomputeBound()
     // build the bbox around the mesh.
     for (auto& vert : _proxyMesh)
     {
-        _localbbox.add(vert);
+        localbbox.add(vert);
     }
 
     auto& m = this->matrix;
 
     // transform the world space to create the bounding sphere
-    vsg::dvec3 center = m * ((_localbbox.min + _localbbox.max) * 0.5);
-    double radius = 0.5 * vsg::length(_localbbox.max - _localbbox.min);
+    vsg::dvec3 center = m * ((localbbox.min + localbbox.max) * 0.5);
+    double radius = 0.5 * vsg::length(localbbox.max - localbbox.min);
     worldBoundingSphere.set(center, radius);
 
     // Compute the medians of each potential child node:

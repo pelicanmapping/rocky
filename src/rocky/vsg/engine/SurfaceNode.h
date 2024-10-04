@@ -51,30 +51,20 @@ namespace ROCKY_NAMESPACE
         //! and horizon checks)
         inline bool isVisible(vsg::State* state) const;
 
-        inline bool anyChildBoxWithinRange(float range, vsg::State* state) const
-        {
-            for (unsigned i = 0u; i < 18u; ++i) {
-                if (distanceTo(_worldPoints[i], state) <= range)
-                    return true;
-            }
-            return false;
-        }
-
+        //! Force a recompute of the bounding box and culling information
         void recomputeBound();
 
-        //float getPixelSizeOnScreen(osg::CullStack* cull) const;
-
         vsg::dsphere worldBoundingSphere;
+        vsg::dbox localbbox;
 
     protected:
 
         TileKey _tileKey;
-        int _lastFramePassedCull;
+        int _lastFramePassedCull = 0;
         shared_ptr<Image> _elevationRaster;
         glm::dmat4 _elevationMatrix;
         std::vector<vsg::dvec3> _worldPoints;
-        vsg::dbox _localbbox;
-        bool _boundsDirty;
+        bool _boundsDirty = true;
         Runtime& _runtime;
         std::vector<vsg::vec3> _proxyMesh;
         vsg::dvec3 _horizonCullingPoint;
@@ -82,7 +72,7 @@ namespace ROCKY_NAMESPACE
     };
 
 
-    bool SurfaceNode::isVisible(vsg::State* state) const
+    inline bool SurfaceNode::isVisible(vsg::State* state) const
     {
         // bounding box visibility check; this is much tighter than the bounding
         // sphere. _frustumStack.top() contains the frustum in world coordinates.
