@@ -100,11 +100,9 @@ const glm::dmat4 &amp;&#160;</td><td class="memItemRight" valign="bottom"><a cla
 <tr class="separator:a893b84970522772248e36f30a51c54e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad8b2c7eecee354e6f732d2dba31846ba"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_surface_node.html#ad8b2c7eecee354e6f732d2dba31846ba">isVisible</a> (vsg::State *state) const</td></tr>
 <tr class="separator:ad8b2c7eecee354e6f732d2dba31846ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6475707614657cd596ce8941d4b90354"><td class="memItemLeft" align="right" valign="top"><a id="a6475707614657cd596ce8941d4b90354"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>anyChildBoxWithinRange</b> (float range, vsg::State *state) const</td></tr>
-<tr class="separator:a6475707614657cd596ce8941d4b90354"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aadccf76cb97b02b3ab6681a68f714d1d"><td class="memItemLeft" align="right" valign="top"><a id="aadccf76cb97b02b3ab6681a68f714d1d"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>recomputeBound</b> ()</td></tr>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_surface_node.html#aadccf76cb97b02b3ab6681a68f714d1d">recomputeBound</a> ()</td></tr>
+<tr class="memdesc:aadccf76cb97b02b3ab6681a68f714d1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Force a recompute of the bounding box and culling information. <br /></td></tr>
 <tr class="separator:aadccf76cb97b02b3ab6681a68f714d1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
@@ -112,6 +110,9 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:ac2ad145eccf65c9e418b6d662c8d3b36"><td class="memItemLeft" align="right" valign="top"><a id="ac2ad145eccf65c9e418b6d662c8d3b36"></a>
 vsg::dsphere&#160;</td><td class="memItemRight" valign="bottom"><b>worldBoundingSphere</b></td></tr>
 <tr class="separator:ac2ad145eccf65c9e418b6d662c8d3b36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34366d504725e4f0203fdc2e63fdd564"><td class="memItemLeft" align="right" valign="top"><a id="a34366d504725e4f0203fdc2e63fdd564"></a>
+vsg::dbox&#160;</td><td class="memItemRight" valign="bottom"><b>localbbox</b></td></tr>
+<tr class="separator:a34366d504725e4f0203fdc2e63fdd564"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -119,7 +120,7 @@ Protected Attributes</h2></td></tr>
 <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&#160;</td><td class="memItemRight" valign="bottom"><b>_tileKey</b></td></tr>
 <tr class="separator:aeeabe986c8347a22052ee8bc72f47aad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2c35c00736f2089ba39419240d53d433"><td class="memItemLeft" align="right" valign="top"><a id="a2c35c00736f2089ba39419240d53d433"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>_lastFramePassedCull</b></td></tr>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>_lastFramePassedCull</b> = 0</td></tr>
 <tr class="separator:a2c35c00736f2089ba39419240d53d433"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c2cf8d995fd7420de49669ab0b6e2e7"><td class="memItemLeft" align="right" valign="top"><a id="a4c2cf8d995fd7420de49669ab0b6e2e7"></a>
 shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_elevationRaster</b></td></tr>
@@ -130,11 +131,8 @@ glm::dmat4&#160;</td><td class="memItemRight" valign="bottom"><b>_elevationMatri
 <tr class="memitem:a85895c9a86bcc640cad540fc8adad0ab"><td class="memItemLeft" align="right" valign="top"><a id="a85895c9a86bcc640cad540fc8adad0ab"></a>
 std::vector&lt; vsg::dvec3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_worldPoints</b></td></tr>
 <tr class="separator:a85895c9a86bcc640cad540fc8adad0ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a99a97cd926b81179be5e5c9cfa9533dd"><td class="memItemLeft" align="right" valign="top"><a id="a99a97cd926b81179be5e5c9cfa9533dd"></a>
-vsg::dbox&#160;</td><td class="memItemRight" valign="bottom"><b>_localbbox</b></td></tr>
-<tr class="separator:a99a97cd926b81179be5e5c9cfa9533dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a60ddaa29374640e56db0761b4e677ee6"><td class="memItemLeft" align="right" valign="top"><a id="a60ddaa29374640e56db0761b4e677ee6"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>_boundsDirty</b></td></tr>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>_boundsDirty</b> = true</td></tr>
 <tr class="separator:a60ddaa29374640e56db0761b4e677ee6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a91c6dd8cf2f4aaf7df6179629558db34"><td class="memItemLeft" align="right" valign="top"><a id="a91c6dd8cf2f4aaf7df6179629558db34"></a>
 <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>_runtime</b></td></tr>
