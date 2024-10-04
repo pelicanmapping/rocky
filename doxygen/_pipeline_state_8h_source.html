@@ -89,50 +89,46 @@ $(function() {
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160; </div>
 <div class="line"><a name="l00022"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_pipeline_utils.html">   22</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_pipeline_utils.html">PipelineUtils</a></div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    {</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;        <span class="keyword">static</span> <span class="keywordtype">void</span> addViewDependentData(</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;            vsg::ref_ptr&lt;vsg::ShaderSet&gt; shaderSet,</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;            VkShaderStageFlags stageFlags)</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;        {</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;            <span class="comment">// override it because we&#39;re getting weird VK errors -gw</span></div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;            stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160; </div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;            <span class="comment">// VSG view-dependent data. You must include it all even if you only intent to use</span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;            <span class="comment">// one of the uniforms.</span></div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;            shaderSet-&gt;customDescriptorSetBindings.push_back(</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;                vsg::ViewDependentStateBinding::create(VSG_VIEW_DEPENDENT_DATA_SET));</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;            shaderSet-&gt;addDescriptorBinding(</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;                <span class="stringliteral">&quot;vsg_lights&quot;</span>, <span class="stringliteral">&quot;&quot;</span>,</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;                VSG_VIEW_DEPENDENT_DATA_SET,</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;                VSG_VIEW_DEPENDENT_LIGHTS_BINDING,</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1,</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;                stageFlags, {});</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160; </div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;            <span class="comment">// VSG viewport state</span></div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;            shaderSet-&gt;addDescriptorBinding(</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;                <span class="stringliteral">&quot;vsg_viewports&quot;</span>, <span class="stringliteral">&quot;&quot;</span>,</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;                VSG_VIEW_DEPENDENT_DATA_SET,</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;                VSG_VIEW_DEPENDENT_VIEWPORTS_BINDING,</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1,</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;                stageFlags, {});</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;            <span class="comment">//shaderSet-&gt;defines</span></div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        }</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        <span class="keyword">static</span> <span class="keywordtype">void</span> enableViewDependentData(vsg::ref_ptr&lt;vsg::GraphicsPipelineConfigurator&gt; pipelineConfig)</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        {</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;            pipelineConfig-&gt;enableDescriptor(<span class="stringliteral">&quot;vsg_lights&quot;</span>);</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;            pipelineConfig-&gt;enableDescriptor(<span class="stringliteral">&quot;vsg_viewports&quot;</span>);</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        }</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="keyword">static</span> vsg::ref_ptr&lt;vsg::StateCommand&gt; createViewDependentBindCommand(vsg::ref_ptr&lt;vsg::GraphicsPipelineConfigurator&gt; pipelineConfig)</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        {</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;            <span class="keywordflow">return</span> vsg::BindViewDescriptorSets::create(</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;                VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig-&gt;layout,</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;                VSG_VIEW_DEPENDENT_DATA_SET);</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        }</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    };</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;}</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;        <span class="keyword">static</span> <span class="keywordtype">void</span> addViewDependentData(vsg::ref_ptr&lt;vsg::ShaderSet&gt; shaderSet, VkShaderStageFlags stageFlags)</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;        {</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;            <span class="comment">// override it because we&#39;re getting weird VK errors -gw</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;            stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;            <span class="comment">// VSG view-dependent data. You must include it all even if you only intent to use</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;            <span class="comment">// one of the uniforms.</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;            shaderSet-&gt;customDescriptorSetBindings.push_back(</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;                vsg::ViewDependentStateBinding::create(VSG_VIEW_DEPENDENT_DATA_SET));</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;            shaderSet-&gt;addDescriptorBinding(</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;                <span class="stringliteral">&quot;vsg_lights&quot;</span>, <span class="stringliteral">&quot;&quot;</span>,</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;                VSG_VIEW_DEPENDENT_DATA_SET,</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;                VSG_VIEW_DEPENDENT_LIGHTS_BINDING,</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;                stageFlags, {});</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160; </div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;            <span class="comment">// VSG viewport state</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;            shaderSet-&gt;addDescriptorBinding(</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;                <span class="stringliteral">&quot;vsg_viewports&quot;</span>, <span class="stringliteral">&quot;&quot;</span>,</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;                VSG_VIEW_DEPENDENT_DATA_SET,</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;                VSG_VIEW_DEPENDENT_VIEWPORTS_BINDING,</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1,</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;                stageFlags, {});</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        }</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160; </div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        <span class="keyword">static</span> <span class="keywordtype">void</span> enableViewDependentData(vsg::ref_ptr&lt;vsg::GraphicsPipelineConfigurator&gt; pipelineConfig)</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        {</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;            pipelineConfig-&gt;enableDescriptor(<span class="stringliteral">&quot;vsg_lights&quot;</span>);</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;            pipelineConfig-&gt;enableDescriptor(<span class="stringliteral">&quot;vsg_viewports&quot;</span>);</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        }</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160; </div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <span class="keyword">static</span> vsg::ref_ptr&lt;vsg::StateCommand&gt; createViewDependentBindCommand(vsg::ref_ptr&lt;vsg::GraphicsPipelineConfigurator&gt; pipelineConfig)</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        {</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;            <span class="keywordflow">return</span> vsg::BindViewDescriptorSets::create(</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;                VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig-&gt;layout,</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;                VSG_VIEW_DEPENDENT_DATA_SET);</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        }</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    };</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;}</div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_pipeline_utils_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_pipeline_utils.html">ROCKY_NAMESPACE::PipelineUtils</a></div><div class="ttdoc">Utilities for helping to set up a graphics pipeline.</div><div class="ttdef"><b>Definition:</b> PipelineState.h:23</div></div>
 </div><!-- fragment --></div><!-- contents -->
