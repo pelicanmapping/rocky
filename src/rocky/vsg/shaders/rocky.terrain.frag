@@ -1,5 +1,4 @@
 #version 450
-#extension GL_NV_fragment_shader_barycentric : enable
 
 #pragma import_defines(RK_LIGHTING)
 #pragma import_defines(RK_WIREFRAME_OVERLAY)
@@ -54,9 +53,10 @@ void main()
     apply_lighting(out_color, rk.vertex_view, get_normal());
 #endif
 
-#if defined(RK_WIREFRAME_OVERLAY) && defined(GL_NV_fragment_shader_barycentric)
-    // outlines - debugging
-    float b = min(gl_BaryCoordNV.x, min(gl_BaryCoordNV.y, gl_BaryCoordNV.z))*32.0;
-    out_color.rgb = mix(vec3(1,1,1), out_color.rgb, clamp(b,0.85,1.0));
+#if defined(RK_WIREFRAME_OVERLAY)
+    // tile outlines - debugging
+    vec2 outline_uv = abs(rk.uv * 2.0 - 1.0);
+    if (outline_uv.x > 0.99 || outline_uv.y > 0.99)
+        out_color = vec4(1.0, 0.9, 0.0, 1.0);
 #endif
 }
