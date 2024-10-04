@@ -22,7 +22,7 @@ auto Demo_Mesh_Absolute = [](Application& app)
         auto& mesh = app.entities.emplace<Mesh>(entity);
 
         // Make some geometry in ECEF coordinates
-        auto xform = SRS::WGS84.to(SRS::WGS84.geocentricSRS());
+        auto xform = SRS::WGS84.to(app.mapNode->worldSRS()); // SRS::WGS84.geocentricSRS());
         const double step = 2.5;
         const double alt = 0.0; 
         for (double lon = 0.0; lon < 35.0; lon += step)
@@ -41,7 +41,7 @@ auto Demo_Mesh_Absolute = [](Application& app)
         }
 
         // Set a dynamic style that we can change at runtime.
-        mesh.style = { { 1.0f, 0.4f, 0.1f, 0.75f }, 32.0f, 2500.0f };
+        mesh.style = { { 1.0f, 0.4f, 0.1f, 0.75f }, 32.0f, 6000.0f };
 
         // Turn off depth buffer writes
         mesh.writeDepth = false;

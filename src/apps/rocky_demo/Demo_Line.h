@@ -23,7 +23,7 @@ auto Demo_Line_Absolute = [](Application& app)
         auto& line = app.entities.emplace<Line>(entity);
 
         // Build the line's geometry:
-        auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
+        auto xform = rocky::SRS::WGS84.to(app.mapNode->worldSRS());
         const double alt = 125000;
         std::vector<glm::dvec3> points;
         for (double lon = -180.0; lon <= 0.0; lon += 2.5)
