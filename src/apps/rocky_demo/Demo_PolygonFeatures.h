@@ -71,7 +71,7 @@ auto Demo_PolygonFeatures = [](Application& app)
                 };
 
             // compile the features into renderable geometry
-            feature_view.generate(app.entities, app.runtime());
+            feature_view.generate(app.entities, app.mapNode->worldSRS(), app.runtime());
         }
         else
         {

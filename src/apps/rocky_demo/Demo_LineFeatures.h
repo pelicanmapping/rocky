@@ -72,7 +72,7 @@ auto Demo_LineFeatures = [](Application& app)
             };
 
             // generate our renderable geometry
-            feature_view.generate(app.entities, app.runtime());
+            feature_view.generate(app.entities, app.mapNode->worldSRS(), app.runtime());
         }
         else
         {

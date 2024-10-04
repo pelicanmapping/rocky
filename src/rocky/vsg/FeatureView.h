@@ -40,11 +40,13 @@ namespace ROCKY_NAMESPACE
 
         //! Create VSG geometry from the feature list
         //! @param registry Entity registry
+        //! @param srs SRS or resulting geometry
         //! @param runtime Runtime operations interface
         //! @param keep_features Whether to keep the "features" vector intact;
         //!   by default it is cleared after calling generate
         void generate(
             entt::registry& registry,
+            const SRS& srs,
             Runtime& runtime,
             bool keep_features = false);
 
@@ -54,7 +56,7 @@ namespace ROCKY_NAMESPACE
         //! Whether to render this component
         bool active = true;
 
-        //! Call if the change the stylesheet after generating.
+        //! Call if you change the stylesheet after generating.
         void dirtyStyles(entt::registry& entities);
 
     public:

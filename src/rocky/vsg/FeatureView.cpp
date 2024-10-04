@@ -117,7 +117,7 @@ namespace
         return m;
     }
 
-    void compile_feature_to_lines(const Feature& feature, const StyleSheet& styles, Line& line)
+    void compile_feature_to_lines(const Feature& feature, const StyleSheet& styles, const SRS& geom_srs, Line& line)
     {
         float max_span = 100000.0f;
 
@@ -135,7 +135,7 @@ namespace
             auto tessellated = tessellate_linestring(part.points, feature.srs, feature.interpolation, max_span);
 
             // transform:
-            auto feature_to_world = feature.srs.to(SRS::ECEF);
+            auto feature_to_world = feature.srs.to(geom_srs);
             feature_to_world.transformRange(tessellated.begin(), tessellated.end());
 
             // make the line attachment:
@@ -153,7 +153,7 @@ namespace
         }
     }
 
-    void compile_polygon_feature_with_weemesh(const Feature& feature, const Geometry& geom, const StyleSheet& styles, Mesh& mesh)
+    void compile_polygon_feature_with_weemesh(const Feature& feature, const Geometry& geom, const StyleSheet& styles, const SRS& geom_srs, Mesh& mesh)
     {
         // scales our local gnomonic coordinates so they are the same order of magnitude as
         // weemesh's default epsilon values:
@@ -170,7 +170,7 @@ namespace
         // some conversions we will need:
         auto feature_geo = feature.srs.geoSRS();
         auto feature_to_geo = feature.srs.to(feature_geo);
-        auto feature_to_ecef = feature.srs.to(feature.srs.geocentricSRS());
+        auto feature_to_world = feature.srs.to(geom_srs);
 
         // centroid for use with the gnomonic projection:
         glm::dvec3 centroid;
@@ -271,7 +271,7 @@ namespace
         gnomonic_to_geo(m.verts.begin(), m.verts.end(), centroid, gnomonic_scale);
 
         // And into the final projection:
-        feature_to_ecef.transformRange(m.verts.begin(), m.verts.end());
+        feature_to_world.transformRange(m.verts.begin(), m.verts.end());
 
         auto color =
             styles.mesh_function ? styles.mesh_function(feature).color :
@@ -326,7 +326,7 @@ FeatureView::clear(entt::registry& registry)
 }
 
 void
-FeatureView::generate(entt::registry& registry, Runtime& runtime, bool keep_features)
+FeatureView::generate(entt::registry& registry, const SRS& geom_srs, Runtime& runtime, bool keep_features)
 {
     if (_entity == entt::null)
     {
@@ -339,13 +339,13 @@ FeatureView::generate(entt::registry& registry, Runtime& runtime, bool keep_feat
             feature.geometry.type == Geometry::Type::MultiLineString)
         {
             auto& geom = registry.get_or_emplace<Line>(_entity);
-            compile_feature_to_lines(feature, styles, geom);
+            compile_feature_to_lines(feature, styles, geom_srs, geom);
             geom.active_ptr = &active;
         }
         else if (feature.geometry.type == Geometry::Type::Polygon)
         {
             auto& geom = registry.get_or_emplace<Mesh>(_entity);
-            compile_polygon_feature_with_weemesh(feature, feature.geometry, styles, geom);
+            compile_polygon_feature_with_weemesh(feature, feature.geometry, styles, geom_srs, geom);
             geom.active_ptr = &active;
         }
         else if (feature.geometry.type == Geometry::Type::MultiPolygon)
@@ -353,7 +353,7 @@ FeatureView::generate(entt::registry& registry, Runtime& runtime, bool keep_feat
             auto& geom = registry.get_or_emplace<Mesh>(_entity);
             for (auto& part : feature.geometry.parts)
             {
-                compile_polygon_feature_with_weemesh(feature, part, styles, geom);
+                compile_polygon_feature_with_weemesh(feature, part, styles, geom_srs, geom);
                 geom.active_ptr = &active;
             }
         }

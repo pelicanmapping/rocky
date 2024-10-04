@@ -152,7 +152,7 @@ auto Demo_Geocoder = [](Application& app)
                                 while(i.hasMore()) for (auto& point : i.next().points) point.z = 500.0;
                                 feature_view.clear(app.entities);
                                 feature_view.features = { copy_of_feature };
-                                feature_view.generate(app.entities, app.runtime());
+                                feature_view.generate(app.entities, app.mapNode->worldSRS(), app.runtime());
                                 feature_view.active = true;
                                 icon.active = false;
                                 label.style = label_style_area;
