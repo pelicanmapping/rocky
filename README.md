@@ -21,8 +21,8 @@ int main(int argc, char** argv)
     rocky::Application app(argc, argv);
 
     auto imagery = rocky::TMSImageLayer::create();
-    imagery->setURI("https://readymap.org/readymap/tiles/1.0.0/7/");
-    app.map()->layers().add(imagery);
+    imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
+    app.mapNode->map->layers().add(imagery);
 
     return app.run();
 }
