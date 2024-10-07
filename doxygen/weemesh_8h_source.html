@@ -169,9 +169,9 @@ $(function() {
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;            <span class="keywordflow">return</span> (x * x) + (y * y);</div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        }</div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        <span class="comment">// cast to another vec3 type</span></div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        <span class="keyword">template</span>&lt;<span class="keyword">class</span> VEC3&gt;</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> VEC3, <span class="keyword">typename</span> TYPE = <span class="keyword">typename</span> VEC3::value_type&gt;</div>
 <div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;        <span class="keyword">inline</span> <span class="keyword">operator</span> VEC3()<span class="keyword"> const </span>{</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;            <span class="keywordflow">return</span> VEC3((VEC3::value_type)x, (VEC3::value_type)y, (VEC3::value_type)z);</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;            <span class="keywordflow">return</span> VEC3((TYPE)x, (TYPE)y, (TYPE)z);</div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;        }</div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    };</div>
 <div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160; </div>
