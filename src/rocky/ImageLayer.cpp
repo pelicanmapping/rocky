@@ -3,7 +3,6 @@
  * Copyright 2023-2024 Pelican Mapping, Chris Djali
  * MIT License
  */
-#pragma once
 #include "ImageLayer.h"
 
 #include "Color.h"

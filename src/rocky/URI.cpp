@@ -480,7 +480,11 @@ URI::isRemote() const
 std::string
 URI::urlEncode(const std::string& value)
 {
+#ifdef ROCKY_HAS_HTTPLIB
     return httplib::detail::encode_url(value);
+#else
+    return {};
+#endif
 }
 
 void

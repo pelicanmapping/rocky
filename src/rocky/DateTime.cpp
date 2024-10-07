@@ -34,7 +34,7 @@ namespace
 #ifdef _WIN32
         int err = ::gmtime_s(&result, &t);
 #else
-        int err = ::gmtime_r(&t, &result);
+        int err = (::gmtime_r(&t, &result) == nullptr) ? 1 : 0;
 #endif
         if (err)
             ::memset(&result, 0, sizeof(tm));

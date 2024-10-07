@@ -10,6 +10,18 @@
 
 const ImVec4 ImGuiErrorColor = ImVec4(1, 0.35f, 0.35f, 1);
 
+#if(IMGUI_VERSION_NUM < 18928)
+namespace ImGui
+{
+    static bool SeparatorText(const char* text)
+    {
+        ImGui::Separator();
+        ImGui::Text(text);
+        return true;
+    }
+}
+#endif
+
 // handy nice-looking table with names on the left.
 namespace ImGuiLTable
 {

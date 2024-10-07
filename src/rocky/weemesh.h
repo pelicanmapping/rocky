@@ -96,9 +96,9 @@ namespace weemesh
             return (x * x) + (y * y);
         }
         // cast to another vec3 type
-        template<class VEC3>
+        template<typename VEC3, typename TYPE = typename VEC3::value_type>
         inline operator VEC3() const {
-            return VEC3((VEC3::value_type)x, (VEC3::value_type)y, (VEC3::value_type)z);
+            return VEC3((TYPE)x, (TYPE)y, (TYPE)z);
         }
     };
 
