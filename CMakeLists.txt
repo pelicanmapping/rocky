@@ -33,6 +33,9 @@ option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 # folder for additional cmake includes
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+# platform-specific settings
+include(platform)
+
 # temporary folder to hold build-time header compilation (.in files built with compile_files)
 set(ROCKY_BUILDTIME_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/build_include")
 include_directories(${ROCKY_BUILDTIME_INCLUDE_DIR})
