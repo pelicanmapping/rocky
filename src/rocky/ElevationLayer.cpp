@@ -6,7 +6,6 @@
 #include "ElevationLayer.h"
 #include "Geoid.h"
 #include "Heightfield.h"
-#include "Metrics.h"
 #include "json.h"
 
 #include <cinttypes>
@@ -520,8 +519,6 @@ ElevationLayerVector::populateHeightfield(
     // heightfield must already exist.
     if ( !hf )
         return false;
-
-    ROCKY_PROFILING_ZONE;
 
     // if the caller provided an "HAE map profile", he wants an HAE elevation grid even if
     // the map profile has a vertical datum. This is the usual case when building the 3D

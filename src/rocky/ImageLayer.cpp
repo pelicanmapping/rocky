@@ -7,7 +7,6 @@
 
 #include "Color.h"
 #include "IOTypes.h"
-#include "Metrics.h"
 #include "Utils.h"
 #include "GeoImage.h"
 #include "Image.h"

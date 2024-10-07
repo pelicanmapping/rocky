@@ -15,12 +15,7 @@ if(ImGui_FOUND)
 
     add_executable(${APP_NAME} ${SOURCES} ${HEADERS})
     
-    target_link_libraries(${APP_NAME} rocky ImGui::ImGui)
-
-    # if we built imgui from source
-    if (ImGui_Sources_FOUND)
-        target_link_libraries(${APP_NAME} ImGui::Sources)
-    endif()
+    target_link_libraries(${APP_NAME} rocky imgui::imgui)
 
     install(TARGETS ${APP_NAME} RUNTIME DESTINATION bin)
 

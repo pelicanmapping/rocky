@@ -1,7 +1,6 @@
 #include "GeoImage.h"
 #include "Math.h"
 #include "Image.h"
-#include "Metrics.h"
 
 #ifdef ROCKY_HAS_GDAL
 #include <gdal.h>
@@ -214,8 +213,6 @@ namespace
         int height,
         bool useBilinearInterpolation)
     {
-        ROCKY_PROFILING_ZONE;
-
         //Create a dataset from the source image
         GDALDataset* srcDS = createDataSetFromImage(srcImage, srcMinX, srcMinY, srcMaxX, srcMaxY, srcWKT);
 
@@ -320,8 +317,6 @@ namespace
         unsigned int      width = 0,
         unsigned int      height = 0)
     {
-        ROCKY_PROFILING_ZONE;
-
         if (width == 0 || height == 0)
         {
             //If no width and height are specified, just use the minimum dimension for the image

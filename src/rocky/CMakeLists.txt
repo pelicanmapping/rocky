@@ -31,9 +31,6 @@ set(PUBLIC_LIBS glm::glm spdlog::spdlog)
 
 set(PRIVATE_LIBS PROJ::proj)
     
-if(Tracy_FOUND)
-    list(APPEND PRIVATE_LIBS Tracy::TracyClient)
-endif()
 if(GDAL_FOUND)
     if (EXISTS "${GDAL_INCLUDE_DIR}/ogr_geocoding.h")
         set(ROCKY_HAS_GEOCODER TRUE) # Version.h.in

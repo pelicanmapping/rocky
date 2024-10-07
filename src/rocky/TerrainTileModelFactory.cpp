@@ -5,7 +5,6 @@
  */
 #include "TerrainTileModelFactory.h"
 #include "Map.h"
-#include "Metrics.h"
 #include "ElevationLayer.h"
 #include "ImageLayer.h"
 
@@ -143,8 +142,6 @@ TerrainTileModelFactory::createTileModel(
     const CreateTileManifest& manifest,
     const IOOptions& io)
 {
-    ROCKY_PROFILING_ZONE;
-
     // Make a new model:
     TerrainTileModel model;
     model.key = key;
@@ -212,8 +209,6 @@ TerrainTileModelFactory::addColorLayers(
     const IOOptions& io,
     bool standalone)
 {
-    ROCKY_PROFILING_ZONE;
-
     int order = 0;
 
     // fetch the candidate layers:
@@ -381,9 +376,6 @@ TerrainTileModelFactory::addElevation(
     unsigned border,
     const IOOptions& io)
 {
-    ROCKY_PROFILING_ZONE;
-    ROCKY_PROFILING_ZONE_TEXT("Elevation");
-
     bool needElevation = manifest.includesElevation();
 
     auto layers = map->layers().all();
