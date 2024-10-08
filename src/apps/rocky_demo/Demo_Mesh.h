@@ -41,7 +41,10 @@ auto Demo_Mesh_Absolute = [](Application& app)
         }
 
         // Set a dynamic style that we can change at runtime.
-        mesh.style = { { 1.0f, 0.4f, 0.1f, 0.75f }, 32.0f, 6000.0f };
+        mesh.style = {
+            { 1.0f, 0.4f, 0.1f, 0.75f }, // color
+            6000.0f  // depth offset
+        };
 
         // Turn off depth buffer writes
         mesh.writeDepth = false;
@@ -58,9 +61,6 @@ auto Demo_Mesh_Absolute = [](Application& app)
             auto& style = mesh.style.value();
             float* col = (float*)&style.color;
             if (ImGuiLTable::ColorEdit4("Color", col))
-                mesh.dirty();
-
-            if (ImGuiLTable::SliderFloat("Wireframe", &style.wireframe, 0.0f, 32.0f, "%.0f"))
                 mesh.dirty();
 
             if (ImGuiLTable::SliderFloat("Depth offset", &style.depth_offset, 0.0f, 10000.0f, "%.0f"))
@@ -134,9 +134,6 @@ auto Demo_Mesh_Relative = [](Application& app)
         if (style)
         {
             if (ImGuiLTable::ColorEdit4("Color", (float*)&style->color))
-                mesh.dirty();
-
-            if (ImGuiLTable::SliderFloat("Wireframe", &style->wireframe, 0.0f, 32.0f, "%.0f"))
                 mesh.dirty();
         }
 
@@ -213,13 +210,7 @@ auto Demo_Mesh_Multi = [](Application& app)
         {
             float* col = (float*)&style->color;
             if (ImGuiLTable::ColorEdit4("Color", col))
-            {
                 mesh.dirty();
-            }
-            if (ImGuiLTable::SliderFloat("Wireframe", &style->wireframe, 0.0f, 32.0f, "%.0f"))
-            {
-                mesh.dirty();
-            }
         }
 
         auto& transform = app.entities.get<Transform>(entity);

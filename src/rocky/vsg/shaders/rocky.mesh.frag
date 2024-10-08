@@ -6,7 +6,6 @@ layout(location = 1) in vec2 uv;
 // inter-stage interface block
 struct Varyings {
     vec4 color;
-    float wireframe;
 };
 layout(location = 2) flat in Varyings vary;
 
