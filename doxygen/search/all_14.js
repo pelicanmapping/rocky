@@ -14,8 +14,8 @@ var searchData=
   ['terraintilenode_691',['TerrainTileNode',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html',1,'ROCKY_NAMESPACE::TerrainTileNode'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html#a5412e73f74771eb7c79b76ba1a40924e',1,'ROCKY_NAMESPACE::TerrainTileNode::TerrainTileNode()']]],
   ['terraintilepager_692',['TerrainTilePager',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html',1,'ROCKY_NAMESPACE::TerrainTilePager'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#ad0ab10bb0cfa2bf647fbb4312e62734c',1,'ROCKY_NAMESPACE::TerrainTilePager::TerrainTilePager()']]],
   ['tethermode_693',['TetherMode',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator.html#ace379abb042a142cb8618ceebb6d8249',1,'ROCKY_NAMESPACE::MapManipulator']]],
-  ['text_694',['text',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label.html#a9ce8f809f52b55789ed0bf46fe4368a8',1,'ROCKY_NAMESPACE::Label']]],
-  ['text_695',['Text',['../class_ti_xml_handle.html#ad3b502c72059421e4dfcc7bda3c392fe',1,'TiXmlHandle']]],
+  ['text_694',['Text',['../class_ti_xml_handle.html#ad3b502c72059421e4dfcc7bda3c392fe',1,'TiXmlHandle']]],
+  ['text_695',['text',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label.html#a9ce8f809f52b55789ed0bf46fe4368a8',1,'ROCKY_NAMESPACE::Label']]],
   ['texture_696',['texture',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a64e9e1cb4afcab1f7d8fe203a36b81f7',1,'ROCKY_NAMESPACE::Mesh']]],
   ['texturedef_697',['TextureDef',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_state_1_1_texture_def.html',1,'ROCKY_NAMESPACE::TerrainState']]],
   ['texturedefs_698',['texturedefs',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_state.html#ad5b31e8ef0be1030272f69c104e6160e',1,'ROCKY_NAMESPACE::TerrainState']]],
@@ -62,7 +62,7 @@ var searchData=
   ['transformrange_739',['transformRange',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html#a679cf85daa813a82b108307dc8587f3d',1,'ROCKY_NAMESPACE::SRSOperation']]],
   ['transformunits_740',['transformUnits',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#a5e9ad33ec07def3e9816da3d62018ecc',1,'ROCKY_NAMESPACE::SRS::transformUnits(double input, const SRS &amp;fromSRS, const SRS &amp;toSRS, const Angle &amp;latitude)'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#afa8331a3237eed9c3f9f8666ad4fd9e5',1,'ROCKY_NAMESPACE::SRS::transformUnits(const Distance &amp;distance, const SRS &amp;outSRS, const Angle &amp;latitude)']]],
   ['triangle_741',['Triangle',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_triangle.html',1,'ROCKY_NAMESPACE']]],
-  ['type_742',['type',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#ab8bbd93edeaaf6912b3a96afd98aa6a7',1,'ROCKY_NAMESPACE::Geometry']]],
-  ['type_743',['Type',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#a236f01ed442e26a87265212a53c09ea1',1,'ROCKY_NAMESPACE::Geometry::Type()'],['../class_ti_xml_node.html#a0f4dd916b2afc2ab2f1a84f3e2b8fd5d',1,'TiXmlNode::Type()']]],
+  ['type_742',['Type',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#a236f01ed442e26a87265212a53c09ea1',1,'ROCKY_NAMESPACE::Geometry::Type()'],['../class_ti_xml_node.html#a0f4dd916b2afc2ab2f1a84f3e2b8fd5d',1,'TiXmlNode::Type()']]],
+  ['type_743',['type',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#ab8bbd93edeaaf6912b3a96afd98aa6a7',1,'ROCKY_NAMESPACE::Geometry']]],
   ['typetostring_744',['typeToString',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#adcbd61fb0903d2a5c8868dd4b62697bb',1,'ROCKY_NAMESPACE::Geometry']]]
 ];
