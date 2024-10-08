@@ -45,13 +45,13 @@ if (NOT TARGET imgui::imgui)
 
                 if(NOT _source_${_file})
                     set(IMGUI_ALL_SOURCES_FOUND FALSE)          
-                    message(WARNING "Failed to find _source_${_file} in ${IMGUI_DIR}")
+                    message(WARNING "Failed to find ${_source_${_file}} in ${IMGUI_DIR}")
                     break()
                 endif()
 
                 list(APPEND IMGUI_SOURCES ${_source_${_file}})
                 
-                unset(${_source_${_file}})
+                unset(_source_${_file})
             endforeach()
 
             if(IMGUI_ALL_SOURCES_FOUND)                
