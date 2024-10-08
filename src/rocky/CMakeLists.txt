@@ -66,14 +66,13 @@ if(ROCKY_RENDERER_VSG)
     file(GLOB SHADERS_VSG vsg/shaders/*)
 
     find_package(vsg CONFIG REQUIRED)
-    find_package(glslang CONFIG REQUIRED)
     find_package(EnTT CONFIG REQUIRED)
     find_package(vsgXchange CONFIG) # not REQUIRED
     list(APPEND PUBLIC_LIBS EnTT::EnTT vsg::vsg)
     
     set(ROCKY_HAS_VSG TRUE)
     set(ROCKY_HAS_ENTT TRUE)
-    set(ROCKY_HAS_GLSLANG TRUE)
+    #set(ROCKY_HAS_GLSLANG TRUE)
 endif()
 
 # Compile shaders into SPIRV - revisit this later.

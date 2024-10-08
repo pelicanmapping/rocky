@@ -3,7 +3,6 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#pragma once
 
 // ALL statics are instantiated in this file to control creation and dependency order.
 

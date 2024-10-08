@@ -2,9 +2,7 @@ set(APP_NAME rocky_demo)
 
 find_package(ImGui)
 
-if(ImGui_FOUND)
-    find_package(glslang CONFIG REQUIRED)
-
+if(ImGui_FOUND)                
     file(GLOB SOURCES *.cpp vsgImGui/*.cpp)
     file(GLOB HEADERS *.h vsgImGui/*.h)
 
@@ -21,5 +19,5 @@ if(ImGui_FOUND)
 
     set_target_properties(${APP_NAME} PROPERTIES FOLDER "apps")
 else()
-    message(WARNING "imgui not found, ${APP_NAME} will not be built :(")
+    message(WARNING "imgui not found, ${APP_NAME} will not build :(")
 endif()
