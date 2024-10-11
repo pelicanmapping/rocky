@@ -10,7 +10,7 @@ if "%VCPKG_DIR%" == "" (
 :: Verify vcpkg is available
 set VCPKG_TOOLCHAIN_FILE=%VCPKG_DIR%\scripts\buildsystems\vcpkg.cmake
 
-if not exist %VCPKG_TOOLCHAIN_FILE% (
+if not exist "%VCPKG_TOOLCHAIN_FILE%" (
     set ERROR_MSG=Please set the VCPKG_DIR environment variable to your vcpkg install location
     goto :usage
 )
@@ -104,7 +104,7 @@ cmake ^
     -A %ARCHITECTURE% ^
     -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
     -DCMAKE_INSTALL_PREFIX="%INSTALL_DIR%" ^
-    -DCMAKE_TOOLCHAIN_FILE=%VCPKG_TOOLCHAIN_FILE% ^
+    -DCMAKE_TOOLCHAIN_FILE="%VCPKG_TOOLCHAIN_FILE%" ^
     -DVCPKG_MANIFEST_DIR="%MANIFEST_DIR%"
 
 goto end
