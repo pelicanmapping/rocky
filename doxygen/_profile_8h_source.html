@@ -171,53 +171,55 @@ $(function() {
 <div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160; </div>
 <div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;        <span class="keyword">const</span> std::string&amp; wellKnownName() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160; </div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    <span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160; </div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;        <span class="keywordtype">void</span> setup(</div>
-<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;            <span class="keyword">const</span> std::string&amp; wellKnownName);</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;        std::string toReadableString() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160; </div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    <span class="keyword">protected</span>:</div>
 <div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160; </div>
 <div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;        <span class="keywordtype">void</span> setup(</div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;            <span class="keyword">const</span> SRS&amp;,</div>
-<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;            <span class="keyword">const</span> Box&amp; bounds,</div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;            <span class="keywordtype">unsigned</span> dim_x,</div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;            <span class="keywordtype">unsigned</span> dim_y );</div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160; </div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    <span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160; </div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;        <span class="keyword">struct </span>Data</div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;        {</div>
-<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;            std::string _wellKnownName;</div>
-<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;            GeoExtent   _extent;</div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;            GeoExtent   _latlong_extent;</div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;            <span class="keywordtype">unsigned</span>    _numTilesWideAtLod0;</div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;            <span class="keywordtype">unsigned</span>    _numTilesHighAtLod0;</div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;            std::string _fullSignature;</div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;            std::string _horizSignature;</div>
-<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;            std::size_t _hash;</div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;        };</div>
-<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;        shared_ptr&lt;Data&gt; _shared;</div>
-<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;    };</div>
-<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160; </div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160; </div>
-<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;    <span class="comment">// inlines</span></div>
-<div class="line"><a name="l00193"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#ace5517cd171b7d024f2d4a5b0394e333">  193</a></span>&#160;    <span class="keyword">const</span> std::string&amp; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#ace5517cd171b7d024f2d4a5b0394e333">Profile::getFullSignature</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _shared-&gt;_fullSignature; }</div>
-<div class="line"><a name="l00194"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a736b3b341dc74f3ccbc315a6dc1eb730">  194</a></span>&#160;    <span class="keyword">const</span> std::string&amp; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a736b3b341dc74f3ccbc315a6dc1eb730">Profile::getHorizSignature</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _shared-&gt;_horizSignature; }</div>
-<div class="line"><a name="l00195"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#aefd66547bdf958bd33dbd637f5b190ac">  195</a></span>&#160;    std::size_t <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#aefd66547bdf958bd33dbd637f5b190ac">Profile::hash</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _shared-&gt;_hash; }</div>
-<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;}</div>
-<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160; </div>
-<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;<span class="keyword">namespace </span>std {</div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;    <span class="comment">// std::hash specialization for Profile</span></div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;    <span class="keyword">template</span>&lt;&gt; <span class="keyword">struct </span>hash&lt;rocky::Profile&gt; {</div>
-<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">size_t</span> operator()(<span class="keyword">const</span> rocky::Profile&amp; value)<span class="keyword"> const </span>{</div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;            <span class="keywordflow">return</span> value.hash();</div>
-<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;        }</div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;    };</div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;}</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;            <span class="keyword">const</span> std::string&amp; wellKnownName);</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160; </div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;        <span class="keywordtype">void</span> setup(</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;            <span class="keyword">const</span> SRS&amp;,</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;            <span class="keyword">const</span> Box&amp; bounds,</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;            <span class="keywordtype">unsigned</span> dim_x,</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;            <span class="keywordtype">unsigned</span> dim_y );</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160; </div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;    <span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160; </div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;        <span class="keyword">struct </span>Data</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;        {</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;            std::string _wellKnownName;</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;            GeoExtent   _extent;</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;            GeoExtent   _latlong_extent;</div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;            <span class="keywordtype">unsigned</span>    _numTilesWideAtLod0;</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;            <span class="keywordtype">unsigned</span>    _numTilesHighAtLod0;</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;            std::string _fullSignature;</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;            std::string _horizSignature;</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;            std::size_t _hash;</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;        };</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;        shared_ptr&lt;Data&gt; _shared;</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;    };</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160; </div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160; </div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;    <span class="comment">// inlines</span></div>
+<div class="line"><a name="l00196"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#ace5517cd171b7d024f2d4a5b0394e333">  196</a></span>&#160;    <span class="keyword">const</span> std::string&amp; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#ace5517cd171b7d024f2d4a5b0394e333">Profile::getFullSignature</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _shared-&gt;_fullSignature; }</div>
+<div class="line"><a name="l00197"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a736b3b341dc74f3ccbc315a6dc1eb730">  197</a></span>&#160;    <span class="keyword">const</span> std::string&amp; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a736b3b341dc74f3ccbc315a6dc1eb730">Profile::getHorizSignature</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _shared-&gt;_horizSignature; }</div>
+<div class="line"><a name="l00198"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#aefd66547bdf958bd33dbd637f5b190ac">  198</a></span>&#160;    std::size_t <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#aefd66547bdf958bd33dbd637f5b190ac">Profile::hash</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _shared-&gt;_hash; }</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;}</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160; </div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;<span class="keyword">namespace </span>std {</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;    <span class="comment">// std::hash specialization for Profile</span></div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;    <span class="keyword">template</span>&lt;&gt; <span class="keyword">struct </span>hash&lt;rocky::Profile&gt; {</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">size_t</span> operator()(<span class="keyword">const</span> rocky::Profile&amp; value)<span class="keyword"> const </span>{</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;            <span class="keywordflow">return</span> value.hash();</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;        }</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;    };</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;}</div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent.html">ROCKY_NAMESPACE::GeoExtent</a></div><div class="ttdef"><b>Definition:</b> GeoExtent.h:19</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html">ROCKY_NAMESPACE::Profile</a></div><div class="ttdef"><b>Definition:</b> Profile.h:22</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile_html_a736b3b341dc74f3ccbc315a6dc1eb730"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a736b3b341dc74f3ccbc315a6dc1eb730">ROCKY_NAMESPACE::Profile::getHorizSignature</a></div><div class="ttdeci">const std::string &amp; getHorizSignature() const</div><div class="ttdef"><b>Definition:</b> Profile.h:194</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile_html_ace5517cd171b7d024f2d4a5b0394e333"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#ace5517cd171b7d024f2d4a5b0394e333">ROCKY_NAMESPACE::Profile::getFullSignature</a></div><div class="ttdeci">const std::string &amp; getFullSignature() const</div><div class="ttdoc">Returns a signature hash code unique to this profile.</div><div class="ttdef"><b>Definition:</b> Profile.h:193</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile_html_aefd66547bdf958bd33dbd637f5b190ac"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#aefd66547bdf958bd33dbd637f5b190ac">ROCKY_NAMESPACE::Profile::hash</a></div><div class="ttdeci">std::size_t hash() const</div><div class="ttdoc">Get the hash code for this profile.</div><div class="ttdef"><b>Definition:</b> Profile.h:195</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile_html_a736b3b341dc74f3ccbc315a6dc1eb730"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a736b3b341dc74f3ccbc315a6dc1eb730">ROCKY_NAMESPACE::Profile::getHorizSignature</a></div><div class="ttdeci">const std::string &amp; getHorizSignature() const</div><div class="ttdef"><b>Definition:</b> Profile.h:197</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile_html_ace5517cd171b7d024f2d4a5b0394e333"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#ace5517cd171b7d024f2d4a5b0394e333">ROCKY_NAMESPACE::Profile::getFullSignature</a></div><div class="ttdeci">const std::string &amp; getFullSignature() const</div><div class="ttdoc">Returns a signature hash code unique to this profile.</div><div class="ttdef"><b>Definition:</b> Profile.h:196</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile_html_aefd66547bdf958bd33dbd637f5b190ac"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#aefd66547bdf958bd33dbd637f5b190ac">ROCKY_NAMESPACE::Profile::hash</a></div><div class="ttdeci">std::size_t hash() const</div><div class="ttdoc">Get the hash code for this profile.</div><div class="ttdef"><b>Definition:</b> Profile.h:198</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">ROCKY_NAMESPACE::SRS</a></div><div class="ttdef"><b>Definition:</b> SRS.h:21</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
 </div><!-- fragment --></div><!-- contents -->
