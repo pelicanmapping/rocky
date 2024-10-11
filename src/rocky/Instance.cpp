@@ -121,7 +121,10 @@ Instance::Instance()
 Instance::Instance(const Instance& rhs) :
     _impl(rhs._impl)
 {
-    //nop
+    // Tell the weejobs library how to set a thread name
+    jobs::set_thread_name_function([](const char* value) {
+        util::setThreadName(value);
+        });
 }
 
 Instance::~Instance()

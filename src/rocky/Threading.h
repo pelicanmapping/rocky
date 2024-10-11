@@ -5,7 +5,7 @@
  */
 #pragma once
 #include <rocky/Common.h>
-#include <unordered_set>
+#include <vector>
 
 #define WEEJOBS_NAMESPACE jobs
 #define WEEJOBS_EXPORT ROCKY_EXPORT
@@ -50,15 +50,14 @@ namespace ROCKY_NAMESPACE
         class Gate
         {
         public:
-            Gate() { }
+            Gate() = default;
 
             //! Lock key's gate
             inline void lock(const T& key)
             {
                 std::unique_lock<std::mutex> lock(_m);
                 for (;;) {
-                    auto i = _keys.emplace(key);
-                    if (i.second)
+                    if (emplace(key))
                         return;
                     _block.wait(lock);
                 }
@@ -68,14 +67,23 @@ namespace ROCKY_NAMESPACE
             inline void unlock(const T& key)
             {
                 std::unique_lock<std::mutex> lock(_m);
-                _keys.erase(key);
+                _keys.erase(std::remove(_keys.begin(), _keys.end(), key), _keys.end());
                 _block.notify_all();
             }
 
         private:
             std::mutex _m;
             std::condition_variable_any _block;
-            std::unordered_set<T> _keys;
+            std::vector<T> _keys;
+
+            inline bool emplace(const T& key)
+            {
+                for(auto& k : _keys)
+                    if (k == key)
+                        return false;
+                _keys.emplace_back(key);
+                return true;
+            }
         };
 
         //! Gate the locks for the duration of this object's scope

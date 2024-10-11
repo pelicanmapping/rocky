@@ -9,6 +9,7 @@
 #include <glm/ext.hpp>
 #include <iterator>
 #include <algorithm>
+#include <cstdarg>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -402,57 +403,24 @@ namespace ROCKY_NAMESPACE
         // Adapted from Boost - see boost license
         // https://www.boost.org/users/license.html
         template <typename T>
-        inline std::size_t hash_value_unsigned(T val)
+        inline std::size_t hash_value_unsigned_one(T val)
         {
             const int size_t_bits = std::numeric_limits<std::size_t>::digits;
             const int length = (std::numeric_limits<T>::digits - 1) / size_t_bits;
             std::size_t seed = 0;
-            for (unsigned int i = length * size_t_bits; i > 0; i -= size_t_bits)
+            for (int i = length * size_t_bits; i > 0; i -= size_t_bits)
                 seed ^= (std::size_t)(val >> i) + (seed << 6) + (seed >> 2);
             seed ^= (std::size_t)val + (seed << 6) + (seed >> 2);
             return seed;
         }
 
-        inline std::size_t hash_value_unsigned(bool val)
-        {
-            return hash_value_unsigned((unsigned)val ? 0x1111111 : 0x2222222);
-        }
-
-        template<typename T>
-        inline std::size_t hash_value_unsigned(const optional<T>& val) {
-            if (val.has_value())
-                return hash_value_unsigned(0x3333333u, val.get());
-            else
-                return (std::size_t)0;
-        }
-
-        template <typename A, typename B> inline std::size_t hash_value_unsigned(A a, B b) {
-            std::size_t seed = hash_value_unsigned(a);
-            seed ^= hash_value_unsigned(b) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-            return seed;
-        }
-
-        template <typename A, typename B, typename C> inline std::size_t hash_value_unsigned(A a, B b, C c) {
-            std::size_t seed = hash_value_unsigned(a);
-            seed ^= hash_value_unsigned(b) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-            seed ^= hash_value_unsigned(c) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-            return seed;
-        }
-
-        template <typename A, typename B, typename C, typename D> inline std::size_t hash_value_unsigned(A a, B b, C c, D d) {
-            std::size_t seed = hash_value_unsigned(a);
-            seed ^= hash_value_unsigned(b) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-            seed ^= hash_value_unsigned(c) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-            seed ^= hash_value_unsigned(d) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-            return seed;
-        }
-
-        template <typename A, typename B, typename C, typename D, typename E> inline std::size_t hash_value_unsigned(A a, B b, C c, D d, E e) {
-            std::size_t seed = hash_value_unsigned(a);
-            seed ^= hash_value_unsigned(b) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-            seed ^= hash_value_unsigned(c) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-            seed ^= hash_value_unsigned(d) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-            seed ^= hash_value_unsigned(e) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        template<typename ...Args>
+        inline std::size_t hash_value_unsigned(Args... args) {
+            std::size_t seed = 0;
+            for(auto v : std::initializer_list<std::size_t>({ args... })) {
+                seed = (seed == 0) ? hash_value_unsigned_one(v) :
+                    seed ^ (hash_value_unsigned_one(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
+            }
             return seed;
         }
 

@@ -161,6 +161,9 @@ namespace ROCKY_NAMESPACE
         //! global-geodetic, spherical-meractor, and plate-carree.
         const std::string& wellKnownName() const;
 
+        //! Readable string represeting this profile as best we can
+        std::string toReadableString() const;
+
     protected:
 
         void setup(

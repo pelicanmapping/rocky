@@ -98,23 +98,34 @@ Application::ctor(int& argc, char** argv)
     vsg::CommandLine commandLine(&argc, argv);
 
     commandLine.read(instance.runtime().readerWriterOptions);
-    _debuglayer = commandLine.read({ "--debug" });
-    _apilayer = commandLine.read({ "--api" });
-    _vsync = !commandLine.read({ "--novsync" });
+    _debuglayer = commandLine.read("--debug");
+    _apilayer = commandLine.read("--api");
+    _vsync = !commandLine.read("--novsync");
 
-    if (commandLine.read({ "--version" }))
+    if (commandLine.read("--version"))
     {
         std::cout << "rocky " << ROCKY_VERSION_STRING << std::endl;
         exit(0);
     }
 
-    if (commandLine.read({ "--version-all" }))
+    if (commandLine.read("--version-all"))
     {
         std::cout << about() << std::endl;
         exit(0);
     }
 
-    if (commandLine.read({ "--help" }))
+    std::string log_level;
+    if (commandLine.read("--log-level", log_level))
+    {
+        if (log_level == "debug") Log()->set_level(spdlog::level::debug);
+        else if (log_level == "info") Log()->set_level(spdlog::level::info);
+        else if (log_level == "warn") Log()->set_level(spdlog::level::warn);
+        else if (log_level == "error") Log()->set_level(spdlog::level::err);
+        else if (log_level == "critical") Log()->set_level(spdlog::level::critical);
+        else if (log_level == "off") Log()->set_level(spdlog::level::off);
+    }
+
+    if (commandLine.read("--help"))
     {
         std::cout
             << "rocky " << ROCKY_VERSION_STRING << std::endl
@@ -139,15 +150,15 @@ Application::ctor(int& argc, char** argv)
     mapNode = rocky::MapNode::create(instance);
 
     // the sun
-    if (commandLine.read({ "--sky" }))
+    if (commandLine.read("--sky"))
     {
         skyNode = rocky::SkyNode::create(instance);
         mainScene->addChild(skyNode);
     }
 
     // wireframe overlay
-    if (commandLine.read({ "--wire" }))
-        instance.runtime().shaderCompileSettings->defines.insert("RK_WIREFRAME_OVERLAY");
+    if (commandLine.read("--wire"))
+        instance.runtime().shaderCompileSettings->defines.insert("ROCKY_WIREFRAME_OVERLAY");
 
     // a node to render the map/terrain
     mainScene->addChild(mapNode);
@@ -163,7 +174,7 @@ Application::ctor(int& argc, char** argv)
     // and those will have to be recompiled.
     // So instead we will just activate the lighting globally and rely on the 
     // light counts in the shader. Is this ok?
-    instance.runtime().shaderCompileSettings->defines.insert("RK_LIGHTING");
+    instance.runtime().shaderCompileSettings->defines.insert("ROCKY_LIGHTING");
 
     // read map from file:
     std::string infile; 

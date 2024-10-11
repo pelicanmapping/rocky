@@ -22,7 +22,11 @@ ROCKY_ADD_OBJECT_FACTORY(TMSImage,
 
 ROCKY_ADD_OBJECT_FACTORY(XYZImage,
     [](const std::string& JSON, const IOOptions& io) {
-        return TMSImageLayer::create(JSON, io); })
+        auto layer = TMSImageLayer::create(JSON, io);
+        if (!layer->profile().valid())
+            layer->setProfile(Profile("spherical-mercator"));
+        return layer;
+    })
 
 TMSImageLayer::TMSImageLayer() :
     super()

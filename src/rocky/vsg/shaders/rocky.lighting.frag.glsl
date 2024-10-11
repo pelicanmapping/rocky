@@ -1,11 +1,11 @@
-#pragma import_defines(RK_ATMOSPHERE)
+#pragma import_defines(ROCKY_ATMOSPHERE)
 
 // from VSG's view-dependent state
 layout(set = 1, binding = 0) uniform VSG_Lights {
     vec4 pack[64];
 } vsg_lights;
 
-#ifdef RK_ATMOSPHERE
+#ifdef ROCKY_ATMOSPHERE
 layout(location = 15) in vec3 atmos_color;
 #endif
 
@@ -138,7 +138,7 @@ void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
 
         color.rgb = color.rgb / (color.rgb + vec3(1.0)); // tone map
 
-#if defined(RK_ATMOSPHERE)
+#if defined(ROCKY_ATMOSPHERE)
         color.rgb += atmos_color; // add in the (linear) atmospheric haze
 #endif
 

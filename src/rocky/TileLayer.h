@@ -47,6 +47,14 @@ namespace ROCKY_NAMESPACE
         void setTileSize(unsigned value);
         const optional<unsigned>& tileSize() const;
 
+        //! Sets the layer profile to use. This will NOT be serialized in to_json();
+        //! call setPermanentProfile() instead for that. It it illegal to call 
+        //! setProfile after opening the layer.
+        void setProfile(const Profile&);
+
+        //! Tiling profile for this layer
+        const Profile& profile() const;
+
         //! seriailize
         std::string to_json() const override;
 
@@ -56,19 +64,12 @@ namespace ROCKY_NAMESPACE
 
         TileLayer(const JSON&);
 
-    public: // Layer
-            
+    public:
+
         //! Tiling profile of this layer.
         //! Layer implementaions will call this to set the profile based
-        //! on information gathered from source metadata. If your Layer
-        //! needs the user to expressly set a profile, override this to
-        //! make it public.
+        //! on information gathered from source metadata.
         void setPermanentProfile(const Profile&);
-
-        //! Tiling profile for this layer
-        const Profile& profile() const;
-
-    public: // Data availability methods
 
         //! True is the tile key intersects the data extents of this layer.
         bool intersects(const TileKey& key) const;
@@ -112,9 +113,6 @@ namespace ROCKY_NAMESPACE
         void closeImplementation() override;
 
     protected:
-
-        //! Sets the layer profile to use now (will not be serialized)
-        void setProfile(const Profile&);
 
         //! Assign a data extents collection to the layer.
         //! A subclass should only call this during openImplementation().

@@ -211,6 +211,10 @@ namespace
                 {
                     new_entry.pj_geodetic = proj_crs_get_geodetic_crs(ctx, new_entry.pj);
                 }
+                else
+                {
+                    Log()->debug(LC "Failed to create SRS from definition \"{}\"; PROJ error = {}", def, new_entry.error);
+                }
 
                 return new_entry;
             }

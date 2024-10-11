@@ -401,6 +401,5 @@ TerrainState::updateTerrainTileDescriptors(
     }
 
     // And update the tile's state group
-    //stategroup->stateCommands.clear();
     stategroup->add(bind);
 }

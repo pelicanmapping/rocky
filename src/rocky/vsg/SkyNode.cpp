@@ -267,7 +267,7 @@ SkyNode::setWorldSRS(const SRS& srs)
         addChild(sun);
 
         // Tell the shaders that lighting is a go
-        _instance.runtime().shaderCompileSettings->defines.insert("RK_LIGHTING");
+        _instance.runtime().shaderCompileSettings->defines.insert("ROCKY_LIGHTING");
         _instance.runtime().dirtyShaders();
 
         // the atmopshere:
@@ -289,7 +289,7 @@ SkyNode::setShowAtmosphere(bool show)
             addChild(_atmosphere);
 
             // activate in shaders
-            _instance.runtime().shaderCompileSettings->defines.insert("RK_ATMOSPHERE");
+            _instance.runtime().shaderCompileSettings->defines.insert("ROCKY_ATMOSPHERE");
             _instance.runtime().dirtyShaders();
         }
         else if (iter != children.end() && show == false)
@@ -297,7 +297,7 @@ SkyNode::setShowAtmosphere(bool show)
             children.erase(iter);
 
             // activate in shaders
-            _instance.runtime().shaderCompileSettings->defines.erase("RK_ATMOSPHERE");
+            _instance.runtime().shaderCompileSettings->defines.erase("ROCKY_ATMOSPHERE");
             _instance.runtime().dirtyShaders();
         }
     }

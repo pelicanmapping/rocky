@@ -58,12 +58,12 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT Object
     {
     protected:
-        Object() { }
+        Object() = default;
         std::string _name;
     public:
         void setName(const std::string& value) { _name = value; }
         const std::string& name() const { return _name; }
-        virtual ~Object() { }
+        virtual ~Object() { } // makes Object polymorphic
     };
 
     //! Base class for objects implementing the create() pattern

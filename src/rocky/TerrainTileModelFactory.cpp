@@ -240,14 +240,6 @@ TerrainTileModelFactory::addColorLayers(
         }
     }
 
-    if (intersecting_layers.size() == 0)
-    {
-        Log()->warn("1) layers={} key={} legalrange={} intersects={}", layers.size(), key.str(), inLegalRange, intersects);
-        intersects = ImageLayer::cast(layers.front())->intersects(key);
-        Log()->warn("2) layers={} key={} legalrange={} intersects={}", layers.size(), key.str(), inLegalRange, intersects);
-        return;
-    }
-
     if (intersecting_layers.size() == 1 && intersecting_layers.front()->mayHaveData(key))
     {
         // if only one layer intersects we will not need to composite

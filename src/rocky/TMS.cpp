@@ -619,12 +619,7 @@ TMS::Driver::close()
 }
 
 Status
-TMS::Driver::open(
-    const URI& uri,
-    Profile& profile,
-    const std::string& format,
-    DataExtentList& dataExtents,
-    const IOOptions& io)
+TMS::Driver::open(const URI& uri, Profile& profile, const std::string& format, DataExtentList& dataExtents, const IOOptions& io)
 {
     // URI is mandatory.
     if (uri.empty())

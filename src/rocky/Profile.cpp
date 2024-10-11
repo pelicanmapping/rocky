@@ -512,6 +512,19 @@ Profile::transformAndExtractContiguousExtents(
     return true;
 }
 
+std::string
+Profile::toReadableString() const
+{
+    if (!wellKnownName().empty())
+    {
+        return wellKnownName();
+    }
+    else
+    {
+        return to_json();
+    }
+}
+
 
 #include "json.h"
 namespace ROCKY_NAMESPACE

@@ -11,7 +11,7 @@
 namespace ROCKY_NAMESPACE
 {
     const std::string StatusText[] = {
-        "No error",
+        "OK",
         "Resource unavailable",
         "Service unavailable",
         "Configuration error",
@@ -46,7 +46,8 @@ namespace ROCKY_NAMESPACE
         bool operator != (const Status& rhs) const { return !(*this==rhs); }
         bool const operator ! () const { return failed(); }
         std::string toString() const {
-            return StatusText[(int)code < 6 ? (int)code : 5] + ": " + message;
+            return message.empty() ? StatusText[(int)code < 6 ? (int)code : 5] :
+                StatusText[(int)code < 6 ? (int)code : 5] + ": " + message;
         }
     };
 

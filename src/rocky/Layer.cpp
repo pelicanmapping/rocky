@@ -117,10 +117,9 @@ Layer::open(const IOOptions& io)
 
     std::unique_lock lock(_state_mutex);
 
-    // be optimistic :)
-    _status = Status_OK;
-
     setStatus(openImplementation(io));
+
+    Log()->debug("Layer \"{}\" status = {}", name(), status().toString());
 
     return status();
 }

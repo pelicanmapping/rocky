@@ -187,8 +187,6 @@ private:
 
 int main(int argc, char** argv)
 {
-    rocky::Log()->set_level(rocky::log::level::info);
-
     // instantiate the application engine.
     rocky::Application app(argc, argv);
 

@@ -255,6 +255,9 @@ namespace ROCKY_NAMESPACE
         //! Reads a disk file into a string.
         extern ROCKY_EXPORT Result<std::string> readFromFile(const std::string& filename);
 
+        //! Sets the name of the current thread
+        extern ROCKY_EXPORT void setThreadName(const char* name);
+
         //! GLSL-style randomizer [0..1]
         inline float glsl_random(float seed) {
             constexpr float A = 12.9898f, B = 43758.5453f;

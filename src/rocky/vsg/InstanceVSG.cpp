@@ -37,13 +37,12 @@ struct ROCKY_NAMESPACE::InstanceVSG::Implementation
 namespace
 {
     // custom VSG logger that redirects to spdlog.
-    /// default Logger that sends debug and info messages to std:cout, and warn and error messages to std::cerr
-    class SpdlogLogger : public Inherit<vsg::Logger, SpdlogLogger>
+    class VSG_to_Spdlog_Logger : public Inherit<vsg::Logger, VSG_to_Spdlog_Logger>
     {
     public:
         std::shared_ptr<spdlog::logger> vsg_logger;
 
-        SpdlogLogger()
+        VSG_to_Spdlog_Logger()
         {
             vsg_logger = spdlog::stdout_color_mt("vsg");
             vsg_logger->set_pattern("%^[%n %l]%$ %v");
@@ -51,18 +50,23 @@ namespace
 
     protected:
         void debug_implementation(const std::string_view& message) override {
+            vsg_logger->set_level(Log()->level());
             vsg_logger->debug(message);
         }
         void info_implementation(const std::string_view& message) override {
+            vsg_logger->set_level(Log()->level());
             vsg_logger->info(message);
         }
         void warn_implementation(const std::string_view& message) override {
+            vsg_logger->set_level(Log()->level());
             vsg_logger->warn(message);
         }
         void error_implementation(const std::string_view& message) override {
+            vsg_logger->set_level(Log()->level());
             vsg_logger->error(message);
         }
         void fatal_implementation(const std::string_view& message) override {
+            vsg_logger->set_level(Log()->level());
             vsg_logger->critical(message);
         }
     };
@@ -223,7 +227,7 @@ InstanceVSG::InstanceVSG() :
     auto& runtime = _impl->runtime;
 
     // redirect the VSG logger to our spdlog
-    vsg::Logger::instance() = new SpdlogLogger();
+    vsg::Logger::instance() = new VSG_to_Spdlog_Logger();
 
 #ifdef ROCKY_HAS_GDAL
     runtime.readerWriterOptions->add(GDAL_VSG_ReaderWriter::create());

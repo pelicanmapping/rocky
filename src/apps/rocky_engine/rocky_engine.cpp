@@ -108,7 +108,7 @@ int main(int argc, char** argv)
     mapNode->terrainSettings().screenSpaceError = 135.0f;
 
     if (arguments.read({ "--wire" }))
-        ri.runtime().shaderCompileSettings->defines.insert("RK_WIREFRAME_OVERLAY");
+        ri.runtime().shaderCompileSettings->defines.insert("ROCKY_WIREFRAME_OVERLAY");
 
 #ifdef ROCKY_HAS_TMS
 

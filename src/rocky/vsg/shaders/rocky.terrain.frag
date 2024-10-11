@@ -1,7 +1,7 @@
 #version 450
 
-#pragma import_defines(RK_LIGHTING)
-#pragma import_defines(RK_WIREFRAME_OVERLAY)
+#pragma import_defines(ROCKY_LIGHTING)
+#pragma import_defines(ROCKY_WIREFRAME_OVERLAY)
 
 
 layout(push_constant) uniform PushConstants
@@ -25,7 +25,7 @@ layout(location = 0) in RkData rk;
 layout(set = 0, binding = 11) uniform sampler2D color_tex;
 layout(set = 0, binding = 12) uniform sampler2D normal_tex;
 
-#if defined(RK_LIGHTING)
+#if defined(ROCKY_LIGHTING)
 #include "rocky.lighting.frag.glsl"
 #endif
 
@@ -49,11 +49,11 @@ void main()
     if (gl_FrontFacing == false)
         out_color.r = 1.0;
 
-#if defined(RK_LIGHTING)
+#if defined(ROCKY_LIGHTING)
     apply_lighting(out_color, rk.vertex_view, get_normal());
 #endif
 
-#if defined(RK_WIREFRAME_OVERLAY)
+#if defined(ROCKY_WIREFRAME_OVERLAY)
     // tile outlines - debugging
     vec2 outline_uv = abs(rk.uv * 2.0 - 1.0);
     if (outline_uv.x > 0.99 || outline_uv.y > 0.99)

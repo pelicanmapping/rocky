@@ -40,7 +40,7 @@ TileLayer::construct(const JSON& conf)
     get_to(j, "max_data_level", _maxDataLevel);
     get_to(j, "min_level", _minLevel);
     get_to(j, "tile_size", _tileSize);
-    get_to(j, "profile", _originalProfile);
+    get_to(j, "profile", _originalProfile);        
 }
 
 JSON
@@ -99,7 +99,8 @@ TileLayer::openImplementation(const IOOptions& io)
     auto result = super::openImplementation(io);
     if (result.ok())
     {
-        _runtimeProfile = _originalProfile;
+        if (_originalProfile.has_value())
+            setProfile(_originalProfile);
     }
     return result;
 }
@@ -113,7 +114,6 @@ TileLayer::closeImplementation()
     _dataExtentsUnion = {};
     if (_dataExtentsIndex)
     {
-        //delete _dataExtentsIndex;
         _dataExtentsIndex = nullptr;
     }
 
@@ -136,7 +136,11 @@ TileLayer::setPermanentProfile(const Profile& profile)
 void
 TileLayer::setProfile(const Profile& profile)
 {
+    ROCKY_SOFT_ASSERT_AND_RETURN(!isOpen(), void(), "ILLEGAL: cannot set profile after layer is open");
+
     _runtimeProfile = profile;
+
+    Log()->debug("Layer \"{}\" profile set to {}", name(), _runtimeProfile->toReadableString());
 }
 
 bool
