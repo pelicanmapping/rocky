@@ -114,6 +114,13 @@ endif()
 # allows the use cmake-generated include files when building (e.g. Version.h)
 include_directories(${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky)
 
+# copies the shaders to the build folder so they can be found when running from the IDE
+foreach(_path IN LISTS SHADERS_VSG)
+    get_filename_component(_file "${_path}" NAME)
+    message(STATUS "configure_file(${_path} ${ROCKY_BUILDTIME_SHARE_DIR}/shaders/${_file} COPYONLY")
+    configure_file("${_path}" "${ROCKY_BUILDTIME_SHARE_DIR}/shaders/${_file}" COPYONLY)
+endforeach()
+
 # enables folders for IDEs
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 assign_source_groups("Sources" "${CMAKE_CURRENT_SOURCE_DIR}" ${SOURCES_CORE} ${SOURCES_CONTRIB} ${SOURCES_VSG} ${SOURCES_VSG_ENGINE})
@@ -153,5 +160,5 @@ install(FILES ${HEADERS_CONTRIB} DESTINATION include/rocky/contrib)
 if(ROCKY_RENDERER_VSG)
     install(FILES ${HEADERS_VSG} DESTINATION include/rocky/vsg)
     install(FILES ${HEADERS_VSG_ENGINE} DESTINATION include/rocky/vsg/engine)
-    install(FILES ${SHADERS_VSG} ${SPIRV_SHADERS} DESTINATION share/shaders)
+    install(FILES ${SHADERS_VSG} ${SPIRV_SHADERS} DESTINATION share/rocky/shaders)
 endif()

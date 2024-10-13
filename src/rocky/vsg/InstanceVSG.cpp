@@ -223,11 +223,40 @@ namespace
 InstanceVSG::InstanceVSG() :
     rocky::Instance()
 {
+    int argc = 0;
+    char* argv[1] = { "rocky" };
+    ctor(argc, argv);
+}
+
+InstanceVSG::InstanceVSG(int& argc, char** argv) :
+    rocky::Instance()
+{
+    ctor(argc, argv);
+}
+
+void
+InstanceVSG::ctor(int& argc, char** argv)
+{
     _impl = std::make_shared<Implementation>();
     auto& runtime = _impl->runtime;
 
+    vsg::CommandLine args(&argc, argv);
+
+    args.read(_impl->runtime.readerWriterOptions);
+
     // redirect the VSG logger to our spdlog
     vsg::Logger::instance() = new VSG_to_Spdlog_Logger();
+
+    std::string log_level;
+    if (args.read("--log-level", log_level))
+    {
+        if (log_level == "debug") Log()->set_level(spdlog::level::debug);
+        else if (log_level == "info") Log()->set_level(spdlog::level::info);
+        else if (log_level == "warn") Log()->set_level(spdlog::level::warn);
+        else if (log_level == "error") Log()->set_level(spdlog::level::err);
+        else if (log_level == "critical") Log()->set_level(spdlog::level::critical);
+        else if (log_level == "off") Log()->set_level(spdlog::level::off);
+    }
 
 #ifdef ROCKY_HAS_GDAL
     runtime.readerWriterOptions->add(GDAL_VSG_ReaderWriter::create());
@@ -259,23 +288,23 @@ InstanceVSG::InstanceVSG() :
     auto rockyPaths = vsg::getEnvPaths("ROCKY_FILE_PATH");
     runtime.searchPaths.insert(runtime.searchPaths.end(), rockyPaths.begin(), rockyPaths.end());
 
-    // make sure we can find the shaders:
+    // add some default places to look for shaders and resources, relative to the executable.
+    auto exec_path = std::filesystem::path(util::getExecutableLocation());
+    auto path = (exec_path.remove_filename() / "../share/rocky").lexically_normal();
+    if (!path.empty())
+        runtime.searchPaths.push_back(vsg::Path(path.generic_string()));
+
+    path = (exec_path.remove_filename() / "../../../../build_share").lexically_normal();
+    if (!path.empty())
+        runtime.searchPaths.push_back(vsg::Path(path.generic_string()));
+
     if (!foundShaders(runtime.searchPaths))
     {
-        // attempt to resolve the location of the rocky shaders relative
-        // to the location of the executable.
-        auto path = std::filesystem::path(util::getExecutableLocation());
-        path = (path.remove_filename() / "../share").lexically_normal();
-        if (!path.empty())
-        {
-            runtime.searchPaths.push_back(vsg::Path(path.generic_string()));
-        }
-
-        if (!foundShaders(runtime.searchPaths))
-        {
-            Log()->warn("Trouble: Rocky may not be able to find its shaders. "
-                "Consider setting one of the environment variables VSG_FILE_PATH or ROCKY_FILE_PATH.");
-        }
+        Log()->warn("Trouble: Rocky may not be able to find its shaders. "
+            "Consider setting one of the environment variables VSG_FILE_PATH or ROCKY_FILE_PATH.");
+        Log()->warn("Places I looked for a 'shaders' folder:");
+        for (auto& path : runtime.searchPaths)
+            Log()->warn("  {}", path.string());
     }
 
     // Install a readImage function that uses the VSG facility
@@ -357,12 +386,6 @@ InstanceVSG::InstanceVSG() :
     io().services.contentCache = std::make_shared<ContentCache>(128);
 
     io().uriGate = std::make_shared<util::Gate<std::string>>();
-}
-
-InstanceVSG::InstanceVSG(vsg::CommandLine& args) :
-    InstanceVSG()
-{
-    args.read(_impl->runtime.readerWriterOptions);
 }
 
 InstanceVSG::InstanceVSG(const InstanceVSG& rhs) :

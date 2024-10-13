@@ -87,7 +87,8 @@ Application::Application()
     ctor(argc, argv);
 }
 
-Application::Application(int& argc, char** argv)
+Application::Application(int& argc, char** argv) :
+    instance(argc, argv)
 {
     ctor(argc, argv);
 }
@@ -112,17 +113,6 @@ Application::ctor(int& argc, char** argv)
     {
         std::cout << about() << std::endl;
         exit(0);
-    }
-
-    std::string log_level;
-    if (commandLine.read("--log-level", log_level))
-    {
-        if (log_level == "debug") Log()->set_level(spdlog::level::debug);
-        else if (log_level == "info") Log()->set_level(spdlog::level::info);
-        else if (log_level == "warn") Log()->set_level(spdlog::level::warn);
-        else if (log_level == "error") Log()->set_level(spdlog::level::err);
-        else if (log_level == "critical") Log()->set_level(spdlog::level::critical);
-        else if (log_level == "off") Log()->set_level(spdlog::level::off);
     }
 
     if (commandLine.read("--help"))

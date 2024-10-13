@@ -69,13 +69,8 @@ TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
 
     if (map)
     {
-        map->onLayerAdded([this](shared_ptr<Layer>, unsigned, Revision) {
-            reset();
-            });
-
-        map->onLayerRemoved([this](shared_ptr<Layer>, Revision) {
-            reset();
-            });
+        map->onLayerAdded([this](auto...) { reset(); });
+        map->onLayerRemoved([this](auto...) { reset(); });
     }
 
     engine = nullptr;
@@ -89,16 +84,22 @@ TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
 void
 TerrainNode::reset()
 {
+    for(auto& child : this->children)
+    {
+        _runtime.dispose(child);
+    }
+
+    children.clear();
+
     engine = nullptr;
-    children.clear(); // wait, do we need to dispose stuff?
+
     status = Status_OK;
 }
 
 Status
 TerrainNode::createRootTiles(const IOOptions& io)
 {
-    // remove everything and start over
-    this->children.clear();
+    ROCKY_HARD_ASSERT(children.empty(), "TerrainNode::createRootTiles() called with children already present");
 
     // create a new engine to render this map
     engine = std::make_shared<TerrainEngine>(

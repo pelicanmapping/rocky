@@ -22,9 +22,8 @@ namespace ROCKY_NAMESPACE
         //! Construct a new VSG-based application instance
         InstanceVSG();
 
-        //! Construct a new VSG-based application instance
-        //! @param args Command line arguments to parse
-        InstanceVSG(vsg::CommandLine& args);
+        //! Construct a new VSG-based instance with the given cmdline args
+        InstanceVSG(int& argc, char** argv);
 
         //! Copy constructor
         InstanceVSG(const InstanceVSG& rhs);
@@ -43,5 +42,7 @@ namespace ROCKY_NAMESPACE
         struct Implementation;
         std::shared_ptr<Implementation> _impl;
         friend class Application;
+
+        void ctor(int& argc, char** argv);
     };
 }

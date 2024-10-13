@@ -69,13 +69,13 @@ namespace ROCKY_NAMESPACE
 
 int main(int argc, char** argv)
 {
+    // Application instance
+    rocky::InstanceVSG ri(argc, argv);
+
     // set up defaults and read command line arguments to override them
     vsg::CommandLine arguments(&argc, argv);
     if (arguments.read({ "--help" }))
         return usage(argv[0]);
-
-    // Application instance
-    rocky::InstanceVSG ri(arguments);
 
     rocky::Log()->set_level(rocky::log::level::info);
     rocky::Log()->info("Hello, world.");

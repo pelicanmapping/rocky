@@ -40,6 +40,9 @@ include(platform)
 set(ROCKY_BUILDTIME_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/build_include")
 include_directories(${ROCKY_BUILDTIME_INCLUDE_DIR})
 
+# temporary folder to hold shared resources (like shaders) for use whrn running from the IDE
+set(ROCKY_BUILDTIME_SHARE_DIR "${CMAKE_CURRENT_BINARY_DIR}/build_share")
+
 # platform specific
 include(platform)
 
