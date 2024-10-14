@@ -22,7 +22,6 @@ macro(remove_items from_list)
     endforeach()
 endmacro()
 
-
 file(GLOB HEADERS_CONTRIB contrib/*.h)
 file(GLOB SOURCES_CONTRIB contrib/*.cpp)
 
@@ -37,18 +36,23 @@ if(GDAL_FOUND)
     endif()
     list(APPEND PRIVATE_LIBS GDAL::GDAL)
 endif()
+
+if(CURL_FOUND)
+    list(APPEND PRIVATE_LIBS CURL::libcurl)
+endif()
+
 if (OPENSSL_FOUND)
     list(APPEND PRIVATE_LIBS OpenSSL::SSL OpenSSL::Crypto)
 endif()
-#if (tinyxml_FOUND)
-#    list(APPEND PRIVATE_LIBS unofficial-tinyxml::unofficial-tinyxml)
-#endif()
+
 if (nlohmann_json_FOUND)
     list(APPEND PRIVATE_LIBS nlohmann_json::nlohmann_json)
 endif()
+
 if (unofficial-sqlite3_FOUND)
     list(APPEND PRIVATE_LIBS unofficial::sqlite3::sqlite3)
 endif()
+
 if (ZLIB_FOUND)
     list(APPEND PRIVATE_LIBS ZLIB::ZLIB)
 endif()
@@ -67,12 +71,16 @@ if(ROCKY_RENDERER_VSG)
 
     find_package(vsg CONFIG REQUIRED)
     find_package(EnTT CONFIG REQUIRED)
-    find_package(vsgXchange CONFIG) # not REQUIRED
     list(APPEND PUBLIC_LIBS EnTT::EnTT vsg::vsg)
     
     set(ROCKY_HAS_VSG TRUE)
     set(ROCKY_HAS_ENTT TRUE)
-    #set(ROCKY_HAS_GLSLANG TRUE)
+
+    find_package(vsgXchange CONFIG) # not REQUIRED
+    if (vsgXchange_FOUND)
+         list(APPEND PRIVATE_LIBS vsgXchange::vsgXchange)
+         set(ROCKY_HAS_VSGXCHANGE TRUE)
+    endif()
 endif()
 
 # Compile shaders into SPIRV - revisit this later.
@@ -85,7 +93,6 @@ endif()
 # Put it all together
 set(LIBRARIES PRIVATE ${PRIVATE_LIBS} PUBLIC ${PUBLIC_LIBS})
 
-
 add_library(rocky
     ${HEADERS_CORE} ${SOURCES_CORE}
     ${HEADERS_CONTRIB} ${SOURCES_CONTRIB}    
@@ -93,12 +100,6 @@ add_library(rocky
     ${HEADERS_VSG_ENGINE} ${SOURCES_VSG_ENGINE}
     ${SHADERS_VSG}
 )
-
-if (vsgXchange_FOUND)
-     target_compile_definitions(rocky PRIVATE VSGXCHANGE_FOUND)
-     list(APPEND LIBRARIES vsgXchange::vsgXchange)
-     set(ROCKY_HAS_VSGXCHANGE TRUE)
-endif()
 
 # generates the version and support header
 configure_file(Version.h.in ${version_h})
@@ -117,7 +118,6 @@ include_directories(${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky)
 # copies the shaders to the build folder so they can be found when running from the IDE
 foreach(_path IN LISTS SHADERS_VSG)
     get_filename_component(_file "${_path}" NAME)
-    message(STATUS "configure_file(${_path} ${ROCKY_BUILDTIME_SHARE_DIR}/shaders/${_file} COPYONLY")
     configure_file("${_path}" "${ROCKY_BUILDTIME_SHARE_DIR}/shaders/${_file}" COPYONLY)
 endforeach()
 

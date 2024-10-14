@@ -247,6 +247,7 @@ InstanceVSG::ctor(int& argc, char** argv)
     // redirect the VSG logger to our spdlog
     vsg::Logger::instance() = new VSG_to_Spdlog_Logger();
 
+    // set the logging level from the command line
     std::string log_level;
     if (args.read("--log-level", log_level))
     {
@@ -256,6 +257,12 @@ InstanceVSG::ctor(int& argc, char** argv)
         else if (log_level == "error") Log()->set_level(spdlog::level::err);
         else if (log_level == "critical") Log()->set_level(spdlog::level::critical);
         else if (log_level == "off") Log()->set_level(spdlog::level::off);
+    }
+
+    // set on-demand rendering mode from the command line
+    if (args.read("--on-demand"))
+    {
+        runtime.renderOnDemand = true;
     }
 
 #ifdef ROCKY_HAS_GDAL

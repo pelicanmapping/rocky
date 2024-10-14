@@ -342,6 +342,11 @@ Application::realize()
         // mark the viewer ready so that subsequent changes will know to
         // use an asynchronous path.
         _viewerRealized = true;
+
+        if (instance.renderOnDemand())
+        {
+            Log()->debug("Render-on-demand mode enabled");
+        }
     }
 }
 

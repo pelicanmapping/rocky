@@ -13,11 +13,6 @@
 #include <rocky/vsg/Application.h>
 #include <rocky/Version.h>
 
-#ifdef ROCKY_HAS_GDAL
-#include <gdal_version.h>
-#include <rocky/GDALImageLayer.h>
-#endif
-
 #ifdef ROCKY_HAS_TMS
 #include <rocky/TMSImageLayer.h>
 #include <rocky/TMSElevationLayer.h>
@@ -228,6 +223,7 @@ int main(int argc, char** argv)
     auto& handlers = app.viewer->getEventHandlers();
     handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(window, app.instance));
 
+    // In render-on-demand mode, this callback will cause ImGui to handle events
     app.noRenderFunction = [&]()
         {
             vsgImGui::RenderImGui::frame([&]() { maingui->render(); });

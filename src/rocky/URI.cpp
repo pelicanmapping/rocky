@@ -3,6 +3,8 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
+#define NOMINMAX
+
 #include "URI.h"
 #include "Utils.h"
 #include "Instance.h"
@@ -13,16 +15,23 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+#include <random>
+#include <algorithm>
 
 #ifdef ROCKY_HAS_HTTPLIB
-#ifdef ROCKY_HAS_OPENSSL
-#define CPPHTTPLIB_OPENSSL_SUPPORT
+    #ifdef ROCKY_HAS_OPENSSL
+        #define CPPHTTPLIB_OPENSSL_SUPPORT
+        #endif
+    #include <httplib.h>
+    ROCKY_ABOUT(cpp_httplib, CPPHTTPLIB_VERSION)
+    #ifdef OPENSSL_VERSION_STR
+        ROCKY_ABOUT(openssl, OPENSSL_VERSION_STR)
+    #endif
 #endif
-#include <httplib.h>
-ROCKY_ABOUT(cpp_httplib, CPPHTTPLIB_VERSION)
-#ifdef OPENSSL_VERSION_STR
-ROCKY_ABOUT(openssl, OPENSSL_VERSION_STR)
-#endif
+
+#ifdef ROCKY_HAS_CURL
+    #include <curl/curl.h>
+    ROCKY_ABOUT(curl, LIBCURL_VERSION)
 #endif
 
 #define LC "[URI] "
@@ -84,8 +93,18 @@ namespace
     {
         int status;
         std::string data;
-        std::unordered_map<std::string, std::string> headers;
+        std::vector<KeyValuePair> headers;
     };
+
+    std::string findHeader(const std::vector<KeyValuePair>& headers, const std::string& name)
+    {
+        for (auto& h : headers)
+        {
+            if (util::ciEquals(h.name, name))
+                return h.value;
+        }
+        return {};
+    }
 
     bool split_url(
         const std::string& url,
@@ -122,11 +141,166 @@ namespace
         return true;
     }
 
-    IOResult<HTTPResponse> http_get(const HTTPRequest& request, const IOOptions& io)
+#ifdef ROCKY_HAS_CURL
+
+    struct stream_object
     {
-#ifndef ROCKY_HAS_HTTPLIB
-        return Status(Status::ServiceUnavailable);
-#else        
+        void write(const char* ptr, size_t realsize)
+        {
+            stream.write(ptr, realsize);
+        }
+
+        void writeHeader(const char* ptr, size_t realsize)
+        {
+            std::string header(ptr);
+            std::size_t colon = header.find_first_of(':');
+            if (colon != std::string::npos && colon > 0 && colon < header.length() - 1)
+            {
+                headers.emplace_back(KeyValuePair{
+                    util::trim(header.substr(0, colon)),
+                    util::trim(header.substr(colon + 1)) });
+            }
+        }
+
+        std::stringstream stream;
+        std::vector<KeyValuePair> headers;
+    };
+
+    static size_t stream_object_write_function(void* ptr, size_t size, size_t nmemb, void* data)
+    {
+        size_t realsize = size * nmemb;
+        stream_object* sp = (stream_object*)data;
+        sp->write((const char*)ptr, realsize);
+        return realsize;
+    }
+
+    static size_t stream_object_header_function(void* ptr, size_t size, size_t nmemb, void* data)
+    {
+        size_t realsize = size * nmemb;
+        stream_object* sp = (stream_object*)data;
+        sp->writeHeader((const char*)ptr, realsize);
+        return realsize;
+    }
+
+
+    IOResult<HTTPResponse> http_get_curl(const HTTPRequest& request, const IOOptions& io)
+    {
+        HTTPResponse response;
+
+        auto handle = curl_easy_init();
+
+        curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, stream_object_write_function);
+        curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, stream_object_header_function);
+        curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, (void*)1);
+        curl_easy_setopt(handle, CURLOPT_MAXREDIRS, (void*)5);
+        curl_easy_setopt(handle, CURLOPT_FILETIME, true);
+        curl_easy_setopt(handle, CURLOPT_USERAGENT, "rocky/" ROCKY_VERSION_STRING);
+
+        // Enable automatic CURL decompression of known types.
+        // An empty string will automatically add all supported encoding types that are built into CURL.
+        // Note that you must have CURL built against zlib to support gzip or deflate encoding.
+        curl_easy_setopt(handle, CURLOPT_ENCODING, "");
+
+        // Disable peer certificate verification to allow us to access  https servers
+        // where the peer certificate cannot be verified.
+        curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, (void*)0);
+
+        //todo: authentication
+        //todo: proxy server
+
+        // request headers:
+        struct curl_slist* headers = nullptr;
+        for (auto& h : request.headers)
+        {
+            std::string header = h.name + ": " + h.value;
+            headers = curl_slist_append(headers, header.c_str());
+        }
+        curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(handle, CURLOPT_URL, request.url.c_str());
+
+        stream_object so;
+        curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)&so);
+        curl_easy_setopt(handle, CURLOPT_HEADERDATA, (void*)&so);
+
+        char errorBuf[CURL_ERROR_SIZE];
+        errorBuf[0] = 0;
+        curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, (void*)errorBuf);
+
+        CURLcode result = CURLE_OK;
+        std::random_device device;
+        std::default_random_engine engine(device());
+        std::uniform_real_distribution distribution;
+
+        auto t0 = std::chrono::steady_clock::now();
+
+        auto max_attempts = std::max(1u, io.maxNetworkAttempts);
+        unsigned attempts = 0;
+        while(attempts++ < max_attempts)
+        {
+            if (attempts > 1)
+            {
+                auto delay = 1000ms * std::pow(2, attempts + distribution(engine));
+                if (!io.canceled())
+                    std::this_thread::sleep_for(delay);
+            }
+
+            result = curl_easy_perform(handle);
+
+            if (result == CURLE_COULDNT_CONNECT || result == CURLE_OPERATION_TIMEDOUT)
+            {
+                continue;
+            }
+
+            curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &response.status);
+
+            if (response.status == 429) // TOO MANY REQUESTS (rate limiting)
+            {
+                continue;
+            }
+
+            break;
+        }
+
+        curl_easy_cleanup(handle);
+
+        if (result == CURLE_OK)
+        {
+            response.data = so.stream.str();
+            response.headers = so.headers;
+
+            auto t1 = std::chrono::steady_clock::now();
+            if (httpDebug)
+            {
+                auto dur_ms = 1e-6 * (double)(t1 - t0).count();
+                auto cti = findHeader(response.headers, "Content-Type");
+                auto ct = cti.empty() ? "unknown" : cti;
+                Log()->info(LC "({} {:3d}ms {:6}b {}) HTTP GET {}", response.status, (int)dur_ms, response.data.size(), ct, request.url);
+            }
+
+            if (response.status != 200)
+            {
+                if (response.status == 404) // NOT FOUND (permanent)
+                {
+                    return Status(Status::ResourceUnavailable, request.url);
+                }
+                else
+                {
+                    return Status(Status::ResourceUnavailable, std::to_string(response.status));
+                }
+            }
+        }
+        else
+        {
+            return Status(Status::ServiceUnavailable, errorBuf);
+        }
+
+        return response;
+    }
+#endif
+
+#ifdef ROCKY_HAS_HTTPLIB
+    IOResult<HTTPResponse> http_get_httplib(const HTTPRequest& request, const IOOptions& io)
+    {
         httplib::Headers headers;
 
         for (auto& h : request.headers)
@@ -185,7 +359,7 @@ namespace
                         auto dur_ms = 1e-6 * (double)(t1 - t0).count();
                         auto cti = res->headers.find("Content-Type");
                         auto ct = cti != res->headers.end() ? cti->second : "unknown";
-                        Log()->info(LC "({} {}ms {}b {}) HTTP GET {}", res->status, (int)dur_ms, res->body.size(), ct, request.url);
+                        Log()->info(LC "({} {:3d}ms {:6d}b {}) HTTP GET {}", res->status, (int)dur_ms, res->body.size(), ct, request.url);
                     }
 
                     if (res->status == 404) // NOT FOUND (permanent)
@@ -217,7 +391,7 @@ namespace
                     response.status = res->status;
 
                     for (auto& h : res->headers)
-                        response.headers[h.first] = h.second;
+                        response.headers.emplace_back(KeyValuePair{ h.first, h.second });
 
                     response.data = std::move(res->body);
 
@@ -250,6 +424,17 @@ namespace
         }
 
         return std::move(response);
+    }
+#endif
+
+    IOResult<HTTPResponse> http_get(const HTTPRequest& request, const IOOptions& io)
+    {
+#if defined(ROCKY_HAS_CURL)
+        return http_get_curl(request, io);
+#elif defined(ROCKY_HAS_HTTPLIB)
+        return http_get_httplib(request, io);
+#else
+        return Status(Status::ServiceUnavailable, "HTTP not supported without curl or httplib");
 #endif
     }
 }
@@ -435,11 +620,7 @@ URI::read(const IOOptions& io) const
             return IOResult<Content>::propagate(r);
         }
 
-        std::string contentType;
-
-        auto i = r.value.headers.find("Content-Type");
-        if (i != r.value.headers.end())
-            contentType = i->second;
+        std::string contentType = findHeader(r.value.headers, "Content-Type");
 
         if (contentType.empty())
         {

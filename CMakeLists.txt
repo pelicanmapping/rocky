@@ -10,7 +10,7 @@ endif()
 # Main PROJECT definition
 project(
     rocky
-    VERSION 0.3.6
+    VERSION 0.4.0
     DESCRIPTION "Rocky by Pelican Mapping"
     HOMEPAGE_URL https://github.com/pelicanmapping/rocky
     LANGUAGES CXX C
@@ -68,7 +68,8 @@ set(ROCKY_HAS_SPDLOG TRUE)
 # optional modules
 option(ROCKY_RENDERER_VSG "Build the VSG/Vulkan Rendering" ON)
 
-option(ROCKY_SUPPORTS_HTTP "Support HTTP (reuqires httplib)" ON)
+option(ROCKY_SUPPORTS_HTTPLIB "Support HTTP with the lightweight cpp-httplib library" ON)
+option(ROCKY_SUPPORTS_CURL "Support HTTP with the CURL library" OFF)
 option(ROCKY_SUPPORTS_HTTPS "Support HTTPS (requires openssl)" ON)
 option(ROCKY_SUPPORTS_TMS "Support OSGeo TileMapService" ON)
 option(ROCKY_SUPPORTS_GDAL "Support GeoTIFF, WMS, WMTS, and other GDAL formats (requires gdal)" ON)
@@ -84,18 +85,20 @@ if(ROCKY_SUPPORTS_QT)
     set(BUILD_WITH_QT ON)
 endif()
 
-if(ROCKY_SUPPORTS_HTTP)
-    set(BUILD_WITH_HTTPLIB ON)
-endif()
-
-if (ROCKY_SUPPORTS_HTTPS)
-    set(BUILD_WITH_HTTPLIB ON)
-    set(BUILD_WITH_OPENSSL ON)
-endif()
-
 if(ROCKY_SUPPORTS_GDAL)
     set(BUILD_WITH_GDAL ON)
-    set(ROCKY_HAS_GDAL TRUE)
+endif()
+
+if(ROCKY_SUPPORTS_CURL)
+    set(BUILD_WITH_CURL ON)
+endif()
+
+if(ROCKY_SUPPORTS_HTTPLIB)
+    set(BUILD_WITH_HTTPLIB ON)
+endif()
+
+if(ROCKY_SUPPORTS_HTTPS)
+    set(BUILD_WITH_OPENSSL ON)
 endif()
 
 if (ROCKY_SUPPORTS_MBTILES)
@@ -124,8 +127,14 @@ if (BUILD_WITH_JSON)
     endif()
 endif()
 
+# GDAL - geospatial data abstraction library
+if(BUILD_WITH_GDAL)
+    find_package(GDAL CONFIG REQUIRED)
+    set(ROCKY_HAS_GDAL TRUE)
+endif()
+
 # httplib - http/https header-only SDK (use BUILD_WITH_OPENSSL=ON for HTTPS support)
-if (BUILD_WITH_HTTPLIB)
+if(BUILD_WITH_HTTPLIB)
     find_path(CPP_HTTPLIB_INCLUDE_DIRS "httplib.h")
     if(CPP_HTTPLIB_INCLUDE_DIRS)
         include_directories(${CPP_HTTPLIB_INCLUDE_DIRS})
@@ -141,9 +150,10 @@ if (BUILD_WITH_HTTPLIB)
     endif()
 endif()
 
-# GDAL - geospatial data abstraction library
-if(BUILD_WITH_GDAL)
-    find_package(GDAL CONFIG REQUIRED)
+# CURL - HTTP library
+if(BUILD_WITH_CURL)
+    find_package(CURL CONFIG REQUIRED)
+    set(ROCKY_HAS_CURL TRUE)
 endif()
 
 # sqlite3 - database - required to support some formats like mbtiles

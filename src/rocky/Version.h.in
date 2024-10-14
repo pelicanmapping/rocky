@@ -33,6 +33,7 @@
 #cmakedefine ROCKY_HAS_JSON
 #cmakedefine ROCKY_HAS_HTTPLIB
 #cmakedefine ROCKY_HAS_OPENSSL
+#cmakedefine ROCKY_HAS_CURL
 #cmakedefine ROCKY_HAS_GDAL
 #cmakedefine ROCKY_HAS_SQLITE
 #cmakedefine ROCKY_HAS_ZLIB
