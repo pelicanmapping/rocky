@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['operator_3c_3c_1691',['operator&lt;&lt;',['../class_ti_xml_node.html#a86cd49cfb17a844c0010b3136ac966c7',1,'TiXmlNode::operator&lt;&lt;()'],['../class_ti_xml_node.html#a52ef17e7080df2490cf87bde380685ab',1,'TiXmlNode::operator&lt;&lt;()']]],
-  ['operator_3e_3e_1692',['operator&gt;&gt;',['../class_ti_xml_node.html#ab57bd426563c926844f65a78412e18b9',1,'TiXmlNode']]]
+  ['operator_3c_3c_0',['operator&lt;&lt;',['../class_ti_xml_node.html#affa325ec27d7311636519d7a367dac2f',1,'TiXmlNode::operator&lt;&lt;'],['../class_ti_xml_node.html#a87c51f067d9823525e9dca4a37642a1b',1,'TiXmlNode::operator&lt;&lt;']]],
+  ['operator_3e_3e_1',['operator&gt;&gt;',['../class_ti_xml_node.html#ae27913e613448542222f5ed966ccdeeb',1,'TiXmlNode']]]
 ];
