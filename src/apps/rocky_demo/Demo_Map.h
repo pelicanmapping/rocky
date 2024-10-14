@@ -88,10 +88,7 @@ auto Demo_Map = [](Application& app)
                 layer->name().empty() ? std::string(" Unnamed ") + layer->getLayerTypeName() + " layer" :
                 layer->name();
 
-            if (layer->isOpen())
-                ImGui::Selectable(name.c_str(), &layerClicked);
-            else
-                ImGui::Text(name.c_str());
+            ImGui::Selectable(name.c_str(), &layerClicked);
 
             if (layerClicked)
             {

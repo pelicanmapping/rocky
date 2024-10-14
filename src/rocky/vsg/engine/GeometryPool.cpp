@@ -277,6 +277,7 @@ GeometryPool::createGeometry(const TileKey& tileKey, const Settings& settings, C
     auto verts = vsg::vec3Array::create(numVerts);
     auto normals = vsg::vec3Array::create(numVerts);
     auto uvs = vsg::vec3Array::create(numVerts);
+
     vsg::ref_ptr<vsg::vec3Array> neighbors;
     vsg::ref_ptr<vsg::vec3Array> neighborNormals;
 

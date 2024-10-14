@@ -25,7 +25,7 @@ layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec3 in_uvw;
 
 // inter-stage interface block
-struct RkData {
+struct RockyVaryings {
     vec4 color;
     vec2 uv;
     vec3 up_view;
@@ -33,7 +33,7 @@ struct RkData {
 };
 
 // output varyings
-layout(location = 0) out RkData rk;
+layout(location = 0) out RockyVaryings varyings;
 
 #if defined(ROCKY_ATMOSPHERE)
 #include "rocky.atmo.ground.vert.glsl"
@@ -71,11 +71,11 @@ void main()
 #endif
 
     mat3 normal_matrix = mat3(transpose(inverse(pc.modelview)));
-    rk.up_view = normal_matrix * in_normal;
+    varyings.up_view = normal_matrix * in_normal;
     
-    rk.color = vec4(0.5); // placeholder
-    rk.uv = (tile.color_matrix * vec4(in_uvw.st, 0, 1)).st;
-    rk.vertex_view = position_view.xyz / position_view.w;
+    varyings.color = vec4(0.5); // placeholder
+    varyings.uv = (tile.color_matrix * vec4(in_uvw.st, 0, 1)).st;
+    varyings.vertex_view = position_view.xyz / position_view.w;
     
     gl_Position = pc.projection * position_view;
 }

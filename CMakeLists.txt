@@ -10,14 +10,14 @@ endif()
 # Main PROJECT definition
 project(
     rocky
-    VERSION 0.4.0
+    VERSION 0.4.1
     DESCRIPTION "Rocky by Pelican Mapping"
     HOMEPAGE_URL https://github.com/pelicanmapping/rocky
     LANGUAGES CXX C
 )
 
 # please update this with each ABI change!!
-set(PROJECT_VERSION_ABI 109)
+set(PROJECT_VERSION_ABI 110)
 
 # require C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -28,7 +28,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_definitions(-DROCKY_BUILDING_SDK)
 
 # option to build shared or static libs
-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(ROCKY_BUILD_SHARED_LIBS "Build shared libraries" ON)
+mark_as_advanced(ROCKY_BUILD_SHARED_LIBS)
+
+# whether to append the ABI version to shared library filenames
+option(ROCKY_APPEND_SO_VERSION "Whether to append the ABI version to libraries" ON)
+mark_as_advanced(ROCKY_APPEND_SO_VERSION)
 
 # folder for additional cmake includes
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -53,18 +58,6 @@ include(GNUInstallDirs)
 # load utilities
 include("cmake/install-export-files.cmake")
 
-# PROJ - geospatial projections library - required
-find_package(PROJ CONFIG REQUIRED)
-set(ROCKY_HAS_PROJ TRUE)
-
-# glm - vector and matrix math library - required
-find_package(glm CONFIG REQUIRED)
-set(ROCKY_HAS_GLM TRUE)
-
-# spdlog - logging utility
-find_package(spdlog CONFIG REQUIRED)
-set(ROCKY_HAS_SPDLOG TRUE)
-
 # optional modules
 option(ROCKY_RENDERER_VSG "Build the VSG/Vulkan Rendering" ON)
 
@@ -79,18 +72,12 @@ option(ROCKY_SUPPORTS_BING "Support Bing Maps" ON)
 option(ROCKY_SUPPORTS_IMGUI "Build ImGui demos" ON)
 option(ROCKY_SUPPORTS_QT "Build Qt demos" OFF)
 
-set(BUILD_WITH_JSON ON)
+mark_as_advanced(ROCKY_SUPPORTS_CURL)
 
-if(ROCKY_SUPPORTS_QT)
-    set(BUILD_WITH_QT ON)
-endif()
+set(BUILD_WITH_JSON ON)
 
 if(ROCKY_SUPPORTS_GDAL)
     set(BUILD_WITH_GDAL ON)
-endif()
-
-if(ROCKY_SUPPORTS_CURL)
-    set(BUILD_WITH_CURL ON)
 endif()
 
 if(ROCKY_SUPPORTS_HTTPLIB)
@@ -104,77 +91,14 @@ endif()
 if (ROCKY_SUPPORTS_MBTILES)
     set(BUILD_WITH_SQLITE3 ON)
     set(BUILD_WITH_ZLIB ON)
-    set(ROCKY_HAS_MBTILES ON)
 endif()
 
-if (ROCKY_SUPPORTS_AZURE)
-    set(ROCKY_HAS_AZURE ON)
+if(ROCKY_SUPPORTS_QT)
+    set(BUILD_WITH_QT ON)
 endif()
 
-if (ROCKY_SUPPORTS_BING)
-    set(ROCKY_HAS_BING ON)
-endif()
-
-if (ROCKY_SUPPORTS_TMS)
-    set(ROCKY_HAS_TMS TRUE)
-endif()
-
-# json parser
-if (BUILD_WITH_JSON)
-    find_package(nlohmann_json CONFIG REQUIRED)
-    if (nlohmann_json_FOUND)
-        set(ROCKY_HAS_JSON TRUE)
-    endif()
-endif()
-
-# GDAL - geospatial data abstraction library
-if(BUILD_WITH_GDAL)
-    find_package(GDAL CONFIG REQUIRED)
-    set(ROCKY_HAS_GDAL TRUE)
-endif()
-
-# httplib - http/https header-only SDK (use BUILD_WITH_OPENSSL=ON for HTTPS support)
-if(BUILD_WITH_HTTPLIB)
-    find_path(CPP_HTTPLIB_INCLUDE_DIRS "httplib.h")
-    if(CPP_HTTPLIB_INCLUDE_DIRS)
-        include_directories(${CPP_HTTPLIB_INCLUDE_DIRS})
-        set(ROCKY_HAS_HTTPLIB TRUE)
-        # OpenSSL - for HTTPS support - optional
-        # option(BUILD_WITH_OPENSSL "Use OpenSSL to support HTTPS protocol" ON)
-        if (BUILD_WITH_OPENSSL)
-            find_package(OpenSSL REQUIRED)
-            if (OPENSSL_FOUND)
-                set(ROCKY_HAS_OPENSSL TRUE)
-            endif()
-        endif()
-    endif()
-endif()
-
-# CURL - HTTP library
-if(BUILD_WITH_CURL)
-    find_package(CURL CONFIG REQUIRED)
-    set(ROCKY_HAS_CURL TRUE)
-endif()
-
-# sqlite3 - database - required to support some formats like mbtiles
-if (BUILD_WITH_SQLITE3)
-    find_package(unofficial-sqlite3 CONFIG REQUIRED)
-    if (unofficial-sqlite3_FOUND)
-        set(ROCKY_HAS_SQLITE TRUE)
-    endif()
-endif()
-
-# zlib - compression
-if (BUILD_WITH_ZLIB)
-    find_package(ZLIB REQUIRED)
-    if (ZLIB_FOUND)
-        set(ROCKY_HAS_ZLIB TRUE)
-    endif()        
-endif()
-
-# pthreads - for linux
-if (UNIX)
-    find_package(Threads REQUIRED)
+if(ROCKY_SUPPORTS_CURL)
+    set(BUILD_WITH_CURL ON)
 endif()
 
 # source code

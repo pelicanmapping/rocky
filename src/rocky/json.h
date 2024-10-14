@@ -7,7 +7,7 @@
 #include "Common.h"
 #include "Status.h"
 
-#if !defined(ROCKY_LIBRARY) && !defined(ROCKY_EXPOSE_JSON_FUNCTIONS)
+#if !defined(ROCKY_BUILDING_SDK) && !defined(ROCKY_EXPOSE_JSON_FUNCTIONS)
 #error json.h is an internal header file; do not include it directly :)
 #endif
 

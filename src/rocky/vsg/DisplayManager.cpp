@@ -26,11 +26,11 @@ namespace
     {
         if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
         {
-            Log()->warn("\n" + std::string(callback_data->pMessage));
+            Log()->warn(std::string(callback_data->pMessage));
         }
         else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
         {
-            Log()->warn("\n" + std::string(callback_data->pMessage));
+            Log()->error(std::string(callback_data->pMessage));
         }
         return VK_FALSE;
     }

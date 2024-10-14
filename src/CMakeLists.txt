@@ -16,6 +16,11 @@ endfunction()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+# For windows import/export
+if(NOT ROCKY_BUILD_SHARED_LIBS)
+    add_definitions(-DROCKY_STATIC)
+endif()
+
 add_subdirectory(rocky)
 add_subdirectory(apps)
 add_subdirectory(tests)

@@ -11,12 +11,12 @@
 #endif
 
 #if defined(_MSC_VER) || defined(__CYGWIN__) || defined(__MINGW32__) || defined( __BCPLUSPLUS__)  || defined( __MWERKS__)
-#  if defined( ROCKY_LIBRARY_STATIC )
+#  if defined( ROCKY_BUILDING_SHARED_LIBRARY )
+#    define ROCKY_EXPORT __declspec(dllexport)
+#  elif defined( ROCKY_STATIC ) // building OR importing static library
 #    define ROCKY_EXPORT
-#  elif defined( ROCKY_LIBRARY )
-#    define ROCKY_EXPORT   __declspec(dllexport)
-#  else
-#    define ROCKY_EXPORT   __declspec(dllimport)
+#  else // importing shared library
+#    define ROCKY_EXPORT __declspec(dllimport)
 #  endif
 #else
 #  define ROCKY_EXPORT

@@ -1,14 +1,14 @@
 include(CheckCXXSourceCompiles)
 
-if(ROCKY_BUILD_STATIC)
-    add_definitions(-DROCKY_LIBRARY_STATIC)
-else()
-    add_definitions(-DROCKY_LIBRARY)
+if(ROCKY_BUILD_SHARED_LIBS)
+    add_definitions(-DROCKY_BUILDING_SHARED_LIBRARY)
 endif()
 
 # Create a "Version.h" header that automatically reflects the
 # version variables found in the CMake configuration.
 set(version_h ${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky/Version.h)
+
+
 
 # collect all the headers in the source directory
 file(GLOB HEADERS_CORE *.h tinyxml/*.h)
@@ -24,6 +24,84 @@ endmacro()
 
 file(GLOB HEADERS_CONTRIB contrib/*.h)
 file(GLOB SOURCES_CONTRIB contrib/*.cpp)
+
+
+
+
+# find dependecies ----
+
+# PROJ - geospatial projections library - required
+find_package(PROJ CONFIG REQUIRED)
+set(ROCKY_HAS_PROJ TRUE)
+
+# glm - vector and matrix math library - required
+find_package(glm CONFIG REQUIRED)
+set(ROCKY_HAS_GLM TRUE)
+
+# spdlog - logging utility
+find_package(spdlog CONFIG REQUIRED)
+set(ROCKY_HAS_SPDLOG TRUE)
+
+# json parser
+if (BUILD_WITH_JSON)
+    find_package(nlohmann_json CONFIG REQUIRED)
+    if (nlohmann_json_FOUND)
+        set(ROCKY_HAS_JSON TRUE) # Version.h.in
+    endif()
+endif()
+
+# GDAL - geospatial data abstraction library
+if(BUILD_WITH_GDAL)
+    find_package(GDAL CONFIG REQUIRED)
+    set(ROCKY_HAS_GDAL TRUE) # Version.h.in
+endif()
+
+# httplib - http/https header-only SDK (use BUILD_WITH_OPENSSL=ON for HTTPS support)
+if(BUILD_WITH_HTTPLIB)
+    find_path(CPP_HTTPLIB_INCLUDE_DIRS "httplib.h")
+    if(CPP_HTTPLIB_INCLUDE_DIRS)
+        include_directories(${CPP_HTTPLIB_INCLUDE_DIRS})
+        set(ROCKY_HAS_HTTPLIB TRUE)
+        # OpenSSL - for HTTPS support - optional
+        # option(BUILD_WITH_OPENSSL "Use OpenSSL to support HTTPS protocol" ON)
+        if (BUILD_WITH_OPENSSL)
+            find_package(OpenSSL REQUIRED)
+            if (OPENSSL_FOUND)
+                set(ROCKY_HAS_OPENSSL TRUE)
+            endif()
+        endif()
+    endif()
+endif()
+
+# CURL - HTTP library
+if(BUILD_WITH_CURL)
+    find_package(CURL CONFIG REQUIRED)
+    set(ROCKY_HAS_CURL TRUE)
+endif()
+
+# sqlite3 - database - required to support some formats like mbtiles
+if (BUILD_WITH_SQLITE3)
+    find_package(unofficial-sqlite3 CONFIG REQUIRED)
+    if (unofficial-sqlite3_FOUND)
+        set(ROCKY_HAS_SQLITE TRUE)
+    endif()
+endif()
+
+# zlib - compression
+if (BUILD_WITH_ZLIB)
+    find_package(ZLIB REQUIRED)
+    if (ZLIB_FOUND)
+        set(ROCKY_HAS_ZLIB TRUE)
+    endif()        
+endif()
+
+# pthreads - for linux
+if (UNIX)
+    find_package(Threads REQUIRED)
+endif()
+
+
+
 
 # set up library dependencies
 set(PUBLIC_LIBS glm::glm spdlog::spdlog)
@@ -57,9 +135,26 @@ if (ZLIB_FOUND)
     list(APPEND PRIVATE_LIBS ZLIB::ZLIB)
 endif()
 
+if(unofficial-sqlite3_FOUND AND ZLIB_FOUND)
+    set(ROCKY_HAS_MBTILES TRUE)
+endif()
+
+if (ROCKY_SUPPORTS_AZURE)
+    set(ROCKY_HAS_AZURE TRUE)
+endif()
+
+if (ROCKY_SUPPORTS_BING)
+    set(ROCKY_HAS_BING TRUE)
+endif()
+
+if (ROCKY_SUPPORTS_TMS)
+    set(ROCKY_HAS_TMS TRUE)
+endif()
+
 if(UNIX)
     list(APPEND PUBLIC_LIBS Threads::Threads)
 endif()
+
 
 # VSG - rendering implementation
 if(ROCKY_RENDERER_VSG)
@@ -83,17 +178,22 @@ if(ROCKY_RENDERER_VSG)
     endif()
 endif()
 
-# Compile shaders into SPIRV - revisit this later.
-# file(GLOB SHADERS_TO_COMPILE vsg/shaders/*.vert vsg/shaders/*.frag vsg/shaders/*.glsl)
-#foreach(file ${SHADERS_TO_COMPILE})
-#    compile_shader(${file})
-#endforeach()
-#add_custom_target(rocky_vsg_shaders ALL DEPENDS ${SPIRV_SHADERS})
+
+# generates the version and support header
+# all the ROCKY_HAS_* values go into here.
+configure_file(Version.h.in ${version_h})
+
 
 # Put it all together
 set(LIBRARIES PRIVATE ${PRIVATE_LIBS} PUBLIC ${PUBLIC_LIBS})
 
-add_library(rocky
+if(ROCKY_BUILD_SHARED_LIBS)
+    set(BUILD_TYPE SHARED)
+else()
+    set(BUILD_TYPE STATIC)
+endif()
+
+add_library(rocky ${BUILD_TYPE}
     ${HEADERS_CORE} ${SOURCES_CORE}
     ${HEADERS_CONTRIB} ${SOURCES_CONTRIB}    
     ${HEADERS_VSG} ${SOURCES_VSG}
@@ -101,8 +201,9 @@ add_library(rocky
     ${SHADERS_VSG}
 )
 
-# generates the version and support header
-configure_file(Version.h.in ${version_h})
+if(ROCKY_APPEND_SO_VERSION)
+    set_target_properties(rocky PROPERTIES VERSION ${PROJECT_VERSION_ABI} SOVERSION ${PROJECT_VERSION_ABI})
+endif()
 
 # makes files appear under a "rocky" folder in the IDE.
 set_target_properties(rocky PROPERTIES FOLDER "rocky")
