@@ -77,11 +77,6 @@ namespace
         }
     }
 
-    Result<TileMap> parseTileMap(const json& j)
-    {
-        auto tileMap = j.find(ELEM_TILEMAP);
-    }
-
     std::string getChildTextValue(const TiXmlElement* node)
     {
         auto text = dynamic_cast<const TiXmlText*>(node->FirstChild());
