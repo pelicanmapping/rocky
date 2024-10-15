@@ -115,15 +115,11 @@ int main(int argc, char** argv)
     auto imagery = rocky::TMSImageLayer::create();
     imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
     mapNode->map->layers().add(imagery);
-    if (imagery->status().failed())
-        return error(imagery);
 
     auto elevation = rocky::TMSElevationLayer::create();
     elevation->encoding = rocky::ElevationLayer::Encoding::MapboxRGB;
     elevation->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
     mapNode->map->layers().add(elevation);
-    if (elevation->status().failed())
-        return error(elevation);
 
 #else // if !ROCKY_HAS_TMS
 
