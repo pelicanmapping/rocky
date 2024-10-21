@@ -7,7 +7,6 @@
 
 #include <rocky/TileLayer.h>
 #include <rocky/GeoHeightfield.h>
-#include <rocky/Threading.h>
 
 namespace ROCKY_NAMESPACE
 {

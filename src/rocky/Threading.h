@@ -5,15 +5,13 @@
  */
 #pragma once
 #include <rocky/Common.h>
-#include <vector>
-
-#define WEEJOBS_NAMESPACE jobs
-#define WEEJOBS_EXPORT ROCKY_EXPORT
 #include <rocky/weejobs.h>
+#include <vector>
 
 namespace ROCKY_NAMESPACE
 {
-    using Cancelable = jobs::cancelable;
+    using Cancelable = WEEJOBS_NAMESPACE::cancelable;
+    //template<class T> using Future = WEEJOBS_NAMESPACE::future<T>;
 
     namespace util
     {
@@ -22,27 +20,26 @@ namespace ROCKY_NAMESPACE
 
         /** Per-thread data store */
         template<class T>
-        struct ThreadLocal : public std::mutex
+        struct ThreadLocal
         {
             T& value() {
-                std::scoped_lock lock(*this);
-                return _data[std::this_thread::get_id()];
+                std::scoped_lock lock(_mutex);
+                auto id = std::this_thread::get_id();
+                for(auto& p : _data)
+                    if (p.first == id)
+                        return p.second;
+                _data.emplace_back(id, T());
+                return _data.back().second;
             }
 
             void clear() {
-                std::scoped_lock lock(*this);
+                std::scoped_lock lock(_mutex);
                 _data.clear();
             }
 
-            using container_t = typename std::unordered_map<std::thread::id, T>;
-            using iterator = typename container_t::iterator;
-
-            // NB. lock before using these!
-            iterator begin() { return _data.begin(); }
-            iterator end() { return _data.end(); }
-
         private:
-            container_t _data;
+            std::mutex _mutex;
+            std::vector<std::pair<std::thread::id, T>> _data;
         };
 
         /** Primitive that only allows one thread at a time access to a keyed resourse */

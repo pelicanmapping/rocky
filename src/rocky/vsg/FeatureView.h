@@ -67,7 +67,7 @@ namespace ROCKY_NAMESPACE
         FeatureView(const Feature& value);
 
         //! Construct a view to display a single moved feature)
-        FeatureView(Feature&& value);
+        FeatureView(Feature&& value) noexcept;
 
     private:
         entt::entity _entity = entt::null;

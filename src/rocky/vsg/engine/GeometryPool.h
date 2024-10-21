@@ -7,7 +7,6 @@
 
 #include <rocky/Math.h>
 #include <rocky/TileKey.h>
-#include <rocky/Threading.h>
 #include <rocky/IOTypes.h>
 #include <rocky/vsg/engine/Runtime.h>
 #include <vsg/nodes/Geometry.h>

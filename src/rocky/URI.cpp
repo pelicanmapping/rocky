@@ -41,6 +41,7 @@ using namespace std::chrono_literals;
 
 bool URI::supportsHTTPS()
 {
+    //todo: query CURL for the same info?
 #ifdef CPPHTTPLIB_OPENSSL_SUPPORT
     return true;
 #else
@@ -51,14 +52,6 @@ bool URI::supportsHTTPS()
 namespace
 {
     static bool httpDebug = !ROCKY_NAMESPACE::util::getEnvVar("HTTP_DEBUG").empty();
-
-    bool containsServerAddress(const std::string& input)
-    {
-        auto temp = util::trim(util::toLower(input));
-        return
-            util::startsWith(temp, "http://") ||
-            util::startsWith(temp, "https://");
-    }
 
     std::string inferContentTypeFromFileExtension(const std::string& filename)
     {
@@ -429,10 +422,10 @@ namespace
 
     IOResult<HTTPResponse> http_get(const HTTPRequest& request, const IOOptions& io)
     {
-#if defined(ROCKY_HAS_CURL)
-        return http_get_curl(request, io);
-#elif defined(ROCKY_HAS_HTTPLIB)
+#if defined(ROCKY_HAS_HTTPLIB)
         return http_get_httplib(request, io);
+#elif defined(ROCKY_HAS_CURL)
+        return http_get_curl(request, io);
 #else
         return Status(Status::ServiceUnavailable, "HTTP not supported without curl or httplib");
 #endif
@@ -655,7 +648,10 @@ URI::read(const IOOptions& io) const
 bool
 URI::isRemote() const
 {
-    return containsServerAddress(_fullURI);
+    auto temp = util::trim(util::toLower(_fullURI));
+    return
+        util::startsWith(temp, "http://") ||
+        util::startsWith(temp, "https://");
 }
 
 std::string

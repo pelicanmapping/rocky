@@ -19,7 +19,7 @@
 #include <string>
 #include <algorithm>
 
- // OPTIONAL: Define WEEJOBS_EXPORT if you want to use this library from multiple modules (DLLs)
+// OPTIONAL: Define WEEJOBS_EXPORT if you want to use this library from multiple modules (DLLs)
 #ifndef WEEJOBS_EXPORT
 #define WEEJOBS_EXPORT
 #endif

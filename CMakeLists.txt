@@ -60,18 +60,19 @@ include("cmake/install-export-files.cmake")
 
 # optional modules
 option(ROCKY_RENDERER_VSG "Build the VSG/Vulkan Rendering" ON)
-
 option(ROCKY_SUPPORTS_HTTPLIB "Support HTTP with the lightweight cpp-httplib library" ON)
 option(ROCKY_SUPPORTS_CURL "Support HTTP with the CURL library" OFF)
 option(ROCKY_SUPPORTS_HTTPS "Support HTTPS (requires openssl)" ON)
-option(ROCKY_SUPPORTS_TMS "Support OSGeo TileMapService" ON)
+option(ROCKY_SUPPORTS_TMS "Support OSGeo TileMapService and generic 'XYZ' maps" ON)
 option(ROCKY_SUPPORTS_GDAL "Support GeoTIFF, WMS, WMTS, and other GDAL formats (requires gdal)" ON)
 option(ROCKY_SUPPORTS_MBTILES "Support MBTiles databases with extended spatial profile support (requires sqlite3, zlib)" ON)
-option(ROCKY_SUPPORTS_AZURE "Support Azure Maps" ON)
-option(ROCKY_SUPPORTS_BING "Support Bing Maps" ON)
+option(ROCKY_SUPPORTS_AZURE "Support Azure Maps (subscription required)" ON)
+option(ROCKY_SUPPORTS_BING "Support Bing Maps (subscription required)" ON)
 option(ROCKY_SUPPORTS_IMGUI "Build ImGui demos" ON)
 option(ROCKY_SUPPORTS_QT "Build Qt demos" OFF)
 
+mark_as_advanced(ROCKY_RENDERER_VSG)
+mark_as_advanced(ROCKY_SUPPORTS_HTTPLIB)
 mark_as_advanced(ROCKY_SUPPORTS_CURL)
 
 set(BUILD_WITH_JSON ON)
@@ -98,7 +99,11 @@ if(ROCKY_SUPPORTS_QT)
 endif()
 
 if(ROCKY_SUPPORTS_CURL)
-    set(BUILD_WITH_CURL ON)
+    if(BUILD_WITH_HTTPLIB)
+        message(WARNING "You selected both HTTPLIB and CURL. These are mutually exclusive, so I am disabling CURL.")
+    else()
+        set(BUILD_WITH_CURL ON)
+    endif()
 endif()
 
 # source code

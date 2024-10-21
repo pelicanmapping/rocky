@@ -6,7 +6,6 @@
 #pragma once
 
 #if defined(_MSC_VER)
-//#pragma warning(disable : 4996) // disable warnings about deprecated functions
 #pragma warning(disable:4244) // disable precision loss warnings (e.g., double to float)
 #endif
 
@@ -30,6 +29,11 @@
 #include <memory>
 #include <iostream>
 #include <cstdlib>
+
+// match the weejobs export to the library export
+#ifndef WEEJOBS_EXPORT
+#define WEEJOBS_EXPORT ROCKY_EXPORT
+#endif
 
 namespace ROCKY_NAMESPACE
 {

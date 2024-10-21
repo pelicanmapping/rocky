@@ -9,7 +9,6 @@
 #include <rocky/Instance.h>
 #include <rocky/Profile.h>
 #include <rocky/Layer.h>
-#include <rocky/Threading.h>
 #include <rocky/Callbacks.h>
 #include <rocky/IOTypes.h>
 #include <rocky/LayerCollection.h>

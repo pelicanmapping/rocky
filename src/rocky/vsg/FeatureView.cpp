@@ -310,7 +310,7 @@ FeatureView::FeatureView(const Feature& f)
     features.emplace_back(f);
 }
 
-FeatureView::FeatureView(Feature&& f)
+FeatureView::FeatureView(Feature&& f) noexcept
 {
     features.emplace_back(f);
 }

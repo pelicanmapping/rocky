@@ -9,7 +9,6 @@
 #include <rocky/vsg/SkyNode.h>
 #include <rocky/vsg/ECS.h>
 #include <rocky/vsg/DisplayManager.h>
-#include <rocky/Threading.h>
 
 #include <vsg/app/Viewer.h>
 #include <vsg/app/Window.h>
