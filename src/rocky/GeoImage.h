@@ -25,8 +25,8 @@ namespace ROCKY_NAMESPACE
         GeoImage();
         GeoImage(const GeoImage&) = default;
         GeoImage& operator=(const GeoImage&) = default;
-        GeoImage(const GeoImage&& rhs) { *this = rhs; }
-        GeoImage& operator=(GeoImage&&);
+        GeoImage(const GeoImage&& rhs) noexcept { *this = rhs; }
+        GeoImage& operator=(GeoImage&&) noexcept;
 
         //! Constructs a new goereferenced image.
         GeoImage(shared_ptr<Image> image, const GeoExtent& extent);

@@ -18,17 +18,21 @@ GeoHeightfield::GeoHeightfield() :
 }
 
 GeoHeightfield&
-GeoHeightfield::operator=(GeoHeightfield&& rhs)
+GeoHeightfield::operator=(GeoHeightfield&& rhs) noexcept
 {
-    *this = (const GeoHeightfield&)rhs;
+    if (this != &rhs)
+    {
+        _hf = std::move(rhs._hf);
+        _extent = std::move(rhs._extent);
+        _minHeight = rhs._minHeight;
+        _maxHeight = rhs._maxHeight;
+        _resolution = rhs._resolution;
+    }
     rhs._extent = GeoExtent::INVALID;
     return *this;
 }
 
-GeoHeightfield::GeoHeightfield(
-    shared_ptr<Heightfield> heightField,
-    const GeoExtent&  extent) :
-
+GeoHeightfield::GeoHeightfield(shared_ptr<Heightfield> heightField, const GeoExtent& extent) :
     _hf(heightField),
     _extent(extent),
     _minHeight(FLT_MAX),

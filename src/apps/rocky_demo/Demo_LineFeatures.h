@@ -45,9 +45,9 @@ auto Demo_LineFeatures = [](Application& app)
             FeatureView& feature_view = app.entities.emplace<FeatureView>(entity);
 
             auto iter = data->fs->iterate(app.instance.io());
-            while (iter->hasMore())
+            while (iter.hasMore())
             {
-                auto feature = iter->next();
+                auto feature = iter.next();
                 if (feature.valid())
                 {
                     // convert anything we find to lines:

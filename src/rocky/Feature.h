@@ -63,6 +63,11 @@ namespace ROCKY_NAMESPACE
 
         //! Copy constructor
         Geometry(const Geometry& rhs) = default;
+        Geometry& operator=(const Geometry& rhs) = default;
+
+        //! Move constructor
+        Geometry(Geometry&& rhs) noexcept = default;
+        Geometry& operator=(Geometry&& rhs) noexcept = default;
         
         //! Contruct a typed geometry by copying points from an existing range
         //! @param type Geometry type
@@ -209,7 +214,14 @@ namespace ROCKY_NAMESPACE
 
         //! Construct an empty feature object.
         Feature() = default;
+
+        //! Copy constructor
         Feature(const Feature& rhs) = default;
+        Feature& operator =(const Feature& rhs) = default;
+
+        //! Move constructor
+        Feature(Feature&& rhs) noexcept = default;
+        Feature& operator =(Feature&& rhs) noexcept = default;
 
         //! Whether the feature is valid
         bool valid() const {
@@ -230,7 +242,9 @@ namespace ROCKY_NAMESPACE
         void dirtyExtent();
     };
 
-
+    /**
+    * Extent, SRS, and possibly the tiling profile of a feautre source
+    */
     struct FeatureProfile
     {
         GeoExtent extent;
@@ -246,15 +260,26 @@ namespace ROCKY_NAMESPACE
         class iterator
         {
         public:
-            virtual bool hasMore() const = 0;
-            virtual const Feature& next() = 0;
+            struct implementation {
+                virtual bool hasMore() const = 0;
+                virtual const Feature& next() = 0;
+            };
+
+        public:
+            bool hasMore() const { return _impl->hasMore(); }
+            const Feature& next() { return _impl->next(); }
+
+            iterator(implementation* impl) : _impl(impl) { }
+
+        private:
+            std::unique_ptr<implementation> _impl;
         };
 
         //! Number of features, or -1 if the count isn't available
         virtual int featureCount() const = 0;
 
         //! Creates a feature iterator
-        virtual std::shared_ptr<iterator> iterate(IOOptions& io) = 0;
+        virtual iterator iterate(IOOptions& io) = 0;
     };
 
 
@@ -284,7 +309,7 @@ namespace ROCKY_NAMESPACE
         void close();
 
         //! Create an interator to read features from the source
-        std::shared_ptr<FeatureSource::iterator> iterate(IOOptions& io) override;
+        FeatureSource::iterator iterate(IOOptions& io) override;
 
         //! Number of features, or -1 if the count isn't available
         int featureCount() const override;
@@ -302,28 +327,28 @@ namespace ROCKY_NAMESPACE
         FeatureProfile _featureProfile;
         std::string _source;
 
-        class ROCKY_EXPORT iterator : public FeatureSource::iterator
+        class ROCKY_EXPORT iterator_impl : public FeatureSource::iterator::implementation
         {
         public:
-            iterator();
-            void init();
-            ~iterator();
+            ~iterator_impl();
             bool hasMore() const override;
             const Feature& next() override;
         private:
             std::queue<Feature> _queue;
             Feature _lastFeatureReturned;
-            void readChunk();
-            friend class OGRFeatureSource;
             OGRFeatureSource* _source = nullptr;
             void* _dsHandle = nullptr;
             void* _layerHandle = nullptr;
             void* _resultSetHandle = nullptr;
             void* _spatialFilterHandle = nullptr;
             void* _nextHandleToQueue = nullptr;
-            bool _resultSetEndReached = false;
+            bool _resultSetEndReached = true;
             const std::size_t _chunkSize = 500;
             Feature::ID _idGenerator = 1;
+
+            void init();
+            void readChunk();
+            friend class OGRFeatureSource;
         };
     };
 

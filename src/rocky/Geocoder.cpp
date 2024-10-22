@@ -29,9 +29,9 @@ Geocoder::geocode(const std::string& location, IOOptions& io) const
             fs->externalLayerHandle = layerHandle;
             fs->externalSRS = SRS::WGS84;
             auto iter = fs->iterate(io);
-            while (iter->hasMore())
+            while (iter.hasMore())
             {
-                result.emplace_back(iter->next());
+                result.emplace_back(iter.next());
             }
             OGRGeocodeFreeResult(layerHandle);
         }

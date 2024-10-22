@@ -104,7 +104,7 @@ namespace
             }
             output.push_back(input.back());
         }
-        return std::move(output);
+        return output;
     }
 
     float get_max_segment_length(const std::vector<glm::dvec3>& input)

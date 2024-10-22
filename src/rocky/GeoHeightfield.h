@@ -22,8 +22,8 @@ namespace ROCKY_NAMESPACE
         GeoHeightfield();
         GeoHeightfield(const GeoHeightfield&) = default;
         GeoHeightfield& operator=(const GeoHeightfield&) = default;
-        GeoHeightfield(GeoHeightfield&& rhs) { *this = rhs; }
-        GeoHeightfield& operator=(GeoHeightfield&& rhs);
+        GeoHeightfield(GeoHeightfield&& rhs) noexcept { *this = rhs; }
+        GeoHeightfield& operator=(GeoHeightfield&& rhs) noexcept;
 
         //! Constructs a new georeferenced heightfield.
         GeoHeightfield(

@@ -29,18 +29,6 @@ GeoExtent::GeoExtent() :
     //NOP - invalid
 }
 
-GeoExtent&
-GeoExtent::operator =(GeoExtent&& rhs)
-{
-    _srs = rhs._srs;
-    _west = rhs._west;
-    _width = rhs._width;
-    _south = rhs._south;
-    _height = rhs._height;
-    rhs._srs = { };
-    return *this;
-}
-
 GeoExtent::GeoExtent(const SRS& srs) :
     _srs(srs),
     _west(0.0),

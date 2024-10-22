@@ -37,11 +37,11 @@ namespace ROCKY_NAMESPACE
 
         //! Visits each height in the field with a user-provided function
         //! that takes "float" or "float&" as an argument.
-        template<typename FUNC>
-        void forEachHeight(FUNC func);
+        template<typename CALLABLE>
+        inline void forEachHeight(CALLABLE&& func);
 
-        template<typename FUNC>
-        void forEachHeight(FUNC func) const;
+        template<typename CALLABLE>
+        inline void forEachHeight(CALLABLE&& func) const;
 
         //! Interpolated height at a normalized (u,v) location
         float heightAtUV(
@@ -70,16 +70,16 @@ namespace ROCKY_NAMESPACE
         return data<float>(c, r);
     }    
 
-    template<typename FUNC>
-    void Heightfield::forEachHeight(FUNC func)
+    template<typename CALLABLE>
+    void Heightfield::forEachHeight(CALLABLE&& func)
     {
         float* ptr = data<float>();
         for (auto i = 0u; i < sizeInPixels(); ++i, ++ptr)
             func(*ptr);
     }
 
-    template<typename FUNC>
-    void Heightfield::forEachHeight(FUNC func) const
+    template<typename CALLABLE>
+    void Heightfield::forEachHeight(CALLABLE&& func) const
     {
         const float* ptr = data<float>();
         for (auto i = 0u; i < sizeInPixels(); ++i, ++ptr)

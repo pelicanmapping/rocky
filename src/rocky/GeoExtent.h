@@ -22,8 +22,8 @@ namespace ROCKY_NAMESPACE
         GeoExtent();
         GeoExtent(const GeoExtent& rhs) = default;
         GeoExtent& operator=(const GeoExtent&) = default;
-        GeoExtent(GeoExtent&& rhs) { *this = rhs; }
-        GeoExtent& operator=(GeoExtent&&);
+        GeoExtent(GeoExtent&& rhs) noexcept = default;
+        GeoExtent& operator=(GeoExtent&&) noexcept = default;
 
         /** Contructs a valid extent */
         GeoExtent(
@@ -38,9 +38,6 @@ namespace ROCKY_NAMESPACE
         GeoExtent(
             const SRS& srs,
             const Box& bounds);
-
-        /** dtor */
-        virtual ~GeoExtent() { }
 
         //! Set from the SW and NE corners.
         void set(double west, double south, double east, double north);

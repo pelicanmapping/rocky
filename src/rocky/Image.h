@@ -75,7 +75,7 @@ namespace ROCKY_NAMESPACE
         Image(const Image& rhs);
 
         //! Move constructor
-        Image(Image&& rhs);
+        Image(Image&& rhs) noexcept;
 
         //! Destruct and release the data unless it's not owned
         virtual ~Image();
@@ -169,12 +169,6 @@ namespace ROCKY_NAMESPACE
         //! Inverts the pixels in the T dimension
         void flipVerticalInPlace();
 
-        //! Copy this entire image to a sub-location in another image
-        bool copyAsSubImage(
-            Image* destination,
-            unsigned destX,
-            unsigned destY) const;
-
         //! Nmmber of components in this image's pixel format
         inline unsigned numComponents() const;
 
@@ -192,9 +186,9 @@ namespace ROCKY_NAMESPACE
             inline void forEachPixel(CALLABLE&& func);
 
         private:
-            const Image* _image;
-            unsigned _r, _s, _t;
-            double _u, _v;
+            const Image* _image = nullptr;
+            unsigned _r = 0, _s = 0, _t = 0;
+            double _u = 0.0, _v = 0.0;
         };
 
         iterator get_iterator() const {

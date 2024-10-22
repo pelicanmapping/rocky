@@ -545,9 +545,13 @@ GeoImage::GeoImage() :
 }
 
 GeoImage&
-GeoImage::operator=(GeoImage&& rhs)
+GeoImage::operator=(GeoImage&& rhs) noexcept
 {
-    *this = (const GeoImage&)rhs;
+    if (this != &rhs)
+    {
+        _image = std::move(rhs._image);
+        _extent = std::move(rhs._extent);
+    }
     rhs._image = nullptr;
     rhs._extent = GeoExtent::INVALID;
     return *this;

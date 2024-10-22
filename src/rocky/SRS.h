@@ -142,7 +142,9 @@ namespace ROCKY_NAMESPACE
         // copy/move operations
         SRS(const SRS& rhs) = default;
         SRS& operator=(const SRS& rhs) = default;
-        // no move operators since we use global instances
+        SRS(SRS&&) = default;
+        SRS& operator =(SRS&& rhs) = default;
+
         ~SRS();
 
         //! Internal SRS representation (for debugging)
@@ -173,8 +175,6 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT SRSOperation
     {
     public:
-        //! Construct an empty (invalid) operation
-        SRSOperation();
 
         //! Whether this is a valid and legal operation
         bool valid() const;
@@ -273,11 +273,11 @@ namespace ROCKY_NAMESPACE
         std::string string() const;
 
         // copy/move ops
+        SRSOperation() = default;
         SRSOperation(const SRSOperation& rhs) = default;
         SRSOperation& operator=(const SRSOperation&) = default;
-        SRSOperation(SRSOperation&& rhs) { *this = rhs; }
-        SRSOperation& operator=(SRSOperation&&);
-        ~SRSOperation();
+        SRSOperation(SRSOperation&& rhs) noexcept = default;
+        SRSOperation& operator=(SRSOperation&&) noexcept = default;
 
     private:
         SRS _from;

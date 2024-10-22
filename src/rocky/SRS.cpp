@@ -808,26 +808,6 @@ SRS::string() const
         return "";
 }
 
-SRSOperation::SRSOperation()
-{
-    // nop
-}
-
-SRSOperation&
-SRSOperation::operator=(SRSOperation&& rhs)
-{
-    _from = rhs._from;
-    _to = rhs._to;
-    rhs._from = { };
-    rhs._to = { };
-    return *this;
-}
-
-SRSOperation::~SRSOperation()
-{
-    //nop
-}
-
 bool
 SRSOperation::valid() const
 {

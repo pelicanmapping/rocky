@@ -478,7 +478,7 @@ OGRFeatureSource::~OGRFeatureSource()
     close();
 }
 
-std::shared_ptr<FeatureSource::iterator>
+FeatureSource::iterator
 OGRFeatureSource::iterate(IOOptions& io)
 {
     OGRDataSourceH dsHandle = nullptr;
@@ -507,14 +507,14 @@ OGRFeatureSource::iterate(IOOptions& io)
         }
     }
 
+    auto i = new iterator_impl();
+
     if (layerHandle)
     {
-        auto i = std::make_shared<iterator>();
         i->_source = this;
         i->_dsHandle = dsHandle;
         i->_layerHandle = layerHandle;
         i->init();
-        return i;
     }
     else
     {
@@ -523,18 +523,16 @@ OGRFeatureSource::iterate(IOOptions& io)
             OGRReleaseDataSource(dsHandle);
         }
     }
-    return { };
 
+    return iterator(i);
 }
 
-
-OGRFeatureSource::iterator::iterator()
-{
-}
 
 void
-OGRFeatureSource::iterator::init()
+OGRFeatureSource::iterator_impl::init()
 {
+    _resultSetEndReached = false;
+
     if (_dsHandle)
     {
         std::string from = OGR_FD_GetName(OGR_L_GetLayerDefn(_layerHandle));
@@ -564,9 +562,8 @@ OGRFeatureSource::iterator::init()
     readChunk();
 }
 
-OGRFeatureSource::iterator::~iterator()
+OGRFeatureSource::iterator_impl::~iterator_impl()
 {
-
     if (_nextHandleToQueue)
     {
         OGR_F_Destroy(_nextHandleToQueue);
@@ -574,7 +571,7 @@ OGRFeatureSource::iterator::~iterator()
 }
 
 void
-OGRFeatureSource::iterator::readChunk()
+OGRFeatureSource::iterator_impl::readChunk()
 {
     if (!_resultSetHandle)
         return;
@@ -617,13 +614,13 @@ OGRFeatureSource::iterator::readChunk()
 }
 
 bool
-OGRFeatureSource::iterator::hasMore() const
+OGRFeatureSource::iterator_impl::hasMore() const
 {
     return _resultSetHandle && !_queue.empty();
 };
 
 const Feature&
-OGRFeatureSource::iterator::next()
+OGRFeatureSource::iterator_impl::next()
 {
     if (!hasMore())
         return _lastFeatureReturned;

@@ -73,12 +73,7 @@ Image::Layout Image::_layouts[7] =
     { &FLOAT<double>::read, &FLOAT<double>::write, 1, 8, R64_SFLOAT }
 };
 
-Image::Image(
-    PixelFormat format,
-    unsigned cols,
-    unsigned rows,
-    unsigned depth) :
-    
+Image::Image(PixelFormat format, unsigned cols, unsigned rows, unsigned depth) :    
     super(),
     _width(0), _height(0), _depth(0),
     _pixelFormat(R8G8B8A8_UNORM),
@@ -94,13 +89,17 @@ Image::Image(const Image& rhs) :
     memcpy(_data, rhs._data, sizeInBytes());
 }
 
-Image::Image(Image&& rhs)
+Image::Image(Image&& rhs) noexcept :
+    super(rhs)
 {
-    _width = rhs._width;
-    _height = rhs._height;
-    _depth = rhs._depth;
-    _pixelFormat = rhs._pixelFormat;
-    _data = rhs.releaseData();
+    if (this != &rhs)
+    {
+        _width = rhs._width;
+        _height = rhs._height;
+        _depth = rhs._depth;
+        _pixelFormat = rhs._pixelFormat;
+        _data = rhs.releaseData();
+    }
 }
 
 Image::~Image()
@@ -170,36 +169,6 @@ Image::releaseData()
     _height = 0;
     _depth = 0;
     return released;
-}
-
-bool
-Image::copyAsSubImage(
-    Image* dst,
-    unsigned dst_start_col,
-    unsigned dst_start_row) const
-{
-    if (!valid() || !dst || !dst->valid() ||
-        dst_start_col + width() > dst->width() ||
-        dst_start_row + height() > dst->height() ||
-        depth() != dst->depth())
-    {
-        return false;
-    }
-
-    Pixel pixel;
-    for (unsigned r = 0; r < depth(); ++r)
-    {
-        for (unsigned src_t = 0, dst_t = dst_start_row; src_t < height(); src_t++, dst_t++)
-        {
-            for (unsigned src_s = 0, dst_s = dst_start_col; src_s < width(); src_s++, dst_s++)
-            {
-                read(pixel, src_s, src_t, r);
-                dst->write(pixel, dst_s, dst_t, r);
-            }
-        }
-    }
-
-    return true;
 }
 
 void

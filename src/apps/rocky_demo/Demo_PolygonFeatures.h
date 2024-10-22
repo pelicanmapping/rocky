@@ -48,9 +48,9 @@ auto Demo_PolygonFeatures = [](Application& app)
                 feature_view.features.reserve(data->fs->featureCount());
 
             auto iter = data->fs->iterate(app.instance.io());
-            while (iter->hasMore())
+            while (iter.hasMore())
             {
-                auto feature = iter->next();
+                auto feature = iter.next();
                 if (feature.valid())
                 {
                     feature.interpolation = GeodeticInterpolation::RhumbLine;
