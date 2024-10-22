@@ -94,11 +94,11 @@ $(function() {
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">float</span>&amp; heightAt(<span class="keywordtype">unsigned</span> col, <span class="keywordtype">unsigned</span> row);</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">float</span> heightAt(<span class="keywordtype">unsigned</span> col, <span class="keywordtype">unsigned</span> row) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> FUNC&gt;</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        <span class="keywordtype">void</span> forEachHeight(FUNC func);</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> CALLABLE&gt;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">void</span> forEachHeight(CALLABLE&amp;&amp; func);</div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160; </div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> FUNC&gt;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <span class="keywordtype">void</span> forEachHeight(FUNC func) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> CALLABLE&gt;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">void</span> forEachHeight(CALLABLE&amp;&amp; func) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        <span class="keywordtype">float</span> heightAtUV(</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;            <span class="keywordtype">double</span> u, <span class="keywordtype">double</span> v,</div>
@@ -124,16 +124,16 @@ $(function() {
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        <span class="keywordflow">return</span> data&lt;float&gt;(c, r);</div>
 <div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    }    </div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> FUNC&gt;</div>
-<div class="line"><a name="l00074"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield.html#a7d55df9bbed8f0820b5cfdbc7d36d28f">   74</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield.html#a7d55df9bbed8f0820b5cfdbc7d36d28f">Heightfield::forEachHeight</a>(FUNC func)</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> CALLABLE&gt;</div>
+<div class="line"><a name="l00074"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield.html#aba6a35e2be30a07e3f8027f8b6e68b14">   74</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield.html#aba6a35e2be30a07e3f8027f8b6e68b14">Heightfield::forEachHeight</a>(CALLABLE&amp;&amp; func)</div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    {</div>
 <div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <span class="keywordtype">float</span>* ptr = data&lt;float&gt;();</div>
 <div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        <span class="keywordflow">for</span> (<span class="keyword">auto</span> i = 0u; i &lt; sizeInPixels(); ++i, ++ptr)</div>
 <div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;            func(*ptr);</div>
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    }</div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> FUNC&gt;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield.html#a7d55df9bbed8f0820b5cfdbc7d36d28f">Heightfield::forEachHeight</a>(FUNC func)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> CALLABLE&gt;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield.html#aba6a35e2be30a07e3f8027f8b6e68b14">Heightfield::forEachHeight</a>(CALLABLE&amp;&amp; func)<span class="keyword"> const</span></div>
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="keyword">    </span>{</div>
 <div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        <span class="keyword">const</span> <span class="keywordtype">float</span>* ptr = data&lt;float&gt;();</div>
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        <span class="keywordflow">for</span> (<span class="keyword">auto</span> i = 0u; i &lt; sizeInPixels(); ++i, ++ptr)</div>
@@ -141,7 +141,7 @@ $(function() {
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    }</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;}</div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield.html">ROCKY_NAMESPACE::Heightfield</a></div><div class="ttdef"><b>Definition:</b> Heightfield.h:18</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield_html_a7d55df9bbed8f0820b5cfdbc7d36d28f"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield.html#a7d55df9bbed8f0820b5cfdbc7d36d28f">ROCKY_NAMESPACE::Heightfield::forEachHeight</a></div><div class="ttdeci">void forEachHeight(FUNC func)</div><div class="ttdef"><b>Definition:</b> Heightfield.h:74</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield_html_aba6a35e2be30a07e3f8027f8b6e68b14"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield.html#aba6a35e2be30a07e3f8027f8b6e68b14">ROCKY_NAMESPACE::Heightfield::forEachHeight</a></div><div class="ttdeci">void forEachHeight(CALLABLE &amp;&amp;func)</div><div class="ttdef"><b>Definition:</b> Heightfield.h:74</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield_html_afba2eeebaa7050961a963273ab1bfd10"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield.html#afba2eeebaa7050961a963273ab1bfd10">ROCKY_NAMESPACE::Heightfield::heightAt</a></div><div class="ttdeci">float &amp; heightAt(unsigned col, unsigned row)</div><div class="ttdoc">Access the height value at col, row.</div><div class="ttdef"><b>Definition:</b> Heightfield.h:63</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">ROCKY_NAMESPACE::Image</a></div><div class="ttdef"><b>Definition:</b> Image.h:21</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>

@@ -164,28 +164,29 @@ $(function() {
 <div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;        <span class="comment">// copy/move operations</span></div>
 <div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;        SRS(<span class="keyword">const</span> SRS&amp; rhs) = <span class="keywordflow">default</span>;</div>
 <div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;        SRS&amp; operator=(<span class="keyword">const</span> SRS&amp; rhs) = <span class="keywordflow">default</span>;</div>
-<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;        <span class="comment">// no move operators since we use global instances</span></div>
-<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;        ~SRS();</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;        SRS(SRS&amp;&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;        SRS&amp; operator =(SRS&amp;&amp; rhs) = <span class="keywordflow">default</span>;</div>
 <div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160; </div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;        std::string string() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160; </div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;        <span class="keyword">static</span> std::string projVersion();</div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160; </div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;        std::string _definition;</div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;        <span class="keywordtype">bool</span> _valid = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;        <span class="keywordtype">bool</span> _isGeodetic = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;        <span class="keywordtype">bool</span> _isGeocentric = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;        <span class="keyword">friend</span> <span class="keyword">class </span>SRSOperation;</div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;    };</div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160; </div>
-<div class="line"><a name="l00164"></a><span class="lineno"><a class="line" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a91df5719391c623b97bc9c263d675ade">  164</a></span>&#160;    <span class="keyword">using</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SpatialReference</a> = <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a>;</div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160; </div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160; </div>
-<div class="line"><a name="l00173"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">  173</a></span>&#160;    <span class="keyword">class </span>ROCKY_EXPORT <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a></div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;    {</div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>();</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;        ~SRS();</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160; </div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;        std::string string() <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160; </div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;        <span class="keyword">static</span> std::string projVersion();</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160; </div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;        std::string _definition;</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;        <span class="keywordtype">bool</span> _valid = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;        <span class="keywordtype">bool</span> _isGeodetic = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;        <span class="keywordtype">bool</span> _isGeocentric = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;        <span class="keyword">friend</span> <span class="keyword">class </span>SRSOperation;</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    };</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160; </div>
+<div class="line"><a name="l00166"></a><span class="lineno"><a class="line" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a91df5719391c623b97bc9c263d675ade">  166</a></span>&#160;    <span class="keyword">using</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SpatialReference</a> = <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a>;</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160; </div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160; </div>
+<div class="line"><a name="l00175"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">  175</a></span>&#160;    <span class="keyword">class </span>ROCKY_EXPORT <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a></div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;    {</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;    <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160; </div>
 <div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;        <span class="keywordtype">bool</span> valid() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;        <span class="keyword">operator</span> bool()<span class="keyword"> const </span>{</div>
@@ -263,25 +264,25 @@ $(function() {
 <div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;        std::string string() <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160; </div>
 <div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;        <span class="comment">// copy/move ops</span></div>
-<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>(<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>&amp; rhs) = <span class="keywordflow">default</span>;</div>
-<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>&amp;) = <span class="keywordflow">default</span>;</div>
-<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>(<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>&amp;&amp; rhs) { *<span class="keyword">this</span> = rhs; }</div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;        SRSOperation&amp; operator=(SRSOperation&amp;&amp;);</div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;        ~SRSOperation();</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>(<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>&amp; rhs) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>&amp;) = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>(<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>&amp;&amp; rhs) noexcept = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>&amp; operator=(<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>&amp;&amp;) noexcept = default;</div>
 <div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160; </div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;        SRS _from;</div>
-<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;        SRS _to;</div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;        <span class="keywordtype">bool</span> _nop = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;        <span class="keyword">mutable</span> std::string _lastError;</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;    private:</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> _from;</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> _to;</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;        <span class="keywordtype">bool</span> _nop = false;</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;        mutable std::<span class="keywordtype">string</span> _lastError;</div>
 <div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160; </div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;        <span class="keywordtype">void</span>* get_handle() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;        <span class="keywordtype">bool</span> forward(<span class="keywordtype">void</span>* handle, <span class="keywordtype">double</span>&amp; x, <span class="keywordtype">double</span>&amp; y, <span class="keywordtype">double</span>&amp; z) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;        <span class="keywordtype">bool</span> inverse(<span class="keywordtype">void</span>* handle, <span class="keywordtype">double</span>&amp; x, <span class="keywordtype">double</span>&amp; y, <span class="keywordtype">double</span>&amp; z) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;        <span class="keywordtype">void</span>* get_handle() const;</div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;        <span class="keywordtype">bool</span> forward(<span class="keywordtype">void</span>* handle, <span class="keywordtype">double</span>&amp; x, <span class="keywordtype">double</span>&amp; y, <span class="keywordtype">double</span>&amp; z) const;</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;        <span class="keywordtype">bool</span> inverse(<span class="keywordtype">void</span>* handle, <span class="keywordtype">double</span>&amp; x, <span class="keywordtype">double</span>&amp; y, <span class="keywordtype">double</span>&amp; z) const;</div>
 <div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160; </div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;        <span class="keywordtype">bool</span> forward(<span class="keywordtype">void</span>* handle, <span class="keywordtype">double</span>* x, <span class="keywordtype">double</span>* y, <span class="keywordtype">double</span>* z, std::size_t stride, std::size_t count) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;        <span class="keywordtype">bool</span> inverse(<span class="keywordtype">void</span>* handle, <span class="keywordtype">double</span>* x, <span class="keywordtype">double</span>* y, <span class="keywordtype">double</span>* z, std::size_t stride, std::size_t count) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;        <span class="keyword">friend</span> <span class="keyword">class </span>SRS;</div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;        <span class="keywordtype">bool</span> forward(<span class="keywordtype">void</span>* handle, <span class="keywordtype">double</span>* x, <span class="keywordtype">double</span>* y, <span class="keywordtype">double</span>* z, std::<span class="keywordtype">size_t</span> stride, std::<span class="keywordtype">size_t</span> count) const;</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;        <span class="keywordtype">bool</span> inverse(<span class="keywordtype">void</span>* handle, <span class="keywordtype">double</span>* x, <span class="keywordtype">double</span>* y, <span class="keywordtype">double</span>* z, std::<span class="keywordtype">size_t</span> stride, std::<span class="keywordtype">size_t</span> count) const;</div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;        friend class <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a>;</div>
 <div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;    };</div>
 <div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;}</div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">ROCKY_NAMESPACE::SRS</a></div><div class="ttdef"><b>Definition:</b> SRS.h:21</div></div>
@@ -292,7 +293,7 @@ $(function() {
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_html_a88832d325145876bca1ed11962c9cf76"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#a88832d325145876bca1ed11962c9cf76">ROCKY_NAMESPACE::SRS::WGS84</a></div><div class="ttdeci">static const SRS WGS84</div><div class="ttdef"><b>Definition:</b> SRS.h:25</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_html_ac8d7e90fb75257b6e14c0c6a9307d122"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#ac8d7e90fb75257b6e14c0c6a9307d122">ROCKY_NAMESPACE::SRS::PLATE_CARREE</a></div><div class="ttdeci">static const SRS PLATE_CARREE</div><div class="ttdef"><b>Definition:</b> SRS.h:37</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_html_aeadf324d06b2bf20d50f003e0c604561"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#aeadf324d06b2bf20d50f003e0c604561">ROCKY_NAMESPACE::SRS::EMPTY</a></div><div class="ttdeci">static const SRS EMPTY</div><div class="ttdoc">Empty invalid SRS.</div><div class="ttdef"><b>Definition:</b> SRS.h:40</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">ROCKY_NAMESPACE::SRSOperation</a></div><div class="ttdef"><b>Definition:</b> SRS.h:174</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">ROCKY_NAMESPACE::SRSOperation</a></div><div class="ttdef"><b>Definition:</b> SRS.h:176</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation_html_a0b94c13ce1d7c51c9b1645aecc9ca844"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html#a0b94c13ce1d7c51c9b1645aecc9ca844">ROCKY_NAMESPACE::SRSOperation::inverseArray</a></div><div class="ttdeci">bool inverseArray(DVEC3 *inout, std::size_t count) const</div><div class="ttdef"><b>Definition:</b> SRS.h:261</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation_html_a235c39741988b32061d1f9fe4e0ce548"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html#a235c39741988b32061d1f9fe4e0ce548">ROCKY_NAMESPACE::SRSOperation::operator()</a></div><div class="ttdeci">bool operator()(const DVEC3A &amp;in, DVEC3B &amp;out) const</div><div class="ttdef"><b>Definition:</b> SRS.h:211</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation_html_a4e764a46b49f9f986c479af7c39b1b41"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html#a4e764a46b49f9f986c479af7c39b1b41">ROCKY_NAMESPACE::SRSOperation::inverseRange</a></div><div class="ttdeci">bool inverseRange(ITERATOR begin, ITERATOR end) const</div><div class="ttdef"><b>Definition:</b> SRS.h:248</div></div>

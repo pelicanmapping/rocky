@@ -101,13 +101,13 @@ float &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="memitem:a4f987e2c9a5a8195386f081622966924"><td class="memItemLeft" align="right" valign="top"><a id="a4f987e2c9a5a8195386f081622966924"></a>
 float&#160;</td><td class="memItemRight" valign="bottom"><b>heightAt</b> (unsigned col, unsigned row) const</td></tr>
 <tr class="separator:a4f987e2c9a5a8195386f081622966924"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7d55df9bbed8f0820b5cfdbc7d36d28f"><td class="memTemplParams" colspan="2">template&lt;typename FUNC &gt; </td></tr>
-<tr class="memitem:a7d55df9bbed8f0820b5cfdbc7d36d28f"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield.html#a7d55df9bbed8f0820b5cfdbc7d36d28f">forEachHeight</a> (FUNC func)</td></tr>
-<tr class="separator:a7d55df9bbed8f0820b5cfdbc7d36d28f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9e5728808e4068784735dad58c7deedb"><td class="memTemplParams" colspan="2"><a id="a9e5728808e4068784735dad58c7deedb"></a>
-template&lt;typename FUNC &gt; </td></tr>
-<tr class="memitem:a9e5728808e4068784735dad58c7deedb"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>forEachHeight</b> (FUNC func) const</td></tr>
-<tr class="separator:a9e5728808e4068784735dad58c7deedb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba6a35e2be30a07e3f8027f8b6e68b14"><td class="memTemplParams" colspan="2">template&lt;typename CALLABLE &gt; </td></tr>
+<tr class="memitem:aba6a35e2be30a07e3f8027f8b6e68b14"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield.html#aba6a35e2be30a07e3f8027f8b6e68b14">forEachHeight</a> (CALLABLE &amp;&amp;func)</td></tr>
+<tr class="separator:aba6a35e2be30a07e3f8027f8b6e68b14"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54eb30ede342a6ae919e86743bb79429"><td class="memTemplParams" colspan="2"><a id="a54eb30ede342a6ae919e86743bb79429"></a>
+template&lt;typename CALLABLE &gt; </td></tr>
+<tr class="memitem:a54eb30ede342a6ae919e86743bb79429"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>forEachHeight</b> (CALLABLE &amp;&amp;func) const</td></tr>
+<tr class="separator:a54eb30ede342a6ae919e86743bb79429"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab9ff06c9e3e933c791f6e5753ea42d1f"><td class="memItemLeft" align="right" valign="top"><a id="ab9ff06c9e3e933c791f6e5753ea42d1f"></a>
 float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_heightfield.html#ab9ff06c9e3e933c791f6e5753ea42d1f">heightAtUV</a> (double u, double v, Interpolation interp=BILINEAR) const</td></tr>
 <tr class="memdesc:ab9ff06c9e3e933c791f6e5753ea42d1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Interpolated height at a normalized (u,v) location. <br /></td></tr>
@@ -156,22 +156,30 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a7d55df9bbed8f0820b5cfdbc7d36d28f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7d55df9bbed8f0820b5cfdbc7d36d28f">&#9670;&nbsp;</a></span>forEachHeight()</h2>
+<a id="aba6a35e2be30a07e3f8027f8b6e68b14"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba6a35e2be30a07e3f8027f8b6e68b14">&#9670;&nbsp;</a></span>forEachHeight()</h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename FUNC &gt; </div>
+template&lt;typename CALLABLE &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void ROCKY_NAMESPACE::Heightfield::forEachHeight </td>
           <td>(</td>
-          <td class="paramtype">FUNC&#160;</td>
+          <td class="paramtype">CALLABLE &amp;&amp;&#160;</td>
           <td class="paramname"><em>func</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 <p>Visits each height in the field with a user-provided function that takes "float" or "float&amp;" as an argument. </p>
 
