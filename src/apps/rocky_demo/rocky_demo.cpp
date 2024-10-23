@@ -45,6 +45,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Stats.h"
 #include "Demo_Geocoder.h"
 #include "Demo_Rendering.h"
+#include "Demo_Simulation.h"
 
 template<class T>
 int layerError(T layer)
@@ -95,6 +96,7 @@ std::vector<Demo> demos =
     Demo{ "Geocoding", Demo_Geocoder },
     Demo{ "Environment", Demo_Environment },
     Demo{ "RTT", Demo_RTT },
+    Demo{ "Simulation", Demo_Simulation },
     Demo{ "Views", Demo_Views },
     Demo{ "Serialization", Demo_Serialization },
     Demo{ "Stats", Demo_Stats },
@@ -204,7 +206,7 @@ int main(int argc, char** argv)
         // add an elevation layer to the map
         auto elev = rocky::TMSElevationLayer::create();
         elev->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
-        layers.add(elev);
+        ///layers.add(elev);
 #endif
     }
 
