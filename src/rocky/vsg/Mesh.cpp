@@ -12,6 +12,7 @@
 #include <vsg/utils/ComputeBounds.h>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 Mesh::Mesh()
 {
@@ -42,6 +43,8 @@ Mesh::initializeNode(const ECS::NodeComponent::Params& params)
 {
     auto cull = vsg::CullNode::create();
 
+    vsg::ref_ptr<vsg::Group> parent;
+
     if (style.has_value() || texture)
     {
         bindCommand = BindMeshDescriptors::create();
@@ -52,13 +55,32 @@ Mesh::initializeNode(const ECS::NodeComponent::Params& params)
 
         auto sg = vsg::StateGroup::create();
         sg->stateCommands.push_back(bindCommand);
-        sg->addChild(geometry);
+
+        if (refPoint != vsg::dvec3())
+        {
+            auto mt = vsg::MatrixTransform::create(vsg::translate(refPoint));
+            mt->addChild(geometry);
+            sg->addChild(mt);
+        }
+        else
+        {
+            sg->addChild(geometry);
+        }
 
         cull->child = sg;
     }
     else
     {
-        cull->child = geometry;
+        if (refPoint != vsg::dvec3())
+        {
+            auto mt = vsg::MatrixTransform::create(vsg::translate(refPoint));
+            mt->addChild(geometry);
+            cull->child = mt;
+        }
+        else
+        {
+            cull->child = geometry;
+        }
     }
 
     vsg::ComputeBounds cb;

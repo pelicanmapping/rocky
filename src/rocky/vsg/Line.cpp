@@ -12,6 +12,7 @@
 #include <vsg/nodes/StateGroup.h>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 Line::Line()
 {
@@ -36,6 +37,8 @@ Line::initializeNode(const ECS::NodeComponent::Params& params)
 {
     auto cull = vsg::CullNode::create();
 
+    vsg::ref_ptr<vsg::Group> geom_parent;
+
     if (style.has_value())
     {
         bindCommand = BindLineDescriptors::create();
@@ -44,20 +47,38 @@ Line::initializeNode(const ECS::NodeComponent::Params& params)
 
         auto sg = vsg::StateGroup::create();
         sg->stateCommands.push_back(bindCommand);
-        for (auto& g : geometries)
-            sg->addChild(g);
-        cull->child = sg;
-    }
-    else if (geometries.size() == 1)
-    {
-        cull->child = geometries[0];
+        geom_parent = sg;
+
+        if (refPoint != vsg::dvec3())
+        {
+            auto localizer = vsg::MatrixTransform::create(vsg::translate(refPoint));
+            localizer->addChild(sg);            
+            cull->child = localizer;
+        }
+        else
+        {
+            cull->child = sg;
+        }
     }
     else
     {
-        auto group = vsg::Group::create();
-        for (auto& g : geometries)
-            group->addChild(g);
-        cull->child = group;
+        if (refPoint != vsg::dvec3())
+        {
+            auto localizer = vsg::MatrixTransform::create(vsg::translate(refPoint));
+            cull->child = localizer;
+            geom_parent = localizer;
+        }
+        else
+        {
+            auto group = vsg::Group::create();
+            cull->child = group;
+            geom_parent = group;
+        }
+    }
+
+    for (auto& geom : geometries)
+    {
+        geom_parent->addChild(geom);
     }
 
     vsg::ComputeBounds cb;

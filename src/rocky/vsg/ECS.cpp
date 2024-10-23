@@ -20,6 +20,32 @@ ECS::Component::to_json() const
     return j.dump();
 }
 
+SRSOperation
+ECS::NodeComponent::setReferencePoint(const GeoPoint& point)
+{
+    SRS worldSRS = point.srs;
+
+    if (point.srs.valid())
+    {
+        if (point.srs.isGeodetic())
+        {
+            worldSRS = point.srs.geocentricSRS();
+
+            GeoPoint world;
+            if (point.transform(worldSRS, world))
+            {
+                refPoint = vsg::dvec3{ world.x, world.y, world.z };
+            }
+        }
+        else
+        {
+            refPoint = vsg::dvec3{ point.x, point.y, point.z };
+        }
+    }
+
+    return SRSOperation(point.srs, worldSRS);
+}
+
 void
 ECS::SystemsManager::update(ECS::time_point time)
 {

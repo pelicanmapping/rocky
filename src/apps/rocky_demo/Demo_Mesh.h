@@ -22,9 +22,16 @@ auto Demo_Mesh_Absolute = [](Application& app)
         auto& mesh = app.entities.emplace<Mesh>(entity);
 
         // Make some geometry in ECEF coordinates
-        auto xform = SRS::WGS84.to(app.mapNode->worldSRS()); // SRS::WGS84.geocentricSRS());
+        //auto xform = SRS::WGS84.to(app.mapNode->worldSRS());
         const double step = 2.5;
-        const double alt = 0.0; 
+        const double alt = 0.0;
+        const double min_lon = 0.0, max_lon = 35.0;
+        const double min_lat = 15.0, max_lat = 35.0;
+
+        // A reference point will prevent local precision jitter.
+        auto xform = mesh.setReferencePoint(GeoPoint(
+            SRS::WGS84, (min_lon + max_lon) * 0.5, (min_lat + max_lat) * 0.5, alt));
+
         for (double lon = 0.0; lon < 35.0; lon += step)
         {
             for(double lat = 15.0; lat < 35.0; lat += step)
@@ -87,8 +94,8 @@ auto Demo_Mesh_Relative = [](Application& app)
         mesh.name = "Relative Mesh";
 
         // Make some geometry that will be relative to a geolocation:
-        const float s = 250000.0;
-        vsg::vec3 verts[8] = {
+        const double s = 250000.0;
+        vsg::dvec3 verts[8] = {
             { -s, -s, -s },
             {  s, -s, -s },
             {  s,  s, -s },
@@ -164,8 +171,8 @@ auto Demo_Mesh_Multi = [](Application& app)
         Mesh& mesh = app.entities.emplace<Mesh>(entity);
         mesh.name = "Relative Mesh";
 
-        const float s = 250000.0;
-        vsg::vec3 verts[8] = {
+        const double s = 250000.0;
+        vsg::dvec3 verts[8] = {
             { -s, -s, -s },
             {  s, -s, -s },
             {  s,  s, -s },

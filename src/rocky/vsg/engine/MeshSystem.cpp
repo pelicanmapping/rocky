@@ -13,6 +13,7 @@
 #include <vsg/commands/DrawIndexed.h>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 #define MESH_VERT_SHADER "shaders/rocky.mesh.vert"
 #define MESH_FRAG_SHADER "shaders/rocky.mesh.frag"

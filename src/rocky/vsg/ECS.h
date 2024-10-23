@@ -184,6 +184,12 @@ namespace ROCKY_NAMESPACE
         class ROCKY_EXPORT NodeComponent : public Component
         {
         public:
+            //! Set a reference point for geometry. For preventing precision jitter.
+            //! @param p The reference point
+            //! @return The operation that can transform data from the reference point's
+            //!   SRS into mesh vertices you can add to a geometry attached to this component.
+            SRSOperation setReferencePoint(const GeoPoint& p);
+
             /**
             * Component initialization parameters for VSG objects
             */
@@ -221,6 +227,9 @@ namespace ROCKY_NAMESPACE
             {
                 nodeDirty = true;
             }
+
+        protected:
+            vsg::dvec3 refPoint;
         };
 
 

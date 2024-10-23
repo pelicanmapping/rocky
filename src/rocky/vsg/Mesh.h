@@ -5,6 +5,8 @@
  */
 #pragma once
 #include <rocky/vsg/ECS.h>
+#include <rocky/GeoPoint.h>
+#include <rocky/SRS.h>
 #include <vsg/nodes/Geometry.h>
 #include <vsg/commands/DrawIndexed.h>
 #include <optional>
@@ -24,9 +26,9 @@ namespace ROCKY_NAMESPACE
         float depth_offset = 0.0f;
     };
 
-    //! A triangle
-    template<typename VEC2=vsg::vec2, typename VEC3=vsg::vec3, typename VEC4=vsg::vec4>
-    struct Triangle
+    //! A mesh triangle
+    template<typename VEC2 = vsg::vec2, typename VEC3 = vsg::dvec3, typename VEC4 = vsg::vec4>
+    struct Triangle_t
     {
         VEC3 verts[3];
         VEC4 colors[3] = { {1,1,1,1}, {1,1,1,1}, {1,1,1,1} };
@@ -34,73 +36,98 @@ namespace ROCKY_NAMESPACE
         float depthoffsets[3] = { 0, 0, 0 };
         //VEC3 normals[3] = { {0,0,1}, {0,0,1}, {0,0,1} };
     };
-    using Triangle32 = Triangle<>;
-    using Triangle64 = Triangle<vsg::vec2, vsg::dvec3, vsg::vec4>;
+    using Triangle = Triangle_t<>;
 
-    /**
-    * Command to render a Mesh's triangles.
-    */
-    class ROCKY_EXPORT MeshGeometry : public vsg::Inherit<vsg::Geometry, MeshGeometry>
+    namespace detail
     {
-    public:
-        //! Construct a new line string geometry node
-        MeshGeometry();
 
-        //! Adds a triangle to the mesh.
-        //! Each array MUST be 3 elements long
-        void add(
-            const vsg::vec3* verts,
-            const vsg::vec2* uvs,
-            const vsg::vec4* colors,
-            const float* depthoffsets);
+        /**
+        * Command to render a Mesh's triangles.
+        */
+        class ROCKY_EXPORT MeshGeometry : public vsg::Inherit<vsg::Geometry, MeshGeometry>
+        {
+        public:
+            //! Construct a new line string geometry node
+            MeshGeometry();
 
-        inline void add(
-            const vsg::dvec3* verts,
-            const vsg::vec2* uvs,
-            const vsg::vec4* colors,
-            const float* depthoffsets);
+            //! Adds a triangle to the mesh.
+            //! Each array MUST be 3 elements long
+            inline void add(
+                const vsg::dvec3& refPoint,
+                const vsg::vec3* verts,
+                const vsg::vec2* uvs,
+                const vsg::vec4* colors,
+                const float* depthoffsets);
 
-        //! Recompile the geometry after making changes.
-        //! TODO: just make it dynamic instead
-        void compile(vsg::Context&) override;
+            inline void add(
+                const vsg::dvec3& refPoint,
+                const vsg::dvec3* verts,
+                const vsg::vec2* uvs,
+                const vsg::vec4* colors,
+                const float* depthoffsets);
 
-        vsg::vec4 _defaultColor = { 1,1,1,1 };
-        std::vector<vsg::vec3> _verts;
-        std::vector<vsg::vec3> _normals;
-        std::vector<vsg::vec4> _colors;
-        std::vector<vsg::vec2> _uvs;
-        std::vector<float> _depthoffsets;
-        vsg::ref_ptr<vsg::DrawIndexed> _drawCommand;
-        using index_type = unsigned int; // short;
-        using key = std::tuple<vsg::vec3, vsg::vec4>; // vert, color (add normal?)
-        std::map<key, index_type> _lut;
-        std::vector<index_type> _indices;
-    };
+            //! Recompile the geometry after making changes.
+            //! TODO: just make it dynamic instead
+            void compile(vsg::Context&) override;
 
-    /**
-    * Command to bind any descriptors associated with Mesh.
-    */
-    class ROCKY_EXPORT BindMeshDescriptors : public vsg::Inherit<vsg::BindDescriptorSet, BindMeshDescriptors>
-    {
-    public:
-        //! Construct a default styling command
-        BindMeshDescriptors();
+            vsg::vec4 _defaultColor = { 1,1,1,1 };
+            std::vector<vsg::vec3> _verts;
+            std::vector<vsg::vec3> _normals;
+            std::vector<vsg::vec4> _colors;
+            std::vector<vsg::vec2> _uvs;
+            std::vector<float> _depthoffsets;
+            vsg::ref_ptr<vsg::DrawIndexed> _drawCommand;
+            using index_type = unsigned int; // short;
+            using key = std::tuple<vsg::vec3, vsg::vec4>; // vert, color (add normal?)
+            std::map<key, index_type> _lut;
+            std::vector<index_type> _indices;
 
-        //! Initialize this command with the associated layout
-        void init(vsg::ref_ptr<vsg::PipelineLayout> layout);
+        private:
+            void add(
+                const vsg::vec3* verts,
+                const vsg::vec2* uvs,
+                const vsg::vec4* colors,
+                const float* depthoffsets);
+        };
 
-        //! Refresh the data buffer contents on the GPU
-        void updateStyle(const MeshStyle&);
+        /**
+        * Command to bind any descriptors associated with Mesh.
+        */
+        class ROCKY_EXPORT BindMeshDescriptors : public vsg::Inherit<vsg::BindDescriptorSet, BindMeshDescriptors>
+        {
+        public:
+            //! Construct a default styling command
+            BindMeshDescriptors();
 
-        vsg::ref_ptr<vsg::ubyteArray> _styleData;
-        vsg::ref_ptr<vsg::ImageInfo> _imageInfo;
-    };
+            //! Initialize this command with the associated layout
+            void init(vsg::ref_ptr<vsg::PipelineLayout> layout);
 
-    // inline
-    void MeshGeometry::add(const vsg::dvec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors, const float* depthoffsets)
-    {
-        vsg::vec3 verts32[3] = { vsg::vec3(verts[0]), vsg::vec3(verts[1]), vsg::vec3(verts[2]) };
-        add(verts32, uvs, colors, depthoffsets);
+            //! Refresh the data buffer contents on the GPU
+            void updateStyle(const MeshStyle&);
+
+            vsg::ref_ptr<vsg::ubyteArray> _styleData;
+            vsg::ref_ptr<vsg::ImageInfo> _imageInfo;
+        };
+
+        inline void MeshGeometry::add(const vsg::dvec3& refpoint, const vsg::vec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors, const float* depthoffsets)
+        {
+            vsg::vec3 verts32[3] = {
+                vsg::vec3(vsg::dvec3(verts[0]) - refpoint),
+                vsg::vec3(vsg::dvec3(verts[1]) - refpoint),
+                vsg::vec3(vsg::dvec3(verts[2]) - refpoint) };
+
+            add(verts32, uvs, colors, depthoffsets);
+        }
+
+        inline void MeshGeometry::add(const vsg::dvec3& refpoint, const vsg::dvec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors, const float* depthoffsets)
+        {
+            vsg::vec3 verts32[3] = {
+                vsg::vec3(verts[0] - refpoint),
+                vsg::vec3(verts[1] - refpoint),
+                vsg::vec3(verts[2] - refpoint) };
+
+            add(verts32, uvs, colors, depthoffsets);
+        }
     }
 
     /**
@@ -125,10 +152,7 @@ namespace ROCKY_NAMESPACE
         std::optional<MeshStyle> style;
 
         //! Add a triangle to the mesh
-        inline void add(const Triangle32& tri);
-
-        //! Add a triangle to the mesh
-        inline void add(const Triangle64& tri);
+        inline void add(const Triangle& tri);
 
         //! If using style, call this after changing a style to apply it
         void dirty();
@@ -144,18 +168,14 @@ namespace ROCKY_NAMESPACE
         int featureMask() const override;
 
     private:
-        vsg::ref_ptr<BindMeshDescriptors> bindCommand;
-        vsg::ref_ptr<MeshGeometry> geometry;
+        vsg::ref_ptr<detail::BindMeshDescriptors> bindCommand;
+        vsg::ref_ptr<detail::MeshGeometry> geometry;
+        vsg::dvec3 refPoint;
         friend class MeshSystem;
     };
 
-
-    // mesh inline functions
-    inline void Mesh::add(const Triangle32& tri) {
-        geometry->add(tri.verts, tri.uvs, tri.colors, tri.depthoffsets);
-    }
-
-    inline void Mesh::add(const Triangle64& tri) {
-        geometry->add(tri.verts, tri.uvs, tri.colors, tri.depthoffsets);
+    inline void Mesh::add(const Triangle& tri)
+    {
+        geometry->add(refPoint, tri.verts, tri.uvs, tri.colors, tri.depthoffsets);
     }
 }

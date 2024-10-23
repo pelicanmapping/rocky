@@ -22,26 +22,28 @@ auto Demo_Line_Absolute = [](Application& app)
         // Attach a new Line component to the entity:
         auto& line = app.entities.emplace<Line>(entity);
 
-        // Build the line's geometry:
-        auto xform = rocky::SRS::WGS84.to(app.mapNode->worldSRS());
-        const double alt = 125000;
+        // Set a reference point. This should be near your geometry, and will
+        // act as an anchor point for localizing geometry.
+        // Use the returned SRSOperation to transform points for use in your line.
+        GeoPoint refPoint(SRS::WGS84, -90.0, -20.0);
+        auto xform = line.setReferencePoint(refPoint);
+
+        const double alt = 10;
         std::vector<glm::dvec3> points;
-        for (double lon = -180.0; lon <= 0.0; lon += 2.5)
+        for (double lon = -180; lon <= 0.0; lon += 0.25)
         {
-            glm::dvec3 ecef;
-            if (xform(glm::dvec3(lon, -20.0, alt), ecef))
-                points.push_back(ecef);
+            glm::dvec3 point;
+            if (xform(glm::dvec3(lon, -20.0, alt), point))
+                points.emplace_back(point);
         }
         line.push(points.begin(), points.end());
 
         // Create a style that we can change dynamically:
-        line.style = LineStyle{
-            { 1,1,0,1 },    // color
-            3.0f,           // width
-            0xffff,         // stipple pattern (16 bit)
-            4 };            // stipple factor
-
-        // Write to the depth buffer:
+        line.style = LineStyle();
+        line.style->color = vsg::vec4{ 1,1,0,1 };
+        line.style->width = 3.0f;
+        line.style->stipple_pattern = 0xffff;
+        line.style->stipple_factor = 1;
         line.write_depth = true;
     }
 

@@ -283,7 +283,7 @@ namespace
             styles.mesh.has_value() ? styles.mesh->depth_offset :
             0.0f;
 
-        Triangle32 temp = {
+        Triangle temp = {
             {}, // we'll fill in the verts below
             {color, color, color},
             {}, // uvs - don't need them

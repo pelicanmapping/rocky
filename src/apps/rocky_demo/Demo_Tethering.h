@@ -36,7 +36,7 @@ auto Demo_Tethering = [](Application& app)
         return;
     }
 
-    const float s = 20.0;
+    const double s = 20.0;
 
     // Make an entity to tether to.
     if (entity == entt::null)
@@ -55,7 +55,7 @@ auto Demo_Tethering = [](Application& app)
 
         // add a mesh plane:
         auto& mesh = app.entities.emplace<Mesh>(entity);
-        vsg::vec3 verts[4] = { { -s, -s, 0 }, {  s, -s, 0 }, {  s,  s, 0 }, { -s,  s, 0 } };
+        vsg::dvec3 verts[4] = { { -s, -s, 0 }, {  s, -s, 0 }, {  s,  s, 0 }, { -s,  s, 0 } };
         unsigned indices[6] = { 0,1,2, 0,2,3 };
         vsg::vec4 color{ 1, 1, 0, 0.55f };
         for (unsigned i = 0; i < 6; ) {
