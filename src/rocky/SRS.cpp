@@ -500,11 +500,6 @@ SRS::SRS(const std::string& h) :
     }
 }
 
-SRS::~SRS()
-{
-    //nop
-}
-
 const char*
 SRS::name() const
 {
@@ -634,15 +629,7 @@ SRS::bounds() const
 SRSOperation
 SRS::to(const SRS& rhs) const
 {
-    SRSOperation result;
-    if (valid() && rhs.valid())
-    {
-        result._from = *this;
-        result._to = rhs;
-        result._nop = (result._from == result._to);
-        return result;
-    }
-    return result;
+    return SRSOperation(*this, rhs);
 }
 
 SRS
@@ -705,8 +692,8 @@ SRS::localToWorldMatrix(const glm::dvec3& origin) const
 
     if (isGeodetic())
     {
-        glm::dvec3 ecef;
-        to(SRS::ECEF).transform(origin, ecef);
+        auto& ellip = ellipsoid();
+        auto ecef = ellip.geodeticToGeocentric(origin);
         return ellipsoid().geocentricToLocalToWorld(ecef);
     }
     else if (isGeocentric())
@@ -720,11 +707,7 @@ SRS::localToWorldMatrix(const glm::dvec3& origin) const
 }
 
 double
-SRS::transformUnits(
-    double input,
-    const SRS& inSRS,
-    const SRS& outSRS,
-    const Angle& latitude)
+SRS::transformUnits(double input, const SRS& inSRS, const SRS& outSRS, const Angle& latitude)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(inSRS.valid() && outSRS.valid(), 0.0);
 
@@ -764,10 +747,7 @@ SRS::transformUnits(
 
 
 double
-SRS::transformUnits(
-    const Distance& distance,
-    const SRS& outSRS,
-    const Angle& latitude)
+SRS::transformUnits(const Distance& distance, const SRS& outSRS, const Angle& latitude)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(outSRS.valid(), distance.value());
 
@@ -808,19 +788,25 @@ SRS::string() const
         return "";
 }
 
-bool
-SRSOperation::valid() const
+
+SRSOperation::SRSOperation(const SRS& from, const SRS& to) :
+    _from(from),
+    _to(to)
 {
-    return _from.valid() && _to.valid() && get_handle() != nullptr;
+    _nop = (_from == _to);
+    if (_from.valid() && _to.valid())
+    {
+        _handle = (void*)g_srs_factory.get_or_create_operation(_from.definition(), _to.definition());
+    }
 }
 
-void*
-SRSOperation::get_handle() const
-{
-    return (void*)g_srs_factory.get_or_create_operation(
-        _from.definition(),
-        _to.definition());
-}
+//void*
+//SRSOperation::get_handle() const
+//{
+//    return (void*)g_srs_factory.get_or_create_operation(
+//        _from.definition(),
+//        _to.definition());
+//}
 
 bool
 SRSOperation::forward(void* handle, double& x, double& y, double& z) const

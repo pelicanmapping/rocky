@@ -15,16 +15,6 @@ GeoPoint::GeoPoint()
     //nop
 }
 
-GeoPoint&
-GeoPoint::operator=(GeoPoint&& rhs)
-{
-    srs = rhs.srs;
-    x = rhs.x, y = rhs.y, z = rhs.z;
-    //_p = rhs._p;
-    rhs.srs = { }; // invalidate rhs
-    return *this;
-}
-
 GeoPoint::GeoPoint(const SRS& in_srs, double in_x, double in_y) :
     srs(in_srs),
     x(in_x), y(in_y), z(0.0)

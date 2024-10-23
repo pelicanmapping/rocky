@@ -58,15 +58,15 @@ namespace ROCKY_NAMESPACE
         const char* name() const;
 
         //! Definition used to initialize this SRS
-        const std::string& definition() const {
+        inline const std::string& definition() const {
             return _definition;
         }
 
         //! Whether this is a valid SRS
-        bool valid() const {
+        inline bool valid() const {
             return _valid;
         }
-        operator bool() const {
+        inline operator bool() const {
             return valid();
         }
 
@@ -108,10 +108,10 @@ namespace ROCKY_NAMESPACE
         bool equivalentTo(const SRS& rhs) const;
 
         //! Whether this SRS is mathematically equivalent to another SRS
-        bool operator == (const SRS& rhs) const {
+        inline bool operator == (const SRS& rhs) const {
             return equivalentTo(rhs);
         }
-        bool operator != (const SRS& rhs) const {
+        inline bool operator != (const SRS& rhs) const {
             return !equivalentTo(rhs);
         }
 
@@ -145,8 +145,6 @@ namespace ROCKY_NAMESPACE
         SRS(SRS&&) = default;
         SRS& operator =(SRS&& rhs) = default;
 
-        ~SRS();
-
         //! Internal SRS representation (for debugging)
         std::string string() const;
 
@@ -175,32 +173,37 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT SRSOperation
     {
     public:
+        SRSOperation() = default;
+
+        SRSOperation(const SRS& from, const SRS& to);
 
         //! Whether this is a valid and legal operation
-        bool valid() const;
-        operator bool() const {
+        bool valid() const {
+            return _handle != nullptr;
+        }
+        inline operator bool() const {
             return valid();
         }
 
         //! Whether this operation is a no-op.
-        bool noop() const {
+        inline bool noop() const {
             return _nop;
         }
 
         //! Source SRS of the operation
-        const SRS& from() const {
+        inline const SRS& from() const {
             return _from;
         }
 
         //! Target SRS of the operation
-        const SRS& to() const {
+        inline const SRS& to() const {
             return _to;
         }
 
         //! Transform a 3-vector
         //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
-        bool transform(const DVEC3A& in, DVEC3B& out) const {
+        inline bool transform(const DVEC3A& in, DVEC3B& out) const {
             out[0] = in[0], out[1] = in[1], out[2] = in[2];
             return _nop? true : forward(get_handle(), out[0], out[1], out[2]);
         }
@@ -208,7 +211,7 @@ namespace ROCKY_NAMESPACE
         //! Transform a 3-vector (symonym for transform() method)
         //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
-        bool operator()(const DVEC3A& in, DVEC3B& out) const {
+        inline bool operator()(const DVEC3A& in, DVEC3B& out) const {
             out[0] = in[0], out[1] = in[1], out[2] = in[2];
             return _nop ? true : forward(get_handle(), out[0], out[1], out[2]);
         }
@@ -216,7 +219,7 @@ namespace ROCKY_NAMESPACE
         //! Transform a range of 3-vectors in place
         //! @return True if all transformations succeeded
         template<typename ITERATOR>
-        bool transformRange(ITERATOR begin, ITERATOR end) const {
+        inline bool transformRange(ITERATOR begin, ITERATOR end) const {
             if (_nop) return true;
             unsigned errors = 0;
             void* handle = get_handle();
@@ -229,7 +232,7 @@ namespace ROCKY_NAMESPACE
         //! Transform an array of 3-vectors in place
         //! @return True if all transformations succeeded
         template<typename DVEC3>
-        bool transformArray(DVEC3* inout, std::size_t count) const {
+        inline bool transformArray(DVEC3* inout, std::size_t count) const {
             return _nop ? true : forward(get_handle(),
                 &inout[0][0], &inout[0][1], &inout[0][2], sizeof(DVEC3), count);
         }
@@ -237,7 +240,7 @@ namespace ROCKY_NAMESPACE
         //! Inverse-transform a 3-vector
         //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
-        bool inverse(const DVEC3A& in, DVEC3B& out) const {
+        inline bool inverse(const DVEC3A& in, DVEC3B& out) const {
             out = { in[0], in[1], in[2] };
             return _nop ? true : inverse(get_handle(), out[0], out[1], out[2]);
         }
@@ -245,7 +248,7 @@ namespace ROCKY_NAMESPACE
         //! Inverse-transform a range of 3-vectors in place
         //! @return True if all transformations succeeded
         template<typename ITERATOR>
-        bool inverseRange(ITERATOR begin, ITERATOR end) const {
+        inline bool inverseRange(ITERATOR begin, ITERATOR end) const {
             if (_nop) return true;
             unsigned errors = 0;
             void* handle = get_handle();
@@ -258,13 +261,13 @@ namespace ROCKY_NAMESPACE
         //! Inverse-transform an array of 3-vectors in place
         //! @return True if all transformations succeeded
         template<typename DVEC3>
-        bool inverseArray(DVEC3* inout, std::size_t count) const {
+        inline bool inverseArray(DVEC3* inout, std::size_t count) const {
             return _nop ? true : inverse(get_handle(),
                 &inout[0][0], &inout[0][1], &inout[0][2], sizeof(DVEC3), count);
         }
 
         //! Error message if something returns false
-        const std::string& lastError() const {
+        inline const std::string& lastError() const {
             return _lastError;
         }
 
@@ -273,19 +276,21 @@ namespace ROCKY_NAMESPACE
         std::string string() const;
 
         // copy/move ops
-        SRSOperation() = default;
         SRSOperation(const SRSOperation& rhs) = default;
         SRSOperation& operator=(const SRSOperation&) = default;
         SRSOperation(SRSOperation&& rhs) noexcept = default;
         SRSOperation& operator=(SRSOperation&&) noexcept = default;
 
     private:
-        SRS _from;
-        SRS _to;
-        bool _nop = false;
+        void* _handle = nullptr;
+        bool _nop = true;
+        SRS _from, _to;
         mutable std::string _lastError;
 
-        void* get_handle() const;
+        inline void* get_handle() const {
+            return _handle;
+        }
+
         bool forward(void* handle, double& x, double& y, double& z) const;
         bool inverse(void* handle, double& x, double& y, double& z) const;
 

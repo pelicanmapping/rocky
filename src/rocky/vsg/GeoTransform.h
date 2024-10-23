@@ -72,12 +72,12 @@ namespace ROCKY_NAMESPACE
 
     protected:
 
-
         struct Data {
             bool dirty = true;
-            GeoPoint worldPos;
             vsg::dmat4 matrix;
             vsg::dmat4 local_matrix;
+            SRS world_srs;
+            SRSOperation pos_to_world;
         };
         util::ViewLocal<Data> _viewlocal;
 

@@ -42,14 +42,21 @@ EntityMotionSystem::update(ECS::time_point time)
 
         view.each([dt](const auto entity, auto& motion, auto& transform)
             {
-                // move the entity using a velocity vector in the local tangent plane
                 auto& pos = transform.node->position;
-                auto l2w = pos.srs.localToWorldMatrix({ pos.x, pos.y, pos.z });
-                auto world = l2w * (motion.velocity * dt);
-                motion.velocity += motion.acceleration * dt;
 
                 if (!motion.world2pos.valid())
+                {
                     motion.world2pos = pos.srs.geocentricSRS().to(pos.srs);
+                    motion.pos2world = pos.srs.to(pos.srs.geocentricSRS());
+                }
+
+                // move the entity using a velocity vector in the local tangent plane
+                glm::dvec3 world;
+                motion.pos2world((glm::dvec3)pos, world);
+                auto l2w = pos.srs.ellipsoid().geocentricToLocalToWorld(world);
+
+                world = l2w * (motion.velocity * dt);
+                motion.velocity += motion.acceleration * dt;
 
                 vsg::dvec3 coord(world.x, world.y, world.z);
                 motion.world2pos(coord, coord);

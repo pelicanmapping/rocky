@@ -331,6 +331,7 @@ namespace ROCKY_NAMESPACE
 
     private:
         SRSOperation world2pos;
+        SRSOperation pos2world;
         friend class EntityMotionSystem;
     };
 

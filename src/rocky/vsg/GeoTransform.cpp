@@ -52,14 +52,20 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix)
     auto& view = _viewlocal[record.getState()->_commandBuffer->viewID];
     if (view.dirty || local_matrix != view.local_matrix)
     {
-        SRS worldSRS;
-        if (record.getValue("worldsrs", worldSRS))
+        if (!view.pos_to_world.valid())
         {
-            if (position.transform(worldSRS, view.worldPos))
+            if (record.getValue("worldsrs", view.world_srs))
             {
-                view.matrix =
-                    to_vsg(worldSRS.localToWorldMatrix(glm::dvec3(view.worldPos.x, view.worldPos.y, view.worldPos.z))) *
-                    local_matrix;
+                view.pos_to_world = position.srs.to(view.world_srs);
+            }
+        }
+
+        if (view.pos_to_world.valid())
+        {
+            glm::dvec3 worldpos;
+            if (view.pos_to_world(glm::dvec3(position.x, position.y, position.z), worldpos))
+            {              
+                view.matrix = to_vsg(view.world_srs.ellipsoid().geocentricToLocalToWorld(worldpos)) * local_matrix;
             }
         }
 

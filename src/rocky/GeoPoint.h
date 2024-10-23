@@ -36,10 +36,8 @@ namespace ROCKY_NAMESPACE
         GeoPoint(const SRS& srs, const T& dvec) :
             GeoPoint(srs, dvec.x, dvec.y, dvec.z) { }
 
-        //! Destruct
-        ~GeoPoint() { }
-
-        //const SRS& srs() const { return _srs; }
+        //! Cast to a vector.
+        explicit operator glm::dvec3 () const { return { x, y, z }; }
 
         //! Transforms this geopoint into another SRS and puts the
         //! output in the "output"
@@ -82,8 +80,8 @@ namespace ROCKY_NAMESPACE
         // copy/move ops
         GeoPoint(const GeoPoint& rhs) = default;
         GeoPoint& operator=(const GeoPoint& rhs) = default;
-        GeoPoint(GeoPoint&& rhs) { *this = rhs; }
-        GeoPoint& operator=(GeoPoint&& rhs);
+        GeoPoint(GeoPoint&& rhs) noexcept = default;
+        GeoPoint& operator=(GeoPoint&& rhs) noexcept = default;
     };
 
 

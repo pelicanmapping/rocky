@@ -75,7 +75,7 @@ namespace
 
                 if (interp == GeodeticInterpolation::GreatCircle)
                 {
-                    ellipsoid.geodesicInterpolate(p1, p2, 0.5, midpoint);
+                    midpoint = ellipsoid.geodesicInterpolate(p1, p2, 0.5);
                 }
                 else // GeodeticInterpolation::RhumbLine
                 {

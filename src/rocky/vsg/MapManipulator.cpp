@@ -695,12 +695,10 @@ MapManipulator::handleTileUpdate(const TileKey& key, vsg::Node* graph, TerrainCa
 #endif
 
 bool
-MapManipulator::createLocalCoordFrame(
-    const vsg::dvec3& worldPos,
-    vsg::dmat4& out_frame) const
+MapManipulator::createLocalCoordFrame(const vsg::dvec3& worldPos, vsg::dmat4& out_frame) const
 {
     if (_worldSRS.valid())
-    {        
+    {
         out_frame = to_vsg(_worldSRS.localToWorldMatrix(to_glm(worldPos)));
     }
     return _worldSRS.valid();
