@@ -131,12 +131,12 @@ $(function() {
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keyword">protected</span>:</div>
 <div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <span class="keyword">struct </span>Data {</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;            <span class="keywordtype">bool</span> dirty = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">GeoPoint</a> worldPos;</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;            vsg::dmat4 matrix;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;            vsg::dmat4 local_matrix;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keyword">struct </span>Data {</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;            <span class="keywordtype">bool</span> dirty = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;            vsg::dmat4 matrix;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;            vsg::dmat4 local_matrix;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> world_srs;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a> pos_to_world;</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        };</div>
 <div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        util::ViewLocal&lt;Data&gt; _viewlocal;</div>
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160; </div>
@@ -145,7 +145,9 @@ $(function() {
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">ROCKY_NAMESPACE::GeoPoint</a></div><div class="ttdef"><b>Definition:</b> GeoPoint.h:17</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_transform_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_transform.html">ROCKY_NAMESPACE::GeoTransform</a></div><div class="ttdef"><b>Definition:</b> GeoTransform.h:37</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_transform_html_a61847b03a95c455f6abe3025c717895a"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_transform.html#a61847b03a95c455f6abe3025c717895a">ROCKY_NAMESPACE::GeoTransform::objectPosition</a></div><div class="ttdeci">const GeoPoint &amp; objectPosition() const override</div><div class="ttdoc">Center position of the object.</div><div class="ttdef"><b>Definition:</b> GeoTransform.h:59</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_positioned_object_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_positioned_object.html">ROCKY_NAMESPACE::PositionedObject</a></div><div class="ttdef"><b>Definition:</b> GeoPoint.h:94</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_positioned_object_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_positioned_object.html">ROCKY_NAMESPACE::PositionedObject</a></div><div class="ttdef"><b>Definition:</b> GeoPoint.h:92</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">ROCKY_NAMESPACE::SRS</a></div><div class="ttdef"><b>Definition:</b> SRS.h:21</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">ROCKY_NAMESPACE::SRSOperation</a></div><div class="ttdef"><b>Definition:</b> SRS.h:174</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

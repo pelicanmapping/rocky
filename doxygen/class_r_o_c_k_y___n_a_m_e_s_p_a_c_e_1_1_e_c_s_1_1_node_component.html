@@ -71,6 +71,7 @@ $(function() {
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">ROCKY_NAMESPACE::ECS::NodeComponent Class Reference</div>  </div>
@@ -90,6 +91,8 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a1ff8002e746bc84771a098c9197e03ed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component.html#a1ff8002e746bc84771a098c9197e03ed">setReferencePoint</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">GeoPoint</a> &amp;p)</td></tr>
+<tr class="separator:a1ff8002e746bc84771a098c9197e03ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a747fd3920c0c134ff4ad07fbea6acc7e"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component.html#a747fd3920c0c134ff4ad07fbea6acc7e">initializeNode</a> (const <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component_1_1_params.html">Params</a> &amp;)</td></tr>
 <tr class="separator:a747fd3920c0c134ff4ad07fbea6acc7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c9881d3afb4a70feea1e758e4a416d5"><td class="memItemLeft" align="right" valign="top"><a id="a6c9881d3afb4a70feea1e758e4a416d5"></a>
@@ -131,6 +134,12 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 entt::entity&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html#adaf25c331b4afa9f666fbe8bd8a02b0e">next_entity</a> = entt::null</td></tr>
 <tr class="memdesc:adaf25c331b4afa9f666fbe8bd8a02b0e inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td class="mdescLeft">&#160;</td><td class="mdescRight">Link to another entity in a collection. <br /></td></tr>
 <tr class="separator:adaf25c331b4afa9f666fbe8bd8a02b0e inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:a81d267e5d6b52eed015c850b170baa4b"><td class="memItemLeft" align="right" valign="top"><a id="a81d267e5d6b52eed015c850b170baa4b"></a>
+vsg::dvec3&#160;</td><td class="memItemRight" valign="bottom"><b>refPoint</b></td></tr>
+<tr class="separator:a81d267e5d6b52eed015c850b170baa4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base class for a <a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s.html" title="Entity Component System support.">ECS</a> <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html">Component</a> that exposes a list of VSG commands. </p>
@@ -164,6 +173,31 @@ entt::entity&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 
 </div>
 </div>
+<a id="a1ff8002e746bc84771a098c9197e03ed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1ff8002e746bc84771a098c9197e03ed">&#9670;&nbsp;</a></span>setReferencePoint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a> ECS::NodeComponent::setReferencePoint </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">GeoPoint</a> &amp;&#160;</td>
+          <td class="paramname"><em>p</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set a reference point for geometry. For preventing precision jitter. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p</td><td>The reference point </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The operation that can transform data from the reference point's <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> into mesh vertices you can add to a geometry attached to this component. </dd></dl>
+
+</div>
+</div>
 <h2 class="groupheader">Member Data Documentation</h2>
 <a id="ab4556dee280b6b35519d9da53a3b208a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab4556dee280b6b35519d9da53a3b208a">&#9670;&nbsp;</a></span>active_ptr</h2>
@@ -180,8 +214,9 @@ entt::entity&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 
 </div>
 </div>
-<hr/>The documentation for this class was generated from the following file:<ul>
+<hr/>The documentation for this class was generated from the following files:<ul>
 <li>src/rocky/vsg/<a class="el" href="_e_c_s_8h_source.html">ECS.h</a></li>
+<li>src/rocky/vsg/ECS.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
