@@ -150,37 +150,34 @@ $(function() {
 <div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160; </div>
 <div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    <span class="keyword">public</span>: <span class="comment">// NodeComponent</span></div>
 <div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160; </div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;        <span class="keywordtype">void</span> initializeNode(<span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component_1_1_params.html">ECS::NodeComponent::Params</a>&amp;) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;        <span class="keywordtype">int</span> featureMask() <span class="keyword">const override</span>;</div>
 <div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160; </div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;        <span class="keywordtype">int</span> featureMask() <span class="keyword">const override</span>;</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160; </div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;        vsg::ref_ptr&lt;detail::BindLineDescriptors&gt; bindCommand;</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;        std::vector&lt;vsg::ref_ptr&lt;detail::LineGeometry&gt;&gt; geometries;</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;        vsg::dvec3 refPoint;</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;        <span class="keyword">friend</span> <span class="keyword">class </span>LineSystem;</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    };</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160; </div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    <span class="comment">// inline implementations</span></div>
-<div class="line"><a name="l00126"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a8a34508bbe7c79621ce8d0fadc3c2c98">  126</a></span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> DVEC3_ITER&gt; <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a8a34508bbe7c79621ce8d0fadc3c2c98">Line::push</a>(DVEC3_ITER begin, DVEC3_ITER end)</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    {</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;        <span class="keyword">auto</span> geom = detail::LineGeometry::create();</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;        <span class="keywordflow">for</span> (DVEC3_ITER i = begin; i != end; ++i)</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;        {</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;            <span class="keyword">auto</span> local = vsg::dvec3(i-&gt;x, i-&gt;y, i-&gt;z) - refPoint;</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;            geom-&gt;push_back(vsg::vec3(local));</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;        }</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;        geometries.push_back(geom);</div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    }</div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;}</div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component.html">ROCKY_NAMESPACE::ECS::NodeComponent</a></div><div class="ttdef"><b>Definition:</b> ECS.h:185</div></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        vsg::ref_ptr&lt;detail::BindLineDescriptors&gt; bindCommand;</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;        std::vector&lt;vsg::ref_ptr&lt;detail::LineGeometry&gt;&gt; geometries;</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;        <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_system_node.html">LineSystemNode</a>;</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    };</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160; </div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    <span class="comment">// inline implementations</span></div>
+<div class="line"><a name="l00123"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a8a34508bbe7c79621ce8d0fadc3c2c98">  123</a></span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> DVEC3_ITER&gt; <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a8a34508bbe7c79621ce8d0fadc3c2c98">Line::push</a>(DVEC3_ITER begin, DVEC3_ITER end)</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    {</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;        <span class="keyword">auto</span> geom = detail::LineGeometry::create();</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;        <span class="keywordflow">for</span> (DVEC3_ITER i = begin; i != end; ++i)</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;        {</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;            <span class="keyword">auto</span> local = vsg::dvec3(i-&gt;x, i-&gt;y, i-&gt;z) - refPoint;</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;            geom-&gt;push_back(vsg::vec3(local));</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;        }</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;        geometries.push_back(geom);</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;    }</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;}</div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component.html">ROCKY_NAMESPACE::ECS::NodeComponent</a></div><div class="ttdef"><b>Definition:</b> ECS.h:48</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html">ROCKY_NAMESPACE::Line</a></div><div class="ttdef"><b>Definition:</b> Line.h:89</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_a8a34508bbe7c79621ce8d0fadc3c2c98"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a8a34508bbe7c79621ce8d0fadc3c2c98">ROCKY_NAMESPACE::Line::push</a></div><div class="ttdeci">void push(DVEC3_ITER begin, DVEC3_ITER end)</div><div class="ttdef"><b>Definition:</b> Line.h:126</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_a8a34508bbe7c79621ce8d0fadc3c2c98"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a8a34508bbe7c79621ce8d0fadc3c2c98">ROCKY_NAMESPACE::Line::push</a></div><div class="ttdeci">void push(DVEC3_ITER begin, DVEC3_ITER end)</div><div class="ttdef"><b>Definition:</b> Line.h:123</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_ab188c1debfcea52c3b487781eabf035d"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ab188c1debfcea52c3b487781eabf035d">ROCKY_NAMESPACE::Line::style</a></div><div class="ttdeci">std::optional&lt; LineStyle &gt; style</div><div class="ttdoc">Dynamic line styling. This is optional.</div><div class="ttdef"><b>Definition:</b> Line.h:95</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_system_node_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_system_node.html">ROCKY_NAMESPACE::LineSystemNode</a></div><div class="ttdef"><b>Definition:</b> LineSystem.h:20</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_bind_line_descriptors_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_bind_line_descriptors.html">ROCKY_NAMESPACE::detail::BindLineDescriptors</a></div><div class="ttdef"><b>Definition:</b> Line.h:69</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_line_geometry_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_line_geometry.html">ROCKY_NAMESPACE::detail::LineGeometry</a></div><div class="ttdef"><b>Definition:</b> Line.h:35</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component_1_1_params_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component_1_1_params.html">ROCKY_NAMESPACE::ECS::NodeComponent::Params</a></div><div class="ttdef"><b>Definition:</b> ECS.h:197</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_style_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_style.html">ROCKY_NAMESPACE::LineStyle</a></div><div class="ttdef"><b>Definition:</b> Line.h:19</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

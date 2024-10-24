@@ -103,26 +103,23 @@ $(function() {
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        <a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a> to_json() <span class="keyword">const override</span>;</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160; </div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keyword">public</span>: <span class="comment">// NodeComponent interface</span></div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        <span class="keywordtype">void</span> initializeNode(<span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component_1_1_params.html">ECS::NodeComponent::Params</a>&amp;) <span class="keyword">override</span>;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        vsg::ref_ptr&lt;vsg::Text&gt; textNode;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        vsg::ref_ptr&lt;vsg::stringValue&gt; valueBuffer;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        vsg::ref_ptr&lt;vsg::StandardLayout&gt; layout;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        vsg::ref_ptr&lt;vsg::Options&gt; options;</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        LabelStyle appliedStyle;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        std::string appliedText;</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    };</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;}</div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component.html">ROCKY_NAMESPACE::ECS::NodeComponent</a></div><div class="ttdef"><b>Definition:</b> ECS.h:185</div></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        vsg::ref_ptr&lt;vsg::Text&gt; textNode;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        vsg::ref_ptr&lt;vsg::stringValue&gt; valueBuffer;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        vsg::ref_ptr&lt;vsg::StandardLayout&gt; layout;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        vsg::ref_ptr&lt;vsg::Options&gt; options;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        LabelStyle appliedStyle;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        std::string appliedText;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label_system_node.html">LabelSystemNode</a>;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    };</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;}</div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component.html">ROCKY_NAMESPACE::ECS::NodeComponent</a></div><div class="ttdef"><b>Definition:</b> ECS.h:48</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label.html">ROCKY_NAMESPACE::Label</a></div><div class="ttdef"><b>Definition:</b> Label.h:28</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label_html_a35dc1d207dc5176af52accf9b43ceaba"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label.html#a35dc1d207dc5176af52accf9b43ceaba">ROCKY_NAMESPACE::Label::style</a></div><div class="ttdeci">LabelStyle style</div><div class="ttdoc">Label style; call dirty() to apply.</div><div class="ttdef"><b>Definition:</b> Label.h:37</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label_html_a9ce8f809f52b55789ed0bf46fe4368a8"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label.html#a9ce8f809f52b55789ed0bf46fe4368a8">ROCKY_NAMESPACE::Label::text</a></div><div class="ttdeci">std::string text</div><div class="ttdoc">Label content; call dirty() to apply.</div><div class="ttdef"><b>Definition:</b> Label.h:34</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label_system_node_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label_system_node.html">ROCKY_NAMESPACE::LabelSystemNode</a></div><div class="ttdef"><b>Definition:</b> LabelSystem.h:18</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a47a3157b68495813746976f5649f0577"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">ROCKY_NAMESPACE::JSON</a></div><div class="ttdeci">std::string JSON</div><div class="ttdoc">json serialization type</div><div class="ttdef"><b>Definition:</b> Common.h:52</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component_1_1_params_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component_1_1_params.html">ROCKY_NAMESPACE::ECS::NodeComponent::Params</a></div><div class="ttdef"><b>Definition:</b> ECS.h:197</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

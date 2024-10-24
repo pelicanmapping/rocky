@@ -79,7 +79,7 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="_mesh_system_8h_source.html">MeshSystem.h</a>&gt;</code></p>
 
-<p>Inherits vsg::Inherit&lt; ECS::VSG_SystemNode, MeshSystemNode &gt;.</p>
+<p>Inherits vsg::Inherit&lt; ECS::SystemNode, MeshSystemNode &gt;, and ROCKY_NAMESPACE::MeshSystem.</p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
@@ -98,18 +98,18 @@ Public Types</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:adeb90a8cb1e4dbe196a7b085b5dc3dd5"><td class="memItemLeft" align="right" valign="top"><a id="adeb90a8cb1e4dbe196a7b085b5dc3dd5"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_system_node.html#adeb90a8cb1e4dbe196a7b085b5dc3dd5">MeshSystemNode</a> (entt::registry &amp;registry)</td></tr>
-<tr class="memdesc:adeb90a8cb1e4dbe196a7b085b5dc3dd5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct the mesh renderer. <br /></td></tr>
-<tr class="separator:adeb90a8cb1e4dbe196a7b085b5dc3dd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab5dafbc2bfdc39f0fc4c02691a32e8be"><td class="memItemLeft" align="right" valign="top"><a id="ab5dafbc2bfdc39f0fc4c02691a32e8be"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_system_node.html#ab5dafbc2bfdc39f0fc4c02691a32e8be">initialize</a> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;) override</td></tr>
-<tr class="memdesc:ab5dafbc2bfdc39f0fc4c02691a32e8be"><td class="mdescLeft">&#160;</td><td class="mdescRight">One time initialization of the system <br  />
+<tr class="memitem:a84ea81958d66398a19c2c4cd653a7bc4"><td class="memItemLeft" align="right" valign="top"><a id="a84ea81958d66398a19c2c4cd653a7bc4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_system_node.html#a84ea81958d66398a19c2c4cd653a7bc4">MeshSystemNode</a> (entt::registry &amp;registry)</td></tr>
+<tr class="memdesc:a84ea81958d66398a19c2c4cd653a7bc4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct the mesh renderer. <br /></td></tr>
+<tr class="separator:a84ea81958d66398a19c2c4cd653a7bc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f9c7835fe5b2e2959828612102772cd"><td class="memItemLeft" align="right" valign="top"><a id="a6f9c7835fe5b2e2959828612102772cd"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_system_node.html#a6f9c7835fe5b2e2959828612102772cd">initializeSystem</a> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;) override</td></tr>
+<tr class="memdesc:a6f9c7835fe5b2e2959828612102772cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">One time initialization of the system <br  />
  <br /></td></tr>
-<tr class="separator:ab5dafbc2bfdc39f0fc4c02691a32e8be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeb29fc203d4e97ebf7d3471c31f1732f"><td class="memItemLeft" align="right" valign="top"><a id="aeb29fc203d4e97ebf7d3471c31f1732f"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>ROCKY_VSG_SYSTEM_HELPER</b> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html">Mesh</a>, helper)</td></tr>
-<tr class="separator:aeb29fc203d4e97ebf7d3471c31f1732f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a6f9c7835fe5b2e2959828612102772cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a557200b7496ba8bceebca4101a6c6b2f"><td class="memItemLeft" align="right" valign="top"><a id="a557200b7496ba8bceebca4101a6c6b2f"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>ROCKY_SYSTEMNODE_HELPER</b> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html">Mesh</a>, helper)</td></tr>
+<tr class="separator:a557200b7496ba8bceebca4101a6c6b2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
