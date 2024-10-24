@@ -9,18 +9,14 @@
 
 namespace ROCKY_NAMESPACE
 {
-    struct IconStyle;
-    class Runtime;
-
     /**
      * Creates commands for rendering icon primitives.
      */
-    class ROCKY_EXPORT IconSystemNode : public vsg::Inherit<ECS::VSG_SystemNode, IconSystemNode>
+    class ROCKY_EXPORT IconSystemNode : public vsg::Inherit<ECS::SystemNode, IconSystemNode>
     {
     public:
         //! Construct the mesh renderer
-        IconSystemNode(entt::registry& registry) :
-            helper(registry) { }
+        IconSystemNode(entt::registry& r);
 
         //! Features supported by this renderer
         enum Features
@@ -33,25 +29,16 @@ namespace ROCKY_NAMESPACE
         static int featureMask(const Icon& icon);
 
         //! Initialize the system (once)
-        void initialize(Runtime&) override;
+        void initializeSystem(Runtime&) override;
 
-        ROCKY_VSG_SYSTEM_HELPER(Icon, helper);
-    };
+        ROCKY_SYSTEMNODE_HELPER(Icon, helper);
 
-    /**
-    * ECS system for managing Icon components.
-    * @see Icon
-    */
-    class ROCKY_EXPORT IconSystem : public ECS::VSG_System
-    {
-    public:
-        IconSystem(entt::registry& registry) :
-            ECS::VSG_System(registry) { }
+    private:
 
-        vsg::ref_ptr<ECS::VSG_SystemNode> getOrCreateNode() override {
-            if (!node)
-                node = IconSystemNode::create(registry);
-            return node;
-        }
+        //! Called by the helper to initialize a new node component.
+        void initializeComponent(Icon& icon, InitContext& c);
+
+        // cache of image descriptors so we can re-use textures
+        std::unordered_map<std::shared_ptr<Image>, vsg::ref_ptr<vsg::DescriptorImage>> diCache;
     };
 }

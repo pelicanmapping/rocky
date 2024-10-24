@@ -15,6 +15,7 @@
 #include <vsg/commands/Draw.h>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 #define VERT_SHADER "shaders/rocky.icon.vert"
 #define FRAG_SHADER "shaders/rocky.icon.frag"
@@ -77,8 +78,18 @@ namespace
     }
 }
 
+IconSystemNode::IconSystemNode(entt::registry& r) :
+    Inherit<ECS::SystemNode,IconSystemNode>(r),
+    helper(r)
+{
+    helper.initializeComponent = [&](Icon& icon, InitContext& context)
+        {
+            this->initializeComponent(icon, context);
+        };
+}
+
 void
-IconSystemNode::initialize(Runtime& runtime)
+IconSystemNode::initializeSystem(Runtime& runtime)
 {
     auto shaderSet = createShaderSet(runtime);
 
@@ -152,6 +163,63 @@ int IconSystemNode::featureMask(const Icon& component)
     return 0;
 }
 
+void
+IconSystemNode::initializeComponent(Icon& icon, InitContext& context)
+{
+    icon.bindCommand = BindIconStyle::create();
+    //icon.bindCommand->_image = icon.imageData;
+    icon.dirty();
+
+    //icon.bindCommand->init(context.layout);
+
+    // assemble the descriptor set for this icon:
+    vsg::Descriptors descriptors;
+
+    // uniform buffer object for dynamic data:
+    auto ubo = vsg::DescriptorBuffer::create(icon.bindCommand->_styleData, BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    descriptors.emplace_back(ubo);
+
+    if (!icon.imageData)
+    {
+        auto image = Image::create(Image::R8G8B8A8_UNORM, 1, 1);
+        image->write(Color::Red, 0, 0);
+        icon.imageData = util::moveImageToVSG(image);
+    }
+
+    // A sampler for the texture:
+    auto sampler = vsg::Sampler::create();
+    sampler->maxLod = 5; // this alone will prompt mipmap generation!
+    sampler->minFilter = VK_FILTER_LINEAR;
+    sampler->magFilter = VK_FILTER_LINEAR;
+    sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    sampler->anisotropyEnable = VK_TRUE; // don't need this for a billboarded icon
+    sampler->maxAnisotropy = 4.0f;
+
+    auto descriptor = vsg::DescriptorImage::create(
+        sampler,
+        icon.imageData,
+        TEXTURE_BINDING,
+        0, // array element (TODO: increment when we change to an array)
+        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+
+    descriptors.emplace_back(descriptor);
+
+    icon.bindCommand->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    icon.bindCommand->layout = context.layout;
+    icon.bindCommand->firstSet = 0;
+    icon.bindCommand->descriptorSet = vsg::DescriptorSet::create(context.layout->setLayouts.front(), descriptors);
+
+
+
+    auto stateGroup = vsg::StateGroup::create();
+    stateGroup->stateCommands.push_back(icon.bindCommand);
+    stateGroup->addChild(icon.geometry);
+
+    icon.node = stateGroup;
+}
 
 
 BindIconStyle::BindIconStyle()
@@ -176,6 +244,7 @@ BindIconStyle::updateStyle(const IconStyle& value)
     _styleData->dirty();
 }
 
+#if 0
 void
 BindIconStyle::init(vsg::ref_ptr<vsg::PipelineLayout> layout)
 {
@@ -184,44 +253,41 @@ BindIconStyle::init(vsg::ref_ptr<vsg::PipelineLayout> layout)
     auto ubo = vsg::DescriptorBuffer::create(_styleData, BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     descriptors.emplace_back(ubo);
 
-    std::shared_ptr<Image> image = _image;
-    if (!image)
+    if (!_image)
     {
-        image = Image::create(Image::R8G8B8A8_UNORM, 1, 1);
+        auto image = Image::create(Image::R8G8B8A8_UNORM, 1, 1);
         image->write(Color::Red, 0, 0);
+        _image = util::moveImageToVSG(image);
     }
 
-    if (image)
-    {
-        auto tex_data = util::moveImageToVSG(image);
+    // A sampler for the texture:
+    auto sampler = vsg::Sampler::create();
+    sampler->maxLod = 5; // this alone will prompt mipmap generation!
+    sampler->minFilter = VK_FILTER_LINEAR;
+    sampler->magFilter = VK_FILTER_LINEAR;
+    sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    sampler->anisotropyEnable = VK_TRUE; // don't need this for a billboarded icon
+    sampler->maxAnisotropy = 4.0f;
 
-        // A sampler for the texture:
-        auto sampler = vsg::Sampler::create();
-        sampler->maxLod = 5; // this alone will prompt mipmap generation!
-        sampler->minFilter = VK_FILTER_LINEAR;
-        sampler->magFilter = VK_FILTER_LINEAR;
-        sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        sampler->anisotropyEnable = VK_TRUE; // don't need this for a billboarded icon
-        sampler->maxAnisotropy = 4.0f;
+    auto descriptor = vsg::DescriptorImage::create(
+        sampler,
+        _imageData,
+        TEXTURE_BINDING,
+        0, // array element (TODO: increment when we change to an array)
+        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
-        auto tex = vsg::DescriptorImage::create(
-            sampler, // IconState::sampler,
-            tex_data,
-            TEXTURE_BINDING,
-            0, // array element (TODO: increment when we change to an array)
-            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-
-        descriptors.emplace_back(tex);
-    }
+    descriptors.emplace_back(descriptor);
 
     this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     this->layout = layout;
     this->firstSet = 0;
+
     this->descriptorSet = vsg::DescriptorSet::create(layout->setLayouts.front(), descriptors);
 }
+#endif
 
 
 IconGeometry::IconGeometry()

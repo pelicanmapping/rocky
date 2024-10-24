@@ -8,6 +8,7 @@
 #include "engine/IconSystem.h"
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 Icon::Icon()
 {
@@ -28,20 +29,6 @@ void
 Icon::dirtyImage()
 {
     node = nullptr;
-}
-
-void
-Icon::initializeNode(const ECS::NodeComponent::Params& params)
-{
-    bindCommand = BindIconStyle::create();
-    bindCommand->_image = image;
-    dirty();
-    bindCommand->init(params.layout);
-
-    auto stateGroup = vsg::StateGroup::create();
-    stateGroup->stateCommands.push_back(bindCommand);
-    stateGroup->addChild(geometry);
-    node = stateGroup;
 }
 
 int

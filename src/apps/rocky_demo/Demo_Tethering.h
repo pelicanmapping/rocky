@@ -47,9 +47,10 @@ auto Demo_Tethering = [](Application& app)
         // add an icon:
         auto io = app.instance.io();
         auto image = io.services.readImageFromURI("https://github.com/gwaldron/osgearth/blob/master/data/airport.png?raw=true", io);
-        if (image.status.ok()) {
+        if (image.status.ok())
+        {
             auto& icon = app.entities.emplace<Icon>(entity);
-            icon.image = image.value;
+            icon.imageData = util::moveImageToVSG(image.value);
             icon.style = IconStyle{ 48.0f, 0.0f }; // pixels, rotation(rad)
         }
 

@@ -13,6 +13,8 @@
 
 namespace ROCKY_NAMESPACE
 {
+    class MeshSystem;
+
     /**
      * Render settings for a mesh.
      */
@@ -162,16 +164,13 @@ namespace ROCKY_NAMESPACE
 
         
     public: // NodeComponent
-        
-        void initializeNode(const ECS::NodeComponent::Params&) override;
 
         int featureMask() const override;
 
     private:
         vsg::ref_ptr<detail::BindMeshDescriptors> bindCommand;
         vsg::ref_ptr<detail::MeshGeometry> geometry;
-        vsg::dvec3 refPoint;
-        friend class MeshSystem;
+        friend class MeshSystemNode;
     };
 
     inline void Mesh::add(const Triangle& tri)

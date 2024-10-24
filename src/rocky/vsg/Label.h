@@ -42,10 +42,6 @@ namespace ROCKY_NAMESPACE
         //! serialize as JSON string
         JSON to_json() const override;
 
-    public: // NodeComponent interface
-
-        void initializeNode(const ECS::NodeComponent::Params&) override;
-
     protected:
         vsg::ref_ptr<vsg::Text> textNode;
         vsg::ref_ptr<vsg::stringValue> valueBuffer;
@@ -53,5 +49,6 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Options> options;
         LabelStyle appliedStyle;
         std::string appliedText;
+        friend class LabelSystemNode;
     };
 }

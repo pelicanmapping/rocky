@@ -16,6 +16,7 @@
 #include <entt/entt.hpp>
 #include <vector>
 #include <chrono>
+#include <type_traits>
 
 namespace ROCKY_NAMESPACE
 {
@@ -41,145 +42,7 @@ namespace ROCKY_NAMESPACE
         };
 
         /**
-        * Base class for all ECS systems.
-        * A "system" is a module that performs operations on a specific Component type.
-        */
-        class ROCKY_EXPORT System
-        {
-        public:
-            //! ECS entity registry
-            entt::registry& registry;
-
-            //! Status of the system; check this before using it
-            //! to make sure it is properly initialized
-            virtual const Status& status() const { return StatusOK; }
-
-            //! Update the system with a time stamp.
-            virtual void update(time_point time) { }
-
-        protected:
-            System(entt::registry& registry_) :
-                registry(registry_) { }
-        };
-
-        /**
-        * Container for a collection of ECS systems.
-        */
-        class ROCKY_EXPORT SystemsManager
-        {
-        public:
-            //! Update all systems with a time stamp.
-            void update(time_point time);
-
-            std::vector<std::shared_ptr<System>> systems;
-        };
-    }
-
-    namespace ECS
-    {
-        /**
-        * Base class for VSG node that mirrors an ECS System.
-        * This node will live in the VSG scene graph and will be able to receive and
-        * respond to VSG traversals, and be responsible for rendering graphics
-        * assoicated with the system's components.
-        */
-        class ROCKY_EXPORT VSG_SystemNode : public vsg::Inherit<vsg::Compilable, VSG_SystemNode>
-        {
-        public:
-            Status status;
-
-            //! Initialize the ECS system (once at startup)
-            virtual void initialize(Runtime& runtime) { }
-
-            //! Update the ECS system (once per frame)
-            virtual void update(Runtime& runtime)
-            {
-                initializeNewComponents(runtime);
-            }
-
-        protected:
-
-            //! Override this to handle any components that need
-            //! initial setup
-            virtual void initializeNewComponents(Runtime& rutime) { }
-        };
-
-        /**
-        * Base class for an ECS System that owns a correspond node in the scene graph,
-        * which is responsible for rendering the system's components.
-        */
-        class VSG_System : public ECS::System
-        {
-        public:
-            //! Create a VSG node for this system, or return the existing one
-            virtual vsg::ref_ptr<VSG_SystemNode> getOrCreateNode() = 0;
-
-            //! Status of this system
-            const Status& status() const override {
-                return node ? node->status : Status_ServiceUnavailable;
-            }
-
-            //! Whether to render this system's components
-            bool active = true;
-
-            vsg::ref_ptr<VSG_SystemNode> node;
-
-
-        protected:
-            VSG_System(entt::registry& registry_) :
-                ECS::System(registry_) { }
-        };
-
-        /**
-        * VSG Group node whose children are VSG_System objects.
-        */
-        class VSG_SystemsGroup : public vsg::Inherit<vsg::Group, VSG_SystemsGroup>
-        {
-        public:
-            //! Given a collection of ECS systems, find each VSG_System and add its node
-            //! to the scene graph.
-            void connect(SystemsManager& manager)
-            {
-                children.clear();
-
-                for (auto& system : manager.systems)
-                {
-                    auto vsg_system = dynamic_cast<VSG_System*>(system.get());
-                    if (vsg_system)
-                    {
-                        auto node = vsg_system->getOrCreateNode();
-                        if (node)
-                        {
-                            addChild(node);
-                        }
-                    }
-                }
-            }
-
-            //! Initialize of all connected system nodes. This should be invoked
-            //! any time a new viewer is created.
-            void initialize(Runtime& runtime)
-            {
-                for (auto& child : children)
-                {
-                    auto node = static_cast<VSG_SystemNode*>(child.get());
-                    node->initialize(runtime);
-                }
-            }
-
-            //! Update all connected system nodes. This should be invoked once per frame.
-            void update(Runtime& runtime)
-            {
-                for (auto& child : children)
-                {
-                    auto node = static_cast<VSG_SystemNode*>(child.get());
-                    node->update(runtime);
-                }
-            } 
-        };
-
-        /**
-        * Base class for a ECS Component that exposes a list of VSG commands.
+        * Base class for a ECS Component that manifests itself as an VSG node.
         */
         class ROCKY_EXPORT NodeComponent : public Component
         {
@@ -190,20 +53,10 @@ namespace ROCKY_NAMESPACE
             //!   SRS into mesh vertices you can add to a geometry attached to this component.
             SRSOperation setReferencePoint(const GeoPoint& p);
 
-            /**
-            * Component initialization parameters for VSG objects
-            */
-            struct Params
-            {
-                vsg::ref_ptr<vsg::PipelineLayout> layout;
-                vsg::ref_ptr<vsg::Options> readerWriterOptions;
-                vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
-            };
-
         public:
             //! Subclass implements to create and VSG objects.
             //! Called by the System if the component's node is nullptr.
-            virtual void initializeNode(const Params&) { }
+            //void initializeNode(const Params& params, Args&& ...args) { }
 
             //! Mask of features pertaining to this component instance, if applicable
             virtual int featureMask() const { return 0; }
@@ -232,6 +85,99 @@ namespace ROCKY_NAMESPACE
             vsg::dvec3 refPoint;
         };
 
+        class ROCKY_EXPORT System
+        {
+        public:
+            //! ECS entity registry
+            entt::registry& registry;
+
+            //! Status
+            Status status;
+
+            //! Initialize the ECS system (once at startup)
+            virtual void initializeSystem(Runtime& runtime) { }
+
+            //! Update the ECS system (once per frame)
+            virtual void update(Runtime& runtime)
+            {
+                initializeNewComponents(runtime);
+            }
+
+        protected:
+            System(entt::registry& in_registry) :
+                registry(in_registry) { }
+
+            //! Override this to handle any components that need initial setup
+            virtual void initializeNewComponents(Runtime& rutime) { }
+        };
+
+        /**
+        * Base class for VSG node that mirrors an ECS System.
+        * This node will live in the VSG scene graph and will be able to receive and
+        * respond to VSG traversals, and be responsible for rendering graphics
+        * assoicated with the system's components.
+        */
+        class ROCKY_EXPORT SystemNode :
+            public vsg::Inherit<vsg::Compilable, SystemNode>,
+            public System
+        {
+        public:
+            struct InitContext
+            {
+                vsg::ref_ptr<vsg::PipelineLayout> layout;
+                vsg::ref_ptr<vsg::Options> readerWriterOptions;
+                vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
+            };
+
+        protected:
+            SystemNode(entt::registry& registry_) :
+                System(registry_) { }
+        };
+
+        /**
+        * VSG Group node whose children are VSG_System objects. It can also hold/manager
+        * non-node systems.
+        */
+        class SystemsGroup : public vsg::Inherit<vsg::Group, SystemsGroup>
+        {
+        public:
+            void add(vsg::ref_ptr<SystemNode> system)
+            {
+                addChild(system);
+                systems.emplace_back(system.get());
+            }
+
+            void add(std::shared_ptr<System> system)
+            {
+                non_node_systems.emplace_back(system);
+                systems.emplace_back(system.get());
+            }
+
+            //! Initialize of all connected system nodes. This should be invoked
+            //! any time a new viewer is created.
+            void initialize(Runtime& runtime)
+            {
+                for (auto& system : systems)
+                {
+                    system->initializeSystem(runtime);
+                }
+            }
+
+            //! Update all connected system nodes. This should be invoked once per frame.
+            void update(Runtime& runtime)
+            {
+                for (auto& system : systems)
+                {
+                    system->update(runtime);
+                }
+            } 
+
+        private:
+            std::vector<System*> systems;
+            std::vector<std::shared_ptr<System>> non_node_systems;
+            // node: node systems are group children.
+        };
+
 
         /**
         * Helper class for making systems that operate on Component types
@@ -242,23 +188,28 @@ namespace ROCKY_NAMESPACE
         * each component under the Graphics Pipeline appropiate for its
         * rendering properties.
         */
-        template<class T> // T must inherit from NodeComponent
-        class VSG_SystemHelper
+        template<class COMPONENT>
+        class SystemNodeHelper
         {
+            static_assert(std::is_base_of<NodeComponent, COMPONENT>::value, "COMPONENT must be derived from NodeComponent");
+
         public:
             //! Construct the system helper object.
-            VSG_SystemHelper(entt::registry& registry_) :
+            SystemNodeHelper(entt::registry& registry_) :
                 registry(registry_) { }
 
             //! Destruct the helper, expressly destroying any Vulkan objects
             //! that it created immediately
-            ~VSG_SystemHelper()
+            ~SystemNodeHelper()
             {
                 pipelines.clear();
             }
 
             // ECS entity registry reference
             entt::registry& registry;
+
+            // component initialization function to be installed by the system
+            std::function<void(COMPONENT&, SystemNode::InitContext&)> initializeComponent;
 
             // The configuration and command list for a graphics pipeline
             // configured for a specific set of features. This setup 
@@ -344,6 +295,7 @@ namespace ROCKY_NAMESPACE
         friend class EntityMotionSystem;
     };
 
+
     /**
     * ECS System to process Motion components
     */
@@ -351,29 +303,33 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Constructor
-        EntityMotionSystem(entt::registry& r) : 
-            ECS::System(r) { }
+        static std::shared_ptr<EntityMotionSystem> create(entt::registry& r) {
+            return std::shared_ptr<EntityMotionSystem>(new EntityMotionSystem(r));
+        }
 
         //! Called to update the transforms
-        void update(ECS::time_point time) override;
+        void update(Runtime& runtime) override;
 
     private:
+        //! Constructor
+        EntityMotionSystem(entt::registry& r) :
+            ECS::System(r) { }
+
         ECS::time_point last_time = ECS::time_point::min();
     };
 
 
 
-
     //! Pass-thru for VSG visitors
-    template<class T>
-    inline void ECS::VSG_SystemHelper<T>::accept(vsg::Visitor& v)
+    template<class COMPONENT>
+    inline void ECS::SystemNodeHelper<COMPONENT>::accept(vsg::Visitor& v)
     {
         for (auto& pipeline : pipelines)
         {
             pipeline.commands->accept(v);
         }
 
-        registry.view<T>().each([&](const auto e, auto& component)
+        registry.view<COMPONENT>().each([&](const auto e, auto& component)
             {
                 if (component.node)
                     component.node->accept(v);
@@ -381,23 +337,23 @@ namespace ROCKY_NAMESPACE
     }
     
     //! Pass-thru for VSG const visitors
-    template<class T>
-    inline void ECS::VSG_SystemHelper<T>::accept(vsg::ConstVisitor& v) const
+    template<class COMPONENT>
+    inline void ECS::SystemNodeHelper<COMPONENT>::accept(vsg::ConstVisitor& v) const
     {
         for (auto& pipeline : pipelines)
         {
             pipeline.commands->accept(v);
         }
 
-        registry.view<T>().each([&](const auto e, auto& component)
+        registry.view<COMPONENT>().each([&](const auto e, auto& component)
             {
                 if (component.node)
                     component.node->accept(v);
             });
     }
 
-    template<class T>
-    inline void ECS::VSG_SystemHelper<T>::compile(vsg::Context& context)
+    template<class COMPONENT>
+    inline void ECS::SystemNodeHelper<COMPONENT>::compile(vsg::Context& context)
     {
         // Compile the pipelines
         for (auto& pipeline : pipelines)
@@ -407,23 +363,23 @@ namespace ROCKY_NAMESPACE
 
         // Compile the components
         util::SimpleCompiler compiler(context);
-        auto view = registry.view<T>();
+        auto view = registry.view<COMPONENT>();
         view.each([&](const auto entity, auto& component)
             {
                 component.node->accept(compiler);
             });
     }
 
-    template<class T>
-    inline void ECS::VSG_SystemHelper<T>::record(vsg::RecordTraversal& rt) const
+    template<class COMPONENT>
+    inline void ECS::SystemNodeHelper<COMPONENT>::record(vsg::RecordTraversal& rt) const
     {
         const vsg::dmat4 identity_matrix = vsg::dmat4(1.0);
 
         // Get an optimized view of all this system's components:
-        auto view = registry.view<T>();
+        auto view = registry.view<COMPONENT>();
 
         using Entry = struct {
-            const T& component;
+            const COMPONENT& component;
             entt::entity entity;
         };
 
@@ -432,7 +388,7 @@ namespace ROCKY_NAMESPACE
         // store them all together
         std::vector<std::vector<Entry>> render_set(!pipelines.empty() ? pipelines.size() : 1);
 
-        view.each([&](const entt::entity entity, const T& component)
+        view.each([&](const entt::entity entity, const COMPONENT& component)
             {
                 // Is the component visible?
                 if (*component.active_ptr)
@@ -486,21 +442,24 @@ namespace ROCKY_NAMESPACE
         }
     }
 
-    template<class T>
-    inline void ECS::VSG_SystemHelper<T>::initializeNewComponents(Runtime& runtime)
+    template<class COMPONENT>
+    inline void ECS::SystemNodeHelper<COMPONENT>::initializeNewComponents(Runtime& runtime)
     {
         // Components with VSG elements need to create and compile those
         // elements before we can render them. These get put on the 
         // initialization list by the record traversal.
         if (!entities_to_initialize.empty())
         {
-            NodeComponent::Params params;
-            params.readerWriterOptions = runtime.readerWriterOptions;
-            params.sharedObjects = runtime.sharedObjects;
+            SystemNode::InitContext context
+            {
+                {}, // will fill this in below
+                runtime.readerWriterOptions,
+                runtime.sharedObjects
+            };
 
             for (auto& entity : entities_to_initialize)
             {
-                auto& component = registry.get<T>(entity);
+                auto& component = registry.get<COMPONENT>(entity);
 
                 // If it's marked dirty, dispose of it properly
                 if (component.node && component.nodeDirty)
@@ -514,12 +473,15 @@ namespace ROCKY_NAMESPACE
                     // if we're using pipelines, find the one matching this
                     // component's feature set:
                     if (pipelines.empty())
-                        params.layout = { };
+                        context.layout = { };
                     else
-                        params.layout = pipelines[component.featureMask()].config->layout;
+                        context.layout = pipelines[component.featureMask()].config->layout;
 
                     // Tell the component to create its VSG node(s)
-                    component.initializeNode(params);
+                    if (initializeComponent)
+                    {
+                        initializeComponent(component, context);
+                    }
 
                     // TODO: Replace this will some error checking
                     ROCKY_SOFT_ASSERT(component.node);
@@ -540,8 +502,8 @@ namespace ROCKY_NAMESPACE
     }
 }
 
-#define ROCKY_VSG_SYSTEM_HELPER(TYPE, MEMBER) \
-    ROCKY_NAMESPACE::ECS::VSG_SystemHelper<TYPE> MEMBER; \
+#define ROCKY_SYSTEMNODE_HELPER(COMPONENT, MEMBER) \
+    ROCKY_NAMESPACE::ECS::SystemNodeHelper<COMPONENT> MEMBER; \
     void accept(vsg::Visitor& v) override { MEMBER.accept(v); } \
     void accept(vsg::ConstVisitor& v) const override { MEMBER.accept(v); } \
     void compile(vsg::Context& context) override { MEMBER.compile(context); } \

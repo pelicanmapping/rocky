@@ -12,15 +12,20 @@ namespace ROCKY_NAMESPACE
     class Runtime;
     class MeshSystemNode;
 
+    class ROCKY_EXPORT MeshSystem
+    {
+    };
+
     /**
     * VSG node that renders Mesh components.
     */
-    class ROCKY_EXPORT MeshSystemNode : public vsg::Inherit<ECS::VSG_SystemNode, MeshSystemNode>
+    class ROCKY_EXPORT MeshSystemNode :
+        public vsg::Inherit<ECS::SystemNode, MeshSystemNode>,
+        public MeshSystem
     {
     public:
         //! Construct the mesh renderer
-        MeshSystemNode(entt::registry& registry) :
-            helper(registry) { }
+        MeshSystemNode(entt::registry& registry);
 
         //! Supported features in a mask format
         enum Features
@@ -37,11 +42,17 @@ namespace ROCKY_NAMESPACE
         static int featureMask(const Mesh& mesh);
 
         //! One time initialization of the system        
-        void initialize(Runtime&) override;
+        void initializeSystem(Runtime&) override;
 
-        ROCKY_VSG_SYSTEM_HELPER(Mesh, helper);
+        ROCKY_SYSTEMNODE_HELPER(Mesh, helper);
+
+    private:
+
+        //! Called by the helper to initialize a new node component.
+        void initializeComponent(Mesh& mesh, InitContext& c);
     };
 
+#if 0
     /**
      * Creates commands for rendering mesh primitives and holds the singleton pipeline
      * configurator for their drawing state.
@@ -58,22 +69,30 @@ namespace ROCKY_NAMESPACE
             return node;
         }
     };
-
+#endif
 
     //TODO-- Move this into its own header.
+
+    class ROCKY_EXPORT NodeSystem
+    {
+    };
 
     /**
     * VSG node that renders Node components (just plain vsg nodes)
     */
-    class ROCKY_EXPORT NodeSystemNode : public vsg::Inherit<ECS::VSG_SystemNode, NodeSystemNode>
+    class ROCKY_EXPORT NodeSystemNode :
+        public vsg::Inherit<ECS::SystemNode, NodeSystemNode>,
+        public NodeSystem
     {
     public:
         NodeSystemNode(entt::registry& registry) :
+            Inherit<ECS::SystemNode, NodeSystemNode>(registry),
             helper(registry) { }
 
-        ROCKY_VSG_SYSTEM_HELPER(ECS::NodeComponent, helper);
+        ROCKY_SYSTEMNODE_HELPER(ECS::NodeComponent, helper);
     };
 
+#if 0
     /**
     * System for managing vsg Nodes
     */
@@ -89,4 +108,5 @@ namespace ROCKY_NAMESPACE
             return node;
         }
     };
+#endif
 }

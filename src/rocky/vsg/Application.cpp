@@ -185,8 +185,10 @@ Application::ctor(int& argc, char** argv)
         commandLineStatus = loadMapFile(commandLine[1], *mapNode, instance);
     }
 
+#if 0
     // install the ECS systems that will render components.
-    ecs.systems.emplace_back(std::make_shared<MeshSystem>(entities));
+    //ecs.systems.emplace_back(std::make_shared<MeshSystem>(entities));
+    ecs.systems.emplace_back(MeshSystemNode::create(entities));
     ecs.systems.emplace_back(std::make_shared<LineSystem>(entities));
     ecs.systems.emplace_back(std::make_shared<NodeSystem>(entities));
     ecs.systems.emplace_back(std::make_shared<IconSystem>(entities));
@@ -199,6 +201,25 @@ Application::ctor(int& argc, char** argv)
     // This way they will all receive the typical VSG traversals (accept, record, compile, etc.)
     ecs_node = ECS::VSG_SystemsGroup::create();
     ecs_node->connect(ecs);
+
+    ecs_node = ECS::VSG_SystemsGroup::create();
+    ecs_node->addChild(MeshSystemNode::create(entities));
+    ecs_node->addChild(LineSystemNode::create(entities));
+    ecs_node->addChild(NodeSystemNode::create(entities));
+    ecs_node->addChild(IconSystemNode::create(entities));
+    ecs_node->addChild(LabelSystemNode::create(entities));
+    ecs_node->systems.emplace(EntityMotionSystem::create(entities));
+#endif
+
+    ecs_node = ECS::SystemsGroup::create();
+
+    ecs_node->add(MeshSystemNode::create(entities));
+    ecs_node->add(LineSystemNode::create(entities));
+    ecs_node->add(NodeSystemNode::create(entities));
+    ecs_node->add(IconSystemNode::create(entities));
+    ecs_node->add(LabelSystemNode::create(entities));
+
+    ecs_node->add(EntityMotionSystem::create(entities));
 
     mainScene->addChild(ecs_node);
 }
@@ -308,7 +329,7 @@ namespace
             app.mapNode->update(app.viewer->getFrameStamp());
             
             // ECS updates - rendering or modifying entities
-            app.ecs.update(app.viewer->getFrameStamp()->time);
+            //app.ecs.update(app.viewer->getFrameStamp()->time);
             app.ecs_node->update(app.instance.runtime());
 
             // User update

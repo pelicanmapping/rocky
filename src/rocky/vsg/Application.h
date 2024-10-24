@@ -76,7 +76,6 @@ namespace ROCKY_NAMESPACE
     public: // public properties
 
         entt::registry entities;
-        ECS::SystemsManager ecs;
 
         rocky::InstanceVSG instance;
         vsg::ref_ptr<rocky::MapNode> mapNode;
@@ -84,7 +83,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Viewer> viewer;
         vsg::ref_ptr<vsg::Group> root;
         vsg::ref_ptr<vsg::Group> mainScene;
-        vsg::ref_ptr<ECS::VSG_SystemsGroup> ecs_node;
+        vsg::ref_ptr<ECS::SystemsGroup> ecs_node;
         std::shared_ptr<DisplayManager> displayManager;
         bool autoCreateWindow = true;
         Status commandLineStatus;

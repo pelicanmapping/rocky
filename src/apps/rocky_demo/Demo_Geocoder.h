@@ -45,7 +45,7 @@ auto Demo_Geocoder = [](Application& app)
 
         // Attach the new Icon and set up its properties:
         auto& icon = app.entities.emplace<Icon>(entity);
-        icon.image = image.value;
+        icon.imageData = util::moveImageToVSG(image.value);
         icon.style = IconStyle{ 32, 0.0f }; // pixel size, rotation(radians)
         icon.active = false;
 

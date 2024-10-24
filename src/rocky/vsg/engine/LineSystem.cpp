@@ -11,6 +11,11 @@
 #include <vsg/state/ViewDependentState.h>
 #include <vsg/commands/DrawIndexed.h>
 
+#include <vsg/nodes/CullNode.h>
+#include <vsg/utils/ComputeBounds.h>
+#include <vsg/nodes/DepthSorted.h>
+#include <vsg/nodes/StateGroup.h>
+
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
 
@@ -68,8 +73,17 @@ namespace
     }
 }
 
+LineSystemNode::LineSystemNode(entt::registry& registry) :
+    vsg::Inherit<ECS::SystemNode, LineSystemNode>(registry),
+    helper(registry)
+{
+    helper.initializeComponent = [this](Line& line, InitContext& context) {
+        this->initializeComponent(line, context);
+    };
+}
+
 void
-LineSystemNode::initialize(Runtime& runtime)
+LineSystemNode::initializeSystem(Runtime& runtime)
 {
     // Now create the pipeline and stategroup to bind it
     auto shaderSet = createLineShaderSet(runtime);
@@ -107,8 +121,6 @@ LineSystemNode::initialize(Runtime& runtime)
         // always both
         PipelineUtils::enableViewDependentData(c.config);
 
-
-
         struct SetPipelineStates : public vsg::Visitor
         {
             int feature_mask;
@@ -144,6 +156,62 @@ LineSystemNode::initialize(Runtime& runtime)
         c.commands->children.push_back(c.config->bindGraphicsPipeline);
         c.commands->children.push_back(PipelineUtils::createViewDependentBindCommand(c.config));
     }
+}
+
+void
+LineSystemNode::initializeComponent(Line& line, InitContext& context)
+{
+    auto cull = vsg::CullNode::create();
+
+    vsg::ref_ptr<vsg::Group> geom_parent;
+
+    if (line.style.has_value())
+    {
+        line.bindCommand = BindLineDescriptors::create();
+        line.dirty();
+        line.bindCommand->init(context.layout);
+
+        auto sg = vsg::StateGroup::create();
+        sg->stateCommands.push_back(line.bindCommand);
+        geom_parent = sg;
+
+        if (line.refPoint != vsg::dvec3())
+        {
+            auto localizer = vsg::MatrixTransform::create(vsg::translate(line.refPoint));
+            localizer->addChild(sg);
+            cull->child = localizer;
+        }
+        else
+        {
+            cull->child = sg;
+        }
+    }
+    else
+    {
+        if (line.refPoint != vsg::dvec3())
+        {
+            auto localizer = vsg::MatrixTransform::create(vsg::translate(line.refPoint));
+            cull->child = localizer;
+            geom_parent = localizer;
+        }
+        else
+        {
+            auto group = vsg::Group::create();
+            cull->child = group;
+            geom_parent = group;
+        }
+    }
+
+    for (auto& geom : line.geometries)
+    {
+        geom_parent->addChild(geom);
+    }
+
+    vsg::ComputeBounds cb;
+    cull->child->accept(cb);
+    cull->bound.set((cb.bounds.min + cb.bounds.max) * 0.5, vsg::length(cb.bounds.min - cb.bounds.max) * 0.5);
+
+    line.node = cull;
 }
 
 int LineSystemNode::featureMask(const Line& c)

@@ -39,7 +39,7 @@ auto Demo_Icon = [](Application& app)
 
         // Attach the new Icon and set up its properties:
         auto& icon = app.entities.emplace<Icon>(entity);
-        icon.image = image.value;
+        icon.imageData = util::moveImageToVSG(image.value);
         icon.style = IconStyle{ 75, 0.0f }; // pixel size, rotation(radians)
 
         // Transform to place the icon:

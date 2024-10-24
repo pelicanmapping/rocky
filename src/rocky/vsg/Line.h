@@ -111,15 +111,12 @@ namespace ROCKY_NAMESPACE
 
     public: // NodeComponent
 
-        void initializeNode(const ECS::NodeComponent::Params&) override;
-
         int featureMask() const override;
 
     private:
         vsg::ref_ptr<detail::BindLineDescriptors> bindCommand;
         std::vector<vsg::ref_ptr<detail::LineGeometry>> geometries;
-        vsg::dvec3 refPoint;
-        friend class LineSystem;
+        friend class LineSystemNode;
     };
 
     // inline implementations

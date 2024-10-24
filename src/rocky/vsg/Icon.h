@@ -20,42 +20,42 @@ namespace ROCKY_NAMESPACE
         float padding[2];
     };
 
-    /**
-    * VSG command to apply an IconStyle
-    */
-    class ROCKY_EXPORT BindIconStyle : public vsg::Inherit<vsg::BindDescriptorSet, BindIconStyle>
+    namespace detail
     {
-    public:
-        //! Construct a default styling command
-        BindIconStyle();
+        /**
+        * VSG command to apply an IconStyle
+        */
+        class ROCKY_EXPORT BindIconStyle : public vsg::Inherit<vsg::BindDescriptorSet, BindIconStyle>
+        {
+        public:
+            //! Construct a default styling command
+            BindIconStyle();
 
-        //! Initialize this command with the associated layout
-        void init(vsg::ref_ptr<vsg::PipelineLayout> layout);
+            //! Refresh the data buffer contents on the GPU
+            void updateStyle(const IconStyle&);
 
-        //! Refresh the data buffer contents on the GPU
-        void updateStyle(const IconStyle&);
+            vsg::ref_ptr<vsg::Data> _image;
+            vsg::ref_ptr<vsg::ubyteArray> _styleData;
+            vsg::ref_ptr<vsg::Data> _imageData;
+        };
 
-        std::shared_ptr<Image> _image;
-        vsg::ref_ptr<vsg::ubyteArray> _styleData;
-        vsg::ref_ptr<vsg::Data> _imageData;
-    };
+        /**
+        * Command to render Icon geometry
+        */
+        class ROCKY_EXPORT IconGeometry : public vsg::Inherit<vsg::Geometry, IconGeometry>
+        {
+        public:
+            //! Construct a new line string geometry node
+            IconGeometry();
 
-    /**
-    * Command to render Icon geometry
-    */
-    class ROCKY_EXPORT IconGeometry : public vsg::Inherit<vsg::Geometry, IconGeometry>
-    {
-    public:
-        //! Construct a new line string geometry node
-        IconGeometry();
+            //! Recompile the geometry after making changes.
+            //! TODO: just make it dynamic instead
+            void compile(vsg::Context&) override;
 
-        //! Recompile the geometry after making changes.
-        //! TODO: just make it dynamic instead
-        void compile(vsg::Context&) override;
-
-    protected:
-        vsg::ref_ptr<vsg::Draw> _drawCommand;
-    };
+        protected:
+            vsg::ref_ptr<vsg::Draw> _drawCommand;
+        };
+    }
 
     /**
     * Icon Component - an icon is a 2D billboard with a texture
@@ -72,6 +72,7 @@ namespace ROCKY_NAMESPACE
 
         //! Image to use for the icon texture
         std::shared_ptr<Image> image;
+        vsg::ref_ptr<vsg::Data> imageData;
 
         //! serialize as JSON string
         std::string to_json() const override;
@@ -83,13 +84,11 @@ namespace ROCKY_NAMESPACE
 
     public: // NodeComponent
 
-        void initializeNode(const ECS::NodeComponent::Params&) override;
-
         int featureMask() const override;
 
     private:
-        vsg::ref_ptr<BindIconStyle> bindCommand;
-        vsg::ref_ptr<IconGeometry> geometry;
-        friend class IconSystem;
+        vsg::ref_ptr<detail::BindIconStyle> bindCommand;
+        vsg::ref_ptr<detail::IconGeometry> geometry;
+        friend class IconSystemNode;
     };
 }

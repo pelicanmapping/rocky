@@ -41,6 +41,8 @@ auto Demo_Simulation = [](Application& app)
             std::mt19937 mt;
             std::uniform_real_distribution<float> rand_unit(0.0, 1.0);
 
+            auto image_data = util::moveImageToVSG(image.value);
+
             for (unsigned i = 0; i < num_platforms; ++i)
             {
                 // Create a host entity:
@@ -49,7 +51,7 @@ auto Demo_Simulation = [](Application& app)
                 {
                     // attach an icon to the host:
                     auto& icon = app.entities.emplace<Icon>(entity);
-                    icon.image = image.value->clone();
+                    icon.imageData = image_data;
                     icon.style = IconStyle{ 16.0f + rand_unit(mt) * 16.0f, 0.0f }; // pixels, rotation(rad)
                 }
 
@@ -62,7 +64,7 @@ auto Demo_Simulation = [](Application& app)
 
                 // Add a motion component to animate the entity:
                 auto& motion = app.entities.emplace<Motion>(entity);
-                motion.velocity = { -75000 + rand_unit(mt) * 150000, 0.0, 0.0 };
+                //motion.velocity = { -75000 + rand_unit(mt) * 150000, 0.0, 0.0 };
 
                 platforms.emplace(entity);
             }

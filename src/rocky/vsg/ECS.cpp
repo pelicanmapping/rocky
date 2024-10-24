@@ -47,17 +47,10 @@ ECS::NodeComponent::setReferencePoint(const GeoPoint& point)
 }
 
 void
-ECS::SystemsManager::update(ECS::time_point time)
+EntityMotionSystem::update(Runtime& runtime)
 {
-    for (auto& system : systems)
-    {
-        system->update(time);
-    }
-}
+    auto time = runtime.viewer->getFrameStamp()->time;
 
-void
-EntityMotionSystem::update(ECS::time_point time)
-{
     if (last_time != ECS::time_point::min())
     {
         // delta seconds since last tick:
@@ -68,27 +61,33 @@ EntityMotionSystem::update(ECS::time_point time)
 
         view.each([dt](const auto entity, auto& motion, auto& transform)
             {
-                auto& pos = transform.node->position;
+                const glm::dvec3 zero{ 0.0, 0.0, 0.0 };
 
-                if (!motion.world2pos.valid())
+                if (motion.velocity != zero)
                 {
-                    motion.world2pos = pos.srs.geocentricSRS().to(pos.srs);
-                    motion.pos2world = pos.srs.to(pos.srs.geocentricSRS());
+                    auto& pos = transform.node->position;
+
+                    if (!motion.world2pos.valid())
+                    {
+                        motion.world2pos = pos.srs.geocentricSRS().to(pos.srs);
+                        motion.pos2world = pos.srs.to(pos.srs.geocentricSRS());
+                    }
+
+                    // move the entity using a velocity vector in the local tangent plane
+                    glm::dvec3 world;
+                    motion.pos2world((glm::dvec3)pos, world);
+                    auto l2w = pos.srs.ellipsoid().geocentricToLocalToWorld(world);
+
+                    world = l2w * (motion.velocity * dt);
+
+                    vsg::dvec3 coord(world.x, world.y, world.z);
+                    motion.world2pos(coord, coord);
+
+                    pos.x = coord.x, pos.y = coord.y, pos.z = coord.z;
+                    transform.node->dirty();
                 }
 
-                // move the entity using a velocity vector in the local tangent plane
-                glm::dvec3 world;
-                motion.pos2world((glm::dvec3)pos, world);
-                auto l2w = pos.srs.ellipsoid().geocentricToLocalToWorld(world);
-
-                world = l2w * (motion.velocity * dt);
                 motion.velocity += motion.acceleration * dt;
-
-                vsg::dvec3 coord(world.x, world.y, world.z);
-                motion.world2pos(coord, coord);
-
-                pos.x = coord.x, pos.y = coord.y, pos.z = coord.z;
-                transform.node->dirty();
             });
     }
     last_time = time;

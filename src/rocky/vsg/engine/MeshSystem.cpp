@@ -12,6 +12,10 @@
 #include <vsg/state/ViewDependentState.h>
 #include <vsg/commands/DrawIndexed.h>
 
+#include <vsg/nodes/CullNode.h>
+#include <vsg/nodes/DepthSorted.h>
+#include <vsg/utils/ComputeBounds.h>
+
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
 
@@ -74,8 +78,17 @@ namespace
     }
 }
 
+MeshSystemNode::MeshSystemNode(entt::registry& registry) :
+    vsg::Inherit<ECS::SystemNode, MeshSystemNode>(registry),
+    helper(registry)
+{
+    helper.initializeComponent = [this](Mesh& mesh, InitContext& context) {
+        this->initializeComponent(mesh, context);
+    };
+}
+
 void
-MeshSystemNode::initialize(Runtime& runtime)
+MeshSystemNode::initializeSystem(Runtime& runtime)
 {
     auto shaderSet = createShaderSet(runtime);
 
@@ -158,6 +171,58 @@ MeshSystemNode::initialize(Runtime& runtime)
         c.commands = vsg::Commands::create();
         c.commands->addChild(c.config->bindGraphicsPipeline);
     }
+}
+
+void
+MeshSystemNode::initializeComponent(Mesh& mesh, InitContext& context)
+{
+    auto cull = vsg::CullNode::create();
+
+    vsg::ref_ptr<vsg::Group> parent;
+
+    if (mesh.style.has_value() || mesh.texture)
+    {
+        mesh.bindCommand = BindMeshDescriptors::create();
+        if (mesh.texture)
+            mesh.bindCommand->_imageInfo = mesh.texture;
+        mesh.dirty();
+        mesh.bindCommand->init(context.layout);
+
+        auto sg = vsg::StateGroup::create();
+        sg->stateCommands.push_back(mesh.bindCommand);
+
+        if (mesh.refPoint != vsg::dvec3())
+        {
+            auto mt = vsg::MatrixTransform::create(vsg::translate(mesh.refPoint));
+            mt->addChild(mesh.geometry);
+            sg->addChild(mt);
+        }
+        else
+        {
+            sg->addChild(mesh.geometry);
+        }
+
+        cull->child = sg;
+    }
+    else
+    {
+        if (mesh.refPoint != vsg::dvec3())
+        {
+            auto mt = vsg::MatrixTransform::create(vsg::translate(mesh.refPoint));
+            mt->addChild(mesh.geometry);
+            cull->child = mt;
+        }
+        else
+        {
+            cull->child = mesh.geometry;
+        }
+    }
+
+    vsg::ComputeBounds cb;
+    cull->child->accept(cb);
+    cull->bound.set((cb.bounds.min + cb.bounds.max) * 0.5, vsg::length(cb.bounds.min - cb.bounds.max) * 0.5);
+
+    mesh.node = cull;
 }
 
 int MeshSystemNode::featureMask(const Mesh& mesh)
