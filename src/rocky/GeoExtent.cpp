@@ -217,7 +217,7 @@ GeoExtent::splitAcrossAntimeridian(GeoExtent& out_west, GeoExtent& out_east) con
     else if ( !_srs.isGeodetic() )
     {
         //note: may not actually work.
-        GeoExtent latlong_extent = transform(_srs.geoSRS());
+        GeoExtent latlong_extent = transform(_srs.geodeticSRS());
         GeoExtent w, e;
         if (latlong_extent.splitAcrossAntimeridian(w, e))
         {
@@ -497,8 +497,8 @@ GeoExtent::intersects(const GeoExtent& rhs, bool checkSRS) const
     if (checkSRS && !_srs.horizontallyEquivalentTo(rhs.srs()))
     {
         // non-contiguous projection? convert to a contiguous one:
-        GeoExtent thisGeo = transform(srs().geoSRS());
-        GeoExtent rhsGeo = rhs.transform(srs().geoSRS());
+        GeoExtent thisGeo = transform(srs().geodeticSRS());
+        GeoExtent rhsGeo = rhs.transform(srs().geodeticSRS());
         return thisGeo.intersects(rhsGeo, false);
     }
 

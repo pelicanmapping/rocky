@@ -73,7 +73,7 @@ GeoPoint::geodesicDistanceTo(const GeoPoint& rhs) const
     // Transform both points to lat/long and do a great circle measurement.
     // https://en.wikipedia.org/wiki/Geographical_distance#Ellipsoidal-surface_formulae
 
-    auto geoSRS = srs.geoSRS();
+    auto geoSRS = srs.geodeticSRS();
     auto p1 = transform(geoSRS);
     auto p2 = rhs.transform(geoSRS);
 

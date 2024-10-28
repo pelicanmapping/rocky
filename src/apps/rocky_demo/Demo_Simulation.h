@@ -31,13 +31,13 @@ namespace
         void run()
         {
             jobs::context context;
-            context.pool = jobs::get_pool("simulation");
+            context.pool = jobs::get_pool("rocky.simulation");
             jobs::dispatch([this]()
                 {
                     while (app.active())
                     {
                         motion.update(app.runtime());
-                        std::this_thread::sleep_for(16ms);
+                        std::this_thread::sleep_for(100ms);
                     }
                 }, context);
         }

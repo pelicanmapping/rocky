@@ -223,7 +223,7 @@ MBTiles::Driver::open(
 
                 GeoExtent extent;
                 if (profile.valid())
-                    extent = GeoExtent(profile.srs().geoSRS(), minLon, minLat, maxLon, maxLat);
+                    extent = GeoExtent(profile.srs().geodeticSRS(), minLon, minLat, maxLon, maxLat);
                 else
                     extent = GeoExtent(SRS::WGS84, minLon, minLat, maxLon, maxLat);
 

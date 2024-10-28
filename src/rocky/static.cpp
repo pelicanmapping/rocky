@@ -29,14 +29,11 @@ const SRS SRS::ECEF("geocentric");
 const SRS SRS::SPHERICAL_MERCATOR("spherical-mercator");
 const SRS SRS::PLATE_CARREE("plate-carree");
 const SRS SRS::EMPTY;
+std::function<void(int level, const char* msg)> SRS::projMessageCallback = nullptr;
 
 const Profile Profile::GLOBAL_GEODETIC("global-geodetic");
 const Profile Profile::SPHERICAL_MERCATOR("spherical-mercator");
 const Profile Profile::PLATE_CARREE("plate-carree");
-
-//CachePolicy CachePolicy::DEFAULT;
-//CachePolicy CachePolicy::NO_CACHE(CachePolicy::Usage::NO_CACHE);
-//CachePolicy CachePolicy::CACHE_ONLY(CachePolicy::Usage::CACHE_ONLY);
 
 Status Instance::_global_status(Status::GeneralError);
 

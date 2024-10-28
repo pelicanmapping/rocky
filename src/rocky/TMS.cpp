@@ -457,7 +457,7 @@ TileMap::intersectsKey(const TileKey& tilekey) const
         glm::dvec3 keyMin(b.xmin, b.ymin, b.zmin);
         glm::dvec3 keyMax(b.xmax, b.ymax, b.zmax);
 
-        auto xform = tilekey.profile().srs().to(tilekey.profile().srs().geoSRS());
+        auto xform = tilekey.profile().srs().to(tilekey.profile().srs().geodeticSRS());
         xform(keyMin, keyMin);
         xform(keyMax, keyMax);
 

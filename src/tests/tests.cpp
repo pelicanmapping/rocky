@@ -382,12 +382,12 @@ TEST_CASE("SRS")
         SRS merc("epsg:3785"); // spherical mercator SRS
         REQUIRE(merc.valid());
 
-        SRS geo = merc.geoSRS();
+        SRS geo = merc.geodeticSRS();
         REQUIRE(geo.valid());
         CHECK(geo.isGeodetic());
 
         SRS utm("epsg:32632"); // UTM32/WGS84
-        CHECK(utm.geoSRS().isGeodetic());
+        CHECK(utm.geodeticSRS().isGeodetic());
     }
 
     SECTION("Geographic <> Geocentric")
@@ -493,16 +493,25 @@ TEST_CASE("SRS")
 
     SECTION("Invalid SRS")
     {
-        Log()->info("You should see a PROJ info message:");
+        std::string proj_error;
+        SRS::projMessageCallback = [&](int level, const char* msg) { proj_error = msg; };
+
         SRS bad("gibberish");
+        CHECK(proj_error == "proj_create: unrecognized format / unknown name");
+
         CHECK(bad.valid() == false);
         CHECK(bad.isProjected() == false);
         CHECK(bad.isGeodetic() == false);
         CHECK(bad.isGeocentric() == false);
+
+        SRS::projMessageCallback = nullptr;
     }
 
     SECTION("SRS with Vertical Datum")
     {
+        std::string proj_error;
+        SRS::projMessageCallback = [&](int level, const char* msg) { proj_error = msg; };
+
         SRS wgs84("epsg:4979"); // geographic WGS84 (3D)
         REQUIRE(wgs84.valid());
         REQUIRE(wgs84.hasVerticalDatumShift() == false);
@@ -513,11 +522,13 @@ TEST_CASE("SRS")
 
         // this is legal but will print a warning because Z values will be lost.
         // (you should use epsg::4979 instead)
+
         SRS wgs84_2d("epsg:4326"); // 2D geographic
         REQUIRE(wgs84_2d);
-        Log()->info("You should see a PROJ warning:");
         auto xform_with_warning = wgs84_2d.to(egm96);
         CHECK(xform_with_warning);
+        CHECK(proj_error == "Warning, \"epsg:4326->epsg:4326+5773\" transforms from GEOGRAPHIC_2D_CRS to COMPOUND_CRS. Z values will be discarded. Use a GEOGRAPHIC_3D_CRS instead");
+        proj_error.clear();
 
         // total equivalency:
         REQUIRE(egm96.equivalentTo(wgs84_2d) == false);

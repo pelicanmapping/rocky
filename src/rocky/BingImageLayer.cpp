@@ -90,7 +90,7 @@ BingImageLayer::createImageImplementation(const TileKey& key, const IOOptions& i
     // Bing's zoom is indexed slightly differently
     auto zoom = key.levelOfDetail() + 1;
     GeoPoint centre = key.extent().centroid();
-    centre.transformInPlace(centre.srs.geoSRS());
+    centre.transformInPlace(centre.srs.geodeticSRS());
 
     std::stringstream relative;
     relative << std::setprecision(12);

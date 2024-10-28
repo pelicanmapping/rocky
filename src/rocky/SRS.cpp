@@ -23,7 +23,10 @@ namespace
     {
         if (msg)
         {
-            Log()->info("PROJ says: " + std::string(msg));
+            if (SRS::projMessageCallback)
+                SRS::projMessageCallback(level, msg);
+            else
+                Log()->info("PROJ says: " + std::string(msg));
         }
     }
 
@@ -56,6 +59,8 @@ namespace
         std::string proj;
         Ellipsoid ellipsoid = { };
         std::string error;
+        SRS geodeticSRS;
+        SRS geocentricSRS;
     };
 
     //! SRS data factory and PROJ main interface
@@ -205,13 +210,37 @@ namespace
                     const char* proj = proj_as_proj_string(ctx, pj, PJ_PROJ_5, nullptr);
                     if (proj)
                         new_entry.proj = proj;
+
+                    // geodetic PJ associated with this CRS:
+                    new_entry.pj_geodetic = proj_crs_get_geodetic_crs(ctx, new_entry.pj);
+
+                    // cahce the underlying geocentric SRS since we use it a lot
+                    if (new_entry.horiz_crs_type != PJ_TYPE_GEOCENTRIC_CRS)
+                    {
+                        if (new_entry.pj_geodetic)
+                        {
+                            // cache a full geodetic SRS:
+                            new_entry.geodeticSRS = SRS(proj_as_proj_string(ctx, new_entry.pj_geodetic, PJ_PROJ_5, nullptr));
+
+                            // and cache the corresponding geocentric SRS:
+                            std::string proj = proj_as_proj_string(ctx, new_entry.pj_geodetic, PJ_PROJ_5, nullptr);
+                            util::replace_in_place(proj, "+proj=longlat", "+proj=geocent");
+                            new_entry.geocentricSRS = SRS(proj);
+                        }
+                    }
+
+                    else
+                    {
+                        // A bit hacky but it works.
+                        // We do this because proj_crs_get_geodetic_crs() on a geocentric CRS
+                        // just returns the same geocentric CRS. Is that a bug in proj? (checkme)
+                        std::string proj = new_entry.proj;
+                        util::replace_in_place(proj, "+proj=geocent", "+proj=longlat");
+                        new_entry.geodeticSRS = SRS(proj);
+                    }
                 }
 
-                if (new_entry.pj)
-                {
-                    new_entry.pj_geodetic = proj_crs_get_geodetic_crs(ctx, new_entry.pj);
-                }
-                else
+                if (new_entry.pj == nullptr)
                 {
                     Log()->debug(LC "Failed to create SRS from definition \"{}\"; PROJ error = {}", def, new_entry.error);
                 }
@@ -633,55 +662,15 @@ SRS::to(const SRS& rhs) const
 }
 
 SRS
-SRS::geoSRS() const
+SRS::geodeticSRS() const
 {
-    if (isGeodetic())
-        return *this;
-
-    auto& def = g_srs_factory.get_or_create(_definition);
-
-    PJ* pj = def.pj;
-    if (pj)
-    {
-        if (isGeocentric())
-        {
-            // A bit hacky but it works.
-            // We do this because proj_crs_get_geodetic_crs() on a geocentric CRS
-            // just returns the same geocentric CRS. Is that a bug in proj?
-            std::string proj = def.proj;
-            util::replace_in_place(proj, "+proj=geocent", "+proj=longlat");
-            return SRS(proj);
-        }
-        auto ctx = g_srs_factory.threading_context();
-
-        PJ* pjgeo = proj_crs_get_geodetic_crs(ctx, pj);
-        if (pjgeo)
-        {
-            std::string wkt = proj_as_wkt(ctx, pjgeo, PJ_WKT2_2019, nullptr);
-            proj_destroy(pjgeo);
-            return SRS(wkt);
-        }
-    }
-    return SRS(); // invalid
+    return isGeodetic() ? *this : g_srs_factory.get_or_create(_definition).geodeticSRS;
 }
 
 SRS
 SRS::geocentricSRS() const
 {
-    auto& def = g_srs_factory.get_or_create(_definition);
-    if (def.pj)
-    {
-        auto ctx = g_srs_factory.threading_context();
-        PJ* pjgeo = proj_crs_get_geodetic_crs(ctx, def.pj);
-        if (pjgeo)
-        {
-            std::string proj = proj_as_proj_string(ctx, pjgeo, PJ_PROJ_5, nullptr);
-            util::replace_in_place(proj, "+proj=longlat", "+proj=geocent");
-            proj_destroy(pjgeo);
-            return SRS(proj);
-        }
-    }
-    return SRS();
+    return isGeocentric() ? *this : g_srs_factory.get_or_create(_definition).geocentricSRS;
 }
 
 glm::dmat4

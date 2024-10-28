@@ -73,7 +73,7 @@ Profile::setup(
         // automatically calculate the lat/long extents:
         _shared->_latlong_extent = srs.isGeodetic() ?
             _shared->_extent :
-            _shared->_extent.transform(srs.geoSRS());
+            _shared->_extent.transform(srs.geodeticSRS());
 
         // make a profile sig (sans srs) and an srs sig for quick comparisons.
         std::string temp = to_json();
@@ -346,7 +346,7 @@ Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) cons
     {
         // The extent transformation failed, probably due to an out-of-bounds condition.
         // Go to Plan B: attempt the operation in lat/long
-        auto geo_srs = srs().geoSRS();
+        auto geo_srs = srs().geodeticSRS();
 
         // get the input in lat/long:
         GeoExtent gcs_input =

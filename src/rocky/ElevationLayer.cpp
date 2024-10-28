@@ -476,7 +476,7 @@ namespace
             unsigned numCols = grid->width();
             GeoExtent geodeticExtent = 
                 ex.srs().isGeodetic() ? ex :
-                ex.transform(ex.srs().geoSRS());
+                ex.transform(ex.srs().geodeticSRS());
             double latMin = geodeticExtent.ymin();
             double lonMin = geodeticExtent.xmin();
             double lonInterval = geodeticExtent.width() / (double)(numCols - 1);

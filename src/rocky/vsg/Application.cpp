@@ -148,13 +148,21 @@ Application::ctor(int& argc, char** argv)
 
     // wireframe overlay
     if (commandLine.read("--wire"))
+    {
         instance.runtime().shaderCompileSettings->defines.insert("ROCKY_WIREFRAME_OVERLAY");
+    }
 
     // a node to render the map/terrain
     mainScene->addChild(mapNode);
 
     // Set up the runtime context with everything we need.
     setViewer(vsg::Viewer::create());
+
+    // No idea what this actually does :)
+    if (commandLine.read("--mt"))
+    {
+        viewer->setupThreading();
+    }
 
     instance.runtime().sharedObjects = vsg::SharedObjects::create();
 
@@ -168,13 +176,13 @@ Application::ctor(int& argc, char** argv)
 
     // read map from file:
     std::string infile; 
-    if (commandLine.read({ "--map" }, infile))
+    if (commandLine.read("--map", infile))
     {
         commandLineStatus = loadMapFile(infile, *mapNode, instance);
     }
 
     // import map from an osgEarth earth file:
-    if (commandLine.read({ "--earthfile" }, infile) && commandLineStatus.ok())
+    if (commandLine.read("--earthfile", infile) && commandLineStatus.ok())
     {
         commandLineStatus = importEarthFile(infile, *mapNode, instance);
     }

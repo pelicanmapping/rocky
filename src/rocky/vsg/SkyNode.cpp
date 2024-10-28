@@ -32,7 +32,7 @@ namespace
         bool with_tex_coords,
         bool with_normals)
     {
-        auto geodeticSRS = worldSRS.geoSRS(); // get a long/lat SRS
+        auto geodeticSRS = worldSRS.geodeticSRS(); // get a long/lat SRS
         SRSOperation geodeticToGeocentric = geodeticSRS.to(worldSRS); // and a xform
 
         int latSegments = 100;

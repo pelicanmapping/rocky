@@ -168,7 +168,7 @@ namespace
 
 
         // some conversions we will need:
-        auto feature_geo = feature.srs.geoSRS();
+        auto feature_geo = feature.srs.geodeticSRS();
         auto feature_to_geo = feature.srs.to(feature_geo);
         auto feature_to_world = feature.srs.to(geom_srs);
 
