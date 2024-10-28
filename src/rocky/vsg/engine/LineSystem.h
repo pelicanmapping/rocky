@@ -6,21 +6,81 @@
 #pragma once
 #include <rocky/vsg/Line.h>
 #include <rocky/vsg/ECS.h>
+#include <vsg/state/BindDescriptorSet.h>
+#include <vsg/nodes/Geometry.h>
 
 namespace ROCKY_NAMESPACE
-{
-    class Runtime;
-    class LineSystem;
+{   
+    /**
+    * Renders a line or linestring geometry.
+    */
+    class ROCKY_EXPORT LineGeometry : public vsg::Inherit<vsg::Geometry, LineGeometry>
+    {
+    public:
+        //! Construct a new line string geometry node
+        LineGeometry();
+
+        //! Adds a vertex to the end of the line string
+        void push_back(const vsg::vec3& vert);
+
+        //! Number of verts comprising this line string
+        unsigned numVerts() const;
+
+        //! The first vertex in the line string to render
+        void setFirst(unsigned value);
+
+        //! Number of vertices in the line string to render
+        void setCount(unsigned value);
+
+        //! Recompile the geometry after making changes.
+        //! TODO: just make it dynamic instead
+        void compile(vsg::Context&) override;
+
+    protected:
+        vsg::vec4 _defaultColor = { 1,1,1,1 };
+        std::vector<vsg::vec3> _current;
+        std::vector<vsg::vec3> _previous;
+        std::vector<vsg::vec3> _next;
+        std::vector<vsg::vec4> _colors;
+        vsg::ref_ptr<vsg::DrawIndexed> _drawCommand;
+    };
+
+    /**
+    * Applies a line style.
+    */
+    class ROCKY_EXPORT BindLineDescriptors : public vsg::Inherit<vsg::BindDescriptorSet, BindLineDescriptors>
+    {
+    public:
+        //! Construct a line style node
+        BindLineDescriptors();
+
+        //! Initialize this command with the associated layout
+        void init(vsg::ref_ptr<vsg::PipelineLayout> layout);
+
+        //! Refresh the data buffer contents on the GPU
+        void updateStyle(const LineStyle&);
+
+        vsg::ref_ptr<vsg::ubyteArray> _styleData;
+    };
+
+
+    struct LineRenderable : public ECS::NodeComponent
+    {
+        vsg::ref_ptr<BindLineDescriptors> bindCommand;
+        //std::vector<vsg::ref_ptr<LineGeometry>> geometries;
+    };
 
     /**
      * ECS system that handles LineString components
      */
     class ROCKY_EXPORT LineSystemNode :
-        public vsg::Inherit<ECS::SystemNode, LineSystemNode>
+        public vsg::Inherit<ECS::SystemNode<Line, LineRenderable>, LineSystemNode>
     {
     public:
         //! Construct the system
         LineSystemNode(entt::registry& registry);
+
+        virtual ~LineSystemNode();
 
         enum Features
         {
@@ -29,13 +89,16 @@ namespace ROCKY_NAMESPACE
             NUM_PIPELINES = 2
         };
 
-        static int featureMask(const Line&);
+        //! Returns a mask of supported features for the given mesh
+        int featureMask(const Line&) const override;
 
+        //! One-time initialization of the system    
         void initializeSystem(Runtime&) override;
 
-        ROCKY_SYSTEMNODE_HELPER(Line, helper);
+        //! Called by ENTT when the user creates a new component.
+        void on_construct(entt::registry& registry, entt::entity entity);
 
     private:
-        void initializeComponent(Line& line, InitContext& context);
+        bool update(entt::entity, Runtime& runtime) override;
     };
 }

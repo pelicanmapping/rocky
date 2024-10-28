@@ -6,19 +6,29 @@
 #pragma once
 #include <rocky/vsg/Label.h>
 #include <rocky/vsg/ECS.h>
-#include <vsg/text/GpuLayoutTechnique.h>
+#include <vsg/text/Text.h>
 
 namespace ROCKY_NAMESPACE
 {
+    struct ROCKY_EXPORT LabelRenderable : public ECS::NodeComponent
+    {
+        vsg::ref_ptr<vsg::Text> textNode;
+        vsg::ref_ptr<vsg::stringValue> valueBuffer;
+        vsg::ref_ptr<vsg::StandardLayout> layout;
+        vsg::ref_ptr<vsg::Options> options;
+    };
+
     /**
      * Creates commands for rendering icon primitives.
      */
     class ROCKY_EXPORT LabelSystemNode :
-        public vsg::Inherit<ECS::SystemNode, LabelSystemNode>
+        public vsg::Inherit<ECS::SystemNode<Label, LabelRenderable>, LabelSystemNode>
     {
     public:
         //! Construct the mesh renderer
         LabelSystemNode(entt::registry& registry);
+
+        virtual ~LabelSystemNode();
 
         enum Features
         {
@@ -26,16 +36,12 @@ namespace ROCKY_NAMESPACE
             NUM_PIPELINES = 0
         };
 
-        //static int featureMask(const Label& component);
-
         //! One time setup of the system
         void initializeSystem(Runtime&) override;
 
-        ROCKY_SYSTEMNODE_HELPER(Label, helper);
+        void on_construct(entt::registry& registry, entt::entity);
 
     private:
-        void initializeComponent(Label& component, InitContext& context);
-
-        vsg::ref_ptr<vsg::GpuLayoutTechnique> text_technique_shared;
+        bool update(entt::entity, Runtime& runtime) override;
     };
 }

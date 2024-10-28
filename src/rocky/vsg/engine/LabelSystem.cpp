@@ -28,23 +28,25 @@ using namespace ROCKY_NAMESPACE;
 #define LABEL_MAX_NUM_CHARS 255
 
 LabelSystemNode::LabelSystemNode(entt::registry& registry) :
-    vsg::Inherit<ECS::SystemNode, LabelSystemNode>(registry),
-    helper(registry)
+    Inherit(registry)
 {
-    helper.initializeComponent = [this](Label& label, InitContext& context)
-        { 
-            this->initializeComponent(label, context);
-        };
+    registry.on_construct<Label>().connect<&LabelSystemNode::on_construct>(*this);
+}
 
-    text_technique_shared = vsg::GpuLayoutTechnique::create();
+LabelSystemNode::~LabelSystemNode()
+{
+    registry.on_construct<Label>().disconnect<&LabelSystemNode::on_construct>(*this);
+}
+
+void
+LabelSystemNode::on_construct(entt::registry& registry, entt::entity entity)
+{
+    registry.emplace<LabelRenderable>(entity);
 }
 
 void
 LabelSystemNode::initializeSystem(Runtime& runtime)
 {
-    // NOTE. This is temporary - replace with one or more TextGroup objects
-    // to optimize rendering.
-
     // Configure the (global?) text shader set to turn off depth testing
     auto& options = runtime.readerWriterOptions;
     auto shaderSet = options->shaderSets["text"] = vsg::createTextShaderSet(options);
@@ -55,44 +57,56 @@ LabelSystemNode::initializeSystem(Runtime& runtime)
     shaderSet->defaultGraphicsPipelineStates.push_back(depthStencilState);
 }
 
-void
-LabelSystemNode::initializeComponent(Label& label, InitContext& context)
+bool
+LabelSystemNode::update(entt::entity entity, Runtime& runtime)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(label.style.font.valid(), void());
+    auto& [label, renderable] = registry.get<Label, LabelRenderable>(entity);
 
-    label.options = context.readerWriterOptions;
+    // TODO: allow custom fonts
+    ROCKY_SOFT_ASSERT_AND_RETURN(label.style.font.valid(), true);
+
+    if (renderable.node)
+        runtime.dispose(renderable.node);
+
+    renderable.options = runtime.readerWriterOptions;
 
     float size = label.style.pointSize;
 
     // Billboard = false because of https://github.com/vsg-dev/VulkanSceneGraph/discussions/985
     // Workaround: use a PixelScaleTransform with unrotate=true
-    label.layout = vsg::StandardLayout::create();
-    label.layout->billboard = false;
-    label.layout->billboardAutoScaleDistance = 0.0f;
-    label.layout->position = label.style.pixelOffset; // vsg::vec3(0.0f, 0.0f, 0.0f);
-    label.layout->horizontal = vsg::vec3(size, 0.0f, 0.0f);
-    label.layout->vertical = vsg::vec3(0.0f, size, 0.0f); // layout->billboard ? vsg::vec3(0.0, size, 0.0) : vsg::vec3(0.0, 0.0, size);
-    label.layout->color = vsg::vec4(1.0f, 0.9f, 1.0f, 1.0f);
-    label.layout->outlineWidth = label.style.outlineSize;
-    label.layout->horizontalAlignment = label.style.horizontalAlignment;
-    label.layout->verticalAlignment = label.style.verticalAlignment;
-    context.sharedObjects->share(label.layout);
+    renderable.layout = vsg::StandardLayout::create();
+    renderable.layout->billboard = false;
+    renderable.layout->billboardAutoScaleDistance = 0.0f;
+    renderable.layout->position = label.style.pixelOffset; // vsg::vec3(0.0f, 0.0f, 0.0f);
+    renderable.layout->horizontal = vsg::vec3(size, 0.0f, 0.0f);
+    renderable.layout->vertical = vsg::vec3(0.0f, size, 0.0f); // layout->billboard ? vsg::vec3(0.0, size, 0.0) : vsg::vec3(0.0, 0.0, size);
+    renderable.layout->color = vsg::vec4(1.0f, 0.9f, 1.0f, 1.0f);
+    renderable.layout->outlineWidth = label.style.outlineSize;
+    renderable.layout->horizontalAlignment = label.style.horizontalAlignment;
+    renderable.layout->verticalAlignment = label.style.verticalAlignment;
 
-    label.valueBuffer = vsg::stringValue::create(label.text);
+    // Share this since it should be the same for everything
+    if (runtime.sharedObjects)
+        runtime.sharedObjects->share(renderable.layout);
 
-    label.textNode = vsg::Text::create();
-    label.textNode->font = label.style.font;
-    label.textNode->text = label.valueBuffer;
-    label.textNode->layout = label.layout;
-    label.textNode->technique = text_technique_shared;
-    label.textNode->setup(LABEL_MAX_NUM_CHARS, label.options); // allocate enough space for max possible characters?
+    renderable.valueBuffer = vsg::stringValue::create(label.text);
+
+    renderable.textNode = vsg::Text::create();
+    renderable.textNode->font = label.style.font;
+    renderable.textNode->text = renderable.valueBuffer;
+    renderable.textNode->layout = renderable.layout;
+    renderable.textNode->technique = vsg::GpuLayoutTechnique::create(); // cannot share these!
+    renderable.textNode->setup(LABEL_MAX_NUM_CHARS, renderable.options); // allocate enough space for max possible characters?
 
 #if 0
     label.node = label.textNode;
 #else
     auto pst = PixelScaleTransform::create();
     pst->unrotate = true;
-    pst->addChild(label.textNode);
-    label.node = pst;
+    pst->addChild(renderable.textNode);
+    renderable.node = pst;
 #endif
+
+    runtime.compile(renderable.node);
+    return true;
 }

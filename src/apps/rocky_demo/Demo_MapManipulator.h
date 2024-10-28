@@ -33,8 +33,8 @@ auto Demo_Viewpoints = [](Application& app)
                 ImGuiLTable::Text("Y:", "%.1lf", vp.position().y);
                 ImGuiLTable::Text("Z:", "%.1lf", vp.position().z);
 
-                GeoPoint LL;
-                if (vp.position().transform(vp.position().srs.geoSRS(), LL))
+                GeoPoint LL = vp.position().transform(vp.position().srs.geoSRS());
+                if (LL.valid())
                 {
                     ImGuiLTable::Text("Longitude:", "%.3lf", LL.x);
                     ImGuiLTable::Text("Latitude:", "%.3lf", LL.y);

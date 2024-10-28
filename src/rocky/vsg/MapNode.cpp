@@ -152,24 +152,25 @@ MapNode::update(const vsg::FrameStamp* f)
 void
 MapNode::accept(vsg::RecordTraversal& rv) const
 {
+    auto& viewlocal = _viewlocal[rv.getState()->_commandBuffer->viewID];
+
     if (worldSRS().isGeocentric())
     {
-        std::shared_ptr<Horizon> horizon;
-        rv.getState()->getValue("horizon", horizon);
-        if (!horizon)
+        if (viewlocal.horizon == nullptr)
         {
-            horizon = std::make_shared<Horizon>(worldSRS().ellipsoid());
-            rv.getState()->setValue("horizon", horizon);
+            viewlocal.horizon = std::make_shared<Horizon>(worldSRS().ellipsoid());
         }
 
         auto eye = vsg::inverse(rv.getState()->modelviewMatrixStack.top()) * vsg::dvec3(0, 0, 0);
         bool is_ortho = rv.getState()->projectionMatrixStack.top()(3, 3) != 0.0;
-        horizon->setEye(to_glm(eye), is_ortho);
+        viewlocal.horizon->setEye(to_glm(eye), is_ortho);
+
+        rv.setValue("rocky.horizon", viewlocal.horizon);
     }
 
-    rv.setValue("worldsrs", worldSRS());
+    rv.setValue("rocky.worldsrs", worldSRS());
 
-    rv.setObject("TerrainTileHost", terrainNode);
+    rv.setObject("rocky.terraintilehost", terrainNode);
 
     Inherit::accept(rv);
 }

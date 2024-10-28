@@ -17,7 +17,6 @@
 #include <vsg/utils/ComputeBounds.h>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::detail;
 
 #define MESH_VERT_SHADER "shaders/rocky.mesh.vert"
 #define MESH_FRAG_SHADER "shaders/rocky.mesh.frag"
@@ -78,13 +77,22 @@ namespace
     }
 }
 
+
 MeshSystemNode::MeshSystemNode(entt::registry& registry) :
-    vsg::Inherit<ECS::SystemNode, MeshSystemNode>(registry),
-    helper(registry)
+    Inherit(registry)
 {
-    helper.initializeComponent = [this](Mesh& mesh, InitContext& context) {
-        this->initializeComponent(mesh, context);
-    };
+    registry.on_construct<Mesh>().connect<&MeshSystemNode::on_construct>(this);
+}
+
+MeshSystemNode::~MeshSystemNode()
+{
+    registry.on_construct<Mesh>().disconnect<&MeshSystemNode::on_construct>(this);
+}
+
+void
+MeshSystemNode::on_construct(entt::registry& registry, entt::entity entity)
+{
+    registry.emplace<MeshRenderable>(entity);
 }
 
 void
@@ -100,12 +108,12 @@ MeshSystemNode::initializeSystem(Runtime& runtime)
         return;
     }
 
-    helper.pipelines.resize(NUM_PIPELINES);
+    pipelines.resize(NUM_PIPELINES);
 
     // create all pipeline permutations.
     for (int feature_mask = 0; feature_mask < NUM_PIPELINES; ++feature_mask)
     {
-        auto& c = helper.pipelines[feature_mask];
+        auto& c = pipelines[feature_mask];
 
         // Create the pipeline configurator for terrain; this is a helper object
         // that acts as a "template" for terrain tile rendering state.
@@ -173,59 +181,88 @@ MeshSystemNode::initializeSystem(Runtime& runtime)
     }
 }
 
-void
-MeshSystemNode::initializeComponent(Mesh& mesh, InitContext& context)
+bool
+MeshSystemNode::update(entt::entity entity, Runtime& runtime)
 {
-    auto cull = vsg::CullNode::create();
+    auto& [mesh, renderable] = registry.get<Mesh, MeshRenderable>(entity);
 
-    vsg::ref_ptr<vsg::Group> parent;
+    if (renderable.node)
+        runtime.dispose(renderable.node);
+
+    vsg::ref_ptr<vsg::StateGroup> stategroup;
 
     if (mesh.style.has_value() || mesh.texture)
     {
-        mesh.bindCommand = BindMeshDescriptors::create();
+        renderable.bindCommand = BindMeshDescriptors::create();
         if (mesh.texture)
-            mesh.bindCommand->_imageInfo = mesh.texture;
-        mesh.dirty();
-        mesh.bindCommand->init(context.layout);
+            renderable.bindCommand->_imageInfo = mesh.texture;
+        renderable.bindCommand->updateStyle(mesh.style.value());
 
-        auto sg = vsg::StateGroup::create();
-        sg->stateCommands.push_back(mesh.bindCommand);
+        renderable.bindCommand->init(getPipelineLayout(mesh));
 
-        if (mesh.refPoint != vsg::dvec3())
+        stategroup = vsg::StateGroup::create();
+        stategroup->stateCommands.push_back(renderable.bindCommand);
+    }
+
+    vsg::ref_ptr<vsg::Node> geometry_root;
+
+    renderable.geometry = new MeshGeometry();
+
+    if (mesh.referencePoint.valid())
+    {
+        SRSOperation xform;
+        vsg::dvec3 offset;
+        setReferencePoint(mesh.referencePoint, xform, offset);
+
+        vsg::dvec3 v0, v1, v2;
+        vsg::vec3 v32[3];
+        for (auto& tri : mesh.triangles)
         {
-            auto mt = vsg::MatrixTransform::create(vsg::translate(mesh.refPoint));
-            mt->addChild(mesh.geometry);
-            sg->addChild(mt);
-        }
-        else
-        {
-            sg->addChild(mesh.geometry);
+            xform(tri.verts[0], v0); v32[0] = v0 - offset;
+            xform(tri.verts[1], v1); v32[1] = v1 - offset;
+            xform(tri.verts[2], v2); v32[2] = v2 - offset;
+
+            renderable.geometry->add(v32, tri.uvs, tri.colors, tri.depthoffsets);
         }
 
-        cull->child = sg;
+        auto mt = vsg::MatrixTransform::create(vsg::translate(offset));
+        mt->addChild(renderable.geometry);
+        geometry_root = mt;
     }
     else
     {
-        if (mesh.refPoint != vsg::dvec3())
+        for (auto& tri : mesh.triangles)
         {
-            auto mt = vsg::MatrixTransform::create(vsg::translate(mesh.refPoint));
-            mt->addChild(mesh.geometry);
-            cull->child = mt;
+            renderable.geometry->add(tri.verts, tri.uvs, tri.colors, tri.depthoffsets);
         }
-        else
-        {
-            cull->child = mesh.geometry;
-        }
+        geometry_root = renderable.geometry;
+    }
+
+    // parent this mesh with a culling node
+    auto cull = vsg::CullNode::create();
+    
+    if (stategroup)
+    {
+        stategroup->addChild(geometry_root);
+        cull->child = stategroup;
+    }
+    else
+    {
+        cull->child = geometry_root;
     }
 
     vsg::ComputeBounds cb;
     cull->child->accept(cb);
     cull->bound.set((cb.bounds.min + cb.bounds.max) * 0.5, vsg::length(cb.bounds.min - cb.bounds.max) * 0.5);
 
-    mesh.node = cull;
+    renderable.node = cull;
+
+    runtime.compile(renderable.node);
+    return true;
 }
 
-int MeshSystemNode::featureMask(const Mesh& mesh)
+int
+MeshSystemNode::featureMask(const Mesh& mesh) const
 {
     int feature_set = 0;
     if (mesh.texture) feature_set |= TEXTURE;
@@ -355,4 +392,33 @@ MeshGeometry::compile(vsg::Context& context)
     }
 
     vsg::Geometry::compile(context);
+}
+
+
+
+
+NodeSystemNode::NodeSystemNode(entt::registry& registry) :
+    Inherit(registry)
+{
+    registry.on_construct<NodeGraph>().connect<&NodeSystemNode::on_construct>(this);
+}
+
+NodeSystemNode::~NodeSystemNode()
+{
+    registry.on_construct<NodeGraph>().disconnect<&NodeSystemNode::on_construct>(this);
+}
+
+void
+NodeSystemNode::on_construct(entt::registry& registry, entt::entity entity)
+{
+    registry.emplace<NodeRenderable>(entity);
+}
+
+bool
+NodeSystemNode::update(entt::entity entity, Runtime& runtime)
+{
+    auto& [node, renderable] = registry.get<NodeGraph, NodeRenderable>(entity);
+    renderable.node = node.node;
+    runtime.compile(renderable.node);
+    return true;
 }

@@ -20,6 +20,7 @@ ECS::Component::to_json() const
     return j.dump();
 }
 
+#if 0
 SRSOperation
 ECS::NodeComponent::setReferencePoint(const GeoPoint& point)
 {
@@ -30,9 +31,8 @@ ECS::NodeComponent::setReferencePoint(const GeoPoint& point)
         if (point.srs.isGeodetic())
         {
             worldSRS = point.srs.geocentricSRS();
-
-            GeoPoint world;
-            if (point.transform(worldSRS, world))
+            GeoPoint world = point.transform(worldSRS);
+            if (world.valid())
             {
                 refPoint = vsg::dvec3{ world.x, world.y, world.z };
             }
@@ -45,6 +45,7 @@ ECS::NodeComponent::setReferencePoint(const GeoPoint& point)
 
     return SRSOperation(point.srs, worldSRS);
 }
+#endif
 
 void
 EntityMotionSystem::update(Runtime& runtime)
@@ -66,24 +67,22 @@ EntityMotionSystem::update(Runtime& runtime)
                 if (motion.velocity != zero)
                 {
                     auto& pos = transform.node->position;
+                    double save_z = pos.z;
 
-                    if (!motion.world2pos.valid())
-                    {
-                        motion.world2pos = pos.srs.geocentricSRS().to(pos.srs);
-                        motion.pos2world = pos.srs.to(pos.srs.geocentricSRS());
-                    }
+                    auto pos_to_world = pos.srs.to(pos.srs.geocentricSRS());
 
                     // move the entity using a velocity vector in the local tangent plane
                     glm::dvec3 world;
-                    motion.pos2world((glm::dvec3)pos, world);
+                    pos_to_world((glm::dvec3)pos, world);
                     auto l2w = pos.srs.ellipsoid().geocentricToLocalToWorld(world);
 
                     world = l2w * (motion.velocity * dt);
 
                     vsg::dvec3 coord(world.x, world.y, world.z);
-                    motion.world2pos(coord, coord);
+                    pos_to_world.inverse(coord, coord);
 
-                    pos.x = coord.x, pos.y = coord.y, pos.z = coord.z;
+                    pos.x = coord.x, pos.y = coord.y;
+                    pos.z = save_z;
                     transform.node->dirty();
                 }
 

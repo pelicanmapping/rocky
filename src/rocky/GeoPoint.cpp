@@ -36,20 +36,19 @@ GeoPoint::GeoPoint(const SRS& in_srs) :
     //nop
 }
 
-bool
-GeoPoint::transform(const SRS& outSRS, GeoPoint& output) const
+GeoPoint
+GeoPoint::transform(const SRS& outSRS) const
 {
+    GeoPoint result;
     if (valid() && outSRS.valid())
     {
         double xyz[3] = { x, y, z };
-        //ec3 out;
         if (srs.to(outSRS).transform(xyz, xyz))
         {
-            output = GeoPoint(outSRS, xyz[0], xyz[1], xyz[2]);
-            return true;
+            return GeoPoint(outSRS, xyz[0], xyz[1], xyz[2]);
         }
     }
-    return false;
+    return {};
 }
 
 bool
@@ -61,6 +60,7 @@ GeoPoint::transformInPlace(const SRS& to_srs)
         if (srs.to(to_srs).transform(xyz, xyz))
         {
             x = xyz[0], y = xyz[1], z = xyz[2];
+            srs = to_srs;
             return true;
         }
     }
@@ -73,10 +73,11 @@ GeoPoint::geodesicDistanceTo(const GeoPoint& rhs) const
     // Transform both points to lat/long and do a great circle measurement.
     // https://en.wikipedia.org/wiki/Geographical_distance#Ellipsoidal-surface_formulae
 
-    GeoPoint p1, p2;
     auto geoSRS = srs.geoSRS();
+    auto p1 = transform(geoSRS);
+    auto p2 = rhs.transform(geoSRS);
 
-    if (transform(geoSRS, p1) && rhs.transform(geoSRS, p2))
+    if (p1.valid() && p2.valid())
     {
         return Distance(
             srs.ellipsoid().geodesicGroundDistance(

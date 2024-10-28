@@ -50,7 +50,7 @@ auto Demo_Tethering = [](Application& app)
         if (image.status.ok())
         {
             auto& icon = app.entities.emplace<Icon>(entity);
-            icon.imageData = util::moveImageToVSG(image.value);
+            icon.image = image.value;
             icon.style = IconStyle{ 48.0f, 0.0f }; // pixels, rotation(rad)
         }
 
@@ -59,8 +59,9 @@ auto Demo_Tethering = [](Application& app)
         vsg::dvec3 verts[4] = { { -s, -s, 0 }, {  s, -s, 0 }, {  s,  s, 0 }, { -s,  s, 0 } };
         unsigned indices[6] = { 0,1,2, 0,2,3 };
         vsg::vec4 color{ 1, 1, 0, 0.55f };
-        for (unsigned i = 0; i < 6; ) {
-            mesh.add({
+        for (unsigned i = 0; i < 6; )
+        {
+            mesh.triangles.emplace_back(Triangle{
                 {verts[indices[i++]], verts[indices[i++]], verts[indices[i++]]},
                 {color, color, color} });
         }

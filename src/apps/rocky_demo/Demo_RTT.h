@@ -145,8 +145,8 @@ auto Demo_RTT = [](Application& app)
                     xform(v[i], v[i]);
                 }
 
-                mesh.add({ {v[0], v[1], v[2]}, { bg,bg,bg }, {uv[0], uv[1], uv[2]} });
-                mesh.add({ {v[0], v[2], v[3]}, { bg,bg,bg }, {uv[0], uv[2], uv[3]} });
+                mesh.triangles.emplace_back(Triangle{ {v[0], v[1], v[2]}, { bg,bg,bg }, {uv[0], uv[1], uv[2]} });
+                mesh.triangles.emplace_back(Triangle{ {v[0], v[2], v[3]}, { bg,bg,bg }, {uv[0], uv[2], uv[3]} });
             }
         }
         mesh.texture = texture;

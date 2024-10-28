@@ -54,7 +54,7 @@ auto Demo_Model = [](Application& app)
         entity = app.entities.create();
 
         // The model component; we just set the node directly.
-        auto& component = app.entities.emplace<ECS::NodeComponent>(entity);
+        auto& component = app.entities.emplace<NodeGraph>(entity);
         component.name = "Demo Model";
         component.node = scaler;
 
@@ -68,7 +68,7 @@ auto Demo_Model = [](Application& app)
 
     if (ImGuiLTable::Begin("model"))
     {
-        auto& component = app.entities.get<ECS::NodeComponent>(entity);
+        auto& component = app.entities.get<NodeGraph>(entity);
         ImGuiLTable::Checkbox("Visible", &component.active);
 
         auto& transform = app.entities.get<Transform>(entity);

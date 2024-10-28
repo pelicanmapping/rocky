@@ -185,43 +185,17 @@ Application::ctor(int& argc, char** argv)
         commandLineStatus = loadMapFile(commandLine[1], *mapNode, instance);
     }
 
-#if 0
-    // install the ECS systems that will render components.
-    //ecs.systems.emplace_back(std::make_shared<MeshSystem>(entities));
-    ecs.systems.emplace_back(MeshSystemNode::create(entities));
-    ecs.systems.emplace_back(std::make_shared<LineSystem>(entities));
-    ecs.systems.emplace_back(std::make_shared<NodeSystem>(entities));
-    ecs.systems.emplace_back(std::make_shared<IconSystem>(entities));
-    ecs.systems.emplace_back(std::make_shared<LabelSystem>(entities));
+    ecsManager = ECS::SystemsManagerGroup::create();
 
-    // install other ECS systems.
-    ecs.systems.emplace_back(std::make_shared<EntityMotionSystem>(entities));
+    ecsManager->add<MeshSystemNode>(entities);
+    ecsManager->add<LineSystemNode>(entities);
+    ecsManager->add<NodeSystemNode>(entities);
+    ecsManager->add<IconSystemNode>(entities);
+    ecsManager->add<LabelSystemNode>(entities);
 
-    // make a scene graph and connect all the renderer systems to it.
-    // This way they will all receive the typical VSG traversals (accept, record, compile, etc.)
-    ecs_node = ECS::VSG_SystemsGroup::create();
-    ecs_node->connect(ecs);
+    //ecsManager->add(EntityMotionSystem::create(entities));
 
-    ecs_node = ECS::VSG_SystemsGroup::create();
-    ecs_node->addChild(MeshSystemNode::create(entities));
-    ecs_node->addChild(LineSystemNode::create(entities));
-    ecs_node->addChild(NodeSystemNode::create(entities));
-    ecs_node->addChild(IconSystemNode::create(entities));
-    ecs_node->addChild(LabelSystemNode::create(entities));
-    ecs_node->systems.emplace(EntityMotionSystem::create(entities));
-#endif
-
-    ecs_node = ECS::SystemsGroup::create();
-
-    ecs_node->add(MeshSystemNode::create(entities));
-    ecs_node->add(LineSystemNode::create(entities));
-    ecs_node->add(NodeSystemNode::create(entities));
-    ecs_node->add(IconSystemNode::create(entities));
-    ecs_node->add(LabelSystemNode::create(entities));
-
-    ecs_node->add(EntityMotionSystem::create(entities));
-
-    mainScene->addChild(ecs_node);
+    mainScene->addChild(ecsManager);
 }
 
 Application::~Application()
@@ -239,7 +213,7 @@ void
 Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
 {
     // Initialize the ECS subsystem:
-    ecs_node->initialize(instance.runtime());
+    ecsManager->initialize(instance.runtime());
 
     // respond to the X or to hitting ESC
     // TODO: refactor this so it responds to individual windows and not the whole app?
@@ -329,8 +303,7 @@ namespace
             app.mapNode->update(app.viewer->getFrameStamp());
             
             // ECS updates - rendering or modifying entities
-            //app.ecs.update(app.viewer->getFrameStamp()->time);
-            app.ecs_node->update(app.instance.runtime());
+            app.ecsManager->update(app.instance.runtime());
 
             // User update
             if (app.updateFunction)
@@ -382,6 +355,8 @@ Application::run()
 bool
 Application::frame()
 {
+    _lastFrameOK = true;
+
     // for stats collection
     std::chrono::steady_clock::time_point t_start, t_update, t_events, t_record, t_present, t_end;
 
@@ -401,7 +376,10 @@ Application::frame()
     if (runtime().renderingEnabled)
     {
         if (!viewer->advanceToNextFrame())
+        {
+            _lastFrameOK = false;
             return false;
+        }
 
         t_update = std::chrono::steady_clock::now();
 
@@ -413,6 +391,7 @@ Application::frame()
         // it's possible that an update operation will shut down the viewer:
         if (!viewer->active())
         {
+            _lastFrameOK = false;
             return false;
         }
 
@@ -430,7 +409,10 @@ Application::frame()
         viewer->handleEvents();
 
         if (!viewer->active())
+        {
+            _lastFrameOK = false;
             return false;
+        }
 
         t_record = std::chrono::steady_clock::now();
 

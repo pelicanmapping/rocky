@@ -39,12 +39,13 @@ GeoCircle::operator == ( const GeoCircle& rhs ) const
         equiv(_radius, rhs._radius);
 }
 
-bool
-GeoCircle::transform(const SRS& srs, GeoCircle& output) const
+GeoCircle
+GeoCircle::transform(const SRS& srs) const
 {
-    output._radius = _radius;
-    center().transform(srs, output._center);
-    return true;
+    GeoCircle result;
+    result._radius = _radius;
+    result._center = center().transform(srs);
+    return result;
 }
 
 bool 
@@ -55,8 +56,7 @@ GeoCircle::intersects( const GeoCircle& rhs ) const
 
     if ( !srs().horizontallyEquivalentTo( rhs.srs() ) )
     {
-        GeoCircle c;
-        return rhs.transform(SRS(), c) && intersects(c);
+        return intersects(rhs.transform(srs()));
     }
     else
     {

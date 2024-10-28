@@ -7,7 +7,6 @@
 #include "Runtime.h"
 #include "PipelineState.h"
 
-#include <vsg/state/BindDescriptorSet.h>
 #include <vsg/state/ViewDependentState.h>
 #include <vsg/commands/DrawIndexed.h>
 
@@ -17,7 +16,6 @@
 #include <vsg/nodes/StateGroup.h>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::detail;
 
 #define LINE_VERT_SHADER "shaders/rocky.line.vert"
 #define LINE_FRAG_SHADER "shaders/rocky.line.frag"
@@ -74,12 +72,20 @@ namespace
 }
 
 LineSystemNode::LineSystemNode(entt::registry& registry) :
-    vsg::Inherit<ECS::SystemNode, LineSystemNode>(registry),
-    helper(registry)
+    Inherit(registry)
 {
-    helper.initializeComponent = [this](Line& line, InitContext& context) {
-        this->initializeComponent(line, context);
-    };
+    registry.on_construct<Line>().connect<&LineSystemNode::on_construct>(*this);
+}
+
+LineSystemNode::~LineSystemNode()
+{
+    registry.on_construct<Line>().disconnect<&LineSystemNode::on_construct>(*this);
+}
+
+void
+LineSystemNode::on_construct(entt::registry& registry, entt::entity entity)
+{
+    registry.emplace<LineRenderable>(entity);
 }
 
 void
@@ -96,11 +102,11 @@ LineSystemNode::initializeSystem(Runtime& runtime)
         return;
     }
 
-    helper.pipelines.resize(NUM_PIPELINES);
+    pipelines.resize(NUM_PIPELINES);
 
     for (int feature_mask = 0; feature_mask < NUM_PIPELINES; ++feature_mask)
     {
-        auto& c = helper.pipelines[feature_mask];
+        auto& c = pipelines[feature_mask];
 
         // Create the pipeline configurator for terrain; this is a helper object
         // that acts as a "template" for terrain tile rendering state.
@@ -158,63 +164,94 @@ LineSystemNode::initializeSystem(Runtime& runtime)
     }
 }
 
-void
-LineSystemNode::initializeComponent(Line& line, InitContext& context)
+bool
+LineSystemNode::update(entt::entity entity, Runtime& runtime)
 {
-    auto cull = vsg::CullNode::create();
+    auto& [line, renderable] = registry.get<Line, LineRenderable>(entity);
 
-    vsg::ref_ptr<vsg::Group> geom_parent;
+    if (renderable.node)
+        runtime.dispose(renderable.node);
 
+    vsg::ref_ptr<vsg::StateGroup> stategroup;
     if (line.style.has_value())
     {
-        line.bindCommand = BindLineDescriptors::create();
-        line.dirty();
-        line.bindCommand->init(context.layout);
+        renderable.bindCommand = BindLineDescriptors::create();
+        renderable.bindCommand->updateStyle(line.style.value());
+        renderable.bindCommand->init(getPipelineLayout(line));
 
-        auto sg = vsg::StateGroup::create();
-        sg->stateCommands.push_back(line.bindCommand);
-        geom_parent = sg;
+        stategroup = vsg::StateGroup::create();
+        stategroup->stateCommands.push_back(renderable.bindCommand);
+    }
 
-        if (line.refPoint != vsg::dvec3())
+    vsg::ref_ptr<vsg::Node> geom_root;
+    if (line.referencePoint.valid())
+    {
+        SRSOperation xform;
+        vsg::dvec3 offset;
+        setReferencePoint(line.referencePoint, xform, offset);
+
+        auto group = vsg::Group::create();
+        vsg::dvec3 temp;
+        for (auto& part : line.parts)
         {
-            auto localizer = vsg::MatrixTransform::create(vsg::translate(line.refPoint));
-            localizer->addChild(sg);
-            cull->child = localizer;
+            auto geom = LineGeometry::create();
+            for (auto& vert : part)
+            {
+                xform(vert, temp); temp -= offset;
+                geom->push_back(vsg::vec3(temp));
+            }
+            group->addChild(geom);
         }
+
+        auto localizer = vsg::MatrixTransform::create(vsg::translate(offset));
+        if (group->children.size() == 1)
+            localizer->addChild(group->children.front());
         else
-        {
-            cull->child = sg;
-        }
+            localizer->addChild(group);
+        geom_root = localizer;
     }
     else
     {
-        if (line.refPoint != vsg::dvec3())
+        // no reference point -- push raw geometry
+        auto group = vsg::Group::create();
+        for (auto& part : line.parts)
         {
-            auto localizer = vsg::MatrixTransform::create(vsg::translate(line.refPoint));
-            cull->child = localizer;
-            geom_parent = localizer;
+            auto geom = LineGeometry::create();
+            for (auto& vert : part)
+            {
+                geom->push_back(vsg::vec3(vert));
+            }
+            group->addChild(geom);
         }
+        if (group->children.size() == 1)
+            geom_root = group->children.front();
         else
-        {
-            auto group = vsg::Group::create();
-            cull->child = group;
-            geom_parent = group;
-        }
+            geom_root = group;
     }
 
-    for (auto& geom : line.geometries)
+    auto cull = vsg::CullNode::create();
+    if (stategroup)
     {
-        geom_parent->addChild(geom);
+        stategroup->addChild(geom_root);
+        cull->child = stategroup;
+    }
+    else
+    {
+        cull->child = geom_root;
     }
 
     vsg::ComputeBounds cb;
     cull->child->accept(cb);
     cull->bound.set((cb.bounds.min + cb.bounds.max) * 0.5, vsg::length(cb.bounds.min - cb.bounds.max) * 0.5);
 
-    line.node = cull;
+    renderable.node = cull;
+
+    runtime.compile(renderable.node);
+    return true;
 }
 
-int LineSystemNode::featureMask(const Line& c)
+int
+LineSystemNode::featureMask(const Line& c) const
 {
     int mask = 0;
     if (c.write_depth) mask |= WRITE_DEPTH;

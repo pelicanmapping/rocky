@@ -17,44 +17,40 @@ namespace ROCKY_NAMESPACE
      class ROCKY_EXPORT GeoCircle
      {
      public:
-         /** Construct an INVALID GeoCircle */
-        GeoCircle();
+         //! Construct an INVALID GeoCircle
+         GeoCircle();
 
-        /** Copy another GoeCircle */
-        GeoCircle(const GeoCircle& rhs);
+         /** Copy another GoeCircle */
+         GeoCircle(const GeoCircle& rhs);
 
-        /** Construct a new GeoCircle */
-        GeoCircle(
-             const GeoPoint& center,
-             double          radius );
+         /** Construct a new GeoCircle */
+         GeoCircle(const GeoPoint& center, double radius);
 
-        virtual ~GeoCircle() { }
+         /** The center point of the circle */
+         const GeoPoint& center() const { return _center; }
+         void setCenter(const GeoPoint& value) { _center = value; }
 
-        /** The center point of the circle */
-        const GeoPoint& center() const { return _center; }
-        void setCenter( const GeoPoint& value ) { _center = value; }
+         /** Circle's radius, in linear map units (or meters for a geographic SRS) */
+         double radius() const { return _radius; }
+         void setRadius(double value) { _radius = value; }
 
-        /** Circle's radius, in linear map units (or meters for a geographic SRS) */
-        double radius() const { return _radius; }
-        void setRadius( double value ) { _radius = value; }
+         /** SRS of the center point */
+         const SRS& srs() const { return _center.srs; }
 
-        /** SRS of the center point */
-        const SRS& srs() const { return _center.srs; }
+         /** equality test */
+         bool operator == (const GeoCircle& rhs) const;
 
-        /** equality test */
-        bool operator == ( const GeoCircle& rhs ) const;
+         /** inequality test */
+         bool operator != (const GeoCircle& rhs) const { return !operator==(rhs); }
 
-        /** inequality test */
-        bool operator != ( const GeoCircle& rhs ) const { return !operator==(rhs); }
+         /** validity test */
+         bool valid() const { return _center.valid() && _radius > 0.0; }
 
-        /** validity test */
-        bool valid() const { return _center.valid() && _radius > 0.0; }
+         /** transform the GeoCircle to another SRS */
+         GeoCircle transform(const SRS& srs) const;
 
-        /** transform the GeoCircle to another SRS */
-        bool transform(const SRS& srs, GeoCircle& out_circle) const;
-
-        /** does this GeoCircle intersect another? */
-        bool intersects(const GeoCircle& rhs) const;
+         /** does this GeoCircle intersect another? */
+         bool intersects(const GeoCircle& rhs) const;
 
      public:
 

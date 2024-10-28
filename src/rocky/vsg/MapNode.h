@@ -9,9 +9,10 @@
 #include <rocky/vsg/InstanceVSG.h>
 #include <rocky/vsg/TerrainSettings.h>
 #include <rocky/vsg/engine/TerrainNode.h>
+#include <rocky/vsg/engine/ViewLocal.h>
 #include <rocky/Map.h>
+#include <rocky/Horizon.h>
 #include <vsg/nodes/Group.h>
-#include <vsg/app/CompileManager.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -80,5 +81,10 @@ namespace ROCKY_NAMESPACE
         SRS _worldSRS;
         vsg::ref_ptr<vsg::Group> _layerNodes;
         bool _openedLayers = false;
+
+        struct ViewData {
+            std::shared_ptr<Horizon> horizon;
+        };
+        util::ViewLocal<ViewData> _viewlocal;
     };
 }

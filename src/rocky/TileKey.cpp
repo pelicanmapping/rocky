@@ -306,8 +306,7 @@ TileKey::createTileKeyContainingPoint(
     }
     else
     {
-        GeoPoint c;
-        point.transform(profile.srs(), c);
+        GeoPoint c = point.transform(profile.srs());
         return createTileKeyContainingPoint(c, level, profile);
     }
 }

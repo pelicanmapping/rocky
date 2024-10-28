@@ -48,15 +48,18 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix)
 {
     auto state = record.getState();
 
-    // update the view-local data if necessary:
+    // fetch the view-local data:
     auto& view = _viewlocal[record.getState()->_commandBuffer->viewID];
+
+    // only if something has changed since last time:
     if (view.dirty || local_matrix != view.local_matrix)
     {
         if (!view.pos_to_world.valid())
         {
-            if (record.getValue("worldsrs", view.world_srs))
+            if (record.getValue("rocky.worldsrs", view.world_srs))
             {
                 view.pos_to_world = position.srs.to(view.world_srs);
+                view.world_ellipsoid = &view.world_srs.ellipsoid(); // for speed :)
             }
         }
 
@@ -65,7 +68,7 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix)
             glm::dvec3 worldpos;
             if (view.pos_to_world(glm::dvec3(position.x, position.y, position.z), worldpos))
             {              
-                view.matrix = to_vsg(view.world_srs.ellipsoid().geocentricToLocalToWorld(worldpos)) * local_matrix;
+                view.matrix = to_vsg(view.world_ellipsoid->geocentricToLocalToWorld(worldpos)) * local_matrix;
             }
         }
 
@@ -73,13 +76,19 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix)
         view.dirty = false;
     }
 
-    // horizon cull, if active:
-    if (horizonCulling)
+    // horizon cull, if active (geocentric only)
+    if (horizonCulling && view.world_srs.isGeocentric())
     {
-        std::shared_ptr<Horizon> horizon;
-        if (state->getValue("horizon", horizon))
+        if (!view.horizon)
         {
-            if (!horizon->isVisible(view.matrix[3][0], view.matrix[3][1], view.matrix[3][2], bound.radius))
+            // cache this view's horizon pointer in the local view data
+            // so we don't have to look it up every frame
+            record.getValue("rocky.horizon", view.horizon);
+        }
+
+        if (view.horizon)
+        {
+            if (!view.horizon->isVisible(view.matrix[3][0], view.matrix[3][1], view.matrix[3][2], bound.radius))
                 return false;
         }
     }

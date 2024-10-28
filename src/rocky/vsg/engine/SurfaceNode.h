@@ -11,13 +11,13 @@
 #include <rocky/TileKey.h>
 #include <rocky/Horizon.h>
 #include <rocky/vsg/engine/Utils.h>
+#include <rocky/vsg/engine/ViewLocal.h>
 #include <vsg/nodes/MatrixTransform.h>
 #include <vsg/vk/State.h>
 #include <vsg/maths/vec3.h>
 
 namespace ROCKY_NAMESPACE
 {
-    class Horizon;
     class Runtime;
 
     /**
@@ -49,7 +49,7 @@ namespace ROCKY_NAMESPACE
         
         //! World-space visibility check (includes bounding box
         //! and horizon checks)
-        inline bool isVisible(vsg::State* state) const;
+        inline bool isVisible(vsg::RecordTraversal& rv) const;
 
         //! Force a recompute of the bounding box and culling information
         void recomputeBound();
@@ -69,11 +69,18 @@ namespace ROCKY_NAMESPACE
         std::vector<vsg::vec3> _proxyMesh;
         vsg::dvec3 _horizonCullingPoint;
         bool _horizonCullingPoint_valid = false;
+
+        struct ViewData {
+            std::shared_ptr<Horizon> horizon;
+        };
+        util::ViewLocal<ViewData> _viewlocal;
     };
 
 
-    inline bool SurfaceNode::isVisible(vsg::State* state) const
+    inline bool SurfaceNode::isVisible(vsg::RecordTraversal& rv) const
     {
+        auto* state = rv.getState();
+
         // bounding box visibility check; this is much tighter than the bounding
         // sphere. _frustumStack.top() contains the frustum in world coordinates.
         // https://github.com/vsg-dev/VulkanSceneGraph/blob/master/include/vsg/vk/State.h#L267
@@ -90,20 +97,24 @@ namespace ROCKY_NAMESPACE
                 return false;
         }
 
-        // still good? check against the horizon.
-        shared_ptr<Horizon> horizon;
-        if (state->getValue("horizon", horizon))
+        // Horizon culling:
+        auto& viewlocal = _viewlocal[state->_commandBuffer->viewID];
+        if (!viewlocal.horizon)
+        {
+            rv.getValue("rocky.horizon", viewlocal.horizon);
+        }
+        if (viewlocal.horizon)
         {
             if (_horizonCullingPoint_valid)
             {
-                return horizon->isVisible(_horizonCullingPoint);
+                return viewlocal.horizon->isVisible(_horizonCullingPoint);
             }
             else
             {
                 for (p = 0; p < 4; ++p)
                 {
                     auto& wp = _worldPoints[p];
-                    if (horizon->isVisible(wp.x, wp.y, wp.z))
+                    if (viewlocal.horizon->isVisible(wp.x, wp.y, wp.z))
                         return true;
                 }
                 return false;

@@ -294,7 +294,7 @@ namespace
             temp.verts[0] = m.verts[tri.second.i0];
             temp.verts[1] = m.verts[tri.second.i1];
             temp.verts[2] = m.verts[tri.second.i2];
-            mesh.add(temp);
+            mesh.triangles.emplace_back(std::move(temp));
         }
     }
 }
@@ -363,7 +363,7 @@ FeatureView::generate(entt::registry& registry, const SRS& geom_srs, Runtime& ru
         }
     }
 
-    next_entity = _entity;
+    //next_entity = _entity;
   
     if (!keep_features)
     {

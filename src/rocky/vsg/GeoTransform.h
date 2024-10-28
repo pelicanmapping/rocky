@@ -8,6 +8,7 @@
 #include <rocky/vsg/Common.h>
 #include <rocky/vsg/engine/ViewLocal.h>
 #include <rocky/GeoPoint.h>
+#include <rocky/Horizon.h>
 #include <vsg/nodes/CullGroup.h>
 #include <vsg/nodes/Transform.h>
 
@@ -77,7 +78,9 @@ namespace ROCKY_NAMESPACE
             vsg::dmat4 matrix;
             vsg::dmat4 local_matrix;
             SRS world_srs;
+            const Ellipsoid* world_ellipsoid = nullptr;
             SRSOperation pos_to_world;
+            std::shared_ptr<Horizon> horizon;
         };
         util::ViewLocal<Data> _viewlocal;
 

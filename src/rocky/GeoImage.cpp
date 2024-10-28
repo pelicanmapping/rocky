@@ -802,8 +802,8 @@ GeoImage::read(glm::fvec4& output, const GeoPoint& p) const
     // transform if necessary
     if (!p.srs.horizontallyEquivalentTo(srs()))
     {
-        GeoPoint c;
-        return p.transform(srs(), c) && read(output, c);
+        GeoPoint c = p.transform(srs());
+        return c.valid() && read(output, c);
     }
 
     double u = (p.x - _extent.xmin()) / _extent.width();

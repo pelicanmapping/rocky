@@ -73,6 +73,10 @@ namespace ROCKY_NAMESPACE
             return instance.runtime();
         }
 
+        bool active() const {
+            return _lastFrameOK;
+        }
+
     public: // public properties
 
         entt::registry entities;
@@ -83,7 +87,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Viewer> viewer;
         vsg::ref_ptr<vsg::Group> root;
         vsg::ref_ptr<vsg::Group> mainScene;
-        vsg::ref_ptr<ECS::SystemsGroup> ecs_node;
+        vsg::ref_ptr<ECS::SystemsManagerGroup> ecsManager;
         std::shared_ptr<DisplayManager> displayManager;
         bool autoCreateWindow = true;
         Status commandLineStatus;
@@ -124,6 +128,7 @@ namespace ROCKY_NAMESPACE
         bool _multithreaded = true;
         bool _viewerRealized = false;
         int _framesSinceLastRender = 0; // for renderOnDemand
+        bool _lastFrameOK = true;
 
         void ctor(int& argc, char** argv);
 

@@ -39,15 +39,10 @@ namespace ROCKY_NAMESPACE
         //! Cast to a vector.
         explicit operator glm::dvec3 () const { return { x, y, z }; }
 
-        //! Transforms this geopoint into another SRS and puts the
-        //! output in the "output"
-        //! @return true upon success, false upon failure
-        bool transform(const SRS& outSRS, GeoPoint& output) const;
-
-        //! Transforms this geopoint into another SRS and puts the 
-        //! output into the provided xyz object
-        template<class VEC3>
-        inline bool transform(const SRS& outSRS, VEC3& output) const;
+        //! Transforms this geopoint into another SRS.
+        //! @param outSRS The target SRS
+        //! @return The transformed geopoint
+        GeoPoint transform(const SRS& outSRS) const;
 
         //! Transforms this point in place to another SRS
         bool transformInPlace(const SRS& srs);
@@ -94,15 +89,4 @@ namespace ROCKY_NAMESPACE
         //! Center position of the object
         virtual const GeoPoint& objectPosition() const = 0;
     };
-
-
-    // inlines
-
-    template<class VEC3>
-    bool GeoPoint::transform(const SRS& outSRS, VEC3& output) const {
-        GeoPoint temp;
-        if (!transform(outSRS, temp)) return false;
-        output = { temp.x, temp.y, temp.z };
-        return true;
-    }
 }

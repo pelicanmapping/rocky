@@ -21,29 +21,25 @@ auto Demo_Mesh_Absolute = [](Application& app)
         // Attach a mesh component:
         auto& mesh = app.entities.emplace<Mesh>(entity);
 
-        // Make some geometry in ECEF coordinates
-        //auto xform = SRS::WGS84.to(app.mapNode->worldSRS());
+        // Make some geometry.
         const double step = 2.5;
         const double alt = 0.0;
         const double min_lon = 0.0, max_lon = 35.0;
         const double min_lat = 15.0, max_lat = 35.0;
 
-        // A reference point will prevent local precision jitter.
-        auto xform = mesh.setReferencePoint(GeoPoint(
-            SRS::WGS84, (min_lon + max_lon) * 0.5, (min_lat + max_lat) * 0.5, alt));
+        mesh.referencePoint = GeoPoint(SRS::WGS84, (min_lon + max_lon) * 0.5, (min_lat + max_lat) * 0.5, alt);
 
         for (double lon = 0.0; lon < 35.0; lon += step)
         {
             for(double lat = 15.0; lat < 35.0; lat += step)
             {
-                vsg::dvec3 v1, v2, v3, v4;
-                xform(vsg::dvec3{ lon, lat, alt }, v1);
-                xform(vsg::dvec3{ lon + step, lat, alt }, v2);
-                xform(vsg::dvec3{ lon + step, lat + step, alt }, v3);
-                xform(vsg::dvec3{ lon, lat + step, alt }, v4);
-
-                mesh.add({ {v1, v2, v3} });
-                mesh.add({ {v1, v3, v4} });
+                vsg::dvec3 v1(lon, lat, alt);
+                vsg::dvec3 v2(lon + step, lat, alt );
+                vsg::dvec3 v3(lon + step, lat + step, alt);
+                vsg::dvec3 v4(lon, lat + step, alt);
+                
+                mesh.triangles.emplace_back(Triangle{ {v1, v2, v3} });
+                mesh.triangles.emplace_back(Triangle{ {v1, v3, v4} });
             }
         }
 
@@ -115,7 +111,7 @@ auto Demo_Mesh_Relative = [](Application& app)
 
         for (unsigned i = 0; i < 48; )
         {
-            mesh.add({
+            mesh.triangles.emplace_back(Triangle{
                 {verts[indices[i++]], verts[indices[i++]], verts[indices[i++]]},
                 {color, color, color} });
 
@@ -192,7 +188,7 @@ auto Demo_Mesh_Multi = [](Application& app)
 
         for (unsigned i = 0; i < 48; )
         {
-            mesh.add({
+            mesh.triangles.emplace_back(Triangle{
                 {verts[indices[i++]], verts[indices[i++]], verts[indices[i++]]},
                 {color, color, color} });
 

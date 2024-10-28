@@ -143,9 +143,9 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
     if (subtilesExist())
         _needsSubtiles = false;
 
-    auto* host = rv.getObject<TerrainTileHost>("TerrainTileHost");
+    auto* host = rv.getObject<TerrainTileHost>("rocky.terraintilehost");
 
-    if (surface->isVisible(rv.getState()))
+    if (surface->isVisible(rv))
     {
         // determine whether we can and should subdivide to a higher resolution:
         bool subtilesInRange = shouldSubDivide(rv.getState());

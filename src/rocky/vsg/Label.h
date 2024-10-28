@@ -5,7 +5,6 @@
  */
 #pragma once
 #include <rocky/vsg/ECS.h>
-#include <vsg/text/Text.h>
 #include <vsg/text/Font.h>
 #include <vsg/text/StandardLayout.h>
 
@@ -24,31 +23,15 @@ namespace ROCKY_NAMESPACE
     /**
     * Text label component
     */
-    class ROCKY_EXPORT Label : public ECS::NodeComponent
+    class ROCKY_EXPORT Label : public ECS::Component
     {
     public:
-        //! Construct a new label component
-        Label();
-
-        //! Label content; call dirty() to apply
         std::string text;
-
-        //! Label style; call dirty() to apply
         LabelStyle style;
 
-        //! Apply changes
-        void dirty() override;
-
         //! serialize as JSON string
-        JSON to_json() const override;
-
-    protected:
-        vsg::ref_ptr<vsg::Text> textNode;
-        vsg::ref_ptr<vsg::stringValue> valueBuffer;
-        vsg::ref_ptr<vsg::StandardLayout> layout;
-        vsg::ref_ptr<vsg::Options> options;
-        LabelStyle appliedStyle;
-        std::string appliedText;
-        friend class LabelSystemNode;
+        std::string to_json() const override {
+            return {}; // TODO
+        }
     };
 }

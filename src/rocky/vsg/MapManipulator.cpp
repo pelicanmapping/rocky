@@ -876,8 +876,8 @@ MapManipulator::setViewpoint(const Viewpoint& vp, std::chrono::duration<float> d
             _state.setVPStartTime.clear();
 
             // End point is the world coordinates of the target viewpoint:
-            vsg::dvec3 endWorld;
-            _state.setVP1->position().transform(_worldSRS, endWorld);
+            auto world_pos = _state.setVP1->position().transform(_worldSRS);
+            vsg::dvec3 endWorld(world_pos.x, world_pos.y, world_pos.z);
 
             // calculate an acceleration factor based on the Z differential.
             _state.setVPArcHeight = 0.0;
@@ -972,12 +972,12 @@ MapManipulator::setViewpointFrame(const vsg::time_point& now)
     else
     {
         // Start point is the current manipulator center:
-        vsg::dvec3 startWorld;
-        _state.setVP0->position().transform(_worldSRS, startWorld);
+        auto p0 = _state.setVP0->position().transform(_worldSRS);
+        vsg::dvec3 startWorld(p0.x, p0.y, p0.z);
 
         // End point is the world coordinates of the target viewpoint:
-        vsg::dvec3 endWorld;
-        _state.setVP1->position().transform(_worldSRS, endWorld);
+        auto p1 = _state.setVP1->position().transform(_worldSRS);
+        vsg::dvec3 endWorld(p1.x, p1.y, p1.z);
 
         // Remaining time is the full duration minus the time since initiation:
         auto elapsed = std::chrono::duration_cast<std::chrono::duration<float>>(
@@ -2354,8 +2354,8 @@ MapManipulator::updateTether(const vsg::time_point& t)
     {
         auto& pos = _state.setVP1->position();
 
-        vsg::dvec3 world;
-        pos.transform(_worldSRS, world);
+        auto p0 = pos.transform(_worldSRS);
+        vsg::dvec3 world(p0.x, p0.y, p0.z);
 
         // If we just called setViewpointFrame, no need to calculate the center again.
         if (!isSettingViewpoint())
