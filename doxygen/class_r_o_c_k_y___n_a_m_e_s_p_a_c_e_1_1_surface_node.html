@@ -98,8 +98,8 @@ shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image
 const glm::dmat4 &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_surface_node.html#a893b84970522772248e36f30a51c54e5">getElevationMatrix</a> () const</td></tr>
 <tr class="memdesc:a893b84970522772248e36f30a51c54e5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Elevation matrix representing to this surface. <br /></td></tr>
 <tr class="separator:a893b84970522772248e36f30a51c54e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad8b2c7eecee354e6f732d2dba31846ba"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_surface_node.html#ad8b2c7eecee354e6f732d2dba31846ba">isVisible</a> (vsg::State *state) const</td></tr>
-<tr class="separator:ad8b2c7eecee354e6f732d2dba31846ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa9427796d077be7569b8224fef55c77"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_surface_node.html#afa9427796d077be7569b8224fef55c77">isVisible</a> (vsg::RecordTraversal &amp;rv) const</td></tr>
+<tr class="separator:afa9427796d077be7569b8224fef55c77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aadccf76cb97b02b3ab6681a68f714d1d"><td class="memItemLeft" align="right" valign="top"><a id="aadccf76cb97b02b3ab6681a68f714d1d"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_surface_node.html#aadccf76cb97b02b3ab6681a68f714d1d">recomputeBound</a> ()</td></tr>
 <tr class="memdesc:aadccf76cb97b02b3ab6681a68f714d1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Force a recompute of the bounding box and culling information. <br /></td></tr>
@@ -146,12 +146,15 @@ vsg::dvec3&#160;</td><td class="memItemRight" valign="bottom"><b>_horizonCulling
 <tr class="memitem:ac623c2f1c2b296344e9f13f43d6559b8"><td class="memItemLeft" align="right" valign="top"><a id="ac623c2f1c2b296344e9f13f43d6559b8"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>_horizonCullingPoint_valid</b> = false</td></tr>
 <tr class="separator:ac623c2f1c2b296344e9f13f43d6559b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6184d5c5cab67bac5e2a40d13f3496a"><td class="memItemLeft" align="right" valign="top"><a id="ac6184d5c5cab67bac5e2a40d13f3496a"></a>
+util::ViewLocal&lt; ViewData &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_viewlocal</b></td></tr>
+<tr class="separator:ac6184d5c5cab67bac5e2a40d13f3496a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_surface_node.html">SurfaceNode</a> holds the geometry and transform information for one terrain tile surface. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="ad8b2c7eecee354e6f732d2dba31846ba"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad8b2c7eecee354e6f732d2dba31846ba">&#9670;&nbsp;</a></span>isVisible()</h2>
+<a id="afa9427796d077be7569b8224fef55c77"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afa9427796d077be7569b8224fef55c77">&#9670;&nbsp;</a></span>isVisible()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -162,8 +165,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>_horizonCullingPoint_
         <tr>
           <td class="memname">bool ROCKY_NAMESPACE::SurfaceNode::isVisible </td>
           <td>(</td>
-          <td class="paramtype">vsg::State *&#160;</td>
-          <td class="paramname"><em>state</em></td><td>)</td>
+          <td class="paramtype">vsg::RecordTraversal &amp;&#160;</td>
+          <td class="paramname"><em>rv</em></td><td>)</td>
           <td> const</td>
         </tr>
       </table>

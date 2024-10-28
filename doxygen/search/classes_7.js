@@ -1,7 +1,7 @@
 var searchData=
 [
   ['icon_845',['Icon',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon.html',1,'ROCKY_NAMESPACE']]],
-  ['icongeometry_846',['IconGeometry',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_icon_geometry.html',1,'ROCKY_NAMESPACE::detail']]],
+  ['icongeometry_846',['IconGeometry',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_geometry.html',1,'ROCKY_NAMESPACE']]],
   ['iconstyle_847',['IconStyle',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_style.html',1,'ROCKY_NAMESPACE']]],
   ['iconsystemnode_848',['IconSystemNode',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_system_node.html',1,'ROCKY_NAMESPACE']]],
   ['image_849',['Image',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html',1,'ROCKY_NAMESPACE']]],

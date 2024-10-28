@@ -93,90 +93,51 @@ $(function() {
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;        <span class="keywordtype">float</span> depth_offset = 0.0f; <span class="comment">// meters</span></div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    };</div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <span class="keyword">namespace </span>detail</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    {</div>
-<div class="line"><a name="l00034"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_line_geometry.html">   34</a></span>&#160;        <span class="keyword">class </span>ROCKY_EXPORT <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_line_geometry.html">LineGeometry</a> : <span class="keyword">public</span> vsg::Inherit&lt;vsg::Geometry, LineGeometry&gt;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        {</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_line_geometry.html">LineGeometry</a>();</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; </div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;            <span class="keywordtype">void</span> push_back(<span class="keyword">const</span> vsg::vec3&amp; vert);</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160; </div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;            <span class="keywordtype">unsigned</span> numVerts() <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;            <span class="keywordtype">void</span> setFirst(<span class="keywordtype">unsigned</span> value);</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;            <span class="keywordtype">void</span> setCount(<span class="keywordtype">unsigned</span> value);</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160; </div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;            <span class="keywordtype">void</span> compile(vsg::Context&amp;) <span class="keyword">override</span>;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160; </div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;            vsg::vec4 _defaultColor = { 1,1,1,1 };</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;            std::vector&lt;vsg::vec3&gt; _current;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;            std::vector&lt;vsg::vec3&gt; _previous;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;            std::vector&lt;vsg::vec3&gt; _next;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;            std::vector&lt;vsg::vec4&gt; _colors;</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;            vsg::ref_ptr&lt;vsg::DrawIndexed&gt; _drawCommand;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        };</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160; </div>
-<div class="line"><a name="l00068"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_bind_line_descriptors.html">   68</a></span>&#160;        <span class="keyword">class </span>ROCKY_EXPORT <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_bind_line_descriptors.html">BindLineDescriptors</a> : <span class="keyword">public</span> vsg::Inherit&lt;vsg::BindDescriptorSet, BindLineDescriptors&gt;</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        {</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_bind_line_descriptors.html">BindLineDescriptors</a>();</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;            <span class="keywordtype">void</span> init(vsg::ref_ptr&lt;vsg::PipelineLayout&gt; layout);</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;            <span class="keywordtype">void</span> updateStyle(<span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_style.html">LineStyle</a>&amp;);</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;            vsg::ref_ptr&lt;vsg::ubyteArray&gt; _styleData;</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        };</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    }</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160; </div>
-<div class="line"><a name="l00088"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html">   88</a></span>&#160;    <span class="keyword">class </span>ROCKY_EXPORT <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html">Line</a> : <span class="keyword">public</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component.html">ECS::NodeComponent</a></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    {</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html">Line</a>();</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160; </div>
-<div class="line"><a name="l00095"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ab188c1debfcea52c3b487781eabf035d">   95</a></span>&#160;        std::optional&lt;LineStyle&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ab188c1debfcea52c3b487781eabf035d">style</a>;</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160; </div>
-<div class="line"><a name="l00098"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ae8099204189392fc192d90c1b368ca3b">   98</a></span>&#160;        <span class="keywordtype">bool</span> write_depth = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160; </div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;        <span class="keyword">template</span>&lt;<span class="keyword">class</span> DVEC3_ITER&gt;</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">void</span> push(DVEC3_ITER begin, DVEC3_ITER end);</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160; </div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;        <span class="keywordtype">void</span> dirty();</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160; </div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;        std::string to_json() <span class="keyword">const override</span>;</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160; </div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    <span class="keyword">public</span>: <span class="comment">// NodeComponent</span></div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160; </div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;        <span class="keywordtype">int</span> featureMask() <span class="keyword">const override</span>;</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160; </div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        vsg::ref_ptr&lt;detail::BindLineDescriptors&gt; bindCommand;</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;        std::vector&lt;vsg::ref_ptr&lt;detail::LineGeometry&gt;&gt; geometries;</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;        <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_system_node.html">LineSystemNode</a>;</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    };</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160; </div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    <span class="comment">// inline implementations</span></div>
-<div class="line"><a name="l00123"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a8a34508bbe7c79621ce8d0fadc3c2c98">  123</a></span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> DVEC3_ITER&gt; <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a8a34508bbe7c79621ce8d0fadc3c2c98">Line::push</a>(DVEC3_ITER begin, DVEC3_ITER end)</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    {</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;        <span class="keyword">auto</span> geom = detail::LineGeometry::create();</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;        <span class="keywordflow">for</span> (DVEC3_ITER i = begin; i != end; ++i)</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;        {</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;            <span class="keyword">auto</span> local = vsg::dvec3(i-&gt;x, i-&gt;y, i-&gt;z) - refPoint;</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;            geom-&gt;push_back(vsg::vec3(local));</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;        }</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;        geometries.push_back(geom);</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;    }</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;}</div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component.html">ROCKY_NAMESPACE::ECS::NodeComponent</a></div><div class="ttdef"><b>Definition:</b> ECS.h:48</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html">ROCKY_NAMESPACE::Line</a></div><div class="ttdef"><b>Definition:</b> Line.h:89</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_a8a34508bbe7c79621ce8d0fadc3c2c98"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a8a34508bbe7c79621ce8d0fadc3c2c98">ROCKY_NAMESPACE::Line::push</a></div><div class="ttdeci">void push(DVEC3_ITER begin, DVEC3_ITER end)</div><div class="ttdef"><b>Definition:</b> Line.h:123</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_ab188c1debfcea52c3b487781eabf035d"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ab188c1debfcea52c3b487781eabf035d">ROCKY_NAMESPACE::Line::style</a></div><div class="ttdeci">std::optional&lt; LineStyle &gt; style</div><div class="ttdoc">Dynamic line styling. This is optional.</div><div class="ttdef"><b>Definition:</b> Line.h:95</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_system_node_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_system_node.html">ROCKY_NAMESPACE::LineSystemNode</a></div><div class="ttdef"><b>Definition:</b> LineSystem.h:20</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_bind_line_descriptors_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_bind_line_descriptors.html">ROCKY_NAMESPACE::detail::BindLineDescriptors</a></div><div class="ttdef"><b>Definition:</b> Line.h:69</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_line_geometry_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_line_geometry.html">ROCKY_NAMESPACE::detail::LineGeometry</a></div><div class="ttdef"><b>Definition:</b> Line.h:35</div></div>
+<div class="line"><a name="l00033"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html">   33</a></span>&#160;    <span class="keyword">class </span>ROCKY_EXPORT <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html">Line</a> : <span class="keyword">public</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html">ECS::Component</a></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    {</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00037"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a57d61b2d1a0ccc993fd756db7ad770a6">   37</a></span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a57d61b2d1a0ccc993fd756db7ad770a6">Line</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; </div>
+<div class="line"><a name="l00040"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ab188c1debfcea52c3b487781eabf035d">   40</a></span>&#160;        std::optional&lt;LineStyle&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ab188c1debfcea52c3b487781eabf035d">style</a>;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
+<div class="line"><a name="l00043"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ae8099204189392fc192d90c1b368ca3b">   43</a></span>&#160;        <span class="keywordtype">bool</span> write_depth = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160; </div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        <span class="keyword">template</span>&lt;<span class="keyword">class</span> DVEC3_ITER&gt;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">void</span> push(DVEC3_ITER begin, DVEC3_ITER end);</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
+<div class="line"><a name="l00054"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ab8c3b02399f6b3e402d1686267c7322b">   54</a></span>&#160;        std::string <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ab8c3b02399f6b3e402d1686267c7322b">to_json</a>()<span class="keyword"> const override </span>{</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;            <span class="keywordflow">return</span> {}; <span class="comment">// TODO</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        }</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; </div>
+<div class="line"><a name="l00061"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ae3acd64289ba361832af68520bd6f6a1">   61</a></span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">GeoPoint</a> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ae3acd64289ba361832af68520bd6f6a1">referencePoint</a>;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; </div>
+<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#af2588899f0d4c6d4e8678f9e6ff0d206">   64</a></span>&#160;        <span class="keyword">using</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#af2588899f0d4c6d4e8678f9e6ff0d206">Part</a> = std::vector&lt;vsg::dvec3&gt;;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        std::vector&lt;Part&gt; parts;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    };</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="comment">// inline implementations</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a8a34508bbe7c79621ce8d0fadc3c2c98">   69</a></span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> DVEC3_ITER&gt; <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a8a34508bbe7c79621ce8d0fadc3c2c98">Line::push</a>(DVEC3_ITER begin, DVEC3_ITER end)</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    {</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#af2588899f0d4c6d4e8678f9e6ff0d206">Part</a> part;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        <span class="keyword">auto</span> size = std::distance(begin, end);</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        part.reserve(size);</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keywordflow">for</span> (DVEC3_ITER i = begin; i != end; ++i)</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        {</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;            part.emplace_back(i-&gt;x, i-&gt;y, i-&gt;z);</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        }</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        parts.emplace_back(std::move(part));</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    }</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;}</div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html">ROCKY_NAMESPACE::ECS::Component</a></div><div class="ttdef"><b>Definition:</b> ECS.h:32</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">ROCKY_NAMESPACE::GeoPoint</a></div><div class="ttdef"><b>Definition:</b> GeoPoint.h:17</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html">ROCKY_NAMESPACE::Line</a></div><div class="ttdef"><b>Definition:</b> Line.h:34</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_a57d61b2d1a0ccc993fd756db7ad770a6"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a57d61b2d1a0ccc993fd756db7ad770a6">ROCKY_NAMESPACE::Line::Line</a></div><div class="ttdeci">Line()=default</div><div class="ttdoc">Construct a new component.</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_a8a34508bbe7c79621ce8d0fadc3c2c98"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a8a34508bbe7c79621ce8d0fadc3c2c98">ROCKY_NAMESPACE::Line::push</a></div><div class="ttdeci">void push(DVEC3_ITER begin, DVEC3_ITER end)</div><div class="ttdef"><b>Definition:</b> Line.h:69</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_ab188c1debfcea52c3b487781eabf035d"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ab188c1debfcea52c3b487781eabf035d">ROCKY_NAMESPACE::Line::style</a></div><div class="ttdeci">std::optional&lt; LineStyle &gt; style</div><div class="ttdoc">Dynamic line styling. This is optional.</div><div class="ttdef"><b>Definition:</b> Line.h:40</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_ab8c3b02399f6b3e402d1686267c7322b"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ab8c3b02399f6b3e402d1686267c7322b">ROCKY_NAMESPACE::Line::to_json</a></div><div class="ttdeci">std::string to_json() const override</div><div class="ttdoc">serialize as JSON string</div><div class="ttdef"><b>Definition:</b> Line.h:54</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_ae3acd64289ba361832af68520bd6f6a1"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ae3acd64289ba361832af68520bd6f6a1">ROCKY_NAMESPACE::Line::referencePoint</a></div><div class="ttdeci">GeoPoint referencePoint</div><div class="ttdef"><b>Definition:</b> Line.h:61</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_af2588899f0d4c6d4e8678f9e6ff0d206"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#af2588899f0d4c6d4e8678f9e6ff0d206">ROCKY_NAMESPACE::Line::Part</a></div><div class="ttdeci">std::vector&lt; vsg::dvec3 &gt; Part</div><div class="ttdoc">Geometry.</div><div class="ttdef"><b>Definition:</b> Line.h:64</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_style_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_style.html">ROCKY_NAMESPACE::LineStyle</a></div><div class="ttdef"><b>Definition:</b> Line.h:19</div></div>
 </div><!-- fragment --></div><!-- contents -->

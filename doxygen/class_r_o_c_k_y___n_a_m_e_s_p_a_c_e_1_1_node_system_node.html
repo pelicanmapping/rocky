@@ -77,21 +77,25 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="_mesh_system_8h_source.html">MeshSystem.h</a>&gt;</code></p>
 
-<p>Inherits vsg::Inherit&lt; ECS::SystemNode, NodeSystemNode &gt;, and ROCKY_NAMESPACE::NodeSystem.</p>
+<p>Inherits vsg::Inherit&lt; ECS::SystemNode&lt; NodeGraph, NodeRenderable &gt;, NodeSystemNode &gt;.</p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a17f14c7eea796ef2194db74a003edab0"><td class="memItemLeft" align="right" valign="top"><a id="a17f14c7eea796ef2194db74a003edab0"></a>
+<tr class="memitem:a90af281380a21bf8eb98bdf03606d39d"><td class="memItemLeft" align="right" valign="top"><a id="a90af281380a21bf8eb98bdf03606d39d"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>NodeSystemNode</b> (entt::registry &amp;registry)</td></tr>
-<tr class="separator:a17f14c7eea796ef2194db74a003edab0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4eeda93b00e4a0003cfb3905b6d08512"><td class="memItemLeft" align="right" valign="top"><a id="a4eeda93b00e4a0003cfb3905b6d08512"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>ROCKY_SYSTEMNODE_HELPER</b> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_node_component.html">ECS::NodeComponent</a>, helper)</td></tr>
-<tr class="separator:a4eeda93b00e4a0003cfb3905b6d08512"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a90af281380a21bf8eb98bdf03606d39d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acae5a76c537f1c78050bc5eacc3d3292"><td class="memItemLeft" align="right" valign="top"><a id="acae5a76c537f1c78050bc5eacc3d3292"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>on_construct</b> (entt::registry &amp;registry, entt::entity entity)</td></tr>
+<tr class="separator:acae5a76c537f1c78050bc5eacc3d3292"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a510167039fb7361a468ae52b93520262"><td class="memItemLeft" align="right" valign="top"><a id="a510167039fb7361a468ae52b93520262"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>update</b> (entt::entity, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;) override</td></tr>
+<tr class="separator:a510167039fb7361a468ae52b93520262"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>VSG node that renders Node components (just plain vsg nodes) </p>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
+</div><hr/>The documentation for this class was generated from the following files:<ul>
 <li>src/rocky/vsg/engine/<a class="el" href="_mesh_system_8h_source.html">MeshSystem.h</a></li>
+<li>src/rocky/vsg/engine/MeshSystem.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

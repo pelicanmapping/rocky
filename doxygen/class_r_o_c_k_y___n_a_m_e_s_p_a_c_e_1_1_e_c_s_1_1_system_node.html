@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Rocky: ROCKY_NAMESPACE::ECS::SystemNode Class Reference</title>
+<title>Rocky: ROCKY_NAMESPACE::ECS::SystemNode&lt; T, R &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -69,25 +69,191 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">ROCKY_NAMESPACE::ECS::SystemNode Class Reference</div>  </div>
+<div class="title">ROCKY_NAMESPACE::ECS::SystemNode&lt; T, R &gt; Class Template Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
 </div><!--header-->
 <div class="contents">
 
 <p><code>#include &lt;<a class="el" href="_e_c_s_8h_source.html">ECS.h</a>&gt;</code></p>
 
-<p>Inherits vsg::Inherit&lt; vsg::Compilable, SystemNode &gt;, and ROCKY_NAMESPACE::ECS::System.</p>
+<p>Inherits vsg::Inherit&lt; vsg::Compilable, SystemNode&lt; T, R &gt; &gt;, and <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html">ROCKY_NAMESPACE::ECS::System</a>.</p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:a6f3f5f5bbef5d366331428b98d1fe668"><td class="memItemLeft" align="right" valign="top"><a id="a6f3f5f5bbef5d366331428b98d1fe668"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>SystemNode</b> (entt::registry &amp;registry_)</td></tr>
-<tr class="separator:a6f3f5f5bbef5d366331428b98d1fe668"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac424b9fea818df9981b31279a0a7bd7"><td class="memItemLeft" align="right" valign="top"><a id="aac424b9fea818df9981b31279a0a7bd7"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#aac424b9fea818df9981b31279a0a7bd7">SystemNode</a> (entt::registry &amp;in_registry)</td></tr>
+<tr class="memdesc:aac424b9fea818df9981b31279a0a7bd7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct from a subclass. <br /></td></tr>
+<tr class="separator:aac424b9fea818df9981b31279a0a7bd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4900d902936281a7bdaab8438ec707dd"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a4900d902936281a7bdaab8438ec707dd">update</a> (entt::entity entity, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;runtime)=0</td></tr>
+<tr class="separator:a4900d902936281a7bdaab8438ec707dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a80d887bb800798c20865a84604bb20"><td class="memItemLeft" align="right" valign="top"><a id="a8a80d887bb800798c20865a84604bb20"></a>
+virtual int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a8a80d887bb800798c20865a84604bb20">featureMask</a> (const T &amp;t) const</td></tr>
+<tr class="memdesc:a8a80d887bb800798c20865a84604bb20"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature.html">Feature</a> mask for a specific component instance. <br /></td></tr>
+<tr class="separator:a8a80d887bb800798c20865a84604bb20"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a085275f80ef1f7976904eaa21e4b8679"><td class="memItemLeft" align="right" valign="top"><a id="a085275f80ef1f7976904eaa21e4b8679"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>accept</b> (vsg::Visitor &amp;v) override</td></tr>
+<tr class="separator:a085275f80ef1f7976904eaa21e4b8679"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8427591d97a914c495894cbe431e20b9"><td class="memItemLeft" align="right" valign="top"><a id="a8427591d97a914c495894cbe431e20b9"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a8427591d97a914c495894cbe431e20b9">accept</a> (vsg::ConstVisitor &amp;v) const override</td></tr>
+<tr class="memdesc:a8427591d97a914c495894cbe431e20b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pass-thru for VSG const visitors. <br /></td></tr>
+<tr class="separator:a8427591d97a914c495894cbe431e20b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40b795d33922d74ef4f3e6acba09585b"><td class="memItemLeft" align="right" valign="top"><a id="a40b795d33922d74ef4f3e6acba09585b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>compile</b> (vsg::Context &amp;) override</td></tr>
+<tr class="separator:a40b795d33922d74ef4f3e6acba09585b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b5fa12b6a5f64e61680b50942bee41a"><td class="memItemLeft" align="right" valign="top"><a id="a0b5fa12b6a5f64e61680b50942bee41a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>traverse</b> (vsg::RecordTraversal &amp;) const override</td></tr>
+<tr class="separator:a0b5fa12b6a5f64e61680b50942bee41a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44dffbb9496be737da42c580b83f847a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a44dffbb9496be737da42c580b83f847a">setReferencePoint</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">GeoPoint</a> &amp;point, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a> &amp;out_xform, vsg::dvec3 &amp;out_offset) const</td></tr>
+<tr class="separator:a44dffbb9496be737da42c580b83f847a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71748b535fd22ac06f5e2e6f459e6cce"><td class="memItemLeft" align="right" valign="top"><a id="a71748b535fd22ac06f5e2e6f459e6cce"></a>
+vsg::ref_ptr&lt; vsg::PipelineLayout &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a71748b535fd22ac06f5e2e6f459e6cce">getPipelineLayout</a> (const T &amp;) const</td></tr>
+<tr class="memdesc:a71748b535fd22ac06f5e2e6f459e6cce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fetches the correct layout for a component. <br /></td></tr>
+<tr class="separator:a71748b535fd22ac06f5e2e6f459e6cce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html">ROCKY_NAMESPACE::ECS::System</a></td></tr>
+<tr class="memitem:a9ca43be82e8703e0d0e2d1d52db83259 inherit pro_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td class="memItemLeft" align="right" valign="top"><a id="a9ca43be82e8703e0d0e2d1d52db83259"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>System</b> (entt::registry &amp;in_registry)</td></tr>
+<tr class="separator:a9ca43be82e8703e0d0e2d1d52db83259 inherit pro_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:a6abdc12570f9850893649c55bb822468"><td class="memItemLeft" align="right" valign="top"><a id="a6abdc12570f9850893649c55bb822468"></a>
+std::vector&lt; Pipeline &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>pipelines</b></td></tr>
+<tr class="separator:a6abdc12570f9850893649c55bb822468"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pub_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html">ROCKY_NAMESPACE::ECS::System</a></td></tr>
+<tr class="memitem:a984b05d1a720d87a47c74eaf6f722fb1 inherit pub_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td class="memItemLeft" align="right" valign="top"><a id="a984b05d1a720d87a47c74eaf6f722fb1"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html#a984b05d1a720d87a47c74eaf6f722fb1">initializeSystem</a> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;runtime)</td></tr>
+<tr class="memdesc:a984b05d1a720d87a47c74eaf6f722fb1 inherit pub_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the <a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s.html" title="Entity Component System support.">ECS</a> system (once at startup) <br /></td></tr>
+<tr class="separator:a984b05d1a720d87a47c74eaf6f722fb1 inherit pub_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20ba2ff06a82fca7a7600f8d8581876d inherit pub_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td class="memItemLeft" align="right" valign="top"><a id="a20ba2ff06a82fca7a7600f8d8581876d"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html#a20ba2ff06a82fca7a7600f8d8581876d">update</a> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;runtime)</td></tr>
+<tr class="memdesc:a20ba2ff06a82fca7a7600f8d8581876d inherit pub_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the <a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s.html" title="Entity Component System support.">ECS</a> system (once per frame) <br /></td></tr>
+<tr class="separator:a20ba2ff06a82fca7a7600f8d8581876d inherit pub_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system')"><img src="closed.png" alt="-"/>&#160;Public Attributes inherited from <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html">ROCKY_NAMESPACE::ECS::System</a></td></tr>
+<tr class="memitem:a2263bf883fd511aafc1aa92111ed64ce inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td class="memItemLeft" align="right" valign="top"><a id="a2263bf883fd511aafc1aa92111ed64ce"></a>
+entt::registry &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html#a2263bf883fd511aafc1aa92111ed64ce">registry</a></td></tr>
+<tr class="memdesc:a2263bf883fd511aafc1aa92111ed64ce inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s.html" title="Entity Component System support.">ECS</a> entity registry. <br /></td></tr>
+<tr class="separator:a2263bf883fd511aafc1aa92111ed64ce inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6e19b5df4438b163e5c8af35bc225a3 inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td class="memItemLeft" align="right" valign="top"><a id="ae6e19b5df4438b163e5c8af35bc225a3"></a>
+<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html#ae6e19b5df4438b163e5c8af35bc225a3">status</a></td></tr>
+<tr class="memdesc:ae6e19b5df4438b163e5c8af35bc225a3 inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>. <br /></td></tr>
+<tr class="separator:ae6e19b5df4438b163e5c8af35bc225a3 inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Base class for VSG node that mirrors an <a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s.html" title="Entity Component System support.">ECS</a> System. This node will live in the VSG scene graph and will be able to receive and respond to VSG traversals, and be responsible for rendering graphics assoicated with the system's components. </p>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
+<div class="textblock"><h3>template&lt;class T, class R&gt;<br />
+class ROCKY_NAMESPACE::ECS::SystemNode&lt; T, R &gt;</h3>
+
+<p>VSG node representing an <a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s.html" title="Entity Component System support.">ECS</a> system for the given component type (T) and corresponding renderable type (R). This lives under a <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_systems_manager_group.html">SystemsManagerGroup</a> node. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">T</td><td>The component type </td></tr>
+    <tr><td class="paramname">R</td><td>The renderable type (a struct that contains drawable data if necessary) </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a44dffbb9496be737da42c580b83f847a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a44dffbb9496be737da42c580b83f847a">&#9670;&nbsp;</a></span>setReferencePoint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class T , class R &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html">ROCKY_NAMESPACE::ECS::SystemNode</a>&lt; T, R &gt;::setReferencePoint </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">GeoPoint</a> &amp;&#160;</td>
+          <td class="paramname"><em>point</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a> &amp;&#160;</td>
+          <td class="paramname"><em>out_xform</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">vsg::dvec3 &amp;&#160;</td>
+          <td class="paramname"><em>out_offset</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Given a geospatial reference point, extract both an <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> op that will transform points from the component's <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> to the world <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a>, and an offset for floating-point precision localization. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">point</td><td>The reference point </td></tr>
+    <tr><td class="paramname">out_xform</td><td>The <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> operation to transform points </td></tr>
+    <tr><td class="paramname">out_offset</td><td>The offset to localize points </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a4900d902936281a7bdaab8438ec707dd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4900d902936281a7bdaab8438ec707dd">&#9670;&nbsp;</a></span>update()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class T , class R &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html">ROCKY_NAMESPACE::ECS::SystemNode</a>&lt; T, R &gt;::update </td>
+          <td>(</td>
+          <td class="paramtype">entt::entity&#160;</td>
+          <td class="paramname"><em>entity</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;&#160;</td>
+          <td class="paramname"><em>runtime</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Called when the system detects a new component. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">entity</td><td>The entity that has the new component </td></tr>
+    <tr><td class="paramname">context</td><td>The context for initializing the component </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if the update was successful; false if update should be called again later. </dd></dl>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
 <li>src/rocky/vsg/<a class="el" href="_e_c_s_8h_source.html">ECS.h</a></li>
 </ul>
 </div><!-- contents -->
