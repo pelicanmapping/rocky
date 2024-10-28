@@ -120,10 +120,10 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#a1c0e59cf6c49cae8f9fb7ff2e20158cb">hasVerticalDatumShift</a> () const</td></tr>
 <tr class="memdesc:a1c0e59cf6c49cae8f9fb7ff2e20158cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Has a vertical datum shift? <br /></td></tr>
 <tr class="separator:a1c0e59cf6c49cae8f9fb7ff2e20158cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abe63043bf209dfe07878fbe10977eed1"><td class="memItemLeft" align="right" valign="top"><a id="abe63043bf209dfe07878fbe10977eed1"></a>
-<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#abe63043bf209dfe07878fbe10977eed1">geoSRS</a> () const</td></tr>
-<tr class="memdesc:abe63043bf209dfe07878fbe10977eed1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the underlying geodetic (longitude, latitude) <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a>. <br /></td></tr>
-<tr class="separator:abe63043bf209dfe07878fbe10977eed1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26ee89b8a66b055e13e267d43a215eff"><td class="memItemLeft" align="right" valign="top"><a id="a26ee89b8a66b055e13e267d43a215eff"></a>
+<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#a26ee89b8a66b055e13e267d43a215eff">geodeticSRS</a> () const</td></tr>
+<tr class="memdesc:a26ee89b8a66b055e13e267d43a215eff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the underlying geodetic (longitude, latitude) <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a>. <br /></td></tr>
+<tr class="separator:a26ee89b8a66b055e13e267d43a215eff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6754dc2483f5e751b14ce1439a288190"><td class="memItemLeft" align="right" valign="top"><a id="a6754dc2483f5e751b14ce1439a288190"></a>
 <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#a6754dc2483f5e751b14ce1439a288190">geocentricSRS</a> () const</td></tr>
 <tr class="memdesc:a6754dc2483f5e751b14ce1439a288190"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the corresponding geocentric <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a>. Only applies to a geodetic <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a>. <br /></td></tr>
@@ -209,6 +209,10 @@ Static Public Attributes</h2></td></tr>
 static const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#aeadf324d06b2bf20d50f003e0c604561">EMPTY</a></td></tr>
 <tr class="memdesc:aeadf324d06b2bf20d50f003e0c604561"><td class="mdescLeft">&#160;</td><td class="mdescRight">Empty invalid <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a>. <br /></td></tr>
 <tr class="separator:aeadf324d06b2bf20d50f003e0c604561"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a87efdec9c564685d9787e2e429e60b9c"><td class="memItemLeft" align="right" valign="top"><a id="a87efdec9c564685d9787e2e429e60b9c"></a>
+static std::function&lt; void(int level, const char *msg)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#a87efdec9c564685d9787e2e429e60b9c">projMessageCallback</a> = nullptr</td></tr>
+<tr class="memdesc:a87efdec9c564685d9787e2e429e60b9c"><td class="mdescLeft">&#160;</td><td class="mdescRight">PROJ message redirector. <br /></td></tr>
+<tr class="separator:a87efdec9c564685d9787e2e429e60b9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Spatial reference system. An <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> is the context that makes a coordinates geospatially meaningful. </p>
