@@ -171,9 +171,9 @@ $(function() {
 <div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;            std::vector&lt;Pipeline&gt; pipelines;</div>
 <div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160; </div>
 <div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;            <span class="comment">// Hooks to expose systems and components to VSG visitors.</span></div>
-<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;            <span class="keywordtype">void</span> accept(vsg::Visitor&amp; v) <span class="keyword">override</span>;</div>
-<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;            <span class="keywordtype">void</span> accept(vsg::ConstVisitor&amp; v) <span class="keyword">const override</span>;</div>
-<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;            <span class="keywordtype">void</span> compile(vsg::Context&amp;) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;            <span class="keywordtype">void</span> compile(vsg::Context&amp;) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;            <span class="keywordtype">void</span> traverse(vsg::Visitor&amp; v) <span class="keyword">override</span>;</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;            <span class="keywordtype">void</span> traverse(vsg::ConstVisitor&amp; v) <span class="keyword">const override</span>;</div>
 <div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;            <span class="keywordtype">void</span> traverse(vsg::RecordTraversal&amp;) <span class="keyword">const override</span>;</div>
 <div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160; </div>
 <div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;            <span class="keywordtype">bool</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a44dffbb9496be737da42c580b83f847a">setReferencePoint</a>(<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">GeoPoint</a>&amp; point, <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>&amp; out_xform, vsg::dvec3&amp; out_offset) <span class="keyword">const</span>;</div>
@@ -299,7 +299,7 @@ $(function() {
 <div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160; </div>
 <div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160; </div>
 <div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T, <span class="keyword">class</span> R&gt;</div>
-<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html">ECS::SystemNode&lt;T,R&gt;::accept</a>(vsg::Visitor&amp; v)</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html">ECS::SystemNode&lt;T,R&gt;::traverse</a>(vsg::Visitor&amp; v)</div>
 <div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;    {</div>
 <div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;        <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; pipeline : pipelines)</div>
 <div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;        {</div>
@@ -311,161 +311,165 @@ $(function() {
 <div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;                <span class="keywordflow">if</span> (renderable.node)</div>
 <div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;                    renderable.node-&gt;accept(v);</div>
 <div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;            });</div>
-<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;    }</div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160; </div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T, <span class="keyword">class</span> R&gt;</div>
-<div class="line"><a name="l00322"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a8427591d97a914c495894cbe431e20b9">  322</a></span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html">ECS::SystemNode&lt;T,R&gt;::accept</a>(vsg::ConstVisitor&amp; v)<span class="keyword"> const</span></div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;<span class="keyword">    </span>{</div>
-<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;        <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; pipeline : pipelines)</div>
-<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;        {</div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;            pipeline.commands-&gt;accept(v);</div>
-<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;        }</div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160; </div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;        registry.view&lt;R&gt;().each([&amp;](<span class="keyword">const</span> <span class="keyword">auto</span> e, <span class="keyword">auto</span>&amp; renderable)</div>
-<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;            {</div>
-<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;                <span class="keywordflow">if</span> (renderable.node)</div>
-<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;                    renderable.node-&gt;accept(v);</div>
-<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;            });</div>
-<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;    }</div>
-<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160; </div>
-<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T, <span class="keyword">class</span> R&gt;</div>
-<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html">ECS::SystemNode&lt;T, R&gt;::compile</a>(vsg::Context&amp; context)</div>
-<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;    {</div>
-<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;        <span class="comment">// Compile the pipelines</span></div>
-<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;        <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; pipeline : pipelines)</div>
-<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;        {</div>
-<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;            pipeline.commands-&gt;compile(context);</div>
-<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;        }</div>
-<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160; </div>
-<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;        <span class="comment">// Compile the components</span></div>
-<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;        util::SimpleCompiler compiler(context);</div>
-<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;        <span class="keyword">auto</span> view = registry.view&lt;R&gt;();</div>
-<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;        view.each([&amp;](<span class="keyword">const</span> <span class="keyword">auto</span> entity, <span class="keyword">auto</span>&amp; renderable)</div>
-<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;            {</div>
-<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;                renderable.node-&gt;accept(compiler);</div>
-<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;            });</div>
-<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;    }</div>
-<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160; </div>
-<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T, <span class="keyword">class</span> R&gt;</div>
-<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> ECS::SystemNode&lt;T,R&gt;::traverse(vsg::RecordTraversal&amp; rt)<span class="keyword"> const</span></div>
-<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;<span class="keyword">    </span>{</div>
-<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;        <span class="keyword">const</span> vsg::dmat4 identity_matrix = vsg::dmat4(1.0);</div>
-<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160; </div>
-<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;        <span class="keyword">using</span> Entry = <span class="keyword">struct</span></div>
-<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;        {</div>
-<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;            <span class="keyword">const</span> R&amp; renderable;</div>
-<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;            entt::entity entity;</div>
-<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;        };</div>
-<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160; </div>
-<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;        <span class="comment">// Sort components into render sets by pipeline.</span></div>
-<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;        <span class="comment">// If this system doesn&#39;t support multiple pipelines, just </span></div>
-<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;        <span class="comment">// store them all together</span></div>
-<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;        std::vector&lt;std::vector&lt;Entry&gt;&gt; render_set(!pipelines.empty() ? pipelines.size() : 1);</div>
-<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160; </div>
-<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;        <span class="comment">// Get an optimized view of all this system&#39;s components:</span></div>
-<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;        registry.view&lt;T, R&gt;().each([&amp;](<span class="keyword">const</span> entt::entity entity, <span class="keyword">const</span> T&amp; component, <span class="keyword">const</span> R&amp; renderable)</div>
-<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;            {</div>
-<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;                <span class="comment">// Is the component visible?</span></div>
-<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;                <span class="keywordflow">if</span> (*component.active_ptr)</div>
-<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;                {</div>
-<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;                    <span class="comment">// Does it have a VSG node? If so, queue it up under the</span></div>
-<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;                    <span class="comment">// appropriate pipeline.</span></div>
-<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;                    <span class="keywordflow">if</span> (renderable.node)</div>
-<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;                    {</div>
-<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;                        <span class="keyword">auto</span>&amp; rs = !pipelines.empty() ? render_set[featureMask(component)] : render_set[0];</div>
-<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;                        rs.emplace_back(Entry{ renderable, entity });</div>
-<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;                    }</div>
-<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160; </div>
-<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;                    <span class="keywordflow">if</span> (!renderable.node || (renderable.revision != component.revision))</div>
-<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;                    {</div>
-<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;                        entities_to_update.push_back(entity);</div>
-<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;                    }</div>
-<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;                }</div>
-<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;            });</div>
-<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160; </div>
-<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;        <span class="comment">// Time to record all visible components.</span></div>
-<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;        <span class="comment">// For each pipeline:</span></div>
-<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">int</span> p = 0; p &lt; render_set.size(); ++p)</div>
-<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;        {</div>
-<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;            <span class="keywordflow">if</span> (!render_set[p].empty())</div>
-<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;            {</div>
-<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;                <span class="comment">// Bind the Graphics Pipeline for this render set, if there is one:</span></div>
-<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;                <span class="keywordflow">if</span> (!pipelines.empty())</div>
-<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;                {</div>
-<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;                    pipelines[p].commands-&gt;accept(rt);</div>
-<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;                }</div>
-<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160; </div>
-<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;                <span class="comment">// Them record each component.</span></div>
-<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;                <span class="comment">// If the component has a transform apply it too.</span></div>
-<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;                <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; e : render_set[p])</div>
-<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;                {</div>
-<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;                    <span class="keyword">auto</span>* xform = registry.try_get&lt;Transform&gt;(e.entity);</div>
-<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;                    <span class="keywordflow">if</span> (xform)</div>
-<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;                    {</div>
-<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;                        <span class="keywordflow">if</span> (xform-&gt;push(rt, identity_matrix))</div>
-<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;                        {</div>
-<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;                            e.renderable.node-&gt;accept(rt);</div>
-<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;                            xform-&gt;pop(rt);</div>
-<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;                        }</div>
-<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;                    }</div>
-<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;                    <span class="keywordflow">else</span></div>
-<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;                    {</div>
-<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;                        e.renderable.node-&gt;accept(rt);</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160; </div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;        Inherit::traverse(v);</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;    }</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160; </div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T, <span class="keyword">class</span> R&gt;</div>
+<div class="line"><a name="l00324"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#adbd7b1ee45740992cc9b42fd3f899656">  324</a></span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html">ECS::SystemNode&lt;T,R&gt;::traverse</a>(vsg::ConstVisitor&amp; v)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;        <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; pipeline : pipelines)</div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;        {</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;            pipeline.commands-&gt;accept(v);</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;        }</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160; </div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;        registry.view&lt;R&gt;().each([&amp;](<span class="keyword">const</span> <span class="keyword">auto</span> e, <span class="keyword">auto</span>&amp; renderable)</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;            {</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;                <span class="keywordflow">if</span> (renderable.node)</div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;                    renderable.node-&gt;accept(v);</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;            });</div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160; </div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;        Inherit::traverse(v);</div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;    }</div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160; </div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T, <span class="keyword">class</span> R&gt;</div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html">ECS::SystemNode&lt;T, R&gt;::compile</a>(vsg::Context&amp; context)</div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;    {</div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;        <span class="comment">// Compile the pipelines</span></div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;        <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; pipeline : pipelines)</div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;        {</div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;            pipeline.commands-&gt;compile(context);</div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;        }</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160; </div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;        <span class="comment">// Compile the components</span></div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;        util::SimpleCompiler compiler(context);</div>
+<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;        <span class="keyword">auto</span> view = registry.view&lt;R&gt;();</div>
+<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;        view.each([&amp;](<span class="keyword">const</span> <span class="keyword">auto</span> entity, <span class="keyword">auto</span>&amp; renderable)</div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;            {</div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;                renderable.node-&gt;accept(compiler);</div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;            });</div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;    }</div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160; </div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T, <span class="keyword">class</span> R&gt;</div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> ECS::SystemNode&lt;T,R&gt;::traverse(vsg::RecordTraversal&amp; rt)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;        <span class="keyword">const</span> vsg::dmat4 identity_matrix = vsg::dmat4(1.0);</div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160; </div>
+<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;        <span class="keyword">using</span> Entry = <span class="keyword">struct</span></div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;        {</div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;            <span class="keyword">const</span> R&amp; renderable;</div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;            entt::entity entity;</div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;        };</div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160; </div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;        <span class="comment">// Sort components into render sets by pipeline.</span></div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;        <span class="comment">// If this system doesn&#39;t support multiple pipelines, just </span></div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;        <span class="comment">// store them all together</span></div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;        std::vector&lt;std::vector&lt;Entry&gt;&gt; render_set(!pipelines.empty() ? pipelines.size() : 1);</div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160; </div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;        <span class="comment">// Get an optimized view of all this system&#39;s components:</span></div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;        registry.view&lt;T, R&gt;().each([&amp;](<span class="keyword">const</span> entt::entity entity, <span class="keyword">const</span> T&amp; component, <span class="keyword">const</span> R&amp; renderable)</div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;            {</div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;                <span class="comment">// Is the component visible?</span></div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;                <span class="keywordflow">if</span> (*component.active_ptr)</div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;                {</div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;                    <span class="comment">// Does it have a VSG node? If so, queue it up under the</span></div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;                    <span class="comment">// appropriate pipeline.</span></div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;                    <span class="keywordflow">if</span> (renderable.node)</div>
+<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;                    {</div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;                        <span class="keyword">auto</span>&amp; rs = !pipelines.empty() ? render_set[featureMask(component)] : render_set[0];</div>
+<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;                        rs.emplace_back(Entry{ renderable, entity });</div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;                    }</div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160; </div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;                    <span class="keywordflow">if</span> (!renderable.node || (renderable.revision != component.revision))</div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;                    {</div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;                        entities_to_update.push_back(entity);</div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;                    }</div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;                }</div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;            });</div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160; </div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;        <span class="comment">// Time to record all visible components.</span></div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;        <span class="comment">// For each pipeline:</span></div>
+<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">int</span> p = 0; p &lt; render_set.size(); ++p)</div>
+<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;        {</div>
+<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;            <span class="keywordflow">if</span> (!render_set[p].empty())</div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;            {</div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;                <span class="comment">// Bind the Graphics Pipeline for this render set, if there is one:</span></div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;                <span class="keywordflow">if</span> (!pipelines.empty())</div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;                {</div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;                    pipelines[p].commands-&gt;accept(rt);</div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;                }</div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160; </div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;                <span class="comment">// Them record each component.</span></div>
+<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;                <span class="comment">// If the component has a transform apply it too.</span></div>
+<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;                <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; e : render_set[p])</div>
+<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;                {</div>
+<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;                    <span class="keyword">auto</span>* xform = registry.try_get&lt;Transform&gt;(e.entity);</div>
+<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;                    <span class="keywordflow">if</span> (xform)</div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;                    {</div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;                        <span class="keywordflow">if</span> (xform-&gt;push(rt, identity_matrix))</div>
+<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;                        {</div>
+<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;                            e.renderable.node-&gt;accept(rt);</div>
+<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;                            xform-&gt;pop(rt);</div>
+<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;                        }</div>
 <div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;                    }</div>
-<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;                }</div>
-<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;            }</div>
-<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;        }</div>
-<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;    }</div>
-<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160; </div>
-<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160; </div>
-<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T, <span class="keyword">class</span> R&gt;</div>
-<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> ECS::SystemNode&lt;T, R&gt;::updateComponents(Runtime&amp; runtime)</div>
-<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;    {</div>
-<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;        <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; entity : entities_to_update)</div>
-<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;        {</div>
-<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;            <span class="keywordflow">if</span> (update(entity, runtime))</div>
-<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;            {</div>
-<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;                <span class="keyword">auto</span>&amp; [component, renderable] = registry.get&lt;T, R&gt;(entity);</div>
-<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;                renderable.revision = component.revision;</div>
-<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;            }</div>
-<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;        }</div>
-<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160; </div>
-<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;        entities_to_update.clear();</div>
-<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;    }</div>
-<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160; </div>
-<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T, <span class="keyword">class</span> R&gt;</div>
-<div class="line"><a name="l00442"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a44dffbb9496be737da42c580b83f847a">  442</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a44dffbb9496be737da42c580b83f847a">ECS::SystemNode&lt;T,R&gt;::setReferencePoint</a>(<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">GeoPoint</a>&amp; point, <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>&amp; out_xform, vsg::dvec3&amp; out_offset)<span class="keyword"> const</span></div>
-<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;<span class="keyword">    </span>{</div>
-<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;        <span class="keywordflow">if</span> (point.srs.<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#a8864cb5c0724df2c581668ace7d1444f">valid</a>())</div>
-<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160;        {</div>
-<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> worldSRS = point.srs;</div>
-<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160; </div>
-<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;            <span class="keywordflow">if</span> (point.srs.<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#aad88fd9aa9fd441e79ec17ee719fa0e0">isGeodetic</a>())</div>
-<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;            {</div>
-<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;                worldSRS = point.srs.<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#a6754dc2483f5e751b14ce1439a288190">geocentricSRS</a>();</div>
-<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;                <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">GeoPoint</a> world = point.<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html#a06d1c649fea2b09bdecad18c34c3113c">transform</a>(worldSRS);</div>
-<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;                <span class="keywordflow">if</span> (world.<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html#aff4448c3c00286dd150334e1bb138672">valid</a>())</div>
-<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160;                {</div>
-<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;                    out_offset = vsg::dvec3{ world.x, world.y, world.z };</div>
-<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160;                }</div>
-<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160;            }</div>
-<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160;            <span class="keywordflow">else</span></div>
-<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160;            {</div>
-<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160;                out_offset = vsg::dvec3{ point.x, point.y, point.z };</div>
+<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;                    <span class="keywordflow">else</span></div>
+<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;                    {</div>
+<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;                        e.renderable.node-&gt;accept(rt);</div>
+<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;                    }</div>
+<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;                }</div>
+<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;            }</div>
+<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;        }</div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;    }</div>
+<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160; </div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160; </div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T, <span class="keyword">class</span> R&gt;</div>
+<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> ECS::SystemNode&lt;T, R&gt;::updateComponents(Runtime&amp; runtime)</div>
+<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;    {</div>
+<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;        <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; entity : entities_to_update)</div>
+<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;        {</div>
+<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;            <span class="keywordflow">if</span> (update(entity, runtime))</div>
+<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;            {</div>
+<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;                <span class="keyword">auto</span>&amp; [component, renderable] = registry.get&lt;T, R&gt;(entity);</div>
+<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;                renderable.revision = component.revision;</div>
+<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;            }</div>
+<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;        }</div>
+<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160; </div>
+<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;        entities_to_update.clear();</div>
+<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;    }</div>
+<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160; </div>
+<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T, <span class="keyword">class</span> R&gt;</div>
+<div class="line"><a name="l00446"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a44dffbb9496be737da42c580b83f847a">  446</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a44dffbb9496be737da42c580b83f847a">ECS::SystemNode&lt;T,R&gt;::setReferencePoint</a>(<span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">GeoPoint</a>&amp; point, <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>&amp; out_xform, vsg::dvec3&amp; out_offset)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;        <span class="keywordflow">if</span> (point.srs.<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#a8864cb5c0724df2c581668ace7d1444f">valid</a>())</div>
+<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;        {</div>
+<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> worldSRS = point.srs;</div>
+<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160; </div>
+<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;            <span class="keywordflow">if</span> (point.srs.<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#aad88fd9aa9fd441e79ec17ee719fa0e0">isGeodetic</a>())</div>
+<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160;            {</div>
+<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;                worldSRS = point.srs.<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#a6754dc2483f5e751b14ce1439a288190">geocentricSRS</a>();</div>
+<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160;                <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">GeoPoint</a> world = point.<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html#a06d1c649fea2b09bdecad18c34c3113c">transform</a>(worldSRS);</div>
+<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160;                <span class="keywordflow">if</span> (world.<a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html#aff4448c3c00286dd150334e1bb138672">valid</a>())</div>
+<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160;                {</div>
+<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160;                    out_offset = vsg::dvec3{ world.x, world.y, world.z };</div>
+<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160;                }</div>
 <div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160;            }</div>
-<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160; </div>
-<div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160;            out_xform = <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>(point.srs, worldSRS);</div>
-<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160;        }</div>
-<div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;    }</div>
-<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160; </div>
-<div class="line"><a name="l00468"></a><span class="lineno">  468</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T, <span class="keyword">class</span> R&gt;</div>
-<div class="line"><a name="l00469"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a71748b535fd22ac06f5e2e6f459e6cce">  469</a></span>&#160;    vsg::ref_ptr&lt;vsg::PipelineLayout&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a71748b535fd22ac06f5e2e6f459e6cce">ECS::SystemNode&lt;T,R&gt;::getPipelineLayout</a>(<span class="keyword">const</span> T&amp; t)<span class="keyword"> const</span></div>
-<div class="line"><a name="l00470"></a><span class="lineno">  470</span>&#160;<span class="keyword">    </span>{</div>
-<div class="line"><a name="l00471"></a><span class="lineno">  471</span>&#160;        <span class="keywordflow">return</span> pipelines.empty() ? nullptr : pipelines[featureMask(t)].config-&gt;layout;</div>
-<div class="line"><a name="l00472"></a><span class="lineno">  472</span>&#160;    }</div>
-<div class="line"><a name="l00473"></a><span class="lineno">  473</span>&#160;}</div>
+<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160;            <span class="keywordflow">else</span></div>
+<div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160;            {</div>
+<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160;                out_offset = vsg::dvec3{ point.x, point.y, point.z };</div>
+<div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160;            }</div>
+<div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160; </div>
+<div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;            out_xform = <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a>(point.srs, worldSRS);</div>
+<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00468"></a><span class="lineno">  468</span>&#160;        }</div>
+<div class="line"><a name="l00469"></a><span class="lineno">  469</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00470"></a><span class="lineno">  470</span>&#160;    }</div>
+<div class="line"><a name="l00471"></a><span class="lineno">  471</span>&#160; </div>
+<div class="line"><a name="l00472"></a><span class="lineno">  472</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">class</span> T, <span class="keyword">class</span> R&gt;</div>
+<div class="line"><a name="l00473"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a71748b535fd22ac06f5e2e6f459e6cce">  473</a></span>&#160;    vsg::ref_ptr&lt;vsg::PipelineLayout&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a71748b535fd22ac06f5e2e6f459e6cce">ECS::SystemNode&lt;T,R&gt;::getPipelineLayout</a>(<span class="keyword">const</span> T&amp; t)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00474"></a><span class="lineno">  474</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00475"></a><span class="lineno">  475</span>&#160;        <span class="keywordflow">return</span> pipelines.empty() ? nullptr : pipelines[featureMask(t)].config-&gt;layout;</div>
+<div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160;    }</div>
+<div class="line"><a name="l00477"></a><span class="lineno">  477</span>&#160;}</div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html">ROCKY_NAMESPACE::ECS::Component</a></div><div class="ttdef"><b>Definition:</b> ECS.h:32</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component_html_a01d286924554068f85bc45360f35c6f3"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html#a01d286924554068f85bc45360f35c6f3">ROCKY_NAMESPACE::ECS::Component::name</a></div><div class="ttdeci">std::string name</div><div class="ttdoc">Component readable name.</div><div class="ttdef"><b>Definition:</b> ECS.h:35</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component_html_a9f26c17b7c063853af1ef11a289c6b2a"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html#a9f26c17b7c063853af1ef11a289c6b2a">ROCKY_NAMESPACE::ECS::Component::dirty</a></div><div class="ttdeci">void dirty()</div><div class="ttdoc">Bump the revision number to indicate that the component has changed.</div><div class="ttdef"><b>Definition:</b> ECS.h:51</div></div>
@@ -477,9 +481,9 @@ $(function() {
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_html_a984b05d1a720d87a47c74eaf6f722fb1"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html#a984b05d1a720d87a47c74eaf6f722fb1">ROCKY_NAMESPACE::ECS::System::initializeSystem</a></div><div class="ttdeci">virtual void initializeSystem(Runtime &amp;runtime)</div><div class="ttdoc">Initialize the ECS system (once at startup)</div><div class="ttdef"><b>Definition:</b> ECS.h:80</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_html_ae6e19b5df4438b163e5c8af35bc225a3"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html#ae6e19b5df4438b163e5c8af35bc225a3">ROCKY_NAMESPACE::ECS::System::status</a></div><div class="ttdeci">Status status</div><div class="ttdoc">Status.</div><div class="ttdef"><b>Definition:</b> ECS.h:77</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html">ROCKY_NAMESPACE::ECS::SystemNode</a></div><div class="ttdef"><b>Definition:</b> ECS.h:106</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node_html_a44dffbb9496be737da42c580b83f847a"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a44dffbb9496be737da42c580b83f847a">ROCKY_NAMESPACE::ECS::SystemNode::setReferencePoint</a></div><div class="ttdeci">bool setReferencePoint(const GeoPoint &amp;point, SRSOperation &amp;out_xform, vsg::dvec3 &amp;out_offset) const</div><div class="ttdef"><b>Definition:</b> ECS.h:442</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node_html_a44dffbb9496be737da42c580b83f847a"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a44dffbb9496be737da42c580b83f847a">ROCKY_NAMESPACE::ECS::SystemNode::setReferencePoint</a></div><div class="ttdeci">bool setReferencePoint(const GeoPoint &amp;point, SRSOperation &amp;out_xform, vsg::dvec3 &amp;out_offset) const</div><div class="ttdef"><b>Definition:</b> ECS.h:446</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node_html_a4900d902936281a7bdaab8438ec707dd"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a4900d902936281a7bdaab8438ec707dd">ROCKY_NAMESPACE::ECS::SystemNode::update</a></div><div class="ttdeci">virtual bool update(entt::entity entity, Runtime &amp;runtime)=0</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node_html_a71748b535fd22ac06f5e2e6f459e6cce"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a71748b535fd22ac06f5e2e6f459e6cce">ROCKY_NAMESPACE::ECS::SystemNode::getPipelineLayout</a></div><div class="ttdeci">vsg::ref_ptr&lt; vsg::PipelineLayout &gt; getPipelineLayout(const T &amp;) const</div><div class="ttdoc">Fetches the correct layout for a component.</div><div class="ttdef"><b>Definition:</b> ECS.h:469</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node_html_a71748b535fd22ac06f5e2e6f459e6cce"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a71748b535fd22ac06f5e2e6f459e6cce">ROCKY_NAMESPACE::ECS::SystemNode::getPipelineLayout</a></div><div class="ttdeci">vsg::ref_ptr&lt; vsg::PipelineLayout &gt; getPipelineLayout(const T &amp;) const</div><div class="ttdoc">Fetches the correct layout for a component.</div><div class="ttdef"><b>Definition:</b> ECS.h:473</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node_html_a8a80d887bb800798c20865a84604bb20"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node.html#a8a80d887bb800798c20865a84604bb20">ROCKY_NAMESPACE::ECS::SystemNode::featureMask</a></div><div class="ttdeci">virtual int featureMask(const T &amp;t) const</div><div class="ttdoc">Feature mask for a specific component instance.</div><div class="ttdef"><b>Definition:</b> ECS.h:128</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_systems_manager_group_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_systems_manager_group.html">ROCKY_NAMESPACE::ECS::SystemsManagerGroup</a></div><div class="ttdef"><b>Definition:</b> ECS.h:172</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_systems_manager_group_html_a170e1d34511636ffe43eea768046bb8a"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_systems_manager_group.html#a170e1d34511636ffe43eea768046bb8a">ROCKY_NAMESPACE::ECS::SystemsManagerGroup::add</a></div><div class="ttdeci">void add(vsg::ref_ptr&lt; SystemNode&lt; T, R &gt;&gt; system)</div><div class="ttdef"><b>Definition:</b> ECS.h:177</div></div>

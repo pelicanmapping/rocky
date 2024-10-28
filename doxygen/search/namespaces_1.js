@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['vsg_961',['vsg',['../namespacevsg.html',1,'']]]
+  ['vsg_960',['vsg',['../namespacevsg.html',1,'']]]
 ];
