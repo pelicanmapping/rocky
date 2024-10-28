@@ -1,6 +1,6 @@
 #include "RTT.h"
 
-using namespace ROCKY_VSG_NAMESPACE;
+using namespace ROCKY_NAMESPACE;
 
 
 // adapted from vsgExamples/vsgrendertotexture.cpp

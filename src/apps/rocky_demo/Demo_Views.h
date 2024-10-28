@@ -51,22 +51,18 @@ auto Demo_Views = [](Application& app)
                         bool vp_dirty = false;
                         auto old_vp = view->camera->getViewport();
                         auto vp = view->camera->getViewport();
+                        
                         if (ImGuiLTable::SliderFloat("X", &vp.x, 0, (float)window->traits()->width))
-                        {
                             vp_dirty = true;
-                        }
+
                         if (ImGuiLTable::SliderFloat("Y", &vp.y, 0, (float)window->traits()->height))
-                        {
                             vp_dirty = true;
-                        }
+
                         if (ImGuiLTable::SliderFloat("Width", &vp.width, 0, (float)window->traits()->width))
-                        {
                             vp_dirty = true;
-                        }
+
                         if (ImGuiLTable::SliderFloat("Height", &vp.height, 0, (float)window->traits()->height))
-                        {
                             vp_dirty = true;
-                        }
 
                         if (vp_dirty)
                         {
@@ -76,6 +72,7 @@ auto Demo_Views = [](Application& app)
                             view->camera->viewportState->set(
                                 (std::uint32_t)vp.x, (std::uint32_t)vp.y,
                                 (std::uint32_t)vp.width, (std::uint32_t)vp.height);
+
                             app.displayManager->refreshView(view);
                         }
 
@@ -126,7 +123,9 @@ auto Demo_Views = [](Application& app)
                             color[0] = float(rand() % 255) / 255.0f;
                             color[1] = float(rand() % 255) / 255.0f;
                             color[2] = float(rand() % 255) / 255.0f;
+                            dm->refreshView(new_view);
                         };
+
                     app.onNextUpdate(add);
                 }
 

@@ -9,7 +9,7 @@
 #include <vsg/state/ImageInfo.h>
 #include <vsg/vk/Context.h>
 
-namespace ROCKY_VSG_NAMESPACE
+namespace ROCKY_NAMESPACE
 {
     /**
     * Utilities for render-to-texture.

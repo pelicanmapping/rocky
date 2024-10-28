@@ -139,9 +139,9 @@ namespace ROCKY_NAMESPACE
             std::vector<Pipeline> pipelines;
 
             // Hooks to expose systems and components to VSG visitors.
-            void accept(vsg::Visitor& v) override;
-            void accept(vsg::ConstVisitor& v) const override;
             void compile(vsg::Context&) override;
+            void traverse(vsg::Visitor& v) override;
+            void traverse(vsg::ConstVisitor& v) const override;
             void traverse(vsg::RecordTraversal&) const override;
 
             //! Given a geospatial reference point, extract both an SRS op that will
@@ -303,7 +303,7 @@ namespace ROCKY_NAMESPACE
 
 
     template<class T, class R>
-    inline void ECS::SystemNode<T,R>::accept(vsg::Visitor& v)
+    inline void ECS::SystemNode<T,R>::traverse(vsg::Visitor& v)
     {
         for (auto& pipeline : pipelines)
         {
@@ -315,11 +315,13 @@ namespace ROCKY_NAMESPACE
                 if (renderable.node)
                     renderable.node->accept(v);
             });
+
+        Inherit::traverse(v);
     }
 
     //! Pass-thru for VSG const visitors
     template<class T, class R>
-    inline void ECS::SystemNode<T,R>::accept(vsg::ConstVisitor& v) const
+    inline void ECS::SystemNode<T,R>::traverse(vsg::ConstVisitor& v) const
     {
         for (auto& pipeline : pipelines)
         {
@@ -331,6 +333,8 @@ namespace ROCKY_NAMESPACE
                 if (renderable.node)
                     renderable.node->accept(v);
             });
+
+        Inherit::traverse(v);
     }
 
     template<class T, class R>
