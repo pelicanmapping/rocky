@@ -65,11 +65,7 @@ namespace ROCKY_NAMESPACE
 
         //! Construct an image an allocate memory for it,
         //! unless data is non-null, in which case use that memory
-        Image(
-            PixelFormat format,
-            unsigned s,
-            unsigned t,
-            unsigned r = 1);
+        Image(PixelFormat format, unsigned s, unsigned t, unsigned r = 1);
 
         //! Copy constructor
         Image(const Image& rhs);
@@ -79,6 +75,26 @@ namespace ROCKY_NAMESPACE
 
         //! Destruct and release the data unless it's not owned
         virtual ~Image();
+
+        //! Iterator for visiting each pixel in the image.
+        struct Iterator
+        {
+            Iterator(const Image* image) : _image(image) { }
+
+            inline unsigned r() const { return _r; }
+            inline unsigned s() const { return _s; }
+            inline unsigned t() const { return _t; }
+            inline double u() const { return _u; }
+            inline double v() const { return _v; }
+
+            template<typename CALLABLE>
+            inline void each(CALLABLE&& func);
+
+        private:
+            const Image* _image = nullptr;
+            unsigned _r = 0, _s = 0, _t = 0;
+            double _u = 0.0, _v = 0.0;
+        };
 
         //! Whether this object contains valid data
         inline bool valid() const;
@@ -109,25 +125,28 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Read the pixel at a column, row, and layer
-        inline void read(
-            Pixel& pixel,
-            unsigned s,
-            unsigned t,
-            unsigned layer = 0) const;
+        inline void read(Pixel& pixel, unsigned s, unsigned t, unsigned layer = 0) const;
+
+        //! Read the pixel at the location in an iterator
+        inline void read(Pixel& pixel, Iterator& i) const {
+            read(pixel, i.s(), i.t(), i.r());
+        }
 
         //! Read the pixel at UV coordinates with bilinear interpolation
-        inline void read_bilinear(
-            Pixel& pixel,
-            float u,
-            float v,
-            unsigned layer = 0) const;
+        inline void read_bilinear(Pixel& pixel, float u, float v, unsigned layer = 0) const;
+
+        //! Read the pixel at UV coordinates with bilinear interpolation at an iterator location
+        inline void read_bilinear(Pixel& pixel, Iterator& i) const {
+            read_bilinear(pixel, i.u(), i.v(), i.r());
+        }
 
         //! Write the pixel at a column, row, and layer
-        inline void write(
-            const Pixel& pixel,
-            unsigned s,
-            unsigned t,
-            unsigned layer = 0);
+        inline void write(const Pixel& pixel, unsigned s, unsigned t, unsigned layer = 0);
+
+        //! Write the pixel at the location in an iterator
+        inline void write(const Pixel& pixel, Iterator& i) {
+            write(pixel, i.s(), i.t(), i.r());
+        }
 
         //! Size of this image in bytes
         inline unsigned sizeInBytes() const;
@@ -152,9 +171,7 @@ namespace ROCKY_NAMESPACE
             double &dst_maxx, double &dst_maxy) const;
 
         //! Creates a resized clone of this image
-        std::shared_ptr<Image> resize(
-            unsigned width,
-            unsigned height) const;
+        std::shared_ptr<Image> resize(unsigned width, unsigned height) const;
 
         //! Creates a sharpened clone of this image.
         //! @param strength sharpening kernel strength, 1-5 is typically a reasonable range
@@ -163,8 +180,7 @@ namespace ROCKY_NAMESPACE
 
         //! Creates a convolved clone of this image.
         //! @param kernel convolution kernel (9 floats that add up to 1.0f)
-        std::shared_ptr<Image> convolve(
-            const float* kernel) const;
+        std::shared_ptr<Image> convolve(const float* kernel) const;
 
         //! Inverts the pixels in the T dimension
         void flipVerticalInPlace();
@@ -172,27 +188,9 @@ namespace ROCKY_NAMESPACE
         //! Nmmber of components in this image's pixel format
         inline unsigned numComponents() const;
 
-        struct iterator
-        {
-            iterator(const Image* image) : _image(image) { }
-
-            inline unsigned r() const { return _r; }
-            inline unsigned s() const { return _s; }
-            inline unsigned t() const { return _t; }
-            inline double u() const { return _u; }
-            inline double v() const { return _v; }
-
-            template<typename CALLABLE>
-            inline void forEachPixel(CALLABLE&& func);
-
-        private:
-            const Image* _image = nullptr;
-            unsigned _r = 0, _s = 0, _t = 0;
-            double _u = 0.0, _v = 0.0;
-        };
-
-        iterator get_iterator() const {
-            return iterator(this);
+        //! Get an iterator for visiting each pixel
+        Iterator iterator() const {
+            return Iterator(this);
         }
 
         //! Fills the entire image with a single value
@@ -209,11 +207,7 @@ namespace ROCKY_NAMESPACE
         PixelFormat _pixelFormat = R8G8B8A8_UNORM;
         unsigned char* _data = nullptr;
 
-        void allocate(
-            PixelFormat format,
-            unsigned s,
-            unsigned t,
-            unsigned r);
+        void allocate(PixelFormat format, unsigned s, unsigned t, unsigned r);
 
         struct Layout {
             void(*read)(Pixel&, unsigned char*, int);
@@ -236,15 +230,15 @@ namespace ROCKY_NAMESPACE
         return width() > 0 && height() > 0 && depth() > 0 && _data;
     }
 
-    void Image::read(Pixel& pixel, unsigned s, unsigned t, unsigned r) const
+    void Image::read(Pixel& pixel, unsigned s, unsigned t, unsigned layer) const
     {
         _layouts[pixelFormat()].read(
             pixel,
-            _data + (width()*height()*r + width()*t + s)*_layouts[pixelFormat()].bytes_per_pixel,
+            _data + (width()*height()*layer + width()*t + s)*_layouts[pixelFormat()].bytes_per_pixel,
             _layouts[pixelFormat()].num_components);
     }
 
-    void Image::read_bilinear(Pixel& pixel, float u, float v, unsigned r) const
+    void Image::read_bilinear(Pixel& pixel, float u, float v, unsigned layer) const
     {
         u = clamp(u, 0.0f, 1.0f);
         v = clamp(v, 0.0f, 1.0f);
@@ -262,21 +256,21 @@ namespace ROCKY_NAMESPACE
         float tmix = t0 < t1 ? (t - t0) / (t1 - t0) : 0.0f;
 
         Pixel UL, UR, LL, LR;
-        read(UL, (unsigned)s0, (unsigned)t0, r);
-        read(UR, (unsigned)s1, (unsigned)t0, r);
-        read(LL, (unsigned)s0, (unsigned)t1, r);
-        read(LR, (unsigned)s1, (unsigned)t1, r);
+        read(UL, (unsigned)s0, (unsigned)t0, layer);
+        read(UR, (unsigned)s1, (unsigned)t0, layer);
+        read(LL, (unsigned)s0, (unsigned)t1, layer);
+        read(LR, (unsigned)s1, (unsigned)t1, layer);
 
         Pixel TOP = UL * (1.0f - smix) + UR * smix;
         Pixel BOT = LL * (1.0f - smix) + LR * smix;
         pixel = TOP * (1.0f - tmix) + BOT * tmix;
     }
 
-    void Image::write(const Pixel& pixel, unsigned s, unsigned t, unsigned r)
+    void Image::write(const Pixel& pixel, unsigned s, unsigned t, unsigned layer)
     {
         _layouts[pixelFormat()].write(
             pixel,
-            _data + (width()*height()*r + height() * t + s)*_layouts[pixelFormat()].bytes_per_pixel,
+            _data + (width()*height()*layer + height() * t + s)*_layouts[pixelFormat()].bytes_per_pixel,
             _layouts[pixelFormat()].num_components);
     }
 
@@ -320,7 +314,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<typename CALLABLE>
-    inline void Image::iterator::forEachPixel(CALLABLE&& func)
+    inline void Image::Iterator::each(CALLABLE&& func)
     {
         for (_r = 0; _r < _image->depth(); ++_r)
         {

@@ -318,10 +318,7 @@ TerrainTileModelFactory::addColorLayers(
 
 
 TerrainTileModel::Elevation
-TerrainTileModelFactory::createElevationModel(
-    const Map* map,
-    const TileKey& key,
-    const IOOptions& io) const
+TerrainTileModelFactory::createElevationModel(const Map* map, const TileKey& key, const IOOptions& io) const
 {
     ROCKY_HARD_ASSERT(map != nullptr);
 

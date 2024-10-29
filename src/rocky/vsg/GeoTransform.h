@@ -63,9 +63,10 @@ namespace ROCKY_NAMESPACE
 
     public:
 
+        //! Disables the copy constructor.
         GeoTransform(const GeoTransform& rhs) = delete;
 
-        void accept(vsg::RecordTraversal&) const override;
+        void traverse(vsg::RecordTraversal&) const override;
 
         bool push(vsg::RecordTraversal&, const vsg::dmat4& m) const;
 

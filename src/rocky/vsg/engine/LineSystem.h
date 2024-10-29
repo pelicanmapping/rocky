@@ -63,24 +63,14 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::ubyteArray> _styleData;
     };
 
-
-    struct LineRenderable : public ECS::NodeComponent
-    {
-        vsg::ref_ptr<BindLineDescriptors> bindCommand;
-        //std::vector<vsg::ref_ptr<LineGeometry>> geometries;
-    };
-
     /**
      * ECS system that handles LineString components
      */
-    class ROCKY_EXPORT LineSystemNode :
-        public vsg::Inherit<ECS::SystemNode<Line, LineRenderable>, LineSystemNode>
+    class ROCKY_EXPORT LineSystemNode : public vsg::Inherit<ECS::SystemNode<Line>, LineSystemNode>
     {
     public:
         //! Construct the system
         LineSystemNode(entt::registry& registry);
-
-        virtual ~LineSystemNode();
 
         enum Features
         {
@@ -94,9 +84,6 @@ namespace ROCKY_NAMESPACE
 
         //! One-time initialization of the system    
         void initializeSystem(Runtime&) override;
-
-        //! Called by ENTT when the user creates a new component.
-        void on_construct(entt::registry& registry, entt::entity entity);
 
     private:
         bool update(entt::entity, Runtime& runtime) override;

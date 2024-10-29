@@ -74,18 +74,7 @@ namespace
 LineSystemNode::LineSystemNode(entt::registry& registry) :
     Inherit(registry)
 {
-    registry.on_construct<Line>().connect<&LineSystemNode::on_construct>(*this);
-}
-
-LineSystemNode::~LineSystemNode()
-{
-    registry.on_construct<Line>().disconnect<&LineSystemNode::on_construct>(*this);
-}
-
-void
-LineSystemNode::on_construct(entt::registry& registry, entt::entity entity)
-{
-    registry.emplace<LineRenderable>(entity);
+    //nop
 }
 
 void
@@ -167,7 +156,8 @@ LineSystemNode::initializeSystem(Runtime& runtime)
 bool
 LineSystemNode::update(entt::entity entity, Runtime& runtime)
 {
-    auto& [line, renderable] = registry.get<Line, LineRenderable>(entity);
+    auto& line = registry.get<Line>(entity);
+    auto& renderable = registry.get<ECS::Renderable>(line.entity);
 
     if (renderable.node)
         runtime.dispose(renderable.node);
@@ -175,12 +165,12 @@ LineSystemNode::update(entt::entity entity, Runtime& runtime)
     vsg::ref_ptr<vsg::StateGroup> stategroup;
     if (line.style.has_value())
     {
-        renderable.bindCommand = BindLineDescriptors::create();
-        renderable.bindCommand->updateStyle(line.style.value());
-        renderable.bindCommand->init(getPipelineLayout(line));
+        auto bindCommand = BindLineDescriptors::create();
+        bindCommand->updateStyle(line.style.value());
+        bindCommand->init(getPipelineLayout(line));
 
         stategroup = vsg::StateGroup::create();
-        stategroup->stateCommands.push_back(renderable.bindCommand);
+        stategroup->stateCommands.push_back(bindCommand);
     }
 
     vsg::ref_ptr<vsg::Node> geom_root;

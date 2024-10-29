@@ -23,15 +23,9 @@ namespace ROCKY_NAMESPACE
     /**
     * Text label component
     */
-    class ROCKY_EXPORT Label : public ECS::Component
+    struct Label : public ECS::VisibleComponent
     {
-    public:
         std::string text;
         LabelStyle style;
-
-        //! serialize as JSON string
-        std::string to_json() const override {
-            return {}; // TODO
-        }
     };
 }

@@ -759,40 +759,43 @@ GeoImage::composite(const std::vector<GeoImage>& sources, const std::vector<floa
     for(auto& source : sources)
         xforms.emplace_back(srs().to(source.srs()));
 
-    for (unsigned s = 0; s < _image->width(); ++s)
-    {
-        for (unsigned t = 0; t < _image->height(); ++t)
+        for (unsigned s = 0; s < _image->width(); ++s)
         {
-            getCoord(s, t, x, y);
-
-            bool pixel_valid = false;
-
-            for (int i = 0; i < (int)sources.size(); ++i)
+            for (unsigned t = 0; t < _image->height(); ++t)
             {
-                auto& source = sources[i];
-                float opacity = have_opacities ? opacities[i] : 1.0f;
+                getCoord(s, t, x, y);
 
-                if (!pixel_valid)
+                for (unsigned layer = 0; layer < _image->depth(); ++layer)
                 {
-                    if (source.read(pixel, x, y, xforms[i]) && pixel.a > 0.0f)
+                    bool pixel_valid = false;
+
+                    for (int i = 0; i < (int)sources.size(); ++i)
                     {
-                        pixel.a *= opacity;
-                        pixel_valid = true;
-                    }
-                }
-                else if (source.read(temp, x, y, xforms[i]))
-                {
-                    pixel = glm::mix(pixel, temp, temp.a * opacity);
-                }
-            }
+                        auto& source = sources[i];
+                        float opacity = have_opacities ? opacities[i] : 1.0f;
 
-            _image->write(pixel, s, t);
+                        if (!pixel_valid)
+                        {
+                            if (source.read(pixel, xforms[i], x, y, layer) && pixel.a > 0.0f)
+                            {
+                                pixel.a *= opacity;
+                                pixel_valid = true;
+                            }
+                        }
+                        else if (source.read(temp, xforms[i], x, y, layer))
+                        {
+                            pixel = glm::mix(pixel, temp, temp.a * opacity);
+                        }
+                    }
+
+                    _image->write(pixel, s, t, layer);
+                }
         }
     }
 }
 
 bool
-GeoImage::read(glm::fvec4& output, const GeoPoint& p) const
+GeoImage::read(glm::fvec4& output, const GeoPoint& p, int layer) const
 {
     if (!p.valid() || !valid())
     {
@@ -815,13 +818,13 @@ GeoImage::read(glm::fvec4& output, const GeoPoint& p) const
         return false;
     }
 
-    _image->read_bilinear(output, (float)u, (float)v);
+    _image->read_bilinear(output, (float)u, (float)v, layer);
 
     return true;
 }
 
 bool
-GeoImage::read(glm::fvec4& out, double x, double y) const
+GeoImage::read(glm::fvec4& out, double x, double y, int layer) const
 {
     if (!valid()) return false;
 
@@ -834,24 +837,24 @@ GeoImage::read(glm::fvec4& out, double x, double y) const
         return false;
     }
 
-    _image->read_bilinear(out, (float)u, (float)v);
+    _image->read_bilinear(out, (float)u, (float)v, layer);
     return true;
 }
 
 bool
-GeoImage::read_clamped(glm::fvec4& out, double x, double y) const
+GeoImage::read_clamped(glm::fvec4& out, double x, double y, int layer) const
 {
     if (!valid()) return false;
 
     double u = (x - _extent.xmin()) / _extent.width();
     double v = (y - _extent.ymin()) / _extent.height();
 
-    _image->read_bilinear(out, (float)clamp(u, 0.0, 1.0), (float)clamp(v, 0.0, 1.0));
+    _image->read_bilinear(out, (float)clamp(u, 0.0, 1.0), (float)clamp(v, 0.0, 1.0), layer);
     return true;
 }
 
 bool
-GeoImage::read(glm::fvec4& out, double x, double y, const SRS& xy_srs) const
+GeoImage::read(glm::fvec4& out, const SRS& xy_srs, double x, double y, int layer) const
 {
     if (!valid())
         return false;
@@ -863,20 +866,20 @@ GeoImage::read(glm::fvec4& out, double x, double y, const SRS& xy_srs) const
     if (!srs().to(xy_srs).transform(temp, temp))
         return false;
 
-    return read(out, temp.x, temp.y);
+    return read(out, temp.x, temp.y, layer);
 }
 
 bool
-GeoImage::read(glm::fvec4& out, double x, double y, const SRSOperation& xform) const
+GeoImage::read(glm::fvec4& out, const SRSOperation& xform, double x, double y, int layer) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(valid(), false);
 
     if (xform.noop())
-        return read(out, x, y);
+        return read(out, x, y, layer);
 
     glm::dvec3 temp(x, y, 0);
     if (!xform.transform(temp, temp))
         return false;
 
-    return read(out, temp.x, temp.y);
+    return read(out, temp.x, temp.y, layer);
 }

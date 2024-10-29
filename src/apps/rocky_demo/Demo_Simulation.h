@@ -42,6 +42,33 @@ namespace
                 }, context);
         }
     };
+
+
+    struct DeclutterData
+    {
+        vsg::dmat4 mvm;
+        vsg::box box;
+    };
+
+    class DeclutterSystem : public ECS::System
+    {
+        DeclutterSystem(entt::registry& registry) : ECS::System(registry) { }
+
+        void initializeSystem(Runtime& runtime)
+        {
+            //nop
+        }
+
+        void updateComponents(Runtime& runtime)
+        {
+            auto view = registry.view<Transform, DeclutterData>();
+
+            view.each([this](const auto entity, auto& xform, auto& declutter)
+                {
+                    //nop
+                });
+        }
+    };
 }
 
 auto Demo_Simulation = [](Application& app)
@@ -78,12 +105,14 @@ auto Demo_Simulation = [](Application& app)
             {
                 // Create a host entity:
                 auto entity = app.entities.create();
+
+                auto& icon = app.entities.emplace<Icon>(entity);
+                icon.style = IconStyle{ 16.0f + rand_unit(mt) * 16.0f, 0.0f }; // pixels, rotation(rad)
+
                 if (image.status.ok())
                 {
                     // attach an icon to the host:
-                    auto& icon = app.entities.emplace<Icon>(entity);
                     icon.image = image.value;
-                    icon.style = IconStyle{ 16.0f + rand_unit(mt) * 16.0f, 0.0f }; // pixels, rotation(rad)
                 }
 
                 double lat = -80.0 + rand_unit(mt) * 160.0;

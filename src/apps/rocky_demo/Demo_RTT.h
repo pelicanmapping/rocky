@@ -166,7 +166,7 @@ auto Demo_RTT = [](Application& app)
     {
         auto& mesh = app.entities.get<Mesh>(entity);
 
-        ImGuiLTable::Checkbox("Visible", &mesh.active);
+        ImGuiLTable::Checkbox("Visible", &mesh.visible);
 
         ImGuiLTable::End();
     }

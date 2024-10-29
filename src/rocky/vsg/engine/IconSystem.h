@@ -43,32 +43,14 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Draw> _drawCommand;
     };
 
-    struct ROCKY_EXPORT IconRenderable : public ECS::NodeComponent
-    {
-        IconRenderable();
-
-        entt::entity icon_id = entt::null;
-        vsg::ref_ptr<vsg::Data> imageData;
-        vsg::ref_ptr<class BindIconStyle> bindCommand;
-        vsg::ref_ptr<class IconGeometry> geometry;
-
-        //! Call after changing the style or image
-        void dirty(Icon&);
-
-        void dirtyImage();
-    };
-
     /**
      * Creates commands for rendering icon primitives.
      */
-    class ROCKY_EXPORT IconSystemNode :
-        public vsg::Inherit<ECS::SystemNode<Icon, IconRenderable>, IconSystemNode>
+    class ROCKY_EXPORT IconSystemNode : public vsg::Inherit<ECS::SystemNode<Icon>, IconSystemNode>
     {
     public:
         //! Construct the mesh renderer
         IconSystemNode(entt::registry& r);
-
-        virtual ~IconSystemNode();
 
         //! Features supported by this renderer
         enum Features
@@ -82,12 +64,6 @@ namespace ROCKY_NAMESPACE
 
         //! Initialize the system (once)
         void initializeSystem(Runtime&) override;
-
-
-    public: // entt signals
-
-        //! Called by ENTT when the user creates a new Icon.
-        void on_construct(entt::registry& registry, entt::entity);
 
     private:
 

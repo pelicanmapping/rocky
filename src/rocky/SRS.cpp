@@ -789,14 +789,6 @@ SRSOperation::SRSOperation(const SRS& from, const SRS& to) :
     }
 }
 
-//void*
-//SRSOperation::get_handle() const
-//{
-//    return (void*)g_srs_factory.get_or_create_operation(
-//        _from.definition(),
-//        _to.definition());
-//}
-
 bool
 SRSOperation::forward(void* handle, double& x, double& y, double& z) const
 {
@@ -892,7 +884,7 @@ std::string
 SRSOperation::string() const
 {
     return std::string(
-        proj_as_proj_string(g_pj_thread_local_context, (PJ*)get_handle(), PJ_PROJ_5, nullptr));
+        proj_as_proj_string(g_pj_thread_local_context, (PJ*)_handle, PJ_PROJ_5, nullptr));
 }
 
 

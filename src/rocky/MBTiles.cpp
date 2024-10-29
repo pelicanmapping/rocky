@@ -397,11 +397,12 @@ MBTiles::Driver::write(const TileKey& key, shared_ptr<Image> input, const IOOpti
     if (_forceRGB && input->pixelFormat() == Image::R8G8B8A8_UNORM)
     {
         image_to_write = Image::create(Image::R8G8B8_UNORM, input->width(), input->height(), input->depth());
-        input->get_iterator().forEachPixel([&](const Image::iterator& i)
+
+        input->iterator().each([&](auto& iter)
             {
                 glm::fvec4 pixel;
-                input->read(pixel, i.s(), i.t(), i.r());
-                image_to_write->write(pixel, i.s(), i.t(), i.r());
+                input->read(pixel, iter);
+                image_to_write->write(pixel, iter);
             }
         );
     }

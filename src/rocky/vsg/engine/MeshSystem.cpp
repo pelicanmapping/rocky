@@ -81,19 +81,9 @@ namespace
 MeshSystemNode::MeshSystemNode(entt::registry& registry) :
     Inherit(registry)
 {
-    registry.on_construct<Mesh>().connect<&MeshSystemNode::on_construct>(this);
+    //nop
 }
 
-MeshSystemNode::~MeshSystemNode()
-{
-    registry.on_construct<Mesh>().disconnect<&MeshSystemNode::on_construct>(this);
-}
-
-void
-MeshSystemNode::on_construct(entt::registry& registry, entt::entity entity)
-{
-    registry.emplace<MeshRenderable>(entity);
-}
 
 void
 MeshSystemNode::initializeSystem(Runtime& runtime)
@@ -184,7 +174,8 @@ MeshSystemNode::initializeSystem(Runtime& runtime)
 bool
 MeshSystemNode::update(entt::entity entity, Runtime& runtime)
 {
-    auto& [mesh, renderable] = registry.get<Mesh, MeshRenderable>(entity);
+    auto& mesh = registry.get<Mesh>(entity);
+    auto& renderable = registry.get<ECS::Renderable>(mesh.entity);
 
     if (renderable.node)
         runtime.dispose(renderable.node);
@@ -193,20 +184,20 @@ MeshSystemNode::update(entt::entity entity, Runtime& runtime)
 
     if (mesh.style.has_value() || mesh.texture)
     {
-        renderable.bindCommand = BindMeshDescriptors::create();
+        auto bindCommand = BindMeshDescriptors::create();
         if (mesh.texture)
-            renderable.bindCommand->_imageInfo = mesh.texture;
-        renderable.bindCommand->updateStyle(mesh.style.value());
+            bindCommand->_imageInfo = mesh.texture;
+        bindCommand->updateStyle(mesh.style.value());
 
-        renderable.bindCommand->init(getPipelineLayout(mesh));
+        bindCommand->init(getPipelineLayout(mesh));
 
         stategroup = vsg::StateGroup::create();
-        stategroup->stateCommands.push_back(renderable.bindCommand);
+        stategroup->stateCommands.push_back(bindCommand);
     }
 
     vsg::ref_ptr<vsg::Node> geometry_root;
 
-    renderable.geometry = new MeshGeometry();
+    auto geometry = MeshGeometry::create();
 
     if (mesh.referencePoint.valid())
     {
@@ -222,20 +213,20 @@ MeshSystemNode::update(entt::entity entity, Runtime& runtime)
             xform(tri.verts[1], v1); v32[1] = v1 - offset;
             xform(tri.verts[2], v2); v32[2] = v2 - offset;
 
-            renderable.geometry->add(v32, tri.uvs, tri.colors, tri.depthoffsets);
+            geometry->add(v32, tri.uvs, tri.colors, tri.depthoffsets);
         }
 
         auto mt = vsg::MatrixTransform::create(vsg::translate(offset));
-        mt->addChild(renderable.geometry);
+        mt->addChild(geometry);
         geometry_root = mt;
     }
     else
     {
         for (auto& tri : mesh.triangles)
         {
-            renderable.geometry->add(tri.verts, tri.uvs, tri.colors, tri.depthoffsets);
+            geometry->add(tri.verts, tri.uvs, tri.colors, tri.depthoffsets);
         }
-        geometry_root = renderable.geometry;
+        geometry_root = geometry;
     }
 
     // parent this mesh with a culling node
@@ -394,31 +385,19 @@ MeshGeometry::compile(vsg::Context& context)
     vsg::Geometry::compile(context);
 }
 
-
-
-
 NodeSystemNode::NodeSystemNode(entt::registry& registry) :
     Inherit(registry)
 {
-    registry.on_construct<NodeGraph>().connect<&NodeSystemNode::on_construct>(this);
-}
-
-NodeSystemNode::~NodeSystemNode()
-{
-    registry.on_construct<NodeGraph>().disconnect<&NodeSystemNode::on_construct>(this);
-}
-
-void
-NodeSystemNode::on_construct(entt::registry& registry, entt::entity entity)
-{
-    registry.emplace<NodeRenderable>(entity);
+    //nop
 }
 
 bool
 NodeSystemNode::update(entt::entity entity, Runtime& runtime)
 {
-    auto& [node, renderable] = registry.get<NodeGraph, NodeRenderable>(entity);
-    renderable.node = node.node;
+    auto& graph = registry.get<NodeGraph>(entity);
+    auto& renderable = registry.get<ECS::Renderable>(graph.entity);
+
+    renderable.node = graph.node;
     runtime.compile(renderable.node);
     return true;
 }

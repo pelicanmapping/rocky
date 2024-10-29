@@ -50,7 +50,7 @@ auto Demo_Line_Absolute = [](Application& app)
     {
         auto& component = app.entities.get<Line>(entity);
 
-        ImGuiLTable::Checkbox("Visible", &component.active);
+        ImGuiLTable::Checkbox("Visible", &component.visible);
 
         if (component.style.has_value())
         {
@@ -108,7 +108,7 @@ auto Demo_Line_Relative = [](Application& app)
     {
         auto& line = app.entities.get<Line>(entity);
 
-        ImGuiLTable::Checkbox("Visible", &line.active);
+        ImGuiLTable::Checkbox("Visible", &line.visible);
 
         if (line.style.has_value())
         {

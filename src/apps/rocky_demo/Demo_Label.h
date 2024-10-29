@@ -43,7 +43,7 @@ auto Demo_Label = [](Application& app)
     if (ImGuiLTable::Begin("text"))
     {
         auto& label = app.entities.get<Label>(entity);
-        ImGuiLTable::Checkbox("Visible", &label.active);
+        ImGuiLTable::Checkbox("Visible", &label.visible);
 
         if (label.text.length() <= 255)
         {

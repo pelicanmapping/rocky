@@ -43,12 +43,8 @@ namespace ROCKY_NAMESPACE
     /**
     * Triangle mesh component
     */
-    class ROCKY_EXPORT Mesh : public ECS::Component
+    struct Mesh : public ECS::VisibleComponent
     {
-    public:
-        //! Construct a mesh attachment
-        Mesh() = default;
-
         //! Optional texture
         vsg::ref_ptr<vsg::ImageInfo> texture;
 
@@ -61,11 +57,6 @@ namespace ROCKY_NAMESPACE
         //! Optional dynamic style data
         std::optional<MeshStyle> style;
 
-        //! serialize as JSON string
-        std::string to_json() const override {
-            return {}; // TODO
-        }
-
         //! Triangles comprising the mesh
         std::vector<Triangle> triangles;
 
@@ -75,7 +66,7 @@ namespace ROCKY_NAMESPACE
 
 
 
-    struct NodeGraph : public ECS::Component
+    struct NodeGraph : public ECS::VisibleComponent
     {
         vsg::ref_ptr<vsg::Node> node;
     };

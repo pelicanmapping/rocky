@@ -340,13 +340,13 @@ FeatureView::generate(entt::registry& registry, const SRS& geom_srs, Runtime& ru
         {
             auto& geom = registry.get_or_emplace<Line>(_entity);
             compile_feature_to_lines(feature, styles, geom_srs, geom);
-            geom.active_ptr = &active;
+            geom.visible_ptr = &visible;
         }
         else if (feature.geometry.type == Geometry::Type::Polygon)
         {
             auto& geom = registry.get_or_emplace<Mesh>(_entity);
             compile_polygon_feature_with_weemesh(feature, feature.geometry, styles, geom_srs, geom);
-            geom.active_ptr = &active;
+            geom.visible_ptr = &visible;
         }
         else if (feature.geometry.type == Geometry::Type::MultiPolygon)
         {
@@ -354,7 +354,7 @@ FeatureView::generate(entt::registry& registry, const SRS& geom_srs, Runtime& ru
             for (auto& part : feature.geometry.parts)
             {
                 compile_polygon_feature_with_weemesh(feature, part, styles, geom_srs, geom);
-                geom.active_ptr = &active;
+                geom.visible_ptr = &visible;
             }
         }
         else
@@ -363,8 +363,6 @@ FeatureView::generate(entt::registry& registry, const SRS& geom_srs, Runtime& ru
         }
     }
 
-    //next_entity = _entity;
-  
     if (!keep_features)
     {
         features.clear();

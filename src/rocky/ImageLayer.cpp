@@ -22,26 +22,22 @@ using namespace ROCKY_NAMESPACE::util;
 
 namespace
 {
-    class CompositeImage : public Inherit<Image, CompositeImage>
+    class Mosaic : public Inherit<Image, Mosaic>
     {
     public:
-        CompositeImage(
-            PixelFormat format,
-            unsigned s,
-            unsigned t,
-            unsigned r = 1) :
+        Mosaic(PixelFormat format, unsigned s, unsigned t, unsigned r = 1) :
             super(format, s, t, r),
             dependencies(),
             cleanupOperation()
         {}
 
-        CompositeImage(const CompositeImage& rhs) :
+        Mosaic(const Mosaic& rhs) :
             super(rhs),
             dependencies(rhs.dependencies),
             cleanupOperation(rhs.cleanupOperation)
         {}
 
-        virtual ~CompositeImage()
+        virtual ~Mosaic()
         {
             if (cleanupOperation)
                 cleanupOperation();
@@ -49,7 +45,7 @@ namespace
 
         std::shared_ptr<Image> clone() const override
         {
-            return std::make_shared<CompositeImage>(*this);
+            return std::make_shared<Mosaic>(*this);
         }
 
         std::vector<std::shared_ptr<Image>> dependencies;
@@ -92,7 +88,7 @@ ImageLayer::to_json() const
 
 Result<GeoImage>
 ImageLayer::createImage(const TileKey& key, const IOOptions& io) const
-{    
+{
     if (!isOpen())
     {
         return Result(GeoImage::INVALID);
@@ -186,11 +182,11 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
                 t1 = clamp(t1, 0, (int)result.value.image()->height() - 1);
 
                 auto image = result.value.image();
-                image->get_iterator().forEachPixel([&](auto& i)
+                image->iterator().each([&](auto& i)
                     {
                         if ((int)i.s() < s0 || (int)i.s() > s1 || (int)i.t() < t0 || (int)i.t() > t1)
                         {
-                            image->write({ 0,0,0,0 }, i.s(), i.t());
+                            image->write({ 0,0,0,0 }, i);
                         }
                     }
                 );
@@ -209,7 +205,7 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
 shared_ptr<Image>
 ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 {
-    std::shared_ptr<CompositeImage> output;
+    std::shared_ptr<Mosaic> output;
 
     // Map the key's LOD to the target profile's LOD.
     unsigned targetLOD = profile().getEquivalentLOD(key.profile(), key.levelOfDetail());
@@ -217,41 +213,6 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
     // Find the set of keys that covers the same area as in input key in our target profile.
     std::vector<TileKey> intersectingKeys;
     key.getIntersectingKeys(profile(), intersectingKeys);
-
-#if 0 // Re-evaluate this later if needed (gw)
-    else
-    {
-        // LOD is zero - check whether the LOD mapping went out of range, and if so,
-        // fall back until we get valid tiles. This can happen when you have two
-        // profiles with very different tile schemes, and the "equivalent LOD"
-        // surpasses the max data LOD of the tile source.
-        unsigned numTilesThatMayHaveData = 0u;
-
-        int intersectionLOD = profile().getEquivalentLOD(key.profile(), key.levelOfDetail());
-
-        while (numTilesThatMayHaveData == 0u && intersectionLOD >= 0)
-        {
-            std::vector<TileKey> temp;
-            TileKey::getIntersectingKeys(
-                key.extent(),
-                intersectionLOD,
-                profile(),
-                temp);
-
-            for (auto& layerKey : intersectingKeys)
-            {
-                if (mayHaveData(layerKey))
-                {
-                    ++numTilesThatMayHaveData;
-                }
-            }
-
-            --intersectionLOD;
-        }
-
-        targetLOD = intersectionLOD;
-    }
-#endif
 
     // collect raster data for each intersecting key, falling back on ancestor images
     // if none are available at the target LOD.
@@ -314,6 +275,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
         {
             unsigned cols = 0;
             unsigned rows = 0;
+            unsigned layers = 1;
 
             // sort the sources by resolution (highest first)
             std::sort(
@@ -327,6 +289,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             {
                 cols = std::max(cols, source.image()->width());
                 rows = std::max(rows, source.image()->height());
+                layers = std::max(layers, source.image()->depth());
             }
 
             // assume all tiles to mosaic are in the same SRS.
@@ -338,7 +301,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             auto sourceBounds = sources[0].srs().bounds();
 
             // new output:
-            output = CompositeImage::create(Image::R8G8B8A8_UNORM, cols, rows);
+            output = Mosaic::create(Image::R8G8B8A8_UNORM, cols, rows, layers);
 
             // Cache pointers to the source images that mosaic to create this tile.
             output->dependencies.reserve(sources.size());
@@ -398,24 +361,30 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 
             // Mosaic our sources into a single output image.
             glm::fvec4 pixel;
-            for (unsigned r = 0; r < rows; ++r)
+            for (unsigned layer = 0; layer < layers; ++layer)
             {
-                for (unsigned c = 0; c < cols; ++c)
+                for (unsigned r = 0; r < rows; ++r)
                 {
-                    unsigned i = r * cols + c;
-
-                    // check each source (high to low LOD) until we get a valid pixel.
-                    pixel = { 0,0,0,0 };
-
-                    for (unsigned k = 0; k < sources.size(); ++k)
+                    for (unsigned c = 0; c < cols; ++c)
                     {
-                        if (sources[k].read(pixel, points[i].x, points[i].y) && pixel.a > 0.0f)
-                        {
-                            break;
-                        }
-                    }
+                        unsigned i = r * cols + c;
 
-                    output->write(pixel, c, r);
+                        // check each source (high to low LOD) until we get a valid pixel.
+                        pixel = { 0,0,0,0 };
+
+                        for (unsigned k = 0; k < sources.size(); ++k)
+                        {
+                            if (layer < sources[k].image()->depth())
+                            {
+                                if (sources[k].read(pixel, points[i].x, points[i].y, layer) && pixel.a > 0.0f)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+
+                        output->write(pixel, c, r, layer);
+                    }
                 }
             }
         }

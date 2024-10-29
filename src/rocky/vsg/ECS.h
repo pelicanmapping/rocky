@@ -25,43 +25,26 @@ namespace ROCKY_NAMESPACE
     {
         using time_point = std::chrono::steady_clock::time_point;
 
-        /**
-        * Base class for all ECS components.
-        */
-        class ROCKY_EXPORT Component
+        struct VisibleComponent
         {
-        public:
-            //! Component readable name
-            std::string name;
+            //! Visibility
+            bool visible = true;
+            bool* visible_ptr = &visible;
 
-            //! Whether to use this component
-            bool active = true;
-
-            //! Component developers can use this to tie this component's
-            //! visiblity to another component.
-            bool* active_ptr = &active;
-
-            //! Revision number. Bump this to dirty the component.
+            //! Version
             int revision = 0;
+            void dirty() { revision++; }
 
-            //! Serialize this component to a JSON string
-            virtual std::string to_json() const;
-            
-            //! Bump the revision number to indicate that the component has changed
-            inline void dirty() { ++revision; }
+            entt::entity entity = entt::null;
+
+        protected:
+            VisibleComponent() = default;
         };
 
-        /**
-        * Base class for a ECS Component that manifests itself as an VSG node.
-        */
-        class ROCKY_EXPORT NodeComponent : public Component
+        struct Renderable
         {
-        public:
-            //! VSG node that renders this component
             vsg::ref_ptr<vsg::Node> node;
-
-            //! Whether to reinitialize this component's node
-            bool nodeDirty = true;
+            int revision = 0;
         };
 
         /**
@@ -97,11 +80,11 @@ namespace ROCKY_NAMESPACE
         * VSG node representing an ECS system for the given component type (T) and corresponding
         * renderable type (R). This lives under a SystemsManagerGroup node.
         * @param T The component type
-        * @param R The renderable type (a struct that contains drawable data if necessary)
+        * @param R The renderdata type (a struct that contains drawable data if necessary)
         */
-        template<class T, class R>
+        template<class T>
         class SystemNode :
-            public vsg::Inherit<vsg::Compilable, SystemNode<T, R>>,
+            public vsg::Inherit<vsg::Compilable, SystemNode<T>>,
             public System
         {
         public:
@@ -112,10 +95,12 @@ namespace ROCKY_NAMESPACE
                 vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
             };
 
+            //! Destructor
+            virtual ~SystemNode<T>();
+
         protected:
             //! Construct from a subclass
-            SystemNode<T, R>(entt::registry& in_registry) :
-                Inherit(), System(in_registry) { }
+            SystemNode<T>(entt::registry& in_registry);
 
             //! Called when the system detects a new component.
             //! @param entity The entity that has the new component
@@ -162,6 +147,18 @@ namespace ROCKY_NAMESPACE
 
             // looks for any new components that need VSG initialization
             void updateComponents(Runtime&);
+
+            struct RenderLeaf
+            {
+                Renderable& renderable;
+                entt::entity entity;
+            };
+            mutable std::vector<std::vector<RenderLeaf>> renderSet;
+
+        public:
+            //! Callbacks for component lifecycle
+            void onConstruct(entt::registry& r, const entt::entity);
+            void onDestroy(entt::registry& r, const entt::entity);
         };
 
         /**
@@ -174,7 +171,7 @@ namespace ROCKY_NAMESPACE
             //! Add a system node instance to the group.
             //! @param system The system node instance to add
             template<class T, class R>
-            void add(vsg::ref_ptr<SystemNode<T,R>> system)
+            void add(vsg::ref_ptr<SystemNode<T>> system)
             {
                 addChild(system);
                 systems.emplace_back(system.get());
@@ -234,7 +231,7 @@ namespace ROCKY_NAMESPACE
     /**
     * ECS Component that provides an entity with a geotransform.
     */
-    struct ROCKY_EXPORT Transform : public ECS::Component
+    struct Transform
     {
         vsg::ref_ptr<GeoTransform> node;
         vsg::dmat4 local_matrix = vsg::dmat4(1.0);
@@ -279,7 +276,7 @@ namespace ROCKY_NAMESPACE
     /**
     * ECS Component representing a moving entity
     */
-    struct Motion : public ECS::Component
+    struct Motion : public ECS::VisibleComponent
     {
         glm::dvec3 velocity;
         glm::dvec3 acceleration;
@@ -302,16 +299,51 @@ namespace ROCKY_NAMESPACE
     };
 
 
-    template<class T, class R>
-    inline void ECS::SystemNode<T,R>::traverse(vsg::Visitor& v)
+    //........................................................................
+
+
+    template<class T>
+    ECS::SystemNode<T>::SystemNode(entt::registry& in_registry) :
+        Inherit(), System(in_registry)
+    {
+        registry.on_construct<T>().connect<&SystemNode<T>::onConstruct>(*this);
+        registry.on_destroy<T>().connect<&SystemNode<T>::onDestroy>(*this);
+    }
+
+    template<class T>
+    ECS::SystemNode<T>::~SystemNode()
+    {
+        registry.on_construct<T>().disconnect<&SystemNode<T>::onConstruct>(*this);
+        registry.on_destroy<T>().disconnect<&SystemNode<T>::onDestroy>(*this);
+    }
+
+    template<class T>
+    void ECS::SystemNode<T>::onConstruct(entt::registry& r, const entt::entity e)
+    {
+        //r.emplace<R>(e);
+
+        T& comp = r.get<T>(e);
+        comp.entity = r.create();
+        r.emplace<Renderable>(comp.entity);
+    }
+
+    template<class T>
+    void ECS::SystemNode<T>::onDestroy(entt::registry& r, const entt::entity e)
+    {
+        //r.remove<R>(e);
+    }
+
+    template<class T>
+    inline void ECS::SystemNode<T>::traverse(vsg::Visitor& v)
     {
         for (auto& pipeline : pipelines)
         {
             pipeline.commands->accept(v);
         }
 
-        registry.view<R>().each([&](const auto e, auto& renderable)
+        registry.view<T>().each([&](const auto e, auto& c)
             {
+                auto& renderable = registry.get<Renderable>(c.entity);
                 if (renderable.node)
                     renderable.node->accept(v);
             });
@@ -320,16 +352,17 @@ namespace ROCKY_NAMESPACE
     }
 
     //! Pass-thru for VSG const visitors
-    template<class T, class R>
-    inline void ECS::SystemNode<T,R>::traverse(vsg::ConstVisitor& v) const
+    template<class T>
+    inline void ECS::SystemNode<T>::traverse(vsg::ConstVisitor& v) const
     {
         for (auto& pipeline : pipelines)
         {
             pipeline.commands->accept(v);
         }
 
-        registry.view<R>().each([&](const auto e, auto& renderable)
+        registry.view<T>().each([&](const auto e, auto& c)
             {
+                auto& renderable = registry.get<Renderable>(c.entity);
                 if (renderable.node)
                     renderable.node->accept(v);
             });
@@ -337,8 +370,8 @@ namespace ROCKY_NAMESPACE
         Inherit::traverse(v);
     }
 
-    template<class T, class R>
-    inline void ECS::SystemNode<T, R>::compile(vsg::Context& context)
+    template<class T>
+    inline void ECS::SystemNode<T>::compile(vsg::Context& context)
     {
         // Compile the pipelines
         for (auto& pipeline : pipelines)
@@ -348,41 +381,43 @@ namespace ROCKY_NAMESPACE
 
         // Compile the components
         util::SimpleCompiler compiler(context);
-        auto view = registry.view<R>();
-        view.each([&](const auto entity, auto& renderable)
+
+        registry.view<T>().each([&](const auto e, auto& c)
             {
-                renderable.node->accept(compiler);
+                auto& renderable = registry.get<Renderable>(c.entity);
+                if (renderable.node)
+                    renderable.node->accept(compiler);
             });
     }
 
-    template<class T, class R>
-    inline void ECS::SystemNode<T,R>::traverse(vsg::RecordTraversal& rt) const
+    template<class T>
+    inline void ECS::SystemNode<T>::traverse(vsg::RecordTraversal& rt) const
     {
         const vsg::dmat4 identity_matrix = vsg::dmat4(1.0);
 
-        using Entry = struct
-        {
-            const R& renderable;
-            entt::entity entity;
-        };
+        //struct Entry
+        //{
+        //    Renderable& renderable;
+        //    entt::entity entity;
+        //};
 
-        // Sort components into render sets by pipeline.
-        // If this system doesn't support multiple pipelines, just 
-        // store them all together
-        std::vector<std::vector<Entry>> render_set(!pipelines.empty() ? pipelines.size() : 1);
+        // Sort components into render sets by pipeline. If this system doesn't support
+        // multiple pipelines, just store them all together
+        // TODO: see if this is multi-view safe
+        if (renderSet.empty())
+            renderSet.resize(!pipelines.empty() ? pipelines.size() : 1);
 
         // Get an optimized view of all this system's components:
-        registry.view<T, R>().each([&](const entt::entity entity, const T& component, const R& renderable)
+        registry.view<T>().each([&](const entt::entity entity, const T& component)
             {
                 // Is the component visible?
-                if (*component.active_ptr)
+                if (*component.visible_ptr)
                 {
-                    // Does it have a VSG node? If so, queue it up under the
-                    // appropriate pipeline.
+                    auto& renderable = registry.get<Renderable>(component.entity);
                     if (renderable.node)
                     {
-                        auto& rs = !pipelines.empty() ? render_set[featureMask(component)] : render_set[0];
-                        rs.emplace_back(Entry{ renderable, entity });
+                        auto& rs = !pipelines.empty() ? renderSet[featureMask(component)] : renderSet[0];
+                        rs.emplace_back(RenderLeaf{ renderable, entity });
                     }
 
                     if (!renderable.node || (renderable.revision != component.revision))
@@ -394,9 +429,9 @@ namespace ROCKY_NAMESPACE
 
         // Time to record all visible components.
         // For each pipeline:
-        for (int p = 0; p < render_set.size(); ++p)
+        for (int p = 0; p < renderSet.size(); ++p)
         {
-            if (!render_set[p].empty())
+            if (!renderSet[p].empty())
             {
                 // Bind the Graphics Pipeline for this render set, if there is one:
                 if (!pipelines.empty())
@@ -406,44 +441,50 @@ namespace ROCKY_NAMESPACE
 
                 // Them record each component.
                 // If the component has a transform apply it too.
-                for (auto& e : render_set[p])
+                for (auto& leaf : renderSet[p])
                 {
-                    auto* xform = registry.try_get<Transform>(e.entity);
+                    auto* xform = registry.try_get<Transform>(leaf.entity);
                     if (xform)
                     {
                         if (xform->push(rt, identity_matrix))
                         {
-                            e.renderable.node->accept(rt);
+                            leaf.renderable.node->accept(rt);
                             xform->pop(rt);
                         }
                     }
                     else
                     {
-                        e.renderable.node->accept(rt);
+                        leaf.renderable.node->accept(rt);
                     }
                 }
+
+                // clear out for next time around.
+                renderSet[p].clear();
             }
         }
     }
 
 
-    template<class T, class R>
-    inline void ECS::SystemNode<T, R>::updateComponents(Runtime& runtime)
+    template<class T>
+    inline void ECS::SystemNode<T>::updateComponents(Runtime& runtime)
     {
         for (auto& entity : entities_to_update)
         {
             if (update(entity, runtime))
             {
-                auto& [component, renderable] = registry.get<T, R>(entity);
-                renderable.revision = component.revision;
+                // TODO: just do this in the update call, since the subclass is probably
+                // already looking up the renderable?
+                auto& comp = registry.get<T>(entity);
+                auto& renderable = registry.get<Renderable>(comp.entity);
+                renderable.revision = comp.revision;
             }
         }
 
         entities_to_update.clear();
     }
 
-    template<class T, class R>
-    bool ECS::SystemNode<T,R>::setReferencePoint(const GeoPoint& point, SRSOperation& out_xform, vsg::dvec3& out_offset) const
+    template<class T>
+    bool ECS::SystemNode<T>::setReferencePoint(const GeoPoint& point, SRSOperation& out_xform, vsg::dvec3& out_offset) const
     {
         if (point.srs.valid())
         {
@@ -469,8 +510,8 @@ namespace ROCKY_NAMESPACE
         return false;
     }
 
-    template<class T, class R>
-    vsg::ref_ptr<vsg::PipelineLayout> ECS::SystemNode<T,R>::getPipelineLayout(const T& t) const
+    template<class T>
+    vsg::ref_ptr<vsg::PipelineLayout> ECS::SystemNode<T>::getPipelineLayout(const T& t) const
     {
         return pipelines.empty() ? nullptr : pipelines[featureMask(t)].config->layout;
     }

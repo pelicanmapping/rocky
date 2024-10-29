@@ -77,28 +77,11 @@ namespace
     }
 }
 
-IconSystemNode::IconSystemNode(entt::registry& r) :
-    Inherit(r)
+IconSystemNode::IconSystemNode(entt::registry& registry) :
+    Inherit(registry)
 {
-    // signal our on_construct method when an Icon component is created
-    // so we can create a corresponding renderable component.
-    r.on_construct<Icon>().connect<&IconSystemNode::on_construct>(this);
+    //nop
 }
-
-IconSystemNode::~IconSystemNode()
-{
-    // disconnect the signal
-    registry.on_construct<Icon>().disconnect<&IconSystemNode::on_construct>(this);
-}
-
-void
-IconSystemNode::on_construct(entt::registry& registry, entt::entity entity)
-{
-    // This method gets called when the user creates an Icon.
-    // Create a corresponding Renderable.
-    registry.emplace<IconRenderable>(entity);
-}
-
 void
 IconSystemNode::initializeSystem(Runtime& runtime)
 {
@@ -173,19 +156,22 @@ IconSystemNode::initializeSystem(Runtime& runtime)
 bool
 IconSystemNode::update(entt::entity entity, Runtime& runtime)
 {
-    auto& [icon, renderable] = registry.get<Icon, IconRenderable>(entity);
+    auto& icon = registry.get<Icon>(entity);
+    auto& renderable = registry.get<ECS::Renderable>(icon.entity);
 
     if (renderable.node)
         runtime.dispose(renderable.node);
 
-    renderable.bindCommand = BindIconStyle::create();
-    renderable.dirty(icon);
+    auto geometry = IconGeometry::create();
+    auto bindCommand = BindIconStyle::create();
+
+    bindCommand->updateStyle(icon.style);
 
     // assemble the descriptor set for this icon:
     vsg::Descriptors descriptors;
 
     // uniform buffer object for dynamic data:
-    auto ubo = vsg::DescriptorBuffer::create(renderable.bindCommand->_styleData, BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    auto ubo = vsg::DescriptorBuffer::create(bindCommand->_styleData, BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     descriptors.emplace_back(ubo);
 
     // make a default image if we don't have one
@@ -200,7 +186,7 @@ IconSystemNode::update(entt::entity entity, Runtime& runtime)
     auto& descriptorImage = descriptorImage_cache[icon.image];
     if (!descriptorImage)
     {
-        renderable.imageData = util::moveImageToVSG(image);
+        auto imageData = util::moveImageToVSG(image);
 
         // A sampler for the texture:
         auto sampler = vsg::Sampler::create();
@@ -216,7 +202,7 @@ IconSystemNode::update(entt::entity entity, Runtime& runtime)
 
         descriptorImage = vsg::DescriptorImage::create(
             sampler,
-            renderable.imageData,
+            imageData,
             TEXTURE_BINDING,
             0, // array element (TODO: increment when we change to an array)
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
@@ -226,42 +212,20 @@ IconSystemNode::update(entt::entity entity, Runtime& runtime)
 
     auto layout = getPipelineLayout(icon);
 
-    renderable.bindCommand->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    renderable.bindCommand->layout = layout;
-    renderable.bindCommand->firstSet = 0;
-    renderable.bindCommand->descriptorSet = vsg::DescriptorSet::create(layout->setLayouts.front(), descriptors);
+    bindCommand->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    bindCommand->layout = layout;
+    bindCommand->firstSet = 0;
+    bindCommand->descriptorSet = vsg::DescriptorSet::create(layout->setLayouts.front(), descriptors);
 
     auto stateGroup = vsg::StateGroup::create();
-    stateGroup->stateCommands.push_back(renderable.bindCommand);
-    stateGroup->addChild(renderable.geometry);
+    stateGroup->stateCommands.push_back(bindCommand);
+    stateGroup->addChild(geometry);
 
     renderable.node = stateGroup;
 
     runtime.compile(renderable.node);
 
     return true;
-}
-
-IconRenderable::IconRenderable()
-{
-    geometry = IconGeometry::create();
-}
-
-void
-IconRenderable::dirty(Icon& icon)
-{
-    //TODO
-    if (bindCommand)
-    {
-        // update the UBO with the new style data.
-        bindCommand->updateStyle(icon.style);
-    }
-}
-
-void
-IconRenderable::dirtyImage()
-{
-    node = nullptr;
 }
 
 

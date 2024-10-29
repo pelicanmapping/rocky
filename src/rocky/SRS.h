@@ -176,8 +176,12 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT SRSOperation
     {
     public:
+        //! Construct an empty, NOOP operation.
         SRSOperation() = default;
 
+        //! Construct an operation to transform coordinates from one SRS to another.
+        //! @param from Source SRS
+        //! @param to Target SRS
         SRSOperation(const SRS& from, const SRS& to);
 
         //! Whether this is a valid and legal operation
@@ -208,7 +212,7 @@ namespace ROCKY_NAMESPACE
         template<typename DVEC3A, typename DVEC3B>
         inline bool transform(const DVEC3A& in, DVEC3B& out) const {
             out[0] = in[0], out[1] = in[1], out[2] = in[2];
-            return _nop? true : forward(get_handle(), out[0], out[1], out[2]);
+            return _nop? true : forward(_handle, out[0], out[1], out[2]);
         }
 
         //! Transform a 3-vector (symonym for transform() method)
@@ -216,7 +220,7 @@ namespace ROCKY_NAMESPACE
         template<typename DVEC3A, typename DVEC3B>
         inline bool operator()(const DVEC3A& in, DVEC3B& out) const {
             out[0] = in[0], out[1] = in[1], out[2] = in[2];
-            return _nop ? true : forward(get_handle(), out[0], out[1], out[2]);
+            return _nop ? true : forward(_handle, out[0], out[1], out[2]);
         }
 
         //! Transform a range of 3-vectors in place
@@ -225,9 +229,8 @@ namespace ROCKY_NAMESPACE
         inline bool transformRange(ITERATOR begin, ITERATOR end) const {
             if (_nop) return true;
             unsigned errors = 0;
-            void* handle = get_handle();
             for (auto iter = begin; iter != end; ++iter)
-                if (!forward(handle, iter->x, iter->y, iter->z))
+                if (!forward(_handle, iter->x, iter->y, iter->z))
                     errors++;
             return errors == 0;
         }
@@ -236,7 +239,7 @@ namespace ROCKY_NAMESPACE
         //! @return True if all transformations succeeded
         template<typename DVEC3>
         inline bool transformArray(DVEC3* inout, std::size_t count) const {
-            return _nop ? true : forward(get_handle(),
+            return _nop ? true : forward(_handle,
                 &inout[0][0], &inout[0][1], &inout[0][2], sizeof(DVEC3), count);
         }
 
@@ -245,7 +248,7 @@ namespace ROCKY_NAMESPACE
         template<typename DVEC3A, typename DVEC3B>
         inline bool inverse(const DVEC3A& in, DVEC3B& out) const {
             out = { in[0], in[1], in[2] };
-            return _nop ? true : inverse(get_handle(), out[0], out[1], out[2]);
+            return _nop ? true : inverse(_handle, out[0], out[1], out[2]);
         }
 
         //! Inverse-transform a range of 3-vectors in place
@@ -254,9 +257,8 @@ namespace ROCKY_NAMESPACE
         inline bool inverseRange(ITERATOR begin, ITERATOR end) const {
             if (_nop) return true;
             unsigned errors = 0;
-            void* handle = get_handle();
             for (auto iter = begin; iter != end; ++iter)
-                if (!inverse(handle, iter->x, iter->y, iter->z))
+                if (!inverse(_handle, iter->x, iter->y, iter->z))
                     errors++;
             return errors == 0;
         }
@@ -265,7 +267,7 @@ namespace ROCKY_NAMESPACE
         //! @return True if all transformations succeeded
         template<typename DVEC3>
         inline bool inverseArray(DVEC3* inout, std::size_t count) const {
-            return _nop ? true : inverse(get_handle(),
+            return _nop ? true : inverse(_handle,
                 &inout[0][0], &inout[0][1], &inout[0][2], sizeof(DVEC3), count);
         }
 
@@ -289,10 +291,6 @@ namespace ROCKY_NAMESPACE
         bool _nop = true;
         SRS _from, _to;
         mutable std::string _lastError;
-
-        inline void* get_handle() const {
-            return _handle;
-        }
 
         bool forward(void* handle, double& x, double& y, double& z) const;
         bool inverse(void* handle, double& x, double& y, double& z) const;

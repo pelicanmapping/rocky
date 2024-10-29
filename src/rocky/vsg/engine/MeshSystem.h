@@ -78,25 +78,14 @@ namespace ROCKY_NAMESPACE
         add(verts32, uvs, colors, depthoffsets);
     }
 
-
-
-    struct MeshRenderable : public ECS::NodeComponent
-    {
-        vsg::ref_ptr<BindMeshDescriptors> bindCommand;
-        vsg::ref_ptr<MeshGeometry> geometry;
-    };
-
     /**
     * VSG node that renders Mesh components.
     */
-    class ROCKY_EXPORT MeshSystemNode :
-        public vsg::Inherit<ECS::SystemNode<Mesh, MeshRenderable>, MeshSystemNode>
+    class ROCKY_EXPORT MeshSystemNode : public vsg::Inherit<ECS::SystemNode<Mesh>, MeshSystemNode>
     {
     public:
         //! Construct the mesh renderer
         MeshSystemNode(entt::registry& registry);
-
-        virtual ~MeshSystemNode();
 
         //! Supported features in a mask format
         enum Features
@@ -115,9 +104,6 @@ namespace ROCKY_NAMESPACE
         //! One-time initialization of the system        
         void initializeSystem(Runtime&) override;
 
-        //! Called by ENTT when the user creates a new component.
-        void on_construct(entt::registry& registry, entt::entity);
-
     protected:
 
         bool update(entt::entity, Runtime&) override;
@@ -128,22 +114,15 @@ namespace ROCKY_NAMESPACE
 
     //TODO-- Move this into its own header.
 
-    struct NodeRenderable : public ECS::NodeComponent
-    {
-        vsg::ref_ptr<vsg::Node> node;
-    };
-
     /**
     * VSG node that renders Node components (just plain vsg nodes)
     */
     class ROCKY_EXPORT NodeSystemNode :
-        public vsg::Inherit<ECS::SystemNode<NodeGraph,NodeRenderable>, NodeSystemNode>
+        public vsg::Inherit<ECS::SystemNode<NodeGraph>, NodeSystemNode>
     {
     public:
         NodeSystemNode(entt::registry& registry);
-        virtual ~NodeSystemNode();
 
-        void on_construct(entt::registry& registry, entt::entity entity);
         bool update(entt::entity, Runtime&) override;
     };
 

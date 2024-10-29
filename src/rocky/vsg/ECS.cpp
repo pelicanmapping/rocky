@@ -12,41 +12,6 @@ ROCKY_ABOUT(entt, ENTT_VERSION);
 using namespace ROCKY_NAMESPACE;
 
 
-JSON
-ECS::Component::to_json() const
-{
-    auto j = json::object();
-    set(j, "name", name);
-    return j.dump();
-}
-
-#if 0
-SRSOperation
-ECS::NodeComponent::setReferencePoint(const GeoPoint& point)
-{
-    SRS worldSRS = point.srs;
-
-    if (point.srs.valid())
-    {
-        if (point.srs.isGeodetic())
-        {
-            worldSRS = point.srs.geocentricSRS();
-            GeoPoint world = point.transform(worldSRS);
-            if (world.valid())
-            {
-                refPoint = vsg::dvec3{ world.x, world.y, world.z };
-            }
-        }
-        else
-        {
-            refPoint = vsg::dvec3{ point.x, point.y, point.z };
-        }
-    }
-
-    return SRSOperation(point.srs, worldSRS);
-}
-#endif
-
 void
 EntityMotionSystem::update(Runtime& runtime)
 {

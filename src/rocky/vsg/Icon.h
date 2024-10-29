@@ -24,23 +24,12 @@ namespace ROCKY_NAMESPACE
     * Icon Component - an icon is a 2D billboard with a texture
     * at a geolocation.
     */
-    class ROCKY_EXPORT Icon : public ECS::Component
+    struct Icon : public ECS::VisibleComponent
     {
-    public:
-        //! Construct the component
-        Icon() = default;
-
         //! Dynamic styling for the icon
         IconStyle style;
 
         //! Image to use for the icon texture
         std::shared_ptr<Image> image;
-
-        //! serialize as JSON string
-        std::string to_json() const override {
-            return {}; // TODO
-        }
-
-    private:
     };
 }

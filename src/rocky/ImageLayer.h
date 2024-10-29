@@ -21,9 +21,8 @@ namespace ROCKY_NAMESPACE
         //! Creates an image for the given tile key.
         //! @param key TileKey for which to create an image
         //! @param io IO options
-        Result<GeoImage> createImage(
-            const TileKey& key,
-            const IOOptions& io) const;
+        //! @return A GeoImage object containing the image data.
+        Result<GeoImage> createImage(const TileKey& key, const IOOptions& io) const;
 
         //! serialize
         std::string to_json() const override;
@@ -34,13 +33,16 @@ namespace ROCKY_NAMESPACE
         ImageLayer();
 
         //! Deserialization constructor
+        //! @param JSON JSON string to deserialize
+        //! @param io IO options
         ImageLayer(const std::string& JSON, const IOOptions& io);
 
         //! Subclass overrides this to generate image data for the key.
         //! The key will always be in the same profile as the layer.
-        virtual Result<GeoImage> createImageImplementation(
-            const TileKey& key,
-            const IOOptions& io) const
+        //! @param key TileKey for which to create an image
+        //! @param io IO options
+        //! @return A GeoImage object containing the image data.
+        virtual Result<GeoImage> createImageImplementation(const TileKey& key, const IOOptions& io) const
         {
             return Result(GeoImage::INVALID);
         }
@@ -55,6 +57,7 @@ namespace ROCKY_NAMESPACE
 
     private:
 
+        // internal construction method
         void construct(const std::string& JSON, const IOOptions& io);
 
         // Creates an image that's in the same profile as the provided key.
@@ -69,6 +72,7 @@ namespace ROCKY_NAMESPACE
             const TileKey& key,
             const IOOptions& io) const;
 
+        // a weak cache that helps us avoid re-fetching dependent images in a mosaic
         std::shared_ptr<TileMosaicWeakCache<Image>> _dependencyCache;
     };
 

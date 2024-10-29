@@ -57,7 +57,7 @@ auto Demo_Mesh_Absolute = [](Application& app)
     {
         auto& mesh = app.entities.get<Mesh>(entity);
 
-        ImGuiLTable::Checkbox("Visible", &mesh.active);
+        ImGuiLTable::Checkbox("Visible", &mesh.visible);
 
         if (mesh.style.has_value())
         {
@@ -87,7 +87,6 @@ auto Demo_Mesh_Relative = [](Application& app)
 
         // Attach the new mesh:
         Mesh& mesh = app.entities.emplace<Mesh>(entity);
-        mesh.name = "Relative Mesh";
 
         // Make some geometry that will be relative to a geolocation:
         const double s = 250000.0;
@@ -131,7 +130,7 @@ auto Demo_Mesh_Relative = [](Application& app)
     {
         auto& mesh = app.entities.get<Mesh>(entity);
 
-        ImGuiLTable::Checkbox("Visible", &mesh.active);
+        ImGuiLTable::Checkbox("Visible", &mesh.visible);
 
         auto* style = app.entities.try_get<MeshStyle>(entity);
         if (style)
@@ -165,7 +164,6 @@ auto Demo_Mesh_Multi = [](Application& app)
     {
         entity = app.entities.create();
         Mesh& mesh = app.entities.emplace<Mesh>(entity);
-        mesh.name = "Relative Mesh";
 
         const double s = 250000.0;
         vsg::dvec3 verts[8] = {
@@ -206,7 +204,7 @@ auto Demo_Mesh_Multi = [](Application& app)
     {
         auto& mesh = app.entities.get<Mesh>(entity);
 
-        ImGuiLTable::Checkbox("Visible", &mesh.active);
+        ImGuiLTable::Checkbox("Visible", &mesh.visible);
 
         auto* style = app.entities.try_get<MeshStyle>(entity);
         if (style)

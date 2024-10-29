@@ -47,7 +47,7 @@ auto Demo_Geocoder = [](Application& app)
         auto& icon = app.entities.emplace<Icon>(entity);
         icon.image = image.value;
         icon.style = IconStyle{ 32, 0.0f }; // pixel size, rotation(radians)
-        icon.active = false;
+        icon.visible = false;
 
         // Attach a label:
         label_style_point.font = app.runtime().defaultFont;
@@ -62,7 +62,7 @@ auto Demo_Geocoder = [](Application& app)
         label_style_area.outlineSize = 0.5f;
 
         auto& label = app.entities.emplace<Label>(entity);
-        label.active = false;
+        label.visible = false;
 
         // Outline for location boundary:
         auto& feature_view = app.entities.emplace<FeatureView>(entity);
@@ -81,7 +81,7 @@ auto Demo_Geocoder = [](Application& app)
         {
             // hide the placemark:
             auto& icon = app.entities.get<Icon>(entity);
-            icon.active = false;
+            icon.visible = false;
 
             std::string input(input_buf);
             geocoding_task = jobs::dispatch([&app, input](jobs::cancelable& c)
@@ -139,8 +139,8 @@ auto Demo_Geocoder = [](Application& app)
                             // show the placemark:
                             if (feature.geometry.type == Geometry::Type::Points)
                             {
-                                icon.active = true;
-                                feature_view.active = false;
+                                icon.visible = true;
+                                feature_view.visible = false;
                                 label.style = label_style_point;
                             }
                             else
@@ -154,7 +154,7 @@ auto Demo_Geocoder = [](Application& app)
                                 feature_view.features = { copy_of_feature };
                                 feature_view.generate(app.entities, app.mapNode->worldSRS(), app.runtime());
                                 feature_view.active = true;
-                                icon.active = false;
+                                icon.visible = false;
                                 label.style = label_style_area;
                             }
 
@@ -162,8 +162,8 @@ auto Demo_Geocoder = [](Application& app)
                             auto text = display_name;
                             replace_in_place(text, ", ", "\n");
                             label.text = text;
-                            label.active = true;
-                            label.dirty(); // to apply the new text.
+                            label.visible = true;
+                            label.revision++;
 
                             // position it:
                             auto& xform = app.entities.get<Transform>(entity);
@@ -179,12 +179,10 @@ auto Demo_Geocoder = [](Application& app)
 
                 app.onNextUpdate([&]()
                     {
-                        auto& icon = app.entities.get<Icon>(entity);
-                        icon.active = false;
-                        auto& label = app.entities.get<Label>(entity);
-                        label.active = false;
-                        FeatureView& feature_view = app.entities.get<FeatureView>(entity);
-                        feature_view.active = false;
+                        auto& [icon, label, feature_view] = app.entities.get<Icon, Label, FeatureView>(entity);
+                        icon.visible = false;
+                        label.visible = false;
+                        feature_view.visible = false;
                     });
             }
         }

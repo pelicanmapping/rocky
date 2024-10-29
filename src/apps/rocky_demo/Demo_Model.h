@@ -55,7 +55,6 @@ auto Demo_Model = [](Application& app)
 
         // The model component; we just set the node directly.
         auto& component = app.entities.emplace<NodeGraph>(entity);
-        component.name = "Demo Model";
         component.node = scaler;
 
         // Since we're supplying our own node, we need to compile it manually
@@ -69,7 +68,7 @@ auto Demo_Model = [](Application& app)
     if (ImGuiLTable::Begin("model"))
     {
         auto& component = app.entities.get<NodeGraph>(entity);
-        ImGuiLTable::Checkbox("Visible", &component.active);
+        ImGuiLTable::Checkbox("Visible", &component.visible);
 
         auto& transform = app.entities.get<Transform>(entity);
         auto& geo = transform.node;

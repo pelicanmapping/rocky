@@ -30,18 +30,7 @@ using namespace ROCKY_NAMESPACE;
 LabelSystemNode::LabelSystemNode(entt::registry& registry) :
     Inherit(registry)
 {
-    registry.on_construct<Label>().connect<&LabelSystemNode::on_construct>(*this);
-}
-
-LabelSystemNode::~LabelSystemNode()
-{
-    registry.on_construct<Label>().disconnect<&LabelSystemNode::on_construct>(*this);
-}
-
-void
-LabelSystemNode::on_construct(entt::registry& registry, entt::entity entity)
-{
-    registry.emplace<LabelRenderable>(entity);
+    //nop
 }
 
 void
@@ -60,7 +49,8 @@ LabelSystemNode::initializeSystem(Runtime& runtime)
 bool
 LabelSystemNode::update(entt::entity entity, Runtime& runtime)
 {
-    auto& [label, renderable] = registry.get<Label, LabelRenderable>(entity);
+    auto& label = registry.get<Label>(entity);
+    auto& renderable = registry.get<ECS::Renderable>(label.entity);
 
     // TODO: allow custom fonts
     ROCKY_SOFT_ASSERT_AND_RETURN(label.style.font.valid(), true);
@@ -68,42 +58,42 @@ LabelSystemNode::update(entt::entity entity, Runtime& runtime)
     if (renderable.node)
         runtime.dispose(renderable.node);
 
-    renderable.options = runtime.readerWriterOptions;
+    auto options = runtime.readerWriterOptions;
 
     float size = label.style.pointSize;
 
     // Billboard = false because of https://github.com/vsg-dev/VulkanSceneGraph/discussions/985
     // Workaround: use a PixelScaleTransform with unrotate=true
-    renderable.layout = vsg::StandardLayout::create();
-    renderable.layout->billboard = false;
-    renderable.layout->billboardAutoScaleDistance = 0.0f;
-    renderable.layout->position = label.style.pixelOffset; // vsg::vec3(0.0f, 0.0f, 0.0f);
-    renderable.layout->horizontal = vsg::vec3(size, 0.0f, 0.0f);
-    renderable.layout->vertical = vsg::vec3(0.0f, size, 0.0f); // layout->billboard ? vsg::vec3(0.0, size, 0.0) : vsg::vec3(0.0, 0.0, size);
-    renderable.layout->color = vsg::vec4(1.0f, 0.9f, 1.0f, 1.0f);
-    renderable.layout->outlineWidth = label.style.outlineSize;
-    renderable.layout->horizontalAlignment = label.style.horizontalAlignment;
-    renderable.layout->verticalAlignment = label.style.verticalAlignment;
+    auto layout = vsg::StandardLayout::create();
+    layout->billboard = false;
+    layout->billboardAutoScaleDistance = 0.0f;
+    layout->position = label.style.pixelOffset; // vsg::vec3(0.0f, 0.0f, 0.0f);
+    layout->horizontal = vsg::vec3(size, 0.0f, 0.0f);
+    layout->vertical = vsg::vec3(0.0f, size, 0.0f); // layout->billboard ? vsg::vec3(0.0, size, 0.0) : vsg::vec3(0.0, 0.0, size);
+    layout->color = vsg::vec4(1.0f, 0.9f, 1.0f, 1.0f);
+    layout->outlineWidth = label.style.outlineSize;
+    layout->horizontalAlignment = label.style.horizontalAlignment;
+    layout->verticalAlignment = label.style.verticalAlignment;
 
     // Share this since it should be the same for everything
     if (runtime.sharedObjects)
-        runtime.sharedObjects->share(renderable.layout);
+        runtime.sharedObjects->share(layout);
 
-    renderable.valueBuffer = vsg::stringValue::create(label.text);
+    auto valueBuffer = vsg::stringValue::create(label.text);
 
-    renderable.textNode = vsg::Text::create();
-    renderable.textNode->font = label.style.font;
-    renderable.textNode->text = renderable.valueBuffer;
-    renderable.textNode->layout = renderable.layout;
-    renderable.textNode->technique = vsg::GpuLayoutTechnique::create(); // cannot share these!
-    renderable.textNode->setup(LABEL_MAX_NUM_CHARS, renderable.options); // allocate enough space for max possible characters?
+    auto textNode = vsg::Text::create();
+    textNode->font = label.style.font;
+    textNode->text = valueBuffer;
+    textNode->layout = layout;
+    textNode->technique = vsg::GpuLayoutTechnique::create(); // cannot share these!
+    textNode->setup(LABEL_MAX_NUM_CHARS, options); // allocate enough space for max possible characters?
 
 #if 0
-    label.node = label.textNode;
+    rd.node = label.textNode;
 #else
     auto pst = PixelScaleTransform::create();
     pst->unrotate = true;
-    pst->addChild(renderable.textNode);
+    pst->addChild(textNode);
     renderable.node = pst;
 #endif
 

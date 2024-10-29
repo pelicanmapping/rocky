@@ -33,12 +33,13 @@ GeoTransform::dirty()
 }
 
 void
-GeoTransform::accept(vsg::RecordTraversal& record) const
+GeoTransform::traverse(vsg::RecordTraversal& record) const
 {
     // traverse the transform
     if (push(record, vsg::dmat4(1.0)))
     {
-        vsg::Group::accept(record);
+        Inherit::traverse(record);
+        //vsg::Group::accept(record);
         pop(record);
     }
 }

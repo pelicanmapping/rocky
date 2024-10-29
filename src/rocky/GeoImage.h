@@ -101,33 +101,25 @@ namespace ROCKY_NAMESPACE
         bool getPixel(double x, double y, int& s, int& t) const;
 
         //! Read the value of a pixel at a geopoint.
-        bool read(glm::fvec4& output, const GeoPoint& p) const;
+        bool read(glm::fvec4& output, const GeoPoint& p, int layer=0) const;
 
         //! Read the value of a pixel at the coordinate (x, y) which is
         //! assumed to be in this GeoImage's SRS.
-        bool read(
-            glm::fvec4& output,
-            double x, double y) const;
+        bool read(glm::fvec4& output, double x, double y, int layer=0) const;
 
         //! Clamp the input coordinate to the image's valid extent and then
         //! read the value of a pixel at the coordinate (x, y) which is
         //! assumed to be in the GeoImage's SRS.
-        bool read_clamped(
-            glm::fvec4& output,
-            double x, double y) const;
+        bool read_clamped(glm::fvec4& output, double x, double y, int layer=0) const;
 
         //! Read the value of a pixel at the coordinate (x, y) which
         //! is expressed in the provided SRS.
-        bool read(
-            glm::fvec4& output,
-            double x, double y, const SRS& srs) const;
+        bool read(glm::fvec4& output, const SRS& srs, double x, double y, int layer=0) const;
 
         //! Read the value of a pixel at the coordinate (x, y) which
         //! will be transformed using the provided operation before
         //! reading.
-        bool read(
-            glm::fvec4& output,
-            double x, double y, const SRSOperation& operation) const;
+        bool read(glm::fvec4& output, const SRSOperation& operation, double x, double y, int layer=0) const;
 
     private:
         GeoExtent _extent;

@@ -51,13 +51,13 @@ auto Demo_Icon = [](Application& app)
     {
         auto& icon = app.entities.get<Icon>(entity);
 
-        ImGuiLTable::Checkbox("Visible", &icon.active);
+        ImGuiLTable::Checkbox("Visible", &icon.visible);
 
         if (ImGuiLTable::SliderFloat("Pixel size", &icon.style.size_pixels, 1.0f, 1024.0f))
-            icon.dirty();
+            icon.revision++;
 
         if (ImGuiLTable::SliderFloat("Rotation", &icon.style.rotation_radians, 0.0f, 6.28f))
-            icon.dirty();
+            icon.revision++;
 
         ImGuiLTable::End();
     }

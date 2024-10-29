@@ -29,7 +29,7 @@ namespace ROCKY_NAMESPACE
     * FeatureView is an attachment that compiles a collection of Feature objects
     * for visualization.
     */
-    class ROCKY_EXPORT FeatureView : public ECS::Component
+    class ROCKY_EXPORT FeatureView : public ECS::VisibleComponent
     {
     public:
         //! Collection of features to view

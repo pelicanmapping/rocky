@@ -10,25 +10,14 @@
 
 namespace ROCKY_NAMESPACE
 {
-    struct ROCKY_EXPORT LabelRenderable : public ECS::NodeComponent
-    {
-        vsg::ref_ptr<vsg::Text> textNode;
-        vsg::ref_ptr<vsg::stringValue> valueBuffer;
-        vsg::ref_ptr<vsg::StandardLayout> layout;
-        vsg::ref_ptr<vsg::Options> options;
-    };
-
     /**
      * Creates commands for rendering icon primitives.
      */
-    class ROCKY_EXPORT LabelSystemNode :
-        public vsg::Inherit<ECS::SystemNode<Label, LabelRenderable>, LabelSystemNode>
+    class ROCKY_EXPORT LabelSystemNode : public vsg::Inherit<ECS::SystemNode<Label>, LabelSystemNode>
     {
     public:
         //! Construct the mesh renderer
         LabelSystemNode(entt::registry& registry);
-
-        virtual ~LabelSystemNode();
 
         enum Features
         {
@@ -38,8 +27,6 @@ namespace ROCKY_NAMESPACE
 
         //! One time setup of the system
         void initializeSystem(Runtime&) override;
-
-        void on_construct(entt::registry& registry, entt::entity);
 
     private:
         bool update(entt::entity, Runtime& runtime) override;
