@@ -79,7 +79,7 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="_line_8h_source.html">Line.h</a>&gt;</code></p>
 
-<p>Inherits <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html">ROCKY_NAMESPACE::ECS::Component</a>.</p>
+<p>Inherits ROCKY_NAMESPACE::ECS::VisibleComponent.</p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
@@ -90,22 +90,9 @@ using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cla
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a57d61b2d1a0ccc993fd756db7ad770a6"><td class="memItemLeft" align="right" valign="top"><a id="a57d61b2d1a0ccc993fd756db7ad770a6"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a57d61b2d1a0ccc993fd756db7ad770a6">Line</a> ()=default</td></tr>
-<tr class="memdesc:a57d61b2d1a0ccc993fd756db7ad770a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new component. <br /></td></tr>
-<tr class="separator:a57d61b2d1a0ccc993fd756db7ad770a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8a34508bbe7c79621ce8d0fadc3c2c98"><td class="memTemplParams" colspan="2">template&lt;class DVEC3_ITER &gt; </td></tr>
 <tr class="memitem:a8a34508bbe7c79621ce8d0fadc3c2c98"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a8a34508bbe7c79621ce8d0fadc3c2c98">push</a> (DVEC3_ITER begin, DVEC3_ITER end)</td></tr>
 <tr class="separator:a8a34508bbe7c79621ce8d0fadc3c2c98"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab8c3b02399f6b3e402d1686267c7322b"><td class="memItemLeft" align="right" valign="top"><a id="ab8c3b02399f6b3e402d1686267c7322b"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ab8c3b02399f6b3e402d1686267c7322b">to_json</a> () const override</td></tr>
-<tr class="memdesc:ab8c3b02399f6b3e402d1686267c7322b"><td class="mdescLeft">&#160;</td><td class="mdescRight">serialize as JSON string <br /></td></tr>
-<tr class="separator:ab8c3b02399f6b3e402d1686267c7322b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html">ROCKY_NAMESPACE::ECS::Component</a></td></tr>
-<tr class="memitem:a9f26c17b7c063853af1ef11a289c6b2a inherit pub_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td class="memItemLeft" align="right" valign="top"><a id="a9f26c17b7c063853af1ef11a289c6b2a"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html#a9f26c17b7c063853af1ef11a289c6b2a">dirty</a> ()</td></tr>
-<tr class="memdesc:a9f26c17b7c063853af1ef11a289c6b2a inherit pub_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bump the revision number to indicate that the component has changed. <br /></td></tr>
-<tr class="separator:a9f26c17b7c063853af1ef11a289c6b2a inherit pub_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -122,21 +109,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a7d3879496ffec9f4977982c1cbb33869"><td class="memItemLeft" align="right" valign="top"><a id="a7d3879496ffec9f4977982c1cbb33869"></a>
 std::vector&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#af2588899f0d4c6d4e8678f9e6ff0d206">Part</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>parts</b></td></tr>
 <tr class="separator:a7d3879496ffec9f4977982c1cbb33869"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component')"><img src="closed.png" alt="-"/>&#160;Public Attributes inherited from <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html">ROCKY_NAMESPACE::ECS::Component</a></td></tr>
-<tr class="memitem:a01d286924554068f85bc45360f35c6f3 inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td class="memItemLeft" align="right" valign="top"><a id="a01d286924554068f85bc45360f35c6f3"></a>
-std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html#a01d286924554068f85bc45360f35c6f3">name</a></td></tr>
-<tr class="memdesc:a01d286924554068f85bc45360f35c6f3 inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html">Component</a> readable name. <br /></td></tr>
-<tr class="separator:a01d286924554068f85bc45360f35c6f3 inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4e0ee53f35749d0a518a61571209b25b inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td class="memItemLeft" align="right" valign="top"><a id="a4e0ee53f35749d0a518a61571209b25b"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html#a4e0ee53f35749d0a518a61571209b25b">active</a> = true</td></tr>
-<tr class="memdesc:a4e0ee53f35749d0a518a61571209b25b inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to use this component. <br /></td></tr>
-<tr class="separator:a4e0ee53f35749d0a518a61571209b25b inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab2e4db18a7bc6169391f2261c54f0b64 inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td class="memItemLeft" align="right" valign="top">bool *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html#ab2e4db18a7bc6169391f2261c54f0b64">active_ptr</a> = &amp;<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html#a4e0ee53f35749d0a518a61571209b25b">active</a></td></tr>
-<tr class="separator:ab2e4db18a7bc6169391f2261c54f0b64 inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a63b622d67b6a2858fb5c4fa65c7c9610 inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td class="memItemLeft" align="right" valign="top"><a id="a63b622d67b6a2858fb5c4fa65c7c9610"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component.html#a63b622d67b6a2858fb5c4fa65c7c9610">revision</a> = 0</td></tr>
-<tr class="memdesc:a63b622d67b6a2858fb5c4fa65c7c9610 inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td class="mdescLeft">&#160;</td><td class="mdescRight">Revision number. Bump this to dirty the component. <br /></td></tr>
-<tr class="separator:a63b622d67b6a2858fb5c4fa65c7c9610 inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_component"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>LineString component - holds one or more separate line string geometries sharing the same style. </p>

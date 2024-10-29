@@ -68,6 +68,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
@@ -85,6 +86,12 @@ $(function() {
 
 <p>Inherited by ROCKY_NAMESPACE::Inherit&lt; Image, Heightfield &gt;.</p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_1_1_iterator.html">Iterator</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_1_1_iterator.html" title="Iterator for visiting each pixel in the image.">Iterator</a> for visiting each pixel in the image.  <a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_1_1_iterator.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
 <tr class="memitem:aa2e62859cc731508ac72b05e5fa965dc"><td class="memItemLeft" align="right" valign="top"><a id="aa2e62859cc731508ac72b05e5fa965dc"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>Interpolation</b> { <br />
@@ -190,14 +197,26 @@ template&lt;class T &gt; </td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a720a9fba9f52ecf30063e033a36476d5">read</a> (Pixel &amp;pixel, unsigned s, unsigned t, unsigned layer=0) const</td></tr>
 <tr class="memdesc:a720a9fba9f52ecf30063e033a36476d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the pixel at a column, row, and layer. <br /></td></tr>
 <tr class="separator:a720a9fba9f52ecf30063e033a36476d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc2ba7636878e8b1e61eae267272680d"><td class="memItemLeft" align="right" valign="top"><a id="abc2ba7636878e8b1e61eae267272680d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#abc2ba7636878e8b1e61eae267272680d">read</a> (Pixel &amp;pixel, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_1_1_iterator.html">Iterator</a> &amp;i) const</td></tr>
+<tr class="memdesc:abc2ba7636878e8b1e61eae267272680d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the pixel at the location in an iterator. <br /></td></tr>
+<tr class="separator:abc2ba7636878e8b1e61eae267272680d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88c2a911eaef8b4778be42d3cbb3ed0f"><td class="memItemLeft" align="right" valign="top"><a id="a88c2a911eaef8b4778be42d3cbb3ed0f"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a88c2a911eaef8b4778be42d3cbb3ed0f">read_bilinear</a> (Pixel &amp;pixel, float u, float v, unsigned layer=0) const</td></tr>
 <tr class="memdesc:a88c2a911eaef8b4778be42d3cbb3ed0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the pixel at UV coordinates with bilinear interpolation. <br /></td></tr>
 <tr class="separator:a88c2a911eaef8b4778be42d3cbb3ed0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70d9761e6e1be594f16f78d4b9dba167"><td class="memItemLeft" align="right" valign="top"><a id="a70d9761e6e1be594f16f78d4b9dba167"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a70d9761e6e1be594f16f78d4b9dba167">read_bilinear</a> (Pixel &amp;pixel, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_1_1_iterator.html">Iterator</a> &amp;i) const</td></tr>
+<tr class="memdesc:a70d9761e6e1be594f16f78d4b9dba167"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the pixel at UV coordinates with bilinear interpolation at an iterator location. <br /></td></tr>
+<tr class="separator:a70d9761e6e1be594f16f78d4b9dba167"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a403051539d2a22a27fd75f86e6a011f0"><td class="memItemLeft" align="right" valign="top"><a id="a403051539d2a22a27fd75f86e6a011f0"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a403051539d2a22a27fd75f86e6a011f0">write</a> (const Pixel &amp;pixel, unsigned s, unsigned t, unsigned layer=0)</td></tr>
 <tr class="memdesc:a403051539d2a22a27fd75f86e6a011f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write the pixel at a column, row, and layer. <br /></td></tr>
 <tr class="separator:a403051539d2a22a27fd75f86e6a011f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8021b28e1564a81e6c28f587bbd8323e"><td class="memItemLeft" align="right" valign="top"><a id="a8021b28e1564a81e6c28f587bbd8323e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a8021b28e1564a81e6c28f587bbd8323e">write</a> (const Pixel &amp;pixel, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_1_1_iterator.html">Iterator</a> &amp;i)</td></tr>
+<tr class="memdesc:a8021b28e1564a81e6c28f587bbd8323e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write the pixel at the location in an iterator. <br /></td></tr>
+<tr class="separator:a8021b28e1564a81e6c28f587bbd8323e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a324cc512cd4ad4d5763638f0f5aba0c6"><td class="memItemLeft" align="right" valign="top"><a id="a324cc512cd4ad4d5763638f0f5aba0c6"></a>
 unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a324cc512cd4ad4d5763638f0f5aba0c6">sizeInBytes</a> () const</td></tr>
 <tr class="memdesc:a324cc512cd4ad4d5763638f0f5aba0c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Size of this image in bytes. <br /></td></tr>
@@ -238,9 +257,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a526b582f034a2fd77750be9f865060ca">numComponents</a> () const</td></tr>
 <tr class="memdesc:a526b582f034a2fd77750be9f865060ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Nmmber of components in this image's pixel format. <br /></td></tr>
 <tr class="separator:a526b582f034a2fd77750be9f865060ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab4761683c7fd631eec52d2092f78f224"><td class="memItemLeft" align="right" valign="top"><a id="ab4761683c7fd631eec52d2092f78f224"></a>
-iterator&#160;</td><td class="memItemRight" valign="bottom"><b>get_iterator</b> () const</td></tr>
-<tr class="separator:ab4761683c7fd631eec52d2092f78f224"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaff917c847442a1402cf54f1e6341546"><td class="memItemLeft" align="right" valign="top"><a id="aaff917c847442a1402cf54f1e6341546"></a>
+<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_1_1_iterator.html">Iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#aaff917c847442a1402cf54f1e6341546">iterator</a> () const</td></tr>
+<tr class="memdesc:aaff917c847442a1402cf54f1e6341546"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get an iterator for visiting each pixel. <br /></td></tr>
+<tr class="separator:aaff917c847442a1402cf54f1e6341546"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3ec2d78e70ebbd65c376d35e6354eb2"><td class="memItemLeft" align="right" valign="top"><a id="ab3ec2d78e70ebbd65c376d35e6354eb2"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#ab3ec2d78e70ebbd65c376d35e6354eb2">fill</a> (const Pixel &amp;p)</td></tr>
 <tr class="memdesc:ab3ec2d78e70ebbd65c376d35e6354eb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fills the entire image with a single value. <br /></td></tr>

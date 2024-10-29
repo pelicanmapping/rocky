@@ -129,29 +129,21 @@ $(function() {
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160; </div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        <span class="keywordtype">bool</span> getPixel(<span class="keywordtype">double</span> x, <span class="keywordtype">double</span> y, <span class="keywordtype">int</span>&amp; s, <span class="keywordtype">int</span>&amp; t) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160; </div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        <span class="keywordtype">bool</span> read(glm::fvec4&amp; output, <span class="keyword">const</span> GeoPoint&amp; p) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        <span class="keywordtype">bool</span> read(glm::fvec4&amp; output, <span class="keyword">const</span> GeoPoint&amp; p, <span class="keywordtype">int</span> layer=0) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160; </div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;        <span class="keywordtype">bool</span> read(</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;            glm::fvec4&amp; output,</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;            <span class="keywordtype">double</span> x, <span class="keywordtype">double</span> y) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160; </div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;        <span class="keywordtype">bool</span> read_clamped(</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;            glm::fvec4&amp; output,</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;            <span class="keywordtype">double</span> x, <span class="keywordtype">double</span> y) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;        <span class="keywordtype">bool</span> read(glm::fvec4&amp; output, <span class="keywordtype">double</span> x, <span class="keywordtype">double</span> y, <span class="keywordtype">int</span> layer=0) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160; </div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;        <span class="keywordtype">bool</span> read_clamped(glm::fvec4&amp; output, <span class="keywordtype">double</span> x, <span class="keywordtype">double</span> y, <span class="keywordtype">int</span> layer=0) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        <span class="keywordtype">bool</span> read(glm::fvec4&amp; output, <span class="keyword">const</span> SRS&amp; srs, <span class="keywordtype">double</span> x, <span class="keywordtype">double</span> y, <span class="keywordtype">int</span> layer=0) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160; </div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;        <span class="keywordtype">bool</span> read(</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;            glm::fvec4&amp; output,</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;            <span class="keywordtype">double</span> x, <span class="keywordtype">double</span> y, <span class="keyword">const</span> SRS&amp; srs) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160; </div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;        <span class="keywordtype">bool</span> read(</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;            glm::fvec4&amp; output,</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;            <span class="keywordtype">double</span> x, <span class="keywordtype">double</span> y, <span class="keyword">const</span> SRSOperation&amp; operation) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160; </div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;    <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;        GeoExtent _extent;</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;        shared_ptr&lt;Image&gt; _image;</div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    };</div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;}</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;        <span class="keywordtype">bool</span> read(glm::fvec4&amp; output, <span class="keyword">const</span> SRSOperation&amp; operation, <span class="keywordtype">double</span> x, <span class="keywordtype">double</span> y, <span class="keywordtype">int</span> layer=0) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160; </div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;        GeoExtent _extent;</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;        shared_ptr&lt;Image&gt; _image;</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    };</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;}</div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent.html">ROCKY_NAMESPACE::GeoExtent</a></div><div class="ttdef"><b>Definition:</b> GeoExtent.h:19</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html">ROCKY_NAMESPACE::GeoImage</a></div><div class="ttdef"><b>Definition:</b> GeoImage.h:21</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image_html_af564882597a72ad5e91a0af16e8071ab"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html#af564882597a72ad5e91a0af16e8071ab">ROCKY_NAMESPACE::GeoImage::~GeoImage</a></div><div class="ttdeci">virtual ~GeoImage()</div><div class="ttdoc">Destructor.</div><div class="ttdef"><b>Definition:</b> GeoImage.h:35</div></div>

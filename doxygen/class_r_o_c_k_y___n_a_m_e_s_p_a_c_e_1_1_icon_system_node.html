@@ -78,7 +78,7 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="_icon_system_8h_source.html">IconSystem.h</a>&gt;</code></p>
 
-<p>Inherits vsg::Inherit&lt; ECS::SystemNode&lt; Icon, IconRenderable &gt;, IconSystemNode &gt;.</p>
+<p>Inherits vsg::Inherit&lt; ECS::SystemNode&lt; Icon &gt;, IconSystemNode &gt;.</p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
@@ -95,17 +95,13 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:ae633208a683cfe310f4770f65cef150f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct the mesh renderer. <br /></td></tr>
 <tr class="separator:ae633208a683cfe310f4770f65cef150f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d242454a4cbfd8feb8f18aefa0394e2"><td class="memItemLeft" align="right" valign="top"><a id="a3d242454a4cbfd8feb8f18aefa0394e2"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_system_node.html#a3d242454a4cbfd8feb8f18aefa0394e2">featureMask</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon.html">Icon</a> &amp;icon) const override</td></tr>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_system_node.html#a3d242454a4cbfd8feb8f18aefa0394e2">featureMask</a> (const <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon.html">Icon</a> &amp;icon) const override</td></tr>
 <tr class="memdesc:a3d242454a4cbfd8feb8f18aefa0394e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the feature mask for a given icon. <br /></td></tr>
 <tr class="separator:a3d242454a4cbfd8feb8f18aefa0394e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3ef9b020d5dd624e357e26ec1a18331"><td class="memItemLeft" align="right" valign="top"><a id="ab3ef9b020d5dd624e357e26ec1a18331"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_system_node.html#ab3ef9b020d5dd624e357e26ec1a18331">initializeSystem</a> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;) override</td></tr>
 <tr class="memdesc:ab3ef9b020d5dd624e357e26ec1a18331"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the system (once) <br /></td></tr>
 <tr class="separator:ab3ef9b020d5dd624e357e26ec1a18331"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeebd9d8052418c821b6c9f404847a22c"><td class="memItemLeft" align="right" valign="top"><a id="aeebd9d8052418c821b6c9f404847a22c"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_system_node.html#aeebd9d8052418c821b6c9f404847a22c">on_construct</a> (entt::registry &amp;registry, entt::entity)</td></tr>
-<tr class="memdesc:aeebd9d8052418c821b6c9f404847a22c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Called by ENTT when the user creates a new <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon.html">Icon</a>. <br /></td></tr>
-<tr class="separator:aeebd9d8052418c821b6c9f404847a22c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Creates commands for rendering icon primitives. </p>

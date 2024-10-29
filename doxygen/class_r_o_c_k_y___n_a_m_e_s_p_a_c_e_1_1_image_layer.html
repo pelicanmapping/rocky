@@ -96,9 +96,7 @@ Protected Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_layer.html#ac26d6074fa38a100a6510b5dc0bdf27c">ImageLayer</a> ()</td></tr>
 <tr class="memdesc:ac26d6074fa38a100a6510b5dc0bdf27c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default construtor. <br /></td></tr>
 <tr class="separator:ac26d6074fa38a100a6510b5dc0bdf27c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2495bf93f394ef95126993f3fbb6ad00"><td class="memItemLeft" align="right" valign="top"><a id="a2495bf93f394ef95126993f3fbb6ad00"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_layer.html#a2495bf93f394ef95126993f3fbb6ad00">ImageLayer</a> (const std::string &amp;<a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a>, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a> &amp;io)</td></tr>
-<tr class="memdesc:a2495bf93f394ef95126993f3fbb6ad00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserialization constructor. <br /></td></tr>
+<tr class="memitem:a2495bf93f394ef95126993f3fbb6ad00"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_layer.html#a2495bf93f394ef95126993f3fbb6ad00">ImageLayer</a> (const std::string &amp;<a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a>, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a> &amp;io)</td></tr>
 <tr class="separator:a2495bf93f394ef95126993f3fbb6ad00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a378fb098b46047672571ff089d97a09d"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_result.html">Result</a>&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html">GeoImage</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_layer.html#a378fb098b46047672571ff089d97a09d">createImageImplementation</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a> &amp;io) const</td></tr>
 <tr class="separator:a378fb098b46047672571ff089d97a09d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -114,7 +112,51 @@ Protected Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A map terrain layer containing bitmap image data. </p>
-</div><h2 class="groupheader">Member Function Documentation</h2>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a2495bf93f394ef95126993f3fbb6ad00"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2495bf93f394ef95126993f3fbb6ad00">&#9670;&nbsp;</a></span>ImageLayer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ImageLayer::ImageLayer </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>JSON</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a> &amp;&#160;</td>
+          <td class="paramname"><em>io</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Deserialization constructor </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">JSON</td><td>JSON string to deserialize </td></tr>
+    <tr><td class="paramname">io</td><td>IO options </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
 <a id="a25d5d1b68c174c05446f01b1057ec8c6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a25d5d1b68c174c05446f01b1057ec8c6">&#9670;&nbsp;</a></span>createImage()</h2>
 
@@ -147,6 +189,7 @@ Protected Attributes</h2></td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>A <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html">GeoImage</a> object containing the image data. </dd></dl>
 
 </div>
 </div>
@@ -183,7 +226,14 @@ Protected Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Subclass overrides this to generate image data for the key. The key will always be in the same profile as the layer. </p>
+<p>Subclass overrides this to generate image data for the key. The key will always be in the same profile as the layer. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">key</td><td><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> for which to create an image </td></tr>
+    <tr><td class="paramname">io</td><td>IO options </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html">GeoImage</a> object containing the image data. </dd></dl>
 
 </div>
 </div>
