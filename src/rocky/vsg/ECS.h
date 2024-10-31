@@ -25,7 +25,7 @@ namespace ROCKY_NAMESPACE
     {
         using time_point = std::chrono::steady_clock::time_point;
 
-
+#if 0
         /**
         * Helper class to create double-buffered (or multi-buffered) components.
         * https://skypjack.github.io/2019-02-25-entt-double-buffering/
@@ -85,6 +85,7 @@ namespace ROCKY_NAMESPACE
         private:
             std::size_t curr{};
         };
+#endif
 
         /**
         * Superclass for ECS components meant to be rendered.
@@ -163,6 +164,8 @@ namespace ROCKY_NAMESPACE
             public vsg::Inherit<vsg::Compilable, SystemNode<T>>,
             public System
         {
+            using super = vsg::Inherit<vsg::Compilable, SystemNode<T>>;
+
         public:
             //! Destructor
             virtual ~SystemNode<T>();
@@ -209,6 +212,8 @@ namespace ROCKY_NAMESPACE
             //! Fetches the correct layout for a component.
             vsg::ref_ptr<vsg::PipelineLayout> getPipelineLayout(const T&) const;
 
+            void onConstruct(entt::registry& r, const entt::entity e) { }
+
         private:
 
             // list of entities whose components are out of date and need updating
@@ -228,11 +233,6 @@ namespace ROCKY_NAMESPACE
             // TODO: make sure this is multi-view/multi-thread safe; if not, put it in a
             // ViewLocal container
             mutable std::vector<std::vector<RenderLeaf>> renderSet;
-
-        public:
-            //! Callbacks for component lifecycle
-            void onConstruct(entt::registry& r, const entt::entity);
-            void onDestroy(entt::registry& r, const entt::entity);
         };
 
         /**
@@ -329,35 +329,38 @@ namespace ROCKY_NAMESPACE
     //........................................................................
 
 
+    namespace detail
+    {
+        template<typename T>
+        inline void SystemNode_on_construct(entt::registry& r, entt::entity e)
+        {
+            // Create a Renderable component and attach it to the new component.
+            T& comp = r.get<T>(e);
+            comp.entity = r.create();
+            r.emplace<ECS::Renderable>(comp.entity);
+        }
+
+        template<typename T>
+        inline void SystemNode_on_destroy(entt::registry& r, entt::entity e)
+        {
+            T& comp = r.get<T>(e);
+            r.remove<ECS::Renderable>(comp.entity);
+        }
+    }
+
     template<class T>
     ECS::SystemNode<T>::SystemNode(entt::registry& in_registry) :
         System(in_registry)
     {
-        registry.on_construct<T>().connect<&SystemNode<T>::onConstruct>(*this);
-        registry.on_destroy<T>().connect<&SystemNode<T>::onDestroy>(*this);
+        registry.on_construct<T>().template connect<&detail::SystemNode_on_construct<T>>();
+        registry.on_destroy<T>().template connect<&detail::SystemNode_on_destroy<T>>();
     }
 
     template<class T>
     ECS::SystemNode<T>::~SystemNode()
     {
-        //registry.on_construct<T>().disconnect<&SystemNode<T>::onConstruct>(*this);
-        //registry.on_destroy<T>().disconnect<&SystemNode<T>::onDestroy>(*this);
-    }
-
-    template<class T>
-    void ECS::SystemNode<T>::onConstruct(entt::registry& r, const entt::entity e)
-    {
-        // Create a Renderable component and attach it to the new component.
-        T& comp = r.get<T>(e);
-        comp.entity = r.create();
-        r.emplace<Renderable>(comp.entity);
-    }
-
-    template<class T>
-    void ECS::SystemNode<T>::onDestroy(entt::registry& r, const entt::entity e)
-    {
-        T& comp = r.get<T>(e);
-        r.remove<Renderable>(comp.entity);
+        registry.on_construct<T>().template disconnect<&detail::SystemNode_on_construct<T>>();
+        registry.on_destroy<T>().template disconnect<&detail::SystemNode_on_destroy<T>>();
     }
 
     template<class T>
@@ -375,7 +378,7 @@ namespace ROCKY_NAMESPACE
                     renderable.node->accept(v);
             });
 
-        Inherit::traverse(v);
+        super::traverse(v);
     }
 
     //! Pass-thru for VSG const visitors
@@ -394,7 +397,7 @@ namespace ROCKY_NAMESPACE
                     renderable.node->accept(v);
             });
 
-        Inherit::traverse(v);
+        super::traverse(v);
     }
 
     template<class T>

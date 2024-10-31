@@ -154,7 +154,7 @@ auto Demo_Simulation = [](Application& app)
         }
     }
 
-    ImGui::Text("Simulating %d platforms", platforms.size());
+    ImGui::Text("Simulating %ld platforms", platforms.size());
     ImGuiLTable::Begin("sim");
     ImGuiLTable::SliderFloat("Update rate (hertz)", &sim.hertz, 1.0f, 120.0f, "%.0f");
     ImGuiLTable::End();

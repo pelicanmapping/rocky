@@ -132,9 +132,7 @@ auto Demo_Geocoder = [](Application& app)
                                 manip->setViewpoint(vp, std::chrono::seconds(2));
                             }
 
-                            auto& icon = app.entities.get<Icon>(entity);
-                            FeatureView& feature_view = app.entities.get<FeatureView>(entity);
-                            auto& label = app.entities.get<Label>(entity);
+                            auto&& [icon, label, feature_view] = app.entities.get<Icon, Label, FeatureView>(entity);
 
                             // show the placemark:
                             if (feature.geometry.type == Geometry::Type::Points)
@@ -179,7 +177,7 @@ auto Demo_Geocoder = [](Application& app)
 
                 app.onNextUpdate([&]()
                     {
-                        auto& [icon, label, feature_view] = app.entities.get<Icon, Label, FeatureView>(entity);
+                        auto&& [icon, label, feature_view] = app.entities.get<Icon, Label, FeatureView>(entity);
                         icon.visible = false;
                         label.visible = false;
                         feature_view.visible = false;
