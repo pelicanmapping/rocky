@@ -80,7 +80,6 @@ namespace ROCKY_NAMESPACE
     public: // public properties
 
         entt::registry entities;
-
         rocky::InstanceVSG instance;
         vsg::ref_ptr<rocky::MapNode> mapNode;
         vsg::ref_ptr<rocky::SkyNode> skyNode;

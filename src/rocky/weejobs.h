@@ -723,7 +723,10 @@ namespace WEEJOBS_NAMESPACE
 
     //! Returns the job pool with the given name, creating a new one if it doesn't 
     //! already exist. If you don't specify a name, a default pool is used.
-    inline jobpool* get_pool(const std::string& name = {})
+    //! @param name Name of the pool to fetch (or create)
+    //! @param pool_size Number of threads in the pool (if it's a new pool)
+    //! @return Pointer to the job pool
+    inline jobpool* get_pool(const std::string& name = {}, unsigned pool_size = 2u)
     {
         std::lock_guard<std::mutex> lock(instance()._pools_mutex);
 
@@ -732,7 +735,7 @@ namespace WEEJOBS_NAMESPACE
             if (pool->name() == name)
                 return pool;
         }
-        auto new_pool = new jobpool(name, 2u);
+        auto new_pool = new jobpool(name, pool_size);
         instance()._pools.push_back(new_pool);
         instance()._metrics._pools.push_back(&new_pool->_metrics);
         new_pool->start_threads();

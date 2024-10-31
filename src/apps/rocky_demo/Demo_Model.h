@@ -8,6 +8,7 @@
 #include <vsg/io/read.h>
 #include <vsg/nodes/MatrixTransform.h>
 #include <rocky/URI.h>
+#include <rocky/vsg/Transform.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
@@ -71,32 +72,28 @@ auto Demo_Model = [](Application& app)
         ImGuiLTable::Checkbox("Visible", &component.visible);
 
         auto& transform = app.entities.get<Transform>(entity);
-        auto& geo = transform.node;
 
-        if (ImGuiLTable::SliderDouble("Latitude", &geo->position.y, -85.0, 85.0, "%.1lf"))
-            geo->dirty();
-
-        if (ImGuiLTable::SliderDouble("Longitude", &geo->position.x, -180.0, 180.0, "%.1lf"))
-            geo->dirty();
-
-        if (ImGuiLTable::SliderDouble("Altitude", &geo->position.z, 0.0, 2500000.0, "%.1lf"))
-            geo->dirty();
+        ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf");
+        ImGuiLTable::SliderDouble("Longitude", &transform.position.x, -180.0, 180.0, "%.1lf");
+        ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2500000.0, "%.1lf");
 
         double heading, pitch, roll;
         vsg::dquat rot;
-        get_rotation_from_matrix(transform.local_matrix, rot);
+        get_rotation_from_matrix(transform.localMatrix, rot);
         rocky::quaternion_to_euler_degrees(rot, pitch, roll, heading);
 
         if (ImGuiLTable::SliderDouble("Heading", &heading, -180.0, 180.0, "%.1lf"))
         {
             rocky::euler_degrees_to_quaternion(pitch, roll, heading, rot);
-            transform.local_matrix = vsg::rotate(rot);
+            transform.localMatrix = vsg::rotate(rot);
+            transform.dirty();
         }
 
         if (ImGuiLTable::SliderDouble("Pitch", &pitch, -90.0, 90.0, "%.1lf"))
         {
             rocky::euler_degrees_to_quaternion(pitch, roll, heading, rot);
-            transform.local_matrix = vsg::rotate(rot);
+            transform.localMatrix = vsg::rotate(rot);
+            transform.dirty();
         }
 
         ImGuiLTable::End();

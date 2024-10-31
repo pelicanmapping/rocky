@@ -11,6 +11,8 @@
 #include <rocky/vsg/Mesh.h>
 #include <rocky/vsg/Line.h>
 #include <rocky/vsg/Icon.h>
+#include <rocky/vsg/Transform.h>
+#include <rocky/vsg/Motion.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;

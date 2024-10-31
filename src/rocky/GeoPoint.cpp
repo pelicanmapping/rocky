@@ -88,6 +88,12 @@ GeoPoint::geodesicDistanceTo(const GeoPoint& rhs) const
     else return { };
 }
 
+std::string
+GeoPoint::string() const
+{
+    return std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + " (" + srs.definition() + ")";
+}
+
 #include "json.h"
 
 namespace ROCKY_NAMESPACE

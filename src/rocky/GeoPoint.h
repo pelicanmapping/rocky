@@ -69,6 +69,9 @@ namespace ROCKY_NAMESPACE
             return srs.valid();
         }
 
+        //! Return a readable string
+        std::string string() const;
+
     public:
         static GeoPoint INVALID;
 

@@ -195,6 +195,7 @@ Application::ctor(int& argc, char** argv)
 
     ecsManager = ECS::SystemsManagerGroup::create();
 
+    //ecsManager->add(ECS::TransformSystem::create(entities));
     ecsManager->add<MeshSystemNode>(entities);
     ecsManager->add<LineSystemNode>(entities);
     ecsManager->add<NodeSystemNode>(entities);

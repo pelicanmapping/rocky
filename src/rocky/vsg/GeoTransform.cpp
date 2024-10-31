@@ -18,11 +18,8 @@ GeoTransform::GeoTransform()
 void
 GeoTransform::setPosition(const GeoPoint& position_)
 {
-    if (position != position_)
-    {
-        position = position_;
-        dirty();
-    }
+    position = position_;
+    dirty();
 }
 
 void
@@ -39,7 +36,6 @@ GeoTransform::traverse(vsg::RecordTraversal& record) const
     if (push(record, vsg::dmat4(1.0)))
     {
         Inherit::traverse(record);
-        //vsg::Group::accept(record);
         pop(record);
     }
 }
@@ -68,8 +64,11 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix)
         {
             glm::dvec3 worldpos;
             if (view.pos_to_world(glm::dvec3(position.x, position.y, position.z), worldpos))
-            {              
-                view.matrix = to_vsg(view.world_ellipsoid->geocentricToLocalToWorld(worldpos)) * local_matrix;
+            {
+                if (localTangentPlane && view.world_srs.isGeocentric())
+                    view.matrix = to_vsg(view.world_ellipsoid->geocentricToLocalToWorld(worldpos)) * local_matrix; 
+                else
+                    view.matrix = vsg::translate(worldpos.x, worldpos.y, worldpos.z) * local_matrix;                
             }
         }
 

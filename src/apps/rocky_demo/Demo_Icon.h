@@ -43,8 +43,9 @@ auto Demo_Icon = [](Application& app)
         icon.style = IconStyle{ 75, 0.0f }; // pixel size, rotation(radians)
 
         // Transform to place the icon:
-        auto& xform = app.entities.emplace<Transform>(entity);
-        xform.setPosition(GeoPoint(SRS::WGS84, 0, 0, 50000));
+        auto& transform = app.entities.emplace<Transform>(entity);
+        transform.setPosition(GeoPoint(SRS::WGS84, 0, 0, 50000));
+        transform.localTangentPlane = false; // optimization for billboards :)
     }
 
     if (ImGuiLTable::Begin("icon"))

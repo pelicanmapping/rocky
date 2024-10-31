@@ -27,6 +27,7 @@ namespace ROCKY_NAMESPACE
             return r;
         }
     };
+
     /**
      * Transform node that accepts geospatial coordinates and creates
      * a local ENU (X=east, Y=north, Z=up) coordinate frame for its children
@@ -44,6 +45,11 @@ namespace ROCKY_NAMESPACE
 
         //! whether horizon culling is active
         bool horizonCulling = true;
+
+        //! Whether the transformation should establish a local tangent plane (ENU)
+        //! at the position. Disabling this can increase performance for objects
+        //! (like billboards) that don't need tangent plane.
+        bool localTangentPlane = true;
 
     public:
         //! Construct an invalid geotransform

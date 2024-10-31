@@ -208,7 +208,7 @@ Runtime::update()
         if (_compileResults.size() > 0)
         {
             std::shared_lock lock(_compileMutex);
-
+            
             for (auto& cr : _compileResults)
             {
                 // no need to check cr, we did that before pushing

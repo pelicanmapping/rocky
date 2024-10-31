@@ -59,7 +59,7 @@ namespace ROCKY_NAMESPACE
         //! Number of render-on-demand requests
         std::atomic_int renderRequests = { 0 };
 
-        //! Request a frame render
+        //! Request a frame render. Thread-safe.
         void requestFrame() {
             ++renderRequests;
         }

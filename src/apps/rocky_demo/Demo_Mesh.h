@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <rocky/vsg/Mesh.h>
+#include <rocky/vsg/Transform.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
@@ -139,16 +140,16 @@ auto Demo_Mesh_Relative = [](Application& app)
                 mesh.dirty();
         }
 
-        auto& xform = app.entities.get<Transform>(entity).node;
+        auto& transform = app.entities.get<Transform>(entity);
 
-        if (ImGuiLTable::SliderDouble("Latitude", &xform->position.y, -85.0, 85.0, "%.1lf"))
-            xform->dirty();
+        if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
+            transform.dirty();
 
-        if (ImGuiLTable::SliderDouble("Longitude", &xform->position.x, -180.0, 180.0, "%.1lf"))
-            xform->dirty();
+        if (ImGuiLTable::SliderDouble("Longitude", &transform.position.x, -180.0, 180.0, "%.1lf"))
+            transform.dirty();
 
-        if (ImGuiLTable::SliderDouble("Altitude", &xform->position.z, 0.0, 2500000.0, "%.1lf"))
-            xform->dirty();
+        if (ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2500000.0, "%.1lf"))
+            transform.dirty();
 
         ImGuiLTable::End();
     }

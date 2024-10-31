@@ -6,7 +6,8 @@
 #pragma once
 
 #include <rocky/vsg/Icon.h>
-#include <rocky/vsg/ECS.h>
+#include <rocky/vsg/Transform.h>
+#include <rocky/vsg/Motion.h>
 #include <set>
 #include <random>
 
@@ -24,20 +25,25 @@ namespace
     {
     public:
         Application& app;
-        EntityMotionSystem motion;
+        MotionSystem motion;
+        float hertz = 30.0f; // updates per second
 
         Simulator(Application& in_app) : app(in_app), motion(in_app.entities) { }
 
         void run()
         {
             jobs::context context;
-            context.pool = jobs::get_pool("rocky.simulation");
+            context.pool = jobs::get_pool("rocky.simulation", 1);
             jobs::dispatch([this]()
                 {
                     while (app.active())
                     {
+                        auto t0 = std::chrono::steady_clock::now();
                         motion.update(app.runtime());
-                        std::this_thread::sleep_for(100ms);
+                        app.runtime().requestFrame();
+                        auto t1 = std::chrono::steady_clock::now();
+                        auto sleep_time = std::chrono::duration<float>(1.0f / hertz);
+                        std::this_thread::sleep_for(sleep_time - (t1 - t0));
                     }
                 }, context);
         }
@@ -126,8 +132,9 @@ auto Demo_Simulation = [](Application& app)
                 pos.transformInPlace(SRS::ECEF);
 
                 // Add a transform component:
-                auto& xform = app.entities.emplace<Transform>(entity);
-                xform.setPosition(pos);
+                auto& transform = app.entities.emplace<Transform>(entity);
+                transform.localTangentPlane = false;
+                transform.setPosition(pos);
 
                 // Add a motion component to represent movement.
                 auto& motion = app.entities.emplace<Motion>(entity);
@@ -148,4 +155,7 @@ auto Demo_Simulation = [](Application& app)
     }
 
     ImGui::Text("Simulating %d platforms", platforms.size());
+    ImGuiLTable::Begin("sim");
+    ImGuiLTable::SliderFloat("Update rate (hertz)", &sim.hertz, 1.0f, 120.0f, "%.0f");
+    ImGuiLTable::End();
 };
