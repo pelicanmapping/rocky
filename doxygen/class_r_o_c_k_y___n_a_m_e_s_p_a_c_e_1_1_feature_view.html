@@ -77,8 +77,6 @@ $(function() {
 <div class="contents">
 
 <p><code>#include &lt;<a class="el" href="_feature_view_8h_source.html">FeatureView.h</a>&gt;</code></p>
-
-<p>Inherits <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component.html">ROCKY_NAMESPACE::ECS::VisibleComponent</a>.</p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -88,6 +86,13 @@ Public Member Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html#ab43635fbf68e4944fee259d1b6b21883">clear</a> (entt::registry &amp;registry)</td></tr>
 <tr class="memdesc:ab43635fbf68e4944fee259d1b6b21883"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deletes any geometries previously created by <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html#a3e22450e541626b81e32f90ba727f4d6">generate()</a> <br /></td></tr>
 <tr class="separator:ab43635fbf68e4944fee259d1b6b21883"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa015086696736ccf1429a51ee178358"><td class="memItemLeft" align="right" valign="top"><a id="aaa015086696736ccf1429a51ee178358"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html#aaa015086696736ccf1429a51ee178358">setVisible</a> (bool value, entt::registry &amp;registry)</td></tr>
+<tr class="memdesc:aaa015086696736ccf1429a51ee178358"><td class="mdescLeft">&#160;</td><td class="mdescRight">Visibility toggle. <br /></td></tr>
+<tr class="separator:aaa015086696736ccf1429a51ee178358"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd311d966028827aab75e0a319f665e7"><td class="memItemLeft" align="right" valign="top"><a id="acd311d966028827aab75e0a319f665e7"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>visible</b> () const</td></tr>
+<tr class="separator:acd311d966028827aab75e0a319f665e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a425405f2fbf1e8ca6bd1c6ffabb47c4a"><td class="memItemLeft" align="right" valign="top"><a id="a425405f2fbf1e8ca6bd1c6ffabb47c4a"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html#a425405f2fbf1e8ca6bd1c6ffabb47c4a">dirtyStyles</a> (entt::registry &amp;entities)</td></tr>
 <tr class="memdesc:a425405f2fbf1e8ca6bd1c6ffabb47c4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Call if you change the stylesheet after generating. <br /></td></tr>
@@ -104,10 +109,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html#aa6be31d0c37b9a6f68c1ce4de4fd91b2">FeatureView</a> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature.html">Feature</a> &amp;&amp;value) noexcept</td></tr>
 <tr class="memdesc:aa6be31d0c37b9a6f68c1ce4de4fd91b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a view to display a single moved feature) <br /></td></tr>
 <tr class="separator:aa6be31d0c37b9a6f68c1ce4de4fd91b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_methods_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component.html">ROCKY_NAMESPACE::ECS::VisibleComponent</a></td></tr>
-<tr class="memitem:a4fe23810942c8d6cd483d0e1526026f6 inherit pub_methods_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component"><td class="memItemLeft" align="right" valign="top"><a id="a4fe23810942c8d6cd483d0e1526026f6"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>dirty</b> ()</td></tr>
-<tr class="separator:a4fe23810942c8d6cd483d0e1526026f6 inherit pub_methods_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -119,27 +120,6 @@ std::vector&lt; rocky::Feature &gt;&#160;</td><td class="memItemRight" valign="b
 <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_style_sheet.html">StyleSheet</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html#a120ae53a0a16752972fb85f6d3d69a3f">styles</a></td></tr>
 <tr class="memdesc:a120ae53a0a16752972fb85f6d3d69a3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Styles to use when compiling features. <br /></td></tr>
 <tr class="separator:a120ae53a0a16752972fb85f6d3d69a3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab1bf4cbaf4dd0b88ddf4045f0c918804"><td class="memItemLeft" align="right" valign="top"><a id="ab1bf4cbaf4dd0b88ddf4045f0c918804"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html#ab1bf4cbaf4dd0b88ddf4045f0c918804">active</a> = true</td></tr>
-<tr class="memdesc:ab1bf4cbaf4dd0b88ddf4045f0c918804"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether to render this component. <br /></td></tr>
-<tr class="separator:ab1bf4cbaf4dd0b88ddf4045f0c918804"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component')"><img src="closed.png" alt="-"/>&#160;Public Attributes inherited from <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component.html">ROCKY_NAMESPACE::ECS::VisibleComponent</a></td></tr>
-<tr class="memitem:ae3abce6056f90e632af5277892ed6423 inherit pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component"><td class="memItemLeft" align="right" valign="top"><a id="ae3abce6056f90e632af5277892ed6423"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component.html#ae3abce6056f90e632af5277892ed6423">visible</a> = true</td></tr>
-<tr class="memdesc:ae3abce6056f90e632af5277892ed6423 inherit pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component"><td class="mdescLeft">&#160;</td><td class="mdescRight">Visibility. <br /></td></tr>
-<tr class="separator:ae3abce6056f90e632af5277892ed6423 inherit pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27f67b4c342d71aeaeff58b8cd68b746 inherit pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component"><td class="memItemLeft" align="right" valign="top"><a id="a27f67b4c342d71aeaeff58b8cd68b746"></a>
-bool *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component.html#a27f67b4c342d71aeaeff58b8cd68b746">visible_ptr</a> = &amp;<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component.html#ae3abce6056f90e632af5277892ed6423">visible</a></td></tr>
-<tr class="memdesc:a27f67b4c342d71aeaeff58b8cd68b746 inherit pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component"><td class="mdescLeft">&#160;</td><td class="mdescRight">Visibility pointer for sharing visibility with other components. <br /></td></tr>
-<tr class="separator:a27f67b4c342d71aeaeff58b8cd68b746 inherit pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0989544d42078ad76902cd2711af905f inherit pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component"><td class="memItemLeft" align="right" valign="top"><a id="a0989544d42078ad76902cd2711af905f"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component.html#a0989544d42078ad76902cd2711af905f">revision</a> = 0</td></tr>
-<tr class="memdesc:a0989544d42078ad76902cd2711af905f inherit pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component"><td class="mdescLeft">&#160;</td><td class="mdescRight">Revision, for synchronizing this component with another. <br /></td></tr>
-<tr class="separator:a0989544d42078ad76902cd2711af905f inherit pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adbb5bb8673316c049a37029f18e89870 inherit pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component"><td class="memItemLeft" align="right" valign="top"><a id="adbb5bb8673316c049a37029f18e89870"></a>
-entt::entity&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component.html#adbb5bb8673316c049a37029f18e89870">entity</a> = entt::null</td></tr>
-<tr class="memdesc:adbb5bb8673316c049a37029f18e89870 inherit pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attach point for additional components, as needed. <br /></td></tr>
-<tr class="separator:adbb5bb8673316c049a37029f18e89870 inherit pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_visible_component"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html">FeatureView</a> is an attachment that compiles a collection of <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature.html">Feature</a> objects for visualization. </p>
