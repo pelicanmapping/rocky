@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Rocky: ROCKY_NAMESPACE::PixelScaleTransform Class Reference</title>
+<title>Rocky: ROCKY_NAMESPACE::ECS::Buffering&lt; Types &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,58 +63,41 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></li><li class="navelem"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_pixel_scale_transform.html">PixelScaleTransform</a></li>  </ul>
+<li class="navelem"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></li><li class="navelem"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s.html">ECS</a></li><li class="navelem"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_buffering.html">Buffering</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-attribs">Public Attributes</a> &#124;
-<a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_pixel_scale_transform-members.html">List of all members</a>  </div>
+<a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_buffering-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">ROCKY_NAMESPACE::PixelScaleTransform Class Reference</div>  </div>
+<div class="title">ROCKY_NAMESPACE::ECS::Buffering&lt; Types &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;<a class="el" href="_pixel_scale_transform_8h_source.html">PixelScaleTransform.h</a>&gt;</code></p>
-
-<p>Inherits vsg::Inherit&lt; vsg::Transform, PixelScaleTransform &gt;.</p>
+<p><code>#include &lt;<a class="el" href="_e_c_s_8h_source.html">ECS.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a127e2b2d6527ef945a98fb658741e825"><td class="memItemLeft" align="right" valign="top"><a id="a127e2b2d6527ef945a98fb658741e825"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>accept</b> (vsg::RecordTraversal &amp;rt) const override</td></tr>
-<tr class="separator:a127e2b2d6527ef945a98fb658741e825"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27e3293746e72876eab94af908004ffb"><td class="memItemLeft" align="right" valign="top"><a id="a27e3293746e72876eab94af908004ffb"></a>
-vsg::dmat4&#160;</td><td class="memItemRight" valign="bottom"><b>transform</b> (const vsg::dmat4 &amp;mv) const override</td></tr>
-<tr class="separator:a27e3293746e72876eab94af908004ffb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
-Public Attributes</h2></td></tr>
-<tr class="memitem:a9ab17c933e0d1088923988420bb0edc4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_pixel_scale_transform.html#a9ab17c933e0d1088923988420bb0edc4">unrotate</a> = false</td></tr>
-<tr class="separator:a9ab17c933e0d1088923988420bb0edc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a841b1cc876e703cb80612bb7d25278c2"><td class="memTemplParams" colspan="2"><a id="a841b1cc876e703cb80612bb7d25278c2"></a>
+template&lt;typename BaseType &gt; </td></tr>
+<tr class="memitem:a841b1cc876e703cb80612bb7d25278c2"><td class="memTemplItemLeft" align="right" valign="top">BaseType *&#160;</td><td class="memTemplItemRight" valign="bottom"><b>try_get</b> (entt::registry &amp;registry, entt::entity entity)</td></tr>
+<tr class="separator:a841b1cc876e703cb80612bb7d25278c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12fa2e013a8d912d199cffb875ff0b07"><td class="memTemplParams" colspan="2"><a id="a12fa2e013a8d912d199cffb875ff0b07"></a>
+template&lt;typename... Other, typename Func &gt; </td></tr>
+<tr class="memitem:a12fa2e013a8d912d199cffb875ff0b07"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>run</b> (entt::registry &amp;registry, Func &amp;&amp;func)</td></tr>
+<tr class="separator:a12fa2e013a8d912d199cffb875ff0b07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5dead977d7e2cfe27aa9f85d58e52376"><td class="memItemLeft" align="right" valign="top"><a id="a5dead977d7e2cfe27aa9f85d58e52376"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>next</b> ()</td></tr>
+<tr class="separator:a5dead977d7e2cfe27aa9f85d58e52376"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Transform that lets you set an object's size in pixels rather than scene units (e.g. meters). Good for text or other billboarded screen-space geometry.</p>
-<p>This won't work great for multi-threaded record traversals.. </p>
-</div><h2 class="groupheader">Member Data Documentation</h2>
-<a id="a9ab17c933e0d1088923988420bb0edc4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9ab17c933e0d1088923988420bb0edc4">&#9670;&nbsp;</a></span>unrotate</h2>
+<div class="textblock"><h3>template&lt;typename... Types&gt;<br />
+class ROCKY_NAMESPACE::ECS::Buffering&lt; Types &gt;</h3>
 
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool ROCKY_NAMESPACE::PixelScaleTransform::unrotate = false</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Whether to undo any rotation found in the origial model view matrix; This will effectively billboard the geometry. </p>
-
-</div>
-</div>
-<hr/>The documentation for this class was generated from the following file:<ul>
-<li>src/rocky/vsg/<a class="el" href="_pixel_scale_transform_8h_source.html">PixelScaleTransform.h</a></li>
+<p>Helper class to create double-buffered (or multi-buffered) components. <a href="https://skypjack.github.io/2019-02-25-entt-double-buffering/">https://skypjack.github.io/2019-02-25-entt-double-buffering/</a> </p>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
+<li>src/rocky/vsg/<a class="el" href="_e_c_s_8h_source.html">ECS.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

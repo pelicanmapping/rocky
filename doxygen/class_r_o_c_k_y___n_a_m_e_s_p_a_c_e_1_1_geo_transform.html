@@ -126,6 +126,8 @@ vsg::dsphere&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_transform.html#a712e57ff90715f6b4f1566ad28dd1b5b">horizonCulling</a> = true</td></tr>
 <tr class="memdesc:a712e57ff90715f6b4f1566ad28dd1b5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">whether horizon culling is active <br /></td></tr>
 <tr class="separator:a712e57ff90715f6b4f1566ad28dd1b5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e621027a0c3c4075ee90d2a886d5c7e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_transform.html#a5e621027a0c3c4075ee90d2a886d5c7e">localTangentPlane</a> = true</td></tr>
+<tr class="separator:a5e621027a0c3c4075ee90d2a886d5c7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
@@ -134,8 +136,24 @@ util::ViewLocal&lt; Data &gt;&#160;</td><td class="memItemRight" valign="bottom"
 <tr class="separator:ade279645350393875db32de3b1b15600"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform.html">Transform</a> node that accepts geospatial coordinates and creates a local ENU (X=east, Y=north, Z=up) coordinate frame for its children that is tangent to the earth at the transform's geo position. </p>
-</div><hr/>The documentation for this class was generated from the following files:<ul>
+<div class="textblock"><p>Transform node that accepts geospatial coordinates and creates a local ENU (X=east, Y=north, Z=up) coordinate frame for its children that is tangent to the earth at the transform's geo position. </p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a5e621027a0c3c4075ee90d2a886d5c7e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5e621027a0c3c4075ee90d2a886d5c7e">&#9670;&nbsp;</a></span>localTangentPlane</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ROCKY_NAMESPACE::GeoTransform::localTangentPlane = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether the transformation should establish a local tangent plane (ENU) at the position. Disabling this can increase performance for objects (like billboards) that don't need tangent plane. </p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following files:<ul>
 <li>src/rocky/vsg/<a class="el" href="_geo_transform_8h_source.html">GeoTransform.h</a></li>
 <li>src/rocky/vsg/GeoTransform.cpp</li>
 </ul>

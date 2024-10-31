@@ -103,8 +103,8 @@ Functions</h2></td></tr>
 WEEJOBS_EXPORT detail::runtime &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e.html#a6712df141c6649164eab909560294b26">instance</a> ()</td></tr>
 <tr class="memdesc:a6712df141c6649164eab909560294b26"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access to the runtime singleton - users need not call this. <br /></td></tr>
 <tr class="separator:a6712df141c6649164eab909560294b26"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a213a0adb9a41fdbbc7359b55d7fa584b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1jobpool.html">jobpool</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e.html#a213a0adb9a41fdbbc7359b55d7fa584b">get_pool</a> (const std::string &amp;name={})</td></tr>
-<tr class="separator:a213a0adb9a41fdbbc7359b55d7fa584b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa3e7322fd67b221c6e76e34c5dedb8d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1jobpool.html">jobpool</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e.html#afa3e7322fd67b221c6e76e34c5dedb8d">get_pool</a> (const std::string &amp;name={}, unsigned pool_size=2u)</td></tr>
+<tr class="separator:afa3e7322fd67b221c6e76e34c5dedb8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2e5229fe8ff14976e96f69cdb2c06644"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e.html#a2e5229fe8ff14976e96f69cdb2c06644">dispatch</a> (std::function&lt; void()&gt; task, const <a class="el" href="struct_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1context.html">context</a> &amp;<a class="el" href="struct_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1context.html">context</a>={})</td></tr>
 <tr class="separator:a2e5229fe8ff14976e96f69cdb2c06644"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac39446989160256aef716ea9a04d8119"><td class="memTemplParams" colspan="2">template&lt;typename F , typename T  = typename detail::result_of_t&lt;F, cancelable&amp;&gt;&gt; </td></tr>
@@ -295,8 +295,8 @@ template&lt;typename F , typename T  = typename detail::result_of_t&lt;F, cancel
 
 </div>
 </div>
-<a id="a213a0adb9a41fdbbc7359b55d7fa584b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a213a0adb9a41fdbbc7359b55d7fa584b">&#9670;&nbsp;</a></span>get_pool()</h2>
+<a id="afa3e7322fd67b221c6e76e34c5dedb8d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afa3e7322fd67b221c6e76e34c5dedb8d">&#9670;&nbsp;</a></span>get_pool()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -308,8 +308,18 @@ template&lt;typename F , typename T  = typename detail::result_of_t&lt;F, cancel
           <td class="memname"><a class="el" href="class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1jobpool.html">jobpool</a>* WEEJOBS_NAMESPACE::get_pool </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>name</em> = <code>{}</code></td><td>)</td>
+          <td class="paramname"><em>name</em> = <code>{}</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">unsigned&#160;</td>
+          <td class="paramname"><em>pool_size</em> = <code>2u</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -318,7 +328,14 @@ template&lt;typename F , typename T  = typename detail::result_of_t&lt;F, cancel
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Returns the job pool with the given name, creating a new one if it doesn't already exist. If you don't specify a name, a default pool is used. </p>
+<p>Returns the job pool with the given name, creating a new one if it doesn't already exist. If you don't specify a name, a default pool is used. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td>Name of the pool to fetch (or create) </td></tr>
+    <tr><td class="paramname">pool_size</td><td>Number of threads in the pool (if it's a new pool) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Pointer to the job pool </dd></dl>
 
 </div>
 </div>

@@ -162,10 +162,11 @@ entt::registry &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class
 <div class="textblock"><h3>template&lt;class T&gt;<br />
 class ROCKY_NAMESPACE::ECS::SystemNode&lt; T &gt;</h3>
 
-<p>VSG node representing an <a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s.html" title="Entity Component System support.">ECS</a> system for the given component type (T) and corresponding renderable type (R). This lives under a <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_systems_manager_group.html">SystemsManagerGroup</a> node. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>VSG node representing an <a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s.html" title="Entity Component System support.">ECS</a> system for the given component type (T). A system of this type asumes that "T" will have a <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_renderable.html">Renderable</a> component attached to "T::entity".</p>
+<p>This lives under a <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_systems_manager_group.html">SystemsManagerGroup</a> node that will tick it each frame.</p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">T</td><td>The component type </td></tr>
-    <tr><td class="paramname">R</td><td>The renderdata type (a struct that contains drawable data if necessary) </td></tr>
   </table>
   </dd>
 </dl>
@@ -257,10 +258,10 @@ template&lt;class T &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Called when the system detects a new component. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Called when the system detects a new or changed component. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">entity</td><td>The entity that has the new component </td></tr>
-    <tr><td class="paramname">context</td><td>The context for initializing the component </td></tr>
+    <tr><td class="paramname">entity</td><td>The entity to which the component is attached </td></tr>
+    <tr><td class="paramname">runtime</td><td><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> context </td></tr>
   </table>
   </dd>
 </dl>
