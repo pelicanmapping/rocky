@@ -108,7 +108,7 @@ AzureImageLayer::createImageImplementation(const TileKey& key, const IOOptions& 
     query << "?api-version=" << apiVersion.value();
     query << "&tilesetId=" << tilesetId.value();
     query << "&zoom=" << zoom << "&x=" << x << "&y=" << y;
-    query << "&tileSize=" << tileSize();
+    query << "&tileSize=" << tileSize().value();
 
     // note: _uriContext holds our authentication headers
     URI imageURI(mapTileApiUrl->full() + query.str(), _uriContext);

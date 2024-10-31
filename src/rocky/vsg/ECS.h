@@ -331,7 +331,7 @@ namespace ROCKY_NAMESPACE
 
     template<class T>
     ECS::SystemNode<T>::SystemNode(entt::registry& in_registry) :
-        Inherit(), System(in_registry)
+        System(in_registry)
     {
         registry.on_construct<T>().connect<&SystemNode<T>::onConstruct>(*this);
         registry.on_destroy<T>().connect<&SystemNode<T>::onDestroy>(*this);
@@ -340,8 +340,8 @@ namespace ROCKY_NAMESPACE
     template<class T>
     ECS::SystemNode<T>::~SystemNode()
     {
-        registry.on_construct<T>().disconnect<&SystemNode<T>::onConstruct>(*this);
-        registry.on_destroy<T>().disconnect<&SystemNode<T>::onDestroy>(*this);
+        //registry.on_construct<T>().disconnect<&SystemNode<T>::onConstruct>(*this);
+        //registry.on_destroy<T>().disconnect<&SystemNode<T>::onDestroy>(*this);
     }
 
     template<class T>
