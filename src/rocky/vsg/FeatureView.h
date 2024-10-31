@@ -29,7 +29,7 @@ namespace ROCKY_NAMESPACE
     * FeatureView is an attachment that compiles a collection of Feature objects
     * for visualization.
     */
-    class ROCKY_EXPORT FeatureView : public ECS::VisibleComponent
+    class ROCKY_EXPORT FeatureView
     {
     public:
         //! Collection of features to view
@@ -53,8 +53,9 @@ namespace ROCKY_NAMESPACE
         //! Deletes any geometries previously created by generate()
         void clear(entt::registry& registry);
 
-        //! Whether to render this component
-        bool active = true;
+        //! Visibility toggle
+        void setVisible(bool value, entt::registry& registry);
+        bool visible() const { return _visible; }
 
         //! Call if you change the stylesheet after generating.
         void dirtyStyles(entt::registry& entities);
@@ -71,5 +72,6 @@ namespace ROCKY_NAMESPACE
 
     private:
         entt::entity _entity = entt::null;
+        bool _visible = true;
     };
 }

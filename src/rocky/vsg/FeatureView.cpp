@@ -326,6 +326,20 @@ FeatureView::clear(entt::registry& registry)
 }
 
 void
+FeatureView::setVisible(bool value, entt::registry& registry)
+{
+    if (_entity != entt::null)
+    {
+        auto [line, mesh] = registry.try_get<Line, Mesh>(_entity);
+        if (line)
+            line->visible = value;
+        if (mesh)
+            mesh->visible = value;
+    }
+    _visible = value;
+}
+
+void
 FeatureView::generate(entt::registry& registry, const SRS& geom_srs, Runtime& runtime, bool keep_features)
 {
     if (_entity == entt::null)
@@ -340,13 +354,11 @@ FeatureView::generate(entt::registry& registry, const SRS& geom_srs, Runtime& ru
         {
             auto& geom = registry.get_or_emplace<Line>(_entity);
             compile_feature_to_lines(feature, styles, geom_srs, geom);
-            geom.visible_ptr = &visible;
         }
         else if (feature.geometry.type == Geometry::Type::Polygon)
         {
             auto& geom = registry.get_or_emplace<Mesh>(_entity);
             compile_polygon_feature_with_weemesh(feature, feature.geometry, styles, geom_srs, geom);
-            geom.visible_ptr = &visible;
         }
         else if (feature.geometry.type == Geometry::Type::MultiPolygon)
         {
@@ -354,7 +366,6 @@ FeatureView::generate(entt::registry& registry, const SRS& geom_srs, Runtime& ru
             for (auto& part : feature.geometry.parts)
             {
                 compile_polygon_feature_with_weemesh(feature, part, styles, geom_srs, geom);
-                geom.visible_ptr = &visible;
             }
         }
         else

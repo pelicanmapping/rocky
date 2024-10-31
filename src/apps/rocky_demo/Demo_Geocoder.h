@@ -21,6 +21,7 @@ auto Demo_Geocoder = [](Application& app)
     static char input_buf[256];
     static LabelStyle label_style_point;
     static LabelStyle label_style_area;
+    static FeatureView feature_view;
 
     if (status.failed())
     {
@@ -65,11 +66,12 @@ auto Demo_Geocoder = [](Application& app)
         label.visible = false;
 
         // Outline for location boundary:
-        auto& feature_view = app.entities.emplace<FeatureView>(entity);
+        //feature_view = {};
+        //auto& feature_view = app.entities.emplace<FeatureView>(entity);
         feature_view.styles.line = LineStyle();
         feature_view.styles.line->color = vsg::vec4{ 1, 1, 0, 1 };
         feature_view.styles.line->depth_offset = 9000.0f; //meters
-        feature_view.active = false;
+        feature_view.setVisible(false, app.entities);
 
         // Transform to place the entity:
         auto& xform = app.entities.emplace<Transform>(entity);
@@ -132,13 +134,13 @@ auto Demo_Geocoder = [](Application& app)
                                 manip->setViewpoint(vp, std::chrono::seconds(2));
                             }
 
-                            auto&& [icon, label, feature_view] = app.entities.get<Icon, Label, FeatureView>(entity);
+                            auto&& [icon, label] = app.entities.get<Icon, Label>(entity);
 
                             // show the placemark:
                             if (feature.geometry.type == Geometry::Type::Points)
                             {
                                 icon.visible = true;
-                                feature_view.visible = false;
+                                feature_view.setVisible(false, app.entities);
                                 label.style = label_style_point;
                             }
                             else
@@ -151,7 +153,7 @@ auto Demo_Geocoder = [](Application& app)
                                 feature_view.clear(app.entities);
                                 feature_view.features = { copy_of_feature };
                                 feature_view.generate(app.entities, app.mapNode->worldSRS(), app.runtime());
-                                feature_view.active = true;
+                                feature_view.setVisible(true, app.entities);
                                 icon.visible = false;
                                 label.style = label_style_area;
                             }
@@ -177,10 +179,10 @@ auto Demo_Geocoder = [](Application& app)
 
                 app.onNextUpdate([&]()
                     {
-                        auto&& [icon, label, feature_view] = app.entities.get<Icon, Label, FeatureView>(entity);
+                        auto&& [icon, label] = app.entities.get<Icon, Label>(entity);
                         icon.visible = false;
                         label.visible = false;
-                        feature_view.visible = false;
+                        feature_view.setVisible(false, app.entities);
                     });
             }
         }

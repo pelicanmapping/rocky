@@ -14,16 +14,19 @@ using namespace ROCKY_NAMESPACE;
 auto Demo_PolygonFeatures = [](Application& app)
 {
 #ifdef ROCKY_HAS_GDAL
-    static entt::entity entity = entt::null;
+    static bool initialized = false;
 
     struct LoadedFeatures {
         Status status;
         std::shared_ptr<rocky::OGRFeatureSource> fs;
     };
     static jobs::future<LoadedFeatures> data;
+    static FeatureView feature_view;
 
-    if (entity == entt::null)
+    if (!initialized)
     {
+        initialized = true;
+
         if (data.empty())
         {
             data = jobs::dispatch([](auto& cancelable)
@@ -40,10 +43,7 @@ auto Demo_PolygonFeatures = [](Application& app)
         }
         else if (data.available() && data->status.ok())
         {
-            // create a feature view and add features to it:
-            entity = app.entities.create();
-            FeatureView& feature_view = app.entities.emplace<FeatureView>(entity);
-
+            // create a feature view and add features to it
             if (data->fs->featureCount() > 0)
                 feature_view.features.reserve(data->fs->featureCount());
 
@@ -81,8 +81,9 @@ auto Demo_PolygonFeatures = [](Application& app)
 
     else if (ImGuiLTable::Begin("Polygon features"))
     {
-        auto& component = app.entities.get<FeatureView>(entity);
-        ImGuiLTable::Checkbox("Visible", &component.active);
+        bool visible = feature_view.visible();
+        if (ImGuiLTable::Checkbox("Visible", &visible))
+            feature_view.setVisible(visible, app.entities);
 
         ImGuiLTable::End();
     }

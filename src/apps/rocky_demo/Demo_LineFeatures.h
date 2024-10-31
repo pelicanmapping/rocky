@@ -12,18 +12,20 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_LineFeatures = [](Application& app)
 {
-
 #ifdef ROCKY_HAS_GDAL
-    static entt::entity entity = entt::null;
+    static bool initialized = false;
     
     struct LoadedFeatures {
         Status status;
         std::shared_ptr<rocky::OGRFeatureSource> fs;
     };
     static jobs::future<LoadedFeatures> data;
+    static FeatureView feature_view;
 
-    if (entity == entt::null)
+    if (!initialized)
     {
+        initialized = true;
+
         if (data.empty())
         {
             data = jobs::dispatch([](auto& cancelable)
@@ -41,9 +43,6 @@ auto Demo_LineFeatures = [](Application& app)
         else if (data.available() && data->status.ok())
         {
             // create a feature view and add features to it:
-            entity = app.entities.create();
-            FeatureView& feature_view = app.entities.emplace<FeatureView>(entity);
-
             auto iter = data->fs->iterate(app.instance.io());
             while (iter.hasMore())
             {
@@ -82,18 +81,18 @@ auto Demo_LineFeatures = [](Application& app)
 
     else if (ImGuiLTable::Begin("Line features"))
     {
-        auto& component = app.entities.get<FeatureView>(entity);
-        
-        ImGuiLTable::Checkbox("Visible", &component.active);
+        bool visible = feature_view.visible();
+        if (ImGuiLTable::Checkbox("Visible", &visible))
+            feature_view.setVisible(visible, app.entities);
 
-        if (component.styles.line.has_value())
+        if (feature_view.styles.line.has_value())
         {
-            float* col = (float*)&component.styles.line->color;
+            float* col = (float*)&feature_view.styles.line->color;
             if (ImGuiLTable::ColorEdit3("Color", col))
-                component.dirtyStyles(app.entities);
+                feature_view.dirtyStyles(app.entities);
 
-            if (ImGuiLTable::SliderFloat("Depth offset", &component.styles.line->depth_offset, 0.0f, 20000.0f, "%.0f"))
-                component.dirtyStyles(app.entities);
+            if (ImGuiLTable::SliderFloat("Depth offset", &feature_view.styles.line->depth_offset, 0.0f, 20000.0f, "%.0f"))
+                feature_view.dirtyStyles(app.entities);
         }
 
         ImGuiLTable::End();
