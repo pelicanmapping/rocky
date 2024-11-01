@@ -121,6 +121,14 @@ namespace WEEJOBS_NAMESPACE
                 return true;
             }
 
+            //! Set if true, reset if false.
+            inline void operator = (bool value) {
+                if (value)
+                    set();
+                else
+                    reset();
+            }
+
             //! Set the event state, causing any waiters to unblock.
             inline void set() {
                 if (!_set) {
