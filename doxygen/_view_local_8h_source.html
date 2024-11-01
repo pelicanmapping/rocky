@@ -85,29 +85,32 @@ $(function() {
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt; <span class="keyword">struct </span>ViewLocal</div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;        {</div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;        <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;            T&amp; operator[](std::uint32_t viewID)<span class="keyword"> const</span></div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keyword">            </span>{</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;                <span class="keywordflow">if</span> (viewID &gt;= _vdd.size())</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;                {</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;                    std::scoped_lock lock(_mutex);</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;                    <span class="keywordflow">if</span> (viewID &gt;= _vdd.size())</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;                    {</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;                        _vdd.resize(viewID + 1);</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;                    }</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;                }</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;                <span class="keywordflow">return</span> _vdd[viewID];</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;            }</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;            <span class="keyword">using</span> iterator = <span class="keyword">typename</span> std::vector&lt;T&gt;::iterator;</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;            iterator begin() { <span class="keywordflow">return</span> _vdd.begin(); }</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;            iterator end() { <span class="keywordflow">return</span> _vdd.end(); }</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;            std::size_t size()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _vdd.size(); }</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;            <span class="keyword">mutable</span> std::mutex _mutex;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;            <span class="keyword">mutable</span> std::vector&lt;T&gt; _vdd;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        };</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    }</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;}</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;            ViewLocal(<span class="keywordtype">unsigned</span> initializeSize = 1) :</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;                _vdd(initializeSize) { }</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160; </div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;            T&amp; operator[](std::uint32_t viewID)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keyword">            </span>{</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;                <span class="keywordflow">if</span> (viewID &gt;= _vdd.size())</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;                {</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;                    std::scoped_lock lock(_mutex);</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;                    <span class="keywordflow">if</span> (viewID &gt;= _vdd.size())</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;                    {</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;                        _vdd.resize(viewID + 1);</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;                    }</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;                }</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;                <span class="keywordflow">return</span> _vdd[viewID];</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;            }</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;            <span class="keyword">using</span> iterator = <span class="keyword">typename</span> std::vector&lt;T&gt;::iterator;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;            iterator begin() { <span class="keywordflow">return</span> _vdd.begin(); }</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;            iterator end() { <span class="keywordflow">return</span> _vdd.end(); }</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;            std::size_t size()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _vdd.size(); }</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;            <span class="keyword">mutable</span> std::mutex _mutex;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;            <span class="keyword">mutable</span> std::vector&lt;T&gt; _vdd;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        };</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    }</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;}</div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

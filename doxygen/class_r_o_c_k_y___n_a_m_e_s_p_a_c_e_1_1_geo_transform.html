@@ -70,7 +70,6 @@ $(function() {
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
-<a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_transform-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">ROCKY_NAMESPACE::GeoTransform Class Reference</div>  </div>
@@ -126,14 +125,15 @@ vsg::dsphere&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_transform.html#a712e57ff90715f6b4f1566ad28dd1b5b">horizonCulling</a> = true</td></tr>
 <tr class="memdesc:a712e57ff90715f6b4f1566ad28dd1b5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">whether horizon culling is active <br /></td></tr>
 <tr class="separator:a712e57ff90715f6b4f1566ad28dd1b5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8668efdb3aba8a4d34dd4515376ed59c"><td class="memItemLeft" align="right" valign="top"><a id="a8668efdb3aba8a4d34dd4515376ed59c"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_transform.html#a8668efdb3aba8a4d34dd4515376ed59c">frustumCulling</a> = true</td></tr>
+<tr class="memdesc:a8668efdb3aba8a4d34dd4515376ed59c"><td class="mdescLeft">&#160;</td><td class="mdescRight">whether frustum culling is active <br /></td></tr>
+<tr class="separator:a8668efdb3aba8a4d34dd4515376ed59c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5e621027a0c3c4075ee90d2a886d5c7e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_transform.html#a5e621027a0c3c4075ee90d2a886d5c7e">localTangentPlane</a> = true</td></tr>
 <tr class="separator:a5e621027a0c3c4075ee90d2a886d5c7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
-Protected Attributes</h2></td></tr>
-<tr class="memitem:ade279645350393875db32de3b1b15600"><td class="memItemLeft" align="right" valign="top"><a id="ade279645350393875db32de3b1b15600"></a>
-util::ViewLocal&lt; Data &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_viewlocal</b></td></tr>
-<tr class="separator:ade279645350393875db32de3b1b15600"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9856f9d6e63e378298057a22da2953c4"><td class="memItemLeft" align="right" valign="top"><a id="a9856f9d6e63e378298057a22da2953c4"></a>
+util::ViewLocal&lt; ViewLocalData &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>viewLocal</b></td></tr>
+<tr class="separator:a9856f9d6e63e378298057a22da2953c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Transform node that accepts geospatial coordinates and creates a local ENU (X=east, Y=north, Z=up) coordinate frame for its children that is tangent to the earth at the transform's geo position. </p>
