@@ -13,10 +13,12 @@
 #include <vsg/utils/GraphicsPipelineConfigurator.h>
 #include <vsg/commands/Commands.h>
 #include <vsg/nodes/Node.h>
-#include <entt/entt.hpp>
 #include <vector>
 #include <chrono>
 #include <type_traits>
+
+#define ENTT_NO_ETO
+#include <entt/entt.hpp>
 
 namespace ROCKY_NAMESPACE
 {
@@ -90,14 +92,8 @@ namespace ROCKY_NAMESPACE
         /**
         * Superclass for ECS components meant to be rendered.
         */
-        struct VisibleComponent
+        struct RevisionedComponent
         {
-            //! Visibility
-            bool visible = true;
-
-            //! Visibility pointer for sharing visibility with other components
-            bool* visible_ptr = &visible;
-
             //! Revision, for synchronizing this component with another
             int revision = 0;
             void dirty() { revision++; }
@@ -106,18 +102,24 @@ namespace ROCKY_NAMESPACE
             entt::entity entity = entt::null;
 
         protected:
-            VisibleComponent() = default;
+            RevisionedComponent() = default;
+        };
+
+
+        struct Visibility
+        {
+            bool visible = true;
         };
 
         /**
         * Component that holds a VSG node and its revision (so it can be
         * synchronized with the associated data model). One will typically
-        * attach a Renderable to VisibleComponent::entity.
+        * attach a Renderable to RevisionedComponent::entity.
         */
         struct Renderable
         {
             vsg::ref_ptr<vsg::Node> node;
-            int revision = 0;
+            int revision = -1;
         };
 
         /**
@@ -212,8 +214,6 @@ namespace ROCKY_NAMESPACE
             //! Fetches the correct layout for a component.
             vsg::ref_ptr<vsg::PipelineLayout> getPipelineLayout(const T&) const;
 
-            void onConstruct(entt::registry& r, const entt::entity e) { }
-
         private:
 
             // list of entities whose components are out of date and need updating
@@ -226,7 +226,8 @@ namespace ROCKY_NAMESPACE
             struct RenderLeaf
             {
                 Renderable& renderable;
-                entt::entity entity;
+                Transform* transform;
+                bool visible;
             };
 
             // re-usable render set to prevent re-allocation
@@ -239,7 +240,7 @@ namespace ROCKY_NAMESPACE
         * VSG Group node whose children are SystemNode instances. It can also hold/manager
         * non-node systems.
         */
-        class SystemsManagerGroup : public vsg::Inherit<vsg::Group, SystemsManagerGroup>
+        class ROCKY_EXPORT SystemsManagerGroup : public vsg::Inherit<vsg::Group, SystemsManagerGroup>
         {
         public:
             //! Add a system node instance to the group.
@@ -323,6 +324,30 @@ namespace ROCKY_NAMESPACE
                 return std::make_shared<TransformSystem>(r);
             }
         };
+
+        /**
+        * Subclass of the EnTT registry providing additional utility functions.
+        */
+        class Registry : public entt::registry
+        {
+        public:
+            //! Toggle the visibility of an entity
+            void setVisible(entt::entity e, bool value)
+            {
+                get<ECS::Visibility>(e).visible = value;
+                //if (value)
+                //    emplace_or_replace<Visible>(e);
+                //else
+                //    remove<Visible>(e);
+            }
+
+            //! Whether an entity is visible
+            bool visible(entt::entity e)
+            {
+                return get<ECS::Visibility>(e).visible;
+                //return try_get<Visible>(e) != nullptr;
+            }
+        };
     }
 
 
@@ -334,10 +359,16 @@ namespace ROCKY_NAMESPACE
         template<typename T>
         inline void SystemNode_on_construct(entt::registry& r, entt::entity e)
         {
-            // Create a Renderable component and attach it to the new component.
+            // Add a visibility tag
+            r.emplace<ECS::Visibility>(e);
+
             T& comp = r.get<T>(e);
+
+            // Create a Renderable component and attach it to the new component.
             comp.entity = r.create();
             r.emplace<ECS::Renderable>(comp.entity);
+
+            comp.revision++;
         }
 
         template<typename T>
@@ -345,6 +376,8 @@ namespace ROCKY_NAMESPACE
         {
             T& comp = r.get<T>(e);
             r.remove<ECS::Renderable>(comp.entity);
+
+            r.remove<ECS::Visibility>(e);
         }
     }
 
@@ -431,22 +464,20 @@ namespace ROCKY_NAMESPACE
             renderSet.resize(!pipelines.empty() ? pipelines.size() : 1);
 
         // Get an optimized view of all this system's components:
-        registry.view<T>().each([&](const entt::entity entity, const T& component)
+        registry.view<T, Visibility>().each([&](const entt::entity entity, const T& component, auto& visibility)
             {
-                // Is the component visible?
-                if (*component.visible_ptr)
+                auto& renderable = registry.get<Renderable>(component.entity);
+                if (renderable.node)
                 {
-                    auto& renderable = registry.get<Renderable>(component.entity);
-                    if (renderable.node)
-                    {
-                        auto& rs = !pipelines.empty() ? renderSet[featureMask(component)] : renderSet[0];
-                        rs.emplace_back(RenderLeaf{ renderable, entity });
-                    }
+                    auto& rs = !pipelines.empty() ? renderSet[featureMask(component)] : renderSet[0];
+                    auto* transform = registry.try_get<Transform>(entity);
+                    if (transform || visibility.visible)
+                        rs.emplace_back(RenderLeaf{ renderable, transform, visibility.visible });
+                }
 
-                    if (!renderable.node || (renderable.revision != component.revision))
-                    {
-                        entities_to_update.push_back(entity);
-                    }
+                if (!renderable.node || (renderable.revision != component.revision))
+                {
+                    entities_to_update.push_back(entity);
                 }
             });
 
@@ -465,18 +496,20 @@ namespace ROCKY_NAMESPACE
                 // Them record each component. If the component has a transform apply it too.
                 for (auto& leaf : renderSet[p])
                 {
-                    auto* xform = registry.try_get<Transform>(leaf.entity);
-                    if (xform)
+                    if (leaf.transform)
                     {
-                        if (xform->push(rt, identity_matrix))
+                        if (leaf.transform->push(rt, identity_matrix))
                         {
-                            leaf.renderable.node->accept(rt);
-                            xform->pop(rt);
+                            if (leaf.visible)
+                                leaf.renderable.node->accept(rt);
+
+                            leaf.transform->pop(rt);
                         }
                     }
                     else
                     {
-                        leaf.renderable.node->accept(rt);
+                        if (leaf.visible)
+                            leaf.renderable.node->accept(rt);
                     }
                 }
 

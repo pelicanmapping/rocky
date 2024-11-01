@@ -46,6 +46,9 @@ namespace ROCKY_NAMESPACE
         //! whether horizon culling is active
         bool horizonCulling = true;
 
+        //! whether frustum culling is active
+        bool frustumCulling = true;
+
         //! Whether the transformation should establish a local tangent plane (ENU)
         //! at the position. Disabling this can increase performance for objects
         //! (like billboards) that don't need tangent plane.
@@ -78,18 +81,20 @@ namespace ROCKY_NAMESPACE
 
         void pop(vsg::RecordTraversal&) const;
 
-    protected:
-
-        struct Data {
+    public:
+        struct ViewLocalData
+        {
             bool dirty = true;
             vsg::dmat4 matrix;
             vsg::dmat4 local_matrix;
+            vsg::dmat4 mvp;
+            double aspect_ratio;
             SRS world_srs;
             const Ellipsoid* world_ellipsoid = nullptr;
             SRSOperation pos_to_world;
             std::shared_ptr<Horizon> horizon;
         };
-        util::ViewLocal<Data> _viewlocal;
+        util::ViewLocal<ViewLocalData> viewLocal;
 
     };
 } // namespace

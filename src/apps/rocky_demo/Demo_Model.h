@@ -68,11 +68,11 @@ auto Demo_Model = [](Application& app)
 
     if (ImGuiLTable::Begin("model"))
     {
-        auto& component = app.entities.get<NodeGraph>(entity);
-        ImGuiLTable::Checkbox("Visible", &component.visible);
+        bool visible = app.entities.visible(entity);
+        if (ImGuiLTable::Checkbox("Visible", &visible))
+            app.entities.setVisible(entity, visible);
 
         auto& transform = app.entities.get<Transform>(entity);
-
         ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf");
         ImGuiLTable::SliderDouble("Longitude", &transform.position.x, -180.0, 180.0, "%.1lf");
         ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2500000.0, "%.1lf");

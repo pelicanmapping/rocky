@@ -56,9 +56,11 @@ auto Demo_Mesh_Absolute = [](Application& app)
 
     if (ImGuiLTable::Begin("Mesh"))
     {
-        auto& mesh = app.entities.get<Mesh>(entity);
+        bool visible = app.entities.visible(entity);
+        if (ImGuiLTable::Checkbox("Visible", &visible))
+            app.entities.setVisible(entity, visible);
 
-        ImGuiLTable::Checkbox("Visible", &mesh.visible);
+        auto& mesh = app.entities.get<Mesh>(entity);
 
         if (mesh.style.has_value())
         {
@@ -129,9 +131,11 @@ auto Demo_Mesh_Relative = [](Application& app)
 
     if (ImGuiLTable::Begin("Mesh"))
     {
-        auto& mesh = app.entities.get<Mesh>(entity);
+        bool visible = app.entities.visible(entity);
+        if (ImGuiLTable::Checkbox("Visible", &visible))
+            app.entities.setVisible(entity, visible);
 
-        ImGuiLTable::Checkbox("Visible", &mesh.visible);
+        auto& mesh = app.entities.get<Mesh>(entity);
 
         auto* style = app.entities.try_get<MeshStyle>(entity);
         if (style)
@@ -203,9 +207,11 @@ auto Demo_Mesh_Multi = [](Application& app)
 
     if (ImGuiLTable::Begin("Mesh"))
     {
-        auto& mesh = app.entities.get<Mesh>(entity);
+        bool visible = app.entities.visible(entity);
+        if (ImGuiLTable::Checkbox("Visible", &visible))
+            app.entities.setVisible(entity, visible);
 
-        ImGuiLTable::Checkbox("Visible", &mesh.visible);
+        auto& mesh = app.entities.get<Mesh>(entity);
 
         auto* style = app.entities.try_get<MeshStyle>(entity);
         if (style)
@@ -216,16 +222,15 @@ auto Demo_Mesh_Multi = [](Application& app)
         }
 
         auto& transform = app.entities.get<Transform>(entity);
-        auto& xform = transform.node;
 
-        if (ImGuiLTable::SliderDouble("Latitude", &xform->position.y, -85.0, 85.0, "%.1lf"))
-            xform->dirty();
+        if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
+            transform.dirty();
 
-        if (ImGuiLTable::SliderDouble("Longitude", &xform->position.x, -180.0, 180.0, "%.1lf"))
-            xform->dirty();
+        if (ImGuiLTable::SliderDouble("Longitude", &transform.position.x, -180.0, 180.0, "%.1lf"))
+            transform.dirty();
 
-        if (ImGuiLTable::SliderDouble("Altitude", &xform->position.z, 0.0, 2500000.0, "%.1lf"))
-            xform->dirty();
+        if (ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2500000.0, "%.1lf"))
+            transform.dirty();
 
         ImGuiLTable::End();
     }

@@ -151,6 +151,11 @@ namespace WEEJOBS_NAMESPACE
                 return _set;
             }
 
+            //! Synonymous with isSet()
+            inline operator bool() const {
+                return isSet();
+            }
+
         protected:
             bool _set;
             std::condition_variable_any _cond;

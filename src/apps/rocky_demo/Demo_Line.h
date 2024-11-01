@@ -49,9 +49,11 @@ auto Demo_Line_Absolute = [](Application& app)
 
     if (ImGuiLTable::Begin("absolute linestring"))
     {
-        auto& component = app.entities.get<Line>(entity);
+        bool visible = app.entities.visible(entity);
+        if (ImGuiLTable::Checkbox("Visible", &visible))
+            app.entities.setVisible(entity, visible);
 
-        ImGuiLTable::Checkbox("Visible", &component.visible);
+        auto& component = app.entities.get<Line>(entity);
 
         if (component.style.has_value())
         {
@@ -107,9 +109,11 @@ auto Demo_Line_Relative = [](Application& app)
 
     if (ImGuiLTable::Begin("relative linestring"))
     {
-        auto& line = app.entities.get<Line>(entity);
+        bool visible = app.entities.visible(entity);
+        if (ImGuiLTable::Checkbox("Visible", &visible))
+            app.entities.setVisible(entity, visible);
 
-        ImGuiLTable::Checkbox("Visible", &line.visible);
+        auto& line = app.entities.get<Line>(entity);
 
         if (line.style.has_value())
         {

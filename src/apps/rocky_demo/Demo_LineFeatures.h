@@ -13,7 +13,6 @@ using namespace ROCKY_NAMESPACE;
 auto Demo_LineFeatures = [](Application& app)
 {
 #ifdef ROCKY_HAS_GDAL
-    static bool initialized = false;
     
     struct LoadedFeatures {
         Status status;
@@ -22,10 +21,8 @@ auto Demo_LineFeatures = [](Application& app)
     static jobs::future<LoadedFeatures> data;
     static FeatureView feature_view;
 
-    if (!initialized)
+    if (feature_view.entity == entt::null)
     {
-        initialized = true;
-
         if (data.empty())
         {
             data = jobs::dispatch([](auto& cancelable)
@@ -81,9 +78,9 @@ auto Demo_LineFeatures = [](Application& app)
 
     else if (ImGuiLTable::Begin("Line features"))
     {
-        bool visible = feature_view.visible();
+        bool visible = app.entities.visible(feature_view.entity);
         if (ImGuiLTable::Checkbox("Visible", &visible))
-            feature_view.setVisible(visible, app.entities);
+            app.entities.setVisible(feature_view.entity, visible);
 
         if (feature_view.styles.line.has_value())
         {

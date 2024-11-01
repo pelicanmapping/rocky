@@ -79,7 +79,11 @@ namespace ROCKY_NAMESPACE
 
     public: // public properties
 
-        entt::registry entities;
+        jobs::detail::semaphore handle;
+
+        ECS::Registry entities;
+        entt::registry& registry = entities; // alias
+
         rocky::InstanceVSG instance;
         vsg::ref_ptr<rocky::MapNode> mapNode;
         vsg::ref_ptr<rocky::SkyNode> skyNode;

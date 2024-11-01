@@ -48,7 +48,6 @@ auto Demo_Geocoder = [](Application& app)
         auto& icon = app.entities.emplace<Icon>(entity);
         icon.image = image.value;
         icon.style = IconStyle{ 32, 0.0f }; // pixel size, rotation(radians)
-        icon.visible = false;
 
         // Attach a label:
         label_style_point.font = app.runtime().defaultFont;
@@ -63,15 +62,14 @@ auto Demo_Geocoder = [](Application& app)
         label_style_area.outlineSize = 0.5f;
 
         auto& label = app.entities.emplace<Label>(entity);
-        label.visible = false;
 
         // Outline for location boundary:
-        //feature_view = {};
-        //auto& feature_view = app.entities.emplace<FeatureView>(entity);
         feature_view.styles.line = LineStyle();
         feature_view.styles.line->color = vsg::vec4{ 1, 1, 0, 1 };
         feature_view.styles.line->depth_offset = 9000.0f; //meters
-        feature_view.setVisible(false, app.entities);
+
+        app.entities.setVisible(entity, false);
+        app.entities.setVisible(feature_view.entity, false);
 
         // Transform to place the entity:
         auto& xform = app.entities.emplace<Transform>(entity);
@@ -83,7 +81,7 @@ auto Demo_Geocoder = [](Application& app)
         {
             // hide the placemark:
             auto& icon = app.entities.get<Icon>(entity);
-            icon.visible = false;
+            app.entities.setVisible(entity, false);
 
             std::string input(input_buf);
             geocoding_task = jobs::dispatch([&app, input](jobs::cancelable& c)
@@ -139,8 +137,8 @@ auto Demo_Geocoder = [](Application& app)
                             // show the placemark:
                             if (feature.geometry.type == Geometry::Type::Points)
                             {
-                                icon.visible = true;
-                                feature_view.setVisible(false, app.entities);
+                                app.entities.setVisible(entity, true);
+                                app.entities.setVisible(feature_view.entity, false);
                                 label.style = label_style_point;
                             }
                             else
@@ -153,16 +151,15 @@ auto Demo_Geocoder = [](Application& app)
                                 feature_view.clear(app.entities);
                                 feature_view.features = { copy_of_feature };
                                 feature_view.generate(app.entities, app.mapNode->worldSRS(), app.runtime());
-                                feature_view.setVisible(true, app.entities);
-                                icon.visible = false;
+                                app.entities.setVisible(entity, true);
+                                app.entities.setVisible(feature_view.entity, true);
                                 label.style = label_style_area;
                             }
 
                             // update the label:
                             auto text = display_name;
                             replace_in_place(text, ", ", "\n");
-                            label.text = text;
-                            label.visible = true;
+                            label.text = text;                            
                             label.revision++;
 
                             // position it:
@@ -179,10 +176,9 @@ auto Demo_Geocoder = [](Application& app)
 
                 app.onNextUpdate([&]()
                     {
-                        auto&& [icon, label] = app.entities.get<Icon, Label>(entity);
-                        icon.visible = false;
-                        label.visible = false;
-                        feature_view.setVisible(false, app.entities);
+                        //auto&& [icon, label] = app.entities.get<Icon, Label>(entity);
+                        app.entities.setVisible(entity, false);
+                        app.entities.setVisible(feature_view.entity, false);
                     });
             }
         }

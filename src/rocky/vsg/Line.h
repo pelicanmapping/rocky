@@ -30,7 +30,7 @@ namespace ROCKY_NAMESPACE
     * LineString component - holds one or more separate line string geometries
     * sharing the same style.
     */
-    class Line : public ECS::VisibleComponent
+    class Line : public ECS::RevisionedComponent
     {
     public:
         //! Dynamic line styling. This is optional.

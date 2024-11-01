@@ -20,11 +20,14 @@ namespace ROCKY_NAMESPACE
         *
         * ViewLocal<Data> viewlocal;
         * ...
-        * auto view_data = viewlocal[t->getState()->_commandBuffer->viewID];
+        * auto& view_data = viewlocal[t->getState()->_commandBuffer->viewID];
         */
         template<typename T> struct ViewLocal
         {
         public:
+            ViewLocal(unsigned initializeSize = 1) :
+                _vdd(initializeSize) { }
+
             //! Fetch the data associated with the view id
             T& operator[](std::uint32_t viewID) const
             {

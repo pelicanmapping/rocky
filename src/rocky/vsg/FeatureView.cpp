@@ -294,7 +294,7 @@ namespace
             temp.verts[0] = m.verts[tri.second.i0];
             temp.verts[1] = m.verts[tri.second.i1];
             temp.verts[2] = m.verts[tri.second.i2];
-            mesh.triangles.emplace_back(std::move(temp));
+            mesh.triangles.emplace_back(temp);
         }
     }
 }
@@ -318,33 +318,19 @@ FeatureView::FeatureView(Feature&& f) noexcept
 void
 FeatureView::clear(entt::registry& registry)
 {
-    if (_entity != entt::null)
+    if (entity != entt::null)
     {
-        registry.remove<Line>(_entity);
-        registry.remove<Mesh>(_entity);
+        registry.remove<Line>(entity);
+        registry.remove<Mesh>(entity);
     }
-}
-
-void
-FeatureView::setVisible(bool value, entt::registry& registry)
-{
-    if (_entity != entt::null)
-    {
-        auto [line, mesh] = registry.try_get<Line, Mesh>(_entity);
-        if (line)
-            line->visible = value;
-        if (mesh)
-            mesh->visible = value;
-    }
-    _visible = value;
 }
 
 void
 FeatureView::generate(entt::registry& registry, const SRS& geom_srs, Runtime& runtime, bool keep_features)
 {
-    if (_entity == entt::null)
+    if (entity == entt::null)
     {
-        _entity = registry.create();
+        entity = registry.create();
     }
 
     for (auto& feature : features)
@@ -352,17 +338,17 @@ FeatureView::generate(entt::registry& registry, const SRS& geom_srs, Runtime& ru
         if (feature.geometry.type == Geometry::Type::LineString ||
             feature.geometry.type == Geometry::Type::MultiLineString)
         {
-            auto& geom = registry.get_or_emplace<Line>(_entity);
+            auto& geom = registry.get_or_emplace<Line>(entity);
             compile_feature_to_lines(feature, styles, geom_srs, geom);
         }
         else if (feature.geometry.type == Geometry::Type::Polygon)
         {
-            auto& geom = registry.get_or_emplace<Mesh>(_entity);
+            auto& geom = registry.get_or_emplace<Mesh>(entity);
             compile_polygon_feature_with_weemesh(feature, feature.geometry, styles, geom_srs, geom);
         }
         else if (feature.geometry.type == Geometry::Type::MultiPolygon)
         {
-            auto& geom = registry.get_or_emplace<Mesh>(_entity);
+            auto& geom = registry.get_or_emplace<Mesh>(entity);
             for (auto& part : feature.geometry.parts)
             {
                 compile_polygon_feature_with_weemesh(feature, part, styles, geom_srs, geom);
@@ -383,12 +369,12 @@ FeatureView::generate(entt::registry& registry, const SRS& geom_srs, Runtime& ru
 void
 FeatureView::dirtyStyles(entt::registry& entities)
 {
-    if (_entity == entt::null)
+    if (entity == entt::null)
         return;
 
     if (styles.line.has_value())
     {
-        if (auto* line = entities.try_get<Line>(_entity))
+        if (auto* line = entities.try_get<Line>(entity))
         {
             line->style = styles.line.value();
             line->dirty();
@@ -397,7 +383,7 @@ FeatureView::dirtyStyles(entt::registry& entities)
 
     if (styles.mesh.has_value())
     {
-        if  (auto* mesh = entities.try_get<Mesh>(_entity))
+        if  (auto* mesh = entities.try_get<Mesh>(entity))
         {
             mesh->style = styles.mesh.value();
             mesh->dirty();

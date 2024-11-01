@@ -24,7 +24,7 @@ namespace ROCKY_NAMESPACE
     * Icon Component - an icon is a 2D billboard with a texture
     * at a geolocation.
     */
-    struct Icon : public ECS::VisibleComponent
+    struct Icon : public ECS::RevisionedComponent
     {
         //! Dynamic styling for the icon
         IconStyle style;

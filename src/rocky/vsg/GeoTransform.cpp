@@ -11,8 +11,7 @@ using namespace ROCKY_NAMESPACE;
 
 GeoTransform::GeoTransform()
 {
-    // force creation of the first viewlocal data structure
-    _viewlocal[0].dirty = true;
+    //nop
 }
 
 void
@@ -25,7 +24,7 @@ GeoTransform::setPosition(const GeoPoint& position_)
 void
 GeoTransform::dirty()
 {
-    for (auto& view : _viewlocal)
+    for (auto& view : viewLocal)
         view.dirty = true;
 }
 
@@ -43,14 +42,15 @@ GeoTransform::traverse(vsg::RecordTraversal& record) const
 bool
 GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix) const
 {
-    auto state = record.getState();
+    auto* state = record.getState();
 
     // fetch the view-local data:
-    auto& view = _viewlocal[record.getState()->_commandBuffer->viewID];
+    auto& view = viewLocal[record.getState()->_commandBuffer->viewID];
 
     // only if something has changed since last time:
     if (view.dirty || local_matrix != view.local_matrix)
     {
+        // first time through, cache information about the world SRS and ellipsoid for this view.
         if (!view.pos_to_world.valid())
         {
             if (record.getValue("rocky.worldsrs", view.world_srs))
@@ -68,12 +68,27 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix)
                 if (localTangentPlane && view.world_srs.isGeocentric())
                     view.matrix = to_vsg(view.world_ellipsoid->geocentricToLocalToWorld(worldpos)) * local_matrix; 
                 else
-                    view.matrix = vsg::translate(worldpos.x, worldpos.y, worldpos.z) * local_matrix;                
+                    view.matrix = vsg::translate(worldpos.x, worldpos.y, worldpos.z) * local_matrix;      
             }
         }
 
         view.local_matrix = local_matrix;
         view.dirty = false;
+    }
+
+    auto mvm = state->modelviewMatrixStack.top() * view.matrix;
+    auto& proj = state->projectionMatrixStack.top();
+    view.mvp = proj * mvm;
+    view.aspect_ratio = std::abs(proj[1][1] / proj[0][0]);
+
+    // Frustum cull (by center point)
+    if (frustumCulling)
+    {
+        // frustum cull
+        vsg::dvec4 clip = view.mvp[3] / view.mvp[3][3];
+        const double t = 1.0;
+        if (clip.x < -t || clip.x > t || clip.y < -t || clip.y > t || clip.z < -t || clip.z > t)
+            return false;
     }
 
     // horizon cull, if active (geocentric only)
@@ -94,8 +109,8 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix)
     }
 
     // replicates RecordTraversal::accept(MatrixTransform&):
-    state->modelviewMatrixStack.push(state->modelviewMatrixStack.top() * view.matrix);
-    state->dirty = true;
+    state->modelviewMatrixStack.push(mvm);
+    //state->dirty = true;
     state->pushFrustum();
 
     return true;
@@ -107,5 +122,5 @@ GeoTransform::pop(vsg::RecordTraversal& record) const
     auto state = record.getState();
     state->popFrustum();
     state->modelviewMatrixStack.pop();
-    state->dirty = true;
+    //state->dirty = true;
 }

@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky/vsg/Label.h>
 #include <rocky/vsg/Transform.h>
+#include <rocky/vsg/ECS.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
@@ -44,8 +45,11 @@ auto Demo_Label = [](Application& app)
 
     if (ImGuiLTable::Begin("text"))
     {
+        bool visible = app.entities.visible(entity);
+        if (ImGuiLTable::Checkbox("Visible", &visible))
+            app.entities.setVisible(entity, visible);
+
         auto& label = app.entities.get<Label>(entity);
-        ImGuiLTable::Checkbox("Visible", &label.visible);
 
         if (label.text.length() <= 255)
         {

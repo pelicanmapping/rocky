@@ -53,10 +53,6 @@ namespace ROCKY_NAMESPACE
         //! Deletes any geometries previously created by generate()
         void clear(entt::registry& registry);
 
-        //! Visibility toggle
-        void setVisible(bool value, entt::registry& registry);
-        bool visible() const { return _visible; }
-
         //! Call if you change the stylesheet after generating.
         void dirtyStyles(entt::registry& entities);
 
@@ -70,8 +66,7 @@ namespace ROCKY_NAMESPACE
         //! Construct a view to display a single moved feature)
         FeatureView(Feature&& value) noexcept;
 
-    private:
-        entt::entity _entity = entt::null;
-        bool _visible = true;
+        //! Underlying entity for this view
+        entt::entity entity = entt::null;
     };
 }

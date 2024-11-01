@@ -50,9 +50,11 @@ auto Demo_Icon = [](Application& app)
 
     if (ImGuiLTable::Begin("icon"))
     {
-        auto& icon = app.entities.get<Icon>(entity);
+        bool visible = app.entities.visible(entity);
+        if (ImGuiLTable::Checkbox("Visible", &visible))
+            app.entities.setVisible(entity, visible);
 
-        ImGuiLTable::Checkbox("Visible", &icon.visible);
+        auto& icon = app.entities.get<Icon>(entity);
 
         if (ImGuiLTable::SliderFloat("Pixel size", &icon.style.size_pixels, 1.0f, 1024.0f))
             icon.revision++;
