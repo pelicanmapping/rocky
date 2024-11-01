@@ -85,7 +85,7 @@ $(function() {
 Public Types</h2></td></tr>
 <tr class="memitem:af2588899f0d4c6d4e8678f9e6ff0d206"><td class="memItemLeft" align="right" valign="top"><a id="af2588899f0d4c6d4e8678f9e6ff0d206"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#af2588899f0d4c6d4e8678f9e6ff0d206">Part</a> = std::vector&lt; vsg::dvec3 &gt;</td></tr>
-<tr class="memdesc:af2588899f0d4c6d4e8678f9e6ff0d206"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html">Geometry</a>. <br /></td></tr>
+<tr class="memdesc:af2588899f0d4c6d4e8678f9e6ff0d206"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html">Geometry</a>. Stored on the heap since it can change size. <br /></td></tr>
 <tr class="separator:af2588899f0d4c6d4e8678f9e6ff0d206"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -110,9 +110,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="separator:ae8099204189392fc192d90c1b368ca3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae3acd64289ba361832af68520bd6f6a1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">GeoPoint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ae3acd64289ba361832af68520bd6f6a1">referencePoint</a></td></tr>
 <tr class="separator:ae3acd64289ba361832af68520bd6f6a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7d3879496ffec9f4977982c1cbb33869"><td class="memItemLeft" align="right" valign="top"><a id="a7d3879496ffec9f4977982c1cbb33869"></a>
-std::vector&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#af2588899f0d4c6d4e8678f9e6ff0d206">Part</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>parts</b></td></tr>
-<tr class="separator:a7d3879496ffec9f4977982c1cbb33869"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a9ca56997f953b740a94c26eaf2a4cf"><td class="memItemLeft" align="right" valign="top"><a id="a8a9ca56997f953b740a94c26eaf2a4cf"></a>
+std::unique_ptr&lt; std::vector&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#af2588899f0d4c6d4e8678f9e6ff0d206">Part</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>parts</b></td></tr>
+<tr class="separator:a8a9ca56997f953b740a94c26eaf2a4cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_revisioned_component"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_revisioned_component')"><img src="closed.png" alt="-"/>&#160;Public Attributes inherited from <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_revisioned_component.html">ROCKY_NAMESPACE::ECS::RevisionedComponent</a></td></tr>
 <tr class="memitem:a6722c0b056b6114b39260d72ccbc8fce inherit pub_attribs_struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_revisioned_component"><td class="memItemLeft" align="right" valign="top"><a id="a6722c0b056b6114b39260d72ccbc8fce"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_revisioned_component.html#a6722c0b056b6114b39260d72ccbc8fce">revision</a> = 0</td></tr>
