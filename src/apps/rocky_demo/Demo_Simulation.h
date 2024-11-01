@@ -38,6 +38,7 @@ namespace
 
     struct Declutter
     {
+        bool dummy = false;
     };
 
     class DeclutterSystem : public ECS::System
@@ -66,7 +67,7 @@ namespace
             sorted.clear();
             double ar = -1.0; // same for all objects
             auto view = registry.view<Declutter, Transform>();
-            for (auto& [entity, declutter, transform] : view.each())
+            for (auto&& [entity, declutter, transform] : view.each())
             {
                 if (transform.node)
                 {
@@ -115,7 +116,7 @@ namespace
         void resetVisibility()
         {
             auto view = registry.view<Declutter, ECS::Visibility>();
-            for (auto& [entity, declutter, visibility] : view.each())
+            for (auto&& [entity, declutter, visibility] : view.each())
             {
                 visibility.visible = true;
             }
@@ -211,7 +212,8 @@ auto Demo_Simulation = [](Application& app)
     {
         // add an icon:
         auto io = app.instance.io();
-        auto image = io.services.readImageFromURI("https://github.com/gwaldron/osgearth/blob/master/data/airport.png?raw=true", io);
+        //auto image = io.services.readImageFromURI("https://github.com/gwaldron/osgearth/blob/master/data/airport.png?raw=true", io);
+        auto image = io.services.readImageFromURI("https://user-images.githubusercontent.com/326618/236923465-c85eb0c2-4d31-41a7-8ef1-29d34696e3cb.png", io);
         status = image.status;
         if (image.status.ok())
         {
@@ -280,7 +282,7 @@ auto Demo_Simulation = [](Application& app)
 
         if (sim.declutterEnabled)
         {
-            ImGuiLTable::SliderDouble("  Buffer size", &sim.declutter.buffer, 0.0f, 0.03f, "%.3f");
+            ImGuiLTable::SliderDouble("  Separation", &sim.declutter.buffer, 0.0f, 0.03f, "%.3f");
             ImGuiLTable::SliderFloat("  Frequency", &sim.declutter_hertz, 1.0f, 30.0f, "%.0f hz");
             ImGuiLTable::Text("  Visible", "%ld / %ld", sim.declutter.visible, sim.declutter.total);
         }

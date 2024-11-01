@@ -25,7 +25,8 @@ endmacro()
 file(GLOB HEADERS_CONTRIB contrib/*.h)
 file(GLOB SOURCES_CONTRIB contrib/*.cpp)
 
-
+# data files to install
+list(APPEND DATA_FILES "${PROJECT_SOURCE_DIR}/data/fonts/times.vsgb")
 
 
 # find dependecies ----
@@ -256,6 +257,7 @@ install(
 # installs the default headers.
 install(FILES ${HEADERS_CORE} DESTINATION include/rocky)
 install(FILES ${HEADERS_CONTRIB} DESTINATION include/rocky/contrib)
+install(FILES ${DATA_FILES} DESTINATION share/rocky/data)
 
 # installs the VSG headers and shaders.
 if(ROCKY_RENDERER_VSG)

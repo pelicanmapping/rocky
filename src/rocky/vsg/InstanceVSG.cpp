@@ -276,11 +276,19 @@ InstanceVSG::ctor(int& argc, char** argv)
 
     // For system fonts
     runtime.readerWriterOptions->paths.push_back("C:/windows/fonts");
+    runtime.readerWriterOptions->paths.push_back("/etc/fonts");
+    runtime.readerWriterOptions->paths.push_back("/usr/local/share/rocky/data");
 
     // Load a default font if there is one
     auto font_file = util::getEnvVar("ROCKY_DEFAULT_FONT");
     if (font_file.empty())
+    {
+#ifdef WIN32
         font_file = "arial.ttf";
+#else
+        font_file = "times.vsgb";
+#endif
+    }
 
     runtime.defaultFont = vsg::read_cast<vsg::Font>(font_file, runtime.readerWriterOptions);
     if (!runtime.defaultFont)

@@ -17,7 +17,7 @@
 #include <chrono>
 #include <type_traits>
 
-#define ENTT_NO_ETO
+//#define ENTT_NO_ETO
 #include <entt/entt.hpp>
 
 namespace ROCKY_NAMESPACE
@@ -359,16 +359,20 @@ namespace ROCKY_NAMESPACE
         template<typename T>
         inline void SystemNode_on_construct(entt::registry& r, entt::entity e)
         {
-            // Add a visibility tag
-            r.emplace<ECS::Visibility>(e);
+            T& new_component = r.get<T>(e);
 
-            T& comp = r.get<T>(e);
+            // Add a visibility tag (if first time dealing with this entity)
+            // I am not sure yet how to remove this in the end.
+            if (!r.try_get<ECS::Visibility>(e))
+            {
+                r.emplace<ECS::Visibility>(e);
+            }
 
             // Create a Renderable component and attach it to the new component.
-            comp.entity = r.create();
-            r.emplace<ECS::Renderable>(comp.entity);
+            new_component.entity = r.create();
+            r.emplace<ECS::Renderable>(new_component.entity);
 
-            comp.revision++;
+            new_component.revision++;
         }
 
         template<typename T>
@@ -377,7 +381,8 @@ namespace ROCKY_NAMESPACE
             T& comp = r.get<T>(e);
             r.remove<ECS::Renderable>(comp.entity);
 
-            r.remove<ECS::Visibility>(e);
+            // Only want to remove it if there are no more components on this entity. I guess.
+            //r.remove<ECS::Visibility>(e);
         }
     }
 
