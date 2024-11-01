@@ -27,70 +27,8 @@ namespace ROCKY_NAMESPACE
     {
         using time_point = std::chrono::steady_clock::time_point;
 
-#if 0
         /**
-        * Helper class to create double-buffered (or multi-buffered) components.
-        * https://skypjack.github.io/2019-02-25-entt-double-buffering/
-        */
-        template<typename...Types>
-        class Buffering
-        {
-            using ident = entt::ident<Types...>;
-
-            template<typename Type, typename... Tail, typename... Other, typename Func>
-            void _run(entt::type_list<Other...>, entt::registry& registry, Func&& func) {
-                if (curr == ident::template type<Type>) {
-                    registry.view<Type, Other...>().each(std::forward<Func>(func));
-                }
-                else {
-                    if (sizeof...(Tail) == 0) {
-                        assert(false);
-                    }
-                    else {
-                        execute<Tail...>(entt::type_list<Other...>{}, registry, std::forward<Func>(func));
-                    }
-                }
-            }
-
-            template<typename BaseType, typename Type, typename... Tail>
-            BaseType* _try_get(entt::registry& registry, entt::entity entity) const {
-                if (curr == ident::value<Type>) {
-                    return registry.try_get<Type>(entity);
-                }
-                else {
-                    if constexpr (sizeof...(Tail) == 0) {
-                        assert(false);
-                        return nullptr;
-                    }
-                    else {
-                        return _try_get<BaseType, Tail...>(registry, entity);
-                    }
-                }
-            }
-
-        public:
-
-            template<typename BaseType>
-            BaseType* try_get(entt::registry& registry, entt::entity entity) {
-                return _try_get<BaseType, Types...>(registry, entity);
-            }
-
-            template<typename... Other, typename Func>
-            void run(entt::registry& registry, Func&& func) {
-                _run<Types...>(entt::type_list<Other...>{}, registry, std::forward<Func>(func));
-            }
-
-            void next() {
-                curr = (curr + 1) % sizeof...(Types);
-            }
-
-        private:
-            std::size_t curr{};
-        };
-#endif
-
-        /**
-        * Superclass for ECS components meant to be rendered.
+        * Superclass for ECS components meant to be revisioned and/or with an attach point.
         */
         struct RevisionedComponent
         {
@@ -105,7 +43,9 @@ namespace ROCKY_NAMESPACE
             RevisionedComponent() = default;
         };
 
-
+        /**
+        * Component representing an entity's visibility.
+        */
         struct Visibility
         {
             bool visible = true;
@@ -136,7 +76,10 @@ namespace ROCKY_NAMESPACE
             Status status;
 
             //! Initialize the ECS system (once at startup)
-            virtual void initializeSystem(Runtime& runtime) { }
+            virtual void initializeSystem(Runtime& runtime)
+            {
+                //nop
+            }
 
             //! Update the ECS system (once per frame)
             virtual void update(Runtime& runtime)
@@ -149,7 +92,10 @@ namespace ROCKY_NAMESPACE
                 registry(in_registry) { }
 
             //! Override this to handle any components that need initial setup
-            virtual void updateComponents(Runtime& rutime) { }
+            virtual void updateComponents(Runtime& rutime)
+            {
+                //nop
+            }
         };
 
         /**
@@ -335,17 +281,12 @@ namespace ROCKY_NAMESPACE
             void setVisible(entt::entity e, bool value)
             {
                 get<ECS::Visibility>(e).visible = value;
-                //if (value)
-                //    emplace_or_replace<Visible>(e);
-                //else
-                //    remove<Visible>(e);
             }
 
             //! Whether an entity is visible
             bool visible(entt::entity e)
             {
                 return get<ECS::Visibility>(e).visible;
-                //return try_get<Visible>(e) != nullptr;
             }
         };
     }

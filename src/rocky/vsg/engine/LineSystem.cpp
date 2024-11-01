@@ -182,7 +182,7 @@ LineSystemNode::update(entt::entity entity, Runtime& runtime)
 
         auto group = vsg::Group::create();
         vsg::dvec3 temp;
-        for (auto& part : line.parts)
+        for (auto& part : *line.parts)
         {
             auto geom = LineGeometry::create();
             for (auto& vert : part)
@@ -204,7 +204,7 @@ LineSystemNode::update(entt::entity entity, Runtime& runtime)
     {
         // no reference point -- push raw geometry
         auto group = vsg::Group::create();
-        for (auto& part : line.parts)
+        for (auto& part : *line.parts)
         {
             auto geom = LineGeometry::create();
             for (auto& vert : part)

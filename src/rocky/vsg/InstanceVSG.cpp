@@ -355,48 +355,56 @@ InstanceVSG::ctor(int& argc, char** argv)
     // To read from a stream, we have to search all the VS readerwriters to
     // find one that matches the 'extension' we want. We also have to put that
     // extension in the options structure as a hint.
-    io().services.readImageFromStream = [options(runtime.readerWriterOptions)](
-        std::istream& location, std::string contentType, const rocky::IOOptions& io)
-        -> Result<shared_ptr<Image>>
-    {
-        if (contentType.empty())
+    io().services.readImageFromStream = [options(runtime.readerWriterOptions)](std::istream& location, std::string contentType, const rocky::IOOptions& io) -> Result<shared_ptr<Image>>
         {
-            contentType = deduceContentTypeFromStream(location);
-        }
-
-        if (contentType.empty())
-        {
-            return Status(Status::ResourceUnavailable, "No content-type");
-        }
-
-        // try the mime-type mapping:
-        auto i = ext_for_mime_type.find(contentType);
-        if (i != ext_for_mime_type.end())
-        {
-            auto rw = findReaderWriter(i->second, options->readerWriters);
-            if (rw != nullptr)
+            // try the mime-type mapping:
+            auto i = ext_for_mime_type.find(contentType);
+            if (i != ext_for_mime_type.end())
             {
-                auto local_options = vsg::Options::create(*options);
-                local_options->extensionHint = i->second;
-                auto result = rw->read_cast<vsg::Data>(location, local_options);
-                return util::makeImageFromVSG(result);
+                auto rw = findReaderWriter(i->second, options->readerWriters);
+                if (rw != nullptr)
+                {
+                    auto local_options = vsg::Options::create(*options);
+                    local_options->extensionHint = i->second;
+                    auto result = rw->read_cast<vsg::Data>(location, local_options);
+                    return util::makeImageFromVSG(result);
+                }
             }
-        }
 
-        // mime-type didn't work; try the content type directly as an extension
-        if (contentType[0] != '.')
-            contentType = "." + contentType;
-        auto rw = findReaderWriter(contentType, options->readerWriters);
-        if (rw != nullptr)
-        {
-            auto local_options = vsg::Options::create(*options);
-            local_options->extensionHint = contentType;
-            auto result = rw->read_cast<vsg::Data>(location, local_options);
-            return util::makeImageFromVSG(result);
-        }
+            // mime-type didn't work; try the content type directly as an extension
+            if (!contentType.empty())
+            {
+                auto contentTypeAsExtension = contentType[0] != '.' ? ("." + contentType) : contentType;
+                auto rw = findReaderWriter(contentTypeAsExtension, options->readerWriters);
+                if (rw != nullptr)
+                {
+                    auto local_options = vsg::Options::create(*options);
+                    local_options->extensionHint = contentTypeAsExtension;
+                    auto result = rw->read_cast<vsg::Data>(location, local_options);
+                    return util::makeImageFromVSG(result);
+                }
+            }
 
-        return Status(Status::ServiceUnavailable, "No image reader for \"" + contentType + "\"");
-    };
+            // last resort, try checking the data itself
+            auto decudedContentType = deduceContentTypeFromStream(location);
+            if (!decudedContentType.empty())
+            {
+                auto i = ext_for_mime_type.find(decudedContentType);
+                if (i != ext_for_mime_type.end())
+                {
+                    auto rw = findReaderWriter(i->second, options->readerWriters);
+                    if (rw != nullptr)
+                    {
+                        auto local_options = vsg::Options::create(*options);
+                        local_options->extensionHint = i->second;
+                        auto result = rw->read_cast<vsg::Data>(location, local_options);
+                        return util::makeImageFromVSG(result);
+                    }
+                }
+            }
+
+            return Status(Status::ServiceUnavailable, "No image reader for \"" + contentType + "\"");
+        };
 
     io().services.contentCache = std::make_shared<ContentCache>(128);
 

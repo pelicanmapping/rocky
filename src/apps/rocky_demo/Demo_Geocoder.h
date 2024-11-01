@@ -34,7 +34,7 @@ auto Demo_Geocoder = [](Application& app)
     {
         // Load an icon image
         auto& io = app.io();
-        auto image = io.services.readImageFromURI("https://raw.githubusercontent.com/gwaldron/osgearth/master/data/placemark64.png", io);
+        auto image = io.services.readImageFromURI("https://readymap.org/readymap/filemanager/download/public/icons/placemark32.png", io);
         if (image.status.failed())
         {
             status = image.status;
@@ -69,7 +69,7 @@ auto Demo_Geocoder = [](Application& app)
         feature_view.styles.line->depth_offset = 9000.0f; //meters
 
         app.entities.setVisible(entity, false);
-        app.entities.setVisible(feature_view.entity, false);
+        //app.entities.setVisible(feature_view.entity, false);
 
         // Transform to place the entity:
         auto& xform = app.entities.emplace<Transform>(entity);

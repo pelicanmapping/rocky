@@ -87,17 +87,17 @@ std::vector<Demo> demos =
         Demo{ "Polygon features", Demo_PolygonFeatures },
         Demo{ "Line features", Demo_LineFeatures }
     } },
+    Demo{ "Simulation", Demo_Simulation },
+    Demo{ "RTT", Demo_RTT },
+    Demo{ "Geocoding", Demo_Geocoder },
     Demo{ "Camera", {},
     {
         Demo{ "Viewpoints", Demo_Viewpoints },
         Demo{ "Tethering", Demo_Tethering }
     } },
     Demo{ "Rendering", Demo_Rendering },
-    Demo{ "Geocoding", Demo_Geocoder },
-    Demo{ "Environment", Demo_Environment },
-    Demo{ "RTT", Demo_RTT },
-    Demo{ "Simulation", Demo_Simulation },
     Demo{ "Views", Demo_Views },
+    Demo{ "Environment", Demo_Environment },
     Demo{ "Serialization", Demo_Serialization },
     Demo{ "Stats", Demo_Stats },
     Demo{ "About", Demo_About }

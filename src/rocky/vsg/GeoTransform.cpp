@@ -42,6 +42,9 @@ GeoTransform::traverse(vsg::RecordTraversal& record) const
 bool
 GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix) const
 {
+    if (!position.valid())
+        return false;
+
     auto* state = record.getState();
 
     // fetch the view-local data:
@@ -84,7 +87,6 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix)
     // Frustum cull (by center point)
     if (frustumCulling)
     {
-        // frustum cull
         vsg::dvec4 clip = view.mvp[3] / view.mvp[3][3];
         const double t = 1.0;
         if (clip.x < -t || clip.x > t || clip.y < -t || clip.y > t || clip.z < -t || clip.z > t)

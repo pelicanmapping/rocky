@@ -27,7 +27,7 @@ auto Demo_Icon = [](Application& app)
     {
         // Load an icon image
         auto io = app.instance.io();
-        auto image = io.services.readImageFromURI("https://user-images.githubusercontent.com/326618/236923465-c85eb0c2-4d31-41a7-8ef1-29d34696e3cb.png", io);
+        auto image = io.services.readImageFromURI("https://readymap.org/readymap/filemanager/download/public/icons/BENDER.png", io);
         if (image.status.failed())
         {
             status = image.status;

@@ -44,9 +44,9 @@ namespace ROCKY_NAMESPACE
         //! in the SRS of the referencePoint.
         GeoPoint referencePoint;
 
-        //! Geometry
+        //! Geometry. Stored on the heap since it can change size.
         using Part = std::vector<vsg::dvec3>;
-        std::vector<Part> parts;
+        std::unique_ptr<std::vector<Part>> parts;
 
         //! Pushes a new sub-geometry along with its range of points. Each point
         //! is expressed in normal VSG coordinates, UNLESS referencePoint is set,
@@ -64,7 +64,12 @@ namespace ROCKY_NAMESPACE
             {
                 part.emplace_back(i->x, i->y, i->z);
             }
-            parts.emplace_back(std::move(part));
+            parts->emplace_back(std::move(part));
+        }
+
+        Line()
+        {
+            parts = std::make_unique<std::vector<Part>>();
         }
     };
 }

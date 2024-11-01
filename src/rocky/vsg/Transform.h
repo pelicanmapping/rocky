@@ -35,6 +35,7 @@ namespace ROCKY_NAMESPACE
 
         Transform()
         {
+            node = GeoTransform::create();
         }
 
         void setPosition(const GeoPoint& p)
@@ -45,37 +46,34 @@ namespace ROCKY_NAMESPACE
         
         void dirty()
         {
-            if (!node)
-                node = GeoTransform::create();
-
             node->setPosition(position);
             node->localTangentPlane = localTangentPlane;
         }
 
-        //! Returns true if the push succeeded (and a pop will be required)
+        //! Applies a transformation and returns true if successful.
+        //! If this method retuns true, you must issue a correspond pop() later.
         inline bool push(vsg::RecordTraversal& rt, const vsg::dmat4& m)
         {
-            if (node)
-            {
-                return node->push(rt, m * localMatrix);
-            }
-            else if (parent)
+            if (parent)
             {
                 return parent->push(rt, m * localMatrix);
             }
-            else return false;
+            else
+            {
+                return node->push(rt, m * localMatrix);
+            }
         }
 
         //! Pops a transform applied if push() returned true.
         inline void pop(vsg::RecordTraversal& rt)
         {
-            if (node)
-            {
-                node->pop(rt);
-            }
-            else if (parent)
+            if (parent)
             {
                 parent->pop(rt);
+            }
+            else
+            {
+                node->pop(rt);
             }
         }
     };
