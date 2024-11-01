@@ -52,7 +52,7 @@ install(TARGETS myApp RUNTIME DESTINATION bin)
 * [sqlite3](https://github.com/sqlite/sqlite) (optional)
 * [vsgXchange](https://github.com/vsg-dev/vsgXchange) (optional)
 * [VulkanSceneGraph](https://github.com/vsg-dev/VulkanSceneGraph)
-* [weejobs](https://github.com/pelicanmapping/weejobs)
+* [weejobs](https://github.com/pelicanmapping/weejobs) (embedded)
 
 ## Building
 
