@@ -9,6 +9,7 @@
 #include <vsg/text/Font.h>
 #include <vsg/io/read.h>
 #include <shared_mutex>
+#include <tuple>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -162,7 +163,10 @@ Runtime::compile(vsg::ref_ptr<vsg::Object> compilable)
 
     if (asyncCompile)
     {
+        // note: this will block (with a fence) until a compile traversal is available,
+        // so be sure to group as many compiles together as possible for maximum performance.
         auto cr = viewer->compileManager->compile(compilable);
+
         if (cr && cr.requiresViewerUpdate())
         {
             std::scoped_lock lock(_compileMutex);
@@ -251,6 +255,9 @@ Runtime::update()
         _deferred_unref_queue.emplace_back(std::move(_deferred_unref_queue.front()));
         _deferred_unref_queue.pop_front();
     }
+
+    // reset the view IDs list
+    activeViewIDs.clear();
 
     return updates_occurred;
 }

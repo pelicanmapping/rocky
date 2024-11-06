@@ -152,7 +152,9 @@ MapNode::update(const vsg::FrameStamp* f)
 void
 MapNode::accept(vsg::RecordTraversal& rv) const
 {
-    auto& viewlocal = _viewlocal[rv.getState()->_commandBuffer->viewID];
+    auto viewID = rv.getState()->_commandBuffer->viewID;
+
+    auto& viewlocal = _viewlocal[viewID];
 
     if (worldSRS().isGeocentric())
     {

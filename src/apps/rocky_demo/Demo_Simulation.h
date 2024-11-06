@@ -8,6 +8,7 @@
 #include <rocky/vsg/Icon.h>
 #include <rocky/vsg/Transform.h>
 #include <rocky/vsg/Motion.h>
+#include <rocky/vsg/DisplayManager.h>
 #include <set>
 #include <random>
 #include <rocky/rtree.h>
@@ -19,23 +20,6 @@ using namespace std::chrono_literals;
 
 namespace
 {
-    // utility to run a loop at a specific frequency (in Hz)
-    struct run_at_frequency
-    {
-        run_at_frequency(float hertz) : start(std::chrono::steady_clock::now()), _max(1.0f/hertz) { }
-        ~run_at_frequency() { std::this_thread::sleep_for(_max - (std::chrono::steady_clock::now() - start)); }
-        auto elapsed() const { return std::chrono::steady_clock::now() - start; }
-        std::chrono::steady_clock::time_point start;
-        std::chrono::duration<float> _max;
-    };
-
-    struct scoped_use
-    {
-        scoped_use(jobs::detail::semaphore& s) : sem(s) { sem.acquire(); }
-        ~scoped_use() { sem.release(); }
-        jobs::detail::semaphore& sem;
-    };
-
     struct Declutter
     {
         bool dummy = false;
@@ -46,9 +30,10 @@ namespace
     public:
         DeclutterSystem(entt::registry& registry) : System(registry) { }
 
-        double buffer = 0.02f;
+        double buffer_radius = 25.0;
         unsigned total = 0, visible = 1;
-        std::vector<std::pair<entt::entity, vsg::dvec4>> sorted; // entity, clip coord & aspect ratio
+        std::size_t last_max_size = 32;
+        std::function<std::vector<std::uint32_t>()> getActiveViewIDs;
 
         static std::shared_ptr<DeclutterSystem> create(entt::registry& registry) {
             return std::make_shared<DeclutterSystem>(registry);
@@ -63,62 +48,71 @@ namespace
         {
             total = 0, visible = 0;
 
-            // First collect all declutter-able entities and sort them by their distance to the camera.
-            sorted.clear();
-            double ar = -1.0; // same for all objects
-            auto view = registry.view<Declutter, Transform>();
-            for (auto&& [entity, declutter, transform] : view.each())
+            auto viewIDs = getActiveViewIDs(); // copy
+
+            for(auto viewID = 0; viewID < viewIDs.size(); ++viewID)
             {
-                if (transform.node)
+                if (viewIDs[viewID] == 0) // skip unused
+                    continue;
+
+                // First collect all declutter-able entities and sort them by their distance to the camera.
+                std::vector<std::tuple<entt::entity, double, double, double>> sorted; // entity, x, y, depth, radius
+                sorted.reserve(last_max_size);
+
+                double aspect_ratio = 1.0; // same for all objects
+                auto view = registry.view<Declutter, Transform>();
+                for (auto&& [entity, declutter, transform] : view.each())
                 {
-                    // Cheat by directly accessing view 0. In reality we will might either declutter per-view
-                    // or have a "driving view" that controls visibility for all views.
-                    auto& viewLocal = transform.node->viewLocal[0];
-                    auto& mvp = viewLocal.mvp;
-                    
-                    sorted.emplace_back(entity, vsg::dvec4(
-                        mvp[3][0] / mvp[3][3], mvp[3][1] / mvp[3][3], mvp[3][2] / mvp[3][3], // clip coords
-                        viewLocal.aspect_ratio));
+                    if (transform.node && transform.node->viewLocal.size() > viewID)
+                    {
+                        // Cheat by directly accessing view 0. In reality we will might either declutter per-view
+                        // or have a "driving view" that controls visibility for all views.
+                        auto& viewLocal = transform.node->viewLocal[viewID];
+                        auto& mvp = viewLocal.mvp;    
+                        auto clip = mvp[3] / mvp[3][3];
+                        vsg::dvec2 window((clip.x + 1.0) * 0.5 * (double)viewLocal.viewport[2], (clip.y + 1.0) * 0.5 * (double)viewLocal.viewport[3]);
+                        sorted.emplace_back(entity, window.x, window.y, clip.z);
+                    }
                 }
-            }
-            std::sort(sorted.begin(), sorted.end(), [](const auto& a, const auto& b) { return a.second.z > b.second.z; });
+                std::sort(sorted.begin(), sorted.end(), [](const auto& a, const auto& b) { return std::get<3>(a) > std::get<3>(b); }); // reverse z buffer
+                last_max_size = sorted.size();
 
-            // Next, take the sorted vector and declutter by populating an R-Tree with rectangles representing
-            // each entity's buffered location in screen(clip) space. For objects that don't conflict with
-            // higher-priority objects, set visibility to true.
-            RTree<entt::entity, double, 2> rtree;
-            for (auto iter : sorted)
-            {
-                ++total;
+                // Next, take the sorted vector and declutter by populating an R-Tree with rectangles representing
+                // each entity's buffered location in screen(clip) space. For objects that don't conflict with
+                // higher-priority objects, set visibility to true.
+                RTree<entt::entity, double, 2> rtree;
+                double bh = 0.5 * buffer_radius;
 
-                auto entity = iter.first;
-                auto& clip = iter.second;
-                auto x = clip.x, y = clip.y, ar = clip.w;
-
-                auto& visibility = registry.get<ECS::Visibility>(entity);
-
-                double LL[2]{ x - buffer, y - buffer*ar };
-                double UR[2]{ x + buffer, y + buffer*ar };
-
-                if (rtree.Search(LL, UR, [](auto e) { return false; }) == 0)
+                for (auto iter : sorted)
                 {
-                    rtree.Insert(LL, UR, entity);
-                    visibility.visible = true;
-                    ++visible;
-                }
-                else
-                {
-                    visibility.visible = false;
+                    ++total;
+
+                    auto [entity, x, y, z] = iter;
+
+                    auto& visibility = registry.get<Visibility>(entity);
+                    double LL[2]{ x - bh, y - bh * aspect_ratio };
+                    double UR[2]{ x + bh, y + bh * aspect_ratio };
+
+                    if (rtree.Search(LL, UR, [](auto e) { return false; }) == 0)
+                    {
+                        rtree.Insert(LL, UR, entity);
+                        visibility[viewID] = true;
+                        ++visible;
+                    }
+                    else
+                    {
+                        visibility[viewID] = false;
+                    }
                 }
             }
         }
 
         void resetVisibility()
         {
-            auto view = registry.view<Declutter, ECS::Visibility>();
+            auto view = registry.view<Declutter, Visibility>();
             for (auto&& [entity, declutter, visibility] : view.each())
             {
-                visibility.visible = true;
+                visibility.setAll(true);
             }
         }
     };
@@ -132,7 +126,7 @@ namespace
         Application& app;
         MotionSystem motion;
         DeclutterSystem declutter;
-        float sim_hertz = 30.0f; // updates per second
+        float sim_hertz = 5.0f; // updates per second
         float declutter_hertz = 1.0f; // updates per second
         bool declutterEnabled = false;
 
@@ -193,11 +187,13 @@ namespace
 
 auto Demo_Simulation = [](Application& app)
 {
+    const char* icon_location = "https://readymap.org/readymap/filemanager/download/public/icons/airport.png";
+
     // Make an entity for us to tether to and set it in motion
     static std::set<entt::entity> platforms;
     static Status status;
     static Simulator sim(app);
-    const unsigned num_platforms = 10000;
+    const unsigned num_platforms = 100;
 
     if (status.failed())
     {
@@ -212,8 +208,9 @@ auto Demo_Simulation = [](Application& app)
     {
         // add an icon:
         auto io = app.instance.io();
-        auto image = io.services.readImageFromURI("https://readymap.org/readymap/filemanager/download/public/icons/airport.png", io);
+        auto image = io.services.readImageFromURI(icon_location, io);
         status = image.status;
+
         if (image.status.ok())
         {
             std::mt19937 mt;
@@ -223,21 +220,21 @@ auto Demo_Simulation = [](Application& app)
 
             for (unsigned i = 0; i < num_platforms; ++i)
             {
+                float t = (float)i / (float)(num_platforms);
+
                 // Create a host entity:
                 auto entity = app.entities.create();
 
+                // Attach an icon:
                 auto& icon = app.entities.emplace<Icon>(entity);
-                icon.style = IconStyle{ 16.0f + rand_unit(mt) * 16.0f, 0.0f }; // pixels, rotation(rad)
+                icon.style = IconStyle{ 16.0f + t*16.0f, 0.0f }; // pixels, rotation(rad)
 
                 if (image.status.ok())
-                {
-                    // attach an icon to the host:
                     icon.image = image.value;
-                }
 
                 double lat = -80.0 + rand_unit(mt) * 160.0;
                 double lon = -180 + rand_unit(mt) * 360.0;
-                double alt = 1000.0 + (double)i * 10.0;
+                double alt = 1000.0 + t * 1000000.0;
                 GeoPoint pos(SRS::WGS84, lon, lat, alt);
 
                 // This is optional, since a Transform can take a point expresssed in any SRS.
@@ -250,11 +247,13 @@ auto Demo_Simulation = [](Application& app)
                 transform.localTangentPlane = false;
                 transform.setPosition(pos);
 
-                // Add a motion component to represent movement.
-                auto& motion = app.entities.emplace<Motion>(entity);
+                // Add a motion component to represent movement:
+                double initial_bearing = -180.0 + rand_unit(mt) * 360.0;
+                auto& motion = app.entities.emplace<MotionGreatCircle>(entity);
                 motion.velocity = { -75000 + rand_unit(mt) * 150000, 0.0, 0.0 };
+                motion.normalAxis = pos.srs.ellipsoid().greatCircleRotationAxis(glm::dvec3(lon, lat, 0.0), initial_bearing);
 
-                // Label the platform.
+                // Label the platform:
                 auto& label = app.entities.emplace<Label>(entity);
                 label.text = std::to_string(i);
                 label.style.font = app.runtime().defaultFont;
@@ -267,6 +266,10 @@ auto Demo_Simulation = [](Application& app)
                 platforms.emplace(entity);
             }
 
+            // tell the declutterer how to access view IDs.
+            sim.declutter.getActiveViewIDs = [&app]() { return app.displayManager->activeViewIDs; };
+
+            Log()->info("Starting simulation threads.");
             sim.run();
         }
     }
@@ -275,15 +278,17 @@ auto Demo_Simulation = [](Application& app)
     if (ImGuiLTable::Begin("sim"))
     {
         ImGuiLTable::SliderFloat("Update rate", &sim.sim_hertz, 1.0f, 120.0f, "%.0f hz");
-        if (ImGuiLTable::Checkbox("Decluttering", &sim.declutterEnabled))
+
+        if (ImGuiLTable::Checkbox("Decluttering", &sim.declutterEnabled)) {
             if (!sim.declutterEnabled)
                 sim.declutter.resetVisibility();
+        }
 
         if (sim.declutterEnabled)
         {
-            ImGuiLTable::SliderDouble("  Separation", &sim.declutter.buffer, 0.0f, 0.03f, "%.3f");
+            ImGuiLTable::SliderDouble("  Radius", &sim.declutter.buffer_radius, 0.0f, 50.0f, "%.0f px");
             ImGuiLTable::SliderFloat("  Frequency", &sim.declutter_hertz, 1.0f, 30.0f, "%.0f hz");
-            ImGuiLTable::Text("  Visible", "%ld / %ld", sim.declutter.visible, sim.declutter.total);
+            ImGuiLTable::Text("  Candidates", "%ld / %ld", sim.declutter.visible, sim.declutter.total);
         }
         ImGuiLTable::End();
     }

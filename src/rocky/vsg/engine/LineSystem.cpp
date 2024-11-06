@@ -6,6 +6,7 @@
 #include "LineSystem.h"
 #include "Runtime.h"
 #include "PipelineState.h"
+#include "Utils.h"
 
 #include <vsg/state/ViewDependentState.h>
 #include <vsg/commands/DrawIndexed.h>
@@ -14,6 +15,8 @@
 #include <vsg/utils/ComputeBounds.h>
 #include <vsg/nodes/DepthSorted.h>
 #include <vsg/nodes/StateGroup.h>
+
+#include <cstring>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -153,14 +156,79 @@ LineSystemNode::initializeSystem(Runtime& runtime)
     }
 }
 
-bool
-LineSystemNode::update(entt::entity entity, Runtime& runtime)
+void
+LineSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const
+{
+    if (data.existing_node)
+    {
+        auto& line = registry.get<Line>(entity);
+
+        // style changed?
+        if (line.style.has_value())
+        {
+            auto* bindStyle = util::find<BindLineDescriptors>(data.existing_node);
+            if (bindStyle)
+            {
+                bindStyle->updateStyle(line.style.value());
+            }
+        }
+
+        if (true) // geometry changed
+        {
+            auto* geometry = util::find<LineGeometry>(data.existing_node);
+            if (geometry)
+            {
+                vsg::dsphere bound;
+                vsg::dmat4 localizer_matrix;
+
+                if (line.referencePoint.valid())
+                {
+                    SRSOperation xform;
+                    vsg::dvec3 offset, temp;
+                    std::vector<vsg::vec3> verts32;
+                    setReferencePoint(line.referencePoint, xform, offset);
+
+                    verts32.reserve(line.points().size());
+                    for (auto& point : line.points())
+                    {
+                        xform(point, temp);
+                        temp -= offset;
+                        verts32.emplace_back(temp);
+                    }
+                    
+                    geometry->set(verts32, line.staticSize);
+
+                    auto mt = util::find<vsg::MatrixTransform>(data.existing_node);
+                    localizer_matrix = mt->matrix;
+                }
+                else
+                {
+                    // no reference point -- push raw geometry
+                    geometry->set(line.points(), line.staticSize);
+                }
+
+                // hand-calculate the bounding sphere
+                auto cull = util::find<vsg::CullNode>(data.existing_node);
+                geometry->calcBound(cull->bound, localizer_matrix);
+            }
+        }
+    }
+    else
+    {
+        data.new_node = createNode(entity, runtime);
+    }
+}
+
+vsg::ref_ptr<vsg::Node>
+LineSystemNode::createNode(entt::entity entity, Runtime& runtime) const
 {
     auto& line = registry.get<Line>(entity);
-    auto& renderable = registry.get<ECS::Renderable>(line.entity);
 
-    if (renderable.node)
-        runtime.dispose(renderable.node);
+    // renderable structure is one of the following:
+    // cullnode -> stategroup -> linegeometry
+    // cullnode -> stategroup -> group -> linegeometry* (multiple parts)
+    // cullnode -> linegeometry
+    // cullnode -> group -> linegeometry* (multiple parts)
 
     vsg::ref_ptr<vsg::StateGroup> stategroup;
     if (line.style.has_value())
@@ -173,50 +241,39 @@ LineSystemNode::update(entt::entity entity, Runtime& runtime)
         stategroup->stateCommands.push_back(bindCommand);
     }
 
+    vsg::ref_ptr<LineGeometry> geometry;
     vsg::ref_ptr<vsg::Node> geom_root;
+    vsg::dmat4 localizer_matrix;
+
     if (line.referencePoint.valid())
     {
         SRSOperation xform;
-        vsg::dvec3 offset;
+        vsg::dvec3 offset, temp;
+        std::vector<vsg::vec3> verts32;
         setReferencePoint(line.referencePoint, xform, offset);
 
-        auto group = vsg::Group::create();
-        vsg::dvec3 temp;
-        for (auto& part : *line.parts)
+        verts32.reserve(line.points().size());
+        for (auto& point : line.points())
         {
-            auto geom = LineGeometry::create();
-            for (auto& vert : part)
-            {
-                xform(vert, temp); temp -= offset;
-                geom->push_back(vsg::vec3(temp));
-            }
-            group->addChild(geom);
+            xform(point, temp);
+            temp -= offset;
+            verts32.emplace_back(temp);
         }
+            
+        geometry = LineGeometry::create();
+        geometry->set(verts32, line.staticSize);
 
-        auto localizer = vsg::MatrixTransform::create(vsg::translate(offset));
-        if (group->children.size() == 1)
-            localizer->addChild(group->children.front());
-        else
-            localizer->addChild(group);
+        localizer_matrix = vsg::translate(offset);
+        auto localizer = vsg::MatrixTransform::create(localizer_matrix);
+        localizer->addChild(geometry);
         geom_root = localizer;
     }
     else
     {
         // no reference point -- push raw geometry
-        auto group = vsg::Group::create();
-        for (auto& part : *line.parts)
-        {
-            auto geom = LineGeometry::create();
-            for (auto& vert : part)
-            {
-                geom->push_back(vsg::vec3(vert));
-            }
-            group->addChild(geom);
-        }
-        if (group->children.size() == 1)
-            geom_root = group->children.front();
-        else
-            geom_root = group;
+        geometry = LineGeometry::create();
+        geometry->set(line.points(), line.staticSize);
+        geom_root = geometry;
     }
 
     auto cull = vsg::CullNode::create();
@@ -230,14 +287,10 @@ LineSystemNode::update(entt::entity entity, Runtime& runtime)
         cull->child = geom_root;
     }
 
-    vsg::ComputeBounds cb;
-    cull->child->accept(cb);
-    cull->bound.set((cb.bounds.min + cb.bounds.max) * 0.5, vsg::length(cb.bounds.min - cb.bounds.max) * 0.5);
+    // hand-calculate the bounding sphere
+    geometry->calcBound(cull->bound, localizer_matrix);
 
-    renderable.node = cull;
-
-    runtime.compile(renderable.node);
-    return true;
+    return cull;
 }
 
 int
@@ -257,6 +310,8 @@ BindLineDescriptors::BindLineDescriptors()
 void
 BindLineDescriptors::updateStyle(const LineStyle& value)
 {
+    bool force = false;
+
     if (!_styleData)
     {
         _styleData = vsg::ubyteArray::create(sizeof(LineStyle));
@@ -264,11 +319,17 @@ BindLineDescriptors::updateStyle(const LineStyle& value)
         // tells VSG that the contents can change, and if they do, the data should be
         // transfered to the GPU before or during recording.
         _styleData->properties.dataVariance = vsg::DYNAMIC_DATA;
+
+        force = true;
     }
 
     LineStyle& my_style = *static_cast<LineStyle*>(_styleData->dataPointer());
-    my_style = value;
-    _styleData->dirty();
+
+    if (force || (std::memcmp(&my_style, &value, sizeof(LineStyle)) == 0))
+    {
+        my_style = value;
+        _styleData->dirty();
+    }
 }
 
 void
@@ -285,9 +346,7 @@ BindLineDescriptors::init(vsg::ref_ptr<vsg::PipelineLayout> layout)
         this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         this->firstSet = 0;
         this->layout = layout;
-        this->descriptorSet = vsg::DescriptorSet::create(
-            layout->setLayouts.front(),
-            descriptors);
+        this->descriptorSet = vsg::DescriptorSet::create(layout->setLayouts.front(), descriptors);
     }
 }
 
@@ -301,6 +360,8 @@ LineGeometry::LineGeometry()
         0, // vertex offset
         0  // first instance
     );
+
+    commands.push_back(_drawCommand);
 }
 
 void
@@ -312,82 +373,18 @@ LineGeometry::setFirst(unsigned value)
 void
 LineGeometry::setCount(unsigned value)
 {
-    _drawCommand->indexCount = value;
-}
-
-unsigned
-LineGeometry::numVerts() const
-{
-    return (unsigned)_current.size() / 4;
+    _drawCommand->indexCount = value * 6;
 }
 
 void
-LineGeometry::push_back(const vsg::vec3& value)
+LineGeometry::calcBound(vsg::dsphere& output, const vsg::dmat4& matrix) const
 {
-    bool first = _current.empty();
+    int first = _drawCommand->firstIndex / 4;
+    int count = _drawCommand->indexCount / 6;
 
-    _previous.push_back(first ? value : _current.back());
-    _previous.push_back(first ? value : _current.back());
-    _previous.push_back(first ? value : _current.back());
-    _previous.push_back(first ? value : _current.back());
-
-    if (!first)
+    output.reset();
+    for(int i = first; i < count; ++i)
     {
-        *(_next.end() - 4) = value;
-        *(_next.end() - 3) = value;
-        *(_next.end() - 2) = value;
-        *(_next.end() - 1) = value;
+        expandBy(output, matrix * vsg::dvec3(_current->at(i * 4)));
     }
-
-    _current.push_back(value);
-    _current.push_back(value);
-    _current.push_back(value);
-    _current.push_back(value);
-
-    _next.push_back(value);
-    _next.push_back(value);
-    _next.push_back(value);
-    _next.push_back(value);
-
-    _colors.push_back(_defaultColor);
-    _colors.push_back(_defaultColor);
-    _colors.push_back(_defaultColor);
-    _colors.push_back(_defaultColor);
-}
-
-void
-LineGeometry::compile(vsg::Context& context)
-{
-    if (commands.empty())
-    {
-        if (_current.size() == 0)
-            return;
-
-        auto vert_array = vsg::vec3Array::create(_current.size(), _current.data());
-        auto prev_array = vsg::vec3Array::create(_previous.size(), _previous.data());
-        auto next_array = vsg::vec3Array::create(_next.size(), _next.data());
-        auto colors_array = vsg::vec4Array::create(_colors.size(), _colors.data());
-
-        unsigned numIndices = (numVerts() - 1) * 6;
-        auto indices = vsg::uintArray::create(numIndices);
-        for (int e = 2, i = 0; e < _current.size() - 2; e += 4)
-        {
-            (*indices)[i++] = e + 3;
-            (*indices)[i++] = e + 1;
-            (*indices)[i++] = e + 0; // provoking vertex
-            (*indices)[i++] = e + 2;
-            (*indices)[i++] = e + 3;
-            (*indices)[i++] = e + 0; // provoking vertex
-        }
-
-        assignArrays({ vert_array, prev_array, next_array, colors_array });
-        assignIndices(indices);
-
-        _drawCommand->indexCount = (uint32_t)indices->size();
-
-        commands.clear();
-        commands.push_back(_drawCommand);
-    }
-
-    vsg::Geometry::compile(context);
 }

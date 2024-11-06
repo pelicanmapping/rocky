@@ -9,6 +9,7 @@
 #include <rocky/Threading.h>
 #include <rocky/Image.h>
 #include <rocky/Math.h>
+#include <rocky/weejobs.h>
 #include <vsg/maths/vec3.h>
 #include <vsg/maths/mat4.h>
 #include <vsg/vk/State.h>
@@ -17,6 +18,9 @@
 #include <vsg/nodes/StateGroup.h>
 #include <vsg/nodes/Geometry.h>
 #include <vsg/threading/OperationThreads.h>
+#include <queue>
+#include <mutex>
+#include <optional>
 
 namespace ROCKY_NAMESPACE
 {
@@ -65,6 +69,27 @@ namespace ROCKY_NAMESPACE
     inline float distanceTo(const vsg::dvec3& p, vsg::State* state)
     {
         return (float)vsg::length(state->modelviewMatrixStack.top() * p);
+    }
+
+    template<typename vec_type>
+    inline void expandBy(vsg::dsphere& bs, const vec_type& v)
+    {        
+        if (bs.valid())
+        {
+            auto dv = vsg::dvec3(v) - bs.center;
+            auto r = vsg::length(dv);
+            if (r > bs.radius)
+            {
+                auto dr = (r - bs.radius) * 0.5;
+                bs.center += dv * (dr / r);
+                bs.radius += dr;
+            }
+        }
+        else
+        {
+            bs.center = v;
+            bs.radius = 0.0;
+        }
     }
 
     namespace util
@@ -319,5 +344,28 @@ namespace ROCKY_NAMESPACE
                 geometry.traverse(*this);
             }
         };
+
+        template<class T>
+        class FindNodeVisitor : public vsg::Inherit<vsg::Visitor, FindNodeVisitor<T>>
+        {
+        public:
+            T* found = nullptr;
+            void apply(vsg::Node& node) override
+            {
+                if (!found)
+                {
+                    found = node.cast<T>();
+                    node.traverse(*this);
+                }
+            }
+        };
+
+        template<class T>
+        inline T* find(const vsg::ref_ptr<vsg::Node>& root)
+        {
+            FindNodeVisitor<T> visitor;
+            root->accept(visitor);
+            return visitor.found;
+        }
     }
 }

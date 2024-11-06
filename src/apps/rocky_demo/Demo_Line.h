@@ -29,14 +29,10 @@ auto Demo_Line_Absolute = [](Application& app)
         line.referencePoint = GeoPoint(SRS::WGS84, -90.0, -20.0);
 
         const double alt = 10;
-        std::vector<glm::dvec3> points;
         for (double lon = -180; lon <= 0.0; lon += 0.25)
         {
-            points.emplace_back(lon, -20.0, alt);
+            line.points().emplace_back(lon, -20.0, alt);
         }
-
-        line.push(points.begin(), points.end());
-
 
         // Create a style that we can change dynamically:
         line.style = LineStyle();
@@ -49,9 +45,9 @@ auto Demo_Line_Absolute = [](Application& app)
 
     if (ImGuiLTable::Begin("absolute linestring"))
     {
-        bool visible = app.entities.visible(entity);
+        static bool visible = true;
         if (ImGuiLTable::Checkbox("Visible", &visible))
-            app.entities.setVisible(entity, visible);
+            ECS::setVisible(app.registry, entity, visible);
 
         auto& component = app.entities.get<Line>(entity);
 
@@ -90,12 +86,11 @@ auto Demo_Line_Relative = [](Application& app)
 
         // Create the line geometry, which will be relative to a transform.
         const double size = 500000;
-        std::vector<vsg::vec3> points = {
-            {-size, -size, 0},
-            { size, -size, 0},
-            {    0,  size, 0},
-            {-size, -size, 0} };
-        line.push(points.begin(), points.end());
+        line.points() = {
+            vsg::dvec3{-size, -size, 0.0},
+            vsg::dvec3{ size, -size, 0.0},
+            vsg::dvec3{  0.0,  size, 0.0},
+            vsg::dvec3{-size, -size, 0.0} };
 
         // Make a style with color and line width
         line.style = LineStyle{ {1,0,0,1}, 4.0f };
@@ -109,9 +104,9 @@ auto Demo_Line_Relative = [](Application& app)
 
     if (ImGuiLTable::Begin("relative linestring"))
     {
-        bool visible = app.entities.visible(entity);
+        static bool visible = true;
         if (ImGuiLTable::Checkbox("Visible", &visible))
-            app.entities.setVisible(entity, visible);
+            ECS::setVisible(app.registry, entity, visible);
 
         auto& line = app.entities.get<Line>(entity);
 

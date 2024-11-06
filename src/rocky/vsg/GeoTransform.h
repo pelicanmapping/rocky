@@ -88,7 +88,7 @@ namespace ROCKY_NAMESPACE
             vsg::dmat4 matrix;
             vsg::dmat4 local_matrix;
             vsg::dmat4 mvp;
-            double aspect_ratio;
+            vsg::vec4 viewport;
             SRS world_srs;
             const Ellipsoid* world_ellipsoid = nullptr;
             SRSOperation pos_to_world;

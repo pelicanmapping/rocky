@@ -27,6 +27,17 @@ namespace ROCKY_NAMESPACE
     {
         using time_point = std::chrono::steady_clock::time_point;
 
+        // Template for a component with per-view data.
+        template<typename T, int NUM_VIEWS, T default_value = T{} >
+        struct PerView
+        {
+            PerView() { views.fill(default_value); }
+            std::array<T, NUM_VIEWS> views;
+            auto& operator[](int i) { return views[i]; }
+            const auto& operator[](int i) const { return views[i]; }
+            void setAll(const T& value) { views.fill(value); }
+        };
+
         /**
         * Superclass for ECS components meant to be revisioned and/or with an attach point.
         */
@@ -37,18 +48,10 @@ namespace ROCKY_NAMESPACE
             void dirty() { revision++; }
 
             //! Attach point for additional components, as needed
-            entt::entity entity = entt::null;
+            entt::entity attach_point = entt::null;
 
         protected:
             RevisionedComponent() = default;
-        };
-
-        /**
-        * Component representing an entity's visibility.
-        */
-        struct Visibility
-        {
-            bool visible = true;
         };
 
         /**
@@ -60,8 +63,24 @@ namespace ROCKY_NAMESPACE
         {
             vsg::ref_ptr<vsg::Node> node;
             int revision = -1;
-        };
 
+            std::unique_ptr<Locked<vsg::ref_ptr<vsg::Node>>> staged;
+            //bool updating = false;
+
+            Renderable() :
+                staged(std::make_unique<Locked<vsg::ref_ptr<vsg::Node>>>()) { }
+        };
+    }
+
+    /**
+    * Component representing an entity's visibility.
+    */
+    struct Visibility : public ECS::PerView<bool, 4, true>
+    {
+    };
+
+    namespace ECS
+    {
         /**
         * Base class for an ECS system. And ECS system is typically responsible
         * for performing logic around a specific type of component.
@@ -84,50 +103,61 @@ namespace ROCKY_NAMESPACE
             //! Update the ECS system (once per frame)
             virtual void update(Runtime& runtime)
             {
-                updateComponents(runtime);
+                //nop
             }
 
         protected:
             System(entt::registry& in_registry) :
                 registry(in_registry) { }
-
-            //! Override this to handle any components that need initial setup
-            virtual void updateComponents(Runtime& rutime)
-            {
-                //nop
-            }
         };
 
         /**
         * VSG node representing an ECS system for the given component type (T).
         * A system of this type asumes that "T" will have a Renderable component attached
         * to "T::entity".
-        * 
+        *
         * This lives under a SystemsManagerGroup node that will tick it each frame.
         *
         * @param T The component type
         */
-        template<class T>
-        class SystemNode :
-            public vsg::Inherit<vsg::Compilable, SystemNode<T>>,
-            public System
+        class SystemNodeBase : public vsg::Inherit<vsg::Compilable, SystemNodeBase>
         {
-            using super = vsg::Inherit<vsg::Compilable, SystemNode<T>>;
+        public:
+            class SystemsManagerGroup* manager = nullptr;
+
+            struct CreateOrUpdateData
+            {
+                vsg::ref_ptr<vsg::Node> existing_node;
+                vsg::ref_ptr<vsg::Node> new_node;
+                bool new_node_needs_compilation = true;
+            };
+
+            struct EntityCompileBatch
+            {
+                std::vector<entt::entity> entities;
+                SystemNodeBase* system;
+                Runtime* runtime;
+            };
+
+            virtual void create_or_update(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const = 0;
+            virtual void finish_update(entt::entity entity, CreateOrUpdateData& data) const = 0;
+        };
+
+        template<class T>
+        class SystemNode : public vsg::Inherit<SystemNodeBase, SystemNode<T>>, public System
+        {
+            using super = SystemNodeBase;
 
         public:
             //! Destructor
             virtual ~SystemNode<T>();
 
+            // looks for any new components that need VSG initialization
+            void update(Runtime&) override;
+
         protected:
             //! Construct from a subclass
             SystemNode<T>(entt::registry& in_registry);
-
-            //! Called when the system detects a new or changed component.
-            //! @param entity The entity to which the component is attached
-            //! @param runtime Runtime context
-            //! @return true if the update was successful; false if update should be
-            //!   called again later.
-            virtual bool update(entt::entity entity, Runtime& runtime) = 0;
 
             //! Feature mask for a specific component instance
             virtual int featureMask(const T& t) const { return 0; }
@@ -160,13 +190,24 @@ namespace ROCKY_NAMESPACE
             //! Fetches the correct layout for a component.
             vsg::ref_ptr<vsg::PipelineLayout> getPipelineLayout(const T&) const;
 
+
+            // temporary? replace with createOrUpdateNode?
+            virtual vsg::ref_ptr<vsg::Node> createNode(entt::entity, Runtime&) const {
+                return {};
+            }
+
+            virtual void createOrUpdateNode(entt::entity entity, SystemNodeBase::CreateOrUpdateData& data, Runtime& runtime) const {
+                data.new_node = createNode(entity, runtime); // polyfill
+            }
+
+
+            void create_or_update(entt::entity entity, SystemNodeBase::CreateOrUpdateData& data, Runtime& runtime) const override;
+            void finish_update(entt::entity entity, SystemNodeBase::CreateOrUpdateData& data) const override;
+
         private:
 
             // list of entities whose components are out of date and need updating
             mutable std::vector<entt::entity> entities_to_update;
-
-            // looks for any new components that need VSG initialization
-            void updateComponents(Runtime&);
 
             // internal structure used when sorting components (by pipeline) for rendering
             struct RenderLeaf
@@ -189,6 +230,8 @@ namespace ROCKY_NAMESPACE
         class ROCKY_EXPORT SystemsManagerGroup : public vsg::Inherit<vsg::Group, SystemsManagerGroup>
         {
         public:
+            SystemsManagerGroup();
+
             //! Add a system node instance to the group.
             //! @param system The system node instance to add
             template<class T>
@@ -227,6 +270,15 @@ namespace ROCKY_NAMESPACE
             //! @param runtime The runtime object to pass to the systems
             void initialize(Runtime& runtime)
             {
+                for (auto& child : children)
+                {
+                    auto systemNode = child->cast<SystemNodeBase>();
+                    if (systemNode)
+                    {
+                        systemNode->manager = this;
+                    }
+                }
+
                 for (auto& system : systems)
                 {
                     system->initializeSystem(runtime);
@@ -243,6 +295,17 @@ namespace ROCKY_NAMESPACE
                 }
             }
 
+            void traverse(vsg::RecordTraversal& rt) const override
+            {
+                vsg::Group::traverse(rt);
+            }
+
+        public:
+
+            //util::LockingQueue<SystemNodeBase::EntityCompileBatch> entityCompileJobs;
+
+            util::RingBuffer<SystemNodeBase::EntityCompileBatch> entityCompileJobs{ 16 };
+
         private:
             std::vector<System*> systems;
             std::vector<std::shared_ptr<System>> non_node_systems;
@@ -257,12 +320,7 @@ namespace ROCKY_NAMESPACE
 
             void update(Runtime& runtime) override
             {
-                //auto view = registry.view<Transform::Dirty, Transform>();
-                //for (auto&& [entity, xform] : view.each())
-                //{
-                //    xform.update();
-                //}
-                //registry.clear<Transform::Dirty>();
+                //nop
             }
 
             static std::shared_ptr<TransformSystem> create(entt::registry& r)
@@ -271,59 +329,78 @@ namespace ROCKY_NAMESPACE
             }
         };
 
-        /**
-        * Subclass of the EnTT registry providing additional utility functions.
-        */
-        class Registry : public entt::registry
+        //! Toggle the visibility of an entity in the given view
+        inline void setVisible(entt::registry& r, entt::entity e, bool value, int view_index = -1)
         {
-        public:
-            //! Toggle the visibility of an entity
-            void setVisible(entt::entity e, bool value)
-            {
-                get<ECS::Visibility>(e).visible = value;
-            }
+            auto& visibility = r.get<Visibility>(e);
+            if (view_index > 0)
+                visibility[view_index] = value;
+            else
+                visibility.setAll(value);
+        }
 
-            //! Whether an entity is visible
-            bool visible(entt::entity e)
-            {
-                return get<ECS::Visibility>(e).visible;
-            }
-        };
+        //! Whether an entity is visible in the given view
+        //! @param e Entity
+        //! @param view_index Index of view to check visibility
+        inline bool visible(entt::registry& r, entt::entity e, int view_index = 0)
+        {
+            auto& visibility = r.get<Visibility>(e);
+            return visibility[view_index];
+        }
     }
 
 
     //........................................................................
 
 
-    namespace detail
+    namespace ECS
     {
-        template<typename T>
-        inline void SystemNode_on_construct(entt::registry& r, entt::entity e)
+        namespace detail
         {
-            T& new_component = r.get<T>(e);
-
-            // Add a visibility tag (if first time dealing with this entity)
-            // I am not sure yet how to remove this in the end.
-            if (!r.try_get<ECS::Visibility>(e))
+            // called by registry.emplace<T>()
+            template<typename T>
+            inline void SystemNode_on_construct(entt::registry& r, entt::entity e)
             {
-                r.emplace<ECS::Visibility>(e);
+                T& new_component = r.get<T>(e);
+
+                // Add a visibility tag (if first time dealing with this entity)
+                // I am not sure yet how to remove this in the end.
+                if (!r.try_get<Visibility>(e))
+                {
+                    r.emplace<Visibility>(e);
+                }
+
+                // Create a Renderable component and attach it to the new component.
+                new_component.attach_point = r.create();
+                r.emplace<ECS::Renderable>(new_component.attach_point);
+
+                new_component.revision++;
             }
 
-            // Create a Renderable component and attach it to the new component.
-            new_component.entity = r.create();
-            r.emplace<ECS::Renderable>(new_component.entity);
+            // invoked by registry.replace<T>(), emplace_or_replace<T>(), or patch<T>()
+            template<typename T>
+            inline void SystemNode_on_update(entt::registry& r, entt::entity e)
+            {
+                T& updated_component = r.get<T>(e);
 
-            new_component.revision++;
-        }
+                if (updated_component.attach_point == entt::null)
+                {
+                    updated_component.attach_point = r.create();
+                    r.emplace<ECS::Renderable>(updated_component.attach_point);
+                }
 
-        template<typename T>
-        inline void SystemNode_on_destroy(entt::registry& r, entt::entity e)
-        {
-            T& comp = r.get<T>(e);
-            r.remove<ECS::Renderable>(comp.entity);
+                updated_component.revision++;
+            }
 
-            // Only want to remove it if there are no more components on this entity. I guess.
-            //r.remove<ECS::Visibility>(e);
+            // invoked by registry.erase<T>(), remove<T>(), or registry.destroy(e)
+            template<typename T>
+            inline void SystemNode_on_destroy(entt::registry& r, entt::entity e)
+            {
+                T& component_being_destroyed = r.get<T>(e);
+                r.destroy(component_being_destroyed.attach_point);
+
+                //r.remove<ECS::Renderable>(component_being_destroyed.entity);
+            }
         }
     }
 
@@ -332,6 +409,7 @@ namespace ROCKY_NAMESPACE
         System(in_registry)
     {
         registry.on_construct<T>().template connect<&detail::SystemNode_on_construct<T>>();
+        registry.on_update<T>().template connect<&detail::SystemNode_on_update<T>>();
         registry.on_destroy<T>().template connect<&detail::SystemNode_on_destroy<T>>();
     }
 
@@ -339,6 +417,7 @@ namespace ROCKY_NAMESPACE
     ECS::SystemNode<T>::~SystemNode()
     {
         registry.on_construct<T>().template disconnect<&detail::SystemNode_on_construct<T>>();
+        registry.on_update<T>().template disconnect<&detail::SystemNode_on_update<T>>();
         registry.on_destroy<T>().template disconnect<&detail::SystemNode_on_destroy<T>>();
     }
 
@@ -352,7 +431,7 @@ namespace ROCKY_NAMESPACE
 
         registry.view<T>().each([&](auto& c)
             {
-                auto& renderable = registry.get<Renderable>(c.entity);
+                auto& renderable = registry.get<Renderable>(c.attach_point);
                 if (renderable.node)
                     renderable.node->accept(v);
             });
@@ -371,7 +450,7 @@ namespace ROCKY_NAMESPACE
 
         registry.view<T>().each([&](auto& c)
             {
-                auto& renderable = registry.get<Renderable>(c.entity);
+                auto& renderable = registry.get<Renderable>(c.attach_point);
                 if (renderable.node)
                     renderable.node->accept(v);
             });
@@ -393,7 +472,7 @@ namespace ROCKY_NAMESPACE
 
         registry.view<T>().each([&](auto& c)
             {
-                auto& renderable = registry.get<Renderable>(c.entity);
+                auto& renderable = registry.get<Renderable>(c.attach_point);
                 if (renderable.node)
                     renderable.node->accept(compiler);
             });
@@ -403,6 +482,7 @@ namespace ROCKY_NAMESPACE
     inline void ECS::SystemNode<T>::traverse(vsg::RecordTraversal& rt) const
     {
         const vsg::dmat4 identity_matrix = vsg::dmat4(1.0);
+        auto viewID = rt.getState()->_commandBuffer->viewID;
 
         // Sort components into render sets by pipeline. If this system doesn't support
         // multiple pipelines, just store them all together in renderSet[0].
@@ -412,18 +492,26 @@ namespace ROCKY_NAMESPACE
         // Get an optimized view of all this system's components:
         registry.view<T, Visibility>().each([&](const entt::entity entity, const T& component, auto& visibility)
             {
-                auto& renderable = registry.get<Renderable>(component.entity);
+                auto& renderable = registry.get<Renderable>(component.attach_point);
                 if (renderable.node)
                 {
                     auto& rs = !pipelines.empty() ? renderSet[featureMask(component)] : renderSet[0];
                     auto* transform = registry.try_get<Transform>(entity);
-                    if (transform || visibility.visible)
-                        rs.emplace_back(RenderLeaf{ renderable, transform, visibility.visible });
+                    if (transform || visibility[viewID])
+                    {
+                        rs.emplace_back(RenderLeaf{ renderable, transform, visibility[viewID] });
+                    }
                 }
 
-                if (!renderable.node || (renderable.revision != component.revision))
+                if (renderable.staged->has_value())
                 {
-                    entities_to_update.push_back(entity);
+                    entities_to_update.emplace_back(entity);
+                }
+
+                else if (renderable.revision != component.revision)
+                {
+                    entities_to_update.emplace_back(entity);
+                    renderable.revision = component.revision;
                 }
             });
 
@@ -467,21 +555,70 @@ namespace ROCKY_NAMESPACE
 
 
     template<class T>
-    inline void ECS::SystemNode<T>::updateComponents(Runtime& runtime)
+    inline void ECS::SystemNode<T>::update(Runtime& runtime)
     {
+        std::vector<entt::entity> entities_to_create;
+
         for (auto& entity : entities_to_update)
         {
-            if (update(entity, runtime))
+            T& component = registry.get<T>(entity);
+            Renderable& renderable = registry.get<Renderable>(component.attach_point);
+
+            // if a staged node exists, swap it in.
+            vsg::ref_ptr<vsg::Node> new_node;
+            if (renderable.staged->get_and_clear(new_node))
             {
-                // TODO: just do this in the update call, since the subclass is probably
-                // already looking up the renderable?
-                auto& comp = registry.get<T>(entity);
-                auto& renderable = registry.get<Renderable>(comp.entity);
-                renderable.revision = comp.revision;
+                if (renderable.node)
+                    runtime.dispose(renderable.node);
+
+                renderable.node = new_node;
+            }
+            else
+            {
+                // either the node doesn't exist yet, or the revision changed.
+                // Queue it up for creation.
+                entities_to_create.emplace_back(entity);
+            }
+        }
+
+        // If we detected any entities that need new nodes, create them now.
+        if (!entities_to_create.empty())
+        {
+            if (manager)
+            {
+                bool ok = manager->entityCompileJobs.emplace(EntityCompileBatch{
+                    std::move(entities_to_create),
+                    this,
+                    &runtime });
+
+                if (!ok)
+                {
+                    Log()->warn("Failed to enqueue entity compile job - queue overflow");
+                }
             }
         }
 
         entities_to_update.clear();
+    }
+
+    template<class T>
+    void ECS::SystemNode<T>::create_or_update(entt::entity entity, SystemNodeBase::CreateOrUpdateData& data, Runtime& runtime) const
+    {
+        T& component = registry.get<T>(entity);
+        auto& renderable = registry.get<Renderable>(component.attach_point);
+        data.existing_node = renderable.node;
+        createOrUpdateNode(entity, data, runtime);
+    }
+
+    template<class T>
+    void ECS::SystemNode<T>::finish_update(entt::entity entity, SystemNodeBase::CreateOrUpdateData& data) const
+    {
+        T& component = registry.get<T>(entity);
+        auto& renderable = registry.get<Renderable>(component.attach_point);
+        if (data.new_node)
+        {
+            renderable.staged->set(data.new_node);
+        }
     }
 
     template<class T>

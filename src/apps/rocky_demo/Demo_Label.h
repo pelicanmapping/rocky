@@ -45,9 +45,9 @@ auto Demo_Label = [](Application& app)
 
     if (ImGuiLTable::Begin("text"))
     {
-        bool visible = app.entities.visible(entity);
+        bool visible = ECS::visible(app.registry, entity);
         if (ImGuiLTable::Checkbox("Visible", &visible))
-            app.entities.setVisible(entity, visible);
+            ECS::setVisible(app.registry, entity, visible);
 
         auto& label = app.entities.get<Label>(entity);
 
@@ -55,6 +55,7 @@ auto Demo_Label = [](Application& app)
         {
             char buf[256];
             std::copy(label.text.begin(), label.text.end(), buf);
+            buf[label.text.length()] = '\0';
             if (ImGuiLTable::InputText("Text", &buf[0], 255))
             {
                 label.text = std::string(buf);

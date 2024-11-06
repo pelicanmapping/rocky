@@ -104,9 +104,10 @@ namespace ROCKY_NAMESPACE
         //! One-time initialization of the system        
         void initializeSystem(Runtime&) override;
 
+        vsg::ref_ptr<vsg::Node> createNode(entt::entity, Runtime&) const override;
     protected:
 
-        bool update(entt::entity, Runtime&) override;
+        //bool update(entt::entity, Runtime&) override;
     };
 
 
@@ -123,7 +124,7 @@ namespace ROCKY_NAMESPACE
     public:
         NodeSystemNode(entt::registry& registry);
 
-        bool update(entt::entity, Runtime&) override;
+        vsg::ref_ptr<vsg::Node> createNode(entt::entity, Runtime&) const override;
     };
 
 }

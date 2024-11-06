@@ -6,6 +6,7 @@
 #include "GeoTransform.h"
 #include "engine/Utils.h"
 #include <rocky/Horizon.h>
+#include <vsg/state/ViewDependentState.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -80,9 +81,8 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix)
     }
 
     auto mvm = state->modelviewMatrixStack.top() * view.matrix;
-    auto& proj = state->projectionMatrixStack.top();
-    view.mvp = proj * mvm;
-    view.aspect_ratio = std::abs(proj[1][1] / proj[0][0]);
+    view.mvp = state->projectionMatrixStack.top() * mvm;
+    view.viewport = state->_commandBuffer->viewDependentState->viewportData->at(0);
 
     // Frustum cull (by center point)
     if (frustumCulling)

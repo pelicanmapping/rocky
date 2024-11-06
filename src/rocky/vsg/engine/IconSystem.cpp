@@ -153,14 +153,24 @@ IconSystemNode::initializeSystem(Runtime& runtime)
     }
 }
 
-bool
-IconSystemNode::update(entt::entity entity, Runtime& runtime)
+namespace
+{
+    template<typename CACHE, typename MUTEX, typename CREATE>
+    vsg::ref_ptr<vsg::DescriptorImage>& getOrCreate(CACHE& cache, MUTEX& mutex, std::shared_ptr<Image> key, CREATE&& create)
+    {
+        std::scoped_lock L(mutex);
+        auto iter = cache.find(key);
+        if (iter != cache.end())
+            return iter->second;
+        else
+            return cache[key] = create();
+    }
+}
+
+vsg::ref_ptr<vsg::Node>
+IconSystemNode::createNode(entt::entity entity, Runtime& runtime) const
 {
     auto& icon = registry.get<Icon>(entity);
-    auto& renderable = registry.get<ECS::Renderable>(icon.entity);
-
-    if (renderable.node)
-        runtime.dispose(renderable.node);
 
     auto geometry = IconGeometry::create();
     auto bindCommand = BindIconStyle::create();
@@ -183,30 +193,29 @@ IconSystemNode::update(entt::entity entity, Runtime& runtime)
     }
 
     // check the cache.
-    auto& descriptorImage = descriptorImage_cache[icon.image];
-    if (!descriptorImage)
-    {
-        auto imageData = util::moveImageToVSG(image);
+    auto& descriptorImage = getOrCreate(descriptorImage_cache, mutex, icon.image, [&]()
+        {
+            auto imageData = util::moveImageToVSG(image);
 
-        // A sampler for the texture:
-        auto sampler = vsg::Sampler::create();
-        sampler->maxLod = 5; // this alone will prompt mipmap generation!
-        sampler->minFilter = VK_FILTER_LINEAR;
-        sampler->magFilter = VK_FILTER_LINEAR;
-        sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        sampler->anisotropyEnable = VK_TRUE; // don't need this for a billboarded icon
-        sampler->maxAnisotropy = 4.0f;
+            // A sampler for the texture:
+            auto sampler = vsg::Sampler::create();
+            sampler->maxLod = 5; // this alone will prompt mipmap generation!
+            sampler->minFilter = VK_FILTER_LINEAR;
+            sampler->magFilter = VK_FILTER_LINEAR;
+            sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+            sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            sampler->anisotropyEnable = VK_TRUE; // don't need this for a billboarded icon
+            sampler->maxAnisotropy = 4.0f;
 
-        descriptorImage = vsg::DescriptorImage::create(
-            sampler,
-            imageData,
-            TEXTURE_BINDING,
-            0, // array element (TODO: increment when we change to an array)
-            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-    }
+            return vsg::DescriptorImage::create(
+                sampler,
+                imageData,
+                TEXTURE_BINDING,
+                0, // array element (TODO: increment when we change to an array)
+                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        });
 
     descriptors.emplace_back(descriptorImage);
 
@@ -221,11 +230,7 @@ IconSystemNode::update(entt::entity entity, Runtime& runtime)
     stateGroup->stateCommands.push_back(bindCommand);
     stateGroup->addChild(geometry);
 
-    renderable.node = stateGroup;
-
-    runtime.compile(renderable.node);
-
-    return true;
+    return stateGroup;
 }
 
 

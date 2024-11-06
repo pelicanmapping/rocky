@@ -28,7 +28,9 @@ namespace ROCKY_NAMESPACE
         //! One time setup of the system
         void initializeSystem(Runtime&) override;
 
+        vsg::ref_ptr<vsg::Node> createNode(entt::entity, Runtime&) const override;
+
     private:
-        bool update(entt::entity, Runtime& runtime) override;
+        //bool update(entt::entity, Runtime& runtime) override;
     };
 }

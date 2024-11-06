@@ -20,7 +20,7 @@ namespace ROCKY_NAMESPACE
         // if alpha is zero, use the line's per-vertex color instead
         vsg::vec4 color = { 1, 1, 1, 0 };
         float width = 2.0f; // pixels
-        int stipple_pattern = 0xffff;
+        int stipple_pattern = ~0;
         int stipple_factor = 1;
         float resolution = 100000.0f; // meters
         float depth_offset = 0.0f; // meters
@@ -44,32 +44,35 @@ namespace ROCKY_NAMESPACE
         //! in the SRS of the referencePoint.
         GeoPoint referencePoint;
 
+        //! Maximum reserved size. Set this if you know the maximum number of points you 
+        //! plan to use.
+        std::size_t staticSize = 0;
+
         //! Geometry. Stored on the heap since it can change size.
-        using Part = std::vector<vsg::dvec3>;
-        std::unique_ptr<std::vector<Part>> parts;
+        std::vector<vsg::dvec3>& points() { return *_points; }
+        const std::vector<vsg::dvec3>& points() const { return *_points; }
 
-        //! Pushes a new sub-geometry along with its range of points. Each point
-        //! is expressed in normal VSG coordinates, UNLESS referencePoint is set,
-        //! in which case each point should be expressing in the SRS of the referencePoint.
-        //! @param begin Iterator of first point to add to the new sub-geometry
-        //! @param end Iterator past the final point to add to the new sub-geometry
-        template<class DVEC3_ITER>
-        inline void push(DVEC3_ITER begin, DVEC3_ITER end)
+        void styleDirty()
         {
-            Part part;
-            auto size = std::distance(begin, end);
-            part.reserve(size);
+            _styleDirty = true;
+            ++revision;
+        }
 
-            for (DVEC3_ITER i = begin; i != end; ++i)
-            {
-                part.emplace_back(i->x, i->y, i->z);
-            }
-            parts->emplace_back(std::move(part));
+        void geometryDirty()
+        {
+            _geometryDirty = true;
+            ++revision;
         }
 
         Line()
         {
-            parts = std::make_unique<std::vector<Part>>();
+            _points = std::make_unique<std::vector<vsg::dvec3>>();
         }
+
+        bool _styleDirty = true;
+        bool _geometryDirty = true;
+
+    private:
+        std::unique_ptr<std::vector<vsg::dvec3>> _points;
     };
 }

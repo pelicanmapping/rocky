@@ -69,11 +69,13 @@ namespace
 DisplayManager::DisplayManager(Application& in_app) :
     app(&in_app)
 {
+    activeViewIDs.assign(64, 0);
     setViewer(in_app.viewer);
 }
 
 DisplayManager::DisplayManager(vsg::ref_ptr<vsg::Viewer> in_viewer)
 {
+    activeViewIDs.assign(64, 0);
     setViewer(in_viewer);
 }
 
@@ -281,6 +283,11 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
 
         windowsAndViews[window].emplace_back(view);
 
+        ++activeViewIDs[view->viewID];
+        for (unsigned i = 0; i < activeViewIDs.size(); ++i)
+            if (activeViewIDs[i] > 0)
+                maxViewID = i;
+
         if (app)
         {
             auto manip = MapManipulator::create(app->mapNode, window, view->camera);
@@ -317,6 +324,11 @@ DisplayManager::removeView(vsg::ref_ptr<vsg::View> view)
     _viewData.erase(view);
     auto& views = windowsAndViews[vsg::observer_ptr<vsg::Window>(window)];
     views.erase(std::remove(views.begin(), views.end(), view), views.end());
+
+    --activeViewIDs[view->viewID];
+    for (unsigned i = 0; i < activeViewIDs.size(); ++i)
+        if (activeViewIDs[i] > 0)
+            maxViewID = i;
 }
 
 void

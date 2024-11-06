@@ -5,8 +5,27 @@
  */
 #pragma once
 #include <rocky/vsg/Application.h>
+#include <rocky/weejobs.h>
 #include <vsg/commands/Command.h>
 #include "vsgImGui/RenderImGui.h"
+#include <chrono>
+
+// utility to run a loop at a specific frequency (in Hz)
+struct run_at_frequency
+{
+    run_at_frequency(float hertz) : start(std::chrono::steady_clock::now()), _max(1.0f / hertz) { }
+    ~run_at_frequency() { std::this_thread::sleep_for(_max - (std::chrono::steady_clock::now() - start)); }
+    auto elapsed() const { return std::chrono::steady_clock::now() - start; }
+    std::chrono::steady_clock::time_point start;
+    std::chrono::duration<float> _max;
+};
+
+struct scoped_use
+{
+    scoped_use(jobs::detail::semaphore& s) : sem(s) { sem.acquire(); }
+    ~scoped_use() { sem.release(); }
+    jobs::detail::semaphore& sem;
+};
 
 const ImVec4 ImGuiErrorColor = ImVec4(1, 0.35f, 0.35f, 1);
 

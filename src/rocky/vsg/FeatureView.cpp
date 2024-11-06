@@ -139,7 +139,9 @@ namespace
             feature_to_world.transformRange(tessellated.begin(), tessellated.end());
 
             // make the line attachment:
-            line.push(tessellated.begin(), tessellated.end());
+            line.points().resize(tessellated.size());
+            std::transform(tessellated.begin(), tessellated.end(), line.points().begin(), 
+                [](const glm::dvec3& p) { return vsg::dvec3(p.x, p.y, p.z); });
 
             final_max_span = std::max(final_max_span, get_max_segment_length(tessellated));
         }

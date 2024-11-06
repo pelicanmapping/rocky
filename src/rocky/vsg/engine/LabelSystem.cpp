@@ -46,17 +46,13 @@ LabelSystemNode::initializeSystem(Runtime& runtime)
     shaderSet->defaultGraphicsPipelineStates.push_back(depthStencilState);
 }
 
-bool
-LabelSystemNode::update(entt::entity entity, Runtime& runtime)
+vsg::ref_ptr<vsg::Node>
+LabelSystemNode::createNode(entt::entity entity, Runtime& runtime) const
 {
     auto& label = registry.get<Label>(entity);
-    auto& renderable = registry.get<ECS::Renderable>(label.entity);
 
     // TODO: allow custom fonts
-    ROCKY_SOFT_ASSERT_AND_RETURN(label.style.font.valid(), true);
-
-    if (renderable.node)
-        runtime.dispose(renderable.node);
+    ROCKY_SOFT_ASSERT_AND_RETURN(label.style.font.valid(), {});
 
     auto options = runtime.readerWriterOptions;
 
@@ -64,16 +60,27 @@ LabelSystemNode::update(entt::entity entity, Runtime& runtime)
 
     // Billboard = false because of https://github.com/vsg-dev/VulkanSceneGraph/discussions/985
     // Workaround: use a PixelScaleTransform with unrotate=true
+#if 1
     auto layout = vsg::StandardLayout::create();
     layout->billboard = false;
     layout->billboardAutoScaleDistance = 0.0f;
-    layout->position = label.style.pixelOffset; // vsg::vec3(0.0f, 0.0f, 0.0f);
+    layout->position = label.style.pixelOffset;
     layout->horizontal = vsg::vec3(size, 0.0f, 0.0f);
     layout->vertical = vsg::vec3(0.0f, size, 0.0f); // layout->billboard ? vsg::vec3(0.0, size, 0.0) : vsg::vec3(0.0, 0.0, size);
     layout->color = vsg::vec4(1.0f, 0.9f, 1.0f, 1.0f);
     layout->outlineWidth = label.style.outlineSize;
     layout->horizontalAlignment = label.style.horizontalAlignment;
     layout->verticalAlignment = label.style.verticalAlignment;
+#else
+    auto layout = vsg::StandardLayout::create();
+    layout->horizontalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;
+    layout->position = vsg::vec3(0.0, 0.0, 0.0);
+    layout->horizontal = vsg::vec3(size, 0.0, 0.0);
+    layout->vertical = vsg::vec3(0.0, size, 0.0);
+    layout->color = vsg::vec4(1.0, 1.0, 1.0, 1.0);
+    layout->outlineWidth = 0.1f;
+    layout->billboard = true;
+#endif
 
     // Share this since it should be the same for everything
     if (runtime.sharedObjects)
@@ -89,14 +96,12 @@ LabelSystemNode::update(entt::entity entity, Runtime& runtime)
     textNode->setup(LABEL_MAX_NUM_CHARS, options); // allocate enough space for max possible characters?
 
 #if 0
-    rd.node = label.textNode;
+    renderable.node = textNode;
 #else
     auto pst = PixelScaleTransform::create();
     pst->unrotate = true;
     pst->addChild(textNode);
-    renderable.node = pst;
+    return pst;
+    //renderable.node = pst;
 #endif
-
-    runtime.compile(renderable.node);
-    return true;
 }

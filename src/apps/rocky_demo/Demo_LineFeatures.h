@@ -78,9 +78,9 @@ auto Demo_LineFeatures = [](Application& app)
 
     else if (ImGuiLTable::Begin("Line features"))
     {
-        bool visible = app.entities.visible(feature_view.entity);
+        bool visible = ECS::visible(app.registry, feature_view.entity);
         if (ImGuiLTable::Checkbox("Visible", &visible))
-            app.entities.setVisible(feature_view.entity, visible);
+            ECS::setVisible(app.registry, feature_view.entity, visible);
 
         if (feature_view.styles.line.has_value())
         {

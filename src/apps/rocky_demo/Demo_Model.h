@@ -68,9 +68,9 @@ auto Demo_Model = [](Application& app)
 
     if (ImGuiLTable::Begin("model"))
     {
-        bool visible = app.entities.visible(entity);
+        bool visible = ECS::visible(app.registry, entity);
         if (ImGuiLTable::Checkbox("Visible", &visible))
-            app.entities.setVisible(entity, visible);
+            ECS::setVisible(app.registry, entity, visible);
 
         auto& transform = app.entities.get<Transform>(entity);
         ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf");

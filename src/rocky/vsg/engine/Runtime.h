@@ -9,6 +9,7 @@
 #include <rocky/Instance.h>
 #include <rocky/IOTypes.h>
 #include <rocky/Threading.h>
+#include <rocky/Utils.h>
 #include <vsg/core/observer_ptr.h>
 #include <vsg/app/Viewer.h>
 #include <vsg/app/CompileManager.h>
@@ -18,6 +19,8 @@
 #include <vsg/text/Font.h>
 #include <shared_mutex>
 #include <queue>
+
+#include <entt/entt.hpp>
 
 namespace vsg
 {
@@ -85,6 +88,10 @@ namespace ROCKY_NAMESPACE
         //! By default Runtime uses its own round-robin object disposer
         std::function<void(vsg::ref_ptr<vsg::Object>)> disposer;
 
+        //! List of viewIDs that were detected during the latest record traversal.
+        //! This needs to be cleared and rebuilt every frame.
+        std::vector<std::uint32_t> activeViewIDs;
+
     public:
 
         //! Queue a function to run during the update pass
@@ -151,6 +158,8 @@ namespace ROCKY_NAMESPACE
         // deferred deletion container
         mutable std::shared_mutex _deferred_unref_mutex;
         std::list<std::vector<vsg::ref_ptr<vsg::Object>>> _deferred_unref_queue;
+
+        jobs::future<bool> _entityJobCompiler;
     };
 }
 

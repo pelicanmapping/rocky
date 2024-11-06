@@ -81,8 +81,8 @@ namespace ROCKY_NAMESPACE
 
         jobs::detail::semaphore handle;
 
-        ECS::Registry entities;
-        entt::registry& registry = entities; // alias
+        entt::registry registry;
+        entt::registry& entities = registry; // alias
 
         rocky::InstanceVSG instance;
         vsg::ref_ptr<rocky::MapNode> mapNode;

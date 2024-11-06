@@ -98,6 +98,11 @@ namespace ROCKY_NAMESPACE
         //! @return Geocentric point that can be used for horizon culling
         glm::dvec3 calculateHorizonPoint(const std::vector<glm::dvec3>& points) const;
 
+        //! Calculates the quaternion that will rotate a point along a great circle path at a provided initial bearing.
+        glm::dvec3 greatCircleRotationAxis(
+            const glm::dvec3& start,
+            double initialBearing_deg) const;
+
         //! Equality operator
         inline bool operator == (const Ellipsoid& rhs) const
         {

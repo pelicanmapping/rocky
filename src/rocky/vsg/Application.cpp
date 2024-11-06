@@ -504,6 +504,10 @@ void
 Application::setViewer(vsg::ref_ptr<vsg::Viewer> in_viewer)
 {
     viewer = in_viewer;
+
     instance.runtime().viewer = viewer;
+
+    //instance.runtime().offlineCompileManager = vsg::CompileManager::create(*viewer, vsg::ref_ptr<vsg::ResourceHints>{});
+
     displayManager = std::make_shared<DisplayManager>(*this);
 }

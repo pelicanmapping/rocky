@@ -9,6 +9,7 @@
 
 using namespace ROCKY_NAMESPACE;
 
+
 #define LC "[Layer] \"" << getName() << "\" "
 
 Layer::Layer() :

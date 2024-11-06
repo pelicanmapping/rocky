@@ -10,59 +10,7 @@
 #include <vsg/nodes/Geometry.h>
 
 namespace ROCKY_NAMESPACE
-{   
-    /**
-    * Renders a line or linestring geometry.
-    */
-    class ROCKY_EXPORT LineGeometry : public vsg::Inherit<vsg::Geometry, LineGeometry>
-    {
-    public:
-        //! Construct a new line string geometry node
-        LineGeometry();
-
-        //! Adds a vertex to the end of the line string
-        void push_back(const vsg::vec3& vert);
-
-        //! Number of verts comprising this line string
-        unsigned numVerts() const;
-
-        //! The first vertex in the line string to render
-        void setFirst(unsigned value);
-
-        //! Number of vertices in the line string to render
-        void setCount(unsigned value);
-
-        //! Recompile the geometry after making changes.
-        //! TODO: just make it dynamic instead
-        void compile(vsg::Context&) override;
-
-    protected:
-        vsg::vec4 _defaultColor = { 1,1,1,1 };
-        std::vector<vsg::vec3> _current;
-        std::vector<vsg::vec3> _previous;
-        std::vector<vsg::vec3> _next;
-        std::vector<vsg::vec4> _colors;
-        vsg::ref_ptr<vsg::DrawIndexed> _drawCommand;
-    };
-
-    /**
-    * Applies a line style.
-    */
-    class ROCKY_EXPORT BindLineDescriptors : public vsg::Inherit<vsg::BindDescriptorSet, BindLineDescriptors>
-    {
-    public:
-        //! Construct a line style node
-        BindLineDescriptors();
-
-        //! Initialize this command with the associated layout
-        void init(vsg::ref_ptr<vsg::PipelineLayout> layout);
-
-        //! Refresh the data buffer contents on the GPU
-        void updateStyle(const LineStyle&);
-
-        vsg::ref_ptr<vsg::ubyteArray> _styleData;
-    };
-
+{
     /**
      * ECS system that handles LineString components
      */
@@ -85,7 +33,127 @@ namespace ROCKY_NAMESPACE
         //! One-time initialization of the system    
         void initializeSystem(Runtime&) override;
 
+        vsg::ref_ptr<vsg::Node> createNode(entt::entity, Runtime&) const override;
+
+        void createOrUpdateNode(entt::entity, CreateOrUpdateData& data, Runtime&) const override;
+
     private:
-        bool update(entt::entity, Runtime& runtime) override;
+        //bool update(entt::entity, Runtime& runtime) override;
+
+        void updateGeometry(Line& line, class LineGeometry*) const;
     };
+
+    /**
+    * Renders a line or linestring geometry.
+    */
+    class ROCKY_EXPORT LineGeometry : public vsg::Inherit<vsg::Geometry, LineGeometry>
+    {
+    public:
+        //! Construct a new line string geometry node
+        LineGeometry();
+
+        template<typename VEC3_T>
+        inline void set(const std::vector<VEC3_T>& verts, std::size_t staticStorage = 0);
+
+        //! The first vertex in the line string to render
+        void setFirst(unsigned value);
+
+        //! Last vertex in the line string to render
+        void setCount(unsigned value);
+
+        //protected:
+        vsg::ref_ptr<vsg::DrawIndexed> _drawCommand;
+        vsg::ref_ptr<vsg::vec3Array> _current;
+        vsg::ref_ptr<vsg::vec3Array> _previous;
+        vsg::ref_ptr<vsg::vec3Array> _next;
+        vsg::ref_ptr<vsg::vec4Array> _colors;
+        vsg::ref_ptr<vsg::uintArray> _indices;
+
+        void calcBound(vsg::dsphere& out, const vsg::dmat4& matrix) const;
+    };
+
+    /**
+    * Applies a line style.
+    */
+    class ROCKY_EXPORT BindLineDescriptors : public vsg::Inherit<vsg::BindDescriptorSet, BindLineDescriptors>
+    {
+    public:
+        //! Construct a line style node
+        BindLineDescriptors();
+
+        //! Initialize this command with the associated layout
+        void init(vsg::ref_ptr<vsg::PipelineLayout> layout);
+
+        //! Refresh the data buffer contents on the GPU
+        void updateStyle(const LineStyle&);
+
+        vsg::ref_ptr<vsg::ubyteArray> _styleData;
+    };
+
+
+
+
+    template<typename VEC3_T>
+    void LineGeometry::set(const std::vector<VEC3_T>& verts, std::size_t staticStorage)
+    {
+        const vsg::vec4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+        std::size_t verts_to_allocate = (staticStorage > 0 ? staticStorage : verts.size());
+
+        if (!_current)
+        {
+            _current = vsg::vec3Array::create(verts_to_allocate * 4);
+            _current->properties.dataVariance = vsg::DYNAMIC_DATA;
+
+            _previous = vsg::vec3Array::create(verts_to_allocate * 4);
+            _previous->properties.dataVariance = vsg::DYNAMIC_DATA;
+            
+            _next = vsg::vec3Array::create(verts_to_allocate * 4);
+            _next->properties.dataVariance = vsg::DYNAMIC_DATA;
+
+            _colors = vsg::vec4Array::create(verts_to_allocate * 4);
+            _colors->properties.dataVariance = vsg::DYNAMIC_DATA;
+
+            assignArrays({ _current, _previous, _next, _colors });
+
+            _indices = vsg::uintArray::create((verts_to_allocate - 1) * 6);
+            _indices->properties.dataVariance = vsg::DYNAMIC_DATA;
+            assignIndices(_indices);
+        }
+
+        int i_ptr = 0;
+        for (unsigned i = 0; i < verts.size(); ++i)
+        {
+            bool first = i == 0;
+            bool last = (i == verts.size() - 1);
+
+            for (int n = 0; n < 4; ++n)
+            {
+                (_previous->data())[i * 4 + n] = first ? verts[i] : verts[i - 1];
+                (_next->data())[i * 4 + n] = last ? verts[i] : verts[i + 1];
+                (_current->data())[i * 4 + n] = verts[i];
+                (_colors->data())[i * 4 + n] = defaultColor;
+            }
+
+            if (!first)
+            {
+                auto e = (i - 1) * 4 + 2;
+                (_indices->data())[i_ptr++] = e + 3;
+                (_indices->data())[i_ptr++] = e + 1;
+                (_indices->data())[i_ptr++] = e + 0; // provoking vertex
+                (_indices->data())[i_ptr++] = e + 2;
+                (_indices->data())[i_ptr++] = e + 3;
+                (_indices->data())[i_ptr++] = e + 0; // provoking vertex
+            }
+        }
+
+        _drawCommand->firstIndex = 0;
+        _drawCommand->indexCount = i_ptr; // 6 * std::max(0, (int)verts.size() - 1);
+
+        _current->dirty();
+        _previous->dirty();
+        _next->dirty();
+        _colors->dirty();
+        _indices->dirty();
+    }
 }

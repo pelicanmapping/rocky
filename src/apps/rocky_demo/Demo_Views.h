@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include <cstdlib> // rand
+#include <random>
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
 
@@ -38,11 +38,7 @@ auto Demo_Views = [](Application& app)
                         rg->getRenderPass()->attachments.size() > 0 &&
                         rg->getRenderPass()->attachments[0].format == VK_FORMAT_B8G8R8A8_UNORM)
                     {
-                        auto& color = rg->clearValues[0].color.float32;
-                        if (ImGuiLTable::ColorEdit3("Clear", color))
-                        {
-                            // just works - nothing to do
-                        }
+                        ImGuiLTable::ColorEdit3("Clear", rg->clearValues[0].color.float32);
                     }
 
                     if (num > 1)  // dont' allow editing the first view
@@ -95,14 +91,17 @@ auto Demo_Views = [](Application& app)
             {
                 if (ImGui::Button("Add an inset view"))
                 {
+                    static std::mt19937 rng;
+                    std::uniform_int_distribution next_int;
+
                     // First make a camera for the new view, placed at a random location.
                     const double nearFarRatio = 0.00001;
                     const double vfov = 30.0;
                     const int width = 320, height = 200;
                     double R = app.mapNode->mapSRS().ellipsoid().semiMajorAxis();
                     int win_width = window->extent2D().width, win_height = window->extent2D().height;
-                    int x = std::max(0, (rand() % win_width) - width);
-                    int y = std::max(0, (rand() % win_height) - height);
+                    int x = std::max(0, (next_int(rng) % win_width) - width);
+                    int y = std::max(0, (next_int(rng) % win_height) - height);
                     double ar = (double)width / (double)height;
 
                     auto camera = vsg::Camera::create(
@@ -117,12 +116,13 @@ auto Demo_Views = [](Application& app)
                     auto dm = app.displayManager;
                     auto add = [=]()
                         {
+                            std::uniform_int_distribution next_int;
                             dm->addViewToWindow(new_view, window);
                             auto rg = dm->getRenderGraph(new_view);
                             auto& color = rg->clearValues[0].color.float32;
-                            color[0] = float(rand() % 255) / 255.0f;
-                            color[1] = float(rand() % 255) / 255.0f;
-                            color[2] = float(rand() % 255) / 255.0f;
+                            color[0] = float(next_int(rng) % 255) / 255.0f;
+                            color[1] = float(next_int(rng) % 255) / 255.0f;
+                            color[2] = float(next_int(rng) % 255) / 255.0f;
                             dm->refreshView(new_view);
                         };
 

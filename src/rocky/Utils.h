@@ -9,6 +9,7 @@
 #include <rocky/Math.h>
 #include <rocky/Status.h>
 #include <rocky/Log.h>
+#include <rocky/weejobs.h>
 
 #include <algorithm>
 #include <cctype>
@@ -21,6 +22,8 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
+#include <queue>
 #include <set>
 #include <sstream>
 #include <stdexcept>
@@ -263,6 +266,124 @@ namespace ROCKY_NAMESPACE
             constexpr float A = 12.9898f, B = 43758.5453f;
             return 0.5 * (1.0 + std::sin(seed * A + seed * B));
         }
+
+        template<class T>
+        class LockingQueue
+        {
+        public:
+            void emplace(const T& obj) {
+                std::scoped_lock L(_mutex);
+                _impl.emplace_back(obj);
+                _event = true;
+            }
+            void emplace(T&& obj) {
+                std::scoped_lock L(_mutex);
+                _impl.emplace_back(std::move(obj));
+                _event = true;            
+            }
+            T pop() {
+                std::scoped_lock L(_mutex);
+                if (_impl.empty()) return T{};
+                auto top = std::move(_impl.front());
+                _impl.pop_front();
+                return top;
+            }
+            void swap(std::vector<T>& output) {
+                std::scoped_lock L(_mutex);
+                auto size = _impl.size();
+                output.swap(_impl);
+                _impl.reserve(size);
+            }
+            bool waitAndReset() {
+                return _event.waitAndReset();
+            }
+            
+            jobs::detail::event _event;
+
+        private:
+            std::vector<T> _impl;
+            std::mutex _mutex;
+        };
+
+
+        template<typename T>
+        class RingBuffer
+        {
+        public:
+            RingBuffer(int size) : _size(size), _buffer(size) {}
+
+            bool push(const T& obj) {
+                if (full()) return false;
+                _buffer[_writeIndex] = obj;
+                _writeIndex.exchange((_writeIndex + 1) % _size);
+                _condition.notify_one();
+            }
+
+            bool emplace(T&& obj) {
+                if (full()) return false;
+                _buffer[_writeIndex] = std::move(obj);
+                _writeIndex.exchange((_writeIndex + 1) % _size);
+                _condition.notify_one();
+                return true;
+            }
+
+            bool pop(T& obj) {
+                if (_readIndex == _writeIndex) return false;
+                obj = std::move(_buffer[_readIndex]);
+                _readIndex.exchange((_readIndex + 1) % _size);
+                return true;
+            }
+
+            void wait() {
+                std::unique_lock<std::mutex> L(_mutex);
+                _condition.wait(L, [this]() { return !empty(); });
+            }
+
+            bool empty() const {
+                return _readIndex == _writeIndex;
+            }
+
+            bool full() const {
+                return (_writeIndex + 1) % _size == _readIndex;
+            }
+        private:
+            std::atomic_int _readIndex = { 0 };
+            std::atomic_int _writeIndex = { 0 };
+            int _size;
+            std::vector<T> _buffer;
+            mutable std::mutex _mutex;
+            mutable std::condition_variable_any _condition;
+        };
+
+
+        template<class T>
+        class Locked
+        {
+        public:
+            void set(const T& obj) {
+                std::scoped_lock L(_mutex);
+                _obj = obj;
+            }
+            void set(T&& obj) {
+                std::scoped_lock L(_mutex);
+                _obj = std::move(obj);
+            }
+            bool get_and_clear(T& obj) {
+                std::scoped_lock L(_mutex);
+                if (_obj.has_value()) {
+                    obj = _obj.value();
+                    _obj.reset();
+                    return true;
+                }
+                return false;
+            }
+            bool has_value() const {
+                return _obj.has_value();
+            }
+        private:
+            std::optional<T> _obj;
+            mutable std::mutex _mutex;
+        };
 
         /**
         * Virtual interface for a stream compressor

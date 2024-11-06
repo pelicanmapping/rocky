@@ -67,13 +67,15 @@ auto Demo_Tethering = [](Application& app)
                 {verts[indices[i++]], verts[indices[i++]], verts[indices[i++]]},
                 {color, color, color} });
         }
-        
+
         // add an arrow line:
         auto& arrow = app.entities.emplace<Line>(entity);
-        std::vector<vsg::vec3> v0 { {0,0,0}, {s * 2, 0, 0} };
-        std::vector<vsg::vec3> v1{ {s * 1.5, s * 0.5, 0}, {s * 2, 0, 0}, {s * 1.5, -s * 0.5, 0} };
-        arrow.push(v0.begin(), v0.end());
-        arrow.push(v1.begin(), v1.end());
+        arrow.points() = { 
+            vsg::dvec3{ s * 1.5, s * 0.5, 0.0 },
+            vsg::dvec3{ s * 2.0, 0.0, 0.0 },
+            vsg::dvec3{ s * 1.5, -s * 0.5, 0.0 }
+        };
+
         arrow.style = LineStyle{ {1,0.5,0,1}, 4.0f };
 
         // Add a transform:

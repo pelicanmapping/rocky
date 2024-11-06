@@ -170,15 +170,10 @@ MeshSystemNode::initializeSystem(Runtime& runtime)
         c.commands->addChild(c.config->bindGraphicsPipeline);
     }
 }
-
-bool
-MeshSystemNode::update(entt::entity entity, Runtime& runtime)
+vsg::ref_ptr<vsg::Node>
+MeshSystemNode::createNode(entt::entity entity, Runtime& runtime) const
 {
     auto& mesh = registry.get<Mesh>(entity);
-    auto& renderable = registry.get<ECS::Renderable>(mesh.entity);
-
-    if (renderable.node)
-        runtime.dispose(renderable.node);
 
     vsg::ref_ptr<vsg::StateGroup> stategroup;
 
@@ -246,10 +241,7 @@ MeshSystemNode::update(entt::entity entity, Runtime& runtime)
     cull->child->accept(cb);
     cull->bound.set((cb.bounds.min + cb.bounds.max) * 0.5, vsg::length(cb.bounds.min - cb.bounds.max) * 0.5);
 
-    renderable.node = cull;
-
-    runtime.compile(renderable.node);
-    return true;
+    return cull;
 }
 
 int
@@ -391,13 +383,9 @@ NodeSystemNode::NodeSystemNode(entt::registry& registry) :
     //nop
 }
 
-bool
-NodeSystemNode::update(entt::entity entity, Runtime& runtime)
+vsg::ref_ptr<vsg::Node>
+NodeSystemNode::createNode(entt::entity entity, Runtime& runtime) const
 {
     auto& graph = registry.get<NodeGraph>(entity);
-    auto& renderable = registry.get<ECS::Renderable>(graph.entity);
-
-    renderable.node = graph.node;
-    runtime.compile(renderable.node);
-    return true;
+    return graph.node;
 }
