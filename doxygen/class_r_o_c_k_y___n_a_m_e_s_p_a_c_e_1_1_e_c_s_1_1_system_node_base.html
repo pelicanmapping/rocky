@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Rocky: ROCKY_NAMESPACE::ECS::RevisionedComponent Struct Reference</title>
+<title>Rocky: ROCKY_NAMESPACE::ECS::SystemNodeBase Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,43 +63,48 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></li><li class="navelem"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s.html">ECS</a></li><li class="navelem"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_revisioned_component.html">RevisionedComponent</a></li>  </ul>
+<li class="navelem"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></li><li class="navelem"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s.html">ECS</a></li><li class="navelem"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node_base.html">SystemNodeBase</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
-<a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_revisioned_component-members.html">List of all members</a>  </div>
+<a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system_node_base-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">ROCKY_NAMESPACE::ECS::RevisionedComponent Struct Reference</div>  </div>
+<div class="title">ROCKY_NAMESPACE::ECS::SystemNodeBase Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
 </div><!--header-->
 <div class="contents">
 
 <p><code>#include &lt;<a class="el" href="_e_c_s_8h_source.html">ECS.h</a>&gt;</code></p>
 
-<p>Inherited by <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon.html">ROCKY_NAMESPACE::Icon</a>, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label.html">ROCKY_NAMESPACE::Label</a>, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html">ROCKY_NAMESPACE::Line</a>, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html">ROCKY_NAMESPACE::Mesh</a>, and ROCKY_NAMESPACE::NodeGraph.</p>
+<p>Inherits vsg::Inherit&lt; vsg::Compilable, SystemNodeBase &gt;.</p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aaed01f216c15ccdd200172efc05857d3"><td class="memItemLeft" align="right" valign="top"><a id="aaed01f216c15ccdd200172efc05857d3"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>dirty</b> ()</td></tr>
-<tr class="separator:aaed01f216c15ccdd200172efc05857d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5501e33460f57010bdbd35cefbcd9b31"><td class="memItemLeft" align="right" valign="top"><a id="a5501e33460f57010bdbd35cefbcd9b31"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>create_or_update</b> (entt::entity entity, CreateOrUpdateData &amp;data, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;runtime) const =0</td></tr>
+<tr class="separator:a5501e33460f57010bdbd35cefbcd9b31"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25ea4099ea3f313c3d960937e91a4495"><td class="memItemLeft" align="right" valign="top"><a id="a25ea4099ea3f313c3d960937e91a4495"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>finish_update</b> (entt::entity entity, CreateOrUpdateData &amp;data) const =0</td></tr>
+<tr class="separator:a25ea4099ea3f313c3d960937e91a4495"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a6722c0b056b6114b39260d72ccbc8fce"><td class="memItemLeft" align="right" valign="top"><a id="a6722c0b056b6114b39260d72ccbc8fce"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_revisioned_component.html#a6722c0b056b6114b39260d72ccbc8fce">revision</a> = 0</td></tr>
-<tr class="memdesc:a6722c0b056b6114b39260d72ccbc8fce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Revision, for synchronizing this component with another. <br /></td></tr>
-<tr class="separator:a6722c0b056b6114b39260d72ccbc8fce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2795e706b2a82419fd13ca15aad116aa"><td class="memItemLeft" align="right" valign="top"><a id="a2795e706b2a82419fd13ca15aad116aa"></a>
-entt::entity&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_revisioned_component.html#a2795e706b2a82419fd13ca15aad116aa">attach_point</a> = entt::null</td></tr>
-<tr class="memdesc:a2795e706b2a82419fd13ca15aad116aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attach point for additional components, as needed. <br /></td></tr>
-<tr class="separator:a2795e706b2a82419fd13ca15aad116aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b71aba585032f0c65c36fcc92baad4f"><td class="memItemLeft" align="right" valign="top"><a id="a8b71aba585032f0c65c36fcc92baad4f"></a>
+class <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_systems_manager_group.html">SystemsManagerGroup</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>manager</b> = nullptr</td></tr>
+<tr class="separator:a8b71aba585032f0c65c36fcc92baad4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Superclass for <a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s.html" title="Entity Component System support.">ECS</a> components meant to be revisioned and/or with an attach point. </p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<div class="textblock"><p>VSG node representing an <a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s.html" title="Entity Component System support.">ECS</a> system for the given component type (T). A system of this type asumes that "T" will have a <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_renderable.html">Renderable</a> component attached to "T::entity".</p>
+<p>This lives under a <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_systems_manager_group.html">SystemsManagerGroup</a> node that will tick it each frame.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">T</td><td>The component type </td></tr>
+  </table>
+  </dd>
+</dl>
+</div><hr/>The documentation for this class was generated from the following file:<ul>
 <li>src/rocky/vsg/<a class="el" href="_e_c_s_8h_source.html">ECS.h</a></li>
 </ul>
 </div><!-- contents -->

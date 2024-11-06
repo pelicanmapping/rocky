@@ -151,6 +151,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="separator:aeedc54d1c8fb0519cc10d0cafaea0b9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf300a439df1f27df59e752351fe1759"><td class="memItemLeft" align="right" valign="top">std::function&lt; void(vsg::ref_ptr&lt; vsg::Object &gt;)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#aaf300a439df1f27df59e752351fe1759">disposer</a></td></tr>
 <tr class="separator:aaf300a439df1f27df59e752351fe1759"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24660a604ba280175a2712c5801d63af"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::uint32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a24660a604ba280175a2712c5801d63af">activeViewIDs</a></td></tr>
+<tr class="separator:a24660a604ba280175a2712c5801d63af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Properties and operations needed for interfacing with VSG. </p>
@@ -303,6 +305,21 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
+<a id="a24660a604ba280175a2712c5801d63af"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24660a604ba280175a2712c5801d63af">&#9670;&nbsp;</a></span>activeViewIDs</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;std::uint32_t&gt; ROCKY_NAMESPACE::Runtime::activeViewIDs</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>List of viewIDs that were detected during the latest record traversal. This needs to be cleared and rebuilt every frame. </p>
+
+</div>
+</div>
 <a id="aeedc54d1c8fb0519cc10d0cafaea0b9f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aeedc54d1c8fb0519cc10d0cafaea0b9f">&#9670;&nbsp;</a></span>asyncCompile</h2>
 

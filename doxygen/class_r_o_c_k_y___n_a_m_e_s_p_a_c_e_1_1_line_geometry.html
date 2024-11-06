@@ -69,7 +69,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pro-attribs">Protected Attributes</a> &#124;
+<a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_geometry-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">ROCKY_NAMESPACE::LineGeometry Class Reference</div>  </div>
@@ -86,77 +86,46 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_geometry.html#a6a7ea65e30e6d58d92d2bad36add793e">LineGeometry</a> ()</td></tr>
 <tr class="memdesc:a6a7ea65e30e6d58d92d2bad36add793e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new line string geometry node. <br /></td></tr>
 <tr class="separator:a6a7ea65e30e6d58d92d2bad36add793e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a271bb00f228e228f6b8dddbb799e3d6a"><td class="memItemLeft" align="right" valign="top"><a id="a271bb00f228e228f6b8dddbb799e3d6a"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_geometry.html#a271bb00f228e228f6b8dddbb799e3d6a">push_back</a> (const vsg::vec3 &amp;vert)</td></tr>
-<tr class="memdesc:a271bb00f228e228f6b8dddbb799e3d6a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a vertex to the end of the line string. <br /></td></tr>
-<tr class="separator:a271bb00f228e228f6b8dddbb799e3d6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab7081c49942ace1843fbe8d8f6d684fe"><td class="memItemLeft" align="right" valign="top"><a id="ab7081c49942ace1843fbe8d8f6d684fe"></a>
-unsigned&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_geometry.html#ab7081c49942ace1843fbe8d8f6d684fe">numVerts</a> () const</td></tr>
-<tr class="memdesc:ab7081c49942ace1843fbe8d8f6d684fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of verts comprising this line string. <br /></td></tr>
-<tr class="separator:ab7081c49942ace1843fbe8d8f6d684fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f897c565c11169e3318954d153e47f0"><td class="memTemplParams" colspan="2"><a id="a5f897c565c11169e3318954d153e47f0"></a>
+template&lt;typename VEC3_T &gt; </td></tr>
+<tr class="memitem:a5f897c565c11169e3318954d153e47f0"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>set</b> (const std::vector&lt; VEC3_T &gt; &amp;verts, std::size_t staticStorage=0)</td></tr>
+<tr class="separator:a5f897c565c11169e3318954d153e47f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a68b7c670058d42d59315f2b3a423f1ab"><td class="memItemLeft" align="right" valign="top"><a id="a68b7c670058d42d59315f2b3a423f1ab"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_geometry.html#a68b7c670058d42d59315f2b3a423f1ab">setFirst</a> (unsigned value)</td></tr>
 <tr class="memdesc:a68b7c670058d42d59315f2b3a423f1ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">The first vertex in the line string to render. <br /></td></tr>
 <tr class="separator:a68b7c670058d42d59315f2b3a423f1ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a82121ef8b3b95dfb844d84b13395abe4"><td class="memItemLeft" align="right" valign="top"><a id="a82121ef8b3b95dfb844d84b13395abe4"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_geometry.html#a82121ef8b3b95dfb844d84b13395abe4">setCount</a> (unsigned value)</td></tr>
-<tr class="memdesc:a82121ef8b3b95dfb844d84b13395abe4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of vertices in the line string to render. <br /></td></tr>
+<tr class="memdesc:a82121ef8b3b95dfb844d84b13395abe4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Last vertex in the line string to render. <br /></td></tr>
 <tr class="separator:a82121ef8b3b95dfb844d84b13395abe4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2928363ad90297a92274aeace978cdc0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_geometry.html#a2928363ad90297a92274aeace978cdc0">compile</a> (vsg::Context &amp;) override</td></tr>
-<tr class="separator:a2928363ad90297a92274aeace978cdc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af69eeaa750455a001fb599a9b2f87bff"><td class="memItemLeft" align="right" valign="top"><a id="af69eeaa750455a001fb599a9b2f87bff"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>calcBound</b> (vsg::dsphere &amp;out, const vsg::dmat4 &amp;matrix) const</td></tr>
+<tr class="separator:af69eeaa750455a001fb599a9b2f87bff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
-Protected Attributes</h2></td></tr>
-<tr class="memitem:a4cfca8a52ac29e1e6f4b4f060087be2c"><td class="memItemLeft" align="right" valign="top"><a id="a4cfca8a52ac29e1e6f4b4f060087be2c"></a>
-vsg::vec4&#160;</td><td class="memItemRight" valign="bottom"><b>_defaultColor</b> = { 1,1,1,1 }</td></tr>
-<tr class="separator:a4cfca8a52ac29e1e6f4b4f060087be2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a997f4e1daa1037ab223df42842e6ddce"><td class="memItemLeft" align="right" valign="top"><a id="a997f4e1daa1037ab223df42842e6ddce"></a>
-std::vector&lt; vsg::vec3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_current</b></td></tr>
-<tr class="separator:a997f4e1daa1037ab223df42842e6ddce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5511740328d38bf07f06dd30856e52a9"><td class="memItemLeft" align="right" valign="top"><a id="a5511740328d38bf07f06dd30856e52a9"></a>
-std::vector&lt; vsg::vec3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_previous</b></td></tr>
-<tr class="separator:a5511740328d38bf07f06dd30856e52a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af4c3292cd32ece5b88943b079055155f"><td class="memItemLeft" align="right" valign="top"><a id="af4c3292cd32ece5b88943b079055155f"></a>
-std::vector&lt; vsg::vec3 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_next</b></td></tr>
-<tr class="separator:af4c3292cd32ece5b88943b079055155f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acd2737550dc060425367ea9d062eca02"><td class="memItemLeft" align="right" valign="top"><a id="acd2737550dc060425367ea9d062eca02"></a>
-std::vector&lt; vsg::vec4 &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_colors</b></td></tr>
-<tr class="separator:acd2737550dc060425367ea9d062eca02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
 <tr class="memitem:a4e5791653ef84750c432f4eec281a9e2"><td class="memItemLeft" align="right" valign="top"><a id="a4e5791653ef84750c432f4eec281a9e2"></a>
 vsg::ref_ptr&lt; vsg::DrawIndexed &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_drawCommand</b></td></tr>
 <tr class="separator:a4e5791653ef84750c432f4eec281a9e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4adea8bed35abe89c96e34778c3f6f6a"><td class="memItemLeft" align="right" valign="top"><a id="a4adea8bed35abe89c96e34778c3f6f6a"></a>
+vsg::ref_ptr&lt; vsg::vec3Array &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_current</b></td></tr>
+<tr class="separator:a4adea8bed35abe89c96e34778c3f6f6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af0d9241e2024602434f7953b32e218a6"><td class="memItemLeft" align="right" valign="top"><a id="af0d9241e2024602434f7953b32e218a6"></a>
+vsg::ref_ptr&lt; vsg::vec3Array &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_previous</b></td></tr>
+<tr class="separator:af0d9241e2024602434f7953b32e218a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29fd0bd1fcb43f5856e589f4242b9928"><td class="memItemLeft" align="right" valign="top"><a id="a29fd0bd1fcb43f5856e589f4242b9928"></a>
+vsg::ref_ptr&lt; vsg::vec3Array &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_next</b></td></tr>
+<tr class="separator:a29fd0bd1fcb43f5856e589f4242b9928"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af758e6cff9ef969bdfce78bd119cede7"><td class="memItemLeft" align="right" valign="top"><a id="af758e6cff9ef969bdfce78bd119cede7"></a>
+vsg::ref_ptr&lt; vsg::vec4Array &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_colors</b></td></tr>
+<tr class="separator:af758e6cff9ef969bdfce78bd119cede7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5e672289ba721260117778863217aa15"><td class="memItemLeft" align="right" valign="top"><a id="a5e672289ba721260117778863217aa15"></a>
+vsg::ref_ptr&lt; vsg::uintArray &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_indices</b></td></tr>
+<tr class="separator:a5e672289ba721260117778863217aa15"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Renders a line or linestring geometry. </p>
-</div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a2928363ad90297a92274aeace978cdc0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2928363ad90297a92274aeace978cdc0">&#9670;&nbsp;</a></span>compile()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void LineGeometry::compile </td>
-          <td>(</td>
-          <td class="paramtype">vsg::Context &amp;&#160;</td>
-          <td class="paramname"><em>context</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">override</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>Recompile the geometry after making changes. TODO: just make it dynamic instead </p>
-
-</div>
-</div>
-<hr/>The documentation for this class was generated from the following files:<ul>
+</div><hr/>The documentation for this class was generated from the following files:<ul>
 <li>src/rocky/vsg/engine/<a class="el" href="_line_system_8h_source.html">LineSystem.h</a></li>
 <li>src/rocky/vsg/engine/LineSystem.cpp</li>
 </ul>
