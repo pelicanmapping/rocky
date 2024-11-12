@@ -63,22 +63,20 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></li><li class="navelem"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s.html">ECS</a></li><li class="navelem"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html">System</a></li>  </ul>
+<li class="navelem"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></li><li class="navelem"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs.html">ecs</a></li><li class="navelem"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_system_node_base.html">SystemNodeBase</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="headertitle">
-<div class="title">ROCKY_NAMESPACE::ECS::System Member List</div>  </div>
+<div class="title">ROCKY_NAMESPACE::ecs::SystemNodeBase Member List</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>This is the complete list of members for <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html">ROCKY_NAMESPACE::ECS::System</a>, including all inherited members.</p>
+<p>This is the complete list of members for <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_system_node_base.html">ROCKY_NAMESPACE::ecs::SystemNodeBase</a>, including all inherited members.</p>
 <table class="directory">
-  <tr class="even"><td class="entry"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html#a984b05d1a720d87a47c74eaf6f722fb1">initializeSystem</a>(Runtime &amp;runtime)</td><td class="entry"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html">ROCKY_NAMESPACE::ECS::System</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">virtual</span></td></tr>
-  <tr><td class="entry"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html#a2263bf883fd511aafc1aa92111ed64ce">registry</a></td><td class="entry"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html">ROCKY_NAMESPACE::ECS::System</a></td><td class="entry"></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html#ae6e19b5df4438b163e5c8af35bc225a3">status</a></td><td class="entry"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html">ROCKY_NAMESPACE::ECS::System</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>System</b>(entt::registry &amp;in_registry) (defined in <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html">ROCKY_NAMESPACE::ECS::System</a>)</td><td class="entry"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html">ROCKY_NAMESPACE::ECS::System</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">protected</span></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html#a20ba2ff06a82fca7a7600f8d8581876d">update</a>(Runtime &amp;runtime)</td><td class="entry"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_e_c_s_1_1_system.html">ROCKY_NAMESPACE::ECS::System</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>create_or_update</b>(entt::entity entity, CreateOrUpdateData &amp;data, Runtime &amp;runtime) const =0 (defined in <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_system_node_base.html">ROCKY_NAMESPACE::ecs::SystemNodeBase</a>)</td><td class="entry"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_system_node_base.html">ROCKY_NAMESPACE::ecs::SystemNodeBase</a></td><td class="entry"><span class="mlabel">pure virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>finish_update</b>(entt::entity entity, CreateOrUpdateData &amp;data) const =0 (defined in <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_system_node_base.html">ROCKY_NAMESPACE::ecs::SystemNodeBase</a>)</td><td class="entry"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_system_node_base.html">ROCKY_NAMESPACE::ecs::SystemNodeBase</a></td><td class="entry"><span class="mlabel">pure virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>manager</b> (defined in <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_system_node_base.html">ROCKY_NAMESPACE::ecs::SystemNodeBase</a>)</td><td class="entry"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_system_node_base.html">ROCKY_NAMESPACE::ecs::SystemNodeBase</a></td><td class="entry"></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
