@@ -81,7 +81,7 @@ namespace ROCKY_NAMESPACE
     /**
     * VSG node that renders Mesh components.
     */
-    class ROCKY_EXPORT MeshSystemNode : public vsg::Inherit<ECS::SystemNode<Mesh>, MeshSystemNode>
+    class ROCKY_EXPORT MeshSystemNode : public vsg::Inherit<ecs::SystemNode<Mesh>, MeshSystemNode>
     {
     public:
         //! Construct the mesh renderer
@@ -119,7 +119,7 @@ namespace ROCKY_NAMESPACE
     * VSG node that renders Node components (just plain vsg nodes)
     */
     class ROCKY_EXPORT NodeSystemNode :
-        public vsg::Inherit<ECS::SystemNode<NodeGraph>, NodeSystemNode>
+        public vsg::Inherit<ecs::SystemNode<NodeGraph>, NodeSystemNode>
     {
     public:
         NodeSystemNode(entt::registry& registry);

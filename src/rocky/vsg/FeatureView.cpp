@@ -139,8 +139,8 @@ namespace
             feature_to_world.transformRange(tessellated.begin(), tessellated.end());
 
             // make the line attachment:
-            line.points().resize(tessellated.size());
-            std::transform(tessellated.begin(), tessellated.end(), line.points().begin(), 
+            line.points.resize(tessellated.size());
+            std::transform(tessellated.begin(), tessellated.end(), line.points.begin(), 
                 [](const glm::dvec3& p) { return vsg::dvec3(p.x, p.y, p.z); });
 
             final_max_span = std::max(final_max_span, get_max_segment_length(tessellated));
@@ -320,11 +320,23 @@ FeatureView::FeatureView(Feature&& f) noexcept
 void
 FeatureView::clear(entt::registry& registry)
 {
-    if (entity != entt::null)
+    for(auto entity : line_entities)
     {
-        registry.remove<Line>(entity);
-        registry.remove<Mesh>(entity);
+        if (entity != entt::null)
+        {
+            registry.remove<Line>(entity);
+        }
+    }   
+    line_entities.clear();
+
+    for(auto entity : mesh_entities)
+    {
+        if (entity != entt::null)
+        {
+            registry.remove<Mesh>(entity);
+        }
     }
+    mesh_entities.clear();
 }
 
 void
@@ -333,24 +345,36 @@ FeatureView::generate(entt::registry& registry, const SRS& geom_srs, Runtime& ru
     if (entity == entt::null)
     {
         entity = registry.create();
+        registry.emplace<Visibility>(entity);
     }
+
+    auto& host_visibility = registry.get<Visibility>(entity);
 
     for (auto& feature : features)
     {
         if (feature.geometry.type == Geometry::Type::LineString ||
             feature.geometry.type == Geometry::Type::MultiLineString)
         {
+            auto entity = line_entities.emplace_back(registry.create());
             auto& geom = registry.get_or_emplace<Line>(entity);
+            registry.get<Visibility>(entity).parent = &host_visibility;
+
             compile_feature_to_lines(feature, styles, geom_srs, geom);
         }
         else if (feature.geometry.type == Geometry::Type::Polygon)
         {
+            auto entity = mesh_entities.emplace_back(registry.create());
             auto& geom = registry.get_or_emplace<Mesh>(entity);
+            registry.get<Visibility>(entity).parent = &host_visibility;
+
             compile_polygon_feature_with_weemesh(feature, feature.geometry, styles, geom_srs, geom);
         }
         else if (feature.geometry.type == Geometry::Type::MultiPolygon)
         {
+            auto entity = mesh_entities.emplace_back(registry.create());
             auto& geom = registry.get_or_emplace<Mesh>(entity);
+            registry.get<Visibility>(entity).parent = &host_visibility;
+
             for (auto& part : feature.geometry.parts)
             {
                 compile_polygon_feature_with_weemesh(feature, part, styles, geom_srs, geom);
@@ -371,24 +395,30 @@ FeatureView::generate(entt::registry& registry, const SRS& geom_srs, Runtime& ru
 void
 FeatureView::dirtyStyles(entt::registry& entities)
 {
-    if (entity == entt::null)
+    if (line_entities.empty() && mesh_entities.empty())
         return;
 
     if (styles.line.has_value())
     {
-        if (auto* line = entities.try_get<Line>(entity))
+        for (auto entity : line_entities)
         {
-            line->style = styles.line.value();
-            line->dirty();
+            if (auto* line = entities.try_get<Line>(entity))
+            {
+                line->style = styles.line.value();
+                line->dirty();
+            }
         }
     }
 
     if (styles.mesh.has_value())
     {
-        if  (auto* mesh = entities.try_get<Mesh>(entity))
+        for (auto entity : mesh_entities)
         {
-            mesh->style = styles.mesh.value();
-            mesh->dirty();
+            if (auto* mesh = entities.try_get<Mesh>(entity))
+            {
+                mesh->style = styles.mesh.value();
+                mesh->dirty();
+            }
         }
     }
 }

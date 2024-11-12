@@ -23,7 +23,7 @@
 namespace ROCKY_NAMESPACE
 {
     //! Entity Component System support
-    namespace ECS
+    namespace ecs
     {
         using time_point = std::chrono::steady_clock::time_point;
 
@@ -75,12 +75,12 @@ namespace ROCKY_NAMESPACE
     /**
     * Component representing an entity's visibility.
     */
-    struct Visibility : public ECS::PerView<bool, 4, true>
+    struct Visibility : public ecs::PerView<bool, 4, true>
     {
         Visibility* parent = nullptr;
     };
 
-    namespace ECS
+    namespace ecs
     {
         /**
         * Base class for an ECS system. And ECS system is typically responsible
@@ -312,22 +312,6 @@ namespace ROCKY_NAMESPACE
         };
 
 
-        class TransformSystem : public ECS::System
-        {
-        public:
-            TransformSystem(entt::registry& r) : ECS::System(r) { }
-
-            void update(Runtime& runtime) override
-            {
-                //nop
-            }
-
-            static std::shared_ptr<TransformSystem> create(entt::registry& r)
-            {
-                return std::make_shared<TransformSystem>(r);
-            }
-        };
-
         //! Toggle the visibility of an entity in the given view
         inline void setVisible(entt::registry& r, entt::entity e, bool value, int view_index = -1)
         {
@@ -359,7 +343,7 @@ namespace ROCKY_NAMESPACE
     //........................................................................
 
 
-    namespace ECS
+    namespace ecs
     {
         namespace detail
         {
@@ -369,7 +353,7 @@ namespace ROCKY_NAMESPACE
             {
                 T& new_component = r.get<T>(e);
 
-                // Add a visibility tag (if first time dealing with this entity)
+                // Add a visibility tag (if first time dealing with this component)
                 // I am not sure yet how to remove this in the end.
                 if (!r.try_get<Visibility>(e))
                 {
@@ -378,7 +362,7 @@ namespace ROCKY_NAMESPACE
 
                 // Create a Renderable component and attach it to the new component.
                 new_component.attach_point = r.create();
-                r.emplace<ECS::Renderable>(new_component.attach_point);
+                r.emplace<ecs::Renderable>(new_component.attach_point);
 
                 new_component.revision++;
             }
@@ -392,7 +376,7 @@ namespace ROCKY_NAMESPACE
                 if (updated_component.attach_point == entt::null)
                 {
                     updated_component.attach_point = r.create();
-                    r.emplace<ECS::Renderable>(updated_component.attach_point);
+                    r.emplace<ecs::Renderable>(updated_component.attach_point);
                 }
 
                 updated_component.revision++;
@@ -404,14 +388,12 @@ namespace ROCKY_NAMESPACE
             {
                 T& component_being_destroyed = r.get<T>(e);
                 r.destroy(component_being_destroyed.attach_point);
-
-                //r.remove<ECS::Renderable>(component_being_destroyed.entity);
             }
         }
     }
 
     template<class T>
-    ECS::SystemNode<T>::SystemNode(entt::registry& in_registry) :
+    ecs::SystemNode<T>::SystemNode(entt::registry& in_registry) :
         System(in_registry)
     {
         registry.on_construct<T>().template connect<&detail::SystemNode_on_construct<T>>();
@@ -420,7 +402,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    ECS::SystemNode<T>::~SystemNode()
+    ecs::SystemNode<T>::~SystemNode()
     {
         registry.on_construct<T>().template disconnect<&detail::SystemNode_on_construct<T>>();
         registry.on_update<T>().template disconnect<&detail::SystemNode_on_update<T>>();
@@ -428,7 +410,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    inline void ECS::SystemNode<T>::traverse(vsg::Visitor& v)
+    inline void ecs::SystemNode<T>::traverse(vsg::Visitor& v)
     {
         for (auto& pipeline : pipelines)
         {
@@ -447,7 +429,7 @@ namespace ROCKY_NAMESPACE
 
     //! Pass-thru for VSG const visitors
     template<class T>
-    inline void ECS::SystemNode<T>::traverse(vsg::ConstVisitor& v) const
+    inline void ecs::SystemNode<T>::traverse(vsg::ConstVisitor& v) const
     {
         for (auto& pipeline : pipelines)
         {
@@ -465,7 +447,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    inline void ECS::SystemNode<T>::compile(vsg::Context& context)
+    inline void ecs::SystemNode<T>::compile(vsg::Context& context)
     {
         // Compile the pipelines
         for (auto& pipeline : pipelines)
@@ -485,7 +467,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    inline void ECS::SystemNode<T>::traverse(vsg::RecordTraversal& rt) const
+    inline void ecs::SystemNode<T>::traverse(vsg::RecordTraversal& rt) const
     {
         const vsg::dmat4 identity_matrix = vsg::dmat4(1.0);
         auto viewID = rt.getState()->_commandBuffer->viewID;
@@ -561,7 +543,7 @@ namespace ROCKY_NAMESPACE
 
 
     template<class T>
-    inline void ECS::SystemNode<T>::update(Runtime& runtime)
+    inline void ecs::SystemNode<T>::update(Runtime& runtime)
     {
         std::vector<entt::entity> entities_to_create;
 
@@ -608,7 +590,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    void ECS::SystemNode<T>::create_or_update(entt::entity entity, SystemNodeBase::CreateOrUpdateData& data, Runtime& runtime) const
+    void ecs::SystemNode<T>::create_or_update(entt::entity entity, SystemNodeBase::CreateOrUpdateData& data, Runtime& runtime) const
     {
         T& component = registry.get<T>(entity);
         auto& renderable = registry.get<Renderable>(component.attach_point);
@@ -617,7 +599,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    void ECS::SystemNode<T>::finish_update(entt::entity entity, SystemNodeBase::CreateOrUpdateData& data) const
+    void ecs::SystemNode<T>::finish_update(entt::entity entity, SystemNodeBase::CreateOrUpdateData& data) const
     {
         T& component = registry.get<T>(entity);
         auto& renderable = registry.get<Renderable>(component.attach_point);
@@ -628,7 +610,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    bool ECS::SystemNode<T>::setReferencePoint(const GeoPoint& point, SRSOperation& out_xform, vsg::dvec3& out_offset) const
+    bool ecs::SystemNode<T>::setReferencePoint(const GeoPoint& point, SRSOperation& out_xform, vsg::dvec3& out_offset) const
     {
         if (point.srs.valid())
         {
@@ -655,7 +637,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    vsg::ref_ptr<vsg::PipelineLayout> ECS::SystemNode<T>::getPipelineLayout(const T& t) const
+    vsg::ref_ptr<vsg::PipelineLayout> ecs::SystemNode<T>::getPipelineLayout(const T& t) const
     {
         return pipelines.empty() ? nullptr : pipelines[featureMask(t)].config->layout;
     }

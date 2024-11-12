@@ -43,7 +43,7 @@ namespace ROCKY_NAMESPACE
     /**
     * Triangle mesh component
     */
-    struct Mesh : public ECS::RevisionedComponent
+    struct Mesh : public ecs::RevisionedComponent
     {
         //! Optional texture
         vsg::ref_ptr<vsg::ImageInfo> texture;
@@ -66,7 +66,7 @@ namespace ROCKY_NAMESPACE
 
 
 
-    struct NodeGraph : public ECS::RevisionedComponent
+    struct NodeGraph : public ecs::RevisionedComponent
     {
         vsg::ref_ptr<vsg::Node> node;
     };

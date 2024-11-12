@@ -78,9 +78,9 @@ auto Demo_PolygonFeatures = [](Application& app)
 
     else if (ImGuiLTable::Begin("Polygon features"))
     {
-        bool visible = ECS::visible(app.registry, feature_view.entity);
+        bool visible = ecs::visible(app.registry, feature_view.entity);
         if (ImGuiLTable::Checkbox("Visible", &visible))
-            ECS::setVisible(app.registry, feature_view.entity, visible);
+            ecs::setVisible(app.registry, feature_view.entity, visible);
 
         ImGuiLTable::End();
     }

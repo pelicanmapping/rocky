@@ -31,7 +31,7 @@ auto Demo_Line_Absolute = [](Application& app)
         const double alt = 10;
         for (double lon = -180; lon <= 0.0; lon += 0.25)
         {
-            line.points().emplace_back(lon, -20.0, alt);
+            line.points.emplace_back(lon, -20.0, alt);
         }
 
         // Create a style that we can change dynamically:
@@ -47,7 +47,7 @@ auto Demo_Line_Absolute = [](Application& app)
     {
         static bool visible = true;
         if (ImGuiLTable::Checkbox("Visible", &visible))
-            ECS::setVisible(app.registry, entity, visible);
+            ecs::setVisible(app.registry, entity, visible);
 
         auto& component = app.entities.get<Line>(entity);
 
@@ -86,7 +86,7 @@ auto Demo_Line_Relative = [](Application& app)
 
         // Create the line geometry, which will be relative to a transform.
         const double size = 500000;
-        line.points() = {
+        line.points = {
             vsg::dvec3{-size, -size, 0.0},
             vsg::dvec3{ size, -size, 0.0},
             vsg::dvec3{  0.0,  size, 0.0},
@@ -106,7 +106,7 @@ auto Demo_Line_Relative = [](Application& app)
     {
         static bool visible = true;
         if (ImGuiLTable::Checkbox("Visible", &visible))
-            ECS::setVisible(app.registry, entity, visible);
+            ecs::setVisible(app.registry, entity, visible);
 
         auto& line = app.entities.get<Line>(entity);
 

@@ -159,7 +159,80 @@ LineSystemNode::initializeSystem(Runtime& runtime)
 void
 LineSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const
 {
-    if (data.existing_node)
+    if (!data.existing_node)
+    {
+        auto& line = registry.get<Line>(entity);
+
+        // renderable structure is one of the following:
+        // cullnode -> stategroup -> linegeometry
+        // cullnode -> stategroup -> group -> linegeometry* (multiple parts)
+        // cullnode -> linegeometry
+        // cullnode -> group -> linegeometry* (multiple parts)
+
+        vsg::ref_ptr<vsg::StateGroup> stategroup;
+        if (line.style.has_value())
+        {
+            auto bindCommand = BindLineDescriptors::create();
+            bindCommand->updateStyle(line.style.value());
+            bindCommand->init(getPipelineLayout(line));
+
+            stategroup = vsg::StateGroup::create();
+            stategroup->stateCommands.push_back(bindCommand);
+        }
+
+        vsg::ref_ptr<LineGeometry> geometry;
+        vsg::ref_ptr<vsg::Node> geom_root;
+        vsg::dmat4 localizer_matrix;
+
+        if (line.referencePoint.valid())
+        {
+            SRSOperation xform;
+            vsg::dvec3 offset, temp;
+            std::vector<vsg::vec3> verts32;
+            setReferencePoint(line.referencePoint, xform, offset);
+
+            verts32.reserve(line.points.size());
+            for (auto& point : line.points)
+            {
+                xform(point, temp);
+                temp -= offset;
+                verts32.emplace_back(temp);
+            }
+
+            geometry = LineGeometry::create();
+            geometry->set(verts32, line.staticSize);
+
+            localizer_matrix = vsg::translate(offset);
+            auto localizer = vsg::MatrixTransform::create(localizer_matrix);
+            localizer->addChild(geometry);
+            geom_root = localizer;
+        }
+        else
+        {
+            // no reference point -- push raw geometry
+            geometry = LineGeometry::create();
+            geometry->set(line.points, line.staticSize);
+            geom_root = geometry;
+        }
+
+        auto cull = vsg::CullNode::create();
+        if (stategroup)
+        {
+            stategroup->addChild(geom_root);
+            cull->child = stategroup;
+        }
+        else
+        {
+            cull->child = geom_root;
+        }
+
+        // hand-calculate the bounding sphere
+        geometry->calcBound(cull->bound, localizer_matrix);
+
+        data.new_node = cull;
+    }
+
+    else // existing node -- update:
     {
         auto& line = registry.get<Line>(entity);
 
@@ -188,8 +261,8 @@ LineSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data
                     std::vector<vsg::vec3> verts32;
                     setReferencePoint(line.referencePoint, xform, offset);
 
-                    verts32.reserve(line.points().size());
-                    for (auto& point : line.points())
+                    verts32.reserve(line.points.size());
+                    for (auto& point : line.points)
                     {
                         xform(point, temp);
                         temp -= offset;
@@ -204,7 +277,7 @@ LineSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data
                 else
                 {
                     // no reference point -- push raw geometry
-                    geometry->set(line.points(), line.staticSize);
+                    geometry->set(line.points, line.staticSize);
                 }
 
                 // hand-calculate the bounding sphere
@@ -213,84 +286,6 @@ LineSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data
             }
         }
     }
-    else
-    {
-        data.new_node = createNode(entity, runtime);
-    }
-}
-
-vsg::ref_ptr<vsg::Node>
-LineSystemNode::createNode(entt::entity entity, Runtime& runtime) const
-{
-    auto& line = registry.get<Line>(entity);
-
-    // renderable structure is one of the following:
-    // cullnode -> stategroup -> linegeometry
-    // cullnode -> stategroup -> group -> linegeometry* (multiple parts)
-    // cullnode -> linegeometry
-    // cullnode -> group -> linegeometry* (multiple parts)
-
-    vsg::ref_ptr<vsg::StateGroup> stategroup;
-    if (line.style.has_value())
-    {
-        auto bindCommand = BindLineDescriptors::create();
-        bindCommand->updateStyle(line.style.value());
-        bindCommand->init(getPipelineLayout(line));
-
-        stategroup = vsg::StateGroup::create();
-        stategroup->stateCommands.push_back(bindCommand);
-    }
-
-    vsg::ref_ptr<LineGeometry> geometry;
-    vsg::ref_ptr<vsg::Node> geom_root;
-    vsg::dmat4 localizer_matrix;
-
-    if (line.referencePoint.valid())
-    {
-        SRSOperation xform;
-        vsg::dvec3 offset, temp;
-        std::vector<vsg::vec3> verts32;
-        setReferencePoint(line.referencePoint, xform, offset);
-
-        verts32.reserve(line.points().size());
-        for (auto& point : line.points())
-        {
-            xform(point, temp);
-            temp -= offset;
-            verts32.emplace_back(temp);
-        }
-            
-        geometry = LineGeometry::create();
-        geometry->set(verts32, line.staticSize);
-
-        localizer_matrix = vsg::translate(offset);
-        auto localizer = vsg::MatrixTransform::create(localizer_matrix);
-        localizer->addChild(geometry);
-        geom_root = localizer;
-    }
-    else
-    {
-        // no reference point -- push raw geometry
-        geometry = LineGeometry::create();
-        geometry->set(line.points(), line.staticSize);
-        geom_root = geometry;
-    }
-
-    auto cull = vsg::CullNode::create();
-    if (stategroup)
-    {
-        stategroup->addChild(geom_root);
-        cull->child = stategroup;
-    }
-    else
-    {
-        cull->child = geom_root;
-    }
-
-    // hand-calculate the bounding sphere
-    geometry->calcBound(cull->bound, localizer_matrix);
-
-    return cull;
 }
 
 int

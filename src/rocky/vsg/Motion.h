@@ -26,17 +26,17 @@ namespace ROCKY_NAMESPACE
     /**
     * ECS System to process Motion components
     */
-    class MotionSystem : public ECS::System
+    class MotionSystem : public ecs::System
     {
     public:
-        MotionSystem(entt::registry& r) : ECS::System(r) { }
+        MotionSystem(entt::registry& r) : ecs::System(r) { }
 
         //! Called periodically to update the transforms
         void update(Runtime& runtime) override
         {
             auto time = runtime.viewer->getFrameStamp()->time;
 
-            if (last_time != ECS::time_point::min())
+            if (last_time != ecs::time_point::min())
             {
                 const glm::dvec3 zero{ 0.0, 0.0, 0.0 };
 
@@ -101,6 +101,6 @@ namespace ROCKY_NAMESPACE
 
     private:
         //! Constructor
-        ECS::time_point last_time = ECS::time_point::min();
+        ecs::time_point last_time = ecs::time_point::min();
     };
 }

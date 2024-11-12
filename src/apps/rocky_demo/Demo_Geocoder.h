@@ -68,8 +68,8 @@ auto Demo_Geocoder = [](Application& app)
         feature_view.styles.line->color = vsg::vec4{ 1, 1, 0, 1 };
         feature_view.styles.line->depth_offset = 9000.0f; //meters
 
-        ECS::setVisible(app.registry, entity, false);
-        //ECS::setVisible(app.registry, feature_view.entity, false);
+        ecs::setVisible(app.registry, entity, false);
+        //ecs::setVisible(app.registry, feature_view.entity, false);
 
         // Transform to place the entity:
         auto& xform = app.entities.emplace<Transform>(entity);
@@ -81,7 +81,7 @@ auto Demo_Geocoder = [](Application& app)
         {
             // hide the placemark:
             auto& icon = app.entities.get<Icon>(entity);
-            ECS::setVisible(app.registry, entity, false);
+            ecs::setVisible(app.registry, entity, false);
 
             std::string input(input_buf);
             geocoding_task = jobs::dispatch([&app, input](jobs::cancelable& c)
@@ -137,8 +137,8 @@ auto Demo_Geocoder = [](Application& app)
                             // show the placemark:
                             if (feature.geometry.type == Geometry::Type::Points)
                             {
-                                ECS::setVisible(app.registry, entity, true);
-                                ECS::setVisible(app.registry, feature_view.entity, false);
+                                ecs::setVisible(app.registry, entity, true);
+                                ecs::setVisible(app.registry, feature_view.entity, false);
                                 label.style = label_style_point;
                             }
                             else
@@ -151,8 +151,8 @@ auto Demo_Geocoder = [](Application& app)
                                 feature_view.clear(app.entities);
                                 feature_view.features = { copy_of_feature };
                                 feature_view.generate(app.entities, app.mapNode->worldSRS(), app.runtime());
-                                ECS::setVisible(app.registry, entity, true);
-                                ECS::setVisible(app.registry, feature_view.entity, true);
+                                ecs::setVisible(app.registry, entity, true);
+                                ecs::setVisible(app.registry, feature_view.entity, true);
                                 label.style = label_style_area;
                             }
 
@@ -176,9 +176,8 @@ auto Demo_Geocoder = [](Application& app)
 
                 app.onNextUpdate([&]()
                     {
-                        //auto&& [icon, label] = app.entities.get<Icon, Label>(entity);
-                        ECS::setVisible(app.registry, entity, false);
-                        ECS::setVisible(app.registry, feature_view.entity, false);
+                        ecs::setVisible(app.registry, entity, false);
+                        ecs::setVisible(app.registry, feature_view.entity, false);
                     });
             }
         }

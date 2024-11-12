@@ -164,9 +164,9 @@ auto Demo_RTT = [](Application& app)
 
     if (ImGuiLTable::Begin("model"))
     {
-        bool visible = ECS::visible(app.registry, entity);
+        bool visible = ecs::visible(app.registry, entity);
         if (ImGuiLTable::Checkbox("Visible", &visible))
-            ECS::setVisible(app.registry, entity, visible);
+            ecs::setVisible(app.registry, entity, visible);
 
         ImGuiLTable::End();
     }

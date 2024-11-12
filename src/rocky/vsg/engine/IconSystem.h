@@ -46,7 +46,7 @@ namespace ROCKY_NAMESPACE
     /**
      * Creates commands for rendering icon primitives.
      */
-    class ROCKY_EXPORT IconSystemNode : public vsg::Inherit<ECS::SystemNode<Icon>, IconSystemNode>
+    class ROCKY_EXPORT IconSystemNode : public vsg::Inherit<ecs::SystemNode<Icon>, IconSystemNode>
     {
     public:
         //! Construct the mesh renderer

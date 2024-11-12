@@ -14,7 +14,7 @@ namespace ROCKY_NAMESPACE
     /**
      * ECS system that handles LineString components
      */
-    class ROCKY_EXPORT LineSystemNode : public vsg::Inherit<ECS::SystemNode<Line>, LineSystemNode>
+    class ROCKY_EXPORT LineSystemNode : public vsg::Inherit<ecs::SystemNode<Line>, LineSystemNode>
     {
     public:
         //! Construct the system
@@ -33,14 +33,7 @@ namespace ROCKY_NAMESPACE
         //! One-time initialization of the system    
         void initializeSystem(Runtime&) override;
 
-        vsg::ref_ptr<vsg::Node> createNode(entt::entity, Runtime&) const override;
-
         void createOrUpdateNode(entt::entity, CreateOrUpdateData& data, Runtime&) const override;
-
-    private:
-        //bool update(entt::entity, Runtime& runtime) override;
-
-        void updateGeometry(Line& line, class LineGeometry*) const;
     };
 
     /**

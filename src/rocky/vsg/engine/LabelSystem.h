@@ -13,7 +13,7 @@ namespace ROCKY_NAMESPACE
     /**
      * Creates commands for rendering icon primitives.
      */
-    class ROCKY_EXPORT LabelSystemNode : public vsg::Inherit<ECS::SystemNode<Label>, LabelSystemNode>
+    class ROCKY_EXPORT LabelSystemNode : public vsg::Inherit<ecs::SystemNode<Label>, LabelSystemNode>
     {
     public:
         //! Construct the mesh renderer

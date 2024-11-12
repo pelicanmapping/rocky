@@ -58,7 +58,7 @@ auto Demo_Mesh_Absolute = [](Application& app)
     {
         static bool visible = true;
         if (ImGuiLTable::Checkbox("Visible", &visible))
-            ECS::setVisible(app.registry, entity, visible);
+            ecs::setVisible(app.registry, entity, visible);
 
         auto& mesh = app.entities.get<Mesh>(entity);
 
@@ -131,9 +131,9 @@ auto Demo_Mesh_Relative = [](Application& app)
 
     if (ImGuiLTable::Begin("Mesh"))
     {
-        bool visible = ECS::visible(app.registry, entity);
+        bool visible = ecs::visible(app.registry, entity);
         if (ImGuiLTable::Checkbox("Visible", &visible))
-            ECS::setVisible(app.registry, entity, visible);
+            ecs::setVisible(app.registry, entity, visible);
 
         auto& mesh = app.entities.get<Mesh>(entity);
 
@@ -207,9 +207,9 @@ auto Demo_Mesh_Multi = [](Application& app)
 
     if (ImGuiLTable::Begin("Mesh"))
     {
-        bool visible = ECS::visible(app.registry, entity);
+        bool visible = ecs::visible(app.registry, entity);
         if (ImGuiLTable::Checkbox("Visible", &visible))
-            ECS::setVisible(app.registry, entity, visible);
+            ecs::setVisible(app.registry, entity, visible);
 
         auto& mesh = app.entities.get<Mesh>(entity);
 

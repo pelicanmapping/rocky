@@ -25,11 +25,13 @@ namespace
         bool dummy = false;
     };
 
-    class DeclutterSystem : public ECS::System
+    class DeclutterSystem
     {
     public:
-        DeclutterSystem(entt::registry& registry) : System(registry) { }
+        DeclutterSystem(entt::registry& in_registry)
+            : registry(in_registry) { }
 
+        entt::registry& registry;
         float update_hertz = 1.0f; // updates per second
         bool enabled = true;
         double buffer_radius = 25.0;
@@ -41,12 +43,7 @@ namespace
             return std::make_shared<DeclutterSystem>(registry);
         }
 
-        void initializeSystem(Runtime& runtime) override
-        {
-            //nop
-        }
-
-        void update(Runtime& runtime) override
+        void update(Runtime& runtime)
         {
             total = 0, visible = 0;
 

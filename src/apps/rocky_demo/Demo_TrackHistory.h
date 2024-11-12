@@ -34,7 +34,7 @@ namespace
         std::size_t numChunks = 0;
     };
 
-    class TrackHistorySystem : public ECS::System
+    class TrackHistorySystem : public ecs::System
     {
     public:
         TrackHistorySystem(entt::registry& registry) : System(registry) {}
@@ -103,6 +103,7 @@ namespace
             auto& line = registry.emplace<Line>(new_chunk.attach_point);
             line.style = track.style;
             line.referencePoint = new_chunk.referencePoint;
+            line.points.reserve(track_chunk_size);
 
             // Tie track visibility to host visibility:
             auto& track_visibility = registry.emplace<Visibility>(new_chunk.attach_point);
@@ -113,7 +114,7 @@ namespace
             {
                 auto prev_chunk = std::prev(std::prev(track.chunks.end()));
                 auto& prev_line = registry.get<Line>(prev_chunk->attach_point);
-                line.points().emplace_back(prev_line.points().back());
+                line.points.emplace_back(prev_line.points.back());
                 ++new_chunk.numPoints;
             }
 
@@ -125,11 +126,11 @@ namespace
         {
             auto& line = registry.get<Line>(chunk.attach_point);
 
-            if (chunk.numPoints > 0 && line.points().back() == to_vsg((glm::dvec3)(transform.position)))
+            if (chunk.numPoints > 0 && line.points.back() == to_vsg((glm::dvec3)(transform.position)))
                 return;
 
             // append the new position:
-            line.points().emplace_back(to_vsg((glm::dvec3)transform.position));
+            line.points.emplace_back(to_vsg((glm::dvec3)transform.position));
             ++chunk.numPoints;
             ++line.revision;
         }

@@ -9,7 +9,7 @@ ROCKY_ABOUT(entt, ENTT_VERSION);
 
 using namespace ROCKY_NAMESPACE;
 
-ECS::SystemsManagerGroup::SystemsManagerGroup(BackgroundServices& bg)
+ecs::SystemsManagerGroup::SystemsManagerGroup(BackgroundServices& bg)
 {
     vsg::observer_ptr<SystemsManagerGroup> weak_self(this);
 

@@ -70,7 +70,7 @@ auto Demo_Tethering = [](Application& app)
 
         // add an arrow line:
         auto& arrow = app.entities.emplace<Line>(entity);
-        arrow.points() = { 
+        arrow.points = { 
             vsg::dvec3{ s * 1.5, s * 0.5, 0.0 },
             vsg::dvec3{ s * 2.0, 0.0, 0.0 },
             vsg::dvec3{ s * 1.5, -s * 0.5, 0.0 }

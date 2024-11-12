@@ -30,7 +30,7 @@ namespace ROCKY_NAMESPACE
     * LineString component - holds one or more separate line string geometries
     * sharing the same style.
     */
-    class Line : public ECS::RevisionedComponent
+    class Line : public ecs::RevisionedComponent
     {
     public:
         //! Dynamic line styling. This is optional.
@@ -48,31 +48,7 @@ namespace ROCKY_NAMESPACE
         //! plan to use.
         std::size_t staticSize = 0;
 
-        //! Geometry. Stored on the heap since it can change size.
-        std::vector<vsg::dvec3>& points() { return *_points; }
-        const std::vector<vsg::dvec3>& points() const { return *_points; }
-
-        void styleDirty()
-        {
-            _styleDirty = true;
-            ++revision;
-        }
-
-        void geometryDirty()
-        {
-            _geometryDirty = true;
-            ++revision;
-        }
-
-        Line()
-        {
-            _points = std::make_unique<std::vector<vsg::dvec3>>();
-        }
-
-        bool _styleDirty = true;
-        bool _geometryDirty = true;
-
-    private:
-        std::unique_ptr<std::vector<vsg::dvec3>> _points;
+        //! Geometry. NB, the actual array elements are stored on the heap
+        std::vector<vsg::dvec3> points;
     };
 }

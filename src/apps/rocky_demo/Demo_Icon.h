@@ -50,9 +50,9 @@ auto Demo_Icon = [](Application& app)
 
     if (ImGuiLTable::Begin("icon"))
     {
-        bool visible = ECS::visible(app.registry, entity);
+        bool visible = ecs::visible(app.registry, entity);
         if (ImGuiLTable::Checkbox("Visible", &visible))
-            ECS::setVisible(app.registry, entity, visible);
+            ecs::setVisible(app.registry, entity, visible);
 
         auto& icon = app.entities.get<Icon>(entity);
 

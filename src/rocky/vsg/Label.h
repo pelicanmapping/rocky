@@ -23,7 +23,7 @@ namespace ROCKY_NAMESPACE
     /**
     * Text label component
     */
-    struct Label : public ECS::RevisionedComponent
+    struct Label : public ecs::RevisionedComponent
     {
         std::string text;
         LabelStyle style;

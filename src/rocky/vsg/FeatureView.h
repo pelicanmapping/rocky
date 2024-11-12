@@ -66,7 +66,9 @@ namespace ROCKY_NAMESPACE
         //! Construct a view to display a single moved feature)
         FeatureView(Feature&& value) noexcept;
 
-        //! Underlying entity for this view
+        //! Host entities
         entt::entity entity = entt::null;
+        std::vector<entt::entity> mesh_entities;
+        std::vector<entt::entity> line_entities;
     };
 }
