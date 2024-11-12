@@ -193,7 +193,7 @@ Application::ctor(int& argc, char** argv)
         commandLineStatus = loadMapFile(commandLine[1], *mapNode, instance);
     }
 
-    ecsManager = ECS::SystemsManagerGroup::create();
+    ecsManager = ECS::SystemsManagerGroup::create(backgroundServices);
 
     ecsManager->add<MeshSystemNode>(entities);
     ecsManager->add<LineSystemNode>(entities);
@@ -206,6 +206,8 @@ Application::ctor(int& argc, char** argv)
 
 Application::~Application()
 {
+    Log()->info("Quitting background services...");
+    backgroundServices.quit();
     handle.join();
 }
 

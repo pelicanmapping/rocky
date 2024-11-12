@@ -32,7 +32,7 @@
 // Version
 #define WEEJOBS_VERSION_MAJOR 1
 #define WEEJOBS_VERSION_MINOR 0
-#define WEEJOBS_VERSION_REV   1
+#define WEEJOBS_VERSION_REV   2
 #define WEEJOBS_STR_NX(s) #s
 #define WEEJOBS_STR(s) WEEJOBS_STR_NX(s)
 #define WEEJOBS_COMPUTE_VERSION(major, minor, patch) ((major) * 10000 + (minor) * 100 + (patch))
@@ -171,16 +171,18 @@ namespace WEEJOBS_NAMESPACE
         {
         public:
             //! Acquire, increasing the usage count by one
-            void acquire()
+            inline void acquire()
             {
                 std::unique_lock<std::mutex> lock(_m);
                 ++_count;
             }
 
+            inline void operator ++ () { acquire(); }
+
             //! Release, decreasing the usage count by one.
             //! When the count reaches zero, joiners will be notified and
             //! the semaphore will reset to its initial state.
-            void release()
+            inline void release()
             {
                 std::unique_lock<std::mutex> lock(_m);
                 _count = std::max(_count - 1, 0);
@@ -188,9 +190,11 @@ namespace WEEJOBS_NAMESPACE
                     _cv.notify_all();
             }
 
+            inline void operator -- () { release(); }
+
             //! Reset to initialize state; this will cause a join to occur
             //! even if no acquisitions have taken place.
-            void reset()
+            inline void reset()
             {
                 std::unique_lock<std::mutex> lock(_m);
                 _count = 0;
@@ -198,7 +202,7 @@ namespace WEEJOBS_NAMESPACE
             }
 
             //! Current count in the semaphore
-            std::size_t count() const
+            inline std::size_t count() const
             {
                 std::unique_lock<std::mutex> lock(_m);
                 return _count;
@@ -208,7 +212,7 @@ namespace WEEJOBS_NAMESPACE
             //! (It must first have left zero)
             //! Warning: this method will block forever if the count
             //! never reaches zero!
-            void join()
+            inline void join()
             {
                 std::unique_lock<std::mutex> lock(_m);
                 while (_count > 0)
@@ -218,7 +222,7 @@ namespace WEEJOBS_NAMESPACE
             //! Block until the semaphore count returns to zero, or
             //! the operation is canceled.
             //! (It must first have left zero)
-            void join(cancelable* c)
+            inline void join(cancelable* c)
             {
                 _cv.wait_for(_m, std::chrono::seconds(1), [this, c]() {
                     return

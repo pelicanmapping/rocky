@@ -53,6 +53,6 @@ namespace ROCKY_NAMESPACE
         TerrainState stateFactory;
 
         //! name of job arena used to load data
-        std::string loadSchedulerName = "rocky.terrain.load";
+        std::string loadSchedulerName = "rocky::terrain_loader";
     };
 }

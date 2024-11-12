@@ -334,9 +334,10 @@ namespace ROCKY_NAMESPACE
                 return true;
             }
 
-            void wait() {
+            template<typename DURATION_T>
+            bool wait(DURATION_T timeout) {
                 std::unique_lock<std::mutex> L(_mutex);
-                _condition.wait(L, [this]() { return !empty(); });
+                return _condition.wait_for(L, timeout, [this]() { return !empty(); });
             }
 
             bool empty() const {
@@ -384,6 +385,55 @@ namespace ROCKY_NAMESPACE
             std::optional<T> _obj;
             mutable std::mutex _mutex;
         };
+
+        /**
+        * Utility to manages loops that run in the background.
+        */
+        class BackgroundServices
+        {
+        public:
+            using Function = std::function<void(jobs::cancelable&)>;
+
+            std::mutex mutex;
+            std::vector<jobs::future<bool>> futures;
+            jobs::detail::semaphore semaphore;
+
+            void start(const std::string& name, Function function)
+            {
+                ROCKY_SOFT_ASSERT_AND_RETURN(function, void());
+                ROCKY_SOFT_ASSERT_AND_RETURN(!name.empty(), void());
+
+                std::lock_guard lock(mutex);
+
+                // wrap with a delegate function so we can control the semaphore
+                auto delegate = [this, function, name](jobs::cancelable& cancelable) -> bool
+                {
+                    ++semaphore;
+                    function(cancelable);
+                    --semaphore;
+                    return true;
+                };
+
+                jobs::context context{ name, jobs::get_pool(name, 1) };
+                futures.emplace_back(jobs::dispatch(delegate, context));
+            }
+
+            void quit()
+            {
+                std::lock_guard lock(mutex);
+
+                // tell all tasks to cancel
+                for (auto& f : futures)
+                    f.abandon();
+
+                // block until all the background tasks exit.
+                semaphore.join();
+
+                futures.clear();
+            }
+        };
+
+
 
         /**
         * Virtual interface for a stream compressor

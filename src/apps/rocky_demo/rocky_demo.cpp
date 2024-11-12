@@ -47,6 +47,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Rendering.h"
 #include "Demo_Simulation.h"
 #include "Demo_TrackHistory.h"
+#include "Demo_Decluttering.h"
 
 template<class T>
 int layerError(T layer)
@@ -88,8 +89,12 @@ std::vector<Demo> demos =
         Demo{ "Polygon features", Demo_PolygonFeatures },
         Demo{ "Line features", Demo_LineFeatures }
     } },
-    Demo{ "Simulation", Demo_Simulation },
-    Demo{ "Track history", Demo_TrackHistory },
+    Demo{ "Simulation", {},
+    {
+        Demo{ "Simulated platforms", Demo_Simulation },
+        Demo{ "Decluttering", Demo_Decluttering },
+        Demo{ "Track histories", Demo_TrackHistory }
+    } },
     Demo{ "RTT", Demo_RTT },
     Demo{ "Geocoding", Demo_Geocoder },
     Demo{ "Camera", {},

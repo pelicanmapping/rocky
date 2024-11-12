@@ -9,69 +9,70 @@ ROCKY_ABOUT(entt, ENTT_VERSION);
 
 using namespace ROCKY_NAMESPACE;
 
-ECS::SystemsManagerGroup::SystemsManagerGroup()
+ECS::SystemsManagerGroup::SystemsManagerGroup(BackgroundServices& bg)
 {
-    vsg::observer_ptr<SystemsManagerGroup> weak(this);
+    vsg::observer_ptr<SystemsManagerGroup> weak_self(this);
 
-    auto runner = [weak]()
+    auto entity_compiler = [weak_self](jobs::cancelable& cancelable)
         {
             Log()->info("Entity compiler thread starting up.");
-            while (true)
+            while (!cancelable.canceled())
             {
-                vsg::ref_ptr<SystemsManagerGroup> self(weak);
-                if (!self) break;
+                vsg::ref_ptr<SystemsManagerGroup> self(weak_self);
+                if (!self)
+                    break;
 
-                self->entityCompileJobs.wait();
-
-                SystemNodeBase::EntityCompileBatch batch;
-
-                if (self->entityCompileJobs.pop(batch))
+                // normally this will be signaled to wake up, but the timeout will
+                // assure that we don't wait forever during shutdown.
+                if (self->entityCompileJobs.wait(std::chrono::milliseconds(1000)))
                 {
-                    // a group to combine all compiles into one operation
-                    auto group = vsg::Group::create();
+                    SystemNodeBase::EntityCompileBatch batch;
 
-                    // collect the results so we can adjust the revision all at once 
-                    // after compilation
-                    std::vector<std::tuple<entt::entity, SystemNodeBase::CreateOrUpdateData, SystemNodeBase::EntityCompileBatch*>> results;
-                    results.reserve(batch.entities.size());
-
-                    for (auto entity : batch.entities)
+                    if (self->entityCompileJobs.pop(batch))
                     {
-                        SystemNodeBase::CreateOrUpdateData result;
+                        // a group to combine all compiles into one operation
+                        auto group = vsg::Group::create();
 
-                        batch.system->create_or_update(entity, result, *batch.runtime);
+                        // collect the results so we can adjust the revision all at once 
+                        // after compilation
+                        std::vector<std::tuple<entt::entity, SystemNodeBase::CreateOrUpdateData, SystemNodeBase::EntityCompileBatch*>> results;
+                        results.reserve(batch.entities.size());
 
-                        if (result.new_node)
+                        for (auto entity : batch.entities)
                         {
-                            if (result.new_node_needs_compilation)
+                            SystemNodeBase::CreateOrUpdateData result;
+
+                            batch.system->create_or_update(entity, result, *batch.runtime);
+
+                            if (result.new_node)
                             {
-                                // this group contains everything that needs to be compiled:
-                                group->addChild(result.new_node);
+                                if (result.new_node_needs_compilation)
+                                {
+                                    // this group contains everything that needs to be compiled:
+                                    group->addChild(result.new_node);
+                                }
+                                results.emplace_back(entity, std::move(result), &batch);
                             }
-                            results.emplace_back(entity, std::move(result), &batch);
                         }
-                    }
 
-                    // compile everything (creates any new vulkan objects)
-                    if (group->children.size() > 0)
-                    {
-                        // compile all the results at once:
-                        batch.runtime->compile(group);
-
-                        // move the compiled results to the staging area. The next iteration
-                        // will pick this up and install them.
-                        for (auto& [entity, result, batch] : results)
+                        // compile everything (creates any new vulkan objects)
+                        if (group->children.size() > 0)
                         {
-                            batch->system->finish_update(entity, result);
+                            // compile all the results at once:
+                            batch.runtime->compile(group);
+
+                            // move the compiled results to the staging area. The next iteration
+                            // will pick this up and install them.
+                            for (auto& [entity, result, batch] : results)
+                            {
+                                batch->system->finish_update(entity, result);
+                            }
                         }
                     }
                 }
             }
             Log()->info("Entity compiler thread terminating.");
-            return true;
         };
 
-    jobs::context context;
-    context.pool = jobs::get_pool("rocky.node_compiler", 1);
-    jobs::dispatch(runner, context);
+    bg.start("rocky::entity_compiler", entity_compiler);
 }

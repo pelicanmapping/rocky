@@ -77,6 +77,7 @@ namespace ROCKY_NAMESPACE
     */
     struct Visibility : public ECS::PerView<bool, 4, true>
     {
+        Visibility* parent = nullptr;
     };
 
     namespace ECS
@@ -230,7 +231,7 @@ namespace ROCKY_NAMESPACE
         class ROCKY_EXPORT SystemsManagerGroup : public vsg::Inherit<vsg::Group, SystemsManagerGroup>
         {
         public:
-            SystemsManagerGroup();
+            SystemsManagerGroup(BackgroundServices& bg);
 
             //! Add a system node instance to the group.
             //! @param system The system node instance to add
@@ -302,8 +303,6 @@ namespace ROCKY_NAMESPACE
 
         public:
 
-            //util::LockingQueue<SystemNodeBase::EntityCompileBatch> entityCompileJobs;
-
             util::RingBuffer<SystemNodeBase::EntityCompileBatch> entityCompileJobs{ 16 };
 
         private:
@@ -333,10 +332,18 @@ namespace ROCKY_NAMESPACE
         inline void setVisible(entt::registry& r, entt::entity e, bool value, int view_index = -1)
         {
             auto& visibility = r.get<Visibility>(e);
-            if (view_index > 0)
-                visibility[view_index] = value;
-            else
-                visibility.setAll(value);
+            if (visibility.parent == nullptr)
+            {
+                if (view_index > 0)
+                    visibility[view_index] = value;
+                else
+                    visibility.setAll(value);
+            }
+        }
+
+        inline bool visible(Visibility& vis, int view_index = 0)
+        {
+            return vis.parent != nullptr ? visible(*vis.parent) : vis[view_index];
         }
 
         //! Whether an entity is visible in the given view
@@ -344,8 +351,7 @@ namespace ROCKY_NAMESPACE
         //! @param view_index Index of view to check visibility
         inline bool visible(entt::registry& r, entt::entity e, int view_index = 0)
         {
-            auto& visibility = r.get<Visibility>(e);
-            return visibility[view_index];
+            return visible(r.get<Visibility>(e), view_index);
         }
     }
 
@@ -497,9 +503,9 @@ namespace ROCKY_NAMESPACE
                 {
                     auto& rs = !pipelines.empty() ? renderSet[featureMask(component)] : renderSet[0];
                     auto* transform = registry.try_get<Transform>(entity);
-                    if (transform || visibility[viewID])
+                    if (transform || visible(visibility, viewID))
                     {
-                        rs.emplace_back(RenderLeaf{ renderable, transform, visibility[viewID] });
+                        rs.emplace_back(RenderLeaf{ renderable, transform, visible(visibility, viewID) });
                     }
                 }
 

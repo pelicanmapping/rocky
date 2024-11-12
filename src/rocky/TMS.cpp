@@ -389,30 +389,37 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
         {
             if (tileSet.order == zoom)
             {
-                std::stringstream ss;
-                std::string path = std::filesystem::path(working).remove_filename().string();
-                if (sub)
+                if (!tileSet.href.empty())
                 {
-                    auto temp = working;
-                    util::replace_in_place(temp, "${x}", std::to_string(x));
-                    util::replace_in_place(temp, "${y}", std::to_string(y));
-                    util::replace_in_place(temp, "${-y}", std::to_string(y_inverted));
-                    util::replace_in_place(temp, "${z}", std::to_string(zoom));
-                    util::replace_in_place(temp, "{x}", std::to_string(x));
-                    util::replace_in_place(temp, "{y}", std::to_string(y));
-                    util::replace_in_place(temp, "{-y}", std::to_string(y_inverted));
-                    util::replace_in_place(temp, "{z}", std::to_string(zoom));
-                    return temp;
+                    return tileSet.href + "/" + std::to_string(x) + "/" + std::to_string(y) + "." + format.extension;
                 }
                 else
                 {
-                    return path +
-                        std::to_string(zoom) + '/' +
-                        std::to_string(x) + '/' +
-                        std::to_string(y) + "." +
-                        format.extension;
+                    std::stringstream ss;
+                    std::string path = std::filesystem::path(working).remove_filename().string();
+                    if (sub)
+                    {
+                        auto temp = working;
+                        util::replace_in_place(temp, "${x}", std::to_string(x));
+                        util::replace_in_place(temp, "${y}", std::to_string(y));
+                        util::replace_in_place(temp, "${-y}", std::to_string(y_inverted));
+                        util::replace_in_place(temp, "${z}", std::to_string(zoom));
+                        util::replace_in_place(temp, "{x}", std::to_string(x));
+                        util::replace_in_place(temp, "{y}", std::to_string(y));
+                        util::replace_in_place(temp, "{-y}", std::to_string(y_inverted));
+                        util::replace_in_place(temp, "{z}", std::to_string(zoom));
+                        return temp;
+                    }
+                    else
+                    {
+                        return path +
+                            std::to_string(zoom) + '/' +
+                            std::to_string(x) + '/' +
+                            std::to_string(y) + "." +
+                            format.extension;
 
-                    return path;
+                        return path;
+                    }
                 }
             }
         }

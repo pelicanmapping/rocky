@@ -8,6 +8,8 @@
 #include <rocky/vsg/ECS.h>
 #include "helpers.h"
 #include <chrono>
+#include <limits>
+#include <list>
 
 using namespace ROCKY_NAMESPACE;
 using namespace std::chrono_literals;
@@ -23,13 +25,13 @@ namespace
         {
             GeoPoint referencePoint;
             entt::entity attach_point = entt::null; // attachment point for the line
-            std::vector<std::chrono::steady_clock::time_point> timestamps;
-            std::vector<vsg::dvec3> points; // in the Line reference point's SRS
-            //std::vector<vsg::dmat4> localMatrices;
+            std::size_t numPoints = 0;
         };
 
         LineStyle style;
-        std::vector<Chunk> chunks;
+        unsigned maxPoints = 48; // std::numeric_limits<unsigned>::max();
+        std::list<Chunk> chunks;
+        std::size_t numChunks = 0;
     };
 
     class TrackHistorySystem : public ECS::System
@@ -41,7 +43,7 @@ namespace
         std::chrono::steady_clock::time_point last_update = std::chrono::steady_clock::now();
         float update_hertz = 1.0f; // updates per second
 
-        bool visible = true;
+        bool tracks_visible = true;
 
         void update(Runtime& runtime) override
         {
@@ -56,109 +58,110 @@ namespace
                 {
                     if (transform.position.valid())
                     {
-                        if (track.chunks.empty() || track.chunks.back().points.size() >= track_chunk_size)
+                        if (track.numChunks == 0 || track.chunks.back().numPoints >= track_chunk_size)
                         {
-                            createNewChunk(track, transform);
+                            createNewChunk(entity, track, transform);
                         }
 
-                        updateChunk(track, track.chunks.back(), transform);
+                        updateChunk(entity, track, track.chunks.back(), transform);
+
+                        // approximation for now.
+                        auto maxChunks = track.maxPoints / track_chunk_size;
+                        if (track.numChunks > 1u && track.numChunks > maxChunks)
+                        {
+                            registry.erase<Line>(track.chunks.front().attach_point);
+                            track.chunks.erase(track.chunks.begin());
+                            --track.numChunks;
+                        }
                     }
+
+                    //// synchronize visibility with the host:
+                    //for (auto& chunk : track.chunks)
+                    //{
+                    //    auto& visibility = registry.get<Visibility>(chunk.attach_point);
+                    //    if (tracks_visible)
+                    //        visibility = registry.get<Visibility>(entity);
+                    //    else
+                    //        visibility.setAll(false);
+                    //}
                 }
 
                 last_update = now;
             }
         };
 
-        void createNewChunk(TrackHistory& track, Transform& transform)
+        void createNewChunk(entt::entity host_entity, TrackHistory& track, Transform& transform)
         {
             // Make a new chunk and set its reference point
-            auto& chunk = track.chunks.emplace_back();
-            chunk.attach_point = registry.create();
-            chunk.referencePoint = transform.position;
+            auto& new_chunk = track.chunks.emplace_back();
+            ++track.numChunks;
+
+            new_chunk.attach_point = registry.create();
+            new_chunk.referencePoint = transform.position;
 
             // Each chunk get a line primitive.
-            auto& line = registry.emplace<Line>(chunk.attach_point);
+            auto& line = registry.emplace<Line>(new_chunk.attach_point);
             line.style = track.style;
-            line.referencePoint = chunk.referencePoint;
+            line.referencePoint = new_chunk.referencePoint;
+
+            // Tie track visibility to host visibility:
+            auto& track_visibility = registry.emplace<Visibility>(new_chunk.attach_point);
+            updateVisibility(host_entity, new_chunk);
 
             // If this is not the first chunk, connect it to the previous one
-            if (track.chunks.size() > 1)
+            if (track.numChunks > 1)
             {
-                auto& prev_chunk = track.chunks[track.chunks.size() - 2];
-                chunk.points.emplace_back(prev_chunk.points.back());
+                auto prev_chunk = std::prev(std::prev(track.chunks.end()));
+                auto& prev_line = registry.get<Line>(prev_chunk->attach_point);
+                line.points().emplace_back(prev_line.points().back());
+                ++new_chunk.numPoints;
             }
 
             // pre-allocates space for all future points
-            line.staticSize = track_chunk_size; 
-
-            registry.get<Visibility>(chunk.attach_point).setAll(visible);
+            line.staticSize = track_chunk_size;
         }
 
-        void updateChunk(TrackHistory& track, TrackHistory::Chunk& chunk, Transform& transform)
+        void updateChunk(entt::entity host_entity, TrackHistory& track, TrackHistory::Chunk& chunk, Transform& transform)
         {
-            if (chunk.points.size() > 0 && chunk.points.back() == to_vsg((glm::dvec3)(transform.position)))
+            auto& line = registry.get<Line>(chunk.attach_point);
+
+            if (chunk.numPoints > 0 && line.points().back() == to_vsg((glm::dvec3)(transform.position)))
                 return;
 
-            // append the new point
-            chunk.points.emplace_back(to_vsg((glm::dvec3)transform.position));
+            // append the new position:
+            line.points().emplace_back(to_vsg((glm::dvec3)transform.position));
+            ++chunk.numPoints;
+            ++line.revision;
+        }
 
-            // and copy over the point array to the line primitive.
-            auto& line = registry.get<Line>(chunk.attach_point);
-            //line.points().emplace_back(chunk.points.back());
-            line.points() = chunk.points;
-            line.revision++;
+        void updateVisibility(entt::entity host_entity, TrackHistory::Chunk& chunk)
+        {
+            auto& track_visibility = registry.get<Visibility>(chunk.attach_point);
+            if (tracks_visible)
+                track_visibility.parent = &registry.get<Visibility>(host_entity);
+            else
+                track_visibility.parent = nullptr, track_visibility.setAll(false);
         }
 
         void updateVisibility()
         {
+            // ensure that the visibility of a track matches the visibility of its host.
             auto view = registry.view<TrackHistory>();
-            for (auto&& [entity, track] : view.each())
+            for (auto&& [host_entity, track] : view.each())
             {
                 for (auto& chunk : track.chunks)
-                    registry.get<Visibility>(chunk.attach_point).setAll(visible);
+                {
+                    updateVisibility(host_entity, chunk);
+                }
             }
         }
     };
-
-#if 0
-    class TrackHistoryCollector
-    {
-    public:
-        Application& app;
-        float update_hertz = 1.0f; // updates per second
-        TrackHistorySystem system;
-
-        TrackHistoryCollector(Application& in_app) :
-            app(in_app),
-            system(in_app.registry) { }
-
-        void run()
-        {
-            jobs::context context;
-            context.pool = jobs::get_pool("rocky.track_history", 1);
-
-            jobs::dispatch([this]()
-                {
-                    scoped_use use(app.handle);
-
-                    while (app.active())
-                    {
-                        run_at_frequency f(update_hertz);
-                        system.update(app.runtime());
-                        app.runtime().requestFrame();
-                    }
-                    Log()->info("Track history thread terminating.");
-
-                }, context);
-        }
-    };
-#endif
 }
+
 
 auto Demo_TrackHistory = [](Application& app)
 {
     static bool init = false;
-    //static int max_tracks = 100;
     static std::shared_ptr<TrackHistorySystem> system;
 
     if (!system)
@@ -169,23 +172,20 @@ auto Demo_TrackHistory = [](Application& app)
         style.color = vsg::vec4{ 0.0f, 1.0f, 1.0f, 1.0f };
         style.width = 2.0f;
 
-        //int count = 0;
         auto view = app.registry.view<Transform>();
         for (auto&& [entity, transform] : view.each())
         {
             auto& track = app.registry.emplace<TrackHistory>(entity);
             track.style = style;
-            //if (count++ > max_tracks) break;
         }
     }
 
     if (ImGuiLTable::Begin("track history"))
     {
-        if (ImGuiLTable::Checkbox("Visible", &system->visible))
+        if (ImGuiLTable::Checkbox("Visible", &system->tracks_visible))
         {
             system->updateVisibility();
         }
-        //ImGuiLTable::Text("Max tracks", "%d", max_tracks);
         ImGuiLTable::SliderFloat("Update frequency", &system->update_hertz, 1.0f, 15.0f);
         ImGuiLTable::End();
     }

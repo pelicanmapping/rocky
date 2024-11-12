@@ -92,6 +92,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Group> mainScene;
         vsg::ref_ptr<ECS::SystemsManagerGroup> ecsManager;
         std::shared_ptr<DisplayManager> displayManager;
+        BackgroundServices backgroundServices;
         bool autoCreateWindow = true;
         Status commandLineStatus;
 
