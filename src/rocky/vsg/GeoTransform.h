@@ -77,7 +77,7 @@ namespace ROCKY_NAMESPACE
 
         void traverse(vsg::RecordTraversal&) const override;
 
-        bool push(vsg::RecordTraversal&, const vsg::dmat4& m) const;
+        bool push(vsg::RecordTraversal&, const vsg::dmat4& m, bool cull) const;
 
         void pop(vsg::RecordTraversal&) const;
 

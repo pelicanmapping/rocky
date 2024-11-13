@@ -52,15 +52,15 @@ namespace ROCKY_NAMESPACE
 
         //! Applies a transformation and returns true if successful.
         //! If this method retuns true, you must issue a correspond pop() later.
-        inline bool push(vsg::RecordTraversal& rt, const vsg::dmat4& m)
+        inline bool push(vsg::RecordTraversal& rt, const vsg::dmat4& m, bool cull)
         {
             if (parent)
             {
-                return parent->push(rt, m * localMatrix);
+                return parent->push(rt, m * localMatrix, cull);
             }
             else
             {
-                return node->push(rt, m * localMatrix);
+                return node->push(rt, m * localMatrix, cull);
             }
         }
 

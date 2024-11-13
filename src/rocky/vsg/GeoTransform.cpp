@@ -32,8 +32,10 @@ GeoTransform::dirty()
 void
 GeoTransform::traverse(vsg::RecordTraversal& record) const
 {
+    static vsg::dmat4 identity(1.0);
+
     // traverse the transform
-    if (push(record, vsg::dmat4(1.0)))
+    if (push(record, identity, true))
     {
         Inherit::traverse(record);
         pop(record);
@@ -41,10 +43,12 @@ GeoTransform::traverse(vsg::RecordTraversal& record) const
 }
 
 bool
-GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix) const
+GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix, bool cull) const
 {
     if (!position.valid())
+    {
         return false;
+    }
 
     auto* state = record.getState();
 
@@ -84,6 +88,9 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix)
     view.mvp = state->projectionMatrixStack.top() * mvm;
     view.viewport = state->_commandBuffer->viewDependentState->viewportData->at(0);
 
+    if (!cull)
+        return false;
+
     // Frustum cull (by center point)
     if (frustumCulling)
     {
@@ -112,7 +119,7 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix)
 
     // replicates RecordTraversal::accept(MatrixTransform&):
     state->modelviewMatrixStack.push(mvm);
-    //state->dirty = true;
+    state->dirty = true;
     state->pushFrustum();
 
     return true;
@@ -124,5 +131,5 @@ GeoTransform::pop(vsg::RecordTraversal& record) const
     auto state = record.getState();
     state->popFrustum();
     state->modelviewMatrixStack.pop();
-    //state->dirty = true;
+    state->dirty = true;
 }

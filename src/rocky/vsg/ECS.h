@@ -215,18 +215,15 @@ namespace ROCKY_NAMESPACE
             {
                 Renderable& renderable;
                 Transform* transform;
-                bool visible;
             };
 
-            // re-usable render set to prevent re-allocation
-            // TODO: make sure this is multi-view/multi-thread safe; if not, put it in a
-            // ViewLocal container
-            mutable std::vector<std::vector<RenderLeaf>> renderSet;
+            // re-usable collection to minimize re-allocation
+            mutable std::vector<std::vector<RenderLeaf>> pipelineRenderLeaves;
         };
 
         /**
         * VSG Group node whose children are SystemNode instances. It can also hold/manager
-        * non-node systems.
+        * non-node systems. It also holds the container for pending entity compilation lists.
         */
         class ROCKY_EXPORT SystemsManagerGroup : public vsg::Inherit<vsg::Group, SystemsManagerGroup>
         {
@@ -302,7 +299,7 @@ namespace ROCKY_NAMESPACE
             }
 
         public:
-
+            // the data structure holding the queued jobs. 16 might be overkill :)
             util::RingBuffer<SystemNodeBase::EntityCompileBatch> entityCompileJobs{ 16 };
 
         private:
@@ -311,8 +308,20 @@ namespace ROCKY_NAMESPACE
             // NB: SystmeNode instances are group children
         };
 
+        //! Whether the Visibility component is visible in the given view
+        //! @param vis The visibility component
+        //! @param view_index Index of view to check visibility
+        //! @return True if visible in that view
+        inline bool visible(Visibility& vis, int view_index)
+        {
+            return vis.parent != nullptr ? visible(*vis.parent, view_index) : vis[view_index];
+        }
 
         //! Toggle the visibility of an entity in the given view
+        //! @param r Entity registry
+        //! @param e Entity id
+        //! @param value New visibility state
+        //! @param view_index Index of view to set visibility
         inline void setVisible(entt::registry& r, entt::entity e, bool value, int view_index = -1)
         {
             auto& visibility = r.get<Visibility>(e);
@@ -325,14 +334,11 @@ namespace ROCKY_NAMESPACE
             }
         }
 
-        inline bool visible(Visibility& vis, int view_index = 0)
-        {
-            return vis.parent != nullptr ? visible(*vis.parent) : vis[view_index];
-        }
-
         //! Whether an entity is visible in the given view
-        //! @param e Entity
+        //! @param r Entity registry
+        //! @param e Entity id
         //! @param view_index Index of view to check visibility
+        //! @return True if visible in that view
         inline bool visible(entt::registry& r, entt::entity e, int view_index = 0)
         {
             return visible(r.get<Visibility>(e), view_index);
@@ -474,8 +480,10 @@ namespace ROCKY_NAMESPACE
 
         // Sort components into render sets by pipeline. If this system doesn't support
         // multiple pipelines, just store them all together in renderSet[0].
-        if (renderSet.empty())
-            renderSet.resize(!pipelines.empty() ? pipelines.size() : 1);
+        if (pipelineRenderLeaves.empty())
+        {
+            pipelineRenderLeaves.resize(!pipelines.empty() ? pipelines.size() : 1);
+        }
 
         // Get an optimized view of all this system's components:
         registry.view<T, Visibility>().each([&](const entt::entity entity, const T& component, auto& visibility)
@@ -483,19 +491,31 @@ namespace ROCKY_NAMESPACE
                 auto& renderable = registry.get<Renderable>(component.attach_point);
                 if (renderable.node)
                 {
-                    auto& rs = !pipelines.empty() ? renderSet[featureMask(component)] : renderSet[0];
+                    auto& leaves = !pipelines.empty() ? pipelineRenderLeaves[featureMask(component)] : pipelineRenderLeaves[0];
                     auto* transform = registry.try_get<Transform>(entity);
-                    if (transform || visible(visibility, viewID))
+
+                    // if it's visible, queue it up for rendering
+                    if (visible(visibility, viewID))
                     {
-                        rs.emplace_back(RenderLeaf{ renderable, transform, visible(visibility, viewID) });
+                        leaves.emplace_back(RenderLeaf{ renderable, transform });
+                    }
+
+                    // otherwise if it's invisible but still has a transform, process that transform
+                    // so it can calculate its screen-space information (for things like decluttering
+                    // and intersection)
+                    else if (transform)
+                    {
+                        transform->push(rt, identity_matrix, false);
                     }
                 }
 
+                // If our renderable has a new node waiting to be merged, queue it up
                 if (renderable.staged->has_value())
                 {
                     entities_to_update.emplace_back(entity);
                 }
 
+                // Or if out renderabe is stale, queue it up for regeneration
                 else if (renderable.revision != component.revision)
                 {
                     entities_to_update.emplace_back(entity);
@@ -503,11 +523,10 @@ namespace ROCKY_NAMESPACE
                 }
             });
 
-        // Time to record all visible components.
-        // For each pipeline:
-        for (int p = 0; p < renderSet.size(); ++p)
+        // Time to record all visible components. For each pipeline:
+        for (int p = 0; p < pipelineRenderLeaves.size(); ++p)
         {
-            if (!renderSet[p].empty())
+            if (!pipelineRenderLeaves[p].empty())
             {
                 // Bind the Graphics Pipeline for this render set, if there is one:
                 if (!pipelines.empty())
@@ -516,27 +535,24 @@ namespace ROCKY_NAMESPACE
                 }
 
                 // Them record each component. If the component has a transform apply it too.
-                for (auto& leaf : renderSet[p])
+                for (auto& leaf : pipelineRenderLeaves[p])
                 {
                     if (leaf.transform)
                     {
-                        if (leaf.transform->push(rt, identity_matrix))
+                        if (leaf.transform->push(rt, identity_matrix, true))
                         {
-                            if (leaf.visible)
-                                leaf.renderable.node->accept(rt);
-
+                            leaf.renderable.node->accept(rt);
                             leaf.transform->pop(rt);
                         }
                     }
                     else
                     {
-                        if (leaf.visible)
-                            leaf.renderable.node->accept(rt);
+                        leaf.renderable.node->accept(rt);
                     }
                 }
 
                 // clear out for next time around.
-                renderSet[p].clear();
+                pipelineRenderLeaves[p].clear();
             }
         }
     }

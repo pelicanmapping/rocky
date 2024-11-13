@@ -60,7 +60,7 @@ auto Demo_Simulation = [](Application& app)
     static std::set<entt::entity> platforms;
     static Status status;
     static Simulator sim(app);
-    const unsigned num_platforms = 1000;
+    const unsigned num_platforms = 2500;
 
     if (status.failed())
     {
