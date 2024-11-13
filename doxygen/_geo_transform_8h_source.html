@@ -144,14 +144,15 @@ $(function() {
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;            vsg::dmat4 mvp;</div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;            vsg::vec4 viewport;</div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> world_srs;</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html">Ellipsoid</a>* world_ellipsoid = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a> pos_to_world;</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;            std::shared_ptr&lt;Horizon&gt; horizon;</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        };</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        util::ViewLocal&lt;ViewLocalData&gt; viewLocal;</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160; </div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    };</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;} <span class="comment">// namespace</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;            <span class="keywordtype">bool</span> culled = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;            <span class="keyword">const</span> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html">Ellipsoid</a>* world_ellipsoid = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a> pos_to_world;</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;            std::shared_ptr&lt;Horizon&gt; horizon;</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        };</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        util::ViewLocal&lt;ViewLocalData&gt; viewLocal;</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160; </div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    };</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;} <span class="comment">// namespace</span></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html">ROCKY_NAMESPACE::Ellipsoid</a></div><div class="ttdef"><b>Definition:</b> Ellipsoid.h:19</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">ROCKY_NAMESPACE::GeoPoint</a></div><div class="ttdef"><b>Definition:</b> GeoPoint.h:17</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_transform_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_transform.html">ROCKY_NAMESPACE::GeoTransform</a></div><div class="ttdef"><b>Definition:</b> GeoTransform.h:39</div></div>
