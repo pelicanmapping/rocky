@@ -53,7 +53,7 @@ namespace
                     continue;
 
                 // First collect all declutter-able entities and sort them by their distance to the camera.
-                std::vector<std::tuple<entt::entity, double, double, double>> sorted; // entity, x, y, sort_key
+                std::vector<std::tuple<entt::entity, double, double, double, int, int>> sorted; // entity, x, y, sort_key, width, height
                 sorted.reserve(last_max_size);
 
                 double aspect_ratio = 1.0; // same for all objects
@@ -62,14 +62,24 @@ namespace
                 {
                     if (transform.node && transform.node->viewLocal.size() > viewID)
                     {
+                        int width = 
+                            (declutter.width_px >= 0 ? declutter.width_px : 0) +
+                            (declutter.buffer_x >= 0 ? declutter.buffer_x : (int)buffer_radius);
+                        int height = 
+                            (declutter.height_px >= 0 ? declutter.height_px : 0) +
+                            (declutter.buffer_y >= 0 ? declutter.buffer_y : (int)buffer_radius);                        
+
                         // Cheat by directly accessing view 0. In reality we will might either declutter per-view
                         // or have a "driving view" that controls visibility for all views.
                         auto& viewLocal = transform.node->viewLocal[viewID];
-                        auto& mvp = viewLocal.mvp;    
-                        auto clip = mvp[3] / mvp[3][3];
-                        vsg::dvec2 window((clip.x + 1.0) * 0.5 * (double)viewLocal.viewport[2], (clip.y + 1.0) * 0.5 * (double)viewLocal.viewport[3]);
-                        double sort_key = sort_by_priority ? (double)declutter.priority : clip.z;
-                        sorted.emplace_back(entity, window.x, window.y, sort_key);
+                        if (!viewLocal.culled)
+                        {
+                            auto& mvp = viewLocal.mvp;
+                            auto clip = mvp[3] / mvp[3][3];
+                            vsg::dvec2 window((clip.x + 1.0) * 0.5 * (double)viewLocal.viewport[2], (clip.y + 1.0) * 0.5 * (double)viewLocal.viewport[3]);
+                            double sort_key = sort_by_priority ? (double)declutter.priority : clip.z;
+                            sorted.emplace_back(entity, window.x, window.y, sort_key, width, height);
+                        }
                     }
                 }
                 std::sort(sorted.begin(), sorted.end(), [](const auto& a, const auto& b) { return std::get<3>(a) > std::get<3>(b); });
@@ -79,19 +89,23 @@ namespace
                 // each entity's buffered location in screen(clip) space. For objects that don't conflict with
                 // higher-priority objects, set visibility to true.
                 RTree<entt::entity, double, 2> rtree;
-                double bh = 0.5 * buffer_radius;
 
                 for (auto iter : sorted)
                 {
                     ++total;
 
-                    auto [entity, x, y, sort_key] = iter;
+                    auto [entity, x, y, sort_key, width, height] = iter;
 
                     auto& visibility = registry.get<Visibility>(entity);
                     if (visibility.parent == nullptr)
                     {
-                        double LL[2]{ x - bh, y - bh * aspect_ratio };
-                        double UR[2]{ x + bh, y + bh * aspect_ratio };
+                        double half_width = (double)(width >> 1);
+                        double half_height = (double)(height >> 1);
+                        //double LL[2]{ x - bh, y - bh * aspect_ratio };
+                        //double UR[2]{ x + bh, y + bh * aspect_ratio };
+
+                        double LL[2]{ x - half_width, y - half_height * aspect_ratio };
+                        double UR[2]{ x + half_width, y + half_height * aspect_ratio };
 
                         if (rtree.Search(LL, UR, [](auto e) { return false; }) == 0)
                         {
@@ -128,17 +142,6 @@ auto Demo_Decluttering = [](Application& app)
     {
         declutter = DeclutterSystem::create(app.entities);
 
-        // find every transform'd entity, and add a decluttering component:
-        auto view = app.registry.view<Transform>();
-        for (auto&& [entity, transform] : view.each())
-        {
-            // only if it doesn't already have one
-            if (!app.registry.try_get<Declutter>(entity))
-            {
-                app.registry.emplace<Declutter>(entity);
-            }
-        }
-
         // tell the declutterer how to access view IDs.
         declutter->getActiveViewIDs = [&app]() { return app.displayManager->activeViewIDs; };
 
@@ -166,13 +169,15 @@ auto Demo_Decluttering = [](Application& app)
                 declutter->resetVisibility();
         }
 
+        ImGuiLTable::Checkbox("Sort by priority", &declutter->sort_by_priority);
+        ImGuiLTable::SliderDouble("Radius", &declutter->buffer_radius, 0.0f, 50.0f, "%.0f px");
+        ImGuiLTable::SliderFloat("Frequency", &declutter->update_hertz, 1.0f, 30.0f, "%.0f hz");
+
         if (declutter->enabled)
         {
-            ImGuiLTable::Checkbox("Sort by Priority", &declutter->sort_by_priority);
-            ImGuiLTable::SliderDouble("  Radius", &declutter->buffer_radius, 0.0f, 50.0f, "%.0f px");
-            ImGuiLTable::SliderFloat("  Frequency", &declutter->update_hertz, 1.0f, 30.0f, "%.0f hz");
-            ImGuiLTable::Text("  Candidates", "%ld / %ld", declutter->visible, declutter->total);
+            ImGuiLTable::Text("Candidates", "%ld / %ld", declutter->visible, declutter->total);
         }
+
         ImGuiLTable::End();
     }
 };

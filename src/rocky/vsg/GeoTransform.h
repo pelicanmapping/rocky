@@ -90,6 +90,7 @@ namespace ROCKY_NAMESPACE
             vsg::dmat4 mvp;
             vsg::vec4 viewport;
             SRS world_srs;
+            bool culled = false;
             const Ellipsoid* world_ellipsoid = nullptr;
             SRSOperation pos_to_world;
             std::shared_ptr<Horizon> horizon;

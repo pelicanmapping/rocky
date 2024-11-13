@@ -24,6 +24,12 @@ auto Demo_LabelFeatures = [](Application& app)
     static jobs::future<LoadedFeatures> data;
     static bool ready = false;
 
+    struct Candidate {
+        double pop = 0.0;
+        GeoPoint centroid;
+        double area = 0.0;
+    };
+
     if (!ready)
     {
         if (data.empty())
@@ -44,6 +50,8 @@ auto Demo_LabelFeatures = [](Application& app)
         {
             if (data->status.ok())
             {
+                std::map<std::string, Candidate> candidates;
+
                 auto iter = data->fs->iterate(app.instance.io());
                 while (iter.hasMore())
                 {
@@ -53,20 +61,39 @@ auto Demo_LabelFeatures = [](Application& app)
                         auto field = feature.field("name");
                         if (!field.stringValue.empty())
                         {
-                            auto entity = app.registry.create();
-                            auto& label = app.registry.emplace<Label>(entity);
-                            label.text = field.stringValue;
-                            label.style.font = app.runtime().defaultFont;
-                            label.style.pointSize = 28.0f;
-                            label.style.outlineSize = 0.25f;
-
-                            auto& transform = app.registry.emplace<Transform>(entity);
-                            transform.setPosition(feature.extent.centroid());
-
-                            auto& declutter = app.registry.emplace<Declutter>(entity);
-                            declutter.priority = (float)feature.field("pop").doubleValue;
+                            auto& candidate = candidates[field.stringValue];
+                            auto area = feature.extent.area();
+                            if (area > candidate.area)
+                            {
+                                candidate.area = area;
+                                candidate.pop = feature.field("pop").doubleValue;
+                                candidate.centroid = feature.extent.centroid();
+                            }
                         }
                     }
+                }
+
+                for (auto& [name, candidate] : candidates)
+                {
+                    auto entity = app.registry.create();
+
+                    // attach a label:
+                    auto& label = app.registry.emplace<Label>(entity);
+                    label.text = name;
+                    label.style.font = app.runtime().defaultFont;
+                    label.style.pointSize = 28.0f;
+                    label.style.outlineSize = 0.5f;
+
+                    // attach a transform to place the label:
+                    auto& transform = app.registry.emplace<Transform>(entity);
+                    transform.setPosition(candidate.centroid);
+
+                    // attach a component to control decluttering:
+                    auto& declutter = app.registry.emplace<Declutter>(entity);
+                    declutter.priority = (float)candidate.pop;
+                    // note, 0.75 is points-to-pixels
+                    declutter.width_px = 0.75f * 0.60f * label.style.pointSize * (float)label.text.size();
+                    declutter.height_px = 0.75f * label.style.pointSize;
                 }
 
                 ready = true;

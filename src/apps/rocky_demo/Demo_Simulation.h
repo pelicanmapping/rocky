@@ -8,6 +8,7 @@
 #include <rocky/vsg/Icon.h>
 #include <rocky/vsg/Transform.h>
 #include <rocky/vsg/Motion.h>
+#include <rocky/vsg/Declutter.h>
 #include <rocky/vsg/DisplayManager.h>
 #include <set>
 #include <random>
@@ -128,6 +129,10 @@ auto Demo_Simulation = [](Application& app)
                 label.style.outlineSize = 0.5f;
                 label.style.pixelOffset.y = -icon.style.size_pixels * 0.5f - 5.0f;
                 label.style.verticalAlignment = vsg::StandardLayout::TOP_ALIGNMENT;
+
+                // Decluttering information
+                auto& declutter = app.entities.emplace<Declutter>(entity);
+                declutter.priority = alt;
 
                 platforms.emplace(entity);
             }

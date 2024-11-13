@@ -87,9 +87,7 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix,
     auto mvm = state->modelviewMatrixStack.top() * view.matrix;
     view.mvp = state->projectionMatrixStack.top() * mvm;
     view.viewport = state->_commandBuffer->viewDependentState->viewportData->at(0);
-
-    if (!cull)
-        return false;
+    view.culled = false;
 
     // Frustum cull (by center point)
     if (frustumCulling)
@@ -97,7 +95,10 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix,
         vsg::dvec4 clip = view.mvp[3] / view.mvp[3][3];
         const double t = 1.0;
         if (clip.x < -t || clip.x > t || clip.y < -t || clip.y > t || clip.z < -t || clip.z > t)
+        {
+            view.culled = true;
             return false;
+        }
     }
 
     // horizon cull, if active (geocentric only)
@@ -113,8 +114,16 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix,
         if (view.horizon)
         {
             if (!view.horizon->isVisible(view.matrix[3][0], view.matrix[3][1], view.matrix[3][2], bound.radius))
+            {
+                view.culled = true;
                 return false;
+            }
         }
+    }
+
+    if (!cull)
+    {
+        return false;
     }
 
     // replicates RecordTraversal::accept(MatrixTransform&):
