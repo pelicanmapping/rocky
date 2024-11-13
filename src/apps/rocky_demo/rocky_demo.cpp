@@ -36,6 +36,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Label.h"
 #include "Demo_LineFeatures.h"
 #include "Demo_PolygonFeatures.h"
+#include "Demo_LabelFeatures.h"
 #include "Demo_MapManipulator.h"
 #include "Demo_Serialization.h"
 #include "Demo_Tethering.h"
@@ -87,7 +88,8 @@ std::vector<Demo> demos =
     Demo{ "GIS Data", {},
     {
         Demo{ "Polygon features", Demo_PolygonFeatures },
-        Demo{ "Line features", Demo_LineFeatures }
+        Demo{ "Line features", Demo_LineFeatures },
+        Demo{ "Labels from features", Demo_LabelFeatures }
     } },
     Demo{ "Simulation", {},
     {

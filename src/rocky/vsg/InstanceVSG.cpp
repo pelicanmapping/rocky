@@ -284,7 +284,7 @@ InstanceVSG::ctor(int& argc, char** argv)
     if (font_file.empty())
     {
 #ifdef WIN32
-        font_file = "arial.ttf";
+        font_file = "arialbd.ttf";
 #else
         font_file = "times.vsgb";
 #endif

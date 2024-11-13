@@ -8,6 +8,7 @@
 #include <rocky/vsg/Icon.h>
 #include <rocky/vsg/Transform.h>
 #include <rocky/vsg/Motion.h>
+#include <rocky/vsg/Declutter.h>
 #include <rocky/vsg/DisplayManager.h>
 #include <set>
 #include <random>
@@ -20,11 +21,6 @@ using namespace std::chrono_literals;
 
 namespace
 {
-    struct Declutter
-    {
-        bool dummy = false;
-    };
-
     class DeclutterSystem
     {
     public:
@@ -35,6 +31,8 @@ namespace
         float update_hertz = 1.0f; // updates per second
         bool enabled = true;
         double buffer_radius = 25.0;
+        bool sort_by_priority = false;
+
         unsigned total = 0, visible = 1;
         std::size_t last_max_size = 32;
         std::function<std::vector<std::uint32_t>()> getActiveViewIDs;
@@ -55,7 +53,7 @@ namespace
                     continue;
 
                 // First collect all declutter-able entities and sort them by their distance to the camera.
-                std::vector<std::tuple<entt::entity, double, double, double>> sorted; // entity, x, y, depth, radius
+                std::vector<std::tuple<entt::entity, double, double, double>> sorted; // entity, x, y, sort_key
                 sorted.reserve(last_max_size);
 
                 double aspect_ratio = 1.0; // same for all objects
@@ -70,10 +68,11 @@ namespace
                         auto& mvp = viewLocal.mvp;    
                         auto clip = mvp[3] / mvp[3][3];
                         vsg::dvec2 window((clip.x + 1.0) * 0.5 * (double)viewLocal.viewport[2], (clip.y + 1.0) * 0.5 * (double)viewLocal.viewport[3]);
-                        sorted.emplace_back(entity, window.x, window.y, clip.z);
+                        double sort_key = sort_by_priority ? (double)declutter.priority : clip.z;
+                        sorted.emplace_back(entity, window.x, window.y, sort_key);
                     }
                 }
-                std::sort(sorted.begin(), sorted.end(), [](const auto& a, const auto& b) { return std::get<3>(a) > std::get<3>(b); }); // reverse z buffer
+                std::sort(sorted.begin(), sorted.end(), [](const auto& a, const auto& b) { return std::get<3>(a) > std::get<3>(b); });
                 last_max_size = sorted.size();
 
                 // Next, take the sorted vector and declutter by populating an R-Tree with rectangles representing
@@ -86,7 +85,7 @@ namespace
                 {
                     ++total;
 
-                    auto [entity, x, y, z] = iter;
+                    auto [entity, x, y, sort_key] = iter;
 
                     auto& visibility = registry.get<Visibility>(entity);
                     if (visibility.parent == nullptr)
@@ -128,13 +127,16 @@ auto Demo_Decluttering = [](Application& app)
     if (!declutter)
     {
         declutter = DeclutterSystem::create(app.entities);
-        //app.ecsManager->add(declutter);
 
         // find every transform'd entity, and add a decluttering component:
         auto view = app.registry.view<Transform>();
         for (auto&& [entity, transform] : view.each())
         {
-            app.registry.emplace<Declutter>(entity);
+            // only if it doesn't already have one
+            if (!app.registry.try_get<Declutter>(entity))
+            {
+                app.registry.emplace<Declutter>(entity);
+            }
         }
 
         // tell the declutterer how to access view IDs.
@@ -166,6 +168,7 @@ auto Demo_Decluttering = [](Application& app)
 
         if (declutter->enabled)
         {
+            ImGuiLTable::Checkbox("Sort by Priority", &declutter->sort_by_priority);
             ImGuiLTable::SliderDouble("  Radius", &declutter->buffer_radius, 0.0f, 50.0f, "%.0f px");
             ImGuiLTable::SliderFloat("  Frequency", &declutter->update_hertz, 1.0f, 30.0f, "%.0f hz");
             ImGuiLTable::Text("  Candidates", "%ld / %ld", declutter->visible, declutter->total);
