@@ -100,21 +100,75 @@ using&#160;</td><td class="memItemRight" valign="bottom"><b>time_point</b> = std
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a259fd68fef6e294eead787ea8c767bc2"><td class="memItemLeft" align="right" valign="top"><a id="a259fd68fef6e294eead787ea8c767bc2"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs.html#a259fd68fef6e294eead787ea8c767bc2">setVisible</a> (entt::registry &amp;r, entt::entity e, bool value, int view_index=-1)</td></tr>
-<tr class="memdesc:a259fd68fef6e294eead787ea8c767bc2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Toggle the visibility of an entity in the given view. <br /></td></tr>
+<tr class="memitem:a632420173b4a37c6ef064331c3630f03"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs.html#a632420173b4a37c6ef064331c3630f03">visible</a> (<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility.html">Visibility</a> &amp;vis, int view_index)</td></tr>
+<tr class="separator:a632420173b4a37c6ef064331c3630f03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a259fd68fef6e294eead787ea8c767bc2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs.html#a259fd68fef6e294eead787ea8c767bc2">setVisible</a> (entt::registry &amp;r, entt::entity e, bool value, int view_index=-1)</td></tr>
 <tr class="separator:a259fd68fef6e294eead787ea8c767bc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9dd21c2ff3fed5045cacd0fa1c468548"><td class="memItemLeft" align="right" valign="top"><a id="a9dd21c2ff3fed5045cacd0fa1c468548"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>visible</b> (<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility.html">Visibility</a> &amp;vis, int view_index=0)</td></tr>
-<tr class="separator:a9dd21c2ff3fed5045cacd0fa1c468548"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace76b9ccad7a3d77e1cb16da3636b360"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs.html#ace76b9ccad7a3d77e1cb16da3636b360">visible</a> (entt::registry &amp;r, entt::entity e, int view_index=0)</td></tr>
 <tr class="separator:ace76b9ccad7a3d77e1cb16da3636b360"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Entity Component <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_system.html">System</a> support. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
+<a id="a259fd68fef6e294eead787ea8c767bc2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a259fd68fef6e294eead787ea8c767bc2">&#9670;&nbsp;</a></span>setVisible()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ROCKY_NAMESPACE::ecs::setVisible </td>
+          <td>(</td>
+          <td class="paramtype">entt::registry &amp;&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">entt::entity&#160;</td>
+          <td class="paramname"><em>e</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>view_index</em> = <code>-1</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Toggle the visibility of an entity in the given view </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">r</td><td>Entity registry </td></tr>
+    <tr><td class="paramname">e</td><td>Entity id </td></tr>
+    <tr><td class="paramname">value</td><td>New visibility state </td></tr>
+    <tr><td class="paramname">view_index</td><td>Index of view to set visibility </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="ace76b9ccad7a3d77e1cb16da3636b360"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ace76b9ccad7a3d77e1cb16da3636b360">&#9670;&nbsp;</a></span>visible()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ace76b9ccad7a3d77e1cb16da3636b360">&#9670;&nbsp;</a></span>visible() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -154,11 +208,57 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>visible</b> (<a class
 </div><div class="memdoc">
 <p>Whether an entity is visible in the given view </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">e</td><td>Entity </td></tr>
+    <tr><td class="paramname">r</td><td>Entity registry </td></tr>
+    <tr><td class="paramname">e</td><td>Entity id </td></tr>
     <tr><td class="paramname">view_index</td><td>Index of view to check visibility </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>True if visible in that view </dd></dl>
+
+</div>
+</div>
+<a id="a632420173b4a37c6ef064331c3630f03"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a632420173b4a37c6ef064331c3630f03">&#9670;&nbsp;</a></span>visible() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ROCKY_NAMESPACE::ecs::visible </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility.html">Visibility</a> &amp;&#160;</td>
+          <td class="paramname"><em>vis</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>view_index</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Whether the <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility.html">Visibility</a> component is visible in the given view </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">vis</td><td>The visibility component </td></tr>
+    <tr><td class="paramname">view_index</td><td>Index of view to check visibility </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if visible in that view </dd></dl>
 
 </div>
 </div>
