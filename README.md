@@ -1,6 +1,6 @@
 # :mountain: Rocky
 
-Rocky is a 3D Geospatial C++ SDK. <img align="right" width="200" alt="Screenshot 2023-02-22 124318" src="https://user-images.githubusercontent.com/326618/220712284-8a17d87a-431f-4966-a425-0f2628b23b40.png">
+Rocky is a C++ SDK for rendering maps and globes. <img align="right" width="200" alt="Screenshot 2023-02-22 124318" src="https://user-images.githubusercontent.com/326618/220712284-8a17d87a-431f-4966-a425-0f2628b23b40.png">
 
 Rocky will render an accurate 3D or 2D map with real geospatial imagery and elevation data. It supports thousands of map projections and many popular geodata sources including GeoTIFF, TMS, OpenStreetMap, WMTS, WMS, and Azure Maps. Rocky's data model is inspired by the osgEarth SDK, a 3D GIS toolkit created in 2008 and still in wide use today.
 
@@ -38,22 +38,6 @@ target_link_libraries(myApp PRIVATE rocky::rocky)
 install(TARGETS myApp RUNTIME DESTINATION bin)
 ```
 
-## Dependencies
-
-* [cpp-httplib](https://github.com/yhirose/cpp-httplib)
-* [entt](https://github.com/skypjack/entt)
-* [GDAL](https://github.com/OSGeo/gdal) (optional)
-* [glm](https://github.com/g-truc/glm)
-* [ImGui](https://github.com/ocornut/imgui) (optional)
-* [nlohmann-json](https://github.com/nlohmann/json)
-* [openssl](https://github.com/openssl/openssl) (optional)
-* [proj](https://github.com/OSGeo/PROJ)
-* [spdlog](https://github.com/gabime/spdlog)
-* [sqlite3](https://github.com/sqlite/sqlite) (optional)
-* [vsgXchange](https://github.com/vsg-dev/vsgXchange) (optional)
-* [VulkanSceneGraph](https://github.com/vsg-dev/VulkanSceneGraph)
-* [weejobs](https://github.com/pelicanmapping/weejobs) (embedded)
-
 ## Building
 
 Rocky comes with a handy Windows batch file to automatically configure the project using `vcpkg`:
@@ -87,3 +71,28 @@ Use `--help` to see all command line options.
 ```
 rocky_demo --help
 ```
+
+
+## Screenshots
+<img width="250" height="250" alt="Simulation" src="https://github.com/user-attachments/assets/3cc364a3-729f-4ad7-a55c-2142f21e02f4">
+<img width="250" height="250" alt="Multiple Views" src="https://github.com/user-attachments/assets/19fecebb-22bf-47f7-b106-95450e0ca776">
+<img width="250" height="250" alt="Track Histories" src="https://github.com/user-attachments/assets/fbd7ed38-a51c-4b59-a17a-6209a56e2a01">
+
+
+## Dependencies
+* [cpp-httplib](https://github.com/yhirose/cpp-httplib)
+* [entt](https://github.com/skypjack/entt)
+* [GDAL](https://github.com/OSGeo/gdal) (optional)
+* [glm](https://github.com/g-truc/glm)
+* [ImGui](https://github.com/ocornut/imgui) (optional)
+* [nlohmann-json](https://github.com/nlohmann/json)
+* [openssl](https://github.com/openssl/openssl) (optional)
+* [proj](https://github.com/OSGeo/PROJ)
+* [spdlog](https://github.com/gabime/spdlog)
+* [sqlite3](https://github.com/sqlite/sqlite) (optional)
+* [vsgXchange](https://github.com/vsg-dev/vsgXchange) (optional)
+* [VulkanSceneGraph](https://github.com/vsg-dev/VulkanSceneGraph)
+* [weejobs](https://github.com/pelicanmapping/weejobs) (embedded)
+
+
+
