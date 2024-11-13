@@ -75,6 +75,7 @@ rocky_demo --help
 
 ## Screenshots
 <img width="250" height="250" alt="Simulation" src="https://github.com/user-attachments/assets/3cc364a3-729f-4ad7-a55c-2142f21e02f4">
+<img width="250" height="250" alt="Simulation" src="https://github.com/user-attachments/assets/0ad69913-695a-41cd-81f5-975372e00cb7">
 <img width="250" height="250" alt="Multiple Views" src="https://github.com/user-attachments/assets/19fecebb-22bf-47f7-b106-95450e0ca776">
 <img width="250" height="250" alt="Track Histories" src="https://github.com/user-attachments/assets/fbd7ed38-a51c-4b59-a17a-6209a56e2a01">
 
