@@ -101,7 +101,7 @@ Application::ctor(int& argc, char** argv)
     commandLine.read(instance.runtime().readerWriterOptions);
     _debuglayer = commandLine.read("--debug");
     _apilayer = commandLine.read("--api");
-    _vsync = !commandLine.read("--novsync");
+    _vsync = !commandLine.read({ "--novsync", "--no-vsync" });
 
     if (commandLine.read("--version"))
     {
@@ -120,13 +120,15 @@ Application::ctor(int& argc, char** argv)
         std::cout
             << "rocky " << ROCKY_VERSION_STRING << std::endl
             << argv[0] << std::endl
-            << "    [--map <filename>]       // load a JSON map file" << std::endl
-            << "    [--earthfile <filename>] // import an osgEarth earth file" << std::endl
-            << "    [--sky]                  // install a sky lighting model" << std::endl
-            << "    [--version]              // print the version" << std::endl
-            << "    [--verison-all]          // print all dependency versions" << std::endl
-            << "    [--debug]                // activate the Vulkan debug validation layer" << std::endl
-            << "    [--api]                  // activate the Vulkan API validation layer (mega-verbose)" << std::endl
+            << "    [--map <filename>]        // load a JSON map file" << std::endl
+            << "    [--earth-file <filename>] // import an osgEarth earth file" << std::endl
+            << "    [--no-vsync]              // disable vertical sync and render frames as fast as possible" << std::endl
+            << "    [--on-demand]             // activate a mode that only renders frames when necessary" << std::endl
+            << "    [--sky]                   // install a rudimentary lighting model" << std::endl
+            << "    [--version]               // print the version" << std::endl
+            << "    [--verison-all]           // print all dependency versions" << std::endl
+            << "    [--debug]                 // activate the Vulkan debug validation layer" << std::endl
+            << "    [--api]                   // activate the Vulkan API validation layer (mega-verbose)" << std::endl
             ;
 
         exit(0);
@@ -182,7 +184,7 @@ Application::ctor(int& argc, char** argv)
     }
 
     // import map from an osgEarth earth file:
-    if (commandLine.read("--earthfile", infile) && commandLineStatus.ok())
+    if (commandLine.read({ "--earthfile", "--earth-file" }, infile) && commandLineStatus.ok())
     {
         commandLineStatus = importEarthFile(infile, *mapNode, instance);
     }

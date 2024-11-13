@@ -120,12 +120,14 @@ auto Demo_Simulation = [](Application& app)
                 motion.velocity = { -75000 + rand_unit(mt) * 150000, 0.0, 0.0 };
                 motion.normalAxis = pos.srs.ellipsoid().greatCircleRotationAxis(glm::dvec3(lon, lat, 0.0), initial_bearing);
 
-                // Label the platform:
+                // Place a label below the platform:
                 auto& label = app.entities.emplace<Label>(entity);
                 label.text = std::to_string(i);
                 label.style.font = app.runtime().defaultFont;
-                label.style.pointSize = 16.0f;
-                label.style.outlineSize = 0.2f;
+                label.style.pointSize = 16.0f + t * 5.0f;
+                label.style.outlineSize = 0.5f;
+                label.style.pixelOffset.y = -icon.style.size_pixels * 0.5f - 5.0f;
+                label.style.verticalAlignment = vsg::StandardLayout::TOP_ALIGNMENT;
 
                 platforms.emplace(entity);
             }

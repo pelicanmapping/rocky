@@ -302,6 +302,7 @@ LabelSystemNode::createNode(entt::entity entity, Runtime& runtime) const
     // don't need this since we're using the custom technique
     textNode->shaderSet = {};
 
+    // this dude will billboard the label.
     auto pst = PixelScaleTransform::create();
     pst->unrotate = true;
     pst->addChild(textNode);
