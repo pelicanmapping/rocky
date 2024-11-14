@@ -573,9 +573,9 @@ $(function() {
 <div class="line"><a name="l00578"></a><span class="lineno">  578</span>&#160;        <span class="comment">// If we detected any entities that need new nodes, create them now.</span></div>
 <div class="line"><a name="l00579"></a><span class="lineno">  579</span>&#160;        <span class="keywordflow">if</span> (!entities_to_create.empty())</div>
 <div class="line"><a name="l00580"></a><span class="lineno">  580</span>&#160;        {</div>
-<div class="line"><a name="l00581"></a><span class="lineno">  581</span>&#160;            <span class="keywordflow">if</span> (manager)</div>
+<div class="line"><a name="l00581"></a><span class="lineno">  581</span>&#160;            <span class="keywordflow">if</span> (SystemNodeBase::manager)</div>
 <div class="line"><a name="l00582"></a><span class="lineno">  582</span>&#160;            {</div>
-<div class="line"><a name="l00583"></a><span class="lineno">  583</span>&#160;                <span class="keywordtype">bool</span> ok = manager-&gt;entityCompileJobs.emplace(EntityCompileBatch{</div>
+<div class="line"><a name="l00583"></a><span class="lineno">  583</span>&#160;                <span class="keywordtype">bool</span> ok = SystemNodeBase::manager-&gt;entityCompileJobs.emplace(SystemNodeBase::EntityCompileBatch{</div>
 <div class="line"><a name="l00584"></a><span class="lineno">  584</span>&#160;                    std::move(entities_to_create),</div>
 <div class="line"><a name="l00585"></a><span class="lineno">  585</span>&#160;                    <span class="keyword">this</span>,</div>
 <div class="line"><a name="l00586"></a><span class="lineno">  586</span>&#160;                    &amp;runtime });</div>
