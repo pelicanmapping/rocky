@@ -578,9 +578,9 @@ namespace ROCKY_NAMESPACE
         // If we detected any entities that need new nodes, create them now.
         if (!entities_to_create.empty())
         {
-            if (manager)
+            if (SystemNodeBase::manager)
             {
-                bool ok = manager->entityCompileJobs.emplace(EntityCompileBatch{
+                bool ok = SystemNodeBase::manager->entityCompileJobs.emplace(SystemNodeBase::EntityCompileBatch{
                     std::move(entities_to_create),
                     this,
                     &runtime });
