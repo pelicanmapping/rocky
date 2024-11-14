@@ -71,7 +71,7 @@ auto Demo_LabelFeatures = [](Application& app)
             label.text = name;
             label.style.font = app.runtime().defaultFont;
             label.style.pointSize = starting_label_size;
-            label.style.outlineSize = 0.4f;
+            label.style.outlineSize = 0.35f;
 
             // attach a transform to place the label:
             auto& transform = app.registry.emplace<Transform>(entity);

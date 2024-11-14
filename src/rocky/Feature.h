@@ -9,6 +9,7 @@
 #include <rocky/SRS.h>
 #include <rocky/URI.h>
 #include <rocky/GeoExtent.h>
+#include <rocky/Utils.h>
 #include <vector>
 #include <stack>
 #include <queue>
@@ -197,9 +198,9 @@ namespace ROCKY_NAMESPACE
             bool operator()(const std::string& L, const std::string& R) const;
         };
 
-        using Fields = std::map<std::string, FieldValueUnion, FieldNameComparator>;
+        using Fields = util::vector_map<std::string, FieldValueUnion, FieldNameComparator>;
 
-        using FieldSchema = std::map<std::string, FieldType>;
+        using FieldSchema = util::vector_map<std::string, FieldType>;
 
         using ID = long long;
 

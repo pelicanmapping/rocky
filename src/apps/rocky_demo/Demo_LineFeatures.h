@@ -48,10 +48,6 @@ auto Demo_LineFeatures = [](Application& app)
                 {
                     // convert anything we find to lines:
                     feature.geometry.convertToType(Geometry::Type::LineString);
-
-                    // use rhumb-line interpolation for linear features:
-                    feature.interpolation = GeodeticInterpolation::RhumbLine;
-
                     feature_view.features.emplace_back(std::move(feature));
                 }
             }

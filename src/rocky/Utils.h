@@ -261,56 +261,12 @@ namespace ROCKY_NAMESPACE
         //! Sets the name of the current thread
         extern ROCKY_EXPORT void setThreadName(const char* name);
 
-        //! GLSL-style randomizer [0..1]
-        inline float glsl_random(float seed) {
-            constexpr float A = 12.9898f, B = 43758.5453f;
-            return 0.5 * (1.0 + std::sin(seed * A + seed * B));
-        }
-
-        template<class T>
-        class LockingQueue
-        {
-        public:
-            void emplace(const T& obj) {
-                std::scoped_lock L(_mutex);
-                _impl.emplace_back(obj);
-                _event = true;
-            }
-            void emplace(T&& obj) {
-                std::scoped_lock L(_mutex);
-                _impl.emplace_back(std::move(obj));
-                _event = true;            
-            }
-            T pop() {
-                std::scoped_lock L(_mutex);
-                if (_impl.empty()) return T{};
-                auto top = std::move(_impl.front());
-                _impl.pop_front();
-                return top;
-            }
-            void swap(std::vector<T>& output) {
-                std::scoped_lock L(_mutex);
-                auto size = _impl.size();
-                output.swap(_impl);
-                _impl.reserve(size);
-            }
-            bool waitAndReset() {
-                return _event.waitAndReset();
-            }
-            
-            jobs::detail::event _event;
-
-        private:
-            std::vector<T> _impl;
-            std::mutex _mutex;
-        };
-
 
         template<typename T>
-        class RingBuffer
+        class ring_buffer
         {
         public:
-            RingBuffer(int size) : _size(size), _buffer(size) {}
+            ring_buffer(int size) : _size(size), _buffer(size) {}
 
             bool push(const T& obj) {
                 if (full()) return false;
@@ -356,9 +312,110 @@ namespace ROCKY_NAMESPACE
             mutable std::condition_variable_any _condition;
         };
 
+        /**
+        * A std::map-like map that uses a vector.
+        * This benchmarks much faster than std::map or std::unordered_map for small sets.
+        */
+        template<typename KEY, typename DATA, typename LESS = std::less<KEY>>
+        struct vector_map
+        {
+            struct ENTRY {
+                KEY first;
+                DATA second;
+            };
 
-        template<class T>
-        class Locked
+            using value_type = DATA;
+            using container_t = std::vector<ENTRY>;
+            using iterator = typename container_t::iterator;
+            using const_iterator = typename container_t::const_iterator;
+
+            container_t _container;
+
+            inline bool keys_equal(const KEY& a, const KEY& b) const {
+                return LESS()(a, b) == false && LESS()(b, a) == false;
+            }
+
+            inline DATA& operator[](const KEY& key) {
+                for (unsigned i = 0; i < _container.size(); ++i) {
+                    if (keys_equal(_container[i].first, key)) {
+                        return _container[i].second;
+                    }
+                }
+                _container.resize(_container.size() + 1);
+                _container.back().first = key;
+                return _container.back().second;
+            }
+
+            inline DATA& emplace(const KEY& key, const DATA& data) {
+                auto& entry = operator[](key);
+                entry = data;
+                return entry;
+            }
+
+            inline DATA& emplace(const KEY& key, DATA&& data) {
+                auto& entry = operator[](key);
+                entry = std::move(data);
+                return entry;
+            }
+
+            inline const_iterator begin() const { return _container.begin(); }
+            inline const_iterator end()   const { return _container.end(); }
+            inline iterator begin() { return _container.begin(); }
+            inline iterator end() { return _container.end(); }
+
+            inline iterator find(const KEY& key) {
+                for (unsigned i = 0; i < _container.size(); ++i) {
+                    if (keys_equal(_container[i].first, key)) {
+                        return _container.begin() + i;
+                    }
+                }
+                return _container.end();
+            }
+
+            inline const_iterator find(const KEY& key) const {
+                for (unsigned i = 0; i < _container.size(); ++i) {
+                    if (keys_equal(_container[i].first, key)) {
+                        return _container.begin() + i;
+                    }
+                }
+                return _container.end();
+            }
+
+            inline bool empty() const { return _container.empty(); }
+
+            inline void clear() { _container.clear(); }
+
+            inline void erase(const KEY& key) {
+                for (unsigned i = 0; i < _container.size(); ++i) {
+                    if (keys_equal(_container[i].first, key)) {
+                        if (i + 1 < _container.size()) {
+                            _container[i] = _container[_container.size() - 1];
+                        }
+                        _container.resize(_container.size() - 1);
+                        break;
+                    }
+                }
+            }
+
+            inline int indexOf(const KEY& key) const {
+                for (unsigned i = 0; i < _container.size(); ++i) {
+                    if (keys_equal(_container[i].first, key)) {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            inline int size() const { return _container.size(); }
+
+            template<typename InputIterator>
+            void insert(InputIterator a, InputIterator b) {
+                for (InputIterator i = a; i != b; ++i) (*this)[i->first] = i->second;
+            }
+        };
+
+        template<typename T>
+        class locked_value
         {
         public:
             void set(const T& obj) {
@@ -407,12 +464,12 @@ namespace ROCKY_NAMESPACE
 
                 // wrap with a delegate function so we can control the semaphore
                 auto delegate = [this, function, name](jobs::cancelable& cancelable) -> bool
-                {
-                    ++semaphore;
-                    function(cancelable);
-                    --semaphore;
-                    return true;
-                };
+                    {
+                        ++semaphore;
+                        function(cancelable);
+                        --semaphore;
+                        return true;
+                    };
 
                 jobs::context context{ name, jobs::get_pool(name, 1) };
                 futures.emplace_back(jobs::dispatch(delegate, context));

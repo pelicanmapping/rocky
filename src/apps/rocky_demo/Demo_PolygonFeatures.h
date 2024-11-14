@@ -50,7 +50,6 @@ auto Demo_PolygonFeatures = [](Application& app)
                 auto feature = iter.next();
                 if (feature.valid())
                 {
-                    feature.interpolation = GeodeticInterpolation::RhumbLine;
                     feature_view.features.emplace_back(std::move(feature));
                 }
             }

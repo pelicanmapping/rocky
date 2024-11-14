@@ -8,6 +8,7 @@
 #include <rocky/vsg/Transform.h>
 #include <rocky/vsg/engine/Runtime.h>
 #include <rocky/vsg/engine/Utils.h>
+#include <rocky/Utils.h>
 #include <vsg/vk/Context.h>
 #include <vsg/app/RecordTraversal.h>
 #include <vsg/utils/GraphicsPipelineConfigurator.h>
@@ -61,14 +62,10 @@ namespace ROCKY_NAMESPACE
         */
         struct Renderable
         {
+            using LockedNode = util::locked_value<vsg::ref_ptr<vsg::Node>>;
             vsg::ref_ptr<vsg::Node> node;
+            std::unique_ptr<LockedNode> staged = std::make_unique<LockedNode>();
             int revision = -1;
-
-            std::unique_ptr<Locked<vsg::ref_ptr<vsg::Node>>> staged;
-            //bool updating = false;
-
-            Renderable() :
-                staged(std::make_unique<Locked<vsg::ref_ptr<vsg::Node>>>()) { }
         };
     }
 
@@ -293,7 +290,7 @@ namespace ROCKY_NAMESPACE
 
         public:
             // the data structure holding the queued jobs. 16 might be overkill :)
-            util::RingBuffer<SystemNodeBase::EntityCompileBatch> entityCompileJobs{ 16 };
+            util::ring_buffer<SystemNodeBase::EntityCompileBatch> entityCompileJobs{ 16 };
 
         private:
             std::vector<System*> systems;

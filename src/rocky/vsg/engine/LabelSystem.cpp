@@ -281,7 +281,7 @@ LabelSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& dat
     layout->position = label.style.pixelOffset;
     layout->horizontal = vsg::vec3(size, 0.0f, 0.0f);
     layout->vertical = vsg::vec3(0.0f, size, 0.0f);
-    layout->color = vsg::vec4(1.0f, 0.9f, 1.0f, 1.0f);
+    layout->color = vsg::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     layout->outlineWidth = label.style.outlineSize;
     layout->horizontalAlignment = label.style.horizontalAlignment;
     layout->verticalAlignment = label.style.verticalAlignment;
