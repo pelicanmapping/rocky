@@ -170,8 +170,9 @@ MeshSystemNode::initializeSystem(Runtime& runtime)
         c.commands->addChild(c.config->bindGraphicsPipeline);
     }
 }
-vsg::ref_ptr<vsg::Node>
-MeshSystemNode::createNode(entt::entity entity, Runtime& runtime) const
+
+void
+MeshSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const
 {
     auto& mesh = registry.get<Mesh>(entity);
 
@@ -241,7 +242,7 @@ MeshSystemNode::createNode(entt::entity entity, Runtime& runtime) const
     cull->child->accept(cb);
     cull->bound.set((cb.bounds.min + cb.bounds.max) * 0.5, vsg::length(cb.bounds.min - cb.bounds.max) * 0.5);
 
-    return cull;
+    data.new_node = cull;
 }
 
 int
@@ -383,9 +384,9 @@ NodeSystemNode::NodeSystemNode(entt::registry& registry) :
     //nop
 }
 
-vsg::ref_ptr<vsg::Node>
-NodeSystemNode::createNode(entt::entity entity, Runtime& runtime) const
+void
+NodeSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const
 {
     auto& graph = registry.get<NodeGraph>(entity);
-    return graph.node;
+    data.new_node = graph.node;
 }

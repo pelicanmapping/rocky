@@ -77,6 +77,7 @@ namespace ROCKY_NAMESPACE
     */
     struct Visibility : public ecs::PerView<bool, 4, true>
     {
+        // setting this ties this component to another, ignoring the internal settings
         Visibility* parent = nullptr;
     };
 
@@ -191,16 +192,8 @@ namespace ROCKY_NAMESPACE
             //! Fetches the correct layout for a component.
             vsg::ref_ptr<vsg::PipelineLayout> getPipelineLayout(const T&) const;
 
-
-            // temporary? replace with createOrUpdateNode?
-            virtual vsg::ref_ptr<vsg::Node> createNode(entt::entity, Runtime&) const {
-                return {};
-            }
-
-            virtual void createOrUpdateNode(entt::entity entity, SystemNodeBase::CreateOrUpdateData& data, Runtime& runtime) const {
-                data.new_node = createNode(entity, runtime); // polyfill
-            }
-
+            //! Subclass must implement this to create or update a node for a component.
+            virtual void createOrUpdateNode(entt::entity entity, SystemNodeBase::CreateOrUpdateData& data, Runtime& runtime) const = 0;
 
             void create_or_update(entt::entity entity, SystemNodeBase::CreateOrUpdateData& data, Runtime& runtime) const override;
             void finish_update(entt::entity entity, SystemNodeBase::CreateOrUpdateData& data) const override;

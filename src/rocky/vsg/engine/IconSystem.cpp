@@ -167,8 +167,8 @@ namespace
     }
 }
 
-vsg::ref_ptr<vsg::Node>
-IconSystemNode::createNode(entt::entity entity, Runtime& runtime) const
+void
+IconSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const
 {
     auto& icon = registry.get<Icon>(entity);
 
@@ -230,7 +230,7 @@ IconSystemNode::createNode(entt::entity entity, Runtime& runtime) const
     stateGroup->stateCommands.push_back(bindCommand);
     stateGroup->addChild(geometry);
 
-    return stateGroup;
+    data.new_node = stateGroup;
 }
 
 

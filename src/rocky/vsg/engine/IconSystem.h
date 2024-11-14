@@ -68,7 +68,7 @@ namespace ROCKY_NAMESPACE
     private:
 
         //! Called by the helper to initialize a new node component.
-        vsg::ref_ptr<vsg::Node> createNode(entt::entity entity, Runtime& runtime) const override;
+        void createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const override;
 
         // cache of image descriptors so we can re-use textures & samplers
         mutable std::unordered_map<std::shared_ptr<Image>, vsg::ref_ptr<vsg::DescriptorImage>> descriptorImage_cache;

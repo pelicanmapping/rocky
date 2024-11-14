@@ -267,8 +267,8 @@ LabelSystemNode::initializeSystem(Runtime& runtime)
         pipelines[0].commands->children.push_back(child);
 }
 
-vsg::ref_ptr<vsg::Node>
-LabelSystemNode::createNode(entt::entity entity, Runtime& runtime) const
+void
+LabelSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const
 {
     auto& label = registry.get<Label>(entity);
 
@@ -306,5 +306,6 @@ LabelSystemNode::createNode(entt::entity entity, Runtime& runtime) const
     auto pst = PixelScaleTransform::create();
     pst->unrotate = true;
     pst->addChild(textNode);
-    return pst;
+
+    data.new_node = pst;
 }
