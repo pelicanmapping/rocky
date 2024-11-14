@@ -37,9 +37,8 @@ namespace ROCKY_NAMESPACE
 
             if (unrotate)
             {
-                vsg::dquat rotation;
                 auto& mv = state.modelviewMatrixStack.top();
-                get_rotation_from_matrix(mv, rotation);
+                auto rotation = util::quaternion_from_unscaled_matrix<vsg::dquat>(mv);
                 matrix = matrix * vsg::rotate(vsg::inverse(rotation));
             }
             rt.apply(*this);

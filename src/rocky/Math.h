@@ -10,6 +10,7 @@
 #include <iterator>
 #include <algorithm>
 #include <cstdarg>
+#include <tuple>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -442,8 +443,10 @@ namespace ROCKY_NAMESPACE
         //! Convert Euler angles, in radians, to a quaternion.
         //! https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
         template<typename Q>
-        inline void euler_radians_to_quaternion(double xaxis, double yaxis, double zaxis, Q& q)
+        inline Q quaternion_from_euler_radians(double xaxis, double yaxis, double zaxis)
         {
+            Q q;
+
             // x-axis rotation:
             double cx = cos(xaxis * 0.5);
             double sx = sin(xaxis * 0.5);
@@ -458,47 +461,58 @@ namespace ROCKY_NAMESPACE
             q.x = sx * cy * cz - cx * sy * sz;
             q.y = cx * sy * cz + sx * cy * sz;
             q.z = cx * cy * sz - sx * sy * cz;
+
+            return q;
         }
 
         //! Convert Euler angles, in degrees, to a quaternion.
         template<typename Q>
-        inline void euler_degrees_to_quaternion(double xaxis, double yaxis, double zaxis, Q& q)
+        inline Q quaternion_from_euler_degrees(double xaxis, double yaxis, double zaxis)
         {
-            euler_radians_to_quaternion(deg2rad(xaxis), deg2rad(yaxis), deg2rad(zaxis), q);
+            return quaternion_from_euler_radians<Q>(deg2rad(xaxis), deg2rad(yaxis), deg2rad(zaxis));
         }
 
         //! Convert a quat to Euler angles in radians.
         //! https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
         template<typename Q>
-        inline void quaternion_to_euler_radians(const Q& q, double& xaxis, double& yaxis, double& zaxis)
+        inline std::tuple<double, double, double> euler_radians_from_quaternion(const Q& q)
         {
             // x-axis rotation
             double sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
             double cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
-            xaxis = std::atan2(sinr_cosp, cosr_cosp);
+            double xaxis = std::atan2(sinr_cosp, cosr_cosp);
             // y-axis rotation
             double sinp = std::sqrt(1 + 2 * (q.w * q.y - q.x * q.z));
             double cosp = std::sqrt(1 - 2 * (q.w * q.y - q.x * q.z));
-            yaxis = (2 * std::atan2(sinp, cosp) - M_PI / 2);
+            double yaxis = (2 * std::atan2(sinp, cosp) - M_PI / 2);
             // z-axis rotation
             double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
             double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
-            zaxis = std::atan2(siny_cosp, cosy_cosp);
+            double zaxis = std::atan2(siny_cosp, cosy_cosp);
+
+            return std::make_tuple(xaxis, yaxis, zaxis);
         }
 
         //! Convert a quat to Euler angles in degrees.
         template<typename Q>
-        inline void quaternion_to_euler_degrees(const Q& q, double& xaxis, double& yaxis, double& zaxis)
+        inline std::tuple<double, double, double> euler_degrees_from_quaternion(const Q& q)
         {
-            quaternion_to_euler_radians(q, xaxis, yaxis, zaxis);
-            xaxis = rad2deg(xaxis), yaxis = rad2deg(yaxis), zaxis = rad2deg(zaxis);
+            auto a = euler_radians_from_quaternion(q);
+            return std::make_tuple(rad2deg(std::get<0>(a)), rad2deg(std::get<1>(a)), rad2deg(std::get<2>(a)));
         }
 
-
-        // from OpenSceneGraph
-        template<typename M, typename Q>
-        inline void get_rotation_from_matrix(const M& _mat, Q& q)
+        //! Extract the rotation component from a 4x4 matrix as a quaternion, assuming the
+        //! matrix has a unit scale (i.e., unscaled). If you are unsure whether the matrix
+        //! is scaled or not, use quaternion_from_matrix() instead.
+        //! 
+        //! @param mat The input unscaled matrix.
+        //! @return The rotation component of the unscaled matrix.
+        template<typename Q, typename M>
+        inline Q quaternion_from_unscaled_matrix(const M& _mat)
         {
+            Q q;
+
+            // from OpenSceneGraph:
             double s;
             double tq[4];
             int i, j;
@@ -549,6 +563,31 @@ namespace ROCKY_NAMESPACE
             q.x *= s;
             q.y *= s;
             q.z *= s;
+
+            return q;
+        }
+
+        //! Extract the rotation component from a 4x4 matrix as a quaternion.
+        //! This method will normalize any scaling factor found in the matrix. If you know your matrix
+        //! is unscaled, call quaternion_from_unscaled_matrix() instead for better performance.
+        //! @param mat The input matrix.
+        //! @return The rotation component of the matrix.
+        template<typename Q, typename M>
+        inline Q quaternion_from_matrix(const M& mat)
+        {
+            Q q;
+            M _mat = mat;
+
+            // Remove the scaling from the matrix by normalizing each axis
+            double scaleX = sqrt(_mat[0][0] * _mat[0][0] + _mat[0][1] * _mat[0][1] + _mat[0][2] * _mat[0][2]);
+            double scaleY = sqrt(_mat[1][0] * _mat[1][0] + _mat[1][1] * _mat[1][1] + _mat[1][2] * _mat[1][2]);
+            double scaleZ = sqrt(_mat[2][0] * _mat[2][0] + _mat[2][1] * _mat[2][1] + _mat[2][2] * _mat[2][2]);
+
+            _mat[0][0] /= scaleX; _mat[0][1] /= scaleX; _mat[0][2] /= scaleX;
+            _mat[1][0] /= scaleY; _mat[1][1] /= scaleY; _mat[1][2] /= scaleY;
+            _mat[2][0] /= scaleZ; _mat[2][1] /= scaleZ; _mat[2][2] /= scaleZ;
+
+            return quaternion_from_unscaled_matrix<Q>(_mat);
         }
     }
 }
