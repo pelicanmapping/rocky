@@ -46,7 +46,7 @@ namespace ROCKY_NAMESPACE
         LineGeometry();
 
         template<typename VEC3_T>
-        inline void set(const std::vector<VEC3_T>& verts, std::size_t staticStorage = 0);
+        inline void set(const std::vector<VEC3_T>& verts, Line::Topology topology, std::size_t staticStorage = 0);
 
         //! The first vertex in the line string to render
         void setFirst(unsigned value);
@@ -87,11 +87,14 @@ namespace ROCKY_NAMESPACE
 
 
     template<typename VEC3_T>
-    void LineGeometry::set(const std::vector<VEC3_T>& verts, std::size_t staticStorage)
+    void LineGeometry::set(const std::vector<VEC3_T>& verts, Line::Topology topology, std::size_t staticStorage)
     {
         const vsg::vec4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
         std::size_t verts_to_allocate = (staticStorage > 0 ? staticStorage : verts.size());
+        std::size_t indices_to_allocate = 
+            topology == Line::Topology::Strip ? (verts_to_allocate - 1) * 6 :
+            (verts_to_allocate/2) * 6; // Segments
 
         if (!_current)
         {
@@ -114,34 +117,80 @@ namespace ROCKY_NAMESPACE
             assignIndices(_indices);
         }
 
+        auto* current = (_current->data());
+        auto* prev = (_previous->data());
+        auto* next = (_next->data());
+        auto* color = (_colors->data());
+        auto* indicies = (_indices->data());
         int i_ptr = 0;
-        for (unsigned i = 0; i < verts.size(); ++i)
+
+        if (topology == Line::Topology::Strip)
         {
-            bool first = i == 0;
-            bool last = (i == verts.size() - 1);
-
-            for (int n = 0; n < 4; ++n)
+            for (unsigned i = 0; i < verts.size(); ++i)
             {
-                (_previous->data())[i * 4 + n] = first ? verts[i] : verts[i - 1];
-                (_next->data())[i * 4 + n] = last ? verts[i] : verts[i + 1];
-                (_current->data())[i * 4 + n] = verts[i];
-                (_colors->data())[i * 4 + n] = defaultColor;
+                bool first = i == 0;
+                bool last = (i == verts.size() - 1);
+
+                for (int n = 0; n < 4; ++n)
+                {
+                    (_previous->data())[i * 4 + n] = first ? verts[i] : verts[i - 1];
+                    (_next->data())[i * 4 + n] = last ? verts[i] : verts[i + 1];
+                    (_current->data())[i * 4 + n] = verts[i];
+                    (_colors->data())[i * 4 + n] = defaultColor;
+                }
+
+                if (!first)
+                {
+                    auto e = (i - 1) * 4 + 2;
+                    (_indices->data())[i_ptr++] = e + 3;
+                    (_indices->data())[i_ptr++] = e + 1;
+                    (_indices->data())[i_ptr++] = e + 0; // provoking vertex
+                    (_indices->data())[i_ptr++] = e + 2;
+                    (_indices->data())[i_ptr++] = e + 3;
+                    (_indices->data())[i_ptr++] = e + 0; // provoking vertex
+                }
             }
+        }
+        else // topology == Topology::Segments
+        {
+            ROCKY_SOFT_ASSERT_AND_RETURN((verts.size() & 0x1) == 0, void(), "Lines with 'Segment' topology must have an even number of vertices");
 
-            if (!first)
+            for (unsigned i = 0; i < verts.size(); ++i)
             {
-                auto e = (i - 1) * 4 + 2;
-                (_indices->data())[i_ptr++] = e + 3;
-                (_indices->data())[i_ptr++] = e + 1;
-                (_indices->data())[i_ptr++] = e + 0; // provoking vertex
-                (_indices->data())[i_ptr++] = e + 2;
-                (_indices->data())[i_ptr++] = e + 3;
-                (_indices->data())[i_ptr++] = e + 0; // provoking vertex
+                bool even = (i & 0x1) == 0;
+
+                for (int n = 0; n < 4; ++n)
+                {
+                    if (even) // beginning of segment
+                    {
+                        prev[i * 4 + n] = verts[i];
+                        next[i * 4 + n] = verts[i + 1];
+                    }
+                    else // end of segment
+                    {
+                        prev[i * 4 + n] = verts[i - 1];
+                        next[i * 4 + n] = verts[i];
+                    }
+
+                    current[i * 4 + n] = verts[i];
+                    color[i * 4 + n] = defaultColor;
+                }
+
+                if (!even)
+                {
+                    auto e = (i - 1) * 4 + 2;
+                    indicies[i_ptr++] = e + 3;
+                    indicies[i_ptr++] = e + 1;
+                    indicies[i_ptr++] = e + 0; // provoking vertex
+                    indicies[i_ptr++] = e + 2;
+                    indicies[i_ptr++] = e + 3;
+                    indicies[i_ptr++] = e + 0; // provoking vertex                
+                }
             }
         }
 
         _drawCommand->firstIndex = 0;
-        _drawCommand->indexCount = i_ptr; // 6 * std::max(0, (int)verts.size() - 1);
+        _drawCommand->indexCount = i_ptr;
 
         _current->dirty();
         _previous->dirty();

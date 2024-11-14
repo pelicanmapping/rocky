@@ -138,10 +138,27 @@ namespace
             auto feature_to_world = feature.srs.to(geom_srs);
             feature_to_world.transformRange(tessellated.begin(), tessellated.end());
 
-            // make the line attachment:
-            line.points.resize(tessellated.size());
-            std::transform(tessellated.begin(), tessellated.end(), line.points.begin(), 
-                [](const glm::dvec3& p) { return vsg::dvec3(p.x, p.y, p.z); });
+            // Populate the line component based on the topology.
+            if (line.topology == Line::Topology::Strip)
+            {
+                line.points.resize(line.points.size() + tessellated.size());
+
+                std::transform(tessellated.begin(), tessellated.end(), line.points.begin(), 
+                    [](const glm::dvec3& p) { return vsg::dvec3(p.x, p.y, p.z); });
+            }
+            else // Line::Topology::Segments
+            {
+                std::size_t num_points_in_segments = tessellated.size() * 2 - 2;
+                auto ptr = line.points.size();
+                line.points.resize(line.points.size() + num_points_in_segments);
+
+                // convert from a strip to segments
+                for (std::size_t i = 0; i < tessellated.size() - 1; ++i)
+                {
+                    line.points[ptr++] = vsg::dvec3(tessellated[i].x, tessellated[i].y, tessellated[i].z);
+                    line.points[ptr++] = vsg::dvec3(tessellated[i + 1].x, tessellated[i + 1].y, tessellated[i + 1].z);
+                }
+            }
 
             final_max_span = std::max(final_max_span, get_max_segment_length(tessellated));
         }
@@ -355,8 +372,13 @@ FeatureView::generate(entt::registry& registry, const SRS& geom_srs, Runtime& ru
         if (feature.geometry.type == Geometry::Type::LineString ||
             feature.geometry.type == Geometry::Type::MultiLineString)
         {
-            auto entity = line_entities.emplace_back(registry.create());
+            if (line_entities.empty())
+                line_entities.emplace_back(registry.create());
+
+            auto& entity = line_entities.front();
             auto& geom = registry.get_or_emplace<Line>(entity);
+            geom.topology = Line::Topology::Segments;
+
             registry.get<Visibility>(entity).parent = &host_visibility;
 
             compile_feature_to_lines(feature, styles, geom_srs, geom);

@@ -48,6 +48,13 @@ namespace ROCKY_NAMESPACE
         //! plan to use.
         std::size_t staticSize = 0;
 
+        //! Line configuration
+        enum class Topology {
+            Strip, // a single line strip
+            Segments // a series of disconnected line segments
+        };
+        Topology topology = Topology::Strip;
+
         //! Geometry. NB, the actual array elements are stored on the heap
         std::vector<vsg::dvec3> points;
     };

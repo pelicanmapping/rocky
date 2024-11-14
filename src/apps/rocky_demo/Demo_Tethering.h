@@ -73,10 +73,14 @@ auto Demo_Tethering = [](Application& app)
         arrow.points = { 
             vsg::dvec3{ s * 1.5, s * 0.5, 0.0 },
             vsg::dvec3{ s * 2.0, 0.0, 0.0 },
-            vsg::dvec3{ s * 1.5, -s * 0.5, 0.0 }
+            vsg::dvec3{ s * 2.0, 0.0, 0.0 },
+            vsg::dvec3{ s * 1.5, -s * 0.5, 0.0 },
+            vsg::dvec3{ s * 2.0, 0.0, 0.0 },
+            vsg::dvec3{ s * 0.0, 0.0, 0.0 }
         };
 
         arrow.style = LineStyle{ {1,0.5,0,1}, 4.0f };
+        arrow.topology = Line::Topology::Segments;
 
         // Add a transform:
         auto& xform = app.entities.emplace<Transform>(entity);

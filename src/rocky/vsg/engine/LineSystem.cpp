@@ -190,7 +190,7 @@ LineSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data
             }
 
             geometry = LineGeometry::create();
-            geometry->set(verts32, line.staticSize);
+            geometry->set(verts32, line.topology, line.staticSize);
 
             localizer_matrix = vsg::translate(offset);
             auto localizer = vsg::MatrixTransform::create(localizer_matrix);
@@ -201,7 +201,7 @@ LineSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data
         {
             // no reference point -- push raw geometry
             geometry = LineGeometry::create();
-            geometry->set(line.points, line.staticSize);
+            geometry->set(line.points, line.topology, line.staticSize);
             geom_root = geometry;
         }
 
@@ -256,7 +256,7 @@ LineSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data
                         verts32.emplace_back(temp);
                     }
                     
-                    geometry->set(verts32, line.staticSize);
+                    geometry->set(verts32, line.topology, line.staticSize);
 
                     auto mt = util::find<vsg::MatrixTransform>(data.existing_node);
                     localizer_matrix = mt->matrix;
@@ -264,7 +264,7 @@ LineSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data
                 else
                 {
                     // no reference point -- push raw geometry
-                    geometry->set(line.points, line.staticSize);
+                    geometry->set(line.points, line.topology, line.staticSize);
                 }
 
                 // hand-calculate the bounding sphere
