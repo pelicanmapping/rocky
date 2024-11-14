@@ -167,17 +167,24 @@ auto Demo_TrackHistory = [](Application& app)
 
     if (!system)
     {
-        app.ecsManager->add(system = TrackHistorySystem::create(app.registry));
+        // make a System to handle track histories, and add it to the app.
+        system = TrackHistorySystem::create(app.registry);
+        app.ecsManager->add(system);
 
+        // style our tracks.
         LineStyle style;
-        style.color = vsg::vec4{ 0.0f, 1.0f, 1.0f, 1.0f };
+        style.color = vsg::vec4{ 0.0f, 1.0f, 0.0f, 1.0f };
         style.width = 2.0f;
 
+        // attach a track for any entity with a Transform.
         auto view = app.registry.view<Transform>();
         for (auto&& [entity, transform] : view.each())
         {
-            auto& track = app.registry.emplace<TrackHistory>(entity);
-            track.style = style;
+            if (transform.parent == nullptr)
+            {
+                auto& track = app.registry.emplace<TrackHistory>(entity);
+                track.style = style;
+            }
         }
     }
 

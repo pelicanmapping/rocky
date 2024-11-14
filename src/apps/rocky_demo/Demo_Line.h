@@ -35,11 +35,11 @@ auto Demo_Line_Absolute = [](Application& app)
         }
 
         // Create a style that we can change dynamically:
-        line.style = LineStyle();
-        line.style->color = vsg::vec4{ 1,1,0,1 };
-        line.style->width = 3.0f;
-        line.style->stipple_pattern = 0xffff;
-        line.style->stipple_factor = 1;
+        line.style.color = vsg::vec4{ 1,1,0,1 };
+        line.style.width = 3.0f;
+        line.style.stipple_pattern = 0xffff;
+        line.style.stipple_factor = 1;
+
         line.write_depth = true;
     }
 
@@ -49,25 +49,22 @@ auto Demo_Line_Absolute = [](Application& app)
         if (ImGuiLTable::Checkbox("Visible", &visible))
             ecs::setVisible(app.registry, entity, visible);
 
-        auto& component = app.entities.get<Line>(entity);
+        auto& line = app.entities.get<Line>(entity);
 
-        if (component.style.has_value())
-        {
-            float* col = (float*)&component.style->color;
-            if (ImGuiLTable::ColorEdit3("Color", col))
-                component.dirty();
+        float* col = (float*)&line.style.color;
+        if (ImGuiLTable::ColorEdit3("Color", col))
+            line.dirty();
 
-            if (ImGuiLTable::SliderFloat("Width", &component.style->width, 1.0f, 15.0f, "%.0f"))
-                component.dirty();
+        if (ImGuiLTable::SliderFloat("Width", &line.style.width, 1.0f, 15.0f, "%.0f"))
+            line.dirty();
 
-            if (ImGuiLTable::SliderInt("Stipple pattern", &component.style->stipple_pattern, 0x0001, 0xffff, "%04x", ImGuiSliderFlags_Logarithmic))
-                component.dirty();
+        if (ImGuiLTable::SliderInt("Stipple pattern", &line.style.stipple_pattern, 0x0001, 0xffff, "%04x", ImGuiSliderFlags_Logarithmic))
+            line.dirty();
 
-            if (ImGuiLTable::SliderInt("Stipple factor", &component.style->stipple_factor, 1, 4))
-                component.dirty();
+        if (ImGuiLTable::SliderInt("Stipple factor", &line.style.stipple_factor, 1, 4))
+            line.dirty();
 
-            ImGuiLTable::End();
-        }
+        ImGuiLTable::End();
     }
 };
 
@@ -110,11 +107,8 @@ auto Demo_Line_Relative = [](Application& app)
 
         auto& line = app.entities.get<Line>(entity);
 
-        if (line.style.has_value())
-        {
-            if (ImGuiLTable::ColorEdit3("Color", (float*)&line.style->color))
-                line.dirty();
-        }
+        if (ImGuiLTable::ColorEdit3("Color", (float*)&line.style.color))
+            line.dirty();
 
         auto& transform = app.entities.get<Transform>(entity);
 

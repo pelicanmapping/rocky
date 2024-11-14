@@ -20,13 +20,6 @@ struct run_at_frequency
     std::chrono::duration<float> _max;
 };
 
-struct scoped_use
-{
-    scoped_use(jobs::detail::semaphore& s) : sem(s) { sem.acquire(); }
-    ~scoped_use() { sem.release(); }
-    jobs::detail::semaphore& sem;
-};
-
 const ImVec4 ImGuiErrorColor = ImVec4(1, 0.35f, 0.35f, 1);
 
 #if(IMGUI_VERSION_NUM < 18928)

@@ -102,7 +102,7 @@ TerrainState::createDefaultDescriptors()
     // Next make the "default" descriptor model, which is used when 
     // no other data is available. These are 1x1 pixel placeholder images.
     auto color_image = Image::create(Image::R8G8B8A8_UNORM, 1, 1);
-    color_image->write(Color::Orange, 0, 0);
+    color_image->write(Color::Navy, 0, 0);
     texturedefs.color.defaultData = util::moveImageToVSG(color_image);
     ROCKY_HARD_ASSERT(texturedefs.color.defaultData);
     this->defaultTileDescriptors.color = vsg::DescriptorImage::create(

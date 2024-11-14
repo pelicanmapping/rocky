@@ -5,11 +5,12 @@
  */
 #pragma once
 #include <rocky/Feature.h>
-#include <optional>
-#include <functional>
 #include <rocky/vsg/Line.h>
 #include <rocky/vsg/Mesh.h>
 #include <rocky/vsg/Icon.h>
+
+#include <optional>
+#include <functional>
 
 namespace ROCKY_NAMESPACE
 {
@@ -26,8 +27,8 @@ namespace ROCKY_NAMESPACE
     };
 
     /**
-    * FeatureView is an attachment that compiles a collection of Feature objects
-    * for visualization.
+    * FeatureView is a utility that compiles a collection of Feature objects
+    * into renderable components.
     */
     class ROCKY_EXPORT FeatureView
     {

@@ -75,7 +75,7 @@ struct Demo
 std::vector<Demo> demos =
 {
     Demo{ "Map", Demo_Map },
-    Demo{ "Primitives", {},
+    Demo{ "Basic Components", {},
     {
         Demo{ "Label", Demo_Label },
         Demo{ "Line - absolute", Demo_Line_Absolute },
@@ -169,11 +169,6 @@ public:
             if (e.handled || forceRefresh)
             {
                 _instance.requestFrame();
-                //Log()->info("{} Event {} handled by ImGui", e.time.time_since_epoch().count(), e.className());
-            }
-            else
-            {
-                //Log()->info("{} Event {} NOT handled by ImGui", e.time.time_since_epoch().count(), e.className());
             }
         }
     }
@@ -211,11 +206,6 @@ int main(int argc, char** argv)
         auto imagery = rocky::TMSImageLayer::create();
         imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
         layers.add(imagery);
-
-        // add an elevation layer to the map
-        auto elev = rocky::TMSElevationLayer::create();
-        elev->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
-        ///layers.add(elev);
 #endif
     }
 

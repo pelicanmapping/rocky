@@ -163,22 +163,12 @@ LineSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data
     {
         auto& line = registry.get<Line>(entity);
 
-        // renderable structure is one of the following:
-        // cullnode -> stategroup -> linegeometry
-        // cullnode -> stategroup -> group -> linegeometry* (multiple parts)
-        // cullnode -> linegeometry
-        // cullnode -> group -> linegeometry* (multiple parts)
+        auto bindCommand = BindLineDescriptors::create();
+        bindCommand->updateStyle(line.style);
+        bindCommand->init(getPipelineLayout(line));
 
-        vsg::ref_ptr<vsg::StateGroup> stategroup;
-        if (line.style.has_value())
-        {
-            auto bindCommand = BindLineDescriptors::create();
-            bindCommand->updateStyle(line.style.value());
-            bindCommand->init(getPipelineLayout(line));
-
-            stategroup = vsg::StateGroup::create();
-            stategroup->stateCommands.push_back(bindCommand);
-        }
+        auto stategroup = vsg::StateGroup::create();
+        stategroup->stateCommands.push_back(bindCommand);
 
         vsg::ref_ptr<LineGeometry> geometry;
         vsg::ref_ptr<vsg::Node> geom_root;
@@ -237,13 +227,10 @@ LineSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data
         auto& line = registry.get<Line>(entity);
 
         // style changed?
-        if (line.style.has_value())
+        auto* bindStyle = util::find<BindLineDescriptors>(data.existing_node);
+        if (bindStyle)
         {
-            auto* bindStyle = util::find<BindLineDescriptors>(data.existing_node);
-            if (bindStyle)
-            {
-                bindStyle->updateStyle(line.style.value());
-            }
+            bindStyle->updateStyle(line.style);
         }
 
         if (true) // geometry changed
@@ -320,7 +307,7 @@ BindLineDescriptors::updateStyle(const LineStyle& value)
 
     LineStyle& my_style = *static_cast<LineStyle*>(_styleData->dataPointer());
 
-    if (force || (std::memcmp(&my_style, &value, sizeof(LineStyle)) == 0))
+    if (force || (std::memcmp(&my_style, &value, sizeof(LineStyle)) != 0))
     {
         my_style = value;
         _styleData->dirty();

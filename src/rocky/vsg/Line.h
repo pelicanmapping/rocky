@@ -33,8 +33,8 @@ namespace ROCKY_NAMESPACE
     class Line : public ecs::RevisionedComponent
     {
     public:
-        //! Dynamic line styling. This is optional.
-        std::optional<LineStyle> style;
+        //! Dynamic line styling
+        LineStyle style;
 
         //! Whether lines should write to the depth buffer
         bool write_depth = false;

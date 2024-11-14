@@ -31,7 +31,7 @@ namespace
         float update_hertz = 1.0f; // updates per second
         bool enabled = true;
         double buffer_radius = 25.0;
-        bool sort_by_priority = false;
+        bool sort_by_priority = true;
 
         unsigned total = 0, visible = 1;
         std::size_t last_max_size = 32;
@@ -82,6 +82,8 @@ namespace
                         }
                     }
                 }
+
+                // sort them by whatever sort key we used, either priority or camera distance
                 std::sort(sorted.begin(), sorted.end(), [](const auto& a, const auto& b) { return std::get<3>(a) > std::get<3>(b); });
                 last_max_size = sorted.size();
 
@@ -101,8 +103,6 @@ namespace
                     {
                         double half_width = (double)(width >> 1);
                         double half_height = (double)(height >> 1);
-                        //double LL[2]{ x - bh, y - bh * aspect_ratio };
-                        //double UR[2]{ x + bh, y + bh * aspect_ratio };
 
                         double LL[2]{ x - half_width, y - half_height * aspect_ratio };
                         double UR[2]{ x + half_width, y + half_height * aspect_ratio };
