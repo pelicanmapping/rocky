@@ -68,6 +68,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_renderable-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -77,17 +78,23 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="_e_c_s_8h_source.html">ECS.h</a>&gt;</code></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a209122b5800dfa44e17303232dcd0ecf"><td class="memItemLeft" align="right" valign="top"><a id="a209122b5800dfa44e17303232dcd0ecf"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>LockedNode</b> = util::locked_value&lt; vsg::ref_ptr&lt; vsg::Node &gt; &gt;</td></tr>
+<tr class="separator:a209122b5800dfa44e17303232dcd0ecf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a74031665146800d8e50053499e3f3fab"><td class="memItemLeft" align="right" valign="top"><a id="a74031665146800d8e50053499e3f3fab"></a>
 vsg::ref_ptr&lt; vsg::Node &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>node</b></td></tr>
 <tr class="separator:a74031665146800d8e50053499e3f3fab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad15b92778f0aa3c158ddd61009b09b8a"><td class="memItemLeft" align="right" valign="top"><a id="ad15b92778f0aa3c158ddd61009b09b8a"></a>
+std::unique_ptr&lt; LockedNode &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>staged</b> = std::make_unique&lt;LockedNode&gt;()</td></tr>
+<tr class="separator:ad15b92778f0aa3c158ddd61009b09b8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae0161b48ef4212007ac96200ee6b0c10"><td class="memItemLeft" align="right" valign="top"><a id="ae0161b48ef4212007ac96200ee6b0c10"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>revision</b> = -1</td></tr>
 <tr class="separator:ae0161b48ef4212007ac96200ee6b0c10"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3f78b4c43e94edce007b428112fd0273"><td class="memItemLeft" align="right" valign="top"><a id="a3f78b4c43e94edce007b428112fd0273"></a>
-std::unique_ptr&lt; Locked&lt; vsg::ref_ptr&lt; vsg::Node &gt; &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>staged</b></td></tr>
-<tr class="separator:a3f78b4c43e94edce007b428112fd0273"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Component that holds a VSG node and its revision (so it can be synchronized with the associated data model). One will typically attach a <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_renderable.html">Renderable</a> to RevisionedComponent::entity. </p>

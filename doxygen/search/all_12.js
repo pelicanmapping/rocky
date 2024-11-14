@@ -21,8 +21,8 @@ var searchData=
   ['release_525',['release',['../class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1future.html#a21f26a366d6092504153172d6934f922',1,'WEEJOBS_NAMESPACE::future::release()'],['../class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1detail_1_1semaphore.html#a44fd0368e3252fd8de30e2bec0da7220',1,'WEEJOBS_NAMESPACE::detail::semaphore::release()']]],
   ['releaseall_526',['releaseAll',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#a7f8ec6f8dd925af2f4739f995e5411d1',1,'ROCKY_NAMESPACE::TerrainTilePager']]],
   ['releasedata_527',['releaseData',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a2cc633df03e7f610dd048c5e21677e6a',1,'ROCKY_NAMESPACE::Image']]],
-  ['remove_528',['Remove',['../class_r_tree.html#a1b4b6b4c73bc47029ba696c49265c043',1,'RTree']]],
-  ['remove_529',['remove',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_callback.html#a0c9eefe4d006aef0632652dfe52300a4',1,'ROCKY_NAMESPACE::Callback::remove()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_collection.html#a8e737c60573b7f1d648aaa4ec2958652',1,'ROCKY_NAMESPACE::LayerCollection::remove()']]],
+  ['remove_528',['remove',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_callback.html#a0c9eefe4d006aef0632652dfe52300a4',1,'ROCKY_NAMESPACE::Callback::remove()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_collection.html#a8e737c60573b7f1d648aaa4ec2958652',1,'ROCKY_NAMESPACE::LayerCollection::remove()']]],
+  ['remove_529',['Remove',['../class_r_tree.html#a1b4b6b4c73bc47029ba696c49265c043',1,'RTree']]],
   ['removeall_530',['RemoveAll',['../class_r_tree.html#a396f1031eb2c8224715741fd0b77349d',1,'RTree']]],
   ['removeattribute_531',['RemoveAttribute',['../class_ti_xml_element.html#a56979767deca794376b1dfa69a525b2a',1,'TiXmlElement::RemoveAttribute(const char *name)'],['../class_ti_xml_element.html#a1afa6aea716511326a608e4c05df4f3a',1,'TiXmlElement::RemoveAttribute(const std::string &amp;name)']]],
   ['removecallback_532',['removeCallback',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html#af03b5a43423bab01082b392bb83e6cd3',1,'ROCKY_NAMESPACE::Map']]],
@@ -35,8 +35,8 @@ var searchData=
   ['renderingenabled_539',['renderingEnabled',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a39a5c266287a5d30e386a2b931730bdc',1,'ROCKY_NAMESPACE::Runtime']]],
   ['renderondemand_540',['renderOnDemand',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#abeffc2b70e7a0dc9e4816ce34864f844',1,'ROCKY_NAMESPACE::Runtime::renderOnDemand()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_instance_v_s_g.html#a0109223a22fcbd1249bfb813e50a5a02',1,'ROCKY_NAMESPACE::InstanceVSG::renderOnDemand()']]],
   ['renderrequests_541',['renderRequests',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a5243f556b1dc031d1fecd4416415e7c6',1,'ROCKY_NAMESPACE::Runtime']]],
-  ['rendertype_542',['RenderType',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1',1,'ROCKY_NAMESPACE::Layer']]],
-  ['rendertype_543',['renderType',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a9ba5c50675206531e4ce441b19880418',1,'ROCKY_NAMESPACE::Layer']]],
+  ['rendertype_542',['renderType',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a9ba5c50675206531e4ce441b19880418',1,'ROCKY_NAMESPACE::Layer']]],
+  ['rendertype_543',['RenderType',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1',1,'ROCKY_NAMESPACE::Layer']]],
   ['replacechild_544',['ReplaceChild',['../class_ti_xml_node.html#a543208c2c801c84a213529541e904b9f',1,'TiXmlNode']]],
   ['reproject_545',['reproject',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html#a379055c5a835826ea0f73b5a112620a4',1,'ROCKY_NAMESPACE::GeoImage']]],
   ['requestframe_546',['requestFrame',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#abb1be2e2d6fbefcc8d43045592cdc2e7',1,'ROCKY_NAMESPACE::Runtime::requestFrame()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_instance_v_s_g.html#ab5e5fbbad6164184567f62bc242d3633',1,'ROCKY_NAMESPACE::InstanceVSG::requestFrame()']]],
@@ -59,7 +59,6 @@ var searchData=
   ['rtree_3c_20dataextent_2c_20double_2c_202_20_3e_563',['RTree&lt; DataExtent, double, 2 &gt;',['../class_r_tree.html',1,'']]],
   ['rtt_564',['RTT',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_r_t_t.html',1,'ROCKY_NAMESPACE']]],
   ['run_565',['run',['../class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1jobpool.html#adc20faebd3bc7d7e2095bcea18dfe842',1,'WEEJOBS_NAMESPACE::jobpool']]],
-  ['runtime_566',['Runtime',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html',1,'ROCKY_NAMESPACE']]],
-  ['runtime_567',['runtime',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_engine.html#ab93462ed24c29dec249b73a456f4d773',1,'ROCKY_NAMESPACE::TerrainEngine::runtime()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_instance_v_s_g.html#a3aed99016c150fef0a730d19d04a5e3d',1,'ROCKY_NAMESPACE::InstanceVSG::runtime()']]],
-  ['runtime_568',['Runtime',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a522dc4b36f2a770bbe3e62c451f38841',1,'ROCKY_NAMESPACE::Runtime']]]
+  ['runtime_566',['Runtime',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html',1,'ROCKY_NAMESPACE::Runtime'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a522dc4b36f2a770bbe3e62c451f38841',1,'ROCKY_NAMESPACE::Runtime::Runtime()']]],
+  ['runtime_567',['runtime',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_engine.html#ab93462ed24c29dec249b73a456f4d773',1,'ROCKY_NAMESPACE::TerrainEngine::runtime()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_instance_v_s_g.html#a3aed99016c150fef0a730d19d04a5e3d',1,'ROCKY_NAMESPACE::InstanceVSG::runtime()']]]
 ];

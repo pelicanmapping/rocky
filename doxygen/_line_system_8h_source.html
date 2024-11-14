@@ -105,7 +105,7 @@ $(function() {
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_geometry.html">LineGeometry</a>();</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> VEC3_T&gt;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">void</span> set(<span class="keyword">const</span> std::vector&lt;VEC3_T&gt;&amp; verts, std::size_t staticStorage = 0);</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        <span class="keyword">inline</span> <span class="keywordtype">void</span> set(<span class="keyword">const</span> std::vector&lt;VEC3_T&gt;&amp; verts, <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a092201da9cba26286568c44ed509473c">Line::Topology</a> topology, std::size_t staticStorage = 0);</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="keywordtype">void</span> setFirst(<span class="keywordtype">unsigned</span> value);</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
@@ -138,72 +138,122 @@ $(function() {
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160; </div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160; </div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> VEC3_T&gt;</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keywordtype">void</span> LineGeometry::set(<span class="keyword">const</span> std::vector&lt;VEC3_T&gt;&amp; verts, std::size_t staticStorage)</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keywordtype">void</span> LineGeometry::set(<span class="keyword">const</span> std::vector&lt;VEC3_T&gt;&amp; verts, <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a092201da9cba26286568c44ed509473c">Line::Topology</a> topology, std::size_t staticStorage)</div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    {</div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        <span class="keyword">const</span> vsg::vec4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160; </div>
 <div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        std::size_t verts_to_allocate = (staticStorage &gt; 0 ? staticStorage : verts.size());</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160; </div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        <span class="keywordflow">if</span> (!_current)</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        {</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;            _current = vsg::vec3Array::create(verts_to_allocate * 4);</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;            _current-&gt;properties.dataVariance = vsg::DYNAMIC_DATA;</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160; </div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;            _previous = vsg::vec3Array::create(verts_to_allocate * 4);</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;            _previous-&gt;properties.dataVariance = vsg::DYNAMIC_DATA;</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;            </div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;            _next = vsg::vec3Array::create(verts_to_allocate * 4);</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;            _next-&gt;properties.dataVariance = vsg::DYNAMIC_DATA;</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160; </div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;            _colors = vsg::vec4Array::create(verts_to_allocate * 4);</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;            _colors-&gt;properties.dataVariance = vsg::DYNAMIC_DATA;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        std::size_t indices_to_allocate = </div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;            topology == Line::Topology::Strip ? (verts_to_allocate - 1) * 6 :</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;            (verts_to_allocate/2) * 6; <span class="comment">// Segments</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160; </div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        <span class="keywordflow">if</span> (!_current)</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;        {</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;            _current = vsg::vec3Array::create(verts_to_allocate * 4);</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;            _current-&gt;properties.dataVariance = vsg::DYNAMIC_DATA;</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160; </div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;            _previous = vsg::vec3Array::create(verts_to_allocate * 4);</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;            _previous-&gt;properties.dataVariance = vsg::DYNAMIC_DATA;</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;            </div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;            _next = vsg::vec3Array::create(verts_to_allocate * 4);</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;            _next-&gt;properties.dataVariance = vsg::DYNAMIC_DATA;</div>
 <div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160; </div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;            assignArrays({ _current, _previous, _next, _colors });</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160; </div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;            _indices = vsg::uintArray::create((verts_to_allocate - 1) * 6);</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;            _indices-&gt;properties.dataVariance = vsg::DYNAMIC_DATA;</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;            assignIndices(_indices);</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;        }</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160; </div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        <span class="keywordtype">int</span> i_ptr = 0;</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;        <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> i = 0; i &lt; verts.size(); ++i)</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;        {</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;            <span class="keywordtype">bool</span> first = i == 0;</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;            <span class="keywordtype">bool</span> last = (i == verts.size() - 1);</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160; </div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">int</span> n = 0; n &lt; 4; ++n)</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;            {</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;                (_previous-&gt;data())[i * 4 + n] = first ? verts[i] : verts[i - 1];</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;                (_next-&gt;data())[i * 4 + n] = last ? verts[i] : verts[i + 1];</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;                (_current-&gt;data())[i * 4 + n] = verts[i];</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;                (_colors-&gt;data())[i * 4 + n] = defaultColor;</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;            }</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160; </div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;            <span class="keywordflow">if</span> (!first)</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;            {</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;                <span class="keyword">auto</span> e = (i - 1) * 4 + 2;</div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;                (_indices-&gt;data())[i_ptr++] = e + 3;</div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;                (_indices-&gt;data())[i_ptr++] = e + 1;</div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;                (_indices-&gt;data())[i_ptr++] = e + 0; <span class="comment">// provoking vertex</span></div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;                (_indices-&gt;data())[i_ptr++] = e + 2;</div>
-<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;                (_indices-&gt;data())[i_ptr++] = e + 3;</div>
-<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;                (_indices-&gt;data())[i_ptr++] = e + 0; <span class="comment">// provoking vertex</span></div>
-<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;            }</div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;        }</div>
-<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160; </div>
-<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;        _drawCommand-&gt;firstIndex = 0;</div>
-<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;        _drawCommand-&gt;indexCount = i_ptr; <span class="comment">// 6 * std::max(0, (int)verts.size() - 1);</span></div>
-<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160; </div>
-<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;        _current-&gt;dirty();</div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;        _previous-&gt;dirty();</div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;        _next-&gt;dirty();</div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;        _colors-&gt;dirty();</div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;        _indices-&gt;dirty();</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;    }</div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;}</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;            _colors = vsg::vec4Array::create(verts_to_allocate * 4);</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;            _colors-&gt;properties.dataVariance = vsg::DYNAMIC_DATA;</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;            assignArrays({ _current, _previous, _next, _colors });</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;            _indices = vsg::uintArray::create((verts_to_allocate - 1) * 6);</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;            _indices-&gt;properties.dataVariance = vsg::DYNAMIC_DATA;</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;            assignIndices(_indices);</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;        }</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160; </div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;        <span class="keyword">auto</span>* current = (_current-&gt;data());</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;        <span class="keyword">auto</span>* prev = (_previous-&gt;data());</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;        <span class="keyword">auto</span>* next = (_next-&gt;data());</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;        <span class="keyword">auto</span>* color = (_colors-&gt;data());</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;        <span class="keyword">auto</span>* indicies = (_indices-&gt;data());</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;        <span class="keywordtype">int</span> i_ptr = 0;</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160; </div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;        <span class="keywordflow">if</span> (topology == Line::Topology::Strip)</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;        {</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> i = 0; i &lt; verts.size(); ++i)</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;            {</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;                <span class="keywordtype">bool</span> first = i == 0;</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;                <span class="keywordtype">bool</span> last = (i == verts.size() - 1);</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160; </div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> n = 0; n &lt; 4; ++n)</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;                {</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;                    (_previous-&gt;data())[i * 4 + n] = first ? verts[i] : verts[i - 1];</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;                    (_next-&gt;data())[i * 4 + n] = last ? verts[i] : verts[i + 1];</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;                    (_current-&gt;data())[i * 4 + n] = verts[i];</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;                    (_colors-&gt;data())[i * 4 + n] = defaultColor;</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;                }</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160; </div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;                <span class="keywordflow">if</span> (!first)</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;                {</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;                    <span class="keyword">auto</span> e = (i - 1) * 4 + 2;</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;                    (_indices-&gt;data())[i_ptr++] = e + 3;</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;                    (_indices-&gt;data())[i_ptr++] = e + 1;</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;                    (_indices-&gt;data())[i_ptr++] = e + 0; <span class="comment">// provoking vertex</span></div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;                    (_indices-&gt;data())[i_ptr++] = e + 2;</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;                    (_indices-&gt;data())[i_ptr++] = e + 3;</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;                    (_indices-&gt;data())[i_ptr++] = e + 0; <span class="comment">// provoking vertex</span></div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;                }</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;            }</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;        }</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;        <span class="keywordflow">else</span> <span class="comment">// topology == Topology::Segments</span></div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;        {</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;            ROCKY_SOFT_ASSERT_AND_RETURN((verts.size() &amp; 0x1) == 0, <span class="keywordtype">void</span>(), <span class="stringliteral">&quot;Lines with &#39;Segment&#39; topology must have an even number of vertices&quot;</span>);</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160; </div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">unsigned</span> i = 0; i &lt; verts.size(); ++i)</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;            {</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;                <span class="keywordtype">bool</span> even = (i &amp; 0x1) == 0;</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160; </div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">int</span> n = 0; n &lt; 4; ++n)</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;                {</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;                    <span class="keywordflow">if</span> (even) <span class="comment">// beginning of segment</span></div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;                    {</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;                        prev[i * 4 + n] = verts[i];</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;                        next[i * 4 + n] = verts[i + 1];</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;                    }</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;                    <span class="keywordflow">else</span> <span class="comment">// end of segment</span></div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;                    {</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;                        prev[i * 4 + n] = verts[i - 1];</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;                        next[i * 4 + n] = verts[i];</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;                    }</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160; </div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;                    current[i * 4 + n] = verts[i];</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;                    color[i * 4 + n] = defaultColor;</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;                }</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160; </div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;                <span class="keywordflow">if</span> (!even)</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;                {</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;                    <span class="keyword">auto</span> e = (i - 1) * 4 + 2;</div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;                    indicies[i_ptr++] = e + 3;</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;                    indicies[i_ptr++] = e + 1;</div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;                    indicies[i_ptr++] = e + 0; <span class="comment">// provoking vertex</span></div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;                    indicies[i_ptr++] = e + 2;</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;                    indicies[i_ptr++] = e + 3;</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;                    indicies[i_ptr++] = e + 0; <span class="comment">// provoking vertex                </span></div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;                }</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;            }</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;        }</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160; </div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;        _drawCommand-&gt;firstIndex = 0;</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;        _drawCommand-&gt;indexCount = i_ptr;</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160; </div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;        _current-&gt;dirty();</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;        _previous-&gt;dirty();</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;        _next-&gt;dirty();</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;        _colors-&gt;dirty();</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;        _indices-&gt;dirty();</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;    }</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;}</div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_bind_line_descriptors_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_bind_line_descriptors.html">ROCKY_NAMESPACE::BindLineDescriptors</a></div><div class="ttdef"><b>Definition:</b> LineSystem.h:72</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_geometry_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_geometry.html">ROCKY_NAMESPACE::LineGeometry</a></div><div class="ttdef"><b>Definition:</b> LineSystem.h:43</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html">ROCKY_NAMESPACE::Line</a></div><div class="ttdef"><b>Definition:</b> Line.h:34</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_a092201da9cba26286568c44ed509473c"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a092201da9cba26286568c44ed509473c">ROCKY_NAMESPACE::Line::Topology</a></div><div class="ttdeci">Topology</div><div class="ttdoc">Line configuration.</div><div class="ttdef"><b>Definition:</b> Line.h:52</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_system_node_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_system_node.html">ROCKY_NAMESPACE::LineSystemNode</a></div><div class="ttdef"><b>Definition:</b> LineSystem.h:18</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">ROCKY_NAMESPACE::Runtime</a></div><div class="ttdef"><b>Definition:</b> Runtime.h:39</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
