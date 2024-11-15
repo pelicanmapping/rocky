@@ -65,16 +65,17 @@ auto Demo_Stats = [](Application& app)
     {
         std::string buf;
 
-        buf = util::format("%.2f ms", 0.001f * (float)app.stats.frame.count());
+        float fps = 1.0f / (1e-6f * (float)app.stats.frame.count());
+        buf = util::format("%.2f ms (%.1f fps)", 0.001f * (float)app.stats.frame.count(), fps);
         ImGuiLTable::PlotLines("Frame", get_timings, &frames, frame_count, f, buf.c_str(), 0.0f, 17.0f);
 
-        buf = util::format(u8"%lld \x00B5s", average(&events, over, f));
+        buf = util::format(u8"%lld us", average(&events, over, f));
         ImGuiLTable::PlotLines("Event", get_timings, &events, frame_count, f, buf.c_str(), 0.0f, 10.0f);
 
-        buf = util::format(u8"%lld \x00B5s", average(&update, over, f));
+        buf = util::format(u8"%lld us", average(&update, over, f));
         ImGuiLTable::PlotLines("Update", get_timings, &update, frame_count, f, buf.c_str(), 0.0f, 10.0f);
 
-        buf = util::format(u8"%lld \x00B5s", average(&record, over, f));
+        buf = util::format(u8"%lld us", average(&record, over, f));
         ImGuiLTable::PlotLines("Record", get_timings, &record, frame_count, f, buf.c_str(), 0.0f, 10.0f);
 
         ImGuiLTable::End();

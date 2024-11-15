@@ -191,6 +191,8 @@ namespace ROCKY_NAMESPACE
         template<class T>
         class SystemNode : public vsg::Inherit<SystemNodeBase, SystemNode<T>>, public System
         {
+            using super = vsg::Inherit<SystemNodeBase, SystemNode<T>>;
+
         public:
             //! Destructor
             virtual ~SystemNode<T>();
@@ -462,7 +464,7 @@ namespace ROCKY_NAMESPACE
                     renderable.node->accept(v);
             });
 
-        Inherit::traverse(v);
+        super::traverse(v);
     }
 
     //! Pass-thru for VSG const visitors
@@ -481,7 +483,7 @@ namespace ROCKY_NAMESPACE
                     renderable.node->accept(v);
             });
 
-        Inherit::traverse(v);
+        super::traverse(v);
     }
 
     template<class T>

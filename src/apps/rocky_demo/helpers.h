@@ -54,7 +54,8 @@ namespace ImGuiLTable
         ImGui::Text(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
-        ImGui::PlotLines("", getter, data, values_count, values_offset, overlay, scale_min, scale_max);
+        std::string s("##" + std::string(label));
+        ImGui::PlotLines(s.c_str(), getter, data, values_count, values_offset, overlay, scale_min, scale_max);
     }
 
     static bool DragFloat(const char* label, float* v, float step, float v_min, float v_max, const char* format = nullptr)

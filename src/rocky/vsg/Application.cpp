@@ -83,8 +83,8 @@ namespace
 Application::Application()
 {
     int argc = 0;
-    char* argv[1] = { "rocky" };
-    ctor(argc, argv);
+    const char* argv[1] = { "rocky" };
+    ctor(argc, (char**)argv);
 }
 
 Application::Application(int& argc, char** argv) :
