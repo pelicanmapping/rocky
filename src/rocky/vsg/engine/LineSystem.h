@@ -18,7 +18,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Construct the system
-        LineSystemNode(entt::registry& registry);
+        LineSystemNode(ecs::Registry& registry);
 
         enum Features
         {
@@ -33,7 +33,7 @@ namespace ROCKY_NAMESPACE
         //! One-time initialization of the system    
         void initializeSystem(Runtime&) override;
 
-        void createOrUpdateNode(entt::entity, CreateOrUpdateData& data, Runtime&) const override;
+        void createOrUpdateNode(const Line&, ecs::BuildInfo&, Runtime&) const override;
     };
 
     /**

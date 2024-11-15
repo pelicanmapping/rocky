@@ -35,15 +35,15 @@ auto Demo_Icon = [](Application& app)
         }
 
         // Make an entity to host our icon:
-        entity = app.entities.create();
+        entity = app.registry.create();
 
         // Attach the new Icon and set up its properties:
-        auto& icon = app.entities.emplace<Icon>(entity);
+        auto& icon = app.registry.emplace<Icon>(entity);
         icon.image = image.value;
         icon.style = IconStyle{ 75, 0.0f }; // pixel size, rotation(radians)
 
         // Transform to place the icon:
-        auto& transform = app.entities.emplace<Transform>(entity);
+        auto& transform = app.registry.emplace<Transform>(entity);
         transform.setPosition(GeoPoint(SRS::WGS84, 0, 0, 50000));
         transform.localTangentPlane = false; // optimization for billboards :)
     }
@@ -51,10 +51,10 @@ auto Demo_Icon = [](Application& app)
     if (ImGuiLTable::Begin("icon"))
     {
         bool visible = ecs::visible(app.registry, entity);
-        if (ImGuiLTable::Checkbox("Visible", &visible))
+        if (ImGuiLTable::Checkbox("Show", &visible))
             ecs::setVisible(app.registry, entity, visible);
 
-        auto& icon = app.entities.get<Icon>(entity);
+        auto& icon = app.registry.get<Icon>(entity);
 
         if (ImGuiLTable::SliderFloat("Pixel size", &icon.style.size_pixels, 1.0f, 1024.0f))
             icon.revision++;

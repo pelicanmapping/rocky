@@ -64,7 +64,7 @@ auto Demo_LineFeatures = [](Application& app)
             };
 
             // generate our renderable geometry
-            feature_view.generate(app.entities, app.mapNode->worldSRS(), app.runtime());
+            feature_view.generate(app.registry, app.mapNode->worldSRS(), app.runtime());
         }
         else
         {
@@ -75,17 +75,17 @@ auto Demo_LineFeatures = [](Application& app)
     else if (ImGuiLTable::Begin("Line features"))
     {
         bool visible = ecs::visible(app.registry, feature_view.entity);
-        if (ImGuiLTable::Checkbox("Visible", &visible))
+        if (ImGuiLTable::Checkbox("Show", &visible))
             ecs::setVisible(app.registry, feature_view.entity, visible);
 
         if (feature_view.styles.line.has_value())
         {
             float* col = (float*)&feature_view.styles.line->color;
             if (ImGuiLTable::ColorEdit3("Color", col))
-                feature_view.dirtyStyles(app.entities);
+                feature_view.dirtyStyles(app.registry);
 
             if (ImGuiLTable::SliderFloat("Depth offset", &feature_view.styles.line->depth_offset, 0.0f, 20000.0f, "%.0f"))
-                feature_view.dirtyStyles(app.entities);
+                feature_view.dirtyStyles(app.registry);
         }
 
         ImGuiLTable::End();

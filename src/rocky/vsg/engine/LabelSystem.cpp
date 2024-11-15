@@ -202,7 +202,7 @@ namespace
 }
 
 
-LabelSystemNode::LabelSystemNode(entt::registry& registry) :
+LabelSystemNode::LabelSystemNode(ecs::Registry& registry) :
     Inherit(registry)
 {
     //nop
@@ -268,10 +268,8 @@ LabelSystemNode::initializeSystem(Runtime& runtime)
 }
 
 void
-LabelSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const
+LabelSystemNode::createOrUpdateNode(const Label& label, ecs::BuildInfo& data, Runtime& runtime) const
 {
-    auto& label = registry.get<Label>(entity);
-
     auto options = runtime.readerWriterOptions;
     float size = label.style.pointSize;
 

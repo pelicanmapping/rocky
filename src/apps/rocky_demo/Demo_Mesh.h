@@ -17,10 +17,10 @@ auto Demo_Mesh_Absolute = [](Application& app)
     if (entity == entt::null)
     {
         // Make an entity to hold our mesh:
-        entity = app.entities.create();
+        entity = app.registry.create();
 
         // Attach a mesh component:
-        auto& mesh = app.entities.emplace<Mesh>(entity);
+        auto& mesh = app.registry.emplace<Mesh>(entity);
 
         // Make some geometry.
         const double step = 2.5;
@@ -57,10 +57,10 @@ auto Demo_Mesh_Absolute = [](Application& app)
     if (ImGuiLTable::Begin("Mesh"))
     {
         static bool visible = true;
-        if (ImGuiLTable::Checkbox("Visible", &visible))
+        if (ImGuiLTable::Checkbox("Show", &visible))
             ecs::setVisible(app.registry, entity, visible);
 
-        auto& mesh = app.entities.get<Mesh>(entity);
+        auto& mesh = app.registry.get<Mesh>(entity);
 
         if (mesh.style.has_value())
         {
@@ -86,10 +86,10 @@ auto Demo_Mesh_Relative = [](Application& app)
     if (entity == entt::null)
     {
         // Create a new entity to host our mesh
-        entity = app.entities.create();
+        entity = app.registry.create();
 
         // Attach the new mesh:
-        Mesh& mesh = app.entities.emplace<Mesh>(entity);
+        Mesh& mesh = app.registry.emplace<Mesh>(entity);
 
         // Make some geometry that will be relative to a geolocation:
         const double s = 250000.0;
@@ -124,7 +124,7 @@ auto Demo_Mesh_Relative = [](Application& app)
         // Add a transform component so we can position our mesh relative
         // to some geospatial coordinates. We then set the bound on the node
         // to control horizon culling a little better
-        auto& xform = app.entities.emplace<Transform>(entity);
+        auto& xform = app.registry.emplace<Transform>(entity);
         xform.setPosition(GeoPoint(SRS::WGS84, 24.0, 24.0, s * 3.0));
         xform.node->bound.radius = s * sqrt(2);
     }
@@ -132,19 +132,19 @@ auto Demo_Mesh_Relative = [](Application& app)
     if (ImGuiLTable::Begin("Mesh"))
     {
         bool visible = ecs::visible(app.registry, entity);
-        if (ImGuiLTable::Checkbox("Visible", &visible))
+        if (ImGuiLTable::Checkbox("Show", &visible))
             ecs::setVisible(app.registry, entity, visible);
 
-        auto& mesh = app.entities.get<Mesh>(entity);
+        auto& mesh = app.registry.get<Mesh>(entity);
 
-        auto* style = app.entities.try_get<MeshStyle>(entity);
+        auto* style = app.registry.try_get<MeshStyle>(entity);
         if (style)
         {
             if (ImGuiLTable::ColorEdit4("Color", (float*)&style->color))
                 mesh.dirty();
         }
 
-        auto& transform = app.entities.get<Transform>(entity);
+        auto& transform = app.registry.get<Transform>(entity);
 
         if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
             transform.dirty();
@@ -167,8 +167,8 @@ auto Demo_Mesh_Multi = [](Application& app)
 
     if (entity == entt::null)
     {
-        entity = app.entities.create();
-        Mesh& mesh = app.entities.emplace<Mesh>(entity);
+        entity = app.registry.create();
+        Mesh& mesh = app.registry.emplace<Mesh>(entity);
 
         const double s = 250000.0;
         vsg::dvec3 verts[8] = {
@@ -201,19 +201,19 @@ auto Demo_Mesh_Multi = [](Application& app)
 
         // Add a transform component so we can position our mesh relative
         // to some geospatial coordinates.
-        auto& xform = app.entities.emplace<Transform>(entity);
+        auto& xform = app.registry.emplace<Transform>(entity);
         xform.setPosition(GeoPoint(SRS::WGS84, 24.0, 24.0, s * 3.0));
     }
 
     if (ImGuiLTable::Begin("Mesh"))
     {
         bool visible = ecs::visible(app.registry, entity);
-        if (ImGuiLTable::Checkbox("Visible", &visible))
+        if (ImGuiLTable::Checkbox("Show", &visible))
             ecs::setVisible(app.registry, entity, visible);
 
-        auto& mesh = app.entities.get<Mesh>(entity);
+        auto& mesh = app.registry.get<Mesh>(entity);
 
-        auto* style = app.entities.try_get<MeshStyle>(entity);
+        auto* style = app.registry.try_get<MeshStyle>(entity);
         if (style)
         {
             float* col = (float*)&style->color;
@@ -221,7 +221,7 @@ auto Demo_Mesh_Multi = [](Application& app)
                 mesh.dirty();
         }
 
-        auto& transform = app.entities.get<Transform>(entity);
+        auto& transform = app.registry.get<Transform>(entity);
 
         if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
             transform.dirty();

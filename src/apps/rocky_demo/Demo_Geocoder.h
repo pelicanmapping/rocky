@@ -42,10 +42,10 @@ auto Demo_Geocoder = [](Application& app)
         }
 
         // Make an entity to host our icon:
-        entity = app.entities.create();
+        entity = app.registry.create();
 
         // Attach the new Icon and set up its properties:
-        auto& icon = app.entities.emplace<Icon>(entity);
+        auto& icon = app.registry.emplace<Icon>(entity);
         icon.image = image.value;
         icon.style = IconStyle{ 32, 0.0f }; // pixel size, rotation(radians)
 
@@ -61,18 +61,18 @@ auto Demo_Geocoder = [](Application& app)
         label_style_area.pointSize = 26.0f;
         label_style_area.outlineSize = 0.5f;
 
-        auto& label = app.entities.emplace<Label>(entity);
+        auto& label = app.registry.emplace<Label>(entity);
 
         // Outline for location boundary:
         feature_view.styles.line = LineStyle();
         feature_view.styles.line->color = vsg::vec4{ 1, 1, 0, 1 };
         feature_view.styles.line->depth_offset = 9000.0f; //meters
 
-        ecs::setVisible(app.registry, entity, false);
+        app.registry.get<Visibility>(entity).active = false;
         //ecs::setVisible(app.registry, feature_view.entity, false);
 
         // Transform to place the entity:
-        auto& xform = app.entities.emplace<Transform>(entity);
+        auto& xform = app.registry.emplace<Transform>(entity);
     }
 
     if (ImGuiLTable::Begin("geocoding"))
@@ -80,8 +80,8 @@ auto Demo_Geocoder = [](Application& app)
         if (ImGuiLTable::InputText("Location:", input_buf, 256, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
         {
             // hide the placemark:
-            auto& icon = app.entities.get<Icon>(entity);
-            ecs::setVisible(app.registry, entity, false);
+            auto& icon = app.registry.get<Icon>(entity);
+            app.registry.get<Visibility>(entity).active = false;
 
             std::string input(input_buf);
             geocoding_task = jobs::dispatch([&app, input](jobs::cancelable& c)
@@ -132,13 +132,14 @@ auto Demo_Geocoder = [](Application& app)
                                 manip->setViewpoint(vp, std::chrono::seconds(2));
                             }
 
-                            auto&& [icon, label] = app.entities.get<Icon, Label>(entity);
+                            auto&& [icon, label] = app.registry.get<Icon, Label>(entity);
 
                             // show the placemark:
                             if (feature.geometry.type == Geometry::Type::Points)
                             {
-                                ecs::setVisible(app.registry, entity, true);
-                                ecs::setVisible(app.registry, feature_view.entity, false);
+                                app.registry.get<Visibility>(entity).active = true;
+                                if (feature_view.entity != entt::null)
+                                    app.registry.get<Visibility>(feature_view.entity).active = false;
                                 label.style = label_style_point;
                             }
                             else
@@ -148,11 +149,12 @@ auto Demo_Geocoder = [](Application& app)
                                 copy_of_feature.geometry.convertToType(Geometry::Type::LineString);
                                 Geometry::iterator i(copy_of_feature.geometry);
                                 while(i.hasMore()) for (auto& point : i.next().points) point.z = 500.0;
-                                feature_view.clear(app.entities);
+                                feature_view.clear(app.registry);
                                 feature_view.features = { copy_of_feature };
-                                feature_view.generate(app.entities, app.mapNode->worldSRS(), app.runtime());
-                                ecs::setVisible(app.registry, entity, true);
-                                ecs::setVisible(app.registry, feature_view.entity, true);
+                                feature_view.generate(app.registry, app.mapNode->worldSRS(), app.runtime());
+                                app.registry.get<Visibility>(entity).active = true;
+                                if (feature_view.entity != entt::null)
+                                    app.registry.get<Visibility>(feature_view.entity).active = true;
                                 label.style = label_style_area;
                             }
 
@@ -163,7 +165,7 @@ auto Demo_Geocoder = [](Application& app)
                             label.revision++;
 
                             // position it:
-                            auto& xform = app.entities.get<Transform>(entity);
+                            auto& xform = app.registry.get<Transform>(entity);
                             xform.setPosition(extent.centroid());
                         });
                 }
@@ -176,8 +178,9 @@ auto Demo_Geocoder = [](Application& app)
 
                 app.onNextUpdate([&]()
                     {
-                        ecs::setVisible(app.registry, entity, false);
-                        ecs::setVisible(app.registry, feature_view.entity, false);
+                        app.registry.get<Visibility>(entity).active = false;
+                        if (feature_view.entity != entt::null)
+                            app.registry.get<Visibility>(feature_view.entity).active = false;
                     });
             }
         }

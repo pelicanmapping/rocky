@@ -24,34 +24,22 @@ ecs::SystemsManagerGroup::SystemsManagerGroup(BackgroundServices& bg)
 
                 // normally this will be signaled to wake up, but the timeout will
                 // assure that we don't wait forever during shutdown.
-                if (self->entityCompileJobs.wait(std::chrono::milliseconds(1000)))
+                if (self->buildInput.wait(std::chrono::milliseconds(1000)))
                 {
-                    SystemNodeBase::EntityCompileBatch batch;
+                    ecs::BuildBatch batch;
 
-                    if (self->entityCompileJobs.pop(batch))
+                    if (self->buildInput.pop(batch))
                     {
                         // a group to combine all compiles into one operation
                         auto group = vsg::Group::create();
 
-                        // collect the results so we can adjust the revision all at once 
-                        // after compilation
-                        std::vector<std::tuple<entt::entity, SystemNodeBase::CreateOrUpdateData, SystemNodeBase::EntityCompileBatch*>> results;
-                        results.reserve(batch.entities.size());
-
-                        for (auto entity : batch.entities)
+                        for(auto& item : batch.items)
                         {
-                            SystemNodeBase::CreateOrUpdateData result;
+                            batch.system->invokeCreateOrUpdate(item, *batch.runtime);
 
-                            batch.system->create_or_update(entity, result, *batch.runtime);
-
-                            if (result.new_node)
+                            if (item.new_node)
                             {
-                                if (result.new_node_needs_compilation)
-                                {
-                                    // this group contains everything that needs to be compiled:
-                                    group->addChild(result.new_node);
-                                }
-                                results.emplace_back(entity, std::move(result), &batch);
+                                group->addChild(item.new_node);
                             }
                         }
 
@@ -61,12 +49,9 @@ ecs::SystemsManagerGroup::SystemsManagerGroup(BackgroundServices& bg)
                             // compile all the results at once:
                             batch.runtime->compile(group);
 
-                            // move the compiled results to the staging area. The next iteration
-                            // will pick this up and install them.
-                            for (auto& [entity, result, batch] : results)
-                            {
-                                batch->system->finish_update(entity, result);
-                            }
+                            // queue the results so the merger will pick em up
+                            // (in SystemsManagerGroup::update)
+                            self->buildOutput.emplace(std::move(batch));
                         }
                     }
                 }
@@ -75,4 +60,25 @@ ecs::SystemsManagerGroup::SystemsManagerGroup(BackgroundServices& bg)
         };
 
     bg.start("rocky::entity_compiler", entity_compiler);
+}
+
+
+void
+ecs::SystemsManagerGroup::update(Runtime& runtime)
+{
+    // update all systems
+    for (auto& system : systems)
+    {
+        system->update(runtime);
+    }
+
+    // process any new nodes that were compiled
+    ecs::BuildBatch batch;
+    while (buildOutput.pop(batch))
+    {
+        for (auto& item : batch.items)
+        {
+            batch.system->mergeCreateOrUpdateResults(item);
+        }
+    }
 }

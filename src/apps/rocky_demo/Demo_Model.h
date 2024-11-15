@@ -48,14 +48,14 @@ auto Demo_Model = [](Application& app)
         }
 
         // New entity to host our model
-        entity = app.entities.create();
+        entity = app.registry.create();
 
         // The model component; we just set the node directly.
-        auto& model = app.entities.emplace<NodeGraph>(entity);
+        auto& model = app.registry.emplace<NodeGraph>(entity);
         model.node = node;
 
         // A transform component to place and move it on the map
-        auto& transform = app.entities.emplace<Transform>(entity);
+        auto& transform = app.registry.emplace<Transform>(entity);
         transform.setPosition(GeoPoint(SRS::WGS84, 50, 0, 250000));
         transform.localMatrix = vsg::scale(scale);
     }
@@ -63,10 +63,10 @@ auto Demo_Model = [](Application& app)
     if (ImGuiLTable::Begin("model"))
     {
         bool visible = ecs::visible(app.registry, entity);
-        if (ImGuiLTable::Checkbox("Visible", &visible))
+        if (ImGuiLTable::Checkbox("Show", &visible))
             ecs::setVisible(app.registry, entity, visible);
 
-        auto& transform = app.entities.get<Transform>(entity);
+        auto& transform = app.registry.get<Transform>(entity);
         if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
             transform.dirty();
         if (ImGuiLTable::SliderDouble("Longitude", &transform.position.x, -180.0, 180.0, "%.1lf"))

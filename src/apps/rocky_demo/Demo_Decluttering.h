@@ -53,14 +53,15 @@ namespace
                     continue;
 
                 // First collect all declutter-able entities and sort them by their distance to the camera.
-                std::vector<std::tuple<entt::entity, double, double, double, int, int>> sorted; // entity, x, y, sort_key, width, height
+                // tuple = [entity, x, y, sort_key, width, height]
+                std::vector<std::tuple<entt::entity, double, double, double, int, int>> sorted;
                 sorted.reserve(last_max_size);
 
                 double aspect_ratio = 1.0; // same for all objects
-                auto view = registry.view<Declutter, Transform>();
-                for (auto&& [entity, declutter, transform] : view.each())
+                auto view = registry.view<Declutter, Transform, Visibility>();
+                for (auto&& [entity, declutter, transform, visibility] : view.each())
                 {
-                    if (transform.node && transform.node->viewLocal.size() > viewID)
+                    if (visibility.active && transform.node && transform.node->viewLocal.size() > viewID)
                     {
                         int width = 
                             (declutter.width_px >= 0 ? declutter.width_px : 0) +
@@ -140,7 +141,7 @@ auto Demo_Decluttering = [](Application& app)
 
     if (!declutter)
     {
-        declutter = DeclutterSystem::create(app.entities);
+        declutter = DeclutterSystem::create(app.registry);
 
         // tell the declutterer how to access view IDs.
         declutter->getActiveViewIDs = [&app]() { return app.displayManager->activeViewIDs; };

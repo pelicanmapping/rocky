@@ -261,7 +261,9 @@ namespace ROCKY_NAMESPACE
         //! Sets the name of the current thread
         extern ROCKY_EXPORT void setThreadName(const char* name);
 
-
+        /**
+        * Ring buffer for lock-less interthread communication.
+        */
         template<typename T>
         class ring_buffer
         {
@@ -273,6 +275,7 @@ namespace ROCKY_NAMESPACE
                 _buffer[_writeIndex] = obj;
                 _writeIndex.exchange((_writeIndex + 1) % _size);
                 _condition.notify_one();
+                return true;
             }
 
             bool emplace(T&& obj) {

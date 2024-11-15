@@ -50,7 +50,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Construct the mesh renderer
-        IconSystemNode(entt::registry& r);
+        IconSystemNode(ecs::Registry& r);
 
         //! Features supported by this renderer
         enum Features
@@ -68,7 +68,7 @@ namespace ROCKY_NAMESPACE
     private:
 
         //! Called by the helper to initialize a new node component.
-        void createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const override;
+        void createOrUpdateNode(const Icon&, ecs::BuildInfo&, Runtime&) const override;
 
         // cache of image descriptors so we can re-use textures & samplers
         mutable std::unordered_map<std::shared_ptr<Image>, vsg::ref_ptr<vsg::DescriptorImage>> descriptorImage_cache;

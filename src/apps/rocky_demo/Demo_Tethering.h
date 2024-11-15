@@ -44,20 +44,20 @@ auto Demo_Tethering = [](Application& app)
     if (entity == entt::null)
     {
         // Create a host entity:
-        entity = app.entities.create();
+        entity = app.registry.create();
 
         // add an icon:
         auto io = app.instance.io();
         auto image = io.services.readImageFromURI("https://github.com/gwaldron/osgearth/blob/master/data/airport.png?raw=true", io);
         if (image.status.ok())
         {
-            auto& icon = app.entities.emplace<Icon>(entity);
+            auto& icon = app.registry.emplace<Icon>(entity);
             icon.image = image.value;
             icon.style = IconStyle{ 48.0f, 0.0f }; // pixels, rotation(rad)
         }
 
         // add a mesh plane:
-        auto& mesh = app.entities.emplace<Mesh>(entity);
+        auto& mesh = app.registry.emplace<Mesh>(entity);
         vsg::dvec3 verts[4] = { { -s, -s, 0 }, {  s, -s, 0 }, {  s,  s, 0 }, { -s,  s, 0 } };
         unsigned indices[6] = { 0,1,2, 0,2,3 };
         vsg::vec4 color{ 1, 1, 0, 0.55f };
@@ -69,7 +69,7 @@ auto Demo_Tethering = [](Application& app)
         }
 
         // add an arrow line:
-        auto& arrow = app.entities.emplace<Line>(entity);
+        auto& arrow = app.registry.emplace<Line>(entity);
         arrow.points = { 
             vsg::dvec3{ s * 1.5, s * 0.5, 0.0 },
             vsg::dvec3{ s * 2.0, 0.0, 0.0 },
@@ -83,11 +83,11 @@ auto Demo_Tethering = [](Application& app)
         arrow.topology = Line::Topology::Segments;
 
         // Add a transform:
-        auto& xform = app.entities.emplace<Transform>(entity);
+        auto& xform = app.registry.emplace<Transform>(entity);
         xform.setPosition(GeoPoint(SRS::WGS84, -121, 55, 50000));
 
         // Add a motion component to animate the entity:
-        auto& motion = app.entities.emplace<Motion>(entity);
+        auto& motion = app.registry.emplace<Motion>(entity);
         motion.velocity = { 1000, 0, 0 };
         motion.acceleration = { 0, 0, 0 };
     }
@@ -99,7 +99,7 @@ auto Demo_Tethering = [](Application& app)
         {
             if (tethering)
             {
-                auto& xform = app.entities.get<Transform>(entity);
+                auto& xform = app.registry.get<Transform>(entity);
                 auto vp = manip->getViewpoint();
                 //vp.target = PositionedObjectAdapter<GeoTransform>::create(xform.node);
                 vp.range = s * 12.0;
@@ -113,7 +113,7 @@ auto Demo_Tethering = [](Application& app)
             }
         }
 
-        auto& motion = app.entities.get<Motion>(entity);
+        auto& motion = app.registry.get<Motion>(entity);
         ImGuiLTable::SliderDouble("Speed", &motion.velocity.x, 0.0, 10000.0, "%.0lf");
         ImGuiLTable::SliderDouble("Acceleration", &motion.acceleration.x, -100.0, 100.0, "%.1lf");
 

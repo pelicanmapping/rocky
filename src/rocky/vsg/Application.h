@@ -19,6 +19,7 @@
 
 #include <chrono>
 #include <list>
+#include <mutex>
 
 namespace ROCKY_NAMESPACE
 {
@@ -81,8 +82,7 @@ namespace ROCKY_NAMESPACE
 
         jobs::detail::semaphore handle;
 
-        entt::registry registry;
-        entt::registry& entities = registry; // alias
+        ecs::Registry registry;
 
         rocky::InstanceVSG instance;
         vsg::ref_ptr<rocky::MapNode> mapNode;

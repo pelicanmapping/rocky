@@ -85,7 +85,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Construct the mesh renderer
-        MeshSystemNode(entt::registry& registry);
+        MeshSystemNode(ecs::Registry& registry);
 
         //! Supported features in a mask format
         enum Features
@@ -104,7 +104,7 @@ namespace ROCKY_NAMESPACE
         //! One-time initialization of the system        
         void initializeSystem(Runtime&) override;
 
-        void createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const override;
+        void createOrUpdateNode(const Mesh&, ecs::BuildInfo&, Runtime&) const override;
     protected:
 
         //bool update(entt::entity, Runtime&) override;
@@ -118,13 +118,12 @@ namespace ROCKY_NAMESPACE
     /**
     * VSG node that renders Node components (just plain vsg nodes)
     */
-    class ROCKY_EXPORT NodeSystemNode :
-        public vsg::Inherit<ecs::SystemNode<NodeGraph>, NodeSystemNode>
+    class ROCKY_EXPORT NodeSystemNode : public vsg::Inherit<ecs::SystemNode<NodeGraph>, NodeSystemNode>
     {
     public:
-        NodeSystemNode(entt::registry& registry);
+        NodeSystemNode(ecs::Registry& registry);
 
-        void createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const override;
+        void createOrUpdateNode(const NodeGraph&, ecs::BuildInfo&, Runtime&) const override;
     };
 
 }

@@ -29,7 +29,7 @@ namespace ROCKY_NAMESPACE
     class MotionSystem : public ecs::System
     {
     public:
-        MotionSystem(entt::registry& r) : ecs::System(r) { }
+        MotionSystem(ecs::Registry& r) : ecs::System(r) { }
 
         //! Called periodically to update the transforms
         void update(Runtime& runtime) override

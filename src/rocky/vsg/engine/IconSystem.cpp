@@ -77,7 +77,7 @@ namespace
     }
 }
 
-IconSystemNode::IconSystemNode(entt::registry& registry) :
+IconSystemNode::IconSystemNode(ecs::Registry& registry) :
     Inherit(registry)
 {
     //nop
@@ -168,10 +168,8 @@ namespace
 }
 
 void
-IconSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const
+IconSystemNode::createOrUpdateNode(const Icon& icon, ecs::BuildInfo& data, Runtime& runtime) const
 {
-    auto& icon = registry.get<Icon>(entity);
-
     auto geometry = IconGeometry::create();
     auto bindCommand = BindIconStyle::create();
 

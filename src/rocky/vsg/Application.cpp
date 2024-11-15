@@ -197,11 +197,11 @@ Application::ctor(int& argc, char** argv)
 
     ecsManager = ecs::SystemsManagerGroup::create(backgroundServices);
 
-    ecsManager->add<MeshSystemNode>(entities);
-    ecsManager->add<LineSystemNode>(entities);
-    ecsManager->add<NodeSystemNode>(entities);
-    ecsManager->add<IconSystemNode>(entities);
-    ecsManager->add<LabelSystemNode>(entities);
+    ecsManager->add<MeshSystemNode>(registry);
+    ecsManager->add<LineSystemNode>(registry);
+    ecsManager->add<NodeSystemNode>(registry);
+    ecsManager->add<IconSystemNode>(registry);
+    ecsManager->add<LabelSystemNode>(registry);
 
     mainScene->addChild(ecsManager);
 }

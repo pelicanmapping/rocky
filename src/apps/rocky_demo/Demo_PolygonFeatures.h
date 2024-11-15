@@ -67,7 +67,7 @@ auto Demo_PolygonFeatures = [](Application& app)
                 };
 
             // compile the features into renderable geometry
-            feature_view.generate(app.entities, app.mapNode->worldSRS(), app.runtime());
+            feature_view.generate(app.registry, app.mapNode->worldSRS(), app.runtime());
         }
         else
         {
@@ -78,7 +78,7 @@ auto Demo_PolygonFeatures = [](Application& app)
     else if (ImGuiLTable::Begin("Polygon features"))
     {
         bool visible = ecs::visible(app.registry, feature_view.entity);
-        if (ImGuiLTable::Checkbox("Visible", &visible))
+        if (ImGuiLTable::Checkbox("Show", &visible))
             ecs::setVisible(app.registry, feature_view.entity, visible);
 
         ImGuiLTable::End();

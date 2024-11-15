@@ -78,7 +78,7 @@ namespace
 }
 
 
-MeshSystemNode::MeshSystemNode(entt::registry& registry) :
+MeshSystemNode::MeshSystemNode(ecs::Registry& registry) :
     Inherit(registry)
 {
     //nop
@@ -172,10 +172,8 @@ MeshSystemNode::initializeSystem(Runtime& runtime)
 }
 
 void
-MeshSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const
+MeshSystemNode::createOrUpdateNode(const Mesh& mesh, ecs::BuildInfo& data, Runtime& runtime) const
 {
-    auto& mesh = registry.get<Mesh>(entity);
-
     vsg::ref_ptr<vsg::StateGroup> stategroup;
 
     if (mesh.style.has_value() || mesh.texture)
@@ -199,7 +197,7 @@ MeshSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data
     {
         SRSOperation xform;
         vsg::dvec3 offset;
-        setReferencePoint(mesh.referencePoint, xform, offset);
+        parseReferencePoint(mesh.referencePoint, xform, offset);
 
         vsg::dvec3 v0, v1, v2;
         vsg::vec3 v32[3];
@@ -212,9 +210,9 @@ MeshSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data
             geometry->add(v32, tri.uvs, tri.colors, tri.depthoffsets);
         }
 
-        auto mt = vsg::MatrixTransform::create(vsg::translate(offset));
-        mt->addChild(geometry);
-        geometry_root = mt;
+        auto localizer = vsg::MatrixTransform::create(vsg::translate(offset));
+        localizer->addChild(geometry);
+        geometry_root = localizer;
     }
     else
     {
@@ -378,15 +376,15 @@ MeshGeometry::compile(vsg::Context& context)
     vsg::Geometry::compile(context);
 }
 
-NodeSystemNode::NodeSystemNode(entt::registry& registry) :
+NodeSystemNode::NodeSystemNode(ecs::Registry& registry) :
     Inherit(registry)
 {
     //nop
 }
 
 void
-NodeSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const
+NodeSystemNode::createOrUpdateNode(const NodeGraph& graph, ecs::BuildInfo& data, Runtime& runtime) const
 {
-    auto& graph = registry.get<NodeGraph>(entity);
     data.new_node = graph.node;
 }
+

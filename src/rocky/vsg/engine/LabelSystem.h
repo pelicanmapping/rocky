@@ -17,7 +17,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Construct the mesh renderer
-        LabelSystemNode(entt::registry& registry);
+        LabelSystemNode(ecs::Registry& registry);
 
         enum Features
         {
@@ -28,7 +28,7 @@ namespace ROCKY_NAMESPACE
         //! One time setup of the system
         void initializeSystem(Runtime&) override;
 
-        void createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const override;
+        void createOrUpdateNode(const Label&, ecs::BuildInfo&, Runtime&) const;
 
     };
 }

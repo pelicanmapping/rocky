@@ -94,11 +94,11 @@ std::vector<Demo> demos =
     Demo{ "Simulation", {},
     {
         Demo{ "Simulated platforms", Demo_Simulation },
-        Demo{ "Decluttering", Demo_Decluttering },
         Demo{ "Track histories", Demo_TrackHistory }
     } },
-    Demo{ "RTT", Demo_RTT },
+    Demo{ "Decluttering", Demo_Decluttering },
     Demo{ "Geocoding", Demo_Geocoder },
+    Demo{ "RTT", Demo_RTT },
     Demo{ "Camera", {},
     {
         Demo{ "Viewpoints", Demo_Viewpoints },

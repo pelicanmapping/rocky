@@ -29,24 +29,38 @@ namespace
         };
 
         LineStyle style;
-        unsigned maxPoints = 48; // std::numeric_limits<unsigned>::max();
+        unsigned maxPoints = 48;
+
+    private:
         std::list<Chunk> chunks;
         std::size_t numChunks = 0;
+        friend class TrackHistorySystem;
     };
 
     class TrackHistorySystem : public ecs::System
     {
     public:
-        TrackHistorySystem(entt::registry& registry) : System(registry) {}
-        static auto create(entt::registry& r) { return std::make_shared<TrackHistorySystem>(r); }
+        //! Construct a new system for managing TrackHistory components.
+        static auto create(ecs::Registry& r) { 
+            return std::make_shared<TrackHistorySystem>(r);
+        }
 
-        std::chrono::steady_clock::time_point last_update = std::chrono::steady_clock::now();
+        //! Construct a new system for managing TrackHistory components.
+        //! Please call create(registry)
+        TrackHistorySystem(ecs::Registry& registry) :
+            System(registry)
+        {
+            // destruction of a TrackHistory requries some extra work:
+            registry.on_destroy<TrackHistory>().connect<&TrackHistorySystem::on_destroy>(this);
+        }
+
         float update_hertz = 1.0f; // updates per second
-
         bool tracks_visible = true;
 
         void update(Runtime& runtime) override
         {
+            //std::scoped_lock(std::shared_lock(registry.mutex));
+
             auto now = std::chrono::steady_clock::now();
             auto freq = 1s / update_hertz;
             auto elapsed = (now - last_update);
@@ -74,16 +88,6 @@ namespace
                             --track.numChunks;
                         }
                     }
-
-                    //// synchronize visibility with the host:
-                    //for (auto& chunk : track.chunks)
-                    //{
-                    //    auto& visibility = registry.get<Visibility>(chunk.attach_point);
-                    //    if (tracks_visible)
-                    //        visibility = registry.get<Visibility>(entity);
-                    //    else
-                    //        visibility.setAll(false);
-                    //}
                 }
 
                 last_update = now;
@@ -156,6 +160,44 @@ namespace
                 }
             }
         }
+
+        void reset()
+        {
+            //std::scoped_lock(std::unique_lock(app.registry_mutex));
+
+            // first delete any existing track histories
+            registry.clear<TrackHistory>();
+
+            // style our tracks.
+            LineStyle style;
+            style.color = vsg::vec4{ 0.0f, 1.0f, 0.0f, 1.0f };
+            style.width = 2.0f;
+
+            // then re-scan and add new ones.
+            auto view = registry.view<Transform>();
+            for (auto&& [entity, transform] : view.each())
+            {
+                if (transform.parent == nullptr)
+                {
+                    auto& track = registry.emplace<TrackHistory>(entity);
+                    track.style = style;
+                }
+            }
+        }
+
+    protected:
+
+        std::chrono::steady_clock::time_point last_update = std::chrono::steady_clock::now();
+
+        // called by EnTT when a TrackHistory component is destroyed.
+        void on_destroy(entt::registry& registry, entt::entity entity)
+        {
+            auto& track = registry.get<TrackHistory>(entity);
+            for (auto& chunk : track.chunks)
+            {
+                registry.destroy(chunk.attach_point);
+            }
+        }
     };
 }
 
@@ -170,31 +212,22 @@ auto Demo_TrackHistory = [](Application& app)
         // make a System to handle track histories, and add it to the app.
         system = TrackHistorySystem::create(app.registry);
         app.ecsManager->add(system);
-
-        // style our tracks.
-        LineStyle style;
-        style.color = vsg::vec4{ 0.0f, 1.0f, 0.0f, 1.0f };
-        style.width = 2.0f;
-
-        // attach a track for any entity with a Transform.
-        auto view = app.registry.view<Transform>();
-        for (auto&& [entity, transform] : view.each())
-        {
-            if (transform.parent == nullptr)
-            {
-                auto& track = app.registry.emplace<TrackHistory>(entity);
-                track.style = style;
-            }
-        }
+        system->reset();
     }
 
     if (ImGuiLTable::Begin("track history"))
     {
-        if (ImGuiLTable::Checkbox("Visible", &system->tracks_visible))
+        if (ImGuiLTable::Checkbox("Show", &system->tracks_visible))
         {
             system->updateVisibility();
         }
         ImGuiLTable::SliderFloat("Update frequency", &system->update_hertz, 1.0f, 15.0f);
         ImGuiLTable::End();
+    }
+
+    ImGui::Separator();
+    if (ImGui::Button("Reset"))
+    {
+        system->reset();
     }
 };

@@ -74,7 +74,7 @@ namespace
     }
 }
 
-LineSystemNode::LineSystemNode(entt::registry& registry) :
+LineSystemNode::LineSystemNode(ecs::Registry& registry) :
     Inherit(registry)
 {
     //nop
@@ -157,12 +157,10 @@ LineSystemNode::initializeSystem(Runtime& runtime)
 }
 
 void
-LineSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data, Runtime& runtime) const
+LineSystemNode::createOrUpdateNode(const Line& line, ecs::BuildInfo& data, Runtime& runtime) const
 {
     if (!data.existing_node)
     {
-        auto& line = registry.get<Line>(entity);
-
         auto bindCommand = BindLineDescriptors::create();
         bindCommand->updateStyle(line.style);
         bindCommand->init(getPipelineLayout(line));
@@ -179,7 +177,7 @@ LineSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data
             SRSOperation xform;
             vsg::dvec3 offset, temp;
             std::vector<vsg::vec3> verts32;
-            setReferencePoint(line.referencePoint, xform, offset);
+            parseReferencePoint(line.referencePoint, xform, offset);
 
             verts32.reserve(line.points.size());
             for (auto& point : line.points)
@@ -224,8 +222,6 @@ LineSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data
 
     else // existing node -- update:
     {
-        auto& line = registry.get<Line>(entity);
-
         // style changed?
         auto* bindStyle = util::find<BindLineDescriptors>(data.existing_node);
         if (bindStyle)
@@ -246,7 +242,7 @@ LineSystemNode::createOrUpdateNode(entt::entity entity, CreateOrUpdateData& data
                     SRSOperation xform;
                     vsg::dvec3 offset, temp;
                     std::vector<vsg::vec3> verts32;
-                    setReferencePoint(line.referencePoint, xform, offset);
+                    parseReferencePoint(line.referencePoint, xform, offset);
 
                     verts32.reserve(line.points.size());
                     for (auto& point : line.points)

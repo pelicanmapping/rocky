@@ -10,6 +10,7 @@
 
 #include "helpers.h"
 #include <unordered_map>
+#include <unordered_set>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -27,7 +28,8 @@ auto Demo_LabelFeatures = [](Application& app)
         double area = 0.0;
     };
     static std::unordered_map<std::string, Candidate> candidates;
-    static std::set<entt::entity> labels;
+    static std::unordered_set<entt::entity> labels;
+    static bool active = true;
     static float label_size_percentage = 100.0f;
     const float starting_label_size = 26.0f;
 
@@ -92,6 +94,14 @@ auto Demo_LabelFeatures = [](Application& app)
     {
         if (status->ok())
         {
+            if (ImGuiLTable::Checkbox("Show", &active))
+            {
+                for (auto entity : labels)
+                {
+                    app.registry.get<Visibility>(entity).active = active;
+                }
+            }
+
             ImGuiLTable::Text("Features:", "%ld", candidates.size());
             if (ImGuiLTable::SliderFloat("Label size", &label_size_percentage, 25.0f, 150.0f, "%.0f%%"))
             {
@@ -115,7 +125,7 @@ auto Demo_LabelFeatures = [](Application& app)
         }
         ImGuiLTable::End();
 
-        ImGui::TextWrapped("Tip: You can declutter the labels in the Simulation -> Decluttering panel.");
+        ImGui::TextWrapped("Tip: You can declutter the labels in the Decluttering panel.");
     }
 
 #else
