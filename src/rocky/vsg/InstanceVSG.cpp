@@ -224,8 +224,8 @@ InstanceVSG::InstanceVSG() :
     rocky::Instance()
 {
     int argc = 0;
-    char* argv[1] = { "rocky" };
-    ctor(argc, argv);
+    const char* argv[1] = { "rocky" };
+    ctor(argc, (char**)argv);
 }
 
 InstanceVSG::InstanceVSG(int& argc, char** argv) :
