@@ -83,6 +83,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a29bdde0e8750ae8bdeff41ab360c6848"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c1caf4c6de6cb3747662ad0f4a80053"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; std::unique_lock&lt; std::shared_mutex &gt;, entt::registry &amp; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_registry.html#a8c1caf4c6de6cb3747662ad0f4a80053">write</a> ()</td></tr>
 <tr class="separator:a8c1caf4c6de6cb3747662ad0f4a80053"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae46d9e877fc9896f0c904b46e29aa01b"><td class="memTemplParams" colspan="2">template&lt;typename CALLABLE &gt; </td></tr>
+<tr class="memitem:ae46d9e877fc9896f0c904b46e29aa01b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_registry.html#ae46d9e877fc9896f0c904b46e29aa01b">read</a> (CALLABLE &amp;&amp;func)</td></tr>
+<tr class="separator:ae46d9e877fc9896f0c904b46e29aa01b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66960737bcc9abfe99da191556063cb0"><td class="memTemplParams" colspan="2">template&lt;typename CALLABLE &gt; </td></tr>
+<tr class="memitem:a66960737bcc9abfe99da191556063cb0"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_registry.html#a66960737bcc9abfe99da191556063cb0">write</a> (CALLABLE &amp;&amp;func)</td></tr>
+<tr class="separator:a66960737bcc9abfe99da191556063cb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Wraps the ECS registry with a read-write lock for thread safety.</p>
@@ -95,7 +101,7 @@ Public Member Functions</h2></td></tr>
 </ul>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a29bdde0e8750ae8bdeff41ab360c6848"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a29bdde0e8750ae8bdeff41ab360c6848">&#9670;&nbsp;</a></span>read()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a29bdde0e8750ae8bdeff41ab360c6848">&#9670;&nbsp;</a></span>read() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -123,8 +129,37 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ae46d9e877fc9896f0c904b46e29aa01b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae46d9e877fc9896f0c904b46e29aa01b">&#9670;&nbsp;</a></span>read() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename CALLABLE &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ROCKY_NAMESPACE::ecs::Registry::read </td>
+          <td>(</td>
+          <td class="paramtype">CALLABLE &amp;&amp;&#160;</td>
+          <td class="paramname"><em>func</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Convenience function to invoke a lambda with a read-locked registry reference. The signature of CALLABLE must match void(entt::registry&amp;). </p>
+
+</div>
+</div>
 <a id="a8c1caf4c6de6cb3747662ad0f4a80053"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8c1caf4c6de6cb3747662ad0f4a80053">&#9670;&nbsp;</a></span>write()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a8c1caf4c6de6cb3747662ad0f4a80053">&#9670;&nbsp;</a></span>write() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -149,6 +184,35 @@ Public Member Functions</h2></td></tr>
 <p>A write-lock is appropritae for calls to create(), destroy(), clear(), emplace(). Note: you do not need a write lock for in-place component changes.</p>
 <p>usage: auto [lock, registry] = ecs_registry.write();</p>
 <dl class="section return"><dt>Returns</dt><dd>A tuple including a scoped unique lock and a reference to the underlying registry </dd></dl>
+
+</div>
+</div>
+<a id="a66960737bcc9abfe99da191556063cb0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66960737bcc9abfe99da191556063cb0">&#9670;&nbsp;</a></span>write() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename CALLABLE &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ROCKY_NAMESPACE::ecs::Registry::write </td>
+          <td>(</td>
+          <td class="paramtype">CALLABLE &amp;&amp;&#160;</td>
+          <td class="paramname"><em>func</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Convenience function to invoke a lambda with a write-locked registry reference. The signature of CALLABLE must match void(entt::registry&amp;). </p>
 
 </div>
 </div>
