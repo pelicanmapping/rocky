@@ -47,9 +47,11 @@ namespace
 
         //! Construct a new system for managing TrackHistory components.
         //! Please call create(registry)
-        TrackHistorySystem(ecs::Registry& registry) :
-            System(registry)
+        TrackHistorySystem(ecs::Registry& r) :
+            System(r)
         {
+            auto [lock, registry] = r.write();
+
             // destruction of a TrackHistory requries some extra work:
             registry.on_destroy<TrackHistory>().connect<&TrackHistorySystem::on_destroy>(this);
         }
@@ -59,14 +61,16 @@ namespace
 
         void update(Runtime& runtime) override
         {
-            //std::scoped_lock(std::shared_lock(registry.mutex));
-
             auto now = std::chrono::steady_clock::now();
             auto freq = 1s / update_hertz;
             auto elapsed = (now - last_update);
+            std::vector<entt::entity> chunks_to_add;
+            std::vector<entt::entity> lines_to_erase;
 
             if (elapsed >= freq)
             {
+                auto [lock, registry] = _registry.read();
+
                 auto view = registry.view<TrackHistory, Transform>();
                 for (auto&& [entity, track, transform] : view.each())
                 {
@@ -74,27 +78,48 @@ namespace
                     {
                         if (track.numChunks == 0 || track.chunks.back().numPoints >= track_chunk_size)
                         {
-                            createNewChunk(entity, track, transform);
+                            chunks_to_add.emplace_back(entity);
                         }
-
-                        updateChunk(entity, track, track.chunks.back(), transform);
-
-                        // approximation for now.
-                        auto maxChunks = track.maxPoints / track_chunk_size;
-                        if (track.numChunks > 1u && track.numChunks > maxChunks)
+                        else
                         {
-                            registry.erase<Line>(track.chunks.front().attach_point);
-                            track.chunks.erase(track.chunks.begin());
-                            --track.numChunks;
+                            updateChunk(registry, entity, track, transform, track.chunks.back());
+
+                            // approximation for now.
+                            auto maxChunks = track.maxPoints / track_chunk_size;
+                            if (track.numChunks > 1u && track.numChunks > maxChunks)
+                            {
+                                lines_to_erase.emplace_back(track.chunks.front().attach_point);
+                                //registry.erase<Line>(track.chunks.front().attach_point);
+                                track.chunks.erase(track.chunks.begin());
+                                --track.numChunks;
+                            }
                         }
                     }
                 }
 
                 last_update = now;
             }
+
+            if (!chunks_to_add.empty() || !lines_to_erase.empty())
+            {
+                auto [lock, registry] = _registry.write();
+
+                for (auto entity : chunks_to_add)
+                {
+                    auto& track = registry.get<TrackHistory>(entity);
+                    auto& transform = registry.get<Transform>(entity);
+                    createNewChunk(registry, entity, track, transform);
+                    updateChunk(registry, entity, track, transform, track.chunks.back());
+                }
+
+                for (auto entity : lines_to_erase)
+                {
+                    registry.erase<Line>(entity);
+                }
+            }
         };
 
-        void createNewChunk(entt::entity host_entity, TrackHistory& track, Transform& transform)
+        void createNewChunk(entt::registry& registry, entt::entity host_entity, TrackHistory& track, Transform& transform)
         {
             // Make a new chunk and set its reference point
             auto& new_chunk = track.chunks.emplace_back();
@@ -111,7 +136,7 @@ namespace
 
             // Tie track visibility to host visibility:
             auto& track_visibility = registry.emplace<Visibility>(new_chunk.attach_point);
-            updateVisibility(host_entity, new_chunk);
+            updateVisibility(registry, host_entity, new_chunk);
 
             // If this is not the first chunk, connect it to the previous one
             if (track.numChunks > 1)
@@ -126,7 +151,7 @@ namespace
             line.staticSize = track_chunk_size;
         }
 
-        void updateChunk(entt::entity host_entity, TrackHistory& track, TrackHistory::Chunk& chunk, Transform& transform)
+        void updateChunk(entt::registry& registry, entt::entity host_entity, TrackHistory& track, Transform& transform, TrackHistory::Chunk& chunk)
         {
             auto& line = registry.get<Line>(chunk.attach_point);
 
@@ -139,7 +164,7 @@ namespace
             ++line.revision;
         }
 
-        void updateVisibility(entt::entity host_entity, TrackHistory::Chunk& chunk)
+        void updateVisibility(entt::registry& registry, entt::entity host_entity, TrackHistory::Chunk& chunk)
         {
             auto& track_visibility = registry.get<Visibility>(chunk.attach_point);
             if (tracks_visible)
@@ -148,7 +173,7 @@ namespace
                 track_visibility.parent = nullptr, track_visibility.setAll(false);
         }
 
-        void updateVisibility()
+        void updateVisibility(entt::registry& registry)
         {
             // ensure that the visibility of a track matches the visibility of its host.
             auto view = registry.view<TrackHistory>();
@@ -156,22 +181,22 @@ namespace
             {
                 for (auto& chunk : track.chunks)
                 {
-                    updateVisibility(host_entity, chunk);
+                    updateVisibility(registry, host_entity, chunk);
                 }
             }
         }
 
         void reset()
         {
-            //std::scoped_lock(std::unique_lock(app.registry_mutex));
-
-            // first delete any existing track histories
-            registry.clear<TrackHistory>();
-
             // style our tracks.
             LineStyle style;
             style.color = vsg::vec4{ 0.0f, 1.0f, 0.0f, 1.0f };
             style.width = 2.0f;
+
+            auto [lock, registry] = _registry.write();
+
+            // first delete any existing track histories
+            registry.clear<TrackHistory>();
 
             // then re-scan and add new ones.
             auto view = registry.view<Transform>();
@@ -197,6 +222,8 @@ namespace
             {
                 registry.destroy(chunk.attach_point);
             }
+            track.chunks.clear();
+            track.numChunks = 0;
         }
     };
 }
@@ -217,9 +244,11 @@ auto Demo_TrackHistory = [](Application& app)
 
     if (ImGuiLTable::Begin("track history"))
     {
+        auto [lock, registry] = app.registry.read();
+
         if (ImGuiLTable::Checkbox("Show", &system->tracks_visible))
         {
-            system->updateVisibility();
+            system->updateVisibility(registry);
         }
         ImGuiLTable::SliderFloat("Update frequency", &system->update_hertz, 1.0f, 15.0f);
         ImGuiLTable::End();

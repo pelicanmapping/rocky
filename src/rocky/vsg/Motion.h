@@ -38,6 +38,8 @@ namespace ROCKY_NAMESPACE
 
             if (last_time != ecs::time_point::min())
             {
+                auto [lock, registry] = _registry.read();
+
                 const glm::dvec3 zero{ 0.0, 0.0, 0.0 };
 
                 // delta seconds since last tick:
@@ -46,7 +48,6 @@ namespace ROCKY_NAMESPACE
                 // Join query all motions + transform pairs:
                 for (auto&& [entity, motion, transform] : registry.view<Motion, Transform>().each())
                 {
-
                     if (motion.velocity != zero)
                     {
                         GeoPoint& pos = transform.position;

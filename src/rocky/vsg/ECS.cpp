@@ -9,7 +9,8 @@ ROCKY_ABOUT(entt, ENTT_VERSION);
 
 using namespace ROCKY_NAMESPACE;
 
-ecs::SystemsManagerGroup::SystemsManagerGroup(BackgroundServices& bg)
+ecs::SystemsManagerGroup::SystemsManagerGroup(ecs::Registry& reg, BackgroundServices& bg) :
+    _registry(reg)
 {
     vsg::observer_ptr<SystemsManagerGroup> weak_self(this);
 
@@ -76,9 +77,11 @@ ecs::SystemsManagerGroup::update(Runtime& runtime)
     ecs::BuildBatch batch;
     while (buildOutput.pop(batch))
     {
+        auto [lock, registry] = _registry.read();
+
         for (auto& item : batch.items)
         {
-            batch.system->mergeCreateOrUpdateResults(item);
+            batch.system->mergeCreateOrUpdateResults(registry, item, runtime);
         }
     }
 }

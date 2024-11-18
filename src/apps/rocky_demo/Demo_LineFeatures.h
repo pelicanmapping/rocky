@@ -39,6 +39,8 @@ auto Demo_LineFeatures = [](Application& app)
         }
         else if (data.available() && data->status.ok())
         {
+            auto[lock, registry] = app.registry.write();
+
             // create a feature view and add features to it:
             auto iter = data->fs->iterate(app.instance.io());
             while (iter.hasMore())
@@ -64,7 +66,7 @@ auto Demo_LineFeatures = [](Application& app)
             };
 
             // generate our renderable geometry
-            feature_view.generate(app.registry, app.mapNode->worldSRS(), app.runtime());
+            feature_view.generate(registry, app.mapNode->worldSRS(), app.runtime());
         }
         else
         {
@@ -74,18 +76,20 @@ auto Demo_LineFeatures = [](Application& app)
 
     else if (ImGuiLTable::Begin("Line features"))
     {
-        bool visible = ecs::visible(app.registry, feature_view.entity);
+        auto [lock, registry] = app.registry.read();
+
+        bool visible = ecs::visible(registry, feature_view.entity);
         if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(app.registry, feature_view.entity, visible);
+            ecs::setVisible(registry, feature_view.entity, visible);
 
         if (feature_view.styles.line.has_value())
         {
             float* col = (float*)&feature_view.styles.line->color;
             if (ImGuiLTable::ColorEdit3("Color", col))
-                feature_view.dirtyStyles(app.registry);
+                feature_view.dirtyStyles(registry);
 
             if (ImGuiLTable::SliderFloat("Depth offset", &feature_view.styles.line->depth_offset, 0.0f, 20000.0f, "%.0f"))
-                feature_view.dirtyStyles(app.registry);
+                feature_view.dirtyStyles(registry);
         }
 
         ImGuiLTable::End();

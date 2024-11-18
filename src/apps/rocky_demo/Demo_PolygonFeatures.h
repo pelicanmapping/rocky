@@ -40,6 +40,8 @@ auto Demo_PolygonFeatures = [](Application& app)
         }
         else if (data.available() && data->status.ok())
         {
+            auto [lock, registry] = app.registry.write();
+
             // create a feature view and add features to it
             if (data->fs->featureCount() > 0)
                 feature_view.features.reserve(data->fs->featureCount());
@@ -67,7 +69,7 @@ auto Demo_PolygonFeatures = [](Application& app)
                 };
 
             // compile the features into renderable geometry
-            feature_view.generate(app.registry, app.mapNode->worldSRS(), app.runtime());
+            feature_view.generate(registry, app.mapNode->worldSRS(), app.runtime());
         }
         else
         {
@@ -77,9 +79,11 @@ auto Demo_PolygonFeatures = [](Application& app)
 
     else if (ImGuiLTable::Begin("Polygon features"))
     {
-        bool visible = ecs::visible(app.registry, feature_view.entity);
+        auto [lock, registry] = app.registry.read();
+
+        bool visible = ecs::visible(registry, feature_view.entity);
         if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(app.registry, feature_view.entity, visible);
+            ecs::setVisible(registry, feature_view.entity, visible);
 
         ImGuiLTable::End();
     }

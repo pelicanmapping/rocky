@@ -32,6 +32,8 @@ auto Demo_Geocoder = [](Application& app)
 
     if (entity == entt::null)
     {
+        auto [lock, registry] = app.registry.write();
+
         // Load an icon image
         auto& io = app.io();
         auto image = io.services.readImageFromURI("https://readymap.org/readymap/filemanager/download/public/icons/placemark32.png", io);
@@ -42,10 +44,10 @@ auto Demo_Geocoder = [](Application& app)
         }
 
         // Make an entity to host our icon:
-        entity = app.registry.create();
+        entity = registry.create();
 
         // Attach the new Icon and set up its properties:
-        auto& icon = app.registry.emplace<Icon>(entity);
+        auto& icon = registry.emplace<Icon>(entity);
         icon.image = image.value;
         icon.style = IconStyle{ 32, 0.0f }; // pixel size, rotation(radians)
 
@@ -61,132 +63,139 @@ auto Demo_Geocoder = [](Application& app)
         label_style_area.pointSize = 26.0f;
         label_style_area.outlineSize = 0.5f;
 
-        auto& label = app.registry.emplace<Label>(entity);
+        auto& label = registry.emplace<Label>(entity);
 
         // Outline for location boundary:
         feature_view.styles.line = LineStyle();
         feature_view.styles.line->color = vsg::vec4{ 1, 1, 0, 1 };
         feature_view.styles.line->depth_offset = 9000.0f; //meters
 
-        app.registry.get<Visibility>(entity).active = false;
-        //ecs::setVisible(app.registry, feature_view.entity, false);
+        registry.get<Visibility>(entity).active = false;
 
         // Transform to place the entity:
-        auto& xform = app.registry.emplace<Transform>(entity);
+        auto& xform = registry.emplace<Transform>(entity);
     }
 
-    if (ImGuiLTable::Begin("geocoding"))
+    else
     {
-        if (ImGuiLTable::InputText("Location:", input_buf, 256, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
+        auto [lock, registry] = app.registry.read();
+
+        if (ImGuiLTable::Begin("geocoding"))
         {
-            // hide the placemark:
-            auto& icon = app.registry.get<Icon>(entity);
-            app.registry.get<Visibility>(entity).active = false;
 
-            std::string input(input_buf);
-            geocoding_task = jobs::dispatch([&app, input](jobs::cancelable& c)
-                {
-                    Result<std::vector<Feature>> result;
-                    if (!c.canceled())
-                    {
-                        Geocoder geocoder;
-                        result = geocoder.geocode(input, app.io());
-                    }
-                    return result;
-                });
-        }
-        ImGuiLTable::End();
-    }
-
-    if (geocoding_task.working())
-    {
-        ImGui::Text("Searching...");
-    }
-
-    else if (geocoding_task.available())
-    {
-        auto& result = geocoding_task.value();
-        if (result.status.ok())
-        {
-            ImGui::Text("Click on a result to center:");
-            for (auto& feature : result.value)
+            if (ImGuiLTable::InputText("Location:", input_buf, 256, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
             {
-                bool selected = false;
-                ImGui::Separator();
-                std::string display_name = feature.field("display_name").stringValue;
-                ImGui::Selectable(display_name.c_str(), &selected);
-                if (selected)
-                {
-                    app.onNextUpdate([&, display_name]()
+                // hide the placemark:
+                auto& icon = registry.get<Icon>(entity);
+                registry.get<Visibility>(entity).active = false;
+
+                std::string input(input_buf);
+                geocoding_task = jobs::dispatch([&app, input](jobs::cancelable& c)
+                    {
+                        Result<std::vector<Feature>> result;
+                        if (!c.canceled())
                         {
-                            auto extent = feature.extent;
-                            if (extent.area() == 0.0)
-                                extent.expand(Distance(10, Units::KILOMETERS), Distance(10, Units::KILOMETERS));
-
-                            auto view = app.displayManager->windowsAndViews.begin()->second.front();
-                            auto manip = MapManipulator::get(view);
-                            if (manip)
-                            {
-                                Viewpoint vp = manip->getViewpoint();
-                                vp.point = extent.centroid();
-                                manip->setViewpoint(vp, std::chrono::seconds(2));
-                            }
-
-                            auto&& [icon, label] = app.registry.get<Icon, Label>(entity);
-
-                            // show the placemark:
-                            if (feature.geometry.type == Geometry::Type::Points)
-                            {
-                                app.registry.get<Visibility>(entity).active = true;
-                                if (feature_view.entity != entt::null)
-                                    app.registry.get<Visibility>(feature_view.entity).active = false;
-                                label.style = label_style_point;
-                            }
-                            else
-                            {
-                                // update the mesh:
-                                auto copy_of_feature = feature;
-                                copy_of_feature.geometry.convertToType(Geometry::Type::LineString);
-                                Geometry::iterator i(copy_of_feature.geometry);
-                                while(i.hasMore()) for (auto& point : i.next().points) point.z = 500.0;
-                                feature_view.clear(app.registry);
-                                feature_view.features = { copy_of_feature };
-                                feature_view.generate(app.registry, app.mapNode->worldSRS(), app.runtime());
-                                app.registry.get<Visibility>(entity).active = true;
-                                if (feature_view.entity != entt::null)
-                                    app.registry.get<Visibility>(feature_view.entity).active = true;
-                                label.style = label_style_area;
-                            }
-
-                            // update the label:
-                            auto text = display_name;
-                            replace_in_place(text, ", ", "\n");
-                            label.text = text;                            
-                            label.revision++;
-
-                            // position it:
-                            auto& xform = app.registry.get<Transform>(entity);
-                            xform.setPosition(extent.centroid());
-                        });
-                }
-            }
-            ImGui::Separator();
-            if (ImGui::Button("Clear"))
-            {
-                geocoding_task.reset();
-                input_buf[0] = (char)0;
-
-                app.onNextUpdate([&]()
-                    {
-                        app.registry.get<Visibility>(entity).active = false;
-                        if (feature_view.entity != entt::null)
-                            app.registry.get<Visibility>(feature_view.entity).active = false;
+                            Geocoder geocoder;
+                            result = geocoder.geocode(input, app.io());
+                        }
+                        return result;
                     });
             }
+            ImGuiLTable::End();
         }
-        else
+
+        if (geocoding_task.working())
         {
-            ImGui::TextColored(ImVec4(1, 0.5, 0.5, 1), std::string("Geocoding failed! " + result.status.message).c_str());
+            ImGui::Text("Searching...");
+        }
+
+        else if (geocoding_task.available())
+        {
+            auto& result = geocoding_task.value();
+            if (result.status.ok())
+            {
+                ImGui::Text("Click on a result to center:");
+                for (auto& feature : result.value)
+                {
+                    bool selected = false;
+                    ImGui::Separator();
+                    std::string display_name = feature.field("display_name").stringValue;
+                    ImGui::Selectable(display_name.c_str(), &selected);
+                    if (selected)
+                    {
+                        app.onNextUpdate([&app, &feature, display_name]()
+                            {
+                                auto extent = feature.extent;
+                                if (extent.area() == 0.0)
+                                    extent.expand(Distance(10, Units::KILOMETERS), Distance(10, Units::KILOMETERS));
+
+                                auto view = app.displayManager->windowsAndViews.begin()->second.front();
+                                auto manip = MapManipulator::get(view);
+                                if (manip)
+                                {
+                                    Viewpoint vp = manip->getViewpoint();
+                                    vp.point = extent.centroid();
+                                    manip->setViewpoint(vp, std::chrono::seconds(2));
+                                }
+
+                                auto [lock, registry] = app.registry.read();
+
+                                auto&& [icon, label] = registry.get<Icon, Label>(entity);
+
+                                // show the placemark:
+                                if (feature.geometry.type == Geometry::Type::Points)
+                                {
+                                    registry.get<Visibility>(entity).active = true;
+                                    if (feature_view.entity != entt::null)
+                                        registry.get<Visibility>(feature_view.entity).active = false;
+
+                                    label.style = label_style_point;
+                                }
+                                else
+                                {
+                                    // update the mesh:
+                                    auto copy_of_feature = feature;
+                                    copy_of_feature.geometry.convertToType(Geometry::Type::LineString);
+                                    Geometry::iterator i(copy_of_feature.geometry);
+                                    while (i.hasMore()) for (auto& point : i.next().points) point.z = 500.0;
+                                    feature_view.clear(registry);
+                                    feature_view.features = { copy_of_feature };
+                                    feature_view.generate(registry, app.mapNode->worldSRS(), app.runtime());
+
+                                    registry.get<Visibility>(entity).active = true;
+                                    if (feature_view.entity != entt::null)
+                                        registry.get<Visibility>(feature_view.entity).active = true;
+
+                                    label.style = label_style_area;
+                                }
+
+                                // update the label:
+                                auto text = display_name;
+                                replace_in_place(text, ", ", "\n");
+                                label.text = text;
+                                label.revision++;
+
+                                // position it:
+                                auto& xform = registry.get<Transform>(entity);
+                                xform.setPosition(extent.centroid());
+                            });
+                    }
+                }
+                ImGui::Separator();
+                if (ImGui::Button("Clear"))
+                {
+                    geocoding_task.reset();
+                    input_buf[0] = (char)0;
+
+                    registry.get<Visibility>(entity).active = false;
+                    if (feature_view.entity != entt::null)
+                        registry.get<Visibility>(feature_view.entity).active = false;
+                }
+            }
+            else
+            {
+                ImGui::TextColored(ImVec4(1, 0.5, 0.5, 1), std::string("Geocoding failed! " + result.status.message).c_str());
+            }
         }
     }
 };

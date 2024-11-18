@@ -195,7 +195,7 @@ Application::ctor(int& argc, char** argv)
         commandLineStatus = loadMapFile(commandLine[1], *mapNode, instance);
     }
 
-    ecsManager = ecs::SystemsManagerGroup::create(backgroundServices);
+    ecsManager = ecs::SystemsManagerGroup::create(registry, backgroundServices);
 
     ecsManager->add<MeshSystemNode>(registry);
     ecsManager->add<LineSystemNode>(registry);

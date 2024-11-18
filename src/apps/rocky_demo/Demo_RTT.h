@@ -115,11 +115,12 @@ auto Demo_RTT = [](Application& app)
             };
         app.onNextUpdate(install);
 
+        auto [lock, registry] = app.registry.write();
 
         // Now, create an entity to host our mesh.
         // This is the geometry that we will apply the texture to. 
-        entity = app.registry.create();
-        auto& mesh = app.registry.emplace<Mesh>(entity);
+        entity = registry.create();
+        auto& mesh = registry.emplace<Mesh>(entity);
 
         // Cenerate the mesh geometry We have to add UVs (texture coordinates)
         // in order to map the RTT texture.
@@ -164,9 +165,11 @@ auto Demo_RTT = [](Application& app)
 
     if (ImGuiLTable::Begin("model"))
     {
-        bool visible = ecs::visible(app.registry, entity);
+        auto [lock, registry] = app.registry.read();
+
+        bool visible = ecs::visible(registry, entity);
         if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(app.registry, entity, visible);
+            ecs::setVisible(registry, entity, visible);
 
         ImGuiLTable::End();
     }

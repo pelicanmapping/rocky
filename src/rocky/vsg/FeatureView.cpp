@@ -337,16 +337,16 @@ FeatureView::FeatureView(Feature&& f) noexcept
 void
 FeatureView::clear(entt::registry& registry)
 {
-    for(auto entity : line_entities)
+    for (auto entity : line_entities)
     {
         if (entity != entt::null)
         {
             registry.remove<Line>(entity);
         }
-    }   
+    }
     line_entities.clear();
 
-    for(auto entity : mesh_entities)
+    for (auto entity : mesh_entities)
     {
         if (entity != entt::null)
         {
@@ -415,7 +415,7 @@ FeatureView::generate(entt::registry& registry, const SRS& geom_srs, Runtime& ru
 }
 
 void
-FeatureView::dirtyStyles(entt::registry& entities)
+FeatureView::dirtyStyles(entt::registry& registry)
 {
     if (line_entities.empty() && mesh_entities.empty())
         return;
@@ -424,7 +424,7 @@ FeatureView::dirtyStyles(entt::registry& entities)
     {
         for (auto entity : line_entities)
         {
-            if (auto* line = entities.try_get<Line>(entity))
+            if (auto* line = registry.try_get<Line>(entity))
             {
                 line->style = styles.line.value();
                 line->dirty();
@@ -436,7 +436,7 @@ FeatureView::dirtyStyles(entt::registry& entities)
     {
         for (auto entity : mesh_entities)
         {
-            if (auto* mesh = entities.try_get<Mesh>(entity))
+            if (auto* mesh = registry.try_get<Mesh>(entity))
             {
                 mesh->style = styles.mesh.value();
                 mesh->dirty();

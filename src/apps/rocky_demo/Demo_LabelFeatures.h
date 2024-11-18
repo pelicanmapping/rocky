@@ -63,24 +63,26 @@ auto Demo_LabelFeatures = [](Application& app)
             }
         }
 
+        auto [lock, registry] = app.registry.write();
+
         // create an entity for each candidate
         for (auto& [name, candidate] : candidates)
         {
-            auto entity = app.registry.create();
+            auto entity = registry.create();
 
             // attach a label:
-            auto& label = app.registry.emplace<Label>(entity);
+            auto& label = registry.emplace<Label>(entity);
             label.text = name;
             label.style.font = app.runtime().defaultFont;
             label.style.pointSize = starting_label_size;
             label.style.outlineSize = 0.35f;
 
             // attach a transform to place the label:
-            auto& transform = app.registry.emplace<Transform>(entity);
+            auto& transform = registry.emplace<Transform>(entity);
             transform.setPosition(candidate.centroid);
 
             // attach a component to control decluttering:
-            auto& declutter = app.registry.emplace<Declutter>(entity);
+            auto& declutter = registry.emplace<Declutter>(entity);
             declutter.priority = (float)candidate.pop;
             // note, 0.75 is points-to-pixels
             declutter.width_px = 0.75f * 0.60f * label.style.pointSize * (float)label.text.size();
@@ -92,13 +94,15 @@ auto Demo_LabelFeatures = [](Application& app)
 
     else if (ImGuiLTable::Begin("Label features"))
     {
+        auto [lock, registry] = app.registry.read();
+
         if (status->ok())
         {
             if (ImGuiLTable::Checkbox("Show", &active))
             {
                 for (auto entity : labels)
                 {
-                    app.registry.get<Visibility>(entity).active = active;
+                    registry.get<Visibility>(entity).active = active;
                 }
             }
 
@@ -107,8 +111,8 @@ auto Demo_LabelFeatures = [](Application& app)
             {
                 for (auto entity : labels)
                 {
-                    auto& label = app.registry.get<Label>(entity);
-                    auto& declutter = app.registry.get<Declutter>(entity);
+                    auto& label = registry.get<Label>(entity);
+                    auto& declutter = registry.get<Declutter>(entity);
 
                     float size = starting_label_size * label_size_percentage * 0.01f;
                     declutter.width_px = 0.75f * 0.60f * size * (float)label.text.size();

@@ -417,35 +417,6 @@ namespace ROCKY_NAMESPACE
             }
         };
 
-        template<typename T>
-        class locked_value
-        {
-        public:
-            void set(const T& obj) {
-                std::scoped_lock L(_mutex);
-                _obj = obj;
-            }
-            void set(T&& obj) {
-                std::scoped_lock L(_mutex);
-                _obj = std::move(obj);
-            }
-            bool get_and_clear(T& obj) {
-                std::scoped_lock L(_mutex);
-                if (_obj.has_value()) {
-                    obj = _obj.value();
-                    _obj.reset();
-                    return true;
-                }
-                return false;
-            }
-            bool has_value() const {
-                return _obj.has_value();
-            }
-        private:
-            std::optional<T> _obj;
-            mutable std::mutex _mutex;
-        };
-
         /**
         * Utility to manages loops that run in the background.
         */

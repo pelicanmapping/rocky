@@ -16,11 +16,13 @@ auto Demo_Mesh_Absolute = [](Application& app)
 
     if (entity == entt::null)
     {
+        auto [lock, registry] = app.registry.write();
+
         // Make an entity to hold our mesh:
-        entity = app.registry.create();
+        entity = registry.create();
 
         // Attach a mesh component:
-        auto& mesh = app.registry.emplace<Mesh>(entity);
+        auto& mesh = registry.emplace<Mesh>(entity);
 
         // Make some geometry.
         const double step = 2.5;
@@ -56,11 +58,13 @@ auto Demo_Mesh_Absolute = [](Application& app)
 
     if (ImGuiLTable::Begin("Mesh"))
     {
+        auto [lock, registry] = app.registry.read();
+
         static bool visible = true;
         if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(app.registry, entity, visible);
+            ecs::setVisible(registry, entity, visible);
 
-        auto& mesh = app.registry.get<Mesh>(entity);
+        auto& mesh = registry.get<Mesh>(entity);
 
         if (mesh.style.has_value())
         {
@@ -85,11 +89,13 @@ auto Demo_Mesh_Relative = [](Application& app)
 
     if (entity == entt::null)
     {
+        auto [lock, registry] = app.registry.write();
+
         // Create a new entity to host our mesh
-        entity = app.registry.create();
+        entity = registry.create();
 
         // Attach the new mesh:
-        Mesh& mesh = app.registry.emplace<Mesh>(entity);
+        Mesh& mesh = registry.emplace<Mesh>(entity);
 
         // Make some geometry that will be relative to a geolocation:
         const double s = 250000.0;
@@ -124,104 +130,29 @@ auto Demo_Mesh_Relative = [](Application& app)
         // Add a transform component so we can position our mesh relative
         // to some geospatial coordinates. We then set the bound on the node
         // to control horizon culling a little better
-        auto& xform = app.registry.emplace<Transform>(entity);
+        auto& xform = registry.emplace<Transform>(entity);
         xform.setPosition(GeoPoint(SRS::WGS84, 24.0, 24.0, s * 3.0));
         xform.node->bound.radius = s * sqrt(2);
     }
 
     if (ImGuiLTable::Begin("Mesh"))
     {
-        bool visible = ecs::visible(app.registry, entity);
+        auto [lock, registry] = app.registry.read();
+
+        bool visible = ecs::visible(registry, entity);
         if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(app.registry, entity, visible);
+            ecs::setVisible(registry, entity, visible);
 
-        auto& mesh = app.registry.get<Mesh>(entity);
+        auto& mesh = registry.get<Mesh>(entity);
 
-        auto* style = app.registry.try_get<MeshStyle>(entity);
+        auto* style = registry.try_get<MeshStyle>(entity);
         if (style)
         {
             if (ImGuiLTable::ColorEdit4("Color", (float*)&style->color))
                 mesh.dirty();
         }
 
-        auto& transform = app.registry.get<Transform>(entity);
-
-        if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
-            transform.dirty();
-
-        if (ImGuiLTable::SliderDouble("Longitude", &transform.position.x, -180.0, 180.0, "%.1lf"))
-            transform.dirty();
-
-        if (ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2500000.0, "%.1lf"))
-            transform.dirty();
-
-        ImGuiLTable::End();
-    }
-};
-
-
-auto Demo_Mesh_Multi = [](Application& app)
-{
-    // Demonstrates adding multiple components of the same type to an entity.
-    static entt::entity entity = entt::null;
-
-    if (entity == entt::null)
-    {
-        entity = app.registry.create();
-        Mesh& mesh = app.registry.emplace<Mesh>(entity);
-
-        const double s = 250000.0;
-        vsg::dvec3 verts[8] = {
-            { -s, -s, -s },
-            {  s, -s, -s },
-            {  s,  s, -s },
-            { -s,  s, -s },
-            { -s, -s,  s },
-            {  s, -s,  s },
-            {  s,  s,  s },
-            { -s,  s,  s }
-        };
-        unsigned indices[48] = {
-            0,3,2, 0,2,1, 4,5,6, 4,6,7,
-            1,2,6, 1,6,5, 3,0,4, 3,4,7,
-            0,1,5, 0,5,4, 2,3,7, 2,7,6
-        };
-
-        vsg::vec4 color{ 1, 0, 1, 0.85f };
-
-        for (unsigned i = 0; i < 48; )
-        {
-            mesh.triangles.emplace_back(Triangle{
-                {verts[indices[i++]], verts[indices[i++]], verts[indices[i++]]},
-                {color, color, color} });
-
-            if ((i % 6) == 0)
-                color.r *= 0.8f, color.b *= 0.8f;
-        }
-
-        // Add a transform component so we can position our mesh relative
-        // to some geospatial coordinates.
-        auto& xform = app.registry.emplace<Transform>(entity);
-        xform.setPosition(GeoPoint(SRS::WGS84, 24.0, 24.0, s * 3.0));
-    }
-
-    if (ImGuiLTable::Begin("Mesh"))
-    {
-        bool visible = ecs::visible(app.registry, entity);
-        if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(app.registry, entity, visible);
-
-        auto& mesh = app.registry.get<Mesh>(entity);
-
-        auto* style = app.registry.try_get<MeshStyle>(entity);
-        if (style)
-        {
-            float* col = (float*)&style->color;
-            if (ImGuiLTable::ColorEdit4("Color", col))
-                mesh.dirty();
-        }
-
-        auto& transform = app.registry.get<Transform>(entity);
+        auto& transform = registry.get<Transform>(entity);
 
         if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
             transform.dirty();

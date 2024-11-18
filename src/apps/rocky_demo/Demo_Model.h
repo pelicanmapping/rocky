@@ -27,6 +27,8 @@ auto Demo_Model = [](Application& app)
 
     if (entity == entt::null)
     {
+        auto [lock, registry] = app.registry.write();
+
         // Load model data from a URI
         URI uri("https://raw.githubusercontent.com/vsg-dev/vsgExamples/master/data/models/teapot.vsgt");
         auto result = uri.read(app.instance.io());
@@ -48,25 +50,27 @@ auto Demo_Model = [](Application& app)
         }
 
         // New entity to host our model
-        entity = app.registry.create();
+        entity = registry.create();
 
         // The model component; we just set the node directly.
-        auto& model = app.registry.emplace<NodeGraph>(entity);
+        auto& model = registry.emplace<NodeGraph>(entity);
         model.node = node;
 
         // A transform component to place and move it on the map
-        auto& transform = app.registry.emplace<Transform>(entity);
+        auto& transform = registry.emplace<Transform>(entity);
         transform.setPosition(GeoPoint(SRS::WGS84, 50, 0, 250000));
         transform.localMatrix = vsg::scale(scale);
     }
 
     if (ImGuiLTable::Begin("model"))
     {
-        bool visible = ecs::visible(app.registry, entity);
-        if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(app.registry, entity, visible);
+        auto [lock, registry] = app.registry.read();
 
-        auto& transform = app.registry.get<Transform>(entity);
+        bool visible = ecs::visible(registry, entity);
+        if (ImGuiLTable::Checkbox("Show", &visible))
+            ecs::setVisible(registry, entity, visible);
+
+        auto& transform = registry.get<Transform>(entity);
         if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
             transform.dirty();
         if (ImGuiLTable::SliderDouble("Longitude", &transform.position.x, -180.0, 180.0, "%.1lf"))

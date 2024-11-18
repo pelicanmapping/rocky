@@ -24,20 +24,21 @@ namespace
     class DeclutterSystem
     {
     public:
-        DeclutterSystem(entt::registry& in_registry)
-            : registry(in_registry) { }
+        DeclutterSystem(ecs::Registry& in_registry)
+            : _registry(in_registry) { }
 
-        entt::registry& registry;
         float update_hertz = 1.0f; // updates per second
         bool enabled = true;
         double buffer_radius = 25.0;
         bool sort_by_priority = true;
-
-        unsigned total = 0, visible = 1;
-        std::size_t last_max_size = 32;
+        unsigned visible = 1;
+        unsigned total = 0;
         std::function<std::vector<std::uint32_t>()> getActiveViewIDs;
 
-        static std::shared_ptr<DeclutterSystem> create(entt::registry& registry) {
+        ecs::Registry& _registry;
+        std::size_t _last_max_size = 32;
+
+        static std::shared_ptr<DeclutterSystem> create(ecs::Registry& registry) {
             return std::make_shared<DeclutterSystem>(registry);
         }
 
@@ -55,20 +56,21 @@ namespace
                 // First collect all declutter-able entities and sort them by their distance to the camera.
                 // tuple = [entity, x, y, sort_key, width, height]
                 std::vector<std::tuple<entt::entity, double, double, double, int, int>> sorted;
-                sorted.reserve(last_max_size);
+                sorted.reserve(_last_max_size);
 
-                double aspect_ratio = 1.0; // same for all objects
+                auto [lock, registry] = _registry.read();
+
                 auto view = registry.view<Declutter, Transform, Visibility>();
                 for (auto&& [entity, declutter, transform, visibility] : view.each())
                 {
                     if (visibility.active && transform.node && transform.node->viewLocal.size() > viewID)
                     {
-                        int width = 
+                        int width =
                             (declutter.width_px >= 0 ? declutter.width_px : 0) +
                             (declutter.buffer_x >= 0 ? declutter.buffer_x : (int)buffer_radius);
-                        int height = 
+                        int height =
                             (declutter.height_px >= 0 ? declutter.height_px : 0) +
-                            (declutter.buffer_y >= 0 ? declutter.buffer_y : (int)buffer_radius);                        
+                            (declutter.buffer_y >= 0 ? declutter.buffer_y : (int)buffer_radius);
 
                         // Cheat by directly accessing view 0. In reality we will might either declutter per-view
                         // or have a "driving view" that controls visibility for all views.
@@ -86,7 +88,7 @@ namespace
 
                 // sort them by whatever sort key we used, either priority or camera distance
                 std::sort(sorted.begin(), sorted.end(), [](const auto& a, const auto& b) { return std::get<3>(a) > std::get<3>(b); });
-                last_max_size = sorted.size();
+                _last_max_size = sorted.size();
 
                 // Next, take the sorted vector and declutter by populating an R-Tree with rectangles representing
                 // each entity's buffered location in screen(clip) space. For objects that don't conflict with
@@ -105,8 +107,8 @@ namespace
                         double half_width = (double)(width >> 1);
                         double half_height = (double)(height >> 1);
 
-                        double LL[2]{ x - half_width, y - half_height * aspect_ratio };
-                        double UR[2]{ x + half_width, y + half_height * aspect_ratio };
+                        double LL[2]{ x - half_width, y - half_height };
+                        double UR[2]{ x + half_width, y + half_height };
 
                         if (rtree.Search(LL, UR, [](auto e) { return false; }) == 0)
                         {
@@ -125,6 +127,8 @@ namespace
 
         void resetVisibility()
         {
+            auto [lock, registry] = _registry.read();
+
             auto view = registry.view<Declutter, Visibility>();
             for (auto&& [entity, declutter, visibility] : view.each())
             {
@@ -153,6 +157,7 @@ auto Demo_Decluttering = [](Application& app)
                 while (!token.canceled())
                 {
                     run_at_frequency f(declutter->update_hertz);
+
                     if (declutter->enabled)
                     {
                         declutter->update(app.runtime());

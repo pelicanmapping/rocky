@@ -40,7 +40,7 @@ namespace ROCKY_NAMESPACE
         StyleSheet styles;
 
         //! Create VSG geometry from the feature list
-        //! @param registry Entity registry
+        //! @param registry Entity registry, locked for writing
         //! @param srs SRS or resulting geometry
         //! @param runtime Runtime operations interface
         //! @param keep_features Whether to keep the "features" vector intact;
@@ -52,10 +52,12 @@ namespace ROCKY_NAMESPACE
             bool keep_features = false);
 
         //! Deletes any geometries previously created by generate()
+        //! @param registry Entity registry, locked for writing
         void clear(entt::registry& registry);
 
         //! Call if you change the stylesheet after generating.
-        void dirtyStyles(entt::registry& entities);
+        //! @param registry Entity registry, locked for reading
+        void dirtyStyles(entt::registry& registry);
 
     public:
         //! Default construct - no data

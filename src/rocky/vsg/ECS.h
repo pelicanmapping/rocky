@@ -26,13 +26,53 @@ namespace ROCKY_NAMESPACE
     //! Entity Component System support
     namespace ecs
     {
-        class Registry : public entt::registry
+        /**
+        * Wraps the ECS registry with a read-write lock for thread safety.
+        * 
+        * Take an exclusive (write) lock when calling entt::registry methods that
+        * alter the database, like:
+        *   - create, destroy, emplace, remove
+        * 
+        * Take a shared (read) lock when calling entt::registry methods like:
+        *   - get, view
+        *   - and when updating components in place
+        */
+        class Registry
         {
         public:
-            std::shared_mutex mutex;
+            Registry() = default;
+
+            //! Returns a reference to a read-locked EnTT registry.
+            //! 
+            //! A read-lock is appropriate for get(), view(), and in-place updates to existing
+            //! components. The read-lock is scoped and will automatically release at the 
+            //! closing of the usage scope.
+            //! 
+            //! usage:
+            //!   auto [lock, registry] = ecs_registry.read();
+            //! 
+            //! @return A tuple including a scoped shared lock and a reference to the underlying registry
+            std::tuple<std::shared_lock<std::shared_mutex>, entt::registry&> read() {
+                return { std::shared_lock(_mutex), _registry };
+            }
+
+            //! Returns a reference to a write-locked EnTT registry.
+            //! 
+            //! A write-lock is appropritae for calls to create(), destroy(), clear(), emplace().
+            //! Note: you do not need a write lock for in-place component changes.
+            //! 
+            //! usage:
+            //!   auto [lock, registry] = ecs_registry.write();
+            //! 
+            //! @return A tuple including a scoped unique lock and a reference to the underlying registry
+            std::tuple<std::unique_lock<std::shared_mutex>, entt::registry&> write() {
+                return { std::unique_lock(_mutex), _registry };
+            }
+
+        private:
+            std::shared_mutex _mutex;
+            entt::registry _registry;
         };
-
-
 
         using time_point = std::chrono::steady_clock::time_point;
 
@@ -72,9 +112,7 @@ namespace ROCKY_NAMESPACE
         */
         struct Renderable
         {
-            using LockedNode = util::locked_value<vsg::ref_ptr<vsg::Node>>;
             vsg::ref_ptr<vsg::Node> node;
-            std::unique_ptr<LockedNode> staged = std::make_unique<LockedNode>();
             int revision = -1;
         };
     }
@@ -101,7 +139,7 @@ namespace ROCKY_NAMESPACE
         {
         public:
             //! ECS entity registry
-            Registry& registry;
+            Registry& _registry;
 
             //! Status
             Status status;
@@ -120,7 +158,7 @@ namespace ROCKY_NAMESPACE
 
         protected:
             System(Registry& in_registry) :
-                registry(in_registry) { }
+                _registry(in_registry) { }
         };
 
         //! Information passed to a system when creating or updating a node
@@ -181,11 +219,11 @@ namespace ROCKY_NAMESPACE
         class SystemNodeBase : public vsg::Inherit<vsg::Compilable, SystemNodeBase>
         {
         public:
-            class SystemsManagerGroup* manager = nullptr;
+            class SystemsManagerGroup* _manager = nullptr;
 
-            virtual void invokeCreateOrUpdate(BuildItem& ec, Runtime& runtime) const = 0;
+            virtual void invokeCreateOrUpdate(BuildItem& item, Runtime& runtime) const = 0;
 
-            virtual void mergeCreateOrUpdateResults(BuildItem& ec) = 0;
+            virtual void mergeCreateOrUpdateResults(entt::registry&, BuildItem& item, Runtime& runtime) = 0;
         };
 
         template<class T>
@@ -238,9 +276,9 @@ namespace ROCKY_NAMESPACE
             //! Subclass must implement this to create or update a node for a component.
             virtual void createOrUpdateNode(const T&, BuildInfo&, Runtime&) const = 0;
 
-            void invokeCreateOrUpdate(BuildItem& ec, Runtime& runtime) const override;
+            void invokeCreateOrUpdate(BuildItem& item, Runtime& runtime) const override;
 
-            void mergeCreateOrUpdateResults(BuildItem& ec) override;
+            void mergeCreateOrUpdateResults(entt::registry& registry, BuildItem& item, Runtime& runtime) override;
 
         private:
 
@@ -265,7 +303,7 @@ namespace ROCKY_NAMESPACE
         class ROCKY_EXPORT SystemsManagerGroup : public vsg::Inherit<vsg::Group, SystemsManagerGroup>
         {
         public:
-            SystemsManagerGroup(BackgroundServices& bg);
+            SystemsManagerGroup(Registry& reg, BackgroundServices& bg);
 
             //! Add a system node instance to the group.
             //! @param system The system node instance to add
@@ -310,7 +348,7 @@ namespace ROCKY_NAMESPACE
                     auto systemNode = child->cast<SystemNodeBase>();
                     if (systemNode)
                     {
-                        systemNode->manager = this;
+                        systemNode->_manager = this;
                     }
                 }
 
@@ -324,27 +362,36 @@ namespace ROCKY_NAMESPACE
             //! @param runtime The runtime object to pass to the systems
             void update(Runtime& runtime);
 
-            void traverse(vsg::RecordTraversal& rt) const override
-            {
-                vsg::Group::traverse(rt);
+
+            void traverse(vsg::Visitor& v) override {
+                Inherit::traverse(v);
+            }
+
+            void traverse(vsg::ConstVisitor& v) const override {
+                Inherit::traverse(v);
+            }
+
+            void traverse(vsg::RecordTraversal& v) const override {
+                Inherit::traverse(v);
             }
 
         public:
             // the data structure holding the queued jobs. 16 might be overkill :)
-            util::ring_buffer<ecs::BuildBatch> buildInput{ 16 };
-            util::ring_buffer<ecs::BuildBatch> buildOutput{ 16 };
+            util::ring_buffer<BuildBatch> buildInput{ 16 };
+            util::ring_buffer<BuildBatch> buildOutput{ 16 };
 
         private:
             std::vector<System*> systems;
             std::vector<std::shared_ptr<System>> non_node_systems;
             // NB: SystmeNode<T> instances are group children
+            Registry& _registry;
         };
 
         //! Whether the Visibility component is visible in the given view
         //! @param vis The visibility component
         //! @param view_index Index of view to check visibility
         //! @return True if visible in that view
-        inline bool visible(Visibility& vis, int view_index)
+        inline bool visible(const Visibility& vis, int view_index)
         {
             return vis.parent != nullptr ? visible(*vis.parent, view_index) : (vis.active && vis[view_index]);
         }
@@ -354,10 +401,11 @@ namespace ROCKY_NAMESPACE
         //! @param e Entity id
         //! @param value New visibility state
         //! @param view_index Index of view to set visibility
-        inline void setVisible(entt::registry& r, entt::entity e, bool value, int view_index = -1)
+        inline void setVisible(entt::registry& registry, entt::entity e, bool value, int view_index = -1)
         {
             ROCKY_SOFT_ASSERT_AND_RETURN(e != entt::null, void());
-            auto& visibility = r.get<Visibility>(e);
+
+            auto& visibility = registry.get<Visibility>(e);
             if (visibility.parent == nullptr)
             {
                 if (view_index >= 0)
@@ -374,7 +422,9 @@ namespace ROCKY_NAMESPACE
         //! @return True if visible in that view
         inline bool visible(entt::registry& r, entt::entity e, int view_index = 0)
         {
+            // assume a readlock on the registry
             ROCKY_SOFT_ASSERT_AND_RETURN(e != entt::null, false);
+
             return visible(r.get<Visibility>(e), view_index);
         }
     }
@@ -436,6 +486,8 @@ namespace ROCKY_NAMESPACE
     ecs::SystemNode<T>::SystemNode(Registry& in_registry) :
         System(in_registry)
     {
+        auto [lock, registry] = _registry.write();
+
         registry.on_construct<T>().template connect<&detail::SystemNode_on_construct<T>>();
         registry.on_update<T>().template connect<&detail::SystemNode_on_update<T>>();
         registry.on_destroy<T>().template connect<&detail::SystemNode_on_destroy<T>>();
@@ -444,6 +496,8 @@ namespace ROCKY_NAMESPACE
     template<class T>
     ecs::SystemNode<T>::~SystemNode()
     {
+        auto [lock, registry] = _registry.write();
+
         registry.on_construct<T>().template disconnect<&detail::SystemNode_on_construct<T>>();
         registry.on_update<T>().template disconnect<&detail::SystemNode_on_update<T>>();
         registry.on_destroy<T>().template disconnect<&detail::SystemNode_on_destroy<T>>();
@@ -456,6 +510,8 @@ namespace ROCKY_NAMESPACE
         {
             pipeline.commands->accept(v);
         }
+
+        auto [lock, registry] = _registry.read();
 
         registry.view<T>().each([&](auto& c)
             {
@@ -475,6 +531,8 @@ namespace ROCKY_NAMESPACE
         {
             pipeline.commands->accept(v);
         }
+
+        auto [lock, registry] = _registry.read();
 
         registry.view<T>().each([&](auto& c)
             {
@@ -498,6 +556,8 @@ namespace ROCKY_NAMESPACE
         // Compile the components
         util::SimpleCompiler compiler(context);
 
+        auto [lock, registry] = _registry.read();
+
         registry.view<T>().each([&](auto& c)
             {
                 auto& renderable = registry.get<Renderable>(c.attach_point);
@@ -518,6 +578,8 @@ namespace ROCKY_NAMESPACE
         {
             pipelineRenderLeaves.resize(!pipelines.empty() ? pipelines.size() : 1);
         }
+
+        auto [lock, registry] = _registry.read();
 
         // Get an optimized view of all this system's components:
         registry.view<T, Visibility>().each([&](const entt::entity entity, const T& component, auto& visibility)
@@ -545,14 +607,7 @@ namespace ROCKY_NAMESPACE
                         }
                     }
 
-                    // If our renderable has a new node waiting to be merged, queue it up
-                    if (renderable.staged->has_value())
-                    {
-                        entities_to_update.emplace_back(entity);
-                    }
-
-                    // Or if out renderabe is stale, queue it up for regeneration
-                    else if (renderable.revision != component.revision)
+                    if (renderable.revision != component.revision)
                     {
                         entities_to_update.emplace_back(entity);
                         renderable.revision = component.revision;
@@ -600,22 +655,19 @@ namespace ROCKY_NAMESPACE
     {
         std::vector<ecs::BuildItem> entities_to_build;
 
-        for (auto& entity : entities_to_update)
+        if (!entities_to_update.empty())
         {
-            T& component = registry.get<T>(entity);
-            Renderable& renderable = registry.get<Renderable>(component.attach_point);
+            auto [lock, registry] = _registry.read();
 
-            // if a staged node exists, swap it in.
-            vsg::ref_ptr<vsg::Node> new_node;
-            if (renderable.staged->get_and_clear(new_node))
+            //TODO: can we just do this during record...?
+            for (auto& entity : entities_to_update)
             {
-                if (renderable.node)
-                    runtime.dispose(renderable.node);
+                if (!registry.valid(entity))
+                    continue;
 
-                renderable.node = new_node;
-            }
-            else
-            {
+                T& component = registry.get<T>(entity);
+                Renderable& renderable = registry.get<Renderable>(component.attach_point);
+
                 // either the node doesn't exist yet, or the revision changed.
                 // Queue it up for creation.
                 ecs::BuildItem item;
@@ -632,14 +684,14 @@ namespace ROCKY_NAMESPACE
         // If we detected any entities that need new nodes, create them now.
         if (!entities_to_build.empty())
         {
-            if (SystemNodeBase::manager) // gcc makes me do this :(
+            if (SystemNodeBase::_manager) // gcc makes me do this :(
             {
                 ecs::BuildBatch batch;
                 batch.items = std::move(entities_to_build);
                 batch.system = this;
                 batch.runtime = &runtime;
 
-                bool ok = SystemNodeBase::manager->buildInput.emplace(std::move(batch));
+                bool ok = SystemNodeBase::_manager->buildInput.emplace(std::move(batch));
 
                 if (!ok)
                 {
@@ -658,7 +710,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<typename T>
-    void ecs::SystemNode<T>::mergeCreateOrUpdateResults(BuildItem& item)
+    void ecs::SystemNode<T>::mergeCreateOrUpdateResults(entt::registry& registry, BuildItem& item, Runtime& runtime)
     {
         // if there's a new node AND the entity isn't outdated or deleted,
         // swap it in. This method is called from SystemsManagerGroup::update().
@@ -666,9 +718,14 @@ namespace ROCKY_NAMESPACE
         {
             T& component = registry.get<T>(item.entity);
             auto& renderable = registry.get<Renderable>(component.attach_point);
-            if (item.new_node)
+
+            if (renderable.node != item.new_node)
             {
-                renderable.staged->set(item.new_node);
+                // dispose of the old node
+                if (renderable.node)
+                    runtime.dispose(renderable.node);
+
+                renderable.node = item.new_node;
             }
         }
     }

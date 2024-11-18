@@ -44,6 +44,7 @@ namespace
                     while (!token.canceled())
                     {
                         run_at_frequency f(sim_hertz);
+                        //readlock
                         motion.update(app.runtime());
                         app.runtime().requestFrame();
                     }
@@ -74,6 +75,8 @@ auto Demo_Simulation = [](Application& app)
 
     if (platforms.empty())
     {
+        auto [lock, registry] = app.registry.write();
+
         // add an icon:
         auto io = app.instance.io();
         auto image = io.services.readImageFromURI(icon_location, io);
@@ -91,10 +94,10 @@ auto Demo_Simulation = [](Application& app)
                 float t = (float)i / (float)(num_platforms);
 
                 // Create a host entity:
-                auto entity = app.registry.create();
+                auto entity = registry.create();
 
                 // Attach an icon:
-                auto& icon = app.registry.emplace<Icon>(entity);
+                auto& icon = registry.emplace<Icon>(entity);
                 icon.style = IconStyle{ 16.0f + t*16.0f, 0.0f }; // pixels, rotation(rad)
 
                 if (image.status.ok())
@@ -111,18 +114,18 @@ auto Demo_Simulation = [](Application& app)
                 pos.transformInPlace(SRS::ECEF);
 
                 // Add a transform component:
-                auto& transform = app.registry.emplace<Transform>(entity);
+                auto& transform = registry.emplace<Transform>(entity);
                 transform.localTangentPlane = false;
                 transform.setPosition(pos);
 
                 // Add a motion component to represent movement:
                 double initial_bearing = -180.0 + rand_unit(mt) * 360.0;
-                auto& motion = app.registry.emplace<MotionGreatCircle>(entity);
+                auto& motion = registry.emplace<MotionGreatCircle>(entity);
                 motion.velocity = { -75000 + rand_unit(mt) * 150000, 0.0, 0.0 };
                 motion.normalAxis = pos.srs.ellipsoid().greatCircleRotationAxis(glm::dvec3(lon, lat, 0.0), initial_bearing);
 
                 // Place a label below the platform:
-                auto& label = app.registry.emplace<Label>(entity);
+                auto& label = registry.emplace<Label>(entity);
                 label.text = std::to_string(i);
                 label.style.font = app.runtime().defaultFont;
                 label.style.pointSize = 16.0f + t * 5.0f;
@@ -131,7 +134,7 @@ auto Demo_Simulation = [](Application& app)
                 label.style.verticalAlignment = vsg::StandardLayout::TOP_ALIGNMENT;
 
                 // Decluttering information
-                auto& declutter = app.registry.emplace<Declutter>(entity);
+                auto& declutter = registry.emplace<Declutter>(entity);
                 declutter.priority = alt;
 
                 platforms.emplace(entity);

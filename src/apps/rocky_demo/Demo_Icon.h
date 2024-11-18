@@ -25,6 +25,8 @@ auto Demo_Icon = [](Application& app)
 
     if (entity == entt::null)
     {
+        auto [lock, registry] = app.registry.write();
+
         // Load an icon image
         auto io = app.instance.io();
         auto image = io.services.readImageFromURI("https://readymap.org/readymap/filemanager/download/public/icons/BENDER.png", io);
@@ -35,26 +37,28 @@ auto Demo_Icon = [](Application& app)
         }
 
         // Make an entity to host our icon:
-        entity = app.registry.create();
+        entity = registry.create();
 
         // Attach the new Icon and set up its properties:
-        auto& icon = app.registry.emplace<Icon>(entity);
+        auto& icon = registry.emplace<Icon>(entity);
         icon.image = image.value;
         icon.style = IconStyle{ 75, 0.0f }; // pixel size, rotation(radians)
 
         // Transform to place the icon:
-        auto& transform = app.registry.emplace<Transform>(entity);
+        auto& transform = registry.emplace<Transform>(entity);
         transform.setPosition(GeoPoint(SRS::WGS84, 0, 0, 50000));
         transform.localTangentPlane = false; // optimization for billboards :)
     }
 
     if (ImGuiLTable::Begin("icon"))
     {
-        bool visible = ecs::visible(app.registry, entity);
-        if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(app.registry, entity, visible);
+        auto [lock, registry] = app.registry.read();
 
-        auto& icon = app.registry.get<Icon>(entity);
+        bool visible = ecs::visible(registry, entity);
+        if (ImGuiLTable::Checkbox("Show", &visible))
+            ecs::setVisible(registry, entity, visible);
+
+        auto& icon = registry.get<Icon>(entity);
 
         if (ImGuiLTable::SliderFloat("Pixel size", &icon.style.size_pixels, 1.0f, 1024.0f))
             icon.revision++;

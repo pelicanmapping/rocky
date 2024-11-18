@@ -17,11 +17,13 @@ auto Demo_Line_Absolute = [](Application& app)
 
     if (entity == entt::null)
     {
+        auto [lock, registry] = app.registry.write();
+
         // Create a new entity to host our line.
-        entity = app.registry.create();
+        entity = registry.create();
 
         // Attach a new Line component to the entity:
-        auto& line = app.registry.emplace<Line>(entity);
+        auto& line = registry.emplace<Line>(entity);
 
         // Set a reference point. This should be near your geometry, and will
         // act as an anchor point for localizing geometry. It will also allow
@@ -45,11 +47,13 @@ auto Demo_Line_Absolute = [](Application& app)
 
     if (ImGuiLTable::Begin("absolute linestring"))
     {
+        auto [lock, registry] = app.registry.read();
+
         static bool visible = true;
         if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(app.registry, entity, visible);
+            ecs::setVisible(registry, entity, visible);
 
-        auto& line = app.registry.get<Line>(entity);
+        auto& line = registry.get<Line>(entity);
 
         float* col = (float*)&line.style.color;
         if (ImGuiLTable::ColorEdit3("Color", col))
@@ -75,11 +79,13 @@ auto Demo_Line_Relative = [](Application& app)
 
     if (entity == entt::null)
     {
+        auto [lock, registry] = app.registry.write();
+
         // Create a new entity to host our line.
-        entity = app.registry.create();
+        entity = registry.create();
 
         // Attach a line component to our new entity:
-        auto& line = app.registry.emplace<Line>(entity);
+        auto& line = registry.emplace<Line>(entity);
 
         // Create the line geometry, which will be relative to a transform.
         const double size = 500000;
@@ -94,23 +100,25 @@ auto Demo_Line_Relative = [](Application& app)
         line.write_depth = true;
 
         // Add a transform that will place the line on the map
-        auto& transform = app.registry.emplace<Transform>(entity);
+        auto& transform = registry.emplace<Transform>(entity);
         transform.setPosition(GeoPoint(SRS::WGS84, -30.0, 10.0, 25000.0));
         transform.node->bound.radius = size; // for horizon culling
     }
 
     if (ImGuiLTable::Begin("relative linestring"))
     {
+        auto [lock, registry] = app.registry.read();
+
         static bool visible = true;
         if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(app.registry, entity, visible);
+            ecs::setVisible(registry, entity, visible);
 
-        auto& line = app.registry.get<Line>(entity);
+        auto& line = registry.get<Line>(entity);
 
         if (ImGuiLTable::ColorEdit3("Color", (float*)&line.style.color))
             line.dirty();
 
-        auto& transform = app.registry.get<Transform>(entity);
+        auto& transform = registry.get<Transform>(entity);
 
         if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
             transform.dirty();
