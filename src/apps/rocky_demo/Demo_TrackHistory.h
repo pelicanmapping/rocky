@@ -193,21 +193,22 @@ namespace
             style.color = vsg::vec4{ 0.0f, 1.0f, 0.0f, 1.0f };
             style.width = 2.0f;
 
-            auto [lock, registry] = _registry.write();
-
-            // first delete any existing track histories
-            registry.clear<TrackHistory>();
-
-            // then re-scan and add new ones.
-            auto view = registry.view<Transform>();
-            for (auto&& [entity, transform] : view.each())
-            {
-                if (transform.parent == nullptr)
+            _registry.write([&](entt::registry& registry)
                 {
-                    auto& track = registry.emplace<TrackHistory>(entity);
-                    track.style = style;
-                }
-            }
+                    // first delete any existing track histories
+                    registry.clear<TrackHistory>();
+
+                    // then re-scan and add new ones.
+                    auto view = registry.view<Transform>();
+                    for (auto&& [entity, transform] : view.each())
+                    {
+                        if (transform.parent == nullptr)
+                        {
+                            auto& track = registry.emplace<TrackHistory>(entity);
+                            track.style = style;
+                        }
+                    }
+                });
         }
 
     protected:

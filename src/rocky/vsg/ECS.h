@@ -69,6 +69,24 @@ namespace ROCKY_NAMESPACE
                 return { std::unique_lock(_mutex), _registry };
             }
 
+            //! Convenience function to invoke a lambda with a read-locked registry reference.
+            //! The signature of CALLABLE must match void(entt::registry&).
+            template<typename CALLABLE>
+            void read(CALLABLE&& func) {
+                static_assert(std::is_invocable_r_v<void, CALLABLE, entt::registry&>, "Callable must match void(entt::registry&)");
+                auto [lock, registry] = read();
+                func(registry);
+            }
+
+            //! Convenience function to invoke a lambda with a write-locked registry reference.
+            //! The signature of CALLABLE must match void(entt::registry&).
+            template<typename CALLABLE>
+            void write(CALLABLE&& func) {
+                static_assert(std::is_invocable_r_v<void, CALLABLE, entt::registry&>, "Callable must match void(entt::registry&)");
+                auto [lock, registry] = write();
+                func(registry);
+            }
+
         private:
             std::shared_mutex _mutex;
             entt::registry _registry;
