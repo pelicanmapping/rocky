@@ -270,40 +270,67 @@ LabelSystemNode::initializeSystem(Runtime& runtime)
 void
 LabelSystemNode::createOrUpdateNode(const Label& label, ecs::BuildInfo& data, Runtime& runtime) const
 {
-    auto options = runtime.readerWriterOptions;
-    float size = label.style.pointSize;
+    bool rebuild = data.existing_node == nullptr;
 
-    // We are doing our own billboarding with the PixelScaleTransform
-    auto layout = vsg::StandardLayout::create();
-    layout->billboard = false; // disabled intentionally
-    layout->position = label.style.pixelOffset;
-    layout->horizontal = vsg::vec3(size, 0.0f, 0.0f);
-    layout->vertical = vsg::vec3(0.0f, size, 0.0f);
-    layout->color = vsg::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    layout->outlineWidth = label.style.outlineSize;
-    layout->horizontalAlignment = label.style.horizontalAlignment;
-    layout->verticalAlignment = label.style.verticalAlignment;
+    if (data.existing_node)
+    {
+        auto textNode = util::find<vsg::Text>(data.existing_node);
+        auto text = static_cast<vsg::stringValue*>(textNode->text.get());
+        auto layout = static_cast<vsg::StandardLayout*>(textNode->layout.get());
 
-    // Share this since it should be the same for everything
-    if (runtime.sharedObjects)
-        runtime.sharedObjects->share(layout);
+        rebuild =
+            text->value() != label.text ||
+            layout->outlineWidth != label.style.outlineSize ||
+            layout->horizontalAlignment != label.style.horizontalAlignment ||
+            layout->verticalAlignment != label.style.verticalAlignment;
+    }
 
-    auto valueBuffer = vsg::stringValue::create(label.text);
+    if (rebuild)
+    {
+        auto options = runtime.readerWriterOptions;
+        //float size = label.style.pointSize;
 
-    auto textNode = vsg::Text::create();
-    textNode->font = label.style.font; // this has to be set or nothing shows up, don't know why yet
-    textNode->text = valueBuffer;
-    textNode->layout = layout;
-    textNode->technique = RockysCpuLayoutTechnique::create(); // one per label yes
-    textNode->setup(LABEL_MAX_NUM_CHARS, options); // allocate enough space for max possible characters?
+        // We are doing our own billboarding with the PixelScaleTransform
+        const float nativeSize = 128.0f;
+        auto layout = vsg::StandardLayout::create();
+        layout->billboard = false; // disabled intentionally
+        layout->position = label.style.pixelOffset;
+        layout->horizontal = vsg::vec3(nativeSize, 0.0f, 0.0f);
+        layout->vertical = vsg::vec3(0.0f, nativeSize, 0.0f);
+        layout->color = vsg::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        layout->outlineWidth = label.style.outlineSize;
+        layout->horizontalAlignment = label.style.horizontalAlignment;
+        layout->verticalAlignment = label.style.verticalAlignment;
 
-    // don't need this since we're using the custom technique
-    textNode->shaderSet = {};
+        // Share this since it should be the same for everything
+        if (runtime.sharedObjects)
+            runtime.sharedObjects->share(layout);
 
-    // this dude will billboard the label.
-    auto pst = PixelScaleTransform::create();
-    pst->unrotate = true;
-    pst->addChild(textNode);
+        auto valueBuffer = vsg::stringValue::create(label.text);
 
-    data.new_node = pst;
+        auto textNode = vsg::Text::create();
+        textNode->font = label.style.font; // this has to be set or nothing shows up, don't know why yet
+        textNode->text = valueBuffer;
+        textNode->layout = layout;
+        textNode->technique = RockysCpuLayoutTechnique::create(); // one per label yes
+        textNode->setup(LABEL_MAX_NUM_CHARS, options); // allocate enough space for max possible characters?
+
+        // don't need this since we're using the custom technique
+        textNode->shaderSet = {};
+
+        // this dude will billboard the label.
+        auto pst = PixelScaleTransform::create();
+        pst->unitSize = nativeSize;
+        pst->renderSize = label.style.pointSize;
+        pst->unrotate = true;
+        pst->addChild(textNode);
+
+        data.new_node = pst;
+    }
+
+    else
+    {
+        auto pst = util::find<PixelScaleTransform>(data.existing_node);
+        pst->renderSize = label.style.pointSize;
+    }
 }

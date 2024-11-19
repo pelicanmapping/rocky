@@ -5,7 +5,7 @@
  */
 #pragma once
 #include <rocky/vsg/Label.h>
-#include <rocky/vsg/ECS.h>
+#include <rocky/vsg/ECSNodes.h>
 #include <vsg/text/Text.h>
 
 namespace ROCKY_NAMESPACE

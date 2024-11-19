@@ -24,15 +24,10 @@ namespace
     Status openOnThisThread(
         const T* layer,
         GDAL::Driver& driver,
-        //std::shared_ptr<GDAL::Driver>& driver,
         Profile* profile,
         DataExtentList* out_dataExtents,
         const IOOptions& io)
     {
-        Log()->info("Opening GDAL driver on thread {}", std::hash<std::thread::id>{}(std::this_thread::get_id()));
-
-        //driver = std::make_shared<GDAL::Driver>();
-
         if (layer->maxDataLevel().has_value())
         {
             driver.maxDataLevel = layer->maxDataLevel();
@@ -121,12 +116,7 @@ GDALImageLayer::openImplementation(const IOOptions& io)
 
     DataExtentList dataExtents;
 
-    Status s = openOnThisThread(
-        this,
-        driver,
-        &profile,
-        &dataExtents,
-        io);
+    Status s = openOnThisThread(this, driver, &profile, &dataExtents, io);
 
     if (s.failed())
         return s;

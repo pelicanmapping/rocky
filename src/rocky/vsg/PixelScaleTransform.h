@@ -26,6 +26,8 @@ namespace ROCKY_NAMESPACE
         //! Whether to undo any rotation found in the origial model view matrix;
         //! This will effectively billboard the geometry.
         bool unrotate = false;
+        float unitSize = 1.0f;
+        float renderSize = 1.0f;
 
         void accept(vsg::RecordTraversal& rt) const override
         {
@@ -33,6 +35,9 @@ namespace ROCKY_NAMESPACE
             auto& state = *rt.getState();
             auto& viewport = state._commandBuffer->viewDependentState->viewportData->at(0);
             double d = state.lodDistance(vsg::dsphere(0.0, 0.0, 0.0, 0.5)) / viewport[3]; // vp height
+
+            d *= (renderSize / unitSize);
+
             matrix = vsg::scale(d);
 
             if (unrotate)
@@ -41,6 +46,7 @@ namespace ROCKY_NAMESPACE
                 auto rotation = util::quaternion_from_unscaled_matrix<vsg::dquat>(mv);
                 matrix = matrix * vsg::rotate(vsg::inverse(rotation));
             }
+
             rt.apply(*this);
         };
 

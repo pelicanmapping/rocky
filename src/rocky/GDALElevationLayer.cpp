@@ -21,24 +21,22 @@ namespace
     template<typename T>
     Status openOnThisThread(
         const T* layer,
-        std::shared_ptr<GDAL::Driver>& driver,
+        GDAL::Driver& driver,
         Profile* profile,
         DataExtentList* out_dataExtents,
         const IOOptions& io)
     {
-        driver = std::make_shared<GDAL::Driver>();
-
         if (layer->maxDataLevel().has_value())
-            driver->maxDataLevel = layer->maxDataLevel();
+            driver.maxDataLevel = layer->maxDataLevel();
 
         if (layer->noDataValue().has_value())
-            driver->noDataValue = layer->noDataValue();
+            driver.noDataValue = layer->noDataValue();
         if (layer->minValidValue().has_value())
-            driver->minValidValue = layer->minValidValue();
+            driver.minValidValue = layer->minValidValue();
         if (layer->maxValidValue().has_value())
-            driver->maxValidValue = layer->maxValidValue();
+            driver.maxValidValue = layer->maxValidValue();
 
-        Status status = driver->open(
+        Status status = driver.open(
             layer->name(),
             layer,
             layer->tileSize(),
@@ -48,9 +46,9 @@ namespace
         if (status.failed())
             return status;
 
-        if (driver->profile().valid() && profile != nullptr)
+        if (driver.profile().valid() && profile != nullptr)
         {
-            *profile = driver->profile();
+            *profile = driver.profile();
         }
 
         return StatusOK;
@@ -119,12 +117,7 @@ GDALElevationLayer::openImplementation(const IOOptions& io)
 
     DataExtentList dataExtents;
 
-    Status s = openOnThisThread(
-        this,
-        driver,
-        &profile,
-        &dataExtents,
-        io);
+    Status s = openOnThisThread(this, driver, &profile, &dataExtents, io);
 
     if (s.failed())
         return s;
@@ -156,16 +149,16 @@ GDALElevationLayer::createHeightfieldImplementation(const TileKey& key, const IO
         return status();
 
     auto& driver = _drivers.value();
-    if (driver == nullptr)
+    if (!driver.isOpen())
     {
         // calling openImpl with NULL params limits the setup
         // since we already called this during openImplementation
         openOnThisThread(this, driver, nullptr, nullptr, io);
     }
 
-    if (driver)
+    if (driver.isOpen())
     {
-        auto r = driver->createImage(key, tileSize(), io);
+        auto r = driver.createImage(key, tileSize(), io);
 
         if (r.status.ok())
         {

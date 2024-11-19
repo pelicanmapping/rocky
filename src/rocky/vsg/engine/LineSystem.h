@@ -5,9 +5,10 @@
  */
 #pragma once
 #include <rocky/vsg/Line.h>
-#include <rocky/vsg/ECS.h>
+#include <rocky/vsg/ECSNodes.h>
 #include <vsg/state/BindDescriptorSet.h>
 #include <vsg/nodes/Geometry.h>
+#include <vsg/commands/DrawIndexed.h>
 
 namespace ROCKY_NAMESPACE
 {

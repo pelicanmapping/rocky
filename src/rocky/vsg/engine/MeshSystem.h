@@ -5,7 +5,7 @@
  */
 #pragma once
 #include <rocky/vsg/Mesh.h>
-#include <rocky/vsg/ECS.h>
+#include <rocky/vsg/ECSNodes.h>
 
 namespace ROCKY_NAMESPACE
 {

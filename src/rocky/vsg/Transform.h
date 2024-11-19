@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <rocky/vsg/GeoTransform.h>
+#include <vsg/app/RecordTraversal.h>
 
 namespace ROCKY_NAMESPACE
 {

@@ -170,65 +170,88 @@ namespace
 void
 IconSystemNode::createOrUpdateNode(const Icon& icon, ecs::BuildInfo& data, Runtime& runtime) const
 {
-    auto geometry = IconGeometry::create();
-    auto bindCommand = BindIconStyle::create();
+    bool rebuild = data.existing_node == nullptr;
 
-    bindCommand->updateStyle(icon.style);
-
-    // assemble the descriptor set for this icon:
-    vsg::Descriptors descriptors;
-
-    // uniform buffer object for dynamic data:
-    auto ubo = vsg::DescriptorBuffer::create(bindCommand->_styleData, BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-    descriptors.emplace_back(ubo);
-
-    // make a default image if we don't have one
-    auto image = icon.image;
-    if (!image)
+    if (!rebuild)
     {
-        image = Image::create(Image::R8G8B8A8_UNORM, 1, 1);
-        image->write(Color::Red, 0, 0);
+        auto bindCommand = util::find<BindIconStyle>(data.existing_node);
+        std::shared_ptr<Image> old_image;
+        if (bindCommand->getValue("icon_image", old_image) && icon.image != old_image)
+        {
+            rebuild = true;
+        }
     }
 
-    // check the cache.
-    auto& descriptorImage = getOrCreate(descriptorImage_cache, mutex, icon.image, [&]()
+    if (rebuild)
+    {
+        auto geometry = IconGeometry::create();
+
+        auto bindCommand = BindIconStyle::create();
+        bindCommand->setValue("icon_image", icon.image);
+
+        bindCommand->updateStyle(icon.style);
+
+        // assemble the descriptor set for this icon:
+        vsg::Descriptors descriptors;
+
+        // uniform buffer object for dynamic data:
+        auto ubo = vsg::DescriptorBuffer::create(bindCommand->_styleData, BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        descriptors.emplace_back(ubo);
+
+        // make a default image if we don't have one
+        auto image = icon.image;
+        if (!image)
         {
-            auto imageData = util::moveImageToVSG(image);
+            image = Image::create(Image::R8G8B8A8_UNORM, 1, 1);
+            image->write(Color::Red, 0, 0);
+        }
 
-            // A sampler for the texture:
-            auto sampler = vsg::Sampler::create();
-            sampler->maxLod = 5; // this alone will prompt mipmap generation!
-            sampler->minFilter = VK_FILTER_LINEAR;
-            sampler->magFilter = VK_FILTER_LINEAR;
-            sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-            sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-            sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-            sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-            sampler->anisotropyEnable = VK_TRUE; // don't need this for a billboarded icon
-            sampler->maxAnisotropy = 4.0f;
+        // check the cache.
+        auto& descriptorImage = getOrCreate(descriptorImage_cache, mutex, icon.image, [&]()
+            {
+                auto imageData = util::moveImageToVSG(image);
 
-            return vsg::DescriptorImage::create(
-                sampler,
-                imageData,
-                TEXTURE_BINDING,
-                0, // array element (TODO: increment when we change to an array)
-                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-        });
+                // A sampler for the texture:
+                auto sampler = vsg::Sampler::create();
+                sampler->maxLod = 5; // this alone will prompt mipmap generation!
+                sampler->minFilter = VK_FILTER_LINEAR;
+                sampler->magFilter = VK_FILTER_LINEAR;
+                sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+                sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                sampler->anisotropyEnable = VK_TRUE; // don't need this for a billboarded icon
+                sampler->maxAnisotropy = 4.0f;
 
-    descriptors.emplace_back(descriptorImage);
+                return vsg::DescriptorImage::create(
+                    sampler,
+                    imageData,
+                    TEXTURE_BINDING,
+                    0, // array element (TODO: increment when we change to an array)
+                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            });
 
-    auto layout = getPipelineLayout(icon);
+        descriptors.emplace_back(descriptorImage);
 
-    bindCommand->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    bindCommand->layout = layout;
-    bindCommand->firstSet = 0;
-    bindCommand->descriptorSet = vsg::DescriptorSet::create(layout->setLayouts.front(), descriptors);
+        auto layout = getPipelineLayout(icon);
 
-    auto stateGroup = vsg::StateGroup::create();
-    stateGroup->stateCommands.push_back(bindCommand);
-    stateGroup->addChild(geometry);
+        bindCommand->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        bindCommand->layout = layout;
+        bindCommand->firstSet = 0;
+        bindCommand->descriptorSet = vsg::DescriptorSet::create(layout->setLayouts.front(), descriptors);
 
-    data.new_node = stateGroup;
+        auto stateGroup = vsg::StateGroup::create();
+        stateGroup->stateCommands.push_back(bindCommand);
+        stateGroup->addChild(geometry);
+
+        data.new_node = stateGroup;
+    }
+
+    else
+    {
+        auto bindCommand = util::find<BindIconStyle>(data.existing_node);
+        bindCommand->updateStyle(icon.style);    
+    }
 }
 
 

@@ -5,11 +5,8 @@
  */
 #pragma once
 #include <rocky/vsg/ECS.h>
-#include <rocky/SRS.h>
-#include <vsg/nodes/Geometry.h>
-#include <vsg/commands/DrawIndexed.h>
-#include <vsg/state/BindDescriptorSet.h>
-#include <optional>
+#include <rocky/GeoPoint.h>
+#include <vector>
 
 namespace ROCKY_NAMESPACE
 {

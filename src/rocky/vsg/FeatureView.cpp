@@ -5,6 +5,8 @@
  */
 #include "FeatureView.h"
 #include "Mesh.h"
+#include "Transform.h"
+#include "Visibility.h"
 #include "engine/Runtime.h"
 #include <rocky/weemesh.h>
 

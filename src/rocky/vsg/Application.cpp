@@ -4,9 +4,7 @@
  * MIT License
  */
 #include "Application.h"
-#include "MapNode.h"
 #include "MapManipulator.h"
-#include "SkyNode.h"
 #include "json.h"
 #include "engine/MeshSystem.h"
 #include "engine/LineSystem.h"
