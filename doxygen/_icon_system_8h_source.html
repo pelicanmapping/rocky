@@ -74,7 +74,7 @@ $(function() {
 <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160; </div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#pragma once</span></div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;rocky/vsg/Icon.h&gt;</span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;rocky/vsg/ECS.h&gt;</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;rocky/vsg/ECSNodes.h&gt;</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;{</div>
@@ -131,11 +131,11 @@ $(function() {
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_system_node_html_a3d242454a4cbfd8feb8f18aefa0394e2"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_system_node.html#a3d242454a4cbfd8feb8f18aefa0394e2">ROCKY_NAMESPACE::IconSystemNode::featureMask</a></div><div class="ttdeci">int featureMask(const Icon &amp;icon) const override</div><div class="ttdoc">Get the feature mask for a given icon.</div><div class="ttdef"><b>Definition:</b> IconSystem.h:63</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_system_node_html_a6e93d09d5ef8d3eabd930160bae588af"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_system_node.html#a6e93d09d5ef8d3eabd930160bae588af">ROCKY_NAMESPACE::IconSystemNode::Features</a></div><div class="ttdeci">Features</div><div class="ttdoc">Features supported by this renderer.</div><div class="ttdef"><b>Definition:</b> IconSystem.h:57</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">ROCKY_NAMESPACE::Runtime</a></div><div class="ttdef"><b>Definition:</b> Runtime.h:39</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_registry_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_registry.html">ROCKY_NAMESPACE::ecs::Registry</a></div><div class="ttdef"><b>Definition:</b> ECS.h:41</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_registry_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_registry.html">ROCKY_NAMESPACE::ecs::Registry</a></div><div class="ttdef"><b>Definition:</b> ECS.h:35</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon.html">ROCKY_NAMESPACE::Icon</a></div><div class="ttdef"><b>Definition:</b> Icon.h:28</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_style_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_style.html">ROCKY_NAMESPACE::IconStyle</a></div><div class="ttdef"><b>Definition:</b> Icon.h:17</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_build_info_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_build_info.html">ROCKY_NAMESPACE::ecs::BuildInfo</a></div><div class="ttdoc">Information passed to a system when creating or updating a node.</div><div class="ttdef"><b>Definition:</b> ECS.h:181</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_build_info_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_build_info.html">ROCKY_NAMESPACE::ecs::BuildInfo</a></div><div class="ttdoc">Information passed to a system when creating or updating a node.</div><div class="ttdef"><b>Definition:</b> ECSNodes.h:36</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

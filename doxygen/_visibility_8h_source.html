@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Rocky: src/rocky/vsg/Label.h Source File</title>
+<title>Rocky: src/rocky/vsg/Visibility.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -68,36 +68,27 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="headertitle">
-<div class="title">Label.h</div>  </div>
+<div class="title">Visibility.h</div>  </div>
 </div><!--header-->
 <div class="contents">
 <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160; </div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#pragma once</span></div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &lt;rocky/vsg/ECS.h&gt;</span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;vsg/text/Font.h&gt;</span></div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;vsg/text/StandardLayout.h&gt;</span></div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160; </div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;{</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;    <span class="keyword">struct </span>LabelStyle</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;    {</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;        vsg::ref_ptr&lt;vsg::Font&gt; font;</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;        vsg::StandardLayout::Alignment horizontalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;        vsg::StandardLayout::Alignment verticalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;        <span class="keywordtype">float</span> pointSize = 14.0f;</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;        <span class="keywordtype">float</span> outlineSize = 0.0f;</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;        vsg::vec3 pixelOffset = { 0.0f, 0.0f, 0.0f };</div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160; </div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;{</div>
+<div class="line"><a name="l00014"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility.html">   14</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility.html">Visibility</a> : <span class="keyword">public</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_per_view.html">ecs::PerView</a>&lt;bool, 4, true&gt;</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    {</div>
+<div class="line"><a name="l00017"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility.html#ae595d049bb5e636eafe61f131916a01c">   17</a></span>&#160;        <span class="keywordtype">bool</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility.html#ae595d049bb5e636eafe61f131916a01c">active</a> = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
+<div class="line"><a name="l00020"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility.html#a13f4bacb4c4afa8c33c43092e5b038b7">   20</a></span>&#160;        <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility.html">Visibility</a>* <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility.html#a13f4bacb4c4afa8c33c43092e5b038b7">parent</a> = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    };</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160; </div>
-<div class="line"><a name="l00026"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label.html">   26</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label.html">Label</a> : <span class="keyword">public</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_revisioned_component.html">ecs::RevisionedComponent</a></div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    {</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;        std::string text;</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;        LabelStyle style;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    };</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;}</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;}</div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label.html">ROCKY_NAMESPACE::Label</a></div><div class="ttdef"><b>Definition:</b> Label.h:27</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_revisioned_component_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_revisioned_component.html">ROCKY_NAMESPACE::ecs::RevisionedComponent</a></div><div class="ttdef"><b>Definition:</b> ECS.h:108</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility.html">ROCKY_NAMESPACE::Visibility</a></div><div class="ttdef"><b>Definition:</b> Visibility.h:15</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility_html_a13f4bacb4c4afa8c33c43092e5b038b7"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility.html#a13f4bacb4c4afa8c33c43092e5b038b7">ROCKY_NAMESPACE::Visibility::parent</a></div><div class="ttdeci">Visibility * parent</div><div class="ttdoc">setting this ties this component to another, ignoring the internal settings</div><div class="ttdef"><b>Definition:</b> Visibility.h:20</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility_html_ae595d049bb5e636eafe61f131916a01c"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visibility.html#ae595d049bb5e636eafe61f131916a01c">ROCKY_NAMESPACE::Visibility::active</a></div><div class="ttdeci">bool active</div><div class="ttdoc">overall active state</div><div class="ttdef"><b>Definition:</b> Visibility.h:17</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_per_view_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_per_view.html">ROCKY_NAMESPACE::ecs::PerView</a></div><div class="ttdef"><b>Definition:</b> ECS.h:96</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
