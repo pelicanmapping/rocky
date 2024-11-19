@@ -93,7 +93,7 @@ $(function() {
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;        <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_create_tile_manifest.html">CreateTileManifest</a>();</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        <span class="keywordtype">void</span> insert(shared_ptr&lt;Layer&gt; layer);</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        <span class="keywordtype">void</span> insert(std::shared_ptr&lt;Layer&gt; layer);</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160; </div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;        <span class="keywordtype">void</span> setProgressive(<span class="keywordtype">bool</span> value);</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        <span class="keyword">const</span> <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional&lt;bool&gt;</a>&amp; progressive()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _progressive; }</div>
@@ -133,7 +133,7 @@ $(function() {
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        <span class="keyword">struct </span>ROCKY_EXPORT ColorLayer : <span class="keyword">public</span> Tile</div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        {</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html">GeoImage</a> image;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;            shared_ptr&lt;const Layer&gt; layer;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;            std::shared_ptr&lt;const Layer&gt; layer;</div>
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;            <span class="keyword">using</span> Vector = std::vector&lt;ColorLayer&gt;;</div>
 <div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        };</div>
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
@@ -147,7 +147,7 @@ $(function() {
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        <span class="keyword">struct </span>ROCKY_EXPORT NormalMap : <span class="keyword">public</span> Tile</div>
 <div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        {</div>
 <div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;            <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html">GeoImage</a> image;</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;            shared_ptr&lt;const Layer&gt; layer;</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;            std::shared_ptr&lt;const Layer&gt; layer;</div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        };</div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160; </div>
 <div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        <span class="keyword">struct </span>ROCKY_EXPORT MaterialMap : <span class="keyword">public</span> Tile</div>
@@ -187,8 +187,8 @@ $(function() {
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_model_html_a9088b8d2995f07b98c02b918d7013bae"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_model.html#a9088b8d2995f07b98c02b918d7013bae">ROCKY_NAMESPACE::TerrainTileModel::elevation</a></div><div class="ttdeci">Elevation elevation</div><div class="ttdoc">Elevation data.</div><div class="ttdef"><b>Definition:</b> TerrainTileModel.h:116</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">ROCKY_NAMESPACE::TileKey</a></div><div class="ttdef"><b>Definition:</b> TileKey.h:22</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
-<div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a2e83fa7a0f75f3995bbe258156464182"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">ROCKY_NAMESPACE::UID</a></div><div class="ttdeci">std::int32_t UID</div><div class="ttdoc">application-wide unique ID.</div><div class="ttdef"><b>Definition:</b> Common.h:46</div></div>
-<div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_af01f4eb53e72c4be729979cd946c295d"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">ROCKY_NAMESPACE::Revision</a></div><div class="ttdeci">std::int32_t Revision</div><div class="ttdoc">revision type</div><div class="ttdef"><b>Definition:</b> Common.h:49</div></div>
+<div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a2e83fa7a0f75f3995bbe258156464182"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">ROCKY_NAMESPACE::UID</a></div><div class="ttdeci">std::int32_t UID</div><div class="ttdoc">application-wide unique ID.</div><div class="ttdef"><b>Definition:</b> Common.h:41</div></div>
+<div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_af01f4eb53e72c4be729979cd946c295d"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">ROCKY_NAMESPACE::Revision</a></div><div class="ttdeci">std::int32_t Revision</div><div class="ttdoc">revision type</div><div class="ttdef"><b>Definition:</b> Common.h:44</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">ROCKY_NAMESPACE::optional&lt; bool &gt;</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

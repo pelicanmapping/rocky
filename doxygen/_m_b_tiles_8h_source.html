@@ -109,13 +109,13 @@ $(function() {
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;            <span class="keywordtype">void</span> close();</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;            Result&lt;shared_ptr&lt;Image&gt;&gt; read(</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;            Result&lt;std::shared_ptr&lt;Image&gt;&gt; read(</div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;                <span class="keyword">const</span> TileKey&amp; key,</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;                <span class="keyword">const</span> IOOptions&amp; io) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; </div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;            Status write(</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;                <span class="keyword">const</span> TileKey&amp; key,</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;                shared_ptr&lt;Image&gt; image,</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;                std::shared_ptr&lt;Image&gt; image,</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;                <span class="keyword">const</span> IOOptions&amp; io) <span class="keyword">const</span>;</div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; </div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;            <span class="keywordtype">void</span> setDataExtents(<span class="keyword">const</span> DataExtentList&amp;);</div>
@@ -126,7 +126,7 @@ $(function() {
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;            <span class="keywordtype">void</span>* _database;</div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;            <span class="keyword">mutable</span> <span class="keywordtype">unsigned</span> _minLevel;</div>
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;            <span class="keyword">mutable</span> <span class="keywordtype">unsigned</span> _maxLevel;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;            shared_ptr&lt;Image&gt; _emptyImage;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;            std::shared_ptr&lt;Image&gt; _emptyImage;</div>
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;            Options _options;</div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;            std::string _tileFormat;</div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;            <span class="keywordtype">bool</span> _forceRGB;</div>

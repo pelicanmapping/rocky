@@ -86,12 +86,12 @@ typedef T::Options&#160;</td><td class="memItemRight" valign="bottom"><b>TypedOp
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a5a17d18edad85b1e6ae95d28e61dbe67"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#a5a17d18edad85b1e6ae95d28e61dbe67">setLayer</a> (shared_ptr&lt; T &gt; layer)</td></tr>
-<tr class="separator:a5a17d18edad85b1e6ae95d28e61dbe67"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeb7edfbc842111370b5ef82aa165a76f"><td class="memItemLeft" align="right" valign="top"><a id="aeb7edfbc842111370b5ef82aa165a76f"></a>
-shared_ptr&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#aeb7edfbc842111370b5ef82aa165a76f">getLayer</a> () const</td></tr>
-<tr class="memdesc:aeb7edfbc842111370b5ef82aa165a76f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contained layer object. <br /></td></tr>
-<tr class="separator:aeb7edfbc842111370b5ef82aa165a76f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f87301e2bd4afe6c271e0b1a098b003"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#a3f87301e2bd4afe6c271e0b1a098b003">setLayer</a> (std::shared_ptr&lt; T &gt; layer)</td></tr>
+<tr class="separator:a3f87301e2bd4afe6c271e0b1a098b003"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a479d469d2b7a9e31cce2332ce59bcacf"><td class="memItemLeft" align="right" valign="top"><a id="a479d469d2b7a9e31cce2332ce59bcacf"></a>
+std::shared_ptr&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#a479d469d2b7a9e31cce2332ce59bcacf">getLayer</a> () const</td></tr>
+<tr class="memdesc:a479d469d2b7a9e31cce2332ce59bcacf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contained layer object. <br /></td></tr>
+<tr class="separator:a479d469d2b7a9e31cce2332ce59bcacf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aee5c4e5d3f54a3e7702dcbc55a7bced9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#aee5c4e5d3f54a3e7702dcbc55a7bced9">isSetByUser</a> () const</td></tr>
 <tr class="separator:aee5c4e5d3f54a3e7702dcbc55a7bced9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a083bb7d0b96d09dc7b57f7fe68811211"><td class="memItemLeft" align="right" valign="top"><a id="a083bb7d0b96d09dc7b57f7fe68811211"></a>
@@ -105,10 +105,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>close</b> ()</td></tr
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#a855f32a8d68324267719ac7f18194e72">addedToMap</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">Map</a> *map, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a> *io)</td></tr>
 <tr class="memdesc:a855f32a8d68324267719ac7f18194e72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find a layer in the map and set this reference to point at it. <br /></td></tr>
 <tr class="separator:a855f32a8d68324267719ac7f18194e72"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a192f4d5fee6a36a3e83cd90f9d337fd3"><td class="memItemLeft" align="right" valign="top"><a id="a192f4d5fee6a36a3e83cd90f9d337fd3"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#a192f4d5fee6a36a3e83cd90f9d337fd3">removedFromMap</a> (shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">Map</a> &gt; map)</td></tr>
-<tr class="memdesc:a192f4d5fee6a36a3e83cd90f9d337fd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">If this reference was set by findInMap, release it. <br /></td></tr>
-<tr class="separator:a192f4d5fee6a36a3e83cd90f9d337fd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac892326e1684d7849a1c31da5317a840"><td class="memItemLeft" align="right" valign="top"><a id="ac892326e1684d7849a1c31da5317a840"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#ac892326e1684d7849a1c31da5317a840">removedFromMap</a> (std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">Map</a> &gt; map)</td></tr>
+<tr class="memdesc:ac892326e1684d7849a1c31da5317a840"><td class="mdescLeft">&#160;</td><td class="mdescRight">If this reference was set by findInMap, release it. <br /></td></tr>
+<tr class="separator:ac892326e1684d7849a1c31da5317a840"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a86f892a2a6c27c561712a6b4916b4629"><td class="memItemLeft" align="right" valign="top"><a id="a86f892a2a6c27c561712a6b4916b4629"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#a86f892a2a6c27c561712a6b4916b4629">get</a> (const Config &amp;conf, const std::string &amp;tag)</td></tr>
 <tr class="memdesc:a86f892a2a6c27c561712a6b4916b4629"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the layer ref from either a name or embedded option. <br /></td></tr>
@@ -164,8 +164,8 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
-<a id="a5a17d18edad85b1e6ae95d28e61dbe67"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5a17d18edad85b1e6ae95d28e61dbe67">&#9670;&nbsp;</a></span>setLayer()</h2>
+<a id="a3f87301e2bd4afe6c271e0b1a098b003"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f87301e2bd4afe6c271e0b1a098b003">&#9670;&nbsp;</a></span>setLayer()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -178,7 +178,7 @@ template&lt;typename T &gt; </div>
         <tr>
           <td class="memname">void <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html">ROCKY_NAMESPACE::LayerReference</a>&lt; T &gt;::setLayer </td>
           <td>(</td>
-          <td class="paramtype">shared_ptr&lt; T &gt;&#160;</td>
+          <td class="paramtype">std::shared_ptr&lt; T &gt;&#160;</td>
           <td class="paramname"><em>layer</em></td><td>)</td>
           <td></td>
         </tr>

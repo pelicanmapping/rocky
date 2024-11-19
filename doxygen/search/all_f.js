@@ -2,9 +2,9 @@ var searchData=
 [
   ['dvec3_428',['dvec3',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html#a57e427efcc9d4f9a180afdbfb5a289b2',1,'ROCKY_NAMESPACE::GeoPoint']]],
   ['objectposition_429',['objectPosition',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_transform.html#a61847b03a95c455f6abe3025c717895a',1,'ROCKY_NAMESPACE::GeoTransform::objectPosition()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_positioned_object.html#a3eaf8862d5fa66ee8a24093b35ed4540',1,'ROCKY_NAMESPACE::PositionedObject::objectPosition()']]],
-  ['oftype_430',['ofType',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_collection.html#a92c78754df85cf0703ec8c20541c1e1d',1,'ROCKY_NAMESPACE::LayerCollection']]],
-  ['onlayerclosed_431',['onLayerClosed',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a0374147f68a639de4dddc821e638dcdd',1,'ROCKY_NAMESPACE::Layer']]],
-  ['onlayeropened_432',['onLayerOpened',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a29b4fe5f93e1ee36a663bdf30cdff948',1,'ROCKY_NAMESPACE::Layer']]],
+  ['oftype_430',['ofType',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_collection.html#a2c70136e4c8323eadddfda3f785d558b',1,'ROCKY_NAMESPACE::LayerCollection']]],
+  ['onlayerclosed_431',['onLayerClosed',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#ab67b34469f952ab8b74bcf82d760e2d2',1,'ROCKY_NAMESPACE::Layer']]],
+  ['onlayeropened_432',['onLayerOpened',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#aa7009964d490d2fbc88a04c66e0e55c3',1,'ROCKY_NAMESPACE::Layer']]],
   ['onnextupdate_433',['onNextUpdate',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#acf54296b0bff88eb4d824cb4b7963bea',1,'ROCKY_NAMESPACE::Runtime::onNextUpdate(std::function&lt; void()&gt; function)'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html#a36c748c9967428286d97923ed7046ed7',1,'ROCKY_NAMESPACE::Runtime::onNextUpdate(vsg::ref_ptr&lt; vsg::Operation &gt; function, std::function&lt; float()&gt; get_priority={})']]],
   ['open_434',['open',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a2610e90b48d44bc3752a418197fa9e9f',1,'ROCKY_NAMESPACE::Layer::open()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#a083bb7d0b96d09dc7b57f7fe68811211',1,'ROCKY_NAMESPACE::LayerReference::open()']]],
   ['openalllayers_435',['openAllLayers',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html#a463c2005f91f8dff3405b7cad5b4e395',1,'ROCKY_NAMESPACE::Map']]],
