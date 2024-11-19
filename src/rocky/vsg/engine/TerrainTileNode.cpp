@@ -98,7 +98,7 @@ TerrainTileNode::recomputeBound()
 }
 
 void
-TerrainTileNode::setElevation(shared_ptr<Image> image, const glm::dmat4& matrix)
+TerrainTileNode::setElevation(std::shared_ptr<Image> image, const glm::dmat4& matrix)
 {
     if (surface)
     {

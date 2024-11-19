@@ -7,11 +7,11 @@
 #include <rocky/Common.h>
 #include <rocky/weejobs.h>
 #include <vector>
+#include <list>
 
 namespace ROCKY_NAMESPACE
 {
     using Cancelable = WEEJOBS_NAMESPACE::cancelable;
-    //template<class T> using Future = WEEJOBS_NAMESPACE::future<T>;
 
     namespace util
     {
@@ -28,8 +28,7 @@ namespace ROCKY_NAMESPACE
                 for(auto& p : _data)
                     if (p.first == id)
                         return p.second;
-                _data.emplace_back(id, T());
-                return _data.back().second;
+                return _data.emplace_back(id, T()).second;
             }
 
             void clear() {
@@ -39,7 +38,7 @@ namespace ROCKY_NAMESPACE
 
         private:
             std::mutex _mutex;
-            std::vector<std::pair<std::thread::id, T>> _data;
+            std::list<std::pair<std::thread::id, T>> _data;
         };
 
         /** Primitive that only allows one thread at a time access to a keyed resourse */

@@ -95,7 +95,7 @@ namespace ROCKY_NAMESPACE
     namespace util
     {
         template<typename T>
-        vsg::ref_ptr<vsg::Data> move(shared_ptr<Image> image, VkFormat format)
+        vsg::ref_ptr<vsg::Data> move(std::shared_ptr<Image> image, VkFormat format)
         {
             // NB!
             // We copy the values out of image FIRST because once we call
@@ -137,7 +137,7 @@ namespace ROCKY_NAMESPACE
 
         //! Moves a rocky Image object into a VSG Data object.
         //! The source Image is cleared in the process.
-        inline vsg::ref_ptr<vsg::Data> moveImageData(shared_ptr<Image> image)
+        inline vsg::ref_ptr<vsg::Data> moveImageData(std::shared_ptr<Image> image)
         {
             if (!image) return { };
 
@@ -173,7 +173,7 @@ namespace ROCKY_NAMESPACE
         // take ownership of the input image as a VSG object.
         // the input image becomes INVALID after this method. If that's not what
         // you want, clone the input image first!
-        inline vsg::ref_ptr<vsg::Data> moveImageToVSG(shared_ptr<Image> image)
+        inline vsg::ref_ptr<vsg::Data> moveImageToVSG(std::shared_ptr<Image> image)
         {
             if (!image)
                 return {};
@@ -186,7 +186,7 @@ namespace ROCKY_NAMESPACE
         }
 
         // Convert a vsg::Data structure to an Image if possible
-        inline Result<shared_ptr<Image>> makeImageFromVSG(vsg::ref_ptr<vsg::Data> data)
+        inline Result<std::shared_ptr<Image>> makeImageFromVSG(vsg::ref_ptr<vsg::Data> data)
         {
             if (!data)
                 return Status(Status::ResourceUnavailable, "Data is empty");

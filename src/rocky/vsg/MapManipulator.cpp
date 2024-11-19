@@ -621,7 +621,7 @@ MapManipulator::configureDefaultSettings()
 }
 
 void
-MapManipulator::applySettings(shared_ptr<Settings> settings)
+MapManipulator::applySettings(std::shared_ptr<Settings> settings)
 {
     if ( settings )
     {
@@ -655,7 +655,7 @@ MapManipulator::applySettings(shared_ptr<Settings> settings)
 #endif
 }
 
-shared_ptr<MapManipulator::Settings>
+std::shared_ptr<MapManipulator::Settings>
 MapManipulator::getSettings() const
 {
     return _settings;

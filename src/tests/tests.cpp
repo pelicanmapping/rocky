@@ -266,19 +266,19 @@ TEST_CASE("Map")
 
         unsigned cb_code = 0;
 
-        auto added_cb = [&cb_code](shared_ptr<Layer> layer, unsigned index, Revision rev)
+        auto added_cb = [&cb_code](std::shared_ptr<Layer> layer, unsigned index, Revision rev)
         {
             cb_code = 100;
         };
         map->onLayerAdded(added_cb);
 
-        auto moved_cb = [&cb_code](shared_ptr<Layer> layer, unsigned oldIndex, unsigned newIndex, Revision rev)
+        auto moved_cb = [&cb_code](std::shared_ptr<Layer> layer, unsigned oldIndex, unsigned newIndex, Revision rev)
         {
             cb_code = 200;
         };
         map->onLayerMoved(moved_cb);
 
-        auto removed_cb = [&cb_code](shared_ptr<Layer> layer, Revision rev)
+        auto removed_cb = [&cb_code](std::shared_ptr<Layer> layer, Revision rev)
         {
             cb_code = 300;
         };

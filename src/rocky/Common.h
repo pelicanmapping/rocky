@@ -37,11 +37,6 @@
 
 namespace ROCKY_NAMESPACE
 {
-    template<class T> using shared_ptr = std::shared_ptr<T>;
-    template<class T> using shared_constptr = std::shared_ptr<const T>;
-    template<class T> using weak_ptr = std::weak_ptr<T>;
-    template<class T> using weak_constptr = std::weak_ptr<const T>;
-
     //! application-wide unique ID.
     using UID = std::int32_t;
 
@@ -81,28 +76,28 @@ namespace ROCKY_NAMESPACE
         Inherit(const Args&... args) : PARENT(args...) { }
     public:
         using super = Inherit<PARENT, ME>;
-        using ptr = shared_ptr<ME>;
-        using constptr = shared_ptr<const ME>;
-        using weakptr = weak_ptr<ME>;
-        using constweakptr = weak_ptr<const ME>;
+        using ptr = std::shared_ptr<ME>;
+        using constptr = std::shared_ptr<const ME>;
+        using weakptr = std::weak_ptr<ME>;
+        using constweakptr = std::weak_ptr<const ME>;
         template<typename... Args>
-        static shared_ptr<ME> create(Args&&... args) {
+        static std::shared_ptr<ME> create(Args&&... args) {
             return std::make_shared<ME>(std::forward<Args>(args)...);
         }
         template<typename T>
-        static shared_ptr<ME> cast(shared_ptr<T>& rhs) {
+        static std::shared_ptr<ME> cast(std::shared_ptr<T>& rhs) {
             return std::dynamic_pointer_cast<ME>(rhs);
         }
         template<typename T>
-        static shared_ptr<const ME> cast(shared_ptr<const T>& rhs) {
+        static std::shared_ptr<const ME> cast(std::shared_ptr<const T>& rhs) {
             return std::dynamic_pointer_cast<const ME>(rhs);
         }
         template<typename T>
-        static shared_ptr<ME> cast(const shared_ptr<T>& rhs) {
+        static std::shared_ptr<ME> cast(const std::shared_ptr<T>& rhs) {
             return std::dynamic_pointer_cast<ME>(rhs);
         }
         template<typename T>
-        static const shared_ptr<const ME> cast(const shared_ptr<const T>& rhs) {
+        static const std::shared_ptr<const ME> cast(const std::shared_ptr<const T>& rhs) {
             return std::dynamic_pointer_cast<const ME>(rhs);
         }
     };

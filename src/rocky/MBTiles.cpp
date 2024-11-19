@@ -287,7 +287,7 @@ MBTiles::Driver::readMaxLevel()
     return result;
 }
 
-Result<shared_ptr<Image>>
+Result<std::shared_ptr<Image>>
 MBTiles::Driver::read(const TileKey& key, const IOOptions& io) const
 {
     std::scoped_lock lock(_mutex);
@@ -328,7 +328,7 @@ MBTiles::Driver::read(const TileKey& key, const IOOptions& io) const
     sqlite3_bind_int(select, 2, x);
     sqlite3_bind_int(select, 3, y);
 
-    Result<shared_ptr<Image>> result;
+    Result<std::shared_ptr<Image>> result;
     std::string errorMessage;
 
     rc = sqlite3_step(select);
@@ -379,7 +379,7 @@ MBTiles::Driver::read(const TileKey& key, const IOOptions& io) const
 
 
 Status
-MBTiles::Driver::write(const TileKey& key, shared_ptr<Image> input, const IOOptions& io) const
+MBTiles::Driver::write(const TileKey& key, std::shared_ptr<Image> input, const IOOptions& io) const
 {
     if (!key.valid() || !input)
         return Status(Status::AssertionFailure);

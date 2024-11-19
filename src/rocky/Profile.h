@@ -188,7 +188,7 @@ namespace ROCKY_NAMESPACE
             std::string _horizSignature;
             std::size_t _hash;
         };
-        shared_ptr<Data> _shared;
+        std::shared_ptr<Data> _shared;
     };
 
 

@@ -82,15 +82,15 @@ namespace ROCKY_NAMESPACE
 
     public:
         //! Callback fired upon added a layer
-        using LayerAdded = void(shared_ptr<Layer>, unsigned index, Revision);
+        using LayerAdded = void(std::shared_ptr<Layer>, unsigned index, Revision);
         Callback<LayerAdded> onLayerAdded;
 
         //! Callback fired upon removing a layer
-        using LayerRemoved = void(shared_ptr<Layer>, Revision);
+        using LayerRemoved = void(std::shared_ptr<Layer>, Revision);
         Callback<LayerRemoved> onLayerRemoved;
 
         //! Callback fired upon reordering a layer
-        using LayerMoved = void(shared_ptr<Layer>, unsigned oldIndex, unsigned newIndex, Revision);
+        using LayerMoved = void(std::shared_ptr<Layer>, unsigned oldIndex, unsigned newIndex, Revision);
         Callback<LayerMoved> onLayerMoved;
 
         //! Remove a callback added to thie object
@@ -102,7 +102,7 @@ namespace ROCKY_NAMESPACE
     private:
         Instance _instance;
         UID _uid;
-        std::vector<shared_ptr<Layer>> _layers;
+        std::vector<std::shared_ptr<Layer>> _layers;
         mutable std::shared_mutex _mapDataMutex;
         optional<Profile> _profile;
         Revision _dataModelRevision;

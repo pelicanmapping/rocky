@@ -30,7 +30,7 @@ namespace ROCKY_NAMESPACE
         MapNode(const InstanceVSG& instance);
 
         //! Creates a map node that will render the given Map.
-        MapNode(shared_ptr<Map> map);
+        MapNode(std::shared_ptr<Map> map);
 
         //! Deserialize a MapNode
         explicit MapNode(const JSON& conf, const InstanceVSG& instance);

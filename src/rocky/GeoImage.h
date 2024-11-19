@@ -29,7 +29,7 @@ namespace ROCKY_NAMESPACE
         GeoImage& operator=(GeoImage&&) noexcept;
 
         //! Constructs a new goereferenced image.
-        GeoImage(shared_ptr<Image> image, const GeoExtent& extent);
+        GeoImage(std::shared_ptr<Image> image, const GeoExtent& extent);
 
         //! Destructor
         virtual ~GeoImage() { }
@@ -40,7 +40,7 @@ namespace ROCKY_NAMESPACE
         bool valid() const;
 
         //! Gets a pointer to the underlying image
-        shared_ptr<Image> image() const;
+        std::shared_ptr<Image> image() const;
 
         //! Gets the geospatial extent of the image
         const GeoExtent& extent() const;
@@ -123,6 +123,6 @@ namespace ROCKY_NAMESPACE
 
     private:
         GeoExtent _extent;
-        shared_ptr<Image> _image;
+        std::shared_ptr<Image> _image;
     };
 }

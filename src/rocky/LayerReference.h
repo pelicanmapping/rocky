@@ -34,13 +34,13 @@ namespace ROCKY_NAMESPACE
 
         //! User can call this to set the layer by hand (instead of finding it
         //! in the map or in an embedded options structure)
-        void setLayer(shared_ptr<T> layer) 
+        void setLayer(std::shared_ptr<T> layer)
         {
             _layer = layer;
         }
 
         //! Contained layer object
-        shared_ptr<T> getLayer() const 
+        std::shared_ptr<T> getLayer() const
         {
             return _layer;
         }
@@ -60,8 +60,8 @@ namespace ROCKY_NAMESPACE
         {
             if (_embeddedOptions.has_value())
             {
-                shared_ptr<Layer> layer = Layer::create(_embeddedOptions.get());
-                shared_ptr<T> typedLayer = std::dynamic_pointer_cast<T>(layer);
+                auto layer = Layer::create(_embeddedOptions.get());
+                std::shared_ptr<T> typedLayer = std::dynamic_pointer_cast<T>(layer);
                 if (typedLayer)
                 {
                     const Status& layerStatus = typedLayer->open(io);
@@ -93,7 +93,7 @@ namespace ROCKY_NAMESPACE
         {
             if (!getLayer() && _externalLayerName.has_value())
             {
-                shared_ptr<Layer> = map->getLayerByName<T>(_externalLayerName.get());
+                auto layer = map->getLayerByName<T>(_externalLayerName.get());
                 if (layer)
                 {
                     _layer = layer;
@@ -111,7 +111,7 @@ namespace ROCKY_NAMESPACE
         }
 
         //! If this reference was set by findInMap, release it.
-        void removedFromMap(shared_ptr<Map> map)
+        void removedFromMap(std::shared_ptr<Map> map)
         {
             if (map && _layer)
             {
@@ -152,7 +152,7 @@ namespace ROCKY_NAMESPACE
                 {
                     for(auto& conf : conf.children())
                     {
-                        shared_ptr<Layer> layer = Layer::create(conf);
+                        std::shared_ptr<Layer> layer = Layer::create(conf);
                         if (layer && std::dynamic_pointer_cast<T>(layer))
                         {
                             _embeddedOptions = TypedOptions(conf);
@@ -188,7 +188,7 @@ namespace ROCKY_NAMESPACE
 
 
     private:
-        shared_ptr<Layer> _layer;
+        std::shared_ptr<Layer> _layer;
         optional<TypedOptions> _embeddedOptions;
         optional<std::string> _externalLayerName;
     };

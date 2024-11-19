@@ -121,7 +121,7 @@ namespace
                 if (ndef == "wgs84" || ndef == "global-geodetic")
                     to_try = "epsg:4979";
                 else if (ndef == "spherical-mercator")
-                    to_try = "epsg:3785";
+                    to_try = "epsg:3857"; //3785;
                 else if (ndef == "geocentric" || ndef == "ecef")
                     to_try = "epsg:4978";
                 else if (ndef == "plate-carree" || ndef == "plate-carre")

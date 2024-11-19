@@ -45,7 +45,7 @@ namespace ROCKY_NAMESPACE
         //! Called by the constructors
         void construct(const std::string& JSON, const IOOptions& io);
 
-        mutable util::ThreadLocal<shared_ptr<GDAL::Driver>> _drivers;
+        mutable util::ThreadLocal<std::shared_ptr<GDAL::Driver>> _drivers;
         friend class GDAL::Driver;
     };
 

@@ -16,7 +16,7 @@ using namespace ROCKY_NAMESPACE;
 namespace
 {
 #ifdef ROCKY_HAS_GDAL
-    shared_ptr<Image> createImageFromDataset(GDALDataset* ds)
+    std::shared_ptr<Image> createImageFromDataset(GDALDataset* ds)
     {
         // called internally -- GDAL lock not required
 
@@ -140,7 +140,7 @@ namespace
     GDALDataset* createDataSetFromImage(const Image* image, double minX, double minY, double maxX, double maxY, const std::string &projection)
     {
         //Clone the incoming image
-        shared_ptr<Image> clonedImage = image->clone();
+        std::shared_ptr<Image> clonedImage = image->clone();
 
         //Flip the image
         clonedImage->flipVerticalInPlace();
@@ -203,7 +203,7 @@ namespace
         return srcDS;
     }
 
-    shared_ptr<Image> GDAL_reprojectImage(
+    std::shared_ptr<Image> GDAL_reprojectImage(
         const Image* srcImage,
         const std::string srcWKT,
         double srcMinX, double srcMinY, double srcMaxX, double srcMaxY,
@@ -309,7 +309,7 @@ namespace
         return false;
     }
 
-    shared_ptr<Image> manualReproject(
+    std::shared_ptr<Image> manualReproject(
         const Image*      image,
         const GeoExtent&  src_extent,
         const GeoExtent&  dest_extent,
@@ -324,7 +324,7 @@ namespace
             height = std::min(image->width(), image->height());
         }
 
-        shared_ptr<Image> result = Image::create(
+        std::shared_ptr<Image> result = Image::create(
             image->pixelFormat(),
             width, height, image->depth());
 
@@ -468,7 +468,7 @@ namespace
         return result;
     }
 
-    shared_ptr<Image>
+    std::shared_ptr<Image>
     cropImage(
         const Image* image,
         double src_minx, double src_miny, double src_maxx, double src_maxy,
@@ -557,7 +557,7 @@ GeoImage::operator=(GeoImage&& rhs) noexcept
     return *this;
 }
 
-GeoImage::GeoImage(shared_ptr<Image> image, const GeoExtent& extent) :
+GeoImage::GeoImage(std::shared_ptr<Image> image, const GeoExtent& extent) :
     _image(image),
     _extent(extent)
 {
@@ -570,7 +570,7 @@ GeoImage::valid() const
     return _extent.valid() && _image != nullptr;
 }
 
-shared_ptr<Image>
+std::shared_ptr<Image>
 GeoImage::image() const
 {
     return _image;
@@ -669,7 +669,7 @@ GeoImage::crop(
             double destXMax = e.xmax();
             double destYMax = e.ymax();
 
-            shared_ptr<Image> new_image = cropImage(
+            auto new_image = cropImage(
                 image().get(),
                 _extent.xmin(), _extent.ymin(), _extent.xmax(), _extent.ymax(),
                 destXMin, destYMin, destXMax, destYMax);

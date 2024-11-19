@@ -41,7 +41,7 @@ CreateTileManifest::CreateTileManifest()
 }
 
 void
-CreateTileManifest::insert(shared_ptr<Layer> layer)
+CreateTileManifest::insert(std::shared_ptr<Layer> layer)
 {
     if (layer)
     {
@@ -212,7 +212,7 @@ TerrainTileModelFactory::addColorLayers(
     int order = 0;
 
     // fetch the candidate layers:
-    auto layers = map->layers().get([&manifest](const shared_ptr<Layer>& layer)
+    auto layers = map->layers().get([&manifest](const std::shared_ptr<Layer>& layer)
         {
             return
                 layer->isOpen() &&

@@ -46,7 +46,7 @@ TerrainNode::to_json() const
 }
 
 const Status&
-TerrainNode::setMap(shared_ptr<Map> new_map, const SRS& new_worldSRS)
+TerrainNode::setMap(std::shared_ptr<Map> new_map, const SRS& new_worldSRS)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(new_map, status);
 

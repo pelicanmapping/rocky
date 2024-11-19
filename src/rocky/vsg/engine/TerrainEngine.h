@@ -25,7 +25,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         TerrainEngine(
-            shared_ptr<Map> map,
+            std::shared_ptr<Map> map,
             const SRS& worldSRS,
             Runtime& runtime,
             const TerrainSettings& settings,
@@ -38,7 +38,7 @@ namespace ROCKY_NAMESPACE
         Runtime& runtime;
 
         //! the map this terrain is rendering
-        shared_ptr<Map> map;
+        std::shared_ptr<Map> map;
 
         //! SRS of the rendered terrain
         SRS worldSRS;

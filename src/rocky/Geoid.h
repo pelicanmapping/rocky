@@ -21,13 +21,13 @@ namespace ROCKY_NAMESPACE
     {
     public:
         std::string name;
-        shared_ptr<Heightfield> heightfield;
+        std::shared_ptr<Heightfield> heightfield;
         Units units;
 
         //! Construct
         Geoid(
             const std::string& name,
-            shared_ptr<Heightfield> hf,
+            std::shared_ptr<Heightfield> hf,
             const Units& units);
 
         //! Queries the geoid for the height offset at the specified geodetic

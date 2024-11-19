@@ -81,7 +81,7 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Decodes a mapbox RGB encoded heightfield image into a heightfield.
-        shared_ptr<Heightfield> decodeMapboxRGB(shared_ptr<Image> image) const;
+        std::shared_ptr<Heightfield> decodeMapboxRGB(std::shared_ptr<Image> image) const;
 
         virtual ~ElevationLayer() { }
 
@@ -94,7 +94,7 @@ namespace ROCKY_NAMESPACE
     private:
         void construct(const std::string& JSON, const IOOptions& io);
 
-        shared_ptr<Heightfield> assembleHeightfield(
+        std::shared_ptr<Heightfield> assembleHeightfield(
             const TileKey& key,
             const IOOptions& io) const;
 
@@ -116,8 +116,7 @@ namespace ROCKY_NAMESPACE
     /**
      * Vector of elevation layers, with added methods.
      */
-    class ROCKY_EXPORT ElevationLayerVector : 
-        public std::vector<shared_ptr<ElevationLayer>>
+    class ROCKY_EXPORT ElevationLayerVector : public std::vector<std::shared_ptr<ElevationLayer>>
     {
     public:
         /**
@@ -133,7 +132,7 @@ namespace ROCKY_NAMESPACE
          * @return True if "hf" was populated, false if no real data was available for key
          */
         bool populateHeightfield(
-            shared_ptr<Heightfield> in_out_hf,
+            std::shared_ptr<Heightfield> in_out_hf,
             std::vector<float>* resolutions,
             const TileKey& key,
             const Profile& hae_profile,

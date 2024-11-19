@@ -33,7 +33,7 @@ namespace ROCKY_NAMESPACE
     struct TextureData
     {
         std::string name;
-        shared_ptr<Image> image;
+        std::shared_ptr<Image> image;
         glm::dmat4 matrix{ 1 };
     };
 
@@ -125,11 +125,11 @@ namespace ROCKY_NAMESPACE
         //! Elevation data for this node along with its scale/bias matrix;
         //! needed for bounding box
         void setElevation(
-            shared_ptr<Image> image,
+            std::shared_ptr<Image> image,
             const glm::dmat4& matrix);
 
         //! This node's elevation raster image
-        shared_ptr<Image> getElevationRaster() const {
+        std::shared_ptr<Image> getElevationRaster() const {
             return surface->getElevationRaster();
         }
 

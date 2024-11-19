@@ -202,7 +202,7 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
     return result;
 }
 
-shared_ptr<Image>
+std::shared_ptr<Image>
 ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 {
     std::shared_ptr<Mosaic> output;

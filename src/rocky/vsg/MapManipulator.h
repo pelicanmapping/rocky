@@ -598,11 +598,11 @@ namespace ROCKY_NAMESPACE
             bool _zoomToMouse;
         };
 
-        shared_ptr<Settings> _settings;
+        std::shared_ptr<Settings> _settings;
 
-        void applySettings(shared_ptr<Settings>);
+        void applySettings(std::shared_ptr<Settings>);
 
-        shared_ptr<Settings> getSettings() const;
+        std::shared_ptr<Settings> getSettings() const;
 
     protected:
 

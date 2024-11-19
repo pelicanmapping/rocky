@@ -18,13 +18,13 @@ LayerCollection::LayerCollection(Map* map) :
 }
 
 Status
-LayerCollection::add(shared_ptr<Layer> layer)
+LayerCollection::add(std::shared_ptr<Layer> layer)
 {
     return add(layer, _map->_instance.io());
 }
 
 Status
-LayerCollection::add(shared_ptr<Layer> layer, const IOOptions& io)
+LayerCollection::add(std::shared_ptr<Layer> layer, const IOOptions& io)
 {
     // check if it's already in the collection
     if (indexOf(layer) != size())
@@ -57,7 +57,7 @@ LayerCollection::add(shared_ptr<Layer> layer, const IOOptions& io)
 }
 
 void
-LayerCollection::remove(shared_ptr<Layer> layer)
+LayerCollection::remove(std::shared_ptr<Layer> layer)
 {
     if (layer == nullptr)
         return;
@@ -67,7 +67,7 @@ LayerCollection::remove(shared_ptr<Layer> layer)
         return;
 
     unsigned int index = -1;
-    shared_ptr<Layer> layerToRemove(layer);
+    std::shared_ptr<Layer> layerToRemove(layer);
     Revision new_revision = -1;
 
     // Close the layer when we remove it from the map.
@@ -99,7 +99,7 @@ LayerCollection::remove(shared_ptr<Layer> layer)
 }
 
 void
-LayerCollection::move(shared_ptr<Layer> layer, unsigned new_index)
+LayerCollection::move(std::shared_ptr<Layer> layer, unsigned new_index)
 {
     unsigned oldIndex = 0;
     unsigned actualIndex = 0;
@@ -146,7 +146,7 @@ LayerCollection::size() const
 }
 
 unsigned
-LayerCollection::indexOf(shared_ptr<Layer> layer) const
+LayerCollection::indexOf(std::shared_ptr<Layer> layer) const
 {
     if (!layer)
         return (unsigned)size();
@@ -161,14 +161,14 @@ LayerCollection::indexOf(shared_ptr<Layer> layer) const
     return index;
 }
 
-shared_ptr<Layer>
+std::shared_ptr<Layer>
 LayerCollection::_at(unsigned index) const
 {
     std::shared_lock lock(_map->_mapDataMutex);
     return index < _layers.size() ? _layers[index] : nullptr;
 }
 
-shared_ptr<Layer>
+std::shared_ptr<Layer>
 LayerCollection::_withName(const std::string& name) const
 {
     std::shared_lock lock(_map->_mapDataMutex);
@@ -178,7 +178,7 @@ LayerCollection::_withName(const std::string& name) const
     return nullptr;
 }
 
-shared_ptr<Layer>
+std::shared_ptr<Layer>
 LayerCollection::_withUID(const UID& uid) const
 {
     std::shared_lock lock(_map->_mapDataMutex);
@@ -188,7 +188,7 @@ LayerCollection::_withUID(const UID& uid) const
     return nullptr;
 }
 
-std::vector<shared_ptr<Layer>>
+std::vector<std::shared_ptr<Layer>>
 LayerCollection::all() const
 {
     std::shared_lock lock(_map->_mapDataMutex);

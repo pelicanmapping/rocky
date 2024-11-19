@@ -32,7 +32,7 @@ GeoHeightfield::operator=(GeoHeightfield&& rhs) noexcept
     return *this;
 }
 
-GeoHeightfield::GeoHeightfield(shared_ptr<Heightfield> heightField, const GeoExtent& extent) :
+GeoHeightfield::GeoHeightfield(std::shared_ptr<Heightfield> heightField, const GeoExtent& extent) :
     _hf(heightField),
     _extent(extent),
     _minHeight(FLT_MAX),
@@ -150,7 +150,7 @@ GeoHeightfield::createSubSample(
     double dx = destExtent.width()/(double)(width-1);
     double dy = destExtent.height()/(double)(height-1);
 
-    shared_ptr<Heightfield> dest = Heightfield::create(width, height);
+    auto dest = Heightfield::create(width, height);
 
     double x, y;
     int col, row;

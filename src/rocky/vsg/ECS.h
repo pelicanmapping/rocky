@@ -118,9 +118,6 @@ namespace ROCKY_NAMESPACE
 
             //! Attach point for additional components, as needed
             entt::entity attach_point = entt::null;
-
-        protected:
-            RevisionedComponent() = default;
         };
 
         /**

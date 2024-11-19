@@ -53,7 +53,7 @@ namespace ROCKY_NAMESPACE
         struct ROCKY_EXPORT Stream
         {
         public:
-            Stream(shared_ptr<std::istream> s = nullptr);
+            Stream(std::shared_ptr<std::istream> s = nullptr);
 
             //! Whether the stream exists
             bool valid() const { return _in != nullptr; }
@@ -65,7 +65,7 @@ namespace ROCKY_NAMESPACE
             std::string to_string();
 
         private:
-            shared_ptr<std::istream> _in;
+            std::shared_ptr<std::istream> _in;
         };
 
     public:

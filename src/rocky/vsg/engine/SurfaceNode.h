@@ -34,11 +34,11 @@ namespace ROCKY_NAMESPACE
 
         //! Update the elevation raster associated with this tile
         void setElevation(
-            shared_ptr<Image> raster,
+            std::shared_ptr<Image> raster,
             const glm::dmat4& scaleBias);
 
         //! Elevation raster representing this surface
-        shared_ptr<Image> getElevationRaster() const {
+        std::shared_ptr<Image> getElevationRaster() const {
             return _elevationRaster;
         }
 
@@ -61,7 +61,7 @@ namespace ROCKY_NAMESPACE
 
         TileKey _tileKey;
         int _lastFramePassedCull = 0;
-        shared_ptr<Image> _elevationRaster;
+        std::shared_ptr<Image> _elevationRaster;
         glm::dmat4 _elevationMatrix;
         std::vector<vsg::dvec3> _worldPoints;
         bool _boundsDirty = true;

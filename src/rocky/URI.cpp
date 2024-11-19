@@ -434,7 +434,7 @@ namespace
 
 //------------------------------------------------------------------------
 
-URI::Stream::Stream(shared_ptr<std::istream> s) :
+URI::Stream::Stream(std::shared_ptr<std::istream> s) :
     _in(s)
 {
     //nop

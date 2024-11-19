@@ -224,9 +224,9 @@ namespace ROCKY_NAMESPACE
     namespace GDAL
     {
 
-        Result<shared_ptr<Image>> readImage(unsigned char* data, std::size_t length, const std::string& name)
+        Result<std::shared_ptr<Image>> readImage(unsigned char* data, std::size_t length, const std::string& name)
         {
-            shared_ptr<Image> result;
+            std::shared_ptr<Image> result;
 
             // generate a unique name for our temporary vsimem file:
             static std::atomic_int rgen(0);
@@ -332,13 +332,10 @@ namespace ROCKY_NAMESPACE
 
 //...................................................................
 
-GDAL::Driver::Driver()
-{
-    _threadId = std::this_thread::get_id();
-}
-
 GDAL::Driver::~Driver()
 {
+    //Log()->info("GDAL::Driver::~Driver, _warped={}, _src={}", (std::uintptr_t)_warpedDS, (std::uintptr_t)_srcDS);
+
     if (_warpedDS)
         GDALClose(_warpedDS);
     else if (_srcDS)
@@ -572,9 +569,7 @@ GDAL::Driver::open(
         SRS srs(warpedSRSWKT);
         if (srs.valid())
         {
-            _profile = Profile(
-                srs,
-                Box(minX, minY, maxX, maxY));
+            _profile = Profile(srs, Box(minX, minY, maxX, maxY));
         }
 
         if (!_profile.valid())
@@ -676,6 +671,7 @@ GDAL::Driver::open(
     // Get the linear units of the SRS for scaling elevation values
     _linearUnits = 1.0; // srs.getReportedLinearUnits();
 
+    _open = true;
     return StatusOK;
 }
 
@@ -864,7 +860,7 @@ GDAL::Driver::intersects(const TileKey& key)
     return key.extent().intersects(_extents);
 }
 
-Result<shared_ptr<Image>>
+Result<std::shared_ptr<Image>>
 GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions& io)
 {
     if (maxDataLevel.has_value() && key.levelOfDetail() > maxDataLevel)
@@ -877,7 +873,7 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
         return Status(Status::ResourceUnavailable);
     }
 
-    shared_ptr<Image> image;
+    std::shared_ptr<Image> image;
 
     const bool invert = true;
 

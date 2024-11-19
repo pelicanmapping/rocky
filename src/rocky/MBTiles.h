@@ -46,13 +46,13 @@ namespace ROCKY_NAMESPACE
 
             void close();
 
-            Result<shared_ptr<Image>> read(
+            Result<std::shared_ptr<Image>> read(
                 const TileKey& key,
                 const IOOptions& io) const;
 
             Status write(
                 const TileKey& key,
-                shared_ptr<Image> image,
+                std::shared_ptr<Image> image,
                 const IOOptions& io) const;
 
             void setDataExtents(const DataExtentList&);
@@ -63,7 +63,7 @@ namespace ROCKY_NAMESPACE
             void* _database;
             mutable unsigned _minLevel;
             mutable unsigned _maxLevel;
-            shared_ptr<Image> _emptyImage;
+            std::shared_ptr<Image> _emptyImage;
             Options _options;
             std::string _tileFormat;
             bool _forceRGB;

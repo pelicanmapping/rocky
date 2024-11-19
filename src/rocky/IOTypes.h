@@ -30,24 +30,24 @@ namespace ROCKY_NAMESPACE
 
     //! Service for reading an image from a URI
     using ReadImageURIService = std::function<
-        Result<shared_ptr<Image>>(const std::string& location, const IOOptions&)>;
+        Result<std::shared_ptr<Image>>(const std::string& location, const IOOptions&)>;
 
     //! Service fro reading an image from a stream
     using ReadImageStreamService = std::function<
-        Result<shared_ptr<Image>>(std::istream& stream, std::string contentType, const IOOptions& io)>;
+        Result<std::shared_ptr<Image>>(std::istream& stream, std::string contentType, const IOOptions& io)>;
 
     //! Service for writing an image to a stream
     using WriteImageStreamService = std::function<
-        Status(shared_ptr<Image> image, std::ostream& stream, std::string contentType, const IOOptions& io)>;
+        Status(std::shared_ptr<Image> image, std::ostream& stream, std::string contentType, const IOOptions& io)>;
 
     //! Service for caching data
     using CacheImpl = void*; // todo.
-    using CacheService = std::function<shared_ptr<CacheImpl>()>;
+    using CacheService = std::function<std::shared_ptr<CacheImpl>()>;
 
     //! Service for accessing other data
     class DataInterface {
     public:
-        virtual shared_ptr<Layer> findLayerByName(const std::string& name) const = 0;
+        virtual std::shared_ptr<Layer> findLayerByName(const std::string& name) const = 0;
     };
     using DataService = std::function<DataInterface&()>;
 
@@ -67,7 +67,7 @@ namespace ROCKY_NAMESPACE
         ReadImageStreamService readImageFromStream;
         WriteImageStreamService writeImageToStream;
         CacheService cache = nullptr;
-        shared_ptr<ContentCache> contentCache;
+        std::shared_ptr<ContentCache> contentCache;
     };
 
     /**

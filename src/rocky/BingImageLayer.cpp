@@ -141,7 +141,7 @@ BingImageLayer::createImageImplementation(const TileKey& key, const IOOptions& i
         return image_rr.status;
     }
 
-    shared_ptr<Image> image = image_rr.value;
+    auto image = image_rr.value;
 
     if (image)
         return GeoImage(image, key.extent());

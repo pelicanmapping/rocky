@@ -23,17 +23,22 @@ namespace
     template<typename T>
     Status openOnThisThread(
         const T* layer,
-        shared_ptr<GDAL::Driver>& driver,
+        GDAL::Driver& driver,
+        //std::shared_ptr<GDAL::Driver>& driver,
         Profile* profile,
         DataExtentList* out_dataExtents,
         const IOOptions& io)
     {
-        driver = std::make_shared<GDAL::Driver>();
+        Log()->info("Opening GDAL driver on thread {}", std::hash<std::thread::id>{}(std::this_thread::get_id()));
+
+        //driver = std::make_shared<GDAL::Driver>();
 
         if (layer->maxDataLevel().has_value())
-            driver->maxDataLevel = layer->maxDataLevel();
+        {
+            driver.maxDataLevel = layer->maxDataLevel();
+        }
 
-        Status status = driver->open(
+        Status status = driver.open(
             layer->name(),
             layer,
             layer->tileSize(),
@@ -43,9 +48,11 @@ namespace
         if (status.failed())
             return status;
 
-        if (driver->profile().valid() && profile != nullptr)
+        //ROCKY_HARD_ASSERT(driver != nullptr);
+
+        if (driver.profile().valid() && profile != nullptr)
         {
-            *profile = driver->profile();
+            *profile = driver.profile();
         }
 
         return StatusOK;
@@ -151,16 +158,16 @@ GDALImageLayer::createImageImplementation(const TileKey& key, const IOOptions& i
         return status();
 
     auto& driver = _drivers.value();
-    if (driver == nullptr)
+    if (!driver.isOpen())
     {
         // calling openImpl with NULL params limits the setup
         // since we already called this during openImplementation
         openOnThisThread(this, driver, nullptr, nullptr, io);
     }
 
-    if (driver)
+    if (driver.isOpen())
     {
-        auto image = driver->createImage(key, _tileSize, io);
+        auto image = driver.createImage(key, _tileSize, io);
         if (image.value)
             return GeoImage(image.value, key.extent());
     }

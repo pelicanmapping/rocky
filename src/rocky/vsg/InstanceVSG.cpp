@@ -355,7 +355,7 @@ InstanceVSG::ctor(int& argc, char** argv)
     // To read from a stream, we have to search all the VS readerwriters to
     // find one that matches the 'extension' we want. We also have to put that
     // extension in the options structure as a hint.
-    io().services.readImageFromStream = [options(runtime.readerWriterOptions)](std::istream& location, std::string contentType, const rocky::IOOptions& io) -> Result<shared_ptr<Image>>
+    io().services.readImageFromStream = [options(runtime.readerWriterOptions)](std::istream& location, std::string contentType, const rocky::IOOptions& io) -> Result<std::shared_ptr<Image>>
         {
             // try the mime-type mapping:
             auto i = ext_for_mime_type.find(contentType);

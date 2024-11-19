@@ -115,7 +115,7 @@ Image::hasAlphaChannel() const
         pixelFormat() == R8G8B8A8_UNORM;
 }
 
-shared_ptr<Image>
+std::shared_ptr<Image>
 Image::clone() const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(_data, nullptr);

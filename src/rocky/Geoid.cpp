@@ -15,7 +15,7 @@ using namespace ROCKY_NAMESPACE;
 
 Geoid::Geoid(
     const std::string& name_,
-    shared_ptr<Heightfield> hf_,
+    std::shared_ptr<Heightfield> hf_,
     const Units& units_) :
 
     name(name_),

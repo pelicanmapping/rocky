@@ -33,7 +33,7 @@ namespace ROCKY_NAMESPACE
         TerrainNode(Runtime& runtime);
 
         //! Map to render, and SRS to render it in
-        const Status& setMap(shared_ptr<Map> new_map, const SRS& world_srs);
+        const Status& setMap(std::shared_ptr<Map> new_map, const SRS& world_srs);
 
         //! Clear out the terrain and rebuild it from the map model
         void reset();

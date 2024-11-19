@@ -39,7 +39,7 @@ SurfaceNode::SurfaceNode(const TileKey& tilekey, const SRS& worldSRS, Runtime& r
 }
 
 void
-SurfaceNode::setElevation(shared_ptr<Image> raster, const glm::dmat4& scaleBias)
+SurfaceNode::setElevation(std::shared_ptr<Image> raster, const glm::dmat4& scaleBias)
 {
     _elevationRaster = raster;
     _elevationMatrix = scaleBias;

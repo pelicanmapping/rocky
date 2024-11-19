@@ -686,10 +686,10 @@ TMS::Driver::open(const URI& uri, Profile& profile, const std::string& format, D
     return StatusOK;
 }
 
-Result<shared_ptr<Image>>
+Result<std::shared_ptr<Image>>
 TMS::Driver::read(const TileKey& key, bool invertY, bool isMapboxRGB, const URIContext& context, const IOOptions& io) const
 {
-    shared_ptr<Image> image;
+    std::shared_ptr<Image> image;
     URI imageURI;
 
     // create the URI from the tile map?

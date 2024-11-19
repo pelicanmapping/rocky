@@ -122,7 +122,7 @@ namespace ROCKY_NAMESPACE
 
             void close();
 
-            Result<shared_ptr<Image>> read(
+            Result<std::shared_ptr<Image>> read(
                 const TileKey& key,
                 bool invertY,
                 bool isMapboxRGB,

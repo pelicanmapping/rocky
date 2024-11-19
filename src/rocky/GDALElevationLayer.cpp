@@ -21,7 +21,7 @@ namespace
     template<typename T>
     Status openOnThisThread(
         const T* layer,
-        shared_ptr<GDAL::Driver>& driver,
+        std::shared_ptr<GDAL::Driver>& driver,
         Profile* profile,
         DataExtentList* out_dataExtents,
         const IOOptions& io)

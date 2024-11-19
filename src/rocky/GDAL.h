@@ -73,8 +73,34 @@ namespace ROCKY_NAMESPACE
             optional<unsigned> maxDataLevel = 30;
 
             //! Constructs a new driver
-            Driver();
+            Driver() = default;
+
             virtual ~Driver();
+
+            Driver(const Driver&) = delete;
+
+            Driver(Driver&& rhs) noexcept {
+                _srcDS = rhs._srcDS;
+                _warpedDS = rhs._warpedDS;
+                _linearUnits = rhs._linearUnits;
+                _extents = rhs._extents;
+                _bounds = rhs._bounds;
+                _profile = rhs._profile;
+                _layer = rhs._layer;
+                _external = std::move(rhs._external);
+                _name = std::move(rhs._name);
+                _open = rhs._open;
+                rhs._srcDS = nullptr;
+                rhs._warpedDS = nullptr;
+                rhs._open = false;
+                rhs._profile = {};
+                rhs._layer = nullptr;
+                rhs._external = nullptr;
+            }
+            
+            bool isOpen() const {
+                return _open;
+            }
 
             //! Opens and initializes the connection to the dataset
             Status open(
@@ -85,7 +111,7 @@ namespace ROCKY_NAMESPACE
                 const IOOptions& io);
 
             //! Creates an image if possible
-            Result<shared_ptr<Image>> createImage(
+            Result<std::shared_ptr<Image>> createImage(
                 const TileKey& key,
                 unsigned tileSize,
                 const IOOptions& io);
@@ -103,6 +129,7 @@ namespace ROCKY_NAMESPACE
             bool intersects(const TileKey&);
             float getInterpolatedValue(GDALRasterBand* band, double x, double y, bool applyOffset = true);
 
+            bool _open = false;
             GDALDataset* _srcDS = nullptr;
             GDALDataset* _warpedDS = nullptr;
             double _linearUnits = 1.0;
@@ -112,7 +139,7 @@ namespace ROCKY_NAMESPACE
             Box _bounds;
             Profile _profile;
             const LayerBase* _layer;
-            shared_ptr<ExternalDataset> _external;
+            std::shared_ptr<ExternalDataset> _external;
             std::string _name;
             std::thread::id _threadId;
 
@@ -120,7 +147,7 @@ namespace ROCKY_NAMESPACE
         };
 
         //! Reads an image from raw data using the specified GDAL driver.
-        extern ROCKY_EXPORT Result<shared_ptr<Image>> readImage(
+        extern ROCKY_EXPORT Result<std::shared_ptr<Image>> readImage(
             unsigned char* data,
             std::size_t len,
             const std::string& gdal_driver);

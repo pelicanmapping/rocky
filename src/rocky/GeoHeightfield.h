@@ -27,7 +27,7 @@ namespace ROCKY_NAMESPACE
 
         //! Constructs a new georeferenced heightfield.
         GeoHeightfield(
-            shared_ptr<Heightfield> heightField,
+            std::shared_ptr<Heightfield> heightField,
             const GeoExtent& extent);
 
         static GeoHeightfield INVALID;
@@ -93,7 +93,7 @@ namespace ROCKY_NAMESPACE
         float maxHeight() const { return _maxHeight; }
 
         //! Gets a pointer to the underlying OSG heightfield.
-        shared_ptr<Heightfield> heightfield() const {
+        std::shared_ptr<Heightfield> heightfield() const {
             return _hf;
         }
 
@@ -116,7 +116,7 @@ namespace ROCKY_NAMESPACE
 
     private:
         GeoExtent _extent;
-        shared_ptr<Heightfield> _hf;
+        std::shared_ptr<Heightfield> _hf;
         float _minHeight, _maxHeight;
         glm::dvec2 _resolution;
 

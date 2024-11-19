@@ -192,7 +192,7 @@ ElevationLayer::normalizeNoDataValues(Heightfield* hf) const
     }
 }
 
-shared_ptr<Heightfield>
+std::shared_ptr<Heightfield>
 ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) const
 {
     std::shared_ptr<HeightfieldMosaic> output;
@@ -385,7 +385,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
     const IOOptions& io) const
 {
     GeoHeightfield result;
-    shared_ptr<Heightfield> hf;
+    std::shared_ptr<Heightfield> hf;
 
     auto my_profile = profile();
     if (!my_profile.valid() || !isOpen())
@@ -411,7 +411,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
     else
     {
         // If the profiles are different, use a compositing method to assemble the tile.
-        shared_ptr<Heightfield> hf = assembleHeightfield(key, io);
+        auto hf = assembleHeightfield(key, io);
         result = GeoHeightfield(hf, key.extent());
     }
 
@@ -452,7 +452,7 @@ namespace
 {
     struct LayerData
     {
-        shared_ptr<ElevationLayer> layer;
+        std::shared_ptr<ElevationLayer> layer;
         TileKey key;
         bool isFallback;
         int index;
@@ -509,7 +509,7 @@ namespace
 
 bool
 ElevationLayerVector::populateHeightfield(
-    shared_ptr<Heightfield> hf,
+    std::shared_ptr<Heightfield> hf,
     std::vector<float>* resolutions,
     const TileKey& key,
     const Profile& haeProfile,
@@ -877,8 +877,8 @@ ElevationLayerVector::populateHeightfield(
     return realData;
 }
 
-shared_ptr<Heightfield>
-ElevationLayer::decodeMapboxRGB(shared_ptr<Image> image) const
+std::shared_ptr<Heightfield>
+ElevationLayer::decodeMapboxRGB(std::shared_ptr<Image> image) const
 {
     if (!image || !image->valid())
         return nullptr;

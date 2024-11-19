@@ -151,7 +151,7 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
 }
 
 bool
-TerrainTilePager::update(const vsg::FrameStamp* fs, const IOOptions& io, shared_ptr<TerrainEngine> terrain)
+TerrainTilePager::update(const vsg::FrameStamp* fs, const IOOptions& io, std::shared_ptr<TerrainEngine> terrain)
 {
     std::scoped_lock lock(_mutex);
 
@@ -283,7 +283,7 @@ TerrainTilePager::update(const vsg::FrameStamp* fs, const IOOptions& io, shared_
 }
 
 vsg::ref_ptr<TerrainTileNode>
-TerrainTilePager::createTile(const TileKey& key, vsg::ref_ptr<TerrainTileNode> parent, shared_ptr<TerrainEngine> terrain)
+TerrainTilePager::createTile(const TileKey& key, vsg::ref_ptr<TerrainTileNode> parent, std::shared_ptr<TerrainEngine> terrain)
 {
     GeometryPool::Settings geomSettings
     {
@@ -333,7 +333,7 @@ TerrainTilePager::getTile(const TileKey& key) const
 void
 TerrainTilePager::requestLoadSubtiles(
     vsg::ref_ptr<TerrainTileNode> parent,
-    shared_ptr<TerrainEngine> engine) const
+    std::shared_ptr<TerrainEngine> engine) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(parent, void());
 
@@ -402,7 +402,7 @@ void
 TerrainTilePager::requestLoadData(
     vsg::ref_ptr<TerrainTileNode> tile,
     const IOOptions& in_io,
-    shared_ptr<TerrainEngine> engine) const
+    std::shared_ptr<TerrainEngine> engine) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(tile, void());
 
@@ -471,7 +471,7 @@ void
 TerrainTilePager::requestMergeData(
     vsg::ref_ptr<TerrainTileNode> tile,
     const IOOptions& in_io,
-    shared_ptr<TerrainEngine> engine) const
+    std::shared_ptr<TerrainEngine> engine) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(tile, void());
 
@@ -583,7 +583,7 @@ void
 TerrainTilePager::requestLoadElevation(
     vsg::ref_ptr<TerrainTileNode> tile,
     const IOOptions& in_io,
-    shared_ptr<TerrainEngine> engine) const
+    std::shared_ptr<TerrainEngine> engine) const
 {
 #ifdef LOAD_ELEVATION_SEPARATELY
     ROCKY_SOFT_ASSERT_AND_RETURN(tile, void());
@@ -644,7 +644,7 @@ void
 TerrainTilePager::requestMergeElevation(
     vsg::ref_ptr<TerrainTileNode> tile,
     const IOOptions& in_io,
-    shared_ptr<TerrainEngine> engine) const
+    std::shared_ptr<TerrainEngine> engine) const
 {
 #ifdef LOAD_ELEVATION_SEPARATELY
     ROCKY_SOFT_ASSERT_AND_RETURN(tile, void());

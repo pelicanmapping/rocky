@@ -15,7 +15,7 @@ using namespace ROCKY_NAMESPACE;
 
 
 TerrainEngine::TerrainEngine(
-    shared_ptr<Map> new_map,
+    std::shared_ptr<Map> new_map,
     const SRS& new_worldSRS,
     Runtime& new_runtime,
     const TerrainSettings& new_settings,

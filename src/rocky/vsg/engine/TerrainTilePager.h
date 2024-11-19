@@ -66,13 +66,13 @@ namespace ROCKY_NAMESPACE
         bool update(
             const vsg::FrameStamp* fs,
             const IOOptions& io,
-            shared_ptr<TerrainEngine> terrain);
+            std::shared_ptr<TerrainEngine> terrain);
 
         //! Create a single terrain tile.
         vsg::ref_ptr<TerrainTileNode> createTile(
             const TileKey& key,
             vsg::ref_ptr<TerrainTileNode> parent,
-            shared_ptr<TerrainEngine> terrain);
+            std::shared_ptr<TerrainEngine> terrain);
 
         //! Fetches a tile by its key.
         //! @param key TileKey for which to fetch a tile
@@ -103,27 +103,27 @@ namespace ROCKY_NAMESPACE
 
         void requestLoadSubtiles(
             vsg::ref_ptr<TerrainTileNode> parent,
-            shared_ptr<TerrainEngine> terrain) const;
+            std::shared_ptr<TerrainEngine> terrain) const;
 
         void requestLoadElevation(
             vsg::ref_ptr<TerrainTileNode> tile,
             const IOOptions& io,
-            shared_ptr<TerrainEngine> terrain) const;
+            std::shared_ptr<TerrainEngine> terrain) const;
 
         void requestMergeElevation(
             vsg::ref_ptr<TerrainTileNode> tile,
             const IOOptions& io,
-            shared_ptr<TerrainEngine> terrain) const;
+            std::shared_ptr<TerrainEngine> terrain) const;
 
         void requestLoadData(
             vsg::ref_ptr<TerrainTileNode> tile,
             const IOOptions& io,
-            shared_ptr<TerrainEngine> terrain) const;
+            std::shared_ptr<TerrainEngine> terrain) const;
 
         void requestMergeData(
             vsg::ref_ptr<TerrainTileNode> tile,
             const IOOptions& io,
-            shared_ptr<TerrainEngine> terrain) const;
+            std::shared_ptr<TerrainEngine> terrain) const;
 
         void getRanges(
             const TileKey& key,

@@ -32,7 +32,7 @@ namespace ROCKY_NAMESPACE
         CreateTileManifest();
 
         //! Request data for a layer
-        void insert(shared_ptr<Layer> layer);
+        void insert(std::shared_ptr<Layer> layer);
 
         //! Sets whether to apply the update progressively (in LOD order)
         void setProgressive(bool value);
@@ -79,7 +79,7 @@ namespace ROCKY_NAMESPACE
         struct ROCKY_EXPORT ColorLayer : public Tile
         {
             GeoImage image;
-            shared_ptr<const Layer> layer;
+            std::shared_ptr<const Layer> layer;
             using Vector = std::vector<ColorLayer>;
         };
 
@@ -93,7 +93,7 @@ namespace ROCKY_NAMESPACE
         struct ROCKY_EXPORT NormalMap : public Tile
         {
             GeoImage image;
-            shared_ptr<const Layer> layer;
+            std::shared_ptr<const Layer> layer;
         };
 
         struct ROCKY_EXPORT MaterialMap : public Tile
