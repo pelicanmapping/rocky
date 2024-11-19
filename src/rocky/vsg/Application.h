@@ -90,7 +90,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Viewer> viewer;
         vsg::ref_ptr<vsg::Group> root;
         vsg::ref_ptr<vsg::Group> mainScene;
-        vsg::ref_ptr<ecs::SystemsManagerGroup> ecsManager;
+        vsg::ref_ptr<ecs::ECSNode> ecsManager;
         std::shared_ptr<DisplayManager> displayManager;
         BackgroundServices backgroundServices;
         bool autoCreateWindow = true;

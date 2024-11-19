@@ -15,11 +15,14 @@
 #include <vsg/utils/GraphicsPipelineConfigurator.h>
 #include <vsg/commands/Commands.h>
 #include <vsg/nodes/Node.h>
+#include <thread>
 
 namespace ROCKY_NAMESPACE
 {
     namespace ecs
     {
+        class SystemNodeBase;
+
         /**
         * Component that holds a VSG node and its revision (so it can be
         * synchronized with the associated data model). One will typically
@@ -41,8 +44,8 @@ namespace ROCKY_NAMESPACE
         // Internal record for a component that needs building
         struct BuildItem : public BuildInfo
         {
-            entt::entity entity;
-            std::uint16_t version;
+            entt::entity entity = entt::null;
+            std::uint16_t version = 0;
             ecs::RevisionedComponent* component = nullptr;
             ~BuildItem() { if (component) delete component; }
 
@@ -66,7 +69,7 @@ namespace ROCKY_NAMESPACE
         struct BuildBatch
         {
             std::vector<BuildItem> items;
-            class SystemNodeBase* system = nullptr;
+            vsg::ref_ptr<SystemNodeBase> system;
             Runtime* runtime = nullptr;
 
             // only permit default or move construction:
@@ -77,19 +80,43 @@ namespace ROCKY_NAMESPACE
             BuildBatch& operator=(const BuildBatch& rhs) = delete;
         };
 
+        // Internal utility for compiling nodes in a background thread
+        class EntityNodeCompiler
+        {
+        public:
+            //! Start the compiler's thread
+            void start();
+
+            //! Stop the compiler's thread
+            void quit();
+
+            //! Called during update, this will merge any compilation results into the scene
+            void mergeCompiledNodes(Registry&, Runtime&);
+
+            // the data structures holding the queued jobs. 16 might be overkill :)
+            struct Buffers
+            {
+                util::ring_buffer<BuildBatch> input{ 16 };
+                util::ring_buffer<BuildBatch> output{ 16 };
+            };
+
+            std::shared_ptr<Buffers> buffers = nullptr;
+            std::thread thread;
+        };
+
         /**
         * VSG node representing an ECS system for the given component type (T).
         * A system of this type asumes that "T" will have a Renderable component attached
         * to "T::entity".
         *
-        * This lives under a SystemsManagerGroup node that will tick it each frame.
+        * This lives under a ECSNode node that will tick it each frame.
         *
         * @param T The component type
         */
         class SystemNodeBase : public vsg::Inherit<vsg::Compilable, SystemNodeBase>
         {
         public:
-            class SystemsManagerGroup* _manager = nullptr;
+            EntityNodeCompiler* compiler = nullptr;
 
             virtual void invokeCreateOrUpdate(BuildItem& item, Runtime& runtime) const = 0;
 
@@ -170,33 +197,24 @@ namespace ROCKY_NAMESPACE
         * VSG Group node whose children are SystemNode instances. It can also hold/manager
         * non-node systems. It also holds the container for pending entity compilation lists.
         */
-        class ROCKY_EXPORT SystemsManagerGroup : public vsg::Inherit<vsg::Group, SystemsManagerGroup>
+        class ROCKY_EXPORT ECSNode : public vsg::Inherit<vsg::Group, ECSNode>
         {
         public:
-            SystemsManagerGroup(Registry& reg, BackgroundServices& bg);
+            //! Construct
+            //! @param reg The entity registry
+            ECSNode(Registry& reg);
+
+            // Destruct
+            ~ECSNode();
 
             //! Add a system node instance to the group.
             //! @param system The system node instance to add
             template<class T>
-            void add(vsg::ref_ptr<SystemNode<T>> system)
+            void add(vsg::ref_ptr<T> system)
             {
+                static_assert(std::is_base_of<SystemNodeBase, T>::value, "T must be a subclass of SystemNodeBase");
                 addChild(system);
                 systems.emplace_back(system.get());
-            }
-
-            //! Create a system node of type T and add it to the group.
-            //! @param entities The ECS entity registry to pass to the system node constructor
-            //! @return The system node instance
-            template<class T>
-            vsg::ref_ptr<T> add(Registry& registry)
-            {
-                auto system = T::create(registry);
-                if (system)
-                {
-                    addChild(system);
-                    systems.emplace_back(system);
-                }
-                return system;
             }
 
             //! Add a non-node system to the group. This is a System instance that does not
@@ -218,7 +236,7 @@ namespace ROCKY_NAMESPACE
                     auto systemNode = child->cast<SystemNodeBase>();
                     if (systemNode)
                     {
-                        systemNode->_manager = this;
+                        systemNode->compiler = &compiler;
                     }
                 }
 
@@ -232,29 +250,11 @@ namespace ROCKY_NAMESPACE
             //! @param runtime The runtime object to pass to the systems
             void update(Runtime& runtime);
 
-
-            void traverse(vsg::Visitor& v) override {
-                Inherit::traverse(v);
-            }
-
-            void traverse(vsg::ConstVisitor& v) const override {
-                Inherit::traverse(v);
-            }
-
-            void traverse(vsg::RecordTraversal& v) const override {
-                Inherit::traverse(v);
-            }
-
-        public:
-            // the data structure holding the queued jobs. 16 might be overkill :)
-            util::ring_buffer<BuildBatch> buildInput{ 16 };
-            util::ring_buffer<BuildBatch> buildOutput{ 16 };
-
-        private:
+        
             std::vector<System*> systems;
             std::vector<std::shared_ptr<System>> non_node_systems;
-            // NB: SystmeNode<T> instances are group children
-            Registry& _registry;
+            Registry& registry;
+            EntityNodeCompiler compiler;
         };
 
         //! Whether the Visibility component is visible in the given view
@@ -554,14 +554,14 @@ namespace ROCKY_NAMESPACE
         // If we detected any entities that need new nodes, create them now.
         if (!entities_to_build.empty())
         {
-            if (SystemNodeBase::_manager) // gcc makes me do this :(
+            if (compiler) // gcc makes me do this :(
             {
                 ecs::BuildBatch batch;
                 batch.items = std::move(entities_to_build);
                 batch.system = this;
                 batch.runtime = &runtime;
 
-                bool ok = SystemNodeBase::_manager->buildInput.emplace(std::move(batch));
+                bool ok = compiler->buffers->input.emplace(std::move(batch));
 
                 if (!ok)
                 {
@@ -583,7 +583,7 @@ namespace ROCKY_NAMESPACE
     void ecs::SystemNode<T>::mergeCreateOrUpdateResults(entt::registry& registry, BuildItem& item, Runtime& runtime)
     {
         // if there's a new node AND the entity isn't outdated or deleted,
-        // swap it in. This method is called from SystemsManagerGroup::update().
+        // swap it in. This method is called from ECSNode::update().
         if (item.new_node && registry.valid(item.entity) && registry.current(item.entity) == item.version)
         {
             T& component = registry.get<T>(item.entity);
