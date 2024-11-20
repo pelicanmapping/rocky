@@ -80,8 +80,6 @@ namespace ROCKY_NAMESPACE
 
     public: // public properties
 
-        jobs::detail::semaphore handle;
-
         ecs::Registry registry;
 
         rocky::InstanceVSG instance;

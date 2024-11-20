@@ -26,6 +26,9 @@ namespace ROCKY_NAMESPACE
     {
     public: // constructors
 
+        //! Creates an empty mapnode with a default Rocky instance.
+        MapNode();
+
         //! Creates an empty map node (with a default empty Map)
         MapNode(const InstanceVSG& instance);
 

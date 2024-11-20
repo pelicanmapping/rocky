@@ -20,6 +20,13 @@ using namespace ROCKY_NAMESPACE::util;
 #undef LC
 #define LC "[MapNode] "
 
+MapNode::MapNode() :
+    instance(InstanceVSG()),
+    map(Map::create(this->instance))
+{
+    construct();
+}
+
 MapNode::MapNode(const InstanceVSG& instance) :
     instance(instance),
     map(Map::create(instance))

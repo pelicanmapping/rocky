@@ -268,21 +268,25 @@ namespace ROCKY_NAMESPACE
         class ring_buffer
         {
         public:
-            ring_buffer(int size) : _size(size), _buffer(size) {}
+            ring_buffer(int size, bool overwrite_when_full_ = false) : _size(size), _buffer(size), overwrite_when_full(overwrite_when_full_){}
+
+            bool overwrite_when_full = false;
 
             bool push(const T& obj) {
-                if (full()) return false;
+                bool is_full = full();
+                if (is_full && !overwrite_when_full) return false;
                 _buffer[_writeIndex] = obj;
-                _writeIndex.exchange((_writeIndex + 1) % _size);
-                _condition.notify_one();
+                if (!is_full) _writeIndex.exchange((_writeIndex + 1) % _size);
+                notify();
                 return true;
             }
 
             bool emplace(T&& obj) {
-                if (full()) return false;
+                bool is_full = full();
+                if (is_full && !overwrite_when_full) return false;
                 _buffer[_writeIndex] = std::move(obj);
-                _writeIndex.exchange((_writeIndex + 1) % _size);
-                _condition.notify_one();
+                if (!is_full) _writeIndex.exchange((_writeIndex + 1) % _size);
+                notify();
                 return true;
             }
 
@@ -293,10 +297,9 @@ namespace ROCKY_NAMESPACE
                 return true;
             }
 
-            template<typename DURATION_T>
-            bool wait(DURATION_T timeout) {
-                std::unique_lock<std::mutex> L(_mutex);
-                return _condition.wait_for(L, timeout, [this]() { return !empty(); });
+            const T& peek() const {
+                //if (_readIndex == _writeIndex) return false;
+                return _buffer[_readIndex];
             }
 
             bool empty() const {
@@ -306,11 +309,35 @@ namespace ROCKY_NAMESPACE
             bool full() const {
                 return (_writeIndex + 1) % _size == _readIndex;
             }
+
+        protected:
+            virtual void notify() { }
+
         private:
             std::atomic_int _readIndex = { 0 };
             std::atomic_int _writeIndex = { 0 };
             int _size;
             std::vector<T> _buffer;
+        };
+
+        template<typename T>
+        class ring_buffer_with_condition : public ring_buffer<T>
+        {
+        public:
+            ring_buffer_with_condition(int size) : ring_buffer<T>(size) {}
+
+            template<typename DURATION_T>
+            bool wait(DURATION_T timeout) {
+                std::unique_lock<std::mutex> L(_mutex);
+                return _condition.wait_for(L, timeout, [this]() { return !empty(); });
+            }
+
+        protected:
+            void notify() override {
+                _condition.notify_one();
+            }
+
+        private:
             mutable std::mutex _mutex;
             mutable std::condition_variable_any _condition;
         };

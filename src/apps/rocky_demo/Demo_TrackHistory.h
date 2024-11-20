@@ -47,8 +47,7 @@ namespace
 
         //! Construct a new system for managing TrackHistory components.
         //! Please call create(registry)
-        TrackHistorySystem(ecs::Registry& r) :
-            System(r)
+        TrackHistorySystem(ecs::Registry& r) : ecs::System(r)
         {
             auto [lock, registry] = r.write();
 
@@ -89,7 +88,6 @@ namespace
                             if (track.numChunks > 1u && track.numChunks > maxChunks)
                             {
                                 lines_to_erase.emplace_back(track.chunks.front().attach_point);
-                                //registry.erase<Line>(track.chunks.front().attach_point);
                                 track.chunks.erase(track.chunks.begin());
                                 --track.numChunks;
                             }
@@ -193,22 +191,21 @@ namespace
             style.color = vsg::vec4{ 0.0f, 1.0f, 0.0f, 1.0f };
             style.width = 2.0f;
 
-            _registry.write([&](entt::registry& registry)
-                {
-                    // first delete any existing track histories
-                    registry.clear<TrackHistory>();
+            auto [lock, registry] = _registry.write();
 
-                    // then re-scan and add new ones.
-                    auto view = registry.view<Transform>();
-                    for (auto&& [entity, transform] : view.each())
-                    {
-                        if (transform.parent == nullptr)
-                        {
-                            auto& track = registry.emplace<TrackHistory>(entity);
-                            track.style = style;
-                        }
-                    }
-                });
+            // first delete any existing track histories
+            registry.clear<TrackHistory>();
+
+            // then re-scan and add new ones.
+            auto view = registry.view<Transform>();
+            for (auto&& [entity, transform] : view.each())
+            {
+                if (transform.parent == nullptr)
+                {
+                    auto& track = registry.emplace<TrackHistory>(entity);
+                    track.style = style;
+                }
+            }
         }
 
     protected:

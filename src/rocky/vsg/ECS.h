@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <shared_mutex>
 #include <mutex>
+#include <utility> // std::pair
 
 //#define ENTT_NO_ETO
 #include <entt/entt.hpp>
@@ -20,6 +21,9 @@ namespace ROCKY_NAMESPACE
     //! Entity Component System support
     namespace ecs
     {
+        //! Alias for time_point
+        using time_point = std::chrono::steady_clock::time_point;
+
         /**
         * Wraps the ECS registry with a read-write lock for thread safety.
         *
@@ -46,7 +50,7 @@ namespace ROCKY_NAMESPACE
             //!   auto [lock, registry] = ecs_registry.read();
             //! 
             //! @return A tuple including a scoped shared lock and a reference to the underlying registry
-            std::tuple<std::shared_lock<std::shared_mutex>, entt::registry&> read() {
+            std::pair<std::shared_lock<std::shared_mutex>, entt::registry&> read() {
                 return { std::shared_lock(_mutex), _registry };
             }
 
@@ -59,7 +63,7 @@ namespace ROCKY_NAMESPACE
             //!   auto [lock, registry] = ecs_registry.write();
             //! 
             //! @return A tuple including a scoped unique lock and a reference to the underlying registry
-            std::tuple<std::unique_lock<std::shared_mutex>, entt::registry&> write() {
+            std::pair<std::unique_lock<std::shared_mutex>, entt::registry&> write() {
                 return { std::unique_lock(_mutex), _registry };
             }
 
@@ -85,8 +89,6 @@ namespace ROCKY_NAMESPACE
             std::shared_mutex _mutex;
             entt::registry _registry;
         };
-
-        using time_point = std::chrono::steady_clock::time_point;
 
         /**
         * Template for a component with per-view data.

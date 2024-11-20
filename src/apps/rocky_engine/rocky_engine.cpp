@@ -5,11 +5,10 @@
  */
 
 /**
-* RENGINE is an example application that demonstrates how to render 
-* a Rocky MapNode using the low-level engine API directly.
-* 
-* Normally you will use the Application API, but if you need finer
-* control you can do something like this.
+* ROCKY_ENGINE is an example application that demonstrates how to 
+* use a rocky::MapNode without the rocky::Application API. This is the
+* approach to use if you are managing VSG windows and views yourself
+* and just want to embed Rocky maps in your own app.
 */
 
 #include <rocky/Instance.h>
@@ -49,29 +48,8 @@ int error(T layer)
     return -1;
 }
 
-namespace ROCKY_NAMESPACE
-{
-    //! Simplest possible image layer.
-    struct TestLayer : public Inherit<ImageLayer, TestLayer>
-    {
-        Result<GeoImage> createImageImplementation(const TileKey& key, const IOOptions& io) const override
-        {
-            const char* url = "https://user-images.githubusercontent.com/326618/236923465-c85eb0c2-4d31-41a7-8ef1-29d34696e3cb.png";
-            auto image = io.services.readImageFromURI(url, io);
-
-            if (image.status.ok())
-                return GeoImage(image.value, key.extent());
-            else
-                return image.status;
-        }
-    };
-}
-
 int main(int argc, char** argv)
 {
-    // Application instance
-    rocky::InstanceVSG ri(argc, argv);
-
     // set up defaults and read command line arguments to override them
     vsg::CommandLine arguments(&argc, argv);
     if (arguments.read({ "--help" }))
@@ -98,8 +76,18 @@ int main(int argc, char** argv)
     // the scene graph
     auto vsg_scene = vsg::Group::create();
 
+    // main viewer
+    auto viewer = vsg::Viewer::create();
+    viewer->addWindow(window);
+    viewer->addEventHandler(vsg::CloseHandler::create(viewer));
+
+
+
+    // Rocky runtime instance
+    //rocky::InstanceVSG ri(argc, argv);
+
     // the map node - renders the terrain
-    auto mapNode = rocky::MapNode::create(ri);
+    auto mapNode = rocky::MapNode::create();
 
     // Configure the terrain engine to our liking:
     mapNode->terrainSettings().concurrency = 4u;
@@ -107,49 +95,23 @@ int main(int argc, char** argv)
     mapNode->terrainSettings().minLevelOfDetail = 1;
     mapNode->terrainSettings().screenSpaceError = 135.0f;
 
-    if (arguments.read({ "--wire" }))
-        ri.runtime().shaderCompileSettings->defines.insert("ROCKY_WIREFRAME_OVERLAY");
-
 #ifdef ROCKY_HAS_TMS
 
-    auto imagery = rocky::TMSImageLayer::create();
-    imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
-    mapNode->map->layers().add(imagery);
-
-    auto elevation = rocky::TMSElevationLayer::create();
-    elevation->encoding = rocky::ElevationLayer::Encoding::MapboxRGB;
-    elevation->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
-    mapNode->map->layers().add(elevation);
-
-#else // if !ROCKY_HAS_TMS
-
-    auto layer = rocky::TestLayer::create();
+    auto layer = rocky::TMSImageLayer::create();
+    layer->uri = "https://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png";
+    layer->setProfile(rocky::Profile::SPHERICAL_MERCATOR);
+    layer->setAttribution(rocky::Hyperlink{ "\u00a9 OpenStreetMap contributors", "https://openstreetmap.org/copyright" });
     mapNode->map->layers().add(layer);
-    if (layer->status().failed())
-        return error(layer);
 
 #endif // ROCKY_HAS_TMS
 
-    // the sun
-    if (arguments.read({ "--sky" }))
-    {
-        auto sky = rocky::SkyNode::create(ri);
-        vsg_scene->addChild(sky);
-    }
-
-    // main viewer
-    auto viewer = vsg::Viewer::create();
-    viewer->addWindow(window);
-    viewer->addEventHandler(vsg::CloseHandler::create(viewer));
-
     // You MUST tell the rocky runtime context about your viewer:
-    ri.runtime().viewer = viewer;
-
-    // Optionally you can install a shared objects instance as well:
-    ri.runtime().sharedObjects = vsg::SharedObjects::create();
-
+    auto& runtime = mapNode->instance.runtime();
+    runtime.viewer = viewer;
+    runtime.sharedObjects = vsg::SharedObjects::create(); // optional
 
     vsg_scene->addChild(mapNode);
+
 
     // main camera
     double nearFarRatio = 0.00001;

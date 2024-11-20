@@ -9,71 +9,16 @@ ROCKY_ABOUT(entt, ENTT_VERSION);
 
 using namespace ROCKY_NAMESPACE;
 
-#if 0
-ecs::ECSNode::ECSNode(ecs::Registry& reg) : //, BackgroundServices& bg) :
-    _registry(reg)
-{
-    vsg::observer_ptr<ECSNode> weak_self(this);
-
-    auto entity_compiler = [weak_self](jobs::cancelable& cancelable)
-        {
-            Log()->info("Entity compiler thread starting up.");
-            while (!cancelable.canceled())
-            {
-                vsg::ref_ptr<ECSNode> self(weak_self);
-                if (!self)
-                    break;
-
-                // normally this will be signaled to wake up, but the timeout will
-                // assure that we don't wait forever during shutdown.
-                if (self->buildInput.wait(std::chrono::milliseconds(1000)))
-                {
-                    ecs::BuildBatch batch;
-
-                    if (self->buildInput.pop(batch))
-                    {
-                        // a group to combine all compiles into one operation
-                        auto group = vsg::Group::create();
-
-                        for (auto& item : batch.items)
-                        {
-                            batch.system->invokeCreateOrUpdate(item, *batch.runtime);
-
-                            if (item.new_node)
-                            {
-                                group->addChild(item.new_node);
-                            }
-                        }
-
-                        // compile everything (creates any new vulkan objects)
-                        if (group->children.size() > 0)
-                        {
-                            // compile all the results at once:
-                            batch.runtime->compile(group);
-
-                            // queue the results so the merger will pick em up
-                            // (in SystemsManagerGroup::update)
-                            self->buildOutput.emplace(std::move(batch));
-                        }
-                    }
-                }
-            }
-            Log()->info("Entity compiler thread terminating.");
-        };
-
-    _background.start("rocky::entity_compiler", entity_compiler);
-}
-#endif
 
 ecs::ECSNode::ECSNode(ecs::Registry& reg) :
     registry(reg)
 {
-    compiler.start();
+    factory.start();
 }
 
 ecs::ECSNode::~ECSNode()
 {
-    compiler.quit();
+    factory.quit();
 }
 
 
@@ -86,14 +31,14 @@ ecs::ECSNode::update(Runtime& runtime)
         system->update(runtime);
     }
 
-    compiler.mergeCompiledNodes(registry, runtime);
+    factory.mergeResults(registry, runtime);
 }
 
 
 
 
 void
-ecs::EntityNodeCompiler::start()
+ecs::EntityNodeFactory::start()
 {
     buffers = std::make_shared<Buffers>();
 
@@ -144,7 +89,7 @@ ecs::EntityNodeCompiler::start()
 }
 
 void
-ecs::EntityNodeCompiler::quit()
+ecs::EntityNodeFactory::quit()
 {
     if (buffers)
     {
@@ -154,7 +99,7 @@ ecs::EntityNodeCompiler::quit()
 }
 
 void
-ecs::EntityNodeCompiler::mergeCompiledNodes(Registry& r, Runtime& runtime)
+ecs::EntityNodeFactory::mergeResults(Registry& r, Runtime& runtime)
 {
     if (buffers)
     {

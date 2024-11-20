@@ -10,11 +10,19 @@
 #include "vsgImGui/RenderImGui.h"
 #include <chrono>
 
+using namespace std::chrono_literals;
+
 // utility to run a loop at a specific frequency (in Hz)
 struct run_at_frequency
 {
     run_at_frequency(float hertz) : start(std::chrono::steady_clock::now()), _max(1.0f / hertz) { }
-    ~run_at_frequency() { std::this_thread::sleep_for(_max - (std::chrono::steady_clock::now() - start)); }
+    ~run_at_frequency() {
+        const auto min_duration = std::chrono::milliseconds(1); // prevent starvation.
+        auto duration = _max - (std::chrono::steady_clock::now() - start);
+        if (duration < min_duration) duration = min_duration;
+        std::this_thread::sleep_for(duration);
+        std::this_thread::yield();
+    }
     auto elapsed() const { return std::chrono::steady_clock::now() - start; }
     std::chrono::steady_clock::time_point start;
     std::chrono::duration<float> _max;
@@ -157,6 +165,16 @@ namespace ImGuiLTable
     static void EndCombo()
     {
         return ImGui::EndCombo();
+    }
+
+    static bool Combo(const char* label, int* current_item, const char* const items[], int items_count, int height_in_items = -1)
+    {
+        ImGui::TableNextColumn();
+        ImGui::Text(label);
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(-1);
+        std::string s("##" + std::string(label));
+        return ImGui::Combo(s.c_str(), current_item, items, items_count, height_in_items);
     }
 
     static bool InputFloat(const char* label, float* v)

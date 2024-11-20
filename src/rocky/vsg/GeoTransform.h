@@ -9,6 +9,7 @@
 #include <rocky/vsg/engine/ViewLocal.h>
 #include <rocky/GeoPoint.h>
 #include <rocky/Horizon.h>
+#include <rocky/Utils.h>
 #include <vsg/nodes/CullGroup.h>
 #include <vsg/nodes/Transform.h>
 
@@ -18,11 +19,11 @@ namespace ROCKY_NAMESPACE
     struct PositionedObjectAdapter : public PositionedObject
     {
         vsg::ref_ptr<T> object;
-        virtual const GeoPoint& objectPosition() const {
-            return object->position;
+        const GeoPoint& objectPosition() const override {
+            return object->objectPosition();
         }
         static std::shared_ptr<PositionedObjectAdapter<T>> create(vsg::ref_ptr<T> object_) {
-            auto r = std::make_shared< PositionedObjectAdapter<T>>();
+            auto r = std::make_shared<PositionedObjectAdapter<T>>();
             r->object = object_;
             return r;
         }
@@ -33,11 +34,10 @@ namespace ROCKY_NAMESPACE
      * a local ENU (X=east, Y=north, Z=up) coordinate frame for its children
      * that is tangent to the earth at the transform's geo position.
      */
-    class ROCKY_EXPORT GeoTransform :
-        public vsg::Inherit<vsg::Group, GeoTransform>,
-        PositionedObject
+    class ROCKY_EXPORT GeoTransform : public vsg::Inherit<vsg::Group, GeoTransform>
     {
     public:
+        //util::ring_buffer<GeoPoint> position{ 2, true };
         GeoPoint position;
 
         //! Sphere for horizon culling
@@ -64,10 +64,8 @@ namespace ROCKY_NAMESPACE
         //! Same as changing position and calling dirty().
         void setPosition(const GeoPoint& p);
 
-    public: // PositionedObject interface
-
-        const GeoPoint& objectPosition() const override {
-            return position;
+        const GeoPoint& objectPosition() const {
+            return position; // .peek();
         }
 
     public:

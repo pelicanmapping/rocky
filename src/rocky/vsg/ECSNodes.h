@@ -81,7 +81,7 @@ namespace ROCKY_NAMESPACE
         };
 
         // Internal utility for compiling nodes in a background thread
-        class EntityNodeCompiler
+        class EntityNodeFactory
         {
         public:
             //! Start the compiler's thread
@@ -91,12 +91,12 @@ namespace ROCKY_NAMESPACE
             void quit();
 
             //! Called during update, this will merge any compilation results into the scene
-            void mergeCompiledNodes(Registry&, Runtime&);
+            void mergeResults(Registry&, Runtime&);
 
             // the data structures holding the queued jobs. 16 might be overkill :)
             struct Buffers
             {
-                util::ring_buffer<BuildBatch> input{ 16 };
+                util::ring_buffer_with_condition<BuildBatch> input{ 16 };
                 util::ring_buffer<BuildBatch> output{ 16 };
             };
 
@@ -116,7 +116,7 @@ namespace ROCKY_NAMESPACE
         class SystemNodeBase : public vsg::Inherit<vsg::Compilable, SystemNodeBase>
         {
         public:
-            EntityNodeCompiler* compiler = nullptr;
+            EntityNodeFactory* factory = nullptr;
 
             virtual void invokeCreateOrUpdate(BuildItem& item, Runtime& runtime) const = 0;
 
@@ -236,7 +236,7 @@ namespace ROCKY_NAMESPACE
                     auto systemNode = child->cast<SystemNodeBase>();
                     if (systemNode)
                     {
-                        systemNode->compiler = &compiler;
+                        systemNode->factory = &factory;
                     }
                 }
 
@@ -254,7 +254,7 @@ namespace ROCKY_NAMESPACE
             std::vector<System*> systems;
             std::vector<std::shared_ptr<System>> non_node_systems;
             Registry& registry;
-            EntityNodeCompiler compiler;
+            EntityNodeFactory factory;
         };
 
         //! Whether the Visibility component is visible in the given view
@@ -424,7 +424,7 @@ namespace ROCKY_NAMESPACE
         }
 
         // Compile the components
-        util::SimpleCompiler compiler(context);
+        util::SimpleCompiler vsg_compiler(context);
 
         auto [lock, registry] = _registry.read();
 
@@ -432,7 +432,7 @@ namespace ROCKY_NAMESPACE
             {
                 auto& renderable = registry.get<Renderable>(c.attach_point);
                 if (renderable.node)
-                    renderable.node->accept(compiler);
+                    renderable.node->accept(vsg_compiler);
             });
     }
 
@@ -554,14 +554,14 @@ namespace ROCKY_NAMESPACE
         // If we detected any entities that need new nodes, create them now.
         if (!entities_to_build.empty())
         {
-            if (compiler) // gcc makes me do this :(
+            if (SystemNodeBase::factory) // why do I have to qualify this?
             {
                 ecs::BuildBatch batch;
                 batch.items = std::move(entities_to_build);
                 batch.system = this;
                 batch.runtime = &runtime;
 
-                bool ok = compiler->buffers->input.emplace(std::move(batch));
+                bool ok = SystemNodeBase::factory->buffers->input.emplace(std::move(batch));
 
                 if (!ok)
                 {

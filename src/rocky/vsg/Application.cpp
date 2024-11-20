@@ -10,6 +10,7 @@
 #include "engine/LineSystem.h"
 #include "engine/IconSystem.h"
 #include "engine/LabelSystem.h"
+#include "Motion.h"
 
 #include <rocky/contrib/EarthFileImporter.h>
 
@@ -193,13 +194,15 @@ Application::ctor(int& argc, char** argv)
         commandLineStatus = loadMapFile(commandLine[1], *mapNode, instance);
     }
 
-    ecsManager = ecs::ECSNode::create(registry); // , backgroundServices);
+    ecsManager = ecs::ECSNode::create(registry);
 
     ecsManager->add(MeshSystemNode::create(registry));
     ecsManager->add(LineSystemNode::create(registry));
     ecsManager->add(NodeSystemNode::create(registry));
     ecsManager->add(IconSystemNode::create(registry));
     ecsManager->add(LabelSystemNode::create(registry));
+
+    //ecsManager->add(MotionSystem::create(registry));
 
     mainScene->addChild(ecsManager);
 }
@@ -208,7 +211,6 @@ Application::~Application()
 {
     Log()->info("Quitting background services...");
     backgroundServices.quit();
-    handle.join();
 }
 
 void

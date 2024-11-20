@@ -13,6 +13,7 @@
 #include <rocky/vsg/Icon.h>
 #include <rocky/vsg/Transform.h>
 #include <rocky/vsg/Motion.h>
+#include <rocky/vsg/GeoTransform.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
@@ -21,7 +22,8 @@ using namespace std::chrono_literals;
 
 auto Demo_Tethering = [](Application& app)
 {
-    auto view = app.displayManager->windowsAndViews.begin()->second.front();
+    auto main_window = app.displayManager->windowsAndViews.begin();
+    auto view = main_window->second.front();
     
     auto manip = MapManipulator::get(view);
     if (!manip)
@@ -105,7 +107,7 @@ auto Demo_Tethering = [](Application& app)
             {
                 auto& xform = registry.get<Transform>(entity);
                 auto vp = manip->getViewpoint();
-                //vp.target = PositionedObjectAdapter<GeoTransform>::create(xform.node);
+                vp.target = PositionedObjectAdapter<GeoTransform>::create(xform.node);
                 vp.range = s * 12.0;
                 vp.pitch = -45;
                 vp.heading = 45;

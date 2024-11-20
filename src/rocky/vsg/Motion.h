@@ -10,7 +10,7 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-    * ECS Component applying simple motion to an object
+    * ECS Component applying motion in a cartesian space
     */
     struct Motion
     {
@@ -18,6 +18,9 @@ namespace ROCKY_NAMESPACE
         glm::dvec3 acceleration;
     };
 
+    /**
+    * ECS Component applying motion along a great circle
+    */
     struct MotionGreatCircle : public Motion
     {
         glm::dvec3 normalAxis;
@@ -53,7 +56,9 @@ namespace ROCKY_NAMESPACE
                         GeoPoint& pos = transform.position;
                         double save_z = pos.z;
 
-                        auto pos_to_world = pos.srs.to(pos.srs.geocentricSRS());
+                        SRSOperation pos_to_world;
+                        if (!pos.srs.isGeocentric())
+                            pos_to_world = pos.srs.to(pos.srs.geocentricSRS());
 
                         // move the entity using a velocity vector in the local tangent plane
                         glm::dvec3 world;
@@ -75,11 +80,16 @@ namespace ROCKY_NAMESPACE
 
                 for (auto&& [entity, motion, transform] : registry.view<MotionGreatCircle, Transform>().each())
                 {
+                    // Note. For this demo, we just use the length of the velocity and acceleration
+                    // vectors and ignore direction.
                     if (motion.velocity != zero)
                     {
                         GeoPoint& pos = transform.position;
                         double save_z = pos.z;
-                        auto pos_to_world = pos.srs.to(pos.srs.geocentricSRS());
+
+                        SRSOperation pos_to_world;
+                        if (!pos.srs.isGeocentric())
+                            pos_to_world = pos.srs.to(pos.srs.geocentricSRS());
 
                         glm::dvec3 world;
                         pos_to_world((glm::dvec3)pos, world);
@@ -94,6 +104,8 @@ namespace ROCKY_NAMESPACE
                         pos.x = temp.x, pos.y = temp.y, pos.z = temp.z;
 
                         transform.dirty();
+
+                        motion.velocity += motion.acceleration * dt;
                     }
                 }
             }

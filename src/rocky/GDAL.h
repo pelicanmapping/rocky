@@ -97,6 +97,8 @@ namespace ROCKY_NAMESPACE
                 rhs._layer = nullptr;
                 rhs._external = nullptr;
             }
+
+            Driver& operator=(Driver&& rhs) noexcept = delete;
             
             bool isOpen() const {
                 return _open;

@@ -29,8 +29,8 @@ namespace
 
         float update_hertz = 1.0f; // updates per second
         bool enabled = true;
-        double buffer_radius = 25.0;
-        bool sort_by_priority = true;
+        double buffer_px = 25.0;
+        int sorting_method = 0; // 0=priority, 1=distance
         unsigned visible = 1;
         unsigned total = 0;
         std::function<std::vector<std::uint32_t>()> getActiveViewIDs;
@@ -38,7 +38,7 @@ namespace
         ecs::Registry& _registry;
         std::size_t _last_max_size = 32;
 
-        static std::shared_ptr<DeclutterSystem> create(ecs::Registry& registry) {
+        static auto create(ecs::Registry& registry) {
             return std::make_shared<DeclutterSystem>(registry);
         }
 
@@ -67,10 +67,10 @@ namespace
                     {
                         int width =
                             (declutter.width_px >= 0 ? declutter.width_px : 0) +
-                            (declutter.buffer_x >= 0 ? declutter.buffer_x : (int)buffer_radius);
+                            (declutter.buffer_x >= 0 ? declutter.buffer_x : (int)buffer_px);
                         int height =
                             (declutter.height_px >= 0 ? declutter.height_px : 0) +
-                            (declutter.buffer_y >= 0 ? declutter.buffer_y : (int)buffer_radius);
+                            (declutter.buffer_y >= 0 ? declutter.buffer_y : (int)buffer_px);
 
                         // Cheat by directly accessing view 0. In reality we will might either declutter per-view
                         // or have a "driving view" that controls visibility for all views.
@@ -80,7 +80,7 @@ namespace
                             auto& mvp = viewLocal.mvp;
                             auto clip = mvp[3] / mvp[3][3];
                             vsg::dvec2 window((clip.x + 1.0) * 0.5 * (double)viewLocal.viewport[2], (clip.y + 1.0) * 0.5 * (double)viewLocal.viewport[3]);
-                            double sort_key = sort_by_priority ? (double)declutter.priority : clip.z;
+                            double sort_key = sorting_method == 0 ? (double)declutter.priority : clip.z;
                             sorted.emplace_back(entity, window.x, window.y, sort_key, width, height);
                         }
                     }
@@ -175,8 +175,10 @@ auto Demo_Decluttering = [](Application& app)
                 declutter->resetVisibility();
         }
 
-        ImGuiLTable::Checkbox("Sort by priority", &declutter->sort_by_priority);
-        ImGuiLTable::SliderDouble("Radius", &declutter->buffer_radius, 0.0f, 50.0f, "%.0f px");
+        static const char* sorting[] = { "Priority", "Distance" };
+        ImGuiLTable::Combo("Sort by", (int*)&declutter->sorting_method, sorting, 2);
+
+        ImGuiLTable::SliderDouble("Buffer", &declutter->buffer_px, 0.0f, 50.0f, "%.0f px");
         ImGuiLTable::SliderFloat("Frequency", &declutter->update_hertz, 1.0f, 30.0f, "%.0f hz");
 
         if (declutter->enabled)

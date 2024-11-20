@@ -24,6 +24,9 @@ namespace
     // Simple simulation system runinng in its own thread.
     // It uses a MotionSystem to process Motion components and update
     // their corresponding Transform components.
+    // 
+    // Be careful. A background thread manipulating the Registry must be careful
+    // not to starve the rendering thread by write-locking the Registry for too long.
     class Simulator
     {
     public:
@@ -44,7 +47,6 @@ namespace
                     while (!token.canceled())
                     {
                         run_at_frequency f(sim_hertz);
-                        //readlock
                         motion.update(app.runtime());
                         app.runtime().requestFrame();
                     }
@@ -62,7 +64,7 @@ auto Demo_Simulation = [](Application& app)
     static std::set<entt::entity> platforms;
     static Status status;
     static Simulator sim(app);
-    const unsigned num_platforms = 2500;
+    const unsigned num_platforms = 5000;
 
     if (status.failed())
     {
@@ -115,8 +117,8 @@ auto Demo_Simulation = [](Application& app)
 
                 // Add a transform component:
                 auto& transform = registry.emplace<Transform>(entity);
-                transform.localTangentPlane = false;
                 transform.setPosition(pos);
+                //transform.localTangentPlane = false;
 
                 // Add a motion component to represent movement:
                 double initial_bearing = -180.0 + rand_unit(mt) * 360.0;
@@ -133,6 +135,12 @@ auto Demo_Simulation = [](Application& app)
                 label.style.pixelOffset.y = -icon.style.size_pixels * 0.5f - 5.0f;
                 label.style.verticalAlignment = vsg::StandardLayout::TOP_ALIGNMENT;
 
+                // How about a drop line?
+                auto& drop_line = registry.emplace<Line>(entity);
+                drop_line.points = { {0.0, 0.0, 0.0}, {0.0, 0.0, -1e6} };
+                drop_line.style.width = 1.5f;
+                drop_line.style.color = vsg::vec4{ 0.4f, 0.4f, 0.4f, 1.0f };
+
                 // Decluttering information
                 auto& declutter = registry.emplace<Declutter>(entity);
                 declutter.priority = alt;
@@ -147,6 +155,14 @@ auto Demo_Simulation = [](Application& app)
     ImGui::Text("Simulating %ld platforms", platforms.size());
     if (ImGuiLTable::Begin("sim"))
     {
+        static bool show = true;
+        if (ImGuiLTable::Checkbox("Show", &show))
+        {
+            auto [lock, registry] = app.registry.read();
+            for (auto entity : platforms)
+                registry.get<Visibility>(entity).active = show;
+        }
+
         ImGuiLTable::SliderFloat("Update rate", &sim.sim_hertz, 1.0f, 120.0f, "%.0f hz");
 
         ImGuiLTable::End();
