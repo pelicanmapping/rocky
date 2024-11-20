@@ -79,10 +79,10 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a29bdde0e8750ae8bdeff41ab360c6848"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; std::shared_lock&lt; std::shared_mutex &gt;, entt::registry &amp; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_registry.html#a29bdde0e8750ae8bdeff41ab360c6848">read</a> ()</td></tr>
-<tr class="separator:a29bdde0e8750ae8bdeff41ab360c6848"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8c1caf4c6de6cb3747662ad0f4a80053"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; std::unique_lock&lt; std::shared_mutex &gt;, entt::registry &amp; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_registry.html#a8c1caf4c6de6cb3747662ad0f4a80053">write</a> ()</td></tr>
-<tr class="separator:a8c1caf4c6de6cb3747662ad0f4a80053"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9107e6586e3236ed77b9e6fcd57fcf5"><td class="memItemLeft" align="right" valign="top">std::pair&lt; std::shared_lock&lt; std::shared_mutex &gt;, entt::registry &amp; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_registry.html#ad9107e6586e3236ed77b9e6fcd57fcf5">read</a> ()</td></tr>
+<tr class="separator:ad9107e6586e3236ed77b9e6fcd57fcf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a977fae26ba241c2a2e1eb38f8eaf6f64"><td class="memItemLeft" align="right" valign="top">std::pair&lt; std::unique_lock&lt; std::shared_mutex &gt;, entt::registry &amp; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_registry.html#a977fae26ba241c2a2e1eb38f8eaf6f64">write</a> ()</td></tr>
+<tr class="separator:a977fae26ba241c2a2e1eb38f8eaf6f64"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae46d9e877fc9896f0c904b46e29aa01b"><td class="memTemplParams" colspan="2">template&lt;typename CALLABLE &gt; </td></tr>
 <tr class="memitem:ae46d9e877fc9896f0c904b46e29aa01b"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_registry.html#ae46d9e877fc9896f0c904b46e29aa01b">read</a> (CALLABLE &amp;&amp;func)</td></tr>
 <tr class="separator:ae46d9e877fc9896f0c904b46e29aa01b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -100,8 +100,8 @@ Public Member Functions</h2></td></tr>
 <li>and when updating components in place </li>
 </ul>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a29bdde0e8750ae8bdeff41ab360c6848"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a29bdde0e8750ae8bdeff41ab360c6848">&#9670;&nbsp;</a></span>read() <span class="overload">[1/2]</span></h2>
+<a id="ad9107e6586e3236ed77b9e6fcd57fcf5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad9107e6586e3236ed77b9e6fcd57fcf5">&#9670;&nbsp;</a></span>read() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -110,7 +110,7 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::tuple&lt;std::shared_lock&lt;std::shared_mutex&gt;, entt::registry&amp;&gt; ROCKY_NAMESPACE::ecs::Registry::read </td>
+          <td class="memname">std::pair&lt;std::shared_lock&lt;std::shared_mutex&gt;, entt::registry&amp;&gt; ROCKY_NAMESPACE::ecs::Registry::read </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -158,8 +158,8 @@ template&lt;typename CALLABLE &gt; </div>
 
 </div>
 </div>
-<a id="a8c1caf4c6de6cb3747662ad0f4a80053"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8c1caf4c6de6cb3747662ad0f4a80053">&#9670;&nbsp;</a></span>write() <span class="overload">[1/2]</span></h2>
+<a id="a977fae26ba241c2a2e1eb38f8eaf6f64"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a977fae26ba241c2a2e1eb38f8eaf6f64">&#9670;&nbsp;</a></span>write() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -168,7 +168,7 @@ template&lt;typename CALLABLE &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::tuple&lt;std::unique_lock&lt;std::shared_mutex&gt;, entt::registry&amp;&gt; ROCKY_NAMESPACE::ecs::Registry::write </td>
+          <td class="memname">std::pair&lt;std::unique_lock&lt;std::shared_mutex&gt;, entt::registry&amp;&gt; ROCKY_NAMESPACE::ecs::Registry::write </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
