@@ -1,4 +1,4 @@
-# :mountain: Rocky
+<h1>:mountain: Rocky</h1>
 
 Rocky is a C++ SDK for rendering maps and globes. <img align="right" width="200" alt="Screenshot 2023-02-22 124318" src="https://user-images.githubusercontent.com/326618/220712284-8a17d87a-431f-4966-a425-0f2628b23b40.png">
 
@@ -7,11 +7,31 @@ Rocky will render an accurate 3D or 2D map with real geospatial imagery and elev
 This project is in its early stages so expect a lot of API and architectural changes before version 1.0. 
 
 ![Windows](https://github.com/pelicanmapping/rocky/actions/workflows/ci-windows-minimal.yml/badge.svg)
-![Docs](https://github.com/pelicanmapping/rocky/actions/workflows/doxygen-gh-pages.yml/badge.svg)
+![Doxygen](https://github.com/pelicanmapping/rocky/actions/workflows/doxygen-gh-pages.yml/badge.svg)
 
+<!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
+
+- [Getting started](#getting-started)
+   * [Build the SDK](#build-the-sdk)
+      + [Dependencies](#dependencies)
+   * [Run the Demo](#run-the-demo)
+- [Development](#development)
+   * [Hello, world](#hello-world)
+      + [main.cpp](#maincpp)
+      + [CMakeLists.txt](#cmakeliststxt)
+   * [Rocky and Qt](#rocky-and-qt)
+   * [Rocky and VulkanSceneGraph](#rocky-and-vulkanscenegraph)
+   * [Working with Maps](#working-with-maps)
+   * [Drawing Annotations](#drawing-annotations)
+
+<!-- TOC end -->
+
+<hr/>
 <img width="100%" alt="image" src="https://github.com/user-attachments/assets/3767d7e8-364c-498f-a09f-2b0e17b45c0a">
 
-## Build
+# Getting started
+
+## Build the SDK
 On Windows, Rocky comes with a handy batch file to automatically configure the project using `vcpkg`:
 ```bat
 bootstrap-vcpkg.bat
@@ -36,7 +56,7 @@ Thanks to these excellent open source projects!
 * [VulkanSceneGraph](https://github.com/vsg-dev/VulkanSceneGraph)
 * [weejobs](https://github.com/pelicanmapping/weejobs) (embedded)
 
-## Run
+## Run the Demo
 Rocky is pretty good at finding its data files, but you might need so up a couple environment variables to help:
 ```bat
 set ROCKY_FILE_PATH=%rocky_install_dir%/share
@@ -57,7 +77,7 @@ There are some JSON map files in the `data` folder. Load one with the `--map` op
 rocky_demo --map data\openstreetmap.map.json
 ```
 
-# Develop
+# Development
 
 ## Hello, world
 The easiest way to write a turnkey Rocky app is to use the `rocky::Application` object. It will create a viewer, a default map, and a scene graph to store everything you want to visualize.
@@ -89,12 +109,12 @@ target_link_libraries(myApp PRIVATE rocky::rocky)
 install(TARGETS myApp RUNTIME DESTINATION bin)
 ```
 
-## Using Rocky with Qt
+## Rocky and Qt
 You can embed Rocky in a Qt widget. See the `rocky_demo_qt` example for details.
 
 <img width="100%" alt="image" src="https://github.com/user-attachments/assets/84cda604-f617-4562-b208-6d049f8b5ee1">
 
-## Using Rocky with a VulkanSceneGraph app
+## Rocky and VulkanSceneGraph
 If you're already using VSG in your application and want to add a `MapNode` to a view, do this:
 ```c++
 // make a map node:
@@ -118,11 +138,13 @@ You'll probably also want to add the `MapManipulator` to that view to control th
 ```c++
 viewer->addEventHandler(rocky::MapManipulator::create(mapNode, window, camera));
 ```
+## Working with Maps
+Coming soon.
 
-## Annotations
+## Drawing Annotations
 Rocky has a set of building blocks for creating map annotations like labels, icons, and geometry. Rocky uses an ECS (entity component system) based on EnTT to store these primitives. 
+Coming soon.
 
-More documentation on this is coming soon so stay tuned!
-
+<hr/>
 <img width="100%" alt="image" src="https://github.com/user-attachments/assets/96f128d5-9391-4b92-aa00-6b9fde0a2b35">
 
