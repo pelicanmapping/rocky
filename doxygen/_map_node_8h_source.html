@@ -135,10 +135,10 @@ $(function() {
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        vsg::ref_ptr&lt;vsg::Group&gt; _layerNodes;</div>
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        <span class="keywordtype">bool</span> _openedLayers = <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160; </div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="keyword">struct </span>ViewData {</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="keyword">struct </span>ViewLocalData {</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            std::shared_ptr&lt;Horizon&gt; horizon;</div>
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        };</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        util::ViewLocal&lt;ViewData&gt; _viewlocal;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        <span class="keyword">mutable</span> util::ViewLocal&lt;ViewLocalData&gt; _viewlocal;</div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    };</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;}</div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">ROCKY_NAMESPACE::IOOptions</a></div><div class="ttdef"><b>Definition:</b> IOTypes.h:77</div></div>
