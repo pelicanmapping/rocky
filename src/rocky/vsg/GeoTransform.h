@@ -12,6 +12,7 @@
 #include <rocky/Utils.h>
 #include <vsg/nodes/CullGroup.h>
 #include <vsg/nodes/Transform.h>
+#include <array>
 
 namespace ROCKY_NAMESPACE
 {
@@ -93,7 +94,7 @@ namespace ROCKY_NAMESPACE
             SRSOperation pos_to_world;
             std::shared_ptr<Horizon> horizon;
         };
-        util::ViewLocal<ViewLocalData> viewLocal;
 
+        mutable util::ViewLocal<ViewLocalData> viewLocal;
     };
 } // namespace

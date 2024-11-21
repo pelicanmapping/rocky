@@ -70,10 +70,10 @@ namespace ROCKY_NAMESPACE
         vsg::dvec3 _horizonCullingPoint;
         bool _horizonCullingPoint_valid = false;
 
-        struct ViewData {
+        struct ViewLocalData {
             std::shared_ptr<Horizon> horizon;
         };
-        util::ViewLocal<ViewData> _viewlocal;
+        mutable util::ViewLocal<ViewLocalData> _viewlocal;
     };
 
 

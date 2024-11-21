@@ -158,9 +158,14 @@ auto Demo_Simulation = [](Application& app)
         static bool show = true;
         if (ImGuiLTable::Checkbox("Show", &show))
         {
-            auto [lock, registry] = app.registry.read();
+            auto [lock, registry] = app.registry.write();
             for (auto entity : platforms)
-                registry.get<Visibility>(entity).active = show;
+            {
+                if (show)
+                    registry.emplace_or_replace<ActiveState>(entity);
+                else
+                    registry.remove<ActiveState>(entity);
+            }
         }
 
         ImGuiLTable::SliderFloat("Update rate", &sim.sim_hertz, 1.0f, 120.0f, "%.0f hz");

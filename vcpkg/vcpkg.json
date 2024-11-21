@@ -11,7 +11,7 @@
         "entt",
         { "name": "gdal", 
           "default-features": false, 
-          "features": [ "recommended-features" ] },
+          "features": [ "recommended-features", "webp" ] },
         "glm",
         { "name" : "imgui",
           "features": [ "vulkan-binding" ] },
@@ -26,6 +26,5 @@
           "features": [ "assimp", "freetype" ] },
         "vsgqt",
         "zlib"
-    ],
-    "builtin-baseline": "a2367ceec5f092d8777606ca110426cadd7ed7db"
+    ]
 }

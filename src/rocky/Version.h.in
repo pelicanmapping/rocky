@@ -25,6 +25,10 @@
 #define ROCKY_VERSION_BEFORE(major, minor, rev) ROCKY_VERSION_NUMBER < ROCKY_COMPUTE_VERSION(major, minor, rev)
 #define ROCKY_VERSION_AT_LEAST(major, minor, rev) ROCKY_VERSION_NUMBER >= ROCKY_COMPUTE_VERSION(major, minor, rev))
 
+// Build constants
+
+#define ROCKY_MAX_NUMBER_OF_VIEWS @ROCKY_MAX_NUMBER_OF_VIEWS@
+
 // Dependency defines
 
 #cmakedefine ROCKY_HAS_GLM

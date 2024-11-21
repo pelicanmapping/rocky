@@ -263,7 +263,7 @@ namespace ROCKY_NAMESPACE
         //! @return True if visible in that view
         inline bool visible(const Visibility& vis, int view_index)
         {
-            return vis.parent != nullptr ? visible(*vis.parent, view_index) : (vis.active && vis[view_index]);
+            return vis.parent != nullptr ? visible(*vis.parent, view_index) : vis[view_index]; // (vis.active && vis[view_index]);
         }
 
         //! Toggle the visibility of an entity in the given view
@@ -281,7 +281,7 @@ namespace ROCKY_NAMESPACE
                 if (view_index >= 0)
                     visibility[view_index] = value;
                 else
-                    visibility.setAll(value);
+                    visibility.fill(value);
             }
         }
 
@@ -312,6 +312,11 @@ namespace ROCKY_NAMESPACE
             inline void SystemNode_on_construct(entt::registry& r, entt::entity e)
             {
                 T& new_component = r.get<T>(e);
+
+                if (!r.try_get<ActiveState>(e))
+                {
+                    r.emplace<ActiveState>(e);
+                }
 
                 // Add a visibility tag (if first time dealing with this component)
                 // I am not sure yet how to remove this in the end.
@@ -452,9 +457,9 @@ namespace ROCKY_NAMESPACE
         auto [lock, registry] = _registry.read();
 
         // Get an optimized view of all this system's components:
-        registry.view<T, Visibility>().each([&](const entt::entity entity, const T& component, auto& visibility)
+        registry.view<T, ActiveState, Visibility>().each([&](const entt::entity entity, auto& component, auto& active, auto& visibility)
             {
-                if (visibility.active)
+                //if (visibility.active)
                 {
                     auto& renderable = registry.get<Renderable>(component.attach_point);
                     if (renderable.node)

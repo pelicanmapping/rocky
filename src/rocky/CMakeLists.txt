@@ -177,6 +177,16 @@ if(ROCKY_RENDERER_VSG)
          list(APPEND PRIVATE_LIBS vsgXchange::vsgXchange)
          set(ROCKY_HAS_VSGXCHANGE TRUE)
     endif()
+    
+    set(ROCKY_MAX_NUMBER_OF_VIEWS "4" CACHE STRING "Maximum number of VSG views to support")
+    
+    # validate ROCKY_MAX_NUMBER_OF_VIEWS
+    if(NOT ROCKY_MAX_NUMBER_OF_VIEWS MATCHES "^[0-9]+$")
+        message(FATAL_ERROR "Nice try. ROCKY_MAX_NUMBER_OF_VIEWS must be an integer.")
+    endif()
+    if (ROCKY_MAX_NUMBER_OF_VIEWS LESS 1)
+        message(FATAL_ERROR "Nice try. ROCKY_MAX_NUMBER_OF_VIEWS must be greater than zero.")
+    endif()
 endif()
 
 

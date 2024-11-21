@@ -60,10 +60,10 @@ namespace
 
                 auto [lock, registry] = _registry.read();
 
-                auto view = registry.view<Declutter, Transform, Visibility>();
-                for (auto&& [entity, declutter, transform, visibility] : view.each())
+                auto view = registry.view<ActiveState, Declutter, Transform>();
+                for (auto&& [entity, active, declutter, transform] : view.each())
                 {
-                    if (visibility.active && transform.node && transform.node->viewLocal.size() > viewID)
+                    if (transform.node && transform.node->viewLocal.size() > viewID)
                     {
                         int width =
                             (declutter.width_px >= 0 ? declutter.width_px : 0) +
@@ -132,7 +132,7 @@ namespace
             auto view = registry.view<Declutter, Visibility>();
             for (auto&& [entity, declutter, visibility] : view.each())
             {
-                visibility.setAll(true);
+                visibility.fill(true);
             }
         }
     };

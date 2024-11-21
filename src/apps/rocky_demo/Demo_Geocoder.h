@@ -70,7 +70,8 @@ auto Demo_Geocoder = [](Application& app)
         feature_view.styles.line->color = vsg::vec4{ 1, 1, 0, 1 };
         feature_view.styles.line->depth_offset = 9000.0f; //meters
 
-        registry.get<Visibility>(entity).active = false;
+        registry.remove<ActiveState>(entity);
+        //registry.get<Visibility>(entity).active = false;
 
         // Transform to place the entity:
         auto& xform = registry.emplace<Transform>(entity);
@@ -78,16 +79,14 @@ auto Demo_Geocoder = [](Application& app)
 
     else
     {
-        auto [lock, registry] = app.registry.read();
-
         if (ImGuiLTable::Begin("geocoding"))
         {
-
             if (ImGuiLTable::InputText("Location:", input_buf, 256, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
             {
+                auto [lock, registry] = app.registry.write();
+
                 // hide the placemark:
-                auto& icon = registry.get<Icon>(entity);
-                registry.get<Visibility>(entity).active = false;
+                registry.remove<ActiveState>(entity);
 
                 std::string input(input_buf);
                 geocoding_task = jobs::dispatch([&app, input](jobs::cancelable& c)
@@ -138,16 +137,15 @@ auto Demo_Geocoder = [](Application& app)
                                     manip->setViewpoint(vp, std::chrono::seconds(2));
                                 }
 
-                                auto [lock, registry] = app.registry.read();
+                                auto [lock, registry] = app.registry.write();
 
                                 auto&& [icon, label] = registry.get<Icon, Label>(entity);
 
                                 // show the placemark:
                                 if (feature.geometry.type == Geometry::Type::Points)
                                 {
-                                    registry.get<Visibility>(entity).active = true;
                                     if (feature_view.entity != entt::null)
-                                        registry.get<Visibility>(feature_view.entity).active = false;
+                                        registry.remove<ActiveState>(feature_view.entity);
 
                                     label.style = label_style_point;
                                 }
@@ -162,12 +160,13 @@ auto Demo_Geocoder = [](Application& app)
                                     feature_view.features = { copy_of_feature };
                                     feature_view.generate(registry, app.mapNode->worldSRS(), app.runtime());
 
-                                    registry.get<Visibility>(entity).active = true;
                                     if (feature_view.entity != entt::null)
-                                        registry.get<Visibility>(feature_view.entity).active = true;
+                                        registry.emplace_or_replace<ActiveState>(feature_view.entity);
 
                                     label.style = label_style_area;
                                 }
+
+                                registry.emplace_or_replace<ActiveState>(entity);
 
                                 // update the label:
                                 auto text = display_name;
@@ -184,12 +183,14 @@ auto Demo_Geocoder = [](Application& app)
                 ImGui::Separator();
                 if (ImGui::Button("Clear"))
                 {
+                    auto [lock, registry] = app.registry.write();
+
                     geocoding_task.reset();
                     input_buf[0] = (char)0;
 
-                    registry.get<Visibility>(entity).active = false;
+                    registry.remove<ActiveState>(entity);
                     if (feature_view.entity != entt::null)
-                        registry.get<Visibility>(feature_view.entity).active = false;
+                        registry.remove<ActiveState>(feature_view.entity);
                 }
             }
             else

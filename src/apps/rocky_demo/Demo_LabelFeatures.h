@@ -94,21 +94,26 @@ auto Demo_LabelFeatures = [](Application& app)
 
     else if (ImGuiLTable::Begin("Label features"))
     {
-        auto [lock, registry] = app.registry.read();
-
         if (status->ok())
         {
             if (ImGuiLTable::Checkbox("Show", &active))
             {
+                auto [lock, registry] = app.registry.write();
+
                 for (auto entity : labels)
-                {
-                    registry.get<Visibility>(entity).active = active;
+                {                    
+                    if (active)
+                        registry.emplace_or_replace<ActiveState>(entity);
+                    else
+                        registry.remove<ActiveState>(entity);
                 }
             }
 
             ImGuiLTable::Text("Features:", "%ld", candidates.size());
             if (ImGuiLTable::SliderFloat("Label size", &label_size_percentage, 25.0f, 150.0f, "%.0f%%"))
             {
+                auto [lock, registry] = app.registry.read();
+
                 for (auto entity : labels)
                 {
                     auto& label = registry.get<Label>(entity);

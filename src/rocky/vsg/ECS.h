@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky/vsg/Common.h>
 #include <rocky/vsg/engine/Runtime.h>
+#include <rocky/vsg/engine/ViewLocal.h>
 #include <vector>
 #include <chrono>
 #include <type_traits>
@@ -88,19 +89,6 @@ namespace ROCKY_NAMESPACE
         private:
             std::shared_mutex _mutex;
             entt::registry _registry;
-        };
-
-        /**
-        * Template for a component with per-view data.
-        */
-        template<typename T, int NUM_VIEWS, T default_value = T{} >
-        struct PerView
-        {
-            PerView() { views.fill(default_value); }
-            std::array<T, NUM_VIEWS> views;
-            auto& operator[](int i) { return views[i]; }
-            const auto& operator[](int i) const { return views[i]; }
-            void setAll(const T& value) { views.fill(value); }
         };
 
         /**

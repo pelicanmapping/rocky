@@ -6,49 +6,13 @@
 #pragma once
 
 #include <rocky/Common.h>
-#include <mutex>
-#include <vector>
+#include <array>
 
 namespace ROCKY_NAMESPACE
 {
     namespace util
     {
-        /**
-        * Structure thats lets you store data on a "per view" basis.
-        * You can index into this structure during a RecordTraversal
-        * like so:
-        *
-        * ViewLocal<Data> viewlocal;
-        * ...
-        * auto& view_data = viewlocal[t->getState()->_commandBuffer->viewID];
-        */
-        template<typename T> struct ViewLocal
-        {
-        public:
-            ViewLocal(unsigned initializeSize = 1) :
-                _vdd(initializeSize) { }
-
-            //! Fetch the data associated with the view id
-            T& operator[](std::uint32_t viewID) const
-            {
-                if (viewID >= _vdd.size())
-                {
-                    std::scoped_lock lock(_mutex);
-                    if (viewID >= _vdd.size())
-                    {
-                        _vdd.resize(viewID + 1);
-                    }
-                }
-                return _vdd[viewID];
-            }
-            using iterator = typename std::vector<T>::iterator;
-            iterator begin() { return _vdd.begin(); }
-            iterator end() { return _vdd.end(); }
-            std::size_t size() const { return _vdd.size(); }
-
-        private:
-            mutable std::mutex _mutex;
-            mutable std::vector<T> _vdd;
-        };
+        template<typename T>
+        using ViewLocal = std::array<T, ROCKY_MAX_NUMBER_OF_VIEWS>;
     }
 }
