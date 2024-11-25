@@ -213,7 +213,7 @@ namespace ROCKY_NAMESPACE
         }
 
     private:
-        mutable std::unordered_map<TileKey, Entry> _map;
+        mutable std::map<TileKey, Entry> _map;
         mutable float _gets = 0.0f;
         mutable float _hits = 0.0f;
         mutable std::mutex _mutex;

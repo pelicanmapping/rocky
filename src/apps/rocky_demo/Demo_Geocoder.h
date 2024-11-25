@@ -5,9 +5,9 @@
  */
 #pragma once
 
-#include <rocky/vsg/Icon.h>
-#include <rocky/vsg/Label.h>
-#include <rocky/vsg/Mesh.h>
+#include <rocky/vsg/ecs/Icon.h>
+#include <rocky/vsg/ecs/Label.h>
+#include <rocky/vsg/ecs/Mesh.h>
 #include <rocky/Geocoder.h>
 
 #include "helpers.h"

@@ -7,9 +7,9 @@
 
 #include <rocky/vsg/Common.h>
 #include <rocky/vsg/InstanceVSG.h>
-#include <rocky/vsg/TerrainSettings.h>
-#include <rocky/vsg/engine/TerrainNode.h>
-#include <rocky/vsg/engine/ViewLocal.h>
+#include <rocky/vsg/terrain/TerrainSettings.h>
+#include <rocky/vsg/terrain/TerrainNode.h>
+#include <rocky/vsg/ViewLocal.h>
 #include <rocky/Map.h>
 #include <rocky/Horizon.h>
 #include <vsg/nodes/Group.h>

@@ -401,30 +401,6 @@ namespace ROCKY_NAMESPACE
             return r;
         }
 
-        // Adapted from Boost - see boost license
-        // https://www.boost.org/users/license.html
-        template <typename T>
-        inline std::size_t hash_value_unsigned_one(T val)
-        {
-            const int size_t_bits = std::numeric_limits<std::size_t>::digits;
-            const int length = (std::numeric_limits<T>::digits - 1) / size_t_bits;
-            std::size_t seed = 0;
-            for (int i = length * size_t_bits; i > 0; i -= size_t_bits)
-                seed ^= (std::size_t)(val >> i) + (seed << 6) + (seed >> 2);
-            seed ^= (std::size_t)val + (seed << 6) + (seed >> 2);
-            return seed;
-        }
-
-        template<typename ...Args>
-        inline std::size_t hash_value_unsigned(Args... args) {
-            std::size_t seed = 0;
-            for(auto v : std::initializer_list<std::size_t>({ args... })) {
-                seed = (seed == 0) ? hash_value_unsigned_one(v) :
-                    seed ^ (hash_value_unsigned_one(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
-            }
-            return seed;
-        }
-
         template<int C, int R, typename T, glm::qualifier Q>
         bool is_identity(const glm::mat<C, R, T, Q>& m) {
             for (int c = 0; c < C; ++c)

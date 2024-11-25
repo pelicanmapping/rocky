@@ -7,7 +7,8 @@
 #include <rocky/vsg/InstanceVSG.h>
 #include <rocky/vsg/MapNode.h>
 #include <rocky/vsg/SkyNode.h>
-#include <rocky/vsg/ECSNodes.h>
+#include <rocky/vsg/ecs/Registry.h>
+#include <rocky/vsg/ecs/ECSNode.h>
 #include <rocky/vsg/DisplayManager.h>
 
 #include <vsg/app/Viewer.h>

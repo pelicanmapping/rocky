@@ -10,20 +10,28 @@
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 
+// Scale and bias matrices, one for each TileKey quadrant.
+const glm::dmat4 scaleBias[4] =
+{
+    glm::dmat4(0.5,0,0,0, 0,0.5,0,0, 0,0,1.0,0, 0.0,0.5,0,1.0),
+    glm::dmat4(0.5,0,0,0, 0,0.5,0,0, 0,0,1.0,0, 0.5,0.5,0,1.0),
+    glm::dmat4(0.5,0,0,0, 0,0.5,0,0, 0,0,1.0,0, 0.0,0.0,0,1.0),
+    glm::dmat4(0.5,0,0,0, 0,0.5,0,0, 0,0,1.0,0, 0.5,0.0,0,1.0)
+};
+
 TileKey TileKey::INVALID(0, 0, 0, Profile());
 
-TileKey::TileKey(TileKey&& rhs)
+TileKey::TileKey(TileKey&& rhs) noexcept
 {
     *this = std::move(rhs);
 }
 
-TileKey& TileKey::operator = (TileKey&& rhs)
+TileKey& TileKey::operator = (TileKey&& rhs) noexcept
 {
     _x = rhs._x;
     _y = rhs._y;
     _lod = rhs._lod;
     _profile = std::move(rhs._profile);
-    _hash = rhs._hash;
     rhs._profile = {};
     return *this;
 }
@@ -36,19 +44,6 @@ TileKey::TileKey(
     _y = tile_y;
     _lod = lod;
     _profile = profile;
-    rehash();
-}
-
-void
-TileKey::rehash()
-{
-    _hash = valid() ?
-        rocky::util::hash_value_unsigned(
-            (std::size_t)_lod, 
-            (std::size_t)_x,
-            (std::size_t)_y,
-            _profile.hash()) :
-        0ULL;
 }
 
 const Profile&
@@ -96,6 +91,12 @@ TileKey::getQuadrant() const
         xeven && yeven ? 0 :
         xeven          ? 2 :
         yeven          ? 1 : 3;
+}
+
+const glm::dmat4
+TileKey::scaleBiasMatrix() const
+{
+    return _lod > 0 ? scaleBias[getQuadrant()] : glm::dmat4(1);
 }
 
 std::pair<double, double>
@@ -155,7 +156,6 @@ TileKey::makeParent()
     _lod--;
     _x >>= 1;
     _y >>= 1;
-    rehash();
     return true;
 }
 

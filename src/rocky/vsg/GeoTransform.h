@@ -6,7 +6,7 @@
 #pragma once
 
 #include <rocky/vsg/Common.h>
-#include <rocky/vsg/engine/ViewLocal.h>
+#include <rocky/vsg/ViewLocal.h>
 #include <rocky/GeoPoint.h>
 #include <rocky/Horizon.h>
 #include <rocky/Utils.h>

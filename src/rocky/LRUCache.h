@@ -5,8 +5,8 @@
  */
 #pragma once
 #include <rocky/Common.h>
+#include <rocky/Utils.h>
 #include <mutex>
-#include <unordered_map>
 #include <list>
 #include <algorithm>
 
@@ -23,7 +23,7 @@ namespace ROCKY_NAMESPACE
             int capacity;
             using E = typename std::pair<K, V>;
             typename std::list<E> cache;
-            std::unordered_map<K, typename std::list<E>::iterator> map;
+            vector_map<K, typename std::list<E>::iterator> map;
 
         public:
             int hits = 0;

@@ -4,8 +4,8 @@
  * MIT License
  */
 #include "InstanceVSG.h"
-#include "engine/Utils.h"
-#include "engine/Runtime.h"
+#include "Utils.h"
+#include "Runtime.h"
 
 #include <rocky/Image.h>
 #include <rocky/URI.h>
@@ -49,25 +49,37 @@ namespace
         }
 
     protected:
+        const char* ignore = "[rocky.ignore]";
+
         void debug_implementation(const std::string_view& message) override {
-            vsg_logger->set_level(Log()->level());
-            vsg_logger->debug(message);
+            if (message.rfind(ignore, 0) != 0) {
+                vsg_logger->set_level(Log()->level());
+                vsg_logger->debug(message);
+            }
         }
         void info_implementation(const std::string_view& message) override {
-            vsg_logger->set_level(Log()->level());
-            vsg_logger->info(message);
+            if (message.rfind(ignore, 0) != 0) {
+                vsg_logger->set_level(Log()->level());
+                vsg_logger->info(message);
+            }
         }
         void warn_implementation(const std::string_view& message) override {
-            vsg_logger->set_level(Log()->level());
-            vsg_logger->warn(message);
+            if (message.rfind(ignore, 0) != 0) {
+                vsg_logger->set_level(Log()->level());
+                vsg_logger->warn(message);
+            }
         }
         void error_implementation(const std::string_view& message) override {
-            vsg_logger->set_level(Log()->level());
-            vsg_logger->error(message);
+            if (message.rfind(ignore, 0) != 0) {
+                vsg_logger->set_level(Log()->level());
+                vsg_logger->error(message);
+            }
         }
         void fatal_implementation(const std::string_view& message) override {
-            vsg_logger->set_level(Log()->level());
-            vsg_logger->critical(message);
+            if (message.rfind(ignore, 0) != 0) {
+                vsg_logger->set_level(Log()->level());
+                vsg_logger->critical(message);
+            }
         }
     };
 

@@ -10,7 +10,7 @@
  * both a unit test for that feature, and a reference or writing your own code.
  */
 #include <rocky/vsg/Application.h>
-#include <rocky/vsg/engine/TerrainEngine.h>
+#include <rocky/vsg/terrain/TerrainEngine.h>
 #include <rocky/Memory.h>
 #include <vsg/core/Allocator.h>
 #include "helpers.h"

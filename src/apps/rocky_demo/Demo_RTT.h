@@ -6,8 +6,8 @@
 #pragma once
 #include <vsg/all.h>
 #include <rocky/URI.h>
-#include <rocky/vsg/engine/RTT.h>
-#include <rocky/vsg/engine/Utils.h>
+#include <rocky/vsg/RTT.h>
+#include <rocky/vsg/Utils.h>
 #include "helpers.h"
 
 using namespace ROCKY_NAMESPACE;

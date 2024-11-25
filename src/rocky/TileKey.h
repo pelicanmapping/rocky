@@ -24,8 +24,8 @@ namespace ROCKY_NAMESPACE
         TileKey() = default;
         TileKey(const TileKey& rhs) = default;
         TileKey& operator = (const TileKey& rhs) = default;
-        TileKey(TileKey&& rhs);
-        TileKey& operator = (TileKey&& rhs);
+        TileKey(TileKey&& rhs) noexcept;
+        TileKey& operator = (TileKey&& rhs) noexcept;
 
         //! Creates a new TileKey with the given tile xy at the specified level of detail
         //! @param lod
@@ -94,6 +94,10 @@ namespace ROCKY_NAMESPACE
         //! Gets a reference to the child key of this key in the specified
         //! quadrant (0, 1, 2, or 3).
         TileKey createChildKey(unsigned quadrant) const;
+
+        //! Gets a scale/bias matrix for this key relative to its parent key
+        //! Returns identity matrix for LOD = 0
+        const glm::dmat4 scaleBiasMatrix() const;
 
         //! Creates and returns a key that represents the parent tile of this key.
         TileKey createParentKey() const;
@@ -179,19 +183,5 @@ namespace ROCKY_NAMESPACE
         unsigned _x;
         unsigned _y;
         Profile _profile;
-        size_t _hash;
-        void rehash();
-
-    public:
-        size_t hash() const { return _hash; }
-    };
-}
-
-namespace std {
-    // std::hash specialization for TileKey
-    template<> struct hash<rocky::TileKey> {
-        inline size_t operator()(const rocky::TileKey& value) const {
-            return value.hash();
-        }
     };
 }

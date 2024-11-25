@@ -5,10 +5,7 @@
  */
 #pragma once
 
-#include <rocky/vsg/Icon.h>
-#include <rocky/vsg/Transform.h>
-#include <rocky/vsg/Motion.h>
-#include <rocky/vsg/Declutter.h>
+#include <rocky/vsg/ecs.h>
 #include <rocky/vsg/DisplayManager.h>
 #include <set>
 #include <random>

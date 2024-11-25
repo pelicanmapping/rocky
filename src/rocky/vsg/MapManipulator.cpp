@@ -5,10 +5,10 @@
  */
 #include "MapManipulator.h"
 #include "MapNode.h"
-#include "engine/Utils.h"
+#include "Utils.h"
 
 #include <rocky/Units.h>
-#include <rocky/vsg/engine/TerrainNode.h>
+#include <rocky/vsg/terrain/TerrainNode.h>
 
 #include <vsg/io/Options.h>
 #include <vsg/utils/ComputeBounds.h>

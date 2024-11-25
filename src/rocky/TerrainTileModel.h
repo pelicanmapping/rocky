@@ -100,6 +100,14 @@ namespace ROCKY_NAMESPACE
         {
         };
 
+        //! True if this model contains no data.
+        bool empty() const
+        {
+            return
+                colorLayers.empty() &&
+                !elevation.heightfield.valid();
+        }
+
         //! Map model revision from which this model was created
         Revision revision = -1;
 
@@ -120,12 +128,6 @@ namespace ROCKY_NAMESPACE
 
         //! Material map data
         MaterialMap materialMap;
-
-        ////! Get a texture given a layer ID
-        //GeoImage getColorLayerImage(UID layerUID) const;
-
-        ////! Get a matrix given a layer ID
-        //const fmat4& getColorLayerMatrix(UID layerUID) const;
     };
 
 }

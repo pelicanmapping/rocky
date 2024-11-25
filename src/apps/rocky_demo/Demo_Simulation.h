@@ -5,10 +5,8 @@
  */
 #pragma once
 
-#include <rocky/vsg/Icon.h>
-#include <rocky/vsg/Transform.h>
-#include <rocky/vsg/Motion.h>
-#include <rocky/vsg/Declutter.h>
+#include <rocky/vsg/ecs.h>
+#include <rocky/vsg/ecs/MotionSystem.h>
 #include <rocky/vsg/DisplayManager.h>
 #include <set>
 #include <random>
@@ -32,7 +30,7 @@ namespace
     public:
         Application& app;
         MotionSystem motion;
-        float sim_hertz = 5.0f; // updates per second
+        float sim_hertz = 10.0f; // updates per second
 
         Simulator(Application& in_app) :
             app(in_app),

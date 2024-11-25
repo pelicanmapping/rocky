@@ -20,7 +20,7 @@
 #include <rocky/vsg/MapNode.h>
 #include <rocky/vsg/MapManipulator.h>
 #include <rocky/vsg/SkyNode.h>
-#include <rocky/vsg/engine/Runtime.h>
+#include <rocky/vsg/Runtime.h>
 
 #include <vsg/all.h>
 #include <chrono>

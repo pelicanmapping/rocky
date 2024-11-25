@@ -4,8 +4,7 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/Line.h>
-#include <rocky/vsg/ECS.h>
+#include <rocky/vsg/ecs.h>
 #include "helpers.h"
 #include <chrono>
 #include <limits>

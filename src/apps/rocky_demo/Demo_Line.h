@@ -4,9 +4,7 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/Line.h>
-#include <rocky/vsg/Transform.h>
-
+#include <rocky/vsg/ecs.h>
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
 

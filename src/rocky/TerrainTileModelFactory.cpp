@@ -140,7 +140,7 @@ TerrainTileModelFactory::createTileModel(
     const Map* map,
     const TileKey& key,
     const CreateTileManifest& manifest,
-    const IOOptions& io)
+    const IOOptions& io) const
 {
     // Make a new model:
     TerrainTileModel model;
@@ -207,7 +207,7 @@ TerrainTileModelFactory::addColorLayers(
     const TileKey& key,
     const CreateTileManifest& manifest,
     const IOOptions& io,
-    bool standalone)
+    bool standalone) const
 {
     int order = 0;
 
@@ -363,7 +363,7 @@ TerrainTileModelFactory::addElevation(
     const TileKey& key,
     const CreateTileManifest& manifest,
     unsigned border,
-    const IOOptions& io)
+    const IOOptions& io) const
 {
     bool needElevation = manifest.includesElevation();
 

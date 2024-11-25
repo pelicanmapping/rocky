@@ -37,7 +37,7 @@ namespace ROCKY_NAMESPACE
             const Map* map,
             const TileKey& key,
             const CreateTileManifest& manifest,
-            const IOOptions& io);
+            const IOOptions& io) const;
 
         TerrainTileModel::Elevation createElevationModel(
             const Map* map,
@@ -52,7 +52,7 @@ namespace ROCKY_NAMESPACE
             const TileKey& key,
             const CreateTileManifest& manifest,
             const IOOptions& io,
-            bool standalone);
+            bool standalone) const;
 
         bool addElevation(
             TerrainTileModel& model,
@@ -60,6 +60,6 @@ namespace ROCKY_NAMESPACE
             const TileKey& key,
             const CreateTileManifest& manifest,
             unsigned border,
-            const IOOptions& io);
+            const IOOptions& io) const;
     };
 }

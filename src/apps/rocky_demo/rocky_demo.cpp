@@ -206,6 +206,10 @@ int main(int argc, char** argv)
         auto imagery = rocky::TMSImageLayer::create();
         imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
         layers.add(imagery);
+
+        auto elevation = rocky::TMSElevationLayer::create();
+        elevation->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
+        layers.add(elevation);
 #endif
     }
 
@@ -229,6 +233,8 @@ int main(int argc, char** argv)
         {
             vsgImGui::RenderImGui::frame([&]() { maingui->render(); });
         };
+
+    //app.mapNode->terrainSettings().maxLevelOfDetail = 0;
 
     // run until the user quits.
     return app.run();

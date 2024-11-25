@@ -4,10 +4,6 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/Label.h>
-#include <rocky/vsg/Transform.h>
-#include <rocky/vsg/ECS.h>
-
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
 

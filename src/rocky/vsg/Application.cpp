@@ -6,11 +6,11 @@
 #include "Application.h"
 #include "MapManipulator.h"
 #include "json.h"
-#include "engine/MeshSystem.h"
-#include "engine/LineSystem.h"
-#include "engine/IconSystem.h"
-#include "engine/LabelSystem.h"
-#include "Motion.h"
+#include "ecs/MeshSystem.h"
+#include "ecs/LineSystem.h"
+#include "ecs/IconSystem.h"
+#include "ecs/LabelSystem.h"
+#include "ecs/Motion.h"
 
 #include <rocky/contrib/EarthFileImporter.h>
 
@@ -22,6 +22,7 @@
 #include <vsg/vk/State.h>
 #include <vsg/vk/CommandBuffer.h>
 #include <vsg/io/read.h>
+#include <vsg/core/Version.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -255,13 +256,22 @@ Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
     auto resourceHints = vsg::ResourceHints::create();
 
     // max number of descriptor sets per pool, regardless of type:
-    resourceHints->numDescriptorSets = 1;
+    //resourceHints->numDescriptorSets = 1;
+
+#if VSG_API_VERSION_GREATER_EQUAL(1,1,8)
+    resourceHints->numDatabasePagerReadThreads = 8;
+#endif
 
     // max number of descriptor sets of a specific type per pool:
     //resourceHints->descriptorPoolSizes.push_back(
     //    VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 });
 
     viewer->compile(resourceHints);
+
+    // Force VSG to install a DatabasePager.
+    vsg::CompileResult result;
+    result.containsPagedLOD = true;
+    vsg::updateTasks(viewer->recordAndSubmitTasks, viewer->compileManager, result);
 
 #else
     viewer->compile();
@@ -309,7 +319,7 @@ namespace
 
         void run() override
         {
-            // MapNode updates - paging tiles in an out
+            // MapNode updates
             app.mapNode->update(app.viewer->getFrameStamp());
             
             // ECS updates - rendering or modifying entities
@@ -323,6 +333,13 @@ namespace
 
             // integrate any pending compile results or disposals
             app.instance.runtime().update();
+
+            // keep the frames running if the pager is active
+            auto& tasks = app.viewer->recordAndSubmitTasks;
+            if (!tasks.empty() && tasks[0]->databasePager && tasks[0]->databasePager->numActiveRequests > 0)
+            {
+                app.instance.runtime().requestFrame();
+            }
         }
     };
 }

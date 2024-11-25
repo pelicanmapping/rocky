@@ -8,12 +8,8 @@
 #include <rocky/Viewpoint.h>
 #include <rocky/SRS.h>
 #include <rocky/vsg/MapManipulator.h>
-#include <rocky/vsg/Mesh.h>
-#include <rocky/vsg/Line.h>
-#include <rocky/vsg/Icon.h>
-#include <rocky/vsg/Transform.h>
-#include <rocky/vsg/Motion.h>
 #include <rocky/vsg/GeoTransform.h>
+#include <rocky/vsg/ecs/Motion.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
