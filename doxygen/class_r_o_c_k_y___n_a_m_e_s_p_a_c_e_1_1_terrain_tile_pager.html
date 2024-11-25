@@ -87,9 +87,9 @@ using&#160;</td><td class="memItemRight" valign="bottom"><b>Ptr</b> = std::share
 <tr class="memitem:a921cdb7a9d23f255c07ee07d1d34bac2"><td class="memItemLeft" align="right" valign="top"><a id="a921cdb7a9d23f255c07ee07d1d34bac2"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><b>Tracker</b> = util::SentryTracker&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html">TerrainTileNode</a> * &gt;</td></tr>
 <tr class="separator:a921cdb7a9d23f255c07ee07d1d34bac2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a457bf225ce48e25192ace29f37d83cf7"><td class="memItemLeft" align="right" valign="top"><a id="a457bf225ce48e25192ace29f37d83cf7"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><b>TileTable</b> = std::unordered_map&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>, TableEntry &gt;</td></tr>
-<tr class="separator:a457bf225ce48e25192ace29f37d83cf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4664ae80c6e00abc3f3c10e43e496e1c"><td class="memItemLeft" align="right" valign="top"><a id="a4664ae80c6e00abc3f3c10e43e496e1c"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>TileTable</b> = std::map&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>, TableEntry &gt;</td></tr>
+<tr class="separator:a4664ae80c6e00abc3f3c10e43e496e1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -145,12 +145,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>_updateViewerRequired
 <tr class="memitem:ae8948a709f34df50e3016d32306beb7c"><td class="memItemLeft" align="right" valign="top"><a id="ae8948a709f34df50e3016d32306beb7c"></a>
 std::vector&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_loadSubtiles</b></td></tr>
 <tr class="separator:ae8948a709f34df50e3016d32306beb7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a503915be7c60bf591c6e47c0dcd72049"><td class="memItemLeft" align="right" valign="top"><a id="a503915be7c60bf591c6e47c0dcd72049"></a>
-std::vector&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_loadElevation</b></td></tr>
-<tr class="separator:a503915be7c60bf591c6e47c0dcd72049"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0b1794297f099c81a165bcbfb93a8d45"><td class="memItemLeft" align="right" valign="top"><a id="a0b1794297f099c81a165bcbfb93a8d45"></a>
-std::vector&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_mergeElevation</b></td></tr>
-<tr class="separator:a0b1794297f099c81a165bcbfb93a8d45"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c63c271d5b5857045858abf0a455590"><td class="memItemLeft" align="right" valign="top"><a id="a4c63c271d5b5857045858abf0a455590"></a>
 std::vector&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>_loadData</b></td></tr>
 <tr class="separator:a4c63c271d5b5857045858abf0a455590"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -263,8 +257,8 @@ unsigned&#160;</td><td class="memItemRight" valign="bottom"><b>_firstLOD</b> = 0
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>src/rocky/vsg/engine/<a class="el" href="_terrain_tile_pager_8h_source.html">TerrainTilePager.h</a></li>
-<li>src/rocky/vsg/engine/TerrainTilePager.cpp</li>
+<li>src/rocky/vsg/terrain/<a class="el" href="_terrain_tile_pager_8h_source.html">TerrainTilePager.h</a></li>
+<li>src/rocky/vsg/terrain/TerrainTilePager.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

@@ -77,9 +77,9 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;<a class="el" href="_terrain_node_8h_source.html">TerrainNode.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="terrain_2_terrain_node_8h_source.html">TerrainNode.h</a>&gt;</code></p>
 
-<p>Inherits vsg::Inherit&lt; vsg::Group, TerrainNode &gt;, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html">ROCKY_NAMESPACE::TerrainSettings</a>, and <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host.html">ROCKY_NAMESPACE::TerrainTileHost</a>.</p>
+<p>Inherits vsg::Inherit&lt; vsg::Group, TerrainNode &gt;, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html">ROCKY_NAMESPACE::TerrainSettings</a>, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host.html">ROCKY_NAMESPACE::TerrainTileHost</a>, vsg::Inherit&lt; vsg::Group, TerrainNode &gt;, and <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html">ROCKY_NAMESPACE::TerrainSettings</a>.</p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -105,6 +105,32 @@ std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <tr class="separator:a2a5a09c06940a26fddb8db10155f7dd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae79cf8a14cb4e483b197922165d7f1a7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#ae79cf8a14cb4e483b197922165d7f1a7">update</a> (const vsg::FrameStamp *, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a> &amp;io)</td></tr>
 <tr class="separator:ae79cf8a14cb4e483b197922165d7f1a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40cf65871e58b6537cebc69fb2728c5e"><td class="memItemLeft" align="right" valign="top"><a id="a40cf65871e58b6537cebc69fb2728c5e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a40cf65871e58b6537cebc69fb2728c5e">TerrainNode</a> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;runtime)</td></tr>
+<tr class="memdesc:a40cf65871e58b6537cebc69fb2728c5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserialize a new terrain node. <br /></td></tr>
+<tr class="separator:a40cf65871e58b6537cebc69fb2728c5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a34cdd79efa3015990979c7e1d4abbb81"><td class="memItemLeft" align="right" valign="top"><a id="a34cdd79efa3015990979c7e1d4abbb81"></a>
+const <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a34cdd79efa3015990979c7e1d4abbb81">setMap</a> (std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">Map</a> &gt; new_map, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> &amp;world_srs)</td></tr>
+<tr class="memdesc:a34cdd79efa3015990979c7e1d4abbb81"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">Map</a> to render, and <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> to render it in. <br /></td></tr>
+<tr class="separator:a34cdd79efa3015990979c7e1d4abbb81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85c4fd1abfa5044fca4a29e24bde2165"><td class="memItemLeft" align="right" valign="top"><a id="a85c4fd1abfa5044fca4a29e24bde2165"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a85c4fd1abfa5044fca4a29e24bde2165">reset</a> ()</td></tr>
+<tr class="memdesc:a85c4fd1abfa5044fca4a29e24bde2165"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear out the terrain and rebuild it from the map model. <br /></td></tr>
+<tr class="separator:a85c4fd1abfa5044fca4a29e24bde2165"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef5fe4e2f78bf77df0bffe1fc15c7ea6"><td class="memItemLeft" align="right" valign="top"><a id="aef5fe4e2f78bf77df0bffe1fc15c7ea6"></a>
+<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#aef5fe4e2f78bf77df0bffe1fc15c7ea6">from_json</a> (const std::string &amp;<a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a>, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a> &amp;io)</td></tr>
+<tr class="memdesc:aef5fe4e2f78bf77df0bffe1fc15c7ea6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deserialize from JSON. <br /></td></tr>
+<tr class="separator:aef5fe4e2f78bf77df0bffe1fc15c7ea6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a817abae936a9e2a0b221018c5e689abe"><td class="memItemLeft" align="right" valign="top"><a id="a817abae936a9e2a0b221018c5e689abe"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a817abae936a9e2a0b221018c5e689abe">to_json</a> () const</td></tr>
+<tr class="memdesc:a817abae936a9e2a0b221018c5e689abe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serialize to JSON. <br /></td></tr>
+<tr class="separator:a817abae936a9e2a0b221018c5e689abe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abfff121fcd3eef180e7bf4e67fabb315"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#abfff121fcd3eef180e7bf4e67fabb315">update</a> (const vsg::FrameStamp *, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a> &amp;io)</td></tr>
+<tr class="separator:abfff121fcd3eef180e7bf4e67fabb315"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad03dddd127f59a6937466faab8c432b3"><td class="memItemLeft" align="right" valign="top"><a id="ad03dddd127f59a6937466faab8c432b3"></a>
+const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html">TerrainSettings</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#ad03dddd127f59a6937466faab8c432b3">settings</a> () const</td></tr>
+<tr class="memdesc:ad03dddd127f59a6937466faab8c432b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Terrain settings. <br /></td></tr>
+<tr class="separator:ad03dddd127f59a6937466faab8c432b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html">ROCKY_NAMESPACE::TerrainSettings</a></td></tr>
 <tr class="memitem:ad96468a47c0d25bb1886942a0ed517e0 inherit pub_methods_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings"><td class="memItemLeft" align="right" valign="top"><a id="ad96468a47c0d25bb1886942a0ed517e0"></a>
 <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#ad96468a47c0d25bb1886942a0ed517e0">from_json</a> (const std::string &amp;<a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a>)</td></tr>
@@ -121,14 +147,14 @@ Public Attributes</h2></td></tr>
 <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a692bab9c62be530715b6d3817e4d5436">status</a></td></tr>
 <tr class="memdesc:a692bab9c62be530715b6d3817e4d5436"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> of this node; check that's it OK before using. <br /></td></tr>
 <tr class="separator:a692bab9c62be530715b6d3817e4d5436"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab7d4d87399522d3d1649909dcbcb85e8"><td class="memItemLeft" align="right" valign="top"><a id="ab7d4d87399522d3d1649909dcbcb85e8"></a>
-std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">Map</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#ab7d4d87399522d3d1649909dcbcb85e8">map</a></td></tr>
-<tr class="memdesc:ab7d4d87399522d3d1649909dcbcb85e8"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">Map</a> containing data model for the terrain. <br /></td></tr>
-<tr class="separator:ab7d4d87399522d3d1649909dcbcb85e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a694640138f04b82615a94a6a085ee6f9"><td class="memItemLeft" align="right" valign="top"><a id="a694640138f04b82615a94a6a085ee6f9"></a>
-std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_engine.html">TerrainEngine</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a694640138f04b82615a94a6a085ee6f9">engine</a></td></tr>
-<tr class="memdesc:a694640138f04b82615a94a6a085ee6f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Engine that renders the terrain. <br /></td></tr>
-<tr class="separator:a694640138f04b82615a94a6a085ee6f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8af6410b6fbc736aa56004cc9c979e65"><td class="memItemLeft" align="right" valign="top"><a id="a8af6410b6fbc736aa56004cc9c979e65"></a>
+std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">Map</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a8af6410b6fbc736aa56004cc9c979e65">map</a></td></tr>
+<tr class="memdesc:a8af6410b6fbc736aa56004cc9c979e65"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html">Map</a> containing data model for the terrain. <br /></td></tr>
+<tr class="separator:a8af6410b6fbc736aa56004cc9c979e65"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af10bdd30cba8b60e1a101ee79cdd818d"><td class="memItemLeft" align="right" valign="top"><a id="af10bdd30cba8b60e1a101ee79cdd818d"></a>
+std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_engine.html">TerrainEngine</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#af10bdd30cba8b60e1a101ee79cdd818d">engine</a></td></tr>
+<tr class="memdesc:af10bdd30cba8b60e1a101ee79cdd818d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Engine that renders the terrain. <br /></td></tr>
+<tr class="separator:af10bdd30cba8b60e1a101ee79cdd818d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings"><td colspan="2" onclick="javascript:toggleInherit('pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings')"><img src="closed.png" alt="-"/>&#160;Public Attributes inherited from <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html">ROCKY_NAMESPACE::TerrainSettings</a></td></tr>
 <tr class="memitem:a8a6a635edcfd5a9466b1e32b9094d501 inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">optional</a>&lt; unsigned &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#a8a6a635edcfd5a9466b1e32b9094d501">tileSize</a> = 17</td></tr>
 <tr class="separator:a8a6a635edcfd5a9466b1e32b9094d501 inherit pub_attribs_class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -177,8 +203,37 @@ const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settin
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Root node of the terrain geometry </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="abfff121fcd3eef180e7bf4e67fabb315"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abfff121fcd3eef180e7bf4e67fabb315">&#9670;&nbsp;</a></span>update() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ROCKY_NAMESPACE::TerrainNode::update </td>
+          <td>(</td>
+          <td class="paramtype">const vsg::FrameStamp *&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a> &amp;&#160;</td>
+          <td class="paramname"><em>io</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Updates the terrain periodically at a safe time. </p><dl class="section return"><dt>Returns</dt><dd>true if any updates were applied </dd></dl>
+
+</div>
+</div>
 <a id="ae79cf8a14cb4e483b197922165d7f1a7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae79cf8a14cb4e483b197922165d7f1a7">&#9670;&nbsp;</a></span>update()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ae79cf8a14cb4e483b197922165d7f1a7">&#9670;&nbsp;</a></span>update() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -207,8 +262,8 @@ const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settin
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>src/rocky/vsg/engine/<a class="el" href="_terrain_node_8h_source.html">TerrainNode.h</a></li>
-<li>src/rocky/vsg/engine/TerrainNode.cpp</li>
+<li>src/rocky/vsg/terrain/<a class="el" href="terrain_2_terrain_node_8h_source.html">TerrainNode.h</a></li>
+<li>src/rocky/vsg/terrain/TerrainNode.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

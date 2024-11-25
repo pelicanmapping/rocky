@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Rocky: src/rocky/vsg/engine/TerrainNode.h Source File</title>
+<title>Rocky: src/rocky/vsg/terrain/TerrainNode.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,7 +63,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_ebc94a7b713110b2b862f36c041ff6c7.html">rocky</a></li><li class="navelem"><a class="el" href="dir_472326dbe6db1c1b7cc8e59dda1779f2.html">vsg</a></li><li class="navelem"><a class="el" href="dir_3a6ac1ef682ddc6b7049b8ff000b455f.html">engine</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_ebc94a7b713110b2b862f36c041ff6c7.html">rocky</a></li><li class="navelem"><a class="el" href="dir_472326dbe6db1c1b7cc8e59dda1779f2.html">vsg</a></li><li class="navelem"><a class="el" href="dir_2d05628136c6a2139f9efd72f0c067ef.html">terrain</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -75,8 +75,8 @@ $(function() {
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#pragma once</span></div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;rocky/vsg/Common.h&gt;</span></div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;rocky/vsg/TerrainSettings.h&gt;</span></div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;rocky/vsg/engine/TerrainTileHost.h&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;rocky/vsg/terrain/TerrainSettings.h&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;rocky/vsg/terrain/TerrainTileHost.h&gt;</span></div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#include &lt;rocky/Status.h&gt;</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor">#include &lt;rocky/SRS.h&gt;</span></div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="preprocessor">#include &lt;vsg/nodes/Group.h&gt;</span></div>
@@ -109,9 +109,9 @@ $(function() {
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; </div>
 <div class="line"><a name="l00052"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a692bab9c62be530715b6d3817e4d5436">   52</a></span>&#160;        <a class="code" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a692bab9c62be530715b6d3817e4d5436">status</a>;</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
-<div class="line"><a name="l00055"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#ab7d4d87399522d3d1649909dcbcb85e8">   55</a></span>&#160;        std::shared_ptr&lt;Map&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#ab7d4d87399522d3d1649909dcbcb85e8">map</a>;</div>
+<div class="line"><a name="l00055"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a8af6410b6fbc736aa56004cc9c979e65">   55</a></span>&#160;        std::shared_ptr&lt;Map&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a8af6410b6fbc736aa56004cc9c979e65">map</a>;</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
-<div class="line"><a name="l00058"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a694640138f04b82615a94a6a085ee6f9">   58</a></span>&#160;        std::shared_ptr&lt;TerrainEngine&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a694640138f04b82615a94a6a085ee6f9">engine</a>;</div>
+<div class="line"><a name="l00058"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#af10bdd30cba8b60e1a101ee79cdd818d">   58</a></span>&#160;        std::shared_ptr&lt;TerrainEngine&gt; <a class="code" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#af10bdd30cba8b60e1a101ee79cdd818d">engine</a>;</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="keyword">protected</span>:</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
@@ -136,13 +136,13 @@ $(function() {
 <div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    };</div>
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;}</div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">ROCKY_NAMESPACE::IOOptions</a></div><div class="ttdef"><b>Definition:</b> IOTypes.h:77</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">ROCKY_NAMESPACE::Runtime</a></div><div class="ttdef"><b>Definition:</b> Runtime.h:39</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">ROCKY_NAMESPACE::Runtime</a></div><div class="ttdef"><b>Definition:</b> Runtime.h:37</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">ROCKY_NAMESPACE::SRS</a></div><div class="ttdef"><b>Definition:</b> SRS.h:21</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html">ROCKY_NAMESPACE::TerrainNode</a></div><div class="ttdef"><b>Definition:</b> TerrainNode.h:30</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node_html_a692bab9c62be530715b6d3817e4d5436"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a692bab9c62be530715b6d3817e4d5436">ROCKY_NAMESPACE::TerrainNode::status</a></div><div class="ttdeci">Status status</div><div class="ttdoc">Status of this node; check that's it OK before using.</div><div class="ttdef"><b>Definition:</b> TerrainNode.h:52</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node_html_a694640138f04b82615a94a6a085ee6f9"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a694640138f04b82615a94a6a085ee6f9">ROCKY_NAMESPACE::TerrainNode::engine</a></div><div class="ttdeci">std::shared_ptr&lt; TerrainEngine &gt; engine</div><div class="ttdoc">Engine that renders the terrain.</div><div class="ttdef"><b>Definition:</b> TerrainNode.h:58</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node_html_a7db9e4a3d63d3dce66b1d78b67572975"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a7db9e4a3d63d3dce66b1d78b67572975">ROCKY_NAMESPACE::TerrainNode::settings</a></div><div class="ttdeci">const TerrainSettings &amp; settings() override</div><div class="ttdoc">Terrain settings.</div><div class="ttdef"><b>Definition:</b> TerrainNode.h:69</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node_html_ab7d4d87399522d3d1649909dcbcb85e8"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#ab7d4d87399522d3d1649909dcbcb85e8">ROCKY_NAMESPACE::TerrainNode::map</a></div><div class="ttdeci">std::shared_ptr&lt; Map &gt; map</div><div class="ttdoc">Map containing data model for the terrain.</div><div class="ttdef"><b>Definition:</b> TerrainNode.h:55</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node_html_a8af6410b6fbc736aa56004cc9c979e65"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a8af6410b6fbc736aa56004cc9c979e65">ROCKY_NAMESPACE::TerrainNode::map</a></div><div class="ttdeci">std::shared_ptr&lt; Map &gt; map</div><div class="ttdoc">Map containing data model for the terrain.</div><div class="ttdef"><b>Definition:</b> TerrainNode.h:55</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node_html_af10bdd30cba8b60e1a101ee79cdd818d"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#af10bdd30cba8b60e1a101ee79cdd818d">ROCKY_NAMESPACE::TerrainNode::engine</a></div><div class="ttdeci">std::shared_ptr&lt; TerrainEngine &gt; engine</div><div class="ttdoc">Engine that renders the terrain.</div><div class="ttdef"><b>Definition:</b> TerrainNode.h:58</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html">ROCKY_NAMESPACE::TerrainSettings</a></div><div class="ttdef"><b>Definition:</b> TerrainSettings.h:18</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host.html">ROCKY_NAMESPACE::TerrainTileHost</a></div><div class="ttdef"><b>Definition:</b> TerrainTileHost.h:20</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html">ROCKY_NAMESPACE::TerrainTileNode</a></div><div class="ttdef"><b>Definition:</b> TerrainTileNode.h:95</div></div>

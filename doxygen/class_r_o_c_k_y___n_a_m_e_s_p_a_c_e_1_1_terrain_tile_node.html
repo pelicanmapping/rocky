@@ -78,28 +78,12 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;<a class="el" href="_terrain_tile_node_8h_source.html">TerrainTileNode.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="terrain_2_terrain_tile_node_8h_source.html">TerrainTileNode.h</a>&gt;</code></p>
 
-<p>Inherits vsg::Inherit&lt; vsg::CullGroup, TerrainTileNode &gt;.</p>
+<p>Inherits vsg::Inherit&lt; vsg::CullGroup, TerrainTileNode &gt;, and vsg::Inherit&lt; vsg::PagedLOD, TerrainTileNode &gt;.</p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a5412e73f74771eb7c79b76ba1a40924e"><td class="memItemLeft" align="right" valign="top"><a id="a5412e73f74771eb7c79b76ba1a40924e"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html#a5412e73f74771eb7c79b76ba1a40924e">TerrainTileNode</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;key, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html">TerrainTileNode</a> *parent, vsg::ref_ptr&lt; vsg::Node &gt; geometry, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> &amp;worldSRS, const TerrainTileDescriptors &amp;initialDescriptors, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host.html">TerrainTileHost</a> *in_host, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;runtime)</td></tr>
-<tr class="memdesc:a5412e73f74771eb7c79b76ba1a40924e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new tile node. <br /></td></tr>
-<tr class="separator:a5412e73f74771eb7c79b76ba1a40924e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a63d1c9c03919017b504ce54cb494c3fe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html#a63d1c9c03919017b504ce54cb494c3fe">setElevation</a> (std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt; image, const glm::dmat4 &amp;matrix)</td></tr>
-<tr class="separator:a63d1c9c03919017b504ce54cb494c3fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a8482e6684ed0e3d15805ad06889c9e"><td class="memItemLeft" align="right" valign="top"><a id="a3a8482e6684ed0e3d15805ad06889c9e"></a>
-std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html#a3a8482e6684ed0e3d15805ad06889c9e">getElevationRaster</a> () const</td></tr>
-<tr class="memdesc:a3a8482e6684ed0e3d15805ad06889c9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">This node's elevation raster image. <br /></td></tr>
-<tr class="separator:a3a8482e6684ed0e3d15805ad06889c9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4ae365249b50005c6a086c1d2ffafd30"><td class="memItemLeft" align="right" valign="top"><a id="a4ae365249b50005c6a086c1d2ffafd30"></a>
-const glm::dmat4 &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html#a4ae365249b50005c6a086c1d2ffafd30">getElevationMatrix</a> () const</td></tr>
-<tr class="memdesc:a4ae365249b50005c6a086c1d2ffafd30"><td class="mdescLeft">&#160;</td><td class="mdescRight">This node's elevation matrix. <br /></td></tr>
-<tr class="separator:a4ae365249b50005c6a086c1d2ffafd30"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a43f18841f062b51bcd3568099cb12e52"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html#a43f18841f062b51bcd3568099cb12e52">unloadSubtiles</a> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;)</td></tr>
-<tr class="separator:a43f18841f062b51bcd3568099cb12e52"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aacf5640f899188fc112078511ee2b600"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_node.html#aacf5640f899188fc112078511ee2b600">update</a> (const vsg::FrameStamp *, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a> &amp;)</td></tr>
 <tr class="separator:aacf5640f899188fc112078511ee2b600"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae6d11294c78ee9926e1ac9cbb6e479d3"><td class="memItemLeft" align="right" valign="top"><a id="ae6d11294c78ee9926e1ac9cbb6e479d3"></a>
@@ -113,40 +97,31 @@ Public Attributes</h2></td></tr>
 <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&#160;</td><td class="memItemRight" valign="bottom"><b>key</b></td></tr>
 <tr class="separator:aca0dbed8b55fb249f5ea4d6d27b01835"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6add013b7ff7c98855ac86097697f33e"><td class="memItemLeft" align="right" valign="top"><a id="a6add013b7ff7c98855ac86097697f33e"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>doNotExpire</b></td></tr>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>doNotExpire</b> = false</td></tr>
 <tr class="separator:a6add013b7ff7c98855ac86097697f33e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a318ef309e808ec13668a60501c37cd1b"><td class="memItemLeft" align="right" valign="top"><a id="a318ef309e808ec13668a60501c37cd1b"></a>
-<a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">Revision</a>&#160;</td><td class="memItemRight" valign="bottom"><b>revision</b></td></tr>
+<a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">Revision</a>&#160;</td><td class="memItemRight" valign="bottom"><b>revision</b> = 0</td></tr>
 <tr class="separator:a318ef309e808ec13668a60501c37cd1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaa34a25ec69f3eb769458e0bf6e54995"><td class="memItemLeft" align="right" valign="top"><a id="aaa34a25ec69f3eb769458e0bf6e54995"></a>
-unsigned&#160;</td><td class="memItemRight" valign="bottom"><b>numLODs</b></td></tr>
-<tr class="separator:aaa34a25ec69f3eb769458e0bf6e54995"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa06e792f122b10e4ac7228169f65e096"><td class="memItemLeft" align="right" valign="top"><a id="aa06e792f122b10e4ac7228169f65e096"></a>
 TerrainTileRenderModel&#160;</td><td class="memItemRight" valign="bottom"><b>renderModel</b></td></tr>
 <tr class="separator:aa06e792f122b10e4ac7228169f65e096"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae84024b7d5556ae95864ddd2b2490dac"><td class="memItemLeft" align="right" valign="top"><a id="ae84024b7d5556ae95864ddd2b2490dac"></a>
+<tr class="memitem:ade7ecdda4c0e7c209cb3975f65c6303c"><td class="memItemLeft" align="right" valign="top"><a id="ade7ecdda4c0e7c209cb3975f65c6303c"></a>
 vsg::ref_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_surface_node.html">SurfaceNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>surface</b></td></tr>
-<tr class="separator:ae84024b7d5556ae95864ddd2b2490dac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9264e02d626cd92d3a73c4da0e0e315e"><td class="memItemLeft" align="right" valign="top"><a id="a9264e02d626cd92d3a73c4da0e0e315e"></a>
+<tr class="separator:ade7ecdda4c0e7c209cb3975f65c6303c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a510e7e78a673951799d7b7771a536e3d"><td class="memItemLeft" align="right" valign="top"><a id="a510e7e78a673951799d7b7771a536e3d"></a>
 vsg::ref_ptr&lt; vsg::StateGroup &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>stategroup</b></td></tr>
-<tr class="separator:a9264e02d626cd92d3a73c4da0e0e315e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a510e7e78a673951799d7b7771a536e3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a189d1edc1b0e084ee9fd3442c417a2a2"><td class="memItemLeft" align="right" valign="top"><a id="a189d1edc1b0e084ee9fd3442c417a2a2"></a>
 jobs::future&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>subtilesLoader</b></td></tr>
 <tr class="separator:a189d1edc1b0e084ee9fd3442c417a2a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af22f50f0dfc8f08c798e110ab2669b1c"><td class="memItemLeft" align="right" valign="top"><a id="af22f50f0dfc8f08c798e110ab2669b1c"></a>
-jobs::future&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_model.html">TerrainTileModel</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>dataLoader</b></td></tr>
-<tr class="separator:af22f50f0dfc8f08c798e110ab2669b1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad4e170bfcb74dd605a63ba5c22d9ccdb"><td class="memItemLeft" align="right" valign="top"><a id="ad4e170bfcb74dd605a63ba5c22d9ccdb"></a>
-jobs::future&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>dataMerger</b></td></tr>
-<tr class="separator:ad4e170bfcb74dd605a63ba5c22d9ccdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3136f8587d004f19ff6460d47f96aaa0"><td class="memItemLeft" align="right" valign="top"><a id="a3136f8587d004f19ff6460d47f96aaa0"></a>
-std::atomic&lt; uint64_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>lastTraversalFrame</b></td></tr>
+std::atomic&lt; uint64_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>lastTraversalFrame</b> = { 0 }</td></tr>
 <tr class="separator:a3136f8587d004f19ff6460d47f96aaa0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a459637a381463b09d524d783fe26087f"><td class="memItemLeft" align="right" valign="top"><a id="a459637a381463b09d524d783fe26087f"></a>
 std::atomic&lt; vsg::time_point &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>lastTraversalTime</b></td></tr>
 <tr class="separator:a459637a381463b09d524d783fe26087f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a483fc5993ad9913f5dd671570eec596f"><td class="memItemLeft" align="right" valign="top"><a id="a483fc5993ad9913f5dd671570eec596f"></a>
-std::atomic&lt; float &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>lastTraversalRange</b></td></tr>
+std::atomic&lt; float &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>lastTraversalRange</b> = { FLT_MAX }</td></tr>
 <tr class="separator:a483fc5993ad9913f5dd671570eec596f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
@@ -157,67 +132,20 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>inheritFrom</b> (vsg:
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
-<tr class="memitem:a43613f5ec5956c814522900dc84e72a3"><td class="memItemLeft" align="right" valign="top"><a id="a43613f5ec5956c814522900dc84e72a3"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>_needsSubtiles</b></td></tr>
-<tr class="separator:a43613f5ec5956c814522900dc84e72a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a50331b905b6e998f9f2caba7c072506e"><td class="memItemLeft" align="right" valign="top"><a id="a50331b905b6e998f9f2caba7c072506e"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>_needsUpdate</b></td></tr>
-<tr class="separator:a50331b905b6e998f9f2caba7c072506e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac3903b49f83be108bc4e3fa81ccf3a8c"><td class="memItemLeft" align="right" valign="top"><a id="ac3903b49f83be108bc4e3fa81ccf3a8c"></a>
-<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host.html">TerrainTileHost</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>_host</b></td></tr>
-<tr class="separator:ac3903b49f83be108bc4e3fa81ccf3a8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7bde2dec6dff108058f22ecd59cd5a06"><td class="memItemLeft" align="right" valign="top"><a id="a7bde2dec6dff108058f22ecd59cd5a06"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>needsSubtiles</b> = false</td></tr>
+<tr class="separator:a7bde2dec6dff108058f22ecd59cd5a06"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9a8c8bc0c72ce15734ffa80785e72c3"><td class="memItemLeft" align="right" valign="top"><a id="aa9a8c8bc0c72ce15734ffa80785e72c3"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>needsUpdate</b> = false</td></tr>
+<tr class="separator:aa9a8c8bc0c72ce15734ffa80785e72c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b262ca2be1cb8b42c12fd8473b57d53"><td class="memItemLeft" align="right" valign="top"><a id="a6b262ca2be1cb8b42c12fd8473b57d53"></a>
+<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_host.html">TerrainTileHost</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>host</b> = nullptr</td></tr>
+<tr class="separator:a6b262ca2be1cb8b42c12fd8473b57d53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>TileNode represents a single tile. TileNode has 5 children: one <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_surface_node.html">SurfaceNode</a> that renders the actual tile content under a MatrixTransform; and four TileNodes representing the LOD+1 quadtree tiles under this tile. </p>
+<div class="textblock"><p>TileNode represents a single tile. TileNode has 5 children: one <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_surface_node.html">SurfaceNode</a> that renders the actual tile content under a MatrixTransform; and four TileNodes representing the LOD+1 quadtree tiles under this tile.</p>
+<p>Represents a single terrain tile in the scene graph, along with its potentially pageable children. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a63d1c9c03919017b504ce54cb494c3fe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a63d1c9c03919017b504ce54cb494c3fe">&#9670;&nbsp;</a></span>setElevation()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void TerrainTileNode::setElevation </td>
-          <td>(</td>
-          <td class="paramtype">std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html">Image</a> &gt;&#160;</td>
-          <td class="paramname"><em>image</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const glm::dmat4 &amp;&#160;</td>
-          <td class="paramname"><em>matrix</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Elevation data for this node along with its scale/bias matrix; needed for bounding box </p>
-
-</div>
-</div>
-<a id="a43f18841f062b51bcd3568099cb12e52"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a43f18841f062b51bcd3568099cb12e52">&#9670;&nbsp;</a></span>unloadSubtiles()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void TerrainTileNode::unloadSubtiles </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;&#160;</td>
-          <td class="paramname"><em>runtime</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Remove this tile's children and reset the child loader future. </p>
-
-</div>
-</div>
 <a id="aacf5640f899188fc112078511ee2b600"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aacf5640f899188fc112078511ee2b600">&#9670;&nbsp;</a></span>update()</h2>
 
@@ -256,8 +184,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>_needsUpdate</b></td>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>src/rocky/vsg/engine/<a class="el" href="_terrain_tile_node_8h_source.html">TerrainTileNode.h</a></li>
-<li>src/rocky/vsg/engine/TerrainTileNode.cpp</li>
+<li>src/rocky/vsg/terrain/<a class="el" href="terrain_2_terrain_tile_node_8h_source.html">TerrainTileNode.h</a></li>
+<li>src/rocky/vsg/terrain/TerrainTileNode.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

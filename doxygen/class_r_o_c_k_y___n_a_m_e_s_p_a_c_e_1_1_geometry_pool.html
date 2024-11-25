@@ -80,9 +80,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:ada5d9065cf77f29b929c8bdcdff34b98"><td class="memItemLeft" align="right" valign="top"><a id="ada5d9065cf77f29b929c8bdcdff34b98"></a>
-using&#160;</td><td class="memItemRight" valign="bottom"><b>SharedGeometries</b> = std::unordered_map&lt; GeometryKey, vsg::ref_ptr&lt; SharedGeometry &gt; &gt;</td></tr>
-<tr class="separator:ada5d9065cf77f29b929c8bdcdff34b98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc2ab5fdf816e60e93c4eb46cd41a325"><td class="memItemLeft" align="right" valign="top"><a id="afc2ab5fdf816e60e93c4eb46cd41a325"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>SharedGeometries</b> = std::map&lt; GeometryKey, vsg::ref_ptr&lt; SharedGeometry &gt; &gt;</td></tr>
+<tr class="separator:afc2ab5fdf816e60e93c4eb46cd41a325"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -90,8 +90,8 @@ Public Member Functions</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_pool.html#a3c9bfbb85cb177fcf5fd291fb10dc22d">GeometryPool</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> &amp;worldSRS)</td></tr>
 <tr class="memdesc:a3c9bfbb85cb177fcf5fd291fb10dc22d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct the geometry pool. <br /></td></tr>
 <tr class="separator:a3c9bfbb85cb177fcf5fd291fb10dc22d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a00217ecfa7803cf4248ae70f098af547"><td class="memItemLeft" align="right" valign="top">vsg::ref_ptr&lt; SharedGeometry &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_pool.html#a00217ecfa7803cf4248ae70f098af547">getPooledGeometry</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;tileKey, const Settings &amp;settings, <a class="el" href="class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1cancelable.html">Cancelable</a> *state)</td></tr>
-<tr class="separator:a00217ecfa7803cf4248ae70f098af547"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac62552b12e482e79b75d365c3c86a64"><td class="memItemLeft" align="right" valign="top">vsg::ref_ptr&lt; SharedGeometry &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_pool.html#aac62552b12e482e79b75d365c3c86a64">getPooledGeometry</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;tileKey, const Settings &amp;settings, <a class="el" href="class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1cancelable.html">Cancelable</a> *state) const</td></tr>
+<tr class="separator:aac62552b12e482e79b75d365c3c86a64"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4736eb668b746bdea0cfc09cb6a23c3e"><td class="memItemLeft" align="right" valign="top"><a id="a4736eb668b746bdea0cfc09cb6a23c3e"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_pool.html#a4736eb668b746bdea0cfc09cb6a23c3e">getNumSkirtElements</a> (const Settings &amp;settings) const</td></tr>
 <tr class="memdesc:a4736eb668b746bdea0cfc09cb6a23c3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of elements (incides) in the terrain skirt if applicable. <br /></td></tr>
@@ -114,8 +114,8 @@ std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <p>In a geocentric map, every tile at a particular LOD and a particular latitudinal (north-south) extent shares exactly the same geometry; each tile is just shifted and rotated differently. Therefore we can use the same <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html">Geometry</a> for all tiles that share the same LOD and same min/max latitude in a geocentric map. In a projected map, all tiles at a given LOD share the same geometry regardless of extent, so eve more sharing is possible.</p>
 <p>This object creates and returns geometries based on TileKeys, sharing instances whenever possible. Concept adapted from OSG's osgTerrain::GeometryPool. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a00217ecfa7803cf4248ae70f098af547"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a00217ecfa7803cf4248ae70f098af547">&#9670;&nbsp;</a></span>getPooledGeometry()</h2>
+<a id="aac62552b12e482e79b75d365c3c86a64"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac62552b12e482e79b75d365c3c86a64">&#9670;&nbsp;</a></span>getPooledGeometry()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -141,7 +141,7 @@ std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td>
+          <td></td><td> const</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -150,8 +150,8 @@ std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>src/rocky/vsg/engine/<a class="el" href="_geometry_pool_8h_source.html">GeometryPool.h</a></li>
-<li>src/rocky/vsg/engine/GeometryPool.cpp</li>
+<li>src/rocky/vsg/terrain-dbpager/<a class="el" href="_geometry_pool_8h_source.html">GeometryPool.h</a></li>
+<li>src/rocky/vsg/terrain-dbpager/GeometryPool.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
