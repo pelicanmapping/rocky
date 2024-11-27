@@ -109,18 +109,23 @@ namespace ROCKY_NAMESPACE
             return reinterpret_cast<T*>(_data);
         }
 
+        //! Raw pointer to the data starting at s, t, layer.
+        template<class T> T* data(unsigned s, unsigned t, unsigned layer = 0) const {
+            return &reinterpret_cast<T*>(_data)[layer * width() * height() + t * width() + s];
+        }
+
         //! Value (type T) at s, t, layer.
-        template<class T> T data(unsigned s, unsigned t, unsigned layer = 0) const {
-            return reinterpret_cast<T*>(_data)[layer*width()*height() + t*width() + s];
+        template<class T> T value(unsigned s, unsigned t, unsigned layer = 0) const {
+            return reinterpret_cast<T*>(_data)[layer * width() * height() + t * width() + s];
         }
 
         //! Mutable reference to the value (type T) at s, t, layer.
-        template<class T> T& data(unsigned s, unsigned t, unsigned layer = 0) {
-            return reinterpret_cast<T*>(_data)[layer*width()*height() + t*width() + s];
+        template<class T> T& value(unsigned s, unsigned t, unsigned layer = 0) {
+            return reinterpret_cast<T*>(_data)[layer * width() * height() + t * width() + s];
         }
 
         //! Value at the i'th position in the data array
-        template<class T> T data(unsigned offset) const {
+        template<class T> T value(unsigned offset) const {
             return reinterpret_cast<T*>(_data)[offset];
         }
 

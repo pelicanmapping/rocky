@@ -172,7 +172,7 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::PipelineLayout> getPipelineLayout(const T&) const;
 
             //! Subclass must implement this to create or update a node for a component.
-            virtual void createOrUpdateNode(const T&, BuildInfo&, Runtime&) const = 0;
+            virtual void createOrUpdateNode(T&, BuildInfo&, Runtime&) const = 0;
 
             void invokeCreateOrUpdate(BuildItem& item, Runtime& runtime) const override;
 
@@ -460,34 +460,31 @@ namespace ROCKY_NAMESPACE
         // Get an optimized view of all this system's components:
         registry.view<T, ActiveState, Visibility>().each([&](const entt::entity entity, auto& component, auto& active, auto& visibility)
             {
-                //if (visibility.active)
+                auto& renderable = registry.get<Renderable>(component.attach_point);
+                if (renderable.node)
                 {
-                    auto& renderable = registry.get<Renderable>(component.attach_point);
-                    if (renderable.node)
+                    auto& leaves = !pipelines.empty() ? pipelineRenderLeaves[featureMask(component)] : pipelineRenderLeaves[0];
+                    auto* transform = registry.try_get<Transform>(entity);
+
+                    // if it's visible, queue it up for rendering
+                    if (visible(visibility, viewID))
                     {
-                        auto& leaves = !pipelines.empty() ? pipelineRenderLeaves[featureMask(component)] : pipelineRenderLeaves[0];
-                        auto* transform = registry.try_get<Transform>(entity);
-
-                        // if it's visible, queue it up for rendering
-                        if (visible(visibility, viewID))
-                        {
-                            leaves.emplace_back(RenderLeaf{ renderable, transform });
-                        }
-
-                        // otherwise if it's invisible but still has a transform, process that transform
-                        // so it can calculate its screen-space information (for things like decluttering
-                        // and intersection)
-                        else if (transform)
-                        {
-                            transform->push(rt, identity_matrix, false);
-                        }
+                        leaves.emplace_back(RenderLeaf{ renderable, transform });
                     }
 
-                    if (renderable.revision != component.revision)
+                    // otherwise if it's invisible but still has a transform, process that transform
+                    // so it can calculate its screen-space information (for things like decluttering
+                    // and intersection)
+                    else if (transform)
                     {
-                        entities_to_update.emplace_back(entity);
-                        renderable.revision = component.revision;
+                        transform->push(rt, identity_matrix, false);
                     }
+                }
+
+                if (renderable.revision != component.revision)
+                {
+                    entities_to_update.emplace_back(entity);
+                    renderable.revision = component.revision;
                 }
             });
 

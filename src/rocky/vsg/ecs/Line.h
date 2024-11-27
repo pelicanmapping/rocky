@@ -28,7 +28,7 @@ namespace ROCKY_NAMESPACE
     * LineString component - holds one or more separate line string geometries
     * sharing the same style.
     */
-    class Line : public RevisionedComponent
+    class ROCKY_EXPORT Line : public RevisionedComponent
     {
     public:
         //! Dynamic line styling
@@ -47,7 +47,8 @@ namespace ROCKY_NAMESPACE
         std::size_t staticSize = 0;
 
         //! Line configuration
-        enum class Topology {
+        enum class Topology
+        {
             Strip, // a single line strip
             Segments // a series of disconnected line segments
         };
@@ -55,5 +56,34 @@ namespace ROCKY_NAMESPACE
 
         //! Geometry. NB, the actual array elements are stored on the heap
         std::vector<vsg::dvec3> points;
+
+        //! Marks the entire line dirty
+        inline void dirty() override
+        {
+            styleDirty = true;
+            pointsDirty = true;
+            ++revision;
+        }
+
+        inline void dirtyStyle()
+        {
+            styleDirty = true;
+            ++revision;
+        }
+
+        inline void dirtyPoints()
+        {
+            pointsDirty = true;
+            ++revision;
+        }
+
+        //! Call this to reset the underlying data if you plan to re-use the line
+        //! later for a different set of points.
+        void recycle(entt::registry&);
+
+    private:
+        bool styleDirty = true;
+        bool pointsDirty = true;
+        friend class LineSystemNode;
     };
 }

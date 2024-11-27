@@ -35,7 +35,7 @@ namespace ROCKY_NAMESPACE
         //! One-time initialization of the system    
         void initializeSystem(Runtime&) override;
 
-        void createOrUpdateNode(const Line&, ecs::BuildInfo&, Runtime&) const override;
+        void createOrUpdateNode(Line&, ecs::BuildInfo&, Runtime&) const override;
     };
 
     /**
@@ -49,6 +49,9 @@ namespace ROCKY_NAMESPACE
 
         template<typename VEC3_T>
         inline void set(const std::vector<VEC3_T>& verts, Line::Topology topology, std::size_t staticStorage = 0);
+
+        template<typename VEC3_T, typename VEC3_ITER>
+        inline void update(unsigned offset, VEC3_ITER begin, VEC3_ITER end, Line::Topology topology, std::size_t staticStorage = 0);
 
         //! The first vertex in the line string to render
         void setFirst(unsigned value);
@@ -93,13 +96,13 @@ namespace ROCKY_NAMESPACE
     {
         const vsg::vec4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-        std::size_t verts_to_allocate = (staticStorage > 0 ? staticStorage : verts.size());
-        std::size_t indices_to_allocate = 
-            topology == Line::Topology::Strip ? (verts_to_allocate - 1) * 6 :
-            (verts_to_allocate/2) * 6; // Segments
-
         if (!_current)
         {
+            std::size_t verts_to_allocate = (staticStorage > 0 ? staticStorage : verts.size());
+            std::size_t indices_to_allocate =
+                topology == Line::Topology::Strip ? (verts_to_allocate - 1) * 6 :
+                (verts_to_allocate / 2) * 6; // Segments
+
             _current = vsg::vec3Array::create(verts_to_allocate * 4);
             _current->properties.dataVariance = vsg::DYNAMIC_DATA;
 
@@ -178,15 +181,15 @@ namespace ROCKY_NAMESPACE
                     color[i * 4 + n] = defaultColor;
                 }
 
-                if (!even)
+                if (even)
                 {
-                    auto e = (i - 1) * 4 + 2;
+                    auto e = (i) * 4 + 2;
                     indicies[i_ptr++] = e + 3;
                     indicies[i_ptr++] = e + 1;
                     indicies[i_ptr++] = e + 0; // provoking vertex
                     indicies[i_ptr++] = e + 2;
                     indicies[i_ptr++] = e + 3;
-                    indicies[i_ptr++] = e + 0; // provoking vertex                
+                    indicies[i_ptr++] = e + 0; // provoking vertex
                 }
             }
         }

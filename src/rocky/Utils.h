@@ -265,7 +265,7 @@ namespace ROCKY_NAMESPACE
         * Ring buffer for lock-less interthread communication.
         */
         template<typename T>
-        class ring_buffer
+        class ROCKY_EXPORT ring_buffer
         {
         public:
             ring_buffer(int size, bool overwrite_when_full_ = false) : _size(size), _buffer(size), overwrite_when_full(overwrite_when_full_){}
@@ -321,7 +321,7 @@ namespace ROCKY_NAMESPACE
         };
 
         template<typename T>
-        class ring_buffer_with_condition : public ring_buffer<T>
+        class ROCKY_EXPORT ring_buffer_with_condition : public ring_buffer<T>
         {
         public:
             ring_buffer_with_condition(int size) : ring_buffer<T>(size) {}
@@ -329,7 +329,7 @@ namespace ROCKY_NAMESPACE
             template<typename DURATION_T>
             bool wait(DURATION_T timeout) {
                 std::unique_lock<std::mutex> L(_mutex);
-                return _condition.wait_for(L, timeout, [this]() { return !empty(); });
+                return _condition.wait_for(L, timeout, [this]() { return !ring_buffer<T>::empty(); });
             }
 
         protected:

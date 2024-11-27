@@ -11,6 +11,7 @@
 #include <rocky/Threading.h>
 #include <rocky/Utils.h>
 #include <vsg/core/observer_ptr.h>
+#include <vsg/core/Objects.h>
 #include <vsg/app/Viewer.h>
 #include <vsg/app/CompileManager.h>
 #include <vsg/app/UpdateOperations.h>
@@ -77,11 +78,6 @@ namespace ROCKY_NAMESPACE
         //! poll this to see if it needs to regenerate its pipeline.
         Revision shaderSettingsRevision = 0;
 
-        //! If true, compile() will operate immediately regardless
-        //! of the calling thread. If false, compilation is deferred
-        //! until the next call to update().
-        bool asyncCompile = true;
-
         //! Custom vsg object disposer (optional)
         //! By default Runtime uses its own round-robin object disposer
         std::function<void(vsg::ref_ptr<vsg::Object>)> disposer;
@@ -105,8 +101,7 @@ namespace ROCKY_NAMESPACE
         void onNextUpdate(
             std::function<void()> function);
 
-        //! Compiles an object now.
-        //! Be careful to only call this from a safe thread
+        //! Compiles an object now
         void compile(vsg::ref_ptr<vsg::Object> object);
 
         //! Destroys a VSG object, eventually. 
@@ -149,9 +144,17 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Operation> _priorityUpdateQueue;
 
         // containers for compilation and integrating the results
+        struct ToCompile
+        {
+            vsg::ref_ptr<vsg::Objects> objects = vsg::Objects::create();
+            std::vector<jobs::future<bool>> results;
+        };
+        ToCompile _toCompile;
+
         mutable std::mutex _compileMutex;
-        std::queue<vsg::ref_ptr<vsg::Object>> _toCompile;
-        std::vector<vsg::CompileResult> _compileResults;
+        //vsg::ref_ptr<vsg::Objects> _toCompile;
+        //std::queue<vsg::ref_ptr<vsg::Object>> _toCompile;
+        vsg::CompileResult _compileResult;
 
         // deferred deletion container
         mutable std::mutex _deferred_unref_mutex;

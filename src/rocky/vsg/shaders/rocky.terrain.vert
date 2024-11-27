@@ -15,8 +15,6 @@ layout(set = 0, binding = 13) uniform TileData
 {
     mat4 elevation_matrix;
     mat4 color_matrix;
-    mat4 normal_matrix;
-    mat4 model_matrix;
 } tile;
 
 // input vertex attributes

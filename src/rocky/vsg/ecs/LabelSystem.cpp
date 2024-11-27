@@ -268,7 +268,7 @@ LabelSystemNode::initializeSystem(Runtime& runtime)
 }
 
 void
-LabelSystemNode::createOrUpdateNode(const Label& label, ecs::BuildInfo& data, Runtime& runtime) const
+LabelSystemNode::createOrUpdateNode(Label& label, ecs::BuildInfo& data, Runtime& runtime) const
 {
     bool rebuild = data.existing_node == nullptr;
 

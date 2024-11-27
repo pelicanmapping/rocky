@@ -118,9 +118,9 @@ TerrainNode::createRootTiles(const IOOptions& io)
     _tilesRoot = vsg::Group::create();
 
     // create the graphics pipeline to render this map
-    auto stateGroup = engine->stateFactory.createTerrainStateGroup();
-    stateGroup->addChild(_tilesRoot);
-    this->addChild(stateGroup);
+    stategroup = engine->stateFactory.createTerrainStateGroup();
+    stategroup->addChild(_tilesRoot);
+    this->addChild(stategroup);
 
     // once the pipeline exists, we can start creating tiles.
     std::vector<TileKey> keys;
@@ -138,7 +138,7 @@ TerrainNode::createRootTiles(const IOOptions& io)
         _tilesRoot->addChild(tile);
     }
 
-    engine->runtime.compile(stateGroup);
+    engine->runtime.compile(stategroup);
 
     return StatusOK;
 }

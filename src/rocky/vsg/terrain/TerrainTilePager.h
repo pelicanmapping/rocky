@@ -26,7 +26,7 @@ namespace ROCKY_NAMESPACE
 
         using Tracker = util::SentryTracker<TerrainTileNode*>;
 
-        struct TableEntry
+        struct TileInfo
         {
             // this needs to be a ref ptr because it's possible for the unloader
             // to remove a Tile's ancestor from the scene graph, which will turn
@@ -34,11 +34,12 @@ namespace ROCKY_NAMESPACE
             // be removed anyway, but we need to keep it alive in the meantime...
             vsg::ref_ptr<TerrainTileNode> tile;
             void* trackerToken = nullptr;
-            mutable jobs::future<TerrainTileModel> dataLoader;
-            mutable jobs::future<bool> dataMerger;
+            jobs::future<vsg::ref_ptr<vsg::Node>> childrenCreator;
+            jobs::future<bool> dataLoader;
+            jobs::future<bool> dataMerger;
         };
 
-        using TileTable = std::map<TileKey, TableEntry>;
+        using TileTable = std::map<TileKey, TileInfo>;
 
     public:
         //! Consturct the tile manager.
@@ -93,9 +94,9 @@ namespace ROCKY_NAMESPACE
         Runtime& _runtime;
         bool _updateViewerRequired = false;
 
-        std::vector<TileKey> _loadSubtiles;
+        std::vector<TileKey> _createChildren;
         std::vector<TileKey> _loadData;
-        std::vector<TileKey> _mergeData; 
+        std::vector<TileKey> _mergeData;
         std::vector<TileKey> _updateData;
 
         unsigned _firstLOD = 0u;
@@ -103,19 +104,19 @@ namespace ROCKY_NAMESPACE
     private:
 
         //! Loads the geometry for 4 new subtiles, and inherits their data models from a parent.
-        void requestLoadSubtiles(
-            vsg::ref_ptr<TerrainTileNode> parent,
+        void requestCreateChildren(
+            TileInfo& info,
             std::shared_ptr<TerrainEngine> terrain) const;
 
         //! Loads new data for a tile that was prepped in loadSubtiles
         void requestLoadData(
-            TableEntry& info,
+            TileInfo& info,
             const IOOptions& io,
             std::shared_ptr<TerrainEngine> terrain) const;
 
         //! Merges the new data model loaded in loadData.
         void requestMergeData(
-            TableEntry& info,
+            TileInfo& info,
             const IOOptions& io,
             std::shared_ptr<TerrainEngine> terrain) const;
     };

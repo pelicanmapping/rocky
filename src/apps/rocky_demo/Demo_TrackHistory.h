@@ -8,7 +8,7 @@
 #include "helpers.h"
 #include <chrono>
 #include <limits>
-#include <list>
+#include <deque>
 
 using namespace ROCKY_NAMESPACE;
 using namespace std::chrono_literals;
@@ -22,7 +22,6 @@ namespace
     {
         struct Chunk
         {
-            GeoPoint referencePoint;
             entt::entity attach_point = entt::null; // attachment point for the line
             std::size_t numPoints = 0;
         };
@@ -31,8 +30,7 @@ namespace
         unsigned maxPoints = 48;
 
     private:
-        std::list<Chunk> chunks;
-        std::size_t numChunks = 0;
+        std::deque<Chunk> chunks;
         friend class TrackHistorySystem;
     };
 
@@ -52,10 +50,16 @@ namespace
 
             // destruction of a TrackHistory requries some extra work:
             registry.on_destroy<TrackHistory>().connect<&TrackHistorySystem::on_destroy>(this);
+
+            // default track style
+            style.color = vsg::vec4{ 0.0f, 1.0f, 0.0f, 1.0f };
+            style.width = 2.0f;
         }
 
         float update_hertz = 1.0f; // updates per second
-        bool tracks_visible = true;
+        bool tracks_visible = true; // global visibility for all tracks
+        LineStyle style; // style for tracks
+        std::vector<TrackHistory::Chunk> freelist; // for recycling used chunks
 
         void update(Runtime& runtime) override
         {
@@ -74,7 +78,7 @@ namespace
                 {
                     if (transform.position.valid())
                     {
-                        if (track.numChunks == 0 || track.chunks.back().numPoints >= track_chunk_size)
+                        if (track.chunks.empty() || track.chunks.back().numPoints >= track_chunk_size)
                         {
                             chunks_to_add.emplace_back(entity);
                         }
@@ -84,12 +88,11 @@ namespace
 
                             // approximation for now.
                             auto maxChunks = track.maxPoints / track_chunk_size;
-                            if (track.numChunks > 1u && track.numChunks > maxChunks)
+                            if (track.chunks.size() > 1u && track.chunks.size() > maxChunks)
                             {
                                 chunks_to_deactivate.emplace_back(track.chunks.front().attach_point);
-                                add_to_freelist(std::move(track.chunks.front()));
+                                add_to_freelist(registry, std::move(track.chunks.front()));
                                 track.chunks.pop_front();
-                                --track.numChunks;
                             }
                         }
                     }
@@ -127,16 +130,14 @@ namespace
             // Check the freelist first
             if (!freelist.empty())
             {
-                track.chunks.emplace_back(std::move(take_from_freelist()));
-                ++track.numChunks;
-                auto& c = track.chunks.back();
+                auto& c = track.chunks.emplace_back(std::move(take_from_freelist()));
                 Line& line = registry.get<Line>(c.attach_point);
-                line.points.clear();
+                line.points.clear(), c.numPoints = 0;
+                line.dirty();
             }
             else
             {
                 auto& c = track.chunks.emplace_back();
-                ++track.numChunks;
                 c.attach_point = registry.create();
 
                 // Each chunk get a line primitive.
@@ -154,18 +155,19 @@ namespace
             // Make a new chunk and set its reference point
             auto& new_chunk = track.chunks.back();
 
-            new_chunk.referencePoint = transform.position;
-
             Line& line = registry.get<Line>(new_chunk.attach_point);
+            line.referencePoint = transform.position;
 
             // If this is not the first chunk, connect it to the previous one
-            if (track.numChunks > 1)
+            if (track.chunks.size() > 1)
             {
                 auto prev_chunk = std::prev(std::prev(track.chunks.end()));
                 auto& prev_line = registry.get<Line>(prev_chunk->attach_point);
+
+                Line& line = registry.get<Line>(new_chunk.attach_point);
                 line.points.emplace_back(prev_line.points.back());
-                ++new_chunk.numPoints;
-                ++line.revision;
+                line.dirtyPoints();
+                new_chunk.numPoints++;
             }          
             
             // activate (if necessary).
@@ -176,13 +178,13 @@ namespace
         {
             auto& line = registry.get<Line>(chunk.attach_point);
 
-            if (chunk.numPoints > 0 && line.points.back() == to_vsg((glm::dvec3)(transform.position)))
+            if (line.points.size() > 0 && line.points.back() == to_vsg((glm::dvec3)(transform.position)))
                 return;
 
             // append the new position:
             line.points.emplace_back(to_vsg((glm::dvec3)transform.position));
-            ++chunk.numPoints;
-            ++line.revision;
+            line.dirtyPoints();
+            chunk.numPoints++;
         }
 
         void updateVisibility(entt::registry& registry, entt::entity host_entity, TrackHistory::Chunk& chunk)
@@ -212,13 +214,23 @@ namespace
             }
         }
 
+        void updateStyle(entt::registry& registry)
+        {
+            auto view = registry.view<TrackHistory>();
+            for (auto&& [entity, track] : view.each())
+            {
+                track.style = style;
+                for (auto& chunk : track.chunks)
+                {
+                    auto& line = registry.get<Line>(chunk.attach_point);
+                    line.style = track.style;
+                    line.dirtyStyle();
+                }
+            }
+        }
+
         void reset()
         {
-            // style our tracks.
-            LineStyle style;
-            style.color = vsg::vec4{ 0.0f, 1.0f, 0.0f, 1.0f };
-            style.width = 2.0f;
-
             auto [lock, registry] = _registry.write();
 
             // first delete any existing track histories
@@ -239,7 +251,6 @@ namespace
     protected:
 
         std::chrono::steady_clock::time_point last_update = std::chrono::steady_clock::now();
-        std::vector<TrackHistory::Chunk> freelist;
 
         // called by EnTT when a TrackHistory component is destroyed.
         void on_destroy(entt::registry& registry, entt::entity entity)
@@ -248,16 +259,18 @@ namespace
             for (auto& chunk : track.chunks)
             {
                 registry.remove<ActiveState>(chunk.attach_point);
-                add_to_freelist(std::move(chunk));
+                add_to_freelist(registry, std::move(chunk));
             }
             track.chunks.clear();
-            track.numChunks = 0;
         }
 
-        void add_to_freelist(TrackHistory::Chunk&& chunk)
+        void add_to_freelist(entt::registry& registry, TrackHistory::Chunk&& chunk)
         {
+            // prep the graphic for possible recycling:
+            auto& line = registry.get<Line>(chunk.attach_point);
+            line.recycle(registry);
+
             freelist.emplace_back(std::move(chunk));
-            freelist.back().numPoints = 0;
         }
 
         TrackHistory::Chunk take_from_freelist()
@@ -285,13 +298,28 @@ auto Demo_TrackHistory = [](Application& app)
 
     if (ImGuiLTable::Begin("track history"))
     {
-        auto [lock, registry] = app.registry.read();
-
         if (ImGuiLTable::Checkbox("Show", &system->tracks_visible))
         {
+            auto [lock, registry] = app.registry.read();
             system->updateVisibility(registry);
         }
+
         ImGuiLTable::SliderFloat("Update frequency", &system->update_hertz, 1.0f, 15.0f);
+
+        if (ImGuiLTable::ColorEdit3("Color", system->style.color.data()))
+        {
+            auto [lock, registry] = app.registry.read();
+            system->updateStyle(registry);
+        }
+
+        if (ImGuiLTable::SliderFloat("Width", &system->style.width, 1.0f, 5.0f))
+        {
+            auto [lock, registry] = app.registry.read();
+            system->updateStyle(registry);
+        }
+        
+        ImGuiLTable::Text("Freelist size", "%ld", system->freelist.size());
+
         ImGuiLTable::End();
     }
 

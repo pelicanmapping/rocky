@@ -39,10 +39,13 @@ namespace ROCKY_NAMESPACE
         //! Creates a state group for rendering terrain
         vsg::ref_ptr<vsg::StateGroup> createTerrainStateGroup();
 
-        //! Creates a state group for rendering a specific terrain tile
-        void updateTerrainTileDescriptors(
-            const TerrainTileRenderModel& renderModel,
-            vsg::ref_ptr<vsg::StateGroup> stategroup,
+        //! Integrates data from the new data model into an existing render model,
+        //! and creates or updates all the necessary descriptors and commands.
+        //! After calling this, you will need to install the find bind command
+        //! in your stategroup.
+        TerrainTileRenderModel updateRenderModel(
+            const TerrainTileRenderModel& oldRenderModel,
+            const TerrainTileModel& newDataModel,
             Runtime& runtime) const;
 
         //! Status of the factory.
@@ -99,9 +102,7 @@ namespace ROCKY_NAMESPACE
         struct
         {
             TextureDef color;
-            TextureDef colorParent;
             TextureDef elevation;
-            TextureDef normal;
         }
         texturedefs;
 

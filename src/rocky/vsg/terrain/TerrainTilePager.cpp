@@ -47,7 +47,7 @@ TerrainTilePager::releaseAll()
 
     _tiles.clear();
     _tracker.reset();
-    _loadSubtiles.clear();
+    _createChildren.clear();
     _loadData.clear();
     _mergeData.clear();
     _updateData.clear();
@@ -60,8 +60,6 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
         _mutex.lock();
 
     // first, update the tracker to keep this tile alive.
-    TileTable::iterator i = _tiles.find(tile->key);
-
     auto& info = _tiles[tile->key];
     if (!info.tile)
     {
@@ -80,34 +78,46 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
 
     if (progressive)
     {
+        // If this tile is fully merged, and it needs children, queue them up to load.
         if (info.dataMerger.available() && tile->needsSubtiles)
         {
-            _loadSubtiles.push_back(tile->key);
+            _createChildren.push_back(tile->key);
         }
 
         if (parent == nullptr)
         {
-            // root tile, go for it
+            // If this is a root tile, and it needs data, queue that up:
             if (info.dataLoader.empty())
+            {
                 _loadData.emplace_back(tile->key);
+            }
         }
         else
         {
-            // non-root tile; make sure parent has its data loaded first
+            // If this is a non-root tile that needs data, check to make sure the 
+            // parent's tile is done loaded before queueing that up.
             auto& parent_info = _tiles[parent->key];
             ROCKY_SOFT_ASSERT_AND_RETURN(parent_info.tile, void());
-            if (parent_info.dataMerger.available() && info.dataLoader.empty())
+            if (parent_info.tile && parent_info.dataMerger.available() && info.dataLoader.empty())
+            {
                 _loadData.push_back(tile->key);
+            }
         }
     }
 
-    // This will only queue one merge per frame, to prevent overloading
+    // If a data-load is complete and ready to merge, queue it up.
+    // This will only queue one merge per frame to prevent overloading
     // the (synchronous) update cycle in VSG.
     if (info.dataLoader.available() && info.dataMerger.empty())
+    {
         _mergeData.push_back(tile->key);
+    }
 
+    // Tile updates are TBD.
     if (tile->needsUpdate)
+    {
         _updateData.push_back(tile->key);
+    }
 
     if (_settings.supportMultiThreadedRecord)
         _mutex.unlock();
@@ -140,18 +150,18 @@ TerrainTilePager::update(const vsg::FrameStamp* fs, const IOOptions& io, std::sh
     _updateData.clear();
 
     // launch any "new subtiles" requests
-    for (auto& key : _loadSubtiles)
+    for (auto& key : _createChildren)
     {
         auto iter = _tiles.find(key);
         if (iter != _tiles.end())
         {
-            requestLoadSubtiles(iter->second.tile, terrain); // parent, context
+            requestCreateChildren(iter->second, terrain); // parent, context
             iter->second.tile->needsSubtiles = false;
         }
 
         changes = true;
     }
-    _loadSubtiles.clear();
+    _createChildren.clear();
 
     // launch any data loading requests
     for (auto& key : _loadData)
@@ -186,31 +196,31 @@ TerrainTilePager::update(const vsg::FrameStamp* fs, const IOOptions& io, std::sh
     if (fs->frameCount > _lastUpdate)
     {
         const auto dispose = [&](TerrainTileNode* tile)
+        {
+            if (!tile->doNotExpire)
             {
-                if (!tile->doNotExpire)
+                auto key = tile->key;
+                auto parent_iter = _tiles.find(key.createParentKey());
+                if (parent_iter != _tiles.end())
                 {
-                    auto key = tile->key;
-                    auto parent_iter = _tiles.find(key.createParentKey());
-                    if (parent_iter != _tiles.end())
+                    auto parent = parent_iter->second.tile;
+                    if (parent.valid())
                     {
-                        auto parent = parent_iter->second.tile;
-                        if (parent.valid())
-                        {
-                            // Feed the children to the garbage disposal before removing them
-                            // so any vulkan objects are safely destroyed
-                            if (tile->children.size() > 1)
-                                terrain->runtime.dispose(tile->children[1]);
+                        // Feed the children to the garbage disposal before removing them
+                        // so any vulkan objects are safely destroyed
+                        if (tile->children.size() > 1)
+                            terrain->runtime.dispose(tile->children[1]);
 
-                            tile->children.resize(1);
-                            tile->subtilesLoader.reset();
-                            tile->needsSubtiles = false;
-                        }
+                        tile->children.resize(1);
+                        tile->subtilesLoader.reset();
+                        tile->needsSubtiles = false;
                     }
-                    _tiles.erase(key);
-                    return true;
                 }
-                return false;
-            };
+                _tiles.erase(key);
+                return true;
+            }
+            return false;
+        };
 
         _tracker.flush(~0, dispose);
     }
@@ -253,11 +263,11 @@ TerrainTilePager::createTile(const TileKey& key, vsg::ref_ptr<TerrainTileNode> p
     // update the bounding sphere for culling
     tile->bound = tile->surface->recomputeBound();
 
-    // Generate its state group:
-    terrain->stateFactory.updateTerrainTileDescriptors(
-        tile->renderModel,
-        tile->stategroup,
-        terrain->runtime);
+    // Generate its state objects:
+    tile->renderModel = terrain->stateFactory.updateRenderModel(tile->renderModel, {}, terrain->runtime);
+
+    // install the bind command.
+    tile->stategroup->add(tile->renderModel.descriptors.bind);
 
     return tile;
 }
@@ -271,20 +281,19 @@ TerrainTilePager::getTile(const TileKey& key) const
         iter != _tiles.end() ? iter->second.tile :
         vsg::ref_ptr<TerrainTileNode>(nullptr);
 }
+
 void
-TerrainTilePager::requestLoadSubtiles(
-    vsg::ref_ptr<TerrainTileNode> parent,
-    std::shared_ptr<TerrainEngine> engine) const
+TerrainTilePager::requestCreateChildren(TileInfo& info, std::shared_ptr<TerrainEngine> engine) const
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(parent, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(info.tile && engine, void());
 
     // make sure we're not already working on it
-    if (!parent->subtilesLoader.empty())
+    if (!info.childrenCreator.empty())
         return;
 
     //RP_DEBUG << "requestLoadSubtiles -> " << parent->key.str() << std::endl;
 
-    vsg::observer_ptr<TerrainTileNode> weak_parent(parent);
+    vsg::observer_ptr<TerrainTileNode> weak_parent(info.tile);
 
     // function that will create all 4 children and compile them
     auto create_children = [engine, weak_parent](Cancelable& p)
@@ -313,7 +322,21 @@ TerrainTilePager::requestLoadSubtiles(
             result = quad;
         }
 
-        engine->runtime.requestFrame();
+        if (result)
+        {
+            engine->runtime.compile(result);
+
+            engine->runtime.onNextUpdate([result, weak_parent]()
+                {
+                    auto parent = weak_parent.ref_ptr();
+                    if (parent)
+                    {
+                        parent->addChild(result);
+                    }
+                });
+
+            engine->runtime.requestFrame();
+        }
 
         return result;
     };
@@ -325,11 +348,10 @@ TerrainTilePager::requestLoadSubtiles(
         return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
     };
 
-    parent->subtilesLoader = engine->runtime.compileAndAddChild(
-        parent,
+    info.childrenCreator = jobs::dispatch(
         create_children,
         jobs::context {
-            "create child " + parent->key.str(),
+            "create child " + info.tile->key.str(),
             jobs::get_pool(engine->loadSchedulerName),
             priority_func,
             nullptr
@@ -337,10 +359,7 @@ TerrainTilePager::requestLoadSubtiles(
 }
 
 void
-TerrainTilePager::requestLoadData(
-    TableEntry& info,
-    const IOOptions& in_io,
-    std::shared_ptr<TerrainEngine> engine) const
+TerrainTilePager::requestLoadData(TileInfo& info, const IOOptions& in_io, std::shared_ptr<TerrainEngine> engine) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(info.tile, void());
 
@@ -351,33 +370,40 @@ TerrainTilePager::requestLoadData(
     }
 
     auto key = info.tile->key;
+    auto tile = info.tile;
 
     //RP_DEBUG("requestLoadData -> {}", key.str());
 
     CreateTileManifest manifest;
     const IOOptions io(in_io);
 
-    auto load = [key, manifest, engine, io](Cancelable& p) -> TerrainTileModel
+    auto load = [key, tile, manifest, engine, io](Cancelable& p) -> bool
     {
         if (p.canceled())
-        {
-            //RP_DEBUG("Data load {} Canceled!", key.str());
-            return { };
-        }
+            return false;
 
         TerrainTileModelFactory factory;
-
         factory.compositeColorLayers = true;
 
-        auto model = factory.createTileModel(
+        auto dataModel = factory.createTileModel(
             engine->map.get(),
             key,
             manifest,
             IOOptions(io, p));
 
-        engine->runtime.requestFrame();
+        if (!dataModel.empty())
+        {
+            auto newRenderModel = engine->stateFactory.updateRenderModel(
+                tile->renderModel,
+                dataModel,
+                engine->runtime);
 
-        return model;
+            tile->renderModel = newRenderModel;
+
+            return true;
+        }
+
+        return false;
     };
 
     // a callback that will return the loading priority of a tile
@@ -400,10 +426,7 @@ TerrainTilePager::requestLoadData(
 }
 
 void
-TerrainTilePager::requestMergeData(
-    TableEntry& info,
-    const IOOptions& in_io,
-    std::shared_ptr<TerrainEngine> engine) const
+TerrainTilePager::requestMergeData(TileInfo& info, const IOOptions& in_io, std::shared_ptr<TerrainEngine> engine) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(info.tile, void());
 
@@ -414,99 +437,41 @@ TerrainTilePager::requestMergeData(
     }
 
     auto key = info.tile->key;
-    auto model = info.dataLoader.value();
 
-    const IOOptions io(in_io);
-
-    //RP_DEBUG("requestMergeData -> {}", key.str());
-
-    auto merge = [key, model, engine](Cancelable& p) -> bool
+    // if the loader didn't load anything, we're done.
+    if (info.dataLoader.value() == false)
     {
-        if (p.canceled())
-        {
-            //Log()->info("  merge canceled -> {}", key.str());
-            return false;
-        }
+        info.dataMerger.resolve(true);
+        return;
+    }
 
+    // operation to dispose of the old state command and replace it with a new one:
+    auto merge = [key, engine](Cancelable& c)
+    {
         auto tile = engine->tiles.getTile(key);
-        if (!tile)
+        if (tile)
         {
-            //Log()->info("  merge tile lost -> {}", key.str());
-            return false;
+            for (auto c : tile->stategroup->stateCommands)
+                engine->runtime.dispose(c);
+
+            tile->stategroup->stateCommands.clear();
+            tile->stategroup->stateCommands.emplace_back(tile->renderModel.descriptors.bind);
+
+            engine->runtime.requestFrame();
+            return true;
         }
-
-        auto& renderModel = tile->renderModel;
-
-        bool updated = false;
-
-        if (model.colorLayers.size() > 0)
-        {
-            auto& layer = model.colorLayers[0];
-            if (layer.image.valid())
-            {
-                renderModel.color.name = "color " + layer.key.str();
-                renderModel.color.image = layer.image.image();
-                renderModel.color.matrix = layer.matrix;
-            }
-            updated = true;
-        }
-
-        if (model.elevation.heightfield.valid())
-        {
-            renderModel.elevation.name = "elevation " + model.elevation.key.str();
-            renderModel.elevation.image = model.elevation.heightfield.heightfield();
-            renderModel.elevation.matrix = model.elevation.matrix;
-
-            // update the tile proxy geometry and bounds
-            tile->surface->setElevation(renderModel.elevation.image, renderModel.elevation.matrix);
-            tile->bound = tile->surface->recomputeBound();
-
-            updated = true;
-        }
-
-        if (model.normalMap.image.valid())
-        {
-            renderModel.elevation.name = "normal " + model.normalMap.key.str();
-            renderModel.normal.image = model.normalMap.image.image();
-            renderModel.normal.matrix = model.normalMap.matrix;
-
-            updated = true;
-        }
-
-        renderModel.modelMatrix = to_glm(tile->surface->matrix);
-
-        if (updated)
-        {
-            engine->stateFactory.updateTerrainTileDescriptors(
-                renderModel,
-                tile->stategroup,
-                engine->runtime);
-
-            RP_DEBUG("  merge ok -> {}", key.str());
-        }
-        else
-        {
-            RP_DEBUG("  merge empty -> {}", key.str());
-        }
-
-        // GW: trying this...
-        engine->runtime.compile(tile);
-
-        engine->runtime.requestFrame();
-
-        return true;
+        return false;
     };
 
-    auto merge_op = util::PromiseOperation<bool>::create(merge);
+    auto merge_operation = util::PromiseOperation<bool>::create(merge);
+    info.dataMerger = merge_operation->future();
 
-    info.dataMerger = merge_op->future();
-
-    vsg::observer_ptr<TerrainTileNode> tile_weak(info.tile);
-    auto priority_func = [tile_weak]() -> float
+    vsg::observer_ptr<TerrainTileNode> weak_tile(info.tile);
+    auto priority_func = [weak_tile]() -> float
     {
-        vsg::ref_ptr<TerrainTileNode> tile = tile_weak.ref_ptr();
-        return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
+        auto tile = weak_tile.ref_ptr();
+        return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : -FLT_MAX;
     };
 
-    engine->runtime.onNextUpdate(merge_op, priority_func);
+    engine->runtime.onNextUpdate(merge_operation, priority_func);
 }

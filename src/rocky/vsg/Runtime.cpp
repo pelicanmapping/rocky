@@ -122,6 +122,8 @@ Runtime::Runtime()
 
     _priorityUpdateQueue = PriorityUpdateQueue::create();
 
+    //_toCompile = vsg::Objects::create();
+
     // initialize the deferred deletion collection.
     // a large number of frames ensures objects will be safely destroyed and
     // and we won't have too many deletions per frame.
@@ -161,22 +163,15 @@ Runtime::compile(vsg::ref_ptr<vsg::Object> compilable)
     ROCKY_HARD_ASSERT(viewer.valid(), "Developer: failure to set InstanceVSG->runtime().viewer");
     ROCKY_SOFT_ASSERT_AND_RETURN(compilable.valid(), void());
 
-    if (asyncCompile)
-    {
-        // note: this will block (with a fence) until a compile traversal is available,
-        // so be sure to group as many compiles together as possible for maximum performance.
-        auto cr = viewer->compileManager->compile(compilable);
+    // note: this will block (with a fence) until a compile traversal is available,
+    // so be sure to group as many compiles together as possible for maximum performance.
+    auto cr = viewer->compileManager->compile(compilable);
 
-        if (cr && cr.requiresViewerUpdate())
-        {
-            std::unique_lock lock(_compileMutex);
-            _compileResults.push_back(cr);
-        }
-    }
-    else
+    if (cr && cr.requiresViewerUpdate())
     {
+        // compile results are stored and processed later during update
         std::unique_lock lock(_compileMutex);
-        _toCompile.push(compilable);
+        _compileResult.add(cr);
     }
 }
 
@@ -207,42 +202,17 @@ Runtime::update()
 
     bool updates_occurred = false;
 
-    if (asyncCompile)
+    if (_compileResult)
     {
-        if (_compileResults.size() > 0)
-        {
-            std::unique_lock lock(_compileMutex);
-            
-            for (auto& cr : _compileResults)
-            {
-                // no need to check cr, we did that before pushing
-                vsg::updateViewer(*viewer, cr);
-                updates_occurred = true;
-            }
-
-            _compileResults.clear();
-        }
-    }
-
-    else if (_toCompile.size() > 0)
-    {
-        // make sure the queues are empty..
-        viewer->deviceWaitIdle();
-
         std::unique_lock lock(_compileMutex);
 
-        while(!_toCompile.empty())
+        if (_compileResult.requiresViewerUpdate())
         {
-            auto object = _toCompile.front();
-            _toCompile.pop();
-
-            auto cr = viewer->compileManager->compile(object);
-            if (cr && cr.requiresViewerUpdate())
-            {
-                vsg::updateViewer(*viewer, cr);
-                updates_occurred = true;
-            }
+            vsg::updateViewer(*viewer, _compileResult);
+            updates_occurred = true;
+            requestFrame();
         }
+        _compileResult.reset();
     }
 
     // process the deferred unref list

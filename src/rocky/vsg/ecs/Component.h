@@ -16,9 +16,14 @@ namespace ROCKY_NAMESPACE
     {
         //! Revision, for synchronizing this component with another
         int revision = 0;
-        void dirty() { revision++; }
 
         //! Attach point for additional components, as needed
         entt::entity attach_point = entt::null;
+
+        //! bump the revision.
+        virtual void dirty()
+        {
+            ++revision;
+        }
     };
 }

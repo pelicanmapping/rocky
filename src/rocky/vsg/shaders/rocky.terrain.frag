@@ -21,7 +21,7 @@ layout(location = 0) in RockyVaryings varyings;
 
 // uniforms
 layout(set = 0, binding = 11) uniform sampler2D color_tex;
-layout(set = 0, binding = 12) uniform sampler2D normal_tex;
+//layout(set = 0, binding = 12) uniform sampler2D normal_tex;
 
 #if defined(ROCKY_LIGHTING)
 #include "rocky.lighting.frag.glsl"

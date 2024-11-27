@@ -172,7 +172,7 @@ MeshSystemNode::initializeSystem(Runtime& runtime)
 }
 
 void
-MeshSystemNode::createOrUpdateNode(const Mesh& mesh, ecs::BuildInfo& data, Runtime& runtime) const
+MeshSystemNode::createOrUpdateNode(Mesh& mesh, ecs::BuildInfo& data, Runtime& runtime) const
 {
     vsg::ref_ptr<vsg::StateGroup> stategroup;
 
@@ -383,7 +383,7 @@ NodeSystemNode::NodeSystemNode(ecs::Registry& registry) :
 }
 
 void
-NodeSystemNode::createOrUpdateNode(const NodeGraph& graph, ecs::BuildInfo& data, Runtime& runtime) const
+NodeSystemNode::createOrUpdateNode(NodeGraph& graph, ecs::BuildInfo& data, Runtime& runtime) const
 {
     data.new_node = graph.node;
 }

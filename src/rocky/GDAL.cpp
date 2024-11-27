@@ -13,6 +13,7 @@
 #include <gdal_proxy.h>
 #include <gdal_vrt.h>
 #include <cpl_string.h>
+#include <cpl_error.h>
 #include <ogr_spatialref.h>
 
 #include <filesystem>
@@ -282,7 +283,8 @@ namespace ROCKY_NAMESPACE
                         if (P)
                         {
                             auto temp = new unsigned char[width * height];
-                            P->RasterIO(GF_Read, 0, 0, width, height, temp, width, height, GDT_Byte, 0, 0, nullptr);
+                            auto err = P->RasterIO(GF_Read, 0, 0, width, height, temp, width, height, GDT_Byte, 0, 0, nullptr);
+                            ROCKY_SOFT_ASSERT(err == CE_None);
                             glm::u8vec4 color;
                             for (int i = 0; i < width * height; ++i)
                             {
@@ -299,7 +301,8 @@ namespace ROCKY_NAMESPACE
                             float value_scale = (float)M->GetScale();
                             float value_offset = (float)M->GetOffset();
 
-                            M->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Float32, 0, 0, nullptr);
+                            auto err = M->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Float32, 0, 0, nullptr);
+                            ROCKY_QUIET_ASSERT(err == CE_None);
 
                             auto ptr = result->data<float>();
                             for (int i = 0; i < width * height; ++i, ptr++)
@@ -308,13 +311,28 @@ namespace ROCKY_NAMESPACE
                         else
                         {
                             if (R)
-                                R->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                            {
+                                auto err = R->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                                ROCKY_SOFT_ASSERT(err == CE_None, ("Error code = " + err) << );
+                            }
+
                             if (G)
-                                G->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                            {
+                                auto err = G->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                                ROCKY_SOFT_ASSERT(err == CE_None, CPLGetLastErrorMsg() << );
+                            }
+
                             if (B)
-                                B->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                            {
+                                auto err = B->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                                ROCKY_SOFT_ASSERT(err == CE_None, CPLGetLastErrorMsg() << );
+                            }
+
                             if (A)
-                                A->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                            {
+                                auto err = A->RasterIO(GF_Read, 0, 0, width, height, result->data<unsigned char>() + (offset++), width, height, GDT_Byte, spacing, 0, nullptr);
+                                ROCKY_SOFT_ASSERT(err == CE_None, CPLGetLastErrorMsg() << );
+                            }
                         }
                     }
 
@@ -556,7 +574,8 @@ GDAL::Driver::open(
     }
 
     // calcluate the inverse of the geotransform:
-    GDALInvGeoTransform(_geotransform, _invtransform);
+    auto err = GDALInvGeoTransform(_geotransform, _invtransform);
+    ROCKY_SOFT_ASSERT(err == CE_None);
 
     double minX, minY, maxX, maxY;
     pixelToGeo(0.0, _warpedDS->GetRasterYSize(), minX, minY);

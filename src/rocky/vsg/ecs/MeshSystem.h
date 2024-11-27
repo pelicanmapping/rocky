@@ -104,7 +104,7 @@ namespace ROCKY_NAMESPACE
         //! One-time initialization of the system        
         void initializeSystem(Runtime&) override;
 
-        void createOrUpdateNode(const Mesh&, ecs::BuildInfo&, Runtime&) const override;
+        void createOrUpdateNode(Mesh&, ecs::BuildInfo&, Runtime&) const override;
     protected:
 
         //bool update(entt::entity, Runtime&) override;
@@ -123,7 +123,7 @@ namespace ROCKY_NAMESPACE
     public:
         NodeSystemNode(ecs::Registry& registry);
 
-        void createOrUpdateNode(const NodeGraph&, ecs::BuildInfo&, Runtime&) const override;
+        void createOrUpdateNode(NodeGraph&, ecs::BuildInfo&, Runtime&) const override;
     };
 
 }

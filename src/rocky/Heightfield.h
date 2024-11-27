@@ -62,12 +62,12 @@ namespace ROCKY_NAMESPACE
 
     float& Heightfield::heightAt(unsigned c, unsigned r)
     {
-        return data<float>(c, r);
+        return value<float>(c, r);
     }
 
     float Heightfield::heightAt(unsigned c, unsigned r) const
     {
-        return data<float>(c, r);
+        return value<float>(c, r);
     }    
 
     template<typename CALLABLE>

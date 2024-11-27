@@ -28,7 +28,7 @@ namespace ROCKY_NAMESPACE
         //! One time setup of the system
         void initializeSystem(Runtime&) override;
 
-        void createOrUpdateNode(const Label&, ecs::BuildInfo&, Runtime&) const;
+        void createOrUpdateNode(Label&, ecs::BuildInfo&, Runtime&) const;
 
     };
 }

@@ -168,7 +168,7 @@ namespace
 }
 
 void
-IconSystemNode::createOrUpdateNode(const Icon& icon, ecs::BuildInfo& data, Runtime& runtime) const
+IconSystemNode::createOrUpdateNode(Icon& icon, ecs::BuildInfo& data, Runtime& runtime) const
 {
     bool rebuild = data.existing_node == nullptr;
 

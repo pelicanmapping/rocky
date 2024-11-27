@@ -70,6 +70,7 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
     {
         auto state = rv.getState();
 
+        // should we subdivide?
         auto& vp = state->_commandBuffer->viewDependentState->viewportData->at(0);
         auto min_screen_height_ratio = (host->settings().tilePixelSize + host->settings().screenSpaceError) / vp[3];
         auto d = state->lodDistance(bound);

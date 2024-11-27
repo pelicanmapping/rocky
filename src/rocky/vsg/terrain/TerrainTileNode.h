@@ -52,14 +52,11 @@ namespace ROCKY_NAMESPACE
         {
             glm::fmat4 elevation_matrix;
             glm::fmat4 color_matrix;
-            glm::fmat4 normal_matrix;
-            glm::fmat4 model_matrix;
         };
         vsg::ref_ptr<vsg::DescriptorImage> color;
-        vsg::ref_ptr<vsg::DescriptorImage> colorParent;
         vsg::ref_ptr<vsg::DescriptorImage> elevation;
-        vsg::ref_ptr<vsg::DescriptorImage> normal;
         vsg::ref_ptr<vsg::DescriptorBuffer> uniforms;
+        vsg::ref_ptr<vsg::BindDescriptorSet> bind;
     };
 
     class TerrainTileRenderModel
@@ -68,8 +65,6 @@ namespace ROCKY_NAMESPACE
         glm::fmat4 modelMatrix;
         TextureData color;
         TextureData elevation;
-        TextureData normal;
-        TextureData colorParent;
 
         TerrainTileDescriptors descriptors;
 
@@ -79,10 +74,6 @@ namespace ROCKY_NAMESPACE
                 color.matrix *= sb;
             if (elevation.image)
                 elevation.matrix *= sb;
-            if (normal.image)
-                normal.matrix *= sb;
-            if (colorParent.image)
-                colorParent.matrix *= sb;
         }
     };
 

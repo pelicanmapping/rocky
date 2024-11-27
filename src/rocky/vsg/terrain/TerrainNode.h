@@ -57,6 +57,9 @@ namespace ROCKY_NAMESPACE
         //! Engine that renders the terrain
         std::shared_ptr<TerrainEngine> engine;
 
+        //! Terrain's state group
+        vsg::ref_ptr<vsg::StateGroup> stategroup;
+
     protected:
 
         //! TerrainTileHost interface

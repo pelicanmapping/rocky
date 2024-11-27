@@ -75,7 +75,7 @@ namespace ROCKY_NAMESPACE
 
     public:
 
-        void accept(vsg::RecordTraversal&) const override;
+        void traverse(vsg::RecordTraversal&) const override;
 
     private:
 

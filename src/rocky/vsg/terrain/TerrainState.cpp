@@ -90,6 +90,7 @@ TerrainState::createDefaultDescriptors()
     if (_runtime.sharedObjects)
         _runtime.sharedObjects->share(texturedefs.elevation.sampler);
 
+#if 0
     texturedefs.normal = { NORMAL_TEX_NAME, NORMAL_TEX_BINDING, vsg::Sampler::create(), {} };
     texturedefs.normal.sampler->maxLod = 16;
     texturedefs.normal.sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
@@ -97,7 +98,7 @@ TerrainState::createDefaultDescriptors()
     texturedefs.normal.sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     if (_runtime.sharedObjects)
         _runtime.sharedObjects->share(texturedefs.normal.sampler);
-
+#endif
 
     // Next make the "default" descriptor model, which is used when 
     // no other data is available. These are 1x1 pixel placeholder images.
@@ -123,6 +124,7 @@ TerrainState::createDefaultDescriptors()
         0, // array element
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
+#if 0
     auto normal_image = Image::create(Image::R8G8B8_UNORM, 1, 1);
     normal_image->fill(glm::fvec4(.5, .5, 1, 0));
     texturedefs.normal.defaultData = util::moveImageToVSG(normal_image);
@@ -133,6 +135,8 @@ TerrainState::createDefaultDescriptors()
         texturedefs.normal.uniform_binding,
         0, // array element
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+#endif
+
 }
 
 vsg::ref_ptr<vsg::ShaderSet>
@@ -184,7 +188,7 @@ TerrainState::createShaderSet() const
     // "binding" (4th param) must match "layout(location=X) uniform" in the shader
     shaderSet->addDescriptorBinding(texturedefs.elevation.name, "", 0, texturedefs.elevation.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
     shaderSet->addDescriptorBinding(texturedefs.color.name, "", 0, texturedefs.color.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
-    shaderSet->addDescriptorBinding(texturedefs.normal.name, "", 0, texturedefs.normal.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+    //shaderSet->addDescriptorBinding(texturedefs.normal.name, "", 0, texturedefs.normal.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
     shaderSet->addDescriptorBinding(TILE_BUFFER_NAME, "", 0, TILE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
     
     PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -214,18 +218,10 @@ TerrainState::createPipelineConfig() const
     config->enableArray(ATTR_NORMAL, VK_VERTEX_INPUT_RATE_VERTEX, 12);
     config->enableArray(ATTR_UV, VK_VERTEX_INPUT_RATE_VERTEX, 12);
 
-    // Temporary decriptors that we will use to set up the PipelineConfig.
-    // Note, we only use these for setup, and then throw them away!
-    // The ACTUAL descriptors we will make on a tile-by-tile basis.
-#if 0
-    config->assignTexture(textures.elevation.name, textures.elevation.defaultData, textures.elevation.sampler);
-    config->assignTexture(textures.color.name, textures.color.defaultData, textures.color.sampler);
-    config->assignTexture(textures.normal.name, textures.normal.defaultData, textures.normal.sampler);
-#else
+    // activate the descriptors we intend to use
     config->enableTexture(texturedefs.elevation.name);
     config->enableTexture(texturedefs.color.name);
-    config->enableTexture(texturedefs.normal.name);
-#endif
+    //config->enableTexture(texturedefs.normal.name);
 
     config->enableDescriptor(TILE_BUFFER_NAME);
 
@@ -260,132 +256,115 @@ TerrainState::createTerrainStateGroup()
     return stateGroup;
 }
 
-void
-TerrainState::updateTerrainTileDescriptors(
-    const TerrainTileRenderModel& renderModel,
-    vsg::ref_ptr<vsg::StateGroup> stategroup,
+TerrainTileRenderModel
+TerrainState::updateRenderModel(
+    const TerrainTileRenderModel& oldRenderModel,
+    const TerrainTileModel& dataModel,
     Runtime& runtime) const
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig.valid(), void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(stategroup.valid(), void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), oldRenderModel);
+    ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig.valid(), oldRenderModel);
 
-    // Takes a tile's render model (which holds the raw image and matrix data)
-    // and creates the necessary VK data to render that model.
+    // Copy the old one
+    TerrainTileRenderModel renderModel = oldRenderModel;
+    TerrainTileDescriptors& descriptors = renderModel.descriptors;
 
-    // copy the existing one:
-    TerrainTileDescriptors dm = renderModel.descriptors;
-
-    if (renderModel.color.image)
+    if (dataModel.colorLayers.size() > 0 && dataModel.colorLayers[0].image.valid())
     {
-        auto data = util::moveImageToVSG(renderModel.color.image->clone());
+        auto& layer = dataModel.colorLayers[0];
+
+        renderModel.color.name = "color " + layer.key.str();
+        renderModel.color.image = layer.image.image();
+        renderModel.color.matrix = layer.matrix;
+
+        // TODO: evaluate this 'clone' operation...
+        auto data = util::wrapImageInVSG(renderModel.color.image); // ->clone());
+        //auto data = util::moveImageToVSG(renderModel.color.image->clone());
         if (data)
         {
             // queue the old data for safe disposal
-            runtime.dispose(dm.color);
+            if (descriptors.color)
+                runtime.dispose(descriptors.color);
 
             // tell vsg to remove the image from CPU memory after sending it to the GPU
+            // note, since we're using wrap() above, only the buffer will get deleted
+            // and not the actual image data.
             data->properties.dataVariance = vsg::STATIC_DATA_UNREF_AFTER_TRANSFER;
 
-            dm.color = vsg::DescriptorImage::create(
+            descriptors.color = vsg::DescriptorImage::create(
                 texturedefs.color.sampler,
                 data,
                 texturedefs.color.uniform_binding,
                 0, // array element (TODO: increment if we change to an array)
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
-            dm.color->setValue("name", renderModel.color.name);
+            descriptors.color->setValue("name", renderModel.color.name);
         }
     }
 
-    if (renderModel.elevation.image)
+    if (dataModel.elevation.heightfield.valid())
     {
-        auto data = util::moveImageToVSG(renderModel.elevation.image->clone());
+        renderModel.elevation.name = "elevation " + dataModel.elevation.key.str();
+        renderModel.elevation.image = dataModel.elevation.heightfield.heightfield();
+        renderModel.elevation.matrix = dataModel.elevation.matrix;
+
+        auto data = util::wrapImageInVSG(renderModel.elevation.image); // ->clone());
+        //auto data = util::moveImageToVSG(renderModel.elevation.image->clone());
         if (data)
         {
             // queue the old data for safe disposal
-            runtime.dispose(dm.elevation);
+            if (descriptors.elevation)
+                runtime.dispose(descriptors.elevation);
 
             // tell vsg to remove the image from CPU memory after sending it to the GPU
+            // note, since we're using wrap() above, only the buffer will get deleted
+            // and not the actual image data.
             data->properties.dataVariance = vsg::STATIC_DATA_UNREF_AFTER_TRANSFER;
 
-            dm.elevation = vsg::DescriptorImage::create(
+            descriptors.elevation = vsg::DescriptorImage::create(
                 texturedefs.elevation.sampler,
                 data,
                 texturedefs.elevation.uniform_binding,
                 0, // array element
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
-            dm.elevation->setValue("name", renderModel.elevation.name);
-        }
-    }
-
-    if (renderModel.normal.image)
-    {
-        auto data = util::moveImageToVSG(renderModel.normal.image->clone());
-        if (data)
-        {
-            // queue the old data for safe disposal
-            runtime.dispose(dm.normal);
-
-            // tell vsg to remove the image from CPU memory after sending it to the GPU
-            data->properties.dataVariance = vsg::STATIC_DATA_UNREF_AFTER_TRANSFER;
-
-            dm.normal = vsg::DescriptorImage::create(
-                texturedefs.normal.sampler,
-                data,
-                texturedefs.normal.uniform_binding,
-                0, // array element
-                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-
-            dm.normal->setValue("name", renderModel.normal.name);
+            descriptors.elevation->setValue("name", renderModel.elevation.name);
         }
     }
 
     // the per-tile uniform block:
-    TerrainTileDescriptors::Uniforms uniforms;
+    auto ubo = vsg::ubyteArray::create(sizeof(TerrainTileDescriptors::Uniforms));
+    auto& uniforms = *static_cast<TerrainTileDescriptors::Uniforms*>(ubo->dataPointer());
     uniforms.elevation_matrix = renderModel.elevation.matrix;
     uniforms.color_matrix = renderModel.color.matrix;
-    uniforms.normal_matrix = renderModel.normal.matrix;
-    uniforms.model_matrix = renderModel.modelMatrix;    
+    descriptors.uniforms = vsg::DescriptorBuffer::create(ubo, TILE_BUFFER_BINDING);
 
-    vsg::ref_ptr<vsg::ubyteArray> data = vsg::ubyteArray::create(sizeof(uniforms));
-    memcpy(data->dataPointer(), &uniforms, sizeof(uniforms));
-    dm.uniforms = vsg::DescriptorBuffer::create(data, TILE_BUFFER_BINDING);
-
-    // the samplers:
-    auto descriptorSetLayout = pipelineConfig->layout->setLayouts.front();
-
+    // make the descriptor set. 
+    // TODO: consider whether to separate the sampler binds from the uniform binds
+    // because of tile inheritance.
     auto descriptorSet = vsg::DescriptorSet::create(
-        descriptorSetLayout,
-        vsg::Descriptors{ dm.elevation, dm.color, dm.normal, dm.uniforms }
+        pipelineConfig->layout->setLayouts[0],
+        vsg::Descriptors{ descriptors.elevation, descriptors.color, descriptors.uniforms }
     );
+
     //if (sharedObjects) sharedObjects->share(descriptorSet);
 
-    auto bind = vsg::BindDescriptorSet::create(
+    // binds the descriptor set to the pipeline
+    descriptors.bind = vsg::BindDescriptorSet::create(
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         pipelineConfig->layout,
         0, // first set
         descriptorSet
     );
 
-    //ROCKY_HARD_ASSERT(bind->vdata().value._vkDescriptorSet == 0);
+    // Compile the objects. Everything should be under the bind command.
+    runtime.compile(descriptors.bind);
 
-    // Destroy the old descriptor set(s) safely; don't just replace them
-    // or it could cause a validataion error during compilation due to 
-    // vsg descriptorset internal recycling.
-    for (auto& command : stategroup->stateCommands)
-        runtime.dispose(command);
-    
-    stategroup->stateCommands.clear();
-
-    // Need to compile the descriptors
-    runtime.compile(bind);
-
+#if 0
     // Temporary:
     // Delete the CPU memory assocaited with the rasters
     // now that they are compiled to the GPU.
-    for (auto& dd : bind->descriptorSet->descriptors)
+    for (auto& dd : descriptors.bind->descriptorSet->descriptors)
     {
         auto di = dd->cast<vsg::DescriptorImage>();
         if (di)
@@ -399,7 +378,8 @@ TerrainState::updateTerrainTileDescriptors(
             }
         }
     }
+#endif
 
-    // And update the tile's state group
-    stategroup->add(bind);
+    return renderModel;
 }
+

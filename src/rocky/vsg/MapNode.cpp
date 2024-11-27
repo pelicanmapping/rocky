@@ -157,7 +157,7 @@ MapNode::update(const vsg::FrameStamp* f)
 }
 
 void
-MapNode::accept(vsg::RecordTraversal& rv) const
+MapNode::traverse(vsg::RecordTraversal& rv) const
 {
     auto viewID = rv.getState()->_commandBuffer->viewID;
 
@@ -181,5 +181,5 @@ MapNode::accept(vsg::RecordTraversal& rv) const
 
     rv.setObject("rocky.terraintilehost", terrainNode);
 
-    Inherit::accept(rv);
+    Inherit::traverse(rv);
 }

@@ -157,7 +157,7 @@ LineSystemNode::initializeSystem(Runtime& runtime)
 }
 
 void
-LineSystemNode::createOrUpdateNode(const Line& line, ecs::BuildInfo& data, Runtime& runtime) const
+LineSystemNode::createOrUpdateNode(Line& line, ecs::BuildInfo& data, Runtime& runtime) const
 {
     if (!data.existing_node)
     {
@@ -223,13 +223,17 @@ LineSystemNode::createOrUpdateNode(const Line& line, ecs::BuildInfo& data, Runti
     else // existing node -- update:
     {
         // style changed?
-        auto* bindStyle = util::find<BindLineDescriptors>(data.existing_node);
-        if (bindStyle)
+        if (line.styleDirty)
         {
-            bindStyle->updateStyle(line.style);
+            auto* bindStyle = util::find<BindLineDescriptors>(data.existing_node);
+            if (bindStyle)
+            {
+                bindStyle->updateStyle(line.style);
+            }
         }
 
-        if (true) // geometry changed
+        // geometry changed?
+        if (line.pointsDirty)
         {
             auto* geometry = util::find<LineGeometry>(data.existing_node);
             if (geometry)
@@ -255,6 +259,7 @@ LineSystemNode::createOrUpdateNode(const Line& line, ecs::BuildInfo& data, Runti
                     geometry->set(verts32, line.topology, line.staticSize);
 
                     auto mt = util::find<vsg::MatrixTransform>(data.existing_node);
+                    mt->matrix = vsg::translate(offset);
                     localizer_matrix = mt->matrix;
                 }
                 else
@@ -269,6 +274,9 @@ LineSystemNode::createOrUpdateNode(const Line& line, ecs::BuildInfo& data, Runti
             }
         }
     }
+
+    line.styleDirty = false;
+    line.pointsDirty = false;
 }
 
 int
@@ -365,4 +373,22 @@ LineGeometry::calcBound(vsg::dsphere& output, const vsg::dmat4& matrix) const
     {
         expandBy(output, matrix * vsg::dvec3(_current->at(i * 4)));
     }
+}
+
+
+void
+Line::recycle(entt::registry& registry)
+{
+    auto& renderable = registry.get<ecs::Renderable>(attach_point);
+    if (renderable.node)
+    {
+        auto geometry = util::find<LineGeometry>(renderable.node);
+        if (geometry)
+        {
+            geometry->setCount(0);
+        }
+    }
+
+    points.clear();
+    dirty();
 }

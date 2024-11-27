@@ -94,6 +94,89 @@ namespace ROCKY_NAMESPACE
 
     namespace util
     {
+        //! Returns a vsg::Data structure pointing the the data in an image object
+        //! without taking ownership of the data.
+        template<typename T>
+        vsg::ref_ptr<vsg::Data> wrap(std::shared_ptr<Image> image, VkFormat format)
+        {
+            unsigned
+                width = image->width(),
+                height = image->height(),
+                depth = image->depth();
+
+            T* data = image->data<T>(); // reinterpret_cast<T*>->data());
+
+            vsg::Data::Properties props;
+            props.format = format;
+            props.allocatorType = vsg::ALLOCATOR_TYPE_NO_DELETE;
+
+            vsg::ref_ptr<vsg::Data> vsg_data;
+            if (depth == 1)
+            {
+                vsg_data = vsg::Array2D<T>::create(width, height, data, props);
+            }
+            else
+            {
+                vsg_data = vsg::Array3D<T>::create(width, height, depth, data, props);
+            }
+
+            //if (image->origin() == Image::BOTTOM_LEFT)
+            //    vsg_data->properties.origin = vsg::TOP_LEFT;
+            //else
+            //    vsg_data->properties.origin = vsg::BOTTOM_LEFT;
+
+            return vsg_data;
+        }
+
+        //! Wraps a rocky Image object in a VSG Data object.
+        //! The source Image is not cleared in the process and data is now shared between the two.
+        inline vsg::ref_ptr<vsg::Data> wrapImageData(std::shared_ptr<Image> image)
+        {
+            if (!image) return { };
+
+            switch (image->pixelFormat())
+            {
+            case Image::R8_UNORM:
+                return wrap<unsigned char>(image, VK_FORMAT_R8_UNORM);
+                break;
+            case Image::R8G8_UNORM:
+                return wrap<vsg::ubvec2>(image, VK_FORMAT_R8G8_UNORM);
+                break;
+            case Image::R8G8B8_UNORM:
+                return wrap<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_UNORM);
+                break;
+            case Image::R8G8B8A8_UNORM:
+                return wrap<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_UNORM);
+                break;
+            case Image::R16_UNORM:
+                return wrap<unsigned short>(image, VK_FORMAT_R16_UNORM);
+                break;
+            case Image::R32_SFLOAT:
+                return wrap<float>(image, VK_FORMAT_R32_SFLOAT);
+                break;
+            case Image::R64_SFLOAT:
+                return wrap<double>(image, VK_FORMAT_R64_SFLOAT);
+                break;
+            };
+
+            return { };
+        }
+
+        //! Wraps a rocky Image object in a VSG Data object. Data is shared.
+        inline vsg::ref_ptr<vsg::Data> wrapImageInVSG(std::shared_ptr<Image> image)
+        {
+            if (!image)
+                return {};
+
+            auto data = wrapImageData(image);
+            data->properties.origin = vsg::TOP_LEFT;
+            data->properties.maxNumMipmaps = 1;
+
+            return data;
+        }
+
+        //! Returns a vsg::Data structure containing the data in an image, taking
+        //! ownership of the data and reseting the image.
         template<typename T>
         vsg::ref_ptr<vsg::Data> move(std::shared_ptr<Image> image, VkFormat format)
         {
@@ -114,17 +197,11 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::Data> vsg_data;
             if (depth == 1)
             {
-                vsg_data = vsg::Array2D<T>::create(
-                    width, height,
-                    data,
-                    props);
+                vsg_data = vsg::Array2D<T>::create(width, height, data, props);
             }
             else
             {
-                vsg_data = vsg::Array3D<T>::create(
-                    width, height, depth,
-                    data,
-                    props);
+                vsg_data = vsg::Array3D<T>::create(width, height, depth, data, props);
             }
 
             //if (image->origin() == Image::BOTTOM_LEFT)
