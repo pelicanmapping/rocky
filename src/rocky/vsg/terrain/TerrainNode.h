@@ -9,15 +9,13 @@
 #include <rocky/vsg/terrain/TerrainSettings.h>
 #include <rocky/vsg/terrain/TerrainTileHost.h>
 #include <rocky/Status.h>
-#include <rocky/SRS.h>
+#include <rocky/Profile.h>
 #include <vsg/nodes/Group.h>
 
 namespace ROCKY_NAMESPACE
 {
     class IOOptions;
     class Map;
-    class SRS;
-    class Runtime;
     class TerrainEngine;
 
     /**
@@ -32,8 +30,8 @@ namespace ROCKY_NAMESPACE
         //! Construct a new terrain node
         TerrainNode() = default;
 
-        //! Map to render, and SRS to render it in
-        const Status& setMap(std::shared_ptr<Map> new_map, const SRS& world_srs, VSGContext& cx);
+        //! Map to render, and profile to render it in
+        const Status& setMap(std::shared_ptr<Map> new_map, const Profile& profile, VSGContext& cx);
 
         //! Clear out the terrain and rebuild it from the map model
         void reset(VSGContext context);
@@ -77,7 +75,7 @@ namespace ROCKY_NAMESPACE
 
         Status createRootTiles(VSGContext&);
 
+        Profile profile;
         vsg::ref_ptr<vsg::Group> tilesRoot;
-        SRS worldSRS;
     };
 }

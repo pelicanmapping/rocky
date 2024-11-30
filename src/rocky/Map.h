@@ -29,13 +29,6 @@ namespace ROCKY_NAMESPACE
         //! Construct an empty map
         Map();
 
-        //! The map's master tiling profile, which defines its SRS and tiling structure
-        void setProfile(const Profile&);
-        const Profile& profile() const;
-
-        //! Spatial reference system of the map's profile (convenience)
-        const SRS& srs() const;
-
         //! Adds a layer to the map
         void add(std::shared_ptr<Layer> layer);
 
@@ -84,7 +77,7 @@ namespace ROCKY_NAMESPACE
 
     private:
         mutable std::shared_mutex _mapDataMutex;
-        optional<Profile> _profile;
+        //optional<Profile> _profile;
         Revision _dataModelRevision = 0;
         LayerCollection _imageLayers;
         LayerCollection _elevationLayers;

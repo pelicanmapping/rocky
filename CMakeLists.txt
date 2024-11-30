@@ -10,14 +10,14 @@ endif()
 # Main PROJECT definition
 project(
     rocky
-    VERSION 0.6.0
+    VERSION 0.6.1
     DESCRIPTION "Rocky by Pelican Mapping"
     HOMEPAGE_URL https://github.com/pelicanmapping/rocky
     LANGUAGES CXX C
 )
 
 # please update this with each ABI change!!
-set(PROJECT_VERSION_ABI 114)
+set(PROJECT_VERSION_ABI 115)
 
 # require C++17
 set(CMAKE_CXX_STANDARD 17)

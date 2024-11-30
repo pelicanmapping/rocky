@@ -26,13 +26,6 @@ LayerCollection::add(std::shared_ptr<Layer> layer)
         return layer->status();
     }
 
-    //// open if necessary
-    //if (openOnAdd && layer->openAutomatically())
-    //{
-    //    // not checking the return value here since we are returning it from this method
-    //    layer->open(io);
-    //}
-
     // insert the new layer into the map safely
     Revision new_revision;
     int index = -1;

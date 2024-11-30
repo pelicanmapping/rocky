@@ -83,10 +83,10 @@ namespace ROCKY_NAMESPACE
         bool hasVerticalDatumShift() const;
 
         //! Gets the underlying geodetic (longitude, latitude) SRS
-        SRS geodeticSRS() const;
+        const SRS& geodeticSRS() const;
 
         //! Gets the corresponding geocentric SRS. Only applies to a geodetic SRS.
-        SRS geocentricSRS() const;
+        const SRS& geocentricSRS() const;
 
         //! WKT (OGC Well-Known Text) representation
         const std::string& wkt() const;

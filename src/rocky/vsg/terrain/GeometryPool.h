@@ -103,6 +103,8 @@ namespace ROCKY_NAMESPACE
 
 namespace ROCKY_NAMESPACE
 {
+    class Profile;
+
     /**
      * Pool of terrain tile geometries.
      *
@@ -120,7 +122,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Construct the geometry pool
-        GeometryPool(const SRS& worldSRS);
+        GeometryPool(const Profile& profile);
 
         using SharedGeometries = std::map<GeometryKey, vsg::ref_ptr<SharedGeometry>>;
 

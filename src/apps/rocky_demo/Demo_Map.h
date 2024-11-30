@@ -26,7 +26,7 @@ auto Demo_Map = [](Application& app)
                 ImGuiLTable::Text("Name:", app.mapNode->map->name().c_str());
             }
 
-            auto& profile = app.mapNode->map->profile();
+            auto& profile = app.mapNode->profile;
             if (profile.valid())
             {
                 if (!profile.wellKnownName().empty())

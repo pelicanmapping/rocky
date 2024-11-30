@@ -18,18 +18,23 @@ using namespace ROCKY_NAMESPACE;
 
 TerrainEngine::TerrainEngine(
     std::shared_ptr<Map> new_map,
-    const SRS& new_worldSRS,
+    const Profile& new_profile,
     VSGContext& new_runtime,
     const TerrainSettings& new_settings,
     TerrainTileHost* host) :
 
     map(new_map),
-    worldSRS(new_worldSRS),
+    profile(new_profile),
     context(new_runtime),
     settings(new_settings),
-    geometryPool(worldSRS),
-    tiles(new_map->profile(), new_settings, new_runtime, host),
+    geometryPool(new_profile),
+    tiles(new_profile, new_settings, new_runtime, host),
     stateFactory(new_runtime)
 {
+    ROCKY_SOFT_ASSERT(map, "Map is required");
+    ROCKY_SOFT_ASSERT(profile.valid(), "Valid profile required");
+
+    worldSRS = profile.srs().isGeodetic() ? profile.srs().geocentricSRS() : profile.srs();
+
     jobs::get_pool(loadSchedulerName)->set_concurrency(settings.concurrency);
 }

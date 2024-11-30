@@ -24,8 +24,8 @@ namespace ROCKY_NAMESPACE
     public:
         TerrainEngine(
             std::shared_ptr<Map> map,
-            const SRS& worldSRS,
-            VSGContext& runtime,
+            const Profile& profile,
+            VSGContext& context,
             const TerrainSettings& settings,
             TerrainTileHost* host);
 
@@ -37,6 +37,9 @@ namespace ROCKY_NAMESPACE
 
         //! the map this terrain is rendering
         std::shared_ptr<Map> map;
+
+        //! tiling profile for querying the map
+        Profile profile;
 
         //! SRS of the rendered terrain
         SRS worldSRS;

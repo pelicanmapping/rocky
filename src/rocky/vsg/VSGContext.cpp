@@ -407,10 +407,11 @@ VSGContextImpl::ctor(int& argc, char** argv)
     {
         Log()->warn("Trouble: Rocky may not be able to find its shaders. "
             "Consider setting one of the environment variables VSG_FILE_PATH or ROCKY_FILE_PATH.");
-        Log()->warn("Places I looked for a 'shaders' folder:");
-        for (auto& path : searchPaths)
-            Log()->warn("  {}", path.string());
     }
+
+    Log()->debug("Search paths:");
+    for (auto& path : searchPaths)
+        Log()->debug("  {}", path.string());
 
     // Install a readImage function that uses the VSG facility
     // for reading data. We may want to subclass Image with something like

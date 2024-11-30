@@ -1947,7 +1947,7 @@ MapManipulator::viewportToWorld(float x, float y, vsg::dvec3& out_world) const
         glm::dvec3 i;
         auto& srs = getMapNode()->mapSRS();
 
-        if (srs.isGeodetic())
+        if (srs.isGeodetic() || srs.isGeocentric())
         {
             if (srs.ellipsoid().intersectGeocentricLine(glm::dvec3{ w0.x,w0.y,w0.z }, glm::dvec3{ w1.x,w1.y,w1.z }, i))
             {

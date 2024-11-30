@@ -8,9 +8,9 @@
 #include <rocky/vsg/ecs.h>
 #include <rocky/vsg/ecs/MotionSystem.h>
 #include <rocky/vsg/DisplayManager.h>
+#include <rocky/rtree.h>
 #include <set>
 #include <random>
-#include <rocky/rtree.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;

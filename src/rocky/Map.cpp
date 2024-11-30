@@ -17,7 +17,7 @@ Map::Map() :
     _imageLayers(this),
     _elevationLayers(this)
 {
-    _profile.set_default(Profile::GLOBAL_GEODETIC);
+    //_profile.set_default(Profile::GLOBAL_GEODETIC);
 }
 
 Status
@@ -28,8 +28,8 @@ Map::from_json(const std::string& input, const IOOptions& io)
         return j.status;
 
     get_to(j, "name", _name);
-    get_to(j, "profile", _profile);
-    get_to(j, "profile_layer", _profileLayer);
+    //get_to(j, "profile", _profile);
+    //get_to(j, "profile_layer", _profileLayer);
     if (j.contains("layers")) {
         auto j_layers = j.at("layers");
         if (j_layers.is_array()) {
@@ -53,8 +53,8 @@ Map::to_json() const
     auto j = json::object();
 
     set(j, "name", _name);
-    set(j, "profile", _profile);
-    set(j, "profile_layer", _profileLayer);
+    //set(j, "profile", _profile);
+    //set(j, "profile_layer", _profileLayer);
 
     auto layers_json = nlohmann::json::array();
     for (auto& layer : layers().all())
@@ -77,24 +77,24 @@ Map::revision() const
     return _dataModelRevision;
 }
 
-void
-Map::setProfile(const Profile& value)
-{
-    _profile = value;
-}
-
-const Profile&
-Map::profile() const
-{
-    return _profile;
-}
-
-const SRS&
-Map::srs() const
-{
-    static SRS emptySRS;
-    return _profile.has_value() && _profile->valid() ? _profile->srs() : emptySRS;
-}
+//void
+//Map::setProfile(const Profile& value)
+//{
+//    _profile = value;
+//}
+//
+//const Profile&
+//Map::profile() const
+//{
+//    return _profile;
+//}
+//
+//const SRS&
+//Map::srs() const
+//{
+//    static SRS emptySRS;
+//    return _profile.has_value() && _profile->valid() ? _profile->srs() : emptySRS;
+//}
 
 void
 Map::removeCallback(UID uid)

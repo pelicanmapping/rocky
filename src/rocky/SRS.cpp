@@ -661,13 +661,13 @@ SRS::to(const SRS& rhs) const
     return SRSOperation(*this, rhs);
 }
 
-SRS
+const SRS&
 SRS::geodeticSRS() const
 {
     return isGeodetic() ? *this : g_srs_factory.get_or_create(_definition).geodeticSRS;
 }
 
-SRS
+const SRS&
 SRS::geocentricSRS() const
 {
     return isGeocentric() ? *this : g_srs_factory.get_or_create(_definition).geocentricSRS;

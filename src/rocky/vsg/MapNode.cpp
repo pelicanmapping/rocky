@@ -20,28 +20,18 @@ using namespace ROCKY_NAMESPACE::util;
 #undef LC
 #define LC "[MapNode] "
 
-MapNode::MapNode() :
-    map(Map::create())
+MapNode::MapNode()
 {
-    construct();
-}
+    map = Map::create();
 
-MapNode::MapNode(std::shared_ptr<Map> in_map) :
-    map(in_map)
-{
-    ROCKY_SOFT_ASSERT(map != nullptr);
-    construct();
-}
-
-void
-MapNode::construct()
-{
     terrainNode = TerrainNode::create();
-    addChild(terrainNode);
+    this->addChild(terrainNode);
 
-    // make a group for the model layers.  This node is a PagingManager instead of a regular Group to allow PagedNode's to be used within the layers.
     _layerNodes = vsg::Group::create();
     this->addChild(_layerNodes);
+
+    // default to geodetic:
+    profile = Profile::GLOBAL_GEODETIC;
 }
 
 Status
@@ -97,18 +87,14 @@ MapNode::terrainSettings()
 const SRS&
 MapNode::mapSRS() const
 {
-    return map && map->profile().valid() ?
-        map->profile().srs() :
-        SRS::EMPTY;
+    return profile.srs();
 }
 
 const SRS&
 MapNode::worldSRS() const
 {
-    if (_worldSRS.valid())
-        return _worldSRS;
-    else if (mapSRS().isGeodetic())
-        return SRS::ECEF;
+    if (mapSRS().isGeodetic())
+        return mapSRS().geocentricSRS();
     else
         return mapSRS();
 }
@@ -123,7 +109,7 @@ MapNode::update(const vsg::FrameStamp* f, VSGContext& context)
 
     if (terrainNode->map == nullptr)
     {
-        auto st = terrainNode->setMap(map, worldSRS(), context);
+        auto st = terrainNode->setMap(map, profile, context);
 
         if (st.failed())
         {

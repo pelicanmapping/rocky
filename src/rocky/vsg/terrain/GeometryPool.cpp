@@ -12,9 +12,10 @@
 
 using namespace ROCKY_NAMESPACE;
 
-GeometryPool::GeometryPool(const SRS& worldSRS) :
-    _worldSRS(worldSRS)
+GeometryPool::GeometryPool(const Profile& profile)
 {
+    _worldSRS = profile.srs().isGeodetic() ? profile.srs().geocentricSRS() : profile.srs();
+
     // activate debugging mode
     if (util::isEnvVarSet("ROCKY_DEBUG_REX_GEOMETRY_POOL"))
     {

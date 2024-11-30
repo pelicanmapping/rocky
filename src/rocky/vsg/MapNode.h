@@ -25,13 +25,13 @@ namespace ROCKY_NAMESPACE
     {
     public: // constructors
 
-        //! Creates an empty mapnode with a default Rocky instance.
+        //! Creates a mapnode with the default global geodetic profile.
         MapNode();
 
-        //! Creates a map node that will render the given Map.
-        MapNode(std::shared_ptr<Map> map);
-
     public:
+
+        //! Tiling profile for this map node
+        Profile profile;
 
         //! Map backing this map node
         std::shared_ptr<Map> map;
@@ -42,6 +42,7 @@ namespace ROCKY_NAMESPACE
     public:
 
         //! Spatial Reference System of the underlying map.
+        //const SRS& mapSRS() const;
         const SRS& mapSRS() const;
 
         //! Spatial reference system of the rendered map.
@@ -71,7 +72,7 @@ namespace ROCKY_NAMESPACE
 
         void construct();
 
-        SRS _worldSRS;
+        //SRS _worldSRS;
         vsg::ref_ptr<vsg::Group> _layerNodes;
         bool _openedLayers = false;
 

@@ -30,7 +30,7 @@ TerrainNode::to_json() const
 }
 
 const Status&
-TerrainNode::setMap(std::shared_ptr<Map> new_map, const SRS& new_worldSRS, VSGContext& context)
+TerrainNode::setMap(std::shared_ptr<Map> new_map, const Profile& new_profile, VSGContext& context)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(new_map, status);
 
@@ -43,13 +43,7 @@ TerrainNode::setMap(std::shared_ptr<Map> new_map, const SRS& new_worldSRS, VSGCo
 
     map = new_map;
 
-    worldSRS = new_worldSRS;
-    if (!worldSRS.valid())
-    {
-        worldSRS = new_map->srs().isGeodetic() ?
-            SRS::ECEF :
-            new_map->srs();
-    }
+    profile = new_profile;
 
     if (map)
     {
@@ -88,7 +82,7 @@ TerrainNode::createRootTiles(VSGContext& context)
     // create a new engine to render this map
     engine = std::make_shared<TerrainEngine>(
         map,
-        worldSRS,
+        profile,
         context,   // runtime API
         *this,     // settings
         this);     // host
@@ -108,7 +102,7 @@ TerrainNode::createRootTiles(VSGContext& context)
 
     // once the pipeline exists, we can start creating tiles.
     std::vector<TileKey> keys;
-    Profile::getAllKeysAtLOD(this->minLevelOfDetail, engine->map->profile(), keys);
+    Profile::getAllKeysAtLOD(this->minLevelOfDetail, engine->profile, keys);
 
     for (unsigned i = 0; i < keys.size(); ++i)
     {
