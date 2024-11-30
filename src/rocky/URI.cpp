@@ -7,7 +7,7 @@
 
 #include "URI.h"
 #include "Utils.h"
-#include "Instance.h"
+#include "Context.h"
 #include "Version.h"
 #include "json.h"
 

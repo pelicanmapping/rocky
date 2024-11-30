@@ -5,7 +5,6 @@
  * MIT License
  */
 #include "MeshSystem.h"
-#include "../Runtime.h"
 #include "../PipelineState.h"
 
 #include <vsg/state/BindDescriptorSet.h>
@@ -27,7 +26,7 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    vsg::ref_ptr<vsg::ShaderSet> createShaderSet(Runtime& runtime)
+    vsg::ref_ptr<vsg::ShaderSet> createShaderSet(VSGContext& context)
     {
         vsg::ref_ptr<vsg::ShaderSet> shaderSet;
 
@@ -35,14 +34,14 @@ namespace
         auto vertexShader = vsg::ShaderStage::read(
             VK_SHADER_STAGE_VERTEX_BIT,
             "main",
-            vsg::findFile(MESH_VERT_SHADER, runtime.searchPaths),
-            runtime.readerWriterOptions);
+            vsg::findFile(MESH_VERT_SHADER, context->searchPaths),
+            context->readerWriterOptions);
 
         auto fragmentShader = vsg::ShaderStage::read(
             VK_SHADER_STAGE_FRAGMENT_BIT,
             "main",
-            vsg::findFile(MESH_FRAG_SHADER, runtime.searchPaths),
-            runtime.readerWriterOptions);
+            vsg::findFile(MESH_FRAG_SHADER, context->searchPaths),
+            context->readerWriterOptions);
 
         if (!vertexShader || !fragmentShader)
         {
@@ -86,9 +85,9 @@ MeshSystemNode::MeshSystemNode(ecs::Registry& registry) :
 
 
 void
-MeshSystemNode::initializeSystem(Runtime& runtime)
+MeshSystemNode::initializeSystem(VSGContext& context)
 {
-    auto shaderSet = createShaderSet(runtime);
+    auto shaderSet = createShaderSet(context);
 
     if (!shaderSet)
     {
@@ -111,8 +110,8 @@ MeshSystemNode::initializeSystem(Runtime& runtime)
 
         // Compile settings / defines. We need to clone this since it may be
         // different defines for each configuration permutation.
-        c.config->shaderHints = runtime.shaderCompileSettings ?
-            vsg::ShaderCompileSettings::create(*runtime.shaderCompileSettings) :
+        c.config->shaderHints = context->shaderCompileSettings ?
+            vsg::ShaderCompileSettings::create(*context->shaderCompileSettings) :
             vsg::ShaderCompileSettings::create();
 
         // activate the arrays we intend to use
@@ -172,7 +171,7 @@ MeshSystemNode::initializeSystem(Runtime& runtime)
 }
 
 void
-MeshSystemNode::createOrUpdateNode(Mesh& mesh, ecs::BuildInfo& data, Runtime& runtime) const
+MeshSystemNode::createOrUpdateNode(Mesh& mesh, ecs::BuildInfo& data, VSGContext& runtime) const
 {
     vsg::ref_ptr<vsg::StateGroup> stategroup;
 
@@ -383,7 +382,7 @@ NodeSystemNode::NodeSystemNode(ecs::Registry& registry) :
 }
 
 void
-NodeSystemNode::createOrUpdateNode(NodeGraph& graph, ecs::BuildInfo& data, Runtime& runtime) const
+NodeSystemNode::createOrUpdateNode(NodeGraph& graph, ecs::BuildInfo& data, VSGContext& runtime) const
 {
     data.new_node = graph.node;
 }

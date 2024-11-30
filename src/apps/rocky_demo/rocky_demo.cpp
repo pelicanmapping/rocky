@@ -59,7 +59,7 @@ int layerError(T layer)
 
 auto Demo_About = [](Application& app)
 {
-    for (auto& about : rocky::Instance::about())
+    for (auto& about : rocky::ContextImpl::about())
     {
         ImGui::Text(about.c_str());
     }
@@ -157,8 +157,8 @@ struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>
 class SendEventsToImGuiWrapper : public vsg::Inherit<vsgImGui::SendEventsToImGui, SendEventsToImGuiWrapper>
 {
 public:
-    SendEventsToImGuiWrapper(vsg::ref_ptr<vsg::Window> window, rocky::InstanceVSG& instance) :
-        _window(window), _instance(instance) { }
+    SendEventsToImGuiWrapper(vsg::ref_ptr<vsg::Window> window, rocky::VSGContext& cx) :
+        _window(window), _context(cx) { }
 
     template<typename E>
     void propagate(E& e, bool forceRefresh = false)
@@ -168,7 +168,7 @@ public:
             vsgImGui::SendEventsToImGui::apply(e);
             if (e.handled || forceRefresh)
             {
-                _instance.requestFrame();
+                _context->requestFrame();
             }
         }
     }
@@ -183,7 +183,7 @@ public:
 
 private:
     vsg::ref_ptr<vsg::Window> _window;
-    InstanceVSG _instance;
+    VSGContext _context;
 };
 
 int main(int argc, char** argv)
@@ -226,7 +226,7 @@ int main(int argc, char** argv)
 
     // Make sure ImGui is the first event handler:
     auto& handlers = app.viewer->getEventHandlers();
-    handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(window, app.instance));
+    handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(window, app.context));
 
     // In render-on-demand mode, this callback will cause ImGui to handle events
     app.noRenderFunction = [&]()

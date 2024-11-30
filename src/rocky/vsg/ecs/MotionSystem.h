@@ -19,9 +19,9 @@ namespace ROCKY_NAMESPACE
         MotionSystem(ecs::Registry& r) : ecs::System(r) { }
 
         //! Called periodically to update the transforms
-        void update(Runtime& runtime) override
+        void update(VSGContext& context) override
         {
-            auto time = runtime.viewer->getFrameStamp()->time;
+            auto time = context->viewer->getFrameStamp()->time;
 
             if (last_time != ecs::time_point::min())
             {

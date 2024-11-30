@@ -8,7 +8,7 @@
 #include <rocky/vsg/ecs/Line.h>
 #include <rocky/vsg/ecs/Mesh.h>
 #include <rocky/vsg/ecs/Icon.h>
-#include <rocky/vsg/Runtime.h>
+#include <rocky/vsg/VSGContext.h>
 
 #include <optional>
 #include <functional>
@@ -49,7 +49,7 @@ namespace ROCKY_NAMESPACE
         void generate(
             entt::registry& registry,
             const SRS& srs,
-            Runtime& runtime,
+            VSGContext& runtime,
             bool keep_features = false);
 
         //! Deletes any geometries previously created by generate()

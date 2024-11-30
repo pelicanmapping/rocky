@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
-#include <rocky/Instance.h>
+#include <rocky/Context.h>
 #include <rocky/Color.h>
 #include <rocky/Log.h>
 #include <rocky/Map.h>
@@ -68,13 +68,14 @@ TEST_CASE("json")
     CHECK((uri2.base() == "file.xml"));
 
 #ifdef ROCKY_HAS_TMS
-    Instance instance;
+    Context context;
     auto layer = rocky::TMSImageLayer::create();
     layer->uri = "file.xml";
-    auto map = rocky::Map::create(instance);
+    auto map = rocky::Map::create();
     map->layers().add(layer);
     auto serialized = map->to_json();
-    map = rocky::Map::create(instance, serialized);
+    map = rocky::Map::create();
+    map->from_json(serialized, context->io);
     CHECK((map->to_json() == R"({"layers":[{"name":"","type":"TMSImage","uri":"file.xml"}],"name":""})"));
 #endif
 }
@@ -257,9 +258,9 @@ TEST_CASE("Heightfield")
 
 TEST_CASE("Map")
 {
-    Instance instance;
+    Context instance;
 
-    auto map = Map::create(instance);
+    auto map = Map::create();
     REQUIRE(map);
     if (map) {
         auto layer = TestLayer::create();
@@ -327,9 +328,9 @@ TEST_CASE("TMS")
 #if 0
         CHECKED_IF(s.ok())
         {
-            // NOTE: we cannot test this here because the JPG reader is in InstanceVSG.
+            // NOTE: we cannot test this here because the JPG reader is in VSGContext.
             // TODO: create a unit test for rocky_vsg? Or link rocky_vsg to this library?
-            InstanceVSG instance;
+            VSGContext instance;
             TileKey key(0, 0, 0, Profile::GLOBAL_GEODETIC);
             Result<GeoImage> tile = layer->createImage(key, instance.io());
             CHECK(tile.status.ok());
@@ -801,9 +802,9 @@ TEST_CASE("Earth File")
     auto result = importer.read(earthFile, {});
     CHECKED_IF(result.status.ok())
     {
-        InstanceVSG instance;
-        auto mapNode = MapNode::create(instance);
-        mapNode->from_json(result.value, IOOptions(instance.io(), earthFile));
+        VSGContext context = VSGContextFactory::create();
+        auto mapNode = MapNode::create();
+        mapNode->from_json(result.value, IOOptions(context->io, earthFile));
 
         auto layer1 = mapNode->map->layers().withName("ReadyMap 15m Imagery");
         CHECKED_IF(layer1)

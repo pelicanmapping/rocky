@@ -26,7 +26,7 @@ auto Demo_Icon = [](Application& app)
         auto [lock, registry] = app.registry.write();
 
         // Load an icon image
-        auto io = app.instance.io();
+        auto io = app.context->io;
         auto image = io.services.readImageFromURI("https://readymap.org/readymap/filemanager/download/public/icons/BENDER.png", io);
         if (image.status.failed())
         {

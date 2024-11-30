@@ -4,7 +4,7 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/InstanceVSG.h>
+#include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/MapManipulator.h>
 
 #include <vsg/app/Viewer.h>

@@ -268,9 +268,20 @@ namespace ROCKY_NAMESPACE
         class ROCKY_EXPORT ring_buffer
         {
         public:
-            ring_buffer(int size, bool overwrite_when_full_ = false) : _size(size), _buffer(size), overwrite_when_full(overwrite_when_full_){}
+            ring_buffer(int size = 8, bool overwrite_when_full_ = false) :
+                _size(size), _buffer(size), overwrite_when_full(overwrite_when_full_){}
 
             bool overwrite_when_full = false;
+
+            //! Resize the buffer. This is not thread-safe, only call it right after 
+            //! construction.
+            void resize(std::size_t newSize) {
+                _buffer.clear();
+                _buffer.resize(newSize);
+                _size = newSize;
+                _readIndex = { 0 };
+                _writeIndex = { 0 };
+            }
 
             bool push(const T& obj) {
                 bool is_full = full();

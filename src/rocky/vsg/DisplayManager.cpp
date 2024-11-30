@@ -154,7 +154,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
     // install a manipulator for the new view:
     if (!user_provied_view && app)
     {
-        auto manip = MapManipulator::create(app->mapNode, window, camera);
+        auto manip = MapManipulator::create(app->mapNode, window, camera, app->context);
         setManipulatorForView(manip, view);
     }
 
@@ -290,7 +290,7 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
 
         if (app)
         {
-            auto manip = MapManipulator::create(app->mapNode, window, view->camera);
+            auto manip = MapManipulator::create(app->mapNode, window, view->camera, app->context);
             setManipulatorForView(manip, view);
         }
     }

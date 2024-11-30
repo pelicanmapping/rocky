@@ -3,16 +3,10 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#include "InstanceVSG.h"
+#include "VSGContext.h"
 #include "Utils.h"
-#include "Runtime.h"
-
 #include <rocky/Image.h>
 #include <rocky/URI.h>
-#include <vsg/io/read.h>
-#include <vsg/io/Logger.h>
-#include <vsg/state/Image.h>
-#include <vsg/io/ReaderWriter.h>
 
 #include <spdlog/sinks/stdout_color_sinks.h>
 
@@ -28,11 +22,6 @@ ROCKY_ABOUT(vsgxchange, VSGXCHANGE_VERSION_STRING)
 #endif
 
 using namespace ROCKY_NAMESPACE;
-
-struct ROCKY_NAMESPACE::InstanceVSG::Implementation
-{
-    Runtime runtime;
-};
 
 namespace
 {
@@ -229,32 +218,121 @@ namespace
         options->paths = searchPaths;
         auto found = vsg::findFile(vsg::Path("shaders/rocky.terrain.vert"), options);
         return !found.empty();
-    }
+    }    
+    
+    /**
+    * An update operation that maintains a priroity queue for update tasks.
+    * This sits in the VSG viewer's update operations queue indefinitely
+    * and runs once per frame. It chooses the highest priority task in its
+    * queue and runs it. It will run one task per frame so that we do not
+    * risk frame drops. It will automatically discard any tasks that have
+    * been abandoned (no Future exists).
+    */
+    struct PriorityUpdateQueue : public vsg::Inherit<vsg::Operation, PriorityUpdateQueue>
+    {
+        std::mutex _mutex;
+
+        struct Task {
+            vsg::ref_ptr<vsg::Operation> function;
+            std::function<float()> get_priority;
+        };
+        std::vector<Task> _queue;
+
+        // runs one task per frame.
+        void run() override
+        {
+            if (!_queue.empty())
+            {
+                Task task;
+                {
+                    std::scoped_lock lock(_mutex);
+
+                    // sort from low to high priority
+                    std::sort(_queue.begin(), _queue.end(),
+                        [](const Task& lhs, const Task& rhs)
+                        {
+                            if (lhs.get_priority == nullptr)
+                                return false;
+                            else if (rhs.get_priority == nullptr)
+                                return true;
+                            else
+                                return lhs.get_priority() < rhs.get_priority();
+                        }
+                    );
+
+                    while (!_queue.empty())
+                    {
+                        // pop the highest priority off the back.
+                        task = _queue.back();
+                        _queue.pop_back();
+
+                        // check for cancelation - if the task is already canceled, 
+                        // discard it and fetch the next one.
+                        auto po = dynamic_cast<Cancelable*>(task.function.get());
+                        if (po == nullptr || !po->canceled())
+                            break;
+                        else
+                            task = { };
+                    }
+                }
+
+                if (task.function)
+                {
+                    task.function->run();
+                }
+            }
+        }
+    };
+
+    struct SimpleUpdateOperation : public vsg::Inherit<vsg::Operation, SimpleUpdateOperation>
+    {
+        std::function<void()> _function;
+
+        SimpleUpdateOperation(std::function<void()> function) :
+            _function(function) { }
+
+        void run() override
+        {
+            _function();
+        };
+    };
 }
 
-InstanceVSG::InstanceVSG() :
-    rocky::Instance()
+
+
+
+VSGContextImpl::VSGContextImpl() :
+    rocky::ContextImpl()
 {
     int argc = 0;
     const char* argv[1] = { "rocky" };
     ctor(argc, (char**)argv);
 }
 
-InstanceVSG::InstanceVSG(int& argc, char** argv) :
-    rocky::Instance()
+VSGContextImpl::VSGContextImpl(int& argc, char** argv) :
+    rocky::ContextImpl()
 {
     ctor(argc, argv);
 }
 
 void
-InstanceVSG::ctor(int& argc, char** argv)
+VSGContextImpl::ctor(int& argc, char** argv)
 {
-    _impl = std::make_shared<Implementation>();
-    auto& runtime = _impl->runtime;
-
     vsg::CommandLine args(&argc, argv);
 
-    args.read(_impl->runtime.readerWriterOptions);
+    readerWriterOptions = vsg::Options::create();
+
+    shaderCompileSettings = vsg::ShaderCompileSettings::create();
+
+    _priorityUpdateQueue = PriorityUpdateQueue::create();
+
+    // initialize the deferred deletion collection.
+    // a large number of frames ensures objects will be safely destroyed and
+    // and we won't have too many deletions per frame.
+    _disposal_queue.resize(8);
+
+    args.read(readerWriterOptions);
+    //args.read(_impl->runtime->readerWriterOptions);
 
     // redirect the VSG logger to our spdlog
     vsg::Logger::instance() = new VSG_to_Spdlog_Logger();
@@ -274,22 +352,22 @@ InstanceVSG::ctor(int& argc, char** argv)
     // set on-demand rendering mode from the command line
     if (args.read("--on-demand"))
     {
-        runtime.renderOnDemand = true;
+        renderOnDemand = true;
     }
 
 #ifdef ROCKY_HAS_GDAL
-    runtime.readerWriterOptions->add(GDAL_VSG_ReaderWriter::create());
+    readerWriterOptions->add(GDAL_VSG_ReaderWriter::create());
 #endif
 
 #ifdef ROCKY_HAS_VSGXCHANGE
     // Adds all the readerwriters in vsgxchange to the options data.
-    runtime.readerWriterOptions->add(vsgXchange::all::create());
+    readerWriterOptions->add(vsgXchange::all::create());
 #endif
 
     // For system fonts
-    runtime.readerWriterOptions->paths.push_back("C:/windows/fonts");
-    runtime.readerWriterOptions->paths.push_back("/etc/fonts");
-    runtime.readerWriterOptions->paths.push_back("/usr/local/share/rocky/data");
+    readerWriterOptions->paths.push_back("C:/windows/fonts");
+    readerWriterOptions->paths.push_back("/etc/fonts");
+    readerWriterOptions->paths.push_back("/usr/local/share/rocky/data");
 
     // Load a default font if there is one
     auto font_file = util::getEnvVar("ROCKY_DEFAULT_FONT");
@@ -302,35 +380,35 @@ InstanceVSG::ctor(int& argc, char** argv)
 #endif
     }
 
-    runtime.defaultFont = vsg::read_cast<vsg::Font>(font_file, runtime.readerWriterOptions);
-    if (!runtime.defaultFont)
+    defaultFont = vsg::read_cast<vsg::Font>(font_file, readerWriterOptions);
+    if (!defaultFont)
     {
         Log()->warn("Cannot load font \"" + font_file + "\"");
     }
 
     // establish search paths for shaders and data:
     auto vsgPaths = vsg::getEnvPaths("VSG_FILE_PATH");
-    runtime.searchPaths.insert(runtime.searchPaths.end(), vsgPaths.begin(), vsgPaths.end());
+    searchPaths.insert(searchPaths.end(), vsgPaths.begin(), vsgPaths.end());
 
     auto rockyPaths = vsg::getEnvPaths("ROCKY_FILE_PATH");
-    runtime.searchPaths.insert(runtime.searchPaths.end(), rockyPaths.begin(), rockyPaths.end());
+    searchPaths.insert(searchPaths.end(), rockyPaths.begin(), rockyPaths.end());
 
     // add some default places to look for shaders and resources, relative to the executable.
     auto exec_path = std::filesystem::path(util::getExecutableLocation());
     auto path = (exec_path.remove_filename() / "../share/rocky").lexically_normal();
     if (!path.empty())
-        runtime.searchPaths.push_back(vsg::Path(path.generic_string()));
+        searchPaths.push_back(vsg::Path(path.generic_string()));
 
     path = (exec_path.remove_filename() / "../../../../build_share").lexically_normal();
     if (!path.empty())
-        runtime.searchPaths.push_back(vsg::Path(path.generic_string()));
+        searchPaths.push_back(vsg::Path(path.generic_string()));
 
-    if (!foundShaders(runtime.searchPaths))
+    if (!foundShaders(searchPaths))
     {
         Log()->warn("Trouble: Rocky may not be able to find its shaders. "
             "Consider setting one of the environment variables VSG_FILE_PATH or ROCKY_FILE_PATH.");
         Log()->warn("Places I looked for a 'shaders' folder:");
-        for (auto& path : runtime.searchPaths)
+        for (auto& path : searchPaths)
             Log()->warn("  {}", path.string());
     }
 
@@ -340,7 +418,7 @@ InstanceVSG::ctor(int& argc, char** argv)
     // stripping it out and later converting it back; or that only transcodes
     // it if it needs to. vsg::read_cast() might do some internal caching
     // as well -- need to look into that.
-    io().services.readImageFromURI = [](const std::string& location, const rocky::IOOptions& io)
+    io.services.readImageFromURI = [](const std::string& location, const rocky::IOOptions& io)
     {
         auto result = URI(location).read(io);
         if (result.status.ok())
@@ -367,7 +445,7 @@ InstanceVSG::ctor(int& argc, char** argv)
     // To read from a stream, we have to search all the VS readerwriters to
     // find one that matches the 'extension' we want. We also have to put that
     // extension in the options structure as a hint.
-    io().services.readImageFromStream = [options(runtime.readerWriterOptions)](std::istream& location, std::string contentType, const rocky::IOOptions& io) -> Result<std::shared_ptr<Image>>
+    io.services.readImageFromStream = [options(readerWriterOptions)](std::istream& location, std::string contentType, const rocky::IOOptions& io) -> Result<std::shared_ptr<Image>>
         {
             // try the mime-type mapping:
             auto i = ext_for_mime_type.find(contentType);
@@ -418,29 +496,122 @@ InstanceVSG::ctor(int& argc, char** argv)
             return Status(Status::ServiceUnavailable, "No image reader for \"" + contentType + "\"");
         };
 
-    io().services.contentCache = std::make_shared<ContentCache>(128);
+    io.services.contentCache = std::make_shared<ContentCache>(128);
 
-    io().uriGate = std::make_shared<util::Gate<std::string>>();
+    io.uriGate = std::make_shared<util::Gate<std::string>>();
 }
 
-InstanceVSG::InstanceVSG(const InstanceVSG& rhs) :
-    Instance(rhs),
-    _impl(rhs._impl)
+
+void
+VSGContextImpl::onNextUpdate(vsg::ref_ptr<vsg::Operation> function, std::function<float()> get_priority)
 {
-    //nop
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer.valid(), void());
+
+    auto pq = dynamic_cast<PriorityUpdateQueue*>(_priorityUpdateQueue.get());
+    if (pq)
+    {
+        std::scoped_lock lock(pq->_mutex);
+
+        if (pq->referenceCount() == 1)
+        {
+            viewer->updateOperations->add(_priorityUpdateQueue, vsg::UpdateOperations::ALL_FRAMES);
+        }
+
+        pq->_queue.push_back({ function, get_priority });
+    }
 }
 
-Runtime& InstanceVSG::runtime()
+void
+VSGContextImpl::onNextUpdate(std::function<void()> function)
 {
-    return _impl->runtime;
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer.valid(), void(), "Developer: failure to set VSGContext->viewer");
+
+    viewer->updateOperations->add(SimpleUpdateOperation::create(function));
 }
 
-bool& InstanceVSG::renderOnDemand()
+void
+VSGContextImpl::compile(vsg::ref_ptr<vsg::Object> compilable)
 {
-    return runtime().renderOnDemand;
+    ROCKY_SOFT_ASSERT(viewer.valid(), "Developer: failure to set VSGContext->viewer");
+    ROCKY_SOFT_ASSERT_AND_RETURN(compilable.valid(), void());
+
+    // note: this can block (with a fence) until a compile traversal is available.
+    // Be sure to group as many compiles together as possible for maximum performance.
+    auto cr = viewer->compileManager->compile(compilable);
+
+    if (cr && cr.requiresViewerUpdate())
+    {
+        // compile results are stored and processed later during update
+        std::unique_lock lock(_compileMutex);
+        _compileResult.add(cr);
+    }
 }
 
-void InstanceVSG::requestFrame()
+void
+VSGContextImpl::dispose(vsg::ref_ptr<vsg::Object> object)
 {
-    runtime().requestFrame();
+    if (object)
+    {
+        // if the user installed a custom disposer, use it
+        if (disposer)
+        {
+            disposer(object);
+        }
+
+        // otherwise use our own
+        else
+        {
+            std::unique_lock lock(_disposal_queue_mutex);
+            _disposal_queue.back().emplace_back(object);
+        }
+    }
+}
+
+void
+VSGContextImpl::dirtyShaders()
+{
+    ++shaderSettingsRevision;
+}
+
+void
+VSGContextImpl::requestFrame()
+{
+    ++renderRequests;
+}
+
+bool
+VSGContextImpl::update()
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer.valid(), false, "Developer: failure to set VSGContext->viewer");
+
+    bool updates_occurred = false;
+
+    if (_compileResult)
+    {
+        std::unique_lock lock(_compileMutex);
+
+        if (_compileResult.requiresViewerUpdate())
+        {
+            vsg::updateViewer(*viewer, _compileResult);
+            updates_occurred = true;
+            requestFrame();
+        }
+        _compileResult.reset();
+    }
+
+    // process the deferred unref list
+    // TODO: make this a ring buffer?
+    {
+        std::unique_lock lock(_disposal_queue_mutex);
+        // unref everything in the oldest collection:
+        _disposal_queue.front().clear();
+        // move the empty collection to the back:
+        _disposal_queue.emplace_back(std::move(_disposal_queue.front()));
+        _disposal_queue.pop_front();
+    }
+
+    // reset the view IDs list
+    activeViewIDs.clear();
+
+    return updates_occurred;
 }

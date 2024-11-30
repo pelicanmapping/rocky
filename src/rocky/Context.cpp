@@ -3,7 +3,7 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#include "Instance.h"
+#include "Context.h"
 #include "GeoExtent.h"
 #include "Profile.h"
 #include "SRS.h"
@@ -36,25 +36,26 @@ ROCKY_ABOUT(tinyxml, std::to_string(TIXML_MAJOR_VERSION) + "." + std::to_string(
 
 using namespace ROCKY_NAMESPACE;
 
-struct ROCKY_NAMESPACE::Instance::Implementation
-{
-    IOOptions ioOptions;
-};
-
-const Status& Instance::status() { return _global_status; }
+//struct ROCKY_NAMESPACE::Context::Implementation
+//{
+//    IOOptions ioOptions;
+//};
+//
+//const Status& Context::status() { return _global_status; }
 
 // Static object factory map.
 // Normally this would go in static.cpp, but since the registration macro (ROCKY_ADD_OBJECT_FACTORY)
 // runs at static initialization time itself, we need to construct the factories map on demand.
-std::unordered_map<std::string, Instance::ObjectFactory>& Instance::objectFactories()
+std::unordered_map<std::string, ContextImpl::ObjectFactory>&
+ContextImpl::objectFactories()
 {
-    static std::unordered_map<std::string, Instance::ObjectFactory> factories;
+    static std::unordered_map<std::string, ContextImpl::ObjectFactory> factories;
     return factories;
 }
 
 // static object creation function:
 std::shared_ptr<Object>
-Instance::createObjectImpl(const std::string& name, const std::string& JSON, const IOOptions& io)
+ContextImpl::createObjectImpl(const std::string& name, const std::string& JSON, const IOOptions& io)
 {
     auto i = objectFactories().find(util::toLower(name));
     if (i != objectFactories().end())
@@ -73,16 +74,16 @@ namespace
 #endif
 
 std::set<std::string>&
-Instance::about()
+ContextImpl::about()
 {
     using About = std::set<std::string>;
     static About about;
     return about;
 }
 
-Instance::Instance()
+ContextImpl::ContextImpl()
 {
-    _impl = std::make_shared<Implementation>();
+    //_impl = std::make_shared<Implementation>();
 
 #ifdef ROCKY_HAS_GDAL
     OGRRegisterAll();
@@ -115,29 +116,33 @@ Instance::Instance()
     //    Log()->warn("Environment variable PROJ_DATA is not set");
     //}
 
-    _global_status = Status_OK;
-}
+    //_global_status = Status_OK;
 
-Instance::Instance(const Instance& rhs) :
-    _impl(rhs._impl)
-{
     // Tell the weejobs library how to set a thread name
     jobs::set_thread_name_function([](const char* value) {
         util::setThreadName(value);
         });
 }
 
-Instance::~Instance()
+//ContextImpl::ContextImpl(const ContextImpl& rhs)
+//{
+//    // Tell the weejobs library how to set a thread name
+//    jobs::set_thread_name_function([](const char* value) {
+//        util::setThreadName(value);
+//        });
+//}
+
+ContextImpl::~ContextImpl()
 {
     jobs::shutdown();
-    _global_status = Status_ServiceUnavailable;
+    //_global_status = Status_ServiceUnavailable;
 }
 
-IOOptions&
-Instance::io()
-{
-    return _impl->ioOptions;
-}
+//IOOptions&
+//Context::io()
+//{
+//    return _impl->ioOptions;
+//}
 
 UID rocky::createUID()
 {

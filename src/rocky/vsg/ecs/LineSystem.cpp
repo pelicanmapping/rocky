@@ -4,7 +4,6 @@
  * MIT License
  */
 #include "LineSystem.h"
-#include "../Runtime.h"
 #include "../PipelineState.h"
 #include "../Utils.h"
 
@@ -28,7 +27,7 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    vsg::ref_ptr<vsg::ShaderSet> createLineShaderSet(Runtime& runtime)
+    vsg::ref_ptr<vsg::ShaderSet> createLineShaderSet(VSGContext& runtime)
     {
         vsg::ref_ptr<vsg::ShaderSet> shaderSet;
 
@@ -36,14 +35,14 @@ namespace
         auto vertexShader = vsg::ShaderStage::read(
             VK_SHADER_STAGE_VERTEX_BIT,
             "main",
-            vsg::findFile(LINE_VERT_SHADER, runtime.searchPaths),
-            runtime.readerWriterOptions);
+            vsg::findFile(LINE_VERT_SHADER, runtime->searchPaths),
+            runtime->readerWriterOptions);
 
         auto fragmentShader = vsg::ShaderStage::read(
             VK_SHADER_STAGE_FRAGMENT_BIT,
             "main",
-            vsg::findFile(LINE_FRAG_SHADER, runtime.searchPaths),
-            runtime.readerWriterOptions);
+            vsg::findFile(LINE_FRAG_SHADER, runtime->searchPaths),
+            runtime->readerWriterOptions);
 
         if (!vertexShader || !fragmentShader)
         {
@@ -81,7 +80,7 @@ LineSystemNode::LineSystemNode(ecs::Registry& registry) :
 }
 
 void
-LineSystemNode::initializeSystem(Runtime& runtime)
+LineSystemNode::initializeSystem(VSGContext& runtime)
 {
     // Now create the pipeline and stategroup to bind it
     auto shaderSet = createLineShaderSet(runtime);
@@ -105,7 +104,7 @@ LineSystemNode::initializeSystem(Runtime& runtime)
         c.config = vsg::GraphicsPipelineConfig::create(shaderSet);
 
         // Apply any custom compile settings / defines:
-        c.config->shaderHints = runtime.shaderCompileSettings;
+        c.config->shaderHints = runtime->shaderCompileSettings;
 
         // activate the arrays we intend to use
         c.config->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
@@ -157,7 +156,7 @@ LineSystemNode::initializeSystem(Runtime& runtime)
 }
 
 void
-LineSystemNode::createOrUpdateNode(Line& line, ecs::BuildInfo& data, Runtime& runtime) const
+LineSystemNode::createOrUpdateNode(Line& line, ecs::BuildInfo& data, VSGContext& runtime) const
 {
     if (!data.existing_node)
     {

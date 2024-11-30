@@ -11,16 +11,15 @@
 * and just want to embed Rocky maps in your own app.
 */
 
-#include <rocky/Instance.h>
+#include <rocky/Context.h>
 #include <rocky/Version.h>
 #include <rocky/ImageLayer.h>
 #include <rocky/Ephemeris.h>
 
-#include <rocky/vsg/InstanceVSG.h>
+#include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/MapNode.h>
 #include <rocky/vsg/MapManipulator.h>
 #include <rocky/vsg/SkyNode.h>
-#include <rocky/vsg/Runtime.h>
 
 #include <vsg/all.h>
 #include <chrono>
@@ -84,7 +83,7 @@ int main(int argc, char** argv)
 
 
     // Rocky runtime instance
-    //rocky::InstanceVSG ri(argc, argv);
+    //rocky::VSGContext ri(argc, argv);
 
     // the map node - renders the terrain
     auto mapNode = rocky::MapNode::create();
@@ -106,9 +105,9 @@ int main(int argc, char** argv)
 #endif // ROCKY_HAS_TMS
 
     // You MUST tell the rocky runtime context about your viewer:
-    auto& runtime = mapNode->instance.runtime();
-    runtime.viewer = viewer;
-    runtime.sharedObjects = vsg::SharedObjects::create(); // optional
+    auto context = rocky::VSGContextFactory::create();
+    context->viewer = viewer;
+    context->sharedObjects = vsg::SharedObjects::create(); // optional
 
     vsg_scene->addChild(mapNode);
 
@@ -128,7 +127,7 @@ int main(int argc, char** argv)
         vsg::LookAt::create(),
         vsg::ViewportState::create(window->extent2D()));
 
-    viewer->addEventHandler(rocky::MapManipulator::create(mapNode, window, camera));
+    viewer->addEventHandler(rocky::MapManipulator::create(mapNode, window, camera, context));
 
     // associate the scene graph with a window and camera in a new render graph
     auto renderGraph = vsg::createRenderGraphForView(
@@ -173,7 +172,7 @@ int main(int argc, char** argv)
             break;
 
         // rocky update pass - management of tiles and paged data
-        mapNode->update(viewer->getFrameStamp());
+        mapNode->update(viewer->getFrameStamp(), context);
 
         // runs through the viewer's update operations queue; this includes update ops 
         // initialized by rocky (tile merges for example)

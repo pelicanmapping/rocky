@@ -5,7 +5,7 @@
  * MIT License
  */
 #include "IconSystem.h"
-#include "../Runtime.h"
+#include "../VSGContext.h"
 #include "../PipelineState.h"
 #include "../Utils.h"
 #include <rocky/Color.h>
@@ -26,7 +26,7 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    vsg::ref_ptr<vsg::ShaderSet> createShaderSet(Runtime& runtime)
+    vsg::ref_ptr<vsg::ShaderSet> createShaderSet(VSGContext& context)
     {
         vsg::ref_ptr<vsg::ShaderSet> shaderSet;
 
@@ -34,14 +34,14 @@ namespace
         auto vertexShader = vsg::ShaderStage::read(
             VK_SHADER_STAGE_VERTEX_BIT,
             "main",
-            vsg::findFile(VERT_SHADER, runtime.searchPaths),
-            runtime.readerWriterOptions);
+            vsg::findFile(VERT_SHADER, context->searchPaths),
+            context->readerWriterOptions);
 
         auto fragmentShader = vsg::ShaderStage::read(
             VK_SHADER_STAGE_FRAGMENT_BIT,
             "main",
-            vsg::findFile(FRAG_SHADER, runtime.searchPaths),
-            runtime.readerWriterOptions);
+            vsg::findFile(FRAG_SHADER, context->searchPaths),
+            context->readerWriterOptions);
 
         if (!vertexShader || !fragmentShader)
         {
@@ -83,9 +83,9 @@ IconSystemNode::IconSystemNode(ecs::Registry& registry) :
     //nop
 }
 void
-IconSystemNode::initializeSystem(Runtime& runtime)
+IconSystemNode::initializeSystem(VSGContext& context)
 {
-    auto shaderSet = createShaderSet(runtime);
+    auto shaderSet = createShaderSet(context);
 
     if (!shaderSet)
     {
@@ -108,7 +108,7 @@ IconSystemNode::initializeSystem(Runtime& runtime)
         c.config = vsg::GraphicsPipelineConfig::create(shaderSet);
 
         // Apply any custom compile settings / defines:
-        c.config->shaderHints = runtime.shaderCompileSettings;
+        c.config->shaderHints = context->shaderCompileSettings;
 
         // activate the arrays we intend to use
         c.config->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
@@ -168,7 +168,7 @@ namespace
 }
 
 void
-IconSystemNode::createOrUpdateNode(Icon& icon, ecs::BuildInfo& data, Runtime& runtime) const
+IconSystemNode::createOrUpdateNode(Icon& icon, ecs::BuildInfo& data, VSGContext& runtime) const
 {
     bool rebuild = data.existing_node == nullptr;
 

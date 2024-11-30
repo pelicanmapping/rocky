@@ -5,8 +5,7 @@
  */
 #pragma once
 
-#include <rocky/vsg/Common.h>
-#include <rocky/vsg/Runtime.h>
+#include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/terrain/TerrainSettings.h>
 #include <rocky/vsg/terrain/GeometryPool.h>
 #include <rocky/vsg/terrain/TerrainState.h>
@@ -26,7 +25,7 @@ namespace ROCKY_NAMESPACE
         TerrainEngine(
             std::shared_ptr<Map> map,
             const SRS& worldSRS,
-            Runtime& runtime,
+            VSGContext& runtime,
             const TerrainSettings& settings,
             TerrainTileHost* host);
 
@@ -34,7 +33,7 @@ namespace ROCKY_NAMESPACE
         const TerrainSettings& settings;
 
         //! runtime operations (scene graph, views, etc)
-        Runtime& runtime;
+        VSGContext& context;
 
         //! the map this terrain is rendering
         std::shared_ptr<Map> map;

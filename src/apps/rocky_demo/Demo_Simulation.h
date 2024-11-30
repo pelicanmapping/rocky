@@ -45,8 +45,8 @@ namespace
                     while (!token.canceled())
                     {
                         run_at_frequency f(sim_hertz);
-                        motion.update(app.runtime());
-                        app.runtime().requestFrame();
+                        motion.update(app.context);
+                        app.context->requestFrame();
                     }
                     Log()->info("Simulation thread terminating.");
                 });
@@ -78,7 +78,7 @@ auto Demo_Simulation = [](Application& app)
         auto [lock, registry] = app.registry.write();
 
         // add an icon:
-        auto io = app.instance.io();
+        auto io = app.context->io;
         auto image = io.services.readImageFromURI(icon_location, io);
         status = image.status;
 
@@ -127,7 +127,7 @@ auto Demo_Simulation = [](Application& app)
                 // Place a label below the platform:
                 auto& label = registry.emplace<Label>(entity);
                 label.text = std::to_string(i);
-                label.style.font = app.runtime().defaultFont;
+                label.style.font = app.context->defaultFont;
                 label.style.pointSize = 16.0f + t * 5.0f;
                 label.style.outlineSize = 0.5f;
                 label.style.pixelOffset.y = -icon.style.size_pixels * 0.5f - 5.0f;

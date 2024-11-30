@@ -5,7 +5,7 @@
  */
 #pragma once
 #include <rocky/vsg/Common.h>
-#include <rocky/vsg/InstanceVSG.h>
+#include <rocky/vsg/VSGContext.h>
 #include <rocky/DateTime.h>
 #include <rocky/SRS.h>
 #include <vsg/nodes/Group.h>
@@ -28,7 +28,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Creates a new sky node
-        SkyNode(const InstanceVSG& instance);
+        SkyNode(const VSGContext& instance);
 
         //! Sets the spatial reference system of the earth (geocentric)
         void setWorldSRS(const SRS& srs);
@@ -45,6 +45,6 @@ namespace ROCKY_NAMESPACE
 
     protected:
         vsg::ref_ptr<vsg::Node> _atmosphere;
-        InstanceVSG _instance;
+        VSGContext _context;
     };
 };

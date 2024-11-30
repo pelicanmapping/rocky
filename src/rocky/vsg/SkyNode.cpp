@@ -5,7 +5,6 @@
  */
 #include "SkyNode.h"
 #include "Utils.h"
-#include "Runtime.h"
 #include "PipelineState.h"
 
 #include <rocky/Ellipsoid.h>
@@ -155,10 +154,8 @@ namespace
     }
 
 
-    vsg::ref_ptr<vsg::StateGroup> makeAtmoStateGroup(Runtime& runtime)
+    vsg::ref_ptr<vsg::StateGroup> makeAtmoStateGroup(VSGContext& runtime)
     {
-        auto sharedObjects = runtime.sharedObjects;
-
         auto shaderSet = makeAtmoShaderSet();
         if (!shaderSet)
         {
@@ -200,8 +197,8 @@ namespace
         };
         vsg::visit<SetPipelineStates>(pipelineConfig);
 
-        if (sharedObjects)
-            sharedObjects->share(pipelineConfig, [](auto gpc) { gpc->init(); });
+        if (runtime->sharedObjects)
+            runtime->sharedObjects->share(pipelineConfig, [](auto gpc) { gpc->init(); });
         else
             pipelineConfig->init();
 
@@ -217,7 +214,7 @@ namespace
     }
 
 
-    vsg::ref_ptr<vsg::Node> makeAtmosphere(const SRS& srs, float thickness, Runtime& runtime)
+    vsg::ref_ptr<vsg::Node> makeAtmosphere(const SRS& srs, float thickness, VSGContext& runtime)
     {
         // attach the actual atmospheric geometry
         const bool with_texcoords = false;
@@ -238,8 +235,8 @@ namespace
     }
 }
 
-SkyNode::SkyNode(const InstanceVSG& inst) :
-    _instance(inst)
+SkyNode::SkyNode(const VSGContext& c) :
+    _context(c)
 {
     setWorldSRS(SRS::ECEF);
 }
@@ -267,12 +264,12 @@ SkyNode::setWorldSRS(const SRS& srs)
         addChild(sun);
 
         // Tell the shaders that lighting is a go
-        _instance.runtime().shaderCompileSettings->defines.insert("ROCKY_LIGHTING");
-        _instance.runtime().dirtyShaders();
+        _context->shaderCompileSettings->defines.insert("ROCKY_LIGHTING");
+        _context->dirtyShaders();
 
         // the atmopshere:
         const float earth_atmos_thickness = 50000.0; // 96560.0;
-        _atmosphere = makeAtmosphere(srs, earth_atmos_thickness, _instance.runtime());
+        _atmosphere = makeAtmosphere(srs, earth_atmos_thickness, _context);
         setShowAtmosphere(true);
     }
 }
@@ -289,16 +286,16 @@ SkyNode::setShowAtmosphere(bool show)
             addChild(_atmosphere);
 
             // activate in shaders
-            _instance.runtime().shaderCompileSettings->defines.insert("ROCKY_ATMOSPHERE");
-            _instance.runtime().dirtyShaders();
+            _context->shaderCompileSettings->defines.insert("ROCKY_ATMOSPHERE");
+            _context->dirtyShaders();
         }
         else if (iter != children.end() && show == false)
         {
             children.erase(iter);
 
             // activate in shaders
-            _instance.runtime().shaderCompileSettings->defines.erase("ROCKY_ATMOSPHERE");
-            _instance.runtime().dirtyShaders();
+            _context->shaderCompileSettings->defines.erase("ROCKY_ATMOSPHERE");
+            _context->dirtyShaders();
         }
     }
 }

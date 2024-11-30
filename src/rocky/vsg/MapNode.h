@@ -5,8 +5,7 @@
  */
 #pragma once
 
-#include <rocky/vsg/Common.h>
-#include <rocky/vsg/InstanceVSG.h>
+#include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/terrain/TerrainSettings.h>
 #include <rocky/vsg/terrain/TerrainNode.h>
 #include <rocky/vsg/ViewLocal.h>
@@ -29,22 +28,13 @@ namespace ROCKY_NAMESPACE
         //! Creates an empty mapnode with a default Rocky instance.
         MapNode();
 
-        //! Creates an empty map node (with a default empty Map)
-        MapNode(const InstanceVSG& instance);
-
         //! Creates a map node that will render the given Map.
         MapNode(std::shared_ptr<Map> map);
-
-        //! Deserialize a MapNode
-        explicit MapNode(const JSON& conf, const InstanceVSG& instance);
 
     public:
 
         //! Map backing this map node
         std::shared_ptr<Map> map;
-
-        //! Instance object assocated with this map node
-        InstanceVSG instance;
 
         //! Node rendering the terrain surface
         vsg::ref_ptr<TerrainNode> terrainNode;
@@ -71,7 +61,7 @@ namespace ROCKY_NAMESPACE
 
         //! Call periodically to update the map node and terrain engine
         //! @return true if updates happened
-        bool update(const vsg::FrameStamp*);
+        bool update(const vsg::FrameStamp*, VSGContext& context);
 
     public:
 

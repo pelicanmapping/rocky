@@ -8,6 +8,7 @@
 #include <rocky/Common.h>
 #include <rocky/GeoExtent.h>
 #include <vector>
+#include <string>
 
 namespace ROCKY_NAMESPACE
 {

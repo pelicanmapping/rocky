@@ -4,8 +4,7 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/Common.h>
-#include <rocky/vsg/Runtime.h>
+#include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/ViewLocal.h>
 #include <vector>
 #include <chrono>
@@ -105,13 +104,13 @@ namespace ROCKY_NAMESPACE
             Status status;
 
             //! Initialize the ECS system (once at startup)
-            virtual void initializeSystem(Runtime& runtime)
+            virtual void initializeSystem(VSGContext& runtime)
             {
                 //nop
             }
 
             //! Update the ECS system (once per frame)
-            virtual void update(Runtime& runtime)
+            virtual void update(VSGContext& runtime)
             {
                 //nop
             }

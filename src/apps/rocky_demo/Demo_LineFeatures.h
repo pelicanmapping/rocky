@@ -41,7 +41,7 @@ auto Demo_LineFeatures = [](Application& app)
             auto[lock, registry] = app.registry.write();
 
             // create a feature view and add features to it:
-            auto iter = data->fs->iterate(app.instance.io());
+            auto iter = data->fs->iterate(app.context->io);
             while (iter.hasMore())
             {
                 auto feature = iter.next();
@@ -65,7 +65,7 @@ auto Demo_LineFeatures = [](Application& app)
             };
 
             // generate our renderable geometry
-            feature_view.generate(registry, app.mapNode->worldSRS(), app.runtime());
+            feature_view.generate(registry, app.mapNode->worldSRS(), app.context);
         }
         else
         {

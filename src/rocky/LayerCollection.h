@@ -22,9 +22,6 @@ namespace ROCKY_NAMESPACE
         //! Add a layer
         Status add(std::shared_ptr<Layer> layer);
 
-        //! Add a layer with some options
-        Status add(std::shared_ptr<Layer> layer, const IOOptions& io);
-
         //! Remove a layer
         void remove(std::shared_ptr<Layer> layer);
 

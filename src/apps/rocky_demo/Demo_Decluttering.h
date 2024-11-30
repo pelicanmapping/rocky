@@ -39,7 +39,7 @@ namespace
             return std::make_shared<DeclutterSystem>(registry);
         }
 
-        void update(Runtime& runtime)
+        void update(VSGContext& runtime)
         {
             total = 0, visible = 0;
 
@@ -157,8 +157,8 @@ auto Demo_Decluttering = [](Application& app)
 
                     if (declutter->enabled)
                     {
-                        declutter->update(app.runtime());
-                        app.runtime().requestFrame();
+                        declutter->update(app.context);
+                        app.context->requestFrame();
                     }
                 }
                 Log()->info("Declutter thread terminating.");

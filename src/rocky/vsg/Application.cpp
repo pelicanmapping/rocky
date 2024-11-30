@@ -28,15 +28,15 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    Status loadMapFile(const std::string& location, MapNode& mapNode, Instance& instance)
+    Status loadMapFile(const std::string& location, MapNode& mapNode, Context context)
     {
         Status status;
 
-        auto map_file = URI(location).read(instance.io());
+        auto map_file = URI(location).read(context->io);
 
         if (map_file.status.ok())
         {
-            auto parse_result = mapNode.from_json(map_file->data, instance.io().from(location));
+            auto parse_result = mapNode.from_json(map_file->data, context->io.from(location));
             if (parse_result.failed())
             {
                 status = parse_result;
@@ -51,11 +51,11 @@ namespace
         return status;
     }
 
-    Status importEarthFile(const std::string& infile, MapNode& mapNode, Instance& instance)
+    Status importEarthFile(const std::string& infile, MapNode& mapNode, Context context)
     {
         Status status;
 
-        auto io = instance.io().from(infile);
+        auto io = context->io.from(infile);
 
         EarthFileImporter importer;
         auto result = importer.read(infile, io);
@@ -87,8 +87,7 @@ Application::Application()
     ctor(argc, (char**)argv);
 }
 
-Application::Application(int& argc, char** argv) :
-    instance(argc, argv)
+Application::Application(int& argc, char** argv)
 {
     ctor(argc, argv);
 }
@@ -96,9 +95,11 @@ Application::Application(int& argc, char** argv) :
 void
 Application::ctor(int& argc, char** argv)
 {
+    context = VSGContextFactory::create(argc, argv);
+
     vsg::CommandLine commandLine(&argc, argv);
 
-    commandLine.read(instance.runtime().readerWriterOptions);
+    commandLine.read(context->readerWriterOptions);
     _debuglayer = commandLine.read("--debug");
     _apilayer = commandLine.read("--api");
     _vsync = !commandLine.read({ "--novsync", "--no-vsync" });
@@ -139,19 +140,19 @@ Application::ctor(int& argc, char** argv)
     mainScene = vsg::Group::create();
     root->addChild(mainScene);
 
-    mapNode = rocky::MapNode::create(instance);
+    mapNode = rocky::MapNode::create();
 
     // the sun
     if (commandLine.read("--sky"))
     {
-        skyNode = rocky::SkyNode::create(instance);
+        skyNode = rocky::SkyNode::create(context);
         mainScene->addChild(skyNode);
     }
 
     // wireframe overlay
     if (commandLine.read("--wire"))
     {
-        instance.runtime().shaderCompileSettings->defines.insert("ROCKY_WIREFRAME_OVERLAY");
+        context->shaderCompileSettings->defines.insert("ROCKY_WIREFRAME_OVERLAY");
     }
 
     // a node to render the map/terrain
@@ -166,7 +167,7 @@ Application::ctor(int& argc, char** argv)
         viewer->setupThreading();
     }
 
-    instance.runtime().sharedObjects = vsg::SharedObjects::create();
+    context->sharedObjects = vsg::SharedObjects::create();
 
     // TODO:
     // The SkyNode does this, but then it's awkward to add a SkyNode at runtime
@@ -174,25 +175,25 @@ Application::ctor(int& argc, char** argv)
     // and those will have to be recompiled.
     // So instead we will just activate the lighting globally and rely on the 
     // light counts in the shader. Is this ok?
-    instance.runtime().shaderCompileSettings->defines.insert("ROCKY_LIGHTING");
+    context->shaderCompileSettings->defines.insert("ROCKY_LIGHTING");
 
     // read map from file:
     std::string infile; 
     if (commandLine.read("--map", infile))
     {
-        commandLineStatus = loadMapFile(infile, *mapNode, instance);
+        commandLineStatus = loadMapFile(infile, *mapNode, context);
     }
 
     // import map from an osgEarth earth file:
     if (commandLine.read({ "--earthfile", "--earth-file" }, infile) && commandLineStatus.ok())
     {
-        commandLineStatus = importEarthFile(infile, *mapNode, instance);
+        commandLineStatus = importEarthFile(infile, *mapNode, context);
     }
 
     // if there are any command-line arguments remaining, assume the first is a map file.
     if (commandLine.argc() > 1 && commandLineStatus.ok())
     {
-        commandLineStatus = loadMapFile(commandLine[1], *mapNode, instance);
+        commandLineStatus = loadMapFile(commandLine[1], *mapNode, context);
     }
 
     ecsManager = ecs::ECSNode::create(registry);
@@ -217,14 +218,14 @@ Application::~Application()
 void
 Application::onNextUpdate(std::function<void()> func)
 {
-    instance.runtime().onNextUpdate(func);
+    context->onNextUpdate(func);
 }
 
 void
 Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
 {
     // Initialize the ECS subsystem:
-    ecsManager->initialize(instance.runtime());
+    ecsManager->initialize(context);
 
     // respond to the X or to hitting ESC
     // TODO: refactor this so it responds to individual windows and not the whole app?
@@ -293,7 +294,7 @@ Application::recreateViewer()
 
     viewer = createViewer();
 
-    instance.runtime().viewer = viewer;
+    instance->viewer = viewer;
     
     for (auto i : displayConfiguration.windows)
         viewer->addWindow(i.first);
@@ -320,10 +321,10 @@ namespace
         void run() override
         {
             // MapNode updates
-            app.mapNode->update(app.viewer->getFrameStamp());
+            app.mapNode->update(app.viewer->getFrameStamp(), app.context);
             
             // ECS updates - rendering or modifying entities
-            app.ecsManager->update(app.instance.runtime());
+            app.ecsManager->update(app.context);
 
             // User update
             if (app.updateFunction)
@@ -332,13 +333,13 @@ namespace
             }
 
             // integrate any pending compile results or disposals
-            app.instance.runtime().update();
+            app.context->update();
 
             // keep the frames running if the pager is active
             auto& tasks = app.viewer->recordAndSubmitTasks;
             if (!tasks.empty() && tasks[0]->databasePager && tasks[0]->databasePager->numActiveRequests > 0)
             {
-                app.instance.runtime().requestFrame();
+                app.context->requestFrame();
             }
         }
     };
@@ -364,7 +365,7 @@ Application::realize()
         // use an asynchronous path.
         _viewerRealized = true;
 
-        if (instance.renderOnDemand())
+        if (context->renderOnDemand)
         {
             Log()->debug("Render-on-demand mode enabled");
         }
@@ -396,11 +397,11 @@ Application::frame()
     t_start = std::chrono::steady_clock::now();
 
     // whether we need to render a new frame based on the renderOnDemand state:
-    runtime().renderingEnabled =
-        instance.renderOnDemand() == false ||
-        instance.runtime().renderRequests.exchange(0) > 0;
+    context->renderingEnabled =
+        context->renderOnDemand == false ||
+        context->renderRequests.exchange(0) > 0;
 
-    if (runtime().renderingEnabled)
+    if (context->renderingEnabled)
     {
         if (!viewer->advanceToNextFrame())
         {
@@ -516,7 +517,7 @@ std::string
 Application::about() const
 {
     std::stringstream buf;
-    for (auto& a : instance.about())
+    for (auto& a : context->about())
         buf << a << std::endl;
     return buf.str();
 }
@@ -526,9 +527,9 @@ Application::setViewer(vsg::ref_ptr<vsg::Viewer> in_viewer)
 {
     viewer = in_viewer;
 
-    instance.runtime().viewer = viewer;
+    context->viewer = viewer;
 
-    //instance.runtime().offlineCompileManager = vsg::CompileManager::create(*viewer, vsg::ref_ptr<vsg::ResourceHints>{});
+    //instance->offlineCompileManager = vsg::CompileManager::create(*viewer, vsg::ref_ptr<vsg::ResourceHints>{});
 
     displayManager = std::make_shared<DisplayManager>(*this);
 }

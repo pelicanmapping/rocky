@@ -531,12 +531,14 @@ MapManipulator::Settings::setAutoViewpointDurationLimits(double minSeconds, doub
 MapManipulator::MapManipulator(
     vsg::ref_ptr<MapNode> mapNode,
     vsg::ref_ptr<vsg::Window> window,
-    vsg::ref_ptr<vsg::Camera> camera) :
+    vsg::ref_ptr<vsg::Camera> camera,
+    VSGContext& context) :
 
     Inherit(),
     _mapNode_weakptr(mapNode),
     _window_weakptr(window),
     _camera_weakptr(camera),
+    _context(context),
     _lastAction(ACTION_NULL)
 {
     if (mapNode.valid())
@@ -1389,10 +1391,9 @@ MapManipulator::apply(vsg::FrameEvent& frame)
     // request a new frame.
     if (camera_changed || _dirty)
     {
-        auto mapNode = getMapNode();
-        if (mapNode)
+        if (_context)
         {
-            mapNode->instance.requestFrame();
+            _context->requestFrame();
         }
     }
 }

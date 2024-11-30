@@ -52,13 +52,13 @@ auto Demo_Geocoder = [](Application& app)
         icon.style = IconStyle{ 32, 0.0f }; // pixel size, rotation(radians)
 
         // Attach a label:
-        label_style_point.font = app.runtime().defaultFont;
+        label_style_point.font = app.context->defaultFont;
         label_style_point.horizontalAlignment = vsg::StandardLayout::LEFT_ALIGNMENT;
         label_style_point.pointSize = 26.0f;
         label_style_point.outlineSize = 0.5f;
         label_style_point.pixelOffset = { icon.style.size_pixels, 0.0f, 0.0f };
 
-        label_style_area.font = app.runtime().defaultFont;
+        label_style_area.font = app.context->defaultFont;
         label_style_area.horizontalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;
         label_style_area.pointSize = 26.0f;
         label_style_area.outlineSize = 0.5f;
@@ -158,7 +158,7 @@ auto Demo_Geocoder = [](Application& app)
                                     while (i.hasMore()) for (auto& point : i.next().points) point.z = 500.0;
                                     feature_view.clear(registry);
                                     feature_view.features = { copy_of_feature };
-                                    feature_view.generate(registry, app.mapNode->worldSRS(), app.runtime());
+                                    feature_view.generate(registry, app.mapNode->worldSRS(), app.context);
 
                                     if (feature_view.entity != entt::null)
                                         registry.emplace_or_replace<ActiveState>(feature_view.entity);

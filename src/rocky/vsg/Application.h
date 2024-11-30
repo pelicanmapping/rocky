@@ -4,7 +4,7 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/InstanceVSG.h>
+#include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/MapNode.h>
 #include <rocky/vsg/SkyNode.h>
 #include <rocky/vsg/ecs/Registry.h>
@@ -67,12 +67,7 @@ namespace ROCKY_NAMESPACE
 
         //! Shortcut to the instance's IOOptions
         IOOptions& io() {
-            return instance.io();
-        }
-        
-        //! Shortcut to the Runtime interface
-        Runtime& runtime() {
-            return instance.runtime();
+            return context->io;
         }
 
         bool active() const {
@@ -83,7 +78,7 @@ namespace ROCKY_NAMESPACE
 
         ecs::Registry registry;
 
-        rocky::InstanceVSG instance;
+        rocky::VSGContext context;
         vsg::ref_ptr<rocky::MapNode> mapNode;
         vsg::ref_ptr<rocky::SkyNode> skyNode;
         vsg::ref_ptr<vsg::Viewer> viewer;

@@ -63,12 +63,12 @@ namespace ROCKY_NAMESPACE
         int featureMask(const Icon& icon) const override { return 0; }
 
         //! Initialize the system (once)
-        void initializeSystem(Runtime&) override;
+        void initializeSystem(VSGContext&) override;
 
     private:
 
         //! Called by the helper to initialize a new node component.
-        void createOrUpdateNode(Icon&, ecs::BuildInfo&, Runtime&) const override;
+        void createOrUpdateNode(Icon&, ecs::BuildInfo&, VSGContext&) const override;
 
         // cache of image descriptors so we can re-use textures & samplers
         mutable std::unordered_map<std::shared_ptr<Image>, vsg::ref_ptr<vsg::DescriptorImage>> descriptorImage_cache;

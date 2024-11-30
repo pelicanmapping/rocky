@@ -25,7 +25,7 @@ auto Demo_Rendering = [](Application& app)
     {
         ImGuiLTable::SliderFloat("Screen space error", &app.mapNode->terrainSettings().screenSpaceError.mutable_value(), 0.0f, 512.0f, "%.0f");
 
-        ImGuiLTable::Checkbox("Render on demand", &app.instance.renderOnDemand());
+        ImGuiLTable::Checkbox("Render on demand", &app.context->renderOnDemand);
 
         auto& c = app.mapNode->terrainNode->stategroup->children;
         bool wireframe = c.front() == setWireframeTopology;

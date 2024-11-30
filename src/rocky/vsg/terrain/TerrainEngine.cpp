@@ -19,13 +19,13 @@ using namespace ROCKY_NAMESPACE;
 TerrainEngine::TerrainEngine(
     std::shared_ptr<Map> new_map,
     const SRS& new_worldSRS,
-    Runtime& new_runtime,
+    VSGContext& new_runtime,
     const TerrainSettings& new_settings,
     TerrainTileHost* host) :
 
     map(new_map),
     worldSRS(new_worldSRS),
-    runtime(new_runtime),
+    context(new_runtime),
     settings(new_settings),
     geometryPool(worldSRS),
     tiles(new_map->profile(), new_settings, new_runtime, host),

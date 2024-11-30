@@ -7,7 +7,6 @@
 #include "SurfaceNode.h"
 #include "TerrainEngine.h"
 #include "TerrainSettings.h"
-#include "../Runtime.h"
 
 #include <rocky/Math.h>
 #include <rocky/ImageLayer.h>

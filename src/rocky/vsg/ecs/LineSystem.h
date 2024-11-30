@@ -33,9 +33,9 @@ namespace ROCKY_NAMESPACE
         int featureMask(const Line&) const override;
 
         //! One-time initialization of the system    
-        void initializeSystem(Runtime&) override;
+        void initializeSystem(VSGContext&) override;
 
-        void createOrUpdateNode(Line&, ecs::BuildInfo&, Runtime&) const override;
+        void createOrUpdateNode(Line&, ecs::BuildInfo&, VSGContext&) const override;
     };
 
     /**

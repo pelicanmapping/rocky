@@ -38,7 +38,7 @@ auto Demo_LabelFeatures = [](Application& app)
         status = fs->open();
 
         // collect all the features, discarding duplicates by keeping the largest one
-        auto iter = fs->iterate(app.instance.io());
+        auto iter = fs->iterate(app.context->io);
         while (iter.hasMore())
         {
             auto feature = iter.next();
@@ -69,7 +69,7 @@ auto Demo_LabelFeatures = [](Application& app)
             // attach a label:
             auto& label = registry.emplace<Label>(entity);
             label.text = name;
-            label.style.font = app.runtime().defaultFont;
+            label.style.font = app.context->defaultFont;
             label.style.pointSize = starting_label_size;
             label.style.outlineSize = 0.35f;
 

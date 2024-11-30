@@ -79,7 +79,7 @@ auto Demo_Map = [](Application& app)
                 }
 
                 if (resetTerrain)
-                    app.mapNode->terrainNode->reset();
+                    app.mapNode->terrainNode->reset(app.context);
             }
 
             ImGui::SameLine();
@@ -138,6 +138,6 @@ auto Demo_Map = [](Application& app)
 
     if (ImGui::Button("Refresh"))
     {
-        app.mapNode->terrainNode->reset();
+        app.mapNode->terrainNode->reset(app.context);
     }
 };

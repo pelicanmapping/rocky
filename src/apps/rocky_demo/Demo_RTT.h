@@ -15,13 +15,13 @@ using namespace ROCKY_NAMESPACE;
 namespace
 {
     // Loads an external model to display in the RTT scene
-    vsg::ref_ptr<vsg::Node> load_rtt_model(const URI& uri, Runtime& runtime)
+    vsg::ref_ptr<vsg::Node> load_rtt_model(const URI& uri, VSGContext& runtime)
     {
         auto result = uri.read({});
         if (result.status.ok())
         {
             // this is a bit awkward but it works when the URI has an extension
-            auto options = vsg::Options::create(*runtime.readerWriterOptions);
+            auto options = vsg::Options::create(*runtime->readerWriterOptions);
             auto extension = std::filesystem::path(uri.full()).extension();
             options->extensionHint = extension.empty() ? std::filesystem::path(result.value.contentType) : extension;
             std::stringstream in(result.value.data);
@@ -74,7 +74,7 @@ auto Demo_RTT = [](Application& app)
 
         // this is the model we will see in the RTT:
         URI uri("https://raw.githubusercontent.com/vsg-dev/vsgExamples/master/data/models/teapot.vsgt");
-        auto rtt_node = load_rtt_model(uri, app.runtime());
+        auto rtt_node = load_rtt_model(uri, app.context);
         if (!rtt_node)
         {
             status = Status(Status::ResourceUnavailable, "Unable to load the model from " + uri.full());

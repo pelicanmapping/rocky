@@ -17,22 +17,6 @@
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 
-TerrainNode::TerrainNode(Runtime& new_runtime) :
-    vsg::Inherit<vsg::Group, TerrainNode>(),
-    _runtime(new_runtime)
-{
-    construct();
-}
-
-void
-TerrainNode::construct()
-{
-    //if (!concurrency.has_value())
-    //{
-    //    concurrency = std::thread::hardware_concurrency() / 2;
-    //}
-}
-
 Status
 TerrainNode::from_json(const std::string& JSON, const IOOptions& io)
 {
@@ -46,7 +30,7 @@ TerrainNode::to_json() const
 }
 
 const Status&
-TerrainNode::setMap(std::shared_ptr<Map> new_map, const SRS& new_worldSRS)
+TerrainNode::setMap(std::shared_ptr<Map> new_map, const SRS& new_worldSRS, VSGContext& context)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(new_map, status);
 
@@ -59,18 +43,18 @@ TerrainNode::setMap(std::shared_ptr<Map> new_map, const SRS& new_worldSRS)
 
     map = new_map;
 
-    _worldSRS = new_worldSRS;
-    if (!_worldSRS.valid())
+    worldSRS = new_worldSRS;
+    if (!worldSRS.valid())
     {
-        _worldSRS = new_map->srs().isGeodetic() ?
+        worldSRS = new_map->srs().isGeodetic() ?
             SRS::ECEF :
             new_map->srs();
     }
 
     if (map)
     {
-        map->onLayerAdded([this](auto...) { reset(); });
-        map->onLayerRemoved([this](auto...) { reset(); });
+        map->onLayerAdded([this, context](auto...) { reset(context); });
+        map->onLayerRemoved([this, context](auto...) { reset(context); });
     }
 
     engine = nullptr;
@@ -82,11 +66,11 @@ TerrainNode::setMap(std::shared_ptr<Map> new_map, const SRS& new_worldSRS)
 }
 
 void
-TerrainNode::reset()
+TerrainNode::reset(VSGContext context)
 {
     for(auto& child : this->children)
     {
-        _runtime.dispose(child);
+        context->dispose(child);
     }
 
     children.clear();
@@ -97,15 +81,15 @@ TerrainNode::reset()
 }
 
 Status
-TerrainNode::createRootTiles(const IOOptions& io)
+TerrainNode::createRootTiles(VSGContext& context)
 {
     ROCKY_HARD_ASSERT(children.empty(), "TerrainNode::createRootTiles() called with children already present");
 
     // create a new engine to render this map
     engine = std::make_shared<TerrainEngine>(
         map,
-        _worldSRS,
-        _runtime,  // runtime API
+        worldSRS,
+        context,   // runtime API
         *this,     // settings
         this);     // host
 
@@ -115,11 +99,11 @@ TerrainNode::createRootTiles(const IOOptions& io)
         return engine->stateFactory.status;
     }
 
-    _tilesRoot = vsg::Group::create();
+    tilesRoot = vsg::Group::create();
 
     // create the graphics pipeline to render this map
-    stategroup = engine->stateFactory.createTerrainStateGroup();
-    stategroup->addChild(_tilesRoot);
+    stategroup = engine->stateFactory.createTerrainStateGroup(engine->context);
+    stategroup->addChild(tilesRoot);
     this->addChild(stategroup);
 
     // once the pipeline exists, we can start creating tiles.
@@ -135,16 +119,16 @@ TerrainNode::createRootTiles(const IOOptions& io)
         tile->doNotExpire = true;
 
         // Add it to the scene graph
-        _tilesRoot->addChild(tile);
+        tilesRoot->addChild(tile);
     }
 
-    engine->runtime.compile(stategroup);
+    engine->context->compile(stategroup);
 
     return StatusOK;
 }
 
 bool
-TerrainNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
+TerrainNode::update(const vsg::FrameStamp* fs, VSGContext& context)
 {
     bool changes = false;
 
@@ -152,7 +136,7 @@ TerrainNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
     {
         if (children.empty())
         {
-            status = createRootTiles(io);
+            status = createRootTiles(context);
             if (status.failed())
             {
                 Log()->warn("TerrainNode initialize failed: " + status.message);
@@ -163,10 +147,10 @@ TerrainNode::update(const vsg::FrameStamp* fs, const IOOptions& io)
         {
             ROCKY_HARD_ASSERT(engine);
 
-            if (engine->tiles.update(fs, io, engine))
+            if (engine->tiles.update(fs, context->io, engine))
                 changes = true;
             
-            engine->geometryPool.sweep(engine->runtime);
+            engine->geometryPool.sweep(engine->context);
         }
     }
 

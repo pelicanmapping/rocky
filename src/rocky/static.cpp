@@ -9,7 +9,7 @@
 #include "Log.h"
 #include "SRS.h"
 #include "Profile.h"
-#include "Instance.h"
+#include "Context.h"
 #include "IOTypes.h"
 #include "Threading.h"
 
@@ -35,7 +35,7 @@ const Profile Profile::GLOBAL_GEODETIC("global-geodetic");
 const Profile Profile::SPHERICAL_MERCATOR("spherical-mercator");
 const Profile Profile::PLATE_CARREE("plate-carree");
 
-Status Instance::_global_status(Status::GeneralError);
+//Status Context::_global_status(Status::GeneralError);
 
 // job system definition
 WEEJOBS_INSTANCE;

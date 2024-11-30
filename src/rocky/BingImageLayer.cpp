@@ -6,7 +6,7 @@
 #include "BingImageLayer.h"
 #ifdef ROCKY_HAS_BING
 
-#include "Instance.h"
+#include "Context.h"
 #include "json.h"
 #include "Utils.h"
 

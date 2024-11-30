@@ -7,7 +7,7 @@
 #include "Mesh.h"
 #include "Transform.h"
 #include "Visibility.h"
-#include "../Runtime.h"
+#include "../VSGContext.h"
 #include <rocky/weemesh.h>
 
 using namespace ROCKY_NAMESPACE;
@@ -359,7 +359,7 @@ FeatureView::clear(entt::registry& registry)
 }
 
 void
-FeatureView::generate(entt::registry& registry, const SRS& geom_srs, Runtime& runtime, bool keep_features)
+FeatureView::generate(entt::registry& registry, const SRS& geom_srs, VSGContext& runtime, bool keep_features)
 {
     if (entity == entt::null)
     {

@@ -6,7 +6,7 @@
 #include "SRS.h"
 #include "Math.h"
 #include "Threading.h"
-#include "Instance.h"
+#include "Context.h"
 
 #include <filesystem>
 #include <proj.h>

@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include <rocky/vsg/Common.h>
+#include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/terrain/TerrainTileNode.h>
 #include <rocky/SentryTracker.h>
 #include <chrono>
@@ -46,7 +46,7 @@ namespace ROCKY_NAMESPACE
         TerrainTilePager(
             const Profile& profile,
             const TerrainSettings& settings,
-            Runtime& runtime,
+            VSGContext& runtime,
             TerrainTileHost* host);
 
         ~TerrainTilePager();
@@ -70,20 +70,18 @@ namespace ROCKY_NAMESPACE
         bool update(
             const vsg::FrameStamp* fs,
             const IOOptions& io,
-            std::shared_ptr<TerrainEngine> terrain);
+            std::shared_ptr<TerrainEngine> engine);
 
         //! Create a single terrain tile.
         vsg::ref_ptr<TerrainTileNode> createTile(
             const TileKey& key,
             vsg::ref_ptr<TerrainTileNode> parent,
-            std::shared_ptr<TerrainEngine> terrain);
+            std::shared_ptr<TerrainEngine> engine);
 
         //! Fetches a tile by its key.
         //! @param key TileKey for which to fetch a tile
         //! @return The tile, if it exists
         vsg::ref_ptr<TerrainTileNode> getTile(const TileKey& key) const;
-
-    //protected:
 
         TileTable _tiles;
         Tracker _tracker;
@@ -91,7 +89,7 @@ namespace ROCKY_NAMESPACE
         mutable std::mutex _mutex;
         TerrainTileHost* _host;
         const TerrainSettings& _settings;
-        Runtime& _runtime;
+        VSGContext& _context;
         bool _updateViewerRequired = false;
 
         std::vector<TileKey> _createChildren;

@@ -21,37 +21,22 @@ using namespace ROCKY_NAMESPACE::util;
 #define LC "[MapNode] "
 
 MapNode::MapNode() :
-    instance(InstanceVSG()),
-    map(Map::create(this->instance))
-{
-    construct();
-}
-
-MapNode::MapNode(const InstanceVSG& instance) :
-    instance(instance),
-    map(Map::create(instance))
+    map(Map::create())
 {
     construct();
 }
 
 MapNode::MapNode(std::shared_ptr<Map> in_map) :
-    instance(reinterpret_cast<InstanceVSG&>(in_map->instance())),
     map(in_map)
 {
-    construct();
-}
-
-MapNode::MapNode(const JSON& conf, const InstanceVSG& instance) :
-    instance(instance),
-    map(Map::create(instance))
-{
+    ROCKY_SOFT_ASSERT(map != nullptr);
     construct();
 }
 
 void
 MapNode::construct()
 {
-    terrainNode = TerrainNode::create(instance.runtime());
+    terrainNode = TerrainNode::create();
     addChild(terrainNode);
 
     // make a group for the model layers.  This node is a PagingManager instead of a regular Group to allow PagedNode's to be used within the layers.
@@ -129,16 +114,16 @@ MapNode::worldSRS() const
 }
 
 bool
-MapNode::update(const vsg::FrameStamp* f)
+MapNode::update(const vsg::FrameStamp* f, VSGContext& context)
 {
-    ROCKY_HARD_ASSERT_STATUS(instance.status());
+    //ROCKY_HARD_ASSERT_STATUS(context.status());
     ROCKY_HARD_ASSERT(map != nullptr && terrainNode != nullptr);
 
     bool changes = false;
 
     if (terrainNode->map == nullptr)
     {
-        auto st = terrainNode->setMap(map, worldSRS());
+        auto st = terrainNode->setMap(map, worldSRS(), context);
 
         if (st.failed())
         {
@@ -149,11 +134,11 @@ MapNode::update(const vsg::FrameStamp* f)
     // on our first update, open any layers that are marked to automatic opening.
     if (!_openedLayers)
     {
-        map->openAllLayers(instance.io());
+        map->openAllLayers(context->io);
         _openedLayers = true;
     }
 
-    return terrainNode->update(f, instance.io());
+    return terrainNode->update(f, context);
 }
 
 void

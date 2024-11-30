@@ -4,7 +4,7 @@
  * MIT License
  */
 #include "Log.h"
-#include "Instance.h"
+#include "Context.h"
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 

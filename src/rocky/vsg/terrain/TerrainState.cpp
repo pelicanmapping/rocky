@@ -7,7 +7,6 @@
 #include "TerrainTileNode.h"
 #include "../Utils.h"
 #include "../PipelineState.h"
-#include "../Runtime.h"
 
 #include <rocky/Color.h>
 #include <rocky/Heightfield.h>
@@ -39,16 +38,15 @@
 
 using namespace ROCKY_NAMESPACE;
 
-TerrainState::TerrainState(Runtime& runtime) :
-    _runtime(runtime)
+TerrainState::TerrainState(VSGContext& context)
 {
     status = StatusOK;
 
     // set up the texture samplers and placeholder images we will use to render terrain.
-    createDefaultDescriptors();
+    createDefaultDescriptors(context);
 
     // shader set prototype for use with a GraphicsPipelineConfig.
-    shaderSet = createShaderSet();
+    shaderSet = createShaderSet(context);
     if (!shaderSet)
     {
         status = Status(Status::ResourceUnavailable,
@@ -59,7 +57,7 @@ TerrainState::TerrainState(Runtime& runtime) :
 }
 
 void
-TerrainState::createDefaultDescriptors()
+TerrainState::createDefaultDescriptors(VSGContext& context)
 {
     // First create our samplers - each one is shared across all tiles.
     // In Vulkan, the sampler is separate from the image you are sampling,
@@ -78,8 +76,8 @@ TerrainState::createDefaultDescriptors()
     texturedefs.color.sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     texturedefs.color.sampler->anisotropyEnable = VK_TRUE;
     texturedefs.color.sampler->maxAnisotropy = 4.0f;
-    if (_runtime.sharedObjects)
-        _runtime.sharedObjects->share(texturedefs.color.sampler);
+    if (context->sharedObjects)
+        context->sharedObjects->share(texturedefs.color.sampler);
 
     texturedefs.elevation = { ELEVATION_TEX_NAME, ELEVATION_TEX_BINDING, vsg::Sampler::create(), {} };
     texturedefs.elevation.sampler->maxLod = 16;
@@ -87,8 +85,8 @@ TerrainState::createDefaultDescriptors()
     texturedefs.elevation.sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     texturedefs.elevation.sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     texturedefs.elevation.sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    if (_runtime.sharedObjects)
-        _runtime.sharedObjects->share(texturedefs.elevation.sampler);
+    if (context->sharedObjects)
+        context->sharedObjects->share(texturedefs.elevation.sampler);
 
 #if 0
     texturedefs.normal = { NORMAL_TEX_NAME, NORMAL_TEX_BINDING, vsg::Sampler::create(), {} };
@@ -96,8 +94,8 @@ TerrainState::createDefaultDescriptors()
     texturedefs.normal.sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     texturedefs.normal.sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     texturedefs.normal.sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    if (_runtime.sharedObjects)
-        _runtime.sharedObjects->share(texturedefs.normal.sampler);
+    if (context->sharedObjects)
+        context->sharedObjects->share(texturedefs.normal.sampler);
 #endif
 
     // Next make the "default" descriptor model, which is used when 
@@ -140,7 +138,7 @@ TerrainState::createDefaultDescriptors()
 }
 
 vsg::ref_ptr<vsg::ShaderSet>
-TerrainState::createShaderSet() const
+TerrainState::createShaderSet(VSGContext& context) const
 {
     // Creates a ShaderSet for terrain rendering.
     //
@@ -160,14 +158,14 @@ TerrainState::createShaderSet() const
     auto vertexShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_VERTEX_BIT,
         "main",
-        vsg::findFile(TERRAIN_VERT_SHADER, _runtime.searchPaths),
-        _runtime.readerWriterOptions);
+        vsg::findFile(TERRAIN_VERT_SHADER, context->searchPaths),
+        context->readerWriterOptions);
 
     auto fragmentShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_FRAGMENT_BIT,
         "main",
-        vsg::findFile(TERRAIN_FRAG_SHADER, _runtime.searchPaths),
-        _runtime.readerWriterOptions);
+        vsg::findFile(TERRAIN_FRAG_SHADER, context->searchPaths),
+        context->readerWriterOptions);
 
     if (!vertexShader || !fragmentShader)
     {
@@ -202,7 +200,7 @@ TerrainState::createShaderSet() const
 
 
 vsg::ref_ptr<vsg::GraphicsPipelineConfig>
-TerrainState::createPipelineConfig() const
+TerrainState::createPipelineConfig(VSGContext& context) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), {});
 
@@ -211,7 +209,7 @@ TerrainState::createPipelineConfig() const
     auto config = vsg::GraphicsPipelineConfig::create(shaderSet);
 
     // Apply any custom compile settings / defines:
-    config->shaderHints = _runtime.shaderCompileSettings;
+    config->shaderHints = context->shaderCompileSettings;
 
     // activate the arrays we intend to use
     config->enableArray(ATTR_VERTEX, VK_VERTEX_INPUT_RATE_VERTEX, 12);
@@ -228,8 +226,8 @@ TerrainState::createPipelineConfig() const
     PipelineUtils::enableViewDependentData(config);
 
     // Initialize GraphicsPipeline from the data in the configuration.
-    if (_runtime.sharedObjects)
-        _runtime.sharedObjects->share(config, [](auto gpc) { gpc->init(); });
+    if (context->sharedObjects)
+        context->sharedObjects->share(config, [](auto gpc) { gpc->init(); });
     else
         config->init();
 
@@ -237,12 +235,12 @@ TerrainState::createPipelineConfig() const
 }
 
 vsg::ref_ptr<vsg::StateGroup>
-TerrainState::createTerrainStateGroup()
+TerrainState::createTerrainStateGroup(VSGContext& context)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), { });
 
     // create the configurator object:
-    pipelineConfig = createPipelineConfig();
+    pipelineConfig = createPipelineConfig(context);
 
     ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig, { });
 
@@ -260,7 +258,7 @@ TerrainTileRenderModel
 TerrainState::updateRenderModel(
     const TerrainTileRenderModel& oldRenderModel,
     const TerrainTileModel& dataModel,
-    Runtime& runtime) const
+    VSGContext& runtime) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), oldRenderModel);
     ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig.valid(), oldRenderModel);
@@ -284,7 +282,7 @@ TerrainState::updateRenderModel(
         {
             // queue the old data for safe disposal
             if (descriptors.color)
-                runtime.dispose(descriptors.color);
+                runtime->dispose(descriptors.color);
 
             // tell vsg to remove the image from CPU memory after sending it to the GPU
             // note, since we're using wrap() above, only the buffer will get deleted
@@ -314,7 +312,7 @@ TerrainState::updateRenderModel(
         {
             // queue the old data for safe disposal
             if (descriptors.elevation)
-                runtime.dispose(descriptors.elevation);
+                runtime->dispose(descriptors.elevation);
 
             // tell vsg to remove the image from CPU memory after sending it to the GPU
             // note, since we're using wrap() above, only the buffer will get deleted
@@ -358,7 +356,7 @@ TerrainState::updateRenderModel(
     );
 
     // Compile the objects. Everything should be under the bind command.
-    runtime.compile(descriptors.bind);
+    runtime->compile(descriptors.bind);
 
 #if 0
     // Temporary:

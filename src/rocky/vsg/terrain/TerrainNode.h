@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include <rocky/vsg/Common.h>
+#include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/terrain/TerrainSettings.h>
 #include <rocky/vsg/terrain/TerrainTileHost.h>
 #include <rocky/Status.h>
@@ -29,14 +29,14 @@ namespace ROCKY_NAMESPACE
         public TerrainTileHost
     {
     public:
-        //! Deserialize a new terrain node
-        TerrainNode(Runtime& runtime);
+        //! Construct a new terrain node
+        TerrainNode() = default;
 
         //! Map to render, and SRS to render it in
-        const Status& setMap(std::shared_ptr<Map> new_map, const SRS& world_srs);
+        const Status& setMap(std::shared_ptr<Map> new_map, const SRS& world_srs, VSGContext& cx);
 
         //! Clear out the terrain and rebuild it from the map model
-        void reset();
+        void reset(VSGContext context);
 
         //! Deserialize from JSON
         Status from_json(const std::string& JSON, const IOOptions& io);
@@ -46,7 +46,7 @@ namespace ROCKY_NAMESPACE
 
         //! Updates the terrain periodically at a safe time.
         //! @return true if any updates were applied
-        bool update(const vsg::FrameStamp*, const IOOptions& io);
+        bool update(const vsg::FrameStamp*, VSGContext& context);
 
         //! Status of this node; check that's it OK before using
         Status status;
@@ -75,12 +75,9 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        void construct();
+        Status createRootTiles(VSGContext&);
 
-        Status createRootTiles(const IOOptions& io);
-
-        Runtime& _runtime;
-        vsg::ref_ptr<vsg::Group> _tilesRoot;
-        SRS _worldSRS;
+        vsg::ref_ptr<vsg::Group> tilesRoot;
+        SRS worldSRS;
     };
 }

@@ -4,43 +4,22 @@
  * MIT License
  */
 #pragma once
-
+#include <rocky/Context.h>
 #include <rocky/vsg/Common.h>
-#include <rocky/Instance.h>
-#include <rocky/IOTypes.h>
-#include <rocky/Threading.h>
-#include <rocky/Utils.h>
-#include <vsg/core/observer_ptr.h>
-#include <vsg/core/Objects.h>
-#include <vsg/app/Viewer.h>
-#include <vsg/app/CompileManager.h>
-#include <vsg/app/UpdateOperations.h>
-#include <vsg/threading/OperationThreads.h>
-#include <vsg/utils/SharedObjects.h>
-#include <vsg/text/Font.h>
-#include <mutex>
-#include <queue>
-
-namespace vsg
-{
-    class Viewer;
-    class Group;
-    class Node;
-    class Font;
-}
+#include <vsg/all.h>
+#include <deque>
+#include <vector>
 
 namespace ROCKY_NAMESPACE
 {
     /**
-     * Properties and operations needed for interfacing with VSG.
+     * Rocky runtime context to use with a VSG-based application.
+     * Use VSGContextFactory::create to VSGContext instance.
      */
-    class ROCKY_EXPORT Runtime
+    class ROCKY_EXPORT VSGContextImpl : public ContextImpl
     {
     public:
-        //! Constructor
-        Runtime();
-
-        //! Viewer instance
+        //! VSG viewer
         vsg::ref_ptr<vsg::Viewer> viewer;
 
         //! VSG object sharing
@@ -62,9 +41,7 @@ namespace ROCKY_NAMESPACE
         std::atomic_int renderRequests = { 0 };
 
         //! Request a frame render. Thread-safe.
-        void requestFrame() {
-            ++renderRequests;
-        }
+        void requestFrame();
 
         //! Whether rendering is enabled in the current frame.
         bool renderingEnabled = true;
@@ -101,7 +78,11 @@ namespace ROCKY_NAMESPACE
         void onNextUpdate(
             std::function<void()> function);
 
-        //! Compiles an object now
+        //! Compiles the Vulkan primitives for an object. This is a thread-safe
+        //! operation. Each call to compile() might block the viewer to access
+        //! a compile manager, so it is always a good idea to batch together as
+        //! many compile operations as possible (e.g., with vsg::Objects) for good
+        //! performance.
         void compile(vsg::ref_ptr<vsg::Object> object);
 
         //! Destroys a VSG object, eventually. 
@@ -113,28 +94,13 @@ namespace ROCKY_NAMESPACE
         //! https://github.com/vsg-dev/VulkanSceneGraph/discussions/949
         void dispose(vsg::ref_ptr<vsg::Object> object);
 
-        //! Schedules data creation; the resulting node or nodes 
-        //! get added to "parent" if the operation suceeds.
-        //! Returns a future so you can check for completion.
-        jobs::future<bool> compileAndAddChild(
-            vsg::ref_ptr<vsg::Group> parent,
-            std::function<vsg::ref_ptr<vsg::Node>(Cancelable&)> factory,
-            const jobs::context& config = { });
-
-        //! Safely removes a node from the scene graph (async)
-        void removeNode(
-            vsg::Group* parent,
-            unsigned index);
-
         //! TODO: Signal that something has changed that requires shader regen.
         //! When we implement this, it will probably fire off a callback that
         //! signals listeners to recreate their graphics pipelines so they
         //! can incorporate the new shader settings.
         //! OR, we can just maintain a revision number and the update() pass
         //! can check it as needed.
-        void dirtyShaders() {
-            shaderSettingsRevision++;
-        }
+        void dirtyShaders();
 
         //! Update any pending compile results. Returns true if updates occurred.
         bool update();
@@ -152,15 +118,39 @@ namespace ROCKY_NAMESPACE
         ToCompile _toCompile;
 
         mutable std::mutex _compileMutex;
-        //vsg::ref_ptr<vsg::Objects> _toCompile;
-        //std::queue<vsg::ref_ptr<vsg::Object>> _toCompile;
         vsg::CompileResult _compileResult;
 
         // deferred deletion container
-        mutable std::mutex _deferred_unref_mutex;
-        std::list<std::vector<vsg::ref_ptr<vsg::Object>>> _deferred_unref_queue;
+        mutable std::mutex _disposal_queue_mutex;
+        std::deque<std::vector<vsg::ref_ptr<vsg::Object>>> _disposal_queue;
 
         jobs::future<bool> _entityJobCompiler;
+
+    private:
+        //! Construct a new VSG-based application instance
+        VSGContextImpl();
+
+        //! Construct a new VSG-based instance with the given cmdline args
+        VSGContextImpl(int& argc, char** argv);
+
+        //! Disable copy/move constructors
+        VSGContextImpl(const VSGContextImpl& rhs) = delete;
+        VSGContextImpl(VSGContextImpl&& rhs) noexcept = delete;
+
+        void ctor(int& argc, char** argv);
+
+        friend class Application;
+        friend class VSGContextFactory;
+    };
+
+    using VSGContext = std::shared_ptr<VSGContextImpl>;
+
+    class VSGContextFactory
+    {
+    public:
+        template<typename... Args>
+        static VSGContext create(Args&&... args) {
+            return VSGContext(new VSGContextImpl(std::forward<Args>(args)...));
+        }
     };
 }
-

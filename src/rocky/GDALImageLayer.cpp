@@ -6,7 +6,7 @@
 #include "GDALImageLayer.h"
 #ifdef ROCKY_HAS_GDAL
 
-#include "Instance.h"
+#include "Context.h"
 #include "Image.h"
 #include "Log.h"
 #include "json.h"

@@ -5,7 +5,7 @@
  */
 #include "Utils.h"
 #include "sha1.h"
-#include "Instance.h"
+#include "Context.h"
 #include <cctype>
 #include <cstring>
 #include <cstdlib>

@@ -4,11 +4,11 @@
  * MIT License
  */
 #pragma once
+#include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/ecs/Registry.h>
 #include <rocky/vsg/ecs/Component.h>
 #include <rocky/vsg/ecs/Visibility.h>
 #include <rocky/vsg/ecs/Transform.h>
-#include <rocky/vsg/Runtime.h>
 #include <rocky/vsg/Utils.h>
 #include <rocky/Utils.h>
 #include <vsg/vk/Context.h>
@@ -71,7 +71,7 @@ namespace ROCKY_NAMESPACE
         {
             std::vector<BuildItem> items;
             vsg::ref_ptr<SystemNodeBase> system;
-            Runtime* runtime = nullptr;
+            VSGContext* context = nullptr;
 
             // only permit default or move construction:
             BuildBatch() = default;
@@ -92,7 +92,7 @@ namespace ROCKY_NAMESPACE
             void quit();
 
             //! Called during update, this will merge any compilation results into the scene
-            void mergeResults(Registry&, Runtime&);
+            void mergeResults(Registry&, VSGContext&);
 
             // the data structures holding the queued jobs. 16 might be overkill :)
             struct Buffers
@@ -119,9 +119,9 @@ namespace ROCKY_NAMESPACE
         public:
             EntityNodeFactory* factory = nullptr;
 
-            virtual void invokeCreateOrUpdate(BuildItem& item, Runtime& runtime) const = 0;
+            virtual void invokeCreateOrUpdate(BuildItem& item, VSGContext& runtime) const = 0;
 
-            virtual void mergeCreateOrUpdateResults(entt::registry&, BuildItem& item, Runtime& runtime) = 0;
+            virtual void mergeCreateOrUpdateResults(entt::registry&, BuildItem& item, VSGContext& runtime) = 0;
         };
 
         template<class T>
@@ -134,7 +134,7 @@ namespace ROCKY_NAMESPACE
             virtual ~SystemNode<T>();
 
             // looks for any new components that need VSG initialization
-            void update(Runtime&) override;
+            void update(VSGContext&) override;
 
         protected:
             //! Construct from a subclass
@@ -172,11 +172,11 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::PipelineLayout> getPipelineLayout(const T&) const;
 
             //! Subclass must implement this to create or update a node for a component.
-            virtual void createOrUpdateNode(T&, BuildInfo&, Runtime&) const = 0;
+            virtual void createOrUpdateNode(T&, BuildInfo&, VSGContext&) const = 0;
 
-            void invokeCreateOrUpdate(BuildItem& item, Runtime& runtime) const override;
+            void invokeCreateOrUpdate(BuildItem& item, VSGContext& runtime) const override;
 
-            void mergeCreateOrUpdateResults(entt::registry& registry, BuildItem& item, Runtime& runtime) override;
+            void mergeCreateOrUpdateResults(entt::registry& registry, BuildItem& item, VSGContext& runtime) override;
 
         private:
 
@@ -230,7 +230,7 @@ namespace ROCKY_NAMESPACE
             //! Initialize of all connected system nodes. This should be invoked
             //! any time a new viewer is created.
             //! @param runtime The runtime object to pass to the systems
-            void initialize(Runtime& runtime)
+            void initialize(VSGContext& runtime)
             {
                 for (auto& child : children)
                 {
@@ -249,7 +249,7 @@ namespace ROCKY_NAMESPACE
 
             //! Update all connected system nodes. This should be invoked once per frame.
             //! @param runtime The runtime object to pass to the systems
-            void update(Runtime& runtime);
+            void update(VSGContext& runtime);
 
         
             std::vector<System*> systems;
@@ -524,7 +524,7 @@ namespace ROCKY_NAMESPACE
 
 
     template<class T>
-    inline void ecs::SystemNode<T>::update(Runtime& runtime)
+    inline void ecs::SystemNode<T>::update(VSGContext& context)
     {
         std::vector<ecs::BuildItem> entities_to_build;
 
@@ -562,7 +562,7 @@ namespace ROCKY_NAMESPACE
                 ecs::BuildBatch batch;
                 batch.items = std::move(entities_to_build);
                 batch.system = this;
-                batch.runtime = &runtime;
+                batch.context = &context;
 
                 bool ok = SystemNodeBase::factory->buffers->input.emplace(std::move(batch));
 
@@ -577,13 +577,13 @@ namespace ROCKY_NAMESPACE
     }
 
     template<typename T>
-    void ecs::SystemNode<T>::invokeCreateOrUpdate(BuildItem& item, Runtime& runtime) const
+    void ecs::SystemNode<T>::invokeCreateOrUpdate(BuildItem& item, VSGContext& context) const
     {
-        createOrUpdateNode(*static_cast<T*>(item.component), item, runtime);
+        createOrUpdateNode(*static_cast<T*>(item.component), item, context);
     }
 
     template<typename T>
-    void ecs::SystemNode<T>::mergeCreateOrUpdateResults(entt::registry& registry, BuildItem& item, Runtime& runtime)
+    void ecs::SystemNode<T>::mergeCreateOrUpdateResults(entt::registry& registry, BuildItem& item, VSGContext& context)
     {
         // if there's a new node AND the entity isn't outdated or deleted,
         // swap it in. This method is called from ECSNode::update().
@@ -596,7 +596,7 @@ namespace ROCKY_NAMESPACE
             {
                 // dispose of the old node
                 if (renderable.node)
-                    runtime.dispose(renderable.node);
+                    context->dispose(renderable.node);
 
                 renderable.node = item.new_node;
             }

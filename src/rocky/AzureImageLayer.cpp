@@ -6,7 +6,7 @@
 #include "AzureImageLayer.h"
 #ifdef ROCKY_HAS_AZURE
 
-#include "Instance.h"
+#include "Context.h"
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;

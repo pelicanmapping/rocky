@@ -23,7 +23,7 @@ ecs::ECSNode::~ECSNode()
 
 
 void
-ecs::ECSNode::update(Runtime& runtime)
+ecs::ECSNode::update(VSGContext& runtime)
 {
     // update all systems
     for (auto& system : systems)
@@ -57,11 +57,11 @@ ecs::EntityNodeFactory::start()
                     if (buffers->input.pop(batch))
                     {
                         // a group to combine all compiles into one operation
-                        auto group = vsg::Group::create();
+                        auto group = vsg::Objects::create();
 
                         for (auto& item : batch.items)
                         {
-                            batch.system->invokeCreateOrUpdate(item, *batch.runtime);
+                            batch.system->invokeCreateOrUpdate(item, *batch.context);
 
                             if (item.new_node)
                             {
@@ -73,7 +73,7 @@ ecs::EntityNodeFactory::start()
                         if (group->children.size() > 0)
                         {
                             // compile all the results at once:
-                            batch.runtime->compile(group);
+                            (*batch.context)->compile(group);
 
                             // queue the results so the merger will pick em up
                             // (in SystemsManagerGroup::update)
@@ -99,7 +99,7 @@ ecs::EntityNodeFactory::quit()
 }
 
 void
-ecs::EntityNodeFactory::mergeResults(Registry& r, Runtime& runtime)
+ecs::EntityNodeFactory::mergeResults(Registry& r, VSGContext& runtime)
 {
     if (buffers)
     {

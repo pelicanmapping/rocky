@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include <rocky/vsg/Common.h>
+#include <rocky/vsg/VSGContext.h>
 
 #include <rocky/GeoPoint.h>
 #include <rocky/Math.h>
@@ -41,7 +41,8 @@ namespace ROCKY_NAMESPACE
         MapManipulator(
             vsg::ref_ptr<MapNode> mapNode,
             vsg::ref_ptr<vsg::Window> window,
-            vsg::ref_ptr<vsg::Camera> camera);
+            vsg::ref_ptr<vsg::Camera> camera,
+            VSGContext& context);
 
         virtual ~MapManipulator();
 
@@ -725,6 +726,8 @@ namespace ROCKY_NAMESPACE
                 tetherRotation(0, 0, 0, 1)
             { }
         };
+
+        VSGContext _context;
 
         vsg::observer_ptr<MapNode> _mapNode_weakptr;
         vsg::observer_ptr<vsg::Window> _window_weakptr;

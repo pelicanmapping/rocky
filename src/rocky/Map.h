@@ -6,7 +6,7 @@
 #pragma once
 
 #include <rocky/Common.h>
-#include <rocky/Instance.h>
+#include <rocky/Context.h>
 #include <rocky/Profile.h>
 #include <rocky/Layer.h>
 #include <rocky/Callbacks.h>
@@ -26,8 +26,8 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT Map : public Inherit<Object, Map>
     {
     public:
-        //! This Map's unique ID
-        UID uid() const { return _uid; }
+        //! Construct an empty map
+        Map();
 
         //! The map's master tiling profile, which defines its SRS and tiling structure
         void setProfile(const Profile&);
@@ -35,6 +35,9 @@ namespace ROCKY_NAMESPACE
 
         //! Spatial reference system of the map's profile (convenience)
         const SRS& srs() const;
+
+        //! Adds a layer to the map
+        void add(std::shared_ptr<Layer> layer);
 
         //! Layers comprising this map
         inline LayerCollection& layers();
@@ -53,29 +56,9 @@ namespace ROCKY_NAMESPACE
         //! in the map model (as a alternative to installing a MapCallback).
         Revision revision() const;
 
-        //! Global application instance
-        Instance& instance() { return _instance; }
-        const Instance& instance() const { return _instance; }
-
-        //! Import map properties and layers from JSON data
+        //! Deserialize from JSON data
         //! @param value JSON string to import
         Status from_json(const JSON& value, const IOOptions& io);
-
-    public:
-
-        //! Construct
-        explicit Map(const Instance& instance);
-
-        //! Construct with custom options
-        explicit Map(const Instance& instance, const IOOptions& io);
-
-        //! Deserialize
-        explicit Map(const Instance& instance, const JSON& conf);
-
-        //! Deserialize
-        explicit Map(const Instance& instance, const JSON& conf, const IOOptions& io);
-
-     public:
 
         //! Serialize
         std::string to_json() const;
@@ -100,17 +83,11 @@ namespace ROCKY_NAMESPACE
         optional<std::string> _profileLayer;
 
     private:
-        Instance _instance;
-        UID _uid;
-        std::vector<std::shared_ptr<Layer>> _layers;
         mutable std::shared_mutex _mapDataMutex;
         optional<Profile> _profile;
-        Revision _dataModelRevision;
-
+        Revision _dataModelRevision = 0;
         LayerCollection _imageLayers;
         LayerCollection _elevationLayers;
-
-        void construct(const JSON&, const IOOptions& io);
 
         friend class LayerCollection;
     };

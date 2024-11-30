@@ -5,7 +5,6 @@
  * MIT License
  */
 #include "LabelSystem.h"
-#include "../Runtime.h"
 #include "../PipelineState.h"
 #include "../Utils.h"
 
@@ -209,10 +208,10 @@ LabelSystemNode::LabelSystemNode(ecs::Registry& registry) :
 }
 
 void
-LabelSystemNode::initializeSystem(Runtime& runtime)
+LabelSystemNode::initializeSystem(VSGContext& runtime)
 {
     // use the VSG stock shaders for text:
-    auto& options = runtime.readerWriterOptions;
+    auto& options = runtime->readerWriterOptions;
     auto shaderSet = options->shaderSets["text"] = vsg::createTextShaderSet(options);
 
     // Configure the text shader set to turn off depth testing
@@ -242,12 +241,12 @@ LabelSystemNode::initializeSystem(Runtime& runtime)
     sampler->anisotropyEnable = VK_FALSE; // don't need it since we're "billboarding"
     sampler->maxLod = 12.0; // generate mipmaps up to level 12
 
-    if (runtime.sharedObjects)
-        runtime.sharedObjects->share(sampler);
+    if (runtime->sharedObjects)
+        runtime->sharedObjects->share(sampler);
 
     // this will prompt the creation of a descriptor image and associated bind command
     // for the texture atlas
-    config->assignTexture("textureAtlas", runtime.defaultFont->atlas, sampler);
+    config->assignTexture("textureAtlas", runtime->defaultFont->atlas, sampler);
 
     // cook it
     config->init();
@@ -255,7 +254,7 @@ LabelSystemNode::initializeSystem(Runtime& runtime)
     // copies any state commands from the configurator to the state group;
     // this will include the texture bind (the sampler) and the pipeline bind itself.
     auto stategroup = vsg::StateGroup::create();
-    config->copyTo(stategroup, runtime.sharedObjects);
+    config->copyTo(stategroup, runtime->sharedObjects);
 
     // Initialize GraphicsPipeline from the data in the configuration.
     // Copy the state commands into our pipeline container.
@@ -268,7 +267,7 @@ LabelSystemNode::initializeSystem(Runtime& runtime)
 }
 
 void
-LabelSystemNode::createOrUpdateNode(Label& label, ecs::BuildInfo& data, Runtime& runtime) const
+LabelSystemNode::createOrUpdateNode(Label& label, ecs::BuildInfo& data, VSGContext& runtime) const
 {
     bool rebuild = data.existing_node == nullptr;
 
@@ -287,7 +286,7 @@ LabelSystemNode::createOrUpdateNode(Label& label, ecs::BuildInfo& data, Runtime&
 
     if (rebuild)
     {
-        auto options = runtime.readerWriterOptions;
+        auto options = runtime->readerWriterOptions;
         //float size = label.style.pointSize;
 
         // We are doing our own billboarding with the PixelScaleTransform
@@ -303,8 +302,8 @@ LabelSystemNode::createOrUpdateNode(Label& label, ecs::BuildInfo& data, Runtime&
         layout->verticalAlignment = label.style.verticalAlignment;
 
         // Share this since it should be the same for everything
-        if (runtime.sharedObjects)
-            runtime.sharedObjects->share(layout);
+        if (runtime->sharedObjects)
+            runtime->sharedObjects->share(layout);
 
         auto valueBuffer = vsg::stringValue::create(label.text);
 

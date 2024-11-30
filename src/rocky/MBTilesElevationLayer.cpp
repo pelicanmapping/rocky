@@ -6,7 +6,7 @@
 #include "MBTilesElevationLayer.h"
 #ifdef ROCKY_HAS_MBTILES
 
-#include "Instance.h"
+#include "Context.h"
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;

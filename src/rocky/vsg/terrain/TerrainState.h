@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include <rocky/vsg/Common.h>
+#include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/terrain/TerrainTileNode.h>
 
 #include <vsg/io/Options.h>
@@ -16,10 +16,8 @@
 
 namespace ROCKY_NAMESPACE
 {
-    class Runtime;
     class TerrainTileNode;
     class TerrainTileRenderModel;
-
 
     /**
      * TerrainState creates all the Vulkan state necessary to
@@ -34,10 +32,10 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Initialize the factory
-        TerrainState(Runtime&);
+        TerrainState(VSGContext&);
 
         //! Creates a state group for rendering terrain
-        vsg::ref_ptr<vsg::StateGroup> createTerrainStateGroup();
+        vsg::ref_ptr<vsg::StateGroup> createTerrainStateGroup(VSGContext&);
 
         //! Integrates data from the new data model into an existing render model,
         //! and creates or updates all the necessary descriptors and commands.
@@ -46,7 +44,7 @@ namespace ROCKY_NAMESPACE
         TerrainTileRenderModel updateRenderModel(
             const TerrainTileRenderModel& oldRenderModel,
             const TerrainTileModel& newDataModel,
-            Runtime& runtime) const;
+            VSGContext& runtime) const;
 
         //! Status of the factory.
         Status status;
@@ -71,16 +69,16 @@ namespace ROCKY_NAMESPACE
         //! Creates all the default texture information,
         //! i.e. placeholder textures and uniforms for all tiles
         //! when they don't have actual data.
-        void createDefaultDescriptors();
+        void createDefaultDescriptors(VSGContext&);
 
         //! Creates the base shader set used when rendering terrain
-        vsg::ref_ptr<vsg::ShaderSet> createShaderSet() const;
+        vsg::ref_ptr<vsg::ShaderSet> createShaderSet(VSGContext&) const;
 
         //! Creates a configurator for graphics pipeline state groups.
         //! The configurator does not contain any ACTUAL decriptors (like
         //! textures and uniforms) but rather just prepares the ShaderSet
         //! to work with the specific decriptors you PLAN to provide.
-        vsg::ref_ptr<vsg::GraphicsPipelineConfig> createPipelineConfig() const;
+        vsg::ref_ptr<vsg::GraphicsPipelineConfig> createPipelineConfig(VSGContext&) const;
 
         //! Defines a single texutre and its (possible shared) sampler
         struct TextureDef
@@ -105,7 +103,5 @@ namespace ROCKY_NAMESPACE
             TextureDef elevation;
         }
         texturedefs;
-
-        Runtime& _runtime;
     };
 }

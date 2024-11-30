@@ -20,24 +20,18 @@ LayerCollection::LayerCollection(Map* map) :
 Status
 LayerCollection::add(std::shared_ptr<Layer> layer)
 {
-    return add(layer, _map->_instance.io());
-}
-
-Status
-LayerCollection::add(std::shared_ptr<Layer> layer, const IOOptions& io)
-{
     // check if it's already in the collection
     if (indexOf(layer) != size())
     {
         return layer->status();
     }
 
-    // open if necessary
-    if (openOnAdd && layer->openAutomatically())
-    {
-        // not checking the return value here since we are returning it from this method
-        layer->open(io);
-    }
+    //// open if necessary
+    //if (openOnAdd && layer->openAutomatically())
+    //{
+    //    // not checking the return value here since we are returning it from this method
+    //    layer->open(io);
+    //}
 
     // insert the new layer into the map safely
     Revision new_revision;

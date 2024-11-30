@@ -128,8 +128,8 @@ layer->setAttribution(rocky::Hyperlink{ "\u00a9 OpenStreetMap contributors", "ht
 mapNode->map->layers().add(layer);
 
 // Required- You MUST tell the rocky runtime context about your `vsg::Viewer` instance:
-auto& runtime = mapNode->instance.runtime();
-runtime.viewer = viewer;
+auto& context = mapNode->context;
+context->viewer = viewer;
 
 ...
 scene->addChild(mapNode);

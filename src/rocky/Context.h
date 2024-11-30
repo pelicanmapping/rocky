@@ -6,29 +6,29 @@
 #pragma once
 #include <rocky/Common.h>
 #include <rocky/IOTypes.h>
+#include <memory>
+#include <functional>
 #include <unordered_map>
 #include <set>
 
 namespace ROCKY_NAMESPACE
 {
-    class ROCKY_EXPORT Instance
+    class ROCKY_EXPORT ContextImpl
     {
     public:
-        //! Construct a new application instance.
-        Instance();
-
         //! Copy constructor
-        Instance(const Instance& rhs);
+        ContextImpl(const ContextImpl& rhs) = delete;
+        ContextImpl(ContextImpl&&) noexcept = delete;
 
         // destructor
-        virtual ~Instance();
+        virtual ~ContextImpl();
 
         //! Default IO options
-        IOOptions& io();
+        IOOptions io;
 
         //! Global application instance status - returns an error
         //! if the instance does not exist
-        static const Status& status();
+        //static const Status& status();
 
     public: // Object factory functions
 
@@ -51,12 +51,29 @@ namespace ROCKY_NAMESPACE
         //! Informational
         static std::set<std::string>& about();
 
-    private:
-        struct Implementation;
-        std::shared_ptr<Implementation> _impl;
+    protected:
+        //! Construct a new application context.
+        ContextImpl();
 
-        static Status _global_status;
+    private:
+        //struct Implementation;
+        //std::shared_ptr<Implementation> _impl;
+
+        //static Status _global_status;
         static std::shared_ptr<Object> createObjectImpl(const std::string& name, const std::string& JSON, const IOOptions& io);
+
+        friend class ContextFactory;
+    };
+
+    using Context = std::shared_ptr<ContextImpl>;
+
+    class ContextFactory
+    {
+    public:
+        template<typename... Args>
+        static Context create(Args&&... args) {
+            return Context(new Context(std::forward<Args>(args)...));
+        };
     };
 }
 
@@ -66,6 +83,6 @@ namespace ROCKY_NAMESPACE
 #define ROCKY_ADD_OBJECT_FACTORY(NAME, FUNC) \
         struct __ROCKY_OBJECTFACTORY_##NAME##_INSTALLER { \
             __ROCKY_OBJECTFACTORY_##NAME##_INSTALLER () { \
-                ROCKY_NAMESPACE::Instance::objectFactories()[ROCKY_NAMESPACE::util::toLower(#NAME)] = FUNC; \
+                ROCKY_NAMESPACE::ContextImpl::objectFactories()[ROCKY_NAMESPACE::util::toLower(#NAME)] = FUNC; \
         } }; \
         __ROCKY_OBJECTFACTORY_##NAME##_INSTALLER __rocky_objectFactory_##NAME ;

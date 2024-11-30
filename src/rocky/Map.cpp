@@ -4,7 +4,8 @@
  * MIT License
  */
 #include "Map.h"
-#include "VisibleLayer.h"
+#include "ImageLayer.h"
+#include "ElevationLayer.h"
 #include "json.h"
 #include <tuple>
 
@@ -12,56 +13,11 @@ using namespace ROCKY_NAMESPACE;
 
 #define LC "[Map] "
 
-Map::Map(const Instance& instance) :
-    _instance(instance),
+Map::Map() :
     _imageLayers(this),
     _elevationLayers(this)
 {
-    construct({}, _instance.io());
-}
-
-Map::Map(const Instance& instance, const IOOptions& io) :
-    _instance(instance),
-    _imageLayers(this),
-    _elevationLayers(this)
-{
-    construct({}, io);
-}
-
-Map::Map(const Instance& instance, const std::string& JSON) :
-    _instance(instance),
-    _imageLayers(this),
-    _elevationLayers(this)
-{
-    construct(JSON, _instance.io());
-}
-
-Map::Map(const Instance& instance, const std::string& JSON, const IOOptions& io) :
-    _instance(instance),
-    _imageLayers(this),
-    _elevationLayers(this)
-{
-    construct(JSON, io);
-}
-
-void
-Map::construct(const std::string& JSON, const IOOptions& io)
-{
-    // reset the revision:
-    _dataModelRevision = 0;
-
-    // Generate a UID.
-    _uid = rocky::createUID();
-
-    // deserialize
-    from_json(JSON, io);
-
-    // set a default profile if neccesary.
-    if (!profile().valid())
-    {
-        // call set_default so it doesn't serialize.
-        _profile.set_default(Profile::GLOBAL_GEODETIC);
-    }
+    _profile.set_default(Profile::GLOBAL_GEODETIC);
 }
 
 Status
@@ -80,7 +36,7 @@ Map::from_json(const std::string& input, const IOOptions& io)
             for (auto& j_layer : j_layers) {
                 std::string type;
                 get_to(j_layer, "type", type);
-                auto new_layer = Instance::createObject<Layer>(type, j_layer.dump(), io);
+                auto new_layer = ContextImpl::createObject<Layer>(type, j_layer.dump(), io);
                 if (new_layer) {
                     layers().add(new_layer);
                 }
@@ -146,6 +102,19 @@ Map::removeCallback(UID uid)
     onLayerAdded.remove(uid);
     onLayerRemoved.remove(uid);
     onLayerMoved.remove(uid);
+}
+
+void
+Map::add(std::shared_ptr<Layer> layer)
+{
+    if (auto imageLayer = ImageLayer::cast(layer))
+    {
+        _imageLayers.add(imageLayer);
+    }
+    else if (auto elevLayer = ElevationLayer::cast(layer))
+    {
+        _elevationLayers.add(elevLayer);
+    }
 }
 
 Status

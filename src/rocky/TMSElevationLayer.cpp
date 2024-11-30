@@ -6,7 +6,7 @@
 #include "TMSElevationLayer.h"
 #ifdef ROCKY_HAS_TMS
 
-#include "Instance.h"
+#include "Context.h"
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
