@@ -89,10 +89,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a5e030029f242281c27954eefa46e626e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a479abc8f6d6c0983681d2849651024f9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_e_c_s_node.html#a479abc8f6d6c0983681d2849651024f9">add</a> (std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_system.html">System</a> &gt; system)</td></tr>
 <tr class="separator:a479abc8f6d6c0983681d2849651024f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6a7dbf61df7587f7b427ec388ee0ef80"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_e_c_s_node.html#a6a7dbf61df7587f7b427ec388ee0ef80">initialize</a> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;runtime)</td></tr>
-<tr class="separator:a6a7dbf61df7587f7b427ec388ee0ef80"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7fe3f0042af058706de2236a6b2e6c40"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_e_c_s_node.html#a7fe3f0042af058706de2236a6b2e6c40">update</a> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;runtime)</td></tr>
-<tr class="separator:a7fe3f0042af058706de2236a6b2e6c40"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c77fb65f0e05d6e5519b2b290efcd43"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_e_c_s_node.html#a2c77fb65f0e05d6e5519b2b290efcd43">initialize</a> (VSGContext &amp;runtime)</td></tr>
+<tr class="separator:a2c77fb65f0e05d6e5519b2b290efcd43"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6e42e325ed1188366cb370eaa325883"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_e_c_s_node.html#ab6e42e325ed1188366cb370eaa325883">update</a> (VSGContext &amp;runtime)</td></tr>
+<tr class="separator:ab6e42e325ed1188366cb370eaa325883"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -203,8 +203,8 @@ template&lt;class T &gt; </div>
 
 </div>
 </div>
-<a id="a6a7dbf61df7587f7b427ec388ee0ef80"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6a7dbf61df7587f7b427ec388ee0ef80">&#9670;&nbsp;</a></span>initialize()</h2>
+<a id="a2c77fb65f0e05d6e5519b2b290efcd43"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c77fb65f0e05d6e5519b2b290efcd43">&#9670;&nbsp;</a></span>initialize()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -215,7 +215,7 @@ template&lt;class T &gt; </div>
         <tr>
           <td class="memname">void ROCKY_NAMESPACE::ecs::ECSNode::initialize </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;&#160;</td>
+          <td class="paramtype">VSGContext &amp;&#160;</td>
           <td class="paramname"><em>runtime</em></td><td>)</td>
           <td></td>
         </tr>
@@ -235,8 +235,8 @@ template&lt;class T &gt; </div>
 
 </div>
 </div>
-<a id="a7fe3f0042af058706de2236a6b2e6c40"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7fe3f0042af058706de2236a6b2e6c40">&#9670;&nbsp;</a></span>update()</h2>
+<a id="ab6e42e325ed1188366cb370eaa325883"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6e42e325ed1188366cb370eaa325883">&#9670;&nbsp;</a></span>update()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -244,7 +244,7 @@ template&lt;class T &gt; </div>
         <tr>
           <td class="memname">void ecs::ECSNode::update </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;&#160;</td>
+          <td class="paramtype">VSGContext &amp;&#160;</td>
           <td class="paramname"><em>runtime</em></td><td>)</td>
           <td></td>
         </tr>

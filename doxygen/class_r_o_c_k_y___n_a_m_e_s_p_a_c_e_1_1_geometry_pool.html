@@ -76,10 +76,13 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;<a class="el" href="_geometry_pool_8h_source.html">GeometryPool.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="terrain_2_geometry_pool_8h_source.html">GeometryPool.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
+<tr class="memitem:afc2ab5fdf816e60e93c4eb46cd41a325"><td class="memItemLeft" align="right" valign="top"><a id="afc2ab5fdf816e60e93c4eb46cd41a325"></a>
+using&#160;</td><td class="memItemRight" valign="bottom"><b>SharedGeometries</b> = std::map&lt; GeometryKey, vsg::ref_ptr&lt; SharedGeometry &gt; &gt;</td></tr>
+<tr class="separator:afc2ab5fdf816e60e93c4eb46cd41a325"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc2ab5fdf816e60e93c4eb46cd41a325"><td class="memItemLeft" align="right" valign="top"><a id="afc2ab5fdf816e60e93c4eb46cd41a325"></a>
 using&#160;</td><td class="memItemRight" valign="bottom"><b>SharedGeometries</b> = std::map&lt; GeometryKey, vsg::ref_ptr&lt; SharedGeometry &gt; &gt;</td></tr>
 <tr class="separator:afc2ab5fdf816e60e93c4eb46cd41a325"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -100,8 +103,30 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_pool.html#ae2355abda3bda9fe01e4def5d4f8e8cc">clear</a> ()</td></tr>
 <tr class="memdesc:ae2355abda3bda9fe01e4def5d4f8e8cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear and reset the pool. <br /></td></tr>
 <tr class="separator:ae2355abda3bda9fe01e4def5d4f8e8cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85d8aa5277953661ab6e10c545d07008"><td class="memItemLeft" align="right" valign="top"><a id="a85d8aa5277953661ab6e10c545d07008"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_pool.html#a85d8aa5277953661ab6e10c545d07008">sweep</a> (VSGContext &amp;context)</td></tr>
+<tr class="memdesc:a85d8aa5277953661ab6e10c545d07008"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove unused entries from the pool. <br /></td></tr>
+<tr class="separator:a85d8aa5277953661ab6e10c545d07008"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d6fcfc85577851548ca30c00f5c403f"><td class="memItemLeft" align="right" valign="top"><a id="a7d6fcfc85577851548ca30c00f5c403f"></a>
+std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_pool.html#a7d6fcfc85577851548ca30c00f5c403f">size</a> () const</td></tr>
+<tr class="memdesc:a7d6fcfc85577851548ca30c00f5c403f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of geometries in the pool. <br /></td></tr>
+<tr class="separator:a7d6fcfc85577851548ca30c00f5c403f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7500c93a3a5c5a6741ecdeeedbe3d9d6"><td class="memItemLeft" align="right" valign="top"><a id="a7500c93a3a5c5a6741ecdeeedbe3d9d6"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_pool.html#a7500c93a3a5c5a6741ecdeeedbe3d9d6">GeometryPool</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> &amp;worldSRS)</td></tr>
+<tr class="memdesc:a7500c93a3a5c5a6741ecdeeedbe3d9d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct the geometry pool. <br /></td></tr>
+<tr class="separator:a7500c93a3a5c5a6741ecdeeedbe3d9d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad73d53778a080f01329159f6fb0e902d"><td class="memItemLeft" align="right" valign="top">vsg::ref_ptr&lt; SharedGeometry &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_pool.html#ad73d53778a080f01329159f6fb0e902d">getPooledGeometry</a> (const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;tileKey, const Settings &amp;settings, <a class="el" href="class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1cancelable.html">Cancelable</a> *state) const</td></tr>
+<tr class="separator:ad73d53778a080f01329159f6fb0e902d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a841f8c7ae349655ef1d5eb21e4ceebfc"><td class="memItemLeft" align="right" valign="top"><a id="a841f8c7ae349655ef1d5eb21e4ceebfc"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_pool.html#a841f8c7ae349655ef1d5eb21e4ceebfc">getNumSkirtElements</a> (const Settings &amp;settings) const</td></tr>
+<tr class="memdesc:a841f8c7ae349655ef1d5eb21e4ceebfc"><td class="mdescLeft">&#160;</td><td class="mdescRight">The number of elements (incides) in the terrain skirt if applicable. <br /></td></tr>
+<tr class="separator:a841f8c7ae349655ef1d5eb21e4ceebfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5102e1e89f955d31db35149b0912981"><td class="memItemLeft" align="right" valign="top"><a id="af5102e1e89f955d31db35149b0912981"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_pool.html#af5102e1e89f955d31db35149b0912981">clear</a> ()</td></tr>
+<tr class="memdesc:af5102e1e89f955d31db35149b0912981"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear and reset the pool. <br /></td></tr>
+<tr class="separator:af5102e1e89f955d31db35149b0912981"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa320faf2640cfd3834bc03ea776fcb6d"><td class="memItemLeft" align="right" valign="top"><a id="aa320faf2640cfd3834bc03ea776fcb6d"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_pool.html#aa320faf2640cfd3834bc03ea776fcb6d">sweep</a> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;runtime)</td></tr>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_pool.html#aa320faf2640cfd3834bc03ea776fcb6d">sweep</a> (Runtime &amp;runtime)</td></tr>
 <tr class="memdesc:aa320faf2640cfd3834bc03ea776fcb6d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove unused entries from the pool. <br /></td></tr>
 <tr class="separator:aa320faf2640cfd3834bc03ea776fcb6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d6fcfc85577851548ca30c00f5c403f"><td class="memItemLeft" align="right" valign="top"><a id="a7d6fcfc85577851548ca30c00f5c403f"></a>
@@ -114,8 +139,43 @@ std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <p>In a geocentric map, every tile at a particular LOD and a particular latitudinal (north-south) extent shares exactly the same geometry; each tile is just shifted and rotated differently. Therefore we can use the same <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html">Geometry</a> for all tiles that share the same LOD and same min/max latitude in a geocentric map. In a projected map, all tiles at a given LOD share the same geometry regardless of extent, so eve more sharing is possible.</p>
 <p>This object creates and returns geometries based on TileKeys, sharing instances whenever possible. Concept adapted from OSG's osgTerrain::GeometryPool. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="ad73d53778a080f01329159f6fb0e902d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad73d53778a080f01329159f6fb0e902d">&#9670;&nbsp;</a></span>getPooledGeometry() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">vsg::ref_ptr&lt;SharedGeometry&gt; ROCKY_NAMESPACE::GeometryPool::getPooledGeometry </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a> &amp;&#160;</td>
+          <td class="paramname"><em>tileKey</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const Settings &amp;&#160;</td>
+          <td class="paramname"><em>settings</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1cancelable.html">Cancelable</a> *&#160;</td>
+          <td class="paramname"><em>state</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Gets the <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html">Geometry</a> associated with a tile key, creating a new one if necessary and storing it in the pool. </p>
+
+</div>
+</div>
 <a id="aac62552b12e482e79b75d365c3c86a64"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aac62552b12e482e79b75d365c3c86a64">&#9670;&nbsp;</a></span>getPooledGeometry()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aac62552b12e482e79b75d365c3c86a64">&#9670;&nbsp;</a></span>getPooledGeometry() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -150,8 +210,8 @@ std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>src/rocky/vsg/terrain-dbpager/<a class="el" href="_geometry_pool_8h_source.html">GeometryPool.h</a></li>
-<li>src/rocky/vsg/terrain-dbpager/GeometryPool.cpp</li>
+<li>src/rocky/vsg/terrain/<a class="el" href="terrain_2_geometry_pool_8h_source.html">GeometryPool.h</a></li>
+<li>src/rocky/vsg/terrain/GeometryPool.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

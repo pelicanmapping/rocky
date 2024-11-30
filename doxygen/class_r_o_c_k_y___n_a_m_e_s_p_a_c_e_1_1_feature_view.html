@@ -80,8 +80,8 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a3e22450e541626b81e32f90ba727f4d6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html#a3e22450e541626b81e32f90ba727f4d6">generate</a> (entt::registry &amp;registry, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> &amp;srs, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;runtime, bool keep_features=false)</td></tr>
-<tr class="separator:a3e22450e541626b81e32f90ba727f4d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04e804c0205a2801c9b6254bbf8dfb86"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html#a04e804c0205a2801c9b6254bbf8dfb86">generate</a> (entt::registry &amp;registry, const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> &amp;srs, VSGContext &amp;runtime, bool keep_features=false)</td></tr>
+<tr class="separator:a04e804c0205a2801c9b6254bbf8dfb86"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab43635fbf68e4944fee259d1b6b21883"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html#ab43635fbf68e4944fee259d1b6b21883">clear</a> (entt::registry &amp;registry)</td></tr>
 <tr class="separator:ab43635fbf68e4944fee259d1b6b21883"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6ef69e4901adf04369b28389b9b3b80a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html#a6ef69e4901adf04369b28389b9b3b80a">dirtyStyles</a> (entt::registry &amp;registry)</td></tr>
@@ -138,7 +138,7 @@ std::vector&lt; entt::entity &gt;&#160;</td><td class="memItemRight" valign="bot
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Deletes any geometries previously created by <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html#a3e22450e541626b81e32f90ba727f4d6">generate()</a> </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Deletes any geometries previously created by <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html#a04e804c0205a2801c9b6254bbf8dfb86">generate()</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">registry</td><td>Entity registry, locked for writing </td></tr>
   </table>
@@ -171,8 +171,8 @@ std::vector&lt; entt::entity &gt;&#160;</td><td class="memItemRight" valign="bot
 
 </div>
 </div>
-<a id="a3e22450e541626b81e32f90ba727f4d6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3e22450e541626b81e32f90ba727f4d6">&#9670;&nbsp;</a></span>generate()</h2>
+<a id="a04e804c0205a2801c9b6254bbf8dfb86"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a04e804c0205a2801c9b6254bbf8dfb86">&#9670;&nbsp;</a></span>generate()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -192,7 +192,7 @@ std::vector&lt; entt::entity &gt;&#160;</td><td class="memItemRight" valign="bot
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> &amp;&#160;</td>
+          <td class="paramtype">VSGContext &amp;&#160;</td>
           <td class="paramname"><em>runtime</em>, </td>
         </tr>
         <tr>
@@ -212,7 +212,7 @@ std::vector&lt; entt::entity &gt;&#160;</td><td class="memItemRight" valign="bot
   <table class="params">
     <tr><td class="paramname">registry</td><td>Entity registry, locked for writing </td></tr>
     <tr><td class="paramname">srs</td><td><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> or resulting geometry </td></tr>
-    <tr><td class="paramname">runtime</td><td><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_runtime.html">Runtime</a> operations interface </td></tr>
+    <tr><td class="paramname">runtime</td><td>Runtime operations interface </td></tr>
     <tr><td class="paramname">keep_features</td><td>Whether to keep the "features" vector intact; by default it is cleared after calling generate </td></tr>
   </table>
   </dd>
