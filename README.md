@@ -59,7 +59,7 @@ Thanks to these excellent open source projects!
 ## Run the Demo
 Rocky is pretty good at finding its data files, but you might need so up a couple environment variables to help:
 ```bat
-set ROCKY_FILE_PATH=%rocky_install_dir%/share
+set ROCKY_FILE_PATH=%rocky_install_dir%/share/rocky
 set ROCKY_DEFAULT_FONT=C:/windows/fonts/arialbd.ttf
 set PROJ_DATA=%proj_install_dir%/share/proj
 ```
