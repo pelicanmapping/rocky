@@ -32,13 +32,14 @@ This project is in its early stages so expect a lot of API and architectural cha
 # Getting started
 
 ## Build the SDK
-On Windows, Rocky comes with a handy batch file to automatically configure the project using `vcpkg`:
+Rocky uses CMake, and we maintain the build on Windows and Linux.
+Rocky comes with a handy Windows batch file to automatically configure the project using `vcpkg`:
 ```bat
 bootstrap-vcpkg.bat
 ```
 That will download and build all the dependencies (takes a while) and generate your CMake project and Visual Studio solution file.
 
-On Linux you can use `vcpkg` as well, or you can install the [dependencies](#dependencies) using your favorite package manager (like `apt`).
+If you would rather not use vcpkg, you can build and install the [dependencies](#dependencies) yourself, or use your favorite package manager (like `apt` on Linux).
 
 ### Dependencies
 Thanks to these excellent open source projects!
@@ -59,7 +60,7 @@ Thanks to these excellent open source projects!
 ## Run the Demo
 Rocky is pretty good at finding its data files, but you might need so up a couple environment variables to help:
 ```bat
-set ROCKY_FILE_PATH=%rocky_install_dir%/share
+set ROCKY_FILE_PATH=%rocky_install_dir%/share/rocky
 set ROCKY_DEFAULT_FONT=C:/windows/fonts/arialbd.ttf
 set PROJ_DATA=%proj_install_dir%/share/proj
 ```
