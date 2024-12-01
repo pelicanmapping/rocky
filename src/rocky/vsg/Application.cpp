@@ -87,15 +87,32 @@ Application::Application()
     ctor(argc, (char**)argv);
 }
 
+Application::Application(vsg::ref_ptr<vsg::Viewer> viewer_)
+{
+    int argc = 0;
+    const char* argv[1] = { "rocky" };
+    setViewer(viewer_);
+    ctor(argc, (char**)argv);
+}
+
 Application::Application(int& argc, char** argv)
 {
+    ctor(argc, argv);
+}
+
+Application::Application(vsg::ref_ptr<vsg::Viewer> viewer_, int& argc, char** argv)
+{
+    setViewer(viewer_);
     ctor(argc, argv);
 }
 
 void
 Application::ctor(int& argc, char** argv)
 {
-    setViewer(vsg::Viewer::create());
+    if (!viewer)
+    {
+        setViewer(vsg::Viewer::create());
+    }
 
     context = VSGContextFactory::create(viewer, argc, argv);
 

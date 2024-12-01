@@ -122,15 +122,14 @@ int main(int argc, char** argv)
 {
     QApplication qt_app(argc, argv);
 
-    rocky::Application app(argc, argv);
-
-    rocky::Log()->set_level(rocky::log::level::info);
-
     // First, create a customized Qt-based viewer and integrate it with our Rocky Application object.
     auto viewer = MyQtViewer::create();
+
+    rocky::Application app(viewer, argc, argv);
     viewer->frame = [&app]() { return app.frame(); };
     viewer->continuousUpdate = true;
-    app.setViewer(viewer);
+
+    rocky::Log()->set_level(rocky::log::level::info);
 
     // Set up the main window and its central container widget as you normally would in Qt.
     // We also set the content margins for a nicer window-filling look.

@@ -35,6 +35,16 @@ namespace ROCKY_NAMESPACE
         //! @param argv Command line arguments
         Application(int& argc, char** argv);
 
+        //! Construct a new application object
+        //! @param viewer The viewer to use
+        Application(vsg::ref_ptr<vsg::Viewer> viewer);
+
+        //! Construct a new application object
+        //! @param viewer The viewer to use
+        //! @param argc Number of command line arguments, including the exe name
+        //! @param argv Command line arguments
+        Application(vsg::ref_ptr<vsg::Viewer> viewer, int& argc, char** argv);
+
         //! Run until exit.
         //! @return exit code, 0 = no error
         int run();
