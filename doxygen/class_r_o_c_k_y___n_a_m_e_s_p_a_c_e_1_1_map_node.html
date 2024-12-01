@@ -69,6 +69,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -82,10 +83,6 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aa4e1fb66b032e08781093ffb7fe03885"><td class="memItemLeft" align="right" valign="top"><a id="aa4e1fb66b032e08781093ffb7fe03885"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#aa4e1fb66b032e08781093ffb7fe03885">MapNode</a> ()</td></tr>
-<tr class="memdesc:aa4e1fb66b032e08781093ffb7fe03885"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a mapnode with the default global geodetic profile. <br /></td></tr>
-<tr class="separator:aa4e1fb66b032e08781093ffb7fe03885"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a87c24c43b26ccef6431631a6d0c0b282"><td class="memItemLeft" align="right" valign="top"><a id="a87c24c43b26ccef6431631a6d0c0b282"></a>
 const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a87c24c43b26ccef6431631a6d0c0b282">mapSRS</a> () const</td></tr>
 <tr class="memdesc:a87c24c43b26ccef6431631a6d0c0b282"><td class="mdescLeft">&#160;</td><td class="mdescRight">Spatial Reference System of the underlying map. <br /></td></tr>
@@ -110,11 +107,18 @@ const <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settin
 std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a332c678d135c745a69f03fd0343ce4e1">to_json</a> () const</td></tr>
 <tr class="memdesc:a332c678d135c745a69f03fd0343ce4e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Serializes the <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html">MapNode</a>. <br /></td></tr>
 <tr class="separator:a332c678d135c745a69f03fd0343ce4e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af36a3a4e2237745e389e32bc6df90be6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#af36a3a4e2237745e389e32bc6df90be6">update</a> (const vsg::FrameStamp *, VSGContext &amp;context)</td></tr>
-<tr class="separator:af36a3a4e2237745e389e32bc6df90be6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a09eab4fd12b1f4a045d7cd46c2d38dda"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a09eab4fd12b1f4a045d7cd46c2d38dda">update</a> (VSGContext context)</td></tr>
+<tr class="separator:a09eab4fd12b1f4a045d7cd46c2d38dda"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28e8591d4cea75dc6dd85d2c7ae8fc5d"><td class="memItemLeft" align="right" valign="top"><a id="a28e8591d4cea75dc6dd85d2c7ae8fc5d"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>traverse</b> (vsg::RecordTraversal &amp;) const override</td></tr>
 <tr class="separator:a28e8591d4cea75dc6dd85d2c7ae8fc5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a013848eca2c4cea825da1f648b293251"><td class="memItemLeft" align="right" valign="top"><a id="a013848eca2c4cea825da1f648b293251"></a>
+static vsg::ref_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html">MapNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a013848eca2c4cea825da1f648b293251">create</a> (VSGContext context)</td></tr>
+<tr class="memdesc:a013848eca2c4cea825da1f648b293251"><td class="mdescLeft">&#160;</td><td class="mdescRight">Custom create function. <br /></td></tr>
+<tr class="separator:a013848eca2c4cea825da1f648b293251"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -134,8 +138,8 @@ vsg::ref_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ter
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>VSG Node that renders a map. This node is a "view" component that renders data from a "Map" data model. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="af36a3a4e2237745e389e32bc6df90be6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af36a3a4e2237745e389e32bc6df90be6">&#9670;&nbsp;</a></span>update()</h2>
+<a id="a09eab4fd12b1f4a045d7cd46c2d38dda"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a09eab4fd12b1f4a045d7cd46c2d38dda">&#9670;&nbsp;</a></span>update()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -143,19 +147,9 @@ vsg::ref_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ter
         <tr>
           <td class="memname">bool MapNode::update </td>
           <td>(</td>
-          <td class="paramtype">const vsg::FrameStamp *&#160;</td>
-          <td class="paramname"><em>f</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">VSGContext&#160;</td>
+          <td class="paramname"><em>context</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">VSGContext &amp;&#160;</td>
-          <td class="paramname"><em>context</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">

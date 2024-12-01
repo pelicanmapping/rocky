@@ -136,6 +136,9 @@ std::size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Pool of terrain tile geometries.</p>
+<p>In a geocentric map, every tile at a particular LOD and a particular latitudinal (north-south) extent shares exactly the same geometry; each tile is just shifted and rotated differently. Therefore we can use the same <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html">Geometry</a> for all tiles that share the same LOD and same min/max latitude in a geocentric map. In a projected map, all tiles at a given LOD share the same geometry regardless of extent, so even more sharing is possible.</p>
+<p>This object creates and returns geometries based on TileKeys, sharing instances whenever possible.</p>
+<p>Pool of terrain tile geometries.</p>
 <p>In a geocentric map, every tile at a particular LOD and a particular latitudinal (north-south) extent shares exactly the same geometry; each tile is just shifted and rotated differently. Therefore we can use the same <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html">Geometry</a> for all tiles that share the same LOD and same min/max latitude in a geocentric map. In a projected map, all tiles at a given LOD share the same geometry regardless of extent, so eve more sharing is possible.</p>
 <p>This object creates and returns geometries based on TileKeys, sharing instances whenever possible. Concept adapted from OSG's osgTerrain::GeometryPool. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
