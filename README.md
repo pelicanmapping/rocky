@@ -94,7 +94,7 @@ int main(int argc, char** argv)
 
     auto imagery = rocky::TMSImageLayer::create();
     imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
-    app.mapNode->map->layers().add(imagery);
+    app.mapNode->map->add(imagery);
 
     return app.run();
 }
@@ -118,26 +118,36 @@ You can embed Rocky in a Qt widget. See the `rocky_demo_qt` example for details.
 ## Rocky and VulkanSceneGraph
 If you're already using VSG in your application and want to add a `MapNode` to a view, do this:
 ```c++
-// make a map node:
-auto mapNode = rocky::MapNode::create();
+// Your VSG viewer:
+auto viewer = vsg::Viewer::create();
+
+// Make a runtime context for the viewer:
+auto context = rocky::VSGContextFactory::create(viewer);
+
+// Make a map node to render your map data:
+auto mapNode = rocky::MapNode::create(context);
 
 // optional - add one or more maps to your map:
 auto layer = rocky::TMSImageLayer::create();
 layer->uri = "https://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png";
 layer->setProfile(rocky::Profile::SPHERICAL_MERCATOR);
 layer->setAttribution(rocky::Hyperlink{ "\u00a9 OpenStreetMap contributors", "https://openstreetmap.org/copyright" });
-mapNode->map->layers().add(layer);
-
-// Required- You MUST tell the rocky runtime context about your `vsg::Viewer` instance:
-auto& context = mapNode->context;
-context->viewer = viewer;
-
+mapNode->map->add(layer);
 ...
 scene->addChild(mapNode);
+...
+// Run your main loop as usual
+while (viewer->advanceToNextFrame())
+{        
+    viewer->handleEvents();
+    viewer->update();
+    viewer->recordAndSubmit();
+    viewer->present();
+}
 ```
 You'll probably also want to add the `MapManipulator` to that view to control the map:
 ```c++
-viewer->addEventHandler(rocky::MapManipulator::create(mapNode, window, camera));
+viewer->addEventHandler(rocky::MapManipulator::create(mapNode, window, camera, context));
 ```
 ## Working with Maps
 Coming soon.
