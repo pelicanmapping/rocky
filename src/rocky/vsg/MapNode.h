@@ -15,7 +15,8 @@
 
 namespace ROCKY_NAMESPACE
 {
-    class SRS;
+    //! Registers a MapNode with a runtime context.
+    extern void ROCKY_EXPORT attach(vsg::ref_ptr<MapNode>, VSGContext);
 
     /**
      * VSG Node that renders a map.
@@ -25,8 +26,8 @@ namespace ROCKY_NAMESPACE
     {
     public: // constructors
 
-        //! Creates a mapnode with the default global geodetic profile.
-        MapNode();
+        //! Custom create function
+        static vsg::ref_ptr<MapNode> create(VSGContext context);
 
     public:
 
@@ -62,7 +63,7 @@ namespace ROCKY_NAMESPACE
 
         //! Call periodically to update the map node and terrain engine
         //! @return true if updates happened
-        bool update(const vsg::FrameStamp*, VSGContext& context);
+        bool update(VSGContext context);
 
     public:
 
@@ -70,9 +71,9 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        void construct();
+        //! Creates a mapnode with the default global geodetic profile.
+        MapNode();
 
-        //SRS _worldSRS;
         vsg::ref_ptr<vsg::Group> _layerNodes;
         bool _openedLayers = false;
 

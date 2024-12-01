@@ -234,8 +234,6 @@ int main(int argc, char** argv)
             vsgImGui::RenderImGui::frame([&]() { maingui->render(); });
         };
 
-    //app.mapNode->terrainSettings().maxLevelOfDetail = 0;
-
     // run until the user quits.
     return app.run();
 }

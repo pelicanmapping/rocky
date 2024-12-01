@@ -49,9 +49,6 @@ namespace ROCKY_NAMESPACE
         //! display manager.
         void onNextUpdate(std::function<void()> func);
 
-        //! Sets a custom view to use for this application.
-        void setViewer(vsg::ref_ptr<vsg::Viewer> viewer);
-
         //! About the application. Lists all the dependencies and their versions.
         std::string about() const;
 
@@ -129,6 +126,8 @@ namespace ROCKY_NAMESPACE
         bool _lastFrameOK = true;
 
         void ctor(int& argc, char** argv);
+
+        void setViewer(vsg::ref_ptr<vsg::Viewer> viewer);
 
         void setupViewer(vsg::ref_ptr<vsg::Viewer> viewer);
 

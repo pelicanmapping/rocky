@@ -72,12 +72,6 @@ namespace ROCKY_NAMESPACE
             const IOOptions& io,
             std::shared_ptr<TerrainEngine> engine);
 
-        //! Create a single terrain tile.
-        vsg::ref_ptr<TerrainTileNode> createTile(
-            const TileKey& key,
-            vsg::ref_ptr<TerrainTileNode> parent,
-            std::shared_ptr<TerrainEngine> engine);
-
         //! Fetches a tile by its key.
         //! @param key TileKey for which to fetch a tile
         //! @return The tile, if it exists

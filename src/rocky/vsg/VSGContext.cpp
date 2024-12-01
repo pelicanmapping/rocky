@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "VSGContext.h"
+#include "MapNode.h"
 #include "Utils.h"
 #include <rocky/Image.h>
 #include <rocky/URI.h>
@@ -301,16 +302,18 @@ namespace
 
 
 
-VSGContextImpl::VSGContextImpl() :
-    rocky::ContextImpl()
+VSGContextImpl::VSGContextImpl(vsg::ref_ptr<vsg::Viewer> viewer_) :
+    rocky::ContextImpl(),
+    viewer(viewer_)
 {
     int argc = 0;
     const char* argv[1] = { "rocky" };
     ctor(argc, (char**)argv);
 }
 
-VSGContextImpl::VSGContextImpl(int& argc, char** argv) :
-    rocky::ContextImpl()
+VSGContextImpl::VSGContextImpl(vsg::ref_ptr<vsg::Viewer> viewer_, int& argc, char** argv) :
+    rocky::ContextImpl(),
+    viewer(viewer_)
 {
     ctor(argc, argv);
 }
@@ -332,7 +335,6 @@ VSGContextImpl::ctor(int& argc, char** argv)
     _disposal_queue.resize(8);
 
     args.read(readerWriterOptions);
-    //args.read(_impl->runtime->readerWriterOptions);
 
     // redirect the VSG logger to our spdlog
     vsg::Logger::instance() = new VSG_to_Spdlog_Logger();

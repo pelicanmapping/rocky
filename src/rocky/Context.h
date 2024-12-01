@@ -72,7 +72,7 @@ namespace ROCKY_NAMESPACE
     public:
         template<typename... Args>
         static Context create(Args&&... args) {
-            return Context(new Context(std::forward<Args>(args)...));
+            return Context(new ContextImpl(std::forward<Args>(args)...));
         };
     };
 }

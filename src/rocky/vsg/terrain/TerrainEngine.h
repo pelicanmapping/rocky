@@ -33,7 +33,7 @@ namespace ROCKY_NAMESPACE
         const TerrainSettings& settings;
 
         //! runtime operations (scene graph, views, etc)
-        VSGContext& context;
+        VSGContext context;
 
         //! the map this terrain is rendering
         std::shared_ptr<Map> map;
@@ -55,5 +55,10 @@ namespace ROCKY_NAMESPACE
 
         //! name of job arena used to load data
         std::string loadSchedulerName = "rocky::terrain_loader";
+
+        //! Create a single terrain tile.
+        vsg::ref_ptr<TerrainTileNode> createTile(
+            const TileKey& key,
+            vsg::ref_ptr<TerrainTileNode> parent);
     };
 }

@@ -12,6 +12,8 @@
 
 namespace ROCKY_NAMESPACE
 {
+    class MapNode;
+
     /**
      * Rocky runtime context to use with a VSG-based application.
      * Use VSGContextFactory::create to VSGContext instance.
@@ -128,10 +130,10 @@ namespace ROCKY_NAMESPACE
 
     private:
         //! Construct a new VSG-based application instance
-        VSGContextImpl();
+        VSGContextImpl(vsg::ref_ptr<vsg::Viewer> viewer);
 
         //! Construct a new VSG-based instance with the given cmdline args
-        VSGContextImpl(int& argc, char** argv);
+        VSGContextImpl(vsg::ref_ptr<vsg::Viewer> viewer, int& argc, char** argv);
 
         //! Disable copy/move constructors
         VSGContextImpl(const VSGContextImpl& rhs) = delete;

@@ -131,6 +131,7 @@ namespace ROCKY_NAMESPACE
                 static_cast<vsg::QuadGroup*>(children[1].get())->children[i].get());
         }
 
+        friend class TerrainEngine;
         friend class TerrainTilePager;
     };
 }

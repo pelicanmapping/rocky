@@ -358,6 +358,15 @@ namespace ROCKY_NAMESPACE
             }
         };
 
+        class LambdaOperation : public vsg::Inherit<vsg::Operation, LambdaOperation>
+        {
+        public:
+            LambdaOperation(std::function<void()> func) : _func(func) { }
+            void run() override { _func(); }
+        private:
+            std::function<void()> _func;
+        };
+
 #if 0
         vsg::ref_ptr<vsg::Image> createBasicImage(std::uint32_t width, std::uint32_t height, VkFormat format)
         {

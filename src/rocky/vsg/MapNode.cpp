@@ -100,7 +100,7 @@ MapNode::worldSRS() const
 }
 
 bool
-MapNode::update(const vsg::FrameStamp* f, VSGContext& context)
+MapNode::update(VSGContext context)
 {
     //ROCKY_HARD_ASSERT_STATUS(context.status());
     ROCKY_HARD_ASSERT(map != nullptr && terrainNode != nullptr);
@@ -124,7 +124,7 @@ MapNode::update(const vsg::FrameStamp* f, VSGContext& context)
         _openedLayers = true;
     }
 
-    return terrainNode->update(f, context);
+    return terrainNode->update(context);
 }
 
 void
@@ -153,4 +153,27 @@ MapNode::traverse(vsg::RecordTraversal& rv) const
     rv.setObject("rocky.terraintilehost", terrainNode);
 
     Inherit::traverse(rv);
+}
+
+vsg::ref_ptr<MapNode>
+MapNode::create(VSGContext context)
+{
+    //ROCKY_SOFT_ASSERT_AND_RETURN(context, {}, "ILLEGAL: null context");
+    //ROCKY_SOFT_ASSERT_AND_RETURN(context->viewer, {}, "ILLEGAL: context does not contain a viewer");
+    //ROCKY_SOFT_ASSERT_AND_RETURN(context->viewer->updateOperations, {}, "ILLEGAL: viewer does not contain update operations");
+
+    auto mapNode = vsg::ref_ptr<MapNode>(new MapNode());
+
+    if (context && context->viewer && context->viewer->updateOperations)
+    {
+        auto update = [mapNode, context]()
+            {
+                mapNode->update(context);
+                context->update();
+            };
+
+        context->viewer->updateOperations->add(LambdaOperation::create(update), vsg::UpdateOperations::ALL_FRAMES);
+    }
+
+    return mapNode;
 }

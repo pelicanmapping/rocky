@@ -80,13 +80,12 @@ int main(int argc, char** argv)
     viewer->addWindow(window);
     viewer->addEventHandler(vsg::CloseHandler::create(viewer));
 
-
-
-    // Rocky runtime instance
-    //rocky::VSGContext ri(argc, argv);
+    // Rocky runtime context connected to the viewer:
+    auto context = rocky::VSGContextFactory::create(viewer);
+    context->sharedObjects = vsg::SharedObjects::create(); // optional
 
     // the map node - renders the terrain
-    auto mapNode = rocky::MapNode::create();
+    auto mapNode = rocky::MapNode::create(context);
 
     // Configure the terrain engine to our liking:
     mapNode->terrainSettings().concurrency = 4u;
@@ -100,14 +99,9 @@ int main(int argc, char** argv)
     layer->uri = "https://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png";
     layer->setProfile(rocky::Profile::SPHERICAL_MERCATOR);
     layer->setAttribution(rocky::Hyperlink{ "\u00a9 OpenStreetMap contributors", "https://openstreetmap.org/copyright" });
-    mapNode->map->layers().add(layer);
+    mapNode->map->add(layer);
 
 #endif // ROCKY_HAS_TMS
-
-    // You MUST tell the rocky runtime context about your viewer:
-    auto context = rocky::VSGContextFactory::create();
-    context->viewer = viewer;
-    context->sharedObjects = vsg::SharedObjects::create(); // optional
 
     vsg_scene->addChild(mapNode);
 
@@ -171,13 +165,7 @@ int main(int argc, char** argv)
         if (!viewer->active())
             break;
 
-        // rocky update pass - management of tiles and paged data
-        mapNode->update(viewer->getFrameStamp(), context);
-
-        // runs through the viewer's update operations queue; this includes update ops 
-        // initialized by rocky (tile merges for example)
         viewer->update();
-
         viewer->recordAndSubmit();
         viewer->present();
 

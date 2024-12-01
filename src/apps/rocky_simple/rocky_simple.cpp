@@ -7,7 +7,7 @@ int main(int argc, char** argv)
 
     auto imagery = rocky::TMSImageLayer::create();
     imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
-    app.mapNode->map->layers().add(imagery);
+    app.mapNode->map->add(imagery);
 
     return app.run();
 }

@@ -95,7 +95,9 @@ Application::Application(int& argc, char** argv)
 void
 Application::ctor(int& argc, char** argv)
 {
-    context = VSGContextFactory::create(argc, argv);
+    setViewer(vsg::Viewer::create());
+
+    context = VSGContextFactory::create(viewer, argc, argv);
 
     vsg::CommandLine commandLine(&argc, argv);
 
@@ -136,11 +138,10 @@ Application::ctor(int& argc, char** argv)
     }
 
     root = vsg::Group::create();
-
     mainScene = vsg::Group::create();
     root->addChild(mainScene);
 
-    mapNode = rocky::MapNode::create();
+    mapNode = rocky::MapNode::create(context);
 
     // the sun
     if (commandLine.read("--sky"))
@@ -157,9 +158,6 @@ Application::ctor(int& argc, char** argv)
 
     // a node to render the map/terrain
     mainScene->addChild(mapNode);
-
-    // Set up the runtime context with everything we need.
-    setViewer(vsg::Viewer::create());
 
     // No idea what this actually does :)
     if (commandLine.read("--mt"))
@@ -320,8 +318,8 @@ namespace
 
         void run() override
         {
-            // MapNode updates
-            app.mapNode->update(app.viewer->getFrameStamp(), app.context);
+            // MapNode updates (this happens automatically now)
+            //app.mapNode->update(app.context);
             
             // ECS updates - rendering or modifying entities
             app.ecsManager->update(app.context);
@@ -332,8 +330,8 @@ namespace
                 app.updateFunction();
             }
 
-            // integrate any pending compile results or disposals
-            app.context->update();
+            // integrate any pending compile results or disposals (happens automatically now)
+            //app.context->update();
 
             // keep the frames running if the pager is active
             auto& tasks = app.viewer->recordAndSubmitTasks;
@@ -526,10 +524,5 @@ void
 Application::setViewer(vsg::ref_ptr<vsg::Viewer> in_viewer)
 {
     viewer = in_viewer;
-
-    context->viewer = viewer;
-
-    //instance->offlineCompileManager = vsg::CompileManager::create(*viewer, vsg::ref_ptr<vsg::ResourceHints>{});
-
     displayManager = std::make_shared<DisplayManager>(*this);
 }

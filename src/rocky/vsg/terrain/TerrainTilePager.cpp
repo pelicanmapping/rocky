@@ -231,47 +231,6 @@ TerrainTilePager::update(const vsg::FrameStamp* fs, const IOOptions& io, std::sh
 }
 
 vsg::ref_ptr<TerrainTileNode>
-TerrainTilePager::createTile(const TileKey& key, vsg::ref_ptr<TerrainTileNode> parent, std::shared_ptr<TerrainEngine> terrain)
-{
-    GeometryPool::Settings geomSettings
-    {
-        terrain->settings.tileSize,
-        terrain->settings.skirtRatio,
-        false // morphing
-    };
-
-    // Get a shared geometry from the pool that corresponds to this tile key:
-    auto geometry = terrain->geometryPool.getPooledGeometry(key, geomSettings, nullptr);
-
-    // Make the new terrain tile
-    auto tile = TerrainTileNode::create();
-    tile->key = key;
-    tile->renderModel.descriptors = terrain->stateFactory.defaultTileDescriptors;
-    tile->doNotExpire = (parent == nullptr);
-    tile->stategroup = vsg::StateGroup::create();
-    tile->stategroup->addChild(geometry);
-    tile->surface = SurfaceNode::create(key, terrain->worldSRS);
-    tile->surface->addChild(tile->stategroup);
-    tile->addChild(tile->surface);
-    tile->host = terrain->tiles._host;
-
-    // inherit model data from the parent
-    if (parent)
-        tile->inheritFrom(parent);
-
-    // update the bounding sphere for culling
-    tile->bound = tile->surface->recomputeBound();
-
-    // Generate its state objects:
-    tile->renderModel = terrain->stateFactory.updateRenderModel(tile->renderModel, {}, terrain->context);
-
-    // install the bind command.
-    tile->stategroup->add(tile->renderModel.descriptors.bind);
-
-    return tile;
-}
-
-vsg::ref_ptr<TerrainTileNode>
 TerrainTilePager::getTile(const TileKey& key) const
 {
     std::scoped_lock lock(_mutex);
@@ -310,7 +269,7 @@ TerrainTilePager::requestCreateChildren(TileInfo& info, std::shared_ptr<TerrainE
 
                 TileKey childkey = parent->key.createChildKey(quadrant);
 
-                auto tile = engine->tiles.createTile(childkey, parent, engine);
+                auto tile = engine->createTile(childkey, parent);
 
                 ROCKY_SOFT_ASSERT_AND_RETURN(tile != nullptr, result);
 

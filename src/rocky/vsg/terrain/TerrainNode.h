@@ -44,7 +44,7 @@ namespace ROCKY_NAMESPACE
 
         //! Updates the terrain periodically at a safe time.
         //! @return true if any updates were applied
-        bool update(const vsg::FrameStamp*, VSGContext& context);
+        bool update(VSGContext context);
 
         //! Status of this node; check that's it OK before using
         Status status;

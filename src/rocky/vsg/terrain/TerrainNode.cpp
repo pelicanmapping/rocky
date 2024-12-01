@@ -107,7 +107,7 @@ TerrainNode::createRootTiles(VSGContext& context)
     for (unsigned i = 0; i < keys.size(); ++i)
     {
         // create a tile with no parent:
-        auto tile = engine->tiles.createTile(keys[i], {}, engine);
+        auto tile = engine->createTile(keys[i], {});
 
         // ensure it can't page out:
         tile->doNotExpire = true;
@@ -122,7 +122,7 @@ TerrainNode::createRootTiles(VSGContext& context)
 }
 
 bool
-TerrainNode::update(const vsg::FrameStamp* fs, VSGContext& context)
+TerrainNode::update(VSGContext context)
 {
     bool changes = false;
 
@@ -131,6 +131,7 @@ TerrainNode::update(const vsg::FrameStamp* fs, VSGContext& context)
         if (children.empty())
         {
             status = createRootTiles(context);
+
             if (status.failed())
             {
                 Log()->warn("TerrainNode initialize failed: " + status.message);
@@ -141,7 +142,7 @@ TerrainNode::update(const vsg::FrameStamp* fs, VSGContext& context)
         {
             ROCKY_HARD_ASSERT(engine);
 
-            if (engine->tiles.update(fs, context->io, engine))
+            if (engine->tiles.update(context->viewer->getFrameStamp(), context->io, engine))
                 changes = true;
             
             engine->geometryPool.sweep(engine->context);

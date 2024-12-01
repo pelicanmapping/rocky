@@ -112,11 +112,11 @@ namespace ROCKY_NAMESPACE
      * (north-south) extent shares exactly the same geometry; each tile is just shifted
      * and rotated differently. Therefore we can use the same Geometry for all tiles that
      * share the same LOD and same min/max latitude in a geocentric map. In a projected
-     * map, all tiles at a given LOD share the same geometry regardless of extent, so eve
+     * map, all tiles at a given LOD share the same geometry regardless of extent, so even
      * more sharing is possible.
      *
      * This object creates and returns geometries based on TileKeys, sharing instances
-     * whenever possible. Concept adapted from OSG's osgTerrain::GeometryPool.
+     * whenever possible.
      */
     class GeometryPool
     {

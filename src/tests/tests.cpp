@@ -68,7 +68,7 @@ TEST_CASE("json")
     CHECK((uri2.base() == "file.xml"));
 
 #ifdef ROCKY_HAS_TMS
-    Context context;
+    Context context = ContextFactory::create();
     auto layer = rocky::TMSImageLayer::create();
     layer->uri = "file.xml";
     auto map = rocky::Map::create();
@@ -258,8 +258,6 @@ TEST_CASE("Heightfield")
 
 TEST_CASE("Map")
 {
-    Context instance;
-
     auto map = Map::create();
     REQUIRE(map);
     if (map) {
@@ -802,8 +800,8 @@ TEST_CASE("Earth File")
     auto result = importer.read(earthFile, {});
     CHECKED_IF(result.status.ok())
     {
-        VSGContext context = VSGContextFactory::create();
-        auto mapNode = MapNode::create();
+        VSGContext context = VSGContextFactory::create(nullptr);
+        auto mapNode = MapNode::create(context);
         mapNode->from_json(result.value, IOOptions(context->io, earthFile));
 
         auto layer1 = mapNode->map->layers().withName("ReadyMap 15m Imagery");
