@@ -123,9 +123,7 @@ vsg::Paths&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href
 vsg::ref_ptr&lt; vsg::Font &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#a9b5ce5be5b5bdb1e40c76fdee6c06938">defaultFont</a></td></tr>
 <tr class="memdesc:a9b5ce5be5b5bdb1e40c76fdee6c06938"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default font. <br /></td></tr>
 <tr class="separator:a9b5ce5be5b5bdb1e40c76fdee6c06938"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1b676f8d9b0feea2011c36d575b1c14d"><td class="memItemLeft" align="right" valign="top"><a id="a1b676f8d9b0feea2011c36d575b1c14d"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#a1b676f8d9b0feea2011c36d575b1c14d">renderOnDemand</a> = false</td></tr>
-<tr class="memdesc:a1b676f8d9b0feea2011c36d575b1c14d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Render on demand mode. <br /></td></tr>
+<tr class="memitem:a1b676f8d9b0feea2011c36d575b1c14d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#a1b676f8d9b0feea2011c36d575b1c14d">renderOnDemand</a> = true</td></tr>
 <tr class="separator:a1b676f8d9b0feea2011c36d575b1c14d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1008c3fa307122c16190dffeb1e0c0ed"><td class="memItemLeft" align="right" valign="top"><a id="a1008c3fa307122c16190dffeb1e0c0ed"></a>
 std::atomic_int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#a1008c3fa307122c16190dffeb1e0c0ed">renderRequests</a> = { 0 }</td></tr>
@@ -279,6 +277,21 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
       </table>
 </div><div class="memdoc">
 <p>Custom vsg object disposer (optional) By default Runtime uses its own round-robin object disposer </p>
+
+</div>
+</div>
+<a id="a1b676f8d9b0feea2011c36d575b1c14d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b676f8d9b0feea2011c36d575b1c14d">&#9670;&nbsp;</a></span>renderOnDemand</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ROCKY_NAMESPACE::VSGContextImpl::renderOnDemand = true</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Render on demand mode When true, the viewer will only paint a frame when requested to do so by setting renderRequests to a non-zero value or by calling <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#ae400cbc9f2a296c23e1ec855c9a6b563" title="Request a frame render. Thread-safe.">requestFrame()</a>. </p>
 
 </div>
 </div>

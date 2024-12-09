@@ -136,11 +136,19 @@ $(function() {
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;                    map.erase(first_key);</div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;                }</div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;                cache.emplace_back(key, value);</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;                map[key] = --cache.end();</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;                map[key] = std::prev(cache.end());</div>
 <div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;            }</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        };</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    }</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;}</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;            <span class="keyword">inline</span> <span class="keywordtype">void</span> clear()</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;            {</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;                std::scoped_lock L(mutex);</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;                cache.clear();</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;                map.clear();</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;                gets = 0, hits = 0;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;            }</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        };</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    }</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;}</div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition:</b> Callbacks.h:16</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
