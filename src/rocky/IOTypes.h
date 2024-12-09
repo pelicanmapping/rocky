@@ -63,10 +63,15 @@ namespace ROCKY_NAMESPACE
     {
     public:
         Services();
+        Services(const Services&) = default;
+        Services& operator=(const Services&) = default;
+        Services(Services&&) noexcept = delete;
+        Services& operator=(Services&&) noexcept = delete;
+
         ReadImageURIService readImageFromURI;
         ReadImageStreamService readImageFromStream;
         WriteImageStreamService writeImageToStream;
-        CacheService cache = nullptr;
+        //CacheService cache = nullptr;
         std::shared_ptr<ContentCache> contentCache;
     };
 
@@ -82,6 +87,8 @@ namespace ROCKY_NAMESPACE
         IOOptions(const IOOptions& rhs, Cancelable& p);
         IOOptions(const std::string& referrer);
         IOOptions(const IOOptions& rhs, const std::string& referrer);
+
+        IOOptions(IOOptions&&) = delete;
 
         //! Copy this options structure and set a new referrer.
         IOOptions from(const std::string& referrer) {

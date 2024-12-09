@@ -26,10 +26,6 @@ namespace ROCKY_NAMESPACE
         //! Default IO options
         IOOptions io;
 
-        //! Global application instance status - returns an error
-        //! if the instance does not exist
-        //static const Status& status();
-
     public: // Object factory functions
 
         //! Object creation function that lets you create objects based on their name.

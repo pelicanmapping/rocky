@@ -37,7 +37,9 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Font> defaultFont;
 
         //! Render on demand mode
-        bool renderOnDemand = false;
+        //! When true, the viewer will only paint a frame when requested to do so
+        //! by setting renderRequests to a non-zero value or by calling requestFrame().
+        bool renderOnDemand = true;
 
         //! Number of render-on-demand requests
         std::atomic_int renderRequests = { 0 };
@@ -77,8 +79,7 @@ namespace ROCKY_NAMESPACE
         //! Queue a function to run during the update pass.
         //! This is a safe way to do things that require modifying the scene
         //! or compiling vulkan objects
-        void onNextUpdate(
-            std::function<void()> function);
+        void onNextUpdate(std::function<void()> function);
 
         //! Compiles the Vulkan primitives for an object. This is a thread-safe
         //! operation. Each call to compile() might block the viewer to access
@@ -122,9 +123,9 @@ namespace ROCKY_NAMESPACE
         mutable std::mutex _compileMutex;
         vsg::CompileResult _compileResult;
 
-        // deferred deletion container
-        mutable std::mutex _disposal_queue_mutex;
-        std::deque<std::vector<vsg::ref_ptr<vsg::Object>>> _disposal_queue;
+        // deferred deletion container (garbage collector)
+        mutable std::mutex _gc_mutex;
+        std::deque<std::vector<vsg::ref_ptr<vsg::Object>>> _gc;
 
         jobs::future<bool> _entityJobCompiler;
 

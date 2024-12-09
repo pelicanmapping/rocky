@@ -51,11 +51,8 @@ TerrainNode::setMap(std::shared_ptr<Map> new_map, const Profile& new_profile, VS
         map->onLayerRemoved([this, context](auto...) { reset(context); });
     }
 
-    engine = nullptr;
+    reset(context);
 
-    // erase everything so the map will reinitialize
-    this->children.clear();
-    status = StatusOK;
     return status;
 }
 
@@ -69,16 +66,6 @@ TerrainNode::reset(VSGContext context)
 
     children.clear();
 
-    engine = nullptr;
-
-    status = Status_OK;
-}
-
-Status
-TerrainNode::createRootTiles(VSGContext& context)
-{
-    ROCKY_HARD_ASSERT(children.empty(), "TerrainNode::createRootTiles() called with children already present");
-
     // create a new engine to render this map
     engine = std::make_shared<TerrainEngine>(
         map,
@@ -87,11 +74,15 @@ TerrainNode::createRootTiles(VSGContext& context)
         *this,     // settings
         this);     // host
 
-    // check that everything initialized ok
-    if (engine->stateFactory.status.failed())
-    {
-        return engine->stateFactory.status;
-    }
+    status = engine->stateFactory.status;
+}
+
+Status
+TerrainNode::createRootTiles(VSGContext& context)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(engine != nullptr, Status_AssertionFailure);
+    ROCKY_SOFT_ASSERT_AND_RETURN(engine->stateFactory.status.ok(), engine->stateFactory.status);
+    ROCKY_HARD_ASSERT(children.empty(), "TerrainNode::createRootTiles() called with children already present");
 
     tilesRoot = vsg::Group::create();
 

@@ -332,7 +332,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
     // initialize the deferred deletion collection.
     // a large number of frames ensures objects will be safely destroyed and
     // and we won't have too many deletions per frame.
-    _disposal_queue.resize(8);
+    _gc.resize(8);
 
     args.read(readerWriterOptions);
 
@@ -542,7 +542,7 @@ VSGContextImpl::compile(vsg::ref_ptr<vsg::Object> compilable)
     // Be sure to group as many compiles together as possible for maximum performance.
     auto cr = viewer->compileManager->compile(compilable);
 
-    if (cr && cr.requiresViewerUpdate())
+    if (cr)
     {
         // compile results are stored and processed later during update
         std::unique_lock lock(_compileMutex);
@@ -564,8 +564,8 @@ VSGContextImpl::dispose(vsg::ref_ptr<vsg::Object> object)
         // otherwise use our own
         else
         {
-            std::unique_lock lock(_disposal_queue_mutex);
-            _disposal_queue.back().emplace_back(object);
+            std::unique_lock lock(_gc_mutex);
+            _gc.back().emplace_back(object);
         }
     }
 }
@@ -597,20 +597,20 @@ VSGContextImpl::update()
         {
             vsg::updateViewer(*viewer, _compileResult);
             updates_occurred = true;
-            requestFrame();
         }
         _compileResult.reset();
+
+        requestFrame();
     }
 
-    // process the deferred unref list
-    // TODO: make this a ring buffer?
+    // process the garbage collector
     {
-        std::unique_lock lock(_disposal_queue_mutex);
+        std::unique_lock lock(_gc_mutex);
         // unref everything in the oldest collection:
-        _disposal_queue.front().clear();
+        _gc.front().clear();
         // move the empty collection to the back:
-        _disposal_queue.emplace_back(std::move(_disposal_queue.front()));
-        _disposal_queue.pop_front();
+        _gc.emplace_back(std::move(_gc.front()));
+        _gc.pop_front();
     }
 
     // reset the view IDs list

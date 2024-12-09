@@ -71,10 +71,9 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
     }
 
     // next, see if the tile needs anything.
-    // 
     // "progressive" means do not load LOD N+1 until LOD N is complete.
+    // This is currently the only option.
     const bool progressive = true;
-
     if (progressive)
     {
         // If this tile is fully merged, and it needs children, queue them up to load.
@@ -96,7 +95,10 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
             // If this is a non-root tile that needs data, check to make sure the 
             // parent's tile is done loaded before queueing that up.
             auto& parent_info = _tiles[parent->key];
-            ROCKY_SOFT_ASSERT_AND_RETURN(parent_info.tile, void());
+            if (!parent_info.tile)
+            {
+                ROCKY_SOFT_ASSERT_AND_RETURN(parent_info.tile, void());
+            }
             if (parent_info.tile && parent_info.dataMerger.available() && info.dataLoader.empty())
             {
                 _loadData.push_back(tile->key);
@@ -128,6 +130,12 @@ TerrainTilePager::update(const vsg::FrameStamp* fs, const IOOptions& io, std::sh
     std::scoped_lock lock(_mutex);
 
     bool changes = false;
+
+    changes =
+        !_updateData.empty() ||
+        !_createChildren.empty() ||
+        !_loadData.empty() ||
+        !_mergeData.empty();
 
     //Log::info()
     //    << "Frame " << fs->frameCount << ": "
@@ -284,13 +292,14 @@ TerrainTilePager::requestCreateChildren(TileInfo& info, std::shared_ptr<TerrainE
         {
             engine->context->compile(result);
 
-            engine->context->onNextUpdate([result, weak_parent]()
+            engine->context->onNextUpdate([result, engine, weak_parent]()
                 {
                     auto parent = weak_parent.ref_ptr();
                     if (parent)
                     {
                         parent->addChild(result);
                     }
+                    engine->context->requestFrame();
                 });
 
             engine->context->requestFrame();
@@ -303,7 +312,7 @@ TerrainTilePager::requestCreateChildren(TileInfo& info, std::shared_ptr<TerrainE
     auto priority_func = [weak_parent]() -> float
     {
         auto tile = weak_parent.ref_ptr();
-        return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
+        return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : -FLT_MAX;
     };
 
     info.childrenCreator = jobs::dispatch(
@@ -358,6 +367,8 @@ TerrainTilePager::requestLoadData(TileInfo& info, const IOOptions& in_io, std::s
 
             tile->renderModel = newRenderModel;
 
+            engine->context->requestFrame();
+
             return true;
         }
 
@@ -370,7 +381,7 @@ TerrainTilePager::requestLoadData(TileInfo& info, const IOOptions& in_io, std::s
     auto priority_func = [tile_weak]() -> float
     {
         vsg::ref_ptr<TerrainTileNode> tile = tile_weak.ref_ptr();
-        return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : 0.0f;
+        return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : -FLT_MAX;
     };
 
     info.dataLoader = jobs::dispatch(

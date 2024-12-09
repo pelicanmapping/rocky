@@ -27,6 +27,14 @@ auto Demo_Rendering = [](Application& app)
 
         ImGuiLTable::Checkbox("Render on demand", &app.context->renderOnDemand);
 
+        //ImGuiLTable::Checkbox("Manual rendering", &app.context->manualRendering);
+        //if (app.context->manualRendering)
+        //{
+        //    ImGui::SameLine();
+        //    if (ImGui::Button("Render next frame"))
+        //        app.context->renderingEnabled = true;
+        //}
+
         auto& c = app.mapNode->terrainNode->stategroup->children;
         bool wireframe = c.front() == setWireframeTopology;
 

@@ -111,16 +111,21 @@ auto Demo_Stats = [](Application& app)
     }
 
     auto& engine = app.mapNode->terrainNode->engine;
-    if (engine)
+    auto& cache = app.context->io.services.contentCache;
+    float ratio = cache->gets > 0 ? float(cache->hits) / float(cache->gets) : 0.0f;
+
+    ImGui::SeparatorText("System");
+    if (ImGuiLTable::Begin("System"))
     {
-        ImGui::SeparatorText("Terrain Engine");
-        if (ImGuiLTable::Begin("Terrain Engine"))
-        {
-            ImGuiLTable::Text("Concurrency", std::to_string(engine->settings.concurrency).c_str());
-            ImGuiLTable::Text("Resident tiles", std::to_string(engine->tiles.size()).c_str());
-            ImGuiLTable::Text("Geometry pool cache", std::to_string(engine->geometryPool.size()).c_str());
-            ImGuiLTable::End();
-        }
+        ImGuiLTable::Text("Concurrency", std::to_string(engine->settings.concurrency).c_str());
+        ImGuiLTable::Text("Resident tiles", std::to_string(engine->tiles.size()).c_str());
+        ImGuiLTable::Text("Geometry pool cache", std::to_string(engine->geometryPool.size()).c_str());
+        ImGuiLTable::Text("Content cache hits", "%d%%", int(ratio * 100.0f));
+        ImGui::SameLine();
+        if (ImGui::Button("Clear"))
+            cache->clear();
+
+        ImGuiLTable::End();
     }
 
     frame_num++;

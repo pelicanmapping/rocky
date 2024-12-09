@@ -335,9 +335,6 @@ namespace
 
         void run() override
         {
-            // MapNode updates (this happens automatically now)
-            //app.mapNode->update(app.context);
-            
             // ECS updates - rendering or modifying entities
             app.ecsManager->update(app.context);
 
@@ -346,9 +343,6 @@ namespace
             {
                 app.updateFunction();
             }
-
-            // integrate any pending compile results or disposals (happens automatically now)
-            //app.context->update();
 
             // keep the frames running if the pager is active
             auto& tasks = app.viewer->recordAndSubmitTasks;

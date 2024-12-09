@@ -268,6 +268,8 @@ namespace ROCKY_NAMESPACE
         class ROCKY_EXPORT ring_buffer
         {
         public:
+            using value_type = T;
+
             ring_buffer(int size = 8, bool overwrite_when_full_ = false) :
                 _size(size), _buffer(size), overwrite_when_full(overwrite_when_full_){}
 
@@ -306,6 +308,11 @@ namespace ROCKY_NAMESPACE
                 obj = std::move(_buffer[_readIndex]);
                 _readIndex.exchange((_readIndex + 1) % _size);
                 return true;
+            }
+
+            T& peek() {
+                //if (_readIndex == _writeIndex) return false;
+                return _buffer[_readIndex];
             }
 
             const T& peek() const {

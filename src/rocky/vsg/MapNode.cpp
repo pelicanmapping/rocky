@@ -168,8 +168,8 @@ MapNode::create(VSGContext context)
     {
         auto update = [mapNode, context]()
             {
-                mapNode->update(context);
                 context->update();
+                mapNode->update(context);
             };
 
         context->viewer->updateOperations->add(LambdaOperation::create(update), vsg::UpdateOperations::ALL_FRAMES);

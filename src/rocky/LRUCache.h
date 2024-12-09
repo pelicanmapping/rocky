@@ -67,7 +67,15 @@ namespace ROCKY_NAMESPACE
                     map.erase(first_key);
                 }
                 cache.emplace_back(key, value);
-                map[key] = --cache.end();
+                map[key] = std::prev(cache.end());
+            }
+
+            inline void clear()
+            {
+                std::scoped_lock L(mutex);
+                cache.clear();
+                map.clear();
+                gets = 0, hits = 0;
             }
         };
     }

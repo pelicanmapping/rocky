@@ -63,8 +63,6 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
         needsSubtiles = false;
     }
 
-    //auto* host = rv.getObject<TerrainTileHost>("rocky.terraintilehost");
-
     if (surface->isVisible(rv))
     {
         auto state = rv.getState();
@@ -128,17 +126,17 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
 void
 TerrainTileNode::inheritFrom(vsg::ref_ptr<TerrainTileNode> parent)
 {
-    if (parent)
-    {
-        auto& sb = scaleBias[key.getQuadrant()];
+    ROCKY_SOFT_ASSERT_AND_RETURN(parent, void());
 
-        renderModel = parent->renderModel;
-        renderModel.applyScaleBias(sb);
+    // copy the parent's model and apply a scale bias based on the new tile's quadrant
+    auto& sb = scaleBias[key.getQuadrant()];
 
-        revision = parent->revision;
+    renderModel = parent->renderModel;
+    renderModel.applyScaleBias(sb);
 
-        // prompts regeneration of the local bounds
-        surface->setElevation(renderModel.elevation.image, renderModel.elevation.matrix);
-        bound = surface->recomputeBound();
-    }
+    revision = parent->revision;
+
+    // copy the parent's elevation data and recompute the bounding sphere
+    surface->setElevation(renderModel.elevation.image, renderModel.elevation.matrix);
+    bound = surface->recomputeBound();
 }
