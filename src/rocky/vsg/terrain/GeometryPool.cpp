@@ -93,6 +93,8 @@ GeometryPool::getPooledGeometry(const TileKey& tileKey, const Settings& settings
             progress);
     }
 
+    ROCKY_SOFT_ASSERT_AND_RETURN(out->indices, nullptr);
+
     return out;
 }
 
@@ -365,8 +367,15 @@ GeometryPool::createGeometry(const TileKey& tileKey, const Settings& settings, C
         // the geometry:
         auto geom = SharedGeometry::create();
 
-        geom->assignArrays(vsg::DataList{
-            verts, normals, uvs, neighbors, neighborNormals });
+        vsg::DataList arrays = { verts, normals, uvs };
+        
+        if (neighbors)
+            arrays.emplace_back(neighbors);
+
+        if (neighborNormals)
+            arrays.emplace_back(neighborNormals);
+
+        geom->assignArrays(arrays);
 
         geom->assignIndices(indices);
 
