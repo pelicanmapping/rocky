@@ -396,14 +396,23 @@ VSGContextImpl::ctor(int& argc, char** argv)
     searchPaths.insert(searchPaths.end(), rockyPaths.begin(), rockyPaths.end());
 
     // add some default places to look for shaders and resources, relative to the executable.
-    auto exec_path = std::filesystem::path(util::getExecutableLocation());
-    auto path = (exec_path.remove_filename() / "../share/rocky").lexically_normal();
-    if (!path.empty())
-        searchPaths.push_back(vsg::Path(path.generic_string()));
+    const char* relative_paths_to_add[] = {
+        "../share/rocky",                        // running from standard install location
+        "../../../../../src/rocky/vsg",          // running from visual studio with build folder inside repo
+        "../../../../../repo/src/rocky/vsg",     // running from visual studio with a repo folder :)
+        "../../../../src/rocky/vsg",             // running from visual studio with an in-source build :(
+        "../../../../build_share"                // in case cmake copies files here (deprecated)
+    };
 
-    path = (exec_path.remove_filename() / "../../../../build_share").lexically_normal();
-    if (!path.empty())
-        searchPaths.push_back(vsg::Path(path.generic_string()));
+    auto exec_path = std::filesystem::path(util::getExecutableLocation());
+    Log()->info("Running from: {}", exec_path.string());
+
+    for (auto& relative_path : relative_paths_to_add)
+    {
+        auto path = (exec_path.remove_filename() / relative_path).lexically_normal();
+        if (!path.empty())
+            searchPaths.push_back(vsg::Path(path.generic_string()));
+    }
 
     if (!foundShaders(searchPaths))
     {

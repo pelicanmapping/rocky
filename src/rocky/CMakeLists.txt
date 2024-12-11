@@ -8,8 +8,6 @@ endif()
 # version variables found in the CMake configuration.
 set(version_h ${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky/Version.h)
 
-
-
 # collect all the headers in the source directory
 file(GLOB HEADERS_CORE *.h tinyxml/*.h)
 list(APPEND HEADERS_CORE Version.h.in)
@@ -162,9 +160,6 @@ if(ROCKY_RENDERER_VSG)
     file(GLOB HEADERS_VSG vsg/*.h)
     file(GLOB SOURCES_VSG vsg/*.cpp)
     
-    #file(GLOB HEADERS_VSG_ENGINE vsg/engine/*.h)
-    #file(GLOB SOURCES_VSG_ENGINE vsg/engine/*.cpp)
-    
     file(GLOB HEADERS_VSG_TERRAIN vsg/terrain/*.h)
     file(GLOB SOURCES_VSG_TERRAIN vsg/terrain/*.cpp)
     
@@ -235,12 +230,6 @@ endif()
 
 # allows the use cmake-generated include files when building (e.g. Version.h)
 include_directories(${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky)
-
-# copies the shaders to the build folder so they can be found when running from the IDE
-foreach(_path IN LISTS SHADERS_VSG)
-    get_filename_component(_file "${_path}" NAME)
-    configure_file("${_path}" "${ROCKY_BUILDTIME_SHARE_DIR}/shaders/${_file}" COPYONLY)
-endforeach()
 
 # enables folders for IDEs
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
