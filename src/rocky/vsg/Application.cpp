@@ -473,7 +473,7 @@ Application::frame()
     {
         // manually poll the events and install a frame event
         // (normally called by advanceToNextFrame)
-        viewer->pollEvents(false);
+        viewer->pollEvents(_framesSinceLastRender > 0);
         viewer->getEvents().emplace_back(new vsg::FrameEvent(vsg::ref_ptr<vsg::FrameStamp>(viewer->getFrameStamp())));
 
         // update traversal (see AppUpateOperation)
