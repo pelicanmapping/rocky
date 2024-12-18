@@ -57,7 +57,8 @@ var searchData=
   ['gettile_54',['getTile',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_pager.html#ae6f4e9469e439c1cdb82175f6e549b5b',1,'ROCKY_NAMESPACE::TerrainTilePager']]],
   ['getunitsperpixel_55',['getUnitsPerPixel',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html#ad2af54b70f16e9920554338aebce8637',1,'ROCKY_NAMESPACE::GeoImage']]],
   ['getuserdata_56',['getuserdata',['../class_ti_xml_base.html#a436b80c865d437835d370a9eada6f9f5',1,'TiXmlBase::GetUserData()'],['../class_ti_xml_base.html#aa44896ae7cc0e9b1007429b150a81d92',1,'TiXmlBase::GetUserData() const']]],
-  ['getviewpoint_57',['getViewpoint',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator.html#a2eff8c93c96ee52e64f7b31f84f88e05',1,'ROCKY_NAMESPACE::MapManipulator']]],
-  ['getwindow_58',['getWindow',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_display_manager.html#a9f75b384ecab0e8e2d771bef17cc86cc',1,'ROCKY_NAMESPACE::DisplayManager']]],
-  ['greatcirclerotationaxis_59',['greatCircleRotationAxis',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html#ada9f57d4cdd8b4e34164a9c4576b9175',1,'ROCKY_NAMESPACE::Ellipsoid']]]
+  ['getview_57',['getView',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_display_manager.html#add5b51bf39a645e0c47177b674ed5cc6',1,'ROCKY_NAMESPACE::DisplayManager']]],
+  ['getviewpoint_58',['getViewpoint',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator.html#a2eff8c93c96ee52e64f7b31f84f88e05',1,'ROCKY_NAMESPACE::MapManipulator']]],
+  ['getwindow_59',['getWindow',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_display_manager.html#a9f75b384ecab0e8e2d771bef17cc86cc',1,'ROCKY_NAMESPACE::DisplayManager']]],
+  ['greatcirclerotationaxis_60',['greatCircleRotationAxis',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html#ada9f57d4cdd8b4e34164a9c4576b9175',1,'ROCKY_NAMESPACE::Ellipsoid']]]
 ];
