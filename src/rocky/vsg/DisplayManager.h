@@ -21,6 +21,28 @@ namespace ROCKY_NAMESPACE
 {
     class Application;
 
+    //! Return value for pointAtWindowCoords(viewer) method
+    struct DisplayGeoPoint
+    {
+        vsg::ref_ptr<vsg::Window> window;
+        vsg::ref_ptr<vsg::View> view;
+        GeoPoint point;
+    };
+
+    //! Return the GeoPoint at the given window coordinates (e.g., mouse position).
+    //! @param window View in which to search
+    //! @param x X coordinate in window space
+    //! @param y Y coordinate in window space
+    //! @return GeoPoint at the given window coordinates
+    extern ROCKY_EXPORT GeoPoint pointAtWindowCoords(vsg::ref_ptr<vsg::View> view, int x, int y);
+
+    //! Return the GeoPoint at the given window coordinates (e.g., mouse position).
+    //! @param viewer Viewer to search for windows and views
+    //! @param x X coordinate in window space
+    //! @param y Y coordinate in window space
+    //! @return GeoPoint at the given window coordinates
+    extern ROCKY_EXPORT DisplayGeoPoint pointAtWindowCoords(vsg::ref_ptr<vsg::Viewer> viewer, int x, int y);
+
     /**
     * DisplayManager is a helper class that manages the creation and destruction of
     * windows and views. It also provides some utility methods for working with
@@ -66,6 +88,13 @@ namespace ROCKY_NAMESPACE
         //! @param manip Manipulator to set
         //! @view View on which to set the manipulator
         void setManipulatorForView(vsg::ref_ptr<MapManipulator> manip, vsg::ref_ptr<vsg::View> view);
+
+        //! Gets the view containing the window coordinates (e.g., mouse position relative to the window)
+        //! @param window Window to query
+        //! @param x X coordinate in window space
+        //! @param y Y coordinate in window space
+        //! @return View containing the coordinates, or nullptr.
+        vsg::ref_ptr<vsg::View> getView(vsg::ref_ptr<vsg::Window> window, double x, double y);
 
         //! Gets the VSG command graph associated with a window.
         vsg::ref_ptr<vsg::CommandGraph> getCommandGraph(vsg::ref_ptr<vsg::Window> window);

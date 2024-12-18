@@ -1264,11 +1264,12 @@ MapManipulator::apply(vsg::MoveEvent& moveEvent)
 {
     // Note: always record the move event (into _previousMove) regardless
     // of whether we process the new move event.
-    
+
     // If there's no button press, bail out.
     if (!_buttonPress.has_value())
     {
         _previousMove = moveEvent;
+        moveEvent.handled = true;
         return;
     }
 
@@ -1929,46 +1930,17 @@ bool
 MapManipulator::viewportToWorld(float x, float y, vsg::dvec3& out_world) const
 {
     vsg::ref_ptr<vsg::Camera> camera = _camera_weakptr;
-    if (camera)
-    {
-        auto vp = camera->getRenderArea();
+    if (!camera)
+        return false;
 
-        // matrix that transforms a point from window space to world space
-        vsg::dmat4 inv_VPW =
-            camera->viewMatrix->inverse() * 
-            camera->projectionMatrix->inverse() *
-            vsg::translate(-1.0, -1.0, 0.0) *
-            vsg::scale(2.0 / (double)vp.extent.width, 2.0 / (double)vp.extent.height, 1.0) *
-            vsg::translate(-(double)vp.offset.x, -(double)vp.offset.y, 0.0);
+    vsg::LineSegmentIntersector lsi(*camera, x, y);
+    getMapNode()->terrainNode->accept(lsi);
+    if (lsi.intersections.empty())
+        return false;
 
-        auto w0 = inv_VPW * vsg::dvec3(x, y, 1);
-        auto w1 = inv_VPW * vsg::dvec3(x, y, 0);
-
-        glm::dvec3 i;
-        auto& srs = getMapNode()->mapSRS();
-
-        if (srs.isGeodetic() || srs.isGeocentric())
-        {
-            if (srs.ellipsoid().intersectGeocentricLine(glm::dvec3{ w0.x,w0.y,w0.z }, glm::dvec3{ w1.x,w1.y,w1.z }, i))
-            {
-                out_world = to_vsg(i);
-            }
-        }
-        else
-        {
-            // projected; just find the point on the segment with z=0.
-            const vsg::dvec3 plane_normal(0, 0, 1);
-            auto dir = w1 - w0;
-            float denom = vsg::dot(plane_normal, dir);
-            if (abs(denom) < 1e-6)
-                return false;
-            double t = vsg::dot(plane_normal, -w0) / denom;
-            out_world = w0 + dir * t;
-        }
-
-        return true;
-    }
-    return false;
+    std::sort(lsi.intersections.begin(), lsi.intersections.end(), [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
+    out_world = lsi.intersections.front()->worldIntersection;
+    return true;
 }
 
 
