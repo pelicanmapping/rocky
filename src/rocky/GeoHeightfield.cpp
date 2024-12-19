@@ -10,9 +10,7 @@ using namespace ROCKY_NAMESPACE;
 GeoHeightfield GeoHeightfield::INVALID;
 
 GeoHeightfield::GeoHeightfield() :
-    _extent(GeoExtent::INVALID),
-    _minHeight(0.0f),
-    _maxHeight(0.0f)
+    _extent(GeoExtent::INVALID)
 {
     init();
 }
@@ -34,9 +32,7 @@ GeoHeightfield::operator=(GeoHeightfield&& rhs) noexcept
 
 GeoHeightfield::GeoHeightfield(std::shared_ptr<Heightfield> heightField, const GeoExtent& extent) :
     _hf(heightField),
-    _extent(extent),
-    _minHeight(FLT_MAX),
-    _maxHeight(-FLT_MAX)
+    _extent(extent)
 {
     init();
 }
@@ -60,8 +56,11 @@ GeoHeightfield::init()
             for (unsigned col = 0; col < _hf->width(); ++col)
             {
                 float h = _hf->heightAt(col, row);
-                _maxHeight = std::max(_maxHeight, h);
-                _minHeight = std::min(_minHeight, h);
+                if (h != NO_DATA_VALUE)
+                {
+                    _maxHeight = std::max(_maxHeight, h);
+                    _minHeight = std::min(_minHeight, h);
+                }
             }
         }
     }

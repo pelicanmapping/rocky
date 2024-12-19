@@ -117,7 +117,8 @@ namespace ROCKY_NAMESPACE
     private:
         GeoExtent _extent;
         std::shared_ptr<Heightfield> _hf;
-        float _minHeight, _maxHeight;
+        float _minHeight = FLT_MAX;
+        float _maxHeight = -FLT_MAX;
         glm::dvec2 _resolution;
 
         void init();

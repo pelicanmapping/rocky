@@ -294,7 +294,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
 
             // working set of points. it's much faster to xform an entire vector all at once.
             std::vector<glm::dvec3> points;
-            points.reserve(cols * rows);
+            points.resize(cols * rows);
 
             double minx, miny, maxx, maxy;
             key.extent().getBounds(minx, miny, maxx, maxy);
