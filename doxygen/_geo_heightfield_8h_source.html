@@ -157,20 +157,21 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    <span class="keyword">private</span>:</div>
 <div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>        GeoExtent _extent;</div>
 <div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>        std::shared_ptr&lt;Heightfield&gt; _hf;</div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>        <span class="keywordtype">float</span> _minHeight, _maxHeight;</div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>        glm::dvec2 _resolution;</div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span> </div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>        <span class="keywordtype">void</span> init();</div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>    };</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>        <span class="keywordtype">float</span> _minHeight = FLT_MAX;</div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>        <span class="keywordtype">float</span> _maxHeight = -FLT_MAX;</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>        glm::dvec2 _resolution;</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span> </div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>        <span class="keywordtype">void</span> init();</div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>    };</div>
 </div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span> </div>
 <div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span> </div>
-<div class="foldopen" id="foldopen00127" data-start="{" data-end="}">
-<div class="line"><a id="l00127" name="l00127"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_heightfield.html#a3d2507c459de3f2596543c50e764aeda">  127</a></span>    <span class="keyword">inline</span> glm::dvec2 GeoHeightfield::resolution()<span class="keyword"> const </span>{</div>
-<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>        <span class="keywordflow">return</span> _resolution;</div>
-<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>    }</div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span> </div>
+<div class="foldopen" id="foldopen00128" data-start="{" data-end="}">
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_heightfield.html#a3d2507c459de3f2596543c50e764aeda">  128</a></span>    <span class="keyword">inline</span> glm::dvec2 GeoHeightfield::resolution()<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>        <span class="keywordflow">return</span> _resolution;</div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>    }</div>
 </div>
-<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>}</div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>}</div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent.html">ROCKY_NAMESPACE::GeoExtent</a></div><div class="ttdef"><b>Definition</b> GeoExtent.h:19</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent_html_af4a3b68a41cde8461b927cae0520bf77"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent.html#af4a3b68a41cde8461b927cae0520bf77">ROCKY_NAMESPACE::GeoExtent::srs</a></div><div class="ttdeci">const SRS &amp; srs() const</div><div class="ttdef"><b>Definition</b> GeoExtent.h:54</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_heightfield_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_heightfield.html">ROCKY_NAMESPACE::GeoHeightfield</a></div><div class="ttdef"><b>Definition</b> GeoHeightfield.h:19</div></div>
