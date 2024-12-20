@@ -566,14 +566,10 @@ MapManipulator::configureDefaultSettings()
 
     options.clear();
     options.add(OPTION_CONTINUOUS, true);
-    options.add(OPTION_SCALE_Y, 5.0);
 
     // zoom as you hold the right button:
     _settings->bindMouse(ACTION_ZOOM, MOUSE_RIGHT_BUTTON, 0L, options);
     _settings->bindMouse(ACTION_ZOOM, MOUSE_RIGHT_BUTTON, vsg::MODKEY_Control, options);
-
-    options.add(OPTION_SCALE_X, 9.0);
-    options.add(OPTION_SCALE_Y, 9.0);
 
     _settings->bindMouse(ACTION_PAN, MOUSE_LEFT_BUTTON, 0L);
     _settings->bindMouse(ACTION_PAN, MOUSE_LEFT_BUTTON, vsg::MODKEY_Control, options);
@@ -584,8 +580,8 @@ MapManipulator::configureDefaultSettings()
     _settings->bindMouse(ACTION_ROTATE, MOUSE_MIDDLE_BUTTON, vsg::MODKEY_Control, options);
     _settings->bindMouse(ACTION_ROTATE, MOUSE_LEFT_BUTTON | MOUSE_RIGHT_BUTTON, vsg::MODKEY_Control, options);
 
-    options.add(OPTION_SCALE_X, 4.0);
-    options.add(OPTION_SCALE_Y, 4.0);
+    options.add(OPTION_SCALE_X, 5.0);
+    options.add(OPTION_SCALE_Y, 5.0);
 
     // zoom with the scroll wheel:
     _settings->bindScroll(ACTION_ZOOM_IN, DIR_UP);
@@ -671,7 +667,7 @@ MapManipulator::reinitialize()
     _delta.set(0.0, 0.0);
     _throwDelta.set(0.0, 0.0);
     _continuousDelta.set(0.0, 0.0);
-    _continuous = false;
+    _continuous = 0;
     _lastAction = ACTION_NULL;
     clearEvents();
 }
@@ -1182,7 +1178,7 @@ MapManipulator::home()
 void
 MapManipulator::clearEvents()
 {
-    _continuous = false;
+    _continuous = 0;
     _keyPress.clear();
     _buttonPress.clear();
     // Note: never clear the _previousMove event!
@@ -1289,19 +1285,25 @@ MapManipulator::apply(vsg::MoveEvent& moveEvent)
         moveEvent.mask, // button mask
         _keyPress.has_value() ? _keyPress->keyModifier : 0);
 
-    bool wasContinuous = _continuous;
-    _continuous = _lastAction.getBoolOption(OPTION_CONTINUOUS, false);
+    bool wasContinuous = _continuous > 0;
+    if (_lastAction.getBoolOption(OPTION_CONTINUOUS, false))
+        ++_continuous;
+    else
+        _continuous = 0;
 
     if (handleMouseAction(_lastAction, _previousMove.value(), moveEvent))
         _dirty = true;
 
-    if (_continuous && !wasContinuous)
+    if (_continuous > 0 && !wasContinuous)
     {
         _continuousAction = _lastAction;
+        _context->requestFrame();
     }
 
-    if (_continuous)
+    if (_continuous > 0)
+    {
         _dirty = true;
+    }
 
     _thrown = false;
     moveEvent.handled = true;
@@ -1358,14 +1360,19 @@ MapManipulator::apply(vsg::FrameEvent& frame)
 {
     //Log()->warn(util::make_string() << "FrameEvent-------------------------- " << frame.time.time_since_epoch().count());
 
-    // clear the dirty flag that indicates whether a new frame is required by the renderer
-    _dirty = false;
-
-    if (_continuous)
+    if (_continuous > 0)
     {
-        double t_factor = to_seconds(frame.time - _previousTime) * 60.0;
-        handleMovementAction(_continuousAction._type, _continuousDelta * t_factor);
+        // start requesting frame draws:
         _dirty = true;
+
+        if (_continuous > 1)
+        {
+            // wait one frame before updating the continuous movement,
+            // becuase the first one (in on-demand mode) will have a bogus time delta
+            // which will cause a jump.
+            double t_factor = to_seconds(frame.time - _previousTime) * 60.0;
+            handleMovementAction(_continuousAction._type, _continuousDelta * t_factor);
+        }
     }
     else
     {
@@ -1396,6 +1403,7 @@ MapManipulator::apply(vsg::FrameEvent& frame)
         {
             _context->requestFrame();
         }
+        _dirty = false;
     }
 }
 
@@ -1435,35 +1443,41 @@ MapManipulator::serviceTask(vsg::time_point now)
 {
     if (_task._type != TASK_NONE)
     {
-        auto dt = to_seconds(now - _previousTime);
-        if (dt > 0.0)
+        _dirty = true;
+
+        // delay the servicing by one frame to prevent jumps in on-demand mode
+        if (_task._frameCount++ > 0)
         {
-            // cap the DT so we don't exceed the expected delta.
-            //dt = std::min(dt, _task._duration_s);
-
-            double dx = _task._delta.x * dt;
-            double dy = _task._delta.y * dt;
-
-            switch (_task._type)
+            auto dt = to_seconds(now - _previousTime);
+            if (dt > 0.0)
             {
-            case TASK_PAN:
-                pan(dx, dy);
-                break;
-            case TASK_ROTATE:
-                rotate(dx, dy);
-                break;
-            case TASK_ZOOM:
-                zoom(dx, dy);
-                break;
-            default:
-                break;
-            }
+                // cap the DT so we don't exceed the expected delta.
+                //dt = std::min(dt, _task._duration_s);
 
-            _task._duration_s -= dt;
+                double dx = _task._delta.x * dt;
+                double dy = _task._delta.y * dt;
 
-            if (_task._duration_s <= 0.0)
-            {
-                _task._type = TASK_NONE;
+                switch (_task._type)
+                {
+                case TASK_PAN:
+                    pan(dx, dy);
+                    break;
+                case TASK_ROTATE:
+                    rotate(dx, dy);
+                    break;
+                case TASK_ZOOM:
+                    zoom(dx, dy);
+                    break;
+                default:
+                    break;
+                }
+
+                _task._duration_s -= dt;
+
+                if (_task._duration_s <= 0.0)
+                {
+                    _task._type = TASK_NONE;
+                }
             }
         }
     }
@@ -1815,116 +1829,8 @@ MapManipulator::zoom(double dx, double dy)
     recalculateCenterFromLookVector();
     double scale = 1.0f + dy;
     setDistance(_state.distance * scale);
-    //collisionDetect();
     return;
-
-#if 0
-    // Zoom to mouseish
-    osgViewer::View* view = dynamic_cast<osgViewer::View*>(in_view);
-    if ( !view )
-        return;
-
-    if (_ga_t0 == NULL)
-        return;
-
-    float x = _ga_t0->getX(), y = _ga_t0->getY();
-    float local_x, local_y;
-
-    const osg::Camera* camera = view->getCameraContainingPosition(x, y, local_x, local_y);
-    if (!camera)
-        camera = view->getCamera();
-
-    if ( !camera )
-        return;
-
-    // reset the "remembered start location" if we're just starting a continuous zoom
-    static vsg::dvec3 zero(0,0,0);
-    if (_last_action._type != ACTION_ZOOM)
-        _lastPointOnEarth = zero;
-
-    vsg::dvec3 target;
-
-    bool onEarth = true;
-    if (_lastPointOnEarth != zero)
-    {
-        // Use the start location (for continuous zoom) 
-        target = _lastPointOnEarth;
-    }
-    else
-    {
-        // Zoom just started; calculate a start location
-        onEarth = screenToWorld(x, y, view, target);
-    }
-
-    if (onEarth)
-    {
-        _lastPointOnEarth = target;
-
-        if (_srs.valid() && _srs.isGeodetic())
-        {
-            // globe
-
-            // Calcuate a rotation that we'll use to interpolate from our center point to the target
-            osg::Quat rotCenterToTarget;
-            rotCenterToTarget.makeRotate(_center, target);
-
-            // Factor by which to scale the distance:
-            double scale = 1.0f + dy;
-            double newDistance = _distance*scale;
-            double delta = _distance - newDistance;
-            double ratio = delta/_distance;
-
-            // xform target point into the current focal point's local frame,
-            // and adjust the zoom ratio to account for the difference in 
-            // target distance based on the earth's curvature...approximately!
-            vsg::dvec3 targetInLocalFrame = _centerRotation.conj()*target;
-            double crRatio = glm::length(_center) / targetInLocalFrame.z();
-            ratio *= crRatio;
-
-            // Interpolate a new focal point:
-            osg::Quat rot;
-            rot.slerp(ratio, osg::Quat(), rotCenterToTarget);
-            setCenter(rot*_center);
-
-            // recompute the local frame:
-            _centerRotation = computeCenterRotation(_center);
-
-            // and set the new zoomed distance.
-            setDistance(newDistance);
-
-            collisionDetect();
-        }
-        else
-        {
-            // projected map. This will a simple linear interpolation
-            // of the eyepoint along the path between the eye and the target.
-            vsg::dvec3 eye, at, up;
-            getWorldInverseMatrix().getLookAt(eye, at, up);
-
-            vsg::dvec3 eyeToTargetVec = target-eye;
-            eyeToTargetVec.normalize();
-
-            double scale = 1.0f + dy;
-            double newDistance = _distance*scale;
-            double delta = _distance - newDistance;
-            double ratio = delta/_distance;
-            
-            vsg::dvec3 newEye = eye + eyeToTargetVec*delta;
-
-            setByLookAt(newEye, newEye+(at-eye), up);
-        }
-    }
-
-    else
-    {
-        // if the user's mouse isn't over the earth, just zoom in to the center of the screen
-        double scale = 1.0f + dy;
-        setDistance( _state.distance * scale );
-        //collisionDetect();
-    }
-#endif
 }
-
 
 bool
 MapManipulator::viewportToWorld(float x, float y, vsg::dvec3& out_world) const
@@ -1942,7 +1848,6 @@ MapManipulator::viewportToWorld(float x, float y, vsg::dvec3& out_world) const
     out_world = lsi.intersections.front()->worldIntersection;
     return true;
 }
-
 
 void
 MapManipulator::setDistance(double distance)
@@ -2036,30 +1941,23 @@ MapManipulator::handleMouseAction(
     const vsg::MoveEvent& previousMove,
     const vsg::MoveEvent& currentMove)
 {
-    auto prev = ndc(previousMove);
     auto curr = ndc(currentMove);
 
-    vsg::dvec2 delta(
-        curr.x - prev.x,
-        -(curr.y - prev.y));
-
-    // return if there is no movement.
-    if (delta.x == 0.0 && delta.y == 0.0)
-        return false;
-
-    // here we adjust for action scale, global sensitivy
-    delta *= _settings->getMouseSensitivity();
-
-    applyOptionsToDeltas(action, delta);
-
-    // in "continuous" mode, we accumulate the deltas each frame - thus
-    // the deltas act more like speeds.
-    if (_continuous)
+    if (_continuous && _buttonPress.has_value())
     {
-        _continuousDelta += (delta * 0.01);
+        auto start = ndc(_buttonPress);
+        vsg::dvec2 delta(curr.x - start.x, -(curr.y - start.y));
+        delta *= 0.1;
+        delta *= _settings->getMouseSensitivity();
+        applyOptionsToDeltas(action, delta);
+        _continuousDelta = delta;
     }
     else
     {
+        auto prev = ndc(previousMove);
+        vsg::dvec2 delta(curr.x - prev.x, -(curr.y - prev.y));
+        delta *= _settings->getMouseSensitivity();
+        applyOptionsToDeltas(action, delta);
         _delta = delta;
         handleMovementAction(action._type, delta);
     }

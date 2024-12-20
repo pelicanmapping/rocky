@@ -629,7 +629,7 @@ namespace ROCKY_NAMESPACE
         {
             Task() : _type(TASK_NONE) { }
             void set(TaskType type, const vsg::dvec2& delta, double duration, vsg::time_point now) {
-                _type = type; _delta = delta; _duration_s = duration;
+                _type = type; _delta = delta; _duration_s = duration; _frameCount = 0;
             }
             void reset() {
                 _type = TASK_NONE;
@@ -637,6 +637,8 @@ namespace ROCKY_NAMESPACE
             TaskType _type;
             vsg::dvec2 _delta;
             double _duration_s = DBL_MAX;
+            int _frameCount = 0;
+            //vsg::time_point _previousTick;
         };
 
         // "ticks" the resident Task, which allows for multi-frame animation of navigation
@@ -745,7 +747,7 @@ namespace ROCKY_NAMESPACE
         vsg::dmat4 _viewMatrix;
         State _state;
         Task _task;
-        bool _continuous;
+        int _continuous = 0;
         vsg::dvec2 _continuousDelta;
         vsg::dvec2 _singleAxis;
         vsg::dmat4 _mapNodeFrame, _mapNodeFrameInverse;
