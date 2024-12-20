@@ -132,7 +132,7 @@ namespace ROCKY_NAMESPACE
         bool _vsync = true;
         bool _multithreaded = true;
         bool _viewerRealized = false;
-        int _framesSinceLastRender = 0; // for renderOnDemand
+        int _framesSinceLastRender = 0; // for non-continuous rendering
         bool _lastFrameOK = true;
 
         void ctor(int& argc, char** argv);

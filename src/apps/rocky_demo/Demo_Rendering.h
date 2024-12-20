@@ -25,15 +25,7 @@ auto Demo_Rendering = [](Application& app)
     {
         ImGuiLTable::SliderFloat("Screen space error", &app.mapNode->terrainSettings().screenSpaceError.mutable_value(), 0.0f, 512.0f, "%.0f");
 
-        ImGuiLTable::Checkbox("Render on demand", &app.context->renderOnDemand);
-
-        //ImGuiLTable::Checkbox("Manual rendering", &app.context->manualRendering);
-        //if (app.context->manualRendering)
-        //{
-        //    ImGui::SameLine();
-        //    if (ImGui::Button("Render next frame"))
-        //        app.context->renderingEnabled = true;
-        //}
+        ImGuiLTable::Checkbox("Render continuously", &app.context->renderContinuously);
 
         auto& c = app.mapNode->terrainNode->stategroup->children;
         bool wireframe = c.front() == setWireframeTopology;

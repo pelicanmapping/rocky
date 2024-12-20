@@ -25,7 +25,7 @@ auto Demo_Viewpoints = [](Application& app)
 
             if (vp.valid())
             {
-                ImGui::SeparatorText("Current viewpoint");
+                ImGui::SeparatorText("Focal point on map");
                 ImGuiLTable::Begin("Viewpoint");
 
                 ImGuiLTable::Text("SRS: %s", vp.position().srs.name());

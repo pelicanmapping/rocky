@@ -317,7 +317,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 
             // Working set of points. it's much faster to xform an entire vector all at once.
             std::vector<glm::dvec3> points;
-            points.assign(cols*rows, { 0, 0, 0 });
+            points.resize(cols * rows);
 
             double minx, miny, maxx, maxy;
             key.extent().getBounds(minx, miny, maxx, maxy);

@@ -354,7 +354,11 @@ VSGContextImpl::ctor(int& argc, char** argv)
     // set on-demand rendering mode from the command line
     if (args.read("--on-demand"))
     {
-        renderOnDemand = true;
+        renderContinuously = false;
+    }
+    else if (args.read("--continuous"))
+    {
+        renderContinuously = true;
     }
 
 #ifdef ROCKY_HAS_GDAL

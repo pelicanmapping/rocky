@@ -284,7 +284,7 @@ namespace ROCKY_NAMESPACE
                         {
                             auto temp = new unsigned char[width * height];
                             auto err = P->RasterIO(GF_Read, 0, 0, width, height, temp, width, height, GDT_Byte, 0, 0, nullptr);
-                            ROCKY_SOFT_ASSERT(err == CE_None);
+                            ROCKY_QUIET_ASSERT(err == CE_None);
                             glm::u8vec4 color;
                             for (int i = 0; i < width * height; ++i)
                             {
@@ -575,7 +575,7 @@ GDAL::Driver::open(
 
     // calcluate the inverse of the geotransform:
     auto err = GDALInvGeoTransform(_geotransform, _invtransform);
-    ROCKY_SOFT_ASSERT(err == CE_None);
+    ROCKY_QUIET_ASSERT(err == CE_None);
 
     double minX, minY, maxX, maxY;
     pixelToGeo(0.0, _warpedDS->GetRasterYSize(), minX, minY);

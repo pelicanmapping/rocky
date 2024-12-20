@@ -142,11 +142,12 @@ Application::ctor(int& argc, char** argv)
             << argv[0] << std::endl
             << "    [--map <filename>]        // load a JSON map file" << std::endl
             << "    [--earth-file <filename>] // import an osgEarth earth file" << std::endl
-            << "    [--no-vsync]              // disable vertical sync and render frames as fast as possible" << std::endl
-            << "    [--on-demand]             // activate a mode that only renders frames when necessary" << std::endl
+            << "    [--no-vsync]              // disable vertical sync" << std::endl
+            << "    [--continuous]            // render frames continuously (instead of only when needed)" << std::endl
+            << "    [--log-level <level>]     // set the log level (debug, info, warn, error, critical, off)" << std::endl
             << "    [--sky]                   // install a rudimentary lighting model" << std::endl
             << "    [--version]               // print the version" << std::endl
-            << "    [--verison-all]           // print all dependency versions" << std::endl
+            << "    [--version-all]           // print all dependency versions" << std::endl
             << "    [--debug]                 // activate the Vulkan debug validation layer" << std::endl
             << "    [--api]                   // activate the Vulkan API validation layer (mega-verbose)" << std::endl
             ;
@@ -373,11 +374,6 @@ Application::realize()
         // mark the viewer ready so that subsequent changes will know to
         // use an asynchronous path.
         _viewerRealized = true;
-
-        if (context->renderOnDemand)
-        {
-            Log()->debug("Render-on-demand mode enabled");
-        }
     }
 }
 
@@ -407,7 +403,7 @@ Application::frame()
 
     // whether we need to render a new frame based on the renderOnDemand state:
     context->renderingEnabled =
-        context->renderOnDemand == false ||
+        context->renderContinuously == true ||
         context->renderRequests.exchange(0) > 0;
 
     if (context->renderingEnabled)
