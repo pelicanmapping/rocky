@@ -513,7 +513,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span>        {</div>
 <div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span>            Task() : _type(TASK_NONE) { }</div>
 <div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span>            <span class="keywordtype">void</span> set(TaskType type, <span class="keyword">const</span> vsg::dvec2&amp; delta, <span class="keywordtype">double</span> duration, vsg::time_point now) {</div>
-<div class="line"><a id="l00632" name="l00632"></a><span class="lineno">  632</span>                _type = type; _delta = delta; _duration_s = duration;</div>
+<div class="line"><a id="l00632" name="l00632"></a><span class="lineno">  632</span>                _type = type; _delta = delta; _duration_s = duration; _frameCount = 0;</div>
 <div class="line"><a id="l00633" name="l00633"></a><span class="lineno">  633</span>            }</div>
 <div class="line"><a id="l00634" name="l00634"></a><span class="lineno">  634</span>            <span class="keywordtype">void</span> reset() {</div>
 <div class="line"><a id="l00635" name="l00635"></a><span class="lineno">  635</span>                _type = TASK_NONE;</div>
@@ -521,138 +521,140 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00637" name="l00637"></a><span class="lineno">  637</span>            TaskType _type;</div>
 <div class="line"><a id="l00638" name="l00638"></a><span class="lineno">  638</span>            vsg::dvec2 _delta;</div>
 <div class="line"><a id="l00639" name="l00639"></a><span class="lineno">  639</span>            <span class="keywordtype">double</span> _duration_s = DBL_MAX;</div>
-<div class="line"><a id="l00640" name="l00640"></a><span class="lineno">  640</span>        };</div>
-<div class="line"><a id="l00641" name="l00641"></a><span class="lineno">  641</span> </div>
-<div class="line"><a id="l00642" name="l00642"></a><span class="lineno">  642</span>        <span class="comment">// &quot;ticks&quot; the resident Task, which allows for multi-frame animation of navigation</span></div>
-<div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span>        <span class="comment">// movements.</span></div>
-<div class="line"><a id="l00644" name="l00644"></a><span class="lineno">  644</span>        <span class="keywordtype">bool</span> serviceTask(vsg::time_point);</div>
-<div class="line"><a id="l00645" name="l00645"></a><span class="lineno">  645</span> </div>
-<div class="line"><a id="l00646" name="l00646"></a><span class="lineno">  646</span>        <span class="comment">// returns the Euler Angles baked into _rotation, the local frame&#39;s rotation quaternion.</span></div>
-<div class="line"><a id="l00647" name="l00647"></a><span class="lineno">  647</span>        <span class="keywordtype">void</span> getEulerAngles(<span class="keyword">const</span> vsg::dquat&amp; quat, <span class="keywordtype">double</span>* azim, <span class="keywordtype">double</span>* pitch) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00648" name="l00648"></a><span class="lineno">  648</span> </div>
-<div class="line"><a id="l00649" name="l00649"></a><span class="lineno">  649</span>        <span class="comment">// Makes a quaternion from an azimuth and pitch.</span></div>
-<div class="line"><a id="l00650" name="l00650"></a><span class="lineno">  650</span>        vsg::dquat getQuaternion(<span class="keywordtype">double</span> azim, <span class="keywordtype">double</span> pitch) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00651" name="l00651"></a><span class="lineno">  651</span> </div>
-<div class="line"><a id="l00654" name="l00654"></a><span class="lineno">  654</span>        <span class="keywordtype">bool</span> recalculateCenterFromLookVector();</div>
-<div class="line"><a id="l00655" name="l00655"></a><span class="lineno">  655</span> </div>
-<div class="line"><a id="l00656" name="l00656"></a><span class="lineno">  656</span>        <span class="keywordtype">bool</span> recalculateCenterAndDistanceFromLookVector();</div>
+<div class="line"><a id="l00640" name="l00640"></a><span class="lineno">  640</span>            <span class="keywordtype">int</span> _frameCount = 0;</div>
+<div class="line"><a id="l00641" name="l00641"></a><span class="lineno">  641</span>            <span class="comment">//vsg::time_point _previousTick;</span></div>
+<div class="line"><a id="l00642" name="l00642"></a><span class="lineno">  642</span>        };</div>
+<div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span> </div>
+<div class="line"><a id="l00644" name="l00644"></a><span class="lineno">  644</span>        <span class="comment">// &quot;ticks&quot; the resident Task, which allows for multi-frame animation of navigation</span></div>
+<div class="line"><a id="l00645" name="l00645"></a><span class="lineno">  645</span>        <span class="comment">// movements.</span></div>
+<div class="line"><a id="l00646" name="l00646"></a><span class="lineno">  646</span>        <span class="keywordtype">bool</span> serviceTask(vsg::time_point);</div>
+<div class="line"><a id="l00647" name="l00647"></a><span class="lineno">  647</span> </div>
+<div class="line"><a id="l00648" name="l00648"></a><span class="lineno">  648</span>        <span class="comment">// returns the Euler Angles baked into _rotation, the local frame&#39;s rotation quaternion.</span></div>
+<div class="line"><a id="l00649" name="l00649"></a><span class="lineno">  649</span>        <span class="keywordtype">void</span> getEulerAngles(<span class="keyword">const</span> vsg::dquat&amp; quat, <span class="keywordtype">double</span>* azim, <span class="keywordtype">double</span>* pitch) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00650" name="l00650"></a><span class="lineno">  650</span> </div>
+<div class="line"><a id="l00651" name="l00651"></a><span class="lineno">  651</span>        <span class="comment">// Makes a quaternion from an azimuth and pitch.</span></div>
+<div class="line"><a id="l00652" name="l00652"></a><span class="lineno">  652</span>        vsg::dquat getQuaternion(<span class="keywordtype">double</span> azim, <span class="keywordtype">double</span> pitch) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00653" name="l00653"></a><span class="lineno">  653</span> </div>
+<div class="line"><a id="l00656" name="l00656"></a><span class="lineno">  656</span>        <span class="keywordtype">bool</span> recalculateCenterFromLookVector();</div>
 <div class="line"><a id="l00657" name="l00657"></a><span class="lineno">  657</span> </div>
-<div class="line"><a id="l00658" name="l00658"></a><span class="lineno">  658</span>        vsg::dmat4 getWorldLookAtMatrix(<span class="keyword">const</span> vsg::dvec3&amp; center) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00658" name="l00658"></a><span class="lineno">  658</span>        <span class="keywordtype">bool</span> recalculateCenterAndDistanceFromLookVector();</div>
 <div class="line"><a id="l00659" name="l00659"></a><span class="lineno">  659</span> </div>
-<div class="line"><a id="l00660" name="l00660"></a><span class="lineno">  660</span>        <span class="keywordtype">bool</span> isMouseClick(vsg::ButtonReleaseEvent&amp;) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00660" name="l00660"></a><span class="lineno">  660</span>        vsg::dmat4 getWorldLookAtMatrix(<span class="keyword">const</span> vsg::dvec3&amp; center) <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00661" name="l00661"></a><span class="lineno">  661</span> </div>
-<div class="line"><a id="l00662" name="l00662"></a><span class="lineno">  662</span>        <span class="keywordtype">void</span> applyOptionsToDeltas(<span class="keyword">const</span> Action&amp; action, vsg::dvec2&amp; delta);</div>
+<div class="line"><a id="l00662" name="l00662"></a><span class="lineno">  662</span>        <span class="keywordtype">bool</span> isMouseClick(vsg::ButtonReleaseEvent&amp;) <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00663" name="l00663"></a><span class="lineno">  663</span> </div>
-<div class="line"><a id="l00664" name="l00664"></a><span class="lineno">  664</span>        <span class="keywordtype">void</span> configureDefaultSettings();</div>
+<div class="line"><a id="l00664" name="l00664"></a><span class="lineno">  664</span>        <span class="keywordtype">void</span> applyOptionsToDeltas(<span class="keyword">const</span> Action&amp; action, vsg::dvec2&amp; delta);</div>
 <div class="line"><a id="l00665" name="l00665"></a><span class="lineno">  665</span> </div>
-<div class="line"><a id="l00666" name="l00666"></a><span class="lineno">  666</span>        <span class="keywordtype">void</span> reinitialize();</div>
+<div class="line"><a id="l00666" name="l00666"></a><span class="lineno">  666</span>        <span class="keywordtype">void</span> configureDefaultSettings();</div>
 <div class="line"><a id="l00667" name="l00667"></a><span class="lineno">  667</span> </div>
-<div class="line"><a id="l00668" name="l00668"></a><span class="lineno">  668</span>        <span class="comment">// sets the new center (focal) point and recalculates it&#39;s L2W matrix.</span></div>
-<div class="line"><a id="l00669" name="l00669"></a><span class="lineno">  669</span>        <span class="keywordtype">void</span> setCenter(<span class="keyword">const</span> vsg::dvec3&amp; center);</div>
-<div class="line"><a id="l00670" name="l00670"></a><span class="lineno">  670</span> </div>
-<div class="line"><a id="l00671" name="l00671"></a><span class="lineno">  671</span>        <span class="comment">// creates a &quot;local-to-world&quot; transform relative to the input point.</span></div>
-<div class="line"><a id="l00672" name="l00672"></a><span class="lineno">  672</span>        <span class="keywordtype">bool</span> createLocalCoordFrame(<span class="keyword">const</span> vsg::dvec3&amp; worldPos, vsg::dmat4&amp; out_frame) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00673" name="l00673"></a><span class="lineno">  673</span> </div>
-<div class="line"><a id="l00674" name="l00674"></a><span class="lineno">  674</span>        <span class="comment">// Applies an action using the raw input parameters.</span></div>
-<div class="line"><a id="l00675" name="l00675"></a><span class="lineno">  675</span>        <span class="keywordtype">bool</span> handleAction(<span class="keyword">const</span> Action&amp; action, <span class="keyword">const</span> vsg::dvec2&amp; delta, vsg::time_point now, <span class="keywordtype">double</span> duration);</div>
-<div class="line"><a id="l00676" name="l00676"></a><span class="lineno">  676</span> </div>
-<div class="line"><a id="l00677" name="l00677"></a><span class="lineno">  677</span>        <span class="keyword">virtual</span> <span class="keywordtype">bool</span> handleMouseAction(<span class="keyword">const</span> Action&amp; action, <span class="keyword">const</span> vsg::MoveEvent&amp; previous, <span class="keyword">const</span> vsg::MoveEvent&amp; current);</div>
-<div class="line"><a id="l00678" name="l00678"></a><span class="lineno">  678</span>        <span class="keyword">virtual</span> <span class="keywordtype">bool</span> handleMouseClickAction(<span class="keyword">const</span> Action&amp; action, vsg::time_point time);</div>
-<div class="line"><a id="l00679" name="l00679"></a><span class="lineno">  679</span>        <span class="keyword">virtual</span> <span class="keywordtype">bool</span> handleKeyboardAction(<span class="keyword">const</span> Action&amp; action, vsg::time_point time, <span class="keywordtype">double</span> duration_s = DBL_MAX);</div>
-<div class="line"><a id="l00680" name="l00680"></a><span class="lineno">  680</span>        <span class="keyword">virtual</span> <span class="keywordtype">bool</span> handleScrollAction(<span class="keyword">const</span> Action&amp; action, vsg::time_point time, <span class="keywordtype">double</span> duration_s = DBL_MAX);</div>
-<div class="line"><a id="l00681" name="l00681"></a><span class="lineno">  681</span>        <span class="keyword">virtual</span> <span class="keywordtype">bool</span> handlePointAction(<span class="keyword">const</span> Action&amp; type, <span class="keywordtype">float</span> mx, <span class="keywordtype">float</span> my, vsg::time_point time);</div>
-<div class="line"><a id="l00682" name="l00682"></a><span class="lineno">  682</span>        <span class="keyword">virtual</span> <span class="keywordtype">void</span> handleMovementAction(<span class="keyword">const</span> ActionType&amp; type, vsg::dvec2 delta);</div>
-<div class="line"><a id="l00683" name="l00683"></a><span class="lineno">  683</span> </div>
-<div class="line"><a id="l00684" name="l00684"></a><span class="lineno">  684</span>        <span class="keywordtype">void</span> clearEvents();</div>
-<div class="line"><a id="l00685" name="l00685"></a><span class="lineno">  685</span>        vsg::ref_ptr&lt;MapNode&gt; getMapNode() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00686" name="l00686"></a><span class="lineno">  686</span> </div>
-<div class="line"><a id="l00687" name="l00687"></a><span class="lineno">  687</span>        <span class="keyword">struct </span>State</div>
-<div class="line"><a id="l00688" name="l00688"></a><span class="lineno">  688</span>        {</div>
-<div class="line"><a id="l00689" name="l00689"></a><span class="lineno">  689</span>            <span class="comment">// The world coordinate of the focal point.</span></div>
-<div class="line"><a id="l00690" name="l00690"></a><span class="lineno">  690</span>            vsg::dvec3 center;</div>
-<div class="line"><a id="l00691" name="l00691"></a><span class="lineno">  691</span> </div>
-<div class="line"><a id="l00692" name="l00692"></a><span class="lineno">  692</span>            <span class="comment">// Reference frame for the local ENU tangent plane to the elllipoid centered</span></div>
-<div class="line"><a id="l00693" name="l00693"></a><span class="lineno">  693</span>            <span class="comment">// at &quot;_center&quot; with (X=east, Y=north, Z=up)</span></div>
-<div class="line"><a id="l00694" name="l00694"></a><span class="lineno">  694</span>            vsg::dmat4 centerRotation;</div>
-<div class="line"><a id="l00695" name="l00695"></a><span class="lineno">  695</span> </div>
-<div class="line"><a id="l00696" name="l00696"></a><span class="lineno">  696</span>            <span class="comment">// Quaternion that applies a heading and pitch in the local tangent plane</span></div>
-<div class="line"><a id="l00697" name="l00697"></a><span class="lineno">  697</span>            <span class="comment">// established by _center and _centerRotation.</span></div>
-<div class="line"><a id="l00698" name="l00698"></a><span class="lineno">  698</span>            vsg::dquat localRotation;</div>
-<div class="line"><a id="l00699" name="l00699"></a><span class="lineno">  699</span> </div>
-<div class="line"><a id="l00700" name="l00700"></a><span class="lineno">  700</span>            <span class="comment">// distance from camera to _center.</span></div>
-<div class="line"><a id="l00701" name="l00701"></a><span class="lineno">  701</span>            <span class="keywordtype">double</span> distance;</div>
-<div class="line"><a id="l00702" name="l00702"></a><span class="lineno">  702</span> </div>
-<div class="line"><a id="l00703" name="l00703"></a><span class="lineno">  703</span>            <span class="comment">// XYZ offsets of the focal point in the local tangent plane coordinate system</span></div>
-<div class="line"><a id="l00704" name="l00704"></a><span class="lineno">  704</span>            <span class="comment">// of the focal point.</span></div>
-<div class="line"><a id="l00705" name="l00705"></a><span class="lineno">  705</span>            vsg::dvec3 localPositionOffset;</div>
-<div class="line"><a id="l00706" name="l00706"></a><span class="lineno">  706</span> </div>
-<div class="line"><a id="l00707" name="l00707"></a><span class="lineno">  707</span>            <span class="comment">// XY offsets (left/right, down/up) of the focal point in the plane normal to</span></div>
-<div class="line"><a id="l00708" name="l00708"></a><span class="lineno">  708</span>            <span class="comment">// the view heading.</span></div>
-<div class="line"><a id="l00709" name="l00709"></a><span class="lineno">  709</span>            vsg::dvec2 viewOffset;</div>
-<div class="line"><a id="l00710" name="l00710"></a><span class="lineno">  710</span> </div>
-<div class="line"><a id="l00711" name="l00711"></a><span class="lineno">  711</span>            vsg::dquat tetherRotation;</div>
+<div class="line"><a id="l00668" name="l00668"></a><span class="lineno">  668</span>        <span class="keywordtype">void</span> reinitialize();</div>
+<div class="line"><a id="l00669" name="l00669"></a><span class="lineno">  669</span> </div>
+<div class="line"><a id="l00670" name="l00670"></a><span class="lineno">  670</span>        <span class="comment">// sets the new center (focal) point and recalculates it&#39;s L2W matrix.</span></div>
+<div class="line"><a id="l00671" name="l00671"></a><span class="lineno">  671</span>        <span class="keywordtype">void</span> setCenter(<span class="keyword">const</span> vsg::dvec3&amp; center);</div>
+<div class="line"><a id="l00672" name="l00672"></a><span class="lineno">  672</span> </div>
+<div class="line"><a id="l00673" name="l00673"></a><span class="lineno">  673</span>        <span class="comment">// creates a &quot;local-to-world&quot; transform relative to the input point.</span></div>
+<div class="line"><a id="l00674" name="l00674"></a><span class="lineno">  674</span>        <span class="keywordtype">bool</span> createLocalCoordFrame(<span class="keyword">const</span> vsg::dvec3&amp; worldPos, vsg::dmat4&amp; out_frame) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00675" name="l00675"></a><span class="lineno">  675</span> </div>
+<div class="line"><a id="l00676" name="l00676"></a><span class="lineno">  676</span>        <span class="comment">// Applies an action using the raw input parameters.</span></div>
+<div class="line"><a id="l00677" name="l00677"></a><span class="lineno">  677</span>        <span class="keywordtype">bool</span> handleAction(<span class="keyword">const</span> Action&amp; action, <span class="keyword">const</span> vsg::dvec2&amp; delta, vsg::time_point now, <span class="keywordtype">double</span> duration);</div>
+<div class="line"><a id="l00678" name="l00678"></a><span class="lineno">  678</span> </div>
+<div class="line"><a id="l00679" name="l00679"></a><span class="lineno">  679</span>        <span class="keyword">virtual</span> <span class="keywordtype">bool</span> handleMouseAction(<span class="keyword">const</span> Action&amp; action, <span class="keyword">const</span> vsg::MoveEvent&amp; previous, <span class="keyword">const</span> vsg::MoveEvent&amp; current);</div>
+<div class="line"><a id="l00680" name="l00680"></a><span class="lineno">  680</span>        <span class="keyword">virtual</span> <span class="keywordtype">bool</span> handleMouseClickAction(<span class="keyword">const</span> Action&amp; action, vsg::time_point time);</div>
+<div class="line"><a id="l00681" name="l00681"></a><span class="lineno">  681</span>        <span class="keyword">virtual</span> <span class="keywordtype">bool</span> handleKeyboardAction(<span class="keyword">const</span> Action&amp; action, vsg::time_point time, <span class="keywordtype">double</span> duration_s = DBL_MAX);</div>
+<div class="line"><a id="l00682" name="l00682"></a><span class="lineno">  682</span>        <span class="keyword">virtual</span> <span class="keywordtype">bool</span> handleScrollAction(<span class="keyword">const</span> Action&amp; action, vsg::time_point time, <span class="keywordtype">double</span> duration_s = DBL_MAX);</div>
+<div class="line"><a id="l00683" name="l00683"></a><span class="lineno">  683</span>        <span class="keyword">virtual</span> <span class="keywordtype">bool</span> handlePointAction(<span class="keyword">const</span> Action&amp; type, <span class="keywordtype">float</span> mx, <span class="keywordtype">float</span> my, vsg::time_point time);</div>
+<div class="line"><a id="l00684" name="l00684"></a><span class="lineno">  684</span>        <span class="keyword">virtual</span> <span class="keywordtype">void</span> handleMovementAction(<span class="keyword">const</span> ActionType&amp; type, vsg::dvec2 delta);</div>
+<div class="line"><a id="l00685" name="l00685"></a><span class="lineno">  685</span> </div>
+<div class="line"><a id="l00686" name="l00686"></a><span class="lineno">  686</span>        <span class="keywordtype">void</span> clearEvents();</div>
+<div class="line"><a id="l00687" name="l00687"></a><span class="lineno">  687</span>        vsg::ref_ptr&lt;MapNode&gt; getMapNode() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00688" name="l00688"></a><span class="lineno">  688</span> </div>
+<div class="line"><a id="l00689" name="l00689"></a><span class="lineno">  689</span>        <span class="keyword">struct </span>State</div>
+<div class="line"><a id="l00690" name="l00690"></a><span class="lineno">  690</span>        {</div>
+<div class="line"><a id="l00691" name="l00691"></a><span class="lineno">  691</span>            <span class="comment">// The world coordinate of the focal point.</span></div>
+<div class="line"><a id="l00692" name="l00692"></a><span class="lineno">  692</span>            vsg::dvec3 center;</div>
+<div class="line"><a id="l00693" name="l00693"></a><span class="lineno">  693</span> </div>
+<div class="line"><a id="l00694" name="l00694"></a><span class="lineno">  694</span>            <span class="comment">// Reference frame for the local ENU tangent plane to the elllipoid centered</span></div>
+<div class="line"><a id="l00695" name="l00695"></a><span class="lineno">  695</span>            <span class="comment">// at &quot;_center&quot; with (X=east, Y=north, Z=up)</span></div>
+<div class="line"><a id="l00696" name="l00696"></a><span class="lineno">  696</span>            vsg::dmat4 centerRotation;</div>
+<div class="line"><a id="l00697" name="l00697"></a><span class="lineno">  697</span> </div>
+<div class="line"><a id="l00698" name="l00698"></a><span class="lineno">  698</span>            <span class="comment">// Quaternion that applies a heading and pitch in the local tangent plane</span></div>
+<div class="line"><a id="l00699" name="l00699"></a><span class="lineno">  699</span>            <span class="comment">// established by _center and _centerRotation.</span></div>
+<div class="line"><a id="l00700" name="l00700"></a><span class="lineno">  700</span>            vsg::dquat localRotation;</div>
+<div class="line"><a id="l00701" name="l00701"></a><span class="lineno">  701</span> </div>
+<div class="line"><a id="l00702" name="l00702"></a><span class="lineno">  702</span>            <span class="comment">// distance from camera to _center.</span></div>
+<div class="line"><a id="l00703" name="l00703"></a><span class="lineno">  703</span>            <span class="keywordtype">double</span> distance;</div>
+<div class="line"><a id="l00704" name="l00704"></a><span class="lineno">  704</span> </div>
+<div class="line"><a id="l00705" name="l00705"></a><span class="lineno">  705</span>            <span class="comment">// XYZ offsets of the focal point in the local tangent plane coordinate system</span></div>
+<div class="line"><a id="l00706" name="l00706"></a><span class="lineno">  706</span>            <span class="comment">// of the focal point.</span></div>
+<div class="line"><a id="l00707" name="l00707"></a><span class="lineno">  707</span>            vsg::dvec3 localPositionOffset;</div>
+<div class="line"><a id="l00708" name="l00708"></a><span class="lineno">  708</span> </div>
+<div class="line"><a id="l00709" name="l00709"></a><span class="lineno">  709</span>            <span class="comment">// XY offsets (left/right, down/up) of the focal point in the plane normal to</span></div>
+<div class="line"><a id="l00710" name="l00710"></a><span class="lineno">  710</span>            <span class="comment">// the view heading.</span></div>
+<div class="line"><a id="l00711" name="l00711"></a><span class="lineno">  711</span>            vsg::dvec2 viewOffset;</div>
 <div class="line"><a id="l00712" name="l00712"></a><span class="lineno">  712</span> </div>
-<div class="line"><a id="l00713" name="l00713"></a><span class="lineno">  713</span>            std::optional&lt;Viewpoint&gt; setVP0;</div>
-<div class="line"><a id="l00714" name="l00714"></a><span class="lineno">  714</span>            std::optional&lt;Viewpoint&gt; setVP1; <span class="comment">// Final viewpoint</span></div>
-<div class="line"><a id="l00715" name="l00715"></a><span class="lineno">  715</span>            optional&lt;vsg::time_point&gt; setVPStartTime; <span class="comment">// Time of call to setViewpoint</span></div>
-<div class="line"><a id="l00716" name="l00716"></a><span class="lineno">  716</span>            std::chrono::duration&lt;float&gt; setVPDuration; <span class="comment">// Transition time for setViewpoint</span></div>
-<div class="line"><a id="l00717" name="l00717"></a><span class="lineno">  717</span>            <span class="keywordtype">double</span> setVPAccel, setVPAccel2; <span class="comment">// Acceleration factors for setViewpoint</span></div>
-<div class="line"><a id="l00718" name="l00718"></a><span class="lineno">  718</span>            <span class="keywordtype">double</span> setVPArcHeight; <span class="comment">// Altitude arcing height for setViewpoint</span></div>
-<div class="line"><a id="l00719" name="l00719"></a><span class="lineno">  719</span>            vsg::dquat tetherRotationVP0;</div>
-<div class="line"><a id="l00720" name="l00720"></a><span class="lineno">  720</span>            vsg::dquat tetherRotationVP1;</div>
-<div class="line"><a id="l00721" name="l00721"></a><span class="lineno">  721</span>            TetherMode lastTetherMode = TETHER_CENTER;</div>
-<div class="line"><a id="l00722" name="l00722"></a><span class="lineno">  722</span> </div>
-<div class="line"><a id="l00723" name="l00723"></a><span class="lineno">  723</span>            State() :</div>
-<div class="line"><a id="l00724" name="l00724"></a><span class="lineno">  724</span>                localRotation(0, 0, 0, 1),</div>
-<div class="line"><a id="l00725" name="l00725"></a><span class="lineno">  725</span>                distance(1.0),</div>
-<div class="line"><a id="l00726" name="l00726"></a><span class="lineno">  726</span>                tetherRotation(0, 0, 0, 1)</div>
-<div class="line"><a id="l00727" name="l00727"></a><span class="lineno">  727</span>            { }</div>
-<div class="line"><a id="l00728" name="l00728"></a><span class="lineno">  728</span>        };</div>
-<div class="line"><a id="l00729" name="l00729"></a><span class="lineno">  729</span> </div>
-<div class="line"><a id="l00730" name="l00730"></a><span class="lineno">  730</span>        VSGContext _context;</div>
+<div class="line"><a id="l00713" name="l00713"></a><span class="lineno">  713</span>            vsg::dquat tetherRotation;</div>
+<div class="line"><a id="l00714" name="l00714"></a><span class="lineno">  714</span> </div>
+<div class="line"><a id="l00715" name="l00715"></a><span class="lineno">  715</span>            std::optional&lt;Viewpoint&gt; setVP0;</div>
+<div class="line"><a id="l00716" name="l00716"></a><span class="lineno">  716</span>            std::optional&lt;Viewpoint&gt; setVP1; <span class="comment">// Final viewpoint</span></div>
+<div class="line"><a id="l00717" name="l00717"></a><span class="lineno">  717</span>            optional&lt;vsg::time_point&gt; setVPStartTime; <span class="comment">// Time of call to setViewpoint</span></div>
+<div class="line"><a id="l00718" name="l00718"></a><span class="lineno">  718</span>            std::chrono::duration&lt;float&gt; setVPDuration; <span class="comment">// Transition time for setViewpoint</span></div>
+<div class="line"><a id="l00719" name="l00719"></a><span class="lineno">  719</span>            <span class="keywordtype">double</span> setVPAccel, setVPAccel2; <span class="comment">// Acceleration factors for setViewpoint</span></div>
+<div class="line"><a id="l00720" name="l00720"></a><span class="lineno">  720</span>            <span class="keywordtype">double</span> setVPArcHeight; <span class="comment">// Altitude arcing height for setViewpoint</span></div>
+<div class="line"><a id="l00721" name="l00721"></a><span class="lineno">  721</span>            vsg::dquat tetherRotationVP0;</div>
+<div class="line"><a id="l00722" name="l00722"></a><span class="lineno">  722</span>            vsg::dquat tetherRotationVP1;</div>
+<div class="line"><a id="l00723" name="l00723"></a><span class="lineno">  723</span>            TetherMode lastTetherMode = TETHER_CENTER;</div>
+<div class="line"><a id="l00724" name="l00724"></a><span class="lineno">  724</span> </div>
+<div class="line"><a id="l00725" name="l00725"></a><span class="lineno">  725</span>            State() :</div>
+<div class="line"><a id="l00726" name="l00726"></a><span class="lineno">  726</span>                localRotation(0, 0, 0, 1),</div>
+<div class="line"><a id="l00727" name="l00727"></a><span class="lineno">  727</span>                distance(1.0),</div>
+<div class="line"><a id="l00728" name="l00728"></a><span class="lineno">  728</span>                tetherRotation(0, 0, 0, 1)</div>
+<div class="line"><a id="l00729" name="l00729"></a><span class="lineno">  729</span>            { }</div>
+<div class="line"><a id="l00730" name="l00730"></a><span class="lineno">  730</span>        };</div>
 <div class="line"><a id="l00731" name="l00731"></a><span class="lineno">  731</span> </div>
-<div class="line"><a id="l00732" name="l00732"></a><span class="lineno">  732</span>        vsg::observer_ptr&lt;MapNode&gt; _mapNode_weakptr;</div>
-<div class="line"><a id="l00733" name="l00733"></a><span class="lineno">  733</span>        vsg::observer_ptr&lt;vsg::Window&gt; _window_weakptr;</div>
-<div class="line"><a id="l00734" name="l00734"></a><span class="lineno">  734</span>        vsg::observer_ptr&lt;vsg::Camera&gt; _camera_weakptr;</div>
-<div class="line"><a id="l00735" name="l00735"></a><span class="lineno">  735</span>        SRS _worldSRS;</div>
-<div class="line"><a id="l00736" name="l00736"></a><span class="lineno">  736</span> </div>
-<div class="line"><a id="l00737" name="l00737"></a><span class="lineno">  737</span>        optional&lt;vsg::MoveEvent&gt; _previousMove;</div>
-<div class="line"><a id="l00738" name="l00738"></a><span class="lineno">  738</span>        optional&lt;vsg::ButtonPressEvent&gt; _buttonPress;</div>
-<div class="line"><a id="l00739" name="l00739"></a><span class="lineno">  739</span>        optional&lt;vsg::KeyPressEvent&gt; _keyPress;</div>
-<div class="line"><a id="l00740" name="l00740"></a><span class="lineno">  740</span>        vsg::time_point _previousTime;</div>
-<div class="line"><a id="l00741" name="l00741"></a><span class="lineno">  741</span> </div>
-<div class="line"><a id="l00742" name="l00742"></a><span class="lineno">  742</span>        <span class="keywordtype">bool</span> _thrown;</div>
-<div class="line"><a id="l00743" name="l00743"></a><span class="lineno">  743</span>        vsg::dvec2 _throwDelta;</div>
-<div class="line"><a id="l00744" name="l00744"></a><span class="lineno">  744</span>        vsg::dvec2 _delta;</div>
-<div class="line"><a id="l00745" name="l00745"></a><span class="lineno">  745</span>        vsg::dmat4 _viewMatrix;</div>
-<div class="line"><a id="l00746" name="l00746"></a><span class="lineno">  746</span>        State _state;</div>
-<div class="line"><a id="l00747" name="l00747"></a><span class="lineno">  747</span>        Task _task;</div>
-<div class="line"><a id="l00748" name="l00748"></a><span class="lineno">  748</span>        <span class="keywordtype">bool</span> _continuous;</div>
-<div class="line"><a id="l00749" name="l00749"></a><span class="lineno">  749</span>        vsg::dvec2 _continuousDelta;</div>
-<div class="line"><a id="l00750" name="l00750"></a><span class="lineno">  750</span>        vsg::dvec2 _singleAxis;</div>
-<div class="line"><a id="l00751" name="l00751"></a><span class="lineno">  751</span>        vsg::dmat4 _mapNodeFrame, _mapNodeFrameInverse;</div>
-<div class="line"><a id="l00752" name="l00752"></a><span class="lineno">  752</span>        Action _lastAction;</div>
-<div class="line"><a id="l00753" name="l00753"></a><span class="lineno">  753</span>        Action _continuousAction;</div>
-<div class="line"><a id="l00754" name="l00754"></a><span class="lineno">  754</span> </div>
-<div class="line"><a id="l00755" name="l00755"></a><span class="lineno">  755</span>        <span class="comment">// rendering required b/c something changed.</span></div>
-<div class="line"><a id="l00756" name="l00756"></a><span class="lineno">  756</span>        <span class="keywordtype">bool</span> _dirty;</div>
-<div class="line"><a id="l00757" name="l00757"></a><span class="lineno">  757</span> </div>
-<div class="line"><a id="l00758" name="l00758"></a><span class="lineno">  758</span>        <span class="keywordtype">bool</span> withinRenderArea(<span class="keyword">const</span> vsg::PointerEvent&amp; pointerEvent) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00732" name="l00732"></a><span class="lineno">  732</span>        VSGContext _context;</div>
+<div class="line"><a id="l00733" name="l00733"></a><span class="lineno">  733</span> </div>
+<div class="line"><a id="l00734" name="l00734"></a><span class="lineno">  734</span>        vsg::observer_ptr&lt;MapNode&gt; _mapNode_weakptr;</div>
+<div class="line"><a id="l00735" name="l00735"></a><span class="lineno">  735</span>        vsg::observer_ptr&lt;vsg::Window&gt; _window_weakptr;</div>
+<div class="line"><a id="l00736" name="l00736"></a><span class="lineno">  736</span>        vsg::observer_ptr&lt;vsg::Camera&gt; _camera_weakptr;</div>
+<div class="line"><a id="l00737" name="l00737"></a><span class="lineno">  737</span>        SRS _worldSRS;</div>
+<div class="line"><a id="l00738" name="l00738"></a><span class="lineno">  738</span> </div>
+<div class="line"><a id="l00739" name="l00739"></a><span class="lineno">  739</span>        optional&lt;vsg::MoveEvent&gt; _previousMove;</div>
+<div class="line"><a id="l00740" name="l00740"></a><span class="lineno">  740</span>        optional&lt;vsg::ButtonPressEvent&gt; _buttonPress;</div>
+<div class="line"><a id="l00741" name="l00741"></a><span class="lineno">  741</span>        optional&lt;vsg::KeyPressEvent&gt; _keyPress;</div>
+<div class="line"><a id="l00742" name="l00742"></a><span class="lineno">  742</span>        vsg::time_point _previousTime;</div>
+<div class="line"><a id="l00743" name="l00743"></a><span class="lineno">  743</span> </div>
+<div class="line"><a id="l00744" name="l00744"></a><span class="lineno">  744</span>        <span class="keywordtype">bool</span> _thrown;</div>
+<div class="line"><a id="l00745" name="l00745"></a><span class="lineno">  745</span>        vsg::dvec2 _throwDelta;</div>
+<div class="line"><a id="l00746" name="l00746"></a><span class="lineno">  746</span>        vsg::dvec2 _delta;</div>
+<div class="line"><a id="l00747" name="l00747"></a><span class="lineno">  747</span>        vsg::dmat4 _viewMatrix;</div>
+<div class="line"><a id="l00748" name="l00748"></a><span class="lineno">  748</span>        State _state;</div>
+<div class="line"><a id="l00749" name="l00749"></a><span class="lineno">  749</span>        Task _task;</div>
+<div class="line"><a id="l00750" name="l00750"></a><span class="lineno">  750</span>        <span class="keywordtype">int</span> _continuous = 0;</div>
+<div class="line"><a id="l00751" name="l00751"></a><span class="lineno">  751</span>        vsg::dvec2 _continuousDelta;</div>
+<div class="line"><a id="l00752" name="l00752"></a><span class="lineno">  752</span>        vsg::dvec2 _singleAxis;</div>
+<div class="line"><a id="l00753" name="l00753"></a><span class="lineno">  753</span>        vsg::dmat4 _mapNodeFrame, _mapNodeFrameInverse;</div>
+<div class="line"><a id="l00754" name="l00754"></a><span class="lineno">  754</span>        Action _lastAction;</div>
+<div class="line"><a id="l00755" name="l00755"></a><span class="lineno">  755</span>        Action _continuousAction;</div>
+<div class="line"><a id="l00756" name="l00756"></a><span class="lineno">  756</span> </div>
+<div class="line"><a id="l00757" name="l00757"></a><span class="lineno">  757</span>        <span class="comment">// rendering required b/c something changed.</span></div>
+<div class="line"><a id="l00758" name="l00758"></a><span class="lineno">  758</span>        <span class="keywordtype">bool</span> _dirty;</div>
 <div class="line"><a id="l00759" name="l00759"></a><span class="lineno">  759</span> </div>
-<div class="line"><a id="l00760" name="l00760"></a><span class="lineno">  760</span>        vsg::dvec2 ndc(<span class="keyword">const</span> vsg::PointerEvent&amp;) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00760" name="l00760"></a><span class="lineno">  760</span>        <span class="keywordtype">bool</span> withinRenderArea(<span class="keyword">const</span> vsg::PointerEvent&amp; pointerEvent) <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00761" name="l00761"></a><span class="lineno">  761</span> </div>
-<div class="line"><a id="l00762" name="l00762"></a><span class="lineno">  762</span>        <span class="keyword">inline</span> <span class="keywordtype">bool</span> isSettingViewpoint()<span class="keyword"> const </span>{</div>
-<div class="line"><a id="l00763" name="l00763"></a><span class="lineno">  763</span>            <span class="keywordflow">return</span> _state.setVP0.has_value() &amp;&amp; _state.setVP1.has_value();</div>
-<div class="line"><a id="l00764" name="l00764"></a><span class="lineno">  764</span>        }</div>
-<div class="line"><a id="l00765" name="l00765"></a><span class="lineno">  765</span> </div>
-<div class="line"><a id="l00766" name="l00766"></a><span class="lineno">  766</span>        <span class="keywordtype">double</span> setViewpointFrame(<span class="keyword">const</span> vsg::time_point&amp;);</div>
+<div class="line"><a id="l00762" name="l00762"></a><span class="lineno">  762</span>        vsg::dvec2 ndc(<span class="keyword">const</span> vsg::PointerEvent&amp;) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00763" name="l00763"></a><span class="lineno">  763</span> </div>
+<div class="line"><a id="l00764" name="l00764"></a><span class="lineno">  764</span>        <span class="keyword">inline</span> <span class="keywordtype">bool</span> isSettingViewpoint()<span class="keyword"> const </span>{</div>
+<div class="line"><a id="l00765" name="l00765"></a><span class="lineno">  765</span>            <span class="keywordflow">return</span> _state.setVP0.has_value() &amp;&amp; _state.setVP1.has_value();</div>
+<div class="line"><a id="l00766" name="l00766"></a><span class="lineno">  766</span>        }</div>
 <div class="line"><a id="l00767" name="l00767"></a><span class="lineno">  767</span> </div>
-<div class="line"><a id="l00768" name="l00768"></a><span class="lineno">  768</span>        <span class="keywordtype">void</span> updateTether(<span class="keyword">const</span> vsg::time_point&amp; t);</div>
+<div class="line"><a id="l00768" name="l00768"></a><span class="lineno">  768</span>        <span class="keywordtype">double</span> setViewpointFrame(<span class="keyword">const</span> vsg::time_point&amp;);</div>
 <div class="line"><a id="l00769" name="l00769"></a><span class="lineno">  769</span> </div>
-<div class="line"><a id="l00771" name="l00771"></a><span class="lineno">  771</span>        <span class="keywordtype">bool</span> updateCamera();</div>
-<div class="line"><a id="l00772" name="l00772"></a><span class="lineno">  772</span>    };</div>
+<div class="line"><a id="l00770" name="l00770"></a><span class="lineno">  770</span>        <span class="keywordtype">void</span> updateTether(<span class="keyword">const</span> vsg::time_point&amp; t);</div>
+<div class="line"><a id="l00771" name="l00771"></a><span class="lineno">  771</span> </div>
+<div class="line"><a id="l00773" name="l00773"></a><span class="lineno">  773</span>        <span class="keywordtype">bool</span> updateCamera();</div>
+<div class="line"><a id="l00774" name="l00774"></a><span class="lineno">  774</span>    };</div>
 </div>
-<div class="line"><a id="l00773" name="l00773"></a><span class="lineno">  773</span>}</div>
+<div class="line"><a id="l00775" name="l00775"></a><span class="lineno">  775</span>}</div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator.html">ROCKY_NAMESPACE::MapManipulator</a></div><div class="ttdef"><b>Definition</b> MapManipulator.h:38</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_html_a29ff4aeb5d816515dd0e0d70cdb16ac7"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator.html#a29ff4aeb5d816515dd0e0d70cdb16ac7">ROCKY_NAMESPACE::MapManipulator::ActionType</a></div><div class="ttdeci">ActionType</div><div class="ttdoc">Bindable manipulator actions.</div><div class="ttdef"><b>Definition</b> MapManipulator.h:114</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_html_a50d910882f4ba880c2d85c75ac649192"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator.html#a50d910882f4ba880c2d85c75ac649192">ROCKY_NAMESPACE::MapManipulator::isTethering</a></div><div class="ttdeci">bool isTethering() const</div><div class="ttdoc">True if the user set a Viewpoint with a tethering target.</div><div class="ttdef"><b>Definition</b> MapManipulator.h:86</div></div>
