@@ -199,7 +199,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
 
     // Determine the intersecting keys
     std::vector<TileKey> intersectingKeys;
-    unsigned targetLOD = key.LOD();
+    unsigned targetLOD = profile().getEquivalentLOD(key.profile(), key.LOD()); // key.LOD();
     key.getIntersectingKeys(profile(), intersectingKeys);
 
     // collect heightfield for each intersecting key. Note, we're hitting the
@@ -279,6 +279,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
 
             // new output HF:
             output = HeightfieldMosaic::create(cols, rows);
+            output->fill(NO_DATA_VALUE);
 
             // Cache pointers to the source images that mosaic to create this tile.
             output->dependencies.reserve(sources.size());
@@ -296,49 +297,46 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
             std::vector<glm::dvec3> points;
             points.resize(cols * rows);
 
+            // note, for elevation we sample edge to edge instead of on pixel-center.
             double minx, miny, maxx, maxy;
             key.extent().getBounds(minx, miny, maxx, maxy);
-            double dx = (maxx - minx) / (double)(cols);
-            double dy = (maxy - miny) / (double)(rows);
+            double dx = (maxx - minx) / (double)(cols-1);
+            double dy = (maxy - miny) / (double)(rows-1);
 
             // build a grid of sample points:
             for (unsigned r = 0; r < rows; ++r)
             {
-                double y = miny + (0.5*dy) + (dy * (double)r);
+                double y = miny + (dy * (double)r);
                 for (unsigned c = 0; c < cols; ++c)
                 {
-                    double x = minx + (0.5*dx) + (dx * (double)c);
-                    points[r * cols + c] = { x, y, NO_DATA_VALUE };
+                    double x = minx + (dx * (double)c);
+                    points[r * cols + c] = { x, y, 0.0 };
                 }
             }
 
-            // transform the sample points to the SRS of our source data tiles:
+            // transform the sample points to the SRS of our source data tiles.
+            // Note, point.z will hold a vdatum offset if applicable.
             if (xform.valid())
             {
                 xform.transformArray(&points[0], points.size());
             }
 
             // sample the heights:
-            for (auto& point : points)
-            {
-                for(unsigned i = 0; point.z == NO_DATA_VALUE && i < sources.size(); ++i)
-                {
-                    point.z = sources[i].heightAtLocation(point.x, point.y, Image::BILINEAR);
-                }
-            }
-
-            // transform the elevations back to the SRS of our tilekey (vdatum transform):
-            if (xform.valid())
-            {
-                xform.inverseArray(&points[0], points.size());
-            }
-
-            // assign the final heights to the heightfield.
             for (unsigned r = 0; r < rows; ++r)
             {
                 for (unsigned c = 0; c < cols; ++c)
                 {
-                    output->heightAt(c, r) = (float)(points[r * cols + c].z);
+                    auto& point = points[r * cols + c];
+                    float& height = output->heightAt(c, r);
+                    for (unsigned i = 0; height == NO_DATA_VALUE && i < sources.size(); ++i)
+                    {
+                        height = sources[i].heightAtLocation(point.x, point.y, Image::BILINEAR);
+                    }
+
+                    if (height != NO_DATA_VALUE)
+                    {
+                        height -= point.z; // apply reverse vdatum offset
+                    }
                 }
             }
         }
