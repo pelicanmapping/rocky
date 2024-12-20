@@ -41,8 +41,7 @@ namespace
 }
 auto Demo_Stats = [](Application& app)
 {
-    int f = frame_num % frame_count;
-
+    int f = (++frame_num) % frame_count;
     frames[f] = app.stats.frame;
     events[f] = app.stats.events;
     update[f] = app.stats.update;
@@ -61,7 +60,7 @@ auto Demo_Stats = [](Application& app)
     {
         std::string buf;
 
-        float fps = 1.0f / (1e-6f * (float)app.stats.frame.count());
+        float fps = 1.0f / (1e-6f * (float)frames[f].count());
         buf = util::format("%.2f ms (%.1f fps)", 0.001f * (float)app.stats.frame.count(), fps);
         ImGuiLTable::PlotLines("Frame", get_timings, &frames, frame_count, f, buf.c_str(), 0.0f, 17.0f);
 
@@ -127,6 +126,4 @@ auto Demo_Stats = [](Application& app)
 
         ImGuiLTable::End();
     }
-
-    frame_num++;
 };

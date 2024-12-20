@@ -495,7 +495,7 @@ Application::frame()
 
         // After not rendering for a few frames, start applying a sleep to
         // "simulate" vsync so we don't tax the CPU by running full-out.
-        if (_framesSinceLastRender >= 60)
+        if (_framesSinceLastRender >= 60 && context->renderRequests == 0)
         {
             auto max_frame_time = std::chrono::milliseconds(10);
             auto now = vsg::clock::now();
@@ -506,12 +506,6 @@ Application::frame()
                 std::this_thread::sleep_for(dur_us);
             }
         }
-
-        auto t_end = std::chrono::steady_clock::now();
-
-        stats.record = std::chrono::microseconds(0);
-        stats.present = std::chrono::microseconds(0);
-        stats.frame = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start);
     }
 
     return viewer->active();
