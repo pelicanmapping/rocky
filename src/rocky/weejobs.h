@@ -11,7 +11,6 @@
 #include <condition_variable>
 #include <cstdlib>
 #include <functional>
-#include <list>
 #include <mutex>
 #include <thread>
 #include <type_traits>
@@ -32,7 +31,7 @@
 // Version
 #define WEEJOBS_VERSION_MAJOR 1
 #define WEEJOBS_VERSION_MINOR 0
-#define WEEJOBS_VERSION_REV   2
+#define WEEJOBS_VERSION_REV   3
 #define WEEJOBS_STR_NX(s) #s
 #define WEEJOBS_STR(s) WEEJOBS_STR_NX(s)
 #define WEEJOBS_COMPUTE_VERSION(major, minor, patch) ((major) * 10000 + (minor) * 100 + (patch))
@@ -571,7 +570,6 @@ namespace WEEJOBS_NAMESPACE
         {
             std::lock_guard<std::mutex> lock(_queue_mutex);
             _queue.clear();
-            _queue_size = 0;
             _metrics.canceled += _metrics.pending;
             _metrics.pending = 0;
         }
@@ -595,7 +593,6 @@ namespace WEEJOBS_NAMESPACE
                     std::lock_guard<std::mutex> lock(_queue_mutex);
 
                     _queue.emplace_back(detail::job{ context, delegate });
-                    _queue_size++;
 
                     _metrics.pending++;
                     _metrics.total++;
@@ -624,7 +621,7 @@ namespace WEEJOBS_NAMESPACE
                 std::lock_guard<std::mutex> lock(_queue_mutex);
                 return _take_job(output, false);
             }
-            else if (!_done && _queue_size > 0)
+            else if (!_done && !_queue.empty())
             {
                 auto ptr = _queue.end();
                 float highest_priority = -FLT_MAX;
@@ -645,8 +642,10 @@ namespace WEEJOBS_NAMESPACE
                     ptr = _queue.begin();
 
                 output = std::move(*ptr);
-                _queue.erase(ptr);
-                _queue_size--;
+                if (_queue.size() > 1)
+                    *ptr = std::move(_queue.back());
+                _queue.resize(_queue.size() - 1);
+
                 _metrics.pending--;
                 return true;
             }
@@ -660,6 +659,7 @@ namespace WEEJOBS_NAMESPACE
         {
             _metrics.name = name;
             _metrics.concurrency = 0;
+            _queue.reserve(256);
         }
 
         //! Pulls queued jobs and runs them in whatever thread run() is called from.
@@ -676,8 +676,7 @@ namespace WEEJOBS_NAMESPACE
         inline void join_threads();
 
         bool _can_steal_work = true;
-        std::list<detail::job> _queue;
-        std::atomic_int _queue_size = { 0 }; // don't use list::size(), it's slow and not atomic
+        std::vector<detail::job> _queue;
         mutable std::mutex _queue_mutex; // protect access to the queue
         mutable std::mutex _quit_mutex; // protects access to _done
         std::atomic<unsigned> _target_concurrency; // target number of concurrent threads in the pool
@@ -920,7 +919,7 @@ namespace WEEJOBS_NAMESPACE
                         // work-stealing enabled: wait until any queue is non-empty
                         _block.wait(lock, [this]() { return get_metrics()->total_pending() > 0 || _done; });
 
-                        if (!_done && _queue_size > 0)
+                        if (!_done && !_queue.empty())
                         {
                             have_next = _take_job(next, false);
                         }
@@ -936,9 +935,9 @@ namespace WEEJOBS_NAMESPACE
                     std::unique_lock<std::mutex> lock(_queue_mutex);
 
                     // wait until just our local queue is non-empty
-                    _block.wait(lock, [this] { return (_queue_size > 0) || _done; });
+                    _block.wait(lock, [this] { return !_queue.empty() || _done; });
 
-                    if (!_done && _queue_size > 0)
+                    if (!_done && !_queue.empty())
                     {
                         have_next = _take_job(next, false);
                     }
@@ -1019,7 +1018,6 @@ namespace WEEJOBS_NAMESPACE
             }
         }
         _queue.clear();
-        _queue_size = 0;
 
         // wake up all threads so they can exit
         _block.notify_all();
@@ -1052,9 +1050,9 @@ namespace WEEJOBS_NAMESPACE
             {
                 if (pool != thief)
                 {
-                    if (static_cast<std::size_t>(pool->_queue_size) > max_num_jobs)
+                    if (static_cast<std::size_t>(pool->_queue.size()) > max_num_jobs)
                     {
-                        max_num_jobs = pool->_queue_size;
+                        max_num_jobs = pool->_queue.size();
                         pool_with_most_jobs = pool;
                     }
                 }
