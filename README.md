@@ -58,7 +58,7 @@ Thanks to these excellent open source projects!
 * [weejobs](https://github.com/pelicanmapping/weejobs) (embedded)
 
 ## Run the Demo
-Rocky is pretty good at finding its data files, but you might need so up a couple environment variables to help:
+Rocky is pretty good at finding its data files, but you might need to set a couple environment variables to help:
 ```bat
 set ROCKY_FILE_PATH=%rocky_install_dir%/share/rocky
 set ROCKY_DEFAULT_FONT=C:/windows/fonts/arialbd.ttf
