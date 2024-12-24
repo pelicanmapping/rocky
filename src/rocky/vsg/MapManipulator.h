@@ -65,7 +65,7 @@ namespace ROCKY_NAMESPACE
         bool viewportToWorld(float x, float y, vsg::dvec3& out_coords) const;
 
         //! Distance from the focal point in world coordiantes
-        double getDistance() const { return _state.distance; }
+        double distance() const { return _state.distance; }
 
         //! Distance from the focal point in world coordinates.
         void setDistance(double distance);
@@ -77,7 +77,7 @@ namespace ROCKY_NAMESPACE
         void setViewpoint(const Viewpoint& vp, std::chrono::duration<float> duration_s);
 
         //! Fetches the current viewpoint
-        Viewpoint getViewpoint() const;
+        Viewpoint viewpoint() const;
 
         //! Clears the current viewpoint (if tethered or transitioning)
         void clearViewpoint();
@@ -237,318 +237,148 @@ namespace ROCKY_NAMESPACE
 
     public:
 
+        /**
+        * Values and bindings that control the behavior of the manipulator.
+        */
         class ROCKY_EXPORT Settings
         {
         public:
             // construct with default settings
-            Settings();
+            Settings() = default;
 
             // copy ctor
-            Settings(const Settings& rhs);
+            Settings(const Settings& rhs) = default;
 
-            /** dtor */
-            virtual ~Settings() { }
+            //! Mouse sensitivity factor. Higher -> more sensitive.
+            double mouseSensitivity = 1.0;
 
-            void dirty() { }
+            //! Touch sensitivity factor. Higher -> more sensitive.
+            double touchSensitivity = 0.005;
 
-            /**
-             * Assigns behavior to the action of dragging the mouse while depressing one or
-             * more mouse buttons and modifier keys.
-             *
-             * @param action
-             *      The EarthManipulator::ActionType value to which to bind this mouse
-             *      input specification.
-             *
-             * @param button_mask
-             *      Mask of osgGA::GUIEventAdapter::MouseButtonMask values
-             *
-             * @param modkey_mask (default = 0L)
-             *      A mask of osgGA::GUIEventAdapter::ModKeyMask values defining a modifier key
-             *      combination to associate with the action.
-             *
-             * @param options
-             *      Action options. Valid options are:
-             *      OPTION_CONTINUOUS, OPTION_SCALE_X, OPTION_SCALE_Y
-             */
-            void bindMouse(
-                ActionType action,
-                int button_mask,
-                int modkey_mask = 0L,
-                const ActionOptions& options = ActionOptions());
+            //! Keyboard action sensitivity factor. This applies to navigation actions
+            //! that are bound to keyboard events. For example, you may bind the LEFT arrow to
+            //! the ACTION_PAN_LEFT action; this factor adjusts how much panning will occur during
+            //! each frame that the key is depressed. Higher -> more sensitive.
+            double keyboardSesitivity = 1.0;
 
-            /**
-             * Assigns a bevahior to the action of clicking one or more mouse buttons.
-             *
-             * @param action
-             *      The EarthManipulator::ActionType value to which to bind this mouse click
-             *      input specification.
-             *
-             * @param button_mask
-             *      Mask of osgGA::GUIEventAdapter::MouseButtonMask values
-             *
-             * @param modkey_mask (default = 0L)
-             *      A mask of osgGA::GUIEventAdapter::ModKeyMask values defining a modifier key
-             *      combination to associate with the action.
-             *
-             * @param options
-             *      Action options. Valid options are:
-             *      OPTION_GOTO_RANGE_FACTOR, OPTION_DURATION
-             */
-            void bindMouseClick(
-                ActionType action,
-                int button_mask,
-                int modkey_mask = 0L,
-                const ActionOptions& options = ActionOptions());
+            //! Scroll-wheel sensitivity factor. This applies to navigation actions
+            //! that are bound to scrolling events. For example, you may bind the scroll wheel to
+            //! the ACTION_ZOOM_IN action; this factor adjusts how much zooming will occur each time
+            //! you click the scroll wheel. Higher = more sensitive.
+            double scrollSensitivity = 1.0;
 
-            /**
-             * Assigns a bevahior to the action of double-clicking one or more mouse buttons.
-             *
-             * @param action
-             *      The EarthManipulator::ActionType value to which to bind this double-click
-             *      input specification.
-             *
-             * @param button_mask
-             *      Mask of osgGA::GUIEventAdapter::MouseButtonMask values
-             *
-             * @param modkey_mask (default = 0L)
-             *      A mask of osgGA::GUIEventAdapter::ModKeyMask values defining a modifier key
-             *      combination to associate with the action.
-             *
-             * @param options
-             *      Action options. Valid options are:
-             *      OPTION_GOTO_RANGE_FACTOR, OPTION_DURATION
-             */
-            void bindMouseDoubleClick(
-                ActionType action,
-                int button_mask,
-                int modkey_mask = 0L,
-                const ActionOptions& options = ActionOptions());
+            //! Prevents simultaneous control of pitch and azimuth (when true).
+            bool singleAxisRotation = false;
 
-            /**
-             * Assigns a bevahior to the action of depressing a key.
-             *
-             * @param action
-             *      The EarthManipulator::ActionType value to which to bind this key
-             *      input specification.
-             *
-             * @param key
-             *      A osgGA::GUIEventAdapter::KeySymbol value
-             *
-             * @param modkey_mask (default = 0L)
-             *      A mask of osgGA::GUIEventAdapter::ModKeyMask values defining a modifier key
-             *      combination to associate with the action.
-             *
-             * @param options
-             *      Action options. Valid options are:
-             *      OPTION_CONTINUOUS
-             */
-            void bindKey(
-                ActionType action,
-                int key,
-                int modkey_mask = 0L,
-                const ActionOptions& options = ActionOptions());
+            //! Whether to lock in a camera heading when performing panning operations.
+            bool lockAzimuthWhilePanning = true;
 
-            /**
-             * Assigns a bevahior to operation of the mouse's scroll wheel.
-             *
-             * @param action
-             *      The EarthManipulator::ActionType value to which to bind this scroll
-             *      input specification.
-             *
-             * @param scrolling_motion
-             *      A osgGA::GUIEventAdapter::ScrollingMotion value
-             *
-             * @param modkey_mask (default = 0L)
-             *      A mask of osgGA::GUIEventAdapter::ModKeyMask values defining a modifier key
-             *      combination to associate with the action.
-             *
-             * @param options
-             *      Action options. Valid options are:
-             *      OPTION_SCALE_Y, OPTION_DURATION
-             */
-            void bindScroll(
-                ActionType action,
-                int scrolling_motion,
-                int modkey_mask = 0L,
-                const ActionOptions& options = ActionOptions());
+            //! Minimum allowable camera pitch relative to the planet (degrees)
+            double minPitch = -89.99;
+
+            //! Maximum allowable camera pitch relative to the planet (degrees)
+            double maxPitch = -1.0;
+
+            //! Max x offset in meters
+            double maxXOffset = 0.0;
+
+            //! Max y offset in meters
+            double maxYOffset = 0.0;
+
+            //! Minimum allowable distance from the focal point (meters)
+            double minDistance = 1.0;
+
+            //! Maximum allowable distance from the focal point (meters)
+            double maxDistance = DBL_MAX;
+
+            //! Mode used for tethering to a node
+            TetherMode tetherMode = TETHER_CENTER;
+
+            //! Collection of Actions that will automatically break a tether.
+            ActionTypeVector breakTetherActions;
+
+            //! Whether a setViewpoint transition should "arc" over the planet surface, versus
+            //! travel with a linearly-interpolated altitude
+            bool arcViewpoints = true;
+
+            //! Whether to automatically calculate a duration for calls to setViewpoint
+            bool autoVPDuration = false;
+
+            //! Minimum duration time when autoVPDuration = true (seconds)
+            double minVPDuration = 3.0;
+
+            //! Maximum duration time when autoVPDuration = true (seconds)
+            double maxVPDuration = 8.0;
+
+            //! Whether to automatically adjust an orthographic camera so that it "tracks" the last known FOV and Aspect Ratio.
+            bool orthoTracksPerspective = true;
+
+            //! Whether or not to keep the camera from going through the terrain surface
+            bool terrainAvoidance = false;
+
+            //! Minimum range for terrain avoidance checks (meters)
+            double minTerrainAvoidanceDistance = 1.0;
+
+            //! Whether a flick of the mouse or touch gesture will cause the camera to "throw" and continue moving after the gesture ends
+            bool throwing = false;
+
+            //! Rate at which a throw will decay (0.0 = no decay, 1.0 = instant stop) when throwing == true
+            double throwDecayRate = 0.05;
+
+            //! Whtehr to zoom towards the mouse cursor when zooming
+            bool zoomToMouse = true;
 
 
-            void bindPinch(
-                ActionType action, const ActionOptions & = ActionOptions());
+            //! Assigns behavior to the action of dragging the mouse while depressing one or
+            //! more mouse buttons and modifier keys.
+            //!
+            //! @param action ActionType value to which to bind this mouse input specification
+            //! @param button_mask Mask of MouseButtonMask values
+            //! @param modkey_mask (default = 0) Mask of ModKeyMask values defining a modifier keycombination to associate with the action.
+            //! @param options Action options (OPTION_CONTINUOUS, OPTION_SCALE_X, OPTION_SCALE_Y)
+            void bindMouse(ActionType action, int button_mask, int modkey_mask = 0, const ActionOptions& options = {});
 
-            void bindTwist(
-                ActionType action, const ActionOptions & = ActionOptions());
+            //! Assigns a bevahior to the action of clicking one or more mouse buttons.
+            //! 
+            //! @param action Actiontype value to which to bind this input specification.
+            //! @param button_mask Mask of MouseButtonMask values
+            //! @param modkey_mask (default = 0L) A mask of ModKeyMask values defining a modifier key combination to associate with the action.
+            //! @param options Action options (OPTION_GOTO_RANGE_FACTOR, OPTION_DURATION
+            void bindMouseClick(ActionType action, int button_mask, int modkey_mask = 0L, const ActionOptions& options = {});
 
-            void bindMultiDrag(
-                ActionType action, const ActionOptions & = ActionOptions());
+            //! Assigns a bevahior to the action of double-clicking one or more mouse buttons.
+            //! 
+            //!  @param action ActionType value to which to bind this double-click input specification.
+            //!  @param button_mask Mask of MouseButtonMask values
+            //!  @param modkey_mask Mask of ModKeyMask values defining a modifier key combination to associate with the action
+            //!  @param options Action options (OPTION_GOTO_RANGE_FACTOR, OPTION_DURATION)
+            //! 
+            void bindMouseDoubleClick(ActionType action, int button_mask, int modkey_mask = 0L, const ActionOptions& options = {});
 
-            /**
-             * Sets an overall mouse sensitivity factor.
-             *
-             * @param value
-             *      A scale factor to apply to mouse readings.
-             *      1.0 = default; < 1.0 = less sensitive; > 1.0 = more sensitive.
-             */
-            void setMouseSensitivity(double value) { _mouse_sens = value; }
+            //!  Assigns a bevahior to the action of depressing a key.
+            //! 
+            //!  @param action ActionType value to which to bind this key input specification.
+            //!  @param key Key value
+            //!  @param modkey_mask (default = 0L) Mask of ModKeyMask values defining a modifier keycombination to associate with the action.
+            //!  @param options Action options (OPTION_CONTINUOUS)
+            void bindKey(ActionType action, int key, int modkey_mask = 0, const ActionOptions& options = {});
 
-            /**
-             * Gets the overall mouse sensitivity scale factor. Default = 1.0.
-             */
-            double getMouseSensitivity() const { return _mouse_sens; }
+            //! Assigns a bevahior to operation of the mouse's scroll wheel.
+            //!
+            //! @param action ActionType to which to bind this input spec
+            //! @param scrolling_motion ScrollingMotion value
+            //! @param modkey_mask Mask of ModKeyMask values defining a modifier key combination to associate with the action.
+            //! @param options Action options (OPTION_SCALE_Y, OPTION_DURATION)
+            void bindScroll(ActionType action, int scrolling_motion, int modkey_mask = 0L, const ActionOptions& options = {});
 
-            /**
-             * Sets an overall touch sensitivity factor.
-             *
-             * @param value
-             *      A scale factor to apply to mouse readings.
-             *      0.005 = default; < 0.005 = less sensitive; > 0.005 = more sensitive.
-             */
-            void setTouchSensitivity(double value) { _touch_sens = value; }
+            //! TODO
+            void bindPinch(ActionType action, const ActionOptions& = {});
 
-            /**
-             * Gets the overall touch sensitivity scale factor. Default = 1.0.
-             */
-            double getTouchSensitivity() const { return _touch_sens; }
+            //! TODO
+            void bindTwist(ActionType action, const ActionOptions& = {});
 
-            /**
-             * Sets the keyboard action sensitivity factor. This applies to navigation actions
-             * that are bound to keyboard events. For example, you may bind the LEFT arrow to
-             * the ACTION_PAN_LEFT action; this factor adjusts how much panning will occur during
-             * each frame that the key is depressed.
-             *
-             * @param value
-             *      A scale factor to apply to keyboard-controller navigation.
-             *      1.0 = default; < 1.0 = less sensitive; > 1.0 = more sensitive.
-             */
-            void setKeyboardSensitivity(double value) { _keyboard_sens = value; }
-
-            /**
-             * Gets the keyboard action sensitivity scale factor. Default = 1.0.
-             */
-            double getKeyboardSensitivity() const { return _keyboard_sens; }
-
-            /**
-             * Sets the scroll-wheel sensitivity factor. This applies to navigation actions
-             * that are bound to scrolling events. For example, you may bind the scroll wheel to
-             * the ACTION_ZOOM_IN action; this factor adjusts how much zooming will occur each time
-             * you click the scroll wheel.
-             *
-             * @param value
-             *      A scale factor to apply to scroll-wheel-controlled navigation.
-             *      1.0 = default; < 1.0 = less sensitive; > 1.0 = more sensitive.
-             */
-            void setScrollSensitivity(double value) { _scroll_sens = value; }
-
-            /**
-             * Gets the scroll wheel sensetivity scale factor. Default = 1.0.
-             */
-            double getScrollSensitivity() const { return _scroll_sens; }
-
-            /**
-             * When set to true, prevents simultaneous control of pitch and azimuth.
-             *
-             * Usually you can alter pitch and azimuth at the same time. When this flag
-             * is set, you can only control one at a time - if you start slewing the azimuth of the camera,
-             * the pitch stays locked until you stop moving and then start slewing the pitch.
-             *
-             * Default = false.
-             */
-            void setSingleAxisRotation(bool value) { _single_axis_rotation = value; }
-
-            /**
-             * Gets whether simultaneous control over pitch and azimuth is disabled.
-             * Default = false.
-             */
-            bool getSingleAxisRotation() const { return _single_axis_rotation; }
-
-            /**
-             * Sets whether to lock in a camera heading when performing panning operations (i.e.,
-             * changing the focal point).
-             */
-            void setLockAzimuthWhilePanning(bool value) { _lock_azim_while_panning = value; }
-
-            /**
-             * Gets true if the manipulator should lock in a camera heading when performing panning
-             * operations (i.e. changing the focal point.)
-             */
-            bool getLockAzimuthWhilePanning() const { return _lock_azim_while_panning; }
-
-            /**
-             * Sets the minimum and maximum allowable local camera pitch, in degrees.
-             *
-             * By "local" we mean relative to the tangent plane passing through the focal point on
-             * the surface of the terrain.
-             *
-             * Defaults are: Min = -90, Max = -10.
-             */
-            void setMinMaxPitch(double min_pitch, double max_pitch);
-
-            /** Gets the minimum allowable local pitch, in degrees. */
-            double getMinPitch() const { return _min_pitch; }
-
-            /** Gets the maximum allowable local pitch, in degrees. */
-            double getMaxPitch() const { return _max_pitch; }
-
-            /** Gets the max x offset in world coordinates */
-            double getMaxXOffset() const { return _max_x_offset; }
-
-            /** Gets the max y offset in world coordinates */
-            double getMaxYOffset() const { return _max_y_offset; }
-
-            /** Gets the minimum distance from the focal point in world coordinates */
-            double getMinDistance() const { return _min_distance; }
-
-            /** Gets the maximum distance from the focal point in world coordinates */
-            double getMaxDistance() const { return _max_distance; }
-
-            /** Sets the min and max distance from the focal point in world coordinates */
-            void setMinMaxDistance(double min_distance, double max_distance);
-
-            /** Sets the maximum allowable offsets for the x and y camera offsets in world coordinates */
-            void setMaxOffset(double max_x_offset, double max_y_offset);
-
-            /** Mode used for tethering to a node. */
-            void setTetherMode(TetherMode value) { _tether_mode = value; }
-            TetherMode getTetherMode() const { return _tether_mode; }
-
-            /** Access to the list of Actions that will automatically break a tether */
-            ActionTypeVector& getBreakTetherActions() { return _breakTetherActions; }
-            const ActionTypeVector& getBreakTetherActions() const { return _breakTetherActions; }
-
-            /** Whether a setViewpoint transition whould "arc" */
-            void setArcViewpointTransitions(bool value);
-            bool getArcViewpointTransitions() const { return _arc_viewpoints; }
-
-            /** Activates auto-duration for transitioned viewpoints. */
-            void setAutoViewpointDurationEnabled(bool value);
-            bool getAutoViewpointDurationEnabled() const { return _auto_vp_duration; }
-
-            void setAutoViewpointDurationLimits(double minSeconds, double maxSeconds);
-            void getAutoViewpointDurationLimits(double& out_minSeconds, double& out_maxSeconds) const {
-                out_minSeconds = _min_vp_duration_s;
-                out_maxSeconds = _max_vp_duration_s;
-            }
-
-            /** Whether to automatically adjust an orthographic camera so that it "tracks" the last known FOV and Aspect Ratio. */
-            bool getOrthoTracksPerspective() const { return _orthoTracksPerspective; }
-            void setOrthoTracksPerspective(bool value) { _orthoTracksPerspective = value; }
-
-            /** Whether or not to keep the camera from going through the terrain surface */
-            bool getTerrainAvoidanceEnabled() const { return _terrainAvoidanceEnabled; }
-            void setTerrainAvoidanceEnabled(bool value) { _terrainAvoidanceEnabled = value; }
-
-            /** Minimum range for terrain avoidance checks in world coordinates */
-            double getTerrainAvoidanceMinimumDistance() const { return _terrainAvoidanceMinDistance; }
-            void setTerrainAvoidanceMinimumDistance(double minDistance) { _terrainAvoidanceMinDistance = minDistance; }
-
-            void setThrowingEnabled(bool throwingEnabled) { _throwingEnabled = throwingEnabled; }
-            bool getThrowingEnabled() const { return _throwingEnabled; }
-
-            void setThrowDecayRate(double throwDecayRate) { _throwDecayRate = util::clamp(throwDecayRate, 0.0, 1.0); }
-            double getThrowDecayRate() const { return _throwDecayRate; }
-
-            void setZoomToMouse(bool value) { _zoomToMouse = value; }
-            bool getZoomToMouse() const { return _zoomToMouse; }
+            //! TODO
+            void bindMultiDrag(ActionType action, const ActionOptions& = {});
 
         private:
 
@@ -567,36 +397,6 @@ namespace ROCKY_NAMESPACE
         private:
 
             ActionBindings _bindings;
-            bool _single_axis_rotation;
-            bool _lock_azim_while_panning;
-            double _mouse_sens;
-            double _keyboard_sens;
-            double _scroll_sens;
-            double _touch_sens;
-            double _min_pitch;
-            double _max_pitch;
-
-            double _max_x_offset;
-            double _max_y_offset;
-
-            double _min_distance;
-            double _max_distance;
-
-            TetherMode _tether_mode;
-            ActionTypeVector _breakTetherActions;
-            bool _arc_viewpoints;
-            bool _auto_vp_duration;
-            double _min_vp_duration_s, _max_vp_duration_s;
-
-            bool _orthoTracksPerspective;
-
-            bool _terrainAvoidanceEnabled;
-            double _terrainAvoidanceMinDistance;
-
-            bool _throwingEnabled;
-            double _throwDecayRate;
-
-            bool _zoomToMouse;
         };
 
         std::shared_ptr<Settings> _settings;
@@ -612,7 +412,7 @@ namespace ROCKY_NAMESPACE
         bool intersectAlongLookVector(vsg::dvec3& out_world) const;
 
         // returns the absolute Euler angles composited from the composite rotation matrix.
-        void getCompositeEulerAngles(double* out_azim, double* out_pitch = 0L) const;
+        void compositeEulerAngles(double* out_azim, double* out_pitch = 0L) const;
 
         // This sets the camera's roll based on your location on the globe.
         void recalculateRoll();
@@ -693,14 +493,14 @@ namespace ROCKY_NAMESPACE
 
             // Reference frame for the local ENU tangent plane to the elllipoid centered
             // at "_center" with (X=east, Y=north, Z=up)
-            vsg::dmat4 centerRotation;
+            vsg::dmat4 centerRotation = vsg::dmat4(1.0);
 
             // Quaternion that applies a heading and pitch in the local tangent plane
             // established by _center and _centerRotation.
-            vsg::dquat localRotation;
+            vsg::dquat localRotation = vsg::dquat( 0, 0, 0, 1 );
 
             // distance from camera to _center.
-            double distance;
+            double distance = 1.0;
 
             // XYZ offsets of the focal point in the local tangent plane coordinate system
             // of the focal point.
@@ -710,7 +510,7 @@ namespace ROCKY_NAMESPACE
             // the view heading.
             vsg::dvec2 viewOffset;
 
-            vsg::dquat tetherRotation;
+            vsg::dquat tetherRotation = vsg::dquat(0, 0, 0, 1);
 
             std::optional<Viewpoint> setVP0;
             std::optional<Viewpoint> setVP1; // Final viewpoint
@@ -721,12 +521,6 @@ namespace ROCKY_NAMESPACE
             vsg::dquat tetherRotationVP0;
             vsg::dquat tetherRotationVP1;
             TetherMode lastTetherMode = TETHER_CENTER;
-
-            State() :
-                localRotation(0, 0, 0, 1),
-                distance(1.0),
-                tetherRotation(0, 0, 0, 1)
-            { }
         };
 
         VSGContext _context;

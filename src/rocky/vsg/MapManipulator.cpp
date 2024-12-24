@@ -277,65 +277,6 @@ MapManipulator::InputSpec::operator < (const InputSpec& rhs) const {
     else return (_modkey_mask < rhs._modkey_mask);
 }
 
-
-MapManipulator::Settings::Settings() :
-    _single_axis_rotation(false),
-    _lock_azim_while_panning(true),
-    _mouse_sens(1.0),
-    _touch_sens(0.005),
-    _keyboard_sens(1.0),
-    _scroll_sens(1.0),
-    _min_pitch(-89.9),
-    _max_pitch(-1.0),
-    _max_x_offset(0.0),
-    _max_y_offset(0.0),
-    _min_distance(1.0),
-    _max_distance(DBL_MAX),
-    _tether_mode(TETHER_CENTER),
-    _arc_viewpoints(true),
-    _auto_vp_duration(false),
-    _min_vp_duration_s(3.0),
-    _max_vp_duration_s(8.0),
-    _orthoTracksPerspective(true),
-    _terrainAvoidanceEnabled(false),
-    _terrainAvoidanceMinDistance(1.0),
-    _throwingEnabled(false),
-    _throwDecayRate(0.05),
-    _zoomToMouse(true)
-{
-    //NOP
-}
-
-MapManipulator::Settings::Settings(const MapManipulator::Settings& rhs) :
-    _bindings(rhs._bindings),
-    _single_axis_rotation(rhs._single_axis_rotation),
-    _lock_azim_while_panning(rhs._lock_azim_while_panning),
-    _mouse_sens(rhs._mouse_sens),
-    _touch_sens(rhs._touch_sens),
-    _keyboard_sens(rhs._keyboard_sens),
-    _scroll_sens(rhs._scroll_sens),
-    _min_pitch(rhs._min_pitch),
-    _max_pitch(rhs._max_pitch),
-    _max_x_offset(rhs._max_x_offset),
-    _max_y_offset(rhs._max_y_offset),
-    _min_distance(rhs._min_distance),
-    _max_distance(rhs._max_distance),
-    _tether_mode(rhs._tether_mode),
-    _arc_viewpoints(rhs._arc_viewpoints),
-    _auto_vp_duration(rhs._auto_vp_duration),
-    _min_vp_duration_s(rhs._min_vp_duration_s),
-    _max_vp_duration_s(rhs._max_vp_duration_s),
-    _orthoTracksPerspective(rhs._orthoTracksPerspective),
-    _breakTetherActions(rhs._breakTetherActions),
-    _terrainAvoidanceEnabled(rhs._terrainAvoidanceEnabled),
-    _terrainAvoidanceMinDistance(rhs._terrainAvoidanceMinDistance),
-    _throwingEnabled(rhs._throwingEnabled),
-    _throwDecayRate(rhs._throwDecayRate),
-    _zoomToMouse(rhs._zoomToMouse)
-{
-    //NOP
-}
-
 #define HASMODKEY( W, V ) (( W & V ) == V )
 
 // expands one input spec into many if necessary, to deal with modifier key combos.
@@ -381,92 +322,56 @@ MapManipulator::Settings::bind(const InputSpec& spec, const Action& action)
 {
     InputSpecs specs;
     expandSpec(spec, specs);
-    for (InputSpecs::const_iterator i = specs.begin(); i != specs.end(); i++)
-    {
-        _bindings[*i] = action;
-    }
+    for (auto& spec : specs)
+        _bindings[spec] = action;
 }
 
 void
-MapManipulator::Settings::bindMouse(
-    ActionType actionType,
-    int button_mask, int modkey_mask,
-    const ActionOptions& options)
+MapManipulator::Settings::bindMouse(ActionType actionType, int button_mask, int modkey_mask, const ActionOptions& options)
 {
-    bind(
-        InputSpec(EVENT_MOUSE_DRAG, button_mask, modkey_mask),
-        Action(actionType, options));
+    bind(InputSpec(EVENT_MOUSE_DRAG, button_mask, modkey_mask), Action(actionType, options));
 }
 
 void
-MapManipulator::Settings::bindMouseClick(
-    ActionType action,
-    int button_mask, int modkey_mask,
-    const ActionOptions& options)
+MapManipulator::Settings::bindMouseClick(ActionType action, int button_mask, int modkey_mask, const ActionOptions& options)
 {
-    bind(
-        InputSpec(EVENT_MOUSE_CLICK, button_mask, modkey_mask),
-        Action(action, options));
+    bind(InputSpec(EVENT_MOUSE_CLICK, button_mask, modkey_mask), Action(action, options));
 }
 
 void
-MapManipulator::Settings::bindMouseDoubleClick(
-    ActionType action,
-    int button_mask, int modkey_mask,
-    const ActionOptions& options)
+MapManipulator::Settings::bindMouseDoubleClick(ActionType action, int button_mask, int modkey_mask, const ActionOptions& options)
 {
-    bind(
-        InputSpec(EVENT_MOUSE_DOUBLE_CLICK, button_mask, modkey_mask),
-        Action(action, options));
+    bind(InputSpec(EVENT_MOUSE_DOUBLE_CLICK, button_mask, modkey_mask), Action(action, options));
 }
 
 void
-MapManipulator::Settings::bindKey(
-    ActionType action,
-    int key, int modkey_mask,
-    const ActionOptions& options)
+MapManipulator::Settings::bindKey(ActionType action, int key, int modkey_mask, const ActionOptions& options)
 {
-    bind(
-        InputSpec(EVENT_KEY_DOWN, key, modkey_mask),
-        Action(action, options));
+    bind(InputSpec(EVENT_KEY_DOWN, key, modkey_mask), Action(action, options));
 }
 
 void
-MapManipulator::Settings::bindScroll(
-    ActionType action, int scrolling_direction,
-    int modkey_mask, const ActionOptions& options)
+MapManipulator::Settings::bindScroll(ActionType action, int scrolling_direction, int modkey_mask, const ActionOptions& options)
 {
-    bind(
-        InputSpec(EVENT_SCROLL, scrolling_direction, modkey_mask),
-        Action(action, options));
-}
-
-
-void
-MapManipulator::Settings::bindPinch(
-    ActionType action, const ActionOptions& options)
-{
-    bind(
-        InputSpec(MapManipulator::EVENT_MULTI_PINCH, 0, 0),
-        Action(action, options));
+    bind(InputSpec(EVENT_SCROLL, scrolling_direction, modkey_mask), Action(action, options));
 }
 
 void
-MapManipulator::Settings::bindTwist(
-    ActionType action, const ActionOptions& options)
+MapManipulator::Settings::bindPinch(ActionType action, const ActionOptions& options)
 {
-    bind(
-        InputSpec(MapManipulator::EVENT_MULTI_TWIST, 0, 0),
-        Action(action, options));
+    bind(InputSpec(MapManipulator::EVENT_MULTI_PINCH, 0, 0), Action(action, options));
 }
 
 void
-MapManipulator::Settings::bindMultiDrag(
-    ActionType action, const ActionOptions& options)
+MapManipulator::Settings::bindTwist(ActionType action, const ActionOptions& options)
 {
-    bind(
-        InputSpec(MapManipulator::EVENT_MULTI_DRAG, 0, 0),
-        Action(action, options));
+    bind(InputSpec(MapManipulator::EVENT_MULTI_TWIST, 0, 0), Action(action, options));
+}
+
+void
+MapManipulator::Settings::bindMultiDrag(ActionType action, const ActionOptions& options)
+{
+    bind(InputSpec(MapManipulator::EVENT_MULTI_DRAG, 0, 0), Action(action, options));
 }
 
 const MapManipulator::Action&
@@ -480,51 +385,6 @@ MapManipulator::Settings::getAction(int event_type, int input_mask, int modkey_m
     return i != _bindings.end() ? i->second : NullAction;
 }
 
-void
-MapManipulator::Settings::setMinMaxPitch( double min_pitch, double max_pitch )
-{
-    _min_pitch = clamp( min_pitch, -89.9, 89.0 );
-    _max_pitch = clamp( max_pitch, min_pitch, 89.0 );
-    dirty();
-}
-
-void
-MapManipulator::Settings::setMaxOffset(double max_x_offset, double max_y_offset)
-{
-    _max_x_offset = std::max(max_x_offset, 0.0);
-    _max_y_offset = std::max(max_y_offset, 0.0);
-    dirty();
-}
-
-void
-MapManipulator::Settings::setMinMaxDistance( double min_distance, double max_distance)
-{
-    _min_distance = min_distance;
-    _max_distance = max_distance;
-    dirty();
-}
-
-void
-MapManipulator::Settings::setArcViewpointTransitions( bool value )
-{
-    _arc_viewpoints = value;
-    dirty();
-}
-
-void
-MapManipulator::Settings::setAutoViewpointDurationEnabled( bool value )
-{
-    _auto_vp_duration = value;
-    dirty();
-}
-
-void
-MapManipulator::Settings::setAutoViewpointDurationLimits(double minSeconds, double maxSeconds)
-{
-    _min_vp_duration_s = std::max(minSeconds, 0.0);
-    _max_vp_duration_s = std::max(maxSeconds, _min_vp_duration_s);
-    dirty();
-}
 
 /************************************************************************/
 
@@ -612,10 +472,8 @@ MapManipulator::configureDefaultSettings()
     _settings->bindTwist(ACTION_ROTATE, options);
     _settings->bindMultiDrag(ACTION_ROTATE, options);
 
-    //_settings->setThrowingEnabled( false );
-    _settings->setLockAzimuthWhilePanning(true);
-
-    _settings->setZoomToMouse(true);
+    _settings->lockAzimuthWhilePanning = true;
+    _settings->zoomToMouse = true;
 }
 
 void
@@ -632,25 +490,14 @@ MapManipulator::applySettings(std::shared_ptr<Settings> settings)
 
     _task._type = TASK_NONE;
 
-    //flushMouseEventStack();
-
     // apply new pitch restrictions
     double old_pitch_rad;
     getEulerAngles(_state.localRotation, nullptr, &old_pitch_rad);
 
     double old_pitch_deg = rad2deg(old_pitch_rad);
-    double new_pitch_deg = clamp(old_pitch_deg, _settings->getMinPitch(), _settings->getMaxPitch());
+    double new_pitch_deg = clamp(old_pitch_deg, _settings->minPitch, _settings->maxPitch);
 
     setDistance(_state.distance);
-
-#if 0
-    if (!equiv(new_pitch_deg, old_pitch_deg))
-    {
-        Viewpoint vp = getViewpoint();
-        vp.pitch->set(new_pitch_deg, Units::DEGREES);
-        setViewpoint(vp);
-    }
-#endif
 }
 
 std::shared_ptr<MapManipulator::Settings>
@@ -671,26 +518,6 @@ MapManipulator::reinitialize()
     _lastAction = ACTION_NULL;
     clearEvents();
 }
-
-#if 0
-void
-MapManipulator::handleTileUpdate(const TileKey& key, vsg::Node* graph, TerrainCallbackContext& context)
-{
-    // Only do collision avoidance if it's enabled, we're not tethering and
-    // we're not in the middle of setting a viewpoint.
-    if (getSettings()->getTerrainAvoidanceEnabled() &&
-        !isTethering() &&
-        !isSettingViewpoint() )
-    {
-        const GeoPoint& pt = centerMap();
-        if ( key.extent().contains(pt.x(), pt.y()) )
-        {
-            recalculateCenterFromLookVector();
-            collisionDetect();
-        }
-    }
-}
-#endif
 
 bool
 MapManipulator::createLocalCoordFrame(const vsg::dvec3& worldPos, vsg::dmat4& out_frame) const
@@ -754,7 +581,7 @@ MapManipulator::getWorldLookAtMatrix(const vsg::dvec3& point) const
 
 #if 1
 Viewpoint
-MapManipulator::getViewpoint() const
+MapManipulator::viewpoint() const
 {
     Viewpoint vp;
 
@@ -799,159 +626,136 @@ MapManipulator::setViewpoint(const Viewpoint& vp)
 
 void
 MapManipulator::setViewpoint(const Viewpoint& vp, std::chrono::duration<float> duration_seconds)
-{
-    //// If the manip is not set up, save the viewpoint for later.
-    //if ( !established() )
-    //{
-    //    _pendingViewpoint = vp;
-    //    _pendingViewpointDuration.set(duration_seconds, Units::SECONDS);
-    //}
-
-    //else
-
+{    
+#if 0
+    // Save any existing tether node so we can properly invoke the callback.
+    osg::ref_ptr<vsg::Node> oldEndNode;
+    if (isTethering() && _tetherCallback.valid())
     {
-#if 0
-        // Save any existing tether node so we can properly invoke the callback.
-        osg::ref_ptr<vsg::Node> oldEndNode;
-        if ( isTethering() && _tetherCallback.valid() )
-        {
-            oldEndNode = _setVP1->getNode();
-        }
+        oldEndNode = _setVP1->getNode();
+    }
 #endif
 
-        // starting viewpoint; all fields will be set:
-        _state.setVP0 = getViewpoint();
+    // starting viewpoint; all fields will be set:
+    _state.setVP0 = viewpoint();
 
-        // ending viewpoint
-        _state.setVP1 = vp;
+    // ending viewpoint
+    _state.setVP1 = vp;
 
-        // Reset the tethering offset quat.
-        _state.tetherRotationVP0 = _state.tetherRotation;
-        _state.tetherRotationVP1 = vsg::dquat();
+    // Reset the tethering offset quat.
+    _state.tetherRotationVP0 = _state.tetherRotation;
+    _state.tetherRotationVP1 = vsg::dquat();
 
-        // Fill in any missing end-point data with defaults matching the current camera setup.
-        // Then all fields are guaranteed to contain usable data during transition.
-        double defPitch, defAzim;
-        getEulerAngles(_state.localRotation, &defAzim, &defPitch );
+    // Fill in any missing end-point data with defaults matching the current camera setup.
+    // Then all fields are guaranteed to contain usable data during transition.
+    double defPitch, defAzim;
+    getEulerAngles(_state.localRotation, &defAzim, &defPitch);
 
-        if ( !_state.setVP1->heading.has_value() )
-            _state.setVP1->heading = Angle(defAzim, Units::RADIANS);
+    if (!_state.setVP1->heading.has_value())
+        _state.setVP1->heading = Angle(defAzim, Units::RADIANS);
 
-        if ( !_state.setVP1->pitch.has_value() )
-            _state.setVP1->pitch = Angle(defPitch, Units::RADIANS);
+    if (!_state.setVP1->pitch.has_value())
+        _state.setVP1->pitch = Angle(defPitch, Units::RADIANS);
 
-        if ( !_state.setVP1->range.has_value() )
-            _state.setVP1->range = Distance(_state.distance, Units::METERS);
+    if (!_state.setVP1->range.has_value())
+        _state.setVP1->range = Distance(_state.distance, Units::METERS);
 
-//#if 0
-//        if ( !_setVP1->nodeIsSet() && !_setVP1->focalPoint().has_value() )
-//        {
-//            osg::ref_ptr<vsg::Node> vpNode = _setVP0->getNode();
-//            if (vpNode.valid())
-//                _setVP1->setNode(vpNode.get());
-//            else
-//                _setVP1->focalPoint() = _setVP0->focalPoint().get();
-//        }
-//#else
-//        _state.setVP1->target = _state.setVP0->target;
-//#endif
+    if (duration_seconds.count() <= 0.0f)
+    {
+        duration_seconds = std::chrono::duration<float>(0.0f);
+    }
 
-        if (duration_seconds.count() <= 0.0f)
+    _state.setVPDuration = duration_seconds;
+
+    // Timed transition, we need to calculate some things:
+    if (duration_seconds.count() > 0.0f)
+    {
+        // Start point is the current manipulator center:
+        vsg::dvec3 startWorld;
+        vsg::ref_ptr<vsg::Node> startNode = {}; // _setVP0->getNode();
+        startWorld = (_state.center); // startNode ? computeWorld(startNode) : _center;
+
+        _state.setVPStartTime.clear();
+
+        // End point is the world coordinates of the target viewpoint:
+        auto world_pos = _state.setVP1->position().transform(_worldSRS);
+        vsg::dvec3 endWorld(world_pos.x, world_pos.y, world_pos.z);
+
+        // calculate an acceleration factor based on the Z differential.
+        _state.setVPArcHeight = 0.0;
+        double range0 = _state.setVP0->range->as(Units::METERS);
+        double range1 = _state.setVP1->range->as(Units::METERS);
+
+        double pitch0 = _state.setVP0->pitch->as(Units::RADIANS);
+        double pitch1 = _state.setVP1->pitch->as(Units::RADIANS);
+
+        double h0 = range0 * sin(-pitch0);
+        double h1 = range1 * sin(-pitch1);
+        double dh = (h1 - h0);
+
+        // calculate the total distance the focal point will travel and derive an arc height:
+        double de = length(endWorld - startWorld);
+
+        // maximum height during viewpoint transition
+        if (_settings->arcViewpoints)
         {
-            duration_seconds = std::chrono::duration<float>(0.0f);
+            _state.setVPArcHeight = std::max(de - fabs(dh), 0.0);
         }
 
-        _state.setVPDuration = duration_seconds;
-
-        // Timed transition, we need to calculate some things:
-        if ( duration_seconds.count() > 0.0f )
+        // calculate acceleration coefficients
+        if (_state.setVPArcHeight > 0.0)
         {
-            // Start point is the current manipulator center:
-            vsg::dvec3 startWorld;
-            vsg::ref_ptr<vsg::Node> startNode = {}; // _setVP0->getNode();
-            startWorld = (_state.center); // startNode ? computeWorld(startNode) : _center;
-
-            _state.setVPStartTime.clear();
-
-            // End point is the world coordinates of the target viewpoint:
-            auto world_pos = _state.setVP1->position().transform(_worldSRS);
-            vsg::dvec3 endWorld(world_pos.x, world_pos.y, world_pos.z);
-
-            // calculate an acceleration factor based on the Z differential.
-            _state.setVPArcHeight = 0.0;
-            double range0 = _state.setVP0->range->as(Units::METERS);
-            double range1 = _state.setVP1->range->as(Units::METERS);
-
-            double pitch0 = _state.setVP0->pitch->as(Units::RADIANS);
-            double pitch1 = _state.setVP1->pitch->as(Units::RADIANS);
-
-            double h0 = range0 * sin( -pitch0 );
-            double h1 = range1 * sin( -pitch1 );
-            double dh = (h1 - h0);
-
-            // calculate the total distance the focal point will travel and derive an arc height:
-            double de = length(endWorld - startWorld);
-
-            // maximum height during viewpoint transition
-            if ( _settings->getArcViewpointTransitions() )
-            {
-                _state.setVPArcHeight = std::max( de - fabs(dh), 0.0 );
-            }
-
-            // calculate acceleration coefficients
-            if (_state.setVPArcHeight > 0.0 )
-            {
-                // if we're arcing, we need separate coefficients for the up and down stages
-                double h_apex = 2.0*(h0+h1) + _state.setVPArcHeight;
-                double dh2_up = fabs(h_apex - h0)/100000.0;
-                _state.setVPAccel = log10( dh2_up );
-                double dh2_down = fabs(h_apex - h1)/100000.0;
-                _state.setVPAccel2 = -log10( dh2_down );
-            }
-            else
-            {
-                // on arc => simple unidirectional acceleration:
-                double dh2 = (h1 - h0)/100000.0;
-                _state.setVPAccel = fabs(dh2) <= 1.0? 0.0 : dh2 > 0.0? log10( dh2 ) : -log10( -dh2 );
-                if ( fabs(_state.setVPAccel ) < 1.0 ) _state.setVPAccel = 0.0;
-            }
-
-#if 0
-            // Adjust the duration if necessary.
-            if ( _settings->getAutoViewpointDurationEnabled() )
-            {
-                double maxDistance = _worldSRS.ellipsoid().semiMajorAxis();
-                double ratio = clamp(de / maxDistance, 0.0, 1.0);
-                ratio = accelerationInterp(ratio, -4.5);
-                double minDur, maxDur;
-                _settings->getAutoViewpointDurationLimits(minDur, maxDur);
-                _state.setVPDuration.set(minDur + ratio * (maxDur - minDur), Units::SECONDS);
-            }
-#endif
+            // if we're arcing, we need separate coefficients for the up and down stages
+            double h_apex = 2.0 * (h0 + h1) + _state.setVPArcHeight;
+            double dh2_up = fabs(h_apex - h0) / 100000.0;
+            _state.setVPAccel = log10(dh2_up);
+            double dh2_down = fabs(h_apex - h1) / 100000.0;
+            _state.setVPAccel2 = -log10(dh2_down);
         }
-
         else
         {
-            // Immediate transition? Just do it now.
-            _state.setVPStartTime = _previousTime;
-            //_state.setVPStartTime->set( _time_s_now, Units::SECONDS );
-            setViewpointFrame(_previousTime);
+            // on arc => simple unidirectional acceleration:
+            double dh2 = (h1 - h0) / 100000.0;
+            _state.setVPAccel = fabs(dh2) <= 1.0 ? 0.0 : dh2 > 0.0 ? log10(dh2) : -log10(-dh2);
+            if (fabs(_state.setVPAccel) < 1.0) _state.setVPAccel = 0.0;
         }
 
 #if 0
-        // Fire a tether callback if required.
-        if ( _tetherCallback.valid() )
+        // Adjust the duration if necessary.
+        if (_settings->getAutoViewpointDurationEnabled())
         {
-            // starting a tether to a NEW node:
-            if ( isTethering() && oldEndNode.get() != endNode.get() )
-                (*_tetherCallback)( endNode.get() );
-
-            // breaking a tether:
-            else if ( !isTethering() && oldEndNode.valid() )
-                (*_tetherCallback)( 0L );
+            double maxDistance = _worldSRS.ellipsoid().semiMajorAxis();
+            double ratio = clamp(de / maxDistance, 0.0, 1.0);
+            ratio = accelerationInterp(ratio, -4.5);
+            double minDur, maxDur;
+            _settings->getAutoViewpointDurationLimits(minDur, maxDur);
+            _state.setVPDuration.set(minDur + ratio * (maxDur - minDur), Units::SECONDS);
         }
 #endif
     }
+
+    else
+    {
+        // Immediate transition? Just do it now.
+        _state.setVPStartTime = _previousTime;
+        //_state.setVPStartTime->set( _time_s_now, Units::SECONDS );
+        setViewpointFrame(_previousTime);
+    }
+
+#if 0
+    // Fire a tether callback if required.
+    if (_tetherCallback.valid())
+    {
+        // starting a tether to a NEW node:
+        if (isTethering() && oldEndNode.get() != endNode.get())
+            (*_tetherCallback)(endNode.get());
+
+        // breaking a tether:
+        else if (!isTethering() && oldEndNode.valid())
+            (*_tetherCallback)(0L);
+    }
+#endif
+
 
     // reset other global state flags.
     _thrown      = false;
@@ -1083,19 +887,6 @@ MapManipulator::clearViewpoint()
         (*_tetherCallback)( 0L );
 #endif
 }
-
-//bool
-//MapManipulator::isWorking() const
-//{
-//    return
-//        _dirty;
-//        //_continuous ||
-//        //_thrown ||
-//        //_dirty ||
-//        //_task._type != TASK_NONE ||
-//        //isSettingViewpoint() ||
-//        //isTethering();
-//}
 
 vsg::ref_ptr<MapNode>
 MapManipulator::getMapNode() const
@@ -1706,8 +1497,8 @@ void
 MapManipulator::rotate(double dx, double dy)
 {
     // clamp the local pitch delta; never allow the pitch to hit -90.
-    double minp = deg2rad(std::min(_settings->getMinPitch(), -89.9));
-    double maxp = deg2rad(std::max(_settings->getMaxPitch(), -0.1));
+    double minp = deg2rad(std::min(_settings->minPitch, -89.9));
+    double maxp = deg2rad(std::max(_settings->maxPitch, -0.1));
 
     // clamp pitch range:
     double oldPitch;
@@ -1779,7 +1570,7 @@ MapManipulator::zoom(double dx, double dy)
     //    return;
     //}
 
-    if (_settings->getZoomToMouse() == true && dy < 0.0)
+    if (_settings->zoomToMouse == true && dy < 0.0)
     {
         vsg::dvec3 target;
 
@@ -1852,7 +1643,7 @@ MapManipulator::viewportToWorld(float x, float y, vsg::dvec3& out_world) const
 void
 MapManipulator::setDistance(double distance)
 {
-    _state.distance = clamp(distance, _settings->getMinDistance(), _settings->getMaxDistance());
+    _state.distance = clamp(distance, _settings->minDistance, _settings->maxDistance);
 }
 
 void
@@ -1866,7 +1657,7 @@ MapManipulator::handleMovementAction(const ActionType& type, vsg::dvec2 d)
 
     case ACTION_ROTATE:
         // in "single axis" mode, zero out one of the deltas.
-        if (_continuous && _settings->getSingleAxisRotation())
+        if (_continuous && _settings->singleAxisRotation)
         {
             if (::fabs(d.x) > ::fabs(d.y))
                 d.y = 0.0;
@@ -1948,7 +1739,7 @@ MapManipulator::handleMouseAction(
         auto start = ndc(_buttonPress);
         vsg::dvec2 delta(curr.x - start.x, -(curr.y - start.y));
         delta *= 0.1;
-        delta *= _settings->getMouseSensitivity();
+        delta *= _settings->mouseSensitivity;
         applyOptionsToDeltas(action, delta);
         _continuousDelta = delta;
     }
@@ -1956,7 +1747,7 @@ MapManipulator::handleMouseAction(
     {
         auto prev = ndc(previousMove);
         vsg::dvec2 delta(curr.x - prev.x, -(curr.y - prev.y));
-        delta *= _settings->getMouseSensitivity();
+        delta *= _settings->mouseSensitivity;
         applyOptionsToDeltas(action, delta);
         _delta = delta;
         handleMovementAction(action._type, delta);
@@ -1990,8 +1781,8 @@ MapManipulator::handleKeyboardAction(
     default: break;
     }
 
-    d.x *= _settings->getKeyboardSensitivity();
-    d.y *= _settings->getKeyboardSensitivity();
+    d.x *= _settings->keyboardSesitivity;
+    d.y *= _settings->keyboardSesitivity;
 
     applyOptionsToDeltas(action, d);
 
@@ -2017,8 +1808,8 @@ MapManipulator::handleScrollAction(
     default: break;
     }
 
-    d.x *= scrollFactor * _settings->getScrollSensitivity();
-    d.y *= scrollFactor * _settings->getScrollSensitivity();
+    d.x *= scrollFactor * _settings->scrollSensitivity;
+    d.y *= scrollFactor * _settings->scrollSensitivity;
 
     applyOptionsToDeltas(action, d);
 
@@ -2115,7 +1906,7 @@ MapManipulator::recalculateRoll()
 }
 
 void
-MapManipulator::getCompositeEulerAngles(double* out_azim, double* out_pitch) const
+MapManipulator::compositeEulerAngles(double* out_azim, double* out_pitch) const
 {
     vsg::dvec3 look = vsg::normalize(-getZAxis(_state.centerRotation));
     vsg::dvec3 up = vsg::normalize(getYAxis(_state.centerRotation));
@@ -2237,7 +2028,7 @@ MapManipulator::updateTether(const vsg::time_point& t)
             //_previousUp = getUpVector(_centerLocalToWorld);
         };
 
-        if (_settings->getTetherMode() == TETHER_CENTER)
+        if (_settings->tetherMode == TETHER_CENTER)
         {
             if (_state.lastTetherMode == TETHER_CENTER_AND_ROTATION)
             {
@@ -2278,6 +2069,6 @@ MapManipulator::updateTether(const vsg::time_point& t)
         }
 #endif
 
-        _state.lastTetherMode = _settings->getTetherMode();
+        _state.lastTetherMode = _settings->tetherMode;
     }
 }
