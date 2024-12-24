@@ -60,8 +60,16 @@ auto Demo_Stats = [](Application& app)
     {
         std::string buf;
 
-        float fps = 1.0f / (1e-6f * (float)frames[f].count());
-        buf = util::format("%.2f ms (%.1f fps)", 0.001f * (float)app.stats.frame.count(), fps);
+        if (app.context->renderContinuously)
+        {
+            float fps = 1.0f / (1e-6f * (float)frames[f].count());
+            buf = util::format("%.2f ms (%.1f fps)", 0.001f * (float)app.stats.frame.count(), fps);
+        }
+        else
+        {
+            buf = util::format("%.2f ms", 0.001f * (float)app.stats.frame.count());
+        }
+
         ImGuiLTable::PlotLines("Frame", get_timings, &frames, frame_count, f, buf.c_str(), 0.0f, 17.0f);
 
         buf = util::format(u8"%lld us", average(&events, over, f));

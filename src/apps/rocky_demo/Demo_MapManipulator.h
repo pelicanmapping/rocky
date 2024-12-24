@@ -20,8 +20,7 @@ auto Demo_Viewpoints = [](Application& app)
         auto manip = MapManipulator::get(first_view);
         if (manip)
         {
-            Viewpoint vp;
-            vp = manip->getViewpoint();
+            Viewpoint vp = manip->viewpoint();
 
             if (vp.valid())
             {

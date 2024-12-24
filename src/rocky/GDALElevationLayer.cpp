@@ -73,14 +73,14 @@ GDALElevationLayer::construct(const std::string& JSON, const IOOptions& io)
 {
     setLayerTypeName("GDALElevation");
     const auto j = parse_json(JSON);
-    get_to(j, "uri", _uri, io);
-    get_to(j, "connection", _connection);
-    get_to(j, "subdataset", _subDataset);
+    get_to(j, "uri", uri, io);
+    get_to(j, "connection", connection);
+    get_to(j, "subdataset", subDataset);
     std::string temp;
     get_to(j, "interpolation", temp);
-    if (temp == "nearest") _interpolation = Image::NEAREST;
-    else if (temp == "bilinear") _interpolation = Image::BILINEAR;
-    get_to(j, "single_threaded", _singleThreaded);
+    if (temp == "nearest") interpolation = Image::NEAREST;
+    else if (temp == "bilinear") interpolation = Image::BILINEAR;
+    get_to(j, "single_threaded", singleThreaded);
 
     setRenderType(RenderType::TERRAIN_SURFACE);
 }
@@ -89,14 +89,14 @@ JSON
 GDALElevationLayer::to_json() const
 {
     auto j = parse_json(super::to_json());
-    set(j, "uri", _uri);
-    set(j, "connection", _connection);
-    set(j, "subdataset", _subDataset);
-    if (_interpolation.has_value(Image::NEAREST))
+    set(j, "uri", uri);
+    set(j, "connection", connection);
+    set(j, "subdataset", subDataset);
+    if (interpolation.has_value(Image::NEAREST))
         set(j, "interpolation", "nearest");
-    else if (_interpolation.has_value(Image::BILINEAR))
+    else if (interpolation.has_value(Image::BILINEAR))
         set(j, "interpolation", "bilinear");
-    set(j, "single_threaded", _singleThreaded);
+    set(j, "single_threaded", singleThreaded);
     return j.dump();
 }
 

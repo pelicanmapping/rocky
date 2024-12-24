@@ -48,6 +48,7 @@ auto Demo_Map = [](Application& app)
     auto layers = app.mapNode->map->layers().all();
     layerExpanded.resize(layers.size(), false);
     int i = 0;
+    bool resetTerrain = false;
 
     for (auto& layer : layers)
     {
@@ -77,9 +78,6 @@ auto Demo_Map = [](Application& app)
                     layer->close();
                     resetTerrain = true;
                 }
-
-                if (resetTerrain)
-                    app.mapNode->terrainNode->reset(app.context);
             }
 
             ImGui::SameLine();
@@ -137,6 +135,11 @@ auto Demo_Map = [](Application& app)
     }
 
     if (ImGui::Button("Refresh"))
+    {
+        resetTerrain = true;
+    }
+
+    if (resetTerrain)
     {
         app.mapNode->terrainNode->reset(app.context);
     }

@@ -39,6 +39,17 @@ auto Demo_Rendering = [](Application& app)
                 c.erase(c.begin());
         }
 
+        bool skirts = app.mapNode->terrainSettings().skirtRatio.has_value();
+        if (ImGuiLTable::Checkbox("Terrain skirts", &skirts))
+        {
+            if (skirts)
+                app.mapNode->terrainSettings().skirtRatio = 0.025f;
+            else
+                app.mapNode->terrainSettings().skirtRatio.clear();
+
+            app.mapNode->terrainNode->reset(app.context);
+        }
+
         ImGuiLTable::End();
     }
 };

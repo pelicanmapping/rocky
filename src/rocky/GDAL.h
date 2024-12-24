@@ -36,27 +36,19 @@ namespace ROCKY_NAMESPACE
         {
         public:
             //! Base URL for TMS requests
-            void setURI(const URI& value);
-            const optional<URI>& uri() const;
+            optional<URI> uri = { };
 
             //! Database connection for GDAL database queries (alternative to URL)
-            void setConnection(const std::string& value);
-            const optional<std::string>& connection() const;
+            optional<std::string> connection = { };
 
             //! GDAL sub-dataset index (optional)
-            void setSubDataset(unsigned value);
-            const optional<unsigned>& subDataset() const;
+            optional<unsigned> subDataset = 0;
 
             //! Interpolation method for resampling (default is bilinear)
-            void setInterpolation(const Image::Interpolation& value);
-            const optional<Image::Interpolation>& interpolation() const;
+            optional<Image::Interpolation> interpolation = Image::AVERAGE;
 
         protected:
-            optional<URI> _uri = { };
-            optional<std::string> _connection = { };
-            optional<unsigned> _subDataset = 0;
-            optional<Image::Interpolation> _interpolation = Image::AVERAGE;
-            optional<bool> _singleThreaded = false;
+            optional<bool> singleThreaded = false;
         };
 
         /**

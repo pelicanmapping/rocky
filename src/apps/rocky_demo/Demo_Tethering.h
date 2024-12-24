@@ -102,7 +102,7 @@ auto Demo_Tethering = [](Application& app)
             if (tethering)
             {
                 auto& xform = registry.get<Transform>(entity);
-                auto vp = manip->getViewpoint();
+                auto vp = manip->viewpoint();
                 vp.target = PositionedObjectAdapter<GeoTransform>::create(xform.node);
                 vp.range = s * 12.0;
                 vp.pitch = -45;

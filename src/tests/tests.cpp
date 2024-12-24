@@ -307,7 +307,7 @@ TEST_CASE("GDAL")
     CHECKED_IF(layer != nullptr)
     {
         layer->setName("World imagery");
-        layer->setConnection("WMTS:https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml,layer=s2cloudless-2020");
+        layer->connection = "WMTS:https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml,layer=s2cloudless-2020";
         auto s = layer->open({});
         CHECK((s.ok() || s.code == s.ResourceUnavailable));
     }

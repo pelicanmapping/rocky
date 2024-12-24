@@ -382,8 +382,8 @@ GDAL::Driver::open(
     }
 
     if (useExternalDataset == false &&        
-        (!layer->uri().has_value() || layer->uri()->empty()) &&
-        (!layer->connection().has_value() || layer->connection()->empty()))
+        (!layer->uri.has_value() || layer->uri->empty()) &&
+        (!layer->connection.has_value() || layer->connection->empty()))
     {
         return Status(Status::ConfigurationError, "No URL, directory, or connection string specified");
     }
@@ -392,21 +392,21 @@ GDAL::Driver::open(
     std::string source;
     bool isFile = true;
 
-    if (layer->uri().has_value())
+    if (layer->uri.has_value())
     {
         // Use the base instead of the full if this is a gdal virtual file system
-        if (util::startsWith(layer->uri()->base(), "/vsi"))
+        if (util::startsWith(layer->uri->base(), "/vsi"))
         {
-            source = layer->uri()->base();
+            source = layer->uri->base();
         }
         else
         {
-            source = layer->uri()->full();
+            source = layer->uri->full();
         }
     }
-    else if (layer->connection().has_value())
+    else if (layer->connection.has_value())
     {
-        source = layer->connection();
+        source = layer->connection;
         isFile = false;
     }
 
@@ -414,8 +414,8 @@ GDAL::Driver::open(
     {
         std::string input;
 
-        if (layer->uri().has_value())
-            input = layer->uri()->full();
+        if (layer->uri.has_value())
+            input = layer->uri->full();
         else
             input = source;
 
@@ -442,7 +442,7 @@ GDAL::Driver::open(
 
             if (numSubDatasets > 0)
             {
-                int subDataset = layer->subDataset().has_value() ? static_cast<int>(layer->subDataset()) : 1;
+                int subDataset = layer->subDataset.has_value() ? static_cast<int>(layer->subDataset) : 1;
                 if (subDataset < 1 || subDataset > numSubDatasets) subDataset = 1;
                 std::stringstream buf;
                 buf << "SUBDATASET_" << subDataset << "_NAME";
@@ -801,7 +801,7 @@ GDAL::Driver::getInterpolatedValue(GDALRasterBand* band, double x, double y, boo
     if (c < 0 || r < 0 || c > _warpedDS->GetRasterXSize() - 1 || r > _warpedDS->GetRasterYSize() - 1)
         return NO_DATA_VALUE;
 
-    if (_layer->interpolation() == Image::NEAREST)
+    if (_layer->interpolation == Image::NEAREST)
     {
         detail::rasterIO(band, GF_Read, (int)round(c), (int)round(r), 1, 1, &result, 1, 1, GDT_Float32, 0, 0);
         if (!isValidValue(result, band))
@@ -831,7 +831,7 @@ GDAL::Driver::getInterpolatedValue(GDALRasterBand* band, double x, double y, boo
             return NO_DATA_VALUE;
         }
 
-        if (_layer->interpolation() == Image::AVERAGE)
+        if (_layer->interpolation == Image::AVERAGE)
         {
             double x_rem = c - (int)c;
             double y_rem = r - (int)r;
@@ -843,7 +843,7 @@ GDAL::Driver::getInterpolatedValue(GDALRasterBand* band, double x, double y, boo
 
             result = (float)(w00 + w01 + w10 + w11);
         }
-        else if (_layer->interpolation() == Image::BILINEAR)
+        else if (_layer->interpolation == Image::BILINEAR)
         {
             //Check for exact value
             if ((colMax == colMin) && (rowMax == rowMin))
@@ -1031,13 +1031,13 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
 
         memset(image->data<char>(), 0, image->sizeInBytes());
 
-        detail::rasterIO(bandRed, GF_Read, src_min_x, src_min_y, src_width, src_height, red, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
-        detail::rasterIO(bandGreen, GF_Read, src_min_x, src_min_y, src_width, src_height, green, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
-        detail::rasterIO(bandBlue, GF_Read, src_min_x, src_min_y, src_width, src_height, blue, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
+        detail::rasterIO(bandRed, GF_Read, src_min_x, src_min_y, src_width, src_height, red, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation);
+        detail::rasterIO(bandGreen, GF_Read, src_min_x, src_min_y, src_width, src_height, green, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation);
+        detail::rasterIO(bandBlue, GF_Read, src_min_x, src_min_y, src_width, src_height, blue, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation);
 
         if (bandAlpha)
         {
-            detail::rasterIO(bandAlpha, GF_Read, src_min_x, src_min_y, src_width, src_height, alpha, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
+            detail::rasterIO(bandAlpha, GF_Read, src_min_x, src_min_y, src_width, src_height, alpha, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation);
         }
 
         for (int src_row = 0, dst_row = tile_offset_top;
@@ -1101,7 +1101,7 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
             {
                 short* temp = new short[target_width * target_height];
 
-                detail::rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation());
+                detail::rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation);
 
                 int success = 0;
                 short noDataValueFromBand = (short)bandGray->GetNoDataValue(&success);
@@ -1125,7 +1125,7 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
             {
                 float* temp = new float[target_width * target_height];
 
-                detail::rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation());
+                detail::rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, temp, target_width, target_height, gdalDataType, 0, 0, _layer->interpolation);
 
                 int success = 0;
                 float noDataValueFromBand = (float)bandGray->GetNoDataValue(&success);
@@ -1162,12 +1162,12 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
                 memset(alpha, 255, target_width * target_height);
             }
 
-            detail::rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, gray, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
+            detail::rasterIO(bandGray, GF_Read, src_min_x, src_min_y, src_width, src_height, gray, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation);
 
             // color only:
             if (bandAlpha)
             {
-                detail::rasterIO(bandAlpha, GF_Read, src_min_x, src_min_y, src_width, src_height, alpha, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation());
+                detail::rasterIO(bandAlpha, GF_Read, src_min_x, src_min_y, src_width, src_height, alpha, target_width, target_height, GDT_Byte, 0, 0, _layer->interpolation);
             }
 
             for (int src_row = 0, dst_row = tile_offset_top;
@@ -1250,7 +1250,7 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
     {
         Log()->warn(
             LC "Could not find red, green and blue bands or gray bands in "
-            + _layer->uri()->full()
+            + _layer->uri->full()
             + ".  Cannot create image. ");
 
         return Status(
@@ -1259,34 +1259,6 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
     }
 
     return image;
-}
-
-
-//...................................................................
-
-void GDAL::LayerBase::setURI(const URI& value) {
-    _uri = value;
-}
-const optional<URI>& GDAL::LayerBase::uri() const {
-    return _uri;
-}
-void GDAL::LayerBase::setConnection(const std::string& value) {
-    _connection = value;
-}
-const optional<std::string>& GDAL::LayerBase::connection() const {
-    return _connection;
-}
-void GDAL::LayerBase::setSubDataset(unsigned value) {
-    _subDataset = value;
-}
-const optional<unsigned>& GDAL::LayerBase::subDataset() const {
-    return _subDataset;
-}
-void GDAL::LayerBase::setInterpolation(const Image::Interpolation& value) {
-    _interpolation = value;
-}
-const optional<Image::Interpolation>& GDAL::LayerBase::interpolation() const {
-    return _interpolation;
 }
 
 #endif // ROCKY_HAS_GDAL

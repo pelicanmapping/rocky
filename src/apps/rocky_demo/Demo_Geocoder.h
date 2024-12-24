@@ -132,7 +132,7 @@ auto Demo_Geocoder = [](Application& app)
                                 auto manip = MapManipulator::get(view);
                                 if (manip)
                                 {
-                                    Viewpoint vp = manip->getViewpoint();
+                                    Viewpoint vp = manip->viewpoint();
                                     vp.point = extent.centroid();
                                     manip->setViewpoint(vp, std::chrono::seconds(2));
                                 }
