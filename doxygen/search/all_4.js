@@ -23,5 +23,6 @@ var searchData=
   ['displaymanager_20',['displaymanager',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_display_manager.html',1,'ROCKY_NAMESPACE::DisplayManager'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_display_manager.html#a11ba2193aea1c217a35bf681eecaa94e',1,'ROCKY_NAMESPACE::DisplayManager::DisplayManager(Application &amp;in_app)'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_display_manager.html#afbc2e90b02eebab65019e31a01907280',1,'ROCKY_NAMESPACE::DisplayManager::DisplayManager(vsg::ref_ptr&lt; vsg::Viewer &gt; viewer)']]],
   ['dispose_21',['dispose',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#a3c00316d876d416bed9092ee39442370',1,'ROCKY_NAMESPACE::VSGContextImpl']]],
   ['disposer_22',['disposer',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#a9cf5ed695d4d40a8e54cd7eee5e8aaeb',1,'ROCKY_NAMESPACE::VSGContextImpl']]],
-  ['doublevalue_23',['DoubleValue',['../class_ti_xml_attribute.html#a8cca240fb2a7130c87b0fc6156e8b34f',1,'TiXmlAttribute']]]
+  ['distance_23',['distance',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator.html#adcea142ce1f72a3ae710b0b01b9e53a5',1,'ROCKY_NAMESPACE::MapManipulator']]],
+  ['doublevalue_24',['DoubleValue',['../class_ti_xml_attribute.html#a8cca240fb2a7130c87b0fc6156e8b34f',1,'TiXmlAttribute']]]
 ];

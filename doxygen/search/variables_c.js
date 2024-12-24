@@ -14,8 +14,18 @@ var searchData=
   ['m_5funitspherevolume_11',['m_unitSphereVolume',['../class_r_tree.html#af26d4beb8ce3a381ee75eabeec4727e3',1,'RTree']]],
   ['map_12',['map',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html#a168a62ea9da0d2c6f22c37981e3352eb',1,'ROCKY_NAMESPACE::MapNode::map'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_engine.html#a8c9727804bbf3da0175d002ae1add40d',1,'ROCKY_NAMESPACE::TerrainEngine::map'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_node.html#a8af6410b6fbc736aa56004cc9c979e65',1,'ROCKY_NAMESPACE::TerrainNode::map']]],
   ['materialmap_13',['materialMap',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_model.html#a2d8b3b45a32abef3b79e812a4756d5c9',1,'ROCKY_NAMESPACE::TerrainTileModel']]],
-  ['maxlevelofdetail_14',['maxLevelOfDetail',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#a12a44ec4b742073549140aaaf931a558',1,'ROCKY_NAMESPACE::TerrainSettings']]],
-  ['maxnetworkattempts_15',['maxNetworkAttempts',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html#abeff73f707c37af0ce68b94744940775',1,'ROCKY_NAMESPACE::IOOptions']]],
-  ['minlevelofdetail_16',['minLevelOfDetail',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#ac2d89ce0d000f33f18edde8ad1d217e2',1,'ROCKY_NAMESPACE::TerrainSettings']]],
-  ['mintilerangefactor_17',['minTileRangeFactor',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#ac9947204aca16c15afc5e68c6b4a7eda',1,'ROCKY_NAMESPACE::TerrainSettings']]]
+  ['maxdistance_14',['maxDistance',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a218aadae94627bd2d2989bf8b81d01c6',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
+  ['maxlevelofdetail_15',['maxLevelOfDetail',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#a12a44ec4b742073549140aaaf931a558',1,'ROCKY_NAMESPACE::TerrainSettings']]],
+  ['maxnetworkattempts_16',['maxNetworkAttempts',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html#abeff73f707c37af0ce68b94744940775',1,'ROCKY_NAMESPACE::IOOptions']]],
+  ['maxpitch_17',['maxPitch',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a8be392688e768458c9c7f52129906e7a',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
+  ['maxvpduration_18',['maxVPDuration',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#ab3c6b3e82185cb1a0f00945fee2ec8a2',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
+  ['maxxoffset_19',['maxXOffset',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a28fd1baabe1c59c0026b71b9801dc405',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
+  ['maxyoffset_20',['maxYOffset',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#ae115cf963ffc8f7fca0d739e229552cb',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
+  ['mindistance_21',['minDistance',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a06abdb9bc46698538ec9c22087c6068c',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
+  ['minlevelofdetail_22',['minLevelOfDetail',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#ac2d89ce0d000f33f18edde8ad1d217e2',1,'ROCKY_NAMESPACE::TerrainSettings']]],
+  ['minpitch_23',['minPitch',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a3a56e5f19d5c4a974b082cb15df5d76e',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
+  ['minterrainavoidancedistance_24',['minTerrainAvoidanceDistance',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a42d8513a0fec24bb6793bba8ac96f383',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
+  ['mintilerangefactor_25',['minTileRangeFactor',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#ac9947204aca16c15afc5e68c6b4a7eda',1,'ROCKY_NAMESPACE::TerrainSettings']]],
+  ['minvpduration_26',['minVPDuration',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#ac2f947e6aa0b2891640786cf2046d25a',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
+  ['mousesensitivity_27',['mouseSensitivity',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a6de6bd8b173b7a8153719e609fdbfe7b',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]]
 ];
