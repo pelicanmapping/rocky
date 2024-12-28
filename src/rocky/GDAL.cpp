@@ -1182,6 +1182,8 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
 
                     if (alpha)
                         c.a = alpha[src_col + src_row * target_width];
+                    else
+                        c.a = 255.0f;
 
                     if (!isValidValue(c.r, bandGray) || (bandAlpha && !isValidValue(c.a, bandAlpha)))
                     {

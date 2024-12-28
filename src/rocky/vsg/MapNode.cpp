@@ -46,6 +46,11 @@ MapNode::from_json(const std::string& JSON, const IOOptions& io)
         status = map->from_json(j.at("map").dump(), io);
     }
 
+    if (status.ok() && j.contains("profile"))
+    {
+        get_to(j, "profile", profile);
+    }
+
     if (status.ok() && terrainNode && j.contains("terrain"))
     {
         status = terrainNode->from_json(j.at("map").dump(), io);
@@ -67,6 +72,11 @@ MapNode::to_json() const
     if (terrainNode)
     {
         j["terrain"] = json::parse(terrainNode->to_json());
+    }
+
+    if (profile.valid() && profile != Profile::GLOBAL_GEODETIC)
+    {
+        j["profile"] = profile;
     }
 
     return j.dump();

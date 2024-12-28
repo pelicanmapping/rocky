@@ -107,7 +107,10 @@ auto Demo_Map = [](Application& app)
                     auto tileLayer = TileLayer::cast(layer);
                     if (tileLayer)
                     {
-                        ImGuiLTable::Text("SRS:", tileLayer->profile().srs().name());
+                        std::string srs_name = tileLayer->profile().srs().name();
+                        if (srs_name.empty() || srs_name == "unknown")
+                            srs_name = tileLayer->profile().srs().definition();
+                        ImGuiLTable::Text("SRS:", srs_name.c_str());
                     }
                     const GeoExtent& extent = layer->extent();
                     if (extent.valid())

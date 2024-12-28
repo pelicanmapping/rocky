@@ -143,12 +143,12 @@ Profile::Profile(
 void
 Profile::setup(const std::string& name)
 {
-    _shared->_wellKnownName = name;
-
     if (util::ciEquals(name, "plate-carree") ||
         util::ciEquals(name, "plate-carre") ||
         util::ciEquals(name, "eqc-wgs84"))
     {
+        _shared->_wellKnownName = name;
+
         // Yes I know this is not really Plate Carre but it will stand in for now.
         glm::dvec3 ex;
 
@@ -161,6 +161,8 @@ Profile::setup(const std::string& name)
     }
     else if (util::ciEquals(name, "global-geodetic"))
     {
+        _shared->_wellKnownName = name;
+
         setup(
             SRS::WGS84,
             Box(-180.0, -90.0, 180.0, 90.0),
@@ -168,10 +170,19 @@ Profile::setup(const std::string& name)
     }
     else if (util::ciEquals(name, "spherical-mercator"))
     {
+        _shared->_wellKnownName = name;
+
         setup(
             SRS::SPHERICAL_MERCATOR,
             Box(MERC_MINX, MERC_MINY, MERC_MAXX, MERC_MAXY),
             1, 1);
+    }
+    else if (name.find("+proj=longlat") != std::string::npos)
+    {
+        setup(
+            SRS(name),
+            Box(-180.0, -90.0, 180.0, 90.0),
+            2, 1);
     }
 }
 
