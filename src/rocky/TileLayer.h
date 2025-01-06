@@ -21,39 +21,31 @@ namespace ROCKY_NAMESPACE
     public:
 
         //! Minimum of detail for which this layer should generate data.
-        void setMinLevel(unsigned value);
-        const optional<unsigned>& minLevel() const;
+        optional<unsigned> minLevel = 0u;
 
         //! Minimum resolution for which this layer should generate data.
-        void setMinResolution(double value);
-        const optional<double>& minResolution() const;
+        optional<double> minResolution = DBL_MAX;
 
         //! Maximum level of detail for which this layer should generate data.
         //! Data from this layer will not appear in map tiles above the maxLevel.
-        void setMaxLevel(unsigned value);
-        const optional<unsigned>& maxLevel() const;
+        optional<unsigned> maxLevel = 99u;
 
         //! Maximum level resolution for which this layer should generate data.
         //! The value is in units per pixel, using the base units of the layer's source data.
-        void setMaxResolution(double value);
-        const optional<double>& maxResolution() const;
+        optional<double> maxResolution = 0.0;
 
         //! Maximum level of detail for which this layer should generate new data.
         //! Data from this layer will be upsampled in map tiles above the maxDataLevel.
-        void setMaxDataLevel(unsigned value);
-        const optional<unsigned>& maxDataLevel() const;
+        optional<unsigned> maxDataLevel = 99u;
 
         //! Number of samples in each dimension.
-        void setTileSize(unsigned value);
-        const optional<unsigned>& tileSize() const;
+        optional<unsigned> tileSize = 256u;
 
-        //! Sets the layer profile to use. This will NOT be serialized in to_json();
-        //! call setPermanentProfile() instead for that. It it illegal to call 
-        //! setProfile after opening the layer.
-        void setProfile(const Profile&);
+        //! The extent to which the layer should be cropped.
+        optional<GeoExtent> crop;
 
-        //! Tiling profile for this layer
-        const Profile& profile() const;
+        //! Tiling profile and SRS or the layer.
+        Profile profile;
 
         //! seriailize
         std::string to_json() const override;
@@ -120,15 +112,7 @@ namespace ROCKY_NAMESPACE
 
     protected:
 
-        optional<unsigned> _minLevel = 0;
-        optional<unsigned> _maxLevel = 23;
-        optional<double> _minResolution;
-        optional<double> _maxResolution;
-        optional<unsigned> _maxDataLevel = 99;
-        optional<unsigned> _tileSize = 256;
-        optional<GeoExtent> _crop;
-        optional<Profile> _originalProfile; // profile specified in the options
-        
+        optional<Profile> _originalProfile; // profile specified in the options       
         optional<Profile> _runtimeProfile; // profile set at runtime by an implementation
 
     private:

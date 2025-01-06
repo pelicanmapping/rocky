@@ -31,13 +31,13 @@ Layer::construct(const JSON& conf)
 
     const auto j = parse_json(conf);
     get_to(j, "name", _name);
-    get_to(j, "open", _openAutomatically);
-    get_to(j, "attribution", _attribution);
-    get_to(j, "l2_cache_size", _l2cachesize);
+    get_to(j, "open", openAutomatically);
+    get_to(j, "attribution", attribution);
+    get_to(j, "l2_cache_size", l2CacheSize);
 
     _status = Status(
         Status::ResourceUnavailable,
-        openAutomatically() ? "Layer closed" : "Layer disabled");
+        openAutomatically ? "Layer closed" : "Layer disabled");
 }
 
 JSON
@@ -46,9 +46,9 @@ Layer::to_json() const
     auto j = json::object();
     set(j, "type", getLayerTypeName());
     set(j, "name", _name);
-    set(j, "open", _openAutomatically);
-    set(j, "attribution", _attribution);
-    set(j, "l2_cache_size", _l2cachesize);
+    set(j, "open", openAutomatically);
+    set(j, "attribution", attribution);
+    set(j, "l2_cache_size", l2CacheSize);
     return j.dump();
 }
 
@@ -80,18 +80,6 @@ Layer::removeCallback(UID uid)
 {
     onLayerOpened.remove(uid);
     onLayerClosed.remove(uid);
-}
-
-const optional<bool>&
-Layer::openAutomatically() const
-{
-    return _openAutomatically;
-}
-
-void
-Layer::setOpenAutomatically(bool value)
-{
-    _openAutomatically = value;
 }
 
 const Status&
@@ -171,16 +159,4 @@ DateTimeExtent
 Layer::dateTimeExtent() const
 {
     return DateTimeExtent();
-}
-
-const optional<Hyperlink>&
-Layer::attribution() const
-{
-    return _attribution;
-}
-
-void
-Layer::setAttribution(const Hyperlink& value)
-{
-    _attribution = value;
 }

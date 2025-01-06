@@ -68,15 +68,15 @@ AzureImageLayer::openImplementation(const IOOptions& io)
     if (parent.failed())
         return parent;
 
-    setProfile(Profile::SPHERICAL_MERCATOR);
-    setDataExtents({ profile().extent() });
+    profile = Profile::SPHERICAL_MERCATOR;
+    setDataExtents({ profile.extent() });
 
     // copy this so we can add headers
     _uriContext = mapTileApiUrl->context();
     _uriContext.headers.emplace("subscription-key", subscriptionKey.value());
 
     // test fetch to make sure the API key is valid
-    TileKey test(1, 0, 0, profile());
+    TileKey test(1, 0, 0, profile);
     auto result = createImageImplementation(test, io);
     if (result.status.failed())
     {
@@ -100,15 +100,15 @@ AzureImageLayer::closeImplementation()
 Result<GeoImage>
 AzureImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io) const
 {
-    auto zoom = key.levelOfDetail();
-    auto x = key.tileX();
-    auto y = key.tileY();
+    auto zoom = key.level;
+    auto x = key.x;
+    auto y = key.y;
 
     std::stringstream query;
     query << "?api-version=" << apiVersion.value();
     query << "&tilesetId=" << tilesetId.value();
     query << "&zoom=" << zoom << "&x=" << x << "&y=" << y;
-    query << "&tileSize=" << tileSize().value();
+    query << "&tileSize=" << tileSize.value();
 
     // note: _uriContext holds our authentication headers
     URI imageURI(mapTileApiUrl->full() + query.str(), _uriContext);

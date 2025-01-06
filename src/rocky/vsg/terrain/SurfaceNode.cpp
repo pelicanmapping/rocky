@@ -25,7 +25,7 @@ using namespace ROCKY_NAMESPACE;
 
 
 SurfaceNode::SurfaceNode(const TileKey& tilekey, const SRS& worldSRS) :
-    _tileKey(tilekey)
+    _tilekey(tilekey)
 {
     // Establish a local reference frame for the tile:
     GeoPoint centroid = tilekey.extent().centroid();
@@ -99,7 +99,7 @@ SurfaceNode::recomputeBound()
                 float h = heightfield->heightAtUV(
                     clamp(uvs->at(i).x * scaleU + biasU, 0.0, 1.0),
                     clamp(uvs->at(i).y * scaleV + biasV, 0.0, 1.0),
-                    Heightfield::NEAREST);
+                    Interpolation::NEAREST);
 
                 auto& v = verts->at(i);
                 auto& n = normals->at(i);
@@ -170,7 +170,7 @@ SurfaceNode::recomputeBound()
         auto world = m * vsg::dvec4(v.x, v.y, v.z, 1.0);
         world_mesh.emplace_back(world.x, world.y, world.z);
     }
-    auto& ellipsoid = _tileKey.profile().srs().ellipsoid();
+    auto& ellipsoid = _tilekey.profile.srs().ellipsoid();
     _horizonCullingPoint = to_vsg(ellipsoid.calculateHorizonPoint(world_mesh));
     _horizonCullingPoint_valid = _horizonCullingPoint != vsg::dvec3(0, 0, 0);
 

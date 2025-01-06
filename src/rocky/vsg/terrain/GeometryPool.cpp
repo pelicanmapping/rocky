@@ -99,13 +99,10 @@ GeometryPool::getPooledGeometry(const TileKey& tileKey, const Settings& settings
 }
 
 void
-GeometryPool::createKeyForTileKey(
-    const TileKey& tileKey,
-    unsigned tileSize,
-    GeometryKey& out) const
+GeometryPool::createKeyForTileKey(const TileKey& key, unsigned tileSize, GeometryKey& out) const
 {
-    out.lod  = tileKey.levelOfDetail();
-    out.tileY = tileKey.profile().srs().isGeodetic()? tileKey.tileY() : 0;
+    out.lod  = key.level;
+    out.tileY = key.profile.srs().isGeodetic()? key.y : 0;
     out.size = tileSize;
 }
 

@@ -49,6 +49,59 @@ bool URI::supportsHTTPS()
 #endif
 }
 
+std::string
+URI::inferContentType(const std::string& buffer)
+{
+    if (buffer.length() < 16)
+        return {};
+
+    if (!strncmp(buffer.c_str(), "<?xml", 5))
+        return "text/xml";
+
+    if (!strncmp(buffer.c_str(), "<html", 5))
+        return "text/html";
+
+    // .jpg:  FF D8 FF
+    // .png:  89 50 4E 47 0D 0A 1A 0A
+    // .gif:  GIF87a
+    //        GIF89a
+    // .tiff: 49 49 2A 00
+    //        4D 4D 00 2A
+    // .bmp:  BM
+    // .webp: RIFF ???? WEBP
+    // .ico   00 00 01 00
+    //        00 00 02 00 ( cursor files )
+    const char* data = buffer.c_str();
+    switch (buffer[0])
+    {
+    case '\xFF':
+        return (!strncmp((const char*)data, "\xFF\xD8\xFF", 3)) ? "image/jpg" : "";
+
+    case '\x89':
+        return (!strncmp((const char*)data,
+            "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A", 8)) ? "image/png" : "";
+
+    case 'G':
+        return (!strncmp((const char*)data, "GIF87a", 6) ||
+            !strncmp((const char*)data, "GIF89a", 6)) ? "image/gif" : "";
+
+    case 'I':
+        return (!strncmp((const char*)data, "\x49\x49\x2A\x00", 4)) ? "image/tif" : "";
+
+    case 'M':
+        return (!strncmp((const char*)data, "\x4D\x4D\x00\x2A", 4)) ? "image/tif" : "";
+
+    case 'B':
+        return ((data[1] == 'M')) ? "image/bmp" : "";
+
+    case 'R':
+        return (!strncmp((const char*)data, "RIFF", 4)) ? "image/webp" : "";
+    }
+
+
+    return { };
+}
+
 namespace
 {
     static bool httpDebug = !ROCKY_NAMESPACE::util::getEnvVar("HTTP_DEBUG").empty();
@@ -63,12 +116,6 @@ namespace
             return "";
     }
     
-    std::string inferContentTypeFromData(const std::string& data)
-    {
-        ROCKY_TODO("Read the header bytes to infer the content type");
-        return "";
-    }
-
     struct KeyValuePair
     {
         std::string name;
@@ -617,14 +664,14 @@ URI::read(const IOOptions& io) const
 
         if (contentType.empty())
         {
-            auto p = request.url.find_first_of('?');
-            auto url_path = p != std::string::npos ? request.url.substr(0, p) : request.url;
-            contentType = inferContentTypeFromFileExtension(url_path);
+            contentType = inferContentType(r.value.data);
         }
 
         if (contentType.empty())
         {
-            contentType = inferContentTypeFromData(r.value.data);
+            auto p = request.url.find_first_of('?');
+            auto url_path = p != std::string::npos ? request.url.substr(0, p) : request.url;
+            contentType = inferContentTypeFromFileExtension(url_path);
         }
 
         content = {

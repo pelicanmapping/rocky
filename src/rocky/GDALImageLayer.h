@@ -15,7 +15,7 @@ namespace ROCKY_NAMESPACE
      * Image layer connected to a GDAL raster dataset
      */
     class ROCKY_EXPORT GDALImageLayer : public Inherit<ImageLayer, GDALImageLayer>,
-        public GDAL::LayerBase
+        public GDAL::Options
     {
     public:
         //! Construct a GDAL image layer

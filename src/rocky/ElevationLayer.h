@@ -16,35 +16,31 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT ElevationLayer :  public Inherit<TileLayer, ElevationLayer>
     {
     public:
-        enum class Encoding {
+        enum class Encoding
+        {
             SingleChannel,
             MapboxRGB
         };
 
         //! Whether this layer contains offsets instead of absolute elevation heights
-        void setOffset(bool value);
-        const optional<bool>& offset() const;
+        optional<bool> offset = false;
 
-        //! Value to treat as "absence of data"
-        void setNoDataValue(float value);
-        const optional<float>& noDataValue() const;
+        //! Value to treat as "absence of data" if the datasource does not specify it
+        optional<float> noDataValue = NO_DATA_VALUE;
 
         //! Treat values lesser than this as "no data"
-        void setMinValidValue(float value);
-        const optional<float>& minValidValue() const;
+        optional<float> minValidValue = -FLT_MAX;
 
         //! Treat values greater than this as "no data"
-        void setMaxValidValue(float value);
-        const optional<float>& maxValidValue() const;
+        optional<float> maxValidValue = FLT_MAX;
 
         //! Encoding of the elevation data
-        void setEncoding(Encoding evalue);
-        const optional<Encoding>& encoding() const;
+        optional<Encoding> encoding = Encoding::SingleChannel;
 
         //! Serialize this layer
         std::string to_json() const override;
 
-    public: // methods
+    public:
 
         /**
          * Creates a GeoHeightField for this layer that corresponds to the extents and LOD
@@ -54,9 +50,7 @@ namespace ROCKY_NAMESPACE
          * @param key TileKey for which to create a heightfield.
          * @param io IO options
          */
-        Result<GeoHeightfield> createHeightfield(
-            const TileKey& key,
-            const IOOptions& io) const;
+        Result<GeoHeightfield> createHeightfield(const TileKey& key, const IOOptions& io) const;
 
     protected: // ElevationLayer
 
@@ -83,23 +77,12 @@ namespace ROCKY_NAMESPACE
         //! Decodes a mapbox RGB encoded heightfield image into a heightfield.
         std::shared_ptr<Heightfield> decodeMapboxRGB(std::shared_ptr<Image> image) const;
 
-        virtual ~ElevationLayer() { }
-
-        optional<Encoding> _encoding = Encoding::SingleChannel;
-        optional<bool> _offset = false;
-        optional<float> _noDataValue = NO_DATA_VALUE;
-        optional<float> _minValidValue = -FLT_MAX;
-        optional<float> _maxValidValue = FLT_MAX;
-
     private:
         void construct(const std::string& JSON, const IOOptions& io);
 
-        std::shared_ptr<Heightfield> assembleHeightfield(
-            const TileKey& key,
-            const IOOptions& io) const;
+        std::shared_ptr<Heightfield> assembleHeightfield(const TileKey& key, const IOOptions& io) const;
 
-        void normalizeNoDataValues(
-            Heightfield* hf) const;
+        void normalizeNoDataValues(Heightfield* hf) const;
 
         util::Gate<TileKey> _sentry;
 
@@ -136,7 +119,7 @@ namespace ROCKY_NAMESPACE
             std::vector<float>* resolutions,
             const TileKey& key,
             const Profile& hae_profile,
-            Image::Interpolation interpolation,
+            Interpolation interpolation,
             const IOOptions& io ) const;
     };
 

@@ -107,9 +107,9 @@ auto Demo_Map = [](Application& app)
                     auto tileLayer = TileLayer::cast(layer);
                     if (tileLayer)
                     {
-                        std::string srs_name = tileLayer->profile().srs().name();
+                        std::string srs_name = tileLayer->profile.srs().name();
                         if (srs_name.empty() || srs_name == "unknown")
-                            srs_name = tileLayer->profile().srs().definition();
+                            srs_name = tileLayer->profile.srs().definition();
                         ImGuiLTable::Text("SRS:", srs_name.c_str());
                     }
                     const GeoExtent& extent = layer->extent();
@@ -118,9 +118,9 @@ auto Demo_Map = [](Application& app)
                         ImGuiLTable::TextWrapped("Extent:", "W:%.1f E:%.1f S:%.1f N:%.1f",
                             extent.west(), extent.east(), extent.south(), extent.north());
                     }
-                    if (layer->attribution().has_value())
+                    if (layer->attribution.has_value())
                     {
-                        ImGuiLTable::TextWrapped("Attribution:", layer->attribution()->text.c_str());
+                        ImGuiLTable::TextWrapped("Attribution:", layer->attribution->text.c_str());
                     }
                     ImGuiLTable::End();
                 }

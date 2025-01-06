@@ -24,6 +24,17 @@ auto Demo_Viewpoints = [](Application& app)
 
             if (vp.valid())
             {
+#if 0
+                auto mouse = ImGui::GetIO().MousePos;
+                auto coord = pointAtWindowCoords(first_view, mouse.x, mouse.y);
+                coord.transformInPlace(SRS::WGS84);
+                ImGui::SeparatorText("Point under mouse");
+                ImGuiLTable::Begin("Mouse Point");
+                ImGuiLTable::Text("Latitude:", "%.4lf", coord.y);
+                ImGuiLTable::Text("Longitude:", "%.4lf", coord.x);
+                ImGuiLTable::End();
+#endif
+
                 ImGui::SeparatorText("Focal point on map");
                 ImGuiLTable::Begin("Viewpoint");
 

@@ -20,7 +20,13 @@ namespace ROCKY_NAMESPACE
      */
     class ROCKY_EXPORT TileKey
     {
-    public: 
+    public:
+        unsigned level;
+        unsigned x;
+        unsigned y;
+        Profile profile;
+
+
         TileKey() = default;
         TileKey(const TileKey& rhs) = default;
         TileKey& operator = (const TileKey& rhs) = default;
@@ -28,16 +34,12 @@ namespace ROCKY_NAMESPACE
         TileKey& operator = (TileKey&& rhs) noexcept;
 
         //! Creates a new TileKey with the given tile xy at the specified level of detail
-        //! @param lod
-        //!     The level of detail (subdivision recursion level) of the tile
-        //! @param tile_x
-        //!     The x index of the tile
-        //! @param tile_y
-        //!     The y index of the tile
-        //! @param profile
-        //!     The profile for the tile
+        //! @param level The level of detail (subdivision recursion level) of the tile
+        //! @param tile_x The x index of the tile
+        //! @param tile_y The y index of the tile
+        //! @param profile The profile for the tile
         TileKey(
-            unsigned lod,
+            unsigned level,
             unsigned tile_x,
             unsigned tile_y,
             const Profile& profile);
@@ -46,31 +48,31 @@ namespace ROCKY_NAMESPACE
         inline bool operator == (const TileKey& rhs) const {
             return
                 valid() == rhs.valid() &&
-                _lod == rhs._lod &&
-                _x == rhs._x &&
-                _y == rhs._y &&
-                _profile.equivalentTo(rhs._profile);
+                level == rhs.level &&
+                x == rhs.x &&
+                y == rhs.y &&
+                profile.equivalentTo(rhs.profile);
         }
 
         //! Compare two tilekeys for inequality
         inline bool operator != (const TileKey& rhs) const {
             return 
                 valid() != rhs.valid() ||
-                _lod != rhs._lod ||
-                _x != rhs._x ||
-                _y != rhs._y ||
-                !_profile.equivalentTo(rhs._profile);
+                level != rhs.level ||
+                x != rhs.x ||
+                y != rhs.y ||
+                !profile.equivalentTo(rhs.profile);
         }
 
         //! Sorts tilekeys, ignoring profiles
         inline bool operator < (const TileKey& rhs) const {
-            if (_lod < rhs._lod) return true;
-            if (_lod > rhs._lod) return false;
-            if (_x < rhs._x) return true;
-            if (_x > rhs._x) return false;
-            if (_y < rhs._y) return true;
-            if (_y > rhs._y) return false;
-            return _profile.getHorizSignature() < rhs._profile.getHorizSignature();
+            if (level < rhs.level) return true;
+            if (level > rhs.level) return false;
+            if (x < rhs.x) return true;
+            if (x > rhs.x) return false;
+            if (y < rhs.y) return true;
+            if (y > rhs.y) return false;
+            return profile.getHorizSignature() < rhs.profile.getHorizSignature();
         }
 
         //! Canonical invalid tile key
@@ -80,12 +82,9 @@ namespace ROCKY_NAMESPACE
         //! "lod/x/y"
         const std::string str() const;
 
-        //! Gets the profile within which this key is interpreted.
-        const Profile& profile() const;
-
         //! Whether this is a valid key.
         bool valid() const {
-            return _profile.valid();
+            return profile.valid();
         }
 
         //! Get the quadrant relative to this key's parent.
@@ -115,16 +114,8 @@ namespace ROCKY_NAMESPACE
         //! give you the key for the tile SW of this tile.
         TileKey createNeighborKey(int xoffset, int yoffset) const;
 
-        //! Gets the level of detail of the tile represented by this key.
-        unsigned levelOfDetail() const { return _lod; }
-        unsigned LOD() const { return _lod; }
-
         //! Gets the geospatial extents of the tile represented by this key.
         const GeoExtent extent() const;
-
-        unsigned tileX() const { return _x; }
-
-        unsigned tileY() const { return _y; }
 
         //! A string that encodes the tile key's lod, x, and y 
         std::string quadKey() const;
@@ -153,13 +144,13 @@ namespace ROCKY_NAMESPACE
 
         //! Creates a TileKey containing (x, y) in the requested profile.
         static TileKey createTileKeyContainingPoint(
-            double x, double y, unsigned lod,
+            double x, double y, unsigned level,
             const Profile& profile);
 
         //! Creates a TileKey containing (x, y) in the requested profile.
         static TileKey createTileKeyContainingPoint(
             const GeoPoint& point,
-            unsigned lod,
+            unsigned level,
             const Profile& profile);
 
         //! Gets the keys that intersect this TileKey in the requested profile.
@@ -174,14 +165,8 @@ namespace ROCKY_NAMESPACE
             std::vector<TileKey>& out_intersectingKeys);
 
         //! Convenience method to match this key.
-        bool is(unsigned lod, unsigned x, unsigned y) const {
-            return _lod == lod && _x == x && _y == y;
-        }
-
-    protected:
-        unsigned _lod;
-        unsigned _x;
-        unsigned _y;
-        Profile _profile;
+        //bool is(unsigned lod_, unsigned x_, unsigned y_) const {
+        //    return lod == lod_ && x == x_ && y == y_;
+        //}
     };
 }

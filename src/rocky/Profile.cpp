@@ -174,8 +174,15 @@ Profile::setup(const std::string& name)
 
         setup(
             SRS::SPHERICAL_MERCATOR,
-            Box(MERC_MINX, MERC_MINY, MERC_MAXX, MERC_MAXY),
+            Box(-20037508.34278925, -20037508.34278925, 20037508.34278925, 20037508.34278925),
             1, 1);
+    }
+    else if (util::ciEquals(name, "moon"))
+    {
+        setup(
+            SRS("moon"),
+            Box(-180.0, -90.0, 180.0, 90.0),
+            2, 1);
     }
     else if (name.find("+proj=longlat") != std::string::npos)
     {
@@ -390,11 +397,7 @@ Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) cons
             clamped_gcs_input :
             clamped_gcs_input.transform(srs());
 
-        if (!result.valid())
-        {
-            Log()->warn("Oh no.");
-            //return clampAndTransformExtent(input, out_clamped);
-        }
+        ROCKY_SOFT_ASSERT(result.valid());
 
         return result;
     }    

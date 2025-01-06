@@ -201,36 +201,32 @@ namespace ROCKY_NAMESPACE
     /**
      * A geospatial area with tile data LOD extents
      */
-    class ROCKY_EXPORT DataExtent : public GeoExtent
+    class ROCKY_EXPORT GeoExtent3D : public GeoExtent
     {
     public:
-        DataExtent();
-        DataExtent(const GeoExtent& extent);
-        DataExtent(const GeoExtent& extent, const std::string &description);
-        DataExtent(const GeoExtent& extent, unsigned minLevel);
-        DataExtent(const GeoExtent& extent, unsigned minLevel, const std::string &description);
-        DataExtent(const GeoExtent& extent, unsigned minLevel, unsigned maxLevel);
-        DataExtent(const GeoExtent& extent, unsigned minLevel, unsigned maxLevel, const std::string &description);
+        GeoExtent3D() = default;
+        GeoExtent3D(const GeoExtent& extent) : GeoExtent(extent) { }
+        GeoExtent3D(const GeoExtent& extent, const std::string &description) :
+            GeoExtent(extent), description(description) { }
+        GeoExtent3D(const GeoExtent& extent, unsigned minLevel) :
+            GeoExtent(extent), minLevel(minLevel) { }
+        GeoExtent3D(const GeoExtent& extent, unsigned minLevel, const std::string &description) :
+            GeoExtent(extent), minLevel(minLevel), description(description) { }
+        GeoExtent3D(const GeoExtent& extent, unsigned minLevel, unsigned maxLevel):
+            GeoExtent(extent), minLevel(minLevel), maxLevel(maxLevel) { }
+        GeoExtent3D(const GeoExtent& extent, unsigned minLevel, unsigned maxLevel, const std::string &description) :
+            GeoExtent(extent), minLevel(minLevel), maxLevel(maxLevel), description(description) { }
 
-        /** dtor */
-        virtual ~DataExtent() { }
+        //! The minimum LOD of the extent
+        optional<unsigned> minLevel = 0u;
 
-        /** The minimum LOD of the extent */
-        optional<unsigned>& minLevel() { return _minLevel; }
-        const optional<unsigned>& minLevel() const { return _minLevel; }
+        //! The maximum LOD of the extent
+        optional<unsigned> maxLevel = 99u;
 
-        /** The maximum LOD of the extent */
-        optional<unsigned>& maxLevel() { return _maxLevel; }
-        const optional<unsigned>& maxLevel() const { return _maxLevel; }
-
-        /** description for the data extents */
-        const optional<std::string>& description() const { return _description; }
-
-    private:
-        optional<unsigned> _minLevel;
-        optional<unsigned> _maxLevel;
-        optional<std::string> _description;
+        //! description for the data extents
+        optional<std::string> description;
     };
 
+    using DataExtent = GeoExtent3D;
     using DataExtentList = std::vector<DataExtent>;
 }

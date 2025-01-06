@@ -23,8 +23,8 @@ ROCKY_ADD_OBJECT_FACTORY(TMSImage,
 ROCKY_ADD_OBJECT_FACTORY(XYZImage,
     [](const std::string& JSON, const IOOptions& io) {
         auto layer = TMSImageLayer::create(JSON, io);
-        if (!layer->profile().valid())
-            layer->setProfile(Profile("spherical-mercator"));
+        if (!layer->profile.valid())
+            layer->profile = Profile("spherical-mercator");
         return layer;
     })
 
@@ -67,7 +67,7 @@ TMSImageLayer::openImplementation(const IOOptions& io)
     if (parent.failed())
         return parent;
 
-    Profile driver_profile = profile();
+    Profile driver_profile = profile;
 
     DataExtentList dataExtents;
     Status status = _driver.open(uri, driver_profile, format, dataExtents, io);
@@ -75,9 +75,9 @@ TMSImageLayer::openImplementation(const IOOptions& io)
     if (status.failed())
         return status;
 
-    if (driver_profile != profile())
+    if (driver_profile != profile)
     {
-        setProfile(driver_profile);
+        profile = driver_profile;
     }
 
     // If the layer name is unset, try to set it from the tileMap title.

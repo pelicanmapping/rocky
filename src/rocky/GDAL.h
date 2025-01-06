@@ -32,7 +32,7 @@ namespace ROCKY_NAMESPACE
         /**
         * Base class for GDAL layers.
         */
-        struct ROCKY_EXPORT LayerBase
+        struct ROCKY_EXPORT Options
         {
         public:
             //! Base URL for TMS requests
@@ -44,8 +44,8 @@ namespace ROCKY_NAMESPACE
             //! GDAL sub-dataset index (optional)
             optional<unsigned> subDataset = 0;
 
-            //! Interpolation method for resampling (default is bilinear)
-            optional<Image::Interpolation> interpolation = Image::AVERAGE;
+            //! Interpolation method for resampling (default is average)
+            optional<Interpolation> interpolation = Interpolation::AVERAGE;
 
         protected:
             optional<bool> singleThreaded = false;
@@ -99,16 +99,16 @@ namespace ROCKY_NAMESPACE
             //! Opens and initializes the connection to the dataset
             Status open(
                 const std::string& name,
-                const LayerBase* layer,
+                const Options* layer,
                 unsigned tileSize,
                 DataExtentList* out_dataExtents,
                 const IOOptions& io);
 
             //! Creates an image if possible
-            Result<std::shared_ptr<Image>> createImage(
-                const TileKey& key,
-                unsigned tileSize,
-                const IOOptions& io);
+            Result<std::shared_ptr<Image>> createImage(const TileKey& key, unsigned tileSize, const IOOptions& io);
+
+            //! Creates an image if possible
+            Result<std::shared_ptr<Heightfield>> createHeightfield(const TileKey& key, unsigned tileSize, const IOOptions& io);
 
             const Profile& profile() const {
                 return _profile;
@@ -119,9 +119,11 @@ namespace ROCKY_NAMESPACE
             void geoToPixel(double, double, double&, double&);
 
             bool isValidValue(float, GDALRasterBand*);
+            bool isValidValue(float, float) const;
             float getValidElevationValue(float value, float nodataValueFromBand, float replacement);
             bool intersects(const TileKey&);
-            float getInterpolatedValue(GDALRasterBand* band, double x, double y, bool applyOffset = true);
+            float getInterpolatedDEMValue(GDALRasterBand*, double x, double y, bool halfPixelOffset);
+            float getInterpolatedDEMValueWorkspace(GDALRasterBand*, double u, double v, float*, int, int);
 
             bool _open = false;
             GDALDataset* _srcDS = nullptr;
@@ -132,10 +134,11 @@ namespace ROCKY_NAMESPACE
             GeoExtent _extents;
             Box _bounds;
             Profile _profile;
-            const LayerBase* _layer;
+            const Options* _layer;
             std::shared_ptr<ExternalDataset> _external;
             std::string _name;
             std::thread::id _threadId;
+            bool _pixelIsArea = true;
 
             const std::string& getName() const { return _name; }
         };

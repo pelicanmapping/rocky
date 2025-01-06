@@ -69,8 +69,8 @@ void
 ImageLayer::construct(const std::string& JSON, const IOOptions& io)
 {
     const auto j = parse_json(JSON);
-    get_to(j, "sharpness", _sharpness);
-    get_to(j, "crop", _crop);
+    get_to(j, "sharpness", sharpness);
+    get_to(j, "crop", crop);
 
     setRenderType(RenderType::TERRAIN_SURFACE);
 
@@ -81,8 +81,8 @@ JSON
 ImageLayer::to_json() const
 {
     auto j = parse_json(super::to_json());
-    set(j, "sharpness", _sharpness);
-    set(j, "crop", _crop);
+    set(j, "sharpness", sharpness);
+    set(j, "crop", crop);
     return j.dump();
 }
 
@@ -122,14 +122,14 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
     }
 
     Result<GeoImage> result;
-    float sharpness = _sharpness.has_value() ? _sharpness.value() : 0.0f;
+    float sharpness_value = sharpness.has_value() ? sharpness.value() : 0.0f;
 
     GeoExtent cropIntersection;
 
     // if we are cropping, and the key doesn't intersect the crop extent, bail out.
-    if (_crop.has_value() && _crop.value().valid())
+    if (crop.has_value() && crop.value().valid())
     {
-        auto cropInKeyProfile = key.profile().clampAndTransformExtent(_crop.value());
+        auto cropInKeyProfile = key.profile.clampAndTransformExtent(crop.value());
         if (cropInKeyProfile.valid())
         {
             cropIntersection = cropInKeyProfile.intersectionSameSRS(key.extent());
@@ -141,12 +141,12 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
     }
 
     // if this layer has no profile, just go straight to the driver.
-    if (!profile().valid())
+    if (!profile.valid())
     {
         result = createImageImplementation_internal(key, io);
     }
 
-    else if (key.profile().horizontallyEquivalentTo(profile()))
+    else if (key.profile.horizontallyEquivalentTo(profile))
     {
         result = createImageImplementation_internal(key, io);
     }
@@ -158,8 +158,8 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
 
         // automatically re-sharpen a reprojected image to account for quality loss.
         // Do we like this idea?
-        if (sharpness == 0.0f)
-            sharpness = 2.0f;
+        if (sharpness_value == 0.0f)
+            sharpness_value = 2.0f;
     }
 
     // developer assert - if a status is OK, the image must exist.
@@ -193,9 +193,9 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
             }
         }
 
-        if (sharpness > 0.0f)
+        if (sharpness_value > 0.0f)
         {
-            result = GeoImage(result.value.image()->sharpen(sharpness), key.extent());
+            result = GeoImage(result.value.image()->sharpen(sharpness_value), key.extent());
         }
     }
 
@@ -208,11 +208,11 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
     std::shared_ptr<Mosaic> output;
 
     // Map the key's LOD to the target profile's LOD.
-    unsigned targetLOD = profile().getEquivalentLOD(key.profile(), key.levelOfDetail());
+    unsigned targetLOD = profile.getEquivalentLOD(key.profile, key.level);
 
     // Find the set of keys that covers the same area as in input key in our target profile.
     std::vector<TileKey> intersectingKeys;
-    key.getIntersectingKeys(profile(), intersectingKeys);
+    key.getIntersectingKeys(profile, intersectingKeys);
 
     // collect raster data for each intersecting key, falling back on ancestor images
     // if none are available at the target LOD.
@@ -231,7 +231,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             {
                 sources.emplace_back(cached_value, cached.valueKey.extent());
 
-                if (cached.valueKey.levelOfDetail() == targetLOD)
+                if (cached.valueKey.level == targetLOD)
                 {
                     hasAtLeastOneSourceAtTargetLOD = true;
                 }
@@ -261,7 +261,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                     // add it to our sources collection:
                     sources.emplace_back(subTile.value);
 
-                    if (subKey.levelOfDetail() == targetLOD)
+                    if (subKey.level == targetLOD)
                     {
                         hasAtLeastOneSourceAtTargetLOD = true;
                     }

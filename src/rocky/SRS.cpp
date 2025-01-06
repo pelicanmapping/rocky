@@ -126,6 +126,8 @@ namespace
                     to_try = "epsg:4978";
                 else if (ndef == "plate-carree" || ndef == "plate-carre")
                     to_try = "epsg:32663";
+                else if (ndef == "moon")
+                    to_try = "+proj=longlat +R=1737400 +no_defs +type=crs";
 
                 // try to determine whether this ia WKT so we can use the right create function
                 auto wkt_dialect = proj_context_guess_wkt_dialect(ctx, to_try.c_str());
@@ -759,6 +761,27 @@ SRS::transformUnits(const Distance& distance, const SRS& outSRS, const Angle& la
     else // both projected or both geographic.
     {
         return distance.as(outSRS.units());
+    }
+}
+
+double
+SRS::transformDistance(const Distance& input, const Units& outputUnits, double referenceLatitude) const
+{
+    auto inputUnits = input.units();
+
+    if (inputUnits.isAngle() && outputUnits.isLinear())
+    {
+        auto meters = ellipsoid().longitudinalDegreesToMeters(input.as(Units::DEGREES), referenceLatitude);
+        return Units::convert(Units::METERS, outputUnits, meters);
+    }
+    else if (inputUnits.isLinear() && outputUnits.isAngle())
+    {
+        auto degrees = ellipsoid().metersToLongitudinalDegrees(input.as(Units::METERS), referenceLatitude);
+        return Units::convert(Units::DEGREES, outputUnits, degrees);
+    }
+    else
+    {
+        return input.as(outputUnits);
     }
 }
 

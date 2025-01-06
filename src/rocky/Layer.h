@@ -37,6 +37,16 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT Layer : public Inherit<Object, Layer>
     {
     public:
+        //! Whether to automatically open this layer when added to a map.
+        optional<bool> openAutomatically = true;
+
+        //! Information about the source of this layer's data
+        optional<Hyperlink> attribution = { };
+
+        //! Size of the L2 (memory) cache
+        optional<unsigned> l2CacheSize = 0;
+
+    public:
         //! Destructor
         virtual ~Layer();
 
@@ -59,14 +69,6 @@ namespace ROCKY_NAMESPACE
 
         //! Serialize this layer into a JSON string
         virtual std::string to_json() const;
-
-        //! Whether to automatically open this layer (by calling open) when
-        //! adding the layer to a Map or when opening a map containing this Layer.
-        void setOpenAutomatically(bool value);
-
-        //! Whether to automatically open this layer (by calling open) when
-        //! adding the layer to a Map or when opening a map containing this Layer.
-        const optional<bool>& openAutomatically() const;
 
         //! Extent of this layer's data.
         //! This method may return GeoExtent::INVALID which means that the
@@ -102,11 +104,6 @@ namespace ROCKY_NAMESPACE
         //! Rendering type of this layer
         void setRenderType(RenderType value) { _renderType = value; }
 
-        //! Attribution to be displayed by the application
-        const optional<Hyperlink>& attribution() const;
-
-        //! Attribution to be displayed by the application
-        void setAttribution(const Hyperlink& attribution);
 
     public:
 
@@ -169,18 +166,8 @@ namespace ROCKY_NAMESPACE
         //! functions that require the layer to remain open
         std::shared_mutex& layerStateMutex() const { return _state_mutex; }
 
-    public:
-
-    protected:
-
         // allow the map access to the addedToMap/removedFromMap methods
         friend class Map;
-
-        optional<bool> _openAutomatically = true;
-        optional<std::string> _cacheid = { };
-        optional<unsigned> _l2cachesize = 0;
-        optional<Hyperlink> _attribution = { };
-        bool _reopenRequired = false;
     };
 
 } // namespace ROCKY_NAMESPACE

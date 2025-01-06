@@ -203,17 +203,6 @@ namespace ROCKY_NAMESPACE
             Units::parse( parseable, _value, _units, defaultUnits );
         }
 
-#if 0
-        // loads the qualified number from an old-school config (e.g., { value="123" units="km" } )
-        qualified_double( const Config& conf, const Units& defaultUnits ) : _value(0.0) {
-            if ( conf.has("value") ) {
-                _value = conf.value<double>("value", 0.0);
-                if ( !Units::parse( conf.value("units"), _units ) )
-                    _units = defaultUnits;
-            }
-        }
-#endif
-
         void set( double value, const Units& units ) {
             _value = value;
             _units = units;
@@ -276,19 +265,19 @@ namespace ROCKY_NAMESPACE
             return T( as(convertTo), convertTo );
         }
 
-        double asDistance(const Units& convertTo, double refLatDegrees) const {
-            if (_units.isAngle() && convertTo.isLinear()) {
-                double angleDeg = Units::convert(_units, Units::DEGREES, _value);
-                double meters = angleDeg * 111000.0 * cos(util::deg2rad(refLatDegrees));
-                return Units::convert(Units::METERS, convertTo, meters);
-            }
-            else if (_units.isLinear() && convertTo.isAngle()) {
-                double valueMeters = Units::convert(_units, Units::METERS, _value);
-                double angleDeg = valueMeters / (111000.0 * cos(util::deg2rad(refLatDegrees)));
-                return Units::convert(Units::DEGREES, convertTo, angleDeg);
-            }
-            else return as(convertTo);
-        }
+        //double asDistance(const Units& convertTo, double refLatDegrees) const {
+        //    if (_units.isAngle() && convertTo.isLinear()) {
+        //        double angleDeg = Units::convert(_units, Units::DEGREES, _value);
+        //        double meters = angleDeg * 111000.0 * cos(util::deg2rad(refLatDegrees));
+        //        return Units::convert(Units::METERS, convertTo, meters);
+        //    }
+        //    else if (_units.isLinear() && convertTo.isAngle()) {
+        //        double valueMeters = Units::convert(_units, Units::METERS, _value);
+        //        double angleDeg = valueMeters / (111000.0 * cos(util::deg2rad(refLatDegrees)));
+        //        return Units::convert(Units::DEGREES, convertTo, angleDeg);
+        //    }
+        //    else return as(convertTo);
+        //}
 
         double       value() const { return _value; }
         const Units& units() const { return _units; }

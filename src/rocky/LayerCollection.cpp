@@ -58,7 +58,7 @@ LayerCollection::remove(std::shared_ptr<Layer> layer)
     Revision new_revision = -1;
 
     // Close the layer when we remove it from the map.
-    if (closeOnRemove && layer->openAutomatically())
+    if (closeOnRemove && layer->openAutomatically)
     {
         layer->close();
     }

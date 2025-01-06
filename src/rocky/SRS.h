@@ -136,6 +136,12 @@ namespace ROCKY_NAMESPACE
             const SRS& outSRS,
             const Angle& latitude);
 
+        //! Transform a distance from one SRS to another, with an optional reference latitude.
+        double transformDistance(
+            const Distance& distance,
+            const Units& output_units,
+            double reference_latitude = 0.0) const;
+
         //! If the event of an error, return the last error message
         const std::string& errorMessage() const;
 

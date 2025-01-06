@@ -26,20 +26,20 @@ namespace
         DataExtentList* out_dataExtents,
         const IOOptions& io)
     {
-        if (layer->maxDataLevel().has_value())
-            driver.maxDataLevel = layer->maxDataLevel();
+        if (layer->maxDataLevel.has_value())
+            driver.maxDataLevel = layer->maxDataLevel;
 
-        if (layer->noDataValue().has_value())
-            driver.noDataValue = layer->noDataValue();
-        if (layer->minValidValue().has_value())
-            driver.minValidValue = layer->minValidValue();
-        if (layer->maxValidValue().has_value())
-            driver.maxValidValue = layer->maxValidValue();
+        if (layer->noDataValue.has_value())
+            driver.noDataValue = layer->noDataValue;
+        if (layer->minValidValue.has_value())
+            driver.minValidValue = layer->minValidValue;
+        if (layer->maxValidValue.has_value())
+            driver.maxValidValue = layer->maxValidValue;
 
         Status status = driver.open(
             layer->name(),
             layer,
-            layer->tileSize(),
+            layer->tileSize,
             out_dataExtents,
             io);
 
@@ -78,9 +78,15 @@ GDALElevationLayer::construct(const std::string& JSON, const IOOptions& io)
     get_to(j, "subdataset", subDataset);
     std::string temp;
     get_to(j, "interpolation", temp);
-    if (temp == "nearest") interpolation = Image::NEAREST;
-    else if (temp == "bilinear") interpolation = Image::BILINEAR;
+    if (temp == "nearest") interpolation = Interpolation::NEAREST;
+    else if (temp == "bilinear") interpolation = Interpolation::BILINEAR;
     get_to(j, "single_threaded", singleThreaded);
+
+    // default for GDAL elevation is nearest-neighbor.
+    if (!interpolation.has_value())
+    {
+        interpolation.set_default(Interpolation::NEAREST);
+    }
 
     setRenderType(RenderType::TERRAIN_SURFACE);
 }
@@ -92,9 +98,9 @@ GDALElevationLayer::to_json() const
     set(j, "uri", uri);
     set(j, "connection", connection);
     set(j, "subdataset", subDataset);
-    if (interpolation.has_value(Image::NEAREST))
+    if (interpolation.has_value(Interpolation::NEAREST))
         set(j, "interpolation", "nearest");
-    else if (interpolation.has_value(Image::BILINEAR))
+    else if (interpolation.has_value(Interpolation::BILINEAR))
         set(j, "interpolation", "bilinear");
     set(j, "single_threaded", singleThreaded);
     return j.dump();
@@ -107,7 +113,7 @@ GDALElevationLayer::openImplementation(const IOOptions& io)
     if (parent.failed())
         return parent;
 
-    Profile profile;
+    Profile new_profile;
 
     // GDAL thread-safety requirement: each thread requires a separate GDALDataSet.
     // So we just encapsulate the entire setup once per thread.
@@ -117,15 +123,15 @@ GDALElevationLayer::openImplementation(const IOOptions& io)
 
     DataExtentList dataExtents;
 
-    Status s = openOnThisThread(this, driver, &profile, &dataExtents, io);
+    Status s = openOnThisThread(this, driver, &new_profile, &dataExtents, io);
 
     if (s.failed())
         return s;
 
     // if the driver generated a valid profile, set it.
-    if (profile.valid())
+    if (new_profile.valid())
     {
-        setProfile(profile);
+        profile = new_profile;
     }
 
     setDataExtents(dataExtents);
@@ -158,18 +164,27 @@ GDALElevationLayer::createHeightfieldImplementation(const TileKey& key, const IO
 
     if (driver.isOpen())
     {
-        auto r = driver.createImage(key, tileSize(), io);
+        auto r = driver.createHeightfield(key, tileSize, io);
 
         if (r.status.ok())
         {
-            if (r.value->pixelFormat() == Image::R32_SFLOAT)
+            return GeoHeightfield(r.value, key.extent());
+        }
+        else
+        {
+            auto r = driver.createImage(key, tileSize, io);
+
+            if (r.status.ok())
             {
-                return GeoHeightfield(Heightfield::create(r.value.get()), key.extent());
-            }
-            else // assume Image::R8G8B8_UNORM?
-            {
-                auto hf = decodeMapboxRGB(r.value);
-                return GeoHeightfield(hf, key.extent());
+                if (r.value->pixelFormat() == Image::R32_SFLOAT)
+                {
+                    return GeoHeightfield(Heightfield::create(r.value.get()), key.extent());
+                }
+                else // assume Image::R8G8B8_UNORM?
+                {
+                    auto hf = decodeMapboxRGB(r.value);
+                    return GeoHeightfield(hf, key.extent());
+                }
             }
         }
     }

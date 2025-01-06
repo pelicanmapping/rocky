@@ -46,12 +46,12 @@ namespace ROCKY_NAMESPACE
         //! Interpolated height at a normalized (u,v) location
         float heightAtUV(
             double u, double v,
-            Interpolation interp = BILINEAR) const;
+            Interpolation interp = Interpolation::BILINEAR) const;
 
         //! Interpolated height at a floating point col/row location
         float heightAtPixel(
             double col, double row,
-            Interpolation interp = BILINEAR) const;
+            Interpolation interp = Interpolation::BILINEAR) const;
 
         //! Fill with a single height value
         void fill(float value);

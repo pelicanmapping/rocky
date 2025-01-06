@@ -17,24 +17,13 @@ namespace ROCKY_NAMESPACE
      * that supports SRS other than spherical mercator, customizable image
      * formats, and tile compression.
      */
-    class ROCKY_EXPORT MBTilesElevationLayer : public Inherit<ElevationLayer, MBTilesElevationLayer>
+    class ROCKY_EXPORT MBTilesElevationLayer : public Inherit<ElevationLayer, MBTilesElevationLayer>,
+        public MBTiles::Options
     {
     public:
         //! Construct an empty layer
         MBTilesElevationLayer();
         explicit MBTilesElevationLayer(const std::string& JSON, const IOOptions& io);
-
-        //! Location of the mbtiles database file
-        void setURI(const URI& value) { _options.uri = value; }
-        optional<URI>& uri() { return _options.uri; }
-
-        //! Content type of the individual tiles in the database (e.g., image/tif)
-        void setFormat(const std::string& value) { _options.format = value; }
-        optional<std::string>& format() { return _options.format; }
-
-        //! Whether to use compression on individual tile data
-        void setCompress(bool value) { _options.compress = value; }
-        optional<bool>& compress() { return _options.compress; }
 
         //! serialize
         std::string to_json() const override;
@@ -52,7 +41,6 @@ namespace ROCKY_NAMESPACE
 
     private:
         MBTiles::Driver _driver;
-        MBTiles::Options _options;
         void construct(const std::string& JSON, const IOOptions& io);
     };
 }

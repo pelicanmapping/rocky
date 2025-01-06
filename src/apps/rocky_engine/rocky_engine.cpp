@@ -97,8 +97,8 @@ int main(int argc, char** argv)
 
     auto layer = rocky::TMSImageLayer::create();
     layer->uri = "https://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png";
-    layer->setProfile(rocky::Profile::SPHERICAL_MERCATOR);
-    layer->setAttribution(rocky::Hyperlink{ "\u00a9 OpenStreetMap contributors", "https://openstreetmap.org/copyright" });
+    layer->attribution = rocky::Hyperlink{ "\u00a9 OpenStreetMap contributors", "https://openstreetmap.org/copyright" };
+    layer->profile = rocky::Profile::SPHERICAL_MERCATOR;
     mapNode->map->add(layer);
 
 #endif // ROCKY_HAS_TMS

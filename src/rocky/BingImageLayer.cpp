@@ -69,9 +69,9 @@ BingImageLayer::openImplementation(const IOOptions& io)
         return parent;
 
     // Bing has a root 2x2 tile setup unlike most web-mercator sources:
-    setProfile(Profile(SRS::SPHERICAL_MERCATOR, Profile::SPHERICAL_MERCATOR.extent().bounds(), 2, 2));
+    profile = Profile(SRS::SPHERICAL_MERCATOR, Profile::SPHERICAL_MERCATOR.extent().bounds(), 2, 2);
     
-    setDataExtents({ profile().extent() });
+    setDataExtents({ profile.extent() });
 
     ROCKY_TODO("When disk cache is implemented, disable it here as it violates the ToS");
 
@@ -88,7 +88,7 @@ Result<GeoImage>
 BingImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io) const
 {
     // Bing's zoom is indexed slightly differently
-    auto zoom = key.levelOfDetail() + 1;
+    auto zoom = key.level + 1;
     GeoPoint centre = key.extent().centroid();
     centre.transformInPlace(centre.srs.geodeticSRS());
 

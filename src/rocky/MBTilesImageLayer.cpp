@@ -34,18 +34,18 @@ MBTilesImageLayer::construct(const std::string& JSON, const IOOptions& io)
 {
     setLayerTypeName("MBTilesImage");
     const auto j = parse_json(JSON);
-    get_to(j, "uri", _options.uri, io);
-    get_to(j, "format", _options.format);
-    get_to(j, "compress", _options.compress);
+    get_to(j, "uri", uri, io);
+    get_to(j, "format", format);
+    get_to(j, "compress", compress);
 }
 
 JSON
 MBTilesImageLayer::to_json() const
 {
     auto j = parse_json(super::to_json());
-    set(j, "uri", _options.uri);
-    set(j, "format", _options.format);
-    set(j, "compress", _options.compress);
+    set(j, "uri", uri);
+    set(j, "format", format);
+    set(j, "compress", compress);
     return j.dump();
 }
 
@@ -56,12 +56,12 @@ MBTilesImageLayer::openImplementation(const IOOptions& io)
     if (parent.failed())
         return parent;
 
-    Profile new_profile = profile();
+    Profile new_profile = profile;
     DataExtentList dataExtents;
 
     Status status = _driver.open(
         name(),
-        _options,
+        *this, // MBTiles::Options
         false, // isWritingRequested(),
         new_profile,
         dataExtents,
@@ -73,9 +73,9 @@ MBTilesImageLayer::openImplementation(const IOOptions& io)
     }
 
     // install the profile if there is one
-    if (!profile().valid() && new_profile.valid())
+    if (!profile.valid() && new_profile.valid())
     {
-        setProfile(new_profile);
+        profile = new_profile;
     }
 
     setDataExtents(dataExtents);

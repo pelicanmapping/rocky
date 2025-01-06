@@ -70,7 +70,7 @@ float
 GeoHeightfield::heightAtLocation(
     double x,
     double y,
-    Image::Interpolation interpolation) const
+    Interpolation interpolation) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(valid(), NO_DATA_VALUE);
 
@@ -87,7 +87,7 @@ GeoHeightfield::heightAtLocation(
 }
 
 float
-GeoHeightfield::heightAt(double x, double y, const SRSOperation& xform, Image::Interpolation interp) const
+GeoHeightfield::heightAt(double x, double y, const SRSOperation& xform, Interpolation interp) const
 {
     glm::dvec3 temp(x, y, 0);
     if (xform.valid())
@@ -108,7 +108,7 @@ GeoHeightfield::heightAt(double x, double y, const SRSOperation& xform, Image::I
 }
 
 float
-GeoHeightfield::heightAt(double x, double y, const SRS& xy_srs, Image::Interpolation interp) const
+GeoHeightfield::heightAt(double x, double y, const SRS& xy_srs, Interpolation interp) const
 {
     const SRS& localSRS = _extent.srs();
 
@@ -140,7 +140,7 @@ GeoHeightfield::createSubSample(
     const GeoExtent& destExtent,
     unsigned width,
     unsigned height,
-    Image::Interpolation interpolation) const
+    Interpolation interpolation) const
 {
     double div = destExtent.width()/_extent.width();
     if ( div >= 1.0f )

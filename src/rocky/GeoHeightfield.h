@@ -49,10 +49,7 @@ namespace ROCKY_NAMESPACE
         //!      associated with this SRS. If the SRS is NULL, assume a geodetic vertical datum
         //!      relative to this object's reference ellipsoid.
         //! @return The elevation value, or NO_DATA_VALUE if the query failed
-        float heightAt(
-            double x, double y,
-            const SRS& xy_srs,
-            Image::Interpolation interp) const;
+        float heightAt(double x, double y, const SRS& xy_srs, Interpolation interp) const;
 
         //! Samples the elevation value at a specified point. If you plan to do
         //! multiple samples, this is faster than using heightAt(x, y, srs).
@@ -71,14 +68,14 @@ namespace ROCKY_NAMESPACE
         float heightAt(
             double x, double y,
             const SRSOperation& operation,
-            Image::Interpolation interp) const;
+            Interpolation interp) const;
 
         //! Subsamples the heightfield, returning a new heightfield corresponding to
         //! the destEx extent. The destEx must be a smaller, inset area of sourceEx.
         GeoHeightfield createSubSample(
             const GeoExtent& destEx, 
             unsigned width, unsigned height,
-            Image::Interpolation interpolation) const;
+            Interpolation interpolation) const;
 
         //! Gets the geospatial extent of the heightfield.
         const GeoExtent& extent() const;
@@ -103,7 +100,7 @@ namespace ROCKY_NAMESPACE
         //! Gets the height at a geographic location (in this object's SRS)
         float heightAtLocation(
             double x, double y,
-            Image::Interpolation interp = Image::BILINEAR) const;
+            Interpolation interp = Interpolation::BILINEAR) const;
 
         // Functor to GeoHeightField's by resolution
         struct SortByResolutionFunctor

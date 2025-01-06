@@ -362,12 +362,12 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
         return {};
     }
 
-    unsigned zoom = tilekey.levelOfDetail();
-    unsigned x = tilekey.tileX();
+    unsigned zoom = tilekey.level;
+    unsigned x = tilekey.x;
 
-    auto [numCols, numRows] = tilekey.profile().numTiles(tilekey.levelOfDetail());
-    unsigned y = numRows - tilekey.tileY() - 1;
-    unsigned y_inverted = tilekey.tileY();
+    auto [numCols, numRows] = tilekey.profile.numTiles(tilekey.level);
+    unsigned y = numRows - tilekey.y - 1;
+    unsigned y_inverted = tilekey.y;
 
     //Some TMS like services swap the Y coordinate so 0,0 is the upper left rather than the lower left.  The normal TMS
     //specification has 0,0 at the bottom left, so inverting Y will make 0,0 in the upper left.
@@ -459,12 +459,12 @@ TileMap::intersectsKey(const TileKey& tilekey) const
         minX, minY, maxX, maxY,
         b.xmin, b.ymin, b.xmax, b.ymax);
 
-    if (!inter && tilekey.profile().srs().horizontallyEquivalentTo(SRS::SPHERICAL_MERCATOR))
+    if (!inter && tilekey.profile.srs().horizontallyEquivalentTo(SRS::SPHERICAL_MERCATOR))
     {
         glm::dvec3 keyMin(b.xmin, b.ymin, b.zmin);
         glm::dvec3 keyMax(b.xmax, b.ymax, b.zmax);
 
-        auto xform = tilekey.profile().srs().to(tilekey.profile().srs().geodeticSRS());
+        auto xform = tilekey.profile.srs().to(tilekey.profile.srs().geodeticSRS());
         xform(keyMin, keyMin);
         xform(keyMax, keyMax);
 
@@ -693,7 +693,7 @@ TMS::Driver::read(const TileKey& key, bool invertY, bool isMapboxRGB, const URIC
     URI imageURI;
 
     // create the URI from the tile map?
-    if (tileMap.valid() && key.levelOfDetail() <= tileMap.maxLevel)
+    if (tileMap.valid() && key.level <= tileMap.maxLevel)
     {
         bool y_inverted = tileMap.invertYaxis;
         if (invertY) y_inverted = !y_inverted;
@@ -731,7 +731,7 @@ TMS::Driver::read(const TileKey& key, bool invertY, bool isMapboxRGB, const URIC
                 // We couldn't read the image from the URL or the cache, so check to see
                 // whether the given key is less than the max level of the tilemap
                 // and create a transparent image.
-                if (key.levelOfDetail() <= tileMap.maxLevel)
+                if (key.level <= tileMap.maxLevel)
                 {
                     ROCKY_TODO("");
                     return Image::create(Image::R8G8B8A8_UNORM, 1, 1);

@@ -18,6 +18,17 @@
 
 namespace ROCKY_NAMESPACE
 {
+    //! Raster interpolation methods
+    enum class Interpolation
+    {
+        NEAREST,
+        AVERAGE,
+        BILINEAR,
+        TRIANGULATE,
+        CUBIC,
+        CUBICSPLINE
+    };
+
     // mult a vec3 x mat4
     inline glm::dvec3 operator * (const glm::dvec3& a, const glm::dmat4& b)
     {

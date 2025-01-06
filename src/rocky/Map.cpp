@@ -123,7 +123,7 @@ Map::openAllLayers(const IOOptions& io)
     Status status;
     for (auto& layer : layers().all())
     {
-        if (layer->openAutomatically() && !layer->isOpen())
+        if (layer->openAutomatically && !layer->isOpen())
         {
             auto layer_status = layer->open(io);
             if (layer_status.failed())

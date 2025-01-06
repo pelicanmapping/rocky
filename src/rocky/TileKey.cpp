@@ -28,28 +28,21 @@ TileKey::TileKey(TileKey&& rhs) noexcept
 
 TileKey& TileKey::operator = (TileKey&& rhs) noexcept
 {
-    _x = rhs._x;
-    _y = rhs._y;
-    _lod = rhs._lod;
-    _profile = std::move(rhs._profile);
-    rhs._profile = {};
+    x = rhs.x;
+    y = rhs.y;
+    level = rhs.level;
+    profile = std::move(rhs.profile);
+    rhs.profile = {};
     return *this;
 }
 
-TileKey::TileKey(
-    unsigned int lod, unsigned int tile_x, unsigned int tile_y,
-    const Profile& profile)
+TileKey::TileKey(unsigned level_, unsigned x_, unsigned y_, const Profile& profile_) :
+    x(x_),
+    y(y_),
+    level(level_),
+    profile(profile_)
 {
-    _x = tile_x;
-    _y = tile_y;
-    _lod = lod;
-    _profile = profile;
-}
-
-const Profile&
-TileKey::profile() const
-{
-    return _profile;
+    //NOP
 }
 
 const GeoExtent
@@ -58,13 +51,13 @@ TileKey::extent() const
     if (!valid())
         return GeoExtent::INVALID;
 
-    auto[width, height] = _profile.tileDimensions(_lod);
-    double xmin = _profile.extent().xmin() + (width * (double)_x);
-    double ymax = _profile.extent().ymax() - (height * (double)_y);
+    auto[width, height] = profile.tileDimensions(level);
+    double xmin = profile.extent().xmin() + (width * (double)x);
+    double ymax = profile.extent().ymax() - (height * (double)y);
     double xmax = xmin + width;
     double ymin = ymax - height;
 
-    return GeoExtent( _profile.srs(), xmin, ymin, xmax, ymax );
+    return GeoExtent(profile.srs(), xmin, ymin, xmax, ymax);
 }
 
 const std::string
@@ -73,9 +66,9 @@ TileKey::str() const
     if (valid())
     {
         return
-            std::to_string(_lod) + '/' +
-            std::to_string(_x) + '/' +
-            std::to_string(_y);
+            std::to_string(level) + '/' +
+            std::to_string(x) + '/' +
+            std::to_string(y);
     }
     else return "invalid";
 }
@@ -83,10 +76,10 @@ TileKey::str() const
 unsigned
 TileKey::getQuadrant() const
 {
-    if ( _lod == 0 )
+    if (level == 0 )
         return 0;
-    bool xeven = (_x & 1) == 0;
-    bool yeven = (_y & 1) == 0;
+    bool xeven = (x & 1) == 0;
+    bool yeven = (y & 1) == 0;
     return 
         xeven && yeven ? 0 :
         xeven          ? 2 :
@@ -96,13 +89,13 @@ TileKey::getQuadrant() const
 const glm::dmat4
 TileKey::scaleBiasMatrix() const
 {
-    return _lod > 0 ? scaleBias[getQuadrant()] : glm::dmat4(1);
+    return level > 0 ? scaleBias[getQuadrant()] : glm::dmat4(1);
 }
 
 std::pair<double, double>
 TileKey::getResolutionForTileSize(unsigned tileSize) const
 {
-    auto [width, height] = _profile.tileDimensions(_lod);
+    auto [width, height] = profile.tileDimensions(level);
 
     return std::make_pair(
         width/(double)(tileSize-1),
@@ -110,68 +103,63 @@ TileKey::getResolutionForTileSize(unsigned tileSize) const
 }
 
 TileKey
-TileKey::createChildKey( unsigned int quadrant ) const
+TileKey::createChildKey( unsigned quadrant ) const
 {
-    unsigned int lod = _lod + 1;
-    unsigned int x = _x * 2;
-    unsigned int y = _y * 2;
+    unsigned xx = x * 2;
+    unsigned yy = y * 2;
 
     if (quadrant == 1)
     {
-        x+=1;
+        xx += 1;
     }
     else if (quadrant == 2)
     {
-        y+=1;
+        yy += 1;
     }
     else if (quadrant == 3)
     {
-        x+=1;
-        y+=1;
+        xx += 1;
+        yy += 1;
     }
-    return TileKey(lod, x, y, _profile);
+    return TileKey(level + 1, xx, yy, profile);
 }
 
 
 TileKey
 TileKey::createParentKey() const
 {
-    if (_lod == 0) return TileKey::INVALID;
-
-    unsigned int lod = _lod - 1;
-    unsigned int x = _x / 2;
-    unsigned int y = _y / 2;
-    return TileKey(lod, x, y, _profile);
+    if (level == 0) return TileKey::INVALID;
+    return TileKey(level - 1, x / 2, y / 2, profile);
 }
 
 bool
 TileKey::makeParent()
 {
-    if (_lod == 0)
+    if (level == 0)
     {
-        _profile = Profile(); // invalidate
+        profile = Profile(); // invalidate
         return false;
     }
 
-    _lod--;
-    _x >>= 1;
-    _y >>= 1;
+    level--;
+    x >>= 1;
+    y >>= 1;
     return true;
 }
 
 TileKey
 TileKey::createAncestorKey(unsigned ancestorLod) const
 {
-    if (ancestorLod > _lod)
+    if (ancestorLod > level)
         return TileKey::INVALID;
 
-    unsigned x = _x, y = _y;
-    for (unsigned i = _lod; i > ancestorLod; i--)
+    unsigned xx = x, yy = y;
+    for (unsigned i = level; i > ancestorLod; i--)
     {
-        x /= 2;
-        y /= 2;
+        xx /= 2;
+        yy /= 2;
     }
-    return TileKey(ancestorLod, x, y, _profile);
+    return TileKey(ancestorLod, xx, yy, profile);
 }
 
 TileKey
@@ -179,37 +167,37 @@ TileKey::createNeighborKey( int xoffset, int yoffset ) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(valid(), TileKey::INVALID);
 
-    auto[tx, ty] = profile().numTiles(_lod);
+    auto[tx, ty] = profile.numTiles(level);
 
-    int sx = (int)_x + xoffset;
+    int sx = (int)x + xoffset;
     unsigned x =
         sx < 0        ? (unsigned)((int)tx + sx) :
         sx >= (int)tx ? (unsigned)sx - tx :
         (unsigned)sx;
 
-    int sy = (int)_y + yoffset;
+    int sy = (int)y + yoffset;
     unsigned y =
         sy < 0        ? (unsigned)((int)ty + sy) :
         sy >= (int)ty ? (unsigned)sy - ty :
         (unsigned)sy;
 
-    return TileKey(_lod, x % tx, y % ty, _profile);
+    return TileKey(level, x % tx, y % ty, profile);
 }
 
 std::string
 TileKey::quadKey() const
 {
     std::string buf;
-    buf.reserve(_lod + 1);
-    for (int i = _lod; i >= 0; i--)
+    buf.reserve(level + 1);
+    for (int i = level; i >= 0; i--)
     {
         char digit = '0';
         int mask = 1 << i;
-        if ((_x & mask) != 0)
+        if ((x & mask) != 0)
         {
             digit++;
         }
-        if ((_y & mask) != 0)
+        if ((y & mask) != 0)
         {
             digit++;
             digit++;
@@ -225,29 +213,29 @@ TileKey::mapResolution(unsigned targetSize,
                        unsigned minimumLOD) const
 {
     // This only works when falling back; i.e. targetSize is smaller than sourceSize.
-    if (levelOfDetail() == 0 || targetSize >= sourceSize )
+    if (level == 0 || targetSize >= sourceSize )
         return *this;
 
     // Minimum target tile size.
     if ( targetSize < 2 )
         targetSize = 2;
 
-    int lod = (int)levelOfDetail();
+    int new_lod = (int)level;
     int targetSizePOT = nextPowerOf2((int)targetSize);
 
     while(true)
     {
         if (targetSizePOT >= (int)sourceSize)
         {
-            return createAncestorKey(lod);
+            return createAncestorKey(new_lod);
         }
 
-        if ( lod == (int)minimumLOD )
+        if (new_lod == (int)minimumLOD )
         {
-            return createAncestorKey(lod);
+            return createAncestorKey(new_lod);
         }
 
-        lod--;
+        new_lod--;
         targetSizePOT *= 2;
     }
 }
@@ -391,7 +379,7 @@ TileKey::getIntersectingKeys(
     ROCKY_SOFT_ASSERT_AND_RETURN(valid(), void());
 
     // If the profiles are exactly equal, just add the given tile key.
-    if (profile().horizontallyEquivalentTo(target_profile))
+    if (profile.horizontallyEquivalentTo(target_profile))
     {
         //Clear the incoming list
         out_intersectingKeys.clear();
@@ -401,7 +389,7 @@ TileKey::getIntersectingKeys(
     {
         // figure out which LOD in the local profile is a best match for the LOD
         // in the source LOD in terms of resolution.
-        unsigned target_LOD = target_profile.getEquivalentLOD(profile(), levelOfDetail());
+        unsigned target_LOD = target_profile.getEquivalentLOD(profile, level);
         getIntersectingKeys(extent(), target_LOD, target_profile, out_intersectingKeys);
         //ROCKY_DEBUG << LC << "GIT, key=" << key.str() << ", localLOD=" << localLOD
         //    << ", resulted in " << out_intersectingKeys.size() << " tiles" << std::endl;

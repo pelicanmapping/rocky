@@ -54,7 +54,7 @@ namespace ROCKY_NAMESPACE
 
     protected:
 
-        TileKey _tileKey;
+        TileKey _tilekey;
         int _lastFramePassedCull = 0;
         std::shared_ptr<Image> _elevationRaster;
         glm::dmat4 _elevationMatrix;

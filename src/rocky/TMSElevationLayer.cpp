@@ -58,7 +58,7 @@ TMSElevationLayer::openImplementation(const IOOptions& io)
     if (parent.failed())
         return parent;
 
-    Profile driver_profile = profile();
+    Profile driver_profile = profile;
 
     DataExtentList dataExtents;
     Status status = _driver.open(
@@ -71,9 +71,9 @@ TMSElevationLayer::openImplementation(const IOOptions& io)
     if (status.failed())
         return status;
 
-    if (driver_profile != profile())
+    if (driver_profile != profile)
     {
-        setProfile(driver_profile);
+        profile = driver_profile;
     }
 
     // If the layer name is unset, try to set it from the tileMap title.
@@ -101,7 +101,7 @@ TMSElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOO
         return status();
 
     // request
-    auto r = _driver.read(key, invertY, _encoding == Encoding::MapboxRGB, uri->context(), io);
+    auto r = _driver.read(key, invertY, encoding == Encoding::MapboxRGB, uri->context(), io);
 
     if (r.status.ok())
     {

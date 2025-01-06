@@ -20,14 +20,6 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT Image : public Inherit<Object, Image>
     {
     public:
-        enum Interpolation {
-            NEAREST,
-            AVERAGE,
-            BILINEAR,
-            TRIANGULATE,
-            CUBIC,
-            CUBICSPLINE
-        };
 
         enum PixelFormat {
             R8_UNORM,

@@ -35,7 +35,7 @@ float
 Geoid::getHeight(
     double lat_deg,
     double lon_deg,
-    Heightfield::Interpolation interp) const
+    Interpolation interp) const
 {
     float result = 0.0f;
 

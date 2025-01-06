@@ -28,15 +28,15 @@ namespace
         DataExtentList* out_dataExtents,
         const IOOptions& io)
     {
-        if (layer->maxDataLevel().has_value())
+        if (layer->maxDataLevel.has_value())
         {
-            driver.maxDataLevel = layer->maxDataLevel();
+            driver.maxDataLevel = layer->maxDataLevel;
         }
 
         Status status = driver.open(
             layer->name(),
             layer,
-            layer->tileSize(),
+            layer->tileSize,
             out_dataExtents,
             io);
 
@@ -77,8 +77,8 @@ GDALImageLayer::construct(const std::string& JSON, const IOOptions& io)
     get_to(j, "subdataset", subDataset);
     std::string temp;
     get_to(j, "interpolation", temp);
-    if (temp == "nearest") interpolation = Image::NEAREST;
-    else if (temp == "bilinear") interpolation = Image::BILINEAR;
+    if (temp == "nearest") interpolation = Interpolation::NEAREST;
+    else if (temp == "bilinear") interpolation = Interpolation::BILINEAR;
     get_to(j, "single_threaded", singleThreaded);
 
     setRenderType(RenderType::TERRAIN_SURFACE);
@@ -91,9 +91,9 @@ GDALImageLayer::to_json() const
     set(j, "uri", uri);
     set(j, "connection", connection);
     set(j, "subdataset", subDataset);
-    if (interpolation.has_value(Image::NEAREST))
+    if (interpolation.has_value(Interpolation::NEAREST))
         set(j, "interpolation", "nearest");
-    else if (interpolation.has_value(Image::BILINEAR))
+    else if (interpolation.has_value(Interpolation::BILINEAR))
         set(j, "interpolation", "bilinear");
     set(j, "single_threaded", singleThreaded);
     return j.dump();
@@ -106,7 +106,7 @@ GDALImageLayer::openImplementation(const IOOptions& io)
     if (parent.failed())
         return parent;
 
-    Profile profile;
+    Profile new_profile;
 
     // GDAL thread-safety requirement: each thread requires a separate GDALDataSet.
     // So we just encapsulate the entire setup once per thread.
@@ -116,15 +116,15 @@ GDALImageLayer::openImplementation(const IOOptions& io)
 
     DataExtentList dataExtents;
 
-    Status s = openOnThisThread(this, driver, &profile, &dataExtents, io);
+    Status s = openOnThisThread(this, driver, &new_profile, &dataExtents, io);
 
     if (s.failed())
         return s;
 
     // if the driver generated a valid profile, set it.
-    if (profile.valid())
+    if (new_profile.valid())
     {
-        setProfile(profile);
+        profile = new_profile;
     }
 
     setDataExtents(dataExtents);
@@ -157,7 +157,7 @@ GDALImageLayer::createImageImplementation(const TileKey& key, const IOOptions& i
 
     if (driver.isOpen())
     {
-        auto image = driver.createImage(key, _tileSize, io);
+        auto image = driver.createImage(key, tileSize, io);
         if (image.value)
             return GeoImage(image.value, key.extent());
     }

@@ -124,15 +124,14 @@ struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>
 
     void render() const
     {
-        if (ImGui::Begin("Welcome to Rocky"))
+        ImGui::Begin("Welcome to Rocky");
         {
             for (auto& demo : demos)
             {
                 render(demo);
             }
-
-            ImGui::End();
         }
+        ImGui::End();
     }
 
     void render(const Demo& demo) const

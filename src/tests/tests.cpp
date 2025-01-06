@@ -243,16 +243,16 @@ TEST_CASE("Heightfield")
         hf->heightAt(17, 16) = 50.0f;
         hf->heightAt(17, 17) = 100.0f;
         CHECK(hf->heightAt(16, 16) == 100.0f);
-        CHECK(hf->heightAtPixel(16.5, 16.5, Heightfield::BILINEAR) == 75.0f);
+        CHECK(hf->heightAtPixel(16.5, 16.5, Interpolation::BILINEAR) == 75.0f);
         
         // read with NO_DATA_VALUEs:
         hf->heightAt(17, 17) = NO_DATA_VALUE;
         hf->heightAt(16, 16) = NO_DATA_VALUE;
-        CHECK(hf->heightAtPixel(16.5, 16.5, Heightfield::BILINEAR) == 50.0f);
+        CHECK(hf->heightAtPixel(16.5, 16.5, Interpolation::BILINEAR) == 50.0f);
 
         // all NODATA:
         hf->fill(NO_DATA_VALUE);
-        CHECK(hf->heightAtPixel(16.5, 16.5, Heightfield::BILINEAR) == NO_DATA_VALUE);
+        CHECK(hf->heightAtPixel(16.5, 16.5, Interpolation::BILINEAR) == NO_DATA_VALUE);
     }
 }
 

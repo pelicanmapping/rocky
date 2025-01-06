@@ -312,7 +312,7 @@ TerrainTilePager::requestCreateChildren(TileInfo& info, std::shared_ptr<TerrainE
     auto priority_func = [weak_parent]() -> float
     {
         auto tile = weak_parent.ref_ptr();
-        return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : -FLT_MAX;
+        return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.level) : -FLT_MAX;
     };
 
     info.childrenCreator = jobs::dispatch(
@@ -381,7 +381,7 @@ TerrainTilePager::requestLoadData(TileInfo& info, const IOOptions& in_io, std::s
     auto priority_func = [tile_weak]() -> float
     {
         vsg::ref_ptr<TerrainTileNode> tile = tile_weak.ref_ptr();
-        return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : -FLT_MAX;
+        return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.level) : -FLT_MAX;
     };
 
     info.dataLoader = jobs::dispatch(
@@ -439,7 +439,7 @@ TerrainTilePager::requestMergeData(TileInfo& info, const IOOptions& in_io, std::
     auto priority_func = [weak_tile]() -> float
     {
         auto tile = weak_tile.ref_ptr();
-        return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.levelOfDetail()) : -FLT_MAX;
+        return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.level) : -FLT_MAX;
     };
 
     engine->context->onNextUpdate(merge_operation, priority_func);

@@ -292,9 +292,9 @@ MBTiles::Driver::read(const TileKey& key, const IOOptions& io) const
 {
     std::scoped_lock lock(_mutex);
 
-    int z = key.levelOfDetail();
-    int x = key.tileX();
-    int y = key.tileY();
+    int z = key.level;
+    int x = key.x;
+    int y = key.y;
 
     if (z < (int)_minLevel)
     {
@@ -307,7 +307,7 @@ MBTiles::Driver::read(const TileKey& key, const IOOptions& io) const
         return Status(Status::ResourceUnavailable);
     }
 
-    auto [numCols, numRows] = key.profile().numTiles(key.levelOfDetail());
+    auto [numCols, numRows] = key.profile.numTiles(key.level);
     y = numRows - y - 1;
 
     sqlite3* database = (sqlite3*)_database;
@@ -429,12 +429,12 @@ MBTiles::Driver::write(const TileKey& key, std::shared_ptr<Image> input, const I
     }
 #endif // ROCKY_HAS_ZLIB
 
-    int z = key.levelOfDetail();
-    int x = key.tileX();
-    int y = key.tileY();
+    int z = key.level;
+    int x = key.x;
+    int y = key.y;
 
     // flip Y axis
-    auto [numCols, numRows] = key.profile().numTiles(key.levelOfDetail());
+    auto [numCols, numRows] = key.profile.numTiles(key.level);
     y = numRows - y - 1;
 
     sqlite3* database = (sqlite3*)_database;
@@ -477,13 +477,13 @@ MBTiles::Driver::write(const TileKey& key, std::shared_ptr<Image> input, const I
     sqlite3_finalize(insert);
 
     // adjust the max level if necessary
-    if (key.levelOfDetail() > _maxLevel)
+    if (key.level > _maxLevel)
     {
-        _maxLevel = key.levelOfDetail();
+        _maxLevel = key.level;
     }
-    if (key.levelOfDetail() < _minLevel)
+    if (key.level < _minLevel)
     {
-        _minLevel = key.levelOfDetail();
+        _minLevel = key.level;
     }
 
     return StatusOK;

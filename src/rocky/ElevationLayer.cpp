@@ -87,34 +87,34 @@ ElevationLayer::ElevationLayer(const std::string& JSON, const IOOptions& io) :
 void
 ElevationLayer::construct(const std::string& JSON, const IOOptions& io)
 {
-    _tileSize.set_default(257u); // override the default in TileLayer
+    tileSize.set_default(257u); // override the default in TileLayer
 
     const auto j = parse_json(JSON);
-    get_to(j, "offset", _offset);
-    get_to(j, "no_data_value", _noDataValue);
-    get_to(j, "min_valid_value", _minValidValue);
-    get_to(j, "max_valid_value", _maxValidValue);
-    std::string encoding;
-    if (get_to(j, "encoding", encoding))
+    get_to(j, "offset", offset);
+    get_to(j, "no_data_value", noDataValue);
+    get_to(j, "min_valid_value", minValidValue);
+    get_to(j, "max_valid_value", maxValidValue);
+    std::string encoding_value;
+    if (get_to(j, "encoding", encoding_value))
     {
-        if (encoding == "single_channel")
-            _encoding = Encoding::SingleChannel;
-        else if (encoding == "mapboxrgb")
-            _encoding = Encoding::MapboxRGB;
+        if (encoding_value == "single_channel")
+            encoding = Encoding::SingleChannel;
+        else if (encoding_value == "mapboxrgb")
+            encoding = Encoding::MapboxRGB;
     }
 
     // a small L2 cache will help with things like normal map creation
     // (i.e. queries that sample neighboring tiles)
-    if (!_l2cachesize.has_value())
+    if (!l2CacheSize.has_value())
     {
-        _l2cachesize.set_default(32u);
+        l2CacheSize.set_default(32u);
     }
 
-    _L2cache.setCapacity(_l2cachesize.value());
+    _L2cache.setCapacity(l2CacheSize.value());
 
     // Disable max-level support for elevation data because it makes no sense.
-    _maxLevel.clear();
-    _maxResolution.clear();
+    maxLevel.clear();
+    maxResolution.clear();
 
     // elevation layers do not render directly; rather, a composite of elevation data
     // feeds the terrain engine to permute the mesh.
@@ -127,48 +127,16 @@ JSON
 ElevationLayer::to_json() const
 {
     auto j = parse_json(super::to_json());
-    set(j, "offset", _offset);
-    set(j, "no_data_value", _noDataValue);
-    set(j, "min_valid_value", _minValidValue);
-    set(j, "max_valid_value", _maxValidValue);
-    if (_encoding.has_value(Encoding::SingleChannel))
+    set(j, "offset", offset);
+    set(j, "no_data_value", noDataValue);
+    set(j, "min_valid_value", minValidValue);
+    set(j, "max_valid_value", maxValidValue);
+    if (encoding.has_value(Encoding::SingleChannel))
         set(j, "encoding", "single_channel");
-    else if (_encoding.has_value(Encoding::MapboxRGB))
+    else if (encoding.has_value(Encoding::MapboxRGB))
         set(j, "encoding", "mapboxrgb");
 
     return j.dump();
-}
-
-void ElevationLayer::setEncoding(ElevationLayer::Encoding value) {
-    _encoding = value;
-}
-const optional<ElevationLayer::Encoding>& ElevationLayer::encoding() const {
-    return _encoding;
-}
-void ElevationLayer::setOffset(bool value) {
-    _offset = value, _reopenRequired = true;
-}
-const optional<bool>& ElevationLayer::offset() const {
-    return _offset;
-}
-void ElevationLayer::setNoDataValue(float value) {
-    _noDataValue = value, _reopenRequired = true;
-}
-const optional<float>& ElevationLayer::noDataValue() const {
-    return _noDataValue;
-}
-void ElevationLayer::setMinValidValue(float value) {
-    _minValidValue = value, _reopenRequired = true;
-}
-const optional<float>& ElevationLayer::minValidValue() const {
-    return _minValidValue;
-}
-
-void ElevationLayer::setMaxValidValue(float value) {
-    _maxValidValue = value, _reopenRequired = true;
-}
-const optional<float>& ElevationLayer::maxValidValue() const {
-    return _maxValidValue;
 }
 
 void
@@ -182,9 +150,9 @@ ElevationLayer::normalizeNoDataValues(Heightfield* hf) const
         {
             float h = *pixel;
             if (std::isnan(h) ||
-                equiv(h, noDataValue().value()) ||
-                h < minValidValue() ||
-                h > maxValidValue())
+                equiv(h, noDataValue.value()) ||
+                h < minValidValue ||
+                h > maxValidValue)
             {
                 *pixel = NO_DATA_VALUE;
             }
@@ -199,8 +167,8 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
 
     // Determine the intersecting keys
     std::vector<TileKey> intersectingKeys;
-    unsigned targetLOD = profile().getEquivalentLOD(key.profile(), key.LOD()); // key.LOD();
-    key.getIntersectingKeys(profile(), intersectingKeys);
+    unsigned targetLOD = profile.getEquivalentLOD(key.profile, key.level);
+    key.getIntersectingKeys(profile, intersectingKeys);
 
     // collect heightfield for each intersecting key. Note, we're hitting the
     // underlying tile source here, so there's no vetical datum shifts happening yet.
@@ -220,7 +188,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
             {
                 sources.emplace_back(cached_value, cached.valueKey.extent());
 
-                if (cached.valueKey.levelOfDetail() == targetLOD)
+                if (cached.valueKey.level == targetLOD)
                 {
                     hasAtLeastOneSourceAtTargetLOD = true;
                 }
@@ -248,7 +216,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
                     // add it to our sources collection:
                     sources.emplace_back(subTile.value);
 
-                    if (subKey.levelOfDetail() == targetLOD)
+                    if (subKey.level == targetLOD)
                     {
                         hasAtLeastOneSourceAtTargetLOD = true;
                     }
@@ -330,7 +298,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
                     float& height = output->heightAt(c, r);
                     for (unsigned i = 0; height == NO_DATA_VALUE && i < sources.size(); ++i)
                     {
-                        height = sources[i].heightAtLocation(point.x, point.y, Image::BILINEAR);
+                        height = sources[i].heightAtLocation(point.x, point.y, Interpolation::BILINEAR);
                     }
 
                     if (height != NO_DATA_VALUE)
@@ -378,14 +346,13 @@ ElevationLayer::createHeightfieldImplementation_internal(
 }
 
 Result<GeoHeightfield>
-ElevationLayer::createHeightfieldInKeyProfile(
-    const TileKey& key,
-    const IOOptions& io) const
+ElevationLayer::createHeightfieldInKeyProfile(const TileKey& key, const IOOptions& io) const
 {
     GeoHeightfield result;
     std::shared_ptr<Heightfield> hf;
 
-    auto my_profile = profile();
+    auto my_profile = profile;
+
     if (!my_profile.valid() || !isOpen())
     {
         return Result<GeoHeightfield>(Status::ResourceUnavailable, "Layer not open or initialize");
@@ -397,7 +364,7 @@ ElevationLayer::createHeightfieldInKeyProfile(
         return Result(GeoHeightfield::INVALID);
     }
 
-    if (key.profile().equivalentTo(my_profile))
+    if (key.profile.equivalentTo(my_profile))
     {
         auto r = createHeightfieldImplementation_internal(key, io);
 
@@ -511,7 +478,7 @@ ElevationLayerVector::populateHeightfield(
     std::vector<float>* resolutions,
     const TileKey& key,
     const Profile& haeProfile,
-    Heightfield::Interpolation interpolation,
+    Interpolation interpolation,
     const IOOptions& io) const
 {
     // heightfield must already exist.
@@ -525,7 +492,7 @@ ElevationLayerVector::populateHeightfield(
     TileKey keyToUse = key;
     if (haeProfile.valid())
     {
-        keyToUse = TileKey(key.levelOfDetail(), key.tileX(), key.tileY(), haeProfile);
+        keyToUse = TileKey(key.level, key.x, key.y, haeProfile);
     }
 
     // Collect the valid layers for this tile.
@@ -549,7 +516,7 @@ ElevationLayerVector::populateHeightfield(
             // calculate the resolution-mapped key (adjusted for tile resolution differential).
             TileKey mappedKey = keyToUse.mapResolution(
                 hf->width(),
-                layer->tileSize() );
+                layer->tileSize );
 
             bool useLayer = true;
             TileKey bestKey( mappedKey );
@@ -558,7 +525,7 @@ ElevationLayerVector::populateHeightfield(
             // We wll ignore the maxDataLevel setting, because we account for that by getting
             // the "best available" key later. We must keep these layers around in case we need
             // to fill in empty spots.
-            if (key.levelOfDetail() < layer->minLevel())
+            if (key.level < layer->minLevel)
             {
                 useLayer = false;
             }
@@ -591,7 +558,7 @@ ElevationLayerVector::populateHeightfield(
 
             if ( useLayer )
             {
-                if ( layer->offset() == true)
+                if ( layer->offset == true)
                 {
                     offsets.push_back(LayerData());
                     LayerData& ld = offsets.back();
@@ -637,7 +604,7 @@ ElevationLayerVector::populateHeightfield(
     double   dx = key.extent().width() / (double)(numColumns - 1);
     double   dy = key.extent().height() / (double)(numRows - 1);
 
-    auto keySRS = keyToUse.profile().srs();
+    auto keySRS = keyToUse.profile.srs();
 
     bool realData = false;
 

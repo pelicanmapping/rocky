@@ -66,8 +66,8 @@ BingElevationLayer::openImplementation(const IOOptions& io)
     if (parent.failed())
         return parent;
 
-    setProfile(Profile(SRS::SPHERICAL_MERCATOR, Profile::SPHERICAL_MERCATOR.extent().bounds(), 2, 2));
-    setDataExtents({ profile().extent() });
+    profile = Profile(SRS::SPHERICAL_MERCATOR, Profile::SPHERICAL_MERCATOR.extent().bounds(), 2, 2);
+    setDataExtents({ profile.extent() });
 
     ROCKY_TODO("When disk cache is implemented, disable it here as it violates the ToS");
 

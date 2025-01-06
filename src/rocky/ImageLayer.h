@@ -18,6 +18,9 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT ImageLayer : public Inherit<TileLayer, ImageLayer>
     {
     public:
+        //! Sharpness filter strength to apply to the image
+        optional<float> sharpness = 0.0f;
+
         //! Creates an image for the given tile key.
         //! @param key TileKey for which to create an image
         //! @param io IO options
@@ -48,8 +51,6 @@ namespace ROCKY_NAMESPACE
         }
 
     protected: // Layer
-
-        optional<float> _sharpness;
 
         Result<GeoImage> createImageImplementation_internal(
             const TileKey& key,

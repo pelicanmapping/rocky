@@ -22,8 +22,13 @@ namespace ROCKY_NAMESPACE
         */
         struct Options
         {
+            //! Location of the mbtiles database file
             optional<URI> uri;
-            optional<std::string> format = std::string("image/png");
+
+            //! Content type of the individual tiles in the database (e.g., image/tif)
+            optional<std::string> format = { "image/png" };
+
+            //! Whether to use compression on individual tile data
             optional<bool> compress = false;
         };
 

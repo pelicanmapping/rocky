@@ -129,7 +129,10 @@ namespace ROCKY_NAMESPACE
     public: // Static convenience methods
 
         /** Encodes text to URL safe test. Escapes special charaters */
-        inline static std::string urlEncode(const std::string &value);
+        inline static std::string urlEncode(const std::string& value);
+
+        //! Try to infer a content-type from a string of bytes.
+        static std::string inferContentType(const std::string& value);
 
     protected:
         std::string _baseURI;

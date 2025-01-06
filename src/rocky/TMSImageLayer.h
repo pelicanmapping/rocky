@@ -15,7 +15,8 @@ namespace ROCKY_NAMESPACE
     /**
      * Image layer reading from a TMS (Tile Map Service) endpoint
      */
-    class ROCKY_EXPORT TMSImageLayer : public Inherit<ImageLayer, TMSImageLayer>, public TMS::Options
+    class ROCKY_EXPORT TMSImageLayer : public Inherit<ImageLayer, TMSImageLayer>,
+        public TMS::Options
     {
     public:
         //! Construct an empty TMS layer

@@ -16,7 +16,8 @@ namespace ROCKY_NAMESPACE
      * Image layer reading from Microsoft's Azure Maps REST API
      * https://learn.microsoft.com/en-us/rest/api/maps/render/get-map-tile?view=rest-maps-2024-04-01
      */
-    class ROCKY_EXPORT AzureImageLayer : public Inherit<ImageLayer, AzureImageLayer>, public Azure::Options
+    class ROCKY_EXPORT AzureImageLayer : public Inherit<ImageLayer, AzureImageLayer>,
+        public Azure::Options
     {
     public:
         //! Construct an empty Azure layer

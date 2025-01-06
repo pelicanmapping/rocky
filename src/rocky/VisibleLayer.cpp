@@ -26,15 +26,15 @@ void
 VisibleLayer::construct(const JSON& conf)
 {
     const auto j = parse_json(conf);
-    get_to(j, "visible", _visible);
-    get_to(j, "opacity", _opacity);
+    get_to(j, "visible", visible);
+    get_to(j, "opacity", opacity);
 }
 
 JSON
 VisibleLayer::to_json() const
 {
     auto j = parse_json(super::to_json());
-    set(j, "visible", _visible);
-    set(j, "opacity", _opacity);
+    set(j, "visible", visible);
+    set(j, "opacity", opacity);
     return j.dump();
 }
