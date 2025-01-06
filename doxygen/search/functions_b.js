@@ -6,7 +6,7 @@ var searchData=
   ['lasterror_3',['lastError',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html#a2785700700dbf37a17af3e78ea303035',1,'ROCKY_NAMESPACE::SRSOperation']]],
   ['layers_4',['layers',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html#a96558ca06ba6cdd5c4007120fdc80a4f',1,'ROCKY_NAMESPACE::Map::layers()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html#a362797fef773068928934138b9f9d6f9',1,'ROCKY_NAMESPACE::Map::layers() const']]],
   ['layerstatemutex_5',['layerStateMutex',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a39cfecebd49cd5c2a86d6c431e574d63',1,'ROCKY_NAMESPACE::Layer']]],
-  ['levelofdetail_6',['levelofdetail',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a3c00236e64c3d93ed394b043d6064121',1,'ROCKY_NAMESPACE::Profile::levelOfDetail()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html#a039bfe6eeda3ef1d9fcc1c753eefa8ba',1,'ROCKY_NAMESPACE::TileKey::levelOfDetail()']]],
+  ['levelofdetail_6',['levelOfDetail',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a3c00236e64c3d93ed394b043d6064121',1,'ROCKY_NAMESPACE::Profile']]],
   ['linebreak_7',['LineBreak',['../class_ti_xml_printer.html#a94969892998ef6a200b7f987b756e823',1,'TiXmlPrinter']]],
   ['linegeometry_8',['LineGeometry',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_geometry.html#a6a7ea65e30e6d58d92d2bad36add793e',1,'ROCKY_NAMESPACE::LineGeometry']]],
   ['linesystemnode_9',['LineSystemNode',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_system_node.html#a4347786eb659c13d8e1f300d0c3c5f44',1,'ROCKY_NAMESPACE::LineSystemNode']]],

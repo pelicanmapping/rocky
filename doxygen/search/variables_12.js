@@ -10,7 +10,7 @@ var searchData=
   ['throwing_7',['throwing',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a84ccbbeee15bc6b43889182d5b4f1e57',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
   ['tilepixelsize_8',['tilePixelSize',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#ab19a4fee1e4a8078a9210415579bc391',1,'ROCKY_NAMESPACE::TerrainSettings']]],
   ['tiles_9',['tiles',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_engine.html#a2605cdc9169aab10ed48201bdb3817a5',1,'ROCKY_NAMESPACE::TerrainEngine']]],
-  ['tilesize_10',['tileSize',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#a0641f69f84c523bbb3d1f51f44fc4ee2',1,'ROCKY_NAMESPACE::TerrainSettings']]],
+  ['tilesize_10',['tilesize',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a71543ebe700a993d0fc8c576a6a952f8',1,'ROCKY_NAMESPACE::TileLayer::tileSize'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#a0641f69f84c523bbb3d1f51f44fc4ee2',1,'ROCKY_NAMESPACE::TerrainSettings::tileSize']]],
   ['touchsensitivity_11',['touchSensitivity',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a4359a37a37a4645d3d94cef54f276d06',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
   ['triangles_12',['triangles',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#afdd83d0c128481ace2ecd4fddd5a4352',1,'ROCKY_NAMESPACE::Mesh']]],
   ['type_13',['type',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry.html#ab8bbd93edeaaf6912b3a96afd98aa6a7',1,'ROCKY_NAMESPACE::Geometry']]]
