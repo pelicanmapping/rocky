@@ -38,9 +38,6 @@ mark_as_advanced(ROCKY_APPEND_SO_VERSION)
 # folder for additional cmake includes
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-# platform-specific settings
-include(platform)
-
 # temporary folder to hold build-time header compilation (.in files built with compile_files)
 set(ROCKY_BUILDTIME_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/build_include")
 include_directories(${ROCKY_BUILDTIME_INCLUDE_DIR})
@@ -48,10 +45,7 @@ include_directories(${ROCKY_BUILDTIME_INCLUDE_DIR})
 # temporary folder to hold shared resources (like shaders) for use whrn running from the IDE
 set(ROCKY_BUILDTIME_SHARE_DIR "${CMAKE_CURRENT_BINARY_DIR}/build_share")
 
-# platform specific
-include(platform)
-
-# set up standard install folder names
+# set up standard install folder names, CMAKE_INSTALL_*
 # https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html
 include(GNUInstallDirs)
 
