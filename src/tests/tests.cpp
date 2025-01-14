@@ -100,7 +100,7 @@ TEST_CASE("Optional")
 
 TEST_CASE("TileKey")
 {
-    auto p = Profile::GLOBAL_GEODETIC;
+    Profile p("global-geodetic");
 
     CHECK(TileKey(0, 0, 0, p).str() == "0/0/0");
     CHECK(TileKey(0, 0, 0, p).quadKey() == "0");
@@ -496,12 +496,13 @@ TEST_CASE("SRS")
         SRS::projMessageCallback = [&](int level, const char* msg) { proj_error = msg; };
 
         SRS bad("gibberish");
-        CHECK(proj_error == "proj_create: unrecognized format / unknown name");
 
         CHECK(bad.valid() == false);
         CHECK(bad.isProjected() == false);
         CHECK(bad.isGeodetic() == false);
         CHECK(bad.isGeocentric() == false);
+
+        CHECK(proj_error == "proj_create: unrecognized format / unknown name");
 
         SRS::projMessageCallback = nullptr;
     }

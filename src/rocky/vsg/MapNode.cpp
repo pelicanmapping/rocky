@@ -31,7 +31,7 @@ MapNode::MapNode()
     this->addChild(_layerNodes);
 
     // default to geodetic:
-    profile = Profile::GLOBAL_GEODETIC;
+    profile = Profile("global-geodetic");
 }
 
 Status
@@ -74,7 +74,7 @@ MapNode::to_json() const
         j["terrain"] = json::parse(terrainNode->to_json());
     }
 
-    if (profile.valid() && profile != Profile::GLOBAL_GEODETIC)
+    if (profile.valid() && profile != Profile("global-geodetic"))
     {
         j["profile"] = profile;
     }

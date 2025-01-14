@@ -294,6 +294,9 @@ void TileMap::computeNumTiles()
 Profile
 TileMap::createProfile() const
 {
+    static const Profile GLOBAL_GEODETIC("global-geodetic");
+    static const Profile SPHERICAL_MERCATOR("spherical-mercator");
+
     Profile profile;
 
     std::string def = srsString;
@@ -306,11 +309,11 @@ TileMap::createProfile() const
 
     if (profileType == ProfileType::GEODETIC)
     {
-        profile = Profile::GLOBAL_GEODETIC;
+        profile = GLOBAL_GEODETIC;
     }
     else if (profileType == ProfileType::MERCATOR)
     {
-        profile = Profile::SPHERICAL_MERCATOR;
+        profile = SPHERICAL_MERCATOR;
     }
     else if (new_srs.horizontallyEquivalentTo(SRS::SPHERICAL_MERCATOR))
     {
@@ -318,14 +321,13 @@ TileMap::createProfile() const
         //       the automatically computed mercator bounds which can cause rendering issues due to the some texture coordinates
         //       crossing the dateline.  If the incoming bounds are nearly the same as our definion of global mercator, just use our definition.
         double eps = 1.0;
-        Profile merc(Profile::SPHERICAL_MERCATOR);
         if (numTilesWide == 1 && numTilesHigh == 1 &&
-            equiv(merc.extent().xmin(), minX, eps) &&
-            equiv(merc.extent().ymin(), minY, eps) &&
-            equiv(merc.extent().xmax(), maxX, eps) &&
-            equiv(merc.extent().ymax(), maxY, eps))
+            equiv(SPHERICAL_MERCATOR.extent().xmin(), minX, eps) &&
+            equiv(SPHERICAL_MERCATOR.extent().ymin(), minY, eps) &&
+            equiv(SPHERICAL_MERCATOR.extent().xmax(), maxX, eps) &&
+            equiv(SPHERICAL_MERCATOR.extent().ymax(), maxY, eps))
         {
-            profile = merc;
+            profile = SPHERICAL_MERCATOR;
         }
     }
 
@@ -336,7 +338,7 @@ TileMap::createProfile() const
         equiv(minY, -90.) &&
         equiv(maxY, 90.))
     {
-        profile = Profile::GLOBAL_GEODETIC;
+        profile = GLOBAL_GEODETIC;
     }
 
     if (!profile.valid())

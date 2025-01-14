@@ -22,18 +22,16 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT Profile
     {
     public:
-        // well knowns
-        static const Profile GLOBAL_GEODETIC;
-        static const Profile SPHERICAL_MERCATOR;
-        static const Profile PLATE_CARREE;
-        static const Profile MOON;
-
-    public:
         //! Construct an empty, invalid profile
         Profile();
 
-        //! Construct a profile from a well-know name
-        //! (See the well-known constants above)
+        //! Construct a profile from a well-know name or initialization string
+        //! Can be one of
+        //!   global-geodetic
+        //!   spherical-mercator
+        //!   plate-carree
+        //!   moon
+        //!   .. or any valid +proj initialization string
         explicit Profile(const std::string& well_known_name);
 
         //! Construct a profile

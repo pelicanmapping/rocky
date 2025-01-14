@@ -32,12 +32,5 @@ const SRS SRS::MOON("moon");
 const SRS SRS::EMPTY;
 std::function<void(int level, const char* msg)> SRS::projMessageCallback = nullptr;
 
-const Profile Profile::GLOBAL_GEODETIC("global-geodetic");
-const Profile Profile::SPHERICAL_MERCATOR("spherical-mercator");
-const Profile Profile::PLATE_CARREE("plate-carree");
-const Profile Profile::MOON("moon");
-
-//Status Context::_global_status(Status::GeneralError);
-
 // job system definition
 WEEJOBS_INSTANCE;

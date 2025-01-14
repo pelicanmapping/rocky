@@ -66,9 +66,8 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Whether this is a valid SRS
-        inline bool valid() const {
-            return _valid;
-        }
+        bool valid() const;
+
         inline operator bool() const {
             return valid();
         }
@@ -166,9 +165,8 @@ namespace ROCKY_NAMESPACE
     private:
         //! Create an SRS from an initialization string.
         std::string _definition;
-        bool _valid = false;
-        bool _isGeodetic = false;
-        bool _isGeocentric = false;
+        mutable std::optional<bool> _valid;
+        mutable std::optional<int> _crs_type;
         friend class SRSOperation;
     };
 

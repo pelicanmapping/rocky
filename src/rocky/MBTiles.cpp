@@ -204,7 +204,7 @@ MBTiles::Driver::open(
                     Log()->warn(LC "Profile \"" + profileStr + "\" not recognized; defaulting to spherical-mercator");
                 }
 
-                profile = Profile::SPHERICAL_MERCATOR;
+                profile = Profile("spherical-mercator");
             }
         }
 
@@ -655,7 +655,7 @@ MBTiles::Driver::setDataExtents(const DataExtentList& values)
         }
         else
         {
-            bounds = Profile::GLOBAL_GEODETIC.clampAndTransformExtent(e);
+            bounds = Profile("global-geodetic").clampAndTransformExtent(e);
         }
         std::stringstream boundsStr;
         boundsStr << bounds.xmin() << "," << bounds.ymin() << "," << bounds.xmax() << "," << bounds.ymax();

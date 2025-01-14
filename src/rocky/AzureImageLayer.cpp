@@ -68,7 +68,7 @@ AzureImageLayer::openImplementation(const IOOptions& io)
     if (parent.failed())
         return parent;
 
-    profile = Profile::SPHERICAL_MERCATOR;
+    profile = Profile("spherical-mercator");
     setDataExtents({ profile.extent() });
 
     // copy this so we can add headers

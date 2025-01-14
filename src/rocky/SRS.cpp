@@ -530,20 +530,7 @@ SRS::SRS()
 SRS::SRS(const std::string& h) :
     _definition(h)
 {
-    PJ* pj = g_srs_factory.get_or_create(h).pj;
-    _valid = (pj != nullptr);
-
-    if (_valid)
-    {
-        // cache things that get called a LOT
-        auto type = g_srs_factory.get_horiz_crs_type(h);
-        
-        _isGeodetic =
-            type == PJ_TYPE_GEOGRAPHIC_2D_CRS ||
-            type == PJ_TYPE_GEOGRAPHIC_3D_CRS;
-
-        _isGeocentric = type == PJ_TYPE_GEOCENTRIC_CRS;
-    }
+    //nop
 }
 
 const char*
@@ -555,15 +542,43 @@ SRS::name() const
 }
 
 bool
+SRS::valid() const
+{
+    if (!_valid.has_value())
+    {        
+        _valid = !_definition.empty() && g_srs_factory.get_or_create(_definition).pj != nullptr;
+    }
+    return _valid.value();
+}
+
+bool
 SRS::isGeodetic() const
 {
-    return valid() && _isGeodetic;
+    if (!valid())
+        return false;
+
+    if (!_crs_type.has_value())
+    {
+        _crs_type = g_srs_factory.get_horiz_crs_type(_definition);
+    }
+
+    return
+        (PJ_TYPE)_crs_type.value() == PJ_TYPE_GEOGRAPHIC_2D_CRS ||
+        (PJ_TYPE)_crs_type.value() == PJ_TYPE_GEOGRAPHIC_3D_CRS;
 }
 
 bool
 SRS::isGeocentric() const
 {
-    return valid() && _isGeocentric;
+    if (!valid())
+        return false;
+
+    if (!_crs_type.has_value())
+    {
+        _crs_type = (int)g_srs_factory.get_horiz_crs_type(_definition);
+    }
+
+    return (PJ_TYPE)_crs_type.value() == PJ_TYPE_GEOCENTRIC_CRS;
 }
 
 bool
@@ -572,9 +587,12 @@ SRS::isProjected() const
     if (!valid())
         return false;
 
-    auto type = g_srs_factory.get_horiz_crs_type(definition());
-    return
-        type == PJ_TYPE_PROJECTED_CRS;
+    if (!_crs_type.has_value())
+    {
+        _crs_type = (int)g_srs_factory.get_horiz_crs_type(_definition);
+    }
+
+    return (PJ_TYPE)_crs_type.value() == PJ_TYPE_PROJECTED_CRS;
 }
 
 bool
@@ -601,7 +619,7 @@ SRS::equivalentTo(const SRS& rhs) const
         return false;
 
     PJ_COMPARISON_CRITERION criterion =
-        _isGeodetic ? PJ_COMP_EQUIVALENT_EXCEPT_AXIS_ORDER_GEOGCRS :
+        isGeodetic() ? PJ_COMP_EQUIVALENT_EXCEPT_AXIS_ORDER_GEOGCRS :
         PJ_COMP_EQUIVALENT;
 
     return proj_is_equivalent_to_with_ctx(
@@ -614,7 +632,7 @@ SRS::horizontallyEquivalentTo(const SRS& rhs) const
     if (definition().empty() || rhs.definition().empty())
         return false;
 
-    if (_isGeodetic && rhs._isGeodetic && ellipsoid() == rhs.ellipsoid())
+    if (isGeodetic() && rhs.isGeodetic() && ellipsoid() == rhs.ellipsoid())
         return true;
 
     auto& lhs_entry = g_srs_factory.get_or_create(definition());
@@ -641,7 +659,7 @@ SRS::horizontallyEquivalentTo(const SRS& rhs) const
         proj_crs_get_sub_crs(g_srs_factory.threading_context(), pj2, 0) : pj2;
 
     PJ_COMPARISON_CRITERION criterion =
-        _isGeodetic ? PJ_COMP_EQUIVALENT_EXCEPT_AXIS_ORDER_GEOGCRS :
+        isGeodetic() ? PJ_COMP_EQUIVALENT_EXCEPT_AXIS_ORDER_GEOGCRS :
         PJ_COMP_EQUIVALENT;
 
     return proj_is_equivalent_to_with_ctx(

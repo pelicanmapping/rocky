@@ -69,7 +69,8 @@ BingImageLayer::openImplementation(const IOOptions& io)
         return parent;
 
     // Bing has a root 2x2 tile setup unlike most web-mercator sources:
-    profile = Profile(SRS::SPHERICAL_MERCATOR, Profile::SPHERICAL_MERCATOR.extent().bounds(), 2, 2);
+    Profile SPHERICAL_MERCATOR("spherical-mercator");
+    profile = Profile(SPHERICAL_MERCATOR.srs(), SPHERICAL_MERCATOR.extent().bounds(), 2, 2);
     
     setDataExtents({ profile.extent() });
 

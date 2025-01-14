@@ -410,15 +410,18 @@ Profile::getEquivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(rhsProfile.valid(), rhsLOD);
 
+    static const Profile SPHERICAL_MERCATOR("spherical-mercator");
+    static const Profile GLOBAL_GEODETIC("global-geodetic");
+
     //If the profiles are equivalent, just use the incoming lod
     if (horizontallyEquivalentTo(rhsProfile))
         return rhsLOD;
 
     // Special check for geodetic to mercator or vise versa, they should match up in LOD.
-    if (rhsProfile.horizontallyEquivalentTo(Profile::SPHERICAL_MERCATOR) && horizontallyEquivalentTo(Profile::GLOBAL_GEODETIC))
+    if (rhsProfile.horizontallyEquivalentTo(SPHERICAL_MERCATOR) && horizontallyEquivalentTo(GLOBAL_GEODETIC))
         return rhsLOD;
 
-    if (rhsProfile.horizontallyEquivalentTo(Profile::GLOBAL_GEODETIC) && horizontallyEquivalentTo(Profile::SPHERICAL_MERCATOR))
+    if (rhsProfile.horizontallyEquivalentTo(GLOBAL_GEODETIC) && horizontallyEquivalentTo(SPHERICAL_MERCATOR))
         return rhsLOD;
 
     auto[rhsWidth, rhsHeight] = rhsProfile.tileDimensions(rhsLOD);

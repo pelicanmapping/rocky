@@ -66,7 +66,8 @@ BingElevationLayer::openImplementation(const IOOptions& io)
     if (parent.failed())
         return parent;
 
-    profile = Profile(SRS::SPHERICAL_MERCATOR, Profile::SPHERICAL_MERCATOR.extent().bounds(), 2, 2);
+    Profile SPHERICAL_MERCATOR("spherical-mercator");
+    profile = Profile(SPHERICAL_MERCATOR.srs(), SPHERICAL_MERCATOR.extent().bounds(), 2, 2);
     setDataExtents({ profile.extent() });
 
     ROCKY_TODO("When disk cache is implemented, disable it here as it violates the ToS");
@@ -88,7 +89,7 @@ BingElevationLayer::createHeightfieldImplementation(const TileKey& key, const IO
     if (!isOpen())
         return status();
 
-    GeoExtent latLongExtent = Profile::GLOBAL_GEODETIC.clampAndTransformExtent(key.extent());
+    GeoExtent latLongExtent = Profile("global-geodetic").clampAndTransformExtent(key.extent());
 
     unsigned tileSize = 32;
     std::stringstream query;
