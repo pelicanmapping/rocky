@@ -39,7 +39,7 @@ int layerError(T layer)
 class MyQtViewer : public vsg::Inherit<vsgQt::Viewer, MyQtViewer>
 {
 public:
-    void render() override
+    void render(double simTime) override
     {
         if (continuousUpdate || requests.load() > 0)
         {
@@ -126,8 +126,11 @@ int main(int argc, char** argv)
     auto viewer = MyQtViewer::create();
 
     rocky::Application app(viewer, argc, argv);
+    app.context->renderContinuously = true;
+
     viewer->frame = [&app]() { return app.frame(); };
     viewer->continuousUpdate = true;
+    viewer->setInterval(8);
 
     rocky::Log()->set_level(rocky::log::level::info);
 

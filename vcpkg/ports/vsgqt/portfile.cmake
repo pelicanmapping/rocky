@@ -9,7 +9,7 @@
 find_program(GIT git)
 
 set(GIT_URL "https://github.com/vsg-dev/vsgQt.git")
-set(GIT_REV "2d048be26c5a6dbe2e61290d0bb2611d75c79547")
+set(GIT_REV "b1f8a9c0be249d14b9affe8f97741cdb7eb66776") # Version 0.40
 
 set(SOURCE_PATH ${CURRENT_BUILDTREES_DIR}/src/${PORT})
 
@@ -29,11 +29,6 @@ vcpkg_execute_required_process(
   COMMAND ${GIT} checkout ${GIT_REV}
   WORKING_DIRECTORY ${SOURCE_PATH}
   LOGNAME checkout
-)
-
-vcpkg_apply_patches(
-   SOURCE_PATH "${SOURCE_PATH}"
-   PATCHES "glslang.patch"
 )
 
 vcpkg_configure_cmake(
