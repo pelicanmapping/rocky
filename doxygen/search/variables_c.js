@@ -16,7 +16,7 @@ var searchData=
   ['materialmap_13',['materialMap',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_tile_model.html#a2d8b3b45a32abef3b79e812a4756d5c9',1,'ROCKY_NAMESPACE::TerrainTileModel']]],
   ['maxdatalevel_14',['maxDataLevel',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a7e5c848c30f6091ebac68cc1ced68656',1,'ROCKY_NAMESPACE::TileLayer']]],
   ['maxdistance_15',['maxDistance',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a218aadae94627bd2d2989bf8b81d01c6',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
-  ['maxlevel_16',['maxlevel',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a647a9c896962309c61ca3102b73c6492',1,'ROCKY_NAMESPACE::TileLayer::maxLevel'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent3_d.html#a736490efb7af00ff67dfa771efd20e4b',1,'ROCKY_NAMESPACE::GeoExtent3D::maxLevel']]],
+  ['maxlevel_16',['maxlevel',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent3_d.html#a736490efb7af00ff67dfa771efd20e4b',1,'ROCKY_NAMESPACE::GeoExtent3D::maxLevel'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a647a9c896962309c61ca3102b73c6492',1,'ROCKY_NAMESPACE::TileLayer::maxLevel']]],
   ['maxlevelofdetail_17',['maxLevelOfDetail',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#a12a44ec4b742073549140aaaf931a558',1,'ROCKY_NAMESPACE::TerrainSettings']]],
   ['maxnetworkattempts_18',['maxNetworkAttempts',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html#abeff73f707c37af0ce68b94744940775',1,'ROCKY_NAMESPACE::IOOptions']]],
   ['maxpitch_19',['maxPitch',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a8be392688e768458c9c7f52129906e7a',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
@@ -26,7 +26,7 @@ var searchData=
   ['maxxoffset_23',['maxXOffset',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a28fd1baabe1c59c0026b71b9801dc405',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
   ['maxyoffset_24',['maxYOffset',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#ae115cf963ffc8f7fca0d739e229552cb',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
   ['mindistance_25',['minDistance',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a06abdb9bc46698538ec9c22087c6068c',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
-  ['minlevel_26',['minlevel',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent3_d.html#abbfd6f687070dba91e77a4558e976662',1,'ROCKY_NAMESPACE::GeoExtent3D::minLevel'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a889f0bd3eea8514737372a508959a877',1,'ROCKY_NAMESPACE::TileLayer::minLevel']]],
+  ['minlevel_26',['minlevel',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a889f0bd3eea8514737372a508959a877',1,'ROCKY_NAMESPACE::TileLayer::minLevel'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent3_d.html#abbfd6f687070dba91e77a4558e976662',1,'ROCKY_NAMESPACE::GeoExtent3D::minLevel']]],
   ['minlevelofdetail_27',['minLevelOfDetail',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#ac2d89ce0d000f33f18edde8ad1d217e2',1,'ROCKY_NAMESPACE::TerrainSettings']]],
   ['minpitch_28',['minPitch',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a3a56e5f19d5c4a974b082cb15df5d76e',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
   ['minresolution_29',['minResolution',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_layer.html#a5ceb571a55eda27a88cd7ad8f0053dc0',1,'ROCKY_NAMESPACE::TileLayer']]],
@@ -34,5 +34,6 @@ var searchData=
   ['mintilerangefactor_31',['minTileRangeFactor',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#ac9947204aca16c15afc5e68c6b4a7eda',1,'ROCKY_NAMESPACE::TerrainSettings']]],
   ['minvalidvalue_32',['minValidValue',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_elevation_layer.html#a8f58255dfa2330c1ee0792c2473c8606',1,'ROCKY_NAMESPACE::ElevationLayer']]],
   ['minvpduration_33',['minVPDuration',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#ac2f947e6aa0b2891640786cf2046d25a',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
-  ['mousesensitivity_34',['mouseSensitivity',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a6de6bd8b173b7a8153719e609fdbfe7b',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]]
+  ['moon_34',['MOON',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#a8e5fac11d16798197e4894264fd3d184',1,'ROCKY_NAMESPACE::SRS']]],
+  ['mousesensitivity_35',['mouseSensitivity',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a6de6bd8b173b7a8153719e609fdbfe7b',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]]
 ];
