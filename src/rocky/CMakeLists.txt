@@ -79,9 +79,15 @@ if(BUILD_WITH_CURL)
 endif()
 
 # sqlite3 - database - required to support some formats like mbtiles
-if (BUILD_WITH_SQLITE3)
-    find_package(unofficial-sqlite3 CONFIG REQUIRED)
-    if (unofficial-sqlite3_FOUND)
+if(BUILD_WITH_SQLITE3)
+    find_package(unofficial-sqlite3 CONFIG QUIET)
+    if(NOT unofficial-sqlite3_FOUND)
+        # vcpkg SQLite not found; fall back to CMake find_package
+        find_package(SQLite3 REQUIRED)
+        set(unofficial-sqlite3_FOUND TRUE)
+        add_library(unofficial::sqlite3::sqlite3 ALIAS SQLite::SQLite3)
+    endif()
+    if(unofficial-sqlite3_FOUND)
         set(ROCKY_HAS_SQLITE TRUE)
     endif()
 endif()
