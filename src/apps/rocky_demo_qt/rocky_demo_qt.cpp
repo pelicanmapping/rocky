@@ -39,7 +39,7 @@ int layerError(T layer)
 class MyQtViewer : public vsg::Inherit<vsgQt::Viewer, MyQtViewer>
 {
 public:
-    void render() override
+    void render(double simulationTime) override
     {
         if (continuousUpdate || requests.load() > 0)
         {
