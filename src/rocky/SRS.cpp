@@ -112,31 +112,46 @@ namespace
             {
                 PJ* pj = nullptr;
 
-                std::string to_try = def;
-                std::string ndef = util::toLower(def);
+                std::string to_try = util::trim(def);
+                std::string ndef = util::toLower(to_try);
 
-                //TODO: Think about epsg:4979, which is supposedly a 3D version of epsg::4326.
-
-                // process some common aliases
-                if (ndef == "wgs84" || ndef == "global-geodetic")
-                    to_try = "epsg:4979";
-                else if (ndef == "spherical-mercator")
-                    to_try = "epsg:3857"; //3785;
-                else if (ndef == "geocentric" || ndef == "ecef")
-                    to_try = "epsg:4978";
-                else if (ndef == "plate-carree" || ndef == "plate-carre")
-                    to_try = "epsg:32663";
-                else if (ndef == "moon")
-                    to_try = "+proj=longlat +R=1737400 +no_defs +type=crs";
-
-                // try to determine whether this ia WKT so we can use the right create function
-                auto wkt_dialect = proj_context_guess_wkt_dialect(ctx, to_try.c_str());
-                if (wkt_dialect != PJ_GUESSED_NOT_WKT)
+                const char* wkt_tags[13] = {
+                    "geoccs[", "geoccrs[",
+                    "geogcs[", "geogcrs[",
+                    "projcs[", "projcrs[",
+                    "vertcs[", "vertcrs[", "vert_cs[",
+                    "compdcs[", "compd_cs[", "compoundcrs[",
+                    "timecrs["
+                };
+                for (auto& wkt_tag : wkt_tags)
                 {
-                    pj = proj_create_from_wkt(ctx, to_try.c_str(), nullptr, nullptr, nullptr);
+                    if (util::startsWith(ndef, wkt_tag))
+                    {
+                        auto wkt_dialect = proj_context_guess_wkt_dialect(ctx, to_try.c_str());
+
+                        if (wkt_dialect != PJ_GUESSED_NOT_WKT)
+                        {
+                            pj = proj_create_from_wkt(ctx, to_try.c_str(), nullptr, nullptr, nullptr);
+                        }
+                    }
                 }
-                else
+
+                if (pj == nullptr)
                 {
+                    //TODO: Think about epsg:4979, which is supposedly a 3D version of epsg::4326.
+
+                    // process some common aliases
+                    if (ndef == "wgs84" || ndef == "global-geodetic")
+                        to_try = "epsg:4979";
+                    else if (ndef == "spherical-mercator")
+                        to_try = "epsg:3857"; //3785;
+                    else if (ndef == "geocentric" || ndef == "ecef")
+                        to_try = "epsg:4978";
+                    else if (ndef == "plate-carree" || ndef == "plate-carre")
+                        to_try = "epsg:32663";
+                    else if (ndef == "moon")
+                        to_try = "+proj=longlat +R=1737400 +no_defs +type=crs";
+
                     // if it's a PROJ string, be sure to add the +type=crs
                     if (contains(ndef, "+proj"))
                     {
