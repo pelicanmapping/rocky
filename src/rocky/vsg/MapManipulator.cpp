@@ -1085,14 +1085,10 @@ MapManipulator::apply(vsg::MoveEvent& moveEvent)
     if (handleMouseAction(_lastAction, _previousMove.value(), moveEvent))
         _dirty = true;
 
-    if (_continuous > 0 && !wasContinuous)
+    if (_continuous > 0) // && !wasContinuous)
     {
         _continuousAction = _lastAction;
         _context->requestFrame();
-    }
-
-    if (_continuous > 0)
-    {
         _dirty = true;
     }
 

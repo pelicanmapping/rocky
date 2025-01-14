@@ -10,13 +10,14 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 namespace ROCKY_NAMESPACE
 {
     class URI;
     class IOControl;
 
-    using Headers = std::unordered_map<std::string, std::string>;
+    using Headers = std::vector<std::pair<std::string, std::string>>;
 
     /**
      * Context for resolving relative URIs.
@@ -126,13 +127,14 @@ namespace ROCKY_NAMESPACE
         }
 
 
-    public: // Static convenience methods
+    public:
 
-        /** Encodes text to URL safe test. Escapes special charaters */
-        inline static std::string urlEncode(const std::string& value);
+        //! Encodes text to URL safe test. Escapes special charaters
+        static std::string urlEncode(const std::string& value);
 
         //! Try to infer a content-type from a string of bytes.
         static std::string inferContentType(const std::string& value);
+
 
     protected:
         std::string _baseURI;

@@ -757,9 +757,8 @@ namespace ROCKY_NAMESPACE
             if (j.contains("headers")) {
                 auto headers = j.at("headers");
                 if (headers.is_array()) {
-                    // correct??
                     for (auto i = headers.begin(); i != headers.end(); ++i)
-                        context.headers[i.key()] = i.value();
+                        context.headers.emplace_back(i.key(), i.value());
                 }
             }
             obj = URI(base, context);

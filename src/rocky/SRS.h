@@ -36,6 +36,9 @@ namespace ROCKY_NAMESPACE
         //! https://proj.org/operations/projections/eqc.html
         static const SRS PLATE_CARREE;
 
+        //! Earth's Moon, Geographic coords.
+        static const SRS MOON;
+
         //! Empty invalid SRS
         static const SRS EMPTY;
 

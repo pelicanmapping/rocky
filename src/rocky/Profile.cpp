@@ -179,6 +179,8 @@ Profile::setup(const std::string& name)
     }
     else if (util::ciEquals(name, "moon"))
     {
+        _shared->_wellKnownName = name;
+
         setup(
             SRS("moon"),
             Box(-180.0, -90.0, 180.0, 90.0),

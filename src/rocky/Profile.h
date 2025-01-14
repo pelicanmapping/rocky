@@ -26,6 +26,7 @@ namespace ROCKY_NAMESPACE
         static const Profile GLOBAL_GEODETIC;
         static const Profile SPHERICAL_MERCATOR;
         static const Profile PLATE_CARREE;
+        static const Profile MOON;
 
     public:
         //! Construct an empty, invalid profile

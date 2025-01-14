@@ -73,7 +73,7 @@ AzureImageLayer::openImplementation(const IOOptions& io)
 
     // copy this so we can add headers
     _uriContext = mapTileApiUrl->context();
-    _uriContext.headers.emplace("subscription-key", subscriptionKey.value());
+    _uriContext.headers.emplace_back("subscription-key", subscriptionKey.value());
 
     // test fetch to make sure the API key is valid
     TileKey test(1, 0, 0, profile);

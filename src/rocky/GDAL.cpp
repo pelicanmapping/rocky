@@ -1530,7 +1530,7 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
         if (read_error != CE_None)
         {
             //OE_WARN << LC << "RasterIO failed.\n";
-            return nullptr;
+            return Status(Status::ResourceUnavailable, "GDAL RasterIO failed");
         }
 
         // Calculate the actual extents of the pixel data in buffer, which will be slightly
