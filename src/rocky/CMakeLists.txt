@@ -222,6 +222,11 @@ add_library(rocky ${BUILD_TYPE}
     ${SHADERS_VSG}
 )
 
+# For windows import/export
+if(NOT ROCKY_BUILD_SHARED_LIBS)
+    target_compile_definitions(rocky PUBLIC ROCKY_STATIC)
+endif()
+
 if(ROCKY_APPEND_SO_VERSION)
     set_target_properties(rocky PROPERTIES VERSION ${PROJECT_VERSION_ABI} SOVERSION ${PROJECT_VERSION_ABI})
 endif()
