@@ -109,109 +109,110 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &lt;memory&gt;</span></div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="preprocessor">#include &lt;iostream&gt;</span></div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#include &lt;cstdlib&gt;</span></div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="comment">// match the weejobs export to the library export</span></div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">#ifndef WEEJOBS_EXPORT</span></div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#define WEEJOBS_EXPORT ROCKY_EXPORT</span></div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>{</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno"><a class="line" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">   41</a></span>    <span class="keyword">using </span><a class="code hl_typedef" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">UID</a> = std::int32_t;</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno"><a class="line" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">   44</a></span>    <span class="keyword">using </span><a class="code hl_typedef" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">Revision</a> = std::int32_t;</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno"><a class="line" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">   47</a></span>    <span class="keyword">using </span><a class="code hl_typedef" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a> = std::string;</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span> </div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    <span class="keyword">extern</span> ROCKY_EXPORT std::string <a class="code hl_function" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#ad0fa031465bda8e87f9666d8bcdca6b2">json_pretty</a>(<span class="keyword">const</span> <a class="code hl_typedef" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a>&amp;);</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    <span class="keyword">extern</span> ROCKY_EXPORT <a class="code hl_typedef" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">UID</a> <a class="code hl_function" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a8d82c29783195912f7dcade0122a9181">createUID</a>();</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <span class="keyword">class </span>ROCKY_EXPORT Object</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    {</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>        Object() = <span class="keywordflow">default</span>;</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>        std::string _name;</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    <span class="keyword">public</span>:</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>        <span class="keywordtype">void</span> setName(<span class="keyword">const</span> std::string&amp; value) { _name = value; }</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>        <span class="keyword">const</span> std::string&amp; name()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _name; }</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>        <span class="keyword">virtual</span> ~Object() { } <span class="comment">// makes Object polymorphic</span></div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    };</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> PARENT, <span class="keyword">typename</span> ME&gt;</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keyword">class </span>Inherit : <span class="keyword">public</span> PARENT</div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    {</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Args&gt;</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>        Inherit(<span class="keyword">const</span> Args&amp;... args) : PARENT(args...) { }</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    <span class="keyword">public</span>:</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>        <span class="keyword">using </span>super = Inherit&lt;PARENT, ME&gt;;</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>        <span class="keyword">using </span>ptr = std::shared_ptr&lt;ME&gt;;</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>        <span class="keyword">using </span>constptr = std::shared_ptr&lt;const ME&gt;;</div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>        <span class="keyword">using </span>weakptr = std::weak_ptr&lt;ME&gt;;</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>        <span class="keyword">using </span>constweakptr = std::weak_ptr&lt;const ME&gt;;</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Args&gt;</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>        <span class="keyword">static</span> std::shared_ptr&lt;ME&gt; create(Args&amp;&amp;... args) {</div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>            <span class="keywordflow">return</span> std::make_shared&lt;ME&gt;(std::forward&lt;Args&gt;(args)...);</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>        }</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>        <span class="keyword">static</span> std::shared_ptr&lt;ME&gt; cast(std::shared_ptr&lt;T&gt;&amp; rhs) {</div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>            <span class="keywordflow">return</span> std::dynamic_pointer_cast&lt;ME&gt;(rhs);</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>        }</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>        <span class="keyword">static</span> std::shared_ptr&lt;const ME&gt; cast(std::shared_ptr&lt;const T&gt;&amp; rhs) {</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>            <span class="keywordflow">return</span> std::dynamic_pointer_cast&lt;const ME&gt;(rhs);</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>        }</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>        <span class="keyword">static</span> std::shared_ptr&lt;ME&gt; cast(<span class="keyword">const</span> std::shared_ptr&lt;T&gt;&amp; rhs) {</div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>            <span class="keywordflow">return</span> std::dynamic_pointer_cast&lt;ME&gt;(rhs);</div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>        }</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>        <span class="keyword">static</span> <span class="keyword">const</span> std::shared_ptr&lt;const ME&gt; cast(<span class="keyword">const</span> std::shared_ptr&lt;const T&gt;&amp; rhs) {</div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>            <span class="keywordflow">return</span> std::dynamic_pointer_cast&lt;const ME&gt;(rhs);</div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>        }</div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span><span class="preprocessor">#if 0</span></div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>        <span class="keyword">virtual</span> <span class="keywordtype">bool</span> is_compatible(<span class="keyword">const</span> std::type_info&amp; type) <span class="keyword">const</span> <span class="keyword">noexcept</span> { <span class="keywordflow">return</span> <span class="keyword">typeid</span>(ME) == type; }</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span> </div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>        <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>        T* cast() { <span class="keywordflow">return</span> is_compatible(<span class="keyword">typeid</span>(T)) ? <span class="keyword">static_cast&lt;</span>T*<span class="keyword">&gt;</span>(<span class="keyword">this</span>) : nullptr; }</div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span> </div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>        <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>        <span class="keyword">const</span> T* cast()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> is_compatible(<span class="keyword">typeid</span>(T)) ? <span class="keyword">static_cast&lt;</span><span class="keyword">const </span>T*<span class="keyword">&gt;</span>(<span class="keyword">this</span>) : nullptr; }</div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    };</div>
-<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>}</div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span> </div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span><span class="preprocessor">#define ROCKY_ABOUT(NAME, VER) namespace { struct __about_##NAME { __about_##NAME() { rocky::ContextImpl::about().insert(std::string(#NAME) + &quot; &quot; + VER); } }; __about_##NAME about_##NAME; }</span></div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span> </div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span><span class="preprocessor">#define ROCKY_DEPRECATED(A, B) rocky::Log::warn() &lt;&lt; #A &lt;&lt; &quot; is deprecated; please use &quot; &lt;&lt; #B &lt;&lt; std::endl</span></div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span> </div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span><span class="preprocessor">#if defined(_MSC_VER)</span></div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span><span class="preprocessor">#define ROCKY_FILE (std::strrchr(__FILE__, &#39;\\&#39;) ? std::strrchr(__FILE__, &#39;\\&#39;) + 1 : __FILE__)</span></div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span><span class="preprocessor">#define ROCKY_FILE (std::strrchr(__FILE__, &#39;/&#39;) ? std::strrchr(__FILE__, &#39;/&#39;) + 1 : __FILE__)</span></div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span> </div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span><span class="preprocessor">#define ROCKY_QUIET_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr &lt;&lt; &quot;&quot;; }</span></div>
-<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span><span class="preprocessor">#define ROCKY_SOFT_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr &lt;&lt; &quot;ASSERTION FAILURE (&quot; &lt;&lt; __func__ &lt;&lt; &quot; @ &quot; &lt;&lt; ROCKY_FILE &lt;&lt; &quot;:&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;) &quot; #EXPR &quot; ...&quot; &lt;&lt; __VA_ARGS__ &quot;&quot; &lt;&lt; std::endl; }</span></div>
-<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span><span class="preprocessor">#define ROCKY_SOFT_ASSERT_AND_RETURN(EXPR, RETVAL, ...) if(!(EXPR)) { std::cerr &lt;&lt; &quot;ASSERTION FAILURE (&quot; &lt;&lt; __func__ &lt;&lt; &quot; @ &quot; &lt;&lt; ROCKY_FILE &lt;&lt; &quot;:&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;) &quot; #EXPR &quot; ...&quot; &lt;&lt; __VA_ARGS__ &quot;&quot; &lt;&lt; std::endl; return RETVAL; }</span></div>
-<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span><span class="preprocessor">#define ROCKY_IF_SOFT_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr &lt;&lt; &quot;ASSERTION FAILURE (&quot; &lt;&lt; __func__ &lt;&lt; &quot; @ &quot; &lt;&lt; ROCKY_FILE &lt;&lt; &quot;:&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;) &quot; #EXPR &quot; ...&quot; &lt;&lt; __VA_ARGS__ &quot;&quot; &lt;&lt; std::endl; } else</span></div>
-<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span><span class="preprocessor">#define ROCKY_HARD_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr &lt;&lt; &quot;FATAL ASSERTION FAILURE (&quot; &lt;&lt; __func__ &lt;&lt; &quot; @ &quot; &lt;&lt; ROCKY_FILE &lt;&lt; &quot;:&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;) &quot; #EXPR &quot; ...&quot; &lt;&lt; __VA_ARGS__ &quot;&quot; &lt;&lt; std::endl; abort(); }</span></div>
-<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span> </div>
-<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span><span class="preprocessor">#define ROCKY_HARD_ASSERT_STATUS(STATUS) \</span></div>
-<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span><span class="preprocessor">    if(STATUS .failed()) { std::cerr \</span></div>
-<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span><span class="preprocessor">        &lt;&lt; &quot;FATAL ASSERTION FAILURE (&quot; &lt;&lt; __func__ &lt;&lt; &quot; @ &quot; &lt;&lt; ROCKY_FILE &lt;&lt; &quot;:&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;) &quot; \</span></div>
-<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span><span class="preprocessor">        &lt;&lt; STATUS .message \</span></div>
-<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span><span class="preprocessor">        &lt;&lt; std::endl; exit(-1); \</span></div>
-<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span><span class="preprocessor">    }</span></div>
-<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span> </div>
-<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span><span class="preprocessor">#define ROCKY_TODO(...) if (false) std::cerr &lt;&lt; &quot;TODO (&quot; &lt;&lt; __func__ &lt;&lt; &quot; @ &quot; &lt;&lt; ROCKY_FILE &lt;&lt; &quot;:&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;)...&quot; &lt;&lt; __VA_ARGS__ &quot;&quot; &lt;&lt; std::endl</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="comment">// match the weejobs export to the library export</span></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="preprocessor">#ifndef WEEJOBS_EXPORT</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#define WEEJOBS_EXPORT ROCKY_EXPORT</span></div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>{</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">   42</a></span>    <span class="keyword">using </span><a class="code hl_typedef" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">UID</a> = std::int32_t;</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno"><a class="line" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">   45</a></span>    <span class="keyword">using </span><a class="code hl_typedef" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">Revision</a> = std::int32_t;</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno"><a class="line" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">   48</a></span>    <span class="keyword">using </span><a class="code hl_typedef" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a> = std::string;</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <span class="keyword">extern</span> ROCKY_EXPORT std::string <a class="code hl_function" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#ad0fa031465bda8e87f9666d8bcdca6b2">json_pretty</a>(<span class="keyword">const</span> <a class="code hl_typedef" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">JSON</a>&amp;);</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    <span class="keyword">extern</span> ROCKY_EXPORT <a class="code hl_typedef" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">UID</a> <a class="code hl_function" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a8d82c29783195912f7dcade0122a9181">createUID</a>();</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    <span class="keyword">class </span>ROCKY_EXPORT Object</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    {</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>        Object() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>        std::string _name;</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    <span class="keyword">public</span>:</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>        <span class="keywordtype">void</span> setName(<span class="keyword">const</span> std::string&amp; value) { _name = value; }</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>        <span class="keyword">const</span> std::string&amp; name()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> _name; }</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>        <span class="keyword">virtual</span> ~Object() { } <span class="comment">// makes Object polymorphic</span></div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    };</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> PARENT, <span class="keyword">typename</span> ME&gt;</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    <span class="keyword">class </span>Inherit : <span class="keyword">public</span> PARENT</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    {</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    <span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>        Inherit(<span class="keyword">const</span> Args&amp;... args) : PARENT(args...) { }</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    <span class="keyword">public</span>:</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>        <span class="keyword">using </span>super = Inherit&lt;PARENT, ME&gt;;</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>        <span class="keyword">using </span>ptr = std::shared_ptr&lt;ME&gt;;</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>        <span class="keyword">using </span>constptr = std::shared_ptr&lt;const ME&gt;;</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>        <span class="keyword">using </span>weakptr = std::weak_ptr&lt;ME&gt;;</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>        <span class="keyword">using </span>constweakptr = std::weak_ptr&lt;const ME&gt;;</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Args&gt;</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>        <span class="keyword">static</span> std::shared_ptr&lt;ME&gt; create(Args&amp;&amp;... args) {</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>            <span class="keywordflow">return</span> std::make_shared&lt;ME&gt;(std::forward&lt;Args&gt;(args)...);</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>        }</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>        <span class="keyword">static</span> std::shared_ptr&lt;ME&gt; cast(std::shared_ptr&lt;T&gt;&amp; rhs) {</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>            <span class="keywordflow">return</span> std::dynamic_pointer_cast&lt;ME&gt;(rhs);</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>        }</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>        <span class="keyword">static</span> std::shared_ptr&lt;const ME&gt; cast(std::shared_ptr&lt;const T&gt;&amp; rhs) {</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>            <span class="keywordflow">return</span> std::dynamic_pointer_cast&lt;const ME&gt;(rhs);</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>        }</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>        <span class="keyword">static</span> std::shared_ptr&lt;ME&gt; cast(<span class="keyword">const</span> std::shared_ptr&lt;T&gt;&amp; rhs) {</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>            <span class="keywordflow">return</span> std::dynamic_pointer_cast&lt;ME&gt;(rhs);</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>        }</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>        <span class="keyword">static</span> <span class="keyword">const</span> std::shared_ptr&lt;const ME&gt; cast(<span class="keyword">const</span> std::shared_ptr&lt;const T&gt;&amp; rhs) {</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>            <span class="keywordflow">return</span> std::dynamic_pointer_cast&lt;const ME&gt;(rhs);</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>        }</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span><span class="preprocessor">#if 0</span></div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>        <span class="keyword">virtual</span> <span class="keywordtype">bool</span> is_compatible(<span class="keyword">const</span> std::type_info&amp; type) <span class="keyword">const</span> <span class="keyword">noexcept</span> { <span class="keywordflow">return</span> <span class="keyword">typeid</span>(ME) == type; }</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span> </div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>        <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>        T* cast() { <span class="keywordflow">return</span> is_compatible(<span class="keyword">typeid</span>(T)) ? <span class="keyword">static_cast&lt;</span>T*<span class="keyword">&gt;</span>(<span class="keyword">this</span>) : nullptr; }</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span> </div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>        <span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>        <span class="keyword">const</span> T* cast()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> is_compatible(<span class="keyword">typeid</span>(T)) ? <span class="keyword">static_cast&lt;</span><span class="keyword">const </span>T*<span class="keyword">&gt;</span>(<span class="keyword">this</span>) : nullptr; }</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    };</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>}</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span> </div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span><span class="preprocessor">#define ROCKY_ABOUT(NAME, VER) namespace { struct __about_##NAME { __about_##NAME() { rocky::ContextImpl::about().insert(std::string(#NAME) + &quot; &quot; + VER); } }; __about_##NAME about_##NAME; }</span></div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span> </div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span><span class="preprocessor">#define ROCKY_DEPRECATED(A, B) rocky::Log::warn() &lt;&lt; #A &lt;&lt; &quot; is deprecated; please use &quot; &lt;&lt; #B &lt;&lt; std::endl</span></div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span> </div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span><span class="preprocessor">#if defined(_MSC_VER)</span></div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span><span class="preprocessor">#define ROCKY_FILE (std::strrchr(__FILE__, &#39;\\&#39;) ? std::strrchr(__FILE__, &#39;\\&#39;) + 1 : __FILE__)</span></div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span><span class="preprocessor">#define ROCKY_FILE (std::strrchr(__FILE__, &#39;/&#39;) ? std::strrchr(__FILE__, &#39;/&#39;) + 1 : __FILE__)</span></div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span> </div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span><span class="preprocessor">#define ROCKY_QUIET_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr &lt;&lt; &quot;&quot;; }</span></div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span><span class="preprocessor">#define ROCKY_SOFT_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr &lt;&lt; &quot;ASSERTION FAILURE (&quot; &lt;&lt; __func__ &lt;&lt; &quot; @ &quot; &lt;&lt; ROCKY_FILE &lt;&lt; &quot;:&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;) &quot; #EXPR &quot; ...&quot; &lt;&lt; __VA_ARGS__ &quot;&quot; &lt;&lt; std::endl; }</span></div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span><span class="preprocessor">#define ROCKY_SOFT_ASSERT_AND_RETURN(EXPR, RETVAL, ...) if(!(EXPR)) { std::cerr &lt;&lt; &quot;ASSERTION FAILURE (&quot; &lt;&lt; __func__ &lt;&lt; &quot; @ &quot; &lt;&lt; ROCKY_FILE &lt;&lt; &quot;:&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;) &quot; #EXPR &quot; ...&quot; &lt;&lt; __VA_ARGS__ &quot;&quot; &lt;&lt; std::endl; return RETVAL; }</span></div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span><span class="preprocessor">#define ROCKY_IF_SOFT_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr &lt;&lt; &quot;ASSERTION FAILURE (&quot; &lt;&lt; __func__ &lt;&lt; &quot; @ &quot; &lt;&lt; ROCKY_FILE &lt;&lt; &quot;:&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;) &quot; #EXPR &quot; ...&quot; &lt;&lt; __VA_ARGS__ &quot;&quot; &lt;&lt; std::endl; } else</span></div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span><span class="preprocessor">#define ROCKY_HARD_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr &lt;&lt; &quot;FATAL ASSERTION FAILURE (&quot; &lt;&lt; __func__ &lt;&lt; &quot; @ &quot; &lt;&lt; ROCKY_FILE &lt;&lt; &quot;:&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;) &quot; #EXPR &quot; ...&quot; &lt;&lt; __VA_ARGS__ &quot;&quot; &lt;&lt; std::endl; abort(); }</span></div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span> </div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span><span class="preprocessor">#define ROCKY_HARD_ASSERT_STATUS(STATUS) \</span></div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span><span class="preprocessor">    if(STATUS .failed()) { std::cerr \</span></div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span><span class="preprocessor">        &lt;&lt; &quot;FATAL ASSERTION FAILURE (&quot; &lt;&lt; __func__ &lt;&lt; &quot; @ &quot; &lt;&lt; ROCKY_FILE &lt;&lt; &quot;:&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;) &quot; \</span></div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span><span class="preprocessor">        &lt;&lt; STATUS .message \</span></div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span><span class="preprocessor">        &lt;&lt; std::endl; exit(-1); \</span></div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span><span class="preprocessor">    }</span></div>
+<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span> </div>
+<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span><span class="preprocessor">#define ROCKY_TODO(...) if (false) std::cerr &lt;&lt; &quot;TODO (&quot; &lt;&lt; __func__ &lt;&lt; &quot; @ &quot; &lt;&lt; ROCKY_FILE &lt;&lt; &quot;:&quot; &lt;&lt; __LINE__ &lt;&lt; &quot;)...&quot; &lt;&lt; __VA_ARGS__ &quot;&quot; &lt;&lt; std::endl</span></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition</b> Callbacks.h:16</div></div>
-<div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a2e83fa7a0f75f3995bbe258156464182"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">ROCKY_NAMESPACE::UID</a></div><div class="ttdeci">std::int32_t UID</div><div class="ttdoc">application-wide unique ID.</div><div class="ttdef"><b>Definition</b> Common.h:41</div></div>
-<div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a47a3157b68495813746976f5649f0577"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">ROCKY_NAMESPACE::JSON</a></div><div class="ttdeci">std::string JSON</div><div class="ttdoc">json serialization type</div><div class="ttdef"><b>Definition</b> Common.h:47</div></div>
+<div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a2e83fa7a0f75f3995bbe258156464182"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a2e83fa7a0f75f3995bbe258156464182">ROCKY_NAMESPACE::UID</a></div><div class="ttdeci">std::int32_t UID</div><div class="ttdoc">application-wide unique ID.</div><div class="ttdef"><b>Definition</b> Common.h:42</div></div>
+<div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a47a3157b68495813746976f5649f0577"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a47a3157b68495813746976f5649f0577">ROCKY_NAMESPACE::JSON</a></div><div class="ttdeci">std::string JSON</div><div class="ttdoc">json serialization type</div><div class="ttdef"><b>Definition</b> Common.h:48</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a8d82c29783195912f7dcade0122a9181"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a8d82c29783195912f7dcade0122a9181">ROCKY_NAMESPACE::createUID</a></div><div class="ttdeci">ROCKY_EXPORT UID createUID()</div><div class="ttdoc">Generate an application-wide unique identifier.</div><div class="ttdef"><b>Definition</b> Context.cpp:147</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_ad0fa031465bda8e87f9666d8bcdca6b2"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#ad0fa031465bda8e87f9666d8bcdca6b2">ROCKY_NAMESPACE::json_pretty</a></div><div class="ttdeci">ROCKY_EXPORT std::string json_pretty(const JSON &amp;)</div><div class="ttdoc">Pretty-print a json string.</div><div class="ttdef"><b>Definition</b> Context.cpp:153</div></div>
-<div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_af01f4eb53e72c4be729979cd946c295d"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">ROCKY_NAMESPACE::Revision</a></div><div class="ttdeci">std::int32_t Revision</div><div class="ttdoc">revision type</div><div class="ttdef"><b>Definition</b> Common.h:44</div></div>
+<div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_af01f4eb53e72c4be729979cd946c295d"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#af01f4eb53e72c4be729979cd946c295d">ROCKY_NAMESPACE::Revision</a></div><div class="ttdeci">std::int32_t Revision</div><div class="ttdoc">revision type</div><div class="ttdef"><b>Definition</b> Common.h:45</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
