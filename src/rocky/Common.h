@@ -29,6 +29,7 @@
 #include <memory>
 #include <iostream>
 #include <cstdlib>
+#include <cstdint>
 
 // match the weejobs export to the library export
 #ifndef WEEJOBS_EXPORT

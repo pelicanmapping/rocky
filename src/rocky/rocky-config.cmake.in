@@ -19,7 +19,7 @@ include(CMakeFindDependencyMacro)
 # Find public dependencies
 find_dependency(glm CONFIG)
 find_dependency(spdlog CONFIG)
-find_dependency(entt CONFIG)
+find_dependency(EnTT CONFIG)
 find_dependency(vsg CONFIG)
 
 # Find private dependencies, for linking to static library
