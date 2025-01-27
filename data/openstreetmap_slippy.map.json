@@ -1,9 +1,9 @@
 {
+    "profile" : "spherical-mercator",
     "terrain" : {
         "screen_space_error" : 128
     },
     "map" : {
-        "profile" : "spherical-mercator",
         "name" : "OpenStreetMap Slippy Map",
         "layers": [
             {
