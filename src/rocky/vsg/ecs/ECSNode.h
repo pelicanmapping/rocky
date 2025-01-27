@@ -131,14 +131,14 @@ namespace ROCKY_NAMESPACE
 
         public:
             //! Destructor
-            virtual ~SystemNode<T>();
+            virtual ~SystemNode();
 
             // looks for any new components that need VSG initialization
             void update(VSGContext&) override;
 
         protected:
             //! Construct from a subclass
-            SystemNode<T>(Registry& in_registry);
+            SystemNode(Registry& in_registry);
 
             //! Feature mask for a specific component instance
             virtual int featureMask(const T& t) const { return 0; }
