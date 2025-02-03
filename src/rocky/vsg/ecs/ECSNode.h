@@ -47,23 +47,7 @@ namespace ROCKY_NAMESPACE
         {
             entt::entity entity = entt::null;
             std::uint16_t version = 0;
-            RevisionedComponent* component = nullptr;
-            ~BuildItem() { if (component) delete component; }
-
-            // only permit default or move construction:
-            BuildItem() = default;
-            BuildItem(const BuildItem&) = delete;
-            BuildItem& operator=(const BuildItem& rhs) = delete;
-            BuildItem(BuildItem&& rhs) noexcept { *this = std::move(rhs); }
-            BuildItem& operator = (BuildItem&& rhs) noexcept {
-                entity = rhs.entity;
-                version = rhs.version;
-                existing_node = rhs.existing_node;
-                new_node = rhs.new_node;
-                component = rhs.component;
-                rhs.component = nullptr;
-                return *this;
-            }
+            std::shared_ptr<RevisionedComponent> component;
         };
 
         // Internal structure for a batch of BuildItems associated with a system
@@ -72,13 +56,6 @@ namespace ROCKY_NAMESPACE
             std::vector<BuildItem> items;
             vsg::ref_ptr<SystemNodeBase> system;
             VSGContext* context = nullptr;
-
-            // only permit default or move construction:
-            BuildBatch() = default;
-            BuildBatch(BuildBatch&& rhs) noexcept = default;
-            BuildBatch& operator=(BuildBatch&& rhs) noexcept = default;
-            BuildBatch(const BuildBatch&) = delete;
-            BuildBatch& operator=(const BuildBatch& rhs) = delete;
         };
 
         // Internal utility for compiling nodes in a background thread
@@ -546,7 +523,7 @@ namespace ROCKY_NAMESPACE
                 ecs::BuildItem item;
                 item.entity = entity;
                 item.version = registry.current(entity);
-                item.component = new T(component);
+                item.component = std::shared_ptr<RevisionedComponent>(new T(component)); // std::make_shared<RevisionedComponent>(component); // new T(component);
                 item.existing_node = renderable.node;
                 item.new_node = {};
 
@@ -564,11 +541,11 @@ namespace ROCKY_NAMESPACE
                 batch.system = this;
                 batch.context = &context;
 
-                bool ok = SystemNodeBase::factory->buffers->input.emplace(std::move(batch));
-
-                if (!ok)
+                int count = 0;
+                while(!SystemNodeBase::factory->buffers->input.push(batch))
                 {
-                    Log()->warn("Failed to enqueue entity compile job - queue overflow");
+                    //Log()->warn("Failed to enqueue entity compile job - queue overflow - will retry, tries = {}", ++count);
+                    std::this_thread::yield();
                 }
             }
         }
@@ -579,7 +556,8 @@ namespace ROCKY_NAMESPACE
     template<typename T>
     void ecs::SystemNode<T>::invokeCreateOrUpdate(BuildItem& item, VSGContext& context) const
     {
-        createOrUpdateNode(*static_cast<T*>(item.component), item, context);
+        T component = *static_cast<T*>(item.component.get());
+        createOrUpdateNode(component, item, context);
     }
 
     template<typename T>

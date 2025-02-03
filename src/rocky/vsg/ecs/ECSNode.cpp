@@ -77,7 +77,12 @@ ecs::EntityNodeFactory::start()
 
                             // queue the results so the merger will pick em up
                             // (in SystemsManagerGroup::update)
-                            buffers->output.emplace(std::move(batch));
+                            int count = 0;
+                            while (!buffers->output.push(batch) && buffers.use_count() > 1)
+                            {
+                                //Log()->warn("Failed to enqueue entity reusults - queue overflow - will retry, tries = {}", ++count);
+                                std::this_thread::yield();
+                            }
                         }
                     }
                 }

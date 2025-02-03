@@ -294,15 +294,6 @@ namespace ROCKY_NAMESPACE
                 return true;
             }
 
-            bool emplace(T&& obj) {
-                bool is_full = full();
-                if (is_full && !overwrite_when_full) return false;
-                _buffer[_writeIndex] = std::move(obj);
-                if (!is_full) _writeIndex.exchange((_writeIndex + 1) % _size);
-                notify();
-                return true;
-            }
-
             bool pop(T& obj) {
                 if (_readIndex == _writeIndex) return false;
                 obj = std::move(_buffer[_readIndex]);
@@ -311,14 +302,15 @@ namespace ROCKY_NAMESPACE
             }
 
             T& peek() {
-                //if (_readIndex == _writeIndex) return false;
                 return _buffer[_readIndex];
             }
 
             const T& peek() const {
-                //if (_readIndex == _writeIndex) return false;
                 return _buffer[_readIndex];
             }
+
+        protected:
+            virtual void notify() { }
 
             bool empty() const {
                 return _readIndex == _writeIndex;
@@ -327,9 +319,6 @@ namespace ROCKY_NAMESPACE
             bool full() const {
                 return (_writeIndex + 1) % _size == _readIndex;
             }
-
-        protected:
-            virtual void notify() { }
 
         private:
             std::atomic_int _readIndex = { 0 };
