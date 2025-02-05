@@ -35,7 +35,7 @@ jobs:
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
     - name: Install Vulkan SDK
-      uses: humbletim/setup-vulkan-sdk@v1.2.1
+      uses: edvn0/setup-vulkan-sdk-edvn0@v1.3.0
       with:
         vulkan-query-version: 1.3.231.1
         vulkan-components: Vulkan-Headers, Vulkan-Loader
