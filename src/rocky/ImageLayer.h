@@ -30,6 +30,12 @@ namespace ROCKY_NAMESPACE
         //! serialize
         std::string to_json() const override;
 
+    public: // Layer
+
+        Status openImplementation(const IOOptions&) override;
+
+        void closeImplementation() override;
+
     protected:
 
         //! Default construtor
@@ -50,7 +56,7 @@ namespace ROCKY_NAMESPACE
             return Result(GeoImage::INVALID);
         }
 
-    protected: // Layer
+    protected:
 
         Result<GeoImage> createImageImplementation_internal(
             const TileKey& key,

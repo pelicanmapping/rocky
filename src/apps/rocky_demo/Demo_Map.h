@@ -68,7 +68,6 @@ auto Demo_Map = [](Application& app)
             bool open = layer->isOpen();
             if (ImGui::Checkbox("##selectable", &open))
             {
-                bool resetTerrain = false;
                 if (open)
                 {
                     resetTerrain = layer->open(app.io()).ok();

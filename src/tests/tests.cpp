@@ -543,7 +543,12 @@ TEST_CASE("SRS")
 
         // geodetic to vdatum:
         {
-            Log()->info("Note: if you see SRS/VDatum errors, check that you have the NGA grid in your share/proj or PROJ_DATA folder! https://github.com/OSGeo/PROJ-data/blob/master/us_nga/us_nga_egm96_15.tif");
+            //Log()->info("Note: if you see SRS/VDatum errors, check that you have the NGA grid in your share/proj or PROJ_DATA folder! https://github.com/OSGeo/PROJ-data/blob/master/us_nga/us_nga_egm96_15.tif");
+
+            SRS::projMessageCallback = [&](int level, const char* msg) { 
+                Log()->warn("PROJ: {} ... do you have the NGA grid in your PROJ_DATA or share/proj folder? You can download it from https://github.com/OSGeo/PROJ-data/blob/master/us_nga/us_nga_egm96_15.tif", msg);
+            };
+
             auto xform = wgs84.to(egm96);
             REQUIRE(xform.valid());
 
@@ -565,6 +570,8 @@ TEST_CASE("SRS")
             CHECK(equiv(out.z, 21.15, E));
             REQUIRE(xform.inverse(glm::dvec3(-90, 0, 0), out));
             CHECK(equiv(out.z, -4.29, E));
+
+            SRS::projMessageCallback = nullptr;
         }
 
         // vdatum to geodetic:

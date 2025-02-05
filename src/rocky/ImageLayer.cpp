@@ -73,8 +73,6 @@ ImageLayer::construct(const std::string& JSON, const IOOptions& io)
     get_to(j, "crop", crop);
 
     setRenderType(RenderType::TERRAIN_SURFACE);
-
-    _dependencyCache = std::make_shared<TileMosaicWeakCache<Image>>();
 }
 
 JSON
@@ -86,17 +84,34 @@ ImageLayer::to_json() const
     return j.dump();
 }
 
+Status
+ImageLayer::openImplementation(const IOOptions& io)
+{
+    auto r = super::openImplementation(io);
+    if (r.failed())
+        return r;
+
+    _dependencyCache = std::make_shared<TileMosaicWeakCache<Image>>();
+
+    return StatusOK;
+}
+
+void
+ImageLayer::closeImplementation()
+{
+    _dependencyCache = nullptr;
+    super::closeImplementation();
+}
+
 Result<GeoImage>
 ImageLayer::createImage(const TileKey& key, const IOOptions& io) const
 {
-    if (!isOpen())
+    std::shared_lock readLock(layerStateMutex());
+    if (isOpen())
     {
-        return Result(GeoImage::INVALID);
+        return createImageInKeyProfile(key, io);
     }
-
-    auto result = createImageInKeyProfile(key, io);
-
-    return result;
+    return status();
 }
 
 Result<GeoImage>

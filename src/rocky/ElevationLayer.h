@@ -52,7 +52,13 @@ namespace ROCKY_NAMESPACE
          */
         Result<GeoHeightfield> createHeightfield(const TileKey& key, const IOOptions& io) const;
 
-    protected: // ElevationLayer
+    public: // Layer
+
+        Status openImplementation(const IOOptions&) override;
+
+        void closeImplementation() override;
+
+    protected:
 
         //! Construct (from subclass)
         ElevationLayer();

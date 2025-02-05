@@ -73,11 +73,7 @@ TileLayer::openImplementation(const IOOptions& io)
 void
 TileLayer::closeImplementation()
 {
-    if (_originalProfile.has_value())
-    {
-        profile = _originalProfile.value();
-    }
-
+    profile = {};
     _dataExtents.clear();
     _dataExtentsUnion = {};
     if (_dataExtentsIndex)
@@ -88,28 +84,12 @@ TileLayer::closeImplementation()
     super::closeImplementation();
 }
 
-//const Profile&
-//TileLayer::profile() const
-//{
-//    return _runtimeProfile;
-//}
-
 void
 TileLayer::setPermanentProfile(const Profile& perm_profile)
 {
     _originalProfile = profile;
     profile = perm_profile;
 }
-
-//void
-//TileLayer::setProfile(const Profile& profile)
-//{
-//    ROCKY_SOFT_ASSERT_AND_RETURN(!isOpen(), void(), "ILLEGAL: cannot set profile after layer is open");
-//
-//    _runtimeProfile = profile;
-//
-//    Log()->debug("Layer \"{}\" profile set to {}", name(), _runtimeProfile->toReadableString());
-//}
 
 bool
 TileLayer::isKeyInLegalRange(const TileKey& key) const

@@ -139,6 +139,25 @@ ElevationLayer::to_json() const
     return j.dump();
 }
 
+Status
+ElevationLayer::openImplementation(const IOOptions& io)
+{
+    auto r = super::openImplementation(io);
+    if (r.failed())
+        return r;
+
+    _dependencyCache = std::make_shared<TileMosaicWeakCache<Heightfield>>();
+
+    return StatusOK;
+}
+
+void
+ElevationLayer::closeImplementation()
+{
+    _dependencyCache = nullptr;
+    super::closeImplementation();
+}
+
 void
 ElevationLayer::normalizeNoDataValues(Heightfield* hf) const
 {
@@ -321,14 +340,13 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
 
 Result<GeoHeightfield>
 ElevationLayer::createHeightfield(const TileKey& key, const IOOptions& io) const
-{    
-    // If the layer is disabled, bail out
-    if (!isOpen())
+{
+    std::shared_lock readLock(layerStateMutex());
+    if (isOpen())
     {
-        return Result(GeoHeightfield::INVALID);
+        return createHeightfieldInKeyProfile(key, io);
     }
-
-    return createHeightfieldInKeyProfile(key, io);
+    return status();
 }
 
 Result<GeoHeightfield>
