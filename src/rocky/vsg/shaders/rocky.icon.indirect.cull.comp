@@ -1,0 +1,81 @@
+#version 460
+
+// size_x == GPU_CULLING_LOCAL_WG_SIZE
+layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+struct VkDrawIndexedIndirectCommand
+{
+    uint indexCount;
+    uint instanceCount;
+    uint firstIndex;
+    uint vertexOffset;
+    uint firstInstance;
+};
+
+struct Instance
+{
+    mat4 proj;
+    mat4 modelview;
+    vec4 viewport;          // viewport x,y,w,h
+    float rotation;         // rotation, radians
+    float size;             // size in pixels; 0 = not visible
+    int texture_index;      // ID of icon texture, -1 = error
+    float padding[1];       // pad to 16 bytes
+};
+
+layout(set = 0, binding = 0) buffer Commands
+{
+    VkDrawIndexedIndirectCommand command;
+};
+
+layout(set = 0, binding = 1) buffer CullList
+{
+    Instance cullList[];
+};
+
+layout(set = 0, binding = 2) buffer DrawList
+{
+    Instance drawList[];
+};
+
+void main()
+{
+    const uint i = gl_GlobalInvocationID.x; // instance
+
+    // skip instances that exist only to pad the instance array to the workgroup size:
+    if (cullList[i].size <= 0.0)
+        return;
+
+    // viewport dimensions
+    float x = cullList[i].viewport.x;
+    float y = cullList[i].viewport.y;
+    float w = cullList[i].viewport.z;
+    float h = cullList[i].viewport.w;
+    
+    // For icons, clip to the viewport in pixel space:
+    vec4 clip4 = cullList[i].proj * cullList[i].modelview * vec4(0,0,0,1);
+    //vec4 clip4 = cullList[i].matrix * vec4(0,0,0,1);
+    vec2 clip = (clip4.xy / clip4.w);
+    vec2 screen = (clip + 1.0) * 0.5 * vec2(w,h);
+
+    // TODO: account for viewport x,y
+    float size = cullList[i].size; // max half-dimension of icon
+
+    // Culling visualization; set this to a negative value for TESTING.
+    //r = -64.0;
+
+    if (screen.x < x-size || screen.y < y-size || screen.x > x+w+size || screen.y > x+h+size)
+    {
+        // fail the frustum test
+        if (size > 0.0)
+            return;
+        else
+            cullList[i].size = -cullList[i].size;
+    }    
+
+    // Passed!
+
+    // increment the draw count.
+    uint index = atomicAdd(command.instanceCount, 1);
+    drawList[index] = cullList[i];
+}

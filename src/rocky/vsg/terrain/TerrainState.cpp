@@ -249,7 +249,7 @@ TerrainState::createTerrainStateGroup(VSGContext& context)
     // (except for the view-dependent state stuff from VSG)
     auto stateGroup = vsg::StateGroup::create();
     stateGroup->add(pipelineConfig->bindGraphicsPipeline);
-    stateGroup->add(PipelineUtils::createViewDependentBindCommand(pipelineConfig));
+    stateGroup->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, VSG_VIEW_DEPENDENT_DATA_SET));
 
     return stateGroup;
 }

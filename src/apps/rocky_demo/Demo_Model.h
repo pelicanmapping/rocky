@@ -76,7 +76,10 @@ auto Demo_Model = [](Application& app)
         if (ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2500000.0, "%.1lf"))
             transform.dirty();
 
-        auto rot = util::quaternion_from_matrix<vsg::dquat>(transform.localMatrix);
+        vsg::dquat rot;
+        if (transform.localMatrix.has_value())
+            rot = util::quaternion_from_matrix<vsg::dquat>(transform.localMatrix.value());
+
         auto [pitch, roll, heading] = util::euler_degrees_from_quaternion(rot);
 
         if (ImGuiLTable::SliderDouble("Heading", &heading, -180.0, 180.0, "%.1lf"))

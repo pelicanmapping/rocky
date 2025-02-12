@@ -10,6 +10,7 @@
 
 using namespace ROCKY_NAMESPACE;
 
+
 GeoTransform::GeoTransform()
 {
     //nop
@@ -32,10 +33,8 @@ GeoTransform::dirty()
 void
 GeoTransform::traverse(vsg::RecordTraversal& record) const
 {
-    static vsg::dmat4 identity(1.0);
-
     // traverse the transform
-    if (push(record, identity, true))
+    if (push(record, true))
     {
         Inherit::traverse(record);
         pop(record);
@@ -43,7 +42,7 @@ GeoTransform::traverse(vsg::RecordTraversal& record) const
 }
 
 bool
-GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix, bool cull) const
+GeoTransform::push(vsg::RecordTraversal& record, bool cull, const std::optional<vsg::dmat4>& localMatrix) const
 {
     if (!position.valid())
     {
@@ -53,10 +52,14 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix,
     auto* state = record.getState();
 
     // fetch the view-local data:
-    auto& view = viewLocal[record.getState()->_commandBuffer->viewID];
+    auto& view = viewLocal[state->_commandBuffer->viewID];
+
+    bool update_required =
+        view.dirty ||
+        (localMatrix.has_value() && !ROCKY_MAT4_EQUAL(localMatrix.value(), view.local));
 
     // only if something has changed since last time:
-    if (view.dirty || local_matrix != view.local_matrix)
+    if (update_required)
     {
         // first time through, cache information about the world SRS and ellipsoid for this view.
         if (!view.pos_to_world.valid())
@@ -74,25 +77,46 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix,
             if (view.pos_to_world(glm::dvec3(position.x, position.y, position.z), worldpos))
             {
                 if (localTangentPlane && view.world_srs.isGeocentric())
-                    view.matrix = to_vsg(view.world_ellipsoid->geocentricToLocalToWorld(worldpos)) * local_matrix; 
+                    view.model = to_vsg(view.world_ellipsoid->geocentricToLocalToWorld(worldpos));
                 else
-                    view.matrix = vsg::translate(worldpos.x, worldpos.y, worldpos.z) * local_matrix;      
+                    view.model = vsg::translate(worldpos.x, worldpos.y, worldpos.z);
+
+                if (localMatrix.has_value())
+                {
+                    glm::dmat4 temp;
+                    ROCKY_FAST_MAT4_MULT(temp, view.model, localMatrix.value());
+                    view.model = to_vsg(temp);
+                }
             }
         }
 
-        view.local_matrix = local_matrix;
+        if (localMatrix.has_value())
+        {
+            view.local = localMatrix.value();
+        }
+
         view.dirty = false;
     }
 
-    auto mvm = state->modelviewMatrixStack.top() * view.matrix;
-    view.mvp = state->projectionMatrixStack.top() * mvm;
-    view.viewport = state->_commandBuffer->viewDependentState->viewportData->at(0);
+    view.proj = state->projectionMatrixStack.top();
+    auto& modelview = state->modelviewMatrixStack.top();
+    ROCKY_FAST_MAT4_MULT(view.modelview, modelview, view.model);
+
+    view.viewport = (*state->_commandBuffer->viewDependentState->viewportData)[0];
     view.culled = false;
+
+    if (!cull)
+    {
+        return false;
+    }
 
     // Frustum cull (by center point)
     if (frustumCulling)
     {
-        vsg::dvec4 clip = view.mvp[3] / view.mvp[3][3];
+        vsg::mat4 mvp;
+        ROCKY_FAST_MAT4_MULT(mvp, view.proj, view.modelview);
+
+        vsg::vec4 clip = mvp[3] / mvp[3][3];
         const double t = 1.0;
         if (clip.x < -t || clip.x > t || clip.y < -t || clip.y > t || clip.z < -t || clip.z > t)
         {
@@ -113,7 +137,7 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix,
 
         if (view.horizon)
         {
-            if (!view.horizon->isVisible(view.matrix[3][0], view.matrix[3][1], view.matrix[3][2], bound.radius))
+            if (!view.horizon->isVisible(view.model[3][0], view.model[3][1], view.model[3][2], bound.radius))
             {
                 view.culled = true;
                 return false;
@@ -121,13 +145,8 @@ GeoTransform::push(vsg::RecordTraversal& record, const vsg::dmat4& local_matrix,
         }
     }
 
-    if (!cull)
-    {
-        return false;
-    }
-
     // replicates RecordTraversal::accept(MatrixTransform&):
-    state->modelviewMatrixStack.push(mvm);
+    state->modelviewMatrixStack.push(view.modelview);
     state->dirty = true;
     state->pushFrustum();
 

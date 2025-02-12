@@ -190,7 +190,7 @@ namespace ROCKY_NAMESPACE
             template<class T>
             void add(vsg::ref_ptr<T> system)
             {
-                static_assert(std::is_base_of<SystemNodeBase, T>::value, "T must be a subclass of SystemNodeBase");
+                //static_assert(std::is_base_of<SystemNodeBase, T>::value, "T must be a subclass of SystemNodeBase");
                 addChild(system);
                 systems.emplace_back(system.get());
             }
@@ -227,7 +227,6 @@ namespace ROCKY_NAMESPACE
             //! Update all connected system nodes. This should be invoked once per frame.
             //! @param runtime The runtime object to pass to the systems
             void update(VSGContext& runtime);
-
         
             std::vector<System*> systems;
             std::vector<std::shared_ptr<System>> non_node_systems;
@@ -241,7 +240,7 @@ namespace ROCKY_NAMESPACE
         //! @return True if visible in that view
         inline bool visible(const Visibility& vis, int view_index)
         {
-            return vis.parent != nullptr ? visible(*vis.parent, view_index) : vis[view_index]; // (vis.active && vis[view_index]);
+            return vis.parent != nullptr ? visible(*vis.parent, view_index) : vis[view_index];
         }
 
         //! Toggle the visibility of an entity in the given view
@@ -454,7 +453,7 @@ namespace ROCKY_NAMESPACE
                     // and intersection)
                     else if (transform)
                     {
-                        transform->push(rt, identity_matrix, false);
+                        transform->push(rt, false);
                     }
                 }
 
@@ -481,7 +480,7 @@ namespace ROCKY_NAMESPACE
                 {
                     if (leaf.transform)
                     {
-                        if (leaf.transform->push(rt, identity_matrix, true))
+                        if (leaf.transform->push(rt, true))
                         {
                             leaf.renderable.node->accept(rt);
                             leaf.transform->pop(rt);

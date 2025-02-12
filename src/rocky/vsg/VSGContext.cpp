@@ -481,6 +481,27 @@ VSGContextImpl::ctor(int& argc, char** argv)
     io.uriGate = std::make_shared<util::Gate<std::string>>();
 }
 
+vsg::ref_ptr<vsg::Device>
+VSGContextImpl::device()
+{
+    return viewer && viewer->windows().size() > 0 ? viewer->windows().front()->getDevice() : nullptr;
+}
+
+vsg::ref_ptr<vsg::CommandGraph>
+VSGContextImpl::getComputeCommandGraph() const
+{
+    return _computeCommandGraph;
+}
+
+vsg::ref_ptr<vsg::CommandGraph>
+VSGContextImpl::getOrCreateComputeCommandGraph(vsg::ref_ptr<vsg::Device> device, int queueFamily)
+{
+    if (!_computeCommandGraph && device)
+    {
+        _computeCommandGraph = vsg::CommandGraph::create(device, queueFamily);
+    }
+    return _computeCommandGraph;
+}
 
 void
 VSGContextImpl::onNextUpdate(vsg::ref_ptr<vsg::Operation> function, std::function<float()> get_priority)

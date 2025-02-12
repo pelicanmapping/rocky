@@ -240,7 +240,7 @@ namespace
             auto view = registry.view<Transform>();
             for (auto&& [entity, transform] : view.each())
             {
-                if (transform.parent == nullptr)
+                //if (transform.parent == nullptr)
                 {
                     auto& track = registry.emplace<TrackHistory>(entity);
                     track.style = style;

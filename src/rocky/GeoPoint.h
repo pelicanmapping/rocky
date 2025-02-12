@@ -65,7 +65,7 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Does this object contain a valid geo point?
-        bool valid() const {
+        inline bool valid() const {
             return srs.valid();
         }
 

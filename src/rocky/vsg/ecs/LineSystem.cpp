@@ -151,7 +151,7 @@ LineSystemNode::initializeSystem(VSGContext& runtime)
         // Assemble the commands required to activate this pipeline:
         c.commands = vsg::Commands::create();
         c.commands->children.push_back(c.config->bindGraphicsPipeline);
-        c.commands->children.push_back(PipelineUtils::createViewDependentBindCommand(c.config));
+        c.commands->children.push_back(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, c.config->layout, VSG_VIEW_DEPENDENT_DATA_SET));
     }
 }
 

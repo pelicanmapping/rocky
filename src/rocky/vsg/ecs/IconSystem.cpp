@@ -149,7 +149,8 @@ IconSystemNode::initializeSystem(VSGContext& context)
 
         c.commands = vsg::Commands::create();
         c.commands->addChild(c.config->bindGraphicsPipeline);
-        c.commands->addChild(PipelineUtils::createViewDependentBindCommand(c.config));
+        c.commands->addChild(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, c.config->layout, VSG_VIEW_DEPENDENT_DATA_SET));
+
     }
 }
 

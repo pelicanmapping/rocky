@@ -101,15 +101,6 @@ namespace ROCKY_NAMESPACE
         static const std::shared_ptr<const ME> cast(const std::shared_ptr<const T>& rhs) {
             return std::dynamic_pointer_cast<const ME>(rhs);
         }
-#if 0
-        virtual bool is_compatible(const std::type_info& type) const noexcept { return typeid(ME) == type; }
-
-        template<class T>
-        T* cast() { return is_compatible(typeid(T)) ? static_cast<T*>(this) : nullptr; }
-
-        template<class T>
-        const T* cast() const { return is_compatible(typeid(T)) ? static_cast<const T*>(this) : nullptr; }
-#endif
     };
 }
 

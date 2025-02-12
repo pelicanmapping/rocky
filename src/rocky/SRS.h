@@ -66,7 +66,7 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Whether this is a valid SRS
-        bool valid() const;
+        inline bool valid() const;            
 
         inline operator bool() const {
             return valid();
@@ -168,6 +168,8 @@ namespace ROCKY_NAMESPACE
         mutable std::optional<bool> _valid;
         mutable std::optional<int> _crs_type;
         friend class SRSOperation;
+
+        bool _establish_valid() const;
     };
 
     //! Convenient symonym
@@ -306,4 +308,12 @@ namespace ROCKY_NAMESPACE
         bool inverse(void* handle, double* x, double* y, double* z, std::size_t stride, std::size_t count) const;
         friend class SRS;
     };
+
+
+    inline bool SRS::valid() const {
+        if (_valid.has_value())
+            return _valid.value();
+        else
+            return _establish_valid();
+    }
 }

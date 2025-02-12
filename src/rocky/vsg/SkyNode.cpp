@@ -208,7 +208,8 @@ namespace
         // set up the state group that will select the new pipeline:
         auto stategroup = vsg::StateGroup::create();
         stategroup->add(pipelineConfig->bindGraphicsPipeline);
-        stategroup->add(PipelineUtils::createViewDependentBindCommand(pipelineConfig));
+        //stategroup->add(PipelineUtils::createViewDependentBindCommand(pipelineConfig, VK_PIPELINE_BIND_POINT_GRAPHICS));
+        stategroup->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, VSG_VIEW_DEPENDENT_DATA_SET));
 
         return stategroup;
     }

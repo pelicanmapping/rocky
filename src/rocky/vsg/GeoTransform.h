@@ -76,7 +76,9 @@ namespace ROCKY_NAMESPACE
 
         void traverse(vsg::RecordTraversal&) const override;
 
-        bool push(vsg::RecordTraversal&, const vsg::dmat4& m, bool cull) const;
+    public:
+
+        bool push(vsg::RecordTraversal&, bool cull, const std::optional<vsg::dmat4>& localMatrix = {}) const;
 
         void pop(vsg::RecordTraversal&) const;
 
@@ -84,9 +86,10 @@ namespace ROCKY_NAMESPACE
         struct ViewLocalData
         {
             bool dirty = true;
-            vsg::dmat4 matrix;
-            vsg::dmat4 local_matrix;
-            vsg::dmat4 mvp;
+            vsg::dmat4 local;     // local rotation/offset
+            vsg::dmat4 model;     // model matrix
+            vsg::mat4 proj;      // projection matrix
+            vsg::mat4 modelview; // modelview matrix
             vsg::vec4 viewport;
             SRS world_srs;
             bool culled = false;

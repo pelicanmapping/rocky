@@ -45,6 +45,7 @@ namespace ROCKY_NAMESPACE
             a[3][0], a[3][1], a[3][2], a[3][3]);
     }
 
+#if 0
     inline vsg::vec3 to_vsg(const glm::fvec3& a) {
         return vsg::vec3(a.x, a.y, a.z);
     }
@@ -65,6 +66,20 @@ namespace ROCKY_NAMESPACE
             a[2][0], a[2][1], a[2][2], a[2][3],
             a[3][0], a[3][1], a[3][2], a[3][3]);
     }
+#else
+    inline const vsg::vec3& to_vsg(const glm::fvec3& a) {
+        return reinterpret_cast<const vsg::vec3&>(a);
+    }
+    inline const vsg::dvec3& to_vsg(const glm::dvec3& a) {
+        return reinterpret_cast<const vsg::dvec3&>(a);
+    }
+    inline const vsg::mat4& to_vsg(const glm::fmat4& a) {
+        return reinterpret_cast<const vsg::mat4&>(a);
+    }
+    inline const vsg::dmat4& to_vsg(const glm::dmat4& a) {
+        return reinterpret_cast<const vsg::dmat4&>(a);
+    }
+#endif
 
     inline float distanceTo(const vsg::dvec3& p, vsg::State* state)
     {

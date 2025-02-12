@@ -110,6 +110,12 @@ namespace ROCKY_NAMESPACE
         //! Update any pending compile results. Returns true if updates occurred.
         bool update();
 
+        vsg::ref_ptr<vsg::Device> device();
+
+        //! A command graph the application can use to run compute shaders
+        vsg::ref_ptr<vsg::CommandGraph> getComputeCommandGraph() const;
+        vsg::ref_ptr<vsg::CommandGraph> getOrCreateComputeCommandGraph(vsg::ref_ptr<vsg::Device> device, int queueFamily);
+
     private:
         // for (some) update operations
         vsg::ref_ptr<vsg::Operation> _priorityUpdateQueue;
@@ -130,6 +136,8 @@ namespace ROCKY_NAMESPACE
         std::deque<std::vector<vsg::ref_ptr<vsg::Object>>> _gc;
 
         jobs::future<bool> _entityJobCompiler;
+
+        vsg::ref_ptr<vsg::CommandGraph> _computeCommandGraph;
 
     private:
         //! Construct a new VSG-based application instance

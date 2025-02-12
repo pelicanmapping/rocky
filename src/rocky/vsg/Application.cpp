@@ -9,6 +9,7 @@
 #include "ecs/MeshSystem.h"
 #include "ecs/LineSystem.h"
 #include "ecs/IconSystem.h"
+#include "ecs/IconSystem2.h"
 #include "ecs/LabelSystem.h"
 #include "ecs/Motion.h"
 
@@ -206,6 +207,12 @@ Application::ctor(int& argc, char** argv)
         commandLineStatus = importEarthFile(infile, *mapNode, context);
     }
 
+    bool indirect = false;
+    if (commandLine.read({ "--indirect" }))
+    {
+        indirect = true;
+    }
+
     // if there are any command-line arguments remaining, assume the first is a map file.
     if (commandLine.argc() > 1 && commandLineStatus.ok())
     {
@@ -217,7 +224,10 @@ Application::ctor(int& argc, char** argv)
     ecsManager->add(MeshSystemNode::create(registry));
     ecsManager->add(LineSystemNode::create(registry));
     ecsManager->add(NodeSystemNode::create(registry));
-    ecsManager->add(IconSystemNode::create(registry));
+    if (indirect)
+        ecsManager->add(IconSystem2Node::create(registry));
+    else
+        ecsManager->add(IconSystemNode::create(registry));
     ecsManager->add(LabelSystemNode::create(registry));
 
     //ecsManager->add(MotionSystem::create(registry));
@@ -240,6 +250,11 @@ Application::onNextUpdate(std::function<void()> func)
 void
 Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
 {
+    // share the same queue family as the graphics command graph for now.
+    auto computeCommandGraph = context->getOrCreateComputeCommandGraph(
+        displayManager->sharedDevice(),
+        displayManager->_commandGraphByWindow.begin()->second->queueFamily);
+
     // Initialize the ECS subsystem:
     ecsManager->initialize(context);
 
@@ -250,7 +265,8 @@ Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
     // This sets up the internal tasks that will, for each command graph, record
     // a scene graph and submit the results to the renderer each frame. Also sets
     // up whatever's necessary to present the resulting swapchain to the device.
-    vsg::CommandGraphs commandGraphs;
+    vsg::CommandGraphs commandGraphs{ computeCommandGraph };
+
     for (auto iter : displayManager->_commandGraphByWindow)
     {
         commandGraphs.push_back(iter.second);

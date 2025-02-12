@@ -28,109 +28,32 @@ ROCKY_ABOUT(zlib, ZLIB_VERSION)
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 
-StringTokenizer::StringTokenizer(
-    const std::string& delims,
-    const std::string& quotes) :
-
-    _allowEmpties(true),
-    _trimTokens(true)
+std::vector<std::string>
+StringTokenizer::operator()(const std::string& input, bool* error) const
 {
-    addDelims(delims);
-    addQuotes(quotes);
-}
+    if (error)
+        *error = false;
 
-StringTokenizer::StringTokenizer(
-    const std::string& input,
-    std::vector<std::string>& output,
-    const std::string& delims,
-    const std::string& quotes,
-    bool               allowEmpties,
-    bool               trimTokens) :
-
-    _allowEmpties(allowEmpties),
-    _trimTokens(trimTokens)
-{
-    addDelims(delims);
-    addQuotes(quotes);
-    tokenize(input, output);
-}
-
-StringTokenizer::StringTokenizer(
-    const std::string& input,
-    std::unordered_map<std::string, std::string>& output,
-    const std::string& delims,
-    const std::string& seps,
-    const std::string& quotes,
-    bool               allowEmpties,
-    bool               trimTokens) :
-
-    _allowEmpties(allowEmpties),
-    _trimTokens(trimTokens)
-{
-    addDelims(delims);
-    addQuotes(quotes);
-    std::vector<std::string> pairs;
-    tokenize(input, pairs);
-
-    for (auto& pair : pairs)
-    {
-        _delims.clear();
-        addDelims(seps);
-        std::vector<std::string> keyvalue;
-        tokenize(pair, keyvalue);
-        if (keyvalue.size() == 2)
-            output[keyvalue[0]] = keyvalue[1];
-    }
-}
-
-void
-StringTokenizer::addDelim( char delim, bool keep )
-{
-    _delims[delim] = keep;
-}
-
-void
-StringTokenizer::addDelims( const std::string& delims, bool keep )
-{
-    for( unsigned i=0; i<delims.size(); ++i )
-        addDelim( delims[i], keep );
-}
-
-void
-StringTokenizer::addQuote( char quote, bool keep )
-{
-    _quotes[quote] = keep;
-}
-
-void
-StringTokenizer::addQuotes( const std::string& quotes, bool keep )
-{
-    for( unsigned i=0; i<quotes.size(); ++i )
-        addQuote( quotes[i], keep );
-}
-
-void
-StringTokenizer::tokenize( const std::string& input, std::vector<std::string>& output ) const
-{
-    output.clear();
+    std::vector<std::string> output;
 
     std::stringstream buf;
-    bool quoted = false;
-    char lastQuoteChar = '\0';
+    bool inside_quote = false;
+    char quote_opener = '\0';
+    char quote_closer = '\0';
+    bool keep_quote_char = false;
+    std::size_t quote_opener_offset = 0;
 
-    for( std::string::const_iterator i = input.begin(); i != input.end(); ++i )
+    for (std::size_t i = 0; i < input.size(); ++i)
     {
-        char c = *i;
+        char c = input[i];
+        auto q = _quotes.find(c);
 
-        TokenMap::const_iterator q = _quotes.find( c );
-
-        if ( quoted )
+        if (inside_quote)
         {
-            if( q != _quotes.end() && lastQuoteChar == c)
+            if (c == quote_closer)
             {
-                quoted = false;
-                lastQuoteChar = '\0';
-                if ( q->second )
+                inside_quote = false;
+                if (keep_quote_char)
                     buf << c;
             }
             else
@@ -140,32 +63,110 @@ StringTokenizer::tokenize( const std::string& input, std::vector<std::string>& o
         }
         else
         {
-            if ( q != _quotes.end() )
+            if (q != _quotes.end())
             {
-                quoted = true;
-                lastQuoteChar = c;
-                if ( q->second )
+                // start a new quoted region
+                inside_quote = true;
+                quote_opener = c;
+                quote_closer = q->second.first;
+                keep_quote_char = q->second.second;
+                quote_opener_offset = i;
+
+                if (keep_quote_char)
                     buf << c;
             }
             else
             {
-                TokenMap::const_iterator d = _delims.find( c );
-                if ( d == _delims.end() )
+                bool is_delimiter = false;
+                auto input_remaining = input.size() - i;
+                for (auto& d : _delims)
+                {
+                    auto delim_size = d.first.size();
+                    if (delim_size <= input_remaining && strncmp(&input[i], d.first.c_str(), delim_size) == 0)
+                    {
+                        is_delimiter = true;
+
+                        // end the current token, clean it up, and push it
+                        auto token = buf.str();
+                        if (_trimTokens)
+                            trim_in_place(token);
+
+                        if (_allowEmpties || !token.empty())
+                            output.push_back(token);
+
+                        if (d.second == true) // keep the delimiter itself as a token?
+                            output.push_back(d.first);
+
+                        buf.str("");
+
+                        // advance over the delimiter
+                        i += d.first.size() - 1;
+                        break;
+                    }
+                }
+
+                if (!is_delimiter)
+                {
+                    buf << c;
+                }
+            }
+        }
+    }
+
+#if 0
+
+    for (auto& c : input)
+    {
+        ++offset;
+        auto q = _quotes.find(c);
+
+        if (inside_quote)
+        {
+            if (c == quote_closer)
+            {
+                inside_quote = false;
+                if (keep_quote_char)
+                    buf << c;
+            }
+            else
+            {
+                buf << c;
+            }
+        }
+        else
+        {
+            if (q != _quotes.end())
+            {
+                // start a new quoted region
+                inside_quote = true;
+                quote_opener = c;
+                quote_closer = q->second.first;
+                keep_quote_char = q->second.second;
+                quote_opener_offset = offset - 1;
+
+                if (keep_quote_char)
+                    buf << c;
+            }
+            else
+            {
+                auto d = _delims.find(c);
+                if (d == _delims.end())
                 {
                     buf << c;
                 }
                 else
                 {
+                    // found a delimiter. end the current token.
                     std::string token = buf.str();
-                    if ( _trimTokens )
-                        trim_in_place( token );
+                    if (_trimTokens)
+                        trim2(token);
 
-                    if ( _allowEmpties || !token.empty() )
-                        output.push_back( token );
+                    if (_allowEmpties || !token.empty())
+                        output.push_back(token);
 
-                    if ( d->second == true )
+                    if (d->second == true) // keep the delimiter itself as a token?
                     {
-                        output.push_back( std::string(1, c) );
+                        output.push_back(std::string(1, c));
                     }
 
                     buf.str("");
@@ -173,12 +174,24 @@ StringTokenizer::tokenize( const std::string& input, std::vector<std::string>& o
             }
         }
     }
+#endif
+
+    if (inside_quote)
+    {
+        Log()->warn("[Tokenizer] unterminated quote in string ({} at offset {}) : {}",
+            quote_opener, quote_opener_offset, input);
+
+        if (error)
+            *error = true;
+    }
 
     std::string bufstr = buf.str();
-    if ( _trimTokens )
-        trim_in_place( bufstr );
-    if ( !bufstr.empty() )
-        output.push_back( bufstr );
+    if (_trimTokens)
+        trim_in_place(bufstr);
+    if (!bufstr.empty())
+        output.push_back(bufstr);
+
+    return output;
 }
 
 //--------------------------------------------------------------------------

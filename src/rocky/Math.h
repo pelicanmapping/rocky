@@ -577,4 +577,36 @@ namespace ROCKY_NAMESPACE
             return quaternion_from_unscaled_matrix<Q>(_mat);
         }
     }
+
+    //! Multiplies two 4x4 matrices together, storing the result in OUT.
+    //! 40% faster than using dmat::operator* (according to SL).
+#define ROCKY_FAST_MAT4_MULT(OUT, LHS, RHS) { \
+    OUT[0][0] = LHS[0][0] * RHS[0][0] + LHS[1][0] * RHS[0][1] + LHS[2][0] * RHS[0][2] + LHS[3][0] * RHS[0][3], \
+    OUT[0][1] = LHS[0][1] * RHS[0][0] + LHS[1][1] * RHS[0][1] + LHS[2][1] * RHS[0][2] + LHS[3][1] * RHS[0][3], \
+    OUT[0][2] = LHS[0][2] * RHS[0][0] + LHS[1][2] * RHS[0][1] + LHS[2][2] * RHS[0][2] + LHS[3][2] * RHS[0][3], \
+    OUT[0][3] = LHS[0][3] * RHS[0][0] + LHS[1][3] * RHS[0][1] + LHS[2][3] * RHS[0][2] + LHS[3][3] * RHS[0][3], \
+    OUT[1][0] = LHS[0][0] * RHS[1][0] + LHS[1][0] * RHS[1][1] + LHS[2][0] * RHS[1][2] + LHS[3][0] * RHS[1][3], \
+    OUT[1][1] = LHS[0][1] * RHS[1][0] + LHS[1][1] * RHS[1][1] + LHS[2][1] * RHS[1][2] + LHS[3][1] * RHS[1][3], \
+    OUT[1][2] = LHS[0][2] * RHS[1][0] + LHS[1][2] * RHS[1][1] + LHS[2][2] * RHS[1][2] + LHS[3][2] * RHS[1][3], \
+    OUT[1][3] = LHS[0][3] * RHS[1][0] + LHS[1][3] * RHS[1][1] + LHS[2][3] * RHS[1][2] + LHS[3][3] * RHS[1][3], \
+    OUT[2][0] = LHS[0][0] * RHS[2][0] + LHS[1][0] * RHS[2][1] + LHS[2][0] * RHS[2][2] + LHS[3][0] * RHS[2][3], \
+    OUT[2][1] = LHS[0][1] * RHS[2][0] + LHS[1][1] * RHS[2][1] + LHS[2][1] * RHS[2][2] + LHS[3][1] * RHS[2][3], \
+    OUT[2][2] = LHS[0][2] * RHS[2][0] + LHS[1][2] * RHS[2][1] + LHS[2][2] * RHS[2][2] + LHS[3][2] * RHS[2][3], \
+    OUT[2][3] = LHS[0][3] * RHS[2][0] + LHS[1][3] * RHS[2][1] + LHS[2][3] * RHS[2][2] + LHS[3][3] * RHS[2][3], \
+    OUT[3][0] = LHS[0][0] * RHS[3][0] + LHS[1][0] * RHS[3][1] + LHS[2][0] * RHS[3][2] + LHS[3][0] * RHS[3][3], \
+    OUT[3][1] = LHS[0][1] * RHS[3][0] + LHS[1][1] * RHS[3][1] + LHS[2][1] * RHS[3][2] + LHS[3][1] * RHS[3][3], \
+    OUT[3][2] = LHS[0][2] * RHS[3][0] + LHS[1][2] * RHS[3][1] + LHS[2][2] * RHS[3][2] + LHS[3][2] * RHS[3][3], \
+    OUT[3][3] = LHS[0][3] * RHS[3][0] + LHS[1][3] * RHS[3][1] + LHS[2][3] * RHS[3][2] + LHS[3][3] * RHS[3][3]; }
+
+#define ROCKY_MAT4_IS_IDENTITY(M) \
+    (M[0][0] == 1.0 && M[0][1] == 0.0 && M[0][2] == 0.0 && M[0][3] == 0.0 && \
+     M[1][0] == 0.0 && M[1][1] == 1.0 && M[1][2] == 0.0 && M[1][3] == 0.0 && \
+     M[2][0] == 0.0 && M[2][1] == 0.0 && M[2][2] == 1.0 && M[2][3] == 0.0 && \
+     M[3][0] == 0.0 && M[3][1] == 0.0 && M[3][2] == 0.0 && M[3][3] == 1.0)
+
+#define ROCKY_MAT4_EQUAL(A,B) \
+    (A[0][0] == B[0][0] && A[0][1] == B[0][1] && A[0][2] == B[0][2] && A[0][3] == B[0][3] && \
+     A[1][0] == B[1][0] && A[1][1] == B[1][1] && A[1][2] == B[1][2] && A[1][3] == B[1][3] && \
+     A[2][0] == B[2][0] && A[2][1] == B[2][1] && A[2][2] == B[2][2] && A[2][3] == B[2][3] && \
+     A[3][0] == B[3][0] && A[3][1] == B[3][1] && A[3][2] == B[3][2] && A[3][3] == B[3][3])
 }

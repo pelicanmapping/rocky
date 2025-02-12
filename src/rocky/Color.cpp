@@ -164,9 +164,9 @@ Color::Color(const std::string& input, Format format)
     if (util::startsWith(t, "rgb("))
     {
         std::string sub = t.substr(4, t.size() - 5);
-        util::StringTokenizer tok(",");
-        std::vector<std::string> components;
-        tok.tokenize(sub, components);
+        auto components = util::StringTokenizer()
+            .delim(",")
+            .tokenize(sub);
         if (components.size() == 3)
         {
             unsigned R = util::as<unsigned>(components[0], 0u);
@@ -178,9 +178,9 @@ Color::Color(const std::string& input, Format format)
     else if (util::startsWith(t, "rgba("))
     {
         std::string sub = t.substr(5, t.size() - 6);
-        util::StringTokenizer tok(",");
-        std::vector<std::string> components;
-        tok.tokenize(sub, components);
+        auto components = util::StringTokenizer()
+            .delim(",")
+            .tokenize(sub);
         if (components.size() == 4)
         {
             unsigned int R = util::as<unsigned int>(components[0], 0u);
@@ -193,9 +193,9 @@ Color::Color(const std::string& input, Format format)
     else if (util::startsWith(t, "hsl("))
     {
         std::string sub = t.substr(4, t.size() - 5);
-        util::StringTokenizer tok(",");
-        std::vector<std::string> components;
-        tok.tokenize(sub, components);
+        auto components = util::StringTokenizer()
+            .delim(",")
+            .tokenize(sub);
         if (components.size() == 3)
         {
             float H = util::as<float>(components[0], 0.0f);
@@ -226,9 +226,9 @@ Color::Color(const std::string& input, Format format)
     else if (util::startsWith(t, "hsla("))
     {
         std::string sub = t.substr(5, t.size() - 6);
-        util::StringTokenizer tok(",");
-        std::vector<std::string> components;
-        tok.tokenize(sub, components);
+        auto components = util::StringTokenizer()
+            .delim(",")
+            .tokenize(sub);
         if (components.size() == 4)
         {
             float H = util::as<float>(components[0], 0.0f);

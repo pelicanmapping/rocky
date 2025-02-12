@@ -542,12 +542,9 @@ SRS::name() const
 }
 
 bool
-SRS::valid() const
+SRS::_establish_valid() const
 {
-    if (!_valid.has_value())
-    {        
-        _valid = !_definition.empty() && g_srs_factory.get_or_create(_definition).pj != nullptr;
-    }
+    _valid = !_definition.empty() && g_srs_factory.get_or_create(_definition).pj != nullptr;
     return _valid.value();
 }
 

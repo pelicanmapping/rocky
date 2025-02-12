@@ -62,7 +62,7 @@ auto Demo_Simulation = [](Application& app)
     static std::set<entt::entity> platforms;
     static Status status;
     static Simulator sim(app);
-    const unsigned num_platforms = 5000;
+    const unsigned num_platforms = 15000;
 
     if (status.failed())
     {
@@ -116,7 +116,7 @@ auto Demo_Simulation = [](Application& app)
                 // Add a transform component:
                 auto& transform = registry.emplace<Transform>(entity);
                 transform.setPosition(pos);
-                //transform.localTangentPlane = false;
+                transform.localTangentPlane = false;
 
                 // Add a motion component to represent movement:
                 double initial_bearing = -180.0 + rand_unit(mt) * 360.0;
@@ -124,6 +124,7 @@ auto Demo_Simulation = [](Application& app)
                 motion.velocity = { -75000 + rand_unit(mt) * 150000, 0.0, 0.0 };
                 motion.normalAxis = pos.srs.ellipsoid().greatCircleRotationAxis(glm::dvec3(lon, lat, 0.0), initial_bearing);
 
+#if 0
                 // Place a label below the platform:
                 auto& label = registry.emplace<Label>(entity);
                 label.text = std::to_string(i);
@@ -138,6 +139,7 @@ auto Demo_Simulation = [](Application& app)
                 drop_line.points = { {0.0, 0.0, 0.0}, {0.0, 0.0, -1e6} };
                 drop_line.style.width = 1.5f;
                 drop_line.style.color = vsg::vec4{ 0.4f, 0.4f, 0.4f, 1.0f };
+#endif
 
                 // Decluttering information
                 auto& declutter = registry.emplace<Declutter>(entity);
