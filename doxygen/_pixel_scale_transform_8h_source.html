@@ -115,8 +115,8 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>            <span class="keywordflow">if</span> (unrotate)</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>            {</div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>                <span class="keyword">auto</span>&amp; <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">mv</a> = state.modelviewMatrixStack.top();</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>                <span class="keyword">auto</span> <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">rotation</a> = util::quaternion_from_unscaled_matrix&lt;vsg::dquat&gt;(<a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">mv</a>);</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>                matrix = matrix * vsg::rotate(vsg::inverse(<a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">rotation</a>));</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>                <span class="keyword">auto</span> rotation = util::quaternion_from_unscaled_matrix&lt;vsg::dquat&gt;(<a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">mv</a>);</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>                matrix = matrix * vsg::rotate(vsg::inverse(rotation));</div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>            }</div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>            <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">rt</a>.apply(*<span class="keyword">this</span>);</div>
