@@ -62,58 +62,6 @@ namespace ROCKY_NAMESPACE
         }
     };
 
-    class ROCKY_EXPORT ComputePipelineConfigurator : public vsg::Inherit<vsg::Object, ComputePipelineConfigurator>
-    {
-    public:
-        ComputePipelineConfigurator(vsg::ref_ptr<vsg::ShaderSet> in_shaderSet = {});
-
-        void traverse(vsg::Visitor& visitor) override;
-        void traverse(vsg::ConstVisitor& visitor) const override;
-
-        uint32_t subpass = 0;
-        uint32_t baseAttributeBinding = 0;
-        vsg::ref_ptr<vsg::ShaderSet> shaderSet;
-
-        void reset();
-
-        bool enableDescriptor(const std::string& name);
-        bool enableTexture(const std::string& name);
-
-        bool assignDescriptor(const std::string& name, vsg::ref_ptr<vsg::Data> data = {}, uint32_t dstArrayElement = 0);
-        bool assignDescriptor(const std::string& name, const vsg::BufferInfoList& bufferInfoList, uint32_t dstArrayElement = 0);
-        bool assignTexture(const std::string& name, vsg::ref_ptr<vsg::Data> textureData = {}, vsg::ref_ptr<vsg::Sampler> sampler = {}, uint32_t dstArrayElement = 0);
-        bool assignTexture(const std::string& name, const vsg::ImageInfoList& imageInfoList, uint32_t dstArrayElement = 0);
-
-        /// set the inherited state which if compatible can hint at the state setup and copying to avoid setting inherited state local subgraph
-        void assignInheritedState(const vsg::StateCommands& stateCommands);
-
-        // setup by assign calls
-        vsg::ref_ptr<vsg::ShaderCompileSettings> shaderHints;
-        vsg::ref_ptr<vsg::DescriptorConfigurator> descriptorConfigurator;
-        vsg::StateCommands inheritedState;
-
-        int compare(const vsg::Object& rhs) const override;
-
-        /// initialize state objects
-        virtual void init();
-
-        /// copy state objects to StateCommands list, return true if state is added.
-        virtual bool copyTo(vsg::StateCommands& stateCommands, vsg::ref_ptr<vsg::SharedObjects> sharedObjects = {});
-
-        /// copy state objects to StateGroup, return true if state is added.
-        //virtual bool copyTo(vsg::ref_ptr<vsg::StateGroup> stateGroup, vsg::ref_ptr<vsg::SharedObjects> sharedObjects = {});
-
-        // setup by init()
-        std::set<uint32_t> inheritedSets;
-        vsg::ref_ptr<vsg::PipelineLayout> layout;
-        vsg::ref_ptr<vsg::ComputePipeline> computePipeline;
-        vsg::ref_ptr<vsg::BindComputePipeline> bindComputePipeline;
-
-    protected:
-        //void _assignShaderSetSettings();
-        //void _assignInheritedSets();
-    };
-
     class ROCKY_EXPORT DrawIndexedIndirectSSBO : public vsg::Inherit<vsg::DrawIndexedIndirect, DrawIndexedIndirectSSBO>
     {
     public:
