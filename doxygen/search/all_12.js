@@ -32,7 +32,7 @@ var searchData=
   ['rendercontinuously_29',['renderContinuously',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#a7841f63786f169eddf8c241edb8135cd',1,'ROCKY_NAMESPACE::VSGContextImpl']]],
   ['renderingenabled_30',['renderingEnabled',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#a60b06e8377def6bbca78f57e6f875c12',1,'ROCKY_NAMESPACE::VSGContextImpl']]],
   ['renderrequests_31',['renderRequests',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#a1008c3fa307122c16190dffeb1e0c0ed',1,'ROCKY_NAMESPACE::VSGContextImpl']]],
-  ['rendertype_32',['rendertype',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1',1,'ROCKY_NAMESPACE::Layer::RenderType'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a9ba5c50675206531e4ce441b19880418',1,'ROCKY_NAMESPACE::Layer::renderType() const']]],
+  ['rendertype_32',['rendertype',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a9ba5c50675206531e4ce441b19880418',1,'ROCKY_NAMESPACE::Layer::renderType() const'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a81f42475cc4fa775fb9b86381a14edd1',1,'ROCKY_NAMESPACE::Layer::RenderType']]],
   ['replacechild_33',['ReplaceChild',['../class_ti_xml_node.html#a543208c2c801c84a213529541e904b9f',1,'TiXmlNode']]],
   ['reproject_34',['reproject',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_image.html#a379055c5a835826ea0f73b5a112620a4',1,'ROCKY_NAMESPACE::GeoImage']]],
   ['requestframe_35',['requestFrame',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#ae400cbc9f2a296c23e1ec855c9a6b563',1,'ROCKY_NAMESPACE::VSGContextImpl']]],
