@@ -116,7 +116,9 @@ auto Demo_Simulation = [](Application& app)
                 // Add a transform component:
                 auto& transform = registry.emplace<Transform>(entity);
                 transform.setPosition(pos);
-                transform.localTangentPlane = false;
+
+                // We need this to support the drop-line. There is a small performance hit.
+                transform.localTangentPlane = true;
 
                 // Add a motion component to represent movement:
                 double initial_bearing = -180.0 + rand_unit(mt) * 360.0;
@@ -124,7 +126,6 @@ auto Demo_Simulation = [](Application& app)
                 motion.velocity = { -75000 + rand_unit(mt) * 150000, 0.0, 0.0 };
                 motion.normalAxis = pos.srs.ellipsoid().greatCircleRotationAxis(glm::dvec3(lon, lat, 0.0), initial_bearing);
 
-#if 0
                 // Place a label below the platform:
                 auto& label = registry.emplace<Label>(entity);
                 label.text = std::to_string(i);
@@ -135,13 +136,15 @@ auto Demo_Simulation = [](Application& app)
                 label.style.verticalAlignment = vsg::StandardLayout::TOP_ALIGNMENT;
 
                 // How about a drop line?
+                // Since the drop line is relative to the platfrom, we have to enable
+                // transform.localTangentPlane = true (see above)
                 auto& drop_line = registry.emplace<Line>(entity);
                 drop_line.points = { {0.0, 0.0, 0.0}, {0.0, 0.0, -1e6} };
                 drop_line.style.width = 1.5f;
                 drop_line.style.color = vsg::vec4{ 0.4f, 0.4f, 0.4f, 1.0f };
-#endif
 
-                // Decluttering information
+                // Decluttering control. The presence of this compoenent will allow the entity
+                // to participate in decluttering when it's enabled.
                 auto& declutter = registry.emplace<Declutter>(entity);
                 declutter.priority = alt;
 

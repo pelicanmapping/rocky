@@ -10,7 +10,7 @@
 
 namespace ROCKY_NAMESPACE
 {
-    namespace util
+    namespace detail
     {
         template<typename T>
         using ViewLocal = std::array<T, ROCKY_MAX_NUMBER_OF_VIEWS>;

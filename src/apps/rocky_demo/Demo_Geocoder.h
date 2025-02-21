@@ -113,9 +113,11 @@ auto Demo_Geocoder = [](Application& app)
             auto& result = geocoding_task.value();
             if (result.status.ok())
             {
+                int count = 0;
                 ImGui::Text("Click on a result to center:");
                 for (auto& feature : result.value)
                 {
+                    ImGui::PushID(count++);
                     bool selected = false;
                     ImGui::Separator();
                     std::string display_name = feature.field("display_name").stringValue;
@@ -179,6 +181,7 @@ auto Demo_Geocoder = [](Application& app)
                                 xform.setPosition(extent.centroid());
                             });
                     }
+                    ImGui::PopID();
                 }
                 ImGui::Separator();
                 if (ImGui::Button("Clear"))

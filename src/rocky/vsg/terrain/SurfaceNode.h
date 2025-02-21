@@ -67,7 +67,7 @@ namespace ROCKY_NAMESPACE
         struct ViewLocalData {
             std::shared_ptr<Horizon> horizon;
         };
-        mutable util::ViewLocal<ViewLocalData> _viewlocal;
+        mutable detail::ViewLocal<ViewLocalData> _viewlocal;
     };
 
 

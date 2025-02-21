@@ -98,6 +98,6 @@ namespace ROCKY_NAMESPACE
             std::shared_ptr<Horizon> horizon;
         };
 
-        mutable util::ViewLocal<ViewLocalData> viewLocal;
+        mutable detail::ViewLocal<ViewLocalData> viewLocal;
     };
 } // namespace

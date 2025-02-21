@@ -24,49 +24,42 @@
 
 namespace ROCKY_NAMESPACE
 {
-    inline glm::fvec3 to_glm(const vsg::vec3& a) {
-        return glm::fvec3(a.x, a.y, a.z);
-    }
-    inline glm::dvec3 to_glm(const vsg::dvec3& a) {
-        return glm::dvec3(a.x, a.y, a.z);
-    }
-    inline glm::fmat4 to_glm(const vsg::mat4& a) {
-        return glm::fmat4(
-            a[0][0], a[0][1], a[0][2], a[0][3],
-            a[1][0], a[1][1], a[1][2], a[1][3],
-            a[2][0], a[2][1], a[2][2], a[2][3],
-            a[3][0], a[3][1], a[3][2], a[3][3]);
-    }
-    inline glm::dmat4 to_glm(const vsg::dmat4& a) {
-        return glm::dmat4(
-            a[0][0], a[0][1], a[0][2], a[0][3],
-            a[1][0], a[1][1], a[1][2], a[1][3],
-            a[2][0], a[2][1], a[2][2], a[2][3],
-            a[3][0], a[3][1], a[3][2], a[3][3]);
+    namespace detail
+    {
+        // Visitor that finds the first node of a given type in a scene graph.
+        template<class T>
+        class FindNodeVisitor : public vsg::Inherit<vsg::Visitor, FindNodeVisitor<T>>
+        {
+        public:
+            T* found = nullptr;
+            void apply(vsg::Node& node) override
+            {
+                if (!found)
+                {
+                    found = node.cast<T>();
+                    node.traverse(*this);
+                }
+            }
+        };
     }
 
-#if 0
-    inline vsg::vec3 to_vsg(const glm::fvec3& a) {
-        return vsg::vec3(a.x, a.y, a.z);
+    // vsg-glm conversions.
+    // These work because GLM and VSG classes are binary compatible.
+    // C++ does not permit conversion operator overload outside of a class.
+
+    inline const glm::fvec3& to_glm(const vsg::vec3& a) {
+        return reinterpret_cast<const glm::fvec3&>(a);
     }
-    inline vsg::dvec3 to_vsg(const glm::dvec3& a) {
-        return vsg::dvec3(a.x, a.y, a.z);
+    inline const glm::dvec3& to_glm(const vsg::dvec3& a) {
+        return reinterpret_cast<const glm::dvec3&>(a);
     }
-    inline vsg::mat4 to_vsg(const glm::fmat4& a) {
-        return vsg::mat4(
-            a[0][0], a[0][1], a[0][2], a[0][3],
-            a[1][0], a[1][1], a[1][2], a[1][3],
-            a[2][0], a[2][1], a[2][2], a[2][3],
-            a[3][0], a[3][1], a[3][2], a[3][3]);
+    inline const glm::fmat4& to_glm(const vsg::mat4& a) {
+        return reinterpret_cast<const glm::fmat4&>(a);
     }
-    inline vsg::dmat4 to_vsg(const glm::dmat4& a) {
-        return vsg::dmat4(
-            a[0][0], a[0][1], a[0][2], a[0][3],
-            a[1][0], a[1][1], a[1][2], a[1][3],
-            a[2][0], a[2][1], a[2][2], a[2][3],
-            a[3][0], a[3][1], a[3][2], a[3][3]);
+    inline const glm::dmat4& to_glm(const vsg::dmat4& a) {
+        return reinterpret_cast<const glm::dmat4&>(a);
     }
-#else
+
     inline const vsg::vec3& to_vsg(const glm::fvec3& a) {
         return reinterpret_cast<const vsg::vec3&>(a);
     }
@@ -79,13 +72,14 @@ namespace ROCKY_NAMESPACE
     inline const vsg::dmat4& to_vsg(const glm::dmat4& a) {
         return reinterpret_cast<const vsg::dmat4&>(a);
     }
-#endif
 
+    //! Distance in scene units (meters) from a point to the camera.
     inline float distanceTo(const vsg::dvec3& p, vsg::State* state)
     {
         return (float)vsg::length(state->modelviewMatrixStack.top() * p);
     }
 
+    //! Expands an existing sphere to include a point.
     template<typename vec_type>
     inline void expandBy(vsg::dsphere& bs, const vec_type& v)
     {        
@@ -373,6 +367,9 @@ namespace ROCKY_NAMESPACE
             }
         };
 
+        /**
+        * vsg::Operation that executes a lambda function.
+        */
         class LambdaOperation : public vsg::Inherit<vsg::Operation, LambdaOperation>
         {
         public:
@@ -381,43 +378,6 @@ namespace ROCKY_NAMESPACE
         private:
             std::function<void()> _func;
         };
-
-#if 0
-        vsg::ref_ptr<vsg::Image> createBasicImage(std::uint32_t width, std::uint32_t height, VkFormat format)
-        {
-            auto image = vsg::Image::create();
-            image->imageType = VK_IMAGE_TYPE_2D;
-            image->format = format; // VK_FORMAT_R8G8B8A8_UNORM;
-            image->extent = VkExtent3D{ width, height, 1 };
-            image->mipLevels = 1;
-            image->arrayLayers = 1;
-            image->samples = VK_SAMPLE_COUNT_1_BIT;
-            image->tiling = VK_IMAGE_TILING_OPTIMAL;
-            image->usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-            image->initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            image->flags = 0;
-            image->sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            return image;
-        }
-
-        vsg::ref_ptr<vsg::Sampler> createBasicSampler()
-        {
-            auto sampler = vsg::Sampler::create();
-            sampler->flags = 0;
-            sampler->magFilter = VK_FILTER_LINEAR;
-            sampler->minFilter = VK_FILTER_LINEAR;
-            sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-            sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-            sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-            sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-            sampler->mipLodBias = 0.0f;
-            sampler->maxAnisotropy = 1.0f;
-            sampler->minLod = 0.0f;
-            sampler->maxLod = 1.0f;
-            sampler->borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-            return sampler;
-        }
-#endif
 
         /**
         * Like vsg::CompileTraversal, but only for simple nodes and commands.
@@ -446,25 +406,11 @@ namespace ROCKY_NAMESPACE
             }
         };
 
-        template<class T>
-        class FindNodeVisitor : public vsg::Inherit<vsg::Visitor, FindNodeVisitor<T>>
-        {
-        public:
-            T* found = nullptr;
-            void apply(vsg::Node& node) override
-            {
-                if (!found)
-                {
-                    found = node.cast<T>();
-                    node.traverse(*this);
-                }
-            }
-        };
-
+        //! Finds the first node of a given type in a scene graph.
         template<class T>
         inline T* find(const vsg::ref_ptr<vsg::Node>& root)
         {
-            FindNodeVisitor<T> visitor;
+            detail::FindNodeVisitor<T> visitor;
             root->accept(visitor);
             return visitor.found;
         }

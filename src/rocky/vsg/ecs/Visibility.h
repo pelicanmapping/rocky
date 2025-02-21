@@ -20,7 +20,7 @@ namespace ROCKY_NAMESPACE
     /**
     * Component representing an entity's visibility state across mulitple views.
     */
-    struct Visibility : public util::ViewLocal<bool>
+    struct Visibility : public detail::ViewLocal<bool>
     {
         Visibility() {
             fill(true);

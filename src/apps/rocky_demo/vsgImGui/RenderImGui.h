@@ -34,16 +34,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace vsgImGui
 {
-
     class RenderImGui : public vsg::Inherit<vsg::Group, RenderImGui>
     {
     public:
         RenderImGui(const vsg::ref_ptr<vsg::Window>& window, bool useClearAttachments = false);
 
         RenderImGui(vsg::ref_ptr<vsg::Device> device, uint32_t queueFamily,
-                    vsg::ref_ptr<vsg::RenderPass> renderPass,
-                    uint32_t minImageCount, uint32_t imageCount,
-                    VkExtent2D imageSize, bool useClearAttachments = false);
+            vsg::ref_ptr<vsg::RenderPass> renderPass,
+            uint32_t minImageCount, uint32_t imageCount,
+            VkExtent2D imageSize, bool useClearAttachments = false);
 
         template<typename... Args>
         RenderImGui(const vsg::ref_ptr<vsg::Window>& window, Args&&... args) :
@@ -86,11 +85,14 @@ namespace vsgImGui
 
         void _init(const vsg::ref_ptr<vsg::Window>& window, bool useClearAttachments);
         void _init(vsg::ref_ptr<vsg::Device> device, uint32_t queueFamily,
-                   vsg::ref_ptr<vsg::RenderPass> renderPass,
-                   uint32_t minImageCount, uint32_t imageCount,
-                   VkExtent2D imageSize, bool useClearAttachments);
+            vsg::ref_ptr<vsg::RenderPass> renderPass,
+            uint32_t minImageCount, uint32_t imageCount,
+            VkExtent2D imageSize, bool useClearAttachments);
         void _uploadFonts();
     };
+
+    // temporary workaround for Dear ImGui's nonexistent sRGB awareness
+    extern void ImGuiStyle_sRGB_to_linear(ImGuiStyle& style);
 
 } // namespace vsgImGui
 

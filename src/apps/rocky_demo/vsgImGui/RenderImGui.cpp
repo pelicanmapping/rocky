@@ -26,6 +26,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <imgui_impl_vulkan.h>
 
 #include <vsg/io/Logger.h>
+#include <vsg/maths/color.h>
+#include <vsg/utils/CoordinateSpace.h>
 #include <vsg/vk/State.h>
 #include <vsg/vk/SubmitCommands.h>
 
@@ -54,6 +56,18 @@ namespace vsgImGui
         }
     };
 
+    void ImGuiStyle_sRGB_to_linear(ImGuiStyle& style)
+    {
+        for (size_t i = 0; i < ImGuiCol_COUNT; ++i)
+        {
+            ImVec4& color = style.Colors[i];
+            color.x = vsg::sRGB_to_linear<float>(color.x);
+            color.y = vsg::sRGB_to_linear<float>(color.y);
+            color.z = vsg::sRGB_to_linear<float>(color.z);
+            //color = vsg::sRGB_to_linear<float>(color);
+        }
+    }
+
 } // namespace vsgImGui
 
 RenderImGui::RenderImGui(const vsg::ref_ptr<vsg::Window>& window, bool useClearAttachments)
@@ -63,9 +77,9 @@ RenderImGui::RenderImGui(const vsg::ref_ptr<vsg::Window>& window, bool useClearA
 }
 
 RenderImGui::RenderImGui(vsg::ref_ptr<vsg::Device> device, uint32_t queueFamily,
-                         vsg::ref_ptr<vsg::RenderPass> renderPass,
-                         uint32_t minImageCount, uint32_t imageCount,
-                         VkExtent2D imageSize, bool useClearAttachments)
+    vsg::ref_ptr<vsg::RenderPass> renderPass,
+    uint32_t minImageCount, uint32_t imageCount,
+    VkExtent2D imageSize, bool useClearAttachments)
 {
     _init(device, queueFamily, renderPass, minImageCount, imageCount, imageSize, useClearAttachments);
     _uploadFonts();
@@ -94,18 +108,18 @@ void RenderImGui::_init(const vsg::ref_ptr<vsg::Window>& window, bool useClearAt
 
     VkSurfaceCapabilitiesKHR capabilities;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(*physicalDevice,
-                                              *(window->getSurface()),
-                                              &capabilities);
+        *(window->getSurface()),
+        &capabilities);
     uint32_t imageCount = 3;
     imageCount =
         std::max(imageCount,
-                 capabilities.minImageCount); // Vulkan spec requires
-                                              // minImageCount to be 1 or greater
+            capabilities.minImageCount); // Vulkan spec requires
+    // minImageCount to be 1 or greater
     if (capabilities.maxImageCount > 0)
         imageCount = std::min(
             imageCount,
             capabilities.maxImageCount); // Vulkan spec specifies 0 as being
-                                         // unlimited number of images
+    // unlimited number of images
 
     _init(device, queueFamily, window->getOrCreateRenderPass(), capabilities.minImageCount, imageCount, window->extent2D(), useClearAttachments);
 }
@@ -117,7 +131,29 @@ void RenderImGui::_init(
     VkExtent2D imageSize, bool useClearAttachments)
 {
     IMGUI_CHECKVERSION();
-    if (!ImGui::GetCurrentContext()) ImGui::CreateContext();
+
+    if (!ImGui::GetCurrentContext())
+    {
+        ImGui::CreateContext();
+    }
+
+    bool sRGB = false;
+    for (auto& attachment : renderPass->attachments)
+    {
+        if (attachment.finalLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR || attachment.finalLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+        {
+            if (attachment.format == VK_FORMAT_B8G8R8_SRGB ||
+                attachment.format == VK_FORMAT_B8G8R8A8_SRGB ||
+                attachment.format == VK_FORMAT_R8G8B8_SRGB ||
+                attachment.format == VK_FORMAT_R8G8B8A8_SRGB) sRGB = true;
+        }
+    }
+
+    if (sRGB)
+    {
+        ImGuiStyle_sRGB_to_linear(ImGui::GetStyle());
+    }
+
     //if (!ImPlot::GetCurrentContext()) ImPlot::CreateContext();
 
     VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT;
@@ -158,7 +194,7 @@ void RenderImGui::_init(
         {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
         {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
         {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
-        {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}};
+        {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000} };
 
     uint32_t maxSets = static_cast<uint32_t>(1000 * pool_sizes.size());
     _descriptorPool = vsg::DescriptorPool::create(_device, maxSets, pool_sizes);
@@ -176,10 +212,10 @@ void RenderImGui::_init(
     {
         // clear the depth buffer before view2 gets rendered
         VkClearValue clearValue{};
-        clearValue.depthStencil = {1.0f, 0};
-        VkClearAttachment attachment{VK_IMAGE_ASPECT_DEPTH_BIT, 1, clearValue};
-        VkClearRect rect{VkRect2D{VkOffset2D{0, 0}, VkExtent2D{imageSize.width, imageSize.height}}, 0, 1};
-        _clearAttachments = vsg::ClearAttachments::create(vsg::ClearAttachments::Attachments{attachment}, vsg::ClearAttachments::Rects{rect});
+        clearValue.depthStencil = { 1.0f, 0 };
+        VkClearAttachment attachment{ VK_IMAGE_ASPECT_DEPTH_BIT, 1, clearValue };
+        VkClearRect rect{ VkRect2D{VkOffset2D{0, 0}, VkExtent2D{imageSize.width, imageSize.height}}, 0, 1 };
+        _clearAttachments = vsg::ClearAttachments::create(vsg::ClearAttachments::Attachments{ attachment }, vsg::ClearAttachments::Rects{ rect });
     }
 }
 
@@ -214,6 +250,7 @@ void RenderImGui::accept(vsg::RecordTraversal& rt) const
     }
 }
 
+// ROCKY
 void RenderImGui::frame(std::function<void()> renderFunction)
 {
     if (renderFunction)

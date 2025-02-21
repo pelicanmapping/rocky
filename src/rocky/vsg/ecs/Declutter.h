@@ -7,6 +7,10 @@
 
 namespace ROCKY_NAMESPACE
 {
+    /**
+    * ECS component whose precense on an entity indicates that the entity
+    * should particpate in decluttering.
+    */
     struct Declutter
     {
         float priority = 0.0f;
