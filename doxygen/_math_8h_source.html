@@ -144,7 +144,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>        Sphere(<span class="keyword">const</span> glm::dvec3&amp; a, <span class="keywordtype">double</span> b) :</div>
 <div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>            center(a), radius(b) { }</div>
 <div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>        <span class="keywordtype">void</span> expandBy(<span class="keyword">const</span> glm::dvec3&amp; v) {</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>        <span class="keywordtype">void</span> <a class="code hl_function" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a1eeebb36064ee832159613307c006bc2">expandBy</a>(<span class="keyword">const</span> glm::dvec3&amp; v) {</div>
 <div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>            <span class="keywordflow">if</span> (valid()) {</div>
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>                <span class="keyword">auto</span> dv = v - center;</div>
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>                <span class="keywordtype">double</span> r = glm::length(dv);</div>
@@ -199,7 +199,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span> </div>
 <div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>        <span class="keywordtype">bool</span> contains(<span class="keyword">const</span> Box&amp;) <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span> </div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>        <span class="keywordtype">void</span> expandBy(<span class="keyword">const</span> glm::dvec3&amp; p) {</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>        <span class="keywordtype">void</span> <a class="code hl_function" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a1eeebb36064ee832159613307c006bc2">expandBy</a>(<span class="keyword">const</span> glm::dvec3&amp; p) {</div>
 <div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span>            xmin = std::min(xmin, p.x);</div>
 <div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>            xmax = std::max(xmax, p.x);</div>
 <div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>            ymin = std::min(ymin, p.y);</div>
@@ -208,7 +208,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>            zmax = std::max(zmax, p.z);</div>
 <div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>        }</div>
 <div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span> </div>
-<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>        <span class="keywordtype">void</span> expandBy(<span class="keyword">const</span> Box&amp; rhs) {</div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span>        <span class="keywordtype">void</span> <a class="code hl_function" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a1eeebb36064ee832159613307c006bc2">expandBy</a>(<span class="keyword">const</span> Box&amp; rhs) {</div>
 <div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span>            xmin = std::min(xmin, rhs.xmin);</div>
 <div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span>            xmax = std::max(xmax, rhs.xmax);</div>
 <div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span>            ymin = std::min(ymin, rhs.ymin);</div>
@@ -229,9 +229,9 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>        }</div>
 <div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span> </div>
 <div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>        <span class="keyword">template</span>&lt;<span class="keyword">class</span> ITER&gt;</div>
-<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>        <span class="keywordtype">void</span> expandBy(ITER begin, ITER end) {</div>
+<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>        <span class="keywordtype">void</span> <a class="code hl_function" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a1eeebb36064ee832159613307c006bc2">expandBy</a>(ITER begin, ITER end) {</div>
 <div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>            <span class="keywordflow">for</span> (ITER i = begin; i != end; ++i)</div>
-<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span>                expandBy({ i-&gt;x, i-&gt;y, i-&gt;z });</div>
+<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span>                <a class="code hl_function" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a1eeebb36064ee832159613307c006bc2">expandBy</a>({ i-&gt;x, i-&gt;y, i-&gt;z });</div>
 <div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>        }</div>
 <div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span> </div>
 <div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span>        glm::dvec3 corner(<span class="keywordtype">unsigned</span> i)<span class="keyword"> const </span>{</div>
@@ -242,8 +242,8 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>        }</div>
 <div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span> </div>
 <div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span><span class="preprocessor">#if 1</span></div>
-<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>        <span class="keywordtype">void</span> expandBy(<span class="keyword">const</span> Sphere&amp; rhs) {</div>
-<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>            expandBy(Box(</div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>        <span class="keywordtype">void</span> <a class="code hl_function" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a1eeebb36064ee832159613307c006bc2">expandBy</a>(<span class="keyword">const</span> Sphere&amp; rhs) {</div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>            <a class="code hl_function" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a1eeebb36064ee832159613307c006bc2">expandBy</a>(Box(</div>
 <div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>                rhs.center.x - rhs.radius, rhs.center.x + rhs.radius,</div>
 <div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>                rhs.center.y - rhs.radius, rhs.center.y + rhs.radius,</div>
 <div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>                rhs.center.z - rhs.radius, rhs.center.z + rhs.radius));</div>
@@ -676,6 +676,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>}</div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition</b> Callbacks.h:16</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a017f7d83163e0abab14e4a8ad76c9ee4"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a017f7d83163e0abab14e4a8ad76c9ee4">ROCKY_NAMESPACE::Interpolation</a></div><div class="ttdeci">Interpolation</div><div class="ttdoc">Raster interpolation methods.</div><div class="ttdef"><b>Definition</b> Math.h:23</div></div>
+<div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a1eeebb36064ee832159613307c006bc2"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a1eeebb36064ee832159613307c006bc2">ROCKY_NAMESPACE::expandBy</a></div><div class="ttdeci">void expandBy(vsg::dsphere &amp;bs, const vec_type &amp;v)</div><div class="ttdoc">Expands an existing sphere to include a point.</div><div class="ttdef"><b>Definition</b> Utils.h:84</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">ROCKY_NAMESPACE::optional</a></div><div class="ttdef"><b>Definition</b> optional.h:26</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
