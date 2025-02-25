@@ -522,11 +522,6 @@ SRS::projVersion()
     return std::to_string(PROJ_VERSION_MAJOR) + "." + std::to_string(PROJ_VERSION_MINOR);
 }
 
-SRS::SRS()
-{
-    //nop
-}
-
 SRS::SRS(const std::string& h) :
     _definition(h)
 {
@@ -706,7 +701,7 @@ SRS::geocentricSRS() const
 }
 
 glm::dmat4
-SRS::localToWorldMatrix(const glm::dvec3& origin) const
+SRS::topocentricToWorldMatrix(const glm::dvec3& origin) const
 {
     if (!valid())
         return { };
@@ -715,11 +710,11 @@ SRS::localToWorldMatrix(const glm::dvec3& origin) const
     {
         auto& ellip = ellipsoid();
         auto ecef = ellip.geodeticToGeocentric(origin);
-        return ellipsoid().geocentricToLocalToWorld(ecef);
+        return ellipsoid().topocentricToGeocentricMatrix(ecef);
     }
     else if (isGeocentric())
     {
-        return ellipsoid().geocentricToLocalToWorld(origin);
+        return ellipsoid().topocentricToGeocentricMatrix(origin);
     }
     else // projected
     {
@@ -795,18 +790,18 @@ SRS::transformUnits(const Distance& distance, const SRS& outSRS, const Angle& la
 }
 
 double
-SRS::transformDistance(const Distance& input, const Units& outputUnits, double referenceLatitude) const
+SRS::transformDistance(const Distance& input, const Units& outputUnits, const Angle& referenceLatitude) const
 {
     auto inputUnits = input.units();
 
     if (inputUnits.isAngle() && outputUnits.isLinear())
     {
-        auto meters = ellipsoid().longitudinalDegreesToMeters(input.as(Units::DEGREES), referenceLatitude);
+        auto meters = ellipsoid().longitudinalDegreesToMeters(input.as(Units::DEGREES), referenceLatitude.as(Units::DEGREES));
         return Units::convert(Units::METERS, outputUnits, meters);
     }
     else if (inputUnits.isLinear() && outputUnits.isAngle())
     {
-        auto degrees = ellipsoid().metersToLongitudinalDegrees(input.as(Units::METERS), referenceLatitude);
+        auto degrees = ellipsoid().metersToLongitudinalDegrees(input.as(Units::METERS), referenceLatitude.as(Units::DEGREES));
         return Units::convert(Units::DEGREES, outputUnits, degrees);
     }
     else

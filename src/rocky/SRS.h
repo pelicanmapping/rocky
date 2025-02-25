@@ -15,28 +15,28 @@ namespace ROCKY_NAMESPACE
 
     /**
     * Spatial reference system.
-    * An SRS is the context that makes a coordinates geospatially meaningful.
+    * An SRS is the context that makes coordinates geospatially meaningful.
     */
     class ROCKY_EXPORT SRS
     {
     public:
-        //! Latitude and Longitude on the WGS84 ellipsoid
+        //! Longitude and Latitude on the WGS84 ellipsoid (degrees)
         //! https://en.wikipedia.org/wiki/World_Geodetic_System
         static const SRS WGS84;
 
-        //! Earth Centered Earth Fixed (Geocentric cartesian)
+        //! Earth Centered Earth Fixed (Geocentric cartesian, meters)
         //! https://en.wikipedia.org/wiki/Earth-centered,_Earth-fixed_coordinate_system
         static const SRS ECEF;
 
-        //! Spherical Mercator, most common SRS for web maps
+        //! Spherical Mercator, most common SRS for web maps (meters)
         //! https://proj.org/operations/projections/merc.html
         static const SRS SPHERICAL_MERCATOR;
 
-        //! Equidistant Cylindrical
+        //! Equidistant Cylindrical (meters)
         //! https://proj.org/operations/projections/eqc.html
         static const SRS PLATE_CARREE;
 
-        //! Earth's Moon, Geographic coords.
+        //! Earth's Moon, Geographic coords (degrees)
         static const SRS MOON;
 
         //! Empty invalid SRS
@@ -44,7 +44,7 @@ namespace ROCKY_NAMESPACE
 
     public:
         //! Construct an empty (invalid) SRS.
-        SRS();
+        SRS() = default;
 
         //! Construct a new SRS from defintion strings.
         //! 
@@ -55,96 +55,140 @@ namespace ROCKY_NAMESPACE
 
         //! Make an operation that will take coordinates from this SRS to another
         //! @param target Target SRS for coordinate operation
+        //! @return Operation that will transform coordinates from this SRS to the target SRS
         SRSOperation to(const SRS& target) const;
 
         //! Name of this SRS
+        //! @return Name of the SRS, or an empty string if the SRS is invalid
         const char* name() const;
 
-        //! Definition used to initialize this SRS
+        //! Definition that was used to initialize this SRS
+        //! @return Definition string
         inline const std::string& definition() const {
             return _definition;
         }
 
         //! Whether this is a valid SRS
+        //! @return True if the SRS is valid, false if not
         inline bool valid() const;            
 
+        //! Whether this is a valid SRS
+        //! @return True if the SRS is valid, false if not
         inline operator bool() const {
             return valid();
         }
 
         //! Is this a geodetic (long, lat) SRS?
+        //! @return True if the SRS is geodetic, false if not
         bool isGeodetic() const;
 
         //! Is this projected (XY) SRS?
+        //! @return True if the SRS is projected, false if not
         bool isProjected() const;
 
         //! Is this a geocentric (ECEF) SRS?
+        //! @return True if the SRS is geocentric, false if not
         bool isGeocentric() const;
 
         //! Has a vertical datum shift?
+        //! @return True if the SRS has a vertical datum shift, false if not
         bool hasVerticalDatumShift() const;
 
         //! Gets the underlying geodetic (longitude, latitude) SRS
+        //! @return Geodetic SRS, which will be "this" if this is already geodetic
         const SRS& geodeticSRS() const;
 
         //! Gets the corresponding geocentric SRS. Only applies to a geodetic SRS.
+        //! @return Geocentric SRS, which will be "this" if this is already geocentric,
+        //!   or an empty SRS if this is not geodetic.
         const SRS& geocentricSRS() const;
 
         //! WKT (OGC Well-Known Text) representation
+        //! @return WKT string, or an empty string if the SRS is invalid
         const std::string& wkt() const;
 
         //! Units of measure for the horizontal components
+        //! @return Units of measure
         const Units& units() const;
 
         //! Underlying reference ellipsoid
+        //! @return Reference ellipsoid
         const Ellipsoid& ellipsoid() const;
 
         //! Bounding box, if known
+        //! @return Bounding box, or an empty box if the SRS is invalid
         const Box& bounds() const;
 
         //! Whether this SRS is mathematically equivalent to another SRS
         //! without taking vertical datums into account.
+        //! @param rhs SRS to compare against
+        //! @return True if the SRS are equivalent, false if not
         bool horizontallyEquivalentTo(const SRS& rhs) const;
 
         //! Whether this SRS is mathematically equivalent to another SRS
+        //! @param rhs SRS to compare against
+        //! @return True if the SRS are equivalent, false if not
         bool equivalentTo(const SRS& rhs) const;
 
         //! Whether this SRS is mathematically equivalent to another SRS
+        //! @param rhs SRS to compare against
+        //! @return True if the SRS are equivalent, false if not
         inline bool operator == (const SRS& rhs) const {
             return equivalentTo(rhs);
         }
+
+        //! Whether this SRS is NOT mathematically different from another SRS
+        //! @param rhs SRS to compare against
+        //! @return True if the SRS are NOT equivalent, false otherwise
         inline bool operator != (const SRS& rhs) const {
             return !equivalentTo(rhs);
         }
 
         //! Make a matrix that will transform coordinates from a topocentric
-        //! ENU coordinate system (e.g., a local tangent plane) centered at
+        //! ENU coordinate system (a local tangent plane) centered at
         //! the provided origin into cartesian world coordinates (geocentric if
         //! the SRS is geographic; projected if the SRS is projected).
-        //! (Note: in this is a geographic SRS, the LTP will
+        //! (Note: if this is a geographic SRS, the local tangent plane will
         //! be in geocentric cartesian space.)
-        glm::dmat4 localToWorldMatrix(const glm::dvec3& origin) const;
+        //! @param origin Origin of the local tangent plane in world coordintes
+        //! @return Matrix that will transform ENU coordinates to world coordinates
+        glm::dmat4 topocentricToWorldMatrix(const glm::dvec3& origin) const;
 
-        //! Units transformation accounting for latitude if necessary
+        //! Transform a value expressed in fromSRS' base units to the correspond value
+        //! expressed in toSRS' units, using the latitude if necessary
+        //! @param input Value to transform
+        //! @param fromSRS SRS whose base units present the input
+        //! @param toSRS SRS whose base units are desired
+        //! @param latitude Latitude to use in the transformation if neccesary
+        //! @return Transformed value
         static double transformUnits(
             double input,
             const SRS& fromSRS,
             const SRS& toSRS,
             const Angle& latitude);
 
-        //! Units transformation accounting for latitude if necessary
+        //! Transform a value expressed in fromSRS' base units to the correspond value
+        //! expressed in toSRS' units, using the latitude if necessary
+        //! @param distance Value to transform
+        //! @param outSRS SRS whose base units are desired
+        //! @param latitude Latitude to use in the transformation if neccesary
+        //! @return Transformed value
         static double transformUnits(
             const Distance& distance,
             const SRS& outSRS,
             const Angle& latitude);
 
         //! Transform a distance from one SRS to another, with an optional reference latitude.
+        //! @param distance Distance to transform
+        //! @param output_units Units of the output distance
+        //! @param latitude Latitude to use in the transformation if neccesary
         double transformDistance(
             const Distance& distance,
             const Units& output_units,
-            double reference_latitude = 0.0) const;
+            const Angle& latitude = { 0 }) const;
 
         //! If the event of an error, return the last error message
+        //! @return Error message, or an empty string if there was no error
         const std::string& errorMessage() const;
 
         // copy/move operations
@@ -157,6 +201,7 @@ namespace ROCKY_NAMESPACE
         std::string string() const;
 
         //! Version of PROJ we use
+        //! @return Version string
         static std::string projVersion();
 
         //! PROJ message redirector
@@ -194,24 +239,31 @@ namespace ROCKY_NAMESPACE
         SRSOperation(const SRS& from, const SRS& to);
 
         //! Whether this is a valid and legal operation
+        //! @return True if the operation is valid, false if not
         bool valid() const {
             return _handle != nullptr;
         }
+
+        //! Whether this is a valid and legal operation
+        //! @return True if the operation is valid, false if not
         inline operator bool() const {
             return valid();
         }
 
         //! Whether this operation is a no-op.
+        //! @return True if the operation is a no-op, false if not
         inline bool noop() const {
             return _nop;
         }
 
         //! Source SRS of the operation
+        //! @return Source SRS
         inline const SRS& from() const {
             return _from;
         }
 
         //! Target SRS of the operation
+        //! @return Target SRS
         inline const SRS& to() const {
             return _to;
         }

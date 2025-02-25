@@ -524,7 +524,7 @@ MapManipulator::createLocalCoordFrame(const vsg::dvec3& worldPos, vsg::dmat4& ou
 {
     if (_worldSRS.valid())
     {
-        out_frame = to_vsg(_worldSRS.localToWorldMatrix(to_glm(worldPos)));
+        out_frame = to_vsg(_worldSRS.topocentricToWorldMatrix(to_glm(worldPos)));
     }
     return _worldSRS.valid();
 }
@@ -536,7 +536,7 @@ MapManipulator::setCenter(const vsg::dvec3& worldPos)
 
     if (_worldSRS.isGeocentric())
     {
-        glm::dmat4 m = _worldSRS.localToWorldMatrix(to_glm(worldPos));
+        glm::dmat4 m = _worldSRS.topocentricToWorldMatrix(to_glm(worldPos));
 
         // remove the translation component
         _state.centerRotation = to_vsg(m);

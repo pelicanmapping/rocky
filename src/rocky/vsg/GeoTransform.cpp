@@ -77,7 +77,7 @@ GeoTransform::push(vsg::RecordTraversal& record, bool cull, const std::optional<
             if (view.pos_to_world(glm::dvec3(position.x, position.y, position.z), worldpos))
             {
                 if (localTangentPlane && view.world_srs.isGeocentric())
-                    view.model = to_vsg(view.world_ellipsoid->geocentricToLocalToWorld(worldpos));
+                    view.model = to_vsg(view.world_ellipsoid->topocentricToGeocentricMatrix(worldpos));
                 else
                     view.model = vsg::translate(worldpos.x, worldpos.y, worldpos.z);
 

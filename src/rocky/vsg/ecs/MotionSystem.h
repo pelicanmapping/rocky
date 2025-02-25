@@ -47,7 +47,7 @@ namespace ROCKY_NAMESPACE
                         // move the entity using a velocity vector in the local tangent plane
                         glm::dvec3 world;
                         pos_to_world((glm::dvec3)pos, world);
-                        auto l2w = pos.srs.ellipsoid().geocentricToLocalToWorld(world);
+                        auto l2w = pos.srs.ellipsoid().topocentricToGeocentricMatrix(world);
 
                         world = l2w * (motion.velocity * dt);
 

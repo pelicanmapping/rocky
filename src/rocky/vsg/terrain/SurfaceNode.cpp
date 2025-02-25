@@ -31,7 +31,7 @@ SurfaceNode::SurfaceNode(const TileKey& tilekey, const SRS& worldSRS) :
     GeoPoint centroid = tilekey.extent().centroid();
     centroid.transformInPlace(worldSRS);
 
-    glm::dmat4 local2world = worldSRS.localToWorldMatrix(glm::dvec3(centroid.x, centroid.y, centroid.z));
+    glm::dmat4 local2world = worldSRS.topocentricToWorldMatrix(glm::dvec3(centroid.x, centroid.y, centroid.z));
 
     this->matrix = to_vsg(local2world);
 }

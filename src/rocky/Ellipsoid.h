@@ -42,7 +42,7 @@ namespace ROCKY_NAMESPACE
         //! the provided geocentric point to geocentric coordinates.
         //! @param xyz Geocentric origin point of the topocentric frame
         //! @return topocentric to geocentric matrix
-        glm::dmat4 geocentricToLocalToWorld(const glm::dvec3& geocPoint) const;
+        glm::dmat4 topocentricToGeocentricMatrix(const glm::dvec3& geocPoint) const;
 
         //! Convert geocentric coords to geodetic
         //! @param geocPoint Input geocentric point (x, y, z meters)

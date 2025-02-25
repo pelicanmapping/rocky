@@ -65,7 +65,7 @@ Ellipsoid::semiMinorAxis() const
 }
 
 glm::dmat4
-Ellipsoid::geocentricToLocalToWorld(const glm::dvec3& geoc) const
+Ellipsoid::topocentricToGeocentricMatrix(const glm::dvec3& geoc) const
 {
     // start with a simple translation to the center point of the topocentric frame:
     auto l2w = glm::translate(glm::dmat4(1.0), geoc);

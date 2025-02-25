@@ -255,7 +255,7 @@ GeometryPool::createGeometry(const TileKey& tileKey, const Settings& settings, C
     // Establish a local reference frame for the tile:
     GeoPoint centroid = tileKey.extent().centroid();
     centroid.transformInPlace(_worldSRS);
-    glm::dmat4 world2local = glm::inverse(_worldSRS.localToWorldMatrix(
+    glm::dmat4 world2local = glm::inverse(_worldSRS.topocentricToWorldMatrix(
         glm::dvec3(centroid.x, centroid.y, centroid.z)));
 
     // Attempt to calculate the number of verts in the surface geometry.
