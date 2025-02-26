@@ -107,8 +107,8 @@ Public Member Functions</h2></td></tr>
 <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>setName</b> (<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">const</a> std::string &amp;value)</td></tr>
 <tr class="memdesc:a794a3c8d78857a09d6e47bfe6b85a963"><td class="mdescLeft">&#160;</td><td class="mdescRight">Name of this ellipsoid. <br /></td></tr>
 <tr class="separator:a794a3c8d78857a09d6e47bfe6b85a963"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a50672d6bc6af929fe6475f20203afa42" id="r_a50672d6bc6af929fe6475f20203afa42"><td class="memItemLeft" align="right" valign="top">glm::dmat4&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html#a50672d6bc6af929fe6475f20203afa42">geocentricToLocalToWorld</a> (<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">const</a> glm::dvec3 &amp;<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">geocPoint</a>) <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">const</a></td></tr>
-<tr class="separator:a50672d6bc6af929fe6475f20203afa42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d10156390c6360da7977e5778399f7d" id="r_a3d10156390c6360da7977e5778399f7d"><td class="memItemLeft" align="right" valign="top">glm::dmat4&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html#a3d10156390c6360da7977e5778399f7d">topocentricToGeocentricMatrix</a> (<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">const</a> glm::dvec3 &amp;<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">geocPoint</a>) <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">const</a></td></tr>
+<tr class="separator:a3d10156390c6360da7977e5778399f7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa56e032ab1260abb1bd095d55b165a4d" id="r_aa56e032ab1260abb1bd095d55b165a4d"><td class="memItemLeft" align="right" valign="top">glm::dvec3&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html#aa56e032ab1260abb1bd095d55b165a4d">geocentricToGeodetic</a> (<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">const</a> glm::dvec3 &amp;<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">geocPoint</a>) <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">const</a></td></tr>
 <tr class="separator:aa56e032ab1260abb1bd095d55b165a4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43d2e88ff9c3da74c3d52b67c30db0b7" id="r_a43d2e88ff9c3da74c3d52b67c30db0b7"><td class="memItemLeft" align="right" valign="top">glm::dvec3&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html#a43d2e88ff9c3da74c3d52b67c30db0b7">geodeticToGeocentric</a> (<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">const</a> glm::dvec3 &amp;<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">geodPoint</a>) <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">const</a></td></tr>
@@ -226,31 +226,6 @@ glm::dvec3&#160;</td><td class="memItemRight" valign="bottom"><b>greatCircleRota
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>output geodetic (degrees longitude, degrees latitude, meters altitude) point </dd></dl>
-
-</div>
-</div>
-<a id="a50672d6bc6af929fe6475f20203afa42" name="a50672d6bc6af929fe6475f20203afa42"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a50672d6bc6af929fe6475f20203afa42">&#9670;&#160;</a></span>geocentricToLocalToWorld()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">glm::dmat4 Ellipsoid::geocentricToLocalToWorld </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">const</a> glm::dvec3 &amp;&#160;</td>
-          <td class="paramname"><em>geocPoint</em></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Matrix to transform from a topocentric (local tangent plane) frame centered at the provided geocentric point to geocentric coordinates. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">xyz</td><td>Geocentric origin point of the topocentric frame </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>topocentric to geocentric matrix </dd></dl>
 
 </div>
 </div>
@@ -433,6 +408,31 @@ glm::dvec3&#160;</td><td class="memItemRight" valign="bottom"><b>greatCircleRota
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Degrees </dd></dl>
+
+</div>
+</div>
+<a id="a3d10156390c6360da7977e5778399f7d" name="a3d10156390c6360da7977e5778399f7d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d10156390c6360da7977e5778399f7d">&#9670;&#160;</a></span>topocentricToGeocentricMatrix()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">glm::dmat4 Ellipsoid::topocentricToGeocentricMatrix </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">const</a> glm::dvec3 &amp;&#160;</td>
+          <td class="paramname"><em>geocPoint</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Matrix to transform from a topocentric (local tangent plane) frame centered at the provided geocentric point to geocentric coordinates. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">xyz</td><td>Geocentric origin point of the topocentric frame </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>topocentric to geocentric matrix </dd></dl>
 
 </div>
 </div>

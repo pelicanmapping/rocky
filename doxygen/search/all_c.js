@@ -12,7 +12,7 @@ var searchData=
   ['layermoved_9',['LayerMoved',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html#a97d9422d037410e1c6e85b21c1033d37',1,'ROCKY_NAMESPACE::Map']]],
   ['layerreference_10',['LayerReference',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html',1,'ROCKY_NAMESPACE']]],
   ['layerremoved_11',['LayerRemoved',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html#a4458f7ed4fed844b6c3f26e0cf83b1ca',1,'ROCKY_NAMESPACE::Map']]],
-  ['layers_12',['layers',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html#a96558ca06ba6cdd5c4007120fdc80a4f',1,'ROCKY_NAMESPACE::Map::layers()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html#a362797fef773068928934138b9f9d6f9',1,'ROCKY_NAMESPACE::Map::layers() const']]],
+  ['layers_12',['layers',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html#a362797fef773068928934138b9f9d6f9',1,'ROCKY_NAMESPACE::Map::layers() const'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map.html#a96558ca06ba6cdd5c4007120fdc80a4f',1,'ROCKY_NAMESPACE::Map::layers()']]],
   ['layerstatemutex_13',['layerStateMutex',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a39cfecebd49cd5c2a86d6c431e574d63',1,'ROCKY_NAMESPACE::Layer']]],
   ['levelofdetail_14',['levelOfDetail',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a3c00236e64c3d93ed394b043d6064121',1,'ROCKY_NAMESPACE::Profile']]],
   ['line_15',['Line',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html',1,'ROCKY_NAMESPACE']]],
@@ -29,7 +29,6 @@ var searchData=
   ['loadschedulername_26',['loadSchedulerName',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_engine.html#aafbf258c321148e919cb97b4c284a397',1,'ROCKY_NAMESPACE::TerrainEngine']]],
   ['localmatrix_27',['localMatrix',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform.html#af684d1e173e4f35f6e1a3cd07913441e',1,'ROCKY_NAMESPACE::Transform']]],
   ['localtangentplane_28',['localtangentplane',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform.html#a9db47834d7b218067b12ec4eaab771a2',1,'ROCKY_NAMESPACE::Transform::localTangentPlane'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_transform.html#a5e621027a0c3c4075ee90d2a886d5c7e',1,'ROCKY_NAMESPACE::GeoTransform::localTangentPlane']]],
-  ['localtoworldmatrix_29',['localToWorldMatrix',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html#a4b07356a2ed3543712385051dd07c251',1,'ROCKY_NAMESPACE::SRS']]],
-  ['lockazimuthwhilepanning_30',['lockAzimuthWhilePanning',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a2a4491453d487e7d28ac29a933b528f3',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
-  ['longitudinaldegreestometers_31',['longitudinalDegreesToMeters',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html#a911b6a3ff89074b04ab20f3c06c9960b',1,'ROCKY_NAMESPACE::Ellipsoid']]]
+  ['lockazimuthwhilepanning_29',['lockAzimuthWhilePanning',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a2a4491453d487e7d28ac29a933b528f3',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
+  ['longitudinaldegreestometers_30',['longitudinalDegreesToMeters',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html#a911b6a3ff89074b04ab20f3c06c9960b',1,'ROCKY_NAMESPACE::Ellipsoid']]]
 ];

@@ -85,13 +85,13 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="_registry_8h_source.html">Registry.h</a>&gt;</code></p>
 
-<p>Inherited by <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_system2_node.html">ROCKY_NAMESPACE::IconSystem2Node</a>, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_motion_system.html">ROCKY_NAMESPACE::MotionSystem</a>, and ROCKY_NAMESPACE::ecs::SystemNode&lt; T &gt;.</p>
+<p>Inherited by <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_system2_node.html">ROCKY_NAMESPACE::IconSystem2Node</a>, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_motion_system.html">ROCKY_NAMESPACE::MotionSystem</a>, ROCKY_NAMESPACE::TransformSystem, and ROCKY_NAMESPACE::ecs::SystemNode&lt; T &gt;.</p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a7f5559953f3813375fbbf48c89faca41" id="r_a7f5559953f3813375fbbf48c89faca41"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">virtual</a> <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_system.html#a7f5559953f3813375fbbf48c89faca41">initializeSystem</a> (VSGContext &amp;runtime)</td></tr>
-<tr class="memdesc:a7f5559953f3813375fbbf48c89faca41"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the ECS system (once at startup)  <br /></td></tr>
-<tr class="separator:a7f5559953f3813375fbbf48c89faca41"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ada217344d9494025985c51579c4edd34" id="r_ada217344d9494025985c51579c4edd34"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">virtual</a> <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_system.html#ada217344d9494025985c51579c4edd34">initialize</a> (VSGContext &amp;runtime)</td></tr>
+<tr class="memdesc:ada217344d9494025985c51579c4edd34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the ECS system (once at startup)  <br /></td></tr>
+<tr class="separator:ada217344d9494025985c51579c4edd34"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2a3712ba6c24724f06ee8d365d1a3a5" id="r_ab2a3712ba6c24724f06ee8d365d1a3a5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">virtual</a> <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_system.html#ab2a3712ba6c24724f06ee8d365d1a3a5">update</a> (VSGContext &amp;runtime)</td></tr>
 <tr class="memdesc:ab2a3712ba6c24724f06ee8d365d1a3a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the ECS system (once per frame)  <br /></td></tr>
 <tr class="separator:ab2a3712ba6c24724f06ee8d365d1a3a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -116,8 +116,8 @@ Protected Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base class for an ECS system. And ECS system is typically responsible for performing logic around a specific type of component. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a7f5559953f3813375fbbf48c89faca41" name="a7f5559953f3813375fbbf48c89faca41"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7f5559953f3813375fbbf48c89faca41">&#9670;&#160;</a></span>initializeSystem()</h2>
+<a id="ada217344d9494025985c51579c4edd34" name="ada217344d9494025985c51579c4edd34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ada217344d9494025985c51579c4edd34">&#9670;&#160;</a></span>initialize()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -126,7 +126,7 @@ Protected Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">virtual</a> <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">void</a> ROCKY_NAMESPACE::ecs::System::initializeSystem </td>
+          <td class="memname"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">virtual</a> <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">void</a> ROCKY_NAMESPACE::ecs::System::initialize </td>
           <td>(</td>
           <td class="paramtype">VSGContext &amp;&#160;</td>
           <td class="paramname"><em>runtime</em></td><td>)</td>
@@ -142,7 +142,7 @@ Protected Member Functions</h2></td></tr>
 
 <p>Initialize the ECS system (once at startup) </p>
 
-<p>Reimplemented in <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_system2_node.html#a2a27c5764e9eb3a8a93ccea968ecbd92">ROCKY_NAMESPACE::IconSystem2Node</a>.</p>
+<p>Reimplemented in <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon_system2_node.html#a5294a08271742d6d4ddff4a4aec047c4">ROCKY_NAMESPACE::IconSystem2Node</a>.</p>
 
 </div>
 </div>
