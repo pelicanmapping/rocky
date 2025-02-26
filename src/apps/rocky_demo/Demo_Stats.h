@@ -38,6 +38,14 @@ namespace
             total += t[i % frame_count].count();
         return total / count;
     }
+    unsigned long long lowest(void* data, int count, int start) {
+        Timings& t = *(Timings*)(data);
+        long long result = INT_MAX;
+        int s = start - count; if (s < 0) s += frame_count;
+        for (int i = s; i <= s + count; i++)
+            result = std::min(result, t[i % frame_count].count());
+        return result;
+    }
 }
 auto Demo_Stats = [](Application& app)
 {
@@ -47,7 +55,7 @@ auto Demo_Stats = [](Application& app)
     update[f] = app.stats.update;
     record[f] = app.stats.record;
 
-    const int over = 60;
+    static int over = 60;
 
     ImGui::SeparatorText("Timings");
 
@@ -62,7 +70,8 @@ auto Demo_Stats = [](Application& app)
 
         if (app.context->renderContinuously)
         {
-            float fps = 1.0f / (1e-6f * (float)frames[f].count());
+            //float fps = 1.0f / (1e-6f * (float)average(&frames, over, f));
+            float fps = 1.0f / (1e-6f * (float)lowest(&frames, over, f));
             buf = util::format("%.2f ms (%.1f fps)", 0.001f * (float)app.stats.frame.count(), fps);
         }
         else

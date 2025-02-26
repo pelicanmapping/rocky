@@ -344,7 +344,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
     if (font_file.empty())
     {
 #ifdef WIN32
-        font_file = "arialbd.ttf";
+        font_file = "calibri.ttf";
 #else
         font_file = "times.vsgb";
 #endif

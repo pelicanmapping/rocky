@@ -83,7 +83,7 @@ IconSystemNode::IconSystemNode(ecs::Registry& registry) :
     //nop
 }
 void
-IconSystemNode::initializeSystem(VSGContext& context)
+IconSystemNode::initialize(VSGContext& context)
 {
     auto shaderSet = createShaderSet(context);
 
@@ -149,7 +149,7 @@ IconSystemNode::initializeSystem(VSGContext& context)
 
         c.commands = vsg::Commands::create();
         c.commands->addChild(c.config->bindGraphicsPipeline);
-        c.commands->addChild(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, c.config->layout, VSG_VIEW_DEPENDENT_DATA_SET));
+        c.commands->addChild(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, c.config->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
 
     }
 }

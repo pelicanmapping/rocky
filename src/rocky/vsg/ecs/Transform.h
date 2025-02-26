@@ -25,72 +25,51 @@ namespace ROCKY_NAMESPACE
         std::optional<vsg::dmat4> localMatrix;
 
         //! Whether the localMatrix is relative to a local tangent plane at
-        //! "position", versus a simple translated reference frame.
-        bool localTangentPlane = true;        
-
-        //! Parent transform to apply before applying this one
-        //Transform* parent = nullptr;
+        //! "position", versus a simple translated reference frame. Setting this
+        //! to false will slightly improve performance.
+        bool localTangentPlane = true;
 
         //! Underlying geotransform logic
         vsg::ref_ptr<GeoTransform> node; // todo. move this to a separate component...?
 
+        //! Construct a transform component
         Transform()
         {
             node = GeoTransform::create();
         }
 
+        //! Sets the geospatial position of this transform
+        //! @param p The geospatial position
         void setPosition(const GeoPoint& p)
         {
             position = p;
             dirty();
         }
         
+        //! Force an update of the underlying node
         void dirty()
         {
             node->setPosition(position);
             node->localTangentPlane = localTangentPlane;
         }
 
-        //! Applies a transformation and returns true if successful.
-        //! If this method retuns true, you must issue a correspond pop() later.
-        inline bool push(vsg::RecordTraversal& rt, bool cull)
+        //! Update the node's values for this traversal
+        inline void update(vsg::RecordTraversal& rt)
         {
-            return node->push(rt, cull);
+            node->update(rt, localMatrix);
+        }
 
-#if 0
-            //bool local_matrix_is_identity = ROCKY_MAT4_IS_IDENTITY(localMatrix);
-            if (parent)
-            {
-                if (local_matrix_is_identity)
-                    return parent->push(rt, m, cull);
-                else
-                    return parent->push(rt, m * localMatrix, cull);
-            }
-            else
-            {
-                if (local_matrix_is_identity)
-                    return node->push(rt, m, cull);
-                else
-                    return(node->push(rt, m * localMatrix, cull));
-            }
-#endif
+        //! Perform culling on this transform's node, pushing its matrix on the stack.
+        //! @return True if the node is visible; you MUST call pop() if this returns true.
+        inline bool push(vsg::RecordTraversal& rt)
+        {
+            return node->push(rt);
         }
 
         //! Pops a transform applied if push() returned true.
         inline void pop(vsg::RecordTraversal& rt)
         {
             node->pop(rt);
-
-#if 0
-            if (parent)
-            {
-                parent->pop(rt);
-            }
-            else
-            {
-                node->pop(rt);
-            }
-#endif
         }
     };
 }

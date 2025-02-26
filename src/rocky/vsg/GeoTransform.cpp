@@ -33,21 +33,20 @@ GeoTransform::dirty()
 void
 GeoTransform::traverse(vsg::RecordTraversal& record) const
 {
-    // traverse the transform
-    if (push(record, true))
+    update(record, {});
+
+    if (push(record))
     {
         Inherit::traverse(record);
         pop(record);
     }
 }
 
-bool
-GeoTransform::push(vsg::RecordTraversal& record, bool cull, const std::optional<vsg::dmat4>& localMatrix) const
+void
+GeoTransform::update(vsg::RecordTraversal& record, const std::optional<vsg::dmat4>& localMatrix) const
 {
     if (!position.valid())
-    {
-        return false;
-    }
+        return;
 
     auto* state = record.getState();
 
@@ -104,11 +103,14 @@ GeoTransform::push(vsg::RecordTraversal& record, bool cull, const std::optional<
 
     view.viewport = (*state->_commandBuffer->viewDependentState->viewportData)[0];
     view.culled = false;
+}
 
-    if (!cull)
-    {
-        return false;
-    }
+bool
+GeoTransform::push(vsg::RecordTraversal& record) const
+{
+    // fetch the view-local data:
+    auto* state = record.getState();
+    auto& view = viewLocal[state->_commandBuffer->viewID];
 
     // Frustum cull (by center point)
     if (frustumCulling)

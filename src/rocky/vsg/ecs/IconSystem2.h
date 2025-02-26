@@ -10,13 +10,6 @@
 
 namespace ROCKY_NAMESPACE
 {
-    //! Indirect setup (set = 0)
-    //!   binding = 0 : command buffer
-    //!   binding = 1 : cull buffer
-    //!   binding = 2 : draw buffer
-    //!   binding = 3 : sampler uniform
-    //!   binding = 4 : array of textures uniform
-
     //! Instance buffer as mirrored in the culling compute shader
     struct IconInstanceGPU
     {
@@ -41,14 +34,11 @@ namespace ROCKY_NAMESPACE
         //! Construct the mesh renderer
         IconSystem2Node(ecs::Registry& r);
 
-        //! Initialize the system (once)
-        void initializeSystem(VSGContext&) override;
+        //! Initialize the system (called once at startup)
+        void initialize(VSGContext&) override;
 
         //! Update pass (called once per frame before recording starts)
         void update(VSGContext&) override;
-
-        //! Standard recording traversal.
-        void traverse(vsg::RecordTraversal& rt) const override;
 
     protected:
         virtual ~IconSystem2Node();
@@ -59,14 +49,27 @@ namespace ROCKY_NAMESPACE
         mutable std::unordered_map<std::shared_ptr<Image>, vsg::ref_ptr<vsg::DescriptorImage>> descriptorImage_cache;
         mutable std::mutex mutex;
 
-        vsg::ref_ptr<vsg::Dispatch> cullDispatch;
+        // dispatch command for the GPU culler
+        vsg::ref_ptr<vsg::Dispatch> cull_dispatch;
 
-        vsg::ref_ptr<vsg::ubyteArray> drawCommandBuffer;
-        vsg::ref_ptr<vsg::ubyteArray> cullBuffer;
+        // The VkDrawIndexedIndirect commmand, which th GPU culler will
+        // write to and the rendering will read from
+        vsg::ref_ptr<StreamingGPUBuffer> indirect_command;
 
+        // The list of InstanceGPU objects that the GPU culler will read from
+        vsg::ref_ptr<StreamingGPUBuffer> cull_list;
+
+        // GPU-side draw list binding
+        vsg::ref_ptr<vsg::DescriptorBuffer> draw_list_descriptor;
+
+        // array of textures
         vsg::ref_ptr<vsg::Sampler> sampler;
         vsg::ImageInfoList textures;
 
         mutable int dirtyCount = 0;
+
+        void buildCullStage(VSGContext& context);
+
+        void buildRenderStage(VSGContext& context);
     };
 }

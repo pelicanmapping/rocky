@@ -63,7 +63,7 @@ namespace ROCKY_NAMESPACE
         int featureMask(const Icon& icon) const override { return 0; }
 
         //! Initialize the system (once)
-        void initializeSystem(VSGContext&) override;
+        void initialize(VSGContext&) override;
 
     private:
 

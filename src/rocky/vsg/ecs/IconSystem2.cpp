@@ -21,17 +21,17 @@ using namespace ROCKY_NAMESPACE;
 #define CULL_SHADER "shaders/rocky.icon.indirect.cull.comp"
 
 // these must match the layout() defs in the shaders.
-#define BUFFER_SET 0  // must match layout(set=X) in the shader UBO
+#define DESCRIPTOR_SET_INDEX 0  // must match layout(set=X) in the shader UBO
 
-#define COMMAND_BUFFER_BINDING  0  // indirect command buffer
-#define CULLLIST_BUFFER_BINDING 1  // input instance buffer
-#define DRAWLIST_BUFFER_BINDING 2  // output drawlist buffer
+#define INDIRECT_COMMAND_BUFFER_BINDING  0  // indirect command buffer
+#define CULL_LIST_BUFFER_BINDING 1  // input instance buffer
+#define DRAW_LIST_BUFFER_BINDING 2  // output draw_list buffer
 #define SAMPLER_BINDING  3  // shared sampler uniform 
 #define TEXTURES_BINDING 4  // array of textures uniform
 
-#define COMMAND_BUFFER_NAME "command"
-#define CULLLIST_BUFFER_NAME "cullList"
-#define DRAWLIST_BUFFER_NAME "drawList"
+#define INDIRECT_COMMAND_BUFFER_NAME "command"
+#define CULL_LIST_BUFFER_NAME "cull_list"
+#define DRAW_LIST_BUFFER_NAME "draw_list"
 #define SAMPLER_NAME "samp"
 #define TEXTURES_NAME "textures"
 
@@ -41,6 +41,27 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
+    //! Create a shader set for the culling compute shader.
+    vsg::ref_ptr<vsg::ShaderStage> createCullingShader(VSGContext& context)
+    {
+        auto computeShader = vsg::ShaderStage::read(
+            VK_SHADER_STAGE_COMPUTE_BIT,
+            "main",
+            vsg::findFile(CULL_SHADER, context->searchPaths),
+            context->readerWriterOptions);
+
+        if (computeShader)
+        {
+            // Specializations to pass to the shader
+            computeShader->specializationConstants = vsg::ShaderStage::SpecializationConstants{
+                {0, vsg::intValue::create(GPU_CULLING_LOCAL_WG_SIZE)} }; // layout(load_size_x_id, 0) in
+        }
+
+        return computeShader;
+    }
+
+
+    //! Load and configure the shader stages for rendering.
     vsg::ref_ptr<vsg::ShaderSet> createRenderingShaderSet(VSGContext& context)
     {
         vsg::ref_ptr<vsg::ShaderSet> shaderSet;
@@ -63,29 +84,31 @@ namespace
             return { };
         }
 
-        vsg::ShaderStages shaderStages{ vertexShader, fragmentShader };
+        shaderSet = vsg::ShaderSet::create(vsg::ShaderStages{ vertexShader, fragmentShader });
 
-        shaderSet = vsg::ShaderSet::create(shaderStages);
-
+#if 0
         // "binding" (3rd param) must match "layout(location=X) in" in the vertex shader
         shaderSet->addAttributeBinding("in_vertex", "", 0, VK_FORMAT_R32G32B32_SFLOAT, { });
 
         // bind the output draw list to both the compute stage (for writing) and
         // the vertex stage (for rendering)
         shaderSet->addDescriptorBinding(
-            DRAWLIST_BUFFER_NAME, "",
-            BUFFER_SET, DRAWLIST_BUFFER_BINDING,
-            VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 
+            DRAW_LIST_BUFFER_NAME, "",
+            DESCRIPTOR_SET_INDEX,
+            DRAW_LIST_BUFFER_BINDING,
+            VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
             1, // count
             VK_SHADER_STAGE_VERTEX_BIT, {});
 
         // bind the array of textures to the fragment stage as a uniform:
         shaderSet->addDescriptorBinding(
             TEXTURES_NAME, "",
-            BUFFER_SET, TEXTURES_BINDING,
-            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
-            MAX_NUM_TEXTURES, 
+            DESCRIPTOR_SET_INDEX,
+            TEXTURES_BINDING,
+            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            MAX_NUM_TEXTURES,
             VK_SHADER_STAGE_FRAGMENT_BIT, {});
+#endif
 
         // We need VSG's view-dependent data:
         PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_VERTEX_BIT);
@@ -96,70 +119,28 @@ namespace
         return shaderSet;
     }
 
-    vsg::ref_ptr<vsg::ShaderSet> createCullingShaderSet(VSGContext& context)
-    {
-        auto computeShader = vsg::ShaderStage::read(
-            VK_SHADER_STAGE_COMPUTE_BIT,
-            "main",
-            vsg::findFile(CULL_SHADER, context->searchPaths),
-            context->readerWriterOptions);
-
-        if (!computeShader)
-        {
-            return {};
-        }
-
-        vsg::ShaderStages shaderStages{ computeShader };
-        auto shaderSet = vsg::ShaderSet::create(shaderStages);
-
-        // bind the indirect comand buffer to the compute stage:
-        shaderSet->addDescriptorBinding(
-            COMMAND_BUFFER_NAME, "",
-            BUFFER_SET, COMMAND_BUFFER_BINDING,
-            VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, {});
-
-        // bind the input instance buffer to the compute stage:
-        shaderSet->addDescriptorBinding(
-            CULLLIST_BUFFER_NAME, "",
-            BUFFER_SET, CULLLIST_BUFFER_BINDING,
-            VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, {});
-
-        // bind the output draw list to both the compute stage (for writing) and
-        // the vertex stage (for rendering)
-        shaderSet->addDescriptorBinding(
-            DRAWLIST_BUFFER_NAME, "",
-            BUFFER_SET, DRAWLIST_BUFFER_BINDING,
-            VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, {});
-
-        // We need VSG's view-dependent data:
-        PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_COMPUTE_BIT);
-
-        // Note: 128 is the maximum size required by the Vulkan spec so don't increase it
-        //shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_COMPUTE_BIT, 0, 128);
-
-        return shaderSet;
-    }
 
     vsg::ref_ptr<vsg::ImageInfo> makeDefaultImageInfo(IOOptions& io, vsg::ref_ptr<vsg::Sampler> sampler = {})
     {
+#if 1
         const char* icon_location = "https://readymap.org/readymap/filemanager/download/public/icons/airport.png";
         auto image = io.services.readImageFromURI(icon_location, io);
         auto imageData = util::moveImageToVSG(image.value);
         auto imageInfo = vsg::ImageInfo::create(sampler, imageData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         return imageInfo;
+#else
+        const int d = 16;
+        auto image = Image::create(Image::R8G8B8A8_UNORM, d, d);
+        image->fill(Color(0,0,0,0));
+        for(int i=0; i<d; ++i)
+        {
+            image->write(Color::Red, i, i);
+            image->write(Color::Red, i, d - i - 1);
+        }
 
-        //const int d = 16;
-        //auto image = Image::create(Image::R8G8B8A8_UNORM, d, d);
-        //image->fill(Color::White);
-        //for(int i=0; i<d; ++i)
-        //{
-        //    image->write(Color::Red, i, i);
-        //    image->write(Color::Red, i, d - i - 1);
-        //}
-
-        //auto imageData = util::moveImageToVSG(image);
-        //auto imageInfo = vsg::ImageInfo::create(sampler, imageData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        //return imageInfo;
+        auto imageData = util::moveImageToVSG(image);
+        return vsg::ImageInfo::create(sampler, imageData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+#endif
     }
 }
 
@@ -186,18 +167,23 @@ IconSystem2Node::~IconSystem2Node()
 }
 
 void
-IconSystem2Node::initializeSystem(VSGContext& context)
+IconSystem2Node::initialize(VSGContext& context)
 {
-    // allocate all the buffers the compute shader will use.
-    // the indirect command buffer
-    drawCommandBuffer = vsg::ubyteArray::create(sizeof(VkDrawIndexedIndirectCommand));
-    drawCommandBuffer->properties.dataVariance = vsg::DYNAMIC_DATA;
+    // a dynamic SSBO that holds the draw-indirect command. The compute shader will write to this
+    // and the rendering shader will read from it.
+    indirect_command = StreamingGPUBuffer::create(
+        INDIRECT_COMMAND_BUFFER_BINDING,
+        sizeof(VkDrawIndexedIndirectCommand),
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT);
 
-    // the cull list buffer
-    cullBuffer = vsg::ubyteArray::create(sizeof(IconInstanceGPU) * MAX_CULL_LIST_SIZE);
-    cullBuffer->properties.dataVariance = vsg::DYNAMIC_DATA;
+    // a dynamic SSBO that holds the list of instances to cull. The CPU populates it, the compute
+    // shader reads from it.
+    cull_list = StreamingGPUBuffer::create(
+        CULL_LIST_BUFFER_BINDING,
+        sizeof(IconInstanceGPU) * MAX_CULL_LIST_SIZE,
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 
-    // create a shared sampler for our texture arena
+    // A shared sampler for our texture arena
     auto sampler = vsg::Sampler::create();
     sampler->maxLod = 5; // this alone will prompt mipmap generation!
     sampler->minFilter = VK_FILTER_LINEAR;
@@ -209,13 +195,20 @@ IconSystem2Node::initializeSystem(VSGContext& context)
     sampler->anisotropyEnable = VK_TRUE; // don't need this for a billboarded icon
     sampler->maxAnisotropy = 4.0f;
 
-    // create the texture arena.
+    // Place a default texture in the arena for now.
     textures.emplace_back(makeDefaultImageInfo(context->io, sampler));
 
+    buildCullStage(context);
 
+    buildRenderStage(context);
+}
+
+void
+IconSystem2Node::buildCullStage(VSGContext& context)
+{
     // Configure the compute pipeline for culling:
-    auto cullShaderSet = createCullingShaderSet(context);
-    if (!cullShaderSet)
+    auto compute_shader = createCullingShader(context);
+    if (!compute_shader)
     {
         status = Status(Status::ResourceUnavailable,
             "Icon compute shaders are missing or corrupt. "
@@ -224,106 +217,70 @@ IconSystem2Node::initializeSystem(VSGContext& context)
         return;
     }
 
-    vsg::DescriptorSetLayoutBindings cull_descriptorBindings
+    vsg::DescriptorSetLayoutBindings descriptor_bindings
     {
-        {COMMAND_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr},
-        {CULLLIST_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr},
-        {DRAWLIST_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr}
+        {INDIRECT_COMMAND_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr},
+        {CULL_LIST_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr},
+        {DRAW_LIST_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr}
     };
 
-    auto cull_descriptorSetLayout = vsg::DescriptorSetLayout::create(cull_descriptorBindings);
+    auto descriptor_set_layout = vsg::DescriptorSetLayout::create(descriptor_bindings);
 
-    auto cull_pipelineLayout = vsg::PipelineLayout::create(
-        vsg::DescriptorSetLayouts{
-            cull_descriptorSetLayout, // set 0
-        },
+    auto pipeline_layout = vsg::PipelineLayout::create(
+        vsg::DescriptorSetLayouts{ descriptor_set_layout }, // set 0
         vsg::PushConstantRanges{}); // no push constants
 
-    auto cull_pipeline = vsg::ComputePipeline::create(cull_pipelineLayout, cullShaderSet->getShaderStages().front());
-    auto cull_bindPipeline = vsg::BindComputePipeline::create(cull_pipeline);
-    
-    // the cull list is the input to the GPU culler.
-    auto culllist_buffer_info = vsg::BufferInfo::create(cullBuffer);
-    auto culllist_desciptor = vsg::DescriptorBuffer::create(
-        vsg::BufferInfoList{ culllist_buffer_info }, CULLLIST_BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    // the pipeline itself, and its binder:
+    auto pipeline = vsg::ComputePipeline::create(pipeline_layout, compute_shader);
+    auto bind_pipeline = vsg::BindComputePipeline::create(pipeline);
 
     // the draw list is the output of the GPU culler and the input to the renderer.
-    // for the drawlist, only allocate memory on the GPU (don't need it on the CPU at all)
-    auto drawlist_size = MAX_CULL_LIST_SIZE * sizeof(IconInstanceGPU);
+    // for the draw_list, only allocate memory on the GPU (don't need it on the CPU at all)
+    auto draw_list_size = MAX_CULL_LIST_SIZE * sizeof(IconInstanceGPU);
 
-    auto drawlist_buffer = vsg::createBufferAndMemory(
-        context->device(),
-        drawlist_size,
-        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-        VK_SHARING_MODE_EXCLUSIVE,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    // GPU-only SSBO that will hold the final draw list.
+    auto draw_list_buffer_info = vsg::BufferInfo::create(
+        vsg::createBufferAndMemory(
+            context->device(),
+            draw_list_size,
+            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+            VK_SHARING_MODE_EXCLUSIVE,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT), // visible to GPU only!
+        0,
+        draw_list_size);
 
-    auto drawlist_buffer_info = vsg::BufferInfo::create();
-    drawlist_buffer_info->buffer = drawlist_buffer;
-    drawlist_buffer_info->offset = 0;
-    drawlist_buffer_info->range = drawlist_size;
+    draw_list_descriptor = vsg::DescriptorBuffer::create(
+        vsg::BufferInfoList{ draw_list_buffer_info },
+        DRAW_LIST_BUFFER_BINDING,
+        0,
+        VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
-    auto drawlist_desciptor = vsg::DescriptorBuffer::create(
-        vsg::BufferInfoList{ drawlist_buffer_info }, DRAWLIST_BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-
-
-
-    // manually create the draw commands buffer so we can use it for indirect commands.
-    auto indirect_command_buffer_info = vsg::BufferInfo::create(drawCommandBuffer);
-
-    auto indirect_command_descriptor = DescriptorBufferEx::create(
-        vsg::BufferInfoList{ indirect_command_buffer_info }, COMMAND_BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-        VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT);
 
     // bind all our descriptors to the pipeline.
-    auto cull_bindDescriptors = vsg::BindDescriptorSet::create(
+    auto bind_descriptors = vsg::BindDescriptorSet::create(
         VK_PIPELINE_BIND_POINT_COMPUTE,
-        cull_pipelineLayout,
+        pipeline_layout,
         vsg::DescriptorSet::create(
-            cull_descriptorSetLayout,
+            descriptor_set_layout,
             vsg::Descriptors{
-                indirect_command_descriptor, culllist_desciptor, drawlist_desciptor }));
+                indirect_command->descriptor, cull_list->descriptor, draw_list_descriptor }));
 
-
-#if 0
-    auto indirectCommandBufferBarrier = vsg::BufferMemoryBarrier::create(
-        0,
-        VK_ACCESS_SHADER_WRITE_BIT,
-        VK_QUEUE_FAMILY_IGNORED,
-        VK_QUEUE_FAMILY_IGNORED,
-        indirect_command_buffer_info->buffer,
-        0,
-        VK_WHOLE_SIZE);
-
-    auto cull_barrierCommand = vsg::PipelineBarrier::create(
-        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-        0,
-        indirectCommandBufferBarrier);
-#endif
-
-    //auto cull_zeroDrawList = ZeroBuffer::create(drawlist_buffer);
 
     // stick it all under the compute graph.
     auto cg = context->getComputeCommandGraph();
-    //cg->addChild(cull_barrierCommand);
-    //cg->addChild(cull_zeroDrawList);
-    cg->addChild(cull_bindPipeline);
-    cg->addChild(cull_bindDescriptors);
 
-    // This brings in the VSG set=1 bing commands (vsg_viewport, vsg_lights)
-    //for (auto& cdsb : cullShaderSet->customDescriptorSetBindings)
-    //    this->addChild(cdsb->createStateCommand(cull_pipelineLayout));
+    cg->addChild(indirect_command);
+    cg->addChild(cull_list);
+    cg->addChild(bind_pipeline);
+    cg->addChild(bind_descriptors);
+    cg->addChild(cull_dispatch = vsg::Dispatch::create(0, 1, 1)); // will be updated later
+}
 
-    cg->addChild(cullDispatch = vsg::Dispatch::create(1, 1, 1));
-
-
-
-
-
-    // now configure the rendering pipeline.
-    auto renderShaderSet = createRenderingShaderSet(context);
-    if (!renderShaderSet)
+void
+IconSystem2Node::buildRenderStage(VSGContext& context)
+{
+    auto shader_set = createRenderingShaderSet(context);
+    if (!shader_set)
     {
         status = Status(Status::ResourceUnavailable,
             "Icon shaders are missing or corrupt. "
@@ -331,40 +288,41 @@ IconSystem2Node::initializeSystem(VSGContext& context)
         return;
     }
 
-    vsg::VertexInputState::Bindings draw_vertexBindings
+    vsg::VertexInputState::Bindings vertex_bindings
     {
         VkVertexInputBindingDescription{0, sizeof(vsg::vec3), VK_VERTEX_INPUT_RATE_VERTEX}  // "in_vertex"
     };
 
-    vsg::VertexInputState::Attributes draw_vertexAttributes
+    vsg::VertexInputState::Attributes vertex_attributes
     {
         VkVertexInputAttributeDescription{0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0}  // "in_vertex"
     };
 
-    // define the draw pipeline template.
-    vsg::DescriptorSetLayoutBindings draw_descriptorBindings
+    // Define the draw pipeline template.
+    vsg::DescriptorSetLayoutBindings descriptor_bindings
     {
-        {COMMAND_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
-        {DRAWLIST_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
+        {INDIRECT_COMMAND_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
+        {DRAW_LIST_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr},
         {TEXTURES_BINDING, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_NUM_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}
     };
 
-    vsg::PushConstantRanges draw_pushConstantRanges
+    // PC's hold the projection and modelview matrices from VSG.
+    vsg::PushConstantRanges push_constant_ranges
     {
-        // projection, view, and model matrices, actual push constant calls automatically provided by the VSG's RecordTraversal
         {VK_SHADER_STAGE_VERTEX_BIT, 0, 128}
     };
 
-    auto inputAssemblyState = vsg::InputAssemblyState::create();
-    inputAssemblyState->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    // Assemble all the pipeline states:
+    auto ia_state = vsg::InputAssemblyState::create();
+    ia_state->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-    auto rasterizationState = vsg::RasterizationState::create();
-    rasterizationState->cullMode = VK_CULL_MODE_NONE;
+    auto rasterization_state = vsg::RasterizationState::create();
+    rasterization_state->cullMode = VK_CULL_MODE_NONE;
 
-    auto depthStencilState = vsg::DepthStencilState::create();
-    //depthStencilState->depthCompareOp = VK_COMPARE_OP_ALWAYS;
-    //depthStencilState->depthTestEnable = VK_FALSE;
-    //depthStencilState->depthWriteEnable = VK_FALSE;
+    auto depth_stencil_state = vsg::DepthStencilState::create();
+    //depth_stencil_state->depthCompareOp = VK_COMPARE_OP_ALWAYS;
+    //depth_stencil_state->depthTestEnable = VK_FALSE;
+    //depth_stencil_state->depthWriteEnable = VK_FALSE;
 
     VkPipelineColorBlendAttachmentState blend;
     blend.blendEnable = true;
@@ -375,75 +333,92 @@ IconSystem2Node::initializeSystem(VSGContext& context)
     blend.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
     blend.alphaBlendOp = VK_BLEND_OP_ADD;
     blend.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    auto colorBlendState = vsg::ColorBlendState::create();
-    colorBlendState->attachments = vsg::ColorBlendState::ColorBlendAttachments{ blend };
+    auto color_blend_state = vsg::ColorBlendState::create();
+    color_blend_state->attachments = vsg::ColorBlendState::ColorBlendAttachments{ blend };
     
-    vsg::GraphicsPipelineStates draw_pipelineStates
+    vsg::GraphicsPipelineStates pipeline_states
     {
-        vsg::VertexInputState::create(draw_vertexBindings, draw_vertexAttributes),
-        inputAssemblyState,
-        rasterizationState,
+        vsg::VertexInputState::create(vertex_bindings, vertex_attributes),
+        ia_state,
+        rasterization_state,
         vsg::MultisampleState::create(),
-        colorBlendState,
-        depthStencilState
+        color_blend_state,
+        depth_stencil_state
     };
 
-    auto draw_descriptorSetLayout = vsg::DescriptorSetLayout::create(draw_descriptorBindings);
+    // our layout:
+    auto descriptor_set_layout = vsg::DescriptorSetLayout::create(descriptor_bindings);
 
-    auto draw_pipelineLayout = vsg::PipelineLayout::create(
+    // VSG's view-dependent stuff:
+    auto view_dependent_binding = vsg::ViewDependentStateBinding::create(VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX);
+    auto view_dependent_descriptor_set_layout = view_dependent_binding->createDescriptorSetLayout();
+
+    auto pipeline_layout = vsg::PipelineLayout::create(
         vsg::DescriptorSetLayouts {
-            draw_descriptorSetLayout, // set 0
-            PipelineUtils::getViewDependentDescriptorSetLayout() // set 1 (vsg_viewport, vsg_lights)
+            descriptor_set_layout, // set 0
+            view_dependent_descriptor_set_layout,    // set 1 (vsg_viewport, vsg_lights, etc)
         },
-        draw_pushConstantRanges);
+        push_constant_ranges);
 
-    auto draw_pipeline = vsg::GraphicsPipeline::create(draw_pipelineLayout, renderShaderSet->getShaderStages(), draw_pipelineStates);
-    auto draw_bindPipeline = vsg::BindGraphicsPipeline::create(draw_pipeline);
+    auto pipeline = vsg::GraphicsPipeline::create(pipeline_layout, shader_set->getShaderStages(), pipeline_states);
+    auto bind_pipeline = vsg::BindGraphicsPipeline::create(pipeline);
 
-    auto draw_textures_descriptor = vsg::DescriptorImage::create(
+    auto textures_descriptor = vsg::DescriptorImage::create(
         vsg::ImageInfoList{ textures },
         TEXTURES_BINDING, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
-    auto draw_bindDescriptorSet = vsg::BindDescriptorSet::create(
+    auto bind_descriptor_sets = vsg::BindDescriptorSet::create(
         VK_PIPELINE_BIND_POINT_GRAPHICS,
-        draw_pipelineLayout,
-        BUFFER_SET,
+        pipeline_layout,
+        DESCRIPTOR_SET_INDEX,
         vsg::DescriptorSet::create(
-            draw_descriptorSetLayout,
-            vsg::Descriptors{
-                drawlist_desciptor, draw_textures_descriptor }));
+            descriptor_set_layout,
+            vsg::Descriptors{ draw_list_descriptor, textures_descriptor }));
+
+    auto bind_view_dependent_descriptor_sets = view_dependent_binding->createStateCommand(pipeline_layout);
 
     // Add our binders to the scene graph.
-    this->addChild(draw_bindPipeline);
-    this->addChild(draw_bindDescriptorSet);
+    this->addChild(bind_pipeline);
+    this->addChild(bind_descriptor_sets);
+    this->addChild(bind_view_dependent_descriptor_sets);
 
-    // This brings in the VSG set=1 bing commands (vsg_viewport, vsg_lights)
-    for (auto& cdsb : renderShaderSet->customDescriptorSetBindings)
-    {
-        this->addChild(cdsb->createStateCommand(draw_pipelineLayout));
-    }
+    //// This brings in the VSG set=1 bing commands (vsg_viewport, vsg_lights)
+    //for (auto& cdsb : shader_set->customDescriptorSetBindings)
+    //{
+    //    this->addChild(cdsb->createStateCommand(pipeline_layout));
+    //}
 
 #if 0
-    auto indirectCommandBufferBarrier = vsg::BufferMemoryBarrier::create(
-        0,
-        VK_ACCESS_INDIRECT_COMMAND_READ_BIT,
+    auto indirect_command_barrier = vsg::BufferMemoryBarrier::create(
+        VK_ACCESS_SHADER_WRITE_BIT,
+        VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INDIRECT_COMMAND_READ_BIT,
         VK_QUEUE_FAMILY_IGNORED,
         VK_QUEUE_FAMILY_IGNORED,
-        indirect_command_buffer_info->buffer,
+        indirect_command_buffer_info_list[0]->buffer,
         0,
         VK_WHOLE_SIZE);
 
-    this->addChild(vsg::PipelineBarrier::create(
-        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+    auto draw_list_barrier = vsg::BufferMemoryBarrier::create(
+        VK_ACCESS_SHADER_WRITE_BIT,
+        VK_ACCESS_SHADER_READ_BIT,
+        VK_QUEUE_FAMILY_IGNORED,
+        VK_QUEUE_FAMILY_IGNORED,
+        draw_list_buffer_info->buffer,
+        0,
+        VK_WHOLE_SIZE);
+
+    auto draw_apply_barriers = vsg::PipelineBarrier::create(
+        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
         VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
         0,
-        indirectCommandBufferBarrier));
-#endif
+        indirect_command_barrier, draw_list_barrier);
 
+    this->addChild(draw_apply_barriers);
+#endif
 
     // the actual rendering command, finally.
     auto draw = vsg::DrawIndexedIndirect::create();
-    draw->bufferInfo = indirect_command_buffer_info;
+    draw->bufferInfo = indirect_command->ssbo; // _info;
     draw->drawCount = 1;
     draw->stride = 0;
 
@@ -476,27 +451,33 @@ IconSystem2Node::update(VSGContext& context)
     if (!status.ok())
         return;
 
+    if (!context->renderingEnabled)
+        return;
+
     // reset the indirect command buffer
-    auto& cmd = *static_cast<VkDrawIndexedIndirectCommand*>(drawCommandBuffer->dataPointer());
+    auto& cmd = indirect_command->data<VkDrawIndexedIndirectCommand>()[0];
     cmd = VkDrawIndexedIndirectCommand{ 6, 0, 0, 0, 0 };
+    indirect_command->dirty();
 
     // update the cull list
-    auto* cullList = static_cast<IconInstanceGPU*>(cullBuffer->dataPointer());
-    
+    auto* instances = cull_list->data<IconInstanceGPU>();
+
     int count = 0;
 
     auto [lock, registry] = _registry.read();
 
-    // TODO: do this for each active view!
+    // This will built a draw list that applies to all active views.
+
+    // TODO: Support ALL active views!
 
     registry.view<Icon, ActiveState, Visibility, Transform>().each([&](
         auto& icon, auto& active, auto& visibility, auto& transform)
         {
-            if (ecs::visible(visibility, 0)) // && !transform.node->viewLocal[0].culled)
+            if (ecs::visible(visibility, 0))
             {
                 auto& viewLocal = transform.node->viewLocal[0];
 
-                auto& instance = cullList[count++];
+                auto& instance = instances[count++];
                 instance.proj = viewLocal.proj;
                 instance.modelview = viewLocal.modelview;
                 instance.viewport = viewLocal.viewport;
@@ -509,35 +490,19 @@ IconSystem2Node::update(VSGContext& context)
 
     // configure the culling shader for 'count' instances
     unsigned workgroups = (count + (GPU_CULLING_LOCAL_WG_SIZE - 1)) / GPU_CULLING_LOCAL_WG_SIZE;
-    cullDispatch->groupCountX = workgroups;
+    cull_dispatch->groupCountX = workgroups;
 
     // zero from the end of the cull list to the padding boundary;
     // this will set the "radius" entries to zero, indicating a blank/padding entry
-    unsigned padding = (workgroups * GPU_CULLING_LOCAL_WG_SIZE) - count;
-    if (padding > 0)
+    std::size_t padding_count = (workgroups * GPU_CULLING_LOCAL_WG_SIZE) - count;
+    
+    if (padding_count > 0)
     {
-        std::memset(&cullList[count], 0, padding * sizeof(IconInstanceGPU));
+        auto offset = count * sizeof(IconInstanceGPU);
+        auto bytes = std::min(padding_count * sizeof(IconInstanceGPU), MAX_CULL_LIST_SIZE - offset);
+        std::memset(&instances[count], 0, bytes);
     }
 
-    drawCommandBuffer->dirty();
-
-    // We really only need to re-transfer the bit we changed, but
-    // VSG does not yet support partial transfer ranges.
-    cullBuffer->dirty();
-}
-
-void
-IconSystem2Node::traverse(vsg::RecordTraversal& rt) const
-{    
-    // now run the actual render commands
-    Inherit::traverse(rt);
-
-    auto [lock, registry] = _registry.read();
-
-    registry.view<Icon, ActiveState, Transform>().each([&](
-        const entt::entity entity, auto& icon, auto& active, auto& transform)
-        {
-            // update the transform (but don't do any culling)
-            transform.push(rt, false);
-        });
+    auto total_cull_list_bytes_to_dirty = (count + padding_count) * sizeof(IconInstanceGPU);
+    cull_list->dirty(0, total_cull_list_bytes_to_dirty);        
 }

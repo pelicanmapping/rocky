@@ -78,7 +78,9 @@ namespace ROCKY_NAMESPACE
 
     public:
 
-        bool push(vsg::RecordTraversal&, bool cull, const std::optional<vsg::dmat4>& localMatrix = {}) const;
+        void update(vsg::RecordTraversal&, const std::optional<vsg::dmat4>& localMatrix = {}) const;
+
+        bool push(vsg::RecordTraversal&) const;
 
         void pop(vsg::RecordTraversal&) const;
 

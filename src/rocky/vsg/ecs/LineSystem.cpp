@@ -80,7 +80,7 @@ LineSystemNode::LineSystemNode(ecs::Registry& registry) :
 }
 
 void
-LineSystemNode::initializeSystem(VSGContext& runtime)
+LineSystemNode::initialize(VSGContext& runtime)
 {
     // Now create the pipeline and stategroup to bind it
     auto shaderSet = createLineShaderSet(runtime);
@@ -151,7 +151,7 @@ LineSystemNode::initializeSystem(VSGContext& runtime)
         // Assemble the commands required to activate this pipeline:
         c.commands = vsg::Commands::create();
         c.commands->children.push_back(c.config->bindGraphicsPipeline);
-        c.commands->children.push_back(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, c.config->layout, VSG_VIEW_DEPENDENT_DATA_SET));
+        c.commands->children.push_back(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, c.config->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
     }
 }
 

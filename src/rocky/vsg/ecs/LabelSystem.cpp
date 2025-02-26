@@ -208,7 +208,7 @@ LabelSystemNode::LabelSystemNode(ecs::Registry& registry) :
 }
 
 void
-LabelSystemNode::initializeSystem(VSGContext& runtime)
+LabelSystemNode::initialize(VSGContext& runtime)
 {
     // use the VSG stock shaders for text:
     auto& options = runtime->readerWriterOptions;

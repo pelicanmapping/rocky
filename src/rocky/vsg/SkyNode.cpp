@@ -209,7 +209,7 @@ namespace
         auto stategroup = vsg::StateGroup::create();
         stategroup->add(pipelineConfig->bindGraphicsPipeline);
         //stategroup->add(PipelineUtils::createViewDependentBindCommand(pipelineConfig, VK_PIPELINE_BIND_POINT_GRAPHICS));
-        stategroup->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, VSG_VIEW_DEPENDENT_DATA_SET));
+        stategroup->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
 
         return stategroup;
     }

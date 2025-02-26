@@ -104,7 +104,7 @@ namespace ROCKY_NAMESPACE
             Status status;
 
             //! Initialize the ECS system (once at startup)
-            virtual void initializeSystem(VSGContext& runtime)
+            virtual void initialize(VSGContext& runtime)
             {
                 //nop
             }

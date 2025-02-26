@@ -102,7 +102,7 @@ namespace ROCKY_NAMESPACE
         int featureMask(const Mesh& mesh) const override;
 
         //! One-time initialization of the system        
-        void initializeSystem(VSGContext&) override;
+        void initialize(VSGContext&) override;
 
         void createOrUpdateNode(Mesh&, ecs::BuildInfo&, VSGContext&) const override;
     protected:

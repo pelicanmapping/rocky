@@ -1,7 +1,4 @@
-#version 460
-
-// size_x == GPU_CULLING_LOCAL_WG_SIZE
-layout(local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+layout (local_size_x_id = 0) in; // specialization constant 0
 
 struct VkDrawIndexedIndirectCommand
 {
@@ -54,13 +51,13 @@ void main()
     
     // For icons, clip to the viewport in pixel space:
     vec4 clip4 = cullList[i].proj * cullList[i].modelview * vec4(0,0,0,1);
-    //vec4 clip4 = cullList[i].matrix * vec4(0,0,0,1);
     vec2 clip = (clip4.xy / clip4.w);
     vec2 screen = (clip + 1.0) * 0.5 * vec2(w,h);
 
     float size = cullList[i].size;
 
-    // Culling visualization; set this to a negative value for TESTING.
+    // Culling visualization; set this to a negative value for TESTING/
+    // and you will see RED for culled geometry.
     size = -64.0;
 
     if (screen.x < x-size || screen.y < y-size || screen.x > x+w+size || screen.y > x+h+size)

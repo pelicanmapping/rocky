@@ -11,6 +11,7 @@
 #include "ecs/IconSystem.h"
 #include "ecs/IconSystem2.h"
 #include "ecs/LabelSystem.h"
+#include "ecs/MotionSystem.h"
 #include "ecs/Motion.h"
 
 #include <rocky/contrib/EarthFileImporter.h>
@@ -219,18 +220,21 @@ Application::ctor(int& argc, char** argv)
         commandLineStatus = loadMapFile(commandLine[1], *mapNode, context);
     }
 
+    // Create the ECS system manager and all its default systems.
     ecsManager = ecs::ECSNode::create(registry);
 
+    ecsManager->add(TransformSystem::create(registry));
+
     ecsManager->add(MeshSystemNode::create(registry));
-    ecsManager->add(LineSystemNode::create(registry));
     ecsManager->add(NodeSystemNode::create(registry));
+    ecsManager->add(LineSystemNode::create(registry));
+
     if (indirect)
         ecsManager->add(IconSystem2Node::create(registry));
     else
         ecsManager->add(IconSystemNode::create(registry));
+    
     ecsManager->add(LabelSystemNode::create(registry));
-
-    //ecsManager->add(MotionSystem::create(registry));
 
     mainScene->addChild(ecsManager);
 }
@@ -379,7 +383,10 @@ Application::realize()
         // Make a window if the user didn't.
         if (viewer->windows().empty() && autoCreateWindow)
         {
-            displayManager->addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
+            auto traits = vsg::WindowTraits::create(1920, 1080, "Main Window");
+            traits->queueFlags |= VK_QUEUE_COMPUTE_BIT;
+            traits->synchronizationLayer = true;
+            displayManager->addWindow(traits);
         }
 
         setupViewer(viewer);
@@ -404,6 +411,11 @@ Application::run()
 bool
 Application::frame()
 {
+    //Log()->info("Frame start ----------------------------------------------------------------------------");
+
+    //viewer->deviceWaitIdle();
+    //viewer->waitForFences(1, ~0);
+
     _lastFrameOK = true;
 
     // for stats collection

@@ -220,7 +220,7 @@ namespace ROCKY_NAMESPACE
 
                 for (auto& system : systems)
                 {
-                    system->initializeSystem(runtime);
+                    system->initialize(runtime);
                 }
             }
 
@@ -448,6 +448,7 @@ namespace ROCKY_NAMESPACE
                         leaves.emplace_back(RenderLeaf{ renderable, transform });
                     }
 
+#if 0
                     // otherwise if it's invisible but still has a transform, process that transform
                     // so it can calculate its screen-space information (for things like decluttering
                     // and intersection)
@@ -455,6 +456,7 @@ namespace ROCKY_NAMESPACE
                     {
                         transform->push(rt, false);
                     }
+#endif
                 }
 
                 if (renderable.revision != component.revision)
@@ -480,7 +482,7 @@ namespace ROCKY_NAMESPACE
                 {
                     if (leaf.transform)
                     {
-                        if (leaf.transform->push(rt, true))
+                        if (leaf.transform->push(rt))
                         {
                             leaf.renderable.node->accept(rt);
                             leaf.transform->pop(rt);

@@ -85,7 +85,7 @@ MeshSystemNode::MeshSystemNode(ecs::Registry& registry) :
 
 
 void
-MeshSystemNode::initializeSystem(VSGContext& context)
+MeshSystemNode::initialize(VSGContext& context)
 {
     auto shaderSet = createShaderSet(context);
 
