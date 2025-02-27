@@ -100,6 +100,15 @@ if (BUILD_WITH_ZLIB)
     endif()        
 endif()
 
+# dear imgui
+if (BUILD_WITH_IMGUI)
+    find_package(ImGui REQUIRED)
+    if(ImGui_FOUND)
+        set(IMGUI_FOUND TRUE)
+        set(ROCKY_HAS_IMGUI TRUE)
+    endif()            
+endif()
+
 # pthreads - for linux
 if (UNIX)
     find_package(Threads REQUIRED)
@@ -142,6 +151,10 @@ endif()
 
 if(unofficial-sqlite3_FOUND AND ZLIB_FOUND)
     set(ROCKY_HAS_MBTILES TRUE)
+endif()
+
+if(ImGui_FOUND)
+    list(APPEND PUBLIC_LIBS imgui::imgui)
 endif()
 
 if (ROCKY_SUPPORTS_AZURE)

@@ -62,7 +62,7 @@ auto Demo_Simulation = [](Application& app)
     static std::set<entt::entity> platforms;
     static Status status;
     static Simulator sim(app);
-    const unsigned num_platforms = 15000;
+    const unsigned num_platforms = 10000;
 
     if (status.failed())
     {
@@ -86,6 +86,26 @@ auto Demo_Simulation = [](Application& app)
         {
             std::mt19937 mt;
             std::uniform_real_distribution<float> rand_unit(0.0, 1.0);
+
+            auto render_widget = [&](WidgetInstance& i)
+                {
+                    Transform& t = i.registry.get<Transform>(i.entity);
+
+                    ImGui::SetNextWindowPos(ImVec2(i.position.x + 12.0f, i.position.y - i.size.y/2));
+                    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1, 1, 1, 0.25f));
+                    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.0f));
+                    if (ImGui::Begin(i.uid.c_str(), nullptr, i.defaultWindowFlags))
+                    {
+                        ImGui::Text("ID: %s", i.widget.text.c_str());
+                        ImGui::Separator();
+                        ImGui::Text("Alt: %.0f", t.position.transform(SRS::WGS84).z);
+
+                        i.size = ImGui::GetWindowSize();
+                        ImGui::End();
+                    }
+                    ImGui::PopStyleColor();
+                    ImGui::PopStyleColor();
+                };
 
             auto ll_to_ecef = SRS::WGS84.to(SRS::ECEF);
 
@@ -126,14 +146,10 @@ auto Demo_Simulation = [](Application& app)
                 motion.velocity = { -75000 + rand_unit(mt) * 150000, 0.0, 0.0 };
                 motion.normalAxis = pos.srs.ellipsoid().greatCircleRotationAxis(glm::dvec3(lon, lat, 0.0), initial_bearing);
 
-                // Place a label below the platform:
-                auto& label = registry.emplace<Label>(entity);
-                label.text = std::to_string(i);
-                label.style.font = app.context->defaultFont;
-                label.style.pointSize = 16.0f + t * 5.0f;
-                label.style.outlineSize = 0.5f;
-                label.style.pixelOffset.y = -icon.style.size_pixels * 0.5f - 5.0f;
-                label.style.verticalAlignment = vsg::StandardLayout::TOP_ALIGNMENT;
+                // Add a labeling widget:
+                auto& widget = registry.emplace<Widget>(entity);
+                widget.text = std::to_string(i);
+                widget.render = render_widget;
 
                 // How about a drop line?
                 // Since the drop line is relative to the platfrom, we have to enable

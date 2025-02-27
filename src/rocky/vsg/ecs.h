@@ -10,6 +10,7 @@
 #include <rocky/vsg/ecs/Mesh.h>
 #include <rocky/vsg/ecs/Icon.h>
 #include <rocky/vsg/ecs/Label.h>
+#include <rocky/vsg/ecs/Widget.h>
 #include <rocky/vsg/ecs/Visibility.h>
 #include <rocky/vsg/ecs/Transform.h>
 #include <rocky/vsg/ecs/Declutter.h>

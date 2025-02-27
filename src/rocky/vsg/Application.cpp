@@ -11,6 +11,7 @@
 #include "ecs/IconSystem.h"
 #include "ecs/IconSystem2.h"
 #include "ecs/LabelSystem.h"
+#include "ecs/WidgetSystem.h"
 #include "ecs/MotionSystem.h"
 #include "ecs/Motion.h"
 
@@ -235,6 +236,10 @@ Application::ctor(int& argc, char** argv)
         ecsManager->add(IconSystemNode::create(registry));
     
     ecsManager->add(LabelSystemNode::create(registry));
+
+#ifdef ROCKY_HAS_IMGUI
+    ecsManager->add(WidgetSystemNode::create(registry));
+#endif
 
     mainScene->addChild(ecsManager);
 }

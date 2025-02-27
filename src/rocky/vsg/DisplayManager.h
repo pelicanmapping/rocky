@@ -120,9 +120,6 @@ namespace ROCKY_NAMESPACE
 
         vsg::ref_ptr<vsg::Viewer> viewer;
 
-        std::vector<std::uint32_t> activeViewIDs;
-        std::uint32_t maxViewID = 0;
-
     protected:
         Application* app = nullptr;
 

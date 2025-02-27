@@ -35,8 +35,9 @@ GeoTransform::traverse(vsg::RecordTraversal& record) const
 {
     update(record, {});
 
-    if (push(record))
+    if (visible(record.getState()->_commandBuffer->viewID))
     {
+        push(record);
         Inherit::traverse(record);
         pop(record);
     }
@@ -89,6 +90,13 @@ GeoTransform::update(vsg::RecordTraversal& record, const std::optional<vsg::dmat
             }
         }
 
+        if (!view.horizon)
+        {
+            // cache this view's horizon pointer in the local view data
+            // so we don't have to look it up every frame
+            record.getValue("rocky.horizon", view.horizon);
+        }
+
         if (localMatrix.has_value())
         {
             view.local = localMatrix.value();
@@ -106,11 +114,10 @@ GeoTransform::update(vsg::RecordTraversal& record, const std::optional<vsg::dmat
 }
 
 bool
-GeoTransform::push(vsg::RecordTraversal& record) const
+GeoTransform::visible(std::uint32_t viewID) const
 {
     // fetch the view-local data:
-    auto* state = record.getState();
-    auto& view = viewLocal[state->_commandBuffer->viewID];
+    auto& view = viewLocal[viewID];
 
     // Frustum cull (by center point)
     if (frustumCulling)
@@ -128,31 +135,28 @@ GeoTransform::push(vsg::RecordTraversal& record) const
     }
 
     // horizon cull, if active (geocentric only)
-    if (horizonCulling && view.world_srs.isGeocentric())
+    if (horizonCulling && view.horizon && view.world_srs.isGeocentric())
     {
-        if (!view.horizon)
+        if (!view.horizon->isVisible(view.model[3][0], view.model[3][1], view.model[3][2], bound.radius))
         {
-            // cache this view's horizon pointer in the local view data
-            // so we don't have to look it up every frame
-            record.getValue("rocky.horizon", view.horizon);
-        }
-
-        if (view.horizon)
-        {
-            if (!view.horizon->isVisible(view.model[3][0], view.model[3][1], view.model[3][2], bound.radius))
-            {
-                view.culled = true;
-                return false;
-            }
+            view.culled = true;
+            return false;
         }
     }
+
+    return true;
+}
+
+void
+GeoTransform::push(vsg::RecordTraversal& record) const
+{
+    auto* state = record.getState();
+    auto& view = viewLocal[state->_commandBuffer->viewID];
 
     // replicates RecordTraversal::accept(MatrixTransform&):
     state->modelviewMatrixStack.push(view.modelview);
     state->dirty = true;
     state->pushFrustum();
-
-    return true;
 }
 
 void
