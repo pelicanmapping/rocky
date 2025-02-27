@@ -43,7 +43,7 @@ namespace
         long long result = INT_MAX;
         int s = start - count; if (s < 0) s += frame_count;
         for (int i = s; i <= s + count; i++)
-            result = std::min(result, t[i % frame_count].count());
+            result = std::min(result, static_cast<long long>(t[i % frame_count].count()));
         return result;
     }
 }
