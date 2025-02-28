@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl-members.html">List of all members</a>  </div>
@@ -86,6 +87,13 @@ $(function() {
 
 <p>Inherits ROCKY_NAMESPACE::ContextImpl.</p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a6267c2790bdae0744225db507f59c85a" id="r_a6267c2790bdae0744225db507f59c85a"><td class="memItemLeft" align="right" valign="top"><a id="a6267c2790bdae0744225db507f59c85a" name="a6267c2790bdae0744225db507f59c85a"></a>
+<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><b>GuiRenderer</b> = std::function&lt; <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">void</a>(std::uint32_t <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">viewID</a>, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">void</a> *<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">guiContext</a>)&gt;</td></tr>
+<tr class="memdesc:a6267c2790bdae0744225db507f59c85a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callbacks to render GUI elements. <br /></td></tr>
+<tr class="separator:a6267c2790bdae0744225db507f59c85a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ae400cbc9f2a296c23e1ec855c9a6b563" id="r_ae400cbc9f2a296c23e1ec855c9a6b563"><td class="memItemLeft" align="right" valign="top"><a id="ae400cbc9f2a296c23e1ec855c9a6b563" name="ae400cbc9f2a296c23e1ec855c9a6b563"></a>
@@ -108,6 +116,7 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aac81cfa0526b7e4db75433597c7e96f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a98b266ccf7883db345d55a356dd77e74" id="r_a98b266ccf7883db345d55a356dd77e74"><td class="memItemLeft" align="right" valign="top"><a id="a98b266ccf7883db345d55a356dd77e74" name="a98b266ccf7883db345d55a356dd77e74"></a>
 vsg::ref_ptr&lt; vsg::Device &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>device</b> ()</td></tr>
+<tr class="memdesc:a98b266ccf7883db345d55a356dd77e74"><td class="mdescLeft">&#160;</td><td class="mdescRight">The VSG/Vulkan device shared by all displays. <br /></td></tr>
 <tr class="separator:a98b266ccf7883db345d55a356dd77e74"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aadf516673bcf990b2eb6739becff3b8d" id="r_aadf516673bcf990b2eb6739becff3b8d"><td class="memItemLeft" align="right" valign="top"><a id="aadf516673bcf990b2eb6739becff3b8d" name="aadf516673bcf990b2eb6739becff3b8d"></a>
 vsg::ref_ptr&lt; vsg::CommandGraph &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>getComputeCommandGraph</b> () <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">const</a></td></tr>
@@ -155,8 +164,13 @@ std::atomic_int&#160;</td><td class="memItemRight" valign="bottom"><b>renderRequ
 <tr class="separator:aa5974b94c3215a8bd74d22f448421fe6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9cf5ed695d4d40a8e54cd7eee5e8aaeb" id="r_a9cf5ed695d4d40a8e54cd7eee5e8aaeb"><td class="memItemLeft" align="right" valign="top">std::function&lt; <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">void</a>(vsg::ref_ptr&lt; vsg::Object &gt;)&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#a9cf5ed695d4d40a8e54cd7eee5e8aaeb">disposer</a></td></tr>
 <tr class="separator:a9cf5ed695d4d40a8e54cd7eee5e8aaeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5eade1e1d66ca3d83ae507b3595404ee" id="r_a5eade1e1d66ca3d83ae507b3595404ee"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::uint32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#a5eade1e1d66ca3d83ae507b3595404ee">activeViewIDs</a></td></tr>
+<tr class="memitem:a5eade1e1d66ca3d83ae507b3595404ee" id="r_a5eade1e1d66ca3d83ae507b3595404ee"><td class="memItemLeft" align="right" valign="top"><a id="a5eade1e1d66ca3d83ae507b3595404ee" name="a5eade1e1d66ca3d83ae507b3595404ee"></a>
+std::vector&lt; std::uint32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>activeViewIDs</b> = { 0 }</td></tr>
+<tr class="memdesc:a5eade1e1d66ca3d83ae507b3595404ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">List of viewIDs that are active. <br /></td></tr>
 <tr class="separator:a5eade1e1d66ca3d83ae507b3595404ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a238baba9c66acdf3edb430c31478cc6b" id="r_a238baba9c66acdf3edb430c31478cc6b"><td class="memItemLeft" align="right" valign="top"><a id="a238baba9c66acdf3edb430c31478cc6b" name="a238baba9c66acdf3edb430c31478cc6b"></a>
+std::deque&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#a6267c2790bdae0744225db507f59c85a">GuiRenderer</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>guiRenderers</b></td></tr>
+<tr class="separator:a238baba9c66acdf3edb430c31478cc6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Rocky runtime context to use with a VSG-based application. Use VSGContextFactory::create to VSGContext instance. </p>
@@ -266,21 +280,6 @@ std::atomic_int&#160;</td><td class="memItemRight" valign="bottom"><b>renderRequ
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="a5eade1e1d66ca3d83ae507b3595404ee" name="a5eade1e1d66ca3d83ae507b3595404ee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5eade1e1d66ca3d83ae507b3595404ee">&#9670;&#160;</a></span>activeViewIDs</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::vector&lt;std::uint32_t&gt; ROCKY_NAMESPACE::VSGContextImpl::activeViewIDs</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>List of viewIDs that were detected during the latest record traversal. This needs to be cleared and rebuilt every frame. </p>
-
-</div>
-</div>
 <a id="a9cf5ed695d4d40a8e54cd7eee5e8aaeb" name="a9cf5ed695d4d40a8e54cd7eee5e8aaeb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9cf5ed695d4d40a8e54cd7eee5e8aaeb">&#9670;&#160;</a></span>disposer</h2>
 
