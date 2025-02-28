@@ -25,6 +25,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <functional>
 
+#include <rocky/vsg/Common.h>
+
 #include <vsg/app/Window.h>
 #include <vsg/commands/ClearAttachments.h>
 #include <vsg/nodes/Group.h>
@@ -34,7 +36,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace vsgImGui
 {
-    class RenderImGui : public vsg::Inherit<vsg::Group, RenderImGui>
+    class ROCKY_EXPORT RenderImGui : public vsg::Inherit<vsg::Group, RenderImGui>
     {
     public:
         RenderImGui(const vsg::ref_ptr<vsg::Window>& window, bool useClearAttachments = false);
@@ -56,6 +58,10 @@ namespace vsgImGui
             RenderImGui(window, useClearAttachments)
         {
             (add(args), ...);
+        }
+
+        ImGuiContext* context() {
+            return _imguiContext;
         }
 
         /// std::function signature used for older vsgImGui versions
@@ -80,6 +86,7 @@ namespace vsgImGui
         uint32_t _queueFamily;
         vsg::ref_ptr<vsg::Queue> _queue;
         vsg::ref_ptr<vsg::DescriptorPool> _descriptorPool;
+        ImGuiContext* _imguiContext = nullptr;
 
         vsg::ref_ptr<vsg::ClearAttachments> _clearAttachments;
 

@@ -13,13 +13,11 @@
 #include <rocky/vsg/Application.h>
 #include <rocky/Version.h>
 
-#ifdef ROCKY_HAS_TMS
 #include <rocky/TMSImageLayer.h>
 #include <rocky/TMSElevationLayer.h>
-#endif
 
-#include "vsgImGui/RenderImGui.h"
-#include "vsgImGui/SendEventsToImGui.h"
+#include <rocky/vsg/imgui/RenderImGui.h>
+#include <rocky/vsg/imgui/SendEventsToImGui.h>
 
 #include <imgui_impl_vulkan.h>
 #include <imgui_internal.h>
@@ -174,14 +172,16 @@ struct GuiCallbackRunner : public vsg::Inherit<vsg::Node, GuiCallbackRunner>
 class SendEventsToImGuiWrapper : public vsg::Inherit<vsgImGui::SendEventsToImGui, SendEventsToImGuiWrapper>
 {
 public:
-    SendEventsToImGuiWrapper(vsg::ref_ptr<vsg::Window> window, rocky::VSGContext& cx) :
-        _window(window), _context(cx) { }
+    SendEventsToImGuiWrapper(vsg::ref_ptr<vsg::Window> window, ImGuiContext* imguiContext, rocky::VSGContext& cx) :
+        _window(window), _imguiContext(imguiContext), _context(cx) { }
 
     template<typename E>
     void propagate(E& e, bool forceRefresh = false)
     {
-        if (e.window.ref_ptr() == _window)
+        if (!e.handled && e.window.ref_ptr() == _window)
         {
+            ImGui::SetCurrentContext(_imguiContext);
+
             vsgImGui::SendEventsToImGui::apply(e);
             if (e.handled || forceRefresh)
             {
@@ -201,6 +201,7 @@ public:
 private:
     vsg::ref_ptr<vsg::Window> _window;
     VSGContext _context;
+    ImGuiContext* _imguiContext;
 };
 
 
@@ -220,7 +221,6 @@ int main(int argc, char** argv)
     auto& layers = app.mapNode->map->layers();
     if (layers.empty())
     {
-#ifdef ROCKY_HAS_TMS
         auto imagery = rocky::TMSImageLayer::create();
         imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
         layers.add(imagery);
@@ -228,41 +228,55 @@ int main(int argc, char** argv)
         auto elevation = rocky::TMSElevationLayer::create();
         elevation->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
         layers.add(elevation);
-#endif
     }
 
     // Create the main window and the main GUI:
-    auto window = app.displayManager->addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
-    auto imgui = vsgImGui::RenderImGui::create(window);
+    auto main_window = app.displayManager->addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
+    auto main_imgui = vsgImGui::RenderImGui::create(main_window);
+
+    // This imgui renderer is for in-scene widgets.
+    auto scene_imgui = vsgImGui::RenderImGui::create(main_window);
+    scene_imgui->addChild(GuiCallbackRunner::create(app.context));
 
     // Hook in any embedded GUI renderers:
-    imgui->addChild(GuiCallbackRunner::create(app.context));
+    //main_imgui->addChild(GuiCallbackRunner::create(app.context));
 
     // Hook in the main demo gui:
-    auto maingui = MainGUI::create(app);
-    imgui->addChild(maingui);
+    auto demo_gui = MainGUI::create(app);
+    main_imgui->addChild(demo_gui);
 
     // ImGui likes to live under the main rendergraph, but outside the main view.
     // https://github.com/vsg-dev/vsgExamples/blob/master/examples/ui/vsgimgui_example/vsgimgui_example.cpp#L276
-    auto main_view = app.displayManager->windowsAndViews[window].front();
-    app.displayManager->getRenderGraph(main_view)->addChild(imgui);
+    auto main_view = app.displayManager->windowsAndViews[main_window].front();
+    app.displayManager->getRenderGraph(main_view)->addChild(scene_imgui);
+    app.displayManager->getRenderGraph(main_view)->addChild(main_imgui);
 
     // Make sure ImGui is the first event handler:
     auto& handlers = app.viewer->getEventHandlers();
-    handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(window, app.context));
+    handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(main_window, scene_imgui->context(), app.context));
+    handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(main_window, main_imgui->context(), app.context));
 
     // In render-on-demand mode, this callback will cause ImGui to handle events
-    // TODO: what about the GuiCallbackRunner callbacks...?
     app.noRenderFunction = [&]()
         {
-            vsgImGui::RenderImGui::frame([&]()
-                {
-                    for(auto& render : app.context->guiCallbacks)
-                        for(auto& viewID : app.context->activeViewIDs)
-                            render(viewID, ImGui::GetCurrentContext());
+            // "render" each imgui context without calling ImGui::Render()
+            // so we can still process events.
+            ImGui::SetCurrentContext(scene_imgui->context());
+            ImGui::NewFrame();
 
-                    maingui->render();
-                });
+            for (auto& render : app.context->guiCallbacks)
+                for (auto& viewID : app.context->activeViewIDs)
+                    render(viewID, scene_imgui->context());
+
+            ImGui::EndFrame();
+
+
+            ImGui::SetCurrentContext(main_imgui->context());
+            ImGui::NewFrame();
+
+            demo_gui->render();
+
+            ImGui::EndFrame();
         };
 
     // run until the user quits.

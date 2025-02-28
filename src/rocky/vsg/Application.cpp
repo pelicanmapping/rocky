@@ -27,6 +27,10 @@
 #include <vsg/io/read.h>
 #include <vsg/core/Version.h>
 
+#ifdef ROCKY_HAS_IMGUI
+
+#endif
+
 using namespace ROCKY_NAMESPACE;
 
 namespace

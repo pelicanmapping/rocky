@@ -23,6 +23,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 </editor-fold> */
 
+#include <rocky/vsg/Common.h>
+
 #include <chrono>
 
 #include <vsg/core/Visitor.h>
@@ -32,7 +34,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace vsgImGui
 {
-    class SendEventsToImGui : public vsg::Inherit<vsg::Visitor, SendEventsToImGui>
+    class ROCKY_EXPORT SendEventsToImGui : public vsg::Inherit<vsg::Visitor, SendEventsToImGui>
     {
     public:
         SendEventsToImGui();

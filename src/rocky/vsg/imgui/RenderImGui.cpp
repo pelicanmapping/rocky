@@ -87,9 +87,10 @@ RenderImGui::RenderImGui(vsg::ref_ptr<vsg::Device> device, uint32_t queueFamily,
 
 RenderImGui::~RenderImGui()
 {
+    ImGui::SetCurrentContext(_imguiContext);
     ImGui_ImplVulkan_Shutdown();
-    //ImPlot::DestroyContext();
-    ImGui::DestroyContext();
+    //ImPlot::DestroyContext();    
+    ImGui::DestroyContext(_imguiContext);
 }
 
 void RenderImGui::add(const LegacyFunction& legacyFunc)
@@ -132,10 +133,14 @@ void RenderImGui::_init(
 {
     IMGUI_CHECKVERSION();
 
-    if (!ImGui::GetCurrentContext())
-    {
-        ImGui::CreateContext();
-    }
+    _imguiContext = ImGui::CreateContext();
+
+    ImGui::SetCurrentContext(_imguiContext);
+
+    //if (!ImGui::GetCurrentContext())
+    //{
+    //    ImGui::CreateContext();
+    //}
 
     bool sRGB = false;
     for (auto& attachment : renderPass->attachments)
@@ -228,6 +233,9 @@ void RenderImGui::accept(vsg::RecordTraversal& rt) const
 {
     auto& commandBuffer = *(rt.getState()->_commandBuffer);
     if (_device.get() != commandBuffer.getDevice()) return;
+
+    // active the context associated with this Node:
+    ImGui::SetCurrentContext(_imguiContext);
 
     // record all the ImGui commands to ImDrawData container
     ImGui_ImplVulkan_NewFrame();
