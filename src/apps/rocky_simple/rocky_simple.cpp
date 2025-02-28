@@ -1,3 +1,9 @@
+/**
+ * rocky c++
+ * Copyright 2023 Pelican Mapping
+ * MIT License
+ */
+
 #include <rocky/vsg/Application.h>
 #include <rocky/TMSImageLayer.h>
 

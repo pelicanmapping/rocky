@@ -7,7 +7,6 @@
 #include <rocky/vsg/Application.h>
 #include <rocky/weejobs.h>
 #include <vsg/commands/Command.h>
-#include "vsgImGui/RenderImGui.h"
 #include <chrono>
 
 using namespace std::chrono_literals;

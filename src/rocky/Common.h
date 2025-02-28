@@ -30,6 +30,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstdint>
+#include <functional>
 
 // match the weejobs export to the library export
 #ifndef WEEJOBS_EXPORT
@@ -101,6 +102,16 @@ namespace ROCKY_NAMESPACE
         static const std::shared_ptr<const ME> cast(const std::shared_ptr<const T>& rhs) {
             return std::dynamic_pointer_cast<const ME>(rhs);
         }
+    };
+
+    /** A comparable function that you can use in a container */
+    struct NamedFunction
+    {
+        void* id = nullptr;
+        std::function<void()> func;
+        bool operator==(const NamedFunction& other) const { return id == other.id; }
+        bool operator<(const NamedFunction& other) const { return id < other.id; }
+        NamedFunction(void* in_in, std::function<void()> in_func) : id(in_in), func(in_func) { }
     };
 }
 

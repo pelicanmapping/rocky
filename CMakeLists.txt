@@ -10,14 +10,14 @@ endif()
 # Main PROJECT definition
 project(
     rocky
-    VERSION 0.8.3
+    VERSION 0.8.4
     DESCRIPTION "Rocky by Pelican Mapping"
     HOMEPAGE_URL https://github.com/pelicanmapping/rocky
     LANGUAGES CXX C
 )
 
 # please update this with each ABI change!!
-set(PROJECT_VERSION_ABI 11)
+set(PROJECT_VERSION_ABI 12)
 
 # require C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -62,7 +62,7 @@ option(ROCKY_SUPPORTS_GDAL "Support GeoTIFF, WMS, WMTS, and other GDAL formats (
 option(ROCKY_SUPPORTS_MBTILES "Support MBTiles databases with extended spatial profile support (requires sqlite3, zlib)" ON)
 option(ROCKY_SUPPORTS_AZURE "Support Azure Maps (subscription required)" ON)
 option(ROCKY_SUPPORTS_BING "Support Bing Maps (subscription required)" ON)
-option(ROCKY_SUPPORTS_IMGUI "Build ImGui demos" ON)
+option(ROCKY_SUPPORTS_IMGUI "Support Dear ImGui and build ImGui-based demos" ON)
 option(ROCKY_SUPPORTS_QT "Build Qt demos" OFF)
 
 mark_as_advanced(ROCKY_RENDERER_VSG)
@@ -98,6 +98,10 @@ if(ROCKY_SUPPORTS_CURL)
     else()
         set(BUILD_WITH_CURL ON)
     endif()
+endif()
+
+if(ROCKY_SUPPORTS_IMGUI)
+    set(BUILD_WITH_IMGUI ON)
 endif()
 
 # source code

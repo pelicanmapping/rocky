@@ -11,18 +11,11 @@
 */
 
 #include <rocky/vsg/Application.h>
+#include <rocky/vsg/imgui/ImGuiIntegration.h>
 #include <rocky/Version.h>
 
-#ifdef ROCKY_HAS_TMS
 #include <rocky/TMSImageLayer.h>
 #include <rocky/TMSElevationLayer.h>
-#endif
-
-#include "vsgImGui/RenderImGui.h"
-#include "vsgImGui/SendEventsToImGui.h"
-
-#include <imgui_impl_vulkan.h>
-#include <imgui_internal.h>
 
 ROCKY_ABOUT(imgui, IMGUI_VERSION)
 
@@ -34,6 +27,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Icon.h"
 #include "Demo_Model.h"
 #include "Demo_Label.h"
+#include "Demo_Widget.h"
 #include "Demo_LineFeatures.h"
 #include "Demo_PolygonFeatures.h"
 #include "Demo_LabelFeatures.h"
@@ -83,7 +77,8 @@ std::vector<Demo> demos =
         Demo{ "Mesh - absolute", Demo_Mesh_Absolute },
         Demo{ "Mesh - relative", Demo_Mesh_Relative },
         Demo{ "Icon", Demo_Icon },
-        Demo{ "User Model", Demo_Model }
+        Demo{ "Model", Demo_Model },
+        Demo{ "Widget", Demo_Widget }
     } },
     Demo{ "GIS Data", {},
     {
@@ -112,18 +107,14 @@ std::vector<Demo> demos =
     Demo{ "About", Demo_About }
 };
 
-struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>
+struct MainGUI : public vsg::Inherit<ImGuiNode, MainGUI>
 {
     Application& app;
     MainGUI(Application& app_) : app(app_) { }
 
-    void record(vsg::CommandBuffer& cb) const override
+    void render(ImGuiContext* imguiContext) const override
     {
-        render();
-    }
-
-    void render() const
-    {
+        ImGui::SetCurrentContext(imguiContext);
         ImGui::Begin("Welcome to Rocky");
         {
             for (auto& demo : demos)
@@ -152,38 +143,6 @@ struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>
     }
 };
 
-//! wrapper for vsgImGui::SendEventsToImGui that restricts ImGui events to a single window.
-class SendEventsToImGuiWrapper : public vsg::Inherit<vsgImGui::SendEventsToImGui, SendEventsToImGuiWrapper>
-{
-public:
-    SendEventsToImGuiWrapper(vsg::ref_ptr<vsg::Window> window, rocky::VSGContext& cx) :
-        _window(window), _context(cx) { }
-
-    template<typename E>
-    void propagate(E& e, bool forceRefresh = false)
-    {
-        if (e.window.ref_ptr() == _window)
-        {
-            vsgImGui::SendEventsToImGui::apply(e);
-            if (e.handled || forceRefresh)
-            {
-                _context->requestFrame();
-            }
-        }
-    }
-
-    void apply(vsg::ButtonPressEvent& e) override { propagate(e); }
-    void apply(vsg::ButtonReleaseEvent& e) override { propagate(e); }
-    void apply(vsg::ScrollWheelEvent& e) override { propagate(e); }
-    void apply(vsg::KeyPressEvent& e) override { propagate(e); }
-    void apply(vsg::KeyReleaseEvent& e) override { propagate(e); }
-    void apply(vsg::MoveEvent& e) override { propagate(e); }
-    void apply(vsg::ConfigureWindowEvent& e) override { propagate(e, true); }
-
-private:
-    vsg::ref_ptr<vsg::Window> _window;
-    VSGContext _context;
-};
 
 int main(int argc, char** argv)
 {
@@ -201,7 +160,6 @@ int main(int argc, char** argv)
     auto& layers = app.mapNode->map->layers();
     if (layers.empty())
     {
-#ifdef ROCKY_HAS_TMS
         auto imagery = rocky::TMSImageLayer::create();
         imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
         layers.add(imagery);
@@ -209,29 +167,18 @@ int main(int argc, char** argv)
         auto elevation = rocky::TMSElevationLayer::create();
         elevation->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
         layers.add(elevation);
-#endif
     }
 
     // Create the main window and the main GUI:
-    auto window = app.displayManager->addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
-    auto imgui = vsgImGui::RenderImGui::create(window);
-    auto maingui = MainGUI::create(app);
-    imgui->addChild(maingui);
+    auto traits = vsg::WindowTraits::create(1920, 1080, "Main Window");
+    auto main_window = app.displayManager->addWindow(traits);
 
-    // ImGui likes to live under the main rendergraph, but outside the main view.
-    // https://github.com/vsg-dev/vsgExamples/blob/master/examples/ui/vsgimgui_example/vsgimgui_example.cpp#L276
-    auto main_view = app.displayManager->windowsAndViews[window].front();
-    app.displayManager->getRenderGraph(main_view)->addChild(imgui);
+    // Install a manager for our main GUI:
+    auto imgui_group = ImGuiIntegration::addContextGroup(app.displayManager, main_window);
 
-    // Make sure ImGui is the first event handler:
-    auto& handlers = app.viewer->getEventHandlers();
-    handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(window, app.context));
-
-    // In render-on-demand mode, this callback will cause ImGui to handle events
-    app.noRenderFunction = [&]()
-        {
-            vsgImGui::RenderImGui::frame([&]() { maingui->render(); });
-        };
+    // Hook in the main demo gui:
+    auto demo_gui = MainGUI::create(app);
+    imgui_group->add(demo_gui, app);
 
     // run until the user quits.
     return app.run();

@@ -13,7 +13,6 @@
 #include <mutex>
 #include <utility> // std::pair
 
-//#define ENTT_NO_ETO
 #include <entt/entt.hpp>
 
 namespace ROCKY_NAMESPACE

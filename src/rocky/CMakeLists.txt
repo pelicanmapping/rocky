@@ -100,6 +100,15 @@ if (BUILD_WITH_ZLIB)
     endif()        
 endif()
 
+# dear imgui
+if (BUILD_WITH_IMGUI)
+    find_package(ImGui REQUIRED)
+    if(ImGui_FOUND)
+        set(IMGUI_FOUND TRUE)
+        set(ROCKY_HAS_IMGUI TRUE)
+    endif()            
+endif()
+
 # pthreads - for linux
 if (UNIX)
     find_package(Threads REQUIRED)
@@ -144,6 +153,10 @@ if(unofficial-sqlite3_FOUND AND ZLIB_FOUND)
     set(ROCKY_HAS_MBTILES TRUE)
 endif()
 
+if(ImGui_FOUND)
+    list(APPEND PRIVATE_LIBS imgui::imgui)
+endif()
+
 if (ROCKY_SUPPORTS_AZURE)
     set(ROCKY_HAS_AZURE TRUE)
 endif()
@@ -171,6 +184,11 @@ if(ROCKY_RENDERER_VSG)
     
     file(GLOB HEADERS_VSG_ECS vsg/ecs/*.h)
     file(GLOB SOURCES_VSG_ECS vsg/ecs/*.cpp)
+
+    if(ImGui_FOUND)
+        file(GLOB HEADERS_VSG_IMGUI vsg/imgui/*.h)
+        file(GLOB SOURCES_VSG_IMGUI vsg/imgui/*.cpp)
+    endif()
     
     file(GLOB SHADERS_VSG vsg/shaders/*)
 
@@ -219,6 +237,7 @@ add_library(rocky ${BUILD_TYPE}
     ${HEADERS_VSG} ${SOURCES_VSG}
     ${HEADERS_VSG_TERRAIN} ${SOURCES_VSG_TERRAIN}
     ${HEADERS_VSG_ECS} ${SOURCES_VSG_ECS}
+    ${HEADERS_VSG_IMGUI} ${SOURCES_VSG_IMGUI}
     ${SHADERS_VSG}
 )
 
@@ -244,8 +263,8 @@ include_directories(${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky)
 
 # enables folders for IDEs
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-assign_source_groups("Sources" "${CMAKE_CURRENT_SOURCE_DIR}" ${SOURCES_CORE} ${SOURCES_CONTRIB} ${SOURCES_VSG} ${SOURCES_VSG_TERRAIN} ${SOURCES_VSG_ECS})
-assign_source_groups("Headers" "${CMAKE_CURRENT_SOURCE_DIR}" ${HEADERS_CORE} ${HEADERS_CONTRIB} ${HEADERS_VSG} ${HEADERS_VSG_TERRAIN} ${HEADERS_VSG_ECS})
+assign_source_groups("Sources" "${CMAKE_CURRENT_SOURCE_DIR}" ${SOURCES_CORE} ${SOURCES_CONTRIB} ${SOURCES_VSG} ${SOURCES_VSG_TERRAIN} ${SOURCES_VSG_ECS} ${SOURCES_VSG_IMGUI})
+assign_source_groups("Headers" "${CMAKE_CURRENT_SOURCE_DIR}" ${HEADERS_CORE} ${HEADERS_CONTRIB} ${HEADERS_VSG} ${HEADERS_VSG_TERRAIN} ${HEADERS_VSG_ECS} ${HEADERS_VSG_IMGUI})
 assign_source_groups("Shaders" "${CMAKE_CURRENT_SOURCE_DIR}" ${SHADERS_VSG})
 
 # sets up versions and position independent code that is required for unix platforms
@@ -283,5 +302,6 @@ if(ROCKY_RENDERER_VSG)
     install(FILES ${HEADERS_VSG} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rocky/vsg)
     install(FILES ${HEADERS_VSG_TERRAIN} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rocky/vsg/terrain)
     install(FILES ${HEADERS_VSG_ECS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rocky/vsg/ecs)
+    install(FILES ${HEADERS_VSG_IMGUI} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rocky/vsg/imgui)
     install(FILES ${SHADERS_VSG} ${SPIRV_SHADERS} DESTINATION ${CMAKE_INSTALL_DATADIR}/rocky/shaders)
 endif()

@@ -11,6 +11,7 @@
 #include "ecs/IconSystem.h"
 #include "ecs/IconSystem2.h"
 #include "ecs/LabelSystem.h"
+#include "ecs/WidgetSystem.h"
 #include "ecs/MotionSystem.h"
 #include "ecs/Motion.h"
 
@@ -25,6 +26,10 @@
 #include <vsg/vk/CommandBuffer.h>
 #include <vsg/io/read.h>
 #include <vsg/core/Version.h>
+
+#ifdef ROCKY_HAS_IMGUI
+
+#endif
 
 using namespace ROCKY_NAMESPACE;
 
@@ -117,6 +122,8 @@ Application::ctor(int& argc, char** argv)
     }
 
     context = VSGContextFactory::create(viewer, argc, argv);
+
+    displayManager->initialize(context);
 
     vsg::CommandLine commandLine(&argc, argv);
 
@@ -235,6 +242,10 @@ Application::ctor(int& argc, char** argv)
         ecsManager->add(IconSystemNode::create(registry));
     
     ecsManager->add(LabelSystemNode::create(registry));
+
+#ifdef ROCKY_HAS_IMGUI
+    ecsManager->add(WidgetSystemNode::create(registry));
+#endif
 
     mainScene->addChild(ecsManager);
 }
@@ -514,9 +525,9 @@ Application::frame()
         viewer->handleEvents();
 
         // Call the user-supplied "no render" function
-        if (noRenderFunction)
+        for (auto& f : noRenderFunctions)
         {
-            noRenderFunction();
+            if (f) (*f)();
         }
 
         _framesSinceLastRender++;

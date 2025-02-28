@@ -25,6 +25,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <functional>
 
+#include <rocky/vsg/Common.h>
+
 #include <vsg/app/Window.h>
 #include <vsg/commands/ClearAttachments.h>
 #include <vsg/nodes/Group.h>
@@ -34,7 +36,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace vsgImGui
 {
-    class RenderImGui : public vsg::Inherit<vsg::Group, RenderImGui>
+    class ROCKY_EXPORT RenderImGui : public vsg::Inherit<vsg::Group, RenderImGui>
     {
     public:
         RenderImGui(const vsg::ref_ptr<vsg::Window>& window, bool useClearAttachments = false);
@@ -58,6 +60,10 @@ namespace vsgImGui
             (add(args), ...);
         }
 
+        ImGuiContext* imguiContext() {
+            return _imguiContext;
+        }
+
         /// std::function signature used for older vsgImGui versions
         using LegacyFunction = std::function<bool()>;
 
@@ -67,14 +73,14 @@ namespace vsgImGui
         /// add a child, equivalent to Group::addChild(..) but adds compatibility with the RenderImGui constructor
         void add(vsg::ref_ptr<vsg::Node> child) { addChild(child); }
 
-        void accept(vsg::RecordTraversal& rt) const override;
+        void traverse(vsg::RecordTraversal& rt) const override;
 
-        //! Execute an ImGui frame natively (bypassing VSG).
-        //! @renderFunction Function that will submit ImGui commands.
-        static void frame(std::function<void()> renderFunction);
+    protected:
+        ImGuiContext* _imguiContext = nullptr;
+
+        virtual ~RenderImGui(); // ROCKY - moved from private
 
     private:
-        virtual ~RenderImGui();
 
         vsg::ref_ptr<vsg::Device> _device;
         uint32_t _queueFamily;

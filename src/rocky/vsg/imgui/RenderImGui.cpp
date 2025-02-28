@@ -87,8 +87,9 @@ RenderImGui::RenderImGui(vsg::ref_ptr<vsg::Device> device, uint32_t queueFamily,
 
 RenderImGui::~RenderImGui()
 {
+    ImGui::SetCurrentContext(_imguiContext);
     ImGui_ImplVulkan_Shutdown();
-    //ImPlot::DestroyContext();
+    //ImPlot::DestroyContext();    
     ImGui::DestroyContext();
 }
 
@@ -132,10 +133,14 @@ void RenderImGui::_init(
 {
     IMGUI_CHECKVERSION();
 
-    if (!ImGui::GetCurrentContext())
-    {
-        ImGui::CreateContext();
-    }
+    // ROCKY
+    _imguiContext = ImGui::CreateContext();
+    ImGui::SetCurrentContext(_imguiContext);
+
+    //if (!ImGui::GetCurrentContext())
+    //{
+    //    ImGui::CreateContext();
+    //}
 
     bool sRGB = false;
     for (auto& attachment : renderPass->attachments)
@@ -221,20 +226,29 @@ void RenderImGui::_init(
 
 void RenderImGui::_uploadFonts()
 {
-    ImGui_ImplVulkan_CreateFontsTexture();
+    //static bool fontsUploaded = false;
+    //if (!fontsUploaded)
+    //{
+        ImGui_ImplVulkan_CreateFontsTexture();
+    //    fontsUploaded = true;
+    //}
 }
 
-void RenderImGui::accept(vsg::RecordTraversal& rt) const
+void RenderImGui::traverse(vsg::RecordTraversal& rt) const
 {
     auto& commandBuffer = *(rt.getState()->_commandBuffer);
     if (_device.get() != commandBuffer.getDevice()) return;
+
+    // active the context associated with this Node, and save it in the traversal
+    ImGui::SetCurrentContext(_imguiContext);
+    rt.setValue("imgui.context", _imguiContext);
 
     // record all the ImGui commands to ImDrawData container
     ImGui_ImplVulkan_NewFrame();
     ImGui::NewFrame();
 
     // traverse children
-    traverse(rt);
+    vsg::Group::traverse(rt);
 
     //ImGui::EndFrame(); // called automatically by Render() below
     ImGui::Render();
@@ -247,17 +261,5 @@ void RenderImGui::accept(vsg::RecordTraversal& rt) const
 
         if (draw_data)
             ImGui_ImplVulkan_RenderDrawData(draw_data, &(*commandBuffer));
-    }
-}
-
-// ROCKY
-void RenderImGui::frame(std::function<void()> renderFunction)
-{
-    if (renderFunction)
-    {
-        ImGui_ImplVulkan_NewFrame();
-        ImGui::NewFrame();
-        renderFunction();
-        ImGui::Render();
     }
 }

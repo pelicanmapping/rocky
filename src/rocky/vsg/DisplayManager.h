@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/MapManipulator.h>
+#include <rocky/Utils.h>
 
 #include <vsg/app/Viewer.h>
 #include <vsg/app/Window.h>
@@ -20,6 +21,7 @@
 namespace ROCKY_NAMESPACE
 {
     class Application;
+    class ImGuiContextGroup;
 
     //! Return value for pointAtWindowCoords(viewer) method
     struct DisplayGeoPoint
@@ -54,9 +56,12 @@ namespace ROCKY_NAMESPACE
         //! Construct a display manager that is connected to a rocky Application object.
         DisplayManager(Application& in_app);
 
-        //! Construct a display manager connected to a user-created Viewer.
+        //! Construct a display manager connected to a VSG context (and associated viewer).
         //! Use this if your app doesn't use the rocky Application object.
-        DisplayManager(vsg::ref_ptr<vsg::Viewer> viewer);
+        DisplayManager(VSGContext& context);
+
+        // Set the Context to use
+        void initialize(VSGContext& context);
 
         //! Creates a new window and adds it to the display.
         //! @param traits Window traits used to create the new window
@@ -118,24 +123,24 @@ namespace ROCKY_NAMESPACE
 
         WindowsAndViews windowsAndViews;
 
-        vsg::ref_ptr<vsg::Viewer> viewer;
-
-        std::vector<std::uint32_t> activeViewIDs;
-        std::uint32_t maxViewID = 0;
+        VSGContext context;
 
     protected:
         Application* app = nullptr;
 
-        void setViewer(vsg::ref_ptr<vsg::Viewer> viewer);
-
         struct ViewData
         {
             vsg::ref_ptr<vsg::RenderGraph> parentRenderGraph;
+            vsg::ref_ptr<vsg::Group> guiContextGroup;
+            vsg::ref_ptr<vsg::Visitor> guiEventHandler;
+            std::shared_ptr<std::function<void()>> guiOfflineEventProcessor;
         };
-        std::map<vsg::ref_ptr<vsg::View>, ViewData> _viewData;
+        util::vector_map<vsg::ref_ptr<vsg::View>, ViewData> _viewData;
 
         bool _debugCallbackInstalled = false;
         std::map<vsg::ref_ptr<vsg::Window>, vsg::ref_ptr<vsg::CommandGraph>> _commandGraphByWindow;
+
         friend class Application;
+        friend struct ImGuiIntegration;
     };
 }

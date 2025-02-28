@@ -205,11 +205,6 @@ namespace ROCKY_NAMESPACE
          * Splits a string up into a vector of strings based on a set of
          * delimiters, quotes, and rules.
          */
-
-    /**
-     * Splits a string up into a vector of strings based on a set of
-     * delimiters, quotes, and rules.
-     */
         class ROCKY_EXPORT StringTokenizer
         {
         public:

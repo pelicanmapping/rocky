@@ -24,10 +24,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </editor-fold> */
 
 #include <chrono>
-
 #include <vsg/core/Visitor.h>
 #include <vsg/ui/KeyEvent.h>
-
 #include "RenderImGui.h"
 
 namespace vsgImGui

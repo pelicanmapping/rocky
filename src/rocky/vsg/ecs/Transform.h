@@ -63,7 +63,10 @@ namespace ROCKY_NAMESPACE
         //! @return True if the node is visible; you MUST call pop() if this returns true.
         inline bool push(vsg::RecordTraversal& rt)
         {
-            return node->push(rt);
+            bool visible = node->visible(rt.getState()->_commandBuffer->viewID);
+            if (visible) 
+                node->push(rt);
+            return visible;
         }
 
         //! Pops a transform applied if push() returned true.

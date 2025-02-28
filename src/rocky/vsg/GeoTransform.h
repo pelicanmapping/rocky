@@ -80,7 +80,9 @@ namespace ROCKY_NAMESPACE
 
         void update(vsg::RecordTraversal&, const std::optional<vsg::dmat4>& localMatrix = {}) const;
 
-        bool push(vsg::RecordTraversal&) const;
+        bool visible(std::uint32_t viewID) const;
+
+        void push(vsg::RecordTraversal&) const;
 
         void pop(vsg::RecordTraversal&) const;
 
