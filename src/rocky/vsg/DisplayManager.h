@@ -8,6 +8,10 @@
 #include <rocky/vsg/MapManipulator.h>
 #include <rocky/Utils.h>
 
+#ifdef ROCKY_HAS_IMGUI
+#include <rocky/vsg/imgui/ImGuiIntegration.h>
+#endif
+
 #include <vsg/app/Viewer.h>
 #include <vsg/app/Window.h>
 #include <vsg/app/RenderGraph.h>
@@ -116,6 +120,16 @@ namespace ROCKY_NAMESPACE
         //! on a command graph.
         void compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, vsg::ref_ptr<vsg::Window> window);
 
+#ifdef ROCKY_HAS_IMGUI
+        //! Creates, installs, and returns a new group that you can use to host ImGuiNode's.
+        //! @param window Window to which to add the new GUI group (defaults to the first window)
+        //! @param view View to which to add the new GUI group (defaults to the first view)
+        //! @return Group that you can add GUI nodes to.
+        vsg::ref_ptr<ImGuiContextGroup> addImGuiGroup(
+            vsg::ref_ptr<vsg::Window> window = {},
+            vsg::ref_ptr<vsg::View> view = {});
+#endif
+
     public:
 
         using WindowsAndViews = std::map<vsg::ref_ptr<vsg::Window>, std::list<vsg::ref_ptr<vsg::View>>>;
@@ -130,10 +144,11 @@ namespace ROCKY_NAMESPACE
         struct ViewData
         {
             vsg::ref_ptr<vsg::RenderGraph> parentRenderGraph;
-            vsg::ref_ptr<vsg::Node> guiManager;
+#ifdef ROCKY_HAS_IMGUI
             vsg::ref_ptr<vsg::Visitor> guiEventRouter;
             std::shared_ptr<std::function<void()>> guiEventProcessor;
-            //NamedFunction guiEventProcessor;
+            vsg::ref_ptr<vsgImGui::RenderImGui> guiGroup;
+#endif
         };
         util::vector_map<vsg::ref_ptr<vsg::View>, ViewData> _viewData;
 

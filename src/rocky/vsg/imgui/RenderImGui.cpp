@@ -225,7 +225,12 @@ void RenderImGui::_init(
 
 void RenderImGui::_uploadFonts()
 {
-    ImGui_ImplVulkan_CreateFontsTexture();
+    static bool fontsUploaded = false;
+    if (!fontsUploaded)
+    {
+        ImGui_ImplVulkan_CreateFontsTexture();
+        fontsUploaded = true;
+    }
 }
 
 void RenderImGui::accept(vsg::RecordTraversal& rt) const
@@ -233,9 +238,8 @@ void RenderImGui::accept(vsg::RecordTraversal& rt) const
     auto& commandBuffer = *(rt.getState()->_commandBuffer);
     if (_device.get() != commandBuffer.getDevice()) return;
 
-    // active the context associated with this Node:
+    // active the context associated with this Node, and save it in the traversal
     ImGui::SetCurrentContext(_imguiContext);
-
     rt.setValue("imgui.context", _imguiContext);
 
     // record all the ImGui commands to ImDrawData container

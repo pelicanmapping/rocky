@@ -22,6 +22,7 @@ namespace ROCKY_NAMESPACE
         ImVec2 position;
         ImVec2& size;
         ImGuiContext* context;
+        std::uint32_t viewID;
     };
 
     /**

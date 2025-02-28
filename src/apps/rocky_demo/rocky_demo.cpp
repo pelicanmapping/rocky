@@ -111,23 +111,14 @@ std::vector<Demo> demos =
     Demo{ "About", Demo_About }
 };
 
-struct MainGUI : public vsg::Inherit<vsg::Node, MainGUI>
+struct MainGUI : public vsg::Inherit<ImGuiNode, MainGUI>
 {
     Application& app;
     MainGUI(Application& app_) : app(app_) { }
 
-    void traverse(vsg::RecordTraversal& record) const override
+    void render(ImGuiContext* imguiContext) const override
     {
-        ImGuiContext* context;
-        if (record.getValue("imgui.context", context))
-            ImGui::SetCurrentContext(context);
-
-        render();
-    }
-
-    void render() const
-    {
-        // set the context b/c were in a different process :(
+        ImGui::SetCurrentContext(imguiContext);
         ImGui::Begin("Welcome to Rocky");
         {
             for (auto& demo : demos)
@@ -183,33 +174,15 @@ int main(int argc, char** argv)
     }
 
     // Create the main window and the main GUI:
-    auto main_window = app.displayManager->addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
+    auto traits = vsg::WindowTraits::create(1920, 1080, "Main Window");
+    auto main_window = app.displayManager->addWindow(traits);
 
     // Install a manager for our main GUI:
-    auto imgui_manager = vsgImGui::RenderImGui::create(main_window);
+    auto imgui_group = app.displayManager->addImGuiGroup(main_window);
 
     // Hook in the main demo gui:
     auto demo_gui = MainGUI::create(app);
-    imgui_manager->addChild(demo_gui);
-
-    // ImGui likes to live under the main rendergraph, but outside the main view.
-    // https://github.com/vsg-dev/vsgExamples/blob/master/examples/ui/vsgimgui_example/vsgimgui_example.cpp#L276
-    auto main_view = app.displayManager->windowsAndViews[main_window].front();
-    app.displayManager->getRenderGraph(main_view)->addChild(imgui_manager);
-
-    // Make sure ImGui is the first event handler:
-    auto& handlers = app.viewer->getEventHandlers();
-    handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(main_window, imgui_manager->context(), app.context));
-
-    // In render-on-demand mode, this callback will cause ImGui to handle events
-    auto no_render_function = [&]()
-        {
-            ImGui::SetCurrentContext(imgui_manager->context());
-            ImGui::NewFrame();
-            demo_gui->render();
-            ImGui::EndFrame();
-        };
-    app.noRenderFunctions.emplace_back(std::make_shared<std::function<void()>>(no_render_function));
+    imgui_group->add(demo_gui, app);
 
     // run until the user quits.
     return app.run();

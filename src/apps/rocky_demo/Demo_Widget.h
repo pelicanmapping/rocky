@@ -40,7 +40,7 @@ auto Demo_Widget = [](Application& app)
             {
                 static float some_float = 0;
                 static int some_int = 0;
-                static float some_color[3] = { 255, 0, 0 };
+                static bool fixed_window_open = false;
 
                 ImGui::SetCurrentContext(i.context);
 
@@ -48,7 +48,7 @@ auto Demo_Widget = [](Application& app)
                 flags &= ~ImGuiWindowFlags_NoInputs;
                 flags &= ~ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-                ImVec2 pos{ i.position.x - i.size.x/2, i.position.y - i.size.y };
+                ImVec2 pos{ i.position.x - i.size.x/2, i.position.y - i.size.y/2 };
                 ImGui::SetNextWindowPos(pos);
 
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 7.0f);
@@ -66,10 +66,24 @@ auto Demo_Widget = [](Application& app)
                         ImGuiLTable::SliderInt("Control", &some_int, 100, 50);
                         ImGuiLTable::End();
                     }
+                    ImGui::Checkbox("Show a fixed-position window", &fixed_window_open);
                     i.size = ImGui::GetWindowSize();
                 }
                 ImGui::End();
                 ImGui::PopStyleVar();
+
+                if (fixed_window_open)
+                {
+                    ImGui::SetNextWindowPos(ImVec2(ImGui::GetMainViewport()->Size.x - 400, ImGui::GetMainViewport()->Size.y - 200));
+                    if (ImGui::Begin("Fixed-position window"))
+                    {
+                        ImGui::Text("Widgets can be placed at absolute coordinates too.");
+                        ImGui::Separator();
+                        if (ImGui::Button("Whatever"))
+                            fixed_window_open = false;
+                    }
+                    ImGui::End();
+                }
             };
 
             // Attach a transform to place and move the label:
@@ -108,7 +122,7 @@ auto Demo_Widget = [](Application& app)
             }
         }
 
-        auto& transform = registry.get<Transform>(entity1);
+        auto& transform = registry.get<Transform>(entity2);
 
         if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
             transform.dirty();

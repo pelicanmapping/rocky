@@ -60,7 +60,7 @@ namespace vsgImGui
             (add(args), ...);
         }
 
-        ImGuiContext* context() {
+        ImGuiContext* imguiContext() {
             return _imguiContext;
         }
 
@@ -75,6 +75,9 @@ namespace vsgImGui
 
         void accept(vsg::RecordTraversal& rt) const override;
 
+    protected:
+        ImGuiContext* _imguiContext = nullptr;
+
     private:
         virtual ~RenderImGui();
 
@@ -82,7 +85,6 @@ namespace vsgImGui
         uint32_t _queueFamily;
         vsg::ref_ptr<vsg::Queue> _queue;
         vsg::ref_ptr<vsg::DescriptorPool> _descriptorPool;
-        ImGuiContext* _imguiContext = nullptr;
 
         vsg::ref_ptr<vsg::ClearAttachments> _clearAttachments;
 

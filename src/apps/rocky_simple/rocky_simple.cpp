@@ -1,5 +1,6 @@
 #include <rocky/vsg/Application.h>
 #include <rocky/TMSImageLayer.h>
+#include <rocky/vsg/ecs.h>
 
 int main(int argc, char** argv)
 {

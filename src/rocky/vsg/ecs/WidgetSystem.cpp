@@ -79,7 +79,8 @@ WidgetSystemNode::initialize(VSGContext& context)
                         defaultWindowFlags,
                         renderable.screen[viewID],
                         renderable.windowSize,
-                        (ImGuiContext*)imguiContext
+                        (ImGuiContext*)imguiContext,
+                        viewID
                     };
 
                     if (widget.render)

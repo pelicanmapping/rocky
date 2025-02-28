@@ -93,11 +93,12 @@ auto Demo_Simulation = [](Application& app)
 
                     ImGui::SetCurrentContext(i.context);
                     ImGui::SetNextWindowPos(ImVec2(i.position.x + 12.0f, i.position.y - i.size.y/2));
+                    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(2, 2));
                     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1, 1, 1, 0.25f));
                     ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.0f));
                     if (ImGui::Begin(i.uid.c_str(), nullptr, i.defaultWindowFlags))
                     {
-                        ImGui::Text("ID: %s", i.widget.text.c_str());
+                        ImGui::Text("ID:  %s", i.widget.text.c_str());
                         ImGui::Separator();
                         ImGui::Text("Alt: %.0f", t.position.transform(SRS::WGS84).z);
 
@@ -106,6 +107,7 @@ auto Demo_Simulation = [](Application& app)
                     }
                     ImGui::PopStyleColor();
                     ImGui::PopStyleColor();
+                    ImGui::PopStyleVar();
                 };
 
             auto ll_to_ecef = SRS::WGS84.to(SRS::ECEF);

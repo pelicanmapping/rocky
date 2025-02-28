@@ -371,11 +371,10 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
         // Then one can use the Widget support without using the DisplayManager. Hopefully.
 
         // Add an ImGui Renderer for this view, which will render Widgets in their own ImGui context.
-        auto guiManager = vsgImGui::RenderImGui::create(window);
-        viewdata.guiManager = guiManager;
-        rendergraph->addChild(viewdata.guiManager);
+        viewdata.guiGroup = vsgImGui::RenderImGui::create(window);
+        rendergraph->addChild(viewdata.guiGroup);
 
-        auto imguiContext = guiManager->context();
+        auto imguiContext = viewdata.guiGroup->imguiContext();
 
         // disable the .ini file for ImGui since we don't want to save stuff for internal widgetry
         ImGui::SetCurrentContext(imguiContext);
@@ -383,13 +382,13 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
 
         // Next, add a node that will run the actual gui rendering callbacks (like the one
         // installed by the WidgetSystem).
-        auto guiRendererDispatcher = GuiRendererDispatcher::create(context);
-        guiManager->addChild(guiRendererDispatcher);
+        auto guiRendererDispatcher = detail::GuiRendererDispatcher::create(context);
+        viewdata.guiGroup->addChild(guiRendererDispatcher);
 
         // Propagate events to the ImGui manager. Order matters here.
         viewdata.guiEventRouter = SendEventsToImGuiWrapper::create(window, imguiContext, context);
         auto& handlers = context->viewer->getEventHandlers();
-        handlers.insert(handlers.begin(), viewdata.guiEventRouter);
+        handlers.emplace_back(viewdata.guiEventRouter);
 
         if (app)
         {
@@ -438,6 +437,7 @@ DisplayManager::removeView(vsg::ref_ptr<vsg::View> view)
     auto& viewData = vd->second;
     auto& rendergraph = viewData.parentRenderGraph;
 
+#ifdef ROCKY_HAS_IMGUI
     // uninstall any gui renderer elements
     if (viewData.guiEventProcessor)
     {
@@ -451,11 +451,12 @@ DisplayManager::removeView(vsg::ref_ptr<vsg::View> view)
         c.erase(std::remove(c.begin(), c.end(), viewData.guiEventRouter), c.end());
     }
 
-    if (viewData.guiManager)
+    if (viewData.guiGroup)
     {
         auto& c = rendergraph->children;
-        c.erase(std::remove(c.begin(), c.end(), viewData.guiManager), c.end());
+        c.erase(std::remove(c.begin(), c.end(), viewData.guiGroup), c.end());
     }
+#endif
 
     // remove the rendergraph from the command graph.
     auto& rps = commandgraph->children;
@@ -624,3 +625,35 @@ DisplayManager::compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, v
         }
     }
 }
+
+#ifdef ROCKY_HAS_IMGUI
+
+vsg::ref_ptr<ImGuiContextGroup>
+DisplayManager::addImGuiGroup(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view)
+{
+    if (window == nullptr)
+    {
+        window = context->viewer->windows().front();        
+    }
+    ROCKY_SOFT_ASSERT_AND_RETURN(window, {});
+
+    if (view == nullptr)
+    {
+        view = windowsAndViews[window].front();
+    }
+    ROCKY_SOFT_ASSERT_AND_RETURN(view, {});
+
+    // create the manager and add it to the proper render graph:
+    auto result = ImGuiContextGroup::create(window);
+
+    auto& viewData = _viewData[view];
+    viewData.parentRenderGraph->addChild(result);
+
+    // add the event handler that will pass events from VSG to ImGui:
+    auto& handlers = context->viewer->getEventHandlers();
+    handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(window, result->imguiContext(), context));
+
+    return result;
+}
+
+#endif
