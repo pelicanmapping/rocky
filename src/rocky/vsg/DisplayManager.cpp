@@ -139,11 +139,13 @@ namespace
 DisplayManager::DisplayManager(Application& in_app) :
     app(&in_app)
 {
+    activeViewIDs.assign(64, 0);
     setViewer(in_app.viewer);
 }
 
 DisplayManager::DisplayManager(vsg::ref_ptr<vsg::Viewer> in_viewer)
 {
+    activeViewIDs.assign(64, 0);
     setViewer(in_viewer);
 }
 
@@ -351,10 +353,10 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
 
         windowsAndViews[window].emplace_back(view);
 
-        if (std::find(app->context->activeViewIDs.begin(), app->context->activeViewIDs.end(), view->viewID) == app->context->activeViewIDs.end())
-        {
-            app->context->activeViewIDs.emplace_back(view->viewID);
-        }
+        ++activeViewIDs[view->viewID];
+        for (unsigned i = 0; i < activeViewIDs.size(); ++i)
+            if (activeViewIDs[i] > 0)
+                maxViewID = i;
 
         if (app)
         {
@@ -393,9 +395,10 @@ DisplayManager::removeView(vsg::ref_ptr<vsg::View> view)
     auto& views = windowsAndViews[vsg::observer_ptr<vsg::Window>(window)];
     views.erase(std::remove(views.begin(), views.end(), view), views.end());
 
-    // remove it from the active-view-ID list
-    auto& ids = app->context->activeViewIDs;
-    ids.erase(std::remove(ids.begin(), ids.end(), view->viewID), ids.end());
+    --activeViewIDs[view->viewID];
+    for (unsigned i = 0; i < activeViewIDs.size(); ++i)
+        if (activeViewIDs[i] > 0)
+            maxViewID = i;
 }
 
 void

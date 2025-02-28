@@ -15,6 +15,7 @@
         "glm",
         { "name" : "imgui",
           "features": [ "vulkan-binding" ] },
+        "imgui",
         "nlohmann-json",
         "openssl",
         "qt5",

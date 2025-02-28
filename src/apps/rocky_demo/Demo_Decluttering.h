@@ -30,6 +30,7 @@ namespace
         int sorting_method = 0; // 0=priority, 1=distance
         unsigned visible = 1;
         unsigned total = 0;
+        std::function<std::vector<std::uint32_t>()> getActiveViewIDs;
 
         ecs::Registry& _registry;
         std::size_t _last_max_size = 32;
@@ -42,10 +43,13 @@ namespace
         {
             total = 0, visible = 0;
 
-            auto viewIDs = runtime->activeViewIDs; // copy
+            auto viewIDs = getActiveViewIDs(); // copy
 
-            for(auto& viewID : viewIDs)
+            for(auto viewID = 0; viewID < viewIDs.size(); ++viewID)
             {
+                if (viewIDs[viewID] == 0) // skip unused
+                    continue;
+
                 // First collect all declutter-able entities and sort them by their distance to the camera.
                 // tuple = [entity, x, y, sort_key, width, height]
                 std::vector<std::tuple<entt::entity, double, double, double, int, int>> sorted;
@@ -143,7 +147,7 @@ auto Demo_Decluttering = [](Application& app)
         declutter = DeclutterSystem::create(app.registry);
 
         // tell the declutterer how to access view IDs.
-        //declutter->getActiveViewIDs = [&app]() { return app.displayManager->activeViewIDs; };
+        declutter->getActiveViewIDs = [&app]() { return app.displayManager->activeViewIDs; };
 
         app.backgroundServices.start("rocky::declutter",
             [&app](jobs::cancelable& token)

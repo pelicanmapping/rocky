@@ -26,7 +26,6 @@ namespace ROCKY_NAMESPACE
         //! Whether to undo any rotation found in the origial model view matrix;
         //! This will effectively billboard the geometry.
         bool unrotate = false;
-        bool snap = false;
         float unitSize = 1.0f;
         float renderSize = 1.0f;
 
@@ -46,20 +45,6 @@ namespace ROCKY_NAMESPACE
                 auto& mv = state.modelviewMatrixStack.top();
                 auto rotation = util::quaternion_from_unscaled_matrix<vsg::dquat>(mv);
                 matrix = matrix * vsg::rotate(vsg::inverse(rotation));
-            }
-
-            if (snap)
-            {
-                auto mvp = state.projectionMatrixStack.top() * state.modelviewMatrixStack.top();
-
-                auto clip = mvp * matrix;
-
-                clip[3][0] = 0.5 * (clip[3][0] / clip[3][3]) * viewport[2];
-                clip[3][1] = 0.5 * (clip[3][1] / clip[3][3]) * viewport[3];
-                clip[3][0] = 2.0 * (floor(clip[3][0]) / viewport[2]) * clip[3][3];
-                clip[3][1] = 2.0 * (floor(clip[3][1]) / viewport[3]) * clip[3][3];
-
-                matrix = vsg::inverse(mvp) * clip;
             }
 
             rt.apply(*this);

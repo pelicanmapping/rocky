@@ -46,7 +46,6 @@
 #cmakedefine ROCKY_HAS_AZURE
 #cmakedefine ROCKY_HAS_BING
 #cmakedefine ROCKY_HAS_GEOCODER
-#cmakedefine ROCKY_HAS_IMGUI
 
 #cmakedefine ROCKY_HAS_VSG
 #cmakedefine ROCKY_HAS_VSGXCHANGE

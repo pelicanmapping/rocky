@@ -298,7 +298,6 @@ LabelSystemNode::createOrUpdateNode(Label& label, ecs::BuildInfo& data, VSGConte
         layout->vertical = vsg::vec3(0.0f, nativeSize, 0.0f);
         layout->color = vsg::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         layout->outlineWidth = label.style.outlineSize;
-        layout->outlineColor = vsg::vec4(0.0f, 0.0f, 0.0f, 1.0f);
         layout->horizontalAlignment = label.style.horizontalAlignment;
         layout->verticalAlignment = label.style.verticalAlignment;
 

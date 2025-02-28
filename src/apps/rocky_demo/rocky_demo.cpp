@@ -34,7 +34,6 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Icon.h"
 #include "Demo_Model.h"
 #include "Demo_Label.h"
-#include "Demo_Widget.h"
 #include "Demo_LineFeatures.h"
 #include "Demo_PolygonFeatures.h"
 #include "Demo_LabelFeatures.h"
@@ -84,8 +83,7 @@ std::vector<Demo> demos =
         Demo{ "Mesh - absolute", Demo_Mesh_Absolute },
         Demo{ "Mesh - relative", Demo_Mesh_Relative },
         Demo{ "Icon", Demo_Icon },
-        Demo{ "Model", Demo_Model },
-        Demo{ "Widget", Demo_Widget }
+        Demo{ "User Model", Demo_Model }
     } },
     Demo{ "GIS Data", {},
     {
@@ -154,22 +152,6 @@ struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>
     }
 };
 
-//! Wrapper to render via callbacks.
-struct GuiCallbackRunner : public vsg::Inherit<vsg::Node, GuiCallbackRunner>
-{
-    VSGContext context;
-
-    GuiCallbackRunner(VSGContext context_in) : context(context_in) { }
-
-    void traverse(vsg::RecordTraversal& record) const override
-    {
-        for (auto& callback : context->guiCallbacks)
-        {
-            callback(record.getState()->_commandBuffer->viewID, ImGui::GetCurrentContext());
-        }
-    }
-};
-
 //! wrapper for vsgImGui::SendEventsToImGui that restricts ImGui events to a single window.
 class SendEventsToImGuiWrapper : public vsg::Inherit<vsgImGui::SendEventsToImGui, SendEventsToImGuiWrapper>
 {
@@ -203,7 +185,6 @@ private:
     VSGContext _context;
 };
 
-
 int main(int argc, char** argv)
 {
     // instantiate the application engine.
@@ -234,11 +215,6 @@ int main(int argc, char** argv)
     // Create the main window and the main GUI:
     auto window = app.displayManager->addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
     auto imgui = vsgImGui::RenderImGui::create(window);
-
-    // Hook in any embedded GUI renderers:
-    imgui->addChild(GuiCallbackRunner::create(app.context));
-
-    // Hook in the main demo gui:
     auto maingui = MainGUI::create(app);
     imgui->addChild(maingui);
 
@@ -252,17 +228,9 @@ int main(int argc, char** argv)
     handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(window, app.context));
 
     // In render-on-demand mode, this callback will cause ImGui to handle events
-    // TODO: what about the GuiCallbackRunner callbacks...?
     app.noRenderFunction = [&]()
         {
-            vsgImGui::RenderImGui::frame([&]()
-                {
-                    for(auto& render : app.context->guiCallbacks)
-                        for(auto& viewID : app.context->activeViewIDs)
-                            render(viewID, ImGui::GetCurrentContext());
-
-                    maingui->render();
-                });
+            vsgImGui::RenderImGui::frame([&]() { maingui->render(); });
         };
 
     // run until the user quits.

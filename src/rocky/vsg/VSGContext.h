@@ -65,11 +65,9 @@ namespace ROCKY_NAMESPACE
         //! By default Runtime uses its own round-robin object disposer
         std::function<void(vsg::ref_ptr<vsg::Object>)> disposer;
 
-        //! List of viewIDs that are active.
-        std::vector<std::uint32_t> activeViewIDs = { 0 };
-
-        //! Callbacks to render GUI elements
-        std::vector<std::function<void(std::uint32_t viewID, void* guiContext)>> guiCallbacks;
+        //! List of viewIDs that were detected during the latest record traversal.
+        //! This needs to be cleared and rebuilt every frame.
+        std::vector<std::uint32_t> activeViewIDs;
 
     public:
 
@@ -112,7 +110,6 @@ namespace ROCKY_NAMESPACE
         //! Update any pending compile results. Returns true if updates occurred.
         bool update();
 
-        //! The VSG/Vulkan device shared by all displays
         vsg::ref_ptr<vsg::Device> device();
 
         //! A command graph the application can use to run compute shaders
@@ -157,16 +154,10 @@ namespace ROCKY_NAMESPACE
 
         friend class Application;
         friend class VSGContextFactory;
-        friend class MapNode;
-
-        std::array<bool, ROCKY_MAX_NUMBER_OF_VIEWS> _viewIDDetected = { false };
     };
 
     using VSGContext = std::shared_ptr<VSGContextImpl>;
 
-    /**
-    * Factory singleton for creating a VSGContext instance.
-    */
     class VSGContextFactory
     {
     public:

@@ -298,9 +298,6 @@ VSGContextImpl::ctor(int& argc, char** argv)
     // and we won't have too many deletions per frame.
     _gc.resize(8);
 
-    // big capacity for this so we can copy it without worry about reallocating.
-    activeViewIDs.reserve(128);
-
     args.read(readerWriterOptions);
 
     // redirect the VSG logger to our spdlog
@@ -613,6 +610,9 @@ VSGContextImpl::update()
         _gc.emplace_back(std::move(_gc.front()));
         _gc.pop_front();
     }
+
+    // reset the view IDs list
+    activeViewIDs.clear();
 
     return updates_occurred;
 }
