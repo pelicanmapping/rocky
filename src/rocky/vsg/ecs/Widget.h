@@ -21,6 +21,7 @@ namespace ROCKY_NAMESPACE
         const int defaultWindowFlags;
         ImVec2 position;
         ImVec2& size;
+        ImGuiContext* context;
     };
 
     /**

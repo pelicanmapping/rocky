@@ -66,51 +66,47 @@ WidgetSystemNode::initialize(VSGContext& context)
                 ImGuiWindowFlags_NoFocusOnAppearing |
                 ImGuiWindowFlags_NoSavedSettings;
 
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(2, 2));
-
-            registry.view<Widget, WidgetRenderable, Transform, Visibility>().each([&](auto entity, auto& widget, auto& renderable, auto& transform, auto& visibility)
+            auto view = registry.view<Widget, WidgetRenderable, Transform, Visibility>();
+            for (auto&& [entity, widget, renderable, transform, visibility] : view.each())
+            {
+                if (ecs::visible(visibility, viewID) && transform.node->visible(viewID))
                 {
-                    if (ecs::visible(visibility, viewID) && transform.node->visible(viewID))
+                    WidgetInstance i{
+                        widget,
+                        renderable.uid,
+                        registry,
+                        entity,
+                        defaultWindowFlags,
+                        renderable.screen[viewID],
+                        renderable.windowSize,
+                        (ImGuiContext*)imguiContext
+                    };
+
+                    if (widget.render)
                     {
-                        WidgetInstance i {
-                            widget,
-                            renderable.uid,
-                            registry,
-                            entity,
-                            defaultWindowFlags,
-                            renderable.screen[viewID],
-                            renderable.windowSize
-                        };
-
-                        if (widget.render)
-                        {
-                            widget.render(i);
-                        }
-
-                        else
-                        {
-                            float x = renderable.screen[viewID].x - renderable.windowSize.x * 0.5f;
-                            float y = renderable.screen[viewID].y - renderable.windowSize.y * 0.5f;
-
-                            ImGui::SetNextWindowPos(ImVec2(x, y));
-
-                            if (ImGui::Begin(i.uid.c_str(), nullptr, i.defaultWindowFlags))
-                            {
-                                ImGui::Text(widget.text.c_str());
-
-                                i.size = ImGui::GetWindowSize();
-
-                                ImGui::End();
-                            }
-                        }
+                        // Note: widget render needs to call ImGui::SetCurrentContext(i.context)
+                        widget.render(i);
                     }
-                });
 
-            ImGui::PopStyleVar();
+                    else
+                    {
+                        float x = renderable.screen[viewID].x - renderable.windowSize.x * 0.5f;
+                        float y = renderable.screen[viewID].y - renderable.windowSize.y * 0.5f;
 
+                        ImGui::SetNextWindowPos(ImVec2(x, y));
+
+                        if (ImGui::Begin(i.uid.c_str(), nullptr, i.defaultWindowFlags))
+                        {
+                            ImGui::Text(widget.text.c_str());
+                            i.size = ImGui::GetWindowSize();
+                        }
+                        ImGui::End();
+                    }
+                }
+            }
         };
 
-    context->guiCallbacks.emplace_back(render);
+    context->guiRenderers.emplace_back(render);
 }
 
 void

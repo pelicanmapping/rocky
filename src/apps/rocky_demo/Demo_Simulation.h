@@ -87,10 +87,11 @@ auto Demo_Simulation = [](Application& app)
             std::mt19937 mt;
             std::uniform_real_distribution<float> rand_unit(0.0, 1.0);
 
-            auto render_widget = [&](WidgetInstance& i)
+            auto render_widget = [](WidgetInstance& i)
                 {
                     Transform& t = i.registry.get<Transform>(i.entity);
 
+                    ImGui::SetCurrentContext(i.context);
                     ImGui::SetNextWindowPos(ImVec2(i.position.x + 12.0f, i.position.y - i.size.y/2));
                     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1, 1, 1, 0.25f));
                     ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.0f));

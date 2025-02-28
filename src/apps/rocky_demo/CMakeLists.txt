@@ -1,5 +1,7 @@
 set(APP_NAME rocky_demo)
 
+find_package(ImGui REQUIRED)
+
 file(GLOB SOURCES *.cpp vsgImGui/*.cpp)
 file(GLOB HEADERS *.h vsgImGui/*.h)
 
@@ -10,7 +12,7 @@ assign_source_groups("Header Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${HEADERS})
 
 add_executable(${APP_NAME} ${SOURCES} ${HEADERS})
 
-target_link_libraries(${APP_NAME} rocky)
+target_link_libraries(${APP_NAME} rocky imgui::imgui)
 
 install(TARGETS ${APP_NAME} RUNTIME DESTINATION bin)
 

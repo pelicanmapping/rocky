@@ -16,11 +16,12 @@ if (NOT TARGET imgui::imgui)
         find_package(imgui CONFIG QUIET)
         if (TARGET imgui::imgui)
             set(ImGui_FOUND TRUE)
+            set(IMGUI_FOUND)
         endif()
 
     else()
     
-        message(STATUS "Since you set IMGUI_DIR, I will try to build ImGui from source.")
+        message(STATUS "I see that you set IMGUI_DIR to '${IMGUI_DIR}'. I will try to build ImGui from source.")
         
         set(IMGUI_SOURCES "")
 

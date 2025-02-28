@@ -19,8 +19,8 @@
 #include <vsg/nodes/Group.h>
 
 #include <chrono>
-#include <list>
 #include <mutex>
+#include <deque>
 
 namespace ROCKY_NAMESPACE
 {
@@ -101,7 +101,8 @@ namespace ROCKY_NAMESPACE
         std::function<void()> updateFunction;
 
         // in renderOnDemand mode, user function to call when not rendering a frame
-        std::function<void()> noRenderFunction;
+        using NoRenderFunction = std::shared_ptr<std::function<void()>>;
+        std::deque<NoRenderFunction> noRenderFunctions;
 
         //! Runtime timing statistics
         struct Stats

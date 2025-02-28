@@ -16,8 +16,7 @@
 #include <rocky/TMSImageLayer.h>
 #include <rocky/TMSElevationLayer.h>
 
-#include <rocky/vsg/imgui/RenderImGui.h>
-#include <rocky/vsg/imgui/SendEventsToImGui.h>
+#include <rocky/vsg/imgui/ImGuiIntegration.h>
 
 #include <imgui_impl_vulkan.h>
 #include <imgui_internal.h>
@@ -112,18 +111,23 @@ std::vector<Demo> demos =
     Demo{ "About", Demo_About }
 };
 
-struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>
+struct MainGUI : public vsg::Inherit<vsg::Node, MainGUI>
 {
     Application& app;
     MainGUI(Application& app_) : app(app_) { }
 
-    void record(vsg::CommandBuffer& cb) const override
+    void traverse(vsg::RecordTraversal& record) const override
     {
+        ImGuiContext* context;
+        if (record.getValue("imgui.context", context))
+            ImGui::SetCurrentContext(context);
+
         render();
     }
 
     void render() const
     {
+        // set the context b/c were in a different process :(
         ImGui::Begin("Welcome to Rocky");
         {
             for (auto& demo : demos)
@@ -150,58 +154,6 @@ struct MainGUI : public vsg::Inherit<vsg::Command, MainGUI>
             }
         }
     }
-};
-
-//! Wrapper to render via callbacks.
-struct GuiCallbackRunner : public vsg::Inherit<vsg::Node, GuiCallbackRunner>
-{
-    VSGContext context;
-
-    GuiCallbackRunner(VSGContext context_in) : context(context_in) { }
-
-    void traverse(vsg::RecordTraversal& record) const override
-    {
-        for (auto& callback : context->guiCallbacks)
-        {
-            callback(record.getState()->_commandBuffer->viewID, ImGui::GetCurrentContext());
-        }
-    }
-};
-
-//! wrapper for vsgImGui::SendEventsToImGui that restricts ImGui events to a single window.
-class SendEventsToImGuiWrapper : public vsg::Inherit<vsgImGui::SendEventsToImGui, SendEventsToImGuiWrapper>
-{
-public:
-    SendEventsToImGuiWrapper(vsg::ref_ptr<vsg::Window> window, ImGuiContext* imguiContext, rocky::VSGContext& cx) :
-        _window(window), _imguiContext(imguiContext), _context(cx) { }
-
-    template<typename E>
-    void propagate(E& e, bool forceRefresh = false)
-    {
-        if (!e.handled && e.window.ref_ptr() == _window)
-        {
-            ImGui::SetCurrentContext(_imguiContext);
-
-            vsgImGui::SendEventsToImGui::apply(e);
-            if (e.handled || forceRefresh)
-            {
-                _context->requestFrame();
-            }
-        }
-    }
-
-    void apply(vsg::ButtonPressEvent& e) override { propagate(e); }
-    void apply(vsg::ButtonReleaseEvent& e) override { propagate(e); }
-    void apply(vsg::ScrollWheelEvent& e) override { propagate(e); }
-    void apply(vsg::KeyPressEvent& e) override { propagate(e); }
-    void apply(vsg::KeyReleaseEvent& e) override { propagate(e); }
-    void apply(vsg::MoveEvent& e) override { propagate(e); }
-    void apply(vsg::ConfigureWindowEvent& e) override { propagate(e, true); }
-
-private:
-    vsg::ref_ptr<vsg::Window> _window;
-    VSGContext _context;
-    ImGuiContext* _imguiContext;
 };
 
 
@@ -232,52 +184,32 @@ int main(int argc, char** argv)
 
     // Create the main window and the main GUI:
     auto main_window = app.displayManager->addWindow(vsg::WindowTraits::create(1920, 1080, "Main Window"));
-    auto main_imgui = vsgImGui::RenderImGui::create(main_window);
 
-    // This imgui renderer is for in-scene widgets.
-    auto scene_imgui = vsgImGui::RenderImGui::create(main_window);
-    scene_imgui->addChild(GuiCallbackRunner::create(app.context));
-
-    // Hook in any embedded GUI renderers:
-    //main_imgui->addChild(GuiCallbackRunner::create(app.context));
+    // Install a manager for our main GUI:
+    auto imgui_manager = vsgImGui::RenderImGui::create(main_window);
 
     // Hook in the main demo gui:
     auto demo_gui = MainGUI::create(app);
-    main_imgui->addChild(demo_gui);
+    imgui_manager->addChild(demo_gui);
 
     // ImGui likes to live under the main rendergraph, but outside the main view.
     // https://github.com/vsg-dev/vsgExamples/blob/master/examples/ui/vsgimgui_example/vsgimgui_example.cpp#L276
     auto main_view = app.displayManager->windowsAndViews[main_window].front();
-    app.displayManager->getRenderGraph(main_view)->addChild(scene_imgui);
-    app.displayManager->getRenderGraph(main_view)->addChild(main_imgui);
+    app.displayManager->getRenderGraph(main_view)->addChild(imgui_manager);
 
     // Make sure ImGui is the first event handler:
     auto& handlers = app.viewer->getEventHandlers();
-    handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(main_window, scene_imgui->context(), app.context));
-    handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(main_window, main_imgui->context(), app.context));
+    handlers.insert(handlers.begin(), SendEventsToImGuiWrapper::create(main_window, imgui_manager->context(), app.context));
 
     // In render-on-demand mode, this callback will cause ImGui to handle events
-    app.noRenderFunction = [&]()
+    auto no_render_function = [&]()
         {
-            // "render" each imgui context without calling ImGui::Render()
-            // so we can still process events.
-            ImGui::SetCurrentContext(scene_imgui->context());
+            ImGui::SetCurrentContext(imgui_manager->context());
             ImGui::NewFrame();
-
-            for (auto& render : app.context->guiCallbacks)
-                for (auto& viewID : app.context->activeViewIDs)
-                    render(viewID, scene_imgui->context());
-
-            ImGui::EndFrame();
-
-
-            ImGui::SetCurrentContext(main_imgui->context());
-            ImGui::NewFrame();
-
             demo_gui->render();
-
             ImGui::EndFrame();
         };
+    app.noRenderFunctions.emplace_back(std::make_shared<std::function<void()>>(no_render_function));
 
     // run until the user quits.
     return app.run();

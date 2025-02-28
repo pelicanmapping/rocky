@@ -90,7 +90,7 @@ RenderImGui::~RenderImGui()
     ImGui::SetCurrentContext(_imguiContext);
     ImGui_ImplVulkan_Shutdown();
     //ImPlot::DestroyContext();    
-    ImGui::DestroyContext(_imguiContext);
+    ImGui::DestroyContext();
 }
 
 void RenderImGui::add(const LegacyFunction& legacyFunc)
@@ -134,7 +134,6 @@ void RenderImGui::_init(
     IMGUI_CHECKVERSION();
 
     _imguiContext = ImGui::CreateContext();
-
     ImGui::SetCurrentContext(_imguiContext);
 
     //if (!ImGui::GetCurrentContext())
@@ -237,6 +236,8 @@ void RenderImGui::accept(vsg::RecordTraversal& rt) const
     // active the context associated with this Node:
     ImGui::SetCurrentContext(_imguiContext);
 
+    rt.setValue("imgui.context", _imguiContext);
+
     // record all the ImGui commands to ImDrawData container
     ImGui_ImplVulkan_NewFrame();
     ImGui::NewFrame();
@@ -255,17 +256,5 @@ void RenderImGui::accept(vsg::RecordTraversal& rt) const
 
         if (draw_data)
             ImGui_ImplVulkan_RenderDrawData(draw_data, &(*commandBuffer));
-    }
-}
-
-// ROCKY
-void RenderImGui::frame(std::function<void()> renderFunction)
-{
-    if (renderFunction)
-    {
-        ImGui_ImplVulkan_NewFrame();
-        ImGui::NewFrame();
-        renderFunction();
-        ImGui::Render();
     }
 }

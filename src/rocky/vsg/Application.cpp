@@ -123,6 +123,8 @@ Application::ctor(int& argc, char** argv)
 
     context = VSGContextFactory::create(viewer, argc, argv);
 
+    displayManager->initialize(context);
+
     vsg::CommandLine commandLine(&argc, argv);
 
     commandLine.read(context->readerWriterOptions);
@@ -523,9 +525,9 @@ Application::frame()
         viewer->handleEvents();
 
         // Call the user-supplied "no render" function
-        if (noRenderFunction)
+        for (auto& f : noRenderFunctions)
         {
-            noRenderFunction();
+            if (f) (*f)();
         }
 
         _framesSinceLastRender++;
