@@ -60,6 +60,5 @@ var searchData=
   ['getuserdata_57',['getuserdata',['../class_ti_xml_base.html#a436b80c865d437835d370a9eada6f9f5',1,'TiXmlBase::GetUserData()'],['../class_ti_xml_base.html#aa44896ae7cc0e9b1007429b150a81d92',1,'TiXmlBase::GetUserData() const']]],
   ['getview_58',['getView',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_display_manager.html#add5b51bf39a645e0c47177b674ed5cc6',1,'ROCKY_NAMESPACE::DisplayManager']]],
   ['getwindow_59',['getWindow',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_display_manager.html#a9f75b384ecab0e8e2d771bef17cc86cc',1,'ROCKY_NAMESPACE::DisplayManager']]],
-  ['greatcirclerotationaxis_60',['greatCircleRotationAxis',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html#ada9f57d4cdd8b4e34164a9c4576b9175',1,'ROCKY_NAMESPACE::Ellipsoid']]],
-  ['guicallbacks_61',['guiCallbacks',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#aed90f8279023cafba4e6a34780ec5ce9',1,'ROCKY_NAMESPACE::VSGContextImpl']]]
+  ['greatcirclerotationaxis_60',['greatCircleRotationAxis',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html#ada9f57d4cdd8b4e34164a9c4576b9175',1,'ROCKY_NAMESPACE::Ellipsoid']]]
 ];
