@@ -319,6 +319,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html">VSGContextImpl</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_widget.html">Widget</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_widget_system_node.html">WidgetSystemNode</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -651,8 +653,6 @@ glm::dvec3&#160;</td><td class="memItemRight" valign="bottom"><b>operator*</b> (
 <tr class="separator:adbde9ec2eb44f310f698690eff2b5f84"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a354e49fa6e17e61d71a93c02cf7eb849" id="r_a354e49fa6e17e61d71a93c02cf7eb849"><td class="memItemLeft" align="right" valign="top">ROCKY_EXPORT <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_display_geo_point.html">DisplayGeoPoint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a354e49fa6e17e61d71a93c02cf7eb849">pointAtWindowCoords</a> (vsg::ref_ptr&lt; vsg::Viewer &gt; viewer, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">int</a> x, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">int</a> y)</td></tr>
 <tr class="separator:a354e49fa6e17e61d71a93c02cf7eb849"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a74e4dafdba7f80d15fc44b7efacce1b8" id="r_a74e4dafdba7f80d15fc44b7efacce1b8"><td class="memItemLeft" align="right" valign="top">ROCKY_EXPORT vsg::ref_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_im_gui_context_group.html">ImGuiContextGroup</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a74e4dafdba7f80d15fc44b7efacce1b8">addImGuiContextGroup</a> (vsg::ref_ptr&lt; vsg::Viewer &gt; viewer, vsg::ref_ptr&lt; vsg::Window &gt; window, vsg::ref_ptr&lt; vsg::RenderGraph &gt; <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">renderGraph</a>, VSGContext <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">vsgContext</a>={})</td></tr>
-<tr class="separator:a74e4dafdba7f80d15fc44b7efacce1b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a057acf339d0c1815a76a5154f764c89c" id="r_a057acf339d0c1815a76a5154f764c89c"><td class="memItemLeft" align="right" valign="top"><a id="a057acf339d0c1815a76a5154f764c89c" name="a057acf339d0c1815a76a5154f764c89c"></a>
 <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">void</a> ROCKY_EXPORT&#160;</td><td class="memItemRight" valign="bottom"><b>attach</b> (vsg::ref_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html">MapNode</a> &gt;, VSGContext)</td></tr>
 <tr class="memdesc:a057acf339d0c1815a76a5154f764c89c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Registers a <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_node.html">MapNode</a> with a runtime context. <br /></td></tr>
@@ -775,55 +775,6 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a74e4dafdba7f80d15fc44b7efacce1b8" name="a74e4dafdba7f80d15fc44b7efacce1b8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a74e4dafdba7f80d15fc44b7efacce1b8">&#9670;&#160;</a></span>addImGuiContextGroup()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">ROCKY_EXPORT vsg::ref_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_im_gui_context_group.html">ImGuiContextGroup</a> &gt; ROCKY_NAMESPACE::addImGuiContextGroup </td>
-          <td>(</td>
-          <td class="paramtype">vsg::ref_ptr&lt; vsg::Viewer &gt;&#160;</td>
-          <td class="paramname"><em>viewer</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">vsg::ref_ptr&lt; vsg::Window &gt;&#160;</td>
-          <td class="paramname"><em>window</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">vsg::ref_ptr&lt; vsg::RenderGraph &gt;&#160;</td>
-          <td class="paramname"><em>renderGraph</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">VSGContext&#160;</td>
-          <td class="paramname"><em>vsgContext</em> = <code>{}</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>Installs an ImGui manager. You can add ImGuiNodes to the returned group to render them. </p>
-
-</div>
-</div>
 <a id="adbde9ec2eb44f310f698690eff2b5f84" name="adbde9ec2eb44f310f698690eff2b5f84"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#adbde9ec2eb44f310f698690eff2b5f84">&#9670;&#160;</a></span>pointAtWindowCoords() <span class="overload">[1/2]</span></h2>
 
