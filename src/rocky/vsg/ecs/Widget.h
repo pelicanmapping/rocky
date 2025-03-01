@@ -6,15 +6,14 @@
 #pragma once
 #include <rocky/vsg/Common.h>
 #include <entt/entt.hpp>
-#include <imgui.h>
 
 namespace ROCKY_NAMESPACE
 {
-//#ifndef IMGUI_VERSION
-//    // polyfill when imgui is not included (yet)
-//    struct ImVec2 { float x; float y; };
-//    using ImGuiContext = void;
-//#endif
+#ifndef IMGUI_VERSION
+    // polyfill when imgui is not included (yet)
+    struct ImVec2 { float x; float y; };
+    using ImGuiContext = void;
+#endif
 
     struct WidgetInstance
     {
