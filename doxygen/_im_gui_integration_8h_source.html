@@ -100,10 +100,10 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_gui_renderer_dispatcher.html">   23</a></span>        <span class="keyword">class </span><a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_gui_renderer_dispatcher.html">GuiRendererDispatcher</a> : <span class="keyword">public</span> vsg::Inherit&lt;vsg::Node, GuiRendererDispatcher&gt;</div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>        {</div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>        <span class="keyword">public</span>:</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>            <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">ImGuiContext</a>* imguiContext;</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>            ImGuiContext* imguiContext;</div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>            VSGContext vsgContext;</div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>            <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_gui_renderer_dispatcher.html">GuiRendererDispatcher</a>(<a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">ImGuiContext</a>* <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">imguiContext_in</a>, VSGContext <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">vsgContext_in</a>)</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>            <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_gui_renderer_dispatcher.html">GuiRendererDispatcher</a>(ImGuiContext* <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">imguiContext_in</a>, VSGContext <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">vsgContext_in</a>)</div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>                : imguiContext(<a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">imguiContext_in</a>), vsgContext(<a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">vsgContext_in</a>) { }</div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>            <span class="keywordtype">void</span> traverse(vsg::RecordTraversal&amp; record)<span class="keyword"> const override</span></div>
@@ -121,7 +121,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_send_events_to_im_gui_wrapper.html">   44</a></span>    <span class="keyword">class </span>ROCKY_EXPORT <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_send_events_to_im_gui_wrapper.html">SendEventsToImGuiWrapper</a> : <span class="keyword">public</span> vsg::Inherit&lt;vsgImGui::SendEventsToImGui, SendEventsToImGuiWrapper&gt;</div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    {</div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    <span class="keyword">public</span>:</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>        <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_send_events_to_im_gui_wrapper.html">SendEventsToImGuiWrapper</a>(vsg::ref_ptr&lt;vsg::Window&gt; window, <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">ImGuiContext</a>* imguiContext, VSGContext vsgContext = {}) :</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>        <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_send_events_to_im_gui_wrapper.html">SendEventsToImGuiWrapper</a>(vsg::ref_ptr&lt;vsg::Window&gt; window, ImGuiContext* imguiContext, VSGContext vsgContext = {}) :</div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>            _window(window), _imguiContext(imguiContext), _vsgContext(vsgContext)</div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>        {</div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>            <span class="comment">//nop</span></div>
@@ -168,7 +168,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    <span class="keyword">private</span>:</div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>        vsg::ref_ptr&lt;vsg::Window&gt; _window;</div>
 <div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>        VSGContext _vsgContext;</div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>        <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">ImGuiContext</a>* _imguiContext;</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>        ImGuiContext* _imguiContext;</div>
 <div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    };</div>
 </div>
 <div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
