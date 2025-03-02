@@ -533,13 +533,13 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00452" name="l00452"></a><span class="lineno">  452</span>            <span class="keywordflow">return</span> q;</div>
 <div class="line"><a id="l00453" name="l00453"></a><span class="lineno">  453</span>        }</div>
 <div class="line"><a id="l00454" name="l00454"></a><span class="lineno">  454</span> </div>
-<div class="line"><a id="l00456" name="l00456"></a><span class="lineno">  456</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> Q&gt;</div>
+<div class="line"><a id="l00456" name="l00456"></a><span class="lineno">  456</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> Q = glm::dquat&gt;</div>
 <div class="line"><a id="l00457" name="l00457"></a><span class="lineno">  457</span>        <span class="keyword">inline</span> Q quaternion_from_euler_degrees(<span class="keywordtype">double</span> xaxis, <span class="keywordtype">double</span> yaxis, <span class="keywordtype">double</span> zaxis)</div>
 <div class="line"><a id="l00458" name="l00458"></a><span class="lineno">  458</span>        {</div>
 <div class="line"><a id="l00459" name="l00459"></a><span class="lineno">  459</span>            <span class="keywordflow">return</span> quaternion_from_euler_radians&lt;Q&gt;(deg2rad(xaxis), deg2rad(yaxis), deg2rad(zaxis));</div>
 <div class="line"><a id="l00460" name="l00460"></a><span class="lineno">  460</span>        }</div>
 <div class="line"><a id="l00461" name="l00461"></a><span class="lineno">  461</span> </div>
-<div class="line"><a id="l00464" name="l00464"></a><span class="lineno">  464</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> Q&gt;</div>
+<div class="line"><a id="l00464" name="l00464"></a><span class="lineno">  464</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> Q = glm::dquat&gt;</div>
 <div class="line"><a id="l00465" name="l00465"></a><span class="lineno">  465</span>        <span class="keyword">inline</span> std::tuple&lt;double, double, double&gt; euler_radians_from_quaternion(<span class="keyword">const</span> Q&amp; q)</div>
 <div class="line"><a id="l00466" name="l00466"></a><span class="lineno">  466</span>        {</div>
 <div class="line"><a id="l00467" name="l00467"></a><span class="lineno">  467</span>            <span class="comment">// x-axis rotation</span></div>
@@ -668,12 +668,18 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span><span class="preprocessor">     M[2][0] == 0.0 &amp;&amp; M[2][1] == 0.0 &amp;&amp; M[2][2] == 1.0 &amp;&amp; M[2][3] == 0.0 &amp;&amp; \</span></div>
 <div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span><span class="preprocessor">     M[3][0] == 0.0 &amp;&amp; M[3][1] == 0.0 &amp;&amp; M[3][2] == 0.0 &amp;&amp; M[3][3] == 1.0)</span></div>
 <div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span> </div>
-<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span><span class="preprocessor">#define ROCKY_MAT4_EQUAL(A,B) \</span></div>
-<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span><span class="preprocessor">    (A[0][0] == B[0][0] &amp;&amp; A[0][1] == B[0][1] &amp;&amp; A[0][2] == B[0][2] &amp;&amp; A[0][3] == B[0][3] &amp;&amp; \</span></div>
-<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span><span class="preprocessor">     A[1][0] == B[1][0] &amp;&amp; A[1][1] == B[1][1] &amp;&amp; A[1][2] == B[1][2] &amp;&amp; A[1][3] == B[1][3] &amp;&amp; \</span></div>
-<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span><span class="preprocessor">     A[2][0] == B[2][0] &amp;&amp; A[2][1] == B[2][1] &amp;&amp; A[2][2] == B[2][2] &amp;&amp; A[2][3] == B[2][3] &amp;&amp; \</span></div>
-<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span><span class="preprocessor">     A[3][0] == B[3][0] &amp;&amp; A[3][1] == B[3][1] &amp;&amp; A[3][2] == B[3][2] &amp;&amp; A[3][3] == B[3][3])</span></div>
-<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>}</div>
+<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span><span class="preprocessor">#define ROCKY_MAT4_IS_NOT_IDENTITY(M) \</span></div>
+<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span><span class="preprocessor">    (M[0][0] != 1.0 || M[0][1] != 0.0 || M[0][2] != 0.0 || M[0][3] != 0.0 || \</span></div>
+<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span><span class="preprocessor">     M[1][0] != 0.0 || M[1][1] != 1.0 || M[1][2] != 0.0 || M[1][3] != 0.0 || \</span></div>
+<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span><span class="preprocessor">     M[2][0] != 0.0 || M[2][1] != 0.0 || M[2][2] != 1.0 || M[2][3] != 0.0 || \</span></div>
+<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span><span class="preprocessor">     M[3][0] != 0.0 || M[3][1] != 0.0 || M[3][2] != 0.0 || M[3][3] != 1.0)</span></div>
+<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span> </div>
+<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span><span class="preprocessor">#define ROCKY_MAT4_EQUAL(A,B) \</span></div>
+<div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span><span class="preprocessor">    (A[0][0] == B[0][0] &amp;&amp; A[0][1] == B[0][1] &amp;&amp; A[0][2] == B[0][2] &amp;&amp; A[0][3] == B[0][3] &amp;&amp; \</span></div>
+<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span><span class="preprocessor">     A[1][0] == B[1][0] &amp;&amp; A[1][1] == B[1][1] &amp;&amp; A[1][2] == B[1][2] &amp;&amp; A[1][3] == B[1][3] &amp;&amp; \</span></div>
+<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span><span class="preprocessor">     A[2][0] == B[2][0] &amp;&amp; A[2][1] == B[2][1] &amp;&amp; A[2][2] == B[2][2] &amp;&amp; A[2][3] == B[2][3] &amp;&amp; \</span></div>
+<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span><span class="preprocessor">     A[3][0] == B[3][0] &amp;&amp; A[3][1] == B[3][1] &amp;&amp; A[3][2] == B[3][2] &amp;&amp; A[3][3] == B[3][3])</span></div>
+<div class="line"><a id="l00618" name="l00618"></a><span class="lineno">  618</span>}</div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition</b> Callbacks.h:16</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a017f7d83163e0abab14e4a8ad76c9ee4"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a017f7d83163e0abab14e4a8ad76c9ee4">ROCKY_NAMESPACE::Interpolation</a></div><div class="ttdeci">Interpolation</div><div class="ttdoc">Raster interpolation methods.</div><div class="ttdef"><b>Definition</b> Math.h:23</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a1eeebb36064ee832159613307c006bc2"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a1eeebb36064ee832159613307c006bc2">ROCKY_NAMESPACE::expandBy</a></div><div class="ttdeci">void expandBy(vsg::dsphere &amp;bs, const vec_type &amp;v)</div><div class="ttdoc">Expands an existing sphere to include a point.</div><div class="ttdef"><b>Definition</b> Utils.h:84</div></div>
