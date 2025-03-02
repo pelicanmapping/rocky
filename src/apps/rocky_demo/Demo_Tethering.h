@@ -84,7 +84,7 @@ auto Demo_Tethering = [](Application& app)
 
         // Add a transform:
         auto& xform = registry.emplace<Transform>(entity);
-        xform.setPosition(GeoPoint(SRS::WGS84, -121, 55, 50000));
+        xform.position = GeoPoint(SRS::WGS84, -121, 55, 50000);
 
         // Add a motion component to animate the entity:
         auto& motion = registry.emplace<Motion>(entity);
@@ -103,7 +103,8 @@ auto Demo_Tethering = [](Application& app)
             {
                 auto& xform = registry.get<Transform>(entity);
                 auto vp = manip->viewpoint();
-                vp.target = PositionedObjectAdapter<GeoTransform>::create(xform.node);
+                //TODO fix
+                //vp.target = PositionedObjectAdapter<GeoTransform>::create(xform.node);
                 vp.range = s * 12.0;
                 vp.pitch = -45;
                 vp.heading = 45;

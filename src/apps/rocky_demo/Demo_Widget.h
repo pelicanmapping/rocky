@@ -11,34 +11,19 @@ auto Demo_Widget = [](Application& app)
 {
 #ifdef ROCKY_HAS_IMGUI
         
-    static entt::entity entity1 = entt::null;
-    static entt::entity entity2 = entt::null;
+    static entt::entity entity = entt::null;
     static Status status;
 
-    if (entity1 == entt::null && entity2 == entt::null)
+    if (entity == entt::null)
     {
         auto [lock, registry] = app.registry.write();
 
-        // Basic widget with just a text label:
-        {
-            // Create a host entity
-            entity1 = registry.create();
+        entity = registry.create();
 
-            auto& widget = registry.emplace<Widget>(entity1);
-            widget.text = "I'm basic.";
+        auto& widget = registry.emplace<Widget>(entity);
+        widget.text = "I'm a widget.";
 
-            // Attach a transform to place and move the label:
-            auto& transform = registry.emplace<Transform>(entity1);
-            transform.setPosition(GeoPoint(SRS::WGS84, 25.0, 25.0, 10.0));     
-        }
-
-        // Complex imgui rendering widget
-        {
-            entity2 = registry.create();
-
-            auto& widget = registry.emplace<Widget>(entity2);
-
-            widget.render = [&](WidgetInstance& i)
+        widget.render = [&](WidgetInstance& i)
             {
                 static float some_float = 0;
                 static int some_int = 0;
@@ -50,25 +35,19 @@ auto Demo_Widget = [](Application& app)
                 flags &= ~ImGuiWindowFlags_NoInputs;
                 flags &= ~ImGuiWindowFlags_NoBringToFrontOnFocus;
 
-                ImVec2 pos{ i.position.x - i.size.x/2, i.position.y - i.size.y/2 };
+                ImVec2 pos{ i.position.x - i.size.x / 2, i.position.y - i.size.y / 2 };
                 ImGui::SetNextWindowPos(pos);
 
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 7.0f);
 
                 if (ImGui::Begin(i.uid.c_str(), nullptr, flags))
                 {
-                    ImGui::Text("I'm not so basic.");
+                    ImGui::Text(i.widget.text.c_str());
                     ImGui::Separator();
-                    ImGui::Text("Some controls:");
+                    ImGui::Text("Text string");
                     ImGui::SliderFloat("Slider", &some_float, 0.0f, 1.0f);
-                    ImGui::Separator();
-                    if (ImGuiLTable::Begin("table")) {
-                        ImGuiLTable::Text("Name", "Value");
-                        ImGuiLTable::Text("Property", "Something");
-                        ImGuiLTable::SliderInt("Control", &some_int, 100, 50);
-                        ImGuiLTable::End();
-                    }
-                    ImGui::Checkbox("Show a fixed-position window", &fixed_window_open);
+                    ImGui::Checkbox("Show me a fixed-position window", &fixed_window_open);
+
                     i.size = ImGui::GetWindowSize();
                 }
                 ImGui::End();
@@ -77,9 +56,20 @@ auto Demo_Widget = [](Application& app)
                 if (fixed_window_open)
                 {
                     ImGui::SetNextWindowPos(ImVec2(ImGui::GetMainViewport()->Size.x - 400, ImGui::GetMainViewport()->Size.y - 200));
+
                     if (ImGui::Begin("Fixed-position window"))
                     {
+                        Transform& transform = i.registry.get<Transform>(i.entity);
+                        auto p = transform.position.transform(SRS::WGS84);
+
                         ImGui::Text("Widgets can be placed at absolute coordinates too.");
+                        ImGui::Separator();
+                        if (ImGuiLTable::Begin("pos_table")) {
+                            ImGuiLTable::Text("Latitude:", "%.3f", p.y);
+                            ImGuiLTable::Text("Longitude:", "%.3f", p.x);
+                            ImGuiLTable::Text("Altitude:", "%.1f", p.z);
+                            ImGuiLTable::End();
+                        }
                         ImGui::Separator();
                         if (ImGui::Button("Whatever"))
                             fixed_window_open = false;
@@ -88,30 +78,28 @@ auto Demo_Widget = [](Application& app)
                 }
             };
 
-            // Attach a transform to place and move the label:
-            auto& transform = registry.emplace<Transform>(entity2);
-            transform.setPosition(GeoPoint(SRS::WGS84, -25.0, 25.0, 500000.0));
+        // Attach a transform to place and move the label:
+        auto& transform = registry.emplace<Transform>(entity);
+        transform.position = GeoPoint(SRS::WGS84, -25.0, 25.0, 500000.0);
 
-            // Drop line from the widget to the ground, for fun.
-            auto& dropline = registry.emplace<Line>(entity2);
-            dropline.points = { { 0,0,0 }, { 0, 0, -500000 } };
-            dropline.style.color = vsg::vec4{ 0, 1, 0, 1 };
-            dropline.style.width = 2;
-        }
+        // Drop line from the widget to the ground, for fun.
+        auto& dropline = registry.emplace<Line>(entity);
+        dropline.points = { { 0,0,0 }, { 0, 0, -500000 } };
+        dropline.style.color = vsg::vec4{ 0, 1, 0, 1 };
+        dropline.style.width = 2;
     }
 
     if (ImGuiLTable::Begin("widget_demo"))
     {
         auto [lock, registry] = app.registry.read();
 
-        bool visible = ecs::visible(registry, entity1);
+        bool visible = ecs::visible(registry, entity);
         if (ImGuiLTable::Checkbox("Show", &visible))
         {
-            ecs::setVisible(registry, entity1, visible);
-            ecs::setVisible(registry, entity2, visible);
+            ecs::setVisible(registry, entity, visible);
         }
 
-        auto& widget = registry.get<Widget>(entity1);
+        auto& widget = registry.get<Widget>(entity);
 
         if (widget.text.length() <= 255)
         {
@@ -124,7 +112,7 @@ auto Demo_Widget = [](Application& app)
             }
         }
 
-        auto& transform = registry.get<Transform>(entity2);
+        auto& transform = registry.get<Transform>(entity);
 
         if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
             transform.dirty();

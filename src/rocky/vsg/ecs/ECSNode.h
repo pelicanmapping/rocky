@@ -8,7 +8,7 @@
 #include <rocky/vsg/ecs/Registry.h>
 #include <rocky/vsg/ecs/Component.h>
 #include <rocky/vsg/ecs/Visibility.h>
-#include <rocky/vsg/ecs/Transform.h>
+#include <rocky/vsg/ecs/TransformData.h>
 #include <rocky/vsg/Utils.h>
 #include <rocky/Utils.h>
 #include <vsg/vk/Context.h>
@@ -164,7 +164,7 @@ namespace ROCKY_NAMESPACE
             struct RenderLeaf
             {
                 Renderable& renderable;
-                Transform* transform;
+                TransformViewData* TransformViewData = nullptr;
             };
 
             // re-usable collection to minimize re-allocation
@@ -440,23 +440,24 @@ namespace ROCKY_NAMESPACE
                 if (renderable.node)
                 {
                     auto& leaves = !pipelines.empty() ? pipelineRenderLeaves[featureMask(component)] : pipelineRenderLeaves[0];
-                    auto* transform = registry.try_get<Transform>(entity);
+                    auto* transformData = registry.try_get<TransformData>(entity);
 
                     // if it's visible, queue it up for rendering
                     if (visible(visibility, viewID))
                     {
-                        leaves.emplace_back(RenderLeaf{ renderable, transform });
+                        if (transformData)
+                        {
+                            auto& view = (*transformData)[viewID];
+                            if (view.passesCull())
+                            {
+                                leaves.emplace_back(RenderLeaf{ renderable, &view });
+                            }
+                        }
+                        else
+                        {
+                            leaves.emplace_back(RenderLeaf{ renderable });
+                        }
                     }
-
-#if 0
-                    // otherwise if it's invisible but still has a transform, process that transform
-                    // so it can calculate its screen-space information (for things like decluttering
-                    // and intersection)
-                    else if (transform)
-                    {
-                        transform->push(rt, false);
-                    }
-#endif
                 }
 
                 if (renderable.revision != component.revision)
@@ -480,17 +481,16 @@ namespace ROCKY_NAMESPACE
                 // Them record each component. If the component has a transform apply it too.
                 for (auto& leaf : pipelineRenderLeaves[p])
                 {
-                    if (leaf.transform)
+                    if (leaf.TransformViewData)
                     {
-                        if (leaf.transform->push(rt))
-                        {
-                            leaf.renderable.node->accept(rt);
-                            leaf.transform->pop(rt);
-                        }
+                        leaf.TransformViewData->push(rt);
                     }
-                    else
+
+                    leaf.renderable.node->accept(rt);
+
+                    if (leaf.TransformViewData)
                     {
-                        leaf.renderable.node->accept(rt);
+                        leaf.TransformViewData->pop(rt);
                     }
                 }
 

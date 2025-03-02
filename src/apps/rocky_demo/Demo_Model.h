@@ -56,8 +56,8 @@ auto Demo_Model = [](Application& app)
 
         // A transform component to place and move it on the map
         auto& transform = registry.emplace<Transform>(entity);
-        transform.setPosition(GeoPoint(SRS::WGS84, 50, 0, 250000));
-        transform.localMatrix = vsg::scale(scale);
+        transform.position = GeoPoint(SRS::WGS84, 50, 0, 250000);
+        transform.localMatrix = to_glm(vsg::scale(scale));
     }
 
     if (ImGuiLTable::Begin("model"))
@@ -85,14 +85,14 @@ auto Demo_Model = [](Application& app)
         if (ImGuiLTable::SliderDouble("Heading", &heading, -180.0, 180.0, "%.1lf"))
         {
             auto rot = util::quaternion_from_euler_degrees<vsg::dquat>(pitch, roll, heading);
-            transform.localMatrix = vsg::scale(scale) * vsg::rotate(rot);
+            transform.localMatrix = to_glm(vsg::scale(scale) * vsg::rotate(rot));
             transform.dirty();
         }
 
         if (ImGuiLTable::SliderDouble("Pitch", &pitch, -90.0, 90.0, "%.1lf"))
         {
             auto rot = util::quaternion_from_euler_degrees<vsg::dquat>(pitch, roll, heading);
-            transform.localMatrix = vsg::scale(scale) * vsg::rotate(rot);
+            transform.localMatrix = to_glm(vsg::scale(scale) * vsg::rotate(rot));
             transform.dirty();
         }
 

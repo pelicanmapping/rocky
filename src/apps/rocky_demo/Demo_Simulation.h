@@ -93,8 +93,8 @@ auto Demo_Simulation = [](Application& app)
 
                     ImGui::SetCurrentContext(i.context);
                     ImGui::SetNextWindowPos(ImVec2(i.position.x + 12.0f, i.position.y - i.size.y/2));
-                    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(2, 2));
-                    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1, 1, 1, 0.25f));
+                    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
+                    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.35f));
                     ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.0f));
                     if (ImGui::Begin(i.uid.c_str(), nullptr, i.defaultWindowFlags))
                     {
@@ -138,10 +138,10 @@ auto Demo_Simulation = [](Application& app)
 
                 // Add a transform component:
                 auto& transform = registry.emplace<Transform>(entity);
-                transform.setPosition(pos);
+                transform.position = pos;
 
                 // We need this to support the drop-line. There is a small performance hit.
-                transform.localTangentPlane = true;
+                transform.topocentric = true;
 
                 // Add a motion component to represent movement:
                 double initial_bearing = -180.0 + rand_unit(mt) * 360.0;

@@ -53,32 +53,25 @@ namespace
 
                 auto [lock, registry] = _registry.read();
 
-                auto view = registry.view<ActiveState, Declutter, Transform>();
-                for (auto&& [entity, active, declutter, transform] : view.each())
+                auto view = registry.view<ActiveState, Declutter, TransformData>();
+                for (auto&& [entity, active, declutter, transforms] : view.each())
                 {
-                    if (transform.node && transform.node->viewLocal.size() > viewID)
-                    {
-                        int width =
-                            (declutter.width_px >= 0 ? declutter.width_px : 0) +
-                            (declutter.buffer_x >= 0 ? declutter.buffer_x : (int)buffer_px);
-                        int height =
-                            (declutter.height_px >= 0 ? declutter.height_px : 0) +
-                            (declutter.buffer_y >= 0 ? declutter.buffer_y : (int)buffer_px);
+                    int width =
+                        (declutter.width_px >= 0 ? declutter.width_px : 0) +
+                        (declutter.buffer_x >= 0 ? declutter.buffer_x : (int)buffer_px);
+                    int height =
+                        (declutter.height_px >= 0 ? declutter.height_px : 0) +
+                        (declutter.buffer_y >= 0 ? declutter.buffer_y : (int)buffer_px);
 
-                        // Cheat by directly accessing view 0. In reality we will might either declutter per-view
-                        // or have a "driving view" that controls visibility for all views.
-                        auto& viewLocal = transform.node->viewLocal[viewID];
-                        if (!viewLocal.culled)
-                        {
-                            vsg::mat4 mvp;
-                            ROCKY_FAST_MAT4_MULT(mvp, viewLocal.proj, viewLocal.modelview);
-                            //auto& mvp = viewLocal.mvp;
-                            auto clip = mvp[3] / mvp[3][3];
-                            vsg::dvec2 window((clip.x + 1.0) * 0.5 * (double)viewLocal.viewport[2], (clip.y + 1.0) * 0.5 * (double)viewLocal.viewport[3]);
-                            double sort_key = sorting_method == 0 ? (double)declutter.priority : clip.z;
-                            sorted.emplace_back(entity, window.x, window.y, sort_key, width, height);
-                        }
-                    }
+                    auto& view = transforms[viewID];
+
+                    vsg::mat4 mvp;
+                    ROCKY_FAST_MAT4_MULT(mvp, view.proj, view.modelview);
+                    //auto& mvp = viewLocal.mvp;
+                    auto clip = mvp[3] / mvp[3][3];
+                    vsg::dvec2 window((clip.x + 1.0) * 0.5 * (double)view.viewport[2], (clip.y + 1.0) * 0.5 * (double)view.viewport[3]);
+                    double sort_key = sorting_method == 0 ? (double)declutter.priority : clip.z;
+                    sorted.emplace_back(entity, window.x, window.y, sort_key, width, height);
                 }
 
                 // sort them by whatever sort key we used, either priority or camera distance

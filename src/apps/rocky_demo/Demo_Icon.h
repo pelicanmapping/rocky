@@ -44,8 +44,8 @@ auto Demo_Icon = [](Application& app)
 
         // Transform to place the icon:
         auto& transform = registry.emplace<Transform>(entity);
-        transform.setPosition(GeoPoint(SRS::WGS84, 0, 0, 50000));
-        transform.localTangentPlane = false; // optimization for billboards :)
+        transform.position = GeoPoint(SRS::WGS84, 0, 0, 50000);
+        transform.topocentric = false; // optimization for billboards :)
     }
 
     if (ImGuiLTable::Begin("icon"))

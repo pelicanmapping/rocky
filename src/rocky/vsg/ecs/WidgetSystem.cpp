@@ -44,12 +44,6 @@ WidgetSystemNode::WidgetSystemNode(ecs::Registry& in_registry) :
     registry.on_construct<Widget>().connect<&on_construct_Widget>();
 }
 
-WidgetSystemNode::~WidgetSystemNode()
-{
-    auto [lock, registry] = _registry.write();
-    registry.on_construct<Widget>().disconnect<&on_construct_Widget>();
-}
-
 void
 WidgetSystemNode::initialize(VSGContext& context)
 {
@@ -69,10 +63,10 @@ WidgetSystemNode::initialize(VSGContext& context)
                 ImGuiWindowFlags_NoFocusOnAppearing |
                 ImGuiWindowFlags_NoSavedSettings;
 
-            auto view = registry.view<Widget, WidgetRenderable, Transform, Visibility>();
-            for (auto&& [entity, widget, renderable, transform, visibility] : view.each())
+            auto view = registry.view<Widget, WidgetRenderable, TransformData, Visibility>();
+            for (auto&& [entity, widget, renderable, xdata, visibility] : view.each())
             {
-                if (ecs::visible(visibility, viewID) && transform.node->visible(viewID))
+                if (ecs::visible(visibility, viewID) && xdata[viewID].passesCull())
                 {
                     WidgetInstance i{
                         widget,
@@ -119,16 +113,16 @@ WidgetSystemNode::update(VSGContext& context)
     auto [lock, registry] = _registry.read();
 
     // calculate the screen position of the widget in each view
-    registry.view<WidgetRenderable, Transform>().each([&](auto& renderable, auto& transform)
+    registry.view<WidgetRenderable, TransformData>().each([&](auto& renderable, auto& xdata)
         {
             vsg::dmat4 mvp;
             for(auto& viewID : context->activeViewIDs)
             {
-                auto& local = transform.node->viewLocal[viewID];
-                ROCKY_FAST_MAT4_MULT(mvp, local.proj, local.modelview);
+                auto& view = xdata[viewID];
+                ROCKY_FAST_MAT4_MULT(mvp, view.proj, view.modelview);
                 auto clip = mvp[3] / mvp[3][3];
-                renderable.screen[viewID].x = (clip.x + 1.0) * 0.5 * (double)local.viewport[2];
-                renderable.screen[viewID].y = (clip.y + 1.0) * 0.5 * (double)local.viewport[3];
+                renderable.screen[viewID].x = (clip.x + 1.0) * 0.5 * (double)view.viewport[2];
+                renderable.screen[viewID].y = (clip.y + 1.0) * 0.5 * (double)view.viewport[3];
             }
         });
 }

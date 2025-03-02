@@ -130,8 +130,8 @@ auto Demo_Mesh_Relative = [](Application& app)
         // to some geospatial coordinates. We then set the bound on the node
         // to control horizon culling a little better
         auto& xform = registry.emplace<Transform>(entity);
-        xform.setPosition(GeoPoint(SRS::WGS84, 24.0, 24.0, s * 3.0));
-        xform.node->bound.radius = s * sqrt(2);
+        xform.position = GeoPoint(SRS::WGS84, 24.0, 24.0, s * 3.0);
+        xform.radius = s * sqrt(2);
     }
 
     if (ImGuiLTable::Begin("Mesh"))

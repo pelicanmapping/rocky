@@ -6,7 +6,7 @@
 #pragma once
 
 #include <rocky/Common.h>
-#include <vsg/core/Version.h>
+#include <vsg/all.h>
 
 #define ROCKY_VSG_NAMESPACE ROCKY_NAMESPACE
 

@@ -78,7 +78,7 @@ auto Demo_LabelFeatures = [](Application& app)
 
             // attach a transform to place the label:
             auto& transform = registry.emplace<Transform>(entity);
-            transform.setPosition(candidate.centroid);
+            transform.position = candidate.centroid;
 
             // attach a component to control decluttering:
             auto& declutter = registry.emplace<Declutter>(entity);

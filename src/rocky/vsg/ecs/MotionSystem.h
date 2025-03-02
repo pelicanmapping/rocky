@@ -100,33 +100,4 @@ namespace ROCKY_NAMESPACE
         //! Constructor
         ecs::time_point last_time = ecs::time_point::min();
     };
-
-
-    class TransformSystem : public vsg::Inherit<vsg::Node, TransformSystem>, public ecs::System
-    {
-    public:
-        TransformSystem(ecs::Registry& r) : ecs::System(r) { }
-
-        //! Called periodically to update the transforms
-        void traverse(vsg::RecordTraversal& rt) const override
-        {
-            auto [lock, registry] = _registry.read();
-
-            registry.view<Transform>().each([&](const entt::entity entity, auto& transform)
-                {
-                    transform.update(rt);
-                });
-        }
-
-        //void update(VSGContext& context) override
-        //{
-        //    auto [lock, registry] = _registry.read();
-
-        //    registry.view<Icon, ActiveState, Transform>().each([&](
-        //        const entt::entity entity, auto& icon, auto& active, auto& transform)
-        //        {
-        //            transform.push(rt, false);
-        //        });
-        //}
-    };
 }

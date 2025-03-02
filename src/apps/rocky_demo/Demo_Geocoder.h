@@ -178,7 +178,7 @@ auto Demo_Geocoder = [](Application& app)
 
                                 // position it:
                                 auto& xform = registry.get<Transform>(entity);
-                                xform.setPosition(extent.centroid());
+                                xform.position = extent.centroid();
                             });
                     }
                     ImGui::PopID();

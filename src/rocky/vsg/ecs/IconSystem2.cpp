@@ -470,12 +470,12 @@ IconSystem2Node::update(VSGContext& context)
 
     // TODO: Support ALL active views!
 
-    registry.view<Icon, ActiveState, Visibility, Transform>().each([&](
-        auto& icon, auto& active, auto& visibility, auto& transform)
+    registry.view<Icon, ActiveState, Visibility, TransformData>().each([&](
+        auto& icon, auto& active, auto& visibility, auto& tdata)
         {
             if (ecs::visible(visibility, 0))
             {
-                auto& viewLocal = transform.node->viewLocal[0];
+                auto& viewLocal = tdata[0];
 
                 auto& instance = instances[count++];
                 instance.proj = viewLocal.proj;

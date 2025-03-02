@@ -24,8 +24,5 @@ namespace ROCKY_NAMESPACE
 
         //! Per-frame update
         void update(VSGContext& context) override;
-
-    protected:
-        virtual ~WidgetSystemNode();
     };
 }
