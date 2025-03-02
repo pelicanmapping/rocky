@@ -115,12 +115,10 @@ WidgetSystemNode::update(VSGContext& context)
     // calculate the screen position of the widget in each view
     registry.view<WidgetRenderable, TransformData>().each([&](auto& renderable, auto& xdata)
         {
-            vsg::dmat4 mvp;
             for(auto& viewID : context->activeViewIDs)
             {
                 auto& view = xdata[viewID];
-                ROCKY_FAST_MAT4_MULT(mvp, view.proj, view.modelview);
-                auto clip = mvp[3] / mvp[3][3];
+                auto clip = view.mvp[3] / view.mvp[3][3];
                 renderable.screen[viewID].x = (clip.x + 1.0) * 0.5 * (double)view.viewport[2];
                 renderable.screen[viewID].y = (clip.y + 1.0) * 0.5 * (double)view.viewport[3];
             }

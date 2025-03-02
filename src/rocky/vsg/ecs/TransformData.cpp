@@ -36,17 +36,21 @@ TransformViewData::update(vsg::RecordTraversal& record)
         if (pos_to_world.valid())
         {
             glm::dvec3 worldpos;
-            if (pos_to_world(glm::dvec3(transform->position.x, transform->position.y, transform->position.z), worldpos))
+            if (pos_to_world(transform->position, worldpos))
             {
                 if (transform->topocentric && world_srs.isGeocentric())
+                {
                     model = to_vsg(world_ellipsoid->topocentricToGeocentricMatrix(worldpos));
+                }
                 else
+                {
                     model = vsg::translate(worldpos.x, worldpos.y, worldpos.z);
+                }
 
-                if (transform->localMatrix.has_value())
+                if (ROCKY_MAT4_IS_NOT_IDENTITY(transform->localMatrix))
                 {
                     glm::dmat4 temp;
-                    ROCKY_FAST_MAT4_MULT(temp, model, transform->localMatrix.value());
+                    ROCKY_FAST_MAT4_MULT(temp, model, transform->localMatrix);
                     model = to_vsg(temp);
                 }
             }
@@ -59,18 +63,16 @@ TransformViewData::update(vsg::RecordTraversal& record)
             record.getValue("rocky.horizon", horizon);
         }
 
-        if (transform->localMatrix.has_value())
-        {
-            local = to_vsg(transform->localMatrix.value());
-        }
+        //local = to_vsg(transform->localMatrix);
     }
 
     proj = state->projectionMatrixStack.top();
     auto& mvm = state->modelviewMatrixStack.top();
     ROCKY_FAST_MAT4_MULT(modelview, mvm, model);
+    ROCKY_FAST_MAT4_MULT(mvp, proj, modelview);
 
     viewport = (*state->_commandBuffer->viewDependentState->viewportData)[0];
-    culled = false;
+    //culled = false;
 }
 
 bool
@@ -81,10 +83,7 @@ TransformViewData::passesCull() const
     // Frustum cull (by center point)
     if (transform->frustumCulled)
     {
-        vsg::mat4 mvp;
-        ROCKY_FAST_MAT4_MULT(mvp, proj, modelview);
-
-        vsg::vec4 clip = mvp[3] / mvp[3][3];
+        auto clip = mvp[3] / mvp[3][3];
         const double t = 1.0;
         if (clip.x < -t || clip.x > t || clip.y < -t || clip.y > t || clip.z < -t || clip.z > t)
         {

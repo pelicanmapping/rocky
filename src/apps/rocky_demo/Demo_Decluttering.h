@@ -65,10 +65,7 @@ namespace
 
                     auto& view = transforms[viewID];
 
-                    vsg::mat4 mvp;
-                    ROCKY_FAST_MAT4_MULT(mvp, view.proj, view.modelview);
-                    //auto& mvp = viewLocal.mvp;
-                    auto clip = mvp[3] / mvp[3][3];
+                    auto clip = view.mvp[3] / view.mvp[3][3];
                     vsg::dvec2 window((clip.x + 1.0) * 0.5 * (double)view.viewport[2], (clip.y + 1.0) * 0.5 * (double)view.viewport[3]);
                     double sort_key = sorting_method == 0 ? (double)declutter.priority : clip.z;
                     sorted.emplace_back(entity, window.x, window.y, sort_key, width, height);

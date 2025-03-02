@@ -18,13 +18,12 @@ namespace ROCKY_NAMESPACE
     {
         Transform* transform = nullptr; // pointer to the Transform component
         int revision = -1;    // revision of this data for syncing
-        vsg::dmat4 local;     // local rotation/offset
         vsg::dmat4 model;     // model matrix
-        vsg::mat4 proj;       // projection matrix
-        vsg::mat4 modelview;  // modelview matrix
+        vsg::dmat4 proj;      // projection matrix
+        vsg::dmat4 modelview; // modelview matrix
+        vsg::dmat4 mvp;       // modelview-projection matrix
         vsg::vec4 viewport;
         SRS world_srs;
-        bool culled = false;
         const Ellipsoid* world_ellipsoid = nullptr;
         SRSOperation pos_to_world;
         std::shared_ptr<Horizon> horizon;

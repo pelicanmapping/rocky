@@ -453,7 +453,7 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Convert Euler angles, in degrees, to a quaternion.
-        template<typename Q>
+        template<typename Q = glm::dquat>
         inline Q quaternion_from_euler_degrees(double xaxis, double yaxis, double zaxis)
         {
             return quaternion_from_euler_radians<Q>(deg2rad(xaxis), deg2rad(yaxis), deg2rad(zaxis));
@@ -461,7 +461,7 @@ namespace ROCKY_NAMESPACE
 
         //! Convert a quat to Euler angles in radians.
         //! https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-        template<typename Q>
+        template<typename Q = glm::dquat>
         inline std::tuple<double, double, double> euler_radians_from_quaternion(const Q& q)
         {
             // x-axis rotation
@@ -603,6 +603,12 @@ namespace ROCKY_NAMESPACE
      M[1][0] == 0.0 && M[1][1] == 1.0 && M[1][2] == 0.0 && M[1][3] == 0.0 && \
      M[2][0] == 0.0 && M[2][1] == 0.0 && M[2][2] == 1.0 && M[2][3] == 0.0 && \
      M[3][0] == 0.0 && M[3][1] == 0.0 && M[3][2] == 0.0 && M[3][3] == 1.0)
+
+#define ROCKY_MAT4_IS_NOT_IDENTITY(M) \
+    (M[0][0] != 1.0 || M[0][1] != 0.0 || M[0][2] != 0.0 || M[0][3] != 0.0 || \
+     M[1][0] != 0.0 || M[1][1] != 1.0 || M[1][2] != 0.0 || M[1][3] != 0.0 || \
+     M[2][0] != 0.0 || M[2][1] != 0.0 || M[2][2] != 1.0 || M[2][3] != 0.0 || \
+     M[3][0] != 0.0 || M[3][1] != 0.0 || M[3][2] != 0.0 || M[3][3] != 1.0)
 
 #define ROCKY_MAT4_EQUAL(A,B) \
     (A[0][0] == B[0][0] && A[0][1] == B[0][1] && A[0][2] == B[0][2] && A[0][3] == B[0][3] && \

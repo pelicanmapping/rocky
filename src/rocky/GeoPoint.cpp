@@ -15,23 +15,16 @@ GeoPoint::GeoPoint()
     //nop
 }
 
-GeoPoint::GeoPoint(const SRS& in_srs, double in_x, double in_y) :
-    srs(in_srs),
-    x(in_x), y(in_y), z(0.0)
-{
-    //nop
-}
-
 GeoPoint::GeoPoint(const SRS& in_srs, double in_x, double in_y, double in_z) :
-    srs(in_srs),
-    x(in_x), y(in_y), z(in_z)
+    glm::dvec3(in_x, in_y, in_z),
+    srs(in_srs)
 {
     //nop
 }
 
 GeoPoint::GeoPoint(const SRS& in_srs) :
-    srs(in_srs),
-    x(0.0), y(0.0), z(0.0)
+    glm::dvec3(0, 0, 0),
+    srs(in_srs)
 {
     //nop
 }
@@ -42,29 +35,29 @@ GeoPoint::transform(const SRS& outSRS) const
     GeoPoint result;
     if (valid() && outSRS.valid())
     {
-        double xyz[3] = { x, y, z };
-        if (srs.to(outSRS).transform(xyz, xyz))
+        if (srs.to(outSRS).transform(*this, result))
         {
-            return GeoPoint(outSRS, xyz[0], xyz[1], xyz[2]);
+            result.srs = outSRS;
         }
     }
-    return {};
+    return result;
 }
 
-bool
+GeoPoint&
 GeoPoint::transformInPlace(const SRS& to_srs)
 {
     if (valid() && srs.valid())
     {
-        double xyz[3] = { x, y, z };
-        if (srs.to(to_srs).transform(xyz, xyz))
+        if (srs.to(to_srs).transform(*this, *this))
         {
-            x = xyz[0], y = xyz[1], z = xyz[2];
             srs = to_srs;
-            return true;
+        }
+        else
+        {
+            srs = {}; // invalidate if it fail
         }
     }
-    return false;
+    return *this;
 }
 
 Distance

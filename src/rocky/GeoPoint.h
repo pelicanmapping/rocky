@@ -13,11 +13,10 @@ namespace ROCKY_NAMESPACE
     /**
      * A georeferenced 3D point.
      */
-    class ROCKY_EXPORT GeoPoint
+    class ROCKY_EXPORT GeoPoint : public glm::dvec3
     {
     public:
         SRS srs;
-        double x, y, z;
 
         //! Constructs an empty (and invalid) geopoint.
         GeoPoint();
@@ -26,18 +25,12 @@ namespace ROCKY_NAMESPACE
         GeoPoint(const SRS& srs);
 
         //! Constructs a GeoPoint
-        GeoPoint(const SRS& srs, double x, double y);
-
-        //! Constructs a GeoPoint
-        GeoPoint(const SRS& srs, double x, double y, double z);
+        GeoPoint(const SRS& srs, double x, double y, double z = 0.0);
 
         //! Constructs a GeoPoint
         template<class T>
         GeoPoint(const SRS& srs, const T& dvec) :
             GeoPoint(srs, dvec.x, dvec.y, dvec.z) { }
-
-        //! Cast to a vector.
-        explicit operator glm::dvec3 () const { return { x, y, z }; }
 
         //! Transforms this geopoint into another SRS.
         //! @param outSRS The target SRS
@@ -45,7 +38,9 @@ namespace ROCKY_NAMESPACE
         GeoPoint transform(const SRS& outSRS) const;
 
         //! Transforms this point in place to another SRS
-        bool transformInPlace(const SRS& srs);
+        //! @param srs The target SRS
+        //! @return This GeoPoint
+        GeoPoint& transformInPlace(const SRS& srs);
 
         //! Geodesic distance from this point to another.
         //! This is the distance along the real-world ellipsoidal surface
