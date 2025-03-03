@@ -29,7 +29,7 @@ namespace ROCKY_NAMESPACE
         //! Optional local matrix for rotation, offset, etc. This matrix is
         //! applied relative to the position AND to the topcentric ENU tangent plane
         //! when topocentric is set to true.
-        glm::dmat4 localMatrix;
+        glm::dmat4 localMatrix = glm::dmat4(1.0);
 
         //! Whether the localMatrix is relative to a local tangent plane at
         //! "position", versus a simple translated reference frame. Setting this
