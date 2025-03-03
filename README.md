@@ -314,7 +314,7 @@ You can embed Rocky in a Qt widget. See the `rocky_demo_qt` example for details.
 
 <img width="100%" alt="image" src="https://github.com/user-attachments/assets/84cda604-f617-4562-b208-6d049f8b5ee1">
 
-# Acknowedgements
+# Acknowledgements
 
 Thanks to these excellent open source projects that help make Rocky possible!
 * [cpp-httplib](https://github.com/yhirose/cpp-httplib)
