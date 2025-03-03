@@ -111,9 +111,9 @@ Rocky has a set of built-in primitives for displaying objects on the map.
 * Model - a VSG scene graph representing an object
 * Widget - an interactive ImGui panel
 
-To create and manage these elements, Rocky uses an Entity Component System (ECS) driven by the popular [EnTT[(https://github.com/skypjack/entt) SDK. We will not delve into the benefits of an ECS for data management here. There are plenty of good reads out there! Suffice to say that it is a very popular mechanism used in modern gaming and graphics engine with excellent performance and scalability benefits.
+To create and manage these elements, Rocky uses an Entity Component System (ECS) driven by the popular [EnTT](https://github.com/skypjack/entt) SDK. We will not delve into the benefits of an ECS for data management here. There are plenty of good reads out there! Suffice to say that it is a very popular mechanism used in modern gaming and graphics engine with excellent performance and scalability benefits.
 
-(This subsystem is completely optional. Since Rocky is built with VulkanSceneGraph, you can use its API to populate your scene in any way you choose.)
+*This subsystem is completely optional. Since Rocky is built with [VulkanSceneGraph](https://github.com/vsg-dev/VulkanSceneGraph), you can use its API to populate your scene in any way you choose.*
 
 ## Creating Entities and Components
 Let's look at a simple example.
