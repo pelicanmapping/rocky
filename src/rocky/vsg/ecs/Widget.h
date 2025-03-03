@@ -7,10 +7,16 @@
 #include <rocky/vsg/Common.h>
 #include <entt/entt.hpp>
 
+#ifdef ROCKY_HAS_IMGUI
+#include <imgui.h>
+#endif
+
 namespace ROCKY_NAMESPACE
 {
-#ifndef IMGUI_VERSION
-    // polyfill when imgui is not included (yet)
+#ifdef ROCKY_HAS_IMGUI
+    using WidgetVec2 = ImVec2;
+    using WidgetContext = ImGuiContext;
+#else
     struct ImVec2 { float x; float y; };
     using ImGuiContext = void;
 #endif
@@ -22,9 +28,9 @@ namespace ROCKY_NAMESPACE
         entt::registry& registry;
         entt::entity entity;
         const int defaultWindowFlags;
-        ImVec2 position;
-        ImVec2& size;
-        ImGuiContext* context;
+        WidgetVec2 position;
+        WidgetVec2& size;
+        WidgetContext* context;
         std::uint32_t viewID;
     };
 

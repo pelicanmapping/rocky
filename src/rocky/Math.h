@@ -429,7 +429,7 @@ namespace ROCKY_NAMESPACE
 
         //! Convert Euler angles, in radians, to a quaternion.
         //! https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-        template<typename Q>
+        template<typename Q = glm::dquat>
         inline Q quaternion_from_euler_radians(double xaxis, double yaxis, double zaxis)
         {
             Q q;

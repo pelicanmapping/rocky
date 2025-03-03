@@ -4,8 +4,7 @@
  * MIT License
  */
 
-#include <rocky/vsg/Application.h>
-#include <rocky/TMSImageLayer.h>
+#include <rocky/rocky.h>
 
 int main(int argc, char** argv)
 {

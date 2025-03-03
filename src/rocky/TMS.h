@@ -6,8 +6,6 @@
 #pragma once
 
 #include <rocky/Version.h>
-#ifdef ROCKY_HAS_TMS
-
 #include <rocky/URI.h>
 #include <rocky/Image.h>
 #include <rocky/TileKey.h>
@@ -134,9 +132,3 @@ namespace ROCKY_NAMESPACE
         };
     }
 }
-
-#else // if !ROCKY_HAS_TMS
-  #ifndef ROCKY_BUILDING_SDK
-    #error TMS support is not enabled in Rocky.
-  #endif
-#endif // ROCKY_HAS_TMS

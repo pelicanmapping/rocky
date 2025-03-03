@@ -10,14 +10,8 @@
 * both a unit test for that feature, and a reference or writing your own code.
 */
 
-#include <rocky/vsg/Application.h>
+#include <rocky/rocky.h>
 #include <rocky/vsg/imgui/ImGuiIntegration.h>
-#include <rocky/Version.h>
-
-#include <rocky/TMSImageLayer.h>
-#include <rocky/TMSElevationLayer.h>
-
-ROCKY_ABOUT(imgui, IMGUI_VERSION)
 
 using namespace ROCKY_NAMESPACE;
 

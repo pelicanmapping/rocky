@@ -8,6 +8,8 @@
 
 using namespace ROCKY_NAMESPACE;
 
+ROCKY_ABOUT(imgui, IMGUI_VERSION)
+
 
 vsg::ref_ptr<ImGuiContextGroup>
 ROCKY_NAMESPACE::ImGuiIntegration::addContextGroup(

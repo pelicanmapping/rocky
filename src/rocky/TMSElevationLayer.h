@@ -5,9 +5,6 @@
  */
 #pragma once
 #include <rocky/TMS.h>
-
-#ifdef ROCKY_HAS_TMS
-
 #include <rocky/ElevationLayer.h>
 #include <rocky/URI.h>
 
@@ -43,9 +40,3 @@ namespace ROCKY_NAMESPACE
         void construct(const std::string& JSON, const IOOptions& io);
     };
 }
-
-#else // if !ROCKY_HAS_TMS
-#ifndef ROCKY_BUILDING_SDK
-#error TMS support is not enabled in Rocky.
-#endif
-#endif // ROCKY_HAS_TMS

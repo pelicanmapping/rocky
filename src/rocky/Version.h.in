@@ -41,7 +41,6 @@
 #cmakedefine ROCKY_HAS_GDAL
 #cmakedefine ROCKY_HAS_SQLITE
 #cmakedefine ROCKY_HAS_ZLIB
-#cmakedefine ROCKY_HAS_TMS
 #cmakedefine ROCKY_HAS_MBTILES
 #cmakedefine ROCKY_HAS_AZURE
 #cmakedefine ROCKY_HAS_BING

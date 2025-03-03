@@ -4,7 +4,6 @@
  * MIT License
  */
 #include "TMS.h"
-#ifdef ROCKY_HAS_TMS
 
 #include "tinyxml/tinyxml.h"
 
@@ -747,5 +746,3 @@ TMS::Driver::read(const TileKey& key, bool invertY, bool isMapboxRGB, const URIC
     else
         return Status(Status::ResourceUnavailable);
 }
-
-#endif // ROCKY_HAS_TMS

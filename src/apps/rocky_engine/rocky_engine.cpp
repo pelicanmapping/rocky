@@ -24,15 +24,8 @@
 #include <vsg/all.h>
 #include <chrono>
 
-#ifdef ROCKY_HAS_GDAL
-#include <rocky/GDALImageLayer.h>
-#include <rocky/GDALElevationLayer.h>
-#endif
-
-#ifdef ROCKY_HAS_TMS
 #include <rocky/TMSImageLayer.h>
 #include <rocky/TMSElevationLayer.h>
-#endif
 
 int usage(const char* msg)
 {
@@ -93,16 +86,14 @@ int main(int argc, char** argv)
     mapNode->terrainSettings().minLevelOfDetail = 1;
     mapNode->terrainSettings().screenSpaceError = 135.0f;
 
-#ifdef ROCKY_HAS_TMS
-
+    // Add a base image layer:
     auto layer = rocky::TMSImageLayer::create();
     layer->uri = "https://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png";
     layer->attribution = rocky::Hyperlink{ "\u00a9 OpenStreetMap contributors", "https://openstreetmap.org/copyright" };
     layer->profile = rocky::Profile("spherical-mercator");
     mapNode->map->add(layer);
 
-#endif // ROCKY_HAS_TMS
-
+    // Add our map to the scene:
     vsg_scene->addChild(mapNode);
 
 

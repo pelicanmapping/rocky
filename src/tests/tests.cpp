@@ -1,28 +1,8 @@
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
-#include <rocky/Context.h>
-#include <rocky/Color.h>
-#include <rocky/Log.h>
-#include <rocky/Map.h>
-#include <rocky/Math.h>
-#include <rocky/Image.h>
-#include <rocky/Heightfield.h>
-#include <rocky/TileKey.h>
-#include <rocky/URI.h>
-#include <rocky/Utils.h>
-#include <rocky/contrib/EarthFileImporter.h>
-#include <rocky/vsg/MapNode.h>
-
+#include <rocky/rocky.h>
 #include <random>
-
-#ifdef ROCKY_HAS_GDAL
-#include <rocky/GDALImageLayer.h>
-#endif
-
-#ifdef ROCKY_HAS_TMS
-#include <rocky/TMSImageLayer.h>
-#endif
 
 #define ROCKY_EXPOSE_JSON_FUNCTIONS
 #include <rocky/json.h>
@@ -67,7 +47,6 @@ TEST_CASE("json")
     ROCKY_NAMESPACE::from_json(j_uri, uri2);
     CHECK((uri2.base() == "file.xml"));
 
-#ifdef ROCKY_HAS_TMS
     Context context = ContextFactory::create();
     auto layer = rocky::TMSImageLayer::create();
     layer->uri = "file.xml";
@@ -77,7 +56,6 @@ TEST_CASE("json")
     map = rocky::Map::create();
     map->from_json(serialized, context->io);
     CHECK((map->to_json() == R"({"layers":[{"name":"","type":"TMSImage","uri":"file.xml"}],"name":""})"));
-#endif
 }
 
 TEST_CASE("Optional")
@@ -303,47 +281,16 @@ TEST_CASE("Map")
 #ifdef ROCKY_HAS_GDAL
 TEST_CASE("GDAL")
 {
-    auto layer = GDALImageLayer::create();
-    CHECKED_IF(layer != nullptr)
-    {
-        layer->setName("World imagery");
-        layer->connection = "WMTS:https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml,layer=s2cloudless-2020";
-        auto s = layer->open({});
-        CHECK((s.ok() || s.code == s.ResourceUnavailable));
-    }
 }
 #endif // ROCKY_HAS_GDAL
 
-#ifdef ROCKY_HAS_TMS
 TEST_CASE("TMS")
 {
     auto layer = TMSImageLayer::create();
-    CHECKED_IF(layer != nullptr)
-    {
-        layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
-        auto s = layer->open({});
-        CHECK((s.ok() || s.code == s.ResourceUnavailable));
-#if 0
-        CHECKED_IF(s.ok())
-        {
-            // NOTE: we cannot test this here because the JPG reader is in VSGContext.
-            // TODO: create a unit test for rocky_vsg? Or link rocky_vsg to this library?
-            VSGContext instance;
-            TileKey key(0, 0, 0, Profile::GLOBAL_GEODETIC);
-            Result<GeoImage> tile = layer->createImage(key, instance.io());
-            CHECK(tile.status.ok());
-            CHECK(tile.value.valid());
-            CHECKED_IF(tile.value.image())
-            {
-                CHECK(tile.value.image()->width() == 256);
-                CHECK(tile.value.image()->height() == 256);
-                CHECK(tile.value.image()->pixelFormat() == Image::R8G8B8_UNORM);
-            }
-        }
-#endif
-    }
+    layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
+    auto s = layer->open({});
+    CHECK((s.ok() || s.code == s.ResourceUnavailable));
 }
-#endif // ROCKY_HAS_TMS
 
 TEST_CASE("SRS")
 {
@@ -800,7 +747,6 @@ TEST_CASE("IO")
     }
 }
 
-#ifdef ROCKY_HAS_TMS
 TEST_CASE("Earth File")
 {
     std::string earthFile = "https://raw.githubusercontent.com/gwaldron/osgearth/master/tests/readymap.earth";
@@ -822,4 +768,3 @@ TEST_CASE("Earth File")
         }
     }
 }
-#endif

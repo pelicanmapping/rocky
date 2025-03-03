@@ -4,8 +4,6 @@
  * MIT License
  */
 #include "TMSElevationLayer.h"
-#ifdef ROCKY_HAS_TMS
-
 #include "Context.h"
 #include "json.h"
 
@@ -126,5 +124,3 @@ TMSElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOO
         return r.status;
     }
 }
-
-#endif // ROCKY_HAS_TMS

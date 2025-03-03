@@ -4,8 +4,6 @@
  * MIT License
  */
 #include "TMSImageLayer.h"
-#ifdef ROCKY_HAS_TMS
-
 #include "Context.h"
 #include "json.h"
 
@@ -108,6 +106,3 @@ TMSImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io
     else
         return r.status;
 }
-
-
-#endif // ROCKY_HAS_TMS

@@ -10,14 +10,14 @@ endif()
 # Main PROJECT definition
 project(
     rocky
-    VERSION 0.8.5
+    VERSION 0.8.6
     DESCRIPTION "Rocky by Pelican Mapping"
     HOMEPAGE_URL https://github.com/pelicanmapping/rocky
     LANGUAGES CXX C
 )
 
 # please update this with each ABI change!!
-set(PROJECT_VERSION_ABI 13)
+set(PROJECT_VERSION_ABI 14)
 
 # require C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -57,7 +57,6 @@ option(ROCKY_RENDERER_VSG "Build the VSG/Vulkan Rendering" ON)
 option(ROCKY_SUPPORTS_HTTPLIB "Support HTTP with the lightweight cpp-httplib library" ON)
 option(ROCKY_SUPPORTS_CURL "Support HTTP with the CURL library" OFF)
 option(ROCKY_SUPPORTS_HTTPS "Support HTTPS (requires openssl)" ON)
-option(ROCKY_SUPPORTS_TMS "Support OSGeo TileMapService and generic 'XYZ' maps" ON)
 option(ROCKY_SUPPORTS_GDAL "Support GeoTIFF, WMS, WMTS, and other GDAL formats (requires gdal)" ON)
 option(ROCKY_SUPPORTS_MBTILES "Support MBTiles databases with extended spatial profile support (requires sqlite3, zlib)" ON)
 option(ROCKY_SUPPORTS_AZURE "Support Azure Maps (subscription required)" ON)

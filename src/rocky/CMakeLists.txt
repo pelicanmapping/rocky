@@ -165,10 +165,6 @@ if (ROCKY_SUPPORTS_BING)
     set(ROCKY_HAS_BING TRUE)
 endif()
 
-if (ROCKY_SUPPORTS_TMS)
-    set(ROCKY_HAS_TMS TRUE)
-endif()
-
 if(UNIX)
     list(APPEND PUBLIC_LIBS Threads::Threads)
 endif()

@@ -5,6 +5,7 @@
  */
 #pragma once
 
+#include <imgui.h>
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/imgui/SendEventsToImGui.h>
 #include <rocky/vsg/imgui/RenderImGui.h>

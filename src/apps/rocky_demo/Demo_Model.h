@@ -70,20 +70,34 @@ auto Demo_Model = [](Application& app)
 
         auto& transform = registry.get<Transform>(entity);
 
-        if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf") ||
-            ImGuiLTable::SliderDouble("Longitude", &transform.position.x, -180.0, 180.0, "%.1lf") ||
-            ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2500000.0, "%.1lf"))
-        {
+        if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
             transform.dirty();
-        }
+
+        if (ImGuiLTable::SliderDouble("Longitude", &transform.position.x, -180.0, 180.0, "%.1lf"))
+            transform.dirty();
+
+        if (ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2500000.0, "%.1lf"))
+            transform.dirty();
 
         auto rot = util::quaternion_from_matrix<glm::dquat>(transform.localMatrix);
 
         auto [pitch, roll, heading] = util::euler_degrees_from_quaternion(rot);
 
-        if (ImGuiLTable::SliderDouble("Heading", &heading, -180.0, 180.0, "%.1lf") ||
-            ImGuiLTable::SliderDouble("Pitch", &pitch, -90.0, 90.0, "%.1lf") ||
-            ImGuiLTable::SliderDouble("Roll", &roll, -90.0, 90.0, "%.1lf"))
+        if (ImGuiLTable::SliderDouble("Heading", &heading, -180.0, 180.0, "%.1lf"))
+        {
+            auto rot = util::quaternion_from_euler_degrees(pitch, roll, heading);
+            transform.localMatrix = glm::scale(glm::dmat4(1), glm::dvec3(scale)) * glm::mat4_cast(rot);
+            transform.dirty();
+        }
+
+        if (ImGuiLTable::SliderDouble("Pitch", &pitch, -90.0, 90.0, "%.1lf"))
+        {
+            auto rot = util::quaternion_from_euler_degrees(pitch, roll, heading);
+            transform.localMatrix = glm::scale(glm::dmat4(1), glm::dvec3(scale)) * glm::mat4_cast(rot);
+            transform.dirty();
+        }
+
+        if (ImGuiLTable::SliderDouble("Roll", &roll, -90.0, 90.0, "%.1lf"))
         {
             auto rot = util::quaternion_from_euler_degrees(pitch, roll, heading);
             transform.localMatrix = glm::scale(glm::dmat4(1), glm::dvec3(scale)) * glm::mat4_cast(rot);
