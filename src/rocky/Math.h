@@ -562,7 +562,6 @@ namespace ROCKY_NAMESPACE
         template<typename Q, typename M>
         inline Q quaternion_from_matrix(const M& mat)
         {
-            Q q;
             M _mat = mat;
 
             // Remove the scaling from the matrix by normalizing each axis

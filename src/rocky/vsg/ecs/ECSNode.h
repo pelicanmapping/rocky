@@ -164,7 +164,7 @@ namespace ROCKY_NAMESPACE
             struct RenderLeaf
             {
                 Renderable& renderable;
-                TransformViewData* TransformViewData = nullptr;
+                TransformViewData* transformViewData = nullptr;
             };
 
             // re-usable collection to minimize re-allocation
@@ -481,16 +481,16 @@ namespace ROCKY_NAMESPACE
                 // Them record each component. If the component has a transform apply it too.
                 for (auto& leaf : pipelineRenderLeaves[p])
                 {
-                    if (leaf.TransformViewData)
+                    if (leaf.transformViewData)
                     {
-                        leaf.TransformViewData->push(rt);
+                        leaf.transformViewData->push(rt);
                     }
 
                     leaf.renderable.node->accept(rt);
 
-                    if (leaf.TransformViewData)
+                    if (leaf.transformViewData)
                     {
-                        leaf.TransformViewData->pop(rt);
+                        leaf.transformViewData->pop(rt);
                     }
                 }
 
