@@ -129,7 +129,8 @@ auto Demo_Views = [](Application& app)
                     app.onNextUpdate(add);
                 }
 
-                if (window_id > 1 && ImGui::Button("Close this window"))
+                //TODO: multi-window not working
+                if (window_id > 1 && ImGui::Button("Close this window (EXPERIMENTAL)"))
                 {
                     auto dm = app.displayManager;
                     app.onNextUpdate([dm, window]() { dm->removeWindow(window); });
@@ -141,10 +142,11 @@ auto Demo_Views = [](Application& app)
         ImGui::PopID();
     }
 
+    //TODO multi-window not working
     ImGui::Indent();
     {
         ImGui::Separator();
-        if (ImGui::Button("Add a window"))
+        if (ImGui::Button("Add a window (EXPERIMENTAL)"))
         {
             auto dm = app.displayManager;
             app.onNextUpdate([dm, window_id]() {

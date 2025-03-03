@@ -8,8 +8,7 @@
 * This is an example of embedding Rocky in a Qt application.
 */
 
-#include <rocky/vsg/Application.h>
-#include <rocky/Version.h>
+#include <rocky/rocky.h>
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMainWindow>
@@ -18,11 +17,6 @@
 #include <QtWidgets/QPushButton>
 
 #include <vsgQt/Window.h>
-
-#ifdef ROCKY_HAS_TMS
-#include <rocky/TMSImageLayer.h>
-#include <rocky/TMSElevationLayer.h>
-#endif
 
 ROCKY_ABOUT(qt, qVersion())
 
@@ -147,7 +141,10 @@ int main(int argc, char** argv)
     // Add a simple menu bar.
     auto menubar = mainWindow.menuBar();
     auto filemenu = menubar->addMenu("&File");
-    filemenu->addAction("&New Window", [&app]() { newWindow(app); });
+
+    // TODO: Not working
+    //filemenu->addAction("&New Window", [&app]() { newWindow(app); });
+
     filemenu->addAction("E&xit", &qt_app, &QApplication::quit);
 
     // Create a Qt container for our Rocky widget, and add it to the layout.
@@ -166,12 +163,10 @@ int main(int argc, char** argv)
     // Add some data to the map if necessary.
     if (app.mapNode->map->layers().empty())
     {
-#ifdef ROCKY_HAS_TMS
         // add an imagery layer to the map
         auto layer = rocky::TMSImageLayer::create();
         layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7";
-        app.mapNode->map->layers().add(layer);
-#endif
+        app.mapNode->map->add(layer);
     }
 
     // Run until the user quits.
