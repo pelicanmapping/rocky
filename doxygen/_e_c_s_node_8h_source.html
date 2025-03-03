@@ -222,7 +222,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>            <span class="keyword">struct </span>RenderLeaf</div>
 <div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>            {</div>
 <div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>                Renderable&amp; renderable;</div>
-<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>                TransformViewData* TransformViewData = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>                TransformViewData* transformViewData = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>            };</div>
 <div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span> </div>
 <div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>            <span class="comment">// re-usable collection to minimize re-allocation</span></div>
@@ -523,16 +523,16 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00481" name="l00481"></a><span class="lineno">  481</span>                <span class="comment">// Them record each component. If the component has a transform apply it too.</span></div>
 <div class="line"><a id="l00482" name="l00482"></a><span class="lineno">  482</span>                <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; leaf : pipelineRenderLeaves[p])</div>
 <div class="line"><a id="l00483" name="l00483"></a><span class="lineno">  483</span>                {</div>
-<div class="line"><a id="l00484" name="l00484"></a><span class="lineno">  484</span>                    <span class="keywordflow">if</span> (leaf.TransformViewData)</div>
+<div class="line"><a id="l00484" name="l00484"></a><span class="lineno">  484</span>                    <span class="keywordflow">if</span> (leaf.transformViewData)</div>
 <div class="line"><a id="l00485" name="l00485"></a><span class="lineno">  485</span>                    {</div>
-<div class="line"><a id="l00486" name="l00486"></a><span class="lineno">  486</span>                        leaf.TransformViewData-&gt;push(rt);</div>
+<div class="line"><a id="l00486" name="l00486"></a><span class="lineno">  486</span>                        leaf.transformViewData-&gt;push(rt);</div>
 <div class="line"><a id="l00487" name="l00487"></a><span class="lineno">  487</span>                    }</div>
 <div class="line"><a id="l00488" name="l00488"></a><span class="lineno">  488</span> </div>
 <div class="line"><a id="l00489" name="l00489"></a><span class="lineno">  489</span>                    leaf.renderable.node-&gt;accept(rt);</div>
 <div class="line"><a id="l00490" name="l00490"></a><span class="lineno">  490</span> </div>
-<div class="line"><a id="l00491" name="l00491"></a><span class="lineno">  491</span>                    <span class="keywordflow">if</span> (leaf.TransformViewData)</div>
+<div class="line"><a id="l00491" name="l00491"></a><span class="lineno">  491</span>                    <span class="keywordflow">if</span> (leaf.transformViewData)</div>
 <div class="line"><a id="l00492" name="l00492"></a><span class="lineno">  492</span>                    {</div>
-<div class="line"><a id="l00493" name="l00493"></a><span class="lineno">  493</span>                        leaf.TransformViewData-&gt;pop(rt);</div>
+<div class="line"><a id="l00493" name="l00493"></a><span class="lineno">  493</span>                        leaf.transformViewData-&gt;pop(rt);</div>
 <div class="line"><a id="l00494" name="l00494"></a><span class="lineno">  494</span>                    }</div>
 <div class="line"><a id="l00495" name="l00495"></a><span class="lineno">  495</span>                }</div>
 <div class="line"><a id="l00496" name="l00496"></a><span class="lineno">  496</span> </div>
