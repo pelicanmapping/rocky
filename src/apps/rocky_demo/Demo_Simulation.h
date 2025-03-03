@@ -90,6 +90,7 @@ auto Demo_Simulation = [](Application& app)
             auto render_widget = [](WidgetInstance& i)
                 {
                     Transform& t = i.registry.get<Transform>(i.entity);
+                    auto& point = t.position.transform(SRS::WGS84);
 
                     ImGui::SetCurrentContext(i.context);
                     ImGui::SetNextWindowPos(ImVec2(i.position.x + 12.0f, i.position.y - i.size.y/2));
@@ -100,7 +101,11 @@ auto Demo_Simulation = [](Application& app)
                     {
                         ImGui::Text("ID:  %s", i.widget.text.c_str());
                         ImGui::Separator();
-                        ImGui::Text("Alt: %.0f", t.position.transform(SRS::WGS84).z);
+                        ImGui::Text("Lat: %.2f", point.y);
+                        ImGui::Separator();
+                        ImGui::Text("Lon: %.2f", point.x);
+                        ImGui::Separator();
+                        ImGui::Text("Alt: %.0f", point.z);
 
                         i.size = ImGui::GetWindowSize();
                         ImGui::End();
@@ -162,7 +167,7 @@ auto Demo_Simulation = [](Application& app)
                 drop_line.style.width = 1.5f;
                 drop_line.style.color = vsg::vec4{ 0.4f, 0.4f, 0.4f, 1.0f };
 
-                // Decluttering control. The presence of this compoenent will allow the entity
+                // Decluttering control. The presence of this component will allow the entity
                 // to participate in decluttering when it's enabled.
                 auto& declutter = registry.emplace<Declutter>(entity);
                 declutter.priority = alt;

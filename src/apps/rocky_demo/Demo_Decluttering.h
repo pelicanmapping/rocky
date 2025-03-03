@@ -48,35 +48,37 @@ namespace
             {
                 // First collect all declutter-able entities and sort them by their distance to the camera.
                 // tuple = [entity, x, y, sort_key, width, height]
-                std::vector<std::tuple<entt::entity, double, double, double, int, int>> sorted;
+                std::vector<std::tuple<double, entt::entity, Rect>> sorted;
                 sorted.reserve(_last_max_size);
 
                 auto [lock, registry] = _registry.read();
 
                 auto view = registry.view<ActiveState, Declutter, TransformData>();
-                for (auto&& [entity, active, declutter, transforms] : view.each())
-                {
-                    int width =
-                        (declutter.width_px >= 0 ? declutter.width_px : 0) +
-                        (declutter.buffer_x >= 0 ? declutter.buffer_x : (int)buffer_px);
-                    int height =
-                        (declutter.height_px >= 0 ? declutter.height_px : 0) +
-                        (declutter.buffer_y >= 0 ? declutter.buffer_y : (int)buffer_px);
 
-                    auto& view = transforms[viewID];
+                for (auto&& [entity, active, declutter, transformData] : view.each())
+                {
+                    auto& view = transformData[viewID];
 
                     auto clip = view.mvp[3] / view.mvp[3][3];
                     vsg::dvec2 window((clip.x + 1.0) * 0.5 * (double)view.viewport[2], (clip.y + 1.0) * 0.5 * (double)view.viewport[3]);
-                    double sort_key = sorting_method == 0 ? (double)declutter.priority : clip.z;
-                    sorted.emplace_back(entity, window.x, window.y, sort_key, width, height);
+
+                    Rect rect = declutter.rect;
+                    rect.xmin += window.x - buffer_px;
+                    rect.ymin += window.y - buffer_px;
+                    rect.xmax += window.x + buffer_px;
+                    rect.ymax += window.y + buffer_px;
+
+                    double sorting_key = sorting_method == 0 ? (double)declutter.priority : clip.z;
+
+                    sorted.emplace_back(sorting_key, entity, rect);
                 }
 
                 // sort them by whatever sort key we used, either priority or camera distance
-                std::sort(sorted.begin(), sorted.end(), [](const auto& a, const auto& b) { return std::get<3>(a) > std::get<3>(b); });
+                std::sort(sorted.begin(), sorted.end(), [](const auto& lhs, const auto& rhs) { return std::get<0>(lhs) > std::get<0>(rhs); });
                 _last_max_size = sorted.size();
 
                 // Next, take the sorted vector and declutter by populating an R-Tree with rectangles representing
-                // each entity's buffered location in screen(clip) space. For objects that don't conflict with
+                // each entity's buffered location in screen space. For objects that don't conflict with
                 // higher-priority objects, set visibility to true.
                 RTree<entt::entity, double, 2> rtree;
 
@@ -84,16 +86,13 @@ namespace
                 {
                     ++total;
 
-                    auto [entity, x, y, sort_key, width, height] = iter;
+                    auto& [sorting_key, entity, rect] = iter;
 
                     auto& visibility = registry.get<Visibility>(entity);
                     if (visibility.parent == nullptr)
                     {
-                        double half_width = (double)(width >> 1);
-                        double half_height = (double)(height >> 1);
-
-                        double LL[2]{ x - half_width, y - half_height };
-                        double UR[2]{ x + half_width, y + half_height };
+                        double LL[2]{ rect.xmin, rect.ymin };
+                        double UR[2]{ rect.xmax, rect.ymax };
 
                         if (rtree.Search(LL, UR, [](auto e) { return false; }) == 0)
                         {

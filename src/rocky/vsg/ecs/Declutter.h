@@ -4,6 +4,7 @@
  * MIT License
  */
 #pragma once
+#include <rocky/Math.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -14,9 +15,6 @@ namespace ROCKY_NAMESPACE
     struct Declutter
     {
         float priority = 0.0f;
-        int width_px = -1;
-        int height_px = -1;
-        int buffer_x = -1;
-        int buffer_y = -1;
+        Rect rect;
     };
 }

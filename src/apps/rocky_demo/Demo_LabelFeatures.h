@@ -84,8 +84,9 @@ auto Demo_LabelFeatures = [](Application& app)
             auto& declutter = registry.emplace<Declutter>(entity);
             declutter.priority = (float)candidate.pop;
             // note, 0.75 is points-to-pixels
-            declutter.width_px = 0.75f * 0.60f * label.style.pointSize * (float)label.text.size();
-            declutter.height_px = 0.75f * label.style.pointSize;
+            auto width = 0.75f * 0.60f * label.style.pointSize * (float)label.text.size();
+            double height = 0.75 * label.style.pointSize;
+            declutter.rect = Rect(width, height);
 
             labels.emplace(entity);
         }
@@ -115,15 +116,14 @@ auto Demo_LabelFeatures = [](Application& app)
 
                 for (auto entity : labels)
                 {
-                    auto& label = registry.get<Label>(entity);
-                    auto& declutter = registry.get<Declutter>(entity);
-
                     float size = starting_label_size * label_size_percentage * 0.01f;
-                    declutter.width_px = 0.75f * 0.60f * size * (float)label.text.size();
-                    declutter.height_px = 0.75f * size;
 
+                    auto& label = registry.get<Label>(entity);
                     label.style.pointSize = size;
-                    label.revision++;
+                    label.dirty();
+
+                    auto& declutter = registry.get<Declutter>(entity);
+                    declutter.rect = Rect(0.75f * 0.60f * size * (float)label.text.size(), 0.75f * size);
                 }
             }
         }

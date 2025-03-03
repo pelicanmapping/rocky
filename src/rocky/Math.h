@@ -49,21 +49,22 @@ namespace ROCKY_NAMESPACE
         return glm::dvec3(mat * glm::dvec4(v, 1));
     }
 
-#if 1
-    class ROCKY_EXPORT Sphere
+    struct ROCKY_EXPORT Sphere
     {
     public:
-        glm::dvec3 center;
-        double radius;
+        glm::dvec3 center = { 0, 0, 0 };
+        double radius = -1;
 
-        Sphere() : center(0, 0, 0), radius(-1) { }
+        Sphere() = default;
 
-        Sphere(const glm::dvec3& a, double b) :
-            center(a), radius(b) { }
+        template<class VEC3>
+        Sphere(const VEC3& a, double r) :
+            center(a.x, a.y, a.z), radius(r) { }
 
-        void expandBy(const glm::dvec3& v) {
+        template<class VEC3>
+        void expandBy(const VEC3& v) {
             if (valid()) {
-                auto dv = v - center;
+                auto dv = glm::dvec3(v.x, v.y, v.z) - center;
                 double r = glm::length(dv);
                 if (r > radius) {
                     double dr = 0.5*(r - radius);
@@ -72,7 +73,7 @@ namespace ROCKY_NAMESPACE
                 }
             }
             else {
-                center = v;
+                center.x = v.x, center.y = v.y, center.z = v.z;
                 radius = 0.0;
             }
         }
@@ -81,7 +82,27 @@ namespace ROCKY_NAMESPACE
             return radius >= 0.0;
         }
     };
-#endif
+
+    struct ROCKY_EXPORT Rect
+    {
+        Rect() = default;
+
+        Rect(double x0, double y0, double x1, double y1) :
+            xmin(x0), ymin(y0), xmax(x1), ymax(y1) { }
+
+        Rect(double width, double height) :
+            xmin(-width*0.5), ymin(-height*0.5), xmax(width*0.5), ymax(height*0.5) { }
+
+        double xmin = 0.0, ymin = 0.0;
+        double xmax = 0.0, ymax = 0.0;
+
+        inline double width() const {
+            return xmax - xmin;
+        }
+        inline double height() const {
+            return ymax - ymin;
+        }
+    };
 
     struct ROCKY_EXPORT Box
     {        
