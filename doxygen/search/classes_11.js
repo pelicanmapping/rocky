@@ -26,8 +26,10 @@ var searchData=
   ['tixmltext_23',['TiXmlText',['../class_ti_xml_text.html',1,'']]],
   ['tixmlunknown_24',['TiXmlUnknown',['../class_ti_xml_unknown.html',1,'']]],
   ['tixmlvisitor_25',['TiXmlVisitor',['../class_ti_xml_visitor.html',1,'']]],
-  ['transform_26',['Transform',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform.html',1,'ROCKY_NAMESPACE']]],
-  ['transformsystem_27',['TransformSystem',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_system.html',1,'ROCKY_NAMESPACE']]],
-  ['transformviewdata_28',['TransformViewData',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_view_data.html',1,'ROCKY_NAMESPACE']]],
-  ['triangle_5ft_29',['Triangle_t',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_triangle__t.html',1,'ROCKY_NAMESPACE']]]
+  ['tmselevationlayer_26',['TMSElevationLayer',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_t_m_s_elevation_layer.html',1,'ROCKY_NAMESPACE']]],
+  ['tmsimagelayer_27',['TMSImageLayer',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_t_m_s_image_layer.html',1,'ROCKY_NAMESPACE']]],
+  ['transform_28',['Transform',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform.html',1,'ROCKY_NAMESPACE']]],
+  ['transformsystem_29',['TransformSystem',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_system.html',1,'ROCKY_NAMESPACE']]],
+  ['transformviewdata_30',['TransformViewData',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_view_data.html',1,'ROCKY_NAMESPACE']]],
+  ['triangle_5ft_31',['Triangle_t',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_triangle__t.html',1,'ROCKY_NAMESPACE']]]
 ];
