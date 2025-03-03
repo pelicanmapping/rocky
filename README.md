@@ -72,8 +72,7 @@ The easiest way to write a turnkey Rocky app is to use the `rocky::Application` 
 
 ## main.cpp
 ```c++
-#include <rocky/vsg/Application.h>
-#include <rocky/TMSImageLayer.h>
+#include <rocky/rocky.h>
 
 int main(int argc, char** argv)
 {
@@ -101,7 +100,7 @@ Coming soon.
 This section will talk about Map data and SRS's.
 
 # Entities
-Rocky has a set of built-in primitives for displaying map annotations:
+Rocky has a set of built-in primitives for displaying objects on the map.
 
 * Icon - a 2D billboarded image
 * Label - a text string
@@ -110,13 +109,14 @@ Rocky has a set of built-in primitives for displaying map annotations:
 * Model - a VSG scene graph representing an object
 * Widget - an interactive ImGui panel
 
-To create and manage these elements, Rocky uses an Entity Component System (ECS) driven by the excellent EnTT SDK.
+To create and manage these elements, Rocky uses an Entity Component System (ECS) driven by the popular [EnTT[(https://github.com/skypjack/entt) SDK. We will not delve into the benefits of an ECS for data management here. There are plenty of good reads out there! Suffice to say that it is a very popular mechanism used in modern gaming and graphics engine with excellent performance and scalability benefits.
+
+(This subsystem is completely optional. Since Rocky is built with VulkanSceneGraph, you can use its API to populate your scene in any way you choose.)
 
 ## Creating Entities and Components
 Let's look at a simple example.
 ```c++
-#include <rocky/vsg/Application.h>
-#include <rocky/vsg/ecs.h>
+#include <rocky/rocky.h>
 
 using namespace rocky;
 
@@ -143,7 +143,7 @@ void addLabel(const std::string& text)
     transform.dirty();
 }
 ```
-As you can see, the ECS works by creating an `entity` and then attaching *components* to that entity.And you are not limited to Rocky's built-in components; you can create and attach your own types as well.
+As you can see, the ECS works by creating an `entity` and then attaching *components* to that entity. You are not limited to Rocky's built-in components; you can create and attach your own types as well.
 
 ## The Entity Registry
 Let's briefly talk about the *Entity Registry*. In the ECS, the *registry* is a container that holds all your entities and components. Rocky wraps the EnTT `entt::registry` in a locking mechanism that makes it safer to access your registry from more than one thread. You just need to follow this usage pattern:
@@ -245,7 +245,7 @@ auto imgui_group = ImGuiIntegration::addContextGroup(app.displayManager, main_wi
 
 imgui_group->add(MyGUI::create(), app);
 ```
-That's basically it. *Don't forget* to call `ImGui::SetCurrentContext` at the top of your render function!
+That's basically it. *Don't forget* to call `ImGui::SetCurrentContext` at the top of your `render` function!
 
 ### Using ImGui Widgets
 Rocky has an ECS component called `Widget` that lets you place an ImGui window anywhere on the Map and treat it just like other components.
@@ -271,8 +271,11 @@ transform.setPosition(GeoPoint(SRS::WGS84, 0, 0, 0));
 ```
 
 ## Rocky and VulkanSceneGraph
-If you're already using VSG in your application and want to add a `MapNode` to a view, do this:
+If you're already using VulkanSceneGraph (VSG) in your application and just want to add a `MapNode` to a view, do this:
 ```c++
+#include <rocky/rocky.h>
+...
+
 // Your VSG viewer:
 auto viewer = vsg::Viewer::create();
 
@@ -304,6 +307,7 @@ You'll probably also want to add the `MapManipulator` to that view to control th
 ```c++
 viewer->addEventHandler(rocky::MapManipulator::create(mapNode, window, camera, context));
 ```
+Keep in mind that with Rocky's `Application` object, you will not get the benefits of using Rocky's ECS for map annotations.
 
 ## Rocky and Qt
 You can embed Rocky in a Qt widget. See the `rocky_demo_qt` example for details.
