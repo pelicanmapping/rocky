@@ -65,6 +65,8 @@ There are some JSON map files in the `data` folder. Load one with the `--map` op
 ```
 rocky_demo --map data\openstreetmap.map.json
 ```
+<img width="500" alt="Screenshot 2023-02-22 124318" src="https://github.com/user-attachments/assets/9590cca6-a170-4418-8588-1ee1d2b72924">
+
 
 # Hello World
 
