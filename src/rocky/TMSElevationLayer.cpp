@@ -109,7 +109,7 @@ TMSElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOO
         }
         else // assume Image::R8G8B8_UNORM?
         {
-            auto hf = decodeMapboxRGB(r.value);
+            auto hf = decodeRGB(r.value);
             return GeoHeightfield(hf, key.extent());
         }
     }

@@ -861,7 +861,7 @@ ElevationLayerVector::populateHeightfield(
 }
 
 std::shared_ptr<Heightfield>
-ElevationLayer::decodeMapboxRGB(std::shared_ptr<Image> image) const
+ElevationLayer::decodeRGB(std::shared_ptr<Image> image) const
 {
     if (!image || !image->valid())
         return nullptr;
@@ -869,20 +869,43 @@ ElevationLayer::decodeMapboxRGB(std::shared_ptr<Image> image) const
     // convert the RGB Elevation into an actual heightfield
     auto hf = Heightfield::create(image->width(), image->height());
 
-    glm::fvec4 pixel;
-    for (unsigned y = 0; y < image->height(); ++y)
+    if (encoding == Encoding::TerrariumRGB)
     {
-        for (unsigned x = 0; x < image->width(); ++x)
+        glm::fvec4 pixel;
+        for (unsigned y = 0; y < image->height(); ++y)
         {
-            image->read(pixel, x, y);
+            for (unsigned x = 0; x < image->width(); ++x)
+            {
+                image->read(pixel, x, y);
 
-            float height = -10000.f +
-                ((pixel.r * 256.0f * 256.0f + pixel.g * 256.0f + pixel.b) * 256.0f * 0.1f);
+                float height =
+                    ((pixel.r * 255.0f * 256.0f + pixel.g * 255.0f + pixel.b * 255.0f / 256.0f) - 32768.0f);
 
-            if (height < -9999 || height > 999999)
-                height = NO_DATA_VALUE;
+                if (height < -9999 || height > 999999)
+                    height = NO_DATA_VALUE;
 
-            hf->heightAt(x, y) = height;
+                hf->heightAt(x, y) = height;
+            }
+        }
+    }
+
+    else // default to MapboxRGB
+    {
+        glm::fvec4 pixel;
+        for (unsigned y = 0; y < image->height(); ++y)
+        {
+            for (unsigned x = 0; x < image->width(); ++x)
+            {
+                image->read(pixel, x, y);
+
+                float height = -10000.f +
+                    ((pixel.r * 256.0f * 256.0f + pixel.g * 256.0f + pixel.b) * 256.0f * 0.1f);
+
+                if (height < -9999 || height > 999999)
+                    height = NO_DATA_VALUE;
+
+                hf->heightAt(x, y) = height;
+            }
         }
     }
 

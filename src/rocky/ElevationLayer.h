@@ -19,7 +19,8 @@ namespace ROCKY_NAMESPACE
         enum class Encoding
         {
             SingleChannel,
-            MapboxRGB
+            MapboxRGB,
+            TerrariumRGB
         };
 
         //! Whether this layer contains offsets instead of absolute elevation heights
@@ -81,7 +82,9 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Decodes a mapbox RGB encoded heightfield image into a heightfield.
-        std::shared_ptr<Heightfield> decodeMapboxRGB(std::shared_ptr<Image> image) const;
+        //std::shared_ptr<Heightfield> decodeMapboxRGB(std::shared_ptr<Image> image) const;
+
+        std::shared_ptr<Heightfield> decodeRGB(std::shared_ptr<Image> image) const;
 
     private:
         void construct(const std::string& JSON, const IOOptions& io);
