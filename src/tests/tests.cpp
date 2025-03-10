@@ -38,7 +38,7 @@ TEST_CASE("json")
     ROCKY_NAMESPACE::from_json(json::parse(conf), point);
     CHECK((point.valid() && point.srs == SRS::WGS84 && point.x == -77 && point.y == 42 && point.z == 0));
 
-    optional<URI> uri;
+    option<URI> uri;
     uri = URI("file.xml");
     json j_uri = json::object();
     ROCKY_NAMESPACE::to_json(j_uri, uri);
@@ -60,17 +60,17 @@ TEST_CASE("json")
 
 TEST_CASE("Optional")
 {
-    optional<int> value_with_no_init;
+    option<int> value_with_no_init;
     CHECK(value_with_no_init.has_value() == false);
     value_with_no_init = 123;
     CHECK(value_with_no_init.has_value() == true);
 
-    optional<int> value_with_brace_init{ 123 };
+    option<int> value_with_brace_init{ 123 };
     CHECK(value_with_brace_init.has_value() == false);
     CHECK(value_with_brace_init.value() == 123);
     CHECK(value_with_brace_init.default_value() == 123);
 
-    optional<int> value_with_equals_init = 123;
+    option<int> value_with_equals_init = 123;
     CHECK(value_with_equals_init.has_value() == false);
     CHECK(value_with_equals_init.value() == 123);
     CHECK(value_with_brace_init.default_value() == 123);

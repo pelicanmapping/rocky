@@ -21,28 +21,28 @@ namespace ROCKY_NAMESPACE
     public:
 
         //! Minimum of detail for which this layer should generate data.
-        optional<unsigned> minLevel = 0u;
+        option<unsigned> minLevel = 0u;
 
         //! Minimum resolution for which this layer should generate data.
-        optional<double> minResolution = DBL_MAX;
+        option<double> minResolution = DBL_MAX;
 
         //! Maximum level of detail for which this layer should generate data.
         //! Data from this layer will not appear in map tiles above the maxLevel.
-        optional<unsigned> maxLevel = 99u;
+        option<unsigned> maxLevel = 99u;
 
         //! Maximum level resolution for which this layer should generate data.
         //! The value is in units per pixel, using the base units of the layer's source data.
-        optional<double> maxResolution = 0.0;
+        option<double> maxResolution = 0.0;
 
         //! Maximum level of detail for which this layer should generate new data.
         //! Data from this layer will be upsampled in map tiles above the maxDataLevel.
-        optional<unsigned> maxDataLevel = 99u;
+        option<unsigned> maxDataLevel = 99u;
 
         //! Number of samples in each dimension.
-        optional<unsigned> tileSize = 256u;
+        option<unsigned> tileSize = 256u;
 
         //! The extent to which the layer should be cropped.
-        optional<GeoExtent> crop;
+        option<GeoExtent> crop;
 
         //! Tiling profile and SRS or the layer.
         Profile profile;
@@ -112,8 +112,8 @@ namespace ROCKY_NAMESPACE
 
     protected:
 
-        optional<Profile> _originalProfile; // profile specified in the options       
-        optional<Profile> _runtimeProfile; // profile set at runtime by an implementation
+        option<Profile> _originalProfile; // profile specified in the options       
+        option<Profile> _runtimeProfile; // profile set at runtime by an implementation
 
     private:
         // Post-ctor

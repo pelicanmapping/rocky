@@ -218,13 +218,13 @@ namespace ROCKY_NAMESPACE
             GeoExtent(extent), minLevel(minLevel), maxLevel(maxLevel), description(description) { }
 
         //! The minimum LOD of the extent
-        optional<unsigned> minLevel = 0u;
+        option<unsigned> minLevel = 0u;
 
         //! The maximum LOD of the extent
-        optional<unsigned> maxLevel = 99u;
+        option<unsigned> maxLevel = 99u;
 
         //! description for the data extents
-        optional<std::string> description;
+        option<std::string> description;
     };
 
     using DataExtent = GeoExtent3D;

@@ -15,7 +15,7 @@ auto Demo_LineFeatures = [](Application& app)
     
     struct LoadedFeatures {
         Status status;
-        std::shared_ptr<rocky::OGRFeatureSource> fs;
+        std::shared_ptr<rocky::FeatureSource> fs;
     };
     static jobs::future<LoadedFeatures> data;
     static FeatureView feature_view;
@@ -26,7 +26,7 @@ auto Demo_LineFeatures = [](Application& app)
         {
             data = jobs::dispatch([](auto& cancelable)
                 {
-                    auto fs = rocky::OGRFeatureSource::create();
+                    auto fs = rocky::GDALFeatureSource::create();
                     fs->uri = "https://readymap.org/readymap/filemanager/download/public/countries.geojson";
                     auto status = fs->open();
                     return LoadedFeatures{ status, fs };

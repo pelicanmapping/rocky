@@ -19,19 +19,20 @@ namespace ROCKY_NAMESPACE
      * of 123:
      * 
      * struct MyClass {
-     *     optional<int> value { 123 };
+     *     option<int> value { 123 };
+     *     option<float> fvalue = 123.0f;
      * };
      */
-    template<typename T> struct optional
+    template<typename T> struct option
     {
-        optional() : _set(false), _value(T()), _defaultValue(T()) { }
-        optional(const T& defaultValue) : _set(false), _value(defaultValue), _defaultValue(defaultValue) { }
-        optional(const T& defaultValue, const T& value) : _set(true), _value(value), _defaultValue(defaultValue) { }
-        optional(const optional<T>& rhs) { operator=(rhs); }
-        optional<T>& operator =(const optional<T>& rhs) { _set=rhs._set; _value=rhs._value; _defaultValue=rhs._defaultValue; return *this; }
+        option() : _set(false), _value(T()), _defaultValue(T()) { }
+        option(const T& defaultValue) : _set(false), _value(defaultValue), _defaultValue(defaultValue) { }
+        option(const T& defaultValue, const T& value) : _set(true), _value(value), _defaultValue(defaultValue) { }
+        option(const option<T>& rhs) { operator=(rhs); }
+        option<T>& operator =(const option<T>& rhs) { _set=rhs._set; _value=rhs._value; _defaultValue=rhs._defaultValue; return *this; }
         const T& operator =(const T& value) { _set=true; _value=value; return _value; }
-        bool operator ==(const optional<T>& rhs) const { return _set && rhs._set && _value==rhs._value; }
-        bool operator !=(const optional<T>& rhs) const { return !( (*this)==rhs); }
+        bool operator ==(const option<T>& rhs) const { return _set && rhs._set && _value==rhs._value; }
+        bool operator !=(const option<T>& rhs) const { return !( (*this)==rhs); }
         bool operator ==(const T& value) const { return _value==value; }
         bool operator !=(const T& value) const { return _value!=value; }
         bool operator > (const T& value) const { return _value>value; }
@@ -62,7 +63,7 @@ namespace ROCKY_NAMESPACE
         T _defaultValue;
         T _value;
         bool _set;
-        typedef T* optional::*unspecified_bool_type;
+        typedef T* option::*unspecified_bool_type;
 
     public:
         operator unspecified_bool_type() const { return 0; }

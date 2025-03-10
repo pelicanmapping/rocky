@@ -33,7 +33,7 @@ auto Demo_LabelFeatures = [](Application& app)
     {
         Log()->info("Loading features...");
 
-        auto fs = rocky::OGRFeatureSource::create();
+        auto fs = rocky::GDALFeatureSource::create();
         fs->uri = "https://readymap.org/readymap/filemanager/download/public/countries.geojson";
         status = fs->open();
 

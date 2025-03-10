@@ -18,7 +18,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Readable name
-        optional<std::string> name;
+        option<std::string> name;
 
         //! Static focal point (if set)
         GeoPoint point;
@@ -27,16 +27,16 @@ namespace ROCKY_NAMESPACE
         std::shared_ptr<PositionedObject> target;
 
         //! Heading of the viewer relative to north
-        optional<Angle> heading = Angle(0.0, Units::DEGREES);
+        option<Angle> heading = Angle(0.0, Units::DEGREES);
 
         //! Pitch of the viewer relative to the ground
-        optional<Angle> pitch = Angle(-90, Units::DEGREES);
+        option<Angle> pitch = Angle(-90, Units::DEGREES);
 
         //! Distance of the viewer to the target
-        optional<Distance> range = Distance(10.0, Units::KILOMETERS);
+        option<Distance> range = Distance(10.0, Units::KILOMETERS);
 
         //! Offset in cartesian space from the focal point
-        optional<glm::dvec3> positionOffset = glm::dvec3(0, 0, 0);
+        option<glm::dvec3> positionOffset = glm::dvec3(0, 0, 0);
 
     public:
         //! Construct an empty viewpoint

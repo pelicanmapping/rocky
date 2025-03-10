@@ -19,7 +19,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Sharpness filter strength to apply to the image
-        optional<float> sharpness = 0.0f;
+        option<float> sharpness = 0.0f;
 
         //! Creates an image for the given tile key.
         //! @param key TileKey for which to create an image

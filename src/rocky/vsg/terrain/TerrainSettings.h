@@ -28,34 +28,34 @@ namespace ROCKY_NAMESPACE
         //! Size of each dimension of each terrain tile, in verts.
         //! Ideally this will be a power of 2 plus 1, i.e.: a number X
         //! such that X = (2^Y)+1 where Y is an integer >= 1.
-        optional<unsigned> tileSize = 17;
+        option<unsigned> tileSize = 17;
 
         //! The minimum tile LOD range as a factor of a tile's radius.
         //! This only applies when using distance-to-tile as a LOD technique.
-        optional<float> minTileRangeFactor = 7.0;
+        option<float> minTileRangeFactor = 7.0;
 
         //! Acceptable error, in pixels, when rendering terrain tiles.
-        optional<float> screenSpaceError = 128.0f;
+        option<float> screenSpaceError = 128.0f;
 
         //! The maximum level of detail to which the terrain should subdivide.
-        optional<unsigned> maxLevelOfDetail = 19;
+        option<unsigned> maxLevelOfDetail = 19;
 
         //! The level of detail at which the terrain should begin.
-        optional<unsigned> minLevelOfDetail = 0;
+        option<unsigned> minLevelOfDetail = 0;
 
         //! Size of the highest resolution imagery tile, in pixels
-        optional<float> tilePixelSize = 256.0f;
+        option<float> tilePixelSize = 256.0f;
 
         //! Ratio of skirt height to tile width. The "skirt" is geometry extending
         //! down from the edge of terrain tiles meant to hide cracks between adjacent
         //! levels of detail. A value of 0 means no skirt.
-        optional<float> skirtRatio = 0.0f;
+        option<float> skirtRatio = 0.0f;
 
         //! Color of the untextured globe (where no imagery is displayed)
-        optional<Color> color = Color::White;
+        option<Color> color = Color::White;
 
         //! Number of threads dedicated to loading terrain data
-        optional<unsigned> concurrency = 4;
+        option<unsigned> concurrency = 4;
 
     public: // internal runtime settings, not serialized.
 

@@ -36,7 +36,7 @@ namespace ROCKY_NAMESPACE
 
         //! Sets whether to apply the update progressively (in LOD order)
         void setProgressive(bool value);
-        const optional<bool>& progressive() const { return _progressive; }
+        const option<bool>& progressive() const { return _progressive; }
 
         //! Is the manifest empty (meaning ALL available layers should be loaded)?
         bool empty() const;
@@ -60,7 +60,7 @@ namespace ROCKY_NAMESPACE
         LayerTable _layers;
         bool _includesElevation;
         bool _includesConstraints;
-        optional<bool> _progressive;
+        option<bool> _progressive;
     };
 
     /**

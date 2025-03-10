@@ -12,10 +12,10 @@
     private: \
         LayerReference< TYPE > _layerRef_ ## NAME ; \
     public: \
-        optional< TYPE ::Options >& NAME ## EmbeddedOptions () { return NAME ().embeddedOptions(); } \
-        const optional< TYPE ::Options >& NAME ## EmbeddedOptions () const { return NAME ().embeddedOptions(); } \
-        optional< std::string >& NAME ## LayerName () { return NAME ().externalLayerName() ; } \
-        const optional< std::string >& NAME ## LayerName () const { return NAME ().externalLayerName() ; } \
+        option< TYPE ::Options >& NAME ## EmbeddedOptions () { return NAME ().embeddedOptions(); } \
+        const option< TYPE ::Options >& NAME ## EmbeddedOptions () const { return NAME ().embeddedOptions(); } \
+        option< std::string >& NAME ## LayerName () { return NAME ().externalLayerName() ; } \
+        const option< std::string >& NAME ## LayerName () const { return NAME ().externalLayerName() ; } \
         LayerReference< TYPE >& NAME () { return _layerRef_ ## NAME ; } \
         const LayerReference< TYPE >& NAME () const { return _layerRef_ ## NAME ; }
 
@@ -180,17 +180,17 @@ namespace ROCKY_NAMESPACE
             }
         }
 
-        optional<TypedOptions>& embeddedOptions() { return _embeddedOptions; }
-        const optional<TypedOptions>& embeddedOptions() const { return _embeddedOptions; }
+        option<TypedOptions>& embeddedOptions() { return _embeddedOptions; }
+        const option<TypedOptions>& embeddedOptions() const { return _embeddedOptions; }
 
-        optional<std::string>& externalLayerName() { return _externalLayerName; }
-        const optional<std::string>& externalLayerName() const { return _externalLayerName; }
+        option<std::string>& externalLayerName() { return _externalLayerName; }
+        const option<std::string>& externalLayerName() const { return _externalLayerName; }
 
 
     private:
         std::shared_ptr<Layer> _layer;
-        optional<TypedOptions> _embeddedOptions;
-        optional<std::string> _externalLayerName;
+        option<TypedOptions> _embeddedOptions;
+        option<std::string> _externalLayerName;
     };
 }
 

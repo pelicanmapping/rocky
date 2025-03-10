@@ -514,7 +514,7 @@ namespace ROCKY_NAMESPACE
 
             std::optional<Viewpoint> setVP0;
             std::optional<Viewpoint> setVP1; // Final viewpoint
-            optional<vsg::time_point> setVPStartTime; // Time of call to setViewpoint
+            option<vsg::time_point> setVPStartTime; // Time of call to setViewpoint
             std::chrono::duration<float> setVPDuration; // Transition time for setViewpoint
             double setVPAccel, setVPAccel2; // Acceleration factors for setViewpoint
             double setVPArcHeight; // Altitude arcing height for setViewpoint
@@ -530,9 +530,9 @@ namespace ROCKY_NAMESPACE
         vsg::observer_ptr<vsg::Camera> _camera_weakptr;
         SRS _worldSRS;
 
-        optional<vsg::MoveEvent> _previousMove;
-        optional<vsg::ButtonPressEvent> _buttonPress;
-        optional<vsg::KeyPressEvent> _keyPress;
+        option<vsg::MoveEvent> _previousMove;
+        option<vsg::ButtonPressEvent> _buttonPress;
+        option<vsg::KeyPressEvent> _keyPress;
         vsg::time_point _previousTime;
 
         bool _thrown;

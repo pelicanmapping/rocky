@@ -38,13 +38,13 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Whether to automatically open this layer when added to a map.
-        optional<bool> openAutomatically = true;
+        option<bool> openAutomatically = true;
 
         //! Information about the source of this layer's data
-        optional<Hyperlink> attribution = { };
+        option<Hyperlink> attribution = { };
 
         //! Size of the L2 (memory) cache
-        optional<unsigned> l2CacheSize = 0;
+        option<unsigned> l2CacheSize = 0;
 
     public:
         //! Destructor

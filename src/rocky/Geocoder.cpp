@@ -25,7 +25,7 @@ Geocoder::geocode(const std::string& location, IOOptions& io) const
         auto layerHandle = OGRGeocode(session, location.c_str(), nullptr, nullptr);
         if (layerHandle)
         {
-            auto fs = OGRFeatureSource::create();
+            auto fs = GDALFeatureSource::create();
             fs->externalLayerHandle = layerHandle;
             fs->externalSRS = SRS::WGS84;
             auto iter = fs->iterate(io);

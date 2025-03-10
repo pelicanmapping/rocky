@@ -17,9 +17,9 @@ namespace ROCKY_NAMESPACE
     {
         struct Options
         {
-            optional<URI> uri;
-            optional<std::string> format;
-            optional<bool> invertY = false;
+            option<URI> uri;
+            option<std::string> format;
+            option<bool> invertY = false;
         };
 
         struct TileFormat

@@ -788,7 +788,7 @@ bool ROCKY_NAMESPACE::get_to(const json& obj, const char* name, URI& var, const 
         var.setReferrer(io.referrer.value());
     return ok;
 }
-bool ROCKY_NAMESPACE::get_to(const json& obj, const char* name, rocky::optional<URI>& var, const IOOptions& io)
+bool ROCKY_NAMESPACE::get_to(const json& obj, const char* name, rocky::option<URI>& var, const IOOptions& io)
 {
     bool ok = get_to(obj, name, var);
     if (ok && io.referrer.has_value())

@@ -13,10 +13,10 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Whether to draw this layer.
-        optional<bool> visible = true;
+        option<bool> visible = true;
 
         //! Opacity with which to draw this layer
-        optional<float> opacity = 1.0f;
+        option<float> opacity = 1.0f;
 
         //! Serialize
         std::string to_json() const override;
@@ -31,7 +31,7 @@ namespace ROCKY_NAMESPACE
 
         void construct(const JSON&);
 
-        optional<bool> _debugView = false;
+        option<bool> _debugView = false;
     };
 
 } // namespace VisibleLayer

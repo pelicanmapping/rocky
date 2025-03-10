@@ -9,7 +9,7 @@
 #ifdef ROCKY_HAS_AZURE
 
 #include <rocky/Common.h>
-#include <rocky/optional.h>
+#include <rocky/option.h>
 #include <rocky/URI.h>
 
 namespace ROCKY_NAMESPACE
@@ -21,17 +21,17 @@ namespace ROCKY_NAMESPACE
         {
             //! Azure Maps subscription key
             //! Or, use the AZURE_KEY environment variable
-            optional<std::string> subscriptionKey;
+            option<std::string> subscriptionKey;
 
             //! Tileset ID
             //! See https://learn.microsoft.com/en-us/rest/api/maps/render/get-map-tile?view=rest-maps-2024-04-01&tabs=HTTP#tilesetid
-            optional<std::string> tilesetId = { "microsoft.base.road" };
+            option<std::string> tilesetId = { "microsoft.base.road" };
 
             //! Base URL for the Azure Maps tile API
-            optional<URI> mapTileApiUrl = { "https://atlas.microsoft.com/map/tile" };
+            option<URI> mapTileApiUrl = { "https://atlas.microsoft.com/map/tile" };
 
             //! API version
-            optional<std::string> apiVersion = { "2024-04-01" };
+            option<std::string> apiVersion = { "2024-04-01" };
         };
     }
 }

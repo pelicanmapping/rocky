@@ -54,7 +54,7 @@ namespace
         PJ_TYPE crs_type = PJ_TYPE_UNKNOWN;
         PJ_TYPE horiz_crs_type = PJ_TYPE_UNKNOWN;
         PJ_TYPE vert_crs_type = PJ_TYPE_UNKNOWN;
-        optional<Box> bounds;
+        option<Box> bounds;
         std::string wkt;
         std::string proj;
         Ellipsoid ellipsoid = { };

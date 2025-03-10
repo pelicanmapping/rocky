@@ -16,12 +16,12 @@ using json = nlohmann::json;
 
 namespace nlohmann
 {
-    // Support the optional<> construct
+    // Support the option<> construct
     // https://github.com/nlohmann/json#how-do-i-convert-third-party-types
     template <typename T>
-    struct adl_serializer<rocky::optional<T>>
+    struct adl_serializer<rocky::option<T>>
     {
-        static void to_json(json& j, const rocky::optional<T>& opt)
+        static void to_json(json& j, const rocky::option<T>& opt)
         {
             if (opt.has_value())
                 j = opt.value();
@@ -29,7 +29,7 @@ namespace nlohmann
                 j = nullptr;
         }
 
-        static void from_json(const json& j, rocky::optional<T>& opt)
+        static void from_json(const json& j, rocky::option<T>& opt)
         {
             if (!j.is_null())
                 opt = j.get<T>();
@@ -165,6 +165,6 @@ namespace ROCKY_NAMESPACE
     // specializations.
     class IOOptions;
     extern ROCKY_EXPORT bool get_to(const json& obj, const char* name, URI& var, const IOOptions& io);
-    extern ROCKY_EXPORT bool get_to(const json& obj, const char* name, rocky::optional<URI>& var, const IOOptions& io);
+    extern ROCKY_EXPORT bool get_to(const json& obj, const char* name, rocky::option<URI>& var, const IOOptions& io);
 }
 

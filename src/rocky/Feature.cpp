@@ -473,13 +473,13 @@ namespace
     }
 }
 
-OGRFeatureSource::~OGRFeatureSource()
+GDALFeatureSource::~GDALFeatureSource()
 {
     close();
 }
 
 FeatureSource::iterator
-OGRFeatureSource::iterate(IOOptions& io)
+GDALFeatureSource::iterate(IOOptions& io)
 {
     OGRDataSourceH dsHandle = nullptr;
     OGRLayerH layerHandle = externalLayerHandle;
@@ -529,7 +529,7 @@ OGRFeatureSource::iterate(IOOptions& io)
 
 
 void
-OGRFeatureSource::iterator_impl::init()
+GDALFeatureSource::iterator_impl::init()
 {
     _resultSetEndReached = false;
 
@@ -562,7 +562,7 @@ OGRFeatureSource::iterator_impl::init()
     readChunk();
 }
 
-OGRFeatureSource::iterator_impl::~iterator_impl()
+GDALFeatureSource::iterator_impl::~iterator_impl()
 {
     if (_nextHandleToQueue)
     {
@@ -571,7 +571,7 @@ OGRFeatureSource::iterator_impl::~iterator_impl()
 }
 
 void
-OGRFeatureSource::iterator_impl::readChunk()
+GDALFeatureSource::iterator_impl::readChunk()
 {
     if (!_resultSetHandle)
         return;
@@ -582,7 +582,7 @@ OGRFeatureSource::iterator_impl::readChunk()
 
     while (_queue.size() < _chunkSize && !_resultSetEndReached)
     {
-        OGRFeatureH handle = OGR_L_GetNextFeature(_resultSetHandle);
+        auto handle = OGR_L_GetNextFeature(_resultSetHandle);
         if (handle)
         {
             Feature feature;
@@ -614,13 +614,13 @@ OGRFeatureSource::iterator_impl::readChunk()
 }
 
 bool
-OGRFeatureSource::iterator_impl::hasMore() const
+GDALFeatureSource::iterator_impl::hasMore() const
 {
     return _resultSetHandle && !_queue.empty();
 };
 
 const Feature&
-OGRFeatureSource::iterator_impl::next()
+GDALFeatureSource::iterator_impl::next()
 {
     if (!hasMore())
         return _lastFeatureReturned;
@@ -641,7 +641,7 @@ OGRFeatureSource::iterator_impl::next()
 
 
 Status
-OGRFeatureSource::open()
+GDALFeatureSource::open()
 {
     // Pre-existing layer handle?
     if (externalLayerHandle)
@@ -763,13 +763,13 @@ OGRFeatureSource::open()
 }
 
 int
-OGRFeatureSource::featureCount() const
+GDALFeatureSource::featureCount() const
 {
     return _featureCount;
 }
 
 void
-OGRFeatureSource::close()
+GDALFeatureSource::close()
 {
     if (_layerHandle)
     {

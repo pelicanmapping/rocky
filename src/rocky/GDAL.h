@@ -36,19 +36,19 @@ namespace ROCKY_NAMESPACE
         {
         public:
             //! Base URL for TMS requests
-            optional<URI> uri = { };
+            option<URI> uri = { };
 
             //! Database connection for GDAL database queries (alternative to URL)
-            optional<std::string> connection = { };
+            option<std::string> connection = { };
 
             //! GDAL sub-dataset index (optional)
-            optional<unsigned> subDataset = 0;
+            option<unsigned> subDataset = 0;
 
             //! Interpolation method for resampling (default is average)
-            optional<Interpolation> interpolation = Interpolation::AVERAGE;
+            option<Interpolation> interpolation = Interpolation::AVERAGE;
 
         protected:
-            optional<bool> singleThreaded = false;
+            option<bool> singleThreaded = false;
         };
 
         /**
@@ -59,10 +59,10 @@ namespace ROCKY_NAMESPACE
         class ROCKY_EXPORT Driver
         {
         public:
-            optional<float> noDataValue;
-            optional<float> minValidValue;
-            optional<float> maxValidValue;
-            optional<unsigned> maxDataLevel = 30;
+            option<float> noDataValue;
+            option<float> minValidValue;
+            option<float> maxValidValue;
+            option<unsigned> maxDataLevel = 30;
 
             //! Constructs a new driver
             Driver() = default;

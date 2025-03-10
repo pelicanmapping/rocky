@@ -289,15 +289,15 @@ namespace ROCKY_NAMESPACE
     /**
     * Reads Feature objects from various sources using the GDAL OGR library.
     */
-    class ROCKY_EXPORT OGRFeatureSource : public rocky::Inherit<FeatureSource, OGRFeatureSource>
+    class ROCKY_EXPORT GDALFeatureSource : public rocky::Inherit<FeatureSource, GDALFeatureSource>
     {
     public:
 
         //! URI of source data, like a shapefile or connection string
-        optional<URI> uri;
+        option<URI> uri;
 
         //! Optional name of the specific OGR driver to load.
-        optional<std::string> ogrDriver;
+        option<std::string> ogrDriver;
 
         //! Use these to create a feature source from an existing OGR layer handle and SRS.
         //! Leave URI empty if you use this method.
@@ -318,7 +318,7 @@ namespace ROCKY_NAMESPACE
         std::string layerName;
 
         // destructor
-        virtual ~OGRFeatureSource();
+        virtual ~GDALFeatureSource();
 
     private:
         void* _dsHandle = nullptr;
@@ -337,7 +337,7 @@ namespace ROCKY_NAMESPACE
         private:
             std::queue<Feature> _queue;
             Feature _lastFeatureReturned;
-            OGRFeatureSource* _source = nullptr;
+            GDALFeatureSource* _source = nullptr;
             void* _dsHandle = nullptr;
             void* _layerHandle = nullptr;
             void* _resultSetHandle = nullptr;
@@ -349,7 +349,7 @@ namespace ROCKY_NAMESPACE
 
             void init();
             void readChunk();
-            friend class OGRFeatureSource;
+            friend class GDALFeatureSource;
         };
     };
 

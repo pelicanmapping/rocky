@@ -73,11 +73,11 @@ namespace ROCKY_NAMESPACE
         void removeCallback(UID uid);
 
     protected:
-        optional<std::string> _profileLayer;
+        option<std::string> _profileLayer;
 
     private:
         mutable std::shared_mutex _mapDataMutex;
-        //optional<Profile> _profile;
+        //option<Profile> _profile;
         Revision _dataModelRevision = 0;
         LayerCollection _imageLayers;
         LayerCollection _elevationLayers;

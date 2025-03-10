@@ -24,19 +24,19 @@ namespace ROCKY_NAMESPACE
         };
 
         //! Whether this layer contains offsets instead of absolute elevation heights
-        optional<bool> offset = false;
+        option<bool> offset = false;
 
         //! Value to treat as "absence of data" if the datasource does not specify it
-        optional<float> noDataValue = NO_DATA_VALUE;
+        option<float> noDataValue = NO_DATA_VALUE;
 
         //! Treat values lesser than this as "no data"
-        optional<float> minValidValue = -FLT_MAX;
+        option<float> minValidValue = -FLT_MAX;
 
         //! Treat values greater than this as "no data"
-        optional<float> maxValidValue = FLT_MAX;
+        option<float> maxValidValue = FLT_MAX;
 
         //! Encoding of the elevation data
-        optional<Encoding> encoding = Encoding::SingleChannel;
+        option<Encoding> encoding = Encoding::SingleChannel;
 
         //! Serialize this layer
         std::string to_json() const override;
@@ -81,9 +81,8 @@ namespace ROCKY_NAMESPACE
             return Result(GeoHeightfield::INVALID);
         }
 
-        //! Decodes a mapbox RGB encoded heightfield image into a heightfield.
-        //std::shared_ptr<Heightfield> decodeMapboxRGB(std::shared_ptr<Image> image) const;
-
+        //! Decodes an image into a heightfield from its native representation
+        //! as denoted in the "encoding" option
         std::shared_ptr<Heightfield> decodeRGB(std::shared_ptr<Image> image) const;
 
     private:
