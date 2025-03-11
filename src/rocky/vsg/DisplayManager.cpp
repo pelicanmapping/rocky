@@ -7,7 +7,10 @@
 #include "Application.h"
 #include "MapManipulator.h"
 #include "terrain/TerrainEngine.h"
+
+#ifdef ROCKY_HAS_IMGUI
 #include "imgui/ImGuiIntegration.h"
+#endif
 
 using namespace ROCKY_NAMESPACE;
 
