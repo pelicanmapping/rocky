@@ -9,17 +9,18 @@
 
 #ifdef ROCKY_HAS_IMGUI
 #include <imgui.h>
+#else
+namespace ROCKY_NAMESPACE
+{
+  struct ImVec2 { float x; float y; };
+  using ImGuiContext = void;
+}
 #endif
 
 namespace ROCKY_NAMESPACE
 {
-#ifdef ROCKY_HAS_IMGUI
     using WidgetVec2 = ImVec2;
     using WidgetContext = ImGuiContext;
-#else
-    struct ImVec2 { float x; float y; };
-    using ImGuiContext = void;
-#endif
 
     struct WidgetInstance
     {
