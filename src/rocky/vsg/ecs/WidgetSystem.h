@@ -4,6 +4,8 @@
  * MIT License
  */
 #pragma once
+
+#ifdef ROCKY_HAS_IMGUI
 #include <rocky/vsg/ecs/Widget.h>
 #include <rocky/vsg/ecs/Registry.h>
 
@@ -26,3 +28,4 @@ namespace ROCKY_NAMESPACE
         void update(VSGContext& context) override;
     };
 }
+#endif // defined(ROCKY_HAS_IMGUI)
