@@ -18,7 +18,11 @@ This project is in its early stages so expect a lot of API and architectural cha
    * [main.cpp](#maincpp)
    * [CMakeLists.txt](#cmakeliststxt)
 - [Maps](#maps)
-- [Entities](#entities)
+   * [Imagery](#imagery)
+   * [Terrain Elevation](#terrain-elevation)
+   * [Vector Features](#vector-features)
+   * [Spatial Reference Systems](#spatial-reference-systems)
+- [Annotations](#annotations)
    * [Creating entities and components](#creating-entities-and-components)
    * [The entity registry](#the-entity-registry)
    * [Control components](#control-components)
@@ -32,6 +36,8 @@ This project is in its early stages so expect a lot of API and architectural cha
 
 <hr/>
 <img width="100%" alt="image" src="https://github.com/user-attachments/assets/3767d7e8-364c-498f-a09f-2b0e17b45c0a">
+<br/>
+<br/>
 
 # Setup
 
@@ -46,7 +52,7 @@ That will download and build all the dependencies (takes a while) and generate y
 If you would rather not use vcpkg, you can build and install the [dependencies](#acknowledgements) yourself, or use your favorite package manager (like `apt` on Linux).
 
 ## Run the Demo
-Rocky is pretty good at finding its data files, but you might need to set a couple environment variables to help:
+Rocky is pretty good at finding its data files, but if you run into trouble, you might need to set a couple environment variables to help:
 ```bat
 set ROCKY_FILE_PATH=%rocky_install_dir%/share/rocky
 set ROCKY_DEFAULT_FONT=C:/windows/fonts/arialbd.ttf
@@ -67,6 +73,8 @@ rocky_demo --map data\openstreetmap.map.json
 ```
 <img width="500" alt="Screenshot 2023-02-22 124318" src="https://github.com/user-attachments/assets/9590cca6-a170-4418-8588-1ee1d2b72924">
 
+<br/>
+<br/>
 
 # Hello World
 
@@ -98,20 +106,87 @@ target_link_libraries(myApp PRIVATE rocky::rocky)
 install(TARGETS myApp RUNTIME DESTINATION bin)
 ```
 # Maps
-Coming soon.
-This section will talk about Map data and SRS's.
+To render a map the first thing we need is map data. Map data can be huge and usually will not fit into the application's memory all at once. To solve that problem the standard approach is to process the source data into a hierarchy of *map tiles* called a *tile pyramid*.
 
-# Entities
+Rocky supports a number of different map data *layers* that will read either *tile pyramids* from the network, or straight raster data from your local disk.
+
+## Imagery
+*Image layers* display the visible colors of the map. It might be satellite or aerial imagery, or it might be a rasterized cartographic map. Here are some ways to load image layers into Rocky.
+
+Let's start with a simple TMS ([OSGeo Tile Map Service](https://wiki.osgeo.org/wiki/Tile_Map_Service_Specification)) layer:
+```c++
+#include <rocky/rocky.h>
+using namespace rocky;
+...
+
+// The map data model lives in our Application object.
+Application app;
+auto& map = app.mapNode->map;
+...
+
+// A TMS layer can use the popular TMS specification:
+auto tms = TMSImageLayer::create();
+tms->uri = "https://readymap.org/readymap/tiles/1.0.0/7";
+
+map->add(tms);
+```
+
+We can also use the `TMSImageLayer` to load generic "XYZ" tile pyramids from the network. In this example, we are loading OpenStreetMap data.
+```c++
+// This will load the rasterizered OpenStreetMap data.
+// We comply with the TOS by including attribution too.
+auto osm = TMSImageLayer::create();
+osm->uri = "https://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png";
+osm->attribution = rocky::Hyperlink{ "\u00a9 OpenStreetMap contributors", "https://openstreetmap.org/copyright" };
+
+// This data source doesn't report any metadata, so we need to tell Rocky
+// about its tiling profile. Most online data sources use "spherical-meractor".
+osm->profile = rocky::Profile("spherical-mercator");
+
+map->add(osm);
+```
+
+You can load imagery datasets from your local disk as well. To do so we will use the `GDALImageLayer`. This layer is based on the [GDAL](https://gdal.org/en/stable/) toolkit which supports a vast array of raster formats.
+```c++
+auto local = GDALImageLayer::create();
+local->uri = "data/world.tif"; // a local GeoTIFF file
+
+map->add(local);
+```
+You can add as many image layers as you want - Rocky will composite them together at runtime.
+
+## Terrain Elevation
+Terrain elevation adds 3D heightmap data to your map.
+
+Rocky supports elevation grid data in three formats:
+* Single-channel TIFF (32-bit float or 16-but integer)
+* Mapbox-encoded PNG
+* Terrarium-encoded PNG
+
+```c++
+auto elevation = TMSElevationLayer::create();
+elevation->uri = "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png";
+elevation->encoding = ElevationLayer::Encodeing::MapboxRGB;
+map->add(elevation);
+```
+
+## Vector Features
+TBD.
+
+## Spatial Reference Systems
+TBD.
+
+# Annotations
 Rocky has a set of built-in primitives for displaying objects on the map.
 
-* Icon - a 2D billboarded image
 * Label - a text string
+* Icon - a 2D billboarded image
 * Line - a string of 2D line segments
 * Mesh - a collection of triangles
 * Model - a VSG scene graph representing an object
 * Widget - an interactive ImGui panel
 
-To create and manage these elements, Rocky uses an Entity Component System (ECS) driven by the popular [EnTT](https://github.com/skypjack/entt) SDK. We will not delve into the benefits of an ECS for data management here. There are plenty of good reads out there! Suffice to say that it is a very popular mechanism used in modern gaming and graphics engine with excellent performance and scalability benefits.
+To create and manage these elements, Rocky uses an [Entity Component System](https://en.wikipedia.org/wiki/Entity_component_system) (ECS) driven by the popular [EnTT](https://github.com/skypjack/entt) SDK. We will not delve into the benefits of an ECS for data management here. Suffice it to say that it is a very popular mechanism used in modern gaming and graphics engine with excellent performance and scalability benefits.
 
 *This subsystem is completely optional. Since Rocky is built with [VulkanSceneGraph](https://github.com/vsg-dev/VulkanSceneGraph), you can use its API to populate your scene in any way you choose.*
 
@@ -148,13 +223,13 @@ void addLabel(const std::string& text)
 As you can see, the ECS works by creating an `entity` and then attaching *components* to that entity. You are not limited to Rocky's built-in components; you can create and attach your own types as well.
 
 ## The Entity Registry
-Let's briefly talk about the *Entity Registry*. In the ECS, the *registry* is a container that holds all your entities and components. Rocky wraps the EnTT `entt::registry` in a locking mechanism that makes it safer to access your registry from more than one thread. You just need to follow this usage pattern:
+Let's briefly talk about the *Entity Registry*. In the ECS, the *registry* is a database that holds all your entities and components. Rocky wraps the EnTT `entt::registry` in a locking mechanism that makes it safer to access your registry from more than one thread should you choose to do so. You just need to follow this usage pattern:
 ```c++
 void function_that_creates_or_destroys_things(Application& app)
 {
    auto [lock, registry] = app.registry.write();
    
-   // ALL registry calls are safe here, including:
+   // ALL registry operations are safe here, including:
    auto e = registry.create();                // creating a new entity
    auto& label = registry.emplace<Label>(e);  // attaching a new component
    registry.remove<Label>(e);                 // removing a component
@@ -174,7 +249,7 @@ void function_that_only_reads_or_edits_things(Application& app)
    // create(), emplace(), emplace_or_replace(), remove(), destroy();
 }
 ```
-While the example here will show you the basics, we highly recommend you read up on the [EnTT SDK](https://github.com/skypjack/entt) if you want to understand the full breadth of the registry's API!
+While the example here will show you the basics, we recommend you read up on the [EnTT SDK](https://github.com/skypjack/entt) if you want to understand the full breadth of the registry's API!
 
 ## Control Components
 *Control Components* do not render anything, but rather affect how other components attached to your entity behave.
@@ -309,7 +384,7 @@ You'll probably also want to add the `MapManipulator` to that view to control th
 ```c++
 viewer->addEventHandler(rocky::MapManipulator::create(mapNode, window, camera, context));
 ```
-Keep in mind that with Rocky's `Application` object, you will not get the benefits of using Rocky's ECS for map annotations.
+Keep in mind that without Rocky's `Application` object, you will not get the benefits of using Rocky's ECS for map annotations.
 
 ## Rocky and Qt
 You can embed Rocky in a Qt widget. See the `rocky_demo_qt` example for details.
