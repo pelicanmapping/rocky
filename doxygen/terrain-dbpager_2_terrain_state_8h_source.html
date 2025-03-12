@@ -103,20 +103,20 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_state.html">   31</a></span>    <span class="keyword">class </span>ROCKY_VSG_INTERNAL <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_state.html">TerrainState</a></div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    {</div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    <span class="keyword">public</span>:</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>        <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_state.html">TerrainState</a>(<a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">Runtime</a>&amp;);</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>        <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_state.html">TerrainState</a>(<a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">Runtime</a>&amp;);</div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>        vsg::ref_ptr&lt;vsg::StateGroup&gt; createTerrainStateGroup();</div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>        <span class="keywordtype">void</span> updateTerrainTileDescriptors(</div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>            <span class="keyword">const</span> TerrainTileRenderModel&amp; renderModel,</div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>            vsg::ref_ptr&lt;vsg::StateGroup&gt; stategroup,</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>            <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">Runtime</a>&amp; runtime) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>            <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">Runtime</a>&amp; runtime) <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>        TerrainTileRenderModel inheritTerrainTileDescriptors(</div>
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>            <span class="keyword">const</span> TerrainTileRenderModel&amp; input,</div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>            <span class="keyword">const</span> glm::dmat4&amp; scaleBias,</div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>            vsg::ref_ptr&lt;vsg::StateGroup&gt; stategroup,</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>            <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">Runtime</a>&amp; runtime) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>            <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">Runtime</a>&amp; runtime) <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_state.html#a4123bbb2d815de5ec72da51de8054bcb">   53</a></span>        <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">Status</a> <a class="code hl_variable" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_state.html#a4123bbb2d815de5ec72da51de8054bcb">status</a>;</div>
 <div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
@@ -143,7 +143,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>            std::string name;</div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>            <span class="comment">// binding point (layout binding=X) in the shader</span></div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>            <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">uint32_t</a> uniform_binding;</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>            <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">uint32_t</a> uniform_binding;</div>
 <div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span> </div>
 <div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>            <span class="comment">// sampler to use</span></div>
 <div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>            vsg::ref_ptr&lt;vsg::Sampler&gt; sampler;</div>
@@ -162,7 +162,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>        }</div>
 <div class="line"><a id="l00110" name="l00110"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_state.html#a016f0d6e656c74b591c5ed4cfb0134e6">  110</a></span>        <a class="code hl_variable" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_state.html#a016f0d6e656c74b591c5ed4cfb0134e6">texturedefs</a>;</div>
 <div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span> </div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>        <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">Runtime</a>&amp; _runtime;</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>        <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">Runtime</a>&amp; _runtime;</div>
 <div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    };</div>
 </div>
 <div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>}</div>
@@ -175,7 +175,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition</b> Callbacks.h:16</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_status.html">ROCKY_NAMESPACE::Status</a></div><div class="ttdef"><b>Definition</b> Status.h:24</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_state_1_1_texture_def_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_state_1_1_texture_def.html">ROCKY_NAMESPACE::TerrainState::TextureDef</a></div><div class="ttdoc">Defines a single texutre and its (possible shared) sampler.</div><div class="ttdef"><b>Definition</b> TerrainState.h:88</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">ROCKY_NAMESPACE::optional</a></div><div class="ttdef"><b>Definition</b> optional.h:26</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">ROCKY_NAMESPACE::option</a></div><div class="ttdef"><b>Definition</b> option.h:27</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

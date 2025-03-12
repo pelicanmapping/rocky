@@ -199,7 +199,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>        };</div>
 <div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span> </div>
 <div class="line"><a id="l00137" name="l00137"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_pool.html#a5876ea228a561221c9a96476b2cf4c1f">  137</a></span>        vsg::ref_ptr&lt;SharedGeometry&gt; <a class="code hl_function" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_pool.html#a5876ea228a561221c9a96476b2cf4c1f">getPooledGeometry</a>(</div>
-<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>            <span class="keyword">const</span> <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">tileKey</a>,</div>
+<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>            <span class="keyword">const</span> <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">tileKey</a>,</div>
 <div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span>            <span class="keyword">const</span> Settings&amp; settings,</div>
 <div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span>            Cancelable* state) <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span> </div>
@@ -221,14 +221,14 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>        Settings _defaultIndicesSettings;</div>
 <div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span> </div>
 <div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>        <span class="keywordtype">void</span> createKeyForTileKey(</div>
-<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>            <span class="keyword">const</span> <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">tileKey</a>,</div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>            <span class="keyword">const</span> <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">tileKey</a>,</div>
 <div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>            <span class="keywordtype">unsigned</span> size,</div>
-<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>            GeometryKey&amp; <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">out</a>) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>            GeometryKey&amp; <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">out</a>) <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span> </div>
 <div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>        vsg::ref_ptr&lt;SharedGeometry&gt; createGeometry(</div>
-<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>            <span class="keyword">const</span> <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">tileKey</a>,</div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>            <span class="keyword">const</span> <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">TileKey</a>&amp; <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">tileKey</a>,</div>
 <div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>            <span class="keyword">const</span> Settings&amp; settings,</div>
-<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>            Cancelable* <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">progress</a>) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span>            Cancelable* <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">progress</a>) <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span> </div>
 <div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span>        <span class="comment">// builds a primitive set to use for any tile without a mask</span></div>
 <div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>        vsg::ref_ptr&lt;vsg::ushortArray&gt; createIndices(</div>
@@ -254,7 +254,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">ROCKY_NAMESPACE::SRS</a></div><div class="ttdef"><b>Definition</b> SRS.h:21</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html">ROCKY_NAMESPACE::TileKey</a></div><div class="ttdef"><b>Definition</b> TileKey.h:22</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition</b> Callbacks.h:16</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1optional.html">ROCKY_NAMESPACE::optional</a></div><div class="ttdef"><b>Definition</b> optional.h:26</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">ROCKY_NAMESPACE::option</a></div><div class="ttdef"><b>Definition</b> option.h:27</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
