@@ -9,6 +9,7 @@
 #include <rocky/Threading.h>
 #include <rocky/Image.h>
 #include <rocky/Math.h>
+#include <rocky/Status.h>
 #include <rocky/weejobs.h>
 #include <vsg/maths/vec3.h>
 #include <vsg/maths/mat4.h>
