@@ -21,6 +21,7 @@ if (NOT TARGET imgui::imgui)
     else()
     
         message(STATUS "Since you set IMGUI_DIR, I will try to build ImGui from source.")
+        message(STATUS "IMGUI_DIR = ${IMGUI_DIR}")
         
         set(IMGUI_SOURCES "")
 

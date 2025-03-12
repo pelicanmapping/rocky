@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#ifdef ROCKY_HAS_IMGUI
+#if defined(ROCKY_HAS_IMGUI)
 #include <rocky/vsg/ecs/Widget.h>
 #include <rocky/vsg/ecs/Registry.h>
 

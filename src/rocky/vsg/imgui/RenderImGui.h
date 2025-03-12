@@ -22,7 +22,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 </editor-fold> */
-
+#include <imgui.h>
 #include <functional>
 
 #include <rocky/vsg/Common.h>
@@ -31,8 +31,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <vsg/commands/ClearAttachments.h>
 #include <vsg/nodes/Group.h>
 #include <vsg/vk/DescriptorPool.h>
-
-#include <imgui.h>
 
 namespace vsgImGui
 {

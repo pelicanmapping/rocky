@@ -4,24 +4,13 @@
  * MIT License
  */
 #pragma once
+#if defined(ROCKY_HAS_IMGUI) && __has_include(<imgui.h>)
+#include <imgui.h>
 #include <rocky/vsg/Common.h>
 #include <entt/entt.hpp>
 
-#ifdef ROCKY_HAS_IMGUI
-#include <imgui.h>
-#else
 namespace ROCKY_NAMESPACE
 {
-  struct ImVec2 { float x; float y; };
-  using ImGuiContext = void;
-}
-#endif
-
-namespace ROCKY_NAMESPACE
-{
-    using WidgetVec2 = ImVec2;
-    using WidgetContext = ImGuiContext;
-
     struct WidgetInstance
     {
         struct Widget& widget;
@@ -29,9 +18,9 @@ namespace ROCKY_NAMESPACE
         entt::registry& registry;
         entt::entity entity;
         const int defaultWindowFlags;
-        WidgetVec2 position;
-        WidgetVec2& size;
-        WidgetContext* context;
+        ImVec2 position;
+        ImVec2& size;
+        ImGuiContext* context;
         std::uint32_t viewID;
     };
 
@@ -47,3 +36,5 @@ namespace ROCKY_NAMESPACE
         std::function<void(WidgetInstance&)> render;
     };
 }
+
+#endif
