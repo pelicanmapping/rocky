@@ -1,23 +1,9 @@
-/* -*-c++-*- */
-/* rocky - Geospatial SDK for OpenSceneGraph
- * Copyright 2020 Pelican Mapping
- * http://osgearth.org
- *
- * rocky is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>
+/**
+ * rocky c++
+ * Copyright 2023 Pelican Mapping
+ * MIT License
  */
-#ifndef ROCKY_UNITS_H
-#define ROCKY_UNITS_H 1
+#pragma once
 
 #include <rocky/Common.h>
 #include <rocky/Utils.h>
@@ -93,7 +79,6 @@ namespace ROCKY_NAMESPACE
         // parses a value+units string (like "15cm" or "24px")
         static bool parse( const std::string& input, double& out_value, Units& out_units, const Units& defaultUnits );
         static bool parse( const std::string& input, float& out_value, Units& out_units, const Units& defaultUnits );
-        static bool parse( const std::string& input, int& out_value, Units& out_units, const Units& defaultUnits );
 
         static bool convert( const Units& from, const Units& to, double input, double& output ) {
             if ( canConvert(from, to) ) {
@@ -190,159 +175,139 @@ namespace ROCKY_NAMESPACE
 
     };
     
-    template<typename T>
-    class qualified_double
+    namespace detail
     {
-    public:
-        qualified_double( double value, const Units& units ) : _value(value), _units(units) { }
+        template<typename T> class qualified_double
+        {
+        public:
+            qualified_double(double value, const Units& units) : _value(value), _units(units) { }
 
-        qualified_double( const T& rhs ) : _value(rhs._value), _units(rhs._units) { }
+            qualified_double(const T& rhs) : _value(rhs._value), _units(rhs._units) { }
 
-        // parses the qualified number from a parseable string (e.g., "123km")
-        qualified_double(const std::string& parseable, const Units& defaultUnits) : _value(0.0), _units(defaultUnits) {
-            Units::parse( parseable, _value, _units, defaultUnits );
-        }
+            // parses the qualified number from a parseable string (e.g., "123km")
+            qualified_double(const std::string& parseable, const Units& defaultUnits) : _value(0.0), _units(defaultUnits) {
+                Units::parse(parseable, _value, _units, defaultUnits);
+            }
 
-        void set( double value, const Units& units ) {
-            _value = value;
-            _units = units;
-        }
+            void set(double value, const Units& units) {
+                _value = value;
+                _units = units;
+            }
 
-        T& operator = ( const T& rhs ) {
-            set( rhs._value, rhs._units );
-            return static_cast<T&>(*this);
-        }
+            T& operator = (const T& rhs) {
+                set(rhs._value, rhs._units);
+                return static_cast<T&>(*this);
+            }
 
-        T operator + ( const T& rhs ) const {
-            return _units.canConvert(rhs._units) ?
-                T(_value + rhs.as(_units), _units) :
-                T(0, Units());
-        }
+            T operator + (const T& rhs) const {
+                return _units.canConvert(rhs._units) ?
+                    T(_value + rhs.as(_units), _units) :
+                    T(0, Units());
+            }
 
-        T operator - ( const T& rhs ) const {
-            return _units.canConvert(rhs._units) ? 
-                T(_value - rhs.as(_units), _units) :
-                T(0, Units());
-        }
+            T operator - (const T& rhs) const {
+                return _units.canConvert(rhs._units) ?
+                    T(_value - rhs.as(_units), _units) :
+                    T(0, Units());
+            }
 
-        T operator * ( double rhs ) const { 
-            return T(_value * rhs, _units);
-        }
+            T operator * (double rhs) const {
+                return T(_value * rhs, _units);
+            }
 
-        T operator / ( double rhs ) const { 
-            return T(_value / rhs, _units);
-        }
+            T operator / (double rhs) const {
+                return T(_value / rhs, _units);
+            }
 
-        bool operator == ( const T& rhs ) const {
-            return _units.canConvert( rhs._units ) && rhs.as(_units) == _value;
-        }
+            bool operator == (const T& rhs) const {
+                return _units.canConvert(rhs._units) && rhs.as(_units) == _value;
+            }
 
-        bool operator != ( const T& rhs ) const {
-            return !_units.canConvert(rhs._units) || rhs.as(_units) != _value;
-        }
+            bool operator != (const T& rhs) const {
+                return !_units.canConvert(rhs._units) || rhs.as(_units) != _value;
+            }
 
-        bool operator < ( const T& rhs ) const {
-            return _units.canConvert(rhs._units) && _value < rhs.as(_units);
-        }
+            bool operator < (const T& rhs) const {
+                return _units.canConvert(rhs._units) && _value < rhs.as(_units);
+            }
 
-        bool operator <= ( const T& rhs ) const {
-            return _units.canConvert(rhs._units) && _value <= rhs.as(_units);
-        }
+            bool operator <= (const T& rhs) const {
+                return _units.canConvert(rhs._units) && _value <= rhs.as(_units);
+            }
 
-        bool operator > ( const T& rhs ) const {
-            return _units.canConvert(rhs._units) && _value > rhs.as(_units);
-        }
+            bool operator > (const T& rhs) const {
+                return _units.canConvert(rhs._units) && _value > rhs.as(_units);
+            }
 
-        bool operator >= ( const T& rhs ) const {
-            return _units.canConvert(rhs._units) && _value >= rhs.as(_units);
-        }
+            bool operator >= (const T& rhs) const {
+                return _units.canConvert(rhs._units) && _value >= rhs.as(_units);
+            }
 
-        double as( const Units& convertTo ) const {
-            return _units.convertTo( convertTo, _value );
-        }
+            double as(const Units& convertTo) const {
+                return _units.convertTo(convertTo, _value);
+            }
 
-        T to(const Units& convertTo) const {
-            return T( as(convertTo), convertTo );
-        }
+            T to(const Units& convertTo) const {
+                return T(as(convertTo), convertTo);
+            }
 
-        //double asDistance(const Units& convertTo, double refLatDegrees) const {
-        //    if (_units.isAngle() && convertTo.isLinear()) {
-        //        double angleDeg = Units::convert(_units, Units::DEGREES, _value);
-        //        double meters = angleDeg * 111000.0 * cos(util::deg2rad(refLatDegrees));
-        //        return Units::convert(Units::METERS, convertTo, meters);
-        //    }
-        //    else if (_units.isLinear() && convertTo.isAngle()) {
-        //        double valueMeters = Units::convert(_units, Units::METERS, _value);
-        //        double angleDeg = valueMeters / (111000.0 * cos(util::deg2rad(refLatDegrees)));
-        //        return Units::convert(Units::DEGREES, convertTo, angleDeg);
-        //    }
-        //    else return as(convertTo);
-        //}
+            //! Access the value part directly
+            double value() const { return _value; }
 
-        double       value() const { return _value; }
-        const Units& units() const { return _units; }
+            //! Access the units part directly
+            const Units& units() const { return _units; }
 
-        // same as getValue; use this class directly as a double or a float
-        operator double() const { return _value; }
+            std::string to_string() const {
+                return std::to_string(_value) + _units.getAbbr();
+            }
 
-        //Config to_json() const;
-        //Config getConfig() const {
-        //    Config conf;
-        //    conf.set("value", _value);
-        //    conf.set("units", _units.getAbbr());
-        //    return conf;
-        //}
+            virtual std::string to_parseable_string() const {
+                return to_string();
+            }
 
-        std::string to_string() const {
-            return std::to_string(_value) + _units.getAbbr();
-        }
+        protected:
+            double _value;
+            Units  _units;
+        };
+    }
 
-        virtual std::string to_parseable_string() const {
-            return to_string();
-        }
-
-    protected:
-        double _value;
-        Units  _units;
-    };
-
-    class Distance : public qualified_double<Distance> {
+    class Distance : public detail::qualified_double<Distance> {
     public:
         Distance() : qualified_double<Distance>(0, Units::METERS) { }
         Distance(double value, const Units& units =Units::METERS) : qualified_double<Distance>(value, units) { }
-        Distance(const std::string& str) : qualified_double<Distance>(str, Units::METERS) { }
+        Distance(const std::string& str, const Units& defaultUnits) : qualified_double<Distance>(str, defaultUnits) { }
     };
 
-    class Angle : public qualified_double<Angle> {
+    class Angle : public detail::qualified_double<Angle> {
     public:
         Angle() : qualified_double<Angle>(0, Units::DEGREES) { }
         Angle(double value, const Units& units =Units::DEGREES) : qualified_double<Angle>(value, units) { }
-        Angle(const std::string& str) : qualified_double<Angle>(str, Units::DEGREES) { }
+        Angle(const std::string& str, const Units& defaultUnits) : qualified_double<Angle>(str, defaultUnits) { }
         std::string asParseableString() const {
             if (_units == Units::DEGREES) return std::to_string(_value);
             else return to_string();
         }
     };
 
-    class Duration : public qualified_double<Duration> {
+    class Duration : public detail::qualified_double<Duration> {
     public:
         Duration() : qualified_double<Duration>(0, Units::SECONDS) { }
-        Duration(double value, const Units& units) : qualified_double<Duration>(value, units) { }
-        Duration(const std::string& str) : qualified_double<Duration>(str, Units::SECONDS) { }
+        Duration(double value, const Units& units =Units::SECONDS) : qualified_double<Duration>(value, units) { }
+        Duration(const std::string& str, const Units& defaultUnits) : qualified_double<Duration>(str, defaultUnits) { }
     };
 
-    class Speed : public qualified_double<Speed> {
+    class Speed : public detail::qualified_double<Speed> {
     public:
         Speed() : qualified_double<Speed>(0, Units::METERS_PER_SECOND) { }
         Speed(double value, const Units& units) : qualified_double<Speed>(value, units) { }
-        Speed(const std::string& str) : qualified_double<Speed>(str, Units::METERS_PER_SECOND) { }
+        Speed(const std::string& str, const Units& defaultUnits) : qualified_double<Speed>(str, defaultUnits) { }
     };
 
-    class ScreenSize : public qualified_double<ScreenSize> {
+    class ScreenSize : public detail::qualified_double<ScreenSize> {
     public:
         ScreenSize() : qualified_double<ScreenSize>(0, Units::PIXELS) { }
         ScreenSize(double value, const Units& units =Units::PIXELS) : qualified_double<ScreenSize>(value, units) { }
-        ScreenSize(const std::string& str) : qualified_double<ScreenSize>(str, Units::PIXELS) { }
+        ScreenSize(const std::string& str, const Units& defaultUnits) : qualified_double<ScreenSize>(str, defaultUnits) { }
     };
 
     // rocky::strings specializations
@@ -399,5 +364,3 @@ namespace ROCKY_NAMESPACE
         }
     }
 }
-
-#endif // ROCKY_UNITS_H
