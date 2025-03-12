@@ -90,7 +90,7 @@ auto Demo_Simulation = [](Application& app)
             auto render_widget = [](WidgetInstance& i)
                 {
                     Transform& t = i.registry.get<Transform>(i.entity);
-                    auto& point = t.position.transform(SRS::WGS84);
+                    auto point = t.position.transform(SRS::WGS84);
 
                     ImGui::SetCurrentContext(i.context);
                     ImGui::SetNextWindowPos(ImVec2(i.position.x + 12.0f, i.position.y - i.size.y/2));
