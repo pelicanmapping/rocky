@@ -63,7 +63,7 @@ auto Demo_Label = [](Application& app)
             }
         }
 
-        if (ImGuiLTable::SliderFloat("Point size", &label.style.pointSize, 8.0f, 144.0f, "%.1f"))
+        if (ImGuiLTable::SliderFloat("Point size", &label.style.pointSize, 8.0f, 144.0f, "%.0f"))
             label.dirty();
 
         if (ImGuiLTable::SliderFloat("Outline size", &label.style.outlineSize, 0.0f, 0.5f, "%.2f"))

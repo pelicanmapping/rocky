@@ -318,19 +318,15 @@ LabelSystemNode::createOrUpdateNode(Label& label, ecs::BuildInfo& data, VSGConte
         // don't need this since we're using the custom technique
         textNode->shaderSet = {};
 
-        // this dude will billboard the label.
-        auto pst = PixelScaleTransform::create();
-        pst->unitSize = nativeSize;
-        pst->renderSize = label.style.pointSize;
-        pst->unrotate = true;
-        pst->addChild(textNode);
-
-        data.new_node = pst;
+        auto ssg = ScreenSpaceGroup::create();
+        ssg->scale = label.style.pointSize / (double)nativeSize;
+        ssg->addChild(textNode);
+        data.new_node = ssg;
     }
 
     else
     {
-        auto pst = util::find<PixelScaleTransform>(data.existing_node);
-        pst->renderSize = label.style.pointSize;
+        auto ssg = util::find<ScreenSpaceGroup>(data.existing_node);
+        ssg->scale = label.style.pointSize / 128; // nativeSize
     }
 }

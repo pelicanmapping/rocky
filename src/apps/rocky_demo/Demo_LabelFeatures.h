@@ -27,7 +27,7 @@ auto Demo_LabelFeatures = [](Application& app)
     static std::unordered_set<entt::entity> labels;
     static bool active = true;
     static float label_size_percentage = 100.0f;
-    const float starting_label_size = 26.0f;
+    const float starting_label_size = 16.0f;
 
     if (!status.has_value())
     {

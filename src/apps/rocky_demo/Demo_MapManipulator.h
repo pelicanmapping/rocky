@@ -50,9 +50,9 @@ auto Demo_Viewpoints = [](Application& app)
                     ImGuiLTable::Text("Latitude:", "%.3lf", LL.y);
                 }
 
-                ImGuiLTable::Text("Heading:", "%.1lf", (double)vp.heading.value());
-                ImGuiLTable::Text("Pitch:", "%.1lf", (double)vp.pitch.value());
-                ImGuiLTable::Text("Range:", "%.1lf", (double)vp.range.value());
+                ImGuiLTable::Text("Heading:", "%.1lf", (double)vp.heading->value());
+                ImGuiLTable::Text("Pitch:", "%.1lf", (double)vp.pitch->value());
+                ImGuiLTable::Text("Range:", "%.1lf", (double)vp.range->value());
                 ImGuiLTable::End();
             }
 
