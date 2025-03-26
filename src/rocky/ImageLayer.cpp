@@ -309,11 +309,6 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 
             // assume all tiles to mosaic are in the same SRS.
             SRSOperation xform = key.extent().srs().to(sources[0].srs());
-            
-            // Working bounds of the SRS itself so we can clamp out-of-bounds points.
-            // This is especially important when going from Mercator to Geographic
-            // where there's no data beyond +/- 85 degrees.
-            auto sourceBounds = sources[0].srs().bounds();
 
             // new output:
             output = Mosaic::create(Image::R8G8B8A8_UNORM, cols, rows, layers);
@@ -350,13 +345,18 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                 }
             }
 
-            // shrink the sourceBounds by our pixel-centering value:
+            // Working bounds of the SRS itself so we can clamp out-of-bounds points.
+            // This is especially important when going from Mercator to Geographic
+            // where there's no data beyond +/- 85 degrees.
+            auto sourceBounds = sources[0].srs().bounds();
+
+            // Transform the source bounds and shrink it by our pixel-centering value:
             if (sourceBounds.valid())
             {
-                sourceBounds.xmin += 0.5 * dx;
-                sourceBounds.ymin += 0.5 * dy;
-                sourceBounds.xmax -= 0.5 * dx;
-                sourceBounds.ymax -= 0.5 * dy;
+                auto xform = sources[0].srs().to(key.extent().srs());
+
+                xform.clamp(sourceBounds.xmin, sourceBounds.ymin);
+                xform.clamp(sourceBounds.xmax, sourceBounds.ymax);
             }
 
             // transform the sample points to the SRS of our source data tiles:

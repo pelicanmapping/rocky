@@ -119,6 +119,10 @@ namespace ROCKY_NAMESPACE
         //! @return Bounding box, or an empty box if the SRS is invalid
         const Box& bounds() const;
 
+        //! Geodetic bounding box, if known
+        //! @return Geodetic bounding box, or an empty box if the SRS is invalid
+        const Box& geodeticBounds() const;
+
         //! Whether this SRS is mathematically equivalent to another SRS
         //! without taking vertical datums into account.
         //! @param rhs SRS to compare against
@@ -268,6 +272,19 @@ namespace ROCKY_NAMESPACE
             return _to;
         }
 
+        //! Transform a 2D point
+        //! @return True is the transformation succeeded
+        inline bool transform(double& x, double& y) const {
+            double unused = 0.0;
+            return _nop ? true : forward(_handle, x, y, unused);
+        }
+
+        //! Transform a 3D point
+        //! @return True is the transformation succeeded
+        inline bool transform(double& x, double& y, double& z) const {
+            return _nop ? true : forward(_handle, x, y, z);
+        }
+
         //! Transform a 3-vector
         //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
@@ -304,6 +321,19 @@ namespace ROCKY_NAMESPACE
                 &inout[0][0], &inout[0][1], &inout[0][2], sizeof(DVEC3), count);
         }
 
+        //! Inverse-transform a 2D point
+        //! @return True is the transformation succeeded
+        inline bool inverse(double& x, double& y) const {
+            double z = 0.0;
+            return _nop ? true : inverse(_handle, x, y, z);
+        }
+
+        //! Inverse-transform a 3D point
+        //! @return True is the transformation succeeded
+        inline bool inverse(double& x, double& y, double& z) const {
+            return _nop ? true : inverse(_handle, x, y, z);
+        }
+
         //! Inverse-transform a 3-vector
         //! @return True is the transformation succeeded
         template<typename DVEC3A, typename DVEC3B>
@@ -331,6 +361,24 @@ namespace ROCKY_NAMESPACE
             return _nop ? true : inverse(_handle,
                 &inout[0][0], &inout[0][1], &inout[0][2], sizeof(DVEC3), count);
         }
+
+        //! Transform a bounding box from this SRS to an MBR in a target SRS.
+        //! Since it is not always possible to transform a bounding extent exactly,
+        //! this method will attempt to return the smallest bounding box in the
+        //! target SRS that contains the transformed extent.
+        //! @return True is the transformation succeeded 
+        bool transformBoundsToMBR(
+            double& in_out_xmin, double& in_out_ymin,
+            double& in_out_xmax, double& in_out_ymax) const;
+
+        //! Given a point in the source SRS, modify it such that its transformed
+        //! coordinates would be clamped within the bounds of the target SRS.
+        //! (NB: this method does not actually perform the transformation to the
+        //! target SRS; the points remain int the source SRS.)
+        //! @param x X coordinate to clamp
+        //! @param y Y coordinate to clamp
+        //! @return True if the point was altered by the clamping.
+        bool clamp(double& x, double& y) const;
 
         //! Error message if something returns false
         inline const std::string& lastError() const {

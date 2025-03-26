@@ -395,7 +395,8 @@ GDAL::Driver::open(
     if (layer->uri.has_value())
     {
         // Use the base instead of the full if this is a gdal virtual file system
-        if (util::startsWith(layer->uri->base(), "/vsi"))
+        if (util::startsWith(layer->uri->base(), "/vsi") ||     // vsi mini-driver
+            util::startsWith(layer->uri->base(), "<"))          // XML init string
         {
             source = layer->uri->base();
         }

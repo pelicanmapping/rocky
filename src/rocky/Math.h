@@ -166,6 +166,12 @@ namespace ROCKY_NAMESPACE
             return clamped;
         }
 
+        inline bool clamp(Box& rhs) const {
+            bool ok1 = clamp(rhs.xmin, rhs.ymin, rhs.zmin);
+            bool ok2 = clamp(rhs.xmax, rhs.ymax, rhs.zmax);
+            return ok1 || ok2;
+        }
+
         template<class ITER>
         void expandBy(ITER begin, ITER end) {
             for (ITER i = begin; i != end; ++i)
