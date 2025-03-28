@@ -43,5 +43,8 @@ namespace ROCKY_NAMESPACE
         //! True if objects positioned with this transform should be clipped
         //! to the view frustum.
         bool frustumCulled = true;
+
+        //! Activates pointer stability for this component
+        static constexpr auto in_place_delete = true;
     };
 }
