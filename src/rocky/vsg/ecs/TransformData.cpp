@@ -9,8 +9,10 @@
 using namespace ROCKY_NAMESPACE;
 
 void
-TransformViewData::update(vsg::RecordTraversal& record)
+TransformData::update(vsg::RecordTraversal& record)
 {
+    auto& view = views[record.getState()->_commandBuffer->viewID];
+
     ROCKY_SOFT_ASSERT_AND_RETURN(transform, void());
 
     if (!transform->position.valid())
@@ -19,9 +21,9 @@ TransformViewData::update(vsg::RecordTraversal& record)
     auto* state = record.getState();
 
     // only if something has changed since last time:
-    if (revision != transform->revision)
+    if (view.revision != transform->revision)
     {
-        revision = transform->revision;
+        view.revision = transform->revision;
 
         // first time through, cache information about the world SRS and ellipsoid for this view.
         if (!pos_to_world.valid())
@@ -40,18 +42,18 @@ TransformViewData::update(vsg::RecordTraversal& record)
             {
                 if (transform->topocentric && world_srs.isGeocentric())
                 {
-                    model = to_vsg(world_ellipsoid->topocentricToGeocentricMatrix(worldpos));
+                    view.model = to_vsg(world_ellipsoid->topocentricToGeocentricMatrix(worldpos));
                 }
                 else
                 {
-                    model = vsg::translate(worldpos.x, worldpos.y, worldpos.z);
+                    view.model = vsg::translate(worldpos.x, worldpos.y, worldpos.z);
                 }
 
                 if (ROCKY_MAT4_IS_NOT_IDENTITY(transform->localMatrix))
                 {
                     glm::dmat4 temp;
-                    ROCKY_FAST_MAT4_MULT(temp, model, transform->localMatrix);
-                    model = to_vsg(temp);
+                    ROCKY_FAST_MAT4_MULT(temp, view.model, transform->localMatrix);
+                    view.model = to_vsg(temp);
                 }
             }
         }
@@ -62,32 +64,36 @@ TransformViewData::update(vsg::RecordTraversal& record)
             // so we don't have to look it up every frame
             record.getValue("rocky.horizon", horizon);
         }
-
-        //local = to_vsg(transform->localMatrix);
     }
 
-    proj = state->projectionMatrixStack.top();
+    view.proj = state->projectionMatrixStack.top();
     auto& mvm = state->modelviewMatrixStack.top();
-    ROCKY_FAST_MAT4_MULT(modelview, mvm, model);
-    ROCKY_FAST_MAT4_MULT(mvp, proj, modelview);
+    ROCKY_FAST_MAT4_MULT(view.modelview, mvm, view.model);
+    ROCKY_FAST_MAT4_MULT(view.mvp, view.proj, view.modelview);
 
-    viewport = (*state->_commandBuffer->viewDependentState->viewportData)[0];
-    //culled = false;
+    view.viewport = (*state->_commandBuffer->viewDependentState->viewportData)[0];
 }
 
 bool
-TransformViewData::passesCull() const
+TransformData::passesCull(vsg::RecordTraversal& record) const
+{
+    return passesCull(record.getState()->_commandBuffer->viewID);
+}
+
+bool
+TransformData::passesCull(std::uint32_t viewID) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(transform, true);
+
+    auto& view = views[viewID];
 
     // Frustum cull (by center point)
     if (transform->frustumCulled)
     {
-        auto clip = mvp[3] / mvp[3][3];
+        auto clip = view.mvp[3] / view.mvp[3][3];
         const double t = 1.0;
         if (clip.x < -t || clip.x > t || clip.y < -t || clip.y > t || clip.z < -t || clip.z > t)
         {
-            //view.culled = true;
             return false;
         }
     }
@@ -95,9 +101,8 @@ TransformViewData::passesCull() const
     // horizon cull, if active (geocentric only)
     if (transform->horizonCulled && horizon && world_srs.isGeocentric())
     {
-        if (!horizon->isVisible(model[3][0], model[3][1], model[3][2], transform->radius))
+        if (!horizon->isVisible(view.model[3][0], view.model[3][1], view.model[3][2], transform->radius))
         {
-            //view.culled = true;
             return false;
         }
     }
@@ -106,18 +111,20 @@ TransformViewData::passesCull() const
 }
 
 void
-TransformViewData::push(vsg::RecordTraversal& record) const
+TransformData::push(vsg::RecordTraversal& record) const
 {
+    auto& view = views[record.getState()->_commandBuffer->viewID];
+
     auto* state = record.getState();
 
     // replicates RecordTraversal::accept(MatrixTransform&):
-    state->modelviewMatrixStack.push(modelview);
+    state->modelviewMatrixStack.push(view.modelview);
     state->dirty = true;
     state->pushFrustum();
 }
 
 void
-TransformViewData::pop(vsg::RecordTraversal& record) const
+TransformData::pop(vsg::RecordTraversal& record) const
 {
     auto state = record.getState();
     state->popFrustum();

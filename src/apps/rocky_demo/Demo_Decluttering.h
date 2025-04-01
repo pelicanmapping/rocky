@@ -57,7 +57,7 @@ namespace
 
                 for (auto&& [entity, active, declutter, transformData] : view.each())
                 {
-                    auto& view = transformData[viewID];
+                    auto& view = transformData.views[viewID];
 
                     auto clip = view.mvp[3] / view.mvp[3][3];
                     vsg::dvec2 window((clip.x + 1.0) * 0.5 * (double)view.viewport[2], (clip.y + 1.0) * 0.5 * (double)view.viewport[3]);

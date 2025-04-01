@@ -164,7 +164,7 @@ namespace ROCKY_NAMESPACE
             struct RenderLeaf
             {
                 Renderable& renderable;
-                TransformViewData* transformViewData = nullptr;
+                TransformData* transformData = nullptr;
             };
 
             // re-usable collection to minimize re-allocation
@@ -447,10 +447,9 @@ namespace ROCKY_NAMESPACE
                     {
                         if (transformData)
                         {
-                            auto& view = (*transformData)[viewID];
-                            if (view.passesCull())
+                            if (transformData->passesCull(rt))
                             {
-                                leaves.emplace_back(RenderLeaf{ renderable, &view });
+                                leaves.emplace_back(RenderLeaf{ renderable, transformData });
                             }
                         }
                         else
@@ -481,16 +480,16 @@ namespace ROCKY_NAMESPACE
                 // Them record each component. If the component has a transform apply it too.
                 for (auto& leaf : pipelineRenderLeaves[p])
                 {
-                    if (leaf.transformViewData)
+                    if (leaf.transformData)
                     {
-                        leaf.transformViewData->push(rt);
+                        leaf.transformData->push(rt);
                     }
 
                     leaf.renderable.node->accept(rt);
 
-                    if (leaf.transformViewData)
+                    if (leaf.transformData)
                     {
-                        leaf.transformViewData->pop(rt);
+                        leaf.transformData->pop(rt);
                     }
                 }
 

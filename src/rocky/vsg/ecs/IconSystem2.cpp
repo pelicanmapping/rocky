@@ -477,7 +477,7 @@ IconSystem2Node::update(VSGContext& context)
             {
                 if (ecs::visible(visibility, viewID))
                 {
-                    auto& view = transformData[viewID];
+                    auto& view = transformData.views[viewID];
 
                     auto& instance = instances[count++];
                     instance.proj = view.proj;

@@ -66,7 +66,7 @@ WidgetSystemNode::initialize(VSGContext& context)
             auto view = registry.view<Widget, WidgetRenderable, TransformData, Visibility>();
             for (auto&& [entity, widget, renderable, xdata, visibility] : view.each())
             {
-                if (ecs::visible(visibility, viewID) && xdata[viewID].passesCull())
+                if (ecs::visible(visibility, viewID) && xdata.passesCull(viewID))
                 {
                     WidgetInstance i{
                         widget,
@@ -117,7 +117,7 @@ WidgetSystemNode::update(VSGContext& context)
         {
             for(auto& viewID : context->activeViewIDs)
             {
-                auto& view = xdata[viewID];
+                auto& view = xdata.views[viewID];
                 auto clip = view.mvp[3] / view.mvp[3][3];
                 renderable.screen[viewID].x = (clip.x + 1.0) * 0.5 * (double)view.viewport[2];
                 renderable.screen[viewID].y = (clip.y + 1.0) * 0.5 * (double)view.viewport[3];
