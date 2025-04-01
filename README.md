@@ -24,7 +24,7 @@ This project is in its early stages so expect a lot of API and architectural cha
    * [Spatial Reference Systems](#spatial-reference-systems)
 - [Annotations](#annotations)
    * [Creating entities and components](#creating-entities-and-components)
-   * [The entity registry](#the-entity-registry)
+   * [The entity registry](#the-registry)
    * [Control components](#control-components)
 - [Integrations](#integrations)
    * [Rocky and ImGui](#rocky-and-imgui)
@@ -202,7 +202,7 @@ Application app;
 
 void addLabel(const std::string& text)
 {
-    // Start by acquiring a write-lock on the entity registry.
+    // Start by acquiring a write-lock on the registry.
     // The lock will release automatically at the end of the current scope,
     // or you can call lock.unlock() to release it manually.
     auto [lock, registry] = app.registry.write();
@@ -222,7 +222,7 @@ void addLabel(const std::string& text)
 ```
 As you can see, the ECS works by creating an `entity` and then attaching *components* to that entity. You are not limited to Rocky's built-in components; you can create and attach your own types as well.
 
-## The Entity Registry
+## The Registry
 Let's briefly talk about the *Entity Registry*. In the ECS, the *registry* is a database that holds all your entities and components. Rocky wraps the EnTT `entt::registry` in a locking mechanism that makes it safer to access your registry from more than one thread should you choose to do so. You just need to follow this usage pattern:
 ```c++
 void function_that_creates_or_destroys_things(Application& app)
@@ -263,10 +263,11 @@ Transform& transform = registry.emplace<Transform>(entity);
 // Set the geospatial position in the SRS of your choice:
 transform.position = GeoPoint(SRS::WGS84, -76, 34, 0);
 
-// Whether any geometry (like a Line or Model) attached to the same entity will render relative to a topographic tangent plane (as opposed to absolute coordinates)
+// Whether any geometry (like a Line or Model) attached to the same entity
+// will render relative to a topographic tangent plane
 transform.localTangentPlane = true;
 ```
-You toggle an entity's visiblity, use the `Visibility` component. (Rocky automatically adds a `Visibility` whenever you create one of the built-in primitive types - you don't have to emplace it yourself.) The component is actually an array so you can control visibility on a per-view basis.
+To toggle an entity's visiblity, use the `Visibility` component. (Rocky automatically adds a `Visibility` whenever you create one of the built-in primitive types - you don't have to emplace it yourself.) The component is actually an array so you can control visibility on a per-view basis.
 ```c++
 auto[lock, registry] = app.registry.read();
 
