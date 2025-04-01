@@ -305,6 +305,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform.html">Transform</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_data.html">TransformData</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_system.html">TransformSystem</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_view_data.html">TransformViewData</a></td></tr>
@@ -394,8 +396,6 @@ Typedefs</h2></td></tr>
 <tr class="memitem:a34cdf5fa7b8e25e6349413ab7cd94335" id="r_a34cdf5fa7b8e25e6349413ab7cd94335"><td class="memItemLeft" align="right" valign="top"><a id="a34cdf5fa7b8e25e6349413ab7cd94335" name="a34cdf5fa7b8e25e6349413ab7cd94335"></a>
 <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Triangle</b> = <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_triangle__t.html">Triangle_t</a>&lt;&gt;</td></tr>
 <tr class="separator:a34cdf5fa7b8e25e6349413ab7cd94335"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a03c75ff0df233e8bd50026fd62e90925" id="r_a03c75ff0df233e8bd50026fd62e90925"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a03c75ff0df233e8bd50026fd62e90925">TransformData</a> = detail::ViewLocal&lt; <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_view_data.html">TransformViewData</a> &gt;</td></tr>
-<tr class="separator:a03c75ff0df233e8bd50026fd62e90925"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a69bbcaa8ab993c914ce06d09fd475cee" id="r_a69bbcaa8ab993c914ce06d09fd475cee"><td class="memItemLeft" align="right" valign="top"><a id="a69bbcaa8ab993c914ce06d09fd475cee" name="a69bbcaa8ab993c914ce06d09fd475cee"></a>
 <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><b>VSGContext</b> = std::shared_ptr&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html">VSGContextImpl</a> &gt;</td></tr>
 <tr class="separator:a69bbcaa8ab993c914ce06d09fd475cee"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -754,21 +754,6 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Basic timestamp (seconds from the 1970 epoch) </p>
-
-</div>
-</div>
-<a id="a03c75ff0df233e8bd50026fd62e90925" name="a03c75ff0df233e8bd50026fd62e90925"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a03c75ff0df233e8bd50026fd62e90925">&#9670;&#160;</a></span>TransformData</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">using</a> ROCKY_NAMESPACE::TransformData = <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">typedef</a> detail::ViewLocal&lt;<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_view_data.html">TransformViewData</a>&gt;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Per-VSG-view <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_view_data.html" title="Internal data calculated from a Transform instance in the context of a specific camera.">TransformViewData</a>. This is an ECS component that the <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_system.html">TransformSystem</a> will automatically attach to each entity that has a <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform.html">Transform</a> component. </p>
 
 </div>
 </div>
