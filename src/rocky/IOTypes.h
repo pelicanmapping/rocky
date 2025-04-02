@@ -6,7 +6,6 @@
 #pragma once
 
 #include <rocky/DateTime.h>
-#include <rocky/Log.h>
 #include <rocky/Status.h>
 #include <rocky/Units.h>
 #include <rocky/Threading.h>

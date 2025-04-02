@@ -53,11 +53,11 @@ namespace
 
                 auto [lock, registry] = _registry.read();
 
-                auto view = registry.view<ActiveState, Declutter, TransformData>();
+                auto view = registry.view<ActiveState, Declutter, TransformDetail>();
 
-                for (auto&& [entity, active, declutter, transformData] : view.each())
+                for (auto&& [entity, active, declutter, transform_detail] : view.each())
                 {
-                    auto& view = transformData.views[viewID];
+                    auto& view = transform_detail.views[viewID];
 
                     auto clip = view.mvp[3] / view.mvp[3][3];
                     vsg::dvec2 window((clip.x + 1.0) * 0.5 * (double)view.viewport[2], (clip.y + 1.0) * 0.5 * (double)view.viewport[3]);

@@ -16,7 +16,7 @@ struct run_at_frequency
 {
     run_at_frequency(float hertz) : start(std::chrono::steady_clock::now()), _max(1.0f / hertz) { }
     ~run_at_frequency() {
-        const auto min_duration = std::chrono::milliseconds(1); // prevent starvation.
+        const auto min_duration = std::chrono::microseconds(100); // prevent starvation.
         auto duration = _max - (std::chrono::steady_clock::now() - start);
         if (duration < min_duration) duration = min_duration;
         std::this_thread::sleep_for(duration);

@@ -6,7 +6,6 @@
 #pragma once
 
 #include <rocky/Common.h>
-#include <rocky/GeoCommon.h>
 #include <rocky/GeoExtent.h>
 #include <rocky/Heightfield.h>
 

@@ -11,7 +11,6 @@
 #include <rocky/IOTypes.h>
 #include <rocky/Status.h>
 #include <rocky/URI.h>
-#include <vector>
 #include <shared_mutex>
 
 namespace ROCKY_NAMESPACE

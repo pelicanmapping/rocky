@@ -7,6 +7,7 @@
 #include "ImageLayer.h"
 #include "ElevationLayer.h"
 #include "json.h"
+#include "Context.h"
 #include <tuple>
 
 using namespace ROCKY_NAMESPACE;

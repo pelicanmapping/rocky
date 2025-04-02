@@ -84,7 +84,7 @@ namespace ROCKY_NAMESPACE
 
         //! True if the user set a Viewpoint with a tethering target
         inline bool isTethering() const {
-            return _state.setVP1.has_value() && _state.setVP1->target;
+            return _state.setVP1.has_value() && _state.setVP1->pointFunction;
         }
 
         //! Whether the manipulator is in the middle of any multi-frame operation

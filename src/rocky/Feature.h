@@ -11,7 +11,6 @@
 #include <rocky/GeoExtent.h>
 #include <rocky/Utils.h>
 #include <vector>
-#include <stack>
 #include <queue>
 
 namespace ROCKY_NAMESPACE

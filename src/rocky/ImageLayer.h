@@ -8,7 +8,6 @@
 #include <rocky/Common.h>
 #include <rocky/TileLayer.h>
 #include <rocky/GeoImage.h>
-#include <rocky/Color.h>
 
 namespace ROCKY_NAMESPACE
 {

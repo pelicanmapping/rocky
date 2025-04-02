@@ -6,16 +6,11 @@
 #pragma once
 
 #include <rocky/Common.h>
-#include <rocky/Context.h>
-#include <rocky/Profile.h>
 #include <rocky/Layer.h>
 #include <rocky/Callbacks.h>
 #include <rocky/IOTypes.h>
 #include <rocky/LayerCollection.h>
-#include <functional>
-#include <set>
 #include <shared_mutex>
-#include <typeindex>
 
 namespace ROCKY_NAMESPACE
 {

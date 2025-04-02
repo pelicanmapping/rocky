@@ -63,10 +63,10 @@ WidgetSystemNode::initialize(VSGContext& context)
                 ImGuiWindowFlags_NoFocusOnAppearing |
                 ImGuiWindowFlags_NoSavedSettings;
 
-            auto view = registry.view<Widget, WidgetRenderable, TransformData, Visibility>();
-            for (auto&& [entity, widget, renderable, xdata, visibility] : view.each())
+            auto view = registry.view<Widget, WidgetRenderable, TransformDetail, Visibility>();
+            for (auto&& [entity, widget, renderable, xdetail, visibility] : view.each())
             {
-                if (ecs::visible(visibility, viewID) && xdata.passesCull(viewID))
+                if (ecs::visible(visibility, viewID) && xdetail.passesCull(viewID))
                 {
                     WidgetInstance i{
                         widget,
@@ -113,11 +113,11 @@ WidgetSystemNode::update(VSGContext& context)
     auto [lock, registry] = _registry.read();
 
     // calculate the screen position of the widget in each view
-    registry.view<WidgetRenderable, TransformData>().each([&](auto& renderable, auto& xdata)
+    registry.view<WidgetRenderable, TransformDetail>().each([&](auto& renderable, auto& xdetail)
         {
             for(auto& viewID : context->activeViewIDs)
             {
-                auto& view = xdata.views[viewID];
+                auto& view = xdetail.views[viewID];
                 auto clip = view.mvp[3] / view.mvp[3][3];
                 renderable.screen[viewID].x = (clip.x + 1.0) * 0.5 * (double)view.viewport[2];
                 renderable.screen[viewID].y = (clip.y + 1.0) * 0.5 * (double)view.viewport[3];

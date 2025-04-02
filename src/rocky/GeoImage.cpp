@@ -1,3 +1,8 @@
+/**
+ * rocky c++
+ * Copyright 2023 Pelican Mapping
+ * MIT License
+ */
 #include "GeoImage.h"
 #include "Math.h"
 #include "Image.h"

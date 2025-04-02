@@ -8,11 +8,3 @@
 // For FLT_MAX
 #include <limits.h>
 #include <cfloat>
-
-//#undef  NO_DATA_VALUE
-//#define NO_DATA_VALUE -FLT_MAX
-
-//namespace ROCKY_NAMESPACE
-//{
-//    constexpr float NO_DATA_VALUE = -FLT_MAX;
-//}

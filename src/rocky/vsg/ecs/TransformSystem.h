@@ -7,12 +7,12 @@
 
 #include <rocky/vsg/Common.h>
 #include <rocky/vsg/ecs/Registry.h>
-#include <rocky/vsg/ecs/TransformData.h>
+#include <rocky/Callbacks.h>
 
 namespace ROCKY_NAMESPACE
 {
     /**
-    * ECS System that processes Transform and TransformData components.
+    * ECS System that processes Transform and TransformDetail components.
     */
     class ROCKY_EXPORT TransformSystem : public vsg::Inherit<vsg::Node, TransformSystem>, public ecs::System
     {
@@ -20,7 +20,12 @@ namespace ROCKY_NAMESPACE
         //! Construct the system
         TransformSystem(ecs::Registry& r);
 
+        void update(VSGContext& runtime) override;
+
         //! Called periodically to update the transforms
         void traverse(vsg::RecordTraversal& record) const override;
+
+        //! Callback to invoke if the update/traverse resulted in any changes
+        Callback<> onChanges;
     };
 }

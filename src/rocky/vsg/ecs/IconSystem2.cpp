@@ -469,15 +469,15 @@ IconSystem2Node::update(VSGContext& context)
     // This will built a draw list that applies to all active views.
 
     // TODO: Support ALL active views!
-    auto view = registry.view<Icon, ActiveState, Visibility, TransformData>();
+    auto view = registry.view<Icon, ActiveState, Visibility, TransformDetail>();
 
-    view.each([&](auto& icon, auto& active, auto& visibility, auto& transformData)
+    view.each([&](auto& icon, auto& active, auto& visibility, auto& transform_detail)
         {
             for (auto viewID : context->activeViewIDs)
             {
                 if (ecs::visible(visibility, viewID))
                 {
-                    auto& view = transformData.views[viewID];
+                    auto& view = transform_detail.views[viewID];
 
                     auto& instance = instances[count++];
                     instance.proj = view.proj;

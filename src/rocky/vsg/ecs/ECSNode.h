@@ -8,7 +8,7 @@
 #include <rocky/vsg/ecs/Registry.h>
 #include <rocky/vsg/ecs/Component.h>
 #include <rocky/vsg/ecs/Visibility.h>
-#include <rocky/vsg/ecs/TransformData.h>
+#include <rocky/vsg/ecs/TransformDetail.h>
 #include <rocky/vsg/Utils.h>
 #include <rocky/Utils.h>
 #include <vsg/vk/Context.h>
@@ -164,7 +164,7 @@ namespace ROCKY_NAMESPACE
             struct RenderLeaf
             {
                 Renderable& renderable;
-                TransformData* transformData = nullptr;
+                TransformDetail* transform_detail = nullptr;
             };
 
             // re-usable collection to minimize re-allocation
@@ -440,16 +440,16 @@ namespace ROCKY_NAMESPACE
                 if (renderable.node)
                 {
                     auto& leaves = !pipelines.empty() ? pipelineRenderLeaves[featureMask(component)] : pipelineRenderLeaves[0];
-                    auto* transformData = registry.try_get<TransformData>(entity);
+                    auto* transform_detail = registry.try_get<TransformDetail>(entity);
 
                     // if it's visible, queue it up for rendering
                     if (visible(visibility, viewID))
                     {
-                        if (transformData)
+                        if (transform_detail)
                         {
-                            if (transformData->passesCull(rt))
+                            if (transform_detail->passesCull(rt))
                             {
-                                leaves.emplace_back(RenderLeaf{ renderable, transformData });
+                                leaves.emplace_back(RenderLeaf{ renderable, transform_detail });
                             }
                         }
                         else
@@ -480,16 +480,16 @@ namespace ROCKY_NAMESPACE
                 // Them record each component. If the component has a transform apply it too.
                 for (auto& leaf : pipelineRenderLeaves[p])
                 {
-                    if (leaf.transformData)
+                    if (leaf.transform_detail)
                     {
-                        leaf.transformData->push(rt);
+                        leaf.transform_detail->push(rt);
                     }
 
                     leaf.renderable.node->accept(rt);
 
-                    if (leaf.transformData)
+                    if (leaf.transform_detail)
                     {
-                        leaf.transformData->pop(rt);
+                        leaf.transform_detail->pop(rt);
                     }
                 }
 

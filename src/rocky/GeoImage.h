@@ -6,13 +6,14 @@
 #pragma once
 
 #include <rocky/Common.h>
-#include <rocky/GeoCommon.h>
+#include <rocky/SRS.h>
 #include <rocky/GeoExtent.h>
+#include <rocky/Math.h>
 
 namespace ROCKY_NAMESPACE
 {
     class Image;
-    class GeoExtent;
+    class GeoPoint;
 
     /**
      * A georeferenced image; i.e. an Image coupled with a GeoExtent.

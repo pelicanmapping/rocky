@@ -7,7 +7,6 @@
 
 #include <rocky/Common.h>
 #include <glm/ext.hpp>
-#include <iterator>
 #include <algorithm>
 #include <cstdarg>
 #include <tuple>

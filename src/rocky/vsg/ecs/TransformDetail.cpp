@@ -3,34 +3,34 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
-#include "TransformData.h"
+#include "TransformDetail.h"
 #include "../Utils.h"
 
 using namespace ROCKY_NAMESPACE;
 
-void
-TransformData::update(vsg::RecordTraversal& record)
+bool
+TransformDetail::update(vsg::RecordTraversal& record)
 {
     auto& view = views[record.getState()->_commandBuffer->viewID];
 
-    ROCKY_SOFT_ASSERT_AND_RETURN(transform, void());
-
-    if (!transform->position.valid())
-        return;
+    if (!sync.position.valid())
+        return false;
 
     auto* state = record.getState();
 
     // only if something has changed since last time:
-    if (view.revision != transform->revision)
+    bool transform_changed = (view.revision != sync.revision);
+
+    if (transform_changed)
     {
-        view.revision = transform->revision;
+        view.revision = sync.revision; // transform->revision;
 
         // first time through, cache information about the world SRS and ellipsoid for this view.
         if (!pos_to_world.valid())
         {
             if (record.getValue("rocky.worldsrs", world_srs))
             {
-                pos_to_world = transform->position.srs.to(world_srs);
+                pos_to_world = sync.position.srs.to(world_srs);
                 world_ellipsoid = &world_srs.ellipsoid(); // for speed :)
             }
         }
@@ -38,9 +38,9 @@ TransformData::update(vsg::RecordTraversal& record)
         if (pos_to_world.valid())
         {
             glm::dvec3 worldpos;
-            if (pos_to_world(transform->position, worldpos))
+            if (pos_to_world(sync.position, worldpos))
             {
-                if (transform->topocentric && world_srs.isGeocentric())
+                if (sync.topocentric && world_srs.isGeocentric())
                 {
                     view.model = to_vsg(world_ellipsoid->topocentricToGeocentricMatrix(worldpos));
                 }
@@ -49,10 +49,10 @@ TransformData::update(vsg::RecordTraversal& record)
                     view.model = vsg::translate(worldpos.x, worldpos.y, worldpos.z);
                 }
 
-                if (ROCKY_MAT4_IS_NOT_IDENTITY(transform->localMatrix))
+                if (ROCKY_MAT4_IS_NOT_IDENTITY(sync.localMatrix))
                 {
                     glm::dmat4 temp;
-                    ROCKY_FAST_MAT4_MULT(temp, view.model, transform->localMatrix);
+                    ROCKY_FAST_MAT4_MULT(temp, view.model, sync.localMatrix);
                     view.model = to_vsg(temp);
                 }
             }
@@ -72,23 +72,25 @@ TransformData::update(vsg::RecordTraversal& record)
     ROCKY_FAST_MAT4_MULT(view.mvp, view.proj, view.modelview);
 
     view.viewport = (*state->_commandBuffer->viewDependentState->viewportData)[0];
+
+    return transform_changed;
 }
 
 bool
-TransformData::passesCull(vsg::RecordTraversal& record) const
+TransformDetail::passesCull(vsg::RecordTraversal& record) const
 {
     return passesCull(record.getState()->_commandBuffer->viewID);
 }
 
 bool
-TransformData::passesCull(std::uint32_t viewID) const
+TransformDetail::passesCull(std::uint32_t viewID) const
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(transform, true);
+    //ROCKY_SOFT_ASSERT_AND_RETURN(transform, true);
 
     auto& view = views[viewID];
 
     // Frustum cull (by center point)
-    if (transform->frustumCulled)
+    if (sync.frustumCulled)
     {
         auto clip = view.mvp[3] / view.mvp[3][3];
         const double t = 1.0;
@@ -99,9 +101,9 @@ TransformData::passesCull(std::uint32_t viewID) const
     }
 
     // horizon cull, if active (geocentric only)
-    if (transform->horizonCulled && horizon && world_srs.isGeocentric())
+    if (sync.horizonCulled && horizon && world_srs.isGeocentric())
     {
-        if (!horizon->isVisible(view.model[3][0], view.model[3][1], view.model[3][2], transform->radius))
+        if (!horizon->isVisible(view.model[3][0], view.model[3][1], view.model[3][2], sync.radius))
         {
             return false;
         }
@@ -111,7 +113,7 @@ TransformData::passesCull(std::uint32_t viewID) const
 }
 
 void
-TransformData::push(vsg::RecordTraversal& record) const
+TransformDetail::push(vsg::RecordTraversal& record) const
 {
     auto& view = views[record.getState()->_commandBuffer->viewID];
 
@@ -124,7 +126,7 @@ TransformData::push(vsg::RecordTraversal& record) const
 }
 
 void
-TransformData::pop(vsg::RecordTraversal& record) const
+TransformDetail::pop(vsg::RecordTraversal& record) const
 {
     auto state = record.getState();
     state->popFrustum();

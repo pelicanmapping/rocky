@@ -26,7 +26,7 @@ namespace ROCKY_NAMESPACE
      * Class fires a callback:
      *   onClick(a);
      */
-    template<typename F>
+    template<typename F = void()>
     class Callback
     {
     private:
@@ -65,6 +65,12 @@ namespace ROCKY_NAMESPACE
                     e.second(args...);
                 firing = false;
             }
+        }
+
+        //! True if there is at least one registered callback to fire
+        operator bool() const
+        {
+            return !entries.empty();
         }
     };
 }

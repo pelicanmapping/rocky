@@ -4,8 +4,7 @@
  * MIT License
  */
 #include "TransformSystem.h"
-#include "TransformData.h"
-#include <rocky/vsg/Utils.h>
+#include "TransformDetail.h"
 
 using namespace ROCKY_NAMESPACE;
 
@@ -13,30 +12,27 @@ namespace
 {
     void on_construct_Transform(entt::registry& r, entt::entity e)
     {
-        auto& data = r.emplace<TransformData>(e);
-        auto& transform = r.get<Transform>(e);
-        data.transform = &transform;
+        r.emplace<TransformDetail>(e);
     }
 
     void on_update_Transform(entt::registry& r, entt::entity e)
     {
-        auto& transform = r.get<Transform>(e);
-        auto& data = r.get<TransformData>(e);
-        data.transform = &transform;
+        if (!r.try_get<TransformDetail>(e))
+            r.emplace<TransformDetail>(e);
     }
 
     void on_destroy_Transform(entt::registry& r, entt::entity e)
     {
-        r.remove<TransformData>(e);
+        r.remove<TransformDetail>(e);
     }
 }
 
 TransformSystem::TransformSystem(ecs::Registry& r) : ecs::System(r)
 {
     // configure EnTT to automatically add the necessary components when a Transform is constructed
-    auto [lock, registry] = _registry.write();
+    auto [lock, registry] = r.write();
 
-    // Each Transform component automatically gets a TransformData component
+    // Each Transform component automatically gets a TransformDetail component
     // that tracks internal per-view transform information.
     registry.on_construct<Transform>().connect<&on_construct_Transform>();
     registry.on_update<Transform>().connect<&on_update_Transform>();
@@ -44,12 +40,34 @@ TransformSystem::TransformSystem(ecs::Registry& r) : ecs::System(r)
 }
 
 void
+TransformSystem::update(VSGContext& context)
+{
+    auto [lock, registry] = _registry.read();
+
+    for(auto&& [entity, transform, detail] : registry.view<Transform, TransformDetail>().each())
+    {
+        if (transform.revision != detail.sync.revision)
+        {
+            detail.sync = transform;
+            detail.sync.revision = transform.revision;
+        }
+    }
+}
+
+void
 TransformSystem::traverse(vsg::RecordTraversal& record) const
 {
     auto [lock, registry] = _registry.read();
 
-    registry.view<TransformData>().each([&](auto& transformData)
+    bool something_changed = false;
+
+    registry.view<TransformDetail>().each([&](auto& transform_detail)
         {
-            transformData.update(record);
+            something_changed = transform_detail.update(record) || something_changed;
         });
+
+    if (something_changed && onChanges)
+    {
+        onChanges.fire();
+    }
 }

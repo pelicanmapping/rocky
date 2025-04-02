@@ -4,18 +4,8 @@
  * MIT License
  */
 #include "GeoTransform.h"
-#include "Utils.h"
-#include "ecs/TransformSystem.h"
-#include <rocky/Horizon.h>
-#include <vsg/state/ViewDependentState.h>
 
 using namespace ROCKY_NAMESPACE;
-
-
-GeoTransform::GeoTransform()
-{
-    transformData.transform = this;
-}
 
 void
 GeoTransform::setPosition(const GeoPoint& position_)
@@ -27,22 +17,19 @@ GeoTransform::setPosition(const GeoPoint& position_)
 void
 GeoTransform::dirty()
 {
-    for (auto& view : transformData.views)
+    for (auto& view : transform_detail.views)
         view.revision = -1;
 }
 
 void
 GeoTransform::traverse(vsg::RecordTraversal& record) const
 {
-    //auto& view = transformData[record.getState()->_commandBuffer->viewID];
+    transform_detail.update(record);
 
-    transformData.update(record);
-    //view.update(record);
-
-    if (transformData.passesCull(record))
+    if (transform_detail.passesCull(record))
     {
-        transformData.push(record);
+        transform_detail.push(record);
         Inherit::traverse(record);
-        transformData.pop(record);
+        transform_detail.pop(record);
     }
 }

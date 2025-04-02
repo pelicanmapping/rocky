@@ -7,6 +7,7 @@
 
 #include <rocky/GeoPoint.h>
 #include <rocky/Units.h>
+#include <functional>
 
 namespace ROCKY_NAMESPACE
 {
@@ -23,8 +24,12 @@ namespace ROCKY_NAMESPACE
         //! Static focal point (if set)
         GeoPoint point;
 
+        //! Function to get a focal point that's called every frame (if set)
+        //! Set this to tether to a moving object.
+        std::function<GeoPoint()> pointFunction;
+
         //! Dynamic focal point (if set)
-        std::shared_ptr<PositionedObject> target;
+        //std::shared_ptr<PositionedObject> target;
 
         //! Heading of the viewer relative to north
         option<Angle> heading = Angle(0.0, Units::DEGREES);
@@ -42,18 +47,20 @@ namespace ROCKY_NAMESPACE
         //! Construct an empty viewpoint
         Viewpoint() { }
 
+        //! Default copy contstructor
         Viewpoint(const Viewpoint&) = default;
 
-        //! The focal point
-        inline const GeoPoint& position() const {
-            return (target ? target->objectPosition() : point);
+        //! The focal position
+        GeoPoint position() const {
+            if (pointFunction)
+                return pointFunction();
+            else
+                return point;
         }
 
-        //! If this a valid viewpoint?
+        //! Is this a valid viewpoint?
         inline bool valid() const {
-            return
-                point.valid() ||
-                (target != nullptr && target->objectPosition().valid());
+            return point.valid() || pointFunction != nullptr;
         }
     };
 

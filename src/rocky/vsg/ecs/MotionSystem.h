@@ -18,6 +18,9 @@ namespace ROCKY_NAMESPACE
     public:
         MotionSystem(ecs::Registry& r) : ecs::System(r) { }
 
+        static std::shared_ptr<MotionSystem> create(ecs::Registry& r) {
+            return std::make_shared<MotionSystem>(r); }
+
         //! Called periodically to update the transforms
         void update(VSGContext& context) override
         {
@@ -33,11 +36,11 @@ namespace ROCKY_NAMESPACE
                 double dt = 1e-9 * (double)(time - last_time).count();
 
                 // Join query all motions + transform pairs:
-                for (auto&& [entity, motion, transform] : registry.view<Motion, Transform>().each())
+                for (auto&& [entity, motion, transform, transform_detail] : registry.view<Motion, Transform, TransformDetail>().each())
                 {
-                    if (motion.velocity != zero)
+                    if (motion.velocity != zero && transform.revision == transform_detail.sync.revision)
                     {
-                        GeoPoint& pos = transform.position;
+                        auto& pos = transform.position;
                         double save_z = pos.z;
 
                         SRSOperation pos_to_world;
@@ -56,19 +59,20 @@ namespace ROCKY_NAMESPACE
 
                         pos.x = coord.x, pos.y = coord.y;
                         pos.z = save_z;
+
                         transform.dirty();
                     }
 
                     motion.velocity += motion.acceleration * dt;
                 }
 
-                for (auto&& [entity, motion, transform] : registry.view<MotionGreatCircle, Transform>().each())
+                for (auto&& [entity, motion, transform, detail] : registry.view<MotionGreatCircle, Transform, TransformDetail>().each())
                 {
                     // Note. For this demo, we just use the length of the velocity and acceleration
                     // vectors and ignore direction.
-                    if (motion.velocity != zero)
+                    if (motion.velocity != zero && transform.revision == detail.sync.revision)
                     {
-                        GeoPoint& pos = transform.position;
+                        auto& pos = transform.position;
                         double save_z = pos.z;
 
                         SRSOperation pos_to_world;
@@ -93,6 +97,7 @@ namespace ROCKY_NAMESPACE
                     }
                 }
             }
+
             last_time = time;
         }
 

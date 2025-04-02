@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "Feature.h"
+#include <stack>
 
 #ifdef ROCKY_HAS_GDAL
 #include <gdal.h> // OGR API

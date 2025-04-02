@@ -2008,9 +2008,9 @@ void
 MapManipulator::updateTether(const vsg::time_point& t)
 {
     // Initial transition is complete, so update the camera for tether.
-    if (_state.setVP1->target)
+    if (_state.setVP1->pointFunction)
     {
-        auto& pos = _state.setVP1->position();
+        auto pos = _state.setVP1->position();
 
         auto p0 = pos.transform(_worldSRS);
         vsg::dvec3 world(p0.x, p0.y, p0.z);

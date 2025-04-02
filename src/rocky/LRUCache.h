@@ -8,7 +8,6 @@
 #include <rocky/Utils.h>
 #include <mutex>
 #include <list>
-#include <algorithm>
 
 namespace ROCKY_NAMESPACE
 {

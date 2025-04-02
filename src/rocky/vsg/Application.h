@@ -12,15 +12,11 @@
 #include <rocky/vsg/DisplayManager.h>
 
 #include <vsg/app/Viewer.h>
-#include <vsg/app/Window.h>
-#include <vsg/app/RenderGraph.h>
-#include <vsg/app/CommandGraph.h>
-#include <vsg/app/View.h>
 #include <vsg/nodes/Group.h>
 
 #include <chrono>
-#include <mutex>
 #include <deque>
+#include <functional>
 
 namespace ROCKY_NAMESPACE
 {
