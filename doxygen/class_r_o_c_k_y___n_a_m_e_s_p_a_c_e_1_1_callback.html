@@ -98,9 +98,13 @@ template&lt;typename... Args&gt; </td></tr>
 <tr class="memitem:ae157971dc466da117dbe589d895fdedf"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><b>fire</b> (<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">Args</a> &amp;&amp;... <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">args</a>) <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">const</a></td></tr>
 <tr class="memdesc:ae157971dc466da117dbe589d895fdedf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Executes all callback functions with the provided args. <br /></td></tr>
 <tr class="separator:ae157971dc466da117dbe589d895fdedf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90a2cb32c5fb21ef18497a2e91cea9c4" id="r_a90a2cb32c5fb21ef18497a2e91cea9c4"><td class="memItemLeft" align="right" valign="top"><a id="a90a2cb32c5fb21ef18497a2e91cea9c4" name="a90a2cb32c5fb21ef18497a2e91cea9c4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>operator bool</b> () <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">const</a></td></tr>
+<tr class="memdesc:a90a2cb32c5fb21ef18497a2e91cea9c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if there is at least one registered callback to fire. <br /></td></tr>
+<tr class="separator:a90a2cb32c5fb21ef18497a2e91cea9c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">typename</a> <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">F</a>&gt;<br />
+<div class="textblock"><div class="compoundTemplParams">template&lt;<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">typename</a> <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">F</a> = void()&gt;<br />
 class ROCKY_NAMESPACE::Callback&lt; F &gt;</div><p>Easy way to add a thread-safe callback to a class.</p>
 <p>Developer defines a callback, usually as a class member: Callback&lt;void(int)&gt; onClick;</p>
 <p>User adds a callback: instance-&gt;onClick([](int a) { ... });</p>
