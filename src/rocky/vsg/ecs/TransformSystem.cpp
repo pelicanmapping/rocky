@@ -49,7 +49,6 @@ TransformSystem::update(VSGContext& context)
         if (transform.revision != detail.sync.revision)
         {
             detail.sync = transform;
-            detail.sync.revision = transform.revision;
         }
     }
 }

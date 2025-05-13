@@ -29,6 +29,11 @@ namespace ROCKY_NAMESPACE
     //! attach to each entity that has a Transform component.
     struct TransformDetail
     {
+        //! Construct the object, and force the sychronization Transform to be dirty.
+        TransformDetail() {
+            sync.revision = -1;
+        }
+
         // Synchronous copy of the corresponding Transform component.
         // TransformSystem will sync this as necessary so that the user can
         // safely and frame-accurately perform asynchronous Transform updates.
