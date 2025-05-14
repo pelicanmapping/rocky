@@ -54,6 +54,8 @@ ROCKY_NAMESPACE::ImGuiIntegration::addContextGroup(
     // create the manager and add it to the proper render graph:
     auto contextGroup = ImGuiContextGroup::create(window);
 
+    ROCKY_SOFT_ASSERT_AND_RETURN(contextGroup->imguiContext(), {});
+
     auto& viewData = displayManager->_viewData[view];
     viewData.guiContextGroup = contextGroup;
     viewData.parentRenderGraph->addChild(contextGroup);

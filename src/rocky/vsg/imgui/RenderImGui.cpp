@@ -135,6 +135,12 @@ void RenderImGui::_init(
 
     // ROCKY
     _imguiContext = ImGui::CreateContext();
+
+    if (_imguiContext == nullptr)
+    {
+        return;
+    }
+
     ImGui::SetCurrentContext(_imguiContext);
 
     //if (!ImGui::GetCurrentContext())

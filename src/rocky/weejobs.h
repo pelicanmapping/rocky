@@ -1259,7 +1259,9 @@ namespace WEEJOBS_NAMESPACE
     // instaniate the weejobs runtime singleton.
 #define WEEJOBS_INSTANCE \
     namespace WEEJOBS_NAMESPACE { \
-        static detail::runtime runtime_singleton_instance; \
-        detail::runtime& instance() { return runtime_singleton_instance; } \
+        detail::runtime& instance() { \
+            static detail::runtime runtime_singleton_instance; \
+            return runtime_singleton_instance; \
+        } \
     }
 }

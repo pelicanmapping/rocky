@@ -370,37 +370,43 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
 #ifdef ROCKY_HAS_IMGUI
 
         auto contextGroup = ImGuiIntegration::addContextGroup(this, window, view);
-
-        auto imguiContext = contextGroup->imguiContext();
-
-        // disable the .ini file for ImGui since we don't want to save stuff for internal widgetry
-        ImGui::SetCurrentContext(imguiContext);
-        ImGui::GetIO().IniFilename = nullptr;
-
-        // Next, add a node that will run the actual gui rendering callbacks (like the one
-        // installed by the WidgetSystem).
-        contextGroup->addChild(detail::GuiRendererDispatcher::create(imguiContext, context));
-
-        if (app)
+        if (contextGroup)
         {
-            auto viewID = view->viewID;
-            VSGContext vsgContext = context;
+            auto imguiContext = contextGroup->imguiContext();
 
-            // We still need to process ImGui events even if we're not rendering the frame,
-            // so install this no-render function:
-            auto func = [vsgContext, viewID, imguiContext]()
-                {
-                    ImGui::SetCurrentContext(imguiContext);
-                    ImGui::NewFrame();
-                    for (auto& render : vsgContext->guiRenderers)
+            // disable the .ini file for ImGui since we don't want to save stuff for internal widgetry
+            ImGui::SetCurrentContext(imguiContext);
+            ImGui::GetIO().IniFilename = nullptr;
+
+            // Next, add a node that will run the actual gui rendering callbacks (like the one
+            // installed by the WidgetSystem).
+            contextGroup->addChild(detail::GuiRendererDispatcher::create(imguiContext, context));
+
+            if (app)
+            {
+                auto viewID = view->viewID;
+                VSGContext vsgContext = context;
+
+                // We still need to process ImGui events even if we're not rendering the frame,
+                // so install this no-render function:
+                auto func = [vsgContext, viewID, imguiContext]()
                     {
-                        render(viewID, imguiContext);
-                    }
-                    ImGui::EndFrame();
-                };
+                        ImGui::SetCurrentContext(imguiContext);
+                        ImGui::NewFrame();
+                        for (auto& render : vsgContext->guiRenderers)
+                        {
+                            render(viewID, imguiContext);
+                        }
+                        ImGui::EndFrame();
+                    };
 
-            viewdata.guiOfflineEventProcessor = std::make_shared<std::function<void()>>(func);
-            app->noRenderFunctions.emplace_front(viewdata.guiOfflineEventProcessor);
+                viewdata.guiOfflineEventProcessor = std::make_shared<std::function<void()>>(func);
+                app->noRenderFunctions.emplace_front(viewdata.guiOfflineEventProcessor);
+            }
+        }
+        else
+        {
+            Log()->warn("Failed to create an ImGui context for this view.");
         }
 #endif
     }

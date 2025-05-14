@@ -36,13 +36,6 @@ ROCKY_ABOUT(tinyxml, std::to_string(TIXML_MAJOR_VERSION) + "." + std::to_string(
 
 using namespace ROCKY_NAMESPACE;
 
-//struct ROCKY_NAMESPACE::Context::Implementation
-//{
-//    IOOptions ioOptions;
-//};
-//
-//const Status& Context::status() { return _global_status; }
-
 // Static object factory map.
 // Normally this would go in static.cpp, but since the registration macro (ROCKY_ADD_OBJECT_FACTORY)
 // runs at static initialization time itself, we need to construct the factories map on demand.
@@ -76,15 +69,12 @@ namespace
 std::set<std::string>&
 ContextImpl::about()
 {
-    using About = std::set<std::string>;
-    static About about;
+    static std::set<std::string> about;
     return about;
 }
 
 ContextImpl::ContextImpl()
 {
-    //_impl = std::make_shared<Implementation>();
-
 #ifdef ROCKY_HAS_GDAL
     OGRRegisterAll();
     GDALAllRegister();
@@ -110,39 +100,16 @@ ContextImpl::ContextImpl()
 
 #endif // ROCKY_HAS_GDAL
 
-    // Check for some environment variables that are important to rocky apps
-    //if (::getenv("PROJ_DATA") == nullptr)
-    //{
-    //    Log()->warn("Environment variable PROJ_DATA is not set");
-    //}
-
-    //_global_status = Status_OK;
-
     // Tell the weejobs library how to set a thread name
     jobs::set_thread_name_function([](const char* value) {
         util::setThreadName(value);
         });
 }
 
-//ContextImpl::ContextImpl(const ContextImpl& rhs)
-//{
-//    // Tell the weejobs library how to set a thread name
-//    jobs::set_thread_name_function([](const char* value) {
-//        util::setThreadName(value);
-//        });
-//}
-
 ContextImpl::~ContextImpl()
 {
     jobs::shutdown();
-    //_global_status = Status_ServiceUnavailable;
 }
-
-//IOOptions&
-//Context::io()
-//{
-//    return _impl->ioOptions;
-//}
 
 UID rocky::createUID()
 {

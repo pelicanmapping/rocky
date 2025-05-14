@@ -18,6 +18,19 @@ using namespace ROCKY_NAMESPACE;
 
 ROCKY_ABOUT(proj, std::to_string(PROJ_VERSION_MAJOR) + "." + std::to_string(PROJ_VERSION_MINOR));
 
+
+// STATIC INITIALIZATION: built-in common SRS definitions
+const SRS SRS::WGS84("wgs84");
+const SRS SRS::ECEF("geocentric");
+const SRS SRS::SPHERICAL_MERCATOR("spherical-mercator");
+const SRS SRS::PLATE_CARREE("plate-carree");
+const SRS SRS::MOON("moon");
+const SRS SRS::EMPTY;
+
+// STATIC INITIALIZATION: PROJ library debug message callback
+std::function<void(int level, const char* msg)> SRS::projMessageCallback = nullptr;
+
+
 namespace
 {
     void redirect_proj_log(void* user, int level, const char* msg)
@@ -68,6 +81,8 @@ namespace
     //! SRS data factory and PROJ main interface
     struct SRSFactory : public std::unordered_map<std::string, SRSEntry>
     {
+        SRSFactory() = default;
+
         //! destroy cache entries and threading context upon descope
         ~SRSFactory()
         {
@@ -521,14 +536,6 @@ namespace
 }
 
 
-#if 0
-// Note! Moved these to Instance.cpp since there's a static startup dependency!
-const SRS SRS::WGS84("epsg:4979");
-const SRS SRS::ECEF("geocentric");
-const SRS SRS::SPHERICAL_MERCATOR("spherical-mercator");
-const SRS SRS::PLATE_CARREE("plate-carree");
-const SRS SRS::EMPTY;
-#endif
 
 std::string
 SRS::projVersion()

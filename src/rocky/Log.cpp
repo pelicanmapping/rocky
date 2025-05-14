@@ -14,42 +14,38 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    class LogSettings
+    struct LogInitializer
     {
-    public:
-        LogSettings();
+        LogInitializer()
+        {
+            const spdlog::level::level_enum default_level = spdlog::level::info;
+            try
+            {
+                auto logger = spdlog::stdout_color_mt("rocky");
+                logger->set_pattern("%^[%n %l]%$ %v");
+
+                std::string log_level = util::getEnvVar("ROCKY_LOG_LEVEL");
+                if (log_level.empty()) log_level = util::getEnvVar("ROCKY_NOTIFY_LEVEL");
+                if (util::ciEquals(log_level, "trace")) logger->set_level(spdlog::level::trace);
+                else if (util::ciEquals(log_level, "info")) logger->set_level(spdlog::level::info);
+                else if (util::ciEquals(log_level, "debug")) logger->set_level(spdlog::level::debug);
+                else if (util::ciEquals(log_level, "warn")) logger->set_level(spdlog::level::warn);
+                else if (util::ciEquals(log_level, "error")) logger->set_level(spdlog::level::err);
+                else if (util::ciEquals(log_level, "critical")) logger->set_level(spdlog::level::critical);
+                else if (util::ciEquals(log_level, "off")) logger->set_level(spdlog::level::off);
+                else logger->set_level(default_level);
+            }
+            catch (spdlog::spdlog_ex ex)
+            {
+                std::cout << "SPDLOG EXCEPTION: " << std::string(ex.what()) << std::endl;
+                std::exit(-1);
+            }
+        }
     };
-}
-
-LogSettings _rocky_log_settings_instance;
-
-LogSettings::LogSettings()
-{
-    const spdlog::level::level_enum default_level = spdlog::level::info;
-    try
-    {
-        auto logger = spdlog::stdout_color_mt("rocky");
-        logger->set_pattern("%^[%n %l]%$ %v");
-
-        std::string log_level = util::getEnvVar("ROCKY_LOG_LEVEL");
-        if (log_level.empty()) log_level = util::getEnvVar("ROCKY_NOTIFY_LEVEL");
-        if (util::ciEquals(log_level, "trace")) logger->set_level(spdlog::level::trace);
-        else if (util::ciEquals(log_level, "info")) logger->set_level(spdlog::level::info);
-        else if (util::ciEquals(log_level, "debug")) logger->set_level(spdlog::level::debug);
-        else if (util::ciEquals(log_level, "warn")) logger->set_level(spdlog::level::warn);
-        else if (util::ciEquals(log_level, "error")) logger->set_level(spdlog::level::err);
-        else if (util::ciEquals(log_level, "critical")) logger->set_level(spdlog::level::critical);
-        else if (util::ciEquals(log_level, "off")) logger->set_level(spdlog::level::off);
-        else logger->set_level(default_level);
-    }
-    catch (spdlog::spdlog_ex ex)
-    {
-        std::cout << "SPDLOG EXCEPTION: " << std::string(ex.what()) << std::endl;
-        std::exit(-1);
-    }
 }
 
 std::shared_ptr<spdlog::logger> rocky::Log()
 {
+    static LogInitializer log_initializer;
     return spdlog::get("rocky");
 }
