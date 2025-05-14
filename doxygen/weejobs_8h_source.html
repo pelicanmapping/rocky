@@ -1281,10 +1281,12 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l01259" name="l01259"></a><span class="lineno"> 1259</span>    <span class="comment">// instaniate the weejobs runtime singleton.</span></div>
 <div class="line"><a id="l01260" name="l01260"></a><span class="lineno"> 1260</span><span class="preprocessor">#define WEEJOBS_INSTANCE \</span></div>
 <div class="line"><a id="l01261" name="l01261"></a><span class="lineno"> 1261</span><span class="preprocessor">    namespace WEEJOBS_NAMESPACE { \</span></div>
-<div class="line"><a id="l01262" name="l01262"></a><span class="lineno"> 1262</span><span class="preprocessor">        static detail::runtime runtime_singleton_instance; \</span></div>
-<div class="line"><a id="l01263" name="l01263"></a><span class="lineno"> 1263</span><span class="preprocessor">        detail::runtime&amp; instance() { return runtime_singleton_instance; } \</span></div>
-<div class="line"><a id="l01264" name="l01264"></a><span class="lineno"> 1264</span><span class="preprocessor">    }</span></div>
-<div class="line"><a id="l01265" name="l01265"></a><span class="lineno"> 1265</span>}</div>
+<div class="line"><a id="l01262" name="l01262"></a><span class="lineno"> 1262</span><span class="preprocessor">        detail::runtime&amp; instance() { \</span></div>
+<div class="line"><a id="l01263" name="l01263"></a><span class="lineno"> 1263</span><span class="preprocessor">            static detail::runtime runtime_singleton_instance; \</span></div>
+<div class="line"><a id="l01264" name="l01264"></a><span class="lineno"> 1264</span><span class="preprocessor">            return runtime_singleton_instance; \</span></div>
+<div class="line"><a id="l01265" name="l01265"></a><span class="lineno"> 1265</span><span class="preprocessor">        } \</span></div>
+<div class="line"><a id="l01266" name="l01266"></a><span class="lineno"> 1266</span><span class="preprocessor">    }</span></div>
+<div class="line"><a id="l01267" name="l01267"></a><span class="lineno"> 1267</span>}</div>
 </div>
 <div class="ttc" id="aclass_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1cancelable_html"><div class="ttname"><a href="class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1cancelable.html">WEEJOBS_NAMESPACE::cancelable</a></div><div class="ttdef"><b>Definition</b> weejobs.h:57</div></div>
 <div class="ttc" id="aclass_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1detail_1_1semaphore_html"><div class="ttname"><a href="class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1detail_1_1semaphore.html">WEEJOBS_NAMESPACE::detail::semaphore</a></div><div class="ttdef"><b>Definition</b> weejobs.h:170</div></div>
