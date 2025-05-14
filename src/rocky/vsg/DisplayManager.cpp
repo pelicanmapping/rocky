@@ -376,8 +376,6 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
         // disable the .ini file for ImGui since we don't want to save stuff for internal widgetry
         ImGui::SetCurrentContext(imguiContext);
         ImGui::GetIO().IniFilename = nullptr;
-        ImGui::GetIO().Fonts->AddFontDefault();
-        ImGui::GetIO().Fonts->Build();
 
         // Next, add a node that will run the actual gui rendering callbacks (like the one
         // installed by the WidgetSystem).
