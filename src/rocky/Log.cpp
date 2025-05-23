@@ -7,16 +7,17 @@
 #include "Context.h"
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <mutex>
 
 ROCKY_ABOUT(spdlog, std::to_string(SPDLOG_VER_MAJOR) + "." + std::to_string(SPDLOG_VER_MINOR) + "." + std::to_string(SPDLOG_VER_PATCH));
 
 using namespace ROCKY_NAMESPACE;
 
-namespace
+Logger rocky::Log()
 {
-    struct LogInitializer
-    {
-        LogInitializer()
+    static std::once_flag s_once;
+
+    std::call_once(s_once, []()
         {
             const spdlog::level::level_enum default_level = spdlog::level::info;
             try
@@ -40,12 +41,7 @@ namespace
                 std::cout << "SPDLOG EXCEPTION: " << std::string(ex.what()) << std::endl;
                 std::exit(-1);
             }
-        }
-    };
-}
+        });
 
-std::shared_ptr<spdlog::logger> rocky::Log()
-{
-    static LogInitializer log_initializer;
     return spdlog::get("rocky");
 }

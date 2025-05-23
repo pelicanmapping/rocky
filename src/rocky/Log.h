@@ -11,5 +11,6 @@ namespace ROCKY_NAMESPACE
 {
     namespace log = spdlog;
 
-    extern ROCKY_EXPORT std::shared_ptr<spdlog::logger> Log();
+    using Logger = std::shared_ptr<spdlog::logger>;
+    extern ROCKY_EXPORT Logger Log();
 }
