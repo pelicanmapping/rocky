@@ -51,7 +51,7 @@ endif()
 
 # GDAL - geospatial data abstraction library
 if(BUILD_WITH_GDAL)
-    find_package(GDAL CONFIG REQUIRED)
+    find_package(GDAL REQUIRED)
     set(ROCKY_HAS_GDAL TRUE) # Version.h.in
 endif()
 
