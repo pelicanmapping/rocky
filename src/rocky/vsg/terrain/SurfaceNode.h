@@ -75,7 +75,7 @@ namespace ROCKY_NAMESPACE
     {
         auto* state = rv.getState();
 
-        if (_worldPoints.size() < (POLYTOPE_SIZE * 8))
+        if (_worldPoints.size() < 8)
             return false;
 
         // bounding box visibility check; this is much tighter than the bounding
