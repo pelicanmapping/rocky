@@ -52,10 +52,6 @@ namespace ROCKY_NAMESPACE
         ContextImpl();
 
     private:
-        //struct Implementation;
-        //std::shared_ptr<Implementation> _impl;
-
-        //static Status _global_status;
         static std::shared_ptr<Object> createObjectImpl(const std::string& name, const std::string& JSON, const IOOptions& io);
 
         friend class ContextFactory;

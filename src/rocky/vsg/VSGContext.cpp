@@ -157,7 +157,6 @@ namespace
     };
 #endif
 
-    // Adapted from https://oroboro.com/image-format-magic-bytes
     std::string deduceContentTypeFromStream(std::istream& stream)
     {
         // Get the length of the stream

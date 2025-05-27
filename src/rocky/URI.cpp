@@ -49,6 +49,7 @@ bool URI::supportsHTTPS()
 #endif
 }
 
+// Adapted from https://oroboro.com/image-format-magic-bytes
 std::string
 URI::inferContentType(const std::string& buffer)
 {
@@ -603,7 +604,7 @@ URI::read(const IOOptions& io) const
     if (io.services.contentCache)
     {
         auto cached = io.services.contentCache->get(full());
-        if (cached.status.ok())
+        if (cached.has_value() && cached->status.ok())
         {
             if (httpDebug)
             {
@@ -612,7 +613,7 @@ URI::read(const IOOptions& io) const
                     + "% (" + full() + ")");
             }
 
-            IOResult<Content> result(cached.value);
+            IOResult<Content> result(cached->value);
             result.fromCache = true;
             return result;
         }
