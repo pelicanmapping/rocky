@@ -69,7 +69,7 @@ LayerCollection::remove(std::shared_ptr<Layer> layer)
         index = 0;
         for (auto i = _layers.begin(); i != _layers.end(); ++i)
         {
-            if (layer == layerToRemove)
+            if (*i == layerToRemove)
             {
                 _layers.erase(i);
                 new_revision = ++_map->_dataModelRevision;

@@ -768,3 +768,75 @@ TEST_CASE("Earth File")
         }
     }
 }
+
+TEST_CASE("LayersCollection API")
+{
+    // Create a map and get its layer collection
+    auto map = Map::create();
+    REQUIRE(map);
+
+    auto& layers = map->layers();
+    CHECK(layers.size() == 0);
+    CHECK(layers.empty());
+
+    // Create some test layers
+    auto layer1 = TestLayer::create();
+    layer1->setName("Layer1");
+    auto layer2 = TestLayer::create();
+    layer2->setName("Layer2");
+    auto layer3 = TestLayer::create();
+    layer3->setName("Layer3");
+
+    // Add layers
+    CHECK(layers.add(layer1).ok());
+    CHECK(layers.add(layer2).ok());
+    CHECK(layers.add(layer3).ok());
+    CHECK(layers.size() == 3);
+
+    // Check all()
+    auto all_layers = layers.all();
+    CHECK(all_layers.size() == 3);
+
+    // Check indexOf
+    CHECK(layers.indexOf(layer1) == 0);
+    CHECK(layers.indexOf(layer2) == 1);
+    CHECK(layers.indexOf(layer3) == 2);
+
+    // Check at()
+    auto at1 = layers.at<TestLayer>(0);
+    CHECK(at1 == layer1);
+    auto at2 = layers.at<TestLayer>(1);
+    CHECK(at2 == layer2);
+
+    // Check withName()
+    auto by_name = layers.withName<TestLayer>("Layer2");
+    CHECK(by_name == layer2);
+
+    // Check withUID()
+    auto by_uid = layers.withUID<TestLayer>(layer3->uid());
+    CHECK(by_uid == layer3);
+
+    // Check firstOfType and ofType
+    auto first = layers.firstOfType<TestLayer>();
+    CHECK(first == layer1);
+    auto all_of_type = layers.ofType<TestLayer>();
+    CHECK(all_of_type.size() == 3);
+
+    // Move a layer
+    layers.move(layer3, 0);
+    CHECK(layers.indexOf(layer3) == 0);
+    CHECK(layers.indexOf(layer1) == 1);
+    CHECK(layers.indexOf(layer2) == 2);
+
+    // Remove a layer
+    layers.remove(layer2);
+    CHECK(layers.size() == 2);
+    CHECK(layers.indexOf(layer3) == 0);
+    CHECK(layers.indexOf(layer1) == 1);
+
+    // Remove all layers
+    layers.remove(layer1);
+    layers.remove(layer3);
+    CHECK(layers.size() == 0);
+    CHECK(layers.empty());
+}
