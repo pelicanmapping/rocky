@@ -75,6 +75,9 @@ namespace ROCKY_NAMESPACE
     {
         auto* state = rv.getState();
 
+        if (_worldPoints.size() < (POLYTOPE_SIZE * 8))
+            return false;
+
         // bounding box visibility check; this is much tighter than the bounding
         // sphere. _frustumStack.top() contains the frustum in world coordinates.
         // https://github.com/vsg-dev/VulkanSceneGraph/blob/master/include/vsg/vk/State.h#L267
