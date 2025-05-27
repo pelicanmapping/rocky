@@ -163,6 +163,11 @@ int main(int argc, char** argv)
     // Add some data to the map if necessary.
     if (app.mapNode->map->layers().empty())
     {
+        // Add elevation layer
+        auto elevationLayer = rocky::TMSElevationLayer::create();
+        elevationLayer->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
+        app.mapNode->map->add(elevationLayer);
+
         // add an imagery layer to the map
         auto layer = rocky::TMSImageLayer::create();
         layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7";

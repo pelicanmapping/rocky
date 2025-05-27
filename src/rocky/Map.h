@@ -75,7 +75,6 @@ namespace ROCKY_NAMESPACE
         //option<Profile> _profile;
         Revision _dataModelRevision = 0;
         LayerCollection _imageLayers;
-        LayerCollection _elevationLayers;
 
         friend class LayerCollection;
     };
