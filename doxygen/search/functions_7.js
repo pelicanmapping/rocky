@@ -24,7 +24,7 @@ var searchData=
   ['get_5fpool_21',['get_pool',['../namespace_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e.html#a2912ee8681e1be4aff4d489c0abdd779',1,'WEEJOBS_NAMESPACE']]],
   ['getallkeysatlod_22',['getAllKeysAtLOD',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a8f90397862ad7b187c0aa738088fbf57',1,'ROCKY_NAMESPACE::Profile']]],
   ['getat_23',['GetAt',['../class_r_tree.html#a9199a66bf611567cd2b7b0229ecbc301',1,'RTree']]],
-  ['getbounds_24',['getbounds',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent.html#aea7ca1bb872b55b87ac38cc675ce6308',1,'ROCKY_NAMESPACE::GeoExtent::getBounds()'],['../class_r_tree_1_1_iterator.html#a65121f5016c2b1bf4696797748092709',1,'RTree::Iterator::GetBounds()']]],
+  ['getbounds_24',['getbounds',['../class_r_tree_1_1_iterator.html#a65121f5016c2b1bf4696797748092709',1,'RTree::Iterator::GetBounds()'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent.html#aea7ca1bb872b55b87ac38cc675ce6308',1,'ROCKY_NAMESPACE::GeoExtent::getBounds(double &amp;xmin, double &amp;ymin, double &amp;xmax, double &amp;ymax) const']]],
   ['getcentroid_25',['getCentroid',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_extent.html#a5f4845e6c9d83843c2b830e7863139d5',1,'ROCKY_NAMESPACE::GeoExtent']]],
   ['getcommandgraph_26',['getCommandGraph',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_display_manager.html#abfa77f436649a2a3175ec97f7675f299',1,'ROCKY_NAMESPACE::DisplayManager']]],
   ['getcomputecommandgraph_27',['getComputeCommandGraph',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#aadf516673bcf990b2eb6739becff3b8d',1,'ROCKY_NAMESPACE::VSGContextImpl']]],
