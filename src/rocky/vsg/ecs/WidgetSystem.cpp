@@ -49,7 +49,7 @@ WidgetSystemNode::initialize(VSGContext& context)
 {
     // register me as a gui rendering callback.
     auto render = [this](std::uint32_t viewID, void* imguiContext)
-        {            
+        {
             auto [lock, registry] = _registry.read();
 
             ImGui::SetCurrentContext((ImGuiContext*)imguiContext);
@@ -119,8 +119,8 @@ WidgetSystemNode::update(VSGContext& context)
             {
                 auto& view = xdetail.views[viewID];
                 auto clip = view.mvp[3] / view.mvp[3][3];
-                renderable.screen[viewID].x = (clip.x + 1.0) * 0.5 * (double)view.viewport[2];
-                renderable.screen[viewID].y = (clip.y + 1.0) * 0.5 * (double)view.viewport[3];
+                renderable.screen[viewID].x = (clip.x + 1.0) * 0.5 * (double)view.viewport[2] + (double)view.viewport[0];
+                renderable.screen[viewID].y = (clip.y + 1.0) * 0.5 * (double)view.viewport[3] + (double)view.viewport[1];
             }
         });
 }
