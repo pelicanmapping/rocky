@@ -64,7 +64,7 @@ namespace ROCKY_NAMESPACE
         using LayerMoved = void(std::shared_ptr<Layer>, unsigned oldIndex, unsigned newIndex, Revision);
         Callback<LayerMoved> onLayerMoved;
 
-        //! Remove a callback added to thie object
+        //! Remove a callback added to this object
         void removeCallback(UID uid);
 
     protected:
@@ -72,20 +72,19 @@ namespace ROCKY_NAMESPACE
 
     private:
         mutable std::shared_mutex _mapDataMutex;
-        //option<Profile> _profile;
         Revision _dataModelRevision = 0;
-        LayerCollection _imageLayers;
+        LayerCollection _layers;
 
         friend class LayerCollection;
     };
 
 
     inline LayerCollection& Map::layers() {
-        return _imageLayers;
+        return _layers;
     }
 
     inline const LayerCollection& Map::layers() const {
-        return _imageLayers;
+        return _layers;
     }
 }
 

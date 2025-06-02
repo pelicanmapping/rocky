@@ -15,7 +15,7 @@ using namespace ROCKY_NAMESPACE;
 #define LC "[Map] "
 
 Map::Map() :
-    _imageLayers(this)
+    _layers(this)
 {
     // nop
 }
