@@ -174,7 +174,47 @@ map->add(elevation);
 TBD.
 
 ## Spatial Reference Systems
-TBD.
+A **Spatial Reference System (SRS)** defines how geographic data is mapped to real-world locations. It specifies the coordinate system, projection, and datum used to interpret spatial data. SRSs are essential for ensuring that geographic features are accurately located and can be combined or compared across different datasets.
+
+In Rocky, the `SRS` class (see `SRS.h`) provides a convenient interface for working with spatial reference systems. It allows you to define, query, and convert between different coordinate systems, such as geographic (latitude/longitude) and projected (e.g., UTM, Web Mercator).
+
+### Built-in SRS Definitions
+
+Rocky provides several commonly used SRS definitions as static constants in `SRS.h`, so you don't need to remember EPSG codes or WKT strings. These include:
+
+- `rocky::SRS::WGS84` &mdash; Geographic coordinates (latitude/longitude, EPSG:4326)
+- `rocky::SRS::SPHERICAL_MERCATOR` &mdash; Spherical Mercator (meters, EPSG:3857)
+- `rocky::SRS::ECEF` &mdash; Earth Centered Earth Fixed (meters, geocentric)
+
+You can use these directly in your code:
+```c++
+#include <rocky/SRS.h>
+
+// Use the built-in WGS84 SRS
+auto srs_geographic = rocky::SRS::WGS84;
+```
+
+### Creating and Using SRS
+
+You can also create an SRS from an EPSG code, WKT string, or PROJ init string:
+```c++
+rocky::SRS srs_custom("EPSG:32633"); // UTM zone 33N
+```
+
+**Checking SRS Properties:**
+```c++
+if (srs_geographic.isGeographic()) {
+    // This SRS uses latitude/longitude coordinates
+}
+```
+
+**Transforming Coordinates:**
+```c++
+rocky::GeoPoint geo_point(srs_geographic, 12.0, 55.0, 0.0); // lon, lat, alt
+auto utm_point = geo_point.transform(srs_custom);
+```
+
+Spatial reference systems ensure that your map data aligns correctly, support accurate distance and area calculations, and enable visualization in a wide variety of map projections. For more details, refer to the documentation in `SRS.h` and the examples provided in the Rocky source code.
 
 # Annotations
 Rocky has a set of built-in primitives for displaying objects on the map.
