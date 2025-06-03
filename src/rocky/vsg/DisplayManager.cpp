@@ -211,16 +211,16 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
 
     addViewToWindow(view, window);
 
+    // add the new window to our viewer
+    context->viewer->addWindow(window);
+    context->viewer->addRecordAndSubmitTaskAndPresentation({ commandgraph });
+
     // Tell Rocky it needs to mutex-protect the terrain engine
     // now that we have more than one window.
     if (app && context->viewer->windows().size() > 1)
     {
         app->mapNode->terrainSettings().supportMultiThreadedRecord = true;
     }
-
-    // add the new window to our viewer
-    context->viewer->addWindow(window);
-    context->viewer->addRecordAndSubmitTaskAndPresentation({ commandgraph });
 
     // install a manipulator for the new view:
     if (!user_provied_view && app)
