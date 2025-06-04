@@ -102,9 +102,14 @@ Classes</h2></td></tr>
 Public Types</h2></td></tr>
 <tr class="memitem:ac8b52c62cbe7ecd86eca1aea1363441a" id="r_ac8b52c62cbe7ecd86eca1aea1363441a"><td class="memItemLeft" align="right" valign="top"><a id="ac8b52c62cbe7ecd86eca1aea1363441a" name="ac8b52c62cbe7ecd86eca1aea1363441a"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>PixelFormat</b> { <br />
 &#160;&#160;<b>R8_UNORM</b>
+, <b>R8_SRGB</b>
 , <b>R8G8_UNORM</b>
-, <b>R8G8B8_UNORM</b>
+, <b>R8G8_SRGB</b>
+, <br />
+&#160;&#160;<b>R8G8B8_UNORM</b>
+, <b>R8G8B8_SRGB</b>
 , <b>R8G8B8A8_UNORM</b>
+, <b>R8G8B8A8_SRGB</b>
 , <br />
 &#160;&#160;<b>R16_UNORM</b>
 , <b>R32_SFLOAT</b>
@@ -300,8 +305,8 @@ PixelFormat&#160;</td><td class="memItemRight" valign="bottom"><b>_pixelFormat</
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-static-attribs" name="pro-static-attribs"></a>
 Static Protected Attributes</h2></td></tr>
-<tr class="memitem:a2e587c469523a72e881c3f3c4c4c277f" id="r_a2e587c469523a72e881c3f3c4c4c277f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">static</a> Layout&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a2e587c469523a72e881c3f3c4c4c277f">_layouts</a> [7]</td></tr>
-<tr class="separator:a2e587c469523a72e881c3f3c4c4c277f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a369b6627db612d564de13e1e72dfe860" id="r_a369b6627db612d564de13e1e72dfe860"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">static</a> Layout&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image.html#a369b6627db612d564de13e1e72dfe860">_layouts</a> [11]</td></tr>
+<tr class="separator:a369b6627db612d564de13e1e72dfe860"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A raster image </p>
@@ -415,8 +420,8 @@ Static Protected Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="a2e587c469523a72e881c3f3c4c4c277f" name="a2e587c469523a72e881c3f3c4c4c277f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2e587c469523a72e881c3f3c4c4c277f">&#9670;&#160;</a></span>_layouts</h2>
+<a id="a369b6627db612d564de13e1e72dfe860" name="a369b6627db612d564de13e1e72dfe860"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a369b6627db612d564de13e1e72dfe860">&#9670;&#160;</a></span>_layouts</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -437,9 +442,13 @@ Static Protected Attributes</h2></td></tr>
 <b>Initial value:</b><div class="fragment"><div class="line">=</div>
 <div class="line">{</div>
 <div class="line">    { &amp;NORM8&lt;uchar&gt;::read, &amp;NORM8&lt;uchar&gt;::write, 1, 1, R8_UNORM },</div>
+<div class="line">    { &amp;NORM8&lt;uchar&gt;::read, &amp;NORM8&lt;uchar&gt;::write, 1, 1, R8_SRGB },</div>
 <div class="line">    { &amp;NORM8&lt;uchar&gt;::read, &amp;NORM8&lt;uchar&gt;::write, 2, 2, R8G8_UNORM },</div>
+<div class="line">    { &amp;NORM8&lt;uchar&gt;::read, &amp;NORM8&lt;uchar&gt;::write, 2, 2, R8G8_SRGB },</div>
 <div class="line">    { &amp;NORM8&lt;uchar&gt;::read, &amp;NORM8&lt;uchar&gt;::write, 3, 3, R8G8B8_UNORM },</div>
+<div class="line">    { &amp;NORM8&lt;uchar&gt;::read, &amp;NORM8&lt;uchar&gt;::write, 3, 3, R8G8B8_SRGB },</div>
 <div class="line">    { &amp;NORM8&lt;uchar&gt;::read, &amp;NORM8&lt;uchar&gt;::write, 4, 4, R8G8B8A8_UNORM },</div>
+<div class="line">    { &amp;NORM8&lt;uchar&gt;::read, &amp;NORM8&lt;uchar&gt;::write, 4, 4, R8G8B8A8_SRGB },</div>
 <div class="line">    { &amp;NORM16&lt;ushort&gt;::read, &amp;NORM16&lt;ushort&gt;::write, 1, 2, R16_UNORM },</div>
 <div class="line">    { &amp;FLOAT&lt;float&gt;::read, &amp;FLOAT&lt;float&gt;::write, 1, 4, R32_SFLOAT },</div>
 <div class="line">    { &amp;FLOAT&lt;double&gt;::read, &amp;FLOAT&lt;double&gt;::write, 1, 8, R64_SFLOAT }</div>
