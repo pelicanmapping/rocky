@@ -23,9 +23,13 @@ namespace ROCKY_NAMESPACE
 
         enum PixelFormat {
             R8_UNORM,
+            R8_SRGB,
             R8G8_UNORM,
+            R8G8_SRGB,
             R8G8B8_UNORM,
+            R8G8B8_SRGB,
             R8G8B8A8_UNORM,
+            R8G8B8A8_SRGB,
             R16_UNORM,
             R32_SFLOAT,
             R64_SFLOAT,
@@ -213,7 +217,7 @@ namespace ROCKY_NAMESPACE
             int bytes_per_pixel;
             PixelFormat format;
         };
-        static Layout _layouts[7];
+        static Layout _layouts[11];
 
         inline unsigned sizeof_miplevel(unsigned level) const;
         inline unsigned char* data_at_miplevel(unsigned level);

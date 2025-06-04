@@ -258,19 +258,20 @@ namespace ROCKY_NAMESPACE
                     GDALRasterBand* M = detail::findBandByColorInterp(ds, GCI_GrayIndex);
                     GDALRasterBand* P = detail::findBandByColorInterp(ds, GCI_PaletteIndex);
 
+                    // Note: we are assuming sRGB encoding by default for RGB!
                     Image::PixelFormat format = Image::UNDEFINED;
                     if (P)
-                        format = Image::R8G8B8A8_UNORM;
+                        format = Image::R8G8B8A8_SRGB;
                     else if (M)
                         format = Image::R32_SFLOAT;
                     else if (R && !G && !B && !A)
-                        format = Image::R8_UNORM;
+                        format = Image::R8_SRGB;
                     else if (R && G && !B && !A)
-                        format = Image::R8G8B8_UNORM;
+                        format = Image::R8G8B8_SRGB;
                     else if (R && G && B && !A)
-                        format = Image::R8G8B8_UNORM;
+                        format = Image::R8G8B8_SRGB;
                     else if (R && G && B && A)
-                        format = Image::R8G8B8A8_UNORM;
+                        format = Image::R8G8B8A8_SRGB;
 
                     if (format != Image::UNDEFINED)
                     {

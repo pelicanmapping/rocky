@@ -62,12 +62,16 @@ namespace
 }
 
 // static member
-Image::Layout Image::_layouts[7] =
+Image::Layout Image::_layouts[11] =
 {
     { &NORM8<uchar>::read, &NORM8<uchar>::write, 1, 1, R8_UNORM },
+    { &NORM8<uchar>::read, &NORM8<uchar>::write, 1, 1, R8_SRGB },
     { &NORM8<uchar>::read, &NORM8<uchar>::write, 2, 2, R8G8_UNORM },
+    { &NORM8<uchar>::read, &NORM8<uchar>::write, 2, 2, R8G8_SRGB },
     { &NORM8<uchar>::read, &NORM8<uchar>::write, 3, 3, R8G8B8_UNORM },
+    { &NORM8<uchar>::read, &NORM8<uchar>::write, 3, 3, R8G8B8_SRGB },
     { &NORM8<uchar>::read, &NORM8<uchar>::write, 4, 4, R8G8B8A8_UNORM },
+    { &NORM8<uchar>::read, &NORM8<uchar>::write, 4, 4, R8G8B8A8_SRGB },
     { &NORM16<ushort>::read, &NORM16<ushort>::write, 1, 2, R16_UNORM },
     { &FLOAT<float>::read, &FLOAT<float>::write, 1, 4, R32_SFLOAT },
     { &FLOAT<double>::read, &FLOAT<double>::write, 1, 8, R64_SFLOAT }

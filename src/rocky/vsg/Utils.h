@@ -149,14 +149,26 @@ namespace ROCKY_NAMESPACE
             case Image::R8_UNORM:
                 return wrap<unsigned char>(image, VK_FORMAT_R8_UNORM);
                 break;
+            case Image::R8_SRGB:
+                return wrap<unsigned char>(image, VK_FORMAT_R8_SRGB);
+                break;
             case Image::R8G8_UNORM:
                 return wrap<vsg::ubvec2>(image, VK_FORMAT_R8G8_UNORM);
+                break;
+            case Image::R8G8_SRGB:
+                return wrap<vsg::ubvec2>(image, VK_FORMAT_R8G8_SRGB);
                 break;
             case Image::R8G8B8_UNORM:
                 return wrap<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_UNORM);
                 break;
+            case Image::R8G8B8_SRGB:
+                return wrap<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_SRGB);
+                break;
             case Image::R8G8B8A8_UNORM:
                 return wrap<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_UNORM);
+                break;
+            case Image::R8G8B8A8_SRGB:
+                return wrap<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_SRGB);
                 break;
             case Image::R16_UNORM:
                 return wrap<unsigned short>(image, VK_FORMAT_R16_UNORM);
@@ -233,14 +245,26 @@ namespace ROCKY_NAMESPACE
             case Image::R8_UNORM:
                 return move<unsigned char>(image, VK_FORMAT_R8_UNORM);
                 break;
+            case Image::R8_SRGB:
+                return move<unsigned char>(image, VK_FORMAT_R8_SRGB);
+                break;
             case Image::R8G8_UNORM:
                 return move<vsg::ubvec2>(image, VK_FORMAT_R8G8_UNORM);
+                break;
+            case Image::R8G8_SRGB:
+                return move<vsg::ubvec2>(image, VK_FORMAT_R8G8_SRGB);
                 break;
             case Image::R8G8B8_UNORM:
                 return move<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_UNORM);
                 break;
+            case Image::R8G8B8_SRGB:
+                return move<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_SRGB);
+                break;
             case Image::R8G8B8A8_UNORM:
                 return move<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_UNORM);
+                break;
+            case Image::R8G8B8A8_SRGB:
+                return move<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_SRGB);
                 break;
             case Image::R16_UNORM:
                 return move<unsigned short>(image, VK_FORMAT_R16_UNORM);
@@ -282,13 +306,17 @@ namespace ROCKY_NAMESPACE
             auto vkformat = data->properties.format;
 
             Image::PixelFormat format =
-                vkformat == VK_FORMAT_R8_UNORM ? Image::R8_UNORM :
-                vkformat == VK_FORMAT_R8G8_UNORM ? Image::R8G8_UNORM :
-                vkformat == VK_FORMAT_R8G8B8_UNORM ? Image::R8G8B8_UNORM :
-                vkformat == VK_FORMAT_R8G8B8A8_UNORM ? Image::R8G8B8A8_UNORM :
-                vkformat == VK_FORMAT_R16_UNORM ? Image::R16_UNORM :
-                vkformat == VK_FORMAT_R32_SFLOAT ? Image::R32_SFLOAT :
-                vkformat == VK_FORMAT_R64_SFLOAT ? Image::R64_SFLOAT :
+                vkformat == VK_FORMAT_R8_UNORM        ? Image::R8_UNORM :
+                vkformat == VK_FORMAT_R8_SRGB         ? Image::R8_SRGB :
+                vkformat == VK_FORMAT_R8G8_UNORM      ? Image::R8G8_UNORM :
+                vkformat == VK_FORMAT_R8G8_SRGB       ? Image::R8G8_SRGB :
+                vkformat == VK_FORMAT_R8G8B8_UNORM    ? Image::R8G8B8_UNORM :
+                vkformat == VK_FORMAT_R8G8B8_SRGB     ? Image::R8G8B8_SRGB :
+                vkformat == VK_FORMAT_R8G8B8A8_UNORM  ? Image::R8G8B8A8_UNORM :
+                vkformat == VK_FORMAT_R8G8B8A8_SRGB   ? Image::R8G8B8A8_SRGB :
+                vkformat == VK_FORMAT_R16_UNORM       ? Image::R16_UNORM :
+                vkformat == VK_FORMAT_R32_SFLOAT      ? Image::R32_SFLOAT :
+                vkformat == VK_FORMAT_R64_SFLOAT      ? Image::R64_SFLOAT :
                 Image::UNDEFINED;
 
             if (format == Image::UNDEFINED)
