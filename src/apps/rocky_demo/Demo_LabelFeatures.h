@@ -10,13 +10,13 @@
 
 using namespace ROCKY_NAMESPACE;
 
-
 auto Demo_LabelFeatures = [](Application& app)
 {
 #ifdef ROCKY_HAS_GDAL
 
     static std::optional<Status> status;
     static unsigned count = 0;
+    const bool use_widgets = true;
 
     struct Candidate {
         double pop = 0.0;
@@ -73,8 +73,22 @@ auto Demo_LabelFeatures = [](Application& app)
             label.style.pointSize = starting_label_size;
             label.style.outlineSize = 0.2f;
 
-            //auto& widget = registry.emplace<Widget>(entity);
-            //widget.text = label.text;
+#if 0
+            // alternatively, you could use a widget:
+            auto& widget = registry.emplace<Widget>(entity);
+            widget.text = label.text;
+            widget.render = [&](WidgetInstance& i)
+                {
+                    i.begin();
+                    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+                    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+                    i.render([&]() {
+                        ImGui::Text(i.widget.text.c_str());
+                        });
+                    ImGui::PopStyleVar(2);                    
+                    i.end();
+                };
+#endif
 
             // attach a transform to place the label:
             auto& transform = registry.emplace<Transform>(entity);

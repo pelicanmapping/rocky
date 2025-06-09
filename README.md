@@ -220,7 +220,7 @@ Spatial reference systems ensure that your map data aligns correctly, support ac
 Rocky has a set of built-in primitives for displaying objects on the map.
 
 * Label - a text string
-* Icon - a 2D billboarded image
+* Icon - a 2D billboard image
 * Line - a string of 2D line segments
 * Mesh - a collection of triangles
 * Model - a VSG scene graph representing an object
@@ -330,7 +330,7 @@ In the `rocky_demo` application you will find example code for each component, i
 # Integrations
 
 ## Rocky and Dear ImGui
-[Dear ImGui](https://github.com/ocornut/imgui) is a fast, flexible runtime UI SDK for C++. Rocky integrates smoothly with ImGui in two ways.
+[Dear ImGui](https://github.com/ocornut/imgui) is a runtime UI SDK for C++. Rocky integrates with ImGui in two ways.
 
 ### Creating a top-level GUI
 Rocky has an `ImGuiIntegration` API that makes it easy to render a GUI atop your map display.
@@ -375,18 +375,19 @@ auto entity = registry.create();
 Widget& widget = registry.emplace<Widget>(entity);
 widget.render = [](WidgetInstance& i)
     {
-        ImGui::SetCurrentContext(i.context);
-        ImGui::SetNextWindowPos(i.position);
-        if (ImGui::Begin(i.uid.c_str(), nullptr, i.defaultWindowFlags))
+        i.begin();
+        i.render([&]() 
         {
-            ImGui::Text("Hello, world!");                        
-        }
-        ImGui::End();
+            ImGui::Text("Hello, world!");
+        });
+        i.end();
     };
 
 auto& transform = registry.emplace<Transform>(entity);
 transform.setPosition(GeoPoint(SRS::WGS84, 0, 0, 0));
 ```
+
+Inspecting the `WidgetInstance` structure you will find various things you can use to customize the position and appearance of your Widget.
 
 ## Rocky and VulkanSceneGraph
 If you're already using VulkanSceneGraph (VSG) in your application and just want to add a `MapNode` to a view, do this:

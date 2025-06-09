@@ -29,28 +29,22 @@ auto Demo_Widget = [](Application& app)
                 static int some_int = 0;
                 static bool fixed_window_open = false;
 
-                ImGui::SetCurrentContext(i.context);
+                i.begin();
 
-                int flags = i.defaultWindowFlags;
-                flags &= ~ImGuiWindowFlags_NoInputs;
-                flags &= ~ImGuiWindowFlags_NoBringToFrontOnFocus;
-
-                ImVec2 pos{ i.position.x - i.size.x / 2, i.position.y - i.size.y / 2 };
-                ImGui::SetNextWindowPos(pos);
+                i.windowFlags &= ~ImGuiWindowFlags_NoInputs;
+                i.windowFlags &= ~ImGuiWindowFlags_NoBringToFrontOnFocus;
 
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 7.0f);
 
-                if (ImGui::Begin(i.uid.c_str(), nullptr, flags))
-                {
-                    ImGui::Text(i.widget.text.c_str());
-                    ImGui::Separator();
-                    ImGui::Text("Text string");
-                    ImGui::SliderFloat("Slider", &some_float, 0.0f, 1.0f);
-                    ImGui::Checkbox("Show me a fixed-position window", &fixed_window_open);
+                i.render([&]()
+                    {
+                        ImGui::Text(i.widget.text.c_str());
+                        ImGui::Separator();
+                        ImGui::Text("Text string");
+                        ImGui::SliderFloat("Slider", &some_float, 0.0f, 1.0f);
+                        ImGui::Checkbox("Show me a fixed-position window", &fixed_window_open);
+                    });
 
-                    i.size = ImGui::GetWindowSize();
-                }
-                ImGui::End();
                 ImGui::PopStyleVar();
 
                 if (fixed_window_open)
@@ -76,6 +70,8 @@ auto Demo_Widget = [](Application& app)
                     }
                     ImGui::End();
                 }
+
+                i.end();
             };
 
         // Attach a transform to place and move the label:

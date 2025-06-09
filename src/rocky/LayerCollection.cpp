@@ -17,13 +17,14 @@ LayerCollection::LayerCollection(Map* map) :
     //nop
 }
 
-Status
+void
 LayerCollection::add(std::shared_ptr<Layer> layer)
 {
     // check if it's already in the collection
     if (indexOf(layer) != size())
     {
-        return layer->status();
+        // should we assert? or print a warning?
+        return;
     }
 
     // insert the new layer into the map safely
@@ -38,20 +39,19 @@ LayerCollection::add(std::shared_ptr<Layer> layer)
 
     // invoke the callback
     _map->onLayerAdded.fire(layer, index, new_revision);
-
-    // return the layer's open status
-    return openOnAdd ? layer->status() : Status_OK;
 }
 
 void
 LayerCollection::remove(std::shared_ptr<Layer> layer)
 {
-    if (layer == nullptr)
-        return;
+    ROCKY_SOFT_ASSERT_AND_RETURN(layer != nullptr, void());
 
     // ensure it's in the map
     if (indexOf(layer) == size())
+    {
+        // asset? warn?
         return;
+    }
 
     unsigned int index = -1;
     std::shared_ptr<Layer> layerToRemove(layer);

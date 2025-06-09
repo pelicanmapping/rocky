@@ -788,9 +788,13 @@ TEST_CASE("LayersCollection API")
     layer3->setName("Layer3");
 
     // Add layers
-    CHECK(layers.add(layer1).ok());
-    CHECK(layers.add(layer2).ok());
-    CHECK(layers.add(layer3).ok());
+    layers.add(layer1);
+    layers.add(layer2);
+    layers.add(layer3);
+    CHECK(layers.size() == 3);
+
+    // Add a layer again (should not duplicate)
+    layers.add(layer3);
     CHECK(layers.size() == 3);
 
     // Check all()

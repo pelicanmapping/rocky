@@ -6,7 +6,6 @@
 #pragma once
 #include <rocky/Layer.h>
 #include <rocky/Status.h>
-#include <mutex>
 #include <vector>
 
 namespace ROCKY_NAMESPACE
@@ -20,7 +19,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Add a layer
-        Status add(std::shared_ptr<Layer> layer);
+        void add(std::shared_ptr<Layer> layer);
 
         //! Remove a layer
         void remove(std::shared_ptr<Layer> layer);
@@ -59,9 +58,6 @@ namespace ROCKY_NAMESPACE
         template<class FUNC> inline std::vector<std::shared_ptr<Layer>> get(FUNC func) const;
 
     public: // public properties
-
-        //! Whether to call layer->open() when adding a layer to the collection
-        bool openOnAdd = false;
 
         //! Whether to call layer->close() when removing a layer from the collection
         bool closeOnRemove = true;

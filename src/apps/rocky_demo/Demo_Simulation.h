@@ -92,27 +92,29 @@ auto Demo_Simulation = [](Application& app)
                     Transform& t = i.registry.get<Transform>(i.entity);
                     auto point = t.position.transform(SRS::WGS84);
 
-                    ImGui::SetCurrentContext(i.context);
-                    ImGui::SetNextWindowPos(ImVec2(i.position.x + 12.0f, i.position.y - i.size.y/2));
+                    i.begin();
+
+                    i.center.x += i.size.x/2 + 12;
+
                     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
                     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.35f));
                     ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.0f));
-                    if (ImGui::Begin(i.uid.c_str(), nullptr, i.defaultWindowFlags))
-                    {
-                        ImGui::Text("ID:  %s", i.widget.text.c_str());
-                        ImGui::Separator();
-                        ImGui::Text("Lat: %.2f", point.y);
-                        ImGui::Separator();
-                        ImGui::Text("Lon: %.2f", point.x);
-                        ImGui::Separator();
-                        ImGui::Text("Alt: %.0f", point.z);
 
-                        i.size = ImGui::GetWindowSize();
-                        ImGui::End();
-                    }
-                    ImGui::PopStyleColor();
-                    ImGui::PopStyleColor();
+                    i.render([&]()
+                        {
+                            ImGui::Text("ID:  %s", i.widget.text.c_str());
+                            ImGui::Separator();
+                            ImGui::Text("Lat: %.2f", point.y);
+                            ImGui::Separator();
+                            ImGui::Text("Lon: %.2f", point.x);
+                            ImGui::Separator();
+                            ImGui::Text("Alt: %.0f", point.z);
+                        });
+
+                    ImGui::PopStyleColor(2);
                     ImGui::PopStyleVar();
+
+                    i.end();
                 };
 
             auto ll_to_ecef = SRS::WGS84.to(SRS::ECEF);

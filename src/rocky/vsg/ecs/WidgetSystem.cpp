@@ -83,22 +83,15 @@ WidgetSystemNode::initialize(VSGContext& context)
                     if (widget.render)
                     {
                         // Note: widget render needs to call ImGui::SetCurrentContext(i.context)
+                        // because of the DLL boundary
                         widget.render(i);
                     }
 
                     else
                     {
-                        float x = renderable.screen[viewID].x - renderable.windowSize.x * 0.5f;
-                        float y = renderable.screen[viewID].y - renderable.windowSize.y * 0.5f;
-
-                        ImGui::SetNextWindowPos(ImVec2(x, y));
-
-                        if (ImGui::Begin(i.uid.c_str(), nullptr, i.defaultWindowFlags))
-                        {
-                            ImGui::Text(widget.text.c_str());
-                            i.size = ImGui::GetWindowSize();
-                        }
-                        ImGui::End();
+                        i.begin();
+                        i.render([&]() { ImGui::Text(widget.text.c_str()); });
+                        i.end();
                     }
                 }
             }

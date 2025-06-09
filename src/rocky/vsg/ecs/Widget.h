@@ -17,11 +17,32 @@ namespace ROCKY_NAMESPACE
         const std::string& uid;
         entt::registry& registry;
         entt::entity entity;
-        const int defaultWindowFlags;
-        ImVec2 position;
+        int windowFlags;
+        ImVec2 center;
         ImVec2& size;
         ImGuiContext* context;
         std::uint32_t viewID;
+
+        //! Initialize the rendering of a widget instance (convenience funtion)
+        inline void begin() {
+            ImGui::SetCurrentContext(context);
+        }
+
+        //! Submit a widget rendering function (convenience function)
+        template<typename FUNC>
+        inline void render(FUNC&& f) {
+            ImGui::SetNextWindowPos(ImVec2(center.x - size.x / 2, center.y - size.y / 2));
+            if (ImGui::Begin(uid.c_str(), nullptr, windowFlags)) {
+                f();
+                size = ImGui::GetWindowSize();
+                ImGui::End();
+            }
+        }
+
+        //! Close out the instance rendering started with begin
+        inline void end() {
+            //nop
+        }
     };
 
     /**
