@@ -210,6 +210,10 @@ LabelSystemNode::LabelSystemNode(ecs::Registry& registry) :
 void
 LabelSystemNode::initialize(VSGContext& runtime)
 {
+    // For now we must have a default font set.
+    if (runtime->defaultFont == nullptr)
+        return;
+
     // use the VSG stock shaders for text:
     auto& options = runtime->readerWriterOptions;
     auto shaderSet = options->shaderSets["text"] = vsg::createTextShaderSet(options);
@@ -269,6 +273,13 @@ LabelSystemNode::initialize(VSGContext& runtime)
 void
 LabelSystemNode::createOrUpdateNode(Label& label, ecs::BuildInfo& data, VSGContext& runtime) const
 {
+    // bail out if initialization failed
+    if (pipelines.empty())
+    {
+        Log()->warn("Labels will not display; no default font set in VSGContext");
+        return;
+    }
+
     bool rebuild = data.existing_node == nullptr;
 
     if (data.existing_node)
