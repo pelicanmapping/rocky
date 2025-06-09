@@ -32,11 +32,10 @@ namespace ROCKY_NAMESPACE
         template<typename FUNC>
         inline void render(FUNC&& f) {
             ImGui::SetNextWindowPos(ImVec2(center.x - size.x / 2, center.y - size.y / 2));
-            if (ImGui::Begin(uid.c_str(), nullptr, windowFlags)) {
-                f();
-                size = ImGui::GetWindowSize();
-                ImGui::End();
-            }
+            ImGui::Begin(uid.c_str(), nullptr, windowFlags);
+            f();
+            size = ImGui::GetWindowSize();
+            ImGui::End();
         }
 
         //! Close out the instance rendering started with begin

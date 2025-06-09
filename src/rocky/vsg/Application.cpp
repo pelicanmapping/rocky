@@ -228,13 +228,9 @@ Application::ctor(int& argc, char** argv)
     // Create the ECS system manager and all its default systems.
     ecsManager = ecs::ECSNode::create(registry);
 
-    // Processes any Motion or GeodeticMotion components each frame
-    //ecsManager->add(MotionSystem::create(registry));
-
     // Responds to changes in Transform components by updating the scene graph
     auto xform_system = TransformSystem::create(registry);
-    xform_system->onChanges([&]() {
-        context->requestFrame(); });
+    xform_system->onChanges([&]() { context->requestFrame(); });
     ecsManager->add(xform_system);
 
     // Rendering components:

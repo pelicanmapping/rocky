@@ -90,6 +90,7 @@ auto Demo_Simulation = [](Application& app)
             auto render_widget = [](WidgetInstance& i)
                 {
                     Transform& t = i.registry.get<Transform>(i.entity);
+
                     auto point = t.position.transform(SRS::WGS84);
 
                     i.begin();
@@ -115,6 +116,10 @@ auto Demo_Simulation = [](Application& app)
                     ImGui::PopStyleVar();
 
                     i.end();
+
+                    // update decluttering volume
+                    auto& dc = i.registry.get<Declutter>(i.entity);
+                    dc.rect = Rect(i.size.x, i.size.y);
                 };
 
             auto ll_to_ecef = SRS::WGS84.to(SRS::ECEF);

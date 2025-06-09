@@ -66,33 +66,37 @@ auto Demo_LabelFeatures = [](Application& app)
         {
             auto entity = registry.create();
 
+#ifdef ROCKY_HAS_IMGUI
+
+            // attach a component to control decluttering:
+            auto& declutter = registry.emplace<Declutter>(entity);
+            declutter.priority = (float)candidate.pop;
+
+            auto& widget = registry.emplace<Widget>(entity);
+
+            widget.render = [name=std::string(name)](WidgetInstance& i)
+                {
+                    auto& dc = i.registry.get<Declutter>(i.entity);
+
+                    i.begin();
+                    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+                    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+                    i.render([&]() { ImGui::Text(name.c_str()); });
+                    ImGui::PopStyleVar(2);                    
+                    i.end();
+
+                    // update the decluttering record to reflect our widget's size
+                    dc.rect = Rect(i.size.x, i.size.y);
+                };
+
+#else
+
             // attach a label:
             auto& label = registry.emplace<Label>(entity);
             label.text = name;
             label.style.font = app.context->defaultFont;
             label.style.pointSize = starting_label_size;
             label.style.outlineSize = 0.2f;
-
-#if 0
-            // alternatively, you could use a widget:
-            auto& widget = registry.emplace<Widget>(entity);
-            widget.text = label.text;
-            widget.render = [&](WidgetInstance& i)
-                {
-                    i.begin();
-                    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
-                    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-                    i.render([&]() {
-                        ImGui::Text(i.widget.text.c_str());
-                        });
-                    ImGui::PopStyleVar(2);                    
-                    i.end();
-                };
-#endif
-
-            // attach a transform to place the label:
-            auto& transform = registry.emplace<Transform>(entity);
-            transform.position = candidate.centroid;
 
             // attach a component to control decluttering:
             auto& declutter = registry.emplace<Declutter>(entity);
@@ -101,6 +105,11 @@ auto Demo_LabelFeatures = [](Application& app)
             auto width = 0.75f * 0.60f * label.style.pointSize * (float)label.text.size();
             double height = 0.75 * label.style.pointSize;
             declutter.rect = Rect(width, height);
+#endif
+
+            // attach a transform to place the label:
+            auto& transform = registry.emplace<Transform>(entity);
+            transform.position = candidate.centroid;
 
             labels.emplace(entity);
         }
