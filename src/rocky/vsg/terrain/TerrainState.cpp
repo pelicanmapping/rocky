@@ -335,6 +335,7 @@ TerrainState::updateRenderModel(
     auto& uniforms = *static_cast<TerrainTileDescriptors::Uniforms*>(ubo->dataPointer());
     uniforms.elevation_matrix = renderModel.elevation.matrix;
     uniforms.color_matrix = renderModel.color.matrix;
+    uniforms.model_matrix = renderModel.modelMatrix;
     descriptors.uniforms = vsg::DescriptorBuffer::create(ubo, TILE_BUFFER_BINDING);
 
     // make the descriptor set. 

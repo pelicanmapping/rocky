@@ -343,7 +343,7 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
         }
 
         auto rendergraph = vsg::RenderGraph::create(window, view);
-        rendergraph->setClearValues({ {0.1f, 0.12f, 0.15f, 1.0f} });
+        rendergraph->setClearValues({ {0.0f, 0.0f, 0.0f, 1.0f} });
         commandgraph->addChild(rendergraph);
 
         if (compiled(context->viewer))

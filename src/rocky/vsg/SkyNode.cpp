@@ -114,26 +114,23 @@ namespace
 #define ATMOSPHERE_VERT_SHADER "shaders/rocky.atmo.sky.vert"
 #define ATMOSPHERE_FRAG_SHADER "shaders/rocky.atmo.sky.frag"
 
-    vsg::ref_ptr<vsg::ShaderSet> makeAtmoShaderSet()
+    vsg::ref_ptr<vsg::ShaderSet> makeAtmoShaderSet(VSGContext& context)
     {
-        // set up search paths to SPIRV shaders and textures
-        vsg::Paths searchPaths = vsg::getEnvPaths("VSG_FILE_PATH");
-        vsg::Paths morePaths = vsg::getEnvPaths("ROCKY_FILE_PATH");
-        searchPaths.insert(searchPaths.end(), morePaths.begin(), morePaths.end());
-        auto options = vsg::Options::create();
+        auto file = vsg::findFile(ATMOSPHERE_VERT_SHADER, context->searchPaths);
+        Log()->warn("Loading atmosphere vertex shader from: {}", file.string());
 
         // load shaders
         auto vertexShader = vsg::ShaderStage::read(
             VK_SHADER_STAGE_VERTEX_BIT,
             "main",
-            vsg::findFile(ATMOSPHERE_VERT_SHADER, searchPaths),
-            options);
+            vsg::findFile(ATMOSPHERE_VERT_SHADER, context->searchPaths),
+            context->readerWriterOptions);
 
         auto fragmentShader = vsg::ShaderStage::read(
             VK_SHADER_STAGE_FRAGMENT_BIT,
             "main",
-            vsg::findFile(ATMOSPHERE_FRAG_SHADER, searchPaths),
-            options);
+            vsg::findFile(ATMOSPHERE_FRAG_SHADER, context->searchPaths),
+            context->readerWriterOptions);
 
         if (!vertexShader || !fragmentShader)
         {
@@ -156,7 +153,7 @@ namespace
 
     vsg::ref_ptr<vsg::StateGroup> makeAtmoStateGroup(VSGContext& runtime)
     {
-        auto shaderSet = makeAtmoShaderSet();
+        auto shaderSet = makeAtmoShaderSet(runtime);
         if (!shaderSet)
         {
             Log()->warn(LC "Failed to create shader set!");
@@ -252,7 +249,7 @@ SkyNode::setWorldSRS(const SRS& srs)
         // some ambient light:
         ambient = vsg::AmbientLight::create();
         ambient->name = "Sky Ambient";
-        ambient->color = { 0.013f, 0.013f, 0.013f };
+        ambient->color = { 0.03f, 0.03f, 0.03f };
         addChild(ambient);
 
         // the sun:

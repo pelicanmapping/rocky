@@ -14,8 +14,9 @@ auto Demo_Environment = [](Application& app)
 {
     if (app.skyNode == nullptr)
     {
-        ImGui::TextColored(ImVec4(1, 0, 0, 1), "Sky is not installed");
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), "Sky is not installed; use --sky");
 
+#if 0
         if (ImGui::Button("Install sky"))
         {
             app.context->onNextUpdate([&app]()
@@ -25,6 +26,7 @@ auto Demo_Environment = [](Application& app)
                     app.context->compile(app.skyNode);
                 });
         }
+#endif
 
         return;
     }
@@ -44,6 +46,12 @@ auto Demo_Environment = [](Application& app)
         if (ImGuiLTable::SliderFloat("Ambient level", &ambient, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic))
         {
             app.skyNode->ambient->color = { ambient, ambient, ambient };
+        }
+
+        static bool atmo = true;
+        if (ImGuiLTable::Checkbox("Show atmosphere", &atmo))
+        {
+            app.skyNode->setShowAtmosphere(atmo);
         }
 
         ImGuiLTable::End();

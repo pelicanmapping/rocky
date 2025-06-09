@@ -370,8 +370,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
         "../share/rocky",                        // running from standard install location
         "../../../../../src/rocky/vsg",          // running from visual studio with build folder inside repo
         "../../../../../repo/src/rocky/vsg",     // running from visual studio with a repo folder :)
-        "../../../../src/rocky/vsg",             // running from visual studio with an in-source build :(
-        "../../../../build_share"                // in case cmake copies files here (deprecated)
+        "../../../../src/rocky/vsg"              // running from visual studio with an in-source build :(
     };
 
     auto exec_path = std::filesystem::path(util::getExecutableLocation());

@@ -5,16 +5,12 @@
  */
 #include "TerrainTileNode.h"
 #include "SurfaceNode.h"
-#include "TerrainEngine.h"
 #include "TerrainSettings.h"
 
 #include <rocky/Math.h>
-#include <rocky/ImageLayer.h>
-#include <rocky/TerrainTileModel.h>
 
 #include <vsg/vk/State.h>
 #include <vsg/ui/FrameStamp.h>
-#include <vsg/nodes/StateGroup.h>
 #include <vsg/state/ViewDependentState.h>
 
 using namespace ROCKY_NAMESPACE;
@@ -139,4 +135,6 @@ TerrainTileNode::inheritFrom(vsg::ref_ptr<TerrainTileNode> parent)
     // copy the parent's elevation data and recompute the bounding sphere
     surface->setElevation(renderModel.elevation.image, renderModel.elevation.matrix);
     bound = surface->recomputeBound();
+
+    renderModel.modelMatrix = to_glm(surface->matrix);
 }

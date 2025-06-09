@@ -62,12 +62,13 @@ void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
     pbr.roughness = 0.75;
     pbr.metal = 0.0;
     const float exposure = 3.3;
-    // ....
 
-    vec3 albedo = pow(color.rgb, vec3(2.2)); // SRGB to linear
+    vec3 albedo = color.rgb;
 
     vec3 N = normalize(normal);
     vec3 V = normalize(-vertex_view);
+
+    float NdotV = max(dot(N, V), 0.0);
 
     vec3 F0 = vec3(0.04);
     F0 = mix(F0, albedo, vec3(pbr.metal));
@@ -106,21 +107,23 @@ void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
         vec3 radiance = light_color;
 
         // cook-torrance BRDF:
-        float NDF = DistributionGGX(N, H, pbr.roughness);
+        float D = DistributionGGX(N, H, pbr.roughness);
         float G = GeometrySmith(N, V, L, pbr.roughness);
         vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
 
         float NdotL = max(dot(N, L), 0.0);
 
-        vec3 numerator = NDF * G * F;
-        float denominator = 4.0 * max(dot(N, V), 0.0) * NdotL;
-        vec3 specular = numerator / max(denominator, 0.001);
+        vec3 numerator = D * G * F;
+        float denominator = 4.0 * NdotV * NdotL + 0.001; // avoid division by zero
+        vec3 specular = numerator / denominator;
 
         vec3 kS = F;
         vec3 kD = vec3(1.0) - kS;
         kD *= 1.0 - pbr.metal;
 
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+        vec3 diffuse = kD * albedo / PI;
+
+        Lo += (diffuse + specular) * radiance * NdotL;
     }
 
 #if 0
@@ -136,17 +139,15 @@ void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
     {
         color.rgb = Lo + (ambient * albedo * pbr.ao);
 
-        color.rgb = color.rgb / (color.rgb + vec3(1.0)); // tone map
-
 #if defined(ROCKY_ATMOSPHERE)
-        color.rgb += atmos_color; // add in the (linear) atmospheric haze
+        color.rgb += atmos_color; // add in the atmospheric haze
+        //color.rgb *= (atmos_color + vec3(1.0));
 #endif
 
-        color.rgb = 1.0 - exp(-exposure * color.rgb); // exposure
+        //color.rgb = 1.0 - exp(-exposure * color.rgb); // exposure
 
-        // linear to SRGB (last step)
-        color.rgb = pow(color.rgb, vec3(1.0 / 2.2));
+        //color.rgb = color.rgb / (color.rgb + vec3(1.0)); // tone map
 
-        //color.rgb = clamp(color.rgb, 0, 1);
+        //color.rgb = pow(color.rgb, vec3(1.0 / 2.2)); // gamma correction
     }
 }

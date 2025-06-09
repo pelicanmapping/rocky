@@ -158,5 +158,5 @@ void atmos_vertex_main(inout vec3 vertex_view)
     }
 
     // SRGB to linear
-    atmos_color = pow(atmos_color, vec3(2.2));
+    //atmos_color = pow(atmos_color, vec3(2.2));
 }

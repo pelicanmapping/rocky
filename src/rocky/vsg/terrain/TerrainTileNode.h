@@ -52,6 +52,7 @@ namespace ROCKY_NAMESPACE
         {
             glm::fmat4 elevation_matrix;
             glm::fmat4 color_matrix;
+            glm::fmat4 model_matrix;
         };
         vsg::ref_ptr<vsg::DescriptorImage> color;
         vsg::ref_ptr<vsg::DescriptorImage> elevation;
