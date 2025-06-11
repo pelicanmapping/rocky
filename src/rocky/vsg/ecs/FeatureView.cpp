@@ -191,7 +191,7 @@ namespace
         // some conversions we will need:
         auto feature_geo = feature.srs.geodeticSRS();
         auto feature_to_geo = feature.srs.to(feature_geo);
-        auto feature_to_world = feature.srs.to(geom_srs);
+        auto geo_to_world = feature_geo.to(geom_srs);
 
         // centroid for use with the gnomonic projection:
         glm::dvec3 centroid;
@@ -292,7 +292,7 @@ namespace
         gnomonic_to_geo(m.verts.begin(), m.verts.end(), centroid, gnomonic_scale);
 
         // And into the final projection:
-        feature_to_world.transformRange(m.verts.begin(), m.verts.end());
+        geo_to_world.transformRange(m.verts.begin(), m.verts.end());
 
         auto color =
             styles.mesh_function ? styles.mesh_function(feature).color :
