@@ -44,8 +44,8 @@ namespace ROCKY_NAMESPACE
             //! GDAL sub-dataset index (optional)
             option<unsigned> subDataset = 0;
 
-            //! Interpolation method for resampling (default is average)
-            option<Interpolation> interpolation = Interpolation::AVERAGE;
+            //! Interpolation method for resampling
+            option<Interpolation> interpolation = Interpolation::BILINEAR;
 
         protected:
             option<bool> singleThreaded = false;
