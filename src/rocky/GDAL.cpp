@@ -24,6 +24,20 @@ using namespace ROCKY_NAMESPACE::GDAL;
 #undef LC
 #define LC "[GDAL] \"" + getName() + "\" "
 
+
+#define PIXEL_TO_GEO(X, Y, GEOX, GEOY) \
+    GEOX = _geotransform[0] + _geotransform[1] * (X) + _geotransform[2] * (Y); \
+    GEOY = _geotransform[3] + _geotransform[4] * (X) + _geotransform[5] * (Y)
+
+#define GEO_TO_PIXEL(GEOX, GEOY, OUTX, OUTY) \
+    OUTX = _invtransform[0] + _invtransform[1] * (GEOX) + _invtransform[2] * (GEOY); \
+    OUTY = _invtransform[3] + _invtransform[4] * (GEOX) + _invtransform[5] * (GEOY); \
+    if (equiv(OUTX, 0.0, 0.0001)) OUTX = 0; \
+    if (equiv(OUTY, 0.0, 0.0001)) OUTY = 0; \
+    if (equiv(OUTX, (double)_warpedDS->GetRasterXSize(), 0.0001)) OUTX = _warpedDS->GetRasterXSize(); \
+    if (equiv(OUTY, (double)_warpedDS->GetRasterYSize(), 0.0001)) OUTY = _warpedDS->GetRasterYSize()
+
+
 namespace ROCKY_NAMESPACE
 {
     namespace detail
@@ -580,8 +594,8 @@ GDAL::Driver::open(
     ROCKY_QUIET_ASSERT(err == CE_None);
 
     double minX, minY, maxX, maxY;
-    pixelToGeo(0.0, _warpedDS->GetRasterYSize(), minX, minY);
-    pixelToGeo(_warpedDS->GetRasterXSize(), 0.0, maxX, maxY);
+    PIXEL_TO_GEO(0.0, _warpedDS->GetRasterYSize(), minX, minY);
+    PIXEL_TO_GEO(_warpedDS->GetRasterXSize(), 0.0, maxX, maxY);
 
     // If we don't have a profile yet, that means this is a projected dataset
     // so we will create the profile from the actual data extents.
@@ -694,27 +708,6 @@ GDAL::Driver::open(
 
     _open = true;
     return StatusOK;
-}
-
-void
-GDAL::Driver::pixelToGeo(double x, double y, double &geoX, double &geoY)
-{
-    geoX = _geotransform[0] + _geotransform[1] * x + _geotransform[2] * y;
-    geoY = _geotransform[3] + _geotransform[4] * x + _geotransform[5] * y;
-}
-
-void
-GDAL::Driver::geoToPixel(double geoX, double geoY, double &x, double &y)
-{
-    x = _invtransform[0] + _invtransform[1] * geoX + _invtransform[2] * geoY;
-    y = _invtransform[3] + _invtransform[4] * geoX + _invtransform[5] * geoY;
-
-    //Account for slight rounding errors.  If we are right on the edge of the dataset, clamp to the edge
-    double eps = 0.0001;
-    if (equiv(x, 0.0, eps)) x = 0;
-    if (equiv(y, 0.0, eps)) y = 0;
-    if (equiv(x, (double)_warpedDS->GetRasterXSize(), eps)) x = _warpedDS->GetRasterXSize();
-    if (equiv(y, (double)_warpedDS->GetRasterYSize(), eps)) y = _warpedDS->GetRasterYSize();
 }
 
 bool
@@ -837,9 +830,10 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
 
     // Determine the read window
     double src_min_x, src_min_y, src_max_x, src_max_y;
+
     // Get the pixel coordiantes of the intersection
-    geoToPixel(west, intersection.ymax(), src_min_x, src_min_y);
-    geoToPixel(east, intersection.ymin(), src_max_x, src_max_y);
+    GEO_TO_PIXEL(west, intersection.ymax(), src_min_x, src_min_y);
+    GEO_TO_PIXEL(east, intersection.ymin(), src_max_x, src_max_y);
 
     double src_width = src_max_x - src_min_x;
     double src_height = src_max_y - src_min_y;
@@ -1171,10 +1165,6 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
 
 namespace
 {
-    // per-thread raster sampling workspace for createHeightField
-    // to avoid heap allocations
-    thread_local std::vector<float> workspace;
-
     template<typename T>
     void applyScaleAndOffset(void* data, int count, double scale, double offset)
     {
@@ -1210,149 +1200,36 @@ namespace
 }
 
 
-float
-GDAL::Driver::getInterpolatedDEMValueWorkspace(GDALRasterBand* band, double u, double v, float* data, int width, int height)
-{
-    float result = 0.0f;
-
-    // extract the no-data value:
-    int success;
-    float value = band->GetNoDataValue(&success);
-    float noDataValue = success ? value : -32767.0f;
-
-    // clamp our sampling unit coordinates to the valid range
-    // note: (u,v) progresses from north/+y at the top to south/-y at the bottom.
-    double c = clamp(u, 0.0, 1.0) * (double)(width);
-    double r = clamp(v, 0.0, 1.0) * (double)(height);
-
-    if (_layer->interpolation == Interpolation::NEAREST)
-    {
-        int x = clamp(c, 0.0, (double)width - 1);
-        int y = clamp(r, 0.0, (double)height - 1);
-
-        result = data[y * width + x];
-
-        if (!isValidValue(result, noDataValue))
-        {
-            result = NO_DATA_VALUE;
-        }
-    }
-    else
-    {
-        // Get the four nearest pixels:
-        int col_min, col_max, row_min, row_max;
-
-#if 0
-        col_min = (fract(c) < 0.5) ? (int)c - 1 : (int)c;
-        col_max = clamp(col_min + 1, 0, width - 1);
-        col_min = clamp(col_min, 0, width - 1);
-
-        row_min = (fract(r) < 0.5) ? (int)r - 1 : (int)r;
-        row_max = clamp(row_min + 1, 0, height - 1);
-        row_min = clamp(row_min, 0, height - 1);
-#else   
-        col_min = clamp((int)floor(c), 0, width - 1);
-        col_max = clamp((int)ceil(c), 0, width - 1);
-        row_min = clamp((int)floor(r), 0, height - 1);
-        row_max = clamp((int)ceil(r), 0, height - 1);
-#endif
-
-        // we will use NSEW here for clarity even though some projections are not NSEW aligned.
-        // North means +y, South means -y, East means +x, West means -x
-        auto NW = data[row_min * width + col_min];
-        auto NE = data[row_min * width + col_max];
-        auto SW = data[row_max * width + col_min];
-        auto SE = data[row_max * width + col_max];
-
-        if ((!isValidValue(NW, noDataValue)) || (!isValidValue(NE, noDataValue)) || (!isValidValue(SW, noDataValue)) || (!isValidValue(SE, noDataValue)))
-        {
-            result = NO_DATA_VALUE;
-        }
-        else
-        {
-            double west_weight = clamp(((double)col_max + 0.5) - c, 0.0, 1.0);
-            double south_weight = clamp(((double)row_max + 0.5) - r, 0.0, 1.0);
-
-            if (_layer->interpolation == Interpolation::AVERAGE)
-            {
-                double h0 = west_weight * south_weight * (double)SW;
-                double h1 = west_weight * (1.0 - south_weight) * (double)NW;
-                double h2 = (1.0 - west_weight) * south_weight * (double)SE;
-                double h3 = (1.0 - west_weight) * (1.0 - south_weight) * (double)NE;
-                result = (float)(h0 + h1 + h2 + h3);
-            }
-            else //if (gdalOptions().interpolation() == INTERP_BILINEAR)
-            {
-                double south = west_weight * (double)SW + (1.0 - west_weight) * (double)SE;
-                double north = west_weight * (double)NW + (1.0 - west_weight) * (double)NE;
-                result = south_weight * south + (1.0 - south_weight) * north;
-            }
-        }
-    }
-
-    return result;
-}
 
 float
-GDAL::Driver::getInterpolatedDEMValue(GDALRasterBand* band, double x, double y, bool applyOffset)
+GDAL::Driver::getInterpolatedDEMValue(GDALRasterBand* band, double x, double y)
 {
     double r, c;
-    geoToPixel(x, y, c, r);
+    GEO_TO_PIXEL(x, y, c, r);
 
-#if GDAL_VERSION_NUM >= 3100000 // 3.10+
-    GDALRIOResampleAlg alg = GRIORA_NearestNeighbour;
+    //Apply half pixel offset
+    r -= 0.5;
+    c -= 0.5;
 
-    switch( _layer->interpolation.value())
+    // Account for the half pixel offset in the geotransform.  If the pixel value is -0.5 we are still technically in the dataset
+    // since 0,0 is now the center of the pixel.  So, if are within a half pixel above or a half pixel below the dataset just use
+    // the edge values
+    if (c < 0 && c >= -0.5)
     {
-    case Interpolation::AVERAGE:
-        alg = GRIORA_Average;
-        break;
-    case Interpolation::BILINEAR:
-        alg = GRIORA_Bilinear;
-        break;
-    case Interpolation::CUBIC:
-        alg = GRIORA_Cubic;
-        break;
-    case Interpolation::CUBICSPLINE:
-        alg = GRIORA_CubicSpline;
-        break;
+        c = 0;
+    }
+    else if (c > _warpedDS->GetRasterXSize() - 1 && c <= _warpedDS->GetRasterXSize() - 0.5)
+    {
+        c = _warpedDS->GetRasterXSize() - 1;
     }
 
-    // this function applies the 1/2 pixel offset for us for DEMs
-    double realPart = 0.0;
-    auto err = band->InterpolateAtPoint(c, r, alg, &realPart, nullptr);
-    if (err == CE_None)
+    if (r < 0 && r >= -0.5)
     {
-        return (float)realPart;
+        r = 0;
     }
-#endif
-
-    if (applyOffset)
+    else if (r > _warpedDS->GetRasterYSize() - 1 && r <= _warpedDS->GetRasterYSize() - 0.5)
     {
-        //Apply half pixel offset
-        r -= 0.5;
-        c -= 0.5;
-
-        //Account for the half pixel offset in the geotransform.  If the pixel value is -0.5 we are still technically in the dataset
-        //since 0,0 is now the center of the pixel.  So, if are within a half pixel above or a half pixel below the dataset just use
-        //the edge values
-        if (c < 0 && c >= -0.5)
-        {
-            c = 0;
-        }
-        else if (c > _warpedDS->GetRasterXSize() - 1 && c <= _warpedDS->GetRasterXSize() - 0.5)
-        {
-            c = _warpedDS->GetRasterXSize() - 1;
-        }
-
-        if (r < 0 && r >= -0.5)
-        {
-            r = 0;
-        }
-        else if (r > _warpedDS->GetRasterYSize() - 1 && r <= _warpedDS->GetRasterYSize() - 0.5)
-        {
-            r = _warpedDS->GetRasterYSize() - 1;
-        }
+        r = _warpedDS->GetRasterYSize() - 1;
     }
 
     float result = 0.0f;
@@ -1484,91 +1361,52 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
     // Assume the first band contains our data
     auto* band = _warpedDS->GetRasterBand(1);
 
-    if (_pixelIsArea && _layer->interpolation != Interpolation::NEAREST)
+    // Raw pointer to the height data output block:
+    float* hf_raw = (float*)hf->data<float>();
+
+    // If the interpolation is not nearest neighbor, we will use the
+    // high-res sampling path. This is not terribly fast but it's accurate.
+#if GDAL_VERSION_NUM >= 3100000 // 3.10+
+    double ri, ci, realPart;
+
+    GDALRIOResampleAlg alg =
+        _layer->interpolation == Interpolation::AVERAGE ? GRIORA_Bilinear : // Average not accepted by InterpolateAtPoint
+        _layer->interpolation == Interpolation::BILINEAR ? GRIORA_Bilinear :
+        _layer->interpolation == Interpolation::CUBIC ? GRIORA_Cubic :
+        _layer->interpolation == Interpolation::CUBICSPLINE ? GRIORA_CubicSpline :
+        GRIORA_NearestNeighbour;
+
+    for (unsigned r = 0; r < tileSize; ++r)
     {
-        // Note. This method always works, but it's slow.
-        // It wound be ideal to use the method in the "else" block but it
-        // does not yet work with the half-pixel shift that is required for DEMs.
-        for (unsigned r = 0; r < tileSize; ++r)
+        double y = tile_ymin + (dy * (double)r);
+        for (unsigned c = 0; c < tileSize; ++c)
         {
-            double y = tile_ymin + (dy * (double)r);
-            for (unsigned c = 0; c < tileSize; ++c)
+            double x = tile_xmin + (dx * (double)c);
+            GEO_TO_PIXEL(x, y, ci, ri);
+
+            // this function applies the 1/2 pixel offset for us for DEMs
+            auto err = band->InterpolateAtPoint(ci, ri, alg, &realPart, nullptr);
+            if (err == CE_None)
             {
-                double x = tile_xmin + (dx * (double)c);
-                float h = getInterpolatedDEMValue(band, x, y, true) * _linearUnits;
-                hf->heightAt(c, r) = h;
+                hf->heightAt(c, r) = (float)realPart * _linearUnits;
             }
         }
     }
-
-    else // _pixelisPoint && _layer->interpolation == Interpolation::NEAREST)
+#else
+    for (unsigned r = 0; r < tileSize; ++r)
     {
-        // Calculate the pixel extents of the tile:
-        double tile_col_min, tile_col_max;
-        double tile_row_min, tile_row_max;
-        geoToPixel(tile_xmin, tile_ymin, tile_col_min, tile_row_max);
-        geoToPixel(tile_xmax, tile_ymax, tile_col_max, tile_row_min);
-
-        const double ws_buffer = 0.5; // greater values cause gaps. I don't know why!!
-
-        int col_min = std::max(0.0, floor(tile_col_min - ws_buffer));
-        int col_max = std::min(ceil(tile_col_max + ws_buffer), (double)band->GetXSize() - 1.0);
-        int row_min = std::max(0.0, floor(tile_row_min - ws_buffer));
-        int row_max = std::min(ceil(tile_row_max + ws_buffer), (double)band->GetYSize() - 1.0);
-
-        // Allocate a read workspace for RasterIO.
-        // note: workspace is a thread_local vector, see above
-        int workspace_width = tileSize, workspace_height = tileSize;
-
-        workspace.assign(workspace_width * workspace_height, NO_DATA_VALUE);
-
-        // Read the data, filling the workspace vector from north to south:
-        auto read_error = band->RasterIO(GF_Read,
-            (int)col_min, (int)row_min,
-            (int)col_max - (int)col_min + 1, (int)row_max - (int)row_min + 1,
-            &workspace[0], workspace_width, workspace_height,
-            GDT_Float32, 0, 0);
-
-        if (read_error != CE_None)
+        double y = tile_ymin + (dy * (double)r);
+        for (unsigned c = 0; c < tileSize; ++c)
         {
-            //OE_WARN << LC << "RasterIO failed.\n";
-            return Status(Status::ResourceUnavailable, "GDAL RasterIO failed");
+            double x = tile_xmin + (dx * (double)c);
+            auto h = getInterpolatedDEMValue(band, x, y) * _linearUnits;
+            hf->heightAt(c, r) = h * _linearUnits;
         }
-
-        // Calculate the actual extents of the pixel data in buffer, which will be slightly
-        // different from the tile extents due to the buffering.
-        // Remember to flip the Y axis.
-        // The "+1"s expand the maximums to include the full extent of the last pixel
-        double buf_xmin, buf_ymin, buf_xmax, buf_ymax;
-        pixelToGeo(col_min, row_max + 1, buf_xmin, buf_ymin);
-        pixelToGeo(col_max + 1, row_min, buf_xmax, buf_ymax);
-
-        // Just to deal with floating point precision issues
-        const double epsilon = 1e-6;
-
-        // Fill the heightfield by transforming the tile's coordinates to the buffer's coordinates
-        // and sampling the buffer.
-        for (unsigned r = 0; r < tileSize; ++r)
-        {
-            double y = tile_ymin + (dy * (double)r);
-            double v = (y - buf_ymin) / (buf_ymax - buf_ymin);
-            if (equiv(v, 0.0, epsilon)) v = 0.0;
-
-            for (unsigned c = 0; c < tileSize; ++c)
-            {
-                double x = tile_xmin + (dx * (double)c);
-                double u = (x - buf_xmin) / (buf_xmax - buf_xmin);
-                if (equiv(u, 0.0, epsilon)) u = 0;
-
-                // invert v since the buffer from rasterio is top-down:
-                float h = getInterpolatedDEMValueWorkspace(band, u, 1.0 - v, &workspace[0], workspace_width, workspace_height) * _linearUnits;
-                hf->heightAt(c, r) = h;
-            }
-        }
-
-        // Apply any scale/offset found in the source:
-        applyScaleAndOffset(band, (void*)hf->data<float>(), GDT_Float32, tileSize, tileSize);
     }
+#endif
+
+    // Apply any scale/offset found in the source:
+    applyScaleAndOffset(band, hf_raw, GDT_Float32, tileSize, tileSize);
 
     return hf;
 }

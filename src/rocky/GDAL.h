@@ -115,15 +115,12 @@ namespace ROCKY_NAMESPACE
             }
 
         private:
-            void pixelToGeo(double, double, double&, double&);
-            void geoToPixel(double, double, double&, double&);
 
             bool isValidValue(float, GDALRasterBand*);
             bool isValidValue(float, float) const;
             float getValidElevationValue(float value, float nodataValueFromBand, float replacement);
+            float getInterpolatedDEMValue(GDALRasterBand* band, double x, double y);
             bool intersects(const TileKey&);
-            float getInterpolatedDEMValue(GDALRasterBand*, double x, double y, bool halfPixelOffset);
-            float getInterpolatedDEMValueWorkspace(GDALRasterBand*, double u, double v, float*, int, int);
 
             bool _open = false;
             GDALDataset* _srcDS = nullptr;
