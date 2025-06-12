@@ -26,7 +26,7 @@ namespace
 
         float update_hertz = 1.0f; // updates per second
         bool enabled = true;
-        double buffer_px = 25.0;
+        double buffer_px = 0.0;
         int sorting_method = 0; // 0=priority, 1=distance
         unsigned visible = 1;
         unsigned total = 0;
