@@ -758,43 +758,43 @@ GeoImage::composite(const std::vector<GeoImage>& sources, const std::vector<floa
     double x, y;
     glm::fvec4 pixel, temp;
     bool have_opacities = opacities.size() == sources.size();
-    
+
     std::vector<SRSOperation> xforms;
     xforms.reserve(sources.size());
-    for(auto& source : sources)
+    for (auto& source : sources)
         xforms.emplace_back(srs().to(source.srs()));
 
-        for (unsigned s = 0; s < _image->width(); ++s)
+    for (unsigned s = 0; s < _image->width(); ++s)
+    {
+        for (unsigned t = 0; t < _image->height(); ++t)
         {
-            for (unsigned t = 0; t < _image->height(); ++t)
+            getCoord(s, t, x, y);
+
+            for (unsigned layer = 0; layer < _image->depth(); ++layer)
             {
-                getCoord(s, t, x, y);
+                bool pixel_valid = false;
 
-                for (unsigned layer = 0; layer < _image->depth(); ++layer)
+                for (int i = 0; i < (int)sources.size(); ++i)
                 {
-                    bool pixel_valid = false;
+                    auto& source = sources[i];
+                    float opacity = have_opacities ? opacities[i] : 1.0f;
 
-                    for (int i = 0; i < (int)sources.size(); ++i)
+                    if (!pixel_valid)
                     {
-                        auto& source = sources[i];
-                        float opacity = have_opacities ? opacities[i] : 1.0f;
-
-                        if (!pixel_valid)
+                        if (source.read(pixel, xforms[i], x, y, layer) && pixel.a > 0.0f)
                         {
-                            if (source.read(pixel, xforms[i], x, y, layer) && pixel.a > 0.0f)
-                            {
-                                pixel.a *= opacity;
-                                pixel_valid = true;
-                            }
-                        }
-                        else if (source.read(temp, xforms[i], x, y, layer))
-                        {
-                            pixel = glm::mix(pixel, temp, temp.a * opacity);
+                            pixel.a *= opacity;
+                            pixel_valid = true;
                         }
                     }
-
-                    _image->write(pixel, s, t, layer);
+                    else if (source.read(temp, xforms[i], x, y, layer))
+                    {
+                        pixel = glm::mix(pixel, temp, temp.a * opacity);
+                    }
                 }
+
+                _image->write(pixel, s, t, layer);
+            }
         }
     }
 }

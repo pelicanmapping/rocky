@@ -359,16 +359,16 @@ TileLayer::intersects(const TileKey& key) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(profile.valid() && key.valid(), false);
 
-    double a_min[2], a_max[2];
-
     // We must use the equivalent lod b/c the input key can be in any profile.
     unsigned localLOD = profile.getEquivalentLOD(key.profile, key.level);
 
     // Transform the key extent to the SRS of this layer to do the index search
     GeoExtent keyExtentInLayerSRS = profile.clampAndTransformExtent(key.extent());
 
-    a_min[0] = keyExtentInLayerSRS.xmin(); a_min[1] = keyExtentInLayerSRS.ymin();
-    a_max[0] = keyExtentInLayerSRS.xmax(); a_max[1] = keyExtentInLayerSRS.ymax();
+    // Intersection should be a [...) test.
+    const double epsilon = 1e-10;
+    double a_min[2] = { keyExtentInLayerSRS.xmin(), keyExtentInLayerSRS.ymin() };
+    double a_max[2] = { keyExtentInLayerSRS.xmax() - epsilon, keyExtentInLayerSRS.ymax() - epsilon };
 
     return _dataExtentsIndex->Intersects(a_min, a_max);
 }
