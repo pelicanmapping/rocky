@@ -22,17 +22,17 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 </editor-fold> */
+#include <rocky/vsg/Common.h>
+
 #include <imgui.h>
 #include <functional>
-
-#include <rocky/vsg/Common.h>
 
 #include <vsg/app/Window.h>
 #include <vsg/commands/ClearAttachments.h>
 #include <vsg/nodes/Group.h>
 #include <vsg/vk/DescriptorPool.h>
 
-namespace vsgImGui
+namespace ROCKY_NAMESPACE
 {
     class ROCKY_EXPORT RenderImGui : public vsg::Inherit<vsg::Group, RenderImGui>
     {
@@ -96,8 +96,5 @@ namespace vsgImGui
     };
 
     // temporary workaround for Dear ImGui's nonexistent sRGB awareness
-    extern void ImGuiStyle_sRGB_to_linear(ImGuiStyle& style);
-
-} // namespace vsgImGui
-
-EVSG_type_name(vsgImGui::RenderImGui);
+    //extern void ImGuiStyle_sRGB_to_linear(ImGuiStyle& style);
+}

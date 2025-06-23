@@ -26,14 +26,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <imgui_impl_vulkan.h>
 
 #include <vsg/io/Logger.h>
-#include <vsg/maths/color.h>
 #include <vsg/utils/CoordinateSpace.h>
 #include <vsg/vk/State.h>
-#include <vsg/vk/SubmitCommands.h>
 
-using namespace vsgImGui;
+using namespace ROCKY_NAMESPACE;
 
-namespace vsgImGui
+namespace
 {
     void check_vk_result(VkResult err)
     {
@@ -68,7 +66,7 @@ namespace vsgImGui
         }
     }
 
-} // namespace vsgImGui
+}
 
 RenderImGui::RenderImGui(const vsg::ref_ptr<vsg::Window>& window, bool useClearAttachments)
 {

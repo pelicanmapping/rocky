@@ -28,9 +28,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <vsg/ui/PointerEvent.h>
 #include <vsg/ui/ScrollWheelEvent.h>
 
-#include <iostream>
-
-using namespace vsgImGui;
+using namespace ROCKY_NAMESPACE;
 
 SendEventsToImGui::SendEventsToImGui() :
     _dragging(false)

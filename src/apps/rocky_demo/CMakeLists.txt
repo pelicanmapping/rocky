@@ -2,8 +2,8 @@ set(APP_NAME rocky_demo)
 
 find_package(ImGui REQUIRED)
 
-file(GLOB SOURCES *.cpp vsgImGui/*.cpp)
-file(GLOB HEADERS *.h vsgImGui/*.h)
+file(GLOB SOURCES *.cpp)
+file(GLOB HEADERS *.h)
 
 # enable folders for IDEs
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

@@ -42,7 +42,7 @@ namespace ROCKY_NAMESPACE
 
     //! wrapper for vsgImGui::SendEventsToImGui that restricts ImGui events to a single window & imgui context,
     //! of which there needs to be one per view.
-    class ROCKY_EXPORT SendEventsToImGuiWrapper : public vsg::Inherit<vsgImGui::SendEventsToImGui, SendEventsToImGuiWrapper>
+    class ROCKY_EXPORT SendEventsToImGuiWrapper : public vsg::Inherit<SendEventsToImGui, SendEventsToImGuiWrapper>
     {
     public:
         SendEventsToImGuiWrapper(vsg::ref_ptr<vsg::Window> window, ImGuiContext* imguiContext, VSGContext vsgContext = {}) :
@@ -64,7 +64,7 @@ namespace ROCKY_NAMESPACE
                     ImGui::SetCurrentContext(_imguiContext);
                 }
 
-                vsgImGui::SendEventsToImGui::apply(e);
+                SendEventsToImGui::apply(e);
 
                 if (_vsgContext && (e.handled || forceRefresh))
                 {
@@ -119,7 +119,7 @@ namespace ROCKY_NAMESPACE
     * Parent class for ImGuiNode's that has Application integration and represents
     * each ImGuiNode child in a separate ImGuiContext.
     */
-    class ROCKY_EXPORT ImGuiContextGroup : public vsg::Inherit<vsgImGui::RenderImGui, ImGuiContextGroup>
+    class ROCKY_EXPORT ImGuiContextGroup : public vsg::Inherit<RenderImGui, ImGuiContextGroup>
     {
     public:
         ImGuiContextGroup(const vsg::ref_ptr<vsg::Window>& window) :

@@ -23,13 +23,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 </editor-fold> */
 
+#include <rocky/vsg/Common.h>
 #include <chrono>
 #include <vsg/core/Visitor.h>
 #include <vsg/ui/KeyEvent.h>
-#include "RenderImGui.h"
 #include <imgui.h>
 
-namespace vsgImGui
+namespace ROCKY_NAMESPACE
 {
     class SendEventsToImGui : public vsg::Inherit<vsg::Visitor, SendEventsToImGui>
     {
@@ -57,4 +57,5 @@ namespace vsgImGui
 
         std::map<vsg::KeySymbol, ImGuiKey> _vsg2imgui;
     };
-} // namespace vsgImGui
+}
+
