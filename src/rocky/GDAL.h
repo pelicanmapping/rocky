@@ -47,6 +47,9 @@ namespace ROCKY_NAMESPACE
             //! Interpolation method for resampling
             option<Interpolation> interpolation = Interpolation::BILINEAR;
 
+            //! Precise mode - slower but more accurate
+            option<bool> precise = false;
+
         protected:
             option<bool> singleThreaded = false;
         };
@@ -126,8 +129,8 @@ namespace ROCKY_NAMESPACE
             GDALDataset* _srcDS = nullptr;
             GDALDataset* _warpedDS = nullptr;
             double _linearUnits = 1.0;
-            double _geotransform[6];
-            double _invtransform[6];
+            double _gt[6];
+            double _igt[6];
             GeoExtent _extents;
             Box _bounds;
             Profile _profile;

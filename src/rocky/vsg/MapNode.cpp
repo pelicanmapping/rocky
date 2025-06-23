@@ -53,7 +53,7 @@ MapNode::from_json(const std::string& JSON, const IOOptions& io)
 
     if (status.ok() && terrainNode && j.contains("terrain"))
     {
-        status = terrainNode->from_json(j.at("map").dump(), io);
+        status = terrainNode->from_json(j.at("terrain").dump(), io);
     }
 
     return status;

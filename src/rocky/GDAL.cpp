@@ -26,16 +26,18 @@ using namespace ROCKY_NAMESPACE::GDAL;
 
 
 #define PIXEL_TO_GEO(X, Y, GEOX, GEOY) \
-    GEOX = _geotransform[0] + _geotransform[1] * (X) + _geotransform[2] * (Y); \
-    GEOY = _geotransform[3] + _geotransform[4] * (X) + _geotransform[5] * (Y)
+    GEOX = _gt[0] + _gt[1] * (X) + _gt[2] * (Y); \
+    GEOY = _gt[3] + _gt[4] * (X) + _gt[5] * (Y)
 
 #define GEO_TO_PIXEL(GEOX, GEOY, OUTX, OUTY) \
-    OUTX = _invtransform[0] + _invtransform[1] * (GEOX) + _invtransform[2] * (GEOY); \
-    OUTY = _invtransform[3] + _invtransform[4] * (GEOX) + _invtransform[5] * (GEOY); \
+    OUTX = _igt[0] + _igt[1] * (GEOX) + _igt[2] * (GEOY); \
+    OUTY = _igt[3] + _igt[4] * (GEOX) + _igt[5] * (GEOY); \
     if (equiv(OUTX, 0.0, 0.0001)) OUTX = 0; \
     if (equiv(OUTY, 0.0, 0.0001)) OUTY = 0; \
     if (equiv(OUTX, (double)_warpedDS->GetRasterXSize(), 0.0001)) OUTX = _warpedDS->GetRasterXSize(); \
-    if (equiv(OUTY, (double)_warpedDS->GetRasterYSize(), 0.0001)) OUTY = _warpedDS->GetRasterYSize()
+    if (equiv(OUTY, (double)_warpedDS->GetRasterYSize(), 0.0001)) OUTY = _warpedDS->GetRasterYSize(); \
+    OUTX = clamp(OUTX, 0.0, (double)_warpedDS->GetRasterXSize() - 1.0); \
+    OUTY = clamp(OUTY, 0.0, (double)_warpedDS->GetRasterYSize() - 1.0);
 
 
 namespace ROCKY_NAMESPACE
@@ -524,10 +526,10 @@ GDAL::Driver::open(
     bool isRotated = false;
     bool requiresReprojection = false;
     
-    bool hasGeoTransform = (_srcDS->GetGeoTransform(_geotransform) == CE_None);
+    bool hasGeoTransform = (_srcDS->GetGeoTransform(_gt) == CE_None);
 
     hasGCP = _srcDS->GetGCPCount() > 0 && _srcDS->GetGCPProjection();
-    isRotated = hasGeoTransform && (_geotransform[2] != 0.0 || _geotransform[4] != 0.0);
+    isRotated = hasGeoTransform && (_gt[2] != 0.0 || _gt[4] != 0.0);
     requiresReprojection = hasGCP || isRotated;
 
     // For a geographic SRS, use the whole-globe profile for performance.
@@ -545,12 +547,12 @@ GDAL::Driver::open(
         // no xform an geographic? Match the profile.
         if (!hasGeoTransform)
         {
-            _geotransform[0] = _profile.extent().xmin();
-            _geotransform[1] = _profile.extent().width() / (double)_srcDS->GetRasterXSize();
-            _geotransform[2] = 0;
-            _geotransform[3] = _profile.extent().ymax();
-            _geotransform[4] = 0;
-            _geotransform[5] = -_profile.extent().height() / (double)_srcDS->GetRasterYSize();
+            _gt[0] = _profile.extent().xmin();
+            _gt[1] = _profile.extent().width() / (double)_srcDS->GetRasterXSize();
+            _gt[2] = 0;
+            _gt[3] = _profile.extent().ymax();
+            _gt[4] = 0;
+            _gt[5] = -_profile.extent().height() / (double)_srcDS->GetRasterYSize();
             hasGeoTransform = true;
         }
     }
@@ -572,7 +574,7 @@ GDAL::Driver::open(
         if (_warpedDS)
         {
             warpedSRSWKT = _warpedDS->GetProjectionRef();
-            _warpedDS->GetGeoTransform(_geotransform);
+            _warpedDS->GetGeoTransform(_gt);
         }
     }
     else
@@ -581,7 +583,7 @@ GDAL::Driver::open(
         warpedSRSWKT = src_srs.wkt();
 
         // re-read the extents from the new DS:
-        _warpedDS->GetGeoTransform(_geotransform);
+        _warpedDS->GetGeoTransform(_gt);
     }
 
     if (!_warpedDS)
@@ -590,7 +592,7 @@ GDAL::Driver::open(
     }
 
     // calcluate the inverse of the geotransform:
-    auto err = GDALInvGeoTransform(_geotransform, _invtransform);
+    auto err = GDALInvGeoTransform(_gt, _igt);
     ROCKY_QUIET_ASSERT(err == CE_None);
 
     double minX, minY, maxX, maxY;
@@ -1364,10 +1366,7 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
     // Raw pointer to the height data output block:
     float* hf_raw = (float*)hf->data<float>();
 
-    // If the interpolation is not nearest neighbor, we will use the
-    // high-res sampling path. This is not terribly fast but it's accurate.
 #if GDAL_VERSION_NUM >= 3100000 // 3.10+
-    double ri, ci, realPart;
 
     GDALRIOResampleAlg alg =
         _layer->interpolation == Interpolation::AVERAGE ? GRIORA_Bilinear : // Average not accepted by InterpolateAtPoint
@@ -1376,22 +1375,88 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
         _layer->interpolation == Interpolation::CUBICSPLINE ? GRIORA_CubicSpline :
         GRIORA_NearestNeighbour;
 
-    for (unsigned r = 0; r < tileSize; ++r)
-    {
-        double y = tile_ymin + (dy * (double)r);
-        for (unsigned c = 0; c < tileSize; ++c)
-        {
-            double x = tile_xmin + (dx * (double)c);
-            GEO_TO_PIXEL(x, y, ci, ri);
+    double px, py;
+    double realPart;
+    double xsize = (double)band->GetXSize();
+    double ysize = (double)band->GetYSize();
 
-            // this function applies the 1/2 pixel offset for us for DEMs
-            auto err = band->InterpolateAtPoint(ci, ri, alg, &realPart, nullptr);
-            if (err == CE_None)
+    auto geo2pixel = [&](double x, double y, double& px, double& py)
+        {
+            px = _igt[0] + _igt[1] * (x)+_igt[2] * (y);
+            py = _igt[3] + _igt[4] * (x)+_igt[5] * (y);
+            if (equiv(px, 0.0, 0.0001)) px = 0.0;
+            if (equiv(py, 0.0, 0.0001)) py = 0.0;
+            if (equiv(px, xsize, 0.0001)) px = xsize;
+            if (equiv(py, ysize, 0.0001)) py = ysize;
+            px = clamp(px, 0.0, xsize - 1.0);
+            py = clamp(py, 0.0, ysize - 1.0);
+        };
+
+    if (_layer->precise == true)
+    {
+        // in precise mode, we sample every single point separately
+        for (unsigned r = 0; r < tileSize; ++r)
+        {
+            double y = tile_ymin + (dy * (double)r);
+
+            for (unsigned c = 0; c < tileSize; ++c)
             {
-                hf->heightAt(c, r) = (float)realPart * _linearUnits;
+                double x = tile_xmin + (dx * (double)c);
+
+                geo2pixel(x, y, px, py);
+
+                // this function applies the 1/2 pixel offset for us for DEMs
+                auto err = band->InterpolateAtPoint(px, py, alg, &realPart, nullptr);
+                if (err == CE_None)
+                {
+                    hf->heightAt(c, r) = (float)realPart * _linearUnits;
+                }
             }
         }
     }
+    else
+    {
+        // in non-precise mode, we read the whole heightfield in a go,
+        // and then resample the edges precisely so they match up correctly.
+        // We are passing a half-pixel shift to geo2pixel.
+        double px2, py2;
+        geo2pixel(tile_xmin - 0.5 * dx, tile_ymax - 0.5 * dy, px, py);
+        geo2pixel(tile_xmax - 0.5 * dx, tile_ymin - 0.5 * dy, px2, py2);
+
+        GDALRasterIOExtraArg xtras;
+        INIT_RASTERIO_EXTRA_ARG(xtras);
+        xtras.eResampleAlg = alg;
+
+        band->RasterIO(GF_Read,
+            (int)floor(px), (int)floor(py),
+            (int)ceil(px2 - px), (int)ceil(py2 - py),
+            hf_raw,
+            tileSize, tileSize,
+            GDT_Float32, 0, 0, &xtras);
+
+        hf->flipVerticalInPlace();
+
+        for (unsigned r = 0; r < tileSize; ++r)
+        {
+            double y = tile_ymin + (dy * (double)r);
+
+            int step = (r == 0 || r == (tileSize - 1)) ? 1 : tileSize - 1;
+            for (unsigned c = 0; c < tileSize; c += step)
+            {
+                double x = tile_xmin + (dx * (double)c);
+
+                geo2pixel(x, y, px, py);
+
+                // this function applies the 1/2 pixel offset for us for DEMs
+                auto err = band->InterpolateAtPoint(px, py, alg, &realPart, nullptr);
+                if (err == CE_None)
+                {
+                    hf->heightAt(c, r) = (float)realPart * _linearUnits;
+                }
+            }
+        }
+    }
+
 #else
     for (unsigned r = 0; r < tileSize; ++r)
     {
