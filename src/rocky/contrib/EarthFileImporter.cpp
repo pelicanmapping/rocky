@@ -195,6 +195,7 @@ EarthFileImporter::read(const std::string& location, const IOOptions& io) const
         return Status(Status::ConfigurationError, "XML missing top-level 'map' element");
     }
 
+    auto top = json::object();
     json map = json::object();
 
     // keep them here do they don't destruct ;)
@@ -236,7 +237,7 @@ EarthFileImporter::read(const std::string& location, const IOOptions& io) const
                     auto profile_json = find_profile_recursively(child_el);
                     if (!profile_json.is_null())
                     {
-                        map["profile"] = profile_json;
+                        top["profile"] = profile_json;
                     }
                 }
 
@@ -262,7 +263,6 @@ EarthFileImporter::read(const std::string& location, const IOOptions& io) const
 
     map["layers"] = layers_json;
 
-    auto top = json::object();
     top["map"] = map;
 
     return to_string(top);
