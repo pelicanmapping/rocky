@@ -7,11 +7,10 @@
 
 #include <rocky/Common.h>
 #include <rocky/Math.h>
+#include <cmath>
 
 namespace ROCKY_NAMESPACE
 {
-    using namespace ROCKY_NAMESPACE::util;
-
     class IOOptions;
 
     /**
@@ -241,8 +240,8 @@ namespace ROCKY_NAMESPACE
 
     void Image::read_bilinear(Pixel& pixel, float u, float v, unsigned layer) const
     {
-        u = clamp(u, 0.0f, 1.0f);
-        v = clamp(v, 0.0f, 1.0f);
+        u = util::clamp(u, 0.0f, 1.0f);
+        v = util::clamp(v, 0.0f, 1.0f);
 
         float sizeS = (float)(width() - 1);
         float s = u * sizeS;
@@ -329,6 +328,34 @@ namespace ROCKY_NAMESPACE
                     func(*this);
                 }
             }
+        }
+    }
+
+
+    namespace util
+    {
+        inline constexpr float linear_to_sRGB(float c)
+        {
+            constexpr float cutoff = 0.04045f / 12.92f;
+            constexpr float linearFactor = 12.92f;
+            constexpr float nonlinearFactor = 1.055f;
+            constexpr float exponent = 1.0f / 2.4f;
+            if (c <= cutoff)
+                return c * linearFactor;
+            else
+                return std::pow(c, exponent) * nonlinearFactor - 0.055f;
+        }
+
+        inline constexpr float sRGB_to_linear(float c)
+        {
+            constexpr float cutoff = 0.04045f / 12.92f;
+            constexpr float linearFactor = 12.92f;
+            constexpr float nonlinearFactor = 1.055f;
+            constexpr float exponent = 2.4f;
+            if (c <= linearFactor * cutoff)
+                return c / linearFactor;
+            else
+                return std::pow((c + 0.055f) / nonlinearFactor, exponent);
         }
     }
 }

@@ -12,6 +12,7 @@ using json = nlohmann::json;
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::TMS;
+using namespace ROCKY_NAMESPACE::util;
 
 
 #define ELEM_TILEMAP "tilemap"

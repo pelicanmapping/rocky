@@ -15,6 +15,7 @@
 #include <vsg/io/Options.h>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 #define LC "[SurfaceNode] "
 

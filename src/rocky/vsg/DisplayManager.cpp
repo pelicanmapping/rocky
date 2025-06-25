@@ -33,7 +33,7 @@ namespace
 GeoPoint
 ROCKY_NAMESPACE::pointAtWindowCoords(vsg::ref_ptr<vsg::View> view, int x, int y)
 {
-    auto terrain = find<TerrainNode>(view);
+    auto terrain = util::find<TerrainNode>(view);
     if (!terrain)
         return {};
 

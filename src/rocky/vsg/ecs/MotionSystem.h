@@ -86,7 +86,7 @@ namespace ROCKY_NAMESPACE
                         double circ = 2.0 * glm::pi<double>() * R;
                         double angle = 360.0 * distance / circ;
 
-                        glm::dquat rot = glm::angleAxis(deg2rad(angle), motion.normalAxis);
+                        glm::dquat rot = glm::angleAxis(util::deg2rad(angle), motion.normalAxis);
                         auto temp = rot * world;
                         pos_to_world.inverse(temp, temp);
                         pos.x = temp.x, pos.y = temp.y, pos.z = temp.z;

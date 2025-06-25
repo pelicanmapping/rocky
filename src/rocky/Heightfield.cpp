@@ -7,6 +7,7 @@
 #include "GeoCommon.h"
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::util;
 
 namespace
 {

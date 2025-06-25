@@ -7,10 +7,10 @@
 
 #include <rocky/vsg/ecs/Icon.h>
 #include <rocky/vsg/ecs/Label.h>
-#include <rocky/vsg/ecs/Mesh.h>
 #include <rocky/Geocoder.h>
 
 #include "helpers.h"
+
 using namespace ROCKY_NAMESPACE;
 
 auto Demo_Geocoder = [](Application& app)
@@ -172,7 +172,7 @@ auto Demo_Geocoder = [](Application& app)
 
                                 // update the label:
                                 auto text = display_name;
-                                replace_in_place(text, ", ", "\n");
+                                util::replace_in_place(text, ", ", "\n");
                                 label.text = text;
                                 label.revision++;
 
