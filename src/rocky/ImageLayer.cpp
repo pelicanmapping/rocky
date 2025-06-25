@@ -311,7 +311,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             SRSOperation xform = key.extent().srs().to(sources[0].srs());
 
             // new output:
-            output = Mosaic::create(Image::R8G8B8A8_UNORM, cols, rows, layers);
+            output = Mosaic::create(sources[0].image()->pixelFormat(), cols, rows, layers);
 
             // Cache pointers to the source images that mosaic to create this tile.
             output->dependencies.reserve(sources.size());

@@ -29,6 +29,49 @@ namespace
         }
     };
 
+    template<typename T>
+    struct SRGB8 {
+        static constexpr float linear_to_sRGB(float c)
+        {
+            constexpr float cutoff = 0.04045f / 12.92f;
+            constexpr float linearFactor = 12.92f;
+            constexpr float nonlinearFactor = 1.055f;
+            constexpr float exponent = 1.0f / 2.4f;
+            if (c <= cutoff)
+                return c * linearFactor;
+            else
+                return std::pow(c, exponent) * nonlinearFactor - 0.055f;
+        }
+
+        static constexpr float sRGB_to_linear(float c)
+        {
+            constexpr float cutoff = 0.04045f;
+            constexpr float linearFactor = 1.0f / 12.92f;
+            constexpr float nonlinearFactor = 1.0f / 1.055f;
+            constexpr float exponent = 2.4f;
+            if (c <= cutoff)
+                return c * linearFactor;
+            else
+                return std::pow((c + 0.055f) * nonlinearFactor, exponent);
+        }
+
+        // RGB are encoded, alpha is direct
+        static void read(Image::Pixel& pixel, unsigned char* ptr, int n) {
+            for (int i = 0; i < std::min(n, 3); ++i)
+                pixel[i] = sRGB_to_linear((float)(*ptr++) * denorm_8);
+            for (int i = std::min(n, 3); i < n; ++i)
+                pixel[i] = (float)(*ptr++) * denorm_8;
+            for (int i = n; i < 4; ++i)
+                pixel[i] = 1.0f; // fills in alpha if source doesn't have it
+        }
+        static void write(const Image::Pixel& pixel, unsigned char* ptr, int n) {
+            for (int i = 0; i < std::min(n, 3); ++i)
+                *ptr++ = (T)(linear_to_sRGB(pixel[i]) * norm_8);
+            for (int i = std::min(n, 3); i < n; ++i)
+                *ptr++ = (T)(pixel[i] * norm_8);
+        }
+    };
+
     constexpr float norm_16 = 65535.0f;
     constexpr float denorm_16 = 1.0f / norm_16;
 
@@ -65,13 +108,13 @@ namespace
 Image::Layout Image::_layouts[11] =
 {
     { &NORM8<uchar>::read, &NORM8<uchar>::write, 1, 1, R8_UNORM },
-    { &NORM8<uchar>::read, &NORM8<uchar>::write, 1, 1, R8_SRGB },
+    { &SRGB8<uchar>::read, &SRGB8<uchar>::write, 1, 1, R8_SRGB },
     { &NORM8<uchar>::read, &NORM8<uchar>::write, 2, 2, R8G8_UNORM },
-    { &NORM8<uchar>::read, &NORM8<uchar>::write, 2, 2, R8G8_SRGB },
+    { &SRGB8<uchar>::read, &SRGB8<uchar>::write, 2, 2, R8G8_SRGB },
     { &NORM8<uchar>::read, &NORM8<uchar>::write, 3, 3, R8G8B8_UNORM },
-    { &NORM8<uchar>::read, &NORM8<uchar>::write, 3, 3, R8G8B8_SRGB },
+    { &SRGB8<uchar>::read, &SRGB8<uchar>::write, 3, 3, R8G8B8_SRGB },
     { &NORM8<uchar>::read, &NORM8<uchar>::write, 4, 4, R8G8B8A8_UNORM },
-    { &NORM8<uchar>::read, &NORM8<uchar>::write, 4, 4, R8G8B8A8_SRGB },
+    { &SRGB8<uchar>::read, &SRGB8<uchar>::write, 4, 4, R8G8B8A8_SRGB },
     { &NORM16<ushort>::read, &NORM16<ushort>::write, 1, 2, R16_UNORM },
     { &FLOAT<float>::read, &FLOAT<float>::write, 1, 4, R32_SFLOAT },
     { &FLOAT<double>::read, &FLOAT<double>::write, 1, 8, R64_SFLOAT }
