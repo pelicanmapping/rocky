@@ -107,6 +107,8 @@ struct MainGUI : public vsg::Inherit<ImGuiNode, MainGUI>
 {
     Application& app;
     MainGUI(Application& app_) : app(app_) { }
+    mutable ImVec2 asize;
+    mutable std::optional<std::string> attribution;
 
     void render(ImGuiContext* imguiContext) const override
     {
@@ -119,6 +121,8 @@ struct MainGUI : public vsg::Inherit<ImGuiNode, MainGUI>
             }
         }
         ImGui::End();
+
+        renderAttribution();
     }
 
     void render(const Demo& demo) const
@@ -135,6 +139,39 @@ struct MainGUI : public vsg::Inherit<ImGuiNode, MainGUI>
                     render(child);
                 ImGui::Unindent();
             }
+        }
+    }
+
+    void renderAttribution() const
+    {
+        // Map attribution
+        if (!attribution.has_value())
+        {
+            std::string buf;
+            auto& layers = app.mapNode->map->layers().all();
+            for (auto& layer : layers) {
+                if (layer->status().ok() && layer->attribution.has_value()) {
+                    if (!buf.empty())
+                        buf += ", ";
+                    buf += layer->attribution->text;
+                }
+            }
+            attribution = buf;
+        }
+
+        if (!attribution->empty())
+        {
+            auto winsize = ImGui::GetIO().DisplaySize;
+            ImGui::SetNextWindowPos(ImVec2(winsize.x - asize.x, winsize.y - asize.y));
+            ImGui::SetNextWindowBgAlpha(0.65f);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+            ImGui::Begin("##Attribution", nullptr,
+                ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | 
+                ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove);
+            ImGui::Text("%s", attribution->c_str());
+            asize = ImGui::GetWindowSize();
+            ImGui::End();
+            ImGui::PopStyleVar(1);
         }
     }
 };
