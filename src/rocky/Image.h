@@ -20,6 +20,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
 
+        //! Pixel formats.
         enum PixelFormat {
             R8_UNORM,
             R8_SRGB,
@@ -36,6 +37,7 @@ namespace ROCKY_NAMESPACE
             UNDEFINED
         };
 
+        //! Pixel value. For color data, each channel is assumed to be in linear color space.
         using Pixel = glm::fvec4;
 
     public:
@@ -72,6 +74,7 @@ namespace ROCKY_NAMESPACE
         virtual ~Image();
 
         //! Iterator for visiting each pixel in the image.
+        
         struct Iterator
         {
             Iterator(const Image* image) : _image(image) { }
@@ -82,6 +85,8 @@ namespace ROCKY_NAMESPACE
             inline double u() const { return _u; }
             inline double v() const { return _v; }
 
+            //! Call the user callable for each pixel in the image.
+            //! CALLABLE must have the signature void(const Iterator& i).
             template<typename CALLABLE>
             inline void each(CALLABLE&& func);
 
@@ -124,26 +129,32 @@ namespace ROCKY_NAMESPACE
             return reinterpret_cast<T*>(_data)[offset];
         }
 
-        //! Read the pixel at a column, row, and layer
+        //! Read the pixel at a column, row, and layer.
+        //! \param pixel Output value (in linear color space, if applicable)
         inline void read(Pixel& pixel, unsigned s, unsigned t, unsigned layer = 0) const;
 
         //! Read the pixel at the location in an iterator
+        //! \param pixel Output value (in linear color space, if applicable)
         inline void read(Pixel& pixel, Iterator& i) const {
             read(pixel, i.s(), i.t(), i.r());
         }
 
         //! Read the pixel at UV coordinates with bilinear interpolation
+        //! \param pixel Output value (in linear color space, if applicable)
         inline void read_bilinear(Pixel& pixel, float u, float v, unsigned layer = 0) const;
 
         //! Read the pixel at UV coordinates with bilinear interpolation at an iterator location
+        //! \param pixel Output value (in linear color space, if applicable)
         inline void read_bilinear(Pixel& pixel, Iterator& i) const {
             read_bilinear(pixel, i.u(), i.v(), i.r());
         }
 
         //! Write the pixel at a column, row, and layer
+        //! \param pixel Value to store (in linear color space, if applicable)
         inline void write(const Pixel& pixel, unsigned s, unsigned t, unsigned layer = 0);
 
         //! Write the pixel at the location in an iterator
+        //! \param pixel Value to store (in linear color space, if applicable)
         inline void write(const Pixel& pixel, Iterator& i) {
             write(pixel, i.s(), i.t(), i.r());
         }
@@ -194,7 +205,8 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Fills the entire image with a single value
-        void fill(const Pixel& p);
+        //! \param pixel Value to store (in linear color space, if applicable)
+        void fill(const Pixel& pixel);
 
         //! Releases this image's data without deleting it. 
         //! Use this to transfer ownership of the raw data to someone else.
@@ -202,10 +214,19 @@ namespace ROCKY_NAMESPACE
         //! This object becomes invalid unless you call allocate() on it again.
         unsigned char* releaseData();
 
+        //! Reinterprets this image as having a different pixel format.
+        //! Use this with caution. Only use this as a temporary object.
+        //! Data ownership is shared between the original and the view,
+        //! and NO data conversion is performed.
+        //! \param format Pixel format to reinterpret data as
+        //! \return A new image that shares the data with this one
+        Image viewAs(Image::PixelFormat format) const;
+
     protected:
         unsigned _width = 0, _height = 0, _depth = 0;
         PixelFormat _pixelFormat = R8G8B8A8_UNORM;
         unsigned char* _data = nullptr;
+        bool _ownsData = true;
 
         void allocate(PixelFormat format, unsigned s, unsigned t, unsigned r);
 

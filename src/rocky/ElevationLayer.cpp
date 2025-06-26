@@ -652,10 +652,6 @@ ElevationLayerVector::populateHeightfield(
                     hf->data<unsigned char>(),
                     layerHF->heightfield()->data<unsigned char>(),
                     hf->sizeInBytes());
-                //memcpy(hf->getFloatArray()->asVector().data(),
-                //    layerHF.getHeightfield()->getFloatArray()->asVector().data(),
-                //    sizeof(float) * hf->getFloatArray()->size()
-                //);
 
                 realData = true;
 
@@ -866,47 +862,50 @@ ElevationLayer::decodeRGB(std::shared_ptr<Image> image) const
     if (!image || !image->valid())
         return nullptr;
 
+    // For RGB-encoded elevation, we want read the components in their raw form
+    // and not perform any color space conversion.
+    auto view_format =
+        image->pixelFormat() == Image::R8_SRGB ? Image::R8_UNORM :
+        image->pixelFormat() == Image::R8G8_SRGB ? Image::R8G8_UNORM :
+        image->pixelFormat() == Image::R8G8B8_SRGB ? Image::R8G8B8_UNORM :
+        image->pixelFormat() == Image::R8G8B8A8_SRGB ? Image::R8G8B8A8_UNORM :
+        image->pixelFormat();
+
+    Image view = image->viewAs(view_format);
+
     // convert the RGB Elevation into an actual heightfield
-    auto hf = Heightfield::create(image->width(), image->height());
+    auto hf = Heightfield::create(view.width(), view.height());
+
+    glm::fvec4 pixel;
 
     if (encoding == Encoding::TerrariumRGB)
     {
-        glm::fvec4 pixel;
-        for (unsigned y = 0; y < image->height(); ++y)
-        {
-            for (unsigned x = 0; x < image->width(); ++x)
+        view.iterator().each([&](auto& i)
             {
-                image->read(pixel, x, y);
+                view.read(pixel, i.s(), i.t());
 
-                float height =
-                    ((pixel.r * 255.0f * 256.0f + pixel.g * 255.0f + pixel.b * 255.0f / 256.0f) - 32768.0f);
+                float height = ((pixel.r * 255.0f * 256.0f + pixel.g * 255.0f + pixel.b * 255.0f / 256.0f) - 32768.0f);
 
                 if (height < -9999 || height > 999999)
                     height = NO_DATA_VALUE;
 
-                hf->heightAt(x, y) = height;
-            }
-        }
+                hf->heightAt(i.s(), i.t()) = height;
+            });
     }
 
     else // default to MapboxRGB
     {
-        glm::fvec4 pixel;
-        for (unsigned y = 0; y < image->height(); ++y)
-        {
-            for (unsigned x = 0; x < image->width(); ++x)
+        view.iterator().each([&](auto& i)
             {
-                image->read(pixel, x, y);
+                view.read(pixel, i.s(), i.t());
 
-                float height = -10000.f +
-                    ((pixel.r * 256.0f * 256.0f + pixel.g * 256.0f + pixel.b) * 256.0f * 0.1f);
+                float height = -10000.f + ((pixel.r * 256.0f * 256.0f + pixel.g * 256.0f + pixel.b) * 256.0f * 0.1f);
 
                 if (height < -9999 || height > 999999)
                     height = NO_DATA_VALUE;
 
-                hf->heightAt(x, y) = height;
-            }
-        }
+                hf->heightAt(i.s(), i.t()) = height;
+            });
     }
 
     return hf;

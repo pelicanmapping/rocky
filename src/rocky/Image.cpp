@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "Image.h"
+#include <cstring>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -108,8 +109,11 @@ Image::Image(PixelFormat format, unsigned cols, unsigned rows, unsigned depth) :
 Image::Image(const Image& rhs) :
     super(rhs)
 {
-    allocate(rhs.pixelFormat(), rhs.width(), rhs.height(), rhs.depth());
-    memcpy(_data, rhs._data, sizeInBytes());
+    if (rhs.sizeInBytes() > 0 && rhs._data != nullptr)
+    {
+        allocate(rhs.pixelFormat(), rhs.width(), rhs.height(), rhs.depth());
+        memcpy(_data, rhs._data, sizeInBytes());
+    }
 }
 
 Image::Image(Image&& rhs) noexcept :
@@ -127,15 +131,16 @@ Image::Image(Image&& rhs) noexcept :
 
 Image::~Image()
 {
-    if (_data)
+    if (_data && _ownsData)
+    {
         delete[] _data;
+    }
 }
 
 bool
 Image::hasAlphaChannel() const
 {
-    return
-        pixelFormat() == R8G8B8A8_UNORM;
+    return pixelFormat() == R8G8B8A8_UNORM || pixelFormat() == R8G8B8A8_SRGB;
 }
 
 std::shared_ptr<Image>
@@ -173,10 +178,11 @@ Image::allocate(
 
     auto layout = _layouts[pixelFormat()];
 
-    if (_data)
+    if (_data && _ownsData)
         delete[] _data;
 
     _data = new unsigned char[sizeInBytes()];
+    _ownsData = true;
 
     // simple init for one-byte images
     if (sizeInBytes() > 0)
@@ -294,4 +300,17 @@ Image::sharpen(float k) const
 #endif
 
     return convolve(kernel);
+}
+
+Image
+Image::viewAs(Image::PixelFormat format) const
+{
+    Image view;
+    view._pixelFormat = format;
+    view._width = _width;
+    view._height = _height;
+    view._depth = _depth;
+    view._data = _data; // share the data
+    view._ownsData = false;
+    return view;
 }
