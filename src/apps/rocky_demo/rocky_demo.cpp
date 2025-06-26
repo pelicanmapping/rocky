@@ -148,8 +148,8 @@ struct MainGUI : public vsg::Inherit<ImGuiNode, MainGUI>
         if (!attribution.has_value())
         {
             std::string buf;
-            auto& layers = app.mapNode->map->layers().all();
-            for (auto& layer : layers) {
+            const auto& layers = app.mapNode->map->layers().all();
+            for (const auto& layer : layers) {
                 if (layer->status().ok() && layer->attribution.has_value()) {
                     if (!buf.empty())
                         buf += ", ";
