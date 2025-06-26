@@ -121,18 +121,6 @@ Geometry::contains(double x, double y) const
     }
 }
 
-bool
-Feature::FieldNameComparator::operator()(const std::string& L, const std::string& R) const
-{
-    for (int i = 0; i < L.length() && i < R.length(); ++i)
-    {
-        char Lc = std::tolower(L[i]), Rc = std::tolower(R[i]);
-        if (Lc < Rc) return true;
-        if (Lc > Rc) return false;
-    }
-    return L.length() < R.length();
-}
-
 void
 Feature::dirtyExtent()
 {
@@ -397,16 +385,7 @@ namespace
                 if (OGR_F_IsFieldSetAndNotNull(handle, i))
                 {
                     auto value = OGR_F_GetFieldAsInteger(handle, i);
-
-                    out_feature.fields.emplace(name, Feature::FieldValueUnion{
-                        std::to_string(value),
-                        (double)value,
-                        value,
-                        (value != 0) });
-                }
-                else
-                {
-                    //feature->setNull(name, ATTRTYPE_INT);
+                    out_feature.fields[name].emplace<long long>(value);
                 }
             }
             break;
@@ -416,16 +395,7 @@ namespace
                 if (OGR_F_IsFieldSetAndNotNull(handle, i))
                 {
                     auto value = OGR_F_GetFieldAsInteger64(handle, i);
-
-                    out_feature.fields.emplace(name, Feature::FieldValueUnion{
-                        std::to_string(value),
-                        (double)value,
-                        value,
-                        (value != 0) });
-                }
-                else
-                {
-                    //feature->setNull(name, ATTRTYPE_INT);
+                    out_feature.fields[name].emplace<long long>(value);
                 }
             }
             break;
@@ -435,16 +405,7 @@ namespace
                 if (OGR_F_IsFieldSetAndNotNull(handle, i))
                 {
                     double value = OGR_F_GetFieldAsDouble(handle, i);
-
-                    out_feature.fields.emplace(name, Feature::FieldValueUnion{
-                        std::to_string(value),
-                        value,
-                        (long long)value,
-                        (value != 0.0) });
-                }
-                else
-                {
-                    //feature->setNull(name, ATTRTYPE_DOUBLE);
+                    out_feature.fields[name].emplace<double>(value);
                 }
             }
             break;
@@ -457,15 +418,7 @@ namespace
                     if (value)
                     {
                         std::string svalue(value);
-                        out_feature.fields.emplace(name, Feature::FieldValueUnion{
-                            svalue,
-                            0.0,
-                            0,
-                            util::toLower(svalue) == "true" });
-                    }
-                    else
-                    {
-                        //feature->setNull(name, ATTRTYPE_STRING);
+                        out_feature.fields[name].emplace<std::string>(svalue);
                     }
                 }
             }

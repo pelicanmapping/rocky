@@ -12,6 +12,9 @@
 #include <rocky/Utils.h>
 #include <vector>
 #include <queue>
+#include <variant>
+#include <cmath>
+#include <cctype>
 
 namespace ROCKY_NAMESPACE
 {
@@ -174,30 +177,32 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! internal - raw values for a field
-        struct FieldValueUnion
+        using FieldValueUnion = std::variant<
+            std::monostate,
+            std::string,
+            double,
+            long long,
+            bool>;
+
+        struct FieldValue : public FieldValueUnion
         {
-            std::string stringValue = {};
-            double doubleValue = 0.0;
-            long long intValue = 0;
-            bool boolValue = false;
+            inline bool valid() const;
+            inline std::string stringValue() const;
+            inline double doubleValue() const;
+            inline long long intValue() const;
+            inline bool boolValue() const;
         };
 
         //! attribute field type
         enum class FieldType
         {
             String,
-            Int,
             Double,
+            Int,
             Bool
         };
 
-        using FieldValue = std::pair<FieldType, FieldValueUnion>;
-
-        struct ROCKY_EXPORT FieldNameComparator {
-            bool operator()(const std::string& L, const std::string& R) const;
-        };
-
-        using Fields = util::vector_map<std::string, FieldValueUnion, FieldNameComparator>;
+        using Fields = util::vector_map<std::string, FieldValue>;
 
         using FieldSchema = util::vector_map<std::string, FieldType>;
 
@@ -233,8 +238,9 @@ namespace ROCKY_NAMESPACE
             return fields.find(name) != fields.end();
         }
 
-        const FieldValueUnion& field(const std::string& name) const {
-            static FieldValueUnion empty;
+        //! Reference to the named field, or a dummy empty field if the field is not found.
+        const FieldValue& field(const std::string& name) const {
+            static FieldValue empty;
             auto i = fields.find(name);
             return i != fields.end() ? i->second : empty;
         }
@@ -368,5 +374,62 @@ namespace ROCKY_NAMESPACE
         points(container.begin(), container.end())
     {
         //nop
+    }
+
+    bool Feature::FieldValue::valid() const
+    {
+        return !std::holds_alternative<std::monostate>(*this);
+    }
+
+    std::string Feature::FieldValue::stringValue() const
+    {
+        if (std::holds_alternative<std::string>(*this))
+            return std::get<std::string>(*this);
+        else if (std::holds_alternative<double>(*this))
+            return std::to_string(std::get<double>(*this));
+        else if (std::holds_alternative<long long>(*this))
+            return std::to_string(std::get<long long>(*this));
+        else if (std::holds_alternative<bool>(*this))
+            return std::get<bool>(*this) ? "true" : "false";
+        return {};
+    }
+
+    double Feature::FieldValue::doubleValue() const
+    {
+        if (std::holds_alternative<double>(*this))
+            return std::get<double>(*this);
+        else if (std::holds_alternative<long long>(*this))
+            return static_cast<double>(std::get<long long>(*this));
+        else if (std::holds_alternative<std::string>(*this))
+            return std::atof(std::get<std::string>(*this).c_str());
+        else if (std::holds_alternative<bool>(*this))
+            return std::get<bool>(*this) ? 1.0 : 0.0;
+        return 0.0;
+    }
+
+    long long Feature::FieldValue::intValue() const
+    {
+        if (std::holds_alternative<long long>(*this))
+            return std::get<long long>(*this);
+        else if (std::holds_alternative<double>(*this))
+            return static_cast<long long>(std::get<double>(*this));
+        else if (std::holds_alternative<std::string>(*this))
+            return std::atoll(std::get<std::string>(*this).c_str());
+        else if (std::holds_alternative<bool>(*this))
+            return std::get<bool>(*this) ? 1LL : 0LL;
+        return 0LL;
+    }
+
+    bool Feature::FieldValue::boolValue() const
+    {
+        if (std::holds_alternative<bool>(*this))
+            return std::get<bool>(*this);
+        else if (std::holds_alternative<double>(*this))
+            return std::get<double>(*this) != 0.0;
+        else if (std::holds_alternative<long long>(*this))
+            return std::get<long long>(*this) != 0LL;
+        else if (std::holds_alternative<std::string>(*this))
+            return std::get<std::string>(*this) == "true";
+        return false;
     }
 }

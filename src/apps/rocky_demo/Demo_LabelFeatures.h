@@ -44,15 +44,15 @@ auto Demo_LabelFeatures = [](Application& app)
             auto feature = iter.next();
             if (feature.valid())
             {
-                auto field = feature.field("name");
-                if (!field.stringValue.empty())
+                auto name = feature.field("name").stringValue();
+                if (!name.empty())
                 {
-                    auto& candidate = candidates[field.stringValue];
+                    auto& candidate = candidates[name];
                     auto area = feature.extent.area();
                     if (area > candidate.area)
                     {
                         candidate.area = area;
-                        candidate.pop = feature.field("pop").doubleValue;
+                        candidate.pop = feature.field("pop").doubleValue();
                         candidate.centroid = feature.extent.centroid();
                     }
                 }

@@ -4,8 +4,6 @@
  * MIT License
  */
 #include "Application.h"
-#include "MapManipulator.h"
-#include "json.h"
 
 #include "ecs/MeshSystem.h"
 #include "ecs/LineSystem.h"
@@ -13,19 +11,12 @@
 #include "ecs/IconSystem2.h"
 #include "ecs/LabelSystem.h"
 #include "ecs/WidgetSystem.h"
-#include "ecs/MotionSystem.h"
 #include "ecs/TransformSystem.h"
 
 #include <rocky/contrib/EarthFileImporter.h>
 
 #include <vsg/app/CloseHandler.h>
-#include <vsg/app/View.h>
-#include <vsg/app/RenderGraph.h>
 #include <vsg/utils/CommandLine.h>
-#include <vsg/utils/ComputeBounds.h>
-#include <vsg/vk/State.h>
-#include <vsg/vk/CommandBuffer.h>
-#include <vsg/io/read.h>
 #include <vsg/core/Version.h>
 
 using namespace ROCKY_NAMESPACE;

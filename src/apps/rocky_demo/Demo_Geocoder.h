@@ -120,7 +120,7 @@ auto Demo_Geocoder = [](Application& app)
                     ImGui::PushID(count++);
                     bool selected = false;
                     ImGui::Separator();
-                    std::string display_name = feature.field("display_name").stringValue;
+                    auto display_name = feature.field("display_name").stringValue();
                     ImGui::Selectable(display_name.c_str(), &selected);
                     if (selected)
                     {

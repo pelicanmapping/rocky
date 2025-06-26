@@ -374,28 +374,34 @@ namespace ROCKY_NAMESPACE
             mutable std::condition_variable_any _condition;
         };
 
+        template<typename T>
+        struct vector_map_equal {
+            inline bool operator()(const T& a, const T& b) const {
+                return a == b;
+            }
+        };
+
         /**
         * A std::map-like map that uses a vector.
         * This benchmarks much faster than std::map or std::unordered_map for small sets.
         */
-        template<typename KEY, typename DATA, typename LESS = std::less<KEY>>
+        template<
+            typename KEY,
+            typename DATA, 
+            typename EQUAL = vector_map_equal<KEY>>
+
         struct vector_map
         {
             struct ENTRY {
-                KEY first;
-                DATA second;
+                KEY first; DATA second;
             };
-
             using value_type = DATA;
             using container_t = std::vector<ENTRY>;
             using iterator = typename container_t::iterator;
             using const_iterator = typename container_t::const_iterator;
+            EQUAL keys_equal;
 
             container_t _container;
-
-            inline bool keys_equal(const KEY& a, const KEY& b) const {
-                return LESS()(a, b) == false && LESS()(b, a) == false;
-            }
 
             inline DATA& operator[](const KEY& key) {
                 for (unsigned i = 0; i < _container.size(); ++i) {
