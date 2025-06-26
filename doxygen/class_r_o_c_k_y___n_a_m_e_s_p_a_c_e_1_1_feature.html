@@ -75,7 +75,6 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
@@ -86,27 +85,22 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="_feature_8h_source.html">Feature.h</a>&gt;</code></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
-Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_1_1_field_value_union.html">FieldValueUnion</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">internal - raw values for a field  <a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_1_1_field_value_union.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
 <tr class="memitem:aea11d562eed02a7df9358b11a467b579" id="r_aea11d562eed02a7df9358b11a467b579"><td class="memItemLeft" align="right" valign="top"><a id="aea11d562eed02a7df9358b11a467b579" name="aea11d562eed02a7df9358b11a467b579"></a>enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature.html#aea11d562eed02a7df9358b11a467b579">FieldType</a> { <b>String</b>
-, <b>Int</b>
 , <b>Double</b>
+, <b>Int</b>
 , <b>Bool</b>
  }</td></tr>
 <tr class="memdesc:aea11d562eed02a7df9358b11a467b579"><td class="mdescLeft">&#160;</td><td class="mdescRight">attribute field type <br /></td></tr>
 <tr class="separator:aea11d562eed02a7df9358b11a467b579"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaefcb3abb7c449aaf1d4ed6cab1cb149" id="r_aaefcb3abb7c449aaf1d4ed6cab1cb149"><td class="memItemLeft" align="right" valign="top"><a id="aaefcb3abb7c449aaf1d4ed6cab1cb149" name="aaefcb3abb7c449aaf1d4ed6cab1cb149"></a>
-<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><b>FieldValue</b> = std::pair&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature.html#aea11d562eed02a7df9358b11a467b579">FieldType</a>, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_1_1_field_value_union.html">FieldValueUnion</a> &gt;</td></tr>
-<tr class="separator:aaefcb3abb7c449aaf1d4ed6cab1cb149"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adedaef5a9938f66fdf9cc8e444fd34eb" id="r_adedaef5a9938f66fdf9cc8e444fd34eb"><td class="memItemLeft" align="right" valign="top"><a id="adedaef5a9938f66fdf9cc8e444fd34eb" name="adedaef5a9938f66fdf9cc8e444fd34eb"></a>
-<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Fields</b> = util::vector_map&lt; std::string, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_1_1_field_value_union.html">FieldValueUnion</a>, FieldNameComparator &gt;</td></tr>
-<tr class="separator:adedaef5a9938f66fdf9cc8e444fd34eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a367626ec65a0b935dc8c908da4fc3d88" id="r_a367626ec65a0b935dc8c908da4fc3d88"><td class="memItemLeft" align="right" valign="top"><a id="a367626ec65a0b935dc8c908da4fc3d88" name="a367626ec65a0b935dc8c908da4fc3d88"></a>
+<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><b>FieldValueUnion</b> = std::variant&lt; std::monostate, std::string, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">double</a>, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">long</a> <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">long</a>, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">bool</a> &gt;</td></tr>
+<tr class="memdesc:a367626ec65a0b935dc8c908da4fc3d88"><td class="mdescLeft">&#160;</td><td class="mdescRight">internal - raw values for a field <br /></td></tr>
+<tr class="separator:a367626ec65a0b935dc8c908da4fc3d88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4453f39cac5df96d4091b16e1d7ccc87" id="r_a4453f39cac5df96d4091b16e1d7ccc87"><td class="memItemLeft" align="right" valign="top"><a id="a4453f39cac5df96d4091b16e1d7ccc87" name="a4453f39cac5df96d4091b16e1d7ccc87"></a>
+<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><b>Fields</b> = util::vector_map&lt; std::string, FieldValue &gt;</td></tr>
+<tr class="separator:a4453f39cac5df96d4091b16e1d7ccc87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9b3bd292d6a26728e315038df3fa050" id="r_ae9b3bd292d6a26728e315038df3fa050"><td class="memItemLeft" align="right" valign="top"><a id="ae9b3bd292d6a26728e315038df3fa050" name="ae9b3bd292d6a26728e315038df3fa050"></a>
 <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><b>FieldSchema</b> = util::vector_map&lt; std::string, <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature.html#aea11d562eed02a7df9358b11a467b579">FieldType</a> &gt;</td></tr>
 <tr class="separator:ae9b3bd292d6a26728e315038df3fa050"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -142,9 +136,10 @@ Public Member Functions</h2></td></tr>
 <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><b>hasField</b> (<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">const</a> std::string &amp;name) <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">const</a></td></tr>
 <tr class="memdesc:a8040fa8c6cd34395817c197339b0aa01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Whether the feature contains the named field. <br /></td></tr>
 <tr class="separator:a8040fa8c6cd34395817c197339b0aa01"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa7207bf09abafb649f888fd282a74ba9" id="r_aa7207bf09abafb649f888fd282a74ba9"><td class="memItemLeft" align="right" valign="top"><a id="aa7207bf09abafb649f888fd282a74ba9" name="aa7207bf09abafb649f888fd282a74ba9"></a>
-<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">const</a> <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_1_1_field_value_union.html">FieldValueUnion</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>field</b> (<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">const</a> std::string &amp;name) <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">const</a></td></tr>
-<tr class="separator:aa7207bf09abafb649f888fd282a74ba9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0de6194abfc0db2902653e5b388d5f24" id="r_a0de6194abfc0db2902653e5b388d5f24"><td class="memItemLeft" align="right" valign="top"><a id="a0de6194abfc0db2902653e5b388d5f24" name="a0de6194abfc0db2902653e5b388d5f24"></a>
+<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">const</a> FieldValue &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>field</b> (<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">const</a> std::string &amp;name) <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">const</a></td></tr>
+<tr class="memdesc:a0de6194abfc0db2902653e5b388d5f24"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reference to the named field, or a dummy empty field if the field is not found. <br /></td></tr>
+<tr class="separator:a0de6194abfc0db2902653e5b388d5f24"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab07ba24958d9b915fd461e96ee677759" id="r_ab07ba24958d9b915fd461e96ee677759"><td class="memItemLeft" align="right" valign="top"><a id="ab07ba24958d9b915fd461e96ee677759" name="ab07ba24958d9b915fd461e96ee677759"></a>
 <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>dirtyExtent</b> ()</td></tr>
 <tr class="separator:ab07ba24958d9b915fd461e96ee677759"><td class="memSeparator" colspan="2">&#160;</td></tr>
