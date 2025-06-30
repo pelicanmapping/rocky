@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['screenspaceerror_0',['screenspaceerror',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#a8adeb4090bfe4c3a044ea784a06508d1',1,'ROCKY_NAMESPACE::TerrainSettings::screenSpaceError'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#a006e0c07523643f086b31003c6b94214',1,'ROCKY_NAMESPACE::TerrainSettings::screenSpaceError']]],
+  ['screenspaceerror_0',['screenspaceerror',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#a006e0c07523643f086b31003c6b94214',1,'ROCKY_NAMESPACE::TerrainSettings::screenSpaceError'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#a8adeb4090bfe4c3a044ea784a06508d1',1,'ROCKY_NAMESPACE::TerrainSettings::screenSpaceError'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_node_pager.html#a2e2acead1fd9efd20bd871aabbadf056',1,'ROCKY_NAMESPACE::NodePager::screenSpaceError']]],
   ['scrollsensitivity_1',['scrollSensitivity',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#adf044d01a6088f65a33a8dca4c0674e1',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
   ['searchpaths_2',['searchPaths',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#a36c0fde5e95df460bad5bd47addde362',1,'ROCKY_NAMESPACE::VSGContextImpl']]],
   ['services_3',['services',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html#ac9adfd301337cf44519270c11d2c723f',1,'ROCKY_NAMESPACE::IOOptions']]],
@@ -22,5 +22,6 @@ var searchData=
   ['status_5fok_19',['Status_OK',['../namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#ac536fb6271554c64879f43568baba1dc',1,'ROCKY_NAMESPACE']]],
   ['style_20',['style',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_icon.html#a058cebeee496ad77335a23759d11684f',1,'ROCKY_NAMESPACE::Icon::style'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#afcbd233bcf9ca8a095e6e6ed2533cf46',1,'ROCKY_NAMESPACE::Line::style'],['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a14af01d8f9d7cd340ada4eacc6def69e',1,'ROCKY_NAMESPACE::Mesh::style']]],
   ['styles_21',['styles',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html#a120ae53a0a16752972fb85f6d3d69a3f',1,'ROCKY_NAMESPACE::FeatureView']]],
-  ['supportmultithreadedrecord_22',['supportMultiThreadedRecord',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#a0a8de58951f830e633606d3190ee4188',1,'ROCKY_NAMESPACE::TerrainSettings']]]
+  ['subtileloaderfactory_22',['subtileLoaderFactory',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_node_pager.html#ac0f5633a6665817fa1ab0b4ddb0515eb',1,'ROCKY_NAMESPACE::NodePager']]],
+  ['supportmultithreadedrecord_23',['supportMultiThreadedRecord',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_terrain_settings.html#a0a8de58951f830e633606d3190ee4188',1,'ROCKY_NAMESPACE::TerrainSettings']]]
 ];

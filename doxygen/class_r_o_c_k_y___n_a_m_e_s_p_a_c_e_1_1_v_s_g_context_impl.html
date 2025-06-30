@@ -89,10 +89,10 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a6267c2790bdae0744225db507f59c85a" id="r_a6267c2790bdae0744225db507f59c85a"><td class="memItemLeft" align="right" valign="top"><a id="a6267c2790bdae0744225db507f59c85a" name="a6267c2790bdae0744225db507f59c85a"></a>
-<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><b>GuiRenderer</b> = std::function&lt; <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">void</a>(std::uint32_t <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">viewID</a>, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">void</a> *<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">guiContext</a>)&gt;</td></tr>
-<tr class="memdesc:a6267c2790bdae0744225db507f59c85a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callbacks to render GUI elements. <br /></td></tr>
-<tr class="separator:a6267c2790bdae0744225db507f59c85a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c7ffc6c1581c2237cb0e1b9e27d0498" id="r_a7c7ffc6c1581c2237cb0e1b9e27d0498"><td class="memItemLeft" align="right" valign="top"><a id="a7c7ffc6c1581c2237cb0e1b9e27d0498" name="a7c7ffc6c1581c2237cb0e1b9e27d0498"></a>
+<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><b>GuiRecorder</b> = std::function&lt; <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">void</a>(<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_view_recording_state.html">ViewRecordingState</a> &amp;, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">void</a> *<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">guiContext</a>)&gt;</td></tr>
+<tr class="memdesc:a7c7ffc6c1581c2237cb0e1b9e27d0498"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callbacks to render GUI elements. <br /></td></tr>
+<tr class="separator:a7c7ffc6c1581c2237cb0e1b9e27d0498"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -168,9 +168,13 @@ std::atomic_int&#160;</td><td class="memItemRight" valign="bottom"><b>renderRequ
 std::vector&lt; std::uint32_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>activeViewIDs</b> = { 0 }</td></tr>
 <tr class="memdesc:a5eade1e1d66ca3d83ae507b3595404ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">List of viewIDs that are active. <br /></td></tr>
 <tr class="separator:a5eade1e1d66ca3d83ae507b3595404ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a238baba9c66acdf3edb430c31478cc6b" id="r_a238baba9c66acdf3edb430c31478cc6b"><td class="memItemLeft" align="right" valign="top"><a id="a238baba9c66acdf3edb430c31478cc6b" name="a238baba9c66acdf3edb430c31478cc6b"></a>
-std::deque&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#a6267c2790bdae0744225db507f59c85a">GuiRenderer</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>guiRenderers</b></td></tr>
-<tr class="separator:a238baba9c66acdf3edb430c31478cc6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaaa0dc15d89c01a6af3a31fcca4d79f0" id="r_aaaa0dc15d89c01a6af3a31fcca4d79f0"><td class="memItemLeft" align="right" valign="top"><a id="aaaa0dc15d89c01a6af3a31fcca4d79f0" name="aaaa0dc15d89c01a6af3a31fcca4d79f0"></a>
+std::deque&lt; <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#a7c7ffc6c1581c2237cb0e1b9e27d0498">GuiRecorder</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>guiRecorders</b></td></tr>
+<tr class="separator:aaaa0dc15d89c01a6af3a31fcca4d79f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ec3fac2dac062c54674cdb7a2596e74" id="r_a9ec3fac2dac062c54674cdb7a2596e74"><td class="memItemLeft" align="right" valign="top"><a id="a9ec3fac2dac062c54674cdb7a2596e74" name="a9ec3fac2dac062c54674cdb7a2596e74"></a>
+AutoCallback&#160;</td><td class="memItemRight" valign="bottom"><b>onUpdate</b></td></tr>
+<tr class="memdesc:a9ec3fac2dac062c54674cdb7a2596e74"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_callback.html">Callback</a> fired during each update pass. <br /></td></tr>
+<tr class="separator:a9ec3fac2dac062c54674cdb7a2596e74"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Rocky runtime context to use with a VSG-based application. Use VSGContextFactory::create to VSGContext instance. </p>
