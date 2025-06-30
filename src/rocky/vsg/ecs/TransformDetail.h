@@ -4,7 +4,7 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/Common.h>
+#include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/ViewLocal.h>
 #include <rocky/vsg/ecs/Transform.h>
 #include <rocky/SRS.h>
@@ -52,11 +52,8 @@ namespace ROCKY_NAMESPACE
         //! Return true if any updates were made due to a dirty Transform.
         bool update(vsg::RecordTraversal&);
 
-        // True if this transform is visible in the given view.
-        bool passesCull(vsg::RecordTraversal&) const;
-
         // True if this transform is visible in the view with the provided ID
-        bool passesCull(std::uint32_t viewID) const;
+        bool visible(ViewRecordingState& state) const;
 
         void push(vsg::RecordTraversal&) const;
 

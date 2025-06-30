@@ -92,13 +92,12 @@ TerrainNode::createRootTiles(VSGContext& context)
     this->addChild(stategroup);
 
     // once the pipeline exists, we can start creating tiles.
-    std::vector<TileKey> keys;
-    Profile::getAllKeysAtLOD(this->minLevelOfDetail, engine->profile, keys);
+    auto keys = engine->profile.allKeysAtLOD(this->minLevelOfDetail);
 
-    for (unsigned i = 0; i < keys.size(); ++i)
+    for(auto& key : keys)
     {
         // create a tile with no parent:
-        auto tile = engine->createTile(keys[i], {});
+        auto tile = engine->createTile(key, {});
 
         // ensure it can't page out:
         tile->doNotExpire = true;

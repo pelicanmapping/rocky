@@ -12,10 +12,10 @@ namespace ROCKY_NAMESPACE
     {
         /**
          * Tracks usage data by maintaining a sentry-blocked linked list.
-         * Each time a use called "use" the corresponding record moves to
-         * the right of the sentry marker. After a cycle you can call
-         * collectTrash to process all users that did not call use() in the
-         * that cycle, and dispose of them.
+         * Each time a something calls "emplace_or_update" the corresponding
+         * record moves to the right of the sentry marker. After a cycle you can call
+         * flush to process all users that did not call update() in the that cycle
+         * and dispose of them.
          */
         template<typename T>
         class SentryTracker
@@ -23,70 +23,69 @@ namespace ROCKY_NAMESPACE
         public:
             struct ListEntry
             {
-                ListEntry(T data, void* token) : _data(data), _token(token) { }
                 T _data;
-                void* _token;
+                typename std::list<ListEntry>::iterator _ptr;
             };
 
             using List = std::list<ListEntry>;
             using ListIterator = typename List::iterator;
-            using Token = ListIterator;
 
+            //! Construct a new tracker.
             SentryTracker()
             {
                 reset();
             }
 
-            ~SentryTracker()
-            {
-                for (auto& e : _list)
-                {
-                    Token* te = static_cast<Token*>(e._token);
-                    if (te)
-                        delete te;
-                }
-            }
-
+            //! Resets the tracker to its initial state.
+            //! Tracked objects are NOT disposed.
             void reset()
             {
-                for (auto& e : _list)
-                {
-                    Token* te = static_cast<Token*>(e._token);
-                    if (te)
-                        delete te;
-                }
                 _list.clear();
-                _list.emplace_front(nullptr, nullptr); // the sentry marker
+                _list.emplace_front(); // the sentry marker
                 _sentryptr = _list.begin();
+                _size = 0;
             }
 
             List _list;
             ListIterator _sentryptr;
+            unsigned _size = 0;
 
-            inline void* use(const T& data, void* token)
+            //! Emplace a new item in the tracker, and receive a token to use
+            //! when calling update().
+            inline void* emplace(const T& data)
             {
-                // Find the tracker for this tile and update its timestamp
-                if (token)
-                {
-                    Token* ptr = static_cast<Token*>(token);
-
-                    // Move the tracker to the front of the list (ahead of the sentry).
-                    // Once a cull traversal is complete, all visited tiles will be
-                    // in front of the sentry, leaving all non-visited tiles behind it.
-                    _list.splice(_list.begin(), _list, *ptr);
-                    *ptr = _list.begin();
-                    return ptr;
-                }
-                else
-                {
-                    // New entry:
-                    Token* ptr = new Token();
-                    _list.emplace_front(data, ptr); // ListEntry
-                    *ptr = _list.begin();
-                    return ptr;
-                }
+                auto& entry = _list.emplace_front();
+                entry._data = data;
+                entry._ptr = _list.begin(); // set the token to point to the new entry
+                _size++;
+                return &entry._ptr;
             }
 
+            //! Inform the tracker that the object associated with the token
+            //! is still in use, and return a new token to replace the old one.
+            inline void* update(void* token)
+            {
+                // Move the tracker to the front of the list (ahead of the sentry).
+                // Once a cull traversal is complete, all visited tiles will be
+                // in front of the sentry, leaving all non-visited tiles behind it.
+                auto ptr = static_cast<ListIterator*>(token);
+                _list.splice(_list.begin(), _list, *ptr);
+                *ptr = _list.begin();
+                return ptr;
+            }
+
+            //! Calls emplace if token is null, otherwise called update and
+            //! returns a new token.
+            inline void* emplace_or_update(const T& data, void* token)
+            {
+                if (token)
+                    return update(token);
+                else
+                    return emplace(data);
+            }
+
+            //! Removes any tracked objects that were not updated since the last
+            //! flush, and calls dispose() on each one.
             template<typename CALLABLE>
             inline void flush(unsigned maxCount, CALLABLE&& dispose)
             {
@@ -110,11 +109,9 @@ namespace ROCKY_NAMESPACE
                         tmp = i;
                         --i;
 
-                        // delete the token
-                        delete static_cast<Token*>(le._token);
-
                         // remove it from the tracker list:
                         _list.erase(tmp);
+                        _size--;
                         ++count;
                     }
                 }
@@ -122,6 +119,17 @@ namespace ROCKY_NAMESPACE
                 // reset the sentry.
                 _list.splice(_list.begin(), _list, _sentryptr);
                 _sentryptr = _list.begin();
+            }
+
+            //! Snapshot of the object list (for debugging)
+            std::vector<T> snapshot() const
+            {
+                std::vector<T> result;
+                result.reserve(_size);
+                for (const auto& e : _list)
+                    if (e._data)
+                        result.emplace_back(e._data);
+                return result;
             }
         };
     }

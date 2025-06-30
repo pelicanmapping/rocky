@@ -32,9 +32,14 @@ namespace ROCKY_NAMESPACE
 
             void traverse(vsg::RecordTraversal& record) const override
             {
-                for (auto& render : vsgContext->guiRenderers)
+                ViewRecordingState vrs{
+                    record.getCommandBuffer()->viewID,
+                    record.getFrameStamp()->frameCount
+                };
+
+                for (auto& record_gui : vsgContext->guiRecorders)
                 {
-                    render(record.getState()->_commandBuffer->viewID, imguiContext);
+                    record_gui(vrs, imguiContext);
                 }
             }
         };

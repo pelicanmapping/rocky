@@ -63,12 +63,25 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
     if (!info.tile)
     {
         info.tile = tile;
-        info.trackerToken = _tracker.use(tile, nullptr);
+        //if (info.trackerToken)
+        //    info.trackerToken = _tracker.update(info.trackerToken);
+        //else
+        //    info.trackerToken = _tracker.emplace(tile);
+        //info.trackerToken = _tracker.use(tile, nullptr);
     }
     else
     {
-        _tracker.use(tile, info.trackerToken);
+        //if (info.trackerToken)
+        //    info.trackerToken = _tracker.update(info.trackerToken);
+        //else
+        //    info.trackerToken = _tracker.emplace(tile);
+        //_tracker.use(tile, info.trackerToken);
     }
+
+    if (info.trackerToken)
+        info.trackerToken = _tracker.update(info.trackerToken);
+    else
+        info.trackerToken = _tracker.emplace(info.tile);
 
     // next, see if the tile needs anything.
     // "progressive" means do not load LOD N+1 until LOD N is complete.

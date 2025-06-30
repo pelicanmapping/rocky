@@ -38,6 +38,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_TrackHistory.h"
 #include "Demo_Decluttering.h"
 #include "Demo_Registry.h"
+#include "Demo_NodePager.h"
 
 template<class T>
 int layerError(T layer)
@@ -73,8 +74,8 @@ std::vector<Demo> demos =
         Demo{ "Mesh - relative", Demo_Mesh_Relative },
         Demo{ "Icon", Demo_Icon },
         Demo{ "Model", Demo_Model },
-        Demo{ "Widget", Demo_Widget },
-        Demo{ "Registry", Demo_Registry }
+        Demo{ "Widget", Demo_Widget }
+        //Demo{ "Registry", Demo_Registry }
     } },
     Demo{ "GIS Data", {},
     {
@@ -88,6 +89,7 @@ std::vector<Demo> demos =
         Demo{ "Track histories", Demo_TrackHistory }
     } },
     Demo{ "Decluttering", Demo_Decluttering },
+    Demo{ "Node Pager", Demo_NodePager },
     Demo{ "Geocoding", Demo_Geocoder },
     Demo{ "RTT", Demo_RTT },
     Demo{ "Camera", {},

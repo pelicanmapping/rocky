@@ -11,17 +11,6 @@
 #include <rocky/Math.h>
 #include <rocky/Status.h>
 #include <rocky/weejobs.h>
-#include <vsg/maths/vec3.h>
-#include <vsg/maths/mat4.h>
-#include <vsg/vk/State.h>
-#include <vsg/vk/Context.h>
-#include <vsg/commands/Commands.h>
-#include <vsg/nodes/StateGroup.h>
-#include <vsg/nodes/Geometry.h>
-#include <vsg/threading/OperationThreads.h>
-#include <queue>
-#include <mutex>
-#include <optional>
 
 namespace ROCKY_NAMESPACE
 {
@@ -29,9 +18,8 @@ namespace ROCKY_NAMESPACE
     {
         // Visitor that finds the first node of a given type in a scene graph.
         template<class T>
-        class FindNodeVisitor : public vsg::Inherit<vsg::Visitor, FindNodeVisitor<T>>
+        struct FindNodeVisitor : public vsg::Inherit<vsg::Visitor, FindNodeVisitor<T>>
         {
-        public:
             T* found = nullptr;
             void apply(vsg::Node& node) override
             {
@@ -40,6 +28,20 @@ namespace ROCKY_NAMESPACE
                     found = node.cast<T>();
                     node.traverse(*this);
                 }
+            }
+        };
+
+        template<class T>
+        struct ForEachNodeVisitor : public vsg::Inherit<vsg::Visitor, ForEachNodeVisitor<T>>
+        {
+            std::function<void(T*)> _func;
+            ForEachNodeVisitor(std::function<void(T*)> func)
+                : _func(func) { }
+
+            void apply(vsg::Object& object) override {
+                if (auto t = object.cast<T>())
+                    _func(t);
+                object.traverse(*this);
             }
         };
     }
@@ -72,6 +74,18 @@ namespace ROCKY_NAMESPACE
     }
     inline const vsg::dmat4& to_vsg(const glm::dmat4& a) {
         return reinterpret_cast<const vsg::dmat4&>(a);
+    }
+
+    inline vsg::dbox to_vsg(const Box& box) {
+        return vsg::dbox(
+            vsg::dvec3(box.xmin, box.ymin, box.zmin),
+            vsg::dvec3(box.xmax, box.ymax, box.zmax));
+    }
+
+    inline vsg::dsphere to_vsg(const Sphere& sphere) {
+        return vsg::dsphere(
+            vsg::dvec3(sphere.center.x, sphere.center.y, sphere.center.z),
+            sphere.radius);
     }
 
     //! Distance in scene units (meters) from a point to the camera.
@@ -437,11 +451,19 @@ namespace ROCKY_NAMESPACE
 
         //! Finds the first node of a given type in a scene graph.
         template<class T>
-        inline T* find(const vsg::ref_ptr<vsg::Node>& root)
+        inline T* find(const vsg::ref_ptr<vsg::Object>& root)
         {
             detail::FindNodeVisitor<T> visitor;
             root->accept(visitor);
             return visitor.found;
+        }
+
+        //! Finds every node of a fiven type and runs a function against it
+        template<class T>
+        inline void forEach(const vsg::ref_ptr<vsg::Object>& root, std::function<void(T*)> func)
+        {
+            detail::ForEachNodeVisitor<T> visitor(func);
+            root->accept(visitor);
         }
     }
 }

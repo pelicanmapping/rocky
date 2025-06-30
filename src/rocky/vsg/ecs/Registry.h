@@ -5,8 +5,6 @@
  */
 #pragma once
 #include <rocky/vsg/VSGContext.h>
-#include <rocky/vsg/ViewLocal.h>
-#include <vector>
 #include <chrono>
 #include <type_traits>
 #include <shared_mutex>

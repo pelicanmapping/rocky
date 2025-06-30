@@ -649,8 +649,7 @@ TEST_CASE("SRS")
         unsigned lod = GG.levelOfDetail(45.0);
         CHECK(lod == 2);
 
-        std::vector<TileKey> keys;
-        Profile::getRootKeys(GG, keys);
+        std::vector<TileKey> keys = GG.rootKeys();
         REQUIRE(keys.size() == 2);
         CHECK(keys[0] == TileKey(0, 0, 0, GG));
         CHECK(keys[1] == TileKey(0, 1, 0, GG));

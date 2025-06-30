@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <rocky/Context.h>
+#include <rocky/Callbacks.h>
 #include <rocky/vsg/Common.h>
 #include <vsg/all.h>
 #include <deque>
@@ -13,6 +14,13 @@
 namespace ROCKY_NAMESPACE
 {
     class MapNode;
+
+    //! State information at the time of recording a specific view.
+    struct ViewRecordingState
+    {
+        std::uint32_t viewID;
+        std::uint64_t frame;
+    };
 
     /**
      * Rocky runtime context to use with a VSG-based application.
@@ -69,8 +77,11 @@ namespace ROCKY_NAMESPACE
         std::vector<std::uint32_t> activeViewIDs = { 0 };
 
         //! Callbacks to render GUI elements
-        using GuiRenderer = std::function<void(std::uint32_t viewID, void* guiContext)>;
-        std::deque<GuiRenderer> guiRenderers;
+        using GuiRecorder = std::function<void(ViewRecordingState&, void* guiContext)>;
+        std::deque<GuiRecorder> guiRecorders;
+
+        //! Callback fired during each update pass.
+        AutoCallback<> onUpdate;
 
     public:
 

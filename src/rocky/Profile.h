@@ -64,26 +64,19 @@ namespace ROCKY_NAMESPACE
 
         //! @return Given an x-resolution, specified in the profile's SRS units, calculates and
         //! returns the closest LOD level.
-        unsigned getLevelOfDetailForHorizResolution(
-            double resolution,
-            int tileSize ) const;
+        unsigned levelOfDetailForHorizResolution(double resolution, int tileSize) const;
 
         //! Tile keys that comprise the tiles at the root (LOD 0) of this
         //! profile. Same as calling getAllKeysAtLOD(0).
         //! @param target_profile Profile for which to query root keys
         //! @param out_keys Places keys in this vector
-        static void getRootKeys(
-            const Profile& target_profile,
-            std::vector<TileKey>& out_keys);
+        std::vector<TileKey> rootKeys() const;
 
         //! Gets all the tile keys at the specified LOD.
         //! @param lod Level of detail for which to query keys
         //! @param target_profile Profile for which to query keys
         //! @param out_keys Places keys in this vector
-        static void getAllKeysAtLOD(
-            unsigned lod,
-            const Profile& target_profile,
-            std::vector<TileKey>& out_keys);
+        std::vector<TileKey> allKeysAtLOD(unsigned lod) const;
 
         //! @return Extent given a tile location in this profile.
         //! @param lod Level of detail for which to calculate tile extent
@@ -112,7 +105,7 @@ namespace ROCKY_NAMESPACE
         //! @param rhs Comparison profile
         bool horizontallyEquivalentTo(const Profile& rhs) const;
 
-        //! Gets the tile dimensions at the given lod.
+        //! Gets the tile dimensions at the given lod, in the profile's SRS units.
         std::pair<double, double> tileDimensions(unsigned lod) const;
 
         //! The number wide and high at the given lod
@@ -129,17 +122,9 @@ namespace ROCKY_NAMESPACE
         //! Populate from a json string
         void from_json(const std::string& json);
 
-        //! Returns a signature hash code unique to this profile
-        inline const std::string& getFullSignature() const;
-
-        //! Returns a signature hash code that uniquely identifies this profile
-        //! without including any vertical datum information. This is useful for
-        //! seeing if two profiles are horizontally compatible.
-        inline const std::string& getHorizSignature() const;
-
         //! Given another Profile and an LOD in that Profile, determine 
         //! the LOD in this Profile that is nearly equivalent.
-        unsigned getEquivalentLOD(const Profile&, unsigned lod) const;
+        unsigned equivalentLOD(const Profile&, unsigned lod) const;
 
         //! Given a LOD-0 tile height, determine the LOD in this Profile that
         //! most closely houses a tile with that height.
@@ -166,36 +151,26 @@ namespace ROCKY_NAMESPACE
 
     protected:
 
-        void setup(
-            const std::string& wellKnownName);
-
-        void setup(
-            const SRS&,
-            const Box& bounds,
-            unsigned dim_x,
-            unsigned dim_y );
+        void setup(const std::string& wellKnownName);
+        void setup(const SRS&, const Box& bounds, unsigned dim_x, unsigned dim_y);
 
     protected:
 
         struct Data
         {
-            std::string _wellKnownName;
-            GeoExtent   _extent;
-            GeoExtent   _latlong_extent;
-            unsigned    _numTilesWideAtLod0;
-            unsigned    _numTilesHighAtLod0;
-            std::string _fullSignature;
-            std::string _horizSignature;
-            std::size_t _hash;
+            std::string wellKnownName;
+            GeoExtent   extent;
+            GeoExtent   geodeticExtent;
+            unsigned    numTilesBaseX = 1u;
+            unsigned    numTilesBaseY = 1u;
+            std::size_t hash = 0;
         };
         std::shared_ptr<Data> _shared;
     };
 
 
     // inlines
-    const std::string& Profile::getFullSignature() const { return _shared->_fullSignature; }
-    const std::string& Profile::getHorizSignature() const { return _shared->_horizSignature; }
-    std::size_t Profile::hash() const { return _shared->_hash; }
+    std::size_t Profile::hash() const { return _shared->hash; }
 }
 
 namespace std {

@@ -93,9 +93,6 @@ namespace ROCKY_NAMESPACE
         bool autoCreateWindow = true;
         Status commandLineStatus;
 
-        // user function to call during update and before event handling
-        std::function<void()> updateFunction;
-
         // in renderOnDemand mode, user function to call when not rendering a frame
         using NoRenderFunction = std::shared_ptr<std::function<void()>>;
         std::deque<NoRenderFunction> noRenderFunctions;

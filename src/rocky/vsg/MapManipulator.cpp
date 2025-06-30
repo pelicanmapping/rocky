@@ -6,16 +6,7 @@
 #include "MapManipulator.h"
 #include "MapNode.h"
 #include "Utils.h"
-
 #include <rocky/Units.h>
-#include <rocky/vsg/terrain/TerrainNode.h>
-
-#include <vsg/io/Options.h>
-#include <vsg/utils/ComputeBounds.h>
-#include <vsg/utils/LineSegmentIntersector.h>
-#include <vsg/ui/ApplicationEvent.h>
-#include <vsg/ui/KeyEvent.h>
-#include <vsg/ui/ScrollWheelEvent.h>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;

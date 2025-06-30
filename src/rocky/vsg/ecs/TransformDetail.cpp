@@ -77,17 +77,9 @@ TransformDetail::update(vsg::RecordTraversal& record)
 }
 
 bool
-TransformDetail::passesCull(vsg::RecordTraversal& record) const
+TransformDetail::visible(ViewRecordingState& state) const
 {
-    return passesCull(record.getState()->_commandBuffer->viewID);
-}
-
-bool
-TransformDetail::passesCull(std::uint32_t viewID) const
-{
-    //ROCKY_SOFT_ASSERT_AND_RETURN(transform, true);
-
-    auto& view = views[viewID];
+    auto& view = views[state.viewID];
 
     // Frustum cull (by center point)
     if (sync.frustumCulled)

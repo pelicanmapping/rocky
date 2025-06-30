@@ -26,7 +26,12 @@ GeoTransform::traverse(vsg::RecordTraversal& record) const
 {
     transform_detail.update(record);
 
-    if (transform_detail.passesCull(record))
+    ViewRecordingState vrs{
+        record.getCommandBuffer()->viewID,
+        record.getFrameStamp()->frameCount
+    };
+
+    if (transform_detail.visible(vrs))
     {
         transform_detail.push(record);
         Inherit::traverse(record);

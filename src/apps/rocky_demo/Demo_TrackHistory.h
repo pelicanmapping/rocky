@@ -197,7 +197,7 @@ namespace
             else
             {
                 track_visibility.parent = nullptr;
-                track_visibility.fill(false);
+                track_visibility.visible.fill(false);
             }
         }
 

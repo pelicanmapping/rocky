@@ -186,7 +186,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
 
     // Determine the intersecting keys
     std::vector<TileKey> intersectingKeys;
-    unsigned targetLOD = profile.getEquivalentLOD(key.profile, key.level);
+    unsigned targetLOD = profile.equivalentLOD(key.profile, key.level);
     key.getIntersectingKeys(profile, intersectingKeys);
 
     // collect heightfield for each intersecting key. Note, we're hitting the

@@ -28,9 +28,18 @@ namespace
 
     void on_construct_Widget(entt::registry& r, entt::entity e)
     {
-        r.emplace<ActiveState>(e);
-        r.emplace<Visibility>(e);
+        if (!r.all_of<ActiveState>(e))
+            r.emplace<ActiveState>(e);
+
+        if (!r.all_of<Visibility>(e))
+            r.emplace<Visibility>(e);
+
         r.emplace<WidgetRenderable>(e);
+    }
+
+    void on_destroy_Widget(entt::registry& r, entt::entity e)
+    {
+        r.remove<WidgetRenderable>(e);
     }
 }
 
@@ -41,14 +50,16 @@ WidgetSystemNode::WidgetSystemNode(ecs::Registry& in_registry) :
 {
     // configure EnTT to automatically add the necessary components when a Widget is constructed
     auto [lock, registry] = _registry.write();
+
     registry.on_construct<Widget>().connect<&on_construct_Widget>();
+    registry.on_destroy<Widget>().connect<&on_destroy_Widget>();
 }
 
 void
 WidgetSystemNode::initialize(VSGContext& context)
 {
     // register me as a gui rendering callback.
-    auto render = [this](std::uint32_t viewID, void* imguiContext)
+    auto recorder = [this](ViewRecordingState& viewState, void* imguiContext)
         {
             auto [lock, registry] = _registry.read();
 
@@ -63,10 +74,14 @@ WidgetSystemNode::initialize(VSGContext& context)
                 ImGuiWindowFlags_NoFocusOnAppearing |
                 ImGuiWindowFlags_NoSavedSettings;
 
-            auto view = registry.view<Widget, WidgetRenderable, TransformDetail, Visibility>();
-            for (auto&& [entity, widget, renderable, xdetail, visibility] : view.each())
+            auto view = registry.view<Widget, WidgetRenderable, TransformDetail, Visibility, ActiveState>();
+            for (auto&& [entity, widget, renderable, xdetail, visibility, active] : view.each())
             {
-                if (ecs::visible(visibility, viewID) && xdetail.passesCull(viewID))
+                auto text = widget.text;
+
+                //Log()->info("Vis {} frame {}", text, visibility.frame[viewState.viewID]);
+
+                if (ecs::visible(visibility, viewState) && xdetail.visible(viewState))
                 {
                     WidgetInstance i{
                         widget,
@@ -74,10 +89,10 @@ WidgetSystemNode::initialize(VSGContext& context)
                         registry,
                         entity,
                         defaultWindowFlags,
-                        renderable.screen[viewID],
+                        renderable.screen[viewState.viewID],
                         renderable.windowSize,
                         (ImGuiContext*)imguiContext,
-                        viewID
+                        viewState.viewID
                     };
 
                     if (widget.render)
@@ -90,14 +105,14 @@ WidgetSystemNode::initialize(VSGContext& context)
                     else
                     {
                         i.begin();
-                        i.render([&]() { ImGui::Text(widget.text.c_str()); });
+                        i.render([&]() { ImGui::Text(text.c_str()); });             
                         i.end();
                     }
                 }
             }
         };
 
-    context->guiRenderers.emplace_back(render);
+    context->guiRecorders.emplace_back(recorder);
 }
 
 void

@@ -389,7 +389,7 @@ TileKey::getIntersectingKeys(
     {
         // figure out which LOD in the local profile is a best match for the LOD
         // in the source LOD in terms of resolution.
-        unsigned target_LOD = target_profile.getEquivalentLOD(profile, level);
+        unsigned target_LOD = target_profile.equivalentLOD(profile, level);
         getIntersectingKeys(extent(), target_LOD, target_profile, out_intersectingKeys);
         //ROCKY_DEBUG << LC << "GIT, key=" << key.str() << ", localLOD=" << localLOD
         //    << ", resulted in " << out_intersectingKeys.size() << " tiles" << std::endl;

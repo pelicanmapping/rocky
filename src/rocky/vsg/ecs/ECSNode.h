@@ -240,7 +240,16 @@ namespace ROCKY_NAMESPACE
         //! @return True if visible in that view
         inline bool visible(const Visibility& vis, int view_index)
         {
-            return vis.parent != nullptr ? visible(*vis.parent, view_index) : vis[view_index];
+            return vis.parent != nullptr ? visible(*vis.parent, view_index) : vis.visible[view_index];
+        }
+
+        inline bool visible(const Visibility& vis, ViewRecordingState& state)
+        {
+            if (vis.parent != nullptr)
+                return visible(*vis.parent, state);
+            
+            auto delta = (std::int64_t)state.frame - vis.frame[state.viewID];
+            return vis.visible[state.viewID] && delta <= 1;
         }
 
         //! Toggle the visibility of an entity in the given view
@@ -253,12 +262,13 @@ namespace ROCKY_NAMESPACE
             ROCKY_SOFT_ASSERT_AND_RETURN(e != entt::null, void());
 
             auto& visibility = registry.get<Visibility>(e);
+
             if (visibility.parent == nullptr)
             {
                 if (view_index >= 0)
-                    visibility[view_index] = value;
+                    visibility.visible[view_index] = value;
                 else
-                    visibility.fill(value);
+                    visibility.visible.fill(value);
             }
         }
 
@@ -419,10 +429,14 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    inline void ecs::SystemNode<T>::traverse(vsg::RecordTraversal& rt) const
+    inline void ecs::SystemNode<T>::traverse(vsg::RecordTraversal& record) const
     {
         const vsg::dmat4 identity_matrix = vsg::dmat4(1.0);
-        auto viewID = rt.getState()->_commandBuffer->viewID;
+
+        ViewRecordingState vrs{
+            record.getCommandBuffer()->viewID,
+            record.getFrameStamp()->frameCount
+        };
 
         // Sort components into render sets by pipeline. If this system doesn't support
         // multiple pipelines, just store them all together in renderSet[0].
@@ -432,9 +446,11 @@ namespace ROCKY_NAMESPACE
         }
 
         auto [lock, registry] = _registry.read();
+            
 
         // Get an optimized view of all this system's components:
-        registry.view<T, ActiveState, Visibility>().each([&](const entt::entity entity, auto& component, auto& active, auto& visibility)
+        auto& view = registry.view<T, ActiveState, Visibility>();
+        view.each([&](const entt::entity entity, auto& component, auto& active, auto& visibility)
             {
                 auto& renderable = registry.get<Renderable>(component.attach_point);
                 if (renderable.node)
@@ -443,11 +459,11 @@ namespace ROCKY_NAMESPACE
                     auto* transform_detail = registry.try_get<TransformDetail>(entity);
 
                     // if it's visible, queue it up for rendering
-                    if (visible(visibility, viewID))
+                    if (visible(visibility, vrs))
                     {
                         if (transform_detail)
                         {
-                            if (transform_detail->passesCull(rt))
+                            if (transform_detail->visible(vrs))
                             {
                                 leaves.emplace_back(RenderLeaf{ renderable, transform_detail });
                             }
@@ -474,7 +490,7 @@ namespace ROCKY_NAMESPACE
                 // Bind the Graphics Pipeline for this render set, if there is one:
                 if (!pipelines.empty())
                 {
-                    pipelines[p].commands->accept(rt);
+                    pipelines[p].commands->accept(record);
                 }
 
                 // Them record each component. If the component has a transform apply it too.
@@ -482,14 +498,14 @@ namespace ROCKY_NAMESPACE
                 {
                     if (leaf.transform_detail)
                     {
-                        leaf.transform_detail->push(rt);
+                        leaf.transform_detail->push(record);
                     }
 
-                    leaf.renderable.node->accept(rt);
+                    leaf.renderable.node->accept(record);
 
                     if (leaf.transform_detail)
                     {
-                        leaf.transform_detail->pop(rt);
+                        leaf.transform_detail->pop(record);
                     }
                 }
 
@@ -523,7 +539,7 @@ namespace ROCKY_NAMESPACE
                 ecs::BuildItem item;
                 item.entity = entity;
                 item.version = registry.current(entity);
-                item.component = std::shared_ptr<RevisionedComponent>(new T(component)); // std::make_shared<RevisionedComponent>(component); // new T(component);
+                item.component = std::shared_ptr<RevisionedComponent>(new T(component));
                 item.existing_node = renderable.node;
                 item.new_node = {};
 

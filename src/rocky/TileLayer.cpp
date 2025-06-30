@@ -101,7 +101,7 @@ TileLayer::isKeyInLegalRange(const TileKey& key) const
 
     // We must use the equivalent lod b/c the input key can be in any profile.
     unsigned localLOD = profile.valid() ?
-        profile.getEquivalentLOD(key.profile, key.level) :
+        profile.equivalentLOD(key.profile, key.level) :
         key.level;
 
 
@@ -247,7 +247,7 @@ TileLayer::bestAvailableTileKey(const TileKey& key) const
     unsigned MDL = maxDataLevel;
 
     // We must use the equivalent lod b/c the input key can be in any profile.
-    unsigned localLOD = profile.getEquivalentLOD(key.profile, key.level);
+    unsigned localLOD = profile.equivalentLOD(key.profile, key.level);
 
     // Check against level extrema:
     if ((maxLevel.has_value() && localLOD > maxLevel) ||
@@ -360,7 +360,7 @@ TileLayer::intersects(const TileKey& key) const
     ROCKY_SOFT_ASSERT_AND_RETURN(profile.valid() && key.valid(), false);
 
     // We must use the equivalent lod b/c the input key can be in any profile.
-    unsigned localLOD = profile.getEquivalentLOD(key.profile, key.level);
+    unsigned localLOD = profile.equivalentLOD(key.profile, key.level);
 
     // Transform the key extent to the SRS of this layer to do the index search
     GeoExtent keyExtentInLayerSRS = profile.clampAndTransformExtent(key.extent());

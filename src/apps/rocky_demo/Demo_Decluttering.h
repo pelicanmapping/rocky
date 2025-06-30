@@ -97,12 +97,12 @@ namespace
                         if (rtree.Search(LL, UR, [](auto e) { return false; }) == 0)
                         {
                             rtree.Insert(LL, UR, entity);
-                            visibility[viewID] = true;
+                            visibility.visible[viewID] = true;
                             ++visible;
                         }
                         else
                         {
-                            visibility[viewID] = false;
+                            visibility.visible[viewID] = false;
                         }
                     }
                 }
@@ -116,7 +116,7 @@ namespace
             auto view = registry.view<Declutter, Visibility>();
             for (auto&& [entity, declutter, visibility] : view.each())
             {
-                visibility.fill(true);
+                visibility.visible.fill(true);
             }
         }
     };
@@ -130,9 +130,6 @@ auto Demo_Decluttering = [](Application& app)
     if (!declutter)
     {
         declutter = DeclutterSystem::create(app.registry);
-
-        // tell the declutterer how to access view IDs.
-        //declutter->getActiveViewIDs = [&app]() { return app.displayManager->activeViewIDs; };
 
         app.backgroundServices.start("rocky::declutter",
             [&app](jobs::cancelable& token)

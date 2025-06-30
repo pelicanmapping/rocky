@@ -65,20 +65,19 @@ Profile::setup(
             }
         }
 
-        _shared->_extent = GeoExtent(srs, b);
+        _shared->extent = GeoExtent(srs, b);
 
-        _shared->_numTilesWideAtLod0 = tx;
-        _shared->_numTilesHighAtLod0 = ty;
+        _shared->numTilesBaseX = tx;
+        _shared->numTilesBaseY = ty;
 
         // automatically calculate the lat/long extents:
-        _shared->_latlong_extent = srs.isGeodetic() ?
-            _shared->_extent :
-            _shared->_extent.transform(srs.geodeticSRS());
+        _shared->geodeticExtent = srs.isGeodetic() ?
+            _shared->extent :
+            _shared->extent.transform(srs.geodeticSRS());
 
         // make a profile sig (sans srs) and an srs sig for quick comparisons.
         std::string temp = to_json();
-        _shared->_fullSignature = util::make_string() << std::hex << util::hashString(temp);
-        _shared->_hash = std::hash<std::string>()(temp);
+        _shared->hash = std::hash<std::string>()(temp);
     }
 }
 
@@ -97,19 +96,19 @@ Profile::equivalentTo(const Profile& rhs) const
     if (_shared == rhs._shared)
         return true;
 
-    if (!_shared->_wellKnownName.empty() && _shared->_wellKnownName == rhs._shared->_wellKnownName)
+    if (!_shared->wellKnownName.empty() && _shared->wellKnownName == rhs._shared->wellKnownName)
         return true;
 
-    if (_shared->_numTilesHighAtLod0 != rhs._shared->_numTilesHighAtLod0)
+    if (_shared->numTilesBaseY != rhs._shared->numTilesBaseY)
         return false;
 
-    if (_shared->_numTilesWideAtLod0 != rhs._shared->_numTilesWideAtLod0)
+    if (_shared->numTilesBaseX != rhs._shared->numTilesBaseX)
         return false;
 
-    if (_shared->_extent != rhs._shared->_extent)
+    if (_shared->extent != rhs._shared->extent)
         return false;
 
-    return _shared->_extent.srs().equivalentTo(rhs._shared->_extent.srs());
+    return _shared->extent.srs().equivalentTo(rhs._shared->extent.srs());
 }
 
 bool
@@ -121,7 +120,7 @@ Profile::horizontallyEquivalentTo(const Profile& rhs) const
     if (!valid() || !rhs.valid())
         return false;
 
-    return _shared->_extent.srs().horizontallyEquivalentTo(rhs._shared->_extent.srs());
+    return _shared->extent.srs().horizontallyEquivalentTo(rhs._shared->extent.srs());
 }
 
 Profile::Profile(const std::string& wellKnownName)
@@ -147,7 +146,7 @@ Profile::setup(const std::string& name)
         util::ciEquals(name, "plate-carre") ||
         util::ciEquals(name, "eqc-wgs84"))
     {
-        _shared->_wellKnownName = name;
+        _shared->wellKnownName = name;
 
         // Yes I know this is not really Plate Carre but it will stand in for now.
         glm::dvec3 ex;
@@ -161,7 +160,7 @@ Profile::setup(const std::string& name)
     }
     else if (util::ciEquals(name, "global-geodetic"))
     {
-        _shared->_wellKnownName = name;
+        _shared->wellKnownName = name;
 
         setup(
             SRS::WGS84,
@@ -170,7 +169,7 @@ Profile::setup(const std::string& name)
     }
     else if (util::ciEquals(name, "spherical-mercator"))
     {
-        _shared->_wellKnownName = name;
+        _shared->wellKnownName = name;
 
         setup(
             SRS::SPHERICAL_MERCATOR,
@@ -179,7 +178,7 @@ Profile::setup(const std::string& name)
     }
     else if (util::ciEquals(name, "moon"))
     {
-        _shared->_wellKnownName = name;
+        _shared->wellKnownName = name;
 
         setup(
             SRS("moon"),
@@ -197,27 +196,27 @@ Profile::setup(const std::string& name)
 
 bool
 Profile::valid() const {
-    return _shared && _shared->_extent.valid();
+    return _shared && _shared->extent.valid();
 }
 
 const SRS&
 Profile::srs() const {
-    return _shared->_extent.srs();
+    return _shared->extent.srs();
 }
 
 const GeoExtent&
 Profile::extent() const {
-    return _shared->_extent;
+    return _shared->extent;
 }
 
 const GeoExtent&
 Profile::geographicExtent() const {
-    return _shared->_latlong_extent;
+    return _shared->geodeticExtent;
 }
 
 const std::string&
 Profile::wellKnownName() const {
-    return _shared->_wellKnownName;
+    return _shared->wellKnownName;
 }
 
 std::string
@@ -240,37 +239,34 @@ Profile::overrideSRS(const SRS& srs) const
 {
     return Profile(
         srs,
-        Box(_shared->_extent.xmin(), _shared->_extent.ymin(), _shared->_extent.xmax(), _shared->_extent.ymax()),
-        _shared->_numTilesWideAtLod0, _shared->_numTilesHighAtLod0);
+        Box(_shared->extent.xmin(), _shared->extent.ymin(), _shared->extent.xmax(), _shared->extent.ymax()),
+        _shared->numTilesBaseX, _shared->numTilesBaseY);
 }
 
-void
-Profile::getRootKeys(
-    const Profile& profile,
-    std::vector<TileKey>& out_keys)
+std::vector<TileKey>
+Profile::rootKeys() const
 {
-    getAllKeysAtLOD(0, profile, out_keys);
+    return allKeysAtLOD(0);
 }
 
-void
-Profile::getAllKeysAtLOD(
-    unsigned lod,
-    const Profile& profile,
-    std::vector<TileKey>& out_keys)
+std::vector<TileKey>
+Profile::allKeysAtLOD(unsigned lod) const
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(profile.valid(), void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(valid(), {});
 
-    out_keys.clear();
+    std::vector<TileKey> result;
 
-    auto[tx, ty] = profile.numTiles(lod);
+    auto[tx, ty] = numTiles(lod);
 
     for (unsigned c = 0; c < tx; ++c)
     {
         for (unsigned r = 0; r < ty; ++r)
         {
-            out_keys.push_back(TileKey(lod, c, r, profile));
+            result.push_back(TileKey(lod, c, r, *this));
         }
     }
+
+    return result;
 }
 
 GeoExtent
@@ -289,8 +285,8 @@ Profile::tileExtent(unsigned lod, unsigned tileX, unsigned tileY) const
 std::pair<double,double>
 Profile::tileDimensions(unsigned int lod) const
 {
-    double out_width  = _shared->_extent.width() / (double)_shared->_numTilesWideAtLod0;
-    double out_height = _shared->_extent.height() / (double)_shared->_numTilesHighAtLod0;
+    double out_width  = _shared->extent.width() / (double)_shared->numTilesBaseX;
+    double out_height = _shared->extent.height() / (double)_shared->numTilesBaseY;
 
     double factor = double(1u << lod);
     out_width /= (double)factor;
@@ -302,8 +298,8 @@ Profile::tileDimensions(unsigned int lod) const
 std::pair<unsigned, unsigned>
 Profile::numTiles(unsigned lod) const
 {
-    unsigned out_tiles_wide = _shared->_numTilesWideAtLod0;
-    unsigned out_tiles_high = _shared->_numTilesHighAtLod0;
+    unsigned out_tiles_wide = _shared->numTilesBaseX;
+    unsigned out_tiles_high = _shared->numTilesBaseY;
 
     auto factor = 1u << lod;
     out_tiles_wide *= factor;
@@ -313,11 +309,11 @@ Profile::numTiles(unsigned lod) const
 }
 
 unsigned int
-Profile::getLevelOfDetailForHorizResolution( double resolution, int tileSize ) const
+Profile::levelOfDetailForHorizResolution( double resolution, int tileSize ) const
 {
     if ( tileSize <= 0 || resolution <= 0.0 ) return 23;
 
-    double tileRes = (_shared->_extent.width() / (double)_shared->_numTilesWideAtLod0) / (double)tileSize;
+    double tileRes = (_shared->extent.width() / (double)_shared->numTilesBaseX) / (double)tileSize;
     unsigned int level = 0;
     while( tileRes > resolution ) 
     {
@@ -406,7 +402,7 @@ Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) cons
 }
 
 unsigned
-Profile::getEquivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
+Profile::equivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(rhsProfile.valid(), rhsLOD);
 
@@ -503,21 +499,21 @@ Profile::transformAndExtractContiguousExtents(
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(valid() && input.valid(), false);
 
-    GeoExtent target_extent = input;
+    GeoExtent targetextent = input;
 
     // reproject into the profile's SRS if necessary:
     if (!srs().horizontallyEquivalentTo(input.srs()))
     {
         // localize the extents and clamp them to legal values
-        target_extent = clampAndTransformExtent(input);
-        if (!target_extent.valid())
+        targetextent = clampAndTransformExtent(input);
+        if (!targetextent.valid())
             return false;
     }
 
-    if (target_extent.crossesAntimeridian())
+    if (targetextent.crossesAntimeridian())
     {
         GeoExtent first, second;
-        if (target_extent.splitAcrossAntimeridian(first, second))
+        if (targetextent.splitAcrossAntimeridian(first, second))
         {
             output.push_back(first);
             output.push_back(second);
@@ -525,7 +521,7 @@ Profile::transformAndExtractContiguousExtents(
     }
     else
     {
-        output.push_back(target_extent);
+        output.push_back(targetextent);
     }
 
     return true;

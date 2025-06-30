@@ -1,0 +1,363 @@
+/**
+ * rocky c++
+ * Copyright 2023 Pelican Mapping
+ * MIT License
+ */
+#include "NodePager.h"
+#include <rocky/vsg/Utils.h>
+#include <atomic>
+
+using namespace ROCKY_NAMESPACE;
+
+namespace ROCKY_NAMESPACE
+{
+    class PagedNode : public vsg::Inherit<vsg::CullNode, PagedNode>
+    {
+    public:
+        TileKey key;
+        const NodePager* pager = nullptr;
+        mutable void* token = nullptr;
+        bool canLoadChild = false;
+        mutable float priority = 0.0f;
+        int revision = 0;
+        mutable std::atomic_bool load_gate = { false };
+        vsg::ref_ptr<vsg::Node> payload;
+        mutable jobs::future<vsg::ref_ptr<vsg::Node>> child;
+
+        //! Kick off a job to load this node's subtile children.
+        void startLoading() const;
+
+        //! Remove this node's subtiles and reset its state.
+        void unload(VSGContext& runtime);
+
+        void traverse(vsg::Visitor& visitor) override {
+            if (payload)
+                payload->accept(visitor);
+            if (auto temp = child.value())
+                temp->accept(visitor);
+        }
+
+        void traverse(vsg::ConstVisitor& visitor) const override {
+            if (payload)
+                payload->accept(visitor);
+            if (auto temp = child.value())
+                temp->accept(visitor);
+        }
+
+        void traverse(vsg::RecordTraversal& record) const override;
+    };
+}
+
+
+NodePager::NodePager(const Profile& profile_)
+    : vsg::Inherit<vsg::Group, NodePager>(), profile(profile_)
+{
+    ROCKY_SOFT_ASSERT(profile.valid());
+}
+
+void
+NodePager::initialize(VSGContext& runtime)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(runtime, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(profile.valid(), void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(createPayload != nullptr, void());
+
+    this->_vsgcontext = runtime;
+
+    for (auto& child : children)
+        runtime->dispose(child);
+
+    children.clear();
+
+    // build the root nodes of the profile graph:
+    auto rootKeys = profile.rootKeys();
+    for (auto& key : rootKeys)
+    {
+        auto node = createNode(key, runtime->io);
+        if (node)
+            addChild(node);
+    }
+
+    // install an update operation that will flush the culling sentry each frame,
+    // removing invisible nodes from the scene graph.
+    _sentryUpdate = runtime->onUpdate([this, runtime]()
+        {
+            auto frame = runtime->viewer->getFrameStamp()->frameCount;
+
+            // only if the frame advanced:
+            if (frame > _lastUpdateFrame)
+            {
+                std::scoped_lock lock(_sentry_mutex);
+
+                _sentry.flush(~0, [runtime](vsg::ref_ptr<vsg::Node> node) mutable
+                    {
+                        if (node)
+                        {
+                            auto* paged = node->cast<PagedNode>();
+                            paged->unload(runtime);
+                        }
+                        return true;
+                    });
+            }
+
+            _lastUpdateFrame = frame;
+        });
+
+    active = true;
+}
+
+NodePager::SubtileLoader
+NodePager::createSubtileLoader(const TileKey& key) const
+{
+    if (!active)
+        return {};
+
+    // If the user installed their own factory function, call it.
+    if (subtileLoaderFactory)
+    {
+        return subtileLoaderFactory(key);
+    }
+
+    // By default, return a subtile loader that creates quadtile children
+    // of the provided key.
+    vsg::observer_ptr<NodePager> weak_pager(const_cast<NodePager*>(this));
+
+    return [weak_pager, key](const IOOptions& io) -> vsg::ref_ptr<vsg::Node>
+        {
+            vsg::ref_ptr<vsg::Group> result;
+
+            if (auto pager = weak_pager.ref_ptr())
+            {
+                // create four quadtree children of the tile key.
+                for (unsigned i = 0; i < 4; ++i)
+                {
+                    if (io.canceled())
+                        return {};
+
+                    auto child_key = key.createChildKey(i);
+                    auto child = pager->createNode(child_key, io);
+                    if (child)
+                    {
+                        if (!result)
+                            result = vsg::Group::create();
+
+                        result->addChild(child);
+                    }
+                }
+
+                if (result)
+                {
+                    pager->_vsgcontext->compile(result);
+                }
+            }
+
+            return result;
+        };
+}
+
+vsg::ref_ptr<vsg::Node>
+NodePager::createNode(const TileKey& key, const IOOptions& io) const
+{
+    vsg::ref_ptr<vsg::Node> result;
+
+    // TODO: offset this using an elevation sample:
+    vsg::dsphere tileBound =
+        calculateBound ? calculateBound(key, io) :
+        to_vsg(key.extent().createWorldBoundingSphere(0, 0));
+
+    bool haveChildren = key.level < maxLevel;
+    bool mayHavePayload = key.level >= minLevel;
+
+    // Create the actual drawable data for this tile.
+    vsg::ref_ptr<vsg::Node> payload;
+
+    // payload, which may or may not exist at this level:
+    if (mayHavePayload)
+    {
+        payload = createPayload(key, io);
+    }
+
+    if (io.canceled())
+    {
+        return result;
+    }
+
+    if (haveChildren)
+    {
+        auto p = PagedNode::create();
+        p->key = key;
+        p->bound = tileBound;
+        p->priority = (float)key.level;
+        p->pager = this;
+        p->canLoadChild = true;
+
+        if (payload)
+            p->payload = payload;
+
+        result = p;
+    }
+
+    else
+    {
+        if (payload)
+        {
+            vsg::ComputeBounds cb;
+            cb.useNodeBounds = false;
+            payload->accept(cb);
+            auto cull = vsg::CullNode::create();
+            cull->bound.center = cb.bounds.min + (cb.bounds.max - cb.bounds.min) * 0.5;
+            cull->bound.radius = vsg::length(cb.bounds.max - cb.bounds.min) * 0.5;
+            cull->child = payload;
+            result = cull;
+        }
+        else
+        {
+            result = payload;
+        }
+    }
+
+    return result;
+}
+
+void*
+NodePager::touch(vsg::Node* node, void* token) const
+{
+    if (!active)
+        return nullptr;
+
+    std::scoped_lock lock(_sentry_mutex);
+
+    if (token)
+        token = _sentry.update(token);
+    else
+        token = _sentry.emplace(vsg::ref_ptr<vsg::Node>(node));
+
+    return token;
+}
+
+unsigned
+NodePager::tiles() const
+{
+    return _sentry._size;
+}
+
+std::vector<TileKey>
+NodePager::tileKeys() const
+{
+    std::vector<TileKey> result;
+    result.reserve(_sentry._size);
+    std::scoped_lock lock(_sentry_mutex);
+    for (const auto& entry : _sentry._list)
+    {
+        if (entry._data)
+        {
+            if (auto paged = entry._data->cast<PagedNode>())
+            {
+                result.emplace_back(paged->key);
+            }
+        }
+    }
+    return result;
+}
+
+
+
+void
+PagedNode::startLoading() const
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(pager, void());
+
+    jobs::context jc;
+    jc.name = key.str();
+    jc.pool = jobs::get_pool(pager->poolName);
+    jc.priority = [&]() { return priority; };
+
+    auto load = pager->createSubtileLoader(key);
+    ROCKY_SOFT_ASSERT_AND_RETURN(load, void());
+
+    vsg::observer_ptr<PagedNode> parent_weak(const_cast<PagedNode*>(this));
+
+    auto load_job = [load, parent_weak, vsgcontext(pager->_vsgcontext), orig_revision(revision)](Cancelable& c)
+        {
+            vsg::ref_ptr<vsg::Node> result = load(IOOptions(c));
+            return result;
+        };
+
+    child = jobs::dispatch(load_job, jc);
+}
+
+void
+PagedNode::traverse(vsg::RecordTraversal& record) const
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(pager, void());
+
+    // check whether the subtiles are in range.
+    auto& vp = record.getCommandBuffer()->viewDependentState->viewportData->at(0);
+    auto min_screen_height_ratio = pager->screenSpaceError / vp[3];
+    auto d = record.getState()->lodDistance(bound);
+    bool child_in_range = (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
+
+    priority = -d;
+
+    if (key == pager->debugKey)
+    {
+        Log()->debug("Debugging {}", key.str());
+    }
+
+    // access once for atomicness
+    auto child_value = child.value();
+
+    if (payload)
+    {
+        if (pager->refinePolicy == NodePager::RefinePolicy::Add || !child_in_range || !child_value)
+        {
+            payload->accept(record);
+        }
+    }
+
+    if (child_in_range)
+    {
+        if (canLoadChild)
+        {
+            if (!load_gate.exchange(true))
+            {
+                startLoading();
+            }
+            else if (child.working())
+            {
+                pager->_vsgcontext->requestFrame();
+            }
+            else if (child.canceled())
+            {
+                Log()->warn("subtile load for {} was canceled, no subtiles available", key.str());
+            }
+        }
+
+        if (child_value)
+        {
+            child_value->accept(record);
+        }
+    }
+
+    // let the pager know that this node was visited.
+    token = pager->touch(const_cast<PagedNode*>(this), token);
+}
+
+void
+PagedNode::unload(VSGContext& runtime)
+{    
+    // expire and dispose of the data
+    if (child.value())
+    {
+        pager->onExpire.fire(child.value());
+        runtime->dispose(child.value());
+    }
+
+    // reset everything to the initial state.
+    child.reset();
+    load_gate.exchange(false);
+    token = nullptr;
+
+    // bump the revision.
+    revision++;
+}

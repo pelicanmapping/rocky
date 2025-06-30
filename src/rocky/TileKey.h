@@ -64,7 +64,7 @@ namespace ROCKY_NAMESPACE
                 !profile.equivalentTo(rhs.profile);
         }
 
-        //! Sorts tilekeys, ignoring profiles
+        //! Sorts tilekeys
         inline bool operator < (const TileKey& rhs) const {
             if (level < rhs.level) return true;
             if (level > rhs.level) return false;
@@ -72,7 +72,7 @@ namespace ROCKY_NAMESPACE
             if (x > rhs.x) return false;
             if (y < rhs.y) return true;
             if (y > rhs.y) return false;
-            return profile.getHorizSignature() < rhs.profile.getHorizSignature();
+            return profile.hash() < rhs.profile.hash();
         }
 
         //! Canonical invalid tile key

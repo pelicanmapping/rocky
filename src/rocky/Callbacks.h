@@ -73,4 +73,56 @@ namespace ROCKY_NAMESPACE
             return !entries.empty();
         }
     };
+
+    using CallbackToken = std::shared_ptr<bool>;
+
+    template<typename F = void()>
+    class AutoCallback
+    {
+    private:
+        using TokenRef = std::weak_ptr<bool>;
+        using Entry = typename std::pair<TokenRef, std::function<F>>;
+        mutable std::vector<Entry> entries;
+        mutable std::mutex mutex;
+        mutable std::atomic_bool firing = { false };
+
+    public:
+        //! Adds a callback function
+        CallbackToken operator()(std::function<F>&& func) const {
+            std::lock_guard<std::mutex> lock(mutex);
+            auto token = CallbackToken(new bool(true));
+            entries.emplace_back(TokenRef(token), func);
+            return token;
+        }
+
+        //! Removed a callback function with the UID returned from ()
+        void remove(CallbackToken token) const {
+            std::lock_guard<std::mutex> lock(mutex);
+            for (auto iter = entries.begin(); iter != entries.end(); ++iter) {
+                if (iter->first == token) {
+                    entries.erase(iter);
+                    break;
+                }
+            }
+        }
+
+        //! Executes all callback functions with the provided args
+        template<typename... Args>
+        void fire(Args&&... args) const {
+            if (firing.exchange(true) == false) {
+                std::lock_guard<std::mutex> lock(mutex);
+                for (auto& e : entries) {
+                    if (auto temp = e.first.lock()) // skip abandoned callbacks
+                        e.second(args...);
+                }
+                firing = false;
+            }
+        }
+
+        //! True if there is at least one registered callback to fire
+        operator bool() const
+        {
+            return !entries.empty();
+        }
+    };
 }

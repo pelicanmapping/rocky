@@ -146,11 +146,9 @@ GeoExtent::width(const Units& units) const
         return Units::convert(srs().units(), units, width());
     }
     else {
-        Distance d(width(), srs().units());
-        double m_per_deg = 2.0 * srs().ellipsoid().semiMajorAxis() * M_PI / 360.0;
-        double d0 = m_per_deg * fabs(cos(ymin())) * width();
-        double d1 = m_per_deg * fabs(cos(ymax())) * height();
-        return Distance(std::max(d0, d1), Units::METERS).as(units);
+        Distance N(srs().ellipsoid().longitudinalDegreesToMeters(width(), north()), Units::METERS);
+        Distance S(srs().ellipsoid().longitudinalDegreesToMeters(width(), south()), Units::METERS);
+        return Distance(std::max(S.as(Units::METERS), N.as(Units::METERS)), Units::METERS).as(units);
     }
 }
 

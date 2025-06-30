@@ -363,11 +363,8 @@ namespace
             // ECS updates - rendering or modifying entities
             app.ecsManager->update(app.context);
 
-            // User update
-            if (app.updateFunction)
-            {
-                app.updateFunction();
-            }
+            // Context update callbacks
+            app.context->onUpdate.fire();
 
             // keep the frames running if the pager is active
             auto& tasks = app.viewer->recordAndSubmitTasks;

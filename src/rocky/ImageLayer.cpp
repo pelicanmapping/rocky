@@ -223,7 +223,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
     std::shared_ptr<Mosaic> output;
 
     // Map the key's LOD to the target profile's LOD.
-    unsigned targetLOD = profile.getEquivalentLOD(key.profile, key.level);
+    unsigned targetLOD = profile.equivalentLOD(key.profile, key.level);
 
     // Find the set of keys that covers the same area as in input key in our target profile.
     std::vector<TileKey> intersectingKeys;

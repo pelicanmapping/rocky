@@ -391,11 +391,16 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
                 // so install this no-render function:
                 auto func = [vsgContext, viewID, imguiContext]()
                     {
+                        ViewRecordingState vrs{ 
+                            viewID,
+                            vsgContext->viewer->getFrameStamp()->frameCount
+                        };
+
                         ImGui::SetCurrentContext(imguiContext);
                         ImGui::NewFrame();
-                        for (auto& render : vsgContext->guiRenderers)
+                        for (auto& record : vsgContext->guiRecorders)
                         {
-                            render(viewID, imguiContext);
+                            record(vrs, imguiContext);
                         }
                         ImGui::EndFrame();
                     };
