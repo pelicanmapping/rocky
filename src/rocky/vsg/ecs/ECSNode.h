@@ -449,7 +449,7 @@ namespace ROCKY_NAMESPACE
             
 
         // Get an optimized view of all this system's components:
-        auto& view = registry.view<T, ActiveState, Visibility>();
+        const auto& view = registry.view<T, ActiveState, Visibility>();
         view.each([&](const entt::entity entity, auto& component, auto& active, auto& visibility)
             {
                 auto& renderable = registry.get<Renderable>(component.attach_point);
