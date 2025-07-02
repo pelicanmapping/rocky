@@ -8,7 +8,6 @@
 
 #ifdef ROCKY_HAS_IMGUI
 #include <imgui.h>
-#include <rocky/vsg/ecs.h>
 #include <rocky/vsg/ecs/ECSNode.h>
 #include <rocky/vsg/ViewLocal.h>
 

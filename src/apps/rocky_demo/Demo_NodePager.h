@@ -13,12 +13,26 @@ namespace
 {
     class EntityNode : public vsg::Inherit<vsg::Node, EntityNode>
     {
-    public:
-        ecs::Registry& r;
-        entt::entity entity = entt::null;
-        TileKey key;
+    private:
+        ecs::Registry _registry;
 
-        EntityNode(ecs::Registry& reg) : r(reg) {}
+    public:
+        entt::entity entity = entt::null;
+
+        EntityNode(ecs::Registry& reg) :
+            _registry(reg)
+        {
+            auto r = _registry.write();
+            entity = r->create();
+        }
+
+        virtual ~EntityNode()
+        {
+            if (entity != entt::null)
+            {
+                _registry.write()->destroy(entity);
+            }
+        }
 
         void traverse(vsg::RecordTraversal& record) const override
         {
@@ -27,34 +41,10 @@ namespace
             {
                 auto viewID = record.getCommandBuffer()->viewID;
 
-                auto [lock, registry] = r.read();
+                auto [lock, registry] = _registry.write();
                 auto& v = registry.get<Visibility>(entity);
                 v.frame[viewID] = record.getFrameStamp()->frameCount;
             }
-        }
-
-        void destroy()
-        {
-            if (entity != entt::null)
-            {
-                auto [lock, registry] = r.write();
-                registry.destroy(entity);
-                entity = entt::null;
-            }
-        }
-
-        // for debugging.
-        bool validate(entt::registry& registry) const
-        {
-            ROCKY_SOFT_ASSERT_AND_RETURN(entity != entt::null, false);
-            ROCKY_SOFT_ASSERT_AND_RETURN(registry.valid(entity), false);
-            ROCKY_SOFT_ASSERT_AND_RETURN(registry.try_get<ActiveState>(entity), false);
-            ROCKY_SOFT_ASSERT_AND_RETURN(registry.try_get<Visibility>(entity), false);
-            ROCKY_SOFT_ASSERT_AND_RETURN(registry.try_get<Transform>(entity), false);
-            ROCKY_SOFT_ASSERT_AND_RETURN(registry.try_get<TransformDetail>(entity), false);
-            ROCKY_SOFT_ASSERT_AND_RETURN(registry.try_get<Line>(entity), false);
-            ROCKY_SOFT_ASSERT_AND_RETURN(registry.try_get<Widget>(entity), false);
-            return true;
         }
     };
 }
@@ -70,33 +60,39 @@ auto Demo_NodePager = [](Application& app)
 
     static vsg::ref_ptr<NodePager> pager;
     static CallbackToken onExpire;
+    static Profile profile("global-geodetic");
 
     if (!pager)
     {
-        pager = NodePager::create(app.mapNode->profile);
+        pager = NodePager::create(profile, app.mapNode->profile);
 
         // Mandatory: the function that will create the payload for each TileKey:
         pager->createPayload = [&app](const TileKey& key, const IOOptions& io)
             {
                 auto node = EntityNode::create(app.registry);
-                node->key = key;
 
                 auto [lock, registry] = app.registry.write();
 
-                node->entity = registry.create();
-
                 auto& transform = registry.emplace<Transform>(node->entity);
                 transform.position = key.extent().centroid();
+                transform.topocentric = false;
 
                 auto& line = registry.emplace<Line>(node->entity);
                 auto w = key.extent().width(Units::METERS) * 0.4, h = key.extent().height(Units::METERS) * 0.4;
-                line.points = {
-                    vsg::dvec3{-w, -h, 0.0},
-                    vsg::dvec3{ w, -h, 0.0},
-                    vsg::dvec3{ w,  h, 0.0},
-                    vsg::dvec3{-w,  h, 0.0},
-                    vsg::dvec3{-w, -h, 0.0} };
-                line.style = LineStyle{ colors[key.level % 4], 2.0f };
+
+                auto keySRS = key.extent().srs();
+                auto worldSRS = app.mapNode->worldSRS();
+                auto center = to_vsg(key.extent().centroid().transform(worldSRS));
+                line.points.resize(5);
+                line.points[0] = to_vsg(GeoPoint(keySRS, key.extent().xmin(), key.extent().ymin()).transform(worldSRS)) - center;
+                line.points[1] = to_vsg(GeoPoint(keySRS, key.extent().xmax(), key.extent().ymin()).transform(worldSRS)) - center;
+                line.points[2] = to_vsg(GeoPoint(keySRS, key.extent().xmax(), key.extent().ymax()).transform(worldSRS)) - center;
+                line.points[3] = to_vsg(GeoPoint(keySRS, key.extent().xmin(), key.extent().ymax()).transform(worldSRS)) - center;
+                line.points[4] = line.points[0]; // close the loop
+
+                line.style.color = colors[key.level % 4];
+                line.style.width = 2.0f;
+                line.style.depth_offset = 10000; // meters
 
                 auto& widget = registry.emplace<Widget>(node->entity);
                 widget.text = key.str();
@@ -106,15 +102,6 @@ auto Demo_NodePager = [](Application& app)
 
                 return node;
             };
-        
-        // Optional: a callback to invoke when data is about to be paged out:
-        onExpire = pager->onExpire([&app](vsg::ref_ptr<vsg::Object> object)
-            {
-                util::forEach<EntityNode>(object, [&](EntityNode* node)
-                    {
-                        node->destroy();
-                    });
-            });
 
         // Always initialize a NodePager before using it:
         pager->initialize(app.context);
@@ -124,12 +111,37 @@ auto Demo_NodePager = [](Application& app)
 
     if (ImGuiLTable::Begin("NodePager"))
     {
+        static std::string profileNames[2] = { "global-geodetic", "spherical-mercator" };
+        static int profileIndex = 0;
+
+        if (ImGuiLTable::BeginCombo("Profile", profileNames[profileIndex].c_str()))
+        {
+            for (int i = 0; i < 2; ++i)
+            {
+                if (ImGui::RadioButton(profileNames[i].c_str(), profileIndex == i))
+                {
+                    profileIndex = i;
+                    profile = Profile(profileNames[i]);
+                    
+                    app.context->onNextUpdate([&]()
+                        {
+                            util::remove(pager, app.mainScene->children);
+                            pager = nullptr;
+                        });
+
+                    app.context->requestFrame();
+                }
+            }
+            ImGuiLTable::EndCombo();
+        }
+
         ImGuiLTable::Text("Tiles", "%u", pager->tiles());
-        ImGuiLTable::SliderFloat("Screen Space Error", &pager->screenSpaceError, 32.0f, 512.0f, "%.0f px");
+        ImGuiLTable::SliderFloat("Screen Space Error", &pager->screenSpaceError, 64.0f, 1024.0f, "%.0f px");
 
         if (ImGuiLTable::Button("Reload"))
+        {
             pager->initialize(app.context);
-
+        }
 
         ImGuiLTable::End();
 

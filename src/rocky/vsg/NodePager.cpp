@@ -49,8 +49,10 @@ namespace ROCKY_NAMESPACE
 }
 
 
-NodePager::NodePager(const Profile& profile_)
-    : vsg::Inherit<vsg::Group, NodePager>(), profile(profile_)
+NodePager::NodePager(const Profile& graphProfile, const Profile& mapProfile) :
+    vsg::Inherit<vsg::Group, NodePager>(), 
+    profile(graphProfile),
+    _mapProfile(mapProfile)
 {
     ROCKY_SOFT_ASSERT(profile.valid());
 }
@@ -161,9 +163,11 @@ NodePager::createNode(const TileKey& key, const IOOptions& io) const
     vsg::ref_ptr<vsg::Node> result;
 
     // TODO: offset this using an elevation sample:
+    auto mapExtent = _mapProfile.clampAndTransformExtent(key.extent());
+
     vsg::dsphere tileBound =
         calculateBound ? calculateBound(key, io) :
-        to_vsg(key.extent().createWorldBoundingSphere(0, 0));
+        to_vsg(mapExtent.createWorldBoundingSphere(0, 0));
 
     bool haveChildren = key.level < maxLevel;
     bool mayHavePayload = key.level >= minLevel;

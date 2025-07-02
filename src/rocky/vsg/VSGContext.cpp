@@ -520,6 +520,8 @@ VSGContextImpl::onNextUpdate(vsg::ref_ptr<vsg::Operation> function, std::functio
         }
 
         pq->_queue.push_back({ function, get_priority });
+
+        requestFrame();
     }
 }
 
@@ -529,6 +531,8 @@ VSGContextImpl::onNextUpdate(std::function<void()> function)
     ROCKY_SOFT_ASSERT_AND_RETURN(viewer.valid(), void(), "Developer: failure to set VSGContext->viewer");
 
     viewer->updateOperations->add(SimpleUpdateOperation::create(function));
+
+    requestFrame();
 }
 
 void
@@ -566,6 +570,8 @@ VSGContextImpl::dispose(vsg::ref_ptr<vsg::Object> object)
             std::unique_lock lock(_gc_mutex);
             _gc.back().emplace_back(object);
         }
+
+        requestFrame();
     }
 }
 

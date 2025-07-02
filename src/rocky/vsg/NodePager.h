@@ -48,8 +48,9 @@ namespace ROCKY_NAMESPACE
     public:
         //! Construct a new node pager whose tiles will correspond to
         //! a tiling profile.
-        //! \param profile The profile to use for tiling. Must be valid.
-        NodePager(const Profile& profile);
+        //! \param graphProfile The profile to use for tiling. Must be valid.
+        //! \param mapProfile The profile of the map displaying this graph.
+        NodePager(const Profile& graphProfile, const Profile& mapProfile);
 
         //! Call this after configuring the pager's settings.
         void initialize(VSGContext&);
@@ -80,7 +81,7 @@ namespace ROCKY_NAMESPACE
         RefinePolicy refinePolicy = RefinePolicy::Replace;
 
         //! LOD switching metric (size of tile on screen)
-        float screenSpaceError = 256.0f; // pixels 
+        float screenSpaceError = 512.0f; // pixels 
 
         //! Name of the job pool to use for node paging
         std::string poolName = "rocky::nodepager";
@@ -104,6 +105,7 @@ namespace ROCKY_NAMESPACE
         mutable std::mutex _sentry_mutex;
         CallbackToken _sentryUpdate;
         std::uint64_t _lastUpdateFrame = 0u;
+        Profile _mapProfile;
 
         friend class PagedNode;
 

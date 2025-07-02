@@ -163,7 +163,7 @@ namespace ROCKY_NAMESPACE
             // internal structure used when sorting components (by pipeline) for rendering
             struct RenderLeaf
             {
-                Renderable& renderable;
+                Renderable* renderable;
                 TransformDetail* transform_detail = nullptr;
             };
 
@@ -230,7 +230,7 @@ namespace ROCKY_NAMESPACE
         
             std::vector<System*> systems;
             std::vector<std::shared_ptr<System>> non_node_systems;
-            Registry& registry;
+            Registry registry;
             EntityNodeFactory factory;
         };
 
@@ -465,12 +465,12 @@ namespace ROCKY_NAMESPACE
                         {
                             if (transform_detail->visible(vrs))
                             {
-                                leaves.emplace_back(RenderLeaf{ renderable, transform_detail });
+                                leaves.emplace_back(RenderLeaf{ &renderable, transform_detail });
                             }
                         }
                         else
                         {
-                            leaves.emplace_back(RenderLeaf{ renderable });
+                            leaves.emplace_back(RenderLeaf{ &renderable });
                         }
                     }
                 }
@@ -501,7 +501,7 @@ namespace ROCKY_NAMESPACE
                         leaf.transform_detail->push(record);
                     }
 
-                    leaf.renderable.node->accept(record);
+                    leaf.renderable->node->accept(record);
 
                     if (leaf.transform_detail)
                     {

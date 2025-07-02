@@ -6,9 +6,6 @@
 #pragma once
 
 #include <rocky/vsg/ecs.h>
-#include <rocky/vsg/DisplayManager.h>
-#include <set>
-#include <random>
 #include <rocky/rtree.h>
 
 #include "helpers.h"
@@ -31,7 +28,7 @@ namespace
         unsigned visible = 1;
         unsigned total = 0;
 
-        ecs::Registry& _registry;
+        ecs::Registry _registry;
         std::size_t _last_max_size = 32;
 
         static auto create(ecs::Registry& registry) {

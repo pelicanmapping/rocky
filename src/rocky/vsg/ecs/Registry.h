@@ -35,7 +35,18 @@ namespace ROCKY_NAMESPACE
         class Registry
         {
         public:
-            Registry() = default;
+            struct Read {
+                std::shared_lock<std::shared_mutex> lock;
+                entt::registry& registry;
+                entt::registry* operator->() { return &registry; }
+                operator std::pair<std::shared_lock<std::shared_mutex>, entt::registry&>() { return { std::move(lock), registry }; }
+            };
+            struct Write {
+                std::unique_lock<std::shared_mutex> lock;
+                entt::registry& registry;
+                entt::registry* operator->() { return &registry; }
+                operator std::pair<std::unique_lock<std::shared_mutex>, entt::registry&>() { return { std::move(lock), registry }; }
+            };
 
             //! Returns a reference to a read-locked EnTT registry.
             //! 
@@ -47,8 +58,11 @@ namespace ROCKY_NAMESPACE
             //!   auto [lock, registry] = ecs_registry.read();
             //! 
             //! @return A tuple including a scoped shared lock and a reference to the underlying registry
-            std::pair<std::shared_lock<std::shared_mutex>, entt::registry&> read() {
-                return { std::shared_lock(_mutex), _registry };
+            Read read() const {
+                return { std::shared_lock(_impl->_mutex), _impl->_registry };
+            }
+            Read update() const {
+                return read();
             }
 
             //! Returns a reference to a write-locked EnTT registry.
@@ -60,14 +74,14 @@ namespace ROCKY_NAMESPACE
             //!   auto [lock, registry] = ecs_registry.write();
             //! 
             //! @return A tuple including a scoped unique lock and a reference to the underlying registry
-            std::pair<std::unique_lock<std::shared_mutex>, entt::registry&> write() {
-                return { std::unique_lock(_mutex), _registry };
+            Write write() const {
+                return { std::unique_lock(_impl->_mutex), _impl->_registry };
             }
 
             //! Convenience function to invoke a lambda with a read-locked registry reference.
             //! The signature of CALLABLE must match void(entt::registry&).
             template<typename CALLABLE>
-            void read(CALLABLE&& func) {
+            void read(CALLABLE&& func) const {
                 static_assert(std::is_invocable_r_v<void, CALLABLE, entt::registry&>, "Callable must match void(entt::registry&)");
                 auto [lock, registry] = read();
                 func(registry);
@@ -76,15 +90,31 @@ namespace ROCKY_NAMESPACE
             //! Convenience function to invoke a lambda with a write-locked registry reference.
             //! The signature of CALLABLE must match void(entt::registry&).
             template<typename CALLABLE>
-            void write(CALLABLE&& func) {
+            void write(CALLABLE&& func) const {
                 static_assert(std::is_invocable_r_v<void, CALLABLE, entt::registry&>, "Callable must match void(entt::registry&)");
                 auto [lock, registry] = write();
                 func(registry);
             }
 
+            //! Default constructor - empty registry
+            Registry() = default;
+
+            //! Copy constructor
+            Registry(const Registry& rhs) = default;
+
+            //! Creator
+            static Registry create() {
+                Registry r;
+                r._impl = std::make_shared<Impl>();
+                return r;
+            }
+
         private:
-            std::shared_mutex _mutex;
-            entt::registry _registry;
+            struct Impl {
+                mutable std::shared_mutex _mutex;
+                mutable entt::registry _registry;
+            };
+            std::shared_ptr<Impl> _impl;
         };
 
         /**
@@ -95,7 +125,7 @@ namespace ROCKY_NAMESPACE
         {
         public:
             //! ECS entity registry
-            Registry& _registry;
+            Registry _registry;
 
             //! Status
             Status status;

@@ -79,7 +79,7 @@ namespace ROCKY_NAMESPACE
 
     public: // public properties
 
-        ecs::Registry registry;
+        ecs::Registry registry = ecs::Registry::create();
 
         rocky::VSGContext context;
         vsg::ref_ptr<rocky::MapNode> mapNode;

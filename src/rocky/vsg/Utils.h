@@ -465,5 +465,15 @@ namespace ROCKY_NAMESPACE
             detail::ForEachNodeVisitor<T> visitor(func);
             root->accept(visitor);
         }
+
+        //! Remove a node from a collection of nodes
+        template<class COLLECTION>
+        inline void remove(vsg::ref_ptr<vsg::Node> node, COLLECTION& collection)
+        {
+            if (!node) return;
+            collection.erase(std::remove_if(collection.begin(), collection.end(),
+                [&node](const vsg::ref_ptr<vsg::Node>& n) { return n == node; }),
+                collection.end());
+        }
     }
 }
