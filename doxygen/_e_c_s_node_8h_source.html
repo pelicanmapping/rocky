@@ -491,7 +491,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00449" name="l00449"></a><span class="lineno">  449</span>            </div>
 <div class="line"><a id="l00450" name="l00450"></a><span class="lineno">  450</span> </div>
 <div class="line"><a id="l00451" name="l00451"></a><span class="lineno">  451</span>        <span class="comment">// Get an optimized view of all this system&#39;s components:</span></div>
-<div class="line"><a id="l00452" name="l00452"></a><span class="lineno">  452</span>        <span class="keyword">auto</span>&amp; view = registry.view&lt;T, ActiveState, Visibility&gt;();</div>
+<div class="line"><a id="l00452" name="l00452"></a><span class="lineno">  452</span>        <span class="keyword">const</span> <span class="keyword">auto</span>&amp; view = registry.view&lt;T, ActiveState, Visibility&gt;();</div>
 <div class="line"><a id="l00453" name="l00453"></a><span class="lineno">  453</span>        view.each([&amp;](<span class="keyword">const</span> entt::entity entity, <span class="keyword">auto</span>&amp; component, <span class="keyword">auto</span>&amp; active, <span class="keyword">auto</span>&amp; visibility)</div>
 <div class="line"><a id="l00454" name="l00454"></a><span class="lineno">  454</span>            {</div>
 <div class="line"><a id="l00455" name="l00455"></a><span class="lineno">  455</span>                <span class="keyword">auto</span>&amp; renderable = registry.get&lt;Renderable&gt;(component.attach_point);</div>
