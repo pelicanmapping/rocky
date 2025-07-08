@@ -508,8 +508,17 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00465" name="l00465"></a><span class="lineno">  465</span>            detail::ForEachNodeVisitor&lt;T&gt; visitor(func);</div>
 <div class="line"><a id="l00466" name="l00466"></a><span class="lineno">  466</span>            root-&gt;accept(visitor);</div>
 <div class="line"><a id="l00467" name="l00467"></a><span class="lineno">  467</span>        }</div>
-<div class="line"><a id="l00468" name="l00468"></a><span class="lineno">  468</span>    }</div>
-<div class="line"><a id="l00469" name="l00469"></a><span class="lineno">  469</span>}</div>
+<div class="line"><a id="l00468" name="l00468"></a><span class="lineno">  468</span> </div>
+<div class="line"><a id="l00470" name="l00470"></a><span class="lineno">  470</span>        <span class="keyword">template</span>&lt;<span class="keyword">class</span> COLLECTION&gt;</div>
+<div class="line"><a id="l00471" name="l00471"></a><span class="lineno">  471</span>        <span class="keyword">inline</span> <span class="keywordtype">void</span> remove(vsg::ref_ptr&lt;vsg::Node&gt; node, COLLECTION&amp; collection)</div>
+<div class="line"><a id="l00472" name="l00472"></a><span class="lineno">  472</span>        {</div>
+<div class="line"><a id="l00473" name="l00473"></a><span class="lineno">  473</span>            <span class="keywordflow">if</span> (!node) <span class="keywordflow">return</span>;</div>
+<div class="line"><a id="l00474" name="l00474"></a><span class="lineno">  474</span>            collection.erase(std::remove_if(collection.begin(), collection.end(),</div>
+<div class="line"><a id="l00475" name="l00475"></a><span class="lineno">  475</span>                [&amp;node](<span class="keyword">const</span> vsg::ref_ptr&lt;vsg::Node&gt;&amp; n) { return n == node; }),</div>
+<div class="line"><a id="l00476" name="l00476"></a><span class="lineno">  476</span>                collection.end());</div>
+<div class="line"><a id="l00477" name="l00477"></a><span class="lineno">  477</span>        }</div>
+<div class="line"><a id="l00478" name="l00478"></a><span class="lineno">  478</span>    }</div>
+<div class="line"><a id="l00479" name="l00479"></a><span class="lineno">  479</span>}</div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition</b> Callbacks.h:16</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a162ad412a065305ec657352ef84345ab"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a162ad412a065305ec657352ef84345ab">ROCKY_NAMESPACE::distanceTo</a></div><div class="ttdeci">float distanceTo(const vsg::dvec3 &amp;p, vsg::State *state)</div><div class="ttdoc">Distance in scene units (meters) from a point to the camera.</div><div class="ttdef"><b>Definition</b> Utils.h:92</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html_a1eeebb36064ee832159613307c006bc2"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html#a1eeebb36064ee832159613307c006bc2">ROCKY_NAMESPACE::expandBy</a></div><div class="ttdeci">void expandBy(vsg::dsphere &amp;bs, const vec_type &amp;v)</div><div class="ttdoc">Expands an existing sphere to include a point.</div><div class="ttdef"><b>Definition</b> Utils.h:99</div></div>

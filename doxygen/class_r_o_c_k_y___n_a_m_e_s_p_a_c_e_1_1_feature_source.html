@@ -91,6 +91,9 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_source_1_1iterator.html">iterator</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterator that returns features.  <a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_source_1_1iterator.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_source_1_1_metadata.html">Metadata</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_source_1_1_metadata.html" title="Metadata about a FeatureSource.">Metadata</a> about a <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_source.html">FeatureSource</a>.  <a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_source_1_1_metadata.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -98,14 +101,57 @@ Public Member Functions</h2></td></tr>
 <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">virtual</a> <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">int</a>&#160;</td><td class="memItemRight" valign="bottom"><b>featureCount</b> () <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">const</a> =0</td></tr>
 <tr class="memdesc:acfa9fac4be0112cc9652651c567d8b42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of features, or -1 if the count isn't available. <br /></td></tr>
 <tr class="separator:acfa9fac4be0112cc9652651c567d8b42"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a66d57524125a8beaca598c5470415b31" id="r_a66d57524125a8beaca598c5470415b31"><td class="memItemLeft" align="right" valign="top"><a id="a66d57524125a8beaca598c5470415b31" name="a66d57524125a8beaca598c5470415b31"></a>
-<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">virtual</a> <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_source_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><b>iterate</b> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a> &amp;io)=0</td></tr>
-<tr class="memdesc:a66d57524125a8beaca598c5470415b31"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a feature iterator. <br /></td></tr>
-<tr class="separator:a66d57524125a8beaca598c5470415b31"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3bf9255b4d97290d54efb3e785a0ad6" id="r_ab3bf9255b4d97290d54efb3e785a0ad6"><td class="memItemLeft" align="right" valign="top"><a id="ab3bf9255b4d97290d54efb3e785a0ad6" name="ab3bf9255b4d97290d54efb3e785a0ad6"></a>
+<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">virtual</a> <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_source_1_1iterator.html">iterator</a>&#160;</td><td class="memItemRight" valign="bottom"><b>iterate</b> (<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">const</a> <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a> &amp;io)=0</td></tr>
+<tr class="memdesc:ab3bf9255b4d97290d54efb3e785a0ad6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a feature iterator. <br /></td></tr>
+<tr class="separator:ab3bf9255b4d97290d54efb3e785a0ad6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a967bd58a3b3f53bda33e7116205a34c5" id="r_a967bd58a3b3f53bda33e7116205a34c5"><td class="memTemplParams" colspan="2">template&lt;<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">typename</a> <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">CALLABLE</a> &gt; </td></tr>
+<tr class="memitem:a967bd58a3b3f53bda33e7116205a34c5"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">void</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_source.html#a967bd58a3b3f53bda33e7116205a34c5">each</a> (<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">const</a> <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a> &amp;io, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">CALLABLE</a> &amp;&amp;func)</td></tr>
+<tr class="separator:a967bd58a3b3f53bda33e7116205a34c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Interface/base class for factories for <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature.html">Feature</a> objects. </p>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a967bd58a3b3f53bda33e7116205a34c5" name="a967bd58a3b3f53bda33e7116205a34c5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a967bd58a3b3f53bda33e7116205a34c5">&#9670;&#160;</a></span>each()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">typename</a> <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">CALLABLE</a> &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">void</a> ROCKY_NAMESPACE::FeatureSource::each </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">const</a> <a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html">IOOptions</a> &amp;&#160;</td>
+          <td class="paramname"><em>io</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">CALLABLE</a> &amp;&amp;&#160;</td>
+          <td class="paramname"><em>func</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Iterate over all features with a callable function with the signature void(Feature&amp;&amp;) </p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
 <li>src/rocky/<a class="el" href="_feature_8h_source.html">Feature.h</a></li>
 </ul>
 </div><!-- contents -->

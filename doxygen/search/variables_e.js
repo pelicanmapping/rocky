@@ -8,5 +8,6 @@ var searchData=
   ['onupdate_5',['onUpdate',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_v_s_g_context_impl.html#a9ec3fac2dac062c54674cdb7a2596e74',1,'ROCKY_NAMESPACE::VSGContextImpl']]],
   ['opacity_6',['opacity',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_visible_layer.html#a78c2ee68f56b7d43b6002e42931648fd',1,'ROCKY_NAMESPACE::VisibleLayer']]],
   ['openautomatically_7',['openAutomatically',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer.html#a8f0e30fbdcfbbbfe02e5a1dd310e897a',1,'ROCKY_NAMESPACE::Layer']]],
-  ['orthotracksperspective_8',['orthoTracksPerspective',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a442e83242e2e3c336fc999b0c59f05c5',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]]
+  ['origin_8',['origin',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html#a68a8fca2afa44581a21d7a2d878d8511',1,'ROCKY_NAMESPACE::FeatureView']]],
+  ['orthotracksperspective_9',['orthoTracksPerspective',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a442e83242e2e3c336fc999b0c59f05c5',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]]
 ];

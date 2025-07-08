@@ -46,6 +46,7 @@ var searchData=
   ['option_3c_20vsg_3a_3akeypressevent_20_3e_43',['option&lt; vsg::KeyPressEvent &gt;',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html',1,'ROCKY_NAMESPACE']]],
   ['option_3c_20vsg_3a_3amoveevent_20_3e_44',['option&lt; vsg::MoveEvent &gt;',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html',1,'ROCKY_NAMESPACE']]],
   ['option_3c_20vsg_3a_3atime_5fpoint_20_3e_45',['option&lt; vsg::time_point &gt;',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html',1,'ROCKY_NAMESPACE']]],
-  ['orthotracksperspective_46',['orthoTracksPerspective',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a442e83242e2e3c336fc999b0c59f05c5',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
-  ['overridesrs_47',['overrideSRS',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a63b4e41b245908edbadd30c6d6942282',1,'ROCKY_NAMESPACE::Profile']]]
+  ['origin_46',['origin',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_view.html#a68a8fca2afa44581a21d7a2d878d8511',1,'ROCKY_NAMESPACE::FeatureView']]],
+  ['orthotracksperspective_47',['orthoTracksPerspective',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#a442e83242e2e3c336fc999b0c59f05c5',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
+  ['overridesrs_48',['overrideSRS',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_profile.html#a63b4e41b245908edbadd30c6d6942282',1,'ROCKY_NAMESPACE::Profile']]]
 ];
