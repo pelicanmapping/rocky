@@ -27,7 +27,7 @@ This project is in its early stages so expect a lot of API and architectural cha
    * [The entity registry](#the-registry)
    * [Control components](#control-components)
 - [Integrations](#integrations)
-   * [Rocky and ImGui](#rocky-and-imgui)
+   * [Rocky and ImGui](#rocky-and-dear-imgui)
    * [Rocky and VulkanSceneGraph](#rocky-and-vulkanscenegraph)
    * [Rocky and Qt](#rocky-and-qt)
 - [Acknowedgements](#acknowledgements)
