@@ -28,7 +28,7 @@ namespace ROCKY_NAMESPACE
         void startLoading() const;
 
         //! Remove this node's subtiles and reset its state.
-        void unload(VSGContext& runtime);
+        void unload(VSGContext runtime);
 
         void traverse(vsg::Visitor& visitor) override {
             if (payload)
@@ -340,7 +340,7 @@ PagedNode::traverse(vsg::RecordTraversal& record) const
 }
 
 void
-PagedNode::unload(VSGContext& runtime)
+PagedNode::unload(VSGContext runtime)
 {    
     // expire and dispose of the data
     if (child.value())

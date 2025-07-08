@@ -450,7 +450,7 @@ GDALFeatureSource::iterator_impl::hasMore() const
 Feature
 GDALFeatureSource::iterator_impl::next()
 {
-    assert(!hasMore());
+    assert(hasMore());
 
     if (_queue.size() == 1u)
         readChunk();

@@ -25,7 +25,7 @@ namespace ROCKY_NAMESPACE
         option<std::string> ogrDriver;
 
         //! Optional layer name to open, for sources that support layers
-        option<std::string> layerName;
+        std::string layerName;
 
         //! Use these to create a feature source from an existing OGR layer handle and SRS.
         //! Leave URI empty if you use this method.
