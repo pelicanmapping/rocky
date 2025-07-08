@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -62,7 +62,12 @@ namespace ROCKY_NAMESPACE
 
         //! Constructor
         //! @param type Geometry type
-        Geometry(Type);
+        inline Geometry(Type);
+        
+        //! Constructor (with inline points)
+        //! @param type Geometry type
+        //! @param pts Points to move into the geometry
+        inline Geometry(Type type, std::vector<glm::dvec3>&& pts);
 
         //! Copy constructor
         Geometry(const Geometry& rhs) = default;
@@ -105,6 +110,14 @@ namespace ROCKY_NAMESPACE
 
         using const_iterator = iterator<const Geometry>;
 
+        //! Visit each part of the geometry, including "this".
+        template<typename CALLABLE>
+        void eachPart(CALLABLE&& func);
+
+        //! Visit each part of the geometry, including "this".
+        template<typename CALLABLE>
+        void eachPart(CALLABLE&& func) const;
+            
         //! Attempt to convert this geometry to a different type
         void convertToType(Type type);
 
@@ -160,6 +173,21 @@ namespace ROCKY_NAMESPACE
         }
     }
 
+    template<typename CALLABLE>
+    void Geometry::eachPart(CALLABLE&& func) {
+        static_assert(std::is_invocable_r_v<void, CALLABLE, Geometry&>);
+        Geometry::iterator iter(*this);
+        while (iter.hasMore())
+            func(iter.next());
+    }
+
+    template<typename CALLABLE>
+    void Geometry::eachPart(CALLABLE&& func) const {
+        static_assert(std::is_invocable_r_v<void, CALLABLE, const Geometry&>);
+        Geometry::const_iterator iter(*this);
+        while (iter.hasMore())
+            func(iter.next());
+    }
 
     /**
     * How to interpolate points along a line segment on a geodetic map
@@ -191,6 +219,22 @@ namespace ROCKY_NAMESPACE
             inline double doubleValue() const;
             inline long long intValue() const;
             inline bool boolValue() const;
+
+            inline bool operator == (const std::string& rhs) const {
+                return stringValue() == rhs;
+            }
+            inline bool operator == (const char* rhs) const {
+                return stringValue() == rhs;
+            }
+            inline bool operator == (double rhs) const {
+                return doubleValue() == rhs;
+            }
+            inline bool operator == (long long rhs) const {
+                return intValue() == rhs;
+            }
+            inline bool operator == (bool rhs) const {
+                return boolValue() == rhs;
+            }
         };
 
         //! attribute field type
@@ -228,32 +272,37 @@ namespace ROCKY_NAMESPACE
         Feature(Feature&& rhs) noexcept = default;
         Feature& operator =(Feature&& rhs) noexcept = default;
 
+        //! Construct a feature with the given geometry, SRS, and interpolation
+        Feature(const SRS& in_srs, Geometry::Type type, std::vector<glm::dvec3>&& pts, GeodeticInterpolation interp = GeodeticInterpolation::GreatCircle) :
+            srs(in_srs),
+            geometry(type, std::move(pts)),
+            interpolation(interp)
+        {
+            dirtyExtent();
+        }
+
         //! Whether the feature is valid
-        bool valid() const {
+        inline bool valid() const {
             return srs.valid();
         }
 
         //! Whether the feature contains the named field
-        bool hasField(const std::string& name) const {
+        inline bool hasField(const std::string& name) const {
             return fields.find(name) != fields.end();
         }
 
         //! Reference to the named field, or a dummy empty field if the field is not found.
-        const FieldValue& field(const std::string& name) const {
+        inline const FieldValue& field(const std::string& name) const {
             static FieldValue empty;
             auto i = fields.find(name);
             return i != fields.end() ? i->second : empty;
         }
 
-        void dirtyExtent();
-    };
+        //! Transform this feature to a different SRS, in place.
+        bool transformInPlace(const SRS& to_srs);
 
-    /**
-    * Extent, SRS, and possibly the tiling profile of a feautre source
-    */
-    struct FeatureProfile
-    {
-        GeoExtent extent;
+        //! Call this is the alter the geometry to recalculate the extent.
+        void dirtyExtent();
     };
 
     /**
@@ -262,18 +311,24 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT FeatureSource : public rocky::Inherit<Object, FeatureSource>
     {
     public:
+        //! Metadata about a FeatureSource
+        struct Metadata
+        {
+            GeoExtent extent;
+        };
+
         //! Iterator that returns features
         class iterator
         {
         public:
             struct implementation {
                 virtual bool hasMore() const = 0;
-                virtual const Feature& next() = 0;
+                virtual Feature next() = 0;
             };
 
         public:
             bool hasMore() const { return _impl->hasMore(); }
-            const Feature& next() { return _impl->next(); }
+            Feature next() { return _impl->next(); }
 
             iterator(implementation* impl) : _impl(impl) { }
 
@@ -285,80 +340,33 @@ namespace ROCKY_NAMESPACE
         virtual int featureCount() const = 0;
 
         //! Creates a feature iterator
-        virtual iterator iterate(IOOptions& io) = 0;
+        virtual iterator iterate(const IOOptions& io) = 0;
+
+        //! Iterate over all features with a callable function with the signature
+        //! void(Feature&&)
+        template<typename CALLABLE>
+        void each(const IOOptions& io, CALLABLE&& func) {
+            static_assert(std::is_invocable_r_v<void, CALLABLE, Feature&&>);
+            auto i = iterate(io);
+            while (i.hasMore())
+                func(std::move(i.next()));
+        }
     };
 
 
-#ifdef ROCKY_HAS_GDAL
 
-    /**
-    * Reads Feature objects from various sources using the GDAL OGR library.
-    */
-    class ROCKY_EXPORT GDALFeatureSource : public rocky::Inherit<FeatureSource, GDALFeatureSource>
+    Geometry::Geometry(Type in_type) :
+        type(in_type)
     {
-    public:
+        //nop
+    }
 
-        //! URI of source data, like a shapefile or connection string
-        option<URI> uri;
-
-        //! Optional name of the specific OGR driver to load.
-        option<std::string> ogrDriver;
-
-        //! Use these to create a feature source from an existing OGR layer handle and SRS.
-        //! Leave URI empty if you use this method.
-        void* externalLayerHandle = nullptr;
-        SRS externalSRS = SRS::WGS84;
-
-        //! Opens the source and returns a status indicating success or failure.
-        Status open();
-
-        void close();
-
-        //! Create an interator to read features from the source
-        FeatureSource::iterator iterate(IOOptions& io) override;
-
-        //! Number of features, or -1 if the count isn't available
-        int featureCount() const override;
-
-        std::string layerName;
-
-        // destructor
-        virtual ~GDALFeatureSource();
-
-    private:
-        void* _dsHandle = nullptr;
-        void* _layerHandle = nullptr;
-        int _featureCount = -1;
-        std::thread::id _dsHandleThreadId;
-        FeatureProfile _featureProfile;
-        std::string _source;
-
-        class ROCKY_EXPORT iterator_impl : public FeatureSource::iterator::implementation
-        {
-        public:
-            ~iterator_impl();
-            bool hasMore() const override;
-            const Feature& next() override;
-        private:
-            std::queue<Feature> _queue;
-            Feature _lastFeatureReturned;
-            GDALFeatureSource* _source = nullptr;
-            void* _dsHandle = nullptr;
-            void* _layerHandle = nullptr;
-            void* _resultSetHandle = nullptr;
-            void* _spatialFilterHandle = nullptr;
-            void* _nextHandleToQueue = nullptr;
-            bool _resultSetEndReached = true;
-            const std::size_t _chunkSize = 500;
-            Feature::ID _idGenerator = 1;
-
-            void init();
-            void readChunk();
-            friend class GDALFeatureSource;
-        };
-    };
-
-#endif // ROCKY_HAS_GDAL
+    Geometry::Geometry(Type in_type, std::vector<glm::dvec3>&& pts) :
+        type(in_type),
+        points(std::move(pts))
+    {
+        // nop
+    }
 
     // inline implementation
     template<class VEC3_ITER>
@@ -368,6 +376,7 @@ namespace ROCKY_NAMESPACE
     {
         //nop
     }
+
     template<class VEC3_CONTAINER>
     Geometry::Geometry(Type in_type, const VEC3_CONTAINER& container) :
         type(in_type),

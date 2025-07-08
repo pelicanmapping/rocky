@@ -14,3 +14,6 @@
 #include <rocky/vsg/ecs/Visibility.h>
 #include <rocky/vsg/ecs/Transform.h>
 #include <rocky/vsg/ecs/Declutter.h>
+
+#include <rocky/vsg/ecs/FeatureView.h>
+#include <rocky/vsg/ecs/EntityNode.h>

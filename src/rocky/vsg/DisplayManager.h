@@ -8,13 +8,6 @@
 #include <rocky/vsg/MapManipulator.h>
 #include <rocky/Utils.h>
 
-#include <vsg/app/Viewer.h>
-#include <vsg/app/Window.h>
-#include <vsg/app/RenderGraph.h>
-#include <vsg/app/CommandGraph.h>
-#include <vsg/app/View.h>
-#include <vsg/nodes/Group.h>
-
 #include <chrono>
 #include <list>
 

@@ -5,6 +5,7 @@
  */
 #pragma once
 #include "helpers.h"
+#include <rocky/GDALFeatureSource.h>
 #include <unordered_map>
 #include <unordered_set>
 

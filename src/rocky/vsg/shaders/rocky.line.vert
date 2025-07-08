@@ -42,6 +42,15 @@ out gl_PerVertex {
     vec4 gl_Position;
 };
 
+vec3 bias_and_clamp_to_near_z(in vec3 vertex, float bias, float nearz)
+{
+    float len = length(vertex);
+    if (len - bias <= nearz)
+        bias = len - nearz - 1.0;
+
+    return vertex - (vertex/len) * bias;
+}
+
 void main()
 {
     rk.color = line.color.a > 0.0 ? line.color : in_color;
@@ -71,17 +80,24 @@ void main()
     vec2 viewport_size = vsg_viewports.viewport[0].zw;
 
     float bias = line.depth_offset;
+    float nearz = -pc.projection[3][2] / (pc.projection[2][2] + 1.0);
+
+
+    //bias = (length(curr_view.xyz) - nearz - 1.0) * 0.5;
 
     vec4 curr_view = pc.modelview * vec4(in_vertex, 1);
-    curr_view.xyz -= normalize(curr_view.xyz) * bias;
+    curr_view.xyz  = bias_and_clamp_to_near_z(curr_view.xyz, bias, nearz);
+    //curr_view.xyz -= normalize(curr_view.xyz) * bias;
     vec4 curr_clip = pc.projection * curr_view;
 
     vec4 prev_view = pc.modelview * vec4(in_vertex_prev, 1);
-    prev_view.xyz -= normalize(prev_view.xyz) * bias;
+    prev_view.xyz  = bias_and_clamp_to_near_z(prev_view.xyz, bias, nearz);
+    //prev_view.xyz -= normalize(prev_view.xyz) * bias;
     vec4 prev_clip = pc.projection * prev_view;
 
     vec4 next_view = pc.modelview * vec4(in_vertex_next, 1);
-    next_view.xyz -= normalize(next_view.xyz) * bias;
+    next_view.xyz  = bias_and_clamp_to_near_z(next_view.xyz, bias, nearz);
+    //next_view.xyz -= normalize(next_view.xyz) * bias;
     vec4 next_clip = pc.projection * next_view;
 
     vec2 curr_pixel = (curr_clip.xy / curr_clip.w) * viewport_size;

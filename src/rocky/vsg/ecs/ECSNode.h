@@ -272,17 +272,26 @@ namespace ROCKY_NAMESPACE
             }
         }
 
+        template<typename ITER>
+        inline void setVisible(entt::registry& registry, ITER begin, ITER end, bool value, int view_index = -1)
+        {
+            for (auto it = begin; it != end; ++it)
+            {
+                setVisible(registry, *it, value, view_index);
+            }
+        }
+
         //! Whether an entity is visible in the given view
         //! @param r Entity registry
         //! @param e Entity id
         //! @param view_index Index of view to check visibility
         //! @return True if visible in that view
-        inline bool visible(entt::registry& r, entt::entity e, int view_index = 0)
+        inline bool visible(entt::registry& registry, entt::entity e, int view_index = 0)
         {
             // assume a readlock on the registry
             ROCKY_SOFT_ASSERT_AND_RETURN(e != entt::null, false);
 
-            return visible(r.get<Visibility>(e), view_index);
+            return visible(registry.get<Visibility>(e), view_index);
         }
     }
 
@@ -528,22 +537,31 @@ namespace ROCKY_NAMESPACE
             //TODO: can we just do this during record...?
             for (auto& entity : entities_to_update)
             {
-                if (!registry.valid(entity))
+                if (!registry.valid(entity) || !registry.all_of<T>(entity))
                     continue;
 
                 T& component = registry.get<T>(entity);
-                Renderable& renderable = registry.get<Renderable>(component.attach_point);
+                //Renderable& renderable = registry.get<Renderable>(component.attach_point);
 
-                // either the node doesn't exist yet, or the revision changed.
-                // Queue it up for creation.
-                ecs::BuildItem item;
-                item.entity = entity;
-                item.version = registry.current(entity);
-                item.component = std::shared_ptr<RevisionedComponent>(new T(component));
-                item.existing_node = renderable.node;
-                item.new_node = {};
+                auto* renderable = registry.try_get<Renderable>(component.attach_point);
+                if (renderable)
+                {
+                    // either the node doesn't exist yet, or the revision changed.
+                    // Queue it up for creation.
+                    ecs::BuildItem item;
+                    item.entity = entity;
+                    item.version = registry.current(entity);
+                    item.component = std::shared_ptr<RevisionedComponent>(new T(component));
+                    item.existing_node = renderable->node;
+                    item.new_node = {};
 
-                entities_to_build.emplace_back(std::move(item));
+                    entities_to_build.emplace_back(std::move(item));
+                }
+                else
+                {
+                    Log()->warn("Failed to fetch Renderable for component {}",
+                        typeid(T).name());
+                }
             }
         }
 
@@ -581,7 +599,8 @@ namespace ROCKY_NAMESPACE
     {
         // if there's a new node AND the entity isn't outdated or deleted,
         // swap it in. This method is called from ECSNode::update().
-        if (item.new_node && registry.valid(item.entity) && registry.current(item.entity) == item.version)
+        if (item.new_node && registry.valid(item.entity) && registry.all_of<T>(item.entity) &&
+            registry.current(item.entity) == item.version)
         {
             T& component = registry.get<T>(item.entity);
             auto& renderable = registry.get<Renderable>(component.attach_point);

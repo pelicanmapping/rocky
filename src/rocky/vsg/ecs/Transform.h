@@ -32,9 +32,9 @@ namespace ROCKY_NAMESPACE
         double radius = 0.0;
 
         //! Whether the localMatrix is relative to a local tangent plane at
-        //! "position", versus a simple translated reference frame. Setting this
-        //! to false will slightly improve performance.
-        bool topocentric = true;
+        //! "position" (true), versus a simple translated reference frame (false).
+        //! Setting this to false will slightly improve performance.
+        bool topocentric = false;
 
         //! True if objects positioned with this transform should be invisible
         //! if they are below the visible horizon.

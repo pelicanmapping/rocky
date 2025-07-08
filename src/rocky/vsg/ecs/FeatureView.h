@@ -5,9 +5,7 @@
  */
 #pragma once
 #include <rocky/Feature.h>
-#include <rocky/vsg/ecs/Line.h>
-#include <rocky/vsg/ecs/Mesh.h>
-#include <rocky/vsg/ecs/Icon.h>
+#include <rocky/vsg/ecs.h>
 #include <rocky/vsg/VSGContext.h>
 
 #include <optional>
@@ -30,49 +28,65 @@ namespace ROCKY_NAMESPACE
     /**
     * FeatureView is a utility that compiles a collection of Feature objects
     * into renderable components.
+    *
+    * Usage:
+    *  - Create a FeatureView
+    *  - Populate the features vector
+    *  - Optionally set styles for rendering
+    *  - Call generate to create a collection of entt::entity representing the geometry.
     */
     class ROCKY_EXPORT FeatureView
     {
     public:
-        //! Collection of features to view
+        //! Return value from FeatureView generate().
+        struct Primitives
+        {
+            Line line;
+            Mesh mesh;
+
+            inline bool empty() const {
+                return line.points.empty() && mesh.triangles.empty();
+            }
+
+            inline entt::entity moveToEntity(entt::registry& r) {
+                if (empty())
+                    return entt::null;
+
+                auto e = r.create();
+
+                if (!line.points.empty())
+                {
+                    r.emplace<Line>(e, std::move(line));
+                }
+                if (!mesh.triangles.empty())
+                {
+                    r.emplace<Mesh>(e, std::move(mesh));
+                }
+                return e;
+            }
+        };
+
+    public:
+        //! Collection of features to process
         std::vector<rocky::Feature> features;
 
         //! Styles to use when compiling features
         StyleSheet styles;
 
-        //! Create VSG geometry from the feature list
-        //! @param registry Entity registry, locked for writing
-        //! @param srs SRS or resulting geometry
-        //! @param runtime Runtime operations interface
-        //! @param keep_features Whether to keep the "features" vector intact;
-        //!   by default it is cleared after calling generate
-        void generate(
-            entt::registry& registry,
-            const SRS& srs,
-            VSGContext& runtime,
-            bool keep_features = false);
-
-        //! Deletes any geometries previously created by generate()
-        //! @param registry Entity registry, locked for writing
-        void clear(entt::registry& registry);
-
-        //! Call if you change the stylesheet after generating.
-        //! @param registry Entity registry, locked for reading
-        void dirtyStyles(entt::registry& registry);
+        //! Reference point (optional) to use for geometry localization.
+        //! If you set this, make sure to add a corresponding Transform component
+        //! to each of the resulting entities.
+        GeoPoint origin;
 
     public:
         //! Default construct - no data
-        FeatureView();
+        FeatureView() = default;
 
-        //! Construct a view to display a single feature
-        FeatureView(const Feature& value);
-
-        //! Construct a view to display a single moved feature)
-        FeatureView(Feature&& value) noexcept;
-
-        //! Host entities
-        entt::entity entity = entt::null;
-        std::vector<entt::entity> mesh_entities;
-        std::vector<entt::entity> line_entities;
+        //! Create geometry primitives from the feature list.
+        //! Note: this method MAY modify the Features in the feature collection.
+        //! @param srs SRS of resulting geometry; Usually this should be the World SRS of your map.
+        //! @param runtime Runtime operations interface
+        //! @return Collection of primtives representing the feature geometry
+        Primitives generate(const SRS& output_srs, VSGContext& runtime);
     };
 }

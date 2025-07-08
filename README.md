@@ -289,6 +289,17 @@ void function_that_only_reads_or_edits_things(Application& app)
    // create(), emplace(), emplace_or_replace(), remove(), destroy();
 }
 ```
+
+You can also use a lambda function to encapsulate your read/update/write work:
+```c++
+app.registry.write([&](entt::registry& registry)
+    {
+        auto e = registry.create();
+        auto& widget = registry.emplace<Widget>(e);
+        widget.text = "WKRP";
+    });
+```
+
 While the example here will show you the basics, we recommend you read up on the [EnTT SDK](https://github.com/skypjack/entt) if you want to understand the full breadth of the registry's API!
 
 ## Control Components

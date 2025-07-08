@@ -26,23 +26,23 @@ TransformDetail::update(vsg::RecordTraversal& record)
         view.revision = sync.revision; // transform->revision;
 
         // first time through, cache information about the world SRS and ellipsoid for this view.
-        if (!pos_to_world.valid())
+        if (!cached.pos_to_world.valid())
         {
-            if (record.getValue("rocky.worldsrs", world_srs))
+            if (record.getValue("rocky.worldsrs", cached.world_srs))
             {
-                pos_to_world = sync.position.srs.to(world_srs);
-                world_ellipsoid = &world_srs.ellipsoid(); // for speed :)
+                cached.pos_to_world = sync.position.srs.to(cached.world_srs);
+                cached.world_ellipsoid = &cached.world_srs.ellipsoid(); // for speed :)
             }
         }
 
-        if (pos_to_world.valid())
+        if (cached.pos_to_world.valid())
         {
             glm::dvec3 worldpos;
-            if (pos_to_world(sync.position, worldpos))
+            if (cached.pos_to_world(sync.position, worldpos))
             {
-                if (sync.topocentric && world_srs.isGeocentric())
+                if (sync.topocentric && cached.world_srs.isGeocentric())
                 {
-                    view.model = to_vsg(world_ellipsoid->topocentricToGeocentricMatrix(worldpos));
+                    view.model = to_vsg(cached.world_ellipsoid->topocentricToGeocentricMatrix(worldpos));
                 }
                 else
                 {
@@ -58,11 +58,11 @@ TransformDetail::update(vsg::RecordTraversal& record)
             }
         }
 
-        if (!horizon)
+        if (!cached.horizon)
         {
             // cache this view's horizon pointer in the local view data
             // so we don't have to look it up every frame
-            record.getValue("rocky.horizon", horizon);
+            record.getValue("rocky.horizon", cached.horizon);
         }
     }
 
@@ -81,7 +81,7 @@ TransformDetail::visible(ViewRecordingState& state) const
 {
     auto& view = views[state.viewID];
 
-    // Frustum cull (by center point)
+    // Frustum cull (by center point) TODO: radius??
     if (sync.frustumCulled)
     {
         auto clip = view.mvp[3] / view.mvp[3][3];
@@ -93,9 +93,9 @@ TransformDetail::visible(ViewRecordingState& state) const
     }
 
     // horizon cull, if active (geocentric only)
-    if (sync.horizonCulled && horizon && world_srs.isGeocentric())
+    if (sync.horizonCulled && cached.horizon && cached.world_srs.isGeocentric())
     {
-        if (!horizon->isVisible(view.model[3][0], view.model[3][1], view.model[3][2], sync.radius))
+        if (!cached.horizon->isVisible(view.model[3][0], view.model[3][1], view.model[3][2], sync.radius))
         {
             return false;
         }

@@ -7,6 +7,7 @@
 #include "Feature.h"
 
 #ifdef ROCKY_HAS_GEOCODER
+#include "GDALFeatureSource.h"
 #include <ogr_geocoding.h>
 #endif
 

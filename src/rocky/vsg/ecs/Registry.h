@@ -87,6 +87,13 @@ namespace ROCKY_NAMESPACE
                 func(registry);
             }
 
+            template<typename CALLABLE>
+            void update(CALLABLE&& func) const {
+                static_assert(std::is_invocable_r_v<void, CALLABLE, entt::registry&>, "Callable must match void(entt::registry&)");
+                auto [lock, registry] = update();
+                func(registry);
+            }
+
             //! Convenience function to invoke a lambda with a write-locked registry reference.
             //! The signature of CALLABLE must match void(entt::registry&).
             template<typename CALLABLE>

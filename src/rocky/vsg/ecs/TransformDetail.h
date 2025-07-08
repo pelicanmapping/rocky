@@ -43,20 +43,26 @@ namespace ROCKY_NAMESPACE
         detail::ViewLocal<TransformViewDetail> views;
 
         // Cached global data
-        SRS world_srs;
-        const Ellipsoid* world_ellipsoid = nullptr;
-        SRSOperation pos_to_world;
-        std::shared_ptr<Horizon> horizon;
+        struct Cached
+        {
+            SRS world_srs;
+            const Ellipsoid* world_ellipsoid = nullptr;
+            SRSOperation pos_to_world;
+            std::shared_ptr<Horizon> horizon;
+        };
+        Cached cached;
 
         //! Updates the per-view data for the given record traversal.
         //! Return true if any updates were made due to a dirty Transform.
         bool update(vsg::RecordTraversal&);
 
-        // True if this transform is visible in the view with the provided ID
+        //! True if this transform is visible in the provided view state
         bool visible(ViewRecordingState& state) const;
 
+        //! Push the matrix associated with this transform onto the record stack
         void push(vsg::RecordTraversal&) const;
 
+        //! Pop a matrix recorded with push(...)
         void pop(vsg::RecordTraversal&) const;
     };
 }

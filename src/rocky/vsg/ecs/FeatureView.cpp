@@ -5,8 +5,6 @@
  */
 #include "FeatureView.h"
 #include "Mesh.h"
-#include "Transform.h"
-#include "Visibility.h"
 #include "../VSGContext.h"
 #include <rocky/weemesh.h>
 
@@ -56,12 +54,11 @@ namespace
     }
 
     template<class T>
-    void tessellate_line_segment(const T& from, const T& to, const SRS& srs, const GeodeticInterpolation interp, float max_span, std::vector<T>& output, bool add_last_point)
+    void tessellate_line_segment(const T& from, const T& to, const SRS& input_srs, const GeodeticInterpolation interp, float max_span, std::vector<T>& output, bool add_last_point)
     {
-        //TODO: make it work for projected SRS?
-        ROCKY_SOFT_ASSERT_AND_RETURN(srs.isGeodetic(), void());
+        ROCKY_SOFT_ASSERT_AND_RETURN(input_srs.isGeodetic(), void());
 
-        auto& ellipsoid = srs.ellipsoid();
+        auto& ellipsoid = input_srs.ellipsoid();
         std::list<T> list{ from, to };
         auto iter = list.begin();
         for (;;)
@@ -96,17 +93,27 @@ namespace
         }
     }
 
-    std::vector<glm::dvec3> tessellate_linestring(const std::vector<glm::dvec3>& input, const SRS& srs, GeodeticInterpolation interp, float max_span)
+    std::vector<glm::dvec3> tessellate_linestring(const std::vector<glm::dvec3>& input, const SRS& input_srs, GeodeticInterpolation interp, float max_span)
     {
         std::vector<glm::dvec3> output;
+
         if (input.size() > 0)
         {
-            for (unsigned i = 1; i < input.size(); ++i)
+            // only geodetic coordinates get tessellated for now:
+            if (input_srs.isGeodetic())
             {
-                tessellate_line_segment(input[i - 1], input[i], srs, interp, max_span, output, false);
+                for (unsigned i = 1; i < input.size(); ++i)
+                {
+                    tessellate_line_segment(input[i - 1], input[i], input_srs, interp, max_span, output, false);
+                }
+                output.push_back(input.back());
             }
-            output.push_back(input.back());
+            else
+            {
+                output = input;
+            }
         }
+
         return output;
     }
 
@@ -120,7 +127,7 @@ namespace
         return m;
     }
 
-    void compile_feature_to_lines(const Feature& feature, const StyleSheet& styles, const SRS& geom_srs, Line& line)
+    void compile_feature_to_lines(const Feature& feature, const StyleSheet& styles, const GeoPoint& origin, const SRS& output_srs, Line& line)
     {
         float max_span = 100000.0f;
 
@@ -129,42 +136,50 @@ namespace
 
         float final_max_span = max_span;
 
-        Geometry::const_iterator iter(feature.geometry);
-        while (iter.hasMore())
-        {
-            auto& part = iter.next();
-
-            // tessellate:
-            auto tessellated = tessellate_linestring(part.points, feature.srs, feature.interpolation, max_span);
-
-            // transform:
-            auto feature_to_world = feature.srs.to(geom_srs);
-            feature_to_world.transformRange(tessellated.begin(), tessellated.end());
-
-            // Populate the line component based on the topology.
-            if (line.topology == Line::Topology::Strip)
+        feature.geometry.eachPart([&](const Geometry& part)
             {
-                line.points.resize(line.points.size() + tessellated.size());
+                // tessellate:
+                auto tessellated = tessellate_linestring(part.points, feature.srs, feature.interpolation, max_span);
 
-                std::transform(tessellated.begin(), tessellated.end(), line.points.begin(), 
-                    [](const glm::dvec3& p) { return vsg::dvec3(p.x, p.y, p.z); });
-            }
-            else // Line::Topology::Segments
-            {
-                std::size_t num_points_in_segments = tessellated.size() * 2 - 2;
-                auto ptr = line.points.size();
-                line.points.resize(line.points.size() + num_points_in_segments);
+                // transform:
+                auto feature_to_world = feature.srs.to(output_srs);
+                feature_to_world.transformRange(tessellated.begin(), tessellated.end());
 
-                // convert from a strip to segments
-                for (std::size_t i = 0; i < tessellated.size() - 1; ++i)
+                // localize:
+                if (origin.valid())
                 {
-                    line.points[ptr++] = vsg::dvec3(tessellated[i].x, tessellated[i].y, tessellated[i].z);
-                    line.points[ptr++] = vsg::dvec3(tessellated[i + 1].x, tessellated[i + 1].y, tessellated[i + 1].z);
+                    auto ref_out = origin.transform(output_srs);
+                    for (auto& p : tessellated)
+                    {
+                        p -= glm::dvec3(ref_out.x, ref_out.y, ref_out.z);
+                    }
                 }
-            }
 
-            final_max_span = std::max(final_max_span, get_max_segment_length(tessellated));
-        }
+                // Populate the line component based on the topology.
+                if (line.topology == Line::Topology::Strip)
+                {
+                    line.points.resize(line.points.size() + tessellated.size());
+
+                    std::transform(tessellated.begin(), tessellated.end(), line.points.begin(),
+                        [](const glm::dvec3& p) { return vsg::dvec3(p.x, p.y, p.z); });
+                }
+
+                else // Line::Topology::Segments
+                {
+                    std::size_t num_points_in_segments = tessellated.size() * 2 - 2;
+                    auto ptr = line.points.size();
+                    line.points.resize(line.points.size() + num_points_in_segments);
+
+                    // convert from a strip to segments
+                    for (std::size_t i = 0; i < tessellated.size() - 1; ++i)
+                    {
+                        line.points[ptr++] = vsg::dvec3(tessellated[i].x, tessellated[i].y, tessellated[i].z);
+                        line.points[ptr++] = vsg::dvec3(tessellated[i + 1].x, tessellated[i + 1].y, tessellated[i + 1].z);
+                    }
+                }
+
+                final_max_span = std::max(final_max_span, get_max_segment_length(tessellated));
+            });
 
         // max length:
         max_span = final_max_span;
@@ -175,11 +190,12 @@ namespace
         }
     }
 
-    void compile_polygon_feature_with_weemesh(const Feature& feature, const Geometry& geom, const StyleSheet& styles, const SRS& geom_srs, Mesh& mesh)
+    void compile_polygon_feature_with_weemesh(const Feature& feature, const Geometry& geom, const StyleSheet& styles, 
+        const GeoPoint& origin, const SRS& output_srs, Mesh& mesh)
     {
         // scales our local gnomonic coordinates so they are the same order of magnitude as
         // weemesh's default epsilon values:
-        const double gnomonic_scale = 1000.0;
+        const double gnomonic_scale = 1e6; // 1.0; // 1000.0;
 
         // Meshed triangles will be at a maximum this many degrees across in size,
         // to help follow the curvature of the earth.
@@ -192,7 +208,7 @@ namespace
         // some conversions we will need:
         auto feature_geo = feature.srs.geodeticSRS();
         auto feature_to_geo = feature.srs.to(feature_geo);
-        auto geo_to_world = feature_geo.to(geom_srs);
+        auto geo_to_world = feature_geo.to(output_srs);
 
         // centroid for use with the gnomonic projection:
         glm::dvec3 centroid;
@@ -295,6 +311,16 @@ namespace
         // And into the final projection:
         geo_to_world.transformRange(m.verts.begin(), m.verts.end());
 
+        // localize:
+        if (origin.valid())
+        {
+            auto ref_out = origin.transform(output_srs);
+            for (auto& p : m.verts)
+            {
+                p = p - weemesh::vert_t(ref_out.x, ref_out.y, ref_out.z);
+            }
+        }
+
         auto color =
             styles.mesh_function ? styles.mesh_function(feature).color :
             styles.mesh.has_value() ? styles.mesh->color :
@@ -322,87 +348,36 @@ namespace
 }
 
 
-FeatureView::FeatureView()
+FeatureView::Primitives
+FeatureView::generate(const SRS& output_srs, VSGContext& runtime)
 {
-    //nop
-}
-
-FeatureView::FeatureView(const Feature& f)
-{
-    features.emplace_back(f);
-}
-
-FeatureView::FeatureView(Feature&& f) noexcept
-{
-    features.emplace_back(f);
-}
-
-void
-FeatureView::clear(entt::registry& registry)
-{
-    for (auto entity : line_entities)
-    {
-        if (entity != entt::null)
-        {
-            registry.remove<Line>(entity);
-        }
-    }
-    line_entities.clear();
-
-    for (auto entity : mesh_entities)
-    {
-        if (entity != entt::null)
-        {
-            registry.remove<Mesh>(entity);
-        }
-    }
-    mesh_entities.clear();
-}
-
-void
-FeatureView::generate(entt::registry& registry, const SRS& geom_srs, VSGContext& runtime, bool keep_features)
-{
-    if (entity == entt::null)
-    {
-        entity = registry.create();
-        registry.emplace<Visibility>(entity);
-    }
-
-    auto& host_visibility = registry.get<Visibility>(entity);
+    Primitives output;
+    output.line.topology = Line::Topology::Segments;
 
     for (auto& feature : features)
     {
+        // If the output is geocentric, do all out processing in geodetic coordinates.
+        if (output_srs.isGeocentric())
+        {
+            feature.transformInPlace(output_srs.geodeticSRS());
+        }
+
         if (feature.geometry.type == Geometry::Type::LineString ||
             feature.geometry.type == Geometry::Type::MultiLineString)
         {
-            if (line_entities.empty())
-                line_entities.emplace_back(registry.create());
-
-            auto& entity = line_entities.front();
-            auto& geom = registry.get_or_emplace<Line>(entity);
-            geom.topology = Line::Topology::Segments;
-
-            registry.get<Visibility>(entity).parent = &host_visibility;
-
-            compile_feature_to_lines(feature, styles, geom_srs, geom);
+            compile_feature_to_lines(feature, styles, origin, output_srs, output.line);
         }
+
         else if (feature.geometry.type == Geometry::Type::Polygon)
         {
-            auto entity = mesh_entities.emplace_back(registry.create());
-            auto& geom = registry.get_or_emplace<Mesh>(entity);
-            registry.get<Visibility>(entity).parent = &host_visibility;
-
-            compile_polygon_feature_with_weemesh(feature, feature.geometry, styles, geom_srs, geom);
+            compile_polygon_feature_with_weemesh(feature, feature.geometry, styles, origin, output_srs, output.mesh);
         }
+
         else if (feature.geometry.type == Geometry::Type::MultiPolygon)
         {
-            auto entity = mesh_entities.emplace_back(registry.create());
-            auto& geom = registry.get_or_emplace<Mesh>(entity);
-            registry.get<Visibility>(entity).parent = &host_visibility;
-
             for (auto& part : feature.geometry.parts)
             {
-                compile_polygon_feature_with_weemesh(feature, part, styles, geom_srs, geom);
+                compile_polygon_feature_with_weemesh(feature, part, styles, origin, output_srs, output.mesh);
             }
         }
         else
@@ -411,39 +386,6 @@ FeatureView::generate(entt::registry& registry, const SRS& geom_srs, VSGContext&
         }
     }
 
-    if (!keep_features)
-    {
-        features.clear();
-    }
+    return output; // moved
 }
 
-void
-FeatureView::dirtyStyles(entt::registry& registry)
-{
-    if (line_entities.empty() && mesh_entities.empty())
-        return;
-
-    if (styles.line.has_value())
-    {
-        for (auto entity : line_entities)
-        {
-            if (auto* line = registry.try_get<Line>(entity))
-            {
-                line->style = styles.line.value();
-                line->dirty();
-            }
-        }
-    }
-
-    if (styles.mesh.has_value())
-    {
-        for (auto entity : mesh_entities)
-        {
-            if (auto* mesh = registry.try_get<Mesh>(entity))
-            {
-                mesh->style = styles.mesh.value();
-                mesh->dirty();
-            }
-        }
-    }
-}

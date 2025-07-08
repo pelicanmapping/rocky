@@ -201,23 +201,9 @@ NodePager::createNode(const TileKey& key, const IOOptions& io) const
         result = p;
     }
 
-    else
+    else if (payload)
     {
-        if (payload)
-        {
-            vsg::ComputeBounds cb;
-            cb.useNodeBounds = false;
-            payload->accept(cb);
-            auto cull = vsg::CullNode::create();
-            cull->bound.center = cb.bounds.min + (cb.bounds.max - cb.bounds.min) * 0.5;
-            cull->bound.radius = vsg::length(cb.bounds.max - cb.bounds.min) * 0.5;
-            cull->child = payload;
-            result = cull;
-        }
-        else
-        {
-            result = payload;
-        }
+        result = payload;
     }
 
     return result;
@@ -273,7 +259,7 @@ PagedNode::startLoading() const
 
     jobs::context jc;
     jc.name = key.str();
-    jc.pool = jobs::get_pool(pager->poolName);
+    jc.pool = jobs::get_pool(pager->poolName, 4);
     jc.priority = [&]() { return priority; };
 
     auto load = pager->createSubtileLoader(key);
@@ -295,33 +281,33 @@ PagedNode::traverse(vsg::RecordTraversal& record) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(pager, void());
 
-    // check whether the subtiles are in range.
-    auto& vp = record.getCommandBuffer()->viewDependentState->viewportData->at(0);
-    auto min_screen_height_ratio = pager->screenSpaceError / vp[3];
-    auto d = record.getState()->lodDistance(bound);
-    bool child_in_range = (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
-
-    priority = -d;
-
-    if (key == pager->debugKey)
+    if (canLoadChild)
     {
-        Log()->debug("Debugging {}", key.str());
-    }
+        // check whether the subtiles are in range.
+        auto& vp = record.getCommandBuffer()->viewDependentState->viewportData->at(0);
+        auto min_screen_height_ratio = pager->screenSpaceError / vp[3];
+        auto d = record.getState()->lodDistance(bound);
+        bool child_in_range = (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
 
-    // access once for atomicness
-    auto child_value = child.value();
+        priority = -d;
 
-    if (payload)
-    {
-        if (pager->refinePolicy == NodePager::RefinePolicy::Add || !child_in_range || !child_value)
+        if (key == pager->debugKey)
         {
-            payload->accept(record);
+            Log()->debug("Debugging {}", key.str());
         }
-    }
 
-    if (child_in_range)
-    {
-        if (canLoadChild)
+        // access once for atomicness
+        auto child_value = child.value();
+
+        if (payload)
+        {
+            if (pager->refinePolicy == NodePager::RefinePolicy::Add || !child_in_range || !child_value)
+            {
+                payload->accept(record);
+            }
+        }
+
+        if (child_in_range)
         {
             if (!load_gate.exchange(true))
             {
@@ -335,12 +321,18 @@ PagedNode::traverse(vsg::RecordTraversal& record) const
             {
                 Log()->warn("subtile load for {} was canceled, no subtiles available", key.str());
             }
-        }
 
-        if (child_value)
-        {
-            child_value->accept(record);
+            if (child_value)
+            {
+                child_value->accept(record);
+            }
         }
+    }
+
+    // no children allowed (leaf node), just take the payload.
+    else if (payload)
+    {
+        payload->accept(record);
     }
 
     // let the pager know that this node was visited.

@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <rocky/vsg/ecs/FeatureView.h>
+#include <rocky/GDALFeatureSource.h>
 #include <random>
 #include "helpers.h"
 
@@ -20,9 +21,9 @@ auto Demo_PolygonFeatures = [](Application& app)
         std::shared_ptr<rocky::FeatureSource> fs;
     };
     static jobs::future<LoadedFeatures> data;
-    static FeatureView feature_view;
+    static std::vector<entt::entity> entities;
 
-    if (feature_view.entity == entt::null)
+    if (entities.empty())
     {
         if (data.empty())
         {
@@ -40,7 +41,7 @@ auto Demo_PolygonFeatures = [](Application& app)
         }
         else if (data.available() && data->status.ok())
         {
-            auto [lock, registry] = app.registry.write();
+            FeatureView feature_view;
 
             // create a feature view and add features to it
             if (data->fs->featureCount() > 0)
@@ -69,7 +70,15 @@ auto Demo_PolygonFeatures = [](Application& app)
                 };
 
             // compile the features into renderable geometry
-            feature_view.generate(registry, app.mapNode->worldSRS(), app.context);
+            auto prims = feature_view.generate(app.mapNode->worldSRS(), app.context);
+
+            if (!prims.empty())
+            {
+                app.registry.write([&](entt::registry& registry)
+                    {
+                        entities.emplace_back(prims.moveToEntity(registry));
+                    });
+            }
         }
         else
         {
@@ -79,13 +88,18 @@ auto Demo_PolygonFeatures = [](Application& app)
 
     else if (ImGuiLTable::Begin("Polygon features"))
     {
-        auto [lock, registry] = app.registry.read();
+        if (!entities.empty())
+        {
+            auto [lock, registry] = app.registry.read();
 
-        bool visible = ecs::visible(registry, feature_view.entity);
-        if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(registry, feature_view.entity, visible);
+            bool visible = ecs::visible(registry, entities.front());
+            if (ImGuiLTable::Checkbox("Show", &visible))
+            {
+                ecs::setVisible(registry, entities.begin(), entities.end(), visible);
+            }
 
-        ImGuiLTable::End();
+            ImGuiLTable::End();
+        }
     }
 
 #else

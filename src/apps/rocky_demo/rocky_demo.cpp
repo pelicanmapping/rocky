@@ -39,6 +39,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Decluttering.h"
 #include "Demo_Registry.h"
 #include "Demo_NodePager.h"
+#include "Demo_MVTFeatures.h"
 
 template<class T>
 int layerError(T layer)
@@ -81,7 +82,8 @@ std::vector<Demo> demos =
     {
         Demo{ "Polygon features", Demo_PolygonFeatures },
         Demo{ "Line features", Demo_LineFeatures },
-        Demo{ "Labels from features", Demo_LabelFeatures }
+        Demo{ "Labels from features", Demo_LabelFeatures },
+        Demo{ "MVT features", Demo_MVTFeatures }
     } },
     Demo{ "Simulation", {},
     {
@@ -197,6 +199,7 @@ int main(int argc, char** argv)
     {
         auto imagery = rocky::TMSImageLayer::create();
         imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
+        imagery->attribution = { "ReadyMap(R) data courtesy of Pelican Mapping" };
         layers.add(imagery);
 
         auto elevation = rocky::TMSElevationLayer::create();

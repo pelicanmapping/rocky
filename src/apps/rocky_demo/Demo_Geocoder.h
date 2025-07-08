@@ -8,20 +8,17 @@
 #include <rocky/vsg/ecs/Icon.h>
 #include <rocky/vsg/ecs/Label.h>
 #include <rocky/Geocoder.h>
-
 #include "helpers.h"
 
 using namespace ROCKY_NAMESPACE;
 
 auto Demo_Geocoder = [](Application& app)
 {
-    static entt::entity entity = entt::null;
     static Status status;
     static jobs::future<Result<std::vector<Feature>>> geocoding_task;
     static char input_buf[256];
-    static LabelStyle label_style_point;
-    static LabelStyle label_style_area;
-    static FeatureView feature_view;
+    static entt::entity placemark = entt::null;
+    static entt::entity outline = entt::null;
 
     if (status.failed())
     {
@@ -30,51 +27,23 @@ auto Demo_Geocoder = [](Application& app)
         return;
     }
 
-    if (entity == entt::null)
+    if (placemark == entt::null)
     {
-        auto [lock, registry] = app.registry.write();
+        app.registry.write([&](entt::registry& registry)
+            {
+                // Make an entity to host our icon:
+                placemark = registry.create();
 
-        // Load an icon image
-        auto& io = app.io();
-        auto image = io.services.readImageFromURI("https://readymap.org/readymap/filemanager/download/public/icons/placemark32.png", io);
-        if (image.status.failed())
-        {
-            status = image.status;
-            return;
-        }
+                // label:
+                auto& widget = registry.emplace<Widget>(placemark);
+                widget.text = "Nowhere";
 
-        // Make an entity to host our icon:
-        entity = registry.create();
+                // Transform to place the entity:
+                auto& xform = registry.emplace<Transform>(placemark);
 
-        // Attach the new Icon and set up its properties:
-        auto& icon = registry.emplace<Icon>(entity);
-        icon.image = image.value;
-        icon.style = IconStyle{ 32, 0.0f }; // pixel size, rotation(radians)
-
-        // Attach a label:
-        label_style_point.font = app.context->defaultFont;
-        label_style_point.horizontalAlignment = vsg::StandardLayout::LEFT_ALIGNMENT;
-        label_style_point.pointSize = 26.0f;
-        label_style_point.outlineSize = 0.5f;
-        label_style_point.pixelOffset = { icon.style.size_pixels, 0.0f, 0.0f };
-
-        label_style_area.font = app.context->defaultFont;
-        label_style_area.horizontalAlignment = vsg::StandardLayout::CENTER_ALIGNMENT;
-        label_style_area.pointSize = 26.0f;
-        label_style_area.outlineSize = 0.5f;
-
-        auto& label = registry.emplace<Label>(entity);
-
-        // Outline for location boundary:
-        feature_view.styles.line = LineStyle();
-        feature_view.styles.line->color = vsg::vec4{ 1, 1, 0, 1 };
-        feature_view.styles.line->depth_offset = 9000.0f; //meters
-
-        registry.remove<ActiveState>(entity);
-        //registry.get<Visibility>(entity).active = false;
-
-        // Transform to place the entity:
-        auto& xform = registry.emplace<Transform>(entity);
+                // Mark it inactive to start.
+                registry.get<Visibility>(placemark).visible.fill(false);
+            });
     }
 
     else
@@ -83,12 +52,15 @@ auto Demo_Geocoder = [](Application& app)
         {
             if (ImGuiLTable::InputText("Location:", input_buf, 256, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
             {
-                auto [lock, registry] = app.registry.write();
-
-                // hide the placemark:
-                registry.remove<ActiveState>(entity);
+                // disable the placemark:
+                app.registry.update([&](entt::registry& registry)
+                    {
+                        // hide the placemark:
+                        registry.get<Visibility>(placemark).visible.fill(false);
+                    });
 
                 std::string input(input_buf);
+
                 geocoding_task = jobs::dispatch([&app, input](jobs::cancelable& c)
                     {
                         Result<std::vector<Feature>> result;
@@ -115,6 +87,7 @@ auto Demo_Geocoder = [](Application& app)
             {
                 int count = 0;
                 ImGui::Text("Click on a result to center:");
+
                 for (auto& feature : result.value)
                 {
                     ImGui::PushID(count++);
@@ -124,9 +97,9 @@ auto Demo_Geocoder = [](Application& app)
                     ImGui::Selectable(display_name.c_str(), &selected);
                     if (selected)
                     {
-                        app.onNextUpdate([&app, &feature, display_name]()
+                        app.onNextUpdate([&app, myfeature(feature), display_name]() mutable
                             {
-                                auto extent = feature.extent;
+                                auto extent = myfeature.extent;
                                 if (extent.area() == 0.0)
                                     extent.expand(Distance(10, Units::KILOMETERS), Distance(10, Units::KILOMETERS));
 
@@ -136,49 +109,46 @@ auto Demo_Geocoder = [](Application& app)
                                 {
                                     Viewpoint vp = manip->viewpoint();
                                     vp.point = extent.centroid();
+                                    vp.range = Distance(extent.width(Units::METERS) * 7.0, Units::METERS);
                                     manip->setViewpoint(vp, std::chrono::seconds(2));
                                 }
 
-                                auto [lock, registry] = app.registry.write();
+                                // update the mesh:
+                                myfeature.geometry.convertToType(Geometry::Type::LineString);
 
-                                auto&& [icon, label] = registry.get<Icon, Label>(entity);
-
-                                // show the placemark:
-                                if (feature.geometry.type == Geometry::Type::Points)
+                                if (myfeature.geometry.type != Geometry::Type::Points)
                                 {
-                                    if (feature_view.entity != entt::null)
-                                        registry.remove<ActiveState>(feature_view.entity);
+                                    // Outline for location boundary:
+                                    FeatureView fgen;
+                                    fgen.styles.line = LineStyle();
+                                    fgen.styles.line->color = vsg::vec4{ 1, 1, 0, 1 };
+                                    fgen.styles.line->depth_offset = 9000.0f; //meters
 
-                                    label.style = label_style_point;
+                                    fgen.features = { myfeature };
+                                    auto primitives = fgen.generate(app.mapNode->worldSRS(), app.context);
+
+                                    app.registry.write([&](entt::registry& registry)
+                                        {
+                                            // Delete the old outline:
+                                            if (outline != entt::null && registry.valid(outline))
+                                                registry.destroy(outline);
+
+                                            outline = primitives.moveToEntity(registry);
+
+                                            registry.get<Visibility>(outline).visible.fill(true);
+                                            registry.get<Visibility>(placemark).visible.fill(true);
+
+                                            // update the label and the transform:
+                                            auto&& [xform, widget] = registry.get<Transform, Widget>(placemark);
+
+                                            auto text = display_name;
+                                            util::replace_in_place(text, ", ", "\n");
+                                            widget.text = text;
+
+                                            xform.position = extent.centroid();
+                                            xform.dirty();
+                                        });
                                 }
-                                else
-                                {
-                                    // update the mesh:
-                                    auto copy_of_feature = feature;
-                                    copy_of_feature.geometry.convertToType(Geometry::Type::LineString);
-                                    Geometry::iterator i(copy_of_feature.geometry);
-                                    while (i.hasMore()) for (auto& point : i.next().points) point.z = 500.0;
-                                    feature_view.clear(registry);
-                                    feature_view.features = { copy_of_feature };
-                                    feature_view.generate(registry, app.mapNode->worldSRS(), app.context);
-
-                                    if (feature_view.entity != entt::null)
-                                        registry.emplace_or_replace<ActiveState>(feature_view.entity);
-
-                                    label.style = label_style_area;
-                                }
-
-                                registry.emplace_or_replace<ActiveState>(entity);
-
-                                // update the label:
-                                auto text = display_name;
-                                util::replace_in_place(text, ", ", "\n");
-                                label.text = text;
-                                label.revision++;
-
-                                // position it:
-                                auto& xform = registry.get<Transform>(entity);
-                                xform.position = extent.centroid();
                             });
                     }
                     ImGui::PopID();
@@ -186,14 +156,14 @@ auto Demo_Geocoder = [](Application& app)
                 ImGui::Separator();
                 if (ImGui::Button("Clear"))
                 {
-                    auto [lock, registry] = app.registry.write();
-
                     geocoding_task.reset();
                     input_buf[0] = (char)0;
 
-                    registry.remove<ActiveState>(entity);
-                    if (feature_view.entity != entt::null)
-                        registry.remove<ActiveState>(feature_view.entity);
+                    app.registry.update([&](entt::registry& registry)
+                        {
+                            registry.get<Visibility>(outline).visible.fill(false);
+                            registry.get<Visibility>(placemark).visible.fill(false);
+                        });
                 }
             }
             else

@@ -4,7 +4,8 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/ecs/FeatureView.h>
+#include <rocky/vsg/ecs.h>
+#include <rocky/GDALFeatureSource.h>
 #include "helpers.h"
 
 using namespace ROCKY_NAMESPACE;
@@ -18,9 +19,9 @@ auto Demo_LineFeatures = [](Application& app)
         std::shared_ptr<rocky::FeatureSource> fs;
     };
     static jobs::future<LoadedFeatures> data;
-    static FeatureView feature_view;
+    static std::vector<entt::entity> entities;
 
-    if (feature_view.entity == entt::null)
+    if (entities.empty())
     {
         if (data.empty())
         {
@@ -38,20 +39,15 @@ auto Demo_LineFeatures = [](Application& app)
         }
         else if (data.available() && data->status.ok())
         {
-            auto[lock, registry] = app.registry.write();
+            FeatureView feature_view;
 
             // create a feature view and add features to it:
-            auto iter = data->fs->iterate(app.context->io);
-            while (iter.hasMore())
-            {
-                auto feature = iter.next();
-                if (feature.valid())
+            data->fs->each(app.context->io, [&](Feature&& feature)
                 {
                     // convert anything we find to lines:
                     feature.geometry.convertToType(Geometry::Type::LineString);
                     feature_view.features.emplace_back(std::move(feature));
-                }
-            }
+                });
 
             // apply a style for geometry creation:
             feature_view.styles.line = LineStyle
@@ -64,8 +60,16 @@ auto Demo_LineFeatures = [](Application& app)
                 5000.0f            // depth offset (meters)
             };
 
-            // generate our renderable geometry
-            feature_view.generate(registry, app.mapNode->worldSRS(), app.context);
+            auto prims = feature_view.generate(app.mapNode->worldSRS(), app.context);
+
+            if (!prims.empty())
+            {
+                app.registry.write([&](entt::registry& registry)
+                    {
+                        auto e = prims.moveToEntity(registry);
+                        entities.emplace_back(e);
+                    });
+            }
         }
         else
         {
@@ -77,18 +81,10 @@ auto Demo_LineFeatures = [](Application& app)
     {
         auto [lock, registry] = app.registry.read();
 
-        bool visible = ecs::visible(registry, feature_view.entity);
+        bool visible = ecs::visible(registry, entities.front());
         if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(registry, feature_view.entity, visible);
-
-        if (feature_view.styles.line.has_value())
         {
-            float* col = (float*)&feature_view.styles.line->color;
-            if (ImGuiLTable::ColorEdit3("Color", col))
-                feature_view.dirtyStyles(registry);
-
-            if (ImGuiLTable::SliderFloat("Depth offset", &feature_view.styles.line->depth_offset, 0.0f, 20000.0f, "%.0f"))
-                feature_view.dirtyStyles(registry);
+            ecs::setVisible(registry, entities.begin(), entities.end(), visible);
         }
 
         ImGuiLTable::End();

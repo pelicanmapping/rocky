@@ -1,53 +1,14 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
 #include <rocky/vsg/ecs.h>
 #include <rocky/vsg/NodePager.h>
 #include "helpers.h"
+
 using namespace ROCKY_NAMESPACE;
-
-namespace
-{
-    class EntityNode : public vsg::Inherit<vsg::Node, EntityNode>
-    {
-    private:
-        ecs::Registry _registry;
-
-    public:
-        entt::entity entity = entt::null;
-
-        EntityNode(ecs::Registry& reg) :
-            _registry(reg)
-        {
-            auto r = _registry.write();
-            entity = r->create();
-        }
-
-        virtual ~EntityNode()
-        {
-            if (entity != entt::null)
-            {
-                _registry.write()->destroy(entity);
-            }
-        }
-
-        void traverse(vsg::RecordTraversal& record) const override
-        {
-            ROCKY_SOFT_ASSERT(entity != entt::null);
-            if (entity != entt::null)
-            {
-                auto viewID = record.getCommandBuffer()->viewID;
-
-                auto [lock, registry] = _registry.write();
-                auto& v = registry.get<Visibility>(entity);
-                v.frame[viewID] = record.getFrameStamp()->frameCount;
-            }
-        }
-    };
-}
 
 auto Demo_NodePager = [](Application& app)
 {
@@ -59,48 +20,89 @@ auto Demo_NodePager = [](Application& app)
     };
 
     static vsg::ref_ptr<NodePager> pager;
-    static CallbackToken onExpire;
     static Profile profile("global-geodetic");
 
     if (!pager)
     {
         pager = NodePager::create(profile, app.mapNode->profile);
 
+        pager->refinePolicy = NodePager::RefinePolicy::Add;
+
         // Mandatory: the function that will create the payload for each TileKey:
         pager->createPayload = [&app](const TileKey& key, const IOOptions& io)
             {
-                auto node = EntityNode::create(app.registry);
+                vsg::ref_ptr<EntityNode> result;
 
-                auto [lock, registry] = app.registry.write();
+                // Geometry generator:
+                FeatureView fview;
 
-                auto& transform = registry.emplace<Transform>(node->entity);
-                transform.position = key.extent().centroid();
-                transform.topocentric = false;
+                // Set up a style for lines:
+                fview.styles.line = LineStyle();
+                fview.styles.line->color = colors[key.level % 4];
+                fview.styles.line->width = 2.0f;
+                fview.styles.line->depth_offset = 10000; // meters
 
-                auto& line = registry.emplace<Line>(node->entity);
-                auto w = key.extent().width(Units::METERS) * 0.4, h = key.extent().height(Units::METERS) * 0.4;
+                // The extents of the tile, transformed into the map SRS:
+                auto ex = key.extent().transform(app.mapNode->mapSRS());
 
-                auto keySRS = key.extent().srs();
-                auto worldSRS = app.mapNode->worldSRS();
-                auto center = to_vsg(key.extent().centroid().transform(worldSRS));
-                line.points.resize(5);
-                line.points[0] = to_vsg(GeoPoint(keySRS, key.extent().xmin(), key.extent().ymin()).transform(worldSRS)) - center;
-                line.points[1] = to_vsg(GeoPoint(keySRS, key.extent().xmax(), key.extent().ymin()).transform(worldSRS)) - center;
-                line.points[2] = to_vsg(GeoPoint(keySRS, key.extent().xmax(), key.extent().ymax()).transform(worldSRS)) - center;
-                line.points[3] = to_vsg(GeoPoint(keySRS, key.extent().xmin(), key.extent().ymax()).transform(worldSRS)) - center;
-                line.points[4] = line.points[0]; // close the loop
+                // Add features for the extents of the tile box:
+                fview.features.emplace_back(Feature(
+                    ex.srs(),
+                    Geometry::Type::LineString, {
+                        glm::dvec3(ex.xmin(), ex.ymin(), 0),
+                        glm::dvec3(ex.xmax(), ex.ymin(), 0)
+                    },
+                    GeodeticInterpolation::RhumbLine));
 
-                line.style.color = colors[key.level % 4];
-                line.style.width = 2.0f;
-                line.style.depth_offset = 10000; // meters
+                fview.features.emplace_back(Feature(
+                    ex.srs(),
+                    Geometry::Type::LineString, {
+                        glm::dvec3(ex.xmin(), ex.ymax(), 0),
+                        glm::dvec3(ex.xmax(), ex.ymax(), 0)
+                    },
+                    GeodeticInterpolation::RhumbLine));
 
-                auto& widget = registry.emplace<Widget>(node->entity);
-                widget.text = key.str();
+                fview.features.emplace_back(Feature(
+                    ex.srs(),
+                    Geometry::Type::LineString, {
+                        glm::dvec3(ex.xmax(), ex.ymin(), 0),
+                        glm::dvec3(ex.xmax(), ex.ymax(), 0)
+                    }));
 
-                auto& visibility = registry.get<Visibility>(node->entity);
-                visibility.enableFrameAgeVisibility(true);
+                fview.features.emplace_back(Feature(
+                    ex.srs(),
+                    Geometry::Type::LineString, {
+                        glm::dvec3(ex.xmin(), ex.ymin(), 0),
+                        glm::dvec3(ex.xmin(), ex.ymax(), 0)
+                    }));
 
-                return node;
+
+                // Make the entities for this tile:
+                auto prims = fview.generate(app.mapNode->worldSRS(), app.context);
+
+                if (!prims.empty())
+                {
+                    // An EntityNode to cull the entities in the scene graph:
+                    result = EntityNode::create(app.registry);
+
+                    app.registry.write([&](entt::registry& registry)
+                        {
+                            result->entities.emplace_back(prims.moveToEntity(registry));
+
+                            // Add a label in the center of the tile:
+                            auto entity = registry.create();
+                            registry.emplace<Visibility>(entity);
+                            result->entities.emplace_back(entity);
+
+                            auto& widget = registry.emplace<Widget>(entity);
+                            widget.text = key.str();
+
+                            auto& transform = registry.emplace<Transform>(entity);
+                            transform.position = key.extent().centroid().transform(app.mapNode->worldSRS());
+                        });
+                }
+
+                return result;
             };
 
         // Always initialize a NodePager before using it:
@@ -111,18 +113,20 @@ auto Demo_NodePager = [](Application& app)
 
     if (ImGuiLTable::Begin("NodePager"))
     {
-        static std::string profileNames[2] = { "global-geodetic", "spherical-mercator" };
-        static int profileIndex = 0;
+        static std::vector<std::string> pn = { "global-geodetic", "spherical-mercator" };
+        int profileIndex = 0;
+        for (int i = 0; i < pn.size(); i++)
+            if (pn[i] == profile.wellKnownName())
+                profileIndex = i;
 
-        if (ImGuiLTable::BeginCombo("Profile", profileNames[profileIndex].c_str()))
+        if (ImGuiLTable::BeginCombo("Profile", pn[profileIndex].c_str()))
         {
-            for (int i = 0; i < 2; ++i)
+            for (int i = 0; i < pn.size(); ++i)
             {
-                if (ImGui::RadioButton(profileNames[i].c_str(), profileIndex == i))
+                if (ImGui::RadioButton(pn[i].c_str(), profileIndex == i))
                 {
                     profileIndex = i;
-                    profile = Profile(profileNames[i]);
-                    
+                    profile = Profile(pn[i]);                    
                     app.context->onNextUpdate([&]()
                         {
                             util::remove(pager, app.mainScene->children);
@@ -136,11 +140,23 @@ auto Demo_NodePager = [](Application& app)
         }
 
         ImGuiLTable::Text("Tiles", "%u", pager->tiles());
-        ImGuiLTable::SliderFloat("Screen Space Error", &pager->screenSpaceError, 64.0f, 1024.0f, "%.0f px");
+
+        bool add = pager->refinePolicy == NodePager::RefinePolicy::Add;
+        if (ImGuiLTable::Checkbox("Additive", &add))
+        {
+            pager->refinePolicy = add ? NodePager::RefinePolicy::Add : NodePager::RefinePolicy::Replace;
+            app.context->requestFrame();
+        }
+
+        if (ImGuiLTable::SliderFloat("Screen Space Error", &pager->screenSpaceError, 64.0f, 1024.0f, "%.0f px"))
+        {
+            app.context->requestFrame();
+        }
 
         if (ImGuiLTable::Button("Reload"))
         {
             pager->initialize(app.context);
+            app.context->requestFrame();
         }
 
         ImGuiLTable::End();

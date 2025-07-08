@@ -38,7 +38,6 @@ auto Demo_Label = [](Application& app)
         // Attach a transform to place and move the label:
         auto& transform = registry.emplace<Transform>(entity);
         transform.position = GeoPoint(SRS::WGS84, -35.0, 15.0, 15000.0);
-        transform.topocentric = false; // optimization for billboards :)
     }
 
     if (ImGuiLTable::Begin("text"))

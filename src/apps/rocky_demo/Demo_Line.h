@@ -99,6 +99,7 @@ auto Demo_Line_Relative = [](Application& app)
 
         // Add a transform that will place the line on the map
         auto& transform = registry.emplace<Transform>(entity);
+        transform.topocentric = true;
         transform.position = GeoPoint(SRS::WGS84, -30.0, 10.0, 25000.0);
         transform.radius = size; // for culling
     }
