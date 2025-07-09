@@ -457,7 +457,7 @@ GDALFeatureSource::iterator_impl::next()
 
     // do this in order to hold a reference to the feature we return, so the caller
     // doesn't have to. This lets us avoid requiring the caller to use a ref_ptr when 
-    // simply iterating over the cursor, making the cursor move conventient to use.
+    // simply iterating over the cursor, making the cursor move convenient to use.
     _lastFeatureReturned = _queue.front();
     _queue.pop();
 

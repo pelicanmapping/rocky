@@ -4,9 +4,9 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/ecs.h>
+#include <rocky/GDALFeatureSource.h>
 #include <rocky/vsg/NodePager.h>
-#include <rocky/vsg/ecs/EntityNode.h>
+#include <rocky/vsg/ecs.h>
 #include "helpers.h"
 
 using namespace ROCKY_NAMESPACE;
