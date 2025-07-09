@@ -102,55 +102,66 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>        vsg::dmat4 modelview; <span class="comment">// modelview matrix</span></div>
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>        vsg::dmat4 mvp;       <span class="comment">// modelview-projection matrix</span></div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>        vsg::vec4 viewport;   <span class="comment">// pixel-space viewport</span></div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    };</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>        <span class="keywordtype">bool</span> passesCull = <span class="keyword">true</span>; <span class="comment">// whether the transform passes frustum/horizon culling</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    };</div>
 </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
-<div class="foldopen" id="foldopen00030" data-start="{" data-end="};">
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html">   30</a></span>    <span class="keyword">struct </span><a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html">TransformDetail</a></div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    {</div>
-<div class="foldopen" id="foldopen00033" data-start="{" data-end="}">
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html#a86a6192267271e91cc737438e1850908">   33</a></span>        <a class="code hl_function" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html#a86a6192267271e91cc737438e1850908">TransformDetail</a>() {</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>            sync.<a class="code hl_variable" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_revisioned_component.html#af4a02a31ffe733c0feff90840b0c035c">revision</a> = -1;</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>        }</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
+<div class="foldopen" id="foldopen00031" data-start="{" data-end="};">
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html">   31</a></span>    <span class="keyword">struct </span><a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html">TransformDetail</a></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    {</div>
+<div class="foldopen" id="foldopen00034" data-start="{" data-end="}">
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html#a86a6192267271e91cc737438e1850908">   34</a></span>        <a class="code hl_function" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html#a86a6192267271e91cc737438e1850908">TransformDetail</a>() {</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>            sync.<a class="code hl_variable" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_revisioned_component.html#af4a02a31ffe733c0feff90840b0c035c">revision</a> = -1;</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>        }</div>
 </div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>        <span class="comment">// Synchronous copy of the corresponding Transform component.</span></div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>        <span class="comment">// TransformSystem will sync this as necessary so that the user can</span></div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>        <span class="comment">// safely and frame-accurately perform asynchronous Transform updates.</span></div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>        <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform.html">Transform</a> sync;</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>        <span class="comment">// Per-view data, calculated during the record traversal</span></div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>        detail::ViewLocal&lt;TransformViewDetail&gt; views;</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>        <span class="comment">// Cached global data</span></div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>        <span class="keyword">struct </span>Cached</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>        {</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>            <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> world_srs;</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>            <span class="keyword">const</span> <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html">Ellipsoid</a>* world_ellipsoid = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>            <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a> pos_to_world;</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>            std::shared_ptr&lt;Horizon&gt; horizon;</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>        };</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>        Cached cached;</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>        <span class="keywordtype">bool</span> update(vsg::RecordTraversal&amp;);</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>        <span class="keywordtype">bool</span> visible(ViewRecordingState&amp; state) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>        <span class="keywordtype">void</span> push(vsg::RecordTraversal&amp;) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>        <span class="keywordtype">void</span> pop(vsg::RecordTraversal&amp;) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    };</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>        <span class="comment">// Synchronous copy of the corresponding Transform component.</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>        <span class="comment">// TransformSystem will sync this as necessary so that the user can</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>        <span class="comment">// safely and frame-accurately perform asynchronous Transform updates.</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>        <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform.html">Transform</a> sync;</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>        <span class="comment">// Per-view data, calculated during the record traversal</span></div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>        detail::ViewLocal&lt;TransformViewDetail&gt; views;</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>        <span class="comment">// Cached global data</span></div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>        <span class="keyword">struct </span>Cached</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>        {</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>            <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">SRS</a> world_srs;</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>            <span class="keyword">const</span> <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html">Ellipsoid</a>* world_ellipsoid = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>            <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">SRSOperation</a> pos_to_world;</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>            std::shared_ptr&lt;Horizon&gt; horizon;</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>        };</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>        Cached cached;</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>        <span class="keywordtype">bool</span> update(vsg::RecordTraversal&amp;);</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>        <span class="keywordtype">void</span> push(vsg::RecordTraversal&amp;) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>        <span class="keywordtype">void</span> pop(vsg::RecordTraversal&amp;) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>        <span class="keyword">inline</span> <span class="keywordtype">bool</span> visible(ViewRecordingState&amp; state) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    };</div>
 </div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>}</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span> </div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    <span class="comment">// inline functions</span></div>
+<div class="foldopen" id="foldopen00072" data-start="{" data-end="}">
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html#ae729f148b3ae73e80821ad7954eda416">   72</a></span>    <span class="keywordtype">bool</span> TransformDetail::visible(<a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_view_recording_state.html">ViewRecordingState</a>&amp; state)<span class="keyword"> const</span></div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span><span class="keyword">    </span>{</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>        <span class="keywordflow">return</span> views[state.viewID].passesCull;</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    }</div>
+</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>}</div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_ellipsoid.html">ROCKY_NAMESPACE::Ellipsoid</a></div><div class="ttdef"><b>Definition</b> Ellipsoid.h:19</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s.html">ROCKY_NAMESPACE::SRS</a></div><div class="ttdef"><b>Definition</b> SRS.h:21</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_s_r_s_operation.html">ROCKY_NAMESPACE::SRSOperation</a></div><div class="ttdef"><b>Definition</b> SRS.h:235</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition</b> Callbacks.h:16</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_revisioned_component_html_af4a02a31ffe733c0feff90840b0c035c"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_revisioned_component.html#af4a02a31ffe733c0feff90840b0c035c">ROCKY_NAMESPACE::RevisionedComponent::revision</a></div><div class="ttdeci">int revision</div><div class="ttdoc">Revision, for synchronizing this component with another.</div><div class="ttdef"><b>Definition</b> Component.h:18</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html">ROCKY_NAMESPACE::TransformDetail</a></div><div class="ttdef"><b>Definition</b> TransformDetail.h:31</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail_html_a86a6192267271e91cc737438e1850908"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html#a86a6192267271e91cc737438e1850908">ROCKY_NAMESPACE::TransformDetail::TransformDetail</a></div><div class="ttdeci">TransformDetail()</div><div class="ttdoc">Construct the object, and force the sychronization Transform to be dirty.</div><div class="ttdef"><b>Definition</b> TransformDetail.h:33</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html">ROCKY_NAMESPACE::TransformDetail</a></div><div class="ttdef"><b>Definition</b> TransformDetail.h:32</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail_html_a86a6192267271e91cc737438e1850908"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html#a86a6192267271e91cc737438e1850908">ROCKY_NAMESPACE::TransformDetail::TransformDetail</a></div><div class="ttdeci">TransformDetail()</div><div class="ttdoc">Construct the object, and force the sychronization Transform to be dirty.</div><div class="ttdef"><b>Definition</b> TransformDetail.h:34</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform.html">ROCKY_NAMESPACE::Transform</a></div><div class="ttdef"><b>Definition</b> Transform.h:22</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_view_detail_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_view_detail.html">ROCKY_NAMESPACE::TransformViewDetail</a></div><div class="ttdoc">Internal data calculated from a Transform instance in the context of a specific camera.</div><div class="ttdef"><b>Definition</b> TransformDetail.h:18</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_view_recording_state_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_view_recording_state.html">ROCKY_NAMESPACE::ViewRecordingState</a></div><div class="ttdoc">State information at the time of recording a specific view.</div><div class="ttdef"><b>Definition</b> VSGContext.h:20</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
