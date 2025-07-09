@@ -35,7 +35,7 @@ DeclutterSystem::update(VSGContext& runtime)
 
         sorted.reserve(_last_max_size);
 
-        auto [lock, registry] = _registry.update();
+        auto [lock, registry] = _registry.read();
 
         auto view = registry.view<ActiveState, Declutter, TransformDetail>();
 

@@ -125,7 +125,7 @@ namespace
 {
     void resetVisibility(ecs::Registry r)
     {
-        auto [lock, registry] = r.update();
+        auto [lock, registry] = r.read();
 
         auto view = registry.view<Declutter, Visibility>();
         for (auto&& [entity, declutter, visibility] : view.each())

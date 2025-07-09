@@ -290,7 +290,7 @@ void function_that_only_reads_or_edits_things(Application& app)
 }
 ```
 
-You can also use a lambda function to encapsulate your read/update/write work:
+You can also use a lambda function to encapsulate your updates:
 ```c++
 app.registry.write([&](entt::registry& registry)
     {

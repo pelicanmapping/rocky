@@ -53,7 +53,7 @@ auto Demo_Geocoder = [](Application& app)
             if (ImGuiLTable::InputText("Location:", input_buf, 256, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
             {
                 // disable the placemark:
-                app.registry.update([&](entt::registry& registry)
+                app.registry.read([&](entt::registry& registry)
                     {
                         // hide the placemark:
                         registry.get<Visibility>(placemark).visible.fill(false);
@@ -159,7 +159,7 @@ auto Demo_Geocoder = [](Application& app)
                     geocoding_task.reset();
                     input_buf[0] = (char)0;
 
-                    app.registry.update([&](entt::registry& registry)
+                    app.registry.read([&](entt::registry& registry)
                         {
                             registry.get<Visibility>(outline).visible.fill(false);
                             registry.get<Visibility>(placemark).visible.fill(false);

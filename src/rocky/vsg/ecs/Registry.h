@@ -61,9 +61,6 @@ namespace ROCKY_NAMESPACE
             Read read() const {
                 return { std::shared_lock(_impl->_mutex), _impl->_registry };
             }
-            Read update() const {
-                return read();
-            }
 
             //! Returns a reference to a write-locked EnTT registry.
             //! 
@@ -84,13 +81,6 @@ namespace ROCKY_NAMESPACE
             void read(CALLABLE&& func) const {
                 static_assert(std::is_invocable_r_v<void, CALLABLE, entt::registry&>, "Callable must match void(entt::registry&)");
                 auto [lock, registry] = read();
-                func(registry);
-            }
-
-            template<typename CALLABLE>
-            void update(CALLABLE&& func) const {
-                static_assert(std::is_invocable_r_v<void, CALLABLE, entt::registry&>, "Callable must match void(entt::registry&)");
-                auto [lock, registry] = update();
                 func(registry);
             }
 
