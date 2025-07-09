@@ -62,7 +62,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{ runner.workspace }}/build
-      run: cmake $GITHUB_WORKSPACE -DWIN32_USE_MP=ON -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DROCKY_SUPPORTS_GDAL=OFF -DROCKY_SUPPORTS_MBTILES=OFF -DROCKY_SUPPORTS_AZURE=OFF -DROCKY_SUPPORTS_BING=OFF -DCMAKE_TOOLCHAIN_FILE=${{ matrix.VCPKG_WORKSPACE }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_BUILD_TYPE=$BUILD_TYPE -DVCPKG_MANIFEST_DIR=$GITHUB_WORKSPACE/vcpkg
+      run: cmake $GITHUB_WORKSPACE -DWIN32_USE_MP=ON -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DROCKY_SUPPORTS_GDAL=ON -DROCKY_SUPPORTS_MBTILES=OFF -DROCKY_SUPPORTS_AZURE=OFF -DROCKY_SUPPORTS_BING=OFF -DCMAKE_TOOLCHAIN_FILE=${{ matrix.VCPKG_WORKSPACE }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_BUILD_TYPE=$BUILD_TYPE -DVCPKG_MANIFEST_DIR=$GITHUB_WORKSPACE/vcpkg
 
     - name: 'Upload cmake configure log artifact'
       uses: actions/upload-artifact@v4
