@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "TransformDetail.h"
@@ -11,7 +11,7 @@ using namespace ROCKY_NAMESPACE;
 bool
 TransformDetail::update(vsg::RecordTraversal& record)
 {
-    auto& view = views[record.getState()->_commandBuffer->viewID];
+    auto& view = views[record.getCommandBuffer()->viewID];
 
     if (!sync.position.valid())
         return false;
@@ -73,41 +73,38 @@ TransformDetail::update(vsg::RecordTraversal& record)
 
     view.viewport = (*state->_commandBuffer->viewDependentState->viewportData)[0];
 
-    return transform_changed;
-}
-
-bool
-TransformDetail::visible(ViewRecordingState& state) const
-{
-    auto& view = views[state.viewID];
-
+    // try this:
     // Frustum cull (by center point) TODO: radius??
+
+    view.passesCull = true;
+
     if (sync.frustumCulled)
     {
         auto clip = view.mvp[3] / view.mvp[3][3];
         const double t = 1.0;
         if (clip.x < -t || clip.x > t || clip.y < -t || clip.y > t || clip.z < -t || clip.z > t)
         {
-            return false;
+            view.passesCull = false;
+            //return false;
         }
     }
 
     // horizon cull, if active (geocentric only)
-    if (sync.horizonCulled && cached.horizon && cached.world_srs.isGeocentric())
+    if (view.passesCull && sync.horizonCulled && cached.horizon && cached.world_srs.isGeocentric())
     {
         if (!cached.horizon->isVisible(view.model[3][0], view.model[3][1], view.model[3][2], sync.radius))
         {
-            return false;
+            view.passesCull = false;
         }
     }
 
-    return true;
+    return transform_changed;
 }
 
 void
 TransformDetail::push(vsg::RecordTraversal& record) const
 {
-    auto& view = views[record.getState()->_commandBuffer->viewID];
+    auto& view = views[record.getCommandBuffer()->viewID];
 
     auto* state = record.getState();
 

@@ -5,9 +5,8 @@
  */
 #include "TileLayer.h"
 #include "TileKey.h"
-#include "Map.h"
-#include "rtree.h"
 #include "json.h"
+#include "rtree.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;

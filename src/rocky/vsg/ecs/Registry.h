@@ -150,7 +150,7 @@ namespace ROCKY_NAMESPACE
             }
 
         protected:
-            System(Registry& in_registry) :
+            System(Registry in_registry) :
                 _registry(in_registry) { }
         };
     }

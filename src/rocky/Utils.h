@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -485,48 +485,23 @@ namespace ROCKY_NAMESPACE
         /**
         * Utility to manages loops that run in the background.
         */
-        class BackgroundServices
+        class ROCKY_EXPORT BackgroundServices
         {
         public:
             using Function = std::function<void(jobs::cancelable&)>;
+            using Future = jobs::future<bool>;
+            using Promise = jobs::future<bool>;
 
+            //! Run a function in a thread with the given name.
+            Promise start(const std::string& name, Function function);
+
+            //! Signal all background threads to quite and wait for them to finish.
+            void quit();
+
+        protected:
             std::mutex mutex;
-            std::vector<jobs::future<bool>> futures;
+            std::vector<Future> futures;
             jobs::detail::semaphore semaphore;
-
-            void start(const std::string& name, Function function)
-            {
-                ROCKY_SOFT_ASSERT_AND_RETURN(function, void());
-                ROCKY_SOFT_ASSERT_AND_RETURN(!name.empty(), void());
-
-                std::lock_guard lock(mutex);
-
-                // wrap with a delegate function so we can control the semaphore
-                auto delegate = [this, function, name](jobs::cancelable& cancelable) -> bool
-                    {
-                        ++semaphore;
-                        function(cancelable);
-                        --semaphore;
-                        return true;
-                    };
-
-                jobs::context context{ name, jobs::get_pool(name, 1) };
-                futures.emplace_back(jobs::dispatch(delegate, context));
-            }
-
-            void quit()
-            {
-                std::lock_guard lock(mutex);
-
-                // tell all tasks to cancel
-                for (auto& f : futures)
-                    f.abandon();
-
-                // block until all the background tasks exit.
-                semaphore.join();
-
-                futures.clear();
-            }
         };
 
 

@@ -13,6 +13,8 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_MVTFeatures = [](Application& app)
 {
+#ifdef ROCKY_HAS_GDAL
+
     static vsg::ref_ptr<NodePager> pager;
 
     if (!pager)
@@ -139,4 +141,7 @@ auto Demo_MVTFeatures = [](Application& app)
             }
         }
     }
+#else
+    ImGui::TextColored(ImVec4(1, .3, .3, 1), "Unavailable - not built with GDAL");
+#endif
 };

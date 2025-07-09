@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -22,6 +22,7 @@ namespace ROCKY_NAMESPACE
         vsg::dmat4 modelview; // modelview matrix
         vsg::dmat4 mvp;       // modelview-projection matrix
         vsg::vec4 viewport;   // pixel-space viewport
+        bool passesCull = true; // whether the transform passes frustum/horizon culling
     };
 
     //! Per-VSG-view TransformViewData.
@@ -56,13 +57,20 @@ namespace ROCKY_NAMESPACE
         //! Return true if any updates were made due to a dirty Transform.
         bool update(vsg::RecordTraversal&);
 
-        //! True if this transform is visible in the provided view state
-        bool visible(ViewRecordingState& state) const;
-
         //! Push the matrix associated with this transform onto the record stack
         void push(vsg::RecordTraversal&) const;
 
         //! Pop a matrix recorded with push(...)
         void pop(vsg::RecordTraversal&) const;
+
+        //! True if this transform is visible in the provided view state
+        inline bool visible(ViewRecordingState& state) const;
     };
+
+
+    // inline functions
+    bool TransformDetail::visible(ViewRecordingState& state) const
+    {
+        return views[state.viewID].passesCull;
+    }
 }

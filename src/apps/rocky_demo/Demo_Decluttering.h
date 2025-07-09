@@ -6,7 +6,7 @@
 #pragma once
 
 #include <rocky/vsg/ecs.h>
-#include <rocky/rtree.h>
+#include <rocky/vsg/ecs/DeclutterSystem.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
@@ -15,6 +15,7 @@ using namespace std::chrono_literals;
 
 namespace
 {
+#if 0
     class DeclutterSystem
     {
     public:
@@ -117,26 +118,43 @@ namespace
             }
         }
     };
+#endif
+}
+
+namespace
+{
+    void resetVisibility(ecs::Registry r)
+    {
+        auto [lock, registry] = r.update();
+
+        auto view = registry.view<Declutter, Visibility>();
+        for (auto&& [entity, declutter, visibility] : view.each())
+        {
+            visibility.visible.fill(true);
+        }
+    }
 }
 
 auto Demo_Decluttering = [](Application& app)
 {
     static Status status;
     static std::shared_ptr<DeclutterSystem> declutter;
+    static float updateHertz = 1.0f;
+    static bool declutteringEnabled = true;
 
     if (!declutter)
     {
         declutter = DeclutterSystem::create(app.registry);
 
-        app.backgroundServices.start("rocky::declutter",
-            [&app](jobs::cancelable& token)
+        app.backgroundServices.start("rocky::declutter", [&app](Cancelable& cancelable)
             {
                 Log()->info("Declutter thread starting.");
-                while (!token.canceled())
-                {
-                    run_at_frequency f(declutter->update_hertz);
 
-                    if (declutter->enabled)
+                while (!cancelable.canceled())
+                {
+                    run_at_frequency f(updateHertz);
+
+                    if (declutteringEnabled)
                     {
                         declutter->update(app.context);
                         app.context->requestFrame();
@@ -148,20 +166,21 @@ auto Demo_Decluttering = [](Application& app)
 
     if (ImGuiLTable::Begin("declutter"))
     {
-        if (ImGuiLTable::Checkbox("Enabled", &declutter->enabled)) {
-            if (!declutter->enabled)
-                declutter->resetVisibility();
+        if (ImGuiLTable::Checkbox("Enabled", &declutteringEnabled)) {
+            if (!declutteringEnabled)
+                resetVisibility(app.registry);
         }
 
         static const char* sorting[] = { "Priority", "Distance" };
-        ImGuiLTable::Combo("Sort by", (int*)&declutter->sorting_method, sorting, 2);
+        ImGuiLTable::Combo("Sort by", (int*)&declutter->sorting, sorting, 2);
 
-        ImGuiLTable::SliderDouble("Buffer", &declutter->buffer_px, 0.0f, 50.0f, "%.0f px");
-        ImGuiLTable::SliderFloat("Frequency", &declutter->update_hertz, 1.0f, 30.0f, "%.0f hz");
+        ImGuiLTable::SliderFloat("Buffer", &declutter->bufferPixels, 0.0f, 50.0f, "%.0f px");
+        ImGuiLTable::SliderFloat("Frequency", &updateHertz, 1.0f, 30.0f, "%.0f hz");
 
-        if (declutter->enabled)
+        if (declutteringEnabled)
         {
-            ImGuiLTable::Text("Candidates", "%ld / %ld", declutter->visible, declutter->total);
+            auto [visible, total] = declutter->visibleAndTotal();
+            ImGuiLTable::Text("Results:", "%ld visible / %ld total", visible, total);
         }
 
         ImGuiLTable::End();

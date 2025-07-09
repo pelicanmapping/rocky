@@ -541,6 +541,44 @@ rocky::util::setThreadName(const char* name)
 #endif
 }
 
+BackgroundServices::Promise
+BackgroundServices::start(const std::string& name, Function function)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(function, {});
+    ROCKY_SOFT_ASSERT_AND_RETURN(!name.empty(), {});
+
+    std::lock_guard lock(mutex);
+
+    // wrap with a delegate function so we can control the semaphore
+    auto delegate = [this, function, name](jobs::cancelable& cancelable) -> bool
+        {
+            ++semaphore;
+            function(cancelable);
+            --semaphore;
+            return true;
+        };
+
+    jobs::context context{ name, jobs::get_pool(name, 1) };
+    futures.emplace_back(jobs::dispatch(delegate, context));
+
+    return futures.back();
+}
+
+void
+BackgroundServices::quit()
+{
+    std::lock_guard lock(mutex);
+
+    // tell all tasks to cancel
+    for (auto& f : futures)
+        f.abandon();
+
+    // block until all the background tasks exit.
+    semaphore.join();
+
+    futures.clear();
+}
+
 #ifdef ROCKY_HAS_ZLIB
 
 // adapted from
