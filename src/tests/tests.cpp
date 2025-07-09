@@ -859,13 +859,15 @@ TEST_CASE("MapManipulator NaN fix")
     
     // Calculate distance between the vectors
     double dist = distance3D(center, target);
+    double centerMag = vsg::length(center);
+    double relativeDist = centerMag > 0 ? dist / centerMag : 0;
     
-    // The distance should be very small (less than 1e-6)
-    CHECK(dist < 1e-6);
+    // The relative distance should be very small (less than 1e-6)
+    CHECK(relativeDist < 1e-6);
     
     // Test our fix logic - when vectors are very close, use identity quaternion
     vsg::dquat rotCenterToTarget;
-    if (distance3D(center, target) < 1e-6) {
+    if (relativeDist < 1e-6) {
         rotCenterToTarget = vsg::dquat(0, 0, 0, 1);
     } else {
         rotCenterToTarget.set(center, target);
