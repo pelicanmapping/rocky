@@ -55,6 +55,23 @@ jobs:
         echo "set(VCPKG_BUILD_TYPE release)" >> ./vcpkg/triplets/x64-windows.cmake
         ${{ matrix.VCPKG_WORKSPACE }}/vcpkg/vcpkg version
 
+    - name: Get vcpkg commit hash
+      id: vcpkg-commit
+      shell: bash
+      run: |
+        cd ${{ matrix.VCPKG_WORKSPACE }}/vcpkg
+        echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+    - name: Cache vcpkg dependencies
+      uses: actions/cache@v4
+      with:
+        path: ${{ matrix.VCPKG_WORKSPACE }}/vcpkg/installed
+        key: ${{ runner.os }}-vcpkg-${{ steps.vcpkg-commit.outputs.hash }}-${{ matrix.triplet }}-${{ hashFiles('vcpkg/vcpkg.json') }}
+        restore-keys: |
+          ${{ runner.os }}-vcpkg-${{ steps.vcpkg-commit.outputs.hash }}-${{ matrix.triplet }}-
+          ${{ runner.os }}-vcpkg-${{ steps.vcpkg-commit.outputs.hash }}-
+          ${{ runner.os }}-vcpkg-
+
     - name: Create Build Environment
       run: |
         cmake -E make_directory ${{runner.workspace}}/build
