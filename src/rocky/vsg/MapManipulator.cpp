@@ -1571,7 +1571,13 @@ MapManipulator::zoom(double dx, double dy)
 
             // Calcuate a rotation that we'll use to interpolate from our center point to the target
             vsg::dquat rotCenterToTarget;
-            rotCenterToTarget.set(_state.center, target);
+            // Check if the vectors are too close to avoid NaN in quaternion calculation
+            if (distance3D(_state.center, target) < 1e-6) {
+                // Use identity quaternion when vectors are nearly identical
+                rotCenterToTarget = vsg::dquat(0, 0, 0, 1);
+            } else {
+                rotCenterToTarget.set(_state.center, target);
+            }
 
             // Factor by which to scale the distance:
             double scale = 1.0f + dy;
