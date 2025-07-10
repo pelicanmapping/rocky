@@ -33,7 +33,7 @@ var searchData=
   ['getelevationmatrix_30',['getelevationmatrix',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_surface_node.html#a40b01b2b3598e34f8a9717b2ab3e54ce',1,'ROCKY_NAMESPACE::SurfaceNode::getElevationMatrix() const'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_surface_node.html#a40b01b2b3598e34f8a9717b2ab3e54ce',1,'ROCKY_NAMESPACE::SurfaceNode::getElevationMatrix() const']]],
   ['getelevationraster_31',['getelevationraster',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_surface_node.html#ad26fde9f626d2471dac9c5740e9a1551',1,'ROCKY_NAMESPACE::SurfaceNode::getElevationRaster() const'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_surface_node.html#ad26fde9f626d2471dac9c5740e9a1551',1,'ROCKY_NAMESPACE::SurfaceNode::getElevationRaster() const']]],
   ['getfirst_32',['GetFirst',['../class_r_tree.html#acbcbd987b4f6549cd53e373e01b74efa',1,'RTree']]],
-  ['getheight_33',['getHeight',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geoid.html#a5c5a55ebcfe1b474f380a926a0000450',1,'ROCKY_NAMESPACE::Geoid']]],
+  ['getheight_33',['getHeight',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geoid.html#a2b252b69e500fa2d85b2798803095c9b',1,'ROCKY_NAMESPACE::Geoid']]],
   ['getintersectingkeys_34',['getIntersectingKeys',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_tile_key.html#a4220df7316475a37502cb3549c52f8fd',1,'ROCKY_NAMESPACE::TileKey']]],
   ['getjulianday_35',['getJulianDay',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_date_time.html#a8364ca4848f5c33b02e67e2cf00f8cea',1,'ROCKY_NAMESPACE::DateTime']]],
   ['getlayer_36',['getLayer',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_layer_reference.html#aa91d3c74c6dedf4565fec8931d882280',1,'ROCKY_NAMESPACE::LayerReference']]],
