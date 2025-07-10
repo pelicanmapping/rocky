@@ -5,6 +5,7 @@
  */
 #include "ImGuiIntegration.h"
 #include <rocky/vsg/Application.h>
+#include <rocky/vsg/DisplayManager.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -33,21 +34,19 @@ ROCKY_NAMESPACE::ImGuiIntegration::addContextGroup(
 
 vsg::ref_ptr<ImGuiContextGroup>
 ROCKY_NAMESPACE::ImGuiIntegration::addContextGroup(
-    DisplayManager* displayManager,
+    DisplayManager& display,
     vsg::ref_ptr<vsg::Window> window,
     vsg::ref_ptr<vsg::View> view)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(displayManager, {});
-
     if (window == nullptr)
     {
-        window = displayManager->context->viewer->windows().front();
+        window = display.vsgcontext->viewer->windows().front();
     }
     ROCKY_SOFT_ASSERT_AND_RETURN(window, {});
 
     if (view == nullptr)
     {
-        view = displayManager->windowsAndViews[window].front();
+        view = display.windowsAndViews[window].front();
     }
     ROCKY_SOFT_ASSERT_AND_RETURN(view, {});
 
@@ -56,25 +55,16 @@ ROCKY_NAMESPACE::ImGuiIntegration::addContextGroup(
 
     ROCKY_SOFT_ASSERT_AND_RETURN(contextGroup->imguiContext(), {});
 
-    auto& viewData = displayManager->_viewData[view];
+    auto& viewData = display._viewData[view];
     viewData.guiContextGroup = contextGroup;
     viewData.parentRenderGraph->addChild(contextGroup);
 
     // add the event handler that will pass events from VSG to ImGui:
-    viewData.guiEventHandler = SendEventsToImGuiWrapper::create(window, contextGroup->imguiContext(), displayManager->context);
-    auto& handlers = displayManager->context->viewer->getEventHandlers();
+    viewData.guiEventHandler = SendEventsToImGuiWrapper::create(window, contextGroup->imguiContext(), display.vsgcontext);
+    auto& handlers = display.vsgcontext->viewer->getEventHandlers();
     handlers.insert(handlers.begin(), viewData.guiEventHandler);
 
     return contextGroup;
-}
-
-vsg::ref_ptr<ImGuiContextGroup>
-ROCKY_NAMESPACE::ImGuiIntegration::addContextGroup(
-    std::shared_ptr<DisplayManager> displayManager,
-    vsg::ref_ptr<vsg::Window> window,
-    vsg::ref_ptr<vsg::View> view)
-{
-    return addContextGroup(displayManager.get(), window, view);
 }
 
 void

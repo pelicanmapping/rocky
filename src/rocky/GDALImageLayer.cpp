@@ -77,8 +77,8 @@ GDALImageLayer::construct(const std::string& JSON, const IOOptions& io)
     get_to(j, "subdataset", subDataset);
     std::string temp;
     get_to(j, "interpolation", temp);
-    if (temp == "nearest") interpolation = Interpolation::NEAREST;
-    else if (temp == "bilinear") interpolation = Interpolation::BILINEAR;
+    if (temp == "nearest") interpolation = Interpolation::Nearest;
+    else if (temp == "bilinear") interpolation = Interpolation::Bilinear;
     get_to(j, "single_threaded", singleThreaded);
 
     setRenderType(RenderType::TERRAIN_SURFACE);
@@ -91,9 +91,9 @@ GDALImageLayer::to_json() const
     set(j, "uri", uri);
     set(j, "connection", connection);
     set(j, "subdataset", subDataset);
-    if (interpolation.has_value(Interpolation::NEAREST))
+    if (interpolation.has_value(Interpolation::Nearest))
         set(j, "interpolation", "nearest");
-    else if (interpolation.has_value(Interpolation::BILINEAR))
+    else if (interpolation.has_value(Interpolation::Bilinear))
         set(j, "interpolation", "bilinear");
     set(j, "single_threaded", singleThreaded);
     return j.dump();

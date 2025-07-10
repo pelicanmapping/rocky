@@ -146,7 +146,7 @@ auto Demo_Decluttering = [](Application& app)
     {
         declutter = DeclutterSystem::create(app.registry);
 
-        app.backgroundServices.start("rocky::declutter", [&app](Cancelable& cancelable)
+        app.background.start("rocky::declutter", [&app](Cancelable& cancelable)
             {
                 Log()->info("Declutter thread starting.");
 
@@ -156,8 +156,8 @@ auto Demo_Decluttering = [](Application& app)
 
                     if (declutteringEnabled)
                     {
-                        declutter->update(app.context);
-                        app.context->requestFrame();
+                        declutter->update(app.vsgcontext);
+                        app.vsgcontext->requestFrame();
                     }
                 }
                 Log()->info("Declutter thread terminating.");

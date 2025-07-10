@@ -19,11 +19,11 @@ auto Demo_Environment = [](Application& app)
 #if 0
         if (ImGui::Button("Install sky"))
         {
-            app.context->onNextUpdate([&app]()
+            app.vsgcontext->onNextUpdate([&app]()
                 {
-                    app.skyNode = SkyNode::create(app.context);
+                    app.skyNode = SkyNode::create(app.vsgcontext);
                     app.mainScene->children.insert(app.mainScene->children.begin(), app.skyNode);
-                    app.context->compile(app.skyNode);
+                    app.vsgcontext->compile(app.skyNode);
                 });
         }
 #endif

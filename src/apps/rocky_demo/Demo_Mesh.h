@@ -48,7 +48,7 @@ auto Demo_Mesh_Absolute = [](Application& app)
         // Set a dynamic style that we can change at runtime.
         mesh.style = {
             { 1.0f, 0.4f, 0.1f, 0.75f }, // color
-            6000.0f  // depth offset
+            10000.0f  // depth offset
         };
 
         // Turn off depth buffer writes

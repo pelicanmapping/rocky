@@ -100,7 +100,7 @@ SurfaceNode::recomputeBound()
                 float h = heightfield->heightAtUV(
                     clamp(uvs->at(i).x * scaleU + biasU, 0.0, 1.0),
                     clamp(uvs->at(i).y * scaleV + biasV, 0.0, 1.0),
-                    Interpolation::NEAREST);
+                    Interpolation::Nearest);
 
                 auto& v = verts->at(i);
                 auto& n = normals->at(i);

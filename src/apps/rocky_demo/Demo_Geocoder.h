@@ -103,7 +103,7 @@ auto Demo_Geocoder = [](Application& app)
                                 if (extent.area() == 0.0)
                                     extent.expand(Distance(10, Units::KILOMETERS), Distance(10, Units::KILOMETERS));
 
-                                auto view = app.displayManager->windowsAndViews.begin()->second.front();
+                                auto view = app.display.windowsAndViews.begin()->second.front();
                                 auto manip = MapManipulator::get(view);
                                 if (manip)
                                 {
@@ -125,7 +125,7 @@ auto Demo_Geocoder = [](Application& app)
                                     fgen.styles.line->depth_offset = 9000.0f; //meters
 
                                     fgen.features = { myfeature };
-                                    auto primitives = fgen.generate(app.mapNode->worldSRS(), app.context);
+                                    auto primitives = fgen.generate(app.mapNode->worldSRS(), app.vsgcontext);
 
                                     app.registry.write([&](entt::registry& registry)
                                         {

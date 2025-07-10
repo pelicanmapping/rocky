@@ -45,7 +45,7 @@ namespace ROCKY_NAMESPACE
             option<unsigned> subDataset = 0;
 
             //! Interpolation method for resampling
-            option<Interpolation> interpolation = Interpolation::BILINEAR;
+            option<Interpolation> interpolation = Interpolation::Bilinear;
 
             //! Precise mode - slower but more accurate
             option<bool> precise = false;

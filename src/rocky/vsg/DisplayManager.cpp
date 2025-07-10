@@ -121,7 +121,7 @@ namespace
                 _app->onNextUpdate([window, this]()
                     {
                         Log()->info("Removing window...");
-                        _app->displayManager->removeWindow(window);
+                        _app->display.removeWindow(window);
 
                         if (_app->viewer->windows().empty())
                         {
@@ -138,46 +138,38 @@ namespace
     };
 }
 
-
-
-DisplayManager::DisplayManager(Application& in_app) :
-    app(&in_app)
+void
+DisplayManager::initialize(Application& app)
 {
-    initialize(in_app.context);
-}
+    _app = &app;
 
-DisplayManager::DisplayManager(VSGContext& in_context)
-{
-    initialize(in_context);
+    initialize(app.vsgcontext);
+
+    if (vsgcontext && vsgcontext->viewer)
+    {
+        // intercept the window-close event so we can remove the window from our tracking tables.
+        auto& handlers = vsgcontext->viewer->getEventHandlers();
+        handlers.insert(handlers.begin(), CloseWindowEventHandler::create(_app));
+    }
 }
 
 void
-DisplayManager::initialize(VSGContext& in_context)
+DisplayManager::initialize(VSGContext in_context)
 {
-    if (!context)
-    {
-        context = in_context;
-
-        if (context && context->viewer)
-        {
-            // intercept the window-close event so we can remove the window from our tracking tables.
-            auto& handlers = context->viewer->getEventHandlers();
-            handlers.insert(handlers.begin(), CloseWindowEventHandler::create(app));
-        }
-    }
+    vsgcontext = in_context;
 }
 
 vsg::ref_ptr<vsg::Device>
 DisplayManager::sharedDevice()
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(context && context->viewer, {});
-    return !context->viewer->windows().empty() ? context->viewer->windows().front()->getDevice() : vsg::ref_ptr<vsg::Device>{ };
+    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer, {});
+    return !vsgcontext->viewer->windows().empty() ? vsgcontext->viewer->windows().front()->getDevice() : vsg::ref_ptr<vsg::Device>{ };
 }
 
 void
 DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(context && context->viewer, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
 
     // Share device with existing windows.
@@ -194,11 +186,11 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
     bool user_provied_view = view.valid();
     vsg::ref_ptr<vsg::Camera> camera;
 
-    if (!view && app && app->mapNode && app->mainScene)
+    if (!view && _app && _app->mapNode && _app->mainScene)
     {        
         // make a camera based on the mapNode's SRS
         double nearFarRatio = 0.00001;
-        double R = app->mapNode->mapSRS().ellipsoid().semiMajorAxis();
+        double R = _app->mapNode->mapSRS().ellipsoid().semiMajorAxis();
         double ar = (double)window->extent2D().width / (double)window->extent2D().height;
 
         camera = vsg::Camera::create(
@@ -206,31 +198,31 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
             vsg::LookAt::create(),
             vsg::ViewportState::create(0, 0, window->extent2D().width, window->extent2D().height));
 
-        view = vsg::View::create(camera, app->mainScene);
+        view = vsg::View::create(camera, _app->mainScene);
     }
 
     addViewToWindow(view, window);
 
     // add the new window to our viewer
-    context->viewer->addWindow(window);
-    context->viewer->addRecordAndSubmitTaskAndPresentation({ commandgraph });
+    vsgcontext->viewer->addWindow(window);
+    vsgcontext->viewer->addRecordAndSubmitTaskAndPresentation({ commandgraph });
 
     // Tell Rocky it needs to mutex-protect the terrain engine
     // now that we have more than one window.
-    if (app && context->viewer->windows().size() > 1)
+    if (_app && vsgcontext->viewer->windows().size() > 1)
     {
-        app->mapNode->terrainSettings().supportMultiThreadedRecord = true;
+        _app->mapNode->terrainSettings().supportMultiThreadedRecord = true;
     }
 
     // install a manipulator for the new view:
-    if (!user_provied_view && app)
+    if (!user_provied_view && _app)
     {
-        auto manip = MapManipulator::create(app->mapNode, window, camera, app->context);
+        auto manip = MapManipulator::create(_app->mapNode, window, camera, vsgcontext);
         setManipulatorForView(manip, view);
     }
 
     // install the debug layer if requested
-    if (app && app->_debuglayer && !_debugCallbackInstalled)
+    if (_app && _app->_debuglayer && !_debugCallbackInstalled)
     {
         VkDebugUtilsMessengerCreateInfoEXT debug_utils_create_info = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
         debug_utils_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
@@ -255,20 +247,20 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
 vsg::ref_ptr<vsg::Window>
 DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(context && context->viewer, {});
+    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer, {});
     ROCKY_SOFT_ASSERT_AND_RETURN(traits, {});
 
     // wait until the device is idle to avoid changing state while it's being used.
-    if (compiled(context->viewer))
+    if (compiled(vsgcontext->viewer))
     {
-        context->viewer->deviceWaitIdle();
+        vsgcontext->viewer->deviceWaitIdle();
     }
 
-    if (app)
+    if (_app)
     {
-        traits->debugLayer = app->_debuglayer;
-        traits->apiDumpLayer = app->_apilayer;
-        if (!app->_vsync)
+        traits->debugLayer = _app->_debuglayer;
+        traits->apiDumpLayer = _app->_apilayer;
+        if (!_app->_vsync)
         {
             traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
         }
@@ -281,13 +273,24 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     {
         // This is required to use the NVIDIA barycentric extension without validation errors
         if (!traits->deviceFeatures)
-        {
             traits->deviceFeatures = vsg::DeviceFeatures::create();
-        }
         traits->deviceExtensionNames.push_back(VK_NV_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
         auto& bary = traits->deviceFeatures->get<VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR>();
         bary.fragmentShaderBarycentric = true;
     }
+
+#if 0 // TODO...hook up shader debug messages
+    if (vsg::isExtensionSupported(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME))
+    {
+        if (!traits->deviceFeatures)
+            traits->deviceFeatures = vsg::DeviceFeatures::create();
+        traits->deviceExtensionNames.push_back(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME);
+        auto& ext = traits->deviceFeatures->get<VkValidationFeaturesEXT, VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT>();
+        VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT };
+        ext.pEnabledValidationFeatures = enables;
+        ext.enabledValidationFeatureCount = 1;
+    }
+#endif
 
     // share the device across all windows
     traits->device = sharedDevice();
@@ -302,14 +305,14 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
 void
 DisplayManager::removeWindow(vsg::ref_ptr<vsg::Window> window)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(context && context->viewer, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
 
     // wait until the device is idle to avoid changing state while it's being used.
-    context->viewer->deviceWaitIdle();
+    vsgcontext->viewer->deviceWaitIdle();
 
     // remove the window from the viewer
-    context->viewer->removeWindow(window);
+    vsgcontext->viewer->removeWindow(window);
 
     // remove the window from our tracking tables
     auto& views = windowsAndViews[window];
@@ -322,31 +325,31 @@ DisplayManager::removeWindow(vsg::ref_ptr<vsg::Window> window)
 void
 DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::Window> window)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(context && context->viewer, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(window != nullptr, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(view != nullptr, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(view->camera != nullptr, void());
 
     // if things are already running, we need to wait on the device:
-    if (compiled(context->viewer))
+    if (compiled(vsgcontext->viewer))
     {
-        context->viewer->deviceWaitIdle();
+        vsgcontext->viewer->deviceWaitIdle();
     }
 
     // find the CG associated with this window:
     auto commandgraph = getCommandGraph(window);
     if (commandgraph)
     {
-        if (view->children.empty() && app)
+        if (view->children.empty() && _app)
         {
-            view->addChild(app->root);
+            view->addChild(_app->root);
         }
 
         auto rendergraph = vsg::RenderGraph::create(window, view);
         rendergraph->setClearValues({ {0.0f, 0.0f, 0.0f, 1.0f} });
         commandgraph->addChild(rendergraph);
 
-        if (compiled(context->viewer))
+        if (compiled(vsgcontext->viewer))
         {
             compileRenderGraph(rendergraph, window);
         }
@@ -356,20 +359,20 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
 
         windowsAndViews[window].emplace_back(view);
 
-        if (std::find(context->activeViewIDs.begin(), context->activeViewIDs.end(), view->viewID) == context->activeViewIDs.end())
+        if (std::find(vsgcontext->activeViewIDs.begin(), vsgcontext->activeViewIDs.end(), view->viewID) == vsgcontext->activeViewIDs.end())
         {
-            context->activeViewIDs.emplace_back(view->viewID);
+            vsgcontext->activeViewIDs.emplace_back(view->viewID);
         }
 
-        if (app)
+        if (_app)
         {
-            auto manip = MapManipulator::create(app->mapNode, window, view->camera, context);
+            auto manip = MapManipulator::create(_app->mapNode, window, view->camera, vsgcontext);
             setManipulatorForView(manip, view);
         }
 
 #ifdef ROCKY_HAS_IMGUI
 
-        auto contextGroup = ImGuiIntegration::addContextGroup(this, window, view);
+        auto contextGroup = ImGuiIntegration::addContextGroup(*this, window, view);
         if (contextGroup)
         {
             auto imguiContext = contextGroup->imguiContext();
@@ -380,12 +383,12 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
 
             // Next, add a node that will run the actual gui rendering callbacks (like the one
             // installed by the WidgetSystem).
-            contextGroup->addChild(detail::GuiRendererDispatcher::create(imguiContext, context));
+            contextGroup->addChild(detail::GuiRendererDispatcher::create(imguiContext, vsgcontext));
 
-            if (app)
+            if (_app)
             {
                 auto viewID = view->viewID;
-                VSGContext vsgContext = context;
+                VSGContext vsgContext = vsgcontext;
 
                 // We still need to process ImGui events even if we're not rendering the frame,
                 // so install this no-render function:
@@ -406,7 +409,7 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
                     };
 
                 viewdata.guiOfflineEventProcessor = std::make_shared<std::function<void()>>(func);
-                app->noRenderFunctions.emplace_front(viewdata.guiOfflineEventProcessor);
+                _app->noRenderFunctions.emplace_front(viewdata.guiOfflineEventProcessor);
             }
         }
         else
@@ -420,11 +423,11 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
 void
 DisplayManager::removeView(vsg::ref_ptr<vsg::View> view)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(context && context->viewer, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(view, void());
 
     // wait until the device is idle to avoid changing state while it's being used.
-    context->viewer->deviceWaitIdle();
+    vsgcontext->viewer->deviceWaitIdle();
 
     auto window = getWindow(view);
     ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
@@ -440,15 +443,15 @@ DisplayManager::removeView(vsg::ref_ptr<vsg::View> view)
 
 #ifdef ROCKY_HAS_IMGUI
     // uninstall any gui renderer elements
-    if (viewData.guiOfflineEventProcessor)
+    if (viewData.guiOfflineEventProcessor && _app)
     {
-        auto& c = app->noRenderFunctions;
+        auto& c = _app->noRenderFunctions;
         c.erase(std::remove(c.begin(), c.end(), viewData.guiOfflineEventProcessor), c.end());
     }
 
     if (viewData.guiEventHandler)
     {
-        auto& c = context->viewer->getEventHandlers();
+        auto& c = vsgcontext->viewer->getEventHandlers();
         c.erase(std::remove(c.begin(), c.end(), viewData.guiEventHandler), c.end());
     }
 
@@ -469,21 +472,21 @@ DisplayManager::removeView(vsg::ref_ptr<vsg::View> view)
     views.erase(std::remove(views.begin(), views.end(), view), views.end());
 
     // remove it from the active-view-ID list
-    auto& ids = app->context->activeViewIDs;
+    auto& ids = vsgcontext->activeViewIDs;
     ids.erase(std::remove(ids.begin(), ids.end(), view->viewID), ids.end());
 }
 
 void
 DisplayManager::refreshView(vsg::ref_ptr<vsg::View> view)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(context && context->viewer, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(view, void());
 
     auto& viewdata = _viewData[view];
     ROCKY_SOFT_ASSERT_AND_RETURN(viewdata.parentRenderGraph, void());
 
     // wait until the device is idle to avoid changing state while it's being used.
-    context->viewer->deviceWaitIdle();
+    vsgcontext->viewer->deviceWaitIdle();
 
     auto vp = view->camera->getViewport();
     viewdata.parentRenderGraph->renderArea.offset.x = (std::uint32_t)vp.x;
@@ -538,7 +541,7 @@ DisplayManager::getWindow(vsg::ref_ptr<vsg::View> view)
 void
 DisplayManager::setManipulatorForView(vsg::ref_ptr<MapManipulator> manip, vsg::ref_ptr<vsg::View> view)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(context && context->viewer, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(manip, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(view, void());
 
@@ -548,7 +551,7 @@ DisplayManager::setManipulatorForView(vsg::ref_ptr<MapManipulator> manip, vsg::r
     // The manipulators (one for each view) need to be in the right order (top to bottom)
     // so that overlapping views don't get mixed up. To accomplish this we'll just
     // remove them all and re-insert them in the new proper order:
-    auto& ehs = context->viewer->getEventHandlers();
+    auto& ehs = vsgcontext->viewer->getEventHandlers();
 
     // remove all the MapManipulators using the dumb remove-erase idiom
     ehs.erase(
@@ -596,7 +599,7 @@ DisplayManager::getView(vsg::ref_ptr<vsg::Window> window, double x, double y)
 void
 DisplayManager::compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, vsg::ref_ptr<vsg::Window> window)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(context && context->viewer, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(renderGraph, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
 
@@ -610,19 +613,19 @@ DisplayManager::compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, v
     if (view)
     {
         // add this rendergraph's view to the viewer's compile manager.
-        context->viewer->compileManager->add(*window, view);
+        vsgcontext->viewer->compileManager->add(*window, view);
 
         // Compile the new render pass for this view.
         // The lambda idiom is taken from vsgexamples/dynamicviews
-        auto result = context->viewer->compileManager->compile(renderGraph, [&view](vsg::Context& context)
+        auto result = vsgcontext->viewer->compileManager->compile(renderGraph, [&view](vsg::Context& compileContext)
             {
-                return context.view == view.get();
+                return compileContext.view == view.get();
             });
 
         // if something was compiled, we need to update the viewer:
         if (result.requiresViewerUpdate())
         {
-            vsg::updateViewer(*context->viewer, result);
+            vsg::updateViewer(*vsgcontext->viewer, result);
         }
     }
 }

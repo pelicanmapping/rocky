@@ -209,10 +209,10 @@ int main(int argc, char** argv)
 
     // Create the main window and the main GUI:
     auto traits = vsg::WindowTraits::create(1920, 1080, "Main Window");
-    auto main_window = app.displayManager->addWindow(traits);
+    auto main_window = app.display.addWindow(traits);
 
     // Install a manager for our main GUI:
-    auto imgui_group = ImGuiIntegration::addContextGroup(app.displayManager, main_window);
+    auto imgui_group = ImGuiIntegration::addContextGroup(app.display, main_window);
 
     // Hook in the main demo gui:
     auto demo_gui = MainGUI::create(app);

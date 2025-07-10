@@ -78,7 +78,7 @@ auto Demo_NodePager = [](Application& app)
 
 
                 // Make the entities for this tile:
-                auto prims = fview.generate(app.mapNode->worldSRS(), app.context);
+                auto prims = fview.generate(app.mapNode->worldSRS(), app.vsgcontext);
 
                 if (!prims.empty())
                 {
@@ -106,7 +106,7 @@ auto Demo_NodePager = [](Application& app)
             };
 
         // Always initialize a NodePager before using it:
-        pager->initialize(app.context);
+        pager->initialize(app.vsgcontext);
 
         app.mainScene->addChild(pager);
     }
@@ -127,13 +127,13 @@ auto Demo_NodePager = [](Application& app)
                 {
                     profileIndex = i;
                     profile = Profile(pn[i]);                    
-                    app.context->onNextUpdate([&]()
+                    app.vsgcontext->onNextUpdate([&]()
                         {
                             util::remove(pager, app.mainScene->children);
                             pager = nullptr;
                         });
 
-                    app.context->requestFrame();
+                    app.vsgcontext->requestFrame();
                 }
             }
             ImGuiLTable::EndCombo();
@@ -145,18 +145,18 @@ auto Demo_NodePager = [](Application& app)
         if (ImGuiLTable::Checkbox("Additive", &add))
         {
             pager->refinePolicy = add ? NodePager::RefinePolicy::Add : NodePager::RefinePolicy::Replace;
-            app.context->requestFrame();
+            app.vsgcontext->requestFrame();
         }
 
         if (ImGuiLTable::SliderFloat("Screen Space Error", &pager->screenSpaceError, 64.0f, 1024.0f, "%.0f px"))
         {
-            app.context->requestFrame();
+            app.vsgcontext->requestFrame();
         }
 
         if (ImGuiLTable::Button("Reload"))
         {
-            pager->initialize(app.context);
-            app.context->requestFrame();
+            pager->initialize(app.vsgcontext);
+            app.vsgcontext->requestFrame();
         }
 
         ImGuiLTable::End();

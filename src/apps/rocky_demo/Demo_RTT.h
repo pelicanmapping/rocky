@@ -68,13 +68,13 @@ auto Demo_RTT = [](Application& app)
     if (entity == entt::null)
     {
         // Find the main window and view:
-        auto main = app.displayManager->windowsAndViews.begin();
+        auto main = app.display.windowsAndViews.begin();
         auto main_window = main->first;
         auto main_view = main->second.front();
 
         // this is the model we will see in the RTT:
         URI uri("https://raw.githubusercontent.com/vsg-dev/vsgExamples/master/data/models/teapot.vsgt");
-        auto rtt_node = load_rtt_model(uri, app.context);
+        auto rtt_node = load_rtt_model(uri, app.vsgcontext);
         if (!rtt_node)
         {
             status = Status(Status::ResourceUnavailable, "Unable to load the model from " + uri.full());
@@ -101,16 +101,15 @@ auto Demo_RTT = [](Application& app)
         // Add the RTT graph to our application's main window.
         // TODO: possibly replace this with the functionality described here:
         // https://github.com/vsg-dev/VulkanSceneGraph/discussions/928
-        auto dm = app.displayManager;
-        auto install = [=]()
+        auto install = [&app, rtt_graph, main_window]()
             {
-                auto commandGraph = dm->getCommandGraph(main_window);
+                auto commandGraph = app.display.getCommandGraph(main_window);
                 if (commandGraph)
                 {
                     // Insert the pre-render graph into the command graph and compile it.
                     // This seems a bit awkward but it works.
                     commandGraph->children.insert(commandGraph->children.begin(), rtt_graph);
-                    dm->compileRenderGraph(rtt_graph, main_window);
+                    app.display.compileRenderGraph(rtt_graph, main_window);
                 }
             };
         app.onNextUpdate(install);

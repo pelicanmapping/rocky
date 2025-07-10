@@ -69,27 +69,30 @@ namespace ROCKY_NAMESPACE
         void realize();
 
         //! Shortcut to the instance's IOOptions
-        IOOptions& io() {
-            return context->io;
-        }
+        inline IOOptions& io();
 
-        bool active() const {
-            return _lastFrameOK;
-        }
+        inline bool active() const;
 
     public: // public properties
 
         ecs::Registry registry = ecs::Registry::create();
 
-        rocky::VSGContext context;
-        vsg::ref_ptr<rocky::MapNode> mapNode;
-        vsg::ref_ptr<rocky::SkyNode> skyNode;
+        //! VSG context object
+        rocky::VSGContext vsgcontext;
+
+        //! Keeps track of windows and views
+        DisplayManager display;
+
+        //! Runs ongoing background tasks
+        util::BackgroundServices background;
+
         vsg::ref_ptr<vsg::Viewer> viewer;
         vsg::ref_ptr<vsg::Group> root;
         vsg::ref_ptr<vsg::Group> mainScene;
-        vsg::ref_ptr<ecs::ECSNode> ecsManager;
-        std::shared_ptr<DisplayManager> displayManager;
-        util::BackgroundServices backgroundServices;
+        vsg::ref_ptr<rocky::MapNode> mapNode;
+        vsg::ref_ptr<rocky::SkyNode> skyNode;
+        vsg::ref_ptr<ecs::ECSNode> ecsNode;
+
         bool autoCreateWindow = true;
         Status commandLineStatus;
 
@@ -131,11 +134,18 @@ namespace ROCKY_NAMESPACE
 
         void ctor(int& argc, char** argv);
 
-        void setViewer(vsg::ref_ptr<vsg::Viewer> viewer);
-
         void setupViewer(vsg::ref_ptr<vsg::Viewer> viewer);
 
         friend class DisplayManager;
     };
+
+
+    inline IOOptions& Application::io() {
+        return vsgcontext->io;
+    }
+
+    inline bool Application::active() const {
+        return _lastFrameOK;
+    }
 }
 

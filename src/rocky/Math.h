@@ -20,12 +20,12 @@ namespace ROCKY_NAMESPACE
     //! Raster interpolation methods
     enum class Interpolation
     {
-        NEAREST,
-        AVERAGE,
-        BILINEAR,
-        TRIANGULATE,
-        CUBIC,
-        CUBICSPLINE
+        Nearest,
+        Average,
+        Bilinear,
+        Triangulate,
+        Cubic,
+        CubicSpline
     };
 
     // mult a vec3 x mat4

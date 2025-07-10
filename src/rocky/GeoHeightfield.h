@@ -99,7 +99,7 @@ namespace ROCKY_NAMESPACE
         //! Gets the height at a geographic location (in this object's SRS)
         float heightAtLocation(
             double x, double y,
-            Interpolation interp = Interpolation::BILINEAR) const;
+            Interpolation interp = Interpolation::Bilinear) const;
 
         // Functor to GeoHeightField's by resolution
         struct SortByResolutionFunctor

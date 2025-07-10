@@ -7,13 +7,12 @@
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/MapManipulator.h>
 #include <rocky/Utils.h>
+#include <rocky/Callbacks.h>
 
-#include <chrono>
 #include <list>
 
 namespace ROCKY_NAMESPACE
 {
-    class Application;
     class ImGuiContextGroup;
 
     //! Return value for pointAtWindowCoords(viewer) method
@@ -46,15 +45,16 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT DisplayManager
     {
     public:
-        //! Construct a display manager that is connected to a rocky Application object.
-        DisplayManager(Application& in_app);
+        //! Construct an empty display manager.
+        //! Call initialize() later to set it up.
+        DisplayManager() = default;
+
+        //! Construct a display manager connected to an Application object.
+        void initialize(Application& app);
 
         //! Construct a display manager connected to a VSG context (and associated viewer).
         //! Use this if your app doesn't use the rocky Application object.
-        DisplayManager(VSGContext& context);
-
-        // Set the Context to use
-        void initialize(VSGContext& context);
+        void initialize(VSGContext context);
 
         //! Creates a new window and adds it to the display.
         //! @param traits Window traits used to create the new window
@@ -116,11 +116,9 @@ namespace ROCKY_NAMESPACE
 
         WindowsAndViews windowsAndViews;
 
-        VSGContext context;
+        VSGContext vsgcontext;
 
     protected:
-        Application* app = nullptr;
-
         struct ViewData
         {
             vsg::ref_ptr<vsg::RenderGraph> parentRenderGraph;
@@ -130,6 +128,7 @@ namespace ROCKY_NAMESPACE
         };
         util::vector_map<vsg::ref_ptr<vsg::View>, ViewData> _viewData;
 
+        Application* _app = nullptr;
         bool _debugCallbackInstalled = false;
         std::map<vsg::ref_ptr<vsg::Window>, vsg::ref_ptr<vsg::CommandGraph>> _commandGraphByWindow;
 

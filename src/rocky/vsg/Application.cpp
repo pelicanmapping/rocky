@@ -83,10 +83,10 @@ Application::Application()
 }
 
 Application::Application(vsg::ref_ptr<vsg::Viewer> viewer_)
+    : viewer(viewer_)
 {
     int argc = 0;
     const char* argv[1] = { "rocky" };
-    setViewer(viewer_);
     ctor(argc, (char**)argv);
 }
 
@@ -95,9 +95,9 @@ Application::Application(int& argc, char** argv)
     ctor(argc, argv);
 }
 
-Application::Application(vsg::ref_ptr<vsg::Viewer> viewer_, int& argc, char** argv)
+Application::Application(vsg::ref_ptr<vsg::Viewer> viewer_, int& argc, char** argv) :
+    viewer(viewer_)
 {
-    setViewer(viewer_);
     ctor(argc, argv);
 }
 
@@ -106,16 +106,18 @@ Application::ctor(int& argc, char** argv)
 {
     if (!viewer)
     {
-        setViewer(vsg::Viewer::create());
+        viewer = vsg::Viewer::create();
     }
 
-    context = VSGContextFactory::create(viewer, argc, argv);
+    // new VSG context
+    vsgcontext = VSGContextFactory::create(viewer, argc, argv);
 
-    displayManager->initialize(context);
+    // new display manager
+    display.initialize(*this);
 
+    // parse the command line
     vsg::CommandLine commandLine(&argc, argv);
-
-    commandLine.read(context->readerWriterOptions);
+    commandLine.read(vsgcontext->readerWriterOptions);
     _debuglayer = commandLine.read("--debug");
     _apilayer = commandLine.read("--api");
     _vsync = !commandLine.read({ "--novsync", "--no-vsync" });
@@ -156,19 +158,19 @@ Application::ctor(int& argc, char** argv)
     mainScene = vsg::Group::create();
     root->addChild(mainScene);
 
-    mapNode = rocky::MapNode::create(context);
+    mapNode = rocky::MapNode::create(vsgcontext);
 
     // the sun
     if (commandLine.read("--sky"))
     {
-        skyNode = rocky::SkyNode::create(context);
+        skyNode = rocky::SkyNode::create(vsgcontext);
         mainScene->addChild(skyNode);
     }
 
     // wireframe overlay
     if (commandLine.read("--wire"))
     {
-        context->shaderCompileSettings->defines.insert("ROCKY_WIREFRAME_OVERLAY");
+        vsgcontext->shaderCompileSettings->defines.insert("ROCKY_WIREFRAME_OVERLAY");
     }
 
     // a node to render the map/terrain
@@ -180,7 +182,7 @@ Application::ctor(int& argc, char** argv)
         viewer->setupThreading();
     }
 
-    context->sharedObjects = vsg::SharedObjects::create();
+    vsgcontext->sharedObjects = vsg::SharedObjects::create();
 
     // TODO:
     // The SkyNode does this, but then it's awkward to add a SkyNode at runtime
@@ -188,19 +190,19 @@ Application::ctor(int& argc, char** argv)
     // and those will have to be recompiled.
     // So instead we will just activate the lighting globally and rely on the 
     // light counts in the shader. Is this ok?
-    context->shaderCompileSettings->defines.insert("ROCKY_LIGHTING");
+    vsgcontext->shaderCompileSettings->defines.insert("ROCKY_LIGHTING");
 
     // read map from file:
     std::string infile; 
     if (commandLine.read("--map", infile))
     {
-        commandLineStatus = loadMapFile(infile, *mapNode, context);
+        commandLineStatus = loadMapFile(infile, *mapNode, vsgcontext);
     }
 
     // import map from an osgEarth earth file:
     if (commandLine.read({ "--earthfile", "--earth-file" }, infile) && commandLineStatus.ok())
     {
-        commandLineStatus = importEarthFile(infile, *mapNode, context);
+        commandLineStatus = importEarthFile(infile, *mapNode, vsgcontext);
     }
 
     bool indirect = false;
@@ -212,59 +214,59 @@ Application::ctor(int& argc, char** argv)
     // if there are any command-line arguments remaining, assume the first is a map file.
     if (commandLine.argc() > 1 && commandLineStatus.ok())
     {
-        commandLineStatus = loadMapFile(commandLine[1], *mapNode, context);
+        commandLineStatus = loadMapFile(commandLine[1], *mapNode, vsgcontext);
     }
 
 
     // Create the ECS system manager and all its default systems.
-    ecsManager = ecs::ECSNode::create(registry);
+    ecsNode = ecs::ECSNode::create(registry);
 
     // Responds to changes in Transform components by updating the scene graph
     auto xform_system = TransformSystem::create(registry);
-    xform_system->onChanges([&]() { context->requestFrame(); });
-    ecsManager->add(xform_system);
+    xform_system->onChanges([&]() { vsgcontext->requestFrame(); });
+    ecsNode->add(xform_system);
 
     // Rendering components:
-    ecsManager->add(MeshSystemNode::create(registry));
-    ecsManager->add(NodeSystemNode::create(registry));
-    ecsManager->add(LineSystemNode::create(registry));
+    ecsNode->add(MeshSystemNode::create(registry));
+    ecsNode->add(NodeSystemNode::create(registry));
+    ecsNode->add(LineSystemNode::create(registry));
 
     if (indirect)
-        ecsManager->add(IconSystem2Node::create(registry));
+        ecsNode->add(IconSystem2Node::create(registry));
     else
-        ecsManager->add(IconSystemNode::create(registry));
+        ecsNode->add(IconSystemNode::create(registry));
     
-    ecsManager->add(LabelSystemNode::create(registry));
+    ecsNode->add(LabelSystemNode::create(registry));
 
 #ifdef ROCKY_HAS_IMGUI
-    ecsManager->add(WidgetSystemNode::create(registry));
+    ecsNode->add(WidgetSystemNode::create(registry));
 #endif
 
-    mainScene->addChild(ecsManager);
+    mainScene->addChild(ecsNode);
 }
 
 Application::~Application()
 {
     Log()->info("Quitting background services...");
-    backgroundServices.quit();
+    background.quit();
 }
 
 void
 Application::onNextUpdate(std::function<void()> func)
 {
-    context->onNextUpdate(func);
+    vsgcontext->onNextUpdate(func);
 }
 
 void
 Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
 {
     // share the same queue family as the graphics command graph for now.
-    auto computeCommandGraph = context->getOrCreateComputeCommandGraph(
-        displayManager->sharedDevice(),
-        displayManager->_commandGraphByWindow.begin()->second->queueFamily);
+    auto computeCommandGraph = vsgcontext->getOrCreateComputeCommandGraph(
+        display.sharedDevice(),
+        display._commandGraphByWindow.begin()->second->queueFamily);
 
     // Initialize the ECS subsystem:
-    ecsManager->initialize(context);
+    ecsNode->initialize(vsgcontext);
 
     // respond to the X or to hitting ESC
     // TODO: refactor this so it responds to individual windows and not the whole app?
@@ -275,7 +277,7 @@ Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
     // up whatever's necessary to present the resulting swapchain to the device.
     vsg::CommandGraphs commandGraphs{ computeCommandGraph };
 
-    for (auto iter : displayManager->_commandGraphByWindow)
+    for (auto iter : display._commandGraphByWindow)
     {
         commandGraphs.push_back(iter.second);
     }
@@ -361,16 +363,16 @@ namespace
         void run() override
         {
             // ECS updates - rendering or modifying entities
-            app.ecsManager->update(app.context);
+            app.ecsNode->update(app.vsgcontext);
 
             // Context update callbacks
-            app.context->onUpdate.fire();
+            app.vsgcontext->onUpdate.fire();
 
             // keep the frames running if the pager is active
             auto& tasks = app.viewer->recordAndSubmitTasks;
             if (!tasks.empty() && tasks[0]->databasePager && tasks[0]->databasePager->numActiveRequests > 0)
             {
-                app.context->requestFrame();
+                app.vsgcontext->requestFrame();
             }
         }
     };
@@ -387,7 +389,7 @@ Application::realize()
             auto traits = vsg::WindowTraits::create(1920, 1080, "Main Window");
             traits->queueFlags |= VK_QUEUE_COMPUTE_BIT;
             traits->synchronizationLayer = true;
-            displayManager->addWindow(traits);
+            display.addWindow(traits);
         }
 
         setupViewer(viewer);
@@ -431,11 +433,11 @@ Application::frame()
     t_start = std::chrono::steady_clock::now();
 
     // whether we need to render a new frame based on the renderOnDemand state:
-    context->renderingEnabled =
-        context->renderContinuously == true ||
-        context->renderRequests.exchange(0) > 0;
+    vsgcontext->renderingEnabled =
+        vsgcontext->renderContinuously == true ||
+        vsgcontext->renderRequests.exchange(0) > 0;
 
-    if (context->renderingEnabled)
+    if (vsgcontext->renderingEnabled)
     {
         if (!viewer->advanceToNextFrame())
         {
@@ -524,7 +526,7 @@ Application::frame()
 
         // After not rendering for a few frames, start applying a sleep to
         // "simulate" vsync so we don't tax the CPU by running full-out.
-        if (_framesSinceLastRender >= 60 && context->renderRequests == 0)
+        if (_framesSinceLastRender >= 60 && vsgcontext->renderRequests == 0)
         {
             auto max_frame_time = std::chrono::milliseconds(10);
             auto now = vsg::clock::now();
@@ -545,14 +547,7 @@ std::string
 Application::about() const
 {
     std::stringstream buf;
-    for (auto& a : context->about())
+    for (auto& a : vsgcontext->about())
         buf << a << std::endl;
     return buf.str();
-}
-
-void
-Application::setViewer(vsg::ref_ptr<vsg::Viewer> in_viewer)
-{
-    viewer = in_viewer;
-    displayManager = std::make_shared<DisplayManager>(*this);
 }

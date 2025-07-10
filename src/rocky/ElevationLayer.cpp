@@ -317,7 +317,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
                     float& height = output->heightAt(c, r);
                     for (unsigned i = 0; height == NO_DATA_VALUE && i < sources.size(); ++i)
                     {
-                        height = sources[i].heightAtLocation(point.x, point.y, Interpolation::BILINEAR);
+                        height = sources[i].heightAtLocation(point.x, point.y, Interpolation::Bilinear);
                     }
 
                     if (height != NO_DATA_VALUE)

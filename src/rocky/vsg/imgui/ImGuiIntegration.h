@@ -132,7 +132,7 @@ namespace ROCKY_NAMESPACE
         {
             //nop
         }
-        
+
         void add(vsg::ref_ptr<ImGuiNode> node, Application& app);
     };
 
@@ -140,13 +140,7 @@ namespace ROCKY_NAMESPACE
     {
         //! Insalls an ImGuiContextGroup in a DisplayManager.
         static vsg::ref_ptr<ImGuiContextGroup> addContextGroup(
-            DisplayManager* displayManager,
-            vsg::ref_ptr<vsg::Window> window = {}, // default to first window
-            vsg::ref_ptr<vsg::View> view = {}); // default to first view
-
-        //! Insalls an ImGuiContextGroup in a DisplayManager.
-        static vsg::ref_ptr<ImGuiContextGroup> addContextGroup(
-            std::shared_ptr<DisplayManager> displayManager,
+            DisplayManager& display,
             vsg::ref_ptr<vsg::Window> window = {}, // default to first window
             vsg::ref_ptr<vsg::View> view = {}); // default to first view
 

@@ -12,7 +12,7 @@ auto Demo_Label = [](Application& app)
     static entt::entity entity = entt::null;
     static Status status;
 
-    auto& font = app.context->defaultFont;
+    auto& font = app.vsgcontext->defaultFont;
     if (!font)
     {
         ImGui::TextWrapped(status.message.c_str());

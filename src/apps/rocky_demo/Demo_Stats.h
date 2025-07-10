@@ -68,7 +68,7 @@ auto Demo_Stats = [](Application& app)
     {
         std::string buf;
 
-        if (app.context->renderContinuously)
+        if (app.vsgcontext->renderContinuously)
         {
             float fps = std::ceil(1.0f / (1e-6f * (float)average(&frames, over, f)));
             //float fps = 1.0f / (1e-6f * (float)lowest(&frames, over, f));
@@ -127,7 +127,7 @@ auto Demo_Stats = [](Application& app)
     }
 
     auto& engine = app.mapNode->terrainNode->engine;
-    auto& cache = app.context->io.services.contentCache;
+    auto& cache = app.vsgcontext->io.services.contentCache;
     float ratio = cache->gets > 0 ? float(cache->hits) / float(cache->gets) : 0.0f;
 
     ImGui::SeparatorText("System");

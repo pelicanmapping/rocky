@@ -35,7 +35,7 @@ namespace ROCKY_NAMESPACE
         float getHeight(
             double lat_deg,
             double lon_deg, 
-            Interpolation interp = Interpolation::BILINEAR) const;
+            Interpolation interp = Interpolation::Bilinear) const;
 
         //! Whether this is a valid object to use
         bool valid() const;

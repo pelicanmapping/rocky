@@ -69,7 +69,7 @@ auto Demo_MVTFeatures = [](Application& app)
                 if (!fview.features.empty())
                 {
                     // generate primitives from features:
-                    auto prims = fview.generate(app.mapNode->worldSRS(), app.context);
+                    auto prims = fview.generate(app.mapNode->worldSRS(), app.vsgcontext);
 
                     if (!prims.line.points.empty() || !prims.mesh.triangles.empty())
                     {
@@ -102,7 +102,7 @@ auto Demo_MVTFeatures = [](Application& app)
             };
 
         // Always initialize a NodePager before using it:
-        pager->initialize(app.context);
+        pager->initialize(app.vsgcontext);
 
         app.mainScene->addChild(pager);
     }
@@ -111,13 +111,13 @@ auto Demo_MVTFeatures = [](Application& app)
     {
         if (ImGuiLTable::SliderFloat("Screen Space Error", &pager->screenSpaceError, 64.0f, 1024.0f, "%.0f px"))
         {
-            app.context->requestFrame();
+            app.vsgcontext->requestFrame();
         }
 
         ImGuiLTable::End();
 
         auto window = app.viewer->windows().front();
-        auto view = app.displayManager->getView(window, 0, 0);
+        auto view = app.display.getView(window, 0, 0);
         auto manip = MapManipulator::get(view);
 
         if (manip)

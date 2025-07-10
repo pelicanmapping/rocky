@@ -42,7 +42,7 @@ auto Demo_LineFeatures = [](Application& app)
             FeatureView feature_view;
 
             // create a feature view and add features to it:
-            data->fs->each(app.context->io, [&](Feature&& feature)
+            data->fs->each(app.vsgcontext->io, [&](Feature&& feature)
                 {
                     // convert anything we find to lines:
                     feature.geometry.convertToType(Geometry::Type::LineString);
@@ -60,7 +60,7 @@ auto Demo_LineFeatures = [](Application& app)
                 5000.0f            // depth offset (meters)
             };
 
-            auto prims = feature_view.generate(app.mapNode->worldSRS(), app.context);
+            auto prims = feature_view.generate(app.mapNode->worldSRS(), app.vsgcontext);
 
             if (!prims.empty())
             {

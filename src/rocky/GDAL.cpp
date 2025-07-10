@@ -175,7 +175,7 @@ namespace ROCKY_NAMESPACE
             GDALDataType eBufType,
             GSpacing nPixelSpace,
             GSpacing nLineSpace,
-            Interpolation interpolation = Interpolation::NEAREST)
+            Interpolation interpolation = Interpolation::Nearest)
         {
             GDALRasterIOExtraArg psExtraArg;
 
@@ -184,19 +184,19 @@ namespace ROCKY_NAMESPACE
 
             switch (interpolation)
             {
-            case Interpolation::AVERAGE:
+            case Interpolation::Average:
                 //psExtraArg.eResampleAlg = GRIORA_Average;
                 // for some reason gdal's average resampling produces artifacts occasionally for imagery at higher levels.
                 // for now we'll just use bilinear interpolation under the hood until we can understand what is going on.
                 psExtraArg.eResampleAlg = GRIORA_Bilinear;
                 break;
-            case Interpolation::BILINEAR:
+            case Interpolation::Bilinear:
                 psExtraArg.eResampleAlg = GRIORA_Bilinear;
                 break;
-            case Interpolation::CUBIC:
+            case Interpolation::Cubic:
                 psExtraArg.eResampleAlg = GRIORA_Cubic;
                 break;
-            case Interpolation::CUBICSPLINE:
+            case Interpolation::CubicSpline:
                 psExtraArg.eResampleAlg = GRIORA_CubicSpline;
                 break;
             }
@@ -1119,7 +1119,7 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
             palette,
             target_width, target_height,
             GDT_Byte, 0, 0, 
-            Interpolation::NEAREST);
+            Interpolation::Nearest);
 
         for (int src_row = 0, dst_row = tile_offset_top;
             src_row < target_height;
@@ -1242,7 +1242,7 @@ GDAL::Driver::getInterpolatedDEMValue(GDALRasterBand* band, double x, double y)
         return NO_DATA_VALUE;
 
 
-    if (_layer->interpolation == Interpolation::NEAREST)
+    if (_layer->interpolation == Interpolation::Nearest)
     {
         detail::rasterIO(band, GF_Read, round(c), round(r), 1, 1, &result, 1, 1, GDT_Float32, 0, 0);
 
@@ -1273,7 +1273,7 @@ GDAL::Driver::getInterpolatedDEMValue(GDALRasterBand* band, double x, double y)
             return NO_DATA_VALUE;
         }
 
-        if (_layer->interpolation == Interpolation::AVERAGE)
+        if (_layer->interpolation == Interpolation::Average)
         {
             double x_rem = c - (int)c;
             double y_rem = r - (int)r;
@@ -1285,7 +1285,7 @@ GDAL::Driver::getInterpolatedDEMValue(GDALRasterBand* band, double x, double y)
 
             result = (float)(w00 + w01 + w10 + w11);
         }
-        else if (_layer->interpolation == Interpolation::BILINEAR)
+        else if (_layer->interpolation == Interpolation::Bilinear)
         {
             //Check for exact value
             if ((colMax == colMin) && (rowMax == rowMin))
@@ -1370,10 +1370,10 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
 #if GDAL_VERSION_NUM >= 3100000 // 3.10+
 
     GDALRIOResampleAlg alg =
-        _layer->interpolation == Interpolation::AVERAGE ? GRIORA_Bilinear : // Average not accepted by InterpolateAtPoint
-        _layer->interpolation == Interpolation::BILINEAR ? GRIORA_Bilinear :
-        _layer->interpolation == Interpolation::CUBIC ? GRIORA_Cubic :
-        _layer->interpolation == Interpolation::CUBICSPLINE ? GRIORA_CubicSpline :
+        _layer->interpolation == Interpolation::Average ? GRIORA_Bilinear : // Average not accepted by InterpolateAtPoint
+        _layer->interpolation == Interpolation::Bilinear ? GRIORA_Bilinear :
+        _layer->interpolation == Interpolation::Cubic ? GRIORA_Cubic :
+        _layer->interpolation == Interpolation::CubicSpline ? GRIORA_CubicSpline :
         GRIORA_NearestNeighbour;
 
     double px, py;

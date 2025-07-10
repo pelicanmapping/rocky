@@ -29,14 +29,14 @@ auto Demo_Model = [](Application& app)
 
         // Load model data from a URI
         URI uri("https://raw.githubusercontent.com/vsg-dev/vsgExamples/master/data/models/teapot.vsgt");
-        auto result = uri.read(app.context->io);
+        auto result = uri.read(app.vsgcontext->io);
         status = result.status;
         if (status.failed())
             return;
 
         // Parse the model
         // this is a bit awkward but it works when the URI has an extension
-        auto options = vsg::Options::create(*app.context->readerWriterOptions);
+        auto options = vsg::Options::create(*app.vsgcontext->readerWriterOptions);
         auto extension = std::filesystem::path(uri.full()).extension();
         options->extensionHint = extension.empty() ? std::filesystem::path(result.value.contentType) : extension;
         std::stringstream in(result.value.data);

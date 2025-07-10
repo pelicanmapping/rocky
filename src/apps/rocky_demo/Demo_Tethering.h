@@ -18,7 +18,7 @@ using namespace std::chrono_literals;
 
 auto Demo_Tethering = [](Application& app)
 {
-    auto main_window = app.displayManager->windowsAndViews.begin();
+    auto main_window = app.display.windowsAndViews.begin();
     auto view = main_window->second.front();
     
     auto manip = MapManipulator::get(view);
@@ -47,7 +47,7 @@ auto Demo_Tethering = [](Application& app)
         entity = registry.create();
 
         // add an icon:
-        auto io = app.context->io;
+        auto io = app.vsgcontext->io;
         auto image = io.services.readImageFromURI("https://github.com/gwaldron/osgearth/blob/master/data/airport.png?raw=true", io);
         if (image.status.ok())
         {

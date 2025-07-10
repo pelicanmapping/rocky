@@ -143,6 +143,6 @@ auto Demo_Map = [](Application& app)
 
     if (resetTerrain)
     {
-        app.mapNode->terrainNode->reset(app.context);
+        app.mapNode->terrainNode->reset(app.vsgcontext);
     }
 };

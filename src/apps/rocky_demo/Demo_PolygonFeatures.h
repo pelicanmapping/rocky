@@ -47,7 +47,7 @@ auto Demo_PolygonFeatures = [](Application& app)
             if (data->fs->featureCount() > 0)
                 feature_view.features.reserve(data->fs->featureCount());
 
-            auto iter = data->fs->iterate(app.context->io);
+            auto iter = data->fs->iterate(app.vsgcontext->io);
             while (iter.hasMore())
             {
                 auto feature = iter.next();
@@ -70,7 +70,7 @@ auto Demo_PolygonFeatures = [](Application& app)
                 };
 
             // compile the features into renderable geometry
-            auto prims = feature_view.generate(app.mapNode->worldSRS(), app.context);
+            auto prims = feature_view.generate(app.mapNode->worldSRS(), app.vsgcontext);
 
             if (!prims.empty())
             {

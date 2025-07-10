@@ -25,7 +25,7 @@ auto Demo_Rendering = [](Application& app)
     {
         ImGuiLTable::SliderFloat("Screen space error", &app.mapNode->terrainSettings().screenSpaceError.mutable_value(), 0.0f, 512.0f, "%.0f");
 
-        ImGuiLTable::Checkbox("Render continuously", &app.context->renderContinuously);
+        ImGuiLTable::Checkbox("Render continuously", &app.vsgcontext->renderContinuously);
 
         auto& c = app.mapNode->terrainNode->stategroup->children;
         bool wireframe = c.front() == setWireframeTopology;
@@ -47,7 +47,7 @@ auto Demo_Rendering = [](Application& app)
             else
                 app.mapNode->terrainSettings().skirtRatio.clear();
 
-            app.mapNode->terrainNode->reset(app.context);
+            app.mapNode->terrainNode->reset(app.vsgcontext);
         }
 
         ImGuiLTable::End();

@@ -38,15 +38,14 @@ namespace
 
         void run()
         {
-            app.backgroundServices.start("rocky::simulation",
-                [this](jobs::cancelable& token)
+            app.background.start("rocky::simulation", [this](jobs::cancelable& token)
                 {
                     Log()->info("Simulation thread starting.");
                     while (!token.canceled())
                     {
                         run_at_frequency f(sim_hertz);
-                        motion.update(app.context);
-                        app.context->requestFrame();
+                        motion.update(app.vsgcontext);
+                        app.vsgcontext->requestFrame();
                     }
                     Log()->info("Simulation thread terminating.");
                 });
@@ -78,7 +77,7 @@ auto Demo_Simulation = [](Application& app)
         auto [lock, registry] = app.registry.write();
 
         // add an icon:
-        auto io = app.context->io;
+        auto io = app.vsgcontext->io;
         auto image = io.services.readImageFromURI(icon_location, io);
         status = image.status;
 

@@ -13,7 +13,7 @@ auto Demo_Views = [](Application& app)
 {
     // iterate over all managed windows:
     int window_id = 0;
-    for (auto windows_iter : app.displayManager->windowsAndViews)
+    for (auto windows_iter : app.display.windowsAndViews)
     {
         auto window = windows_iter.first;
         auto& views = windows_iter.second;
@@ -30,7 +30,7 @@ auto Demo_Views = [](Application& app)
                 {
                     ImGuiLTable::Begin("view");
                     
-                    auto rg = app.displayManager->getRenderGraph(view);
+                    auto rg = app.display.getRenderGraph(view);
 
                     // the clear color, which resides in a renderpass attachment:
                     if (rg &&
@@ -69,13 +69,12 @@ auto Demo_Views = [](Application& app)
                                 (std::uint32_t)vp.x, (std::uint32_t)vp.y,
                                 (std::uint32_t)vp.width, (std::uint32_t)vp.height);
 
-                            app.displayManager->refreshView(view);
+                            app.display.refreshView(view);
                         }
 
                         if (ImGui::Button("Remove view"))
                         {
-                            auto dm = app.displayManager;
-                            app.onNextUpdate([dm, view]() { dm->removeView(view); });
+                            app.onNextUpdate([&app, view]() { app.display.removeView(view); });
                         }
                     }
 
@@ -113,17 +112,16 @@ auto Demo_Views = [](Application& app)
                     // create the new view:
                     auto new_view = vsg::View::create(camera, app.root);
 
-                    auto dm = app.displayManager;
-                    auto add = [=]()
+                    auto add = [&]()
                         {
                             std::uniform_int_distribution next_int;
-                            dm->addViewToWindow(new_view, window);
-                            auto rg = dm->getRenderGraph(new_view);
+                            app.display.addViewToWindow(new_view, window);
+                            auto rg = app.display.getRenderGraph(new_view);
                             auto& color = rg->clearValues[0].color.float32;
                             color[0] = float(next_int(rng) % 255) / 255.0f;
                             color[1] = float(next_int(rng) % 255) / 255.0f;
                             color[2] = float(next_int(rng) % 255) / 255.0f;
-                            dm->refreshView(new_view);
+                            app.display.refreshView(new_view);
                         };
 
                     app.onNextUpdate(add);
@@ -132,8 +130,7 @@ auto Demo_Views = [](Application& app)
                 //TODO: multi-window not working
                 if (window_id > 1 && ImGui::Button("Close this window (EXPERIMENTAL)"))
                 {
-                    auto dm = app.displayManager;
-                    app.onNextUpdate([dm, window]() { dm->removeWindow(window); });
+                    app.onNextUpdate([&app, window]() { app.display.removeWindow(window); });
                 }
 
                 ImGui::Unindent();
@@ -148,10 +145,9 @@ auto Demo_Views = [](Application& app)
         ImGui::Separator();
         if (ImGui::Button("Add a window (EXPERIMENTAL)"))
         {
-            auto dm = app.displayManager;
-            app.onNextUpdate([dm, window_id]() {
+            app.onNextUpdate([&app, window_id]() {
                 auto name = std::string("Window ") + std::to_string(window_id);
-                dm->addWindow(vsg::WindowTraits::create(800, 600, name));
+                app.display.addWindow(vsg::WindowTraits::create(800, 600, name));
             });
         }
 
