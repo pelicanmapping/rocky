@@ -42,13 +42,15 @@ out gl_PerVertex {
     vec4 gl_Position;
 };
 
-vec3 bias_and_clamp_to_near_z(in vec3 vertex, float bias, float nearz)
+// Moves the vertex closer to the camera by the specified bias,
+// clamping it beyond the near clip plane if necessary.
+vec3 apply_depth_offset(in vec3 vertex, float offset, float n)
 {
+    float t_n = (-n + 1.0) / -vertex.z; // [0..1] -> [n+1 .. vertex]
+    if (t_n <= 0.0) return vertex; // already behind near plane
     float len = length(vertex);
-    if (len - bias <= nearz)
-        bias = len - nearz - 1.0;
-
-    return vertex - (vertex/len) * bias;
+    float t_offset = 1.0 - (offset/len);
+    return vertex * max(t_n, t_offset);
 }
 
 void main()
@@ -82,22 +84,16 @@ void main()
     float bias = line.depth_offset;
     float nearz = -pc.projection[3][2] / (pc.projection[2][2] + 1.0);
 
-
-    //bias = (length(curr_view.xyz) - nearz - 1.0) * 0.5;
-
     vec4 curr_view = pc.modelview * vec4(in_vertex, 1);
-    curr_view.xyz  = bias_and_clamp_to_near_z(curr_view.xyz, bias, nearz);
-    //curr_view.xyz -= normalize(curr_view.xyz) * bias;
+    curr_view.xyz  = apply_depth_offset(curr_view.xyz, bias, nearz);
     vec4 curr_clip = pc.projection * curr_view;
 
     vec4 prev_view = pc.modelview * vec4(in_vertex_prev, 1);
-    prev_view.xyz  = bias_and_clamp_to_near_z(prev_view.xyz, bias, nearz);
-    //prev_view.xyz -= normalize(prev_view.xyz) * bias;
+    prev_view.xyz  = apply_depth_offset(prev_view.xyz, bias, nearz);
     vec4 prev_clip = pc.projection * prev_view;
 
     vec4 next_view = pc.modelview * vec4(in_vertex_next, 1);
-    next_view.xyz  = bias_and_clamp_to_near_z(next_view.xyz, bias, nearz);
-    //next_view.xyz -= normalize(next_view.xyz) * bias;
+    next_view.xyz  = apply_depth_offset(next_view.xyz, bias, nearz);
     vec4 next_clip = pc.projection * next_view;
 
     vec2 curr_pixel = (curr_clip.xy / curr_clip.w) * viewport_size;
