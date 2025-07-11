@@ -403,30 +403,30 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
 <div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>        <span class="keyword">inline</span> <span class="keywordtype">double</span> dot2D(<span class="keyword">const</span> T&amp; a, <span class="keyword">const</span> T&amp; b)</div>
 <div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>        {</div>
-<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>            <span class="keywordflow">return</span> a.x() * b.x() + a.y() * b.y();</div>
+<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>            <span class="keywordflow">return</span> a.x * b.x + a.y * b.y;</div>
 <div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span>        }</div>
 <div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span> </div>
 <div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
 <div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>        <span class="keyword">inline</span> <span class="keywordtype">double</span> dot3D(<span class="keyword">const</span> T&amp; a, <span class="keyword">const</span> T&amp; b)</div>
 <div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>        {</div>
-<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>            <span class="keywordflow">return</span> a.x() * b.x() + a.y() * b.y() + a.z() * b.z();</div>
+<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>            <span class="keywordflow">return</span> a.x * b.x + a.y * b.y + a.z * b.z;</div>
 <div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>        }</div>
 <div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span> </div>
 <div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
 <div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>        <span class="keyword">inline</span> <span class="keywordtype">double</span> distanceSquared2D(<span class="keyword">const</span> T&amp; a, <span class="keyword">const</span> T&amp; b)</div>
 <div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>        {</div>
 <div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>            <span class="keywordflow">return</span></div>
-<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>                (b.x() - a.x()) * (b.x() - a.x()) +</div>
-<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>                (b.y() - a.y()) * (b.y() - a.y());</div>
+<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>                (b.x - a.x) * (b.x - a.x) +</div>
+<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>                (b.y - a.y) * (b.y - a.y);</div>
 <div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>        }</div>
 <div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span> </div>
 <div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
 <div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>        <span class="keyword">inline</span> <span class="keywordtype">double</span> distanceSquared3D(<span class="keyword">const</span> T&amp; a, <span class="keyword">const</span> T&amp; b)</div>
 <div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>        {</div>
 <div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>            <span class="keywordflow">return</span></div>
-<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>                (b.x() - a.x()) * (b.x() - a.x()) +</div>
-<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>                (b.y() - a.y()) * (b.y() - a.y()) +</div>
-<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>                (b.z() - a.z()) * (b.z() - a.z());</div>
+<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>                (b.x - a.x) * (b.x - a.x) +</div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>                (b.y - a.y) * (b.y - a.y) +</div>
+<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>                (b.z - a.z) * (b.z - a.z);</div>
 <div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>        }</div>
 <div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span> </div>
 <div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
