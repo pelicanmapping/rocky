@@ -60,7 +60,8 @@ jobs:
       shell: bash
       run: |
         cd ${{ matrix.VCPKG_WORKSPACE }}/vcpkg
-        echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+        # echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+        echo "hash=ea2a964f9303270322cf3f2d51c265ba146c422d" >> $GITHUB_OUTPUT
 
     - name: Cache vcpkg dependencies
       uses: actions/cache@v4
