@@ -320,30 +320,30 @@ namespace ROCKY_NAMESPACE
         template<typename T>
         inline double dot2D(const T& a, const T& b)
         {
-            return a.x() * b.x() + a.y() * b.y();
+            return a.x * b.x + a.y * b.y;
         }
 
         template<typename T>
         inline double dot3D(const T& a, const T& b)
         {
-            return a.x() * b.x() + a.y() * b.y() + a.z() * b.z();
+            return a.x * b.x + a.y * b.y + a.z * b.z;
         }
 
         template<typename T>
         inline double distanceSquared2D(const T& a, const T& b)
         {
             return
-                (b.x() - a.x()) * (b.x() - a.x()) +
-                (b.y() - a.y()) * (b.y() - a.y());
+                (b.x - a.x) * (b.x - a.x) +
+                (b.y - a.y) * (b.y - a.y);
         }
 
         template<typename T>
         inline double distanceSquared3D(const T& a, const T& b)
         {
             return
-                (b.x() - a.x()) * (b.x() - a.x()) +
-                (b.y() - a.y()) * (b.y() - a.y()) +
-                (b.z() - a.z()) * (b.z() - a.z());
+                (b.x - a.x) * (b.x - a.x) +
+                (b.y - a.y) * (b.y - a.y) +
+                (b.z - a.z) * (b.z - a.z);
         }
 
         template<typename T>
