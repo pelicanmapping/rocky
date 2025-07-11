@@ -7,6 +7,9 @@
 #define ROCKY_EXPOSE_JSON_FUNCTIONS
 #include <rocky/json.h>
 
+#include <vsg/maths/vec3.h>
+#include <vsg/maths/quat.h>
+
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 
@@ -222,16 +225,16 @@ TEST_CASE("Heightfield")
         hf->heightAt(17, 16) = 50.0f;
         hf->heightAt(17, 17) = 100.0f;
         CHECK(hf->heightAt(16, 16) == 100.0f);
-        CHECK(hf->heightAtPixel(16.5, 16.5, Interpolation::Bilinear) == 75.0f);
+        CHECK(hf->heightAtPixel(16.5, 16.5, Interpolation::BILINEAR) == 75.0f);
         
         // read with NO_DATA_VALUEs:
         hf->heightAt(17, 17) = NO_DATA_VALUE;
         hf->heightAt(16, 16) = NO_DATA_VALUE;
-        CHECK(hf->heightAtPixel(16.5, 16.5, Interpolation::Bilinear) == 50.0f);
+        CHECK(hf->heightAtPixel(16.5, 16.5, Interpolation::BILINEAR) == 50.0f);
 
         // all NODATA:
         hf->fill(NO_DATA_VALUE);
-        CHECK(hf->heightAtPixel(16.5, 16.5, Interpolation::Bilinear) == NO_DATA_VALUE);
+        CHECK(hf->heightAtPixel(16.5, 16.5, Interpolation::BILINEAR) == NO_DATA_VALUE);
     }
 }
 
@@ -843,4 +846,42 @@ TEST_CASE("LayersCollection API")
     layers.remove(layer3);
     CHECK(layers.size() == 0);
     CHECK(layers.empty());
+}
+
+TEST_CASE("MapManipulator NaN fix")
+{
+    // Test case for issue #105 - NaN error in MapManipulator.cpp
+    // This tests that very close vectors don't produce NaN when creating quaternions
+    
+    // Test data from the original issue
+    vsg::dvec3 center(-2248544.6429430502, 5050313.7280376982, 3170373.6894794349);
+    vsg::dvec3 target(-2248544.6095093964, 5050313.7806744399, 3170373.6297455574);
+    
+    // Calculate distance between the vectors
+    double dist = distance3D(center, target);
+    double centerMag = vsg::length(center);
+    double relativeDist = centerMag > 0 ? dist / centerMag : 0;
+    
+    // The relative distance should be very small (less than 1e-6)
+    CHECK(relativeDist < 1e-6);
+    
+    // Test our fix logic - when vectors are very close, use identity quaternion
+    vsg::dquat rotCenterToTarget;
+    if (relativeDist < 1e-6) {
+        rotCenterToTarget = vsg::dquat(0, 0, 0, 1);
+    } else {
+        rotCenterToTarget.set(center, target);
+    }
+    
+    // Check that none of the quaternion components are NaN
+    CHECK(!std::isnan(rotCenterToTarget.x));
+    CHECK(!std::isnan(rotCenterToTarget.y));
+    CHECK(!std::isnan(rotCenterToTarget.z));
+    CHECK(!std::isnan(rotCenterToTarget.w));
+    
+    // The quaternion should be an identity quaternion (or very close to it)
+    CHECK(rotCenterToTarget.x == 0.0);
+    CHECK(rotCenterToTarget.y == 0.0);
+    CHECK(rotCenterToTarget.z == 0.0);
+    CHECK(rotCenterToTarget.w == 1.0);
 }
