@@ -12,5 +12,5 @@ var searchData=
   ['imguinode_9',['ImGuiNode',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_im_gui_node.html',1,'ROCKY_NAMESPACE']]],
   ['iooptions_10',['IOOptions',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_options.html',1,'ROCKY_NAMESPACE']]],
   ['ioresult_11',['IOResult',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_i_o_result.html',1,'ROCKY_NAMESPACE']]],
-  ['iterator_12',['iterator',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_source_1_1iterator.html',1,'ROCKY_NAMESPACE::FeatureSource::iterator'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geometry_1_1iterator.html',1,'ROCKY_NAMESPACE::Geometry::iterator&lt; T &gt;'],['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_1_1_iterator.html',1,'ROCKY_NAMESPACE::Image::Iterator'],['../class_r_tree_1_1_iterator.html',1,'RTree&lt; DATATYPE, ELEMTYPE, NUMDIMS, ELEMTYPEREAL, TMAXNODES, TMINNODES &gt;::Iterator']]]
+  ['iterator_12',['iterator',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_feature_source_1_1iterator.html',1,'ROCKY_NAMESPACE::FeatureSource::iterator'],['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_image_1_1iterator.html',1,'ROCKY_NAMESPACE::Image::iterator'],['../class_r_tree_1_1_iterator.html',1,'RTree&lt; DATATYPE, ELEMTYPE, NUMDIMS, ELEMTYPEREAL, TMAXNODES, TMINNODES &gt;::Iterator']]]
 ];
