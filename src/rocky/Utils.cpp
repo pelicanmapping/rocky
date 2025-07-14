@@ -29,7 +29,7 @@ using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 
 std::vector<std::string>
-StringTokenizer::operator()(const std::string& input, bool* error) const
+StringTokenizer::operator()(std::string_view input, bool* error) const
 {
     if (error)
         *error = false;
@@ -197,7 +197,7 @@ StringTokenizer::operator()(const std::string& input, bool* error) const
 //--------------------------------------------------------------------------
 
 std::string
-rocky::util::toLegalFileName(const std::string& input, bool allowSubdirs, const char* replacementChar)
+rocky::util::toLegalFileName(std::string_view input, bool allowSubdirs, const char* replacementChar)
 {
     // See: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_282
     // We omit '-' so we can use it for the HEX identifier.
@@ -235,12 +235,12 @@ rocky::util::toLegalFileName(const std::string& input, bool allowSubdirs, const 
 
 /** MurmurHash 2.0 (http://sites.google.com/site/murmurhash/) */
 unsigned
-rocky::util::hashString( const std::string& input )
+rocky::util::hashString(std::string_view input )
 {
     const unsigned m = 0x5bd1e995;
     const int r = 24;
     unsigned len = (unsigned)input.length();
-    const char* data = input.c_str();
+    const char* data = input.data();
     unsigned int h = m ^ len; // using "m" as the seed.
 
     while(len >= 4)
@@ -274,8 +274,8 @@ rocky::util::hashString( const std::string& input )
 std::string&
 rocky::util::replace_in_place(
     std::string& s,
-    const std::string& sub,
-    const std::string& other)
+    std::string_view sub,
+    std::string_view other)
 {
     if (sub.empty()) return s;
     size_t b = 0;
@@ -292,15 +292,15 @@ rocky::util::replace_in_place(
 std::string&
 rocky::util::replace_in_place_case_insensitive(
     std::string& s,
-    const std::string& pattern,
-    const std::string& replacement)
+    std::string_view pattern,
+    std::string_view replacement)
 {
     if (pattern.empty()) return s;
 
-    std::string upperSource = s;
+    std::string upperSource(s);
     std::transform(upperSource.begin(), upperSource.end(), upperSource.begin(), (int(*)(int))std::toupper);
 
-    std::string upperPattern = pattern;
+    std::string upperPattern(pattern);
     std::transform(upperPattern.begin(), upperPattern.end(), upperPattern.begin(), (int(*)(int))std::toupper);
 
     for (size_t b = 0; ; )
@@ -338,18 +338,18 @@ rocky::util::trim_in_place( std::string& str )
 * copy of the string with whitespace removed.
 */
 std::string
-rocky::util::trim( const std::string& in )
+rocky::util::trim(std::string_view in)
 {
-    std::string str = in;
-    trim_in_place( str );
+    std::string str(in);
+    trim_in_place(str);
     return str;
 }
 
 /** Returns a lower-case version of the input string. */
 std::string
-rocky::util::toLower( const std::string& input )
+rocky::util::toLower(std::string_view input )
 {
-    std::string output = input;
+    std::string output(input);
     std::transform( output.begin(), output.end(), output.begin(), ::tolower );
     return output;
 }
@@ -367,7 +367,7 @@ namespace
 }
 
 bool
-rocky::util::ciEquals(const std::string& lhs, const std::string& rhs, const std::locale& loc )
+rocky::util::ciEquals(std::string_view lhs, std::string_view rhs, const std::locale& loc )
 {
     if ( lhs.length() != rhs.length() )
         return false;
@@ -388,7 +388,7 @@ rocky::util::ciEquals(const std::string& lhs, const std::string& rhs, const std:
 #endif
 
 bool
-rocky::util::startsWith( const std::string& ref, const std::string& pattern, bool caseSensitive, const std::locale& loc )
+rocky::util::startsWith(std::string_view ref, std::string_view pattern, bool caseSensitive, const std::locale& loc )
 {
     if ( pattern.length() > ref.length() )
         return false;
@@ -413,7 +413,7 @@ rocky::util::startsWith( const std::string& ref, const std::string& pattern, boo
 }
 
 bool
-rocky::util::endsWith( const std::string& ref, const std::string& pattern, bool caseSensitive, const std::locale& loc )
+rocky::util::endsWith(std::string_view ref, std::string_view pattern, bool caseSensitive, const std::locale& loc )
 {
     if ( pattern.length() > ref.length() )
         return false;
@@ -460,9 +460,9 @@ rocky::util::getExecutableLocation()
 }
 
 bool
-rocky::util::writeToFile(const std::string& data, const std::string& filename)
+rocky::util::writeToFile(std::string_view data, std::string_view filename)
 {
-    std::ofstream out(filename);
+    std::ofstream out(filename.data());
     if (out.fail())
         return false;
     out << data;
@@ -471,9 +471,9 @@ rocky::util::writeToFile(const std::string& data, const std::string& filename)
 }
 
 Result<std::string>
-rocky::util::readFromFile(const std::string& filename)
+rocky::util::readFromFile(std::string_view filename)
 {
-    std::ifstream in(filename, std::ios_base::binary);
+    std::ifstream in(filename.data(), std::ios_base::binary);
     if (in.fail())
         return Status(Status::ResourceUnavailable);
     std::stringstream buf;
@@ -558,7 +558,7 @@ BackgroundServices::start(const std::string& name, Function function)
             return true;
         };
 
-    jobs::context context{ name, jobs::get_pool(name, 1) };
+    jobs::context context{ std::string(name), jobs::get_pool(name, 1) };
     futures.emplace_back(jobs::dispatch(delegate, context));
 
     return futures.back();

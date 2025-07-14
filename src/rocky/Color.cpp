@@ -5,12 +5,9 @@
  */
 #include "Color.h"
 #include "Utils.h"
-#include "Math.h"
-#include <algorithm>
 #include <sstream>
 #include <iomanip>
 #include <random>
-#include <ctype.h>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
@@ -108,29 +105,29 @@ namespace
     }
 }
 
-Color Color::White    ( 0xffffffff, Color::RGBA );
-Color Color::Silver   ( 0xc0c0c0ff, Color::RGBA );
-Color Color::Gray     ( 0x808080ff, Color::RGBA );
-Color Color::Black    ( 0x000000ff, Color::RGBA );
-Color Color::Red      ( 0xff0000ff, Color::RGBA );
-Color Color::Maroon   ( 0x800000ff, Color::RGBA );
-Color Color::Yellow   ( 0xffff00ff, Color::RGBA );
-Color Color::Olive    ( 0x808000ff, Color::RGBA );
-Color Color::Lime     ( 0x00ff00ff, Color::RGBA );
-Color Color::Green    ( 0x008000ff, Color::RGBA );
-Color Color::Aqua     ( 0x00ffffff, Color::RGBA );
-Color Color::Teal     ( 0x008080ff, Color::RGBA );
-Color Color::Blue     ( 0x0000ffff, Color::RGBA );
-Color Color::Navy     ( 0x000080ff, Color::RGBA );
-Color Color::Fuchsia  ( 0xff00ffff, Color::RGBA );
-Color Color::Purple   ( 0x800080ff, Color::RGBA );
-Color Color::Orange   ( 0xffa500ff, Color::RGBA );
+const Color Color::White    ( 0xffffffff, Color::RGBA );
+const Color Color::Silver   ( 0xc0c0c0ff, Color::RGBA );
+const Color Color::Gray     ( 0x808080ff, Color::RGBA );
+const Color Color::Black    ( 0x000000ff, Color::RGBA );
+const Color Color::Red      ( 0xff0000ff, Color::RGBA );
+const Color Color::Maroon   ( 0x800000ff, Color::RGBA );
+const Color Color::Yellow   ( 0xffff00ff, Color::RGBA );
+const Color Color::Olive    ( 0x808000ff, Color::RGBA );
+const Color Color::Lime     ( 0x00ff00ff, Color::RGBA );
+const Color Color::Green    ( 0x008000ff, Color::RGBA );
+const Color Color::Aqua     ( 0x00ffffff, Color::RGBA );
+const Color Color::Teal     ( 0x008080ff, Color::RGBA );
+const Color Color::Blue     ( 0x0000ffff, Color::RGBA );
+const Color Color::Navy     ( 0x000080ff, Color::RGBA );
+const Color Color::Fuchsia  ( 0xff00ffff, Color::RGBA );
+const Color Color::Purple   ( 0x800080ff, Color::RGBA );
+const Color Color::Orange   ( 0xffa500ff, Color::RGBA );
 
-Color Color::DarkGray ( 0x404040ff, Color::RGBA );
-Color Color::Magenta  ( 0xc000c0ff, Color::RGBA );
-Color Color::Cyan     ( 0x00ffffff, Color::RGBA );
-Color Color::Brown    ( 0xaa5500ff, Color::RGBA );
-Color Color::Transparent(0x00000000,Color::RGBA);
+const Color Color::DarkGray ( 0x404040ff, Color::RGBA );
+const Color Color::Magenta  ( 0xc000c0ff, Color::RGBA );
+const Color Color::Cyan     ( 0x00ffffff, Color::RGBA );
+const Color Color::Brown    ( 0xaa5500ff, Color::RGBA );
+const Color Color::Transparent(0x00000000,Color::RGBA);
 
 Color::Color(unsigned v, Format format)
 {
@@ -159,7 +156,12 @@ Color::Color(const Color& rhs, float alpha) :
 /** Parses a hex color string ("#rrggbb", "#rrggbbaa", "0xrrggbb", etc.) into an OSG color. */
 Color::Color(const std::string& input, Format format)
 {
-    std::string t = util::trim(util::toLower(input));
+    // ascii-only toLower + trim:
+    std::string t;
+    t.reserve(input.size());
+    for(auto c : input)
+        if (!std::isspace(c))
+            t += (c >= 'A' && c <= 'Z') ? (c | 0x20) : c;
 
     if (util::startsWith(t, "rgb("))
     {
@@ -407,11 +409,8 @@ Color::asNormalizedRGBA() const
         (char)(a * 255.0));
 }
 
-void
-Color::createRandomColorRamp(
-    unsigned count,
-    std::vector<Color>& output,
-    int seed)
+std::vector<Color>
+Color::createRandomColorRamp(unsigned count, int seed)
 {
     // Code is adapted from QGIS random color ramp feature,
     // which found the idea here (http://basecase.org/env/on-rainbows)
@@ -431,6 +430,7 @@ Color::createRandomColorRamp(
     float hueAngle = (float)prng(gen);// prng.next(360);
     glm::fvec4 hsv(0, 0, 0, 1);
 
+    std::vector<Color> output;
     output.reserve(count);
 
     for (unsigned i = 0; i < count; ++i)
@@ -441,6 +441,8 @@ Color::createRandomColorRamp(
         hsv[2] = valMin + (float)prng(gen)*(valMax - valMin);        
         output.emplace_back(hsv2rgb_in_place(hsv));
     }
+
+    return output;
 }
 
 

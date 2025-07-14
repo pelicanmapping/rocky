@@ -4,10 +4,11 @@
  * MIT License
  */
 #pragma once
-
+#include <rocky/Common.h>
 #include <rocky/Math.h>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 namespace ROCKY_NAMESPACE
 {
@@ -49,9 +50,7 @@ namespace ROCKY_NAMESPACE
             glm::fvec4(v, v, v, v) { }
 
         /** RGBA/ABGR constructor */
-        explicit Color(
-            unsigned value,
-            Format format = RGBA);
+        explicit Color(std::uint32_t value, Format format = RGBA);
 
         /**
          * Construct a color from a hex string in one of the following formats, (with or
@@ -66,7 +65,7 @@ namespace ROCKY_NAMESPACE
         std::string toHTML(Format format = RGBA) const;
 
         /** Dump out the color as a 32-bit integer */
-        unsigned as(Format format) const;
+        std::uint32_t as(Format format) const;
 
         /** Lighten/darken the color by factor */
         Color brightness(float factor) const;
@@ -86,36 +85,33 @@ namespace ROCKY_NAMESPACE
         // built in colors
         // http://en.wikipedia.org/wiki/Web_colors#HTML_color_names
 
-        static Color White;
-        static Color Silver;
-        static Color Gray;
-        static Color Black;
-        static Color Red;
-        static Color Maroon;
-        static Color Yellow;
-        static Color Olive;
-        static Color Lime;
-        static Color Green;
-        static Color Aqua;
-        static Color Teal;
-        static Color Blue;
-        static Color Navy;
-        static Color Fuchsia;
-        static Color Purple;
-        static Color Orange;
+        static const Color White;
+        static const Color Silver;
+        static const Color Gray;
+        static const Color Black;
+        static const Color Red;
+        static const Color Maroon;
+        static const Color Yellow;
+        static const Color Olive;
+        static const Color Lime;
+        static const Color Green;
+        static const Color Aqua;
+        static const Color Teal;
+        static const Color Blue;
+        static const Color Navy;
+        static const Color Fuchsia;
+        static const Color Purple;
+        static const Color Orange;
 
         // others:
-        static Color Cyan;
-        static Color DarkGray;
-        static Color Magenta;
-        static Color Brown;
-        static Color Transparent;
+        static const Color Cyan;
+        static const Color DarkGray;
+        static const Color Magenta;
+        static const Color Brown;
+        static const Color Transparent;
 
         //! generate a random color ramp
-        static void createRandomColorRamp(
-            unsigned count,
-            std::vector<Color>& output,
-            int seed = -1);
+        static std::vector<Color> createRandomColorRamp(unsigned count, int seed = -1);
     };
 
 } // namespace osgEarth

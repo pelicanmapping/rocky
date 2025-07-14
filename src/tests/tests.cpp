@@ -196,7 +196,7 @@ TEST_CASE("Image")
     }
 
     image = Image::create(Image::R8G8B8A8_UNORM, 256, 256);
-    image->fill(Color(1, 0.5, 0.0, 1));
+    image->fill(Color::Orange);
     Image::Pixel value;
     image->read(value, 17, 17);
     //std::cout << value.r << ", " << value.g << ", " << value.b << ", " << value.a << std::endl;

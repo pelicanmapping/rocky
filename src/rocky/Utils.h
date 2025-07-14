@@ -50,7 +50,7 @@ namespace ROCKY_NAMESPACE
         //! Replacement for sprintf
         //! https://stackoverflow.com/a/26221725/4218920
         template<typename ... Args>
-        std::string format( const std::string& format, Args... args) {
+        std::string format(const std::string& format, Args... args) {
             int size_s = std::snprintf( nullptr, 0, format.c_str(), args... ) + 1; // Extra space for '\0'
             if( size_s <= 0 ) { throw std::runtime_error( "Error during formatting." ); }
             auto size = static_cast<size_t>( size_s );
@@ -62,48 +62,48 @@ namespace ROCKY_NAMESPACE
         //! Replaces all the instances of "pattern" with "replacement" in "in_out"
         extern ROCKY_EXPORT std::string& replace_in_place(
             std::string& in_out,
-            const std::string& pattern,
-            const std::string& replacement);
+            std::string_view pattern,
+            std::string_view replacement);
 
         //! Replaces all the instances of "pattern" with "replacement" in "in_out" (case-insensitive)
         extern ROCKY_EXPORT std::string& replace_in_place_case_insensitive(
             std::string& in_out,
-            const std::string& pattern,
-            const std::string& replacement);
+            std::string_view pattern,
+            std::string_view replacement);
 
         //! Trims whitespace from the ends of a string.
-        extern ROCKY_EXPORT std::string trim(const std::string& in);
+        extern ROCKY_EXPORT std::string trim(std::string_view in);
 
         //! Trims whitespace from the ends of a string; in-place modification on the string to reduce string copies.
         extern ROCKY_EXPORT void trim_in_place(std::string& str);
 
         //! True is "ref" starts with "pattern"
         extern ROCKY_EXPORT bool startsWith(
-            const std::string& ref,
-            const std::string& pattern,
-            bool               caseSensitive = true,
+            std::string_view ref,
+            std::string_view pattern,
+            bool caseSensitive = true,
             const std::locale& locale = std::locale());
 
         //! True is "ref" ends with "pattern"
         extern ROCKY_EXPORT bool endsWith(
-            const std::string& ref,
-            const std::string& pattern,
-            bool               caseSensitive = true,
+            std::string_view ref,
+            std::string_view pattern,
+            bool caseSensitive = true,
             const std::locale& locale = std::locale());
 
         //! Case-insensitive compare
         extern ROCKY_EXPORT bool ciEquals(
-            const std::string& lhs,
-            const std::string& rhs,
+            std::string_view lhs,
+            std::string_view rhs,
             const std::locale& local = std::locale());
         
-        extern ROCKY_EXPORT std::string toLower(const std::string& input);
+        extern ROCKY_EXPORT std::string toLower(std::string_view input);
 
         /** Makes a valid filename out of a string */
-        extern ROCKY_EXPORT std::string toLegalFileName(const std::string& input, bool allowSubdir = false, const char* replacementChar = NULL);
+        extern ROCKY_EXPORT std::string toLegalFileName(std::string_view input, bool allowSubdir = false, const char* replacementChar = NULL);
 
         /** Generates a hashed integer for a string (poor man's MD5) */
-        extern ROCKY_EXPORT unsigned hashString(const std::string& input);
+        extern ROCKY_EXPORT unsigned hashString(std::string_view input);
 
         //! Full pathname of the currently running executable
         extern ROCKY_EXPORT std::string getExecutableLocation();
@@ -113,7 +113,7 @@ namespace ROCKY_NAMESPACE
 
         // converts a string to primitive using serialization
         template<typename T> inline T
-            as(const std::string& str, const T& default_value)
+        as(const std::string& str, const T& default_value)
         {
             T temp = default_value;
             std::istringstream strin(str);
@@ -123,32 +123,32 @@ namespace ROCKY_NAMESPACE
 
         // template specialization for integers (to handle hex)
 #define AS_INT_DEC_OR_HEX(TYPE) \
-    template<> inline TYPE \
-    as< TYPE >(const std::string& str, const TYPE & dv) { \
-        TYPE temp = dv; \
-        std::istringstream strin( trim(str) ); \
-        if ( !strin.eof() ) { \
-            if ( str.length() >= 2 && str[0] == '0' && str[1] == 'x' ) { \
-                strin.seekg( 2 ); \
-                strin >> std::hex >> temp; \
+        template<> inline TYPE \
+        as< TYPE >(const std::string& str, const TYPE & dv) { \
+            TYPE temp = dv; \
+            std::istringstream strin( trim(str) ); \
+            if ( !strin.eof() ) { \
+                if ( str.length() >= 2 && str[0] == '0' && str[1] == 'x' ) { \
+                    strin.seekg( 2 ); \
+                    strin >> std::hex >> temp; \
+                } \
+                else { \
+                    strin >> temp; \
+                } \
             } \
-            else { \
-                strin >> temp; \
-            } \
-        } \
-        return temp; \
-    }
+            return temp; \
+        }
 
         AS_INT_DEC_OR_HEX(int)
-            AS_INT_DEC_OR_HEX(unsigned)
-            AS_INT_DEC_OR_HEX(short)
-            AS_INT_DEC_OR_HEX(unsigned short)
-            AS_INT_DEC_OR_HEX(long)
-            AS_INT_DEC_OR_HEX(unsigned long)
+        AS_INT_DEC_OR_HEX(unsigned)
+        AS_INT_DEC_OR_HEX(short)
+        AS_INT_DEC_OR_HEX(unsigned short)
+        AS_INT_DEC_OR_HEX(long)
+        AS_INT_DEC_OR_HEX(unsigned long)
 
-            // template specialization for a bool
-            template<> inline bool
-            as<bool>(const std::string& str, const bool& default_value)
+        // template specialization for a bool
+        template<> inline bool
+        as<bool>(const std::string& str, const bool& default_value)
         {
             std::string temp = toLower(str);
             return
@@ -166,7 +166,7 @@ namespace ROCKY_NAMESPACE
 
         // snips a substring and parses it.
         template<typename T> inline bool
-            as(const std::string& in, unsigned start, unsigned len, T default_value)
+            as(std::string_view in, unsigned start, unsigned len, T default_value)
         {
             std::string buf;
             std::copy(in.begin() + start, in.begin() + start + len, std::back_inserter(buf));
@@ -210,16 +210,16 @@ namespace ROCKY_NAMESPACE
 
             //! Tokenize input into output.
             //! @return true upon success, false if there was a dangling quote.
-            std::vector<std::string> operator()(const std::string& input, bool* error = nullptr) const;
+            std::vector<std::string> operator()(std::string_view input, bool* error = nullptr) const;
 
             //! Backwards compatibility
             //! @deprecated
-            void tokenize(const std::string& input, std::vector<std::string>& output) const {
+            void tokenize(std::string_view input, std::vector<std::string>& output) const {
                 output = operator()(input, nullptr);
             }
 
             //! Alias
-            std::vector<std::string> tokenize(const std::string& input) const {
+            std::vector<std::string> tokenize(std::string_view input) const {
                 return operator()(input, nullptr);
             }
 
@@ -276,10 +276,10 @@ namespace ROCKY_NAMESPACE
         };
 
         //! Writes a string to a text file on disk.
-        extern ROCKY_EXPORT bool writeToFile(const std::string& data, const std::string& filename);
+        extern ROCKY_EXPORT bool writeToFile(std::string_view data, std::string_view filename);
 
         //! Reads a disk file into a string.
-        extern ROCKY_EXPORT Result<std::string> readFromFile(const std::string& filename);
+        extern ROCKY_EXPORT Result<std::string> readFromFile(std::string_view filename);
 
         //! Sets the name of the current thread
         extern ROCKY_EXPORT void setThreadName(const char* name);
