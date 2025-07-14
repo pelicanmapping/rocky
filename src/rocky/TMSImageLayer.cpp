@@ -14,12 +14,12 @@ using namespace ROCKY_NAMESPACE::TMS;
 #define LC "[TMS] "
 
 ROCKY_ADD_OBJECT_FACTORY(TMSImage,
-    [](const std::string& JSON, const IOOptions& io) {
+    [](std::string_view JSON, const IOOptions& io) {
         return TMSImageLayer::create(JSON, io); })
 
 
 ROCKY_ADD_OBJECT_FACTORY(XYZImage,
-    [](const std::string& JSON, const IOOptions& io) {
+    [](std::string_view JSON, const IOOptions& io) {
         auto layer = TMSImageLayer::create(JSON, io);
         if (!layer->profile.valid())
             layer->profile = Profile("spherical-mercator");
@@ -32,14 +32,14 @@ TMSImageLayer::TMSImageLayer() :
     construct({}, {});
 }
 
-TMSImageLayer::TMSImageLayer(const std::string& JSON, const IOOptions& io) :
+TMSImageLayer::TMSImageLayer(std::string_view JSON, const IOOptions& io) :
     super(JSON, io)
 {
     construct(JSON, io);
 }
 
 void
-TMSImageLayer::construct(const std::string& JSON, const IOOptions& io)
+TMSImageLayer::construct(std::string_view JSON, const IOOptions& io)
 {
     setLayerTypeName("TMSImage");
     const auto j = parse_json(JSON);

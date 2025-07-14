@@ -19,7 +19,7 @@ namespace ROCKY_NAMESPACE
     public:
         //! Construct an empty TMS layer
         TMSImageLayer();
-        TMSImageLayer(const std::string& JSON, const IOOptions& io);
+        TMSImageLayer(std::string_view JSON, const IOOptions& io);
 
         //! serialize
         std::string to_json() const override;
@@ -36,6 +36,6 @@ namespace ROCKY_NAMESPACE
     private:
         TMS::Driver _driver;
 
-        void construct(const std::string& JSON, const IOOptions& io);
+        void construct(std::string_view JSON, const IOOptions& io);
     };
 }

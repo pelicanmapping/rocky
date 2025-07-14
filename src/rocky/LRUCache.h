@@ -9,7 +9,7 @@
 #include <rocky/Utils.h>
 #include <mutex>
 #include <list>
-#include <algorithm>
+#include <optional>
 
 namespace ROCKY_NAMESPACE
 {

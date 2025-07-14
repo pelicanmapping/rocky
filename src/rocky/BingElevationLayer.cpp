@@ -16,7 +16,7 @@ using namespace ROCKY_NAMESPACE::Bing;
 #define LC "[Bing] "
 
 ROCKY_ADD_OBJECT_FACTORY(BingElevation, 
-    [](const std::string& JSON, const IOOptions& io) { 
+    [](std::string_view JSON, const IOOptions& io) {
         return BingElevationLayer::create(JSON, io); })
 
 BingElevationLayer::BingElevationLayer() :
@@ -25,14 +25,14 @@ BingElevationLayer::BingElevationLayer() :
     construct({}, {});
 }
 
-BingElevationLayer::BingElevationLayer(const std::string& JSON, const IOOptions& io) :
+BingElevationLayer::BingElevationLayer(std::string_view JSON, const IOOptions& io) :
     super(JSON, io)
 {
     construct(JSON, io);
 }
 
 void
-BingElevationLayer::construct(const std::string& JSON, const IOOptions& io)
+BingElevationLayer::construct(std::string_view JSON, const IOOptions& io)
 {
     setLayerTypeName("BingElevation");
 

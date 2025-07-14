@@ -6,7 +6,6 @@
 #pragma once
 
 #include <rocky/TerrainTileModel.h>
-#include <unordered_map>
 
 namespace ROCKY_NAMESPACE
 {

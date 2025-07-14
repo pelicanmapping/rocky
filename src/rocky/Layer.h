@@ -123,7 +123,7 @@ namespace ROCKY_NAMESPACE
 
         Layer();
 
-        Layer(const JSON& conf);
+        Layer(std::string_view conf);
 
         //! Called by open() to connect to external resources and return a status.
         //! MAKE SURE you call superclass openImplementation() if you override this!
@@ -154,7 +154,7 @@ namespace ROCKY_NAMESPACE
         std::string _layerTypeName;
 
         //! post-ctor initialization
-        void construct(const JSON&);
+        void construct(std::string_view);
 
     protected:
 

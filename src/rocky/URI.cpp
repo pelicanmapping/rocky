@@ -648,7 +648,7 @@ URI::read(const IOOptions& io) const
         static int rotator = 0;
         if (_r0 != std::string::npos && _r1 != std::string::npos)
         {
-            util::replace_in_place(
+            util::replaceInPlace(
                 request.url,
                 request.url.substr(_r0, _r1 - _r0 + 1),
                 request.url.substr(_r0 + 1 + (rotator++ % (_r1 - _r0 - 1)), 1));
@@ -706,7 +706,7 @@ std::string
 URI::urlEncode(const std::string& value)
 {
 #ifdef ROCKY_HAS_HTTPLIB
-    return httplib::detail::encode_url(value);
+    return httplib::encode_uri(value);
 #else
     return {};
 #endif

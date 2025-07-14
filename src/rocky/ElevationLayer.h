@@ -65,7 +65,7 @@ namespace ROCKY_NAMESPACE
         ElevationLayer();
 
         //! Deserialize (from subclass)
-        explicit ElevationLayer(const std::string& JSON, const IOOptions& io);
+        explicit ElevationLayer(std::string_view JSON, const IOOptions& io);
 
         //! Entry point for createHeightfield
         Result<GeoHeightfield> createHeightfieldInKeyProfile(
@@ -86,7 +86,7 @@ namespace ROCKY_NAMESPACE
         std::shared_ptr<Heightfield> decodeRGB(std::shared_ptr<Image> image) const;
 
     private:
-        void construct(const std::string& JSON, const IOOptions& io);
+        void construct(std::string_view, const IOOptions& io);
 
         std::shared_ptr<Heightfield> assembleHeightfield(const TileKey& key, const IOOptions& io) const;
 

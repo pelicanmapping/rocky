@@ -4,10 +4,10 @@
  * MIT License
  */
 #include "VSGContext.h"
-#include "MapNode.h"
 #include "Utils.h"
 #include <rocky/Image.h>
 #include <rocky/URI.h>
+#include <filesystem>
 
 #include <spdlog/sinks/stdout_color_sinks.h>
 

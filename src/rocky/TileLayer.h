@@ -10,6 +10,7 @@
 #include <rocky/VisibleLayer.h>
 #include <rocky/Profile.h>
 #include <rocky/TileKey.h>
+#include <map>
 
 namespace ROCKY_NAMESPACE
 {
@@ -54,7 +55,7 @@ namespace ROCKY_NAMESPACE
 
         TileLayer();
 
-        TileLayer(const JSON&);
+        TileLayer(std::string_view);
 
     public:
 
@@ -117,7 +118,7 @@ namespace ROCKY_NAMESPACE
 
     private:
         // Post-ctor
-        void construct(const JSON&);
+        void construct(std::string_view);
 
         // available data extents.
         DataExtentList _dataExtents;

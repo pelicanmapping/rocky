@@ -22,7 +22,7 @@ namespace ROCKY_NAMESPACE
         GDALElevationLayer();
 
         //! Deserialize a GDAL image layer
-        GDALElevationLayer(const std::string& JSON, const IOOptions& io);
+        GDALElevationLayer(std::string_view JSON, const IOOptions& io);
 
         //! serialize
         std::string to_json() const override;
@@ -43,7 +43,7 @@ namespace ROCKY_NAMESPACE
     private:
 
         //! Called by the constructors
-        void construct(const std::string& JSON, const IOOptions& io);
+        void construct(std::string_view JSON, const IOOptions& io);
 
         mutable util::ThreadLocal<GDAL::Driver> _drivers;
         friend class GDAL::Driver;

@@ -8,6 +8,7 @@
 #include <rocky/Common.h>
 #include <rocky/Units.h>
 #include <rocky/Ellipsoid.h>
+#include <optional>
 
 namespace ROCKY_NAMESPACE
 {
@@ -51,7 +52,7 @@ namespace ROCKY_NAMESPACE
         //! @param definition Definition string may be WKT string, 
         //!     a PROJ init string, an epsg code (like epsg:4326), or a
         //!     well-known alias like "wgs84" or "spherical-mercator".
-        SRS(const std::string& definition);
+        SRS(std::string_view definition);
 
         //! Make an operation that will take coordinates from this SRS to another
         //! @param target Target SRS for coordinate operation

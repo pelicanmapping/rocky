@@ -17,7 +17,8 @@ using namespace ROCKY_NAMESPACE::Bing;
 #define LC "[Bing] "
 
 ROCKY_ADD_OBJECT_FACTORY(BingImage,
-    [](const std::string& JSON, const IOOptions& io) { return BingImageLayer::create(JSON, io); })
+    [](std::string_view JSON, const IOOptions& io) { 
+        return BingImageLayer::create(JSON, io); })
 
 BingImageLayer::BingImageLayer() :
     super()
@@ -25,14 +26,14 @@ BingImageLayer::BingImageLayer() :
     construct({}, {});
 }
 
-BingImageLayer::BingImageLayer(const std::string& JSON, const IOOptions& io) :
+BingImageLayer::BingImageLayer(std::string_view JSON, const IOOptions& io) :
     super(JSON, io)
 {
     construct(JSON, io);
 }
 
 void
-BingImageLayer::construct(const std::string& JSON, const IOOptions& io)
+BingImageLayer::construct(std::string_view JSON, const IOOptions& io)
 {
     setLayerTypeName("BingImage");
 

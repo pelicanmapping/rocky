@@ -59,14 +59,14 @@ ImageLayer::ImageLayer() :
     construct({}, {});
 }
 
-ImageLayer::ImageLayer(const std::string& JSON, const IOOptions& io) :
+ImageLayer::ImageLayer(std::string_view JSON, const IOOptions& io) :
     super(JSON)
 {
     construct(JSON, io);
 }
 
 void
-ImageLayer::construct(const std::string& JSON, const IOOptions& io)
+ImageLayer::construct(std::string_view JSON, const IOOptions& io)
 {
     const auto j = parse_json(JSON);
     get_to(j, "sharpness", sharpness);

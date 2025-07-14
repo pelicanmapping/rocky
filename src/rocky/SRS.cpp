@@ -180,12 +180,12 @@ namespace
                     else
                     {
                         // +init= is no longer supported in PROJ 7+
-                        util::replace_in_place(to_try, "+init=", "");
+                        util::replaceInPlace(to_try, "+init=", "");
 
                         // perhaps it's an EPSG string, in which case we must lower-case it so it
                         // works on case-sensitive file systems
                         // https://github.com/pyproj4/pyproj/blob/9283f962e4792da2a7f05ba3735c1ed7f3479502/pyproj/crs/crs.py#L111
-                        util::replace_in_place(to_try, "EPSG", "epsg");
+                        util::replaceInPlace(to_try, "EPSG", "epsg");
                     }
 
                     pj = proj_create(ctx, to_try.c_str());
@@ -258,7 +258,7 @@ namespace
 
                             // and cache the corresponding geocentric SRS:
                             std::string proj = proj_as_proj_string(ctx, new_entry.pj_geodetic, PJ_PROJ_5, nullptr);
-                            util::replace_in_place(proj, "+proj=longlat", "+proj=geocent");
+                            util::replaceInPlace(proj, "+proj=longlat", "+proj=geocent");
                             new_entry.geocentricSRS = SRS(proj);
                         }
                     }
@@ -269,7 +269,7 @@ namespace
                         // We do this because proj_crs_get_geodetic_crs() on a geocentric CRS
                         // just returns the same geocentric CRS. Is that a bug in proj? (checkme)
                         std::string proj = new_entry.proj;
-                        util::replace_in_place(proj, "+proj=geocent", "+proj=longlat");
+                        util::replaceInPlace(proj, "+proj=geocent", "+proj=longlat");
                         new_entry.geodeticSRS = SRS(proj);
                     }
 
@@ -543,7 +543,7 @@ SRS::projVersion()
     return std::to_string(PROJ_VERSION_MAJOR) + "." + std::to_string(PROJ_VERSION_MINOR);
 }
 
-SRS::SRS(const std::string& h) :
+SRS::SRS(std::string_view h) :
     _definition(h)
 {
     //nop

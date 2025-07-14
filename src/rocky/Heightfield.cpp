@@ -4,7 +4,6 @@
  * MIT License
  */
 #include "Heightfield.h"
-#include "GeoCommon.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;

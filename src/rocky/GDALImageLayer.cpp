@@ -15,7 +15,7 @@ using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::GDAL;
 
 ROCKY_ADD_OBJECT_FACTORY(GDALImage,
-    [](const std::string& JSON, const IOOptions& io) {
+    [](std::string_view JSON, const IOOptions& io) {
         return GDALImageLayer::create(JSON, io); })
 
 namespace
@@ -61,14 +61,14 @@ GDALImageLayer::GDALImageLayer() :
     construct({}, {});
 }
 
-GDALImageLayer::GDALImageLayer(const std::string& JSON, const IOOptions& io) :
+GDALImageLayer::GDALImageLayer(std::string_view JSON, const IOOptions& io) :
     super(JSON, io)
 {
     construct(JSON, io);
 }
 
 void
-GDALImageLayer::construct(const std::string& JSON, const IOOptions& io)
+GDALImageLayer::construct(std::string_view JSON, const IOOptions& io)
 {
     setLayerTypeName("GDALImage");
     const auto j = parse_json(JSON);

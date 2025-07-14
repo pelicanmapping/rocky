@@ -14,18 +14,14 @@
 #include <rocky/Context.h>
 #include <rocky/Version.h>
 #include <rocky/ImageLayer.h>
-#include <rocky/Ephemeris.h>
+#include <rocky/TMSImageLayer.h>
 
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/MapNode.h>
 #include <rocky/vsg/MapManipulator.h>
-#include <rocky/vsg/SkyNode.h>
 
-#include <vsg/all.h>
 #include <chrono>
-
-#include <rocky/TMSImageLayer.h>
-#include <rocky/TMSElevationLayer.h>
+#include <iomanip>
 
 int usage(const char* msg)
 {

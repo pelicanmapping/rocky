@@ -4,9 +4,7 @@
  * MIT License
  */
 #include "Utils.h"
-#include "sha1.h"
-#include "Context.h"
-#include <cctype>
+#include <rocky/Context.h>
 #include <cstring>
 #include <cstdlib>
 #include <filesystem>
@@ -89,7 +87,7 @@ StringTokenizer::operator()(std::string_view input, bool* error) const
                         // end the current token, clean it up, and push it
                         auto token = buf.str();
                         if (_trimTokens)
-                            trim_in_place(token);
+                            trimInPlace(token);
 
                         if (_allowEmpties || !token.empty())
                             output.push_back(token);
@@ -113,69 +111,6 @@ StringTokenizer::operator()(std::string_view input, bool* error) const
         }
     }
 
-#if 0
-
-    for (auto& c : input)
-    {
-        ++offset;
-        auto q = _quotes.find(c);
-
-        if (inside_quote)
-        {
-            if (c == quote_closer)
-            {
-                inside_quote = false;
-                if (keep_quote_char)
-                    buf << c;
-            }
-            else
-            {
-                buf << c;
-            }
-        }
-        else
-        {
-            if (q != _quotes.end())
-            {
-                // start a new quoted region
-                inside_quote = true;
-                quote_opener = c;
-                quote_closer = q->second.first;
-                keep_quote_char = q->second.second;
-                quote_opener_offset = offset - 1;
-
-                if (keep_quote_char)
-                    buf << c;
-            }
-            else
-            {
-                auto d = _delims.find(c);
-                if (d == _delims.end())
-                {
-                    buf << c;
-                }
-                else
-                {
-                    // found a delimiter. end the current token.
-                    std::string token = buf.str();
-                    if (_trimTokens)
-                        trim2(token);
-
-                    if (_allowEmpties || !token.empty())
-                        output.push_back(token);
-
-                    if (d->second == true) // keep the delimiter itself as a token?
-                    {
-                        output.push_back(std::string(1, c));
-                    }
-
-                    buf.str("");
-                }
-            }
-        }
-    }
-#endif
-
     if (inside_quote)
     {
         Log()->warn("[Tokenizer] unterminated quote in string ({} at offset {}) : {}",
@@ -187,7 +122,7 @@ StringTokenizer::operator()(std::string_view input, bool* error) const
 
     std::string bufstr = buf.str();
     if (_trimTokens)
-        trim_in_place(bufstr);
+        trimInPlace(bufstr);
     if (!bufstr.empty())
         output.push_back(bufstr);
 
@@ -196,83 +131,11 @@ StringTokenizer::operator()(std::string_view input, bool* error) const
 
 //--------------------------------------------------------------------------
 
-std::string
-rocky::util::toLegalFileName(std::string_view input, bool allowSubdirs, const char* replacementChar)
-{
-    // See: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_282
-    // We omit '-' so we can use it for the HEX identifier.
-    static const std::string legalWithoutSubdirs("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.");
-    static const std::string legalWithDirs      ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_./");
 
-    
-    std::size_t pos = input.find("://");
-    pos = pos == std::string::npos ? 0 : pos+3;
-
-    const std::string& legal = allowSubdirs? legalWithDirs : legalWithoutSubdirs;
-
-    std::stringstream buf;
-    for( ; pos < input.size(); ++pos )
-    {
-        std::string::const_reference c = input[pos];
-        if (legal.find(c) != std::string::npos)
-        {
-            buf << c;
-        }
-        else
-        {
-            if (replacementChar)
-                buf << (char)(*replacementChar);
-            else
-                buf << "-" << std::hex << static_cast<unsigned>(c) << "-";
-        }
-    }
-
-    std::string result;
-    result = buf.str();
-
-    return result;
-}
-
-/** MurmurHash 2.0 (http://sites.google.com/site/murmurhash/) */
-unsigned
-rocky::util::hashString(std::string_view input )
-{
-    const unsigned m = 0x5bd1e995;
-    const int r = 24;
-    unsigned len = (unsigned)input.length();
-    const char* data = input.data();
-    unsigned int h = m ^ len; // using "m" as the seed.
-
-    while(len >= 4)
-    {
-        unsigned int k = *(unsigned int *)data;
-        k *= m;
-        k ^= k >> r;
-        k *= m;
-        h *= m;
-        h ^= k;
-        data += 4;
-        len -= 4;
-    }
-
-    switch(len)
-    {
-    case 3: h ^= data[2] << 16;
-    case 2: h ^= data[1] << 8;
-    case 1: h ^= data[0];
-        h *= m;
-    };
-
-    h ^= h >> 13;
-    h *= m;
-    h ^= h >> 15;
-
-    return h;
-}
 
 /** Replaces all the instances of "sub" with "other" in "s". */
 std::string&
-rocky::util::replace_in_place(
+rocky::util::replaceInPlace(
     std::string& s,
     std::string_view sub,
     std::string_view other)
@@ -289,39 +152,13 @@ rocky::util::replace_in_place(
     return s;
 }
 
-std::string&
-rocky::util::replace_in_place_case_insensitive(
-    std::string& s,
-    std::string_view pattern,
-    std::string_view replacement)
-{
-    if (pattern.empty()) return s;
-
-    std::string upperSource(s);
-    std::transform(upperSource.begin(), upperSource.end(), upperSource.begin(), (int(*)(int))std::toupper);
-
-    std::string upperPattern(pattern);
-    std::transform(upperPattern.begin(), upperPattern.end(), upperPattern.begin(), (int(*)(int))std::toupper);
-
-    for (size_t b = 0; ; )
-    {
-        b = upperSource.find(upperPattern, b);
-        if (b == s.npos) break;
-        s.replace(b, pattern.size(), replacement);
-        upperSource.replace(b, upperPattern.size(), replacement);
-        b += replacement.size();
-    }
-
-    return s;
-}
-
 /**
 * Trims whitespace from the ends of a string.
 * by Rodrigo C F Dias
 * http://www.codeproject.com/KB/stl/stdstringtrim.aspx
 */
 void
-rocky::util::trim_in_place( std::string& str )
+rocky::util::trimInPlace( std::string& str )
 {
     static const std::string whitespace (" \t\f\v\n\r");
     std::string::size_type pos = str.find_last_not_of( whitespace );
@@ -341,17 +178,8 @@ std::string
 rocky::util::trim(std::string_view in)
 {
     std::string str(in);
-    trim_in_place(str);
+    trimInPlace(str);
     return str;
-}
-
-/** Returns a lower-case version of the input string. */
-std::string
-rocky::util::toLower(std::string_view input )
-{
-    std::string output(input);
-    std::transform( output.begin(), output.end(), output.begin(), ::tolower );
-    return output;
 }
 
 namespace
@@ -457,30 +285,6 @@ rocky::util::getExecutableLocation()
 #endif
 
     return {};
-}
-
-bool
-rocky::util::writeToFile(std::string_view data, std::string_view filename)
-{
-    std::ofstream out(filename.data());
-    if (out.fail())
-        return false;
-    out << data;
-    out.close();
-    return true;
-}
-
-Result<std::string>
-rocky::util::readFromFile(std::string_view filename)
-{
-    std::ifstream in(filename.data(), std::ios_base::binary);
-    if (in.fail())
-        return Status(Status::ResourceUnavailable);
-    std::stringstream buf;
-    buf << in.rdbuf();
-    auto data = buf.str();
-    in.close();
-    return data;
 }
 
 namespace

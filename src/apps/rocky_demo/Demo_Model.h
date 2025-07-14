@@ -6,9 +6,10 @@
 #pragma once
 
 #include <vsg/io/read.h>
-#include <vsg/nodes/MatrixTransform.h>
 #include <rocky/URI.h>
 #include "helpers.h"
+#include <filesystem>
+
 using namespace ROCKY_NAMESPACE;
 
 auto Demo_Model = [](Application& app)

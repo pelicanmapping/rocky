@@ -78,14 +78,14 @@ ElevationLayer::ElevationLayer() :
     construct({}, {});
 }
 
-ElevationLayer::ElevationLayer(const std::string& JSON, const IOOptions& io) :
+ElevationLayer::ElevationLayer(std::string_view JSON, const IOOptions& io) :
     super(JSON)
 {
     construct(JSON, io);
 }
 
 void
-ElevationLayer::construct(const std::string& JSON, const IOOptions& io)
+ElevationLayer::construct(std::string_view JSON, const IOOptions& io)
 {
     tileSize.set_default(257u); // override the default in TileLayer
 

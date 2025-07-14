@@ -13,7 +13,7 @@
 using namespace ROCKY_NAMESPACE;
 
 ROCKY_ADD_OBJECT_FACTORY(MBTilesImage,
-    [](const std::string& JSON, const IOOptions& io) {
+    [](std::string_view JSON, const IOOptions& io) {
         return MBTilesImageLayer::create(JSON, io); })
 
 
@@ -23,14 +23,14 @@ MBTilesImageLayer::MBTilesImageLayer() :
     construct({}, {});
 }
 
-MBTilesImageLayer::MBTilesImageLayer(const std::string& JSON, const IOOptions& io) :
+MBTilesImageLayer::MBTilesImageLayer(std::string_view JSON, const IOOptions& io) :
     super(JSON, io)
 {
     construct(JSON, io);
 }
 
 void
-MBTilesImageLayer::construct(const std::string& JSON, const IOOptions& io)
+MBTilesImageLayer::construct(std::string_view JSON, const IOOptions& io)
 {
     setLayerTypeName("MBTilesImage");
     const auto j = parse_json(JSON);

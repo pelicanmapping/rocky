@@ -43,7 +43,7 @@ namespace ROCKY_NAMESPACE
         //! Deserialization constructor
         //! @param JSON JSON string to deserialize
         //! @param io IO options
-        ImageLayer(const std::string& JSON, const IOOptions& io);
+        ImageLayer(std::string_view JSON, const IOOptions& io);
 
         //! Subclass overrides this to generate image data for the key.
         //! The key will always be in the same profile as the layer.
@@ -64,7 +64,7 @@ namespace ROCKY_NAMESPACE
     private:
 
         // internal construction method
-        void construct(const std::string& JSON, const IOOptions& io);
+        void construct(std::string_view, const IOOptions& io);
 
         // Creates an image that's in the same profile as the provided key.
         Result<GeoImage> createImageInKeyProfile(

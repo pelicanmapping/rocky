@@ -1,6 +1,7 @@
 #include "GeoExtent.h"
 #include "Math.h"
 #include "Context.h"
+#include <iomanip>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;

@@ -18,14 +18,14 @@ Layer::Layer() :
     construct(JSON());
 }
 
-Layer::Layer(const JSON& conf) :
+Layer::Layer(std::string_view conf) :
     super()
 {
     construct(conf);
 }
 
 void
-Layer::construct(const JSON& conf)
+Layer::construct(std::string_view conf)
 {
     _uid = rocky::createUID();
 

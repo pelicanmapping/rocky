@@ -23,7 +23,7 @@ namespace ROCKY_NAMESPACE
     public:
         //! Construct an empty layer
         MBTilesImageLayer();
-        explicit MBTilesImageLayer(const std::string& JSON, const IOOptions& io);
+        explicit MBTilesImageLayer(std::string_view JSON, const IOOptions& io);
 
         //! serialize
         JSON to_json() const override;
@@ -42,7 +42,7 @@ namespace ROCKY_NAMESPACE
     private:
         MBTiles::Driver _driver;
 
-        void construct(const std::string& JSON, const IOOptions& io);
+        void construct(std::string_view JSON, const IOOptions& io);
     };
 }
 

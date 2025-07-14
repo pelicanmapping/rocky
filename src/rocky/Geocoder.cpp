@@ -20,7 +20,8 @@ Geocoder::geocode(const std::string& location, IOOptions& io) const
 #ifdef ROCKY_HAS_GEOCODER
 
     std::vector<Feature> result;
-    auto session = OGRGeocodeCreateSession(nullptr);
+    char* options[2] = { "WRITE_CACHE=FALSE", nullptr };
+    auto session = OGRGeocodeCreateSession(options);
     if (session)
     {
         auto layerHandle = OGRGeocode(session, location.c_str(), nullptr, nullptr);

@@ -8,7 +8,6 @@
 #ifdef ROCKY_HAS_BING
 
 #include <rocky/ImageLayer.h>
-#include <rocky/LRUCache.h>
 #include <rocky/URI.h>
 
 namespace ROCKY_NAMESPACE
@@ -23,7 +22,7 @@ namespace ROCKY_NAMESPACE
         BingImageLayer();
 
         //! Deserialize a Bing maps image layer
-        BingImageLayer(const std::string& JSON, const IOOptions& io);
+        BingImageLayer(std::string_view JSON, const IOOptions& io);
 
         //! serialize
         std::string to_json() const override;
@@ -39,7 +38,7 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        void construct(const std::string& JSON, const IOOptions& io);
+        void construct(std::string_view, const IOOptions& io);
     };
 }
 

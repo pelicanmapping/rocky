@@ -7,9 +7,7 @@
 
 #include <rocky/Common.h>
 #include <ctime>
-#include <cstring>
 #include <string>
-#include <chrono>
 
 namespace ROCKY_NAMESPACE
 {

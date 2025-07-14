@@ -23,14 +23,14 @@ TMSElevationLayer::TMSElevationLayer() :
     construct({}, {});
 }
 
-TMSElevationLayer::TMSElevationLayer(const std::string& JSON, const IOOptions& io) :
+TMSElevationLayer::TMSElevationLayer(std::string_view JSON, const IOOptions& io) :
     super(JSON, io)
 {
     construct(JSON, io);
 }
 
 void
-TMSElevationLayer::construct(const std::string& JSON, const IOOptions& io)
+TMSElevationLayer::construct(std::string_view JSON, const IOOptions& io)
 {
     setLayerTypeName("TMSElevation");
     const auto j = parse_json(JSON);

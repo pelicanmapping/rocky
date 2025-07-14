@@ -6,34 +6,20 @@
 #pragma once
 
 #include <rocky/Common.h>
-#include <rocky/Math.h>
-#include <rocky/Status.h>
 #include <rocky/Log.h>
 #include <rocky/weejobs.h>
 
 #include <algorithm>
 #include <cctype>
-#include <chrono>
-#include <filesystem>
 #include <functional>
-#include <iomanip>
-#include <list>
 #include <locale>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <optional>
-#include <queue>
-#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <thread>
-#include <unordered_map>
 #include <vector>
 
-
-class TiXmlDocument;
 
 namespace ROCKY_NAMESPACE
 {
@@ -60,13 +46,7 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Replaces all the instances of "pattern" with "replacement" in "in_out"
-        extern ROCKY_EXPORT std::string& replace_in_place(
-            std::string& in_out,
-            std::string_view pattern,
-            std::string_view replacement);
-
-        //! Replaces all the instances of "pattern" with "replacement" in "in_out" (case-insensitive)
-        extern ROCKY_EXPORT std::string& replace_in_place_case_insensitive(
+        extern ROCKY_EXPORT std::string& replaceInPlace(
             std::string& in_out,
             std::string_view pattern,
             std::string_view replacement);
@@ -75,7 +55,19 @@ namespace ROCKY_NAMESPACE
         extern ROCKY_EXPORT std::string trim(std::string_view in);
 
         //! Trims whitespace from the ends of a string; in-place modification on the string to reduce string copies.
-        extern ROCKY_EXPORT void trim_in_place(std::string& str);
+        extern ROCKY_EXPORT void trimInPlace(std::string& str);
+
+        //! Character to lower case
+        inline char toLower(char c) {
+            return (c < 0x08) ? (c >= 'A' && c <= 'Z' ? (c | 0x20) : c) : std::tolower(c);
+        }
+
+        //! String to lower case
+        inline std::string toLower(std::string_view in) {
+            std::string out(in);
+            std::transform(out.begin(), out.end(), out.begin(), [](unsigned char c) { return toLower(c); });
+            return out;
+        }
 
         //! True is "ref" starts with "pattern"
         extern ROCKY_EXPORT bool startsWith(
@@ -96,281 +88,9 @@ namespace ROCKY_NAMESPACE
             std::string_view lhs,
             std::string_view rhs,
             const std::locale& local = std::locale());
-        
-        extern ROCKY_EXPORT std::string toLower(std::string_view input);
-
-        /** Makes a valid filename out of a string */
-        extern ROCKY_EXPORT std::string toLegalFileName(std::string_view input, bool allowSubdir = false, const char* replacementChar = NULL);
-
-        /** Generates a hashed integer for a string (poor man's MD5) */
-        extern ROCKY_EXPORT unsigned hashString(std::string_view input);
 
         //! Full pathname of the currently running executable
         extern ROCKY_EXPORT std::string getExecutableLocation();
-
-        //------------------------------------------------------------------------
-        // conversion templates
-
-        // converts a string to primitive using serialization
-        template<typename T> inline T
-        as(const std::string& str, const T& default_value)
-        {
-            T temp = default_value;
-            std::istringstream strin(str);
-            if (!strin.eof()) strin >> temp;
-            return temp;
-        }
-
-        // template specialization for integers (to handle hex)
-#define AS_INT_DEC_OR_HEX(TYPE) \
-        template<> inline TYPE \
-        as< TYPE >(const std::string& str, const TYPE & dv) { \
-            TYPE temp = dv; \
-            std::istringstream strin( trim(str) ); \
-            if ( !strin.eof() ) { \
-                if ( str.length() >= 2 && str[0] == '0' && str[1] == 'x' ) { \
-                    strin.seekg( 2 ); \
-                    strin >> std::hex >> temp; \
-                } \
-                else { \
-                    strin >> temp; \
-                } \
-            } \
-            return temp; \
-        }
-
-        AS_INT_DEC_OR_HEX(int)
-        AS_INT_DEC_OR_HEX(unsigned)
-        AS_INT_DEC_OR_HEX(short)
-        AS_INT_DEC_OR_HEX(unsigned short)
-        AS_INT_DEC_OR_HEX(long)
-        AS_INT_DEC_OR_HEX(unsigned long)
-
-        // template specialization for a bool
-        template<> inline bool
-        as<bool>(const std::string& str, const bool& default_value)
-        {
-            std::string temp = toLower(str);
-            return
-                temp == "true" || temp == "yes" || temp == "on" ? true :
-                temp == "false" || temp == "no" || temp == "off" ? false :
-                default_value;
-        }
-
-        // template specialization for string
-        template<> inline std::string
-            as<std::string>(const std::string& str, const std::string& default_value)
-        {
-            return str;
-        }
-
-        // snips a substring and parses it.
-        template<typename T> inline bool
-            as(std::string_view in, unsigned start, unsigned len, T default_value)
-        {
-            std::string buf;
-            std::copy(in.begin() + start, in.begin() + start + len, std::back_inserter(buf));
-            return as<T>(buf, default_value);
-        }
-
-        /**
-         * Assembles and returns an inline string using a stream-like << operator.
-         * Example:
-         *     std::string str = make_string() << "Hello, world " << variable;
-         */
-        struct make_string
-        {
-            operator std::string() const
-            {
-                std::string result;
-                result = buf.str();
-                return result;
-            }
-
-            template<typename T>
-            make_string& operator << (const T& val) { buf << val; return (*this); }
-
-            make_string& operator << (const make_string& val) { buf << (std::string)val; return (*this); }
-
-        protected:
-            std::stringstream buf;
-        };
-
-        template<> inline
-            make_string& make_string::operator << <bool>(const bool& val) { buf << (val ? "true" : "false"); return (*this); }
-
-        /**
-         * Splits a string up into a vector of strings based on a set of
-         * delimiters, quotes, and rules.
-         */
-        class ROCKY_EXPORT StringTokenizer
-        {
-        public:
-            StringTokenizer() = default;
-
-            //! Tokenize input into output.
-            //! @return true upon success, false if there was a dangling quote.
-            std::vector<std::string> operator()(std::string_view input, bool* error = nullptr) const;
-
-            //! Backwards compatibility
-            //! @deprecated
-            void tokenize(std::string_view input, std::vector<std::string>& output) const {
-                output = operator()(input, nullptr);
-            }
-
-            //! Alias
-            std::vector<std::string> tokenize(std::string_view input) const {
-                return operator()(input, nullptr);
-            }
-
-            //! Whether to keep emptry tokens in the output.
-            StringTokenizer& keepEmpties(bool value) {
-                _allowEmpties = value;
-                return *this;
-            }
-
-            //! Whether to trim leading and training whitespace from tokens.
-            StringTokenizer& trimTokens(bool value) {
-                _trimTokens = value;
-                return *this;
-            }
-
-            //! Adds a delimiter and whether to keep it in the output as a separate token.
-            StringTokenizer& delim(const std::string& value, bool keepAsToken = false) {
-                _delims[value] = keepAsToken;
-                return *this;
-            }
-
-            //! Adds a quote character and whether to keep it in the output as a separate token.
-            //! Use this is the quote opener is the same as the closer (like "'")
-            StringTokenizer& quote(char opener_and_closer, bool keepInToken = true) {
-                _quotes[opener_and_closer] = std::make_pair(opener_and_closer, keepInToken);
-                return *this;
-            }
-
-            //! Adds a quote character pair and whether to keep them in the output as separate tokens.
-            //! Use this if the quote chars don't match (like '{' and '}')
-            StringTokenizer& quotePair(char opener, char closer, bool keepInToken = true) {
-                _quotes[opener] = std::make_pair(closer, keepInToken);
-                return *this;
-            }
-
-            //! Adds standard whitespace characters as delimiters.
-            StringTokenizer& whitespaceDelims() {
-                return delim(" ").delim("\t").delim("\n").delim("\r");
-            }
-
-            //! Adds the standard quote characters: single and double quotes, kept in the token.
-            StringTokenizer& standardQuotes() {
-                return quote('\'').quote('"');
-            }
-
-        private:
-            using DelimiterMap = std::map<std::string, bool>; // string, keep?
-            using QuoteMap = std::map<char, std::pair<char, bool>>; // open, close, keep?
-
-            DelimiterMap _delims;
-            QuoteMap _quotes;
-            bool _allowEmpties = true;
-            bool _trimTokens = true;
-        };
-
-        //! Writes a string to a text file on disk.
-        extern ROCKY_EXPORT bool writeToFile(std::string_view data, std::string_view filename);
-
-        //! Reads a disk file into a string.
-        extern ROCKY_EXPORT Result<std::string> readFromFile(std::string_view filename);
-
-        //! Sets the name of the current thread
-        extern ROCKY_EXPORT void setThreadName(const char* name);
-
-        /**
-        * Ring buffer for lock-less interthread communication.
-        */
-        template<typename T>
-        class ROCKY_EXPORT ring_buffer
-        {
-        public:
-            using value_type = T;
-
-            ring_buffer(int size = 8, bool overwrite_when_full_ = false) :
-                _size(size), _buffer(size), overwrite_when_full(overwrite_when_full_){}
-
-            bool overwrite_when_full = false;
-
-            //! Resize the buffer. This is not thread-safe, only call it right after 
-            //! construction.
-            void resize(std::size_t newSize) {
-                _buffer.clear();
-                _buffer.resize(newSize);
-                _size = newSize;
-                _readIndex = { 0 };
-                _writeIndex = { 0 };
-            }
-
-            bool push(const T& obj) {
-                bool is_full = full();
-                if (is_full && !overwrite_when_full) return false;
-                _buffer[_writeIndex] = obj;
-                if (!is_full) _writeIndex.exchange((_writeIndex + 1) % _size);
-                notify();
-                return true;
-            }
-
-            bool pop(T& obj) {
-                if (_readIndex == _writeIndex) return false;
-                obj = std::move(_buffer[_readIndex]);
-                _readIndex.exchange((_readIndex + 1) % _size);
-                return true;
-            }
-
-            T& peek() {
-                return _buffer[_readIndex];
-            }
-
-            const T& peek() const {
-                return _buffer[_readIndex];
-            }
-
-        protected:
-            virtual void notify() { }
-
-            bool empty() const {
-                return _readIndex == _writeIndex;
-            }
-
-            bool full() const {
-                return (_writeIndex + 1) % _size == _readIndex;
-            }
-
-        private:
-            std::atomic_int _readIndex = { 0 };
-            std::atomic_int _writeIndex = { 0 };
-            int _size;
-            std::vector<T> _buffer;
-        };
-
-        template<typename T>
-        class ROCKY_EXPORT ring_buffer_with_condition : public ring_buffer<T>
-        {
-        public:
-            ring_buffer_with_condition(int size) : ring_buffer<T>(size) {}
-
-            template<typename DURATION_T>
-            bool wait(DURATION_T timeout) {
-                std::unique_lock<std::mutex> L(_mutex);
-                return _condition.wait_for(L, timeout, [this]() { return !ring_buffer<T>::empty(); });
-            }
-
-        protected:
-            void notify() override {
-                _condition.notify_one();
-            }
-
-        private:
-            mutable std::mutex _mutex;
-            mutable std::condition_variable_any _condition;
-        };
 
         template<typename T>
         struct vector_map_equal {
@@ -383,11 +103,7 @@ namespace ROCKY_NAMESPACE
         * A std::map-like map that uses a vector.
         * This benchmarks much faster than std::map or std::unordered_map for small sets.
         */
-        template<
-            typename KEY,
-            typename DATA, 
-            typename EQUAL = vector_map_equal<KEY>>
-
+        template<typename KEY, typename DATA, typename EQUAL = vector_map_equal<KEY>>
         struct vector_map
         {
             struct ENTRY {
@@ -478,6 +194,202 @@ namespace ROCKY_NAMESPACE
             void insert(InputIterator a, InputIterator b) {
                 for (InputIterator i = a; i != b; ++i) (*this)[i->first] = i->second;
             }
+        };
+
+        /**
+         * Assembles and returns an inline string using a stream-like << operator.
+         * Example:
+         *     std::string str = make_string() << "Hello, world " << variable;
+         */
+        struct make_string
+        {
+            operator std::string() const
+            {
+                std::string result;
+                result = buf.str();
+                return result;
+            }
+
+            template<typename T>
+            make_string& operator << (const T& val) { buf << val; return (*this); }
+
+            make_string& operator << (const make_string& val) { buf << (std::string)val; return (*this); }
+
+        protected:
+            std::stringstream buf;
+        };
+
+        template<> inline
+        make_string& make_string::operator << <bool>(const bool& val) { buf << (val ? "true" : "false"); return (*this); }
+
+        /**
+         * Splits a string up into a vector of strings based on a set of
+         * delimiters, quotes, and rules.
+         */
+        class ROCKY_EXPORT StringTokenizer
+        {
+        public:
+            StringTokenizer() = default;
+
+            //! Tokenize input into output.
+            //! @return true upon success, false if there was a dangling quote.
+            std::vector<std::string> operator()(std::string_view input, bool* error = nullptr) const;
+
+            //! Backwards compatibility
+            //! @deprecated
+            void tokenize(std::string_view input, std::vector<std::string>& output) const {
+                output = operator()(input, nullptr);
+            }
+
+            //! Alias
+            std::vector<std::string> tokenize(std::string_view input) const {
+                return operator()(input, nullptr);
+            }
+
+            //! Whether to keep emptry tokens in the output.
+            StringTokenizer& keepEmpties(bool value) {
+                _allowEmpties = value;
+                return *this;
+            }
+
+            //! Whether to trim leading and training whitespace from tokens.
+            StringTokenizer& trimTokens(bool value) {
+                _trimTokens = value;
+                return *this;
+            }
+
+            //! Adds a delimiter and whether to keep it in the output as a separate token.
+            StringTokenizer& delim(const std::string& value, bool keepAsToken = false) {
+                _delims.emplace(value, keepAsToken);
+                //_delims[value] = keepAsToken;
+                return *this;
+            }
+
+            //! Adds a quote character and whether to keep it in the output as a separate token.
+            //! Use this is the quote opener is the same as the closer (like "'")
+            StringTokenizer& quote(char opener_and_closer, bool keepInToken = true) {
+                _quotes.emplace(opener_and_closer, std::make_pair(opener_and_closer, keepInToken));
+                return *this;
+            }
+
+            //! Adds a quote character pair and whether to keep them in the output as separate tokens.
+            //! Use this if the quote chars don't match (like '{' and '}')
+            StringTokenizer& quotePair(char opener, char closer, bool keepInToken = true) {
+                _quotes.emplace(opener, std::make_pair(closer, keepInToken));
+                return *this;
+            }
+
+            //! Adds standard whitespace characters as delimiters.
+            StringTokenizer& whitespaceDelims() {
+                return delim(" ").delim("\t").delim("\n").delim("\r");
+            }
+
+            //! Adds the standard quote characters: single and double quotes, kept in the token.
+            StringTokenizer& standardQuotes() {
+                return quote('\'').quote('"');
+            }
+
+        private:
+            using DelimiterMap = vector_map<std::string, bool>; // std::map<std::string, bool>; // string, keep?
+            using QuoteMap = vector_map<char, std::pair<char, bool>>; // std::map<char, std::pair<char, bool>>; // open, close, keep?
+
+            //DelimiterMap _delims;
+            //QuoteMap _quotes;
+            vector_map<std::string, bool> _delims;
+            vector_map<char, std::pair<char, bool>> _quotes;
+            bool _allowEmpties = true;
+            bool _trimTokens = true;
+        };
+
+        //! Sets the name of the current thread
+        extern ROCKY_EXPORT void setThreadName(const char* name);
+
+        /**
+        * Ring buffer for lock-less interthread communication.
+        */
+        template<typename T>
+        class ROCKY_EXPORT ring_buffer
+        {
+        public:
+            using value_type = T;
+
+            ring_buffer(int size = 8, bool overwrite_when_full_ = false) :
+                _size(size), _buffer(size), overwrite_when_full(overwrite_when_full_){}
+
+            bool overwrite_when_full = false;
+
+            //! Resize the buffer. This is not thread-safe, only call it right after 
+            //! construction.
+            void resize(std::size_t newSize) {
+                _buffer.clear();
+                _buffer.resize(newSize);
+                _size = newSize;
+                _readIndex = { 0 };
+                _writeIndex = { 0 };
+            }
+
+            bool push(const T& obj) {
+                bool is_full = full();
+                if (is_full && !overwrite_when_full) return false;
+                _buffer[_writeIndex] = obj;
+                if (!is_full) _writeIndex.exchange((_writeIndex + 1) % _size);
+                notify();
+                return true;
+            }
+
+            bool pop(T& obj) {
+                if (_readIndex == _writeIndex) return false;
+                obj = std::move(_buffer[_readIndex]);
+                _readIndex.exchange((_readIndex + 1) % _size);
+                return true;
+            }
+
+            T& peek() {
+                return _buffer[_readIndex];
+            }
+
+            const T& peek() const {
+                return _buffer[_readIndex];
+            }
+
+        protected:
+            virtual void notify() { }
+
+            bool empty() const {
+                return _readIndex == _writeIndex;
+            }
+
+            bool full() const {
+                return (_writeIndex + 1) % _size == _readIndex;
+            }
+
+        private:
+            std::atomic_int _readIndex = { 0 };
+            std::atomic_int _writeIndex = { 0 };
+            int _size;
+            std::vector<T> _buffer;
+        };
+
+        template<typename T>
+        class ROCKY_EXPORT ring_buffer_with_condition : public ring_buffer<T>
+        {
+        public:
+            ring_buffer_with_condition(int size) : ring_buffer<T>(size) {}
+
+            template<typename DURATION_T>
+            bool wait(DURATION_T timeout) {
+                std::unique_lock<std::mutex> L(_mutex);
+                return _condition.wait_for(L, timeout, [this]() { return !ring_buffer<T>::empty(); });
+            }
+
+        protected:
+            void notify() override {
+                _condition.notify_one();
+            }
+
+        private:
+            mutable std::mutex _mutex;
+            mutable std::condition_variable_any _condition;
         };
 
         /**

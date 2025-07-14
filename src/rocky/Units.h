@@ -6,13 +6,9 @@
 #pragma once
 
 #include <rocky/Common.h>
-#include <rocky/Utils.h>
-#include <ostream>
 
 namespace ROCKY_NAMESPACE
 {
-    class Registry;
-
     class ROCKY_EXPORT Units
     {
     public:
@@ -309,58 +305,4 @@ namespace ROCKY_NAMESPACE
         ScreenSize(double value, const Units& units =Units::PIXELS) : qualified_double<ScreenSize>(value, units) { }
         ScreenSize(const std::string& str, const Units& defaultUnits) : qualified_double<ScreenSize>(str, defaultUnits) { }
     };
-
-    // rocky::strings specializations
-    namespace util
-    {
-        template<> inline
-        Distance as(const std::string& str, const Distance& default_value) {
-            double val;
-            Units units;
-            if (Units::parse(str, val, units, Units::METERS))
-                return Distance(val, units);
-            else
-                return default_value;
-        }
-
-        template<> inline
-        Angle as(const std::string& str, const Angle& default_value) {
-            double val;
-            Units units;
-            if (Units::parse(str, val, units, Units::DEGREES))
-                return Angle(val, units);
-            else
-                return default_value;
-        }
-
-        template<> inline
-        Duration as(const std::string& str, const Duration& default_value) {
-            double val;
-            Units units;
-            if (Units::parse(str, val, units, Units::SECONDS))
-                return Duration(val, units);
-            else
-                return default_value;
-        }
-
-        template<> inline
-        Speed as(const std::string& str, const Speed& default_value) {
-            double val;
-            Units units;
-            if (Units::parse(str, val, units, Units::METERS_PER_SECOND))
-                return Speed(val, units);
-            else
-                return default_value;
-        }
-
-        template<> inline
-        ScreenSize as(const std::string& str, const ScreenSize& default_value) {
-            double val;
-            Units units;
-            if (Units::parse(str, val, units, Units::PIXELS))
-                return ScreenSize(val, units);
-            else
-                return default_value;
-        }
-    }
 }

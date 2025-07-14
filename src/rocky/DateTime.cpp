@@ -5,8 +5,7 @@
  */
 #include "DateTime.h"
 #include "Utils.h"
-#include <stdio.h> 
-#include <time.h>
+#include <iomanip>
 
 // to get the TIXML_SSCANF macro
 #include "tinyxml/tinyxml.h"

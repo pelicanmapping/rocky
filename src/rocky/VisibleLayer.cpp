@@ -16,14 +16,14 @@ VisibleLayer::VisibleLayer() :
     construct(JSON());
 }
 
-VisibleLayer::VisibleLayer(const JSON& conf) :
+VisibleLayer::VisibleLayer(std::string_view conf) :
     super(conf)
 {
     construct(conf);
 }
 
 void
-VisibleLayer::construct(const JSON& conf)
+VisibleLayer::construct(std::string_view conf)
 {
     const auto j = parse_json(conf);
     get_to(j, "opacity", opacity);

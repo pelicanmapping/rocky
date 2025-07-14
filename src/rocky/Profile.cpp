@@ -6,6 +6,7 @@
 #include "Profile.h"
 #include "TileKey.h"
 #include "Math.h"
+#include "Utils.h"
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
@@ -13,25 +14,14 @@ using namespace ROCKY_NAMESPACE::util;
 
 #define LC "[Profile] "
 
-
-//Definitions for the mercator extent
-const double MERC_MINX = -20037508.34278925;
-const double MERC_MINY = -20037508.34278925;
-const double MERC_MAXX = 20037508.34278925;
-const double MERC_MAXY = 20037508.34278925;
-
 void
-Profile::setup(
-    const SRS& srs,
-    const Box& bounds,
-    unsigned numTilesWideAtLod0,
-    unsigned numTilesHighAtLod0)
+Profile::setup(const SRS& srs, const Box& bounds, unsigned width0, unsigned height0)
 {
     if (srs.valid())
     {
         Box b;
-        unsigned tx = numTilesWideAtLod0;
-        unsigned ty = numTilesHighAtLod0;
+        unsigned tx = width0;
+        unsigned ty = height0;
 
         if (bounds.valid())
         {
@@ -425,7 +415,7 @@ Profile::equivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
     // safety catch
     if (equiv(rhsWidth, 0.0) || equiv(rhsHeight, 0.0))
     {
-        std::cerr << LC << "[rk] Profile: getEquivalentLOD: zero dimension" << std::endl;
+        Log()->warn("Profile: getEquivalentLOD: zero dimension");
         return rhsLOD;
     }
 

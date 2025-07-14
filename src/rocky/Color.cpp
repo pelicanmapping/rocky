@@ -129,7 +129,7 @@ const Color Color::Cyan     ( 0x00ffffff, Color::RGBA );
 const Color Color::Brown    ( 0xaa5500ff, Color::RGBA );
 const Color Color::Transparent(0x00000000,Color::RGBA);
 
-Color::Color(unsigned v, Format format)
+Color::Color(std::uint32_t v, Format format)
 {
     if (format == RGBA)
     {
@@ -171,9 +171,9 @@ Color::Color(const std::string& input, Format format)
             .tokenize(sub);
         if (components.size() == 3)
         {
-            unsigned R = util::as<unsigned>(components[0], 0u);
-            unsigned G = util::as<unsigned>(components[1], 0u);
-            unsigned B = util::as<unsigned>(components[2], 0u);
+            unsigned R = std::atoi(components[0].c_str());
+            unsigned G = std::atoi(components[1].c_str());
+            unsigned B = std::atoi(components[2].c_str());
             set((float)R / 255.0f, (float)G / 255.0f, (float)B / 255.0f, 1.0f);
         }
     }
@@ -185,10 +185,10 @@ Color::Color(const std::string& input, Format format)
             .tokenize(sub);
         if (components.size() == 4)
         {
-            unsigned int R = util::as<unsigned int>(components[0], 0u);
-            unsigned int G = util::as<unsigned int>(components[1], 0u);
-            unsigned int B = util::as<unsigned int>(components[2], 0u);
-            float A = util::as<float>(components[3], 1.0f);
+            unsigned R = std::atoi(components[0].c_str());
+            unsigned G = std::atoi(components[1].c_str());
+            unsigned B = std::atoi(components[2].c_str());
+            float A = std::atof(components[3].c_str());
             set((float)R / 255.0f, (float)G / 255.0f, (float)B / 255.0f, (float)A);
         }
     }
@@ -200,26 +200,26 @@ Color::Color(const std::string& input, Format format)
             .tokenize(sub);
         if (components.size() == 3)
         {
-            float H = util::as<float>(components[0], 0.0f);
+            float H = std::atof(components[0].c_str());
             float S = 0.0f;
             if (util::endsWith(components[1], "%"))
             {
                 std::string sub = components[1].substr(0, components[1].size() - 1);
-                S = util::as<float>(sub, 0.0f);
+                S = std::atof(sub.c_str());
             }
             else
             {
-                S = util::as<float>(components[1], 0.0f);
+                S = std::atof(components[1].c_str());
             }
             float L = 0.0f;
             if (util::endsWith(components[2], "%"))
             {
                 std::string sub = components[2].substr(0, components[2].size() - 1);
-                L = util::as<float>(sub, 0.0f);
+                L = std::atof(sub.c_str());
             }
             else
             {
-                L = util::as<float>(components[2], 0.0f);
+                L = std::atof(components[2].c_str());
             }
             set(H / 255.0f, S / 100.0f, L / 100.0f, 1.0f);
             hsl2rgb_in_place(*this);
@@ -233,28 +233,28 @@ Color::Color(const std::string& input, Format format)
             .tokenize(sub);
         if (components.size() == 4)
         {
-            float H = util::as<float>(components[0], 0.0f);
+            float H = std::atof(components[0].c_str());
             float S = 0.0f;
             if (util::endsWith(components[1], "%"))
             {
                 std::string sub = components[1].substr(0, components[1].size() - 1);
-                S = util::as<float>(sub, 0.0f);
+                S = std::atof(sub.c_str());
             }
             else
             {
-                S = util::as<float>(components[1], 0.0f);
+                S = std::atof(components[1].c_str());
             }
             float L = 0.0f;
             if (util::endsWith(components[2], "%"))
             {
                 std::string sub = components[2].substr(0, components[2].size() - 1);
-                L = util::as<float>(sub, 0.0f);
+                L = std::atof(sub.c_str());
             }
             else
             {
-                L = util::as<float>(components[2], 0.0f);
+                L = std::atof(components[2].c_str());
             }
-            float A = util::as<float>(components[3], 1.0f);
+            float A = std::atof(components[3].c_str());
             set(H / 255.0f, S / 100.0f, L / 100.0f, A);
             hsl2rgb_in_place(*this);
         }

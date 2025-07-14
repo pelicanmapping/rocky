@@ -24,11 +24,11 @@ namespace ROCKY_NAMESPACE
         VisibleLayer();
 
         //! Deserialize a layer (from a subclass)
-        VisibleLayer(const JSON&);
+        VisibleLayer(std::string_view JSON);
 
     private:
 
-        void construct(const JSON&);
+        void construct(std::string_view JSON);
     };
 
-} // namespace VisibleLayer
+} // namespace ROCKY_NAMESPACE

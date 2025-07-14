@@ -24,14 +24,14 @@ TileLayer::TileLayer() :
     construct(JSON());
 }
 
-TileLayer::TileLayer(const JSON& conf) :
+TileLayer::TileLayer(std::string_view conf) :
     super(conf)
 {
     construct(conf);
 }
 
 void
-TileLayer::construct(const JSON& conf)
+TileLayer::construct(std::string_view conf)
 {
     const auto j = parse_json(conf);
     get_to(j, "max_level", maxLevel);

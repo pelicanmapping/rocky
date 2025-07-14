@@ -7,8 +7,6 @@
 
 #include <rocky/Common.h>
 #include <glm/ext.hpp>
-#include <algorithm>
-#include <cstdarg>
 #include <tuple>
 
 #ifndef M_PI

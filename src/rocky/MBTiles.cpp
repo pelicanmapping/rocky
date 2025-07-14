@@ -217,10 +217,10 @@ MBTiles::Driver::open(
                 .tokenize(boundsStr);
             if (tokens.size() == 4)
             {
-                double minLon = util::as<double>(tokens[0], 0.0);
-                double minLat = util::as<double>(tokens[1], 0.0);
-                double maxLon = util::as<double>(tokens[2], 0.0);
-                double maxLat = util::as<double>(tokens[3], 0.0);
+                double minLon = std::atof(tokens[0].c_str());
+                double minLat = std::atof(tokens[1].c_str());
+                double maxLon = std::atof(tokens[2].c_str());
+                double maxLat = std::atof(tokens[3].c_str());
 
                 GeoExtent extent;
                 if (profile.valid())

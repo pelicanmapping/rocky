@@ -142,7 +142,7 @@ auto Demo_Geocoder = [](Application& app)
                                             auto&& [xform, widget] = registry.get<Transform, Widget>(placemark);
 
                                             auto text = display_name;
-                                            util::replace_in_place(text, ", ", "\n");
+                                            util::replaceInPlace(text, ", ", "\n");
                                             widget.text = text;
 
                                             xform.position = extent.centroid();

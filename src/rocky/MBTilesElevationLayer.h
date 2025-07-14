@@ -23,7 +23,7 @@ namespace ROCKY_NAMESPACE
     public:
         //! Construct an empty layer
         MBTilesElevationLayer();
-        explicit MBTilesElevationLayer(const std::string& JSON, const IOOptions& io);
+        explicit MBTilesElevationLayer(std::string_view JSON, const IOOptions& io);
 
         //! serialize
         std::string to_json() const override;
@@ -41,7 +41,7 @@ namespace ROCKY_NAMESPACE
 
     private:
         MBTiles::Driver _driver;
-        void construct(const std::string& JSON, const IOOptions& io);
+        void construct(std::string_view JSON, const IOOptions& io);
     };
 }
 

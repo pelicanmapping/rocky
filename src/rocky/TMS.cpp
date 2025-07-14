@@ -402,14 +402,14 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
                     if (sub)
                     {
                         auto temp = working;
-                        util::replace_in_place(temp, "${x}", std::to_string(x));
-                        util::replace_in_place(temp, "${y}", std::to_string(y));
-                        util::replace_in_place(temp, "${-y}", std::to_string(y_inverted));
-                        util::replace_in_place(temp, "${z}", std::to_string(zoom));
-                        util::replace_in_place(temp, "{x}", std::to_string(x));
-                        util::replace_in_place(temp, "{y}", std::to_string(y));
-                        util::replace_in_place(temp, "{-y}", std::to_string(y_inverted));
-                        util::replace_in_place(temp, "{z}", std::to_string(zoom));
+                        util::replaceInPlace(temp, "${x}", std::to_string(x));
+                        util::replaceInPlace(temp, "${y}", std::to_string(y));
+                        util::replaceInPlace(temp, "${-y}", std::to_string(y_inverted));
+                        util::replaceInPlace(temp, "${z}", std::to_string(zoom));
+                        util::replaceInPlace(temp, "{x}", std::to_string(x));
+                        util::replaceInPlace(temp, "{y}", std::to_string(y));
+                        util::replaceInPlace(temp, "{-y}", std::to_string(y_inverted));
+                        util::replaceInPlace(temp, "{z}", std::to_string(zoom));
                         return temp;
                     }
                     else
@@ -430,14 +430,14 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
     if (sub)
     {
         auto temp = working;
-        util::replace_in_place(temp, "${x}", std::to_string(x));
-        util::replace_in_place(temp, "${y}", std::to_string(y));
-        util::replace_in_place(temp, "${-y}", std::to_string(y_inverted));
-        util::replace_in_place(temp, "${z}", std::to_string(zoom));
-        util::replace_in_place(temp, "{x}", std::to_string(x));
-        util::replace_in_place(temp, "{y}", std::to_string(y));
-        util::replace_in_place(temp, "{-y}", std::to_string(y_inverted));
-        util::replace_in_place(temp, "{z}", std::to_string(zoom));
+        util::replaceInPlace(temp, "${x}", std::to_string(x));
+        util::replaceInPlace(temp, "${y}", std::to_string(y));
+        util::replaceInPlace(temp, "${-y}", std::to_string(y_inverted));
+        util::replaceInPlace(temp, "${z}", std::to_string(zoom));
+        util::replaceInPlace(temp, "{x}", std::to_string(x));
+        util::replaceInPlace(temp, "{y}", std::to_string(y));
+        util::replaceInPlace(temp, "{-y}", std::to_string(y_inverted));
+        util::replaceInPlace(temp, "{z}", std::to_string(zoom));
         return temp;
     }
    

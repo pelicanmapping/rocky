@@ -16,8 +16,7 @@ namespace ROCKY_NAMESPACE
      * planet's surface. Each value in the geoid's height field is an offset
      * from the reference ellipsoid.
      */
-    class ROCKY_EXPORT Geoid :
-        public Inherit<Object, Geoid>
+    class ROCKY_EXPORT Geoid : public Inherit<Object, Geoid>
     {
     public:
         std::string name;

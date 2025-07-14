@@ -24,7 +24,7 @@ namespace ROCKY_NAMESPACE
         AzureImageLayer();
 
         //! Deserialize an Azure Maps layer
-        AzureImageLayer(const std::string& JSON, const IOOptions& io);
+        AzureImageLayer(std::string_view JSON, const IOOptions& io);
 
         //! serialize
         std::string to_json() const override;
@@ -39,7 +39,7 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        void construct(const std::string& JSON, const IOOptions& io);
+        void construct(std::string_view JSON, const IOOptions& io);
 
         URIContext _uriContext;
     };

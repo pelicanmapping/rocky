@@ -12,7 +12,7 @@
 using namespace ROCKY_NAMESPACE;
 
 ROCKY_ADD_OBJECT_FACTORY(MBTilesElevation,
-    [](const std::string& JSON, const IOOptions& io) {
+    [](std::string_view JSON, const IOOptions& io) {
         return MBTilesElevationLayer::create(JSON, io); })
 
 
@@ -21,14 +21,14 @@ MBTilesElevationLayer::MBTilesElevationLayer() :
 {
     construct({}, {});
 }
-MBTilesElevationLayer::MBTilesElevationLayer(const std::string& JSON, const IOOptions& io) :
+MBTilesElevationLayer::MBTilesElevationLayer(std::string_view JSON, const IOOptions& io) :
     super(JSON, io)
 {
     construct(JSON, io);
 }
 
 void
-MBTilesElevationLayer::construct(const std::string& JSON, const IOOptions& io)
+MBTilesElevationLayer::construct(std::string_view JSON, const IOOptions& io)
 {
     setLayerTypeName("MBTilesElevation");
     const auto j = parse_json(JSON);
