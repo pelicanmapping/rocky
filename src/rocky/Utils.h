@@ -96,9 +96,7 @@ namespace ROCKY_NAMESPACE
             const std::string& lhs,
             const std::string& rhs,
             const std::locale& local = std::locale());
-
-
-        /** Returns a lower-case version of the input string. */
+        
         extern ROCKY_EXPORT std::string toLower(const std::string& input);
 
         /** Makes a valid filename out of a string */

@@ -148,13 +148,8 @@ Image::clone() const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(_data, nullptr);
 
-    auto clone = Image::create(
-        pixelFormat(), width(), height(), depth());
-
-    memcpy(
-        clone->data<unsigned char*>(),
-        _data,
-        sizeInBytes());
+    auto clone = Image::create(pixelFormat(), width(), height(), depth());
+    memcpy(clone->data<unsigned char*>(), _data, sizeInBytes());
 
     return clone;
 }

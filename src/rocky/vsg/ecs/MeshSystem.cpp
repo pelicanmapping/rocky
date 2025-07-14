@@ -192,6 +192,11 @@ MeshSystemNode::createOrUpdateNode(Mesh& mesh, ecs::BuildInfo& data, VSGContext&
 
     auto geometry = MeshGeometry::create();
 
+    if (!mesh.triangles.empty())
+    {
+        geometry->reserve(mesh.triangles.size() * 3);
+    }
+
     if (mesh.referencePoint.valid())
     {
         SRSOperation xform;
@@ -317,6 +322,17 @@ MeshGeometry::MeshGeometry()
         0, // vertex offset
         0  // first instance
     );
+}
+
+void
+MeshGeometry::reserve(size_t num_verts)
+{
+    _verts.reserve(num_verts);
+    _normals.reserve(num_verts);
+    _colors.reserve(num_verts);
+    _uvs.reserve(num_verts);
+    _depthoffsets.reserve(num_verts);
+    _indices.reserve(num_verts);
 }
 
 void

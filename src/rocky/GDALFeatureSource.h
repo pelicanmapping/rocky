@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky/Common.h>
 #include <rocky/Feature.h>
+#include <vector>
 
 namespace ROCKY_NAMESPACE
 {
@@ -32,6 +33,9 @@ namespace ROCKY_NAMESPACE
         void* externalLayerHandle = nullptr;
         SRS externalSRS = SRS::WGS84;
 
+        //! GDAL driver open options, each in the format "VAR=VALUE"
+        std::vector<std::string> openOptions;
+
     public:
 
         //! Opens the source and returns a status indicating success or failure.
@@ -57,6 +61,8 @@ namespace ROCKY_NAMESPACE
         Metadata _metadata;
         std::string _source;
 
+        void* openGDALDataset() const;
+
         class ROCKY_EXPORT iterator_impl : public FeatureSource::iterator::implementation
         {
         public:
@@ -69,6 +75,7 @@ namespace ROCKY_NAMESPACE
             GDALFeatureSource* _source = nullptr;
             void* _dsHandle = nullptr;
             void* _layerHandle = nullptr;
+            const FeatureSource::Metadata* _metadata = nullptr;
             void* _resultSetHandle = nullptr;
             void* _spatialFilterHandle = nullptr;
             void* _nextHandleToQueue = nullptr;

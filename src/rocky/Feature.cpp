@@ -120,15 +120,15 @@ void
 Feature::dirtyExtent()
 {
     Box box;
-    Geometry::const_iterator iter(geometry);
-    while (iter.hasMore())
-    {
-        auto& part = iter.next();
-        for (auto& point : part.points)
+
+    geometry.eachPart([&](const Geometry& part)
         {
-            box.expandBy(point);
-        }
-    }
+            for (const auto& point : part.points)
+            {
+                box.expandBy(point);
+            }
+        });
+
     extent = GeoExtent(srs, box);
 }
 
@@ -139,13 +139,13 @@ Feature::transformInPlace(const SRS& to_srs)
         return true;
     if (!srs.valid() || !to_srs.valid())
         return false;
+
     // Transform the geometry points:
-    Geometry::iterator iter(geometry);
-    while (iter.hasMore())
-    {
-        auto& part = iter.next();
-        srs.to(to_srs).transformRange(part.points.begin(), part.points.end());
-    }
+    geometry.eachPart([&](Geometry& part)
+        {
+            srs.to(to_srs).transformRange(part.points.begin(), part.points.end());
+        });
+
     // Update the SRS:
     srs = to_srs;
     // Recompute the extent:

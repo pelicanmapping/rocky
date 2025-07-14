@@ -14,7 +14,6 @@
 #include <queue>
 #include <variant>
 #include <cmath>
-#include <cctype>
 
 namespace ROCKY_NAMESPACE
 {
@@ -90,15 +89,18 @@ namespace ROCKY_NAMESPACE
         template<class VEC3_CONTAINER>
         inline Geometry(Type type, const VEC3_CONTAINER& container);
 
+    private:
         //! Iterates over geometry parts.
         //! Includes "this" if not empty.
         template<class T = Geometry>
-        class iterator
+        class iterator_base
         {
         public:
-            inline iterator(T& g, bool traverse_polygon_holes = true);
+            inline iterator_base(T& g, bool traverse_polygon_holes = true);
             bool hasMore() const { return _next != nullptr; }
             inline T& next();
+            template<typename CALLABLE> inline void eachPart(CALLABLE&& func);
+            template<typename CALLABLE> inline void eachPart(CALLABLE&& func) const;
 
         private:
             std::queue<T*> _queue;
@@ -108,15 +110,21 @@ namespace ROCKY_NAMESPACE
             inline void fetch();
         };
 
-        using const_iterator = iterator<const Geometry>;
+    public:
+        using iterator = iterator_base<Geometry>;
+        using const_iterator = iterator_base<const Geometry>;
 
         //! Visit each part of the geometry, including "this".
         template<typename CALLABLE>
-        void eachPart(CALLABLE&& func);
+        void eachPart(CALLABLE&& func) {
+            iterator(*this, true).eachPart(std::forward<CALLABLE>(func));
+        }
 
         //! Visit each part of the geometry, including "this".
         template<typename CALLABLE>
-        void eachPart(CALLABLE&& func) const;
+        void eachPart(CALLABLE&& func) const {
+            const_iterator(*this, true).eachPart(std::forward<CALLABLE>(func));
+        }
             
         //! Attempt to convert this geometry to a different type
         void convertToType(Type type);
@@ -128,66 +136,6 @@ namespace ROCKY_NAMESPACE
         //! Readable name of the geometry type
         static std::string typeToString(Type type);
     };
-
-    // template inlines
-    template<class T>
-    Geometry::iterator<T>::iterator(T& geom, bool trav_holes) {
-        _traverse_polygon_holes = trav_holes;
-        _queue.push(&geom);
-        fetch();
-    }
-
-    template<class T>
-    T& Geometry::iterator<T>::next() {
-        T* n = _next;
-        fetch();
-        return *n;
-    }
-
-    template<class T>
-    void Geometry::iterator<T>::fetch() {
-        _next = nullptr;
-        if (_queue.empty())
-            return;
-        T* current = _queue.front();
-        _queue.pop();
-        bool is_multi =
-            current->type == Geometry::Type::MultiLineString ||
-            current->type == Geometry::Type::MultiPoints ||
-            current->type == Geometry::Type::MultiPolygon;
-
-        if (is_multi && _traverse_multi)
-        {
-            for (auto& part : current->parts)
-                _queue.push(&part);
-            fetch();
-        }
-        else
-        {
-            _next = current;
-            if (current->type == Type::Polygon && _traverse_polygon_holes)
-            {
-                for (auto& ring : current->parts)
-                    _queue.push(&ring);
-            }
-        }
-    }
-
-    template<typename CALLABLE>
-    void Geometry::eachPart(CALLABLE&& func) {
-        static_assert(std::is_invocable_r_v<void, CALLABLE, Geometry&>);
-        Geometry::iterator iter(*this);
-        while (iter.hasMore())
-            func(iter.next());
-    }
-
-    template<typename CALLABLE>
-    void Geometry::eachPart(CALLABLE&& func) const {
-        static_assert(std::is_invocable_r_v<void, CALLABLE, const Geometry&>);
-        Geometry::const_iterator iter(*this);
-        while (iter.hasMore())
-            func(iter.next());
-    }
 
     /**
     * How to interpolate points along a line segment on a geodetic map
@@ -315,6 +263,7 @@ namespace ROCKY_NAMESPACE
         struct Metadata
         {
             GeoExtent extent;
+            std::vector<std::string> fieldNames;
         };
 
         //! Iterator that returns features
@@ -329,7 +278,7 @@ namespace ROCKY_NAMESPACE
         public:
             bool hasMore() const { return _impl->hasMore(); }
             Feature next() { return _impl->next(); }
-
+            template<typename CALLABLE> inline void each(CALLABLE&& func);
             iterator(implementation* impl) : _impl(impl) { }
 
         private:
@@ -346,14 +295,12 @@ namespace ROCKY_NAMESPACE
         //! void(Feature&&)
         template<typename CALLABLE>
         void each(const IOOptions& io, CALLABLE&& func) {
-            static_assert(std::is_invocable_r_v<void, CALLABLE, Feature&&>);
-            auto i = iterate(io);
-            while (i.hasMore())
-                func(std::move(i.next()));
+            iterate(io).each(std::forward<CALLABLE>(func));
         }
     };
 
 
+    // ---- inline functions ----
 
     Geometry::Geometry(Type in_type) :
         type(in_type)
@@ -383,6 +330,66 @@ namespace ROCKY_NAMESPACE
         points(container.begin(), container.end())
     {
         //nop
+    }
+
+    // template inlines
+    template<class T>
+    Geometry::iterator_base<T>::iterator_base(T& geom, bool trav_holes) {
+        _traverse_polygon_holes = trav_holes;
+        _queue.push(&geom);
+        fetch();
+    }
+
+    template<class T>
+    T& Geometry::iterator_base<T>::next() {
+        T* n = _next;
+        fetch();
+        return *n;
+    }
+
+    template<class T>
+    void Geometry::iterator_base<T>::fetch() {
+        _next = nullptr;
+        if (_queue.empty())
+            return;
+        T* current = _queue.front();
+        _queue.pop();
+        bool is_multi =
+            current->type == Geometry::Type::MultiLineString ||
+            current->type == Geometry::Type::MultiPoints ||
+            current->type == Geometry::Type::MultiPolygon;
+
+        if (is_multi && _traverse_multi)
+        {
+            for (auto& part : current->parts)
+                _queue.push(&part);
+            fetch();
+        }
+        else
+        {
+            _next = current;
+            if (current->type == Type::Polygon && _traverse_polygon_holes)
+            {
+                for (auto& ring : current->parts)
+                    _queue.push(&ring);
+            }
+        }
+    }
+
+    template<class T>
+    template<typename CALLABLE>
+    void Geometry::iterator_base<T>::eachPart(CALLABLE&& func) {
+        static_assert(std::is_invocable_r_v<void, CALLABLE, Geometry&>);
+        while (hasMore())
+            func(next());
+    }
+
+    template<class T>
+    template<typename CALLABLE>
+    void Geometry::iterator_base<T>::eachPart(CALLABLE&& func) const {
+        static_assert(std::is_invocable_r_v<void, CALLABLE, const Geometry&>);
+        while (hasMore())
+            func(next());
     }
 
     bool Feature::FieldValue::valid() const
@@ -440,5 +447,13 @@ namespace ROCKY_NAMESPACE
         else if (std::holds_alternative<std::string>(*this))
             return std::get<std::string>(*this) == "true";
         return false;
+    }
+
+
+    template<typename CALLABLE>
+    inline void FeatureSource::iterator::each(CALLABLE&& func) {
+        static_assert(std::is_invocable_r_v<void, CALLABLE, Feature&&>);
+        while (hasMore())
+            func(std::move(next()));
     }
 }

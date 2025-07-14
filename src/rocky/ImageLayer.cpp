@@ -197,7 +197,7 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
                 t1 = clamp(t1, 0, (int)result.value.image()->height() - 1);
 
                 auto image = result.value.image();
-                image->iterator().each([&](auto& i)
+                image->eachPixel([&](auto& i)
                     {
                         if ((int)i.s() < s0 || (int)i.s() > s1 || (int)i.t() < t0 || (int)i.t() > t1)
                         {

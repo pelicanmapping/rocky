@@ -190,7 +190,7 @@ namespace
         }
     }
 
-    void compile_polygon_feature_with_weemesh(const Feature& feature, const Geometry& geom, const StyleSheet& styles, 
+    void compile_polygon_feature_with_weemesh(const Feature& feature, const StyleSheet& styles, 
         const GeoPoint& origin, const SRS& output_srs, Mesh& mesh)
     {
         // scales our local gnomonic coordinates so they are the same order of magnitude as
@@ -218,27 +218,28 @@ namespace
         // transform to gnomonic. We are not using SRS/PROJ for the gnomonic projection
         // because it would require creating a new SRS for each and every feature (because
         // of the centroid) and that is way too slow.
-        Geometry local_geom = geom; // working copy
+        Geometry local_geom = feature.geometry; // working copy
         Box local_ex;
-        Geometry::iterator iter(local_geom);
-        while (iter.hasMore())
-        {
-            auto& part = iter.next();
-            if (!part.points.empty())
+
+        // transform the geometry to gnomonic coordinates, and establish the extent.
+        local_geom.eachPart([&](Geometry& part)
             {
                 feature_to_geo.transformRange(part.points.begin(), part.points.end());
                 geo_to_gnomonic(part.points.begin(), part.points.end(), centroid, gnomonic_scale);
                 local_ex.expandBy(part.points.begin(), part.points.end());
-            }
-        }
+            });
 
-        // start with a weemesh covering the feature extent.
+        // start with a tessellated weemesh covering the feature extent.
+        // The amount of tessellation is determined by the resolution_degrees to account
+        // for the planet's curvature.
         weemesh::mesh_t m;
         int marker = 0;
         double xspan = gnomonic_scale * resolution_degrees * 3.14159 / 180.0;
         double yspan = gnomonic_scale * resolution_degrees * 3.14159 / 180.0;
+        
         int cols = std::max(2, (int)(local_ex.width() / xspan));
         int rows = std::max(2, (int)(local_ex.height() / yspan));
+
         for (int row = 0; row < rows; ++row)
         {
             double v = (double)row / (double)(rows - 1);
@@ -264,36 +265,33 @@ namespace
         }
 
         // next, apply the segments of the polygon to slice the mesh into triangles.
-        Geometry::const_iterator segment_iter(local_geom);
-        while (segment_iter.hasMore())
-        {
-            auto& part = segment_iter.next();
-            for (unsigned i = 0; i < part.points.size(); ++i)
+        local_geom.eachPart([&](const Geometry& part)
             {
-                unsigned j = (i == part.points.size() - 1) ? 0 : i + 1;
-                m.insert(weemesh::segment_t{ part.points[i], part.points[j] }, marker);
-            }
-        }
+                for (unsigned i = 0; i < part.points.size(); ++i)
+                {
+                    unsigned j = (i == part.points.size() - 1) ? 0 : i + 1;
+                    m.insert(weemesh::segment_t{ part.points[i], part.points[j] }, marker);
+                }
+            });
 
         // next we need to remove all the exterior triangles.
         std::unordered_set<weemesh::triangle_t*> insiders;
         std::unordered_set<weemesh::triangle_t*> outsiders;
-        Geometry::const_iterator remove_iter(local_geom, false);
-        while (remove_iter.hasMore())
-        {
-            auto& part = remove_iter.next();
 
-            for (auto& tri_iter : m.triangles)
+        Geometry::const_iterator(local_geom, false).eachPart([&](const Geometry& part)
             {
-                weemesh::triangle_t& tri = tri_iter.second;
-                auto c = (tri.p0 + tri.p1 + tri.p2) * (1.0 / 3.0); // centroid
-                bool inside = part.contains(c.x, c.y);
-                if (inside)
-                    insiders.insert(&tri);
-                else
-                    outsiders.insert(&tri);
-            }
-        }
+                for (auto& tri_iter : m.triangles)
+                {
+                    weemesh::triangle_t& tri = tri_iter.second;
+                    auto c = (tri.p0 + tri.p1 + tri.p2) * (1.0 / 3.0); // centroid
+                    bool inside = part.contains(c.x, c.y);
+                    if (inside)
+                        insiders.insert(&tri);
+                    else
+                        outsiders.insert(&tri);
+                }
+            });
+
         for (auto tri : outsiders)
         {
             if (insiders.count(tri) == 0)
@@ -356,7 +354,7 @@ FeatureView::generate(const SRS& output_srs, VSGContext& runtime)
 
     for (auto& feature : features)
     {
-        // If the output is geocentric, do all out processing in geodetic coordinates.
+        // If the output is geocentric, do all our processing in geodetic coordinates.
         if (output_srs.isGeocentric())
         {
             feature.transformInPlace(output_srs.geodeticSRS());
@@ -368,18 +366,12 @@ FeatureView::generate(const SRS& output_srs, VSGContext& runtime)
             compile_feature_to_lines(feature, styles, origin, output_srs, output.line);
         }
 
-        else if (feature.geometry.type == Geometry::Type::Polygon)
+        else if (feature.geometry.type == Geometry::Type::Polygon ||
+            feature.geometry.type == Geometry::Type::MultiPolygon)
         {
-            compile_polygon_feature_with_weemesh(feature, feature.geometry, styles, origin, output_srs, output.mesh);
+            compile_polygon_feature_with_weemesh(feature, styles, origin, output_srs, output.mesh);
         }
 
-        else if (feature.geometry.type == Geometry::Type::MultiPolygon)
-        {
-            for (auto& part : feature.geometry.parts)
-            {
-                compile_polygon_feature_with_weemesh(feature, part, styles, origin, output_srs, output.mesh);
-            }
-        }
         else
         {
             Log()->warn("FeatureView no support for " + Geometry::typeToString(feature.geometry.type));

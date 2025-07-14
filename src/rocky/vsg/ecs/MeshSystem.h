@@ -20,6 +20,8 @@ namespace ROCKY_NAMESPACE
         //! Construct a new line string geometry node
         MeshGeometry();
 
+        void reserve(size_t numVerts);
+
         inline void add(
             const vsg::dvec3* verts,
             const vsg::vec2* uvs,

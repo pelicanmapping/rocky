@@ -19,6 +19,7 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT Image : public Inherit<Object, Image>
     {
     public:
+        using Ptr = std::shared_ptr<Image>;
 
         //! Pixel formats.
         enum PixelFormat {
@@ -73,11 +74,11 @@ namespace ROCKY_NAMESPACE
         //! Destruct and release the data unless it's not owned
         virtual ~Image();
 
-        //! Iterator for visiting each pixel in the image.
-        
-        struct Iterator
+        //! Iterator for visiting each pixel in the image.        
+        class iterator
         {
-            Iterator(const Image* image) : _image(image) { }
+        public:
+            iterator(const Image* image) : _image(image) { }
 
             inline unsigned r() const { return _r; }
             inline unsigned s() const { return _s; }
@@ -87,8 +88,7 @@ namespace ROCKY_NAMESPACE
 
             //! Call the user callable for each pixel in the image.
             //! CALLABLE must have the signature void(const Iterator& i).
-            template<typename CALLABLE>
-            inline void each(CALLABLE&& func);
+            template<typename CALLABLE> inline void each(CALLABLE&& func);
 
         private:
             const Image* _image = nullptr;
@@ -134,8 +134,8 @@ namespace ROCKY_NAMESPACE
         inline void read(Pixel& pixel, unsigned s, unsigned t, unsigned layer = 0) const;
 
         //! Read the pixel at the location in an iterator
-        //! \param pixel Output value (in linear color space, if applicable)
-        inline void read(Pixel& pixel, Iterator& i) const {
+        //! \param pixel Output value (in linear color space, if applicable)        
+        inline void read(Pixel& pixel, const iterator& i) const {
             read(pixel, i.s(), i.t(), i.r());
         }
 
@@ -145,7 +145,7 @@ namespace ROCKY_NAMESPACE
 
         //! Read the pixel at UV coordinates with bilinear interpolation at an iterator location
         //! \param pixel Output value (in linear color space, if applicable)
-        inline void read_bilinear(Pixel& pixel, Iterator& i) const {
+        inline void read_bilinear(Pixel& pixel, const iterator& i) const {
             read_bilinear(pixel, i.u(), i.v(), i.r());
         }
 
@@ -155,7 +155,7 @@ namespace ROCKY_NAMESPACE
 
         //! Write the pixel at the location in an iterator
         //! \param pixel Value to store (in linear color space, if applicable)
-        inline void write(const Pixel& pixel, Iterator& i) {
+        inline void write(const Pixel& pixel, const iterator& i) {
             write(pixel, i.s(), i.t(), i.r());
         }
 
@@ -174,16 +174,6 @@ namespace ROCKY_NAMESPACE
         //! Creates a deep copy of this image
         virtual std::shared_ptr<Image> clone() const;
 
-        //! Creates a cropped copy of this image
-        std::shared_ptr<Image> crop(
-            double src_minx, double src_miny,
-            double src_maxx, double src_maxy,
-            double &dst_minx, double &dst_miny,
-            double &dst_maxx, double &dst_maxy) const;
-
-        //! Creates a resized clone of this image
-        std::shared_ptr<Image> resize(unsigned width, unsigned height) const;
-
         //! Creates a sharpened clone of this image.
         //! @param strength sharpening kernel strength, 1-5 is typically a reasonable range
         std::shared_ptr<Image> sharpen(
@@ -199,10 +189,9 @@ namespace ROCKY_NAMESPACE
         //! Nmmber of components in this image's pixel format
         inline unsigned numComponents() const;
 
-        //! Get an iterator for visiting each pixel
-        Iterator iterator() const {
-            return Iterator(this);
-        }
+        //! Iterate each pixel
+        template<typename CALLABLE>
+        void eachPixel(CALLABLE&& func) const;
 
         //! Fills the entire image with a single value
         //! \param pixel Value to store (in linear color space, if applicable)
@@ -291,7 +280,7 @@ namespace ROCKY_NAMESPACE
     {
         _layouts[pixelFormat()].write(
             pixel,
-            _data + (width()*height()*layer + height() * t + s)*_layouts[pixelFormat()].bytes_per_pixel,
+            _data + (width() * height() * layer + height() * t + s) * _layouts[pixelFormat()].bytes_per_pixel,
             _layouts[pixelFormat()].num_components);
     }
 
@@ -335,8 +324,10 @@ namespace ROCKY_NAMESPACE
     }
 
     template<typename CALLABLE>
-    inline void Image::Iterator::each(CALLABLE&& func)
+    inline void Image::iterator::each(CALLABLE&& func)
     {
+        static_assert(std::is_invocable_r_v<void, CALLABLE, const iterator&>);
+
         for (_r = 0; _r < _image->depth(); ++_r)
         {
             for (_t = 0; _t < _image->height(); ++_t)
@@ -350,6 +341,11 @@ namespace ROCKY_NAMESPACE
                 }
             }
         }
+    }
+
+    template<typename CALLABLE>
+    inline void Image::eachPixel(CALLABLE&& func) const {
+        iterator(this).each(std::forward<CALLABLE>(func));
     }
 
 

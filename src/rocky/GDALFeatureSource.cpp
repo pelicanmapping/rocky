@@ -227,7 +227,8 @@ namespace
         }
     }
 
-    void create_feature_from_OGR_handle(void* handle, const SRS& srs, Feature& out_feature)
+
+    void create_feature_from_OGR_handle(void* handle, const SRS& srs, const std::vector<std::string>& fieldNames, Feature& out_feature)
     {
         out_feature.id = OGR_F_GetFID(handle);
         OGRGeometryH geom_handle = OGR_F_GetGeometryRef(handle);
@@ -242,13 +243,24 @@ namespace
 
         int numAttrs = OGR_F_GetFieldCount(handle);
 
+        std::string name;
+
         for (int i = 0; i < numAttrs; ++i)
         {
+            //auto d = OGR_L_GetLayerDefn(handle); // Ensure layer definition is available
+            
             OGRFieldDefnH field_handle_ref = OGR_F_GetFieldDefnRef(handle, i);
 
-            // get the field name and convert to lower case:
-            const char* field_name = OGR_Fld_GetNameRef(field_handle_ref);
-            std::string name = util::toLower(std::string(field_name));
+            if (i < fieldNames.size())
+            {
+                name = fieldNames[i];
+            }
+            else
+            {
+                // get the field name and convert to lower case:
+                name = std::string(OGR_Fld_GetNameRef(field_handle_ref));
+                name = util::toLower(name);
+            }
 
             // get the field type and set the value appropriately
             OGRFieldType field_type = OGR_Fld_GetType(field_handle_ref);
@@ -306,6 +318,36 @@ GDALFeatureSource::~GDALFeatureSource()
     close();
 }
 
+void*
+GDALFeatureSource::openGDALDataset() const
+{
+    int openFlags = GDAL_OF_VECTOR | GDAL_OF_READONLY;
+    if (Log()->level() >= log::level::info)
+        openFlags |= GDAL_OF_VERBOSE_ERROR;
+
+    std::vector<const char*> driversCC;
+    if (ogrDriver.has_value())
+    {
+        driversCC.emplace_back(ogrDriver.value().c_str());
+        driversCC.emplace_back(nullptr);
+    }
+
+    std::vector<const char*> openOptionsCC;
+    if (!openOptions.empty())
+    {
+        for (auto& oo : openOptions)
+            openOptionsCC.emplace_back(oo.c_str());
+        openOptionsCC.emplace_back(nullptr);
+    }
+
+    return GDALOpenEx(
+        _source.c_str(),
+        openFlags,
+        driversCC.empty() ? nullptr : driversCC.data(),
+        openOptionsCC.empty() ? nullptr : openOptionsCC.data(),
+        nullptr);
+}
+
 FeatureSource::iterator
 GDALFeatureSource::iterate(const IOOptions& io)
 {
@@ -314,17 +356,7 @@ GDALFeatureSource::iterate(const IOOptions& io)
 
     if (!layerHandle)
     {
-        const char* openOptions[2] = {
-            "OGR_GPKG_INTEGRITY_CHECK=NO",
-            nullptr
-        };
-
-        dsHandle = GDALOpenEx(
-            _source.c_str(),
-            GDAL_OF_VECTOR | GDAL_OF_READONLY,
-            nullptr,
-            nullptr, //openOptions,
-            nullptr);
+        dsHandle = openGDALDataset();
 
         // open the handles safely:
         // Each cursor requires its own DS handle so that multi-threaded access will work.
@@ -340,8 +372,9 @@ GDALFeatureSource::iterate(const IOOptions& io)
     if (layerHandle)
     {
         i->_source = this;
-        i->_dsHandle = dsHandle;
-        i->_layerHandle = layerHandle;
+        i->_dsHandle = _dsHandle;
+        i->_layerHandle = _layerHandle;
+        i->_metadata = &_metadata;
         i->init();
     }
     else
@@ -363,31 +396,13 @@ GDALFeatureSource::iterator_impl::init()
 
     if (_dsHandle)
     {
-        std::string from = OGR_FD_GetName(OGR_L_GetLayerDefn(_layerHandle));
-        std::string driverName = OGR_Dr_GetName(OGR_DS_GetDriver(_dsHandle));
-
-        // Quote the layer name if it is a shapefile, so we can handle any weird filenames like those with spaces or hyphens.
-        // Or quote any layers containing spaces for PostgreSQL
-        if (driverName == "ESRI Shapefile" || driverName == "VRT" ||
-            from.find(' ') != std::string::npos)
-        {
-            std::string delim = "\"";
-            from = delim + from + delim;
-        }
-
-        std::string expr = "SELECT * FROM " + from;
-        _resultSetHandle = GDALDatasetExecuteSQL(_dsHandle, expr.c_str(), _spatialFilterHandle, nullptr);
-    }
-    else
-    {
-        // pre-existing layer with no dataset; iterate it directly.
         _resultSetHandle = _layerHandle;
+
+        if (_resultSetHandle)
+            OGR_L_ResetReading(_resultSetHandle);
+
+        readChunk();
     }
-
-    if (_resultSetHandle)
-        OGR_L_ResetReading(_resultSetHandle);
-
-    readChunk();
 }
 
 GDALFeatureSource::iterator_impl::~iterator_impl()
@@ -415,7 +430,7 @@ GDALFeatureSource::iterator_impl::readChunk()
         {
             Feature feature;
 
-            create_feature_from_OGR_handle(handle, srs, feature);
+            create_feature_from_OGR_handle(handle, srs, _metadata->fieldNames, feature);
 
             if (feature.valid())
             {
@@ -500,33 +515,9 @@ GDALFeatureSource::open()
         // remember the thread so we don't use the handles illegaly.
         _dsHandleThreadId = std::thread::id();
 
-        // If the user request a particular driver, set that up now:
-        std::string driverName;
-        if (ogrDriver.has_value())
-            driverName = ogrDriver.value();
-
-        //if (driverName.empty())
-        //    driverName = "ESRI Shapefile";
-
-        const char* driverList[2] = {
-            driverName.c_str(),
-            nullptr
-        };
-
-        // always opening a vector source:
-        int openFlags = GDAL_OF_VECTOR | GDAL_OF_READONLY;
-
-        if (Log()->level() >= log::level::info)
-            openFlags |= GDAL_OF_VERBOSE_ERROR;
-
         // this handle may ONLY be used from this thread!
         // https://github.com/OSGeo/gdal/blob/v2.4.1/gdal/gcore/gdaldataset.cpp#L2577
-        _dsHandle = GDALOpenEx(
-            _source.c_str(),
-            openFlags,
-            driverName.empty() ? nullptr : driverList,
-            nullptr,
-            nullptr);
+        _dsHandle = openGDALDataset();
 
         if (!_dsHandle)
         {
@@ -543,6 +534,25 @@ GDALFeatureSource::open()
         }
 
         _featureCount = (int)OGR_L_GetFeatureCount(_layerHandle, 1);
+
+        // Build the field schema:
+        auto fetaureDefHandle = OGR_L_GetLayerDefn(_layerHandle);
+        if (fetaureDefHandle)
+        {
+            int count = OGR_FD_GetFieldCount(fetaureDefHandle);
+            for (int i = 0; i < count; ++i)
+            {
+                auto fieldDefHandle = OGR_FD_GetFieldDefn(fetaureDefHandle, i);
+                if (fieldDefHandle)
+                {
+                    auto* name = OGR_Fld_GetNameRef(fieldDefHandle);
+                    if (name)
+                    {
+                        _metadata.fieldNames.emplace_back(util::toLower(std::string(name)));
+                    }
+                }
+            }
+        }
 
         // extract the SRS and Extent:
         OGRSpatialReferenceH srHandle = OGR_L_GetSpatialRef(_layerHandle);

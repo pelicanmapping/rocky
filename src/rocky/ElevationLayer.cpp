@@ -880,7 +880,7 @@ ElevationLayer::decodeRGB(std::shared_ptr<Image> image) const
 
     if (encoding == Encoding::TerrariumRGB)
     {
-        view.iterator().each([&](auto& i)
+        view.eachPixel([&](auto& i)
             {
                 view.read(pixel, i.s(), i.t());
 
@@ -895,7 +895,7 @@ ElevationLayer::decodeRGB(std::shared_ptr<Image> image) const
 
     else // default to MapboxRGB
     {
-        view.iterator().each([&](auto& i)
+        view.eachPixel([&](auto& i)
             {
                 view.read(pixel, i.s(), i.t());
 

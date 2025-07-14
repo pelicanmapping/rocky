@@ -32,6 +32,7 @@ auto Demo_MVTFeatures = [](Application& app)
                 // Feature source that will read MVT from the intercloud:
                 auto gdal = GDALFeatureSource::create();
                 gdal->uri = "MVT:https://readymap.org/readymap/mvt/osm/" + key.str() + ".pbf";
+                gdal->openOptions.emplace_back("CLIP=NO");
 
                 auto status = gdal->open();
                 if (status.failed())
@@ -46,13 +47,13 @@ auto Demo_MVTFeatures = [](Application& app)
                 fview.origin = key.extent().centroid();
 
                 fview.styles.line = LineStyle();
-                fview.styles.line->color = vsg::vec4(0, 1, 0, 1);
+                fview.styles.line->color = vsg::vec4(1, 0, 0, 1);
                 fview.styles.line->width = 5.0f;
                 fview.styles.line->depth_offset = 1000; // meters
 
                 fview.styles.mesh = MeshStyle();
                 fview.styles.mesh->color = vsg::vec4(1, 0.75f, 0.2f, 1);
-                fview.styles.mesh->depth_offset = 1000; // meters
+                fview.styles.mesh->depth_offset = 1100; // meters
 
                 if (gdal->featureCount() > 0)
                     fview.features.reserve(gdal->featureCount());
@@ -62,6 +63,16 @@ auto Demo_MVTFeatures = [](Application& app)
                     {
                         if (f.hasField("building") && f.geometry.type == Geometry::Type::Polygon)
                         {
+                            fview.features.emplace_back(std::move(f));
+                        }
+
+                        else if (f.field("highway") == "motorway" ||
+                            f.field("highway") == "trunk" ||
+                            f.field("highway") == "primary" ||
+                            f.field("highway") == "secondary" ||
+                            f.field("highway") == "tertiary")
+                        {
+                            // convert to a line string:
                             fview.features.emplace_back(std::move(f));
                         }
                     });

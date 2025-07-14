@@ -276,8 +276,7 @@ TerrainState::updateRenderModel(
         renderModel.color.matrix = layer.matrix;
 
         // TODO: evaluate this 'clone' operation...
-        auto data = util::wrapImageInVSG(renderModel.color.image); // ->clone());
-        //auto data = util::moveImageToVSG(renderModel.color.image->clone());
+        auto data = util::wrapImageInVSG(renderModel.color.image);
         if (data)
         {
             // queue the old data for safe disposal
@@ -306,8 +305,7 @@ TerrainState::updateRenderModel(
         renderModel.elevation.image = dataModel.elevation.heightfield.heightfield();
         renderModel.elevation.matrix = dataModel.elevation.matrix;
 
-        auto data = util::wrapImageInVSG(renderModel.elevation.image); // ->clone());
-        //auto data = util::moveImageToVSG(renderModel.elevation.image->clone());
+        auto data = util::wrapImageInVSG(renderModel.elevation.image);
         if (data)
         {
             // queue the old data for safe disposal
@@ -358,26 +356,6 @@ TerrainState::updateRenderModel(
 
     // Compile the objects. Everything should be under the bind command.
     runtime->compile(descriptors.bind);
-
-#if 0
-    // Temporary:
-    // Delete the CPU memory assocaited with the rasters
-    // now that they are compiled to the GPU.
-    for (auto& dd : descriptors.bind->descriptorSet->descriptors)
-    {
-        auto di = dd->cast<vsg::DescriptorImage>();
-        if (di)
-        {
-            for (auto& ii : di->imageInfoList)
-            {
-                if (ii->imageView->image->data->properties.dataVariance == vsg::STATIC_DATA_UNREF_AFTER_TRANSFER)
-                {
-                    ii->imageView->image->data = nullptr;
-                }
-            }
-        }
-    }
-#endif
 
     return renderModel;
 }

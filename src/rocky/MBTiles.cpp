@@ -399,7 +399,7 @@ MBTiles::Driver::write(const TileKey& key, std::shared_ptr<Image> input, const I
     {
         image_to_write = Image::create(Image::R8G8B8_UNORM, input->width(), input->height(), input->depth());
 
-        input->iterator().each([&](auto& iter)
+        input->eachPixel([&](auto& iter)
             {
                 glm::fvec4 pixel;
                 input->read(pixel, iter);

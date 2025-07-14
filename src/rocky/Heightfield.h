@@ -17,6 +17,8 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT Heightfield : public Inherit<Image, Heightfield>
     {
     public:
+        using Ptr = std::shared_ptr<Heightfield>;
+
         //! Construct an empty (and invalid) heightfield
         Heightfield();
 
