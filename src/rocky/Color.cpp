@@ -153,7 +153,7 @@ Color::Color(const Color& rhs, float alpha) :
     a = alpha;
 }
 
-/** Parses a hex color string ("#rrggbb", "#rrggbbaa", "0xrrggbb", etc.) into an OSG color. */
+/** Parses a hex color string ("#rrggbb", "#rrggbbaa", "0xrrggbb", etc.) into an RGBA color. */
 Color::Color(const std::string& input, Format format)
 {
     // ascii-only toLower + trim:
@@ -310,7 +310,7 @@ Color::set(float in_r, float in_g, float in_b, float in_a)
     r = in_r, g = in_g, b = in_b, a = in_a;
 }
 
-/** Makes an HTML color ("#rrggbb" or "#rrggbbaa") from an OSG color. */
+/** Makes an HTML color ("#rrggbb" or "#rrggbbaa") from an RGBA color. */
 std::string
 Color::toHTML(Format format) const
 {

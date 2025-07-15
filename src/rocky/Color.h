@@ -114,4 +114,5 @@ namespace ROCKY_NAMESPACE
         static std::vector<Color> createRandomColorRamp(unsigned count, int seed = -1);
     };
 
-} // namespace osgEarth
+}
+

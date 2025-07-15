@@ -689,7 +689,7 @@ TMS::Driver::open(const URI& uri, Profile& profile, const std::string& format, D
 }
 
 Result<std::shared_ptr<Image>>
-TMS::Driver::read(const TileKey& key, bool invertY, bool isMapboxRGB, const URIContext& context, const IOOptions& io) const
+TMS::Driver::read(const TileKey& key, bool invertY, bool isMapboxRGB, const URI::Context& context, const IOOptions& io) const
 {
     std::shared_ptr<Image> image;
     URI imageURI;

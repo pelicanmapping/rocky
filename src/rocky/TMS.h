@@ -124,7 +124,7 @@ namespace ROCKY_NAMESPACE
                 const TileKey& key,
                 bool invertY,
                 bool isMapboxRGB,
-                const URIContext& context,
+                const URI::Context& context,
                 const IOOptions& io) const;
 
             //! Source information structure

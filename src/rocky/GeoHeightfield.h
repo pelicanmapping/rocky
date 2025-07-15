@@ -88,7 +88,7 @@ namespace ROCKY_NAMESPACE
         //! The maximum height in the heightfield
         float maxHeight() const { return _maxHeight; }
 
-        //! Gets a pointer to the underlying OSG heightfield.
+        //! Gets a pointer to the underlying heightfield.
         std::shared_ptr<Heightfield> heightfield() const {
             return _hf;
         }

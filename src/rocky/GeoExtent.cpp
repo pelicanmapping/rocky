@@ -892,7 +892,6 @@ GeoExtent::clamp()
     if (_srs.isGeodetic())
     {
         _width = rocky::util::clamp(_width, 0.0, 360.0);
-        //_height = osg::clampBetween(_height, 0.0, 180.0);
 
         if (south() < -90.0)
         {

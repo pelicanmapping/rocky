@@ -662,13 +662,13 @@ SRS::horizontallyEquivalentTo(const SRS& rhs) const
         return false;
 
     // compare only the horizontal CRS components:
-    PJ* lhs_pj = nullptr;
-    PJ* rhs_pj = nullptr;
+    PJ* lhs_horiz_pj = nullptr;
+    PJ* rhs_horiz_pj = nullptr;
 
-    lhs_pj = lhs_entry.crs_type == PJ_TYPE_COMPOUND_CRS ?
+    lhs_horiz_pj = lhs_entry.crs_type == PJ_TYPE_COMPOUND_CRS ?
         proj_crs_get_sub_crs(g_srs_factory.threading_context(), pj1, 0) : pj1;
 
-    rhs_pj = rhs_entry.crs_type == PJ_TYPE_COMPOUND_CRS ?
+    rhs_horiz_pj = rhs_entry.crs_type == PJ_TYPE_COMPOUND_CRS ?
         proj_crs_get_sub_crs(g_srs_factory.threading_context(), pj2, 0) : pj2;
 
     PJ_COMPARISON_CRITERION criterion =
@@ -676,7 +676,7 @@ SRS::horizontallyEquivalentTo(const SRS& rhs) const
         PJ_COMP_EQUIVALENT;
 
     return proj_is_equivalent_to_with_ctx(
-        g_srs_factory.threading_context(), lhs_pj, rhs_pj, criterion);
+        g_srs_factory.threading_context(), lhs_horiz_pj, rhs_horiz_pj, criterion);
 }
 
 const std::string&

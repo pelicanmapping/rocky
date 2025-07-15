@@ -20,13 +20,13 @@ namespace ROCKY_NAMESPACE
         {
             option<std::string> apiKey;
             option<std::string> imagerySet = { "Aerial" };
-            option<URI> imageryMetadataUrl = { "https://dev.virtualearth.net/REST/v1/Imagery/Metadata" };
+            option<URI> imageryMetadataUrl = URI("https://dev.virtualearth.net/REST/v1/Imagery/Metadata");
         };
 
         struct ElevationLayerOptions
         {
             option<std::string> apiKey;
-            option<URI> url = { "http://dev.virtualearth.net/REST/v1/Elevation/Bounds" };
+            option<URI> url = URI("http://dev.virtualearth.net/REST/v1/Elevation/Bounds");
         };
     }
 }

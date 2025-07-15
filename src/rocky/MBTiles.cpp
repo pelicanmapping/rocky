@@ -230,7 +230,8 @@ MBTiles::Driver::open(
 
                 if (extent.valid())
                 {
-                    // Using 0 for the minLevel is not technically correct, but we use it instead of the proper minLevel to force osgEarth to subdivide
+                    // Using 0 for the minLevel is not technically correct, but we use it
+                    // instead of the proper minLevel to force subdivision
                     // since we don't really handle DataExtents with minLevels > 0 just yet.
                     out_dataExtents.push_back(DataExtent(extent, 0, _maxLevel));
                 }
@@ -242,7 +243,8 @@ MBTiles::Driver::open(
         }
         else
         {
-            // Using 0 for the minLevel is not technically correct, but we use it instead of the proper minLevel to force osgEarth to subdivide
+            // Using 0 for the minLevel is not technically correct, but we use it
+            // instead of the proper minLevel to force subdivision
             // since we don't really handle DataExtents with minLevels > 0 just yet.
             out_dataExtents.push_back(DataExtent(profile.extent(), 0, _maxLevel));
         }

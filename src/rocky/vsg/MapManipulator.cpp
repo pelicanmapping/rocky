@@ -102,30 +102,6 @@ namespace
     }
 }
 
-#if 0
-
-//------------------------------------------------------------------------
-namespace
-{
-    // Callback that notifies the manipulator whenever the terrain changes
-    // around its center point.
-    struct ManipTerrainCallback : public TerrainCallback
-    {
-        ManipTerrainCallback(MapManipulator* manip) : _manip(manip) { }
-        void onTileUpdate(const TileKey& key, vsg::Node* graph, TerrainCallbackContext& context)
-        {
-            osg::ref_ptr<MapManipulator> safe;
-            if ( _manip.lock(safe) )
-            {
-                safe->handleTileUpdate(key, graph, context);
-            }
-        }
-        osg::observer_ptr<MapManipulator> _manip;
-    };
-}
-#endif
-
-
 void
 MapManipulator::put(vsg::ref_ptr<vsg::Object> object)
 {
@@ -299,11 +275,6 @@ MapManipulator::Settings::expandSpec(const InputSpec& input, InputSpecs& output)
         //expandSpec(InputSpec(e, i, m & ~vsg::KEY_Meta_L), output);
         //expandSpec(InputSpec(e, i, m & ~vsg::KEY_Meta_R), output);
     }
-    //else if (HASMODKEY(m, osgGA::GUIEventAdapter::MODKEY_HYPER))
-    //{
-    //    expandSpec(InputSpec(e, i, m & ~osgGA::GUIEventAdapter::MODKEY_LEFT_HYPER), output);
-    //    expandSpec(InputSpec(e, i, m & ~osgGA::GUIEventAdapter::MODKEY_RIGHT_HYPER), output);
-    //}
 
     //Always add the input so if we are dealing with a windowing system like QT that just sends MODKEY_CTRL it will still work.
     output.push_back(input);
@@ -1473,8 +1444,8 @@ MapManipulator::pan(double dx, double dy)
     _viewOffset.y() -= dy * scale;
 
     //Clamp values within range
-    _viewOffset.x() = osg::clampBetween(_viewOffset.x(), -_settings->getMaxXOffset(), _settings->getMaxXOffset());
-    _viewOffset.y() = osg::clampBetween(_viewOffset.y(), -_settings->getMaxYOffset(), _settings->getMaxYOffset());
+    _viewOffset.x() = clamp(_viewOffset.x(), -_settings->getMaxXOffset(), _settings->getMaxXOffset());
+    _viewOffset.y() = clamp(_viewOffset.y(), -_settings->getMaxYOffset(), _settings->getMaxYOffset());
     }
 #endif
 
@@ -1822,11 +1793,6 @@ MapManipulator::handleAction(
 {
     bool handled = true;
 
-    //if ( osgEarth::getNotifyLevel() > osg::INFO )
-    //    dumpActionInfo( action, osg::DEBUG_INFO );
-
-    //ROCKY_NOTICE << "action=" << action << ", dx=" << dx << ", dy=" << dy << std::endl;
-
     switch( action._type )
     {
 #if 0
@@ -2020,9 +1986,6 @@ MapManipulator::updateTether(const vsg::time_point& t)
         if (!isSettingViewpoint())
         {
             setCenter(world);
-            //setCenter(osg::Vec3d(0, 0, 0) * L2W);
-            //_centerRotation = computeCenterRotation(_center);
-            //_previousUp = getUpVector(_centerLocalToWorld);
         };
 
         if (_settings->tetherMode == TETHER_CENTER)
@@ -2031,7 +1994,7 @@ MapManipulator::updateTether(const vsg::time_point& t)
             {
                 //TODO
                 //// level out the camera so we don't leave the camera is weird state.
-                //osg::Matrixd localToFrame(L2W * osg::Matrixd::inverse(_centerLocalToWorld));
+                //vsg::dmat4 localToFrame(L2W * vsg::dmat4::inverse(_centerLocalToWorld));
                 //double azim = atan2(-localToFrame(0, 1), localToFrame(0, 0));
                 //_tetherRotation.makeRotate(-azim, 0.0, 0.0, 1.0);
             }

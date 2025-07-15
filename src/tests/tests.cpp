@@ -767,7 +767,7 @@ TEST_CASE("Earth File")
             auto tms_layer = TMSImageLayer::cast(layer1);
             CHECK(tms_layer);
             CHECK(tms_layer->uri.has_value());
-            CHECK(tms_layer->uri.value() == "https://readymap.org/readymap/tiles/1.0.0/7/");
+            CHECK(tms_layer->uri.value().full() == "https://readymap.org/readymap/tiles/1.0.0/7/");
         }
     }
 }

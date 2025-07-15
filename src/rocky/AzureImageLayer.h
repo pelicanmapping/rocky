@@ -41,7 +41,7 @@ namespace ROCKY_NAMESPACE
 
         void construct(std::string_view JSON, const IOOptions& io);
 
-        URIContext _uriContext;
+        URI::Context _uriContext;
     };
 }
 

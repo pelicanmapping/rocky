@@ -8,44 +8,42 @@
 #include <rocky/Common.h>
 #include <rocky/IOTypes.h>
 
-#include <iostream>
 #include <string>
 #include <vector>
 
 namespace ROCKY_NAMESPACE
 {
-    class URI;
-    class IOControl;
-
-    using Headers = std::vector<std::pair<std::string, std::string>>;
-
-    /**
-     * Context for resolving relative URIs.
-     *
-     * This object provides "context" for a relative URI. In other words, it provides
-     * all of the information the system needs to resolve it to an absolute location from
-     * which OSG can load data.
-     *
-     * The "referrer" is the location of an object that "points" to the object in the
-     * corresponding URI. The location conveyed by the URI will be relative to the location of
-     * its referrer. For example, a referrer of "http://server/folder/hello.xml" applied
-     * to the URI "there.jpg" will resolve to "http://server/folder/there.jpg". NOTE that referrer
-     * it not itself a location (like a folder); rather it's the object that referred to the URI
-     * being contextualized.
-     */
-    struct URIContext
-    {
-        std::string referrer;
-        Headers headers;
-    };
-
-
     /**
      * Represents the location of a resource, providing the raw (original, possibly
      * relative) and absolute forms.
      */
     class ROCKY_EXPORT URI
     {
+    public:
+
+        using Headers = std::vector<std::pair<std::string, std::string>>;
+
+        /**
+         * Context for resolving relative URIs.
+         *
+         * This object provides "context" for a relative URI. In other words, it provides
+         * all of the information the system needs to resolve it to an absolute location.
+         *
+         * The "referrer" is the location of an object that "points" to the object in the
+         * corresponding URI. The location conveyed by the URI will be relative to the location of
+         * its referrer. For example, a referrer of "http://server/folder/hello.xml" applied
+         * to the URI "there.jpg" will resolve to "http://server/folder/there.jpg". NOTE that referrer
+         * it not itself a location (like a folder); rather it's the object that referred to the URI
+         * being contextualized.
+         */
+        struct Context
+        {
+            Context() = default;
+            Context(std::string_view v) : referrer(v) {}
+            std::string referrer;
+            Headers headers;
+        };
+
     public:
         //! Whether HTTPS support is available
         static bool supportsHTTPS();
@@ -71,20 +69,19 @@ namespace ROCKY_NAMESPACE
 
     public:
         //! Constructs an empty (and invalid) URI.
-        URI();
+        URI() = default;
 
-        URI(const URI& rhs);
+        //! Copy construct
+        URI(const URI& rhs) = default;
 
-        //! Constructs a new URI from a location (typically an absolute url)
-        URI(const std::string& location);
-
-        //! Constructs a new URI from a location and an existing context.
-        URI(const std::string& location, const URIContext& context);
+        //! Constructs a new URI from a location and a referring location.
+        URI(const std::string& location, const URI::Context& context = {});
 
         //! Constructs a new URI from a location and a referring location.
         URI(const std::string& location, const std::string& referrer) :
-            URI(location, URIContext{ referrer }) { }
+            URI(location, URI::Context{ referrer }) { }
 
+        //! Construct a new URI from a character string
         URI(const char* location) :
             URI(std::string(location)) { }
 
@@ -101,7 +98,7 @@ namespace ROCKY_NAMESPACE
         void setReferrer(const std::string& value);
 
         /** Context with which this URI was created. */
-        const URIContext& context() const { return _context; }
+        const URI::Context& context() const { return _context; }
 
         /** Whether the URI is empty */
         bool empty() const { return _baseURI.empty(); }
@@ -140,9 +137,9 @@ namespace ROCKY_NAMESPACE
         std::string _baseURI;
         std::string _fullURI;
         std::string::size_type _r0 = std::string::npos, _r1 = std::string::npos;
-        URIContext _context;
+        URI::Context _context;
 
-        void set(const std::string& location, const URIContext& context);
+        void set(std::string_view location, const URI::Context& context);
         void findRotation();
     };
 

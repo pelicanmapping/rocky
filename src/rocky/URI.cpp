@@ -11,12 +11,9 @@
 #include "Version.h"
 #include "json.h"
 
-#include <typeinfo>
 #include <fstream>
 #include <sstream>
-#include <cstdlib>
 #include <random>
-#include <algorithm>
 
 #ifdef ROCKY_HAS_HTTPLIB
     #ifdef ROCKY_HAS_OPENSSL
@@ -499,38 +496,23 @@ URI::Stream::to_string()
     return os.str();
 }
 
-URI::URI()
-{
-    //nop
-}
+//URI::URI(const std::string& location)
+//{
+//    _baseURI = location;
+//    _fullURI = location;
+//
+//    findRotation();
+//}
 
-URI::URI(const URI& rhs) :
-    _baseURI(rhs._baseURI),
-    _fullURI(rhs._fullURI),
-    _r0(rhs._r0),
-    _r1(rhs._r1),
-    _context(rhs._context)
-{
-    //nop
-}
-
-URI::URI(const std::string& location)
-{
-    _baseURI = location;
-    _fullURI = location;
-
-    findRotation();
-}
-
-URI::URI(const std::string& location, const URIContext& context)
+URI::URI(const std::string& location, const URI::Context& context)
 {
     set(location, context);
 }
 
 void
-URI::set(const std::string& location, const URIContext& context)
+URI::set(std::string_view location, const URI::Context& context)
 {
-    std::string location_to_use = location;
+    std::string location_to_use(location);
 
     if (util::startsWith(location, "file://", false))
         _baseURI = location.substr(7);
@@ -754,7 +736,7 @@ namespace ROCKY_NAMESPACE
             std::string base, referrer;
             get_to(j, "href", base);
             get_to(j, "referrer", referrer);
-            URIContext context{ referrer };
+            URI::Context context{ referrer };
             if (j.contains("headers")) {
                 auto headers = j.at("headers");
                 if (headers.is_array()) {

@@ -28,7 +28,7 @@ namespace ROCKY_NAMESPACE
             option<std::string> tilesetId = { "microsoft.base.road" };
 
             //! Base URL for the Azure Maps tile API
-            option<URI> mapTileApiUrl = { "https://atlas.microsoft.com/map/tile" };
+            option<URI> mapTileApiUrl = URI("https://atlas.microsoft.com/map/tile");
 
             //! API version
             option<std::string> apiVersion = { "2024-04-01" };

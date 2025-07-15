@@ -446,8 +446,8 @@ GDAL::Driver::open(
         // Resolve the pathname...
         if (isFile && !std::filesystem::exists(input))
         {
-            // TODO?
-            //std::string found = osgDB::findDataFile(input);
+            // TODO? Search paths? or not?
+            //std::string found = findDataFile(input);
             //if (!found.empty())
             //    input = found;
         }

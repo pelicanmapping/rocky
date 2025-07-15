@@ -19,19 +19,7 @@ namespace ROCKY_NAMESPACE
     class TileKey;
 
     /**
-     * Base class for all Map layers.
-     *
-     * Subclass Layer to create a new layer type. Use the META_Layer macro
-     * to establish the standard options framework.
-     *
-     * When you create a Layer, init() is called. Do all one-time construction
-     * activity where.
-     *
-     * When you add a Layer to a Map, the follow methods are called in order:
-     *
-     *   setReadOptions() sets OSG options for IO activity;
-     *   open() to initialize any underlying data sources;
-     *   addedToMap() to signal to the layer that it is now a member of a Map.
+     * Base class for all Map layer types.
      */
     class ROCKY_EXPORT Layer : public Inherit<Object, Layer>
     {
@@ -165,7 +153,7 @@ namespace ROCKY_NAMESPACE
         //! functions that require the layer to remain open
         std::shared_mutex& layerStateMutex() const { return _state_mutex; }
 
-        // allow the map access to the addedToMap/removedFromMap methods
+        // allow the map access
         friend class Map;
     };
 

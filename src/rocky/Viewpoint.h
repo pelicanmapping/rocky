@@ -28,9 +28,6 @@ namespace ROCKY_NAMESPACE
         //! Set this to tether to a moving object.
         std::function<GeoPoint()> pointFunction;
 
-        //! Dynamic focal point (if set)
-        //std::shared_ptr<PositionedObject> target;
-
         //! Heading of the viewer relative to north
         option<Angle> heading = Angle(0.0, Units::DEGREES);
 
@@ -45,13 +42,13 @@ namespace ROCKY_NAMESPACE
 
     public:
         //! Construct an empty viewpoint
-        Viewpoint() { }
+        Viewpoint() = default;
 
         //! Default copy contstructor
         Viewpoint(const Viewpoint&) = default;
 
         //! The focal position
-        GeoPoint position() const {
+        inline GeoPoint position() const {
             if (pointFunction)
                 return pointFunction();
             else
