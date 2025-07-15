@@ -100,13 +100,13 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>        {</div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>            option&lt;std::string&gt; apiKey;</div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>            option&lt;std::string&gt; imagerySet = { <span class="stringliteral">&quot;Aerial&quot;</span> };</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>            option&lt;URI&gt; imageryMetadataUrl = { <span class="stringliteral">&quot;https://dev.virtualearth.net/REST/v1/Imagery/Metadata&quot;</span> };</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>            option&lt;URI&gt; imageryMetadataUrl = URI(<span class="stringliteral">&quot;https://dev.virtualearth.net/REST/v1/Imagery/Metadata&quot;</span>);</div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>        };</div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>        <span class="keyword">struct </span>ElevationLayerOptions</div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>        {</div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>            option&lt;std::string&gt; apiKey;</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>            option&lt;URI&gt; url = { <span class="stringliteral">&quot;http://dev.virtualearth.net/REST/v1/Elevation/Bounds&quot;</span> };</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>            option&lt;URI&gt; url = URI(<span class="stringliteral">&quot;http://dev.virtualearth.net/REST/v1/Elevation/Bounds&quot;</span>);</div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>        };</div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    }</div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>}</div>

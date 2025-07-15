@@ -9,6 +9,6 @@ var searchData=
   ['cancelable_6',['cancelable',['../class_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1cancelable.html',1,'WEEJOBS_NAMESPACE']]],
   ['celestialbody_7',['CelestialBody',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_celestial_body.html',1,'ROCKY_NAMESPACE']]],
   ['color_8',['Color',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_color.html',1,'ROCKY_NAMESPACE']]],
-  ['context_9',['context',['../struct_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1context.html',1,'WEEJOBS_NAMESPACE']]],
+  ['context_9',['context',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_u_r_i_1_1_context.html',1,'ROCKY_NAMESPACE::URI::Context'],['../struct_w_e_e_j_o_b_s___n_a_m_e_s_p_a_c_e_1_1context.html',1,'WEEJOBS_NAMESPACE::context']]],
   ['createtilemanifest_10',['CreateTileManifest',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_create_tile_manifest.html',1,'ROCKY_NAMESPACE']]]
 ];
