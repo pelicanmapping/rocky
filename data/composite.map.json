@@ -1,0 +1,17 @@
+{
+    "map" : {
+        "name" : "Local GeoTIFF Map",
+        "layers": [
+            {
+                "name": "Worldwide GeoTIFF",
+                "type": "GDALImage",
+                "uri": "imagery/world.tif"
+            },            
+            {
+                "name": "Local UTM imagery",
+                "type": "GDALImage",
+                "uri": "imagery/boston-inset-utm.tif"
+            }
+        ]
+    }
+}

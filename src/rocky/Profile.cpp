@@ -104,10 +104,22 @@ Profile::equivalentTo(const Profile& rhs) const
 bool
 Profile::horizontallyEquivalentTo(const Profile& rhs) const
 {
-    if (equivalentTo(rhs))
+    if (!valid() || !rhs.valid())
+        return false;
+
+    if (_shared == rhs._shared)
         return true;
 
-    if (!valid() || !rhs.valid())
+    if (!_shared->wellKnownName.empty() && _shared->wellKnownName == rhs._shared->wellKnownName)
+        return true;
+
+    if (_shared->numTilesBaseY != rhs._shared->numTilesBaseY)
+        return false;
+
+    if (_shared->numTilesBaseX != rhs._shared->numTilesBaseX)
+        return false;
+
+    if (_shared->extent != rhs._shared->extent)
         return false;
 
     return _shared->extent.srs().horizontallyEquivalentTo(rhs._shared->extent.srs());
@@ -399,7 +411,7 @@ Profile::equivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
     static const Profile SPHERICAL_MERCATOR("spherical-mercator");
     static const Profile GLOBAL_GEODETIC("global-geodetic");
 
-    //If the profiles are equivalent, just use the incoming lod
+    // If the profiles are equivalent (except for vdatum) just use the incoming lod
     if (horizontallyEquivalentTo(rhsProfile))
         return rhsLOD;
 
@@ -419,67 +431,20 @@ Profile::equivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
         return rhsLOD;
     }
 
-    double rhsTargetHeight = SRS::transformUnits(
-        rhsHeight, rhsProfile.srs(), srs(), Angle());
+    double rhsTargetHeight = SRS::transformUnits(rhsHeight, rhsProfile.srs(), srs(), Angle{});
 
-    int currLOD = 0;
-    int destLOD = currLOD;
-
-    double delta = DBL_MAX;
-
-    // Find the LOD that most closely matches the resolution of the incoming key.
-    // We use the closest (under or over) so that you can match back and forth between profiles and be sure to get the same results each time.
-    while (true)
-    {
-        double prevDelta = delta;
-
-        auto[w, h] = tileDimensions(currLOD);
-
-        delta = fabs(h - rhsTargetHeight);
-        if (delta < prevDelta)
-        {
-            // We're getting closer so keep going
-            destLOD = currLOD;
-        }
-        else
-        {
-            // We are further away from the previous lod so stop.
-            break;
-        }
-        currLOD++;
-    }
-    return destLOD;
+    return levelOfDetail(rhsTargetHeight);
 }
 
 unsigned
 Profile::levelOfDetail(double height) const
 {
-    int currLOD = 0;
-    int destLOD = currLOD;
+    auto [baseWidth, baseHeight] = tileDimensions(0);
 
-    double delta = DBL_MAX;
-
-    // Find the LOD that most closely matches the target height in this profile.
-    while (true)
-    {
-        double prevDelta = delta;
-
-        auto[w, h] = tileDimensions(currLOD);
-
-        delta = fabs(h - height);
-        if (delta < prevDelta)
-        {
-            // We're getting closer so keep going
-            destLOD = currLOD;
-        }
-        else
-        {
-            // We are further away from the previous lod so stop.
-            break;
-        }
-        currLOD++;
-    }
-    return destLOD;
+    // Compute LOD: at LOD n, the height is baseHeight / (2^n)
+    // Solve for n: n = log2(baseHeight / rhsTargetHeight)
+    int computed_lod = static_cast<int>(std::round(std::log2(baseHeight / height)));
+    return (unsigned)std::max(computed_lod, 0);
 }
 
 bool
