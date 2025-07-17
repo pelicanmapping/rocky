@@ -85,8 +85,8 @@ $(document).ready(function() { init_codefold(0); });
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span> </div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#pragma once</span></div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;rocky/vsg/VSGContext.h&gt;</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;rocky/vsg/ViewLocal.h&gt;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;rocky/vsg/ecs/Transform.h&gt;</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;rocky/ecs/Transform.h&gt;</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;rocky/Rendering.h&gt;</span></div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &lt;rocky/SRS.h&gt;</span></div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &lt;rocky/Ellipsoid.h&gt;</span></div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &lt;rocky/Horizon.h&gt;</span></div>
@@ -139,16 +139,16 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
 <div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>        <span class="keywordtype">void</span> pop(vsg::RecordTraversal&amp;) <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>        <span class="keyword">inline</span> <span class="keywordtype">bool</span> visible(ViewRecordingState&amp; state) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>        <span class="keyword">inline</span> <span class="keywordtype">bool</span> visible(detail::RenderingState&amp;) <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    };</div>
 </div>
 <div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span> </div>
 <div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
 <div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    <span class="comment">// inline functions</span></div>
 <div class="foldopen" id="foldopen00072" data-start="{" data-end="}">
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html#ae729f148b3ae73e80821ad7954eda416">   72</a></span>    <span class="keywordtype">bool</span> TransformDetail::visible(<a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_view_recording_state.html">ViewRecordingState</a>&amp; <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">state</a>)<span class="keyword"> const</span></div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html#af23a13423788ceaddc64b975108610a0">   72</a></span>    <span class="keywordtype">bool</span> TransformDetail::visible(<a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_rendering_state.html">detail::RenderingState</a>&amp; <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">rs</a>)<span class="keyword"> const</span></div>
 <div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span><span class="keyword">    </span>{</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>        <span class="keywordflow">return</span> views[<a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">state</a>.viewID].passesCull;</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>        <span class="keywordflow">return</span> views[<a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">rs</a>.viewID].passesCull;</div>
 <div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    }</div>
 </div>
 <div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>}</div>
@@ -159,9 +159,9 @@ $(document).ready(function() { init_codefold(0); });
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_revisioned_component_html_af4a02a31ffe733c0feff90840b0c035c"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_revisioned_component.html#af4a02a31ffe733c0feff90840b0c035c">ROCKY_NAMESPACE::RevisionedComponent::revision</a></div><div class="ttdeci">int revision</div><div class="ttdoc">Revision, for synchronizing this component with another.</div><div class="ttdef"><b>Definition</b> Component.h:18</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html">ROCKY_NAMESPACE::TransformDetail</a></div><div class="ttdef"><b>Definition</b> TransformDetail.h:32</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail_html_a86a6192267271e91cc737438e1850908"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_detail.html#a86a6192267271e91cc737438e1850908">ROCKY_NAMESPACE::TransformDetail::TransformDetail</a></div><div class="ttdeci">TransformDetail()</div><div class="ttdoc">Construct the object, and force the sychronization Transform to be dirty.</div><div class="ttdef"><b>Definition</b> TransformDetail.h:34</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform.html">ROCKY_NAMESPACE::Transform</a></div><div class="ttdef"><b>Definition</b> Transform.h:22</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform.html">ROCKY_NAMESPACE::Transform</a></div><div class="ttdef"><b>Definition</b> Transform.h:20</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_view_detail_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_transform_view_detail.html">ROCKY_NAMESPACE::TransformViewDetail</a></div><div class="ttdoc">Internal data calculated from a Transform instance in the context of a specific camera.</div><div class="ttdef"><b>Definition</b> TransformDetail.h:18</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_view_recording_state_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_view_recording_state.html">ROCKY_NAMESPACE::ViewRecordingState</a></div><div class="ttdoc">State information at the time of recording a specific view.</div><div class="ttdef"><b>Definition</b> VSGContext.h:20</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_rendering_state_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_rendering_state.html">ROCKY_NAMESPACE::detail::RenderingState</a></div><div class="ttdoc">State information at the time of rendering a view.</div><div class="ttdef"><b>Definition</b> Rendering.h:16</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">ROCKY_NAMESPACE::option</a></div><div class="ttdef"><b>Definition</b> option.h:27</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

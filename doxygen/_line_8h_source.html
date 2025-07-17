@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Rocky: src/rocky/vsg/ecs/Line.h Source File</title>
+<title>Rocky: src/rocky/ecs/Line.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -75,7 +75,7 @@ $(document).ready(function() { init_codefold(0); });
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_ebc94a7b713110b2b862f36c041ff6c7.html">rocky</a></li><li class="navelem"><a class="el" href="dir_472326dbe6db1c1b7cc8e59dda1779f2.html">vsg</a></li><li class="navelem"><a class="el" href="dir_476824ac9846d7c78844e6512d742570.html">ecs</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_ebc94a7b713110b2b862f36c041ff6c7.html">rocky</a></li><li class="navelem"><a class="el" href="dir_00131048f9c35d5d91bea1700fdb2f37.html">ecs</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -84,9 +84,9 @@ $(document).ready(function() { init_codefold(0); });
 <div class="contents">
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span> </div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#pragma once</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;rocky/vsg/ecs/Component.h&gt;</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;rocky/Color.h&gt;</span></div>
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;rocky/GeoPoint.h&gt;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;vsg/maths/vec4.h&gt;</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;rocky/ecs/Component.h&gt;</span></div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div>
@@ -95,7 +95,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_style.html">   16</a></span>    <span class="keyword">struct </span><a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_style.html">LineStyle</a></div>
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    {</div>
 <div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>        <span class="comment">// if alpha is zero, use the line&#39;s per-vertex color instead</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>        vsg::vec4 color = { 1, 1, 1, 0 };</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>        <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_color.html">Color</a> color = <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_color.html">Color</a>{ 1, 1, 1, 0 };</div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>        <span class="keywordtype">float</span> width = 2.0f; <span class="comment">// pixels</span></div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>        <span class="keywordtype">int</span> stipple_pattern = ~0;</div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>        <span class="keywordtype">int</span> stipple_factor = 1;</div>
@@ -125,7 +125,7 @@ $(document).ready(function() { init_codefold(0); });
 </div>
 <div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>        Topology topology = Topology::Strip;</div>
 <div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a0873bd9c2e5d85c9696d40c1a4b1b720">   58</a></span>        std::vector&lt;vsg::dvec3&gt; <a class="code hl_variable" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a0873bd9c2e5d85c9696d40c1a4b1b720">points</a>;</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a18cd3be0b6292650af92e6a044980048">   58</a></span>        std::vector&lt;glm::dvec3&gt; <a class="code hl_variable" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a18cd3be0b6292650af92e6a044980048">points</a>;</div>
 <div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
 <div class="foldopen" id="foldopen00061" data-start="{" data-end="}">
 <div class="line"><a id="l00061" name="l00061"></a><span class="lineno"><a class="line" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a9e17d24ae9922f8d908e6bb110a51280">   61</a></span>        <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code hl_function" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a9e17d24ae9922f8d908e6bb110a51280">dirty</a>()<span class="keyword"> override</span></div>
@@ -157,10 +157,11 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    };</div>
 </div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>}</div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_color_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_color.html">ROCKY_NAMESPACE::Color</a></div><div class="ttdef"><b>Definition</b> Color.h:19</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">ROCKY_NAMESPACE::GeoPoint</a></div><div class="ttdef"><b>Definition</b> GeoPoint.h:17</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html">ROCKY_NAMESPACE::Line</a></div><div class="ttdef"><b>Definition</b> Line.h:32</div></div>
-<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_a0873bd9c2e5d85c9696d40c1a4b1b720"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a0873bd9c2e5d85c9696d40c1a4b1b720">ROCKY_NAMESPACE::Line::points</a></div><div class="ttdeci">std::vector&lt; vsg::dvec3 &gt; points</div><div class="ttdoc">Geometry. NB, the actual array elements are stored on the heap.</div><div class="ttdef"><b>Definition</b> Line.h:58</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_a092201da9cba26286568c44ed509473c"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a092201da9cba26286568c44ed509473c">ROCKY_NAMESPACE::Line::Topology</a></div><div class="ttdeci">Topology</div><div class="ttdoc">Line configuration.</div><div class="ttdef"><b>Definition</b> Line.h:51</div></div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_a18cd3be0b6292650af92e6a044980048"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a18cd3be0b6292650af92e6a044980048">ROCKY_NAMESPACE::Line::points</a></div><div class="ttdeci">std::vector&lt; glm::dvec3 &gt; points</div><div class="ttdoc">Geometry. NB, the actual array elements are stored on the heap.</div><div class="ttdef"><b>Definition</b> Line.h:58</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_a9e17d24ae9922f8d908e6bb110a51280"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#a9e17d24ae9922f8d908e6bb110a51280">ROCKY_NAMESPACE::Line::dirty</a></div><div class="ttdeci">void dirty() override</div><div class="ttdoc">Marks the entire line dirty.</div><div class="ttdef"><b>Definition</b> Line.h:61</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_ae3acd64289ba361832af68520bd6f6a1"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#ae3acd64289ba361832af68520bd6f6a1">ROCKY_NAMESPACE::Line::referencePoint</a></div><div class="ttdeci">GeoPoint referencePoint</div><div class="ttdef"><b>Definition</b> Line.h:43</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line_html_afcbd233bcf9ca8a095e6e6ed2533cf46"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_line.html#afcbd233bcf9ca8a095e6e6ed2533cf46">ROCKY_NAMESPACE::Line::style</a></div><div class="ttdeci">LineStyle style</div><div class="ttdoc">Dynamic line styling.</div><div class="ttdef"><b>Definition</b> Line.h:35</div></div>

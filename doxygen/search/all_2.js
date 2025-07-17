@@ -19,5 +19,5 @@ var searchData=
   ['breaktetheractions_16',['breakTetherActions',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_map_manipulator_1_1_settings.html#aff103b4a004d924457f155961770ba21',1,'ROCKY_NAMESPACE::MapManipulator::Settings']]],
   ['brightness_17',['brightness',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_color.html#abbea44abe7ee71b29518a3c29cd28dbb',1,'ROCKY_NAMESPACE::Color']]],
   ['bufferpixels_18',['bufferPixels',['../class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_declutter_system.html#a7cfcb85e86472e9d0be0ce1573ef507f',1,'ROCKY_NAMESPACE::DeclutterSystem']]],
-  ['buildinfo_19',['BuildInfo',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_build_info.html',1,'ROCKY_NAMESPACE::ecs']]]
+  ['buildinfo_19',['BuildInfo',['../struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_build_info.html',1,'ROCKY_NAMESPACE::detail']]]
 ];

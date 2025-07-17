@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Rocky: src/rocky/vsg/ecs/Mesh.h Source File</title>
+<title>Rocky: src/rocky/ecs/Mesh.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -75,7 +75,7 @@ $(document).ready(function() { init_codefold(0); });
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_ebc94a7b713110b2b862f36c041ff6c7.html">rocky</a></li><li class="navelem"><a class="el" href="dir_472326dbe6db1c1b7cc8e59dda1779f2.html">vsg</a></li><li class="navelem"><a class="el" href="dir_476824ac9846d7c78844e6512d742570.html">ecs</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_ebc94a7b713110b2b862f36c041ff6c7.html">rocky</a></li><li class="navelem"><a class="el" href="dir_00131048f9c35d5d91bea1700fdb2f37.html">ecs</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -84,75 +84,68 @@ $(document).ready(function() { init_codefold(0); });
 <div class="contents">
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span> </div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#pragma once</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;rocky/vsg/ecs/Component.h&gt;</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;rocky/Color.h&gt;</span></div>
 <div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;rocky/GeoPoint.h&gt;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;vsg/nodes/Geometry.h&gt;</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &lt;vsg/commands/DrawIndexed.h&gt;</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &lt;optional&gt;</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>{</div>
-<div class="foldopen" id="foldopen00018" data-start="{" data-end="};">
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_style.html">   18</a></span>    <span class="keyword">struct </span><a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_style.html">MeshStyle</a></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    {</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>        <span class="comment">// if alpha is zero, use the line&#39;s per-vertex color instead</span></div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>        vsg::vec4 color = { 1, 1, 1, 0 };</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>        <span class="comment">// vertex adjustment (in meters) to apply to the mesh verts</span></div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>        <span class="comment">// as a simple method or avoiding depth fighting</span></div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>        <span class="keywordtype">float</span> depth_offset = 0.0f;</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    };</div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;rocky/ecs/Component.h&gt;</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &lt;optional&gt;</span></div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>{</div>
+<div class="foldopen" id="foldopen00017" data-start="{" data-end="};">
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_style.html">   17</a></span>    <span class="keyword">struct </span><a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_style.html">MeshStyle</a></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    {</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>        <span class="comment">// if alpha is zero, use the line&#39;s per-vertex color instead</span></div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>        <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_color.html">Color</a> color = { 1, 1, 1, 0 };</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>        <span class="comment">// vertex adjustment (in meters) to apply to the mesh verts</span></div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>        <span class="comment">// as a simple method or avoiding depth fighting</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>        <span class="keywordtype">float</span> depth_offset = 0.0f;</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    };</div>
 </div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> VEC2 = vsg::vec2, <span class="keyword">typename</span> VEC3 = vsg::dvec3, <span class="keyword">typename</span> VEC4 = vsg::vec4&gt;</div>
-<div class="foldopen" id="foldopen00030" data-start="{" data-end="};">
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_triangle__t.html">   30</a></span>    <span class="keyword">struct </span><a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_triangle__t.html">Triangle_t</a></div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    {</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>        <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">VEC3</a> verts[3];</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>        <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">VEC4</a> colors[3] = { {1,1,1,1}, {1,1,1,1}, {1,1,1,1} };</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>        <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">VEC2</a> uvs[3] = { {0,0}, {0,0}, {0,0} };</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>        <span class="keywordtype">float</span> depthoffsets[3] = { 0, 0, 0 };</div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>        <span class="comment">//VEC3 normals[3] = { {0,0,1}, {0,0,1}, {0,0,1} };</span></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    };</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> VEC2 = glm::fvec2, <span class="keyword">typename</span> VEC3 = glm::dvec3, <span class="keyword">typename</span> VEC4 = glm::vec4&gt;</div>
+<div class="foldopen" id="foldopen00029" data-start="{" data-end="};">
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_triangle__t.html">   29</a></span>    <span class="keyword">struct </span><a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_triangle__t.html">Triangle_t</a></div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    {</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>        <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">VEC3</a> verts[3];</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>        <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">VEC4</a> colors[3] = { {1,1,1,1}, {1,1,1,1}, {1,1,1,1} };</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>        <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">VEC2</a> uvs[3] = { {0,0}, {0,0}, {0,0} };</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>        <span class="keywordtype">float</span> depthoffsets[3] = { 0, 0, 0 };</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>        <span class="comment">//VEC3 normals[3] = { {0,0,1}, {0,0,1}, {0,0,1} };</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    };</div>
 </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    <span class="keyword">using </span><a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">Triangle</a> = <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">Triangle_t&lt;&gt;</a>;</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
-<div class="foldopen" id="foldopen00043" data-start="{" data-end="};">
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html">   43</a></span>    <span class="keyword">struct </span><a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html">Mesh</a> : <span class="keyword">public</span> <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_revisioned_component.html">RevisionedComponent</a></div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    {</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a64e9e1cb4afcab1f7d8fe203a36b81f7">   46</a></span>        vsg::ref_ptr&lt;vsg::ImageInfo&gt; <a class="code hl_variable" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a64e9e1cb4afcab1f7d8fe203a36b81f7">texture</a>;</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a7c6d0021dab40cd1b715dd342a0258f7">   49</a></span>        <span class="keywordtype">bool</span> <a class="code hl_variable" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a7c6d0021dab40cd1b715dd342a0258f7">writeDepth</a> = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#aac24ac21a0577e28fc8270332e21191b">   52</a></span>        <span class="keywordtype">bool</span> <a class="code hl_variable" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#aac24ac21a0577e28fc8270332e21191b">cullBackfaces</a> = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a14af01d8f9d7cd340ada4eacc6def69e">   55</a></span>        std::optional&lt;MeshStyle&gt; <a class="code hl_variable" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a14af01d8f9d7cd340ada4eacc6def69e">style</a>;</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#afdd83d0c128481ace2ecd4fddd5a4352">   58</a></span>        std::vector&lt;Triangle&gt; <a class="code hl_variable" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#afdd83d0c128481ace2ecd4fddd5a4352">triangles</a>;</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a6869bcd2499410b4e44299404b599734">   61</a></span>        <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">GeoPoint</a> <a class="code hl_variable" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a6869bcd2499410b4e44299404b599734">referencePoint</a>;</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    };</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keyword">using </span><a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">Triangle</a> = <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">Triangle_t&lt;&gt;</a>;</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
+<div class="foldopen" id="foldopen00042" data-start="{" data-end="};">
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html">   42</a></span>    <span class="keyword">struct </span><a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html">Mesh</a> : <span class="keyword">public</span> <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_revisioned_component.html">RevisionedComponent</a></div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    {</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a7c6d0021dab40cd1b715dd342a0258f7">   45</a></span>        <span class="keywordtype">bool</span> <a class="code hl_variable" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a7c6d0021dab40cd1b715dd342a0258f7">writeDepth</a> = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#aac24ac21a0577e28fc8270332e21191b">   48</a></span>        <span class="keywordtype">bool</span> <a class="code hl_variable" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#aac24ac21a0577e28fc8270332e21191b">cullBackfaces</a> = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a14af01d8f9d7cd340ada4eacc6def69e">   51</a></span>        std::optional&lt;MeshStyle&gt; <a class="code hl_variable" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a14af01d8f9d7cd340ada4eacc6def69e">style</a>;</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#afdd83d0c128481ace2ecd4fddd5a4352">   54</a></span>        std::vector&lt;Triangle&gt; <a class="code hl_variable" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#afdd83d0c128481ace2ecd4fddd5a4352">triangles</a>;</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a6869bcd2499410b4e44299404b599734">   57</a></span>        <a class="code hl_class" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">GeoPoint</a> <a class="code hl_variable" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a6869bcd2499410b4e44299404b599734">referencePoint</a>;</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno"><a class="line" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a6d008a54de1746819911cdbea3db62e2">   60</a></span>        entt::entity <a class="code hl_variable" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a6d008a54de1746819911cdbea3db62e2">texture</a> = entt::null;</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    };</div>
 </div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    <span class="keyword">struct </span>NodeGraph : <span class="keyword">public</span> <a class="code hl_struct" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_revisioned_component.html">RevisionedComponent</a></div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    {</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>        vsg::ref_ptr&lt;vsg::Node&gt; node;</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    };</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>}</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>}</div>
+<div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_color_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_color.html">ROCKY_NAMESPACE::Color</a></div><div class="ttdef"><b>Definition</b> Color.h:19</div></div>
 <div class="ttc" id="aclass_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point_html"><div class="ttname"><a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_geo_point.html">ROCKY_NAMESPACE::GeoPoint</a></div><div class="ttdef"><b>Definition</b> GeoPoint.h:17</div></div>
 <div class="ttc" id="anamespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e_html"><div class="ttname"><a href="namespace_r_o_c_k_y___n_a_m_e_s_p_a_c_e.html">ROCKY_NAMESPACE</a></div><div class="ttdef"><b>Definition</b> Callbacks.h:16</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html">ROCKY_NAMESPACE::Mesh</a></div><div class="ttdef"><b>Definition</b> Mesh.h:44</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_html_a14af01d8f9d7cd340ada4eacc6def69e"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a14af01d8f9d7cd340ada4eacc6def69e">ROCKY_NAMESPACE::Mesh::style</a></div><div class="ttdeci">std::optional&lt; MeshStyle &gt; style</div><div class="ttdoc">Optional dynamic style data.</div><div class="ttdef"><b>Definition</b> Mesh.h:55</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_html_a64e9e1cb4afcab1f7d8fe203a36b81f7"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a64e9e1cb4afcab1f7d8fe203a36b81f7">ROCKY_NAMESPACE::Mesh::texture</a></div><div class="ttdeci">vsg::ref_ptr&lt; vsg::ImageInfo &gt; texture</div><div class="ttdoc">Optional texture.</div><div class="ttdef"><b>Definition</b> Mesh.h:46</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_html_a6869bcd2499410b4e44299404b599734"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a6869bcd2499410b4e44299404b599734">ROCKY_NAMESPACE::Mesh::referencePoint</a></div><div class="ttdeci">GeoPoint referencePoint</div><div class="ttdoc">Reference point for absolute coordinate localization (optional)</div><div class="ttdef"><b>Definition</b> Mesh.h:61</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_html_a7c6d0021dab40cd1b715dd342a0258f7"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a7c6d0021dab40cd1b715dd342a0258f7">ROCKY_NAMESPACE::Mesh::writeDepth</a></div><div class="ttdeci">bool writeDepth</div><div class="ttdoc">Whether to write the the depth buffer.</div><div class="ttdef"><b>Definition</b> Mesh.h:49</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_html_aac24ac21a0577e28fc8270332e21191b"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#aac24ac21a0577e28fc8270332e21191b">ROCKY_NAMESPACE::Mesh::cullBackfaces</a></div><div class="ttdeci">bool cullBackfaces</div><div class="ttdoc">Whether to cull backfaces.</div><div class="ttdef"><b>Definition</b> Mesh.h:52</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_html_afdd83d0c128481ace2ecd4fddd5a4352"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#afdd83d0c128481ace2ecd4fddd5a4352">ROCKY_NAMESPACE::Mesh::triangles</a></div><div class="ttdeci">std::vector&lt; Triangle &gt; triangles</div><div class="ttdoc">Triangles comprising the mesh.</div><div class="ttdef"><b>Definition</b> Mesh.h:58</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_style_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_style.html">ROCKY_NAMESPACE::MeshStyle</a></div><div class="ttdef"><b>Definition</b> Mesh.h:19</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html">ROCKY_NAMESPACE::Mesh</a></div><div class="ttdef"><b>Definition</b> Mesh.h:43</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_html_a14af01d8f9d7cd340ada4eacc6def69e"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a14af01d8f9d7cd340ada4eacc6def69e">ROCKY_NAMESPACE::Mesh::style</a></div><div class="ttdeci">std::optional&lt; MeshStyle &gt; style</div><div class="ttdoc">Optional dynamic style data.</div><div class="ttdef"><b>Definition</b> Mesh.h:51</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_html_a6869bcd2499410b4e44299404b599734"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a6869bcd2499410b4e44299404b599734">ROCKY_NAMESPACE::Mesh::referencePoint</a></div><div class="ttdeci">GeoPoint referencePoint</div><div class="ttdoc">Reference point for absolute coordinate localization (optional)</div><div class="ttdef"><b>Definition</b> Mesh.h:57</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_html_a6d008a54de1746819911cdbea3db62e2"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a6d008a54de1746819911cdbea3db62e2">ROCKY_NAMESPACE::Mesh::texture</a></div><div class="ttdeci">entt::entity texture</div><div class="ttdoc">Entity that holds texture information (optional)</div><div class="ttdef"><b>Definition</b> Mesh.h:60</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_html_a7c6d0021dab40cd1b715dd342a0258f7"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#a7c6d0021dab40cd1b715dd342a0258f7">ROCKY_NAMESPACE::Mesh::writeDepth</a></div><div class="ttdeci">bool writeDepth</div><div class="ttdoc">Whether to write the the depth buffer.</div><div class="ttdef"><b>Definition</b> Mesh.h:45</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_html_aac24ac21a0577e28fc8270332e21191b"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#aac24ac21a0577e28fc8270332e21191b">ROCKY_NAMESPACE::Mesh::cullBackfaces</a></div><div class="ttdeci">bool cullBackfaces</div><div class="ttdoc">Whether to cull backfaces.</div><div class="ttdef"><b>Definition</b> Mesh.h:48</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_html_afdd83d0c128481ace2ecd4fddd5a4352"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh.html#afdd83d0c128481ace2ecd4fddd5a4352">ROCKY_NAMESPACE::Mesh::triangles</a></div><div class="ttdeci">std::vector&lt; Triangle &gt; triangles</div><div class="ttdoc">Triangles comprising the mesh.</div><div class="ttdef"><b>Definition</b> Mesh.h:54</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_style_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_mesh_style.html">ROCKY_NAMESPACE::MeshStyle</a></div><div class="ttdef"><b>Definition</b> Mesh.h:18</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_revisioned_component_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_revisioned_component.html">ROCKY_NAMESPACE::RevisionedComponent</a></div><div class="ttdef"><b>Definition</b> Component.h:16</div></div>
-<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_triangle__t_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_triangle__t.html">ROCKY_NAMESPACE::Triangle_t</a></div><div class="ttdoc">A mesh triangle.</div><div class="ttdef"><b>Definition</b> Mesh.h:31</div></div>
+<div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_triangle__t_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_triangle__t.html">ROCKY_NAMESPACE::Triangle_t</a></div><div class="ttdoc">A mesh triangle.</div><div class="ttdef"><b>Definition</b> Mesh.h:30</div></div>
 <div class="ttc" id="astruct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option_html"><div class="ttname"><a href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">ROCKY_NAMESPACE::option</a></div><div class="ttdef"><b>Definition</b> option.h:27</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

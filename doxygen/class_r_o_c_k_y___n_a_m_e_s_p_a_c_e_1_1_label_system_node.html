@@ -77,6 +77,8 @@ $(function() {
   <div class="summary">
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-types">Protected Types</a> &#124;
+<a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label_system_node-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">ROCKY_NAMESPACE::LabelSystemNode Class Reference</div></div>
 </div><!--header-->
@@ -84,7 +86,7 @@ $(function() {
 
 <p><code>#include &lt;<a class="el" href="_label_system_8h_source.html">LabelSystem.h</a>&gt;</code></p>
 
-<p>Inherits vsg::Inherit&lt; ecs::SystemNode&lt; Label &gt;, LabelSystemNode &gt;.</p>
+<p>Inherits vsg::Inherit&lt; detail::SystemNode&lt; Label &gt;, LabelSystemNode &gt;.</p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
@@ -95,17 +97,29 @@ Public Types</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a1cc06c98ebc59f4bdd9e18595cdcabfd" id="r_a1cc06c98ebc59f4bdd9e18595cdcabfd"><td class="memItemLeft" align="right" valign="top"><a id="a1cc06c98ebc59f4bdd9e18595cdcabfd" name="a1cc06c98ebc59f4bdd9e18595cdcabfd"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>LabelSystemNode</b> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_registry.html">ecs::Registry</a> &amp;registry)</td></tr>
-<tr class="memdesc:a1cc06c98ebc59f4bdd9e18595cdcabfd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct the mesh renderer. <br /></td></tr>
-<tr class="separator:a1cc06c98ebc59f4bdd9e18595cdcabfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d4cfa59ba32be5ed8fdc6278b8f50cd" id="r_a7d4cfa59ba32be5ed8fdc6278b8f50cd"><td class="memItemLeft" align="right" valign="top"><a id="a7d4cfa59ba32be5ed8fdc6278b8f50cd" name="a7d4cfa59ba32be5ed8fdc6278b8f50cd"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>LabelSystemNode</b> (<a class="el" href="class_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_registry.html">Registry</a> &amp;registry)</td></tr>
+<tr class="memdesc:a7d4cfa59ba32be5ed8fdc6278b8f50cd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct the mesh renderer. <br /></td></tr>
+<tr class="separator:a7d4cfa59ba32be5ed8fdc6278b8f50cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b01a6dc63045d5b846e86a671b526b6" id="r_a6b01a6dc63045d5b846e86a671b526b6"><td class="memItemLeft" align="right" valign="top"><a id="a6b01a6dc63045d5b846e86a671b526b6" name="a6b01a6dc63045d5b846e86a671b526b6"></a>
 <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>initialize</b> (VSGContext &amp;) <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">override</a></td></tr>
 <tr class="memdesc:a6b01a6dc63045d5b846e86a671b526b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">One time setup of the system. <br /></td></tr>
 <tr class="separator:a6b01a6dc63045d5b846e86a671b526b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7857a071d49e0f197e3bad950d9c5e43" id="r_a7857a071d49e0f197e3bad950d9c5e43"><td class="memItemLeft" align="right" valign="top"><a id="a7857a071d49e0f197e3bad950d9c5e43" name="a7857a071d49e0f197e3bad950d9c5e43"></a>
-<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>createOrUpdateNode</b> (<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label.html">Label</a> &amp;, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1ecs_1_1_build_info.html">ecs::BuildInfo</a> &amp;, VSGContext &amp;) <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">const</a></td></tr>
-<tr class="separator:a7857a071d49e0f197e3bad950d9c5e43"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2d43f69c3d6f8df060e679785b5551b" id="r_ac2d43f69c3d6f8df060e679785b5551b"><td class="memItemLeft" align="right" valign="top"><a id="ac2d43f69c3d6f8df060e679785b5551b" name="ac2d43f69c3d6f8df060e679785b5551b"></a>
+<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">void</a>&#160;</td><td class="memItemRight" valign="bottom"><b>createOrUpdateNode</b> (<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1_label.html">Label</a> &amp;, <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1detail_1_1_build_info.html">detail::BuildInfo</a> &amp;, VSGContext &amp;) <a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">const</a></td></tr>
+<tr class="separator:ac2d43f69c3d6f8df060e679785b5551b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-types" name="pro-types"></a>
+Protected Types</h2></td></tr>
+<tr class="memitem:a279edc2819ff0762eeb09e5f9a9163ff" id="r_a279edc2819ff0762eeb09e5f9a9163ff"><td class="memItemLeft" align="right" valign="top"><a id="a279edc2819ff0762eeb09e5f9a9163ff" name="a279edc2819ff0762eeb09e5f9a9163ff"></a>
+<a class="el" href="struct_r_o_c_k_y___n_a_m_e_s_p_a_c_e_1_1option.html">using</a>&#160;</td><td class="memItemRight" valign="bottom"><b>FontCache</b> = std::map&lt; std::string, vsg::ref_ptr&lt; vsg::Font &gt; &gt;</td></tr>
+<tr class="separator:a279edc2819ff0762eeb09e5f9a9163ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pro-attribs" name="pro-attribs"></a>
+Protected Attributes</h2></td></tr>
+<tr class="memitem:a658584f5bc62f474767ffd17278904ff" id="r_a658584f5bc62f474767ffd17278904ff"><td class="memItemLeft" align="right" valign="top"><a id="a658584f5bc62f474767ffd17278904ff" name="a658584f5bc62f474767ffd17278904ff"></a>
+FontCache&#160;</td><td class="memItemRight" valign="bottom"><b>_fontCache</b></td></tr>
+<tr class="separator:a658584f5bc62f474767ffd17278904ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Creates commands for rendering icon primitives. </p>
