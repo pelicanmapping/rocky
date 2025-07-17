@@ -23,7 +23,14 @@ jobs:
     - name: Generate API Markdown
       run: |
         mkdir -p docs/api
-        clang-doc-18 --public --output docs/api --format=md --extra-arg=-std=c++17 $(find src/rocky -name '*.h' -print)
+        clang-doc-18 --public --output docs/api --format=md \
+          --extra-arg=-std=c++17 $(find src/rocky -name '*.h' -print)
+        # Remove docs not under the rocky namespace
+        for f in docs/api/*.md; do
+          [ "$(basename "$f")" = "README.md" ] && continue
+          head_line=$(head -n 1 "$f")
+          echo "$head_line" | grep -Eq '^# (class|struct) (rocky|ROCKY_NAMESPACE)::' || rm "$f"
+        done
 
     - name: Build MkDocs site
       run: mkdocs build
