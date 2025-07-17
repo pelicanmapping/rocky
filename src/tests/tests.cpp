@@ -764,6 +764,19 @@ TEST_CASE("IO")
         URI relative_to_url_file("filename.ext", "https://server.tld/folder/another_file.ext");
         CHECK(relative_to_url_file.base() == "filename.ext");
         CHECK(relative_to_url_file.full() == "https://server.tld/folder/filename.ext");
+
+        // Test header serialization/deserialization
+        URI header_uri("http://server/path");
+        header_uri.context().headers.emplace_back("User-Agent", "Rocky");
+        header_uri.context().headers.emplace_back("Accept", "image/png");
+        json j = header_uri;
+        URI header_uri2 = j.get<URI>();
+        CHECK(header_uri2.base() == "http://server/path");
+        REQUIRE(header_uri2.context().headers.size() == 2);
+        CHECK(header_uri2.context().headers[0].first == "User-Agent");
+        CHECK(header_uri2.context().headers[0].second == "Rocky");
+        CHECK(header_uri2.context().headers[1].first == "Accept");
+        CHECK(header_uri2.context().headers[1].second == "image/png");
     }
 }
 

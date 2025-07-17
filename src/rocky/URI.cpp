@@ -716,10 +716,13 @@ namespace ROCKY_NAMESPACE
             j = json::object();
             set(j, "href", obj.base());
 
-            if (obj.context().headers.empty() == false) {
+            if (!obj.context().headers.empty()) {
                 auto headers = json::array();
                 for (auto& h : obj.context().headers) {
-                    headers.push_back({ h.first, h.second });
+                    json pair = json::object();
+                    pair["name"] = h.first;
+                    pair["value"] = h.second;
+                    headers.push_back(pair);
                 }
                 j["headers"] = headers;
             }
@@ -741,8 +744,13 @@ namespace ROCKY_NAMESPACE
             if (j.contains("headers")) {
                 auto headers = j.at("headers");
                 if (headers.is_array()) {
-                    for (auto i = headers.begin(); i != headers.end(); ++i)
-                        context.headers.emplace_back(i.key(), i.value());
+                    for (auto& item : headers) {
+                        std::string name, value;
+                        get_to(item, "name", name);
+                        get_to(item, "value", value);
+                        if (!name.empty())
+                            context.headers.emplace_back(name, value);
+                    }
                 }
             }
             obj = URI(base, context);
