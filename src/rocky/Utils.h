@@ -6,13 +6,11 @@
 #pragma once
 
 #include <rocky/Common.h>
-#include <rocky/Log.h>
 #include <rocky/weejobs.h>
 
 #include <algorithm>
 #include <cctype>
 #include <functional>
-#include <locale>
 #include <memory>
 #include <mutex>
 #include <sstream>
@@ -54,12 +52,12 @@ namespace ROCKY_NAMESPACE
         //! Trims whitespace from the ends of a string.
         extern ROCKY_EXPORT std::string trim(std::string_view in);
 
-        //! Trims whitespace from the ends of a string; in-place modification on the string to reduce string copies.
-        extern ROCKY_EXPORT void trimInPlace(std::string& str);
+        //! Trims whitespace from the ends of a string (in situ)
+        extern ROCKY_EXPORT std::string& trimInPlace(std::string& str);
 
         //! Character to lower case
         inline char toLower(char c) {
-            return (c < 0x08) ? (c >= 'A' && c <= 'Z' ? (c | 0x20) : c) : std::tolower(c);
+            return (c < 0x80) ? c | ((c >= 'A' && c <= 'Z') ? 0x20 : 0x00) : std::tolower(c);
         }
 
         //! String to lower case
@@ -69,25 +67,28 @@ namespace ROCKY_NAMESPACE
             return out;
         }
 
+        //! String to lower case in situ
+        inline std::string& toLowerInPlace(std::string& in) {
+            std::transform(in.begin(), in.end(), in.begin(), [](unsigned char c) { return toLower(c); });
+            return in;
+        }
+
         //! True is "ref" starts with "pattern"
         extern ROCKY_EXPORT bool startsWith(
             std::string_view ref,
             std::string_view pattern,
-            bool caseSensitive = true,
-            const std::locale& locale = std::locale());
+            bool caseSensitive = true);
 
         //! True is "ref" ends with "pattern"
         extern ROCKY_EXPORT bool endsWith(
             std::string_view ref,
             std::string_view pattern,
-            bool caseSensitive = true,
-            const std::locale& locale = std::locale());
+            bool caseSensitive = true);
 
         //! Case-insensitive compare
         extern ROCKY_EXPORT bool ciEquals(
             std::string_view lhs,
-            std::string_view rhs,
-            const std::locale& local = std::locale());
+            std::string_view rhs);
 
         //! Full pathname of the currently running executable
         extern ROCKY_EXPORT std::string getExecutableLocation();

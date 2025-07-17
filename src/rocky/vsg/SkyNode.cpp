@@ -4,7 +4,7 @@
  * MIT License
  */
 #include "SkyNode.h"
-#include "Utils.h"
+#include "VSGUtils.h"
 #include "PipelineState.h"
 
 #include <rocky/Ellipsoid.h>

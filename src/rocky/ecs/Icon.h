@@ -5,8 +5,7 @@
  */
 #pragma once
 #include <rocky/Image.h>
-#include <rocky/vsg/ecs/Component.h>
-#include <optional>
+#include <rocky/ecs/Component.h>
 
 namespace ROCKY_NAMESPACE
 {

@@ -4,8 +4,8 @@
  * MIT License
  */
 #include "FeatureView.h"
-#include "Mesh.h"
-#include "../VSGContext.h"
+#include <rocky/ecs/Mesh.h>
+#include <rocky/vsg/VSGContext.h>
 #include <rocky/weemesh.h>
 
 using namespace ROCKY_NAMESPACE;
@@ -158,10 +158,11 @@ namespace
                 // Populate the line component based on the topology.
                 if (line.topology == Line::Topology::Strip)
                 {
-                    line.points.resize(line.points.size() + tessellated.size());
-
-                    std::transform(tessellated.begin(), tessellated.end(), line.points.begin(),
-                        [](const glm::dvec3& p) { return vsg::dvec3(p.x, p.y, p.z); });
+                    // CHECK THIS
+                    line.points.reserve(line.points.size() + tessellated.size());
+                    line.points.insert(line.points.end(), tessellated.begin(), tessellated.end());
+                    //std::transform(tessellated.begin(), tessellated.end(), line.points.begin(),
+                    //    [](const glm::dvec3& p) { return glm::dvec3(p.x, p.y, p.z); });
                 }
 
                 else // Line::Topology::Segments
@@ -173,8 +174,8 @@ namespace
                     // convert from a strip to segments
                     for (std::size_t i = 0; i < tessellated.size() - 1; ++i)
                     {
-                        line.points[ptr++] = vsg::dvec3(tessellated[i].x, tessellated[i].y, tessellated[i].z);
-                        line.points[ptr++] = vsg::dvec3(tessellated[i + 1].x, tessellated[i + 1].y, tessellated[i + 1].z);
+                        line.points[ptr++] = glm::dvec3(tessellated[i].x, tessellated[i].y, tessellated[i].z);
+                        line.points[ptr++] = glm::dvec3(tessellated[i + 1].x, tessellated[i + 1].y, tessellated[i + 1].z);
                     }
                 }
 
@@ -322,7 +323,7 @@ namespace
         auto color =
             styles.mesh_function ? styles.mesh_function(feature).color :
             styles.mesh.has_value() ? styles.mesh->color :
-            vsg::vec4(1, 1, 1, 1);
+            Color::White;
 
         auto depth_offset =
             styles.mesh_function ? styles.mesh_function(feature).depth_offset :

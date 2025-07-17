@@ -5,7 +5,7 @@
  */
 #include "MapManipulator.h"
 #include "MapNode.h"
-#include "Utils.h"
+#include "VSGUtils.h"
 #include <rocky/Units.h>
 
 using namespace ROCKY_NAMESPACE;

@@ -8,10 +8,7 @@
 #include "TerrainSettings.h"
 
 #include <rocky/Math.h>
-
-#include <vsg/vk/State.h>
-#include <vsg/ui/FrameStamp.h>
-#include <vsg/state/ViewDependentState.h>
+#include <rocky/vsg/VSGUtils.h>
 
 using namespace ROCKY_NAMESPACE;
 

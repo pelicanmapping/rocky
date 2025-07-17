@@ -35,6 +35,7 @@ auto Demo_Widget = [](Application& app)
                 i.windowFlags &= ~ImGuiWindowFlags_NoBringToFrontOnFocus;
 
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 7.0f);
+                ImGui::SetNextWindowBgAlpha(1.0f);
 
                 i.render([&]()
                     {
@@ -76,12 +77,13 @@ auto Demo_Widget = [](Application& app)
 
         // Attach a transform to place and move the label:
         auto& transform = registry.emplace<Transform>(entity);
-        transform.position = GeoPoint(SRS::WGS84, -25.0, 25.0, 500000.0);
+        transform.position = GeoPoint(SRS::WGS84, -25.0, 25.0, 2'500'000.0);
+        transform.topocentric = true;
 
         // Drop line from the widget to the ground, for fun.
         auto& dropline = registry.emplace<Line>(entity);
-        dropline.points = { { 0,0,0 }, { 0, 0, -500000 } };
-        dropline.style.color = vsg::vec4{ 0, 1, 0, 1 };
+        dropline.points = { { 0,0,0 }, { 0, 0, -2'500'000.0 } };
+        dropline.style.color = Color(0.1f, 0.1f, 0.1f, 1.0f);
         dropline.style.width = 2;
     }
 
@@ -89,10 +91,10 @@ auto Demo_Widget = [](Application& app)
     {
         auto [lock, registry] = app.registry.read();
 
-        bool visible = ecs::visible(registry, entity);
-        if (ImGuiLTable::Checkbox("Show", &visible))
+        bool v = visible(registry, entity);
+        if (ImGuiLTable::Checkbox("Show", &v))
         {
-            ecs::setVisible(registry, entity, visible);
+            setVisible(registry, entity, v);
         }
 
         auto& widget = registry.get<Widget>(entity);
@@ -116,7 +118,7 @@ auto Demo_Widget = [](Application& app)
         if (ImGuiLTable::SliderDouble("Longitude", &transform.position.x, -180.0, 180.0, "%.1lf"))
             transform.dirty();
 
-        if (ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2500000.0, "%.1lf"))
+        if (ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2'500'000.0, "%.1lf"))
             transform.dirty();
 
         ImGuiLTable::End();

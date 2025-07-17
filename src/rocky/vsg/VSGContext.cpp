@@ -4,7 +4,7 @@
  * MIT License
  */
 #include "VSGContext.h"
-#include "Utils.h"
+#include "VSGUtils.h"
 #include <rocky/Image.h>
 #include <rocky/URI.h>
 #include <filesystem>

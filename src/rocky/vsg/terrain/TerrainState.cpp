@@ -5,7 +5,7 @@
  */
 #include "TerrainState.h"
 #include "TerrainTileNode.h"
-#include "../Utils.h"
+#include "../VSGUtils.h"
 #include "../PipelineState.h"
 
 #include <rocky/Color.h>

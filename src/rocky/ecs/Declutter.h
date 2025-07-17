@@ -4,6 +4,7 @@
  * MIT License
  */
 #pragma once
+#include <rocky/Common.h>
 #include <rocky/Math.h>
 
 namespace ROCKY_NAMESPACE

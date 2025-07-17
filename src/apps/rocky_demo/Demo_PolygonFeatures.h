@@ -64,7 +64,7 @@ auto Demo_PolygonFeatures = [](Application& app)
                 {
                     std::default_random_engine re(f.id);
                     MeshStyle ms;
-                    ms.color = vsg::vec4{ frand(re), frand(re), frand(re), 1.0f };
+                    ms.color = Color{ frand(re), frand(re), frand(re), 1.0f };
                     ms.depth_offset = 9000.0f; // highest point on earth
                     return ms;
                 };
@@ -92,10 +92,10 @@ auto Demo_PolygonFeatures = [](Application& app)
         {
             auto [lock, registry] = app.registry.read();
 
-            bool visible = ecs::visible(registry, entities.front());
-            if (ImGuiLTable::Checkbox("Show", &visible))
+            bool v = visible(registry, entities.front());
+            if (ImGuiLTable::Checkbox("Show", &v))
             {
-                ecs::setVisible(registry, entities.begin(), entities.end(), visible);
+                setVisible(registry, entities.begin(), entities.end(), v);
             }
 
             ImGuiLTable::End();

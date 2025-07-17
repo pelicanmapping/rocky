@@ -4,19 +4,20 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/ecs.h>
+#include <rocky/ecs/Registry.h>
 #include <rocky/vsg/NodePager.h>
+#include <rocky/vsg/ecs/EntityNode.h>
 #include "helpers.h"
 
 using namespace ROCKY_NAMESPACE;
 
 auto Demo_NodePager = [](Application& app)
 {
-    static const vsg::vec4 colors[4] = {
-        vsg::vec4{1, 0, 0, 1}, // red
-        vsg::vec4{0, 1, 0, 1}, // green
-        vsg::vec4{0, 0, 1, 1}, // blue
-        vsg::vec4{1, 1, 0, 1}  // yellow
+    static const Color colors[4] = {
+        Color{1, 0, 0, 1}, // red
+        Color{0, 1, 0, 1}, // green
+        Color{0, 0, 1, 1}, // blue
+        Color{1, 1, 0, 1}  // yellow
     };
 
     static vsg::ref_ptr<NodePager> pager;
@@ -26,7 +27,7 @@ auto Demo_NodePager = [](Application& app)
     {
         pager = NodePager::create(profile, app.mapNode->profile);
 
-        pager->refinePolicy = NodePager::RefinePolicy::Add;
+        pager->refinePolicy = NodePager::RefinePolicy::Replace;
 
         // Mandatory: the function that will create the payload for each TileKey:
         pager->createPayload = [&app](const TileKey& key, const IOOptions& io)
@@ -44,6 +45,7 @@ auto Demo_NodePager = [](Application& app)
 
                 // The extents of the tile, transformed into the map SRS:
                 auto ex = key.extent().transform(app.mapNode->mapSRS());
+                ex.expand(-ex.width() * 0.025, -ex.height() * 0.025); // shrink a tad
 
                 // Add features for the extents of the tile box:
                 fview.features.emplace_back(Feature(

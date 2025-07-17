@@ -4,7 +4,6 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/ecs.h>
 #include <rocky/GDALFeatureSource.h>
 #include "helpers.h"
 
@@ -81,10 +80,10 @@ auto Demo_LineFeatures = [](Application& app)
     {
         auto [lock, registry] = app.registry.read();
 
-        bool visible = ecs::visible(registry, entities.front());
-        if (ImGuiLTable::Checkbox("Show", &visible))
+        bool v = visible(registry, entities.front());
+        if (ImGuiLTable::Checkbox("Show", &v))
         {
-            ecs::setVisible(registry, entities.begin(), entities.end(), visible);
+            setVisible(registry, entities.begin(), entities.end(), v);
         }
 
         ImGuiLTable::End();

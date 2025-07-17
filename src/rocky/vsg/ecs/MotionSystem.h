@@ -4,21 +4,22 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/ecs/Motion.h>
-#include <rocky/vsg/ecs/Registry.h>
-#include <rocky/vsg/ecs/Transform.h>
+#include <rocky/ecs/Motion.h>
+#include <rocky/ecs/Registry.h>
+#include <rocky/ecs/Transform.h>
+#include <rocky/vsg/ecs/System.h>
 
 namespace ROCKY_NAMESPACE
 {
     /**
     * ECS System to process Motion components
     */
-    class MotionSystem : public ecs::System
+    class MotionSystem : public System
     {
     public:
-        MotionSystem(ecs::Registry& r) : ecs::System(r) { }
+        MotionSystem(Registry& r) : System(r) { }
 
-        static std::shared_ptr<MotionSystem> create(ecs::Registry& r) {
+        static std::shared_ptr<MotionSystem> create(Registry& r) {
             return std::make_shared<MotionSystem>(r); }
 
         //! Called periodically to update the transforms
@@ -26,7 +27,7 @@ namespace ROCKY_NAMESPACE
         {
             auto time = context->viewer->getFrameStamp()->time;
 
-            if (last_time != ecs::time_point::min())
+            if (last_time != vsg::time_point::min())
             {
                 auto [lock, registry] = _registry.read();
 
@@ -103,6 +104,6 @@ namespace ROCKY_NAMESPACE
 
     private:
         //! Constructor
-        ecs::time_point last_time = ecs::time_point::min();
+        vsg::time_point last_time = vsg::time_point::min();
     };
 }

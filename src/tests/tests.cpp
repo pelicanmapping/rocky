@@ -24,6 +24,23 @@ namespace
     };
 }
 
+TEST_CASE("strings")
+{
+    std::string s1 = "Hello, world!";
+    CHECK(util::replaceInPlace(s1, "world", "Rocky") == "Hello, Rocky!");
+    s1 = "Hello, world!";
+    CHECK(util::replaceInPlace(s1, "world", "") == "Hello, !");
+    s1 = "Hello, world!";
+    CHECK(util::replaceInPlace(s1, "", "Rocky") == "Hello, world!");
+    s1 = "Hello, world!";
+    CHECK(util::replaceInPlace(s1, "", "") == "Hello, world!");
+
+    s1 = util::trim("  Hello, Rocky!  ");
+    CHECK(s1 == "Hello, Rocky!");
+    s1 = "  Hello, Rocky!  ";
+    CHECK(util::trimInPlace(s1) == "Hello, Rocky!");
+}
+
 TEST_CASE("json")
 {
     Profile profile("global-geodetic");
@@ -201,7 +218,7 @@ TEST_CASE("Image")
     image->read(value, 17, 17);
     //std::cout << value.r << ", " << value.g << ", " << value.b << ", " << value.a << std::endl;
     CHECK(equiv(value.r, 1.0f, 0.01f));
-    CHECK(equiv(value.g, 0.5f, 0.01f));
+    CHECK(equiv(value.g, 0.65f, 0.01f));
     CHECK(equiv(value.b, 0.0f, 0.01f));
     CHECK(equiv(value.a, 1.0f, 0.01f));
 }

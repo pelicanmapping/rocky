@@ -4,10 +4,8 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/Common.h>
-#include <rocky/vsg/ecs/Component.h>
 #include <rocky/GeoPoint.h>
-#include <optional>
+#include <rocky/ecs/Component.h>
 
 namespace ROCKY_NAMESPACE
 {

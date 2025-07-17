@@ -5,8 +5,6 @@
  */
 #pragma once
 
-#include <rocky/vsg/ecs/Icon.h>
-#include <rocky/vsg/ecs/Label.h>
 #include <rocky/Geocoder.h>
 #include "helpers.h"
 
@@ -121,7 +119,7 @@ auto Demo_Geocoder = [](Application& app)
                                     // Outline for location boundary:
                                     FeatureView fgen;
                                     fgen.styles.line = LineStyle();
-                                    fgen.styles.line->color = vsg::vec4{ 1, 1, 0, 1 };
+                                    fgen.styles.line->color = Color::Yellow;
                                     fgen.styles.line->depth_offset = 9000.0f; //meters
 
                                     fgen.features = { myfeature };

@@ -8,10 +8,9 @@
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/terrain/TerrainSettings.h>
 #include <rocky/vsg/terrain/TerrainNode.h>
-#include <rocky/vsg/ViewLocal.h>
+#include <rocky/Rendering.h>
 #include <rocky/Map.h>
 #include <rocky/Horizon.h>
-#include <vsg/nodes/Group.h>
 
 namespace ROCKY_NAMESPACE
 {

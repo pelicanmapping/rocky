@@ -18,8 +18,9 @@
 #ifdef ROCKY_HAS_HTTPLIB
     #ifdef ROCKY_HAS_OPENSSL
         #define CPPHTTPLIB_OPENSSL_SUPPORT
-        #endif
+    #endif
     #include <httplib.h>
+    
     ROCKY_ABOUT(cpp_httplib, CPPHTTPLIB_VERSION)
     #ifdef OPENSSL_VERSION_STR
         ROCKY_ABOUT(openssl, OPENSSL_VERSION_STR)
@@ -684,15 +685,15 @@ URI::isRemote() const
         util::startsWith(temp, "https://");
 }
 
-std::string
-URI::urlEncode(const std::string& value)
-{
-#ifdef ROCKY_HAS_HTTPLIB
-    return httplib::encode_uri(value);
-#else
-    return {};
-#endif
-}
+//std::string
+//URI::urlEncode(const std::string& value)
+//{
+//#ifdef ROCKY_HAS_HTTPLIB
+//    return httplib::encode_uri(value);
+//#else
+//    return {};
+//#endif
+//}
 
 void
 URI::setReferrer(const std::string& value)

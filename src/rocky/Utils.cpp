@@ -135,10 +135,7 @@ StringTokenizer::operator()(std::string_view input, bool* error) const
 
 /** Replaces all the instances of "sub" with "other" in "s". */
 std::string&
-rocky::util::replaceInPlace(
-    std::string& s,
-    std::string_view sub,
-    std::string_view other)
+rocky::util::replaceInPlace(std::string& s, std::string_view sub, std::string_view other)
 {
     if (sub.empty()) return s;
     size_t b = 0;
@@ -157,52 +154,32 @@ rocky::util::replaceInPlace(
 * by Rodrigo C F Dias
 * http://www.codeproject.com/KB/stl/stdstringtrim.aspx
 */
-void
-rocky::util::trimInPlace( std::string& str )
+std::string&
+rocky::util::trimInPlace(std::string& str)
 {
-    static const std::string whitespace (" \t\f\v\n\r");
-    std::string::size_type pos = str.find_last_not_of( whitespace );
-    if(pos != std::string::npos) {
-        str.erase(pos + 1);
-        pos = str.find_first_not_of( whitespace );
-        if(pos != std::string::npos) str.erase(0, pos);
-    }
-    else str.erase(str.begin(), str.end());
-}
-
-/**
-* Trims whitespace from the ends of a string, returning a
-* copy of the string with whitespace removed.
-*/
-std::string
-rocky::util::trim(std::string_view in)
-{
-    std::string str(in);
-    trimInPlace(str);
+    int start, end;
+    for (start = 0; start < (int)str.length() && std::isspace(str[start]); ++start);
+    for (end = (int)str.length() - 1; end > start && std::isspace(str[end]); --end);
+    if (end >= start) str = str.substr(start, end - start + 1);
     return str;
 }
 
-namespace
+std::string
+rocky::util::trim(std::string_view in)
 {
-    template<typename charT>
-    struct ci_equal {
-        ci_equal( const std::locale& loc ) : _loc(loc) { }
-        bool operator()(charT c1, charT c2) {
-            return std::toupper(c1,_loc) == std::toupper(c2,_loc);
-        }
-        const std::locale& _loc;
-    };
+    std::string out(in);
+    return trimInPlace(out);
 }
 
 bool
-rocky::util::ciEquals(std::string_view lhs, std::string_view rhs, const std::locale& loc )
+rocky::util::ciEquals(std::string_view lhs, std::string_view rhs)
 {
     if ( lhs.length() != rhs.length() )
         return false;
 
     for( unsigned i=0; i<lhs.length(); ++i )
     {
-        if ( std::toupper(lhs[i], loc) != std::toupper(rhs[i], loc) )
+        if (toLower(lhs[i]) != toLower(rhs[i]))
             return false;
     }
 
@@ -216,7 +193,7 @@ rocky::util::ciEquals(std::string_view lhs, std::string_view rhs, const std::loc
 #endif
 
 bool
-rocky::util::startsWith(std::string_view ref, std::string_view pattern, bool caseSensitive, const std::locale& loc )
+rocky::util::startsWith(std::string_view ref, std::string_view pattern, bool caseSensitive)
 {
     if ( pattern.length() > ref.length() )
         return false;
@@ -233,7 +210,7 @@ rocky::util::startsWith(std::string_view ref, std::string_view pattern, bool cas
     {
         for( unsigned i=0; i<pattern.length(); ++i )
         {
-            if ( std::toupper(ref[i], loc) != std::toupper(pattern[i],loc) )
+            if (toLower(ref[i]) != toLower(pattern[i]))
                 return false;
         }
     }
@@ -241,7 +218,7 @@ rocky::util::startsWith(std::string_view ref, std::string_view pattern, bool cas
 }
 
 bool
-rocky::util::endsWith(std::string_view ref, std::string_view pattern, bool caseSensitive, const std::locale& loc )
+rocky::util::endsWith(std::string_view ref, std::string_view pattern, bool caseSensitive)
 {
     if ( pattern.length() > ref.length() )
         return false;
@@ -259,7 +236,7 @@ rocky::util::endsWith(std::string_view ref, std::string_view pattern, bool caseS
     {
         for( auto i=0; i < pattern.length(); ++i )
         {
-            if ( std::toupper(ref[i+offset], loc) != std::toupper(pattern[i],loc) )
+            if (toLower(ref[i + offset]) != toLower(pattern[i]))
                 return false;
         }
     }

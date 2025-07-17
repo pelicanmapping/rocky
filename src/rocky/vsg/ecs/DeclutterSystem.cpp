@@ -4,16 +4,17 @@
  * MIT License
  */
 #include "DeclutterSystem.h"
-#include "Registry.h"
-#include "Declutter.h"
 #include "TransformDetail.h"
-#include "Visibility.h"
+
+#include <rocky/ecs/Registry.h>
+#include <rocky/ecs/Visibility.h>
+#include <rocky/ecs/Declutter.h>
 #include <rocky/Utils.h>
 #include <rocky/rtree.h>
 
 using namespace ROCKY_NAMESPACE;
 
-DeclutterSystem::DeclutterSystem(ecs::Registry r) : ecs::System(r)
+DeclutterSystem::DeclutterSystem(Registry r) : System(r)
 {
     //nop
 }

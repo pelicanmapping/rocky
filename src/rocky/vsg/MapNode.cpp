@@ -4,13 +4,9 @@
  * MIT License
  */
 #include "MapNode.h"
-#include "Utils.h"
+#include "VSGUtils.h"
 #include "json.h"
 #include <rocky/Horizon.h>
-#include <rocky/ImageLayer.h>
-#include <rocky/ElevationLayer.h>
-
-#include <vsg/io/Options.h>
 #include <vsg/app/RecordTraversal.h>
 #include <vsg/vk/State.h>
 

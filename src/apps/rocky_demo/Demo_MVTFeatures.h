@@ -5,8 +5,8 @@
  */
 #pragma once
 #include <rocky/GDALFeatureSource.h>
+#include <rocky/ecs/Registry.h>
 #include <rocky/vsg/NodePager.h>
-#include <rocky/vsg/ecs.h>
 #include "helpers.h"
 
 using namespace ROCKY_NAMESPACE;
@@ -47,12 +47,12 @@ auto Demo_MVTFeatures = [](Application& app)
                 fview.origin = key.extent().centroid();
 
                 fview.styles.line = LineStyle();
-                fview.styles.line->color = vsg::vec4(1, 0, 0, 1);
+                fview.styles.line->color = Color::Red;
                 fview.styles.line->width = 5.0f;
                 fview.styles.line->depth_offset = 1000; // meters
 
                 fview.styles.mesh = MeshStyle();
-                fview.styles.mesh->color = vsg::vec4(1, 0.75f, 0.2f, 1);
+                fview.styles.mesh->color = Color(1, 0.75f, 0.2f, 1);
                 fview.styles.mesh->depth_offset = 1100; // meters
 
                 if (gdal->featureCount() > 0)

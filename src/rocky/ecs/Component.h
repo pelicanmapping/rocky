@@ -4,7 +4,7 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/Common.h>
+#include <rocky/Common.h>
 #include <entt/entt.hpp>
 
 namespace ROCKY_NAMESPACE

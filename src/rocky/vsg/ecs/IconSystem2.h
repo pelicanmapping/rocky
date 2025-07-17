@@ -4,7 +4,7 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/ecs/Icon.h>
+#include <rocky/ecs/Icon.h>
 #include <rocky/vsg/ecs/ECSNode.h>
 #include <rocky/vsg/PipelineState.h>
 
@@ -27,12 +27,11 @@ namespace ROCKY_NAMESPACE
     /**
      * Creates commands for rendering icon primitives using indirect rendering
      */
-    class ROCKY_EXPORT IconSystem2Node : public vsg::Inherit<vsg::Group, IconSystem2Node>,
-        public ecs::System
+    class ROCKY_EXPORT IconSystem2Node : public vsg::Inherit<vsg::Group, IconSystem2Node>, public System
     {
     public:
         //! Construct the mesh renderer
-        IconSystem2Node(ecs::Registry& r);
+        IconSystem2Node(Registry& r);
 
         //! Initialize the system (called once at startup)
         void initialize(VSGContext&) override;

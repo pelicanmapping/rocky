@@ -7,11 +7,13 @@
 #include <rocky/vsg/Common.h>
 
 #ifdef ROCKY_HAS_IMGUI
-#include <imgui.h>
-#include <rocky/vsg/ecs/ECSNode.h>
-#include <rocky/vsg/ViewLocal.h>
 
 #include "WidgetSystem.h"
+#include "TransformDetail.h"
+#include <rocky/Rendering.h>
+#include <rocky/ecs/Widget.h>
+#include <rocky/ecs/Visibility.h>
+#include <imgui.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -43,9 +45,9 @@ namespace
 }
 
 
-WidgetSystemNode::WidgetSystemNode(ecs::Registry& in_registry) :
+WidgetSystemNode::WidgetSystemNode(Registry& in_registry) :
     vsg::Inherit<vsg::Node, WidgetSystemNode>(),
-    ecs::System(in_registry)
+    System(in_registry)
 {
     // configure EnTT to automatically add the necessary components when a Widget is constructed
     auto [lock, registry] = _registry.write();
@@ -58,7 +60,7 @@ void
 WidgetSystemNode::initialize(VSGContext& context)
 {
     // register me as a gui rendering callback.
-    auto recorder = [this](ViewRecordingState& viewState, void* imguiContext)
+    auto recorder = [this](detail::RenderingState& rs, void* imguiContext)
         {
             auto [lock, registry] = _registry.read();
 
@@ -80,7 +82,7 @@ WidgetSystemNode::initialize(VSGContext& context)
 
                 //Log()->info("Vis {} frame {}", text, visibility.frame[viewState.viewID]);
 
-                if (ecs::visible(visibility, viewState) && xdetail.visible(viewState))
+                if (visible(visibility, rs) && xdetail.visible(rs))
                 {
                     WidgetInstance i{
                         widget,
@@ -88,10 +90,10 @@ WidgetSystemNode::initialize(VSGContext& context)
                         registry,
                         entity,
                         defaultWindowFlags,
-                        renderable.screen[viewState.viewID],
+                        renderable.screen[rs.viewID],
                         renderable.windowSize,
                         (ImGuiContext*)imguiContext,
-                        viewState.viewID
+                        rs.viewID
                     };
 
                     if (widget.render)

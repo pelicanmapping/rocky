@@ -394,7 +394,7 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
                 // so install this no-render function:
                 auto func = [vsgContext, viewID, imguiContext]()
                     {
-                        ViewRecordingState vrs{ 
+                        detail::RenderingState vrs{
                             viewID,
                             vsgContext->viewer->getFrameStamp()->frameCount
                         };

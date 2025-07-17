@@ -8,8 +8,7 @@
 #include <rocky/Viewpoint.h>
 #include <rocky/SRS.h>
 #include <rocky/vsg/MapManipulator.h>
-#include <rocky/vsg/GeoTransform.h>
-#include <rocky/vsg/ecs/Motion.h>
+#include <rocky/ecs/Motion.h>
 
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
@@ -58,9 +57,9 @@ auto Demo_Tethering = [](Application& app)
 
         // add a mesh plane:
         auto& mesh = registry.emplace<Mesh>(entity);
-        vsg::dvec3 verts[4] = { { -s, -s, 0 }, {  s, -s, 0 }, {  s,  s, 0 }, { -s,  s, 0 } };
+        glm::dvec3 verts[4] = { { -s, -s, 0 }, {  s, -s, 0 }, {  s,  s, 0 }, { -s,  s, 0 } };
         unsigned indices[6] = { 0,1,2, 0,2,3 };
-        vsg::vec4 color{ 1, 1, 0, 0.55f };
+        glm::vec4 color{ 1, 1, 0, 0.55f };
         for (unsigned i = 0; i < 6; )
         {
             mesh.triangles.emplace_back(Triangle{
@@ -71,12 +70,12 @@ auto Demo_Tethering = [](Application& app)
         // add an arrow line:
         auto& arrow = registry.emplace<Line>(entity);
         arrow.points = { 
-            vsg::dvec3{ s * 1.5, s * 0.5, 0.0 },
-            vsg::dvec3{ s * 2.0, 0.0, 0.0 },
-            vsg::dvec3{ s * 2.0, 0.0, 0.0 },
-            vsg::dvec3{ s * 1.5, -s * 0.5, 0.0 },
-            vsg::dvec3{ s * 2.0, 0.0, 0.0 },
-            vsg::dvec3{ s * 0.0, 0.0, 0.0 }
+            glm::dvec3{ s * 1.5, s * 0.5, 0.0 },
+            glm::dvec3{ s * 2.0, 0.0, 0.0 },
+            glm::dvec3{ s * 2.0, 0.0, 0.0 },
+            glm::dvec3{ s * 1.5, -s * 0.5, 0.0 },
+            glm::dvec3{ s * 2.0, 0.0, 0.0 },
+            glm::dvec3{ s * 0.0, 0.0, 0.0 }
         };
 
         arrow.style = LineStyle{ {1,0.5,0,1}, 4.0f };

@@ -5,22 +5,16 @@
  */
 #pragma once
 #include <rocky/vsg/VSGContext.h>
-#include <rocky/vsg/ecs/Registry.h>
-#include <rocky/vsg/ecs/Component.h>
-#include <rocky/vsg/ecs/Visibility.h>
+#include <rocky/ECS.h>
+#include <rocky/vsg/ecs/System.h>
 #include <rocky/vsg/ecs/TransformDetail.h>
-#include <rocky/vsg/Utils.h>
+#include <rocky/vsg/VSGUtils.h>
 #include <rocky/Utils.h>
-#include <vsg/vk/Context.h>
-#include <vsg/app/RecordTraversal.h>
-#include <vsg/utils/GraphicsPipelineConfigurator.h>
-#include <vsg/commands/Commands.h>
-#include <vsg/nodes/Node.h>
 #include <thread>
 
 namespace ROCKY_NAMESPACE
 {
-    namespace ecs
+    namespace detail
     {
         class SystemNodeBase;
 
@@ -234,6 +228,7 @@ namespace ROCKY_NAMESPACE
             EntityNodeFactory factory;
         };
 
+#if 0
         //! Whether the Visibility component is visible in the given view
         //! @param vis The visibility component
         //! @param view_index Index of view to check visibility
@@ -243,12 +238,12 @@ namespace ROCKY_NAMESPACE
             return vis.parent != nullptr ? visible(*vis.parent, view_index) : vis.visible[view_index];
         }
 
-        inline bool visible(const Visibility& vis, ViewRecordingState& state)
+        inline bool visible(const Visibility& vis, detail::RenderingState& rs)
         {
             if (vis.parent != nullptr)
-                return visible(*vis.parent, state);
+                return visible(*vis.parent, rs);
             
-            auto delta = (std::int64_t)state.frame - vis.frame[state.viewID];
+            auto delta = (std::int64_t)rs.frame - vis.frame[rs.viewID];
             return vis.visible[state.viewID] && delta <= 1;
         }
 
@@ -293,68 +288,60 @@ namespace ROCKY_NAMESPACE
 
             return visible(registry.get<Visibility>(e), view_index);
         }
-    }
+#endif
 
 
-    //........................................................................
-
-
-    namespace ecs
-    {
-        namespace detail
+        // called by registry.emplace<T>()
+        template<typename T>
+        inline void SystemNode_on_construct(entt::registry& r, entt::entity e)
         {
-            // called by registry.emplace<T>()
-            template<typename T>
-            inline void SystemNode_on_construct(entt::registry& r, entt::entity e)
+            T& new_component = r.get<T>(e);
+
+            if (!r.try_get<ActiveState>(e))
             {
-                T& new_component = r.get<T>(e);
-
-                if (!r.try_get<ActiveState>(e))
-                {
-                    r.emplace<ActiveState>(e);
-                }
-
-                // Add a visibility tag (if first time dealing with this component)
-                // I am not sure yet how to remove this in the end.
-                if (!r.try_get<Visibility>(e))
-                {
-                    r.emplace<Visibility>(e);
-                }
-
-                // Create a Renderable component and attach it to the new component.
-                new_component.attach_point = r.create();
-                r.emplace<ecs::Renderable>(new_component.attach_point);
-
-                new_component.revision++;
+                r.emplace<ActiveState>(e);
             }
 
-            // invoked by registry.replace<T>(), emplace_or_replace<T>(), or patch<T>()
-            template<typename T>
-            inline void SystemNode_on_update(entt::registry& r, entt::entity e)
+            // Add a visibility tag (if first time dealing with this component)
+            // I am not sure yet how to remove this in the end.
+            if (!r.try_get<Visibility>(e))
             {
-                T& updated_component = r.get<T>(e);
-
-                if (updated_component.attach_point == entt::null)
-                {
-                    updated_component.attach_point = r.create();
-                    r.emplace<ecs::Renderable>(updated_component.attach_point);
-                }
-
-                updated_component.revision++;
+                r.emplace<Visibility>(e);
             }
 
-            // invoked by registry.erase<T>(), remove<T>(), or registry.destroy(e)
-            template<typename T>
-            inline void SystemNode_on_destroy(entt::registry& r, entt::entity e)
+            // Create a Renderable component and attach it to the new component.
+            new_component.attach_point = r.create();
+            r.emplace<detail::Renderable>(new_component.attach_point);
+
+            new_component.revision++;
+        }
+
+        // invoked by registry.replace<T>(), emplace_or_replace<T>(), or patch<T>()
+        template<typename T>
+        inline void SystemNode_on_update(entt::registry& r, entt::entity e)
+        {
+            T& updated_component = r.get<T>(e);
+
+            if (updated_component.attach_point == entt::null)
             {
-                T& component_being_destroyed = r.get<T>(e);
-                r.destroy(component_being_destroyed.attach_point);
+                updated_component.attach_point = r.create();
+                r.emplace<detail::Renderable>(updated_component.attach_point);
             }
+
+            updated_component.revision++;
+        }
+
+        // invoked by registry.erase<T>(), remove<T>(), or registry.destroy(e)
+        template<typename T>
+        inline void SystemNode_on_destroy(entt::registry& r, entt::entity e)
+        {
+            T& component_being_destroyed = r.get<T>(e);
+            r.destroy(component_being_destroyed.attach_point);
         }
     }
 
     template<class T>
-    ecs::SystemNode<T>::SystemNode(Registry& in_registry) :
+    detail::SystemNode<T>::SystemNode(Registry& in_registry) :
         System(in_registry)
     {
         auto [lock, registry] = _registry.write();
@@ -365,7 +352,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    ecs::SystemNode<T>::~SystemNode()
+    detail::SystemNode<T>::~SystemNode()
     {
         auto [lock, registry] = _registry.write();
 
@@ -375,7 +362,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    inline void ecs::SystemNode<T>::traverse(vsg::Visitor& v)
+    inline void detail::SystemNode<T>::traverse(vsg::Visitor& v)
     {
         for (auto& pipeline : pipelines)
         {
@@ -396,7 +383,7 @@ namespace ROCKY_NAMESPACE
 
     //! Pass-thru for VSG const visitors
     template<class T>
-    inline void ecs::SystemNode<T>::traverse(vsg::ConstVisitor& v) const
+    inline void detail::SystemNode<T>::traverse(vsg::ConstVisitor& v) const
     {
         for (auto& pipeline : pipelines)
         {
@@ -416,7 +403,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    inline void ecs::SystemNode<T>::compile(vsg::Context& context)
+    inline void detail::SystemNode<T>::compile(vsg::Context& context)
     {
         // Compile the pipelines
         for (auto& pipeline : pipelines)
@@ -438,11 +425,11 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    inline void ecs::SystemNode<T>::traverse(vsg::RecordTraversal& record) const
+    inline void detail::SystemNode<T>::traverse(vsg::RecordTraversal& record) const
     {
         const vsg::dmat4 identity_matrix = vsg::dmat4(1.0);
 
-        ViewRecordingState vrs{
+        detail::RenderingState rs{
             record.getCommandBuffer()->viewID,
             record.getFrameStamp()->frameCount
         };
@@ -468,11 +455,11 @@ namespace ROCKY_NAMESPACE
                     auto* transform_detail = registry.try_get<TransformDetail>(entity);
 
                     // if it's visible, queue it up for rendering
-                    if (visible(visibility, vrs))
+                    if (visible(visibility, rs))
                     {
                         if (transform_detail)
                         {
-                            if (transform_detail->visible(vrs))
+                            if (transform_detail->visible(rs))
                             {
                                 leaves.emplace_back(RenderLeaf{ &renderable, transform_detail });
                             }
@@ -526,9 +513,9 @@ namespace ROCKY_NAMESPACE
 
 
     template<class T>
-    inline void ecs::SystemNode<T>::update(VSGContext& context)
+    inline void detail::SystemNode<T>::update(VSGContext& context)
     {
-        std::vector<ecs::BuildItem> entities_to_build;
+        std::vector<detail::BuildItem> entities_to_build;
 
         if (!entities_to_update.empty())
         {
@@ -541,14 +528,13 @@ namespace ROCKY_NAMESPACE
                     continue;
 
                 T& component = registry.get<T>(entity);
-                //Renderable& renderable = registry.get<Renderable>(component.attach_point);
 
                 auto* renderable = registry.try_get<Renderable>(component.attach_point);
                 if (renderable)
                 {
                     // either the node doesn't exist yet, or the revision changed.
                     // Queue it up for creation.
-                    ecs::BuildItem item;
+                    detail::BuildItem item;
                     item.entity = entity;
                     item.version = registry.current(entity);
                     item.component = std::shared_ptr<RevisionedComponent>(new T(component));
@@ -570,7 +556,7 @@ namespace ROCKY_NAMESPACE
         {
             if (SystemNodeBase::factory) // why do I have to qualify this?
             {
-                ecs::BuildBatch batch;
+                detail::BuildBatch batch;
                 batch.items = std::move(entities_to_build);
                 batch.system = this;
                 batch.context = &context;
@@ -588,14 +574,14 @@ namespace ROCKY_NAMESPACE
     }
 
     template<typename T>
-    void ecs::SystemNode<T>::invokeCreateOrUpdate(BuildItem& item, VSGContext& context) const
+    void detail::SystemNode<T>::invokeCreateOrUpdate(BuildItem& item, VSGContext& context) const
     {
         T component = *static_cast<T*>(item.component.get());
         createOrUpdateNode(component, item, context);
     }
 
     template<typename T>
-    void ecs::SystemNode<T>::mergeCreateOrUpdateResults(entt::registry& registry, BuildItem& item, VSGContext& context)
+    void detail::SystemNode<T>::mergeCreateOrUpdateResults(entt::registry& registry, BuildItem& item, VSGContext& context)
     {
         // if there's a new node AND the entity isn't outdated or deleted,
         // swap it in. This method is called from ECSNode::update().
@@ -617,7 +603,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    bool ecs::SystemNode<T>::parseReferencePoint(const GeoPoint& point, SRSOperation& out_xform, vsg::dvec3& out_offset) const
+    bool detail::SystemNode<T>::parseReferencePoint(const GeoPoint& point, SRSOperation& out_xform, vsg::dvec3& out_offset) const
     {
         if (point.srs.valid())
         {
@@ -644,7 +630,7 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    vsg::ref_ptr<vsg::PipelineLayout> ecs::SystemNode<T>::getPipelineLayout(const T& t) const
+    vsg::ref_ptr<vsg::PipelineLayout> detail::SystemNode<T>::getPipelineLayout(const T& t) const
     {
         return pipelines.empty() ? nullptr : pipelines[featureMask(t)].config->layout;
     }

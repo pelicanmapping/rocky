@@ -5,7 +5,7 @@
  */
 #include "LineSystem.h"
 #include "../PipelineState.h"
-#include "../Utils.h"
+#include "../VSGUtils.h"
 
 #include <vsg/state/ViewDependentState.h>
 #include <vsg/commands/DrawIndexed.h>
@@ -73,7 +73,7 @@ namespace
     }
 }
 
-LineSystemNode::LineSystemNode(ecs::Registry& registry) :
+LineSystemNode::LineSystemNode(Registry& registry) :
     Inherit(registry)
 {
     //nop
@@ -156,7 +156,7 @@ LineSystemNode::initialize(VSGContext& runtime)
 }
 
 void
-LineSystemNode::createOrUpdateNode(Line& line, ecs::BuildInfo& data, VSGContext& runtime) const
+LineSystemNode::createOrUpdateNode(Line& line, detail::BuildInfo& data, VSGContext& runtime) const
 {
     if (!data.existing_node)
     {
@@ -378,7 +378,7 @@ LineGeometry::calcBound(vsg::dsphere& output, const vsg::dmat4& matrix) const
 void
 Line::recycle(entt::registry& registry)
 {
-    auto& renderable = registry.get<ecs::Renderable>(attach_point);
+    auto& renderable = registry.get<detail::Renderable>(attach_point);
     if (renderable.node)
     {
         auto geometry = util::find<LineGeometry>(renderable.node);

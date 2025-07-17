@@ -4,10 +4,9 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/ecs/Component.h>
+#include <rocky/Color.h>
 #include <rocky/GeoPoint.h>
-#include <vsg/nodes/Geometry.h>
-#include <vsg/commands/DrawIndexed.h>
+#include <rocky/ecs/Component.h>
 #include <optional>
 
 namespace ROCKY_NAMESPACE
@@ -18,7 +17,7 @@ namespace ROCKY_NAMESPACE
     struct MeshStyle
     {
         // if alpha is zero, use the line's per-vertex color instead
-        vsg::vec4 color = { 1, 1, 1, 0 };
+        Color color = { 1, 1, 1, 0 };
 
         // vertex adjustment (in meters) to apply to the mesh verts
         // as a simple method or avoiding depth fighting
@@ -26,7 +25,7 @@ namespace ROCKY_NAMESPACE
     };
 
     //! A mesh triangle
-    template<typename VEC2 = vsg::vec2, typename VEC3 = vsg::dvec3, typename VEC4 = vsg::vec4>
+    template<typename VEC2 = glm::fvec2, typename VEC3 = glm::dvec3, typename VEC4 = glm::vec4>
     struct Triangle_t
     {
         VEC3 verts[3];
@@ -42,9 +41,6 @@ namespace ROCKY_NAMESPACE
     */
     struct Mesh : public RevisionedComponent
     {
-        //! Optional texture
-        vsg::ref_ptr<vsg::ImageInfo> texture;
-
         //! Whether to write the the depth buffer
         bool writeDepth = true;
 
@@ -59,12 +55,8 @@ namespace ROCKY_NAMESPACE
 
         //! Reference point for absolute coordinate localization (optional)
         GeoPoint referencePoint;
-    };
 
-
-
-    struct NodeGraph : public RevisionedComponent
-    {
-        vsg::ref_ptr<vsg::Node> node;
+        //! Entity that holds texture information (optional)
+        entt::entity texture = entt::null;
     };
 }

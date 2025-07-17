@@ -10,20 +10,20 @@ ROCKY_ABOUT(entt, ENTT_VERSION);
 using namespace ROCKY_NAMESPACE;
 
 
-ecs::ECSNode::ECSNode(ecs::Registry& reg) :
+detail::ECSNode::ECSNode(Registry& reg) :
     registry(reg)
 {
     factory.start();
 }
 
-ecs::ECSNode::~ECSNode()
+detail::ECSNode::~ECSNode()
 {
     factory.quit();
 }
 
 
 void
-ecs::ECSNode::update(VSGContext& runtime)
+detail::ECSNode::update(VSGContext& runtime)
 {
     // update all systems
     for (auto& system : systems)
@@ -38,7 +38,7 @@ ecs::ECSNode::update(VSGContext& runtime)
 
 
 void
-ecs::EntityNodeFactory::start()
+detail::EntityNodeFactory::start()
 {
     buffers = std::make_shared<Buffers>();
 
@@ -52,7 +52,7 @@ ecs::EntityNodeFactory::start()
                 // assure that we don't wait forever during shutdown.
                 if (buffers->input.wait(std::chrono::milliseconds(500)))
                 {
-                    ecs::BuildBatch batch;
+                    detail::BuildBatch batch;
 
                     if (buffers->input.pop(batch))
                     {
@@ -94,7 +94,7 @@ ecs::EntityNodeFactory::start()
 }
 
 void
-ecs::EntityNodeFactory::quit()
+detail::EntityNodeFactory::quit()
 {
     if (buffers)
     {
@@ -104,7 +104,7 @@ ecs::EntityNodeFactory::quit()
 }
 
 void
-ecs::EntityNodeFactory::mergeResults(Registry& r, VSGContext& runtime)
+detail::EntityNodeFactory::mergeResults(Registry& r, VSGContext& runtime)
 {
     if (buffers)
     {

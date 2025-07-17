@@ -9,10 +9,10 @@ endif()
 set(version_h ${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky/Version.h)
 
 # collect all the headers in the source directory
-file(GLOB HEADERS_CORE *.h tinyxml/*.h)
+file(GLOB HEADERS_CORE *.h ecs/*.h tinyxml/*.h)
 list(APPEND HEADERS_CORE Version.h.in)
 list(APPEND HEADERS_CORE ${version_h})
-file(GLOB SOURCES_CORE *.cpp tinyxml/*.cpp)
+file(GLOB SOURCES_CORE *.cpp ecs/*.cpp tinyxml/*.cpp)
 
 macro(remove_items from_list)
     foreach(item ${ARGN})

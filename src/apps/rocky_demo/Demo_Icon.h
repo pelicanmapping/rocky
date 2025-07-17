@@ -4,7 +4,6 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/ecs.h>
 #include "helpers.h"
 
 using namespace ROCKY_NAMESPACE;
@@ -51,9 +50,9 @@ auto Demo_Icon = [](Application& app)
     {
         auto [lock, registry] = app.registry.read();
 
-        bool visible = ecs::visible(registry, entity);
-        if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(registry, entity, visible);
+        bool v = visible(registry, entity);
+        if (ImGuiLTable::Checkbox("Show", &v))
+            setVisible(registry, entity, v);
 
         auto& icon = registry.get<Icon>(entity);
 

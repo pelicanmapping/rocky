@@ -10,11 +10,7 @@
 #include <rocky/SRS.h>
 #include <rocky/TileKey.h>
 #include <rocky/Horizon.h>
-#include <rocky/vsg/Utils.h>
-#include <rocky/vsg/ViewLocal.h>
-#include <vsg/nodes/MatrixTransform.h>
-#include <vsg/vk/State.h>
-#include <vsg/maths/vec3.h>
+#include <rocky/Rendering.h>
 
 namespace ROCKY_NAMESPACE
 {

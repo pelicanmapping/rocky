@@ -12,7 +12,6 @@
 #include <vsg/commands/DrawIndexed.h>
 
 #include <vsg/nodes/CullNode.h>
-#include <vsg/nodes/DepthSorted.h>
 #include <vsg/utils/ComputeBounds.h>
 
 using namespace ROCKY_NAMESPACE;
@@ -77,7 +76,7 @@ namespace
 }
 
 
-MeshSystemNode::MeshSystemNode(ecs::Registry& registry) :
+MeshSystemNode::MeshSystemNode(Registry& registry) :
     Inherit(registry)
 {
     //nop
@@ -171,17 +170,29 @@ MeshSystemNode::initialize(VSGContext& context)
 }
 
 void
-MeshSystemNode::createOrUpdateNode(Mesh& mesh, ecs::BuildInfo& data, VSGContext& runtime) const
+MeshSystemNode::createOrUpdateNode(Mesh& mesh, detail::BuildInfo& data, VSGContext& runtime) const
 {
     vsg::ref_ptr<vsg::StateGroup> stategroup;
+    vsg::ref_ptr<BindMeshDescriptors> bindCommand;
 
-    if (mesh.style.has_value() || mesh.texture)
+    vsg::ref_ptr<vsg::ImageInfo> texImageInfo;
+    if (mesh.texture != entt::null)
     {
-        auto bindCommand = BindMeshDescriptors::create();
-        if (mesh.texture)
-            bindCommand->_imageInfo = mesh.texture;
-        bindCommand->updateStyle(mesh.style.value());
+        _registry.read([&](entt::registry& r)
+            {
+                auto* tex = r.try_get<Texture>(mesh.texture);
+                if (tex)
+                    texImageInfo = tex->imageInfo;
+            });
+    }
 
+    if (mesh.style.has_value() || texImageInfo)
+    {
+        bindCommand = BindMeshDescriptors::create();
+        if (texImageInfo)
+            bindCommand->_imageInfo = texImageInfo;
+
+        bindCommand->updateStyle(mesh.style.value());
         bindCommand->init(getPipelineLayout(mesh));
 
         stategroup = vsg::StateGroup::create();
@@ -211,7 +222,11 @@ MeshSystemNode::createOrUpdateNode(Mesh& mesh, ecs::BuildInfo& data, VSGContext&
             xform(tri.verts[1], v1); v32[1] = v1 - offset;
             xform(tri.verts[2], v2); v32[2] = v2 - offset;
 
-            geometry->add(v32, tri.uvs, tri.colors, tri.depthoffsets);
+            geometry->add(
+                v32,
+                reinterpret_cast<vsg::vec2*>(tri.uvs),
+                reinterpret_cast<vsg::vec4*>(tri.colors),
+                tri.depthoffsets);
         }
 
         auto localizer = vsg::MatrixTransform::create(vsg::translate(offset));
@@ -222,7 +237,12 @@ MeshSystemNode::createOrUpdateNode(Mesh& mesh, ecs::BuildInfo& data, VSGContext&
     {
         for (auto& tri : mesh.triangles)
         {
-            geometry->add(tri.verts, tri.uvs, tri.colors, tri.depthoffsets);
+            //geometry->add(tri.verts, tri.uvs, tri.colors, tri.depthoffsets);
+            geometry->add(
+                reinterpret_cast<vsg::dvec3*>(tri.verts),
+                reinterpret_cast<vsg::vec2*>(tri.uvs),
+                reinterpret_cast<vsg::vec4*>(tri.colors),
+                tri.depthoffsets);
         }
         geometry_root = geometry;
     }
@@ -251,7 +271,8 @@ int
 MeshSystemNode::featureMask(const Mesh& mesh) const
 {
     int feature_set = 0;
-    if (mesh.texture) feature_set |= TEXTURE;
+
+    if (mesh.texture != entt::null) feature_set |= TEXTURE;
     if (mesh.style.has_value()) feature_set |= DYNAMIC_STYLE;
     if (mesh.writeDepth) feature_set |= WRITE_DEPTH;
     if (mesh.cullBackfaces) feature_set |= CULL_BACKFACES;
@@ -390,16 +411,3 @@ MeshGeometry::compile(vsg::Context& context)
 
     vsg::Geometry::compile(context);
 }
-
-NodeSystemNode::NodeSystemNode(ecs::Registry& registry) :
-    Inherit(registry)
-{
-    //nop
-}
-
-void
-NodeSystemNode::createOrUpdateNode(NodeGraph& graph, ecs::BuildInfo& data, VSGContext& runtime) const
-{
-    data.new_node = graph.node;
-}
-

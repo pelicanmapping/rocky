@@ -4,7 +4,6 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/ecs.h>
 #include "helpers.h"
 
 using namespace ROCKY_NAMESPACE;
@@ -35,10 +34,10 @@ auto Demo_Mesh_Absolute = [](Application& app)
         {
             for(double lat = 15.0; lat < 35.0; lat += step)
             {
-                vsg::dvec3 v1(lon, lat, alt);
-                vsg::dvec3 v2(lon + step, lat, alt );
-                vsg::dvec3 v3(lon + step, lat + step, alt);
-                vsg::dvec3 v4(lon, lat + step, alt);
+                glm::dvec3 v1(lon, lat, alt);
+                glm::dvec3 v2(lon + step, lat, alt );
+                glm::dvec3 v3(lon + step, lat + step, alt);
+                glm::dvec3 v4(lon, lat + step, alt);
                 
                 mesh.triangles.emplace_back(Triangle{ {v1, v2, v3} });
                 mesh.triangles.emplace_back(Triangle{ {v1, v3, v4} });
@@ -61,7 +60,7 @@ auto Demo_Mesh_Absolute = [](Application& app)
 
         static bool visible = true;
         if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(registry, entity, visible);
+            setVisible(registry, entity, visible);
 
         auto& mesh = registry.get<Mesh>(entity);
 
@@ -98,7 +97,7 @@ auto Demo_Mesh_Relative = [](Application& app)
 
         // Make some geometry that will be relative to a geolocation:
         const double s = 250000.0;
-        vsg::dvec3 verts[8] = {
+        glm::dvec3 verts[8] = {
             { -s, -s, -s },
             {  s, -s, -s },
             {  s,  s, -s },
@@ -114,7 +113,7 @@ auto Demo_Mesh_Relative = [](Application& app)
             0,1,5, 0,5,4, 2,3,7, 2,7,6
         };
 
-        vsg::vec4 color{ 1, 0, 1, 0.85f };
+        Color color{ 1, 0, 1, 0.85f };
 
         for (unsigned i = 0; i < 48; )
         {
@@ -139,9 +138,9 @@ auto Demo_Mesh_Relative = [](Application& app)
     {
         auto [lock, registry] = app.registry.read();
 
-        bool visible = ecs::visible(registry, entity);
-        if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(registry, entity, visible);
+        bool v = visible(registry, entity);
+        if (ImGuiLTable::Checkbox("Show", &v))
+            setVisible(registry, entity, v);
 
         auto& mesh = registry.get<Mesh>(entity);
 

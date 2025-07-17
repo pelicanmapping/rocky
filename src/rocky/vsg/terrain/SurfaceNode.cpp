@@ -5,7 +5,7 @@
  */
 #include "SurfaceNode.h"
 #include "GeometryPool.h"
-#include <rocky/vsg/Utils.h>
+#include <rocky/vsg/VSGUtils.h>
 
 #include <rocky/Heightfield.h>
 #include <rocky/Horizon.h>

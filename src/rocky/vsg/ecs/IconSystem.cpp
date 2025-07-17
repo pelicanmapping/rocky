@@ -7,7 +7,7 @@
 #include "IconSystem.h"
 #include "../VSGContext.h"
 #include "../PipelineState.h"
-#include "../Utils.h"
+#include "../VSGUtils.h"
 #include <rocky/Color.h>
 
 #include <vsg/state/BindDescriptorSet.h>
@@ -77,7 +77,7 @@ namespace
     }
 }
 
-IconSystemNode::IconSystemNode(ecs::Registry& registry) :
+IconSystemNode::IconSystemNode(Registry& registry) :
     Inherit(registry)
 {
     //nop
@@ -169,7 +169,7 @@ namespace
 }
 
 void
-IconSystemNode::createOrUpdateNode(Icon& icon, ecs::BuildInfo& data, VSGContext& runtime) const
+IconSystemNode::createOrUpdateNode(Icon& icon, detail::BuildInfo& data, VSGContext& runtime) const
 {
     bool rebuild = data.existing_node == nullptr;
 
@@ -235,7 +235,6 @@ IconSystemNode::createOrUpdateNode(Icon& icon, ecs::BuildInfo& data, VSGContext&
         descriptors.emplace_back(descriptorImage);
 
         auto layout = getPipelineLayout(icon);
-
         bindCommand->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         bindCommand->layout = layout;
         bindCommand->firstSet = 0;

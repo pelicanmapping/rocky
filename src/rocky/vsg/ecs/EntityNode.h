@@ -5,7 +5,7 @@
  */
 #pragma once
 #include <rocky/vsg/Common.h>
-#include <rocky/vsg/ecs.h>
+#include <rocky/ecs/Registry.h>
 #include <vector>
 
 namespace ROCKY_NAMESPACE
@@ -30,7 +30,7 @@ namespace ROCKY_NAMESPACE
         //! Construct a new entity node (with EntityNode::create)
         //! \param reg The ECS registry to use when updating or destorying
         //!     the entities this node manages
-        EntityNode(ecs::Registry& reg) :
+        EntityNode(Registry& reg) :
             _registry(reg)
         {
             //nop
@@ -61,6 +61,6 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        ecs::Registry _registry;
+        Registry _registry;
     };
 }

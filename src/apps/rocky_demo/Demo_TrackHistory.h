@@ -4,7 +4,7 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/ecs.h>
+#include <rocky/vsg/ecs/System.h>
 #include "helpers.h"
 #include <chrono>
 #include <limits>
@@ -34,17 +34,17 @@ namespace
         friend class TrackHistorySystem;
     };
 
-    class TrackHistorySystem : public ecs::System
+    class TrackHistorySystem : public System
     {
     public:
         //! Construct a new system for managing TrackHistory components.
-        static auto create(ecs::Registry& r) { 
+        static auto create(Registry& r) { 
             return std::make_shared<TrackHistorySystem>(r);
         }
 
         //! Construct a new system for managing TrackHistory components.
         //! Please call create(registry)
-        TrackHistorySystem(ecs::Registry& r) : ecs::System(r)
+        TrackHistorySystem(Registry& r) : System(r)
         {
             auto [lock, registry] = r.write();
 
@@ -52,7 +52,7 @@ namespace
             registry.on_destroy<TrackHistory>().connect<&TrackHistorySystem::on_destroy>(this);
 
             // default track style
-            style.color = vsg::vec4{ 0.0f, 1.0f, 0.0f, 1.0f };
+            style.color = Color::Lime;
             style.width = 2.0f;
         }
 
@@ -178,11 +178,11 @@ namespace
         {
             auto& line = registry.get<Line>(chunk.attach_point);
 
-            if (line.points.size() > 0 && line.points.back() == to_vsg((glm::dvec3)(transform.position)))
+            if (line.points.size() > 0 && line.points.back() == (glm::dvec3)(transform.position))
                 return;
 
             // append the new position:
-            line.points.emplace_back(to_vsg((glm::dvec3)transform.position));
+            line.points.emplace_back((glm::dvec3)transform.position);
             line.dirtyPoints();
             chunk.numPoints++;
         }
@@ -306,7 +306,7 @@ auto Demo_TrackHistory = [](Application& app)
 
         ImGuiLTable::SliderFloat("Update frequency", &system->update_hertz, 1.0f, 15.0f);
 
-        if (ImGuiLTable::ColorEdit3("Color", system->style.color.data()))
+        if (ImGuiLTable::ColorEdit3("Color", &system->style.color.x))
         {
             auto [lock, registry] = app.registry.read();
             system->updateStyle(registry);

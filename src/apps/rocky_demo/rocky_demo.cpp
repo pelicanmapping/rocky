@@ -68,15 +68,14 @@ std::vector<Demo> demos =
     Demo{ "Map", Demo_Map },
     Demo{ "Basic Components", {},
     {
-        Demo{ "Label", Demo_Label },
         Demo{ "Line - absolute", Demo_Line_Absolute },
         Demo{ "Line - relative", Demo_Line_Relative },
         Demo{ "Mesh - absolute", Demo_Mesh_Absolute },
         Demo{ "Mesh - relative", Demo_Mesh_Relative },
         Demo{ "Icon", Demo_Icon },
         Demo{ "Model", Demo_Model },
-        Demo{ "Widget", Demo_Widget }
-        //Demo{ "Registry", Demo_Registry }
+        Demo{ "Widget", Demo_Widget },
+        Demo{ "Label (old)", Demo_Label }
     } },
     Demo{ "GIS Data", {},
     {

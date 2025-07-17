@@ -6,29 +6,28 @@
  */
 #include "LabelSystem.h"
 #include "../PipelineState.h"
-#include "../Utils.h"
+#include "../VSGUtils.h"
 
 #include <rocky/vsg/PixelScaleTransform.h>
-
-#include <vsg/state/BindDescriptorSet.h>
-#include <vsg/state/ViewDependentState.h>
-#include <vsg/commands/Draw.h>
-
-#include <vsg/vk/State.h>
 #include <vsg/text/StandardLayout.h>
 #include <vsg/text/CpuLayoutTechnique.h>
-#include <vsg/text/GpuLayoutTechnique.h>
 #include <vsg/text/Font.h>
 #include <vsg/state/DepthStencilState.h>
-#include <vsg/io/read.h>
-
-#include <algorithm>
 
 using namespace ROCKY_NAMESPACE;
 
 
 #define LABEL_MAX_NUM_CHARS 255
 
+namespace ROCKY_NAMESPACE
+{
+    inline vsg::StandardLayout::Alignment to_vsg(rocky::LabelStyle::Align align)
+    {
+        return align == LabelStyle::Align::Left ? vsg::StandardLayout::LEFT_ALIGNMENT :
+            align == LabelStyle::Align::Center ? vsg::StandardLayout::CENTER_ALIGNMENT :
+            vsg::StandardLayout::RIGHT_ALIGNMENT;
+    }
+}
 
 namespace
 {
@@ -201,7 +200,7 @@ namespace
 }
 
 
-LabelSystemNode::LabelSystemNode(ecs::Registry& registry) :
+LabelSystemNode::LabelSystemNode(Registry& registry) :
     Inherit(registry)
 {
     //nop
@@ -271,7 +270,7 @@ LabelSystemNode::initialize(VSGContext& runtime)
 }
 
 void
-LabelSystemNode::createOrUpdateNode(Label& label, ecs::BuildInfo& data, VSGContext& runtime) const
+LabelSystemNode::createOrUpdateNode(Label& label, detail::BuildInfo& data, VSGContext& runtime) const
 {
     // bail out if initialization failed
     if (pipelines.empty())
@@ -291,27 +290,41 @@ LabelSystemNode::createOrUpdateNode(Label& label, ecs::BuildInfo& data, VSGConte
         rebuild =
             text->value() != label.text ||
             layout->outlineWidth != label.style.outlineSize ||
-            layout->horizontalAlignment != label.style.horizontalAlignment ||
-            layout->verticalAlignment != label.style.verticalAlignment;
+            layout->horizontalAlignment != to_vsg(label.style.horizontalAlignment) ||
+            layout->verticalAlignment != to_vsg(label.style.verticalAlignment);
     }
 
     if (rebuild)
     {
-        auto options = runtime->readerWriterOptions;
-        //float size = label.style.pointSize;
+        auto font = runtime->defaultFont;
+        if (!label.style.font.empty())
+        {
+            auto iter = _fontCache.find(label.style.font);
+            if (iter == _fontCache.end())
+            {
+                font = vsg::read_cast<vsg::Font>(label.style.font, runtime->readerWriterOptions);
+                if (!font)
+                {
+                    Log()->warn("Failed to load font: {}", label.style.font);
+                    font = runtime->defaultFont; // fallback to default font
+                }
+                _fontCache[label.style.font] = font;
+            }
+        }
+
 
         // We are doing our own billboarding with the PixelScaleTransform
         const float nativeSize = 128.0f;
         auto layout = vsg::StandardLayout::create();
         layout->billboard = false; // disabled intentionally
-        layout->position = label.style.pixelOffset;
+        layout->position = to_vsg(label.style.pixelOffset);
         layout->horizontal = vsg::vec3(nativeSize, 0.0f, 0.0f);
         layout->vertical = vsg::vec3(0.0f, nativeSize, 0.0f);
         layout->color = vsg::vec4(1.0f, 1.0f, 1.0f, 1.0f);
         layout->outlineWidth = label.style.outlineSize;
         layout->outlineColor = vsg::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-        layout->horizontalAlignment = label.style.horizontalAlignment;
-        layout->verticalAlignment = label.style.verticalAlignment;
+        layout->horizontalAlignment = to_vsg(label.style.horizontalAlignment);
+        layout->verticalAlignment = to_vsg(label.style.verticalAlignment);
 
         // Share this since it should be the same for everything
         if (runtime->sharedObjects)
@@ -320,11 +333,11 @@ LabelSystemNode::createOrUpdateNode(Label& label, ecs::BuildInfo& data, VSGConte
         auto valueBuffer = vsg::stringValue::create(label.text);
 
         auto textNode = vsg::Text::create();
-        textNode->font = label.style.font; // this has to be set or nothing shows up, don't know why yet
+        textNode->font = font; // this has to be set or nothing shows up, don't know why yet
         textNode->text = valueBuffer;
         textNode->layout = layout;
         textNode->technique = RockysCpuLayoutTechnique::create(); // one per label yes
-        textNode->setup(LABEL_MAX_NUM_CHARS, options); // allocate enough space for max possible characters?
+        textNode->setup(LABEL_MAX_NUM_CHARS, runtime->readerWriterOptions); // allocate enough space for max possible characters?
 
         // don't need this since we're using the custom technique
         textNode->shaderSet = {};

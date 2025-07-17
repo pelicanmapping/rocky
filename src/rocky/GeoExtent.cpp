@@ -1,3 +1,8 @@
+/**
+ * rocky c++
+ * Copyright 2025 Pelican Mapping
+ * MIT License
+ */
 #include "GeoExtent.h"
 #include "Math.h"
 #include "Context.h"

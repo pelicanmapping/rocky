@@ -3,7 +3,7 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/ecs.h>
+#include <rocky/ecs/Registry.h>
 #include "helpers.h"
 #include <deque>
 

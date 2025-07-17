@@ -4,9 +4,9 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/ecs/Component.h>
+#include <rocky/Color.h>
 #include <rocky/GeoPoint.h>
-#include <vsg/maths/vec4.h>
+#include <rocky/ecs/Component.h>
 #include <vector>
 
 namespace ROCKY_NAMESPACE
@@ -16,7 +16,7 @@ namespace ROCKY_NAMESPACE
     struct LineStyle
     {
         // if alpha is zero, use the line's per-vertex color instead
-        vsg::vec4 color = { 1, 1, 1, 0 };
+        Color color = Color{ 1, 1, 1, 0 };
         float width = 2.0f; // pixels
         int stipple_pattern = ~0;
         int stipple_factor = 1;
@@ -55,7 +55,7 @@ namespace ROCKY_NAMESPACE
         Topology topology = Topology::Strip;
 
         //! Geometry. NB, the actual array elements are stored on the heap
-        std::vector<vsg::dvec3> points;
+        std::vector<glm::dvec3> points;
 
         //! Marks the entire line dirty
         inline void dirty() override

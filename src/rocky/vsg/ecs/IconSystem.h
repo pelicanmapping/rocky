@@ -4,7 +4,7 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/ecs/Icon.h>
+#include <rocky/ecs/Icon.h>
 #include <rocky/vsg/ecs/ECSNode.h>
 
 namespace ROCKY_NAMESPACE
@@ -46,11 +46,11 @@ namespace ROCKY_NAMESPACE
     /**
      * Creates commands for rendering icon primitives.
      */
-    class ROCKY_EXPORT IconSystemNode : public vsg::Inherit<ecs::SystemNode<Icon>, IconSystemNode>
+    class ROCKY_EXPORT IconSystemNode : public vsg::Inherit<detail::SystemNode<Icon>, IconSystemNode>
     {
     public:
         //! Construct the mesh renderer
-        IconSystemNode(ecs::Registry& r);
+        IconSystemNode(Registry& r);
 
         //! Features supported by this renderer
         enum Features
@@ -68,7 +68,7 @@ namespace ROCKY_NAMESPACE
     private:
 
         //! Called by the helper to initialize a new node component.
-        void createOrUpdateNode(Icon&, ecs::BuildInfo&, VSGContext&) const override;
+        void createOrUpdateNode(Icon&, detail::BuildInfo&, VSGContext&) const override;
 
         // cache of image descriptors so we can re-use textures & samplers
         mutable std::unordered_map<std::shared_ptr<Image>, vsg::ref_ptr<vsg::DescriptorImage>> descriptorImage_cache;

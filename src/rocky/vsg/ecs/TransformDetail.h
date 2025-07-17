@@ -5,8 +5,8 @@
  */
 #pragma once
 #include <rocky/vsg/VSGContext.h>
-#include <rocky/vsg/ViewLocal.h>
-#include <rocky/vsg/ecs/Transform.h>
+#include <rocky/ecs/Transform.h>
+#include <rocky/Rendering.h>
 #include <rocky/SRS.h>
 #include <rocky/Ellipsoid.h>
 #include <rocky/Horizon.h>
@@ -64,13 +64,13 @@ namespace ROCKY_NAMESPACE
         void pop(vsg::RecordTraversal&) const;
 
         //! True if this transform is visible in the provided view state
-        inline bool visible(ViewRecordingState& state) const;
+        inline bool visible(detail::RenderingState&) const;
     };
 
 
     // inline functions
-    bool TransformDetail::visible(ViewRecordingState& state) const
+    bool TransformDetail::visible(detail::RenderingState& rs) const
     {
-        return views[state.viewID].passesCull;
+        return views[rs.viewID].passesCull;
     }
 }

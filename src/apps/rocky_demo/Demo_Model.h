@@ -65,9 +65,9 @@ auto Demo_Model = [](Application& app)
     {
         auto [lock, registry] = app.registry.read();
 
-        bool visible = ecs::visible(registry, entity);
-        if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(registry, entity, visible);
+        bool v = visible(registry, entity);
+        if (ImGuiLTable::Checkbox("Show", &v))
+            setVisible(registry, entity, v);
 
         auto& transform = registry.get<Transform>(entity);
 

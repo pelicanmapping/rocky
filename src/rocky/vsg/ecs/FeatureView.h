@@ -5,7 +5,9 @@
  */
 #pragma once
 #include <rocky/Feature.h>
-#include <rocky/vsg/ecs.h>
+#include <rocky/ecs/Line.h>
+#include <rocky/ecs/Mesh.h>
+#include <rocky/ecs/Icon.h>
 #include <rocky/vsg/VSGContext.h>
 
 #include <optional>

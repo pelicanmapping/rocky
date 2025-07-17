@@ -6,7 +6,7 @@
 #pragma once
 
 #include <rocky/vsg/Common.h>
-#include <rocky/vsg/ecs/Transform.h>
+#include <rocky/ecs/Transform.h>
 #include <rocky/vsg/ecs/TransformDetail.h>
 #include <rocky/GeoPoint.h>
 

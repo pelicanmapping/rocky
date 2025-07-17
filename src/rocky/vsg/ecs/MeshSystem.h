@@ -4,12 +4,19 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/ecs/Mesh.h>
+#include <rocky/ecs/Mesh.h>
 #include <rocky/vsg/ecs/ECSNode.h>
+#include <rocky/vsg/ecs/NodeGraph.h>
 
 namespace ROCKY_NAMESPACE
 {
     class Runtime;
+
+    //! Texture ECS component.
+    struct Texture
+    {
+        vsg::ref_ptr<vsg::ImageInfo> imageInfo;
+    };
 
     /**
     * Command to render a Mesh's triangles.
@@ -83,11 +90,11 @@ namespace ROCKY_NAMESPACE
     /**
     * VSG node that renders Mesh components.
     */
-    class ROCKY_EXPORT MeshSystemNode : public vsg::Inherit<ecs::SystemNode<Mesh>, MeshSystemNode>
+    class ROCKY_EXPORT MeshSystemNode : public vsg::Inherit<detail::SystemNode<Mesh>, MeshSystemNode>
     {
     public:
         //! Construct the mesh renderer
-        MeshSystemNode(ecs::Registry& registry);
+        MeshSystemNode(Registry& registry);
 
         //! Supported features in a mask format
         enum Features
@@ -101,31 +108,15 @@ namespace ROCKY_NAMESPACE
         };
 
         //! Returns a mask of supported features for the given mesh
-        int featureMask(const Mesh& mesh) const override;
+        int featureMask(const Mesh&) const override;
 
         //! One-time initialization of the system        
         void initialize(VSGContext&) override;
 
-        void createOrUpdateNode(Mesh&, ecs::BuildInfo&, VSGContext&) const override;
+        void createOrUpdateNode(Mesh&, detail::BuildInfo&, VSGContext&) const override;
     protected:
 
         //bool update(entt::entity, VSGContext&) override;
-    };
-
-
-
-
-    //TODO-- Move this into its own header.
-
-    /**
-    * VSG node that renders Node components (just plain vsg nodes)
-    */
-    class ROCKY_EXPORT NodeSystemNode : public vsg::Inherit<ecs::SystemNode<NodeGraph>, NodeSystemNode>
-    {
-    public:
-        NodeSystemNode(ecs::Registry& registry);
-
-        void createOrUpdateNode(NodeGraph&, ecs::BuildInfo&, VSGContext&) const override;
     };
 
 }

@@ -24,6 +24,7 @@
 #define ROCKY_NAMESPACE rocky
 
 #include <rocky/Version.h>
+#include <rocky/Log.h>
 #include <rocky/option.h>
 #include <string>
 #include <memory>

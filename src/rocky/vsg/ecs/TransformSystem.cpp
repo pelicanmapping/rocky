@@ -27,7 +27,7 @@ namespace
     }
 }
 
-TransformSystem::TransformSystem(ecs::Registry& r) : ecs::System(r)
+TransformSystem::TransformSystem(Registry& r) : System(r)
 {
     // configure EnTT to automatically add the necessary components when a Transform is constructed
     auto [lock, registry] = r.write();

@@ -5,14 +5,11 @@
  */
 #pragma once
 
-#include <rocky/vsg/ecs.h>
 #include <rocky/vsg/ecs/MotionSystem.h>
-#include <rocky/vsg/DisplayManager.h>
-#include <rocky/rtree.h>
 #include <set>
 #include <random>
-
 #include "helpers.h"
+
 using namespace ROCKY_NAMESPACE;
 
 using namespace std::chrono_literals;
@@ -171,7 +168,7 @@ auto Demo_Simulation = [](Application& app)
                 auto& drop_line = registry.emplace<Line>(entity);
                 drop_line.points = { {0.0, 0.0, 0.0}, {0.0, 0.0, -1e6} };
                 drop_line.style.width = 1.5f;
-                drop_line.style.color = vsg::vec4{ 0.4f, 0.4f, 0.4f, 1.0f };
+                drop_line.style.color = Color{ 0.4f, 0.4f, 0.4f, 1.0f };
 
                 // Decluttering control. The presence of this component will allow the entity
                 // to participate in decluttering when it's enabled.

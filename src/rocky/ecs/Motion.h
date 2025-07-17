@@ -4,6 +4,7 @@
  * MIT License
  */
 #pragma once
+#include <rocky/Common.h>
 #include <glm/glm.hpp>
 
 namespace ROCKY_NAMESPACE

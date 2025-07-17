@@ -4,7 +4,7 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/ecs/Line.h>
+#include <rocky/ecs/Line.h>
 #include <rocky/vsg/ecs/ECSNode.h>
 
 #include <vsg/state/BindDescriptorSet.h>
@@ -16,11 +16,11 @@ namespace ROCKY_NAMESPACE
     /**
      * ECS system that handles LineString components
      */
-    class ROCKY_EXPORT LineSystemNode : public vsg::Inherit<ecs::SystemNode<Line>, LineSystemNode>
+    class ROCKY_EXPORT LineSystemNode : public vsg::Inherit<detail::SystemNode<Line>, LineSystemNode>
     {
     public:
         //! Construct the system
-        LineSystemNode(ecs::Registry& registry);
+        LineSystemNode(Registry& registry);
 
         enum Features
         {
@@ -35,7 +35,7 @@ namespace ROCKY_NAMESPACE
         //! One-time initialization of the system    
         void initialize(VSGContext&) override;
 
-        void createOrUpdateNode(Line&, ecs::BuildInfo&, VSGContext&) const override;
+        void createOrUpdateNode(Line&, detail::BuildInfo&, VSGContext&) const override;
     };
 
     /**
@@ -92,9 +92,11 @@ namespace ROCKY_NAMESPACE
 
 
     template<typename VEC3_T>
-    void LineGeometry::set(const std::vector<VEC3_T>& verts, Line::Topology topology, std::size_t staticStorage)
+    void LineGeometry::set(const std::vector<VEC3_T>& t_verts, Line::Topology topology, std::size_t staticStorage)
     {
         const vsg::vec4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+        auto& verts = reinterpret_cast<const std::vector<vsg::dvec3>&>(t_verts);
 
         if (!_current)
         {

@@ -4,7 +4,7 @@
  * MIT License
  */
 #include "NodePager.h"
-#include <rocky/vsg/Utils.h>
+#include <rocky/vsg/VSGUtils.h>
 #include <atomic>
 
 using namespace ROCKY_NAMESPACE;

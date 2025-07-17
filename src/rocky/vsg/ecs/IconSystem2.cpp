@@ -7,7 +7,7 @@
 #include "IconSystem2.h"
 #include "../VSGContext.h"
 #include "../PipelineState.h"
-#include "../Utils.h"
+#include "../VSGUtils.h"
 #include <rocky/Color.h>
 
 #include <vsg/state/BindDescriptorSet.h>
@@ -144,26 +144,26 @@ namespace
     }
 }
 
-IconSystem2Node::IconSystem2Node(ecs::Registry& registry) :
-    ecs::System(registry)
+IconSystem2Node::IconSystem2Node(Registry& registry) :
+    System(registry)
 {
     //nop
 
     // TODO: move this
     auto [lock, r] = registry.write();
 
-    r.on_construct<Icon>().template connect<&ecs::detail::SystemNode_on_construct<Icon>>();
-    r.on_update<Icon>().template connect<&ecs::detail::SystemNode_on_update<Icon>>();
-    r.on_destroy<Icon>().template connect<&ecs::detail::SystemNode_on_destroy<Icon>>();
+    r.on_construct<Icon>().template connect<&detail::SystemNode_on_construct<Icon>>();
+    r.on_update<Icon>().template connect<&detail::SystemNode_on_update<Icon>>();
+    r.on_destroy<Icon>().template connect<&detail::SystemNode_on_destroy<Icon>>();
 }
 
 IconSystem2Node::~IconSystem2Node()
 {
     auto [lock, registry] = _registry.write();
 
-    registry.on_construct<Icon>().template disconnect<&ecs::detail::SystemNode_on_construct<Icon>>();
-    registry.on_update<Icon>().template disconnect<&ecs::detail::SystemNode_on_update<Icon>>();
-    registry.on_destroy<Icon>().template disconnect<&ecs::detail::SystemNode_on_destroy<Icon>>();
+    registry.on_construct<Icon>().template disconnect<&detail::SystemNode_on_construct<Icon>>();
+    registry.on_update<Icon>().template disconnect<&detail::SystemNode_on_update<Icon>>();
+    registry.on_destroy<Icon>().template disconnect<&detail::SystemNode_on_destroy<Icon>>();
 }
 
 void
@@ -475,7 +475,7 @@ IconSystem2Node::update(VSGContext& context)
         {
             for (auto viewID : context->activeViewIDs)
             {
-                if (ecs::visible(visibility, viewID))
+                if (visible(visibility, viewID))
                 {
                     auto& view = transform_detail.views[viewID];
 

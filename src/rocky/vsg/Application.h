@@ -7,12 +7,9 @@
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/MapNode.h>
 #include <rocky/vsg/SkyNode.h>
-#include <rocky/vsg/ecs/Registry.h>
+#include <rocky/ecs/Registry.h>
 #include <rocky/vsg/ecs/ECSNode.h>
 #include <rocky/vsg/DisplayManager.h>
-
-#include <vsg/app/Viewer.h>
-#include <vsg/nodes/Group.h>
 
 #include <chrono>
 #include <deque>
@@ -75,7 +72,7 @@ namespace ROCKY_NAMESPACE
 
     public: // public properties
 
-        ecs::Registry registry = ecs::Registry::create();
+        Registry registry = Registry::create();
 
         //! VSG context object
         rocky::VSGContext vsgcontext;
@@ -91,7 +88,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Group> mainScene;
         vsg::ref_ptr<rocky::MapNode> mapNode;
         vsg::ref_ptr<rocky::SkyNode> skyNode;
-        vsg::ref_ptr<ecs::ECSNode> ecsNode;
+        vsg::ref_ptr<rocky::detail::ECSNode> ecsNode;
 
         bool autoCreateWindow = true;
         Status commandLineStatus;

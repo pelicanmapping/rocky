@@ -31,7 +31,6 @@ auto Demo_Label = [](Application& app)
         // Attach a label to the host and configure it
         auto& label = registry.emplace<Label>(entity);
         label.text = "Hello, world";
-        label.style.font = font;
         label.style.pointSize = 36.0f;
         label.style.outlineSize = 0.05f;
         
@@ -44,9 +43,9 @@ auto Demo_Label = [](Application& app)
     {
         auto [lock, registry] = app.registry.read();
 
-        bool visible = ecs::visible(registry, entity);
-        if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(registry, entity, visible);
+        bool v = visible(registry, entity);
+        if (ImGuiLTable::Checkbox("Show", &v))
+            setVisible(registry, entity, v);
 
         auto& label = registry.get<Label>(entity);
 

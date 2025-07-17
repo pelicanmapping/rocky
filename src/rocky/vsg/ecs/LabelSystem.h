@@ -4,20 +4,21 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/ecs/Label.h>
+#include <rocky/ecs/Label.h>
 #include <rocky/vsg/ecs/ECSNode.h>
-#include <vsg/text/Text.h>
+#include <vsg/text/Font.h>
+#include <map>
 
 namespace ROCKY_NAMESPACE
 {
     /**
      * Creates commands for rendering icon primitives.
      */
-    class ROCKY_EXPORT LabelSystemNode : public vsg::Inherit<ecs::SystemNode<Label>, LabelSystemNode>
+    class ROCKY_EXPORT LabelSystemNode : public vsg::Inherit<detail::SystemNode<Label>, LabelSystemNode>
     {
     public:
         //! Construct the mesh renderer
-        LabelSystemNode(ecs::Registry& registry);
+        LabelSystemNode(Registry& registry);
 
         enum Features
         {
@@ -28,7 +29,11 @@ namespace ROCKY_NAMESPACE
         //! One time setup of the system
         void initialize(VSGContext&) override;
 
-        void createOrUpdateNode(Label&, ecs::BuildInfo&, VSGContext&) const;
+        void createOrUpdateNode(Label&, detail::BuildInfo&, VSGContext&) const;
 
+
+    protected:
+        using FontCache = std::map<std::string, vsg::ref_ptr<vsg::Font>>;
+        mutable FontCache _fontCache;
     };
 }

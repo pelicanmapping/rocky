@@ -5,21 +5,22 @@
  */
 #pragma once
 
+#include <rocky/vsg/VSGContext.h>
+
 #if defined(ROCKY_HAS_IMGUI)
-#include <rocky/vsg/ecs/Widget.h>
-#include <rocky/vsg/ecs/Registry.h>
+#include <rocky/vsg/ecs/System.h>
+#include <rocky/ecs/Registry.h>
 
 namespace ROCKY_NAMESPACE
 {
     /**
      * Creates commands for rendering ImGui-based overlays
      */
-    class ROCKY_EXPORT WidgetSystemNode : public vsg::Inherit<vsg::Node, WidgetSystemNode>,
-        public ecs::System
+    class ROCKY_EXPORT WidgetSystemNode : public vsg::Inherit<vsg::Node, WidgetSystemNode>, public System
     {
     public:
         //! Construct the mesh renderer
-        WidgetSystemNode(ecs::Registry& registry);
+        WidgetSystemNode(Registry& registry);
 
         //! One time setup of the system
         void initialize(VSGContext& context) override;

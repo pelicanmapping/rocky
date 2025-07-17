@@ -7,6 +7,7 @@
 #include <vsg/all.h>
 #include <rocky/URI.h>
 #include <rocky/vsg/RTT.h>
+#include <rocky/vsg/ecs/MeshSystem.h>
 #include "helpers.h"
 #include <filesystem>
 
@@ -127,13 +128,13 @@ auto Demo_RTT = [](Application& app)
         const double step = 2.5;
         const double alt = 500000;
         const double lon0 = -35.0, lon1 = 0.0, lat0 = -35.0, lat1 = 0.0;
-        vsg::vec2 uv[4];
-        vsg::vec4 bg{ 1,1,1,1 };
+        glm::vec2 uv[4];
+        glm::vec4 bg{ 1,1,1,1 };
         for(double lon = lon0; lon < lon1; lon += step)
         {
             for(double lat = lat0; lat < lat1; lat += step)
             {
-                vsg::dvec3 v[4] = {
+                glm::dvec3 v[4] = {
                     {lon, lat, alt},
                     {lon + step, lat, alt},
                     {lon + step, lat + step, alt},
@@ -149,8 +150,13 @@ auto Demo_RTT = [](Application& app)
                 mesh.triangles.emplace_back(Triangle{ {v[0], v[2], v[3]}, { bg,bg,bg }, {uv[0], uv[2], uv[3]} });
             }
         }
-        mesh.texture = texture;
+
         mesh.style = MeshStyle{ { 1,1,1,0.5 }, 64.0f };
+
+        // add the texture
+        mesh.texture = registry.create();
+        auto& t = registry.emplace<Texture>(mesh.texture);
+        t.imageInfo = texture;
         
         return;
     }
@@ -166,9 +172,9 @@ auto Demo_RTT = [](Application& app)
     {
         auto [lock, registry] = app.registry.read();
 
-        bool visible = ecs::visible(registry, entity);
-        if (ImGuiLTable::Checkbox("Show", &visible))
-            ecs::setVisible(registry, entity, visible);
+        bool v = visible(registry, entity);
+        if (ImGuiLTable::Checkbox("Show", &v))
+            setVisible(registry, entity, v);
 
         ImGuiLTable::End();
     }
