@@ -284,73 +284,90 @@ LabelSystemNode::createOrUpdateNode(Label& label, detail::BuildInfo& data, VSGCo
     if (data.existing_node)
     {
         auto textNode = util::find<vsg::Text>(data.existing_node);
-        auto text = static_cast<vsg::stringValue*>(textNode->text.get());
-        auto layout = static_cast<vsg::StandardLayout*>(textNode->layout.get());
+        if (textNode)
+        {
+            auto text = static_cast<vsg::stringValue*>(textNode->text.get());
+            auto layout = static_cast<vsg::StandardLayout*>(textNode->layout.get());
 
-        rebuild =
-            text->value() != label.text ||
-            layout->outlineWidth != label.style.outlineSize ||
-            layout->horizontalAlignment != to_vsg(label.style.horizontalAlignment) ||
-            layout->verticalAlignment != to_vsg(label.style.verticalAlignment);
+            rebuild =
+                text->value() != label.text ||
+                layout->outlineWidth != label.style.outlineSize ||
+                layout->horizontalAlignment != to_vsg(label.style.horizontalAlignment) ||
+                layout->verticalAlignment != to_vsg(label.style.verticalAlignment);
+        }
+        else
+        {
+            rebuild = true;
+        }
     }
 
     if (rebuild)
     {
-        auto font = runtime->defaultFont;
-        if (!label.style.font.empty())
+        if (label.text.empty())
         {
-            auto iter = _fontCache.find(label.style.font);
-            if (iter == _fontCache.end())
-            {
-                font = vsg::read_cast<vsg::Font>(label.style.font, runtime->readerWriterOptions);
-                if (!font)
-                {
-                    Log()->warn("Failed to load font: {}", label.style.font);
-                    font = runtime->defaultFont; // fallback to default font
-                }
-                _fontCache[label.style.font] = font;
-            }
+            data.new_node = vsg::Node::create();
         }
+        else
+        {
+            auto font = runtime->defaultFont;
+            if (!label.style.font.empty())
+            {
+                auto iter = _fontCache.find(label.style.font);
+                if (iter == _fontCache.end())
+                {
+                    font = vsg::read_cast<vsg::Font>(label.style.font, runtime->readerWriterOptions);
+                    if (!font)
+                    {
+                        Log()->warn("Failed to load font: {}", label.style.font);
+                        font = runtime->defaultFont; // fallback to default font
+                    }
+                    _fontCache[label.style.font] = font;
+                }
+            }
 
 
-        // We are doing our own billboarding with the PixelScaleTransform
-        const float nativeSize = 128.0f;
-        auto layout = vsg::StandardLayout::create();
-        layout->billboard = false; // disabled intentionally
-        layout->position = to_vsg(label.style.pixelOffset);
-        layout->horizontal = vsg::vec3(nativeSize, 0.0f, 0.0f);
-        layout->vertical = vsg::vec3(0.0f, nativeSize, 0.0f);
-        layout->color = vsg::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-        layout->outlineWidth = label.style.outlineSize;
-        layout->outlineColor = vsg::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-        layout->horizontalAlignment = to_vsg(label.style.horizontalAlignment);
-        layout->verticalAlignment = to_vsg(label.style.verticalAlignment);
+            // We are doing our own billboarding with the PixelScaleTransform
+            const float nativeSize = 128.0f;
+            auto layout = vsg::StandardLayout::create();
+            layout->billboard = false; // disabled intentionally
+            layout->position = to_vsg(label.style.pixelOffset);
+            layout->horizontal = vsg::vec3(nativeSize, 0.0f, 0.0f);
+            layout->vertical = vsg::vec3(0.0f, nativeSize, 0.0f);
+            layout->color = vsg::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+            layout->outlineWidth = label.style.outlineSize;
+            layout->outlineColor = vsg::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+            layout->horizontalAlignment = to_vsg(label.style.horizontalAlignment);
+            layout->verticalAlignment = to_vsg(label.style.verticalAlignment);
 
-        // Share this since it should be the same for everything
-        if (runtime->sharedObjects)
-            runtime->sharedObjects->share(layout);
+            // Share this since it should be the same for everything
+            if (runtime->sharedObjects)
+                runtime->sharedObjects->share(layout);
 
-        auto valueBuffer = vsg::stringValue::create(label.text);
+            auto valueBuffer = vsg::stringValue::create(label.text);
 
-        auto textNode = vsg::Text::create();
-        textNode->font = font; // this has to be set or nothing shows up, don't know why yet
-        textNode->text = valueBuffer;
-        textNode->layout = layout;
-        textNode->technique = RockysCpuLayoutTechnique::create(); // one per label yes
-        textNode->setup(LABEL_MAX_NUM_CHARS, runtime->readerWriterOptions); // allocate enough space for max possible characters?
+            auto textNode = vsg::Text::create();
+            textNode->font = font; // this has to be set or nothing shows up, don't know why yet
+            textNode->text = valueBuffer;
+            textNode->layout = layout;
+            textNode->technique = RockysCpuLayoutTechnique::create(); // one per label yes
+            textNode->setup(LABEL_MAX_NUM_CHARS, runtime->readerWriterOptions); // allocate enough space for max possible characters?
 
-        // don't need this since we're using the custom technique
-        textNode->shaderSet = {};
+            // don't need this since we're using the custom technique
+            textNode->shaderSet = {};
 
-        auto ssg = ScreenSpaceGroup::create();
-        ssg->scale = label.style.pointSize / (double)nativeSize;
-        ssg->addChild(textNode);
-        data.new_node = ssg;
+            auto ssg = ScreenSpaceGroup::create();
+            ssg->scale = label.style.pointSize / (double)nativeSize;
+            ssg->addChild(textNode);
+            data.new_node = ssg;
+        }
     }
 
     else
     {
         auto ssg = util::find<ScreenSpaceGroup>(data.existing_node);
-        ssg->scale = label.style.pointSize / 128; // nativeSize
+        if (ssg)
+        {
+            ssg->scale = label.style.pointSize / 128; // nativeSize
+        }
     }
 }
