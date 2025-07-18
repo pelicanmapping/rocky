@@ -466,15 +466,15 @@
 <h2 id="functions">Functions</h2>
 <h3 id="systemnode">~SystemNode<T></h3>
 <p><em>public void ~SystemNode<T>()</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#354</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#293</em></p>
 <p>Destructor</p>
 <h3 id="update">update</h3>
 <p><em>public void update(int &amp; )</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#515</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#454</em></p>
 <p>looks for any new components that need VSG initialization</p>
 <h3 id="systemnode_1">SystemNode<T></h3>
 <p><em>protected void SystemNode<T>(int &amp; in_registry)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#343</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#282</em></p>
 <p>Construct from a subclass</p>
 <h3 id="featuremask">featureMask</h3>
 <p><em>protected int featureMask(const T &amp; t)</em></p>
@@ -482,35 +482,35 @@
 <p>Feature mask for a specific component instance</p>
 <h3 id="compile">compile</h3>
 <p><em>protected void compile(int &amp; )</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#405</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#344</em></p>
 <p>Hooks to expose systems and components to VSG visitors.</p>
 <h3 id="traverse">traverse</h3>
 <p><em>protected void traverse(int &amp; v)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#364</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#303</em></p>
 <h3 id="traverse_1">traverse</h3>
 <p><em>protected void traverse(int &amp; v)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#385</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#324</em></p>
 <p>Pass-thru for VSG const visitors</p>
 <h3 id="parsereferencepoint">parseReferencePoint</h3>
-<p><em>protected _Bool parseReferencePoint(const int &amp; point, int &amp; out_xform, int &amp; out_offset)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#605</em></p>
+<p><em>protected _Bool parseReferencePoint(const int &amp; point, int &amp; out_xform, DVEC3 &amp; out_offset)</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#544</em></p>
 <p>Given a geospatial reference point, extract both an SRS op that will transform points from the component's SRS to the world SRS, and an offset for floating-point precision localization.</p>
 <p><strong>point</strong> The reference point</p>
 <p><strong>out_xform</strong> The SRS operation to transform points</p>
 <p><strong>out_offset</strong> The offset to localize points</p>
 <h3 id="getpipelinelayout">getPipelineLayout</h3>
 <p><em>protected int getPipelineLayout(const T &amp; )</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#632</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#572</em></p>
 <p>Fetches the correct layout for a component.</p>
 <h3 id="createorupdatenode">createOrUpdateNode</h3>
 <p><em>protected void createOrUpdateNode(T &amp; , BuildInfo &amp; , int &amp; )</em></p>
 <p>Subclass must implement this to create or update a node for a component.</p>
 <h3 id="invokecreateorupdate">invokeCreateOrUpdate</h3>
 <p><em>protected void invokeCreateOrUpdate(BuildItem &amp; item, int &amp; runtime)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#576</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#515</em></p>
 <h3 id="mergecreateorupdateresults">mergeCreateOrUpdateResults</h3>
 <p><em>protected void mergeCreateOrUpdateResults(int &amp; registry, BuildItem &amp; item, int &amp; runtime)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#583</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#522</em></p>
 
 
 
