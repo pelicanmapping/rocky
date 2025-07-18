@@ -1,0 +1,7 @@
+site_name: Rocky
+nav:
+  - Home: index.md
+  - API Reference:
+      - API Index: api/README.md
+theme:
+  name: material
