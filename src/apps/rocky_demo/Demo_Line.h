@@ -22,24 +22,19 @@ auto Demo_Line_Absolute = [](Application& app)
         // Attach a new Line component to the entity:
         auto& line = registry.emplace<Line>(entity);
 
-        // Set a reference point. This should be near your geometry, and will
-        // act as an anchor point for localizing geometry. It will also allow
-        // you to set the line's position in geocoordinates.
-        line.referencePoint = GeoPoint(SRS::WGS84, -90.0, -20.0);
+        // Let's transform geodetic (long, lat) points into our world SRS:
+        auto xform = SRS::WGS84.to(app.mapNode->worldSRS());
 
-        const double alt = 10;
         for (double lon = -180; lon <= 0.0; lon += 0.25)
         {
-            line.points.emplace_back(lon, -20.0, alt);
+            auto world = xform(glm::dvec3(lon, 20.0, 0.0));
+            line.points.emplace_back(world);
         }
 
         // Create a style that we can change dynamically:
         line.style.color = Color::Yellow;
         line.style.width = 3.0f;
-        line.style.stipple_pattern = 0xffff;
-        line.style.stipple_factor = 1;
-
-        line.write_depth = true;
+        line.style.depth_offset = 1000.0f;
     }
 
     if (ImGuiLTable::Begin("absolute linestring"))
@@ -64,6 +59,46 @@ auto Demo_Line_Absolute = [](Application& app)
 
         if (ImGuiLTable::SliderInt("Stipple factor", &line.style.stipple_factor, 1, 4))
             line.dirty();
+
+        ImGuiLTable::End();
+    }
+};
+
+auto Demo_Line_ReferencePoint = [](Application& app)
+{
+    static entt::entity entity = entt::null;
+    static bool visible = true;
+
+    if (entity == entt::null)
+    {
+        auto [lock, registry] = app.registry.write();
+
+        // Create a new entity to host our line.
+        entity = registry.create();
+
+        // Attach a new Line component to the entity:
+        auto& line = registry.emplace<Line>(entity);
+
+        // Setting this lets us express our points in long/lat.
+        line.srs = SRS::WGS84;
+        for (double lon = -180; lon <= 0.0; lon += 0.25)
+        {
+            line.points.emplace_back(lon, 10, 0.0);
+        }
+
+        // Create a style that we can change dynamically:
+        line.style.color = Color::Fuchsia;
+        line.style.width = 3.0f;
+    }
+
+    if (ImGuiLTable::Begin("refpoint linestring"))
+    {
+        static bool visible = true;
+        app.registry.read([&](entt::registry& r)
+        {
+            if (ImGuiLTable::Checkbox("Show", &visible))
+                setVisible(r, entity, visible);
+        });
 
         ImGuiLTable::End();
     }
@@ -94,7 +129,7 @@ auto Demo_Line_Relative = [](Application& app)
 
         // Make a style with color and line width
         line.style = LineStyle{ {1,0,0,1}, 4.0f };
-        line.write_depth = true;
+        line.writeDepth = true;
 
         // Add a transform that will place the line on the map
         auto& transform = registry.emplace<Transform>(entity);

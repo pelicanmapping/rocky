@@ -78,22 +78,16 @@ auto Demo_MVTFeatures = [](Application& app)
                 if (!fview.features.empty())
                 {
                     // generate primitives from features:
-                    auto prims = fview.generate(app.mapNode->worldSRS(), app.vsgcontext);
+                    auto prims = fview.generate(app.mapNode->worldSRS());
 
-                    if (!prims.line.points.empty() || !prims.mesh.triangles.empty())
+                    if (!prims.empty())
                     {
                         auto node = EntityNode::create(app.registry);
 
                         // Take a write-lock to move the primitives into ECS entities.
                         app.registry.write([&](entt::registry& registry)
                             {
-                                auto e = registry.create();
-
-                                if (!prims.line.points.empty())
-                                    registry.emplace<Line>(e, std::move(prims.line));
-
-                                if (!prims.mesh.triangles.empty())
-                                    registry.emplace<Mesh>(e, std::move(prims.mesh));
+                                auto e = prims.move(registry);
 
                                 // Since we localized to an origin, the tile needs a transform:
                                 auto& xform = registry.get_or_emplace<Transform>(e);

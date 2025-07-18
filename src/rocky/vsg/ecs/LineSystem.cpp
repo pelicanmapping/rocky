@@ -7,14 +7,6 @@
 #include "../PipelineState.h"
 #include "../VSGUtils.h"
 
-#include <vsg/state/ViewDependentState.h>
-#include <vsg/commands/DrawIndexed.h>
-
-#include <vsg/nodes/CullNode.h>
-#include <vsg/utils/ComputeBounds.h>
-#include <vsg/nodes/DepthSorted.h>
-#include <vsg/nodes/StateGroup.h>
-
 #include <cstring>
 
 using namespace ROCKY_NAMESPACE;
@@ -168,49 +160,49 @@ LineSystemNode::createOrUpdateNode(Line& line, detail::BuildInfo& data, VSGConte
         stategroup->stateCommands.push_back(bindCommand);
 
         vsg::ref_ptr<LineGeometry> geometry;
-        vsg::ref_ptr<vsg::Node> geom_root;
+        vsg::ref_ptr<vsg::Node> geometry_root;
         vsg::dmat4 localizer_matrix;
 
-        if (line.referencePoint.valid())
+        if (line.srs.valid() && line.points.size() > 0)
         {
-            SRSOperation xform;
-            vsg::dvec3 offset, temp;
-            std::vector<vsg::vec3> verts32;
-            parseReferencePoint(line.referencePoint, xform, offset);
+            GeoPoint anchor(line.srs, (line.points.front() + line.points.back()) * 0.5);
 
-            verts32.reserve(line.points.size());
-            for (auto& point : line.points)
-            {
-                xform(point, temp);
-                temp -= offset;
-                verts32.emplace_back(temp);
-            }
+            SRSOperation xform;
+            glm::dvec3 offset;
+            bool ok = parseReferencePoint(anchor, xform, offset);
+            ROCKY_SOFT_ASSERT_AND_RETURN(ok, void());
+
+            // make a copy that we will use to transform and offset:
+            std::vector<glm::dvec3> copy(line.points);
+            xform.transformRange(copy.begin(), copy.end());
+            for (auto& point : copy)
+                point -= offset;
 
             geometry = LineGeometry::create();
-            geometry->set(verts32, line.topology, line.staticSize);
+            geometry->set(copy, line.topology, line.staticSize);
 
-            localizer_matrix = vsg::translate(offset);
+            localizer_matrix = vsg::translate(to_vsg(offset));
             auto localizer = vsg::MatrixTransform::create(localizer_matrix);
             localizer->addChild(geometry);
-            geom_root = localizer;
+            geometry_root = localizer;
         }
         else
         {
             // no reference point -- push raw geometry
             geometry = LineGeometry::create();
             geometry->set(line.points, line.topology, line.staticSize);
-            geom_root = geometry;
+            geometry_root = geometry;
         }
 
         auto cull = vsg::CullNode::create();
         if (stategroup)
         {
-            stategroup->addChild(geom_root);
+            stategroup->addChild(geometry_root);
             cull->child = stategroup;
         }
         else
         {
-            cull->child = geom_root;
+            cull->child = geometry_root;
         }
 
         // hand-calculate the bounding sphere
@@ -240,25 +232,25 @@ LineSystemNode::createOrUpdateNode(Line& line, detail::BuildInfo& data, VSGConte
                 vsg::dsphere bound;
                 vsg::dmat4 localizer_matrix;
 
-                if (line.referencePoint.valid())
+                if (line.srs.valid() && line.points.size() > 0)
                 {
-                    SRSOperation xform;
-                    vsg::dvec3 offset, temp;
-                    std::vector<vsg::vec3> verts32;
-                    parseReferencePoint(line.referencePoint, xform, offset);
+                    GeoPoint anchor(line.srs, (line.points.front() + line.points.back()) * 0.5);
 
-                    verts32.reserve(line.points.size());
-                    for (auto& point : line.points)
-                    {
-                        xform(point, temp);
-                        temp -= offset;
-                        verts32.emplace_back(temp);
-                    }
-                    
-                    geometry->set(verts32, line.topology, line.staticSize);
+                    SRSOperation xform;
+                    glm::dvec3 offset;
+                    bool ok = parseReferencePoint(anchor, xform, offset);
+                    ROCKY_SOFT_ASSERT_AND_RETURN(ok, void());
+
+                    // make a copy that we will use to transform and offset:
+                    std::vector<glm::dvec3> copy(line.points);
+                    xform.transformRange(copy.begin(), copy.end());
+                    for (auto& point : copy)
+                        point -= offset;
+
+                    geometry->set(copy, line.topology, line.staticSize);
 
                     auto mt = util::find<vsg::MatrixTransform>(data.existing_node);
-                    mt->matrix = vsg::translate(offset);
+                    mt->matrix = vsg::translate(to_vsg(offset));
                     localizer_matrix = mt->matrix;
                 }
                 else
@@ -282,7 +274,7 @@ int
 LineSystemNode::featureMask(const Line& c) const
 {
     int mask = 0;
-    if (c.write_depth) mask |= WRITE_DEPTH;
+    if (c.writeDepth) mask |= WRITE_DEPTH;
     return mask;
 }
 

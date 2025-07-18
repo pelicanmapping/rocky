@@ -59,13 +59,13 @@ auto Demo_LineFeatures = [](Application& app)
                 5000.0f            // depth offset (meters)
             };
 
-            auto prims = feature_view.generate(app.mapNode->worldSRS(), app.vsgcontext);
+            auto prims = feature_view.generate(app.mapNode->worldSRS());
 
             if (!prims.empty())
             {
                 app.registry.write([&](entt::registry& registry)
                     {
-                        auto e = prims.moveToEntity(registry);
+                        auto e = prims.move(registry);
                         entities.emplace_back(e);
                     });
             }

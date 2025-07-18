@@ -53,8 +53,8 @@ namespace ROCKY_NAMESPACE
         //! Triangles comprising the mesh
         std::vector<Triangle> triangles;
 
-        //! Reference point for absolute coordinate localization (optional)
-        GeoPoint referencePoint;
+        //! Reference SRS for the triangles data.
+        SRS srs;
 
         //! Entity that holds texture information (optional)
         entt::entity texture = entt::null;

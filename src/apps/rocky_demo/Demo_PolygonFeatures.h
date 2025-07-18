@@ -70,13 +70,13 @@ auto Demo_PolygonFeatures = [](Application& app)
                 };
 
             // compile the features into renderable geometry
-            auto prims = feature_view.generate(app.mapNode->worldSRS(), app.vsgcontext);
+            auto prims = feature_view.generate(app.mapNode->worldSRS());
 
             if (!prims.empty())
             {
                 app.registry.write([&](entt::registry& registry)
                     {
-                        entities.emplace_back(prims.moveToEntity(registry));
+                        entities.emplace_back(prims.move(registry));
                     });
             }
         }

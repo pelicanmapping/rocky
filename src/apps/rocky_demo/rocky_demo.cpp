@@ -39,6 +39,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Decluttering.h"
 #include "Demo_Registry.h"
 #include "Demo_NodePager.h"
+#include "Demo_FeatureView.h"
 #include "Demo_MVTFeatures.h"
 
 template<class T>
@@ -69,6 +70,7 @@ std::vector<Demo> demos =
     Demo{ "Basic Components", {},
     {
         Demo{ "Line - absolute", Demo_Line_Absolute },
+        Demo{ "Line - reference", Demo_Line_ReferencePoint },
         Demo{ "Line - relative", Demo_Line_Relative },
         Demo{ "Mesh - absolute", Demo_Mesh_Absolute },
         Demo{ "Mesh - relative", Demo_Mesh_Relative },
@@ -79,6 +81,7 @@ std::vector<Demo> demos =
     } },
     Demo{ "GIS Data", {},
     {
+        Demo{ "FeatureView", Demo_FeatureView },
         Demo{ "Polygon features", Demo_PolygonFeatures },
         Demo{ "Line features", Demo_LineFeatures },
         Demo{ "Labels from features", Demo_LabelFeatures },

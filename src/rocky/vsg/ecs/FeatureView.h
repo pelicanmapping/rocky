@@ -7,10 +7,7 @@
 #include <rocky/Feature.h>
 #include <rocky/ecs/Line.h>
 #include <rocky/ecs/Mesh.h>
-#include <rocky/ecs/Icon.h>
-#include <rocky/vsg/VSGContext.h>
 
-#include <optional>
 #include <functional>
 
 namespace ROCKY_NAMESPACE
@@ -22,7 +19,6 @@ namespace ROCKY_NAMESPACE
     {
         LineStyle line;
         MeshStyle mesh;
-        IconStyle icon;
 
         std::function<MeshStyle(const Feature&)> mesh_function;
     };
@@ -50,7 +46,10 @@ namespace ROCKY_NAMESPACE
                 return line.points.empty() && mesh.triangles.empty();
             }
 
-            inline entt::entity moveToEntity(entt::registry& r) {
+            //! Creates components for the primitive data and moves them
+            //! into the registry. After calling this method, the member
+            //! primitives are reset.
+            inline entt::entity move(entt::registry& r) {
                 if (empty())
                     return entt::null;
 
@@ -89,6 +88,6 @@ namespace ROCKY_NAMESPACE
         //! @param srs SRS of resulting geometry; Usually this should be the World SRS of your map.
         //! @param runtime Runtime operations interface
         //! @return Collection of primtives representing the feature geometry
-        Primitives generate(const SRS& output_srs, VSGContext& runtime);
+        Primitives generate(const SRS& output_srs);
     };
 }

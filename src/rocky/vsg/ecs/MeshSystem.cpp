@@ -208,11 +208,12 @@ MeshSystemNode::createOrUpdateNode(Mesh& mesh, detail::BuildInfo& data, VSGConte
         geometry->reserve(mesh.triangles.size() * 3);
     }
 
-    if (mesh.referencePoint.valid())
+    if (mesh.srs.valid() && mesh.triangles.size() > 0)
     {
+        GeoPoint anchor(mesh.srs, mesh.triangles.front().verts[0]);
         SRSOperation xform;
         vsg::dvec3 offset;
-        parseReferencePoint(mesh.referencePoint, xform, offset);
+        parseReferencePoint(anchor, xform, offset);
 
         vsg::dvec3 v0, v1, v2;
         vsg::vec3 v32[3];
@@ -248,8 +249,7 @@ MeshSystemNode::createOrUpdateNode(Mesh& mesh, detail::BuildInfo& data, VSGConte
     }
 
     // parent this mesh with a culling node
-    auto cull = vsg::CullNode::create();
-    
+    auto cull = vsg::CullNode::create();    
     if (stategroup)
     {
         stategroup->addChild(geometry_root);

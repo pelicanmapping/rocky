@@ -28,16 +28,17 @@ auto Demo_Mesh_Absolute = [](Application& app)
         const double min_lon = 0.0, max_lon = 35.0;
         const double min_lat = 15.0, max_lat = 35.0;
 
-        mesh.referencePoint = GeoPoint(SRS::WGS84, (min_lon + max_lon) * 0.5, (min_lat + max_lat) * 0.5, alt);
+        // A transform from WGS84 to the world SRS:
+        auto xform = SRS::WGS84.to(app.mapNode->worldSRS());
 
         for (double lon = 0.0; lon < 35.0; lon += step)
         {
             for(double lat = 15.0; lat < 35.0; lat += step)
             {
-                glm::dvec3 v1(lon, lat, alt);
-                glm::dvec3 v2(lon + step, lat, alt );
-                glm::dvec3 v3(lon + step, lat + step, alt);
-                glm::dvec3 v4(lon, lat + step, alt);
+                auto v1 = xform(glm::dvec3(lon, lat, alt));
+                auto v2 = xform(glm::dvec3(lon + step, lat, alt));
+                auto v3 = xform(glm::dvec3(lon + step, lat + step, alt));
+                auto v4 = xform(glm::dvec3(lon, lat + step, alt));
                 
                 mesh.triangles.emplace_back(Triangle{ {v1, v2, v3} });
                 mesh.triangles.emplace_back(Triangle{ {v1, v3, v4} });

@@ -137,7 +137,8 @@ namespace ROCKY_NAMESPACE
             //! @param point The reference point
             //! @param out_xform The SRS operation to transform points
             //! @param out_offset The offset to localize points
-            bool parseReferencePoint(const GeoPoint& point, SRSOperation& out_xform, vsg::dvec3& out_offset) const;
+            template<typename DVEC3>
+            bool parseReferencePoint(const GeoPoint& point, SRSOperation& out_xform, DVEC3& out_offset) const;
 
             //! Fetches the correct layout for a component.
             vsg::ref_ptr<vsg::PipelineLayout> getPipelineLayout(const T&) const;
@@ -227,68 +228,6 @@ namespace ROCKY_NAMESPACE
             Registry registry;
             EntityNodeFactory factory;
         };
-
-#if 0
-        //! Whether the Visibility component is visible in the given view
-        //! @param vis The visibility component
-        //! @param view_index Index of view to check visibility
-        //! @return True if visible in that view
-        inline bool visible(const Visibility& vis, int view_index)
-        {
-            return vis.parent != nullptr ? visible(*vis.parent, view_index) : vis.visible[view_index];
-        }
-
-        inline bool visible(const Visibility& vis, detail::RenderingState& rs)
-        {
-            if (vis.parent != nullptr)
-                return visible(*vis.parent, rs);
-            
-            auto delta = (std::int64_t)rs.frame - vis.frame[rs.viewID];
-            return vis.visible[state.viewID] && delta <= 1;
-        }
-
-        //! Toggle the visibility of an entity in the given view
-        //! @param r Entity registry
-        //! @param e Entity id
-        //! @param value New visibility state
-        //! @param view_index Index of view to set visibility
-        inline void setVisible(entt::registry& registry, entt::entity e, bool value, int view_index = -1)
-        {
-            ROCKY_SOFT_ASSERT_AND_RETURN(e != entt::null, void());
-
-            auto& visibility = registry.get<Visibility>(e);
-
-            if (visibility.parent == nullptr)
-            {
-                if (view_index >= 0)
-                    visibility.visible[view_index] = value;
-                else
-                    visibility.visible.fill(value);
-            }
-        }
-
-        template<typename ITER>
-        inline void setVisible(entt::registry& registry, ITER begin, ITER end, bool value, int view_index = -1)
-        {
-            for (auto it = begin; it != end; ++it)
-            {
-                setVisible(registry, *it, value, view_index);
-            }
-        }
-
-        //! Whether an entity is visible in the given view
-        //! @param r Entity registry
-        //! @param e Entity id
-        //! @param view_index Index of view to check visibility
-        //! @return True if visible in that view
-        inline bool visible(entt::registry& registry, entt::entity e, int view_index = 0)
-        {
-            // assume a readlock on the registry
-            ROCKY_SOFT_ASSERT_AND_RETURN(e != entt::null, false);
-
-            return visible(registry.get<Visibility>(e), view_index);
-        }
-#endif
 
 
         // called by registry.emplace<T>()
@@ -603,7 +542,8 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class T>
-    bool detail::SystemNode<T>::parseReferencePoint(const GeoPoint& point, SRSOperation& out_xform, vsg::dvec3& out_offset) const
+    template<typename DVEC3>
+    bool detail::SystemNode<T>::parseReferencePoint(const GeoPoint& point, SRSOperation& out_xform, DVEC3& out_offset) const
     {
         if (point.srs.valid())
         {
@@ -615,12 +555,12 @@ namespace ROCKY_NAMESPACE
                 GeoPoint world = point.transform(worldSRS);
                 if (world.valid())
                 {
-                    out_offset = vsg::dvec3{ world.x, world.y, world.z };
+                    out_offset = DVEC3{ world.x, world.y, world.z };
                 }
             }
             else
             {
-                out_offset = vsg::dvec3{ point.x, point.y, point.z };
+                out_offset = DVEC3{ point.x, point.y, point.z };
             }
 
             out_xform = SRSOperation(point.srs, worldSRS);

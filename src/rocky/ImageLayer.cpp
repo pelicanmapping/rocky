@@ -350,7 +350,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             // where there's no data beyond +/- 85 degrees.
             auto sourceBounds = sources[0].srs().bounds();
 
-            // Transform the source bounds and shrink it by our pixel-centering value:
+            // Transform the source bounds and clamp them:
             if (sourceBounds.valid())
             {
                 auto xform = sources[0].srs().to(key.extent().srs());

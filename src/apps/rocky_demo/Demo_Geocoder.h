@@ -122,7 +122,7 @@ auto Demo_Geocoder = [](Application& app)
                                     fgen.styles.line.depth_offset = 9000.0f; //meters
 
                                     fgen.features = { myfeature };
-                                    auto primitives = fgen.generate(app.mapNode->worldSRS(), app.vsgcontext);
+                                    auto primitives = fgen.generate(app.mapNode->worldSRS());
 
                                     app.registry.write([&](entt::registry& registry)
                                         {
@@ -130,7 +130,7 @@ auto Demo_Geocoder = [](Application& app)
                                             if (outline != entt::null && registry.valid(outline))
                                                 registry.destroy(outline);
 
-                                            outline = primitives.moveToEntity(registry);
+                                            outline = primitives.move(registry);
 
                                             registry.get<Visibility>(outline).visible.fill(true);
                                             registry.get<Visibility>(placemark).visible.fill(true);

@@ -9,6 +9,7 @@
 #include <rocky/Units.h>
 #include <rocky/Ellipsoid.h>
 #include <optional>
+#include <climits>
 
 namespace ROCKY_NAMESPACE
 {
@@ -300,6 +301,16 @@ namespace ROCKY_NAMESPACE
         inline bool operator()(const DVEC3A& in, DVEC3B& out) const {
             out[0] = in[0], out[1] = in[1], out[2] = in[2];
             return _nop ? true : forward(_handle, out[0], out[1], out[2]);
+        }
+
+        //! Transform a 3-vector (symonym for transform() method)
+        //! @return Transfomed result, or NANs on error.
+        template<typename DVEC3>
+        inline DVEC3 operator()(const DVEC3& in) const {
+            if (_nop) return in;
+            DVEC3 out(in);
+            if (forward(_handle, out.x, out.y, out.z)) return out;
+            else return DVEC3(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
         }
 
         //! Transform a range of 3-vectors in place

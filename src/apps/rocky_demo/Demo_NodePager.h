@@ -79,7 +79,7 @@ auto Demo_NodePager = [](Application& app)
 
 
                 // Make the entities for this tile:
-                auto prims = fview.generate(app.mapNode->worldSRS(), app.vsgcontext);
+                auto prims = fview.generate(app.mapNode->worldSRS());
 
                 if (!prims.empty())
                 {
@@ -88,7 +88,7 @@ auto Demo_NodePager = [](Application& app)
 
                     app.registry.write([&](entt::registry& registry)
                         {
-                            result->entities.emplace_back(prims.moveToEntity(registry));
+                            result->entities.emplace_back(prims.move(registry));
 
                             // Add a label in the center of the tile:
                             auto entity = registry.create();

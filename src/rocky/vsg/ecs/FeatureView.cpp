@@ -340,7 +340,7 @@ namespace
 
 
 FeatureView::Primitives
-FeatureView::generate(const SRS& output_srs, VSGContext& runtime)
+FeatureView::generate(const SRS& output_srs)
 {
     Primitives output;
     output.line.topology = Line::Topology::Segments;

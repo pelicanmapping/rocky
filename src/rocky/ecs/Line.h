@@ -25,7 +25,7 @@ namespace ROCKY_NAMESPACE
     };
 
     /**
-    * LineString component - holds one or more separate line string geometries
+    * Line string component - holds one or more separate line string geometries
     * sharing the same style.
     */
     class ROCKY_EXPORT Line : public RevisionedComponent
@@ -35,12 +35,10 @@ namespace ROCKY_NAMESPACE
         LineStyle style;
 
         //! Whether lines should write to the depth buffer
-        bool write_depth = false;
+        bool writeDepth = true;
 
-        //! When set, the line vertices will be transformed relative to this point 
-        //! for precision localization. Furthermore all line point should be expressed
-        //! in the SRS of the referencePoint.
-        GeoPoint referencePoint;
+        //! SRS of the points in the points vector (when set).
+        SRS srs;
 
         //! Maximum reserved size. Set this if you know the maximum number of points you 
         //! plan to use.
@@ -54,7 +52,9 @@ namespace ROCKY_NAMESPACE
         };
         Topology topology = Topology::Strip;
 
-        //! Geometry. NB, the actual array elements are stored on the heap
+        //! Points can be absolute (in the world SRS), relative to a topocentric
+        //! coordinate system (if a topocentric Transform is in use), or in the SRS of the 
+        //! referencePoint if that is in use.
         std::vector<glm::dvec3> points;
 
         //! Marks the entire line dirty

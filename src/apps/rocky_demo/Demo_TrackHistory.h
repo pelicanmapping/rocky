@@ -156,7 +156,7 @@ namespace
             auto& new_chunk = track.chunks.back();
 
             Line& line = registry.get<Line>(new_chunk.attach_point);
-            line.referencePoint = transform.position;
+            line.srs = transform.position.srs;
 
             // If this is not the first chunk, connect it to the previous one
             if (track.chunks.size() > 1)
