@@ -134,22 +134,6 @@ auto Demo_LabelFeatures = [](Application& app)
             }
 
             ImGuiLTable::Text("Features:", "%ld", candidates.size());
-            if (ImGuiLTable::SliderFloat("Label size", &label_size_percentage, 25.0f, 150.0f, "%.0f%%"))
-            {
-                auto [lock, registry] = app.registry.read();
-
-                for (auto entity : labels)
-                {
-                    float size = starting_label_size * label_size_percentage * 0.01f;
-
-                    auto& label = registry.get<Label>(entity);
-                    label.style.pointSize = size;
-                    label.dirty();
-
-                    auto& declutter = registry.get<Declutter>(entity);
-                    declutter.rect = Rect(0.75f * 0.60f * size * (float)label.text.size(), 0.75f * size);
-                }
-            }
         }
         else
         {

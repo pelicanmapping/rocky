@@ -38,10 +38,9 @@ auto Demo_NodePager = [](Application& app)
                 FeatureView fview;
 
                 // Set up a style for lines:
-                fview.styles.line = LineStyle();
-                fview.styles.line->color = colors[key.level % 4];
-                fview.styles.line->width = 2.0f;
-                fview.styles.line->depth_offset = 10000; // meters
+                fview.styles.line.color = colors[key.level % 4];
+                fview.styles.line.width = 2.0f;
+                fview.styles.line.depth_offset = 10000; // meters
 
                 // The extents of the tile, transformed into the map SRS:
                 auto ex = key.extent().transform(app.mapNode->mapSRS());

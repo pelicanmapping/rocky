@@ -30,7 +30,7 @@ This project is in its early stages so expect a lot of API and architectural cha
    * [Rocky and ImGui](#rocky-and-dear-imgui)
    * [Rocky and VulkanSceneGraph](#rocky-and-vulkanscenegraph)
    * [Rocky and Qt](#rocky-and-qt)
-- [Acknowedgements](#acknowledgements)
+- [Acknowledgements](#acknowledgements)
 
 <!-- TOC end -->
 
@@ -113,6 +113,7 @@ Rocky supports a number of different map data *layers* that will read either *ti
 ## Imagery
 *Image layers* display the visible colors of the map. It might be satellite or aerial imagery, or it might be a rasterized cartographic map. Here are some ways to load image layers into Rocky.
 
+### Loading Imagery from the Network
 Let's start with a simple TMS ([OSGeo Tile Map Service](https://wiki.osgeo.org/wiki/Tile_Map_Service_Specification)) layer:
 ```c++
 #include <rocky/rocky.h>
@@ -136,7 +137,7 @@ We can also use the `TMSImageLayer` to load generic "XYZ" tile pyramids from the
 // This will load the rasterizered OpenStreetMap data.
 // We comply with the TOS by including attribution too.
 auto osm = TMSImageLayer::create();
-osm->uri = "https://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png";
+osm->uri = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 osm->attribution = rocky::Hyperlink{ "\u00a9 OpenStreetMap contributors", "https://openstreetmap.org/copyright" };
 
 // This data source doesn't report any metadata, so we need to tell Rocky
@@ -146,6 +147,7 @@ osm->profile = rocky::Profile("spherical-mercator");
 map->add(osm);
 ```
 
+### Loading a Local File
 You can load imagery datasets from your local disk as well. To do so we will use the `GDALImageLayer`. This layer is based on the [GDAL](https://gdal.org/en/stable/) toolkit which supports a vast array of raster formats.
 ```c++
 auto local = GDALImageLayer::create();
@@ -159,19 +161,60 @@ You can add as many image layers as you want - Rocky will composite them togethe
 Terrain elevation adds 3D heightmap data to your map.
 
 Rocky supports elevation grid data in three formats:
-* Single-channel TIFF (32-bit float or 16-but integer)
+* Single-channel TIFF (32-bit float)
 * Mapbox-encoded PNG
 * Terrarium-encoded PNG
 
 ```c++
 auto elevation = TMSElevationLayer::create();
 elevation->uri = "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png";
-elevation->encoding = ElevationLayer::Encodeing::MapboxRGB;
+elevation->encoding = ElevationLayer::Encoding::MapboxRGB;
 map->add(elevation);
 ```
 
 ## Vector Features
-TBD.
+Rocky include some facilities for loading GIS Feature data through GDAL. GDAL has many drivers to load different types of feature data.
+
+This will open an ESRI Shapefile and iterate over all its features:
+```c++
+#include <rocky/GDALFeatureSource.h>
+...
+auto fs = rocky::GDALFeatureSource::create();
+fs->uri = "my_vectors.shp";
+auto status = fs->open();
+
+if (status.ok())
+{
+    fs.each(app.vsgcontext->io, [&](Feature&& feature)
+        {
+            // ... each Feature object contains geometry and fields
+        });
+}
+```
+
+Use a `FeatureView` to help turn features into visible geometry:
+```c++
+FeatureView feature_view;
+
+// add features to our FeatureView helper:
+fs.each(app.vsgcontext->io, [&](Feature&& feature)
+    {
+        feature_view.features.emplace_back(std::move(feature));
+    });
+       
+// Generate primitives (lines and meshes) in the world coordinate system:
+auto prims = feature_view.generate(app.mapNode->worldSRS(), app.vsgcontext);
+
+// Put our new primitives into the ECS registry:
+if (!prims.empty())
+{
+    app.registry.write([&](entt::registry& registry)
+        {
+            auto e = prims.moveToEntity(registry);
+            entities.emplace_back(e);
+        });
+}
+```
 
 ## Spatial Reference Systems
 A **Spatial Reference System (SRS)** defines how geographic data is mapped to real-world locations. It specifies the coordinate system, projection, and datum used to interpret spatial data. SRSs are essential for ensuring that geographic features are accurately located and can be combined or compared across different datasets.
@@ -219,12 +262,11 @@ Spatial reference systems ensure that your map data aligns correctly, support ac
 # Annotations
 Rocky has a set of built-in primitives for displaying objects on the map.
 
-* Label - a text string
 * Icon - a 2D billboard image
 * Line - a string of 2D line segments
 * Mesh - a collection of triangles
 * Model - a VSG scene graph representing an object
-* Widget - an interactive ImGui panel
+* Widget - an interactive ImGui panel (or a simple text label)
 
 To create and manage these elements, Rocky uses an [Entity Component System](https://en.wikipedia.org/wiki/Entity_component_system) (ECS) driven by the popular [EnTT](https://github.com/skypjack/entt) SDK. We will not delve into the benefits of an ECS for data management here. Suffice it to say that it is a very popular mechanism used in modern gaming and graphics engine with excellent performance and scalability benefits.
 
@@ -243,15 +285,14 @@ Application app;
 void addLabel(const std::string& text)
 {
     // Start by acquiring a write-lock on the registry.
-    // The lock will release automatically at the end of the current scope,
-    // or you can call lock.unlock() to release it manually.
+    // The lock will release automatically at the end of the current scope.
     auto [lock, registry] = app.registry.write();
 
     // create a new entity
     auto entity = registry.create();
     
-    // attach a Label component:
-    Label& label = registry.emplace<Label>(entity);
+    // attach a simple label:
+    Widget& label = registry.emplace<Widget>(entity);
     label.text = "Hello, world";
     
     // attach a Transform component to position our entity on the map:
@@ -298,6 +339,12 @@ app.registry.write([&](entt::registry& registry)
         auto& widget = registry.emplace<Widget>(e);
         widget.text = "WKRP";
     });
+
+app.registry.read([&](entt::registry& registry)
+    {
+        auto& visibility = registry.get<Visibility>(e);
+        visibility.visible[0] = true;
+    });
 ```
 
 While the example here will show you the basics, we recommend you read up on the [EnTT SDK](https://github.com/skypjack/entt) if you want to understand the full breadth of the registry's API!
@@ -307,24 +354,39 @@ While the example here will show you the basics, we recommend you read up on the
 
 As we've already seen, you can position an entity using a `Transform` component:
 ```c++
-auto[lock, registry] = app.registry.write();
+// Use a 'write' block to emplace the Transform.
+// Later you can use a 'read' block to update it.
+app.registry.write([&](entt::registry& registry)
+    {
+        Transform& transform = registry.emplace<Transform>(entity);
 
-Transform& transform = registry.emplace<Transform>(entity);
+        // Set the geospatial position in the SRS of your choice:
+        transform.position = GeoPoint(SRS::WGS84, -76, 34, 0);
 
-// Set the geospatial position in the SRS of your choice:
-transform.position = GeoPoint(SRS::WGS84, -76, 34, 0);
-
-// Whether any geometry (like a Line or Model) attached to the same entity
-// will render relative to a topographic tangent plane
-transform.localTangentPlane = true;
+        // Whether any geometry (like a Line or Model) attached to the same entity
+        // will render relative to a topographic tangent plane
+        transform.localTangentPlane = true;
+    });
 ```
+
 To toggle an entity's visiblity, use the `Visibility` component. (Rocky automatically adds a `Visibility` whenever you create one of the built-in primitive types - you don't have to emplace it yourself.) The component is actually an array so you can control visibility on a per-view basis.
 ```c++
-auto[lock, registry] = app.registry.read();
+// Set visibility on a particular view:
+app.registry.read([&](entt::registry& r)
+    {
+        Visibility& vis = r.get<Visibility>(entity);
+        vis[0] = true; // index 0 is the default view
+    });
 
-Visibility& vis = registry.get<Visibility>(entity);
-vis[0] = true; // index 0 is the default view
+// Or set it across all views using the setVisible convenience function:
+app.registry.read([&](entt::registry& r)
+    {
+        auto& vis = r.get<Visibility>(entity);
+        rocky::setVisible(r, entity, true);
+    });
 ```
+
+
 Other control components include:
 * `Active` (for the overall active state of an entity)
 * `Declutter` (whether, and how, the entity participates in screen decluttering)
@@ -343,7 +405,32 @@ In the `rocky_demo` application you will find example code for each component, i
 ## Rocky and Dear ImGui
 [Dear ImGui](https://github.com/ocornut/imgui) is a runtime UI SDK for C++. Rocky integrates with ImGui in two ways.
 
-### Creating a top-level GUI
+### ImGui Widgets
+Rocky has an ECS component called `Widget` that lets you place an ImGui window anywhere on the Map (using a `Transform`) and treat it just like other components.
+
+```c++
+auto [lock, registry] = app.registry.write();
+
+auto entity = registry.create();
+
+Widget& widget = registry.emplace<Widget>(entity);
+
+widget.render = [](WidgetInstance& i) {
+        i.begin();
+        i.render([&]() {
+            ImGui::Text("Hello, world!");
+        });
+        i.end();
+    };
+
+auto& transform = registry.emplace<Transform>(entity);
+transform.setPosition(GeoPoint(SRS::WGS84, 0, 0));
+```
+
+Inspecting the `WidgetInstance` structure you will find various things you can use to customize the position and appearance of your Widget.
+
+
+### Creating an Application GUI
 Rocky has an `ImGuiIntegration` API that makes it easy to render a GUI atop your map display.
 ```c++
 #include <rocky/vsg/imgui/ImGuiIntegration.h>
@@ -375,30 +462,6 @@ auto imgui_group = ImGuiIntegration::addContextGroup(app.displayManager, main_wi
 imgui_group->add(MyGUI::create(), app);
 ```
 That's basically it. *Don't forget* to call `ImGui::SetCurrentContext` at the top of your `render` function!
-
-### Using ImGui Widgets
-Rocky has an ECS component called `Widget` that lets you place an ImGui window anywhere on the Map and treat it just like other components.
-```c++
-auto [lock, registry] = app.registry.write();
-
-auto entity = registry.create();
-
-Widget& widget = registry.emplace<Widget>(entity);
-widget.render = [](WidgetInstance& i)
-    {
-        i.begin();
-        i.render([&]() 
-        {
-            ImGui::Text("Hello, world!");
-        });
-        i.end();
-    };
-
-auto& transform = registry.emplace<Transform>(entity);
-transform.setPosition(GeoPoint(SRS::WGS84, 0, 0, 0));
-```
-
-Inspecting the `WidgetInstance` structure you will find various things you can use to customize the position and appearance of your Widget.
 
 ## Rocky and VulkanSceneGraph
 If you're already using VulkanSceneGraph (VSG) in your application and just want to add a `MapNode` to a view, do this:

@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -20,9 +20,9 @@ namespace ROCKY_NAMESPACE
     */
     struct StyleSheet
     {
-        std::optional<LineStyle> line;
-        std::optional<MeshStyle> mesh;
-        std::optional<IconStyle> icon;
+        LineStyle line;
+        MeshStyle mesh;
+        IconStyle icon;
 
         std::function<MeshStyle(const Feature&)> mesh_function;
     };

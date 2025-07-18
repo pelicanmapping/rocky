@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "FeatureView.h"
@@ -129,10 +129,7 @@ namespace
 
     void compile_feature_to_lines(const Feature& feature, const StyleSheet& styles, const GeoPoint& origin, const SRS& output_srs, Line& line)
     {
-        float max_span = 100000.0f;
-
-        if (styles.line.has_value())
-            max_span = styles.line->resolution;
+        float max_span = styles.line.resolution;
 
         float final_max_span = max_span;
 
@@ -185,10 +182,7 @@ namespace
         // max length:
         max_span = final_max_span;
 
-        if (styles.line.has_value())
-        {
-            line.style = styles.line.value();
-        }
+        line.style = styles.line;
     }
 
     void compile_polygon_feature_with_weemesh(const Feature& feature, const StyleSheet& styles, 
@@ -322,13 +316,11 @@ namespace
 
         auto color =
             styles.mesh_function ? styles.mesh_function(feature).color :
-            styles.mesh.has_value() ? styles.mesh->color :
-            Color::White;
+            styles.mesh.color;
 
         auto depth_offset =
             styles.mesh_function ? styles.mesh_function(feature).depth_offset :
-            styles.mesh.has_value() ? styles.mesh->depth_offset :
-            0.0f;
+            styles.mesh.depth_offset;
 
         Triangle temp = {
             {}, // we'll fill in the verts below
