@@ -238,7 +238,6 @@ MeshSystemNode::createOrUpdateNode(Mesh& mesh, detail::BuildInfo& data, VSGConte
     {
         for (auto& tri : mesh.triangles)
         {
-            //geometry->add(tri.verts, tri.uvs, tri.colors, tri.depthoffsets);
             geometry->add(
                 reinterpret_cast<vsg::dvec3*>(tri.verts),
                 reinterpret_cast<vsg::vec2*>(tri.uvs),

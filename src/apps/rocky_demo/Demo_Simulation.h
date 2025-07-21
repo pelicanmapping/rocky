@@ -6,6 +6,7 @@
 #pragma once
 
 #include <rocky/vsg/ecs/MotionSystem.h>
+#include <rocky/vsg/WidgetImage.h>
 #include <set>
 #include <random>
 #include "helpers.h"
@@ -58,6 +59,7 @@ auto Demo_Simulation = [](Application& app)
     static std::set<entt::entity> platforms;
     static Status status;
     static Simulator sim(app);
+    static vsg::ref_ptr<WidgetImage> widgetImage;
     const unsigned num_platforms = 10000;
 
     if (status.failed())
@@ -69,36 +71,51 @@ auto Demo_Simulation = [](Application& app)
 
     const float s = 20.0;
 
-    if (platforms.empty())
+    if (!widgetImage)
     {
-        auto [lock, registry] = app.registry.write();
-
         // add an icon:
         auto io = app.vsgcontext->io;
         auto image = io.services.readImageFromURI(icon_location, io);
         status = image.status;
-
-        if (image.status.ok())
+        if (status.ok())
         {
-            std::mt19937 mt;
-            std::uniform_real_distribution<float> rand_unit(0.0, 1.0);
+            image.value->flipVerticalInPlace();
+            widgetImage = WidgetImage::create(image.value);
+            app.vsgcontext->compile(widgetImage);
+        }
+    }
 
-            auto render_widget = [](WidgetInstance& i)
-                {
-                    Transform& t = i.registry.get<Transform>(i.entity);
+    if (platforms.empty())
+    {
+        auto [lock, registry] = app.registry.write();
 
-                    auto point = t.position.transform(SRS::WGS84);
+        std::mt19937 mt;
+        std::uniform_real_distribution<float> rand_unit(0.0, 1.0);
 
-                    i.begin();
+        auto render_widget = [&](WidgetInstance& i)
+            {
+                Transform& t = i.registry.get<Transform>(i.entity);
 
-                    i.center.x += i.size.x/2 + 12;
+                auto point = t.position.transform(SRS::WGS84);
 
-                    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
-                    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.35f));
-                    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.0f));
+                i.begin();
 
-                    i.render([&]()
+                i.center.x += (i.size.x / 2) - (widgetImage->size().y / 2);
+                i.center.y += (i.size.y / 2) - (widgetImage->size().y / 2);
+
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
+                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.35f));
+                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.0f));
+
+                i.render([&]()
+                    {
+                        auto deviceID = app.vsgcontext->device()->deviceID;
+                        if (ImGui::BeginTable("asset", 2))
                         {
+                            ImGui::TableNextColumn();
+                            ImGui::Image(widgetImage->id(deviceID), widgetImage->size());
+
+                            ImGui::TableNextColumn();
                             ImGui::Text("ID:  %s", i.widget.text.c_str());
                             ImGui::Separator();
                             ImGui::Text("Lat: %.2f", point.y);
@@ -106,80 +123,84 @@ auto Demo_Simulation = [](Application& app)
                             ImGui::Text("Lon: %.2f", point.x);
                             ImGui::Separator();
                             ImGui::Text("Alt: %.0f", point.z);
-                        });
 
-                    ImGui::PopStyleColor(2);
-                    ImGui::PopStyleVar();
+                            ImGui::EndTable();
+                        }
+                    });
 
-                    i.end();
+                ImGui::PopStyleColor(2);
+                ImGui::PopStyleVar();
 
-                    // update decluttering volume
-                    auto& dc = i.registry.get<Declutter>(i.entity);
-                    dc.rect = Rect(i.size.x, i.size.y);
-                };
+                i.end();
 
-            auto ll_to_ecef = SRS::WGS84.to(SRS::ECEF);
+                // update decluttering volume
+                auto& dc = i.registry.get<Declutter>(i.entity);
+                dc.rect = Rect(i.size.x, i.size.y);
+            };
 
-            for (unsigned i = 0; i < num_platforms; ++i)
-            {
-                float t = (float)i / (float)(num_platforms);
+        auto ll_to_ecef = SRS::WGS84.to(SRS::ECEF);
 
-                // Create a host entity:
-                auto entity = registry.create();
+        for (unsigned i = 0; i < num_platforms; ++i)
+        {
+            float t = (float)i / (float)(num_platforms);
 
-                // Attach an icon:
-                auto& icon = registry.emplace<Icon>(entity);
-                icon.style = IconStyle{ 16.0f + t*16.0f, 0.0f }; // pixels, rotation(rad)
+            // Create a host entity:
+            auto entity = registry.create();
 
-                if (image.status.ok())
-                    icon.image = image.value;
+#if 0
+            // Attach an icon:
+            auto& icon = registry.emplace<Icon>(entity);
+            icon.style = IconStyle{ 16.0f + t*16.0f, 0.0f }; // pixels, rotation(rad)
 
-                double lat = -80.0 + rand_unit(mt) * 160.0;
-                double lon = -180 + rand_unit(mt) * 360.0;
-                double alt = 1000.0 + t * 1000000.0;
-                GeoPoint pos(SRS::WGS84, lon, lat, alt);
+            if (image.status.ok())
+                icon.image = image.value;
+#endif
 
-                // This is optional, since a Transform can take a point expresssed in any SRS.
-                // But since we KNOW the map is geocentric, this will give us better performance
-                // by avoiding a conversion every frame.
-                pos.transformInPlace(SRS::ECEF);
+            double lat = -80.0 + rand_unit(mt) * 160.0;
+            double lon = -180 + rand_unit(mt) * 360.0;
+            double alt = 1000.0 + t * 1000000.0;
+            GeoPoint pos(SRS::WGS84, lon, lat, alt);
 
-                // Add a transform component:
-                auto& transform = registry.emplace<Transform>(entity);
-                transform.position = pos;
+            // This is optional, since a Transform can take a point expresssed in any SRS.
+            // But since we KNOW the map is geocentric, this will give us better performance
+            // by avoiding a conversion every frame.
+            pos.transformInPlace(SRS::ECEF);
 
-                // We need this to support the drop-line. There is a small performance hit.
-                transform.topocentric = true;
+            // Add a transform component:
+            auto& transform = registry.emplace<Transform>(entity);
+            transform.position = pos;
 
-                // Add a motion component to represent movement:
-                double initial_bearing = -180.0 + rand_unit(mt) * 360.0;
-                auto& motion = registry.emplace<MotionGreatCircle>(entity);
-                motion.velocity = { -75000 + rand_unit(mt) * 150000, 0.0, 0.0 };
-                motion.normalAxis = pos.srs.ellipsoid().greatCircleRotationAxis(glm::dvec3(lon, lat, 0.0), initial_bearing);
+            // We need this to support the drop-line. There is a small performance hit.
+            transform.topocentric = true;
 
-                // Add a labeling widget:
-                auto& widget = registry.emplace<Widget>(entity);
-                widget.text = std::to_string(i);
-                widget.render = render_widget;
+            // Add a motion component to represent movement:
+            double initial_bearing = -180.0 + rand_unit(mt) * 360.0;
+            auto& motion = registry.emplace<MotionGreatCircle>(entity);
+            motion.velocity = { -75000 + rand_unit(mt) * 150000, 0.0, 0.0 };
+            motion.normalAxis = pos.srs.ellipsoid().greatCircleRotationAxis(glm::dvec3(lon, lat, 0.0), initial_bearing);
 
-                // How about a drop line?
-                // Since the drop line is relative to the platfrom, we have to enable
-                // transform.localTangentPlane = true (see above)
-                auto& drop_line = registry.emplace<Line>(entity);
-                drop_line.points = { {0.0, 0.0, 0.0}, {0.0, 0.0, -1e6} };
-                drop_line.style.width = 1.5f;
-                drop_line.style.color = Color{ 0.4f, 0.4f, 0.4f, 1.0f };
+            // Add a labeling widget:
+            auto& widget = registry.emplace<Widget>(entity);
+            widget.text = std::to_string(i);
+            widget.render = render_widget;
 
-                // Decluttering control. The presence of this component will allow the entity
-                // to participate in decluttering when it's enabled.
-                auto& declutter = registry.emplace<Declutter>(entity);
-                declutter.priority = alt;
+            // How about a drop line?
+            // Since the drop line is relative to the platfrom, we have to enable
+            // transform.localTangentPlane = true (see above)
+            auto& drop_line = registry.emplace<Line>(entity);
+            drop_line.points = { {0.0, 0.0, 0.0}, {0.0, 0.0, -1e6} };
+            drop_line.style.width = 1.5f;
+            drop_line.style.color = Color{ 0.4f, 0.4f, 0.4f, 1.0f };
 
-                platforms.emplace(entity);
-            }
+            // Decluttering control. The presence of this component will allow the entity
+            // to participate in decluttering when it's enabled.
+            auto& declutter = registry.emplace<Declutter>(entity);
+            declutter.priority = alt;
 
-            sim.run();
+            platforms.emplace(entity);
         }
+
+        sim.run();
     }
 
     ImGui::Text("Simulating %ld platforms", platforms.size());

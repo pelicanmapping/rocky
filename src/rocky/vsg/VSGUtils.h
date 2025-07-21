@@ -310,6 +310,45 @@ namespace ROCKY_NAMESPACE
             return data;
         }
 
+        inline Image::PixelFormat fromVkPixelFormat(VkFormat vkformat)
+        {
+            switch (vkformat)
+            {
+            case VK_FORMAT_R8_UNORM: return Image::R8_UNORM;
+            case VK_FORMAT_R8_SRGB: return Image::R8_SRGB;
+            case VK_FORMAT_R8G8_UNORM: return Image::R8G8_UNORM;
+            case VK_FORMAT_R8G8_SRGB: return Image::R8G8_SRGB;
+            case VK_FORMAT_R8G8B8_UNORM: return Image::R8G8B8_UNORM;
+            case VK_FORMAT_R8G8B8_SRGB: return Image::R8G8B8_SRGB;
+            case VK_FORMAT_R8G8B8A8_UNORM: return Image::R8G8B8A8_UNORM;
+            case VK_FORMAT_R8G8B8A8_SRGB: return Image::R8G8B8A8_SRGB;
+            case VK_FORMAT_R16_UNORM: return Image::R16_UNORM;
+            case VK_FORMAT_R32_SFLOAT: return Image::R32_SFLOAT;
+            case VK_FORMAT_R64_SFLOAT: return Image::R64_SFLOAT;
+            default: return Image::UNDEFINED;
+            }
+        }
+
+        inline VkFormat toVkPixelFormat(Image::PixelFormat format)
+        {
+            switch (format)
+            {
+            case Image::R8_UNORM: return VK_FORMAT_R8_UNORM;
+            case Image::R8_SRGB: return VK_FORMAT_R8_SRGB;
+            case Image::R8G8_UNORM: return VK_FORMAT_R8G8_UNORM;
+            case Image::R8G8_SRGB: return VK_FORMAT_R8G8_SRGB;
+            case Image::R8G8B8_UNORM: return VK_FORMAT_R8G8B8_UNORM;
+            case Image::R8G8B8_SRGB: return VK_FORMAT_R8G8B8_SRGB;
+            case Image::R8G8B8A8_UNORM: return VK_FORMAT_R8G8B8A8_UNORM;
+            case Image::R8G8B8A8_SRGB: return VK_FORMAT_R8G8B8A8_SRGB;
+            case Image::R16_UNORM: return VK_FORMAT_R16_UNORM;
+            case Image::R32_SFLOAT: return VK_FORMAT_R32_SFLOAT;
+            case Image::R64_SFLOAT: return VK_FORMAT_R64_SFLOAT;
+            default: return VK_FORMAT_UNDEFINED;
+            }
+        }
+
+
         // Convert a vsg::Data structure to an Image if possible
         inline Result<std::shared_ptr<Image>> makeImageFromVSG(vsg::ref_ptr<vsg::Data> data)
         {
@@ -319,19 +358,7 @@ namespace ROCKY_NAMESPACE
             // TODO: move this into a utility somewhere
             auto vkformat = data->properties.format;
 
-            Image::PixelFormat format =
-                vkformat == VK_FORMAT_R8_UNORM        ? Image::R8_UNORM :
-                vkformat == VK_FORMAT_R8_SRGB         ? Image::R8_SRGB :
-                vkformat == VK_FORMAT_R8G8_UNORM      ? Image::R8G8_UNORM :
-                vkformat == VK_FORMAT_R8G8_SRGB       ? Image::R8G8_SRGB :
-                vkformat == VK_FORMAT_R8G8B8_UNORM    ? Image::R8G8B8_UNORM :
-                vkformat == VK_FORMAT_R8G8B8_SRGB     ? Image::R8G8B8_SRGB :
-                vkformat == VK_FORMAT_R8G8B8A8_UNORM  ? Image::R8G8B8A8_UNORM :
-                vkformat == VK_FORMAT_R8G8B8A8_SRGB   ? Image::R8G8B8A8_SRGB :
-                vkformat == VK_FORMAT_R16_UNORM       ? Image::R16_UNORM :
-                vkformat == VK_FORMAT_R32_SFLOAT      ? Image::R32_SFLOAT :
-                vkformat == VK_FORMAT_R64_SFLOAT      ? Image::R64_SFLOAT :
-                Image::UNDEFINED;
+            Image::PixelFormat format = fromVkPixelFormat(vkformat);
 
             if (format == Image::UNDEFINED)
             {
@@ -353,6 +380,44 @@ namespace ROCKY_NAMESPACE
 
             return Result(image);
         }
+
+        inline vsg::ref_ptr<vsg::DescriptorImage> createTexture(Image::Ptr image,
+            vsg::ref_ptr<vsg::Device> vsg_device)
+        {
+            //auto vsg_context = vsg::Context::create(vsg_device);
+
+            //auto imageInfo = vsg::ImageInfo::create();
+
+            auto colorImage = vsg::Image::create(moveImageData(image));
+            colorImage->imageType = VK_IMAGE_TYPE_2D;
+            colorImage->format = toVkPixelFormat(image->pixelFormat());
+            colorImage->mipLevels = 1;
+            colorImage->arrayLayers = 1;
+            colorImage->samples = VK_SAMPLE_COUNT_1_BIT;
+            colorImage->tiling = VK_IMAGE_TILING_OPTIMAL;
+            colorImage->usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+            colorImage->initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            colorImage->flags = 0;
+            colorImage->sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            //imageInfo->imageView = vsg::createImageView(*vsg_context, colorImage, VK_IMAGE_ASPECT_COLOR_BIT);
+
+            auto sampler = vsg::Sampler::create();
+            sampler->magFilter = VK_FILTER_LINEAR;
+            sampler->minFilter = VK_FILTER_LINEAR;
+            sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+            sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            sampler->anisotropyEnable = VK_FALSE; // don't need this for a billboarded icon
+            sampler->maxAnisotropy = 1.0f;
+            sampler->maxLod = 1.0f;
+
+            //imageInfo->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            return vsg::DescriptorImage::create(
+                sampler, moveImageData(image), 0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        }
+
 
         /**
         * PromiseOperation combines a VSG operation with the Promise/Future construct

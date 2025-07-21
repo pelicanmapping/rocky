@@ -40,7 +40,7 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
         colorImage->initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         colorImage->flags = 0;
         colorImage->sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        auto colorImageView = createImageView(context, colorImage, VK_IMAGE_ASPECT_COLOR_BIT);
+        auto colorImageView = vsg::createImageView(context, colorImage, VK_IMAGE_ASPECT_COLOR_BIT);
 
         // Sampler for accessing attachment as a texture
         auto colorSampler = vsg::Sampler::create();
