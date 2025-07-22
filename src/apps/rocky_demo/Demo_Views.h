@@ -112,7 +112,7 @@ auto Demo_Views = [](Application& app)
                     // create the new view:
                     auto new_view = vsg::View::create(camera, app.root);
 
-                    auto add = [&]()
+                    auto add = [&app, new_view, window]()
                         {
                             std::uniform_int_distribution next_int;
                             app.display.addViewToWindow(new_view, window);
