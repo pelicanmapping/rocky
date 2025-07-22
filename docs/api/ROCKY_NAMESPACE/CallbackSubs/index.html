@@ -16,7 +16,7 @@
     
     
       
-        <title>class AutoCallback - Rocky</title>
+        <title>struct CallbackSubs - Rocky</title>
       
     
     
@@ -58,7 +58,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#class-autocallback" class="md-skip">
+        <a href="#struct-callbacksubs" class="md-skip">
           Skip to content
         </a>
       
@@ -94,7 +94,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              class AutoCallback
+              struct CallbackSubs
             
           </span>
         </div>
@@ -312,34 +312,7 @@
           <li class="md-nav__item">
   <a href="#operator" class="md-nav__link">
     <span class="md-ellipsis">
-      operator()
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#remove" class="md-nav__link">
-    <span class="md-ellipsis">
-      remove
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fire" class="md-nav__link">
-    <span class="md-ellipsis">
-      fire
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#operator-bool" class="md-nav__link">
-    <span class="md-ellipsis">
-      operator bool
+      operator+=
     </span>
   </a>
   
@@ -366,25 +339,13 @@
 
 
 
-<h1 id="class-autocallback">class AutoCallback</h1>
-<p><em>Defined at src/rocky/Callbacks.h#80</em></p>
+<h1 id="struct-callbacksubs">struct CallbackSubs</h1>
+<p><em>Defined at src/rocky/Callbacks.h#22</em></p>
+<p>Collection of callback subscriptions.</p>
 <h2 id="functions">Functions</h2>
-<h3 id="operator">operator()</h3>
-<p><em>public int operator()(int &amp;&amp; func)</em></p>
-<p><em>Defined at src/rocky/Callbacks.h#91</em></p>
-<p>Adds a callback function</p>
-<h3 id="remove">remove</h3>
-<p><em>public void remove(int token)</em></p>
-<p><em>Defined at src/rocky/Callbacks.h#99</em></p>
-<p>Removed a callback function with the UID returned from ()</p>
-<h3 id="fire">fire</h3>
-<p><em>public void fire(Args &amp;&amp;... args)</em></p>
-<p><em>Defined at src/rocky/Callbacks.h#111</em></p>
-<p>Executes all callback functions with the provided args</p>
-<h3 id="operator-bool">operator bool</h3>
-<p><em>public _Bool operator bool()</em></p>
-<p><em>Defined at src/rocky/Callbacks.h#123</em></p>
-<p>True if there is at least one registered callback to fire</p>
+<h3 id="operator">operator+=</h3>
+<p><em>public CallbackSubs &amp; operator+=(const int &amp; sub)</em></p>
+<p><em>Defined at src/rocky/Callbacks.h#23</em></p>
 
 
 

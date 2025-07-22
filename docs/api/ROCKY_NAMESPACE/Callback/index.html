@@ -367,27 +367,23 @@
 
 
 <h1 id="class-callback">class Callback</h1>
-<p><em>Defined at src/rocky/Callbacks.h#30</em></p>
-<p>Easy way to add a thread-safe callback to a class.</p>
-<p>Developer defines a callback, usually as a class member:   Callback<void(int)> onClick;</p>
-<p>User adds a callback:   instance-&gt;onClick(<a href="int a"></a> { ... });</p>
-<p>Class fires a callback:   onClick(a);</p>
+<p><em>Defined at src/rocky/Callbacks.h#29</em></p>
 <h2 id="functions">Functions</h2>
 <h3 id="operator">operator()</h3>
 <p><em>public int operator()(int &amp;&amp; func)</em></p>
-<p><em>Defined at src/rocky/Callbacks.h#41</em></p>
-<p>Adds a callback function</p>
+<p><em>Defined at src/rocky/Callbacks.h#42</em></p>
+<p>Adds a callback function, and returns a subscription object. When the subscription object is destroyed the callback is deactivated.</p>
 <h3 id="remove">remove</h3>
-<p><em>public void remove(int uid)</em></p>
-<p><em>Defined at src/rocky/Callbacks.h#49</em></p>
-<p>Removed a callback function with the UID returned from ()</p>
+<p><em>public void remove(int sub)</em></p>
+<p><em>Defined at src/rocky/Callbacks.h#51</em></p>
+<p>Remove a callback function associated with a subscription  returned from operator().</p>
 <h3 id="fire">fire</h3>
 <p><em>public void fire(Args &amp;&amp;... args)</em></p>
-<p><em>Defined at src/rocky/Callbacks.h#61</em></p>
+<p><em>Defined at src/rocky/Callbacks.h#63</em></p>
 <p>Executes all callback functions with the provided args</p>
 <h3 id="operator-bool">operator bool</h3>
 <p><em>public _Bool operator bool()</em></p>
-<p><em>Defined at src/rocky/Callbacks.h#71</em></p>
+<p><em>Defined at src/rocky/Callbacks.h#75</em></p>
 <p>True if there is at least one registered callback to fire</p>
 
 
