@@ -14,44 +14,6 @@ using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::TMS;
 using namespace ROCKY_NAMESPACE::util;
 
-
-#define ELEM_TILEMAP "tilemap"
-#define ELEM_TITLE "title"
-#define ELEM_ABSTRACT "abstract"
-#define ELEM_SRS "srs"
-#define ELEM_BOUNDINGBOX "boundingbox"
-#define ELEM_ORIGIN "origin"
-#define ELEM_TILE_FORMAT "tileformat"
-#define ELEM_TILESETS "tilesets"
-#define ELEM_TILESET "tileset"
-#define ELEM_DATA_EXTENTS "dataextents"
-#define ELEM_DATA_EXTENT "dataextent"
-
-#define ATTR_VERSION "version"
-#define ATTR_TILEMAPSERVICE "tilemapservice"
-
-#define ATTR_MINX "minx"
-#define ATTR_MINY "miny"
-#define ATTR_MAXX "maxx"
-#define ATTR_MAXY "maxy"
-#define ATTR_X "x"
-#define ATTR_Y "y"
-#define ATTR_MIN_LEVEL "minlevel"
-#define ATTR_MAX_LEVEL "maxlevel"
-
-#define ATTR_WIDTH "width"
-#define ATTR_HEIGHT "height"
-#define ATTR_MIME_TYPE "mime-type"
-#define ATTR_EXTENSION "extension"
-
-#define ATTR_PROFILE "profile"
-
-#define ATTR_HREF "href"
-#define ATTR_ORDER "order"
-#define ATTR_UNITSPERPIXEL "units-per-pixel"
-
-#define ATTR_DESCRIPTION "description"
-
 namespace
 {
     bool intersects(const double& minXa, const double& minYa, const double& maxXa, const double& maxYa,
@@ -209,19 +171,26 @@ namespace
                             dexml->QueryUnsignedAttribute("maxlevel", &maxLevel);
                             dexml->QueryStringAttribute("description", &description);
 
-                            if (maxLevel > 0u)
+                            // Note: TMS DataExtents are a Pelican extension and are ALWAYS in WGS84.
+                            GeoExtent e = profile.clampAndTransformExtent(
+                                GeoExtent(SRS::WGS84, minX, minY, maxX, maxY));
+
+                            if (e.valid())
                             {
-                                if (description.empty())
-                                    tilemap.dataExtents.push_back(DataExtent(GeoExtent(profile.srs(), minX, minY, maxX, maxY), 0, maxLevel));
+                                if (maxLevel > 0u)
+                                {
+                                    if (description.empty())
+                                        tilemap.dataExtents.push_back(DataExtent(e, 0, maxLevel));
+                                    else
+                                        tilemap.dataExtents.push_back(DataExtent(e, 0, maxLevel, description));
+                                }
                                 else
-                                    tilemap.dataExtents.push_back(DataExtent(GeoExtent(profile.srs(), minX, minY, maxX, maxY), 0, maxLevel, description));
-                            }
-                            else
-                            {
-                                if (description.empty())
-                                    tilemap.dataExtents.push_back(DataExtent(GeoExtent(profile.srs(), minX, minY, maxX, maxY), 0));
-                                else
-                                    tilemap.dataExtents.push_back(DataExtent(GeoExtent(profile.srs(), minX, minY, maxX, maxY), 0, description));
+                                {
+                                    if (description.empty())
+                                        tilemap.dataExtents.push_back(DataExtent(e, 0));
+                                    else
+                                        tilemap.dataExtents.push_back(DataExtent(e, 0, description));
+                                }
                             }
                         }
                     }
