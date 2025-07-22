@@ -9,8 +9,8 @@
 #include <rocky/Layer.h>
 #include <rocky/Callbacks.h>
 #include <rocky/IOTypes.h>
-#include <rocky/LayerCollection.h>
 #include <shared_mutex>
+#include <vector>
 
 namespace ROCKY_NAMESPACE
 {
@@ -21,17 +21,30 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT Map : public Inherit<Object, Map>
     {
     public:
+        //! Ordered collection of map layers.
+        using Layers = std::vector<Layer::Ptr>;
+        
         //! Construct an empty map
-        Map();
+        Map() = default;
 
-        //! Adds a layer to the map
-        void add(std::shared_ptr<Layer> layer);
+        //! Adds a layer to the map.
+        void add(Layer::Ptr layer);
 
-        //! Layers comprising this map
-        inline LayerCollection& layers();
+        //! Sets the layers collection
+        void setLayers(const Layers& layers);
+        void setLayers(Layers&& layes) noexcept;
 
-        //! Layers comprising this map
-        inline const LayerCollection& layers() const;
+        //! A safe copy of the layers collection
+        Layers layers() const;
+
+        //! A safe copy of all the layers that match the optional cast type and the 
+        //! optional preficate function.
+        template<class T = Layer, class PREDICATE = std::function<bool(const typename T::ConstPtr)>>
+        inline std::vector<typename T::Ptr> layers(PREDICATE&& pred = [](typename T::ConstPtr) { return true; }) const;
+
+        //! Iterate safely over all layers, calling the callable.
+        template<typename CALLABLE>
+        inline void each(CALLABLE&&) const;
 
         //! Open all layers that are marked for openAutomatically.
         //! Note, this method will be called automatically by the MapNode, but you 
@@ -52,39 +65,48 @@ namespace ROCKY_NAMESPACE
         std::string to_json() const;
 
     public:
-        //! Callback fired upon added a layer
-        using LayerAdded = void(std::shared_ptr<Layer>, unsigned index, Revision);
-        Callback<LayerAdded> onLayerAdded;
-
-        //! Callback fired upon removing a layer
-        using LayerRemoved = void(std::shared_ptr<Layer>, Revision);
-        Callback<LayerRemoved> onLayerRemoved;
-
-        //! Callback fired upon reordering a layer
-        using LayerMoved = void(std::shared_ptr<Layer>, unsigned oldIndex, unsigned newIndex, Revision);
-        Callback<LayerMoved> onLayerMoved;
-
-        //! Remove a callback added to this object
-        void removeCallback(UID uid);
-
-    protected:
-        option<std::string> _profileLayer;
+        //! Callback fired then dirty() is called.
+        Callback<void(const Map*)> onLayersChanged;
 
     private:
-        mutable std::shared_mutex _mapDataMutex;
-        Revision _dataModelRevision = 0;
-        LayerCollection _layers;
-
-        friend class LayerCollection;
+        mutable std::shared_mutex _mutex;
+        Revision _revision = 0;
+        std::vector<Layer::Ptr> _layers;
     };
 
 
-    inline LayerCollection& Map::layers() {
-        return _layers;
+
+    // inlines
+    template<class T, class PREDICATE>
+    inline std::vector<typename T::Ptr> Map::layers(PREDICATE&& pred) const
+    {
+        static_assert(std::is_invocable_r_v<bool, PREDICATE, typename T::Ptr>,
+            "Map::layers() requires a predicate that takes a T::ConstPtr and returns bool");
+
+        std::vector<typename T::Ptr> result;
+        std::shared_lock lock(_mutex);
+        for (auto& layer : _layers)
+        {
+            typename T::Ptr typed = T::cast(layer);
+            if (typed && pred(typed))
+            {
+                result.emplace_back(typed);
+            }
+        }
+        return result;
     }
 
-    inline const LayerCollection& Map::layers() const {
-        return _layers;
+    template<typename CALLABLE>
+    inline void Map::each(CALLABLE&& func) const
+    {
+        static_assert(std::is_invocable_r_v<void, CALLABLE, Layer::ConstPtr>,
+            "Map::each() requires a callable that takes a Layer::ConstPtr and returns void");
+
+        std::shared_lock lock(_mutex);
+        for (const auto& layer : _layers)
+        {
+            func(layer.get());
+        }
     }
 }
 

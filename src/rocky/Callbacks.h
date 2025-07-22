@@ -11,73 +11,22 @@
 #include <mutex>
 #include <functional>
 #include <vector>
+#include <unordered_set>
 
 namespace ROCKY_NAMESPACE
 {
-    /**
-     * Easy way to add a thread-safe callback to a class.
-     * 
-     * Developer defines a callback, usually as a class member:
-     *   Callback<void(int)> onClick;
-     *
-     * User adds a callback:
-     *   instance->onClick([](int a) { ... });
-     *
-     * Class fires a callback:
-     *   onClick(a);
-     */
-    template<typename F = void()>
-    class Callback
-    {
-    private:
-        using Entry = typename std::pair<int, std::function<F>>;
-        mutable int uidgen = 0;
-        mutable std::vector<Entry> entries;
-        mutable std::mutex mutex;
-        mutable std::atomic_bool firing = { false };
+    //! A callback subscription.
+    using CallbackSub = std::shared_ptr<bool>;
 
-    public:
-        //! Adds a callback function
-        int operator()(std::function<F>&& func) const {
-            std::lock_guard<std::mutex> lock(mutex);
-            auto uid = ++uidgen;
-            entries.emplace_back(uid, func);
-            return uid;
-        }
-
-        //! Removed a callback function with the UID returned from ()
-        void remove(int uid) const {
-            std::lock_guard<std::mutex> lock(mutex);
-            for (auto iter = entries.begin(); iter != entries.end(); ++iter) {
-                if (iter->first == uid) {
-                    entries.erase(iter);
-                    break;
-                }
-            }
-        }
-
-        //! Executes all callback functions with the provided args
-        template<typename... Args>
-        void fire(Args&&... args) const {
-            if (firing.exchange(true) == false) {
-                std::lock_guard<std::mutex> lock(mutex);
-                for (auto& e : entries)
-                    e.second(args...);
-                firing = false;
-            }
-        }
-
-        //! True if there is at least one registered callback to fire
-        operator bool() const
-        {
-            return !entries.empty();
+    //! Collection of callback subscriptions.
+    struct CallbackSubs : public std::unordered_set<CallbackSub> {
+        inline CallbackSubs& operator += (const CallbackSub& sub) {
+            this->emplace(sub); return *this;
         }
     };
 
-    using CallbackToken = std::shared_ptr<bool>;
-
     template<typename F = void()>
-    class AutoCallback
+    class Callback
     {
     private:
         using TokenRef = std::weak_ptr<bool>;
@@ -87,19 +36,22 @@ namespace ROCKY_NAMESPACE
         mutable std::atomic_bool firing = { false };
 
     public:
-        //! Adds a callback function
-        CallbackToken operator()(std::function<F>&& func) const {
+        //! Adds a callback function, and returns a subscription object.
+        //! When the subscription object is destroyed the callback is deactivated.
+        [[nodiscard]]
+        CallbackSub operator()(std::function<F>&& func) const {
             std::lock_guard<std::mutex> lock(mutex);
-            auto token = CallbackToken(new bool(true));
-            entries.emplace_back(TokenRef(token), func);
-            return token;
+            auto sub = CallbackSub(new bool(true));
+            entries.emplace_back(TokenRef(sub), func);
+            return sub;
         }
 
-        //! Removed a callback function with the UID returned from ()
-        void remove(CallbackToken token) const {
+        //! Remove a callback function associated with a subscription 
+        //! returned from operator().
+        void remove(CallbackSub sub) const {
             std::lock_guard<std::mutex> lock(mutex);
             for (auto iter = entries.begin(); iter != entries.end(); ++iter) {
-                if (iter->first == token) {
+                if (iter->first == sub) {
                     entries.erase(iter);
                     break;
                 }

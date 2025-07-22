@@ -72,7 +72,7 @@ TEST_CASE("json")
     auto layer = rocky::TMSImageLayer::create();
     layer->uri = "file.xml";
     auto map = rocky::Map::create();
-    map->layers().add(layer);
+    map->add(layer);
     auto serialized = map->to_json();
     map = rocky::Map::create();
     map->from_json(serialized, context->io);
@@ -261,41 +261,8 @@ TEST_CASE("Map")
     REQUIRE(map);
     if (map) {
         auto layer = TestLayer::create();
-
-        unsigned cb_code = 0;
-
-        auto added_cb = [&cb_code](std::shared_ptr<Layer> layer, unsigned index, Revision rev)
-        {
-            cb_code = 100;
-        };
-        map->onLayerAdded(added_cb);
-
-        auto moved_cb = [&cb_code](std::shared_ptr<Layer> layer, unsigned oldIndex, unsigned newIndex, Revision rev)
-        {
-            cb_code = 200;
-        };
-        map->onLayerMoved(moved_cb);
-
-        auto removed_cb = [&cb_code](std::shared_ptr<Layer> layer, Revision rev)
-        {
-            cb_code = 300;
-        };
-        map->onLayerRemoved(removed_cb);
-
-        map->layers().add(layer);
-        CHECK(cb_code == 100);
+        map->add(layer);
         CHECK(map->layers().size() == 1);
-
-        //map->moveLayer(layer, 0);
-        map->layers().move(layer, 0);
-        CHECK(cb_code == 200);
-
-        auto layers = map->layers().all();
-        CHECK(layers.size() == 1);
-
-        map->layers().remove(layer);
-        CHECK(cb_code == 300);
-        CHECK(map->layers().size() == 0);
     }
 }
 
@@ -778,7 +745,12 @@ TEST_CASE("Earth File")
         auto mapNode = MapNode::create(context);
         mapNode->from_json(result.value, IOOptions(context->io, earthFile));
 
-        auto layer1 = mapNode->map->layers().withName("ReadyMap 15m Imagery");
+        auto layers = mapNode->map->layers([&](auto layer) {
+            return layer->name() == "ReadyMap 15m Imagery"; });
+
+        CHECK(layers.size() == 1);
+        
+        auto layer1 = layers.front();
         CHECKED_IF(layer1)
         {
             auto tms_layer = TMSImageLayer::cast(layer1);
@@ -787,82 +759,6 @@ TEST_CASE("Earth File")
             CHECK(tms_layer->uri.value().full() == "https://readymap.org/readymap/tiles/1.0.0/7/");
         }
     }
-}
-
-TEST_CASE("LayersCollection API")
-{
-    // Create a map and get its layer collection
-    auto map = Map::create();
-    REQUIRE(map);
-
-    auto& layers = map->layers();
-    CHECK(layers.size() == 0);
-    CHECK(layers.empty());
-
-    // Create some test layers
-    auto layer1 = TestLayer::create();
-    layer1->setName("Layer1");
-    auto layer2 = TestLayer::create();
-    layer2->setName("Layer2");
-    auto layer3 = TestLayer::create();
-    layer3->setName("Layer3");
-
-    // Add layers
-    layers.add(layer1);
-    layers.add(layer2);
-    layers.add(layer3);
-    CHECK(layers.size() == 3);
-
-    // Add a layer again (should not duplicate)
-    layers.add(layer3);
-    CHECK(layers.size() == 3);
-
-    // Check all()
-    auto all_layers = layers.all();
-    CHECK(all_layers.size() == 3);
-
-    // Check indexOf
-    CHECK(layers.indexOf(layer1) == 0);
-    CHECK(layers.indexOf(layer2) == 1);
-    CHECK(layers.indexOf(layer3) == 2);
-
-    // Check at()
-    auto at1 = layers.at<TestLayer>(0);
-    CHECK(at1 == layer1);
-    auto at2 = layers.at<TestLayer>(1);
-    CHECK(at2 == layer2);
-
-    // Check withName()
-    auto by_name = layers.withName<TestLayer>("Layer2");
-    CHECK(by_name == layer2);
-
-    // Check withUID()
-    auto by_uid = layers.withUID<TestLayer>(layer3->uid());
-    CHECK(by_uid == layer3);
-
-    // Check firstOfType and ofType
-    auto first = layers.firstOfType<TestLayer>();
-    CHECK(first == layer1);
-    auto all_of_type = layers.ofType<TestLayer>();
-    CHECK(all_of_type.size() == 3);
-
-    // Move a layer
-    layers.move(layer3, 0);
-    CHECK(layers.indexOf(layer3) == 0);
-    CHECK(layers.indexOf(layer1) == 1);
-    CHECK(layers.indexOf(layer2) == 2);
-
-    // Remove a layer
-    layers.remove(layer2);
-    CHECK(layers.size() == 2);
-    CHECK(layers.indexOf(layer3) == 0);
-    CHECK(layers.indexOf(layer1) == 1);
-
-    // Remove all layers
-    layers.remove(layer1);
-    layers.remove(layer3);
-    CHECK(layers.size() == 0);
-    CHECK(layers.empty());
 }
 
 TEST_CASE("MapManipulator NaN fix")

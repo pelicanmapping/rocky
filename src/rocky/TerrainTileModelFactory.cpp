@@ -212,7 +212,7 @@ TerrainTileModelFactory::addColorLayers(
     int order = 0;
 
     // fetch the candidate layers:
-    auto layers = map->layers().get([&manifest](const std::shared_ptr<Layer>& layer)
+    auto layers = map->layers([&manifest](auto layer)
         {
             return
                 layer->isOpen() &&
@@ -323,7 +323,8 @@ TerrainTileModelFactory::createElevationModel(const Map* map, const TileKey& key
 
     TerrainTileModel::Elevation model;
 
-    auto layer = map->layers().firstOfType<ElevationLayer>();
+    auto layers = map->layers<ElevationLayer>();
+    auto layer = layers.empty() ? nullptr : layers.front();
 
     if (layer != nullptr && 
         layer->isOpen() &&
@@ -366,12 +367,14 @@ TerrainTileModelFactory::addElevation(
 {
     bool needElevation = manifest.includesElevation();
 
-    auto layers = map->layers().all();
-
+    auto layers = map->layers<ElevationLayer>();
     if (layers.empty())
         return false;
 
+    auto layer = layers.front();
+
     int combinedRevision = map->revision();
+
     if (!manifest.empty())
     {
         for (const auto& layer : layers)
@@ -385,8 +388,6 @@ TerrainTileModelFactory::addElevation(
     }
     if (!needElevation)
         return false;
-
-    auto layer = map->layers().firstOfType<ElevationLayer>();
 
     if (layer != nullptr &&
         layer->isOpen() &&

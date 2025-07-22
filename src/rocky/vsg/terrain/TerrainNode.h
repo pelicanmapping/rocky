@@ -21,8 +21,7 @@ namespace ROCKY_NAMESPACE
     /**
      * Root node of the terrain geometry
      */
-    class ROCKY_EXPORT TerrainNode :
-        public vsg::Inherit<vsg::Group, TerrainNode>,
+    class ROCKY_EXPORT TerrainNode : public vsg::Inherit<vsg::Group, TerrainNode>,
         public TerrainSettings,
         public TerrainTileHost
     {
@@ -77,5 +76,6 @@ namespace ROCKY_NAMESPACE
 
         Profile profile;
         vsg::ref_ptr<vsg::Group> tilesRoot;
+        CallbackSubs _callbacks;
     };
 }

@@ -74,7 +74,7 @@ namespace ROCKY_NAMESPACE
         std::deque<GuiRecorder> guiRecorders;
 
         //! Callback fired during each update pass.
-        AutoCallback<> onUpdate;
+        Callback<> onUpdate;
 
     public:
 

@@ -154,14 +154,14 @@ struct MainGUI : public vsg::Inherit<ImGuiNode, MainGUI>
         if (!attribution.has_value())
         {
             std::string buf;
-            const auto& layers = app.mapNode->map->layers().all();
-            for (const auto& layer : layers) {
-                if (layer->status().ok() && layer->attribution.has_value()) {
-                    if (!buf.empty())
-                        buf += ", ";
-                    buf += layer->attribution->text;
-                }
-            }
+            app.mapNode->map->each([&](auto layer)
+                {
+                    if (layer->status().ok() && layer->attribution.has_value()) {
+                        if (!buf.empty())
+                            buf += ", ";
+                        buf += layer->attribution->text;
+                    }
+                });
             attribution = buf;
         }
 
@@ -196,17 +196,18 @@ int main(int argc, char** argv)
     }
 
     // Add some default layers if the user didn't load a file:
-    auto& layers = app.mapNode->map->layers();
-    if (layers.empty())
+    auto map = app.mapNode->map;
+
+    if (map->layers().empty())
     {
         auto imagery = rocky::TMSImageLayer::create();
         imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
         imagery->attribution = { "ReadyMap(R) data courtesy of Pelican Mapping" };
-        layers.add(imagery);
+        map->add(imagery);
 
         auto elevation = rocky::TMSElevationLayer::create();
         elevation->uri = "https://readymap.org/readymap/tiles/1.0.0/116/";
-        layers.add(elevation);
+        map->add(elevation);
     }
 
     // Create the main window and the main GUI:

@@ -68,7 +68,7 @@ namespace ROCKY_NAMESPACE
         BoundCalculator calculateBound;
        
         //! Fired when expired data is about to be removed from the scene graph
-        AutoCallback<void(vsg::ref_ptr<vsg::Object>)> onExpire;
+        Callback<void(vsg::ref_ptr<vsg::Object>)> onExpire;
 
         //! Min level at which to create payloads
         unsigned minLevel = 0;
@@ -103,7 +103,7 @@ namespace ROCKY_NAMESPACE
         VSGContext _vsgcontext;
         mutable util::SentryTracker<vsg::ref_ptr<vsg::Node>> _sentry;
         mutable std::mutex _sentry_mutex;
-        CallbackToken _sentryUpdate;
+        CallbackSub _sentryUpdate;
         std::uint64_t _lastUpdateFrame = 0u;
         Profile _mapProfile;
 

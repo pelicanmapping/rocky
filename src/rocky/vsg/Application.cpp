@@ -223,7 +223,7 @@ Application::ctor(int& argc, char** argv)
 
     // Responds to changes in Transform components by updating the scene graph
     auto xform_system = TransformSystem::create(registry);
-    xform_system->onChanges([&]() { vsgcontext->requestFrame(); });
+    _subs += xform_system->onChanges([&]() { vsgcontext->requestFrame(); });
     ecsNode->add(xform_system);
 
     // Rendering components:

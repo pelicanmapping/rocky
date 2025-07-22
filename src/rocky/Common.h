@@ -80,9 +80,13 @@ namespace ROCKY_NAMESPACE
     public:
         using super = Inherit<PARENT, ME>;
         using ptr = std::shared_ptr<ME>;
+        using Ptr = ptr;
         using constptr = std::shared_ptr<const ME>;
+        using ConstPtr = constptr;
         using weakptr = std::weak_ptr<ME>;
+        using WeakPtr = weakptr;
         using constweakptr = std::weak_ptr<const ME>;
+        using ConstWeakPtr = constweakptr;
         template<typename... Args>
         static std::shared_ptr<ME> create(Args&&... args) {
             return std::make_shared<ME>(std::forward<Args>(args)...);

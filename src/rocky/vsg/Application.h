@@ -10,6 +10,7 @@
 #include <rocky/ecs/Registry.h>
 #include <rocky/vsg/ecs/ECSNode.h>
 #include <rocky/vsg/DisplayManager.h>
+#include <rocky/Callbacks.h>
 
 #include <chrono>
 #include <deque>
@@ -128,6 +129,7 @@ namespace ROCKY_NAMESPACE
         bool _viewerRealized = false;
         int _framesSinceLastRender = 0; // for non-continuous rendering
         bool _lastFrameOK = true;
+        CallbackSubs _subs;
 
         void ctor(int& argc, char** argv);
 

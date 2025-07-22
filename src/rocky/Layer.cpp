@@ -75,13 +75,6 @@ Layer::bumpRevision()
     ++_revision;
 }
 
-void
-Layer::removeCallback(UID uid)
-{
-    onLayerOpened.remove(uid);
-    onLayerClosed.remove(uid);
-}
-
 const Status&
 Layer::setStatus(const Status& status) const
 {

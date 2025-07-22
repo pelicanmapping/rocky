@@ -37,18 +37,16 @@ TerrainNode::setMap(std::shared_ptr<Map> new_map, const Profile& new_profile, VS
     // remove old hooks:
     if (map)
     {
-        map->onLayerAdded.remove(std::uintptr_t(this));
-        map->onLayerRemoved.remove(std::uintptr_t(this));
+        _callbacks.clear();
     }
 
     map = new_map;
-
     profile = new_profile;
 
     if (map)
     {
-        map->onLayerAdded([this, context](auto...) { reset(context); });
-        map->onLayerRemoved([this, context](auto...) { reset(context); });
+        _callbacks.emplace(
+            map->onLayersChanged([this, context](auto...) { reset(context); }));
     }
 
     reset(context);
