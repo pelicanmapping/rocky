@@ -394,7 +394,7 @@
 
 
 <h1 id="struct-promiseoperation">struct PromiseOperation</h1>
-<p><em>Defined at src/rocky/vsg/VSGUtils.h#371</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#436</em></p>
 <p>PromiseOperation combines a VSG operation with the Promise/Future construct so that a VSG operation can return a future result.</p>
 <p>Example: say you want to run something in VSG's update operations queue and get the result when it's done:</p>
 <p>auto op = PromiseOperation<bool>::create();   auto result = op-&gt;future();   vsg_viewer-&gt;updateOperations-&gt;add(op);   ... later, maybe during the next frame ...   auto result = result.get();</p>
@@ -404,30 +404,30 @@
 <h2 id="functions">Functions</h2>
 <h3 id="canceled">canceled</h3>
 <p><em>public _Bool canceled()</em></p>
-<p><em>Defined at src/rocky/vsg/VSGUtils.h#377</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#442</em></p>
 <p>Was the operation canceled or abandoned?</p>
 <h3 id="create">create</h3>
 <p><em>public int create(const Args &amp;... args)</em></p>
-<p><em>Defined at src/rocky/vsg/VSGUtils.h#383</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#448</em></p>
 <p>Static factory function</p>
 <h3 id="promiseoperation">PromiseOperation<T></h3>
 <p><em>public void PromiseOperation<T>(int func)</em></p>
-<p><em>Defined at src/rocky/vsg/VSGUtils.h#389</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#454</em></p>
 <p>Construct a new promise operation with the function to execute</p>
 <p><strong>func</strong> Function to execute</p>
 <h3 id="promiseoperation_1">PromiseOperation<T></h3>
 <p><em>public void PromiseOperation<T>(int promise, int func)</em></p>
-<p><em>Defined at src/rocky/vsg/VSGUtils.h#395</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#460</em></p>
 <p>Construct a new promise operation with the function to execute</p>
 <p><strong>promise</strong> User-supplied promise object to use</p>
 <p><strong>func</strong> Function to execute</p>
 <h3 id="future">future</h3>
 <p><em>public int future()</em></p>
-<p><em>Defined at src/rocky/vsg/VSGUtils.h#400</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#465</em></p>
 <p>Return the future result assocaited with this operation</p>
 <h3 id="run">run</h3>
 <p><em>public void run()</em></p>
-<p><em>Defined at src/rocky/vsg/VSGUtils.h#405</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#470</em></p>
 <p>Runs the operation (don't call this directly)</p>
 
 
