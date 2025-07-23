@@ -6,6 +6,7 @@
 #pragma once
 
 #include <rocky/vsg/ecs/MotionSystem.h>
+#include <rocky/vsg/imgui/ImGuiImage.h>
 #include <set>
 #include <random>
 #include "helpers.h"

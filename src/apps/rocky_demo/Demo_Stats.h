@@ -110,9 +110,9 @@ auto Demo_Stats = [](Application& app)
         ImGuiLTable::End();
     }
 
-    ImGui::SeparatorText("Thread Pools");
+    ImGui::SeparatorText("Job Pools");
     auto* metrics = jobs::get_metrics();
-    if (ImGuiLTable::Begin("Thread Pools"))
+    if (ImGuiLTable::Begin("Job Pools"))
     {
         for (auto m : metrics->all())
         {
@@ -133,9 +133,8 @@ auto Demo_Stats = [](Application& app)
     ImGui::SeparatorText("System");
     if (ImGuiLTable::Begin("System"))
     {
-        ImGuiLTable::Text("Loader concurrency", std::to_string(engine->settings.concurrency).c_str());
-        ImGuiLTable::Text("Resident tiles", std::to_string(engine->tiles.size()).c_str());
-        ImGuiLTable::Text("Geometry pool cache", std::to_string(engine->geometryPool.size()).c_str());
+        ImGuiLTable::Text("Terrain tiles resident", std::to_string(engine->tiles.size()).c_str());
+        ImGuiLTable::Text("Terrain geometry pool", std::to_string(engine->geometryPool.size()).c_str());
         ImGuiLTable::Text("Content cache hits", "%d%%", int(ratio * 100.0f));
         ImGui::SameLine();
         if (ImGui::Button("Clear"))

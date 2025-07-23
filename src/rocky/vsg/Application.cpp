@@ -516,10 +516,10 @@ Application::frame()
         // things like tethering to a moving node will be one frame behind
         viewer->handleEvents();
 
-        // Call the user-supplied "no render" function
-        for (auto& f : noRenderFunctions)
+        // Call the user-supplied "idle" functions
+        for (auto& idle : idleFunctions)
         {
-            if (f) (*f)();
+            if (idle) (*idle)();
         }
 
         _framesSinceLastRender++;

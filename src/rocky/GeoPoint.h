@@ -44,27 +44,28 @@ namespace ROCKY_NAMESPACE
 
         //! Geodesic distance from this point to another.
         //! This is the distance along the real-world ellipsoidal surface
-        //! of the Earth (or other body), regardless of map projection.
+        //! of the planet, regardless of map projection.
         //! It does not account for Z/altitude.
         //! @param rhs Other point
         //! @return Geodesic distance between the two points
         Distance geodesicDistanceTo(const GeoPoint& rhs) const;
 
-
+        //! Checks for equality
         bool operator == (const GeoPoint& rhs) const {
             return srs == rhs.srs && x == rhs.x && y == rhs.y && z == rhs.z;
         }
 
+        //! Checks for inequality
         bool operator != (const GeoPoint& rhs) const {
             return !operator==(rhs);
         }
 
-        //! Does this object contain a valid geo point?
+        //! Does this object represent a valid geo point?
         inline bool valid() const {
             return srs.valid();
         }
 
-        //! Return a readable string
+        //! Readable string
         std::string string() const;
 
     public:
@@ -75,16 +76,5 @@ namespace ROCKY_NAMESPACE
         GeoPoint& operator=(const GeoPoint& rhs) = default;
         GeoPoint(GeoPoint&& rhs) noexcept = default;
         GeoPoint& operator=(GeoPoint&& rhs) noexcept = default;
-    };
-
-
-    /**
-    * Base class for any object that has a position on a Map.
-    */
-    class PositionedObject
-    {
-    public:
-        //! Center position of the object
-        virtual const GeoPoint& objectPosition() const = 0;
     };
 }

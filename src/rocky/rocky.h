@@ -25,10 +25,6 @@
 #include <rocky/vsg/ecs/FeatureView.h>
 #include <rocky/vsg/ecs/EntityNode.h>
 #include <rocky/vsg/ecs/NodeGraph.h>
-
-#ifdef ROCKY_HAS_IMGUI
-#include <rocky/vsg/imgui/ImGuiIntegration.h>
-#include <rocky/vsg/imgui/ImGuiImage.h>
 #endif
 
-#endif
+// NOTE: do NOT add any imgui-related includes here

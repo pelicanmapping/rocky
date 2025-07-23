@@ -60,9 +60,9 @@ ROCKY_NAMESPACE::ImGuiIntegration::addContextGroup(
     viewData.parentRenderGraph->addChild(contextGroup);
 
     // add the event handler that will pass events from VSG to ImGui:
-    viewData.guiEventHandler = SendEventsToImGuiWrapper::create(window, contextGroup->imguiContext(), display.vsgcontext);
+    viewData.guiEventVisitor = SendEventsToImGuiWrapper::create(window, contextGroup->imguiContext(), display.vsgcontext);
     auto& handlers = display.vsgcontext->viewer->getEventHandlers();
-    handlers.insert(handlers.begin(), viewData.guiEventHandler);
+    handlers.insert(handlers.begin(), viewData.guiEventVisitor);
 
     return contextGroup;
 }
@@ -74,7 +74,9 @@ ImGuiContextGroup::add(vsg::ref_ptr<ImGuiNode> node, Application& app)
 
     auto c = imguiContext();
 
-    auto no_render_function = [c, node]()
+    // We still want to process ImGui events even if we're not rendering frames,
+    // so install an idle function to do so:
+    auto idle_function = [c, node]()
         {
             ImGui::SetCurrentContext(c);
             ImGui::NewFrame();
@@ -82,5 +84,5 @@ ImGuiContextGroup::add(vsg::ref_ptr<ImGuiNode> node, Application& app)
             ImGui::EndFrame();
         };
 
-    app.noRenderFunctions.emplace_back(std::make_shared<std::function<void()>>(no_render_function));
+    app.idleFunctions.emplace_back(std::make_shared<std::function<void()>>(idle_function));
 }

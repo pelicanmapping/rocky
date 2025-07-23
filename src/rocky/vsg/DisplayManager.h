@@ -124,8 +124,8 @@ namespace ROCKY_NAMESPACE
         {
             vsg::ref_ptr<vsg::RenderGraph> parentRenderGraph;
             vsg::ref_ptr<vsg::Group> guiContextGroup;
-            vsg::ref_ptr<vsg::Visitor> guiEventHandler;
-            std::shared_ptr<std::function<void()>> guiOfflineEventProcessor;
+            vsg::ref_ptr<vsg::Visitor> guiEventVisitor;
+            std::shared_ptr<std::function<void()>> guiIdleEventProcessor;
         };
         util::vector_map<vsg::ref_ptr<vsg::View>, ViewData> _viewData;
 

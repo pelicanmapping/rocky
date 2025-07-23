@@ -391,7 +391,7 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
                 VSGContext vsgContext = vsgcontext;
 
                 // We still need to process ImGui events even if we're not rendering the frame,
-                // so install this no-render function:
+                // so install this "idle" function:
                 auto func = [vsgContext, viewID, imguiContext]()
                     {
                         detail::RenderingState vrs{
@@ -408,8 +408,8 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
                         ImGui::EndFrame();
                     };
 
-                viewdata.guiOfflineEventProcessor = std::make_shared<std::function<void()>>(func);
-                _app->noRenderFunctions.emplace_front(viewdata.guiOfflineEventProcessor);
+                viewdata.guiIdleEventProcessor = std::make_shared<std::function<void()>>(func);
+                _app->idleFunctions.emplace_front(viewdata.guiIdleEventProcessor);
             }
         }
         else
@@ -443,16 +443,16 @@ DisplayManager::removeView(vsg::ref_ptr<vsg::View> view)
 
 #ifdef ROCKY_HAS_IMGUI
     // uninstall any gui renderer elements
-    if (viewData.guiOfflineEventProcessor && _app)
+    if (viewData.guiIdleEventProcessor && _app)
     {
-        auto& c = _app->noRenderFunctions;
-        c.erase(std::remove(c.begin(), c.end(), viewData.guiOfflineEventProcessor), c.end());
+        auto& c = _app->idleFunctions;
+        c.erase(std::remove(c.begin(), c.end(), viewData.guiIdleEventProcessor), c.end());
     }
 
-    if (viewData.guiEventHandler)
+    if (viewData.guiEventVisitor)
     {
         auto& c = vsgcontext->viewer->getEventHandlers();
-        c.erase(std::remove(c.begin(), c.end(), viewData.guiEventHandler), c.end());
+        c.erase(std::remove(c.begin(), c.end(), viewData.guiEventVisitor), c.end());
     }
 
     if (viewData.guiContextGroup)
