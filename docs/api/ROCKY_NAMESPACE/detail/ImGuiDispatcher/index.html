@@ -11,16 +11,16 @@
       
       
       
-      <link rel="icon" href="../../../assets/images/favicon.png">
+      <link rel="icon" href="../../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
     
     
       
-        <title>namespace detail - Rocky</title>
+        <title>class ImGuiDispatcher - Rocky</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.342714a4.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.342714a4.min.css">
       
       
 
@@ -39,7 +39,7 @@
       
     
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -58,7 +58,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#namespace-detail" class="md-skip">
+        <a href="#class-imguidispatcher" class="md-skip">
           Skip to content
         </a>
       
@@ -74,7 +74,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="Rocky" class="md-header__button md-logo" aria-label="Rocky" data-md-component="logo">
+    <a href="../../../.." title="Rocky" class="md-header__button md-logo" aria-label="Rocky" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -94,7 +94,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              namespace detail
+              class ImGuiDispatcher
             
           </span>
         </div>
@@ -172,7 +172,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="Rocky" class="md-nav__button md-logo" aria-label="Rocky" data-md-component="logo">
+    <a href="../../../.." title="Rocky" class="md-nav__button md-logo" aria-label="Rocky" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -190,7 +190,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href="../../../.." class="md-nav__link">
         
   
   
@@ -250,7 +250,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../README.md" class="md-nav__link">
+      <a href="../../../README.md" class="md-nav__link">
         
   
   
@@ -300,9 +300,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#records" class="md-nav__link">
+  <a href="#members" class="md-nav__link">
     <span class="md-ellipsis">
-      Records
+      Members
     </span>
   </a>
   
@@ -319,27 +319,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#systemnode_on_construct" class="md-nav__link">
+  <a href="#imguidispatcher" class="md-nav__link">
     <span class="md-ellipsis">
-      SystemNode_on_construct
+      ImGuiDispatcher
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#systemnode_on_update" class="md-nav__link">
+  <a href="#traverse" class="md-nav__link">
     <span class="md-ellipsis">
-      SystemNode_on_update
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#systemnode_on_destroy" class="md-nav__link">
-    <span class="md-ellipsis">
-      SystemNode_on_destroy
+      traverse
     </span>
   </a>
   
@@ -366,36 +357,19 @@
 
 
 
-<h1 id="namespace-detail">namespace detail</h1>
-<h2 id="records">Records</h2>
-<ul>
-<li><a href="ImGuiDispatcher/">ImGuiDispatcher</a></li>
-<li><a href="FindNodeVisitor/">FindNodeVisitor</a></li>
-<li><a href="ForEachNodeVisitor/">ForEachNodeVisitor</a></li>
-<li><a href="SystemNodeBase/">SystemNodeBase</a></li>
-<li><a href="Renderable/">Renderable</a></li>
-<li><a href="BuildInfo/">BuildInfo</a></li>
-<li><a href="BuildItem/">BuildItem</a></li>
-<li><a href="BuildBatch/">BuildBatch</a></li>
-<li><a href="EntityNodeFactory/">EntityNodeFactory</a></li>
-<li><a href="SystemNode/">SystemNode</a></li>
-<li><a href="ROCKY_EXPORT/">ROCKY_EXPORT</a></li>
-<li><a href="qualified_double/">qualified_double</a></li>
-<li><a href="RenderingState/">RenderingState</a></li>
-</ul>
+<h1 id="class-imguidispatcher">class ImGuiDispatcher</h1>
+<p><em>Defined at src/rocky/vsg/imgui/ImGuiIntegration.h#148</em></p>
+<p>Node that lives under a RenderImGui node, and invokes any GUI renderers installed on the VSGContext (for example, the one used by the WidgetSystem).</p>
+<h2 id="members">Members</h2>
+<p>public int * imguicontext</p>
+<p>public int vsgcontext</p>
 <h2 id="functions">Functions</h2>
-<h3 id="systemnode_on_construct">SystemNode_on_construct</h3>
-<p><em>void SystemNode_on_construct(int &amp; r, int e)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#235</em></p>
-<p>called by registry.emplace<T>()</p>
-<h3 id="systemnode_on_update">SystemNode_on_update</h3>
-<p><em>void SystemNode_on_update(int &amp; r, int e)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#260</em></p>
-<p>invoked by registry.replace<T>(), emplace_or_replace<T>(), or patch<T>()</p>
-<h3 id="systemnode_on_destroy">SystemNode_on_destroy</h3>
-<p><em>void SystemNode_on_destroy(int &amp; r, int e)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#275</em></p>
-<p>invoked by registry.erase<T>(), remove<T>(), or registry.destroy(e)</p>
+<h3 id="imguidispatcher">ImGuiDispatcher</h3>
+<p><em>public void ImGuiDispatcher(int * imguiContext_in, int vsgContext_in)</em></p>
+<p><em>Defined at src/rocky/vsg/imgui/ImGuiIntegration.h#154</em></p>
+<h3 id="traverse">traverse</h3>
+<p><em>public void traverse(int &amp; record)</em></p>
+<p><em>Defined at src/rocky/vsg/imgui/ImGuiIntegration.h#158</em></p>
 
 
 
@@ -444,10 +418,10 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../../../..", "features": [], "search": "../../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
       
     
   </body>
