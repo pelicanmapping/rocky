@@ -502,6 +502,14 @@ viewer->addEventHandler(rocky::MapManipulator::create(mapNode, window, camera, c
 ```
 Keep in mind that without Rocky's `Application` object, you will not get the benefits of using Rocky's ECS for map annotations.
 
+Rocky uses the ubiquitous `glm` library for math operations, whereas VulkanSceneGraph has its own math objects. Luckily they are practically identical
+and it is easy to convert between them:
+```c++
+vsg::dvec3 vsg_input(...);
+glm::dvec3 glm_value = to_glm(vsg_input); // convert from VSG to GLM
+vsg::dvec3 vsg_value = to_vsg(glm_value); // convert from GLM to VSG
+```
+
 ## Rocky and Qt
 You can embed Rocky in a Qt widget. See the `rocky_demo_qt` example for details.
 
