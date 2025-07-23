@@ -3,25 +3,40 @@
  * Copyright 2025 Pelican Mapping
  * MIT License
  */
-#include "WidgetImage.h"
+#include "ImGuiImage.h"
 
 #if defined(ROCKY_HAS_IMGUI)
 
 #include <rocky/vsg/VSGUtils.h>
-#include <imgui_impl_vulkan.h>
 
 using namespace ROCKY_NAMESPACE;
 
 
-struct WidgetImage::Internal
+struct ImGuiImage::Internal
 {
-    vsg::ref_ptr<vsg::DescriptorSet> descriptorSet;
+    // Viewer::compile will not compile a descriptorset directly, so we need a holder that
+    // implements Compilable...
+    struct Holder : public vsg::Inherit<vsg::Compilable, Holder> {
+        void compile(vsg::Context& c) override {
+            descriptorSet->compile(c);
+        }
+        vsg::ref_ptr<vsg::DescriptorSet> descriptorSet;
+    };
+
+    vsg::ref_ptr<Holder> compilable;
+
+    Internal() {
+        compilable = Holder::create();
+    }
 };
 
 
-WidgetImage::WidgetImage(Image::Ptr image) :
-    vsg::Inherit<vsg::Compilable, WidgetImage>()
+ImGuiImage::ImGuiImage(Image::Ptr image, VSGContext vsg)
 {
+    ROCKY_SOFT_ASSERT(image && vsg);
+    if (!image || !vsg)
+        return;
+
     if (_internal)
         delete _internal;
 
@@ -44,24 +59,16 @@ WidgetImage::WidgetImage(Image::Ptr image) :
 
     auto texture = vsg::DescriptorImage::create(sampler, data, 0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
-    _internal->descriptorSet = vsg::DescriptorSet::create(dsl, vsg::Descriptors{ texture });
-}
+    _internal->compilable->descriptorSet = vsg::DescriptorSet::create(dsl, vsg::Descriptors{ texture });
 
-void
-WidgetImage::compile(vsg::Context& context)
-{
-    if (_internal && _internal->descriptorSet)
-    {
-        _internal->descriptorSet->compile(context);
-        _compiled = true;
-    }
+    vsg->compile(_internal->compilable);
 }
 
 ImTextureID
-WidgetImage::id(std::uint32_t deviceID) const
+ImGuiImage::id(std::uint32_t deviceID) const
 {
-    return _compiled ?
-        reinterpret_cast<ImTextureID>(_internal->descriptorSet->vk(deviceID)) :
+    return _internal ?
+        reinterpret_cast<ImTextureID>(_internal->compilable->descriptorSet->vk(deviceID)) :
         ImTextureID{};
 }
 

@@ -6,7 +6,6 @@
 #pragma once
 
 #include <rocky/vsg/ecs/MotionSystem.h>
-#include <rocky/vsg/WidgetImage.h>
 #include <set>
 #include <random>
 #include "helpers.h"
@@ -59,7 +58,7 @@ auto Demo_Simulation = [](Application& app)
     static std::set<entt::entity> platforms;
     static Status status;
     static Simulator sim(app);
-    static vsg::ref_ptr<WidgetImage> widgetImage;
+    static ImGuiImage widgetImage;
     const unsigned num_platforms = 10000;
 
     if (status.failed())
@@ -80,8 +79,7 @@ auto Demo_Simulation = [](Application& app)
         if (status.ok())
         {
             image.value->flipVerticalInPlace();
-            widgetImage = WidgetImage::create(image.value);
-            app.vsgcontext->compile(widgetImage);
+            widgetImage = ImGuiImage(image.value, app.vsgcontext);
         }
     }
 
@@ -100,8 +98,8 @@ auto Demo_Simulation = [](Application& app)
 
                 i.begin();
 
-                i.center.x += (i.size.x / 2) - (widgetImage->size().y / 2);
-                i.center.y += (i.size.y / 2) - (widgetImage->size().y / 2);
+                i.center.x += (i.size.x / 2) - (widgetImage.size().y / 2);
+                i.center.y += (i.size.y / 2) - (widgetImage.size().y / 2);
 
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
                 ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.35f));
@@ -113,7 +111,7 @@ auto Demo_Simulation = [](Application& app)
                         if (ImGui::BeginTable("asset", 2))
                         {
                             ImGui::TableNextColumn();
-                            ImGui::Image(widgetImage->id(deviceID), widgetImage->size());
+                            ImGui::Image(widgetImage.id(deviceID), widgetImage.size());
 
                             ImGui::TableNextColumn();
                             ImGui::Text("ID:  %s", i.widget.text.c_str());

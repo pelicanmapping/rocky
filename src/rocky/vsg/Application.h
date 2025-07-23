@@ -49,7 +49,7 @@ namespace ROCKY_NAMESPACE
         bool frame();
 
         //! Queues a function to run during the next update cycle,
-        //! during which it's safe to modify the scene qgraph and the
+        //! during which it's safe to modify the scene graph and use the
         //! display manager.
         void onNextUpdate(std::function<void()> func);
 

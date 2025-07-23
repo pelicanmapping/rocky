@@ -9,10 +9,9 @@ endif()
 set(version_h ${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky/Version.h)
 
 # collect all the headers in the source directory
-file(GLOB HEADERS_CORE *.h ecs/*.h tinyxml/*.h)
-list(APPEND HEADERS_CORE Version.h.in)
+file(GLOB HEADERS_CORE *.h)
 list(APPEND HEADERS_CORE ${version_h})
-file(GLOB SOURCES_CORE *.cpp ecs/*.cpp tinyxml/*.cpp)
+file(GLOB SOURCES_CORE *.cpp tinyxml/*.cpp)
 
 macro(remove_items from_list)
     foreach(item ${ARGN})
@@ -20,8 +19,14 @@ macro(remove_items from_list)
     endforeach()
 endmacro()
 
+# headers that should not be installed b/c they are internal only
+file(GLOB HEADERS_NO_INSTALL tinyxml/*.h)
+
 file(GLOB HEADERS_CONTRIB contrib/*.h)
 file(GLOB SOURCES_CONTRIB contrib/*.cpp)
+
+file(GLOB HEADERS_ECS ecs/*.h)
+file(GLOB SOURCES_ECS ecs/*.cpp)
 
 # data files to install
 list(APPEND DATA_FILES "${PROJECT_SOURCE_DIR}/data/fonts/times.vsgb")
@@ -229,7 +234,9 @@ endif()
 
 add_library(rocky ${BUILD_TYPE}
     ${HEADERS_CORE} ${SOURCES_CORE}
+    ${HEADERS_ECS} ${SOURCES_ECS}
     ${HEADERS_CONTRIB} ${SOURCES_CONTRIB}    
+    ${HEADERS_NO_INSTALL}
     ${HEADERS_VSG} ${SOURCES_VSG}
     ${HEADERS_VSG_TERRAIN} ${SOURCES_VSG_TERRAIN}
     ${HEADERS_VSG_ECS} ${SOURCES_VSG_ECS}
@@ -259,8 +266,8 @@ include_directories(${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky)
 
 # enables folders for IDEs
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-assign_source_groups("Sources" "${CMAKE_CURRENT_SOURCE_DIR}" ${SOURCES_CORE} ${SOURCES_CONTRIB} ${SOURCES_VSG} ${SOURCES_VSG_TERRAIN} ${SOURCES_VSG_ECS} ${SOURCES_VSG_IMGUI})
-assign_source_groups("Headers" "${CMAKE_CURRENT_SOURCE_DIR}" ${HEADERS_CORE} ${HEADERS_CONTRIB} ${HEADERS_VSG} ${HEADERS_VSG_TERRAIN} ${HEADERS_VSG_ECS} ${HEADERS_VSG_IMGUI})
+assign_source_groups("Sources" "${CMAKE_CURRENT_SOURCE_DIR}" ${SOURCES_CORE} ${SOURCES_CONTRIB} ${SOURCES_ECS} ${SOURCES_VSG} ${SOURCES_VSG_TERRAIN} ${SOURCES_VSG_ECS} ${SOURCES_VSG_IMGUI})
+assign_source_groups("Headers" "${CMAKE_CURRENT_SOURCE_DIR}" ${HEADERS_CORE} ${HEADERS_CONTRIB} ${HEADERS_ECS} ${HEADERS_VSG} ${HEADERS_VSG_TERRAIN} ${HEADERS_VSG_ECS} ${HEADERS_VSG_IMGUI} ${HEADERS_NO_INSTALL})
 assign_source_groups("Shaders" "${CMAKE_CURRENT_SOURCE_DIR}" ${SHADERS_VSG})
 
 # sets up versions and position independent code that is required for unix platforms
@@ -290,6 +297,7 @@ install(
 
 # installs the default headers.
 install(FILES ${HEADERS_CORE} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rocky)
+install(FILES ${HEADERS_ECS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rocky/ecs)
 install(FILES ${HEADERS_CONTRIB} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rocky/contrib)
 install(FILES ${DATA_FILES} DESTINATION ${CMAKE_INSTALL_DATADIR}/rocky/data)
 
