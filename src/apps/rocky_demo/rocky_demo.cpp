@@ -11,7 +11,7 @@
 */
 
 #include <rocky/rocky.h>
-#include <rocky/vsg/imgui/ImGuiIntegration.h>
+#include <rocky/rocky_imgui.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -109,7 +109,7 @@ std::vector<Demo> demos =
     Demo{ "About", Demo_About }
 };
 
-struct MainGUI : public vsg::Inherit<ImGuiNode, MainGUI>
+struct MainGUI : public vsg::Inherit<ImGuiContextNode, MainGUI>
 {
     Application& app;
     MainGUI(Application& app_) : app(app_) { }
@@ -210,16 +210,14 @@ int main(int argc, char** argv)
         map->add(elevation);
     }
 
-    // Create the main window and the main GUI:
+    // Create the main window:
     auto traits = vsg::WindowTraits::create(1920, 1080, "Main Window");
     auto main_window = app.display.addWindow(traits);
 
-    // Install a manager for our main GUI:
-    auto imgui_group = ImGuiIntegration::addContextGroup(app.display, main_window);
-
-    // Hook in the main demo gui:
-    auto demo_gui = MainGUI::create(app);
-    imgui_group->add(demo_gui, app);
+    // Add our GUI:
+    auto imguiRenderer = RenderImGuiContext::create(main_window);
+    imguiRenderer->add(MainGUI::create(app));
+    app.install(imguiRenderer);
 
     // run until the user quits.
     return app.run();

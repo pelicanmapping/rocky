@@ -19,6 +19,10 @@
 #include <vsg/utils/CommandLine.h>
 #include <vsg/core/Version.h>
 
+#ifdef ROCKY_HAS_IMGUI
+#include <rocky/rocky_imgui.h>
+#endif
+
 using namespace ROCKY_NAMESPACE;
 
 namespace
@@ -551,3 +555,65 @@ Application::about() const
         buf << a << std::endl;
     return buf.str();
 }
+
+
+#ifndef ROCKY_HAS_IMGUI
+using RenderImGuiContext = vsg::Node;
+#endif
+
+void
+Application::install(vsg::ref_ptr<RenderImGuiContext> group)
+{
+    install(group, true);
+}
+
+void
+Application::install(vsg::ref_ptr<RenderImGuiContext> group, bool installAutomaticIdleFunctions)
+{
+#ifdef ROCKY_HAS_IMGUI
+    ROCKY_SOFT_ASSERT_AND_RETURN(group, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(group->window, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(group->imguiContext(), void());
+
+    auto view = group->view ? group->view : display.windowsAndViews[group->window].front();
+    ROCKY_SOFT_ASSERT_AND_RETURN(view, void());
+
+    // keep track so we can remove it later if necessary:
+    auto& viewData = display._viewData[view];
+    viewData.guiContextGroup = group;
+
+    // add the renderer to the view's render graph:
+    viewData.parentRenderGraph->addChild(group);
+
+    // add the event handler that will pass events from VSG to ImGui:
+    auto send = SendEventsToImGuiContext::create(group->window, group->imguiContext());
+    viewData.guiEventVisitor = send;
+    auto& handlers = display.vsgcontext->viewer->getEventHandlers();
+    handlers.insert(handlers.begin(), send);
+
+    // request a frame when the sender handles an ImGui event:
+    _subs += send->onEventHandled([vsgcontext(this->vsgcontext)](const vsg::UIEvent& e)
+        {
+            vsgcontext->requestFrame();
+        });
+
+    if (installAutomaticIdleFunctions)
+    {
+        // when the user adds a new GUI node, we need to add it to the idle functions
+        _subs += group->onNodeAdded([app(this), ic(group->imguiContext())](vsg::ref_ptr<ImGuiContextNode> node)
+            {
+                // add the node to the idle functions so it can render
+                auto idle_function = [ic, node]()
+                    {
+                        ImGui::SetCurrentContext(ic);
+                        ImGui::NewFrame();
+                        node->render(ic);
+                        ImGui::EndFrame();
+                    };
+
+                app->idleFunctions.emplace_back(std::make_shared<std::function<void()>>(idle_function));
+            });
+    }
+#endif
+}
+

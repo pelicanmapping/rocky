@@ -6,55 +6,33 @@
 #pragma once
 
 #include <rocky/vsg/VSGContext.h>
+#include <rocky/Callbacks.h>
 #include <rocky/vsg/imgui/SendEventsToImGui.h>
 #include <rocky/vsg/imgui/RenderImGui.h>
 #include <imgui.h>
+
+/**
+* Classes here are extensions of the vsgImGui classes to support multi-context
+* ImGui rendering. This is neccessary when crossing DLL boundaries and the like.
+*/
 
 namespace ROCKY_NAMESPACE
 {
     class Application;
     class DisplayManager;
 
-    namespace detail
-    {
-        /**
-        * Node that lives under a RenderImGui node, and invokes any GUI renderers
-        * installed on the VSGContext.
-        */
-        class GuiRendererDispatcher : public vsg::Inherit<vsg::Node, GuiRendererDispatcher>
-        {
-        public:
-            ImGuiContext* imguiContext;
-            VSGContext vsgContext;
-
-            GuiRendererDispatcher(ImGuiContext* imguiContext_in, VSGContext vsgContext_in)
-                : imguiContext(imguiContext_in), vsgContext(vsgContext_in) { }
-
-            void traverse(vsg::RecordTraversal& record) const override
-            {
-                detail::RenderingState rs{
-                    record.getCommandBuffer()->viewID,
-                    record.getFrameStamp()->frameCount
-                };
-
-                for (auto& record_gui : vsgContext->guiRecorders)
-                {
-                    record_gui(rs, imguiContext);
-                }
-            }
-        };
-    }
-
     //! wrapper for vsgImGui::SendEventsToImGui that restricts ImGui events to a single window & imgui context,
     //! of which there needs to be one per view.
-    class ROCKY_EXPORT SendEventsToImGuiWrapper : public vsg::Inherit<SendEventsToImGui, SendEventsToImGuiWrapper>
+    class ROCKY_EXPORT SendEventsToImGuiContext : public vsg::Inherit<SendEventsToImGui, SendEventsToImGuiContext>
     {
     public:
-        SendEventsToImGuiWrapper(vsg::ref_ptr<vsg::Window> window, ImGuiContext* imguiContext, VSGContext vsgContext = {}) :
-            _window(window), _imguiContext(imguiContext), _vsgContext(vsgContext)
+        SendEventsToImGuiContext(vsg::ref_ptr<vsg::Window> window, ImGuiContext* imguiContext) :
+            _window(window), _imguiContext(imguiContext)
         {
             //nop
         }
+
+        Callback<void(const vsg::UIEvent&)> onEventHandled;
 
         template<typename E>
         inline void propagate(E& e, bool forceRefresh = false)
@@ -71,9 +49,9 @@ namespace ROCKY_NAMESPACE
 
                 SendEventsToImGui::apply(e);
 
-                if (_vsgContext && (e.handled || forceRefresh))
+                if (e.handled || forceRefresh)
                 {
-                    _vsgContext->requestFrame();
+                    onEventHandled.fire(e);
                 }
             }
         }
@@ -89,7 +67,9 @@ namespace ROCKY_NAMESPACE
         void apply(vsg::FrameEvent& frame) override
         {
             if (_imguiContext)
+            {
                 ImGui::SetCurrentContext(_imguiContext);
+            }
 
             Inherit::apply(frame);
         }
@@ -104,16 +84,16 @@ namespace ROCKY_NAMESPACE
     * Node that renders ImGui commands.
     * This MUST live under a ImGuiContextGroup in order to work properly.
     */
-    class ROCKY_EXPORT ImGuiNode : public vsg::Inherit<vsg::Node, ImGuiNode>
+    class ROCKY_EXPORT ImGuiContextNode : public vsg::Inherit<vsg::Node, ImGuiContextNode>
     {
     public:
-        ImGuiNode() = default;
+        ImGuiContextNode() = default;
 
+        //! Installs the context pointer on the record traversal.
         void traverse(vsg::RecordTraversal& record) const override
         {
             ImGuiContext* imguiContext = nullptr;
             record.getValue("imgui.context", imguiContext);
-
             render(imguiContext);
         }
 
@@ -124,32 +104,69 @@ namespace ROCKY_NAMESPACE
     * Parent class for ImGuiNode's that has Application integration and represents
     * each ImGuiNode child in a separate ImGuiContext.
     */
-    class ROCKY_EXPORT ImGuiContextGroup : public vsg::Inherit<RenderImGui, ImGuiContextGroup>
+    class ROCKY_EXPORT RenderImGuiContext : public vsg::Inherit<RenderImGui, RenderImGuiContext>
     {
     public:
-        ImGuiContextGroup(const vsg::ref_ptr<vsg::Window>& window) :
-            Inherit(window)
+        //! Window ImGui will render to
+        vsg::ref_ptr<vsg::Window> window;
+        
+        //! View ImGui will render to, or null for the first view
+        vsg::ref_ptr<vsg::View> view;
+
+        //! Fired when user adds a node
+        Callback<void(vsg::ref_ptr<ImGuiContextNode>)> onNodeAdded;
+
+        //! Construct a new ImGui renderer
+        RenderImGuiContext(vsg::ref_ptr<vsg::Window> in_window, vsg::ref_ptr<vsg::View> in_view = {}) :
+            Inherit(in_window), window(in_window), view(in_view)
         {
             //nop
         }
 
-        void add(vsg::ref_ptr<ImGuiNode> node, Application& app);
+        //! Add a Gui Node to this renderer
+        void add(vsg::ref_ptr<ImGuiContextNode> node) {
+            addChild(node);
+            onNodeAdded.fire(node);
+        }
+
+        void traverse(vsg::RecordTraversal& record) const override
+        {
+            // active the context associated with this Node, and save it in the traversal
+            ImGui::SetCurrentContext(_imguiContext);
+            record.setValue("imgui.context", _imguiContext);
+
+            Inherit::traverse(record);
+        }
     };
 
-    struct ROCKY_EXPORT ImGuiIntegration
+    namespace detail
     {
-        //! Insalls an ImGuiContextGroup in a DisplayManager.
-        static vsg::ref_ptr<ImGuiContextGroup> addContextGroup(
-            DisplayManager& display,
-            vsg::ref_ptr<vsg::Window> window = {}, // default to first window
-            vsg::ref_ptr<vsg::View> view = {}); // default to first view
+        /**
+        * Node that lives under a RenderImGui node, and invokes any GUI renderers
+        * installed on the VSGContext (for example, the one used by the WidgetSystem).
+        */
+        class ImGuiDispatcher : public vsg::Inherit<vsg::Node, ImGuiDispatcher>
+        {
+        public:
+            ImGuiContext* imguicontext = nullptr;
+            VSGContext vsgcontext;
 
-        //! Installs an ImGui manager. You can add ImGuiNodes to the returned group
-        //! to render them.
-        static vsg::ref_ptr<ImGuiContextGroup> addContextGroup(
-            vsg::ref_ptr<vsg::Viewer> viewer,
-            vsg::ref_ptr<vsg::Window> window,
-            vsg::ref_ptr<vsg::RenderGraph> renderGraph,
-            VSGContext vsgContext = {});
-    };
+            ImGuiDispatcher(ImGuiContext* imguiContext_in, VSGContext vsgContext_in)
+                : imguicontext(imguiContext_in), vsgcontext(vsgContext_in) {
+            }
+
+            void traverse(vsg::RecordTraversal& record) const override
+            {
+                detail::RenderingState rs{
+                    record.getCommandBuffer()->viewID,
+                    record.getFrameStamp()->frameCount
+                };
+
+                for (auto& record_gui : vsgcontext->guiRecorders)
+                {
+                    record_gui(rs, imguicontext);
+                }
+            }
+        };
+    }
 }

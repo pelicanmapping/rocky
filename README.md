@@ -433,14 +433,14 @@ Inspecting the `WidgetInstance` structure you will find various things you can u
 ### Creating an Application GUI
 Rocky has an `ImGuiIntegration` API that makes it easy to render a GUI atop your map display.
 ```c++
-#include <rocky/vsg/imgui/ImGuiIntegration.h>
+#include <rocky/rocky_imgui.h>
 ...
 
-struct MyGUI : public vsg::Inherit<ImGuiNode, MainGUI>
+struct MyGUI : public vsg::Inherit<ImGuiContextNode, MainGUI>
 {
     void render(ImGuiContext* imguiContext) const override
     {
-        ImGui::SetCurrentContext(imguiContext);
+        ImGui::SetCurrentContext(imguiContext); // important!!
         
         if (ImGui::Begin("Main Window")) 
         {
@@ -457,9 +457,9 @@ Application app;
 auto traits = vsg::WindowTraits::create(1920, 1080, "Main Window");
 auto main_window = app.displayManager->addWindow(traits);
 
-auto imgui_group = ImGuiIntegration::addContextGroup(app.displayManager, main_window);
-
-imgui_group->add(MyGUI::create(), app);
+auto imgui_renderer = RenderImGuiContext::create(main_window);
+imgui_renderer->add(MyGUI::create());
+app.install(imgui_renderer);
 ```
 That's basically it. *Don't forget* to call `ImGui::SetCurrentContext` at the top of your `render` function!
 

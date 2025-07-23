@@ -32,13 +32,15 @@ namespace ROCKY_NAMESPACE
 
         //! Sets the layers collection
         void setLayers(const Layers& layers);
-        void setLayers(Layers&& layes) noexcept;
 
-        //! A safe copy of the layers collection
-        Layers layers() const;
+        //! Sets the layers collection
+        void setLayers(Layers&& layers) noexcept;
 
-        //! A safe copy of all the layers that match the optional cast type and the 
-        //! optional preficate function.
+        //! A safe copy of all the layers that match the optional cast type and the optional preficate function.
+        //! Examples:
+        //!     auto layers = map.layers(); // fetch all layers
+        //!     auto layers = map.layers<ImageLayer>(); // fetch all layers of type ImageLayer
+        //!     auto layers = map.layers([](auto layer) { return layer->name() == "MyLayer"; }); // fetch all layers with a given name
         template<class T = Layer, class PREDICATE = std::function<bool(const typename T::ConstPtr)>>
         inline std::vector<typename T::Ptr> layers(PREDICATE&& pred = [](typename T::ConstPtr) { return true; }) const;
 
@@ -65,7 +67,7 @@ namespace ROCKY_NAMESPACE
         std::string to_json() const;
 
     public:
-        //! Callback fired then dirty() is called.
+        //! Callback fired when the layers vector changes
         Callback<void(const Map*)> onLayersChanged;
 
     private:

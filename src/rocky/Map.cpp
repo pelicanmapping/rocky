@@ -81,13 +81,6 @@ Map::setLayers(Layers&& layers) noexcept
     onLayersChanged.fire(this);
 }
 
-Map::Layers
-Map::layers() const
-{
-    std::shared_lock lock(_mutex);
-    return _layers;
-}
-
 Revision
 Map::revision() const
 {

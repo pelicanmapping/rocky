@@ -20,7 +20,7 @@ namespace ROCKY_NAMESPACE
 
     //! Collection of callback subscriptions.
     struct CallbackSubs : public std::unordered_set<CallbackSub> {
-        inline CallbackSubs& operator += (const CallbackSub& sub) {
+        inline CallbackSubs& operator += (CallbackSub sub) {
             this->emplace(sub); return *this;
         }
     };
@@ -29,8 +29,8 @@ namespace ROCKY_NAMESPACE
     class Callback
     {
     private:
-        using TokenRef = std::weak_ptr<bool>;
-        using Entry = typename std::pair<TokenRef, std::function<F>>;
+        using SubRef = std::weak_ptr<bool>;
+        using Entry = typename std::pair<SubRef, std::function<F>>;
         mutable std::vector<Entry> entries;
         mutable std::mutex mutex;
         mutable std::atomic_bool firing = { false };
@@ -42,7 +42,7 @@ namespace ROCKY_NAMESPACE
         CallbackSub operator()(std::function<F>&& func) const {
             std::lock_guard<std::mutex> lock(mutex);
             auto sub = CallbackSub(new bool(true));
-            entries.emplace_back(TokenRef(sub), func);
+            entries.emplace_back(SubRef(sub), func);
             return sub;
         }
 

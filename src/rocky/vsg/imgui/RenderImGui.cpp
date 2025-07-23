@@ -141,11 +141,6 @@ void RenderImGui::_init(
 
     ImGui::SetCurrentContext(_imguiContext);
 
-    //if (!ImGui::GetCurrentContext())
-    //{
-    //    ImGui::CreateContext();
-    //}
-
     bool sRGB = false;
     for (auto& attachment : renderPass->attachments)
     {
@@ -230,22 +225,13 @@ void RenderImGui::_init(
 
 void RenderImGui::_uploadFonts()
 {
-    //static bool fontsUploaded = false;
-    //if (!fontsUploaded)
-    //{
-        ImGui_ImplVulkan_CreateFontsTexture();
-    //    fontsUploaded = true;
-    //}
+    ImGui_ImplVulkan_CreateFontsTexture();
 }
 
 void RenderImGui::traverse(vsg::RecordTraversal& rt) const
 {
     auto& commandBuffer = *(rt.getState()->_commandBuffer);
     if (_device.get() != commandBuffer.getDevice()) return;
-
-    // active the context associated with this Node, and save it in the traversal
-    ImGui::SetCurrentContext(_imguiContext);
-    rt.setValue("imgui.context", _imguiContext);
 
     // record all the ImGui commands to ImDrawData container
     ImGui_ImplVulkan_NewFrame();

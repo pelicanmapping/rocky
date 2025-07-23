@@ -10,7 +10,6 @@
 #include <rocky/ecs/Registry.h>
 #include <rocky/vsg/ecs/ECSNode.h>
 #include <rocky/vsg/DisplayManager.h>
-#include <rocky/vsg/DisplayManager.h>
 #include <rocky/Callbacks.h>
 
 #include <chrono>
@@ -19,6 +18,8 @@
 
 namespace ROCKY_NAMESPACE
 {
+    class RenderImGuiContext;
+
     class ROCKY_EXPORT Application
     {
     public:
@@ -70,7 +71,11 @@ namespace ROCKY_NAMESPACE
         //! Shortcut to the instance's IOOptions
         inline IOOptions& io();
 
+        //! Whether this application is still active
         inline bool active() const;
+
+        //! Installs a RenderImGuiContext that will render ImGui elements
+        void install(vsg::ref_ptr<RenderImGuiContext>);
 
     public: // public properties
 
@@ -143,6 +148,7 @@ namespace ROCKY_NAMESPACE
         void ctor(int& argc, char** argv);
 
         void setupViewer(vsg::ref_ptr<vsg::Viewer> viewer);
+        void install(vsg::ref_ptr<RenderImGuiContext>, bool installIdleFunction);
 
         friend class DisplayManager;
     };

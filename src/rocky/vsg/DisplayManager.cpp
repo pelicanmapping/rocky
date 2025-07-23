@@ -372,51 +372,46 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
 
 #ifdef ROCKY_HAS_IMGUI
 
-        auto contextGroup = ImGuiIntegration::addContextGroup(*this, window, view);
-        if (contextGroup)
+        // ImGui renderer for drawing Widgets (et al) on this view:
+
+        auto imguiRenderer = RenderImGuiContext::create(window, view);
+
+        auto imguicontext = imguiRenderer->imguiContext();
+
+        // disable the .ini file for ImGui since we don't want to save stuff for internal widgetry
+        ImGui::SetCurrentContext(imguicontext);
+        ImGui::GetIO().IniFilename = nullptr;
+
+        // Next, add a node that will dispatch the actual gui rendering callbacks
+        // (like the one installed by the WidgetSystem):
+        imguiRenderer->addChild(detail::ImGuiDispatcher::create(imguicontext, vsgcontext));
+
+        if (_app)
         {
-            auto imguiContext = contextGroup->imguiContext();
+            _app->install(imguiRenderer, false);
 
-            // disable the .ini file for ImGui since we don't want to save stuff for internal widgetry
-            ImGui::SetCurrentContext(imguiContext);
-            ImGui::GetIO().IniFilename = nullptr;
-
-            // Next, add a node that will run the actual gui rendering callbacks (like the one
-            // installed by the WidgetSystem).
-            contextGroup->addChild(detail::GuiRendererDispatcher::create(imguiContext, vsgcontext));
-
-            if (_app)
-            {
-                auto viewID = view->viewID;
-                VSGContext vsgContext = vsgcontext;
-
-                // We still need to process ImGui events even if we're not rendering the frame,
-                // so install this "idle" function:
-                auto func = [vsgContext, viewID, imguiContext]()
-                    {
-                        detail::RenderingState vrs{
-                            viewID,
-                            vsgContext->viewer->getFrameStamp()->frameCount
-                        };
-
-                        ImGui::SetCurrentContext(imguiContext);
-                        ImGui::NewFrame();
-                        for (auto& record : vsgContext->guiRecorders)
-                        {
-                            record(vrs, imguiContext);
-                        }
-                        ImGui::EndFrame();
+            // We still need to process ImGui events even if we're not rendering the frame,
+            // so install this "idle" function:
+            auto func = [vsgcontext(vsgcontext), viewID(view->viewID), imguicontext]()
+                {
+                    detail::RenderingState vrs{
+                        viewID,
+                        vsgcontext->viewer->getFrameStamp()->frameCount
                     };
 
-                viewdata.guiIdleEventProcessor = std::make_shared<std::function<void()>>(func);
-                _app->idleFunctions.emplace_front(viewdata.guiIdleEventProcessor);
-            }
-        }
-        else
-        {
-            Log()->warn("Failed to create an ImGui context for this view.");
-        }
+                    ImGui::SetCurrentContext(imguicontext);
+                    ImGui::NewFrame();
+                    for (auto& record : vsgcontext->guiRecorders)
+                    {
+                        record(vrs, imguicontext);
+                    }
+                    ImGui::EndFrame();
+                };
+
+            viewdata.guiIdleEventProcessor = std::make_shared<std::function<void()>>(func);
+            _app->idleFunctions.emplace_front(viewdata.guiIdleEventProcessor);
 #endif
+        }
     }
 }
 
