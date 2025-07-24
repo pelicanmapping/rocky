@@ -59,6 +59,7 @@ auto Demo_Model = [](Application& app)
         auto& transform = registry.emplace<Transform>(entity);
         transform.position = GeoPoint(SRS::WGS84, 50, 0, 250000);
         transform.localMatrix = glm::scale(glm::dmat4(1), glm::dvec3(scale));
+        transform.topocentric = true;
     }
 
     if (ImGuiLTable::Begin("model"))
