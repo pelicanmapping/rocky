@@ -12,15 +12,15 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.16">
     
     
       
-        <title>struct Result - Rocky</title>
+        <title>class Result - Rocky</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.342714a4.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.7e37652d.min.css">
       
       
 
@@ -58,7 +58,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#struct-result" class="md-skip">
+        <a href="#class-result" class="md-skip">
           Skip to content
         </a>
       
@@ -94,7 +94,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              struct Result
+              class Result
             
           </span>
         </div>
@@ -300,15 +300,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#members" class="md-nav__link">
-    <span class="md-ellipsis">
-      Members
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#functions" class="md-nav__link">
     <span class="md-ellipsis">
       Functions
@@ -355,6 +346,78 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#result_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      Result
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Result
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      operator=
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      operator=
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      operator=
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ok" class="md-nav__link">
+    <span class="md-ellipsis">
+      ok
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      failed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      operator bool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#operator-" class="md-nav__link">
     <span class="md-ellipsis">
       operator-&gt;
@@ -364,9 +427,18 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#operator-_1" class="md-nav__link">
+  <a href="#value" class="md-nav__link">
     <span class="md-ellipsis">
-      operator-&gt;
+      value
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error" class="md-nav__link">
+    <span class="md-ellipsis">
+      error
     </span>
   </a>
   
@@ -393,31 +465,55 @@
 
 
 
-<h1 id="struct-result">struct Result</h1>
-<p><em>Defined at src/rocky/Status.h#66</em></p>
-<p>Generic return value that wraps a value type and a Status.</p>
-<h2 id="members">Members</h2>
-<p>public T value</p>
-<p>public Status status</p>
+<h1 id="class-result">class Result</h1>
+<p><em>Defined at src/rocky/Result.h#66</em></p>
 <h2 id="functions">Functions</h2>
-<h3 id="result">Result<T></h3>
-<p><em>public void Result<T>(const T &amp; v)</em></p>
-<p><em>Defined at src/rocky/Status.h#71</em></p>
-<h3 id="result_1">Result<T></h3>
-<p><em>public void Result<T>(const Status &amp; s)</em></p>
-<p><em>Defined at src/rocky/Status.h#72</em></p>
-<h3 id="result_2">Result<T></h3>
-<p><em>public void Result<T>()</em></p>
-<p><em>Defined at src/rocky/Status.h#73</em></p>
-<h3 id="result_3">Result<T></h3>
-<p><em>public void Result<T>(const struct Status::Code &amp; c, const int &amp; m)</em></p>
-<p><em>Defined at src/rocky/Status.h#74</em></p>
+<h3 id="result">Result<T, E></h3>
+<p><em>public void Result<T, E>()</em></p>
+<p><em>Defined at src/rocky/Result.h#129</em></p>
+<p>Default constructor, default good result.</p>
+<h3 id="result_1">Result<T, E></h3>
+<p><em>public void Result<T, E>(const Result<T, E> &amp; rhs)</em></p>
+<p><em>Defined at src/rocky/Result.h#72</em></p>
+<h3 id="result_2">Result<T, E></h3>
+<p><em>public void Result<T, E>(const T &amp; good)</em></p>
+<p><em>Defined at src/rocky/Result.h#74</em></p>
+<h3 id="result_3">Result<T, E></h3>
+<p><em>public void Result<T, E>(T &amp;&amp; good)</em></p>
+<p><em>Defined at src/rocky/Result.h#77</em></p>
+<h3 id="result_4">Result<T, E></h3>
+<p><em>public void Result<T, E>(const E &amp; bad)</em></p>
+<p><em>Defined at src/rocky/Result.h#80</em></p>
+<h3 id="result_5">Result<T, E></h3>
+<p><em>public void Result<T, E>(E &amp;&amp; bad)</em></p>
+<p><em>Defined at src/rocky/Result.h#83</em></p>
+<h3 id="operator">operator=</h3>
+<p><em>public Result<T, E> &amp; operator=(const Result<T, E> &amp; rhs)</em></p>
+<p><em>Defined at src/rocky/Result.h#87</em></p>
+<h3 id="operator_1">operator=</h3>
+<p><em>public Result<T, E> &amp; operator=(const E &amp; bad)</em></p>
+<p><em>Defined at src/rocky/Result.h#97</em></p>
+<h3 id="operator_2">operator=</h3>
+<p><em>public Result<T, E> &amp; operator=(const T &amp; good)</em></p>
+<p><em>Defined at src/rocky/Result.h#101</em></p>
+<h3 id="ok">ok</h3>
+<p><em>public _Bool ok()</em></p>
+<p><em>Defined at src/rocky/Result.h#106</em></p>
+<h3 id="failed">failed</h3>
+<p><em>public _Bool failed()</em></p>
+<p><em>Defined at src/rocky/Result.h#109</em></p>
+<h3 id="operator-bool">operator bool</h3>
+<p><em>public _Bool operator bool()</em></p>
+<p><em>Defined at src/rocky/Result.h#112</em></p>
 <h3 id="operator-">operator-&gt;</h3>
 <p><em>public T * operator-&gt;()</em></p>
-<p><em>Defined at src/rocky/Status.h#75</em></p>
-<h3 id="operator-_1">operator-&gt;</h3>
-<p><em>public const T * operator-&gt;()</em></p>
-<p><em>Defined at src/rocky/Status.h#76</em></p>
+<p><em>Defined at src/rocky/Result.h#115</em></p>
+<h3 id="value">value</h3>
+<p><em>public T &amp; value()</em></p>
+<p><em>Defined at src/rocky/Result.h#118</em></p>
+<h3 id="error">error</h3>
+<p><em>public const E &amp; error()</em></p>
+<p><em>Defined at src/rocky/Result.h#121</em></p>
 
 
 
@@ -469,7 +565,7 @@
       <script id="__config" type="application/json">{"base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.50899def.min.js"></script>
       
     
   </body>

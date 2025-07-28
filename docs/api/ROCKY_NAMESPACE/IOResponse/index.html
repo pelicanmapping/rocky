@@ -12,15 +12,15 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.16">
     
     
       
-        <title>struct IOResult - Rocky</title>
+        <title>struct IOResponse - Rocky</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.342714a4.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.7e37652d.min.css">
       
       
 
@@ -58,7 +58,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#struct-ioresult" class="md-skip">
+        <a href="#struct-ioresponse" class="md-skip">
           Skip to content
         </a>
       
@@ -94,7 +94,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              struct IOResult
+              struct IOResponse
             
           </span>
         </div>
@@ -319,45 +319,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#ioresult" class="md-nav__link">
+  <a href="#ioresponse" class="md-nav__link">
     <span class="md-ellipsis">
-      IOResult
+      IOResponse
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#ioresult_1" class="md-nav__link">
+  <a href="#ioresponse_1" class="md-nav__link">
     <span class="md-ellipsis">
-      IOResult
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#propagate" class="md-nav__link">
-    <span class="md-ellipsis">
-      propagate
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#getresultcodestring" class="md-nav__link">
-    <span class="md-ellipsis">
-      getResultCodeString
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#getresultcodestring_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      getResultCodeString
+      IOResponse
     </span>
   </a>
   
@@ -365,15 +338,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#enums" class="md-nav__link">
-    <span class="md-ellipsis">
-      Enums
-    </span>
-  </a>
   
 </li>
       
@@ -393,49 +357,21 @@
 
 
 
-<h1 id="struct-ioresult">struct IOResult</h1>
-<p><em>Defined at src/rocky/IOTypes.h#132</em></p>
-<p>Return value from a read* method</p>
+<h1 id="struct-ioresponse">struct IOResponse</h1>
+<p><em>Defined at src/rocky/IOTypes.h#159</em></p>
 <h2 id="members">Members</h2>
-<p>public unsigned int ioCode</p>
+<p>public Content content</p>
 <p>public int lastModifiedTime</p>
 <p>public int duration</p>
 <p>public _Bool fromCache</p>
-<p>public int metadata</p>
+<p>public int jsonMetadata</p>
 <h2 id="functions">Functions</h2>
-<h3 id="ioresult">IOResult<T></h3>
-<p><em>public void IOResult<T>(const T &amp; result)</em></p>
-<p><em>Defined at src/rocky/IOTypes.h#156</em></p>
-<h3 id="ioresult_1">IOResult<T></h3>
-<p><em>public void IOResult<T>(const int &amp; s)</em></p>
-<p><em>Defined at src/rocky/IOTypes.h#160</em></p>
-<p>Construct a result with an error message </p>
-<h3 id="propagate">propagate</h3>
-<p><em>public IOResult propagate(const IOResult<RHS> &amp; rhs)</em></p>
-<p><em>Defined at src/rocky/IOTypes.h#165</em></p>
-<h3 id="getresultcodestring">getResultCodeString</h3>
-<p><em>public int getResultCodeString(unsigned int code)</em></p>
-<p><em>Defined at src/rocky/IOTypes.h#176</em></p>
-<p>Gets a string describing the read result </p>
-<h3 id="getresultcodestring_1">getResultCodeString</h3>
-<p><em>public int getResultCodeString()</em></p>
-<p><em>Defined at src/rocky/IOTypes.h#191</em></p>
-<h2 id="enums">Enums</h2>
-<p>| enum IOCode |</p>
-<p>--</p>
-<p>| RESULT_OK |
-| RESULT_CANCELED |
-| RESULT_NOT_FOUND |
-| RESULT_EXPIRED |
-| RESULT_SERVER_ERROR |
-| RESULT_TIMEOUT |
-| RESULT_NO_READER |
-| RESULT_READER_ERROR |
-| RESULT_UNKNOWN_ERROR |
-| RESULT_NOT_IMPLEMENTED |
-| RESULT_NOT_MODIFIED |</p>
-<p><em>Defined at src/rocky/IOTypes.h#135</em></p>
-<p>Read result codes. </p>
+<h3 id="ioresponse">IOResponse</h3>
+<p><em>public void IOResponse(const Content &amp; in_content)</em></p>
+<p><em>Defined at src/rocky/IOTypes.h#167</em></p>
+<h3 id="ioresponse_1">IOResponse</h3>
+<p><em>public void IOResponse(Content &amp;&amp; in_content)</em></p>
+<p><em>Defined at src/rocky/IOTypes.h#170</em></p>
 
 
 
@@ -487,7 +423,7 @@
       <script id="__config" type="application/json">{"base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.50899def.min.js"></script>
       
     
   </body>
