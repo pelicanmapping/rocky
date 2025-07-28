@@ -46,7 +46,7 @@ MBTiles::Driver::close()
     }
 }
 
-Status
+Result<>
 MBTiles::Driver::open(
     const std::string& name,
     const MBTiles::Options& options,
@@ -67,13 +67,13 @@ MBTiles::Driver::open(
         // For a NEW database, the profile MUST be set prior to initialization.
         if (profile.valid() == false)
         {
-            return Status(Status::ConfigurationError,
+            return Failure(Failure::ConfigurationError,
                 "Cannot create database; required Profile is missing");
         }
 
         if (!options.format.has_value())
         {
-            return Status(Status::ConfigurationError,
+            return Failure(Failure::ConfigurationError,
                 "Cannot create database; required format property is missing");
         }
 
@@ -95,8 +95,7 @@ MBTiles::Driver::open(
     int rc = sqlite3_open_v2(fullFilename.c_str(), dbptr, flags, 0L);
     if (rc != 0)
     {
-        return Status(Status::ResourceUnavailable,  util::make_string()
-            << "Database \"" << fullFilename << "\": " << sqlite3_errmsg(database));
+        return Failure(Failure::ResourceUnavailable, "Database \"" + fullFilename + "\": " + sqlite3_errmsg(database));
     }
 
     // New database setup:
@@ -165,7 +164,7 @@ MBTiles::Driver::open(
         // By this point, we require a valid tile format.
         if (_tileFormat.empty())
         {
-            return Status(Status::ConfigurationError,
+            return Failure(Failure::ConfigurationError,
                 "Required format not in metadata, nor specified in the options.");
         }
 
@@ -260,7 +259,7 @@ MBTiles::Driver::open(
     _emptyImage = Image::create(Image::R8G8B8A8_UNORM, size, size);
     _emptyImage->fill(glm::fvec4(0.0));
 
-    return StatusOK;
+    return {};
 }
 
 Result<int>
@@ -277,7 +276,7 @@ MBTiles::Driver::readMaxLevel()
     if (rc != SQLITE_OK)
     {
         Log()->warn(LC "Failed to prepare SQL: " + query + "; " + sqlite3_errmsg(database));
-        return Status::GeneralError;
+        return Failure_GeneralError;
     }
 
     rc = sqlite3_step(select);
@@ -301,13 +300,13 @@ MBTiles::Driver::read(const TileKey& key, const IOOptions& io) const
 
     if (z < (int)_minLevel)
     {
-        return Status(Status::ResourceUnavailable);
+        return Failure_ResourceUnavailable;
     }
 
     if (z > (int)_maxLevel)
     {
         //If we're at the max level, just return NULL
-        return Status(Status::ResourceUnavailable);
+        return Failure_ResourceUnavailable;
     }
 
     auto [numCols, numRows] = key.profile.numTiles(key.level);
@@ -321,8 +320,7 @@ MBTiles::Driver::read(const TileKey& key, const IOOptions& io) const
     int rc = sqlite3_prepare_v2(database, query.c_str(), -1, &select, 0L);
     if (rc != SQLITE_OK)
     {
-        return Status(Status::GeneralError, util::make_string()
-            << "Failed to prepare SQL: " << query << "; " << sqlite3_errmsg(database));
+        return Failure(Failure::GeneralError, "Failed to prepare SQL: " + query + "; " + sqlite3_errmsg(database));
     }
 
     bool valid = true;
@@ -374,21 +372,21 @@ MBTiles::Driver::read(const TileKey& key, const IOOptions& io) const
 
     if (!valid)
     {
-        result = Status(Status::GeneralError, errorMessage);
+        result = Failure(Failure::GeneralError, errorMessage);
     }
 
     return result;
 }
 
 
-Status
+Result<>
 MBTiles::Driver::write(const TileKey& key, std::shared_ptr<Image> input, const IOOptions& io) const
 {
     if (!key.valid() || !input)
-        return Status(Status::AssertionFailure);
+        return Failure_AssertionFailure;
 
     if (!io.services.writeImageToStream)
-        return Status(Status::ServiceUnavailable);
+        return Failure_ServiceUnavailable;
 
     std::scoped_lock lock(_mutex);
 
@@ -410,12 +408,10 @@ MBTiles::Driver::write(const TileKey& key, std::shared_ptr<Image> input, const I
         );
     }
 
-    Status wr = io.services.writeImageToStream(image_to_write, buf, _options.format, io);
+    auto wr = io.services.writeImageToStream(image_to_write, buf, _options.format, io);
 
     if (wr.failed())
-    {
-        return wr;
-    }
+        return wr.error();
 
     std::string value = buf.str();
 
@@ -426,7 +422,7 @@ MBTiles::Driver::write(const TileKey& key, std::shared_ptr<Image> input, const I
         std::ostringstream output;
         if (!util::ZLibCompressor().compress(value, output))
         {
-            return Status(Status::GeneralError, "Compressor failed");
+            return Failure(Failure::GeneralError, "Compressor failed");
         }
         value = output.str();
     }
@@ -448,8 +444,8 @@ MBTiles::Driver::write(const TileKey& key, std::shared_ptr<Image> input, const I
     int rc = sqlite3_prepare_v2(database, query.c_str(), -1, &insert, 0L);
     if (rc != SQLITE_OK)
     {
-        return Status(Status::GeneralError, util::make_string()
-            << "Failed to prepare SQL: " << query << "; " << sqlite3_errmsg(database));
+        auto a = "Failed to prepare SQL: " + query + "; " + sqlite3_errmsg(database);
+        return Failure(Failure::GeneralError, a);
     }
 
     // bind parameters:
@@ -469,11 +465,8 @@ MBTiles::Driver::write(const TileKey& key, std::shared_ptr<Image> input, const I
 
     if (SQLITE_OK != rc && SQLITE_DONE != rc)
     {
-#if SQLITE_VERSION_NUMBER >= 3007015
-        return Status(Status::GeneralError, util::make_string() << "Failed query: " << query << "(" << rc << ")" << sqlite3_errstr(rc) << "; " << sqlite3_errmsg(database));
-#else
-        return Status(Status::GeneralError, make_string() << "Failed query: " << query << "(" << rc << ")" << rc << "; " << sqlite3_errmsg(database));
-#endif
+        auto a = "Failed query: " + query + "(" + std::to_string(rc) + ")" + sqlite3_errstr(rc) + "; " + sqlite3_errmsg(database);
+        return Failure(Failure::GeneralError, a);
         ok = false;
     }
 
@@ -489,7 +482,7 @@ MBTiles::Driver::write(const TileKey& key, std::shared_ptr<Image> input, const I
         _minLevel = key.level;
     }
 
-    return StatusOK;
+    return {};
 }
 
 bool

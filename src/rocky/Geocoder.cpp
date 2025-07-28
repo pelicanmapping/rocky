@@ -41,11 +41,11 @@ Geocoder::geocode(const std::string& location, IOOptions& io) const
     }
 
     if (result.empty())
-        return Status(Status::ResourceUnavailable, "No results found");
+        return Failure(Failure::ResourceUnavailable, "No results found");
     else
         return result;
 
 #else
-    return Status(Status::ServiceUnavailable, "Geocoder service is not available");
+    return Failure(Failure::ServiceUnavailable, "Geocoder service is not available");
 #endif
 }

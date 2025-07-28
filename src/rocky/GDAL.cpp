@@ -379,7 +379,7 @@ GDAL::Driver::~Driver()
 }
 
 // Open the data source and prepare it for reading
-Status
+Result<>
 GDAL::Driver::open(
     const std::string& name,
     const GDAL::Options* layer,
@@ -403,7 +403,7 @@ GDAL::Driver::open(
         (!layer->uri.has_value() || layer->uri->empty()) &&
         (!layer->connection.has_value() || layer->connection->empty()))
     {
-        return Status(Status::ConfigurationError, "No URL, directory, or connection string specified");
+        return Failure(Failure::ConfigurationError, "No URL, directory, or connection string specified");
     }
 
     // source connection:
@@ -440,7 +440,7 @@ GDAL::Driver::open(
 
         if (input.empty())
         {
-            return Status(Status::ResourceUnavailable, "Could not find any valid input.");
+            return Failure(Failure::ResourceUnavailable, "Could not find any valid input.");
         }
 
         // Resolve the pathname...
@@ -474,7 +474,7 @@ GDAL::Driver::open(
 
         if (!_srcDS)
         {
-            return Status(Status::ResourceUnavailable, "Failed to open " + input);
+            return Failure(Failure::ResourceUnavailable, "Failed to open " + input);
         }
     }
     else
@@ -510,15 +510,15 @@ GDAL::Driver::open(
             .generic_string();
 
         auto rr = URI(prjLocation).read(io); // TODO io
-        if (rr.status.ok() && !rr.value.data.empty())
+        if (rr.ok() && !rr.value().content.data.empty())
         {
-            src_srs = SRS(util::trim(rr.value.data));
+            src_srs = SRS(util::trim(rr.value().content.data));
         }
     }
 
     if (!src_srs.valid())
     {
-        return Status(Status::ResourceUnavailable,
+        return Failure(Failure::ResourceUnavailable,
             "Dataset has no spatial reference information (" + source + ")");
     }
 
@@ -540,7 +540,7 @@ GDAL::Driver::open(
         _profile = Profile(src_srs);
         if (!_profile.valid())
         {
-            return Status(Status::ResourceUnavailable,
+            return Failure(Failure::ResourceUnavailable,
                 "Cannot create geographic Profile from dataset's spatial reference information: " +
                 std::string(src_srs.name()));
         }
@@ -589,7 +589,7 @@ GDAL::Driver::open(
 
     if (!_warpedDS)
     {
-        return Status("Failed to create a final sampling dataset");
+        return Failure("Failed to create a final sampling dataset");
     }
 
     // calcluate the inverse of the geotransform:
@@ -612,7 +612,7 @@ GDAL::Driver::open(
 
         if (!_profile.valid())
         {
-            return Status("Cannot create projected Profile from dataset's warped spatial reference WKT: " + warpedSRSWKT);
+            return Failure("Cannot create projected Profile from dataset's warped spatial reference WKT: " + warpedSRSWKT);
         }
     }
 
@@ -710,7 +710,7 @@ GDAL::Driver::open(
     _linearUnits = 1.0; // srs.getReportedLinearUnits();
 
     _open = true;
-    return StatusOK;
+    return {};
 }
 
 bool
@@ -786,12 +786,12 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
 {
     if (maxDataLevel.has_value() && key.level > maxDataLevel)
     {
-        return Status(Status::ResourceUnavailable);
+        return Failure_ResourceUnavailable;
     }
 
     if (io.canceled())
     {
-        return Status(Status::ResourceUnavailable);
+        return Failure_OperationCanceled;
     }
 
     std::shared_ptr<Image> image;
@@ -806,7 +806,7 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
     rocky::GeoExtent intersection = key.extent().intersectionSameSRS(_extents);
     if (!intersection.valid())
     {
-        return Status(Status::ResourceUnavailable);
+        return Failure_ResourceUnavailable;
     }
 
     double west = intersection.xmin();
@@ -873,7 +873,7 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
     // Return if parameters are out of range.
     if (src_width <= 0 || src_height <= 0 || target_width <= 0 || target_height <= 0)
     {
-        return Status(Status::ResourceUnavailable);
+        return Failure_ResourceUnavailable;
     }
 
     GDALRasterBand* bandRed = detail::findBandByColorInterp(_warpedDS, GCI_RedBand);
@@ -1158,9 +1158,7 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
             + _layer->uri->full()
             + ".  Cannot create image. ");
 
-        return Status(
-            Status::ResourceUnavailable,
-            "Could not find red, green, blue, or gray band");
+        return Failure(Failure::ResourceUnavailable, "Could not find red, green, blue, or gray band");
     }
 
     return image;
@@ -1326,12 +1324,12 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
 {
     if (maxDataLevel.has_value() && key.level > maxDataLevel)
     {
-        return Status(Status::ResourceUnavailable);
+        return Failure_ResourceUnavailable;
     }
 
     if (io.canceled())
     {
-        return Status(Status::ResourceUnavailable);
+        return Failure_ResourceUnavailable;
     }
 
     std::shared_ptr<Heightfield> hf;
@@ -1346,7 +1344,7 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
     rocky::GeoExtent intersection = key.extent().intersectionSameSRS(_extents);
     if (!intersection.valid())
     {
-        return Status(Status::ResourceUnavailable);
+        return Failure_ResourceUnavailable;
     }
 
     // Allocate the heightfield

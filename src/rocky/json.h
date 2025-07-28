@@ -5,7 +5,7 @@
  */
 #pragma once
 #include "Common.h"
-#include "Status.h"
+#include "Result.h"
 
 #if !defined(ROCKY_BUILDING_SDK) && !defined(ROCKY_EXPOSE_JSON_FUNCTIONS)
 #error json.h is an internal header file; do not include it directly :)
@@ -53,11 +53,11 @@ namespace ROCKY_NAMESPACE
     //! extent json with a status so we can check for parsing errors
     struct json_parse_result : public json
     {
-        Status status;
-        json_parse_result() : json(json::object()), status(StatusOK) {}
-        json_parse_result(const json& j) : json(j), status(StatusOK) {}
-        json_parse_result(const Status& s) : json(json::object()), status(s) {}
-        json_parse_result(const json& j, const Status& s) : json(j), status(s) {}
+        Result<> status;
+        json_parse_result() : json(json::object()) {}
+        json_parse_result(const json& j) : json(j) {}
+        json_parse_result(const Failure& f) : json(json::object()), status(f) {}
+        json_parse_result(const json& j, const Failure& f) : json(j), status(f) {}
     };
 
     inline json_parse_result parse_json(std::string_view input) {
@@ -66,7 +66,7 @@ namespace ROCKY_NAMESPACE
                 return json::parse(input);
             }
             JSON_CATCH {
-                return Status("JSON parsing error");
+                return Failure("JSON parsing error");
             }
         }
         return json::object();

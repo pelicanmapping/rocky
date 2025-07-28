@@ -125,9 +125,16 @@ namespace
 #if 1
         const char* icon_location = "https://readymap.org/readymap/filemanager/download/public/icons/airport.png";
         auto image = io.services.readImageFromURI(icon_location, io);
-        auto imageData = util::moveImageToVSG(image.value);
-        auto imageInfo = vsg::ImageInfo::create(sampler, imageData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        return imageInfo;
+        if (image.ok())
+        {
+            auto imageData = util::moveImageToVSG(image.value());
+            auto imageInfo = vsg::ImageInfo::create(sampler, imageData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            return imageInfo;
+        }
+        else
+        {
+            return {};
+        }
 #else
         const int d = 16;
         auto image = Image::create(Image::R8G8B8A8_UNORM, d, d);
@@ -210,7 +217,7 @@ IconSystem2Node::buildCullStage(VSGContext& context)
     auto compute_shader = createCullingShader(context);
     if (!compute_shader)
     {
-        status = Status(Status::ResourceUnavailable,
+        status = Failure(Failure::ResourceUnavailable,
             "Icon compute shaders are missing or corrupt. "
             "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
 
@@ -282,7 +289,7 @@ IconSystem2Node::buildRenderStage(VSGContext& context)
     auto shader_set = createRenderingShaderSet(context);
     if (!shader_set)
     {
-        status = Status(Status::ResourceUnavailable,
+        status = Failure(Failure::ResourceUnavailable,
             "Icon shaders are missing or corrupt. "
             "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
         return;

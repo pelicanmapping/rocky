@@ -6,7 +6,7 @@
 #pragma once
 
 #include <rocky/Color.h>
-#include <rocky/Status.h>
+#include <rocky/Result.h>
 #include <rocky/vsg/Common.h>
 
 namespace ROCKY_NAMESPACE
@@ -20,7 +20,7 @@ namespace ROCKY_NAMESPACE
         TerrainSettings() = default;
 
         //! deserialize from JSON
-        Status from_json(const std::string& JSON);
+        Result<> from_json(const std::string& JSON);
 
         //! serialize to JSON
         std::string to_json() const;

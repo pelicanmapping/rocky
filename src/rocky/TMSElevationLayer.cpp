@@ -49,25 +49,25 @@ TMSElevationLayer::to_json() const
     return j.dump();
 }
 
-Status
+Result<>
 TMSElevationLayer::openImplementation(const IOOptions& io)
 {
-    Status parent = super::openImplementation(io);
+    auto parent = super::openImplementation(io);
     if (parent.failed())
         return parent;
 
     Profile driver_profile = profile;
 
     DataExtentList dataExtents;
-    Status status = _driver.open(
+    auto r = _driver.open(
         uri,
         driver_profile,
         format,
         dataExtents,
         io);
 
-    if (status.failed())
-        return status;
+    if (r.failed())
+        return r;
 
     if (driver_profile != profile)
     {
@@ -82,7 +82,7 @@ TMSElevationLayer::openImplementation(const IOOptions& io)
 
     setDataExtents(dataExtents);
 
-    return StatusOK;
+    return {};
 }
 
 void
@@ -95,32 +95,32 @@ TMSElevationLayer::closeImplementation()
 Result<GeoHeightfield>
 TMSElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOOptions& io) const
 {
-    if (!isOpen())
-        return status();
+    if (status().failed())
+        return status().error();
 
     // request
     auto r = _driver.read(key, invertY, encoding == Encoding::MapboxRGB, uri->context(), io);
 
-    if (r.status.ok())
+    if (r.ok())
     {
-        if (r.value->pixelFormat() == Image::R32_SFLOAT)
+        if (r.value()->pixelFormat() == Image::R32_SFLOAT)
         {
-            return GeoHeightfield(Heightfield::create(r.value.get()), key.extent());
+            return GeoHeightfield(Heightfield::create(r.value().get()), key.extent());
         }
         else // assume Image::R8G8B8_UNORM?
         {
-            auto hf = decodeRGB(r.value);
+            auto hf = decodeRGB(r.value());
             return GeoHeightfield(hf, key.extent());
         }
     }
     else
     {
-        if (r.status.code == Status::ServiceUnavailable)
+        if (r.error().type == Failure::ServiceUnavailable)
         {
-            setStatus(r.status);
-            Log()->warn(LC "Layer \"" + name() + "\" : " + r.status.message);
+            fail(r.error());
+            Log()->warn(LC "Layer \"" + name() + "\" : " + r.error().message);
         }
 
-        return r.status;
+        return r.error();
     }
 }

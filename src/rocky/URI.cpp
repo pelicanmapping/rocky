@@ -320,17 +320,17 @@ namespace
             {
                 if (response.status == 404) // NOT FOUND (permanent)
                 {
-                    return Status(Status::ResourceUnavailable, request.url);
+                    return Failure(Failure::ResourceUnavailable, request.url);
                 }
                 else
                 {
-                    return Status(Status::ResourceUnavailable, std::to_string(response.status));
+                    return Failure(Failure::ResourceUnavailable, std::to_string(response.status));
                 }
             }
         }
         else
         {
-            return Status(Status::ServiceUnavailable, errorBuf);
+            return Failure(Failure::ServiceUnavailable, errorBuf);
         }
 
         return response;
@@ -338,7 +338,7 @@ namespace
 #endif
 
 #ifdef ROCKY_HAS_HTTPLIB
-    IOResult<HTTPResponse> http_get_httplib(const HTTPRequest& request, const IOOptions& io)
+    Result<HTTPResponse> http_get_httplib(const HTTPRequest& request, const IOOptions& io)
     {
         httplib::Headers headers;
 
@@ -358,7 +358,7 @@ namespace
         std::string query_text;
 
         if (!split_url(request.url, proto_host_port, path, query_text))
-            return Status(Status::ConfigurationError);
+            return Failure_ConfigurationError;
 
         httplib::Params params;
         httplib::detail::parse_query_text(query_text, params);
@@ -385,7 +385,7 @@ namespace
             for(;;)
             {
                 if (io.canceled())
-                    return StatusOK;
+                    return Failure_OperationCanceled;
                 
                 auto t0 = std::chrono::steady_clock::now();
                 auto res = client.Get(path, params, headers);
@@ -403,7 +403,7 @@ namespace
 
                     if (res->status == 404) // NOT FOUND (permanent)
                     {
-                        return Status(Status::ResourceUnavailable, httplib::status_message(res->status));
+                        return Failure(Failure::ResourceUnavailable, httplib::status_message(res->status));
                     }
                     else if (res->status == 429) // TOO MANY REQUESTS (rate limiting)
                     {
@@ -419,12 +419,12 @@ namespace
                         else
                         {
                             Log()->info(LC + std::string("Retries exhausted with ") + proto_host_port + path);
-                            return Status(Status::ResourceUnavailable, httplib::status_message(res->status));
+                            return Failure(Failure::ResourceUnavailable, httplib::status_message(res->status));
                         }
                     }
                     else if (res->status != 200)
                     {
-                        return Status(Status::GeneralError, httplib::status_message(res->status));
+                        return Failure(Failure::GeneralError, httplib::status_message(res->status));
                     }
 
                     response.status = res->status;
@@ -452,28 +452,28 @@ namespace
                         continue;
                     }
 
-                    return Status(Status::ServiceUnavailable, httplib::to_string(res.error()));
+                    return Failure(Failure::ServiceUnavailable, httplib::to_string(res.error()));
                 }
             }
 
         }
         catch (std::exception& ex)
         {
-            return Status(Status::GeneralError, ex.what());
+            return Failure(Failure::GeneralError, ex.what());
         }
 
         return std::move(response);
     }
 #endif
 
-    IOResult<HTTPResponse> http_get(const HTTPRequest& request, const IOOptions& io)
+    Result<HTTPResponse> http_get(const HTTPRequest& request, const IOOptions& io)
     {
 #if defined(ROCKY_HAS_HTTPLIB)
         return http_get_httplib(request, io);
 #elif defined(ROCKY_HAS_CURL)
         return http_get_curl(request, io);
 #else
-        return Status(Status::ServiceUnavailable, "HTTP not supported without curl or httplib");
+        return Failure(Failure::ServiceUnavailable, "HTTP not supported without curl or httplib");
 #endif
     }
 }
@@ -578,8 +578,8 @@ URI::findRotation()
     }
 }
 
-IOResult<Content>
-URI::read(const IOOptions& io) const
+
+auto URI::read(const IOOptions& io) const -> Result<IOResponse>
 {
     // protect against multiple threads trying to read the same URI at the same time
     util::ScopedGate<std::string> gate(io.uriGate, full());
@@ -587,7 +587,7 @@ URI::read(const IOOptions& io) const
     if (io.services.contentCache)
     {
         auto cached = io.services.contentCache->get(full());
-        if (cached.has_value() && cached->status.ok())
+        if (cached.has_value() && cached->ok())
         {
             if (httpDebug)
             {
@@ -596,8 +596,8 @@ URI::read(const IOOptions& io) const
                     + "% (" + full() + ")");
             }
 
-            IOResult<Content> result(cached->value);
-            result.fromCache = true;
+            Result<IOResponse> result(cached->value());
+            result->fromCache = true;
             return result;
         }
     }
@@ -614,7 +614,7 @@ URI::read(const IOOptions& io) const
         std::stringstream buf;
         buf << in.rdbuf() << std::flush;
         content.data = buf.str();
-        content.contentType = contentType;
+        content.type = contentType;
         in.close();
     }
 
@@ -639,16 +639,16 @@ URI::read(const IOOptions& io) const
 
         // make the actual request:
         auto r = http_get(request, io);
-        if (r.status.failed())
+        if (r.failed())
         {
-            return IOResult<Content>::propagate(r);
+            return r.error();
         }
 
-        std::string contentType = findHeader(r.value.headers, "Content-Type");
+        std::string contentType = findHeader(r.value().headers, "Content-Type");
 
         if (contentType.empty())
         {
-            contentType = inferContentType(r.value.data);
+            contentType = inferContentType(r.value().data);
         }
 
         if (contentType.empty())
@@ -658,14 +658,12 @@ URI::read(const IOOptions& io) const
             contentType = inferContentTypeFromFileExtension(url_path);
         }
 
-        content = {
-            contentType,
-            r.value.data
-        };
+        content.type = std::move(contentType);
+        content.data = std::move(r.value().data);
     }
     else
     {
-        return Status(Status::ResourceUnavailable, full());
+        return Failure(Failure::ResourceUnavailable, full());
     }
 
     if (io.services.contentCache)
@@ -673,7 +671,7 @@ URI::read(const IOOptions& io) const
         io.services.contentCache->put(full(), Result<Content>(content));
     }
 
-    return content;
+    return IOResponse(content);
 }
 
 bool
@@ -684,16 +682,6 @@ URI::isRemote() const
         util::startsWith(temp, "http://") ||
         util::startsWith(temp, "https://");
 }
-
-//std::string
-//URI::urlEncode(const std::string& value)
-//{
-//#ifdef ROCKY_HAS_HTTPLIB
-//    return httplib::encode_uri(value);
-//#else
-//    return {};
-//#endif
-//}
 
 void
 URI::setReferrer(const std::string& value)

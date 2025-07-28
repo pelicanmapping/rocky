@@ -26,7 +26,7 @@ namespace ROCKY_NAMESPACE
 
     protected: // Layer
 
-        Status openImplementation(const IOOptions& io) override;
+        Result<> openImplementation(const IOOptions& io) override;
 
         void closeImplementation() override;
 

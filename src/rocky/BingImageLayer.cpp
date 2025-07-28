@@ -62,10 +62,10 @@ BingImageLayer::to_json() const
     return j.dump();
 }
 
-Status
+Result<>
 BingImageLayer::openImplementation(const IOOptions& io)
 {
-    Status parent = super::openImplementation(io);
+    auto parent = super::openImplementation(io);
     if (parent.failed())
         return parent;
 
@@ -77,7 +77,7 @@ BingImageLayer::openImplementation(const IOOptions& io)
 
     ROCKY_TODO("When disk cache is implemented, disable it here as it violates the ToS");
 
-    return StatusOK;
+    return {};
 }
 
 void
@@ -108,47 +108,45 @@ BingImageLayer::createImageImplementation(const TileKey& key, const IOOptions& i
 
     // Bing is a 2-step process. First fetch the metadata for this tile:
     auto metaFetch = metadataURI.read(io);
-    if (metaFetch.status.ok())
+    if (metaFetch.ok())
     {
-        auto json = parse_json(metaFetch->data);
+        auto json = parse_json(metaFetch->content.data);
         const auto& vintage = json["/resourceSets/0/resources/0/vintageEnd"_json_pointer];
         const auto& jsonURI = json["/resourceSets/0/resources/0/imageUrl"_json_pointer];
         if (!vintage.empty() && !jsonURI.empty())
             imageURI = URI(jsonURI.get<std::string>(), imageryMetadataUrl->context());
         else
-            return Status(Status::ResourceUnavailable, "No data");
+            return Failure(Failure::ResourceUnavailable, "No data");
     }
     else
     {
-        if (metaFetch.status.message == "Unauthorized")
+        if (metaFetch.error().message == "Unauthorized")
         {
-            setStatus(metaFetch.status);
+            fail(metaFetch.error());
         }
-        return metaFetch.status;
+        return metaFetch.error();
     }
 
     // Now fetch the actual image:
     auto fetch = imageURI.read(io);
-    if (fetch.status.failed())
+    if (fetch.failed())
     {
-        return fetch.status;
+        return fetch.error();
     }
 
     // Decode the stream:
-    std::istringstream buf(fetch->data);
-    auto image_rr = io.services.readImageFromStream(buf, fetch->contentType, io);
+    std::istringstream stream(fetch->content.data);
+    auto image_rr = io.services.readImageFromStream(stream, fetch->content.type, io);
 
-    if (image_rr.status.failed())
-    {
-        return image_rr.status;
-    }
+    if (image_rr.failed())
+        return image_rr.error();
 
-    auto image = image_rr.value;
+    auto image = image_rr.value();
 
     if (image)
         return GeoImage(image, key.extent());
     else
-        return Status_ResourceUnavailable;
+        return Failure_ResourceUnavailable;
 }
 
 #endif // ROCKY_HAS_BING

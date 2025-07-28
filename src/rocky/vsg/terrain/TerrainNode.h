@@ -8,7 +8,7 @@
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/terrain/TerrainSettings.h>
 #include <rocky/vsg/terrain/TerrainTileHost.h>
-#include <rocky/Status.h>
+#include <rocky/Result.h>
 #include <rocky/Profile.h>
 #include <vsg/nodes/Group.h>
 
@@ -30,13 +30,13 @@ namespace ROCKY_NAMESPACE
         TerrainNode() = default;
 
         //! Map to render, and profile to render it in
-        const Status& setMap(std::shared_ptr<Map> new_map, const Profile& profile, VSGContext& cx);
+        const Result<>& setMap(std::shared_ptr<Map> new_map, const Profile& profile, VSGContext& cx);
 
         //! Clear out the terrain and rebuild it from the map model
         void reset(VSGContext context);
 
         //! Deserialize from JSON
-        Status from_json(const std::string& JSON, const IOOptions& io);
+        Result<> from_json(const std::string& JSON, const IOOptions& io);
 
         //! Serialize to JSON
         std::string to_json() const;
@@ -46,7 +46,7 @@ namespace ROCKY_NAMESPACE
         bool update(VSGContext context);
 
         //! Status of this node; check that's it OK before using
-        Status status;
+        Result<> status;
 
         //! Map containing data model for the terrain
         std::shared_ptr<Map> map;
@@ -72,7 +72,7 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        Status createRootTiles(VSGContext&);
+        Result<> createRootTiles(VSGContext&);
 
         Profile profile;
         vsg::ref_ptr<vsg::Group> tilesRoot;

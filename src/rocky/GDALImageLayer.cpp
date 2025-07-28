@@ -21,7 +21,7 @@ ROCKY_ADD_OBJECT_FACTORY(GDALImage,
 namespace
 {
     template<typename T>
-    Status openOnThisThread(
+    Result<> openOnThisThread(
         const T* layer,
         GDAL::Driver& driver,
         Profile* profile,
@@ -33,7 +33,7 @@ namespace
             driver.maxDataLevel = layer->maxDataLevel;
         }
 
-        Status status = driver.open(
+        auto status = driver.open(
             layer->name(),
             layer,
             layer->tileSize,
@@ -50,7 +50,7 @@ namespace
             *profile = driver.profile();
         }
 
-        return StatusOK;
+        return status;
     }
 }
 
@@ -99,10 +99,10 @@ GDALImageLayer::to_json() const
     return j.dump();
 }
 
-Status
+Result<>
 GDALImageLayer::openImplementation(const IOOptions& io)
 {
-    Status parent = super::openImplementation(io);
+    auto parent = super::openImplementation(io);
     if (parent.failed())
         return parent;
 
@@ -116,8 +116,7 @@ GDALImageLayer::openImplementation(const IOOptions& io)
 
     DataExtentList dataExtents;
 
-    Status s = openOnThisThread(this, driver, &new_profile, &dataExtents, io);
-
+    auto s = openOnThisThread(this, driver, &new_profile, &dataExtents, io);
     if (s.failed())
         return s;
 
@@ -145,24 +144,29 @@ Result<GeoImage>
 GDALImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io) const
 {
     if (status().failed())
-        return status();
+        return status().error();
 
     auto& driver = _drivers.value();
     if (!driver.isOpen())
     {
         // calling openImpl with NULL params limits the setup
         // since we already called this during openImplementation
-        openOnThisThread(this, driver, nullptr, nullptr, io);
+        auto r = openOnThisThread(this, driver, nullptr, nullptr, io);
+        if (r.failed())
+        {            
+            fail(r.error());
+            return r.error();
+        }
     }
 
     if (driver.isOpen())
     {
         auto image = driver.createImage(key, tileSize, io);
-        if (image.value)
-            return GeoImage(image.value, key.extent());
+        if (image.ok())
+            return GeoImage(image.value(), key.extent());
     }
 
-    return Status_ResourceUnavailable;
+    return Failure_ResourceUnavailable;
 }
 
 #endif // ROCKY_HAS_GDAL

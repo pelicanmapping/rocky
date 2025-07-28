@@ -7,7 +7,7 @@
 #include <rocky/Common.h>
 #ifdef ROCKY_HAS_MBTILES
 
-#include <rocky/Status.h>
+#include <rocky/Result.h>
 #include <rocky/URI.h>
 #include <rocky/TileKey.h>
 
@@ -41,7 +41,7 @@ namespace ROCKY_NAMESPACE
             Driver();
             ~Driver();
 
-            Status open(
+            Result<> open(
                 const std::string& name,
                 const Options& options,
                 bool isWritingRequested,
@@ -55,7 +55,7 @@ namespace ROCKY_NAMESPACE
                 const TileKey& key,
                 const IOOptions& io) const;
 
-            Status write(
+            Result<> write(
                 const TileKey& key,
                 std::shared_ptr<Image> image,
                 const IOOptions& io) const;

@@ -73,14 +73,13 @@ namespace
         doc.Parse(xml.c_str());
         if (doc.Error())
         {
-            return Status(Status::GeneralError, util::make_string()
-                << "XML parse error at row " << doc.ErrorRow()
-                << " col " << doc.ErrorCol());
+            return Failure(Failure::GeneralError, "XML parse error at row " + std::to_string(doc.ErrorRow())
+                + " col " + std::to_string(doc.ErrorCol()));
         }
 
         auto tilemapxml = find("tilemap", doc.RootElement());
         if (!tilemapxml)
-            return Status(Status::ConfigurationError, "XML missing TileMap element");
+            return Failure(Failure::ConfigurationError, "XML missing TileMap element");
 
         tilemapxml->QueryStringAttribute("version", &tilemap.version);
         tilemapxml->QueryStringAttribute("tilemapservice", &tilemap.tileMapService);
@@ -564,19 +563,19 @@ ROCKY_NAMESPACE::TMS::readTileMap(const URI& location, const IOOptions& io)
 {
     auto r = location.read(io);
 
-    if (r.status.failed())
-        return r.status;
+    if (r.failed())
+        return r.error();
 
-    auto tilemap = parseTileMapFromXML(r->data);
+    auto tilemap = parseTileMapFromXML(r->content.data);
 
-    if (tilemap.status.ok())
+    if (tilemap.ok())
     {
-        tilemap.value.filename = location.full();
+        tilemap.value().filename = location.full();
         
         // remote locations should have a trailing slash
-        if (location.isRemote() && tilemap.value.filename.back() != '/')
+        if (location.isRemote() && tilemap.value().filename.back() != '/')
         {
-            tilemap.value.filename += '/';
+            tilemap.value().filename += '/';
         }
     }
 
@@ -591,13 +590,13 @@ TMS::Driver::close()
     tileMap = {};
 }
 
-Status
+Result<>
 TMS::Driver::open(const URI& uri, Profile& profile, const std::string& format, DataExtentList& dataExtents, const IOOptions& io)
 {
     // URI is mandatory.
     if (uri.empty())
     {
-        return Status(Status::ConfigurationError, "TMS driver requires a valid \"uri\" property");
+        return Failure(Failure::ConfigurationError, "TMS driver requires a valid \"uri\" property");
     }
 
     // If the user supplied a profile, this means we are NOT querying a TMS manifest
@@ -618,10 +617,10 @@ TMS::Driver::open(const URI& uri, Profile& profile, const std::string& format, D
         // Attempt to read the tile map parameters from a TMS TileMap manifest:
         auto tileMapRead = readTileMap(uri, io);
 
-        if (tileMapRead.status.failed())
-            return tileMapRead.status;
+        if (tileMapRead.failed())
+            return tileMapRead.error();
 
-        tileMap = tileMapRead.value;
+        tileMap = tileMapRead.value();
 
         Profile profileFromTileMap = tileMap.createProfile();
         if (profileFromTileMap.valid())
@@ -633,7 +632,7 @@ TMS::Driver::open(const URI& uri, Profile& profile, const std::string& format, D
     // Make sure we've established a profile by this point:
     if (!profile.valid())
     {
-        return Status("Failed to establish a profile for " + uri.full());
+        return Failure("Failed to establish a profile for " + uri.full());
     }
 
     // TileMap and profile are valid at this point. Build the tile sets.
@@ -654,7 +653,7 @@ TMS::Driver::open(const URI& uri, Profile& profile, const std::string& format, D
         dataExtents.push_back(DataExtent(profile.extent(), 0, tileMap.maxLevel));
     }
 
-    return StatusOK;
+    return {};
 }
 
 Result<std::shared_ptr<Image>>
@@ -680,20 +679,20 @@ TMS::Driver::read(const TileKey& key, bool invertY, bool isMapboxRGB, const URI:
         }
 
         auto fetch = imageURI.read(io);
-        if (fetch.status.failed())
+        if (fetch.failed())
         {
-            return fetch.status;
+            return fetch.error();
         }
 
-        std::istringstream buf(fetch->data);
-        auto image_rr = io.services.readImageFromStream(buf, fetch->contentType, io);
+        std::istringstream stream(fetch->content.data);
+        auto image_rr = io.services.readImageFromStream(stream, fetch->content.type, io);
 
-        if (image_rr.status.failed())
+        if (image_rr.failed())
         {
-            return image_rr.status;
+            return image_rr.error();
         }
 
-        image = image_rr.value;
+        image = image_rr.value();
 
         if (!image)
         {
@@ -714,5 +713,5 @@ TMS::Driver::read(const TileKey& key, bool invertY, bool isMapboxRGB, const URI:
     if (image)
         return image;
     else
-        return Status(Status::ResourceUnavailable);
+        return Failure_ResourceUnavailable;
 }

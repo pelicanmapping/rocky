@@ -15,7 +15,7 @@ auto Demo_LabelFeatures = [](Application& app)
 {
 #ifdef ROCKY_HAS_GDAL
 
-    static std::optional<Status> status;
+    static std::optional<Result<>> status;
     static unsigned count = 0;
     const bool use_widgets = true;
 
@@ -137,7 +137,7 @@ auto Demo_LabelFeatures = [](Application& app)
         }
         else
         {
-            ImGui::TextColored(ImGuiErrorColor, "Failed to load features: %s", status->message.c_str());
+            ImGui::TextColored(ImGuiErrorColor, "Failed to load features: %s", status->error().message.c_str());
         }
         ImGuiLTable::End();
 

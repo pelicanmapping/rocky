@@ -49,17 +49,17 @@ MBTilesImageLayer::to_json() const
     return j.dump();
 }
 
-Status
+Result<>
 MBTilesImageLayer::openImplementation(const IOOptions& io)
 {
-    Status parent = super::openImplementation(io);
+    auto parent = super::openImplementation(io);
     if (parent.failed())
         return parent;
 
     Profile new_profile = profile;
     DataExtentList dataExtents;
 
-    Status status = _driver.open(
+    auto r = _driver.open(
         name(),
         *this, // MBTiles::Options
         false, // isWritingRequested(),
@@ -67,9 +67,9 @@ MBTilesImageLayer::openImplementation(const IOOptions& io)
         dataExtents,
         io);
 
-    if (status.failed())
+    if (r.failed())
     {
-        return status;
+        return r;
     }
 
     // install the profile if there is one
@@ -80,7 +80,7 @@ MBTilesImageLayer::openImplementation(const IOOptions& io)
 
     setDataExtents(dataExtents);
 
-    return StatusOK;
+    return {};
 }
 
 void
@@ -93,14 +93,15 @@ MBTilesImageLayer::closeImplementation()
 Result<GeoImage>
 MBTilesImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io) const
 {
-    if (status().failed()) return status();
+    if (status().failed())
+        return status().error();
 
     auto result = _driver.read(key, io);
 
-    if (result.status.ok())
-        return GeoImage(result.value, key.extent());
+    if (result)
+        return GeoImage(result.value(), key.extent());
     else
-        return result.status;
+        return result.error();
 }
 
 #endif // ROCKY_HAS_MBTILES

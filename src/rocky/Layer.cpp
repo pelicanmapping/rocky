@@ -35,9 +35,7 @@ Layer::construct(std::string_view conf)
     get_to(j, "attribution", attribution);
     get_to(j, "l2_cache_size", l2CacheSize);
 
-    _status = Status(
-        Status::ResourceUnavailable,
-        openAutomatically ? "Layer closed" : "Layer disabled");
+    fail(Failure::ResourceUnavailable, openAutomatically ? "Layer closed" : "Layer disabled");
 }
 
 JSON
@@ -75,33 +73,38 @@ Layer::bumpRevision()
     ++_revision;
 }
 
-const Status&
-Layer::setStatus(const Status& status) const
+const Failure&
+Layer::fail(const Failure& f) const
 {
-    _status = status;
-    return _status;
+    const_cast<Layer*>(this)->_status = f;
+    return _status.error();
 }
 
-const Status&
-Layer::setStatus(const Status::Code& code, const std::string& message) const
+const Failure&
+Layer::fail(const Failure::Type code, std::string_view message) const
 {
-    return setStatus(Status(code, message));
+    return fail(Failure(code, message));
 }
 
-Status
+Result<>
 Layer::open(const IOOptions& io)
 {
     // Cannot open a layer that's already open OR is disabled.
-    if (isOpen())
+    if (!isOpen())
     {
-        return status();
+        std::unique_lock lock(_state_mutex);
+
+        auto r = openImplementation(io);
+        if (r.ok())
+        {
+            _status = r;
+        }
+        else
+        {
+            fail(r.error());
+            Log()->debug("Layer \"{}\" failed to open: {}", name(), r.error().message);
+        }
     }
-
-    std::unique_lock lock(_state_mutex);
-
-    setStatus(openImplementation(io));
-
-    Log()->debug("Layer \"{}\" status = {}", name(), status().toString());
 
     return status();
 }
@@ -113,14 +116,14 @@ Layer::close()
     {
         std::unique_lock lock(_state_mutex);
         closeImplementation();
-        _status = Status(Status::ResourceUnavailable, "Layer closed");
+        fail(Failure::ResourceUnavailable, "Layer closed");
     }
 }
 
-Status
+Result<>
 Layer::openImplementation(const IOOptions& io)
 {
-    return Status_OK;
+    return {}; // ok
 }
 
 void
@@ -133,12 +136,6 @@ bool
 Layer::isOpen() const
 {
     return status().ok();
-}
-
-const Status&
-Layer::status() const
-{
-    return _status;
 }
 
 const GeoExtent&

@@ -30,12 +30,12 @@ MapNode::MapNode()
     profile = Profile("global-geodetic");
 }
 
-Status
+Result<>
 MapNode::from_json(const std::string& JSON, const IOOptions& io)
 {
     const auto j = parse_json(JSON);
 
-    Status status = j.status;
+    auto status = j.status;
 
     if (status.ok() && map && j.contains("map"))
     {        
@@ -119,14 +119,19 @@ MapNode::update(VSGContext context)
 
         if (st.failed())
         {
-            Log()->warn(st.message);
+            Log()->warn(st.error().message);
         }
     }
 
     // on our first update, open any layers that are marked to automatic opening.
     if (!_openedLayers)
     {
-        map->openAllLayers(context->io);
+        auto r = map->openAllLayers(context->io);
+        if (r.failed())
+        {
+            Log()->warn("Failed to open at least one layer... " + r.error().message);
+        }
+
         _openedLayers = true;
     }
 

@@ -47,17 +47,17 @@ MBTilesElevationLayer::to_json() const
     return j.dump();
 }
 
-Status
+Result<>
 MBTilesElevationLayer::openImplementation(const IOOptions& io)
 {
-    Status parent = super::openImplementation(io);
+    auto parent = super::openImplementation(io);
     if (parent.failed())
         return parent;
 
     Profile new_profile = profile;
     DataExtentList dataExtents;
 
-    Status status = _driver.open(
+    auto r = _driver.open(
         name(),
         *this, // MBTiles::Options
         false, // isWritingRequested()
@@ -65,10 +65,8 @@ MBTilesElevationLayer::openImplementation(const IOOptions& io)
         dataExtents,
         io);
 
-    if (status.failed())
-    {
-        return status;
-    }
+    if (r.failed())
+        return r.error();
 
     // install the profile if there is one
     if (!profile.valid() && new_profile.valid())
@@ -78,7 +76,7 @@ MBTilesElevationLayer::openImplementation(const IOOptions& io)
 
     setDataExtents(dataExtents);
 
-    return StatusOK;
+    return {};
 }
 
 void
@@ -91,14 +89,15 @@ MBTilesElevationLayer::closeImplementation()
 Result<GeoHeightfield>
 MBTilesElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOOptions& io) const
 {
-    if (status().failed()) return status();
+    if (status().failed())
+        return status().error();
 
     auto result = _driver.read(key, io);
 
-    if (result.status.ok())
-        return GeoHeightfield(Heightfield::create(result.value.get()), key.extent());
+    if (result)
+        return GeoHeightfield(Heightfield::create(result.value().get()), key.extent());
     else
-        return result.status;
+        return result.error();
 }
 
 #endif // ROCKY_HAS_MBTILES

@@ -100,7 +100,7 @@ namespace ROCKY_NAMESPACE
             }
 
             //! Opens and initializes the connection to the dataset
-            Status open(
+            Result<> open(
                 const std::string& name,
                 const Options* layer,
                 unsigned tileSize,

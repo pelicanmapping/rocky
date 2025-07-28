@@ -14,7 +14,7 @@ auto Demo_LineFeatures = [](Application& app)
 #ifdef ROCKY_HAS_GDAL
     
     struct LoadedFeatures {
-        Status status;
+        Result<> status;
         std::shared_ptr<rocky::FeatureSource> fs;
     };
     static jobs::future<LoadedFeatures> data;

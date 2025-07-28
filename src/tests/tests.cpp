@@ -18,8 +18,8 @@ namespace
     class TestLayer : public Inherit<Layer, TestLayer>
     {
     public:
-        Status openImplementation(const IOOptions& io) override {
-            return StatusOK;
+        Result<> openImplementation(const IOOptions& io) override {
+            return {};
         }
     };
 }
@@ -75,7 +75,8 @@ TEST_CASE("json")
     map->add(layer);
     auto serialized = map->to_json();
     map = rocky::Map::create();
-    map->from_json(serialized, context->io);
+    auto r = map->from_json(serialized, context->io);
+    CHECK(r.ok());
     CHECK((map->to_json() == R"({"layers":[{"name":"","type":"TMSImage","uri":"file.xml"}],"name":""})"));
 }
 
@@ -277,7 +278,7 @@ TEST_CASE("TMS")
     auto layer = TMSImageLayer::create();
     layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
     auto s = layer->open({});
-    CHECK((s.ok() || s.code == s.ResourceUnavailable));
+    CHECK((s.ok() || s.error().type == Failure::ResourceUnavailable));
 }
 
 TEST_CASE("SRS")
@@ -668,17 +669,17 @@ TEST_CASE("IO")
     {
         URI uri("http://readymap.org/readymap/tiles/1.0.0/7/");
         auto r = uri.read(IOOptions());
-        CHECKED_IF(r.status.ok())
+        CHECKED_IF(r.ok())
         {
-            CHECK(r.value.contentType == "text/xml");
+            CHECK(r.value().content.type == "text/xml");
 
-            auto body = r.value.data;
+            auto body = r.value().content.data;
             CHECK(!body.empty());
             CHECK(rocky::util::startsWith(body, "<?xml"));
         }
         else
         {
-            std::cerr << "HTTP/S request failed: " << r.status.message << std::endl;
+            std::cerr << "HTTP/S request failed: " << r.error().message << std::endl;
         }
     }
 
@@ -688,10 +689,10 @@ TEST_CASE("IO")
         {
             URI uri("https://readymap.org/readymap/tiles/1.0.0/7/");
             auto r = uri.read(IOOptions());
-            CHECKED_IF(r.status.ok())
+            CHECKED_IF(r.ok())
             {
-                CHECK(r.value.contentType == "text/xml");
-                auto body = r.value.data;
+                CHECK(r.value().content.type == "text/xml");
+                auto body = r.value().content.data;
                 CHECK(!body.empty());
                 CHECK(rocky::util::startsWith(body, "<?xml"));
             }
@@ -739,11 +740,12 @@ TEST_CASE("Earth File")
     std::string earthFile = "https://raw.githubusercontent.com/gwaldron/osgearth/master/tests/readymap.earth";
     EarthFileImporter importer;
     auto result = importer.read(earthFile, {});
-    CHECKED_IF(result.status.ok())
+    CHECKED_IF(result.ok())
     {
         VSGContext context = VSGContextFactory::create(nullptr);
         auto mapNode = MapNode::create(context);
-        mapNode->from_json(result.value, IOOptions(context->io, earthFile));
+        auto r = mapNode->from_json(result.value(), IOOptions(context->io, earthFile));
+        CHECK(r.ok());
 
         auto layers = mapNode->map->layers([&](auto layer) {
             return layer->name() == "ReadyMap 15m Imagery"; });

@@ -40,7 +40,7 @@ auto Demo_Map = [](Application& app)
     }
     else
     {
-        ImGui::TextColored(ImGuiErrorColor, app.commandLineStatus.message.c_str());
+        ImGui::TextColored(ImGuiErrorColor, app.commandLineStatus.error().message.c_str());
     }
 
     // Enumerate all the map's layers and display information about them
@@ -55,7 +55,7 @@ auto Demo_Map = [](Application& app)
         ImGui::PushID(layer->uid());
 
         bool stylePushed = false;
-        if (layer->status().failed() && layer->status().message != "Layer closed")
+        if (layer->status().failed() && layer->status().error().message != "Layer closed")
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 72, 72))), stylePushed = true;
         else if (!layer->isOpen())
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(127, 127, 127))), stylePushed = true;
@@ -97,7 +97,7 @@ auto Demo_Map = [](Application& app)
             {
                 if (layer->status().failed())
                 {
-                    ImGuiLTable::Text("ERROR:", layer->status().message.c_str());
+                    ImGuiLTable::Text("ERROR:", layer->status().error().message.c_str());
                 }
                 ImGuiLTable::Text("Type:", layer->getLayerTypeName().c_str());
                 auto tileLayer = TileLayer::cast(layer);

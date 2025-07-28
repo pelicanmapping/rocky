@@ -15,7 +15,7 @@ using namespace ROCKY_NAMESPACE;
 auto Demo_Model = [](Application& app)
 {
     static entt::entity entity = entt::null;
-    static Status status;
+    static Result<> status;
     const double scale = 50000.0;
 
     if (status.failed())
@@ -31,20 +31,19 @@ auto Demo_Model = [](Application& app)
         // Load model data from a URI
         URI uri("https://raw.githubusercontent.com/vsg-dev/vsgExamples/master/data/models/teapot.vsgt");
         auto result = uri.read(app.vsgcontext->io);
-        status = result.status;
-        if (status.failed())
+        if (result.failed())
             return;
 
         // Parse the model
         // this is a bit awkward but it works when the URI has an extension
         auto options = vsg::Options::create(*app.vsgcontext->readerWriterOptions);
         auto extension = std::filesystem::path(uri.full()).extension();
-        options->extensionHint = extension.empty() ? std::filesystem::path(result.value.contentType) : extension;
-        std::stringstream in(result.value.data);
+        options->extensionHint = extension.empty() ? std::filesystem::path(result.value().content.type) : extension;
+        std::istringstream in(result.value().content.data);
         auto node = vsg::read_cast<vsg::Node>(in, options);
         if (!node)
         {
-            status = Status(Status::ResourceUnavailable, "Failed to parse model");
+            status = Failure(Failure::ResourceUnavailable, "Failed to parse model");
             return;
         }
 

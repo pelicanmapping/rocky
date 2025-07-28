@@ -16,6 +16,11 @@ endfunction()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+# treat [[nodisard]] as an error in VS
+if (WIN32)
+    add_compile_options(/we4834)
+endif()
+
 add_subdirectory(rocky)
 add_subdirectory(apps)
 add_subdirectory(tests)

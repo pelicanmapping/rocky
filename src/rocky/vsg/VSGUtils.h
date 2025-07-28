@@ -9,7 +9,7 @@
 #include <rocky/Threading.h>
 #include <rocky/Image.h>
 #include <rocky/Math.h>
-#include <rocky/Status.h>
+#include <rocky/Result.h>
 #include <rocky/weejobs.h>
 
 namespace ROCKY_NAMESPACE
@@ -353,7 +353,7 @@ namespace ROCKY_NAMESPACE
         inline Result<std::shared_ptr<Image>> makeImageFromVSG(vsg::ref_ptr<vsg::Data> data)
         {
             if (!data)
-                return Status(Status::ResourceUnavailable, "Data is empty");
+                return Failure(Failure::ResourceUnavailable, "Data is empty");
 
             // TODO: move this into a utility somewhere
             auto vkformat = data->properties.format;
@@ -362,7 +362,7 @@ namespace ROCKY_NAMESPACE
 
             if (format == Image::UNDEFINED)
             {
-                return Status(Status::ResourceUnavailable, "Unsupported image format");
+                return Failure(Failure::ResourceUnavailable, "Unsupported image format");
             }
 
             auto image = Image::create(
@@ -378,7 +378,7 @@ namespace ROCKY_NAMESPACE
                 image->flipVerticalInPlace();
             }
 
-            return Result(image);
+            return image;
         }
 
         inline vsg::ref_ptr<vsg::DescriptorImage> createTexture(Image::Ptr image,

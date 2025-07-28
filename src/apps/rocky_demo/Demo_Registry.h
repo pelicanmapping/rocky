@@ -11,13 +11,13 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_Registry = [](Application& app)
 {
-    static Status status;
+    static Result<> status;
     static std::set<entt::entity> entities;
 
     if (status.failed())
     {
         ImGui::TextColored(ImVec4(1, 0, 0, 1), "Image load failed");
-        ImGui::TextColored(ImVec4(1, 0, 0, 1), status.message.c_str());
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), status.error().message.c_str());
         return;
     }
 

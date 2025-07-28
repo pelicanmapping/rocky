@@ -482,7 +482,7 @@ GDALFeatureSource::iterator_impl::next()
 
 
 
-Status
+Result<>
 GDALFeatureSource::open()
 {
     // Pre-existing layer handle?
@@ -508,7 +508,7 @@ GDALFeatureSource::open()
         // If nothing was set, we're done
         if (_source.empty())
         {
-            return Status(Status::ConfigurationError, "No URL, connection, or inline geometry provided");
+            return Failure(Failure::ConfigurationError, "No URL, connection, or inline geometry provided");
         }
 
         // assume we're loading from the URL/connection:
@@ -521,7 +521,7 @@ GDALFeatureSource::open()
 
         if (!_dsHandle)
         {
-            return Status(Status::ResourceUnavailable, util::make_string() << "Failed to open \"" << _source << "\"");
+            return Failure(Failure::ResourceUnavailable, "Failed to open \"" + _source + "\"");
         }
 
         // Open a specific layer within the data source, if applicable:
@@ -529,8 +529,8 @@ GDALFeatureSource::open()
 
         if (!_layerHandle)
         {
-            return Status(Status::ResourceUnavailable, util::make_string()
-                << "Failed to open layer \"" << layerName << "\" from \"" << _source << "\"");
+            return Failure(Failure::ResourceUnavailable, 
+                "Failed to open layer \"" + layerName + "\" from \"" + _source + "\"");
         }
 
         _featureCount = (int)OGR_L_GetFeatureCount(_layerHandle, 1);
@@ -558,8 +558,7 @@ GDALFeatureSource::open()
         OGRSpatialReferenceH srHandle = OGR_L_GetSpatialRef(_layerHandle);
         if (!srHandle)
         {
-            return Status(Status::ResourceUnavailable, util::make_string()
-                << "No spatial reference found in \"" << _source << "\"");
+            return Failure(Failure::ResourceUnavailable, "No spatial reference found in \"" + _source + "\"");
         }
 
         SRS srs;
@@ -570,8 +569,7 @@ GDALFeatureSource::open()
             CPLFree(wktbuf);
             if (!srs.valid())
             {
-                return Status(Status::ResourceUnavailable, util::make_string()
-                    << "Unrecognized SRS found in \"" << _source << "\"");
+                return Failure(Failure::ResourceUnavailable, "Unrecognized SRS found in \"" + _source + "\"");
             }
         }
 
@@ -579,15 +577,13 @@ GDALFeatureSource::open()
         OGREnvelope env;
         if (OGR_L_GetExtent(_layerHandle, &env, 1) != OGRERR_NONE)
         {
-            return Status(Status::ResourceUnavailable, util::make_string()
-                << "Invalid extent returned from \"" << _source << "\"");
+            return Failure(Failure::ResourceUnavailable, "Invalid extent returned from \"" + _source + "\"");
         }
 
         GeoExtent extent(srs, env.MinX, env.MinY, env.MaxX, env.MaxY);
         if (!extent.valid())
         {
-            return Status(Status::ResourceUnavailable, util::make_string()
-                << "Invalid extent returned from \"" << _source << "\"");
+            return Failure(Failure::ResourceUnavailable, "Invalid extent returned from \"" + _source + "\"");
         }
 
         // Made it!

@@ -52,7 +52,7 @@ namespace ROCKY_NAMESPACE
         //! Note, this method will be called automatically by the MapNode, but you 
         //! are free to call it manually if you want to force all layers to open 
         //! and check for errors.
-        Status openAllLayers(const IOOptions& options);
+        Result<> openAllLayers(const IOOptions& options);
 
         //! Gets the revision # of the map. The revision # changes every time
         //! you add, remove, or move layers. You can use this to track changes
@@ -61,7 +61,7 @@ namespace ROCKY_NAMESPACE
 
         //! Deserialize from JSON data
         //! @param value JSON string to import
-        Status from_json(const JSON& value, const IOOptions& io);
+        Result<> from_json(const JSON& value, const IOOptions& io);
 
         //! Serialize
         std::string to_json() const;

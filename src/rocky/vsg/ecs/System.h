@@ -17,7 +17,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Status
-        Status status;
+        Result<> status;
 
         //! Initialize the ECS system (once at startup)
         virtual void initialize(VSGContext& runtime)

@@ -11,7 +11,7 @@ using namespace ROCKY_NAMESPACE;
 
 #define LC "[Map] "
 
-Status
+Result<>
 Map::from_json(const std::string& input, const IOOptions& io)
 {
     auto j = parse_json(input);
@@ -34,7 +34,7 @@ Map::from_json(const std::string& input, const IOOptions& io)
         }
     }
 
-    return Status_OK;
+    return {};
 }
 
 std::string
@@ -99,12 +99,12 @@ Map::add(Layer::Ptr layer)
     onLayersChanged.fire(this);
 }
 
-Status
+Result<>
 Map::openAllLayers(const IOOptions& io)
 {
     std::shared_lock lock(_mutex);
 
-    Status status;
+    Result<> status;
     for (auto& layer : _layers)
     {
         if (layer->openAutomatically && !layer->isOpen())
@@ -112,7 +112,7 @@ Map::openAllLayers(const IOOptions& io)
             auto layer_status = layer->open(io);
             if (layer_status.failed())
             {
-                status = Status_GeneralError;
+                status = Failure_GeneralError;
             }
         }
     }

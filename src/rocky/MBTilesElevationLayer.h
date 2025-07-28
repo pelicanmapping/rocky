@@ -34,7 +34,7 @@ namespace ROCKY_NAMESPACE
         Result<GeoHeightfield> createHeightfieldImplementation(const TileKey& key, const IOOptions& io) const override;
 
         //! Opens the layer and returns its status
-        Status openImplementation(const IOOptions& io) override;
+        Result<> openImplementation(const IOOptions& io) override;
 
         //! Closes the layer and returns its status
         void closeImplementation() override;

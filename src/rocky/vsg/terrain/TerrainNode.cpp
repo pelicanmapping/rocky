@@ -17,7 +17,7 @@
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 
-Status
+Result<>
 TerrainNode::from_json(const std::string& JSON, const IOOptions& io)
 {
     return TerrainSettings::from_json(JSON);
@@ -29,7 +29,7 @@ TerrainNode::to_json() const
     return TerrainSettings::to_json();
 }
 
-const Status&
+const Result<>&
 TerrainNode::setMap(std::shared_ptr<Map> new_map, const Profile& new_profile, VSGContext& context)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(new_map, status);
@@ -75,10 +75,10 @@ TerrainNode::reset(VSGContext context)
     status = engine->stateFactory.status;
 }
 
-Status
+Result<>
 TerrainNode::createRootTiles(VSGContext& context)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(engine != nullptr, Status_AssertionFailure);
+    ROCKY_SOFT_ASSERT_AND_RETURN(engine != nullptr, Failure_AssertionFailure);
     ROCKY_SOFT_ASSERT_AND_RETURN(engine->stateFactory.status.ok(), engine->stateFactory.status);
     ROCKY_HARD_ASSERT(children.empty(), "TerrainNode::createRootTiles() called with children already present");
 
@@ -106,7 +106,7 @@ TerrainNode::createRootTiles(VSGContext& context)
 
     engine->context->compile(stategroup);
 
-    return StatusOK;
+    return {};
 }
 
 bool
@@ -122,7 +122,7 @@ TerrainNode::update(VSGContext context)
 
             if (status.failed())
             {
-                Log()->warn("TerrainNode initialize failed: " + status.message);
+                Log()->warn("TerrainNode initialize failed: " + status.error().message);
             }
             changes = true;
         }

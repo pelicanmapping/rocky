@@ -10,13 +10,13 @@ using namespace ROCKY_NAMESPACE;
 auto Demo_Label = [](Application& app)
 {
     static entt::entity entity = entt::null;
-    static Status status;
+    static Result<> status;
 
     auto& font = app.vsgcontext->defaultFont;
     if (!font)
     {
-        ImGui::TextWrapped(status.message.c_str());
-        status = Status(Status::ResourceUnavailable,
+        ImGui::TextWrapped(status.error().message.c_str());
+        status = Failure(Failure::ResourceUnavailable,
             "No font available - did you set the ROCKY_DEFAULT_FONT environment variable?");
         return;
     }

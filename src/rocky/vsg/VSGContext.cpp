@@ -149,8 +149,8 @@ namespace
 
             auto result = GDAL::readImage((unsigned char*)data.c_str(), data.length(), gdal_driver);
 
-            if (result.status.ok())
-                return util::moveImageToVSG(result.value);
+            if (result.ok())
+                return util::moveImageToVSG(result.value());
             else
                 return { };
         }
@@ -402,12 +402,12 @@ VSGContextImpl::ctor(int& argc, char** argv)
     io.services.readImageFromURI = [](const std::string& location, const rocky::IOOptions& io)
     {
         auto result = URI(location).read(io);
-        if (result.status.ok())
+        if (result.ok())
         {
-            std::stringstream buf(result.value.data);
-            return io.services.readImageFromStream(buf, result.value.contentType, io);
+            std::istringstream buf(result.value().content.data);
+            return io.services.readImageFromStream(buf, result.value().content.type, io);
         }
-        return Result<std::shared_ptr<Image>>(Status(Status::ResourceUnavailable, "Data is null"));
+        return Result<std::shared_ptr<Image>>(Failure(Failure::ResourceUnavailable, "Data is null"));
     };
 
     // map of mime-types to extensions that VSG can understand
@@ -474,7 +474,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
                 }
             }
 
-            return Status(Status::ServiceUnavailable, "No image reader for \"" + contentType + "\"");
+            return Failure(Failure::ServiceUnavailable, "No image reader for \"" + contentType + "\"");
         };
 
     io.services.contentCache = std::make_shared<ContentCache>(128);

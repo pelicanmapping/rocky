@@ -61,10 +61,10 @@ AzureImageLayer::to_json() const
     return j.dump();
 }
 
-Status
+Result<>
 AzureImageLayer::openImplementation(const IOOptions& io)
 {
-    Status parent = super::openImplementation(io);
+    auto parent = super::openImplementation(io);
     if (parent.failed())
         return parent;
 
@@ -78,9 +78,9 @@ AzureImageLayer::openImplementation(const IOOptions& io)
     // test fetch to make sure the API key is valid
     TileKey test(1, 0, 0, profile);
     auto result = createImageImplementation(test, io);
-    if (result.status.failed())
+    if (result.failed())
     {
-        Log()->warn(LC "Failed to fetch test tile: {}", result.status.message);
+        Log()->warn(LC "Failed to fetch test tile: {}", result.error().message);
     }
 
 
@@ -88,7 +88,7 @@ AzureImageLayer::openImplementation(const IOOptions& io)
 
     ROCKY_TODO("update attribution - it's a separate API call and depends on the visible region and zoom level, or can be queried for individual tiles, or there's an API to get a big JSON object with strings for each region of the world all at once");
 
-    return StatusOK;
+    return {};
 }
 
 void
@@ -114,23 +114,23 @@ AzureImageLayer::createImageImplementation(const TileKey& key, const IOOptions& 
     URI imageURI(mapTileApiUrl->full() + query.str(), _uriContext);
 
     auto fetch = imageURI.read(io);
-    if (fetch.status.failed())
+    if (fetch.failed())
     {
-        return fetch.status;
+        return fetch.error();
     }
 
-    std::istringstream buf(fetch->data);
-    auto image_rr = io.services.readImageFromStream(buf, fetch->contentType, io);
+    std::istringstream stream(fetch->content.data);
+    auto image_rr = io.services.readImageFromStream(stream, fetch->content.type, io);
 
-    if (image_rr.status.failed())
-        return image_rr.status;
+    if (image_rr.failed())
+        return image_rr.error();
 
-    auto image = image_rr.value;
+    auto image = image_rr.value();
 
     if (image)
         return GeoImage(image, key.extent());
     else
-        return Status(Status::ResourceUnavailable);
+        return Failure_ResourceUnavailable;
 }
 
 #endif // ROCKY_HAS_AZURE

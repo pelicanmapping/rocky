@@ -37,7 +37,7 @@ auto Demo_MVTFeatures = [](Application& app)
                 auto status = gdal->open();
                 if (status.failed())
                 {
-                    Log()->warn(status.message);
+                    Log()->warn(status.error().message);
                     return result;
                 }
 

@@ -26,12 +26,12 @@ auto Demo_Tethering = [](Application& app)
 
     // Make an entity for us to tether to and set it in motion
     static entt::entity entity = entt::null;
-    static Status status;
+    static Result<> status;
 
     if (status.failed())
     {
         ImGui::TextColored(ImVec4(1, 0, 0, 1), "Image load failed");
-        ImGui::TextColored(ImVec4(1, 0, 0, 1), status.message.c_str());
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), status.error().message.c_str());
         return;
     }
 
@@ -48,10 +48,10 @@ auto Demo_Tethering = [](Application& app)
         // add an icon:
         auto io = app.vsgcontext->io;
         auto image = io.services.readImageFromURI("https://github.com/gwaldron/osgearth/blob/master/data/airport.png?raw=true", io);
-        if (image.status.ok())
+        if (image.ok())
         {
             auto& icon = registry.emplace<Icon>(entity);
-            icon.image = image.value;
+            icon.image = image.value();
             icon.style = IconStyle{ 48.0f, 0.0f }; // pixels, rotation(rad)
         }
 

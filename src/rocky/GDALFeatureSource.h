@@ -39,7 +39,7 @@ namespace ROCKY_NAMESPACE
     public:
 
         //! Opens the source and returns a status indicating success or failure.
-        Status open();
+        Result<> open();
 
         //! Closes the source.
         void close();

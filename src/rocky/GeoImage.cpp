@@ -646,7 +646,7 @@ GeoImage::crop(
         return *this;
 
     if (!image())
-        return Status(Status::ResourceUnavailable);
+        return Failure_ResourceUnavailable;
 
     // Check for equivalence
     if (e.srs().horizontallyEquivalentTo(srs()))
@@ -688,7 +688,7 @@ GeoImage::crop(
     }
     else
     {
-        return Status("Cropping extent does not have equivalent SpatialReference");
+        return Failure("Cropping extent does not have equivalent SpatialReference");
     }
 }
 

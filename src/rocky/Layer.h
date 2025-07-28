@@ -9,7 +9,7 @@
 #include <rocky/Callbacks.h>
 #include <rocky/DateTime.h>
 #include <rocky/IOTypes.h>
-#include <rocky/Status.h>
+#include <rocky/Result.h>
 #include <rocky/URI.h>
 #include <shared_mutex>
 
@@ -43,10 +43,12 @@ namespace ROCKY_NAMESPACE
         UID uid() const { return _uid; }
 
         //! Status of this layer
-        const Status& status() const;
+        Result<> status() const {
+            return _status;
+        }
 
         //! Open a layer.
-        Status open(const IOOptions& options);
+        Result<> open(const IOOptions& options);
 
         //! Close this layer.
         void close();
@@ -117,16 +119,16 @@ namespace ROCKY_NAMESPACE
         //! appropriate. When added to a map, init() is called before open()
         //! and addedToMap() is called after open() if it succeeds.
         //! By default, returns STATUS_OK.
-        virtual Status openImplementation(const IOOptions& io);
+        virtual Result<> openImplementation(const IOOptions& io);
 
         //! Called by close() to shut down the resources associated with a layer.
         virtual void closeImplementation();
 
         //! Sets the status for this layer - internal
-        const Status& setStatus(const Status& status) const;
+        const Failure& fail(const Failure& failure) const;
 
         //! Sets the status for this layer with a message - internal
-        const Status& setStatus(const Status::Code& statusCode, const std::string& message) const;
+        const Failure& fail(const Failure::Type type, std::string_view message) const;
 
         //! Sets the name to use for serialization
         void setLayerTypeName(const std::string&);
@@ -134,7 +136,7 @@ namespace ROCKY_NAMESPACE
     private:
         UID _uid = -1;
         RenderType _renderType = RenderType::NONE;
-        mutable Status _status = Status_OK;
+        Result<> _status;
         std::atomic<Revision> _revision = { 1 };
         mutable std::shared_mutex _state_mutex;
         std::string _layerTypeName;

@@ -57,7 +57,7 @@ auto Demo_Simulation = [](Application& app)
 
     // Make an entity for us to tether to and set it in motion
     static std::set<entt::entity> platforms;
-    static Status status;
+    static Result<> status;
     static Simulator sim(app);
     static ImGuiImage widgetImage;
     const unsigned num_platforms = 10000;
@@ -65,7 +65,7 @@ auto Demo_Simulation = [](Application& app)
     if (status.failed())
     {
         ImGui::TextColored(ImVec4(1, 0, 0, 1), "Image load failed!");
-        ImGui::TextColored(ImVec4(1, 0, 0, 1), status.message.c_str());
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), status.error().message.c_str());
         return;
     }
 
@@ -76,11 +76,10 @@ auto Demo_Simulation = [](Application& app)
         // add an icon:
         auto io = app.vsgcontext->io;
         auto image = io.services.readImageFromURI(icon_location, io);
-        status = image.status;
-        if (status.ok())
+        if (image.ok())
         {
-            image.value->flipVerticalInPlace();
-            widgetImage = ImGuiImage(image.value, app.vsgcontext);
+            image.value()->flipVerticalInPlace();
+            widgetImage = ImGuiImage(image.value(), app.vsgcontext);
         }
     }
 
@@ -146,15 +145,6 @@ auto Demo_Simulation = [](Application& app)
             // Create a host entity:
             auto entity = registry.create();
 
-#if 0
-            // Attach an icon:
-            auto& icon = registry.emplace<Icon>(entity);
-            icon.style = IconStyle{ 16.0f + t*16.0f, 0.0f }; // pixels, rotation(rad)
-
-            if (image.status.ok())
-                icon.image = image.value;
-#endif
-
             double lat = -80.0 + rand_unit(mt) * 160.0;
             double lon = -180 + rand_unit(mt) * 360.0;
             double alt = 1000.0 + t * 1000000.0;
@@ -175,7 +165,7 @@ auto Demo_Simulation = [](Application& app)
             // Add a motion component to represent movement:
             double initial_bearing = -180.0 + rand_unit(mt) * 360.0;
             auto& motion = registry.emplace<MotionGreatCircle>(entity);
-            motion.velocity = { -75000 + rand_unit(mt) * 150000, 0.0, 0.0 };
+            motion.velocity = { -7500 + rand_unit(mt) * 15000, 0.0, 0.0 };
             motion.normalAxis = pos.srs.ellipsoid().greatCircleRotationAxis(glm::dvec3(lon, lat, 0.0), initial_bearing);
 
             // Add a labeling widget:

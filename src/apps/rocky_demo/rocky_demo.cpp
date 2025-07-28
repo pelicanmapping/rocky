@@ -191,7 +191,7 @@ int main(int argc, char** argv)
     // Exit if the user tries to load a file and failed:
     if (app.commandLineStatus.failed())
     {
-        Log()->error(app.commandLineStatus.toString());
+        Log()->error(app.commandLineStatus.error().string());
         exit(-1);
     }
 

@@ -55,7 +55,7 @@ namespace ROCKY_NAMESPACE
         const TerrainSettings& terrainSettings() const;
 
         //! deserialize from JSON
-        Status from_json(const std::string& JSON, const IOOptions& io);
+        Result<> from_json(const std::string& JSON, const IOOptions& io);
 
         //! Serializes the MapNode
         std::string to_json() const;

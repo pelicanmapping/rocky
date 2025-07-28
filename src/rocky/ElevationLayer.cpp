@@ -139,7 +139,7 @@ ElevationLayer::to_json() const
     return j.dump();
 }
 
-Status
+Result<>
 ElevationLayer::openImplementation(const IOOptions& io)
 {
     auto r = super::openImplementation(io);
@@ -148,7 +148,7 @@ ElevationLayer::openImplementation(const IOOptions& io)
 
     _dependencyCache = std::make_shared<TileMosaicWeakCache<Heightfield>>();
 
-    return StatusOK;
+    return {};
 }
 
 void
@@ -217,23 +217,23 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
             {
                 TileKey subKey = intersectingKey;
                 Result<GeoHeightfield> subTile;
-                while (subKey.valid() && (!subTile.status.ok() || !subTile.value.heightfield()))
+                while (subKey.valid() && (!subTile.ok() || !subTile->heightfield()))
                 {
                     subTile = createHeightfieldImplementation_internal(subKey, io);
-                    if (subTile.status.failed())
+                    if (subTile.failed())
                         subKey.makeParent();
 
                     if (io.canceled())
                         return {};
                 }
 
-                if (subTile.status.ok() && subTile.value.heightfield())
+                if (subTile.ok() && subTile->heightfield())
                 {
                     // save it in the weak cache:
-                    _dependencyCache->put(intersectingKey, subKey, subTile.value.heightfield());
+                    _dependencyCache->put(intersectingKey, subKey, subTile->heightfield());
 
                     // add it to our sources collection:
-                    sources.emplace_back(subTile.value);
+                    sources.emplace_back(subTile.value());
 
                     if (subKey.level == targetLOD)
                     {
@@ -342,23 +342,21 @@ Result<GeoHeightfield>
 ElevationLayer::createHeightfield(const TileKey& key, const IOOptions& io) const
 {
     std::shared_lock readLock(layerStateMutex());
-    if (isOpen())
+    if (status().ok())
     {
         return createHeightfieldInKeyProfile(key, io);
     }
-    return status();
+    return status().error();
 }
 
 Result<GeoHeightfield>
-ElevationLayer::createHeightfieldImplementation_internal(
-    const TileKey& key,
-    const IOOptions& io) const
+ElevationLayer::createHeightfieldImplementation_internal(const TileKey& key, const IOOptions& io) const
 {
     std::shared_lock lock(layerStateMutex());
     auto result = createHeightfieldImplementation(key, io);
-    if (result.status.failed())
+    if (result.failed())
     {
-        Log()->debug("Failed to create heightfield for key {0} : {1}", key.str(), result.status.message);
+        Log()->debug("Failed to create heightfield for key {0} : {1}", key.str(), result.error().message);
     }
     return result;
 }
@@ -373,23 +371,23 @@ ElevationLayer::createHeightfieldInKeyProfile(const TileKey& key, const IOOption
 
     if (!my_profile.valid() || !isOpen())
     {
-        return Result<GeoHeightfield>(Status::ResourceUnavailable, "Layer not open or initialize");
+        return Failure(Failure::ResourceUnavailable, "Layer not open or initialize");
     }
 
     // Check that the key is legal (in valid LOD range, etc.)
     if ( !isKeyInLegalRange(key) )
     {
-        return Result(GeoHeightfield::INVALID);
+        return Failure_ResourceUnavailable;
     }
 
     if (key.profile.equivalentTo(my_profile))
     {
         auto r = createHeightfieldImplementation_internal(key, io);
 
-        if (r.status.failed())
+        if (r.failed())
             return r;
         else
-            result = r.value;
+            result = r.value();
     }
     else
     {
@@ -401,7 +399,7 @@ ElevationLayer::createHeightfieldInKeyProfile(const TileKey& key, const IOOption
     // Check for cancelation before writing to a cache
     if (io.canceled())
     {
-        return Result(GeoHeightfield::INVALID);
+        return Failure_ResourceUnavailable;
     }
 
     // The const_cast is safe here because we just created the
@@ -411,7 +409,7 @@ ElevationLayer::createHeightfieldInKeyProfile(const TileKey& key, const IOOption
     // validate it to make sure it's legal.
     if (hf && !validateHeightfield(hf.get()))
     {
-        return Result<GeoHeightfield>(Status::GeneralError, "Generated an illegal heightfield!");
+        return Failure(Failure::GeneralError, "Generated an illegal heightfield!");
     }
 
     // Pre-caching operations:
@@ -420,7 +418,7 @@ ElevationLayer::createHeightfieldInKeyProfile(const TileKey& key, const IOOption
     // No luck on any path:
     if (hf == nullptr)
     {
-        return Result(GeoHeightfield::INVALID);
+        return Failure(Failure::ResourceUnavailable);
     }
 
     result = GeoHeightfield(hf, key.extent());
@@ -641,7 +639,7 @@ ElevationLayerVector::populateHeightfield(
         ElevationLayer* layer = contenders[0].layer.get();
 
         auto layerHF = layer->createHeightfield(contenders[0].key, io);
-        if (layerHF.value.valid())
+        if (layerHF.ok() && layerHF.value().valid())
         {
             if (layerHF->heightfield()->width() == hf->width() &&
                 layerHF->heightfield()->height() == hf->height())
@@ -717,7 +715,7 @@ ElevationLayerVector::populateHeightfield(
                     if (heightFailed[i])
                         continue;
 
-                    GeoHeightfield& layerHF = heightfields[i];
+                    GeoHeightfield layerHF = heightfields[i];
                     TileKey& actualKey = heightfieldActualKeys[i];
 
                     if (!layerHF.valid())
@@ -726,11 +724,11 @@ ElevationLayerVector::populateHeightfield(
                         // We also fallback on parent layers to make sure that we have data at the location even if it's fallback.
                         while (!layerHF.valid() && actualKey.valid() && layer->isKeyInLegalRange(actualKey))
                         {
-                            layerHF = layer->createHeightfield(actualKey, io).value;
-                            if (!layerHF.valid())
-                            {
+                            auto temp = layer->createHeightfield(actualKey, io);
+                            if (temp.ok() && temp.value().valid())
+                                layerHF = temp.value();
+                            else
                                 actualKey.makeParent();
-                            }
                         }
 
                         // Mark this layer as fallback if necessary.
@@ -807,14 +805,16 @@ ElevationLayerVector::populateHeightfield(
                     if (offsetFailed[i] == true)
                         continue;
 
-                    GeoHeightfield& layerHF = offsetfields[i];
+                    GeoHeightfield layerHF = offsetfields[i];
                     if (!layerHF.valid())
                     {
                         ElevationLayer* offset = offsets[i].layer.get();
 
-                        layerHF = offset->createHeightfield(contenderKey, io).value;
-                        if (!layerHF.valid())
-                        {
+                        auto r = offset->createHeightfield(contenderKey, io);
+                        if (r.ok() && r.value().valid()) {
+                            layerHF = r.value();
+                        }
+                        else {
                             offsetFailed[i] = true;
                             continue;
                         }

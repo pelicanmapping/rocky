@@ -8,7 +8,7 @@
 
 using namespace ROCKY_NAMESPACE;
 
-Status
+Result<>
 TerrainSettings::from_json(const std::string& JSON)
 {
     const auto j = parse_json(JSON);
@@ -23,7 +23,7 @@ TerrainSettings::from_json(const std::string& JSON)
     get_to(j, "color", color);
     get_to(j, "concurrency", concurrency);
 
-    return Status_OK;
+    return {};
 }
 
 JSON

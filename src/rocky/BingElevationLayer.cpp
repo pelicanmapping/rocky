@@ -59,10 +59,10 @@ BingElevationLayer::to_json() const
     return j.dump();
 }
 
-Status
+Result<>
 BingElevationLayer::openImplementation(const IOOptions& io)
 {
-    Status parent = super::openImplementation(io);
+    auto parent = super::openImplementation(io);
     if (parent.failed())
         return parent;
 
@@ -74,7 +74,7 @@ BingElevationLayer::openImplementation(const IOOptions& io)
 
     ROCKY_TODO("Update attribution - it's included in the JSON response, but we don't track which tiles are still visible and only have the data in a const function");
 
-    return StatusOK;
+    return {};
 }
 
 void
@@ -86,8 +86,8 @@ BingElevationLayer::closeImplementation()
 Result<GeoHeightfield>
 BingElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOOptions& io) const
 {
-    if (!isOpen())
-        return status();
+    if (status().failed())
+        return status().error();
 
     GeoExtent latLongExtent = Profile("global-geodetic").clampAndTransformExtent(key.extent());
 
@@ -103,17 +103,18 @@ BingElevationLayer::createHeightfieldImplementation(const TileKey& key, const IO
     URI dataURI(url->full() + query.str(), url->context());
 
     auto fetch = dataURI.read(io);
-    if (fetch.status.failed())
-        return fetch.status;
+    if (fetch.failed())
+        return fetch.error();
 
-    auto json = parse_json(fetch->data);
+    auto json = parse_json(fetch->content.data);
+
     const auto& elevations = json["/resourceSets/0/resources/0/elevations"_json_pointer];
     if (elevations.empty())
-        return Status("JSON response contained no elevations");
+        return Failure("JSON response contained no elevations");
     if (!elevations.is_array())
-        return Status("JSON response contained unexpected type");
+        return Failure("JSON response contained unexpected type");
     if (elevations.size() != tileSize * tileSize)
-        return Status("JSON response contained unexpected number of points");
+        return Failure("JSON response contained unexpected number of points");
 
     auto heightfield = Heightfield::create(tileSize, tileSize);
     auto jsonItr = elevations.begin();
@@ -122,7 +123,7 @@ BingElevationLayer::createHeightfieldImplementation(const TileKey& key, const IO
     if (heightfield)
         return GeoHeightfield(heightfield, key.extent());
     else
-        return Status_ResourceUnavailable;
+        return Failure_ResourceUnavailable;
 }
 
 #endif // ROCKY_HAS_BING

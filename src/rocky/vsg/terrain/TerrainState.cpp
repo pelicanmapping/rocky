@@ -40,8 +40,6 @@ using namespace ROCKY_NAMESPACE;
 
 TerrainState::TerrainState(VSGContext& context)
 {
-    status = StatusOK;
-
     // set up the texture samplers and placeholder images we will use to render terrain.
     createDefaultDescriptors(context);
 
@@ -49,7 +47,7 @@ TerrainState::TerrainState(VSGContext& context)
     shaderSet = createShaderSet(context);
     if (!shaderSet)
     {
-        status = Status(Status::ResourceUnavailable,
+        status = Failure(Failure::ResourceUnavailable,
             "Terrain shaders are missing or corrupt. "
             "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
         return;

@@ -31,7 +31,7 @@ namespace ROCKY_NAMESPACE
 
     public: // Layer
 
-        Status openImplementation(const IOOptions&) override;
+        Result<> openImplementation(const IOOptions&) override;
 
         void closeImplementation() override;
 
@@ -52,7 +52,7 @@ namespace ROCKY_NAMESPACE
         //! @return A GeoImage object containing the image data.
         virtual Result<GeoImage> createImageImplementation(const TileKey& key, const IOOptions& io) const
         {
-            return Result(GeoImage::INVALID);
+            return Failure_ResourceUnavailable;
         }
 
     protected:

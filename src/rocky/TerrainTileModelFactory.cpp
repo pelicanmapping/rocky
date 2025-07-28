@@ -165,10 +165,10 @@ namespace
         TileKey key = requested_key;
         if (fallback)
         {
-            while(key.valid() && !result.value.valid())
+            while(key.valid() && !result.ok())
             {
                 result = layer->createImage(key, io);
-                if (!result.value.valid())
+                if (!result.ok())
                     key.makeParent();
             }
         }
@@ -177,12 +177,14 @@ namespace
             result = layer->createImage(key, io);
         }
 
-        if (result.value.valid())
+        if (result.ok())
         {
+            ROCKY_HARD_ASSERT(result.value().valid());
+
             TerrainTileModel::ColorLayer m;            
             m.layer = layer;
             m.revision = layer->revision();
-            m.image = result.value;
+            m.image = result.value();
             m.key = key;
             model.colorLayers.emplace_back(std::move(m));
             //if (layer->dynamic())
@@ -193,9 +195,11 @@ namespace
 
         // ResourceUnavailable just means the driver could not produce data
         // for the tilekey; it is not an actual read error.
-        else if (result.status.failed() && result.status.code != Status::ResourceUnavailable)
+        else if (
+            result.error().type != Failure::ResourceUnavailable &&
+            result.error().type != Failure::OperationCanceled)
         {
-            Log()->warn("Problem getting data from \"" + layer->name() + "\" : " + result.status.message);
+            Log()->warn("Problem getting data from \"" + layer->name() + "\" : " + result.error().string());
         }
     }
 }
@@ -315,47 +319,6 @@ TerrainTileModelFactory::addColorLayers(
 }
 
 
-
-TerrainTileModel::Elevation
-TerrainTileModelFactory::createElevationModel(const Map* map, const TileKey& key, const IOOptions& io) const
-{
-    ROCKY_HARD_ASSERT(map != nullptr);
-
-    TerrainTileModel::Elevation model;
-
-    auto layers = map->layers<ElevationLayer>();
-    auto layer = layers.empty() ? nullptr : layers.front();
-
-    if (layer != nullptr && 
-        layer->isOpen() &&
-        layer->isKeyInLegalRange(key) &&
-        layer->mayHaveData(key))
-    {
-        auto result = layer->createHeightfield(key, io);
-
-        if (result.status.ok())
-        {
-            replace_nodata_values(result.value);
-
-            model.heightfield = std::move(result.value);
-            model.revision = layer->revision();
-            model.key = key;
-        }
-
-        // ResourceUnavailable just means the driver could not produce data
-        // for the tilekey; it is not an actual read error.
-        else if (result.status.code != Status::ResourceUnavailable)
-        {
-            Log()->warn("Problem getting data from \"" + layer->name() + "\" : " + result.status.message);
-        }
-    }
-
-    return model;
-}
-
-
-
-
 bool
 TerrainTileModelFactory::addElevation(
     TerrainTileModel& model,
@@ -396,20 +359,22 @@ TerrainTileModelFactory::addElevation(
     {
         auto result = layer->createHeightfield(key, io);
 
-        if (result.status.ok())
+        if (result.ok())
         {
-            replace_nodata_values(result.value);
+            replace_nodata_values(result.value());
 
-            model.elevation.heightfield = std::move(result.value);
+            model.elevation.heightfield = std::move(result.value());
             model.elevation.revision = layer->revision();
             model.elevation.key = key;
         }
 
         // ResourceUnavailable just means the driver could not produce data
         // for the tilekey; it is not an actual read error.
-        else if (result.status.code != Status::ResourceUnavailable)
+        else if (
+            result.error().type != Failure::ResourceUnavailable &&
+            result.error().type != Failure::OperationCanceled)
         {
-            Log()->warn("Problem getting data from \"" + layer->name() + "\" : " + result.status.message);
+            Log()->warn("Problem getting data from \"" + layer->name() + "\" : " + result.error().string());
         }
     }
 

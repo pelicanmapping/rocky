@@ -19,7 +19,7 @@ ROCKY_ADD_OBJECT_FACTORY(GDALElevation,
 namespace
 {
     template<typename T>
-    Status openOnThisThread(
+    Result<> openOnThisThread(
         const T* layer,
         GDAL::Driver& driver,
         Profile* profile,
@@ -36,7 +36,7 @@ namespace
         if (layer->maxValidValue.has_value())
             driver.maxValidValue = layer->maxValidValue;
 
-        Status status = driver.open(
+        auto status = driver.open(
             layer->name(),
             layer,
             layer->tileSize,
@@ -51,7 +51,7 @@ namespace
             *profile = driver.profile();
         }
 
-        return StatusOK;
+        return status;
     }
 }
 
@@ -106,10 +106,10 @@ GDALElevationLayer::to_json() const
     return j.dump();
 }
 
-Status
+Result<>
 GDALElevationLayer::openImplementation(const IOOptions& io)
 {
-    Status parent = super::openImplementation(io);
+    auto parent = super::openImplementation(io);
     if (parent.failed())
         return parent;
 
@@ -123,8 +123,7 @@ GDALElevationLayer::openImplementation(const IOOptions& io)
 
     DataExtentList dataExtents;
 
-    Status s = openOnThisThread(this, driver, &new_profile, &dataExtents, io);
-
+    auto s = openOnThisThread(this, driver, &new_profile, &dataExtents, io);
     if (s.failed())
         return s;
 
@@ -152,44 +151,46 @@ Result<GeoHeightfield>
 GDALElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOOptions& io) const
 {
     if (status().failed())
-        return status();
+        return status().error();
 
     auto& driver = _drivers.value();
     if (!driver.isOpen())
     {
         // calling openImpl with NULL params limits the setup
         // since we already called this during openImplementation
-        openOnThisThread(this, driver, nullptr, nullptr, io);
+        auto r = openOnThisThread(this, driver, nullptr, nullptr, io);
+        if (r.failed())
+            return fail(r.error());
     }
 
     if (driver.isOpen())
     {
         auto r = driver.createHeightfield(key, tileSize, io);
 
-        if (r.status.ok())
+        if (r.ok())
         {
-            return GeoHeightfield(r.value, key.extent());
+            return GeoHeightfield(r.value(), key.extent());
         }
         else
         {
             auto r = driver.createImage(key, tileSize, io);
 
-            if (r.status.ok())
+            if (r.ok())
             {
-                if (r.value->pixelFormat() == Image::R32_SFLOAT)
+                if (r.value()->pixelFormat() == Image::R32_SFLOAT)
                 {
-                    return GeoHeightfield(Heightfield::create(r.value.get()), key.extent());
+                    return GeoHeightfield(Heightfield::create(r.value().get()), key.extent());
                 }
                 else // assume Image::R8G8B8_UNORM?
                 {
-                    auto hf = decodeRGB(r.value);
+                    auto hf = decodeRGB(r.value());
                     return GeoHeightfield(hf, key.extent());
                 }
             }
         }
     }
 
-    return Status_ResourceUnavailable;
+    return Failure_ResourceUnavailable;
 }
 
 #endif // GDAL_HAS_ROCKY

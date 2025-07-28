@@ -6,7 +6,7 @@
 #pragma once
 
 #include <rocky/DateTime.h>
-#include <rocky/Status.h>
+#include <rocky/Result.h>
 #include <rocky/Units.h>
 #include <rocky/Threading.h>
 #include <rocky/LRUCache.h>
@@ -37,7 +37,7 @@ namespace ROCKY_NAMESPACE
 
     //! Service for writing an image to a stream
     using WriteImageStreamService = std::function<
-        Status(std::shared_ptr<Image> image, std::ostream& stream, std::string contentType, const IOOptions& io)>;
+        Result<>(std::shared_ptr<Image> image, std::ostream& stream, std::string contentType, const IOOptions& io)>;
 
     //! Service for caching data
     using CacheImpl = void*; // todo.
@@ -50,9 +50,10 @@ namespace ROCKY_NAMESPACE
     };
     using DataService = std::function<DataInterface&()>;
 
+    //! Holds a generic content buffer and its type.
     struct Content {
-        std::string contentType;
-        std::string data;
+        std::string type;   // i.e., content-type or mime-type
+        std::string data;   // actual data buffer
         std::chrono::system_clock::time_point timestamp;
     };
 
@@ -114,27 +115,14 @@ namespace ROCKY_NAMESPACE
 
     private:
         Cancelable* _cancelable = nullptr;
-        std::unordered_map<std::string, std::string> _properties;
     };
-
-    /**
-     * Convenience metadata tags
-     */
-    namespace IOMetadata
-    {
-        const std::string CONTENT_TYPE = "Content-Type";
-    }
 
     /**
      * Return value from a read* method
      */
-    template<typename T>
-    struct IOResult : public Result<T>
+    struct IOFailure
     {
-        /** Read result codes. */
-        enum IOCode
-        {
-            RESULT_OK,
+        enum Type {
             RESULT_CANCELED,
             RESULT_NOT_FOUND,
             RESULT_EXPIRED,
@@ -147,51 +135,40 @@ namespace ROCKY_NAMESPACE
             RESULT_NOT_MODIFIED
         };
 
-        unsigned ioCode = RESULT_OK;
+        Type type;
+        std::string message;
+
+        IOFailure(Type t) : type(t) {}
+        IOFailure(Type t, std::string_view m) : type(t), message(m) {}
+
+        std::string string() const {
+            return
+                type == RESULT_CANCELED ? "Read canceled" :
+                type == RESULT_NOT_FOUND ? "Target not found" :
+                type == RESULT_EXPIRED ? "Target expired" :
+                type == RESULT_SERVER_ERROR ? "Server reported error" :
+                type == RESULT_TIMEOUT ? "Read timed out" :
+                type == RESULT_NO_READER ? "No suitable ReaderWriter found" :
+                type == RESULT_READER_ERROR ? "ReaderWriter error" :
+                type == RESULT_NOT_IMPLEMENTED ? "Not implemented" :
+                type == RESULT_NOT_MODIFIED ? "Not modified" :
+                "Unknown error";
+        }
+    };
+    
+    struct IOResponse
+    {
+        Content content;
         TimeStamp lastModifiedTime = 0;
         Duration duration;
         bool fromCache = false;
-        JSON metadata;
+        std::string jsonMetadata;
 
-        IOResult(const T& result) :
-            Result<T>(result) { }
+        IOResponse(const Content& in_content) :
+            content(in_content) { }
 
-        /** Construct a result with an error message */
-        IOResult(const Status& s) :
-            Result<T>(s),
-            ioCode(s.ok() ? RESULT_OK : RESULT_NOT_FOUND) { }
-
-        template<typename RHS>
-        static IOResult<T> propagate(const IOResult<RHS>& rhs) {
-            IOResult<T> lhs(rhs.status);
-            lhs.ioCode = rhs.ioCode;
-            lhs.metadata = rhs.metadata;
-            lhs.fromCache = rhs.fromCache;
-            lhs.lastModifiedTime = rhs.lastModifiedTime;
-            lhs.duration = rhs.duration;
-            return lhs;
-        }
-
-        /** Gets a string describing the read result */
-        static std::string getResultCodeString(unsigned code)
-        {
-            return
-                code == RESULT_OK              ? "OK" :
-                code == RESULT_CANCELED        ? "Read canceled" :
-                code == RESULT_NOT_FOUND       ? "Target not found" :
-                code == RESULT_SERVER_ERROR    ? "Server reported error" :
-                code == RESULT_TIMEOUT         ? "Read timed out" :
-                code == RESULT_NO_READER       ? "No suitable ReaderWriter found" :
-                code == RESULT_READER_ERROR    ? "ReaderWriter error" :
-                code == RESULT_NOT_IMPLEMENTED ? "Not implemented" :
-                code == RESULT_NOT_MODIFIED    ? "Not modified" :
-                                                 "Unknown error";
-        }
-
-        std::string getResultCodeString() const
-        {
-            return getResultCodeString(ioCode);
-        }
+        IOResponse(Content&& in_content) :
+            content(std::move(in_content)) { }
     };
 
     bool IOOptions::canceled() const {

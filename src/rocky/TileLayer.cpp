@@ -55,7 +55,7 @@ TileLayer::to_json() const
     return j.dump();
 }
 
-Status
+Result<>
 TileLayer::openImplementation(const IOOptions& io)
 {
     auto result = super::openImplementation(io);

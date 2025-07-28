@@ -12,7 +12,7 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_Geocoder = [](Application& app)
 {
-    static Status status;
+    static Result<> status;
     static jobs::future<Result<std::vector<Feature>>> geocoding_task;
     static char input_buf[256];
     static entt::entity placemark = entt::null;
@@ -21,7 +21,7 @@ auto Demo_Geocoder = [](Application& app)
     if (status.failed())
     {
         ImGui::TextColored(ImVec4(1, 0, 0, 1), "Icon load failed");
-        ImGui::TextColored(ImVec4(1, 0, 0, 1), status.message.c_str());
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), status.error().message.c_str());
         return;
     }
 
@@ -59,15 +59,14 @@ auto Demo_Geocoder = [](Application& app)
 
                 std::string input(input_buf);
 
-                geocoding_task = jobs::dispatch([&app, input](jobs::cancelable& c)
+                geocoding_task = jobs::dispatch([&app, input](jobs::cancelable& c) -> Result<std::vector<Feature>>
                     {
-                        Result<std::vector<Feature>> result;
                         if (!c.canceled())
                         {
                             Geocoder geocoder;
-                            result = geocoder.geocode(input, app.io());
+                            return geocoder.geocode(input, app.io());
                         }
-                        return result;
+                        return {}; // result;
                     });
             }
             ImGuiLTable::End();
@@ -80,13 +79,13 @@ auto Demo_Geocoder = [](Application& app)
 
         else if (geocoding_task.available())
         {
-            auto& result = geocoding_task.value();
-            if (result.status.ok())
+            auto result = geocoding_task.value();
+            if (result.ok())
             {
                 int count = 0;
                 ImGui::Text("Click on a result to center:");
 
-                for (auto& feature : result.value)
+                for (auto& feature : result.value())
                 {
                     ImGui::PushID(count++);
                     bool selected = false;
@@ -165,7 +164,7 @@ auto Demo_Geocoder = [](Application& app)
             }
             else
             {
-                ImGui::TextColored(ImVec4(1, 0.5, 0.5, 1), std::string("Geocoding failed! " + result.status.message).c_str());
+                ImGui::TextColored(ImVec4(1, 0.5, 0.5, 1), std::string("Geocoding failed! " + result.error().message).c_str());
             }
         }
     }

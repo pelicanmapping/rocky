@@ -144,20 +144,19 @@ namespace
     Result<TiXmlDocument> load_include_file(const URI& href, const IOOptions& io)
     {
         auto result = href.read(io);
-        if (result.status.ok())
+        if (result.ok())
         {
             TiXmlDocument doc;
-            doc.Parse(result.value.data.c_str());
+            doc.Parse(result.value().content.data.c_str());
             if (doc.Error() || !doc.RootElement())
             {
-                return Status(Status::GeneralError, util::make_string()
-                    << "Include file - XML parse error at row " << doc.ErrorRow()
-                    << " col " << doc.ErrorCol());
+                return Failure(Failure::GeneralError, "Include file - XML parse error at row " +
+                    std::to_string(doc.ErrorRow()) + " col " + std::to_string(doc.ErrorCol()));
             }
 
             return doc;
         }
-        return Status(Status::ResourceUnavailable, "Failed to load include file");
+        return Failure(Failure::ResourceUnavailable, "Failed to load include file");
     }
 }
 
@@ -173,26 +172,26 @@ EarthFileImporter::read(const std::string& location, const IOOptions& io) const
     URI uri(location);
 
     auto result = uri.read(io);
-    if (result.status.failed())
+    if (result.failed())
     {
-        return result.status;
+        return result.error();
     }
 
     // try to parse the string into an XML document:
     TiXmlDocument doc;
-    doc.Parse(result.value.data.c_str());
+    doc.Parse(result.value().content.data.c_str());
     if (doc.Error() || !doc.RootElement())
     {
-        return Status(Status::GeneralError, util::make_string()
-            << "XML parse error at row " << doc.ErrorRow()
-            << " col " << doc.ErrorCol());
+        return Failure(Failure::GeneralError,
+            "XML parse error at row " + std::to_string(doc.ErrorRow()) +
+            " col " + std::to_string(doc.ErrorCol()));
     }
 
     // Confirm a top-level "map" element:
     auto mapxml = doc.RootElement();
     if (!util::ciEquals(mapxml->Value(), "map"))
     {
-        return Status(Status::ConfigurationError, "XML missing top-level 'map' element");
+        return Failure(Failure::ConfigurationError, "XML missing top-level 'map' element");
     }
 
     auto top = json::object();
@@ -218,9 +217,9 @@ EarthFileImporter::read(const std::string& location, const IOOptions& io) const
                 if (child_el->QueryStringAttribute("href", &href) == TIXML_SUCCESS)
                 {
                     auto included_doc = load_include_file(URI(href, location), io);
-                    if (included_doc.status.ok())
+                    if (included_doc.ok())
                     {
-                        included_docs.push_back(included_doc.value);
+                        included_docs.emplace_back(included_doc.value());
                         child_el = included_docs.back().RootElement();
                     }
                 }

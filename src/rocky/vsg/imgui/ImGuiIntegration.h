@@ -32,27 +32,24 @@ namespace ROCKY_NAMESPACE
             //nop
         }
 
-        Callback<void(const vsg::UIEvent&)> onEventHandled;
+        Callback<void(const vsg::UIEvent&)> onEvent;
 
         template<typename E>
-        inline void propagate(E& e, bool forceRefresh = false)
+        inline void propagate(E& e)
         {
             // only process events for the window we are interested in, and if the event wasn't handled
             // (say, by another wrapper connected to another view)
             if (!e.handled && ((_window == nullptr) || (e.window.ref_ptr() == _window)))
             {
-                // active the context associated with this window/view
+                // activate the context associated with this window/view
                 if (_imguiContext)
                 {
                     ImGui::SetCurrentContext(_imguiContext);
                 }
 
-                SendEventsToImGui::apply(e);
+                Inherit::apply(e);
 
-                if (e.handled || forceRefresh)
-                {
-                    onEventHandled.fire(e);
-                }
+                onEvent.fire(e);
             }
         }
 
@@ -62,16 +59,13 @@ namespace ROCKY_NAMESPACE
         void apply(vsg::KeyPressEvent& e) override { propagate(e); }
         void apply(vsg::KeyReleaseEvent& e) override { propagate(e); }
         void apply(vsg::MoveEvent& e) override { propagate(e); }
-        void apply(vsg::ConfigureWindowEvent& e) override { propagate(e, true); }
-        
-        void apply(vsg::FrameEvent& frame) override
-        {
-            if (_imguiContext)
-            {
-                ImGui::SetCurrentContext(_imguiContext);
-            }
+        void apply(vsg::ConfigureWindowEvent& e) override { propagate(e); }
 
-            Inherit::apply(frame);
+        void apply(vsg::FrameEvent& e) override {
+            if (_imguiContext)
+                ImGui::SetCurrentContext(_imguiContext);
+            Inherit::apply(e);
+            onEvent.fire(e);
         }
 
     private:

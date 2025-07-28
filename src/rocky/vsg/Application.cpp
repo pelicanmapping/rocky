@@ -27,52 +27,54 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    Status loadMapFile(const std::string& location, MapNode& mapNode, Context context)
+    Result<> loadMapFile(const std::string& location, MapNode& mapNode, Context context)
     {
-        Status status;
+        Result<> status;
 
         auto map_file = URI(location).read(context->io);
 
-        if (map_file.status.ok())
+        if (map_file.ok())
         {
-            auto parse_result = mapNode.from_json(map_file->data, context->io.from(location));
+            auto parse_result = mapNode.from_json(map_file->content.data, context->io.from(location));
             if (parse_result.failed())
             {
-                status = parse_result;
+                status = parse_result.error();
             }
         }
         else
         {
             // return the error
-            status = map_file.status;
+            status = map_file.error();
         }
 
         return status;
     }
 
-    Status importEarthFile(const std::string& infile, MapNode& mapNode, Context context)
+    Result<> importEarthFile(const std::string& infile, MapNode& mapNode, Context context)
     {
-        Status status;
+        Result<> status;
 
         auto io = context->io.from(infile);
 
         EarthFileImporter importer;
         auto result = importer.read(infile, io);
 
-        if (result.status.ok())
+        if (result.ok())
         {
             auto count = mapNode.map->layers().size();
 
-            mapNode.from_json(result.value, io);
+            auto r = mapNode.from_json(result.value(), io);
+            if (r.failed())
+                return r.error();
 
             if (count == mapNode.map->layers().size())
             {
-                status = Status(Status::ResourceUnavailable, "No layers imported from earth file");
+                status = Failure(Failure::ResourceUnavailable, "No layers imported from earth file");
             }
         }
         else
         {
-            status = result.status;
+            status = result.error();
         }
 
         return status;
@@ -592,8 +594,10 @@ Application::install(vsg::ref_ptr<RenderImGuiContext> group, bool installAutomat
     handlers.insert(handlers.begin(), send);
 
     // request a frame when the sender handles an ImGui event:
-    _subs += send->onEventHandled([vsgcontext(this->vsgcontext)](const vsg::UIEvent& e)
+    _subs += send->onEvent([vsgcontext(this->vsgcontext)](const vsg::UIEvent& e)
         {
+            if (e.cast<vsg::FrameEvent>()) return;
+
             vsgcontext->requestFrame();
         });
 

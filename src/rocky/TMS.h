@@ -111,7 +111,7 @@ namespace ROCKY_NAMESPACE
         class ROCKY_EXPORT Driver
         {
         public:
-            Status open(
+            Result<> open(
                 const URI& uri,
                 Profile& profile,
                 const std::string& format,

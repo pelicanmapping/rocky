@@ -9,7 +9,7 @@
 #include <rocky/SRS.h>
 #include <rocky/GeoExtent.h>
 #include <rocky/Math.h>
-#include <rocky/Status.h>
+#include <rocky/Result.h>
 
 namespace ROCKY_NAMESPACE
 {

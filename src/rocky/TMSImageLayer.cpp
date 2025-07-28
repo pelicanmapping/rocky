@@ -58,20 +58,20 @@ TMSImageLayer::to_json() const
     return j.dump();
 }
 
-Status
+Result<>
 TMSImageLayer::openImplementation(const IOOptions& io)
 {
-    Status parent = super::openImplementation(io);
+    auto parent = super::openImplementation(io);
     if (parent.failed())
         return parent;
 
     Profile driver_profile = profile;
 
     DataExtentList dataExtents;
-    Status status = _driver.open(uri, driver_profile, format, dataExtents, io);
+    auto status = _driver.open(uri, driver_profile, format, dataExtents, io);
 
     if (status.failed())
-        return status;
+        return status.error();
 
     if (driver_profile != profile)
     {
@@ -86,7 +86,7 @@ TMSImageLayer::openImplementation(const IOOptions& io)
 
     setDataExtents(dataExtents);
 
-    return StatusOK;
+    return {};
 }
 
 void
@@ -101,8 +101,8 @@ TMSImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io
 {
     auto r = _driver.read(key, invertY, false, uri->context(), io);
 
-    if (r.status.ok())
-        return GeoImage(r.value, key.extent());
+    if (r.ok())
+        return GeoImage(r.value(), key.extent());
     else
-        return r.status;
+        return r.error();
 }

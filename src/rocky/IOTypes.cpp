@@ -47,12 +47,11 @@ IOOptions::operator = (const IOOptions& rhs)
     maxNetworkAttempts = rhs.maxNetworkAttempts;
     uriGate = rhs.uriGate;
     _cancelable = rhs._cancelable;
-    _properties = rhs._properties;
     return *this;
 }
 
 Services::Services()
 {
-    readImageFromURI = [](const std::string& location, const IOOptions&) { return Status_ServiceUnavailable; };
-    readImageFromStream = [](std::istream& stream, std::string contentType, const IOOptions& io) { return Status_ServiceUnavailable; };
+    readImageFromURI = [](const std::string& location, const IOOptions&) { return Failure_ServiceUnavailable; };
+    readImageFromStream = [](std::istream& stream, std::string contentType, const IOOptions& io) { return Failure_ServiceUnavailable; };
 }

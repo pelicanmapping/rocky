@@ -30,7 +30,7 @@ namespace ROCKY_NAMESPACE
     protected:
 
         //! Establishes a connection to the GDAL data source
-        Status openImplementation(const IOOptions&) override;
+        Result<> openImplementation(const IOOptions&) override;
 
         //! Closes down any GDAL connections
         void closeImplementation() override;

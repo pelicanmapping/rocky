@@ -30,7 +30,6 @@ namespace
 
 auto Demo_Decluttering = [](Application& app)
 {
-    static Status status;
     static std::shared_ptr<DeclutterSystem> declutter;
     static float updateHertz = 1.0f;
     static bool declutteringEnabled = true;

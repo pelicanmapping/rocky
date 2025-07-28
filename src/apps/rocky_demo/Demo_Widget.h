@@ -7,15 +7,75 @@
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
 
+namespace
+{
+    struct MapClickHandler : public vsg::Inherit<vsg::Visitor, MapClickHandler>
+    {
+        Application& app;
+        MapClickHandler(Application& in_app) : app(in_app) {}
+        std::optional<vsg::ButtonPressEvent> _press;
+
+        Callback<void(const GeoPoint&)> onClick;
+
+        void apply(vsg::ButtonPressEvent& e) override
+        {
+            if (e.button == 1) // left mouse button
+            {
+                _press = e;
+            }
+        }
+
+        void apply(vsg::ButtonReleaseEvent& e) override
+        {
+            if (_press.has_value())
+            {
+                auto dx = std::abs(e.x - _press->x), dy = std::abs(e.y - _press->y);
+                if (dx < 5 && dy < 5) // click threshold
+                {
+                    auto view = app.display.getView(_press->window, _press->x, _press->y);
+                    if (view)
+                    {
+                        auto p = rocky::pointAtWindowCoords(view, _press->x, _press->y);
+                        if (p.valid())
+                            onClick.fire(p);
+                    }
+                }
+            }
+            _press.reset();
+        }
+    };
+}
+
 auto Demo_Widget = [](Application& app)
 {
 #ifdef ROCKY_HAS_IMGUI
         
     static entt::entity entity = entt::null;
-    static Status status;
+    static bool move_widget_on_map_click = false;
+    static CallbackSub sub;
 
     if (entity == entt::null)
     {
+        auto handler = MapClickHandler::create(app);
+        app.viewer->getEventHandlers().emplace_back(handler);
+
+        sub = handler->onClick([&](const GeoPoint& p)
+            {
+                if (move_widget_on_map_click)
+                {
+                    app.registry.read([&](entt::registry& registry)
+                        {
+                            auto& transform = registry.get<Transform>(entity);
+                            auto old = transform.position.transform(SRS::WGS84);
+                            auto pos = p.transform(SRS::WGS84);
+                            pos.z = old.z;
+                            transform.position = pos;
+                            transform.dirty();
+                        });
+                }
+            });
+
+
         auto [lock, registry] = app.registry.write();
 
         entity = registry.create();
@@ -65,9 +125,12 @@ auto Demo_Widget = [](Application& app)
                             ImGuiLTable::Text("Altitude:", "%.1f", p.z);
                             ImGuiLTable::End();
                         }
+                        ImGui::Checkbox("Move widget on map click", &move_widget_on_map_click);
                         ImGui::Separator();
-                        if (ImGui::Button("Whatever"))
+                        if (ImGui::Button("Whatever")) {
                             fixed_window_open = false;
+                            move_widget_on_map_click = false;
+                        }
                     }
                     ImGui::End();
                 }

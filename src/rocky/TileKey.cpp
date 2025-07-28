@@ -243,9 +243,7 @@ TileKey::mapResolution(unsigned targetSize,
 
 
 TileKey
-TileKey::createTileKeyContainingPoint(
-    double x, double y, unsigned level,
-    const Profile& profile)
+TileKey::createTileKeyContainingPoint(double x, double y, unsigned level, const Profile& profile)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(profile.valid(), TileKey::INVALID);
 
@@ -254,17 +252,6 @@ TileKey::createTileKeyContainingPoint(
     if (extent.contains(x, y))
     {
         auto [tilesX, tilesY] = profile.numTiles(level);
-        //unsigned tilesX = _numTilesWideAtLod0 * (1 << (unsigned)level);
-        //unsigned tilesY = _numTilesHighAtLod0 * (1 << (unsigned)level);
-
-        // overflow checks:
-#if 0
-        if (_numTilesWideAtLod0 == 0u || ((tilesX / _numTilesWideAtLod0) != (1 << (unsigned)level)))
-            return TileKey::INVALID;
-
-        if (_numTilesHighAtLod0 == 0u || ((tilesY / _numTilesHighAtLod0) != (1 << (unsigned)level)))
-            return TileKey::INVALID;
-#endif
 
         double rx = (x - extent.xmin()) / extent.width();
         int tileX = std::min((unsigned)(rx * (double)tilesX), tilesX - 1);

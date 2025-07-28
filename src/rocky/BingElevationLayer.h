@@ -31,7 +31,7 @@ namespace ROCKY_NAMESPACE
 
     public: // Layer
 
-        Status openImplementation(const IOOptions& io) override;
+        Result<> openImplementation(const IOOptions& io) override;
 
         void closeImplementation() override;
 

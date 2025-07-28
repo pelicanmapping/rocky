@@ -5,7 +5,7 @@
  */
 #pragma once
 #include <rocky/Common.h>
-#include <rocky/Status.h>
+#include <rocky/Result.h>
 #include <rocky/IOTypes.h>
 #include <vector>
 

@@ -55,7 +55,7 @@ namespace ROCKY_NAMESPACE
 
     public: // Layer
 
-        Status openImplementation(const IOOptions&) override;
+        Result<> openImplementation(const IOOptions&) override;
 
         void closeImplementation() override;
 
@@ -78,7 +78,7 @@ namespace ROCKY_NAMESPACE
             const TileKey& key,
             const IOOptions& io) const
         {
-            return Result(GeoHeightfield::INVALID);
+            return Failure_ResourceUnavailable;
         }
 
         //! Decodes an image into a heightfield from its native representation

@@ -107,7 +107,7 @@ namespace ROCKY_NAMESPACE
         bool isRemote() const;
 
         //! Reads the URI into a data buffer
-        IOResult<Content> read(const IOOptions& io) const;
+        Result<IOResponse> read(const IOOptions& io) const;
 
     public:
 

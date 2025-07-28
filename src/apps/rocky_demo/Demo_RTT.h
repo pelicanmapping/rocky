@@ -19,13 +19,13 @@ namespace
     vsg::ref_ptr<vsg::Node> load_rtt_model(const URI& uri, VSGContext& runtime)
     {
         auto result = uri.read({});
-        if (result.status.ok())
+        if (result.ok())
         {
             // this is a bit awkward but it works when the URI has an extension
             auto options = vsg::Options::create(*runtime->readerWriterOptions);
             auto extension = std::filesystem::path(uri.full()).extension();
-            options->extensionHint = extension.empty() ? std::filesystem::path(result.value.contentType) : extension;
-            std::stringstream in(result.value.data);
+            options->extensionHint = extension.empty() ? std::filesystem::path(result.value().content.type) : extension;
+            std::istringstream in(result.value().content.data);
             return vsg::read_cast<vsg::Node>(in, options);
         }
         else
@@ -55,14 +55,14 @@ namespace
 
 auto Demo_RTT = [](Application& app)
 {
-    static Status status;
+    static Result<> status;
     static entt::entity entity = entt::null;
     static vsg::ref_ptr<vsg::MatrixTransform> mt;
     static float rotation = 0.0f;
 
     if (status.failed())
     {
-        ImGui::TextColored(ImVec4(1, 0, 0, 1), status.message.c_str());
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), status.error().message.c_str());
         return;
     }
 
@@ -78,7 +78,7 @@ auto Demo_RTT = [](Application& app)
         auto rtt_node = load_rtt_model(uri, app.vsgcontext);
         if (!rtt_node)
         {
-            status = Status(Status::ResourceUnavailable, "Unable to load the model from " + uri.full());
+            status = Failure(Failure::ResourceUnavailable, "Unable to load the model from " + uri.full());
             return;
         }
 

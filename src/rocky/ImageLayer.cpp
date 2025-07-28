@@ -84,7 +84,7 @@ ImageLayer::to_json() const
     return j.dump();
 }
 
-Status
+Result<>
 ImageLayer::openImplementation(const IOOptions& io)
 {
     auto r = super::openImplementation(io);
@@ -93,7 +93,7 @@ ImageLayer::openImplementation(const IOOptions& io)
 
     _dependencyCache = std::make_shared<TileMosaicWeakCache<Image>>();
 
-    return StatusOK;
+    return {};
 }
 
 void
@@ -107,11 +107,10 @@ Result<GeoImage>
 ImageLayer::createImage(const TileKey& key, const IOOptions& io) const
 {
     std::shared_lock readLock(layerStateMutex());
-    if (isOpen())
-    {
+    if (status().ok())
         return createImageInKeyProfile(key, io);
-    }
-    return status();
+    else
+        return status().error();
 }
 
 Result<GeoImage>
@@ -119,9 +118,9 @@ ImageLayer::createImageImplementation_internal(const TileKey& key, const IOOptio
 {
     std::shared_lock lock(layerStateMutex());
     auto result = createImageImplementation(key, io);
-    if (result.status.failed())
+    if (result.failed())
     {
-        Log()->debug("Failed to create image for key {0} : {1}", key.str(), result.status.message);
+        Log()->debug("Failed to create image for key {0} : {1}", key.str(), result.error().message);
     }
     return result;
 }
@@ -181,7 +180,7 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
     // address this later if necessary.
     //ROCKY_SOFT_ASSERT(result.status.failed() || result.value.image());
 
-    if (result.status.ok() && result.value.image())
+    if (result.ok() && result.value().image())
     {
         if (cropIntersection.valid())
         {
@@ -189,14 +188,15 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
             if (!cropIntersection.contains(b))
             {
                 int s0, t0, s1, t1;
-                result.value.getPixel(cropIntersection.xmin(), cropIntersection.ymin(), s0, t0);
-                result.value.getPixel(cropIntersection.xmax(), cropIntersection.ymax(), s1, t1);
-                s0 = clamp(s0, 0, (int)result.value.image()->width() - 1);
-                s1 = clamp(s1, 0, (int)result.value.image()->width() - 1);
-                t0 = clamp(t0, 0, (int)result.value.image()->height() - 1);
-                t1 = clamp(t1, 0, (int)result.value.image()->height() - 1);
+                result.value().getPixel(cropIntersection.xmin(), cropIntersection.ymin(), s0, t0);
+                result.value().getPixel(cropIntersection.xmax(), cropIntersection.ymax(), s1, t1);
+                s0 = clamp(s0, 0, (int)result.value().image()->width() - 1);
+                s1 = clamp(s1, 0, (int)result.value().image()->width() - 1);
+                t0 = clamp(t0, 0, (int)result.value().image()->height() - 1);
+                t1 = clamp(t1, 0, (int)result.value().image()->height() - 1);
 
-                auto image = result.value.image();
+                auto image = result.value().image();
+
                 image->eachPixel([&](auto& i)
                     {
                         if ((int)i.s() < s0 || (int)i.s() > s1 || (int)i.t() < t0 || (int)i.t() > t1)
@@ -210,7 +210,7 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
 
         if (sharpness_value > 0.0f)
         {
-            result = GeoImage(result.value.image()->sharpen(sharpness_value), key.extent());
+            result = GeoImage(result.value().image()->sharpen(sharpness_value), key.extent());
         }
     }
 
@@ -257,24 +257,24 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                 // create the sub tile, falling back until we get real data
                 TileKey subKey = intersectingKey;
                 Result<GeoImage> subTile;
-                while (subKey.valid() && !subTile.status.ok())
+                while (subKey.valid() && !subTile.ok())
                 {
                     subTile = createImageImplementation_internal(subKey, io);
 
-                    if (subTile.status.failed() || subTile.value.image() == nullptr)
+                    if (subTile.failed() || !subTile.value().image())
                         subKey.makeParent();
 
                     if (io.canceled())
                         return {};
                 }
 
-                if (subTile.status.ok() && subTile.value.image())
+                if (subTile.ok() && subTile.value().image())
                 {
                     // save it in the weak cache:
-                    _dependencyCache->put(intersectingKey, subKey, subTile.value.image());
+                    _dependencyCache->put(intersectingKey, subKey, subTile.value().image());
 
                     // add it to our sources collection:
-                    sources.emplace_back(subTile.value);
+                    sources.emplace_back(subTile.value());
 
                     if (subKey.level == targetLOD)
                     {
