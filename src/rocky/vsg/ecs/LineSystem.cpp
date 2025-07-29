@@ -163,9 +163,11 @@ LineSystemNode::createOrUpdateNode(Line& line, detail::BuildInfo& data, VSGConte
         vsg::ref_ptr<vsg::Node> geometry_root;
         vsg::dmat4 localizer_matrix;
 
-        if (line.srs.valid() && line.points.size() > 0)
+        if (line.srs.valid())
         {
-            GeoPoint anchor(line.srs, (line.points.front() + line.points.back()) * 0.5);
+            GeoPoint anchor(line.srs, 0, 0);
+            if (!line.points.empty())
+                anchor = GeoPoint(line.srs, (line.points.front() + line.points.back()) * 0.5);
 
             SRSOperation xform;
             glm::dvec3 offset;
@@ -173,13 +175,20 @@ LineSystemNode::createOrUpdateNode(Line& line, detail::BuildInfo& data, VSGConte
             ROCKY_SOFT_ASSERT_AND_RETURN(ok, void());
 
             // make a copy that we will use to transform and offset:
-            std::vector<glm::dvec3> copy(line.points);
-            xform.transformRange(copy.begin(), copy.end());
-            for (auto& point : copy)
-                point -= offset;
-
             geometry = LineGeometry::create();
-            geometry->set(copy, line.topology, line.staticSize);
+            if (!line.points.empty())
+            {
+                std::vector<glm::dvec3> copy(line.points);
+                xform.transformRange(copy.begin(), copy.end());
+                for (auto& point : copy)
+                    point -= offset;
+                geometry->set(copy, line.topology, line.staticSize);
+            }
+            else
+            {
+                geometry->set(line.points, line.topology, line.staticSize);
+            }
+
 
             localizer_matrix = vsg::translate(to_vsg(offset));
             auto localizer = vsg::MatrixTransform::create(localizer_matrix);

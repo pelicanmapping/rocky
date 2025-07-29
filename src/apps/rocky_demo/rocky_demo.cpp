@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 
@@ -41,6 +41,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_NodePager.h"
 #include "Demo_FeatureView.h"
 #include "Demo_MVTFeatures.h"
+#include "Demo_DrawComponent.h"
 
 template<class T>
 int layerError(T layer)
@@ -77,7 +78,8 @@ std::vector<Demo> demos =
         Demo{ "Icon", Demo_Icon },
         Demo{ "Model", Demo_Model },
         Demo{ "Widget", Demo_Widget },
-        Demo{ "Label (old)", Demo_Label }
+        Demo{ "Label (old)", Demo_Label },
+        Demo{ "Drawing", Demo_Draw }
     } },
     Demo{ "GIS Data", {},
     {

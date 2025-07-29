@@ -98,13 +98,21 @@ namespace ROCKY_NAMESPACE
 
         auto& verts = reinterpret_cast<const std::vector<vsg::dvec3>&>(t_verts);
 
+        std::size_t verts_to_allocate = (staticStorage > 0 ? staticStorage : verts.size());
+
+        if (verts_to_allocate < 2)
+        {
+            throw "LineGeometry requires at least two vertices";
+            _drawCommand->indexCount = 0;
+            return;
+        }
+
+        std::size_t indices_to_allocate =
+            topology == Line::Topology::Strip ? (verts_to_allocate - 1) * 6 :
+            (verts_to_allocate / 2) * 6; // Segments
+
         if (!_current)
         {
-            std::size_t verts_to_allocate = (staticStorage > 0 ? staticStorage : verts.size());
-            std::size_t indices_to_allocate =
-                topology == Line::Topology::Strip ? (verts_to_allocate - 1) * 6 :
-                (verts_to_allocate / 2) * 6; // Segments
-
             _current = vsg::vec3Array::create(verts_to_allocate * 4);
             _current->properties.dataVariance = vsg::DYNAMIC_DATA;
 
@@ -119,9 +127,17 @@ namespace ROCKY_NAMESPACE
 
             assignArrays({ _current, _previous, _next, _colors });
 
-            _indices = vsg::uintArray::create((verts_to_allocate - 1) * 6);
+            _indices = vsg::uintArray::create(indices_to_allocate * 4);
             _indices->properties.dataVariance = vsg::DYNAMIC_DATA;
             assignIndices(_indices);
+        }
+        else
+        {
+            if (verts_to_allocate * 4 > _current->size())
+            {
+                Log()->warn("LineGoemetry overflow");
+                return;
+            }
         }
 
         auto* current = (_current->data());
