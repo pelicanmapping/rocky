@@ -381,6 +381,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#traverse" class="md-nav__link">
+    <span class="md-ellipsis">
+      traverse
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -414,9 +423,10 @@
 <p>protected int _elevationMatrix</p>
 <p>protected int _worldPoints</p>
 <p>protected _Bool _boundsDirty</p>
-<p>protected int _proxyMesh</p>
 <p>protected int _horizonCullingPoint</p>
 <p>protected _Bool _horizonCullingPoint_valid</p>
+<p>protected int _proxyGeom</p>
+<p>protected int _proxyVerts</p>
 <p>protected int _viewlocal</p>
 <h2 id="records">Records</h2>
 <p>ViewLocalData</p>
@@ -428,19 +438,22 @@
 <p>Update the elevation raster associated with this tile</p>
 <h3 id="getelevationraster">getElevationRaster</h3>
 <p><em>public int getElevationRaster()</em></p>
-<p><em>Defined at src/rocky/vsg/terrain/SurfaceNode.h#32</em></p>
+<p><em>Defined at src/rocky/vsg/terrain/SurfaceNode.h#30</em></p>
 <p>Elevation raster representing this surface</p>
 <h3 id="getelevationmatrix">getElevationMatrix</h3>
 <p><em>public const int &amp; getElevationMatrix()</em></p>
-<p><em>Defined at src/rocky/vsg/terrain/SurfaceNode.h#37</em></p>
+<p><em>Defined at src/rocky/vsg/terrain/SurfaceNode.h#35</em></p>
 <p>Elevation matrix representing to this surface</p>
 <h3 id="isvisible">isVisible</h3>
 <p><em>public _Bool isVisible(int &amp; rv)</em></p>
-<p><em>Defined at src/rocky/vsg/terrain/SurfaceNode.h#70</em></p>
+<p><em>Defined at src/rocky/vsg/terrain/SurfaceNode.h#84</em></p>
 <p>World-space visibility check (includes bounding box and horizon checks)</p>
 <h3 id="recomputebound">recomputeBound</h3>
 <p><em>public const int &amp; recomputeBound()</em></p>
 <p>Force a recompute of the bounding box and culling information</p>
+<h3 id="traverse">traverse</h3>
+<p><em>public void traverse(int &amp; v)</em></p>
+<p><em>Defined at src/rocky/vsg/terrain/SurfaceNode.h#51</em></p>
 
 
 

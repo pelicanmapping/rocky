@@ -427,7 +427,25 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#operator-_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      operator-&gt;
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#value" class="md-nav__link">
+    <span class="md-ellipsis">
+      value
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#value_1" class="md-nav__link">
     <span class="md-ellipsis">
       value
     </span>
@@ -466,54 +484,77 @@
 
 
 <h1 id="class-result">class Result</h1>
-<p><em>Defined at src/rocky/Result.h#66</em></p>
+<p><em>Defined at src/rocky/Result.h#72</em></p>
+<p>Result union that can hold either a success value object or a failure object.</p>
 <h2 id="functions">Functions</h2>
 <h3 id="result">Result<T, E></h3>
 <p><em>public void Result<T, E>()</em></p>
-<p><em>Defined at src/rocky/Result.h#129</em></p>
+<p><em>Defined at src/rocky/Result.h#156</em></p>
 <p>Default constructor, default good result.</p>
 <h3 id="result_1">Result<T, E></h3>
 <p><em>public void Result<T, E>(const Result<T, E> &amp; rhs)</em></p>
-<p><em>Defined at src/rocky/Result.h#72</em></p>
+<p><em>Defined at src/rocky/Result.h#79</em></p>
+<p>Copy construct</p>
 <h3 id="result_2">Result<T, E></h3>
 <p><em>public void Result<T, E>(const T &amp; good)</em></p>
-<p><em>Defined at src/rocky/Result.h#74</em></p>
+<p><em>Defined at src/rocky/Result.h#82</em></p>
+<p>New successful result</p>
 <h3 id="result_3">Result<T, E></h3>
 <p><em>public void Result<T, E>(T &amp;&amp; good)</em></p>
-<p><em>Defined at src/rocky/Result.h#77</em></p>
+<p><em>Defined at src/rocky/Result.h#86</em></p>
+<p>New successful result (moved)</p>
 <h3 id="result_4">Result<T, E></h3>
 <p><em>public void Result<T, E>(const E &amp; bad)</em></p>
-<p><em>Defined at src/rocky/Result.h#80</em></p>
+<p><em>Defined at src/rocky/Result.h#90</em></p>
+<p>New failure result</p>
 <h3 id="result_5">Result<T, E></h3>
 <p><em>public void Result<T, E>(E &amp;&amp; bad)</em></p>
-<p><em>Defined at src/rocky/Result.h#83</em></p>
+<p><em>Defined at src/rocky/Result.h#94</em></p>
+<p>New failure result (moved)</p>
 <h3 id="operator">operator=</h3>
 <p><em>public Result<T, E> &amp; operator=(const Result<T, E> &amp; rhs)</em></p>
-<p><em>Defined at src/rocky/Result.h#87</em></p>
+<p><em>Defined at src/rocky/Result.h#98</em></p>
+<p>Assignment operator (copy)</p>
 <h3 id="operator_1">operator=</h3>
 <p><em>public Result<T, E> &amp; operator=(const E &amp; bad)</em></p>
-<p><em>Defined at src/rocky/Result.h#97</em></p>
+<p><em>Defined at src/rocky/Result.h#109</em></p>
+<p>Assignment operator (failure)</p>
 <h3 id="operator_2">operator=</h3>
 <p><em>public Result<T, E> &amp; operator=(const T &amp; good)</em></p>
-<p><em>Defined at src/rocky/Result.h#101</em></p>
+<p><em>Defined at src/rocky/Result.h#114</em></p>
+<p>Assignment operator (success)</p>
 <h3 id="ok">ok</h3>
 <p><em>public _Bool ok()</em></p>
-<p><em>Defined at src/rocky/Result.h#106</em></p>
+<p><em>Defined at src/rocky/Result.h#120</em></p>
+<p>Did the result succeed?</p>
 <h3 id="failed">failed</h3>
 <p><em>public _Bool failed()</em></p>
-<p><em>Defined at src/rocky/Result.h#109</em></p>
+<p><em>Defined at src/rocky/Result.h#124</em></p>
+<p>Did the result fail?</p>
 <h3 id="operator-bool">operator bool</h3>
 <p><em>public _Bool operator bool()</em></p>
-<p><em>Defined at src/rocky/Result.h#112</em></p>
+<p><em>Defined at src/rocky/Result.h#128</em></p>
+<p>Did the result succeed?</p>
 <h3 id="operator-">operator-&gt;</h3>
 <p><em>public T * operator-&gt;()</em></p>
-<p><em>Defined at src/rocky/Result.h#115</em></p>
+<p><em>Defined at src/rocky/Result.h#132</em></p>
+<p>Access a good result (be sure to check ok()/failed() first)</p>
+<h3 id="operator-_1">operator-&gt;</h3>
+<p><em>public const T * operator-&gt;()</em></p>
+<p><em>Defined at src/rocky/Result.h#136</em></p>
+<p>Access a good result (be sure to check ok()/failed() first)</p>
 <h3 id="value">value</h3>
 <p><em>public T &amp; value()</em></p>
-<p><em>Defined at src/rocky/Result.h#118</em></p>
+<p><em>Defined at src/rocky/Result.h#140</em></p>
+<p>Access a good result (be sure to check ok()/failed() first)</p>
+<h3 id="value_1">value</h3>
+<p><em>public const T &amp; value()</em></p>
+<p><em>Defined at src/rocky/Result.h#144</em></p>
+<p>Access a good result (be sure to check ok()/failed() first)</p>
 <h3 id="error">error</h3>
 <p><em>public const E &amp; error()</em></p>
-<p><em>Defined at src/rocky/Result.h#121</em></p>
+<p><em>Defined at src/rocky/Result.h#148</em></p>
+<p>Access the failure result (be sure to check ok()/failed() first)</p>
 
 
 
