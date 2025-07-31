@@ -89,12 +89,14 @@ namespace ROCKY_NAMESPACE
         float maxHeight() const { return _maxHeight; }
 
         //! Gets a pointer to the underlying heightfield.
-        std::shared_ptr<Heightfield> heightfield() const {
+        Heightfield::Ptr heightfield() const {
             return _hf;
         }
 
         //! Gets the X interval of this GeoHeightField
-        inline glm::dvec2 resolution() const;
+        inline glm::dvec2 resolution() const {
+            return _resolution;
+        }
 
         //! Gets the height at a geographic location (in this object's SRS)
         float heightAtLocation(
@@ -112,16 +114,11 @@ namespace ROCKY_NAMESPACE
 
     private:
         GeoExtent _extent;
-        std::shared_ptr<Heightfield> _hf;
+        Heightfield::Ptr _hf;
         float _minHeight = FLT_MAX;
         float _maxHeight = -FLT_MAX;
         glm::dvec2 _resolution;
 
         void init();
     };
-
-
-    inline glm::dvec2 GeoHeightfield::resolution() const {
-        return _resolution;
-    }
 }

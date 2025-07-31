@@ -354,10 +354,9 @@ TerrainTilePager::requestLoadData(TileInfo& info, const IOOptions& in_io, std::s
 
     //RP_DEBUG("requestLoadData -> {}", key.str());
 
-    CreateTileManifest manifest;
     const IOOptions io(in_io);
 
-    auto load = [key, tile, manifest, engine, io](Cancelable& p) -> bool
+    auto load = [key, tile, engine, io](Cancelable& p) -> bool
     {
         if (p.canceled())
             return false;
@@ -365,11 +364,7 @@ TerrainTilePager::requestLoadData(TileInfo& info, const IOOptions& in_io, std::s
         TerrainTileModelFactory factory;
         factory.compositeColorLayers = true;
 
-        auto dataModel = factory.createTileModel(
-            engine->map.get(),
-            key,
-            manifest,
-            IOOptions(io, p));
+        auto dataModel = factory.createTileModel(engine->map.get(), key, IOOptions(io, p));
 
         if (!dataModel.empty())
         {
@@ -436,8 +431,11 @@ TerrainTilePager::requestMergeData(TileInfo& info, const IOOptions& in_io, std::
             for (auto c : tile->stategroup->stateCommands)
                 engine->context->dispose(c);
 
-            tile->stategroup->stateCommands.clear();
-            tile->stategroup->stateCommands.emplace_back(tile->renderModel.descriptors.bind);
+            tile->stategroup->stateCommands = { tile->renderModel.descriptors.bind };
+
+            tile->surface->setElevation(
+                tile->renderModel.elevation.image,
+                tile->renderModel.elevation.matrix);
 
             engine->context->requestFrame();
             return true;

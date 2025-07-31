@@ -29,14 +29,14 @@ namespace ROCKY_NAMESPACE
     //! @param x X coordinate in window space
     //! @param y Y coordinate in window space
     //! @return GeoPoint at the given window coordinates
-    extern ROCKY_EXPORT GeoPoint pointAtWindowCoords(vsg::ref_ptr<vsg::View> view, int x, int y);
+    extern ROCKY_EXPORT Result<GeoPoint> pointAtWindowCoords(vsg::ref_ptr<vsg::View> view, int x, int y);
 
     //! Return the GeoPoint at the given window coordinates (e.g., mouse position).
     //! @param viewer Viewer to search for windows and views
     //! @param x X coordinate in window space
     //! @param y Y coordinate in window space
     //! @return GeoPoint at the given window coordinates
-    extern ROCKY_EXPORT DisplayGeoPoint pointAtWindowCoords(vsg::ref_ptr<vsg::Viewer> viewer, int x, int y);
+    extern ROCKY_EXPORT Result<DisplayGeoPoint> pointAtWindowCoords(vsg::ref_ptr<vsg::Viewer> viewer, int x, int y);
 
     /**
     * DisplayManager is a helper class that manages the creation and destruction of

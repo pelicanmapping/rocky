@@ -13,7 +13,7 @@ namespace ROCKY_NAMESPACE
     class Map;
     class ImageLayer;
     class ElevationLayer;
-    class IOControl;
+    class IOOptions;
 
     /**
      * Builds a TerrainTileModel from a map frame.
@@ -30,12 +30,10 @@ namespace ROCKY_NAMESPACE
         //! Creates a tile model and populates it with data from the map.
         //! @param map Map from which to read source data
         //! @param key Tile key for which to create the model
-        //! @param manifest Set of layers for which to fetch data (empty => all layers)
         //! @param io I/O options and cancelation callback
         TerrainTileModel createTileModel(
             const Map* map,
             const TileKey& key,
-            const CreateTileManifest& manifest,
             const IOOptions& io) const;
 
     protected:
@@ -44,7 +42,6 @@ namespace ROCKY_NAMESPACE
             TerrainTileModel& model,
             const Map* map,
             const TileKey& key,
-            const CreateTileManifest& manifest,
             const IOOptions& io,
             bool standalone) const;
 
@@ -52,8 +49,6 @@ namespace ROCKY_NAMESPACE
             TerrainTileModel& model,
             const Map* map,
             const TileKey& key,
-            const CreateTileManifest& manifest,
-            unsigned border,
             const IOOptions& io) const;
     };
 }

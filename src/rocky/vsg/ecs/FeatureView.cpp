@@ -135,6 +135,9 @@ namespace
 
         feature.geometry.eachPart([&](const Geometry& part)
             {
+                if (part.points.size() < 2)
+                    return;
+
                 // tessellate:
                 auto tessellated = tessellate_linestring(part.points, feature.srs, feature.interpolation, max_span);
 
@@ -158,8 +161,6 @@ namespace
                     // CHECK THIS
                     line.points.reserve(line.points.size() + tessellated.size());
                     line.points.insert(line.points.end(), tessellated.begin(), tessellated.end());
-                    //std::transform(tessellated.begin(), tessellated.end(), line.points.begin(),
-                    //    [](const glm::dvec3& p) { return glm::dvec3(p.x, p.y, p.z); });
                 }
 
                 else // Line::Topology::Segments
@@ -371,6 +372,41 @@ FeatureView::generate(const SRS& output_srs)
         }
     }
 
-    return output; // moved
+    return output;
 }
 
+void
+FeatureView::generate(FeatureView::PrimitivesRef& output, const SRS& output_srs)
+{
+    for (auto& feature : features)
+    {
+        // If the output is geocentric, do all our processing in geodetic coordinates.
+        if (output_srs.isGeocentric())
+        {
+            feature.transformInPlace(output_srs.geodeticSRS());
+        }
+
+        if (feature.geometry.type == Geometry::Type::LineString ||
+            feature.geometry.type == Geometry::Type::MultiLineString)
+        {
+            if (output.line)
+            {
+                compile_feature_to_lines(feature, styles, origin, output_srs, *output.line);
+            }
+        }
+
+        else if (feature.geometry.type == Geometry::Type::Polygon ||
+            feature.geometry.type == Geometry::Type::MultiPolygon)
+        {
+            if (output.mesh)
+            {
+                compile_polygon_feature_with_weemesh(feature, styles, origin, output_srs, *output.mesh);
+            }
+        }
+
+        else
+        {
+            Log()->warn("FeatureView no support for " + Geometry::typeToString(feature.geometry.type));
+        }
+    }
+}

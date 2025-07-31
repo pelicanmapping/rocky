@@ -6,23 +6,12 @@
 #include "SurfaceNode.h"
 #include "GeometryPool.h"
 #include <rocky/vsg/VSGUtils.h>
-
 #include <rocky/Heightfield.h>
-#include <rocky/Horizon.h>
-
-#include <numeric>
-#include <vsg/utils/Builder.h>
-#include <vsg/io/Options.h>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 
 #define LC "[SurfaceNode] "
-
-// uncomment to draw each tile's tight bounding box
-//#define RENDER_TILE_BBOX
-
-//..............................................................
 
 
 SurfaceNode::SurfaceNode(const TileKey& tilekey, const SRS& worldSRS) :
@@ -38,11 +27,12 @@ SurfaceNode::SurfaceNode(const TileKey& tilekey, const SRS& worldSRS) :
 }
 
 void
-SurfaceNode::setElevation(std::shared_ptr<Image> raster, const glm::dmat4& scaleBias)
+SurfaceNode::setElevation(Image::Ptr raster, const glm::fmat4& scaleBias)
 {
     _elevationRaster = raster;
     _elevationMatrix = scaleBias;
     _boundsDirty = true;
+    recomputeBound();
 }
 
 #define corner(N) vsg::dvec3( \
@@ -69,15 +59,13 @@ SurfaceNode::recomputeBound()
     auto geom = static_cast<vsg::Group*>(children.front().get())->children.front()->cast<SharedGeometry>();
     ROCKY_SOFT_ASSERT_AND_RETURN(geom, worldBoundingSphere);
 
-    auto verts = geom->proxy_verts;
-    auto normals = geom->proxy_normals;
-    auto uvs = geom->proxy_uvs;
-    
-    ROCKY_SOFT_ASSERT_AND_RETURN(verts && normals && uvs, worldBoundingSphere);
-
-    if (_proxyMesh.size() < verts->size())
+    if (!_proxyVerts)
     {
-        _proxyMesh.resize(verts->size());
+        _proxyVerts = vsg::clone(geom->verts);
+        _proxyGeom = vsg::Geometry::create();
+        _proxyGeom->assignArrays(vsg::DataList{ _proxyVerts });
+        _proxyGeom->assignIndices(geom->indexArray);
+        _proxyGeom->commands = geom->commands;
     }
 
     if (_elevationRaster)
@@ -93,22 +81,22 @@ SurfaceNode::recomputeBound()
 
         ROCKY_SOFT_ASSERT_AND_RETURN(!equiv(scaleU, 0.0) && !equiv(scaleV, 0.0), worldBoundingSphere);
 
-        for (int i = 0; i < verts->size(); ++i)
+        for (int i = 0; i < geom->verts->size(); ++i)
         {
-            if (((int)uvs->at(i).z & VERTEX_HAS_ELEVATION) == 0)
+            if (((int)geom->uvs->at(i).z & VERTEX_HAS_ELEVATION) == 0)
             {
                 float h = heightfield->heightAtUV(
-                    clamp(uvs->at(i).x * scaleU + biasU, 0.0, 1.0),
-                    clamp(uvs->at(i).y * scaleV + biasV, 0.0, 1.0),
-                    Interpolation::Nearest);
+                    clamp(geom->uvs->at(i).x * scaleU + biasU, 0.0, 1.0),
+                    clamp(geom->uvs->at(i).y * scaleV + biasV, 0.0, 1.0),
+                    Interpolation::Bilinear);
 
-                auto& v = verts->at(i);
-                auto& n = normals->at(i);
-                _proxyMesh[i] = v + n * h;
+                auto& vert = geom->verts->at(i);
+                auto& norm = geom->normals->at(i);
+                (*_proxyVerts)[i] = vert + norm * h;
             }
             else
             {
-                _proxyMesh[i] = (*verts)[i];
+                (*_proxyVerts)[i] = (*geom->verts)[i];
             }
         }
     }
@@ -116,11 +104,14 @@ SurfaceNode::recomputeBound()
     else
     {
         // no elevation? just copy the verts into the proxy
-        std::copy(verts->begin(), verts->end(), _proxyMesh.begin());
+        std::copy(geom->verts->begin(), geom->verts->end(), _proxyVerts->begin());
     }
 
+    // for debugging only
+    //_proxyVerts->dirty();
+
     // build the bbox around the mesh.
-    for (auto& vert : _proxyMesh)
+    for (auto& vert : *_proxyVerts)
     {
         localbbox.add(vert);
     }
@@ -166,8 +157,8 @@ SurfaceNode::recomputeBound()
 
     // finally, calculate a horizon culling point for the tile.
     std::vector<glm::dvec3> world_mesh;
-    world_mesh.reserve(_proxyMesh.size());
-    for (auto& v : _proxyMesh) {
+    world_mesh.reserve(_proxyVerts->size());
+    for (auto& v : *_proxyVerts) {
         auto world = m * vsg::dvec4(v.x, v.y, v.z, 1.0);
         world_mesh.emplace_back(world.x, world.y, world.z);
     }

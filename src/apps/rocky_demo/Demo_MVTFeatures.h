@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <rocky/GDALFeatureSource.h>
+#include <rocky/ElevationSampler.h>
 #include <rocky/ecs/Registry.h>
 #include <rocky/vsg/NodePager.h>
 #include "helpers.h"
@@ -16,14 +17,45 @@ auto Demo_MVTFeatures = [](Application& app)
 #ifdef ROCKY_HAS_GDAL
 
     static vsg::ref_ptr<NodePager> pager;
+    static ElevationSampler clamper;
 
     if (!pager)
     {
+        // Set up our elevation clamper.
+        auto layers = app.mapNode->map->layers<ElevationLayer>();
+        if (!layers.empty() && layers.front()->isOpen())
+        {
+            clamper.layer = layers.front();
+        }
+
         pager = NodePager::create(Profile("spherical-mercator"), app.mapNode->profile);
 
         pager->minLevel = 14;
         pager->maxLevel = 14;
         pager->refinePolicy = NodePager::RefinePolicy::Add;
+
+        pager->calculateBound = [&](const TileKey& key, const IOOptions& io)
+            {
+                auto ex = app.mapNode->profile.clampAndTransformExtent(key.extent());
+                auto bs = ex.createWorldBoundingSphere(0, 0);
+
+                if (clamper.ok())
+                {
+                    auto p = ex.centroid().transform(SRS::WGS84);
+
+                    auto session = clamper.session(io);
+                    session.lod = std::min(key.level, 6u);
+                    session.xform = p.srs.to(clamper.layer->profile.srs());
+
+                    float z = clamper.sample(session, p.x, p.y, p.z);
+                    if (z != NO_DATA_VALUE) p.z = z;
+                    return vsg::dsphere(to_vsg(p.transform(app.mapNode->worldSRS())), bs.radius);
+                }
+                else
+                {
+                    return to_vsg(bs);
+                }
+            };
 
         pager->createPayload = [&app](const TileKey& key, const IOOptions& io)
             {
@@ -48,10 +80,10 @@ auto Demo_MVTFeatures = [](Application& app)
 
                 fview.styles.line.color = Color::Red;
                 fview.styles.line.width = 5.0f;
-                fview.styles.line.depth_offset = 1000; // meters
+                fview.styles.line.depth_offset = 10; // meters
 
                 fview.styles.mesh.color = Color(1, 0.75f, 0.2f, 1);
-                fview.styles.mesh.depth_offset = 1100; // meters
+                fview.styles.mesh.depth_offset = 10; // meters
 
                 if (gdal->featureCount() > 0)
                     fview.features.reserve(gdal->featureCount());
@@ -77,6 +109,25 @@ auto Demo_MVTFeatures = [](Application& app)
                 
                 if (!fview.features.empty())
                 {
+                    if (clamper.ok())
+                    {
+                        // configure a sampling session since we're doing a batch of work:
+                        auto session = clamper.session(io);
+                        session.lod = key.level;
+
+                        // transform points to the proper SRS:
+                        session.xform = fview.features.front().srs.to(clamper.layer->profile.srs());
+
+                        for (auto& f : fview.features)
+                        {
+                            f.geometry.eachPart([&](Geometry& part)
+                                {
+                                    // clamp the geometry to the elevation layer:
+                                    clamper.sampleRange(session, part.points.begin(), part.points.end());
+                                });
+                        }
+                    }
+
                     // generate primitives from features:
                     auto prims = fview.generate(app.mapNode->worldSRS());
 

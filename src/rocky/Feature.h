@@ -115,12 +115,14 @@ namespace ROCKY_NAMESPACE
         using const_iterator = iterator_base<const Geometry>;
 
         //! Visit each part of the geometry, including "this".
+        //! CALLABLE must have the signature: void(Geometry& part).
         template<typename CALLABLE>
         void eachPart(CALLABLE&& func) {
             iterator(*this, true).eachPart(std::forward<CALLABLE>(func));
         }
 
         //! Visit each part of the geometry, including "this".
+        //! CALLABLE must have the signature: void(const Geometry& part)
         template<typename CALLABLE>
         void eachPart(CALLABLE&& func) const {
             const_iterator(*this, true).eachPart(std::forward<CALLABLE>(func));

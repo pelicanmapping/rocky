@@ -9,10 +9,10 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    struct MapClickHandler : public vsg::Inherit<vsg::Visitor, MapClickHandler>
+    struct DemoWidgetMouseHandler : public vsg::Inherit<vsg::Visitor, DemoWidgetMouseHandler>
     {
         Application& app;
-        MapClickHandler(Application& in_app) : app(in_app) {}
+        DemoWidgetMouseHandler(Application& in_app) : app(in_app) {}
         std::optional<vsg::ButtonPressEvent> _press;
 
         Callback<void(const GeoPoint&)> onClick;
@@ -35,9 +35,11 @@ namespace
                     auto view = app.display.getView(_press->window, _press->x, _press->y);
                     if (view)
                     {
-                        auto p = rocky::pointAtWindowCoords(view, _press->x, _press->y);
-                        if (p.valid())
-                            onClick.fire(p);
+                        if (auto p = rocky::pointAtWindowCoords(view, _press->x, _press->y))
+                        {
+                            onClick.fire(p.value());
+                            e.handled = true;
+                        }
                     }
                 }
             }
@@ -56,7 +58,7 @@ auto Demo_Widget = [](Application& app)
 
     if (entity == entt::null)
     {
-        auto handler = MapClickHandler::create(app);
+        auto handler = DemoWidgetMouseHandler::create(app);
         app.viewer->getEventHandlers().emplace_back(handler);
 
         sub = handler->onClick([&](const GeoPoint& p)

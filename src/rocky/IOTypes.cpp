@@ -21,18 +21,6 @@ IOOptions::IOOptions(const IOOptions& rhs, Cancelable& c) :
     _cancelable = &c;
 }
 
-IOOptions::IOOptions(Cancelable& c) :
-    _cancelable(&c)
-{
-    //nop
-}
-
-IOOptions::IOOptions(const std::string& in_referrer) :
-    referrer(in_referrer)
-{
-    //nop
-}
-
 IOOptions::IOOptions(const IOOptions& rhs, const std::string& in_referrer) :
     IOOptions(rhs)
 {
@@ -52,6 +40,9 @@ IOOptions::operator = (const IOOptions& rhs)
 
 Services::Services()
 {
-    readImageFromURI = [](const std::string& location, const IOOptions&) { return Failure_ServiceUnavailable; };
-    readImageFromStream = [](std::istream& stream, std::string contentType, const IOOptions& io) { return Failure_ServiceUnavailable; };
+    readImageFromURI = [](const std::string& location, const IOOptions&) { 
+        return Failure(Failure::ServiceUnavailable, "Services.readImageFromURI is not implemented"); };
+
+    readImageFromStream = [](std::istream& stream, std::string contentType, const IOOptions& io) {
+        return Failure(Failure::ServiceUnavailable, "Services.readImageFromStream is not implemented"); };
 }

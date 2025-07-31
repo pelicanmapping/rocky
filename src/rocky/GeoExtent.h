@@ -206,16 +206,25 @@ namespace ROCKY_NAMESPACE
     public:
         GeoExtent3D() = default;
         GeoExtent3D(const GeoExtent& extent) : GeoExtent(extent) { }
-        GeoExtent3D(const GeoExtent& extent, const std::string &description) :
-            GeoExtent(extent), description(description) { }
-        GeoExtent3D(const GeoExtent& extent, unsigned minLevel) :
-            GeoExtent(extent), minLevel(minLevel) { }
-        GeoExtent3D(const GeoExtent& extent, unsigned minLevel, const std::string &description) :
-            GeoExtent(extent), minLevel(minLevel), description(description) { }
-        GeoExtent3D(const GeoExtent& extent, unsigned minLevel, unsigned maxLevel):
-            GeoExtent(extent), minLevel(minLevel), maxLevel(maxLevel) { }
-        GeoExtent3D(const GeoExtent& extent, unsigned minLevel, unsigned maxLevel, const std::string &description) :
-            GeoExtent(extent), minLevel(minLevel), maxLevel(maxLevel), description(description) { }
+        GeoExtent3D(const GeoExtent& extent, const std::string& in_description) : GeoExtent(extent) {
+            description = in_description;
+        }
+        GeoExtent3D(const GeoExtent& extent, unsigned in_minLevel) : GeoExtent(extent) {
+            minLevel = in_minLevel;
+        }
+        GeoExtent3D(const GeoExtent& extent, unsigned in_minLevel, const std::string& in_description) : GeoExtent(extent) {
+            minLevel = in_minLevel;
+            description = in_description;
+        }
+        GeoExtent3D(const GeoExtent& extent, unsigned in_minLevel, unsigned in_maxLevel) : GeoExtent(extent) {
+            minLevel = in_minLevel;
+            maxLevel = in_maxLevel;
+        }
+        GeoExtent3D(const GeoExtent& extent, unsigned in_minLevel, unsigned in_maxLevel, const std::string& in_description) : GeoExtent(extent) {
+            minLevel = in_minLevel;
+            maxLevel = in_maxLevel;
+            description = in_description;
+        }
 
         //! The minimum LOD of the extent
         option<unsigned> minLevel = 0u;

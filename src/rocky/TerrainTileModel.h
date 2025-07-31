@@ -20,50 +20,6 @@ namespace ROCKY_NAMESPACE
     class Map;
 
     /**
-     * Set of layers that the TerrainTileModelFactory can use
-     * to determine what data to create for a tile. If the manifest
-     * is empty, that represents that the factory should create
-     * data for ALL available layers. But if it contains at least
-     * one entry, the creation is limited to those entries.
-     */
-    class ROCKY_EXPORT CreateTileManifest
-    {
-    public:
-        CreateTileManifest();
-
-        //! Request data for a layer
-        void insert(std::shared_ptr<Layer> layer);
-
-        //! Sets whether to apply the update progressively (in LOD order)
-        void setProgressive(bool value);
-        const option<bool>& progressive() const { return _progressive; }
-
-        //! Is the manifest empty (meaning ALL available layers should be loaded)?
-        bool empty() const;
-
-        //! Are the layers in the manifest up to date with the layers in the map?
-        bool inSyncWith(const Map*) const;
-
-        //! Update all the manifest layers with the latest layer revisions from the map
-        void updateRevisions(const Map*);
-
-        bool includes(UID uid) const;
-
-        bool includes(const Layer* layer) const;
-
-        bool includesElevation() const;
-
-        bool includesConstraints() const;
-
-    private:
-        using LayerTable = std::unordered_map<UID, Revision>;
-        LayerTable _layers;
-        bool _includesElevation;
-        bool _includesConstraints;
-        option<bool> _progressive;
-    };
-
-    /**
      * Data model backing an individual terrain tile.
      */
     class ROCKY_EXPORT TerrainTileModel

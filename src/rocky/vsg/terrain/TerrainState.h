@@ -8,14 +8,9 @@
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/terrain/TerrainTileNode.h>
 
-#include <vsg/io/Options.h>
-#include <vsg/utils/GraphicsPipelineConfigurator.h>
-#include <vsg/utils/ShaderSet.h>
-#include <vsg/utils/SharedObjects.h>
-#include <vsg/nodes/StateGroup.h>
-
 namespace ROCKY_NAMESPACE
 {
+    class TerrainTileModel;
     class TerrainTileNode;
     class TerrainTileRenderModel;
 

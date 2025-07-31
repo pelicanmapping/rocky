@@ -21,6 +21,7 @@ namespace ROCKY_NAMESPACE
     class IOOptions;
     class Image;
     class Layer;
+    class ContextImpl;
 
     //! Base class for a cache
     class Cache : public Inherit<Object, Cache>
@@ -82,13 +83,14 @@ namespace ROCKY_NAMESPACE
     {
     public:
         IOOptions() = default;
+
+    public:
         IOOptions(const IOOptions& rhs);
-        IOOptions(Cancelable& p);
         IOOptions(const IOOptions& rhs, Cancelable& p);
-        IOOptions(const std::string& referrer);
         IOOptions(const IOOptions& rhs, const std::string& referrer);
 
         IOOptions(IOOptions&&) = delete;
+        IOOptions& operator=(IOOptions&&) noexcept = delete;
 
         //! Copy this options structure and set a new referrer.
         IOOptions from(const std::string& referrer) {

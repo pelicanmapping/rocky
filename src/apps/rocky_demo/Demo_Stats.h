@@ -135,7 +135,7 @@ auto Demo_Stats = [](Application& app)
     {
         ImGuiLTable::Text("Terrain tiles resident", std::to_string(engine->tiles.size()).c_str());
         ImGuiLTable::Text("Terrain geometry pool", std::to_string(engine->geometryPool.size()).c_str());
-        ImGuiLTable::Text("Content cache hits", "%d%%", int(ratio * 100.0f));
+        ImGuiLTable::Text("Content cache hits/misses", "%d/%d", cache->hits, (cache->gets - cache->hits));
         ImGui::SameLine();
         if (ImGui::Button("Clear"))
             cache->clear();

@@ -67,6 +67,13 @@ namespace ROCKY_NAMESPACE
             }
         };
 
+        //! Return value from FeatureView generate().
+        struct PrimitivesRef
+        {
+            Line* line = nullptr;
+            Mesh* mesh = nullptr;
+        };
+
     public:
         //! Collection of features to process
         std::vector<rocky::Feature> features;
@@ -89,5 +96,7 @@ namespace ROCKY_NAMESPACE
         //! @param runtime Runtime operations interface
         //! @return Collection of primtives representing the feature geometry
         Primitives generate(const SRS& output_srs);
+
+        void generate(PrimitivesRef& working, const SRS& output_srs);
     };
 }

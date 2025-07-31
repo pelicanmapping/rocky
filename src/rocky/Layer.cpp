@@ -76,6 +76,7 @@ Layer::bumpRevision()
 const Failure&
 Layer::fail(const Failure& f) const
 {
+    Log()->warn("Layer \"{}\" FAILED with status {}", name(), f.message);
     const_cast<Layer*>(this)->_status = f;
     return _status.error();
 }

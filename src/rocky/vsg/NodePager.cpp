@@ -267,9 +267,9 @@ PagedNode::startLoading() const
 
     vsg::observer_ptr<PagedNode> parent_weak(const_cast<PagedNode*>(this));
 
-    auto load_job = [load, parent_weak, vsgcontext(pager->_vsgcontext), orig_revision(revision)](Cancelable& c)
+    auto load_job = [load, parent_weak, vsgcontext(pager->_vsgcontext), orig_revision(revision), io(pager->_vsgcontext->io)](Cancelable& c)
         {
-            vsg::ref_ptr<vsg::Node> result = load(IOOptions(c));
+            vsg::ref_ptr<vsg::Node> result = load(IOOptions(io, c));
             return result;
         };
 

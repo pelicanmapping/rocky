@@ -24,9 +24,7 @@ namespace ROCKY_NAMESPACE
         SurfaceNode(const TileKey& tilekey, const SRS& worldSRS);
 
         //! Update the elevation raster associated with this tile
-        void setElevation(
-            std::shared_ptr<Image> raster,
-            const glm::dmat4& scaleBias);
+        void setElevation(Image::Ptr raster, const glm::fmat4& scaleBias);
 
         //! Elevation raster representing this surface
         std::shared_ptr<Image> getElevationRaster() const {
@@ -34,7 +32,7 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Elevation matrix representing to this surface
-        const glm::dmat4& getElevationMatrix() const {
+        const glm::fmat4& getElevationMatrix() const {
             return _elevationMatrix;
         }
         
@@ -48,17 +46,33 @@ namespace ROCKY_NAMESPACE
         vsg::dsphere worldBoundingSphere;
         vsg::dbox localbbox;
 
+    public:
+
+        inline void traverse(vsg::ConstVisitor& v) const override
+        {
+            if (_proxyGeom)
+            {
+                if (auto i = v.cast<vsg::Intersector>())
+                {                    
+                    i->apply(*_proxyGeom);
+                    return;
+                }
+            }
+            Inherit::traverse(v);
+        }
+
     protected:
 
         TileKey _tilekey;
         int _lastFramePassedCull = 0;
         std::shared_ptr<Image> _elevationRaster;
-        glm::dmat4 _elevationMatrix;
+        glm::fmat4 _elevationMatrix;
         std::vector<vsg::dvec3> _worldPoints;
         bool _boundsDirty = true;
-        std::vector<vsg::vec3> _proxyMesh;
         vsg::dvec3 _horizonCullingPoint;
         bool _horizonCullingPoint_valid = false;
+        vsg::ref_ptr<vsg::Geometry> _proxyGeom;
+        vsg::ref_ptr<vsg::vec3Array> _proxyVerts;
 
         struct ViewLocalData {
             std::shared_ptr<Horizon> horizon;

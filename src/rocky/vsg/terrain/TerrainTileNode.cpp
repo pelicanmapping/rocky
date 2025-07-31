@@ -34,6 +34,23 @@ namespace
 }
 
 void
+TerrainTileNode::accept(vsg::ConstVisitor& visitor) const
+{
+    if (subtilesExist())
+    {
+        for (unsigned i = 1; i < children.size(); ++i)
+        {
+            // traverse all subtiles first
+            children[i]->accept(visitor);
+        }
+    }
+    else
+    {
+        children[0]->accept(visitor);
+    }
+}
+
+void
 TerrainTileNode::accept(vsg::RecordTraversal& rv) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(host != nullptr, void());
@@ -61,10 +78,14 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
         auto state = rv.getState();
 
         // should we subdivide?
-        auto& vp = state->_commandBuffer->viewDependentState->viewportData->at(0);
-        auto min_screen_height_ratio = (host->settings().tilePixelSize + host->settings().screenSpaceError) / vp[3];
-        auto d = state->lodDistance(bound);
-        bool subtilesInRange = (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
+        bool subtilesInRange = false;
+        if (key.level < host->settings().maxLevelOfDetail)
+        {
+            auto& vp = state->_commandBuffer->viewDependentState->viewportData->at(0);
+            auto min_screen_height_ratio = (host->settings().tilePixelSize + host->settings().screenSpaceError) / vp[3];
+            auto d = state->lodDistance(bound);
+            subtilesInRange = (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
+        }
 
         // TODO: someday, when we support orthographic cameras, look at this approach 
         // that would theoritically keep the same LOD across the visible scene:
@@ -131,7 +152,6 @@ TerrainTileNode::inheritFrom(vsg::ref_ptr<TerrainTileNode> parent)
 
     // copy the parent's elevation data and recompute the bounding sphere
     surface->setElevation(renderModel.elevation.image, renderModel.elevation.matrix);
-    bound = surface->recomputeBound();
 
     renderModel.modelMatrix = to_glm(surface->matrix);
 }

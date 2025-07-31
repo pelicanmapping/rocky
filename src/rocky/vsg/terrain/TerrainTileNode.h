@@ -11,7 +11,6 @@
 #include <rocky/Threading.h>
 #include <rocky/TileKey.h>
 #include <rocky/Image.h>
-#include <rocky/TerrainTileModel.h>
 
 #include <vsg/nodes/QuadGroup.h>
 #include <vsg/nodes/CullGroup.h>
@@ -19,7 +18,6 @@
 #include <vsg/app/RecordTraversal.h>
 #include <vsg/ui/UIEvent.h> // time_point
 #include <vsg/state/Sampler.h>
-#include <vsg/state/ImageInfo.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -105,6 +103,9 @@ namespace ROCKY_NAMESPACE
     public:
         //! Customized cull traversal
         void accept(vsg::RecordTraversal& visitor) const override;
+
+        //! Intersectors, etc.
+        void accept(vsg::ConstVisitor& visitor) const override;
         
     protected:
 

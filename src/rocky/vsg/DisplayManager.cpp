@@ -30,26 +30,29 @@ namespace
     };
 }
 
-GeoPoint
+Result<GeoPoint>
 ROCKY_NAMESPACE::pointAtWindowCoords(vsg::ref_ptr<vsg::View> view, int x, int y)
 {
     auto terrain = util::find<TerrainNode>(view);
     if (!terrain)
-        return {};
+        return Failure_AssertionFailure;
 
     vsg::LineSegmentIntersector lsi(*view->camera, x, y);
     terrain->accept(lsi);
     if (lsi.intersections.empty())
-        return {};
+        return Failure{};
 
-    std::sort(lsi.intersections.begin(), lsi.intersections.end(), [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
-    return GeoPoint(terrain->engine->worldSRS, lsi.intersections[0]->worldIntersection);
+    auto closest = std::min_element(
+        lsi.intersections.begin(), lsi.intersections.end(),
+        [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
+
+    return GeoPoint(terrain->engine->worldSRS, closest->get()->worldIntersection);
 }
 
-DisplayGeoPoint
+Result<DisplayGeoPoint>
 ROCKY_NAMESPACE::pointAtWindowCoords(vsg::ref_ptr<vsg::Viewer> viewer, int x, int y)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(viewer, {});
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer, Failure_ConfigurationError);
 
     DisplayGeoPoint result;
 
@@ -70,16 +73,23 @@ ROCKY_NAMESPACE::pointAtWindowCoords(vsg::ref_ptr<vsg::Viewer> viewer, int x, in
 
                     if (x >= vp.x && x < vp.x + vp.width && y >= vp.y && y < vp.y + vp.height)
                     {
-                        result.window = cg->window;
-                        result.view = view;
-                        result.point = pointAtWindowCoords(view, x, y);
+                        auto point = pointAtWindowCoords(view, x, y);
+                        if (point.ok())
+                        {
+                            result.window = cg->window;
+                            result.view = view;
+                            result.point = point.value();
+                        }
                     }
                 }
             }
         }
     }
 
-    return result;
+    if (result.point.valid())
+        return result;
+    else
+        return Failure{};
 }
 
 

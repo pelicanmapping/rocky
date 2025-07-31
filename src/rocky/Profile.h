@@ -106,10 +106,12 @@ namespace ROCKY_NAMESPACE
         bool horizontallyEquivalentTo(const Profile& rhs) const;
 
         //! Gets the tile dimensions at the given lod, in the profile's SRS units.
-        std::pair<double, double> tileDimensions(unsigned lod) const;
+        using TileDims = struct { double x, y; };
+        TileDims tileDimensions(unsigned lod) const;
 
         //! The number wide and high at the given lod
-        std::pair<unsigned, unsigned> numTiles(unsigned lod) const;
+        using NumTiles = struct { std::uint32_t x, y; };
+        NumTiles numTiles(unsigned lod) const;
 
         //! Clamps the incoming extents to the extents of this profile, and then converts the 
         //! clamped extents to this profile's SRS, and returns the result. Returned GeoExtent::INVALID

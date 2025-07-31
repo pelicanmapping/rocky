@@ -9,8 +9,6 @@
 #include <rocky/TileKey.h>
 #include <rocky/IOTypes.h>
 #include <rocky/vsg/VSGContext.h>
-#include <vsg/nodes/Geometry.h>
-#include <vsg/nodes/Group.h>
 #include <map>
 
 #define VERTEX_VISIBLE       1 // draw it
@@ -28,18 +26,15 @@ namespace ROCKY_NAMESPACE
     class SharedGeometry : public vsg::Inherit<vsg::Geometry, SharedGeometry>
     {
     public:
-        SharedGeometry() :
-            hasConstraints(false) { }
+        SharedGeometry() = default;
 
-        bool empty() const {
+        inline bool empty() const {
             return commands.empty();
         }
 
-        bool hasConstraints;
-        vsg::ref_ptr<vsg::vec3Array> proxy_verts;
-        vsg::ref_ptr<vsg::vec3Array> proxy_normals;
-        vsg::ref_ptr<vsg::vec3Array> proxy_uvs;
-        vsg::ref_ptr<vsg::ushortArray> proxy_indices;
+        bool hasConstraints = false;
+        vsg::ref_ptr<vsg::vec3Array> verts, normals, uvs; // originals
+        vsg::ref_ptr<vsg::ushortArray> indexArray; // original indices
     };
 
 

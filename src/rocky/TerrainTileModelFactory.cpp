@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "TerrainTileModelFactory.h"
@@ -33,101 +33,6 @@ namespace
     }
 }
 
-CreateTileManifest::CreateTileManifest()
-{
-    _includesElevation = false;
-    _includesConstraints = false;
-    _progressive.set_default(false);
-}
-
-void
-CreateTileManifest::insert(std::shared_ptr<Layer> layer)
-{
-    if (layer)
-    {
-        _layers[layer->uid()] = layer->revision();
-
-        if (ElevationLayer::cast(layer))
-        {
-            _includesElevation = true;
-        }
-
-        //else if (std::dynamic_pointer_cast<TerrainConstraintLayer>(layer))
-        //{
-        //    _includesConstraints = true;
-        //}
-    }
-}
-
-bool
-CreateTileManifest::empty() const
-{
-    return _layers.empty();
-}
-
-bool
-CreateTileManifest::inSyncWith(const Map* map) const
-{
-#if 0
-    for(auto& iter : _layers)
-    {
-        auto layer = map->getLayerByUID(iter.first);
-
-        // note: if the layer is null, it was removed, so let it pass.
-        if (layer && layer->revision() != iter.second)
-        {
-            return false;
-        }
-    }
-#endif
-    return true;
-}
-
-void
-CreateTileManifest::updateRevisions(const Map* map)
-{
-#if 0
-    for (auto& iter : _layers)
-    {
-        auto layer = map->getLayerByUID(iter.first);
-        if (layer)
-        {
-            iter.second = layer->revision();
-        }
-    }
-#endif
-}
-
-bool
-CreateTileManifest::includes(const Layer* layer) const
-{
-    return includes(layer->uid());
-}
-
-bool
-CreateTileManifest::includes(UID uid) const
-{
-    return empty() || _layers.count(uid) > 0;
-}
-
-bool
-CreateTileManifest::includesElevation() const
-{
-    return empty() || _includesElevation;
-}
-
-bool
-CreateTileManifest::includesConstraints() const
-{
-    return _includesConstraints;
-}
-
-void
-CreateTileManifest::setProgressive(bool value)
-{
-    _progressive = value;
-}
-
 //.........................................................................
 
 TerrainTileModelFactory::TerrainTileModelFactory()
@@ -136,11 +41,7 @@ TerrainTileModelFactory::TerrainTileModelFactory()
 }
 
 TerrainTileModel
-TerrainTileModelFactory::createTileModel(
-    const Map* map,
-    const TileKey& key,
-    const CreateTileManifest& manifest,
-    const IOOptions& io) const
+TerrainTileModelFactory::createTileModel(const Map* map, const TileKey& key, const IOOptions& io) const
 {
     // Make a new model:
     TerrainTileModel model;
@@ -148,12 +49,12 @@ TerrainTileModelFactory::createTileModel(
     model.revision = map->revision();
 
     // assemble all the components:
-    addColorLayers(model, map, key, manifest, io, false);
+    addColorLayers(model, map, key, io, false);
 
     unsigned border = 0u;
-    addElevation(model, map, key, manifest, border, io);
+    addElevation(model, map, key, io);
 
-    return std::move(model);
+    return model;
 }
 
 namespace
@@ -209,20 +110,14 @@ TerrainTileModelFactory::addColorLayers(
     TerrainTileModel& model,
     const Map* map,
     const TileKey& key,
-    const CreateTileManifest& manifest,
     const IOOptions& io,
     bool standalone) const
 {
     int order = 0;
 
     // fetch the candidate layers:
-    auto layers = map->layers([&manifest](auto layer)
-        {
-            return
-                layer->isOpen() &&
-                layer->renderType() == Layer::RenderType::TERRAIN_SURFACE &&
-                manifest.includes(layer.get());
-        });
+    auto layers = map->layers<ImageLayer>([&](auto layer) { 
+        return layer->status().ok(); } );
 
     // first collect the image layers that have intersecting data.
     std::vector<std::shared_ptr<ImageLayer>> intersecting_layers;
@@ -320,37 +215,17 @@ TerrainTileModelFactory::addColorLayers(
 
 
 bool
-TerrainTileModelFactory::addElevation(
-    TerrainTileModel& model,
-    const Map* map,
-    const TileKey& key,
-    const CreateTileManifest& manifest,
-    unsigned border,
-    const IOOptions& io) const
+TerrainTileModelFactory::addElevation(TerrainTileModel& model, const Map* map, const TileKey& key, const IOOptions& io) const
 {
-    bool needElevation = manifest.includesElevation();
+    auto layers = map->layers<ElevationLayer>([&](auto layer) {
+        return layer->status().ok(); });
 
-    auto layers = map->layers<ElevationLayer>();
     if (layers.empty())
         return false;
 
     auto layer = layers.front();
 
     int combinedRevision = map->revision();
-
-    if (!manifest.empty())
-    {
-        for (const auto& layer : layers)
-        {
-            if (needElevation == false && manifest.includes(layer.get()))
-            {
-                needElevation = true;
-            }
-            combinedRevision += layer->revision();
-        }
-    }
-    if (!needElevation)
-        return false;
 
     if (layer != nullptr &&
         layer->isOpen() &&
@@ -380,4 +255,3 @@ TerrainTileModelFactory::addElevation(
 
     return model.elevation.heightfield.valid();
 }
-

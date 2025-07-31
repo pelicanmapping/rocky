@@ -68,10 +68,7 @@ GeoHeightfield::init()
 }
 
 float
-GeoHeightfield::heightAtLocation(
-    double x,
-    double y,
-    Interpolation interpolation) const
+GeoHeightfield::heightAtLocation(double x, double y, Interpolation interpolation) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(valid(), NO_DATA_VALUE);
 

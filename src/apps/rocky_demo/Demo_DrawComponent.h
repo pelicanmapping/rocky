@@ -27,7 +27,8 @@ namespace
         {
             if (auto view = app.display.getView(e.window, e.x, e.y))
             {
-                return rocky::pointAtWindowCoords(view, e.x, e.y);
+                if (auto p = rocky::pointAtWindowCoords(view, e.x, e.y))
+                    return p;
             }
             return Failure{};
         }
@@ -44,7 +45,7 @@ namespace
             {
                 auto dx = std::abs(e.x - press->x), dy = std::abs(e.y - press->y);
                 if (dx < 5 && dy < 5) // click threshold
-                {
+                {                    
                     if (auto p = mapPoint(press.value()))
                     {
                         if (e.button == 1)
@@ -65,6 +66,10 @@ namespace
             }
         }
     };
+
+    //inline bool active(Application& app, int frame) {
+    //    return (app.viewer->getFrameStamp()->frameCount - frame < 2);
+    //}
 }
 
 
@@ -73,6 +78,12 @@ auto Demo_Draw = [](Application& app)
     static entt::entity entity = entt::null;
     static CallbackSubs subs;
     static bool drawing = false;
+    static std::uint64_t frame = 0;
+    static auto active = [](Application& app) {
+            return (app.viewer->getFrameStamp()->frameCount - frame < 2);
+        };
+
+    frame = app.viewer->getFrameStamp()->frameCount;
 
     if (entity == entt::null)
     {
@@ -94,6 +105,8 @@ auto Demo_Draw = [](Application& app)
         // left click: start or continue a line:
         subs += handler->onLeftClick([&](const GeoPoint& p)
             {
+                if (!active(app)) return;
+
                 app.registry.read([&](entt::registry& r)
                     {
                         auto& line = r.get<Line>(entity);
@@ -108,6 +121,8 @@ auto Demo_Draw = [](Application& app)
         // move: continue a line:
         subs += handler->onMouseMove([&](const GeoPoint& p)
             {
+                if (!active(app)) return;
+
                 if (drawing)
                 {
                     app.registry.read([&](entt::registry& r)
@@ -122,6 +137,8 @@ auto Demo_Draw = [](Application& app)
         // right click: finish a line:
         subs += handler->onRightClick([&](const GeoPoint& p)
             {
+                if (!active(app)) return;
+
                 if (drawing)
                 {
                     app.registry.read([&](entt::registry& r)

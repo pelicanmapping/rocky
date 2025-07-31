@@ -306,7 +306,6 @@ TileLayer::bestAvailableTileKey(const TileKey& key) const
     TileKey bestKey;
     _dataExtentsIndex->Search(a_min, a_max, [&](const DataExtent& de)
         {
-            // check that the extent isn't higher-resolution than our key:
             if (!de.minLevel.has_value() || localLOD >= (int)de.minLevel.value())
             {
                 // Got an intersetion; now test the LODs:

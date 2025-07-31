@@ -284,7 +284,7 @@ Profile::tileExtent(unsigned lod, unsigned tileX, unsigned tileY) const
     return GeoExtent(srs(), xmin, ymin, xmax, ymax);
 }
 
-std::pair<double,double>
+Profile::TileDims
 Profile::tileDimensions(unsigned int lod) const
 {
     double out_width  = _shared->extent.width() / (double)_shared->numTilesBaseX;
@@ -294,10 +294,10 @@ Profile::tileDimensions(unsigned int lod) const
     out_width /= (double)factor;
     out_height /= (double)factor;
 
-    return std::make_pair(out_width, out_height);
+    return { out_width, out_height };
 }
 
-std::pair<unsigned, unsigned>
+Profile::NumTiles
 Profile::numTiles(unsigned lod) const
 {
     unsigned out_tiles_wide = _shared->numTilesBaseX;
@@ -307,7 +307,7 @@ Profile::numTiles(unsigned lod) const
     out_tiles_wide *= factor;
     out_tiles_high *= factor;
 
-    return std::make_pair(out_tiles_wide, out_tiles_high);
+    return { out_tiles_wide, out_tiles_high };
 }
 
 unsigned int
@@ -439,11 +439,11 @@ Profile::equivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
 unsigned
 Profile::levelOfDetail(double height) const
 {
-    auto [baseWidth, baseHeight] = tileDimensions(0);
+    auto dims = tileDimensions(0);
 
     // Compute LOD: at LOD n, the height is baseHeight / (2^n)
     // Solve for n: n = log2(baseHeight / rhsTargetHeight)
-    int computed_lod = static_cast<int>(std::round(std::log2(baseHeight / height)));
+    int computed_lod = static_cast<int>(std::round(std::log2(dims.y / height)));
     return (unsigned)std::max(computed_lod, 0);
 }
 

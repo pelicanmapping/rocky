@@ -869,16 +869,11 @@ MapManipulator::intersect(const vsg::dvec3& start, const vsg::dvec3& end, vsg::d
 
         if (!lsi.intersections.empty())
         {
-            int closest = 0;
-            for (int i = 1; i < lsi.intersections.size(); ++i)
-            {
-                if (lsi.intersections[i]->ratio < lsi.intersections[closest]->ratio)
-                {
-                    closest = i;
-                }
-            }
+            auto closest = std::min_element(
+                lsi.intersections.begin(), lsi.intersections.end(),
+                [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
 
-            out_intersection = lsi.intersections[closest]->worldIntersection;
+            out_intersection = closest->get()->worldIntersection;
             return true;
         }
     }
@@ -948,6 +943,8 @@ MapManipulator::apply(vsg::KeyPressEvent& keyPress)
 
     _keyPress = keyPress;
 
+    recalculateCenterAndDistanceFromLookVector();
+
     //std::cout << "KeyPressEvent" << std::endl;
 
     _lastAction = _settings->getAction(
@@ -981,6 +978,8 @@ MapManipulator::apply(vsg::ButtonPressEvent& buttonPress)
     clearEvents();
 
     _buttonPress = buttonPress;
+
+    recalculateCenterAndDistanceFromLookVector();
 
     buttonPress.handled = true;
 }
@@ -1270,7 +1269,12 @@ MapManipulator::recalculateCenterFromLookVector()
     bool ok = false;
     vsg::dvec3 intersection;
 
-    if (intersect(lookat.eye, lookat.eye + look * _state.distance * 1.5, intersection))
+    if (intersectAlongLookVector(intersection))
+    {
+        ok = true;
+    }
+
+    else if (intersect(lookat.eye, lookat.eye + look * _state.distance * 1.5, intersection))
     {
         ok = true;
     }
@@ -1379,8 +1383,8 @@ void
 MapManipulator::pan(double dx, double dy)
 {
     // to pan, we need a focus point on the terrain:
-    if ( !recalculateCenterFromLookVector() )
-        return;
+    //if ( !recalculateCenterFromLookVector() )
+    //    return;
 
     auto camera = _camera_weakptr.ref_ptr();
     if (!camera)
@@ -1476,6 +1480,8 @@ MapManipulator::rotate(double dx, double dy)
     _state.localRotation = _state.localRotation * rotate_elevation * rotate_azim;
 
     //collisionDetect();
+
+    //recalculateCenterAndDistanceFromLookVector();
 }
 
 namespace
@@ -1538,7 +1544,7 @@ MapManipulator::zoom(double dx, double dy)
 
         if (viewportToWorld(x, y, target))
         {
-            recalculateCenterFromLookVector();
+            //recalculateCenterFromLookVector();
 
             // Calcuate a rotation that we'll use to interpolate from our center point to the target
             vsg::dquat rotCenterToTarget;
@@ -1585,10 +1591,9 @@ MapManipulator::zoom(double dx, double dy)
         }
     }
 
-    recalculateCenterFromLookVector();
+    //recalculateCenterFromLookVector();
     double scale = 1.0f + dy;
     setDistance(_state.distance * scale);
-    return;
 }
 
 bool
@@ -1603,8 +1608,12 @@ MapManipulator::viewportToWorld(float x, float y, vsg::dvec3& out_world) const
     if (lsi.intersections.empty())
         return false;
 
-    std::sort(lsi.intersections.begin(), lsi.intersections.end(), [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
-    out_world = lsi.intersections.front()->worldIntersection;
+    auto closest = std::min_element(
+        lsi.intersections.begin(), lsi.intersections.end(),
+        [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
+
+    out_world = closest->get()->worldIntersection;
+
     return true;
 }
 

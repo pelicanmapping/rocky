@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "GeometryPool.h"
@@ -385,10 +385,10 @@ GeometryPool::createGeometry(const TileKey& tileKey, const Settings& settings, C
                 0));             // first instance
 
         // maintain for calculating proxy geometries
-        geom->proxy_verts = verts;
-        geom->proxy_normals = normals;
-        geom->proxy_uvs = uvs;
-        geom->proxy_indices = indices;
+        geom->verts = verts;
+        geom->normals = normals;
+        geom->uvs = uvs;
+        geom->indexArray = indices;
 
         return geom;
     }

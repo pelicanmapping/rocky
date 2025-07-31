@@ -11,6 +11,7 @@
 #include <rocky/Color.h>
 #include <rocky/Heightfield.h>
 #include <rocky/Image.h>
+#include <rocky/TerrainTileModel.h>
 
 #include <vsg/state/BindDescriptorSet.h>
 #include <vsg/state/ViewDependentState.h>

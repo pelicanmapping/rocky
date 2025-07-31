@@ -50,6 +50,12 @@ auto Demo_Rendering = [](Application& app)
             app.mapNode->terrainNode->reset(app.vsgcontext);
         }
 
+        int maxLevel = app.mapNode->terrainSettings().maxLevelOfDetail.value();
+        if (ImGuiLTable::SliderInt("Max LOD", &maxLevel, 0, 20))
+        {
+            app.mapNode->terrainSettings().maxLevelOfDetail = maxLevel;
+        }
+
         ImGuiLTable::End();
     }
 };
