@@ -7,6 +7,7 @@
 #include <rocky/ecs/Registry.h>
 #include <rocky/vsg/NodePager.h>
 #include <rocky/vsg/ecs/EntityNode.h>
+#include <rocky/ElevationSampler.h>
 #include "helpers.h"
 
 using namespace ROCKY_NAMESPACE;
@@ -22,17 +23,62 @@ auto Demo_NodePager = [](Application& app)
 
     static vsg::ref_ptr<NodePager> pager;
     static Profile profile("global-geodetic");
+    static ElevationSampler clamper;
 
     if (!pager)
     {
+        auto layers = app.mapNode->map->layers<ElevationLayer>();
+        if (!layers.empty() && layers.front()->isOpen())
+            clamper.layer = layers.front();
+
         pager = NodePager::create(profile, app.mapNode->profile);
 
+        pager->minLevel = 0;
+
+        pager->maxLevel = 14;
+
         pager->refinePolicy = NodePager::RefinePolicy::Replace;
+
+        pager->calculateBound = [&](const TileKey& key, const IOOptions& io)
+            {
+                auto ex = app.mapNode->profile.clampAndTransformExtent(key.extent());
+                auto bs = ex.createWorldBoundingSphere(0, 0);
+
+                if (clamper.ok() && key.level > 1)
+                {
+                    auto p = ex.centroid().transform(SRS::WGS84);
+
+                    auto session = clamper.session(io);
+                    session.lod = std::min(key.level, 4u);
+                    session.xform = p.srs.to(clamper.layer->profile.srs());
+
+                    float z = clamper.sample(session, p.x, p.y, p.z);
+                    if (z != NO_DATA_VALUE)
+                        p.z = z;
+                    p.transformInPlace(app.mapNode->worldSRS());
+
+                    return vsg::dsphere(to_vsg(p), bs.radius);
+                }
+                else
+                {
+                    return to_vsg(bs);
+                }
+            };
 
         // Mandatory: the function that will create the payload for each TileKey:
         pager->createPayload = [&app](const TileKey& key, const IOOptions& io)
             {
                 vsg::ref_ptr<EntityNode> result;
+
+                auto centroid = key.extent().centroid().transform(SRS::WGS84);
+
+                if (clamper.ok())
+                {
+                    auto session = clamper.session(io);
+                    session.lod = std::min(key.level, 6u);
+                    session.xform = centroid.srs.to(clamper.layer->profile.srs());
+                    centroid.z = clamper.sample(session, centroid.x, centroid.y, centroid.z);
+                }
 
                 // Geometry generator:
                 FeatureView fview;
@@ -50,31 +96,31 @@ auto Demo_NodePager = [](Application& app)
                 fview.features.emplace_back(Feature(
                     ex.srs(),
                     Geometry::Type::LineString, {
-                        glm::dvec3(ex.xmin(), ex.ymin(), 0),
-                        glm::dvec3(ex.xmax(), ex.ymin(), 0)
+                        glm::dvec3(ex.xmin(), ex.ymin(), centroid.z),
+                        glm::dvec3(ex.xmax(), ex.ymin(), centroid.z)
                     },
                     GeodeticInterpolation::RhumbLine));
 
                 fview.features.emplace_back(Feature(
                     ex.srs(),
                     Geometry::Type::LineString, {
-                        glm::dvec3(ex.xmin(), ex.ymax(), 0),
-                        glm::dvec3(ex.xmax(), ex.ymax(), 0)
+                        glm::dvec3(ex.xmin(), ex.ymax(), centroid.z),
+                        glm::dvec3(ex.xmax(), ex.ymax(), centroid.z)
                     },
                     GeodeticInterpolation::RhumbLine));
 
                 fview.features.emplace_back(Feature(
                     ex.srs(),
                     Geometry::Type::LineString, {
-                        glm::dvec3(ex.xmax(), ex.ymin(), 0),
-                        glm::dvec3(ex.xmax(), ex.ymax(), 0)
+                        glm::dvec3(ex.xmax(), ex.ymin(), centroid.z),
+                        glm::dvec3(ex.xmax(), ex.ymax(), centroid.z)
                     }));
 
                 fview.features.emplace_back(Feature(
                     ex.srs(),
                     Geometry::Type::LineString, {
-                        glm::dvec3(ex.xmin(), ex.ymin(), 0),
-                        glm::dvec3(ex.xmin(), ex.ymax(), 0)
+                        glm::dvec3(ex.xmin(), ex.ymin(), centroid.z),
+                        glm::dvec3(ex.xmin(), ex.ymax(), centroid.z)
                     }));
 
 
@@ -99,7 +145,7 @@ auto Demo_NodePager = [](Application& app)
                             widget.text = key.str();
 
                             auto& transform = registry.emplace<Transform>(entity);
-                            transform.position = key.extent().centroid().transform(app.mapNode->worldSRS());
+                            transform.position = centroid.transform(app.mapNode->worldSRS());
                         });
                 }
 

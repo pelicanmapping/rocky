@@ -39,17 +39,20 @@ auto Demo_MVTFeatures = [](Application& app)
                 auto ex = app.mapNode->profile.clampAndTransformExtent(key.extent());
                 auto bs = ex.createWorldBoundingSphere(0, 0);
 
-                if (clamper.ok())
+                if (clamper.ok() && key.level > 1)
                 {
                     auto p = ex.centroid().transform(SRS::WGS84);
 
                     auto session = clamper.session(io);
-                    session.lod = std::min(key.level, 6u);
+                    session.lod = std::min(key.level, 5u);
                     session.xform = p.srs.to(clamper.layer->profile.srs());
 
                     float z = clamper.sample(session, p.x, p.y, p.z);
-                    if (z != NO_DATA_VALUE) p.z = z;
-                    return vsg::dsphere(to_vsg(p.transform(app.mapNode->worldSRS())), bs.radius);
+                    if (z != NO_DATA_VALUE)
+                        p.z = z;
+                    p.transformInPlace(app.mapNode->worldSRS());
+
+                    return vsg::dsphere(to_vsg(p), bs.radius);
                 }
                 else
                 {
