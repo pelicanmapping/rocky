@@ -172,6 +172,49 @@ elevation->encoding = ElevationLayer::Encoding::MapboxRGB;
 map->add(elevation);
 ```
 
+### Elevation Queries
+It is often useful to query the elevation at a given location. There are two ways to do it.
+
+#### Intersect the scene graph
+This method is fast, but it limited to whatever terrain triangles are currently
+in memory. Thus the result will depend on where your camera is and how much data is loaded.
+```c++
+GeoPoint point(SRS::WGS84, longitude, latitude);
+
+auto clampedPoint = mapNode->terrain->intersect(point);
+
+if (clampedPoint.ok())
+    float elevation = clampedPoint->transform(SRS::WGS84).z;
+```
+
+#### Query the source data
+This method is the most accurate, and does not depend on what data is currently
+loaded in the scene since it goes straight to the source layer. But it's usually slower.
+```c++
+ElevationSampler sampler;
+sampler.layer = elevationLayerFromMap;
+
+Result<ElevationSample> result = sampler.sample(point, app.io);
+
+if (result.ok())
+    Log()->info("Result = {}m", result.value());
+
+// or, return a clamped GeoPoint:
+Result<GeoPoint> clampedPoint = sampler.clamp(point, app.io);
+```
+
+You can also batch queries to the `ElevationSampler`, which speeds things up when querying a localized area. A batched query session modifies the input data directly. It also expects an `SRSOperation` that can transform those points into the SRS of the elevation layer. You also get optional control over the sampling resolution ... lower resolution is often faster.
+```c++
+ElevationSampler sampler;
+sampler.layer = ...;
+
+auto session = sampler.session(app.io);
+session.xform = pointsSRS.to(sampler.layer->profile->srs());
+session.resolution = Distance(100, Units::METERS);
+sampler.clampRange(session, points.begin(), points.end());
+```
+We use this technique in the `Demo_MVTFeatures.h` example to clamp GIS features to the terrain.
+
 ## Vector Features
 Rocky include some facilities for loading GIS Feature data through GDAL. GDAL has many drivers to load different types of feature data.
 

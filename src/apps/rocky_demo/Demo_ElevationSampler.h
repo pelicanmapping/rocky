@@ -130,14 +130,12 @@ auto Demo_ElevationSampler = [](Application& app)
 
     if (sample.available() && sample.value().ok())
     {
-        ImGuiLTable::Text("Elevation sampler:", "%.2f m", sample.value()->height.as(Units::METERS));
-        ImGuiLTable::Text("Resolution:", "%.2f m", sample.value()->resolution.as(Units::METERS));
+        ImGuiLTable::Text("Elevation sampler:", "%.2f m", sample->value());
 
     }
     else if (sample.working())
     {
         ImGuiLTable::Text("Elevation sampler:", "...");
-        ImGuiLTable::Text("Resolution:", "...");
 
         if (sample.working())
             app.vsgcontext->requestFrame();
@@ -145,7 +143,6 @@ auto Demo_ElevationSampler = [](Application& app)
     else
     {
         ImGuiLTable::Text("Elevation sampler:", "no data");
-        ImGuiLTable::Text("Resolution:", "no data");
     }
     ImGuiLTable::End();
 };

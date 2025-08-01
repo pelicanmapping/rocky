@@ -30,7 +30,7 @@ auto ElevationSampler::fetch(const TileKey& key, const IOOptions& io) const -> R
     return Failure{};
 }
 
-auto ElevationSampler::sample(Session& env, double x, double y, double z) const -> float
+bool ElevationSampler::clamp(Session& env, double& x, double& y, double& z) const
 {
     if (env.pw <= 0.0)
     {
@@ -50,10 +50,11 @@ auto ElevationSampler::sample(Session& env, double x, double y, double z) const 
     }
 
     // xform into the layer's SRS if necessary.
-    env.xform.transform(x, y, z);
+    double xa = x, ya = y, za = z;
+    env.xform.transform(xa, ya, za);
     
     // simple ONE TILE caching internally.
-    auto [tx, ty] = env.tile(x, y);
+    auto [tx, ty] = env.tile(xa, ya);
 
     if (tx != env.tx || ty != env.ty)
     {
@@ -71,5 +72,14 @@ auto ElevationSampler::sample(Session& env, double x, double y, double z) const 
         }
     }
 
-    return env.hf.ok() ? env.hf->heightAtLocation(x, y, interpolation) : failValue;
+    if (env.hf.ok())
+    {
+        x = xa, y = ya;
+        z = env.hf->heightAtLocation(xa, ya, interpolation);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }

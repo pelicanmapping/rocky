@@ -46,23 +46,19 @@ auto Demo_NodePager = [](Application& app)
 
                 if (clamper.ok() && key.level > 1)
                 {
-                    auto p = ex.centroid().transform(SRS::WGS84);
-
+                    auto p = ex.centroid();
                     auto session = clamper.session(io);
-                    session.lod = std::min(key.level, 4u);
+                    session.lod = std::min(key.level, 5u);
                     session.xform = p.srs.to(clamper.layer->profile.srs());
 
-                    float z = clamper.sample(session, p.x, p.y, p.z);
-                    if (z != NO_DATA_VALUE)
-                        p.z = z;
-                    p.transformInPlace(app.mapNode->worldSRS());
+                    if (clamper.clamp(session, p.x, p.y, p.z))
+                    {
+                        p.transformInPlace(app.mapNode->worldSRS());
+                        return vsg::dsphere(to_vsg(p), bs.radius);
+                    }
+                }
 
-                    return vsg::dsphere(to_vsg(p), bs.radius);
-                }
-                else
-                {
-                    return to_vsg(bs);
-                }
+                return to_vsg(bs);
             };
 
         // Mandatory: the function that will create the payload for each TileKey:
