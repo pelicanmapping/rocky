@@ -148,13 +148,25 @@ TerrainNode::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg::Rec
 Result<GeoPoint>
 TerrainNode::intersect(const GeoPoint& input) const
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(input.valid(), Failure_ConfigurationError);
+    if (!input)
+        return Failure{};
+
     ROCKY_SOFT_ASSERT_AND_RETURN(engine, Failure_AssertionFailure);
 
+    // world vector from earth's center to the input point:
     GeoPoint world = input.transform(engine->worldSRS);    
 
-    vsg::dvec3 start(0, 0, 0);
-    vsg::dvec3 end = to_vsg(world) * 2.0; // far enough to hit the terrain
+    vsg::dvec3 start, end;
+    if (engine->worldSRS.isGeocentric())
+    {
+        start = to_vsg(world) * 2.0;
+        end.set(0, 0, 0);
+    }
+    else
+    {
+        start.set(world.x, world.y, 1e6);
+        end.set(world.x, world.y, -1e6);
+    }
 
     vsg::LineSegmentIntersector lsi(start, end);
 
@@ -163,6 +175,7 @@ TerrainNode::intersect(const GeoPoint& input) const
     if (lsi.intersections.empty())
         return Failure{};
 
+    // there should be only one, but we will take the closest one anyway:
     auto closest = std::min_element(
         lsi.intersections.begin(), lsi.intersections.end(),
         [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });

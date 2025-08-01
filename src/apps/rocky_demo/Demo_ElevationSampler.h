@@ -74,11 +74,8 @@ auto Demo_ElevationSampler = [](Application& app)
             });
 
         // Configure our sampler.
-        // The elevation layer is required:
-        auto layers = app.mapNode->map->layers<ElevationLayer>();
-        if (!layers.empty())
-            sampler.layer = layers.front();
-        else
+        sampler.layer = app.mapNode->map->layer<ElevationLayer>();
+        if (!sampler.layer)
             return;
 
         // event handler to capture mouse movements:

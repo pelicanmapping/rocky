@@ -36,13 +36,17 @@ namespace ROCKY_NAMESPACE
         //! Sets the layers collection
         void setLayers(Layers&& layers) noexcept;
 
-        //! A safe copy of all the layers that match the optional cast type and the optional preficate function.
+        //! A safe copy of all the layers that match the optional cast type and the optional predicate function.
         //! Examples:
         //!     auto layers = map.layers(); // fetch all layers
         //!     auto layers = map.layers<ImageLayer>(); // fetch all layers of type ImageLayer
         //!     auto layers = map.layers([](auto layer) { return layer->name() == "MyLayer"; }); // fetch all layers with a given name
-        template<class T = Layer, class PREDICATE = std::function<bool(const typename T::ConstPtr)>>
+        template<class T = Layer, class PREDICATE = std::function<bool(typename T::ConstPtr)>>
         inline std::vector<typename T::Ptr> layers(PREDICATE&& pred = [](typename T::ConstPtr) { return true; }) const;
+
+        //! Pointer to the first layer that matches both the optional type cast and the optional predicate function.
+        template<class T = Layer, class PREDICATE = std::function<bool(typename T::ConstPtr)>>
+        inline typename T::Ptr layer(PREDICATE&& pred = [](typename T::ConstPtr) { return true; }) const;
 
         //! Iterate safely over all layers, calling the callable.
         template<typename CALLABLE>
@@ -83,7 +87,7 @@ namespace ROCKY_NAMESPACE
     inline std::vector<typename T::Ptr> Map::layers(PREDICATE&& pred) const
     {
         static_assert(std::is_invocable_r_v<bool, PREDICATE, typename T::Ptr>,
-            "Map::layers() requires a predicate that takes a T::ConstPtr and returns bool");
+            "Map::layers() requires a predicate matching the signature bool(T::ConstPtr)");
 
         std::vector<typename T::Ptr> result;
         std::shared_lock lock(_mutex);
@@ -96,6 +100,23 @@ namespace ROCKY_NAMESPACE
             }
         }
         return result;
+    }
+
+    template<class T, class PREDICATE>
+    inline typename T::Ptr Map::layer(PREDICATE&& pred) const
+    {
+        static_assert(std::is_invocable_r_v<bool, PREDICATE, typename T::Ptr>,
+            "Map::layer() requires a predicate matching the signature bool(T::ConstPtr)");
+
+        typename T::Ptr result;
+        std::shared_lock lock(_mutex);
+        for (auto& layer : _layers)
+        {
+            typename T::Ptr typed = T::cast(layer);
+            if (typed && pred(typed))
+                return typed;
+        }
+        return {};
     }
 
     template<typename CALLABLE>

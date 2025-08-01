@@ -83,6 +83,10 @@ namespace ROCKY_NAMESPACE
                         double circ = 2.0 * glm::pi<double>() * R;
                         double angle = 360.0 * distance / circ;
 
+                        // bailout if the time delta was too small to cause any motion
+                        if (util::equiv(distance, 0.0) || util::equiv(angle, 0.0))
+                            return;
+
                         // move the point:
                         pos = pos.srs.ellipsoid().rotate(world, motion.normalAxis, angle);
 

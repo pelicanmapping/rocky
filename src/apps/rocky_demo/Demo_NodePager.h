@@ -27,13 +27,11 @@ auto Demo_NodePager = [](Application& app)
 
     if (!pager)
     {
-        auto layers = app.mapNode->map->layers<ElevationLayer>();
-        if (!layers.empty() && layers.front()->isOpen())
-            clamper.layer = layers.front();
+        clamper.layer = app.mapNode->map->layer<ElevationLayer>();
 
         pager = NodePager::create(profile, app.mapNode->profile);
 
-        pager->minLevel = 0;
+        pager->minLevel = 3;
 
         pager->maxLevel = 14;
 

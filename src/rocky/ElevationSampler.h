@@ -55,7 +55,7 @@ namespace ROCKY_NAMESPACE
 
         //! Sample a vector of 3D points and replace each one with the elevation-clamped version.
         template<class VEC3_ITER>
-        inline void clampRange(const SRS& srs, VEC3_ITER begin, VEC3_ITER end, const IOOptions& io) const;
+        inline Result<> clampRange(const SRS& srs, VEC3_ITER begin, VEC3_ITER end, const IOOptions& io) const;
 
         /**
         * Session for use with batch operations and for more control over sampling resolution.
@@ -105,7 +105,7 @@ namespace ROCKY_NAMESPACE
 
         //! Samples a point.
         template<class VEC3_ITER>
-        inline void clampRange(Session& env, VEC3_ITER begin, VEC3_ITER end) const;
+        inline Result<> clampRange(Session& env, VEC3_ITER begin, VEC3_ITER end) const;
 
         //! Fetches a new heightfield for a key.
         Result<GeoHeightfield> fetch(const TileKey&, const IOOptions& io) const;
@@ -167,32 +167,34 @@ namespace ROCKY_NAMESPACE
     }
 
     template<class VEC3_ITER>
-    void ElevationSampler::clampRange(const SRS& srs, VEC3_ITER begin, VEC3_ITER end, const IOOptions& io) const
+    Result<> ElevationSampler::clampRange(const SRS& srs, VEC3_ITER begin, VEC3_ITER end, const IOOptions& io) const
     {
         if (!layer || !layer->status().ok())
             return NoLayer;
 
         if (begin == end)
-            return;
+            return NoLayer;
 
         auto env = session(io, begin->y);
         env.xform = srs.to(layer->profile.srs());
-        clampRange(env, begin, end);
+        return clampRange(env, begin, end);
     }
 
     template<class VEC3_ITER>
-    void ElevationSampler::clampRange(Session& env, VEC3_ITER begin, VEC3_ITER end) const
+    Result<> ElevationSampler::clampRange(Session& env, VEC3_ITER begin, VEC3_ITER end) const
     {
         if (!layer || !layer->status().ok())
-            return;
+            return NoLayer;
 
         if (begin == end)
-            return;
+            return NoLayer;
 
         for (auto iter = begin; iter != end; ++iter)
         {
             if (clamp(env, iter->x, iter->y, iter->z))
                 env.xform.inverse(iter->x, iter->y, iter->z);
         }
+
+        return {}; // ok
     }
 }

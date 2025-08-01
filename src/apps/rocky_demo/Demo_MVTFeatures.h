@@ -22,11 +22,7 @@ auto Demo_MVTFeatures = [](Application& app)
     if (!pager)
     {
         // Set up our elevation clamper.
-        auto layers = app.mapNode->map->layers<ElevationLayer>();
-        if (!layers.empty() && layers.front()->isOpen())
-        {
-            clamper.layer = layers.front();
-        }
+        clamper.layer = app.mapNode->map->layer<ElevationLayer>();
 
         pager = NodePager::create(Profile("spherical-mercator"), app.mapNode->profile);
 
@@ -122,7 +118,9 @@ auto Demo_MVTFeatures = [](Application& app)
                             f.geometry.eachPart([&](Geometry& part)
                                 {
                                     // clamp the geometry to the elevation layer:
-                                    clamper.clampRange(session, part.points.begin(), part.points.end());
+                                    auto r = clamper.clampRange(session, part.points.begin(), part.points.end());
+                                    if (r.failed())
+                                        return;
                                 });
                         }
                     }

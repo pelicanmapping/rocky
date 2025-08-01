@@ -783,7 +783,7 @@ ElevationLayerVector::populateHeightfield(
                         //OE_NOTICE << "Clearing cache" << std::endl;
                         for (unsigned int k = 0; k < heightfields.size(); k++)
                         {
-                            heightfields[k] = GeoHeightfield::INVALID;
+                            heightfields[k] = {};
                             heightFallback[k] = false;
                         }
                         numHeightfieldsInCache = 0;

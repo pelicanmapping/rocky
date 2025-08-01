@@ -71,6 +71,11 @@ namespace ROCKY_NAMESPACE
             return srs.valid();
         }
 
+        //! Does this object represent an invalid geo point?
+        inline operator bool() const {
+            return valid();
+        }
+
         //! Readable string
         std::string string() const;
 
