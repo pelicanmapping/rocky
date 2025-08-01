@@ -21,7 +21,7 @@ struct ROCKY_NAMESPACE::TileLayer::DataExtentsIndex : public RTree<DataExtent, d
 TileLayer::TileLayer() :
     super()
 {
-    construct(JSON());
+    construct({});
 }
 
 TileLayer::TileLayer(std::string_view conf) :
@@ -42,7 +42,7 @@ TileLayer::construct(std::string_view conf)
     get_to(j, "profile", _originalProfile);        
 }
 
-JSON
+std::string
 TileLayer::to_json() const
 {
     auto j = parse_json(super::to_json());

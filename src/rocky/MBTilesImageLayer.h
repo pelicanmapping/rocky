@@ -26,7 +26,7 @@ namespace ROCKY_NAMESPACE
         explicit MBTilesImageLayer(std::string_view JSON, const IOOptions& io);
 
         //! serialize
-        JSON to_json() const override;
+        std::string to_json() const override;
 
     protected:
 

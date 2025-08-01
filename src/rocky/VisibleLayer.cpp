@@ -13,7 +13,7 @@ using namespace ROCKY_NAMESPACE;
 VisibleLayer::VisibleLayer() :
     super()
 {
-    construct(JSON());
+    construct({});
 }
 
 VisibleLayer::VisibleLayer(std::string_view conf) :
@@ -29,7 +29,7 @@ VisibleLayer::construct(std::string_view conf)
     get_to(j, "opacity", opacity);
 }
 
-JSON
+std::string
 VisibleLayer::to_json() const
 {
     auto j = parse_json(super::to_json());

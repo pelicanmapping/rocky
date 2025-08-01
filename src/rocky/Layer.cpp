@@ -15,7 +15,7 @@ using namespace ROCKY_NAMESPACE;
 Layer::Layer() :
     super()
 {
-    construct(JSON());
+    construct({});
 }
 
 Layer::Layer(std::string_view conf) :
@@ -30,6 +30,14 @@ Layer::construct(std::string_view conf)
     _uid = rocky::createUID();
 
     const auto j = parse_json(conf);
+
+    // catched JSON parsing errors for ALL subclasses
+    if (j.status.failed())
+    { 
+        fail(j.status.error());
+        return;
+    }
+
     get_to(j, "name", _name);
     get_to(j, "open", openAutomatically);
     get_to(j, "attribution", attribution);
@@ -38,7 +46,7 @@ Layer::construct(std::string_view conf)
     fail(Failure::ResourceUnavailable, openAutomatically ? "Layer closed" : "Layer disabled");
 }
 
-JSON
+std::string
 Layer::to_json() const
 {
     auto j = json::object();

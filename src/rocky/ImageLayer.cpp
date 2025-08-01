@@ -71,11 +71,9 @@ ImageLayer::construct(std::string_view JSON, const IOOptions& io)
     const auto j = parse_json(JSON);
     get_to(j, "sharpness", sharpness);
     get_to(j, "crop", crop);
-
-    setRenderType(RenderType::TERRAIN_SURFACE);
 }
 
-JSON
+std::string
 ImageLayer::to_json() const
 {
     auto j = parse_json(super::to_json());

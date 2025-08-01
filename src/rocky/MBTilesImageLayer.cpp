@@ -39,7 +39,7 @@ MBTilesImageLayer::construct(std::string_view JSON, const IOOptions& io)
     get_to(j, "compress", compress);
 }
 
-JSON
+std::string
 MBTilesImageLayer::to_json() const
 {
     auto j = parse_json(super::to_json());

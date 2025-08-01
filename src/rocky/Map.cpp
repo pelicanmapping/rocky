@@ -12,11 +12,11 @@ using namespace ROCKY_NAMESPACE;
 #define LC "[Map] "
 
 Result<>
-Map::from_json(const std::string& input, const IOOptions& io)
+Map::from_json(std::string_view input, const IOOptions& io)
 {
     auto j = parse_json(input);
     if (j.status.failed())
-        return j.status;
+        return j.status.error();
 
     get_to(j, "name", _name);
     if (j.contains("layers")) {

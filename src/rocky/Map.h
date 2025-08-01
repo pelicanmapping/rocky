@@ -65,7 +65,7 @@ namespace ROCKY_NAMESPACE
 
         //! Deserialize from JSON data
         //! @param value JSON string to import
-        Result<> from_json(const JSON& value, const IOOptions& io);
+        Result<> from_json(std::string_view value, const IOOptions& io);
 
         //! Serialize
         std::string to_json() const;

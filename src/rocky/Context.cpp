@@ -117,7 +117,7 @@ UID rocky::createUID()
     return uidgen++;
 }
 
-std::string rocky::json_pretty(const JSON& j)
+std::string rocky::json_pretty(std::string_view j)
 {
     return parse_json(j).dump(4);
 }

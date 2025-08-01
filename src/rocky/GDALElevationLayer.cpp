@@ -87,11 +87,9 @@ GDALElevationLayer::construct(std::string_view JSON, const IOOptions& io)
     {
         interpolation.set_default(Interpolation::Nearest);
     }
-
-    setRenderType(RenderType::TERRAIN_SURFACE);
 }
 
-JSON
+std::string
 GDALElevationLayer::to_json() const
 {
     auto j = parse_json(super::to_json());

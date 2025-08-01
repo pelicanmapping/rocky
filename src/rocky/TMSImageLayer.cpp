@@ -48,7 +48,7 @@ TMSImageLayer::construct(std::string_view JSON, const IOOptions& io)
     get_to(j, "invert_y", invertY);
 }
 
-JSON
+std::string
 TMSImageLayer::to_json() const
 {
     auto j = parse_json(super::to_json());   

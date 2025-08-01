@@ -123,7 +123,7 @@ ElevationLayer::construct(std::string_view JSON, const IOOptions& io)
     _dependencyCache = std::make_shared<TileMosaicWeakCache<Heightfield>>();
 }
 
-JSON
+std::string
 ElevationLayer::to_json() const
 {
     auto j = parse_json(super::to_json());

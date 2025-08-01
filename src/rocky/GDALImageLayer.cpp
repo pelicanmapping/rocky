@@ -80,11 +80,9 @@ GDALImageLayer::construct(std::string_view JSON, const IOOptions& io)
     if (temp == "nearest") interpolation = Interpolation::Nearest;
     else if (temp == "bilinear") interpolation = Interpolation::Bilinear;
     get_to(j, "single_threaded", singleThreaded);
-
-    setRenderType(RenderType::TERRAIN_SURFACE);
 }
 
-JSON
+std::string
 GDALImageLayer::to_json() const
 {
     auto j = parse_json(super::to_json());

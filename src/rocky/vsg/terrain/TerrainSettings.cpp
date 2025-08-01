@@ -9,9 +9,12 @@
 using namespace ROCKY_NAMESPACE;
 
 Result<>
-TerrainSettings::from_json(const std::string& JSON)
+TerrainSettings::from_json(std::string_view JSON)
 {
     const auto j = parse_json(JSON);
+
+    if (j.status.failed())
+        return j.status.error();
 
     get_to(j, "tile_size", tileSize);
     get_to(j, "min_tile_range_factor", minTileRangeFactor);
@@ -26,7 +29,7 @@ TerrainSettings::from_json(const std::string& JSON)
     return {};
 }
 
-JSON
+std::string
 TerrainSettings::to_json() const
 {
     auto j = json::object();

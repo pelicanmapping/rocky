@@ -75,25 +75,6 @@ namespace ROCKY_NAMESPACE
 
     public:
 
-        //! How (and if) to use this layer when rendering terrain tiles.
-        enum class RenderType
-        {
-            //! Layer does not draw anything (directly)
-            NONE,
-
-            //! Layer requires a terrain rendering pass that draws terrain tiles with texturing
-            TERRAIN_SURFACE
-        };
-
-        //! Rendering type of this layer
-        RenderType renderType() const { return _renderType; }
-
-        //! Rendering type of this layer
-        void setRenderType(RenderType value) { _renderType = value; }
-
-
-    public:
-
         //! Revision number of this layer
         Revision revision() const { return _revision; }
 
@@ -109,8 +90,10 @@ namespace ROCKY_NAMESPACE
 
     protected:
 
+        //! Construct the layer (from a subclass)
         Layer();
 
+        //! Construct a layer (from serialized JSON)
         Layer(std::string_view conf);
 
         //! Called by open() to connect to external resources and return a status.
@@ -135,7 +118,6 @@ namespace ROCKY_NAMESPACE
 
     private:
         UID _uid = -1;
-        RenderType _renderType = RenderType::NONE;
         Result<> _status;
         std::atomic<Revision> _revision = { 1 };
         mutable std::shared_mutex _state_mutex;

@@ -46,11 +46,8 @@ namespace ROCKY_NAMESPACE
     //! revision type
     using Revision = std::int32_t;
 
-    //! json serialization type
-    using JSON = std::string;
-
     //! Pretty-print a json string.
-    extern ROCKY_EXPORT std::string json_pretty(const JSON&);
+    extern ROCKY_EXPORT std::string json_pretty(std::string_view JSON);
 
     //! Generate an application-wide unique identifier.
     extern ROCKY_EXPORT UID createUID();

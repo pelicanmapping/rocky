@@ -183,6 +183,7 @@ MBTiles::Driver::open(
             {
                 // try to parse it as a JSON config
                 auto j = parse_json(profileStr);
+                // todo: error check.
 
                 // new style. e.g., "global-geodetic"
                 get_to(j, profile);
