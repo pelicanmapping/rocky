@@ -409,6 +409,14 @@ Application::realize()
     }
 }
 
+std::uint64_t
+Application::frameCount() const
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer, 0);
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer->getFrameStamp(), 0);
+    return viewer->getFrameStamp()->frameCount;
+}
+
 int
 Application::run()
 {
@@ -451,6 +459,16 @@ Application::frame()
             return false;
         }
 
+        t_events = std::chrono::steady_clock::now();
+
+        viewer->handleEvents();
+
+        if (!viewer->active())
+        {
+            _lastFrameOK = false;
+            return false;
+        }
+
         t_update = std::chrono::steady_clock::now();
 
         auto num_windows = viewer->windows().size();
@@ -470,18 +488,6 @@ Application::frame()
         {
             Log()->debug("Number of windows changed; skipping to next frame");
             return true;
-        }
-
-        t_events = std::chrono::steady_clock::now();
-
-        // Event handling happens after updating the scene, otherwise
-        // things like tethering to a moving node will be one frame behind
-        viewer->handleEvents();
-
-        if (!viewer->active())
-        {
-            _lastFrameOK = false;
-            return false;
         }
 
         t_record = std::chrono::steady_clock::now();

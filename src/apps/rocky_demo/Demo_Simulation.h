@@ -60,7 +60,8 @@ auto Demo_Simulation = [](Application& app)
     static Result<> status;
     static Simulator sim(app);
     static ImGuiImage widgetImage;
-    const unsigned num_platforms = 10000;
+    static std::set<entt::entity>::const_iterator tether = platforms.end();
+    const unsigned num_platforms = 1000;
 
     if (status.failed())
     {
@@ -147,17 +148,12 @@ auto Demo_Simulation = [](Application& app)
 
             double lat = -80.0 + rand_unit(mt) * 160.0;
             double lon = -180 + rand_unit(mt) * 360.0;
-            double alt = 1000.0 + t * 1000000.0;
-            GeoPoint pos(SRS::WGS84, lon, lat, alt);
-
-            // This is optional, since a Transform can take a point expresssed in any SRS.
-            // But since we KNOW the map is geocentric, this will give us better performance
-            // by avoiding a conversion every frame.
-            pos.transformInPlace(SRS::ECEF);
+            double alt = 1000.0 + t * 100000.0;
+            GeoPoint pos_ecef = GeoPoint(SRS::WGS84, lon, lat, alt).transform(SRS::ECEF);
 
             // Add a transform component:
             auto& transform = registry.emplace<Transform>(entity);
-            transform.position = pos;
+            transform.position = pos_ecef;
 
             // We need this to support the drop-line. There is a small performance hit.
             transform.topocentric = true;
@@ -166,7 +162,7 @@ auto Demo_Simulation = [](Application& app)
             double initial_bearing = -180.0 + rand_unit(mt) * 360.0;
             auto& motion = registry.emplace<MotionGreatCircle>(entity);
             motion.velocity = { -7500 + rand_unit(mt) * 15000, 0.0, 0.0 };
-            motion.normalAxis = pos.srs.ellipsoid().greatCircleRotationAxis(glm::dvec3(lon, lat, 0.0), initial_bearing);
+            motion.normalAxis = pos_ecef.srs.ellipsoid().rotationAxis(pos_ecef, initial_bearing);
 
             // Add a labeling widget:
             auto& widget = registry.emplace<Widget>(entity);
@@ -209,6 +205,35 @@ auto Demo_Simulation = [](Application& app)
         }
 
         ImGuiLTable::SliderFloat("Update rate", &sim.sim_hertz, 1.0f, 120.0f, "%.0f hz");
+
+        static bool tethering = false;
+        if (ImGuiLTable::Checkbox("Tethering", &tethering))
+        {
+            auto main_window = app.display.windowsAndViews.begin();
+            auto view = main_window->second.front();
+            auto manip = MapManipulator::get(view);
+            
+            if (tethering)
+            {
+                // To tether, create a Viewpoint object with a "pointFunction" that
+                // returns the current location of the tracked object.
+                Viewpoint vp;
+                vp.range = 1e6;
+                vp.pitch = -45;
+                vp.heading = 45;
+                vp.pointFunction = [&app]()
+                    {
+                        auto [lock, registry] = app.registry.read();
+                        return registry.get<Transform>(*platforms.begin()).position;
+                    };
+
+                manip->setViewpoint(vp, 2.0s);
+            }
+            else
+            {
+                manip->home();
+            }
+        }
 
         ImGuiLTable::End();
     }

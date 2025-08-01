@@ -45,7 +45,7 @@ auto Demo_ElevationSampler = [](Application& app)
     static entt::entity entity = entt::null;
     static CallbackSubs subs;
     static std::uint64_t frame = 0;
-    static auto active = [](Application& app) {return (app.viewer->getFrameStamp()->frameCount - frame < 2); };
+    static auto active = [](Application& app) {return (app.frameCount() - frame < 2); };
     static ElevationSampler sampler;
     static jobs::future<Result<ElevationSample>> sample;
     static GeoPoint mouse;
@@ -60,15 +60,17 @@ auto Demo_ElevationSampler = [](Application& app)
             {
                 entity = r.create();
                         
-                auto& line = r.get_or_emplace<Line>(entity);
+                auto& line = r.emplace<Line>(entity);
                 line.style.color = Color::Cyan;
                 line.style.width = 4.0f;
                 line.topology = Line::Topology::Segments;
                 double t = 500.0;
                 line.points = { {-t, 0, 0}, {t, 0, 0}, {0, -t, 0}, {0, t, 0}, {0, 0, -t}, {0, 0, t} };
 
-                auto& transform = r.get_or_emplace<Transform>(entity);
+                auto& transform = r.emplace<Transform>(entity);
                 transform.topocentric = true;
+                transform.frustumCulled = false;
+                transform.horizonCulled = false;
             });
 
         // Configure our sampler.
@@ -85,9 +87,15 @@ auto Demo_ElevationSampler = [](Application& app)
 
         subs += handler->onMouseMove([&](const GeoPoint& p)
             {
-                //if (!active(app)) return;
                 if (p.valid())
                 {
+                    app.registry.read([&](entt::registry& r)
+                        {
+                            auto& transform = r.get<Transform>(entity);
+                            transform.position = p;
+                            transform.dirty();
+                        });
+
                     mouse = p.transform(SRS::WGS84);
 
                     sample = jobs::dispatch([&app, point(p)](Cancelable& c)
@@ -106,28 +114,29 @@ auto Demo_ElevationSampler = [](Application& app)
 
     ImGuiLTable::Begin("elevation sampler");
 
-    ImGuiLTable::Text("Mouse:", "%.2f, %.2f, %.2f",
-        mouse.x, mouse.y, mouse.z);
+    ImGuiLTable::Text("Point at mouse:", "%.2f, %.2f, %.2f", mouse.x, mouse.y, mouse.z);
 
-    if (mouse.valid())
+    auto intersection = app.mapNode->terrainNode->intersect(mouse);
+
+    if (intersection)
     {
-        app.registry.read([&](entt::registry& r)
-            {
-                auto& transform = r.get<Transform>(entity);
-                transform.position = mouse;
-                transform.dirty();
-            });
+        GeoPoint i = intersection->transform(SRS::WGS84);
+        ImGuiLTable::Text("Mesh intersection:", "%.2f, %.2f, %.2f", i.x, i.y, i.z);
+    }
+    else
+    {
+        ImGuiLTable::Text("Mesh intersection:", "---");
     }
 
     if (sample.available() && sample.value().ok())
     {
-        ImGuiLTable::Text("Elevation:", "%.2f m", sample.value()->height.as(Units::METERS));
+        ImGuiLTable::Text("Elevation sampler:", "%.2f m", sample.value()->height.as(Units::METERS));
         ImGuiLTable::Text("Resolution:", "%.2f m", sample.value()->resolution.as(Units::METERS));
 
     }
     else if (sample.working())
     {
-        ImGuiLTable::Text("Elevation:", "...");
+        ImGuiLTable::Text("Elevation sampler:", "...");
         ImGuiLTable::Text("Resolution:", "...");
 
         if (sample.working())
@@ -135,7 +144,7 @@ auto Demo_ElevationSampler = [](Application& app)
     }
     else
     {
-        ImGuiLTable::Text("Elevation:", "no data");
+        ImGuiLTable::Text("Elevation sampler:", "no data");
         ImGuiLTable::Text("Resolution:", "no data");
     }
     ImGuiLTable::End();

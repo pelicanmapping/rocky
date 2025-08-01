@@ -32,6 +32,12 @@ namespace ROCKY_NAMESPACE
         GeoPoint(const SRS& srs, const T& dvec) :
             GeoPoint(srs, dvec.x, dvec.y, dvec.z) { }
 
+        //! Assign a vec3
+        GeoPoint& operator = (const glm::dvec3& rhs) {
+            x = rhs.x, y = rhs.y, z = rhs.z;
+            return *this;
+        }
+
         //! Transforms this geopoint into another SRS.
         //! @param outSRS The target SRS
         //! @return The transformed geopoint

@@ -15,6 +15,7 @@
 #include <chrono>
 #include <deque>
 #include <functional>
+#include <cstdint>
 
 namespace ROCKY_NAMESPACE
 {
@@ -76,6 +77,9 @@ namespace ROCKY_NAMESPACE
 
         //! Installs a RenderImGuiContext that will render ImGui elements
         void install(vsg::ref_ptr<RenderImGuiContext>);
+
+        //! Frame number
+        std::uint64_t frameCount() const;
 
     public: // public properties
 

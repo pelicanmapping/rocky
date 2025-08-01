@@ -704,7 +704,7 @@ TMS::Driver::read(const TileKey& key, bool invertY, bool isMapboxRGB, const URI:
                 if (key.level <= tileMap.maxLevel)
                 {
                     ROCKY_TODO("");
-                    return Image::create(Image::R8G8B8A8_UNORM, 1, 1);
+                    image = Image::create(Image::R8G8B8A8_UNORM, 1, 1);
                 }
             }
         }

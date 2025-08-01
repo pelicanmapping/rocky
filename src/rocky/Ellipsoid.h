@@ -83,13 +83,20 @@ namespace ROCKY_NAMESPACE
 
         //! Intersects a geocentric line with the ellipsoid.
         //! Upon success return true and place the first intersection point in "out".
-        //! @param p0 Start point of the line
-        //! @param p1 End point of the line
-        //! @param out Output geocentric intersection point
+        //! @param geocStart Start point of the geocentric line
+        //! @param geocEnd End point of the geocentric line
+        //! @param geocOut Output geocentric intersection point
         bool intersectGeocentricLine(
-            const glm::dvec3& p0,
-            const glm::dvec3& p1,
-            glm::dvec3& out) const;
+            const glm::dvec3& geocStart,
+            const glm::dvec3& geocEnd,
+            glm::dvec3& geocOut) const;
+
+        //! Rotates the geocentric point along the a great ellipse.
+        //! @param geocPoint Geocentric point to rotate
+        //! @param geocAxis Axis of rotation (geocentric)
+        //! @param angle_deg Angle to rotate in degrees
+        //! @return Rotated geocentric point
+        glm::dvec3 rotate(const glm::dvec3& geocPoint, const glm::dvec3& geocAxis, double angle_deg) const;
 
         //! Calculates a geocentric point that can be used for horizon-culling;
         //! i.e. if the horizon point is visible over the horizon, that means that
@@ -98,10 +105,12 @@ namespace ROCKY_NAMESPACE
         //! @return Geocentric point that can be used for horizon culling
         glm::dvec3 calculateHorizonPoint(const std::vector<glm::dvec3>& points) const;
 
-        //! Calculates the quaternion that will rotate a point along a great circle path at a provided initial bearing.
-        glm::dvec3 greatCircleRotationAxis(
-            const glm::dvec3& start,
-            double initialBearing_deg) const;
+        //! Calculates the rotation axis that will rotate a point along an ellipsoidal
+        //! path at a provided initial bearing.
+        //! @param geocPoint Geocentric start point (x, y, z in meters)
+        //! @param initialBearing_deg Initial bearing in degrees relative to the local tangent place at geocPoint
+        //! @return Rotation axis in geocentric coordinates (x, y, z in meters)
+        glm::dvec3 rotationAxis(const glm::dvec3& geocPoint, double initialBearing_deg) const;
 
         //! Equality operator
         inline bool operator == (const Ellipsoid& rhs) const

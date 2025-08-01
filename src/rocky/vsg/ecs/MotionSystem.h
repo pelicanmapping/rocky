@@ -42,7 +42,6 @@ namespace ROCKY_NAMESPACE
                     if (motion.velocity != zero && transform.revision == transform_detail.sync.revision)
                     {
                         auto& pos = transform.position;
-                        double save_z = pos.z;
 
                         SRSOperation pos_to_world;
                         if (!pos.srs.isGeocentric())
@@ -50,16 +49,12 @@ namespace ROCKY_NAMESPACE
 
                         // move the entity using a velocity vector in the local tangent plane
                         glm::dvec3 world;
-                        pos_to_world((glm::dvec3)pos, world);
+                        pos_to_world(pos, world);
                         auto l2w = pos.srs.ellipsoid().topocentricToGeocentricMatrix(world);
 
                         world = l2w * (motion.velocity * dt);
 
-                        vsg::dvec3 coord(world.x, world.y, world.z);
-                        pos_to_world.inverse(coord, coord);
-
-                        pos.x = coord.x, pos.y = coord.y;
-                        pos.z = save_z;
+                        pos_to_world.inverse(world, pos);
 
                         transform.dirty();
                     }
@@ -74,28 +69,27 @@ namespace ROCKY_NAMESPACE
                     if (motion.velocity != zero && transform.revision == detail.sync.revision)
                     {
                         auto& pos = transform.position;
-                        double save_z = pos.z;
 
                         SRSOperation pos_to_world;
                         if (!pos.srs.isGeocentric())
                             pos_to_world = pos.srs.to(pos.srs.geocentricSRS());
 
                         glm::dvec3 world;
-                        pos_to_world((glm::dvec3)pos, world);
+                        pos_to_world(pos, world);
+
+                        // calculate the rotation angle for the distance to travel:
                         double distance = glm::length(motion.velocity * dt);
                         double R = glm::length(world);
                         double circ = 2.0 * glm::pi<double>() * R;
                         double angle = 360.0 * distance / circ;
 
-                        glm::dquat rot = glm::angleAxis(util::deg2rad(angle), motion.normalAxis);
-                        auto temp = rot * world;
-                        pos_to_world.inverse(temp, temp);
-                        pos.x = temp.x, pos.y = temp.y, pos.z = temp.z;
+                        // move the point:
+                        pos = pos.srs.ellipsoid().rotate(world, motion.normalAxis, angle);
 
                         transform.dirty();
-
-                        motion.velocity += motion.acceleration * dt;
                     }
+
+                    motion.velocity += motion.acceleration * dt;
                 }
             }
 
@@ -103,7 +97,6 @@ namespace ROCKY_NAMESPACE
         }
 
     private:
-        //! Constructor
         vsg::time_point last_time = vsg::time_point::min();
     };
 }

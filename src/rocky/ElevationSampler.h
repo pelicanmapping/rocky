@@ -35,17 +35,14 @@ namespace ROCKY_NAMESPACE
         //! Layer from which to query elevations (required)
         ElevationLayer::Ptr layer;
 
-        //! Source of heightfields (like a cache) to check before querying the layer (optional).
-        std::function<Result<GeoHeightfield>(const TileKey&, const IOOptions&)> preFetch;
-
-        //! Maximum resolution at which to query
-        //Distance resolution = Distance(10.0, Units::METERS);
-
         //! Interpolation method to use when sampling the elevation layer
         Interpolation interpolation = Interpolation::Bilinear;
 
         //! Value to return when no data is available at the requested coordinates
         float failValue = NO_DATA_VALUE;
+
+        //! Source of heightfields (like a cache) to check before querying the layer (optional).
+        std::function<Result<GeoHeightfield>(const TileKey&, const IOOptions&)> preFetch;
 
     public:
 
@@ -111,6 +108,9 @@ namespace ROCKY_NAMESPACE
 
         //! Fetches a new heightfield for a key.
         Result<GeoHeightfield> fetch(const TileKey&, const IOOptions& io) const;
+
+    public:
+        const Failure NoLayer = Failure(Failure::ServiceUnavailable, "Elevation layer is not set or not open");
     };
 
 
@@ -118,20 +118,23 @@ namespace ROCKY_NAMESPACE
 
     // inlines ---
 
-    auto ElevationSampler::session(const IOOptions& io) const -> ElevationSampler::Session
+    auto ElevationSampler::session(const IOOptions& io) const
+        -> ElevationSampler::Session
     {
         return Session(io);
     }
 
-    auto ElevationSampler::sample(double x, double y, double z, const IOOptions& io) const -> Result<ElevationSample>
+    auto ElevationSampler::sample(double x, double y, double z, const IOOptions& io) const
+        -> Result<ElevationSample>
     {
-        ROCKY_SOFT_ASSERT_AND_RETURN(layer, Failure_AssertionFailure, "REQUIRED layer is null");
-        ROCKY_SOFT_ASSERT_AND_RETURN(layer->status().ok(), Failure_ServiceUnavailable, "Elevation layer is not open");
+        if (!layer || !layer->status().ok())
+            return NoLayer;
 
         auto env = session(io);
         auto height = sample(env, x, y, z);
         if (height == failValue)
             return Failure_ResourceUnavailable;
+
         ElevationSample r;
         r.height.set(height, Units::METERS);
         if (env.hf.ok()) {
@@ -145,10 +148,11 @@ namespace ROCKY_NAMESPACE
         return r;
     }
 
-    auto ElevationSampler::sample(const GeoPoint& p, const IOOptions& io) const -> Result<ElevationSample>
+    auto ElevationSampler::sample(const GeoPoint& p, const IOOptions& io) const
+        -> Result<ElevationSample>
     {
-        ROCKY_SOFT_ASSERT_AND_RETURN(layer, Failure_AssertionFailure, "REQUIRED layer is null");
-        ROCKY_SOFT_ASSERT_AND_RETURN(layer->status().ok(), Failure_ServiceUnavailable, "Elevation layer is not open");
+        if (!layer || !layer->status().ok())
+            return NoLayer;
 
         if (p.srs == layer->profile.srs()) {
             return sample(p.x, p.y, p.z, io);
@@ -163,8 +167,8 @@ namespace ROCKY_NAMESPACE
     template<class VEC3_ITER>
     void ElevationSampler::sampleRange(VEC3_ITER begin, VEC3_ITER end, const IOOptions& io) const
     {
-        ROCKY_SOFT_ASSERT_AND_RETURN(layer, void(), "REQUIRED layer is null");
-        ROCKY_SOFT_ASSERT_AND_RETURN(layer->status().ok(), void(), "Elevation layer is not open");
+        if (!layer || !layer->status().ok())
+            return NoLayer;
 
         if (begin == end)
             return;
@@ -176,8 +180,8 @@ namespace ROCKY_NAMESPACE
     template<class VEC3_ITER>
     void ElevationSampler::sampleRange(Session& env, VEC3_ITER begin, VEC3_ITER end) const
     {
-        ROCKY_SOFT_ASSERT_AND_RETURN(layer, void(), "REQUIRED layer is null");
-        ROCKY_SOFT_ASSERT_AND_RETURN(layer->status().ok(), void(), "Elevation layer is not open");
+        if (!layer || !layer->status().ok())
+            return;
 
         if (begin == end)
             return;

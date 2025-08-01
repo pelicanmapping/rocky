@@ -34,7 +34,7 @@ namespace ROCKY_NAMESPACE
         Profile profile;
 
         //! Map backing this map node
-        std::shared_ptr<Map> map;
+        Map::Ptr map;
 
         //! Node rendering the terrain surface
         vsg::ref_ptr<TerrainNode> terrainNode;

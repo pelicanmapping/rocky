@@ -26,7 +26,7 @@ TransformDetail::update(vsg::RecordTraversal& record)
         view.revision = sync.revision; // transform->revision;
 
         // first time through, cache information about the world SRS and ellipsoid for this view.
-        if (!cached.pos_to_world.valid())
+        if (!cached.pos_to_world)
         {
             if (record.getValue("rocky.worldsrs", cached.world_srs))
             {
@@ -35,7 +35,7 @@ TransformDetail::update(vsg::RecordTraversal& record)
             }
         }
 
-        if (cached.pos_to_world.valid())
+        if (cached.pos_to_world)
         {
             glm::dvec3 worldpos;
             if (cached.pos_to_world(sync.position, worldpos))
@@ -85,7 +85,6 @@ TransformDetail::update(vsg::RecordTraversal& record)
         if (clip.x < -t || clip.x > t || clip.y < -t || clip.y > t || clip.z < -t || clip.z > t)
         {
             view.passesCull = false;
-            //return false;
         }
     }
 

@@ -383,15 +383,17 @@ Ellipsoid::calculateHorizonPoint(const std::vector<glm::dvec3>& points) const
 }
 
 glm::dvec3
-Ellipsoid::greatCircleRotationAxis(const glm::dvec3& start, double initialBearing_deg) const
+Ellipsoid::rotationAxis(const glm::dvec3& geocStart, double initialBearing_deg) const
 {
     // convert to unit sphere
     auto distance_unit = 1.0 / semiMajorAxis();
-    auto start_unit = glm::normalize(geodeticToGeocentric(start) * _ellipsoidToUnitSphere);
+    auto start_unit = glm::normalize(geocStart * _ellipsoidToUnitSphere);
+
+    glm::dvec3 geodStart = geocentricToGeodetic(geocStart);
 
     // find the destination lat/long:
     double bearing_rad = deg2rad(initialBearing_deg);
-    double lat1_rad = deg2rad(start.y), lon1_rad = deg2rad(start.x);
+    double lat1_rad = deg2rad(geodStart.y), lon1_rad = deg2rad(geodStart.x);
     double dR = distance_unit; // 1.0; // distance / radius;
     double lat2_rad = asin(sin(lat1_rad) * cos(dR) + cos(lat1_rad) * sin(dR) * cos(bearing_rad));
     double lon2_rad = lon1_rad + atan2(sin(bearing_rad) * sin(dR) * cos(lat1_rad),
@@ -404,4 +406,17 @@ Ellipsoid::greatCircleRotationAxis(const glm::dvec3& start, double initialBearin
     auto rotation_axis_unit = glm::cross(start_unit, end_unit);
     
     return glm::normalize(rotation_axis_unit * _unitSphereToEllipsoid);
+}
+
+glm::dvec3
+Ellipsoid::rotate(const glm::dvec3& geocPoint, const glm::dvec3& geocAxis, double angle_deg) const
+{
+    // convert to unit sphere:
+    auto point_unit = geocPoint * _ellipsoidToUnitSphere;
+    auto axis_unit = glm::normalize(geocAxis * _ellipsoidToUnitSphere);
+    
+    // rotate the point around the axis:
+    glm::dquat rot = glm::angleAxis(util::deg2rad(angle_deg), axis_unit);
+    auto output = rot * point_unit;
+    return output * _unitSphereToEllipsoid;
 }

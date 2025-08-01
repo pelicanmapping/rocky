@@ -66,10 +66,6 @@ namespace
             }
         }
     };
-
-    //inline bool active(Application& app, int frame) {
-    //    return (app.viewer->getFrameStamp()->frameCount - frame < 2);
-    //}
 }
 
 

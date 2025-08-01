@@ -17,6 +17,7 @@ namespace ROCKY_NAMESPACE
     class IOOptions;
     class Map;
     class TerrainEngine;
+    class GeoPoint;
 
     /**
      * Root node of the terrain geometry
@@ -56,6 +57,9 @@ namespace ROCKY_NAMESPACE
 
         //! Terrain's state group
         vsg::ref_ptr<vsg::StateGroup> stategroup;
+
+        //! Intersect a point with the loaded terrain geometry.
+        Result<GeoPoint> intersect(const GeoPoint& input) const;
 
     protected:
 

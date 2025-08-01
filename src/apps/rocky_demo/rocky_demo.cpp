@@ -27,7 +27,6 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_LabelFeatures.h"
 #include "Demo_MapManipulator.h"
 #include "Demo_Serialization.h"
-#include "Demo_Tethering.h"
 #include "Demo_Environment.h"
 #include "Demo_Views.h"
 #include "Demo_RTT.h"
@@ -69,7 +68,6 @@ struct Demo
 std::vector<Demo> demos =
 {
     Demo{ "Map", Demo_Map },
-    Demo{ "Elevation Sampler", Demo_ElevationSampler },
     Demo{ "Basic Components", {},
     {
         Demo{ "Line - absolute", Demo_Line_Absolute },
@@ -98,13 +96,10 @@ std::vector<Demo> demos =
     } },
     Demo{ "Decluttering", Demo_Decluttering },
     Demo{ "Node Pager", Demo_NodePager },
+    Demo{ "Elevation Queries", Demo_ElevationSampler },
     Demo{ "Geocoding", Demo_Geocoder },
     Demo{ "RTT", Demo_RTT },
-    Demo{ "Camera", {},
-    {
-        Demo{ "Viewpoints", Demo_Viewpoints },
-        Demo{ "Tethering", Demo_Tethering }
-    } },
+    Demo{ "Viewpoints", Demo_Viewpoints },
     Demo{ "Rendering", Demo_Rendering },
     Demo{ "Views", Demo_Views },
     Demo{ "Environment", Demo_Environment },

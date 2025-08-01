@@ -6,11 +6,10 @@
 #include "TerrainNode.h"
 #include "TerrainTileNode.h"
 #include "TerrainEngine.h"
+#include "../VSGUtils.h"
 
-#include <rocky/json.h>
 #include <rocky/IOTypes.h>
 #include <rocky/Map.h>
-#include <rocky/TileKey.h>
 
 #include <vsg/all.h>
 
@@ -144,4 +143,29 @@ void
 TerrainNode::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg::RecordTraversal& nv)
 {
     engine->tiles.ping(tile, parent, nv);
+}
+
+Result<GeoPoint>
+TerrainNode::intersect(const GeoPoint& input) const
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(input.valid(), Failure_ConfigurationError);
+    ROCKY_SOFT_ASSERT_AND_RETURN(engine, Failure_AssertionFailure);
+
+    GeoPoint world = input.transform(engine->worldSRS);    
+
+    vsg::dvec3 start(0, 0, 0);
+    vsg::dvec3 end = to_vsg(world) * 2.0; // far enough to hit the terrain
+
+    vsg::LineSegmentIntersector lsi(start, end);
+
+    this->accept(lsi);
+
+    if (lsi.intersections.empty())
+        return Failure{};
+
+    auto closest = std::min_element(
+        lsi.intersections.begin(), lsi.intersections.end(),
+        [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
+
+    return GeoPoint(engine->worldSRS, closest->get()->worldIntersection);
 }
