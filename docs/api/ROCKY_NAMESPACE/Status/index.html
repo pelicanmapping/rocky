@@ -11,16 +11,16 @@
       
       
       
-      <link rel="icon" href="../../../../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.16">
     
     
       
-        <title>struct shared_t - Rocky</title>
+        <title>class Status - Rocky</title>
       
     
     
-      <link rel="stylesheet" href="../../../../assets/stylesheets/main.7e37652d.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.7e37652d.min.css">
       
       
 
@@ -39,7 +39,7 @@
       
     
     
-    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -58,7 +58,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#struct-shared_t" class="md-skip">
+        <a href="#class-status" class="md-skip">
           Skip to content
         </a>
       
@@ -74,7 +74,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../../.." title="Rocky" class="md-header__button md-logo" aria-label="Rocky" data-md-component="logo">
+    <a href="../../.." title="Rocky" class="md-header__button md-logo" aria-label="Rocky" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -94,7 +94,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              struct shared_t
+              class Status
             
           </span>
         </div>
@@ -172,7 +172,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../../.." title="Rocky" class="md-nav__button md-logo" aria-label="Rocky" data-md-component="logo">
+    <a href="../../.." title="Rocky" class="md-nav__button md-logo" aria-label="Rocky" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -190,7 +190,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -250,7 +250,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../README.md" class="md-nav__link">
+      <a href="../../README.md" class="md-nav__link">
         
   
   
@@ -300,11 +300,89 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#members" class="md-nav__link">
+  <a href="#functions" class="md-nav__link">
     <span class="md-ellipsis">
-      Members
+      Functions
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#status" class="md-nav__link">
+    <span class="md-ellipsis">
+      Status
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#status_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Status
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      operator=
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      operator=
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error" class="md-nav__link">
+    <span class="md-ellipsis">
+      error
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ok" class="md-nav__link">
+    <span class="md-ellipsis">
+      ok
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      failed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clear" class="md-nav__link">
+    <span class="md-ellipsis">
+      clear
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -324,15 +402,38 @@
 
 
 
-<h1 id="struct-shared_t">struct shared_t</h1>
-<p><em>Defined at src/rocky/weejobs.h#299</em></p>
-<p>internal structure to track references to the result One instance of this is shared among all Future instances created from the copy constructor.</p>
-<h2 id="members">Members</h2>
-<p>public int _obj</p>
-<p>public event _ev</p>
-<p>public int _continuation_mutex</p>
-<p>public int _continuation</p>
-<p>public int _continuation_ran</p>
+<h1 id="class-status">class Status</h1>
+<p><em>Defined at src/rocky/Result.h#167</em></p>
+<p>Status object that holds a potential Failure state. The default constructed Status represents a good state.</p>
+<h2 id="functions">Functions</h2>
+<h3 id="status">Status</h3>
+<p><em>public void Status()</em></p>
+<p><em>Defined at src/rocky/Result.h#171</em></p>
+<p>Construct a status indicating all is well</p>
+<h3 id="status_1">Status</h3>
+<p><em>public void Status(const Failure &amp; f)</em></p>
+<p><em>Defined at src/rocky/Result.h#174</em></p>
+<p>Construct a status indicating failure</p>
+<h3 id="operator">operator=</h3>
+<p><em>public Status &amp; operator=(const Failure &amp; f)</em></p>
+<p><em>Defined at src/rocky/Result.h#177</em></p>
+<p>Assign</p>
+<h3 id="operator_1">operator=</h3>
+<p><em>public Status &amp; operator=(const Status &amp; rhs)</em></p>
+<p><em>Defined at src/rocky/Result.h#183</em></p>
+<p>Assign</p>
+<h3 id="error">error</h3>
+<p><em>public const Failure &amp; error()</em></p>
+<p><em>Defined at src/rocky/Result.h#190</em></p>
+<h3 id="ok">ok</h3>
+<p><em>public _Bool ok()</em></p>
+<p><em>Defined at src/rocky/Result.h#193</em></p>
+<h3 id="failed">failed</h3>
+<p><em>public _Bool failed()</em></p>
+<p><em>Defined at src/rocky/Result.h#196</em></p>
+<h3 id="clear">clear</h3>
+<p><em>public void clear()</em></p>
+<p><em>Defined at src/rocky/Result.h#199</em></p>
 
 
 
@@ -381,10 +482,10 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "../../../..", "features": [], "search": "../../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.50899def.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.50899def.min.js"></script>
       
     
   </body>

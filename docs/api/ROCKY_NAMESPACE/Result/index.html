@@ -355,15 +355,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#result_5" class="md-nav__link">
-    <span class="md-ellipsis">
-      Result
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#operator" class="md-nav__link">
     <span class="md-ellipsis">
       operator=
@@ -445,6 +436,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#release" class="md-nav__link">
+    <span class="md-ellipsis">
+      release
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#value_1" class="md-nav__link">
     <span class="md-ellipsis">
       value
@@ -484,30 +484,26 @@
 
 
 <h1 id="class-result">class Result</h1>
-<p><em>Defined at src/rocky/Result.h#72</em></p>
-<p>Result union that can hold either a success value object or a failure object.</p>
+<p><em>Defined at src/rocky/Result.h#75</em></p>
+<p>Result union that can hold either a success value object or a failure object. Result has NO default constructor. If you want to hold onto a Failure state, Use the Status object instead.</p>
 <h2 id="functions">Functions</h2>
 <h3 id="result">Result<T, E></h3>
-<p><em>public void Result<T, E>()</em></p>
-<p><em>Defined at src/rocky/Result.h#156</em></p>
-<p>Default constructor, default good result.</p>
-<h3 id="result_1">Result<T, E></h3>
 <p><em>public void Result<T, E>(const Result<T, E> &amp; rhs)</em></p>
 <p><em>Defined at src/rocky/Result.h#79</em></p>
 <p>Copy construct</p>
-<h3 id="result_2">Result<T, E></h3>
+<h3 id="result_1">Result<T, E></h3>
 <p><em>public void Result<T, E>(const T &amp; good)</em></p>
 <p><em>Defined at src/rocky/Result.h#82</em></p>
 <p>New successful result</p>
-<h3 id="result_3">Result<T, E></h3>
+<h3 id="result_2">Result<T, E></h3>
 <p><em>public void Result<T, E>(T &amp;&amp; good)</em></p>
 <p><em>Defined at src/rocky/Result.h#86</em></p>
 <p>New successful result (moved)</p>
-<h3 id="result_4">Result<T, E></h3>
+<h3 id="result_3">Result<T, E></h3>
 <p><em>public void Result<T, E>(const E &amp; bad)</em></p>
 <p><em>Defined at src/rocky/Result.h#90</em></p>
 <p>New failure result</p>
-<h3 id="result_5">Result<T, E></h3>
+<h3 id="result_4">Result<T, E></h3>
 <p><em>public void Result<T, E>(E &amp;&amp; bad)</em></p>
 <p><em>Defined at src/rocky/Result.h#94</em></p>
 <p>New failure result (moved)</p>
@@ -547,13 +543,17 @@
 <p><em>public T &amp; value()</em></p>
 <p><em>Defined at src/rocky/Result.h#140</em></p>
 <p>Access a good result (be sure to check ok()/failed() first)</p>
+<h3 id="release">release</h3>
+<p><em>public T release()</em></p>
+<p><em>Defined at src/rocky/Result.h#144</em></p>
+<p>Release ownership of the good result, leaving this object in an undefined state.</p>
 <h3 id="value_1">value</h3>
 <p><em>public const T &amp; value()</em></p>
-<p><em>Defined at src/rocky/Result.h#144</em></p>
+<p><em>Defined at src/rocky/Result.h#148</em></p>
 <p>Access a good result (be sure to check ok()/failed() first)</p>
 <h3 id="error">error</h3>
 <p><em>public const E &amp; error()</em></p>
-<p><em>Defined at src/rocky/Result.h#148</em></p>
+<p><em>Defined at src/rocky/Result.h#152</em></p>
 <p>Access the failure result (be sure to check ok()/failed() first)</p>
 
 

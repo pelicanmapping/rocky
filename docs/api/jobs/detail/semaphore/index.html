@@ -403,38 +403,38 @@
 
 
 <h1 id="class-semaphore">class semaphore</h1>
-<p><em>Defined at src/rocky/weejobs.h#169</em></p>
+<p><em>Defined at src/rocky/weejobs.h#170</em></p>
 <p>Sempahore lets N users aquire it and then notifies when the count goes back down to zero.</p>
 <h2 id="functions">Functions</h2>
 <h3 id="acquire">acquire</h3>
 <p><em>public void acquire()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#173</em></p>
+<p><em>Defined at src/rocky/weejobs.h#174</em></p>
 <p>Acquire, increasing the usage count by one</p>
 <h3 id="operator">operator++</h3>
 <p><em>public void operator++()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#179</em></p>
+<p><em>Defined at src/rocky/weejobs.h#180</em></p>
 <h3 id="release">release</h3>
 <p><em>public void release()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#184</em></p>
+<p><em>Defined at src/rocky/weejobs.h#185</em></p>
 <p>Release, decreasing the usage count by one. When the count reaches zero, joiners will be notified and the semaphore will reset to its initial state.</p>
 <h3 id="operator-">operator--</h3>
 <p><em>public void operator--()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#192</em></p>
+<p><em>Defined at src/rocky/weejobs.h#193</em></p>
 <h3 id="reset">reset</h3>
 <p><em>public void reset()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#196</em></p>
+<p><em>Defined at src/rocky/weejobs.h#197</em></p>
 <p>Reset to initialize state; this will cause a join to occur even if no acquisitions have taken place.</p>
 <h3 id="count">count</h3>
 <p><em>public int count()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#204</em></p>
+<p><em>Defined at src/rocky/weejobs.h#205</em></p>
 <p>Current count in the semaphore</p>
 <h3 id="join">join</h3>
 <p><em>public void join()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#214</em></p>
+<p><em>Defined at src/rocky/weejobs.h#215</em></p>
 <p>Block until the semaphore count returns to zero. (It must first have left zero) Warning: this method will block forever if the count never reaches zero!</p>
 <h3 id="join_1">join</h3>
 <p><em>public void join(cancelable * c)</em></p>
-<p><em>Defined at src/rocky/weejobs.h#224</em></p>
+<p><em>Defined at src/rocky/weejobs.h#225</em></p>
 <p>Block until the semaphore count returns to zero, or the operation is canceled. (It must first have left zero)</p>
 
 
