@@ -68,12 +68,15 @@ namespace ROCKY_NAMESPACE
 
         void traverse(vsg::RecordTraversal&) const override;
 
+        void traverse(vsg::Visitor&) override;
+
+        void traverse(vsg::ConstVisitor&) const override;
+
     private:
 
         //! Creates a mapnode with the default global geodetic profile.
         MapNode();
 
-        vsg::ref_ptr<vsg::Group> _layerNodes;
         bool _openedLayers = false;
 
         struct ViewLocalData {

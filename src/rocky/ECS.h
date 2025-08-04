@@ -14,6 +14,7 @@
 #include <rocky/ecs/Transform.h>
 #include <rocky/ecs/Visibility.h>
 #include <rocky/ecs/Declutter.h>
+#include <rocky/ecs/EntityCollectionLayer.h>
 
 namespace ROCKY_NAMESPACE
 {

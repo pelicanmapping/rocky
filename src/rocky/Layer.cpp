@@ -38,7 +38,7 @@ Layer::construct(std::string_view conf)
         return;
     }
 
-    get_to(j, "name", _name);
+    get_to(j, "name", name);
     get_to(j, "open", openAutomatically);
     get_to(j, "attribution", attribution);
     get_to(j, "l2_cache_size", l2CacheSize);
@@ -51,7 +51,7 @@ Layer::to_json() const
 {
     auto j = json::object();
     set(j, "type", getLayerTypeName());
-    set(j, "name", _name);
+    set(j, "name", name);
     set(j, "open", openAutomatically);
     set(j, "attribution", attribution);
     set(j, "l2_cache_size", l2CacheSize);
@@ -84,7 +84,7 @@ Layer::bumpRevision()
 const Failure&
 Layer::fail(const Failure& f) const
 {
-    Log()->debug("Layer \"{}\" FAILED with status {}", name(), f.message);
+    Log()->debug("Layer \"{}\" FAILED with status {}", name, f.message);
     const_cast<Layer*>(this)->_status = f;
     return _status.error();
 }
@@ -111,7 +111,7 @@ Layer::open(const IOOptions& io)
         else
         {
             fail(r.error());
-            Log()->debug("Layer \"{}\" failed to open: {}", name(), r.error().message);
+            Log()->debug("Layer \"{}\" failed to open: {}", name, r.error().message);
         }
     }
 

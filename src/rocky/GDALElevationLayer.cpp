@@ -37,7 +37,7 @@ namespace
             driver.maxValidValue = layer->maxValidValue;
 
         auto status = driver.open(
-            layer->name(),
+            layer->name,
             layer,
             layer->tileSize,
             out_dataExtents,

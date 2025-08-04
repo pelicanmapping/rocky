@@ -20,6 +20,7 @@
 
 #ifdef ROCKY_HAS_VSG
 #include <rocky/vsg/Application.h>
+#include <rocky/vsg/NodeLayer.h>
 #include <rocky/vsg/NodePager.h>
 #include <rocky/vsg/GeoTransform.h>
 #include <rocky/vsg/ecs/FeatureView.h>

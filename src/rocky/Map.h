@@ -40,16 +40,16 @@ namespace ROCKY_NAMESPACE
         //! Examples:
         //!     auto layers = map.layers(); // fetch all layers
         //!     auto layers = map.layers<ImageLayer>(); // fetch all layers of type ImageLayer
-        //!     auto layers = map.layers([](auto layer) { return layer->name() == "MyLayer"; }); // fetch all layers with a given name
-        template<class T = Layer, class PREDICATE = std::function<bool(typename T::ConstPtr)>>
+        //!     auto layers = map.layers([](auto layer) { return layer->name == "MyLayer"; }); // fetch all layers with a given name
+        template<typename T = Layer, typename PREDICATE = std::function<bool(typename T::ConstPtr)>>
         inline std::vector<typename T::Ptr> layers(PREDICATE&& pred = [](typename T::ConstPtr) { return true; }) const;
 
         //! Pointer to the first layer that matches both the optional type cast and the optional predicate function.
-        template<class T = Layer, class PREDICATE = std::function<bool(typename T::ConstPtr)>>
+        template<typename T = Layer, typename PREDICATE = std::function<bool(typename T::ConstPtr)>>
         inline typename T::Ptr layer(PREDICATE&& pred = [](typename T::ConstPtr) { return true; }) const;
 
         //! Iterate safely over all layers, calling the callable.
-        template<typename CALLABLE>
+        template<typename T = Layer, typename CALLABLE>
         inline void each(CALLABLE&&) const;
 
         //! Open all layers that are marked for openAutomatically.
@@ -119,16 +119,18 @@ namespace ROCKY_NAMESPACE
         return {};
     }
 
-    template<typename CALLABLE>
+    template<typename T, typename CALLABLE>
     inline void Map::each(CALLABLE&& func) const
     {
-        static_assert(std::is_invocable_r_v<void, CALLABLE, Layer::ConstPtr>,
-            "Map::each() requires a callable that takes a Layer::ConstPtr and returns void");
+        static_assert(std::is_invocable_r_v<void, CALLABLE, typename T::Ptr>,
+            "Map::each() requires a callable that takes a Layer::Ptr and returns void");
 
         std::shared_lock lock(_mutex);
         for (const auto& layer : _layers)
         {
-            func(layer.get());
+            typename T::Ptr typed = T::cast(layer);
+            if (typed)
+                func(typed);
         }
     }
 }

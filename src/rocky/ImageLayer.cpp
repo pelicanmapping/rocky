@@ -126,14 +126,15 @@ ImageLayer::createImageImplementation_internal(const TileKey& key, const IOOptio
 Result<GeoImage>
 ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) const
 {
+    Result<GeoImage> result = Failure_ResourceUnavailable;
+
     // Make sure the request is in range.
     // TODO: perhaps this should be a call to mayHaveData(key) instead.
     if ( !isKeyInLegalRange(key) )
     {
-        return GeoImage::INVALID;
+        return Failure_ResourceUnavailable;
     }
 
-    Result<GeoImage> result;
     float sharpness_value = sharpness.has_value() ? sharpness.value() : 0.0f;
 
     GeoExtent cropIntersection;
@@ -147,7 +148,7 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
             cropIntersection = cropInKeyProfile.intersectionSameSRS(key.extent());
             if (!cropIntersection.valid())
             {
-                return GeoImage::INVALID;
+                return Failure_ResourceUnavailable;
             }
         }
     }
@@ -166,20 +167,22 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
     {
         // If the profiles are different, use a compositing method to assemble the tile.
         auto image = assembleImage(key, io);
-        result = GeoImage(image, key.extent());
 
-        // automatically re-sharpen a reprojected image to account for quality loss.
-        // Do we like this idea?
-        if (sharpness_value == 0.0f)
-            sharpness_value = 2.0f;
+        if (image)
+        {
+            result = GeoImage(image, key.extent());
+
+            // automatically re-sharpen a reprojected image to account for quality loss.
+            // Do we like this idea?
+            if (sharpness_value == 0.0f)
+                sharpness_value = 2.0f;
+        }
     }
 
-    // developer assert - if a status is OK, the image must exist.
-    // address this later if necessary.
-    //ROCKY_SOFT_ASSERT(result.status.failed() || result.value.image());
-
-    if (result.ok() && result.value().image())
+    if (result.ok())
     {
+        ROCKY_SOFT_ASSERT(result.value().image());
+
         if (cropIntersection.valid())
         {
             auto b = key.extent().bounds();
@@ -254,7 +257,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             {
                 // create the sub tile, falling back until we get real data
                 TileKey subKey = intersectingKey;
-                Result<GeoImage> subTile;
+                Result<GeoImage> subTile = Failure{};
                 while (subKey.valid() && !subTile.ok())
                 {
                     subTile = createImageImplementation_internal(subKey, io);

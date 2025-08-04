@@ -58,10 +58,10 @@ namespace ROCKY_NAMESPACE
     {
     protected:
         Object() = default;
-        std::string _name;
+
     public:
-        void setName(const std::string& value) { _name = value; }
-        const std::string& name() const { return _name; }
+        std::string name;
+
         virtual ~Object() { } // makes Object polymorphic
     };
 

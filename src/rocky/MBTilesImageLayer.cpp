@@ -60,7 +60,7 @@ MBTilesImageLayer::openImplementation(const IOOptions& io)
     DataExtentList dataExtents;
 
     auto r = _driver.open(
-        name(),
+        name,
         *this, // MBTiles::Options
         false, // isWritingRequested(),
         new_profile,

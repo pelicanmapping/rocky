@@ -80,18 +80,23 @@ namespace
 
         if (result.ok())
         {
-            ROCKY_HARD_ASSERT(result.value().valid());
-
-            TerrainTileModel::ColorLayer m;            
-            m.layer = layer;
-            m.revision = layer->revision();
-            m.image = result.value();
-            m.key = key;
-            model.colorLayers.emplace_back(std::move(m));
-            //if (layer->dynamic())
-            //{
-            //    model.requiresUpdate = true;
-            //}
+            if (result.value().valid())
+            {
+                TerrainTileModel::ColorLayer m;
+                m.layer = layer;
+                m.revision = layer->revision();
+                m.image = result.value();
+                m.key = key;
+                model.colorLayers.emplace_back(std::move(m));
+                //if (layer->dynamic())
+                //{
+                //    model.requiresUpdate = true;
+                //}
+            }
+            else
+            {
+                //... assert? result.value() should always be valid.
+            }
         }
 
         // ResourceUnavailable just means the driver could not produce data
@@ -100,7 +105,7 @@ namespace
             result.error().type != Failure::ResourceUnavailable &&
             result.error().type != Failure::OperationCanceled)
         {
-            Log()->warn("Problem getting data from \"" + layer->name() + "\" : " + result.error().string());
+            Log()->warn("Problem getting data from \"" + layer->name + "\" : " + result.error().string());
         }
     }
 }
@@ -249,7 +254,7 @@ TerrainTileModelFactory::addElevation(TerrainTileModel& model, const Map* map, c
             result.error().type != Failure::ResourceUnavailable &&
             result.error().type != Failure::OperationCanceled)
         {
-            Log()->warn("Problem getting data from \"" + layer->name() + "\" : " + result.error().string());
+            Log()->warn("Problem getting data from \"" + layer->name + "\" : " + result.error().string());
         }
     }
 

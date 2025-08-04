@@ -155,7 +155,11 @@ auto Demo_MVTFeatures = [](Application& app)
         // Always initialize a NodePager before using it:
         pager->initialize(app.vsgcontext);
 
-        app.mainScene->addChild(pager);
+        // Add it as a layer :)
+        auto layer = NodeLayer::create(pager);
+        layer->name = "MVT Features Demo Layer";
+        if (layer->open(app.io()).ok())
+            app.mapNode->map->add(layer);
     }
 
     if (ImGuiLTable::Begin("NodePager"))

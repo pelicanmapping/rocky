@@ -36,8 +36,6 @@ namespace ROCKY_NAMESPACE
         //! Destructor
         virtual ~GeoImage() { }
 
-        static GeoImage INVALID;
-
         //! True if this is a valid geo image.
         bool valid() const;
 

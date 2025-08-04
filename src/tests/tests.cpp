@@ -748,7 +748,7 @@ TEST_CASE("Earth File")
         CHECK(r.ok());
 
         auto layers = mapNode->map->layers([&](auto layer) {
-            return layer->name() == "ReadyMap 15m Imagery"; });
+            return layer->name == "ReadyMap 15m Imagery"; });
 
         CHECK(layers.size() == 1);
         

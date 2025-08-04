@@ -18,7 +18,7 @@ Map::from_json(std::string_view input, const IOOptions& io)
     if (j.status.failed())
         return j.status.error();
 
-    get_to(j, "name", _name);
+    get_to(j, "name", name);
     if (j.contains("layers")) {
         auto j_layers = j.at("layers");
         if (j_layers.is_array()) {
@@ -42,7 +42,7 @@ Map::to_json() const
 {
     auto j = json::object();
 
-    set(j, "name", _name);
+    set(j, "name", name);
 
     auto layers_json = nlohmann::json::array();
     for (auto& layer :  _layers)

@@ -21,9 +21,9 @@ auto Demo_Map = [](Application& app)
     {
         if (ImGuiLTable::Begin("map"))
         {
-            if (!app.mapNode->map->name().empty())
+            if (!app.mapNode->map->name.empty())
             {
-                ImGuiLTable::Text("Name:", app.mapNode->map->name().c_str());
+                ImGuiLTable::Text("Name:", app.mapNode->map->name.c_str());
             }
 
             auto& profile = app.mapNode->profile;
@@ -74,13 +74,17 @@ auto Demo_Map = [](Application& app)
                 layer->close();
                 resetTerrain = true;
             }
+
+            resetTerrain = resetTerrain && (ImageLayer::cast(layer) || ElevationLayer::cast(layer));
+
+            app.vsgcontext->requestFrame();
         }
 
         ImGui::SameLine();
 
         std::string name =
-            layer->name().empty() ? std::string(" Unnamed ") + layer->getLayerTypeName() + " layer" :
-            layer->name();
+            layer->name.empty() ? std::string(" Unnamed ") + layer->getLayerTypeName() + " layer" :
+            layer->name;
 
         ImGui::Selectable(name.c_str(), &layerClicked);
 

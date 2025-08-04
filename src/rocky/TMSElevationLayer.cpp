@@ -75,9 +75,9 @@ TMSElevationLayer::openImplementation(const IOOptions& io)
     }
 
     // If the layer name is unset, try to set it from the tileMap title.
-    if (name().empty() && !_driver.tileMap.title.empty())
+    if (name.empty() && !_driver.tileMap.title.empty())
     {
-        setName(_driver.tileMap.title);
+        name = _driver.tileMap.title;
     }
 
     setDataExtents(dataExtents);
@@ -118,7 +118,7 @@ TMSElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOO
         if (r.error().type == Failure::ServiceUnavailable)
         {
             fail(r.error());
-            Log()->warn(LC "Layer \"" + name() + "\" : " + r.error().message);
+            Log()->warn(LC "Layer \"" + name + "\" : " + r.error().message);
         }
 
         return r.error();

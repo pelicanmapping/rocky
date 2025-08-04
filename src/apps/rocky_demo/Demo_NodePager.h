@@ -149,7 +149,11 @@ auto Demo_NodePager = [](Application& app)
         // Always initialize a NodePager before using it:
         pager->initialize(app.vsgcontext);
 
-        app.mainScene->addChild(pager);
+        // Add it as a layer, because why not? You could also just add it to scene graph.
+        auto layer = NodeLayer::create(pager);
+        layer->name = "NodePager Demo Layer";
+        if (layer->open(app.io()).ok())
+            app.mapNode->map->add(layer);
     }
 
     if (ImGuiLTable::Begin("NodePager"))

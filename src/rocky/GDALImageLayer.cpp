@@ -34,7 +34,7 @@ namespace
         }
 
         auto status = driver.open(
-            layer->name(),
+            layer->name,
             layer,
             layer->tileSize,
             out_dataExtents,
@@ -159,9 +159,11 @@ GDALImageLayer::createImageImplementation(const TileKey& key, const IOOptions& i
 
     if (driver.isOpen())
     {
-        auto image = driver.createImage(key, tileSize, io);
-        if (image.ok())
-            return GeoImage(image.value(), key.extent());
+        auto r = driver.createImage(key, tileSize, io);
+        if (r.ok())
+        {
+            return GeoImage(r.value(), key.extent());
+        }
     }
 
     return Failure_ResourceUnavailable;

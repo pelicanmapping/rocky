@@ -539,9 +539,6 @@ namespace
 
 #define LC "[GeoImage] "
 
-// static
-GeoImage GeoImage::INVALID;
-
 
 GeoImage::GeoImage() :
     _image(nullptr),
@@ -567,7 +564,7 @@ GeoImage::GeoImage(std::shared_ptr<Image> image, const GeoExtent& extent) :
     _image(image),
     _extent(extent)
 {
-    //nop
+    ROCKY_SOFT_ASSERT(image != nullptr && extent.valid());
 }
 
 bool
@@ -643,53 +640,53 @@ GeoImage::crop(
     bool useBilinearInterpolation) const
 {
     if (!valid())
-        return *this;
+        return Failure_ResourceUnavailable;
 
     if (!image())
         return Failure_ResourceUnavailable;
 
     // Check for equivalence
-    if (e.srs().horizontallyEquivalentTo(srs()))
+    if (!e.srs().horizontallyEquivalentTo(srs()))
+        return Failure(Failure::AssertionFailure, "Cropping extent does not have equivalent SpatialReference");
+
+
+    //If we want an exact crop or they want to specify the output size of the image, use GDAL
+    if (exact || width != 0 || height != 0)
     {
-        //If we want an exact crop or they want to specify the output size of the image, use GDAL
-        if (exact || width != 0 || height != 0)
+        //Suggest an output image size
+        if (width == 0 || height == 0)
         {
-            //Suggest an output image size
-            if (width == 0 || height == 0)
-            {
-                double xRes = extent().width() / (double)image()->width();
-                double yRes = extent().height() / (double)image()->height();
+            double xRes = extent().width() / (double)image()->width();
+            double yRes = extent().height() / (double)image()->height();
 
-                width = std::max(1u, (unsigned int)(e.width() / xRes));
-                height = std::max(1u, (unsigned int)(e.height() / yRes));
-            }
-
-            //Note:  Passing in the current SRS simply forces GDAL to not do any warping
-            return reproject(srs(), &e, width, height, useBilinearInterpolation);
+            width = std::max(1u, (unsigned int)(e.width() / xRes));
+            height = std::max(1u, (unsigned int)(e.height() / yRes));
         }
-        else
-        {
-            //If an exact crop is not desired, we can use the faster image cropping code that does no resampling.
-            double destXMin = e.xmin();
-            double destYMin = e.ymin();
-            double destXMax = e.xmax();
-            double destYMax = e.ymax();
 
-            auto new_image = cropImage(
-                image().get(),
-                _extent.xmin(), _extent.ymin(), _extent.xmax(), _extent.ymax(),
-                destXMin, destYMin, destXMax, destYMax);
-
-            //The destination extents may be different than the input extents due to not being able to crop along pixel boundaries.
-            return new_image ?
-                GeoImage(new_image, GeoExtent(srs(), destXMin, destYMin, destXMax, destYMax)) :
-                GeoImage::INVALID;
-        }
+        //Note:  Passing in the current SRS simply forces GDAL to not do any warping
+        return reproject(srs(), &e, width, height, useBilinearInterpolation);
     }
     else
     {
-        return Failure("Cropping extent does not have equivalent SpatialReference");
+        //If an exact crop is not desired, we can use the faster image cropping code that does no resampling.
+        double destXMin = e.xmin();
+        double destYMin = e.ymin();
+        double destXMax = e.xmax();
+        double destYMax = e.ymax();
+
+        auto new_image = cropImage(
+            image().get(),
+            _extent.xmin(), _extent.ymin(), _extent.xmax(), _extent.ymax(),
+            destXMin, destYMin, destXMax, destYMax);
+
+        //The destination extents may be different than the input extents due to not being able to crop along pixel boundaries.
+        if (new_image)
+        {
+            return GeoImage(new_image, GeoExtent(srs(), destXMin, destYMin, destXMax, destYMax));
+        }
     }
+
+    return Failure{};
 }
 
 Result<GeoImage>
@@ -750,7 +747,10 @@ GeoImage::reproject(
     }
 #endif
 
-    return GeoImage(resultImage, destExtent);
+    if (resultImage)
+        return GeoImage(resultImage, destExtent);
+    else
+        return Failure{};
 }
 
 void

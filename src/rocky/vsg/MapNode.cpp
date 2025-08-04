@@ -7,8 +7,7 @@
 #include "VSGUtils.h"
 #include "json.h"
 #include <rocky/Horizon.h>
-#include <vsg/app/RecordTraversal.h>
-#include <vsg/vk/State.h>
+#include <rocky/vsg/NodeLayer.h>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
@@ -22,9 +21,6 @@ MapNode::MapNode()
 
     terrainNode = TerrainNode::create();
     this->addChild(terrainNode);
-
-    _layerNodes = vsg::Group::create();
-    this->addChild(_layerNodes);
 
     // default to geodetic:
     profile = Profile("global-geodetic");
@@ -139,9 +135,9 @@ MapNode::update(VSGContext context)
 }
 
 void
-MapNode::traverse(vsg::RecordTraversal& rv) const
+MapNode::traverse(vsg::RecordTraversal& record) const
 {
-    auto viewID = rv.getState()->_commandBuffer->viewID;
+    auto viewID = record.getState()->_commandBuffer->viewID;
 
     auto& viewlocal = _viewlocal[viewID];
 
@@ -152,18 +148,58 @@ MapNode::traverse(vsg::RecordTraversal& rv) const
             viewlocal.horizon = std::make_shared<Horizon>(worldSRS().ellipsoid());
         }
 
-        auto eye = vsg::inverse(rv.getState()->modelviewMatrixStack.top()) * vsg::dvec3(0, 0, 0);
-        bool is_ortho = rv.getState()->projectionMatrixStack.top()(3, 3) != 0.0;
+        auto eye = vsg::inverse(record.getState()->modelviewMatrixStack.top()) * vsg::dvec3(0, 0, 0);
+        bool is_ortho = record.getState()->projectionMatrixStack.top()(3, 3) != 0.0;
         viewlocal.horizon->setEye(to_glm(eye), is_ortho);
 
-        rv.setValue("rocky.horizon", viewlocal.horizon);
+        record.setValue("rocky.horizon", viewlocal.horizon);
     }
 
-    rv.setValue("rocky.worldsrs", worldSRS());
+    record.setValue("rocky.worldsrs", worldSRS());
 
-    rv.setObject("rocky.terraintilehost", terrainNode);
+    record.setObject("rocky.terraintilehost", terrainNode);
 
-    Inherit::traverse(rv);
+    Inherit::traverse(record);
+
+    map->each<NodeLayer>([&](auto layer)
+        {
+            if (layer->isOpen() && layer->node)
+            {
+                layer->node->accept(record);
+            }
+        });
+}
+
+void
+MapNode::traverse(vsg::Visitor& visitor)
+{
+    visitor.setValue("rocky.worldsrs", worldSRS());
+
+    Inherit::traverse(visitor);
+
+    map->each<NodeLayer>([&](auto layer)
+        {
+            if (layer->isOpen() && layer->node)
+            {
+                layer->node->accept(visitor);
+            }
+        });
+}
+
+void
+MapNode::traverse(vsg::ConstVisitor& visitor) const
+{
+    visitor.setValue("rocky.worldsrs", worldSRS());
+
+    Inherit::traverse(visitor);
+
+    map->each<NodeLayer>([&](auto layer)
+        {
+            if (layer->isOpen() && layer->node)
+            {
+                layer->node->accept(visitor);
+            }
+        });
 }
 
 vsg::ref_ptr<MapNode>
