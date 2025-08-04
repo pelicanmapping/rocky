@@ -15,7 +15,7 @@ using namespace ROCKY_NAMESPACE;
 auto Demo_Model = [](Application& app)
 {
     static entt::entity entity = entt::null;
-    static Result<> status;
+    static Status status;
     const double scale = 50000.0;
 
     if (status.failed())
@@ -59,6 +59,8 @@ auto Demo_Model = [](Application& app)
         transform.position = GeoPoint(SRS::WGS84, 50, 0, 250000);
         transform.localMatrix = glm::scale(glm::dmat4(1), glm::dvec3(scale));
         transform.topocentric = true;
+
+        app.vsgcontext->requestFrame();
     }
 
     if (ImGuiLTable::Begin("model"))

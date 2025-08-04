@@ -31,7 +31,7 @@ namespace ROCKY_NAMESPACE
         TerrainNode() = default;
 
         //! Map to render, and profile to render it in
-        const Result<>& setMap(std::shared_ptr<Map> new_map, const Profile& profile, VSGContext& cx);
+        Result<> setMap(std::shared_ptr<Map> new_map, const Profile& profile, VSGContext& cx);
 
         //! Clear out the terrain and rebuild it from the map model
         void reset(VSGContext context);
@@ -47,7 +47,7 @@ namespace ROCKY_NAMESPACE
         bool update(VSGContext context);
 
         //! Status of this node; check that's it OK before using
-        Result<> status;
+        Status status;
 
         //! Map containing data model for the terrain
         std::shared_ptr<Map> map;

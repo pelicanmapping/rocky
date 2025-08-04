@@ -77,7 +77,7 @@ BingImageLayer::openImplementation(const IOOptions& io)
 
     ROCKY_TODO("When disk cache is implemented, disable it here as it violates the ToS");
 
-    return {};
+    return ResultVoidOK;
 }
 
 void

@@ -12,18 +12,10 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_Geocoder = [](Application& app)
 {
-    static Result<> status;
     static jobs::future<Result<std::vector<Feature>>> geocoding_task;
     static char input_buf[256];
     static entt::entity placemark = entt::null;
     static entt::entity outline = entt::null;
-
-    if (status.failed())
-    {
-        ImGui::TextColored(ImVec4(1, 0, 0, 1), "Icon load failed");
-        ImGui::TextColored(ImVec4(1, 0, 0, 1), status.error().message.c_str());
-        return;
-    }
 
     if (placemark == entt::null)
     {
@@ -42,6 +34,8 @@ auto Demo_Geocoder = [](Application& app)
                 // Mark it inactive to start.
                 registry.get<Visibility>(placemark).visible.fill(false);
             });
+
+        app.vsgcontext->requestFrame();
     }
 
     else
@@ -66,7 +60,7 @@ auto Demo_Geocoder = [](Application& app)
                             Geocoder geocoder;
                             return geocoder.geocode(input, app.io());
                         }
-                        return {}; // result;
+                        return Failure{};
                     });
             }
             ImGuiLTable::End();

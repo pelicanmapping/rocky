@@ -86,7 +86,7 @@ TMSImageLayer::openImplementation(const IOOptions& io)
 
     setDataExtents(dataExtents);
 
-    return {};
+    return ResultVoidOK;
 }
 
 void

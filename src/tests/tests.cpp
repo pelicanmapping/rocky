@@ -19,7 +19,7 @@ namespace
     {
     public:
         Result<> openImplementation(const IOOptions& io) override {
-            return {};
+            return ResultVoidOK;
         }
     };
 }

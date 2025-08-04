@@ -35,6 +35,8 @@ auto Demo_Line_Absolute = [](Application& app)
         line.style.color = Color::Yellow;
         line.style.width = 3.0f;
         line.style.depth_offset = 1000.0f;
+
+        app.vsgcontext->requestFrame();
     }
 
     if (ImGuiLTable::Begin("absolute linestring"))
@@ -89,6 +91,8 @@ auto Demo_Line_ReferencePoint = [](Application& app)
         // Create a style that we can change dynamically:
         line.style.color = Color::Fuchsia;
         line.style.width = 3.0f;
+
+        app.vsgcontext->requestFrame();
     }
 
     if (ImGuiLTable::Begin("refpoint linestring"))
@@ -136,6 +140,8 @@ auto Demo_Line_Relative = [](Application& app)
         transform.topocentric = true;
         transform.position = GeoPoint(SRS::WGS84, -30.0, 10.0, 25000.0);
         transform.radius = size; // for culling
+
+        app.vsgcontext->requestFrame();
     }
 
     if (ImGuiLTable::Begin("relative linestring"))

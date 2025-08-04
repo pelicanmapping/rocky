@@ -18,13 +18,14 @@ auto Demo_PolygonFeatures = [](Application& app)
 #ifdef ROCKY_HAS_GDAL
 
     struct LoadedFeatures {
-        Result<> status;
+        Status status;
         std::shared_ptr<rocky::FeatureSource> fs;
     };
     static jobs::future<LoadedFeatures> data;
     static EntityCollectionLayer::Ptr layer;
+    static bool ready = false;
 
-    if (!layer || layer->entities.empty())
+    if (!ready)
     {
         if (!layer)
         {
@@ -39,8 +40,10 @@ auto Demo_PolygonFeatures = [](Application& app)
                 {
                     auto fs = rocky::GDALFeatureSource::create();
                     fs->uri = "https://readymap.org/readymap/filemanager/download/public/countries.geojson";
-                    auto status = fs->open();
-                    return LoadedFeatures{ status, fs };
+                    auto r = fs->open();
+                    Status s;
+                    if (r.failed()) s = r.error();
+                    return LoadedFeatures{ s, fs };
                 });
         }
         else if (data.working())
@@ -92,6 +95,9 @@ auto Demo_PolygonFeatures = [](Application& app)
             {
                 Log()->warn("Failed to open entity collection layer");
             }
+
+            ready = true;
+            app.vsgcontext->requestFrame();
         }
         else
         {

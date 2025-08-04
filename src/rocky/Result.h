@@ -32,6 +32,7 @@ namespace ROCKY_NAMESPACE
         Failure() = default;
         Failure(const Failure& rhs) = default;
         Failure(Failure&& rhs) noexcept = default;
+        Failure& operator = (const Failure& rhs) = default;
 
         explicit Failure(const Type t) : type(t) {}
         explicit Failure(std::string_view m) : message(m) {}
@@ -67,14 +68,13 @@ namespace ROCKY_NAMESPACE
 
     /**
     * Result union that can hold either a success value object or a failure object.
+    * Result has NO default constructor. If you want to hold onto a Failure state,
+    * Use the Status object instead.
     */
     template<typename T = std::nullopt_t, typename E = Failure>
     class [[nodiscard]] Result
     {
     public:
-        //! Default constructor, default good result.
-        Result();
-
         //! Copy construct
         Result(const Result& rhs) = default;
 
@@ -140,6 +140,10 @@ namespace ROCKY_NAMESPACE
         [[nodiscard]] T& value() {
             return std::get<T>(_value);
         }
+        //! Release ownership of the good result, leaving this object in an undefined state.
+        [[nodiscard]] T release() {
+            return std::move(std::get<T>(_value));
+        }
         //! Access a good result (be sure to check ok()/failed() first)
         [[nodiscard]] const T& value() const {
             return std::get<T>(_value);
@@ -153,14 +157,50 @@ namespace ROCKY_NAMESPACE
         std::variant<std::monostate, T, E> _value;
     };
 
-    template<class T, class E>
-    Result<T,E>::Result() {
-        _value.template emplace<T>(T{});
-    }
+    //! Constant to use as a "good" value for a Result<>.
+    constexpr std::nullopt_t ResultVoidOK = std::nullopt;
 
-    // specialize for std::nullopt_t + Failure
-    template<>
-    inline Result<std::nullopt_t, Failure>::Result() {
-        _value.emplace<std::nullopt_t>(std::nullopt);
-    }
+    /**
+    * Status object that holds a potential Failure state.
+    * The default constructed Status represents a good state.
+    */
+    class Status
+    {
+    public:
+        //! Construct a status indicating all is well
+        Status() = default;
+
+        //! Construct a status indicating failure
+        Status(const Failure& f) : _error(f) {}
+
+        //! Assign
+        Status& operator = (const Failure& f) {
+            _error = f;
+            return *this;
+        }
+
+        //! Assign
+        Status& operator = (const Status& rhs) {
+            if (this != &rhs) {
+                _error = rhs._error;
+            }
+            return *this;
+        }
+
+        inline const Failure& error() const {
+            return _error.value();
+        }
+        inline bool ok() const {
+            return !_error.has_value();
+        }
+        inline bool failed() const {
+            return _error.has_value();
+        }
+        inline void clear() {
+            _error.reset();
+        }
+
+    private:
+        std::optional<Failure> _error;
+    };
 }

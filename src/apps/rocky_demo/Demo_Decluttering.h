@@ -54,6 +54,8 @@ auto Demo_Decluttering = [](Application& app)
                 }
                 Log()->info("Declutter thread terminating.");
             });
+
+        app.vsgcontext->requestFrame();
     }
 
     if (ImGuiLTable::Begin("declutter"))

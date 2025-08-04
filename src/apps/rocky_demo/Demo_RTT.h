@@ -55,7 +55,7 @@ namespace
 
 auto Demo_RTT = [](Application& app)
 {
-    static Result<> status;
+    static Status status;
     static entt::entity entity = entt::null;
     static vsg::ref_ptr<vsg::MatrixTransform> mt;
     static float rotation = 0.0f;
@@ -157,6 +157,8 @@ auto Demo_RTT = [](Application& app)
         mesh.texture = registry.create();
         auto& t = registry.emplace<Texture>(mesh.texture);
         t.imageInfo = texture;
+
+        app.vsgcontext->requestFrame();
         
         return;
     }

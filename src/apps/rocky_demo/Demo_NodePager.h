@@ -31,7 +31,7 @@ auto Demo_NodePager = [](Application& app)
 
         pager = NodePager::create(profile, app.mapNode->profile);
 
-        pager->minLevel = 3;
+        pager->minLevel = 1;
 
         pager->maxLevel = 14;
 
@@ -149,11 +149,7 @@ auto Demo_NodePager = [](Application& app)
         // Always initialize a NodePager before using it:
         pager->initialize(app.vsgcontext);
 
-        // Add it as a layer, because why not? You could also just add it to scene graph.
-        auto layer = NodeLayer::create(pager);
-        layer->name = "NodePager Demo Layer";
-        if (layer->open(app.io()).ok())
-            app.mapNode->map->add(layer);
+        app.mainScene->addChild(pager);
     }
 
     if (ImGuiLTable::Begin("NodePager"))

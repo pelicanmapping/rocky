@@ -39,4 +39,6 @@ auto Demo_FeatureView = [](Application& app)
                     entity = primitives.move(r);
                 });
         }
+
+        app.vsgcontext->requestFrame();
     };

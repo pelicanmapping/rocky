@@ -107,6 +107,8 @@ auto Demo_ElevationSampler = [](Application& app)
 
                 app.vsgcontext->requestFrame();
             });
+
+        app.vsgcontext->requestFrame();
     }
 
     ImGuiLTable::Begin("elevation sampler");

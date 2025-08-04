@@ -710,7 +710,8 @@ GDAL::Driver::open(
     _linearUnits = 1.0; // srs.getReportedLinearUnits();
 
     _open = true;
-    return {};
+
+    return ResultVoidOK;
 }
 
 bool

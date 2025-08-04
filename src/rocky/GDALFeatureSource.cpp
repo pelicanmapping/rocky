@@ -592,7 +592,7 @@ GDALFeatureSource::open()
 
     Log()->debug("GDAL features " + _source + " opened OK");
 
-    return { };
+    return ResultVoidOK;
 }
 
 int

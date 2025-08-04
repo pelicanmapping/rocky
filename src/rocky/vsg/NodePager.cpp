@@ -33,14 +33,14 @@ namespace ROCKY_NAMESPACE
         void traverse(vsg::Visitor& visitor) override {
             if (payload)
                 payload->accept(visitor);
-            if (auto temp = child.value())
+            if (auto temp = child.available() ? child.value() : nullptr)
                 temp->accept(visitor);
         }
 
         void traverse(vsg::ConstVisitor& visitor) const override {
             if (payload)
                 payload->accept(visitor);
-            if (auto temp = child.value())
+            if (auto temp = child.available() ? child.value() : nullptr)
                 temp->accept(visitor);
         }
 
@@ -297,7 +297,7 @@ PagedNode::traverse(vsg::RecordTraversal& record) const
         }
 
         // access once for atomicness
-        auto child_value = child.value();
+        vsg::ref_ptr<vsg::Node> child_value = child.available() ? child.value() : nullptr;
 
         if (payload)
         {
@@ -343,7 +343,7 @@ void
 PagedNode::unload(VSGContext runtime)
 {    
     // expire and dispose of the data
-    if (child.value())
+    if (child.available() && child.value())
     {
         pager->onExpire.fire(child.value());
         runtime->dispose(child.value());

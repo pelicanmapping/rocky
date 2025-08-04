@@ -30,25 +30,29 @@ Result<>
 MapNode::from_json(const std::string& JSON, const IOOptions& io)
 {
     const auto j = parse_json(JSON);
+    if (j.status.failed())
+        return j.status.error();
 
-    auto status = j.status;
-
-    if (status.ok() && map && j.contains("map"))
+    if (map && j.contains("map"))
     {        
-        status = map->from_json(j.at("map").dump(), io);
+        auto r = map->from_json(j.at("map").dump(), io);
+        if (r.failed())
+            return r.error();
     }
 
-    if (status.ok() && j.contains("profile"))
+    if (j.contains("profile"))
     {
         get_to(j, "profile", profile);
     }
 
-    if (status.ok() && terrainNode && j.contains("terrain"))
+    if (terrainNode && j.contains("terrain"))
     {
-        status = terrainNode->from_json(j.at("terrain").dump(), io);
+        auto r = terrainNode->from_json(j.at("terrain").dump(), io);
+        if (r.failed())
+            return r.error();
     }
 
-    return status;
+    return ResultVoidOK;
 }
 
 std::string

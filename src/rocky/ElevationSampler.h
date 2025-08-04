@@ -82,7 +82,8 @@ namespace ROCKY_NAMESPACE
             // cache:
             std::uint32_t tx = UINT_MAX, ty = UINT_MAX;
             TileKey key;
-            Result<GeoHeightfield> hf;
+            Status status;
+            GeoHeightfield hf;
             friend class ElevationSampler;
 
             inline std::pair<std::uint32_t, std::uint32_t> tile(double x, double y) const {
@@ -195,6 +196,6 @@ namespace ROCKY_NAMESPACE
                 env.xform.inverse(iter->x, iter->y, iter->z);
         }
 
-        return {}; // ok
+        return ResultVoidOK; // ok
     }
 }

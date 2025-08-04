@@ -53,7 +53,7 @@ namespace ROCKY_NAMESPACE
     //! extent json with a status so we can check for parsing errors
     struct json_parse_result : public json
     {
-        Result<> status;
+        Status status;
         json_parse_result() : json(json::object()) {}
         json_parse_result(const json& j) : json(j) {}
         json_parse_result(const Failure& f) : json(json::object()), status(f) {}

@@ -88,7 +88,7 @@ AzureImageLayer::openImplementation(const IOOptions& io)
 
     ROCKY_TODO("update attribution - it's a separate API call and depends on the visible region and zoom level, or can be queried for individual tiles, or there's an API to get a big JSON object with strings for each region of the world all at once");
 
-    return {};
+    return ResultVoidOK;
 }
 
 void

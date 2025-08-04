@@ -34,7 +34,7 @@ Map::from_json(std::string_view input, const IOOptions& io)
         }
     }
 
-    return {};
+    return ResultVoidOK;
 }
 
 std::string
@@ -104,17 +104,20 @@ Map::openAllLayers(const IOOptions& io)
 {
     std::shared_lock lock(_mutex);
 
-    Result<> status;
+    Status status;
     for (auto& layer : _layers)
     {
         if (layer->openAutomatically && !layer->isOpen())
         {
-            auto layer_status = layer->open(io);
-            if (layer_status.failed())
+            auto r = layer->open(io);
+            if (r.failed())
             {
-                status = Failure_GeneralError;
+                status = r.error();
             }
         }
     }
-    return status;
+    if (status.ok())
+        return ResultVoidOK;
+    else
+        return status.error();
 }

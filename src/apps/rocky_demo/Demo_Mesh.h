@@ -53,6 +53,8 @@ auto Demo_Mesh_Absolute = [](Application& app)
 
         // Turn off depth buffer writes
         mesh.writeDepth = false;
+
+        app.vsgcontext->requestFrame();
     }
 
     if (ImGuiLTable::Begin("Mesh"))
@@ -133,6 +135,8 @@ auto Demo_Mesh_Relative = [](Application& app)
         xform.topocentric = true;
         xform.position = GeoPoint(SRS::WGS84, 24.0, 24.0, s * 3.0);
         xform.radius = s * sqrt(2);
+
+        app.vsgcontext->requestFrame();
     }
 
     if (ImGuiLTable::Begin("Mesh"))

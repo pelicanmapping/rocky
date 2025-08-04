@@ -74,7 +74,7 @@ BingElevationLayer::openImplementation(const IOOptions& io)
 
     ROCKY_TODO("Update attribution - it's included in the JSON response, but we don't track which tiles are still visible and only have the data in a const function");
 
-    return {};
+    return ResultVoidOK;
 }
 
 void

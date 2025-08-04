@@ -150,6 +150,8 @@ auto Demo_Widget = [](Application& app)
         dropline.points = { { 0,0,0 }, { 0, 0, -2'500'000.0 } };
         dropline.style.color = Color(0.1f, 0.1f, 0.1f, 1.0f);
         dropline.style.width = 2;
+
+        app.vsgcontext->requestFrame();
     }
 
     if (ImGuiLTable::Begin("widget_demo"))

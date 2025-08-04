@@ -10,7 +10,7 @@ using namespace ROCKY_NAMESPACE;
 auto Demo_Label = [](Application& app)
 {
     static entt::entity entity = entt::null;
-    static Result<> status;
+    static Status status;
 
     auto& font = app.vsgcontext->defaultFont;
     if (!font)
@@ -37,6 +37,8 @@ auto Demo_Label = [](Application& app)
         // Attach a transform to place and move the label:
         auto& transform = registry.emplace<Transform>(entity);
         transform.position = GeoPoint(SRS::WGS84, -35.0, 15.0, 15000.0);
+
+        app.vsgcontext->requestFrame();
     }
 
     if (ImGuiLTable::Begin("text"))

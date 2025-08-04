@@ -17,6 +17,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <variant>
 
 // OPTIONAL: Define WEEJOBS_EXPORT if you want to use this library from multiple modules (DLLs)
 #ifndef WEEJOBS_EXPORT
@@ -297,7 +298,7 @@ namespace WEEJOBS_NAMESPACE
         // created from the copy constructor.
         struct shared_t
         {
-            T _obj;
+            std::variant<std::monostate, T> _obj; // variant lets us support object with no default ctor
             mutable detail::event _ev;
             std::mutex _continuation_mutex;
             std::function<void()> _continuation;
@@ -344,13 +345,13 @@ namespace WEEJOBS_NAMESPACE
         //! will just get the default object.
         const T& value() const
         {
-            return _shared->_obj;
+            return std::get<T>(_shared->_obj);
         }
 
         //! Dereference this object to const pointer to the result.
         const T* operator -> () const
         {
-            return &_shared->_obj;
+            return &std::get<T>(_shared->_obj);
         }
 
         //! Result is available AND equal to the argument.
@@ -415,7 +416,7 @@ namespace WEEJOBS_NAMESPACE
         //! Resolve (fulfill) the promise with the provided result value.
         void resolve(const T& value)
         {
-            _shared->_obj = value;
+            _shared->_obj.template emplace<T>(value);
             _shared->_ev.set();
             fire_continuation();
         }
@@ -423,7 +424,7 @@ namespace WEEJOBS_NAMESPACE
         //! Resolve (fulfill) the promise with an rvalue
         void resolve(T&& value)
         {
-            _shared->_obj = std::move(value);
+            _shared->_obj.template emplace<T>(std::move(value));
             _shared->_ev.set();
             fire_continuation();
         }

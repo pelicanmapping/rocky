@@ -28,10 +28,10 @@ TerrainNode::to_json() const
     return TerrainSettings::to_json();
 }
 
-const Result<>&
+Result<>
 TerrainNode::setMap(std::shared_ptr<Map> new_map, const Profile& new_profile, VSGContext& context)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(new_map, status);
+    ROCKY_SOFT_ASSERT_AND_RETURN(new_map, Failure_AssertionFailure);
 
     // remove old hooks:
     if (map)
@@ -50,7 +50,9 @@ TerrainNode::setMap(std::shared_ptr<Map> new_map, const Profile& new_profile, VS
 
     reset(context);
 
-    return status;
+    if (status.ok())
+        return ResultVoidOK;
+    else return status.error();
 }
 
 void
@@ -78,7 +80,7 @@ Result<>
 TerrainNode::createRootTiles(VSGContext& context)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(engine != nullptr, Failure_AssertionFailure);
-    ROCKY_SOFT_ASSERT_AND_RETURN(engine->stateFactory.status.ok(), engine->stateFactory.status);
+    ROCKY_SOFT_ASSERT_AND_RETURN(engine->stateFactory.status.ok(), engine->stateFactory.status.error());
     ROCKY_HARD_ASSERT(children.empty(), "TerrainNode::createRootTiles() called with children already present");
 
     tilesRoot = vsg::Group::create();
@@ -105,7 +107,10 @@ TerrainNode::createRootTiles(VSGContext& context)
 
     engine->context->compile(stategroup);
 
-    return {};
+    if (status.ok())
+        return ResultVoidOK;
+    else
+        return status.error();
 }
 
 bool
@@ -117,10 +122,10 @@ TerrainNode::update(VSGContext context)
     {
         if (children.empty())
         {
-            status = createRootTiles(context);
-
-            if (status.failed())
+            auto r = createRootTiles(context);
+            if (r.failed())
             {
+                status = r.error();
                 Log()->warn("TerrainNode initialize failed: " + status.error().message);
             }
             changes = true;

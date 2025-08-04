@@ -33,6 +33,8 @@ namespace ROCKY_NAMESPACE
         Result<> openImplementation(const IOOptions& io) override;
 
         void closeImplementation() override;
+        
+        void construct(std::string_view JSON);
 
     protected:
 

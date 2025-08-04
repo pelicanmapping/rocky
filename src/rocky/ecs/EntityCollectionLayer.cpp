@@ -12,14 +12,20 @@ EntityCollectionLayer::EntityCollectionLayer(Registry registry) :
     super(),
     _registry(registry)
 {
-    // nop
+    construct({});
 }
 
 EntityCollectionLayer::EntityCollectionLayer(Registry registry, std::string_view JSON) :
     super(JSON),
     _registry(registry)
 {
-    // nop
+    construct({});
+}
+
+void
+EntityCollectionLayer::construct(std::string_view JSON)
+{
+    setLayerTypeName("EntityCollectionLayer");
 }
 
 Result<> EntityCollectionLayer::openImplementation(const IOOptions& io)

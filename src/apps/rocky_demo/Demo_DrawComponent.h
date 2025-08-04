@@ -146,6 +146,8 @@ auto Demo_Draw = [](Application& app)
                 }
                 drawing = false;
             });
+
+        app.vsgcontext->requestFrame();
     }
 
     ImGui::Text("Left click: start a line or add a new point");

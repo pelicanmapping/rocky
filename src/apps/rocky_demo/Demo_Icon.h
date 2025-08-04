@@ -11,7 +11,7 @@ using namespace ROCKY_NAMESPACE;
 auto Demo_Icon = [](Application& app)
 {
     static entt::entity entity = entt::null;
-    static Result<> status;
+    static Status status;
 
     if (status.failed())
     {
@@ -44,6 +44,8 @@ auto Demo_Icon = [](Application& app)
         // Transform to place the icon:
         auto& transform = registry.emplace<Transform>(entity);
         transform.position = GeoPoint(SRS::WGS84, 0, 0, 50000);
+
+        app.vsgcontext->requestFrame();
     }
 
     if (ImGuiLTable::Begin("icon"))

@@ -58,24 +58,31 @@ bool ElevationSampler::clamp(Session& env, double& x, double& y, double& z) cons
 
     if (tx != env.tx || ty != env.ty)
     {
+        env.status.clear();
+
         env.key = layer->bestAvailableTileKey(TileKey(env.lod, tx, ty, layer->profile));
         if (env.key.valid())
         {
-            env.hf = fetch(env.key, env.io);
+            auto r = fetch(env.key, env.io);
+            if (r.ok())
+                env.hf = std::move(r.value());
+            else
+                env.status = r.error();
+
             env.tx = tx, env.ty = ty;
         }
         else
         {
             // invalid data
             tx = UINT_MAX, ty = UINT_MAX;
-            env.hf = Failure{};
+            env.status = Failure{};
         }
     }
 
-    if (env.hf.ok())
+    if (env.status.ok())
     {
         x = xa, y = ya;
-        z = env.hf->heightAtLocation(xa, ya, interpolation);
+        z = env.hf.heightAtLocation(xa, ya, interpolation);
         return true;
     }
     else

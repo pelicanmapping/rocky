@@ -61,51 +61,58 @@ namespace
 {
     void addImageLayer(const TileKey& requested_key, std::shared_ptr<ImageLayer> layer, bool fallback, TerrainTileModel& model, const IOOptions& io)
     {
-        Result<GeoImage> result;
+        GeoImage geoimage;
+        Status status;
 
         TileKey key = requested_key;
         if (fallback)
         {
-            while(key.valid() && !result.ok())
+            while(key.valid() && !geoimage.valid())
             {
-                result = layer->createImage(key, io);
-                if (!result.ok())
+                auto r = layer->createImage(key, io);
+                if (r.ok())
+                {
+                    geoimage = r.release();
+                }
+                else
+                {
+                    status = r.error();
                     key.makeParent();
+                }
             }
         }
         else
         {
-            result = layer->createImage(key, io);
+            auto r = layer->createImage(key, io);
+            if (r.ok())
+                geoimage = r.release();
+            else
+                status = r.error();
         }
 
-        if (result.ok())
+        if (geoimage.valid())
         {
-            if (result.value().valid())
-            {
-                TerrainTileModel::ColorLayer m;
-                m.layer = layer;
-                m.revision = layer->revision();
-                m.image = result.value();
-                m.key = key;
-                model.colorLayers.emplace_back(std::move(m));
-                //if (layer->dynamic())
-                //{
-                //    model.requiresUpdate = true;
-                //}
-            }
-            else
-            {
-                //... assert? result.value() should always be valid.
-            }
+            TerrainTileModel::ColorLayer m;
+            m.layer = layer;
+            m.revision = layer->revision();
+            m.image = std::move(geoimage);
+            m.key = key;
+            model.colorLayers.emplace_back(std::move(m));
+            //if (layer->dynamic())
+            //{
+            //    model.requiresUpdate = true;
+            //}
         }
 
         // ResourceUnavailable just means the driver could not produce data
         // for the tilekey; it is not an actual read error.
-        else if (
-            result.error().type != Failure::ResourceUnavailable &&
-            result.error().type != Failure::OperationCanceled)
+        else if (status.failed())
         {
-            Log()->warn("Problem getting data from \"" + layer->name + "\" : " + result.error().string());
+            if (status.error().type != Failure::ResourceUnavailable &&
+                status.error().type != Failure::OperationCanceled)
+            {
+                Log()->warn("Problem getting data from \"" + layer->name + "\" : " + status.error().string());
+            }
         }
     }
 }

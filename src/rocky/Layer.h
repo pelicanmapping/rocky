@@ -43,7 +43,7 @@ namespace ROCKY_NAMESPACE
         UID uid() const { return _uid; }
 
         //! Status of this layer
-        Result<> status() const {
+        inline const Status& status() const {
             return _status;
         }
 
@@ -118,7 +118,7 @@ namespace ROCKY_NAMESPACE
 
     private:
         UID _uid = -1;
-        Result<> _status;
+        mutable Status _status;
         std::atomic<Revision> _revision = { 1 };
         mutable std::shared_mutex _state_mutex;
         std::string _layerTypeName;

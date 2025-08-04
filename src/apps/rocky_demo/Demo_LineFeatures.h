@@ -69,6 +69,8 @@ auto Demo_LineFeatures = [](Application& app)
                         entities.emplace_back(e);
                     });
             }
+
+            app.vsgcontext->requestFrame();
         }
         else
         {

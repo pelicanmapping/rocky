@@ -653,7 +653,7 @@ TMS::Driver::open(const URI& uri, Profile& profile, const std::string& format, D
         dataExtents.push_back(DataExtent(profile.extent(), 0, tileMap.maxLevel));
     }
 
-    return {};
+    return ResultVoidOK;
 }
 
 Result<std::shared_ptr<Image>>

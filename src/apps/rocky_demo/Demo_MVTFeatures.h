@@ -160,6 +160,8 @@ auto Demo_MVTFeatures = [](Application& app)
         layer->name = "MVT Features Demo Layer";
         if (layer->open(app.io()).ok())
             app.mapNode->map->add(layer);
+
+        app.vsgcontext->requestFrame();
     }
 
     if (ImGuiLTable::Begin("NodePager"))

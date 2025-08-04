@@ -28,6 +28,8 @@ auto Demo_Environment = [](Application& app)
         }
 #endif
 
+        app.vsgcontext->requestFrame();
+
         return;
     }
 

@@ -29,55 +29,36 @@ namespace
 {
     Result<> loadMapFile(const std::string& location, MapNode& mapNode, Context context)
     {
-        Result<> status;
-
         auto map_file = URI(location).read(context->io);
+        if (map_file.failed())
+            return map_file.error();
 
-        if (map_file.ok())
-        {
-            auto parse_result = mapNode.from_json(map_file->content.data, context->io.from(location));
-            if (parse_result.failed())
-            {
-                status = parse_result.error();
-            }
-        }
-        else
-        {
-            // return the error
-            status = map_file.error();
-        }
+        auto r = mapNode.from_json(map_file->content.data, context->io.from(location));
+        if (r.failed())
+            return r.error();
 
-        return status;
+        return ResultVoidOK;
     }
 
     Result<> importEarthFile(const std::string& infile, MapNode& mapNode, Context context)
     {
-        Result<> status;
-
         auto io = context->io.from(infile);
 
         EarthFileImporter importer;
         auto result = importer.read(infile, io);
+        if (result.failed())
+            return result.error();
 
-        if (result.ok())
-        {
-            auto count = mapNode.map->layers().size();
+        auto count = mapNode.map->layers().size();
 
-            auto r = mapNode.from_json(result.value(), io);
-            if (r.failed())
-                return r.error();
+        auto r = mapNode.from_json(result.value(), io);
+        if (r.failed())
+            return r.error();
 
-            if (count == mapNode.map->layers().size())
-            {
-                status = Failure(Failure::ResourceUnavailable, "No layers imported from earth file");
-            }
-        }
-        else
-        {
-            status = result.error();
-        }
+        if (count == mapNode.map->layers().size())
+            return Failure(Failure::ResourceUnavailable, "No layers imported from earth file");
 
-        return status;
+        return ResultVoidOK;
     }
 }
 
@@ -202,13 +183,17 @@ Application::ctor(int& argc, char** argv)
     std::string infile; 
     if (commandLine.read("--map", infile))
     {
-        commandLineStatus = loadMapFile(infile, *mapNode, vsgcontext);
+        auto r = loadMapFile(infile, *mapNode, vsgcontext);
+        if (r.failed())
+            commandLineStatus = r.error();
     }
 
     // import map from an osgEarth earth file:
     if (commandLine.read({ "--earthfile", "--earth-file" }, infile) && commandLineStatus.ok())
     {
-        commandLineStatus = importEarthFile(infile, *mapNode, vsgcontext);
+        auto r = importEarthFile(infile, *mapNode, vsgcontext);
+        if (r.failed())
+            commandLineStatus = r.error();
     }
 
     bool indirect = false;
@@ -220,7 +205,9 @@ Application::ctor(int& argc, char** argv)
     // if there are any command-line arguments remaining, assume the first is a map file.
     if (commandLine.argc() > 1 && commandLineStatus.ok())
     {
-        commandLineStatus = loadMapFile(commandLine[1], *mapNode, vsgcontext);
+        auto r = loadMapFile(commandLine[1], *mapNode, vsgcontext);
+        if (r.failed())
+            commandLineStatus = r.error();
     }
 
 
@@ -515,6 +502,8 @@ Application::frame()
         viewer->pollEvents(_framesSinceLastRender > 0);
         viewer->getEvents().emplace_back(new vsg::FrameEvent(vsg::ref_ptr<vsg::FrameStamp>(viewer->getFrameStamp())));
 
+        viewer->handleEvents();
+
         // update traversal (see AppUpateOperation)
         viewer->update();
 
@@ -523,10 +512,6 @@ Application::frame()
         {
             return false;
         }
-
-        // Event handling happens after updating the scene, otherwise
-        // things like tethering to a moving node will be one frame behind
-        viewer->handleEvents();
 
         // Call the user-supplied "idle" functions
         for (auto& idle : idleFunctions)
@@ -603,7 +588,6 @@ Application::install(vsg::ref_ptr<RenderImGuiContext> group, bool installAutomat
     _subs += send->onEvent([vsgcontext(this->vsgcontext)](const vsg::UIEvent& e)
         {
             if (e.cast<vsg::FrameEvent>()) return;
-
             vsgcontext->requestFrame();
         });
 

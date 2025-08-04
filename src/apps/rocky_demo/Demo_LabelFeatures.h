@@ -15,7 +15,7 @@ auto Demo_LabelFeatures = [](Application& app)
 {
 #ifdef ROCKY_HAS_GDAL
 
-    static std::optional<Result<>> status;
+    static std::optional<Status> status;
     static unsigned count = 0;
     const bool use_widgets = true;
 
@@ -36,7 +36,15 @@ auto Demo_LabelFeatures = [](Application& app)
 
         auto fs = rocky::GDALFeatureSource::create();
         fs->uri = "https://readymap.org/readymap/filemanager/download/public/countries.geojson";
-        status = fs->open();
+        auto r = fs->open();
+        if (r.failed())
+        {
+            status = r.error();
+            Log()->error("Failed to open GDAL feature source: {}", status->error().message);
+            return;
+        }
+
+        status = Status{}; // ok!
 
         // collect all the features, discarding duplicates by keeping the largest one
         auto iter = fs->iterate(app.vsgcontext->io);
@@ -114,6 +122,8 @@ auto Demo_LabelFeatures = [](Application& app)
 
             labels.emplace(entity);
         }
+
+        app.vsgcontext->requestFrame();
     }
 
     else if (ImGuiLTable::Begin("Label features"))

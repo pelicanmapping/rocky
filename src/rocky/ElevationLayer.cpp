@@ -148,7 +148,7 @@ ElevationLayer::openImplementation(const IOOptions& io)
 
     _dependencyCache = std::make_shared<TileMosaicWeakCache<Heightfield>>();
 
-    return {};
+    return ResultVoidOK;
 }
 
 void
@@ -216,24 +216,26 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
             else
             {
                 TileKey subKey = intersectingKey;
-                Result<GeoHeightfield> subTile;
-                while (subKey.valid() && (!subTile.ok() || !subTile->heightfield()))
+                GeoHeightfield subTile;
+                while (subKey.valid() && (!subTile.valid() || !subTile.heightfield()))
                 {
-                    subTile = createHeightfieldImplementation_internal(subKey, io);
-                    if (subTile.failed())
+                    auto r = createHeightfieldImplementation_internal(subKey, io);
+                    if (r.ok())
+                        subTile = r.release();
+                    else
                         subKey.makeParent();
 
                     if (io.canceled())
-                        return {};
+                        return nullptr;
                 }
 
-                if (subTile.ok() && subTile->heightfield())
+                if (subTile.valid() && subTile.heightfield())
                 {
                     // save it in the weak cache:
-                    _dependencyCache->put(intersectingKey, subKey, subTile->heightfield());
+                    _dependencyCache->put(intersectingKey, subKey, subTile.heightfield());
 
                     // add it to our sources collection:
-                    sources.emplace_back(subTile.value());
+                    sources.emplace_back(std::move(subTile));
 
                     if (subKey.level == targetLOD)
                     {

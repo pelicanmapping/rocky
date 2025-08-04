@@ -133,6 +133,8 @@ auto Demo_Stats = [](Application& app)
     ImGui::SeparatorText("System");
     if (ImGuiLTable::Begin("System"))
     {
+        ImGuiLTable::Text("Last frame rendered", std::to_string(app.frameCount()).c_str());
+        ImGuiLTable::Text("Render requests", std::to_string(app.vsgcontext->renderRequests).c_str());
         ImGuiLTable::Text("Terrain tiles resident", std::to_string(engine->tiles.size()).c_str());
         ImGuiLTable::Text("Terrain geometry pool", std::to_string(engine->geometryPool.size()).c_str());
         ImGuiLTable::Text("Content cache hits/misses", "%d/%d", cache->hits, (cache->gets - cache->hits));

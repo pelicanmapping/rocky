@@ -26,7 +26,7 @@ TerrainSettings::from_json(std::string_view JSON)
     get_to(j, "color", color);
     get_to(j, "concurrency", concurrency);
 
-    return {};
+    return ResultVoidOK;
 }
 
 std::string

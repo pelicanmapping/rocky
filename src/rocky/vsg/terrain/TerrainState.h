@@ -42,7 +42,7 @@ namespace ROCKY_NAMESPACE
             VSGContext& runtime) const;
 
         //! Status of the factory.
-        Result<> status;
+        Status status;
 
     public:
 

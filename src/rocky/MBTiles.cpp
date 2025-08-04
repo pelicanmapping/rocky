@@ -260,7 +260,7 @@ MBTiles::Driver::open(
     _emptyImage = Image::create(Image::R8G8B8A8_UNORM, size, size);
     _emptyImage->fill(glm::fvec4(0.0));
 
-    return {};
+    return ResultVoidOK;
 }
 
 Result<int>
@@ -330,7 +330,7 @@ MBTiles::Driver::read(const TileKey& key, const IOOptions& io) const
     sqlite3_bind_int(select, 2, x);
     sqlite3_bind_int(select, 3, y);
 
-    Result<std::shared_ptr<Image>> result;
+    Image::Ptr result;
     std::string errorMessage;
 
     rc = sqlite3_step(select);
@@ -365,7 +365,9 @@ MBTiles::Driver::read(const TileKey& key, const IOOptions& io) const
         if (valid)
         {
             std::istringstream inputStream(dataBuffer);
-            result = io.services.readImageFromStream(inputStream, {}, io);
+            auto r = io.services.readImageFromStream(inputStream, {}, io);
+            if (r.ok())
+                result = r.value();
         }
     }
 
@@ -373,10 +375,13 @@ MBTiles::Driver::read(const TileKey& key, const IOOptions& io) const
 
     if (!valid)
     {
-        result = Failure(Failure::GeneralError, errorMessage);
+        return Failure(Failure::GeneralError, errorMessage);
     }
 
-    return result;
+    if (result)
+        return result;
+    else
+        return Failure_GeneralError;
 }
 
 
@@ -483,7 +488,7 @@ MBTiles::Driver::write(const TileKey& key, std::shared_ptr<Image> input, const I
         _minLevel = key.level;
     }
 
-    return {};
+    return ResultVoidOK;
 }
 
 bool

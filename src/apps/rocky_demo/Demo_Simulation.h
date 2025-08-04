@@ -56,11 +56,11 @@ auto Demo_Simulation = [](Application& app)
     const char* icon_location = "https://readymap.org/readymap/filemanager/download/public/icons/airport.png";
 
     // Make an entity for us to tether to and set it in motion
-    static std::set<entt::entity> platforms;
-    static Result<> status;
+    static EntityCollectionLayer::Ptr layer;
+    //static std::set<entt::entity> platforms;
+    static Status status;
     static Simulator sim(app);
     static ImGuiImage widgetImage;
-    static std::set<entt::entity>::const_iterator tether = platforms.end();
     const unsigned num_platforms = 1000;
 
     if (status.failed())
@@ -84,8 +84,13 @@ auto Demo_Simulation = [](Application& app)
         }
     }
 
-    if (platforms.empty())
+    if (!layer)
     {
+        layer = EntityCollectionLayer::create(app.registry);
+        layer->name = "Simulation Entities";
+        if (layer->open(app.io()))
+            app.mapNode->map->add(layer);
+
         auto [lock, registry] = app.registry.write();
 
         std::mt19937 mt;
@@ -139,6 +144,8 @@ auto Demo_Simulation = [](Application& app)
 
         auto ll_to_ecef = SRS::WGS84.to(SRS::ECEF);
 
+        layer->entities.reserve(num_platforms);
+
         for (unsigned i = 0; i < num_platforms; ++i)
         {
             float t = (float)i / (float)(num_platforms);
@@ -182,28 +189,20 @@ auto Demo_Simulation = [](Application& app)
             auto& declutter = registry.emplace<Declutter>(entity);
             declutter.priority = alt;
 
-            platforms.emplace(entity);
+            layer->entities.emplace_back(entity);
+            //platforms.emplace(entity);
         }
 
         sim.run();
+
+        app.vsgcontext->requestFrame();
     }
 
-    ImGui::Text("Simulating %ld platforms", platforms.size());
-    if (ImGuiLTable::Begin("sim"))
-    {
-        static bool show = true;
-        if (ImGuiLTable::Checkbox("Show", &show))
-        {
-            auto [lock, registry] = app.registry.write();
-            for (auto entity : platforms)
-            {
-                if (show)
-                    registry.emplace_or_replace<ActiveState>(entity);
-                else
-                    registry.remove<ActiveState>(entity);
-            }
-        }
+    ImGui::Text("Simulating %ld platforms", layer->entities.size());
+    ImGui::Text("NOTE: toggle visibility in the Map panel");
 
+    if (ImGuiLTable::Begin("simulation"))
+    {
         ImGuiLTable::SliderFloat("Update rate", &sim.sim_hertz, 1.0f, 120.0f, "%.0f hz");
 
         static bool tethering = false;
@@ -221,10 +220,10 @@ auto Demo_Simulation = [](Application& app)
                 vp.range = 1e6;
                 vp.pitch = -45;
                 vp.heading = 45;
-                vp.pointFunction = [&app]()
+                vp.pointFunction = [&]()
                     {
                         auto [lock, registry] = app.registry.read();
-                        return registry.get<Transform>(*platforms.begin()).position;
+                        return registry.get<Transform>(*layer->entities.begin()).position;
                     };
 
                 manip->setViewpoint(vp, 2.0s);

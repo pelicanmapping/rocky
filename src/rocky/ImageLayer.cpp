@@ -91,7 +91,7 @@ ImageLayer::openImplementation(const IOOptions& io)
 
     _dependencyCache = std::make_shared<TileMosaicWeakCache<Image>>();
 
-    return {};
+    return ResultVoidOK;
 }
 
 void
