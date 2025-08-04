@@ -31,8 +31,8 @@
 
 // Version
 #define WEEJOBS_VERSION_MAJOR 1
-#define WEEJOBS_VERSION_MINOR 0
-#define WEEJOBS_VERSION_REV   3
+#define WEEJOBS_VERSION_MINOR 1
+#define WEEJOBS_VERSION_REV   0
 #define WEEJOBS_STR_NX(s) #s
 #define WEEJOBS_STR(s) WEEJOBS_STR_NX(s)
 #define WEEJOBS_COMPUTE_VERSION(major, minor, patch) ((major) * 10000 + (minor) * 100 + (patch))
@@ -298,6 +298,7 @@ namespace WEEJOBS_NAMESPACE
         // created from the copy constructor.
         struct shared_t
         {
+            //std::optional<T> _obj;
             std::variant<std::monostate, T> _obj; // variant lets us support object with no default ctor
             mutable detail::event _ev;
             std::mutex _continuation_mutex;
@@ -1099,7 +1100,7 @@ namespace WEEJOBS_NAMESPACE
                     if (shared && shared->_ev.isSet())
                     {
                         // copy it and dispatch it as the input to a new job:
-                        T copy_of_value = shared->_obj;
+                        T copy_of_value = std::get<T>(shared->_obj);
 
                         // Once this wrapper gets created, note that we now have 2 refereces to the continuation_promise.
                         // To prevent this from hampering cancelation, the continuation fuction is set to nullptr
@@ -1188,7 +1189,8 @@ namespace WEEJOBS_NAMESPACE
                     auto shared = weak_shared.lock();
                     if (shared)
                     {
-                        auto copy_of_value = shared->_obj;
+                        auto copy_of_value = std::get<T>(shared->_obj);
+
                         auto fire_and_forget_delegate = [func, copy_of_value]() mutable
                             {
                                 func(copy_of_value);
