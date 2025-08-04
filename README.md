@@ -228,7 +228,7 @@ auto status = fs->open();
 
 if (status.ok())
 {
-    fs.each(app.vsgcontext->io, [&](Feature&& feature)
+    fs.each(app.io(), [&](Feature&& feature)
         {
             // ... each Feature object contains geometry and fields
         });
@@ -240,7 +240,7 @@ Use a `FeatureView` to help turn features into visible geometry:
 FeatureView feature_view;
 
 // add features to our FeatureView helper:
-fs.each(app.vsgcontext->io, [&](Feature&& feature)
+fs.each(app.app.io(), [&](Feature&& feature)
     {
         feature_view.features.emplace_back(std::move(feature));
     });
