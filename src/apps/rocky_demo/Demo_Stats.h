@@ -147,13 +147,13 @@ auto Demo_Stats = [](Application& app)
 
         auto contentCache = app.io().services().contentCache;
         ImGui::TableNextColumn(); ImGui::Text("URI cache");
-        ImGui::TableNextColumn(); ImGui::Text("%d", contentCache->size());
+        ImGui::TableNextColumn(); ImGui::Text("%ld", contentCache->size());
         ImGui::TableNextColumn(); ImGui::Text("%d", contentCache->hits());
         ImGui::TableNextColumn(); ImGui::Text("%d", contentCache->misses());
 
         auto residentImageCache = app.io().services().residentImageCache;
         ImGui::TableNextColumn(); ImGui::Text("Resident image cache");
-        ImGui::TableNextColumn(); ImGui::Text("%d", residentImageCache->size());
+        ImGui::TableNextColumn(); ImGui::Text("%ld", residentImageCache->size());
         ImGui::TableNextColumn(); ImGui::Text("%d", residentImageCache->hits());
         ImGui::TableNextColumn(); ImGui::Text("%d", residentImageCache->misses());
 

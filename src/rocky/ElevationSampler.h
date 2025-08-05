@@ -221,7 +221,7 @@ namespace ROCKY_NAMESPACE
         auto sesh = session(io);
         sesh.srs = srs;
         sesh.referenceLatitude = begin->y;
-        return clampRange(env, begin, end);
+        return sesh.clampRange(begin, end);
     }
 
     float ElevationSession::sample(double x, double y, double z) const
