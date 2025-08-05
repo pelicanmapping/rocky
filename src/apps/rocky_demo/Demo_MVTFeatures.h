@@ -17,12 +17,12 @@ auto Demo_MVTFeatures = [](Application& app)
 #ifdef ROCKY_HAS_GDAL
 
     static vsg::ref_ptr<NodePager> pager;
-    static ElevationSampler clamper;
+    static ElevationSampler elevationSampler;
 
     if (!pager)
     {
         // Set up our elevation clamper.
-        clamper.layer = app.mapNode->map->layer<ElevationLayer>();
+        elevationSampler.layer = app.mapNode->map->layer<ElevationLayer>();
 
         // Configure a pager that will display paged tiles in mercator profile
         // at LOD 14 only:
@@ -31,6 +31,7 @@ auto Demo_MVTFeatures = [](Application& app)
         pager->minLevel = 14;
         pager->maxLevel = 14;
         pager->refinePolicy = NodePager::RefinePolicy::Replace;
+        pager->screenSpaceError = 256;
 
         // This functor will calculate the bounding sphere for each streamed tile.
         // Since the feature data will be clamped, we need the tile itself to conform
@@ -40,10 +41,10 @@ auto Demo_MVTFeatures = [](Application& app)
                 auto ex = app.mapNode->profile.clampAndTransformExtent(key.extent());
                 auto bs = ex.createWorldBoundingSphere(0, 0);
 
-                if (clamper.ok() && key.level > 1)
+                if (elevationSampler.ok() && key.level > 1)
                 {
-                    auto resolutionX = clamper.layer->resolution(key.level).first;
-                    if (auto p = clamper.clamp(ex.centroid(), resolutionX, io))
+                    auto resolutionX = elevationSampler.layer->resolution(key.level).first;
+                    if (auto p = elevationSampler.clamp(ex.centroid(), resolutionX, io))
                     {
                         return vsg::dsphere(to_vsg(p->transform(app.mapNode->worldSRS())), bs.radius);
                     }
@@ -108,31 +109,10 @@ auto Demo_MVTFeatures = [](Application& app)
                 
                 if (!fview.features.empty())
                 {
-                    if (clamper.ok())
-                    {
-                        // Clamp each feature to the elevation data (if we have any).
-
-                        // configure a sampling session since we're doing a batch of work:
-                        auto session = clamper.session(io);
-
-                        // Set the LOD of elevation data to use. This is optional; without it
-                        // the clamper will try to use the highest resolution data available.
-                        session.lod = key.level;
-
-                        // The ensures each feature gets transformed into the proper SRS:
-                        session.xform = fview.features.front().srs.to(clamper.layer->profile.srs());
-
-                        for (auto& f : fview.features)
-                        {
-                            f.geometry.eachPart([&](Geometry& part)
-                                {
-                                    // clamp the geometry to the elevation layer:
-                                    auto r = clamper.clampRange(session, part.points.begin(), part.points.end());
-                                    if (r.failed())
-                                        return;
-                                });
-                        }
-                    }
+                    // tell the FeatureView to use the elevation clamper.                    
+                    fview.clamper = elevationSampler.session(io);
+                    fview.clamper.lod = key.level;
+                    fview.clamper.srs = fview.features.front().srs;
 
                     // generate primitives from features:
                     auto prims = fview.generate(app.mapNode->worldSRS());
@@ -185,43 +165,43 @@ auto Demo_MVTFeatures = [](Application& app)
             app.vsgcontext->requestFrame();
         }
 
-        auto window = app.viewer->windows().front();
-        auto view = app.display.getView(window, 0, 0);
-        auto manip = MapManipulator::get(view);
+        ImGuiLTable::End();
+}
 
-        if (manip)
+    auto window = app.viewer->windows().front();
+    auto view = app.display.getView(window, 0, 0);
+    auto manip = MapManipulator::get(view);
+
+    if (manip)
+    {
+        if (ImGui::Button("Helsinki"))
         {
-            if (ImGuiLTable::Button("Helsinki"))
-            {
-                Viewpoint vp;
-                vp.name = "Helsinki";
-                vp.point = GeoPoint(SRS::WGS84, 24.919, 60.162);
-                vp.range = Distance(8.0, Units::KILOMETERS);
-                manip->setViewpoint(vp);
-            }
-
-            ImGui::SameLine();
-            if (ImGuiLTable::Button("Tokyo"))
-            {
-                Viewpoint vp;
-                vp.name = "Tokyo";
-                vp.point = GeoPoint(SRS::WGS84, 139.743, 35.684);
-                vp.range = Distance(13.5, Units::KILOMETERS);
-                manip->setViewpoint(vp);
-            }
-
-            ImGui::SameLine();
-            if (ImGuiLTable::Button("Quito"))
-            {
-                Viewpoint vp;
-                vp.name = "Quito";
-                vp.point = GeoPoint(SRS::WGS84, -78.511, -0.206);
-                vp.range = Distance(8.0, Units::KILOMETERS);
-                manip->setViewpoint(vp);
-            }
+            Viewpoint vp;
+            vp.name = "Helsinki";
+            vp.point = GeoPoint(SRS::WGS84, 24.919, 60.162);
+            vp.range = Distance(8.0, Units::KILOMETERS);
+            manip->setViewpoint(vp);
         }
 
-        ImGuiLTable::End();
+        ImGui::SameLine();
+        if (ImGui::Button("Tokyo"))
+        {
+            Viewpoint vp;
+            vp.name = "Tokyo";
+            vp.point = GeoPoint(SRS::WGS84, 139.743, 35.684);
+            vp.range = Distance(13.5, Units::KILOMETERS);
+            manip->setViewpoint(vp);
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Quito"))
+        {
+            Viewpoint vp;
+            vp.name = "Quito";
+            vp.point = GeoPoint(SRS::WGS84, -78.511, -0.206);
+            vp.range = Distance(8.0, Units::KILOMETERS);
+            manip->setViewpoint(vp);
+        }
     }
 #else
     ImGui::TextColored(ImVec4(1, .3, .3, 1), "Unavailable - not built with GDAL");

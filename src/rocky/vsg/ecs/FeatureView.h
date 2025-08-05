@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <rocky/Feature.h>
+#include <rocky/ElevationSampler.h>
 #include <rocky/ecs/Line.h>
 #include <rocky/ecs/Mesh.h>
 
@@ -12,6 +13,8 @@
 
 namespace ROCKY_NAMESPACE
 {
+    class ElevationSession;
+
     /**
     * Style information for compiling and displaying Features
     */
@@ -85,6 +88,9 @@ namespace ROCKY_NAMESPACE
         //! If you set this, make sure to add a corresponding Transform component
         //! to each of the resulting entities.
         GeoPoint origin;
+
+        //! An optional elevation sampler will create clamped geometry.
+        ElevationSession clamper;
 
     public:
         //! Default construct - no data

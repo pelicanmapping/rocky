@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "FeatureView.h"
+#include <rocky/ElevationSampler.h>
 #include <rocky/weemesh.h>
 
 using namespace ROCKY_NAMESPACE;
@@ -125,7 +126,8 @@ namespace
         return m;
     }
 
-    void compile_feature_to_lines(const Feature& feature, const StyleSheet& styles, const GeoPoint& origin, const SRS& output_srs, Line& line)
+    void compile_feature_to_lines(const Feature& feature, const StyleSheet& styles, const GeoPoint& origin,
+        ElevationSession& clamper, const SRS& output_srs, Line& line)
     {
         float max_span = styles.line.resolution;
 
@@ -138,6 +140,12 @@ namespace
 
                 // tessellate:
                 auto tessellated = tessellate_linestring(part.points, feature.srs, feature.interpolation, max_span);
+
+                // clamp:
+                if (clamper)
+                {
+                    clamper.clampRange(tessellated.begin(), tessellated.end());
+                }
 
                 // transform:
                 auto feature_to_world = feature.srs.to(output_srs);
@@ -185,7 +193,7 @@ namespace
     }
 
     void compile_polygon_feature_with_weemesh(const Feature& feature, const StyleSheet& styles, 
-        const GeoPoint& origin, const SRS& output_srs, Mesh& mesh)
+        const GeoPoint& origin, ElevationSession& clamper, const SRS& output_srs, Mesh& mesh)
     {
         // scales our local gnomonic coordinates so they are the same order of magnitude as
         // weemesh's default epsilon values:
@@ -227,7 +235,9 @@ namespace
         // The amount of tessellation is determined by the resolution_degrees to account
         // for the planet's curvature.
         weemesh::mesh_t m;
+
         int marker = 0;
+
         double xspan = gnomonic_scale * resolution_degrees * 3.14159 / 180.0;
         double yspan = gnomonic_scale * resolution_degrees * 3.14159 / 180.0;
         
@@ -264,7 +274,7 @@ namespace
                 for (unsigned i = 0; i < part.points.size(); ++i)
                 {
                     unsigned j = (i == part.points.size() - 1) ? 0 : i + 1;
-                    m.insert(weemesh::segment_t{ part.points[i], part.points[j] }, marker);
+                    m.insert(weemesh::segment_t{ part.points[i], part.points[j] }, marker | m._has_elevation_marker);
                 }
             });
 
@@ -299,6 +309,13 @@ namespace
 
         // Back to geographic:
         gnomonic_to_geo(m.verts.begin(), m.verts.end(), centroid, gnomonic_scale);
+
+        // Clamp any points that are not marked as having elevation.
+        if (clamper)
+        {
+            clamper.srs = feature_geo;
+            clamper.clampRange(m.verts.begin(), m.verts.end());
+        }
 
         // And into the final projection:
         geo_to_world.transformRange(m.verts.begin(), m.verts.end());
@@ -346,22 +363,25 @@ FeatureView::generate(const SRS& output_srs)
 
     for (auto& feature : features)
     {
+        clamper.srs = feature.srs;
+
         // If the output is geocentric, do all our processing in geodetic coordinates.
         if (output_srs.isGeocentric())
         {
             feature.transformInPlace(output_srs.geodeticSRS());
+            clamper.srs = output_srs.geodeticSRS();
         }
 
         if (feature.geometry.type == Geometry::Type::LineString ||
             feature.geometry.type == Geometry::Type::MultiLineString)
         {
-            compile_feature_to_lines(feature, styles, origin, output_srs, output.line);
+            compile_feature_to_lines(feature, styles, origin, clamper, output_srs, output.line);
         }
 
         else if (feature.geometry.type == Geometry::Type::Polygon ||
             feature.geometry.type == Geometry::Type::MultiPolygon)
         {
-            compile_polygon_feature_with_weemesh(feature, styles, origin, output_srs, output.mesh);
+            compile_polygon_feature_with_weemesh(feature, styles, origin, clamper, output_srs, output.mesh);
         }
 
         else
@@ -389,7 +409,7 @@ FeatureView::generate(FeatureView::PrimitivesRef& output, const SRS& output_srs)
         {
             if (output.line)
             {
-                compile_feature_to_lines(feature, styles, origin, output_srs, *output.line);
+                compile_feature_to_lines(feature, styles, origin, clamper, output_srs, *output.line);
             }
         }
 
@@ -398,7 +418,7 @@ FeatureView::generate(FeatureView::PrimitivesRef& output, const SRS& output_srs)
         {
             if (output.mesh)
             {
-                compile_polygon_feature_with_weemesh(feature, styles, origin, output_srs, *output.mesh);
+                compile_polygon_feature_with_weemesh(feature, styles, origin, clamper, output_srs, *output.mesh);
             }
         }
 

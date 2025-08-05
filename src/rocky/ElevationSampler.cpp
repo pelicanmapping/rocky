@@ -30,59 +30,69 @@ auto ElevationSampler::fetch(const TileKey& key, const IOOptions& io) const -> R
     return Failure{};
 }
 
-bool ElevationSampler::clamp(Session& env, double& x, double& y, double& z) const
+bool ElevationSession::clamp(double& x, double& y, double& z) const
 {
-    if (env.pw <= 0.0)
+    if (_xform.from() != srs)
     {
-        auto& profile = layer->profile;
+        _xform = srs.to(_sampler->layer->profile.srs());
+        _pw = -1.0;
+    }
 
-        if (env.lod == UINT_MAX)
+    if (_pw <= 0.0)
+    {
+        auto& profile = _sampler->layer->profile;
+
+        if (lod == UINT_MAX)
         {
-            double r = profile.srs().transformDistance(env.resolution, profile.srs().units(), env.referenceLatitude);
-            env.lod = profile.levelOfDetailForHorizResolution(r, layer->tileSize);
+            double r = profile.srs().transformDistance(resolution, profile.srs().units(), referenceLatitude);
+            const_cast<ElevationSession*>(this)->lod = profile.levelOfDetailForHorizResolution(r, _sampler->layer->tileSize);
         }
 
-        env.pw = profile.extent().width();
-        env.ph = profile.extent().height();
-        env.pxmin = profile.extent().xmin();
-        env.pymin = profile.extent().ymin();
-        env.numtiles = profile.numTiles(env.lod);
+        _pw = profile.extent().width();
+        _ph = profile.extent().height();
+        _pxmin = profile.extent().xmin();
+        _pymin = profile.extent().ymin();
+        _numtiles = profile.numTiles(lod);
+
+        _cache.tx = UINT_MAX;
+        _cache.ty = UINT_MAX;
+        _cache.status = Failure{};
     }
 
     // xform into the layer's SRS if necessary.
     double xa = x, ya = y, za = z;
-    env.xform.transform(xa, ya, za);
+    _xform.transform(xa, ya, za);
     
     // simple ONE TILE caching internally.
-    auto [tx, ty] = env.tile(xa, ya);
+    auto [new_tx, new_ty] = tile(xa, ya);
 
-    if (tx != env.tx || ty != env.ty)
+    if (new_tx != _cache.tx || _cache.ty != new_ty)
     {
-        env.status.clear();
+        _cache.status.clear();
 
-        env.key = layer->bestAvailableTileKey(TileKey(env.lod, tx, ty, layer->profile));
-        if (env.key.valid())
+        _cache.key = _sampler->layer->bestAvailableTileKey(TileKey(lod, new_tx, new_ty, _sampler->layer->profile));
+        if (_cache.key.valid())
         {
-            auto r = fetch(env.key, env.io);
+            auto r = _sampler->fetch(_cache.key, *_io);
             if (r.ok())
-                env.hf = std::move(r.value());
+                _cache.hf = std::move(r.value());
             else
-                env.status = r.error();
+                _cache.status = r.error();
 
-            env.tx = tx, env.ty = ty;
+            _cache.tx = new_tx, _cache.ty = new_ty;
         }
         else
         {
             // invalid data
-            tx = UINT_MAX, ty = UINT_MAX;
-            env.status = Failure{};
+            _cache.tx = UINT_MAX, _cache.ty = UINT_MAX;
+            _cache.status = Failure{};
         }
     }
 
-    if (env.status.ok())
+    if (_cache.status.ok())
     {
         x = xa, y = ya;
-        z = env.hf.heightAtLocation(xa, ya, interpolation);
+        z = _cache.hf.heightAtLocation(xa, ya, _sampler->interpolation);
         return true;
     }
     else

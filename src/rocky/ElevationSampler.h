@@ -8,6 +8,8 @@
 
 namespace ROCKY_NAMESPACE
 {
+    class ElevationSession;
+
     /**
     * A sample of elevation data, which includes the height and the resolution
     */
@@ -60,56 +62,10 @@ namespace ROCKY_NAMESPACE
         template<class VEC3_ITER>
         inline Result<> clampRange(const SRS& srs, VEC3_ITER begin, VEC3_ITER end, const IOOptions& io) const;
 
-        /**
-        * Session for use with batch operations and for more control over sampling resolution.
-        */
-        class Session
-        {
-        public:
-            SRSOperation xform;
-            unsigned lod = UINT_MAX;
-            Distance resolution = Distance(10.0, Units::METERS);
-            Angle referenceLatitude = {};
-
-            inline void dirty() {
-                pw = -1.0;
-            }
-
-        private:
-            Session(const IOOptions& in_io) : io(in_io) {}
-            const IOOptions& io;
-            double pw = 0.0, ph = 0.0, pxmin = 0.0, pymin = 0.0;
-            Profile::NumTiles numtiles;
-            ElevationSampler* sampler;
-
-            // cache:
-            std::uint32_t tx = UINT_MAX, ty = UINT_MAX;
-            TileKey key;
-            Status status;
-            GeoHeightfield hf;
-            friend class ElevationSampler;
-
-            inline std::pair<std::uint32_t, std::uint32_t> tile(double x, double y) const {
-                auto rx = (x - pxmin) / pw, ry = (y - pymin) / ph;
-                auto tx = std::min((unsigned)(rx * (double)numtiles.x), numtiles.x - 1u);
-                auto ty = std::min((unsigned)((1.0 - ry) * (double)numtiles.y), numtiles.y - 1u);
-                return { tx, ty };
-            }
-        };
 
         //! Construct a new query envelope.
         //! The optional "y" value is a latitude that will help determine the appropriate sampling resolution.
-        inline Session session(const IOOptions& io) const;
-
-        //! Clamps the incoming point to the elevation data.
-        bool clamp(Session& env, double& x, double& y, double& z) const;
-
-        //! Samples the incoming point and returns the height.
-        inline float sample(Session& env, double x, double y, double z) const;
-
-        //! Samples a point.
-        template<class VEC3_ITER>
-        inline Result<> clampRange(Session& env, VEC3_ITER begin, VEC3_ITER end) const;
+        inline ElevationSession session(const IOOptions& io) const;
 
         //! Fetches a new heightfield for a key.
         Result<GeoHeightfield> fetch(const TileKey&, const IOOptions& io) const;
@@ -119,14 +75,89 @@ namespace ROCKY_NAMESPACE
     };
 
 
+    /**
+    * Session for use with batch operations and for more control over sampling resolution.
+    */
+    class ROCKY_EXPORT ElevationSession
+    {
+    public:
+        //! Default (invalid) constructor.
+        //! Create a valid session by calling ElevationSampler::session().
+        ElevationSession() = default;
+
+        //! SRS of the incoming points
+        SRS srs;
+
+        //! Elevation level of detail to clamp to (use this OR resolution)
+        unsigned lod = UINT_MAX;
+
+        //! Resolution of elevation data to clamp to (use this OR lod)
+        Distance resolution = Distance(10.0, Units::METERS);
+
+        //! Reference latitude for resolution calculations (optional).
+        Angle referenceLatitude = {};
+
+        //! Clamps the incoming point to the elevation data.
+        bool clamp(double& x, double& y, double& z) const;
+
+        //! Samples the incoming point and returns the height.
+        //! Failure will return the failValue.
+        inline float sample(double x, double y, double z) const;
+
+        //! Samples a point.
+        template<class VEC3_ITER>
+        inline bool clampRange(VEC3_ITER begin, VEC3_ITER end) const;
+
+        //! Force a cache purge if you changed the lod or resolution.
+        inline void dirty() {
+            _pw = -1.0;
+        }
+
+        inline bool ok() const {
+            return _sampler != nullptr;
+        }
+        inline operator bool() const {
+            return ok();
+        }
+
+    private:
+        friend class ElevationSampler;
+        ElevationSession(const IOOptions& in_io) : _io(&in_io) {}
+        const IOOptions* _io = nullptr;
+        mutable double _pw = 0.0, _ph = 0.0, _pxmin = 0.0, _pymin = 0.0;
+        mutable Profile::NumTiles _numtiles;
+        mutable SRSOperation _xform;
+        const ElevationSampler* _sampler = nullptr;
+
+        // cache:
+        struct {
+            mutable std::uint32_t tx = UINT_MAX, ty = UINT_MAX;
+            mutable TileKey key;
+            mutable Status status;
+            mutable GeoHeightfield hf;
+        }
+        _cache;
+
+        friend class ElevationSampler;
+
+        inline std::pair<std::uint32_t, std::uint32_t> tile(double x, double y) const {
+            auto rx = (x - _pxmin) / _pw, ry = (y - _pymin) / _ph;
+            auto out_tx = std::min((unsigned)(rx * (double)_numtiles.x), _numtiles.x - 1u);
+            auto out_ty = std::min((unsigned)((1.0 - ry) * (double)_numtiles.y), _numtiles.y - 1u);
+            return { out_tx, out_ty };
+        }
+    };
+
 
 
     // inlines ---
 
     auto ElevationSampler::session(const IOOptions& io) const
-        -> ElevationSampler::Session
+        -> ElevationSession
     {
-        return Session(io);
+        ElevationSession sesh(io);
+        sesh._sampler = this;
+        return sesh;
     }
 
     auto ElevationSampler::sample(const GeoPoint& p, const IOOptions& io) const
@@ -136,10 +167,10 @@ namespace ROCKY_NAMESPACE
             return NoLayer;
 
         auto sesh = session(io);
-        sesh.xform = p.srs.to(layer->profile.srs());
+        sesh.srs = p.srs;
 
         glm::dvec3 t(p);
-        if (clamp(sesh, t.x, t.y, t.z))
+        if (sesh.clamp(t.x, t.y, t.z))
             return t.z;
         else
             return Failure{};
@@ -152,10 +183,10 @@ namespace ROCKY_NAMESPACE
             return NoLayer;
 
         auto sesh = session(io);
-        sesh.xform = p.srs.to(layer->profile.srs());
+        sesh.srs = p.srs;
 
         GeoPoint out(p);
-        if (clamp(sesh, out.x, out.y, out.z))
+        if (sesh.clamp(out.x, out.y, out.z))
             return out;
         else
             return Failure{};
@@ -168,23 +199,14 @@ namespace ROCKY_NAMESPACE
             return NoLayer;
 
         auto sesh = session(io);
-        sesh.xform = p.srs.to(layer->profile.srs());
+        sesh.srs = p.srs;
         sesh.resolution = resolution;
 
         GeoPoint out(p);
-        if (clamp(sesh, out.x, out.y, out.z))
+        if (sesh.clamp(out.x, out.y, out.z))
             return out;
         else
             return Failure{};
-    }
-
-    float ElevationSampler::sample(Session& env, double x, double y, double z) const
-    {
-        double a = x, b = y, c = z;
-        if (clamp(env, a, b, c))
-            return static_cast<float>(c);
-        else
-            return failValue;
     }
 
     template<class VEC3_ITER>
@@ -196,26 +218,40 @@ namespace ROCKY_NAMESPACE
         if (begin == end)
             return NoLayer;
 
-        auto env = session(io, begin->y);
-        env.xform = srs.to(layer->profile.srs());
+        auto sesh = session(io);
+        sesh.srs = srs;
+        sesh.referenceLatitude = begin->y;
         return clampRange(env, begin, end);
     }
 
-    template<class VEC3_ITER>
-    Result<> ElevationSampler::clampRange(Session& env, VEC3_ITER begin, VEC3_ITER end) const
+    float ElevationSession::sample(double x, double y, double z) const
     {
-        if (!layer || !layer->status().ok())
-            return NoLayer;
+        double a = x, b = y, c = z;
+        if (clamp(a, b, c))
+            return static_cast<float>(c);
+        else
+            return _sampler->failValue;
+    }
+
+    template<class VEC3_ITER>
+    bool ElevationSession::clampRange(VEC3_ITER begin, VEC3_ITER end) const
+    {
+        if (!_sampler->layer || !_sampler->layer->status().ok())
+            return false;
 
         if (begin == end)
-            return NoLayer;
+            return true;
+
+        bool result = true;
 
         for (auto iter = begin; iter != end; ++iter)
         {
-            if (clamp(env, iter->x, iter->y, iter->z))
-                env.xform.inverse(iter->x, iter->y, iter->z);
+            if (clamp(iter->x, iter->y, iter->z))
+                _xform.inverse(iter->x, iter->y, iter->z);
+            else
+                result = false;
         }
 
-        return ResultVoidOK; // ok
+        return result;
     }
 }

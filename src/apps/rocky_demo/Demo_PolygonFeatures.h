@@ -22,18 +22,11 @@ auto Demo_PolygonFeatures = [](Application& app)
         std::shared_ptr<rocky::FeatureSource> fs;
     };
     static jobs::future<LoadedFeatures> data;
-    static EntityCollectionLayer::Ptr layer;
+    static std::vector<entt::entity> entities;
     static bool ready = false;
 
     if (!ready)
     {
-        if (!layer)
-        {
-            layer = EntityCollectionLayer::create(app.registry);
-            layer->name = "Demo_PolygonFeatures layer";
-            app.mapNode->map->add(layer);
-        }
-
         if (data.empty())
         {
             data = jobs::dispatch([](auto& cancelable)
@@ -87,13 +80,8 @@ auto Demo_PolygonFeatures = [](Application& app)
             {
                 app.registry.write([&](entt::registry& registry)
                     {
-                        layer->entities.emplace_back(prims.move(registry));
+                        entities.emplace_back(prims.move(registry));
                     });
-            }
-
-            if (layer->open(app.io()).failed())
-            {
-                Log()->warn("Failed to open entity collection layer");
             }
 
             ready = true;
@@ -107,19 +95,14 @@ auto Demo_PolygonFeatures = [](Application& app)
 
     else if (ImGuiLTable::Begin("Polygon features"))
     {
-        bool open = layer->isOpen();
-        if (ImGuiLTable::Checkbox("Show", &open))
+        auto [lock, registry] = app.registry.read();
+
+        bool v = visible(registry, entities.front());
+        if (ImGuiLTable::Checkbox("Show", &v))
         {
-            if (open) {
-                auto r = layer->open(app.io());
-                if (r.failed())
-                    Log()->warn("Failed to open entity collection layer");
-            }
-            else {
-                layer->close();
-            }
-            //setVisible(registry, entities.begin(), entities.end(), v);
+            setVisible(registry, entities.begin(), entities.end(), v);
         }
+
         ImGuiLTable::End();
     }
 
