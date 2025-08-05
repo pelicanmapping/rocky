@@ -10,6 +10,7 @@
 #include <rocky/vsg/terrain/TerrainTileHost.h>
 #include <rocky/Result.h>
 #include <rocky/Profile.h>
+#include <rocky/Layer.h>
 #include <vsg/nodes/Group.h>
 
 namespace ROCKY_NAMESPACE
@@ -81,5 +82,6 @@ namespace ROCKY_NAMESPACE
         Profile profile;
         vsg::ref_ptr<vsg::Group> tilesRoot;
         CallbackSubs _callbacks;
+        std::vector<Layer::Ptr> _terrainLayers;
     };
 }

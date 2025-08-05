@@ -12,7 +12,7 @@
 namespace ROCKY_NAMESPACE
 {
     /** Basic timestamp (seconds from the 1970 epoch) */
-    using TimeStamp = ::time_t;
+    using TimeStamp = std::int64_t;
 
     /** Time span (in seconds) */
     using TimeSpan = long;

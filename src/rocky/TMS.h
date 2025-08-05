@@ -10,6 +10,7 @@
 #include <rocky/Image.h>
 #include <rocky/TileKey.h>
 #include <rocky/Profile.h>
+#include <rocky/DateTime.h>
 
 namespace ROCKY_NAMESPACE
 {

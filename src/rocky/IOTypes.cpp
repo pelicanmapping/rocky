@@ -9,10 +9,9 @@
 
 using namespace ROCKY_NAMESPACE;
 
-
-IOOptions::IOOptions(const IOOptions& rhs)
+IOOptions::IOOptions()
 {
-    this->operator=(rhs);
+    _services = std::make_shared<Services>();
 }
 
 IOOptions::IOOptions(const IOOptions& rhs, Cancelable& c) :
@@ -25,17 +24,6 @@ IOOptions::IOOptions(const IOOptions& rhs, const std::string& in_referrer) :
     IOOptions(rhs)
 {
     referrer = in_referrer;
-}
-
-IOOptions&
-IOOptions::operator = (const IOOptions& rhs)
-{
-    services = rhs.services;
-    referrer = rhs.referrer;
-    maxNetworkAttempts = rhs.maxNetworkAttempts;
-    uriGate = rhs.uriGate;
-    _cancelable = rhs._cancelable;
-    return *this;
 }
 
 Services::Services()

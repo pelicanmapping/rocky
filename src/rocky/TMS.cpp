@@ -685,7 +685,7 @@ TMS::Driver::read(const TileKey& key, bool invertY, bool isMapboxRGB, const URI:
         }
 
         std::istringstream stream(fetch->content.data);
-        auto image_rr = io.services.readImageFromStream(stream, fetch->content.type, io);
+        auto image_rr = io.services().readImageFromStream(stream, fetch->content.type, io);
 
         if (image_rr.failed())
         {

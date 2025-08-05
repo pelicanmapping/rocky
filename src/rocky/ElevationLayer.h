@@ -53,6 +53,11 @@ namespace ROCKY_NAMESPACE
          */
         Result<GeoHeightfield> createHeightfield(const TileKey& key, const IOOptions& io) const;
 
+        /**
+        * The resolution in each dimension (x, y) for the data at the given level of detail.
+        */
+        std::pair<Distance, Distance> resolution(unsigned level) const;
+
     public: // Layer
 
         Result<> openImplementation(const IOOptions&) override;

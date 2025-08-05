@@ -124,7 +124,7 @@ namespace
     {
 #if 1
         const char* icon_location = "https://readymap.org/readymap/filemanager/download/public/icons/airport.png";
-        auto image = io.services.readImageFromURI(icon_location, io);
+        auto image = io.services().readImageFromURI(icon_location, io);
         if (image.ok())
         {
             auto imageData = util::moveImageToVSG(image.value());

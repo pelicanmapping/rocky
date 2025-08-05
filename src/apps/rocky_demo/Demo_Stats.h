@@ -127,21 +127,36 @@ auto Demo_Stats = [](Application& app)
     }
 
     auto& engine = app.mapNode->terrainNode->engine;
-    auto& cache = app.vsgcontext->io.services.contentCache;
-    float ratio = cache->gets > 0 ? float(cache->hits) / float(cache->gets) : 0.0f;
 
     ImGui::SeparatorText("System");
-    if (ImGuiLTable::Begin("System"))
+    if (ImGuiLTable::Begin("System-Misc"))
     {
         ImGuiLTable::Text("Last frame rendered", std::to_string(app.frameCount()).c_str());
-        ImGuiLTable::Text("Render requests", std::to_string(app.vsgcontext->renderRequests).c_str());
         ImGuiLTable::Text("Terrain tiles resident", std::to_string(engine->tiles.size()).c_str());
         ImGuiLTable::Text("Terrain geometry pool", std::to_string(engine->geometryPool.size()).c_str());
-        ImGuiLTable::Text("Content cache hits/misses", "%d/%d", cache->hits, (cache->gets - cache->hits));
-        ImGui::SameLine();
-        if (ImGui::Button("Clear"))
-            cache->clear();
-
         ImGuiLTable::End();
+    }
+
+    if (ImGui::BeginTable("System-Caches", 4, ImGuiTableFlags_SizingStretchProp))
+    {
+        ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableNextColumn();
+        ImGui::TableNextColumn(); ImGui::Text("Size");
+        ImGui::TableNextColumn(); ImGui::Text("Hits");
+        ImGui::TableNextColumn(); ImGui::Text("Misses");
+
+        auto contentCache = app.io().services().contentCache;
+        ImGui::TableNextColumn(); ImGui::Text("URI cache");
+        ImGui::TableNextColumn(); ImGui::Text("%d", contentCache->size());
+        ImGui::TableNextColumn(); ImGui::Text("%d", contentCache->hits());
+        ImGui::TableNextColumn(); ImGui::Text("%d", contentCache->misses());
+
+        auto residentImageCache = app.io().services().residentImageCache;
+        ImGui::TableNextColumn(); ImGui::Text("Resident image cache");
+        ImGui::TableNextColumn(); ImGui::Text("%d", residentImageCache->size());
+        ImGui::TableNextColumn(); ImGui::Text("%d", residentImageCache->hits());
+        ImGui::TableNextColumn(); ImGui::Text("%d", residentImageCache->misses());
+
+        ImGui::EndTable();
     }
 };

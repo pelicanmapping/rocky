@@ -181,15 +181,15 @@ namespace ROCKY_NAMESPACE
             }
 
             inline int indexOf(const KEY& key) const {
-                for (unsigned i = 0; i < _container.size(); ++i) {
+                for (std::size_t i = 0; i < _container.size(); ++i) {
                     if (keys_equal(_container[i].first, key)) {
-                        return i;
+                        return (int)i;
                     }
                 }
                 return -1;
             }
 
-            inline int size() const { return _container.size(); }
+            inline std::size_t size() const { return _container.size(); }
 
             template<typename InputIterator>
             void insert(InputIterator a, InputIterator b) {

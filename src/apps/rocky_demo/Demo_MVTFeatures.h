@@ -24,12 +24,17 @@ auto Demo_MVTFeatures = [](Application& app)
         // Set up our elevation clamper.
         clamper.layer = app.mapNode->map->layer<ElevationLayer>();
 
+        // Configure a pager that will display paged tiles in mercator profile
+        // at LOD 14 only:
         pager = NodePager::create(Profile("spherical-mercator"), app.mapNode->profile);
 
         pager->minLevel = 14;
         pager->maxLevel = 14;
-        pager->refinePolicy = NodePager::RefinePolicy::Add;
+        pager->refinePolicy = NodePager::RefinePolicy::Replace;
 
+        // This functor will calculate the bounding sphere for each streamed tile.
+        // Since the feature data will be clamped, we need the tile itself to conform
+        // to our elevation data set.
         pager->calculateBound = [&](const TileKey& key, const IOOptions& io)
             {
                 auto ex = app.mapNode->profile.clampAndTransformExtent(key.extent());
@@ -37,21 +42,17 @@ auto Demo_MVTFeatures = [](Application& app)
 
                 if (clamper.ok() && key.level > 1)
                 {
-                    auto p = ex.centroid();
-                    auto session = clamper.session(io);
-                    session.lod = std::min(key.level, 5u);
-                    session.xform = p.srs.to(clamper.layer->profile.srs());
-
-                    if (clamper.clamp(session, p.x, p.y, p.z))
+                    auto resolutionX = clamper.layer->resolution(key.level).first;
+                    if (auto p = clamper.clamp(ex.centroid(), resolutionX, io))
                     {
-                        p.transformInPlace(app.mapNode->worldSRS());
-                        return vsg::dsphere(to_vsg(p), bs.radius);
+                        return vsg::dsphere(to_vsg(p->transform(app.mapNode->worldSRS())), bs.radius);
                     }
                 }
 
                 return to_vsg(bs);
             };
 
+        // This (required) functor will create the actual geometry for each tile
         pager->createPayload = [&app](const TileKey& key, const IOOptions& io)
             {
                 vsg::ref_ptr<vsg::Node> result;
@@ -61,6 +62,7 @@ auto Demo_MVTFeatures = [](Application& app)
                 gdal->uri = "MVT:https://readymap.org/readymap/mvt/osm/" + key.str() + ".pbf";
                 gdal->openOptions.emplace_back("CLIP=NO");
 
+                // Open the feature source and make sure it worked.
                 auto status = gdal->open();
                 if (status.failed())
                 {
@@ -68,17 +70,19 @@ auto Demo_MVTFeatures = [](Application& app)
                     return result;
                 }
 
+                // FeatureView is a helper that will generate basic primitives from feature data.
                 FeatureView fview;
 
-                // specify an origin to localize our geometry:
+                // specify an origin to localize our geometry, so it doesn't jitter
                 fview.origin = key.extent().centroid();
 
+                // set up the styling for the FeatureView to use for lines and meshes.
                 fview.styles.line.color = Color::Red;
                 fview.styles.line.width = 5.0f;
                 fview.styles.line.depth_offset = 10; // meters
 
                 fview.styles.mesh.color = Color(1, 0.75f, 0.2f, 1);
-                fview.styles.mesh.depth_offset = 10; // meters
+                fview.styles.mesh.depth_offset = 12; // meters
 
                 if (gdal->featureCount() > 0)
                     fview.features.reserve(gdal->featureCount());
@@ -106,11 +110,16 @@ auto Demo_MVTFeatures = [](Application& app)
                 {
                     if (clamper.ok())
                     {
+                        // Clamp each feature to the elevation data (if we have any).
+
                         // configure a sampling session since we're doing a batch of work:
                         auto session = clamper.session(io);
+
+                        // Set the LOD of elevation data to use. This is optional; without it
+                        // the clamper will try to use the highest resolution data available.
                         session.lod = key.level;
 
-                        // transform points to the proper SRS:
+                        // The ensures each feature gets transformed into the proper SRS:
                         session.xform = fview.features.front().srs.to(clamper.layer->profile.srs());
 
                         for (auto& f : fview.features)
@@ -155,7 +164,9 @@ auto Demo_MVTFeatures = [](Application& app)
         // Always initialize a NodePager before using it:
         pager->initialize(app.vsgcontext);
 
-        // Add it as a layer :)
+        // Add it to the map as a layer. This is optional. You can also just add the pager
+        // to the scene graph anywhere you want. As a map layer you'll be able to toggle it
+        // on and off.
         auto layer = NodeLayer::create(pager);
         layer->name = "MVT Features Demo Layer";
         if (layer->open(app.io()).ok())
@@ -164,14 +175,15 @@ auto Demo_MVTFeatures = [](Application& app)
         app.vsgcontext->requestFrame();
     }
 
-    if (ImGuiLTable::Begin("NodePager"))
+
+    ImGui::TextWrapped("Mapnik Vector Tiles (MVT) is a binary format for streaming tiled vector data.");
+
+    if (ImGuiLTable::Begin("MVTFeatures"))
     {
         if (ImGuiLTable::SliderFloat("Screen Space Error", &pager->screenSpaceError, 64.0f, 1024.0f, "%.0f px"))
         {
             app.vsgcontext->requestFrame();
         }
-
-        ImGuiLTable::End();
 
         auto window = app.viewer->windows().front();
         auto view = app.display.getView(window, 0, 0);
@@ -179,7 +191,7 @@ auto Demo_MVTFeatures = [](Application& app)
 
         if (manip)
         {
-            if (ImGuiLTable::Button("Zoom 1"))
+            if (ImGuiLTable::Button("Helsinki"))
             {
                 Viewpoint vp;
                 vp.name = "Helsinki";
@@ -188,7 +200,8 @@ auto Demo_MVTFeatures = [](Application& app)
                 manip->setViewpoint(vp);
             }
 
-            if (ImGuiLTable::Button("Zoom 2"))
+            ImGui::SameLine();
+            if (ImGuiLTable::Button("Tokyo"))
             {
                 Viewpoint vp;
                 vp.name = "Tokyo";
@@ -196,7 +209,19 @@ auto Demo_MVTFeatures = [](Application& app)
                 vp.range = Distance(13.5, Units::KILOMETERS);
                 manip->setViewpoint(vp);
             }
+
+            ImGui::SameLine();
+            if (ImGuiLTable::Button("Quito"))
+            {
+                Viewpoint vp;
+                vp.name = "Quito";
+                vp.point = GeoPoint(SRS::WGS84, -78.511, -0.206);
+                vp.range = Distance(8.0, Units::KILOMETERS);
+                manip->setViewpoint(vp);
+            }
         }
+
+        ImGuiLTable::End();
     }
 #else
     ImGui::TextColored(ImVec4(1, .3, .3, 1), "Unavailable - not built with GDAL");

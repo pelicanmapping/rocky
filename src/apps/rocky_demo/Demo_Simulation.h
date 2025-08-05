@@ -76,7 +76,7 @@ auto Demo_Simulation = [](Application& app)
     {
         // add an icon:
         auto io = app.vsgcontext->io;
-        auto image = io.services.readImageFromURI(icon_location, io);
+        auto image = io.services().readImageFromURI(icon_location, io);
         if (image.ok())
         {
             image.value()->flipVerticalInPlace();

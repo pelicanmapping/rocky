@@ -582,20 +582,13 @@ URI::findRotation()
 auto URI::read(const IOOptions& io) const -> Result<IOResponse>
 {
     // protect against multiple threads trying to read the same URI at the same time
-    util::ScopedGate<std::string> gate(io.uriGate, full());
+    util::ScopedGate<std::string> gate(io.services().uriGate, full());
 
-    if (io.services.contentCache)
+    if (io.services().contentCache)
     {
-        auto cached = io.services.contentCache->get(full());
+        auto cached = io.services().contentCache->get(full());
         if (cached.has_value() && cached->ok())
         {
-            if (httpDebug)
-            {
-                Log()->debug(LC "Cache hit, ratio = "
-                    + std::to_string(100.0f * (float)io.services.contentCache->hits / (float)io.services.contentCache->gets)
-                    + "% (" + full() + ")");
-            }
-
             Result<IOResponse> result(cached->value());
             result->fromCache = true;
             return result;
@@ -666,9 +659,9 @@ auto URI::read(const IOOptions& io) const -> Result<IOResponse>
         return Failure(Failure::ResourceUnavailable, full());
     }
 
-    if (io.services.contentCache)
+    if (io.services().contentCache)
     {
-        io.services.contentCache->put(full(), Result<Content>(content));
+        io.services().contentCache->put(full(), Result<Content>(content));
     }
 
     return IOResponse(content);

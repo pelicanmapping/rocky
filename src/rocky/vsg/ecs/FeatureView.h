@@ -31,7 +31,7 @@ namespace ROCKY_NAMESPACE
     *  - Create a FeatureView
     *  - Populate the features vector
     *  - Optionally set styles for rendering
-    *  - Call generate to create a collection of entt::entity representing the geometry.
+    *  - Call generate to create Line and Mesh primitives representing the geometry.
     */
     class ROCKY_EXPORT FeatureView
     {

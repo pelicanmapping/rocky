@@ -399,13 +399,13 @@ VSGContextImpl::ctor(int& argc, char** argv)
     // stripping it out and later converting it back; or that only transcodes
     // it if it needs to. vsg::read_cast() might do some internal caching
     // as well -- need to look into that.
-    io.services.readImageFromURI = [](const std::string& location, const rocky::IOOptions& io)
+    io.services().readImageFromURI = [](const std::string& location, const rocky::IOOptions& io)
     {
         auto result = URI(location).read(io);
         if (result.ok())
         {
             std::istringstream buf(result.value().content.data);
-            return io.services.readImageFromStream(buf, result.value().content.type, io);
+            return io.services().readImageFromStream(buf, result.value().content.type, io);
         }
         return Result<std::shared_ptr<Image>>(Failure(Failure::ResourceUnavailable, "Data is null"));
     };
@@ -426,7 +426,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
     // To read from a stream, we have to search all the VS readerwriters to
     // find one that matches the 'extension' we want. We also have to put that
     // extension in the options structure as a hint.
-    io.services.readImageFromStream = [options(readerWriterOptions)](std::istream& location, std::string contentType, const rocky::IOOptions& io) -> Result<std::shared_ptr<Image>>
+    io.services().readImageFromStream = [options(readerWriterOptions)](std::istream& location, std::string contentType, const rocky::IOOptions& io) -> Result<std::shared_ptr<Image>>
         {
             // try the mime-type mapping:
             auto i = ext_for_mime_type.find(contentType);
@@ -477,9 +477,9 @@ VSGContextImpl::ctor(int& argc, char** argv)
             return Failure(Failure::ServiceUnavailable, "No image reader for \"" + contentType + "\"");
         };
 
-    io.services.contentCache = std::make_shared<ContentCache>(128);
+    io.services().contentCache = std::make_shared<ContentCache>(128);
 
-    io.uriGate = std::make_shared<util::Gate<std::string>>();
+    io.services().residentImageCache = std::make_shared<util::ResidentCache<std::string, Image>>();
 }
 
 vsg::ref_ptr<vsg::Device>

@@ -27,16 +27,16 @@ namespace ROCKY_NAMESPACE
         Ellipsoid(double semiMajorRadius, double semiMinorRadius);
 
         //! Equatorial radius (meters)
-        double semiMajorAxis() const;
+        inline double semiMajorAxis() const;
 
         //! Polar radius (meters)
-        double semiMinorAxis() const;
+        inline double semiMinorAxis() const;
 
         //! Name of this ellipsoid
-        const std::string& name() const { return _name; }
+        inline const std::string& name() const;
 
         //! Name of this ellipsoid
-        void setName(const std::string& value) { _name = value; }
+        inline void setName(const std::string& value);
 
         //! Matrix to transform from a topocentric (local tangent plane) frame centered at
         //! the provided geocentric point to geocentric coordinates.
@@ -91,13 +91,6 @@ namespace ROCKY_NAMESPACE
             const glm::dvec3& geocEnd,
             glm::dvec3& geocOut) const;
 
-        //! Rotates the geocentric point along the a great ellipse.
-        //! @param geocPoint Geocentric point to rotate
-        //! @param geocAxis Axis of rotation (geocentric)
-        //! @param angle_deg Angle to rotate in degrees
-        //! @return Rotated geocentric point
-        glm::dvec3 rotate(const glm::dvec3& geocPoint, const glm::dvec3& geocAxis, double angle_deg) const;
-
         //! Calculates a geocentric point that can be used for horizon-culling;
         //! i.e. if the horizon point is visible over the horizon, that means that
         //! at least one point in the input vector are visible as well.
@@ -112,17 +105,18 @@ namespace ROCKY_NAMESPACE
         //! @return Rotation axis in geocentric coordinates (x, y, z in meters)
         glm::dvec3 rotationAxis(const glm::dvec3& geocPoint, double initialBearing_deg) const;
 
+        //! Rotates the geocentric point along the a great ellipse.
+        //! @param geocPoint Geocentric point to rotate
+        //! @param geocAxis Axis of rotation (geocentric)
+        //! @param angle_deg Angle to rotate in degrees
+        //! @return Rotated geocentric point
+        glm::dvec3 rotate(const glm::dvec3& geocPoint, const glm::dvec3& geocAxis, double angle_deg) const;
+
         //! Equality operator
-        inline bool operator == (const Ellipsoid& rhs) const
-        {
-            return _re == rhs._re && _rp == rhs._rp;
-        }
+        inline bool operator == (const Ellipsoid& rhs) const;
 
         //! Inequality operator
-        inline bool operator != (const Ellipsoid& rhs) const
-        {
-            return _re != rhs._re || _rp != rhs._rp;
-        }
+        inline bool operator != (const Ellipsoid& rhs) const;
 
     private:
         void set(double er, double pr);
@@ -132,5 +126,32 @@ namespace ROCKY_NAMESPACE
         glm::dvec3 _ellipsoidToUnitSphere;
         glm::dvec3 _unitSphereToEllipsoid;
     };
+
+
+    // inlines
+    inline double Ellipsoid::semiMajorAxis() const
+    {
+        return _re;
+    }
+    inline double Ellipsoid::semiMinorAxis() const
+    {
+        return _rp;
+    }
+    inline const std::string& Ellipsoid::name() const
+    {
+        return _name;
+    }
+    inline void Ellipsoid::setName(const std::string& value)
+    {
+        _name = value;
+    }
+    inline bool Ellipsoid::operator == (const Ellipsoid& rhs) const
+    {
+        return _re == rhs._re && _rp == rhs._rp && _name == rhs._name;
+    }
+    inline bool Ellipsoid::operator != (const Ellipsoid& rhs) const
+    {
+        return _re != rhs._re || _rp != rhs._rp || _name != rhs._name;
+    }
 }
 

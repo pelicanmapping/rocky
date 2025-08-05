@@ -36,7 +36,6 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Simulation.h"
 #include "Demo_TrackHistory.h"
 #include "Demo_Decluttering.h"
-#include "Demo_Registry.h"
 #include "Demo_NodePager.h"
 #include "Demo_FeatureView.h"
 #include "Demo_MVTFeatures.h"
@@ -79,7 +78,8 @@ std::vector<Demo> demos =
         Demo{ "Model", Demo_Model },
         Demo{ "Widget", Demo_Widget },
         Demo{ "Label (old)", Demo_Label },
-        Demo{ "Drawing", Demo_Draw }
+        Demo{ "Drawing", Demo_Draw },
+        Demo{ "Node Pager", Demo_NodePager }
     } },
     Demo{ "GIS Data", {},
     {
@@ -87,7 +87,7 @@ std::vector<Demo> demos =
         Demo{ "Polygon features", Demo_PolygonFeatures },
         Demo{ "Line features", Demo_LineFeatures },
         Demo{ "Labels from features", Demo_LabelFeatures },
-        Demo{ "MVT features", Demo_MVTFeatures }
+        Demo{ "Vector tiles", Demo_MVTFeatures }
     } },
     Demo{ "Simulation", {},
     {
@@ -95,7 +95,6 @@ std::vector<Demo> demos =
         Demo{ "Track histories", Demo_TrackHistory }
     } },
     Demo{ "Decluttering", Demo_Decluttering },
-    Demo{ "Node Pager", Demo_NodePager },
     Demo{ "Elevation Queries", Demo_ElevationSampler },
     Demo{ "Geocoding", Demo_Geocoder },
     Demo{ "RTT", Demo_RTT },

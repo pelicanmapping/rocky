@@ -33,7 +33,7 @@ namespace ROCKY_NAMESPACE
             Replace,
 
             //! Render all loaded levels of detail at once
-            Add
+            Accumulate
         };
 
         using BoundCalculator = std::function<vsg::dsphere(const TileKey& key, const IOOptions& io)>;

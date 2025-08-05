@@ -38,7 +38,9 @@ auto Demo_FeatureView = [](Application& app)
                 {
                     entity = primitives.move(r);
                 });
+
+            app.vsgcontext->requestFrame();
         }
 
-        app.vsgcontext->requestFrame();
+        ImGui::TextWrapped("FeatureView is a helper utility for turning GIS feature data into geometry (lines and meshes).");
     };

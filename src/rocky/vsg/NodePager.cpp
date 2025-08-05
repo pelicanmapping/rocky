@@ -301,7 +301,7 @@ PagedNode::traverse(vsg::RecordTraversal& record) const
 
         if (payload)
         {
-            if (pager->refinePolicy == NodePager::RefinePolicy::Add || !child_in_range || !child_value)
+            if (pager->refinePolicy == NodePager::RefinePolicy::Accumulate || !child_in_range || !child_value)
             {
                 payload->accept(record);
             }

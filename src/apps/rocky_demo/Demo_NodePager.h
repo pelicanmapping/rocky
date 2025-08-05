@@ -27,129 +27,71 @@ auto Demo_NodePager = [](Application& app)
 
     if (!pager)
     {
+        // set up the elevation clamper:
         clamper.layer = app.mapNode->map->layer<ElevationLayer>();
 
+        // set up the pager, which needs to know both the tiling profile it will use
+        // and the profile of the map.
         pager = NodePager::create(profile, app.mapNode->profile);
 
-        pager->minLevel = 1;
+        // tiles will start to appear at this level of detail:
+        pager->minLevel = 2;
 
-        pager->maxLevel = 14;
+        // tiles will max out at the level of detail:
+        pager->maxLevel = 16;
 
+        // whether to replace each LOD with the higher one as you zoom in (versus accumulating them)
         pager->refinePolicy = NodePager::RefinePolicy::Replace;
 
-        pager->calculateBound = [&](const TileKey& key, const IOOptions& io)
+        // a function that will calculate the bounding sphere for each tile.
+        auto calculateTileBound = [&](const TileKey& key, const IOOptions& io)
             {
                 auto ex = app.mapNode->profile.clampAndTransformExtent(key.extent());
                 auto bs = ex.createWorldBoundingSphere(0, 0);
 
                 if (clamper.ok() && key.level > 1)
                 {
-                    auto p = ex.centroid();
-                    auto session = clamper.session(io);
-                    session.lod = std::min(key.level, 5u);
-                    session.xform = p.srs.to(clamper.layer->profile.srs());
-
-                    if (clamper.clamp(session, p.x, p.y, p.z))
+                    auto resolutionX = clamper.layer->resolution(key.level).first;
+                    if (auto p = clamper.clamp(ex.centroid(), resolutionX, io))
                     {
-                        p.transformInPlace(app.mapNode->worldSRS());
-                        return vsg::dsphere(to_vsg(p), bs.radius);
+                        return vsg::dsphere(to_vsg(p->transform(app.mapNode->worldSRS())), bs.radius);
                     }
                 }
 
                 return to_vsg(bs);
             };
 
-        // Mandatory: the function that will create the payload for each TileKey:
-        pager->createPayload = [&app](const TileKey& key, const IOOptions& io)
+        // we'll use it to control tile paging:
+        pager->calculateBound = calculateTileBound;
+
+        // The function that will create the payload for each TileKey:
+        pager->createPayload = [&app, calculateTileBound](const TileKey& key, const IOOptions& io)
             {
-                vsg::ref_ptr<EntityNode> result;
+                // Make a simple topocentric-aligned bounding box representing our clamped tile.
+                // Let's use VSG's builder utility to make it easy.
+                vsg::Builder builder;
 
-                auto centroid = key.extent().centroid().transform(SRS::WGS84);
+                auto bs = calculateTileBound(key, io);
+                auto r = bs.radius / sqrt(2);
+                vsg::box box(vsg::vec3(-r, -r, -r), vsg::vec3(r, r, r));
 
-                if (clamper.ok())
-                {
-                    auto session = clamper.session(io);
-                    session.lod = std::min(key.level, 6u);
-                    session.xform = centroid.srs.to(clamper.layer->profile.srs());
-                    centroid.z = clamper.sample(session, centroid.x, centroid.y, centroid.z);
-                }
+                vsg::GeometryInfo gi(box);
+                gi.color = to_vsg(Color::Cyan);
+                gi.transform = to_vsg(key.profile.srs().ellipsoid().topocentricToGeocentricMatrix(to_glm(bs.center)));
 
-                // Geometry generator:
-                FeatureView fview;
+                vsg::StateInfo si;
+                si.lighting = false;
+                si.wireframe = true;
 
-                // Set up a style for lines:
-                fview.styles.line.color = colors[key.level % 4];
-                fview.styles.line.width = 2.0f;
-                fview.styles.line.depth_offset = 10000; // meters
-
-                // The extents of the tile, transformed into the map SRS:
-                auto ex = key.extent().transform(app.mapNode->mapSRS());
-                ex.expand(-ex.width() * 0.025, -ex.height() * 0.025); // shrink a tad
-
-                // Add features for the extents of the tile box:
-                fview.features.emplace_back(Feature(
-                    ex.srs(),
-                    Geometry::Type::LineString, {
-                        glm::dvec3(ex.xmin(), ex.ymin(), centroid.z),
-                        glm::dvec3(ex.xmax(), ex.ymin(), centroid.z)
-                    },
-                    GeodeticInterpolation::RhumbLine));
-
-                fview.features.emplace_back(Feature(
-                    ex.srs(),
-                    Geometry::Type::LineString, {
-                        glm::dvec3(ex.xmin(), ex.ymax(), centroid.z),
-                        glm::dvec3(ex.xmax(), ex.ymax(), centroid.z)
-                    },
-                    GeodeticInterpolation::RhumbLine));
-
-                fview.features.emplace_back(Feature(
-                    ex.srs(),
-                    Geometry::Type::LineString, {
-                        glm::dvec3(ex.xmax(), ex.ymin(), centroid.z),
-                        glm::dvec3(ex.xmax(), ex.ymax(), centroid.z)
-                    }));
-
-                fview.features.emplace_back(Feature(
-                    ex.srs(),
-                    Geometry::Type::LineString, {
-                        glm::dvec3(ex.xmin(), ex.ymin(), centroid.z),
-                        glm::dvec3(ex.xmin(), ex.ymax(), centroid.z)
-                    }));
-
-
-                // Make the entities for this tile:
-                auto prims = fview.generate(app.mapNode->worldSRS());
-
-                if (!prims.empty())
-                {
-                    // An EntityNode to cull the entities in the scene graph:
-                    result = EntityNode::create(app.registry);
-
-                    app.registry.write([&](entt::registry& registry)
-                        {
-                            result->entities.emplace_back(prims.move(registry));
-
-                            // Add a label in the center of the tile:
-                            auto entity = registry.create();
-                            registry.emplace<Visibility>(entity);
-                            result->entities.emplace_back(entity);
-
-                            auto& widget = registry.emplace<Widget>(entity);
-                            widget.text = key.str();
-
-                            auto& transform = registry.emplace<Transform>(entity);
-                            transform.position = centroid.transform(app.mapNode->worldSRS());
-                        });
-                }
-
-                return result;
+                return builder.createBox(gi, si);
             };
 
         // Always initialize a NodePager before using it:
         pager->initialize(app.vsgcontext);
 
         app.mainScene->addChild(pager);
+
+        app.vsgcontext->requestFrame();
     }
 
     if (ImGuiLTable::Begin("NodePager"))
@@ -182,10 +124,10 @@ auto Demo_NodePager = [](Application& app)
 
         ImGuiLTable::Text("Tiles", "%u", pager->tiles());
 
-        bool add = pager->refinePolicy == NodePager::RefinePolicy::Add;
-        if (ImGuiLTable::Checkbox("Additive", &add))
+        bool accumulate = pager->refinePolicy == NodePager::RefinePolicy::Accumulate;
+        if (ImGuiLTable::Checkbox("Accumulate", &accumulate))
         {
-            pager->refinePolicy = add ? NodePager::RefinePolicy::Add : NodePager::RefinePolicy::Replace;
+            pager->refinePolicy = accumulate ? NodePager::RefinePolicy::Accumulate : NodePager::RefinePolicy::Replace;
             app.vsgcontext->requestFrame();
         }
 

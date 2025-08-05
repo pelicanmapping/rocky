@@ -53,6 +53,9 @@ namespace ROCKY_NAMESPACE
         //! Clamps the incoming point to the elevation data.
         inline Result<GeoPoint> clamp(const GeoPoint& p, const IOOptions& io) const;
 
+        //! Clamps the incoming point to the elevation data.
+        inline Result<GeoPoint> clamp(const GeoPoint& p, const Distance& resolution, const IOOptions& io) const;
+
         //! Sample a vector of 3D points and replace each one with the elevation-clamped version.
         template<class VEC3_ITER>
         inline Result<> clampRange(const SRS& srs, VEC3_ITER begin, VEC3_ITER end, const IOOptions& io) const;
@@ -150,6 +153,23 @@ namespace ROCKY_NAMESPACE
 
         auto sesh = session(io);
         sesh.xform = p.srs.to(layer->profile.srs());
+
+        GeoPoint out(p);
+        if (clamp(sesh, out.x, out.y, out.z))
+            return out;
+        else
+            return Failure{};
+    }
+
+    auto ElevationSampler::clamp(const GeoPoint& p, const Distance& resolution, const IOOptions& io) const
+        -> Result<GeoPoint>
+    {
+        if (!layer || !layer->status().ok())
+            return NoLayer;
+
+        auto sesh = session(io);
+        sesh.xform = p.srs.to(layer->profile.srs());
+        sesh.resolution = resolution;
 
         GeoPoint out(p);
         if (clamp(sesh, out.x, out.y, out.z))

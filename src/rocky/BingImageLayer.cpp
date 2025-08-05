@@ -136,7 +136,7 @@ BingImageLayer::createImageImplementation(const TileKey& key, const IOOptions& i
 
     // Decode the stream:
     std::istringstream stream(fetch->content.data);
-    auto image_rr = io.services.readImageFromStream(stream, fetch->content.type, io);
+    auto image_rr = io.services().readImageFromStream(stream, fetch->content.type, io);
 
     if (image_rr.failed())
         return image_rr.error();

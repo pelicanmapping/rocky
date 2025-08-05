@@ -487,8 +487,8 @@ Application::frame()
 
         auto t_end = std::chrono::steady_clock::now();
         stats.frame = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_start);
-        stats.update = std::chrono::duration_cast<std::chrono::microseconds>(t_events - t_update);
-        stats.events = std::chrono::duration_cast<std::chrono::microseconds>(t_record - t_events);
+        stats.events = std::chrono::duration_cast<std::chrono::microseconds>(t_update - t_events);
+        stats.update = std::chrono::duration_cast<std::chrono::microseconds>(t_record - t_update);
         stats.record = std::chrono::duration_cast<std::chrono::microseconds>(t_present - t_record);
         stats.present = std::chrono::duration_cast<std::chrono::microseconds>(t_end - t_present);
 

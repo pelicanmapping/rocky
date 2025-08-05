@@ -56,6 +56,12 @@ namespace ROCKY_NAMESPACE
     inline const glm::dvec3& to_glm(const vsg::dvec3& a) {
         return reinterpret_cast<const glm::dvec3&>(a);
     }
+    inline const glm::fvec4& to_glm(const vsg::vec4& a) {
+        return reinterpret_cast<const glm::fvec4&>(a);
+    }
+    inline const glm::dvec4& to_glm(const vsg::dvec4& a) {
+        return reinterpret_cast<const glm::dvec4&>(a);
+    }
     inline const glm::fmat4& to_glm(const vsg::mat4& a) {
         return reinterpret_cast<const glm::fmat4&>(a);
     }
@@ -68,6 +74,12 @@ namespace ROCKY_NAMESPACE
     }
     inline const vsg::dvec3& to_vsg(const glm::dvec3& a) {
         return reinterpret_cast<const vsg::dvec3&>(a);
+    }
+    inline const vsg::vec4& to_vsg(const glm::fvec4& a) {
+        return reinterpret_cast<const vsg::vec4&>(a);
+    }
+    inline const vsg::dvec4& to_vsg(const glm::dvec4& a) {
+        return reinterpret_cast<const vsg::dvec4&>(a);
     }
     inline const vsg::mat4& to_vsg(const glm::fmat4& a) {
         return reinterpret_cast<const vsg::mat4&>(a);

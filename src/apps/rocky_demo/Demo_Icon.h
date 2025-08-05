@@ -26,7 +26,7 @@ auto Demo_Icon = [](Application& app)
 
         // Load an icon image
         auto io = app.vsgcontext->io;
-        auto image = io.services.readImageFromURI("https://readymap.org/readymap/filemanager/download/public/icons/BENDER.png", io);
+        auto image = io.services().readImageFromURI("https://readymap.org/readymap/filemanager/download/public/icons/BENDER.png", io);
         if (image.failed())
         {
             status = image.error();

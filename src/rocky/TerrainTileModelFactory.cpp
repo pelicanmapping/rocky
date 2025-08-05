@@ -35,10 +35,6 @@ namespace
 
 //.........................................................................
 
-TerrainTileModelFactory::TerrainTileModelFactory()
-{
-    //nop
-}
 
 TerrainTileModel
 TerrainTileModelFactory::createTileModel(const Map* map, const TileKey& key, const IOOptions& io) const
@@ -137,17 +133,13 @@ TerrainTileModelFactory::addColorLayers(
     bool intersects = false;
     for (auto layer : layers)
     {
-        auto imageLayer = ImageLayer::cast(layer);
-        if (imageLayer)
-        {
-            inLegalRange = imageLayer->isKeyInLegalRange(key);
-            intersects = imageLayer->intersects(key);
+        inLegalRange = layer->isKeyInLegalRange(key);
+        intersects = layer->intersects(key);
 
-            if (imageLayer->isKeyInLegalRange(key) &&
-                imageLayer->intersects(key))
-            {
-                intersecting_layers.push_back(imageLayer);
-            }
+        if (layer->isKeyInLegalRange(key) &&
+            layer->intersects(key))
+        {
+            intersecting_layers.push_back(layer);
         }
     }
 

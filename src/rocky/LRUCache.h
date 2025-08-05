@@ -8,13 +8,93 @@
 #include <rocky/Common.h>
 #include <rocky/Utils.h>
 #include <mutex>
+#include <shared_mutex>
 #include <list>
 #include <optional>
+#include <unordered_map>
 
 namespace ROCKY_NAMESPACE
 {
+    template<class K, class V>
+    class Cache
+    {
+    public:
+        virtual std::optional<V> get(const K& k) = 0;
+        virtual void put(const K& k, const V& v) = 0;
+        virtual std::size_t size() const = 0;
+        virtual std::uint32_t hits() const = 0;
+        virtual std::uint32_t misses() const = 0;
+    };
+
     namespace util
     {
+        /**
+        * ResidentCache cached std::weak_ptr's to shared objects. If the shared
+        * object is resideny anywhere in memory, the ResidentCache will be able
+        * to return it.
+        * K = KEY. Any object that can be hashed for an unordered_map.
+        * V = VALUE. Any object that is stored in a shared_ptr.
+        */
+        template<class K, class V>
+        class ResidentCache : public rocky::Cache<K, std::shared_ptr<V>>
+        {
+        public:
+            mutable std::unordered_map<K, std::weak_ptr<V>> _lut;
+            mutable std::shared_mutex _mutex;
+            std::uint32_t _hits = 0;
+            std::uint32_t _misses = 0;
+            std::uint32_t _puts = 0;
+
+            std::optional<std::shared_ptr<V>> get(const K& key) override
+            {
+                std::shared_lock lock(_mutex);
+
+                auto it = _lut.find(key);
+                if (it != _lut.end() && !it->second.expired())
+                {
+                    ++_hits;
+                    return it->second.lock();
+                }
+                else
+                {
+                    ++_misses;
+                    return {};
+                }
+            }
+
+            void put(const K& key, const std::shared_ptr<V>& value) override
+            {
+                std::unique_lock lock(_mutex);
+                _lut.emplace(key, value);
+                ++_puts;
+                if (_puts % 1000 == 0) {
+                    // Clean up expired entries every 1000 puts
+                    for (auto it = _lut.begin(); it != _lut.end();) {
+                        if (it->second.expired())
+                            it = _lut.erase(it);
+                        else
+                            ++it;
+                    }
+                }
+            }
+
+            std::size_t size() const override
+            {
+                std::shared_lock lock(_mutex);
+                return _lut.size();
+            }
+
+            std::uint32_t hits() const override
+            {
+                return _hits;
+            }
+
+            std::uint32_t misses() const override
+            {
+                return _misses;
+            }
+        };
+
         /**
         * LRUCache is a thread-safe implementation of a Least Recently Used (LRU) cache.
         * It stores key-value pairs and evicts the least recently used item when the cache reaches its capacity.
@@ -23,55 +103,55 @@ namespace ROCKY_NAMESPACE
         * Optimized by Copilot
         */
         template<class K, class V>
-        class LRUCache
+        class LRUCache : public rocky::Cache<K, V>
         {
         private:
-            mutable std::mutex mutex;
-            size_t capacity;
+            mutable std::mutex _mutex;
+            size_t _capacity;
             using E = typename std::pair<K, V>;
-            mutable typename std::list<E> cache;
-            mutable vector_map<K, typename std::list<E>::iterator> map;
+            mutable typename std::list<E> _cache;
+            mutable vector_map<K, typename std::list<E>::iterator> _map;
+            std::uint32_t _hits = 0, _misses = 0;
 
         public:
-            mutable int hits = 0;
-            mutable int gets = 0;
 
             //! Constructs an LRUCache with the specified capacity.
             //! \param capacity_ The maximum number of items the cache can hold.
-            LRUCache(size_t capacity_ = 32) : capacity(capacity_)
+            LRUCache(size_t capacity = 32) : _capacity(capacity)
             {
-                map._container.reserve(capacity);
+                _map._container.reserve(capacity);
             }
 
             //! Sets the cache capacity and clears all current entries and statistics.
             //! \param value The new maximum number of items the cache can hold.
             inline void setCapacity(size_t value)
             {
-                std::scoped_lock L(mutex);
-                cache.clear();
-                map.clear();
-                hits = 0;
-                gets = 0;
-                capacity = std::max((size_t)0, value);
-                map._container.reserve(capacity);
+                std::scoped_lock L(_mutex);
+                _cache.clear();
+                _map.clear();
+                _capacity = std::max((size_t)0, value);
+                _map._container.reserve(_capacity);
+                _hits = 0;
+                _misses = 0;
             }
 
             //! Retrieves the value associated with the given key, if present.
             //! Moves the accessed item to the most recently used position.
             //! \param key The key to look up.
             //! \return An optional containing the value if found, or empty if not found.
-            inline std::optional<V> get(const K& key) const
+            inline std::optional<V> get(const K& key) override
             {
-                if (capacity == 0)
+                if (_capacity == 0)
                     return {};
-                std::scoped_lock L(mutex);
-                ++gets;
-                auto it = map.find(key);
-                if (it == map.end())
+                std::scoped_lock L(_mutex);
+                auto it = _map.find(key);
+                if (it == _map.end()) {
+                    ++_misses;
                     return {};
-                if (it->second != std::prev(cache.end()))
-                    cache.splice(cache.end(), cache, it->second);
-                ++hits;
+                }
+                if (it->second != std::prev(_cache.end()))
+                    _cache.splice(_cache.end(), _cache, it->second);
+                ++_hits;
                 return it->second->second;
             }
 
@@ -80,35 +160,51 @@ namespace ROCKY_NAMESPACE
             //! If the cache is full, evicts the least recently used item.
             //! \param key The key to insert or update.
             //! \param value The value to associate with the key.
-            inline void put(const K& key, const V& value)
+            inline void put(const K& key, const V& value) override
             {
-                if (capacity == 0)
+                if (_capacity == 0)
                     return;
-                std::scoped_lock L(mutex);
-                auto it = map.find(key);
-                if (it != map.end()) {
+                std::scoped_lock L(_mutex);
+                auto it = _map.find(key);
+                if (it != _map.end()) {
                     // Update value and move to back
                     it->second->second = value;
-                    cache.splice(cache.end(), cache, it->second);
+                    _cache.splice(_cache.end(), _cache, it->second);
                 }
                 else {
-                    if (cache.size() == capacity) {
-                        auto first_key = cache.front().first;
-                        cache.pop_front();
-                        map.erase(first_key);
+                    if (_cache.size() == _capacity) {
+                        auto first_key = _cache.front().first;
+                        _cache.pop_front();
+                        _map.erase(first_key);
                     }
-                    cache.emplace_back(key, value);
-                    map[key] = std::prev(cache.end());
+                    _cache.emplace_back(key, value);
+                    _map[key] = std::prev(_cache.end());
                 }
+            }
+
+            std::size_t size() const override
+            {
+                std::scoped_lock lock(_mutex);
+                return _map.size();
+            }
+
+            std::uint32_t hits() const override
+            {
+                return _hits;
+            }
+
+            std::uint32_t misses() const override
+            {
+                return _misses;
             }
 
             //! Clears all entries from the cache and resets statistics.
             inline void clear()
             {
-                std::scoped_lock L(mutex);
-                cache.clear();
-                map.clear();
-                gets = 0, hits = 0;
+                std::scoped_lock L(_mutex);
+                _cache.clear();
+                _map.clear();
+                _hits = 0, _misses = 0;
             }
         };
     }

@@ -116,10 +116,6 @@ ElevationLayer::construct(std::string_view JSON, const IOOptions& io)
     maxLevel.clear();
     maxResolution.clear();
 
-    // elevation layers do not render directly; rather, a composite of elevation data
-    // feeds the terrain engine to permute the mesh.
-    //setRenderType(RENDERTYPE_NONE);
-
     _dependencyCache = std::make_shared<TileMosaicWeakCache<Heightfield>>();
 }
 
@@ -177,6 +173,19 @@ ElevationLayer::normalizeNoDataValues(Heightfield* hf) const
             }
         }
     }
+}
+
+std::pair<Distance, Distance>
+ElevationLayer::resolution(unsigned level) const
+{
+    if (!profile.valid())
+        return {};
+
+    auto dims = profile.tileDimensions(level);
+
+    return std::make_pair(
+        Distance(dims.x / (double)(tileSize.value() - 1), profile.srs().units()),
+        Distance(dims.y / (double)(tileSize.value() - 1), profile.srs().units()));
 }
 
 std::shared_ptr<Heightfield>
@@ -346,9 +355,35 @@ ElevationLayer::createHeightfield(const TileKey& key, const IOOptions& io) const
     std::shared_lock readLock(layerStateMutex());
     if (status().ok())
     {
-        return createHeightfieldInKeyProfile(key, io);
+        if (io.services().residentImageCache)
+        {
+            auto k = key.str() + '-' + std::to_string(uid()) + "-" + std::to_string(revision());
+
+            auto image = io.services().residentImageCache->get(k);
+            if (image.has_value())
+            {
+                auto hf = std::dynamic_pointer_cast<Heightfield>(image.value());
+                return GeoHeightfield(hf, key.extent());
+            }
+
+            auto r = createHeightfieldInKeyProfile(key, io);
+
+            if (r.ok())
+            {
+                io.services().residentImageCache->put(k, r.value().heightfield());
+            }
+
+            return r;
+        }
+        else
+        {
+            return createHeightfieldInKeyProfile(key, io);
+        }
     }
-    return status().error();
+    else
+    {
+        return status().error();
+    }
 }
 
 Result<GeoHeightfield>

@@ -10,6 +10,7 @@
 
 #include <rocky/IOTypes.h>
 #include <rocky/Map.h>
+#include <rocky/TileLayer.h>
 
 #include <vsg/all.h>
 
@@ -44,15 +45,24 @@ TerrainNode::setMap(std::shared_ptr<Map> new_map, const Profile& new_profile, VS
 
     if (map)
     {
-        _callbacks.emplace(
-            map->onLayersChanged([this, context](auto...) { reset(context); }));
+        _callbacks += map->onLayersChanged([this, context](auto...)
+            {
+                auto newLayers = map->layers([](auto layer) {
+                    return TileLayer::cast(layer) != nullptr; });
+
+                if (newLayers != _terrainLayers)
+                {
+                    reset(context);
+                }
+            });
     }
 
     reset(context);
 
     if (status.ok())
         return ResultVoidOK;
-    else return status.error();
+    else
+        return status.error();
 }
 
 void
@@ -64,6 +74,12 @@ TerrainNode::reset(VSGContext context)
     }
 
     children.clear();
+
+    if (map)
+    {
+        _terrainLayers = map->layers([](auto layer) {
+            return TileLayer::cast(layer) != nullptr; });
+    }
 
     // create a new engine to render this map
     engine = std::make_shared<TerrainEngine>(

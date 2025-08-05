@@ -5,13 +5,14 @@
  */
 #pragma once
 
-#include <rocky/DateTime.h>
 #include <rocky/Result.h>
 #include <rocky/Units.h>
 #include <rocky/Threading.h>
 #include <rocky/LRUCache.h>
 #include <optional>
 #include <string>
+#include <cstdint>
+#include <tuple>
 
 /**
  * A collection of types used by the various I/O systems.
@@ -22,11 +23,6 @@ namespace ROCKY_NAMESPACE
     class Image;
     class Layer;
     class ContextImpl;
-
-    //! Base class for a cache
-    class Cache : public Inherit<Object, Cache>
-    {
-    };
 
     //! Service for reading an image from a URI
     using ReadImageURIService = std::function<
@@ -39,17 +35,6 @@ namespace ROCKY_NAMESPACE
     //! Service for writing an image to a stream
     using WriteImageStreamService = std::function<
         Result<>(std::shared_ptr<Image> image, std::ostream& stream, std::string contentType, const IOOptions& io)>;
-
-    //! Service for caching data
-    using CacheImpl = void*; // todo.
-    using CacheService = std::function<std::shared_ptr<CacheImpl>()>;
-
-    //! Service for accessing other data
-    class DataInterface {
-    public:
-        virtual std::shared_ptr<Layer> findLayerByName(const std::string& name) const = 0;
-    };
-    using DataService = std::function<DataInterface&()>;
 
     //! Holds a generic content buffer and its type.
     struct Content {
@@ -69,11 +54,23 @@ namespace ROCKY_NAMESPACE
         Services(Services&&) noexcept = delete;
         Services& operator=(Services&&) noexcept = delete;
 
+        //! Decodes an Image::Ptr from a URI
         ReadImageURIService readImageFromURI;
+
+        //! Decodes an Image::Ptr from a std::istream
         ReadImageStreamService readImageFromStream;
+
+        //! Encodes an Image::Ptr to a std::ostream
         WriteImageStreamService writeImageToStream;
-        //CacheService cache = nullptr;
+
+        //! Serializes reads from identical URIs
+        util::Gate<std::string> uriGate;
+
+        //! Caches raw context coming from a URI (like a browser cache)
         std::shared_ptr<ContentCache> contentCache;
+
+        //! Provides fast access to Image data that is resident in memory
+        std::shared_ptr<util::ResidentCache<std::string, Image>> residentImageCache;
     };
 
     /**
@@ -82,10 +79,8 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT IOOptions : public Cancelable
     {
     public:
-        IOOptions() = default;
-
-    public:
-        IOOptions(const IOOptions& rhs);
+        IOOptions();
+        IOOptions(const IOOptions& rhs) = default;
         IOOptions(const IOOptions& rhs, Cancelable& p);
         IOOptions(const IOOptions& rhs, const std::string& referrer);
 
@@ -100,23 +95,23 @@ namespace ROCKY_NAMESPACE
         //! Was the current operation canceled?
         inline bool canceled() const override;
 
-        //! Access to pluggable services
-        Services services;
-
         //! Maximum number of attempts to make a network connection
         unsigned maxNetworkAttempts = 4u;
 
         //! Referring location for an operation using these options
         std::optional<std::string> referrer;
 
-        //! Gate for seriaizing duplicate URI requests (shared)
-        mutable std::shared_ptr<util::Gate<std::string>> uriGate;
+        //! Access to shared services
+        Services& services() const {
+            return *_services;
+        }
 
     public:
-        IOOptions& operator = (const IOOptions& rhs);
+        IOOptions& operator = (const IOOptions& rhs) = default;
 
     private:
         Cancelable* _cancelable = nullptr;
+        mutable std::shared_ptr<Services> _services;
     };
 
     /**
@@ -161,7 +156,7 @@ namespace ROCKY_NAMESPACE
     struct IOResponse
     {
         Content content;
-        TimeStamp lastModifiedTime = 0;
+        std::int64_t lastModifiedTime = 0;
         Duration duration;
         bool fromCache = false;
         std::string jsonMetadata;

@@ -25,7 +25,7 @@ namespace ROCKY_NAMESPACE
         bool compositeColorLayers = true;
 
     public:
-        TerrainTileModelFactory();
+        TerrainTileModelFactory() = default;
 
         //! Creates a tile model and populates it with data from the map.
         //! @param map Map from which to read source data

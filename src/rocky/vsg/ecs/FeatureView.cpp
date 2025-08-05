@@ -4,8 +4,6 @@
  * MIT License
  */
 #include "FeatureView.h"
-#include <rocky/ecs/Mesh.h>
-#include <rocky/vsg/VSGContext.h>
 #include <rocky/weemesh.h>
 
 using namespace ROCKY_NAMESPACE;

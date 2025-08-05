@@ -106,9 +106,33 @@ ImageLayer::createImage(const TileKey& key, const IOOptions& io) const
 {
     std::shared_lock readLock(layerStateMutex());
     if (status().ok())
-        return createImageInKeyProfile(key, io);
+    {
+        if (io.services().residentImageCache)
+        {
+            auto k = key.str() + '-' + std::to_string(uid()) + "-" + std::to_string(revision());
+
+            auto image = io.services().residentImageCache->get(k);
+            if (image.has_value())
+                return GeoImage(image.value(), key.extent());
+
+            auto r = createImageInKeyProfile(key, io);
+
+            if (r.ok())
+            {
+                io.services().residentImageCache->put(k, r.value().image());
+            }
+
+            return r;
+        }
+        else
+        {
+            return createImageInKeyProfile(key, io);
+        }
+    }
     else
+    {
         return status().error();
+    }
 }
 
 Result<GeoImage>

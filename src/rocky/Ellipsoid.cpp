@@ -52,18 +52,6 @@ Ellipsoid::Ellipsoid(double er, double pr)
     set(er, pr);
 }
 
-double
-Ellipsoid::semiMajorAxis() const
-{
-    return _re;
-}
-
-double
-Ellipsoid::semiMinorAxis() const
-{
-    return _rp;
-}
-
 glm::dmat4
 Ellipsoid::topocentricToGeocentricMatrix(const glm::dvec3& geoc) const
 {
