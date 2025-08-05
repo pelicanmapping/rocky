@@ -423,26 +423,26 @@
 <p>Access to the runtime singleton - users need not call this</p>
 <h3 id="get_pool">get_pool</h3>
 <p><em>jobpool * get_pool(const int &amp; name, unsigned int pool_size)</em></p>
-<p><em>Defined at src/rocky/weejobs.h#746</em></p>
+<p><em>Defined at src/rocky/weejobs.h#747</em></p>
 <p>Returns the job pool with the given name, creating a new one if it doesn't  already exist. If you don't specify a name, a default pool is used.</p>
 <p><strong>name</strong> Name of the pool to fetch (or create)</p>
 <p><strong>pool_size</strong> Number of threads in the pool (if it's a new pool)</p>
 <p><strong>return</strong> Pointer to the job pool</p>
 <h3 id="get_metrics">get_metrics</h3>
 <p><em>metrics * get_metrics()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#853</em></p>
+<p><em>Defined at src/rocky/weejobs.h#854</em></p>
 <p>Metrics for all job pool</p>
 <h3 id="shutdown">shutdown</h3>
 <p><em>void shutdown()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#859</em></p>
+<p><em>Defined at src/rocky/weejobs.h#860</em></p>
 <p>stop all threads, wait for them to exit, and shut down the system</p>
 <h3 id="alive">alive</h3>
 <p><em>_Bool alive()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#865</em></p>
+<p><em>Defined at src/rocky/weejobs.h#866</em></p>
 <p>Whether the weejobs runtime is still alive (has not been shutdown)</p>
 <h3 id="set_allow_work_stealing">set_allow_work_stealing</h3>
 <p><em>void set_allow_work_stealing(_Bool value)</em></p>
-<p><em>Defined at src/rocky/weejobs.h#878</em></p>
+<p><em>Defined at src/rocky/weejobs.h#879</em></p>
 <p>Whether to allow jobpools to steal work from other jobpools when they are idle.</p>
 
 
