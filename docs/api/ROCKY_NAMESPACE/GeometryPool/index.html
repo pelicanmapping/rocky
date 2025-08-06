@@ -300,6 +300,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#members" class="md-nav__link">
+    <span class="md-ellipsis">
+      Members
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#records" class="md-nav__link">
     <span class="md-ellipsis">
       Records
@@ -398,11 +407,14 @@
 <p>Pool of terrain tile geometries.</p>
 <p>In a geocentric map, every tile at a particular LOD and a particular latitudinal (north-south) extent shares exactly the same geometry; each tile is just shifted and rotated differently. Therefore we can use the same Geometry for all tiles that share the same LOD and same min/max latitude in a geocentric map. In a projected map, all tiles at a given LOD share the same geometry regardless of extent, so even more sharing is possible.</p>
 <p>This object creates and returns geometries based on TileKeys, sharing instances whenever possible.</p>
+<h2 id="members">Members</h2>
+<p>public _Bool enabled</p>
+<p>public _Bool debug</p>
 <h2 id="records">Records</h2>
 <p>Settings</p>
 <h2 id="functions">Functions</h2>
 <h3 id="geometrypool">GeometryPool</h3>
-<p><em>public void GeometryPool(const Profile &amp; profile)</em></p>
+<p><em>public void GeometryPool(const int &amp; renderingSRS)</em></p>
 <p>Construct the geometry pool</p>
 <h3 id="getpooledgeometry">getPooledGeometry</h3>
 <p><em>public int getPooledGeometry(const int &amp; tileKey, const Settings &amp; settings, int * state)</em></p>
@@ -418,7 +430,7 @@
 <p>Remove unused entries from the pool</p>
 <h3 id="size">size</h3>
 <p><em>public int size()</em></p>
-<p><em>Defined at src/rocky/vsg/terrain/GeometryPool.h#177</em></p>
+<p><em>Defined at src/rocky/vsg/terrain/GeometryPool.h#179</em></p>
 <p>Number of geometries in the pool</p>
 <p>inlines</p>
 
