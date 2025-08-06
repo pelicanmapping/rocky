@@ -26,6 +26,92 @@ TerrainProfileNode::TerrainProfileNode(const Profile& in_profile, TerrainNode& i
     //nop
 }
 
+void
+TerrainProfileNode::reset(VSGContext context)
+{
+    for (auto& child : this->children)
+    {
+        context->dispose(child);
+    }
+
+    children.clear();
+
+    // create a new engine to render this map
+    engine = std::make_shared<TerrainEngine>(
+        terrain.map,
+        profile,
+        terrain.renderingSRS,
+        terrain.stateFactory,
+        context,    // runtime API
+        settings(), // settings
+        this);      // host
+}
+
+Result<>
+TerrainProfileNode::createRootTiles(VSGContext context)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(engine != nullptr, Failure_AssertionFailure);
+    ROCKY_SOFT_ASSERT_AND_RETURN(engine->stateFactory.status.ok(), engine->stateFactory.status.error());
+    ROCKY_HARD_ASSERT(children.empty(), "TerrainNode::createRootTiles() called with children already present");
+
+    // once the pipeline exists, we can start creating tiles.
+    auto keys = engine->profile.allKeysAtLOD(terrain.minLevelOfDetail);
+
+    for (auto& key : keys)
+    {
+        // create a tile with no parent:
+        auto tile = engine->createTile(key, {});
+
+        // ensure it can't page out:
+        tile->doNotExpire = true;
+
+        // Add it to the scene graph
+        this->addChild(tile);
+    }
+
+    context->compile(vsg::ref_ptr<TerrainProfileNode>(this));
+
+    return ResultVoidOK;
+}
+
+bool
+TerrainProfileNode::update(VSGContext context)
+{
+    bool changes = false;
+
+    if (terrain.status.ok())
+    {
+        if (children.empty())
+        {
+            auto r = createRootTiles(context);
+            if (r.failed())
+            {
+                terrain.status = r.error();
+                Log()->warn("TerrainProfileNode initialize failed: " + terrain.status.error().message);
+            }
+            changes = true;
+        }
+        else
+        {
+            ROCKY_HARD_ASSERT(engine);
+
+            if (engine->tiles.update(context->viewer->getFrameStamp(), context->io, engine))
+                changes = true;
+
+            engine->geometryPool.sweep(engine->context);
+        }
+    }
+
+    return changes;
+}
+
+void
+TerrainProfileNode::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg::RecordTraversal& nv)
+{
+    engine->tiles.ping(tile, parent, nv);
+}
+
+
 
 
 TerrainNode::TerrainNode(VSGContext context) :
@@ -33,9 +119,6 @@ TerrainNode::TerrainNode(VSGContext context) :
 {
     //nop
 }
-
-
-
 
 Result<>
 TerrainNode::from_json(const std::string& JSON, const IOOptions& io)
@@ -123,27 +206,6 @@ TerrainNode::reset(VSGContext context)
     }
 }
 
-void
-TerrainProfileNode::reset(VSGContext context)
-{
-    for (auto& child : this->children)
-    {
-        context->dispose(child);
-    }
-
-    children.clear();
-
-    // create a new engine to render this map
-    engine = std::make_shared<TerrainEngine>(
-        terrain.map,
-        profile,
-        terrain.renderingSRS,
-        terrain.stateFactory,
-        context,    // runtime API
-        settings(), // settings
-        this);      // host
-}
-
 Result<>
 TerrainNode::createProfiles(VSGContext context)
 {
@@ -170,64 +232,6 @@ TerrainNode::createProfiles(VSGContext context)
     return ResultVoidOK;
 }
 
-Result<>
-TerrainProfileNode::createRootTiles(VSGContext context)
-{
-    ROCKY_SOFT_ASSERT_AND_RETURN(engine != nullptr, Failure_AssertionFailure);
-    ROCKY_SOFT_ASSERT_AND_RETURN(engine->stateFactory.status.ok(), engine->stateFactory.status.error());
-    ROCKY_HARD_ASSERT(children.empty(), "TerrainNode::createRootTiles() called with children already present");
-
-    // once the pipeline exists, we can start creating tiles.
-    auto keys = engine->profile.allKeysAtLOD(terrain.minLevelOfDetail);
-
-    for(auto& key : keys)
-    {
-        // create a tile with no parent:
-        auto tile = engine->createTile(key, {});
-
-        // ensure it can't page out:
-        tile->doNotExpire = true;
-
-        // Add it to the scene graph
-        this->addChild(tile);
-    }
-
-    context->compile(vsg::ref_ptr<TerrainProfileNode>(this));
-
-    return ResultVoidOK;
-}
-
-bool
-TerrainProfileNode::update(VSGContext context)
-{
-    bool changes = false;
-
-    if (terrain.status.ok())
-    {
-        if (children.empty())
-        {
-            auto r = createRootTiles(context);
-            if (r.failed())
-            {
-                terrain.status = r.error();
-                Log()->warn("TerrainProfileNode initialize failed: " + terrain.status.error().message);
-            }
-            changes = true;
-        }
-        else
-        {
-            ROCKY_HARD_ASSERT(engine);
-
-            if (engine->tiles.update(context->viewer->getFrameStamp(), context->io, engine))
-                changes = true;
-            
-            engine->geometryPool.sweep(engine->context);
-        }
-    }
-
-    return changes;
-}
-
 bool
 TerrainNode::update(VSGContext context)
 {
@@ -238,12 +242,6 @@ TerrainNode::update(VSGContext context)
             changes = c->update(context) || changes;
     }
     return changes;
-}
-
-void
-TerrainProfileNode::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg::RecordTraversal& nv)
-{
-    engine->tiles.ping(tile, parent, nv);
 }
 
 const TerrainSettings&

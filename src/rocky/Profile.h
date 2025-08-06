@@ -137,9 +137,7 @@ namespace ROCKY_NAMESPACE
 
         //! Given an input extent, translate it into one or more
         //! GeoExtents in this profile.
-        bool transformAndExtractContiguousExtents(
-            const GeoExtent& input,
-            std::vector<GeoExtent>& output) const;
+        std::vector<GeoExtent> transformAndExtractContiguousExtents(const GeoExtent& input) const;
 
         //! Makes a clone of this profile but replaces the SRS with a custom one.
         Profile overrideSRS(const SRS&) const;

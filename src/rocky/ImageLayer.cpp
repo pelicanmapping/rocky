@@ -22,6 +22,9 @@ using namespace ROCKY_NAMESPACE::util;
 
 namespace
 {
+    // Image subclass that keeps a list of the images used to assemble it.
+    // This in combination with the ImageLayer's dependency tracker acts
+    // as a resident dependency cache, speeding up assemble operations.
     class Mosaic : public Inherit<Image, Mosaic>
     {
     public:
@@ -251,8 +254,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
     unsigned targetLOD = profile.equivalentLOD(key.profile, key.level);
 
     // Find the set of keys that covers the same area as in input key in our target profile.
-    std::vector<TileKey> intersectingKeys;
-    key.getIntersectingKeys(profile, intersectingKeys);
+    auto intersectingKeys = key.intersectingKeys(profile);
 
     // collect raster data for each intersecting key, falling back on ancestor images
     // if none are available at the target LOD.
@@ -345,8 +347,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 
             // Clean up orphaned entries any time a tile destructs.
             output->cleanupOperation = [captured{ std::weak_ptr(_dependencyCache) }, key]() {
-                auto cache = captured.lock();
-                if (cache)
+                if (auto cache = captured.lock())
                     cache->clean();
                 };
 

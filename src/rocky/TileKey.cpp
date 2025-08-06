@@ -358,45 +358,38 @@ namespace
     }
 }
 
-void
-TileKey::getIntersectingKeys(
-    const Profile& target_profile,
-    std::vector<TileKey>& out_intersectingKeys) const
+std::vector<TileKey>
+TileKey::intersectingKeys(const Profile& target_profile) const
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(valid(), void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(valid(), {});
 
     // If the profiles are exactly equal, just add the given tile key.
     if (profile.horizontallyEquivalentTo(target_profile))
     {
-        //Clear the incoming list
-        out_intersectingKeys.clear();
-        out_intersectingKeys.push_back(*this);
+        return { *this };
     }
     else
     {
         // figure out which LOD in the local profile is a best match for the LOD
         // in the source LOD in terms of resolution.
         unsigned target_LOD = target_profile.equivalentLOD(profile, level);
-        getIntersectingKeys(extent(), target_LOD, target_profile, out_intersectingKeys);
-        //ROCKY_DEBUG << LC << "GIT, key=" << key.str() << ", localLOD=" << localLOD
-        //    << ", resulted in " << out_intersectingKeys.size() << " tiles" << std::endl;
+        return intersectingKeys(extent(), target_LOD, target_profile);
     }
 }
 
-void
-TileKey::getIntersectingKeys(
-    const GeoExtent& input,
-    unsigned localLOD,
-    const Profile& target_profile,
-    std::vector<TileKey>& out_intersectingKeys)
+std::vector<TileKey>
+TileKey::intersectingKeys(const GeoExtent& input, unsigned localLOD, const Profile& target_profile)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(input.valid() && target_profile.valid(), void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(input.valid() && target_profile.valid(), {});
 
-    std::vector<GeoExtent> target_extents;
-    target_profile.transformAndExtractContiguousExtents(input, target_extents);
+    std::vector<TileKey> output;
+
+    auto target_extents = target_profile.transformAndExtractContiguousExtents(input);
 
     for (auto& extent : target_extents)
     {
-        addIntersectingKeys(extent, localLOD, target_profile, out_intersectingKeys);
+        addIntersectingKeys(extent, localLOD, target_profile, output);
     }
+
+    return output;
 }

@@ -154,19 +154,11 @@ namespace ROCKY_NAMESPACE
             const Profile& profile);
 
         //! Gets the keys that intersect this TileKey in the requested profile.
-        void getIntersectingKeys(
-            const Profile& profile,
-            std::vector<TileKey>& output) const;
+        std::vector<TileKey> intersectingKeys(const Profile& profile) const;
 
-        static void getIntersectingKeys(
+        static std::vector<TileKey> intersectingKeys(
             const GeoExtent& extent,
             unsigned localLOD,
-            const Profile& target_profile,
-            std::vector<TileKey>& out_intersectingKeys);
-
-        //! Convenience method to match this key.
-        //bool is(unsigned lod_, unsigned x_, unsigned y_) const {
-        //    return lod == lod_ && x == x_ && y == y_;
-        //}
+            const Profile& target_profile);
     };
 }

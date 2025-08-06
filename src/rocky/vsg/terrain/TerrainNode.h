@@ -62,6 +62,11 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT TerrainNode : public vsg::Inherit<vsg::StateGroup, TerrainNode>,
         public TerrainSettings
     {
+    public: 
+        
+        //! Intersect a point with the loaded terrain geometry.
+        Result<GeoPoint> intersect(const GeoPoint& input) const;
+
     public:
         //! Construct a new terrain node
         TerrainNode(VSGContext);
@@ -76,12 +81,6 @@ namespace ROCKY_NAMESPACE
         //! Clear out the terrain and rebuild it from the map model
         void reset(VSGContext context);
 
-        //! Deserialize from JSON
-        Result<> from_json(const std::string& JSON, const IOOptions& io);
-
-        //! Serialize to JSON
-        std::string to_json() const;
-
         //! Updates the terrain periodically at a safe time.
         //! @return true if any updates were applied
         bool update(VSGContext context);
@@ -89,17 +88,23 @@ namespace ROCKY_NAMESPACE
         //! Map containing data model for the terrain
         std::shared_ptr<const Map> map;
 
+        //! Tiling profile used to subdivide the terrain
         Profile profile;
 
+        //! Spatial reference system of the rendered terrain
         SRS renderingSRS;
-
-        Status status;
 
         //! Creates Vulkan state for rendering terrain tiles.
         TerrainState stateFactory;
 
-        //! Intersect a point with the loaded terrain geometry.
-        Result<GeoPoint> intersect(const GeoPoint& input) const;
+        //! Reflects any startup errors that occur
+        Status status;
+
+        //! Deserialize from JSON
+        Result<> from_json(const std::string& JSON, const IOOptions& io);
+
+        //! Serialize to JSON
+        std::string to_json() const;
 
     private:
 

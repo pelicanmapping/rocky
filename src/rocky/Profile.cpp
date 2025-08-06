@@ -122,6 +122,9 @@ Profile::horizontallyEquivalentTo(const Profile& rhs) const
     if (_shared->extent != rhs._shared->extent)
         return false;
 
+    if (_shared->geodeticExtent != rhs._shared->geodeticExtent)
+        return false;
+
     return _shared->extent.srs().horizontallyEquivalentTo(rhs._shared->extent.srs());
 }
 
@@ -213,6 +216,7 @@ Profile::setup(const std::string& name)
             SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=90 +lon_0=0"),
             Box(-6378137, -6378137, 6378137, 6378137),
             1, 1);
+        _shared->geodeticExtent = GeoExtent(SRS::WGS84, -180.0, 45.0, 180.0, 90.0);
     }
     else if (util::ciEquals(name, "qsc-z"))
     {
@@ -221,6 +225,7 @@ Profile::setup(const std::string& name)
             SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=-90 +lon_0=0"),
             Box(-6378137, -6378137, 6378137, 6378137),
             1, 1);
+        _shared->geodeticExtent = GeoExtent(SRS::WGS84, -180.0, -90.0, 180.0, -45.0);
     }
     else if (util::ciEquals(name, "qsc+x"))
     {
@@ -229,6 +234,7 @@ Profile::setup(const std::string& name)
             SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=0"),
             Box(-6378137, -6378137, 6378137, 6378137),
             1, 1);
+        _shared->geodeticExtent = GeoExtent(SRS::WGS84, -45.0, -45.0, 45.0, 45.0);
     }
     else if (util::ciEquals(name, "qsc-x"))
     {
@@ -237,6 +243,7 @@ Profile::setup(const std::string& name)
             SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=180"),
             Box(-6378137, -6378137, 6378137, 6378137),
             1, 1);
+        _shared->geodeticExtent = GeoExtent(SRS::WGS84, 135.0, -45.0, 225.0, 45.0);
     }
     else if (util::ciEquals(name, "qsc+y"))
     {
@@ -245,6 +252,7 @@ Profile::setup(const std::string& name)
             SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=90"),
             Box(-6378137, -6378137, 6378137, 6378137),
             1, 1);
+        _shared->geodeticExtent = GeoExtent(SRS::WGS84, 45.0, -45.0, 125.0, 45.0);
     }
     else if (util::ciEquals(name, "qsc-y"))
     {
@@ -253,6 +261,7 @@ Profile::setup(const std::string& name)
             SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=-90"),
             Box(-6378137, -6378137, 6378137, 6378137),
             1, 1);
+        _shared->geodeticExtent = GeoExtent(SRS::WGS84, -135.0, -45.0, -45.0, 45.0);
     }
 }
 
@@ -507,12 +516,12 @@ Profile::levelOfDetail(double height) const
     return (unsigned)std::max(computed_lod, 0);
 }
 
-bool
-Profile::transformAndExtractContiguousExtents(
-    const GeoExtent& input,
-    std::vector<GeoExtent>& output) const
+std::vector<GeoExtent>
+Profile::transformAndExtractContiguousExtents(const GeoExtent& input) const
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(valid() && input.valid(), false);
+    ROCKY_SOFT_ASSERT_AND_RETURN(valid() && input.valid(), {});
+
+    std::vector<GeoExtent> output;
 
     GeoExtent targetextent = input;
 
@@ -522,7 +531,7 @@ Profile::transformAndExtractContiguousExtents(
         // localize the extents and clamp them to legal values
         targetextent = clampAndTransformExtent(input);
         if (!targetextent.valid())
-            return false;
+            return output;
     }
 
     if (targetextent.crossesAntimeridian())
@@ -530,16 +539,16 @@ Profile::transformAndExtractContiguousExtents(
         GeoExtent first, second;
         if (targetextent.splitAcrossAntimeridian(first, second))
         {
-            output.push_back(first);
-            output.push_back(second);
+            output.emplace_back(first);
+            output.emplace_back(second);
         }
     }
     else
     {
-        output.push_back(targetextent);
+        output.emplace_back(targetextent);
     }
 
-    return true;
+    return output;
 }
 
 std::string
