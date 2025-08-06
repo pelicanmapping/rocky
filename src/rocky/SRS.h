@@ -92,6 +92,10 @@ namespace ROCKY_NAMESPACE
         //! @return True if the SRS is geocentric, false if not
         bool isGeocentric() const;
 
+        //! Is this a Quadrilateralized Spherical Cube SRS?
+        //! @return True if the SRS is a Quadrilateralized Spherical Cube, false if not
+        bool isQSC() const;
+
         //! Has a vertical datum shift?
         //! @return True if the SRS has a vertical datum shift, false if not
         bool hasVerticalDatumShift() const;

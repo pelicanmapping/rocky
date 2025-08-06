@@ -26,6 +26,6 @@ namespace ROCKY_NAMESPACE
             vsg::RecordTraversal& t) = 0;
 
         //! Access terrain settings.
-        virtual const TerrainSettings& settings() = 0;
+        virtual const TerrainSettings& settings() const = 0;
     };
 }

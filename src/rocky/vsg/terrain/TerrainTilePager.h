@@ -44,7 +44,6 @@ namespace ROCKY_NAMESPACE
     public:
         //! Consturct the tile manager.
         TerrainTilePager(
-            const Profile& profile,
             const TerrainSettings& settings,
             VSGContext& runtime,
             TerrainTileHost* host);

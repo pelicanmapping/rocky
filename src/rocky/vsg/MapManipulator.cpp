@@ -365,7 +365,7 @@ MapManipulator::MapManipulator(
     _lastAction(ACTION_NULL)
 {
     if (mapNode.valid())
-        _worldSRS = mapNode->worldSRS();
+        _worldSRS = mapNode->srs();
 
     reinitialize();
     configureDefaultSettings();

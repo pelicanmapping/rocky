@@ -23,9 +23,11 @@ namespace ROCKY_NAMESPACE
     {
     public:
         TerrainEngine(
-            std::shared_ptr<Map> map,
+            std::shared_ptr<const Map> map,
             const Profile& profile,
-            VSGContext& context,
+            const SRS& renderingSRS,
+            TerrainState& stateFactory,
+            VSGContext context,
             const TerrainSettings& settings,
             TerrainTileHost* host);
 
@@ -36,13 +38,13 @@ namespace ROCKY_NAMESPACE
         VSGContext context;
 
         //! the map this terrain is rendering
-        std::shared_ptr<Map> map;
+        std::shared_ptr<const Map> map;
 
         //! tiling profile for querying the map
         Profile profile;
 
         //! SRS of the rendered terrain
-        SRS worldSRS;
+        SRS renderingSRS;
 
         //! Builds geometry for terrain tiles
         GeometryPool geometryPool;
@@ -51,7 +53,7 @@ namespace ROCKY_NAMESPACE
         TerrainTilePager tiles;
 
         //! Creates the state group objects for terrain rendering
-        TerrainState stateFactory;
+        TerrainState& stateFactory;
 
         //! name of job arena used to load data
         std::string loadSchedulerName = "rocky::terrain_loader";

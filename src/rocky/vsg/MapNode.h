@@ -41,12 +41,8 @@ namespace ROCKY_NAMESPACE
 
     public:
 
-        //! Spatial Reference System of the underlying map.
-        //const SRS& mapSRS() const;
-        const SRS& mapSRS() const;
-
         //! Spatial reference system of the rendered map.
-        const SRS& worldSRS() const;
+        const SRS& srs() const;
 
         //! Mutable access to the terrain settings
         TerrainSettings& terrainSettings();
@@ -75,7 +71,7 @@ namespace ROCKY_NAMESPACE
     private:
 
         //! Creates a mapnode with the default global geodetic profile.
-        MapNode();
+        MapNode(VSGContext);
 
         bool _openedLayers = false;
 

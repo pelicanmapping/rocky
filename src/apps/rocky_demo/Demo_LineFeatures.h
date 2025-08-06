@@ -59,7 +59,7 @@ auto Demo_LineFeatures = [](Application& app)
                 5000.0f            // depth offset (meters)
             };
 
-            auto prims = feature_view.generate(app.mapNode->worldSRS());
+            auto prims = feature_view.generate(app.mapNode->srs());
 
             if (!prims.empty())
             {

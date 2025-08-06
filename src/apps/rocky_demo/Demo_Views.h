@@ -97,7 +97,7 @@ auto Demo_Views = [](Application& app)
                     const double nearFarRatio = 0.00001;
                     const double vfov = 30.0;
                     const int width = 320, height = 200;
-                    double R = app.mapNode->mapSRS().ellipsoid().semiMajorAxis();
+                    double R = app.mapNode->srs().ellipsoid().semiMajorAxis();
                     int win_width = window->extent2D().width, win_height = window->extent2D().height;
                     int x = std::max(0, (next_int(rng) % win_width) - width);
                     int y = std::max(0, (next_int(rng) % win_height) - height);

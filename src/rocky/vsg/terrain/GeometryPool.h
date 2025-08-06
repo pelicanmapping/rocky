@@ -117,7 +117,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Construct the geometry pool
-        GeometryPool(const Profile& profile);
+        GeometryPool(const SRS& renderingSRS);
 
         using SharedGeometries = std::map<GeometryKey, vsg::ref_ptr<SharedGeometry>>;
 
@@ -146,9 +146,14 @@ namespace ROCKY_NAMESPACE
         //! Number of geometries in the pool
         inline std::size_t size() const;
 
+        //! Whether to pool geometries with compatible keys.
+        bool enabled = true;
+
+        bool debug = false;
+
     private:
 
-        SRS _worldSRS;
+        SRS _renderingSRS;
         mutable util::Gate<GeometryKey> _keygate;
         mutable std::mutex _mutex;
         mutable SharedGeometries _sharedGeometries;
@@ -168,9 +173,6 @@ namespace ROCKY_NAMESPACE
         // builds a primitive set to use for any tile without a mask
         vsg::ref_ptr<vsg::ushortArray> createIndices(
             const Settings& settings) const;
-
-        bool _enabled = true;
-        bool _debug = false;
     };
 
     // inlines

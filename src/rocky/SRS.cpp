@@ -76,6 +76,7 @@ namespace
         std::string error;
         SRS geodeticSRS;
         SRS geocentricSRS;
+        bool isQSC = false;
     };
 
     //! SRS data factory and PROJ main interface
@@ -200,6 +201,7 @@ namespace
                     // store any error in the cache entry
                     auto err_no = proj_context_errno(ctx);
                     new_entry.error = proj_errno_string(err_no);
+                    Log()->warn("Failed to create SRS from \"{}\"", def);
                 }
                 else
                 {
@@ -243,7 +245,11 @@ namespace
                     // extract the PROJ string
                     const char* proj = proj_as_proj_string(ctx, pj, PJ_PROJ_5, nullptr);
                     if (proj)
+                    {
                         new_entry.proj = proj;
+                        if (new_entry.proj.find("+proj=qsc") != std::string::npos)
+                            new_entry.isQSC = true;
+                    }
 
                     // geodetic PJ associated with this CRS:
                     new_entry.pj_geodetic = proj_crs_get_geodetic_crs(ctx, new_entry.pj);
@@ -297,12 +303,7 @@ namespace
 
                         else if (contains(new_entry.proj, "proj=qsc"))
                         {
-                            // maximum possible values, I think
-                            new_entry.bounds = Box(
-                                -new_entry.ellipsoid.semiMajorAxis(),
-                                -new_entry.ellipsoid.semiMinorAxis(),
-                                new_entry.ellipsoid.semiMajorAxis(),
-                                new_entry.ellipsoid.semiMinorAxis());
+                            new_entry.bounds = Box(-6378137, -6378137, 6378137, 6378137);
                         }
                     }
 
@@ -514,7 +515,6 @@ namespace
                     if (err_no != 0)
                     {
                         error = proj_errno_string(err_no);
-                        //Instance::log().warn << error << " (\"" << def << "\")" << std::endl;
                     }
                 }
 
@@ -606,6 +606,15 @@ SRS::isProjected() const
     }
 
     return (PJ_TYPE)_crs_type.value() == PJ_TYPE_PROJECTED_CRS;
+}
+
+bool
+SRS::isQSC() const
+{
+    if (!valid())
+        return false;
+
+    return g_srs_factory.get_or_create(definition()).isQSC;
 }
 
 bool

@@ -115,7 +115,7 @@ auto Demo_Geocoder = [](Application& app)
                                     fgen.styles.line.depth_offset = 9000.0f; //meters
 
                                     fgen.features = { myfeature };
-                                    auto primitives = fgen.generate(app.mapNode->worldSRS());
+                                    auto primitives = fgen.generate(app.mapNode->srs());
 
                                     app.registry.write([&](entt::registry& registry)
                                         {

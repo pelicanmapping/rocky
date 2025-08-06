@@ -32,7 +32,7 @@ auto Demo_FeatureView = [](Application& app)
             view.styles.line.color = Color::Yellow;
             view.styles.line.stipple_pattern = 0xF0F0; // dashed line
 
-            auto primitives = view.generate(app.mapNode->worldSRS());
+            auto primitives = view.generate(app.mapNode->srs());
 
             app.registry.write([&](entt::registry& r)
                 {

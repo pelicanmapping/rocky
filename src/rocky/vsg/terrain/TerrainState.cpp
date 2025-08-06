@@ -39,7 +39,7 @@
 
 using namespace ROCKY_NAMESPACE;
 
-TerrainState::TerrainState(VSGContext& context)
+TerrainState::TerrainState(VSGContext context)
 {
     // set up the texture samplers and placeholder images we will use to render terrain.
     createDefaultDescriptors(context);
@@ -236,21 +236,30 @@ TerrainState::createPipelineConfig(VSGContext& context) const
 vsg::ref_ptr<vsg::StateGroup>
 TerrainState::createTerrainStateGroup(VSGContext& context)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), { });
+    auto stateGroup = vsg::StateGroup::create();
+    if (setupTerrainStateGroup(*stateGroup, context))
+        return stateGroup;
+    else
+        return {};
+}
+
+bool
+TerrainState::setupTerrainStateGroup(vsg::StateGroup& stateGroup, VSGContext& context)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), false);
 
     // create the configurator object:
     pipelineConfig = createPipelineConfig(context);
 
-    ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig, { });
+    ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig, false);
 
     // Just a StateGroup holding the graphics pipeline.
     // No actual descriptors here - those will appear on each tile.
     // (except for the view-dependent state stuff from VSG)
-    auto stateGroup = vsg::StateGroup::create();
-    stateGroup->add(pipelineConfig->bindGraphicsPipeline);
-    stateGroup->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
+    stateGroup.add(pipelineConfig->bindGraphicsPipeline);
+    stateGroup.add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
 
-    return stateGroup;
+    return true;
 }
 
 TerrainTileRenderModel

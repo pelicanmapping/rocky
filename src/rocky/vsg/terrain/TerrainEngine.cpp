@@ -9,34 +9,39 @@
 #include "TerrainSettings.h"
 #include "GeometryPool.h"
 #include <rocky/Map.h>
-#include <rocky/TerrainTileModelFactory.h>
-
-#include <vsg/state/ShaderStage.h>
+#include <rocky/TerrainTileModel.h>
 
 using namespace ROCKY_NAMESPACE;
 
 
 TerrainEngine::TerrainEngine(
-    std::shared_ptr<Map> new_map,
+    std::shared_ptr<const Map> new_map,
     const Profile& new_profile,
-    VSGContext& new_context,
+    const SRS& new_renderingSRS,
+    TerrainState& new_stateFactory,
+    VSGContext new_context,
     const TerrainSettings& new_settings,
     TerrainTileHost* host) :
 
     map(new_map),
     profile(new_profile),
+    renderingSRS(new_renderingSRS),
+    stateFactory(new_stateFactory),
     context(new_context),
     settings(new_settings),
-    geometryPool(new_profile),
-    tiles(new_profile, new_settings, new_context, host),
-    stateFactory(new_context)
+    geometryPool(new_renderingSRS),
+    tiles(new_settings, new_context, host)
 {
     ROCKY_SOFT_ASSERT(map, "Map is required");
     ROCKY_SOFT_ASSERT(profile.valid(), "Valid profile required");
 
-    worldSRS = profile.srs().isGeodetic() ? profile.srs().geocentricSRS() : profile.srs();
-
     jobs::get_pool(loadSchedulerName)->set_concurrency(settings.concurrency);
+
+    // geometry pooling not supported for QSC yet.
+    if (new_profile.srs().isQSC())
+    {
+        geometryPool.enabled = false;
+    }
 }
 
 
@@ -60,7 +65,7 @@ TerrainEngine::createTile(const TileKey& key, vsg::ref_ptr<TerrainTileNode> pare
     tile->doNotExpire = (parent == nullptr);
     tile->stategroup = vsg::StateGroup::create();
     tile->stategroup->addChild(geometry);
-    tile->surface = SurfaceNode::create(key, worldSRS);
+    tile->surface = SurfaceNode::create(key, renderingSRS);
     tile->surface->addChild(tile->stategroup);
     tile->addChild(tile->surface);
     tile->host = tiles._host;

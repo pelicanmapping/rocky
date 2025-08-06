@@ -194,6 +194,66 @@ Profile::setup(const std::string& name)
             Box(-180.0, -90.0, 180.0, 90.0),
             2, 1);
     }
+    else if (util::ciEquals(name, "qsc"))
+    {
+        _shared->wellKnownName = name;
+        _shared->composite.emplace_back(Profile("qsc+z"));
+        _shared->composite.emplace_back(Profile("qsc-z"));
+        _shared->composite.emplace_back(Profile("qsc+x"));
+        _shared->composite.emplace_back(Profile("qsc-x"));
+        _shared->composite.emplace_back(Profile("qsc+y"));
+        _shared->composite.emplace_back(Profile("qsc-y"));
+        _shared->extent = GeoExtent(SRS::WGS84, -180, -90, 180, 90);
+        _shared->geodeticExtent = _shared->extent;
+    }
+    else if (util::ciEquals(name, "qsc+z"))
+    {
+        _shared->wellKnownName = name;
+        setup(
+            SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=90 +lon_0=0"),
+            Box(-6378137, -6378137, 6378137, 6378137),
+            1, 1);
+    }
+    else if (util::ciEquals(name, "qsc-z"))
+    {
+        _shared->wellKnownName = name;
+        setup(
+            SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=-90 +lon_0=0"),
+            Box(-6378137, -6378137, 6378137, 6378137),
+            1, 1);
+    }
+    else if (util::ciEquals(name, "qsc+x"))
+    {
+        _shared->wellKnownName = name;
+        setup(
+            SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=0"),
+            Box(-6378137, -6378137, 6378137, 6378137),
+            1, 1);
+    }
+    else if (util::ciEquals(name, "qsc-x"))
+    {
+        _shared->wellKnownName = name;
+        setup(
+            SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=180"),
+            Box(-6378137, -6378137, 6378137, 6378137),
+            1, 1);
+    }
+    else if (util::ciEquals(name, "qsc+y"))
+    {
+        _shared->wellKnownName = name;
+        setup(
+            SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=90"),
+            Box(-6378137, -6378137, 6378137, 6378137),
+            1, 1);
+    }
+    else if (util::ciEquals(name, "qsc-y"))
+    {
+        _shared->wellKnownName = name;
+        setup(
+            SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=-90"),
+            Box(-6378137, -6378137, 6378137, 6378137),
+            1, 1);
+    }
 }
 
 bool
@@ -493,6 +553,18 @@ Profile::toReadableString() const
     {
         return to_json();
     }
+}
+
+bool
+Profile::isComposite() const
+{
+    return _shared->composite.empty() == false;
+}
+
+const std::vector<Profile>&
+Profile::compositeMembers() const
+{
+    return _shared->composite;
 }
 
 

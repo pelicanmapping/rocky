@@ -8,6 +8,7 @@
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/terrain/TerrainSettings.h>
 #include <rocky/vsg/terrain/TerrainTileHost.h>
+#include <rocky/vsg/terrain/TerrainState.h>
 #include <rocky/Result.h>
 #include <rocky/Profile.h>
 #include <rocky/Layer.h>
@@ -19,20 +20,58 @@ namespace ROCKY_NAMESPACE
     class Map;
     class TerrainEngine;
     class GeoPoint;
+    class TerrainNode;
+
+    /**
+    * Node that renders a terrain (or part of one) in a specific tiling profile.
+    */
+    class ROCKY_EXPORT TerrainProfileNode : public vsg::Inherit<vsg::Group, TerrainProfileNode>,
+        public TerrainTileHost
+    {
+    public:
+        TerrainProfileNode(const Profile& profile, TerrainNode& terrain);
+
+        //! Terrain housing this profile node
+        TerrainNode& terrain;
+
+        //! Tiling profile of this node
+        Profile profile;
+
+        //! Rebuilds the profile node contents from scratch.
+        void reset(VSGContext context);
+
+        //! Runs periodically to update the terrain tiles if neceessary.
+        bool update(VSGContext context);
+
+    public: //! TerrainTileHost interface
+
+        void ping(TerrainTileNode*, const TerrainTileNode*, vsg::RecordTraversal&) override;
+
+        const TerrainSettings& settings() const override;
+
+    private:
+
+        std::shared_ptr<TerrainEngine> engine;
+
+        Result<> createRootTiles(VSGContext);
+    };
 
     /**
      * Root node of the terrain geometry
      */
-    class ROCKY_EXPORT TerrainNode : public vsg::Inherit<vsg::Group, TerrainNode>,
-        public TerrainSettings,
-        public TerrainTileHost
+    class ROCKY_EXPORT TerrainNode : public vsg::Inherit<vsg::StateGroup, TerrainNode>,
+        public TerrainSettings
     {
     public:
         //! Construct a new terrain node
-        TerrainNode() = default;
+        TerrainNode(VSGContext);
 
         //! Map to render, and profile to render it in
-        Result<> setMap(std::shared_ptr<Map> new_map, const Profile& profile, VSGContext& cx);
+        Result<> setMap(
+            std::shared_ptr<Map> map,
+            const Profile& tilingProfile,
+            const SRS& renderingSRS,
+            VSGContext cx);
 
         //! Clear out the terrain and rebuild it from the map model
         void reset(VSGContext context);
@@ -47,40 +86,24 @@ namespace ROCKY_NAMESPACE
         //! @return true if any updates were applied
         bool update(VSGContext context);
 
-        //! Status of this node; check that's it OK before using
+        //! Map containing data model for the terrain
+        std::shared_ptr<const Map> map;
+
+        Profile profile;
+
+        SRS renderingSRS;
+
         Status status;
 
-        //! Map containing data model for the terrain
-        std::shared_ptr<Map> map;
-
-        //! Engine that renders the terrain
-        std::shared_ptr<TerrainEngine> engine;
-
-        //! Terrain's state group
-        vsg::ref_ptr<vsg::StateGroup> stategroup;
+        //! Creates Vulkan state for rendering terrain tiles.
+        TerrainState stateFactory;
 
         //! Intersect a point with the loaded terrain geometry.
         Result<GeoPoint> intersect(const GeoPoint& input) const;
 
-    protected:
-
-        //! TerrainTileHost interface
-        void ping(
-            TerrainTileNode* tile,
-            const TerrainTileNode* parent,
-            vsg::RecordTraversal&) override;
-
-        //! Terrain settings
-        const TerrainSettings& settings() override {
-            return *this;
-        }
-
     private:
 
-        Result<> createRootTiles(VSGContext&);
-
-        Profile profile;
-        vsg::ref_ptr<vsg::Group> tilesRoot;
+        Result<> createProfiles(VSGContext);
         CallbackSubs _callbacks;
         std::vector<Layer::Ptr> _terrainLayers;
     };

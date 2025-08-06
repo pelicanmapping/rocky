@@ -54,7 +54,7 @@ auto Demo_NodePager = [](Application& app)
                     auto resolutionX = clamper.layer->resolution(key.level).first;
                     if (auto p = clamper.clamp(ex.centroid(), resolutionX, io))
                     {
-                        return vsg::dsphere(to_vsg(p->transform(app.mapNode->worldSRS())), bs.radius);
+                        return vsg::dsphere(to_vsg(p->transform(app.mapNode->srs())), bs.radius);
                     }
                 }
 

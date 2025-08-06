@@ -46,7 +46,7 @@ ROCKY_NAMESPACE::pointAtWindowCoords(vsg::ref_ptr<vsg::View> view, int x, int y)
         lsi.intersections.begin(), lsi.intersections.end(),
         [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
 
-    return GeoPoint(terrain->engine->worldSRS, closest->get()->worldIntersection);
+    return GeoPoint(terrain->renderingSRS, closest->get()->worldIntersection);
 }
 
 Result<DisplayGeoPoint>
@@ -200,7 +200,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
     {        
         // make a camera based on the mapNode's SRS
         double nearFarRatio = 0.00001;
-        double R = _app->mapNode->mapSRS().ellipsoid().semiMajorAxis();
+        double R = _app->mapNode->srs().ellipsoid().semiMajorAxis();
         double ar = (double)window->extent2D().width / (double)window->extent2D().height;
 
         camera = vsg::Camera::create(

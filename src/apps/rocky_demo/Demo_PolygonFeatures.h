@@ -74,7 +74,7 @@ auto Demo_PolygonFeatures = [](Application& app)
                 };
 
             // compile the features into renderable geometry
-            auto prims = feature_view.generate(app.mapNode->worldSRS());
+            auto prims = feature_view.generate(app.mapNode->srs());
 
             if (!prims.empty())
             {

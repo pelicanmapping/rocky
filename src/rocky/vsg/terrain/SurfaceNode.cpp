@@ -18,10 +18,9 @@ SurfaceNode::SurfaceNode(const TileKey& tilekey, const SRS& worldSRS) :
     _tilekey(tilekey)
 {
     // Establish a local reference frame for the tile:
-    GeoPoint centroid = tilekey.extent().centroid();
-    centroid.transformInPlace(worldSRS);
+    GeoPoint centroid = tilekey.extent().centroid().transform(worldSRS);
 
-    glm::dmat4 local2world = worldSRS.topocentricToWorldMatrix(glm::dvec3(centroid.x, centroid.y, centroid.z));
+    glm::dmat4 local2world = worldSRS.topocentricToWorldMatrix(centroid);
 
     this->matrix = to_vsg(local2world);
 }

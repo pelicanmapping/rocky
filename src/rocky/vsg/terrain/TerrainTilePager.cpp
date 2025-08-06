@@ -7,14 +7,7 @@
 #include "TerrainEngine.h"
 #include "TerrainSettings.h"
 #include "../VSGUtils.h"
-
-#include <rocky/ElevationLayer.h>
-#include <rocky/ImageLayer.h>
-#include <rocky/Map.h>
 #include <rocky/TerrainTileModelFactory.h>
-
-#include <vsg/nodes/QuadGroup.h>
-#include <vsg/ui/FrameStamp.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -24,9 +17,7 @@ using namespace ROCKY_NAMESPACE;
 
 //----------------------------------------------------------------------------
 
-TerrainTilePager::TerrainTilePager(
-    const Profile& profile, const TerrainSettings& settings,
-    VSGContext& runtime, TerrainTileHost* in_host) :
+TerrainTilePager::TerrainTilePager(const TerrainSettings& settings, VSGContext& runtime, TerrainTileHost* in_host) :
     _host(in_host),
     _settings(settings),
     _context(runtime)

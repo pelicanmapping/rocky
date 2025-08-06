@@ -29,7 +29,7 @@ auto Demo_Mesh_Absolute = [](Application& app)
         const double min_lat = 15.0, max_lat = 35.0;
 
         // A transform from WGS84 to the world SRS:
-        auto xform = SRS::WGS84.to(app.mapNode->worldSRS());
+        auto xform = SRS::WGS84.to(app.mapNode->srs());
 
         for (double lon = 0.0; lon < 35.0; lon += step)
         {
@@ -47,7 +47,7 @@ auto Demo_Mesh_Absolute = [](Application& app)
 
         // Set a dynamic style that we can change at runtime.
         mesh.style = {
-            { 1.0f, 0.4f, 0.1f, 0.75f }, // color
+            { 1.0f, 0.4f, 0.1f, 0.5f }, // color
             10000.0f  // depth offset
         };
 

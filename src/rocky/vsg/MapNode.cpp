@@ -15,11 +15,11 @@ using namespace ROCKY_NAMESPACE::util;
 #undef LC
 #define LC "[MapNode] "
 
-MapNode::MapNode()
+MapNode::MapNode(VSGContext context)
 {
     map = Map::create();
 
-    terrainNode = TerrainNode::create();
+    terrainNode = TerrainNode::create(context);
     this->addChild(terrainNode);
 
     // default to geodetic:
@@ -91,18 +91,12 @@ MapNode::terrainSettings()
 }
 
 const SRS&
-MapNode::mapSRS() const
+MapNode::srs() const
 {
-    return profile.srs();
-}
-
-const SRS&
-MapNode::worldSRS() const
-{
-    if (mapSRS().isGeodetic())
-        return mapSRS().geocentricSRS();
+    if (profile.srs().isGeodetic() || profile.srs().isQSC())
+        return profile.srs().geocentricSRS();
     else
-        return mapSRS();
+        return profile.srs();
 }
 
 bool
@@ -115,7 +109,7 @@ MapNode::update(VSGContext context)
 
     if (terrainNode->map == nullptr)
     {
-        auto st = terrainNode->setMap(map, profile, context);
+        auto st = terrainNode->setMap(map, profile, srs(), context);
 
         if (st.failed())
         {
@@ -145,11 +139,11 @@ MapNode::traverse(vsg::RecordTraversal& record) const
 
     auto& viewlocal = _viewlocal[viewID];
 
-    if (worldSRS().isGeocentric())
+    if (srs().isGeocentric())
     {
         if (viewlocal.horizon == nullptr)
         {
-            viewlocal.horizon = std::make_shared<Horizon>(worldSRS().ellipsoid());
+            viewlocal.horizon = std::make_shared<Horizon>(srs().ellipsoid());
         }
 
         auto eye = vsg::inverse(record.getState()->modelviewMatrixStack.top()) * vsg::dvec3(0, 0, 0);
@@ -159,7 +153,7 @@ MapNode::traverse(vsg::RecordTraversal& record) const
         record.setValue("rocky.horizon", viewlocal.horizon);
     }
 
-    record.setValue("rocky.worldsrs", worldSRS());
+    record.setValue("rocky.worldsrs", srs());
 
     record.setObject("rocky.terraintilehost", terrainNode);
 
@@ -177,7 +171,7 @@ MapNode::traverse(vsg::RecordTraversal& record) const
 void
 MapNode::traverse(vsg::Visitor& visitor)
 {
-    visitor.setValue("rocky.worldsrs", worldSRS());
+    visitor.setValue("rocky.worldsrs", srs());
 
     Inherit::traverse(visitor);
 
@@ -193,7 +187,7 @@ MapNode::traverse(vsg::Visitor& visitor)
 void
 MapNode::traverse(vsg::ConstVisitor& visitor) const
 {
-    visitor.setValue("rocky.worldsrs", worldSRS());
+    visitor.setValue("rocky.worldsrs", srs());
 
     Inherit::traverse(visitor);
 
@@ -213,7 +207,7 @@ MapNode::create(VSGContext context)
     //ROCKY_SOFT_ASSERT_AND_RETURN(context->viewer, {}, "ILLEGAL: context does not contain a viewer");
     //ROCKY_SOFT_ASSERT_AND_RETURN(context->viewer->updateOperations, {}, "ILLEGAL: viewer does not contain update operations");
 
-    auto mapNode = vsg::ref_ptr<MapNode>(new MapNode());
+    auto mapNode = vsg::ref_ptr<MapNode>(new MapNode(context));
 
     if (context && context->viewer && context->viewer->updateOperations)
     {

@@ -10,8 +10,38 @@
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
 
+namespace
+{
+    Layer::Ptr createAxesLayer(const Ellipsoid& ell, Registry& registry)
+    {
+        auto layer = EntityCollectionLayer::create(registry);
+        layer->name = "Axes";
+        registry.write([&](entt::registry& r)
+            {
+                const double length = 1e6;
+
+                layer->entities.emplace_back(r.create());
+                auto& xline = r.emplace<Line>(layer->entities.back());
+                xline.points = { { ell.semiMajorAxis(),0,0 }, { ell.semiMajorAxis() + length, 0, 0} };
+                xline.style.color = Color::Lime;
+
+                layer->entities.emplace_back(r.create());
+                auto& yline = r.emplace<Line>(layer->entities.back());
+                yline.points = { { 0,ell.semiMajorAxis(),0 }, { 0, ell.semiMajorAxis() + length, 0} };
+                yline.style.color = Color::Red;
+
+                layer->entities.emplace_back(r.create());
+                auto& zline = r.emplace<Line>(layer->entities.back());
+                zline.points = { { 0,0,ell.semiMinorAxis() }, { 0, 0, ell.semiMinorAxis() + length} };
+                zline.style.color = Color::Cyan;
+            });
+        return layer;
+    }
+}
+
 auto Demo_Rendering = [](Application& app)
 {
+    static Layer::Ptr axesLayer;
     // Better would be vkCmdSetPolygonMode extension, but it is noy supported by VSG
     // This will do in the meantime.
     static vsg::ref_ptr<vsg::SetPrimitiveTopology> setWireframeTopology;        
@@ -27,12 +57,11 @@ auto Demo_Rendering = [](Application& app)
 
         ImGuiLTable::Checkbox("Render continuously", &app.vsgcontext->renderContinuously);
 
-        auto& c = app.mapNode->terrainNode->stategroup->children;
+        auto& c = app.mapNode->terrainNode->children;
         bool wireframe = c.front() == setWireframeTopology;
 
         if (ImGuiLTable::Checkbox("Wireframe", &wireframe))
         {
-            auto& c = app.mapNode->terrainNode->stategroup->children;
             if (wireframe)
                 c.insert(c.begin(), setWireframeTopology);
             else
@@ -54,6 +83,26 @@ auto Demo_Rendering = [](Application& app)
         if (ImGuiLTable::SliderInt("Max LOD", &maxLevel, 0, 20))
         {
             app.mapNode->terrainSettings().maxLevelOfDetail = maxLevel;
+        }
+
+        static bool showAxes = false;
+        if (ImGuiLTable::Checkbox("Show axes", &showAxes))
+        {
+            if (showAxes)
+            {
+                if (!axesLayer)
+                    app.mapNode->map->add(axesLayer = createAxesLayer(app.mapNode->srs().ellipsoid(), app.registry));
+
+                auto r = axesLayer->open(app.io());
+                if (r.failed())
+                    Log()->info("Failed to open axes layer: " + r.error().message);
+            }
+            else if (axesLayer)
+            {
+                axesLayer->close();
+            }
+
+            app.vsgcontext->requestFrame();
         }
 
         ImGuiLTable::End();

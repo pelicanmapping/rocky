@@ -109,7 +109,7 @@ ImageLayer::createImage(const TileKey& key, const IOOptions& io) const
     {
         if (io.services().residentImageCache)
         {
-            auto k = key.str() + '-' + std::to_string(uid()) + "-" + std::to_string(revision());
+            auto k = key.str() + '-' + std::to_string(key.profile.hash()) + '-' + std::to_string(uid()) + "-" + std::to_string(revision());
 
             auto image = io.services().residentImageCache->get(k);
             if (image.has_value())
@@ -378,10 +378,9 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             // Transform the source bounds and clamp them:
             if (sourceBounds.valid())
             {
-                auto xform = sources[0].srs().to(key.extent().srs());
-
-                xform.clamp(sourceBounds.xmin, sourceBounds.ymin);
-                xform.clamp(sourceBounds.xmax, sourceBounds.ymax);
+                //auto xform = sources[0].srs().to(key.extent().srs());
+                //xform.clamp(sourceBounds.xmin, sourceBounds.ymin);
+                //xform.clamp(sourceBounds.xmax, sourceBounds.ymax);
             }
 
             // transform the sample points to the SRS of our source data tiles:

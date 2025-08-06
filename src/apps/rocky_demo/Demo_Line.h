@@ -23,7 +23,7 @@ auto Demo_Line_Absolute = [](Application& app)
         auto& line = registry.emplace<Line>(entity);
 
         // Let's transform geodetic (long, lat) points into our world SRS:
-        auto xform = SRS::WGS84.to(app.mapNode->worldSRS());
+        auto xform = SRS::WGS84.to(app.mapNode->srs());
 
         for (double lon = -180; lon <= 0.0; lon += 0.25)
         {

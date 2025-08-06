@@ -95,7 +95,7 @@ int main(int argc, char** argv)
 
     // main camera
     double nearFarRatio = 0.00001;
-    double R = mapNode->mapSRS().ellipsoid().semiMajorAxis();
+    double R = mapNode->srs().ellipsoid().semiMajorAxis();
 
     auto perspective = vsg::Perspective::create(
         30.0,

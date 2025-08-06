@@ -46,7 +46,7 @@ auto Demo_MVTFeatures = [](Application& app)
                     auto resolutionX = elevationSampler.layer->resolution(key.level).first;
                     if (auto p = elevationSampler.clamp(ex.centroid(), resolutionX, io))
                     {
-                        return vsg::dsphere(to_vsg(p->transform(app.mapNode->worldSRS())), bs.radius);
+                        return vsg::dsphere(to_vsg(p->transform(app.mapNode->srs())), bs.radius);
                     }
                 }
 
@@ -115,7 +115,7 @@ auto Demo_MVTFeatures = [](Application& app)
                     fview.clamper.srs = fview.features.front().srs;
 
                     // generate primitives from features:
-                    auto prims = fview.generate(app.mapNode->worldSRS());
+                    auto prims = fview.generate(app.mapNode->srs());
 
                     if (!prims.empty())
                     {

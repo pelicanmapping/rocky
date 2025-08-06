@@ -151,6 +151,12 @@ namespace ROCKY_NAMESPACE
         //! Readable string represeting this profile as best we can
         std::string toReadableString() const;
 
+        //! Whether this is a composite profile
+        bool isComposite() const;
+
+        //! Access composite profile components.
+        const std::vector<Profile>& compositeMembers() const;
+
     protected:
 
         void setup(const std::string& wellKnownName);
@@ -166,6 +172,7 @@ namespace ROCKY_NAMESPACE
             unsigned    numTilesBaseX = 1u;
             unsigned    numTilesBaseY = 1u;
             std::size_t hash = 0;
+            std::vector<Profile> composite;
         };
         std::shared_ptr<Data> _shared;
     };

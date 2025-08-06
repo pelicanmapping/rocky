@@ -126,14 +126,14 @@ auto Demo_Stats = [](Application& app)
         ImGuiLTable::End();
     }
 
-    auto& engine = app.mapNode->terrainNode->engine;
+    //auto& engine = app.mapNode->terrainNode->engine;
 
     ImGui::SeparatorText("System");
     if (ImGuiLTable::Begin("System-Misc"))
     {
         ImGuiLTable::Text("Last frame rendered", std::to_string(app.frameCount()).c_str());
-        ImGuiLTable::Text("Terrain tiles resident", std::to_string(engine->tiles.size()).c_str());
-        ImGuiLTable::Text("Terrain geometry pool", std::to_string(engine->geometryPool.size()).c_str());
+        //ImGuiLTable::Text("Terrain tiles resident", std::to_string(engine->tiles.size()).c_str());
+        //ImGuiLTable::Text("Terrain geometry pool", std::to_string(engine->geometryPool.size()).c_str());
         ImGuiLTable::End();
     }
 
@@ -152,10 +152,13 @@ auto Demo_Stats = [](Application& app)
         ImGui::TableNextColumn(); ImGui::Text("%d", contentCache->misses());
 
         auto residentImageCache = app.io().services().residentImageCache;
-        ImGui::TableNextColumn(); ImGui::Text("Resident image cache");
-        ImGui::TableNextColumn(); ImGui::Text("%ld", residentImageCache->size());
-        ImGui::TableNextColumn(); ImGui::Text("%d", residentImageCache->hits());
-        ImGui::TableNextColumn(); ImGui::Text("%d", residentImageCache->misses());
+        if (residentImageCache)
+        {
+            ImGui::TableNextColumn(); ImGui::Text("Resident image cache");
+            ImGui::TableNextColumn(); ImGui::Text("%ld", residentImageCache->size());
+            ImGui::TableNextColumn(); ImGui::Text("%d", residentImageCache->hits());
+            ImGui::TableNextColumn(); ImGui::Text("%d", residentImageCache->misses());
+        }
 
         ImGui::EndTable();
     }

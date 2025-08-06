@@ -4,27 +4,26 @@
  * MIT License
  */
 #include "GeometryPool.h"
-#include "TerrainSettings.h"
-#include <vsg/commands/DrawIndexed.h>
+#include <rocky/vsg/VSGUtils.h>
 
 #undef LC
 #define LC "[GeometryPool] "
 
 using namespace ROCKY_NAMESPACE;
 
-GeometryPool::GeometryPool(const Profile& profile)
+GeometryPool::GeometryPool(const SRS& renderingSRS)
 {
-    _worldSRS = profile.srs().isGeodetic() ? profile.srs().geocentricSRS() : profile.srs();
+    _renderingSRS = renderingSRS;
 
     // activate debugging mode
     if (util::isEnvVarSet("ROCKY_DEBUG_REX_GEOMETRY_POOL"))
     {
-        _debug = true;
+        debug = true;
     }
 
     if (util::isEnvVarSet("ROCKY_NO_GEOMETRY_POOL"))
     {
-        _enabled = false;
+        enabled = false;
         Log()->info(LC "Geometry pool disabled (environment)");
     }
 }
@@ -49,7 +48,7 @@ GeometryPool::getPooledGeometry(const TileKey& tileKey, const Settings& settings
 
     ROCKY_TODO("MeshEditor meshEditor(tileKey, tileSize, map, nullptr);");
 
-    if ( _enabled )
+    if ( enabled )
     {
         // Protect access on a per key basis to prevent the same key from being created twice.  
         // This was causing crashes with multiple windows opening and closing.
@@ -212,7 +211,6 @@ namespace
     struct Locator
     {
         GeoExtent tile_extent;
-        Ellipsoid ellipsoid;
         SRSOperation tile_to_world;
 
         Locator(const GeoExtent& extent, const SRS& worldSRS)
@@ -221,22 +219,22 @@ namespace
             tile_to_world = tile_extent.srs().to(worldSRS);
         }
 
-        inline glm::dvec3 unitToWorld(const glm::dvec3& unit) const
+        template<typename DVEC3>
+        inline DVEC3 unitToWorld(const DVEC3& unit) const
         {
             // unit to tile:
-            glm::dvec3 tile(
+            DVEC3 tile(
                 unit.x * tile_extent.width() + tile_extent.xmin(),
                 unit.y * tile_extent.height() + tile_extent.ymin(),
                 unit.z);
 
-            glm::dvec3 world;
+            DVEC3 world;
             tile_to_world(tile, world);
 
             return world;
         }
     };
 
-    //template<class SPHERE, class VEC3>
     inline void expandSphereToInclude(vsg::dsphere& sphere, const vsg::dvec3& p)
     {
         auto dv = p - sphere.center;
@@ -253,10 +251,9 @@ vsg::ref_ptr<SharedGeometry>
 GeometryPool::createGeometry(const TileKey& tileKey, const Settings& settings, Cancelable* progress) const
 {
     // Establish a local reference frame for the tile:
-    GeoPoint centroid = tileKey.extent().centroid();
-    centroid.transformInPlace(_worldSRS);
-    glm::dmat4 world2local = glm::inverse(_worldSRS.topocentricToWorldMatrix(
-        glm::dvec3(centroid.x, centroid.y, centroid.z)));
+    GeoPoint centroid = tileKey.extent().centroid().transform(_renderingSRS);
+
+    glm::dmat4 world2local = glm::inverse(_renderingSRS.topocentricToWorldMatrix(centroid));
 
     // Attempt to calculate the number of verts in the surface geometry.
     bool needsSkirt = settings.skirtRatio > 0.0f;
@@ -271,7 +268,6 @@ GeometryPool::createGeometry(const TileKey& tileKey, const Settings& settings, C
     ROCKY_TODO("GLenum mode = gpuTessellation ? GL_PATCHES : GL_TRIANGLES;");
 
     vsg::dsphere tileBound;
-    //Sphere tileBound;
 
     // the initial vertex locations:
     auto verts = vsg::vec3Array::create(numVerts);
@@ -295,7 +291,7 @@ GeometryPool::createGeometry(const TileKey& tileKey, const Settings& settings, C
         glm::dvec3 world_plus_one;
         glm::dvec3 normal;
 
-        Locator locator(tileKey.extent(), _worldSRS);
+        Locator locator(tileKey.extent(), _renderingSRS);
 
         for (unsigned row = 0; row < tileSize; ++row)
         {
@@ -310,7 +306,7 @@ GeometryPool::createGeometry(const TileKey& tileKey, const Settings& settings, C
                 local = world2local * world;
                 verts->set(i, vsg::vec3(local.x, local.y, local.z));
 
-                expandSphereToInclude(tileBound, vsg::dvec3(local.x, local.y, local.z));
+                expandSphereToInclude(tileBound, to_vsg(local));
 
                 // Use the Z coord as a type marker
                 float marker = VERTEX_VISIBLE;
@@ -359,7 +355,7 @@ GeometryPool::createGeometry(const TileKey& tileKey, const Settings& settings, C
         }
 
         auto indices =
-            _enabled ? _defaultIndices : createIndices(settings);
+            enabled ? _defaultIndices : createIndices(settings);
 
         // the geometry:
         auto geom = SharedGeometry::create();
