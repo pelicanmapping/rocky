@@ -107,7 +107,7 @@ MapNode::update(VSGContext context)
 
     bool changes = false;
 
-    if (terrainNode->map == nullptr)
+    if (terrainNode->map == nullptr || terrainNode->profile != profile)
     {
         auto st = terrainNode->setMap(map, profile, srs(), context);
 

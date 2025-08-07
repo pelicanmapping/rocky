@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -12,29 +12,37 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    Layer::Ptr createAxesLayer(const Ellipsoid& ell, Registry& registry)
+    Layer::Ptr createAxesLayer(const Ellipsoid& ell, VSGContext vsg)
     {
-        auto layer = EntityCollectionLayer::create(registry);
+        const float len = 2.0 * (ell.semiMajorAxis() + 1e6);
+        const float width = 100'000;
+
+        auto group = vsg::Group::create();
+
+        vsg::Builder builder;
+        vsg::StateInfo si;
+        si.lighting = false;
+
+        vsg::GeometryInfo gi;
+        gi.dx = { width, 0, 0 }, gi.dy = { 0, width, 0 }, gi.dz = { 0, 0, len };
+
+        gi.color = to_vsg(Color::Cyan);
+        group->addChild(builder.createCylinder(gi, si));
+
+        gi.color = to_vsg(Color::Lime);
+        gi.transform = vsg::rotate(vsg::dquat({ 0,0,1 }, { 1,0,0 }));
+        group->addChild(builder.createCylinder(gi, si));
+
+        gi.color = to_vsg(Color::Red);
+        gi.transform = vsg::rotate(vsg::dquat({ 0,0,1 }, { 0,1,0 }));
+        group->addChild(builder.createCylinder(gi, si));
+
+        auto layer = NodeLayer::create();
         layer->name = "Axes";
-        registry.write([&](entt::registry& r)
-            {
-                const double length = 1e6;
+        layer->node = group;
 
-                layer->entities.emplace_back(r.create());
-                auto& xline = r.emplace<Line>(layer->entities.back());
-                xline.points = { { ell.semiMajorAxis(),0,0 }, { ell.semiMajorAxis() + length, 0, 0} };
-                xline.style.color = Color::Lime;
+        vsg->compile(group);
 
-                layer->entities.emplace_back(r.create());
-                auto& yline = r.emplace<Line>(layer->entities.back());
-                yline.points = { { 0,ell.semiMajorAxis(),0 }, { 0, ell.semiMajorAxis() + length, 0} };
-                yline.style.color = Color::Red;
-
-                layer->entities.emplace_back(r.create());
-                auto& zline = r.emplace<Line>(layer->entities.back());
-                zline.points = { { 0,0,ell.semiMinorAxis() }, { 0, 0, ell.semiMinorAxis() + length} };
-                zline.style.color = Color::Cyan;
-            });
         return layer;
     }
 }
@@ -91,7 +99,7 @@ auto Demo_Rendering = [](Application& app)
             if (showAxes)
             {
                 if (!axesLayer)
-                    app.mapNode->map->add(axesLayer = createAxesLayer(app.mapNode->srs().ellipsoid(), app.registry));
+                    app.mapNode->map->add(axesLayer = createAxesLayer(app.mapNode->srs().ellipsoid(), app.vsgcontext));
 
                 auto r = axesLayer->open(app.io());
                 if (r.failed())
@@ -103,6 +111,27 @@ auto Demo_Rendering = [](Application& app)
             }
 
             app.vsgcontext->requestFrame();
+        }
+
+        if (!app.mapNode->srs().isProjected())
+        {
+            static std::vector<std::string> options = { "global-geodetic", "global-qsc" };
+            int index = util::indexOf(options, app.mapNode->profile.wellKnownName());
+            if (index >= 0)
+            {
+                if (ImGuiLTable::BeginCombo("Rendering profile", options[index].c_str()))
+                {
+                    for (int i = 0; i < options.size(); ++i)
+                    {
+                        if (ImGui::RadioButton(options[i].c_str(), index == i))
+                        {
+                            app.mapNode->profile = Profile(options[i]);
+                            app.vsgcontext->requestFrame();
+                        }
+                    }
+                    ImGuiLTable::EndCombo();
+                }
+            }
         }
 
         ImGuiLTable::End();

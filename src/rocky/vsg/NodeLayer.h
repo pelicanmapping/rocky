@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -9,6 +9,9 @@
 
 namespace ROCKY_NAMESPACE
 {
+    /**
+    * NodeLayer enscapulates a VSG Node in a Rocky map layer.
+    */
     class ROCKY_EXPORT NodeLayer : public Inherit<rocky::VisibleLayer, NodeLayer>
     {
     public:
@@ -21,5 +24,11 @@ namespace ROCKY_NAMESPACE
         }
 
         vsg::ref_ptr<vsg::Node> node;
+
+    protected:
+
+        Result<> openImplementation(const IOOptions& io) override;
+
+        void closeImplementation() override;
     };
 }

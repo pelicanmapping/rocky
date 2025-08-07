@@ -31,6 +31,13 @@ namespace ROCKY_NAMESPACE
         //! Whther and environment variable is set at all
         extern ROCKY_EXPORT bool isEnvVarSet(const char* name);
 
+        //! Index of an element in a container
+        template<typename T, typename V>
+        inline int indexOf(const T& container, const V& v)
+        {
+            return std::distance(container.begin(), std::find(container.begin(), container.end(), v));
+        }
+
         //! Replacement for sprintf
         //! https://stackoverflow.com/a/26221725/4218920
         template<typename ... Args>

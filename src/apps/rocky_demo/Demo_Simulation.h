@@ -56,8 +56,8 @@ auto Demo_Simulation = [](Application& app)
     const char* icon_location = "https://readymap.org/readymap/filemanager/download/public/icons/airport.png";
 
     // Make an entity for us to tether to and set it in motion
-    static EntityCollectionLayer::Ptr layer;
-    //static std::set<entt::entity> platforms;
+    static NodeLayer::Ptr layer;
+    static vsg::ref_ptr<EntityNode> entityNode;
     static Status status;
     static Simulator sim(app);
     static ImGuiImage widgetImage;
@@ -86,119 +86,121 @@ auto Demo_Simulation = [](Application& app)
 
     if (!layer)
     {
-        layer = EntityCollectionLayer::create(app.registry);
+        entityNode = EntityNode::create(app.registry);
+
+        app.registry.write([&](entt::registry& registry)
+            {
+                std::mt19937 mt;
+                std::uniform_real_distribution<float> rand_unit(0.0, 1.0);
+
+                auto render_widget = [&](WidgetInstance& i)
+                    {
+                        Transform& t = i.registry.get<Transform>(i.entity);
+
+                        auto point = t.position.transform(SRS::WGS84);
+
+                        i.begin();
+
+                        i.center.x += (i.size.x / 2) - (widgetImage.size().y / 2);
+                        i.center.y += (i.size.y / 2) - (widgetImage.size().y / 2);
+
+                        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
+                        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.35f));
+                        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.0f));
+
+                        i.render([&]()
+                            {
+                                auto deviceID = app.vsgcontext->device()->deviceID;
+                                if (ImGui::BeginTable("asset", 2))
+                                {
+                                    ImGui::TableNextColumn();
+                                    ImGui::Image(widgetImage.id(deviceID), widgetImage.size());
+
+                                    ImGui::TableNextColumn();
+                                    ImGui::Text("ID:  %s", i.widget.text.c_str());
+                                    ImGui::Separator();
+                                    ImGui::Text("Lat: %.2f", point.y);
+                                    ImGui::Separator();
+                                    ImGui::Text("Lon: %.2f", point.x);
+                                    ImGui::Separator();
+                                    ImGui::Text("Alt: %.0f", point.z);
+
+                                    ImGui::EndTable();
+                                }
+                            });
+
+                        ImGui::PopStyleColor(2);
+                        ImGui::PopStyleVar();
+
+                        i.end();
+
+                        // update decluttering volume
+                        auto& dc = i.registry.get<Declutter>(i.entity);
+                        dc.rect = Rect(i.size.x, i.size.y);
+                    };
+
+                auto ll_to_ecef = SRS::WGS84.to(SRS::ECEF);
+
+                entityNode->entities.reserve(num_platforms);
+
+                for (unsigned i = 0; i < num_platforms; ++i)
+                {
+                    float t = (float)i / (float)(num_platforms);
+
+                    // Create a host entity:
+                    auto entity = registry.create();
+
+                    double lat = -80.0 + rand_unit(mt) * 160.0;
+                    double lon = -180 + rand_unit(mt) * 360.0;
+                    double alt = 1000.0 + t * 100000.0;
+                    GeoPoint pos_ecef = GeoPoint(SRS::WGS84, lon, lat, alt).transform(SRS::ECEF);
+
+                    // Add a transform component:
+                    auto& transform = registry.emplace<Transform>(entity);
+                    transform.position = pos_ecef;
+
+                    // We need this to support the drop-line. There is a small performance hit.
+                    transform.topocentric = true;
+
+                    // Add a motion component to represent movement:
+                    double initial_bearing = -180.0 + rand_unit(mt) * 360.0;
+                    auto& motion = registry.emplace<MotionGreatCircle>(entity);
+                    motion.velocity = { -7500 + rand_unit(mt) * 15000, 0.0, 0.0 };
+                    motion.normalAxis = pos_ecef.srs.ellipsoid().rotationAxis(pos_ecef, initial_bearing);
+
+                    // Add a labeling widget:
+                    auto& widget = registry.emplace<Widget>(entity);
+                    widget.text = std::to_string(i);
+                    widget.render = render_widget;
+
+                    // How about a drop line?
+                    // Since the drop line is relative to the platfrom, we have to enable
+                    // transform.localTangentPlane = true (see above)
+                    auto& drop_line = registry.emplace<Line>(entity);
+                    drop_line.points = { {0.0, 0.0, 0.0}, {0.0, 0.0, -1e6} };
+                    drop_line.style.width = 1.5f;
+                    drop_line.style.color = Color{ 0.4f, 0.4f, 0.4f, 1.0f };
+
+                    // Decluttering control. The presence of this component will allow the entity
+                    // to participate in decluttering when it's enabled.
+                    auto& declutter = registry.emplace<Declutter>(entity);
+                    declutter.priority = alt;
+
+                    entityNode->entities.emplace_back(entity);
+                }
+            });
+
+        layer = NodeLayer::create(entityNode);
         layer->name = "Simulation Entities";
         if (layer->open(app.io()))
             app.mapNode->map->add(layer);
-
-        auto [lock, registry] = app.registry.write();
-
-        std::mt19937 mt;
-        std::uniform_real_distribution<float> rand_unit(0.0, 1.0);
-
-        auto render_widget = [&](WidgetInstance& i)
-            {
-                Transform& t = i.registry.get<Transform>(i.entity);
-
-                auto point = t.position.transform(SRS::WGS84);
-
-                i.begin();
-
-                i.center.x += (i.size.x / 2) - (widgetImage.size().y / 2);
-                i.center.y += (i.size.y / 2) - (widgetImage.size().y / 2);
-
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
-                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.35f));
-                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.0f));
-
-                i.render([&]()
-                    {
-                        auto deviceID = app.vsgcontext->device()->deviceID;
-                        if (ImGui::BeginTable("asset", 2))
-                        {
-                            ImGui::TableNextColumn();
-                            ImGui::Image(widgetImage.id(deviceID), widgetImage.size());
-
-                            ImGui::TableNextColumn();
-                            ImGui::Text("ID:  %s", i.widget.text.c_str());
-                            ImGui::Separator();
-                            ImGui::Text("Lat: %.2f", point.y);
-                            ImGui::Separator();
-                            ImGui::Text("Lon: %.2f", point.x);
-                            ImGui::Separator();
-                            ImGui::Text("Alt: %.0f", point.z);
-
-                            ImGui::EndTable();
-                        }
-                    });
-
-                ImGui::PopStyleColor(2);
-                ImGui::PopStyleVar();
-
-                i.end();
-
-                // update decluttering volume
-                auto& dc = i.registry.get<Declutter>(i.entity);
-                dc.rect = Rect(i.size.x, i.size.y);
-            };
-
-        auto ll_to_ecef = SRS::WGS84.to(SRS::ECEF);
-
-        layer->entities.reserve(num_platforms);
-
-        for (unsigned i = 0; i < num_platforms; ++i)
-        {
-            float t = (float)i / (float)(num_platforms);
-
-            // Create a host entity:
-            auto entity = registry.create();
-
-            double lat = -80.0 + rand_unit(mt) * 160.0;
-            double lon = -180 + rand_unit(mt) * 360.0;
-            double alt = 1000.0 + t * 100000.0;
-            GeoPoint pos_ecef = GeoPoint(SRS::WGS84, lon, lat, alt).transform(SRS::ECEF);
-
-            // Add a transform component:
-            auto& transform = registry.emplace<Transform>(entity);
-            transform.position = pos_ecef;
-
-            // We need this to support the drop-line. There is a small performance hit.
-            transform.topocentric = true;
-
-            // Add a motion component to represent movement:
-            double initial_bearing = -180.0 + rand_unit(mt) * 360.0;
-            auto& motion = registry.emplace<MotionGreatCircle>(entity);
-            motion.velocity = { -7500 + rand_unit(mt) * 15000, 0.0, 0.0 };
-            motion.normalAxis = pos_ecef.srs.ellipsoid().rotationAxis(pos_ecef, initial_bearing);
-
-            // Add a labeling widget:
-            auto& widget = registry.emplace<Widget>(entity);
-            widget.text = std::to_string(i);
-            widget.render = render_widget;
-
-            // How about a drop line?
-            // Since the drop line is relative to the platfrom, we have to enable
-            // transform.localTangentPlane = true (see above)
-            auto& drop_line = registry.emplace<Line>(entity);
-            drop_line.points = { {0.0, 0.0, 0.0}, {0.0, 0.0, -1e6} };
-            drop_line.style.width = 1.5f;
-            drop_line.style.color = Color{ 0.4f, 0.4f, 0.4f, 1.0f };
-
-            // Decluttering control. The presence of this component will allow the entity
-            // to participate in decluttering when it's enabled.
-            auto& declutter = registry.emplace<Declutter>(entity);
-            declutter.priority = alt;
-
-            layer->entities.emplace_back(entity);
-            //platforms.emplace(entity);
-        }
 
         sim.run();
 
         app.vsgcontext->requestFrame();
     }
 
-    ImGui::Text("Simulating %ld platforms", layer->entities.size());
+    ImGui::Text("Simulating %ld platforms", entityNode->entities.size());
     ImGui::Text("NOTE: toggle visibility in the Map panel");
 
     if (ImGuiLTable::Begin("simulation"))
@@ -223,7 +225,7 @@ auto Demo_Simulation = [](Application& app)
                 vp.pointFunction = [&]()
                     {
                         auto [lock, registry] = app.registry.read();
-                        return registry.get<Transform>(*layer->entities.begin()).position;
+                        return registry.get<Transform>(*entityNode->entities.begin()).position;
                     };
 
                 manip->setViewpoint(vp, 2.0s);

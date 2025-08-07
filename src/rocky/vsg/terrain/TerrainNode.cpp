@@ -143,6 +143,14 @@ TerrainNode::setMap(Map::Ptr in_map, const Profile& in_profile, const SRS& in_re
         _callbacks.clear();
     }
 
+    // dispose of all children
+    for (auto& c : children)
+    {
+        context->dispose(c);
+    }
+
+    children.clear();
+
     map = in_map;
     profile = in_profile;
     renderingSRS = in_renderingSRS;
@@ -161,16 +169,10 @@ TerrainNode::setMap(Map::Ptr in_map, const Profile& in_profile, const SRS& in_re
             });
     }
 
-    for (auto& c : children)
-    {
-        context->dispose(c);
-    }
-
-    children.clear();
-
     auto r = createProfiles(context);
     if (r.ok())
     {
+        status.clear();
         reset(context);
     }
     else

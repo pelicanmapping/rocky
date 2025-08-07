@@ -12,7 +12,7 @@
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
 
-auto Demo_Viewpoints = [](Application& app)
+auto Demo_MapManipulator = [](Application& app)
 {
     auto first_view = app.display.getView(app.viewer->windows().front(), 0, 0);
     if (first_view)
@@ -42,6 +42,10 @@ auto Demo_Viewpoints = [](Application& app)
                 ImGuiLTable::Text("Heading:", "%.1lf", (double)vp.heading->value());
                 ImGuiLTable::Text("Pitch:", "%.1lf", (double)vp.pitch->value());
                 ImGuiLTable::Text("Range:", "%.1lf", (double)vp.range->value());
+
+                ImGuiLTable::Checkbox("Lock azimuth", &manip->settings.lockAzimuthWhilePanning);
+                ImGuiLTable::Checkbox("Zoom to mouse", &manip->settings.zoomToMouse);
+
                 ImGuiLTable::End();
             }
 

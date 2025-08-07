@@ -15,7 +15,7 @@ using namespace ROCKY_NAMESPACE::util;
 #define LC "[Profile] "
 
 void
-Profile::setup(const SRS& srs, const Box& bounds, unsigned width0, unsigned height0)
+Profile::setup(const SRS& srs, const Box& bounds, unsigned width0, unsigned height0, const std::vector<Profile>& subprofiles)
 {
     if (srs.valid())
     {
@@ -68,6 +68,8 @@ Profile::setup(const SRS& srs, const Box& bounds, unsigned width0, unsigned heig
         // make a profile sig (sans srs) and an srs sig for quick comparisons.
         std::string temp = to_json();
         _shared->hash = std::hash<std::string>()(temp);
+
+        _shared->composite = subprofiles;
     }
 }
 
@@ -134,14 +136,10 @@ Profile::Profile(const std::string& wellKnownName)
     setup(wellKnownName);
 }
 
-Profile::Profile(
-    const SRS& srs,
-    const Box& bounds,
-    unsigned x_tiles_at_lod0,
-    unsigned y_tiles_at_lod0)
+Profile::Profile(const SRS& srs, const Box& bounds, unsigned x_tiles_at_lod0, unsigned y_tiles_at_lod0, const std::vector<Profile>& subprofiles)
 {
     _shared = std::make_shared<Data>();
-    setup(srs, bounds, x_tiles_at_lod0, y_tiles_at_lod0);
+    setup(srs, bounds, x_tiles_at_lod0, y_tiles_at_lod0, subprofiles);
 }
 
 void
@@ -165,7 +163,7 @@ Profile::setup(const std::string& name)
     }
     else if (util::ciEquals(name, "global-geodetic"))
     {
-        _shared->wellKnownName = name;
+        _shared->wellKnownName = "global-geodetic";
 
         setup(
             SRS::WGS84,
@@ -174,7 +172,7 @@ Profile::setup(const std::string& name)
     }
     else if (util::ciEquals(name, "spherical-mercator"))
     {
-        _shared->wellKnownName = name;
+        _shared->wellKnownName = "spherical-mercator";
 
         setup(
             SRS::SPHERICAL_MERCATOR,
@@ -183,7 +181,7 @@ Profile::setup(const std::string& name)
     }
     else if (util::ciEquals(name, "moon"))
     {
-        _shared->wellKnownName = name;
+        _shared->wellKnownName = "moon";
 
         setup(
             SRS("moon"),
@@ -197,9 +195,9 @@ Profile::setup(const std::string& name)
             Box(-180.0, -90.0, 180.0, 90.0),
             2, 1);
     }
-    else if (util::ciEquals(name, "qsc"))
+    else if (util::ciEquals(name, "global-qsc") || util::ciEquals(name, "qsc"))
     {
-        _shared->wellKnownName = name;
+        _shared->wellKnownName = "global-qsc";
         _shared->composite.emplace_back(Profile("qsc+z"));
         _shared->composite.emplace_back(Profile("qsc-z"));
         _shared->composite.emplace_back(Profile("qsc+x"));

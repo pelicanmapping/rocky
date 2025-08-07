@@ -351,11 +351,8 @@ MapManipulator::Settings::getAction(int event_type, int input_mask, int modkey_m
 
 /************************************************************************/
 
-MapManipulator::MapManipulator(
-    vsg::ref_ptr<MapNode> mapNode,
-    vsg::ref_ptr<vsg::Window> window,
-    vsg::ref_ptr<vsg::Camera> camera,
-    VSGContext& context) :
+MapManipulator::MapManipulator(vsg::ref_ptr<MapNode> mapNode, vsg::ref_ptr<vsg::Window> window,
+    vsg::ref_ptr<vsg::Camera> camera, VSGContext& context) :
 
     Inherit(),
     _mapNode_weakptr(mapNode),
@@ -380,77 +377,68 @@ MapManipulator::~MapManipulator()
 void
 MapManipulator::configureDefaultSettings()
 {
-    _settings = std::make_shared<Settings>();
+    settings = Settings();
 
     // install default action bindings:
     ActionOptions options;
 
-    _settings->bindKey(ACTION_HOME, vsg::KEY_Space);
+    settings.bindKey(ACTION_HOME, vsg::KEY_Space);
 
     options.clear();
     options.add(OPTION_CONTINUOUS, true);
 
     // zoom as you hold the right button:
-    _settings->bindMouse(ACTION_ZOOM, MOUSE_RIGHT_BUTTON, 0L, options);
-    _settings->bindMouse(ACTION_ZOOM, MOUSE_RIGHT_BUTTON, vsg::MODKEY_Control, options);
+    settings.bindMouse(ACTION_ZOOM, MOUSE_RIGHT_BUTTON, 0L, options);
+    settings.bindMouse(ACTION_ZOOM, MOUSE_RIGHT_BUTTON, vsg::MODKEY_Control, options);
 
-    _settings->bindMouse(ACTION_PAN, MOUSE_LEFT_BUTTON, 0L);
-    _settings->bindMouse(ACTION_PAN, MOUSE_LEFT_BUTTON, vsg::MODKEY_Control, options);
+    settings.bindMouse(ACTION_PAN, MOUSE_LEFT_BUTTON, 0L);
+    settings.bindMouse(ACTION_PAN, MOUSE_LEFT_BUTTON, vsg::MODKEY_Control, options);
 
     // rotate with either the middle button or the left+right buttons:
-    _settings->bindMouse(ACTION_ROTATE, MOUSE_MIDDLE_BUTTON, 0L);
-    _settings->bindMouse(ACTION_ROTATE, MOUSE_LEFT_BUTTON | MOUSE_RIGHT_BUTTON, 0L);
-    _settings->bindMouse(ACTION_ROTATE, MOUSE_MIDDLE_BUTTON, vsg::MODKEY_Control, options);
-    _settings->bindMouse(ACTION_ROTATE, MOUSE_LEFT_BUTTON | MOUSE_RIGHT_BUTTON, vsg::MODKEY_Control, options);
+    settings.bindMouse(ACTION_ROTATE, MOUSE_MIDDLE_BUTTON, 0L);
+    settings.bindMouse(ACTION_ROTATE, MOUSE_LEFT_BUTTON | MOUSE_RIGHT_BUTTON, 0L);
+    settings.bindMouse(ACTION_ROTATE, MOUSE_MIDDLE_BUTTON, vsg::MODKEY_Control, options);
+    settings.bindMouse(ACTION_ROTATE, MOUSE_LEFT_BUTTON | MOUSE_RIGHT_BUTTON, vsg::MODKEY_Control, options);
 
     options.add(OPTION_SCALE_X, 5.0);
     options.add(OPTION_SCALE_Y, 5.0);
 
     // zoom with the scroll wheel:
-    _settings->bindScroll(ACTION_ZOOM_IN, DIR_UP);
-    _settings->bindScroll(ACTION_ZOOM_OUT, DIR_DOWN);
+    settings.bindScroll(ACTION_ZOOM_IN, DIR_UP);
+    settings.bindScroll(ACTION_ZOOM_OUT, DIR_DOWN);
 
     // pan around with arrow keys:
-    _settings->bindKey(ACTION_PAN_LEFT, vsg::KEY_Left);
-    _settings->bindKey(ACTION_PAN_RIGHT, vsg::KEY_Right);
-    _settings->bindKey(ACTION_PAN_UP, vsg::KEY_Up);
-    _settings->bindKey(ACTION_PAN_DOWN, vsg::KEY_Down);
+    settings.bindKey(ACTION_PAN_LEFT, vsg::KEY_Left);
+    settings.bindKey(ACTION_PAN_RIGHT, vsg::KEY_Right);
+    settings.bindKey(ACTION_PAN_UP, vsg::KEY_Up);
+    settings.bindKey(ACTION_PAN_DOWN, vsg::KEY_Down);
 
     // double click the left button to zoom in on a point:
     options.clear();
     options.add(OPTION_GOTO_RANGE_FACTOR, 0.4);
-    _settings->bindMouseDoubleClick(ACTION_GOTO, MOUSE_LEFT_BUTTON, 0L, options);
+    settings.bindMouseDoubleClick(ACTION_GOTO, MOUSE_LEFT_BUTTON, 0L, options);
 
     // double click the right button (or CTRL-left button) to zoom out to a point
     options.clear();
     options.add(OPTION_GOTO_RANGE_FACTOR, 2.5);
-    _settings->bindMouseDoubleClick(ACTION_GOTO, MOUSE_RIGHT_BUTTON, 0L, options);
-    _settings->bindMouseDoubleClick(ACTION_GOTO, MOUSE_LEFT_BUTTON, vsg::MODKEY_Control, options);
+    settings.bindMouseDoubleClick(ACTION_GOTO, MOUSE_RIGHT_BUTTON, 0L, options);
+    settings.bindMouseDoubleClick(ACTION_GOTO, MOUSE_LEFT_BUTTON, vsg::MODKEY_Control, options);
 
     // map multi-touch pinch to a discrete zoom
     options.clear();
-    _settings->bindPinch(ACTION_ZOOM, options);
+    settings.bindPinch(ACTION_ZOOM, options);
 
     options.clear();
-    _settings->bindTwist(ACTION_ROTATE, options);
-    _settings->bindMultiDrag(ACTION_ROTATE, options);
+    settings.bindTwist(ACTION_ROTATE, options);
+    settings.bindMultiDrag(ACTION_ROTATE, options);
 
-    _settings->lockAzimuthWhilePanning = true;
-    _settings->zoomToMouse = true;
+    settings.lockAzimuthWhilePanning = true;
+    settings.zoomToMouse = true;
 }
 
 void
-MapManipulator::applySettings(std::shared_ptr<Settings> settings)
+MapManipulator::dirty()
 {
-    if ( settings )
-    {
-        _settings = settings;
-    }
-    else
-    {
-        configureDefaultSettings();
-    }
-
     _task._type = TASK_NONE;
 
     // apply new pitch restrictions
@@ -458,15 +446,9 @@ MapManipulator::applySettings(std::shared_ptr<Settings> settings)
     getEulerAngles(_state.localRotation, nullptr, &old_pitch_rad);
 
     double old_pitch_deg = rad2deg(old_pitch_rad);
-    double new_pitch_deg = clamp(old_pitch_deg, _settings->minPitch, _settings->maxPitch);
+    double new_pitch_deg = clamp(old_pitch_deg, settings.minPitch, settings.maxPitch);
 
     setDistance(_state.distance);
-}
-
-std::shared_ptr<MapManipulator::Settings>
-MapManipulator::getSettings() const
-{
-    return _settings;
 }
 
 void
@@ -495,18 +477,27 @@ MapManipulator::createLocalCoordFrame(const vsg::dvec3& worldPos, vsg::dmat4& ou
 void
 MapManipulator::setCenter(const vsg::dvec3& worldPos)
 {
-    _state.center = worldPos;
-
     if (_worldSRS.isGeocentric())
     {
-        glm::dmat4 m = _worldSRS.topocentricToWorldMatrix(to_glm(worldPos));
+        glm::dmat4 new_topo_frame = _worldSRS.topocentricToWorldMatrix(to_glm(worldPos));
 
-        // remove the translation component
-        _state.centerRotation = to_vsg(m);
-        _state.centerRotation[3][0] = 0;
-        _state.centerRotation[3][1] = 0;
-        _state.centerRotation[3][2] = 0;
+        if (settings.lockAzimuthWhilePanning)
+        {
+            // remove the translation component
+            _state.centerRotation = to_vsg(new_topo_frame);
+            _state.centerRotation[3][0] = 0;
+            _state.centerRotation[3][1] = 0;
+            _state.centerRotation[3][2] = 0;
+        }
+        else
+        {
+            glm::dquat delta = glm::dquat(to_glm(_state.center), to_glm(worldPos));
+            glm::dquat old = glm::quat_cast(to_glm(_state.centerRotation));
+            _state.centerRotation = to_vsg(glm::mat4_cast(delta * old));
+        }
     }
+
+    _state.center = worldPos;
 }
 
 
@@ -660,7 +651,7 @@ MapManipulator::setViewpoint(const Viewpoint& vp, std::chrono::duration<float> d
         double de = length(endWorld - startWorld);
 
         // maximum height during viewpoint transition
-        if (_settings->arcViewpoints)
+        if (settings.arcViewpoints)
         {
             _state.setVPArcHeight = std::max(de - fabs(dh), 0.0);
         }
@@ -685,13 +676,13 @@ MapManipulator::setViewpoint(const Viewpoint& vp, std::chrono::duration<float> d
 
 #if 0
         // Adjust the duration if necessary.
-        if (_settings->getAutoViewpointDurationEnabled())
+        if (settings.getAutoViewpointDurationEnabled())
         {
             double maxDistance = _worldSRS.ellipsoid().semiMajorAxis();
             double ratio = clamp(de / maxDistance, 0.0, 1.0);
             ratio = accelerationInterp(ratio, -4.5);
             double minDur, maxDur;
-            _settings->getAutoViewpointDurationLimits(minDur, maxDur);
+            settings.getAutoViewpointDurationLimits(minDur, maxDur);
             _state.setVPDuration.set(minDur + ratio * (maxDur - minDur), Units::SECONDS);
         }
 #endif
@@ -919,6 +910,13 @@ MapManipulator::home()
         setCenter(vsg::dvec3(0, 0, 0));
     }
 
+    // reset to +Y up:
+    auto topo_frame = _worldSRS.topocentricToWorldMatrix(to_glm(_state.center));
+    _state.centerRotation = to_vsg(topo_frame);
+    _state.centerRotation[3][0] = 0;
+    _state.centerRotation[3][1] = 0;
+    _state.centerRotation[3][2] = 0;
+
     setDistance(radius * 3.5);
 
     clearEvents();
@@ -947,7 +945,7 @@ MapManipulator::apply(vsg::KeyPressEvent& keyPress)
 
     //std::cout << "KeyPressEvent" << std::endl;
 
-    _lastAction = _settings->getAction(
+    _lastAction = settings.getAction(
         EVENT_KEY_DOWN,
         keyPress.keyBase,
         keyPress.keyModifier);
@@ -991,7 +989,7 @@ MapManipulator::apply(vsg::ButtonReleaseEvent& buttonRelease)
 
     if (isMouseClick(buttonRelease))
     {
-        _lastAction = _settings->getAction(
+        _lastAction = settings.getAction(
             EVENT_MOUSE_CLICK,
             _buttonPress->button,
             _buttonPress->mask);
@@ -1033,7 +1031,7 @@ MapManipulator::apply(vsg::MoveEvent& moveEvent)
     // Good to go, process the move:
     vsg::ref_ptr<vsg::Window> window = moveEvent.window;
 
-    _lastAction = _settings->getAction(
+    _lastAction = settings.getAction(
         EVENT_MOUSE_DRAG,
         moveEvent.mask, // button mask
         _keyPress.has_value() ? _keyPress->keyModifier : 0);
@@ -1075,7 +1073,7 @@ MapManipulator::apply(vsg::ScrollWheelEvent& scrollEvent)
         scrollEvent.delta.y > 0 ? DIR_DOWN :
         DIR_NA;
 
-    _lastAction = _settings->getAction(
+    _lastAction = settings.getAction(
         EVENT_SCROLL,
         dir,
         _keyPress.has_value() ? _keyPress->keyModifier : 0);
@@ -1416,7 +1414,7 @@ MapManipulator::pan(double dx, double dy)
     setCenter(new_center);
 
 #if 0
-        if ( _settings->getLockAzimuthWhilePanning() )
+        if ( settings.getLockAzimuthWhilePanning() )
         {
             // in azimuth-lock mode, _centerRotation maintains a consistent north vector
             _centerRotation = computeCenterRotation( _center );
@@ -1448,8 +1446,8 @@ MapManipulator::pan(double dx, double dy)
     _viewOffset.y() -= dy * scale;
 
     //Clamp values within range
-    _viewOffset.x() = clamp(_viewOffset.x(), -_settings->getMaxXOffset(), _settings->getMaxXOffset());
-    _viewOffset.y() = clamp(_viewOffset.y(), -_settings->getMaxYOffset(), _settings->getMaxYOffset());
+    _viewOffset.x() = clamp(_viewOffset.x(), -settings.getMaxXOffset(), settings.getMaxXOffset());
+    _viewOffset.y() = clamp(_viewOffset.y(), -settings.getMaxYOffset(), settings.getMaxYOffset());
     }
 #endif
 
@@ -1460,8 +1458,8 @@ void
 MapManipulator::rotate(double dx, double dy)
 {
     // clamp the local pitch delta; never allow the pitch to hit -90.
-    double minp = deg2rad(std::min(_settings->minPitch, -89.9));
-    double maxp = deg2rad(std::max(_settings->maxPitch, -0.1));
+    double minp = deg2rad(std::min(settings.minPitch, -89.9));
+    double maxp = deg2rad(std::max(settings.maxPitch, -0.1));
 
     // clamp pitch range:
     double oldPitch;
@@ -1535,7 +1533,7 @@ MapManipulator::zoom(double dx, double dy)
     //    return;
     //}
 
-    if (_settings->zoomToMouse == true && dy < 0.0)
+    if (settings.zoomToMouse == true && dy < 0.0)
     {
         vsg::dvec3 target;
 
@@ -1620,7 +1618,7 @@ MapManipulator::viewportToWorld(float x, float y, vsg::dvec3& out_world) const
 void
 MapManipulator::setDistance(double distance)
 {
-    _state.distance = clamp(distance, _settings->minDistance, _settings->maxDistance);
+    _state.distance = clamp(distance, settings.minDistance, settings.maxDistance);
 }
 
 void
@@ -1634,7 +1632,7 @@ MapManipulator::handleMovementAction(const ActionType& type, vsg::dvec2 d)
 
     case ACTION_ROTATE:
         // in "single axis" mode, zero out one of the deltas.
-        if (_continuous && _settings->singleAxisRotation)
+        if (_continuous && settings.singleAxisRotation)
         {
             if (::fabs(d.x) > ::fabs(d.y))
                 d.y = 0.0;
@@ -1716,7 +1714,7 @@ MapManipulator::handleMouseAction(
         auto start = ndc(_buttonPress);
         vsg::dvec2 delta(curr.x - start.x, -(curr.y - start.y));
         delta *= 0.1;
-        delta *= _settings->mouseSensitivity;
+        delta *= settings.mouseSensitivity;
         applyOptionsToDeltas(action, delta);
         _continuousDelta = delta;
     }
@@ -1724,7 +1722,7 @@ MapManipulator::handleMouseAction(
     {
         auto prev = ndc(previousMove);
         vsg::dvec2 delta(curr.x - prev.x, -(curr.y - prev.y));
-        delta *= _settings->mouseSensitivity;
+        delta *= settings.mouseSensitivity;
         applyOptionsToDeltas(action, delta);
         _delta = delta;
         handleMovementAction(action._type, delta);
@@ -1758,8 +1756,8 @@ MapManipulator::handleKeyboardAction(
     default: break;
     }
 
-    d.x *= _settings->keyboardSesitivity;
-    d.y *= _settings->keyboardSesitivity;
+    d.x *= settings.keyboardSesitivity;
+    d.y *= settings.keyboardSesitivity;
 
     applyOptionsToDeltas(action, d);
 
@@ -1785,8 +1783,8 @@ MapManipulator::handleScrollAction(
     default: break;
     }
 
-    d.x *= scrollFactor * _settings->scrollSensitivity;
-    d.y *= scrollFactor * _settings->scrollSensitivity;
+    d.x *= scrollFactor * settings.scrollSensitivity;
+    d.y *= scrollFactor * settings.scrollSensitivity;
 
     applyOptionsToDeltas(action, d);
 
@@ -1983,21 +1981,17 @@ MapManipulator::ndc(const vsg::PointerEvent& event) const
 void
 MapManipulator::updateTether(const vsg::time_point& t)
 {
-    // Initial transition is complete, so update the camera for tether.
     if (_state.setVP1->pointFunction)
     {
-        auto pos = _state.setVP1->position();
-
-        auto p0 = pos.transform(_worldSRS);
-        vsg::dvec3 world(p0.x, p0.y, p0.z);
+        auto world = _state.setVP1->position().transform(_worldSRS);
 
         // If we just called setViewpointFrame, no need to calculate the center again.
         if (!isSettingViewpoint())
         {
-            setCenter(world);
+            setCenter(to_vsg(world));
         };
 
-        if (_settings->tetherMode == TETHER_CENTER)
+        if (settings.tetherMode == TETHER_CENTER)
         {
             if (_state.lastTetherMode == TETHER_CENTER_AND_ROTATION)
             {
@@ -2017,7 +2011,7 @@ MapManipulator::updateTether(const vsg::time_point& t)
             double sz = 1.0 / sqrt(L2W(0, 2) * L2W(0, 2) + L2W(1, 2) * L2W(1, 2) + L2W(2, 2) * L2W(2, 2));
             L2W = L2W * osg::Matrixd::scale(sx, sy, sz);
 
-            if (_settings->getTetherMode() == TETHER_CENTER_AND_HEADING)
+            if (settings.getTetherMode() == TETHER_CENTER_AND_HEADING)
             {
                 // Back out the tetheree's rotation, then discard all but the heading component:
                 osg::Matrixd localToFrame(L2W * osg::Matrixd::inverse(_centerLocalToWorld));
@@ -2029,7 +2023,7 @@ MapManipulator::updateTether(const vsg::time_point& t)
             }
 
             // Track all rotations
-            else if (_settings->getTetherMode() == TETHER_CENTER_AND_ROTATION)
+            else if (settings.getTetherMode() == TETHER_CENTER_AND_ROTATION)
             {
                 osg::Quat finalTetherRotation;
                 finalTetherRotation = L2W.getRotate() * _centerRotation.inverse();
@@ -2038,6 +2032,6 @@ MapManipulator::updateTether(const vsg::time_point& t)
         }
 #endif
 
-        _state.lastTetherMode = _settings->tetherMode;
+        _state.lastTetherMode = settings.tetherMode;
     }
 }

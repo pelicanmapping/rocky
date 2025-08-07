@@ -39,11 +39,13 @@ namespace ROCKY_NAMESPACE
         //! @param box Full extent of the profile (in the provided SRS)
         //! @param x_tiles_at_root Number of tiles in the X dimension at level of detail zero
         //! @param y_tiles_at_root Number of tiles in the Y dimension at level of detail zero
+        //! @param subprofiles Optional subprofiles that make up a composite profile
         Profile(
             const SRS& srs,
             const Box& bounds = Box(),
             unsigned x_tiles_at_root = 0,
-            unsigned y_tiles_at_root = 0);
+            unsigned y_tiles_at_root = 0,
+            const std::vector<Profile>& subprofiles = {});
 
         // copy/move ops
         Profile(const Profile& rhs) = default;
@@ -157,11 +159,6 @@ namespace ROCKY_NAMESPACE
 
     protected:
 
-        void setup(const std::string& wellKnownName);
-        void setup(const SRS&, const Box& bounds, unsigned dim_x, unsigned dim_y);
-
-    protected:
-
         struct Data
         {
             std::string wellKnownName;
@@ -173,6 +170,9 @@ namespace ROCKY_NAMESPACE
             std::vector<Profile> composite;
         };
         std::shared_ptr<Data> _shared;
+
+        void setup(const std::string& wellKnownName);
+        void setup(const SRS&, const Box& bounds, unsigned dim_x, unsigned dim_y, const std::vector<Profile> & = {});
     };
 
 

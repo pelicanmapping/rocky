@@ -1,0 +1,17 @@
+{
+    "map" : {
+        "name" : "ReadyMap(R) Tiles",
+        "layers": [
+            {
+                "name": "ReadyMap 15m Base Imagery",
+                "type": "TMSImage",
+                "uri": "https://readymap.org/readymap/tiles/1.0.0/7",
+                "attribution": {
+                    "text": "ReadyMap data courtesy of Pelican Mapping",
+                    "href": "https://www.pelicanmapping.com/readymap-data"
+                }
+            }
+        ]
+    },
+    "profile" : "global-qsc"
+}

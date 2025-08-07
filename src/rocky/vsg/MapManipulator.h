@@ -87,9 +87,6 @@ namespace ROCKY_NAMESPACE
             return _state.setVP1.has_value() && _state.setVP1->pointFunction;
         }
 
-        //! Whether the manipulator is in the middle of any multi-frame operation
-        //bool isWorking() const;
-
         //! Store a reference to this manipulator in another object
         void put(vsg::ref_ptr<vsg::Object> object);
 
@@ -279,23 +276,11 @@ namespace ROCKY_NAMESPACE
             //! Maximum allowable camera pitch relative to the planet (degrees)
             double maxPitch = -1.0;
 
-            //! Max x offset in meters
-            double maxXOffset = 0.0;
-
-            //! Max y offset in meters
-            double maxYOffset = 0.0;
-
             //! Minimum allowable distance from the focal point (meters)
             double minDistance = 1.0;
 
             //! Maximum allowable distance from the focal point (meters)
             double maxDistance = DBL_MAX;
-
-            //! Mode used for tethering to a node
-            TetherMode tetherMode = TETHER_CENTER;
-
-            //! Collection of Actions that will automatically break a tether.
-            ActionTypeVector breakTetherActions;
 
             //! Whether a setViewpoint transition should "arc" over the planet surface, versus
             //! travel with a linearly-interpolated altitude
@@ -309,21 +294,6 @@ namespace ROCKY_NAMESPACE
 
             //! Maximum duration time when autoVPDuration = true (seconds)
             double maxVPDuration = 8.0;
-
-            //! Whether to automatically adjust an orthographic camera so that it "tracks" the last known FOV and Aspect Ratio.
-            bool orthoTracksPerspective = true;
-
-            //! Whether or not to keep the camera from going through the terrain surface
-            bool terrainAvoidance = false;
-
-            //! Minimum range for terrain avoidance checks (meters)
-            double minTerrainAvoidanceDistance = 1.0;
-
-            //! Whether a flick of the mouse or touch gesture will cause the camera to "throw" and continue moving after the gesture ends
-            bool throwing = false;
-
-            //! Rate at which a throw will decay (0.0 = no decay, 1.0 = instant stop) when throwing == true
-            double throwDecayRate = 0.05;
 
             //! Whtehr to zoom towards the mouse cursor when zooming
             bool zoomToMouse = true;
@@ -380,6 +350,35 @@ namespace ROCKY_NAMESPACE
             //! TODO
             void bindMultiDrag(ActionType action, const ActionOptions& = {});
 
+        private: // settings that we might port in the future
+
+            //! Mode used for tethering to a node
+            TetherMode tetherMode = TETHER_CENTER;
+
+            //! Collection of Actions that will automatically break a tether.
+            ActionTypeVector breakTetherActions;
+
+            //! Max x offset in meters
+            //double maxXOffset = 0.0;
+
+            //! Max y offset in meters
+            //double maxYOffset = 0.0;
+
+            //! Whether to automatically adjust an orthographic camera so that it "tracks" the last known FOV and Aspect Ratio.
+            //bool orthoTracksPerspective = true;
+
+            //! Whether or not to keep the camera from going through the terrain surface
+            //bool terrainAvoidance = false;
+
+            //! Minimum range for terrain avoidance checks (meters)
+            //double minTerrainAvoidanceDistance = 1.0;
+
+            //! Whether a flick of the mouse or touch gesture will cause the camera to "throw" and continue moving after the gesture ends
+            //bool throwing = false;
+
+            //! Rate at which a throw will decay (0.0 = no decay, 1.0 = instant stop) when throwing == true
+            //double throwDecayRate = 0.05;
+
         private:
 
             friend class MapManipulator;
@@ -399,11 +398,10 @@ namespace ROCKY_NAMESPACE
             ActionBindings _bindings;
         };
 
-        std::shared_ptr<Settings> _settings;
+        Settings settings;
 
-        void applySettings(std::shared_ptr<Settings>);
-
-        std::shared_ptr<Settings> getSettings() const;
+        //! Call if you replace the Settings object outright
+        void dirty();
 
     protected:
 
@@ -492,11 +490,11 @@ namespace ROCKY_NAMESPACE
             vsg::dvec3 center;
 
             // Reference frame for the local ENU tangent plane to the elllipoid centered
-            // at "_center" with (X=east, Y=north, Z=up)
+            // at "_center" with (X=east, Y=north, Z=up), with the translation removed.
             vsg::dmat4 centerRotation = vsg::dmat4(1.0);
 
             // Quaternion that applies a heading and pitch in the local tangent plane
-            // established by _center and _centerRotation.
+            // established by center and centerRotation.
             vsg::dquat localRotation = vsg::dquat( 0, 0, 0, 1 );
 
             // distance from camera to _center.

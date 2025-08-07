@@ -41,7 +41,6 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_MVTFeatures.h"
 #include "Demo_DrawComponent.h"
 #include "Demo_ElevationSampler.h"
-#include "Demo_EntityCollectionLayer.h"
 
 template<class T>
 int layerError(T layer)
@@ -80,7 +79,6 @@ std::vector<Demo> demos =
         Demo{ "Widget", Demo_Widget },
         Demo{ "Label (old)", Demo_Label },
         Demo{ "Drawing", Demo_Draw },
-        Demo{ "Entity Collection Layer", Demo_EntityCollectionLayer },
         Demo{ "Node Pager", Demo_NodePager }
     } },
     Demo{ "GIS Data", {},
@@ -100,7 +98,7 @@ std::vector<Demo> demos =
     Demo{ "Elevation Queries", Demo_ElevationSampler },
     Demo{ "Geocoding", Demo_Geocoder },
     Demo{ "RTT", Demo_RTT },
-    Demo{ "Viewpoints", Demo_Viewpoints },
+    Demo{ "Camera", Demo_MapManipulator },
     Demo{ "Rendering", Demo_Rendering },
     Demo{ "Views", Demo_Views },
     Demo{ "Environment", Demo_Environment },
@@ -197,8 +195,6 @@ int main(int argc, char** argv)
 
     // Add some default layers if the user didn't load a file:
     auto map = app.mapNode->map;
-
-    //app.mapNode->terrainSettings().maxLevelOfDetail = 5;
 
     if (map->layers().empty())
     {

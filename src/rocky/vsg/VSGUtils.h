@@ -68,6 +68,12 @@ namespace ROCKY_NAMESPACE
     inline const glm::dmat4& to_glm(const vsg::dmat4& a) {
         return reinterpret_cast<const glm::dmat4&>(a);
     }
+    inline const glm::fquat& to_glm(const vsg::quat& a) {
+        return reinterpret_cast<const glm::fquat&>(a);
+    }
+    inline const glm::dquat& to_glm(const vsg::dquat& a) {
+        return reinterpret_cast<const glm::dquat&>(a);
+    }
 
     inline const vsg::vec3& to_vsg(const glm::fvec3& a) {
         return reinterpret_cast<const vsg::vec3&>(a);
@@ -86,6 +92,12 @@ namespace ROCKY_NAMESPACE
     }
     inline const vsg::dmat4& to_vsg(const glm::dmat4& a) {
         return reinterpret_cast<const vsg::dmat4&>(a);
+    }
+    inline const vsg::quat& to_vsg(const glm::fquat& a) {
+        return reinterpret_cast<const vsg::quat&>(a);
+    }
+    inline const vsg::dquat& to_vsg(const glm::dquat& a) {
+        return reinterpret_cast<const vsg::dquat&>(a);
     }
 
     inline vsg::dbox to_vsg(const Box& box) {
@@ -539,6 +551,7 @@ namespace ROCKY_NAMESPACE
         template<class T>
         inline void forEach(const vsg::ref_ptr<vsg::Object>& root, std::function<void(T*)> func)
         {
+            if (!root) return;
             detail::ForEachNodeVisitor<T> visitor(func);
             root->accept(visitor);
         }

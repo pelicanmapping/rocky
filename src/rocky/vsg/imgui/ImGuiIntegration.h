@@ -110,6 +110,9 @@ namespace ROCKY_NAMESPACE
         //! Fired when user adds a node
         Callback<void(vsg::ref_ptr<ImGuiContextNode>)> onNodeAdded;
 
+        //! whether to enable docking, if supported by ImGui
+        bool enableDocking = false;
+
         //! Construct a new ImGui renderer
         RenderImGuiContext(vsg::ref_ptr<vsg::Window> in_window, vsg::ref_ptr<vsg::View> in_view = {}) :
             Inherit(in_window), window(in_window), view(in_view)
@@ -118,19 +121,14 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Add a Gui Node to this renderer
-        void add(vsg::ref_ptr<ImGuiContextNode> node) {
-            addChild(node);
-            onNodeAdded.fire(node);
-        }
+        void add(vsg::ref_ptr<ImGuiContextNode> node);
 
-        void traverse(vsg::RecordTraversal& record) const override
-        {
-            // active the context associated with this Node, and save it in the traversal
-            ImGui::SetCurrentContext(_imguiContext);
-            record.setValue("imgui.context", _imguiContext);
+    public:
 
-            Inherit::traverse(record);
-        }
+        void traverse(vsg::RecordTraversal& record) const override;
+
+    protected:
+        mutable bool _firstFrame = true;
     };
 
     namespace detail
