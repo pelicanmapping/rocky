@@ -21,7 +21,8 @@ using namespace ROCKY_NAMESPACE::util;
 
 TerrainProfileNode::TerrainProfileNode(const Profile& in_profile, TerrainNode& in_terrain) :
     profile(in_profile),
-    terrain(in_terrain)
+    terrain(in_terrain),
+    _tiles(in_terrain, this)
 {
     //nop
 }
@@ -37,7 +38,7 @@ TerrainProfileNode::reset(VSGContext context)
     children.clear();
 
     // create a new engine to render this map
-    engine = std::make_shared<TerrainEngine>(
+    _engine = std::make_shared<TerrainEngine>(
         terrain.map,
         profile,
         terrain.renderingSRS,
@@ -50,17 +51,17 @@ TerrainProfileNode::reset(VSGContext context)
 Result<>
 TerrainProfileNode::createRootTiles(VSGContext context)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(engine != nullptr, Failure_AssertionFailure);
-    ROCKY_SOFT_ASSERT_AND_RETURN(engine->stateFactory.status.ok(), engine->stateFactory.status.error());
+    ROCKY_SOFT_ASSERT_AND_RETURN(_engine != nullptr, Failure_AssertionFailure);
+    ROCKY_SOFT_ASSERT_AND_RETURN(_engine->stateFactory.status.ok(), _engine->stateFactory.status.error());
     ROCKY_HARD_ASSERT(children.empty(), "TerrainNode::createRootTiles() called with children already present");
 
     // once the pipeline exists, we can start creating tiles.
-    auto keys = engine->profile.allKeysAtLOD(terrain.minLevelOfDetail);
+    auto keys = _engine->profile.allKeysAtLOD(terrain.minLevelOfDetail);
 
     for (auto& key : keys)
     {
         // create a tile with no parent:
-        auto tile = engine->createTile(key, {});
+        auto tile = _engine->createTile(key, {});
 
         // ensure it can't page out:
         tile->doNotExpire = true;
@@ -93,12 +94,12 @@ TerrainProfileNode::update(VSGContext context)
         }
         else
         {
-            ROCKY_HARD_ASSERT(engine);
+            ROCKY_HARD_ASSERT(_engine);
 
-            if (engine->tiles.update(context->viewer->getFrameStamp(), context->io, engine))
+            if (_tiles.update(context->viewer->getFrameStamp(), context->io, _engine))
                 changes = true;
 
-            engine->geometryPool.sweep(engine->context);
+            changes = _engine->update(context);
         }
     }
 
@@ -108,7 +109,7 @@ TerrainProfileNode::update(VSGContext context)
 void
 TerrainProfileNode::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg::RecordTraversal& nv)
 {
-    engine->tiles.ping(tile, parent, nv);
+    _tiles.ping(tile, parent, nv);
 }
 
 

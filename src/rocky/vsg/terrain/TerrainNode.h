@@ -9,6 +9,7 @@
 #include <rocky/vsg/terrain/TerrainSettings.h>
 #include <rocky/vsg/terrain/TerrainTileHost.h>
 #include <rocky/vsg/terrain/TerrainState.h>
+#include <rocky/vsg/terrain/TerrainTilePager.h>
 #include <rocky/Result.h>
 #include <rocky/Profile.h>
 #include <rocky/Layer.h>
@@ -43,15 +44,27 @@ namespace ROCKY_NAMESPACE
         //! Runs periodically to update the terrain tiles if neceessary.
         bool update(VSGContext context);
 
+        //! Access to the engine for stats
+        const TerrainEngine& engine() const {
+            return *_engine.get();
+        }
+
     public: //! TerrainTileHost interface
 
         void ping(TerrainTileNode*, const TerrainTileNode*, vsg::RecordTraversal&) override;
 
         const TerrainSettings& settings() const override;
 
+        TerrainTilePager& tiles() override {
+            return _tiles;
+        }
+
     private:
 
-        std::shared_ptr<TerrainEngine> engine;
+        //! Tracks and updates state for terrain tiles
+        TerrainTilePager _tiles;
+
+        std::shared_ptr<TerrainEngine> _engine;
 
         Result<> createRootTiles(VSGContext);
     };

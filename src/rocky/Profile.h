@@ -15,9 +15,10 @@ namespace ROCKY_NAMESPACE
     class TileKey;
 
     /**
-     * A "profile" defines the layout of a data source. The profile conveys the
-     * spatial reference system (SRS), the geospatial extents within that SRS, and
-     * the tiling scheme.
+     * Profile describes a quadtree tiling structure along with its geospatial
+     * reference. Profiles are for tiling purposes, so even though they contain
+     * an SRS (for referencing) any vertical datum is ignored for the purposes
+     * of tiling and Profile equivalency.
      */
     class ROCKY_EXPORT Profile
     {
@@ -94,18 +95,13 @@ namespace ROCKY_NAMESPACE
         bool equivalentTo(const Profile& rhs) const;
 
         //! Whether two profiles are equivalent.
+        //! Note: The SRS vertical datum is NOT considered when testing for equivalence.
         bool operator == (const Profile& rhs) const {
             return equivalentTo(rhs);
         }
         bool operator != (const Profile& rhs) const {
             return !equivalentTo(rhs);
         }
-
-        //! Gets whether the two profiles can be treated as equivalent (without regard
-        //! for any vertical datum information - i.e., still returns true if the SRS
-        //! vertical datums are different)
-        //! @param rhs Comparison profile
-        bool horizontallyEquivalentTo(const Profile& rhs) const;
 
         //! Gets the tile dimensions at the given lod, in the profile's SRS units.
         using TileDims = struct { double x, y; };

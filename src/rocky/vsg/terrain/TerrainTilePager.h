@@ -43,10 +43,7 @@ namespace ROCKY_NAMESPACE
 
     public:
         //! Consturct the tile manager.
-        TerrainTilePager(
-            const TerrainSettings& settings,
-            VSGContext& runtime,
-            TerrainTileHost* host);
+        TerrainTilePager(const TerrainSettings& settings, TerrainTileHost* host);
 
         ~TerrainTilePager();
 
@@ -82,7 +79,6 @@ namespace ROCKY_NAMESPACE
         mutable std::mutex _mutex;
         TerrainTileHost* _host;
         const TerrainSettings& _settings;
-        VSGContext& _context;
         bool _updateViewerRequired = false;
 
         std::vector<TileKey> _createChildren;

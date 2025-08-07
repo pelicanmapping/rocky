@@ -21,7 +21,7 @@ TerrainEngine::TerrainEngine(
     TerrainState& new_stateFactory,
     VSGContext new_context,
     const TerrainSettings& new_settings,
-    TerrainTileHost* host) :
+    TerrainTileHost* new_host) :
 
     map(new_map),
     profile(new_profile),
@@ -30,7 +30,7 @@ TerrainEngine::TerrainEngine(
     context(new_context),
     settings(new_settings),
     geometryPool(new_renderingSRS),
-    tiles(new_settings, new_context, host)
+    host(new_host)
 {
     ROCKY_SOFT_ASSERT(map, "Map is required");
     ROCKY_SOFT_ASSERT(profile.valid(), "Valid profile required");
@@ -68,7 +68,7 @@ TerrainEngine::createTile(const TileKey& key, vsg::ref_ptr<TerrainTileNode> pare
     tile->surface = SurfaceNode::create(key, renderingSRS);
     tile->surface->addChild(tile->stategroup);
     tile->addChild(tile->surface);
-    tile->host = tiles._host;
+    tile->host = host;
 
     // inherit model data from the parent
     if (parent)
@@ -84,4 +84,20 @@ TerrainEngine::createTile(const TileKey& key, vsg::ref_ptr<TerrainTileNode> pare
     tile->stategroup->add(tile->renderModel.descriptors.bind);
 
     return tile;
+}
+
+bool TerrainEngine::update(VSGContext context)
+{
+    bool changes = false;
+
+    geometryPool.sweep(context);
+
+    auto pool = jobs::get_pool(loadSchedulerName);
+    if (pool->concurrency() != settings.concurrency)
+    {
+        pool->set_concurrency(settings.concurrency);
+        changes = true;
+    }
+
+    return changes;
 }

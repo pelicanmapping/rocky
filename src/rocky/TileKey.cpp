@@ -364,7 +364,7 @@ TileKey::intersectingKeys(const Profile& target_profile) const
     ROCKY_SOFT_ASSERT_AND_RETURN(valid(), {});
 
     // If the profiles are exactly equal, just add the given tile key.
-    if (profile.horizontallyEquivalentTo(target_profile))
+    if (profile == target_profile)
     {
         return { *this };
     }

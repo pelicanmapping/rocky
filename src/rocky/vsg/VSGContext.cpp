@@ -477,7 +477,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
             return Failure(Failure::ServiceUnavailable, "No image reader for \"" + contentType + "\"");
         };
 
-    io.services().contentCache = std::make_shared<ContentCache>(128);
+    io.services().contentCache = std::make_shared<ContentCache>(256);
 
     io.services().residentImageCache = std::make_shared<util::ResidentCache<std::string, Image>>();
 }

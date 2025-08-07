@@ -49,11 +49,10 @@ namespace ROCKY_NAMESPACE
         //! Builds geometry for terrain tiles
         GeometryPool geometryPool;
 
-        //! Tracks and updates state for terrain tiles
-        TerrainTilePager tiles;
-
         //! Creates the state group objects for terrain rendering
         TerrainState& stateFactory;
+
+        TerrainTileHost* host = nullptr;
 
         //! name of job arena used to load data
         std::string loadSchedulerName = "rocky::terrain_loader";
@@ -62,5 +61,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<TerrainTileNode> createTile(
             const TileKey& key,
             vsg::ref_ptr<TerrainTileNode> parent);
+
+        bool update(VSGContext context);
     };
 }

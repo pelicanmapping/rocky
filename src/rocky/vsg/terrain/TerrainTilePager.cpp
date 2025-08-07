@@ -17,10 +17,9 @@ using namespace ROCKY_NAMESPACE;
 
 //----------------------------------------------------------------------------
 
-TerrainTilePager::TerrainTilePager(const TerrainSettings& settings, VSGContext& runtime, TerrainTileHost* in_host) :
-    _host(in_host),
-    _settings(settings),
-    _context(runtime)
+TerrainTilePager::TerrainTilePager(const TerrainSettings& settings, TerrainTileHost* host) :
+    _host(host),
+    _settings(settings)
 {
     _firstLOD = settings.minLevelOfDetail;
 }
@@ -52,22 +51,7 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
     // first, update the tracker to keep this tile alive.
     auto& info = _tiles[tile->key];
     if (!info.tile)
-    {
         info.tile = tile;
-        //if (info.trackerToken)
-        //    info.trackerToken = _tracker.update(info.trackerToken);
-        //else
-        //    info.trackerToken = _tracker.emplace(tile);
-        //info.trackerToken = _tracker.use(tile, nullptr);
-    }
-    else
-    {
-        //if (info.trackerToken)
-        //    info.trackerToken = _tracker.update(info.trackerToken);
-        //else
-        //    info.trackerToken = _tracker.emplace(tile);
-        //_tracker.use(tile, info.trackerToken);
-    }
 
     if (info.trackerToken)
         info.trackerToken = _tracker.update(info.trackerToken);
@@ -416,7 +400,7 @@ TerrainTilePager::requestMergeData(TileInfo& info, const IOOptions& in_io, std::
     // operation to dispose of the old state command and replace it with a new one:
     auto merge = [key, engine](Cancelable& c)
     {
-        auto tile = engine->tiles.getTile(key);
+        auto tile = engine->host->tiles().getTile(key);
         if (tile)
         {
             for (auto c : tile->stategroup->stateCommands)

@@ -146,10 +146,13 @@ auto Demo_Stats = [](Application& app)
         ImGui::TableNextColumn(); ImGui::Text("Misses");
 
         auto contentCache = app.io().services().contentCache;
-        ImGui::TableNextColumn(); ImGui::Text("URI cache");
-        ImGui::TableNextColumn(); ImGui::Text("%ld", contentCache->size());
-        ImGui::TableNextColumn(); ImGui::Text("%d", contentCache->hits());
-        ImGui::TableNextColumn(); ImGui::Text("%d", contentCache->misses());
+        if (contentCache)
+        {
+            ImGui::TableNextColumn(); ImGui::Text("URI cache");
+            ImGui::TableNextColumn(); ImGui::Text("%ld", contentCache->size());
+            ImGui::TableNextColumn(); ImGui::Text("%d", contentCache->hits());
+            ImGui::TableNextColumn(); ImGui::Text("%d", contentCache->misses());
+        }
 
         auto residentImageCache = app.io().services().residentImageCache;
         if (residentImageCache)
@@ -161,5 +164,7 @@ auto Demo_Stats = [](Application& app)
         }
 
         ImGui::EndTable();
+
+        ImGui::SliderInt("Concurrency", (int*)&app.mapNode->terrainNode->concurrency, 1, 16);
     }
 };

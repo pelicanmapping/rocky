@@ -100,30 +100,6 @@ Profile::equivalentTo(const Profile& rhs) const
     if (_shared->extent != rhs._shared->extent)
         return false;
 
-    return _shared->extent.srs().equivalentTo(rhs._shared->extent.srs());
-}
-
-bool
-Profile::horizontallyEquivalentTo(const Profile& rhs) const
-{
-    if (!valid() || !rhs.valid())
-        return false;
-
-    if (_shared == rhs._shared)
-        return true;
-
-    if (!_shared->wellKnownName.empty() && _shared->wellKnownName == rhs._shared->wellKnownName)
-        return true;
-
-    if (_shared->numTilesBaseY != rhs._shared->numTilesBaseY)
-        return false;
-
-    if (_shared->numTilesBaseX != rhs._shared->numTilesBaseX)
-        return false;
-
-    if (_shared->extent != rhs._shared->extent)
-        return false;
-
     if (_shared->geodeticExtent != rhs._shared->geodeticExtent)
         return false;
 
@@ -471,25 +447,46 @@ Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) cons
 }
 
 unsigned
-Profile::equivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
+Profile::equivalentLOD(const Profile& rhs, unsigned rhsLOD) const
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(rhsProfile.valid(), rhsLOD);
+    ROCKY_SOFT_ASSERT_AND_RETURN(rhs.valid(), rhsLOD);
 
     static const Profile SPHERICAL_MERCATOR("spherical-mercator");
     static const Profile GLOBAL_GEODETIC("global-geodetic");
+    static const Profile GLOBAL_QSC("global-qsc");
 
     // If the profiles are equivalent (except for vdatum) just use the incoming lod
-    if (horizontallyEquivalentTo(rhsProfile))
+    auto& lhs = *this;
+
+    if (lhs == rhs)
         return rhsLOD;
 
     // Special check for geodetic to mercator or vise versa, they should match up in LOD.
-    if (rhsProfile.horizontallyEquivalentTo(SPHERICAL_MERCATOR) && horizontallyEquivalentTo(GLOBAL_GEODETIC))
-        return rhsLOD;
+    if (lhs == GLOBAL_GEODETIC)
+    {
+        if (rhs == SPHERICAL_MERCATOR || rhs == GLOBAL_QSC)
+        {
+            return rhsLOD; // they are equivalent, so just return the incoming LOD.
+        }
+    }
+    else if (lhs == SPHERICAL_MERCATOR)
+    {
+        if (rhs == GLOBAL_GEODETIC || rhs == GLOBAL_QSC)
+        {
+            return rhsLOD; // they are equivalent, so just return the incoming LOD.
+        }
+    }
+    else if (lhs == GLOBAL_QSC)
+    {
+        if (rhs == GLOBAL_GEODETIC || rhs == SPHERICAL_MERCATOR)
+        {
+            return rhsLOD; // they are equivalent, so just return the incoming LOD.
+        }
+    }
 
-    if (rhsProfile.horizontallyEquivalentTo(GLOBAL_GEODETIC) && horizontallyEquivalentTo(SPHERICAL_MERCATOR))
-        return rhsLOD;
+    // perform resolution matching to get the best LOD.
 
-    auto[rhsWidth, rhsHeight] = rhsProfile.tileDimensions(rhsLOD);
+    auto[rhsWidth, rhsHeight] = rhs.tileDimensions(rhsLOD);
 
     // safety catch
     if (equiv(rhsWidth, 0.0) || equiv(rhsHeight, 0.0))
@@ -498,7 +495,7 @@ Profile::equivalentLOD(const Profile& rhsProfile, unsigned rhsLOD) const
         return rhsLOD;
     }
 
-    double rhsTargetHeight = SRS::transformUnits(rhsHeight, rhsProfile.srs(), srs(), Angle{});
+    double rhsTargetHeight = SRS::transformUnits(rhsHeight, rhs.srs(), srs(), Angle{});
 
     return levelOfDetail(rhsTargetHeight);
 }

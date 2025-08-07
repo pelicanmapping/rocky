@@ -186,7 +186,7 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
         result = createImageImplementation_internal(key, io);
     }
 
-    else if (key.profile.horizontallyEquivalentTo(profile))
+    else if (key.profile == profile)
     {
         result = createImageImplementation_internal(key, io);
     }

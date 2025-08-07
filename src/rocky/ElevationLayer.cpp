@@ -416,7 +416,8 @@ ElevationLayer::createHeightfieldInKeyProfile(const TileKey& key, const IOOption
         return Failure_ResourceUnavailable;
     }
 
-    if (key.profile.equivalentTo(my_profile))
+    // we check the srs too in case the vdatums differ.
+    if (key.profile == my_profile && key.profile.srs() == my_profile.srs())
     {
         auto r = createHeightfieldImplementation_internal(key, io);
 

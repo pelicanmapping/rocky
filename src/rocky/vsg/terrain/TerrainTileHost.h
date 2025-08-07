@@ -5,12 +5,12 @@
  */
 #pragma once
 
-#include <vsg/nodes/QuadGroup.h>
 #include <vsg/app/RecordTraversal.h>
 
 namespace ROCKY_NAMESPACE
 {
     class TerrainTileNode;
+    class TerrainTilePager;
     class TerrainSettings;
 
     /** 
@@ -20,12 +20,11 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Tell the host that a tile is alive!
-        virtual void ping(
-            TerrainTileNode* tile,
-            const TerrainTileNode* parent,
-            vsg::RecordTraversal& t) = 0;
+        virtual void ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg::RecordTraversal& t) = 0;
 
         //! Access terrain settings.
         virtual const TerrainSettings& settings() const = 0;
+
+        virtual TerrainTilePager& tiles() = 0;
     };
 }
