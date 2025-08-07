@@ -367,23 +367,24 @@
 
 
 <h1 id="class-entitynode">class EntityNode</h1>
-<p><em>Defined at src/rocky/vsg/ecs/EntityNode.h#20</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/EntityNode.h#22</em></p>
 <h2 id="members">Members</h2>
 <p>public int entities</p>
 <p>public _Bool autoDestroy</p>
+<p>public int registry</p>
 <h2 id="functions">Functions</h2>
 <h3 id="entitynode">EntityNode</h3>
 <p><em>public void EntityNode(int &amp; reg)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/EntityNode.h#33</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/EntityNode.h#35</em></p>
 <p>Construct a new entity node (with EntityNode::create)</p>
 <p><strong>reg</strong> The ECS registry to use when updating or destorying     the entities this node manages</p>
 <h3 id="entitynode_1">~EntityNode</h3>
 <p><em>public void ~EntityNode()</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/EntityNode.h#40</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/EntityNode.h#42</em></p>
 <p>Destruct the node and optionally destroy all entities</p>
 <h3 id="traverse">traverse</h3>
 <p><em>public void traverse(int &amp; record)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/EntityNode.h#49</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/EntityNode.h#51</em></p>
 <p>Record traversal - update all entities with the frame count</p>
 
 

@@ -688,6 +688,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#indexof" class="md-nav__link">
+    <span class="md-ellipsis">
+      indexOf
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#format" class="md-nav__link">
     <span class="md-ellipsis">
       format
@@ -822,17 +831,17 @@
 <p>Sets the name of the current thread</p>
 <h3 id="fromvkpixelformat">fromVkPixelFormat</h3>
 <p><em>int fromVkPixelFormat(int vkformat)</em></p>
-<p><em>Defined at src/rocky/vsg/VSGUtils.h#325</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#337</em></p>
 <h3 id="tovkpixelformat">toVkPixelFormat</h3>
 <p><em>int toVkPixelFormat(int format)</em></p>
-<p><em>Defined at src/rocky/vsg/VSGUtils.h#344</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#356</em></p>
 <h3 id="find">find</h3>
 <p><em>T * find(const int &amp; root)</em></p>
-<p><em>Defined at src/rocky/vsg/VSGUtils.h#531</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#543</em></p>
 <p>Finds the first node of a given type in a scene graph.</p>
 <h3 id="foreach">forEach</h3>
 <p><em>void forEach(const int &amp; root, int func)</em></p>
-<p><em>Defined at src/rocky/vsg/VSGUtils.h#540</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#552</em></p>
 <p>Finds every node of a fiven type and runs a function against it</p>
 <h3 id="lengthsquared">lengthSquared</h3>
 <p><em>double lengthSquared(const T &amp; v)</em></p>
@@ -957,21 +966,25 @@
 <h3 id="isenvvarset">isEnvVarSet</h3>
 <p><em>int isEnvVarSet(const char * name)</em></p>
 <p>Whther and environment variable is set at all</p>
+<h3 id="indexof">indexOf</h3>
+<p><em>int indexOf(const T &amp; container, const V &amp; v)</em></p>
+<p><em>Defined at src/rocky/Utils.h#36</em></p>
+<p>Index of an element in a container</p>
 <h3 id="format">format</h3>
 <p><em>int format(const int &amp; format, Args... args)</em></p>
-<p><em>Defined at src/rocky/Utils.h#37</em></p>
+<p><em>Defined at src/rocky/Utils.h#44</em></p>
 <p>Replacement for sprintf https://stackoverflow.com/a/26221725/4218920</p>
 <h3 id="tolower">toLower</h3>
 <p><em>char toLower(char c)</em></p>
-<p><em>Defined at src/rocky/Utils.h#59</em></p>
+<p><em>Defined at src/rocky/Utils.h#66</em></p>
 <p>Character to lower case</p>
 <h3 id="tolower_1">toLower</h3>
 <p><em>int toLower(int in)</em></p>
-<p><em>Defined at src/rocky/Utils.h#64</em></p>
+<p><em>Defined at src/rocky/Utils.h#71</em></p>
 <p>String to lower case</p>
 <h3 id="tolowerinplace">toLowerInPlace</h3>
 <p><em>int &amp; toLowerInPlace(int &amp; in)</em></p>
-<p><em>Defined at src/rocky/Utils.h#71</em></p>
+<p><em>Defined at src/rocky/Utils.h#78</em></p>
 <p>String to lower case in situ</p>
 <h3 id="startswith">startsWith</h3>
 <p><em>int startsWith(int ref, int pattern, _Bool caseSensitive)</em></p>
