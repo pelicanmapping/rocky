@@ -224,11 +224,23 @@ TerrainState::createPipelineConfig(VSGContext& context) const
 
     PipelineUtils::enableViewDependentData(config);
 
-    // Initialize GraphicsPipeline from the data in the configuration.
-    if (context->sharedObjects)
-        context->sharedObjects->share(config, [](auto gpc) { gpc->init(); });
-    else
-        config->init();
+    struct SetPipelineStates : public vsg::Visitor
+    {
+        void apply(vsg::Object& object) override {
+            object.traverse(*this);
+        }
+        void apply(vsg::RasterizationState& state) override {
+            state.cullMode = VK_CULL_MODE_BACK_BIT;
+        }
+        void apply(vsg::DepthStencilState& state) override {
+        }
+        void apply(vsg::ColorBlendState& state) override {
+        }
+    };
+    SetPipelineStates visitor;
+    config->accept(visitor);
+
+    config->init();
 
     return config;
 }

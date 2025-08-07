@@ -55,7 +55,7 @@ namespace ROCKY_NAMESPACE
         option<Color> color = Color::White;
 
         //! Number of threads dedicated to loading terrain data
-        option<unsigned> concurrency = 4;
+        option<unsigned> concurrency = 6;
 
     public: // internal runtime settings, not serialized.
 

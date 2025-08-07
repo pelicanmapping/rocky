@@ -434,9 +434,12 @@ Application::frame()
     t_start = std::chrono::steady_clock::now();
 
     // whether we need to render a new frame based on the renderOnDemand state:
+    if (vsgcontext->renderRequests.exchange(0) > 0)
+        _framesUntilStopRender = 2;
+
     vsgcontext->renderingEnabled =
         vsgcontext->renderContinuously == true ||
-        vsgcontext->renderRequests.exchange(0) > 0;
+        _framesUntilStopRender-- > 0;
 
     if (vsgcontext->renderingEnabled)
     {

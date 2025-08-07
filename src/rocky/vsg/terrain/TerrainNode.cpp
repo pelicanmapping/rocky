@@ -37,6 +37,8 @@ TerrainProfileNode::reset(VSGContext context)
 
     children.clear();
 
+    _tiles.releaseAll();
+
     // create a new engine to render this map
     _engine = std::make_shared<TerrainEngine>(
         terrain.map,
@@ -220,7 +222,7 @@ TerrainNode::createProfiles(VSGContext context)
 
     if (profile.isComposite())
     {
-        for (auto& subprofile : profile.compositeMembers())
+        for (auto& subprofile : profile.subprofiles())
         {
             auto profileNode = TerrainProfileNode::create(subprofile, *this);
             this->addChild(profileNode);

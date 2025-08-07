@@ -69,7 +69,7 @@ Profile::setup(const SRS& srs, const Box& bounds, unsigned width0, unsigned heig
         std::string temp = to_json();
         _shared->hash = std::hash<std::string>()(temp);
 
-        _shared->composite = subprofiles;
+        _shared->subprofiles = subprofiles;
     }
 }
 
@@ -174,12 +174,12 @@ Profile::setup(const std::string& name)
     else if (util::ciEquals(name, "global-qsc") || util::ciEquals(name, "qsc"))
     {
         _shared->wellKnownName = "global-qsc";
-        _shared->composite.emplace_back(Profile("qsc+z"));
-        _shared->composite.emplace_back(Profile("qsc-z"));
-        _shared->composite.emplace_back(Profile("qsc+x"));
-        _shared->composite.emplace_back(Profile("qsc-x"));
-        _shared->composite.emplace_back(Profile("qsc+y"));
-        _shared->composite.emplace_back(Profile("qsc-y"));
+        _shared->subprofiles.emplace_back(Profile("qsc+z"));
+        _shared->subprofiles.emplace_back(Profile("qsc-z"));
+        _shared->subprofiles.emplace_back(Profile("qsc+x"));
+        _shared->subprofiles.emplace_back(Profile("qsc-x"));
+        _shared->subprofiles.emplace_back(Profile("qsc+y"));
+        _shared->subprofiles.emplace_back(Profile("qsc-y"));
         _shared->extent = GeoExtent(SRS::WGS84, -180, -90, 180, 90);
         _shared->geodeticExtent = _shared->extent;
     }
@@ -559,18 +559,6 @@ Profile::toReadableString() const
     }
 }
 
-bool
-Profile::isComposite() const
-{
-    return _shared->composite.empty() == false;
-}
-
-const std::vector<Profile>&
-Profile::compositeMembers() const
-{
-    return _shared->composite;
-}
-
 
 #include "json.h"
 namespace ROCKY_NAMESPACE
@@ -590,6 +578,18 @@ namespace ROCKY_NAMESPACE
                 auto [tx, ty] = obj.numTiles(0);
                 set(j, "tx", tx);
                 set(j, "ty", ty);
+
+                if (obj.isComposite())
+                {
+                    auto sp = json::array();
+                    for (auto& subprofile : obj.subprofiles())
+                    {
+                        json subprofile_json;
+                        to_json(subprofile_json, subprofile);
+                        sp.emplace_back(subprofile_json);
+                    }
+                    set(j, "subprofiles", sp);
+                }
             }
         }
         else j = nullptr;
@@ -614,6 +614,27 @@ namespace ROCKY_NAMESPACE
             {
                 obj = Profile(extent.srs(), extent.bounds(), tx, ty);
             }
+
+            if (j.contains("subprofiles"))
+            {
+                auto j_subprofiles = j.at("subprofiles");
+                if (j_subprofiles.is_array())
+                {
+                    obj.subprofiles().clear();
+                    obj.subprofiles().reserve(j_subprofiles.size());
+
+                    for(auto& j_subprofile : j_subprofiles)
+                    {
+                        Profile subprofile;
+                        from_json(j_subprofile, subprofile);
+                        if (subprofile.valid())
+                        {
+                            obj.subprofiles().emplace_back(subprofile);
+                        }
+                    }
+                }
+            }
+
         }
         else
         {

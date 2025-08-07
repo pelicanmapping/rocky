@@ -69,7 +69,7 @@ namespace ROCKY_NAMESPACE
         //! Caches raw context coming from a URI (like a browser cache)
         std::shared_ptr<ContentCache> contentCache;
 
-        //! Provides fast access to Image data that is resident in memory
+        //! Provides fast access to Image data that is resident somwehere in memory
         std::shared_ptr<util::ResidentCache<std::string, Image>> residentImageCache;
     };
 

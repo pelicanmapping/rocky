@@ -165,6 +165,12 @@ auto Demo_Stats = [](Application& app)
 
         ImGui::EndTable();
 
-        ImGui::SliderInt("Concurrency", (int*)&app.mapNode->terrainNode->concurrency, 1, 16);
+        ImGui::SeparatorText("Terrain");
+        if (ImGuiLTable::Begin("Terrain-Settings"))
+        {
+            ImGuiLTable::SliderInt("Load threads", (int*)&app.mapNode->terrainNode->concurrency, 1, 16);
+            ImGuiLTable::Checkbox("Continuous rendering", &app.vsgcontext->renderContinuously);
+            ImGuiLTable::End();
+        }
     }
 };
