@@ -36,9 +36,9 @@ This project is in its early stages so expect a lot of API and architectural cha
 
 <hr/>
 <img width="100%" alt="image" src="https://github.com/user-attachments/assets/3767d7e8-364c-498f-a09f-2b0e17b45c0a">
-<br/>
-<br/>
 
+
+<br/><br/>
 # Setup
 
 ## Build the SDK
@@ -73,9 +73,8 @@ rocky_demo --map data\openstreetmap.map.json
 ```
 <img width="500" alt="Screenshot 2023-02-22 124318" src="https://github.com/user-attachments/assets/9590cca6-a170-4418-8588-1ee1d2b72924">
 
-<br/>
-<br/>
 
+<br/><br/>
 # Hello World
 
 The easiest way to write a turnkey Rocky app is to use the `rocky::Application` object. It will create a viewer, a default map, and a scene graph to store everything you want to visualize.
@@ -105,6 +104,8 @@ add_executable(myApp main.cpp)
 target_link_libraries(myApp PRIVATE rocky::rocky)
 install(TARGETS myApp RUNTIME DESTINATION bin)
 ```
+
+<br/><br/>
 # Maps
 To render a map the first thing we need is map data. Map data can be huge and usually will not fit into the application's memory all at once. To solve that problem the standard approach is to process the source data into a hierarchy of *map tiles* called a *tile pyramid*.
 
@@ -215,6 +216,8 @@ sampler.clampRange(session, points.begin(), points.end());
 ```
 We use this technique in the `Demo_MVTFeatures.h` example to clamp GIS features to the terrain.
 
+<br/>
+
 ## Vector Features
 Rocky include some facilities for loading GIS Feature data through GDAL. GDAL has many drivers to load different types of feature data.
 
@@ -259,7 +262,10 @@ if (!prims.empty())
 }
 ```
 
-## Spatial Reference Systems
+<br/><br/>
+
+# Spatial Reference Systems
+
 A **Spatial Reference System (SRS)** defines how geographic data is mapped to real-world locations. It specifies the coordinate system, projection, and datum used to interpret spatial data. SRSs are essential for ensuring that geographic features are accurately located and can be combined or compared across different datasets.
 
 In Rocky, the `SRS` class (see `SRS.h`) provides a convenient interface for working with spatial reference systems. It allows you to define, query, and convert between different coordinate systems, such as geographic (latitude/longitude) and projected (e.g., UTM, Web Mercator).
@@ -280,7 +286,7 @@ You can use these directly in your code:
 auto srs_geographic = rocky::SRS::WGS84;
 ```
 
-### Creating and Using SRS
+### Creating and Using an SRS
 
 You can also create an SRS from an EPSG code, WKT string, or PROJ init string:
 ```c++
@@ -302,7 +308,10 @@ auto utm_point = geo_point.transform(srs_custom);
 
 Spatial reference systems ensure that your map data aligns correctly, support accurate distance and area calculations, and enable visualization in a wide variety of map projections. For more details, refer to the documentation in `SRS.h` and the examples provided in the Rocky source code.
 
+<br/><br/>
+
 # Annotations
+
 Rocky has a set of built-in primitives for displaying objects on the map.
 
 * Icon - a 2D billboard image
@@ -431,7 +440,7 @@ app.registry.read([&](entt::registry& r)
 
 
 Other control components include:
-* `Active` (for the overall active state of an entity)
+* `ActiveState` (for the overall active state of an entity)
 * `Declutter` (whether, and how, the entity participates in screen decluttering)
 
 In the `rocky_demo` application you will find example code for each component, in the header files `Demo_Icon.h`, `Demo_Line.h`, etc.
@@ -441,11 +450,11 @@ In the `rocky_demo` application you will find example code for each component, i
 <hr/>
 <img width="100%" alt="image" src="https://github.com/user-attachments/assets/96f128d5-9391-4b92-aa00-6b9fde0a2b35">
 
-<hr/>
 
-# Integrations
+<br/><br/>
 
-## Rocky and Dear ImGui
+# Rocky and Dear ImGui
+
 [Dear ImGui](https://github.com/ocornut/imgui) is a runtime UI SDK for C++. Rocky integrates with ImGui in two ways.
 
 ### ImGui Widgets
@@ -506,7 +515,12 @@ app.install(imgui_renderer);
 ```
 That's basically it. *Don't forget* to call `ImGui::SetCurrentContext` at the top of your `render` function!
 
-## Rocky and VulkanSceneGraph
+
+
+<br/><br/>
+
+# Rocky and VulkanSceneGraph <img src="https://avatars.githubusercontent.com/u/44898258?s=64&v=4" align="right"/>
+
 If you're already using VulkanSceneGraph (VSG) in your application and just want to add a `MapNode` to a view, do this:
 ```c++
 #include <rocky/rocky.h>
@@ -545,7 +559,24 @@ viewer->addEventHandler(rocky::MapManipulator::create(mapNode, window, camera, c
 ```
 Keep in mind that without Rocky's `Application` object, you will not get the benefits of using Rocky's ECS for map annotations.
 
-Rocky uses the ubiquitous `glm` library for math operations, whereas VulkanSceneGraph has its own math objects. Luckily they are practically identical
+### VSG Nodes and Layers
+
+Use Rocky's `NodeLayer` to wrap a `vsg::Node` in a Rocky map layer. it's easy:
+```c++
+auto layer = NodeLayer::create(my_vsg_node);
+...
+map->add(layer);
+```
+
+Use the `EntityNode` to manage a collection of Rocky ECS Components in a VSG node. The entities' visibility will be automatically controlled by the normal culling of the scene graph:
+```c++
+auto entityNode = EntityNode::create(registry);
+entityNode->entities.emplace_back(...);
+```
+And of course you can combine the two and put an `EntityNode` inside a `NodeLayer`. Opening and closing the layer will show and hide the entities in the `EntityNode`.
+
+### VSG and Math Functions
+Rocky uses the [glm](https://github.com/g-truc/glm) library for math operations, whereas VulkanSceneGraph has its own math objects. Luckily they are practically identical
 and it is easy to convert between them:
 ```c++
 vsg::dvec3 vsg_input(...);
@@ -553,11 +584,15 @@ glm::dvec3 glm_value = to_glm(vsg_input); // convert from VSG to GLM
 vsg::dvec3 vsg_value = to_vsg(glm_value); // convert from GLM to VSG
 ```
 
-## Rocky and Qt
+<br/><br/>
+
+# Rocky and Qt
+
 You can embed Rocky in a Qt widget. See the `rocky_demo_qt` example for details.
 
 <img width="100%" alt="image" src="https://github.com/user-attachments/assets/84cda604-f617-4562-b208-6d049f8b5ee1">
 
+<br/><br/>
 # Acknowledgements
 
 Thanks to these excellent open source projects that help make Rocky possible!
