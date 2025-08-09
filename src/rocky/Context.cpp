@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "Context.h"
@@ -76,16 +76,15 @@ ContextImpl::about()
 ContextImpl::ContextImpl()
 {
 #ifdef ROCKY_HAS_GDAL
+
     OGRRegisterAll();
     GDALAllRegister();
 
-  #ifdef ROCKY_USE_UTF8_FILENAME
-    CPLSetConfigOption("GDAL_FILENAME_IS_UTF8", "YES");
-  #else
-    // support Chinese character in the file name and attributes in ESRI's shapefile
+#if defined(_WIN32) && !defined(ROCKY_USE_UTF8_FILENAMES_ON_WINDOWS)
+    // GDAL assumes filenames are UTF-8 encoded by default.
+    // Setting this options to NO tells GDAL to pass filenames through without recoding them.
     CPLSetConfigOption("GDAL_FILENAME_IS_UTF8", "NO");
-  #endif
-    CPLSetConfigOption("SHAPE_ENCODING", "");
+#endif
 
   #if GDAL_VERSION_MAJOR>=3
     CPLSetConfigOption("OGR_CT_FORCE_TRADITIONAL_GIS_ORDER", "YES");

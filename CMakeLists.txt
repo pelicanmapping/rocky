@@ -42,7 +42,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(ROCKY_BUILDTIME_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/build_include")
 include_directories(${ROCKY_BUILDTIME_INCLUDE_DIR})
 
-# temporary folder to hold shared resources (like shaders) for use whrn running from the IDE
+# temporary folder to hold shared resources (like shaders) for use when running from the IDE
 set(ROCKY_BUILDTIME_SHARE_DIR "${CMAKE_CURRENT_BINARY_DIR}/build_share")
 
 # set up standard install folder names, CMAKE_INSTALL_*
@@ -67,6 +67,8 @@ option(ROCKY_SUPPORTS_QT "Build Qt demos" OFF)
 mark_as_advanced(ROCKY_RENDERER_VSG)
 mark_as_advanced(ROCKY_SUPPORTS_HTTPLIB)
 mark_as_advanced(ROCKY_SUPPORTS_CURL)
+
+option(ROCKY_USE_UTF8_FILENAMES_ON_WINDOWS "" ON)
 
 set(BUILD_WITH_JSON ON)
 
