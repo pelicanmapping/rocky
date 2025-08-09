@@ -519,7 +519,7 @@ That's basically it. *Don't forget* to call `ImGui::SetCurrentContext` at the to
 
 <br/><br/>
 
-# Rocky and VulkanSceneGraph <img src="https://avatars.githubusercontent.com/u/44898258?s=64&v=4" align="right"/>
+# Rocky and VulkanSceneGraph
 
 If you're already using VulkanSceneGraph (VSG) in your application and just want to add a `MapNode` to a view, do this:
 ```c++
