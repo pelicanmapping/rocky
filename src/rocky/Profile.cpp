@@ -189,7 +189,7 @@ Profile::setup(const std::string& name)
         setup(
             SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=90 +lon_0=0"),
             Box(-6378137, -6378137, 6378137, 6378137),
-            1, 1);
+            2, 2);
         _shared->geodeticExtent = GeoExtent(SRS::WGS84, -180.0, 45.0, 180.0, 90.0);
     }
     else if (util::ciEquals(name, "qsc-z"))
@@ -198,7 +198,7 @@ Profile::setup(const std::string& name)
         setup(
             SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=-90 +lon_0=0"),
             Box(-6378137, -6378137, 6378137, 6378137),
-            1, 1);
+            2, 2);
         _shared->geodeticExtent = GeoExtent(SRS::WGS84, -180.0, -90.0, 180.0, -45.0);
     }
     else if (util::ciEquals(name, "qsc+x"))
@@ -207,7 +207,7 @@ Profile::setup(const std::string& name)
         setup(
             SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=0"),
             Box(-6378137, -6378137, 6378137, 6378137),
-            1, 1);
+            2, 2);
         _shared->geodeticExtent = GeoExtent(SRS::WGS84, -45.0, -45.0, 45.0, 45.0);
     }
     else if (util::ciEquals(name, "qsc-x"))
@@ -216,7 +216,7 @@ Profile::setup(const std::string& name)
         setup(
             SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=180"),
             Box(-6378137, -6378137, 6378137, 6378137),
-            1, 1);
+            2, 2);
         _shared->geodeticExtent = GeoExtent(SRS::WGS84, 135.0, -45.0, 225.0, 45.0);
     }
     else if (util::ciEquals(name, "qsc+y"))
@@ -225,7 +225,7 @@ Profile::setup(const std::string& name)
         setup(
             SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=90"),
             Box(-6378137, -6378137, 6378137, 6378137),
-            1, 1);
+            2, 2);
         _shared->geodeticExtent = GeoExtent(SRS::WGS84, 45.0, -45.0, 125.0, 45.0);
     }
     else if (util::ciEquals(name, "qsc-y"))
@@ -234,7 +234,7 @@ Profile::setup(const std::string& name)
         setup(
             SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=-90"),
             Box(-6378137, -6378137, 6378137, 6378137),
-            1, 1);
+            2, 2);
         _shared->geodeticExtent = GeoExtent(SRS::WGS84, -135.0, -45.0, -45.0, 45.0);
     }
 }
@@ -464,23 +464,31 @@ Profile::equivalentLOD(const Profile& rhs, unsigned rhsLOD) const
     // Special check for geodetic to mercator or vise versa, they should match up in LOD.
     if (lhs == GLOBAL_GEODETIC)
     {
-        if (rhs == SPHERICAL_MERCATOR || rhs == GLOBAL_QSC)
+        if (rhs == SPHERICAL_MERCATOR) // || rhs.srs().isQSC())
         {
             return rhsLOD; // they are equivalent, so just return the incoming LOD.
+        }
+        else if (rhs.srs().isQSC())
+        {
+            return std::max(0, (int)rhsLOD + 2);
         }
     }
     else if (lhs == SPHERICAL_MERCATOR)
     {
-        if (rhs == GLOBAL_GEODETIC || rhs == GLOBAL_QSC)
+        if (rhs == GLOBAL_GEODETIC) // || rhs.srs().isQSC())
         {
             return rhsLOD; // they are equivalent, so just return the incoming LOD.
         }
+        else if (rhs.srs().isQSC())
+        {
+            return std::max(0, (int)rhsLOD + 2);
+        }
     }
-    else if (lhs == GLOBAL_QSC)
+    else if (lhs.srs().isQSC())
     {
         if (rhs == GLOBAL_GEODETIC || rhs == SPHERICAL_MERCATOR)
         {
-            return rhsLOD; // they are equivalent, so just return the incoming LOD.
+            return rhsLOD + 2; // std::max((int)rhsLOD - 1, 0); ; // rhsLOD; // they are equivalent, so just return the incoming LOD.
         }
     }
 

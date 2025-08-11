@@ -81,6 +81,25 @@ GeoPoint::geodesicDistanceTo(const GeoPoint& rhs) const
     else return { };
 }
 
+GeoPoint
+GeoPoint::interpolateTo(const GeoPoint& rhs, double t) const
+{
+    t = clamp(t, 0.0, 1.0);
+    
+    if (srs.isGeodetic())
+    {
+        return GeoPoint(srs, srs.ellipsoid().geodesicInterpolate(
+            glm::dvec3(x, y, z),
+            glm::dvec3(rhs.x, rhs.y, rhs.z),
+            t));
+    }
+    else
+    {
+        auto vec = glm::dvec3(rhs.x - x, rhs.y - y, rhs.z - z);
+        return GeoPoint(srs, x + t * vec.x, y + t * vec.y, z + t * vec.z);
+    }
+}
+
 std::string
 GeoPoint::string() const
 {

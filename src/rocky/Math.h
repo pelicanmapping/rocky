@@ -46,6 +46,28 @@ namespace ROCKY_NAMESPACE
         return glm::dvec3(mat * glm::dvec4(v, 1));
     }
 
+    template<typename SPHERE>
+    inline SPHERE& expandBy(SPHERE& s, typename SPHERE::vec_type p)
+    {
+        if (s.radius >= 0.0)
+        {
+            auto dv = p - s.center;
+            double r = glm::length(to_glm(dv));
+            if (r > s.radius)
+            {
+                double dr = 0.5 * (r - s.radius);
+                s.center += dv * (dr / r);
+                s.radius += dr;
+            }
+        }
+        else
+        {
+            s.center = p;
+            s.radius = 0.0;
+        }
+        return s;
+    }
+
     struct ROCKY_EXPORT Sphere
     {
     public:
@@ -103,8 +125,8 @@ namespace ROCKY_NAMESPACE
 
     struct ROCKY_EXPORT Box
     {        
-        double xmin, ymin, zmin;
-        double xmax, ymax, zmax;
+        double xmin = DBL_MAX, ymin = DBL_MAX, zmin = DBL_MAX;
+        double xmax = -DBL_MAX, ymax = -DBL_MAX, zmax = -DBL_MAX;
 
         inline double width() const {
             return xmax - xmin;
@@ -218,9 +240,7 @@ namespace ROCKY_NAMESPACE
                 zmax != rhs.zmax;
         }
 
-        Box() :
-            xmin(DBL_MAX), ymin(DBL_MAX), zmin(DBL_MAX),
-            xmax(-DBL_MAX), ymax(-DBL_MAX), zmax(-DBL_MAX) { }
+        Box() = default;
 
         Box(double x0, double y0, double z0, double x1, double y1, double z1) :
             xmin(x0), ymin(y0), zmin(z0),
@@ -598,6 +618,158 @@ namespace ROCKY_NAMESPACE
             _mat[2][0] /= scaleZ; _mat[2][1] /= scaleZ; _mat[2][2] /= scaleZ;
 
             return quaternion_from_unscaled_matrix<Q>(_mat);
+        }
+
+
+        template<typename VEC3>
+        static inline double cross2D(const VEC3& a, const VEC3& b, const VEC3& c) {
+            const double abx = b.x - a.x, aby = b.y - a.y;
+            const double acx = c.x - a.x, acy = c.y - a.y;
+            return abx * acy - aby * acx;
+        }
+
+        static inline int sgn(double v, double eps) {
+            return (v > eps) - (v < -eps);
+        }
+
+        static inline bool onSegment2D(const glm::dvec3& a, const glm::dvec3& b,
+            const glm::dvec3& p, double eps)
+        {
+            if (std::abs(cross2D(a, b, p)) > eps) return false;
+            const double minx = std::min(a.x, b.x) - eps, maxx = std::max(a.x, b.x) + eps;
+            const double miny = std::min(a.y, b.y) - eps, maxy = std::max(a.y, b.y) + eps;
+            return (p.x >= minx && p.x <= maxx && p.y >= miny && p.y <= maxy);
+        }
+
+        static inline bool segmentsIntersect2D(const glm::dvec3& a, const glm::dvec3& b,
+            const glm::dvec3& c, const glm::dvec3& d,
+            double eps)
+        {
+            const int s1 = sgn(cross2D(a, b, c), eps);
+            const int s2 = sgn(cross2D(a, b, d), eps);
+            const int s3 = sgn(cross2D(c, d, a), eps);
+            const int s4 = sgn(cross2D(c, d, b), eps);
+
+            if (s1 * s2 < 0 && s3 * s4 < 0) return true;
+            if (s1 == 0 && onSegment2D(a, b, c, eps)) return true;
+            if (s2 == 0 && onSegment2D(a, b, d, eps)) return true;
+            if (s3 == 0 && onSegment2D(c, d, a, eps)) return true;
+            if (s4 == 0 && onSegment2D(c, d, b, eps)) return true;
+            return false;
+        }
+
+        template<class It, class DVEC>
+        static inline bool pointInPolygon2D(It begin, It end, const DVEC& p, double eps)
+        {
+            // On-edge => inside
+            if (begin == end) return false;
+            auto it = begin; auto prev = *it; glm::dvec3 first = prev; ++it;
+            for (; it != end; ++it) {
+                if (onSegment2D(prev, *it, glm::dvec3(p, 0.0), eps)) return true;
+                prev = *it;
+            }
+            if (onSegment2D(prev, first, glm::dvec3(p, 0.0), eps)) return true;
+
+            // Ray cast to +x
+            bool inside = false;
+            it = begin; prev = *it; first = prev; ++it;
+            for (; it != end; ++it) {
+                const glm::dvec3& a = prev;
+                const glm::dvec3& b = *it;
+                const bool cond = ((a.y > p.y) != (b.y > p.y)) &&
+                    (p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x);
+                if (cond) inside = !inside;
+                prev = *it;
+            }
+            // close last edge
+            {
+                const glm::dvec3& a = prev;
+                const glm::dvec3& b = first;
+                const bool cond = ((a.y > p.y) != (b.y > p.y)) &&
+                    (p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x);
+                if (cond) inside = !inside;
+            }
+            return inside;
+        }
+
+        template<class It>
+        static inline void bounds2D(It begin, It end,
+            double& xmin, double& ymin,
+            double& xmax, double& ymax)
+        {
+            auto it = begin;
+            const glm::dvec3 p0 = *it++;
+            xmin = xmax = p0.x; ymin = ymax = p0.y;
+            for (; it != end; ++it) {
+                xmin = std::min(xmin, it->x); xmax = std::max(xmax, it->x);
+                ymin = std::min(ymin, it->y); ymax = std::max(ymax, it->y);
+            }
+        }
+
+        template<class ItA, class ItB>
+        bool polygonsIntersect2D(ItA a_begin, ItA a_end,
+            ItB b_begin, ItB b_end,
+            double eps = 1e-12)
+        {
+            // Need at least triangles
+            if (std::distance(a_begin, a_end) < 3) return false;
+            if (std::distance(b_begin, b_end) < 3) return false;
+
+            // 0) bbox reject
+            double axmin, aymin, axmax, aymax;
+            double bxmin, bymin, bxmax, bymax;
+            bounds2D(a_begin, a_end, axmin, aymin, axmax, aymax);
+            bounds2D(b_begin, b_end, bxmin, bymin, bxmax, bymax);
+            if (axmax < bxmin - eps || axmin > bxmax + eps ||
+                aymax < bymin - eps || aymin > bymax + eps) {
+                return false;
+            }
+
+            // 1) any edge crossing?
+            // Iterate edges of A
+            {
+                auto ai = a_begin;
+                glm::dvec3 a_first = *ai, a_prev = a_first;
+                ++ai;
+                for (; ai != a_end; ++ai) {
+                    const glm::dvec3 a_curr = *ai;
+
+                    // iterate edges of B for this A edge
+                    auto bi = b_begin;
+                    glm::dvec3 b_first = *bi, b_prev = b_first;
+                    ++bi;
+                    for (; bi != b_end; ++bi) {
+                        const glm::dvec3 b_curr = *bi;
+                        if (segmentsIntersect2D(a_prev, a_curr, b_prev, b_curr, eps)) return true;
+                        b_prev = b_curr;
+                    }
+                    // close B ring
+                    if (segmentsIntersect2D(a_prev, a_curr, b_prev, b_first, eps)) return true;
+
+                    a_prev = a_curr;
+                }
+                // close A edge against all B edges
+                auto bi = b_begin;
+                glm::dvec3 b_first = *bi, b_prev = b_first;
+                ++bi;
+                for (; bi != b_end; ++bi) {
+                    const glm::dvec3 b_curr = *bi;
+                    if (segmentsIntersect2D(a_prev, a_first, b_prev, b_curr, eps)) return true;
+                    b_prev = b_curr;
+                }
+                if (segmentsIntersect2D(a_prev, a_first, b_prev, b_first, eps)) return true;
+            }
+
+            // 2) containment: one polygon wholly inside the other
+            // pick any vertex from A; test inside B
+            const glm::dvec3 a0 = *a_begin;
+            if (pointInPolygon2D(b_begin, b_end, glm::dvec2(a0.x, a0.y), eps)) return true;
+
+            // pick any vertex from B; test inside A
+            const glm::dvec3 b0 = *b_begin;
+            if (pointInPolygon2D(a_begin, a_end, glm::dvec2(b0.x, b0.y), eps)) return true;
+
+            return false; // disjoint
         }
     }
 

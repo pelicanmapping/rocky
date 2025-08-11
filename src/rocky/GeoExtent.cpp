@@ -915,7 +915,40 @@ GeoExtent::clamp()
 double
 GeoExtent::area() const
 {
-    return valid() ? width() * height() : 0.0;
+    if (!valid())
+        return 0.0;
+
+    if (srs().isProjected() && !srs().isQSC())
+    {
+        // projected area is width * height in the units of the SRS.
+        double a = Distance(width(), srs().units()).as(Units::METERS);
+        double b = Distance(height(), srs().units()).as(Units::METERS);
+        return a * b;
+    }
+
+    // take the four corners in geodetic coords.
+    glm::dvec3 corners[4] = { {xmin(), ymin(), 0}, {xmax(), ymin(), 0}, {xmax(), ymax(), 0}, {xmin(), ymax(), 0} };
+    if (!srs().isGeodetic())
+    {
+        auto to_geo = srs().to(srs().geodeticSRS());
+        for (auto& p : corners)
+            to_geo.transform(p, p);
+    }
+
+    // calculate the ground distance between the corners, and across the diagonal.
+    auto& ellip = srs().ellipsoid();
+    double a = ellip.geodesicGroundDistance(corners[0], corners[1]);
+    double b = ellip.geodesicGroundDistance(corners[1], corners[2]);
+    double c = ellip.geodesicGroundDistance(corners[2], corners[3]);
+    double d = ellip.geodesicGroundDistance(corners[3], corners[0]);
+    double e = ellip.geodesicGroundDistance(corners[0], corners[2]); // diagonal
+
+    // Calculate the area by adding the area of both triangles formed by the diagonal.
+    double s1 = (a + b + e) / 2.0; // semi-perimeter of triangle 1
+    double s2 = (c + d + e) / 2.0; // semi-perimeter of triangle 2
+    double area1 = sqrt(s1 * (s1 - a) * (s1 - b) * (s1 - e)); // area of triangle 1
+    double area2 = sqrt(s2 * (s2 - c) * (s2 - d) * (s2 - e)); // area of triangle 2
+    return area1 + area2;
 }
 
 double

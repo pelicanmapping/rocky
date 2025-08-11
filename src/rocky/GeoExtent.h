@@ -159,7 +159,7 @@ namespace ROCKY_NAMESPACE
         //! Expands the extent by x and y.
         void expand(const Distance& x, const Distance& y);
 
-        //! Gets the area of this GeoExtent
+        //! Gets the area of this GeoExtent in square meters.
         double area() const;
 
         //! Computes a scale/bias matrix that transforms parametric coordinates [0..1]
@@ -172,9 +172,7 @@ namespace ROCKY_NAMESPACE
         //! Note! For the sake of efficiency, this method does NOT check for
         //! validity nor for SRS equivalence -- so be sure to validate those beforehand.
         //! It also assumes the output matrix is preset to the identity.
-        bool createScaleBias(
-            const GeoExtent& target,
-            glm::dmat4& output) const;
+        bool createScaleBias(const GeoExtent& target, glm::dmat4& output) const;
 
         //! Generates a Sphere encompassing the extent and a vertical volume, in world coordinates.
         Sphere createWorldBoundingSphere(double minElev, double maxElev) const;

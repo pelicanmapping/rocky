@@ -29,6 +29,8 @@
 
 #define ROCKY_MAX_NUMBER_OF_VIEWS @ROCKY_MAX_NUMBER_OF_VIEWS@
 
+#cmakedefine ROCKY_USE_UTF8_FILENAMES_ON_WINDOWS
+
 // Dependency defines
 
 #cmakedefine ROCKY_HAS_GLM

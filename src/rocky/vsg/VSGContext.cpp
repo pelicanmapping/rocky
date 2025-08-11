@@ -480,6 +480,8 @@ VSGContextImpl::ctor(int& argc, char** argv)
     io.services().contentCache = std::make_shared<ContentCache>(256);
 
     io.services().residentImageCache = std::make_shared<util::ResidentCache<std::string, Image>>();
+
+    io.services().deadpool = std::make_shared<DealpoolService>(4096);
 }
 
 vsg::ref_ptr<vsg::Device>

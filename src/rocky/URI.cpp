@@ -597,6 +597,15 @@ auto URI::read(const IOOptions& io) const -> Result<IOResponse>
 
     Content content;
 
+    // check the dead pool, if available.
+    if (io.services().deadpool)
+    {
+        if (auto r = io.services().deadpool->get(full()))
+        {
+            return r.value();
+        }
+    }
+
     if (std::filesystem::exists(full()))
     {
         auto contentType = inferContentTypeFromFileExtension(full());
@@ -632,8 +641,15 @@ auto URI::read(const IOOptions& io) const -> Result<IOResponse>
 
         // make the actual request:
         auto r = http_get(request, io);
+
         if (r.failed())
         {
+            // if the error is unrecoverable, deadpool it.
+            if (io.services().deadpool && r.error().type == Failure::ResourceUnavailable)
+            {
+                io.services().deadpool->put(full(), r.error());
+            }
+
             return r.error();
         }
 

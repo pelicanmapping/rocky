@@ -6,6 +6,7 @@
 #include "TileKey.h"
 #include "Math.h"
 #include "GeoPoint.h"
+#include <array>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
@@ -359,6 +360,24 @@ namespace
 }
 
 std::vector<TileKey>
+TileKey::intersectingKeys(const GeoExtent& input, unsigned localLOD, const Profile& target_profile)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(input.valid() && target_profile.valid(), {});
+
+    std::vector<TileKey> output;
+
+    auto target_extents = target_profile.transformAndExtractContiguousExtents(input);
+
+    for (auto& extent : target_extents)
+    {
+        addIntersectingKeys(extent, localLOD, target_profile, output);
+    }
+
+    return output;
+}
+
+#if 0
+std::vector<TileKey>
 TileKey::intersectingKeys(const Profile& target_profile) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(valid(), {});
@@ -377,19 +396,184 @@ TileKey::intersectingKeys(const Profile& target_profile) const
     }
 }
 
-std::vector<TileKey>
-TileKey::intersectingKeys(const GeoExtent& input, unsigned localLOD, const Profile& target_profile)
+#else
+
+namespace
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(input.valid() && target_profile.valid(), {});
+    template<typename ITER>
+    inline void normalizeLongitudes(ITER begin, ITER end, double lonRef) {
+
+        if (begin == end) return;
+        double L0 = begin->x;
+        double K0 = std::round((lonRef - L0) / 360.0);
+        double prev = L0 + K0 * 360.0;
+        begin->x = prev;
+        begin->y = clamp(begin->y, -90.0, 90.0);
+        begin++;
+        while (begin != end)
+        {
+            double Li = begin->x;
+            while (Li - prev > 180.0) Li -= 360.0;
+            while (prev - Li > 180.0) Li += 360.0;
+            begin->x = Li;
+            begin->y = clamp(begin->y, -90.0, 90.0);
+            prev = Li;
+            begin++;
+        }
+    }
+}
+
+std::vector<TileKey>
+TileKey::intersectingKeys(const Profile& target_profile, unsigned tile_size) const
+{
+    if (profile == target_profile)
+        return { *this };
+
+    //Log()->info("Tile {} {} get intersecting keys with {}:", str(), profile.wellKnownName(), target_profile.wellKnownName());
+
+    auto source_extent = extent();
+    auto& source_srs = profile.srs();
+    auto& geo = source_srs.geodeticSRS();
+
+    // create a (possibly densified) boundary polygon.
+    // The epsilon keeps up from overrunning lat/long extrema:
+    double E = source_srs.isProjected() ? 0.5 : 1e-5;
+
+    std::array<glm::dvec3, 4> corners = {
+        glm::dvec3(source_extent.xmin() + E, source_extent.ymin() + E, 0),
+        glm::dvec3(source_extent.xmax() - E, source_extent.ymin() + E, 0),
+        glm::dvec3(source_extent.xmax() - E, source_extent.ymax() - E, 0),
+        glm::dvec3(source_extent.xmin() + E, source_extent.ymax() - E, 0)
+    };
+
+#if 0
+    // densification:
+    std::vector<glm::dvec3> boundary;
+    boundary.reserve(corners.size() * 6);
+    for (int i = 0; i < corners.size()-1; ++i)
+    {
+        for (double t = 0.0; t < 1.0; t += 1.0 / 6.0)
+        {
+            boundary.emplace_back(GeoPoint(source_srs, corners[i]).interpolateTo(GeoPoint(source_srs, corners[i + 1]), t));
+        }
+    }
+#else
+    auto boundary = corners;
+#endif
+
+    // convert to geodetic.
+    auto source_to_geo = source_srs.to(geo);
+    auto source_centroid = (corners[0] + corners[2]) * 0.5;
+    auto geo_centroid = source_to_geo(source_centroid);
+
+    source_to_geo.transformRange(boundary.begin(), boundary.end());
+    normalizeLongitudes(boundary.begin(), boundary.end(), geo_centroid.x);
+
+    // calculate the geodetic bounding box.
+    Box box;
+    box.expandBy(boundary.begin(), boundary.end());
+
+    // use it as our new boundary.
+    boundary = {
+        glm::dvec3(box.xmin, box.ymin, 0),
+        glm::dvec3(box.xmax, box.ymin, 0),
+        glm::dvec3(box.xmax, box.ymax, 0),
+        glm::dvec3(box.xmin, box.ymax, 0)
+    };
+
+    // create a local span in each dimension for resolution matching.
+    double dlon = box.width();
+    double dlat = box.height();
+
+    // project the local spans into the target SRS.
+    auto geo_to_target = geo.to(target_profile.srs());
+
+    auto dxb = glm::length(
+        geo_to_target(glm::dvec3{ geo_centroid.x + dlon / 2.0, geo_centroid.y, 0 }) -
+        geo_to_target(glm::dvec3{ geo_centroid.x - dlon / 2.0, geo_centroid.y, 0 }));
+
+    auto dyb = glm::length(
+        geo_to_target(glm::dvec3{ geo_centroid.x, clamp(geo_centroid.y + dlat / 2.0, -90.0, 90.0), 0 }) -
+        geo_to_target(glm::dvec3{ geo_centroid.x, clamp(geo_centroid.y - dlat / 2.0, -90.0, 90.0), 0 }));
+
+    // calculate the target LOD
+    auto dims0 = target_profile.tileDimensions(0);
+    double ex = std::abs(std::log2(dims0.x / std::max(dxb, 1e-12)));
+    double ey = std::abs(std::log2(dims0.y / std::max(dyb, 1e-12)));
+
+    // for a geodetic target, we only care about the Y-axis error
+    unsigned target_lod =
+        target_profile.srs().isGeodetic() ? (unsigned)std::llround(ey) :
+        (unsigned)std::llround((ex + ey) * 0.5);
+        
+    target_lod = std::min(target_lod, 30u);
+    
+    //Log()->info("  Target LOD = {} (dlon={} dlat={}) (dxb={}, dyb={}) (ex={} ey={})", target_lod, dlon, dlat, dxb, dyb, ex, ey);
+    //Log()->info("  Geodetic centroid = {} {}", geo_centroid.x, geo_centroid.y);
+
+    // boundary into target coords:
+    geo_to_target.transformRange(boundary.begin(), boundary.end());
+
+    // collect the candidate tiles.
+    auto target_ex = target_profile.extent();
+    auto dims = target_profile.tileDimensions(target_lod);
+
+#if 1
+    Box targetBox;
+    targetBox.expandBy(boundary.begin(), boundary.end());
+
+    int colmin = (int)std::floor((targetBox.xmin - target_ex.xmin()) / dims.x);
+    int colmax = (int)std::floor((targetBox.xmax - target_ex.xmin()) / dims.x);
+    int rowmin = (int)std::floor((target_ex.ymax() - targetBox.ymax) / dims.y);
+    int rowmax = (int)std::floor((target_ex.ymax() - targetBox.ymin) / dims.y);
+#else
+    int colmin = INT_MAX, colmax = 0, rowmin = INT_MAX, rowmax = 0;
+    for (auto& p : boundary) // boundary is in the target SRS
+    {
+        double col = (p.x - target_ex.xmin()) / dims.x;
+        double row = (target_ex.ymax() - p.y) / dims.y;
+
+        colmin = std::min(colmin, (int)std::floor(col));
+        colmax = std::max(colmax, (int)std::floor(col));
+        rowmin = std::min(rowmin, (int)std::floor(row));
+        rowmax = std::max(rowmax, (int)std::floor(row));
+    }
+#endif
+    colmin = clamp(colmin - 1, 0, (int)target_profile.numTiles(target_lod).x - 1);
+    colmax = clamp(colmax + 1, 0, (int)target_profile.numTiles(target_lod).x - 1);
+    rowmin = clamp(rowmin - 1, 0, (int)target_profile.numTiles(target_lod).y - 1);
+    rowmax = clamp(rowmax + 1, 0, (int)target_profile.numTiles(target_lod).y - 1);
 
     std::vector<TileKey> output;
+    auto tiles = target_profile.numTiles(target_lod);
+    std::array<glm::dvec3, 4> tile_box;
 
-    auto target_extents = target_profile.transformAndExtractContiguousExtents(input);
-
-    for (auto& extent : target_extents)
+    // todo: intersect test the boundary against the candidate tiles.
+    for (unsigned col = colmin; col <= colmax; ++col)
     {
-        addIntersectingKeys(extent, localLOD, target_profile, output);
+        for (unsigned row = rowmin; row <= rowmax; ++row)
+        {
+            TileKey ikey(target_lod, col, row, target_profile);
+
+            if (ikey.valid())
+            {
+                auto tile_ex = ikey.extent();
+                tile_box[0] = glm::dvec3(tile_ex.xmin(), tile_ex.ymin(), 0);
+                tile_box[1] = glm::dvec3(tile_ex.xmax(), tile_ex.ymin(), 0);
+                tile_box[2] = glm::dvec3(tile_ex.xmax(), tile_ex.ymax(), 0);
+                tile_box[3] = glm::dvec3(tile_ex.xmin(), tile_ex.ymax(), 0);
+
+                if (util::polygonsIntersect2D(boundary.begin(), boundary.end(), tile_box.begin(), tile_box.end()))
+                {
+                    output.emplace_back(ikey);
+                }
+            }
+        }
     }
+
+    //Log()->info("  done - found {}/{} keys", output.size(), (colmax-colmin+1)*(rowmax-rowmin+1));
 
     return output;
 }
+
+#endif

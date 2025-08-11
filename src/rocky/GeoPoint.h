@@ -56,6 +56,8 @@ namespace ROCKY_NAMESPACE
         //! @return Geodesic distance between the two points
         Distance geodesicDistanceTo(const GeoPoint& rhs) const;
 
+        GeoPoint interpolateTo(const GeoPoint& rhs, double t) const;
+
         //! Checks for equality
         bool operator == (const GeoPoint& rhs) const {
             return srs == rhs.srs && x == rhs.x && y == rhs.y && z == rhs.z;

@@ -12,7 +12,7 @@
 #include <optional>
 #include <string>
 #include <cstdint>
-#include <tuple>
+#include <unordered_set>
 
 /**
  * A collection of types used by the various I/O systems.
@@ -35,6 +35,9 @@ namespace ROCKY_NAMESPACE
     //! Service for writing an image to a stream
     using WriteImageStreamService = std::function<
         Result<>(std::shared_ptr<Image> image, std::ostream& stream, std::string contentType, const IOOptions& io)>;
+
+    //! Service for tracking invalid request URIs
+    using DealpoolService = util::LRUCache<std::string, Failure>;
 
     //! Holds a generic content buffer and its type.
     struct Content {
@@ -71,6 +74,9 @@ namespace ROCKY_NAMESPACE
 
         //! Provides fast access to Image data that is resident somwehere in memory
         std::shared_ptr<util::ResidentCache<std::string, Image>> residentImageCache;
+
+        //! URI deadpool; URI will use this if available.
+        std::shared_ptr<DealpoolService> deadpool;
     };
 
     /**

@@ -250,11 +250,8 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 {
     std::shared_ptr<Mosaic> output;
 
-    // Map the key's LOD to the target profile's LOD.
-    unsigned targetLOD = profile.equivalentLOD(key.profile, key.level);
-
     // Find the set of keys that covers the same area as in input key in our target profile.
-    auto intersectingKeys = key.intersectingKeys(profile);
+    auto intersectingKeys = key.intersectingKeys(profile, tileSize);
 
     // collect raster data for each intersecting key, falling back on ancestor images
     // if none are available at the target LOD.
@@ -273,7 +270,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             {
                 sources.emplace_back(cached_value, cached.valueKey.extent());
 
-                if (cached.valueKey.level == targetLOD)
+                if (cached.valueKey.level == intersectingKey.level)
                 {
                     hasAtLeastOneSourceAtTargetLOD = true;
                 }
@@ -303,7 +300,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                     // add it to our sources collection:
                     sources.emplace_back(subTile.value());
 
-                    if (subKey.level == targetLOD)
+                    if (subKey.level == intersectingKey.level)
                     {
                         hasAtLeastOneSourceAtTargetLOD = true;
                     }

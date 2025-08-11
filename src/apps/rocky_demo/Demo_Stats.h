@@ -137,10 +137,11 @@ auto Demo_Stats = [](Application& app)
         ImGuiLTable::End();
     }
 
-    if (ImGui::BeginTable("System-Caches", 4, ImGuiTableFlags_SizingStretchProp))
+    if (ImGui::BeginTable("System-Caches", 5, ImGuiTableFlags_SizingStretchProp))
     {
         ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableNextColumn();
+        ImGui::TableNextColumn(); ImGui::Text("Capacity");
         ImGui::TableNextColumn(); ImGui::Text("Size");
         ImGui::TableNextColumn(); ImGui::Text("Hits");
         ImGui::TableNextColumn(); ImGui::Text("Misses");
@@ -149,15 +150,27 @@ auto Demo_Stats = [](Application& app)
         if (contentCache)
         {
             ImGui::TableNextColumn(); ImGui::Text("URI cache");
+            ImGui::TableNextColumn(); ImGui::Text("%ld", contentCache->capacity());
             ImGui::TableNextColumn(); ImGui::Text("%ld", contentCache->size());
             ImGui::TableNextColumn(); ImGui::Text("%d", contentCache->hits());
             ImGui::TableNextColumn(); ImGui::Text("%d", contentCache->misses());
+        }
+
+        auto deadpool = app.io().services().deadpool;
+        if (deadpool)
+        {
+            ImGui::TableNextColumn(); ImGui::Text("URI deadpool");
+            ImGui::TableNextColumn(); ImGui::Text("%ld", deadpool->capacity());
+            ImGui::TableNextColumn(); ImGui::Text("%ld", deadpool->size());
+            ImGui::TableNextColumn(); ImGui::Text("%d", deadpool->hits());
+            ImGui::TableNextColumn(); ImGui::Text("%d", deadpool->misses());
         }
 
         auto residentImageCache = app.io().services().residentImageCache;
         if (residentImageCache)
         {
             ImGui::TableNextColumn(); ImGui::Text("Resident image cache");
+            ImGui::TableNextColumn(); ImGui::Text("%ld", residentImageCache->capacity());
             ImGui::TableNextColumn(); ImGui::Text("%ld", residentImageCache->size());
             ImGui::TableNextColumn(); ImGui::Text("%d", residentImageCache->hits());
             ImGui::TableNextColumn(); ImGui::Text("%d", residentImageCache->misses());

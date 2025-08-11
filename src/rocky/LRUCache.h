@@ -21,6 +21,7 @@ namespace ROCKY_NAMESPACE
     public:
         virtual std::optional<V> get(const K& k) = 0;
         virtual void put(const K& k, const V& v) = 0;
+        virtual std::size_t capacity() const = 0;
         virtual std::size_t size() const = 0;
         virtual std::uint32_t hits() const = 0;
         virtual std::uint32_t misses() const = 0;
@@ -76,6 +77,11 @@ namespace ROCKY_NAMESPACE
                             ++it;
                     }
                 }
+            }
+
+            std::size_t capacity() const override
+            {
+                return 0; // ResidentCache does not have a fixed capacity
             }
 
             std::size_t size() const override
@@ -180,6 +186,12 @@ namespace ROCKY_NAMESPACE
                     _cache.emplace_back(key, value);
                     _map[key] = std::prev(_cache.end());
                 }
+            }
+
+            //! Returns the maximum number of items the cache can hold.
+            inline std::size_t capacity() const override
+            {
+                return _capacity;
             }
 
             std::size_t size() const override

@@ -155,11 +155,13 @@ SurfaceNode::recomputeBound()
     };
 
     // finally, calculate a horizon culling point for the tile.
+    worldBoundingSphere.reset();
     std::vector<glm::dvec3> world_mesh;
     world_mesh.reserve(_proxyVerts->size());
     for (auto& v : *_proxyVerts) {
         auto world = m * vsg::dvec4(v.x, v.y, v.z, 1.0);
         world_mesh.emplace_back(world.x, world.y, world.z);
+        expandBy(worldBoundingSphere, vsg::dvec3(world.x, world.y, world.z));
     }
     auto& ellipsoid = _tilekey.profile.srs().ellipsoid();
     _horizonCullingPoint = to_vsg(ellipsoid.calculateHorizonPoint(world_mesh));

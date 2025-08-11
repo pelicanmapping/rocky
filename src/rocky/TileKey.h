@@ -154,7 +154,9 @@ namespace ROCKY_NAMESPACE
             const Profile& profile);
 
         //! Gets the keys that intersect this TileKey in the requested profile.
-        std::vector<TileKey> intersectingKeys(const Profile& profile) const;
+        //std::vector<TileKey> intersectingKeys(const Profile& profile) const;
+
+        std::vector<TileKey> intersectingKeys(const Profile& profile, unsigned tileSize) const;
 
         static std::vector<TileKey> intersectingKeys(
             const GeoExtent& extent,

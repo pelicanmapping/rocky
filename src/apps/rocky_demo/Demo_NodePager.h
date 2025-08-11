@@ -96,7 +96,7 @@ auto Demo_NodePager = [](Application& app)
 
     if (ImGuiLTable::Begin("NodePager"))
     {
-        static std::vector<std::string> pn = { "global-geodetic", "spherical-mercator" };
+        static std::vector<std::string> pn = { "global-geodetic", "spherical-mercator", "qsc+x", "qsc+z", "qsc-z" };
         int profileIndex = 0;
         for (int i = 0; i < pn.size(); i++)
             if (pn[i] == profile.wellKnownName())

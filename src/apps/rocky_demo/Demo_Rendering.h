@@ -113,6 +113,7 @@ auto Demo_Rendering = [](Application& app)
             app.vsgcontext->requestFrame();
         }
 
+#if 1
         if (!app.mapNode->srs().isProjected())
         {
             static std::vector<std::string> options = { "global-geodetic", "global-qsc" };
@@ -133,6 +134,7 @@ auto Demo_Rendering = [](Application& app)
                 }
             }
         }
+#endif
 
         ImGuiLTable::End();
     }

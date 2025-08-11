@@ -194,8 +194,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
     std::shared_ptr<HeightfieldMosaic> output;
 
     // Determine the intersecting keys
-    unsigned targetLOD = profile.equivalentLOD(key.profile, key.level);
-    auto intersectingKeys = key.intersectingKeys(profile);
+    auto intersectingKeys = key.intersectingKeys(profile, tileSize);
 
     // collect heightfield for each intersecting key. Note, we're hitting the
     // underlying tile source here, so there's no vetical datum shifts happening yet.
@@ -215,7 +214,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
             {
                 sources.emplace_back(cached_value, cached.valueKey.extent());
 
-                if (cached.valueKey.level == targetLOD)
+                if (cached.valueKey.level == intersectingKey.level)
                 {
                     hasAtLeastOneSourceAtTargetLOD = true;
                 }
@@ -245,7 +244,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
                     // add it to our sources collection:
                     sources.emplace_back(std::move(subTile));
 
-                    if (subKey.level == targetLOD)
+                    if (subKey.level == intersectingKey.level)
                     {
                         hasAtLeastOneSourceAtTargetLOD = true;
                     }
