@@ -328,15 +328,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#iterator_base" class="md-nav__link">
-    <span class="md-ellipsis">
-      iterator_base
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#operator" class="md-nav__link">
     <span class="md-ellipsis">
       operator&gt;&gt;
@@ -349,6 +340,15 @@
   <a href="#operator_1" class="md-nav__link">
     <span class="md-ellipsis">
       operator&lt;&lt;
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iterator_base" class="md-nav__link">
+    <span class="md-ellipsis">
+      iterator_base
     </span>
   </a>
   
@@ -388,17 +388,15 @@
 <h2 id="namespaces">Namespaces</h2>
 <ul>
 <li><a href="../ROCKY_NAMESPACE/">ROCKY_NAMESPACE</a></li>
-<li><a href="../std/">std</a></li>
+<li><a href="../jobs/">jobs</a></li>
 <li><a href="../rocky/">rocky</a></li>
 <li><a href="../nlohmann/">nlohmann</a></li>
-<li><a href="../vsg/">vsg</a></li>
-<li><a href="../jobs/">jobs</a></li>
 <li><a href="../weemesh/">weemesh</a></li>
+<li><a href="../vsg/">vsg</a></li>
+<li><a href="../std/">std</a></li>
 </ul>
 <h2 id="records">Records</h2>
 <ul>
-<li><a href="RTFileStream/">RTFileStream</a></li>
-<li><a href="RTree/">RTree</a></li>
 <li><a href="TiXmlDocument/">TiXmlDocument</a></li>
 <li><a href="TiXmlElement/">TiXmlElement</a></li>
 <li><a href="TiXmlComment/">TiXmlComment</a></li>
@@ -414,12 +412,10 @@
 <li><a href="TiXmlAttributeSet/">TiXmlAttributeSet</a></li>
 <li><a href="TiXmlHandle/">TiXmlHandle</a></li>
 <li><a href="TiXmlPrinter/">TiXmlPrinter</a></li>
+<li><a href="RTFileStream/">RTFileStream</a></li>
+<li><a href="RTree/">RTree</a></li>
 </ul>
 <h2 id="functions">Functions</h2>
-<h3 id="iterator_base">iterator_base</h3>
-<p><em>int iterator_base(T &amp; geom, _Bool trav_holes)</em></p>
-<p><em>Defined at src/rocky/Feature.h#339</em></p>
-<p>template inlines</p>
 <h3 id="operator">operator&gt;&gt;</h3>
 <p><em>int &amp; operator&gt;&gt;(int &amp; in, TiXmlNode &amp; base)</em></p>
 <p>An input stream operator, for every class. Tolerant of newlines and            formatting, but doesn't expect them.</p>
@@ -433,6 +429,10 @@
         A TiXmlDocument will read nodes until it reads a root element, and          all the children of that root element.
 </code></pre>
 <p>Appends the XML node or attribute to a std::string.</p>
+<h3 id="iterator_base">iterator_base</h3>
+<p><em>int iterator_base(T &amp; geom, _Bool trav_holes)</em></p>
+<p><em>Defined at src/rocky/Feature.h#339</em></p>
+<p>template inlines</p>
 <h2 id="enums">Enums</h2>
 <p>| enum TiXmlEncoding |</p>
 <p>--</p>
