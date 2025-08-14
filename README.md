@@ -195,13 +195,13 @@ loaded in the scene since it goes straight to the source layer. But it's usually
 ElevationSampler sampler;
 sampler.layer = elevationLayerFromMap;
 
-Result<ElevationSample> result = sampler.sample(point, app.io);
+Result<ElevationSample> result = sampler.sample(point, app.io());
 
 if (result.ok())
     Log()->info("Result = {}m", result.value());
 
 // or, return a clamped GeoPoint:
-Result<GeoPoint> clampedPoint = sampler.clamp(point, app.io);
+Result<GeoPoint> clampedPoint = sampler.clamp(point, app.io());
 ```
 
 You can also batch queries to the `ElevationSampler`, which speeds things up when querying a localized area. A batched query session modifies the input data directly. It also expects an `SRSOperation` that can transform those points into the SRS of the elevation layer. You also get optional control over the sampling resolution ... lower resolution is often faster.
@@ -209,7 +209,7 @@ You can also batch queries to the `ElevationSampler`, which speeds things up whe
 ElevationSampler sampler;
 sampler.layer = ...;
 
-auto session = sampler.session(app.io);
+auto session = sampler.session(app.io());
 session.xform = pointsSRS.to(sampler.layer->profile->srs());
 session.resolution = Distance(100, Units::METERS);
 sampler.clampRange(session, points.begin(), points.end());
