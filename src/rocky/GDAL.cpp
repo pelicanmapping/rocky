@@ -1457,6 +1457,23 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
         }
     }
 
+    int success;
+    float bandNoData = (float)band->GetNoDataValue(&success);
+    if (success)
+    {
+        const double epsilon = 1e-6;
+        for (unsigned r = 0; r < tileSize; ++r)
+        {
+            for (unsigned c = 0; c < tileSize; ++c)
+            {
+                auto& value = hf->heightAt(c, r);
+                if (equiv(value, bandNoData, epsilon)) {
+                    value = NO_DATA_VALUE;
+                }
+            }
+        }
+    }
+
 #else
     for (unsigned r = 0; r < tileSize; ++r)
     {
