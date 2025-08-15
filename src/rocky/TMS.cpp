@@ -171,8 +171,7 @@ namespace
                             dexml->QueryStringAttribute("description", &description);
 
                             // Note: TMS DataExtents are a Pelican extension and are ALWAYS in WGS84.
-                            GeoExtent e = profile.clampAndTransformExtent(
-                                GeoExtent(SRS::WGS84, minX, minY, maxX, maxY));
+                            auto e = GeoExtent(SRS::WGS84, minX, minY, maxX, maxY).transform(profile.srs());
 
                             if (e.valid())
                             {
@@ -544,7 +543,7 @@ TileMap::TileMap(
         }
 
         // Convert the bounds to the output profile
-        GeoExtent bounds = profile.clampAndTransformExtent(e);
+        GeoExtent bounds = e.transform(profile.srs());
         minX = bounds.xmin();
         minY = bounds.ymin();
         maxX = bounds.xmax();

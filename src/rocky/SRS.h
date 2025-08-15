@@ -378,14 +378,10 @@ namespace ROCKY_NAMESPACE
                 &inout[0][0], &inout[0][1], &inout[0][2], sizeof(DVEC3), count);
         }
 
-        //! Transform a bounding box from this SRS to an MBR in a target SRS.
-        //! Since it is not always possible to transform a bounding extent exactly,
-        //! this method will attempt to return the smallest bounding box in the
-        //! target SRS that contains the transformed extent.
-        //! @return True is the transformation succeeded 
-        bool transformBoundsToMBR(
-            double& in_out_xmin, double& in_out_ymin,
-            double& in_out_xmax, double& in_out_ymax) const;
+        //! Transform a bounding box from this SRS to the target SRS.
+        //! @param input Input bounds
+        //! @return output bounds
+        Box transformBounds(const Box& input) const;
 
         //! Given a point in the source SRS, modify it such that its transformed
         //! coordinates would be clamped within the bounds of the target SRS.

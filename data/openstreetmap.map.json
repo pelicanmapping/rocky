@@ -1,7 +1,4 @@
 {
-    "terrain" : {
-        "screen_space_error" : 0.0
-    },
     "map" : {
         "name" : "OpenStreetMap Example",
         "layers": [

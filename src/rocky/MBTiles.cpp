@@ -657,7 +657,7 @@ MBTiles::Driver::setDataExtents(const DataExtentList& values)
         }
         else
         {
-            bounds = Profile("global-geodetic").clampAndTransformExtent(e);
+            bounds = e.transform(SRS::WGS84);
         }
         std::stringstream boundsStr;
         boundsStr << bounds.xmin() << "," << bounds.ymin() << "," << bounds.xmax() << "," << bounds.ymax();

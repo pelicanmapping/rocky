@@ -88,6 +88,9 @@ Profile::equivalentTo(const Profile& rhs) const
     if (_shared == rhs._shared)
         return true;
 
+    if (_shared->hash == rhs._shared->hash)
+        return true;
+
     if (!_shared->wellKnownName.empty() && _shared->wellKnownName == rhs._shared->wellKnownName)
         return true;
 
@@ -255,7 +258,7 @@ Profile::extent() const {
 }
 
 const GeoExtent&
-Profile::geographicExtent() const {
+Profile::geodeticExtent() const {
     return _shared->geodeticExtent;
 }
 
@@ -368,146 +371,6 @@ Profile::levelOfDetailForHorizResolution( double resolution, int tileSize ) cons
     return level;
 }
 
-GeoExtent
-Profile::clampAndTransformExtent(const GeoExtent& input, bool* out_clamped) const
-{
-    // initialize the output flag
-    if ( out_clamped )
-        *out_clamped = false;
-
-    // null checks
-    if (!input.valid())
-        return GeoExtent::INVALID;
-
-    if (input.isWholeEarth())
-    {
-        if (out_clamped && !extent().isWholeEarth())
-            *out_clamped = true;
-        return extent();
-    }
-
-    // begin by transforming the input extent to this profile's SRS.
-    GeoExtent inputInMySRS = input.transform(srs());
-
-    if (inputInMySRS.valid())
-    {
-        // Compute the intersection of the two:
-        GeoExtent intersection = inputInMySRS.intersectionSameSRS(extent());
-
-        // expose whether clamping took place:
-        if (out_clamped != 0L)
-        {
-            *out_clamped = intersection != extent();
-        }
-
-        return intersection;
-    }
-
-    else
-    {
-        // The extent transformation failed, probably due to an out-of-bounds condition.
-        // Go to Plan B: attempt the operation in lat/long
-        auto geo_srs = srs().geodeticSRS();
-
-        // get the input in lat/long:
-        GeoExtent gcs_input =
-            input.srs().isGeodetic() ?
-            input :
-            input.transform(geo_srs);
-
-        // bail out on a bad transform:
-        if (!gcs_input.valid())
-            return GeoExtent::INVALID;
-
-        // bail out if the extent's do not intersect at all:
-        if (!gcs_input.intersects(geographicExtent(), false))
-            return GeoExtent::INVALID;
-
-        // clamp it to the profile's extents:
-        GeoExtent clamped_gcs_input = GeoExtent(
-            gcs_input.srs(),
-            clamp(gcs_input.xmin(), geographicExtent().xmin(), geographicExtent().xmax()),
-            clamp(gcs_input.ymin(), geographicExtent().ymin(), geographicExtent().ymax()),
-            clamp(gcs_input.xmax(), geographicExtent().xmin(), geographicExtent().xmax()),
-            clamp(gcs_input.ymax(), geographicExtent().ymin(), geographicExtent().ymax()));
-
-        if (out_clamped)
-            *out_clamped = (clamped_gcs_input != gcs_input);
-
-        // finally, transform the clamped extent into this profile's SRS and return it.
-        GeoExtent result =
-            clamped_gcs_input.srs() == srs() ?
-            clamped_gcs_input :
-            clamped_gcs_input.transform(srs());
-
-        ROCKY_SOFT_ASSERT(result.valid());
-
-        return result;
-    }    
-}
-
-unsigned
-Profile::equivalentLOD(const Profile& rhs, unsigned rhsLOD) const
-{
-    ROCKY_SOFT_ASSERT_AND_RETURN(rhs.valid(), rhsLOD);
-
-    static const Profile SPHERICAL_MERCATOR("spherical-mercator");
-    static const Profile GLOBAL_GEODETIC("global-geodetic");
-    static const Profile GLOBAL_QSC("global-qsc");
-
-    // If the profiles are equivalent (except for vdatum) just use the incoming lod
-    auto& lhs = *this;
-
-    if (lhs == rhs)
-        return rhsLOD;
-
-    // Special check for geodetic to mercator or vise versa, they should match up in LOD.
-    if (lhs == GLOBAL_GEODETIC)
-    {
-        if (rhs == SPHERICAL_MERCATOR) // || rhs.srs().isQSC())
-        {
-            return rhsLOD; // they are equivalent, so just return the incoming LOD.
-        }
-        else if (rhs.srs().isQSC())
-        {
-            return std::max(0, (int)rhsLOD + 2);
-        }
-    }
-    else if (lhs == SPHERICAL_MERCATOR)
-    {
-        if (rhs == GLOBAL_GEODETIC) // || rhs.srs().isQSC())
-        {
-            return rhsLOD; // they are equivalent, so just return the incoming LOD.
-        }
-        else if (rhs.srs().isQSC())
-        {
-            return std::max(0, (int)rhsLOD + 2);
-        }
-    }
-    else if (lhs.srs().isQSC())
-    {
-        if (rhs == GLOBAL_GEODETIC || rhs == SPHERICAL_MERCATOR)
-        {
-            return rhsLOD + 2; // std::max((int)rhsLOD - 1, 0); ; // rhsLOD; // they are equivalent, so just return the incoming LOD.
-        }
-    }
-
-    // perform resolution matching to get the best LOD.
-
-    auto[rhsWidth, rhsHeight] = rhs.tileDimensions(rhsLOD);
-
-    // safety catch
-    if (equiv(rhsWidth, 0.0) || equiv(rhsHeight, 0.0))
-    {
-        Log()->warn("Profile: getEquivalentLOD: zero dimension");
-        return rhsLOD;
-    }
-
-    double rhsTargetHeight = SRS::transformUnits(rhsHeight, rhs.srs(), srs(), Angle{});
-
-    return levelOfDetail(rhsTargetHeight);
-}
-
 unsigned
 Profile::levelOfDetail(double height) const
 {
@@ -517,41 +380,6 @@ Profile::levelOfDetail(double height) const
     // Solve for n: n = log2(baseHeight / rhsTargetHeight)
     int computed_lod = static_cast<int>(std::round(std::log2(dims.y / height)));
     return (unsigned)std::max(computed_lod, 0);
-}
-
-std::vector<GeoExtent>
-Profile::transformAndExtractContiguousExtents(const GeoExtent& input) const
-{
-    ROCKY_SOFT_ASSERT_AND_RETURN(valid() && input.valid(), {});
-
-    std::vector<GeoExtent> output;
-
-    GeoExtent targetextent = input;
-
-    // reproject into the profile's SRS if necessary:
-    if (!srs().horizontallyEquivalentTo(input.srs()))
-    {
-        // localize the extents and clamp them to legal values
-        targetextent = clampAndTransformExtent(input);
-        if (!targetextent.valid())
-            return output;
-    }
-
-    if (targetextent.crossesAntimeridian())
-    {
-        GeoExtent first, second;
-        if (targetextent.splitAcrossAntimeridian(first, second))
-        {
-            output.emplace_back(first);
-            output.emplace_back(second);
-        }
-    }
-    else
-    {
-        output.emplace_back(targetextent);
-    }
-
-    return output;
 }
 
 std::string

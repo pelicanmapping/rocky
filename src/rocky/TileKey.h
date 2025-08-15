@@ -9,6 +9,7 @@
 #include <rocky/Profile.h>
 #include <string>
 #include <functional> // std::hash
+#include <vector>
 
 namespace ROCKY_NAMESPACE
 {
@@ -26,8 +27,9 @@ namespace ROCKY_NAMESPACE
         unsigned y;
         Profile profile;
 
-
+        //! Constructs an invalid tilekey
         TileKey() = default;
+
         TileKey(const TileKey& rhs) = default;
         TileKey& operator = (const TileKey& rhs) = default;
         TileKey(TileKey&& rhs) noexcept;
@@ -38,11 +40,7 @@ namespace ROCKY_NAMESPACE
         //! @param tile_x The x index of the tile
         //! @param tile_y The y index of the tile
         //! @param profile The profile for the tile
-        TileKey(
-            unsigned level,
-            unsigned tile_x,
-            unsigned tile_y,
-            const Profile& profile);
+        TileKey(unsigned level, unsigned tile_x, unsigned tile_y, const Profile& profile);
 
         //! Compare two tilekeys for equality.
         inline bool operator == (const TileKey& rhs) const {
@@ -51,17 +49,17 @@ namespace ROCKY_NAMESPACE
                 level == rhs.level &&
                 x == rhs.x &&
                 y == rhs.y &&
-                profile.equivalentTo(rhs.profile);
+                profile == rhs.profile;
         }
 
         //! Compare two tilekeys for inequality
         inline bool operator != (const TileKey& rhs) const {
-            return 
+            return
                 valid() != rhs.valid() ||
                 level != rhs.level ||
                 x != rhs.x ||
                 y != rhs.y ||
-                !profile.equivalentTo(rhs.profile);
+                profile != rhs.profile;
         }
 
         //! Sorts tilekeys
@@ -74,9 +72,6 @@ namespace ROCKY_NAMESPACE
             if (y > rhs.y) return false;
             return profile.hash() < rhs.profile.hash();
         }
-
-        //! Canonical invalid tile key
-        static TileKey INVALID;
 
         //! Gets the string representation of the key, formatted like:
         //! "lod/x/y"
@@ -115,28 +110,10 @@ namespace ROCKY_NAMESPACE
         TileKey createNeighborKey(int xoffset, int yoffset) const;
 
         //! Gets the geospatial extents of the tile represented by this key.
-        const GeoExtent extent() const;
+        GeoExtent extent() const;
 
         //! A string that encodes the tile key's lod, x, and y 
         std::string quadKey() const;
-
-        //! Maps this tile key to another tile key in order to account in
-        //! a resolution difference. For example: we are requesting data for
-        //! a TileKey at LOD 4, at a tile size of 32. The source data's tile
-        //! size if 256. That means the source data at LOD 1 will contain the
-        //! data necessary to build the tile.
-        //!
-        //!   usage: TileKey tk = mapResolution(31, 256);
-        //!
-        //! We want a 31x31 tile. The source data is 256x256. This will return
-        //! a TileKey that access the appropriate source data, which we will then
-        //! need to crop to populate our tile.
-        //!
-        //! You can set "minimumLOD" if you don't want a key below a certain LOD.
-        TileKey mapResolution(
-            unsigned targetSize,
-            unsigned sourceDataSize,
-            unsigned minimumLOD =0) const;
 
         //! X and Y resolution (in profile units) for the given tile size
         std::pair<double,double> getResolutionForTileSize(
@@ -153,14 +130,10 @@ namespace ROCKY_NAMESPACE
             unsigned level,
             const Profile& profile);
 
-        //! Gets the keys that intersect this TileKey in the requested profile.
-        //std::vector<TileKey> intersectingKeys(const Profile& profile) const;
-
-        std::vector<TileKey> intersectingKeys(const Profile& profile, unsigned tileSize) const;
-
-        static std::vector<TileKey> intersectingKeys(
-            const GeoExtent& extent,
-            unsigned localLOD,
-            const Profile& target_profile);
+        //! Given a profile, return the collection of keys in that profile that
+        //! intersect (and completely cover) this key's extent (to the degree possible).
+        //! @param profile The profile for which to calculate the intersecting keys
+        //! @return A vector of TileKeys that intersect this key's extent in the given profile.
+        std::vector<TileKey> intersectingKeys(const Profile& profile) const;
     };
 }

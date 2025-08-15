@@ -35,7 +35,6 @@ TileLayer::construct(std::string_view conf)
 {
     const auto j = parse_json(conf);
     get_to(j, "max_level", maxLevel);
-    get_to(j, "max_resolution", maxResolution);
     get_to(j, "max_data_level", maxDataLevel);
     get_to(j, "min_level", minLevel);
     get_to(j, "tile_size", tileSize);
@@ -47,7 +46,6 @@ TileLayer::to_json() const
 {
     auto j = parse_json(super::to_json());
     set(j, "max_level", maxLevel);
-    set(j, "max_resolution", maxResolution);
     set(j, "max_data_level", maxDataLevel);
     set(j, "min_level", minLevel);
     set(j, "tile_size", tileSize);
@@ -91,53 +89,20 @@ TileLayer::setPermanentProfile(const Profile& perm_profile)
 }
 
 bool
-TileLayer::isKeyInLegalRange(const TileKey& key) const
+TileLayer::isKeyInConfiguredRange(const TileKey& in_key) const
 {
-    if ( !key.valid() )
-    {
+    if (!in_key.valid() || !profile.valid())
         return false;
-    }
 
-    // We must use the equivalent lod b/c the input key can be in any profile.
-    unsigned localLOD = profile.valid() ?
-        profile.equivalentLOD(key.profile, key.level) :
-        key.level;
-
-
-    // First check the key against the min/max level limits, it they are set.
-    if ((maxLevel.has_value() && localLOD > maxLevel) ||
-        (minLevel.has_value() && localLOD < minLevel))
-    {
+    auto localKeys = in_key.intersectingKeys(profile);
+    if (localKeys.empty())
         return false;
-    }
 
-    // Next check the maxDataLevel if that is set.
-    if (maxDataLevel.has_value() && localLOD > maxDataLevel)
-    {
+    if (minLevel.has_value() && localKeys.front().level < minLevel)
         return false;
-    }
 
-    // Next, check against resolution limits (based on the source tile size).
-    if (minResolution.has_value() || maxResolution.has_value())
-    {
-        if (profile.valid())
-        {
-            // calculate the resolution in the layer's profile, which can
-            // be different that the key's profile.
-            double resKey = key.extent().width() / (double)tileSize;
-            double resLayer = SRS::transformUnits(resKey, key.profile.srs(), profile.srs(), Angle());
-
-            if (maxResolution.has_value() && maxResolution > resLayer)
-            {
-                return false;
-            }
-
-            if (minResolution.has_value() && minResolution < resLayer)
-            {
-                return false;
-            }
-        }
-    }
+    if (maxLevel.has_value() && localKeys.front().level > maxLevel)
+        return false;
 
     return true;
 }
@@ -179,7 +144,7 @@ TileLayer::setDataExtents(const DataExtentList& dataExtents)
     for (auto de = _dataExtents.begin(); de != _dataExtents.end(); ++de)
     {
         // Build the index in the SRS of this layer
-        GeoExtent extentInLayerSRS = profile.clampAndTransformExtent(*de);
+        GeoExtent extentInLayerSRS = de->transform(profile.srs());
 
         if (extentInLayerSRS.srs().isGeodetic() && extentInLayerSRS.crossesAntimeridian())
         {
@@ -239,117 +204,90 @@ TileLayer::bestAvailableTileKey(const TileKey& key) const
 
     // trivial reject
     if (!key.valid())
-    {
-        return TileKey::INVALID;
-    }
+        return {};
 
-    unsigned MDL = maxDataLevel;
+    // find the corresponding keys in the local profile:
+    auto localKeys = key.intersectingKeys(profile);
+    if (localKeys.empty())
+        return {};
 
-    // We must use the equivalent lod b/c the input key can be in any profile.
-    unsigned localLOD = profile.equivalentLOD(key.profile, key.level);
+    auto& firstKey = localKeys.front();
+    auto localLevel = firstKey.level;
 
-    // Check against level extrema:
-    if ((maxLevel.has_value() && localLOD > maxLevel) ||
-        (minLevel.has_value() && localLOD < minLevel))
-    {
-        return TileKey::INVALID;
-    }
+    auto effectiveMinLevel = std::max(firstKey.level, minLevel.value_or(0)); 
+    if (effectiveMinLevel > firstKey.level)
+        return {}; // the key is below the minimum level
 
-    // Next, check against resolution limits (based on the source tile size).
-    if (minResolution.has_value() || maxResolution.has_value())
-    {
-        // calculate the resolution in the layer's profile, which can
-        // be different that the key's profile.
-        double resKey = key.extent().width() / (double)tileSize;
-        double resLayer = SRS::transformUnits(resKey, key.profile.srs(), profile.srs(), Angle());
+    auto effectiveMaxLevel = std::min(firstKey.level, maxLevel.value_or(~0));
 
-        if (maxResolution.has_value() && maxResolution > resLayer)
+    // union the local key extents
+    GeoExtent localExtent;
+    for (auto& localKey : localKeys)
+        localExtent.expandToInclude(localKey.extent());
+
+    // coarse intersection check:    
+    if (extent().valid() && !extent().intersects(localExtent))
+        return {};
+
+    // no extents? Just return the input key
+    if (_dataExtents.empty())
+        return key;
+
+    bool intersectionFound = false;
+    unsigned highestLevelFound = 0u;
+    unsigned bestLevel = ~0;
+
+    auto checkDE = [&](const DataExtent& de)
         {
-            return TileKey::INVALID;
-        }
-
-        if (minResolution.has_value() && minResolution < resLayer)
-        {
-            return TileKey::INVALID;
-        }
-    }
-
-    // If we have no data extents available, just return the MDL-limited input key.
-    if (_dataExtents.size() == 0)
-    {
-        return localLOD > MDL ? key.createAncestorKey(MDL) : key;
-    }
-
-    // Reject if the extents don't overlap at all.
-    // (Note: this does not consider min/max levels, only spatial extents)
-    if (!dataExtentsUnion().intersects(key.extent()))
-    {
-        return TileKey::INVALID;
-    }
-
-    // Consider a user-crop:
-    if (crop.has_value() && !crop->intersects(key.extent()))
-    {
-        return TileKey::INVALID;
-    }
-
-    bool intersects = false;
-    unsigned highestLOD = 0u;
-    double a_min[2], a_max[2];
-
-    // Transform the key extent to the SRS of this layer to do the index search
-    GeoExtent keyExtentInLayerSRS = profile.clampAndTransformExtent(key.extent());
-
-    a_min[0] = keyExtentInLayerSRS.xmin(); a_min[1] = keyExtentInLayerSRS.ymin();
-    a_max[0] = keyExtentInLayerSRS.xmax(); a_max[1] = keyExtentInLayerSRS.ymax();
-
-    TileKey bestKey;
-    _dataExtentsIndex->Search(a_min, a_max, [&](const DataExtent& de)
-        {
-            if (!de.minLevel.has_value() || localLOD >= (int)de.minLevel.value())
+            if (!de.minLevel.has_value() || localLevel >= (int)de.minLevel.value())
             {
-                // Got an intersetion; now test the LODs:
-                intersects = true;
+                intersectionFound = true;
 
                 // If the maxLevel is not set, there's not enough information
                 // so just assume our key might be good.
                 if (!de.maxLevel.has_value())
                 {
-                    bestKey = localLOD > MDL ? key.createAncestorKey(MDL) : key;
-                    return false; //Stop searching, we've found a key
+                    bestLevel = std::min(localLevel, effectiveMaxLevel);
+                    return RTREE_STOP_SEARCHING; // Stop searching, we've found a key
                 }
 
                 // Is our key at a lower or equal LOD than the max key in this extent?
                 // If so, our key is good.
-                else if (localLOD <= (int)de.maxLevel.value())
+                else if (localLevel <= (int)de.maxLevel.value())
                 {
-                    bestKey = localLOD > MDL ? key.createAncestorKey(MDL) : key;
-                    return false; //Stop searching, we've found a key
+                    bestLevel = std::min(localLevel, effectiveMaxLevel);
+                    return RTREE_STOP_SEARCHING; // Stop searching, we've found a key
                 }
 
                 // otherwise, record the highest encountered LOD that
                 // intersects our key.
-                else if (de.maxLevel.value() > highestLOD)
+                else if (de.maxLevel.value() > highestLevelFound)
                 {
-                    highestLOD = de.maxLevel.value();
+                    highestLevelFound = de.maxLevel.value();
                 }
             }
-            return true; // Continue searching
-        });
+            return RTREE_KEEP_SEARCHING; // Continue searching
+        };
 
-    if (bestKey.valid())
+    constexpr double EPS = 1e-10;
+    double a_min[2] = { localExtent.xmin(), localExtent.ymin() };
+    double a_max[2] = { localExtent.xmax() - EPS, localExtent.ymax() - EPS };
+    _dataExtentsIndex->Search(a_min, a_max, checkDE);
+
+    int delta;
+    if (bestLevel < ~0)
     {
-        return bestKey;
+        delta = firstKey.level - bestLevel;
     }
-
-    if ( intersects )
+    else if (intersectionFound)
     {
         // for a normal dataset, dataset max takes priority over MDL.
-        unsigned maxAvailableLOD = std::min(highestLOD, MDL);
-        return key.createAncestorKey(std::min(key.level, maxAvailableLOD));
+        unsigned maxAvailableLevel = std::min(highestLevelFound, effectiveMaxLevel);
+        delta = firstKey.level - std::min(firstKey.level, maxAvailableLevel);
     }
+    else return {};
 
-    return TileKey::INVALID;
+    return key.createAncestorKey(std::max(0, (int)key.level + delta));
 }
 
 bool
@@ -357,18 +295,34 @@ TileLayer::intersects(const TileKey& key) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(profile.valid() && key.valid(), false);
 
-    // We must use the equivalent lod b/c the input key can be in any profile.
-    unsigned localLOD = profile.equivalentLOD(key.profile, key.level);
+    // find the corresponding keys in the local profile:
+    auto localKeys = key.intersectingKeys(profile);
+    if (localKeys.empty())
+        return false;
 
-    // Transform the key extent to the SRS of this layer to do the index search
-    GeoExtent keyExtentInLayerSRS = profile.clampAndTransformExtent(key.extent());
+    if (minLevel.has_value() && localKeys.front().level < minLevel)
+        return false;
 
-    // Intersection should be a [...) test.
-    const double epsilon = 1e-10;
-    double a_min[2] = { keyExtentInLayerSRS.xmin(), keyExtentInLayerSRS.ymin() };
-    double a_max[2] = { keyExtentInLayerSRS.xmax() - epsilon, keyExtentInLayerSRS.ymax() - epsilon };
+    if (maxLevel.has_value() && localKeys.front().level > maxLevel)
+        return false;
 
-    return _dataExtentsIndex->Intersects(a_min, a_max);
+    // union the local key extents
+    GeoExtent localExtent;
+    for (auto& localKey : localKeys)
+        localExtent.expandToInclude(localKey.extent());
+
+    // account for a crop:
+    if (crop.has_value() && !localExtent.intersects(crop.value()))
+        return false;
+
+    // and search the spatial index.
+    constexpr double EPS = 1e-10;
+    double a_min[2] = { localExtent.xmin(), localExtent.ymin() };
+    double a_max[2] = { localExtent.xmax() - EPS, localExtent.ymax() - EPS };
+    auto hits = _dataExtentsIndex->Search(a_min, a_max, [](const DataExtent& de) {
+        return false; }); // just check if we have any extents that intersect
+
+    return hits > 0;
 }
 
 bool

@@ -45,7 +45,7 @@ TerrainTileModelFactory::createTileModel(const Map* map, const TileKey& key, con
     model.revision = map->revision();
 
     // assemble all the components:
-    addColorLayers(model, map, key, io, false);
+    addColorLayers(model, map, key, io);
 
     unsigned border = 0u;
     addElevation(model, map, key, io);
@@ -114,12 +114,7 @@ namespace
 }
 
 void
-TerrainTileModelFactory::addColorLayers(
-    TerrainTileModel& model,
-    const Map* map,
-    const TileKey& key,
-    const IOOptions& io,
-    bool standalone) const
+TerrainTileModelFactory::addColorLayers(TerrainTileModel& model, const Map* map, const TileKey& key, const IOOptions& io) const
 {
     int order = 0;
 
@@ -128,35 +123,29 @@ TerrainTileModelFactory::addColorLayers(
         return layer->status().ok(); } );
 
     // first collect the image layers that have intersecting data.
-    std::vector<std::shared_ptr<ImageLayer>> intersecting_layers;
-    bool inLegalRange = false;
-    bool intersects = false;
+    std::vector<std::shared_ptr<ImageLayer>> candidateLayers;
     for (auto layer : layers)
     {
-        inLegalRange = layer->isKeyInLegalRange(key);
-        intersects = layer->intersects(key);
-
-        if (layer->isKeyInLegalRange(key) &&
-            layer->intersects(key))
+        if (layer->intersects(key))
         {
-            intersecting_layers.push_back(layer);
+            candidateLayers.push_back(layer);
         }
     }
 
-    if (intersecting_layers.size() == 1 && intersecting_layers.front()->mayHaveData(key))
+    if (candidateLayers.size() == 1 && candidateLayers.front()->mayHaveData(key))
     {
         // if only one layer intersects we will not need to composite
         // so just get the raw data for this key if there is any.
-        addImageLayer(key, intersecting_layers.front(), false, model, io);
+        addImageLayer(key, candidateLayers.front(), false, model, io);
     }
 
-    else if (intersecting_layers.size() > 1)
+    else if (candidateLayers.size() > 1)
     {
         // More than one layer intersects so we will need to composite.
         // First count the number of layers that MIGHT have data.
         // If any of them do, we must fetch them all for composition.
         bool data_maybe = false;
-        for (auto layer : intersecting_layers)
+        for (auto layer : candidateLayers)
         {
             if (layer->mayHaveData(key))
             {
@@ -167,7 +156,7 @@ TerrainTileModelFactory::addColorLayers(
 
         if (data_maybe)
         {
-            for (auto layer : intersecting_layers)
+            for (auto layer : candidateLayers)
             {
                 addImageLayer(key, layer, true, model, io);
             }
@@ -231,30 +220,24 @@ TerrainTileModelFactory::addElevation(TerrainTileModel& model, const Map* map, c
 
     int combinedRevision = map->revision();
 
-    if (layer != nullptr &&
-        layer->isOpen() &&
-        layer->isKeyInLegalRange(key) &&
-        layer->mayHaveData(key))
+    auto result = layer->createHeightfield(key, io);
+
+    if (result.ok())
     {
-        auto result = layer->createHeightfield(key, io);
+        replace_nodata_values(result.value());
 
-        if (result.ok())
-        {
-            replace_nodata_values(result.value());
+        model.elevation.heightfield = std::move(result.value());
+        model.elevation.revision = layer->revision();
+        model.elevation.key = key;
+    }
 
-            model.elevation.heightfield = std::move(result.value());
-            model.elevation.revision = layer->revision();
-            model.elevation.key = key;
-        }
-
-        // ResourceUnavailable just means the driver could not produce data
-        // for the tilekey; it is not an actual read error.
-        else if (
-            result.error().type != Failure::ResourceUnavailable &&
-            result.error().type != Failure::OperationCanceled)
-        {
-            Log()->warn("Problem getting data from \"" + layer->name + "\" : " + result.error().string());
-        }
+    // ResourceUnavailable just means the driver could not produce data
+    // for the tilekey; it is not an actual read error.
+    else if (
+        result.error().type != Failure::ResourceUnavailable &&
+        result.error().type != Failure::OperationCanceled)
+    {
+        Log()->warn("Problem getting data from \"" + layer->name + "\" : " + result.error().string());
     }
 
     return model.elevation.heightfield.valid();

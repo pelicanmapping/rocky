@@ -89,7 +89,7 @@ BingElevationLayer::createHeightfieldImplementation(const TileKey& key, const IO
     if (status().failed())
         return status().error();
 
-    GeoExtent latLongExtent = Profile("global-geodetic").clampAndTransformExtent(key.extent());
+    GeoExtent latLongExtent = key.extent().transform(SRS::WGS84);
 
     unsigned tileSize = 32;
     std::stringstream query;

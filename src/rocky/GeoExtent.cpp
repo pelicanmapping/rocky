@@ -69,15 +69,6 @@ GeoExtent::GeoExtent(const SRS& srs, const Box& bounds) :
     set(bounds.xmin, bounds.ymin, bounds.xmax, bounds.ymax);
 }
 
-bool
-GeoExtent::isWholeEarth() const
-{
-    return 
-        _srs.isGeodetic() &&
-        width() == 360.0 &&
-        height() == 180.0;
-}
-
 void
 GeoExtent::set(double west, double south, double east, double north)
 {
@@ -233,6 +224,7 @@ GeoExtent::splitAcrossAntimeridian(GeoExtent& out_west, GeoExtent& out_east) con
     return out_west.valid() && out_east.valid();
 }
 
+#if 0
 namespace
 {
     bool transformExtentToMBR(
@@ -358,6 +350,7 @@ namespace
         return false;
     }
 }
+#endif
 
 GeoExtent
 GeoExtent::transform(const SRS& to_srs) const 
@@ -366,31 +359,12 @@ GeoExtent::transform(const SRS& to_srs) const
     if (!valid() || !to_srs.valid())
         return GeoExtent::INVALID;
 
-    // check for equivalence
-    if (srs().horizontallyEquivalentTo(to_srs))
-        return *this;
+    if (to_srs.isGeocentric())
+        return transform(to_srs.geodeticSRS());
 
-    //TODO: this may not work across the antimeridian - unit test required
-    if (valid() && to_srs.valid())
-    {
-        // do not normalize the X values here.
-        double xmin = west(), ymin = south();
-        double xmax = west() + width(), ymax = south() + height();
-
-        if (transformExtentToMBR(srs(), to_srs, xmin, ymin, xmax, ymax))
-        {
-            return GeoExtent(to_srs, xmin, ymin, xmax, ymax);
-        }
-    }
-    return GeoExtent::INVALID;
-}
-
-
-bool
-GeoExtent::transform(const SRS& srs, GeoExtent& output) const
-{
-    output = transform(srs);
-    return output.valid();
+    auto xform = srs().to(to_srs);
+    Box output = xform.transformBounds(Box(xmin(), ymin(), xmax(), ymax()));
+    return GeoExtent(to_srs, output);
 }
 
 void
@@ -739,18 +713,6 @@ GeoExtent::expandToInclude(const GeoExtent& rhs)
     return true;
 }
 
-namespace
-{
-    void sort4(double* n, bool* b)
-    {
-        if (n[0] > n[1]) std::swap(n[0], n[1]), std::swap(b[0], b[1]);
-        if (n[2] > n[3]) std::swap(n[2], n[3]), std::swap(b[2], b[3]);
-        if (n[0] > n[2]) std::swap(n[0], n[2]), std::swap(b[0], b[2]);
-        if (n[1] > n[3]) std::swap(n[1], n[3]), std::swap(b[1], b[3]);
-        if (n[1] > n[2]) std::swap(n[1], n[2]), std::swap(b[1], b[2]);
-    }
-}
-
 GeoExtent
 GeoExtent::intersectionSameSRS(const GeoExtent& rhs) const
 {
@@ -956,22 +918,26 @@ GeoExtent::normalizeX(double x) const
 {
     if (is_valid(x) && _srs.isGeodetic())
     {
-        if (fabs(x) <= 180.0)
-        {
-            return x;
+        constexpr double EPS = 1e-8;
+        if (std::abs(x - (-180)) < EPS || std::abs(x - 180) < EPS) {
+            x = -180.0;
+        }
+        else {
+            while (x < -180.0) x += 360.0;
+            while (x >= 180.0) x -= 360.0;
         }
 
-        if (x < 0.0 || x >= 360.0)
-        {
-            x = fmod(x, 360.0);
-            if (x < 0.0)
-                x += 360.0;
-        }
-        
-        if (x > 180.0)
-        {
-            x -= 360.0;
-        }
+        //if (x < 0.0 || x >= 360.0)
+        //{
+        //    x = fmod(x, 360.0);
+        //    if (x < 0.0)
+        //        x += 360.0;
+        //}
+        //
+        //if (x > 180.0)
+        //{
+        //    x -= 360.0;
+        //}
     }
     return x;
 }

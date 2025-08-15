@@ -163,7 +163,7 @@ NodePager::createNode(const TileKey& key, const IOOptions& io) const
     vsg::ref_ptr<vsg::Node> result;
 
     // TODO: offset this using an elevation sample:
-    auto mapExtent = _mapProfile.clampAndTransformExtent(key.extent());
+    auto mapExtent = key.extent().transform(_mapProfile.srs());
 
     vsg::dsphere tileBound =
         calculateBound ? calculateBound(key, io) :

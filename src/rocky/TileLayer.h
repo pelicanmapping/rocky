@@ -24,16 +24,9 @@ namespace ROCKY_NAMESPACE
         //! Minimum of detail for which this layer should generate data.
         option<unsigned> minLevel = 0u;
 
-        //! Minimum resolution for which this layer should generate data.
-        option<double> minResolution = DBL_MAX;
-
         //! Maximum level of detail for which this layer should generate data.
         //! Data from this layer will not appear in map tiles above the maxLevel.
         option<unsigned> maxLevel = 99u;
-
-        //! Maximum level resolution for which this layer should generate data.
-        //! The value is in units per pixel, using the base units of the layer's source data.
-        option<double> maxResolution = 0.0;
 
         //! Maximum level of detail for which this layer should generate new data.
         //! Data from this layer will be upsampled in map tiles above the maxDataLevel.
@@ -86,7 +79,7 @@ namespace ROCKY_NAMESPACE
         //! Whether the given key falls within the range limits set in the options;
         //! i.e. min/maxLevel or min/maxResolution. (This does not mean that the key
         //! will result in data.)
-        virtual bool isKeyInLegalRange(const TileKey& key) const;
+        virtual bool isKeyInConfiguredRange(const TileKey& key) const;
 
         //! Data extents reported for this layer
         virtual const DataExtentList& dataExtents() const;

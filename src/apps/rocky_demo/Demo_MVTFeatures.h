@@ -38,7 +38,7 @@ auto Demo_MVTFeatures = [](Application& app)
         // to our elevation data set.
         pager->calculateBound = [&](const TileKey& key, const IOOptions& io)
             {
-                auto ex = app.mapNode->profile.clampAndTransformExtent(key.extent());
+                auto ex = key.extent().transform(app.mapNode->srs());
                 auto bs = ex.createWorldBoundingSphere(0, 0);
 
                 if (elevationSampler.ok() && key.level > 1)

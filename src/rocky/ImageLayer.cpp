@@ -155,24 +155,22 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
 {
     Result<GeoImage> result = Failure_ResourceUnavailable;
 
-    // Make sure the request is in range.
-    // TODO: perhaps this should be a call to mayHaveData(key) instead.
-    if ( !isKeyInLegalRange(key) )
-    {
+    if (!intersects(key))
         return Failure_ResourceUnavailable;
-    }
 
     float sharpness_value = sharpness.has_value() ? sharpness.value() : 0.0f;
 
     GeoExtent cropIntersection;
 
     // if we are cropping, and the key doesn't intersect the crop extent, bail out.
+    // NOTE: this check happend in intersects(), so it might make more sense to 
+    // cache the cropInLocalSRS extent instead.
     if (crop.has_value() && crop.value().valid())
     {
-        auto cropInKeyProfile = key.profile.clampAndTransformExtent(crop.value());
-        if (cropInKeyProfile.valid())
+        auto cropInKeySRS = crop.value().transform(key.profile.srs());
+        if (cropInKeySRS.valid())
         {
-            cropIntersection = cropInKeyProfile.intersectionSameSRS(key.extent());
+            cropIntersection = cropInKeySRS.intersectionSameSRS(key.extent());
             if (!cropIntersection.valid())
             {
                 return Failure_ResourceUnavailable;
@@ -251,26 +249,26 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
     std::shared_ptr<Mosaic> output;
 
     // Find the set of keys that covers the same area as in input key in our target profile.
-    auto intersectingKeys = key.intersectingKeys(profile, tileSize);
+    auto localKeys = key.intersectingKeys(profile);
 
     // collect raster data for each intersecting key, falling back on ancestor images
     // if none are available at the target LOD.
     std::vector<GeoImage> sources;
 
-    if (intersectingKeys.size() > 0)
+    if (localKeys.size() > 0)
     {
         bool hasAtLeastOneSourceAtTargetLOD = false;
 
-        for (auto& intersectingKey : intersectingKeys)
+        for (auto& localKey : localKeys)
         {
             // first try the weak dependency cache.
-            auto cached = _dependencyCache->get(intersectingKey);
+            auto cached = _dependencyCache->get(localKey);
             auto cached_value = cached.value.lock();
             if (cached_value)
             {
                 sources.emplace_back(cached_value, cached.valueKey.extent());
 
-                if (cached.valueKey.level == intersectingKey.level)
+                if (cached.valueKey.level == localKey.level)
                 {
                     hasAtLeastOneSourceAtTargetLOD = true;
                 }
@@ -279,7 +277,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             else
             {
                 // create the sub tile, falling back until we get real data
-                TileKey subKey = intersectingKey;
+                TileKey subKey = localKey;
                 Result<GeoImage> subTile = Failure{};
                 while (subKey.valid() && !subTile.ok())
                 {
@@ -295,12 +293,12 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                 if (subTile.ok() && subTile.value().image())
                 {
                     // save it in the weak cache:
-                    _dependencyCache->put(intersectingKey, subKey, subTile.value().image());
+                    _dependencyCache->put(localKey, subKey, subTile.value().image());
 
                     // add it to our sources collection:
                     sources.emplace_back(subTile.value());
 
-                    if (subKey.level == intersectingKey.level)
+                    if (subKey.level == localKey.level)
                     {
                         hasAtLeastOneSourceAtTargetLOD = true;
                     }
@@ -371,15 +369,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             // Working bounds of the SRS itself so we can clamp out-of-bounds points.
             // This is especially important when going from Mercator to Geographic
             // where there's no data beyond +/- 85 degrees.
-            auto sourceBounds = sources[0].srs().bounds();
-
-            // Transform the source bounds and clamp them:
-            if (sourceBounds.valid())
-            {
-                //auto xform = sources[0].srs().to(key.extent().srs());
-                //xform.clamp(sourceBounds.xmin, sourceBounds.ymin);
-                //xform.clamp(sourceBounds.xmax, sourceBounds.ymax);
-            }
+            auto keyExtentInSourceSRS = key.extent().transform(sources[0].srs());
 
             // transform the sample points to the SRS of our source data tiles:
             if (xform.valid())
@@ -387,12 +377,9 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                 xform.transformArray(&points[0], points.size());
 
                 // clamp the transformed points to the profile SRS.
-                if (sourceBounds.valid())
+                if (keyExtentInSourceSRS.valid())
                 {
-                    for (auto& point : points)
-                    {
-                        sourceBounds.clamp(point.x, point.y, point.z);
-                    }
+                    keyExtentInSourceSRS.clamp(points.begin(), points.end());
                 }
             }
 

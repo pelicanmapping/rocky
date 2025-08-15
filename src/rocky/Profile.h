@@ -59,8 +59,8 @@ namespace ROCKY_NAMESPACE
         //! @return Extent of the profile (in the profile's SRS)
         const GeoExtent& extent() const;
 
-        //! @return Extent of the profile in geographic coordinates (long, lat degrees)
-        const GeoExtent& geographicExtent() const;
+        //! @return Extent of the profile in geodetic coordinates (long, lat degrees)
+        const GeoExtent& geodeticExtent() const;
         
         //! @return Spatial reference system underlying this profile.
         const SRS& srs() const;
@@ -111,31 +111,15 @@ namespace ROCKY_NAMESPACE
         using NumTiles = struct { std::uint32_t x, y; };
         NumTiles numTiles(unsigned lod) const;
 
-        //! Clamps the incoming extents to the extents of this profile, and then converts the 
-        //! clamped extents to this profile's SRS, and returns the result. Returned GeoExtent::INVALID
-        //! if the transformation fails.
-        GeoExtent clampAndTransformExtent( const GeoExtent& input, bool* out_clamped =0L ) const;
-
         //! Returns a readable description of the profile.
         std::string to_json() const;
 
         //! Populate from a json string
         void from_json(const std::string& json);
 
-        //! Given another Profile and an LOD in that Profile, determine 
-        //! the LOD in this Profile that is nearly equivalent.
-        unsigned equivalentLOD(const Profile&, unsigned lod) const;
-
         //! Given a LOD-0 tile height, determine the LOD in this Profile that
         //! most closely houses a tile with that height.
         unsigned levelOfDetail(double tileHeight) const;
-
-        //! Get the hash code for this profile
-        inline std::size_t hash() const;
-
-        //! Given an input extent, translate it into one or more
-        //! GeoExtents in this profile.
-        std::vector<GeoExtent> transformAndExtractContiguousExtents(const GeoExtent& input) const;
 
         //! Makes a clone of this profile but replaces the SRS with a custom one.
         Profile overrideSRS(const SRS&) const;
@@ -153,6 +137,9 @@ namespace ROCKY_NAMESPACE
         //! Access composite profile components.
         inline std::vector<Profile>& subprofiles();
         inline const std::vector<Profile>& subprofiles() const;
+
+        //! Get the hash code for this profile
+        inline std::size_t hash() const;
 
     protected:
 

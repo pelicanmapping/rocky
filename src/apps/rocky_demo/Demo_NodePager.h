@@ -35,7 +35,7 @@ auto Demo_NodePager = [](Application& app)
         pager = NodePager::create(profile, app.mapNode->profile);
 
         // tiles will start to appear at this level of detail:
-        pager->minLevel = 2;
+        pager->minLevel = 1;
 
         // tiles will max out at the level of detail:
         pager->maxLevel = 16;
@@ -46,7 +46,7 @@ auto Demo_NodePager = [](Application& app)
         // a function that will calculate the bounding sphere for each tile.
         auto calculateTileBound = [&](const TileKey& key, const IOOptions& io)
             {
-                auto ex = app.mapNode->profile.clampAndTransformExtent(key.extent());
+                auto ex = key.extent().transform(app.mapNode->srs());
                 auto bs = ex.createWorldBoundingSphere(0, 0);
 
                 if (clamper.ok() && key.level > 1)
@@ -71,7 +71,7 @@ auto Demo_NodePager = [](Application& app)
                 // Let's use VSG's builder utility to make it easy.
                 vsg::Builder builder;
 
-                auto bs = calculateTileBound(key, io);
+                auto bs = calculateTileBound(key, io);  
                 auto r = bs.radius / sqrt(2);
                 vsg::box box(vsg::vec3(-r, -r, -r), vsg::vec3(r, r, r));
 

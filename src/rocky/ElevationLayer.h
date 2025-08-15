@@ -108,33 +108,5 @@ namespace ROCKY_NAMESPACE
         std::shared_ptr<TileMosaicWeakCache<Heightfield>> _dependencyCache;
     };
 
-
-    /**
-     * Vector of elevation layers, with added methods.
-     */
-    class ROCKY_EXPORT ElevationLayerVector : public std::vector<std::shared_ptr<ElevationLayer>>
-    {
-    public:
-        /**
-         * Populates an existing height field (hf must already exist) with height
-         * values from the elevation layers.
-         *
-         * @param hf Heightfield object to populate; must be pre-allocated
-         * @param resolutions If non-null, populate with resolution of each sample
-         * @param key Tilekey for which to populate
-         * @param haeProfile Optional geodetic (no vdatum) tiling profile to use
-         * @param interpolation Elevation interpolation technique
-         * @param progress Optional progress callback for cancelation
-         * @return True if "hf" was populated, false if no real data was available for key
-         */
-        bool populateHeightfield(
-            std::shared_ptr<Heightfield> in_out_hf,
-            std::vector<float>* resolutions,
-            const TileKey& key,
-            const Profile& hae_profile,
-            Interpolation interpolation,
-            const IOOptions& io ) const;
-    };
-
 } // namespace
 

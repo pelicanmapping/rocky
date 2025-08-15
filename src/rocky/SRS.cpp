@@ -280,15 +280,33 @@ namespace
                     }
 
                     // Attempt to calculate the legal bounds for this SRS.
-                    // Well known stuff:
-                    if (new_entry.horiz_crs_type == PJ_TYPE_GEOGRAPHIC_2D_CRS || new_entry.horiz_crs_type == PJ_TYPE_GEOGRAPHIC_3D_CRS)
+
+                    // try querying the area of use:
+                    if (!new_entry.bounds.has_value())
                     {
-                        new_entry.bounds = Box(-180, -90, 180, 90);
+                        double west_lon = -1000, south_lat, east_lon, north_lat;
+                        if (proj_get_area_of_use(ctx, new_entry.pj, &west_lon, &south_lat, &east_lon, &north_lat, nullptr) &&
+                            west_lon > -1000)
+                        {
+                            // always returns lat/long, so transform back to this srs
+                            std::string geo_def = proj_as_proj_string(ctx, new_entry.pj_geodetic, PJ_PROJ_5, nullptr);
+                            auto xform = get_or_create_operation(geo_def, def); // don't call proj_destroy on this
+                            PJ_COORD LL = proj_trans(xform, PJ_FWD, PJ_COORD{ west_lon, south_lat, 0.0, 0.0 });
+                            PJ_COORD UR = proj_trans(xform, PJ_FWD, PJ_COORD{ east_lon, north_lat, 0.0, 0.0 });
+                            new_entry.bounds = Box(LL.xyz.x, LL.xyz.y, UR.xyz.x, UR.xyz.y);
+                            new_entry.geodeticBounds = Box(west_lon, south_lat, east_lon, north_lat);
+                        }
                     }
 
-                    else if (new_entry.horiz_crs_type != PJ_TYPE_GEOCENTRIC_CRS)
+                    // try some known quantities:
+                    if (!new_entry.bounds.has_value() && new_entry.horiz_crs_type != PJ_TYPE_GEOCENTRIC_CRS)
                     {
-                        if (contains(new_entry.proj, "proj=utm"))
+                        if (new_entry.horiz_crs_type == PJ_TYPE_GEOGRAPHIC_2D_CRS || new_entry.horiz_crs_type == PJ_TYPE_GEOGRAPHIC_3D_CRS)
+                        {
+                            new_entry.bounds = Box(-180, -90, 180, 90);
+                        }
+
+                        else if (contains(new_entry.proj, "proj=utm"))
                         {
                             if (contains(new_entry.proj, "+south"))
                                 new_entry.bounds = Box(166000, 1116915, 834000, 10000000);
@@ -304,23 +322,6 @@ namespace
                         else if (contains(new_entry.proj, "proj=qsc"))
                         {
                             new_entry.bounds = Box(-6378137, -6378137, 6378137, 6378137);
-                        }
-                    }
-
-                    // no good? try querying it instead:
-                    if (!new_entry.bounds.has_value())
-                    {
-                        double west_lon, south_lat, east_lon, north_lat;
-                        if (proj_get_area_of_use(ctx, new_entry.pj, &west_lon, &south_lat, &east_lon, &north_lat, nullptr) &&
-                            west_lon > -1000)
-                        {
-                            // always returns lat/long, so transform back to this srs
-                            std::string geo_def = proj_as_proj_string(ctx, new_entry.pj_geodetic, PJ_PROJ_5, nullptr);
-                            auto xform = get_or_create_operation(geo_def, def); // don't call proj_destroy on this
-                            PJ_COORD LL = proj_trans(xform, PJ_FWD, PJ_COORD{ west_lon, south_lat, 0.0, 0.0 });
-                            PJ_COORD UR = proj_trans(xform, PJ_FWD, PJ_COORD{ east_lon, north_lat, 0.0, 0.0 });
-                            new_entry.bounds = Box(LL.xyz.x, LL.xyz.y, UR.xyz.x, UR.xyz.y);
-                            new_entry.geodeticBounds = Box(west_lon, south_lat, east_lon, north_lat);
                         }
                     }
 
@@ -964,119 +965,45 @@ SRSOperation::inverse(void* handle, double* x, double* y, double* z, std::size_t
         return false;
 }
 
-bool
-SRSOperation::transformBoundsToMBR(
-    double& in_out_xmin, double& in_out_ymin,
-    double& in_out_xmax, double& in_out_ymax) const
+Box
+SRSOperation::transformBounds(const Box& in) const
 {
-    if (!valid() && _nop)
-        return false;
+    if (!valid())
+        return {};
 
-    Box input(in_out_xmin, in_out_ymin, in_out_xmax, in_out_ymax);
+    if (_nop)
+        return in;
 
-    // first we need to clamp the inputs to the valid bounds of the output SRS.
-    auto& geodetic_bounds = _to.geodeticBounds();
-    if (geodetic_bounds.valid())
+    constexpr int densify_points = 21;
+
+    // Transform the rectangle boundary with densification
+    double oxmin = 0, oymin = 0, oxmax = 0, oymax = 0;
+
+    auto ok = proj_trans_bounds(g_pj_thread_local_context, (PJ*)_handle, PJ_FWD,
+        in.xmin, in.ymin, in.xmax, in.ymax,
+        &oxmin, &oymin, &oxmax, &oymax,
+        densify_points);
+
+    if (ok)
     {
-        // start by transforming them to Long/Lat.
-        SRSOperation from_to_geo(_from, _from.geodeticSRS());
-        from_to_geo.transform(input.xmin, input.ymin);
-        from_to_geo.transform(input.xmax, input.ymax);
-
-        // then clamp them to the geodetic bounds of the target SRS.
-        // this will return true if clamping took place.
-        if (geodetic_bounds.clamp(input))
+        if (!_to.isGeodetic() && _to.bounds().valid())
         {
-            // now transform them back to the oroginal SRS.
-            from_to_geo.inverse(input.xmin, input.ymin);
-            from_to_geo.inverse(input.xmax, input.ymax);
+            const auto intersection = [](const Box& a, const Box& b) -> Box
+                {
+                    return Box(
+                        std::max(a.xmin, b.xmin), std::max(a.ymin, b.ymin),
+                        std::min(a.xmax, b.xmax), std::min(a.ymax, b.ymax));
+                };
+
+            return intersection(Box(oxmin, oymin, oxmax, oymax), _to.bounds());
         }
         else
         {
-            input = Box(in_out_xmin, in_out_ymin, in_out_xmax, in_out_ymax);
+            return Box(oxmin, oymin, oxmax, oymax);
         }
     }
 
-    double height = input.ymax - input.ymin;
-    double width = input.xmax - input.xmin;
-
-    const unsigned int numSamples = 5;
-
-    // 25 = 5 + numSamples * 4
-    std::array<glm::dvec3, 25> v;
-    std::size_t ptr = 0;
-
-    // first point is a centroid. This we will use to make sure none of the corner points
-    // wraps around if the target SRS is geographic.
-    v[ptr++] = glm::dvec3(in_out_xmin + width * 0.5, in_out_ymin + height * 0.5, 0); // centroid.
-
-    // add the four corners
-    v[ptr++] = glm::dvec3(input.xmin, input.ymin, 0); // ll
-    v[ptr++] = glm::dvec3(input.xmin, input.ymax, 0); // ul
-    v[ptr++] = glm::dvec3(input.xmax, input.ymax, 0); // ur
-    v[ptr++] = glm::dvec3(input.xmax, input.ymin, 0); // lr
-
-    // We also sample along the edges of the bounding box and include them in the 
-    // MBR computation in case you are dealing with a projection that will cause the edges
-    // of the bounding box to be expanded.  This was first noticed when dealing with converting
-    // Hotline Oblique Mercator to WGS84
-
-    double dWidth = width / (numSamples - 1);
-    double dHeight = height / (numSamples - 1);
-
-    // Left edge
-    for (unsigned int i = 0; i < numSamples; i++)
-    {
-        v[ptr++] = glm::dvec3(input.xmin, input.ymin + dHeight * (double)i, 0);
-    }
-
-    // Right edge
-    for (unsigned int i = 0; i < numSamples; i++)
-    {
-        v[ptr++] = glm::dvec3(input.xmax, input.ymin + dHeight * (double)i, 0);
-    }
-
-    // Top edge
-    for (unsigned int i = 0; i < numSamples; i++)
-    {
-        v[ptr++] = glm::dvec3(input.xmin + dWidth * (double)i, input.ymax, 0);
-    }
-
-    // Bottom edge
-    for (unsigned int i = 0; i < numSamples; i++)
-    {
-        v[ptr++] = glm::dvec3(input.xmin + dWidth * (double)i, input.ymin, 0);
-    }
-
-    if (transformRange(v.begin(), v.end()))
-    {
-        in_out_xmin = DBL_MAX;
-        in_out_ymin = DBL_MAX;
-        in_out_xmax = -DBL_MAX;
-        in_out_ymax = -DBL_MAX;
-
-        // For a geodetic target, make sure the new extents contain the centroid
-        // because they might have wrapped around or run into a precision failure.
-        // v[0]=centroid, v[1]=LL, v[2]=UL, v[3]=UR, v[4]=LR
-        if (_to.isGeodetic())
-        {
-            if (v[1].x > v[0].x || v[2].x > v[0].x) in_out_xmin = -180.0;
-            if (v[3].x < v[0].x || v[4].x < v[0].x) in_out_xmax = 180.0;
-        }
-
-        // enforce an MBR:
-        for (auto& p : v)
-        {
-            in_out_xmin = std::min(p.x, in_out_xmin);
-            in_out_ymin = std::min(p.y, in_out_ymin);
-            in_out_xmax = std::max(p.x, in_out_xmax);
-            in_out_ymax = std::max(p.y, in_out_ymax);
-        }
-
-        return true;
-    }
-
-    return false;
+    return {};
 }
 
 bool

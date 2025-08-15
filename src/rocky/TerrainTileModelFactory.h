@@ -31,24 +31,12 @@ namespace ROCKY_NAMESPACE
         //! @param map Map from which to read source data
         //! @param key Tile key for which to create the model
         //! @param io I/O options and cancelation callback
-        TerrainTileModel createTileModel(
-            const Map* map,
-            const TileKey& key,
-            const IOOptions& io) const;
+        TerrainTileModel createTileModel(const Map* map, const TileKey& key, const IOOptions& io) const;
 
     protected:
 
-        void addColorLayers(
-            TerrainTileModel& model,
-            const Map* map,
-            const TileKey& key,
-            const IOOptions& io,
-            bool standalone) const;
+        void addColorLayers(TerrainTileModel& model,const Map* map,const TileKey& key,const IOOptions& io) const;
 
-        bool addElevation(
-            TerrainTileModel& model,
-            const Map* map,
-            const TileKey& key,
-            const IOOptions& io) const;
+        bool addElevation(TerrainTileModel& model, const Map* map, const TileKey& key, const IOOptions& io) const;
     };
 }

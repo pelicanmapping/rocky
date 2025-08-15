@@ -100,16 +100,9 @@ namespace ROCKY_NAMESPACE
         //! parameters untouched.
         bool splitAcrossAntimeridian(GeoExtent& first, GeoExtent& second) const;
 
-        //! Returns this extent transformed into another spatial reference.
-        //! NOTE: It is possible that the target SRS will not be able to accomadate the
-        //! extents of the source SRS. (For example, transforming a full WGS84 extent
-        //! to Mercator will resultin an error since Mercator does not cover the entire
-        //! globe.) Consider using Profile:clampAndTransformExtent() instead of using
-        //! this method directly.
+        //! Returns this extent transformed into another spatial reference. The result will be
+        //! a minimum bounding rectangle.
         GeoExtent transform(const SRS& to_srs) const;
-
-        //! Same as transform(srs) but puts the result in the output extent
-        bool transform(const SRS& to_srs, GeoExtent& output) const;
 
         //! Returns true if the specified point falls within the bounds of the extent.
         //! @param x, y Coordinates to test
@@ -177,9 +170,12 @@ namespace ROCKY_NAMESPACE
         //! Generates a Sphere encompassing the extent and a vertical volume, in world coordinates.
         Sphere createWorldBoundingSphere(double minElev, double maxElev) const;
 
-        //! Returns true if the extent is the entire Earth, for geographic
-        //! extents. Otherwise returns false.
-        bool isWholeEarth() const;
+        //! Clamps a 2D point to this extent.
+        template<typename VEC>
+        inline VEC clamp(const VEC& vec) const;
+
+        template<typename ITER>
+        inline void clamp(ITER begin, ITER end) const;
 
     public:
         static GeoExtent INVALID;
@@ -236,4 +232,23 @@ namespace ROCKY_NAMESPACE
 
     using DataExtent = GeoExtent3D;
     using DataExtentList = std::vector<DataExtent>;
+
+
+
+    template<typename VEC>
+    inline VEC GeoExtent::clamp(const VEC& input) const {
+        VEC output = input;
+        output.x = util::clamp(input.x, xmin(), xmax());
+        output.y = util::clamp(input.y, ymin(), ymax());
+        return output;
+    }
+
+    template<typename ITER>
+    inline void GeoExtent::clamp(ITER begin, ITER end) const {
+        for (auto it = begin; it != end; ++it) {
+            it->x = util::clamp(it->x, xmin(), xmax());
+            it->y = util::clamp(it->y, ymin(), ymax());
+        }
+    }
+
 }
