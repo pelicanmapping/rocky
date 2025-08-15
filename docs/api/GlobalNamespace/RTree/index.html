@@ -826,7 +826,7 @@
 
 
 <h1 id="class-rtree">class RTree</h1>
-<p><em>Defined at src/rocky/rtree.h#57</em></p>
+<p><em>Defined at src/rocky/rtree.h#61</em></p>
 <p>RTree</p>
 <p>Implementation of RTree, a multidimensional bounding rectangle tree. Example usage: For a 3-dimensional tree use RTree<Object*, float, 3> myTree;</p>
 <p>This modified, templated C++ version by Greg Douglas at Auran (http://www.auran.com)</p>
@@ -845,208 +845,208 @@
 <h2 id="functions">Functions</h2>
 <h3 id="rtree">RTree<DATATYPE, ELEMTYPE, NUMDIMS, ELEMTYPEREAL, TMAXNODES, TMINNODES></h3>
 <p><em>public void RTree<DATATYPE, ELEMTYPE, NUMDIMS, ELEMTYPEREAL, TMAXNODES, TMINNODES>()</em></p>
-<p><em>Defined at src/rocky/rtree.h#465</em></p>
+<p><em>Defined at src/rocky/rtree.h#469</em></p>
 <h3 id="rtree_1">RTree<DATATYPE, ELEMTYPE, NUMDIMS, ELEMTYPEREAL, TMAXNODES, TMINNODES></h3>
 <p><em>public void RTree<DATATYPE, ELEMTYPE, NUMDIMS, ELEMTYPEREAL, TMAXNODES, TMINNODES>(const RTree<DATATYPE, ELEMTYPE, NUMDIMS, ELEMTYPEREAL, TMAXNODES, TMINNODES> &amp; other)</em></p>
-<p><em>Defined at src/rocky/rtree.h#488</em></p>
+<p><em>Defined at src/rocky/rtree.h#492</em></p>
 <h3 id="rtree_2">~RTree<DATATYPE, ELEMTYPE, NUMDIMS, ELEMTYPEREAL, TMAXNODES, TMINNODES></h3>
 <p><em>public void ~RTree<DATATYPE, ELEMTYPE, NUMDIMS, ELEMTYPEREAL, TMAXNODES, TMINNODES>()</em></p>
-<p><em>Defined at src/rocky/rtree.h#495</em></p>
+<p><em>Defined at src/rocky/rtree.h#499</em></p>
 <h3 id="insert">Insert</h3>
 <p><em>public void Insert(const ELEMTYPE[NUMDIMS] a_min, const ELEMTYPE[NUMDIMS] a_max, const DATATYPE &amp; a_dataId)</em></p>
-<p><em>Defined at src/rocky/rtree.h#502</em></p>
+<p><em>Defined at src/rocky/rtree.h#506</em></p>
 <p>Insert entry</p>
 <p><strong>a_min</strong> Min of bounding rect</p>
 <p><strong>a_max</strong> Max of bounding rect</p>
 <p><strong>a_dataId</strong> Positive Id of data.  Maybe zero, but negative numbers not allowed.</p>
 <h3 id="remove">Remove</h3>
 <p><em>public void Remove(const ELEMTYPE[NUMDIMS] a_min, const ELEMTYPE[NUMDIMS] a_max, const DATATYPE &amp; a_dataId)</em></p>
-<p><em>Defined at src/rocky/rtree.h#526</em></p>
+<p><em>Defined at src/rocky/rtree.h#530</em></p>
 <p>Remove entry</p>
 <p><strong>a_min</strong> Min of bounding rect</p>
 <p><strong>a_max</strong> Max of bounding rect</p>
 <p><strong>a_dataId</strong> Positive Id of data.  Maybe zero, but negative numbers not allowed.</p>
 <h3 id="search">Search</h3>
 <p><em>public int Search(const ELEMTYPE[NUMDIMS] a_min, const ELEMTYPE[NUMDIMS] a_max, CALLBACK_TYPE &amp;&amp; callback)</em></p>
-<p><em>Defined at src/rocky/rtree.h#548</em></p>
+<p><em>Defined at src/rocky/rtree.h#552</em></p>
 <h3 id="intersects">Intersects</h3>
 <p><em>public _Bool Intersects(const ELEMTYPE[NUMDIMS] a_min, const ELEMTYPE[NUMDIMS] a_max)</em></p>
-<p><em>Defined at src/rocky/rtree.h#575</em></p>
+<p><em>Defined at src/rocky/rtree.h#579</em></p>
 <p>True if the input intersects any data in the tree</p>
 <h3 id="removeall">RemoveAll</h3>
 <p><em>public void RemoveAll()</em></p>
-<p><em>Defined at src/rocky/rtree.h#838</em></p>
+<p><em>Defined at src/rocky/rtree.h#842</em></p>
 <p>Remove all entries from tree</p>
 <h3 id="count">Count</h3>
 <p><em>public int Count()</em></p>
-<p><em>Defined at src/rocky/rtree.h#581</em></p>
+<p><em>Defined at src/rocky/rtree.h#585</em></p>
 <p>Count the data elements in this container.  This is slow as no internal counter is maintained.</p>
 <h3 id="load">Load</h3>
 <p><em>public _Bool Load(const char * a_fileName)</em></p>
-<p><em>Defined at src/rocky/rtree.h#609</em></p>
+<p><em>Defined at src/rocky/rtree.h#613</em></p>
 <p>Load tree contents from file</p>
 <h3 id="load_1">Load</h3>
 <p><em>public _Bool Load(RTFileStream &amp; a_stream)</em></p>
-<p><em>Defined at src/rocky/rtree.h#629</em></p>
+<p><em>Defined at src/rocky/rtree.h#633</em></p>
 <p>Load tree contents from stream</p>
 <h3 id="save">Save</h3>
 <p><em>public _Bool Save(const char * a_fileName)</em></p>
-<p><em>Defined at src/rocky/rtree.h#759</em></p>
+<p><em>Defined at src/rocky/rtree.h#763</em></p>
 <p>Save tree contents to file</p>
 <h3 id="save_1">Save</h3>
 <p><em>public _Bool Save(RTFileStream &amp; a_stream)</em></p>
-<p><em>Defined at src/rocky/rtree.h#776</em></p>
+<p><em>Defined at src/rocky/rtree.h#780</em></p>
 <p>Save tree contents to stream</p>
 <h3 id="getfirst">GetFirst</h3>
 <p><em>public void GetFirst(Iterator &amp; a_it)</em></p>
-<p><em>Defined at src/rocky/rtree.h#255</em></p>
+<p><em>Defined at src/rocky/rtree.h#259</em></p>
 <p>Get 'first' for iteration</p>
 <h3 id="getnext">GetNext</h3>
 <p><em>public void GetNext(Iterator &amp; a_it)</em></p>
-<p><em>Defined at src/rocky/rtree.h#278</em></p>
+<p><em>Defined at src/rocky/rtree.h#282</em></p>
 <p>Get Next for iteration</p>
 <h3 id="isnull">IsNull</h3>
 <p><em>public _Bool IsNull(Iterator &amp; a_it)</em></p>
-<p><em>Defined at src/rocky/rtree.h#281</em></p>
+<p><em>Defined at src/rocky/rtree.h#285</em></p>
 <p>Is iterator NULL, or at end?</p>
 <h3 id="getat">GetAt</h3>
 <p><em>public DATATYPE &amp; GetAt(Iterator &amp; a_it)</em></p>
-<p><em>Defined at src/rocky/rtree.h#284</em></p>
+<p><em>Defined at src/rocky/rtree.h#288</em></p>
 <p>Get object at iterator position</p>
 <h3 id="allocnode">AllocNode</h3>
 <p><em>protected Node * AllocNode()</em></p>
-<p><em>Defined at src/rocky/rtree.h#879</em></p>
+<p><em>Defined at src/rocky/rtree.h#883</em></p>
 <h3 id="freenode">FreeNode</h3>
 <p><em>protected void FreeNode(Node * a_node)</em></p>
-<p><em>Defined at src/rocky/rtree.h#893</em></p>
+<p><em>Defined at src/rocky/rtree.h#897</em></p>
 <h3 id="initnode">InitNode</h3>
 <p><em>protected void InitNode(Node * a_node)</em></p>
-<p><em>Defined at src/rocky/rtree.h#930</em></p>
+<p><em>Defined at src/rocky/rtree.h#934</em></p>
 <h3 id="initrect">InitRect</h3>
 <p><em>protected void InitRect(Rect * a_rect)</em></p>
-<p><em>Defined at src/rocky/rtree.h#938</em></p>
+<p><em>Defined at src/rocky/rtree.h#942</em></p>
 <h3 id="insertrectrec">InsertRectRec</h3>
 <p><em>protected _Bool InsertRectRec(const Branch &amp; a_branch, Node * a_node, Node ** a_newNode, int a_level)</em></p>
-<p><em>Defined at src/rocky/rtree.h#956</em></p>
+<p><em>Defined at src/rocky/rtree.h#960</em></p>
 <p>Inserts a new data rectangle into the index structure. Recursively descends tree, propagates splits back up. Returns 0 if node was not split.  Old node updated. If node was split, returns 1 and sets the pointer pointed to by new_node to point to the new node.  Old node updated to become one of two. The level argument specifies the number of steps up from the leaf level to insert; e.g. a data rectangle goes in at level = 0.</p>
 <h3 id="insertrect">InsertRect</h3>
 <p><em>protected _Bool InsertRect(const Branch &amp; a_branch, Node ** a_root, int a_level)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1017</em></p>
+<p><em>Defined at src/rocky/rtree.h#1021</em></p>
 <p>Insert a data rectangle into an index structure. InsertRect provides for splitting the root; returns 1 if root was split, 0 if it was not. The level argument specifies the number of steps up from the leaf level to insert; e.g. a data rectangle goes in at level = 0. InsertRect2 does the recursion.</p>
 <h3 id="nodecover">NodeCover</h3>
 <p><em>protected Rect NodeCover(Node * a_node)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1060</em></p>
+<p><em>Defined at src/rocky/rtree.h#1064</em></p>
 <p>Find the smallest rectangle that includes all rectangles in branches of a node.</p>
 <h3 id="addbranch">AddBranch</h3>
 <p><em>protected _Bool AddBranch(const Branch * a_branch, Node * a_node, Node ** a_newNode)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1079</em></p>
+<p><em>Defined at src/rocky/rtree.h#1083</em></p>
 <p>Add a branch to a node.  Split the node if necessary. Returns 0 if node not split.  Old node updated. Returns 1 if node split, sets *new_node to address of new node. Old node updated, becomes one of two.</p>
 <h3 id="disconnectbranch">DisconnectBranch</h3>
 <p><em>protected void DisconnectBranch(Node * a_node, int a_index)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1104</em></p>
+<p><em>Defined at src/rocky/rtree.h#1108</em></p>
 <p>Disconnect a dependent node. Caller must return (or stop using iteration index) after this as count has changed</p>
 <h3 id="pickbranch">PickBranch</h3>
 <p><em>protected int PickBranch(const Rect * a_rect, Node * a_node)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1122</em></p>
+<p><em>Defined at src/rocky/rtree.h#1126</em></p>
 <p>Pick a branch.  Pick the one that will need the smallest increase in area to accomodate the new rectangle.  This will result in the least total area for the covering rectangles in the current node. In case of a tie, pick the one which was smaller before, to get the best resolution when searching.</p>
 <h3 id="combinerect">CombineRect</h3>
 <p><em>protected Rect CombineRect(const Rect * a_rectA, const Rect * a_rectB)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1160</em></p>
+<p><em>Defined at src/rocky/rtree.h#1164</em></p>
 <p>Combine two rectangles into larger one containing both</p>
 <h3 id="splitnode">SplitNode</h3>
 <p><em>protected void SplitNode(Node * a_node, const Branch * a_branch, Node ** a_newNode)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1182</em></p>
+<p><em>Defined at src/rocky/rtree.h#1186</em></p>
 <p>Split a node. Divides the nodes branches and the extra one between two nodes. Old node is one of the new ones, and one really new one is created. Tries more than one method for choosing a partition, uses best result.</p>
 <h3 id="rectsphericalvolume">RectSphericalVolume</h3>
 <p><em>protected ELEMTYPEREAL RectSphericalVolume(Rect * a_rect)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1230</em></p>
+<p><em>Defined at src/rocky/rtree.h#1234</em></p>
 <p>The exact volume of the bounding sphere for the given Rect</p>
 <h3 id="rectvolume">RectVolume</h3>
 <p><em>protected ELEMTYPEREAL RectVolume(Rect * a_rect)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1211</em></p>
+<p><em>Defined at src/rocky/rtree.h#1215</em></p>
 <p>Calculate the n-dimensional volume of a rectangle</p>
 <h3 id="calcrectvolume">CalcRectVolume</h3>
 <p><em>protected ELEMTYPEREAL CalcRectVolume(Rect * a_rect)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1263</em></p>
+<p><em>Defined at src/rocky/rtree.h#1267</em></p>
 <p>Use one of the methods to calculate retangle volume</p>
 <h3 id="getbranches">GetBranches</h3>
 <p><em>protected void GetBranches(Node * a_node, const Branch * a_branch, PartitionVars * a_parVars)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1275</em></p>
+<p><em>Defined at src/rocky/rtree.h#1279</em></p>
 <p>Load branch buffer with branches from full node plus the extra branch.</p>
 <h3 id="choosepartition">ChoosePartition</h3>
 <p><em>protected void ChoosePartition(PartitionVars * a_parVars, int a_minFill)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1312</em></p>
+<p><em>Defined at src/rocky/rtree.h#1316</em></p>
 <p>Method #0 for choosing a partition: As the seeds for the two groups, pick the two rects that would waste the most area if covered by a single rectangle, i.e. evidently the worst pair to have in the same group. Of the remaining, one at a time is chosen to be put in one of the two groups. The one chosen is the one with the greatest difference in area expansion depending on which group - the rect most strongly attracted to one group and repelled from the other. If one group gets too full (more would force other group to violate min fill requirement) then other group gets the rest. These last are the ones that can go in either group most easily.</p>
 <h3 id="loadnodes">LoadNodes</h3>
 <p><em>protected void LoadNodes(Node * a_nodeA, Node * a_nodeB, PartitionVars * a_parVars)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1391</em></p>
+<p><em>Defined at src/rocky/rtree.h#1395</em></p>
 <p>Copy branches from the buffer into two nodes according to the partition.</p>
 <h3 id="initparvars">InitParVars</h3>
 <p><em>protected void InitParVars(PartitionVars * a_parVars, int a_maxRects, int a_minFill)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1413</em></p>
+<p><em>Defined at src/rocky/rtree.h#1417</em></p>
 <p>Initialize a PartitionVars structure.</p>
 <h3 id="pickseeds">PickSeeds</h3>
 <p><em>protected void PickSeeds(PartitionVars * a_parVars)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1429</em></p>
+<p><em>Defined at src/rocky/rtree.h#1433</em></p>
 <h3 id="classify">Classify</h3>
 <p><em>protected void Classify(int a_index, int a_group, PartitionVars * a_parVars)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1463</em></p>
+<p><em>Defined at src/rocky/rtree.h#1467</em></p>
 <p>Put a branch in one of the groups.</p>
 <h3 id="removerect">RemoveRect</h3>
 <p><em>protected _Bool RemoveRect(Rect * a_rect, const DATATYPE &amp; a_id, Node ** a_root)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1492</em></p>
+<p><em>Defined at src/rocky/rtree.h#1496</em></p>
 <p>Delete a data rectangle from an index structure. Pass in a pointer to a Rect, the tid of the record, ptr to ptr to root node. Returns 1 if record not found, 0 if success. RemoveRect provides for eliminating the root.</p>
 <h3 id="removerectrec">RemoveRectRec</h3>
 <p><em>protected _Bool RemoveRectRec(Rect * a_rect, const DATATYPE &amp; a_id, Node * a_node, ListNode ** a_listNode)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1546</em></p>
+<p><em>Defined at src/rocky/rtree.h#1550</em></p>
 <p>Delete a rectangle from non-root part of an index structure. Called by RemoveRect.  Descends tree recursively, merges branches on the way back up. Returns 1 if record not found, 0 if success.</p>
 <h3 id="alloclistnode">AllocListNode</h3>
 <p><em>protected ListNode * AllocListNode()</em></p>
-<p><em>Defined at src/rocky/rtree.h#908</em></p>
+<p><em>Defined at src/rocky/rtree.h#912</em></p>
 <p>Allocate space for a node in the list used in DeletRect to store Nodes that are too empty.</p>
 <h3 id="freelistnode">FreeListNode</h3>
 <p><em>protected void FreeListNode(ListNode * a_listNode)</em></p>
-<p><em>Defined at src/rocky/rtree.h#919</em></p>
+<p><em>Defined at src/rocky/rtree.h#923</em></p>
 <h3 id="overlap">Overlap</h3>
 <p><em>protected _Bool Overlap(Rect * a_rectA, Rect * a_rectB)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1593</em></p>
+<p><em>Defined at src/rocky/rtree.h#1597</em></p>
 <p>Decide whether two rectangles overlap.</p>
 <h3 id="reinsert">ReInsert</h3>
 <p><em>protected void ReInsert(Node * a_node, ListNode ** a_listNode)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1612</em></p>
+<p><em>Defined at src/rocky/rtree.h#1616</em></p>
 <p>Add a node to the reinsertion list.  All its branches will later be reinserted into the index structure.</p>
 <h3 id="search_1">Search</h3>
 <p><em>protected _Bool Search(Node * a_node, Rect * a_rect, int &amp; a_foundCount, CALLBACK_TYPE &amp;&amp; callback)</em></p>
-<p><em>Defined at src/rocky/rtree.h#1625</em></p>
+<p><em>Defined at src/rocky/rtree.h#1629</em></p>
 <p>Search in an index tree or subtree for all data retangles that overlap the argument rectangle.</p>
 <h3 id="removeallrec">RemoveAllRec</h3>
 <p><em>protected void RemoveAllRec(Node * a_node)</em></p>
-<p><em>Defined at src/rocky/rtree.h#862</em></p>
+<p><em>Defined at src/rocky/rtree.h#866</em></p>
 <h3 id="reset">Reset</h3>
 <p><em>protected void Reset()</em></p>
-<p><em>Defined at src/rocky/rtree.h#849</em></p>
+<p><em>Defined at src/rocky/rtree.h#853</em></p>
 <h3 id="countrec">CountRec</h3>
 <p><em>protected void CountRec(Node * a_node, int &amp; a_count)</em></p>
-<p><em>Defined at src/rocky/rtree.h#592</em></p>
+<p><em>Defined at src/rocky/rtree.h#596</em></p>
 <h3 id="saverec">SaveRec</h3>
 <p><em>protected _Bool SaveRec(Node * a_node, RTFileStream &amp; a_stream)</em></p>
-<p><em>Defined at src/rocky/rtree.h#803</em></p>
+<p><em>Defined at src/rocky/rtree.h#807</em></p>
 <h3 id="loadrec">LoadRec</h3>
 <p><em>protected _Bool LoadRec(Node * a_node, RTFileStream &amp; a_stream)</em></p>
-<p><em>Defined at src/rocky/rtree.h#677</em></p>
+<p><em>Defined at src/rocky/rtree.h#681</em></p>
 <h3 id="copyrec">CopyRec</h3>
 <p><em>protected void CopyRec(Node * current, Node * other)</em></p>
-<p><em>Defined at src/rocky/rtree.h#713</em></p>
+<p><em>Defined at src/rocky/rtree.h#717</em></p>
 <h3 id="listtree">ListTree</h3>
 <p><em>public int ListTree()</em></p>
-<p><em>Defined at src/rocky/rtree.h#1670</em></p>
+<p><em>Defined at src/rocky/rtree.h#1674</em></p>
 <p>return all the AABBs that form the RTree</p>
 <h2 id="enums">Enums</h2>
 <p>| enum  |</p>
 <p>--</p>
 <p>| MAXNODES |
 | MINNODES |</p>
-<p><em>Defined at src/rocky/rtree.h#69</em></p>
+<p><em>Defined at src/rocky/rtree.h#73</em></p>
 <p>These constant must be declared after Branch and before Node struct Stuck up here for MSVC 6 compiler.  NSVC .NET 2003 is much happier.</p>
 
 

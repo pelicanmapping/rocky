@@ -376,26 +376,26 @@
 
 
 <h1 id="class-tilemosaicweakcache">class TileMosaicWeakCache</h1>
-<p><em>Defined at src/rocky/TileLayer.h#139</em></p>
+<p><em>Defined at src/rocky/TileLayer.h#132</em></p>
 <p>A "cache" of weak pointers to values, keyed by tile key. This will keep references to data that are still in use elsewhere in the system in order to prevent re-fetching or re-mosacing the same data over and over.</p>
 <h2 id="records">Records</h2>
 <p>Entry</p>
 <h2 id="functions">Functions</h2>
 <h3 id="get">get</h3>
 <p><em>public Entry get(const int &amp; key)</em></p>
-<p><em>Defined at src/rocky/TileLayer.h#152</em></p>
+<p><em>Defined at src/rocky/TileLayer.h#145</em></p>
 <p>Fetch a value from the cache or an empty if it's not there</p>
 <h3 id="put">put</h3>
 <p><em>public const Entry &amp; put(const int &amp; key, const int &amp; valueKey, const int &amp; value)</em></p>
-<p><em>Defined at src/rocky/TileLayer.h#168</em></p>
+<p><em>Defined at src/rocky/TileLayer.h#161</em></p>
 <p>Add a value to the cache, or return the existing value if it's already there.</p>
 <h3 id="clean">clean</h3>
 <p><em>public void clean()</em></p>
-<p><em>Defined at src/rocky/TileLayer.h#183</em></p>
+<p><em>Defined at src/rocky/TileLayer.h#176</em></p>
 <p>Purge entries whose weak pointers have expired</p>
 <h3 id="hitratio">hitRatio</h3>
 <p><em>public float hitRatio()</em></p>
-<p><em>Defined at src/rocky/TileLayer.h#195</em></p>
+<p><em>Defined at src/rocky/TileLayer.h#188</em></p>
 
 
 
