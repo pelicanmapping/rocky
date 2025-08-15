@@ -204,15 +204,15 @@ if (result.ok())
 Result<GeoPoint> clampedPoint = sampler.clamp(point, app.io());
 ```
 
-You can also batch queries to the `ElevationSampler`, which speeds things up when querying a localized area. A batched query session modifies the input data directly. It also expects an `SRSOperation` that can transform those points into the SRS of the elevation layer. You also get optional control over the sampling resolution ... lower resolution is often faster.
+You can also batch queries to the `ElevationSampler`, which speeds things up when querying a localized area. A batched query session modifies the input data directly. It expects the `SRS` of the points you plan to sample. You also get optional control over the sampling resolution ... lower resolution is often faster.
 ```c++
 ElevationSampler sampler;
 sampler.layer = ...;
 
 auto session = sampler.session(app.io());
-session.xform = pointsSRS.to(sampler.layer->profile->srs());
+session.srs = pointsSRS; // required!
 session.resolution = Distance(100, Units::METERS);
-sampler.clampRange(session, points.begin(), points.end());
+session.clampRange(points.begin(), points.end());
 ```
 We use this technique in the `Demo_MVTFeatures.h` example to clamp GIS features to the terrain.
 
@@ -558,6 +558,20 @@ You'll probably also want to add the `MapManipulator` to that view to control th
 viewer->addEventHandler(rocky::MapManipulator::create(mapNode, window, camera, context));
 ```
 Keep in mind that without Rocky's `Application` object, you will not get the benefits of using Rocky's ECS for map annotations.
+
+### Terrain Rendering Profiles
+
+Rocky supports two map-tiling profiles for rendering the terrain.
+
+* `global-geodetic` : Loads fast, but sacrifices some quality in the polar regions. This is the default since it closely matches most online data sources.
+
+* `global-qsc` : Accurate worldwide including the polar regions. The trade-off can be slower loading speeds depending on your data. If you work in the polar regions or use polar stereographic data, this will be the better option.
+
+You can configure the rendering profile in your `MapNode`:
+```c++
+mapNode->profile = Profile("global-qsc");
+```
+The *Rendering* panel in `rocky_demo` has a drop-down to select the profile so you can see the difference. Toggle on *Wireframe* mode for a better look.
 
 ### VSG Nodes and Layers
 

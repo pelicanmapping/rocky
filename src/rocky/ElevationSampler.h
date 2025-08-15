@@ -11,7 +11,7 @@ namespace ROCKY_NAMESPACE
     class ElevationSession;
 
     /**
-    * A sample of elevation data, which includes the height and the resolution
+    * A sample of elevation data.
     */
     using ElevationSample = float;
 
@@ -22,10 +22,16 @@ namespace ROCKY_NAMESPACE
     *   ElevationSampler sampler;
     *   sampler.layer = myElevationLayer; // required
     *
-    *   auto sample = sampler.sample(GeoPoint(x, y, srs), io);
+    *   auto sample = sampler.sample(GeoPoint(srs, x, y), io);
     *   if (sample.ok())
-    *      // sample.height contains the height.
+    *      // sample.value() contains the height.
     *
+    * If you plan to sample collections of points in the same general area,
+    * an ElevationSession may be faster:
+    *
+    *   auto session = sampler.session(io);
+    *   session.srs = mySRS; // required, SRS of incoming points
+    *   session.clampRange(points.begin(), points.end(); // clamps a range of points
     */
     class ROCKY_EXPORT ElevationSampler
     {
@@ -64,14 +70,17 @@ namespace ROCKY_NAMESPACE
 
 
         //! Construct a new query envelope.
-        //! The optional "y" value is a latitude that will help determine the appropriate sampling resolution.
+        //! This is more efficient when you plan to query multiple points in a localized area.
         inline ElevationSession session(const IOOptions& io) const;
 
-        //! Fetches a new heightfield for a key.
-        Result<GeoHeightfield> fetch(const TileKey&, const IOOptions& io) const;
 
     public:
         const Failure NoLayer = Failure(Failure::ServiceUnavailable, "Elevation layer is not set or not open");
+
+    private:
+        //! Fetches a new heightfield for a key.
+        Result<GeoHeightfield> fetch(const TileKey&, const IOOptions& io) const;
+        friend class ElevationSession;
     };
 
 
