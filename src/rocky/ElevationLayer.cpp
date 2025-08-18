@@ -169,7 +169,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
 
     if (localKeys.size() > 0)
     {
-        auto& keyExtent = key.extent();
+        auto keyExtent = key.extent();
         unsigned numSourcesAtFullResolution = 0;
 
         for (auto& localKey : localKeys)
