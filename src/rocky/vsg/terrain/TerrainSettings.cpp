@@ -25,6 +25,7 @@ TerrainSettings::from_json(std::string_view JSON)
     get_to(j, "skirt_ratio", skirtRatio);
     get_to(j, "color", color);
     get_to(j, "concurrency", concurrency);
+    get_to(j, "wire_overlay", wireOverlay);
 
     return ResultVoidOK;
 }
@@ -42,5 +43,6 @@ TerrainSettings::to_json() const
     set(j, "skirt_ratio", skirtRatio);
     set(j, "color", color);
     set(j, "concurrency", concurrency);
+    set(j, "wire_overlay", wireOverlay);
     return j.dump();
 }

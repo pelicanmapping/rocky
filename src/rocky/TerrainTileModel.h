@@ -22,7 +22,7 @@ namespace ROCKY_NAMESPACE
     /**
      * Data model backing an individual terrain tile.
      */
-    class ROCKY_EXPORT TerrainTileModel
+    struct TerrainTileModel
     {
     public:
         struct ROCKY_EXPORT Tile

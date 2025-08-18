@@ -481,7 +481,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
     io.services().contentCache = std::make_shared<ContentCache>(256);
 
     // weak cache of resident image (and elevation) rasters
-    io.services().residentImageCache = std::make_shared<util::ResidentCache<std::string, Image>>();
+    io.services().residentImageCache = std::make_shared<util::ResidentCache<std::string, Image, GeoExtent>>();
 
     // remembers failed URI requests so we don't repeat them
     io.services().deadpool = std::make_shared<DealpoolService>(4096);

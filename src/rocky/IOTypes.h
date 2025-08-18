@@ -23,6 +23,7 @@ namespace ROCKY_NAMESPACE
     class Image;
     class Layer;
     class ContextImpl;
+    class GeoExtent;
 
     //! Service for reading an image from a URI
     using ReadImageURIService = std::function<
@@ -73,7 +74,7 @@ namespace ROCKY_NAMESPACE
         std::shared_ptr<ContentCache> contentCache;
 
         //! Provides fast access to Image data that is resident somwehere in memory
-        std::shared_ptr<util::ResidentCache<std::string, Image>> residentImageCache;
+        std::shared_ptr<util::ResidentCache<std::string, Image, GeoExtent>> residentImageCache;
 
         //! URI deadpool; URI will use this if available.
         std::shared_ptr<DealpoolService> deadpool;

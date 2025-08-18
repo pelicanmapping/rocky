@@ -57,6 +57,9 @@ namespace ROCKY_NAMESPACE
         //! Number of threads dedicated to loading terrain data
         option<unsigned> concurrency = 6;
 
+        //! Whether to render a wireframe overlay on the terrain
+        option<bool> wireOverlay = false;
+
     public: // internal runtime settings, not serialized.
 
         //! TEMPORARY.

@@ -57,9 +57,7 @@ namespace ROCKY_NAMESPACE
 
     protected:
 
-        Result<GeoImage> createImageImplementation_internal(
-            const TileKey& key,
-            const IOOptions& io) const;
+        Result<GeoImage> createImageImplementation_internal(const TileKey& key, const IOOptions& io) const;
 
     private:
 
@@ -67,19 +65,12 @@ namespace ROCKY_NAMESPACE
         void construct(std::string_view, const IOOptions& io);
 
         // Creates an image that's in the same profile as the provided key.
-        Result<GeoImage> createImageInKeyProfile(
-            const TileKey& key,
-            const IOOptions& io) const;
+        Result<GeoImage> createImageInKeyProfile(const TileKey& key, const IOOptions& io) const;
 
         // Fetches multiple images from the TileSource; mosaics/reprojects/crops as necessary, and
         // returns a single tile. This is called by createImageFromTileSource() if the key profile
         // doesn't match the layer profile.
-        std::shared_ptr<Image> assembleImage(
-            const TileKey& key,
-            const IOOptions& io) const;
-
-        // a weak cache that helps us avoid re-fetching dependent images in a mosaic
-        std::shared_ptr<TileMosaicWeakCache<Image>> _dependencyCache;
+        std::shared_ptr<Image> assembleImage(const TileKey& key, const IOOptions& io) const;
     };
 
 } // namespace ROCKY_NAMESPACE

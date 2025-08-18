@@ -1,7 +1,8 @@
-#version 450
+#version 460
+
+#extension GL_EXT_fragment_shader_barycentric : enable
 
 #pragma import_defines(ROCKY_LIGHTING)
-#pragma import_defines(ROCKY_WIREFRAME_OVERLAY)
 
 layout(push_constant) uniform PushConstants {
     mat4 projection;
@@ -19,9 +20,14 @@ struct RockyVaryings {
 // input varyings
 layout(location = 0) in RockyVaryings varyings;
 
+// struct TerrainDescriptors (TerrainNode.h)
+layout(set = 0, binding = 9) uniform TerrainDescriptors {
+    int wireOverlay;
+    float padding[3];
+} settings;
+
 // uniforms
 layout(set = 0, binding = 11) uniform sampler2D color_tex;
-//layout(set = 0, binding = 12) uniform sampler2D normal_tex;
 
 #if defined(ROCKY_LIGHTING)
 #include "rocky.lighting.frag.glsl"
@@ -51,10 +57,15 @@ void main()
     apply_lighting(out_color, varyings.vertex_view, get_normal());
 #endif
 
-#if defined(ROCKY_WIREFRAME_OVERLAY)
-    // tile outlines - debugging
-    vec2 outline_uv = abs(varyings.uv * 2.0 - 1.0);
-    if (outline_uv.x > 0.99 || outline_uv.y > 0.99)
-        out_color = vec4(1.0, 0.9, 0.0, 1.0);
+#if GL_EXT_fragment_shader_barycentric
+    if (settings.wireOverlay > 0)
+    {
+        const float pixelWidth = 1.0;
+        vec3 b = fwidth(gl_BaryCoordEXT.xyz);
+        vec3 edge = smoothstep(vec3(0.0), b * pixelWidth, gl_BaryCoordEXT.xyz);
+        float wire = 1.0 - min(min(edge.x, edge.y), edge.z);
+        vec3 wire_color = clamp(out_color.rgb*3.0, 0.0, 1.0);
+        out_color.rgb = mix(out_color.rgb, wire_color, clamp(wire, 0.0, 1.0));
+    }
 #endif
 }

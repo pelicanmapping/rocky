@@ -23,28 +23,14 @@ using namespace ROCKY_NAMESPACE::util;
 namespace
 {
     // Image subclass that keeps a list of the images used to assemble it.
-    // This in combination with the ImageLayer's dependency tracker acts
-    // as a resident dependency cache, speeding up assemble operations.
+    // This in combination with the resident image cache speeds up assemble operations.
     class Mosaic : public Inherit<Image, Mosaic>
     {
     public:
         Mosaic(PixelFormat format, unsigned s, unsigned t, unsigned r = 1) :
-            super(format, s, t, r),
-            dependencies(),
-            cleanupOperation()
-        {}
+            super(format, s, t, r) { }
 
-        Mosaic(const Mosaic& rhs) :
-            super(rhs),
-            dependencies(rhs.dependencies),
-            cleanupOperation(rhs.cleanupOperation)
-        {}
-
-        virtual ~Mosaic()
-        {
-            if (cleanupOperation)
-                cleanupOperation();
-        }
+        Mosaic(const Mosaic& rhs) = default;
 
         std::shared_ptr<Image> clone() const override
         {
@@ -52,7 +38,6 @@ namespace
         }
 
         std::vector<std::shared_ptr<Image>> dependencies;
-        std::function<void()> cleanupOperation;
     };
 }
 
@@ -92,7 +77,9 @@ ImageLayer::openImplementation(const IOOptions& io)
     if (r.failed())
         return r;
 
+#if 0
     _dependencyCache = std::make_shared<TileMosaicWeakCache<Image>>();
+#endif
 
     return ResultVoidOK;
 }
@@ -100,29 +87,34 @@ ImageLayer::openImplementation(const IOOptions& io)
 void
 ImageLayer::closeImplementation()
 {
+#if 0
     _dependencyCache = nullptr;
+#endif
+
     super::closeImplementation();
 }
 
 Result<GeoImage>
 ImageLayer::createImage(const TileKey& key, const IOOptions& io) const
 {
+    // lock prevents closing the layer while creating an image
     std::shared_lock readLock(layerStateMutex());
+
     if (status().ok())
     {
         if (io.services().residentImageCache)
         {
-            auto k = key.str() + '-' + std::to_string(key.profile.hash()) + '-' + std::to_string(uid()) + "-" + std::to_string(revision());
+            auto cacheKey = key.str() + '-' + std::to_string(key.profile.hash()) + '-' + std::to_string(uid()) + "-" + std::to_string(revision());
 
-            auto image = io.services().residentImageCache->get(k);
-            if (image.has_value())
-                return GeoImage(image.value(), key.extent());
+            auto cached = io.services().residentImageCache->get(cacheKey);
+            if (cached.has_value())
+                return GeoImage(cached.value().first, cached.value().second);
 
             auto r = createImageInKeyProfile(key, io);
 
             if (r.ok())
             {
-                io.services().residentImageCache->put(k, r.value().image());
+                io.services().residentImageCache->put(cacheKey, r.value().image(), r.value().extent());
             }
 
             return r;
@@ -141,13 +133,7 @@ ImageLayer::createImage(const TileKey& key, const IOOptions& io) const
 Result<GeoImage>
 ImageLayer::createImageImplementation_internal(const TileKey& key, const IOOptions& io) const
 {
-    std::shared_lock lock(layerStateMutex());
-    auto result = createImageImplementation(key, io);
-    if (result.failed())
-    {
-        Log()->debug("Failed to create image for key {0} : {1}", key.str(), result.error().message);
-    }
-    return result;
+    return createImageImplementation(key, io);
 }
 
 Result<GeoImage>
@@ -179,15 +165,11 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
     }
 
     // if this layer has no profile, just go straight to the driver.
-    if (!profile.valid())
+    if (!profile.valid() || (key.profile == profile))
     {
         result = createImageImplementation_internal(key, io);
     }
 
-    else if (key.profile == profile)
-    {
-        result = createImageImplementation_internal(key, io);
-    }
     else
     {
         // If the profiles are different, use a compositing method to assemble the tile.
@@ -257,69 +239,83 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 
     if (localKeys.size() > 0)
     {
-        bool hasAtLeastOneSourceAtTargetLOD = false;
+        auto& keyExtent = key.extent();
+        unsigned numSourcesAtFullResolution = 0;
 
         for (auto& localKey : localKeys)
         {
-            // first try the weak dependency cache.
-            auto cached = _dependencyCache->get(localKey);
-            auto cached_value = cached.value.lock();
-            if (cached_value)
-            {
-                sources.emplace_back(cached_value, cached.valueKey.extent());
+            // resolve an image for each local key.
+            GeoImage localTile;
+            TileKey actualKey = localKey;
 
-                if (cached.valueKey.level == localKey.level)
+            // check the resident image cache first.
+            // this cache keeps a weak pointer to any image anywhere in memory; 
+            // this speeds up mosacing a lot during reprojection.
+            auto cacheKey = localKey.str() + '-' + std::to_string(localKey.profile.hash()) + '-' + std::to_string(uid()) + '-' + std::to_string(revision());
+            bool fromResidentCache = false;
+
+            if (io.services().residentImageCache)
+            {
+                auto cached = io.services().residentImageCache->get(cacheKey);
+                if (cached.has_value())
                 {
-                    hasAtLeastOneSourceAtTargetLOD = true;
+                    localTile = GeoImage(cached.value().first, cached.value().second);
+                    fromResidentCache = true;
                 }
             }
 
-            else
+            // not found in the resident cache; go to the source, and fall back until we get
+            // a usable image tile.
+            while (!localTile.valid() && actualKey.valid())
             {
-                // create the sub tile, falling back until we get real data
-                TileKey subKey = localKey;
-                Result<GeoImage> subTile = Failure{};
-                while (subKey.valid() && !subTile.ok())
+                auto r = createImageImplementation_internal(actualKey, io);
+
+                if (io.canceled())
+                    return {};
+                else if (r.ok() && r.value().image())
+                    localTile = std::move(r.value());
+                else
+                    actualKey.makeParent();
+            }
+
+            if (localTile.valid())
+            {
+                // if the image came from the source, register it with the resident image cache
+                if (!fromResidentCache && io.services().residentImageCache)
                 {
-                    subTile = createImageImplementation_internal(subKey, io);
-
-                    if (subTile.failed() || !subTile.value().image())
-                        subKey.makeParent();
-
-                    if (io.canceled())
-                        return {};
+                    io.services().residentImageCache->put(cacheKey, localTile.image(), actualKey.extent());
                 }
 
-                if (subTile.ok() && subTile.value().image())
+                sources.emplace_back(std::move(localTile));
+
+                if (actualKey.level == localKey.level)
                 {
-                    // save it in the weak cache:
-                    _dependencyCache->put(localKey, subKey, subTile.value().image());
-
-                    // add it to our sources collection:
-                    sources.emplace_back(subTile.value());
-
-                    if (subKey.level == localKey.level)
-                    {
-                        hasAtLeastOneSourceAtTargetLOD = true;
-                    }
+                    ++numSourcesAtFullResolution;
                 }
             }
         }
 
         // If we actually got at least one piece of usable data,
         // move ahead and build a mosaic of all sources.
-        if (hasAtLeastOneSourceAtTargetLOD)
+        if (numSourcesAtFullResolution > 0)
         {
             unsigned cols = 0;
             unsigned rows = 0;
             unsigned layers = 1;
 
             // sort the sources by resolution (highest first)
-            std::sort(
-                sources.begin(), sources.end(),
-                [](const GeoImage& lhs, const GeoImage& rhs) {
-                    return lhs.extent().width() < rhs.extent().width();
-                });
+            bool useIndirectIndexing = true;
+
+            if (numSourcesAtFullResolution < sources.size())
+            {
+                useIndirectIndexing = false;
+
+                std::sort(
+                    sources.begin(), sources.end(),
+                    [](const GeoImage& lhs, const GeoImage& rhs) {
+                        return lhs.extent().width() < rhs.extent().width();
+                    });
+            }
 
             // output size is the max of all the source sizes.
             for(auto& source : sources)
@@ -338,13 +334,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             // Cache pointers to the source images that mosaic to create this tile.
             output->dependencies.reserve(sources.size());
             for (auto& source : sources)
-                output->dependencies.push_back(source.image());
-
-            // Clean up orphaned entries any time a tile destructs.
-            output->cleanupOperation = [captured{ std::weak_ptr(_dependencyCache) }, key]() {
-                if (auto cache = captured.lock())
-                    cache->clean();
-                };
+                output->dependencies.emplace_back(source.image());
 
             // Working set of points. it's much faster to xform an entire vector all at once.
             std::vector<glm::dvec3> points;
@@ -383,6 +373,10 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                 }
             }
 
+            // Indirect indexing lets us do a basic "LRU" cache when looping through multiple images.
+            std::vector<unsigned> indexes(sources.size());
+            std::iota(indexes.begin(), indexes.end(), 0);
+
             // Mosaic our sources into a single output image.
             glm::fvec4 pixel;
             for (unsigned layer = 0; layer < layers; ++layer)
@@ -396,12 +390,15 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                         // check each source (high to low LOD) until we get a valid pixel.
                         pixel = { 0,0,0,0 };
 
-                        for (unsigned k = 0; k < sources.size(); ++k)
+                        for(unsigned n = 0; n < indexes.size(); ++n)
                         {
+                            unsigned k = useIndirectIndexing ? indexes[n] : n;
+
                             if (layer < sources[k].image()->depth())
                             {
                                 if (sources[k].read(pixel, points[i].x, points[i].y, layer) && pixel.a > 0.0f)
                                 {
+                                    std::swap(indexes[n], indexes[0]);
                                     break;
                                 }
                             }

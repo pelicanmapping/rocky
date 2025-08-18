@@ -50,7 +50,7 @@ namespace
 auto Demo_Rendering = [](Application& app)
 {
     static Layer::Ptr axesLayer;
-    // Better would be vkCmdSetPolygonMode extension, but it is noy supported by VSG
+    // Better would be vkCmdSetPolygonMode extension, but it is not supported by VSG
     // This will do in the meantime.
     static vsg::ref_ptr<vsg::SetPrimitiveTopology> setWireframeTopology;        
     if (!setWireframeTopology)
@@ -67,6 +67,9 @@ auto Demo_Rendering = [](Application& app)
 
         auto& c = app.mapNode->terrainNode->children;
         bool wireframe = c.front() == setWireframeTopology;
+
+        // Doesn't work :(
+        //ImGuiLTable::Checkbox("Wireframe", &app.mapNode->terrainNode->wireOverlay.mutable_value());
 
         if (ImGuiLTable::Checkbox("Wireframe", &wireframe))
         {

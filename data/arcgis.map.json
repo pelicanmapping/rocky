@@ -1,0 +1,18 @@
+{
+    "map" : {
+        "name" : "ArcGIS Imagery Online",
+        "layers": [
+            {
+                "name": "ArcGIS",
+                "type": "TMSImage",
+                "uri": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                "format" : "image/jpg",
+                "profile" : "spherical-mercator",
+                "attribution" : {
+                    "text" : "Copyright Ersi"
+                }
+            }
+        ]
+    },
+    "profile" : "global-qsc"
+}

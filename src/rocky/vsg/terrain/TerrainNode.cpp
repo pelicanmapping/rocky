@@ -215,7 +215,7 @@ Result<>
 TerrainNode::createProfiles(VSGContext context)
 {
     // create the graphics pipeline to render this map
-    if (!stateFactory.setupTerrainStateGroup(*this, context))
+    if (!stateFactory.setupTerrainStateGroup(*this, _descriptors, context))
     {
         return Failure("Failed to set up terrain state group");
     }
@@ -246,6 +246,15 @@ TerrainNode::update(VSGContext context)
         if (auto c = child.cast<TerrainProfileNode>())
             changes = c->update(context) || changes;
     }
+
+    // check for settings change
+    auto& uniforms = *static_cast<TerrainDescriptors::Uniforms*>(_descriptors.ubo_data->dataPointer());
+    if ((bool)uniforms.wireOverlay != wireOverlay)
+    {
+        uniforms.wireOverlay = wireOverlay;
+        _descriptors.ubo_data->dirty();
+    }
+
     return changes;
 }
 

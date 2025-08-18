@@ -23,19 +23,11 @@ namespace
         if (!hf)
             return false;
         if (hf->height() < 1 || hf->height() > 1024) {
-            //ROCKY_WARN << "row count = " << hf->height() << std::endl;
             return false;
         }
         if (hf->width() < 1 || hf->width() > 1024) {
-            //ROCKY_WARN << "col count = " << hf->width() << std::endl;
             return false;
         }
-        //if (hf->getHeightList().size() != hf->width() * hf->height()) {
-        //    OE_WARN << "mismatched data size" << std::endl;
-        //    return false;
-        //}
-        //if (hf->getXInterval() < 1e-5 || hf->getYInterval() < 1e-5)
-        //    return false;
 
         return true;
     }
@@ -47,26 +39,15 @@ namespace
     class HeightfieldMosaic : public Inherit<Heightfield, HeightfieldMosaic>
     {
     public:
-        HeightfieldMosaic(unsigned s, unsigned t) :
-            super(s, t)
-        {
-            //nop
-        }
+        HeightfieldMosaic(unsigned s, unsigned t) : super(s, t) { }
+        HeightfieldMosaic(const HeightfieldMosaic& rhs) = default;
 
-        HeightfieldMosaic(const HeightfieldMosaic& rhs) :
-            super(rhs),
-            dependencies(rhs.dependencies)
+        std::shared_ptr<Image> clone() const override
         {
-            //nop
-        }
-
-        virtual ~HeightfieldMosaic()
-        {
-            cleanupOperation();
+            return std::make_shared<HeightfieldMosaic>(*this);
         }
 
         std::vector<std::shared_ptr<Heightfield>> dependencies;
-        std::function<void()> cleanupOperation;
     };
 }
 
@@ -103,20 +84,8 @@ ElevationLayer::construct(std::string_view JSON, const IOOptions& io)
             encoding = Encoding::MapboxRGB;
     }
 
-    // a small L2 cache will help with things like normal map creation
-    // (i.e. queries that sample neighboring tiles)
-    if (!l2CacheSize.has_value())
-    {
-        l2CacheSize.set_default(32u);
-    }
-
-    _L2cache.setCapacity(l2CacheSize.value());
-
     // Disable max-level support for elevation data because it makes no sense.
     maxLevel.clear();
-    //maxResolution.clear();
-
-    _dependencyCache = std::make_shared<TileMosaicWeakCache<Heightfield>>();
 }
 
 std::string
@@ -142,15 +111,12 @@ ElevationLayer::openImplementation(const IOOptions& io)
     if (r.failed())
         return r;
 
-    _dependencyCache = std::make_shared<TileMosaicWeakCache<Heightfield>>();
-
     return ResultVoidOK;
 }
 
 void
 ElevationLayer::closeImplementation()
 {
-    _dependencyCache = nullptr;
     super::closeImplementation();
 }
 
@@ -194,67 +160,75 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
     std::shared_ptr<HeightfieldMosaic> output;
 
     // Determine the intersecting keys
-    auto intersectingKeys = key.intersectingKeys(profile);
+    auto localKeys = key.intersectingKeys(profile);
 
     // collect heightfield for each intersecting key. Note, we're hitting the
     // underlying tile source here, so there's no vetical datum shifts happening yet.
     // we will do that later.
     std::vector<GeoHeightfield> sources;
 
-    if (intersectingKeys.size() > 0)
+    if (localKeys.size() > 0)
     {
-        bool hasAtLeastOneSourceAtTargetLOD = false;
+        auto& keyExtent = key.extent();
+        unsigned numSourcesAtFullResolution = 0;
 
-        for (auto& intersectingKey : intersectingKeys)
+        for (auto& localKey : localKeys)
         {
-            // first try the weak dependency cache.
-            auto cached = _dependencyCache->get(intersectingKey);
-            auto cached_value = cached.value.lock();
-            if (cached_value)
-            {
-                sources.emplace_back(cached_value, cached.valueKey.extent());
+            // resolve an image for each local key.
+            GeoHeightfield localTile;
+            TileKey actualKey = localKey;
 
-                if (cached.valueKey.level == intersectingKey.level)
+            // check the resident image cache first.
+            // this cache keeps a weak pointer to any image anywhere in memory; 
+            // this speeds up mosacing a lot during reprojection.
+            auto cacheKey = localKey.str() + '-' + std::to_string(localKey.profile.hash()) + '-' + std::to_string(uid()) + '-' + std::to_string(revision());
+            bool fromResidentCache = false;
+
+            if (io.services().residentImageCache)
+            {
+                auto cached = io.services().residentImageCache->get(cacheKey);
+                if (cached.has_value())
                 {
-                    hasAtLeastOneSourceAtTargetLOD = true;
+                    auto hf = std::dynamic_pointer_cast<Heightfield>(cached.value().first);
+                    localTile = GeoHeightfield(hf, cached.value().second);
+                    fromResidentCache = true;
                 }
             }
 
-            else
+            // not found in the resident cache; go to the source, and fall back until we get
+            // a usable image tile.
+            while (!localTile.valid() && actualKey.valid())
             {
-                TileKey subKey = intersectingKey;
-                GeoHeightfield subTile;
-                while (subKey.valid() && (!subTile.valid() || !subTile.heightfield()))
-                {
-                    auto r = createHeightfieldImplementation_internal(subKey, io);
-                    if (r.ok())
-                        subTile = r.release();
-                    else
-                        subKey.makeParent();
+                auto r = createHeightfieldImplementation_internal(actualKey, io);
 
-                    if (io.canceled())
-                        return nullptr;
+                if (io.canceled())
+                    return {};
+                else if (r.ok() && r.value().heightfield())
+                    localTile = std::move(r.value());
+                else
+                    actualKey.makeParent();
+            }
+
+            if (localTile.valid())
+            {
+                // if the image came from the source, register it with the resident image cache
+                if (!fromResidentCache && io.services().residentImageCache)
+                {
+                    io.services().residentImageCache->put(cacheKey, localTile.heightfield(), actualKey.extent());
                 }
 
-                if (subTile.valid() && subTile.heightfield())
+                sources.emplace_back(std::move(localTile));
+
+                if (actualKey.level == localKey.level)
                 {
-                    // save it in the weak cache:
-                    _dependencyCache->put(intersectingKey, subKey, subTile.heightfield());
-
-                    // add it to our sources collection:
-                    sources.emplace_back(std::move(subTile));
-
-                    if (subKey.level == intersectingKey.level)
-                    {
-                        hasAtLeastOneSourceAtTargetLOD = true;
-                    }
+                    ++numSourcesAtFullResolution;
                 }
             }
         }
 
         // If we actually got at least one piece of usable data,
         // move ahead and build a mosaic of all sources.
-        if (hasAtLeastOneSourceAtTargetLOD)
+        if (numSourcesAtFullResolution > 0)
         {
             unsigned cols = 0;
             unsigned rows = 0;
@@ -280,14 +254,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
             // Cache pointers to the source images that mosaic to create this tile.
             output->dependencies.reserve(sources.size());
             for (auto& source : sources)
-                output->dependencies.push_back(source.heightfield());
-
-            // Clean up orphaned entries any time a tile destructs.
-            output->cleanupOperation = [captured{ std::weak_ptr(_dependencyCache) }, key]() {
-                auto cache = captured.lock();
-                if (cache)
-                    cache->clean();
-                };
+                output->dependencies.emplace_back(source.heightfield());
 
             // working set of points. it's much faster to xform an entire vector all at once.
             std::vector<glm::dvec3> points;
@@ -317,6 +284,13 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
                 xform.transformArray(&points[0], points.size());
             }
 
+            // indirect indexing is a trick that minimized the number of sources we
+            // need to iterate over, but we can only use it when all resolutions are
+            // the same.
+            std::vector<unsigned> indexes(sources.size());
+            std::iota(indexes.begin(), indexes.end(), 0);
+            bool useIndirectIndexing = (numSourcesAtFullResolution == sources.size());
+
             // sample the heights:
             for (unsigned r = 0; r < rows; ++r)
             {
@@ -324,9 +298,15 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
                 {
                     auto& point = points[r * cols + c];
                     float& height = output->heightAt(c, r);
-                    for (unsigned i = 0; height == NO_DATA_VALUE && i < sources.size(); ++i)
+
+                    for (unsigned i = 0; i < sources.size(); ++i)
                     {
-                        height = sources[i].heightAtLocation(point.x, point.y, Interpolation::Bilinear);
+                        unsigned j = useIndirectIndexing ? indexes[i] : i;
+                        height = sources[j].heightAtLocation(point.x, point.y, Interpolation::Bilinear);
+                        if (height != NO_DATA_VALUE) {
+                            std::swap(indexes[i], indexes[0]); // move the used source to the front
+                            break;
+                        }
                     }
 
                     if (height != NO_DATA_VALUE)
@@ -355,20 +335,20 @@ ElevationLayer::createHeightfield(const TileKey& key, const IOOptions& io) const
     {
         if (io.services().residentImageCache)
         {
-            auto k = key.str() + '-' + std::to_string(uid()) + "-" + std::to_string(revision());
+            auto cacheKey = key.str() + '-' + std::to_string(uid()) + "-" + std::to_string(revision());
 
-            auto image = io.services().residentImageCache->get(k);
-            if (image.has_value())
+            auto cached = io.services().residentImageCache->get(cacheKey);
+            if (cached.has_value())
             {
-                auto hf = std::dynamic_pointer_cast<Heightfield>(image.value());
-                return GeoHeightfield(hf, key.extent());
+                auto hf = std::dynamic_pointer_cast<Heightfield>(cached.value().first);
+                return GeoHeightfield(hf, cached.value().second);
             }
 
             auto r = createHeightfieldInKeyProfile(key, io);
 
             if (r.ok())
             {
-                io.services().residentImageCache->put(k, r.value().heightfield());
+                io.services().residentImageCache->put(cacheKey, r.value().heightfield(), key.extent());
             }
 
             return r;

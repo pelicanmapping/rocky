@@ -10,9 +10,11 @@
 
 namespace ROCKY_NAMESPACE
 {
-    class TerrainTileModel;
     class TerrainTileNode;
-    class TerrainTileRenderModel;
+
+    struct TerrainTileModel;
+    struct TerrainTileRenderModel;
+    struct TerrainDescriptors;
 
     /**
      * TerrainState creates all the Vulkan state necessary to
@@ -29,11 +31,8 @@ namespace ROCKY_NAMESPACE
         //! Initialize the factory
         TerrainState(VSGContext);
 
-        //! Creates a state group for rendering terrain
-        vsg::ref_ptr<vsg::StateGroup> createTerrainStateGroup(VSGContext&);
-
         //! Configures an existing stategroup for rendering terrain
-        bool setupTerrainStateGroup(vsg::StateGroup& stateGroup, VSGContext& context);
+        bool setupTerrainStateGroup(vsg::StateGroup& stateGroup, TerrainDescriptors& descriptors, VSGContext& context);
 
         //! Integrates data from the new data model into an existing render model,
         //! and creates or updates all the necessary descriptors and commands.

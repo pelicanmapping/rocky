@@ -99,13 +99,9 @@ namespace ROCKY_NAMESPACE
 
         util::Gate<TileKey> _sentry;
 
-        mutable util::LRUCache<TileKey, Result<GeoHeightfield>> _L2cache;
-
         Result<GeoHeightfield> createHeightfieldImplementation_internal(
             const TileKey& key,
             const IOOptions& io) const;
-
-        std::shared_ptr<TileMosaicWeakCache<Heightfield>> _dependencyCache;
     };
 
 } // namespace

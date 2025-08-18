@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "TerrainState.h"
+#include "TerrainNode.h"
 #include "TerrainTileNode.h"
 #include "../VSGUtils.h"
 #include "../PipelineState.h"
@@ -19,6 +20,9 @@
 #define TERRAIN_VERT_SHADER "shaders/rocky.terrain.vert"
 #define TERRAIN_FRAG_SHADER "shaders/rocky.terrain.frag"
 
+#define SETTINGS_UBO_NAME "settings"
+#define SETTINGS_UBO_BINDING 9
+
 #define ELEVATION_TEX_NAME "elevation_tex"
 #define ELEVATION_TEX_BINDING 10
 
@@ -28,8 +32,8 @@
 #define NORMAL_TEX_NAME "normal_tex"
 #define NORMAL_TEX_BINDING 12
 
-#define TILE_BUFFER_NAME "tile"
-#define TILE_BUFFER_BINDING 13
+#define TILE_UBO_NAME "tile"
+#define TILE_UBO_BINDING 13
 
 #define ATTR_VERTEX "in_vertex"
 #define ATTR_NORMAL "in_normal"
@@ -186,7 +190,8 @@ TerrainState::createShaderSet(VSGContext& context) const
     shaderSet->addDescriptorBinding(texturedefs.elevation.name, "", 0, texturedefs.elevation.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
     shaderSet->addDescriptorBinding(texturedefs.color.name, "", 0, texturedefs.color.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
     //shaderSet->addDescriptorBinding(texturedefs.normal.name, "", 0, texturedefs.normal.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
-    shaderSet->addDescriptorBinding(TILE_BUFFER_NAME, "", 0, TILE_BUFFER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
+    shaderSet->addDescriptorBinding(TILE_UBO_NAME, "", 0, TILE_UBO_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
+    shaderSet->addDescriptorBinding(SETTINGS_UBO_NAME, "", 0, SETTINGS_UBO_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
     
     PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_FRAGMENT_BIT);
 
@@ -220,7 +225,8 @@ TerrainState::createPipelineConfig(VSGContext& context) const
     config->enableTexture(texturedefs.color.name);
     //config->enableTexture(texturedefs.normal.name);
 
-    config->enableDescriptor(TILE_BUFFER_NAME);
+    config->enableDescriptor(TILE_UBO_NAME);
+    config->enableDescriptor(SETTINGS_UBO_NAME);
 
     PipelineUtils::enableViewDependentData(config);
 
@@ -245,18 +251,8 @@ TerrainState::createPipelineConfig(VSGContext& context) const
     return config;
 }
 
-vsg::ref_ptr<vsg::StateGroup>
-TerrainState::createTerrainStateGroup(VSGContext& context)
-{
-    auto stateGroup = vsg::StateGroup::create();
-    if (setupTerrainStateGroup(*stateGroup, context))
-        return stateGroup;
-    else
-        return {};
-}
-
 bool
-TerrainState::setupTerrainStateGroup(vsg::StateGroup& stateGroup, VSGContext& context)
+TerrainState::setupTerrainStateGroup(vsg::StateGroup& stateGroup, TerrainDescriptors& descriptors, VSGContext& context)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), false);
 
@@ -265,12 +261,22 @@ TerrainState::setupTerrainStateGroup(vsg::StateGroup& stateGroup, VSGContext& co
 
     ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig, false);
 
-    // Just a StateGroup holding the graphics pipeline.
-    // No actual descriptors here - those will appear on each tile.
-    // (except for the view-dependent state stuff from VSG)
-    stateGroup.add(pipelineConfig->bindGraphicsPipeline);
-    stateGroup.add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
+    // global settings uniform setup
+    descriptors.ubo_data = vsg::ubyteArray::create(sizeof(TerrainDescriptors::Uniforms));
+    descriptors.ubo_data->properties.dataVariance = vsg::DYNAMIC_DATA_TRANSFER_AFTER_RECORD;
+    auto ubo = vsg::DescriptorBuffer::create(descriptors.ubo_data, SETTINGS_UBO_BINDING);
+    auto ubo_ds = vsg::DescriptorSet::create(pipelineConfig->layout->setLayouts[0], vsg::Descriptors{ ubo });
 
+    // initialize to the defaults
+    auto& uniforms = *static_cast<TerrainDescriptors::Uniforms*>(descriptors.ubo_data->dataPointer());
+    uniforms = TerrainDescriptors::Uniforms();
+
+    // Just a StateGroup holding the graphics pipeline.
+    // Descriptors are the global terrain uniform buffer and the VSG view-dependent buffer.
+    stateGroup.add(pipelineConfig->bindGraphicsPipeline);
+    stateGroup.add(vsg::BindDescriptorSet::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, 0, ubo_ds));
+    stateGroup.add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
+    
     return true;
 }
 
@@ -354,7 +360,7 @@ TerrainState::updateRenderModel(
     uniforms.elevation_matrix = renderModel.elevation.matrix;
     uniforms.color_matrix = renderModel.color.matrix;
     uniforms.model_matrix = renderModel.modelMatrix;
-    descriptors.uniforms = vsg::DescriptorBuffer::create(ubo, TILE_BUFFER_BINDING);
+    descriptors.uniforms = vsg::DescriptorBuffer::create(ubo, TILE_UBO_BINDING);
 
     // make the descriptor set. 
     // TODO: consider whether to separate the sampler binds from the uniform binds

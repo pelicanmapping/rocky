@@ -58,9 +58,8 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::BindDescriptorSet> bind;
     };
 
-    class TerrainTileRenderModel
+    struct TerrainTileRenderModel
     {
-    public:
         glm::fmat4 modelMatrix;
         TextureData color;
         TextureData elevation;

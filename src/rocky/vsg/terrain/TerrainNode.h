@@ -69,13 +69,24 @@ namespace ROCKY_NAMESPACE
         Result<> createRootTiles(VSGContext);
     };
 
+    //! Holds any terrain-wide textures and uniforms.
+    struct TerrainDescriptors
+    {
+        struct Uniforms
+        {
+            int wireOverlay = 1;
+            float padding[3];
+        };
+        vsg::ref_ptr<vsg::Data> ubo_data;
+    };
+
     /**
      * Root node of the terrain geometry
      */
     class ROCKY_EXPORT TerrainNode : public vsg::Inherit<vsg::StateGroup, TerrainNode>,
         public TerrainSettings
     {
-    public: 
+    public:
         
         //! Intersect a point with the loaded terrain geometry.
         Result<GeoPoint> intersect(const GeoPoint& input) const;
@@ -124,5 +135,6 @@ namespace ROCKY_NAMESPACE
         Result<> createProfiles(VSGContext);
         CallbackSubs _callbacks;
         std::vector<Layer::Ptr> _terrainLayers;
+        TerrainDescriptors _descriptors;
     };
 }

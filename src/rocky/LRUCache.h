@@ -36,25 +36,28 @@ namespace ROCKY_NAMESPACE
         * K = KEY. Any object that can be hashed for an unordered_map.
         * V = VALUE. Any object that is stored in a shared_ptr.
         */
-        template<class K, class V>
-        class ResidentCache : public rocky::Cache<K, std::shared_ptr<V>>
+        template<class K, class V, class METADATA = bool>
+        class ResidentCache // : public rocky::Cache<K, std::shared_ptr<V>>
         {
         public:
-            mutable std::unordered_map<K, std::weak_ptr<V>> _lut;
+            using entry_t = std::pair<std::weak_ptr<V>, METADATA>;
+            mutable std::unordered_map<K, entry_t> _lut;
             mutable std::shared_mutex _mutex;
             std::uint32_t _hits = 0;
             std::uint32_t _misses = 0;
             std::uint32_t _puts = 0;
 
-            std::optional<std::shared_ptr<V>> get(const K& key) override
+            using data_t = std::pair<std::shared_ptr<V>, METADATA>;
+
+            std::optional<data_t> get(const K& key) //override
             {
                 std::shared_lock lock(_mutex);
 
                 auto it = _lut.find(key);
-                if (it != _lut.end() && !it->second.expired())
+                if (it != _lut.end() && !it->second.first.expired())
                 {
                     ++_hits;
-                    return it->second.lock();
+                    return std::make_pair(it->second.first.lock(), it->second.second);
                 }
                 else
                 {
@@ -63,39 +66,41 @@ namespace ROCKY_NAMESPACE
                 }
             }
 
-            void put(const K& key, const std::shared_ptr<V>& value) override
+            void put(const K& key, const std::shared_ptr<V>& value, const METADATA& m) //override
             {
                 std::unique_lock lock(_mutex);
-                _lut.emplace(key, value);
+                _lut.emplace(key, entry_t{ value, m });
                 ++_puts;
-                if (_puts % 1000 == 0) {
-                    // Clean up expired entries every 1000 puts
+                if (_puts % 256 == 0) {
+                    // Clean up expired entries every N puts
                     for (auto it = _lut.begin(); it != _lut.end();) {
-                        if (it->second.expired())
+                        if (it->second.first.expired()) {
                             it = _lut.erase(it);
-                        else
+                        }
+                        else {
                             ++it;
+                        }
                     }
                 }
             }
 
-            std::size_t capacity() const override
+            std::size_t capacity() const //override
             {
                 return 0; // ResidentCache does not have a fixed capacity
             }
 
-            std::size_t size() const override
+            std::size_t size() const //override
             {
                 std::shared_lock lock(_mutex);
                 return _lut.size();
             }
 
-            std::uint32_t hits() const override
+            std::uint32_t hits() const //override
             {
                 return _hits;
             }
 
-            std::uint32_t misses() const override
+            std::uint32_t misses() const //override
             {
                 return _misses;
             }
