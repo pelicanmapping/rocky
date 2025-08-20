@@ -5,9 +5,7 @@
  */
 #include "ImageLayer.h"
 
-#include "Color.h"
 #include "IOTypes.h"
-#include "Utils.h"
 #include "GeoImage.h"
 #include "Image.h"
 #include "TileKey.h"
@@ -77,21 +75,39 @@ ImageLayer::openImplementation(const IOOptions& io)
     if (r.failed())
         return r;
 
-#if 0
-    _dependencyCache = std::make_shared<TileMosaicWeakCache<Image>>();
-#endif
-
     return ResultVoidOK;
 }
 
 void
 ImageLayer::closeImplementation()
 {
-#if 0
-    _dependencyCache = nullptr;
-#endif
-
     super::closeImplementation();
+}
+
+Result<GeoImage>
+ImageLayer::readCacheOrCreate(const TileKey& key, const IOOptions& io, std::function<Result<GeoImage>()>&& create) const
+{
+    if (io.services().residentImageCache)
+    {
+        auto cacheKey = key.str() + '-' + std::to_string(key.profile.hash()) + '-' + std::to_string(uid()) + "-" + std::to_string(revision());
+
+        auto cached = io.services().residentImageCache->get(cacheKey);
+        if (cached.has_value())
+            return GeoImage(cached.value().first, cached.value().second);
+
+        auto r = create();
+
+        if (r.ok())
+        {
+            io.services().residentImageCache->put(cacheKey, r.value().image(), r.value().extent());
+        }
+
+        return r;
+    }
+    else
+    {
+        return create();
+    }
 }
 
 Result<GeoImage>
@@ -100,34 +116,13 @@ ImageLayer::createImage(const TileKey& key, const IOOptions& io) const
     // lock prevents closing the layer while creating an image
     std::shared_lock readLock(layerStateMutex());
 
-    if (status().ok())
-    {
-        if (io.services().residentImageCache)
-        {
-            auto cacheKey = key.str() + '-' + std::to_string(key.profile.hash()) + '-' + std::to_string(uid()) + "-" + std::to_string(revision());
+    if (status().failed())
+        return status().error();
 
-            auto cached = io.services().residentImageCache->get(cacheKey);
-            if (cached.has_value())
-                return GeoImage(cached.value().first, cached.value().second);
-
-            auto r = createImageInKeyProfile(key, io);
-
-            if (r.ok())
-            {
-                io.services().residentImageCache->put(cacheKey, r.value().image(), r.value().extent());
-            }
-
-            return r;
-        }
-        else
+    return readCacheOrCreate(key, io, [&]()
         {
             return createImageInKeyProfile(key, io);
-        }
-    }
-    else
-    {
-        return status().error();
-    }
+        });
 }
 
 Result<GeoImage>
@@ -245,48 +240,32 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
         for (auto& localKey : localKeys)
         {
             // resolve an image for each local key.
-            GeoImage localTile;
             TileKey actualKey = localKey;
 
-            // check the resident image cache first.
-            // this cache keeps a weak pointer to any image anywhere in memory; 
-            // this speeds up mosacing a lot during reprojection.
-            auto cacheKey = localKey.str() + '-' + std::to_string(localKey.profile.hash()) + '-' + std::to_string(uid()) + '-' + std::to_string(revision());
-            bool fromResidentCache = false;
-
-            if (io.services().residentImageCache)
-            {
-                auto cached = io.services().residentImageCache->get(cacheKey);
-                if (cached.has_value())
+            auto create = [&]() -> Result<GeoImage>
                 {
-                    localTile = GeoImage(cached.value().first, cached.value().second);
-                    fromResidentCache = true;
-                }
-            }
+                    // not found in the resident cache; go to the source, and fall back until we get
+                    // a usable image tile.
+                    while (actualKey.valid())
+                    {
+                        auto r = createImageImplementation_internal(actualKey, io);
 
-            // not found in the resident cache; go to the source, and fall back until we get
-            // a usable image tile.
-            while (!localTile.valid() && actualKey.valid())
+                        if (io.canceled())
+                            return Failure_OperationCanceled;
+                        else if (r.ok() && r.value().image())
+                            return r;
+                        else
+                            actualKey.makeParent();
+                    }
+
+                    return Failure_ResourceUnavailable;
+                };
+
+            auto localTile = readCacheOrCreate(localKey, io, create);
+
+            if (localTile.ok())
             {
-                auto r = createImageImplementation_internal(actualKey, io);
-
-                if (io.canceled())
-                    return {};
-                else if (r.ok() && r.value().image())
-                    localTile = std::move(r.value());
-                else
-                    actualKey.makeParent();
-            }
-
-            if (localTile.valid())
-            {
-                // if the image came from the source, register it with the resident image cache
-                if (!fromResidentCache && io.services().residentImageCache)
-                {
-                    io.services().residentImageCache->put(cacheKey, localTile.image(), actualKey.extent());
-                }
-
-                sources.emplace_back(std::move(localTile));
+                sources.emplace_back(std::move(localTile.value()));
 
                 if (actualKey.level == localKey.level)
                 {

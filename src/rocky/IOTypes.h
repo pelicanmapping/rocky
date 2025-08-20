@@ -8,11 +8,10 @@
 #include <rocky/Result.h>
 #include <rocky/Units.h>
 #include <rocky/Threading.h>
-#include <rocky/LRUCache.h>
+#include <rocky/Cache.h>
 #include <optional>
 #include <string>
 #include <cstdint>
-#include <unordered_set>
 
 /**
  * A collection of types used by the various I/O systems.
@@ -29,7 +28,7 @@ namespace ROCKY_NAMESPACE
     using ReadImageURIService = std::function<
         Result<std::shared_ptr<Image>>(const std::string& location, const IOOptions&)>;
 
-    //! Service fro reading an image from a stream
+    //! Service for reading an image from a stream
     using ReadImageStreamService = std::function<
         Result<std::shared_ptr<Image>>(std::istream& stream, std::string contentType, const IOOptions& io)>;
 
@@ -47,8 +46,12 @@ namespace ROCKY_NAMESPACE
         std::chrono::system_clock::time_point timestamp;
     };
 
+    //! A cache that stores Content objects by URI.
     using ContentCache = rocky::util::LRUCache<std::string, Result<Content>>;
 
+    /**
+    * Collection of service available to rocky classes that perform IO operations.
+    */
     class ROCKY_EXPORT Services
     {
     public:
@@ -121,61 +124,9 @@ namespace ROCKY_NAMESPACE
         mutable std::shared_ptr<Services> _services;
     };
 
-    /**
-     * Return value from a read* method
-     */
-    struct IOFailure
-    {
-        enum Type {
-            RESULT_CANCELED,
-            RESULT_NOT_FOUND,
-            RESULT_EXPIRED,
-            RESULT_SERVER_ERROR,
-            RESULT_TIMEOUT,
-            RESULT_NO_READER,
-            RESULT_READER_ERROR,
-            RESULT_UNKNOWN_ERROR,
-            RESULT_NOT_IMPLEMENTED,
-            RESULT_NOT_MODIFIED
-        };
 
-        Type type;
-        std::string message;
-
-        IOFailure(Type t) : type(t) {}
-        IOFailure(Type t, std::string_view m) : type(t), message(m) {}
-
-        std::string string() const {
-            return
-                type == RESULT_CANCELED ? "Read canceled" :
-                type == RESULT_NOT_FOUND ? "Target not found" :
-                type == RESULT_EXPIRED ? "Target expired" :
-                type == RESULT_SERVER_ERROR ? "Server reported error" :
-                type == RESULT_TIMEOUT ? "Read timed out" :
-                type == RESULT_NO_READER ? "No suitable ReaderWriter found" :
-                type == RESULT_READER_ERROR ? "ReaderWriter error" :
-                type == RESULT_NOT_IMPLEMENTED ? "Not implemented" :
-                type == RESULT_NOT_MODIFIED ? "Not modified" :
-                "Unknown error";
-        }
-    };
-    
-    struct IOResponse
-    {
-        Content content;
-        std::int64_t lastModifiedTime = 0;
-        Duration duration;
-        bool fromCache = false;
-        std::string jsonMetadata;
-
-        IOResponse(const Content& in_content) :
-            content(in_content) { }
-
-        IOResponse(Content&& in_content) :
-            content(std::move(in_content)) { }
-    };
-
-    bool IOOptions::canceled() const {
+    // inlines
+    inline bool IOOptions::canceled() const {
         return _cancelable ? _cancelable->canceled() : false;
     }
 }

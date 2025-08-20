@@ -55,12 +55,14 @@ TerrainTileModelFactory::createTileModel(const Map* map, const TileKey& key, con
 
 namespace
 {
-    void addImageLayer(const TileKey& requested_key, std::shared_ptr<ImageLayer> layer, bool fallback, TerrainTileModel& model, const IOOptions& io)
+    // return: true if fallback occurred, false if not.
+    bool addImageLayer(const TileKey& startingKey, std::shared_ptr<ImageLayer> layer, bool fallback, TerrainTileModel& model, const IOOptions& io)
     {
         GeoImage geoimage;
         Status status;
+        bool fell_back = false;
 
-        TileKey key = requested_key;
+        TileKey key = startingKey;
         if (fallback)
         {
             while(key.valid() && !geoimage.valid())
@@ -74,6 +76,7 @@ namespace
                 {
                     status = r.error();
                     key.makeParent();
+                    fell_back = true;
                 }
             }
         }
@@ -110,12 +113,19 @@ namespace
                 Log()->warn("Problem getting data from \"" + layer->name + "\" : " + status.error().string());
             }
         }
+
+        return fell_back;
     }
 }
 
 void
 TerrainTileModelFactory::addColorLayers(TerrainTileModel& model, const Map* map, const TileKey& key, const IOOptions& io) const
 {
+    struct Candidate {
+        ImageLayer::Ptr layer;
+        TileKey key;
+    };
+
     int order = 0;
 
     // fetch the candidate layers:
@@ -123,46 +133,53 @@ TerrainTileModelFactory::addColorLayers(TerrainTileModel& model, const Map* map,
         return layer->status().ok(); } );
 
     // first collect the image layers that have intersecting data.
-    std::vector<std::shared_ptr<ImageLayer>> candidateLayers;
+    std::vector<Candidate> candidates;
+    bool mayHaveData = false;
+
     for (auto layer : layers)
     {
+#if 1
+        auto bestKey = layer->bestAvailableTileKey(key);
+        if (bestKey.valid())
+        {
+            candidates.emplace_back(Candidate{ layer, bestKey });
+            mayHaveData = mayHaveData || bestKey == key;
+        }
+#else
         if (layer->intersects(key))
         {
-            candidateLayers.push_back(layer);
+            candidates.push_back(Candidate{ layer, key });
+            mayHaveData = true;
         }
+#endif
     }
 
-    if (candidateLayers.size() == 1 && candidateLayers.front()->mayHaveData(key))
+    if (mayHaveData)
     {
-        // if only one layer intersects we will not need to composite
-        // so just get the raw data for this key if there is any.
-        addImageLayer(key, candidateLayers.front(), false, model, io);
-    }
+        constexpr bool no_fallback = false;
+        constexpr bool yes_fallback = true;
 
-    else if (candidateLayers.size() > 1)
-    {
-        // More than one layer intersects so we will need to composite.
-        // First count the number of layers that MIGHT have data.
-        // If any of them do, we must fetch them all for composition.
-        bool data_maybe = false;
-        for (auto layer : candidateLayers)
+        if (candidates.size() == 1)
         {
-            if (layer->mayHaveData(key))
-            {
-                data_maybe = true;
-                break;
-            }
+            // if only one layer intersects we will not need to composite
+            // so just get the raw data for this key if there is any.
+            addImageLayer(candidates.front().key, candidates.front().layer, no_fallback, model, io);
         }
 
-        if (data_maybe)
+        else if (candidates.size() > 1)
         {
-            for (auto layer : candidateLayers)
+            unsigned num_fallbacks = 0;
+
+            for (auto c : candidates)
             {
-                addImageLayer(key, layer, true, model, io);
+                if (addImageLayer(c.key, c.layer, yes_fallback, model, io))
+                {
+                    ++num_fallbacks;
+                }
             }
 
-            // now composite them.
-            if (compositeColorLayers && model.colorLayers.size() > 1)
+            // now composite them (unless ALL tiles were fallbacks)
+            if (compositeColorLayers && num_fallbacks < candidates.size() && model.colorLayers.size() > 1)
             {
                 auto& base_image = model.colorLayers.front().image;
                 TerrainTileModel::Tile tile = model.colorLayers.front();
@@ -220,24 +237,29 @@ TerrainTileModelFactory::addElevation(TerrainTileModel& model, const Map* map, c
 
     int combinedRevision = map->revision();
 
-    auto result = layer->createHeightfield(key, io);
+    auto bestKey = layer->bestAvailableTileKey(key);
 
-    if (result.ok())
+    if (bestKey == key)
     {
-        replace_nodata_values(result.value());
+        auto result = layer->createHeightfield(key, io);
 
-        model.elevation.heightfield = std::move(result.value());
-        model.elevation.revision = layer->revision();
-        model.elevation.key = key;
-    }
+        if (result.ok())
+        {
+            replace_nodata_values(result.value());
 
-    // ResourceUnavailable just means the driver could not produce data
-    // for the tilekey; it is not an actual read error.
-    else if (
-        result.error().type != Failure::ResourceUnavailable &&
-        result.error().type != Failure::OperationCanceled)
-    {
-        Log()->warn("Problem getting data from \"" + layer->name + "\" : " + result.error().string());
+            model.elevation.heightfield = std::move(result.value());
+            model.elevation.revision = layer->revision();
+            model.elevation.key = key;
+        }
+
+        // ResourceUnavailable just means the driver could not produce data
+        // for the tilekey; it is not an actual read error.
+        else if (
+            result.error().type != Failure::ResourceUnavailable &&
+            result.error().type != Failure::OperationCanceled)
+        {
+            Log()->warn("Problem getting data from \"" + layer->name + "\" : " + result.error().string());
+        }
     }
 
     return model.elevation.heightfield.valid();

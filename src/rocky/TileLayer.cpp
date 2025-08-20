@@ -202,92 +202,62 @@ TileLayer::bestAvailableTileKey(const TileKey& key) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(profile.valid() && key.valid(), {});
 
-    // trivial reject
-    if (!key.valid())
-        return {};
-
     // find the corresponding keys in the local profile:
     auto localKeys = key.intersectingKeys(profile);
     if (localKeys.empty())
         return {};
 
-    auto& firstKey = localKeys.front();
-    auto localLevel = firstKey.level;
+    auto localLevel = localKeys.front().level;
 
-    auto effectiveMinLevel = std::max(firstKey.level, minLevel.value_or(0)); 
-    if (effectiveMinLevel > firstKey.level)
-        return {}; // the key is below the minimum level
+    if (minLevel.has_value() && localLevel < minLevel)
+        return {};
 
-    auto effectiveMaxLevel = std::min(firstKey.level, maxLevel.value_or(~0));
+    if (maxLevel.has_value() && localLevel > maxLevel)
+        return {};
 
     // union the local key extents
     GeoExtent localExtent;
     for (auto& localKey : localKeys)
         localExtent.expandToInclude(localKey.extent());
 
-    // coarse intersection check:    
-    if (extent().valid() && !extent().intersects(localExtent))
+    // account for a crop:
+    if (crop.has_value() && !localExtent.intersects(crop.value()))
         return {};
 
     // no extents? Just return the input key
     if (_dataExtents.empty())
         return key;
 
-    bool intersectionFound = false;
-    unsigned highestLevelFound = 0u;
-    unsigned bestLevel = ~0;
+    // now we will search the spatial index to find the BEST local level available
+    // for the extents containing the intersecting keys.
+    unsigned bestLocalLevel = 0;
 
-    auto checkDE = [&](const DataExtent& de)
+    auto findBestLocalLevel = [&](const DataExtent& de)
         {
-            if (!de.minLevel.has_value() || localLevel >= (int)de.minLevel.value())
-            {
-                intersectionFound = true;
+            auto minLevel = de.minLevel.has_value() ? de.minLevel.value() : 0;
+            auto maxLevel = de.maxLevel.has_value() ? std::min(de.maxLevel.value(), localLevel) : localLevel;
 
-                // If the maxLevel is not set, there's not enough information
-                // so just assume our key might be good.
-                if (!de.maxLevel.has_value())
-                {
-                    bestLevel = std::min(localLevel, effectiveMaxLevel);
-                    return RTREE_STOP_SEARCHING; // Stop searching, we've found a key
-                }
+            if (localLevel >= minLevel)
+                bestLocalLevel = std::max(bestLocalLevel, maxLevel);
 
-                // Is our key at a lower or equal LOD than the max key in this extent?
-                // If so, our key is good.
-                else if (localLevel <= (int)de.maxLevel.value())
-                {
-                    bestLevel = std::min(localLevel, effectiveMaxLevel);
-                    return RTREE_STOP_SEARCHING; // Stop searching, we've found a key
-                }
-
-                // otherwise, record the highest encountered LOD that
-                // intersects our key.
-                else if (de.maxLevel.value() > highestLevelFound)
-                {
-                    highestLevelFound = de.maxLevel.value();
-                }
-            }
-            return RTREE_KEEP_SEARCHING; // Continue searching
+            return bestLocalLevel < localLevel ? RTREE_KEEP_SEARCHING : RTREE_STOP_SEARCHING;
         };
 
-    constexpr double EPS = 1e-10;
+    constexpr double EPS = 1e-12;
     double a_min[2] = { localExtent.xmin(), localExtent.ymin() };
     double a_max[2] = { localExtent.xmax() - EPS, localExtent.ymax() - EPS };
-    _dataExtentsIndex->Search(a_min, a_max, checkDE);
+    int intersections = _dataExtentsIndex->Search(a_min, a_max, findBestLocalLevel);
 
-    int delta;
-    if (bestLevel < ~0)
-    {
-        delta = firstKey.level - bestLevel;
-    }
-    else if (intersectionFound)
-    {
-        // for a normal dataset, dataset max takes priority over MDL.
-        unsigned maxAvailableLevel = std::min(highestLevelFound, effectiveMaxLevel);
-        delta = firstKey.level - std::min(firstKey.level, maxAvailableLevel);
-    }
-    else return {};
+    // no intersections in the spatial index == no data.
+    if (intersections == 0)
+        return {};
 
-    return key.createAncestorKey(std::max(0, (int)key.level + delta));
+    // Calculate the delta between our best local level, and the profile of the input key.
+    // It might be negative.
+    int delta = (int)localLevel - (int)key.level;
+    int bestLevel = std::max((int)bestLocalLevel - delta, 0);
+
+    return key.createAncestorKey((unsigned)bestLevel);
 }
 
 bool
@@ -300,10 +270,12 @@ TileLayer::intersects(const TileKey& key) const
     if (localKeys.empty())
         return false;
 
-    if (minLevel.has_value() && localKeys.front().level < minLevel)
+    auto localLevel = localKeys.front().level;
+
+    if (minLevel.has_value() && localLevel < minLevel)
         return false;
 
-    if (maxLevel.has_value() && localKeys.front().level > maxLevel)
+    if (maxLevel.has_value() && localLevel > maxLevel)
         return false;
 
     // union the local key extents
@@ -311,18 +283,30 @@ TileLayer::intersects(const TileKey& key) const
     for (auto& localKey : localKeys)
         localExtent.expandToInclude(localKey.extent());
 
+    // first check the union of our data extents, if we have any
+    if (_dataExtentsUnion.valid() && !_dataExtentsUnion.intersects(localExtent))
+        return {};
+
     // account for a crop:
     if (crop.has_value() && !localExtent.intersects(crop.value()))
         return false;
+
+    // no data extents? We did the best we could:
+    if (_dataExtents.empty())
+        return true;
 
     // and search the spatial index.
     constexpr double EPS = 1e-10;
     double a_min[2] = { localExtent.xmin(), localExtent.ymin() };
     double a_max[2] = { localExtent.xmax() - EPS, localExtent.ymax() - EPS };
-    auto hits = _dataExtentsIndex->Search(a_min, a_max, [](const DataExtent& de) {
-        return false; }); // just check if we have any extents that intersect
+    bool hit = false;
+    _dataExtentsIndex->Search(a_min, a_max, [&](const DataExtent& de) {
+        if (de.minLevel.has_value() && localLevel < de.minLevel.value()) return RTREE_KEEP_SEARCHING; // skip this extent
+        if (de.maxLevel.has_value() && localLevel > de.maxLevel.value()) return RTREE_KEEP_SEARCHING; // skip this extent
+        hit = true; // we have at least one extent that intersects
+        return RTREE_STOP_SEARCHING; }); // just check if we have any extents that intersect
 
-    return hits > 0;
+    return hit;
 }
 
 bool

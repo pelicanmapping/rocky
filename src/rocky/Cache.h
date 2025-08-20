@@ -37,7 +37,7 @@ namespace ROCKY_NAMESPACE
         * V = VALUE. Any object that is stored in a shared_ptr.
         */
         template<class K, class V, class METADATA = bool>
-        class ResidentCache // : public rocky::Cache<K, std::shared_ptr<V>>
+        class ResidentCache
         {
         public:
             using entry_t = std::pair<std::weak_ptr<V>, METADATA>;
@@ -66,7 +66,7 @@ namespace ROCKY_NAMESPACE
                 }
             }
 
-            void put(const K& key, const std::shared_ptr<V>& value, const METADATA& m) //override
+            void put(const K& key, const std::shared_ptr<V>& value, const METADATA& m)
             {
                 std::unique_lock lock(_mutex);
                 _lut.emplace(key, entry_t{ value, m });
@@ -84,23 +84,23 @@ namespace ROCKY_NAMESPACE
                 }
             }
 
-            std::size_t capacity() const //override
+            std::size_t capacity() const
             {
                 return 0; // ResidentCache does not have a fixed capacity
             }
 
-            std::size_t size() const //override
+            std::size_t size() const
             {
                 std::shared_lock lock(_mutex);
                 return _lut.size();
             }
 
-            std::uint32_t hits() const //override
+            std::uint32_t hits() const
             {
                 return _hits;
             }
 
-            std::uint32_t misses() const //override
+            std::uint32_t misses() const
             {
                 return _misses;
             }

@@ -13,6 +13,23 @@
 
 namespace ROCKY_NAMESPACE
 {
+    struct URIResponse
+    {
+        Content content;
+        std::int64_t lastModifiedTime = 0;
+        Duration duration;
+        bool fromCache = false;
+        std::string jsonMetadata;
+
+        URIResponse(const Content& in_content) :
+            content(in_content) {
+        }
+
+        URIResponse(Content&& in_content) :
+            content(std::move(in_content)) {
+        }
+    };
+
     /**
      * Represents the location of a resource, providing the raw (original, possibly
      * relative) and absolute forms.
@@ -107,7 +124,7 @@ namespace ROCKY_NAMESPACE
         bool isRemote() const;
 
         //! Reads the URI into a data buffer
-        Result<IOResponse> read(const IOOptions& io) const;
+        Result<URIResponse> read(const IOOptions& io) const;
 
     public:
 

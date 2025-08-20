@@ -71,6 +71,10 @@ namespace ROCKY_NAMESPACE
         // returns a single tile. This is called by createImageFromTileSource() if the key profile
         // doesn't match the layer profile.
         std::shared_ptr<Image> assembleImage(const TileKey& key, const IOOptions& io) const;
+
+        // Checks a cache for an image, and if not found, calls the create function to generate it.
+        Result<GeoImage> readCacheOrCreate(const TileKey& key, const IOOptions& io,
+            std::function<Result<GeoImage>()>&& create) const;
     };
 
 } // namespace ROCKY_NAMESPACE

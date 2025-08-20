@@ -222,7 +222,7 @@ namespace
     }
 
 
-    IOResult<HTTPResponse> http_get_curl(const HTTPRequest& request, const IOOptions& io)
+    Result<HTTPResponse> http_get_curl(const HTTPRequest& request, const IOOptions& io)
     {
         HTTPResponse response;
 
@@ -367,13 +367,25 @@ namespace
 
         try
         {
-            httplib::Client client(proto_host_port);
+            // use thread-local clients so we can do keep-alive for high performance
+            static thread_local httplib::Client client("");
+            static thread_local std::string last_proto_host_port;
+
+            if (proto_host_port != last_proto_host_port)
+            {
+                client = httplib::Client(proto_host_port);
+                last_proto_host_port = proto_host_port;
+            }
 
             // follow redirects
             client.set_follow_location(true);
 
             // disable cert verification
             client.enable_server_certificate_verification(false);
+            client.enable_server_hostname_verification(false);
+
+            // keep the connection alive for high performance
+            client.set_keep_alive(true);
 
             unsigned max_attempts = std::max(1u, io.maxNetworkAttempts);
 
@@ -579,7 +591,7 @@ URI::findRotation()
 }
 
 
-auto URI::read(const IOOptions& io) const -> Result<IOResponse>
+auto URI::read(const IOOptions& io) const -> Result<URIResponse>
 {
     // protect against multiple threads trying to read the same URI at the same time
     util::ScopedGate<std::string> gate(io.services().uriGate, full());
@@ -589,7 +601,7 @@ auto URI::read(const IOOptions& io) const -> Result<IOResponse>
         auto cached = io.services().contentCache->get(full());
         if (cached.has_value() && cached->ok())
         {
-            Result<IOResponse> result(cached->value());
+            Result<URIResponse> result(cached->value());
             result->fromCache = true;
             return result;
         }
@@ -680,7 +692,7 @@ auto URI::read(const IOOptions& io) const -> Result<IOResponse>
         io.services().contentCache->put(full(), Result<Content>(content));
     }
 
-    return IOResponse(content);
+    return URIResponse(content);
 }
 
 bool

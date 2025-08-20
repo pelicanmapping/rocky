@@ -154,6 +154,35 @@ ElevationLayer::resolution(unsigned level) const
         Distance(dims.y / (double)(tileSize.value() - 1), profile.srs().units()));
 }
 
+Result<GeoHeightfield>
+ElevationLayer::readCacheOrCreate(const TileKey& key, const IOOptions& io, std::function<Result<GeoHeightfield>()>&& create) const
+{
+    if (io.services().residentImageCache)
+    {
+        auto cacheKey = key.str() + '-' + std::to_string(key.profile.hash()) + '-' + std::to_string(uid()) + "-" + std::to_string(revision());
+
+        auto cached = io.services().residentImageCache->get(cacheKey);
+        if (cached.has_value())
+        {
+            auto hf = std::dynamic_pointer_cast<Heightfield>(cached.value().first);
+            return GeoHeightfield(hf, cached.value().second);
+        }
+
+        auto r = create();
+
+        if (r.ok())
+        {
+            io.services().residentImageCache->put(cacheKey, r.value().heightfield(), r.value().extent());
+        }
+
+        return r;
+    }
+    else
+    {
+        return create();
+    }
+}
+
 std::shared_ptr<Heightfield>
 ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) const
 {
@@ -175,49 +204,32 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
         for (auto& localKey : localKeys)
         {
             // resolve an image for each local key.
-            GeoHeightfield localTile;
             TileKey actualKey = localKey;
 
-            // check the resident image cache first.
-            // this cache keeps a weak pointer to any image anywhere in memory; 
-            // this speeds up mosacing a lot during reprojection.
-            auto cacheKey = localKey.str() + '-' + std::to_string(localKey.profile.hash()) + '-' + std::to_string(uid()) + '-' + std::to_string(revision());
-            bool fromResidentCache = false;
-
-            if (io.services().residentImageCache)
-            {
-                auto cached = io.services().residentImageCache->get(cacheKey);
-                if (cached.has_value())
+            auto create = [&]() -> Result<GeoHeightfield>
                 {
-                    auto hf = std::dynamic_pointer_cast<Heightfield>(cached.value().first);
-                    localTile = GeoHeightfield(hf, cached.value().second);
-                    fromResidentCache = true;
-                }
-            }
+                    // not found in the resident cache; go to the source, and fall back until we get
+                    // a usable image tile.
+                    while (actualKey.valid())
+                    {
+                        auto r = createHeightfieldImplementation_internal(actualKey, io);
 
-            // not found in the resident cache; go to the source, and fall back until we get
-            // a usable image tile.
-            while (!localTile.valid() && actualKey.valid())
+                        if (io.canceled())
+                            return Failure_OperationCanceled;
+                        else if (r.ok() && r.value().heightfield())
+                            return r;
+                        else
+                            actualKey.makeParent();
+                    }
+
+                    return Failure_ResourceUnavailable;
+                };
+
+            auto localTile = readCacheOrCreate(localKey, io, create);
+
+            if (localTile.ok())
             {
-                auto r = createHeightfieldImplementation_internal(actualKey, io);
-
-                if (io.canceled())
-                    return {};
-                else if (r.ok() && r.value().heightfield())
-                    localTile = std::move(r.value());
-                else
-                    actualKey.makeParent();
-            }
-
-            if (localTile.valid())
-            {
-                // if the image came from the source, register it with the resident image cache
-                if (!fromResidentCache && io.services().residentImageCache)
-                {
-                    io.services().residentImageCache->put(cacheKey, localTile.heightfield(), actualKey.extent());
-                }
-
-                sources.emplace_back(std::move(localTile));
+                sources.emplace_back(std::move(localTile.value()));
 
                 if (actualKey.level == localKey.level)
                 {
@@ -330,38 +342,16 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
 Result<GeoHeightfield>
 ElevationLayer::createHeightfield(const TileKey& key, const IOOptions& io) const
 {
+    // lock prevents closing the layer while creating an image
     std::shared_lock readLock(layerStateMutex());
-    if (status().ok())
-    {
-        if (io.services().residentImageCache)
-        {
-            auto cacheKey = key.str() + '-' + std::to_string(uid()) + "-" + std::to_string(revision());
 
-            auto cached = io.services().residentImageCache->get(cacheKey);
-            if (cached.has_value())
-            {
-                auto hf = std::dynamic_pointer_cast<Heightfield>(cached.value().first);
-                return GeoHeightfield(hf, cached.value().second);
-            }
+    if (status().failed())
+        return status().error();
 
-            auto r = createHeightfieldInKeyProfile(key, io);
-
-            if (r.ok())
-            {
-                io.services().residentImageCache->put(cacheKey, r.value().heightfield(), key.extent());
-            }
-
-            return r;
-        }
-        else
+    return readCacheOrCreate(key, io, [&]()
         {
             return createHeightfieldInKeyProfile(key, io);
-        }
-    }
-    else
-    {
-        return status().error();
-    }
+        });
 }
 
 Result<GeoHeightfield>
