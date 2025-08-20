@@ -98,16 +98,13 @@ namespace ROCKY_NAMESPACE
         
         void closeImplementation() override;
 
-    protected:
-
         //! Assign a data extents collection to the layer.
         //! A subclass should only call this during openImplementation().
         void setDataExtents(const DataExtentList& dataExtents);
 
     protected:
 
-        option<Profile> _originalProfile; // profile specified in the options       
-        option<Profile> _runtimeProfile; // profile set at runtime by an implementation
+        option<Profile> _originalProfile; // profile specified in the options
 
     private:
         // Post-ctor

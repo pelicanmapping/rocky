@@ -73,7 +73,7 @@ namespace ROCKY_NAMESPACE
         std::shared_ptr<Image> assembleImage(const TileKey& key, const IOOptions& io) const;
 
         // Checks a cache for an image, and if not found, calls the create function to generate it.
-        Result<GeoImage> readCacheOrCreate(const TileKey& key, const IOOptions& io,
+        Result<GeoImage> getOrCreate(const TileKey& key, const IOOptions& io,
             std::function<Result<GeoImage>()>&& create) const;
     };
 

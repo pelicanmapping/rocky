@@ -85,7 +85,7 @@ ImageLayer::closeImplementation()
 }
 
 Result<GeoImage>
-ImageLayer::readCacheOrCreate(const TileKey& key, const IOOptions& io, std::function<Result<GeoImage>()>&& create) const
+ImageLayer::getOrCreate(const TileKey& key, const IOOptions& io, std::function<Result<GeoImage>()>&& create) const
 {
     if (io.services().residentImageCache)
     {
@@ -119,7 +119,7 @@ ImageLayer::createImage(const TileKey& key, const IOOptions& io) const
     if (status().failed())
         return status().error();
 
-    return readCacheOrCreate(key, io, [&]()
+    return getOrCreate(key, io, [&]()
         {
             return createImageInKeyProfile(key, io);
         });
@@ -261,7 +261,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                     return Failure_ResourceUnavailable;
                 };
 
-            auto localTile = readCacheOrCreate(localKey, io, create);
+            auto localTile = getOrCreate(localKey, io, create);
 
             if (localTile.ok())
             {

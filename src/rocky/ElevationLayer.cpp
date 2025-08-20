@@ -155,7 +155,7 @@ ElevationLayer::resolution(unsigned level) const
 }
 
 Result<GeoHeightfield>
-ElevationLayer::readCacheOrCreate(const TileKey& key, const IOOptions& io, std::function<Result<GeoHeightfield>()>&& create) const
+ElevationLayer::getOrCreate(const TileKey& key, const IOOptions& io, std::function<Result<GeoHeightfield>()>&& create) const
 {
     if (io.services().residentImageCache)
     {
@@ -225,7 +225,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
                     return Failure_ResourceUnavailable;
                 };
 
-            auto localTile = readCacheOrCreate(localKey, io, create);
+            auto localTile = getOrCreate(localKey, io, create);
 
             if (localTile.ok())
             {
@@ -348,7 +348,7 @@ ElevationLayer::createHeightfield(const TileKey& key, const IOOptions& io) const
     if (status().failed())
         return status().error();
 
-    return readCacheOrCreate(key, io, [&]()
+    return getOrCreate(key, io, [&]()
         {
             return createHeightfieldInKeyProfile(key, io);
         });

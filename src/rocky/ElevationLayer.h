@@ -104,7 +104,7 @@ namespace ROCKY_NAMESPACE
             const IOOptions& io) const;
 
         // Checks a cache for an image, and if not found, calls the create function to generate it.
-        Result<GeoHeightfield> readCacheOrCreate(const TileKey& key, const IOOptions& io,
+        Result<GeoHeightfield> getOrCreate(const TileKey& key, const IOOptions& io,
             std::function<Result<GeoHeightfield>()>&& create) const;
     };
 

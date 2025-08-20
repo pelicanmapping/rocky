@@ -221,28 +221,51 @@ namespace
         return realsize;
     }
 
+    struct CURLHandle
+    {
+        CURL* handle = nullptr;
+        CURLHandle() {
+            handle = curl_easy_init();
+        }
+        ~CURLHandle() {
+            if (handle)
+                curl_easy_cleanup(handle);
+        }
+    };
 
     Result<HTTPResponse> http_get_curl(const HTTPRequest& request, const IOOptions& io)
     {
+        // use thread-local clients for connection reuse.
+        static thread_local struct Basket {
+            CURL* handle = nullptr;
+            ~Basket() { if (handle) curl_easy_cleanup(handle); }
+        } basket;
+
         HTTPResponse response;
 
-        auto handle = curl_easy_init();
+        CURL* handle = basket.handle;
+        if (!handle)
+        {
+            handle = curl_easy_init();
 
-        curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, stream_object_write_function);
-        curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, stream_object_header_function);
-        curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, (void*)1);
-        curl_easy_setopt(handle, CURLOPT_MAXREDIRS, (void*)5);
-        curl_easy_setopt(handle, CURLOPT_FILETIME, true);
-        curl_easy_setopt(handle, CURLOPT_USERAGENT, "rocky/" ROCKY_VERSION_STRING);
+            curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, stream_object_write_function);
+            curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, stream_object_header_function);
+            curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, (void*)1);
+            curl_easy_setopt(handle, CURLOPT_MAXREDIRS, (void*)5);
+            curl_easy_setopt(handle, CURLOPT_FILETIME, true);
+            curl_easy_setopt(handle, CURLOPT_USERAGENT, "rocky/" ROCKY_VERSION_STRING);
 
-        // Enable automatic CURL decompression of known types.
-        // An empty string will automatically add all supported encoding types that are built into CURL.
-        // Note that you must have CURL built against zlib to support gzip or deflate encoding.
-        curl_easy_setopt(handle, CURLOPT_ENCODING, "");
+            // Enable automatic CURL decompression of known types.
+            // An empty string will automatically add all supported encoding types that are built into CURL.
+            // Note that you must have CURL built against zlib to support gzip or deflate encoding.
+            curl_easy_setopt(handle, CURLOPT_ENCODING, "");
 
-        // Disable peer certificate verification to allow us to access  https servers
-        // where the peer certificate cannot be verified.
-        curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, (void*)0);
+            // Disable peer certificate verification to allow us to access  https servers
+            // where the peer certificate cannot be verified.
+            curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, (void*)0);
+
+            basket.handle = handle;
+        }
 
         //todo: authentication
         //todo: proxy server
@@ -300,7 +323,7 @@ namespace
             break;
         }
 
-        curl_easy_cleanup(handle);
+        //curl_easy_cleanup(handle);
 
         if (result == CURLE_OK)
         {
@@ -382,9 +405,9 @@ namespace
 
             // disable cert verification
             client.enable_server_certificate_verification(false);
-            client.enable_server_hostname_verification(false);
+            //client.enable_server_hostname_verification(false);
 
-            // keep the connection alive for high performance
+            // ask the server to keep the connection alive
             client.set_keep_alive(true);
 
             unsigned max_attempts = std::max(1u, io.maxNetworkAttempts);
