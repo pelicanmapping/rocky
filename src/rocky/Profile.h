@@ -46,6 +46,7 @@ namespace ROCKY_NAMESPACE
             const Box& bounds = Box(),
             unsigned x_tiles_at_root = 0,
             unsigned y_tiles_at_root = 0,
+            const Box& geodeticBounds = {},
             const std::vector<Profile>& subprofiles = {});
 
         // copy/move ops
@@ -156,7 +157,8 @@ namespace ROCKY_NAMESPACE
         std::shared_ptr<Data> _shared;
 
         void setup(const std::string& wellKnownName);
-        void setup(const SRS&, const Box& bounds, unsigned dim_x, unsigned dim_y, const std::vector<Profile> & = {});
+        void setup(const SRS&, const Box& bounds, unsigned dim_x, unsigned dim_y, 
+            const Box& geodeticBounds = {}, const std::vector<Profile> & = {});
     };
 
 

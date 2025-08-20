@@ -15,7 +15,8 @@ using namespace ROCKY_NAMESPACE::util;
 #define LC "[Profile] "
 
 void
-Profile::setup(const SRS& srs, const Box& bounds, unsigned width0, unsigned height0, const std::vector<Profile>& subprofiles)
+Profile::setup(const SRS& srs, const Box& bounds, unsigned width0, unsigned height0,
+    const Box& geodeticBounds, const std::vector<Profile>& subprofiles)
 {
     if (srs.valid())
     {
@@ -60,10 +61,17 @@ Profile::setup(const SRS& srs, const Box& bounds, unsigned width0, unsigned heig
         _shared->numTilesBaseX = tx;
         _shared->numTilesBaseY = ty;
 
-        // automatically calculate the lat/long extents:
-        _shared->geodeticExtent = srs.isGeodetic() ?
-            _shared->extent :
-            _shared->extent.transform(srs.geodeticSRS());
+        if (geodeticBounds.valid())
+        {
+            _shared->geodeticExtent = GeoExtent(srs.geodeticSRS(), geodeticBounds);
+        }
+        else
+        {
+            // automatically calculate the lat/long extents:
+            _shared->geodeticExtent = srs.isGeodetic() ?
+                _shared->extent :
+                _shared->extent.transform(srs.geodeticSRS());
+        }
 
         // make a profile sig (sans srs) and an srs sig for quick comparisons.
         std::string temp = to_json();
@@ -115,10 +123,11 @@ Profile::Profile(const std::string& wellKnownName)
     setup(wellKnownName);
 }
 
-Profile::Profile(const SRS& srs, const Box& bounds, unsigned x_tiles_at_lod0, unsigned y_tiles_at_lod0, const std::vector<Profile>& subprofiles)
+Profile::Profile(const SRS& srs, const Box& bounds, unsigned x_tiles_at_lod0, unsigned y_tiles_at_lod0, 
+    const Box& geodeticBounds, const std::vector<Profile>& subprofiles)
 {
     _shared = std::make_shared<Data>();
-    setup(srs, bounds, x_tiles_at_lod0, y_tiles_at_lod0, subprofiles);
+    setup(srs, bounds, x_tiles_at_lod0, y_tiles_at_lod0, geodeticBounds, subprofiles);
 }
 
 void
@@ -158,33 +167,12 @@ Profile::setup(const std::string& name)
             Box(-20037508.34278925, -20037508.34278925, 20037508.34278925, 20037508.34278925),
             1, 1);
     }
-    else if (util::ciEquals(name, "moon"))
-    {
-        _shared->wellKnownName = "moon";
-
-        setup(
-            SRS("moon"),
-            Box(-180.0, -90.0, 180.0, 90.0),
-            2, 1);
-    }
     else if (name.find("+proj=longlat") != std::string::npos)
     {
         setup(
             SRS(name),
             Box(-180.0, -90.0, 180.0, 90.0),
             2, 1);
-    }
-    else if (util::ciEquals(name, "global-qsc") || util::ciEquals(name, "qsc"))
-    {
-        _shared->wellKnownName = "global-qsc";
-        _shared->subprofiles.emplace_back(Profile("qsc+z"));
-        _shared->subprofiles.emplace_back(Profile("qsc-z"));
-        _shared->subprofiles.emplace_back(Profile("qsc+x"));
-        _shared->subprofiles.emplace_back(Profile("qsc-x"));
-        _shared->subprofiles.emplace_back(Profile("qsc+y"));
-        _shared->subprofiles.emplace_back(Profile("qsc-y"));
-        _shared->extent = GeoExtent(SRS::WGS84, -180, -90, 180, 90);
-        _shared->geodeticExtent = _shared->extent;
     }
     else if (util::ciEquals(name, "qsc+z"))
     {
@@ -239,6 +227,46 @@ Profile::setup(const std::string& name)
             Box(-6378137, -6378137, 6378137, 6378137),
             2, 2);
         _shared->geodeticExtent = GeoExtent(SRS::WGS84, -135.0, -45.0, -45.0, 45.0);
+    }
+    else if (util::ciEquals(name, "global-qsc") || util::ciEquals(name, "qsc"))
+    {
+        _shared->wellKnownName = "global-qsc";
+
+        const Box qscbox(-6378137, -6378137, 6378137, 6378137);
+
+        setup(
+            SRS::WGS84,
+            Box(-180.0, -90.0, 180.0, 90.0),  // extent
+            1, 1,                             // num tiles at LOD 0 (not used in QSC)
+            Box(-180.0, -90.0, 180.0, 90.0),  // geodetic extent
+            {
+                Profile(SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=90 +lon_0=0"), qscbox, 2, 2, Box(-180.0, 45.0, 180.0, 90.0)),
+                Profile(SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=-90 +lon_0=0"), qscbox, 2, 2, Box(-180.0, -90.0, 180.0, -45.0)),
+                Profile(SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=0"), qscbox, 2, 2, Box(-45.0, -45.0, 45.0, 45.0)),
+                Profile(SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=90"), qscbox, 2, 2, Box(45.0, -45.0, 125.0, 45.0)),
+                Profile(SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=180"), qscbox, 2, 2, Box(135.0, -45.0, 225.0, 45.0)),
+                Profile(SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=-90"), qscbox, 2, 2, Box(-135.0, -45.0, -45.0, 45.0))
+            });
+    }
+    else if (util::ciEquals(name, "moon"))
+    {
+        _shared->wellKnownName = "moon";
+
+        const Box qscbox(-1737400, -1737400, 1737400, 1737400);
+
+        setup(
+            SRS::MOON, 
+            Box(-180.0, -90.0, 180.0, 90.0),  // extent
+            1, 1,                             // num tiles at LOD 0 (not used in QSC)
+            Box(-180.0, -90.0, 180.0, 90.0),  // geodetic extent
+            {
+                Profile(SRS("+wktext +proj=qsc +units=m +R=1737400 +lat_0=90 +lon_0=0"), qscbox, 2, 2, Box(-180.0, 45.0, 180.0, 90.0)),
+                Profile(SRS("+wktext +proj=qsc +units=m +R=1737400 +lat_0=-90 +lon_0=0"), qscbox, 2, 2, Box(-180.0, -90.0, 180.0, -45.0)),
+                Profile(SRS("+wktext +proj=qsc +units=m +R=1737400 +lat_0=0 +lon_0=0"), qscbox, 2, 2, Box(-45.0, -45.0, 45.0, 45.0)),
+                Profile(SRS("+wktext +proj=qsc +units=m +R=1737400 +lat_0=0 +lon_0=90"), qscbox, 2, 2, Box(45.0, -45.0, 125.0, 45.0)),
+                Profile(SRS("+wktext +proj=qsc +units=m +R=1737400 +lat_0=0 +lon_0=180"), qscbox, 2, 2, Box(135.0, -45.0, 225.0, 45.0)),
+                Profile(SRS("+wktext +proj=qsc +units=m +R=1737400 +lat_0=0 +lon_0=-90"), qscbox, 2, 2, Box(-135.0, -45.0, -45.0, 45.0))
+            });
     }
 }
 
