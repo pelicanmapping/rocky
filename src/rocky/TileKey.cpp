@@ -280,7 +280,7 @@ TileKey::intersectingKeys(const Profile& targetProfile) const
 
     if (source_geo_ex.intersects(target_geo_ex))
     {
-        //Log()->info("Tile {} {} get intersecting keys with {}:", str(), profile.wellKnownName(), target_profile.wellKnownName());
+        //Log()->info("Tile {} {} get intersecting keys with {}:", str(), profile.wellKnownName(), targetProfile.wellKnownName());
 
         // create a span in each dimension for resolution-matching.
         auto source_geo_c = source_geo_ex.centroid();

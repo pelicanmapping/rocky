@@ -14,7 +14,18 @@ namespace ROCKY_NAMESPACE
 
     struct TerrainTileModel;
     struct TerrainTileRenderModel;
-    struct TerrainDescriptors;
+
+    //! Holds any terrain-wide textures and uniforms.
+    struct TerrainDescriptors
+    {
+        struct Uniforms
+        {
+            bool wireOverlay = false;
+        };
+
+        vsg::ref_ptr<vsg::Data> data;
+        vsg::ref_ptr<vsg::Descriptor> ubo;
+    };
 
     /**
      * TerrainState creates all the Vulkan state necessary to
@@ -32,7 +43,7 @@ namespace ROCKY_NAMESPACE
         TerrainState(VSGContext);
 
         //! Configures an existing stategroup for rendering terrain
-        bool setupTerrainStateGroup(vsg::StateGroup& stateGroup, TerrainDescriptors& descriptors, VSGContext& context);
+        bool setupTerrainStateGroup(vsg::StateGroup& stateGroup, VSGContext& context);
 
         //! Integrates data from the new data model into an existing render model,
         //! and creates or updates all the necessary descriptors and commands.
@@ -42,6 +53,8 @@ namespace ROCKY_NAMESPACE
             const TerrainTileRenderModel& oldRenderModel,
             const TerrainTileModel& newDataModel,
             VSGContext& runtime) const;
+
+        void updateSettings(const TerrainSettings&);
 
         //! Status of the factory.
         Status status;
@@ -100,5 +113,8 @@ namespace ROCKY_NAMESPACE
             TextureDef elevation;
         }
         texturedefs;
+
+        // terrain-wide settings, etc.
+        TerrainDescriptors _terrainDescriptors;
     };
 }

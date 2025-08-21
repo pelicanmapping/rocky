@@ -80,8 +80,10 @@ ElevationLayer::construct(std::string_view JSON, const IOOptions& io)
     {
         if (encoding_value == "single_channel")
             encoding = Encoding::SingleChannel;
-        else if (encoding_value == "mapboxrgb")
+        else if (encoding_value == "mapbox")
             encoding = Encoding::MapboxRGB;
+        else if (encoding_value == "terrarium")
+            encoding = Encoding::TerrariumRGB;
     }
 
     // Disable max-level support for elevation data because it makes no sense.
@@ -99,7 +101,9 @@ ElevationLayer::to_json() const
     if (encoding.has_value(Encoding::SingleChannel))
         set(j, "encoding", "single_channel");
     else if (encoding.has_value(Encoding::MapboxRGB))
-        set(j, "encoding", "mapboxrgb");
+        set(j, "encoding", "mapbox");
+    else if (encoding.has_value(Encoding::TerrariumRGB))
+        set(j, "encoding", "terrarium");
 
     return j.dump();
 }
@@ -514,8 +518,8 @@ ElevationLayer::decodeRGB(std::shared_ptr<Image> image) const
             {
                 view.read(pixel, i.s(), i.t());
 
-                float height = ((pixel.r * 255.0f * 256.0f + pixel.g * 255.0f + pixel.b * 255.0f / 256.0f) - 32768.0f);
-
+                float height = (pixel.r * 255.0f * 256.0f + pixel.g * 255.0f + pixel.b * 255.0f / 256.0f) - 32768.0f;
+                
                 if (height < -9999 || height > 999999)
                     height = NO_DATA_VALUE;
 

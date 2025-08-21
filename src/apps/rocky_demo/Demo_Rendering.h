@@ -15,7 +15,7 @@ namespace
     Layer::Ptr createAxesLayer(const Ellipsoid& ell, VSGContext vsg)
     {
         const float len = 2.0 * (ell.semiMajorAxis() + 1e6);
-        const float width = 100'000;
+        const float width = 25'000;
 
         auto group = vsg::Group::create();
 
@@ -68,8 +68,7 @@ auto Demo_Rendering = [](Application& app)
         auto& c = app.mapNode->terrainNode->children;
         bool wireframe = c.front() == setWireframeTopology;
 
-        // Doesn't work :(
-        //ImGuiLTable::Checkbox("Wireframe", &app.mapNode->terrainNode->wireOverlay.mutable_value());
+        ImGuiLTable::Checkbox("Show triangles", &app.mapNode->terrainNode->wireOverlay.mutable_value());
 
         if (ImGuiLTable::Checkbox("Wireframe", &wireframe))
         {
@@ -116,28 +115,26 @@ auto Demo_Rendering = [](Application& app)
             app.vsgcontext->requestFrame();
         }
 
-#if 1
-        if (!app.mapNode->srs().isProjected())
+        static std::vector<std::string> options = { "global-geodetic", "global-qsc", "spherical-mercator" };
+        int index = util::indexOf(options, app.mapNode->profile.wellKnownName());
+        if (index >= 0)
         {
-            static std::vector<std::string> options = { "global-geodetic", "global-qsc" };
-            int index = util::indexOf(options, app.mapNode->profile.wellKnownName());
-            if (index >= 0)
+            if (ImGuiLTable::BeginCombo("Rendering profile", options[index].c_str()))
             {
-                if (ImGuiLTable::BeginCombo("Rendering profile", options[index].c_str()))
+                for (int i = 0; i < options.size(); ++i)
                 {
-                    for (int i = 0; i < options.size(); ++i)
+                    if (ImGui::RadioButton(options[i].c_str(), index == i))
                     {
-                        if (ImGui::RadioButton(options[i].c_str(), index == i))
-                        {
-                            app.mapNode->profile = Profile(options[i]);
-                            app.vsgcontext->requestFrame();
-                        }
+                        app.mapNode->profile = Profile(options[i]);
+                        if (auto view = app.display.getView(app.viewer->windows().front(), 0, 0))
+                            if (auto manip = MapManipulator::get(view))
+                                manip->home();
+                        app.vsgcontext->requestFrame();
                     }
-                    ImGuiLTable::EndCombo();
                 }
+                ImGuiLTable::EndCombo();
             }
         }
-#endif
 
         ImGuiLTable::End();
     }

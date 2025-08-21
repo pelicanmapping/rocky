@@ -361,9 +361,6 @@ MapManipulator::MapManipulator(vsg::ref_ptr<MapNode> mapNode, vsg::ref_ptr<vsg::
     _context(context),
     _lastAction(ACTION_NULL)
 {
-    if (mapNode.valid())
-        _worldSRS = mapNode->srs();
-
     reinitialize();
     configureDefaultSettings();
     home();
@@ -461,25 +458,28 @@ MapManipulator::reinitialize()
     _continuousDelta.set(0.0, 0.0);
     _continuous = 0;
     _lastAction = ACTION_NULL;
+    _previousMove.clear();
     clearEvents();
 }
 
 bool
 MapManipulator::createLocalCoordFrame(const vsg::dvec3& worldPos, vsg::dmat4& out_frame) const
 {
-    if (_worldSRS.valid())
-    {
-        out_frame = to_vsg(_worldSRS.topocentricToWorldMatrix(to_glm(worldPos)));
-    }
-    return _worldSRS.valid();
+    auto mapNode = getMapNode();
+    if (!mapNode) return false;
+    out_frame = to_vsg(mapNode->srs().topocentricToWorldMatrix(to_glm(worldPos)));
+    return true;
 }
 
 void
 MapManipulator::setCenter(const vsg::dvec3& worldPos)
 {
-    if (_worldSRS.isGeocentric())
+    auto mapNode = getMapNode();
+    if (!mapNode) return;
+
+    if (mapNode->srs().isGeocentric())
     {
-        glm::dmat4 new_topo_frame = _worldSRS.topocentricToWorldMatrix(to_glm(worldPos));
+        glm::dmat4 new_topo_frame = mapNode->srs().topocentricToWorldMatrix(to_glm(worldPos));
 
         if (settings.lockAzimuthWhilePanning)
         {
@@ -552,8 +552,11 @@ MapManipulator::viewpoint() const
     }
 #endif
 
+    auto mapNode = getMapNode();
+    if (!mapNode) return vp;
+
     // the focal point:
-    vp.point = GeoPoint(_worldSRS, _state.center);
+    vp.point = GeoPoint(mapNode->srs(), _state.center);
 
     // Always update the local offsets.
     double localAzim, localPitch;
@@ -589,6 +592,9 @@ MapManipulator::setViewpoint(const Viewpoint& vp, std::chrono::duration<float> d
         oldEndNode = _setVP1->getNode();
     }
 #endif
+
+    auto mapNode = getMapNode();
+    if (!mapNode) return;
 
     // starting viewpoint; all fields will be set:
     _state.setVP0 = viewpoint();
@@ -632,7 +638,7 @@ MapManipulator::setViewpoint(const Viewpoint& vp, std::chrono::duration<float> d
         _state.setVPStartTime.clear();
 
         // End point is the world coordinates of the target viewpoint:
-        auto world_pos = _state.setVP1->position().transform(_worldSRS);
+        auto world_pos = _state.setVP1->position().transform(mapNode->srs());
         vsg::dvec3 endWorld(world_pos.x, world_pos.y, world_pos.z);
 
         // calculate an acceleration factor based on the Z differential.
@@ -720,6 +726,9 @@ MapManipulator::setViewpoint(const Viewpoint& vp, std::chrono::duration<float> d
 double
 MapManipulator::setViewpointFrame(const vsg::time_point& now)
 {
+    auto mapNode = getMapNode();
+    if (!mapNode) return 0.0;
+
     if ( !_state.setVPStartTime.has_value() )
     {
         _state.setVPStartTime = now;
@@ -728,11 +737,11 @@ MapManipulator::setViewpointFrame(const vsg::time_point& now)
     else
     {
         // Start point is the current manipulator center:
-        auto p0 = _state.setVP0->position().transform(_worldSRS);
+        auto p0 = _state.setVP0->position().transform(mapNode->srs());
         vsg::dvec3 startWorld(p0.x, p0.y, p0.z);
 
         // End point is the world coordinates of the target viewpoint:
-        auto p1 = _state.setVP1->position().transform(_worldSRS);
+        auto p1 = _state.setVP1->position().transform(mapNode->srs());
         vsg::dvec3 endWorld(p1.x, p1.y, p1.z);
 
         // Remaining time is the full duration minus the time since initiation:
@@ -768,7 +777,7 @@ MapManipulator::setViewpointFrame(const vsg::time_point& now)
         }
 
         vsg::dvec3 newCenter =
-            _worldSRS.isGeocentric() ? nlerp(startWorld, endWorld, tp) :
+            mapNode->srs().isGeocentric() ? nlerp(startWorld, endWorld, tp) :
             lerp(startWorld, endWorld, tp);
 
         // Calculate the delta-heading, and make sure we are going in the shortest direction:
@@ -851,7 +860,7 @@ MapManipulator::getMapNode() const
 bool
 MapManipulator::intersect(const vsg::dvec3& start, const vsg::dvec3& end, vsg::dvec3& out_intersection) const
 {
-    auto mapNode = _mapNode_weakptr.ref_ptr();
+    auto mapNode = getMapNode();
     if (mapNode)
     {
         vsg::LineSegmentIntersector lsi(start, end);
@@ -898,20 +907,26 @@ MapManipulator::home()
 
     _state.localRotation.set(0, 0, 0, 1);
 
+    auto mapNode = getMapNode();
+    if (!mapNode)
+        return;
+
+    reinitialize();
+
     double radius;
-    if (_worldSRS.isGeocentric())
+    if (mapNode->srs().isGeocentric())
     {
-        radius = _worldSRS.ellipsoid().semiMajorAxis();
+        radius = mapNode->srs().ellipsoid().semiMajorAxis();
         setCenter(vsg::dvec3(radius, 0, 0));
     }
     else
     {
-        radius = _worldSRS.bounds().width() * 0.5;
+        radius = mapNode->srs().bounds().width() * 0.5;
         setCenter(vsg::dvec3(0, 0, 0));
     }
 
-    // reset to +Y up:
-    auto topo_frame = _worldSRS.topocentricToWorldMatrix(to_glm(_state.center));
+    // reset rotation:
+    auto topo_frame = mapNode->srs().topocentricToWorldMatrix(to_glm(_state.center));
     _state.centerRotation = to_vsg(topo_frame);
     _state.centerRotation[3][0] = 0;
     _state.centerRotation[3][1] = 0;
@@ -1260,6 +1275,10 @@ MapManipulator::recalculateCenterFromLookVector()
     if (!camera)
         return false;
 
+    auto mapNode = getMapNode();
+    if (!mapNode)
+        return false;
+
     vsg::LookAt lookat;
     lookat.set(camera->viewMatrix->inverse());
     auto look = vsg::normalize(lookat.center - lookat.eye);
@@ -1278,11 +1297,11 @@ MapManipulator::recalculateCenterFromLookVector()
     }
 
     // backup plan, intersect the ellipsoid or the ground plane
-    else if (_worldSRS.isGeocentric())
+    else if (mapNode->srs().isGeocentric())
     {
         glm::dvec3 i;
         auto target = lookat.eye + look * 1e10;
-        if (_worldSRS.ellipsoid().intersectGeocentricLine(to_glm(lookat.eye), to_glm(target), i))
+        if (mapNode->srs().ellipsoid().intersectGeocentricLine(to_glm(lookat.eye), to_glm(target), i))
         {
             intersection = to_vsg(i);
             ok = true;
@@ -1306,7 +1325,7 @@ MapManipulator::recalculateCenterFromLookVector()
 
     if (ok)
     {
-        if (_worldSRS.isGeocentric())
+        if (mapNode->srs().isGeocentric())
         {
             // keep the existing center, but change its length
             double len = vsg::length(intersection);
@@ -1328,6 +1347,10 @@ MapManipulator::recalculateCenterAndDistanceFromLookVector()
     if (!camera)
         return false;
 
+    auto mapNode = getMapNode();
+    if (!mapNode)
+        return false;
+
     vsg::LookAt lookat;
     lookat.set(camera->viewMatrix->inverse());
     auto look = vsg::normalize(lookat.center - lookat.eye);
@@ -1342,11 +1365,11 @@ MapManipulator::recalculateCenterAndDistanceFromLookVector()
     }
 
     // backup plan, intersect the ellipsoid or the ground plane
-    else if (_worldSRS.isGeocentric())
+    else if (mapNode->srs().isGeocentric())
     {
         glm::dvec3 i;
         auto target = lookat.eye + look * 1e10;
-        if (_worldSRS.ellipsoid().intersectGeocentricLine(to_glm(lookat.eye), to_glm(target), i))
+        if (mapNode->srs().ellipsoid().intersectGeocentricLine(to_glm(lookat.eye), to_glm(target), i))
         {
             intersection = to_vsg(i);
             ok = true;
@@ -1388,6 +1411,10 @@ MapManipulator::pan(double dx, double dy)
     if (!camera)
         return;
 
+    auto mapNode = getMapNode();
+    if (!mapNode)
+        return;
+
     double scale = -0.3 * _state.distance;
 
     // the view-space coordinate frame:
@@ -1404,7 +1431,7 @@ MapManipulator::pan(double dx, double dy)
     double old_len = vsg::length(_state.center);
     vsg::dvec3 new_center = _state.center + dv;
 
-    if (_worldSRS.isGeocentric())
+    if (mapNode->srs().isGeocentric())
     {
         // in geocentric, ensure that it doesn't change length.
         new_center = vsg::normalize(new_center);
@@ -1533,6 +1560,10 @@ MapManipulator::zoom(double dx, double dy)
     //    return;
     //}
 
+    auto mapNode = getMapNode();
+    if (!mapNode)
+        return;
+
     if (settings.zoomToMouse == true && dy < 0.0)
     {
         vsg::dvec3 target;
@@ -1563,7 +1594,7 @@ MapManipulator::zoom(double dx, double dy)
             double delta = _state.distance - newDistance;
             double ratio = delta / _state.distance;
 
-            if (_worldSRS.isGeocentric())
+            if (mapNode->srs().isGeocentric())
             {
                 // xform target point into the current focal point's local frame,
                 // and adjust the zoom ratio to account for the difference in 
@@ -1981,9 +2012,13 @@ MapManipulator::ndc(const vsg::PointerEvent& event) const
 void
 MapManipulator::updateTether(const vsg::time_point& t)
 {
+    auto mapNode = getMapNode();
+    if (!mapNode)
+        return;
+
     if (_state.setVP1->pointFunction)
     {
-        auto world = _state.setVP1->position().transform(_worldSRS);
+        auto world = _state.setVP1->position().transform(mapNode->srs());
 
         // If we just called setViewpointFrame, no need to calculate the center again.
         if (!isSettingViewpoint())

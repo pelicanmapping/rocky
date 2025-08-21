@@ -121,8 +121,7 @@ namespace ROCKY_NAMESPACE
 
         //! Returns TRUE if this extent intersects another extent.
         //! @param[in ] rhs      Extent against which to perform intersect test
-        //! @param[in ] checkSRS If false, assume the extents have the same SRS (don't check).
-        bool intersects(const GeoExtent& rhs, bool checkSRS = true) const;
+        bool intersects(const GeoExtent& rhs) const;
 
         //! Copy of the anonymous bounding box
         Box bounds() const;

@@ -252,7 +252,7 @@ TerrainState::createPipelineConfig(VSGContext& context) const
 }
 
 bool
-TerrainState::setupTerrainStateGroup(vsg::StateGroup& stateGroup, TerrainDescriptors& descriptors, VSGContext& context)
+TerrainState::setupTerrainStateGroup(vsg::StateGroup& stateGroup, VSGContext& context)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), false);
 
@@ -261,30 +261,28 @@ TerrainState::setupTerrainStateGroup(vsg::StateGroup& stateGroup, TerrainDescrip
 
     ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig, false);
 
-    // global settings uniform setup
-    descriptors.ubo_data = vsg::ubyteArray::create(sizeof(TerrainDescriptors::Uniforms));
-    descriptors.ubo_data->properties.dataVariance = vsg::DYNAMIC_DATA_TRANSFER_AFTER_RECORD;
-    auto ubo = vsg::DescriptorBuffer::create(descriptors.ubo_data, SETTINGS_UBO_BINDING);
-    auto ubo_ds = vsg::DescriptorSet::create(pipelineConfig->layout->setLayouts[0], vsg::Descriptors{ ubo });
+    if (!_terrainDescriptors.data)
+    {
+        // global settings uniform setup
+        _terrainDescriptors.data = vsg::ubyteArray::create(sizeof(TerrainDescriptors::Uniforms));
+        _terrainDescriptors.data->properties.dataVariance = vsg::DYNAMIC_DATA;
+        _terrainDescriptors.ubo = vsg::DescriptorBuffer::create(_terrainDescriptors.data, SETTINGS_UBO_BINDING);
 
-    // initialize to the defaults
-    auto& uniforms = *static_cast<TerrainDescriptors::Uniforms*>(descriptors.ubo_data->dataPointer());
-    uniforms = TerrainDescriptors::Uniforms();
+        // initialize to the defaults
+        auto& uniforms = *static_cast<TerrainDescriptors::Uniforms*>(_terrainDescriptors.data->dataPointer());
+        uniforms = TerrainDescriptors::Uniforms();
+    }
 
     // Just a StateGroup holding the graphics pipeline.
     // Descriptors are the global terrain uniform buffer and the VSG view-dependent buffer.
     stateGroup.add(pipelineConfig->bindGraphicsPipeline);
-    stateGroup.add(vsg::BindDescriptorSet::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, 0, ubo_ds));
     stateGroup.add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
     
     return true;
 }
 
 TerrainTileRenderModel
-TerrainState::updateRenderModel(
-    const TerrainTileRenderModel& oldRenderModel,
-    const TerrainTileModel& dataModel,
-    VSGContext& runtime) const
+TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, const TerrainTileModel& dataModel, VSGContext& runtime) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), oldRenderModel);
     ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig.valid(), oldRenderModel);
@@ -362,12 +360,10 @@ TerrainState::updateRenderModel(
     uniforms.model_matrix = renderModel.modelMatrix;
     descriptors.uniforms = vsg::DescriptorBuffer::create(ubo, TILE_UBO_BINDING);
 
-    // make the descriptor set. 
-    // TODO: consider whether to separate the sampler binds from the uniform binds
-    // because of tile inheritance.
+    // make the descriptor set, and include the terrain settings UBO
     auto descriptorSet = vsg::DescriptorSet::create(
         pipelineConfig->layout->setLayouts[0],
-        vsg::Descriptors{ descriptors.elevation, descriptors.color, descriptors.uniforms }
+        vsg::Descriptors{ descriptors.elevation, descriptors.color, descriptors.uniforms, _terrainDescriptors.ubo }
     );
 
     //if (sharedObjects) sharedObjects->share(descriptorSet);
@@ -386,3 +382,14 @@ TerrainState::updateRenderModel(
     return renderModel;
 }
 
+void
+TerrainState::updateSettings(const TerrainSettings& settings)
+{    
+    auto& uniforms = *static_cast<TerrainDescriptors::Uniforms*>(_terrainDescriptors.data->dataPointer());
+
+    if ((bool)uniforms.wireOverlay != settings.wireOverlay.value())
+    {
+        uniforms.wireOverlay = settings.wireOverlay.value();
+        _terrainDescriptors.data->dirty();
+    }
+}

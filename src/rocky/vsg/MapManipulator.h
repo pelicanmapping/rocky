@@ -526,7 +526,6 @@ namespace ROCKY_NAMESPACE
         vsg::observer_ptr<MapNode> _mapNode_weakptr;
         vsg::observer_ptr<vsg::Window> _window_weakptr;
         vsg::observer_ptr<vsg::Camera> _camera_weakptr;
-        SRS _worldSRS;
 
         option<vsg::MoveEvent> _previousMove;
         option<vsg::ButtonPressEvent> _buttonPress;
@@ -542,7 +541,6 @@ namespace ROCKY_NAMESPACE
         int _continuous = 0;
         vsg::dvec2 _continuousDelta;
         vsg::dvec2 _singleAxis;
-        vsg::dmat4 _mapNodeFrame, _mapNodeFrameInverse;
         Action _lastAction;
         Action _continuousAction;
 

@@ -69,17 +69,6 @@ namespace ROCKY_NAMESPACE
         Result<> createRootTiles(VSGContext);
     };
 
-    //! Holds any terrain-wide textures and uniforms.
-    struct TerrainDescriptors
-    {
-        struct Uniforms
-        {
-            int wireOverlay = 1;
-            float padding[3];
-        };
-        vsg::ref_ptr<vsg::Data> ubo_data;
-    };
-
     /**
      * Root node of the terrain geometry
      */
@@ -119,7 +108,7 @@ namespace ROCKY_NAMESPACE
         SRS renderingSRS;
 
         //! Creates Vulkan state for rendering terrain tiles.
-        TerrainState stateFactory;
+        TerrainState terrainState;
 
         //! Reflects any startup errors that occur
         Status status;
@@ -135,6 +124,5 @@ namespace ROCKY_NAMESPACE
         Result<> createProfiles(VSGContext);
         CallbackSubs _callbacks;
         std::vector<Layer::Ptr> _terrainLayers;
-        TerrainDescriptors _descriptors;
     };
 }

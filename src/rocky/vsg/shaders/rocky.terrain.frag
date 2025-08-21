@@ -20,13 +20,12 @@ struct RockyVaryings {
 // input varyings
 layout(location = 0) in RockyVaryings varyings;
 
-// struct TerrainDescriptors (TerrainNode.h)
-layout(set = 0, binding = 9) uniform TerrainDescriptors {
-    int wireOverlay;
-    float padding[3];
+// uniforms (TerrainNode.h)
+layout(set = 0, binding = 9) uniform TerrainData
+{
+    bool wireOverlay;
 } settings;
 
-// uniforms
 layout(set = 0, binding = 11) uniform sampler2D color_tex;
 
 #if defined(ROCKY_LIGHTING)
@@ -58,7 +57,7 @@ void main()
 #endif
 
 #if GL_EXT_fragment_shader_barycentric
-    if (settings.wireOverlay > 0)
+    if (settings.wireOverlay)
     {
         const float pixelWidth = 1.0;
         vec3 b = fwidth(gl_BaryCoordEXT.xyz);

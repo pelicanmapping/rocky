@@ -7,7 +7,7 @@
 /**
 * THE DEMO APPLICATION is an ImGui-based app that shows off all the features
 * of the Rocky Application API. We intend each "Demo_*" include file to be
-* both a unit test for that feature, and a reference or writing your own code.
+* both a unit test for that feature, and a reference for writing your own code.
 */
 
 #include <rocky/rocky.h>
@@ -67,7 +67,7 @@ struct Demo
 std::vector<Demo> demos =
 {
     Demo{ "Map", Demo_Map },
-    Demo{ "Basic Components", {},
+    Demo{ "Basics", {},
     {
         Demo{ "Line - absolute", Demo_Line_Absolute },
         Demo{ "Line - reference", Demo_Line_ReferencePoint },
@@ -79,7 +79,8 @@ std::vector<Demo> demos =
         Demo{ "Widget", Demo_Widget },
         Demo{ "Label (old)", Demo_Label },
         Demo{ "Drawing", Demo_Draw },
-        Demo{ "Node Pager", Demo_NodePager }
+        Demo{ "Node Pager", Demo_NodePager },
+        Demo{ "RTT", Demo_RTT }
     } },
     Demo{ "GIS Data", {},
     {
@@ -97,12 +98,11 @@ std::vector<Demo> demos =
     Demo{ "Decluttering", Demo_Decluttering },
     Demo{ "Elevation Queries", Demo_ElevationSampler },
     Demo{ "Geocoding", Demo_Geocoder },
-    Demo{ "RTT", Demo_RTT },
     Demo{ "Camera", Demo_MapManipulator },
-    Demo{ "Rendering", Demo_Rendering },
     Demo{ "Views", Demo_Views },
     Demo{ "Environment", Demo_Environment },
     Demo{ "Serialization", Demo_Serialization },
+    Demo{ "Rendering", Demo_Rendering },
     Demo{ "Stats", Demo_Stats },
     Demo{ "About", Demo_About }
 };
@@ -156,7 +156,7 @@ struct MainGUI : public vsg::Inherit<ImGuiContextNode, MainGUI>
                 {
                     if (layer->status().ok() && layer->attribution.has_value()) {
                         if (!buf.empty())
-                            buf += ", ";
+                            buf += " | ";
                         buf += layer->attribution->text;
                     }
                 });

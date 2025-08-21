@@ -433,7 +433,13 @@ namespace
                         auto dur_ms = 1e-6 * (double)(t1 - t0).count();
                         auto cti = res->headers.find("Content-Type");
                         auto ct = cti != res->headers.end() ? cti->second : "unknown";
-                        Log()->info(LC "({} {:3d}ms {:6d}b {}) HTTP GET {}", res->status, (int)dur_ms, res->body.size(), ct, request.url);
+                        auto cacahestatusi = res->headers.find("Cf-Cache-Status");
+                        auto cachestatus = cacahestatusi != res->headers.end() ? cacahestatusi->second : "";
+                        if (cachestatus.empty()) {
+                            auto xcachei = res->headers.find("X-Cache");
+                            cachestatus = xcachei != res->headers.end() ? xcachei->second : "";
+                        }
+                        Log()->info(LC "({} {:3d}ms {:6d}b {}) HTTP GET {} ({})", res->status, (int)dur_ms, res->body.size(), ct, request.url, cachestatus);
                     }
 
                     if (res->status == 404) // NOT FOUND (permanent)

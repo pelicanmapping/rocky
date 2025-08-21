@@ -466,18 +466,18 @@ GeoExtent::contains(const GeoExtent& rhs) const
 #define OVERLAPS(A, B, C, D) (!(B <= C || A >= D))
 
 bool
-GeoExtent::intersects(const GeoExtent& rhs, bool checkSRS) const
+GeoExtent::intersects(const GeoExtent& rhs) const
 {
     if ( !valid() || !rhs.valid() )
         return false;
 
     // Transform the incoming extent if necessary:
-    if (checkSRS && !_srs.horizontallyEquivalentTo(rhs.srs()))
+    if (!_srs.horizontallyEquivalentTo(rhs.srs()))
     {
         // non-contiguous projection? convert to a contiguous one:
         GeoExtent thisGeo = transform(srs().geodeticSRS());
         GeoExtent rhsGeo = rhs.transform(srs().geodeticSRS());
-        return thisGeo.intersects(rhsGeo, false);
+        return thisGeo.intersects(rhsGeo);
     }
 
     // Trivial reject: y-dimension does not overlap:
@@ -723,7 +723,7 @@ GeoExtent::intersectionSameSRS(const GeoExtent& rhs) const
 
     // check for basic intersection. Note, we do NOT validate
     // that they are the same SRS!
-    if (!intersects(rhs, false))
+    if (!intersects(rhs))
     {
         return GeoExtent::INVALID;
     }

@@ -1,6 +1,6 @@
 {
     "map" : {
-        "name" : "ArcGIS Imagery Online",
+        "name" : "High Resolution Globe",
         "layers": [
             {
                 "name": "ArcGIS",
@@ -9,10 +9,25 @@
                 "format" : "image/jpg",
                 "profile" : "spherical-mercator",
                 "attribution" : {
-                    "text" : "Copyright Ersi"
+                    "text" : "Imagery by Esri (noncommercial use)"
+                }
+            },  
+            {
+                "name" : "MapZen global elevation",
+                "type" : "TMSElevation",
+                "uri" : "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
+                "encoding" : "terrarium",
+                "max_level" : 13,
+                "profile" : "spherical-mercator",
+                "attribution" : {
+                    "text" : "Elevation by MapZen"
                 }
             }
         ]
     },
-    "profile" : "global-qsc"
+    "profile" : "global-qsc",
+    "terrain" : {
+        "skirt_ratio" : 0.025,
+        "concurrency" : 8
+    }
 }

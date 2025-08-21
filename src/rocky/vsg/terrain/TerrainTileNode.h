@@ -55,7 +55,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::DescriptorImage> color;
         vsg::ref_ptr<vsg::DescriptorImage> elevation;
         vsg::ref_ptr<vsg::DescriptorBuffer> uniforms;
-        vsg::ref_ptr<vsg::BindDescriptorSet> bind;
+        vsg::ref_ptr<vsg::StateCommand> bind;
     };
 
     struct TerrainTileRenderModel

@@ -44,7 +44,7 @@ TerrainProfileNode::reset(VSGContext context)
         terrain.map,
         profile,
         terrain.renderingSRS,
-        terrain.stateFactory,
+        terrain.terrainState,
         context,    // runtime API
         settings(), // settings
         this);      // host
@@ -118,7 +118,7 @@ TerrainProfileNode::ping(TerrainTileNode* tile, const TerrainTileNode* parent, v
 
 
 TerrainNode::TerrainNode(VSGContext context) :
-    stateFactory(context)
+    terrainState(context)
 {
     //nop
 }
@@ -215,7 +215,7 @@ Result<>
 TerrainNode::createProfiles(VSGContext context)
 {
     // create the graphics pipeline to render this map
-    if (!stateFactory.setupTerrainStateGroup(*this, _descriptors, context))
+    if (!terrainState.setupTerrainStateGroup(*this, context))
     {
         return Failure("Failed to set up terrain state group");
     }
@@ -248,12 +248,7 @@ TerrainNode::update(VSGContext context)
     }
 
     // check for settings change
-    auto& uniforms = *static_cast<TerrainDescriptors::Uniforms*>(_descriptors.ubo_data->dataPointer());
-    if ((bool)uniforms.wireOverlay != wireOverlay)
-    {
-        uniforms.wireOverlay = wireOverlay;
-        _descriptors.ubo_data->dirty();
-    }
+    terrainState.updateSettings(*this);
 
     return changes;
 }
