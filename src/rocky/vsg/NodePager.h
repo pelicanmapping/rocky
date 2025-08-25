@@ -49,8 +49,8 @@ namespace ROCKY_NAMESPACE
         //! Construct a new node pager whose tiles will correspond to
         //! a tiling profile.
         //! \param graphProfile The profile to use for tiling. Must be valid.
-        //! \param mapProfile The profile of the map displaying this graph.
-        NodePager(const Profile& graphProfile, const Profile& mapProfile);
+        //! \param sceneSRS The SRS of the rendered map node (i.e. MapNode::srs)
+        NodePager(const Profile& graphProfile, const SRS& sceneSRS);
 
         //! Call this after configuring the pager's settings.
         void initialize(VSGContext&);
@@ -105,7 +105,7 @@ namespace ROCKY_NAMESPACE
         mutable std::mutex _sentry_mutex;
         CallbackSub _sentryUpdate;
         std::uint64_t _lastUpdateFrame = 0u;
-        Profile _mapProfile;
+        SRS _renderingSRS;
 
         friend class PagedNode;
 

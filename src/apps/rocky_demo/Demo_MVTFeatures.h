@@ -26,7 +26,7 @@ auto Demo_MVTFeatures = [](Application& app)
 
         // Configure a pager that will display paged tiles in mercator profile
         // at LOD 14 only:
-        pager = NodePager::create(Profile("spherical-mercator"), app.mapNode->profile);
+        pager = NodePager::create(Profile("spherical-mercator"), app.mapNode->srs());
 
         pager->minLevel = 14;
         pager->maxLevel = 14;

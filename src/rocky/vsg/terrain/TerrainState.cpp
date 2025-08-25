@@ -114,9 +114,9 @@ TerrainState::createDefaultDescriptors(VSGContext& context)
         0, // array element (TODO: increment when we change to an array)
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
-    auto elev_image = Heightfield::create(1, 1);
-    elev_image->fill(0.0f);
-    texturedefs.elevation.defaultData = util::moveImageToVSG(elev_image);
+    auto hf = Heightfield::create(1, 1);
+    hf.fill(0.0f);
+    texturedefs.elevation.defaultData = util::moveImageToVSG(hf.image);
     ROCKY_HARD_ASSERT(texturedefs.elevation.defaultData);
     this->defaultTileDescriptors.elevation = vsg::DescriptorImage::create(
         texturedefs.elevation.sampler,
@@ -326,7 +326,7 @@ TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, co
     if (dataModel.elevation.heightfield.valid())
     {
         renderModel.elevation.name = "elevation " + dataModel.elevation.key.str();
-        renderModel.elevation.image = dataModel.elevation.heightfield.heightfield();
+        renderModel.elevation.image = dataModel.elevation.heightfield.image();
         renderModel.elevation.matrix = dataModel.elevation.matrix;
 
         auto data = util::wrapImageInVSG(renderModel.elevation.image);

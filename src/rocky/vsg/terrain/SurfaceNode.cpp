@@ -69,8 +69,7 @@ SurfaceNode::recomputeBound()
 
     if (_elevationRaster)
     {
-        // yes, this is safe...for now :)
-        auto heightfield = Heightfield::cast_from(_elevationRaster.get());
+        Heightfield hf(_elevationRaster);
 
         double
             scaleU = _elevationMatrix[0][0],
@@ -84,10 +83,9 @@ SurfaceNode::recomputeBound()
         {
             if (((int)geom->uvs->at(i).z & VERTEX_HAS_ELEVATION) == 0)
             {
-                float h = heightfield->heightAtUV(
+                float h = hf.heightAtUV(
                     clamp(geom->uvs->at(i).x * scaleU + biasU, 0.0, 1.0),
-                    clamp(geom->uvs->at(i).y * scaleV + biasV, 0.0, 1.0),
-                    Interpolation::Bilinear);
+                    clamp(geom->uvs->at(i).y * scaleV + biasV, 0.0, 1.0));
 
                 auto& vert = geom->verts->at(i);
                 auto& norm = geom->normals->at(i);

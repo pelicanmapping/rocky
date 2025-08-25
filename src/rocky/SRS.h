@@ -9,7 +9,7 @@
 #include <rocky/Units.h>
 #include <rocky/Ellipsoid.h>
 #include <optional>
-#include <climits>
+#include <limits>
 
 namespace ROCKY_NAMESPACE
 {
@@ -393,9 +393,7 @@ namespace ROCKY_NAMESPACE
         bool clamp(double& x, double& y) const;
 
         //! Error message if something returns false
-        inline const std::string& lastError() const {
-            return _lastError;
-        }
+        const std::string& errorMessage() const;
 
         //! Gets the internal definition string of this operation
         //! (for debugging purposes)
@@ -411,7 +409,6 @@ namespace ROCKY_NAMESPACE
         void* _handle = nullptr;
         bool _nop = true;
         SRS _from, _to;
-        mutable std::string _lastError;
 
         bool forward(void* handle, double& x, double& y, double& z) const;
         bool inverse(void* handle, double& x, double& y, double& z) const;

@@ -215,8 +215,7 @@ TEST_CASE("Image")
 
     image = Image::create(Image::R8G8B8A8_UNORM, 256, 256);
     image->fill(Color::Orange);
-    Image::Pixel value;
-    image->read(value, 17, 17);
+    Image::Pixel value = image->read(17, 17);
     //std::cout << value.r << ", " << value.g << ", " << value.b << ", " << value.a << std::endl;
     CHECK(equiv(value.r, 1.0f, 0.01f));
     CHECK(equiv(value.g, 0.65f, 0.01f));
@@ -227,32 +226,36 @@ TEST_CASE("Image")
 TEST_CASE("Heightfield")
 {
     auto hf = Heightfield::create(257, 257);
-    REQUIRE(hf);
-    if (hf) {
+    REQUIRE(hf.image);
+    if (hf.image) {
         // test metadata:
-        CHECK(hf->pixelFormat() == Image::R32_SFLOAT);
-        CHECK(hf->numComponents() == 1);
-        CHECK(hf->sizeInBytes() == 264196);
-        CHECK(hf->rowSizeInBytes() == 1028);
-        CHECK(hf->componentSizeInBytes() == 4);
-        CHECK(hf->sizeInPixels() == 66049);
+        CHECK(hf.image->pixelFormat() == Image::R32_SFLOAT);
+        CHECK(hf.image->numComponents() == 1);
+        CHECK(hf.image->sizeInBytes() == 264196);
+        CHECK(hf.image->rowSizeInBytes() == 1028);
+        CHECK(hf.image->componentSizeInBytes() == 4);
+        CHECK(hf.image->sizeInPixels() == 66049);
 
         // write/read:
-        hf->heightAt(16, 16) = 100.0f;
-        hf->heightAt(16, 17) = 50.0f;
-        hf->heightAt(17, 16) = 50.0f;
-        hf->heightAt(17, 17) = 100.0f;
-        CHECK(hf->heightAt(16, 16) == 100.0f);
-        CHECK(hf->heightAtPixel(16.5, 16.5, Interpolation::Bilinear) == 75.0f);
+        hf.heightAt(16, 16) = 100.0f;
+        hf.heightAt(16, 17) = 50.0f;
+        hf.heightAt(17, 16) = 50.0f;
+        hf.heightAt(17, 17) = 100.0f;
+        CHECK(hf.heightAt(16, 16) == 100.0f);
+
+        float u = 16.5f / (float(hf.width()) - 1.0f);
+        float v = 16.5f / (float(hf.height()) - 1.0f);
+        CHECK(hf.heightAtUV(u, v) == 75.0f);
         
         // read with NO_DATA_VALUEs:
-        hf->heightAt(17, 17) = NO_DATA_VALUE;
-        hf->heightAt(16, 16) = NO_DATA_VALUE;
-        CHECK(hf->heightAtPixel(16.5, 16.5, Interpolation::Bilinear) == 50.0f);
+        hf.heightAt(17, 17) = NO_DATA_VALUE;
+        hf.heightAt(16, 16) = NO_DATA_VALUE;
+        CHECK(hf.heightAt(16, 16) == NO_DATA_VALUE);
+        CHECK(hf.heightAtUV(u, v) == 50.0f);
 
         // all NODATA:
-        hf->fill(NO_DATA_VALUE);
-        CHECK(hf->heightAtPixel(16.5, 16.5, Interpolation::Bilinear) == NO_DATA_VALUE);
+        hf.fill(NO_DATA_VALUE);
+        CHECK(hf.heightAt(16, 16) == NO_DATA_VALUE);
     }
 }
 
@@ -304,7 +307,7 @@ TEST_CASE("SRS")
         REQUIRE(xform.valid());
 
         glm::dvec3 out;
-        REQUIRE(xform(glm::dvec3(-20037508.34278925, 0, 0), out));
+        REQUIRE(xform(glm::dvec3(-20037508.342789248, 0, 0), out));
         CHECK(equiv(out, glm::dvec3(-180, 0, 0), E));
         
         // NB: succeeds despite the 90 degrees N being out of bounds for Mercator.
@@ -437,7 +440,8 @@ TEST_CASE("SRS")
         CHECK(bad.isProjected() == false);
         CHECK(bad.isGeodetic() == false);
         CHECK(bad.isGeocentric() == false);
-
+        CHECK(bad.errorMessage() == "Invalid PROJ string syntax");
+        
         CHECK(proj_error == "proj_create: unrecognized format / unknown name");
 
         SRS::projMessageCallback = nullptr;
@@ -548,18 +552,17 @@ TEST_CASE("SRS")
 
     SECTION("SRS Metadata")
     {
-        Box b;
-        b = SRS::WGS84.bounds();
-        CHECK(equiv(b.xmin, -180.0));
-        CHECK(equiv(b.xmax, 180.0));
-        CHECK(equiv(b.ymin, -90.0));
-        CHECK(equiv(b.ymax, 90.0));
+        Box a = SRS::WGS84.bounds();
+        CHECK(equiv(a.xmin, -180.0));
+        CHECK(equiv(a.xmax, 180.0));
+        CHECK(equiv(a.ymin, -90.0));
+        CHECK(equiv(a.ymax, 90.0));
 
-        b = SRS::SPHERICAL_MERCATOR.bounds();
-        CHECK(equiv(b.xmin, -20037508.342789244, E));
-        CHECK(equiv(b.xmax, 20037508.342789244, E));
-        CHECK(equiv(b.ymin, -20037508.342789244, E));
-        CHECK(equiv(b.ymax, 20037508.342789244, E));
+        Box bb = SRS::SPHERICAL_MERCATOR.bounds();
+        CHECK(equiv(bb.xmin, -20037508.342789248, E));
+        CHECK(equiv(bb.xmax, 20037508.342789248, E));
+        CHECK(equiv(bb.ymin, -20037508.342789248, E));
+        CHECK(equiv(bb.ymax, 20037508.342789248, E));
 
         auto ellipsoid = SRS::WGS84.ellipsoid();
         REQUIRE(ellipsoid.semiMajorAxis() == 6378137.0);

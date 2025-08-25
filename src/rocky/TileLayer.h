@@ -14,6 +14,8 @@
 
 namespace ROCKY_NAMESPACE
 {
+    class GeoImage;
+
     /**
      * A layer that comprises the terrain skin (image or elevation layer)
      */
@@ -101,6 +103,10 @@ namespace ROCKY_NAMESPACE
         //! Assign a data extents collection to the layer.
         //! A subclass should only call this during openImplementation().
         void setDataExtents(const DataExtentList& dataExtents);
+
+        // Checks a cache for an image, and if not found, calls the create function to generate it.
+        Result<GeoImage> getOrCreateTile(const TileKey& key, const IOOptions& io,
+            std::function<Result<GeoImage>()>&& create) const;
 
     protected:
 

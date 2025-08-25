@@ -36,7 +36,7 @@ namespace ROCKY_NAMESPACE
         void closeImplementation() override;
 
         //! Gets a raster image for the given tile key
-        Result<GeoImage> createImageImplementation(
+        Result<GeoImage> createTileImplementation(
             const TileKey& key,
             const IOOptions& io) const override;
 

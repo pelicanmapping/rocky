@@ -49,7 +49,6 @@ auto Demo_ElevationSampler = [](Application& app)
     static ElevationSampler sampler;
     static jobs::future<Result<ElevationSample>> sample;
     static GeoPoint mouse;
-    static util::LRUCache<TileKey, GeoHeightfield> cache;
 
     frame = app.viewer->getFrameStamp()->frameCount;
 

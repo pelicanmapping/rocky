@@ -91,7 +91,7 @@ MBTilesImageLayer::closeImplementation()
 }
 
 Result<GeoImage>
-MBTilesImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io) const
+MBTilesImageLayer::createTileImplementation(const TileKey& key, const IOOptions& io) const
 {
     if (status().failed())
         return status().error();

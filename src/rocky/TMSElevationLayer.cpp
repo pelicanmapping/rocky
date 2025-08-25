@@ -92,8 +92,8 @@ TMSElevationLayer::closeImplementation()
     super::closeImplementation();
 }
 
-Result<GeoHeightfield>
-TMSElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOOptions& io) const
+Result<GeoImage>
+TMSElevationLayer::createTileImplementation(const TileKey& key, const IOOptions& io) const
 {
     if (status().failed())
         return status().error();
@@ -103,15 +103,7 @@ TMSElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOO
 
     if (r.ok())
     {
-        if (r.value()->pixelFormat() == Image::R32_SFLOAT)
-        {
-            return GeoHeightfield(Heightfield::create(r.value().get()), key.extent());
-        }
-        else // assume Image::R8G8B8_UNORM?
-        {
-            auto hf = decodeRGB(r.value());
-            return GeoHeightfield(hf, key.extent());
-        }
+        return GeoImage(r.value(), key.extent());
     }
     else
     {

@@ -7,9 +7,7 @@
 
 #include <rocky/Common.h>
 #include <rocky/TileKey.h>
-#include <rocky/Math.h>
 #include <rocky/GeoImage.h>
-#include <rocky/GeoHeightfield.h>
 #include <vector>
 
 namespace ROCKY_NAMESPACE
@@ -41,9 +39,7 @@ namespace ROCKY_NAMESPACE
 
         struct ROCKY_EXPORT Elevation : public Tile
         {
-            float minHeight = FLT_MAX;
-            float maxHeight = -FLT_MAX;
-            GeoHeightfield heightfield;
+            GeoImage heightfield;
         };
 
         struct ROCKY_EXPORT NormalMap : public Tile

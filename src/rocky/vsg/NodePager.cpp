@@ -49,10 +49,10 @@ namespace ROCKY_NAMESPACE
 }
 
 
-NodePager::NodePager(const Profile& graphProfile, const Profile& mapProfile) :
+NodePager::NodePager(const Profile& graphProfile, const SRS& sceneSRS) :
     vsg::Inherit<vsg::Group, NodePager>(), 
     profile(graphProfile),
-    _mapProfile(mapProfile)
+    _renderingSRS(sceneSRS)
 {
     ROCKY_SOFT_ASSERT(profile.valid());
 }
@@ -162,8 +162,7 @@ NodePager::createNode(const TileKey& key, const IOOptions& io) const
 {
     vsg::ref_ptr<vsg::Node> result;
 
-    // TODO: offset this using an elevation sample:
-    auto mapExtent = key.extent().transform(_mapProfile.srs());
+    auto mapExtent = key.extent().transform(_renderingSRS);
 
     vsg::dsphere tileBound =
         calculateBound ? calculateBound(key, io) :

@@ -139,7 +139,7 @@ GDALImageLayer::closeImplementation()
 }
 
 Result<GeoImage>
-GDALImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io) const
+GDALImageLayer::createTileImplementation(const TileKey& key, const IOOptions& io) const
 {
     if (status().failed())
         return status().error();

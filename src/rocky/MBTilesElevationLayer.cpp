@@ -86,8 +86,8 @@ MBTilesElevationLayer::closeImplementation()
     super::closeImplementation();
 }
 
-Result<GeoHeightfield>
-MBTilesElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOOptions& io) const
+Result<GeoImage>
+MBTilesElevationLayer::createTileImplementation(const TileKey& key, const IOOptions& io) const
 {
     if (status().failed())
         return status().error();
@@ -95,7 +95,7 @@ MBTilesElevationLayer::createHeightfieldImplementation(const TileKey& key, const
     auto result = _driver.read(key, io);
 
     if (result)
-        return GeoHeightfield(Heightfield::create(result.value().get()), key.extent());
+        return GeoImage(result.value(), key.extent());
     else
         return result.error();
 }

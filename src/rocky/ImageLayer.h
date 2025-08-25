@@ -24,7 +24,7 @@ namespace ROCKY_NAMESPACE
         //! @param key TileKey for which to create an image
         //! @param io IO options
         //! @return A GeoImage object containing the image data.
-        Result<GeoImage> createImage(const TileKey& key, const IOOptions& io) const;
+        Result<GeoImage> createTile(const TileKey& key, const IOOptions& io) const;
 
         //! serialize
         std::string to_json() const override;
@@ -50,14 +50,10 @@ namespace ROCKY_NAMESPACE
         //! @param key TileKey for which to create an image
         //! @param io IO options
         //! @return A GeoImage object containing the image data.
-        virtual Result<GeoImage> createImageImplementation(const TileKey& key, const IOOptions& io) const
+        virtual Result<GeoImage> createTileImplementation(const TileKey& key, const IOOptions& io) const
         {
             return Failure_ResourceUnavailable;
         }
-
-    protected:
-
-        Result<GeoImage> createImageImplementation_internal(const TileKey& key, const IOOptions& io) const;
 
     private:
 
@@ -65,16 +61,12 @@ namespace ROCKY_NAMESPACE
         void construct(std::string_view, const IOOptions& io);
 
         // Creates an image that's in the same profile as the provided key.
-        Result<GeoImage> createImageInKeyProfile(const TileKey& key, const IOOptions& io) const;
+        Result<GeoImage> createTileInKeyProfile(const TileKey& key, const IOOptions& io) const;
 
         // Fetches multiple images from the TileSource; mosaics/reprojects/crops as necessary, and
         // returns a single tile. This is called by createImageFromTileSource() if the key profile
         // doesn't match the layer profile.
-        std::shared_ptr<Image> assembleImage(const TileKey& key, const IOOptions& io) const;
-
-        // Checks a cache for an image, and if not found, calls the create function to generate it.
-        Result<GeoImage> getOrCreate(const TileKey& key, const IOOptions& io,
-            std::function<Result<GeoImage>()>&& create) const;
+        std::shared_ptr<Image> assembleTile(const TileKey& key, const IOOptions& io) const;
     };
 
 } // namespace ROCKY_NAMESPACE

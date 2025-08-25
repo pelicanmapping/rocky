@@ -998,7 +998,7 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
 
         if (isElevation)
         {
-            image = Image::create(Image::R32_SFLOAT, tileSize, tileSize);
+            image = Image::create(Heightfield::FORMAT, tileSize, tileSize);
             image->fill(glm::fvec4(NO_DATA_VALUE));
             
             if (gdalDataType == GDT_Int16)
@@ -1320,7 +1320,7 @@ GDAL::Driver::getInterpolatedDEMValue(GDALRasterBand* band, double x, double y)
     return result;
 }
 
-Result<std::shared_ptr<Heightfield>>
+Result<std::shared_ptr<Image>>
 GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOOptions& io)
 {
     if (maxDataLevel.has_value() && key.level > maxDataLevel)
@@ -1332,8 +1332,6 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
     {
         return Failure_ResourceUnavailable;
     }
-
-    std::shared_ptr<Heightfield> hf;
 
     const bool invert = true;
 
@@ -1349,8 +1347,8 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
     }
 
     // Allocate the heightfield
-    hf = Heightfield::create(tileSize, tileSize);
-    hf->fill(NO_DATA_VALUE);
+    Heightfield hf(tileSize, tileSize);
+    hf.fill(NO_DATA_VALUE);
 
     // Extract the extents of the tile
     double tile_xmin, tile_ymin, tile_xmax, tile_ymax;
@@ -1364,7 +1362,7 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
     auto* band = _warpedDS->GetRasterBand(1);
 
     // Raw pointer to the height data output block:
-    float* hf_raw = (float*)hf->data<float>();
+    float* hf_raw = (float*)hf.image->data<float>();
 
 #if GDAL_VERSION_NUM >= 3100000 // 3.10+
 
@@ -1409,7 +1407,7 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
                 auto err = band->InterpolateAtPoint(px, py, alg, &realPart, nullptr);
                 if (err == CE_None)
                 {
-                    hf->heightAt(c, r) = (float)realPart * _linearUnits;
+                    hf.heightAt(c, r) = (float)realPart * _linearUnits;
                 }
             }
         }
@@ -1434,7 +1432,7 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
             tileSize, tileSize,
             GDT_Float32, 0, 0, &xtras);
 
-        hf->flipVerticalInPlace();
+        hf.image->flipVerticalInPlace();
 
         for (unsigned r = 0; r < tileSize; ++r)
         {
@@ -1451,7 +1449,7 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
                 auto err = band->InterpolateAtPoint(px, py, alg, &realPart, nullptr);
                 if (err == CE_None)
                 {
-                    hf->heightAt(c, r) = (float)realPart * _linearUnits;
+                    hf.heightAt(c, r) = (float)realPart * _linearUnits;
                 }
             }
         }
@@ -1466,7 +1464,7 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
         {
             for (unsigned c = 0; c < tileSize; ++c)
             {
-                auto& value = hf->heightAt(c, r);
+                auto& value = hf.heightAt(c, r);
                 if (equiv(value, bandNoData, epsilon)) {
                     value = NO_DATA_VALUE;
                 }
@@ -1482,7 +1480,7 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
         {
             double x = tile_xmin + (dx * (double)c);
             auto h = getInterpolatedDEMValue(band, x, y) * _linearUnits;
-            hf->heightAt(c, r) = h * _linearUnits;
+            hf.heightAt(c, r) = h * _linearUnits;
         }
     }
 #endif
@@ -1490,7 +1488,7 @@ GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOO
     // Apply any scale/offset found in the source:
     applyScaleAndOffset(band, hf_raw, GDT_Float32, tileSize, tileSize);
 
-    return hf;
+    return hf.image;
 }
 
 #endif // ROCKY_HAS_GDAL

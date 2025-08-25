@@ -4,7 +4,6 @@
  * MIT License
  */
 #include "ElevationLayer.h"
-#include "Geoid.h"
 #include "Heightfield.h"
 #include "json.h"
 
@@ -18,37 +17,16 @@ using namespace ROCKY_NAMESPACE::util;
 namespace
 {
     // perform very basic sanity-check validation on a heightfield.
-    bool validateHeightfield(const Heightfield* hf)
+    bool validateHeightfield(const Image* image)
     {
-        if (!hf)
+        if (!image)
             return false;
-        if (hf->height() < 1 || hf->height() > 1024) {
+        if (image->height() < 1 || image->height() > 1024)
             return false;
-        }
-        if (hf->width() < 1 || hf->width() > 1024) {
+        if (image->width() < 1 || image->width() > 1024)
             return false;
-        }
-
         return true;
     }
-}
-
-
-namespace
-{
-    class HeightfieldMosaic : public Inherit<Heightfield, HeightfieldMosaic>
-    {
-    public:
-        HeightfieldMosaic(unsigned s, unsigned t) : super(s, t) { }
-        HeightfieldMosaic(const HeightfieldMosaic& rhs) = default;
-
-        std::shared_ptr<Image> clone() const override
-        {
-            return std::make_shared<HeightfieldMosaic>(*this);
-        }
-
-        std::vector<std::shared_ptr<Heightfield>> dependencies;
-    };
 }
 
 //------------------------------------------------------------------------
@@ -125,7 +103,7 @@ ElevationLayer::closeImplementation()
 }
 
 void
-ElevationLayer::normalizeNoDataValues(Heightfield* hf) const
+ElevationLayer::normalizeNoDataValues(Image* hf) const
 {
     if ( hf )
     {
@@ -158,39 +136,10 @@ ElevationLayer::resolution(unsigned level) const
         Distance(dims.y / (double)(tileSize.value() - 1), profile.srs().units()));
 }
 
-Result<GeoHeightfield>
-ElevationLayer::getOrCreate(const TileKey& key, const IOOptions& io, std::function<Result<GeoHeightfield>()>&& create) const
+std::shared_ptr<Image>
+ElevationLayer::assembleTile(const TileKey& key, const IOOptions& io) const
 {
-    if (io.services().residentImageCache)
-    {
-        auto cacheKey = key.str() + '-' + std::to_string(key.profile.hash()) + '-' + std::to_string(uid()) + "-" + std::to_string(revision());
-
-        auto cached = io.services().residentImageCache->get(cacheKey);
-        if (cached.has_value())
-        {
-            auto hf = std::dynamic_pointer_cast<Heightfield>(cached.value().first);
-            return GeoHeightfield(hf, cached.value().second);
-        }
-
-        auto r = create();
-
-        if (r.ok())
-        {
-            io.services().residentImageCache->put(cacheKey, r.value().heightfield(), r.value().extent());
-        }
-
-        return r;
-    }
-    else
-    {
-        return create();
-    }
-}
-
-std::shared_ptr<Heightfield>
-ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) const
-{
-    std::shared_ptr<HeightfieldMosaic> output;
+    std::shared_ptr<Mosaic> output;
 
     // Determine the intersecting keys
     auto localKeys = key.intersectingKeys(profile);
@@ -198,7 +147,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
     // collect heightfield for each intersecting key. Note, we're hitting the
     // underlying tile source here, so there's no vetical datum shifts happening yet.
     // we will do that later.
-    std::vector<GeoHeightfield> sources;
+    std::vector<GeoImage> sources;
 
     if (localKeys.size() > 0)
     {
@@ -210,17 +159,17 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
             // resolve an image for each local key.
             TileKey actualKey = localKey;
 
-            auto create = [&]() -> Result<GeoHeightfield>
+            auto create = [&]() -> Result<GeoImage>
                 {
                     // not found in the resident cache; go to the source, and fall back until we get
                     // a usable image tile.
                     while (actualKey.valid())
                     {
-                        auto r = createHeightfieldImplementation_internal(actualKey, io);
+                        auto r = createTileImplementation_internal(actualKey, io);
 
                         if (io.canceled())
                             return Failure_OperationCanceled;
-                        else if (r.ok() && r.value().heightfield())
+                        else if (r.ok() && r.value().image())
                             return r;
                         else
                             actualKey.makeParent();
@@ -229,7 +178,7 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
                     return Failure_ResourceUnavailable;
                 };
 
-            auto localTile = getOrCreate(localKey, io, create);
+            auto localTile = getOrCreateTile(localKey, io, create);
 
             if (localTile.ok())
             {
@@ -252,8 +201,8 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
             // output size is the max of all the source sizes.
             for (auto& source : sources)
             {
-                cols = std::max(cols, source.heightfield()->width());
-                rows = std::max(rows, source.heightfield()->height());
+                cols = std::max(cols, source.image()->width());
+                rows = std::max(rows, source.image()->height());
             }
 
             // assume all tiles to mosaic are in the same SRS.
@@ -261,16 +210,21 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
 
             // Now sort the heightfields by resolution to make sure we're sampling
             // the highest resolution one first.
-            std::sort(sources.begin(), sources.end(), GeoHeightfield::SortByResolutionFunctor());
+            std::sort(
+                sources.begin(), sources.end(),
+                [](const GeoImage& lhs, const GeoImage& rhs) {
+                    return lhs.extent().width() < rhs.extent().width();
+                });
 
             // new output HF:
-            output = HeightfieldMosaic::create(cols, rows);
-            output->fill(NO_DATA_VALUE);
+            output = Mosaic::create(sources[0].image()->pixelFormat(), cols, rows);
+            Heightfield hf(output);
+            hf.fill(NO_DATA_VALUE);
 
             // Cache pointers to the source images that mosaic to create this tile.
             output->dependencies.reserve(sources.size());
             for (auto& source : sources)
-                output->dependencies.emplace_back(source.heightfield());
+                output->dependencies.emplace_back(source.image());
 
             // working set of points. it's much faster to xform an entire vector all at once.
             std::vector<glm::dvec3> points;
@@ -313,14 +267,18 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
                 for (unsigned c = 0; c < cols; ++c)
                 {
                     auto& point = points[r * cols + c];
-                    float& height = output->heightAt(c, r);
+                    float& height = hf.heightAt(c, r);
 
                     for (unsigned i = 0; i < sources.size(); ++i)
                     {
                         unsigned j = useIndirectIndexing ? indexes[i] : i;
-                        height = sources[j].heightAtLocation(point.x, point.y, Interpolation::Bilinear);
-                        if (height != NO_DATA_VALUE) {
-                            std::swap(indexes[i], indexes[0]); // move the used source to the front
+
+                        auto r = sources[j].read(point.x, point.y);
+                        height = r.ok() ? r.value().r : NO_DATA_VALUE;
+
+                        if (height != NO_DATA_VALUE)
+                        {
+                            std::swap(indexes[i], indexes[0]);
                             break;
                         }
                     }
@@ -343,8 +301,8 @@ ElevationLayer::assembleHeightfield(const TileKey& key, const IOOptions& io) con
     return output;
 }
 
-Result<GeoHeightfield>
-ElevationLayer::createHeightfield(const TileKey& key, const IOOptions& io) const
+Result<GeoImage>
+ElevationLayer::createTile(const TileKey& key, const IOOptions& io) const
 {
     // lock prevents closing the layer while creating an image
     std::shared_lock readLock(layerStateMutex());
@@ -352,28 +310,49 @@ ElevationLayer::createHeightfield(const TileKey& key, const IOOptions& io) const
     if (status().failed())
         return status().error();
 
-    return getOrCreate(key, io, [&]()
+    return getOrCreateTile(key, io, [&]()
         {
-            return createHeightfieldInKeyProfile(key, io);
+            return createTileInKeyProfile(key, io);
         });
 }
 
-Result<GeoHeightfield>
-ElevationLayer::createHeightfieldImplementation_internal(const TileKey& key, const IOOptions& io) const
+Result<GeoImage>
+ElevationLayer::createTileImplementation_internal(const TileKey& key, const IOOptions& io) const
 {
-    std::shared_lock lock(layerStateMutex());
-    auto result = createHeightfieldImplementation(key, io);
-    if (result.failed())
+    auto result = createTileImplementation(key, io);
+
+    if (result.ok())
+    {
+        ROCKY_SOFT_ASSERT_AND_RETURN(result.value().valid(), result);
+
+        if (result.value().image()->pixelFormat() != Heightfield::FORMAT)
+        {
+            // If the image is not a heightfield, decode it to a heightfield.
+            auto hf = decodeRGB(result.value().image());
+            if (hf)
+            {
+                ROCKY_SOFT_ASSERT_AND_RETURN(hf->pixelFormat() == Heightfield::FORMAT, result);
+                result = GeoImage(hf, key.extent());
+            }
+            else
+            {
+                result = Failure(Failure::GeneralError, "Failed to decode RGB image to heightfield.");
+            }
+        }
+    }
+
+    else
     {
         Log()->debug("Failed to create heightfield for key {0} : {1}", key.str(), result.error().message);
     }
+
     return result;
 }
 
-Result<GeoHeightfield>
-ElevationLayer::createHeightfieldInKeyProfile(const TileKey& key, const IOOptions& io) const
+Result<GeoImage>
+ElevationLayer::createTileInKeyProfile(const TileKey& key, const IOOptions& io) const
 {
-    Result<GeoHeightfield> result = Failure_ResourceUnavailable;
+    Result<GeoImage> result = Failure_ResourceUnavailable;
 
     ROCKY_SOFT_ASSERT_AND_RETURN(profile.valid(), result);
 
@@ -384,7 +363,7 @@ ElevationLayer::createHeightfieldInKeyProfile(const TileKey& key, const IOOption
     // we check the srs too in case the vdatums differ.
     if (key.profile == profile && key.profile.srs() == profile.srs())
     {
-        auto r = createHeightfieldImplementation_internal(key, io);
+        auto r = createTileImplementation_internal(key, io);
 
         if (r.failed())
             return r;
@@ -394,8 +373,11 @@ ElevationLayer::createHeightfieldInKeyProfile(const TileKey& key, const IOOption
     else
     {
         // If the profiles are different, use a compositing method to assemble the tile.
-        auto hf = assembleHeightfield(key, io);
-        result = GeoHeightfield(hf, key.extent());
+        auto hf = assembleTile(key, io);
+        if (hf)
+        {
+            result = GeoImage(hf, key.extent());
+        }
     }
 
     // Check for cancelation before writing to a cache
@@ -406,7 +388,7 @@ ElevationLayer::createHeightfieldInKeyProfile(const TileKey& key, const IOOption
 
     if (result.ok())
     {
-        auto hf = result.value().heightfield();
+        auto hf = result.value().image();
 
         // validate it to make sure it's legal.
         if (hf && !validateHeightfield(hf.get()))
@@ -423,74 +405,13 @@ ElevationLayer::createHeightfieldInKeyProfile(const TileKey& key, const IOOption
             return Failure(Failure::ResourceUnavailable);
         }
 
-        result = GeoHeightfield(hf, key.extent());
+        result = GeoImage(hf, key.extent());
     }
 
     return result;
 }
 
-#undef  LC
-#define LC "[ElevationLayers] "
-
-namespace
-{
-    struct LayerData
-    {
-        std::shared_ptr<ElevationLayer> layer;
-        TileKey key;
-        bool isFallback;
-        int index;
-    };
-
-    using LayerDataVector = std::vector<LayerData>;
-
-    void resolveInvalidHeights(
-        Heightfield* grid,
-        const GeoExtent&  ex,
-        float invalidValue,
-        const Geoid* geoid)
-    {
-        if (!grid)
-            return;
-
-        if (geoid)
-        {
-            // need the lat/long extent for geoid queries:
-            unsigned numRows = grid->height();
-            unsigned numCols = grid->width();
-            GeoExtent geodeticExtent = 
-                ex.srs().isGeodetic() ? ex :
-                ex.transform(ex.srs().geodeticSRS());
-            double latMin = geodeticExtent.ymin();
-            double lonMin = geodeticExtent.xmin();
-            double lonInterval = geodeticExtent.width() / (double)(numCols - 1);
-            double latInterval = geodeticExtent.height() / (double)(numRows - 1);
-
-            for (unsigned r = 0; r < numRows; ++r)
-            {
-                double lat = latMin + latInterval * (double)r;
-                for (unsigned c = 0; c < numCols; ++c)
-                {
-                    double lon = lonMin + lonInterval * (double)c;
-                    if (grid->heightAt(c, r) == invalidValue)
-                    {
-                        grid->heightAt(c, r) = geoid->getHeight(lat, lon);
-                    }
-                }
-            }
-        }
-        else
-        {
-            grid->forEachHeight([invalidValue](float& height)
-                {
-                    if (height == invalidValue)
-                        height = 0.0f;
-                });
-        }
-    }
-}
-
-std::shared_ptr<Heightfield>
+std::shared_ptr<Image>
 ElevationLayer::decodeRGB(std::shared_ptr<Image> image) const
 {
     if (!image || !image->valid())
@@ -508,7 +429,7 @@ ElevationLayer::decodeRGB(std::shared_ptr<Image> image) const
     Image view = image->viewAs(view_format);
 
     // convert the RGB Elevation into an actual heightfield
-    auto hf = Heightfield::create(view.width(), view.height());
+    Heightfield hf(view.width(), view.height());
 
     glm::fvec4 pixel;
 
@@ -516,14 +437,14 @@ ElevationLayer::decodeRGB(std::shared_ptr<Image> image) const
     {
         view.eachPixel([&](auto& i)
             {
-                view.read(pixel, i.s(), i.t());
+                pixel = view.read(i.s(), i.t());
 
                 float height = (pixel.r * 255.0f * 256.0f + pixel.g * 255.0f + pixel.b * 255.0f / 256.0f) - 32768.0f;
                 
                 if (height < -9999 || height > 999999)
                     height = NO_DATA_VALUE;
 
-                hf->heightAt(i.s(), i.t()) = height;
+                hf.heightAt(i.s(), i.t()) = height;
             });
     }
 
@@ -531,16 +452,16 @@ ElevationLayer::decodeRGB(std::shared_ptr<Image> image) const
     {
         view.eachPixel([&](auto& i)
             {
-                view.read(pixel, i.s(), i.t());
+                pixel = view.read(i.s(), i.t());
 
                 float height = -10000.f + ((pixel.r * 256.0f * 256.0f + pixel.g * 256.0f + pixel.b) * 256.0f * 0.1f);
 
                 if (height < -9999 || height > 999999)
                     height = NO_DATA_VALUE;
 
-                hf->heightAt(i.s(), i.t()) = height;
+                hf.heightAt(i.s(), i.t()) = height;
             });
     }
 
-    return hf;
+    return hf.image;
 }

@@ -111,7 +111,7 @@ namespace ROCKY_NAMESPACE
             Result<std::shared_ptr<Image>> createImage(const TileKey& key, unsigned tileSize, const IOOptions& io);
 
             //! Creates an image if possible
-            Result<std::shared_ptr<Heightfield>> createHeightfield(const TileKey& key, unsigned tileSize, const IOOptions& io);
+            Result<std::shared_ptr<Image>> createHeightfield(const TileKey& key, unsigned tileSize, const IOOptions& io);
 
             const Profile& profile() const {
                 return _profile;

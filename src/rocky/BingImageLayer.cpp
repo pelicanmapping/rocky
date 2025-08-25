@@ -87,7 +87,7 @@ BingImageLayer::closeImplementation()
 }
 
 Result<GeoImage>
-BingImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io) const
+BingImageLayer::createTileImplementation(const TileKey& key, const IOOptions& io) const
 {
     // Bing's zoom is indexed slightly differently
     auto zoom = key.level + 1;

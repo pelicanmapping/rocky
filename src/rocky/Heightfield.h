@@ -9,33 +9,38 @@
 
 namespace ROCKY_NAMESPACE
 {
-    constexpr float NO_DATA_VALUE = -FLT_MAX;
+    constexpr float NO_DATA_VALUE = -std::numeric_limits<float>::max();
 
     /**
-     * A grid of height values (32-bit floats).
-     */
-    class ROCKY_EXPORT Heightfield : public Inherit<Image, Heightfield>
+    * Wrapper around an Image that provides heightfield functions.
+    */
+    class /*ROCKY_EXPORT*/ Heightfield
     {
     public:
-        using Ptr = std::shared_ptr<Heightfield>;
+        static const Image::PixelFormat FORMAT = Image::R32_SFLOAT;
 
-        //! Construct an empty (and invalid) heightfield
-        Heightfield();
+        static Heightfield create(unsigned cols, unsigned rows) {
+            return Heightfield(cols, rows);
+        }
 
-        //! Construct a heightfield with the given dimensions
-        Heightfield(unsigned cols, unsigned rows);
+        Heightfield(Image::Ptr in_image) : image(in_image)
+        {
+            ROCKY_SOFT_ASSERT(image);
+            ROCKY_SOFT_ASSERT(image->pixelFormat() == FORMAT);
+        }
+        
+        Heightfield(unsigned cols, unsigned rows)
+        {
+            image = Image::create(FORMAT, cols, rows, 1);
+        }
 
-        //! Make a heightfield, stealing data from an image.
-        explicit Heightfield(Image* rhs);
-
-        //! Pointer that can be used to call heightfield functions on an Image 
-        //! object, as long as that Image object is a valid heightfield format.
-        //! usage: auto hf = Heightfield::cast_from(image);
-        static const Heightfield* cast_from(const Image* rhs);
+        Image::Ptr image = nullptr;
 
         //! Access the height value at col, row
         inline float& heightAt(unsigned col, unsigned row);
         inline float heightAt(unsigned col, unsigned row) const;
+
+        inline float heightAtUV(float u, float v) const;
 
         //! Visits each height in the field with a user-provided function
         //! that takes "float" or "float&" as an argument.
@@ -45,46 +50,51 @@ namespace ROCKY_NAMESPACE
         template<typename CALLABLE>
         inline void forEachHeight(CALLABLE&& func) const;
 
-        //! Interpolated height at a normalized (u,v) location
-        float heightAtUV(
-            double u, double v,
-            Interpolation interp = Interpolation::Bilinear) const;
-
-        //! Interpolated height at a floating point col/row location
-        float heightAtPixel(
-            double col, double row,
-            Interpolation interp = Interpolation::Bilinear) const;
-
         //! Fill with a single height value
-        void fill(float value);
-    };
+        inline void fill(float value);
 
+        inline unsigned width() const { return image->width(); }
+        inline unsigned height() const { return image->height(); }
+        inline float noDataValue() const { return image->noDataValue(); }
+    };
 
     // inline functions
 
-    float& Heightfield::heightAt(unsigned c, unsigned r)
+    inline float& Heightfield::heightAt(unsigned c, unsigned r)
     {
-        return value<float>(c, r);
+        return image->value<float>(c, r);
     }
 
-    float Heightfield::heightAt(unsigned c, unsigned r) const
+    inline float Heightfield::heightAt(unsigned c, unsigned r) const
     {
-        return value<float>(c, r);
-    }    
+        return image->value<float>(c, r);
+    }
+
+    inline float Heightfield::heightAtUV(float u, float v) const
+    {
+        return image->read_bilinear(u, v, 0).r;
+    }
 
     template<typename CALLABLE>
-    void Heightfield::forEachHeight(CALLABLE&& func)
+    inline void Heightfield::forEachHeight(CALLABLE&& func)
     {
-        float* ptr = data<float>();
-        for (auto i = 0u; i < sizeInPixels(); ++i, ++ptr)
+        float* ptr = image->data<float>();
+        for (auto i = 0u; i < image->sizeInPixels(); ++i, ++ptr)
             func(*ptr);
     }
 
     template<typename CALLABLE>
-    void Heightfield::forEachHeight(CALLABLE&& func) const
+    inline void Heightfield::forEachHeight(CALLABLE&& func) const
     {
-        const float* ptr = data<float>();
-        for (auto i = 0u; i < sizeInPixels(); ++i, ++ptr)
+        const float* ptr = image->data<float>();
+        for (auto i = 0u; i < image->sizeInPixels(); ++i, ++ptr)
             func(*ptr);
+    }
+    
+    inline void Heightfield::fill(float value)
+    {
+        float* ptr = image->data<float>();
+        for (unsigned i = 0; i < image->sizeInPixels(); ++i)
+            *ptr++ = value;
     }
 }

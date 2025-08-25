@@ -83,8 +83,8 @@ BingElevationLayer::closeImplementation()
     super::closeImplementation();
 }
 
-Result<GeoHeightfield>
-BingElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOOptions& io) const
+Result<GeoImage>
+BingElevationLayer::createTileImplementation(const TileKey& key, const IOOptions& io) const
 {
     if (status().failed())
         return status().error();
@@ -118,12 +118,9 @@ BingElevationLayer::createHeightfieldImplementation(const TileKey& key, const IO
 
     auto heightfield = Heightfield::create(tileSize, tileSize);
     auto jsonItr = elevations.begin();
-    heightfield->forEachHeight([&](float& point) {point = (jsonItr++)->get<float>(); });
+    heightfield.forEachHeight([&](float& point) {point = (jsonItr++)->get<float>(); });
 
-    if (heightfield)
-        return GeoHeightfield(heightfield, key.extent());
-    else
-        return Failure_ResourceUnavailable;
+    return GeoImage(heightfield.image, key.extent());
 }
 
 #endif // ROCKY_HAS_BING

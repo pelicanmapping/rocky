@@ -19,12 +19,8 @@ ROCKY_ADD_OBJECT_FACTORY(GDALElevation,
 namespace
 {
     template<typename T>
-    Result<> openOnThisThread(
-        const T* layer,
-        GDAL::Driver& driver,
-        Profile* profile,
-        DataExtentList* out_dataExtents,
-        const IOOptions& io)
+    Result<> openOnThisThread(const T* layer, GDAL::Driver& driver, Profile* profile,
+        DataExtentList* out_dataExtents, const IOOptions& io)
     {
         if (layer->maxDataLevel.has_value())
             driver.maxDataLevel = layer->maxDataLevel;
@@ -36,12 +32,7 @@ namespace
         if (layer->maxValidValue.has_value())
             driver.maxValidValue = layer->maxValidValue;
 
-        auto status = driver.open(
-            layer->name,
-            layer,
-            layer->tileSize,
-            out_dataExtents,
-            io);
+        auto status = driver.open(layer->name, layer, layer->tileSize, out_dataExtents, io);
 
         if (status.failed())
             return status;
@@ -145,8 +136,8 @@ GDALElevationLayer::closeImplementation()
     super::closeImplementation();
 }
 
-Result<GeoHeightfield>
-GDALElevationLayer::createHeightfieldImplementation(const TileKey& key, const IOOptions& io) const
+Result<GeoImage>
+GDALElevationLayer::createTileImplementation(const TileKey& key, const IOOptions& io) const
 {
     if (status().failed())
         return status().error();
@@ -167,24 +158,13 @@ GDALElevationLayer::createHeightfieldImplementation(const TileKey& key, const IO
 
         if (r.ok())
         {
-            return GeoHeightfield(r.value(), key.extent());
+            return GeoImage(r.value(), key.extent());
         }
         else
         {
-            auto r = driver.createImage(key, tileSize, io);
-
+            r = driver.createImage(key, tileSize, io);
             if (r.ok())
-            {
-                if (r.value()->pixelFormat() == Image::R32_SFLOAT)
-                {
-                    return GeoHeightfield(Heightfield::create(r.value().get()), key.extent());
-                }
-                else // assume Image::R8G8B8_UNORM?
-                {
-                    auto hf = decodeRGB(r.value());
-                    return GeoHeightfield(hf, key.extent());
-                }
-            }
+                return GeoImage(r.value(), key.extent());
         }
     }
 

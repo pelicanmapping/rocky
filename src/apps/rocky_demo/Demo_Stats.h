@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 
@@ -126,14 +126,19 @@ auto Demo_Stats = [](Application& app)
         ImGuiLTable::End();
     }
 
-    //auto& engine = app.mapNode->terrainNode->engine;
 
     ImGui::SeparatorText("System");
+
     if (ImGuiLTable::Begin("System-Misc"))
     {
         ImGuiLTable::Text("Last frame rendered", std::to_string(app.frameCount()).c_str());
-        //ImGuiLTable::Text("Terrain tiles resident", std::to_string(engine->tiles.size()).c_str());
-        //ImGuiLTable::Text("Terrain geometry pool", std::to_string(engine->geometryPool.size()).c_str());
+
+        if (!app.mapNode->profile.isComposite())
+        {
+            //auto& engine = app.mapNode->terrainNode->->engine;
+            //ImGuiLTable::Text("Terrain tiles resident", std::to_string(engine->tiles.size()).c_str());
+            //ImGuiLTable::Text("Terrain geometry pool", std::to_string(engine->geometryPool.size()).c_str());
+        }
         ImGuiLTable::End();
     }
 
@@ -181,7 +186,7 @@ auto Demo_Stats = [](Application& app)
         ImGui::SeparatorText("Terrain");
         if (ImGuiLTable::Begin("Terrain-Settings"))
         {
-            ImGuiLTable::SliderInt("Load threads", (int*)&app.mapNode->terrainNode->concurrency, 1, 16);
+            ImGuiLTable::SliderInt("Load threads", (int*)&app.mapNode->terrainNode->concurrency.mutable_value(), 1, 16);
             ImGuiLTable::Checkbox("Continuous rendering", &app.vsgcontext->renderContinuously);
             ImGuiLTable::End();
         }

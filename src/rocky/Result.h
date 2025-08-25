@@ -160,6 +160,9 @@ namespace ROCKY_NAMESPACE
     //! Constant to use as a "good" value for a Result<>.
     constexpr std::nullopt_t ResultVoidOK = std::nullopt;
 
+    //! Constant to use as a "fail" value for a Result<T, std::nullopt_t>.
+    constexpr std::nullopt_t ResultFail = std::nullopt;
+
     /**
     * Status object that holds a potential Failure state.
     * The default constructed Status represents a good state.

@@ -31,7 +31,7 @@ namespace ROCKY_NAMESPACE
         void closeImplementation() override;
 
         //! Creates a raster image for the given tile key
-        Result<GeoImage> createImageImplementation(const TileKey& key, const IOOptions& io) const override;
+        Result<GeoImage> createTileImplementation(const TileKey& key, const IOOptions& io) const override;
 
     private:
         TMS::Driver _driver;

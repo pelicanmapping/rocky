@@ -7,7 +7,7 @@
 
 using namespace ROCKY_NAMESPACE;
 
-auto ElevationSampler::fetch(const TileKey& key, const IOOptions& io) const -> Result<GeoHeightfield>
+auto ElevationSampler::fetch(const TileKey& key, const IOOptions& io) const -> Result<GeoImage>
 {
     // check the cache first.
     if (preFetch)
@@ -22,7 +22,7 @@ auto ElevationSampler::fetch(const TileKey& key, const IOOptions& io) const -> R
     // failing that, check the layer, and fall back to parent tiles if necessary.
     for (auto k = key; k.valid(); k.makeParent())
     {
-        auto r = layer->createHeightfield(k, io);
+        auto r = layer->createTile(k, io);
         if (r.ok())
             return r;
     }
@@ -30,7 +30,7 @@ auto ElevationSampler::fetch(const TileKey& key, const IOOptions& io) const -> R
     return Failure{};
 }
 
-bool ElevationSession::clamp(double& x, double& y, double& z) const
+bool ElevationSession::transformAndClamp(double& x, double& y, double& z) const
 {
     if (_xform.from() != srs)
     {
@@ -91,12 +91,13 @@ bool ElevationSession::clamp(double& x, double& y, double& z) const
 
     if (_cache.status.ok())
     {
-        x = xa, y = ya;
-        z = _cache.hf.heightAtLocation(xa, ya, _sampler->interpolation);
-        return true;
+        auto r = _cache.hf.read(xa, ya);
+        if (r.ok())
+        {
+            x = xa, y = ya, z = r.value().r;
+            return true;
+        }
     }
-    else
-    {
-        return false;
-    }
+    
+    return false;
 }

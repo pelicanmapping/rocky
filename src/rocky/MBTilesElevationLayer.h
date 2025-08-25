@@ -31,7 +31,7 @@ namespace ROCKY_NAMESPACE
     protected:
 
         //! Creates a raster image for the given tile key
-        Result<GeoHeightfield> createHeightfieldImplementation(const TileKey& key, const IOOptions& io) const override;
+        Result<GeoImage> createTileImplementation(const TileKey& key, const IOOptions& io) const override;
 
         //! Opens the layer and returns its status
         Result<> openImplementation(const IOOptions& io) override;

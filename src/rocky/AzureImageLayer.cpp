@@ -77,7 +77,7 @@ AzureImageLayer::openImplementation(const IOOptions& io)
 
     // test fetch to make sure the API key is valid
     TileKey test(1, 0, 0, profile);
-    auto result = createImageImplementation(test, io);
+    auto result = createTileImplementation(test, io);
     if (result.failed())
     {
         Log()->warn(LC "Failed to fetch test tile: {}", result.error().message);
@@ -98,7 +98,7 @@ AzureImageLayer::closeImplementation()
 }
 
 Result<GeoImage>
-AzureImageLayer::createImageImplementation(const TileKey& key, const IOOptions& io) const
+AzureImageLayer::createTileImplementation(const TileKey& key, const IOOptions& io) const
 {
     auto zoom = key.level;
     auto x = key.x;

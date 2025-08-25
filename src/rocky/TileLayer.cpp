@@ -7,6 +7,7 @@
 #include "TileKey.h"
 #include "json.h"
 #include "rtree.h"
+#include "GeoImage.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
@@ -313,4 +314,30 @@ bool
 TileLayer::mayHaveData(const TileKey& key) const
 {
     return (key == bestAvailableTileKey(key));
+}
+
+Result<GeoImage>
+TileLayer::getOrCreateTile(const TileKey& key, const IOOptions& io, std::function<Result<GeoImage>()>&& create) const
+{
+    if (io.services().residentImageCache)
+    {
+        auto cacheKey = key.str() + '-' + std::to_string(key.profile.hash()) + '-' + std::to_string(uid()) + "-" + std::to_string(revision());
+
+        auto cached = io.services().residentImageCache->get(cacheKey);
+        if (cached.has_value())
+            return GeoImage(cached.value().first, cached.value().second);
+
+        auto r = create();
+
+        if (r.ok())
+        {
+            io.services().residentImageCache->put(cacheKey, r.value().image(), r.value().extent());
+        }
+
+        return r;
+    }
+    else
+    {
+        return create();
+    }
 }

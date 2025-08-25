@@ -32,7 +32,7 @@ auto Demo_NodePager = [](Application& app)
 
         // set up the pager, which needs to know both the tiling profile it will use
         // and the profile of the map.
-        pager = NodePager::create(profile, app.mapNode->profile);
+        pager = NodePager::create(profile, app.mapNode->srs());
 
         // tiles will start to appear at this level of detail:
         pager->minLevel = 1;
@@ -96,7 +96,7 @@ auto Demo_NodePager = [](Application& app)
 
     if (ImGuiLTable::Begin("NodePager"))
     {
-        static std::vector<std::string> pn = { "global-geodetic", "spherical-mercator", "qsc+x", "qsc+z", "qsc-z" };
+        static std::vector<std::string> pn = { "global-geodetic", "spherical-mercator" }; // , "qsc+x", "qsc+z", "qsc-z"
         int profileIndex = 0;
         for (int i = 0; i < pn.size(); i++)
             if (pn[i] == profile.wellKnownName())

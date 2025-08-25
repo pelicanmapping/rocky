@@ -18,11 +18,12 @@ namespace
 
     template<typename T>
     struct NORM8 {
-        static void read(Image::Pixel& pixel, unsigned char* ptr, int n) {
-            for (int i = 0; i < n; ++i)
-                pixel[i] = (float)(*ptr++) * denorm_8;
-            for (int i = n; i < 4; ++i)
-                pixel[i] = 1.0f; // fills in alpha if source doesn't have it
+        static Image::Pixel read(unsigned char* ptr, int n) {
+            return Image::Pixel(
+                n > 0 ? (float)(ptr[0]) * denorm_8 : 1.0f,
+                n > 1 ? (float)(ptr[1]) * denorm_8 : 1.0f,
+                n > 2 ? (float)(ptr[2]) * denorm_8 : 1.0f,
+                n > 3 ? (float)(ptr[3]) * denorm_8 : 1.0f);
         }
         static void write(const Image::Pixel& pixel, unsigned char* ptr, int n) {
             for (int i = 0; i < n; ++i)
@@ -33,13 +34,15 @@ namespace
     template<typename T>
     struct SRGB8 {
         // RGB are encoded, alpha is direct
-        static void read(Image::Pixel& pixel, unsigned char* ptr, int n) {
+        static Image::Pixel read(unsigned char* ptr, int n) {
+            Image::Pixel pixel;
             for (int i = 0; i < std::min(n, 3); ++i)
                 pixel[i] = util::sRGB_to_linear((float)(*ptr++) * denorm_8);
             for (int i = std::min(n, 3); i < n; ++i)
                 pixel[i] = (float)(*ptr++) * denorm_8;
             for (int i = n; i < 4; ++i)
-                pixel[i] = 1.0f; // fills in alpha if source doesn't have it
+                pixel[i] = 1.0f;
+            return pixel;
         }
         static void write(const Image::Pixel& pixel, unsigned char* ptr, int n) {
             for (int i = 0; i < std::min(n, 3); ++i)
@@ -54,10 +57,13 @@ namespace
 
     template<typename T>
     struct NORM16 {
-        static void read(Image::Pixel& pixel, unsigned char* ptr, int n) {
+        static Image::Pixel read(unsigned char* ptr, int n) {
             T* sptr = (T*)ptr;
-            for (int i = 0; i < n; ++i)
-                pixel[i] = (float)(*sptr++) * denorm_16;
+            return Image::Pixel(
+                n > 0 ? (float)(sptr[0]) * denorm_16 : 1.0f,
+                n > 1 ? (float)(sptr[1]) * denorm_16 : 1.0f,
+                n > 2 ? (float)(sptr[2]) * denorm_16 : 1.0f,
+                n > 3 ? (float)(sptr[3]) * denorm_16 : 1.0f);
         }
         static void write(const Image::Pixel& pixel, unsigned char* ptr, int n) {
             T* sptr = (T*)ptr;
@@ -68,10 +74,13 @@ namespace
 
     template<typename T>
     struct FLOAT {
-        static void read(Image::Pixel& pixel, unsigned char* ptr, int n) {
+        static Image::Pixel read(unsigned char* ptr, int n) {
             T* sptr = (T*)ptr;
-            for (int i = 0; i < n; ++i)
-                pixel[i] = (float)(*sptr++);
+            return Image::Pixel(
+                n > 0 ? (float)(sptr[0]) : 1.0f,
+                n > 1 ? (float)(sptr[1]) : 1.0f,
+                n > 2 ? (float)(sptr[2]) : 1.0f,
+                n > 3 ? (float)(sptr[3]) : 1.0f);
         }
         static void write(const Image::Pixel& pixel, unsigned char* ptr, int n) {
             T* sptr = (T*)ptr;
@@ -246,17 +255,17 @@ Image::convolve(const float* kernel) const
                 unsigned s_minus_1 = s > 0 ? s - 1 : s;
                 unsigned s_plus_1 = s < width() - 1 ? s + 1 : s;
 
-                read(samples[0], s_minus_1, t_minus_1, r);
-                read(samples[1], s, t_minus_1, r);
-                read(samples[2], s_plus_1, t_minus_1, r);
+                samples[0] = read(s_minus_1, t_minus_1, r);
+                samples[1] = read(s, t_minus_1, r);
+                samples[2] = read(s_plus_1, t_minus_1, r);
 
-                read(samples[3], s_minus_1, t, r);
-                read(samples[4], s, t, r);
-                read(samples[5], s_plus_1, t, r);
+                samples[3] = read(s_minus_1, t, r);
+                samples[4] = read(s, t, r);
+                samples[5] = read(s_plus_1, t, r);
 
-                read(samples[6], s_minus_1, t_plus_1, r);
-                read(samples[7], s, t_plus_1, r);
-                read(samples[8], s_plus_1, t_plus_1, r);
+                samples[6] = read(s_minus_1, t_plus_1, r);
+                samples[7] = read(s, t_plus_1, r);
+                samples[8] = read(s_plus_1, t_plus_1, r);
 
                 glm::fvec4 pixel(0, 0, 0, 0);
                 for (int i = 0; i < 9; ++i)

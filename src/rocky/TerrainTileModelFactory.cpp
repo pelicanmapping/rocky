@@ -14,20 +14,17 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    void replace_nodata_values(GeoHeightfield& geohf)
+    void replace_nodata_values(GeoImage& geohf)
     {
-        auto grid = geohf.heightfield();
-        if (grid)
+        if (geohf.image())
         {
-            for (unsigned col = 0; col < grid->height(); ++col)
+            // we know heightfields are R32_SFLOAT so take a shortcut.
+            float* pixel = geohf.image()->data<float>();
+            auto size = geohf.image()->width() * geohf.image()->height();
+            for (unsigned i = 0; i < size; ++i, ++pixel)
             {
-                for (unsigned row = 0; row < grid->width(); ++row)
-                {
-                    if (grid->heightAt(col, row) == NO_DATA_VALUE)
-                    {
-                        grid->heightAt(col, row) = 0.0f;
-                    }
-                }
+                float& h = *pixel;
+                if (h == NO_DATA_VALUE) h = 0.0f;
             }
         }
     }
@@ -67,7 +64,7 @@ namespace
         {
             while(key.valid() && !geoimage.valid())
             {
-                auto r = layer->createImage(key, io);
+                auto r = layer->createTile(key, io);
                 if (r.ok())
                 {
                     geoimage = r.release();
@@ -82,7 +79,7 @@ namespace
         }
         else
         {
-            auto r = layer->createImage(key, io);
+            auto r = layer->createTile(key, io);
             if (r.ok())
                 geoimage = r.release();
             else
@@ -235,19 +232,20 @@ TerrainTileModelFactory::addElevation(TerrainTileModel& model, const Map* map, c
 
     auto layer = layers.front();
 
-    int combinedRevision = map->revision();
-
     auto bestKey = layer->bestAvailableTileKey(key);
 
     if (bestKey == key)
     {
-        auto result = layer->createHeightfield(key, io);
+        auto result = layer->createTile(key, io);
 
         if (result.ok())
         {
             replace_nodata_values(result.value());
 
             model.elevation.heightfield = std::move(result.value());
+            // compute the min/max values for the heightfield - the terrain engine
+            // will use this to make its bounding volume
+            model.elevation.heightfield.computeMinMax();
             model.elevation.revision = layer->revision();
             model.elevation.key = key;
         }

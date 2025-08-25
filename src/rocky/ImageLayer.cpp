@@ -16,28 +16,6 @@
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 
-#define LC "[ImageLayer] \"" << name().value() << "\" "
-
-namespace
-{
-    // Image subclass that keeps a list of the images used to assemble it.
-    // This in combination with the resident image cache speeds up assemble operations.
-    class Mosaic : public Inherit<Image, Mosaic>
-    {
-    public:
-        Mosaic(PixelFormat format, unsigned s, unsigned t, unsigned r = 1) :
-            super(format, s, t, r) { }
-
-        Mosaic(const Mosaic& rhs) = default;
-
-        std::shared_ptr<Image> clone() const override
-        {
-            return std::make_shared<Mosaic>(*this);
-        }
-
-        std::vector<std::shared_ptr<Image>> dependencies;
-    };
-}
 
 ImageLayer::ImageLayer() :
     super()
@@ -85,33 +63,7 @@ ImageLayer::closeImplementation()
 }
 
 Result<GeoImage>
-ImageLayer::getOrCreate(const TileKey& key, const IOOptions& io, std::function<Result<GeoImage>()>&& create) const
-{
-    if (io.services().residentImageCache)
-    {
-        auto cacheKey = key.str() + '-' + std::to_string(key.profile.hash()) + '-' + std::to_string(uid()) + "-" + std::to_string(revision());
-
-        auto cached = io.services().residentImageCache->get(cacheKey);
-        if (cached.has_value())
-            return GeoImage(cached.value().first, cached.value().second);
-
-        auto r = create();
-
-        if (r.ok())
-        {
-            io.services().residentImageCache->put(cacheKey, r.value().image(), r.value().extent());
-        }
-
-        return r;
-    }
-    else
-    {
-        return create();
-    }
-}
-
-Result<GeoImage>
-ImageLayer::createImage(const TileKey& key, const IOOptions& io) const
+ImageLayer::createTile(const TileKey& key, const IOOptions& io) const
 {
     // lock prevents closing the layer while creating an image
     std::shared_lock readLock(layerStateMutex());
@@ -119,20 +71,14 @@ ImageLayer::createImage(const TileKey& key, const IOOptions& io) const
     if (status().failed())
         return status().error();
 
-    return getOrCreate(key, io, [&]()
+    return getOrCreateTile(key, io, [&]()
         {
-            return createImageInKeyProfile(key, io);
+            return createTileInKeyProfile(key, io);
         });
 }
 
 Result<GeoImage>
-ImageLayer::createImageImplementation_internal(const TileKey& key, const IOOptions& io) const
-{
-    return createImageImplementation(key, io);
-}
-
-Result<GeoImage>
-ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) const
+ImageLayer::createTileInKeyProfile(const TileKey& key, const IOOptions& io) const
 {
     Result<GeoImage> result = Failure_ResourceUnavailable;
 
@@ -162,13 +108,13 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
     // if this layer has no profile, just go straight to the driver.
     if (!profile.valid() || (key.profile == profile))
     {
-        result = createImageImplementation_internal(key, io);
+        result = createTileImplementation(key, io);
     }
 
     else
     {
         // If the profiles are different, use a compositing method to assemble the tile.
-        auto image = assembleImage(key, io);
+        auto image = assembleTile(key, io);
 
         if (image)
         {
@@ -221,7 +167,7 @@ ImageLayer::createImageInKeyProfile(const TileKey& key, const IOOptions& io) con
 }
 
 std::shared_ptr<Image>
-ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
+ImageLayer::assembleTile(const TileKey& key, const IOOptions& io) const
 {
     std::shared_ptr<Mosaic> output;
 
@@ -248,7 +194,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                     // a usable image tile.
                     while (actualKey.valid())
                     {
-                        auto r = createImageImplementation_internal(actualKey, io);
+                        auto r = createTileImplementation(actualKey, io);
 
                         if (io.canceled())
                             return Failure_OperationCanceled;
@@ -261,7 +207,7 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                     return Failure_ResourceUnavailable;
                 };
 
-            auto localTile = getOrCreate(localKey, io, create);
+            auto localTile = getOrCreateTile(localKey, io, create);
 
             if (localTile.ok())
             {
@@ -357,7 +303,8 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
             std::iota(indexes.begin(), indexes.end(), 0);
 
             // Mosaic our sources into a single output image.
-            glm::fvec4 pixel;
+            glm::fvec4 emptypixel(0.0f, 0.0f, 0.0f, 0.0f);
+
             for (unsigned layer = 0; layer < layers; ++layer)
             {
                 for (unsigned r = 0; r < rows; ++r)
@@ -366,8 +313,8 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
                     {
                         unsigned i = r * cols + c;
 
-                        // check each source (high to low LOD) until we get a valid pixel.
-                        pixel = { 0,0,0,0 };
+                        // check each source (high to low resolution) until we get a valid pixel.
+                        bool wrote = false;
 
                         for(unsigned n = 0; n < indexes.size(); ++n)
                         {
@@ -375,15 +322,21 @@ ImageLayer::assembleImage(const TileKey& key, const IOOptions& io) const
 
                             if (layer < sources[k].image()->depth())
                             {
-                                if (sources[k].read(pixel, points[i].x, points[i].y, layer) && pixel.a > 0.0f)
+                                auto pixel = sources[k].read(points[i].x, points[i].y, layer);
+                                if (pixel.ok() && pixel.value().a > 0.0f)
                                 {
+                                    output->write(pixel.value(), c, r, layer);
+                                    wrote = true;
                                     std::swap(indexes[n], indexes[0]);
                                     break;
                                 }
                             }
                         }
 
-                        output->write(pixel, c, r, layer);
+                        if (!wrote)
+                        {
+                            output->write(emptypixel, c, r, layer);
+                        }
                     }
                 }
             }

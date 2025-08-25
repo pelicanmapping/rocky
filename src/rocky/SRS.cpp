@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <proj.h>
 #include <array>
+#include <map>
 
 #define LC "[SRS] "
 
@@ -56,6 +57,9 @@ namespace
     //! Per thread proj threading context.
     thread_local PJ_CONTEXT* g_pj_thread_local_context = nullptr;
 
+    //! Last error message form an SRSOperation failure
+    thread_local std::string g_last_operation_error;
+
     const Ellipsoid default_ellipsoid = { };
     const Box empty_box = { };
     const std::string empty_string = { };
@@ -80,7 +84,7 @@ namespace
     };
 
     //! SRS data factory and PROJ main interface
-    struct SRSFactory : public std::unordered_map<std::string, SRSEntry>
+    struct SRSFactory : public std::map<std::string, SRSEntry>
     {
         SRSFactory() = default;
 
@@ -201,7 +205,7 @@ namespace
                     // store any error in the cache entry
                     auto err_no = proj_context_errno(ctx);
                     new_entry.error = proj_errno_string(err_no);
-                    Log()->warn("Failed to create SRS from \"{}\"", def);
+                    Log()->debug("Failed to create SRS from \"{}\"", def);
                 }
                 else
                 {
@@ -280,6 +284,18 @@ namespace
                     }
 
                     // Attempt to calculate the legal bounds for this SRS.
+
+                    // first check for special cases, since the proj_get_area_of_use() function only returns an
+                    // approximate bounds.
+                    if (!new_entry.bounds.has_value())
+                    {
+                        if (to_try == "epsg:3857")
+                        {
+                            // spherical mercator has a well-known bound
+                            new_entry.bounds = Box(-20037508.342789248, -20037508.342789248, 20037508.342789248, 20037508.342789248);
+                            new_entry.geodeticBounds = Box(-180, -85.0511287798066, 180, 85.0511287798066);
+                        }
+                    }
 
                     // try querying the area of use:
                     if (!new_entry.bounds.has_value())
@@ -862,6 +878,11 @@ SRS::string() const
         return "";
 }
 
+const std::string&
+SRSOperation::errorMessage() const
+{
+    return g_last_operation_error;
+}
 
 SRSOperation::SRSOperation(const SRS& from, const SRS& to) :
     _from(from),
@@ -884,7 +905,7 @@ SRSOperation::forward(void* handle, double& x, double& y, double& z) const
         int err = proj_errno((PJ*)handle);
         if (err != 0)
         {
-            _lastError = proj_errno_string(err);
+            g_last_operation_error = proj_context_errno_string(g_pj_thread_local_context, err);
             return false;
         }
         x = out.xyz.x, y = out.xyz.y, z = out.xyz.z;
@@ -910,7 +931,7 @@ SRSOperation::forward(void* handle, double* x, double* y, double* z, std::size_t
         int err = proj_errno((PJ*)handle);
         if (err != 0)
         {
-            _lastError = proj_errno_string(err);
+            g_last_operation_error = proj_context_errno_string(g_pj_thread_local_context, err);
             return false;
         }
         return true;
@@ -930,7 +951,7 @@ SRSOperation::inverse(void* handle, double& x, double& y, double& z) const
         int err = proj_errno((PJ*)handle);
         if (err != 0)
         {
-            _lastError = proj_errno_string(err);
+            g_last_operation_error = proj_context_errno_string(g_pj_thread_local_context, err);
             return false;
         }
         x = out.xyz.x, y = out.xyz.y, z = out.xyz.z;
@@ -956,7 +977,7 @@ SRSOperation::inverse(void* handle, double* x, double* y, double* z, std::size_t
         int err = proj_errno((PJ*)handle);
         if (err != 0)
         {
-            _lastError = proj_errno_string(err);
+            g_last_operation_error = proj_context_errno_string(g_pj_thread_local_context, err);
             return false;
         }
         return true;

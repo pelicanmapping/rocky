@@ -46,7 +46,7 @@ namespace ROCKY_NAMESPACE
         float failValue = NO_DATA_VALUE;
 
         //! Source of heightfields (like a cache) to check before querying the layer (optional).
-        std::function<Result<GeoHeightfield>(const TileKey&, const IOOptions&)> preFetch;
+        std::function<Result<GeoImage>(const TileKey&, const IOOptions&)> preFetch;
 
     public:
 
@@ -79,7 +79,7 @@ namespace ROCKY_NAMESPACE
 
     private:
         //! Fetches a new heightfield for a key.
-        Result<GeoHeightfield> fetch(const TileKey&, const IOOptions& io) const;
+        Result<GeoImage> fetch(const TileKey&, const IOOptions& io) const;
         friend class ElevationSession;
     };
 
@@ -107,13 +107,13 @@ namespace ROCKY_NAMESPACE
         Angle referenceLatitude = {};
 
         //! Clamps the incoming point to the elevation data.
-        bool clamp(double& x, double& y, double& z) const;
+        bool transformAndClamp(double& x, double& y, double& z) const;
 
         //! Samples the incoming point and returns the height.
         //! Failure will return the failValue.
         inline float sample(double x, double y, double z) const;
 
-        //! Samples a point.
+        //! Samples a range of points. All points are expected to be in the "srs" SRS.
         template<class VEC3_ITER>
         inline bool clampRange(VEC3_ITER begin, VEC3_ITER end) const;
 
@@ -143,7 +143,7 @@ namespace ROCKY_NAMESPACE
             mutable std::uint32_t tx = UINT_MAX, ty = UINT_MAX;
             mutable TileKey key;
             mutable Status status;
-            mutable GeoHeightfield hf;
+            mutable GeoImage hf;
         }
         _cache;
 
@@ -179,7 +179,7 @@ namespace ROCKY_NAMESPACE
         sesh.srs = p.srs;
 
         glm::dvec3 t(p);
-        if (sesh.clamp(t.x, t.y, t.z))
+        if (sesh.transformAndClamp(t.x, t.y, t.z))
             return t.z;
         else
             return Failure{};
@@ -195,7 +195,7 @@ namespace ROCKY_NAMESPACE
         sesh.srs = p.srs;
 
         GeoPoint out(p);
-        if (sesh.clamp(out.x, out.y, out.z))
+        if (sesh.transformAndClamp(out.x, out.y, out.z))
             return out;
         else
             return Failure{};
@@ -212,8 +212,11 @@ namespace ROCKY_NAMESPACE
         sesh.resolution = resolution;
 
         GeoPoint out(p);
-        if (sesh.clamp(out.x, out.y, out.z))
+        if (sesh.transformAndClamp(out.x, out.y, out.z))
+        {
+            sesh._xform.inverse(out.x, out.y, out.z);
             return out;
+        }
         else
             return Failure{};
     }
@@ -236,10 +239,15 @@ namespace ROCKY_NAMESPACE
     float ElevationSession::sample(double x, double y, double z) const
     {
         double a = x, b = y, c = z;
-        if (clamp(a, b, c))
+        if (transformAndClamp(a, b, c))
+        {
+            _xform.inverse(a, b, c);
             return static_cast<float>(c);
+        }
         else
+        {
             return _sampler->failValue;
+        }
     }
 
     template<class VEC3_ITER>
@@ -255,7 +263,7 @@ namespace ROCKY_NAMESPACE
 
         for (auto iter = begin; iter != end; ++iter)
         {
-            if (clamp(iter->x, iter->y, iter->z))
+            if (transformAndClamp(iter->x, iter->y, iter->z))
                 _xform.inverse(iter->x, iter->y, iter->z);
             else
                 result = false;

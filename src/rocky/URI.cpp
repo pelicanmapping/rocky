@@ -485,15 +485,24 @@ namespace
                         Log()->info(LC "(---) HTTP GET {:.2} ({})", request.url, httplib::to_string(res.error()));
                     }
 
-                    // retry on a missing connection
-                    if (res.error() == httplib::Error::Connection && (--max_attempts > 0))
+                    constexpr auto unrecoverable = [](httplib::Error error) {
+                        return
+                            error == httplib::Error::ExceedRedirectCount ||
+                            error == httplib::Error::SSLLoadingCerts ||
+                            error == httplib::Error::SSLServerVerification ||
+                            error == httplib::Error::SSLServerHostnameVerification ||
+                            error == httplib::Error::UnsupportedMultipartBoundaryChars ||
+                            error == httplib::Error::Compression;
+                        };
+
+                    if (unrecoverable(res.error()))
                     {
-                        Log()->info(LC + httplib::to_string(res.error()) + " with " + proto_host_port + "; retrying..");
-                        std::this_thread::sleep_for(1s);
-                        continue;
+                        return Failure(Failure::ServiceUnavailable, httplib::to_string(res.error()));
                     }
 
-                    return Failure(Failure::ServiceUnavailable, httplib::to_string(res.error()));
+                    // retry on a missing connection
+                    Log()->info(LC + httplib::to_string(res.error()) + " with " + proto_host_port + "; retrying..");
+                    std::this_thread::sleep_for(1s);
                 }
             }
 

@@ -8,6 +8,7 @@
 #include <rocky/Common.h>
 #include <rocky/Math.h>
 #include <cmath>
+#include <limits>
 
 namespace ROCKY_NAMESPACE
 {
@@ -53,6 +54,9 @@ namespace ROCKY_NAMESPACE
 
         //! Pixel format (see PixelFormat enum)
         PixelFormat pixelFormat() const { return _pixelFormat; }
+
+        //! No-data value (for elevation)
+        float noDataValue() const { return _noDataValue; }
 
         //! Whether there's an alpha channel
         bool hasAlphaChannel() const;
@@ -131,22 +135,22 @@ namespace ROCKY_NAMESPACE
 
         //! Read the pixel at a column, row, and layer.
         //! \param pixel Output value (in linear color space, if applicable)
-        inline void read(Pixel& pixel, unsigned s, unsigned t, unsigned layer = 0) const;
+        inline Pixel read(unsigned s, unsigned t, unsigned layer = 0) const;
 
         //! Read the pixel at the location in an iterator
         //! \param pixel Output value (in linear color space, if applicable)        
-        inline void read(Pixel& pixel, const iterator& i) const {
-            read(pixel, i.s(), i.t(), i.r());
+        inline Pixel read(const iterator& i) const {
+            return read(i.s(), i.t(), i.r());
         }
 
         //! Read the pixel at UV coordinates with bilinear interpolation
         //! \param pixel Output value (in linear color space, if applicable)
-        inline void read_bilinear(Pixel& pixel, float u, float v, unsigned layer = 0) const;
+        inline Pixel read_bilinear(float u, float v, unsigned layer = 0) const;
 
         //! Read the pixel at UV coordinates with bilinear interpolation at an iterator location
         //! \param pixel Output value (in linear color space, if applicable)
-        inline void read_bilinear(Pixel& pixel, const iterator& i) const {
-            read_bilinear(pixel, i.u(), i.v(), i.r());
+        inline Pixel read_bilinear(const iterator& i) const {
+            return read_bilinear(i.u(), i.v(), i.r());
         }
 
         //! Write the pixel at a column, row, and layer
@@ -176,8 +180,7 @@ namespace ROCKY_NAMESPACE
 
         //! Creates a sharpened clone of this image.
         //! @param strength sharpening kernel strength, 1-5 is typically a reasonable range
-        std::shared_ptr<Image> sharpen(
-            float strength = 2.5f) const;
+        std::shared_ptr<Image> sharpen(float strength = 2.5f) const;
 
         //! Creates a convolved clone of this image.
         //! @param kernel convolution kernel (9 floats that add up to 1.0f)
@@ -215,12 +218,13 @@ namespace ROCKY_NAMESPACE
         unsigned _width = 0, _height = 0, _depth = 0;
         PixelFormat _pixelFormat = R8G8B8A8_UNORM;
         unsigned char* _data = nullptr;
+        float _noDataValue = -std::numeric_limits<float>::max(); // default no-data value
         bool _ownsData = true;
 
         void allocate(PixelFormat format, unsigned s, unsigned t, unsigned r);
 
         struct Layout {
-            void(*read)(Pixel&, unsigned char*, int);
+            Pixel(*read)(unsigned char*, int);
             void(*write)(const Pixel&, unsigned char*, int);
             int num_components;
             int bytes_per_pixel;
@@ -235,20 +239,19 @@ namespace ROCKY_NAMESPACE
 
     // inline functions
 
-    bool Image::valid() const
+    inline bool Image::valid() const
     {
         return width() > 0 && height() > 0 && depth() > 0 && _data;
     }
 
-    void Image::read(Pixel& pixel, unsigned s, unsigned t, unsigned layer) const
+    inline Image::Pixel Image::read(unsigned s, unsigned t, unsigned layer) const
     {
-        _layouts[pixelFormat()].read(
-            pixel,
+        return _layouts[pixelFormat()].read(
             _data + (width()*height()*layer + width()*t + s)*_layouts[pixelFormat()].bytes_per_pixel,
             _layouts[pixelFormat()].num_components);
     }
 
-    void Image::read_bilinear(Pixel& pixel, float u, float v, unsigned layer) const
+    inline Image::Pixel Image::read_bilinear(float u, float v, unsigned layer) const
     {
         u = util::clamp(u, 0.0f, 1.0f);
         v = util::clamp(v, 0.0f, 1.0f);
@@ -265,15 +268,21 @@ namespace ROCKY_NAMESPACE
         float t1 = std::min(t0 + 1.0f, sizeT);
         float tmix = t0 < t1 ? (t - t0) / (t1 - t0) : 0.0f;
 
-        Pixel UL, UR, LL, LR;
-        read(UL, (unsigned)s0, (unsigned)t0, layer);
-        read(UR, (unsigned)s1, (unsigned)t0, layer);
-        read(LL, (unsigned)s0, (unsigned)t1, layer);
-        read(LR, (unsigned)s1, (unsigned)t1, layer);
+        auto UL = read((unsigned)s0, (unsigned)t0, layer);
+        auto UR = read((unsigned)s1, (unsigned)t0, layer);
+        auto LL = read((unsigned)s0, (unsigned)t1, layer);
+        auto LR = read((unsigned)s1, (unsigned)t1, layer);
 
-        Pixel TOP = UL * (1.0f - smix) + UR * smix;
-        Pixel BOT = LL * (1.0f - smix) + LR * smix;
-        pixel = TOP * (1.0f - tmix) + BOT * tmix;
+        Pixel TOP = UL.r == _noDataValue ? UR : UR.r == _noDataValue ? UL : UL * (1.0f - smix) + UR * smix;
+        Pixel BOT = LL.r == _noDataValue ? LR : LR.r == _noDataValue ? LL : LL * (1.0f - smix) + LR * smix;
+
+        if (TOP.r == _noDataValue && BOT.r == _noDataValue)
+            return Pixel(_noDataValue);
+
+        return
+            TOP.r == _noDataValue ? BOT :
+            BOT.r == _noDataValue ? TOP :
+            TOP * (1.0f - tmix) + BOT * tmix;
     }
 
     void Image::write(const Pixel& pixel, unsigned s, unsigned t, unsigned layer)
@@ -375,4 +384,31 @@ namespace ROCKY_NAMESPACE
                 return std::pow((c + 0.055f) / nonlinearFactor, exponent);
         }
     }
+
+
+
+    /**
+    * Image subclass that keeps a list of the images used to assemble it.
+    * This in combination with the resident image cache speeds up assemble operations.
+    */
+    class Mosaic : public Inherit<Image, Mosaic>
+    {
+    public:
+        //! Construct a new mosaic
+        Mosaic(Image::PixelFormat format, unsigned s, unsigned t, unsigned r = 1) :
+            super(format, s, t, r) {
+        }
+
+        //! Copy constructor
+        Mosaic(const Mosaic& rhs) = default;
+
+        //! Clone this object
+        std::shared_ptr<Image> clone() const override
+        {
+            return std::make_shared<Mosaic>(*this);
+        }
+
+        //! Collection of images used to create this mosaic
+        std::vector<std::shared_ptr<Image>> dependencies;
+    };
 }

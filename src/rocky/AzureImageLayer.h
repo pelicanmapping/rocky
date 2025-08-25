@@ -35,7 +35,7 @@ namespace ROCKY_NAMESPACE
 
         void closeImplementation() override;
 
-        Result<GeoImage> createImageImplementation(const TileKey& key, const IOOptions& io) const override;
+        Result<GeoImage> createTileImplementation(const TileKey& key, const IOOptions& io) const override;
 
     private:
 
