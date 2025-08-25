@@ -12,7 +12,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.17">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.18">
     
     
       
@@ -293,6 +293,146 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#members" class="md-nav__link">
+    <span class="md-ellipsis">
+      Members
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Functions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create" class="md-nav__link">
+    <span class="md-ellipsis">
+      create
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#heightfield" class="md-nav__link">
+    <span class="md-ellipsis">
+      Heightfield
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#heightfield_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Heightfield
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#heightat" class="md-nav__link">
+    <span class="md-ellipsis">
+      heightAt
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#heightat_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      heightAt
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#heightatuv" class="md-nav__link">
+    <span class="md-ellipsis">
+      heightAtUV
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#foreachheight" class="md-nav__link">
+    <span class="md-ellipsis">
+      forEachHeight
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#foreachheight_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      forEachHeight
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fill" class="md-nav__link">
+    <span class="md-ellipsis">
+      fill
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#width" class="md-nav__link">
+    <span class="md-ellipsis">
+      width
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#height" class="md-nav__link">
+    <span class="md-ellipsis">
+      height
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nodatavalue" class="md-nav__link">
+    <span class="md-ellipsis">
+      noDataValue
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -308,6 +448,50 @@
 
 
 <h1 id="class-heightfield">class Heightfield</h1>
+<p><em>Defined at src/rocky/Heightfield.h#17</em></p>
+<h2 id="members">Members</h2>
+<p>public int image</p>
+<h2 id="functions">Functions</h2>
+<h3 id="create">create</h3>
+<p><em>public Heightfield create(unsigned int cols, unsigned int rows)</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#22</em></p>
+<h3 id="heightfield">Heightfield</h3>
+<p><em>public void Heightfield(int in_image)</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#26</em></p>
+<h3 id="heightfield_1">Heightfield</h3>
+<p><em>public void Heightfield(unsigned int cols, unsigned int rows)</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#32</em></p>
+<h3 id="heightat">heightAt</h3>
+<p><em>public float &amp; heightAt(unsigned int col, unsigned int row)</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#63</em></p>
+<p>Access the height value at col, row</p>
+<p>inline functions</p>
+<h3 id="heightat_1">heightAt</h3>
+<p><em>public float heightAt(unsigned int col, unsigned int row)</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#68</em></p>
+<h3 id="heightatuv">heightAtUV</h3>
+<p><em>public float heightAtUV(float u, float v)</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#73</em></p>
+<h3 id="foreachheight">forEachHeight</h3>
+<p><em>public void forEachHeight(CALLABLE &amp;&amp; func)</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#79</em></p>
+<p>Visits each height in the field with a user-provided function that takes "float" or "float&amp;" as an argument.</p>
+<h3 id="foreachheight_1">forEachHeight</h3>
+<p><em>public void forEachHeight(CALLABLE &amp;&amp; func)</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#87</em></p>
+<h3 id="fill">fill</h3>
+<p><em>public void fill(float value)</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#94</em></p>
+<p>Fill with a single height value</p>
+<h3 id="width">width</h3>
+<p><em>public unsigned int width()</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#56</em></p>
+<h3 id="height">height</h3>
+<p><em>public unsigned int height()</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#57</em></p>
+<h3 id="nodatavalue">noDataValue</h3>
+<p><em>public float noDataValue()</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#58</em></p>
 
 
 
