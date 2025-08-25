@@ -260,7 +260,7 @@ GeoImage::read(const SRSOperation& xform, double x, double y, int layer) const
 void
 GeoImage::computeMinMax()
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(_image->valid() && _image->pixelFormat() == Heightfield::FORMAT, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(_image->valid() && _image->pixelFormat() == HEIGHTFIELD_FORMAT, void());
 
     _minValue = FLT_MAX;
     _maxValue = -FLT_MAX;

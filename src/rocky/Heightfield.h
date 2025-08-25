@@ -11,14 +11,14 @@ namespace ROCKY_NAMESPACE
 {
     constexpr float NO_DATA_VALUE = -std::numeric_limits<float>::max();
 
+    constexpr Image::PixelFormat HEIGHTFIELD_FORMAT = Image::R32_SFLOAT;
+
     /**
     * Wrapper around an Image that provides heightfield functions.
     */
     class /*ROCKY_EXPORT*/ Heightfield
     {
     public:
-        static const Image::PixelFormat FORMAT = Image::R32_SFLOAT;
-
         static Heightfield create(unsigned cols, unsigned rows) {
             return Heightfield(cols, rows);
         }
@@ -26,12 +26,12 @@ namespace ROCKY_NAMESPACE
         Heightfield(Image::Ptr in_image) : image(in_image)
         {
             ROCKY_SOFT_ASSERT(image);
-            ROCKY_SOFT_ASSERT(image->pixelFormat() == FORMAT);
+            ROCKY_SOFT_ASSERT(image->pixelFormat() == HEIGHTFIELD_FORMAT);
         }
         
         Heightfield(unsigned cols, unsigned rows)
         {
-            image = Image::create(FORMAT, cols, rows, 1);
+            image = Image::create(HEIGHTFIELD_FORMAT, cols, rows, 1);
         }
 
         Image::Ptr image = nullptr;

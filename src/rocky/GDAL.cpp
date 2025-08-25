@@ -998,7 +998,7 @@ GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions
 
         if (isElevation)
         {
-            image = Image::create(Heightfield::FORMAT, tileSize, tileSize);
+            image = Image::create(HEIGHTFIELD_FORMAT, tileSize, tileSize);
             image->fill(glm::fvec4(NO_DATA_VALUE));
             
             if (gdalDataType == GDT_Int16)

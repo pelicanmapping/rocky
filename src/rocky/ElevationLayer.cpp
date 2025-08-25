@@ -325,13 +325,13 @@ ElevationLayer::createTileImplementation_internal(const TileKey& key, const IOOp
     {
         ROCKY_SOFT_ASSERT_AND_RETURN(result.value().valid(), result);
 
-        if (result.value().image()->pixelFormat() != Heightfield::FORMAT)
+        if (result.value().image()->pixelFormat() != HEIGHTFIELD_FORMAT)
         {
             // If the image is not a heightfield, decode it to a heightfield.
             auto hf = decodeRGB(result.value().image());
             if (hf)
             {
-                ROCKY_SOFT_ASSERT_AND_RETURN(hf->pixelFormat() == Heightfield::FORMAT, result);
+                ROCKY_SOFT_ASSERT_AND_RETURN(hf->pixelFormat() == HEIGHTFIELD_FORMAT, result);
                 result = GeoImage(hf, key.extent());
             }
             else
