@@ -71,14 +71,12 @@ int main(int argc, char** argv)
 
     // Rocky runtime context connected to the viewer:
     auto context = rocky::VSGContextFactory::create(viewer);
-    context->sharedObjects = vsg::SharedObjects::create(); // optional
 
     // the map node - renders the terrain
     auto mapNode = rocky::MapNode::create(context);
 
     // Configure the terrain engine to our liking:
     mapNode->terrainSettings().concurrency = 4u;
-    mapNode->terrainSettings().skirtRatio = 0.025f;
     mapNode->terrainSettings().minLevelOfDetail = 1;
     mapNode->terrainSettings().screenSpaceError = 135.0f;
 
@@ -88,6 +86,9 @@ int main(int argc, char** argv)
     layer->attribution = rocky::Hyperlink{ "\u00a9 OpenStreetMap contributors", "https://openstreetmap.org/copyright" };
     layer->profile = rocky::Profile("spherical-mercator");
     mapNode->map->add(layer);
+
+    // A rendering profile (optional) that works well with OSM tiles
+    mapNode->profile = rocky::Profile("global-qsc");
 
     // Add our map to the scene:
     vsg_scene->addChild(mapNode);
