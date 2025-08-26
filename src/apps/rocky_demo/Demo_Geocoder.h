@@ -21,8 +21,11 @@ auto Demo_Geocoder = [](Application& app)
     {
         app.registry.write([&](entt::registry& registry)
             {
+                outline = registry.create();
+                registry.emplace<Line>(outline);
+
                 // Make an entity to host our icon:
-                placemark = registry.create();
+                placemark = registry.create();               
 
                 // label:
                 auto& widget = registry.emplace<Widget>(placemark);
@@ -55,13 +58,16 @@ auto Demo_Geocoder = [](Application& app)
 
                 geocoding_task = jobs::dispatch([&app, input](jobs::cancelable& c) -> Result<std::vector<Feature>>
                     {
-                        if (!c.canceled())
-                        {
-                            Geocoder geocoder;
-                            return geocoder.geocode(input, app.io());
-                        }
-                        return Failure{};
+                        if (c.canceled())
+                            return Failure_OperationCanceled;
+
+                        Geocoder geocoder;
+                        auto r = geocoder.geocode(input, app.io());
+                        app.vsgcontext->requestFrame();
+                        return r;
                     });
+
+                app.vsgcontext->requestFrame();
             }
             ImGuiLTable::End();
         }
@@ -101,7 +107,7 @@ auto Demo_Geocoder = [](Application& app)
                                     Viewpoint vp = manip->viewpoint();
                                     vp.point = extent.centroid();
                                     vp.range = Distance(extent.width(Units::METERS) * 7.0, Units::METERS);
-                                    manip->setViewpoint(vp, std::chrono::seconds(2));
+                                    manip->setViewpoint(vp, std::chrono::seconds(1));
                                 }
 
                                 // update the mesh:
@@ -119,11 +125,7 @@ auto Demo_Geocoder = [](Application& app)
 
                                     app.registry.write([&](entt::registry& registry)
                                         {
-                                            // Delete the old outline:
-                                            if (outline != entt::null && registry.valid(outline))
-                                                registry.destroy(outline);
-
-                                            outline = primitives.move(registry);
+                                            registry.emplace_or_replace<Line>(outline, primitives.line);
 
                                             registry.get<Visibility>(outline).visible.fill(true);
                                             registry.get<Visibility>(placemark).visible.fill(true);
@@ -135,12 +137,12 @@ auto Demo_Geocoder = [](Application& app)
                                             util::replaceInPlace(text, ", ", "\n");
                                             widget.text = text;
 
-                                            xform.position = extent.centroid();
+                                            xform.position = myfeature.extent.centroid();
                                             xform.dirty();
                                         });
                                 }
                             });
-                    }
+                    }                                    
                     ImGui::PopID();
                 }
                 ImGui::Separator();

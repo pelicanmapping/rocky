@@ -15,7 +15,9 @@ namespace ROCKY_NAMESPACE
     class IOOptions;
 
     /**
-     * A raster image
+     * A raster grid. The image can hold any data including colors, height samples,
+     * coverage values, etc. as long as it's storable in one of the supported
+     * pixel formats.
      */
     class ROCKY_EXPORT Image : public Inherit<Object, Image>
     {

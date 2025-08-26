@@ -387,6 +387,7 @@ namespace ROCKY_NAMESPACE
         const auto& view = registry.view<T, ActiveState, Visibility>();
         view.each([&](const entt::entity entity, auto& component, auto& active, auto& visibility)
             {
+                ROCKY_HARD_ASSERT(component.attach_point != entt::null);
                 auto& renderable = registry.get<Renderable>(component.attach_point);
                 if (renderable.node)
                 {

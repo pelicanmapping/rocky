@@ -63,7 +63,7 @@ void main()
         vec3 b = fwidth(gl_BaryCoordEXT.xyz);
         vec3 edge = smoothstep(vec3(0.0), b * pixelWidth, gl_BaryCoordEXT.xyz);
         float wire = 1.0 - min(min(edge.x, edge.y), edge.z);
-        vec3 wire_color = clamp(out_color.rgb*3.0, 0.0, 1.0);
+        vec3 wire_color = clamp(out_color.rgb*3.0, 0.05, 1.0);
         out_color.rgb = mix(out_color.rgb, wire_color, clamp(wire, 0.0, 1.0));
     }
 #endif

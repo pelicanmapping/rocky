@@ -372,8 +372,7 @@ GDALFeatureSource::iterate(const IOOptions& io)
     if (layerHandle)
     {
         i->_source = this;
-        i->_dsHandle = _dsHandle;
-        i->_layerHandle = _layerHandle;
+        i->_layerHandle = layerHandle;
         i->_metadata = &_metadata;
         i->init();
     }
@@ -394,15 +393,12 @@ GDALFeatureSource::iterator_impl::init()
 {
     _resultSetEndReached = false;
 
-    if (_dsHandle)
-    {
-        _resultSetHandle = _layerHandle;
+    _resultSetHandle = _layerHandle;
 
-        if (_resultSetHandle)
-            OGR_L_ResetReading(_resultSetHandle);
+    if (_resultSetHandle)
+        OGR_L_ResetReading(_resultSetHandle);
 
-        readChunk();
-    }
+    readChunk();
 }
 
 GDALFeatureSource::iterator_impl::~iterator_impl()

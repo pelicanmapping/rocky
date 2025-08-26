@@ -73,7 +73,6 @@ namespace ROCKY_NAMESPACE
             std::queue<Feature> _queue;
             Feature _lastFeatureReturned;
             GDALFeatureSource* _source = nullptr;
-            void* _dsHandle = nullptr;
             void* _layerHandle = nullptr;
             const FeatureSource::Metadata* _metadata = nullptr;
             void* _resultSetHandle = nullptr;

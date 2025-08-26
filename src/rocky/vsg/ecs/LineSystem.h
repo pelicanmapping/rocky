@@ -102,7 +102,7 @@ namespace ROCKY_NAMESPACE
 
         if (verts_to_allocate < 2)
         {
-            throw "LineGeometry requires at least two vertices";
+            //throw "LineGeometry requires at least two vertices";
             _drawCommand->indexCount = 0;
             return;
         }

@@ -30,11 +30,10 @@ Geocoder::geocode(const std::string& location, IOOptions& io) const
             auto fs = GDALFeatureSource::create();
             fs->externalLayerHandle = layerHandle;
             fs->externalSRS = SRS::WGS84;
-            auto iter = fs->iterate(io);
-            while (iter.hasMore())
-            {
-                result.emplace_back(iter.next());
-            }
+            fs->each(io, [&](Feature&& f)
+                {
+                    result.emplace_back(std::move(f));
+                });
             OGRGeocodeFreeResult(layerHandle);
         }
         OGRGeocodeDestroySession(session);
