@@ -448,50 +448,60 @@
 
 
 <h1 id="class-heightfield">class Heightfield</h1>
-<p><em>Defined at src/rocky/Heightfield.h#19</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#21</em></p>
+<p>Wrapper around an Image that provides heightfield functions.</p>
 <h2 id="members">Members</h2>
 <p>public int image</p>
 <h2 id="functions">Functions</h2>
 <h3 id="create">create</h3>
 <p><em>public Heightfield create(unsigned int cols, unsigned int rows)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#22</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#25</em></p>
+<p>Construct a new Image wrapped in a Heightfield API.</p>
 <h3 id="heightfield">Heightfield</h3>
 <p><em>public void Heightfield(int in_image)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#26</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#30</em></p>
+<p>Wrap a Heightfield API around an existing image.</p>
 <h3 id="heightfield_1">Heightfield</h3>
 <p><em>public void Heightfield(unsigned int cols, unsigned int rows)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#32</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#37</em></p>
+<p>Construct a new heightfield with given dimensions.</p>
 <h3 id="heightat">heightAt</h3>
 <p><em>public float &amp; heightAt(unsigned int col, unsigned int row)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#63</em></p>
-<p>Access the height value at col, row</p>
+<p><em>Defined at src/rocky/Heightfield.h#79</em></p>
+<p>Mutable reference to the height value at col, row</p>
 <p>inline functions</p>
 <h3 id="heightat_1">heightAt</h3>
 <p><em>public float heightAt(unsigned int col, unsigned int row)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#68</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#84</em></p>
+<p>Height value at col, row</p>
 <h3 id="heightatuv">heightAtUV</h3>
 <p><em>public float heightAtUV(float u, float v)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#73</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#89</em></p>
+<p>Height value at normalized UV coordinates (0..1, 0..1)</p>
 <h3 id="foreachheight">forEachHeight</h3>
 <p><em>public void forEachHeight(CALLABLE &amp;&amp; func)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#79</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#95</em></p>
 <p>Visits each height in the field with a user-provided function that takes "float" or "float&amp;" as an argument.</p>
 <h3 id="foreachheight_1">forEachHeight</h3>
 <p><em>public void forEachHeight(CALLABLE &amp;&amp; func)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#87</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#103</em></p>
+<p>Visits each height in the field with a user-provided function that takes "float" as an argument.</p>
 <h3 id="fill">fill</h3>
 <p><em>public void fill(float value)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#94</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#111</em></p>
 <p>Fill with a single height value</p>
 <h3 id="width">width</h3>
 <p><em>public unsigned int width()</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#56</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#68</em></p>
+<p>Width of the underlying image (in pixels)</p>
 <h3 id="height">height</h3>
 <p><em>public unsigned int height()</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#57</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#71</em></p>
+<p>Height of the underlying image (in pixels)</p>
 <h3 id="nodatavalue">noDataValue</h3>
 <p><em>public float noDataValue()</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#58</em></p>
+<p><em>Defined at src/rocky/Heightfield.h#74</em></p>
+<p>No-data value of the underlying image</p>
 
 
 
