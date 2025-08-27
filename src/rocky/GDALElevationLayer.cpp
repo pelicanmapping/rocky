@@ -71,7 +71,7 @@ GDALElevationLayer::construct(std::string_view JSON, const IOOptions& io)
     get_to(j, "interpolation", temp);
     if (temp == "nearest") interpolation = Interpolation::Nearest;
     else if (temp == "bilinear") interpolation = Interpolation::Bilinear;
-    get_to(j, "single_threaded", singleThreaded);
+    get_to(j, "singleThreaded", singleThreaded);
 
     // default for GDAL elevation is nearest-neighbor.
     if (!interpolation.has_value())
@@ -91,7 +91,7 @@ GDALElevationLayer::to_json() const
         set(j, "interpolation", "nearest");
     else if (interpolation.has_value(Interpolation::Bilinear))
         set(j, "interpolation", "bilinear");
-    set(j, "single_threaded", singleThreaded);
+    set(j, "singleThreaded", singleThreaded);
     return j.dump();
 }
 

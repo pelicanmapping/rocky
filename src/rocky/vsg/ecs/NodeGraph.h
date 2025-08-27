@@ -10,7 +10,7 @@
 namespace ROCKY_NAMESPACE
 {
     /** ECS component that holds a VSG node */
-    struct NodeGraph : public RevisionedComponent
+    struct NodeGraph : public BaseComponent
     {
         vsg::ref_ptr<vsg::Node> node;
     };

@@ -16,7 +16,7 @@ namespace ROCKY_NAMESPACE
     *
     * A Transform may be safely updated asynchronously.
     */
-    struct Transform : public RevisionedComponent
+    struct Transform : public BaseComponent
     {
         //! Georeferenced position
         GeoPoint position;

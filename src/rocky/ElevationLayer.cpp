@@ -50,13 +50,13 @@ ElevationLayer::construct(std::string_view JSON, const IOOptions& io)
 
     const auto j = parse_json(JSON);
     get_to(j, "offset", offset);
-    get_to(j, "no_data_value", noDataValue);
-    get_to(j, "min_valid_value", minValidValue);
-    get_to(j, "max_valid_value", maxValidValue);
+    get_to(j, "noDataValue", noDataValue);
+    get_to(j, "minValidValue", minValidValue);
+    get_to(j, "maxValidValue", maxValidValue);
     std::string encoding_value;
     if (get_to(j, "encoding", encoding_value))
     {
-        if (encoding_value == "single_channel")
+        if (encoding_value == "singleChannel")
             encoding = Encoding::SingleChannel;
         else if (encoding_value == "mapbox")
             encoding = Encoding::MapboxRGB;
@@ -73,11 +73,11 @@ ElevationLayer::to_json() const
 {
     auto j = parse_json(super::to_json());
     set(j, "offset", offset);
-    set(j, "no_data_value", noDataValue);
-    set(j, "min_valid_value", minValidValue);
-    set(j, "max_valid_value", maxValidValue);
+    set(j, "noDataValue", noDataValue);
+    set(j, "minValidValue", minValidValue);
+    set(j, "maxValidValue", maxValidValue);
     if (encoding.has_value(Encoding::SingleChannel))
-        set(j, "encoding", "single_channel");
+        set(j, "encoding", "singleChannel");
     else if (encoding.has_value(Encoding::MapboxRGB))
         set(j, "encoding", "mapbox");
     else if (encoding.has_value(Encoding::TerrariumRGB))

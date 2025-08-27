@@ -18,9 +18,9 @@ namespace ROCKY_NAMESPACE
         set(j, "pitch", obj.pitch);
         set(j, "range", obj.range);
         if (obj.positionOffset.has_value()) {
-            set(j, "x_offset", obj.positionOffset->x);
-            set(j, "y_offset", obj.positionOffset->y);
-            set(j, "z_offset", obj.positionOffset->z);
+            set(j, "xOffset", obj.positionOffset->x);
+            set(j, "yOffset", obj.positionOffset->y);
+            set(j, "zOffset", obj.positionOffset->z);
         }
         //TODO
         //if (obj.target && obj.target->position().valid())
@@ -32,9 +32,9 @@ namespace ROCKY_NAMESPACE
         get_to(j, "heading", obj.heading);
         get_to(j, "pitch", obj.pitch);
         get_to(j, "range", obj.range);
-        get_to(j, "x_offset", obj.positionOffset->x);
-        get_to(j, "y_offset", obj.positionOffset->y);
-        get_to(j, "z_offset", obj.positionOffset->z);
+        get_to(j, "xOffset", obj.positionOffset->x);
+        get_to(j, "yOffset", obj.positionOffset->y);
+        get_to(j, "zOffset", obj.positionOffset->z);
         //TODO target
     }
 }

@@ -58,7 +58,7 @@ TerrainProfileNode::createRootTiles(VSGContext context)
     ROCKY_HARD_ASSERT(children.empty(), "TerrainNode::createRootTiles() called with children already present");
 
     // once the pipeline exists, we can start creating tiles.
-    auto keys = _engine->profile.allKeysAtLOD(terrain.minLevelOfDetail);
+    auto keys = _engine->profile.allKeysAtLOD(terrain.minLevel);
 
     for (auto& key : keys)
     {

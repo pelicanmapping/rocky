@@ -16,16 +16,16 @@ TerrainSettings::from_json(std::string_view JSON)
     if (j.status.failed())
         return j.status.error();
 
-    get_to(j, "tile_size", tileSize);
-    get_to(j, "min_tile_range_factor", minTileRangeFactor);
-    get_to(j, "max_level", maxLevelOfDetail);
-    get_to(j, "min_level", minLevelOfDetail);
-    get_to(j, "screen_space_error", screenSpaceError);
-    get_to(j, "tile_pixel_size", tilePixelSize);
-    get_to(j, "skirt_ratio", skirtRatio);
+    get_to(j, "tileSize", tileSize);
+    get_to(j, "minTileRangeFactor", minTileRangeFactor);
+    get_to(j, "maxLevel", maxLevel);
+    get_to(j, "minLevel", minLevel);
+    get_to(j, "screenSpaceError", screenSpaceError);
+    get_to(j, "tilePixelSize", tilePixelSize);
+    get_to(j, "skirtRatio", skirtRatio);
     get_to(j, "color", color);
     get_to(j, "concurrency", concurrency);
-    get_to(j, "wire_overlay", wireOverlay);
+    get_to(j, "wireOverlay", wireOverlay);
 
     return ResultVoidOK;
 }
@@ -34,15 +34,15 @@ std::string
 TerrainSettings::to_json() const
 {
     auto j = json::object();
-    set(j, "tile_size", tileSize);
-    set(j, "min_tile_range_factor", minTileRangeFactor);
-    set(j, "max_level", maxLevelOfDetail);
-    set(j, "min_level", minLevelOfDetail);
-    set(j, "screen_space_error", screenSpaceError);
-    set(j, "tile_pixel_size", tilePixelSize);
-    set(j, "skirt_ratio", skirtRatio);
+    set(j, "tileSize", tileSize);
+    set(j, "minTileRangeFactor", minTileRangeFactor);
+    set(j, "maxLevel", maxLevel);
+    set(j, "minLevel", minLevel);
+    set(j, "screenSpaceError", screenSpaceError);
+    set(j, "tilePixelSize", tilePixelSize);
+    set(j, "skirtRatio", skirtRatio);
     set(j, "color", color);
     set(j, "concurrency", concurrency);
-    set(j, "wire_overlay", wireOverlay);
+    set(j, "wireOverlay", wireOverlay);
     return j.dump();
 }

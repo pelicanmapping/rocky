@@ -37,9 +37,9 @@ AzureImageLayer::construct(std::string_view JSON, const IOOptions& io)
     setLayerTypeName("AzureImage");
 
     const auto j = parse_json(JSON);
-    get_to(j, "subscription_key", subscriptionKey);
-    get_to(j, "tileset_id", tilesetId);
-    get_to(j, "map_tile_api_url", mapTileApiUrl);
+    get_to(j, "subscriptionKey", subscriptionKey);
+    get_to(j, "tilesetId", tilesetId);
+    get_to(j, "mapTileApiUrl", mapTileApiUrl);
 
     // environment variable key overrides a key set in code
     auto key = util::getEnvVar("AZURE_KEY");
@@ -55,9 +55,9 @@ std::string
 AzureImageLayer::to_json() const
 {
     auto j = parse_json(super::to_json());
-    set(j, "subscription_key", subscriptionKey);
-    set(j, "tileset_id", tilesetId);
-    set(j, "map_tile_api_url", mapTileApiUrl);
+    set(j, "subscriptionKey", subscriptionKey);
+    set(j, "tilesetId", tilesetId);
+    set(j, "mapTileApiUrl", mapTileApiUrl);
     return j.dump();
 }
 

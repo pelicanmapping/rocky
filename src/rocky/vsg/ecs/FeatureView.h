@@ -52,7 +52,7 @@ namespace ROCKY_NAMESPACE
             //! Creates components for the primitive data and moves them
             //! into the registry. After calling this method, the member
             //! primitives are reset.
-            inline entt::entity move(entt::registry& r) {
+            inline entt::entity createEntity(entt::registry& r) {
                 if (empty())
                     return entt::null;
 
@@ -103,6 +103,7 @@ namespace ROCKY_NAMESPACE
         //! @return Collection of primtives representing the feature geometry
         Primitives generate(const SRS& output_srs);
 
+    protected:
         void generate(PrimitivesRef& working, const SRS& output_srs);
     };
 }

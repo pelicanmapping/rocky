@@ -35,10 +35,10 @@ void
 TileLayer::construct(std::string_view conf)
 {
     const auto j = parse_json(conf);
-    get_to(j, "max_level", maxLevel);
-    get_to(j, "max_data_level", maxDataLevel);
-    get_to(j, "min_level", minLevel);
-    get_to(j, "tile_size", tileSize);
+    get_to(j, "maxLevel", maxLevel);
+    get_to(j, "maxDataLevel", maxDataLevel);
+    get_to(j, "minLevel", minLevel);
+    get_to(j, "tileSize", tileSize);
     get_to(j, "profile", _originalProfile);        
 }
 
@@ -46,10 +46,10 @@ std::string
 TileLayer::to_json() const
 {
     auto j = parse_json(super::to_json());
-    set(j, "max_level", maxLevel);
-    set(j, "max_data_level", maxDataLevel);
-    set(j, "min_level", minLevel);
-    set(j, "tile_size", tileSize);
+    set(j, "maxLevel", maxLevel);
+    set(j, "maxDataLevel", maxDataLevel);
+    set(j, "minLevel", minLevel);
+    set(j, "tileSize", tileSize);
     set(j, "profile", _originalProfile);
     return j.dump();
 }

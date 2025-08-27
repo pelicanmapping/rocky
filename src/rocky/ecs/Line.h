@@ -28,7 +28,7 @@ namespace ROCKY_NAMESPACE
     * Line string component - holds one or more separate line string geometries
     * sharing the same style.
     */
-    class ROCKY_EXPORT Line : public RevisionedComponent
+    class ROCKY_EXPORT Line : public BaseComponent
     {
     public:
         //! Dynamic line styling

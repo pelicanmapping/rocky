@@ -102,7 +102,11 @@ TMSImageLayer::createTileImplementation(const TileKey& key, const IOOptions& io)
     auto r = _driver.read(key, invertY, false, uri->context(), io);
 
     if (r.ok())
+    {
         return GeoImage(r.value(), key.extent());
+    }
     else
+    {
         return r.error();
+    }
 }

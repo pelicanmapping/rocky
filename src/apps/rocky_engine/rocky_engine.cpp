@@ -77,7 +77,7 @@ int main(int argc, char** argv)
 
     // Configure the terrain engine to our liking:
     mapNode->terrainSettings().concurrency = 4u;
-    mapNode->terrainSettings().minLevelOfDetail = 1;
+    mapNode->terrainSettings().minLevel = 1;
     mapNode->terrainSettings().screenSpaceError = 135.0f;
 
     // Add a base image layer:

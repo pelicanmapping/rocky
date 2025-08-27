@@ -30,9 +30,6 @@ namespace ROCKY_NAMESPACE
         //! Information about the source of this layer's data
         option<Hyperlink> attribution = { };
 
-        //! Size of the L2 (memory) cache
-        option<unsigned> l2CacheSize = 0;
-
     public:
         //! Destructor
         virtual ~Layer();

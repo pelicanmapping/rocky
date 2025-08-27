@@ -39,8 +39,8 @@ BingImageLayer::construct(std::string_view JSON, const IOOptions& io)
 
     const auto j = parse_json(JSON);
     get_to(j, "key", apiKey);
-    get_to(j, "imagery_set", imagerySet);
-    get_to(j, "imagery_metadata_api_url", imageryMetadataUrl, io);
+    get_to(j, "imagerySet", imagerySet);
+    get_to(j, "imageryMetadataUrl", imageryMetadataUrl, io);
 
     // environment variable key overrides a key set in code
     auto key = util::getEnvVar("BING_KEY");
@@ -57,8 +57,8 @@ BingImageLayer::to_json() const
 {
     auto j = parse_json(super::to_json());
     set(j, "key", apiKey);
-    set(j, "imagery_set", imagerySet);
-    set(j, "imagery_metadata_api_url", imageryMetadataUrl);
+    set(j, "imagerySet", imagerySet);
+    set(j, "imageryMetadataUrl", imageryMetadataUrl);
     return j.dump();
 }
 

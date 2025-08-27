@@ -21,7 +21,7 @@ namespace ROCKY_NAMESPACE
         /**
         * Component that holds a VSG node and its revision (so it can be
         * synchronized with the associated data model). One will typically
-        * attach a Renderable to RevisionedComponent::entity.
+        * attach a Renderable to BaseComponent::entity.
         */
         struct Renderable
         {
@@ -41,7 +41,7 @@ namespace ROCKY_NAMESPACE
         {
             entt::entity entity = entt::null;
             std::uint16_t version = 0;
-            std::shared_ptr<RevisionedComponent> component;
+            std::shared_ptr<BaseComponent> component;
         };
 
         // Internal structure for a batch of BuildItems associated with a system
@@ -99,6 +99,11 @@ namespace ROCKY_NAMESPACE
         class SystemNode : public vsg::Inherit<SystemNodeBase, SystemNode<T>>, public System
         {
             using super = vsg::Inherit<SystemNodeBase, SystemNode<T>>;
+
+            // assert that the component type is move-constructible.
+            // This is a C++17 safety mechanism to prevent accidentally disabling move construction if
+            // the developer inserts a ~T = default.
+            static_assert(std::is_move_constructible_v<T>);
 
         public:
             //! Destructor
@@ -477,7 +482,7 @@ namespace ROCKY_NAMESPACE
                     detail::BuildItem item;
                     item.entity = entity;
                     item.version = registry.current(entity);
-                    item.component = std::shared_ptr<RevisionedComponent>(new T(component));
+                    item.component = std::shared_ptr<BaseComponent>(new T(component));
                     item.existing_node = renderable->node;
                     item.new_node = {};
 

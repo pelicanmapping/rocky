@@ -10,9 +10,10 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-    * Superclass for ECS components meant to be revisioned and/or with an attach point.
+    * Superclass for ECS components that support revisionings and an attach point.
+    * The attach point is for internal usage.
     */
-    struct RevisionedComponent
+    struct BaseComponent
     {
         //! Revision, for synchronizing this component with another
         int revision = 0;
@@ -24,6 +25,30 @@ namespace ROCKY_NAMESPACE
         virtual void dirty()
         {
             ++revision;
+        }
+
+        BaseComponent() = default;
+
+        BaseComponent(const BaseComponent&) = default;
+
+        BaseComponent& operator = (const BaseComponent&) = default;
+
+        BaseComponent(BaseComponent&& rhs) noexcept
+        {
+            *this = rhs;
+        }
+
+        BaseComponent& operator = (BaseComponent&& rhs) noexcept
+        {
+            if (this != &rhs)
+            {
+                attach_point = rhs.attach_point;
+                rhs.attach_point = entt::null;
+
+                revision = rhs.revision;
+                rhs.revision = 0;
+            }
+            return *this;
         }
     };
 }

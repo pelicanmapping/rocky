@@ -3,17 +3,18 @@
         "name" : "High Resolution Globe",
         "layers": [
             {
-                "name": "ArcGIS",
+                "name": "ArcGIS Online World Imagery",
                 "type": "TMSImage",
                 "uri": "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
                 "format" : "image/jpg",
                 "profile" : "spherical-mercator",
+                "noDataColor" : "#cccccc",
                 "attribution" : {
                     "text" : "Imagery by Esri (noncommercial use)"
                 }
             },  
             {
-                "name" : "MapZen global elevation",
+                "name" : "MapZen Global Elevation",
                 "type" : "TMSElevation",
                 "uri" : "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
                 "encoding" : "terrarium",

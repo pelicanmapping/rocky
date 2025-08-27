@@ -41,7 +41,6 @@ Layer::construct(std::string_view conf)
     get_to(j, "name", name);
     get_to(j, "open", openAutomatically);
     get_to(j, "attribution", attribution);
-    get_to(j, "l2_cache_size", l2CacheSize);
 
     fail(Failure::ResourceUnavailable, openAutomatically ? "Layer closed" : "Layer disabled");
 }
@@ -54,7 +53,6 @@ Layer::to_json() const
     set(j, "name", name);
     set(j, "open", openAutomatically);
     set(j, "attribution", attribution);
-    set(j, "l2_cache_size", l2CacheSize);
     return j.dump();
 }
 

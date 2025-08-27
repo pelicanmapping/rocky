@@ -38,10 +38,10 @@ namespace ROCKY_NAMESPACE
         option<float> screenSpaceError = 128.0f;
 
         //! The maximum level of detail to which the terrain should subdivide.
-        option<unsigned> maxLevelOfDetail = 19;
+        option<unsigned> maxLevel = 19;
 
         //! The level of detail at which the terrain should begin.
-        option<unsigned> minLevelOfDetail = 0;
+        option<unsigned> minLevel = 0;
 
         //! Size of the highest resolution imagery tile, in pixels
         option<float> tilePixelSize = 256.0f;

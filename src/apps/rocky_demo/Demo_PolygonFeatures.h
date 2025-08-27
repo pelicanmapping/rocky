@@ -80,7 +80,7 @@ auto Demo_PolygonFeatures = [](Application& app)
             {
                 app.registry.write([&](entt::registry& registry)
                     {
-                        entities.emplace_back(prims.move(registry));
+                        entities.emplace_back(prims.createEntity(registry));
                     });
             }
 

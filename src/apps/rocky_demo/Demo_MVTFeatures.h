@@ -124,7 +124,7 @@ auto Demo_MVTFeatures = [](Application& app)
                         // Take a write-lock to move the primitives into ECS entities.
                         app.registry.write([&](entt::registry& registry)
                             {
-                                auto e = prims.move(registry);
+                                auto e = prims.createEntity(registry);
 
                                 // Since we localized to an origin, the tile needs a transform:
                                 auto& xform = registry.get_or_emplace<Transform>(e);

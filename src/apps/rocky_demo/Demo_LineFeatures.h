@@ -65,7 +65,7 @@ auto Demo_LineFeatures = [](Application& app)
             {
                 app.registry.write([&](entt::registry& registry)
                     {
-                        auto e = prims.move(registry);
+                        auto e = prims.createEntity(registry);
                         entities.emplace_back(e);
                     });
             }

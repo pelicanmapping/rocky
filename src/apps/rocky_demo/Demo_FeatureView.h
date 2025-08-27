@@ -36,7 +36,7 @@ auto Demo_FeatureView = [](Application& app)
 
             app.registry.write([&](entt::registry& r)
                 {
-                    entity = primitives.move(r);
+                    entity = primitives.createEntity(r);
                 });
 
             app.vsgcontext->requestFrame();

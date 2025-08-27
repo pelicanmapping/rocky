@@ -21,7 +21,7 @@ TerrainTilePager::TerrainTilePager(const TerrainSettings& settings, TerrainTileH
     _host(host),
     _settings(settings)
 {
-    _firstLOD = settings.minLevelOfDetail;
+    _firstLOD = settings.minLevel;
 }
 
 TerrainTilePager::~TerrainTilePager()

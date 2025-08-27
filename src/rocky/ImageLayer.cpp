@@ -35,6 +35,7 @@ ImageLayer::construct(std::string_view JSON, const IOOptions& io)
     const auto j = parse_json(JSON);
     get_to(j, "sharpness", sharpness);
     get_to(j, "crop", crop);
+    get_to(j, "noDataColor", noDataColor);
 }
 
 std::string
@@ -43,6 +44,7 @@ ImageLayer::to_json() const
     auto j = parse_json(super::to_json());
     set(j, "sharpness", sharpness);
     set(j, "crop", crop);
+    set(j, "noDataColor", noDataColor);
     return j.dump();
 }
 
@@ -108,7 +110,7 @@ ImageLayer::createTileInKeyProfile(const TileKey& key, const IOOptions& io) cons
     // if this layer has no profile, just go straight to the driver.
     if (!profile.valid() || (key.profile == profile))
     {
-        result = createTileImplementation(key, io);
+        result = invokeCreateTileImplementation(key, io);
     }
 
     else
@@ -194,7 +196,7 @@ ImageLayer::assembleTile(const TileKey& key, const IOOptions& io) const
                     // a usable image tile.
                     while (actualKey.valid())
                     {
-                        auto r = createTileImplementation(actualKey, io);
+                        auto r = invokeCreateTileImplementation(actualKey, io);
 
                         if (io.canceled())
                             return Failure_OperationCanceled;
@@ -350,4 +352,36 @@ ImageLayer::assembleTile(const TileKey& key, const IOOptions& io) const
     }
 
     return output;
+}
+
+Result<GeoImage>
+ImageLayer::invokeCreateTileImplementation(const TileKey& key, const IOOptions& io) const
+{
+    auto r = createTileImplementation(key, io);
+
+    if (r.ok())
+    {
+        auto& image = r.value().image();
+
+        // check the no-data color.
+        if (noDataColor.has_value() && image->width() > 0 && image->height() > 0)
+        {
+            auto view_format =
+                image->pixelFormat() == Image::R8_SRGB ? Image::R8_UNORM :
+                image->pixelFormat() == Image::R8G8_SRGB ? Image::R8G8_UNORM :
+                image->pixelFormat() == Image::R8G8B8_SRGB ? Image::R8G8B8_UNORM :
+                image->pixelFormat() == Image::R8G8B8A8_SRGB ? Image::R8G8B8A8_UNORM :
+                image->pixelFormat();
+
+            Image i = image->viewAs(view_format);
+
+            if (glm::all(glm::epsilonEqual(i.read(0, 0), noDataColor.value(), 1e-3f)) &&
+                glm::all(glm::epsilonEqual(i.read(i.width()-1, i.height()-1), noDataColor.value(), 1e-3f)))
+            {
+                return Failure_ResourceUnavailable;
+            }
+        }
+    }
+
+    return r;
 }

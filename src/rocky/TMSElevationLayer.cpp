@@ -36,7 +36,7 @@ TMSElevationLayer::construct(std::string_view JSON, const IOOptions& io)
     const auto j = parse_json(JSON);
     get_to(j, "uri", uri, io);
     get_to(j, "format", format);
-    get_to(j, "invert_y", invertY);
+    get_to(j, "invertY", invertY);
 }
 
 std::string
@@ -45,7 +45,7 @@ TMSElevationLayer::to_json() const
     auto j = parse_json(super::to_json());
     set(j, "uri", uri);
     set(j, "format", format);
-    set(j, "invert_y", invertY);
+    set(j, "invertY", invertY);
     return j.dump();
 }
 

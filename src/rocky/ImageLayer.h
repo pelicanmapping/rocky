@@ -8,6 +8,7 @@
 #include <rocky/Common.h>
 #include <rocky/TileLayer.h>
 #include <rocky/GeoImage.h>
+#include <rocky/Color.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -20,6 +21,11 @@ namespace ROCKY_NAMESPACE
         //! Sharpness filter strength to apply to the image
         option<float> sharpness = 0.0f;
 
+        //! Color that represents a "no data" image. Matches the first and
+        //! last pixels.
+        option<Color> noDataColor;
+
+    public:
         //! Creates an image for the given tile key.
         //! @param key TileKey for which to create an image
         //! @param io IO options
@@ -67,6 +73,8 @@ namespace ROCKY_NAMESPACE
         // returns a single tile. This is called by createImageFromTileSource() if the key profile
         // doesn't match the layer profile.
         std::shared_ptr<Image> assembleTile(const TileKey& key, const IOOptions& io) const;
+
+        Result<GeoImage> invokeCreateTileImplementation(const TileKey& key, const IOOptions& io) const;
     };
 
 } // namespace ROCKY_NAMESPACE

@@ -78,35 +78,41 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
         auto state = rv.getState();
 
         // should we subdivide?
+        bool subdivisionPossible = key.level < host->settings().maxLevel;
         bool subtilesInRange = false;
-        if (key.level < host->settings().maxLevelOfDetail)
+        bool traversePayload = true;
+
+        if (subdivisionPossible)
         {
             auto& vp = state->_commandBuffer->viewDependentState->viewportData->at(0);
             auto min_screen_height_ratio = (host->settings().tilePixelSize + host->settings().screenSpaceError) / vp[3];
             auto d = state->lodDistance(bound);
             subtilesInRange = (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
-        }
 
-        // TODO: someday, when we support orthographic cameras, look at this approach 
-        // that would theoritically keep the same LOD across the visible scene:
-        //double tile_height = surface->localbbox.max.y - surface->localbbox.min.y;
-        //return (d > 0.0) && (tile_height > (d * min_screen_height_ratio));
+            // TODO: someday, when we support orthographic cameras, look at this approach 
+            // that would theoritically keep the same LOD across the visible scene:
+            //double tile_height = surface->localbbox.max.y - surface->localbbox.min.y;
+            //return (d > 0.0) && (tile_height > (d * min_screen_height_ratio));
 
-        if (subtilesInRange && subtilesExist())
-        {
-            // children are available, traverse them now.
-            children[1]->accept(rv);
+            if (subtilesInRange && subtilesExist())
+            {
+                traversePayload = false;
+
+                // children are available, traverse them now.
+                children[1]->accept(rv);
 
 #ifdef AGGRESSIVE_PAGEOUT
-            // always ping all children at once so the system can never
-            // delete one of a quad.
-            host->ping(subTile(0), this, rv);
-            host->ping(subTile(1), this, rv);
-            host->ping(subTile(2), this, rv);
-            host->ping(subTile(3), this, rv);
+                // always ping all children at once so the system can never
+                // delete one of a quad.
+                host->ping(subTile(0), this, rv);
+                host->ping(subTile(1), this, rv);
+                host->ping(subTile(2), this, rv);
+                host->ping(subTile(3), this, rv);
 #endif
+            }
         }
-        else
+
+        if (traversePayload)
         {
             // children do not exist or are out of range; use this tile's geometry
             children[0]->accept(rv);
