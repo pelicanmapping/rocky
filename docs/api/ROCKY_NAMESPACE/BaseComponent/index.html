@@ -16,7 +16,7 @@
     
     
       
-        <title>struct RevisionedComponent - Rocky</title>
+        <title>struct BaseComponent - Rocky</title>
       
     
     
@@ -58,7 +58,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#struct-revisionedcomponent" class="md-skip">
+        <a href="#struct-basecomponent" class="md-skip">
           Skip to content
         </a>
       
@@ -94,7 +94,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              struct RevisionedComponent
+              struct BaseComponent
             
           </span>
         </div>
@@ -327,6 +327,51 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#basecomponent" class="md-nav__link">
+    <span class="md-ellipsis">
+      BaseComponent
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basecomponent_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      BaseComponent
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      operator=
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#basecomponent_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      BaseComponent
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      operator=
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -348,17 +393,32 @@
 
 
 
-<h1 id="struct-revisionedcomponent">struct RevisionedComponent</h1>
-<p><em>Defined at src/rocky/ecs/Component.h#15</em></p>
-<p>Superclass for ECS components meant to be revisioned and/or with an attach point.</p>
+<h1 id="struct-basecomponent">struct BaseComponent</h1>
+<p><em>Defined at src/rocky/ecs/Component.h#16</em></p>
+<p>Superclass for ECS components that support revisionings and an attach point. The attach point is for internal usage.</p>
 <h2 id="members">Members</h2>
 <p>public int revision</p>
 <p>public int attach_point</p>
 <h2 id="functions">Functions</h2>
 <h3 id="dirty">dirty</h3>
 <p><em>public void dirty()</em></p>
-<p><em>Defined at src/rocky/ecs/Component.h#24</em></p>
+<p><em>Defined at src/rocky/ecs/Component.h#25</em></p>
 <p>bump the revision.</p>
+<h3 id="basecomponent">BaseComponent</h3>
+<p><em>public void BaseComponent()</em></p>
+<p><em>Defined at src/rocky/ecs/Component.h#30</em></p>
+<h3 id="basecomponent_1">BaseComponent</h3>
+<p><em>public void BaseComponent(const BaseComponent &amp; )</em></p>
+<p><em>Defined at src/rocky/ecs/Component.h#32</em></p>
+<h3 id="operator">operator=</h3>
+<p><em>public BaseComponent &amp; operator=(const BaseComponent &amp; )</em></p>
+<p><em>Defined at src/rocky/ecs/Component.h#34</em></p>
+<h3 id="basecomponent_2">BaseComponent</h3>
+<p><em>public void BaseComponent(BaseComponent &amp;&amp; rhs)</em></p>
+<p><em>Defined at src/rocky/ecs/Component.h#36</em></p>
+<h3 id="operator_1">operator=</h3>
+<p><em>public BaseComponent &amp; operator=(BaseComponent &amp;&amp; rhs)</em></p>
+<p><em>Defined at src/rocky/ecs/Component.h#41</em></p>
 
 
 
