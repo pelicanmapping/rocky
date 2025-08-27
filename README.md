@@ -243,20 +243,20 @@ Use a `FeatureView` to help turn features into visible geometry:
 FeatureView feature_view;
 
 // add features to our FeatureView helper:
-fs.each(app.app.io(), [&](Feature&& feature)
+fs.each(app.io(), [&](Feature&& feature)
     {
         feature_view.features.emplace_back(std::move(feature));
     });
        
 // Generate primitives (lines and meshes) in the world coordinate system:
-auto prims = feature_view.generate(app.mapNode->worldSRS(), app.vsgcontext);
+auto prims = feature_view.generate(app.mapNode->worldSRS());
 
 // Put our new primitives into the ECS registry:
 if (!prims.empty())
 {
     app.registry.write([&](entt::registry& registry)
         {
-            auto e = prims.moveToEntity(registry);
+            auto e = prims.move(registry);
             entities.emplace_back(e);
         });
 }
