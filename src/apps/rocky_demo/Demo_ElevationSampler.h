@@ -74,8 +74,6 @@ auto Demo_ElevationSampler = [](Application& app)
 
         // Configure our sampler.
         sampler.layer = app.mapNode->map->layer<ElevationLayer>();
-        if (!sampler.layer)
-            return;
 
         // event handler to capture mouse movements:
         auto handler = ElevationSamplerMouseHandler::create(app);
@@ -126,21 +124,28 @@ auto Demo_ElevationSampler = [](Application& app)
         ImGuiLTable::Text("Mesh intersection:", "---");
     }
 
-    if (sample.available() && sample.value().ok())
+    if (sampler.layer)
     {
-        ImGuiLTable::Text("Elevation sampler:", "%.2f m", sample->value());
+        if (sample.available() && sample.value().ok())
+        {
+            ImGuiLTable::Text("Elevation sampler:", "%.2f m", sample->value());
 
-    }
-    else if (sample.working())
-    {
-        ImGuiLTable::Text("Elevation sampler:", "...");
+        }
+        else if (sample.working())
+        {
+            ImGuiLTable::Text("Elevation sampler:", "...");
 
-        if (sample.working())
-            app.vsgcontext->requestFrame();
+            if (sample.working())
+                app.vsgcontext->requestFrame();
+        }
+        else
+        {
+            ImGuiLTable::Text("Elevation sampler:", "no data");
+        }
     }
     else
     {
-        ImGuiLTable::Text("Elevation sampler:", "no data");
+        ImGuiLTable::Text("Elevation sampler:", "n/a - no elevation layer");
     }
     ImGuiLTable::End();
 };
