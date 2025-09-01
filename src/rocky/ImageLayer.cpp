@@ -361,7 +361,7 @@ ImageLayer::invokeCreateTileImplementation(const TileKey& key, const IOOptions& 
 
     if (r.ok())
     {
-        auto& image = r.value().image();
+        auto image = r.value().image();
 
         // check the no-data color.
         if (noDataColor.has_value() && image->width() > 0 && image->height() > 0)
