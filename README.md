@@ -231,7 +231,7 @@ auto status = fs->open();
 
 if (status.ok())
 {
-    fs.each(app.io(), [&](Feature&& feature)
+    fs.each(app.io(), [](Feature&& feature)
         {
             // ... each Feature object contains geometry and fields
         });
@@ -256,7 +256,7 @@ if (!prims.empty())
 {
     app.registry.write([&](entt::registry& registry)
         {
-            auto e = prims.move(registry);
+            auto e = prims.createEntity(registry);
             entities.emplace_back(e);
         });
 }
