@@ -113,9 +113,14 @@ namespace ROCKY_NAMESPACE
         //! Failure will return the failValue.
         inline float sample(double x, double y, double z) const;
 
-        //! Samples a range of points. All points are expected to be in the "srs" SRS.
+        //! Clamps a range of points. All points are expected to be in the "srs" SRS.
         template<class VEC3_ITER>
         inline bool clampRange(VEC3_ITER begin, VEC3_ITER end) const;
+
+        //! Given a range of points, clamps each one for which the predicate returns true.
+        //! All points expected to be in the "srs" SRS.
+        template<class VEC3_ITER, class PREDICATE>
+        inline bool clampRange(VEC3_ITER begin, VEC3_ITER end, PREDICATE&& pred) const;
 
         //! Force a cache purge if you changed the lod or resolution.
         inline void dirty() {
@@ -267,6 +272,34 @@ namespace ROCKY_NAMESPACE
                 _xform.inverse(iter->x, iter->y, iter->z);
             else
                 result = false;
+        }
+
+        return result;
+    }
+
+    template<class VEC3_ITER, class PREDICATE>
+    bool ElevationSession::clampRange(VEC3_ITER begin, VEC3_ITER end, PREDICATE&& predicate) const
+    {
+        static_assert(std::is_invocable_r_v<bool, PREDICATE, decltype(*begin)>,
+            "ElevationSession::clampRange() requires a predicate matching the signature bool(vec3)");
+
+        if (!_sampler->layer || !_sampler->layer->status().ok())
+            return false;
+
+        if (begin == end)
+            return true;
+
+        bool result = true;
+
+        for (auto iter = begin; iter != end; ++iter)
+        {
+            if (predicate(*iter))
+            {
+                if (transformAndClamp(iter->x, iter->y, iter->z))
+                    _xform.inverse(iter->x, iter->y, iter->z);
+                else
+                    result = false;
+            }
         }
 
         return result;

@@ -314,7 +314,11 @@ namespace
         if (clamper)
         {
             clamper.srs = feature_geo;
-            clamper.clampRange(m.verts.begin(), m.verts.end());
+
+            clamper.clampRange(m.verts.begin(), m.verts.end(),
+                [&](const weemesh::vert_t& p) {
+                    return (m.get_marker(p) & m._has_elevation_marker) == 0;
+                });
         }
 
         // And into the final projection:
