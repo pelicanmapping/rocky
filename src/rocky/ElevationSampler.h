@@ -98,7 +98,7 @@ namespace ROCKY_NAMESPACE
         SRS srs;
 
         //! Elevation level of detail to clamp to (use this OR resolution)
-        unsigned lod = UINT_MAX;
+        unsigned level = UINT_MAX;
 
         //! Resolution of elevation data to clamp to (use this OR lod)
         Distance resolution = Distance(10.0, Units::METERS);

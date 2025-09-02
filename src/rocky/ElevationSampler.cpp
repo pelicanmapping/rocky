@@ -42,17 +42,17 @@ bool ElevationSession::transformAndClamp(double& x, double& y, double& z) const
     {
         auto& profile = _sampler->layer->profile;
 
-        if (lod == UINT_MAX)
+        if (level == UINT_MAX)
         {
             double r = profile.srs().transformDistance(resolution, profile.srs().units(), referenceLatitude);
-            const_cast<ElevationSession*>(this)->lod = profile.levelOfDetailForHorizResolution(r, _sampler->layer->tileSize);
+            const_cast<ElevationSession*>(this)->level = profile.levelOfDetailForHorizResolution(r, _sampler->layer->tileSize);
         }
 
         _pw = profile.extent().width();
         _ph = profile.extent().height();
         _pxmin = profile.extent().xmin();
         _pymin = profile.extent().ymin();
-        _numtiles = profile.numTiles(lod);
+        _numtiles = profile.numTiles(level);
 
         _cache.tx = UINT_MAX;
         _cache.ty = UINT_MAX;
@@ -70,7 +70,7 @@ bool ElevationSession::transformAndClamp(double& x, double& y, double& z) const
     {
         _cache.status.clear();
 
-        _cache.key = _sampler->layer->bestAvailableTileKey(TileKey(lod, new_tx, new_ty, _sampler->layer->profile));
+        _cache.key = _sampler->layer->bestAvailableTileKey(TileKey(level, new_tx, new_ty, _sampler->layer->profile));
         if (_cache.key.valid())
         {
             auto r = _sampler->fetch(_cache.key, *_io);

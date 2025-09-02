@@ -111,7 +111,7 @@ auto Demo_MVTFeatures = [](Application& app)
                 {
                     // tell the FeatureView to use the elevation clamper.                    
                     fview.clamper = elevationSampler.session(io);
-                    fview.clamper.lod = key.level;
+                    fview.clamper.level = key.level;
                     fview.clamper.srs = fview.features.front().srs;
 
                     // generate primitives from features:

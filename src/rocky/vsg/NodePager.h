@@ -86,14 +86,15 @@ namespace ROCKY_NAMESPACE
         //! Name of the job pool to use for node paging
         std::string poolName = "rocky::nodepager";
 
-        //SampleElevation sampleElevation; // TODO - to get the elevation at the center of the tile for a bound
-
         //! Custom factory that will creaet a subtile loader function.
         SubtileLoaderFactory subtileLoaderFactory = nullptr;
 
-        //! Number of tiles under management (snapshot in time)
+    public:
+
+        //! Number of tiles under management (snapshot in time; for debugging)
         unsigned tiles() const;
 
+        //! Tiles resident (for debugging)
         std::vector<TileKey> tileKeys() const;
 
         TileKey debugKey;
