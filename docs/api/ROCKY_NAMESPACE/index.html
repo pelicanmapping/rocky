@@ -337,15 +337,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#visible_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      visible
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#setvisible" class="md-nav__link">
     <span class="md-ellipsis">
       setVisible
@@ -364,7 +355,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#visible_2" class="md-nav__link">
+  <a href="#visible_1" class="md-nav__link">
     <span class="md-ellipsis">
       visible
     </span>
@@ -568,18 +559,11 @@
 </ul>
 <h2 id="functions">Functions</h2>
 <h3 id="visible">visible</h3>
-<p><em>_Bool visible(const Visibility &amp; vis, int view_index)</em></p>
-<p><em>Defined at src/rocky/ecs/Visibility.h#53</em></p>
-<p>Whether the Visibility component is visible in the given view</p>
-<p><strong>vis</strong> The visibility component</p>
-<p><strong>view_index</strong> Index of view to check visibility</p>
-<p><strong>return</strong> True if visible in that view</p>
-<h3 id="visible_1">visible</h3>
 <p><em>_Bool visible(const Visibility &amp; vis, int &amp; rs)</em></p>
-<p><em>Defined at src/rocky/ecs/Visibility.h#58</em></p>
+<p><em>Defined at src/rocky/ecs/Visibility.h#45</em></p>
 <h3 id="setvisible">setVisible</h3>
 <p><em>void setVisible(int &amp; registry, int e, _Bool value, int view_index)</em></p>
-<p><em>Defined at src/rocky/ecs/Visibility.h#72</em></p>
+<p><em>Defined at src/rocky/ecs/Visibility.h#56</em></p>
 <p>Toggle the visibility of an entity in the given view</p>
 <p><strong>r</strong> Entity registry</p>
 <p><strong>e</strong> Entity id</p>
@@ -587,11 +571,11 @@
 <p><strong>view_index</strong> Index of view to set visibility</p>
 <h3 id="setvisible_1">setVisible</h3>
 <p><em>void setVisible(int &amp; registry, ITER begin, ITER end, _Bool value, int view_index)</em></p>
-<p><em>Defined at src/rocky/ecs/Visibility.h#88</em></p>
-<h3 id="visible_2">visible</h3>
+<p><em>Defined at src/rocky/ecs/Visibility.h#69</em></p>
+<h3 id="visible_1">visible</h3>
 <p><em>_Bool visible(int &amp; registry, int e, int view_index)</em></p>
-<p><em>Defined at src/rocky/ecs/Visibility.h#101</em></p>
-<p>Whether an entity is visible in the given view</p>
+<p><em>Defined at src/rocky/ecs/Visibility.h#82</em></p>
+<p>Whether an entity is active and visible in the given view</p>
 <p><strong>r</strong> Entity registry</p>
 <p><strong>e</strong> Entity id</p>
 <p><strong>view_index</strong> Index of view to check visibility</p>
