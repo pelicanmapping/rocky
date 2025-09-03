@@ -110,7 +110,7 @@ namespace ROCKY_NAMESPACE
         //! to marking the buffer as DYNAMIC_DATA and marking it dirty(), which
         //! is inefficient for large numbers of buffers whose data is only
         //! updated periodically.
-        void upload(vsg::BufferInfoList& bufferInfos);
+        void upload(vsg::BufferInfoList bufferInfos);
 
         //! TODO: Signal that something has changed that requires shader regen.
         //! When we implement this, it will probably fire off a callback that

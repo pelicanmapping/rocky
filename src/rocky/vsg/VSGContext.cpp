@@ -581,7 +581,7 @@ VSGContextImpl::dispose(vsg::ref_ptr<vsg::Object> object)
 }
 
 void
-VSGContextImpl::upload(vsg::BufferInfoList& bufferInfos)
+VSGContextImpl::upload(vsg::BufferInfoList bufferInfos)
 {
     // A way to upload GPU buffers without using the dirty()/DYNAMIC_DATA mechanism,
     // which gets slow with a large number of buffers.

@@ -252,6 +252,11 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
 
         _debugCallbackInstalled = true;
     }
+
+    if (sharedDevice()->supportsDeviceExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME))
+    {
+        vsgcontext->shaderCompileSettings->defines.emplace("ROCKY_HAS_VK_BARYCENTRIC_EXTENSION");
+    }
 }
 
 vsg::ref_ptr<vsg::Window>
@@ -276,39 +281,27 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
         }
     }
 
-    // This will install the debug messaging callback so we can capture validation errors
-    traits->instanceExtensionNames.push_back("VK_EXT_debug_utils");
-
-    if (true) //vsg::isExtensionSupported(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME))
-    {
-        // This is required to use the NVIDIA barycentric extension without validation errors
-        if (!traits->deviceFeatures)
-            traits->deviceFeatures = vsg::DeviceFeatures::create();
-        traits->deviceExtensionNames.push_back(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
-        auto& bary = traits->deviceFeatures->get<VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR>();
-        bary.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR;
-        bary.fragmentShaderBarycentric = true;
-        Log()->debug("Extension {} enabled.", VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
-    }
-
-#if 0 // TODO...hook up shader debug messages
-    if (vsg::isExtensionSupported(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME))
-    {
-        if (!traits->deviceFeatures)
-            traits->deviceFeatures = vsg::DeviceFeatures::create();
-        traits->deviceExtensionNames.push_back(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME);
-        auto& ext = traits->deviceFeatures->get<VkValidationFeaturesEXT, VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT>();
-        VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT };
-        ext.pEnabledValidationFeatures = enables;
-        ext.enabledValidationFeatureCount = 1;
-    }
-#endif
-
     // share the device across all windows
     traits->device = sharedDevice();
 
     auto window = vsg::Window::create(traits);
 
+    // install extensions:
+    auto pd = window->getOrCreatePhysicalDevice();
+
+    // This will install the debug messaging callback so we can capture validation errors
+    if (pd->supportsDeviceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME))
+    {
+        traits->instanceExtensionNames.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    }
+
+    // Barycentric coordinates support for wireOverlay rendering
+    if (pd->supportsDeviceExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME))
+    {
+        traits->deviceExtensionNames.push_back(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
+    }
+
+    // configure the window
     addWindow(window);
 
     return window;

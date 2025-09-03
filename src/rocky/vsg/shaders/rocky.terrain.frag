@@ -3,6 +3,7 @@
 #extension GL_EXT_fragment_shader_barycentric : enable
 
 #pragma import_defines(ROCKY_LIGHTING)
+#pragma import_defines(ROCKY_HAS_VK_BARYCENTRIC_EXTENSION)
 
 layout(push_constant) uniform PushConstants {
     mat4 projection;
@@ -56,7 +57,7 @@ void main()
     apply_lighting(out_color, varyings.vertex_view, get_normal());
 #endif
 
-#if GL_EXT_fragment_shader_barycentric
+#if defined(ROCKY_HAS_VK_BARYCENTRIC_EXTENSION) && defined(GL_EXT_fragment_shader_barycentric)
     if (settings.wireOverlay)
     {
         const float pixelWidth = 1.0;
