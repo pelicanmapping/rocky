@@ -218,6 +218,9 @@ LineSystemNode::createOrUpdateNode(Line& line, detail::BuildInfo& data, VSGConte
         geometry->calcBound(cull->bound, localizer_matrix);
 
         data.new_node = cull;
+
+        line.styleDirty = true;
+        line.pointsDirty = true;
     }
 
     else // existing node -- update:
@@ -275,8 +278,30 @@ LineSystemNode::createOrUpdateNode(Line& line, detail::BuildInfo& data, VSGConte
         }
     }
 
-    line.styleDirty = false;
-    line.pointsDirty = false;
+    // check for updates to the style, and upload the new data if needed:
+    if (line.styleDirty)
+    {
+        auto stategroup = util::find<vsg::StateGroup>(data.new_node ? data.new_node : data.existing_node);
+        if (stategroup)
+        {
+            auto bindCommand = stategroup->stateCommands[0]->cast<BindLineDescriptors>();
+            runtime->upload(bindCommand->_ubo->bufferInfoList);
+        }
+
+        line.styleDirty = false;
+    }
+
+    if (line.pointsDirty)
+    {
+        auto geometry = util::find<LineGeometry>(data.new_node ? data.new_node : data.existing_node);
+        if (geometry)
+        {
+            runtime->upload(geometry->arrays);
+            runtime->upload(vsg::BufferInfoList{ geometry->indices });
+        }
+
+        line.pointsDirty = false;
+    }
 }
 
 int
@@ -301,11 +326,7 @@ BindLineDescriptors::updateStyle(const LineStyle& value)
     if (!_styleData)
     {
         _styleData = vsg::ubyteArray::create(sizeof(LineStyle));
-
-        // tells VSG that the contents can change, and if they do, the data should be
-        // transfered to the GPU before or during recording.
-        _styleData->properties.dataVariance = vsg::DYNAMIC_DATA;
-
+        // do NOT mark as DYNAMIC_DATA, since we only update it when the style changes.
         force = true;
     }
 
@@ -324,8 +345,8 @@ BindLineDescriptors::init(vsg::ref_ptr<vsg::PipelineLayout> layout)
     vsg::Descriptors descriptors;
 
     // the style buffer:
-    auto ubo = vsg::DescriptorBuffer::create(_styleData, LINE_BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-    descriptors.push_back(ubo);
+    _ubo = vsg::DescriptorBuffer::create(_styleData, LINE_BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    descriptors.push_back(_ubo);
 
     if (!descriptors.empty())
     {

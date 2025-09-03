@@ -86,6 +86,7 @@ namespace ROCKY_NAMESPACE
         void updateStyle(const LineStyle&);
 
         vsg::ref_ptr<vsg::ubyteArray> _styleData;
+        vsg::ref_ptr<vsg::DescriptorBuffer> _ubo;
     };
 
 

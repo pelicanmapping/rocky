@@ -264,6 +264,22 @@ MeshSystemNode::createOrUpdateNode(Mesh& mesh, detail::BuildInfo& data, VSGConte
     cull->bound.set((cb.bounds.min + cb.bounds.max) * 0.5, vsg::length(cb.bounds.min - cb.bounds.max) * 0.5);
 
     data.new_node = cull;
+
+
+    // check for updates to the style, and upload the new data if needed:
+    if (!stategroup)
+    {
+        stategroup = util::find<vsg::StateGroup>(data.new_node ? data.new_node : data.existing_node);
+        if (stategroup)
+        {
+            vsg::ModifiedCount mc;
+            auto bindCommand = stategroup->stateCommands[0]->cast<BindMeshDescriptors>();
+            if (bindCommand->_styleData->getModifiedCount(mc) && mc.count > 0)
+            {
+                runtime->upload(bindCommand->_ubo->bufferInfoList);
+            }
+        }
+    }
 }
 
 int
@@ -290,10 +306,7 @@ BindMeshDescriptors::updateStyle(const MeshStyle& value)
     if (!_styleData)
     {
         _styleData = vsg::ubyteArray::create(sizeof(MeshStyle));
-
-        // tells VSG that the contents can change, and if they do, the data should be
-        // transfered to the GPU before or during recording.
-        _styleData->properties.dataVariance = vsg::DYNAMIC_DATA;
+        // do NOT mark as DYNAMIC_DATA, since we only update it when the style changes.
     }
 
     MeshStyle& my_style = *static_cast<MeshStyle*>(_styleData->dataPointer());
@@ -310,8 +323,8 @@ BindMeshDescriptors::init(vsg::ref_ptr<vsg::PipelineLayout> layout)
     if (_styleData)
     {
         // the style buffer:
-        auto ubo = vsg::DescriptorBuffer::create(_styleData, MESH_STYLE_BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-        descriptors.push_back(ubo);
+        _ubo = vsg::DescriptorBuffer::create(_styleData, MESH_STYLE_BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        descriptors.push_back(_ubo);
     }
 
     // the texture, if present:

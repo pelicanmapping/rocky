@@ -75,6 +75,7 @@ namespace ROCKY_NAMESPACE
 
         vsg::ref_ptr<vsg::ubyteArray> _styleData;
         vsg::ref_ptr<vsg::ImageInfo> _imageInfo;
+        vsg::ref_ptr<vsg::DescriptorBuffer> _ubo;
     };
 
     inline void MeshGeometry::add(const vsg::dvec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors, const float* depthoffsets)

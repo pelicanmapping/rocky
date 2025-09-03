@@ -183,21 +183,22 @@ IconSystemNode::createOrUpdateNode(Icon& icon, detail::BuildInfo& data, VSGConte
         }
     }
 
+    vsg::ref_ptr<BindIconStyle> bindCommand;
+
     if (rebuild)
     {
         auto geometry = IconGeometry::create();
 
-        auto bindCommand = BindIconStyle::create();
+        bindCommand = BindIconStyle::create();
         bindCommand->setValue("icon_image", icon.image);
-
         bindCommand->updateStyle(icon.style);
 
         // assemble the descriptor set for this icon:
         vsg::Descriptors descriptors;
 
         // uniform buffer object for dynamic data:
-        auto ubo = vsg::DescriptorBuffer::create(bindCommand->_styleData, BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-        descriptors.emplace_back(ubo);
+        bindCommand->_ubo = vsg::DescriptorBuffer::create(bindCommand->_styleData, BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        descriptors.emplace_back(bindCommand->_ubo);
 
         // make a default image if we don't have one
         auto image = icon.image;
@@ -249,8 +250,14 @@ IconSystemNode::createOrUpdateNode(Icon& icon, detail::BuildInfo& data, VSGConte
 
     else
     {
-        auto bindCommand = util::find<BindIconStyle>(data.existing_node);
+        bindCommand = util::find<BindIconStyle>(data.existing_node);
         bindCommand->updateStyle(icon.style);    
+    }
+
+    vsg::ModifiedCount mc;
+    if (bindCommand->_styleData->getModifiedCount(mc) && mc.count > 0)
+    {
+        runtime->upload(bindCommand->_ubo->bufferInfoList);
     }
 }
 
@@ -266,10 +273,7 @@ BindIconStyle::updateStyle(const IconStyle& value)
     if (!_styleData)
     {
         _styleData = vsg::ubyteArray::create(sizeof(IconStyle));
-
-        // tells VSG that the contents can change, and if they do, the data should be
-        // transfered to the GPU before or during recording.
-        _styleData->properties.dataVariance = vsg::DYNAMIC_DATA;
+        // do NOT mark as DYNAMIC_DATA, since we only update it when the style changes.
     }
 
     IconStyle& my_style = *static_cast<IconStyle*>(_styleData->dataPointer());

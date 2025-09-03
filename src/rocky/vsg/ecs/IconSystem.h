@@ -24,6 +24,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Data> _image;
         vsg::ref_ptr<vsg::ubyteArray> _styleData;
         vsg::ref_ptr<vsg::Data> _imageData;
+        vsg::ref_ptr<vsg::DescriptorBuffer> _ubo;
     };
 
     /**

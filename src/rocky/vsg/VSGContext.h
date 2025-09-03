@@ -106,6 +106,12 @@ namespace ROCKY_NAMESPACE
         //! https://github.com/vsg-dev/VulkanSceneGraph/discussions/949
         void dispose(vsg::ref_ptr<vsg::Object> object);
 
+        //! Queues a bufferinfo list for transfer to the GPU. This is an alternative
+        //! to marking the buffer as DYNAMIC_DATA and marking it dirty(), which
+        //! is inefficient for large numbers of buffers whose data is only
+        //! updated periodically.
+        void upload(vsg::BufferInfoList& bufferInfos);
+
         //! TODO: Signal that something has changed that requires shader regen.
         //! When we implement this, it will probably fire off a callback that
         //! signals listeners to recreate their graphics pipelines so they
@@ -128,22 +134,12 @@ namespace ROCKY_NAMESPACE
         // for (some) update operations
         vsg::ref_ptr<vsg::Operation> _priorityUpdateQueue;
 
-        // containers for compilation and integrating the results
-        struct ToCompile
-        {
-            vsg::ref_ptr<vsg::Objects> objects = vsg::Objects::create();
-            std::vector<jobs::future<bool>> results;
-        };
-        ToCompile _toCompile;
-
         mutable std::mutex _compileMutex;
         vsg::CompileResult _compileResult;
 
         // deferred deletion container (garbage collector)
         mutable std::mutex _gc_mutex;
         std::deque<std::vector<vsg::ref_ptr<vsg::Object>>> _gc;
-
-        jobs::future<bool> _entityJobCompiler;
 
         vsg::ref_ptr<vsg::CommandGraph> _computeCommandGraph;
 
@@ -163,8 +159,6 @@ namespace ROCKY_NAMESPACE
         friend class Application;
         friend class VSGContextFactory;
         friend class MapNode;
-
-        std::array<bool, ROCKY_MAX_NUMBER_OF_VIEWS> _viewIDDetected = { false };
     };
 
     using VSGContext = std::shared_ptr<VSGContextImpl>;
