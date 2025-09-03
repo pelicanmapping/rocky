@@ -19,6 +19,8 @@ namespace ROCKY_NAMESPACE
         float padding[2];
     };
 
+    static_assert(sizeof(IconStyle) % 16 == 0, "IconStyle must be 16-byte aligned");
+
     /**
     * Icon Component - an icon is a 2D billboard with a texture
     */

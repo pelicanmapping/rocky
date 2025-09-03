@@ -79,7 +79,6 @@ namespace ROCKY_NAMESPACE
         mutable std::mutex _mutex;
         TerrainTileHost* _host;
         const TerrainSettings& _settings;
-        bool _updateViewerRequired = false;
 
         std::vector<TileKey> _createChildren;
         std::vector<TileKey> _loadData;

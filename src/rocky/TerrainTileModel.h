@@ -66,8 +66,6 @@ namespace ROCKY_NAMESPACE
         //! Tile key corresponding to this model
         TileKey key;
 
-        //! Whether some data here requires updates
-        bool requiresUpdate = false;
 
         //! Imagery and other surface coloring layers
         ColorLayer::Vector colorLayers;
@@ -78,8 +76,6 @@ namespace ROCKY_NAMESPACE
         //! Normal map data
         NormalMap normalMap;
 
-        //! Material map data
-        MaterialMap materialMap;
     };
 
 }
