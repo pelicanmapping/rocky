@@ -1,7 +1,7 @@
 {
     "profile" : "spherical-mercator",
     "terrain" : {
-        "screen_space_error" : 128
+        "pixelError" : 128
     },
     "map" : {
         "name" : "OpenStreetMap Slippy Map",

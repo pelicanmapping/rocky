@@ -85,7 +85,7 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
         if (subdivisionPossible)
         {
             auto& vp = state->_commandBuffer->viewDependentState->viewportData->at(0);
-            auto min_screen_height_ratio = (host->settings().tilePixelSize + host->settings().screenSpaceError) / vp[3];
+            auto min_screen_height_ratio = (host->settings().tilePixelSize + host->settings().pixelError) / vp[3];
             auto d = state->lodDistance(bound);
             subtilesInRange = (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
 

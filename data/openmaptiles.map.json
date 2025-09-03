@@ -1,6 +1,6 @@
 {
     "terrain" : {
-        "screen_space_error" : 0.0
+        "pixelError" : 0.0
     },
     "map" : {
         "name" : "OpenMapTiles Example",

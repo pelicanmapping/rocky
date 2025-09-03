@@ -284,7 +284,7 @@ PagedNode::traverse(vsg::RecordTraversal& record) const
     {
         // check whether the subtiles are in range.
         auto& vp = record.getCommandBuffer()->viewDependentState->viewportData->at(0);
-        auto min_screen_height_ratio = pager->screenSpaceError / vp[3];
+        auto min_screen_height_ratio = pager->pixelError / vp[3];
         auto d = record.getState()->lodDistance(bound);
         bool child_in_range = (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
 

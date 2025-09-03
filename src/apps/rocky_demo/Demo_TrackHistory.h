@@ -123,6 +123,11 @@ namespace
                     registry.remove<ActiveState>(entity);
                 }
             }
+
+            _registry.read([&](entt::registry& registry)
+                {
+                    updateVisibility(registry);
+                });
         };
 
         void createNewChunk(entt::registry& registry, entt::entity host_entity, TrackHistory& track, Transform& transform)
@@ -190,22 +195,20 @@ namespace
         void updateVisibility(entt::registry& registry, entt::entity host_entity, TrackHistory::Chunk& chunk)
         {
             auto& track_visibility = registry.get<Visibility>(chunk.attach_point);
-            if (tracks_visible)
+            if (tracks_visible && registry.all_of<ActiveState>(host_entity))
             {
-                track_visibility.parent = &registry.get<Visibility>(host_entity);
+                // ensure that the visibility of a track matches the visibility of its host.
+                track_visibility.visible = registry.get<Visibility>(host_entity).visible;
             }
             else
             {
-                track_visibility.parent = nullptr;
                 track_visibility.visible.fill(false);
             }
         }
 
         void updateVisibility(entt::registry& registry)
         {
-            // ensure that the visibility of a track matches the visibility of its host.
-            auto view = registry.view<TrackHistory>();
-            for (auto&& [host_entity, track] : view.each())
+            for (auto&& [host_entity, track] : registry.view<TrackHistory>().each())
             {
                 for (auto& chunk : track.chunks)
                 {
@@ -240,11 +243,8 @@ namespace
             auto view = registry.view<Transform>();
             for (auto&& [entity, transform] : view.each())
             {
-                //if (transform.parent == nullptr)
-                {
-                    auto& track = registry.emplace<TrackHistory>(entity);
-                    track.style = style;
-                }
+                auto& track = registry.emplace<TrackHistory>(entity);
+                track.style = style;
             }
         }
 
@@ -298,11 +298,7 @@ auto Demo_TrackHistory = [](Application& app)
 
     if (ImGuiLTable::Begin("track history"))
     {
-        if (ImGuiLTable::Checkbox("Show", &system->tracks_visible))
-        {
-            auto [lock, registry] = app.registry.read();
-            system->updateVisibility(registry);
-        }
+        ImGuiLTable::Checkbox("Show", &system->tracks_visible);
 
         ImGuiLTable::SliderFloat("Update frequency", &system->update_hertz, 1.0f, 15.0f);
 

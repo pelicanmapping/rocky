@@ -81,7 +81,7 @@ namespace ROCKY_NAMESPACE
         RefinePolicy refinePolicy = RefinePolicy::Replace;
 
         //! LOD switching metric (size of tile on screen)
-        float screenSpaceError = 512.0f; // pixels 
+        float pixelError = 512.0f; // pixels 
 
         //! Name of the job pool to use for node paging
         std::string poolName = "rocky::nodepager";

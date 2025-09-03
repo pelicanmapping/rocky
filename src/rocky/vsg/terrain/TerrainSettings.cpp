@@ -20,7 +20,7 @@ TerrainSettings::from_json(std::string_view JSON)
     get_to(j, "minTileRangeFactor", minTileRangeFactor);
     get_to(j, "maxLevel", maxLevel);
     get_to(j, "minLevel", minLevel);
-    get_to(j, "screenSpaceError", screenSpaceError);
+    get_to(j, "pixelError", pixelError);
     get_to(j, "tilePixelSize", tilePixelSize);
     get_to(j, "skirtRatio", skirtRatio);
     get_to(j, "color", color);
@@ -38,7 +38,7 @@ TerrainSettings::to_json() const
     set(j, "minTileRangeFactor", minTileRangeFactor);
     set(j, "maxLevel", maxLevel);
     set(j, "minLevel", minLevel);
-    set(j, "screenSpaceError", screenSpaceError);
+    set(j, "pixelError", pixelError);
     set(j, "tilePixelSize", tilePixelSize);
     set(j, "skirtRatio", skirtRatio);
     set(j, "color", color);

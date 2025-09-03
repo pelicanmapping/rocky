@@ -61,7 +61,7 @@ auto Demo_Rendering = [](Application& app)
 
     if (ImGuiLTable::Begin("rendering"))
     {
-        ImGuiLTable::SliderFloat("Screen space error", &app.mapNode->terrainSettings().screenSpaceError.mutable_value(), 0.0f, 512.0f, "%.0f");
+        ImGuiLTable::SliderFloat("Pixel error", &app.mapNode->terrainSettings().pixelError.mutable_value(), 0.0f, 512.0f, "%.0f");
 
         ImGuiLTable::Checkbox("Render continuously", &app.vsgcontext->renderContinuously);
 

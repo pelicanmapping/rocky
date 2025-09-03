@@ -131,7 +131,7 @@ auto Demo_NodePager = [](Application& app)
             app.vsgcontext->requestFrame();
         }
 
-        if (ImGuiLTable::SliderFloat("Screen Space Error", &pager->screenSpaceError, 64.0f, 1024.0f, "%.0f px"))
+        if (ImGuiLTable::SliderFloat("Pixel Error", &pager->pixelError, 64.0f, 1024.0f, "%.0f px"))
         {
             app.vsgcontext->requestFrame();
         }

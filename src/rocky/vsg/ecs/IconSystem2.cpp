@@ -482,7 +482,7 @@ IconSystem2Node::update(VSGContext& context)
         {
             for (auto viewID : context->activeViewIDs)
             {
-                if (visible(visibility, viewID))
+                if (visibility.visible[viewID])
                 {
                     auto& view = transform_detail.views[viewID];
 

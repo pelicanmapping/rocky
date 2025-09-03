@@ -31,7 +31,7 @@ auto Demo_MVTFeatures = [](Application& app)
         pager->minLevel = 14;
         pager->maxLevel = 14;
         pager->refinePolicy = NodePager::RefinePolicy::Replace;
-        pager->screenSpaceError = 256;
+        pager->pixelError = 256;
 
         // This functor will calculate the bounding sphere for each streamed tile.
         // Since the feature data will be clamped, we need the tile itself to conform
@@ -160,7 +160,7 @@ auto Demo_MVTFeatures = [](Application& app)
 
     if (ImGuiLTable::Begin("MVTFeatures"))
     {
-        if (ImGuiLTable::SliderFloat("Screen Space Error", &pager->screenSpaceError, 64.0f, 1024.0f, "%.0f px"))
+        if (ImGuiLTable::SliderFloat("Screen Space Error", &pager->pixelError, 64.0f, 1024.0f, "%.0f px"))
         {
             app.vsgcontext->requestFrame();
         }

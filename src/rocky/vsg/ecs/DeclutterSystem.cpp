@@ -81,23 +81,21 @@ DeclutterSystem::update(VSGContext& runtime)
             auto& [sorting_key, entity, rect] = iter;
 
             auto& visibility = registry.get<Visibility>(entity);
-            if (visibility.parent == nullptr)
-            {
-                double LL[2]{ rect.xmin, rect.ymin };
-                double UR[2]{ rect.xmax, rect.ymax };
 
-                if (rtree.Search(LL, UR, [](auto e) { return false; }) == 0)
-                {
-                    // no conflict - mark visible
-                    rtree.Insert(LL, UR, entity);
-                    visibility.visible[viewID] = true;
-                    ++_visible;
-                }
-                else
-                {
-                    // conflict! mark invisibile
-                    visibility.visible[viewID] = false;
-                }
+            double LL[2]{ rect.xmin, rect.ymin };
+            double UR[2]{ rect.xmax, rect.ymax };
+
+            if (rtree.Search(LL, UR, [](auto e) { return false; }) == 0)
+            {
+                // no conflict - mark visible
+                rtree.Insert(LL, UR, entity);
+                visibility.visible[viewID] = true;
+                ++_visible;
+            }
+            else
+            {
+                // conflict! mark invisibile
+                visibility.visible[viewID] = false;
             }
         }
     }

@@ -5,7 +5,7 @@
             {
                 "name": "Bing Maps imagery",
                 "type": "BingImage",
-                "imagery_set": "Aerial",
+                "imagerySet": "Aerial",
                 "key": "<your key here>",
                 "attribution" : {
                     "text" :"\u00a9 Microsoft Corporation, \u00a9 TomTom",
