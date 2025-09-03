@@ -68,7 +68,10 @@ auto Demo_Rendering = [](Application& app)
         auto& c = app.mapNode->terrainNode->children;
         bool wireframe = c.front() == setWireframeTopology;
 
-        ImGuiLTable::Checkbox("Show triangles", &app.mapNode->terrainNode->wireOverlay.mutable_value());
+        if (app.vsgcontext->device()->getPhysicalDevice()->supportsDeviceExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME))
+        {
+            ImGuiLTable::Checkbox("Show triangles", &app.mapNode->terrainNode->wireOverlay.mutable_value());
+        }
 
         if (ImGuiLTable::Checkbox("Wireframe", &wireframe))
         {
