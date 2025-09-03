@@ -112,23 +112,15 @@ namespace ROCKY_NAMESPACE
         //! updated periodically.
         void upload(vsg::BufferInfoList bufferInfos);
 
-        //! TODO: Signal that something has changed that requires shader regen.
-        //! When we implement this, it will probably fire off a callback that
-        //! signals listeners to recreate their graphics pipelines so they
-        //! can incorporate the new shader settings.
-        //! OR, we can just maintain a revision number and the update() pass
-        //! can check it as needed.
-        void dirtyShaders();
-
-        //! Update any pending compile results. Returns true if updates occurred.
-        bool update();
-
         //! The VSG/Vulkan device shared by all displays
         vsg::ref_ptr<vsg::Device> device();
 
         //! A command graph the application can use to run compute shaders
         vsg::ref_ptr<vsg::CommandGraph> getComputeCommandGraph() const;
         vsg::ref_ptr<vsg::CommandGraph> getOrCreateComputeCommandGraph(vsg::ref_ptr<vsg::Device> device, int queueFamily);
+
+        //! Update any pending compile results. Returns true if updates occurred.
+        bool update();
 
     private:
         // for (some) update operations

@@ -263,7 +263,7 @@ SkyNode::setWorldSRS(const SRS& srs)
 
         // Tell the shaders that lighting is a go
         _context->shaderCompileSettings->defines.insert("ROCKY_LIGHTING");
-        _context->dirtyShaders();
+        // TODO: dirty shaders
 
         // the atmopshere:
         const float earth_atmos_thickness = 50000.0; // 96560.0;
@@ -285,7 +285,7 @@ SkyNode::setShowAtmosphere(bool show)
 
             // activate in shaders
             _context->shaderCompileSettings->defines.insert("ROCKY_ATMOSPHERE");
-            _context->dirtyShaders();
+            // TODO: dirty shaders
         }
         else if (iter != children.end() && show == false)
         {
@@ -293,7 +293,7 @@ SkyNode::setShowAtmosphere(bool show)
 
             // activate in shaders
             _context->shaderCompileSettings->defines.erase("ROCKY_ATMOSPHERE");
-            _context->dirtyShaders();
+            // TODO: dirty shaders
         }
     }
 }

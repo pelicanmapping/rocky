@@ -600,12 +600,6 @@ VSGContextImpl::upload(vsg::BufferInfoList bufferInfos)
 }
 
 void
-VSGContextImpl::dirtyShaders()
-{
-    ++shaderSettingsRevision;
-}
-
-void
 VSGContextImpl::requestFrame()
 {
     ++renderRequests;
