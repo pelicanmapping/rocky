@@ -24,6 +24,9 @@ namespace ROCKY_NAMESPACE
         //! Serialize
         std::string to_json() const override;
 
+        //! extent
+        const GeoExtent& extent() const override;
+
         option<Encoding> encoding;
 
     public: // Layer

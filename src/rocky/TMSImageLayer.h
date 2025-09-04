@@ -24,6 +24,9 @@ namespace ROCKY_NAMESPACE
         //! serialize
         std::string to_json() const override;
 
+        //! extent
+        const GeoExtent& extent() const override;
+
     protected: // Layer
 
         Result<> openImplementation(const IOOptions& io) override;

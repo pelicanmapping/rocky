@@ -140,7 +140,7 @@ TileLayer::setDataExtents(const DataExtentList& dataExtents)
 
     // rebuild the index:
     double a_min[2], a_max[2];
-    _dataExtentsIndex = std::make_shared<DataExtentsIndex>(); // new DataExtentsIndex();
+    _dataExtentsIndex = std::make_shared<DataExtentsIndex>();
 
     for (auto de = _dataExtents.begin(); de != _dataExtents.end(); ++de)
     {

@@ -110,3 +110,21 @@ TMSImageLayer::createTileImplementation(const TileKey& key, const IOOptions& io)
         return r.error();
     }
 }
+
+
+const GeoExtent&
+TMSImageLayer::extent() const
+{
+    if (crop.has_value())
+    {
+        return crop.value();
+    }
+    else if (_driver.tileMapExtent.valid())
+    {
+        return _driver.tileMapExtent;
+    }
+    else
+    {
+        return super::extent();
+    }
+}

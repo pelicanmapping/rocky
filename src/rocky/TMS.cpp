@@ -318,7 +318,7 @@ TileMap::createProfile() const
             std::max(numTilesHigh, 1u));
     }
 
-    return std::move(profile);
+    return profile;
 }
 
 
@@ -626,6 +626,8 @@ TMS::Driver::open(const URI& uri, Profile& profile, const std::string& format, D
         {
             profile = profileFromTileMap;
         }
+
+        tileMapExtent = GeoExtent(profile.extent());
     }
 
     // Make sure we've established a profile by this point:

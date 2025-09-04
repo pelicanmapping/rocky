@@ -578,59 +578,80 @@ GeoExtent::expandToInclude(double x, double y)
     {
         if (y < south())
         {
-            _height += (_south-y);
+            _height += (_south - y);
             _south = y;
         }
         else if (y > north())
         {
-            _height = y - south();
+            _height = y - _south;
         }
     }
 
+    // Expand along the X axis:
     if (!containsX)
     {
         if (_srs.isGeodetic())
         {
-            if (x > west())
+            // For geodetic coordinates, we need to consider antimeridian wrap-around
+            double current_east = east();
+            double current_width = width();
+            
+            // Calculate the two possible expansions:
+            // 1. Direct expansion (no wrap-around)
+            double new_west_direct = std::min(west(), x);
+            double new_east_direct = std::max(current_east, x);
+            double width_direct = new_east_direct - new_west_direct;
+            
+            // Handle the case where direct expansion would cross 180/-180
+            if (width_direct > 180.0)
             {
-                double w0 = x - west(); // non-wrap-around width
-                double w1 = (180.0 - x) + (west() - (-180.0) + _width); // wrap-around width
-                if (w0 <= w1)
+                // Need to consider wrap-around
+                double width_wrap;
+                double new_west_wrap;
+                
+                if (x < west())
                 {
-                    _width = w0;
+                    // Expanding westward past the antimeridian
+                    width_wrap = (west() - (-180.0)) + (180.0 - x);
+                    new_west_wrap = x;
                 }
                 else
                 {
-                    _west = x;
-                    _width = w1;
+                    // Expanding eastward past the antimeridian  
+                    width_wrap = (x - (-180.0)) + (180.0 - west());
+                    new_west_wrap = west();
+                }
+                
+                // Choose the smaller expansion
+                if (width_wrap < width_direct)
+                {
+                    _west = new_west_wrap;
+                    _width = width_wrap;
+                }
+                else
+                {
+                    _west = new_west_direct;
+                    _width = width_direct;
                 }
             }
-            else // (x < west())
+            else
             {
-                double w0 = _width + (west() - x); // non-wrap-around
-                double w1 = (x - (-180.0)) + (180.0 - west()); // wrap-around
-                if (w0 < w1)
-                {
-                    _west = x;
-                    _width = w0;
-                }
-                else
-                {
-                    _width = w1;
-                }
+                // Direct expansion is fine
+                _west = new_west_direct;
+                _width = width_direct;
             }
         }
         else
         {
-            // projected mode is the same approach as Y
+            // Projected mode: simple expansion
             if (x < west())
             {
-                _width += _west - x;
+                _width += (_west - x);
                 _west = x;
             }
             else if (x > east())
             {
-                _width = x - west();
+                _width = x - _west;
             }
         }
     }
@@ -659,56 +680,20 @@ GeoExtent::expandToInclude(const GeoExtent& rhs)
         return expandToInclude(rhs.transform(_srs));
     }
 
-    else
-    {        
-        if (area() <= 0.0)
-        {
-            *this = rhs;
-            return true;
-        }
-
-        double h = std::max(north(), rhs.north()) - std::min(south(), rhs.south());
-        if (rhs.south() < south())
-        {
-            _south = rhs.south();
-        }
-        _height = h;
-        
-        // non-wrap-around new width:
-        double w0 = std::max(xmax(), rhs.xmax()) - std::min(xmin(), rhs.xmin());
-
-        if (_srs.isGeodetic())
-        {
-            // wrap-around width:
-            double w1 = west() > rhs.east()? (180-west())+(rhs.east()-(-180)) : (180-rhs.west()) + (east()-(-180));
-
-            // pick the smaller one:
-            if (w0 <= w1)
-            {
-                if (w0 > _width)
-                {
-                    _width = w0;
-                    _west = std::min(west(), rhs.west());
-                }
-            }
-            else
-            {
-                if (w1 > _width)
-                {
-                    _width = w1;
-                    if (west() <= rhs.east())
-                        _west = rhs.west();
-                }
-            }
-        }
-        else
-        {
-            // projected mode is the same approach as Y
-            _west = std::min(west(), rhs.west());
-            _width = w0;
-        }
-
+    // If this extent is invalid, just assign the RHS
+    if (!valid())
+    {
+        *this = rhs;
+        return true;
     }
+
+    // For simplicity and correctness, expand to include the four corners
+    // and centroid of the RHS extent. This handles antimeridian cases properly.
+    expandToInclude(rhs.west(), rhs.south());
+    expandToInclude(rhs.east(), rhs.south());  
+    expandToInclude(rhs.east(), rhs.north());
+    expandToInclude(rhs.west(), rhs.north());
+    expandToInclude(rhs.centroid().x, rhs.centroid().y);
 
     return true;
 }

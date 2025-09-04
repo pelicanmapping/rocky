@@ -116,3 +116,20 @@ TMSElevationLayer::createTileImplementation(const TileKey& key, const IOOptions&
         return r.error();
     }
 }
+
+const GeoExtent&
+TMSElevationLayer::extent() const
+{
+    if (crop.has_value())
+    {
+        return crop.value();
+    }
+    else if (_driver.tileMapExtent.valid())
+    {
+        return _driver.tileMapExtent;
+    }
+    else
+    {
+        return super::extent();
+    }
+}

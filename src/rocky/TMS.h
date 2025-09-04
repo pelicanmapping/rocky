@@ -130,6 +130,7 @@ namespace ROCKY_NAMESPACE
 
             //! Source information structure
             TileMap tileMap;
+            GeoExtent tileMapExtent;
         };
     }
 }
