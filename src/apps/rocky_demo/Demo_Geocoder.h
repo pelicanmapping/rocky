@@ -106,8 +106,8 @@ auto Demo_Geocoder = [](Application& app)
                                 {
                                     Viewpoint vp = manip->viewpoint();
                                     vp.point = extent.centroid();
-                                    vp.range = Distance(extent.width(Units::METERS) * 7.0, Units::METERS);
-                                    manip->setViewpoint(vp, std::chrono::seconds(1));
+                                    vp.range = Distance(std::max(extent.width(Units::METERS) * 7.0, 2500.0), Units::METERS);
+                                    manip->setViewpoint(vp, std::chrono::seconds(2));
                                 }
 
                                 // update the mesh:

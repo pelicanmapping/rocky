@@ -586,16 +586,23 @@ VSGContextImpl::upload(vsg::BufferInfoList bufferInfos)
     // A way to upload GPU buffers without using the dirty()/DYNAMIC_DATA mechanism,
     // which gets slow with a large number of buffers.
     // inspired by: https://github.com/vsg-dev/VulkanSceneGraph/discussions/1572
+    unsigned count = 0;
     for (auto& bi : bufferInfos)
     {
-        if (bi->data)
+        if (bi && bi->data)
+        {
             bi->data->dirty();
+            ++count;
+        }
     }
 
-    auto& tasks = viewer->recordAndSubmitTasks;
-    for (auto& task : tasks)
+    if (count > 0)
     {
-        task->transferTask->assign(bufferInfos);
+        auto& tasks = viewer->recordAndSubmitTasks;
+        for (auto& task : tasks)
+        {
+            task->transferTask->assign(bufferInfos);
+        }
     }
 }
 
