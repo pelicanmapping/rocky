@@ -115,13 +115,15 @@ void
 GeoImage::composite(const std::vector<GeoImage>& sources, const std::vector<float>& opacities)
 {
     double x, y;
-    glm::fvec4 pixel;
     bool have_opacities = opacities.size() == sources.size();
 
     std::vector<SRSOperation> xforms;
     xforms.reserve(sources.size());
     for (auto& source : sources)
         xforms.emplace_back(srs().to(source.srs()));
+
+    std::vector<glm::fvec4> pixels;
+    pixels.reserve(sources.size());
 
     for (unsigned s = 0; s < _image->width(); ++s)
     {
@@ -131,36 +133,29 @@ GeoImage::composite(const std::vector<GeoImage>& sources, const std::vector<floa
 
             for (unsigned layer = 0; layer < _image->depth(); ++layer)
             {
-                bool pixel_valid = false;
+                pixels.clear();
 
-                for (int i = 0; i < (int)sources.size(); ++i)
+                for (int i = (int)sources.size() - 1; i >= 0; --i)
                 {
-                    auto& source = sources[i];
-                    float opacity = have_opacities ? opacities[i] : 1.0f;
-                    auto r = source.read(xforms[i], x, y, layer);
+                    auto r = sources[i].read(xforms[i], x, y, layer);
                     if (r.ok())
                     {
-                        if (!pixel_valid)
-                        {
-                            if (pixel.a > 0.0f)
-                            {
-                                pixel.a *= opacity;
-                                pixel_valid = true;
-                            }
-                            //if (source.read(pixel, xforms[i], x, y, layer) && pixel.a > 0.0f)
-                            //{
-                            //    pixel.a *= opacity;
-                            //    pixel_valid = true;
-                            //}
-                        }
-                        else
-                        {
-                            pixel = glm::mix(pixel, r.value(), r.value().a * opacity);
-                        }
+                        r.value().a *= opacities[i];
+                        float a = r.value().a;
+                        pixels.emplace_back(std::move(r.value()));
+                        if (a >= 1.0f)
+                            break;
                     }
-
-                    _image->write(pixel, s, t, layer);
                 }
+                
+                glm::fvec4 pixel(0, 0, 0, 0);
+                auto n = (int)pixels.size();
+                for (int i = n - 1; i >= 0; --i)
+                {
+                    pixel = i == (n - 1) ? pixels[i] : glm::mix(pixel, pixels[i], pixels[i].a);
+                }
+
+                _image->write(pixel, s, t, layer);
             }
         }
     }
@@ -182,7 +177,6 @@ GeoImage::read(const GeoPoint& p, int layer) const
             return read(c);
         else
             return ResultFail;
-        //return c.valid() && read(output, c);
     }
 
     double u = (p.x - _extent.xmin()) / _extent.width();
@@ -195,7 +189,6 @@ GeoImage::read(const GeoPoint& p, int layer) const
     }
 
     return _image->read_bilinear((float)u, (float)v, layer);
-    //return true;
 }
 
 GeoImage::ReadResult

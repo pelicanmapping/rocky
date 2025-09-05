@@ -135,20 +135,12 @@ TerrainTileModelFactory::addColorLayers(TerrainTileModel& model, const Map* map,
 
     for (auto layer : layers)
     {
-#if 1
         auto bestKey = layer->bestAvailableTileKey(key);
         if (bestKey.valid())
         {
             candidates.emplace_back(Candidate{ layer, bestKey });
             mayHaveData = mayHaveData || bestKey == key;
         }
-#else
-        if (layer->intersects(key))
-        {
-            candidates.push_back(Candidate{ layer, key });
-            mayHaveData = true;
-        }
-#endif
     }
 
     if (mayHaveData)
