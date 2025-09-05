@@ -7,6 +7,7 @@
 
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/terrain/TerrainTileNode.h>
+#include <rocky/Color.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -20,6 +21,7 @@ namespace ROCKY_NAMESPACE
     {
         struct Uniforms
         {
+            glm::vec4 backgroundColor = Color("#08AEE0");
             bool wireOverlay = false;
         };
 

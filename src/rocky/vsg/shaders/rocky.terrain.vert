@@ -25,7 +25,6 @@ layout(location = 2) in vec3 in_uvw;
 
 // inter-stage interface block
 struct RockyVaryings {
-    vec4 color;
     vec2 uv;
     vec3 up_view;
     vec3 vertex_view;
@@ -72,7 +71,6 @@ void main()
     mat3 normal_matrix = mat3(transpose(inverse(pc.modelview)));
     varyings.up_view = normal_matrix * in_normal;
     
-    varyings.color = vec4(0.5); // placeholder
     varyings.uv = (tile.color_matrix * vec4(in_uvw.st, 0, 1)).st;
     varyings.vertex_view = position_view.xyz / position_view.w;
     

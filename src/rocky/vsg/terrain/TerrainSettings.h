@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -52,7 +52,7 @@ namespace ROCKY_NAMESPACE
         option<float> skirtRatio = 0.0f;
 
         //! Color of the untextured globe (where no imagery is displayed)
-        option<Color> color = Color::White;
+        option<Color> backgroundColor = Color("#08AEE0");
 
         //! Number of threads dedicated to loading terrain data
         option<unsigned> concurrency = 6;

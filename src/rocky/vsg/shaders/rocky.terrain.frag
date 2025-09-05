@@ -12,7 +12,6 @@ layout(push_constant) uniform PushConstants {
 
 // inter-stage interface block
 struct RockyVaryings {
-    vec4 color;
     vec2 uv;
     vec3 up_view;
     vec3 vertex_view;
@@ -24,6 +23,7 @@ layout(location = 0) in RockyVaryings varyings;
 // uniforms (TerrainNode.h)
 layout(set = 0, binding = 9) uniform TerrainData
 {
+    vec4 backgroundColor;
     bool wireOverlay;
 } settings;
 
@@ -48,7 +48,7 @@ vec3 get_normal()
 void main()
 {
     vec4 texel = texture(color_tex, varyings.uv);
-    out_color = mix(varyings.color, clamp(texel, 0, 1), texel.a);
+    out_color = mix(settings.backgroundColor, clamp(texel, 0, 1), texel.a);
 
     if (gl_FrontFacing == false)
         out_color.r = 1.0;

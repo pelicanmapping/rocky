@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "TerrainSettings.h"
@@ -23,7 +23,7 @@ TerrainSettings::from_json(std::string_view JSON)
     get_to(j, "pixelError", pixelError);
     get_to(j, "tilePixelSize", tilePixelSize);
     get_to(j, "skirtRatio", skirtRatio);
-    get_to(j, "color", color);
+    get_to(j, "backgroundColor", backgroundColor);
     get_to(j, "concurrency", concurrency);
     get_to(j, "wireOverlay", wireOverlay);
 
@@ -41,7 +41,7 @@ TerrainSettings::to_json() const
     set(j, "pixelError", pixelError);
     set(j, "tilePixelSize", tilePixelSize);
     set(j, "skirtRatio", skirtRatio);
-    set(j, "color", color);
+    set(j, "backgroundColor", backgroundColor);
     set(j, "concurrency", concurrency);
     set(j, "wireOverlay", wireOverlay);
     return j.dump();

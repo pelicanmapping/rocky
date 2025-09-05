@@ -104,7 +104,7 @@ TerrainState::createDefaultDescriptors(VSGContext& context)
     // Next make the "default" descriptor model, which is used when 
     // no other data is available. These are 1x1 pixel placeholder images.
     auto color_image = Image::create(Image::R8G8B8A8_UNORM, 1, 1);
-    color_image->write(Color("#08AEE0"), 0, 0);
+    color_image->write(Color(Color::Red, 0.0f), 0, 0);
     texturedefs.color.defaultData = util::moveImageToVSG(color_image);
     ROCKY_HARD_ASSERT(texturedefs.color.defaultData);
     this->defaultTileDescriptors.color = vsg::DescriptorImage::create(
@@ -387,7 +387,13 @@ TerrainState::updateSettings(const TerrainSettings& settings)
 {    
     auto& uniforms = *static_cast<TerrainDescriptors::Uniforms*>(_terrainDescriptors.data->dataPointer());
 
-    if ((bool)uniforms.wireOverlay != settings.wireOverlay.value())
+    if (uniforms.backgroundColor != settings.backgroundColor.value())
+    {
+        uniforms.backgroundColor = settings.backgroundColor.value();
+        _terrainDescriptors.data->dirty();
+    }
+
+    if (uniforms.wireOverlay != settings.wireOverlay.value())
     {
         uniforms.wireOverlay = settings.wireOverlay.value();
         _terrainDescriptors.data->dirty();
