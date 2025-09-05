@@ -32,7 +32,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_RTT.h"
 #include "Demo_Stats.h"
 #include "Demo_Geocoder.h"
-#include "Demo_Rendering.h"
+#include "Demo_Terrain.h"
 #include "Demo_Simulation.h"
 #include "Demo_TrackHistory.h"
 #include "Demo_Decluttering.h"
@@ -102,7 +102,7 @@ std::vector<Demo> demos =
     Demo{ "Views", Demo_Views },
     Demo{ "Environment", Demo_Environment },
     Demo{ "Serialization", Demo_Serialization },
-    Demo{ "Rendering", Demo_Rendering },
+    Demo{ "Terrain", Demo_Terrain },
     Demo{ "Stats", Demo_Stats },
     Demo{ "About", Demo_About }
 };

@@ -12,7 +12,7 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    Layer::Ptr createAxesLayer(const Ellipsoid& ell, VSGContext vsg)
+    Layer::Ptr createAxesLayer(Application& app, const Ellipsoid& ell, VSGContext vsg)
     {
         const float len = 2.0 * (ell.semiMajorAxis() + 1e6);
         const float width = 25'000;
@@ -37,6 +37,38 @@ namespace
         gi.transform = vsg::rotate(vsg::dquat({ 0,0,1 }, { 0,1,0 }));
         group->addChild(builder.createCylinder(gi, si));
 
+        auto enode = EntityNode::create(app.registry);
+        group->addChild(enode);
+
+        app.registry.write([&](entt::registry& r)
+            {
+                auto render = [](WidgetInstance& w)
+                    {
+                        w.begin();
+                        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+                        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, w.size.x / 2.0);
+                        w.render([&w]() { ImGui::Text("%s", w.widget.text.c_str()); });
+                        ImGui::PopStyleVar(2);
+                        w.end();
+                    };
+
+                auto add = [&](const GeoPoint& pos, const std::string& text)
+                    {
+                        auto entity = enode->entities.emplace_back(r.create());
+                        r.emplace<Transform>(entity).position = pos;
+                        auto& widget = r.emplace<Widget>(entity);
+                        widget.text = text;
+                        widget.render = render;
+                    };
+
+                add(GeoPoint(SRS::ECEF, 0, 0, (len / 2)), "+Z");
+                add(GeoPoint(SRS::ECEF, (len / 2), 0, 0), "+X");
+                add(GeoPoint(SRS::ECEF, 0, (len / 2), 0), "+Y");
+                add(GeoPoint(SRS::ECEF, 0, 0, -(len / 2)), "-Z");
+                add(GeoPoint(SRS::ECEF, -(len / 2), 0, 0), "-X");
+                add(GeoPoint(SRS::ECEF, 0, -(len / 2), 0), "-Y");
+            });
+
         auto layer = NodeLayer::create();
         layer->name = "Axes";
         layer->node = group;
@@ -47,7 +79,7 @@ namespace
     }
 }
 
-auto Demo_Rendering = [](Application& app)
+auto Demo_Terrain = [](Application& app)
 {
     static Layer::Ptr axesLayer;
     // Better would be vkCmdSetPolygonMode extension, but it is not supported by VSG
@@ -59,11 +91,9 @@ auto Demo_Rendering = [](Application& app)
         setWireframeTopology->topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
     }
 
-    if (ImGuiLTable::Begin("rendering"))
+    if (ImGuiLTable::Begin("terrain"))
     {
         ImGuiLTable::SliderFloat("Pixel error", &app.mapNode->terrainSettings().pixelError.mutable_value(), 0.0f, 512.0f, "%.0f");
-
-        ImGuiLTable::Checkbox("Render continuously", &app.vsgcontext->renderContinuously);
 
         auto& c = app.mapNode->terrainNode->children;
         bool wireframe = c.front() == setWireframeTopology;
@@ -82,7 +112,7 @@ auto Demo_Rendering = [](Application& app)
         }
 
         bool skirts = app.mapNode->terrainSettings().skirtRatio.has_value();
-        if (ImGuiLTable::Checkbox("Terrain skirts", &skirts))
+        if (ImGuiLTable::Checkbox("Tile skirts", &skirts))
         {
             if (skirts)
                 app.mapNode->terrainSettings().skirtRatio = 0.025f;
@@ -92,19 +122,13 @@ auto Demo_Rendering = [](Application& app)
             app.mapNode->terrainNode->reset(app.vsgcontext);
         }
 
-        int maxLevel = app.mapNode->terrainSettings().maxLevel.value();
-        if (ImGuiLTable::SliderInt("Max LOD", &maxLevel, 0, 20))
-        {
-            app.mapNode->terrainSettings().maxLevel = maxLevel;
-        }
-
         static bool showAxes = false;
         if (ImGuiLTable::Checkbox("Show axes", &showAxes))
         {
             if (showAxes)
             {
                 if (!axesLayer)
-                    app.mapNode->map->add(axesLayer = createAxesLayer(app.mapNode->srs().ellipsoid(), app.vsgcontext));
+                    app.mapNode->map->add(axesLayer = createAxesLayer(app, app.mapNode->srs().ellipsoid(), app.vsgcontext));
 
                 auto r = axesLayer->open(app.io());
                 if (r.failed())
@@ -117,6 +141,15 @@ auto Demo_Rendering = [](Application& app)
 
             app.vsgcontext->requestFrame();
         }
+
+        int maxLevel = app.mapNode->terrainSettings().maxLevel.value();
+        if (ImGuiLTable::SliderInt("Max level", &maxLevel, 0, 20))
+        {
+            app.mapNode->terrainSettings().maxLevel = maxLevel;
+        }
+
+        float* bg = (float*)&app.mapNode->terrainSettings().backgroundColor.mutable_value();
+        ImGuiLTable::ColorEdit3("Background color", bg);
 
         static std::vector<std::string> options = { "global-geodetic", "global-qsc", "spherical-mercator" };
         int index = util::indexOf(options, app.mapNode->profile.wellKnownName());
