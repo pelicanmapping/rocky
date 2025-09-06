@@ -9,6 +9,8 @@
 #include <rocky/Callbacks.h>
 #include <rocky/vsg/imgui/SendEventsToImGui.h>
 #include <rocky/vsg/imgui/RenderImGui.h>
+
+#ifdef ROCKY_HAS_IMGUI
 #include <imgui.h>
 
 /**
@@ -162,3 +164,5 @@ namespace ROCKY_NAMESPACE
         };
     }
 }
+
+#endif // ROCKY_HAS_IMGUI

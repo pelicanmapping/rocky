@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </editor-fold> */
 #include <rocky/vsg/Common.h>
 
+#ifdef ROCKY_HAS_IMGUI
 #include <imgui.h>
 #include <functional>
 
@@ -98,3 +99,5 @@ namespace ROCKY_NAMESPACE
     // temporary workaround for Dear ImGui's nonexistent sRGB awareness
     //extern void ImGuiStyle_sRGB_to_linear(ImGuiStyle& style);
 }
+
+#endif // ROCKY_HAS_IMGUI

@@ -13,7 +13,10 @@
 #include <rocky/Rendering.h>
 #include <rocky/ecs/Widget.h>
 #include <rocky/ecs/Visibility.h>
+
+#ifdef ROCKY_HAS_IMGUI
 #include <imgui.h>
+#endif
 
 using namespace ROCKY_NAMESPACE;
 
@@ -59,6 +62,7 @@ WidgetSystemNode::WidgetSystemNode(Registry& in_registry) :
 void
 WidgetSystemNode::initialize(VSGContext& context)
 {
+#ifdef ROCKY_HAS_IMGUI
     // register me as a gui rendering callback.
     auto recorder = [this](detail::RenderingState& rs, void* imguiContext)
         {
@@ -114,6 +118,7 @@ WidgetSystemNode::initialize(VSGContext& context)
         };
 
     context->guiRecorders.emplace_back(recorder);
+#endif // ROCKY_HAS_IMGUI
 }
 
 void

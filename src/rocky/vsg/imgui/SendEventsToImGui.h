@@ -27,6 +27,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <chrono>
 #include <vsg/core/Visitor.h>
 #include <vsg/ui/KeyEvent.h>
+
+#ifdef ROCKY_HAS_IMGUI
 #include <imgui.h>
 
 namespace ROCKY_NAMESPACE
@@ -58,4 +60,6 @@ namespace ROCKY_NAMESPACE
         std::map<vsg::KeySymbol, ImGuiKey> _vsg2imgui;
     };
 }
+
+#endif // ROCKY_HAS_IMGUI
 
