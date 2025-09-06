@@ -22,6 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </editor-fold> */
 
 #include "SendEventsToImGui.h"
+
+#ifdef ROCKY_HAS_IMGUI
 #include <imgui.h>
 
 #include <vsg/ui/KeyEvent.h>
@@ -310,3 +312,5 @@ void SendEventsToImGui::apply(vsg::FrameEvent& /*frame*/)
 
     t0 = t1;
 }
+
+#endif // ROCKY_HAS_IMGUI
