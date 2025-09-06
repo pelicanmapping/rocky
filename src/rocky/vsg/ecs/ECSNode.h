@@ -290,9 +290,9 @@ namespace ROCKY_NAMESPACE
     {
         auto [lock, registry] = _registry.write();
 
-        registry.on_construct<T>().template connect<&detail::SystemNode_on_construct<T>>();
-        registry.on_update<T>().template connect<&detail::SystemNode_on_update<T>>();
-        registry.on_destroy<T>().template connect<&detail::SystemNode_on_destroy<T>>();
+        registry.template on_construct<T>().template connect<&detail::SystemNode_on_construct<T>>();
+        registry.template on_update<T>().template connect<&detail::SystemNode_on_update<T>>();
+        registry.template on_destroy<T>().template connect<&detail::SystemNode_on_destroy<T>>();
     }
 
     template<class T>
@@ -300,9 +300,9 @@ namespace ROCKY_NAMESPACE
     {
         auto [lock, registry] = _registry.write();
 
-        registry.on_construct<T>().template disconnect<&detail::SystemNode_on_construct<T>>();
-        registry.on_update<T>().template disconnect<&detail::SystemNode_on_update<T>>();
-        registry.on_destroy<T>().template disconnect<&detail::SystemNode_on_destroy<T>>();
+        registry.template on_construct<T>().template disconnect<&detail::SystemNode_on_construct<T>>();
+        registry.template on_update<T>().template disconnect<&detail::SystemNode_on_update<T>>();
+        registry.template on_destroy<T>().template disconnect<&detail::SystemNode_on_destroy<T>>();
     }
 
     template<class T>
