@@ -71,6 +71,10 @@ int main(int argc, char** argv)
 
     // Rocky runtime context connected to the viewer:
     auto context = rocky::VSGContextFactory::create(viewer);
+    if (!context->status.ok()) {
+        rocky::Log()->error("Cannot create rocky context: {}" + context->status.error().message);
+        return -1;
+    }
 
     // the map node - renders the terrain
     auto mapNode = rocky::MapNode::create(context);

@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "VSGContext.h"
@@ -383,10 +383,15 @@ VSGContextImpl::ctor(int& argc, char** argv)
             searchPaths.push_back(vsg::Path(path.generic_string()));
     }
 
+    searchPaths.emplace_back("/usr/local/share/rocky");
+
     if (!foundShaders(searchPaths))
     {
         Log()->warn("Trouble: Rocky may not be able to find its shaders. "
             "Consider setting one of the environment variables VSG_FILE_PATH or ROCKY_FILE_PATH.");
+
+        status = Failure(Failure::ResourceUnavailable, "Cannot find shaders - check your ROCKY_FILE_PATH");
+        return;
     }
 
     Log()->debug("Search paths:");

@@ -81,6 +81,9 @@ namespace ROCKY_NAMESPACE
         //! Frame number
         std::uint64_t frameCount() const;
 
+        //! Did this object initialize successfully?
+        inline bool ok() const;
+
     public: // public properties
 
         //! ECS registry associated with this Application
@@ -165,6 +168,10 @@ namespace ROCKY_NAMESPACE
 
     inline bool Application::active() const {
         return _lastFrameOK;
+    }
+
+    inline bool Application::ok() const {
+        return vsgcontext && vsgcontext->status.ok();
     }
 }
 

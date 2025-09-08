@@ -746,6 +746,8 @@ TEST_CASE("Earth File")
     CHECKED_IF(result.ok())
     {
         VSGContext context = VSGContextFactory::create(nullptr);
+        CHECK(context->status.ok());
+
         auto mapNode = MapNode::create(context);
         auto r = mapNode->from_json(result.value(), IOOptions(context->io, earthFile));
         CHECK(r.ok());

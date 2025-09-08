@@ -99,6 +99,12 @@ Application::ctor(int& argc, char** argv)
     // new VSG context
     vsgcontext = VSGContextFactory::create(viewer, argc, argv);
 
+    if (!vsgcontext->status.ok())
+    {
+        Log()->error("Cannot create rocky context: {}" + vsgcontext->status.error().message);
+        return;
+    }
+
     // new display manager
     display.initialize(*this);
 

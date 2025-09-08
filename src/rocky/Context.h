@@ -24,6 +24,9 @@ namespace ROCKY_NAMESPACE
         // destructor
         virtual ~ContextImpl();
 
+        //! Whether this context intialized OK
+        Status status;
+
         //! Default IO options
         IOOptions io;
 
