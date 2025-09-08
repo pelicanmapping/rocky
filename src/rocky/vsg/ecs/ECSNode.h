@@ -315,9 +315,9 @@ namespace ROCKY_NAMESPACE
 
         auto [lock, registry] = _registry.read();
 
-        registry.view<T>().each([&](auto& c)
+        registry.template view<T>().each([&](auto& c)
             {
-                auto& renderable = registry.get<Renderable>(c.attach_point);
+                auto& renderable = registry.template get<Renderable>(c.attach_point);
                 if (renderable.node)
                     renderable.node->accept(v);
             });
@@ -336,9 +336,9 @@ namespace ROCKY_NAMESPACE
 
         auto [lock, registry] = _registry.read();
 
-        registry.view<T>().each([&](auto& c)
+        registry.template view<T>().each([&](auto& c)
             {
-                auto& renderable = registry.get<Renderable>(c.attach_point);
+                auto& renderable = registry.template get<Renderable>(c.attach_point);
                 if (renderable.node)
                     renderable.node->accept(v);
             });
@@ -360,9 +360,9 @@ namespace ROCKY_NAMESPACE
 
         auto [lock, registry] = _registry.read();
 
-        registry.view<T>().each([&](auto& c)
+        registry.template view<T>().each([&](auto& c)
             {
-                auto& renderable = registry.get<Renderable>(c.attach_point);
+                auto& renderable = registry.template get<Renderable>(c.attach_point);
                 if (renderable.node)
                     renderable.node->accept(vsg_compiler);
             });
@@ -389,15 +389,15 @@ namespace ROCKY_NAMESPACE
             
 
         // Get an optimized view of all this system's components:
-        const auto& view = registry.view<T, ActiveState, Visibility>();
+        const auto& view = registry.template view<T, ActiveState, Visibility>();
         view.each([&](const entt::entity entity, auto& component, auto& active, auto& visibility)
             {
                 ROCKY_HARD_ASSERT(component.attach_point != entt::null);
-                auto& renderable = registry.get<Renderable>(component.attach_point);
+                auto& renderable = registry.template get<Renderable>(component.attach_point);
                 if (renderable.node)
                 {
                     auto& leaves = !pipelines.empty() ? pipelineRenderLeaves[featureMask(component)] : pipelineRenderLeaves[0];
-                    auto* transform_detail = registry.try_get<TransformDetail>(entity);
+                    auto* transform_detail = registry.template try_get<TransformDetail>(entity);
 
                     // if it's visible, queue it up for rendering
                     if (visible(visibility, rs))
@@ -469,12 +469,12 @@ namespace ROCKY_NAMESPACE
             //TODO: can we just do this during record...?
             for (auto& entity : entities_to_update)
             {
-                if (!registry.valid(entity) || !registry.all_of<T>(entity))
+                if (!registry.valid(entity) || !registry.template all_of<T>(entity))
                     continue;
 
-                T& component = registry.get<T>(entity);
+                T& component = registry.template get<T>(entity);
 
-                auto* renderable = registry.try_get<Renderable>(component.attach_point);
+                auto* renderable = registry.template try_get<Renderable>(component.attach_point);
                 if (renderable)
                 {
                     // either the node doesn't exist yet, or the revision changed.
