@@ -457,10 +457,10 @@ VSGContextImpl::ctor(int& argc, char** argv)
             }
 
             // last resort, try checking the data itself
-            auto decudedContentType = deduceContentTypeFromStream(location);
-            if (!decudedContentType.empty())
+            auto deducedContentType = deduceContentTypeFromStream(location);
+            if (!deducedContentType.empty())
             {
-                auto i = ext_for_mime_type.find(decudedContentType);
+                auto i = ext_for_mime_type.find(deducedContentType);
                 if (i != ext_for_mime_type.end())
                 {
                     auto rw = findReaderWriter(i->second, options->readerWriters);

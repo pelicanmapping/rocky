@@ -110,9 +110,26 @@ namespace
         ROCKY_TODO("Map the extension to a known mime type");
         auto dot = filename.find_last_of('.');
         if (dot != std::string::npos)
-            return filename.substr(dot + 1);
+        {
+            auto suffix = util::toLower(filename.substr(dot + 1));
+            if (suffix == "png") return "image/png";
+            if (suffix == "jpg" || suffix == "jpeg") return "image/jpeg";
+            if (suffix == "tif" || suffix == "tiff") return "image/tiff";
+            if (suffix == "gif") return "image/gif";
+            if (suffix == "bmp") return "image/bmp";
+            if (suffix == "webp") return "image/webp";
+            if (suffix == "xml") return "text/xml";
+            if (suffix == "html" || suffix == "htm") return "text/html";
+            if (suffix == "json") return "application/json";
+            if (suffix == "kml") return "application/vnd.google-earth.kml+xml";
+            if (suffix == "kmz") return "application/vnd.google-earth.kmz";
+            if (suffix == "dds") return "image/dds";
+            return "application/octet-stream";
+        }
         else
+        {
             return "";
+        }
     }
     
     struct KeyValuePair
@@ -660,13 +677,17 @@ auto URI::read(const IOOptions& io) const -> Result<URIResponse>
     {
         auto contentType = inferContentTypeFromFileExtension(full());
 
-        ROCKY_TODO("worry about text or binary open mode?");
-
-        std::ifstream in(full().c_str(), std::ios_base::in);
-        std::stringstream buf;
-        buf << in.rdbuf() << std::flush;
-        content.data = buf.str();
-        content.type = contentType;
+        std::ifstream in(full(), std::ios::binary);
+        if (in)
+        {
+            in.seekg(0, std::ios::end);
+            const auto size = (std::size_t)in.tellg();
+            content.data = std::string(size, '\0');
+            in.seekg(0, std::ios::beg);
+            in.read(content.data.data(), (std::streamsize)size);
+            in.close();
+            content.type = contentType;
+        }
         in.close();
     }
 
