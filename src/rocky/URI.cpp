@@ -504,7 +504,7 @@ namespace
 
                     constexpr auto unrecoverable = [](httplib::Error error) {
                         return
-                            error == httplib::Error::ExceedRedirectCount ||
+                            //error == httplib::Error::ExceedRedirectCount ||
                             error == httplib::Error::SSLLoadingCerts ||
                             error == httplib::Error::SSLServerVerification ||
                             error == httplib::Error::SSLServerHostnameVerification ||
@@ -518,7 +518,10 @@ namespace
                     }
 
                     // retry on a missing connection
-                    Log()->info(LC + httplib::to_string(res.error()) + " with " + proto_host_port + "; retrying..");
+                    if (httpDebug)
+                    {
+                        Log()->info(LC + httplib::to_string(res.error()) + " with " + proto_host_port + "; retrying..");
+                    }
                     std::this_thread::sleep_for(1s);
                 }
             }
