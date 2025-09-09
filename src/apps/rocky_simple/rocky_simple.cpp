@@ -82,7 +82,7 @@ int custom_window(int argc, char** argv)
 
     app.viewer->addEventHandler(vsg::Trackball::create(camera));
 
-    app.vsgcontext->renderContinuously = true;
+    app.renderContinuously = true;
 
     return app.run();
 }

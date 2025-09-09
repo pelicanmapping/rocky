@@ -37,13 +37,6 @@ namespace ROCKY_NAMESPACE
         //! Default font
         vsg::ref_ptr<vsg::Font> defaultFont;
 
-        //! Continuous render mode.
-        //! When true, the viewer will render frames continuously as fast as the CPU
-        //! (or the VSYNC) will allow. When false, the viewer will only paint a frame
-        //! when requested to do so by setting renderRequests to a non-zero value or
-        //! by calling requestFrame().
-        bool renderContinuously = false;
-
         //! Number of render-on-demaframe rendernd requests
         std::atomic_int renderRequests = { 0 };
 

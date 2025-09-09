@@ -106,6 +106,13 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<rocky::SkyNode> skyNode;
         vsg::ref_ptr<rocky::detail::ECSNode> ecsNode;
 
+        //! Continuous render mode.
+        //! When true, the viewer will render frames continuously as fast as the CPU
+        //! (or the VSYNC) will allow. When false, the viewer will only paint a frame
+        //! when requested to do so by setting renderRequests to a non-zero value or
+        //! by calling vsgcontetx->requestFrame().
+        bool renderContinuously = false;
+
         //! When true, the application will automatically create a main window
         //! on the first frame if the user does not add one via the display manager.
         bool autoCreateWindow = true;

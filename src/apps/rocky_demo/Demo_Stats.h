@@ -68,7 +68,7 @@ auto Demo_Stats = [](Application& app)
     {
         std::string buf;
 
-        if (app.vsgcontext->renderContinuously)
+        if (app.renderContinuously)
         {
             float fps = std::ceil(1.0f / (1e-6f * (float)average(&frames, over, f)));
             //float fps = 1.0f / (1e-6f * (float)lowest(&frames, over, f));
@@ -187,7 +187,7 @@ auto Demo_Stats = [](Application& app)
         if (ImGuiLTable::Begin("Terrain-Settings"))
         {
             ImGuiLTable::SliderInt("Load threads", (int*)&app.mapNode->terrainNode->concurrency.mutable_value(), 1, 16);
-            ImGuiLTable::Checkbox("Continuous rendering", &app.vsgcontext->renderContinuously);
+            ImGuiLTable::Checkbox("Continuous rendering", &app.renderContinuously);
             ImGuiLTable::End();
         }
     }

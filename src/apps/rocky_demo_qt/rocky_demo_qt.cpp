@@ -118,7 +118,7 @@ int main(int argc, char** argv)
     auto viewer = MyQtViewer::create();
 
     rocky::Application app(viewer, argc, argv);
-    app.vsgcontext->renderContinuously = true;
+    app.renderContinuously = true;
 
     viewer->frame = [&app]() { return app.frame(); };
     viewer->continuousUpdate = true;

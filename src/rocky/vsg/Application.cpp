@@ -168,6 +168,16 @@ Application::ctor(int& argc, char** argv)
         vsgcontext->shaderCompileSettings->defines.insert("ROCKY_WIREFRAME_OVERLAY");
     }
 
+    // set on-demand rendering mode from the command line
+    if (commandLine.read("--on-demand"))
+    {
+        renderContinuously = false;
+    }
+    else if (commandLine.read("--continuous"))
+    {
+        renderContinuously = true;
+    }
+
     // a node to render the map/terrain
     mainScene->addChild(mapNode);
 
@@ -443,7 +453,7 @@ Application::frame()
         _framesUntilStopRender = 2;
 
     vsgcontext->renderingEnabled =
-        vsgcontext->renderContinuously == true ||
+        renderContinuously == true ||
         _framesUntilStopRender-- > 0;
 
     if (vsgcontext->renderingEnabled)

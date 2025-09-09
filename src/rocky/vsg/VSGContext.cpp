@@ -317,16 +317,6 @@ VSGContextImpl::ctor(int& argc, char** argv)
         else if (log_level == "off") Log()->set_level(spdlog::level::off);
     }
 
-    // set on-demand rendering mode from the command line
-    if (args.read("--on-demand"))
-    {
-        renderContinuously = false;
-    }
-    else if (args.read("--continuous"))
-    {
-        renderContinuously = true;
-    }
-
 #ifdef ROCKY_HAS_GDAL
     readerWriterOptions->add(GDAL_VSG_ReaderWriter::create());
 #endif
