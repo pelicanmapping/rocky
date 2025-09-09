@@ -209,6 +209,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
             vsg::ViewportState::create(0, 0, window->extent2D().width, window->extent2D().height));
 
         view = vsg::View::create(camera, _app->mainScene);
+        view->setValue("rocky_auto_created", true);
     }
 
     addViewToWindow(view, window);
@@ -369,7 +370,10 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
             vsgcontext->activeViewIDs.emplace_back(view->viewID);
         }
 
-        if (_app)
+        bool rocky_auto_view = false;
+        view->getValue("rocky_auto_created", rocky_auto_view);
+
+        if (_app && rocky_auto_view)
         {
             auto manip = MapManipulator::create(_app->mapNode, window, view->camera, vsgcontext);
             setManipulatorForView(manip, view);
