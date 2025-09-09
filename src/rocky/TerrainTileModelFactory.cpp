@@ -88,16 +88,11 @@ namespace
 
         if (geoimage.valid())
         {
-            TerrainTileModel::ColorLayer m;
+            auto& m = model.colorLayers.emplace_back();
             m.layer = layer;
             m.revision = layer->revision();
-            m.image = std::move(geoimage);
+            m.image = geoimage;
             m.key = key;
-            model.colorLayers.emplace_back(std::move(m));
-            //if (layer->dynamic())
-            //{
-            //    model.requiresUpdate = true;
-            //}
         }
 
         // ResourceUnavailable just means the driver could not produce data

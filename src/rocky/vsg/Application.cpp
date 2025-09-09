@@ -115,6 +115,8 @@ Application::ctor(int& argc, char** argv)
     _apilayer = commandLine.read("--api");
     _vsync = !commandLine.read({ "--novsync", "--no-vsync" });
 
+    if (commandLine.read("--pause")) ::getchar();
+
     if (commandLine.read("--version"))
     {
         std::cout << "rocky " << ROCKY_VERSION_STRING << std::endl;
@@ -300,9 +302,9 @@ Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
     // max number of descriptor sets per pool, regardless of type:
     //resourceHints->numDescriptorSets = 1;
 
-#if VSG_API_VERSION_GREATER_EQUAL(1,1,8)
-    resourceHints->numDatabasePagerReadThreads = 8;
-#endif
+    //#if VSG_API_VERSION_GREATER_EQUAL(1,1,8)
+    //    resourceHints->numDatabasePagerReadThreads = 8;
+    //#endif
 
     // max number of descriptor sets of a specific type per pool:
     //resourceHints->descriptorPoolSizes.push_back(
@@ -311,9 +313,9 @@ Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
     viewer->compile(resourceHints);
 
     // Force VSG to install a DatabasePager.
-    vsg::CompileResult result;
-    result.containsPagedLOD = true;
-    vsg::updateTasks(viewer->recordAndSubmitTasks, viewer->compileManager, result);
+    //vsg::CompileResult result;
+    //result.containsPagedLOD = true;
+    //vsg::updateTasks(viewer->recordAndSubmitTasks, viewer->compileManager, result);
 
 #else
     viewer->compile();
@@ -363,9 +365,6 @@ namespace
         {
             // ECS updates - rendering or modifying entities
             app.ecsNode->update(app.vsgcontext);
-
-            // Context update callbacks
-            app.vsgcontext->onUpdate.fire();
 
             // keep the frames running if the pager is active
             auto& tasks = app.viewer->recordAndSubmitTasks;

@@ -624,6 +624,9 @@ VSGContextImpl::update()
 
     bool updates_occurred = false;
 
+    // Context update callbacks
+    onUpdate.fire();
+
     if (_compileResult)
     {
         std::unique_lock lock(_compileMutex);

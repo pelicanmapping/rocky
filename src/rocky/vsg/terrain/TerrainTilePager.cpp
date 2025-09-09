@@ -245,7 +245,7 @@ TerrainTilePager::requestCreateChildren(TileInfo& info, std::shared_ptr<TerrainE
     if (!info.childrenCreator.empty())
         return;
 
-    //RP_DEBUG << "requestLoadSubtiles -> " << parent->key.str() << std::endl;
+    RP_DEBUG("requestLoadSubtiles -> {}", info.tile->key.str());
 
     vsg::observer_ptr<TerrainTileNode> weak_parent(info.tile);
 
@@ -327,7 +327,7 @@ TerrainTilePager::requestLoadData(TileInfo& info, const IOOptions& in_io, std::s
     auto key = info.tile->key;
     auto tile = info.tile;
 
-    //RP_DEBUG("requestLoadData -> {}", key.str());
+    RP_DEBUG("requestLoadData -> {}", key.str());
 
     const IOOptions io(in_io);
 
