@@ -521,30 +521,62 @@ That's basically it. *Don't forget* to call `ImGui::SetCurrentContext` at the to
 
 # Rocky and VulkanSceneGraph
 
-If you're already using VulkanSceneGraph (VSG) in your application and just want to add a `MapNode` to a view, do this:
+If you need more fine-grained control over the view and the camera in a VulkanSceneGraph (VSG) application, you
+can use a `rocky::Application` object and add your windows and views by hand. Here is an example:
+```c++
+rocky::Application app(argc, argv);
+
+auto imagery = rocky::TMSImageLayer::create();
+imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
+app.mapNode->map->add(imagery);
+
+double nearFarRatio = 0.00001;
+double R = app.mapNode->srs().ellipsoid().semiMajorAxis();
+
+auto traits = vsg::WindowTraits::create(1920, 1080, "window");
+auto window = vsg::Window::create(traits);
+
+auto perspective = vsg::Perspective::create(
+    30.0,
+    (double)(window->extent2D().width) / (double)(window->extent2D().height),
+    R * nearFarRatio,
+    R * 10.0);
+
+auto lookAt = vsg::LookAt::create(
+    vsg::dvec3(R * 10.0, 0.0, 0.0),
+    vsg::dvec3(0.0, 0.0, 0.0),
+    vsg::dvec3(0.0, 0.0, 1.0));
+
+auto camera = vsg::Camera::create(
+    perspective,
+    lookAt,
+    vsg::ViewportState::create(window->extent2D()));
+
+auto view = vsg::View::create(camera, app.mainScene);
+
+app.display.addWindow(window, view);
+
+app.viewer->addEventHandler(vsg::Trackball::create(camera));
+
+app.vsgcontext->renderContinuously = true;
+
+return app.run();
+```
+
+You can also skip the `Application` object altogether and run your own frame loop. Just be aware: the ECS-based Annotation system is managed by `Application` so it will not be available. Here's the framework:
+
 ```c++
 #include <rocky/rocky.h>
 ...
 
-// Your VSG viewer:
 auto viewer = vsg::Viewer::create();
 
-// Make a runtime context for the viewer:
 auto context = rocky::VSGContextFactory::create(viewer);
 
-// Make a map node to render your map data:
 auto mapNode = rocky::MapNode::create(context);
 
-// optional - add one or more maps to your map:
-auto layer = rocky::TMSImageLayer::create();
-layer->uri = "https://[abc].tile.openstreetmap.org/{z}/{x}/{y}.png";
-layer->setProfile(rocky::Profile::SPHERICAL_MERCATOR);
-layer->setAttribution(rocky::Hyperlink{ "\u00a9 OpenStreetMap contributors", "https://openstreetmap.org/copyright" });
-mapNode->map->add(layer);
-...
-scene->addChild(mapNode);
-...
-// Run your main loop as usual
+// ... add the MapNode to your scene graph wherever you like
+
 while (viewer->advanceToNextFrame())
 {        
     viewer->handleEvents();
@@ -553,17 +585,16 @@ while (viewer->advanceToNextFrame())
     viewer->present();
 }
 ```
-You'll probably also want to add the `MapManipulator` to that view to control the map:
+If you want to add Rocky's stock `MapManipulator` to that Viewer to control the map:
 ```c++
 viewer->addEventHandler(rocky::MapManipulator::create(mapNode, window, camera, context));
 ```
-Keep in mind that without Rocky's `Application` object, you will not get the benefits of using Rocky's ECS for map annotations.
 
 ### Terrain Rendering Profiles
 
 Rocky supports two map-tiling profiles for rendering the terrain.
 
-* `global-geodetic` : Loads fast, but sacrifices some quality in the polar regions. This is the default since it closely matches most online data sources.
+* `global-geodetic` : Loads fast, but sacrifices some quality in the polar regions. This is the default since it closely matches many online data sources.
 
 * `global-qsc` : Accurate worldwide including the polar regions. The trade-off can be slower loading speeds depending on your data. If you work in the polar regions or use polar stereographic data, this will be the better option.
 
@@ -571,11 +602,11 @@ You can configure the rendering profile in your `MapNode`:
 ```c++
 mapNode->profile = Profile("global-qsc");
 ```
-The *Rendering* panel in `rocky_demo` has a drop-down to select the profile so you can see the difference. Toggle on *Wireframe* mode for a better look.
+The *Rendering* panel in `rocky_demo` has a drop-down to select the profile so you can see the difference. Toggle on *Show triangles* for a better look.
 
 ### VSG Nodes and Layers
 
-Use Rocky's `NodeLayer` to wrap a `vsg::Node` in a Rocky map layer. it's easy:
+Use Rocky's `NodeLayer` to wrap a `vsg::Node` in a Rocky map layer:
 ```c++
 auto layer = NodeLayer::create(my_vsg_node);
 ...
