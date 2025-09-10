@@ -13,17 +13,16 @@ int custom_frame_loop(int argc, char** argv);
 
 int main(int argc, char** argv)
 {
-    rocky::Log()->info("Options are: ");
+    rocky::Log()->info("Options: ");
     rocky::Log()->info("  --simple               (the default)");
     rocky::Log()->info("  --custom-window        (create our own window and camera)");
     rocky::Log()->info("  --custom-frame-loop    (manage the VSG viewer and frame loop ourselves)");
+    rocky::Log()->info("");
 
-    std::string a(argv[1]);
-
-    if (argc >= 2 && a == "--custom-window")
+    if (argc >= 2 && std::string(argv[1]) == "--custom-window")
         return custom_window(argc, argv);
 
-    if (argc >= 2 && a == "--custom-frame-loop")
+    if (argc >= 2 && std::string(argv[1]) == "--custom-frame-loop")
         return custom_frame_loop(argc, argv);
 
     return simple(argc, argv);
@@ -32,7 +31,7 @@ int main(int argc, char** argv)
 
 int simple(int argc, char** argv)
 {
-    rocky::Log()->info("\nRunning simply");
+    rocky::Log()->info("Running simply");
 
     rocky::Application app(argc, argv);
 
@@ -46,7 +45,7 @@ int simple(int argc, char** argv)
 
 int custom_window(int argc, char** argv)
 {
-    rocky::Log()->info("\nRunning with a custom window");
+    rocky::Log()->info("Running with a custom window");
 
     rocky::Application app(argc, argv);
 
@@ -87,9 +86,10 @@ int custom_window(int argc, char** argv)
     return app.run();
 }
 
+
 int custom_frame_loop(int argc, char** argv)
 {
-    rocky::Log()->info("\nRunning with a custom frame loop and no Application object");
+    rocky::Log()->info("Running with a custom frame loop and no Application object");
 
     auto viewer = vsg::Viewer::create();
 
@@ -133,6 +133,7 @@ int custom_frame_loop(int argc, char** argv)
     viewer->addEventHandler(rocky::MapManipulator::create(mapNode, window, camera, vsgcontext));
 
     viewer->compile();
+    vsgcontext->compile(mapNode);
 
     while (viewer->advanceToNextFrame())
     {
