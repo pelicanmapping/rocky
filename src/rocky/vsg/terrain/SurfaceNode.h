@@ -73,11 +73,7 @@ namespace ROCKY_NAMESPACE
         bool _horizonCullingPoint_valid = false;
         vsg::ref_ptr<vsg::Geometry> _proxyGeom;
         vsg::ref_ptr<vsg::vec3Array> _proxyVerts;
-
-        struct ViewLocalData {
-            std::shared_ptr<Horizon> horizon;
-        };
-        mutable detail::ViewLocal<ViewLocalData> _viewlocal;
+        mutable detail::ViewLocal<Horizon>* _horizon = nullptr;
     };
 
 
@@ -107,23 +103,26 @@ namespace ROCKY_NAMESPACE
         }
 
         // Horizon culling:
-        auto& viewlocal = _viewlocal[state->_commandBuffer->viewID];
-        if (!viewlocal.horizon)
+        if (!_horizon)
         {
-            rv.getValue("rocky.horizon", viewlocal.horizon);
+            rv.getValue("rocky.horizon", _horizon);
         }
-        if (viewlocal.horizon)
+
+        if (_horizon)
         {
+            auto viewID = rv.getCommandBuffer()->viewID;
+            auto& horizon = (*_horizon)[viewID];
+
             if (_horizonCullingPoint_valid)
             {
-                return viewlocal.horizon->isVisible(_horizonCullingPoint);
+                return horizon.isVisible(_horizonCullingPoint);
             }
             else
             {
                 for (int p = 0; p < 4; ++p)
                 {
                     auto& wp = _worldPoints[p];
-                    if (viewlocal.horizon->isVisible(wp.x, wp.y, wp.z))
+                    if (horizon.isVisible(wp.x, wp.y, wp.z))
                         return true;
                 }
                 return false;

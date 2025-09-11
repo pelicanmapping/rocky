@@ -111,13 +111,13 @@ auto Demo_Terrain = [](Application& app)
                 c.erase(c.begin());
         }
 
-        bool skirts = app.mapNode->terrainSettings().skirtRatio.has_value();
+        bool skirts = app.mapNode->terrainSettings().skirtRatio.value() > 0.0f;
         if (ImGuiLTable::Checkbox("Tile skirts", &skirts))
         {
             if (skirts)
                 app.mapNode->terrainSettings().skirtRatio = 0.025f;
             else
-                app.mapNode->terrainSettings().skirtRatio.clear();
+                app.mapNode->terrainSettings().skirtRatio = 0.0f;
 
             app.mapNode->terrainNode->reset(app.vsgcontext);
         }

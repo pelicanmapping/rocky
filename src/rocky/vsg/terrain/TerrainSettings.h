@@ -49,7 +49,7 @@ namespace ROCKY_NAMESPACE
         //! Ratio of skirt height to tile width. The "skirt" is geometry extending
         //! down from the edge of terrain tiles meant to hide cracks between adjacent
         //! levels of detail. A value of 0 means no skirt.
-        option<float> skirtRatio = 0.0f;
+        option<float> skirtRatio = 0.025f;
 
         //! Color of the untextured globe (where no imagery is displayed)
         option<Color> backgroundColor = Color("#08AEE0");
