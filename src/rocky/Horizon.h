@@ -54,6 +54,9 @@ namespace ROCKY_NAMESPACE
         //! @return Radius in meters of the ellipsoid
         double getRadius() const;
 
+        //! Whether this object has been initialized with a valid ellipsoid
+        operator bool() const { return _valid; }
+
     protected:
         Ellipsoid _em;
         bool _valid = false;

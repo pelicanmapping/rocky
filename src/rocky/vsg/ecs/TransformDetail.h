@@ -49,7 +49,7 @@ namespace ROCKY_NAMESPACE
             SRS world_srs;
             const Ellipsoid* world_ellipsoid = nullptr;
             SRSOperation pos_to_world;
-            std::shared_ptr<Horizon> horizon;
+            detail::ViewLocal<Horizon>* horizon = nullptr;
         };
         Cached cached;
 
@@ -64,12 +64,12 @@ namespace ROCKY_NAMESPACE
         void pop(vsg::RecordTraversal&) const;
 
         //! True if this transform is visible in the provided view state
-        inline bool visible(detail::RenderingState&) const;
+        inline bool visible(detail::RenderingState) const;
     };
 
 
     // inline functions
-    bool TransformDetail::visible(detail::RenderingState& rs) const
+    bool TransformDetail::visible(detail::RenderingState rs) const
     {
         return views[rs.viewID].passesCull;
     }

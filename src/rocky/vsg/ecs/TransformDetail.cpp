@@ -11,7 +11,8 @@ using namespace ROCKY_NAMESPACE;
 bool
 TransformDetail::update(vsg::RecordTraversal& record)
 {
-    auto& view = views[record.getCommandBuffer()->viewID];
+    auto viewID = record.getCommandBuffer()->viewID;
+    auto& view = views[viewID];
 
     if (!sync.position.valid())
         return false;
@@ -23,7 +24,7 @@ TransformDetail::update(vsg::RecordTraversal& record)
 
     if (transform_changed)
     {
-        view.revision = sync.revision; // transform->revision;
+        view.revision = sync.revision;
 
         // first time through, cache information about the world SRS and ellipsoid for this view.
         if (!cached.pos_to_world)
@@ -73,11 +74,10 @@ TransformDetail::update(vsg::RecordTraversal& record)
 
     view.viewport = (*state->_commandBuffer->viewDependentState->viewportData)[0];
 
-    // try this:
-    // Frustum cull (by center point) TODO: radius??
 
     view.passesCull = true;
 
+    // Frustum cull (by center point) TODO: radius??
     if (sync.frustumCulled)
     {
         auto clip = view.mvp[3] / view.mvp[3][3];
@@ -91,7 +91,8 @@ TransformDetail::update(vsg::RecordTraversal& record)
     // horizon cull, if active (geocentric only)
     if (view.passesCull && sync.horizonCulled && cached.horizon && cached.world_srs.isGeocentric())
     {
-        if (!cached.horizon->isVisible(view.model[3][0], view.model[3][1], view.model[3][2], sync.radius))
+        auto& horizon = *cached.horizon;
+        if (!horizon[viewID].isVisible(view.model[3][0], view.model[3][1], view.model[3][2], sync.radius))
         {
             view.passesCull = false;
         }

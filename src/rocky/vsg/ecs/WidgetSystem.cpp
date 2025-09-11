@@ -80,8 +80,6 @@ WidgetSystemNode::initialize(VSGContext& context)
             {
                 auto text = widget.text;
 
-                //Log()->info("Vis {} frame {}", text, visibility.frame[viewState.viewID]);
-
                 if (visible(visibility, rs) && xdetail.visible(rs))
                 {
                     WidgetInstance i{

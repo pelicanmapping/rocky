@@ -135,22 +135,22 @@ MapNode::update(VSGContext context)
 void
 MapNode::traverse(vsg::RecordTraversal& record) const
 {
-    auto viewID = record.getState()->_commandBuffer->viewID;
+    auto viewID = record.getCommandBuffer()->viewID;
 
-    auto& viewlocal = _viewlocal[viewID];
+    auto& horizon = _horizon[viewID];
 
     if (srs().isGeocentric())
     {
-        if (viewlocal.horizon == nullptr)
+        if (!horizon)
         {
-            viewlocal.horizon = std::make_shared<Horizon>(srs().ellipsoid());
+            horizon.setEllipsoid(srs().ellipsoid());
         }
 
         auto eye = vsg::inverse(record.getState()->modelviewMatrixStack.top()) * vsg::dvec3(0, 0, 0);
         bool is_ortho = record.getState()->projectionMatrixStack.top()(3, 3) != 0.0;
-        viewlocal.horizon->setEye(to_glm(eye), is_ortho);
+        horizon.setEye(to_glm(eye), is_ortho);
 
-        record.setValue("rocky.horizon", viewlocal.horizon);
+        record.setValue("rocky.horizon", &_horizon);
     }
 
     record.setValue("rocky.worldsrs", srs());

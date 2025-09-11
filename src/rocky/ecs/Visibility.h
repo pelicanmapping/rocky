@@ -79,11 +79,11 @@ namespace ROCKY_NAMESPACE
     //! @param e Entity id
     //! @param view_index Index of view to check visibility
     //! @return True if visible in that view
-    inline bool visible(entt::registry& registry, entt::entity e, int view_index = 0)
-    {
-        // assume a readlock on the registry
-        ROCKY_SOFT_ASSERT_AND_RETURN(e != entt::null, false);
+    //inline bool visible(entt::registry& registry, entt::entity e, int view_index)
+    //{
+    //    // assume a readlock on the registry
+    //    ROCKY_SOFT_ASSERT_AND_RETURN(e != entt::null, false);
 
-        return registry.get<Visibility>(e).visible[view_index];
-    }
+    //    return registry.get<Visibility>(e).visible[view_index];
+    //}
 }

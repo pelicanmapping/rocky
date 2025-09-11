@@ -25,7 +25,6 @@ DeclutterSystem::update(VSGContext& runtime)
     _total = 0, _visible = 0;
 
     auto viewIDs = runtime->activeViewIDs; // copy
-    auto frame = (std::int64_t)runtime->viewer->getFrameStamp()->frameCount;
 
     for (auto& viewID : viewIDs)
     {
@@ -85,7 +84,7 @@ DeclutterSystem::update(VSGContext& runtime)
             double LL[2]{ rect.xmin, rect.ymin };
             double UR[2]{ rect.xmax, rect.ymax };
 
-            if (rtree.Search(LL, UR, [](auto e) { return false; }) == 0)
+            if (rtree.Search(LL, UR, [](auto e) { return RTREE_STOP_SEARCHING; }) == 0)
             {
                 // no conflict - mark visible
                 rtree.Insert(LL, UR, entity);

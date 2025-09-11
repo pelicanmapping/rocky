@@ -8,15 +8,12 @@
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/terrain/TerrainSettings.h>
 #include <rocky/vsg/terrain/TerrainNode.h>
-#include <rocky/Rendering.h>
-#include <rocky/Map.h>
 #include <rocky/Horizon.h>
+#include <rocky/Map.h>
+#include <rocky/Rendering.h>
 
 namespace ROCKY_NAMESPACE
 {
-    //! Registers a MapNode with a runtime context.
-    extern void ROCKY_EXPORT attach(vsg::ref_ptr<MapNode>, VSGContext);
-
     /**
      * VSG Node that renders a map.
      * This node is a "view" component that renders data from a "Map" data model.
@@ -75,9 +72,6 @@ namespace ROCKY_NAMESPACE
 
         bool _openedLayers = false;
 
-        struct ViewLocalData {
-            std::shared_ptr<Horizon> horizon;
-        };
-        mutable detail::ViewLocal<ViewLocalData> _viewlocal;
+        mutable detail::ViewLocal<Horizon> _horizon;
     };
 }

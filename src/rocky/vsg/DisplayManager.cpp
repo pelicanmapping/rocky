@@ -329,7 +329,8 @@ DisplayManager::removeWindow(vsg::ref_ptr<vsg::Window> window)
 }
 
 void
-DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::Window> window)
+DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::Window> window,
+    bool add_manipulator)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(window != nullptr, void());
@@ -373,7 +374,7 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
         bool rocky_auto_view = false;
         view->getValue("rocky_auto_created", rocky_auto_view);
 
-        if (_app && rocky_auto_view)
+        if (_app && (rocky_auto_view || add_manipulator)) //rocky_auto_view)
         {
             auto manip = MapManipulator::create(_app->mapNode, window, view->camera, vsgcontext);
             setManipulatorForView(manip, view);
