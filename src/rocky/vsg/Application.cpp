@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "Application.h"
@@ -162,12 +162,6 @@ Application::ctor(int& argc, char** argv)
         mainScene->addChild(skyNode);
     }
 
-    // wireframe overlay
-    if (commandLine.read("--wire"))
-    {
-        vsgcontext->shaderCompileSettings->defines.insert("ROCKY_WIREFRAME_OVERLAY");
-    }
-
     // set on-demand rendering mode from the command line
     if (commandLine.read("--on-demand"))
     {
@@ -228,7 +222,6 @@ Application::ctor(int& argc, char** argv)
             commandLineStatus = r.error();
     }
 
-
     // Create the ECS system manager and all its default systems.
     ecsNode = detail::ECSNode::create(registry);
 
@@ -277,7 +270,10 @@ Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
         display._commandGraphByWindow.begin()->second->queueFamily);
 
     // Initialize the ECS subsystem:
-    ecsNode->initialize(vsgcontext);
+    if (ecsNode)
+    {
+        ecsNode->initialize(vsgcontext);
+    }
 
     // respond to the X or to hitting ESC
     // TODO: refactor this so it responds to individual windows and not the whole app?
@@ -294,7 +290,6 @@ Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
     }
 
     viewer->assignRecordAndSubmitTaskAndPresentation(commandGraphs);
-
 
 #if 1
     // Configure a descriptor pool size that's appropriate for terrain
@@ -374,7 +369,10 @@ namespace
         void run() override
         {
             // ECS updates - rendering or modifying entities
-            app.ecsNode->update(app.vsgcontext);
+            if (app.ecsNode)
+            {
+                app.ecsNode->update(app.vsgcontext);
+            }
 
             // keep the frames running if the pager is active
             auto& tasks = app.viewer->recordAndSubmitTasks;

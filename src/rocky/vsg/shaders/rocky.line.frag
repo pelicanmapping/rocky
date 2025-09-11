@@ -7,8 +7,8 @@ struct Varyings {
     int stipple_pattern;
     int stipple_factor;
 };
-layout(location = 0) in float lateral;
-layout(location = 1) flat in Varyings rk;
+layout(location = 1) in float lateral;
+layout(location = 2) flat in Varyings rk;
 
 // outputs
 layout(location = 0) out vec4 out_color;

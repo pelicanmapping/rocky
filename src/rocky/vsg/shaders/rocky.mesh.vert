@@ -1,8 +1,6 @@
 #version 450
 #pragma import_defines(USE_MESH_STYLE)
 
-#extension GL_EXT_debug_printf : enable
-
 // vsg push constants
 layout(push_constant) uniform PushConstants {
     mat4 projection;

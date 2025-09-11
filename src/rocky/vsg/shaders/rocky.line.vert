@@ -34,8 +34,8 @@ struct Varyings {
     int stipple_pattern;
     int stipple_factor;
 };
-layout(location = 0) out float lateral;
-layout(location = 1) flat out Varyings rk;
+layout(location = 1) out float lateral;
+layout(location = 2) flat out Varyings rk;
 
 // GL built-ins
 out gl_PerVertex {

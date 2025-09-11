@@ -10,16 +10,23 @@
 int simple(int argc, char** argv);
 int custom_window(int argc, char** argv);
 int no_app(int argc, char** argv);
+void install_debug_layer(vsg::ref_ptr<vsg::Window>);
+bool debugLayer = false;
 
 int main(int argc, char** argv)
 {
-    if (argc >= 2 && std::string_view(argv[1]) == "--simple")
+    vsg::CommandLine args(&argc, argv);
+
+    if (args.read("--debug"))
+        debugLayer = true;
+
+    if (args.read("--simple"))
         return simple(argc, argv);
 
-    if (argc >= 2 && std::string_view(argv[1]) == "--custom-window")
+    if (args.read("--custom-window"))
         return custom_window(argc, argv);
 
-    if (argc >= 2 && std::string_view(argv[1]) == "--no-app")
+    if (args.read("--no-app"))
         return no_app(argc, argv);
 
     rocky::Log()->info("Options: ");
@@ -121,8 +128,14 @@ int no_app(int argc, char** argv)
     double R = mapNode->srs().ellipsoid().semiMajorAxis();
 
     auto traits = vsg::WindowTraits::create(1920, 1080, argv[0]);
+    if (debugLayer)
+        traits->instanceExtensionNames.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
     auto window = vsg::Window::create(traits);
     viewer->addWindow(window);
+
+    if (debugLayer)
+        install_debug_layer(window);
 
     auto perspective = vsg::Perspective::create(
         30.0,
@@ -164,4 +177,50 @@ int no_app(int argc, char** argv)
     }
 
     return 0;
+}
+
+
+
+
+
+
+
+
+
+// https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/debug_utils
+VKAPI_ATTR VkBool32 VKAPI_CALL debug_utils_messenger_callback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+    VkDebugUtilsMessageTypeFlagsEXT message_type,
+    const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+    void* user_data)
+{
+    if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+    {
+        rocky::Log()->warn(std::string_view(callback_data->pMessage));
+    }
+    else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+    {
+        rocky::Log()->error(std::string_view(callback_data->pMessage));
+    }
+    return VK_FALSE;
+}
+
+
+void install_debug_layer(vsg::ref_ptr<vsg::Window> window)
+{
+    VkDebugUtilsMessengerCreateInfoEXT debug_utils_create_info = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
+    debug_utils_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
+    debug_utils_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+    debug_utils_create_info.pfnUserCallback = debug_utils_messenger_callback;
+
+    static VkDebugUtilsMessengerEXT debug_utils_messenger;
+
+    auto vki = window->getOrCreateDevice()->getInstance();
+
+    using PFN_vkCreateDebugUtilsMessengerEXT = VkResult(VKAPI_PTR*)(VkInstance, const VkDebugUtilsMessengerCreateInfoEXT*, const VkAllocationCallbacks*, VkDebugUtilsMessengerEXT*);
+    PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
+    if (vki->getProcAddr(vkCreateDebugUtilsMessengerEXT, "vkCreateDebugUtilsMessenger", "vkCreateDebugUtilsMessengerEXT"))
+    {
+        vkCreateDebugUtilsMessengerEXT(vki->vk(), &debug_utils_create_info, nullptr, &debug_utils_messenger);
+    }
 }

@@ -157,7 +157,7 @@ namespace
     };
 #endif
 
-    std::string deduceContentTypeFromStream(std::istream& stream)
+    std::string inferContentTypeFromStream(std::istream& stream)
     {
         // Get the length of the stream
         stream.seekg(0, std::ios::end);
@@ -452,10 +452,11 @@ VSGContextImpl::ctor(int& argc, char** argv)
             }
 
             // last resort, try checking the data itself
-            auto deducedContentType = deduceContentTypeFromStream(location);
-            if (!deducedContentType.empty())
+            // TODO: maybe this should be a FIRST resort?
+            auto inferredContentType = inferContentTypeFromStream(location);
+            if (!inferredContentType.empty())
             {
-                auto i = ext_for_mime_type.find(deducedContentType);
+                auto i = ext_for_mime_type.find(inferredContentType);
                 if (i != ext_for_mime_type.end())
                 {
                     auto rw = findReaderWriter(i->second, options->readerWriters);

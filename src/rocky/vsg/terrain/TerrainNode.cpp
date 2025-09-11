@@ -120,7 +120,11 @@ TerrainProfileNode::ping(TerrainTileNode* tile, const TerrainTileNode* parent, v
 TerrainNode::TerrainNode(VSGContext context) :
     terrainState(context)
 {
-    //nop
+    // create the graphics pipeline to render this map
+    if (!terrainState.setupTerrainStateGroup(*this, context))
+    {
+        status = Failure("Failed to set up terrain state group");
+    }
 }
 
 Result<>
@@ -139,6 +143,7 @@ Result<>
 TerrainNode::setMap(Map::Ptr in_map, const Profile& in_profile, const SRS& in_renderingSRS, VSGContext context)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(in_map, Failure_AssertionFailure);
+    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), status.error());
 
     // remove old hooks:
     if (map)
@@ -214,12 +219,6 @@ TerrainNode::reset(VSGContext context)
 Result<>
 TerrainNode::createProfiles(VSGContext context)
 {
-    // create the graphics pipeline to render this map
-    if (!terrainState.setupTerrainStateGroup(*this, context))
-    {
-        return Failure("Failed to set up terrain state group");
-    }
-
     if (profile.isComposite())
     {
         for (auto& subprofile : profile.subprofiles())

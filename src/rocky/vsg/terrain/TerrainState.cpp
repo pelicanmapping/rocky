@@ -299,7 +299,6 @@ TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, co
         renderModel.color.image = layer.image.image();
         renderModel.color.matrix = layer.matrix;
 
-        // TODO: evaluate this 'clone' operation...
         auto data = util::wrapImageInVSG(renderModel.color.image);
         if (data)
         {
@@ -365,8 +364,6 @@ TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, co
         pipelineConfig->layout->setLayouts[0],
         vsg::Descriptors{ descriptors.elevation, descriptors.color, descriptors.uniforms, _terrainDescriptors.ubo }
     );
-
-    //if (sharedObjects) sharedObjects->share(descriptorSet);
 
     // binds the descriptor set to the pipeline
     descriptors.bind = vsg::BindDescriptorSet::create(
