@@ -28,7 +28,7 @@ namespace ROCKY_NAMESPACE
         void startLoading() const;
 
         //! Remove this node's subtiles and reset its state.
-        void unload(VSGContext runtime);
+        void unload(VSGContext vsgcontext);
 
         void traverse(vsg::Visitor& visitor) override {
             if (payload)
@@ -58,16 +58,16 @@ NodePager::NodePager(const Profile& graphProfile, const SRS& sceneSRS) :
 }
 
 void
-NodePager::initialize(VSGContext& runtime)
+NodePager::initialize(VSGContext& vsgcontext)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(runtime, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(profile.valid(), void());
     ROCKY_SOFT_ASSERT_AND_RETURN(createPayload != nullptr, void());
 
-    this->_vsgcontext = runtime;
+    this->_vsgcontext = vsgcontext;
 
     for (auto& child : children)
-        runtime->dispose(child);
+        vsgcontext->dispose(child);
 
     children.clear();
 
@@ -75,28 +75,28 @@ NodePager::initialize(VSGContext& runtime)
     auto rootKeys = profile.rootKeys();
     for (auto& key : rootKeys)
     {
-        auto node = createNode(key, runtime->io);
+        auto node = createNode(key, vsgcontext->io);
         if (node)
             addChild(node);
     }
 
     // install an update operation that will flush the culling sentry each frame,
     // removing invisible nodes from the scene graph.
-    _sentryUpdate = runtime->onUpdate([this, runtime]()
+    _sentryUpdate = vsgcontext->onUpdate([this, vsgcontext]()
         {
-            auto frame = runtime->viewer->getFrameStamp()->frameCount;
+            auto frame = vsgcontext->viewer()->getFrameStamp()->frameCount;
 
             // only if the frame advanced:
             if (frame > _lastUpdateFrame)
             {
                 std::scoped_lock lock(_sentry_mutex);
 
-                _sentry.flush(~0, [runtime](vsg::ref_ptr<vsg::Node> node) mutable
+                _sentry.flush(~0, [vsgcontext](vsg::ref_ptr<vsg::Node> node) mutable
                     {
                         if (node)
                         {
                             auto* paged = node->cast<PagedNode>();
-                            paged->unload(runtime);
+                            paged->unload(vsgcontext);
                         }
                         return true;
                     });
@@ -268,7 +268,7 @@ PagedNode::startLoading() const
 
     auto load_job = [load, parent_weak, vsgcontext(pager->_vsgcontext), orig_revision(revision), io(pager->_vsgcontext->io)](Cancelable& c)
         {
-            vsg::ref_ptr<vsg::Node> result = load(IOOptions(io, c));
+            vsg::ref_ptr<vsg::Node> result = load(io.with(c));
             return result;
         };
 
@@ -339,13 +339,13 @@ PagedNode::traverse(vsg::RecordTraversal& record) const
 }
 
 void
-PagedNode::unload(VSGContext runtime)
+PagedNode::unload(VSGContext vsgcontext)
 {    
     // expire and dispose of the data
     if (child.available() && child.value())
     {
         pager->onExpire.fire(child.value());
-        runtime->dispose(child.value());
+        vsgcontext->dispose(child.value());
     }
 
     // reset everything to the initial state.

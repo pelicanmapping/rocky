@@ -10,28 +10,45 @@ ROCKY_ABOUT(entt, ENTT_VERSION);
 using namespace ROCKY_NAMESPACE;
 
 
-detail::ECSNode::ECSNode(Registry& reg) :
+ECSNode::ECSNode(Registry& reg) :
     registry(reg)
 {
     factory.start();
 }
 
-detail::ECSNode::~ECSNode()
+ECSNode::~ECSNode()
 {
     factory.quit();
 }
 
+void
+ECSNode::initialize(VSGContext& vsgcontext)
+{
+    for (auto& child : children)
+    {
+        auto systemNode = child->cast<detail::SystemNodeBase>();
+        if (systemNode)
+        {
+            systemNode->factory = &factory;
+        }
+    }
+
+    for (auto& system : systems)
+    {
+        system->initialize(vsgcontext);
+    }
+}
 
 void
-detail::ECSNode::update(VSGContext& runtime)
+ECSNode::update(VSGContext& vsgcontext)
 {
     // update all systems
     for (auto& system : systems)
     {
-        system->update(runtime);
+        system->update(vsgcontext);
     }
 
-    factory.mergeResults(registry, runtime);
+    factory.mergeResults(registry, vsgcontext);
 }
 
 
@@ -104,7 +121,7 @@ detail::EntityNodeFactory::quit()
 }
 
 void
-detail::EntityNodeFactory::mergeResults(Registry& r, VSGContext& runtime)
+detail::EntityNodeFactory::mergeResults(Registry& r, VSGContext& vsgcontext)
 {
     if (buffers)
     {
@@ -116,7 +133,7 @@ detail::EntityNodeFactory::mergeResults(Registry& r, VSGContext& runtime)
 
             for (auto& item : batch.items)
             {
-                batch.system->mergeCreateOrUpdateResults(registry, item, runtime);
+                batch.system->mergeCreateOrUpdateResults(registry, item, vsgcontext);
             }
         }
     }

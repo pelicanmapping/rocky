@@ -282,7 +282,7 @@ TerrainState::setupTerrainStateGroup(vsg::StateGroup& stateGroup, VSGContext& co
 }
 
 TerrainTileRenderModel
-TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, const TerrainTileModel& dataModel, VSGContext& runtime) const
+TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, const TerrainTileModel& dataModel, VSGContext& vsgcontext) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), oldRenderModel);
     ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig.valid(), oldRenderModel);
@@ -304,7 +304,7 @@ TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, co
         {
             // queue the old data for safe disposal
             if (descriptors.color)
-                runtime->dispose(descriptors.color);
+                vsgcontext->dispose(descriptors.color);
 
             // tell vsg to remove the image from CPU memory after sending it to the GPU
             // note, since we're using wrap() above, only the buffer will get deleted
@@ -333,7 +333,7 @@ TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, co
         {
             // queue the old data for safe disposal
             if (descriptors.elevation)
-                runtime->dispose(descriptors.elevation);
+                vsgcontext->dispose(descriptors.elevation);
 
             // tell vsg to remove the image from CPU memory after sending it to the GPU
             // note, since we're using wrap() above, only the buffer will get deleted
@@ -374,7 +374,7 @@ TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, co
     );
 
     // Compile the objects. Everything should be under the bind command.
-    runtime->compile(descriptors.bind);
+    vsgcontext->compile(descriptors.bind);
 
     return renderModel;
 }

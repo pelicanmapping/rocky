@@ -20,13 +20,13 @@ namespace ROCKY_NAMESPACE
         Status status;
 
         //! Initialize the ECS system (once at startup)
-        virtual void initialize(VSGContext& runtime)
+        virtual void initialize(VSGContext& vsgcontext)
         {
             //nop
         }
 
         //! Update the ECS system (once per frame)
-        virtual void update(VSGContext& runtime)
+        virtual void update(VSGContext& vsgcontext)
         {
             //nop
         }

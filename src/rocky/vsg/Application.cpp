@@ -223,7 +223,7 @@ Application::ctor(int& argc, char** argv)
     }
 
     // Create the ECS system manager and all its default systems.
-    ecsNode = detail::ECSNode::create(registry);
+    ecsNode = ECSNode::create(registry);
 
     // Responds to changes in Transform components by updating the scene graph
     auto xform_system = TransformSystem::create(registry);
@@ -597,7 +597,7 @@ Application::install(vsg::ref_ptr<RenderImGuiContext> group, bool installAutomat
     // add the event handler that will pass events from VSG to ImGui:
     auto send = SendEventsToImGuiContext::create(group->window, group->imguiContext());
     viewData.guiEventVisitor = send;
-    auto& handlers = display.vsgcontext->viewer->getEventHandlers();
+    auto& handlers = display.vsgcontext->viewer()->getEventHandlers();
     handlers.insert(handlers.begin(), send);
 
     // request a frame when the sender handles an ImGui event:

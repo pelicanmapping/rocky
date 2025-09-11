@@ -20,11 +20,11 @@ DeclutterSystem::DeclutterSystem(Registry r) : System(r)
 }
 
 void
-DeclutterSystem::update(VSGContext& runtime)
+DeclutterSystem::update(VSGContext& vsgcontext)
 {
     _total = 0, _visible = 0;
 
-    auto viewIDs = runtime->activeViewIDs; // copy
+    auto viewIDs = vsgcontext->activeViewIDs; // copy
 
     for (auto& viewID : viewIDs)
     {

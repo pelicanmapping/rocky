@@ -26,7 +26,6 @@ namespace ROCKY_NAMESPACE
     class TerrainTileNode;
     class TerrainEngine;
     class TerrainSettings;
-    class Runtime;
 
     struct TextureData
     {

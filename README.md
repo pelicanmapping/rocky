@@ -563,7 +563,9 @@ app.vsgcontext->renderContinuously = true;
 return app.run();
 ```
 
-You can also skip the `Application` object altogether and run your own frame loop. Just be aware: the ECS-based Annotation system is managed by `Application` so it will not be available. Here's the framework:
+You can also skip the `Application` object altogether and run your own frame loop. Just be aware: the ECS-based Annotation system is managed by `Application` so it will not be available (unless you install and manage it yourself.)
+
+Here's the framework:
 
 ```c++
 #include <rocky/rocky.h>

@@ -169,7 +169,7 @@ namespace
 }
 
 void
-IconSystemNode::createOrUpdateNode(Icon& icon, detail::BuildInfo& data, VSGContext& runtime) const
+IconSystemNode::createOrUpdateNode(Icon& icon, detail::BuildInfo& data, VSGContext& vsgcontext) const
 {
     bool rebuild = data.existing_node == nullptr;
 
@@ -257,7 +257,7 @@ IconSystemNode::createOrUpdateNode(Icon& icon, detail::BuildInfo& data, VSGConte
     vsg::ModifiedCount mc;
     if (bindCommand->_styleData->getModifiedCount(mc) && mc.count > 0)
     {
-        runtime->upload(bindCommand->_ubo->bufferInfoList);
+        vsgcontext->upload(bindCommand->_ubo->bufferInfoList);
     }
 }
 

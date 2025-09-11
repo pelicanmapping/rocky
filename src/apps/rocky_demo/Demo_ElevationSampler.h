@@ -94,7 +94,7 @@ auto Demo_ElevationSampler = [](Application& app)
 
                     sample = jobs::dispatch([&app, point(p)](Cancelable& c)
                         {
-                            return sampler.sample(point, IOOptions(app.io(), c));
+                            return sampler.sample(point, app.io().with(c));
                         });
                 }
                 else

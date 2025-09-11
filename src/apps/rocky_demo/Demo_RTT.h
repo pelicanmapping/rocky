@@ -16,13 +16,13 @@ using namespace ROCKY_NAMESPACE;
 namespace
 {
     // Loads an external model to display in the RTT scene
-    vsg::ref_ptr<vsg::Node> load_rtt_model(const URI& uri, VSGContext& runtime)
+    vsg::ref_ptr<vsg::Node> load_rtt_model(const URI& uri, VSGContext& vsgcontext)
     {
         auto result = uri.read({});
         if (result.ok())
         {
             // this is a bit awkward but it works when the URI has an extension
-            auto options = vsg::Options::create(*runtime->readerWriterOptions);
+            auto options = vsg::Options::create(*vsgcontext->readerWriterOptions);
             auto extension = std::filesystem::path(uri.full()).extension();
             options->extensionHint = extension.empty() ? std::filesystem::path(result.value().content.type) : extension;
             std::istringstream in(result.value().content.data);

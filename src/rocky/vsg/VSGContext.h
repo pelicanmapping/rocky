@@ -23,7 +23,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! VSG viewer
-        vsg::ref_ptr<vsg::Viewer> viewer;
+        inline const vsg::ref_ptr<vsg::Viewer>& viewer() const;
 
         //! VSG object sharing
         vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
@@ -37,7 +37,7 @@ namespace ROCKY_NAMESPACE
         //! Default font
         vsg::ref_ptr<vsg::Font> defaultFont;
 
-        //! Number of render-on-demaframe rendernd requests
+        //! Number of render-on-demaframe rendered requests
         std::atomic_int renderRequests = { 0 };
 
         //! Request a frame render. Thread-safe.
@@ -50,10 +50,6 @@ namespace ROCKY_NAMESPACE
         //! that should be used throughout the application; things like enabling
         //! lighting, debug visuals, etc.
         vsg::ref_ptr<vsg::ShaderCompileSettings> shaderCompileSettings;
-
-        //! Revision number associated with the compile settings. A clients can
-        //! poll this to see if it needs to regenerate its pipeline.
-        Revision shaderSettingsRevision = 0;
 
         //! Custom vsg object disposer (optional)
         //! By default Runtime uses its own round-robin object disposer
@@ -116,6 +112,8 @@ namespace ROCKY_NAMESPACE
         bool update();
 
     private:
+        vsg::ref_ptr<vsg::Viewer> _viewer;
+
         // for (some) update operations
         vsg::ref_ptr<vsg::Operation> _priorityUpdateQueue;
 
@@ -145,6 +143,10 @@ namespace ROCKY_NAMESPACE
         friend class VSGContextFactory;
         friend class MapNode;
     };
+
+    inline const vsg::ref_ptr<vsg::Viewer>& VSGContextImpl::viewer() const {
+        return _viewer;
+    }
 
     using VSGContext = std::shared_ptr<VSGContextImpl>;
 

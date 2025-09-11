@@ -207,14 +207,14 @@ LabelSystemNode::LabelSystemNode(Registry& registry) :
 }
 
 void
-LabelSystemNode::initialize(VSGContext& runtime)
+LabelSystemNode::initialize(VSGContext& vsgcontext)
 {
     // For now we must have a default font set.
-    if (runtime->defaultFont == nullptr)
+    if (vsgcontext->defaultFont == nullptr)
         return;
 
     // use the VSG stock shaders for text:
-    auto& options = runtime->readerWriterOptions;
+    auto& options = vsgcontext->readerWriterOptions;
     auto shaderSet = options->shaderSets["text"] = vsg::createTextShaderSet(options);
 
     // Configure the text shader set to turn off depth testing
@@ -244,12 +244,12 @@ LabelSystemNode::initialize(VSGContext& runtime)
     sampler->anisotropyEnable = VK_FALSE; // don't need it since we're "billboarding"
     sampler->maxLod = 12.0; // generate mipmaps up to level 12
 
-    if (runtime->sharedObjects)
-        runtime->sharedObjects->share(sampler);
+    if (vsgcontext->sharedObjects)
+        vsgcontext->sharedObjects->share(sampler);
 
     // this will prompt the creation of a descriptor image and associated bind command
     // for the texture atlas
-    config->assignTexture("textureAtlas", runtime->defaultFont->atlas, sampler);
+    config->assignTexture("textureAtlas", vsgcontext->defaultFont->atlas, sampler);
 
     // cook it
     config->init();
@@ -257,7 +257,7 @@ LabelSystemNode::initialize(VSGContext& runtime)
     // copies any state commands from the configurator to the state group;
     // this will include the texture bind (the sampler) and the pipeline bind itself.
     auto stategroup = vsg::StateGroup::create();
-    config->copyTo(stategroup, runtime->sharedObjects);
+    config->copyTo(stategroup, vsgcontext->sharedObjects);
 
     // Initialize GraphicsPipeline from the data in the configuration.
     // Copy the state commands into our pipeline container.
@@ -270,7 +270,7 @@ LabelSystemNode::initialize(VSGContext& runtime)
 }
 
 void
-LabelSystemNode::createOrUpdateNode(Label& label, detail::BuildInfo& data, VSGContext& runtime) const
+LabelSystemNode::createOrUpdateNode(Label& label, detail::BuildInfo& data, VSGContext& vsgcontext) const
 {
     // bail out if initialization failed
     if (pipelines.empty())
@@ -309,17 +309,17 @@ LabelSystemNode::createOrUpdateNode(Label& label, detail::BuildInfo& data, VSGCo
         }
         else
         {
-            auto font = runtime->defaultFont;
+            auto font = vsgcontext->defaultFont;
             if (!label.style.font.empty())
             {
                 auto iter = _fontCache.find(label.style.font);
                 if (iter == _fontCache.end())
                 {
-                    font = vsg::read_cast<vsg::Font>(label.style.font, runtime->readerWriterOptions);
+                    font = vsg::read_cast<vsg::Font>(label.style.font, vsgcontext->readerWriterOptions);
                     if (!font)
                     {
                         Log()->warn("Failed to load font: {}", label.style.font);
-                        font = runtime->defaultFont; // fallback to default font
+                        font = vsgcontext->defaultFont; // fallback to default font
                     }
                     _fontCache[label.style.font] = font;
                 }
@@ -340,8 +340,8 @@ LabelSystemNode::createOrUpdateNode(Label& label, detail::BuildInfo& data, VSGCo
             layout->verticalAlignment = to_vsg(label.style.verticalAlignment);
 
             // Share this since it should be the same for everything
-            if (runtime->sharedObjects)
-                runtime->sharedObjects->share(layout);
+            if (vsgcontext->sharedObjects)
+                vsgcontext->sharedObjects->share(layout);
 
             auto valueBuffer = vsg::stringValue::create(label.text);
 
@@ -350,7 +350,7 @@ LabelSystemNode::createOrUpdateNode(Label& label, detail::BuildInfo& data, VSGCo
             textNode->text = valueBuffer;
             textNode->layout = layout;
             textNode->technique = RockysCpuLayoutTechnique::create(); // one per label yes
-            textNode->setup(LABEL_MAX_NUM_CHARS, runtime->readerWriterOptions); // allocate enough space for max possible characters?
+            textNode->setup(LABEL_MAX_NUM_CHARS, vsgcontext->readerWriterOptions); // allocate enough space for max possible characters?
 
             // don't need this since we're using the custom technique
             textNode->shaderSet = {};

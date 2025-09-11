@@ -151,9 +151,9 @@ namespace
     }
 
 
-    vsg::ref_ptr<vsg::StateGroup> makeAtmoStateGroup(VSGContext& runtime)
+    vsg::ref_ptr<vsg::StateGroup> makeAtmoStateGroup(VSGContext& vsgcontext)
     {
-        auto shaderSet = makeAtmoShaderSet(runtime);
+        auto shaderSet = makeAtmoShaderSet(vsgcontext);
         if (!shaderSet)
         {
             Log()->warn(LC "Failed to create shader set!");
@@ -194,8 +194,8 @@ namespace
         };
         vsg::visit<SetPipelineStates>(pipelineConfig);
 
-        if (runtime->sharedObjects)
-            runtime->sharedObjects->share(pipelineConfig, [](auto gpc) { gpc->init(); });
+        if (vsgcontext->sharedObjects)
+            vsgcontext->sharedObjects->share(pipelineConfig, [](auto gpc) { gpc->init(); });
         else
             pipelineConfig->init();
 
@@ -212,13 +212,13 @@ namespace
     }
 
 
-    vsg::ref_ptr<vsg::Node> makeAtmosphere(const SRS& srs, float thickness, VSGContext& runtime)
+    vsg::ref_ptr<vsg::Node> makeAtmosphere(const SRS& srs, float thickness, VSGContext& vsgcontext)
     {
         // attach the actual atmospheric geometry
         const bool with_texcoords = false;
         const bool with_normals = false;
 
-        auto stategroup = makeAtmoStateGroup(runtime);
+        auto stategroup = makeAtmoStateGroup(vsgcontext);
         if (!stategroup)
         {
             Log()->warn(LC "Failed to make state group!");

@@ -25,7 +25,7 @@ namespace ROCKY_NAMESPACE
         //! Called periodically to update the transforms
         void update(VSGContext& context) override
         {
-            auto time = context->viewer->getFrameStamp()->time;
+            auto time = context->viewer()->getFrameStamp()->time;
 
             if (last_time != vsg::time_point::min())
             {

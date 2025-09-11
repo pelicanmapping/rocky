@@ -90,9 +90,9 @@ namespace ROCKY_NAMESPACE
         public:
             EntityNodeFactory* factory = nullptr;
 
-            virtual void invokeCreateOrUpdate(BuildItem& item, VSGContext& runtime) const = 0;
+            virtual void invokeCreateOrUpdate(BuildItem& item, VSGContext& vsgcontext) const = 0;
 
-            virtual void mergeCreateOrUpdateResults(entt::registry&, BuildItem& item, VSGContext& runtime) = 0;
+            virtual void mergeCreateOrUpdateResults(entt::registry&, BuildItem& item, VSGContext& vsgcontext) = 0;
         };
 
         template<class T>
@@ -151,9 +151,9 @@ namespace ROCKY_NAMESPACE
             //! Subclass must implement this to create or update a node for a component.
             virtual void createOrUpdateNode(T&, BuildInfo&, VSGContext&) const = 0;
 
-            void invokeCreateOrUpdate(BuildItem& item, VSGContext& runtime) const override;
+            void invokeCreateOrUpdate(BuildItem& item, VSGContext& vsgcontext) const override;
 
-            void mergeCreateOrUpdateResults(entt::registry& registry, BuildItem& item, VSGContext& runtime) override;
+            void mergeCreateOrUpdateResults(entt::registry& registry, BuildItem& item, VSGContext& vsgcontext) override;
 
         private:
 
@@ -169,69 +169,6 @@ namespace ROCKY_NAMESPACE
 
             // re-usable collection to minimize re-allocation
             mutable std::vector<std::vector<RenderLeaf>> pipelineRenderLeaves;
-        };
-
-        /**
-        * VSG Group node whose children are SystemNode instances. It can also hold/manager
-        * non-node systems. It also holds the container for pending entity compilation lists.
-        */
-        class ROCKY_EXPORT ECSNode : public vsg::Inherit<vsg::Group, ECSNode>
-        {
-        public:
-            //! Construct
-            //! @param reg The entity registry
-            ECSNode(Registry& reg);
-
-            // Destruct
-            ~ECSNode();
-
-            //! Add a system node instance to the group.
-            //! @param system The system node instance to add
-            template<class T>
-            void add(vsg::ref_ptr<T> system)
-            {
-                //static_assert(std::is_base_of<SystemNodeBase, T>::value, "T must be a subclass of SystemNodeBase");
-                addChild(system);
-                systems.emplace_back(system.get());
-            }
-
-            //! Add a non-node system to the group. This is a System instance that does not
-            //! do any VSG stuff and is not part of the scene graph.
-            //! @param system The non-node system to add
-            void add(std::shared_ptr<System> system)
-            {
-                non_node_systems.emplace_back(system);
-                systems.emplace_back(system.get());
-            }
-
-            //! Initialize of all connected system nodes. This should be invoked
-            //! any time a new viewer is created.
-            //! @param runtime The runtime object to pass to the systems
-            void initialize(VSGContext& runtime)
-            {
-                for (auto& child : children)
-                {
-                    auto systemNode = child->cast<SystemNodeBase>();
-                    if (systemNode)
-                    {
-                        systemNode->factory = &factory;
-                    }
-                }
-
-                for (auto& system : systems)
-                {
-                    system->initialize(runtime);
-                }
-            }
-
-            //! Update all connected system nodes. This should be invoked once per frame.
-            //! @param runtime The runtime object to pass to the systems
-            void update(VSGContext& runtime);
-        
-            std::vector<System*> systems;
-            std::vector<std::shared_ptr<System>> non_node_systems;
-            Registry registry;
-            EntityNodeFactory factory;
         };
 
 
@@ -580,4 +517,51 @@ namespace ROCKY_NAMESPACE
     {
         return pipelines.empty() ? nullptr : pipelines[featureMask(t)].config->layout;
     }
+
+    /**
+    * VSG Group node that contains systems.
+    */
+    class ROCKY_EXPORT ECSNode : public vsg::Inherit<vsg::Group, ECSNode>
+    {
+    public:
+        //! Construct
+        //! @param reg The entity registry
+        ECSNode(Registry& reg);
+
+        // Destruct
+        ~ECSNode();
+
+        //! Add a system node instance to the group.
+        //! @param system The system node instance to add
+        template<class T>
+        void add(vsg::ref_ptr<T> system)
+        {
+            //static_assert(std::is_base_of<SystemNodeBase, T>::value, "T must be a subclass of SystemNodeBase");
+            addChild(system);
+            systems.emplace_back(system.get());
+        }
+
+        //! Add a non-node system to the group. This is a System instance that does not
+        //! do any VSG stuff and is not part of the scene graph.
+        //! @param system The non-node system to add
+        void add(std::shared_ptr<System> system)
+        {
+            non_node_systems.emplace_back(system);
+            systems.emplace_back(system.get());
+        }
+
+        //! Initialize of all connected system nodes. This should be invoked
+        //! any time a new viewer is created.
+        //! @param runtime The runtime object to pass to the systems
+        void initialize(VSGContext& vsgcontext);
+
+        //! Update all connected system nodes. This should be invoked once per frame.
+        //! @param runtime The runtime object to pass to the systems
+        void update(VSGContext& vsgcontext);
+
+        std::vector<System*> systems;
+        std::vector<std::shared_ptr<System>> non_node_systems;
+        Registry registry;
+        detail::EntityNodeFactory factory;
+    };
 }

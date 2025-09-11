@@ -170,7 +170,7 @@ MeshSystemNode::initialize(VSGContext& context)
 }
 
 void
-MeshSystemNode::createOrUpdateNode(Mesh& mesh, detail::BuildInfo& data, VSGContext& runtime) const
+MeshSystemNode::createOrUpdateNode(Mesh& mesh, detail::BuildInfo& data, VSGContext& vsgcontext) const
 {
     vsg::ref_ptr<vsg::StateGroup> stategroup;
     vsg::ref_ptr<BindMeshDescriptors> bindCommand;
@@ -276,7 +276,7 @@ MeshSystemNode::createOrUpdateNode(Mesh& mesh, detail::BuildInfo& data, VSGConte
             auto bindCommand = stategroup->stateCommands[0]->cast<BindMeshDescriptors>();
             if (bindCommand->_styleData->getModifiedCount(mc) && mc.count > 0)
             {
-                runtime->upload(bindCommand->_ubo->bufferInfoList);
+                vsgcontext->upload(bindCommand->_ubo->bufferInfoList);
             }
         }
     }

@@ -339,7 +339,7 @@ TerrainTilePager::requestLoadData(TileInfo& info, const IOOptions& in_io, std::s
         TerrainTileModelFactory factory;
         factory.compositeColorLayers = true;
 
-        auto dataModel = factory.createTileModel(engine->map.get(), key, IOOptions(io, p));
+        auto dataModel = factory.createTileModel(engine->map.get(), key, io.with(p));
 
         if (!dataModel.empty())
         {

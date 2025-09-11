@@ -265,19 +265,21 @@ namespace
 
 
 
-VSGContextImpl::VSGContextImpl(vsg::ref_ptr<vsg::Viewer> viewer_) :
+VSGContextImpl::VSGContextImpl(vsg::ref_ptr<vsg::Viewer> viewer) :
     rocky::ContextImpl(),
-    viewer(viewer_)
+    _viewer(viewer)
 {
+    ROCKY_HARD_ASSERT(viewer);
     int argc = 0;
     const char* argv[1] = { "rocky" };
     ctor(argc, (char**)argv);
 }
 
-VSGContextImpl::VSGContextImpl(vsg::ref_ptr<vsg::Viewer> viewer_, int& argc, char** argv) :
+VSGContextImpl::VSGContextImpl(vsg::ref_ptr<vsg::Viewer> viewer, int& argc, char** argv) :
     rocky::ContextImpl(),
-    viewer(viewer_)
+    _viewer(viewer)
 {
+    ROCKY_HARD_ASSERT(viewer);
     ctor(argc, argv);
 }
 
@@ -486,7 +488,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
 vsg::ref_ptr<vsg::Device>
 VSGContextImpl::device()
 {
-    return viewer && viewer->windows().size() > 0 ? viewer->windows().front()->getDevice() : nullptr;
+    return _viewer->windows().size() > 0 ? _viewer->windows().front()->getOrCreateDevice() : nullptr;
 }
 
 vsg::ref_ptr<vsg::CommandGraph>
@@ -508,8 +510,6 @@ VSGContextImpl::getOrCreateComputeCommandGraph(vsg::ref_ptr<vsg::Device> device,
 void
 VSGContextImpl::onNextUpdate(vsg::ref_ptr<vsg::Operation> function, std::function<float()> get_priority)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(viewer.valid(), void());
-
     auto pq = dynamic_cast<PriorityUpdateQueue*>(_priorityUpdateQueue.get());
     if (pq)
     {
@@ -517,7 +517,7 @@ VSGContextImpl::onNextUpdate(vsg::ref_ptr<vsg::Operation> function, std::functio
 
         if (pq->referenceCount() == 1)
         {
-            viewer->updateOperations->add(_priorityUpdateQueue, vsg::UpdateOperations::ALL_FRAMES);
+            _viewer->updateOperations->add(_priorityUpdateQueue, vsg::UpdateOperations::ALL_FRAMES);
         }
 
         pq->_queue.push_back({ function, get_priority });
@@ -529,9 +529,7 @@ VSGContextImpl::onNextUpdate(vsg::ref_ptr<vsg::Operation> function, std::functio
 void
 VSGContextImpl::onNextUpdate(std::function<void()> function)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(viewer.valid(), void(), "Developer: failure to set VSGContext->viewer");
-
-    viewer->updateOperations->add(SimpleUpdateOperation::create(function));
+    _viewer->updateOperations->add(SimpleUpdateOperation::create(function));
 
     requestFrame();
 }
@@ -539,12 +537,11 @@ VSGContextImpl::onNextUpdate(std::function<void()> function)
 void
 VSGContextImpl::compile(vsg::ref_ptr<vsg::Object> compilable)
 {
-    ROCKY_SOFT_ASSERT(viewer.valid(), "Developer: failure to set VSGContext->viewer");
     ROCKY_SOFT_ASSERT_AND_RETURN(compilable.valid(), void());
 
     // note: this can block (with a fence) until a compile traversal is available.
     // Be sure to group as many compiles together as possible for maximum performance.
-    auto cr = viewer->compileManager->compile(compilable);
+    auto cr = _viewer->compileManager->compile(compilable);
 
     if (cr)
     {
@@ -594,7 +591,7 @@ VSGContextImpl::upload(vsg::BufferInfoList bufferInfos)
 
     if (count > 0)
     {
-        auto& tasks = viewer->recordAndSubmitTasks;
+        auto& tasks = _viewer->recordAndSubmitTasks;
         for (auto& task : tasks)
         {
             task->transferTask->assign(bufferInfos);
@@ -611,8 +608,6 @@ VSGContextImpl::requestFrame()
 bool
 VSGContextImpl::update()
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(viewer.valid(), false, "Developer: failure to set VSGContext->viewer");
-
     bool updates_occurred = false;
 
     // Context update callbacks
@@ -624,7 +619,7 @@ VSGContextImpl::update()
 
         if (_compileResult.requiresViewerUpdate())
         {
-            vsg::updateViewer(*viewer, _compileResult);
+            vsg::updateViewer(*_viewer, _compileResult);
             updates_occurred = true;
         }
         _compileResult.reset();

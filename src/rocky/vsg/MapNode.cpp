@@ -204,12 +204,12 @@ vsg::ref_ptr<MapNode>
 MapNode::create(VSGContext context)
 {
     //ROCKY_SOFT_ASSERT_AND_RETURN(context, {}, "ILLEGAL: null context");
-    //ROCKY_SOFT_ASSERT_AND_RETURN(context->viewer, {}, "ILLEGAL: context does not contain a viewer");
-    //ROCKY_SOFT_ASSERT_AND_RETURN(context->viewer->updateOperations, {}, "ILLEGAL: viewer does not contain update operations");
+    //ROCKY_SOFT_ASSERT_AND_RETURN(context->viewer(), {}, "ILLEGAL: context does not contain a viewer");
+    //ROCKY_SOFT_ASSERT_AND_RETURN(context->viewer()->updateOperations, {}, "ILLEGAL: viewer does not contain update operations");
 
     auto mapNode = vsg::ref_ptr<MapNode>(new MapNode(context));
 
-    if (context && context->viewer && context->viewer->updateOperations)
+    if (context && context->viewer() && context->viewer()->updateOperations)
     {
         auto update = [mapNode, context]()
             {
@@ -217,7 +217,7 @@ MapNode::create(VSGContext context)
                 mapNode->update(context);
             };
 
-        context->viewer->updateOperations->add(LambdaOperation::create(update), vsg::UpdateOperations::ALL_FRAMES);
+        context->viewer()->updateOperations->add(LambdaOperation::create(update), vsg::UpdateOperations::ALL_FRAMES);
     }
 
     return mapNode;

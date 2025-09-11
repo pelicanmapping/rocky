@@ -98,7 +98,7 @@ TerrainProfileNode::update(VSGContext context)
         {
             ROCKY_HARD_ASSERT(_engine);
 
-            if (_tiles.update(context->viewer->getFrameStamp(), context->io, _engine))
+            if (_tiles.update(context->viewer()->getFrameStamp(), context->io, _engine))
                 changes = true;
 
             changes = _engine->update(context);

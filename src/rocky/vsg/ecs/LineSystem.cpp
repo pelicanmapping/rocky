@@ -19,7 +19,7 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    vsg::ref_ptr<vsg::ShaderSet> createLineShaderSet(VSGContext& runtime)
+    vsg::ref_ptr<vsg::ShaderSet> createLineShaderSet(VSGContext& vsgcontext)
     {
         vsg::ref_ptr<vsg::ShaderSet> shaderSet;
 
@@ -27,14 +27,14 @@ namespace
         auto vertexShader = vsg::ShaderStage::read(
             VK_SHADER_STAGE_VERTEX_BIT,
             "main",
-            vsg::findFile(LINE_VERT_SHADER, runtime->searchPaths),
-            runtime->readerWriterOptions);
+            vsg::findFile(LINE_VERT_SHADER, vsgcontext->searchPaths),
+            vsgcontext->readerWriterOptions);
 
         auto fragmentShader = vsg::ShaderStage::read(
             VK_SHADER_STAGE_FRAGMENT_BIT,
             "main",
-            vsg::findFile(LINE_FRAG_SHADER, runtime->searchPaths),
-            runtime->readerWriterOptions);
+            vsg::findFile(LINE_FRAG_SHADER, vsgcontext->searchPaths),
+            vsgcontext->readerWriterOptions);
 
         if (!vertexShader || !fragmentShader)
         {
@@ -72,10 +72,10 @@ LineSystemNode::LineSystemNode(Registry& registry) :
 }
 
 void
-LineSystemNode::initialize(VSGContext& runtime)
+LineSystemNode::initialize(VSGContext& vsgcontext)
 {
     // Now create the pipeline and stategroup to bind it
-    auto shaderSet = createLineShaderSet(runtime);
+    auto shaderSet = createLineShaderSet(vsgcontext);
 
     if (!shaderSet)
     {
@@ -96,7 +96,7 @@ LineSystemNode::initialize(VSGContext& runtime)
         c.config = vsg::GraphicsPipelineConfig::create(shaderSet);
 
         // Apply any custom compile settings / defines:
-        c.config->shaderHints = runtime->shaderCompileSettings;
+        c.config->shaderHints = vsgcontext->shaderCompileSettings;
 
         // activate the arrays we intend to use
         c.config->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
@@ -148,7 +148,7 @@ LineSystemNode::initialize(VSGContext& runtime)
 }
 
 void
-LineSystemNode::createOrUpdateNode(Line& line, detail::BuildInfo& data, VSGContext& runtime) const
+LineSystemNode::createOrUpdateNode(Line& line, detail::BuildInfo& data, VSGContext& vsgcontext) const
 {
     if (!data.existing_node)
     {
@@ -285,7 +285,7 @@ LineSystemNode::createOrUpdateNode(Line& line, detail::BuildInfo& data, VSGConte
         if (stategroup)
         {
             auto bindCommand = stategroup->stateCommands[0]->cast<BindLineDescriptors>();
-            runtime->upload(bindCommand->_ubo->bufferInfoList);
+            vsgcontext->upload(bindCommand->_ubo->bufferInfoList);
         }
 
         line.styleDirty = false;
@@ -296,8 +296,8 @@ LineSystemNode::createOrUpdateNode(Line& line, detail::BuildInfo& data, VSGConte
         auto geometry = util::find<LineGeometry>(data.new_node ? data.new_node : data.existing_node);
         if (geometry)
         {
-            runtime->upload(geometry->arrays);
-            runtime->upload(vsg::BufferInfoList{ geometry->indices });
+            vsgcontext->upload(geometry->arrays);
+            vsgcontext->upload(vsg::BufferInfoList{ geometry->indices });
         }
 
         line.pointsDirty = false;

@@ -61,7 +61,7 @@ namespace
         LineStyle style; // style for tracks
         std::vector<TrackHistory::Chunk> freelist; // for recycling used chunks
 
-        void update(VSGContext& runtime) override
+        void update(VSGContext& vsgcontext) override
         {
             auto now = std::chrono::steady_clock::now();
             auto freq = 1s / update_hertz;

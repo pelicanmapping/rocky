@@ -10,8 +10,6 @@
 
 namespace ROCKY_NAMESPACE
 {
-    class Runtime;
-
     //! Texture ECS component.
     struct Texture
     {

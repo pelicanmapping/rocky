@@ -104,7 +104,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Group> mainScene;
         vsg::ref_ptr<rocky::MapNode> mapNode;
         vsg::ref_ptr<rocky::SkyNode> skyNode;
-        vsg::ref_ptr<rocky::detail::ECSNode> ecsNode;
+        vsg::ref_ptr<rocky::ECSNode> ecsNode;
 
         //! Continuous render mode.
         //! When true, the viewer will render frames continuously as fast as the CPU

@@ -749,7 +749,7 @@ TEST_CASE("Earth File")
         CHECK(context->status.ok());
 
         auto mapNode = MapNode::create(context);
-        auto r = mapNode->from_json(result.value(), IOOptions(context->io, earthFile));
+        auto r = mapNode->from_json(result.value(), context->io.from(earthFile));
         CHECK(r.ok());
 
         auto layers = mapNode->map->layers([&](auto layer) {

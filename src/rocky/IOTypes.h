@@ -90,17 +90,16 @@ namespace ROCKY_NAMESPACE
     {
     public:
         IOOptions();
-        IOOptions(const IOOptions& rhs) = default;
-        IOOptions(const IOOptions& rhs, Cancelable& p);
-        IOOptions(const IOOptions& rhs, const std::string& referrer);
+        inline IOOptions(const IOOptions& rhs) = default;
+        inline IOOptions(IOOptions&& rhs) { *this = rhs; }
+        inline IOOptions& operator=(IOOptions&&) noexcept;
 
-        IOOptions(IOOptions&&) = delete;
-        IOOptions& operator=(IOOptions&&) noexcept = delete;
+        //! Clone this options structure and set a new referrer.
+        inline IOOptions from(const std::string& referrer);
 
-        //! Copy this options structure and set a new referrer.
-        IOOptions from(const std::string& referrer) {
-            return IOOptions(*this, referrer);
-        }
+        //! Clone this options structure and include the cancelable token.
+        //! Use this to pass options to operations that support cancellation.
+        inline IOOptions with(Cancelable& c) const;
 
         //! Was the current operation canceled?
         inline bool canceled() const override;
@@ -112,9 +111,7 @@ namespace ROCKY_NAMESPACE
         std::optional<std::string> referrer;
 
         //! Access to shared services
-        Services& services() const {
-            return *_services;
-        }
+        inline Services& services() const;
 
     public:
         IOOptions& operator = (const IOOptions& rhs) = default;
@@ -126,7 +123,37 @@ namespace ROCKY_NAMESPACE
 
 
     // inlines
+    IOOptions& IOOptions::operator = (IOOptions&& rhs) noexcept
+    {
+        if (this != &rhs)
+        {
+            Cancelable::operator=(rhs);
+            maxNetworkAttempts = rhs.maxNetworkAttempts;
+            referrer = std::move(rhs.referrer);
+            _services = rhs._services;
+            _cancelable = rhs._cancelable;
+            rhs._cancelable = nullptr;
+        }
+        return *this;
+    }
+
+    inline IOOptions IOOptions::from(const std::string& referrer) {
+        IOOptions copy(*this);
+        copy.referrer = referrer;
+        return copy;
+    }
+
+    inline IOOptions IOOptions::with(Cancelable& c) const {
+        IOOptions copy(*this);
+        copy._cancelable = &c;
+        return copy;
+    }
+
     inline bool IOOptions::canceled() const {
         return _cancelable ? _cancelable->canceled() : false;
+    }
+
+    inline Services& IOOptions::services() const {
+        return *_services;
     }
 }

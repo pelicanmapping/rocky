@@ -14,18 +14,6 @@ IOOptions::IOOptions()
     _services = std::make_shared<Services>();
 }
 
-IOOptions::IOOptions(const IOOptions& rhs, Cancelable& c) :
-    IOOptions(rhs)
-{
-    _cancelable = &c;
-}
-
-IOOptions::IOOptions(const IOOptions& rhs, const std::string& in_referrer) :
-    IOOptions(rhs)
-{
-    referrer = in_referrer;
-}
-
 Services::Services()
 {
     readImageFromURI = [](const std::string& location, const IOOptions&) { 
