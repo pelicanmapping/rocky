@@ -75,7 +75,7 @@ TransformDetail::update(vsg::RecordTraversal& record)
     view.viewport = (*state->_commandBuffer->viewDependentState->viewportData)[0];
 
 
-    view.passesCull = true;
+    view.passingCull = true;
 
     // Frustum cull (by center point) TODO: radius??
     if (sync.frustumCulled)
@@ -84,17 +84,17 @@ TransformDetail::update(vsg::RecordTraversal& record)
         const double t = 1.0;
         if (clip.x < -t || clip.x > t || clip.y < -t || clip.y > t || clip.z < -t || clip.z > t)
         {
-            view.passesCull = false;
+            view.passingCull = false;
         }
     }
 
     // horizon cull, if active (geocentric only)
-    if (view.passesCull && sync.horizonCulled && cached.horizon && cached.world_srs.isGeocentric())
+    if (view.passingCull && sync.horizonCulled && cached.horizon && cached.world_srs.isGeocentric())
     {
         auto& horizon = *cached.horizon;
         if (!horizon[viewID].isVisible(view.model[3][0], view.model[3][1], view.model[3][2], sync.radius))
         {
-            view.passesCull = false;
+            view.passingCull = false;
         }
     }
 

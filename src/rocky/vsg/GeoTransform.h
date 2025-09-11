@@ -31,8 +31,11 @@ namespace ROCKY_NAMESPACE
         //! Call this is you change position directly.
         void dirty();
 
-        //! Same as changing position and calling dirty().
-        void setPosition(const GeoPoint& p);
+        //! Shortcut for changing position and calling dirty().
+        inline void setPosition(const GeoPoint& p) {
+            position = p;
+            dirty();
+        }
 
     public:
 
@@ -41,9 +44,9 @@ namespace ROCKY_NAMESPACE
 
         void traverse(vsg::RecordTraversal&) const override;
 
-    public:
+    private:
 
-        mutable TransformDetail transform_detail;
+        mutable TransformDetail _transformDetail;
     };
 
 } // namespace

@@ -80,7 +80,7 @@ WidgetSystemNode::initialize(VSGContext& context)
             {
                 auto text = widget.text;
 
-                if (visible(visibility, rs) && xdetail.visible(rs))
+                if (visible(visibility, rs) && xdetail.passingCull(rs))
                 {
                     WidgetInstance i{
                         widget,

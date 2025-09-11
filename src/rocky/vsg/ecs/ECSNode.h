@@ -404,7 +404,7 @@ namespace ROCKY_NAMESPACE
                     {
                         if (transform_detail)
                         {
-                            if (transform_detail->visible(rs))
+                            if (transform_detail->passingCull(rs))
                             {
                                 leaves.emplace_back(RenderLeaf{ &renderable, transform_detail });
                             }

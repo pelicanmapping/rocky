@@ -44,7 +44,7 @@ DeclutterSystem::update(VSGContext& runtime)
             auto& view = transform_detail.views[viewID];
 
             // skip anything that didn't pass cull since we can't see it
-            if (!view.passesCull)
+            if (!view.passingCull)
                 continue;
 
             // caclulate the window-space coordinates of the transform.

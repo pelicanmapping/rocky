@@ -22,7 +22,7 @@ namespace ROCKY_NAMESPACE
         vsg::dmat4 modelview; // modelview matrix
         vsg::dmat4 mvp;       // modelview-projection matrix
         vsg::vec4 viewport;   // pixel-space viewport
-        bool passesCull = true; // whether the transform passes frustum/horizon culling
+        bool passingCull = true; // whether the transform passes frustum/horizon culling
     };
 
     //! Per-VSG-view TransformViewData.
@@ -64,13 +64,13 @@ namespace ROCKY_NAMESPACE
         void pop(vsg::RecordTraversal&) const;
 
         //! True if this transform is visible in the provided view state
-        inline bool visible(detail::RenderingState) const;
+        inline bool passingCull(detail::RenderingState) const;
     };
 
 
     // inline functions
-    bool TransformDetail::visible(detail::RenderingState rs) const
+    bool TransformDetail::passingCull(detail::RenderingState rs) const
     {
-        return views[rs.viewID].passesCull;
+        return views[rs.viewID].passingCull;
     }
 }

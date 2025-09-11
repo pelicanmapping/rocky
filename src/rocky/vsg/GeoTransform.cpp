@@ -8,33 +8,26 @@
 using namespace ROCKY_NAMESPACE;
 
 void
-GeoTransform::setPosition(const GeoPoint& position_)
-{
-    position = position_;
-    dirty();
-}
-
-void
 GeoTransform::dirty()
 {
-    for (auto& view : transform_detail.views)
+    for (auto& view : _transformDetail.views)
         view.revision = -1;
 }
 
 void
 GeoTransform::traverse(vsg::RecordTraversal& record) const
 {
-    transform_detail.update(record);
+    _transformDetail.update(record);
 
     detail::RenderingState rs{
         record.getCommandBuffer()->viewID,
         record.getFrameStamp()->frameCount
     };
 
-    if (transform_detail.visible(rs))
+    if (_transformDetail.passingCull(rs))
     {
-        transform_detail.push(record);
+        _transformDetail.push(record);
         Inherit::traverse(record);
-        transform_detail.pop(record);
+        _transformDetail.pop(record);
     }
 }
