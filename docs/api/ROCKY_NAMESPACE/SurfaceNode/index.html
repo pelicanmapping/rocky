@@ -309,15 +309,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#records" class="md-nav__link">
-    <span class="md-ellipsis">
-      Records
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#functions" class="md-nav__link">
     <span class="md-ellipsis">
       Functions
@@ -427,9 +418,7 @@
 <p>protected _Bool _horizonCullingPoint_valid</p>
 <p>protected int _proxyGeom</p>
 <p>protected int _proxyVerts</p>
-<p>protected int _viewlocal</p>
-<h2 id="records">Records</h2>
-<p>ViewLocalData</p>
+<p>protected int * _horizon</p>
 <h2 id="functions">Functions</h2>
 <h3 id="surfacenode">SurfaceNode</h3>
 <p><em>public void SurfaceNode(const int &amp; tilekey, const int &amp; worldSRS)</em></p>
@@ -446,7 +435,7 @@
 <p>Elevation matrix representing to this surface</p>
 <h3 id="isvisible">isVisible</h3>
 <p><em>public _Bool isVisible(int &amp; rv)</em></p>
-<p><em>Defined at src/rocky/vsg/terrain/SurfaceNode.h#84</em></p>
+<p><em>Defined at src/rocky/vsg/terrain/SurfaceNode.h#80</em></p>
 <p>World-space visibility check (includes bounding box and horizon checks)</p>
 <h3 id="recomputebound">recomputeBound</h3>
 <p><em>public const int &amp; recomputeBound()</em></p>
