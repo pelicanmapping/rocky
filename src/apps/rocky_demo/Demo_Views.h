@@ -108,14 +108,13 @@ auto Demo_Views = [](Application& app)
                         vsg::LookAt::create(),
                         vsg::ViewportState::create(x, y, width, height));
 
-
                     // create the new view:
                     auto new_view = vsg::View::create(camera, app.root);
 
                     auto add = [&app, new_view, window]()
                         {
                             std::uniform_int_distribution next_int;
-                            app.display.addViewToWindow(new_view, window);
+                            app.display.addViewToWindow(new_view, window, true);
                             auto rg = app.display.getRenderGraph(new_view);
                             auto& color = rg->clearValues[0].color.float32;
                             color[0] = float(next_int(rng) % 255) / 255.0f;

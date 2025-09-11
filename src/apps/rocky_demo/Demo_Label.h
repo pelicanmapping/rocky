@@ -45,7 +45,7 @@ auto Demo_Label = [](Application& app)
     {
         auto [lock, registry] = app.registry.read();
 
-        bool v = visible(registry, entity);
+        auto& v = registry.get<Visibility>(entity).visible[0];
         if (ImGuiLTable::Checkbox("Show", &v))
             setVisible(registry, entity, v);
 

@@ -97,7 +97,7 @@ auto Demo_PolygonFeatures = [](Application& app)
     {
         auto [lock, registry] = app.registry.read();
 
-        bool v = visible(registry, entities.front());
+        auto& v = registry.get<Visibility>(entities.front()).visible[0];
         if (ImGuiLTable::Checkbox("Show", &v))
         {
             setVisible(registry, entities.begin(), entities.end(), v);
