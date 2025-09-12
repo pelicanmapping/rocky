@@ -29,7 +29,7 @@ This project is in its early stages so expect a lot of API and architectural cha
 - [Integrations](#integrations)
    * [Rocky and ImGui](#rocky-and-dear-imgui)
    * [Rocky and VulkanSceneGraph](#rocky-and-vulkanscenegraph)
-   * [Rocky and Qt5](#rocky-and-qt)
+   * [Rocky and Qt5](#rocky-and-qt5)
 - [Acknowledgements](#acknowledgements)
 
 <!-- TOC end -->
@@ -626,14 +626,17 @@ myScene->addChild(ecs);
 
 Rocky supports two map-tiling profiles for rendering the terrain.
 
-* `global-geodetic` : Loads fast, but sacrifices some quality in the polar regions. This is the default since it closely matches many online data sources.
-
-* `global-qsc` : Accurate worldwide including the polar regions. The trade-off can be slower loading speeds depending on your data. If you work in the polar regions or use polar stereographic data, this will be the better option.
-
 You can configure the rendering profile in your `MapNode`:
 ```c++
 mapNode->profile = Profile("global-qsc");
 ```
+
+**global-geodetic** : Loads fast, but sacrifices some quality in the polar regions. This is the default since it closely matches many online data sources.<br/>
+<img width="480" height="320" alt="global-geodetic" src="https://github.com/user-attachments/assets/2a07e68c-6881-4d4b-b743-4b5365b324f4" />
+
+**global-qsc** : Accurate worldwide including the polar regions. The trade-off can be slower loading speeds depending on your data. If you work in the polar regions or use polar stereographic data, this will be the better option.<br/>
+<img width="480" height="320" alt="global-qsc" src="https://github.com/user-attachments/assets/adb12b63-9013-4fb0-b875-1a7b24b79d53" />
+
 The *Rendering* panel in `rocky_demo` has a drop-down to select the profile so you can see the difference. Toggle on *Show triangles* for a better look.
 
 ## VSG Nodes and Layers
