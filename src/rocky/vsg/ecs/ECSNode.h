@@ -528,6 +528,9 @@ namespace ROCKY_NAMESPACE
         //! @param reg The entity registry
         ECSNode(Registry& reg);
 
+        //! Construct, optionally adding default systems
+        ECSNode(Registry& reg, bool addDefaultSystems);
+
         // Destruct
         ~ECSNode();
 

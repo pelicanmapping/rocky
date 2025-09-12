@@ -29,7 +29,7 @@ This project is in its early stages so expect a lot of API and architectural cha
 - [Integrations](#integrations)
    * [Rocky and ImGui](#rocky-and-dear-imgui)
    * [Rocky and VulkanSceneGraph](#rocky-and-vulkanscenegraph)
-   * [Rocky and Qt](#rocky-and-qt)
+   * [Rocky and Qt5](#rocky-and-qt)
 - [Acknowledgements](#acknowledgements)
 
 <!-- TOC end -->
@@ -169,14 +169,14 @@ Rocky supports elevation grid data in three formats:
 ```c++
 auto elevation = TMSElevationLayer::create();
 elevation->uri = "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png";
-elevation->encoding = ElevationLayer::Encoding::MapboxRGB;
+elevation->encoding = ElevationLayer::Encoding::TerrariumRGB;
 map->add(elevation);
 ```
 
-### Elevation Queries
+## Elevation Queries
 It is often useful to query the elevation at a given location. There are two ways to do it.
 
-#### Intersect the scene graph
+### Intersect the scene graph
 This method is fast, but it limited to whatever terrain triangles are currently
 in memory. Thus the result will depend on where your camera is and how much data is loaded.
 ```c++
@@ -188,7 +188,7 @@ if (clampedPoint.ok())
     float elevation = clampedPoint->transform(SRS::WGS84).z;
 ```
 
-#### Query the source data
+### Query the source data
 This method is the most accurate, and does not depend on what data is currently
 loaded in the scene since it goes straight to the source layer. But it's usually slower.
 ```c++
@@ -221,7 +221,7 @@ We use this technique in the `Demo_MVTFeatures.h` example to clamp GIS features 
 ## Vector Features
 Rocky include some facilities for loading GIS Feature data through GDAL. GDAL has many drivers to load different types of feature data.
 
-This will open an ESRI Shapefile and iterate over all its features:
+Open an ESRI Shapefile and iterate over all its features:
 ```c++
 #include <rocky/GDALFeatureSource.h>
 ...
@@ -238,7 +238,7 @@ if (status.ok())
 }
 ```
 
-Use a `FeatureView` to help turn features into visible geometry:
+`FeatureView` will help turn features into visible geometry:
 ```c++
 FeatureView feature_view;
 
@@ -261,6 +261,7 @@ if (!prims.empty())
         });
 }
 ```
+Worldwide data? Check out the [Mapbox Vector Tiles](src/rocky/apps/rocky_demo/Demo_MVT.h) demo.
 
 <br/><br/>
 
@@ -470,7 +471,7 @@ Widget& widget = registry.emplace<Widget>(entity);
 widget.render = [](WidgetInstance& i)
 {
     ImGui::SetCurrentContext(i.context);
-    i.render([&]() {
+    i.renderWindow([&]() {
         ImGui::Text("Hello, world!");
     });
 };
@@ -479,8 +480,27 @@ auto& transform = registry.emplace<Transform>(entity);
 transform.setPosition(GeoPoint(SRS::WGS84, 0, 0));
 ```
 
-Inspecting the `WidgetInstance` structure you will find various things you can use to customize the position and appearance of your Widget.
+`WidgetInstance` contains various things you can use to customize the position and appearance of your Widget.
 
+`renderWindow()` is just a convenience. If you want more control, roll your own:
+```c++
+widget.render = [](WidgetInstance& i)
+{
+    ImGui::SetCurrentContext(i.context);
+
+    // window setup and creation:
+    ImGui::SetNextWindowPos(ImVec2(i.center.x - i.size.x / 2, i.center.y - i.size.y / 2));
+    ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
+
+    ImGui::Text("Hello, world!");
+
+    // window cleanup:
+    i.size = ImGui::GetWindowSize();
+    ImGui::End();
+};
+```
+
+[Demo_Widget.h](src/rocky/apps/rocky_demo/Demo_Widget.h) has more examples.
 
 ### Creating an Application GUI
 Rocky has an `ImGuiIntegration` API that makes it easy to render a GUI atop your map display.
@@ -513,7 +533,7 @@ auto imgui_renderer = RenderImGuiContext::create(main_window);
 imgui_renderer->add(MyGUI::create());
 app.install(imgui_renderer);
 ```
-That's basically it. *Don't forget* to call `ImGui::SetCurrentContext` at the top of your `render` function!
+That's it. **Don't forget** to call `ImGui::SetCurrentContext` at the top of your `render` function!
 
 
 
@@ -558,7 +578,7 @@ app.display.addWindow(window, view);
 
 app.viewer->addEventHandler(vsg::Trackball::create(camera));
 
-app.vsgcontext->renderContinuously = true;
+app.renderContinuously = true;
 
 return app.run();
 ```
@@ -578,6 +598,7 @@ auto context = rocky::VSGContextFactory::create(viewer);
 auto mapNode = rocky::MapNode::create(context);
 
 // ... add the MapNode to your scene graph wherever you like
+myScene->addChild(mapNode);
 
 while (viewer->advanceToNextFrame())
 {        
@@ -592,7 +613,16 @@ If you want to add Rocky's stock `MapManipulator` to that Viewer to control the 
 viewer->addEventHandler(rocky::MapManipulator::create(mapNode, window, camera, context));
 ```
 
-### Terrain Rendering Profiles
+Still want the ECS system? Create your own `Registry` and `ECSNode`:
+```c++
+Registry registry;
+...
+// true = install all the same systems that Application installs
+auto ecs = rocky::ECSNode::create(registry, true);
+myScene->addChild(ecs);
+```
+
+## Terrain Rendering Profiles
 
 Rocky supports two map-tiling profiles for rendering the terrain.
 
@@ -606,7 +636,7 @@ mapNode->profile = Profile("global-qsc");
 ```
 The *Rendering* panel in `rocky_demo` has a drop-down to select the profile so you can see the difference. Toggle on *Show triangles* for a better look.
 
-### VSG Nodes and Layers
+## VSG Nodes and Layers
 
 Use Rocky's `NodeLayer` to wrap a `vsg::Node` in a Rocky map layer:
 ```c++
@@ -622,7 +652,7 @@ entityNode->entities.emplace_back(...);
 ```
 And of course you can combine the two and put an `EntityNode` inside a `NodeLayer`. Opening and closing the layer will show and hide the entities in the `EntityNode`.
 
-### VSG and Math Functions
+## VSG and Math Functions
 Rocky uses the [glm](https://github.com/g-truc/glm) library for math operations, whereas VulkanSceneGraph has its own math objects. Luckily they are practically identical
 and it is easy to convert between them:
 ```c++
@@ -633,9 +663,11 @@ vsg::dvec3 vsg_value = to_vsg(glm_value); // convert from GLM to VSG
 
 <br/><br/>
 
-# Rocky and Qt
+# Rocky and Qt5
 
-You can embed Rocky in a Qt widget. See the `rocky_demo_qt` example for details.
+You can embed Rocky in a Qt5 widget. See the `rocky_demo_qt` example for details.
+
+Look for Qt6 support in the future.
 
 <img width="100%" alt="image" src="https://github.com/user-attachments/assets/84cda604-f617-4562-b208-6d049f8b5ee1">
 

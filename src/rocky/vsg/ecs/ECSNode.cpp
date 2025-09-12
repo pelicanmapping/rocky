@@ -1,9 +1,16 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "ECSNode.h"
+
+#include "MeshSystem.h"
+#include "LineSystem.h"
+#include "IconSystem.h"
+#include "LabelSystem.h"
+#include "WidgetSystem.h"
+#include "TransformSystem.h"
 
 ROCKY_ABOUT(entt, ENTT_VERSION);
 
@@ -14,6 +21,23 @@ ECSNode::ECSNode(Registry& reg) :
     registry(reg)
 {
     factory.start();
+}
+
+ECSNode::ECSNode(Registry& reg, bool addDefaultSystems) :
+    ECSNode(reg)
+{
+    if (addDefaultSystems)
+    {
+        add(TransformSystem::create(registry));
+        add(MeshSystemNode::create(registry));
+        add(NodeSystemNode::create(registry));
+        add(LineSystemNode::create(registry));
+        add(IconSystemNode::create(registry));
+        add(LabelSystemNode::create(registry));
+#ifdef ROCKY_HAS_IMGUI
+        add(WidgetSystemNode::create(registry));
+#endif
+    }
 }
 
 ECSNode::~ECSNode()

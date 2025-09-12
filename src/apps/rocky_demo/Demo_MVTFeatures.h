@@ -156,7 +156,7 @@ auto Demo_MVTFeatures = [](Application& app)
     }
 
 
-    ImGui::TextWrapped("Mapnik Vector Tiles (MVT) is a binary format for streaming tiled vector data.");
+    ImGui::TextWrapped("Mapbox Vector Tiles (MVT) is a spec for streaming tiled vector data.");
 
     if (ImGuiLTable::Begin("MVTFeatures"))
     {

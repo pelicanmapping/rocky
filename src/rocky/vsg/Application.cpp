@@ -223,7 +223,7 @@ Application::ctor(int& argc, char** argv)
     }
 
     // Create the ECS system manager and all its default systems.
-    ecsNode = ECSNode::create(registry);
+    ecsNode = ECSNode::create(registry, false);
 
     // Responds to changes in Transform components by updating the scene graph
     auto xform_system = TransformSystem::create(registry);

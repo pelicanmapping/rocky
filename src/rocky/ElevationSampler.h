@@ -39,9 +39,6 @@ namespace ROCKY_NAMESPACE
         //! Layer from which to query elevations (required)
         ElevationLayer::Ptr layer;
 
-        //! Interpolation method to use when sampling the elevation layer
-        Interpolation interpolation = Interpolation::Bilinear;
-
         //! Value to return when no data is available at the requested coordinates
         float failValue = NO_DATA_VALUE;
 
