@@ -27,8 +27,6 @@ namespace ROCKY_NAMESPACE
         //! extent
         const GeoExtent& extent() const override;
 
-        option<Encoding> encoding;
-
     public: // Layer
 
         Result<> openImplementation(const IOOptions& io) override;
