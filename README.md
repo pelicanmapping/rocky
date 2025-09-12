@@ -467,13 +467,13 @@ auto entity = registry.create();
 
 Widget& widget = registry.emplace<Widget>(entity);
 
-widget.render = [](WidgetInstance& i) {
-        i.begin();
-        i.render([&]() {
-            ImGui::Text("Hello, world!");
-        });
-        i.end();
-    };
+widget.render = [](WidgetInstance& i)
+{
+    ImGui::SetCurrentContext(i.context);
+    i.render([&]() {
+        ImGui::Text("Hello, world!");
+    });
+};
 
 auto& transform = registry.emplace<Transform>(entity);
 transform.setPosition(GeoPoint(SRS::WGS84, 0, 0));
