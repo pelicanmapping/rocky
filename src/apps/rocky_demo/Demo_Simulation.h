@@ -99,16 +99,15 @@ auto Demo_Simulation = [](Application& app)
 
                         auto point = t.position.transform(SRS::WGS84);
 
-                        i.begin();
-
                         i.center.x += (i.size.x / 2) - (widgetImage.size().y / 2);
                         i.center.y += (i.size.y / 2) - (widgetImage.size().y / 2);
 
+                        ImGui::SetCurrentContext(i.context);
                         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
                         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.35f));
                         ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.0f));
 
-                        i.render([&]()
+                        i.renderWindow([&]()
                             {
                                 auto deviceID = app.vsgcontext->device()->deviceID;
                                 if (ImGui::BeginTable("asset", 2))
@@ -131,8 +130,6 @@ auto Demo_Simulation = [](Application& app)
 
                         ImGui::PopStyleColor(2);
                         ImGui::PopStyleVar();
-
-                        i.end();
 
                         // update decluttering volume
                         auto& dc = i.registry.get<Declutter>(i.entity);

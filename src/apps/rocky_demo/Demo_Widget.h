@@ -91,7 +91,7 @@ auto Demo_Widget = [](Application& app)
                 static int some_int = 0;
                 static bool fixed_window_open = false;
 
-                i.begin();
+                ImGuiContextScope s(i.context);
 
                 i.windowFlags &= ~ImGuiWindowFlags_NoInputs;
                 i.windowFlags &= ~ImGuiWindowFlags_NoBringToFrontOnFocus;
@@ -99,7 +99,7 @@ auto Demo_Widget = [](Application& app)
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 7.0f);
                 ImGui::SetNextWindowBgAlpha(1.0f);
 
-                i.render([&]()
+                i.renderWindow([&]()
                     {
                         ImGui::Text(i.widget.text.c_str());
                         ImGui::Separator();
@@ -136,8 +136,6 @@ auto Demo_Widget = [](Application& app)
                     }
                     ImGui::End();
                 }
-
-                i.end();
             };
 
         // Attach a transform to place and move the label:

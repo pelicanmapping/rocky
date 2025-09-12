@@ -22,7 +22,7 @@ namespace ROCKY_NAMESPACE
         //! Default text to display when "render" is not set
         std::string text;
 
-        //! Custom render function; x and y are screen coordinates
+        //! Custom render function
         std::function<void(WidgetInstance&)> render;
     };
 
@@ -40,24 +40,33 @@ namespace ROCKY_NAMESPACE
         ImGuiContext* context;
         std::uint32_t viewID;
 
-        //! Initialize the rendering of a widget instance (convenience function)
-        inline void begin() {
-            ImGui::SetCurrentContext(context);
-        }
-
-        //! Submit a widget rendering function (convenience function)
+        //! Submit a widget rendering function (convenience function).
+        //! Don't forget to call ImGui::SetCurrentContext(i.context) or use
+        //! ImGuiContextScope to set the current context before calling this.
         template<typename FUNC>
-        inline void render(FUNC&& f) {
+        inline void renderWindow(FUNC&& f) {
             ImGui::SetNextWindowPos(ImVec2(center.x - size.x / 2, center.y - size.y / 2));
             ImGui::Begin(uid.c_str(), nullptr, windowFlags);
             f();
             size = ImGui::GetWindowSize();
             ImGui::End();
         }
+    };
 
-        //! Close out the instance rendering started with begin
-        inline void end() {
-            //nop
+    /**
+    * RAII helper to set and restore the current ImGui context.
+    */
+    struct ImGuiContextScope
+    {
+        ImGuiContext* previous = nullptr;
+        inline ImGuiContextScope(ImGuiContext* newContext)
+        {
+            previous = ImGui::GetCurrentContext();
+            ImGui::SetCurrentContext(newContext);
+        }
+        inline ~ImGuiContextScope()
+        {
+            ImGui::SetCurrentContext(previous);
         }
     };
 }

@@ -64,8 +64,6 @@ WidgetSystemNode::initialize(VSGContext& context)
         {
             auto [lock, registry] = _registry.read();
 
-            ImGui::SetCurrentContext((ImGuiContext*)imguiContext);
-
             const int defaultWindowFlags =
                 ImGuiWindowFlags_AlwaysAutoResize |
                 ImGuiWindowFlags_NoDecoration |
@@ -103,9 +101,8 @@ WidgetSystemNode::initialize(VSGContext& context)
 
                     else
                     {
-                        i.begin();
-                        i.render([&]() { ImGui::Text(text.c_str()); });             
-                        i.end();
+                        ImGuiContextScope s(i.context);
+                        i.renderWindow([&]() { ImGui::Text(text.c_str()); });
                     }
                 }
             }

@@ -42,14 +42,13 @@ namespace
 
         app.registry.write([&](entt::registry& r)
             {
-                auto render = [](WidgetInstance& w)
+                auto render = [](WidgetInstance& i)
                     {
-                        w.begin();
+                        ImGuiContextScope scope(i.context);
                         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-                        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, w.size.x / 2.0);
-                        w.render([&w]() { ImGui::Text("%s", w.widget.text.c_str()); });
+                        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, i.size.x / 2.0);
+                        i.renderWindow([&i]() { ImGui::Text("%s", i.widget.text.c_str()); });
                         ImGui::PopStyleVar(2);
-                        w.end();
                     };
 
                 auto add = [&](const GeoPoint& pos, const std::string& text)

@@ -87,12 +87,11 @@ auto Demo_LabelFeatures = [](Application& app)
                 {
                     auto& dc = i.registry.get<Declutter>(i.entity);
 
-                    i.begin();
+                    ImGui::SetCurrentContext(i.context);
                     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
                     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-                    i.render([&]() { ImGui::Text(name.c_str()); });
+                    i.renderWindow([&]() { ImGui::Text(name.c_str()); });
                     ImGui::PopStyleVar(2);                    
-                    i.end();
 
                     // update the decluttering record to reflect our widget's size
                     dc.rect = Rect(i.size.x, i.size.y);
