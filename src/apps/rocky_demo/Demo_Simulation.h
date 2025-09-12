@@ -49,6 +49,114 @@ namespace
                 });
         }
     };
+
+    // Create a number of entities with random positions and motions
+    std::vector<entt::entity> createEntities(entt::registry& registry, unsigned count, 
+        ImGuiImage& image, bool& showPosition, VSGContext context)
+    {
+        std::vector<entt::entity> entities;
+
+        auto render_widget = [&image, &showPosition, context](WidgetInstance& i)
+            {
+                Transform& t = i.registry.get<Transform>(i.entity);
+
+                auto point = t.position.transform(SRS::WGS84);
+
+                i.center.x += (i.size.x / 2) - (image.size().y / 2);
+                i.center.y += (i.size.y / 2) - (image.size().y / 2);
+
+                ImGui::SetCurrentContext(i.context);
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
+                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.35f));
+                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.0f));
+
+                i.renderWindow([&]()
+                    {
+                        if (ImGui::BeginTable("asset", 2))
+                        {
+                            ImGui::TableNextColumn();
+                            ImGui::Image(image.id(context->device()->deviceID), image.size());
+
+                            ImGui::TableNextColumn();
+                            ImGui::Text("ID: %s", i.widget.text.c_str());
+
+                            if (showPosition)
+                            {
+                                ImGui::Separator();
+                                ImGui::Text("Lat: %.2f", point.y);
+                                ImGui::Separator();
+                                ImGui::Text("Lon: %.2f", point.x);
+                                ImGui::Separator();
+                                ImGui::Text("Alt: %.0f", point.z);
+                            }
+
+                            ImGui::EndTable();
+                        }
+                    });
+
+                ImGui::PopStyleColor(2);
+                ImGui::PopStyleVar();
+
+                // update decluttering volume
+                auto& dc = i.registry.get<Declutter>(i.entity);
+                dc.rect = Rect(i.size.x, i.size.y);
+            };
+
+        auto ll_to_ecef = SRS::WGS84.to(SRS::ECEF);
+
+        entities.reserve(count);
+
+        std::mt19937 mt;
+        std::uniform_real_distribution<float> rand_unit(0.0, 1.0);
+
+        for (unsigned i = 0; i < count; ++i)
+        {
+            float t = (float)i / (float)(count);
+
+            // Create a host entity:
+            auto entity = registry.create();
+
+            double lat = -80.0 + rand_unit(mt) * 160.0;
+            double lon = -180 + rand_unit(mt) * 360.0;
+            double alt = 1000.0 + t * 100000.0;
+            GeoPoint pos_ecef = GeoPoint(SRS::WGS84, lon, lat, alt).transform(SRS::ECEF);
+
+            // Add a transform component:
+            auto& transform = registry.emplace<Transform>(entity);
+            transform.position = pos_ecef;
+
+            // We need this to support the drop-line. There is a small performance hit.
+            transform.topocentric = true;
+
+            // Add a motion component to represent movement:
+            double initial_bearing = -180.0 + rand_unit(mt) * 360.0;
+            auto& motion = registry.emplace<MotionGreatCircle>(entity);
+            motion.velocity = { -7500 + rand_unit(mt) * 15000, 0.0, 0.0 };
+            motion.normalAxis = pos_ecef.srs.ellipsoid().rotationAxis(pos_ecef, initial_bearing);
+
+            // Add a labeling widget:
+            auto& widget = registry.emplace<Widget>(entity);
+            widget.text = std::to_string(i);
+            widget.render = render_widget;
+
+            // How about a drop line?
+            // Since the drop line is relative to the platfrom, we have to enable
+            // transform.localTangentPlane = true (see above)
+            auto& drop_line = registry.emplace<Line>(entity);
+            drop_line.points = { {0.0, 0.0, 0.0}, {0.0, 0.0, -1e6} };
+            drop_line.style.width = 1.5f;
+            drop_line.style.color = Color{ 0.4f, 0.4f, 0.4f, 1.0f };
+
+            // Decluttering control. The presence of this component will allow the entity
+            // to participate in decluttering when it's enabled.
+            auto& declutter = registry.emplace<Declutter>(entity);
+            declutter.priority = alt;
+
+            entities.emplace_back(entity);
+        }
+
+        return entities;
+    }
 }
 
 auto Demo_Simulation = [](Application& app)
@@ -61,7 +169,8 @@ auto Demo_Simulation = [](Application& app)
     static Status status;
     static Simulator sim(app);
     static ImGuiImage widgetImage;
-    const unsigned num_platforms = 1000;
+    static unsigned num_platforms = 1000;
+    static bool showPosition = false;
 
     if (status.failed())
     {
@@ -72,6 +181,7 @@ auto Demo_Simulation = [](Application& app)
 
     const float s = 20.0;
 
+    // Load an image to use in our widget.
     if (!widgetImage)
     {
         // add an icon:
@@ -84,108 +194,10 @@ auto Demo_Simulation = [](Application& app)
         }
     }
 
+    // Create the layer, the entity node, and start up the background sim thread.
     if (!layer)
     {
         entityNode = EntityNode::create(app.registry);
-
-        app.registry.write([&](entt::registry& registry)
-            {
-                std::mt19937 mt;
-                std::uniform_real_distribution<float> rand_unit(0.0, 1.0);
-
-                auto render_widget = [&](WidgetInstance& i)
-                    {
-                        Transform& t = i.registry.get<Transform>(i.entity);
-
-                        auto point = t.position.transform(SRS::WGS84);
-
-                        i.center.x += (i.size.x / 2) - (widgetImage.size().y / 2);
-                        i.center.y += (i.size.y / 2) - (widgetImage.size().y / 2);
-
-                        ImGui::SetCurrentContext(i.context);
-                        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
-                        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.35f));
-                        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.0f));
-
-                        i.renderWindow([&]()
-                            {
-                                auto deviceID = app.vsgcontext->device()->deviceID;
-                                if (ImGui::BeginTable("asset", 2))
-                                {
-                                    ImGui::TableNextColumn();
-                                    ImGui::Image(widgetImage.id(deviceID), widgetImage.size());
-
-                                    ImGui::TableNextColumn();
-                                    ImGui::Text("ID:  %s", i.widget.text.c_str());
-                                    ImGui::Separator();
-                                    ImGui::Text("Lat: %.2f", point.y);
-                                    ImGui::Separator();
-                                    ImGui::Text("Lon: %.2f", point.x);
-                                    ImGui::Separator();
-                                    ImGui::Text("Alt: %.0f", point.z);
-
-                                    ImGui::EndTable();
-                                }
-                            });
-
-                        ImGui::PopStyleColor(2);
-                        ImGui::PopStyleVar();
-
-                        // update decluttering volume
-                        auto& dc = i.registry.get<Declutter>(i.entity);
-                        dc.rect = Rect(i.size.x, i.size.y);
-                    };
-
-                auto ll_to_ecef = SRS::WGS84.to(SRS::ECEF);
-
-                entityNode->entities.reserve(num_platforms);
-
-                for (unsigned i = 0; i < num_platforms; ++i)
-                {
-                    float t = (float)i / (float)(num_platforms);
-
-                    // Create a host entity:
-                    auto entity = registry.create();
-
-                    double lat = -80.0 + rand_unit(mt) * 160.0;
-                    double lon = -180 + rand_unit(mt) * 360.0;
-                    double alt = 1000.0 + t * 100000.0;
-                    GeoPoint pos_ecef = GeoPoint(SRS::WGS84, lon, lat, alt).transform(SRS::ECEF);
-
-                    // Add a transform component:
-                    auto& transform = registry.emplace<Transform>(entity);
-                    transform.position = pos_ecef;
-
-                    // We need this to support the drop-line. There is a small performance hit.
-                    transform.topocentric = true;
-
-                    // Add a motion component to represent movement:
-                    double initial_bearing = -180.0 + rand_unit(mt) * 360.0;
-                    auto& motion = registry.emplace<MotionGreatCircle>(entity);
-                    motion.velocity = { -7500 + rand_unit(mt) * 15000, 0.0, 0.0 };
-                    motion.normalAxis = pos_ecef.srs.ellipsoid().rotationAxis(pos_ecef, initial_bearing);
-
-                    // Add a labeling widget:
-                    auto& widget = registry.emplace<Widget>(entity);
-                    widget.text = std::to_string(i);
-                    widget.render = render_widget;
-
-                    // How about a drop line?
-                    // Since the drop line is relative to the platfrom, we have to enable
-                    // transform.localTangentPlane = true (see above)
-                    auto& drop_line = registry.emplace<Line>(entity);
-                    drop_line.points = { {0.0, 0.0, 0.0}, {0.0, 0.0, -1e6} };
-                    drop_line.style.width = 1.5f;
-                    drop_line.style.color = Color{ 0.4f, 0.4f, 0.4f, 1.0f };
-
-                    // Decluttering control. The presence of this component will allow the entity
-                    // to participate in decluttering when it's enabled.
-                    auto& declutter = registry.emplace<Declutter>(entity);
-                    declutter.priority = alt;
-
-                    entityNode->entities.emplace_back(entity);
-                }
-            });
 
         layer = NodeLayer::create(entityNode);
         layer->name = "Simulation Entities";
@@ -197,12 +209,36 @@ auto Demo_Simulation = [](Application& app)
         app.vsgcontext->requestFrame();
     }
 
-    ImGui::Text("Simulating %ld platforms", entityNode->entities.size());
-    ImGui::Text("NOTE: toggle visibility in the Map panel");
+    // Create some entities!
+    if (entityNode->entities.empty())
+    {
+        app.registry.write([&](entt::registry& registry)
+            {
+                entityNode->entities = createEntities(registry, num_platforms,
+                    widgetImage, showPosition, app.vsgcontext);
+            });
+    }
+
+    ImGui::Text("TIP: toggle visibility in the Map panel!");
+    ImGui::Text("TIP: declutter by opening the Decluttering panel!");
+    ImGui::Separator();
 
     if (ImGuiLTable::Begin("simulation"))
     {
+        ImGuiLTable::SliderInt("Entities", (int*)&num_platforms, 100, 5000);
+        if (ImGuiLTable::Button("Refresh"))
+        {
+            app.registry.write([&](entt::registry& r)
+                {
+                    r.destroy(entityNode->entities.begin(), entityNode->entities.end());
+                });
+
+            entityNode->entities.clear();
+        }
+
         ImGuiLTable::SliderFloat("Update rate", &sim.sim_hertz, 1.0f, 120.0f, "%.0f hz");
+
+        ImGuiLTable::Checkbox("Show position", &showPosition);
 
         static bool tethering = false;
         if (ImGuiLTable::Checkbox("Tethering", &tethering))
