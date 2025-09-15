@@ -149,7 +149,7 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::PipelineLayout> getPipelineLayout(const T&) const;
 
             //! Subclass must implement this to create or update a node for a component.
-            virtual void createOrUpdateNode(T&, BuildInfo&, VSGContext&) const = 0;
+            virtual void createOrUpdateNode(const T&, BuildInfo&, VSGContext&) const = 0;
 
             void invokeCreateOrUpdate(BuildItem& item, VSGContext& vsgcontext) const override;
 
@@ -458,8 +458,14 @@ namespace ROCKY_NAMESPACE
     template<typename T>
     void detail::SystemNode<T>::invokeCreateOrUpdate(BuildItem& item, VSGContext& context) const
     {
-        T component = *static_cast<T*>(item.component.get());
-        createOrUpdateNode(component, item, context);
+        // make a copy of the component to work with:
+        T copy;
+        _registry.read([&](entt::registry& registry)
+            {
+                copy = *static_cast<T*>(item.component.get());
+            });
+        //T component = *static_cast<T*>(item.component.get());
+        createOrUpdateNode(copy, item, context);
     }
 
     template<typename T>

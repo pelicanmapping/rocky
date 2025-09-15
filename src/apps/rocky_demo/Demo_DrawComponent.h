@@ -92,7 +92,7 @@ auto Demo_Draw = [](Application& app)
                 line.style.depth_offset = 1000;
                 line.topology = Line::Topology::Strip;
                 line.srs = SRS::ECEF;
-                line.staticSize = 1024;
+                line.points.reserve(4);
             });
 
         auto handler = MapEventHandler::create(app);
@@ -112,6 +112,7 @@ auto Demo_Draw = [](Application& app)
                         line.dirty();
                     });
                 drawing = true;
+                app.vsgcontext->requestFrame();
             });
 
         // move: continue a line:
@@ -128,6 +129,7 @@ auto Demo_Draw = [](Application& app)
                             line.dirty();
                         });
                 }
+                app.vsgcontext->requestFrame();
             });
 
         // right click: finish a line:
@@ -145,6 +147,7 @@ auto Demo_Draw = [](Application& app)
                         });
                 }
                 drawing = false;
+                app.vsgcontext->requestFrame();
             });
 
         app.vsgcontext->requestFrame();
@@ -163,5 +166,6 @@ auto Demo_Draw = [](Application& app)
             });
 
         drawing = false;
+        app.vsgcontext->requestFrame();
     }
 };

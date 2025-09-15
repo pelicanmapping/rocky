@@ -270,7 +270,7 @@ LabelSystemNode::initialize(VSGContext& vsgcontext)
 }
 
 void
-LabelSystemNode::createOrUpdateNode(Label& label, detail::BuildInfo& data, VSGContext& vsgcontext) const
+LabelSystemNode::createOrUpdateNode(const Label& label, detail::BuildInfo& data, VSGContext& vsgcontext) const
 {
     // bail out if initialization failed
     if (pipelines.empty())

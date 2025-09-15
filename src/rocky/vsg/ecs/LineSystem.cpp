@@ -148,10 +148,32 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
 }
 
 void
-LineSystemNode::createOrUpdateNode(Line& line, detail::BuildInfo& data, VSGContext& vsgcontext) const
+LineSystemNode::createOrUpdateNode(const Line& line, detail::BuildInfo& data, VSGContext& vsgcontext) const
 {
+    bool reallocate = false;
+    bool uploadStyle = false;
+    bool uploadPoints = false;
+
     if (!data.existing_node)
     {
+        reallocate = true;
+    }
+    else
+    {
+        auto geometry = util::find<LineGeometry>(data.existing_node);
+        if (geometry && geometry->_capacity < line._capacity)
+        {
+            reallocate = true;
+        }
+    }
+
+    if (reallocate)
+    {
+        if (data.existing_node)
+        {
+            vsgcontext->dispose(data.existing_node);
+        }
+
         auto bindCommand = BindLineDescriptors::create();
         bindCommand->updateStyle(line.style);
         bindCommand->init(getPipelineLayout(line));
@@ -182,11 +204,11 @@ LineSystemNode::createOrUpdateNode(Line& line, detail::BuildInfo& data, VSGConte
                 xform.transformRange(copy.begin(), copy.end());
                 for (auto& point : copy)
                     point -= offset;
-                geometry->set(copy, line.topology, line.staticSize);
+                geometry->set(copy, line.topology, line._capacity);
             }
             else
             {
-                geometry->set(line.points, line.topology, line.staticSize);
+                geometry->set(line.points, line.topology, line._capacity);
             }
 
 
@@ -199,7 +221,7 @@ LineSystemNode::createOrUpdateNode(Line& line, detail::BuildInfo& data, VSGConte
         {
             // no reference point -- push raw geometry
             geometry = LineGeometry::create();
-            geometry->set(line.points, line.topology, line.staticSize);
+            geometry->set(line.points, line.topology, line._capacity);
             geometry_root = geometry;
         }
 
@@ -219,67 +241,63 @@ LineSystemNode::createOrUpdateNode(Line& line, detail::BuildInfo& data, VSGConte
 
         data.new_node = cull;
 
-        line.styleDirty = true;
-        line.pointsDirty = true;
+        uploadStyle = true;
+        uploadPoints = true;
     }
 
     else // existing node -- update:
     {
-        // style changed?
-        if (line.styleDirty)
+        // style:
+        auto* bindStyle = util::find<BindLineDescriptors>(data.existing_node);
+        if (bindStyle)
         {
-            auto* bindStyle = util::find<BindLineDescriptors>(data.existing_node);
-            if (bindStyle)
-            {
-                bindStyle->updateStyle(line.style);
-            }
+            uploadStyle = bindStyle->updateStyle(line.style);
         }
 
-        // geometry changed?
-        if (line.pointsDirty)
+        // points:
+        auto* geometry = util::find<LineGeometry>(data.existing_node);
+        if (geometry)
         {
-            auto* geometry = util::find<LineGeometry>(data.existing_node);
-            if (geometry)
+            vsg::dsphere bound;
+            vsg::dmat4 localizer_matrix;
+
+            if (line.srs.valid() && line.points.size() > 0)
             {
-                vsg::dsphere bound;
-                vsg::dmat4 localizer_matrix;
+                GeoPoint anchor(line.srs, (line.points.front() + line.points.back()) * 0.5);
 
-                if (line.srs.valid() && line.points.size() > 0)
-                {
-                    GeoPoint anchor(line.srs, (line.points.front() + line.points.back()) * 0.5);
+                SRSOperation xform;
+                glm::dvec3 offset;
+                bool ok = parseReferencePoint(anchor, xform, offset);
+                ROCKY_SOFT_ASSERT_AND_RETURN(ok, void());
 
-                    SRSOperation xform;
-                    glm::dvec3 offset;
-                    bool ok = parseReferencePoint(anchor, xform, offset);
-                    ROCKY_SOFT_ASSERT_AND_RETURN(ok, void());
+                // make a copy that we will use to transform and offset:
+                std::vector<glm::dvec3> copy(line.points);
+                xform.transformRange(copy.begin(), copy.end());
+                for (auto& point : copy)
+                    point -= offset;
 
-                    // make a copy that we will use to transform and offset:
-                    std::vector<glm::dvec3> copy(line.points);
-                    xform.transformRange(copy.begin(), copy.end());
-                    for (auto& point : copy)
-                        point -= offset;
+                geometry->set(copy, line.topology, line._capacity);
 
-                    geometry->set(copy, line.topology, line.staticSize);
-
-                    auto mt = util::find<vsg::MatrixTransform>(data.existing_node);
-                    mt->matrix = vsg::translate(to_vsg(offset));
-                    localizer_matrix = mt->matrix;
-                }
-                else
-                {
-                    // no reference point -- push raw geometry
-                    geometry->set(line.points, line.topology, line.staticSize);
-                }
-
-                // hand-calculate the bounding sphere
-                auto cull = util::find<vsg::CullNode>(data.existing_node);
-                geometry->calcBound(cull->bound, localizer_matrix);
+                auto mt = util::find<vsg::MatrixTransform>(data.existing_node);
+                mt->matrix = vsg::translate(to_vsg(offset));
+                localizer_matrix = mt->matrix;
             }
+            else
+            {
+                // no reference point -- push raw geometry
+                geometry->set(line.points, line.topology, line._capacity);
+            }
+
+            // hand-calculate the bounding sphere
+            auto cull = util::find<vsg::CullNode>(data.existing_node);
+            geometry->calcBound(cull->bound, localizer_matrix);
+
+            uploadPoints = true;
         }
     }
 
     // check for updates to the style, and upload the new data if needed:
-    if (line.styleDirty)
+    if (uploadStyle)
     {
         auto stategroup = util::find<vsg::StateGroup>(data.new_node ? data.new_node : data.existing_node);
         if (stategroup)
@@ -287,20 +305,19 @@ LineSystemNode::createOrUpdateNode(Line& line, detail::BuildInfo& data, VSGConte
             auto bindCommand = stategroup->stateCommands[0]->cast<BindLineDescriptors>();
             vsgcontext->upload(bindCommand->_ubo->bufferInfoList);
         }
-
-        line.styleDirty = false;
     }
 
-    if (line.pointsDirty)
+    if (uploadPoints)
     {
         auto geometry = util::find<LineGeometry>(data.new_node ? data.new_node : data.existing_node);
         if (geometry)
         {
-            vsgcontext->upload(geometry->arrays);
-            vsgcontext->upload(vsg::BufferInfoList{ geometry->indices });
+            if (geometry->_current && geometry->indices)
+            {
+                vsgcontext->upload(geometry->arrays);
+                vsgcontext->upload(vsg::BufferInfoList{ geometry->indices });
+            }
         }
-
-        line.pointsDirty = false;
     }
 }
 
@@ -318,7 +335,7 @@ BindLineDescriptors::BindLineDescriptors()
     //nop
 }
 
-void
+bool
 BindLineDescriptors::updateStyle(const LineStyle& value)
 {
     bool force = false;
@@ -336,7 +353,10 @@ BindLineDescriptors::updateStyle(const LineStyle& value)
     {
         my_style = value;
         _styleData->dirty();
+        return true;
     }
+
+    return false;
 }
 
 void

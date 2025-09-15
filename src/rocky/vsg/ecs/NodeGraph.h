@@ -28,7 +28,7 @@ namespace ROCKY_NAMESPACE
             //nop
         }
 
-        void createOrUpdateNode(NodeGraph& component, detail::BuildInfo& data, VSGContext&) const override
+        void createOrUpdateNode(const NodeGraph& component, detail::BuildInfo& data, VSGContext&) const override
         {
             data.new_node = component.node;
         }

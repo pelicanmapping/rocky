@@ -150,9 +150,6 @@ namespace
                 line.style = track.style;
                 line.points.reserve(track_chunk_size);
 
-                // pre-allocates space for all future points
-                line.staticSize = track_chunk_size;
-
                 // Tie track visibility to host visibility:
                 updateVisibility(registry, host_entity, c);
             }
@@ -171,7 +168,7 @@ namespace
 
                 Line& line = registry.get<Line>(new_chunk.attach_point);
                 line.points.emplace_back(prev_line.points.back());
-                line.dirtyPoints();
+                line.dirty();
                 new_chunk.numPoints++;
             }          
             
@@ -188,7 +185,7 @@ namespace
 
             // append the new position:
             line.points.emplace_back((glm::dvec3)transform.position);
-            line.dirtyPoints();
+            line.dirty();
             chunk.numPoints++;
         }
 
@@ -227,7 +224,7 @@ namespace
                 {
                     auto& line = registry.get<Line>(chunk.attach_point);
                     line.style = track.style;
-                    line.dirtyStyle();
+                    line.dirty();
                 }
             }
         }

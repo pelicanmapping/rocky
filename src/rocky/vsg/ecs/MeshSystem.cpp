@@ -170,7 +170,7 @@ MeshSystemNode::initialize(VSGContext& context)
 }
 
 void
-MeshSystemNode::createOrUpdateNode(Mesh& mesh, detail::BuildInfo& data, VSGContext& vsgcontext) const
+MeshSystemNode::createOrUpdateNode(const Mesh& mesh, detail::BuildInfo& data, VSGContext& vsgcontext) const
 {
     vsg::ref_ptr<vsg::StateGroup> stategroup;
     vsg::ref_ptr<BindMeshDescriptors> bindCommand;
@@ -225,8 +225,8 @@ MeshSystemNode::createOrUpdateNode(Mesh& mesh, detail::BuildInfo& data, VSGConte
 
             geometry->add(
                 v32,
-                reinterpret_cast<vsg::vec2*>(tri.uvs),
-                reinterpret_cast<vsg::vec4*>(tri.colors),
+                reinterpret_cast<const vsg::vec2*>(tri.uvs),
+                reinterpret_cast<const vsg::vec4*>(tri.colors),
                 tri.depthoffsets);
         }
 
@@ -239,9 +239,9 @@ MeshSystemNode::createOrUpdateNode(Mesh& mesh, detail::BuildInfo& data, VSGConte
         for (auto& tri : mesh.triangles)
         {
             geometry->add(
-                reinterpret_cast<vsg::dvec3*>(tri.verts),
-                reinterpret_cast<vsg::vec2*>(tri.uvs),
-                reinterpret_cast<vsg::vec4*>(tri.colors),
+                reinterpret_cast<const vsg::dvec3*>(tri.verts),
+                reinterpret_cast<const vsg::vec2*>(tri.uvs),
+                reinterpret_cast<const vsg::vec4*>(tri.colors),
                 tri.depthoffsets);
         }
         geometry_root = geometry;

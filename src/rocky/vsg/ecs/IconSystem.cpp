@@ -169,7 +169,7 @@ namespace
 }
 
 void
-IconSystemNode::createOrUpdateNode(Icon& icon, detail::BuildInfo& data, VSGContext& vsgcontext) const
+IconSystemNode::createOrUpdateNode(const Icon& icon, detail::BuildInfo& data, VSGContext& vsgcontext) const
 {
     bool rebuild = data.existing_node == nullptr;
 

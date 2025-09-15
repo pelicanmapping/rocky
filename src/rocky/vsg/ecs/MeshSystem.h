@@ -112,10 +112,7 @@ namespace ROCKY_NAMESPACE
         //! One-time initialization of the system        
         void initialize(VSGContext&) override;
 
-        void createOrUpdateNode(Mesh&, detail::BuildInfo&, VSGContext&) const override;
-    protected:
-
-        //bool update(entt::entity, VSGContext&) override;
+        void createOrUpdateNode(const Mesh&, detail::BuildInfo&, VSGContext&) const override;
     };
 
 }

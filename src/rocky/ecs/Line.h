@@ -40,10 +40,6 @@ namespace ROCKY_NAMESPACE
         //! SRS of the points in the points vector (when set).
         SRS srs;
 
-        //! Maximum reserved size. Set this if you know the maximum number of points you 
-        //! plan to use.
-        std::size_t staticSize = 0;
-
         //! Line configuration
         enum class Topology
         {
@@ -57,24 +53,17 @@ namespace ROCKY_NAMESPACE
         //! referencePoint if that is in use.
         std::vector<glm::dvec3> points;
 
-        //! Marks the entire line dirty
-        inline void dirty() override
-        {
-            styleDirty = true;
-            pointsDirty = true;
-            ++revision;
+        //! Marks the line dirty
+        inline void dirty() override;
+
+        //! Mark the style as dirty
+        [[deprecated]] inline void dirtyStyle() {
+            dirty();
         }
 
-        inline void dirtyStyle()
-        {
-            styleDirty = true;
-            ++revision;
-        }
-
-        inline void dirtyPoints()
-        {
-            pointsDirty = true;
-            ++revision;
+        //! Mark the points vector as dirty
+        [[deprecated]] inline void dirtyPoints() {
+            dirty();
         }
 
         //! Call this to reset the underlying data if you plan to re-use the line
@@ -82,8 +71,14 @@ namespace ROCKY_NAMESPACE
         void recycle(entt::registry&);
 
     private:
-        bool styleDirty = true;
-        bool pointsDirty = true;
+        // track the capacity separately from the vector since the vector's copy constructor
+        // will NOT necessary copy the capacity.
+        std::size_t _capacity = 0;
         friend class LineSystemNode;
     };
+
+    inline void Line::dirty() {
+        _capacity = points.capacity();
+        ++revision;
+    }
 }

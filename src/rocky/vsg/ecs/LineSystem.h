@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -35,7 +35,7 @@ namespace ROCKY_NAMESPACE
         //! One-time initialization of the system    
         void initialize(VSGContext&) override;
 
-        void createOrUpdateNode(Line&, detail::BuildInfo&, VSGContext&) const override;
+        void createOrUpdateNode(const Line&, detail::BuildInfo&, VSGContext&) const override;
     };
 
     /**
@@ -47,11 +47,9 @@ namespace ROCKY_NAMESPACE
         //! Construct a new line string geometry node
         LineGeometry();
 
+        //! Populate the geometry arrays
         template<typename VEC3_T>
-        inline void set(const std::vector<VEC3_T>& verts, Line::Topology topology, std::size_t staticStorage = 0);
-
-        template<typename VEC3_T, typename VEC3_ITER>
-        inline void update(unsigned offset, VEC3_ITER begin, VEC3_ITER end, Line::Topology topology, std::size_t staticStorage = 0);
+        inline void set(const std::vector<VEC3_T>& verts, Line::Topology topology, std::size_t capacity);
 
         //! The first vertex in the line string to render
         void setFirst(unsigned value);
@@ -60,6 +58,7 @@ namespace ROCKY_NAMESPACE
         void setCount(unsigned value);
 
         //protected:
+        std::size_t _capacity = 0u;
         vsg::ref_ptr<vsg::DrawIndexed> _drawCommand;
         vsg::ref_ptr<vsg::vec3Array> _current;
         vsg::ref_ptr<vsg::vec3Array> _previous;
@@ -68,6 +67,12 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::uintArray> _indices;
 
         void calcBound(vsg::dsphere& out, const vsg::dmat4& matrix) const;
+
+        void record(vsg::CommandBuffer& commandBuffer) const override
+        {
+            if (_drawCommand->indexCount > 0)
+                vsg::Geometry::record(commandBuffer);
+        }
     };
 
     /**
@@ -83,7 +88,8 @@ namespace ROCKY_NAMESPACE
         void init(vsg::ref_ptr<vsg::PipelineLayout> layout);
 
         //! Refresh the data buffer contents on the GPU
-        void updateStyle(const LineStyle&);
+        //! @return true if the style was changed, false if it was the same
+        bool updateStyle(const LineStyle&);
 
         vsg::ref_ptr<vsg::ubyteArray> _styleData;
         vsg::ref_ptr<vsg::DescriptorBuffer> _ubo;
@@ -93,53 +99,42 @@ namespace ROCKY_NAMESPACE
 
 
     template<typename VEC3_T>
-    void LineGeometry::set(const std::vector<VEC3_T>& t_verts, Line::Topology topology, std::size_t staticStorage)
+    void LineGeometry::set(const std::vector<VEC3_T>& t_verts, Line::Topology topology, std::size_t capacity)
     {
         const vsg::vec4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
         auto& verts = reinterpret_cast<const std::vector<vsg::dvec3>&>(t_verts);
 
-        std::size_t verts_to_allocate = (staticStorage > 0 ? staticStorage : verts.size());
+        capacity = std::max(capacity, verts.size());
+        capacity = std::max(capacity, (std::size_t)4);
 
-        if (verts_to_allocate < 2)
-        {
-            //throw "LineGeometry requires at least two vertices";
-            _drawCommand->indexCount = 0;
-            return;
-        }
+        ROCKY_HARD_ASSERT(capacity > 0);
 
         std::size_t indices_to_allocate =
-            topology == Line::Topology::Strip ? (verts_to_allocate - 1) * 6 :
-            (verts_to_allocate / 2) * 6; // Segments
+            topology == Line::Topology::Strip ? (capacity - 1) * 6 :
+            (capacity / 2) * 6; // Segments
 
-        if (!_current)
+        ROCKY_SOFT_ASSERT_AND_RETURN(_current == nullptr || capacity <= _capacity, void(),
+            "LineGeometry state corruption - capacity overflow should always result in a new LineGeometry");
+
+        if (!_current) // capacity exceeded, new object
         {
-            _current = vsg::vec3Array::create(verts_to_allocate * 4);
-            _current->properties.dataVariance = vsg::DYNAMIC_DATA;
-
-            _previous = vsg::vec3Array::create(verts_to_allocate * 4);
-            _previous->properties.dataVariance = vsg::DYNAMIC_DATA;
-            
-            _next = vsg::vec3Array::create(verts_to_allocate * 4);
-            _next->properties.dataVariance = vsg::DYNAMIC_DATA;
-
-            _colors = vsg::vec4Array::create(verts_to_allocate * 4);
-            _colors->properties.dataVariance = vsg::DYNAMIC_DATA;
-
+            // this should only happen on a new LineGeometry
+            _current = vsg::vec3Array::create(capacity * 4);
+            _previous = vsg::vec3Array::create(capacity * 4);
+            _next = vsg::vec3Array::create(capacity * 4);
+            _colors = vsg::vec4Array::create(capacity * 4);
             assignArrays({ _current, _previous, _next, _colors });
 
             _indices = vsg::uintArray::create(indices_to_allocate * 4);
-            _indices->properties.dataVariance = vsg::DYNAMIC_DATA;
             assignIndices(_indices);
         }
         else
         {
-            if (verts_to_allocate * 4 > _current->size())
-            {
-                Log()->warn("LineGoemetry overflow");
-                return;
-            }
+            ROCKY_SOFT_ASSERT_AND_RETURN(capacity * 4 <= _current->size(), void(), "LineGeometry overflow");
         }
+
+        _capacity = capacity;
 
         auto* current = (_current->data());
         auto* prev = (_previous->data());
@@ -216,6 +211,8 @@ namespace ROCKY_NAMESPACE
         _drawCommand->firstIndex = 0;
         _drawCommand->indexCount = i_ptr;
 
+        // not strictly necessary since we are using the upload() technique,
+        // but keep for good measure
         _current->dirty();
         _previous->dirty();
         _next->dirty();
