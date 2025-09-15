@@ -261,7 +261,7 @@ if (!prims.empty())
         });
 }
 ```
-Worldwide data? Check out the [Mapbox Vector Tiles](src/rocky/apps/rocky_demo/Demo_MVT.h) demo.
+Worldwide data? Check out the [Mapbox Vector Tiles](src/apps/rocky_demo/Demo_MVT.h) demo.
 
 <br/><br/>
 
@@ -500,7 +500,7 @@ widget.render = [](WidgetInstance& i)
 };
 ```
 
-[Demo_Widget.h](src/rocky/apps/rocky_demo/Demo_Widget.h) has more examples.
+[Demo_Widget.h](src/apps/rocky_demo/Demo_Widget.h) has more examples.
 
 ### Creating an Application GUI
 Rocky has an `ImGuiIntegration` API that makes it easy to render a GUI atop your map display.
