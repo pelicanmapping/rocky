@@ -170,7 +170,7 @@ DisplayManager::initialize(VSGContext in_context)
 }
 
 vsg::ref_ptr<vsg::Device>
-DisplayManager::sharedDevice()
+DisplayManager::sharedDevice() const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer(), {});
     return !vsgcontext->viewer()->windows().empty() ? vsgcontext->viewer()->windows().front()->getDevice() : vsg::ref_ptr<vsg::Device>{ };
@@ -344,7 +344,7 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
     }
 
     // find the CG associated with this window:
-    auto commandgraph = getCommandGraph(window);
+    auto commandgraph = commandGraph(window);
     if (commandgraph)
     {
         if (view->children.empty() && _app)
@@ -434,10 +434,10 @@ DisplayManager::removeView(vsg::ref_ptr<vsg::View> view)
     // wait until the device is idle to avoid changing state while it's being used.
     vsgcontext->viewer()->deviceWaitIdle();
 
-    auto window = getWindow(view);
+    auto window = windowContainingView(view);
     ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
 
-    auto commandgraph = getCommandGraph(window);
+    auto commandgraph = commandGraph(window);
     ROCKY_SOFT_ASSERT_AND_RETURN(commandgraph, void());
 
     // find the rendergraph hosting the view:
@@ -507,7 +507,7 @@ DisplayManager::refreshView(vsg::ref_ptr<vsg::View> view)
 }
 
 vsg::ref_ptr<vsg::CommandGraph>
-DisplayManager::getCommandGraph(vsg::ref_ptr<vsg::Window> window)
+DisplayManager::commandGraph(vsg::ref_ptr<vsg::Window> window) const
 {
     auto iter = _commandGraphByWindow.find(window);
     if (iter != _commandGraphByWindow.end())
@@ -517,7 +517,7 @@ DisplayManager::getCommandGraph(vsg::ref_ptr<vsg::Window> window)
 }
 
 vsg::ref_ptr<vsg::RenderGraph>
-DisplayManager::getRenderGraph(vsg::ref_ptr<vsg::View> view)
+DisplayManager::renderGraph(vsg::ref_ptr<vsg::View> view) const
 {
     auto i = _viewData.find(view);
     if (i != _viewData.end())
@@ -527,7 +527,7 @@ DisplayManager::getRenderGraph(vsg::ref_ptr<vsg::View> view)
 }
 
 vsg::ref_ptr<vsg::Window>
-DisplayManager::getWindow(vsg::ref_ptr<vsg::View> view)
+DisplayManager::windowContainingView(vsg::ref_ptr<vsg::View> view) const
 {
     for (auto iter : windowsAndViews)
     {
@@ -544,7 +544,7 @@ DisplayManager::getWindow(vsg::ref_ptr<vsg::View> view)
 }
 
 void
-DisplayManager::setManipulatorForView(vsg::ref_ptr<MapManipulator> manip, vsg::ref_ptr<vsg::View> view)
+DisplayManager::setManipulatorForView(vsg::ref_ptr<MapManipulator> manip, vsg::ref_ptr<vsg::View> view) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer(), void());
     ROCKY_SOFT_ASSERT_AND_RETURN(manip, void());
@@ -579,8 +579,19 @@ DisplayManager::setManipulatorForView(vsg::ref_ptr<MapManipulator> manip, vsg::r
     }
 }
 
+std::vector<vsg::ref_ptr<vsg::View>>
+DisplayManager::views(vsg::ref_ptr<vsg::Window> window) const
+{
+    auto i = windowsAndViews.find(window);
+    if (i != windowsAndViews.end())
+    {
+        return i->second;
+    }
+    return {};
+}
+
 vsg::ref_ptr<vsg::View>
-DisplayManager::getView(vsg::ref_ptr<vsg::Window> window, double x, double y)
+DisplayManager::viewAtWindowCoords(vsg::ref_ptr<vsg::Window> window, double x, double y) const
 {
     auto i = windowsAndViews.find(window);
     if (i != windowsAndViews.end())
@@ -602,7 +613,7 @@ DisplayManager::getView(vsg::ref_ptr<vsg::Window> window, double x, double y)
 
 // Call this when adding a new rendergraph to the scene.
 void
-DisplayManager::compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, vsg::ref_ptr<vsg::Window> window)
+DisplayManager::compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, vsg::ref_ptr<vsg::Window> window) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer(), void());
     ROCKY_SOFT_ASSERT_AND_RETURN(renderGraph, void());
@@ -633,4 +644,35 @@ DisplayManager::compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, v
             vsg::updateViewer(*vsgcontext->viewer(), result);
         }
     }
+}
+
+vsg::ref_ptr<vsg::Window>
+DisplayManager::mainWindow() const
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer(), {});
+    return !vsgcontext->viewer()->windows().empty() ? vsgcontext->viewer()->windows().front() : vsg::ref_ptr<vsg::Window>{ };
+}
+
+Result<GeoPoint>
+DisplayManager::pointAtWindowCoords(vsg::ref_ptr<vsg::Window> window, int x, int y) const
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(window, Failure_AssertionFailure);
+
+    for (auto view : views(window))
+    {
+        if (view->camera)
+        {
+            const auto& vp = view->camera->getViewport();
+            if (x >= vp.x && x < vp.x + vp.width && y >= vp.y && y < vp.y + vp.height)
+            {
+                auto point = ROCKY_NAMESPACE::pointAtWindowCoords(view, x, y);
+                if (point.ok())
+                {
+                    return point;
+                }
+            }
+        }
+    }
+
+    return Failure{ };
 }

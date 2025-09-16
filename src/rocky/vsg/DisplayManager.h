@@ -8,8 +8,7 @@
 #include <rocky/vsg/MapManipulator.h>
 #include <rocky/Utils.h>
 #include <rocky/Callbacks.h>
-
-#include <list>
+#include <vector>
 
 namespace ROCKY_NAMESPACE
 {
@@ -87,40 +86,54 @@ namespace ROCKY_NAMESPACE
         //! Adds a manipulator to a view.
         //! @param manip Manipulator to set
         //! @view View on which to set the manipulator
-        void setManipulatorForView(vsg::ref_ptr<MapManipulator> manip, vsg::ref_ptr<vsg::View> view);
+        void setManipulatorForView(vsg::ref_ptr<MapManipulator> manip, vsg::ref_ptr<vsg::View> view) const;
+
+        //! Gets all the views associated with a window.
+        std::vector<vsg::ref_ptr<vsg::View>> views(vsg::ref_ptr<vsg::Window> window) const;
 
         //! Gets the view containing the window coordinates (e.g., mouse position relative to the window)
         //! @param window Window to query
         //! @param x X coordinate in window space
         //! @param y Y coordinate in window space
         //! @return View containing the coordinates, or nullptr.
-        vsg::ref_ptr<vsg::View> getView(vsg::ref_ptr<vsg::Window> window, double x, double y);
+        vsg::ref_ptr<vsg::View> viewAtWindowCoords(vsg::ref_ptr<vsg::Window> window, double x, double y) const;
 
         //! Gets the VSG command graph associated with a window.
-        vsg::ref_ptr<vsg::CommandGraph> getCommandGraph(vsg::ref_ptr<vsg::Window> window);
+        vsg::ref_ptr<vsg::CommandGraph> commandGraph(vsg::ref_ptr<vsg::Window> window) const;
 
         //! Gets the VSG render graph associated with a view.
-        vsg::ref_ptr<vsg::RenderGraph> getRenderGraph(vsg::ref_ptr<vsg::View> view);
+        vsg::ref_ptr<vsg::RenderGraph> renderGraph(vsg::ref_ptr<vsg::View> view) const;
 
         //! Gets the window hosting the provided view.
-        vsg::ref_ptr<vsg::Window> getWindow(vsg::ref_ptr<vsg::View> view);
+        vsg::ref_ptr<vsg::Window> windowContainingView(vsg::ref_ptr<vsg::View> view) const;
 
         //! Gets the vulkan device shared by all windows
-        vsg::ref_ptr<vsg::Device> sharedDevice();
+        vsg::ref_ptr<vsg::Device> sharedDevice() const;
+
+        //! Returns the first window (which we'll assume is the main window) (convenience function)
+        vsg::ref_ptr<vsg::Window> mainWindow() const;
+
+        //! Return the GeoPoint at the given window coordinates (e.g., mouse position).
+        //! @param window Window in which to search for the top-most view containing the coordinates
+        //! @param x X coordinate in window space
+        //! @param y Y coordinate in window space
+        //! @return GeoPoint at the given window coordinates
+        Result<GeoPoint> pointAtWindowCoords(vsg::ref_ptr<vsg::Window> window, int x, int y) const;
 
         //! Compile and hook up a render graph that you have manually installed
         //! on a command graph.
-        void compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, vsg::ref_ptr<vsg::Window> window);
+        void compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, vsg::ref_ptr<vsg::Window> window) const;
 
     public:
-
-        using WindowsAndViews = std::map<vsg::ref_ptr<vsg::Window>, std::list<vsg::ref_ptr<vsg::View>>>;
-
-        WindowsAndViews windowsAndViews;
 
         VSGContext vsgcontext;
 
     protected:
+
+        using WindowsAndViews = std::map<vsg::ref_ptr<vsg::Window>, std::vector<vsg::ref_ptr<vsg::View>>>;
+
+        WindowsAndViews windowsAndViews;
+
         struct ViewData
         {
             vsg::ref_ptr<vsg::RenderGraph> parentRenderGraph;

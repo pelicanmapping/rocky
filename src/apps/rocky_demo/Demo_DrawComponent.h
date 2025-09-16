@@ -25,12 +25,10 @@ namespace
 
         Result<GeoPoint> mapPoint(vsg::PointerEvent& e) const
         {
-            if (auto view = app.display.getView(e.window, e.x, e.y))
-            {
-                if (auto p = rocky::pointAtWindowCoords(view, e.x, e.y))
-                    return p;
-            }
-            return Failure{};
+            if (auto p = app.display.pointAtWindowCoords(e.window, e.x, e.y))
+                return p;
+            else
+                return Failure{};
         }
 
         void apply(vsg::ButtonPressEvent& e) override

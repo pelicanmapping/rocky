@@ -75,7 +75,7 @@ void newWindow(rocky::Application& app)
 {
     app.onNextUpdate([&app]()
         {
-            auto i = app.display.windowsAndViews.size();
+            auto i = app.viewer->windows().size();
 
             // the window:
             auto window = new QWidget();

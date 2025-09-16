@@ -32,15 +32,12 @@ namespace
                 auto dx = std::abs(e.x - _press->x), dy = std::abs(e.y - _press->y);
                 if (dx < 5 && dy < 5) // click threshold
                 {
-                    auto view = app.display.getView(_press->window, _press->x, _press->y);
-                    if (view)
+                    if (auto p = app.display.pointAtWindowCoords(_press->window, _press->x, _press->y))
                     {
-                        if (auto p = rocky::pointAtWindowCoords(view, _press->x, _press->y))
-                        {
-                            onClick.fire(p.value());
-                            e.handled = true;
-                        }
+                        onClick.fire(p.value());
+                        e.handled = true;
                     }
+                    
                 }
             }
             _press.reset();

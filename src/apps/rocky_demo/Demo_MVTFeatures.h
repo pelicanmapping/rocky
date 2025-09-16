@@ -168,8 +168,7 @@ auto Demo_MVTFeatures = [](Application& app)
         ImGuiLTable::End();
 }
 
-    auto window = app.viewer->windows().front();
-    auto view = app.display.getView(window, 0, 0);
+    auto view = app.display.views(app.display.mainWindow()).front();
     auto manip = MapManipulator::get(view);
 
     if (manip)

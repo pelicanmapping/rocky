@@ -69,9 +69,8 @@ auto Demo_RTT = [](Application& app)
     if (entity == entt::null)
     {
         // Find the main window and view:
-        auto main = app.display.windowsAndViews.begin();
-        auto main_window = main->first;
-        auto main_view = main->second.front();
+        auto main_window = app.display.mainWindow();
+        auto main_view = app.display.views(main_window).front();
 
         // this is the model we will see in the RTT:
         URI uri("https://raw.githubusercontent.com/vsg-dev/vsgExamples/master/data/models/teapot.vsgt");
@@ -104,7 +103,7 @@ auto Demo_RTT = [](Application& app)
         // https://github.com/vsg-dev/VulkanSceneGraph/discussions/928
         auto install = [&app, rtt_graph, main_window]()
             {
-                auto commandGraph = app.display.getCommandGraph(main_window);
+                auto commandGraph = app.display.commandGraph(main_window);
                 if (commandGraph)
                 {
                     // Insert the pre-render graph into the command graph and compile it.

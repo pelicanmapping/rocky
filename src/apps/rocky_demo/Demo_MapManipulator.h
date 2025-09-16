@@ -14,7 +14,7 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_MapManipulator = [](Application& app)
 {
-    auto first_view = app.display.getView(app.viewer->windows().front(), 0, 0);
+    auto first_view = app.display.viewAtWindowCoords(app.viewer->windows().front(), 0, 0);
     if (first_view)
     {
         auto manip = MapManipulator::get(first_view);

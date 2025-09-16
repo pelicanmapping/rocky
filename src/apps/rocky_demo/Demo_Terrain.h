@@ -161,7 +161,7 @@ auto Demo_Terrain = [](Application& app)
                     if (ImGui::RadioButton(options[i].c_str(), index == i))
                     {
                         app.mapNode->profile = Profile(options[i]);
-                        if (auto view = app.display.getView(app.viewer->windows().front(), 0, 0))
+                        if (auto view = app.display.viewAtWindowCoords(app.viewer->windows().front(), 0, 0))
                             if (auto manip = MapManipulator::get(view))
                                 manip->home();
                         app.vsgcontext->requestFrame();

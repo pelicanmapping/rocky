@@ -243,8 +243,7 @@ auto Demo_Simulation = [](Application& app)
         static bool tethering = false;
         if (ImGuiLTable::Checkbox("Tethering", &tethering))
         {
-            auto main_window = app.display.windowsAndViews.begin();
-            auto view = main_window->second.front();
+            auto view = app.display.views(app.display.mainWindow()).front();
             auto manip = MapManipulator::get(view);
             
             if (tethering)

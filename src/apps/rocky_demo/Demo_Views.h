@@ -13,10 +13,9 @@ auto Demo_Views = [](Application& app)
 {
     // iterate over all managed windows:
     int window_id = 0;
-    for (auto windows_iter : app.display.windowsAndViews)
+    for (auto window : app.viewer->windows())
     {
-        auto window = windows_iter.first;
-        auto& views = windows_iter.second;
+        auto views = app.display.views(window);
 
         ImGui::PushID(window_id++);
         if (ImGui::TreeNodeEx(window->traits()->windowTitle.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
@@ -30,7 +29,7 @@ auto Demo_Views = [](Application& app)
                 {
                     ImGuiLTable::Begin("view");
                     
-                    auto rg = app.display.getRenderGraph(view);
+                    auto rg = app.display.renderGraph(view);
 
                     // the clear color, which resides in a renderpass attachment:
                     if (rg &&
@@ -115,7 +114,7 @@ auto Demo_Views = [](Application& app)
                         {
                             std::uniform_int_distribution next_int;
                             app.display.addViewToWindow(new_view, window, true);
-                            auto rg = app.display.getRenderGraph(new_view);
+                            auto rg = app.display.renderGraph(new_view);
                             auto& color = rg->clearValues[0].color.float32;
                             color[0] = float(next_int(rng) % 255) / 255.0f;
                             color[1] = float(next_int(rng) % 255) / 255.0f;
