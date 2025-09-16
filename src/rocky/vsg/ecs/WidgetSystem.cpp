@@ -102,7 +102,7 @@ WidgetSystemNode::initialize(VSGContext& context)
                     else
                     {
                         ImGuiContextScope s(i.context);
-                        i.renderWindow([&]() { ImGui::Text(text.c_str()); });
+                        i.renderWindow([&]() { ImGui::Text("%s", text.c_str()); });
                     }
                 }
             }

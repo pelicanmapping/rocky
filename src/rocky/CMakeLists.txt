@@ -35,7 +35,16 @@ list(APPEND DATA_FILES "${PROJECT_SOURCE_DIR}/data/fonts/times.vsgb")
 # find dependecies ----
 
 # PROJ - geospatial projections library - required
-find_package(PROJ CONFIG REQUIRED)
+find_package(PROJ CONFIG QUIET)
+if (NOT PROJ_FOUND)
+    # backup plan for older Ubuntu PROJ releases without cmake files
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(PROJ REQUIRED proj)
+    add_library(PROJ::proj INTERFACE IMPORTED)
+    set_target_properties(PROJ::proj PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${PROJ_INCLUDE_DIRS}"
+        INTERFACE_LINK_LIBRARIES "${PROJ_LIBRARIES}")
+endif()
 set(ROCKY_HAS_PROJ TRUE)
 
 # glm - vector and matrix math library - required
