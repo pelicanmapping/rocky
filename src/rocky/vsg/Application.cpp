@@ -183,14 +183,6 @@ Application::ctor(int& argc, char** argv)
 
     vsgcontext->sharedObjects = vsg::SharedObjects::create();
 
-    // TODO:
-    // The SkyNode does this, but then it's awkward to add a SkyNode at runtime
-    // because various other shaders depend on the define to activate lighting,
-    // and those will have to be recompiled.
-    // So instead we will just activate the lighting globally and rely on the 
-    // light counts in the shader. Is this ok?
-    vsgcontext->shaderCompileSettings->defines.insert("ROCKY_LIGHTING");
-
     // read map from file:
     std::string infile; 
     if (commandLine.read("--map", infile))

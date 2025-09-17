@@ -217,6 +217,10 @@ int main(int argc, char** argv)
     imguiRenderer->add(MainGUI::create(app));
     app.install(imguiRenderer);
 
+    // Add a light if we need one
+    if (!app.skyNode)
+        app.mainScene->addChild(vsg::createHeadlight());
+
     // run until the user quits.
     return app.run();
 }

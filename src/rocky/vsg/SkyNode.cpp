@@ -262,7 +262,7 @@ SkyNode::setWorldSRS(const SRS& srs)
         addChild(sun);
 
         // Tell the shaders that lighting is a go
-        _context->shaderCompileSettings->defines.insert("ROCKY_LIGHTING");
+        //_context->shaderCompileSettings->defines.insert("ROCKY_LIGHTING");
         // TODO: dirty shaders
 
         // the atmopshere:

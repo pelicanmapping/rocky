@@ -1,5 +1,4 @@
 #version 450
-#pragma import_defines(ROCKY_LIGHTING)
 #pragma import_defines(ROCKY_ATMOSPHERE)
 
 layout(set = 0, binding = 10) uniform sampler2D elevation_tex;

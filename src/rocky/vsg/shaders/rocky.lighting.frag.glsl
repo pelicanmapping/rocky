@@ -92,8 +92,10 @@ void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
 
     for (int i = 0; i < directional_count; ++i)
     {
-        vec3 light_color = vsg_lights.pack[index++].rgb;
+        vec4 light_color = vsg_lights.pack[index++];
         vec3 direction = normalize(vsg_lights.pack[index++].xyz);
+        // placeholder:
+        Lo += (albedo * light_color.rgb * light_color.a);
     }
 
     for (int i = 0; i < point_count; ++i)
@@ -137,7 +139,7 @@ void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
 
     if (total_light_count > 0)
     {
-        color.rgb = Lo + (ambient * albedo * pbr.ao);
+        color.rgb = Lo + (clamp(ambient, vec3(0.0), vec3(1.0)) * albedo * pbr.ao);
 
 #if defined(ROCKY_ATMOSPHERE)
         color.rgb += atmos_color; // add in the atmospheric haze

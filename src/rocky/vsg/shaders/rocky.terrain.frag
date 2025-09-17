@@ -2,7 +2,6 @@
 
 #extension GL_EXT_fragment_shader_barycentric : enable
 
-#pragma import_defines(ROCKY_LIGHTING)
 #pragma import_defines(ROCKY_HAS_VK_BARYCENTRIC_EXTENSION)
 
 layout(push_constant) uniform PushConstants {
@@ -29,9 +28,7 @@ layout(set = 0, binding = 9) uniform TerrainData
 
 layout(set = 0, binding = 11) uniform sampler2D color_tex;
 
-#if defined(ROCKY_LIGHTING)
 #include "rocky.lighting.frag.glsl"
-#endif
 
 // outputs
 layout(location = 0) out vec4 out_color;
@@ -53,9 +50,7 @@ void main()
     if (gl_FrontFacing == false)
         out_color.r = 1.0;
 
-#if defined(ROCKY_LIGHTING)
     apply_lighting(out_color, varyings.vertex_view, get_normal());
-#endif
 
 #if defined(ROCKY_HAS_VK_BARYCENTRIC_EXTENSION) && defined(GL_EXT_fragment_shader_barycentric)
     if (settings.wireOverlay)
