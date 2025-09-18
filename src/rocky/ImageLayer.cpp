@@ -220,6 +220,9 @@ ImageLayer::assembleTile(const TileKey& key, const IOOptions& io) const
                     ++numSourcesAtFullResolution;
                 }
             }
+
+            if (io.canceled())
+                return {};
         }
 
         // If we actually got at least one piece of usable data,
@@ -340,6 +343,9 @@ ImageLayer::assembleTile(const TileKey& key, const IOOptions& io) const
                             output->write(emptypixel, c, r, layer);
                         }
                     }
+
+                    if (io.canceled())
+                        return {};
                 }
             }
         }

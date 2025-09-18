@@ -189,6 +189,9 @@ ElevationLayer::assembleTile(const TileKey& key, const IOOptions& io) const
                     ++numSourcesAtFullResolution;
                 }
             }
+
+            if (io.canceled())
+                return {};
         }
 
         // If we actually got at least one piece of usable data,
@@ -288,6 +291,9 @@ ElevationLayer::assembleTile(const TileKey& key, const IOOptions& io) const
                         height -= point.z; // apply reverse vdatum offset
                     }
                 }
+
+                if (io.canceled())
+                    return {};
             }
         }
     }

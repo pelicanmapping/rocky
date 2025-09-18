@@ -10,6 +10,7 @@
 
 #include <string>
 #include <vector>
+#include <chrono>
 
 namespace ROCKY_NAMESPACE
 {
@@ -17,17 +18,22 @@ namespace ROCKY_NAMESPACE
     {
         Content content;
         std::int64_t lastModifiedTime = 0;
-        Duration duration;
+        std::chrono::duration<double> duration_s;
         bool fromCache = false;
         std::string jsonMetadata;
 
         URIResponse(const Content& in_content) :
             content(in_content) {
         }
-
-        URIResponse(Content&& in_content) :
-            content(std::move(in_content)) {
+        URIResponse(const Content& in_content, std::chrono::duration<double> in_duration) :
+            content(in_content), duration_s(in_duration) {
         }
+        //URIResponse(Content&& in_content, std::chrono::duration<double> in_duration) :
+        //    content(std::move(in_content)),
+        //    duration_s(in_duration)
+        //{
+        //    //nop
+        //}
     };
 
     /**

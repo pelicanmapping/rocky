@@ -305,6 +305,8 @@ namespace
         errorBuf[0] = 0;
         curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, (void*)errorBuf);
 
+        curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)io.networkConnectionTimeout.count());
+
         CURLcode result = CURLE_OK;
         std::random_device device;
         std::default_random_engine engine(device());
@@ -316,6 +318,9 @@ namespace
         unsigned attempts = 0;
         while(attempts++ < max_attempts)
         {
+            if (io.canceled())
+                return Failure_OperationCanceled;
+
             if (attempts > 1)
             {
                 auto delay = 1000ms * std::pow(2, attempts + distribution(engine));
@@ -355,6 +360,9 @@ namespace
                 auto ct = cti.empty() ? "unknown" : cti;
                 Log()->info(LC "({} {:3d}ms {:6}b {}) HTTP GET {}", response.status, (int)dur_ms, response.data.size(), ct, request.url);
             }
+
+            if (io.canceled())
+                return Failure_OperationCanceled;
 
             if (response.status != 200)
             {
@@ -427,6 +435,9 @@ namespace
             // ask the server to keep the connection alive
             client.set_keep_alive(true);
 
+            // connection timeout
+            client.set_connection_timeout((time_t)io.networkConnectionTimeout.count());
+
             unsigned max_attempts = std::max(1u, io.maxNetworkAttempts);
 
             unsigned tooManyRequestsCount = 0;
@@ -434,16 +445,23 @@ namespace
             std::default_random_engine engine(device());
             std::uniform_real_distribution distribution;
 
+            // in-flight cancelation detector ... I don't think this actually works.
+            // I put a logger in here are it never prints :)
+            auto progress = [&](size_t current, size_t total) -> bool
+                {
+                    return !io.canceled();
+                };
+
             for(;;)
             {
                 if (io.canceled())
                     return Failure_OperationCanceled;
                 
                 auto t0 = std::chrono::steady_clock::now();
-                auto res = client.Get(path, params, headers);
+                auto res = client.Get(path, params, headers, progress);
                 auto t1 = std::chrono::steady_clock::now();
 
-                if (res)
+                if (res) // means we got a response form the server
                 {
                     if (httpDebug)
                     {
@@ -495,7 +513,7 @@ namespace
                     break;
                 }
 
-                else
+                else // unable to get a response from the server
                 {
                     if (httpDebug)
                     {
@@ -522,6 +540,10 @@ namespace
                     {
                         Log()->info(LC + httplib::to_string(res.error()) + " with " + proto_host_port + "; retrying..");
                     }
+
+                    if (io.canceled())
+                        return Failure_OperationCanceled;
+
                     std::this_thread::sleep_for(1s);
                 }
             }
@@ -532,7 +554,7 @@ namespace
             return Failure(Failure::GeneralError, ex.what());
         }
 
-        return std::move(response);
+        return response;
     }
 #endif
 
@@ -676,6 +698,8 @@ auto URI::read(const IOOptions& io) const -> Result<URIResponse>
         }
     }
 
+    auto t0 = std::chrono::steady_clock::now();
+
     if (std::filesystem::exists(full()))
     {
         auto contentType = inferContentTypeFromFileExtension(full());
@@ -749,12 +773,14 @@ auto URI::read(const IOOptions& io) const -> Result<URIResponse>
         return Failure(Failure::ResourceUnavailable, full());
     }
 
+    auto t1 = std::chrono::steady_clock::now();
+
     if (io.services().contentCache)
     {
         io.services().contentCache->put(full(), Result<Content>(content));
     }
 
-    return URIResponse(content);
+    return URIResponse(content, t1 - t0);
 }
 
 bool

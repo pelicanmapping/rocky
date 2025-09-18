@@ -6,12 +6,12 @@
 #pragma once
 
 #include <rocky/Result.h>
-#include <rocky/Units.h>
 #include <rocky/Threading.h>
 #include <rocky/Cache.h>
 #include <optional>
 #include <string>
 #include <cstdint>
+#include <chrono>
 
 /**
  * A collection of types used by the various I/O systems.
@@ -106,6 +106,9 @@ namespace ROCKY_NAMESPACE
 
         //! Maximum number of attempts to make a network connection
         unsigned maxNetworkAttempts = 4u;
+
+        //! Network connection timeout (in seconds; 0 = infinite)
+        std::chrono::seconds networkConnectionTimeout = std::chrono::seconds(5);
 
         //! Referring location for an operation using these options
         std::optional<std::string> referrer;
