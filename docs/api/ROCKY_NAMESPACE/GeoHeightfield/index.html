@@ -16,7 +16,7 @@
     
     
       
-        <title>class Heightfield - Rocky</title>
+        <title>class GeoHeightfield - Rocky</title>
       
     
     
@@ -58,7 +58,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#class-heightfield" class="md-skip">
+        <a href="#class-geoheightfield" class="md-skip">
           Skip to content
         </a>
       
@@ -94,7 +94,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              class Heightfield
+              class GeoHeightfield
             
           </span>
         </div>
@@ -319,162 +319,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#create" class="md-nav__link">
+  <a href="#geoheightfield" class="md-nav__link">
     <span class="md-ellipsis">
-      create
+      GeoHeightfield
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#heightfield" class="md-nav__link">
+  <a href="#read" class="md-nav__link">
     <span class="md-ellipsis">
-      Heightfield
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#heightfield_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Heightfield
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#heightat" class="md-nav__link">
-    <span class="md-ellipsis">
-      heightAt
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#heightat_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      heightAt
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#heightatuv" class="md-nav__link">
-    <span class="md-ellipsis">
-      heightAtUV
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#foreachheight" class="md-nav__link">
-    <span class="md-ellipsis">
-      forEachHeight
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#foreachheight_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      forEachHeight
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fill" class="md-nav__link">
-    <span class="md-ellipsis">
-      fill
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#width" class="md-nav__link">
-    <span class="md-ellipsis">
-      width
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#height" class="md-nav__link">
-    <span class="md-ellipsis">
-      height
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#nodatavalue" class="md-nav__link">
-    <span class="md-ellipsis">
-      noDataValue
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#minheight" class="md-nav__link">
-    <span class="md-ellipsis">
-      minHeight
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#maxheight" class="md-nav__link">
-    <span class="md-ellipsis">
-      maxHeight
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#encode" class="md-nav__link">
-    <span class="md-ellipsis">
-      encode
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#encoded" class="md-nav__link">
-    <span class="md-ellipsis">
-      encoded
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#computeandsetminmax" class="md-nav__link">
-    <span class="md-ellipsis">
-      computeAndSetMinMax
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#computeminmax" class="md-nav__link">
-    <span class="md-ellipsis">
-      computeMinMax
+      read
     </span>
   </a>
   
@@ -501,84 +357,18 @@
 
 
 
-<h1 id="class-heightfield">class Heightfield</h1>
-<p><em>Defined at src/rocky/Heightfield.h#20</em></p>
-<p>Wrapper around an Image that provides heightfield functions.</p>
+<h1 id="class-geoheightfield">class GeoHeightfield</h1>
+<p><em>Defined at src/rocky/GeoImage.h#98</em></p>
 <h2 id="members">Members</h2>
-<p>public int image</p>
+<p>public const int &amp; image</p>
+<p>public int hf</p>
 <h2 id="functions">Functions</h2>
-<h3 id="create">create</h3>
-<p><em>public Heightfield create(unsigned int cols, unsigned int rows)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#27</em></p>
-<p>Construct a new Image wrapped in a Heightfield API.</p>
-<h3 id="heightfield">Heightfield</h3>
-<p><em>public void Heightfield(int in_image)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#32</em></p>
-<p>Wrap a Heightfield API around an existing image.</p>
-<h3 id="heightfield_1">Heightfield</h3>
-<p><em>public void Heightfield(unsigned int cols, unsigned int rows)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#40</em></p>
-<p>Construct a new heightfield with given dimensions.</p>
-<h3 id="heightat">heightAt</h3>
-<p><em>public float &amp; heightAt(unsigned int col, unsigned int row)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#112</em></p>
-<p>Mutable reference to the height value at col, row</p>
-<h3 id="heightat_1">heightAt</h3>
-<p><em>public float heightAt(unsigned int col, unsigned int row)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#119</em></p>
-<p>Height value at col, row</p>
-<h3 id="heightatuv">heightAtUV</h3>
-<p><em>public float heightAtUV(float u, float v)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#126</em></p>
-<p>Height value at normalized UV coordinates (0..1, 0..1)</p>
-<h3 id="foreachheight">forEachHeight</h3>
-<p><em>public void forEachHeight(CALLABLE &amp;&amp; func)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#134</em></p>
-<p>Visits each height in the field with a user-provided function that takes "float" or "float&amp;" as an argument.</p>
-<h3 id="foreachheight_1">forEachHeight</h3>
-<p><em>public void forEachHeight(CALLABLE &amp;&amp; func)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#144</em></p>
-<p>Visits each height in the field with a user-provided function that takes "float" as an argument.</p>
-<h3 id="fill">fill</h3>
-<p><em>public void fill(float value)</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#154</em></p>
-<p>Fill with a single height value</p>
-<h3 id="width">width</h3>
-<p><em>public unsigned int width()</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#72</em></p>
-<p>Width of the underlying image (in pixels)</p>
-<h3 id="height">height</h3>
-<p><em>public unsigned int height()</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#75</em></p>
-<p>Height of the underlying image (in pixels)</p>
-<h3 id="nodatavalue">noDataValue</h3>
-<p><em>public float noDataValue()</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#78</em></p>
-<p>No-data value of the underlying image</p>
-<h3 id="minheight">minHeight</h3>
-<p><em>public float minHeight()</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#81</em></p>
-<p>Minimum height value (if known)</p>
-<h3 id="maxheight">maxHeight</h3>
-<p><em>public float maxHeight()</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#84</em></p>
-<p>Maximum height value (if known)</p>
-<h3 id="encode">encode</h3>
-<p><em>public Heightfield encode()</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#192</em></p>
-<p>Convert a writable heightfield into an encoded heightfield suitable for the GPU</p>
-<h3 id="encoded">encoded</h3>
-<p><em>public _Bool encoded()</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#212</em></p>
-<p>Has this heightfield been encoded?</p>
-<h3 id="computeandsetminmax">computeAndSetMinMax</h3>
-<p><em>public void computeAndSetMinMax()</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#162</em></p>
-<p>Recompute the min and max heights</p>
-<h3 id="computeminmax">computeMinMax</h3>
-<p><em>public int computeMinMax()</em></p>
-<p><em>Defined at src/rocky/Heightfield.h#178</em></p>
-<p>Compute the min and max heights and return them without storing them</p>
+<h3 id="geoheightfield">GeoHeightfield</h3>
+<p><em>public void GeoHeightfield(const int &amp; in_image)</em></p>
+<p><em>Defined at src/rocky/GeoImage.h#103</em></p>
+<h3 id="read">read</h3>
+<p><em>public int read(double x, double y)</em></p>
+<p><em>Defined at src/rocky/GeoImage.h#110</em></p>
 
 
 
