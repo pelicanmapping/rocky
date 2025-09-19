@@ -15,6 +15,9 @@ layout(set = 0, binding = 13) uniform TileData
     mat4 elevation_matrix;
     mat4 color_matrix;
     mat4 model_matrix;
+    float min_height;
+    float max_height;
+    float padding[2];
 } tile;
 
 // input vertex attributes
@@ -54,7 +57,12 @@ float terrain_get_elevation(in vec2 uv)
         + coeff.x * tile.elevation_matrix[3].st // bias
         + coeff.y;
 
-    return texture(elevation_tex, elevc).r;
+    float h = texture(elevation_tex, elevc).r;
+
+    if (tile.max_height > tile.min_height)
+        h = h * (tile.max_height - tile.min_height) + tile.min_height; // R16_UNORM
+
+     return h;
 }
 
 void main()

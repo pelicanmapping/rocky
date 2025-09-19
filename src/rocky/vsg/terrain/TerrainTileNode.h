@@ -50,6 +50,9 @@ namespace ROCKY_NAMESPACE
             glm::fmat4 elevation_matrix;
             glm::fmat4 color_matrix;
             glm::fmat4 model_matrix;
+            float min_height = 1.0f;
+            float max_height = 0.0f;
+            float padding[2];
         };
         vsg::ref_ptr<vsg::DescriptorImage> color;
         vsg::ref_ptr<vsg::DescriptorImage> elevation;
@@ -62,6 +65,8 @@ namespace ROCKY_NAMESPACE
         glm::fmat4 modelMatrix;
         TextureData color;
         TextureData elevation;
+        float minHeight = 0.0f;
+        float maxHeight = 0.0f;
 
         TerrainTileDescriptors descriptors;
 

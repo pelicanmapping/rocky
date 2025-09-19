@@ -291,7 +291,7 @@ TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, co
     TerrainTileRenderModel renderModel = oldRenderModel;
     TerrainTileDescriptors& descriptors = renderModel.descriptors;
 
-    if (dataModel.colorLayers.size() > 0 && dataModel.colorLayers[0].image.valid())
+    if (dataModel.colorLayers.size() > 0 && dataModel.colorLayers[0].image)
     {
         auto& layer = dataModel.colorLayers[0];
 
@@ -322,11 +322,16 @@ TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, co
         }
     }
 
-    if (dataModel.elevation.heightfield.valid())
+    if (dataModel.elevation.heightfield)
     {
         renderModel.elevation.name = "elevation " + dataModel.elevation.key.str();
         renderModel.elevation.image = dataModel.elevation.heightfield.image();
         renderModel.elevation.matrix = dataModel.elevation.matrix;
+
+        // min > max means the data is NOT encoded (and is raw floats)
+        Heightfield hf(renderModel.elevation.image);
+        renderModel.minHeight = hf.encoded() ? hf.minHeight() : 1.0f;
+        renderModel.maxHeight = hf.encoded() ? hf.maxHeight() : 0.0f;
 
         auto data = util::wrapImageInVSG(renderModel.elevation.image);
         if (data)
@@ -357,6 +362,8 @@ TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, co
     uniforms.elevation_matrix = renderModel.elevation.matrix;
     uniforms.color_matrix = renderModel.color.matrix;
     uniforms.model_matrix = renderModel.modelMatrix;
+    uniforms.min_height = renderModel.minHeight;
+    uniforms.max_height = renderModel.maxHeight;
     descriptors.uniforms = vsg::DescriptorBuffer::create(ubo, TILE_UBO_BINDING);
 
     // make the descriptor set, and include the terrain settings UBO

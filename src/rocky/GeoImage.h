@@ -11,6 +11,7 @@
 #include <rocky/Math.h>
 #include <rocky/Result.h>
 #include <rocky/Image.h>
+#include <rocky/Heightfield.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -39,6 +40,7 @@ namespace ROCKY_NAMESPACE
 
         //! True if this is a valid geo image.
         bool valid() const;
+        operator bool() const { return valid(); }
 
         //! Gets a pointer to the underlying image
         std::shared_ptr<Image> image() const;
@@ -88,19 +90,30 @@ namespace ROCKY_NAMESPACE
         //! reading.
         ReadResult read(const SRSOperation& operation, double x, double y, int layer=0) const;
 
-        //! Minimum value (of height data) or FLT_MAX if not available
-        float minValue() const { return _minValue; }
-
-        //! Maximum value (of height data) or -FLT_MAX if not available
-        float maxValue() const { return _maxValue; }
-
-        //! Compute the min/max values. This is typically only applicable to heightfield data.
-        void computeMinMax();
-
     private:
         GeoExtent _extent;
         std::shared_ptr<Image> _image;
-        float _minValue = FLT_MAX;
-        float _maxValue = -FLT_MAX;
+    };
+
+    class GeoHeightfield
+    {
+    public:
+        using ReadResult = Result<float, std::nullopt_t>;
+
+        GeoHeightfield(const GeoImage& in_image) :
+            image(in_image), hf(in_image.image()) {
+        }
+
+        const GeoImage& image;
+        Heightfield hf;
+
+        ReadResult read(double x, double y) const {
+            if (!image.valid()) return ResultFail;
+            double u = (x - image.extent().xmin()) / image.extent().width();
+            double v = (y - image.extent().ymin()) / image.extent().height();
+            if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
+                return ResultFail;
+            return hf.heightAtUV((float)u, (float)v);
+        }
     };
 }

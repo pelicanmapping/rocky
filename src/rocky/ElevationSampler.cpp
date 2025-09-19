@@ -91,10 +91,10 @@ bool ElevationSession::transformAndClamp(double& x, double& y, double& z) const
 
     if (_cache.status.ok())
     {
-        auto r = _cache.hf.read(xa, ya);
+        auto r = GeoHeightfield(_cache.hf).read(xa, ya);
         if (r.ok())
         {
-            x = xa, y = ya, z = r.value().r;
+            x = xa, y = ya, z = r.value();
             return true;
         }
     }

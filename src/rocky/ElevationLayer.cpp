@@ -331,19 +331,16 @@ ElevationLayer::createTileImplementation_internal(const TileKey& key, const IOOp
     {
         ROCKY_SOFT_ASSERT_AND_RETURN(result.value().valid(), result);
 
-        if (result.value().image()->pixelFormat() != HEIGHTFIELD_FORMAT)
+        // If the image is not a heightfield, decode it to a heightfield.
+        auto image = decodeRGB(result.value().image());
+
+        if (image)
         {
-            // If the image is not a heightfield, decode it to a heightfield.
-            auto hf = decodeRGB(result.value().image());
-            if (hf)
-            {
-                ROCKY_SOFT_ASSERT_AND_RETURN(hf->pixelFormat() == HEIGHTFIELD_FORMAT, result);
-                result = GeoImage(hf, key.extent());
-            }
-            else
-            {
-                result = Failure(Failure::GeneralError, "Failed to decode RGB image to heightfield.");
-            }
+            result = GeoImage(image, key.extent());
+        }
+        else
+        {
+            result = Failure(Failure::GeneralError, "Failed to decode RGB image to heightfield.");
         }
     }
 
@@ -394,24 +391,25 @@ ElevationLayer::createTileInKeyProfile(const TileKey& key, const IOOptions& io) 
 
     if (result.ok())
     {
-        auto hf = result.value().image();
-
-        // validate it to make sure it's legal.
-        if (hf && !validateHeightfield(hf.get()))
-        {
-            return Failure(Failure::GeneralError, "Generated an illegal heightfield!");
-        }
-
-        // Pre-caching operations:
-        normalizeNoDataValues(hf.get());
-
-        // No luck on any path:
-        if (hf == nullptr)
+        if (!result.value())
         {
             return Failure(Failure::ResourceUnavailable);
         }
 
-        result = GeoImage(hf, key.extent());
+        auto image = result.value().image();
+
+        Heightfield hf(image);
+
+        if (hf.image->pixelFormat() == HF_WRITABLE_FORMAT)
+        {
+            normalizeNoDataValues(hf.image.get());
+
+            // enocde for GPU
+            hf.computeAndSetMinMax();
+            image = hf.encode().image;
+        }
+
+        result = GeoImage(image, key.extent());
     }
 
     return result;
@@ -422,6 +420,12 @@ ElevationLayer::decodeRGB(std::shared_ptr<Image> image) const
 {
     if (!image || !image->valid())
         return nullptr;
+
+    if (image->pixelFormat() == HF_WRITABLE_FORMAT)
+    {
+        // already a heightfield, just compute the minmax and return it
+        return image;
+    }
 
     // For RGB-encoded elevation, we want read the components in their raw form
     // and not perform any color space conversion.
@@ -469,5 +473,6 @@ ElevationLayer::decodeRGB(std::shared_ptr<Image> image) const
             });
     }
 
+    // compute the new min/max and compress the heightfield.
     return hf.image;
 }

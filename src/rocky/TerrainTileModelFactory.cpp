@@ -12,6 +12,7 @@
 
 using namespace ROCKY_NAMESPACE;
 
+#if 0
 namespace
 {
     void replace_nodata_values(GeoImage& geohf)
@@ -29,6 +30,7 @@ namespace
         }
     }
 }
+#endif
 
 //.........................................................................
 
@@ -168,10 +170,8 @@ TerrainTileModelFactory::addColorLayers(TerrainTileModel& model, const Map* map,
                 auto& base_image = model.colorLayers.front().image;
                 TerrainTileModel::Tile tile = model.colorLayers.front();
 
-                auto comp_image = Image::create(
-                    Image::R8G8B8A8_UNORM,
-                    base_image.image()->width(),
-                    base_image.image()->height());
+                auto comp_image = Image::create(Image::R8G8B8A8_UNORM,
+                    base_image.image()->width(), base_image.image()->height());
 
                 comp_image->fill(glm::fvec4(0, 0, 0, 0));
 
@@ -227,12 +227,9 @@ TerrainTileModelFactory::addElevation(TerrainTileModel& model, const Map* map, c
 
         if (result.ok())
         {
-            replace_nodata_values(result.value());
+            ROCKY_SOFT_ASSERT(Heightfield(result.value().image()).encoded());
 
             model.elevation.heightfield = std::move(result.value());
-            // compute the min/max values for the heightfield - the terrain engine
-            // will use this to make its bounding volume
-            model.elevation.heightfield.computeMinMax();
             model.elevation.revision = layer->revision();
             model.elevation.key = key;
         }
@@ -247,5 +244,5 @@ TerrainTileModelFactory::addElevation(TerrainTileModel& model, const Map* map, c
         }
     }
 
-    return model.elevation.heightfield.valid();
+    return model.elevation.heightfield;
 }

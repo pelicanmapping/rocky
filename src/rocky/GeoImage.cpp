@@ -249,26 +249,3 @@ GeoImage::read(const SRSOperation& xform, double x, double y, int layer) const
 
     return read(temp.x, temp.y, layer);
 }
-
-void
-GeoImage::computeMinMax()
-{
-    ROCKY_SOFT_ASSERT_AND_RETURN(_image->valid() && _image->pixelFormat() == HEIGHTFIELD_FORMAT, void());
-
-    _minValue = FLT_MAX;
-    _maxValue = -FLT_MAX;
-
-    Heightfield hf(_image);
-    for (unsigned t = 0; t < hf.height(); ++t)
-    {
-        for (unsigned s = 0; s < hf.width(); ++s)
-        {
-            float height = hf.heightAt(s, t);
-            if (height != hf.noDataValue())
-            {
-                _minValue = std::min(_minValue, height);
-                _maxValue = std::max(_maxValue, height);
-            }
-        }
-    }
-}

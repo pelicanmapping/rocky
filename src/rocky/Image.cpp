@@ -10,24 +10,24 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    using uchar = unsigned char;
-    using ushort = unsigned short;
+    using uchar = std::uint8_t; // unsigned char;
+    using ushort = std::uint16_t;
 
-    constexpr float norm_8 = 255.0f;
-    constexpr float denorm_8 = 1.0f / norm_8;
+    constexpr float norm_u8 = 255.0f;
+    constexpr float denorm_u8 = 1.0f / norm_u8;
 
     template<typename T>
-    struct NORM8 {
+    struct UNORM8 {
         static Image::Pixel read(unsigned char* ptr, int n) {
             return Image::Pixel(
-                n > 0 ? (float)(ptr[0]) * denorm_8 : 1.0f,
-                n > 1 ? (float)(ptr[1]) * denorm_8 : 1.0f,
-                n > 2 ? (float)(ptr[2]) * denorm_8 : 1.0f,
-                n > 3 ? (float)(ptr[3]) * denorm_8 : 1.0f);
+                n > 0 ? (float)(ptr[0]) * denorm_u8 : 1.0f,
+                n > 1 ? (float)(ptr[1]) * denorm_u8 : 1.0f,
+                n > 2 ? (float)(ptr[2]) * denorm_u8 : 1.0f,
+                n > 3 ? (float)(ptr[3]) * denorm_u8 : 1.0f);
         }
         static void write(const Image::Pixel& pixel, unsigned char* ptr, int n) {
             for (int i = 0; i < n; ++i)
-                *ptr++ = (T)(pixel[i] * norm_8);
+                *ptr++ = (T)(pixel[i] * norm_u8);
         }
     };
 
@@ -37,38 +37,38 @@ namespace
         static Image::Pixel read(unsigned char* ptr, int n) {
             Image::Pixel pixel;
             for (int i = 0; i < std::min(n, 3); ++i)
-                pixel[i] = util::sRGB_to_linear((float)(*ptr++) * denorm_8);
+                pixel[i] = util::sRGB_to_linear((float)(*ptr++) * denorm_u8);
             for (int i = std::min(n, 3); i < n; ++i)
-                pixel[i] = (float)(*ptr++) * denorm_8;
+                pixel[i] = (float)(*ptr++) * denorm_u8;
             for (int i = n; i < 4; ++i)
                 pixel[i] = 1.0f;
             return pixel;
         }
         static void write(const Image::Pixel& pixel, unsigned char* ptr, int n) {
             for (int i = 0; i < std::min(n, 3); ++i)
-                *ptr++ = (T)(util::linear_to_sRGB(pixel[i]) * norm_8);
+                *ptr++ = (T)(util::linear_to_sRGB(pixel[i]) * norm_u8);
             for (int i = std::min(n, 3); i < n; ++i)
-                *ptr++ = (T)(pixel[i] * norm_8);
+                *ptr++ = (T)(pixel[i] * norm_u8);
         }
     };
 
-    constexpr float norm_16 = 65535.0f;
-    constexpr float denorm_16 = 1.0f / norm_16;
+    constexpr float norm_u16 = 65535.0f;
+    constexpr float denorm_u16 = 1.0f / norm_u16;
 
     template<typename T>
-    struct NORM16 {
+    struct UNORM16 {
         static Image::Pixel read(unsigned char* ptr, int n) {
             T* sptr = (T*)ptr;
             return Image::Pixel(
-                n > 0 ? (float)(sptr[0]) * denorm_16 : 1.0f,
-                n > 1 ? (float)(sptr[1]) * denorm_16 : 1.0f,
-                n > 2 ? (float)(sptr[2]) * denorm_16 : 1.0f,
-                n > 3 ? (float)(sptr[3]) * denorm_16 : 1.0f);
+                n > 0 ? (float)(sptr[0]) * denorm_u16 : 1.0f,
+                n > 1 ? (float)(sptr[1]) * denorm_u16 : 1.0f,
+                n > 2 ? (float)(sptr[2]) * denorm_u16 : 1.0f,
+                n > 3 ? (float)(sptr[3]) * denorm_u16 : 1.0f);
         }
         static void write(const Image::Pixel& pixel, unsigned char* ptr, int n) {
             T* sptr = (T*)ptr;
             for (int i = 0; i < n; ++i)
-                *sptr++ = (T)(pixel[i] * norm_16);
+                *sptr++ = (T)(pixel[i] * norm_u16);
         }
     };
 
@@ -93,15 +93,15 @@ namespace
 // static member
 Image::Layout Image::_layouts[11] =
 {
-    { &NORM8<uchar>::read, &NORM8<uchar>::write, 1, 1, R8_UNORM },
+    { &UNORM8<uchar>::read, &UNORM8<uchar>::write, 1, 1, R8_UNORM },
     { &SRGB8<uchar>::read, &SRGB8<uchar>::write, 1, 1, R8_SRGB },
-    { &NORM8<uchar>::read, &NORM8<uchar>::write, 2, 2, R8G8_UNORM },
+    { &UNORM8<uchar>::read, &UNORM8<uchar>::write, 2, 2, R8G8_UNORM },
     { &SRGB8<uchar>::read, &SRGB8<uchar>::write, 2, 2, R8G8_SRGB },
-    { &NORM8<uchar>::read, &NORM8<uchar>::write, 3, 3, R8G8B8_UNORM },
+    { &UNORM8<uchar>::read, &UNORM8<uchar>::write, 3, 3, R8G8B8_UNORM },
     { &SRGB8<uchar>::read, &SRGB8<uchar>::write, 3, 3, R8G8B8_SRGB },
-    { &NORM8<uchar>::read, &NORM8<uchar>::write, 4, 4, R8G8B8A8_UNORM },
+    { &UNORM8<uchar>::read, &UNORM8<uchar>::write, 4, 4, R8G8B8A8_UNORM },
     { &SRGB8<uchar>::read, &SRGB8<uchar>::write, 4, 4, R8G8B8A8_SRGB },
-    { &NORM16<ushort>::read, &NORM16<ushort>::write, 1, 2, R16_UNORM },
+    { &UNORM16<ushort>::read, &UNORM16<ushort>::write, 1, 2, R16_UNORM },
     { &FLOAT<float>::read, &FLOAT<float>::write, 1, 4, R32_SFLOAT },
     { &FLOAT<double>::read, &FLOAT<double>::write, 1, 8, R64_SFLOAT }
 };

@@ -55,9 +55,7 @@ namespace ROCKY_NAMESPACE
         //! True if this model contains no data.
         bool empty() const
         {
-            return
-                colorLayers.empty() &&
-                !elevation.heightfield.valid();
+            return      colorLayers.empty() && !elevation.heightfield;
         }
 
         //! Map model revision from which this model was created

@@ -222,6 +222,8 @@ namespace ROCKY_NAMESPACE
         unsigned char* _data = nullptr;
         float _noDataValue = -std::numeric_limits<float>::max(); // default no-data value
         bool _ownsData = true;
+        float _minValue = 0.0f; // applies to heightfields
+        float _maxValue = 0.0f; // applies to heightfields
 
         void allocate(PixelFormat format, unsigned s, unsigned t, unsigned r);
 
@@ -236,6 +238,8 @@ namespace ROCKY_NAMESPACE
 
         inline unsigned sizeof_miplevel(unsigned level) const;
         inline unsigned char* data_at_miplevel(unsigned level);
+
+        friend class Heightfield;
     };
 
 
