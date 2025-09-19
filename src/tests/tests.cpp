@@ -7,9 +7,6 @@
 #define ROCKY_EXPOSE_JSON_FUNCTIONS
 #include <rocky/json.h>
 
-#include <vsg/maths/vec3.h>
-#include <vsg/maths/quat.h>
-
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 

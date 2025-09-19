@@ -1,83 +1,22 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
 
 #include <rocky/vsg/Common.h>
+#include <rocky/vsg/terrain/TerrainState.h>
 #include <rocky/vsg/terrain/SurfaceNode.h>
-#include <rocky/vsg/terrain/TerrainTileHost.h>
 #include <rocky/Threading.h>
 #include <rocky/TileKey.h>
-#include <rocky/Image.h>
-
-#include <vsg/nodes/QuadGroup.h>
-#include <vsg/nodes/CullGroup.h>
-#include <vsg/nodes/StateGroup.h>
-#include <vsg/app/RecordTraversal.h>
-#include <vsg/ui/UIEvent.h> // time_point
-#include <vsg/state/Sampler.h>
 
 namespace ROCKY_NAMESPACE
 {
     class CreateTileManifest;
-    class SurfaceNode;
-    class TerrainTileNode;
     class TerrainEngine;
     class TerrainSettings;
-
-    struct TextureData
-    {
-        std::string name;
-        std::shared_ptr<Image> image;
-        glm::dmat4 matrix{ 1 };
-    };
-
-    enum TextureType
-    {
-        COLOR,
-        COLOR_PARENT,
-        ELEVATION,
-        NORMAL,
-        NUM_TEXTURE_TYPES
-    };
-
-    struct TerrainTileDescriptors
-    {
-        struct Uniforms
-        {
-            glm::fmat4 elevation_matrix;
-            glm::fmat4 color_matrix;
-            glm::fmat4 model_matrix;
-            float min_height = 1.0f;
-            float max_height = 0.0f;
-            float padding[2];
-        };
-        vsg::ref_ptr<vsg::DescriptorImage> color;
-        vsg::ref_ptr<vsg::DescriptorImage> elevation;
-        vsg::ref_ptr<vsg::DescriptorBuffer> uniforms;
-        vsg::ref_ptr<vsg::StateCommand> bind;
-    };
-
-    struct TerrainTileRenderModel
-    {
-        glm::fmat4 modelMatrix;
-        TextureData color;
-        TextureData elevation;
-        float minHeight = 0.0f;
-        float maxHeight = 0.0f;
-
-        TerrainTileDescriptors descriptors;
-
-        void applyScaleBias(const glm::dmat4& sb)
-        {
-            if (color.image)
-                color.matrix *= sb;
-            if (elevation.image)
-                elevation.matrix *= sb;
-        }
-    };
+    class TerrainTileHost;
 
     /**
      * TileNode represents a single tile. TileNode has 5 children:

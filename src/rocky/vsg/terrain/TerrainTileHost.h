@@ -4,8 +4,7 @@
  * MIT License
  */
 #pragma once
-
-#include <vsg/app/RecordTraversal.h>
+#include <rocky/vsg/Common.h>
 
 namespace ROCKY_NAMESPACE
 {

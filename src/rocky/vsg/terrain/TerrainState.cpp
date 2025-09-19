@@ -1,11 +1,12 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "TerrainState.h"
 #include "TerrainNode.h"
 #include "TerrainTileNode.h"
+#include "TerrainSettings.h"
 #include "../VSGUtils.h"
 #include "../PipelineState.h"
 

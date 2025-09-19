@@ -1,12 +1,9 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/Application.h>
-#include <rocky/weejobs.h>
-#include <vsg/commands/Command.h>
 #include <chrono>
 
 using namespace std::chrono_literals;

@@ -10,10 +10,6 @@
 #include "../VSGUtils.h"
 #include <rocky/Color.h>
 
-#include <vsg/state/BindDescriptorSet.h>
-#include <vsg/state/ViewDependentState.h>
-#include <vsg/commands/Draw.h>
-
 using namespace ROCKY_NAMESPACE;
 
 #define VERT_SHADER "shaders/rocky.icon.indirect.vert"

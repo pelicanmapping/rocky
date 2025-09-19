@@ -1,23 +1,13 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "SkyNode.h"
 #include "VSGUtils.h"
 #include "PipelineState.h"
-
 #include <rocky/Ellipsoid.h>
 #include <rocky/Ephemeris.h>
-
-#include <vsg/nodes/StateGroup.h>
-#include <vsg/nodes/Geometry.h>
-#include <vsg/nodes/VertexIndexDraw.h>
-#include <vsg/utils/ShaderSet.h>
-#include <vsg/utils/GraphicsPipelineConfigurator.h>
-#include <vsg/state/BindDescriptorSet.h>
-#include <vsg/state/ViewDependentState.h>
-#include <vsg/io/Options.h>
 
 using namespace ROCKY_NAMESPACE;
 

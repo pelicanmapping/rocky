@@ -7,13 +7,6 @@
 #include "MeshSystem.h"
 #include "../PipelineState.h"
 
-#include <vsg/state/BindDescriptorSet.h>
-#include <vsg/state/ViewDependentState.h>
-#include <vsg/commands/DrawIndexed.h>
-
-#include <vsg/nodes/CullNode.h>
-#include <vsg/utils/ComputeBounds.h>
-
 using namespace ROCKY_NAMESPACE;
 
 #define MESH_VERT_SHADER "shaders/rocky.mesh.vert"

@@ -12,8 +12,6 @@
 #include <rocky/Map.h>
 #include <rocky/TileLayer.h>
 
-#include <vsg/all.h>
-
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 

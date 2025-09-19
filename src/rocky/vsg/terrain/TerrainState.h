@@ -1,20 +1,18 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
 
 #include <rocky/vsg/VSGContext.h>
-#include <rocky/vsg/terrain/TerrainTileNode.h>
 #include <rocky/Color.h>
+#include <rocky/Image.h>
 
 namespace ROCKY_NAMESPACE
 {
-    class TerrainTileNode;
-
     struct TerrainTileModel;
-    struct TerrainTileRenderModel;
+    class TerrainSettings;
 
     //! Holds any terrain-wide textures and uniforms.
     struct TerrainDescriptors
@@ -27,6 +25,52 @@ namespace ROCKY_NAMESPACE
 
         vsg::ref_ptr<vsg::Data> data;
         vsg::ref_ptr<vsg::Descriptor> ubo;
+    };
+
+    //! Descriptors for a single terrain tile.
+    struct TerrainTileDescriptors
+    {
+        struct Uniforms
+        {
+            glm::fmat4 elevation_matrix;
+            glm::fmat4 color_matrix;
+            glm::fmat4 model_matrix;
+            float min_height = 1.0f;
+            float max_height = 0.0f;
+            float padding[2];
+        };
+        vsg::ref_ptr<vsg::DescriptorImage> color;
+        vsg::ref_ptr<vsg::DescriptorImage> elevation;
+        vsg::ref_ptr<vsg::DescriptorBuffer> uniforms;
+        vsg::ref_ptr<vsg::StateCommand> bind;
+    };
+
+    //! One texture source image and its matrix.
+    struct TextureData
+    {
+        std::string name;
+        std::shared_ptr<Image> image;
+        glm::dmat4 matrix{ 1 };
+    };
+
+    //! Everything needed to render a single tile
+    struct TerrainTileRenderModel
+    {
+        glm::fmat4 modelMatrix;
+        TextureData color;
+        TextureData elevation;
+        float minHeight = 0.0f;
+        float maxHeight = 0.0f;
+
+        TerrainTileDescriptors descriptors;
+
+        void applyScaleBias(const glm::dmat4& sb)
+        {
+            if (color.image)
+                color.matrix *= sb;
+            if (elevation.image)
+                elevation.matrix *= sb;
+        }
     };
 
     /**

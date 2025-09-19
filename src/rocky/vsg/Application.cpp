@@ -15,10 +15,6 @@
 
 #include <rocky/contrib/EarthFileImporter.h>
 
-#include <vsg/app/CloseHandler.h>
-#include <vsg/utils/CommandLine.h>
-#include <vsg/core/Version.h>
-
 #ifdef ROCKY_HAS_IMGUI
 #include <rocky/rocky_imgui.h>
 #endif

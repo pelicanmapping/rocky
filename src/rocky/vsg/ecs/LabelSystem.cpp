@@ -7,12 +7,7 @@
 #include "LabelSystem.h"
 #include "../PipelineState.h"
 #include "../VSGUtils.h"
-
 #include <rocky/vsg/PixelScaleTransform.h>
-#include <vsg/text/StandardLayout.h>
-#include <vsg/text/CpuLayoutTechnique.h>
-#include <vsg/text/Font.h>
-#include <vsg/state/DepthStencilState.h>
 
 using namespace ROCKY_NAMESPACE;
 

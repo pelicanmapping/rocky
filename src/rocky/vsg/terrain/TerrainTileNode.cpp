@@ -1,11 +1,12 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "TerrainTileNode.h"
-#include "SurfaceNode.h"
+#include "TerrainTileHost.h"
 #include "TerrainSettings.h"
+#include "SurfaceNode.h"
 
 #include <rocky/Math.h>
 #include <rocky/vsg/VSGUtils.h>

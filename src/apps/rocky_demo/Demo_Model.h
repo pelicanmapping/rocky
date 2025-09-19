@@ -5,7 +5,6 @@
  */
 #pragma once
 
-#include <vsg/io/read.h>
 #include <rocky/URI.h>
 #include "helpers.h"
 #include <filesystem>

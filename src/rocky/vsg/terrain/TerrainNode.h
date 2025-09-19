@@ -13,7 +13,6 @@
 #include <rocky/Result.h>
 #include <rocky/Profile.h>
 #include <rocky/Layer.h>
-#include <vsg/nodes/Group.h>
 
 namespace ROCKY_NAMESPACE
 {

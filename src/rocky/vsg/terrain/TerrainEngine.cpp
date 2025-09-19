@@ -1,12 +1,14 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "TerrainEngine.h"
 #include "TerrainTilePager.h"
 #include "TerrainTileHost.h"
 #include "TerrainSettings.h"
+#include "TerrainState.h"
+#include "SurfaceNode.h"
 #include "GeometryPool.h"
 #include <rocky/Map.h>
 #include <rocky/TerrainTileModel.h>

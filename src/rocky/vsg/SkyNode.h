@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -8,8 +8,6 @@
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/DateTime.h>
 #include <rocky/SRS.h>
-#include <vsg/nodes/Group.h>
-#include <vsg/core/Version.h>
 
 #if VSG_API_VERSION_GREATER_EQUAL(1,1,3)
 #include <vsg/lighting/AmbientLight.h>

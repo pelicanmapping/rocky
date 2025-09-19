@@ -4,6 +4,7 @@
  * MIT License
  */
 #pragma once
+#include <rocky/vsg/Common.h>
 #include <rocky/Context.h>
 #include <rocky/Callbacks.h>
 #include <rocky/Rendering.h>

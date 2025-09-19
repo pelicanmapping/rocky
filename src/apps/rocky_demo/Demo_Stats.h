@@ -12,7 +12,6 @@
 #include <rocky/vsg/Application.h>
 #include <rocky/vsg/terrain/TerrainEngine.h>
 #include <rocky/Memory.h>
-#include <vsg/core/Allocator.h>
 #include "helpers.h"
 
 using namespace ROCKY_NAMESPACE;

@@ -7,10 +7,6 @@
 #include <rocky/ecs/Line.h>
 #include <rocky/vsg/ecs/ECSNode.h>
 
-#include <vsg/state/BindDescriptorSet.h>
-#include <vsg/nodes/Geometry.h>
-#include <vsg/commands/DrawIndexed.h>
-
 namespace ROCKY_NAMESPACE
 {
     /**

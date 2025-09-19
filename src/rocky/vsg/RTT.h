@@ -1,13 +1,10 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
 #include <rocky/vsg/Common.h>
-#include <vsg/app/RenderGraph.h>
-#include <vsg/state/ImageInfo.h>
-#include <vsg/vk/Context.h>
 
 namespace ROCKY_NAMESPACE
 {

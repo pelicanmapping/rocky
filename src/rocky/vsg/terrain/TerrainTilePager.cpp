@@ -6,6 +6,9 @@
 #include "TerrainTilePager.h"
 #include "TerrainEngine.h"
 #include "TerrainSettings.h"
+#include "TerrainTileNode.h"
+#include "TerrainTileHost.h"
+#include "SurfaceNode.h"
 #include "../VSGUtils.h"
 #include <rocky/TerrainTileModelFactory.h>
 

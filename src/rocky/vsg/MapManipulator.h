@@ -1,23 +1,14 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
 
 #include <rocky/vsg/VSGContext.h>
-
 #include <rocky/GeoPoint.h>
 #include <rocky/Math.h>
 #include <rocky/Viewpoint.h>
-
-#include <vsg/core/Inherit.h>
-#include <vsg/core/Visitor.h>
-#include <vsg/app/Camera.h>
-#include <vsg/ui/KeyEvent.h>
-#include <vsg/ui/UIEvent.h>
-#include <vsg/ui/PointerEvent.h>
-
 #include <optional>
 #include <vector>
 

@@ -6,7 +6,6 @@
 #pragma once
 #include <rocky/ecs/Label.h>
 #include <rocky/vsg/ecs/ECSNode.h>
-#include <vsg/text/Font.h>
 #include <map>
 
 namespace ROCKY_NAMESPACE

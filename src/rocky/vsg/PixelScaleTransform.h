@@ -1,15 +1,11 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
 #include <rocky/vsg/Common.h>
 #include <rocky/Math.h>
-
-#include <vsg/vk/State.h>
-#include <vsg/nodes/Transform.h>
-#include <vsg/state/ViewDependentState.h>
 
 namespace ROCKY_NAMESPACE
 {

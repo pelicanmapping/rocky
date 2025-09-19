@@ -7,6 +7,7 @@
 #include "VSGUtils.h"
 #include <rocky/Image.h>
 #include <rocky/URI.h>
+#include <rocky/GeoExtent.h>
 #include <filesystem>
 
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -269,7 +270,7 @@ VSGContextImpl::VSGContextImpl(vsg::ref_ptr<vsg::Viewer> viewer) :
     rocky::ContextImpl(),
     _viewer(viewer)
 {
-    ROCKY_HARD_ASSERT(viewer);
+    if (!_viewer) _viewer = vsg::Viewer::create();
     int argc = 0;
     const char* argv[1] = { "rocky" };
     ctor(argc, (char**)argv);
@@ -279,7 +280,7 @@ VSGContextImpl::VSGContextImpl(vsg::ref_ptr<vsg::Viewer> viewer, int& argc, char
     rocky::ContextImpl(),
     _viewer(viewer)
 {
-    ROCKY_HARD_ASSERT(viewer);
+    if (!_viewer) _viewer = vsg::Viewer::create();
     ctor(argc, argv);
 }
 
