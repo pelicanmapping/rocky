@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "DisplayManager.h"
@@ -224,15 +224,6 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
     {
         _app->mapNode->terrainSettings().supportMultiThreadedRecord = true;
     }
-
-    #if 0
-    // install a manipulator for the new view:
-    if (!user_provied_view && _app)
-    {
-        auto manip = MapManipulator::create(_app->mapNode, window, camera, vsgcontext);
-        setManipulatorForView(manip, view);
-    }
-    #endif
 
     // install the debug layer if requested
     if (_app && _app->_debuglayer && !_debugCallbackInstalled)
