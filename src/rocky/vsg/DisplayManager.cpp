@@ -193,7 +193,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
     auto commandgraph = vsg::CommandGraph::create(window);
     _commandGraphByWindow[window] = commandgraph;
 
-    bool user_provied_view = view.valid();
+    bool user_provided_view = view.valid();
     vsg::ref_ptr<vsg::Camera> camera;
 
     if (!view && _app && _app->mapNode && _app->mainScene)
@@ -212,7 +212,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
         view->setValue("rocky_auto_created", true);
     }
 
-    addViewToWindow(view, window);
+    addViewToWindow(view, window, !user_provided_view);
 
     // add the new window to our viewer
     vsgcontext->viewer()->addWindow(window);
@@ -225,12 +225,14 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
         _app->mapNode->terrainSettings().supportMultiThreadedRecord = true;
     }
 
+    #if 0
     // install a manipulator for the new view:
     if (!user_provied_view && _app)
     {
         auto manip = MapManipulator::create(_app->mapNode, window, camera, vsgcontext);
         setManipulatorForView(manip, view);
     }
+    #endif
 
     // install the debug layer if requested
     if (_app && _app->_debuglayer && !_debugCallbackInstalled)
