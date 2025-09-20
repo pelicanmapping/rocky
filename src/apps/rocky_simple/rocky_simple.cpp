@@ -80,10 +80,9 @@ int custom_window(int argc, char** argv)
         R * nearFarRatio,
         R * 10.0);
 
-    auto lookAt = vsg::LookAt::create(
-        vsg::dvec3(R * 10.0, 0.0, 0.0),
-        vsg::dvec3(0.0, 0.0, 0.0),
-        vsg::dvec3(0.0, 0.0, 1.0));
+    auto target = rocky::GeoPoint(rocky::SRS::WGS84, 0.1276, 51.507, 0.0).transform(rocky::SRS::ECEF);
+    auto eye = glm::normalize(target) * R * 2.0;
+    auto lookAt = vsg::LookAt::create(rocky::to_vsg(eye), rocky::to_vsg(target), vsg::dvec3(0, 0, 1));
     
     auto camera = vsg::Camera::create(
         perspective,

@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "DisplayManager.h"
@@ -193,7 +193,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
     auto commandgraph = vsg::CommandGraph::create(window);
     _commandGraphByWindow[window] = commandgraph;
 
-    bool user_provied_view = view.valid();
+    bool user_provided_view = view.valid();
     vsg::ref_ptr<vsg::Camera> camera;
 
     if (!view && _app && _app->mapNode && _app->mainScene)
@@ -212,7 +212,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
         view->setValue("rocky_auto_created", true);
     }
 
-    addViewToWindow(view, window);
+    addViewToWindow(view, window, !user_provided_view);
 
     // add the new window to our viewer
     vsgcontext->viewer()->addWindow(window);
@@ -223,13 +223,6 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
     if (_app && vsgcontext->viewer()->windows().size() > 1)
     {
         _app->mapNode->terrainSettings().supportMultiThreadedRecord = true;
-    }
-
-    // install a manipulator for the new view:
-    if (!user_provied_view && _app)
-    {
-        auto manip = MapManipulator::create(_app->mapNode, window, camera, vsgcontext);
-        setManipulatorForView(manip, view);
     }
 
     // install the debug layer if requested

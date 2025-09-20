@@ -73,7 +73,7 @@ namespace ROCKY_NAMESPACE
         //! @param view New view to add
         //! @param window Window to which to add the new view
         //! @param manipulator Whether to add a MapManipulator to the view (default: true)
-        void addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::Window> window, bool addManipulator =true);
+        void addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::Window> window, bool addManipulator);
 
         //! Removes a view from its host window.
         //! @param view View to remove from its window
