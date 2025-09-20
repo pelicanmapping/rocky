@@ -1102,19 +1102,99 @@ MapManipulator::apply(vsg::ScrollWheelEvent& scrollEvent)
 void
 MapManipulator::apply(vsg::TouchDownEvent& touchDown)
 {
-    NOT_YET_IMPLEMENTED("");
+    _previousTouches[touchDown.id] = &touchDown;
+    switch (touchDown.id)
+    {
+    case 0: {
+        if (_previousTouches.size() == 1)
+        {
+            vsg::ref_ptr<vsg::Window> w = touchDown.window;
+            vsg::ref_ptr<vsg::ButtonPressEvent> evt = vsg::ButtonPressEvent::create(
+                w,
+                touchDown.time,
+                touchDown.x,
+                touchDown.y,
+                vsg::BUTTON_MASK_1, //touchMappedToButtonMask,
+                touchDown.id);
+            apply(*evt.get());
+        }
+        break;
+    }
+    case 1: {
+        _prevZoomTouchDistance = 0.0;
+        if (touchDown.id == 0 && _previousTouches.count(1))
+        {
+            const auto& prevTouch1 = _previousTouches[1];
+            auto a = std::abs(static_cast<double>(prevTouch1->x) - touchDown.x);
+            auto b = std::abs(static_cast<double>(prevTouch1->y) - touchDown.y);
+            if (a > 0 || b > 0)
+                _prevZoomTouchDistance = sqrt(a * a + b * b);
+        }
+        break;
+    }
+    }
 }
 
 void
 MapManipulator::apply(vsg::TouchUpEvent& touchUp)
 {
-    NOT_YET_IMPLEMENTED("");
+    if (touchUp.id == 0 && _previousTouches.size() == 1)
+    {
+        vsg::ref_ptr<vsg::Window> w = touchUp.window;
+        vsg::ref_ptr<vsg::ButtonReleaseEvent> evt = vsg::ButtonReleaseEvent::create(
+            w,
+            touchUp.time,
+            touchUp.x,
+            touchUp.y,
+            vsg::BUTTON_MASK_1, //touchMappedToButtonMask,
+            touchUp.id);
+        apply(*evt.get());
+    }
+    _previousTouches.erase(touchUp.id);
 }
 
 void
 MapManipulator::apply(vsg::TouchMoveEvent& touchMove)
 {
-    NOT_YET_IMPLEMENTED("");
+    vsg::ref_ptr<vsg::Window> w = touchMove.window;
+    switch (_previousTouches.size())
+    {
+    case 1: {
+        // Rotate
+        vsg::ref_ptr<vsg::MoveEvent> evt = vsg::MoveEvent::create(
+            w,
+            touchMove.time,
+            touchMove.x,
+            touchMove.y,
+            vsg::BUTTON_MASK_1); //touchMappedToButtonMask,
+        apply(*evt.get());
+        break;
+    }
+    case 2: {
+        if (touchMove.id == 0 && _previousTouches.count(0))
+        {
+            // Zoom
+            const auto& prevTouch1 = _previousTouches[1];
+            auto a = std::abs(static_cast<double>(prevTouch1->x) - touchMove.x);
+            auto b = std::abs(static_cast<double>(prevTouch1->y) - touchMove.y);
+            if (a > 0 || b > 0)
+            {
+                auto touchZoomDistance = sqrt(a * a + b * b);
+                if (_prevZoomTouchDistance && touchZoomDistance > 0)
+                {
+                    auto zoomLevel = touchZoomDistance / _prevZoomTouchDistance;
+                    if (zoomLevel < 1)
+                        zoomLevel = -(1 / zoomLevel);
+                    zoomLevel *= 0.1;
+                    zoom(zoomLevel, zoomLevel);
+                }
+                _prevZoomTouchDistance = touchZoomDistance;
+            }
+        }
+        break;
+    }
+    }
+    _previousTouches[touchMove.id] = &touchMove;
 }
 
 void

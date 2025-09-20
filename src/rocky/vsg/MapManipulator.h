@@ -522,6 +522,8 @@ namespace ROCKY_NAMESPACE
         option<vsg::ButtonPressEvent> _buttonPress;
         option<vsg::KeyPressEvent> _keyPress;
         vsg::time_point _previousTime;
+        std::map<uint32_t, vsg::ref_ptr<vsg::TouchEvent>> _previousTouches;
+        double _prevZoomTouchDistance = 0.0;
 
         bool _thrown;
         vsg::dvec2 _throwDelta;
