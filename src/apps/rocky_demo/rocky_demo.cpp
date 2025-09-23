@@ -70,8 +70,8 @@ std::vector<Demo> demos =
     Demo{ "Basics", {},
     {
         Demo{ "Line - absolute", Demo_Line_Absolute },
-        Demo{ "Line - reference", Demo_Line_ReferencePoint },
         Demo{ "Line - relative", Demo_Line_Relative },
+        Demo{ "Line - shared", Demo_Line_Shared },
         Demo{ "Mesh - absolute", Demo_Mesh_Absolute },
         Demo{ "Mesh - relative", Demo_Mesh_Relative },
         Demo{ "Icon", Demo_Icon },

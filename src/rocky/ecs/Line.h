@@ -5,7 +5,7 @@
  */
 #pragma once
 #include <rocky/Color.h>
-#include <rocky/GeoPoint.h>
+#include <rocky/SRS.h>
 #include <rocky/ecs/Component.h>
 #include <vector>
 

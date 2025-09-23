@@ -5,6 +5,8 @@
  */
 #pragma once
 #include "helpers.h"
+#include <random>
+
 using namespace ROCKY_NAMESPACE;
 
 auto Demo_Line_Absolute = [](Application& app)
@@ -61,48 +63,6 @@ auto Demo_Line_Absolute = [](Application& app)
 
         if (ImGuiLTable::SliderInt("Stipple factor", &line.style.stipple_factor, 1, 4))
             line.dirty();
-
-        ImGuiLTable::End();
-    }
-};
-
-auto Demo_Line_ReferencePoint = [](Application& app)
-{
-    static entt::entity entity = entt::null;
-    static bool visible = true;
-
-    if (entity == entt::null)
-    {
-        auto [lock, registry] = app.registry.write();
-
-        // Create a new entity to host our line.
-        entity = registry.create();
-
-        // Attach a new Line component to the entity:
-        auto& line = registry.emplace<Line>(entity);
-
-        // Setting this lets us express our points in long/lat.
-        line.srs = SRS::WGS84;
-        for (double lon = -180; lon <= 0.0; lon += 0.25)
-        {
-            line.points.emplace_back(lon, 10, 0.0);
-        }
-
-        // Create a style that we can change dynamically:
-        line.style.color = Color::Fuchsia;
-        line.style.width = 3.0f;
-
-        app.vsgcontext->requestFrame();
-    }
-
-    if (ImGuiLTable::Begin("refpoint linestring"))
-    {
-        static bool visible = true;
-        app.registry.read([&](entt::registry& r)
-        {
-            if (ImGuiLTable::Checkbox("Show", &visible))
-                setVisible(r, entity, visible);
-        });
 
         ImGuiLTable::End();
     }
@@ -167,6 +127,120 @@ auto Demo_Line_Relative = [](Application& app)
 
         if (ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2500000.0, "%.1lf"))
             transform.dirty();
+
+        ImGuiLTable::End();
+    }
+};
+
+auto Demo_Line_Shared = [](Application& app)
+{
+    static std::shared_ptr<Line> shared_line1;
+    static std::shared_ptr<Line> shared_line2;
+    static std::shared_ptr<Line> shared_line3;
+    static std::vector<entt::entity> entities;
+    static bool visible = true;
+    static bool regenerate = false;
+
+    if (regenerate)
+    {
+        auto [lock, registry] = app.registry.write();
+        registry.destroy(entities.begin(), entities.end());
+        entities.clear();
+        regenerate = false;
+    }
+
+    if (entities.empty())
+    {
+        auto [lock, registry] = app.registry.write();
+
+        const double size = 100000;
+
+        // define the line:
+        Line line1; // cyna square
+        line1.style.color = Color::Cyan;
+        line1.style.width = 2.0f;
+        line1.points = {
+            glm::dvec3{-size, -size, 0.0},
+            glm::dvec3{ size, -size, 0.0},
+            glm::dvec3{ size,  size, 0.0},
+            glm::dvec3{-size,  size, 0.0},
+            glm::dvec3{-size, -size, 0.0} };
+        line1.topology = Line::Topology::Strip;
+        shared_line1 = std::make_shared<Line>(std::move(line1));
+
+        Line line2; // purple triangle
+        line2.style.color = Color::Purple;
+        line2.style.width = 5.0f;
+        line2.points = {
+            glm::dvec3{0.0,  size, 0.0},
+            glm::dvec3{ size, -size, 0.0},
+            glm::dvec3{-size, -size, 0.0},
+            glm::dvec3{0.0,  size, 0.0} };
+        shared_line2 = std::make_shared<Line>(std::move(line2));
+
+        Line line3; // yellow circle
+        line3.style.color = Color::Yellow;
+        line3.style.width = 3.0f;
+        const int circle_points = 64;
+        for (int i = 0; i <= circle_points; ++i) {
+            double angle = (double)i / (double)circle_points * glm::two_pi<double>();
+            line3.points.emplace_back(glm::dvec3{ cos(angle) * size, sin(angle) * size, 0.0 });
+        }
+        shared_line3 = std::make_shared<Line>(std::move(line3));
+
+        const unsigned count = 10000;
+        std::mt19937 mt(std::chrono::system_clock::now().time_since_epoch().count());
+        std::uniform_real_distribution<float> rand_unit(0.0, 1.0);
+
+        entities.reserve(count);
+        for (unsigned i = 0; i < count; ++i)
+        {
+            auto e = registry.create();
+            if (i % 3 == 0)
+                registry.emplace<SharedComponent<Line>>(e, shared_line1);
+            else if (i % 3 == 1)
+                registry.emplace<SharedComponent<Line>>(e, shared_line2);
+            else
+                registry.emplace<SharedComponent<Line>>(e, shared_line3);
+
+            double lat = rand_unit(mt) * 170.0 - 85.0;
+            double lon = rand_unit(mt) * 360.0 - 180.0;
+
+            // Add a transform that will place the line on the map
+            auto& transform = registry.emplace<Transform>(e);
+            transform.topocentric = true;
+            transform.position = GeoPoint(SRS::WGS84, lon, lat, 25000.0);
+            transform.radius = size; // for culling
+
+            // Decluttering object, just to prove that it works with SharedComponents:
+            auto& dc = registry.emplace<Declutter>(e);
+            dc.rect = { -10, -10, 10, 10 };
+            dc.priority = i % 3;
+
+            entities.emplace_back(e);
+        }
+
+        app.vsgcontext->requestFrame();
+    }
+
+    ImGui::TextWrapped("Sharing: %d instances share the same Line component, but each has its own Transform.", (int)entities.size());
+
+    if (ImGuiLTable::Begin("instanced linestring"))
+    {
+        auto [lock, registry] = app.registry.read();
+
+        auto& shared = registry.get<SharedComponent<Line>>(entities.front());
+        auto& line = *shared.pointer;
+
+        if (ImGuiLTable::ColorEdit3("Color", (float*)&line.style.color))
+        {
+            shared.dirty();
+        }
+
+        if (ImGuiLTable::Button("Regenerate"))
+        {
+            regenerate = true;
+        }
 
         ImGuiLTable::End();
     }

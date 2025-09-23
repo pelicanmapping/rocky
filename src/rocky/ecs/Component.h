@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky/Common.h>
 #include <entt/entt.hpp>
+#include <memory>
 
 namespace ROCKY_NAMESPACE
 {
@@ -49,6 +50,34 @@ namespace ROCKY_NAMESPACE
                 rhs.revision = 0;
             }
             return *this;
+        }
+    };
+
+    /**
+     * ECS Component that holds a shared pointer to another component type.
+     * This is useful for re-using a single basic component with different
+     * transforms, visibility states, etc.
+     */
+    template<typename T>
+    struct SharedComponent
+    {
+        //! Revision, for synchronizing this component with another
+        int revision = 0;
+
+        //! Shared pointer to the shared component
+        std::shared_ptr<T> pointer;
+
+        //! Construct a shared component. The pointer must be non-null
+        //! at the time of construction and must stay non-null.
+        SharedComponent<T>(std::shared_ptr<T> p) : pointer(p) {
+            ROCKY_HARD_ASSERT(p != nullptr);
+        }
+
+        //! Mark this componenet dirty so the system will re-process it.
+        //! In this case, if you change the underlying T, you should mark
+        //! THIS object dirty, not the shared T.
+        inline void dirty() {
+            ++revision;
         }
     };
 }
