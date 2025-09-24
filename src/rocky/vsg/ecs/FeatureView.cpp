@@ -162,24 +162,24 @@ namespace
                 }
 
                 // Populate the line component based on the topology.
-                if (line.topology == Line::Topology::Strip)
+                if (line.geometry.topology == LineTopology::Strip)
                 {
                     // CHECK THIS
-                    line.points.reserve(line.points.size() + tessellated.size());
-                    line.points.insert(line.points.end(), tessellated.begin(), tessellated.end());
+                    line.geometry.points.reserve(line.geometry.points.size() + tessellated.size());
+                    line.geometry.points.insert(line.geometry.points.end(), tessellated.begin(), tessellated.end());
                 }
 
                 else // Line::Topology::Segments
                 {
                     std::size_t num_points_in_segments = tessellated.size() * 2 - 2;
-                    auto ptr = line.points.size();
-                    line.points.resize(line.points.size() + num_points_in_segments);
+                    auto ptr = line.geometry.points.size();
+                    line.geometry.points.resize(line.geometry.points.size() + num_points_in_segments);
 
                     // convert from a strip to segments
                     for (std::size_t i = 0; i < tessellated.size() - 1; ++i)
                     {
-                        line.points[ptr++] = glm::dvec3(tessellated[i].x, tessellated[i].y, tessellated[i].z);
-                        line.points[ptr++] = glm::dvec3(tessellated[i + 1].x, tessellated[i + 1].y, tessellated[i + 1].z);
+                        line.geometry.points[ptr++] = glm::dvec3(tessellated[i].x, tessellated[i].y, tessellated[i].z);
+                        line.geometry.points[ptr++] = glm::dvec3(tessellated[i + 1].x, tessellated[i + 1].y, tessellated[i + 1].z);
                     }
                 }
 
@@ -363,7 +363,7 @@ FeatureView::Primitives
 FeatureView::generate(const SRS& output_srs)
 {
     Primitives output;
-    output.line.topology = Line::Topology::Segments;
+    output.line.geometry.topology = LineTopology::Segments;
 
     for (auto& feature : features)
     {

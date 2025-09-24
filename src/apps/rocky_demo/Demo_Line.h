@@ -30,7 +30,7 @@ auto Demo_Line_Absolute = [](Application& app)
         for (double lon = -180; lon <= 0.0; lon += 0.25)
         {
             auto world = xform(glm::dvec3(lon, 20.0, 0.0));
-            line.points.emplace_back(world);
+            line.geometry.points.emplace_back(world);
         }
 
         // Create a style that we can change dynamically:
@@ -85,14 +85,15 @@ auto Demo_Line_Relative = [](Application& app)
 
         // Create the line geometry, which will be relative to a transform.
         const double size = 500000;
-        line.points = {
+        line.geometry.points = {
             glm::dvec3{-size, -size, 0.0},
             glm::dvec3{ size, -size, 0.0},
             glm::dvec3{  0.0,  size, 0.0},
             glm::dvec3{-size, -size, 0.0} };
 
         // Make a style with color and line width
-        line.style = LineStyle{ {1,0,0,1}, 4.0f };
+        line.style.color = Color::Red;
+        //.style = LineStyle{ {1,0,0,1}, 4.0f };
         line.writeDepth = true;
 
         // Add a transform that will place the line on the map
@@ -159,19 +160,19 @@ auto Demo_Line_Shared = [](Application& app)
         Line line1; // cyna square
         line1.style.color = Color::Cyan;
         line1.style.width = 2.0f;
-        line1.points = {
+        line1.geometry.points = {
             glm::dvec3{-size, -size, 0.0},
             glm::dvec3{ size, -size, 0.0},
             glm::dvec3{ size,  size, 0.0},
             glm::dvec3{-size,  size, 0.0},
             glm::dvec3{-size, -size, 0.0} };
-        line1.topology = Line::Topology::Strip;
+        line1.geometry.topology = LineTopology::Strip;
         shared_line1 = std::make_shared<Line>(std::move(line1));
 
         Line line2; // purple triangle
         line2.style.color = Color::Purple;
         line2.style.width = 5.0f;
-        line2.points = {
+        line2.geometry.points = {
             glm::dvec3{0.0,  size, 0.0},
             glm::dvec3{ size, -size, 0.0},
             glm::dvec3{-size, -size, 0.0},
@@ -184,7 +185,7 @@ auto Demo_Line_Shared = [](Application& app)
         const int circle_points = 64;
         for (int i = 0; i <= circle_points; ++i) {
             double angle = (double)i / (double)circle_points * glm::two_pi<double>();
-            line3.points.emplace_back(glm::dvec3{ cos(angle) * size, sin(angle) * size, 0.0 });
+            line3.geometry.points.emplace_back(glm::dvec3{ cos(angle) * size, sin(angle) * size, 0.0 });
         }
         shared_line3 = std::make_shared<Line>(std::move(line3));
 

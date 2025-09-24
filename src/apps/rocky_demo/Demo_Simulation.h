@@ -143,7 +143,7 @@ namespace
             // Since the drop line is relative to the platfrom, we have to enable
             // transform.localTangentPlane = true (see above)
             auto& drop_line = registry.emplace<Line>(entity);
-            drop_line.points = { {0.0, 0.0, 0.0}, {0.0, 0.0, -1e6} };
+            drop_line.geometry.points = { {0.0, 0.0, 0.0}, {0.0, 0.0, -1e6} };
             drop_line.style.width = 1.5f;
             drop_line.style.color = Color{ 0.4f, 0.4f, 0.4f, 1.0f };
 

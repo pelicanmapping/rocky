@@ -37,15 +37,15 @@ namespace ROCKY_NAMESPACE
     /**
     * Renders a line or linestring geometry.
     */
-    class ROCKY_EXPORT LineGeometry : public vsg::Inherit<vsg::Geometry, LineGeometry>
+    class ROCKY_EXPORT LineDrawable : public vsg::Inherit<vsg::Geometry, LineDrawable>
     {
     public:
         //! Construct a new line string geometry node
-        LineGeometry();
+        LineDrawable();
 
         //! Populate the geometry arrays
         template<typename VEC3_T>
-        inline void set(const std::vector<VEC3_T>& verts, Line::Topology topology, std::size_t capacity);
+        inline void set(const std::vector<VEC3_T>& verts, LineTopology topology, std::size_t capacity);
 
         //! The first vertex in the line string to render
         void setFirst(unsigned value);
@@ -95,7 +95,7 @@ namespace ROCKY_NAMESPACE
 
 
     template<typename VEC3_T>
-    void LineGeometry::set(const std::vector<VEC3_T>& t_verts, Line::Topology topology, std::size_t capacity)
+    void LineDrawable::set(const std::vector<VEC3_T>& t_verts, LineTopology topology, std::size_t capacity)
     {
         const vsg::vec4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
@@ -107,7 +107,7 @@ namespace ROCKY_NAMESPACE
         ROCKY_HARD_ASSERT(capacity > 0);
 
         std::size_t indices_to_allocate =
-            topology == Line::Topology::Strip ? (capacity - 1) * 6 :
+            topology == LineTopology::Strip ? (capacity - 1) * 6 :
             (capacity / 2) * 6; // Segments
 
         ROCKY_SOFT_ASSERT_AND_RETURN(_current == nullptr || capacity <= _capacity, void(),
@@ -139,7 +139,7 @@ namespace ROCKY_NAMESPACE
         auto* indicies = (_indices->data());
         int i_ptr = 0;
 
-        if (topology == Line::Topology::Strip)
+        if (topology == LineTopology::Strip)
         {
             for (unsigned i = 0; i < verts.size(); ++i)
             {
@@ -166,7 +166,7 @@ namespace ROCKY_NAMESPACE
                 }
             }
         }
-        else // topology == Topology::Segments
+        else // topology == LineTopology::Segments
         {
             ROCKY_SOFT_ASSERT_AND_RETURN((verts.size() & 0x1) == 0, void(), "Lines with 'Segment' topology must have an even number of vertices");
 

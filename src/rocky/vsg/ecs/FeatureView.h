@@ -46,7 +46,7 @@ namespace ROCKY_NAMESPACE
             Mesh mesh;
 
             inline bool empty() const {
-                return line.points.empty() && mesh.triangles.empty();
+                return line.geometry.points.empty() && mesh.triangles.empty();
             }
 
             //! Creates components for the primitive data and moves them
@@ -58,7 +58,7 @@ namespace ROCKY_NAMESPACE
 
                 auto e = r.create();
 
-                if (!line.points.empty())
+                if (!line.geometry.points.empty())
                 {
                     r.emplace<Line>(e, std::move(line));
                 }

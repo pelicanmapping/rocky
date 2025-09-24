@@ -137,7 +137,7 @@ namespace
             {
                 auto& c = track.chunks.emplace_back(std::move(take_from_freelist()));
                 Line& line = registry.get<Line>(c.attach_point);
-                line.points.clear(), c.numPoints = 0;
+                line.geometry.points.clear(), c.numPoints = 0;
                 line.dirty();
             }
             else
@@ -148,7 +148,7 @@ namespace
                 // Each chunk get a line primitive.
                 auto& line = registry.emplace<Line>(c.attach_point);
                 line.style = track.style;
-                line.points.reserve(track_chunk_size);
+                line.geometry.points.reserve(track_chunk_size);
 
                 // Tie track visibility to host visibility:
                 updateVisibility(registry, host_entity, c);
@@ -158,7 +158,7 @@ namespace
             auto& new_chunk = track.chunks.back();
 
             Line& line = registry.get<Line>(new_chunk.attach_point);
-            line.srs = transform.position.srs;
+            line.geometry.srs = transform.position.srs;
 
             // If this is not the first chunk, connect it to the previous one
             if (track.chunks.size() > 1)
@@ -167,7 +167,7 @@ namespace
                 auto& prev_line = registry.get<Line>(prev_chunk->attach_point);
 
                 Line& line = registry.get<Line>(new_chunk.attach_point);
-                line.points.emplace_back(prev_line.points.back());
+                line.geometry.points.emplace_back(prev_line.geometry.points.back());
                 line.dirty();
                 new_chunk.numPoints++;
             }          
@@ -180,11 +180,11 @@ namespace
         {
             auto& line = registry.get<Line>(chunk.attach_point);
 
-            if (line.points.size() > 0 && line.points.back() == (glm::dvec3)(transform.position))
+            if (line.geometry.points.size() > 0 && line.geometry.points.back() == (glm::dvec3)(transform.position))
                 return;
 
             // append the new position:
-            line.points.emplace_back((glm::dvec3)transform.position);
+            line.geometry.points.emplace_back((glm::dvec3)transform.position);
             line.dirty();
             chunk.numPoints++;
         }

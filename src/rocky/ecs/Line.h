@@ -8,6 +8,8 @@
 #include <rocky/SRS.h>
 #include <rocky/ecs/Component.h>
 #include <vector>
+#include <variant>
+#include <functional>
 
 namespace ROCKY_NAMESPACE
 {
@@ -24,35 +26,50 @@ namespace ROCKY_NAMESPACE
         float depth_offset = 0.0f; // meters
     };
 
-    /**
-    * Line string component - holds one or more separate line string geometries
-    * sharing the same style.
-    */
-    class ROCKY_EXPORT Line : public BaseComponent
+    enum struct LineTopology
     {
-    public:
-        //! Dynamic line styling
-        LineStyle style;
+        Strip, // a single line strip
+        Segments // a series of disconnected line segments
+    };
 
-        //! Whether lines should write to the depth buffer
-        bool writeDepth = true;
-
-        //! SRS of the points in the points vector (when set).
-        SRS srs;
-
+    struct LineGeometry
+    {
         //! Line configuration
         enum class Topology
         {
             Strip, // a single line strip
             Segments // a series of disconnected line segments
         };
-        Topology topology = Topology::Strip;
+        LineTopology topology = LineTopology::Strip;
+
+        //! SRS of the points in the points vector (when set)
+        SRS srs;
 
         //! Points can be absolute (in the world SRS), relative to a topocentric
         //! coordinate system (if a topocentric Transform is in use), or in the SRS of the 
         //! referencePoint if that is in use.
         std::vector<glm::dvec3> points;
 
+    private:
+        std::size_t _capacity = 0;
+
+        friend class Line;
+        friend class LineSystemNode;
+    };
+
+    /**
+    * Line string component - holds one or more separate line string geometries
+    * sharing the same style.
+    */
+    class ROCKY_EXPORT Line : public AttachableComponent
+    {
+    public:
+        LineStyle style;
+        LineGeometry geometry;
+
+        //! Whether lines should write to the depth buffer
+        bool writeDepth = true;
+        
         //! Marks the line dirty
         inline void dirty() override;
 
@@ -69,16 +86,10 @@ namespace ROCKY_NAMESPACE
         //! Call this to reset the underlying data if you plan to re-use the line
         //! later for a different set of points.
         void recycle(entt::registry&);
-
-    private:
-        // track the capacity separately from the vector since the vector's copy constructor
-        // will NOT necessary copy the capacity.
-        std::size_t _capacity = 0;
-        friend class LineSystemNode;
     };
 
     inline void Line::dirty() {
-        _capacity = points.capacity();
+        geometry._capacity = geometry.points.capacity();
         ++revision;
     }
 }

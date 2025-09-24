@@ -160,8 +160,8 @@ LineSystemNode::createOrUpdateNode(const Line& line, detail::BuildInfo& data, VS
     }
     else
     {
-        auto geometry = util::find<LineGeometry>(data.existing_node);
-        if (geometry && geometry->_capacity < line._capacity)
+        auto drawable = util::find<LineDrawable>(data.existing_node);
+        if (drawable && drawable->_capacity < line.geometry._capacity)
         {
             reallocate = true;
         }
@@ -181,15 +181,16 @@ LineSystemNode::createOrUpdateNode(const Line& line, detail::BuildInfo& data, VS
         auto stategroup = vsg::StateGroup::create();
         stategroup->stateCommands.push_back(bindCommand);
 
-        vsg::ref_ptr<LineGeometry> geometry;
+        vsg::ref_ptr<LineDrawable> drawable;
         vsg::ref_ptr<vsg::Node> geometry_root;
         vsg::dmat4 localizer_matrix;
+        auto& geom = line.geometry;
 
-        if (line.srs.valid())
+        if (geom.srs.valid())
         {
-            GeoPoint anchor(line.srs, 0, 0);
-            if (!line.points.empty())
-                anchor = GeoPoint(line.srs, (line.points.front() + line.points.back()) * 0.5);
+            GeoPoint anchor(geom.srs, 0, 0);
+            if (!geom.points.empty())
+                anchor = GeoPoint(geom.srs, (geom.points.front() + geom.points.back()) * 0.5);
 
             SRSOperation xform;
             glm::dvec3 offset;
@@ -197,32 +198,32 @@ LineSystemNode::createOrUpdateNode(const Line& line, detail::BuildInfo& data, VS
             ROCKY_SOFT_ASSERT_AND_RETURN(ok, void());
 
             // make a copy that we will use to transform and offset:
-            geometry = LineGeometry::create();
-            if (!line.points.empty())
+            drawable = LineDrawable::create();
+            if (!geom.points.empty())
             {
-                std::vector<glm::dvec3> copy(line.points);
+                std::vector<glm::dvec3> copy(geom.points);
                 xform.transformRange(copy.begin(), copy.end());
                 for (auto& point : copy)
                     point -= offset;
-                geometry->set(copy, line.topology, line._capacity);
+                drawable->set(copy, geom.topology, geom._capacity);
             }
             else
             {
-                geometry->set(line.points, line.topology, line._capacity);
+                drawable->set(geom.points, geom.topology, geom._capacity);
             }
 
 
             localizer_matrix = vsg::translate(to_vsg(offset));
             auto localizer = vsg::MatrixTransform::create(localizer_matrix);
-            localizer->addChild(geometry);
+            localizer->addChild(drawable);
             geometry_root = localizer;
         }
         else
         {
             // no reference point -- push raw geometry
-            geometry = LineGeometry::create();
-            geometry->set(line.points, line.topology, line._capacity);
-            geometry_root = geometry;
+            drawable = LineDrawable::create();
+            drawable->set(geom.points, geom.topology, geom._capacity);
+            geometry_root = drawable;
         }
 
         auto cull = vsg::CullNode::create();
@@ -237,7 +238,7 @@ LineSystemNode::createOrUpdateNode(const Line& line, detail::BuildInfo& data, VS
         }
 
         // hand-calculate the bounding sphere
-        geometry->calcBound(cull->bound, localizer_matrix);
+        drawable->calcBound(cull->bound, localizer_matrix);
 
         data.new_node = cull;
 
@@ -255,15 +256,17 @@ LineSystemNode::createOrUpdateNode(const Line& line, detail::BuildInfo& data, VS
         }
 
         // points:
-        auto* geometry = util::find<LineGeometry>(data.existing_node);
-        if (geometry)
+        auto* drawable = util::find<LineDrawable>(data.existing_node);
+        if (drawable)
         {
             vsg::dsphere bound;
             vsg::dmat4 localizer_matrix;
 
-            if (line.srs.valid() && line.points.size() > 0)
+            auto& geom = line.geometry;
+
+            if (geom.srs.valid() && geom.points.size() > 0)
             {
-                GeoPoint anchor(line.srs, (line.points.front() + line.points.back()) * 0.5);
+                GeoPoint anchor(geom.srs, (geom.points.front() + geom.points.back()) * 0.5);
 
                 SRSOperation xform;
                 glm::dvec3 offset;
@@ -271,12 +274,12 @@ LineSystemNode::createOrUpdateNode(const Line& line, detail::BuildInfo& data, VS
                 ROCKY_SOFT_ASSERT_AND_RETURN(ok, void());
 
                 // make a copy that we will use to transform and offset:
-                std::vector<glm::dvec3> copy(line.points);
+                std::vector<glm::dvec3> copy(geom.points);
                 xform.transformRange(copy.begin(), copy.end());
                 for (auto& point : copy)
                     point -= offset;
 
-                geometry->set(copy, line.topology, line._capacity);
+                drawable->set(copy, geom.topology, geom._capacity);
 
                 auto mt = util::find<vsg::MatrixTransform>(data.existing_node);
                 mt->matrix = vsg::translate(to_vsg(offset));
@@ -285,12 +288,12 @@ LineSystemNode::createOrUpdateNode(const Line& line, detail::BuildInfo& data, VS
             else
             {
                 // no reference point -- push raw geometry
-                geometry->set(line.points, line.topology, line._capacity);
+                drawable->set(geom.points, geom.topology, geom._capacity);
             }
 
             // hand-calculate the bounding sphere
             auto cull = util::find<vsg::CullNode>(data.existing_node);
-            geometry->calcBound(cull->bound, localizer_matrix);
+            drawable->calcBound(cull->bound, localizer_matrix);
 
             uploadPoints = true;
         }
@@ -309,13 +312,13 @@ LineSystemNode::createOrUpdateNode(const Line& line, detail::BuildInfo& data, VS
 
     if (uploadPoints)
     {
-        auto geometry = util::find<LineGeometry>(data.new_node ? data.new_node : data.existing_node);
-        if (geometry)
+        auto drawable = util::find<LineDrawable>(data.new_node ? data.new_node : data.existing_node);
+        if (drawable)
         {
-            if (geometry->_current && geometry->indices)
+            if (drawable->_current && drawable->indices)
             {
-                vsgcontext->upload(geometry->arrays);
-                vsgcontext->upload(vsg::BufferInfoList{ geometry->indices });
+                vsgcontext->upload(drawable->arrays);
+                vsgcontext->upload(vsg::BufferInfoList{ drawable->indices });
             }
         }
     }
@@ -378,7 +381,7 @@ BindLineDescriptors::init(vsg::ref_ptr<vsg::PipelineLayout> layout)
 }
 
 
-LineGeometry::LineGeometry()
+LineDrawable::LineDrawable()
 {
     _drawCommand = vsg::DrawIndexed::create(
         0, // index count
@@ -392,19 +395,19 @@ LineGeometry::LineGeometry()
 }
 
 void
-LineGeometry::setFirst(unsigned value)
+LineDrawable::setFirst(unsigned value)
 {
     _drawCommand->firstIndex = value * 4;
 }
 
 void
-LineGeometry::setCount(unsigned value)
+LineDrawable::setCount(unsigned value)
 {
     _drawCommand->indexCount = value * 6;
 }
 
 void
-LineGeometry::calcBound(vsg::dsphere& output, const vsg::dmat4& matrix) const
+LineDrawable::calcBound(vsg::dsphere& output, const vsg::dmat4& matrix) const
 {
     int first = _drawCommand->firstIndex / 4;
     int count = _drawCommand->indexCount / 6;
@@ -423,13 +426,13 @@ Line::recycle(entt::registry& registry)
     auto& renderable = registry.get<detail::Renderable>(attach_point);
     if (renderable.node)
     {
-        auto geometry = util::find<LineGeometry>(renderable.node);
+        auto geometry = util::find<LineDrawable>(renderable.node);
         if (geometry)
         {
             geometry->setCount(0);
         }
     }
 
-    points.clear();
+    geometry.points.clear();
     dirty();
 }

@@ -30,7 +30,7 @@ namespace ROCKY_NAMESPACE
     /**
     * Text label component
     */
-    struct Label : public BaseComponent
+    struct Label : public AttachableComponent
     {
         std::string text;
         LabelStyle style;

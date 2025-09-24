@@ -88,9 +88,9 @@ auto Demo_Draw = [](Application& app)
                 line.style.color = Color::Yellow;
                 line.style.width = 3;
                 line.style.depth_offset = 1000;
-                line.topology = Line::Topology::Strip;
-                line.srs = SRS::ECEF;
-                line.points.reserve(4);
+                line.geometry.topology = LineTopology::Strip;
+                line.geometry.srs = SRS::ECEF;
+                line.geometry.points.reserve(4);
             });
 
         auto handler = MapEventHandler::create(app);
@@ -105,8 +105,8 @@ auto Demo_Draw = [](Application& app)
                     {
                         auto& line = r.get<Line>(entity);
                         if (!drawing)
-                            line.points = { p };
-                        line.points.emplace_back(p);
+                            line.geometry.points = { p };
+                        line.geometry.points.emplace_back(p);
                         line.dirty();
                     });
                 drawing = true;
@@ -123,7 +123,7 @@ auto Demo_Draw = [](Application& app)
                     app.registry.read([&](entt::registry& r)
                         {
                             auto& line = r.get<Line>(entity);
-                            line.points.back() = p;
+                            line.geometry.points.back() = p;
                             line.dirty();
                         });
                 }
@@ -140,7 +140,7 @@ auto Demo_Draw = [](Application& app)
                     app.registry.read([&](entt::registry& r)
                         {
                             auto& line = r.get<Line>(entity);
-                            line.points.emplace_back(p);
+                            line.geometry.points.emplace_back(p);
                             line.dirty();
                         });
                 }
@@ -159,7 +159,7 @@ auto Demo_Draw = [](Application& app)
         app.registry.read([&](entt::registry& r)
             {
                 auto& line = r.get<Line>(entity);
-                line.points.clear();
+                line.geometry.points.clear();
                 line.dirty();
             });
 

@@ -10,44 +10,55 @@
 
 namespace ROCKY_NAMESPACE
 {
-    /**
-    * Superclass for ECS components that support revisionings and an attach point.
-    * The attach point is for internal usage.
-    */
     struct BaseComponent
     {
         //! Revision, for synchronizing this component with another
         int revision = 0;
 
-        //! Attach point for additional components, as needed
-        entt::entity attach_point = entt::null;
-
-        //! bump the revision.
+        //! Bump the revision. It's up to other systems to detect a change
         virtual void dirty()
         {
             ++revision;
         }
 
+        //! Constructors
         BaseComponent() = default;
-
         BaseComponent(const BaseComponent&) = default;
-
         BaseComponent& operator = (const BaseComponent&) = default;
-
-        BaseComponent(BaseComponent&& rhs) noexcept
-        {
+        BaseComponent(BaseComponent&& rhs) noexcept {
             *this = rhs;
         }
-
-        BaseComponent& operator = (BaseComponent&& rhs) noexcept
-        {
-            if (this != &rhs)
-            {
-                attach_point = rhs.attach_point;
-                rhs.attach_point = entt::null;
-
+        BaseComponent& operator = (BaseComponent&& rhs) noexcept {
+            if (this != &rhs) {
                 revision = rhs.revision;
                 rhs.revision = 0;
+            }
+            return *this;
+        }
+    };
+
+
+    /**
+    * Superclass for ECS components that support revisionings and an attach point.
+    * The attach point is for internal usage.
+    */
+    struct AttachableComponent : public BaseComponent
+    {
+        //! Attach point for additional components, as needed
+        entt::entity attach_point = entt::null;
+
+        //! Constructors
+        AttachableComponent() = default;
+        AttachableComponent(const AttachableComponent&) = default;
+        AttachableComponent& operator = (const AttachableComponent&) = default;
+        AttachableComponent(AttachableComponent&& rhs) noexcept {
+            *this = rhs;
+        }
+        AttachableComponent& operator = (AttachableComponent&& rhs) noexcept {
+            if (this != &rhs) {
+                BaseComponent::operator = (rhs);
+                attach_point = rhs.attach_point;
+                rhs.attach_point = entt::null;
             }
             return *this;
         }
@@ -59,11 +70,8 @@ namespace ROCKY_NAMESPACE
      * transforms, visibility states, etc.
      */
     template<typename T>
-    struct SharedComponent
+    struct SharedComponent : public BaseComponent
     {
-        //! Revision, for synchronizing this component with another
-        int revision = 0;
-
         //! Shared pointer to the shared component
         std::shared_ptr<T> pointer;
 
@@ -71,13 +79,6 @@ namespace ROCKY_NAMESPACE
         //! at the time of construction and must stay non-null.
         SharedComponent<T>(std::shared_ptr<T> p) : pointer(p) {
             ROCKY_HARD_ASSERT(p != nullptr);
-        }
-
-        //! Mark this componenet dirty so the system will re-process it.
-        //! In this case, if you change the underlying T, you should mark
-        //! THIS object dirty, not the shared T.
-        inline void dirty() {
-            ++revision;
         }
     };
 }

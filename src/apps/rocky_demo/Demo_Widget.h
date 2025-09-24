@@ -142,7 +142,7 @@ auto Demo_Widget = [](Application& app)
 
         // Drop line from the widget to the ground, for fun.
         auto& dropline = registry.emplace<Line>(entity);
-        dropline.points = { { 0,0,0 }, { 0, 0, -2'500'000.0 } };
+        dropline.geometry.points = { { 0,0,0 }, { 0, 0, -2'500'000.0 } };
         dropline.style.color = Color(0.1f, 0.1f, 0.1f, 1.0f);
         dropline.style.width = 2;
 
