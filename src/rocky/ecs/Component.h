@@ -81,6 +81,8 @@ namespace ROCKY_NAMESPACE
      * ECS Component that holds a shared pointer to another component type.
      * This is useful for re-using a single basic component with different
      * transforms, visibility states, etc.
+     *
+     * WARNING -- EXPIERMENTAL -- API MAY CHANGE OR DISAPPEAR WITHOUT NOTICE!
      */
     template<typename T>
     struct Shareable : public ComponentBase

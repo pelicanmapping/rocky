@@ -125,9 +125,7 @@ namespace ROCKY_NAMESPACE
     /**
      * ECS system that handles LineString components
      */
-    class ROCKY_EXPORT LineSystemNode :
-        public vsg::Inherit<vsg::Compilable, LineSystemNode>,
-        public System
+    class ROCKY_EXPORT LineSystemNode : public vsg::Inherit<detail::SimpleSystemNodeBase, LineSystemNode>
     {
     public:
         //! Construct the system
@@ -158,17 +156,9 @@ namespace ROCKY_NAMESPACE
         std::array<bool, MAX_LINE_STYLES> _styleInUse;
         unsigned _styleLUTSize = 0;
 
-        struct Pipeline
-        {
-            vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> config;
-            vsg::ref_ptr<vsg::Commands> commands;
-        };
-        std::vector<Pipeline> _pipelines;
-
         inline vsg::PipelineLayout* getPipelineLayout(const Line& line) {
             return _pipelines[0].config->layout;
         }
-        bool _pipelinesCompiled = false;
 
         struct RenderLeaf {
             vsg::Node* node = nullptr;
@@ -191,16 +181,6 @@ namespace ROCKY_NAMESPACE
 
         // Called when a line style is found in the dirty list
         void createOrUpdateLineStyle(const LineStyle& style, detail::LineStyleDetail& styleDetail);
-
-        vsg::ref_ptr<vsg::Objects> _toCompile;
-        vsg::BufferInfoList _toUpload;
-
-        inline void upload(vsg::BufferInfo* bi) {
-            _toUpload.emplace_back(bi);
-        }
-        inline void upload(vsg::BufferInfoList& bil) {
-            _toUpload.insert(_toUpload.end(), bil.begin(), bil.end());
-        }
     };
 
 

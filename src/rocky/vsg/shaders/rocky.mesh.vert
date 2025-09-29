@@ -18,7 +18,7 @@ layout(set = 0, binding = 0) readonly buffer MeshStyles {
 } styles;
 
 layout(set = 0, binding = 1) uniform MeshUniforms {
-    int style;
+    int styleIndex;
     int padding[3];
 } mesh;
 
@@ -55,9 +55,22 @@ vec3 apply_depth_offset(in vec3 vertex, in float offset)
 
 void main()
 {
-    vec4 style_color = styles.lut[mesh.style].color;
-    vary.color = style_color.a > 0.0 ? style_color : in_color;
-    float depthOffset = styles.lut[mesh.style].depthOffset;
+    float depthOffset = 0.0;
+
+    if (mesh.styleIndex >= 0)
+    {
+        vary.color = styles.lut[mesh.styleIndex].color;
+        if (vary.color.a == 0.0) vary.color = in_color;
+        vary.textureIndex = styles.lut[mesh.styleIndex].textureIndex;
+        
+        depthOffset = styles.lut[mesh.styleIndex].depthOffset;
+    }
+    else
+    {
+        vary.color = in_color;
+        vary.textureIndex = -1;
+    }
+
 
     uv = in_uv;
 

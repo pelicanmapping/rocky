@@ -69,7 +69,7 @@ namespace
 }
 
 LineSystemNode::LineSystemNode(Registry& registry) :
-    System(registry)
+    Inherit(registry)
 {
     _styleInUse.fill(false);
 }
@@ -253,7 +253,7 @@ LineSystemNode::createOrUpdateLineNode(const Line& line, LineDetail& lineDetail,
         lineDetail.node->stateCommands.emplace_back(bind);
         lineDetail.bind = bind;
 
-        _toCompile->addChild(lineDetail.node);
+        compile(lineDetail.node);
     }
 
     ROCKY_SOFT_ASSERT_AND_RETURN(lineDetail.node, void());
@@ -359,7 +359,7 @@ LineSystemNode::createOrUpdateLineGeometry(const LineGeometry& geom, LineGeometr
 
         geomDetail.node = geomDetail.cullNode;
 
-        _toCompile->addChild(geomDetail.node);
+        compile(geomDetail.node);
     }
 
     else // existing node -- update:
@@ -493,17 +493,6 @@ LineSystemNode::update(VSGContext& vsgcontext)
 {
     bool uploadStyles = false;
 
-    if (!_toCompile)
-    {
-        _toCompile = vsg::Objects::create();
-    }
-
-    if (!_pipelinesCompiled)
-    {
-        _toCompile->addChild(_pipelines[0].commands);
-        _pipelinesCompiled = true;
-    }
-
     _registry.read([&](entt::registry& reg)
         {
             LineStyle::eachDirty(reg, [&](entt::entity e)
@@ -533,21 +522,7 @@ LineSystemNode::update(VSGContext& vsgcontext)
         upload(_styleLUT_buffer->bufferInfoList);
     }
 
-    // compiles:
-    if (_toCompile->children.size() > 0)
-    {
-        vsgcontext->compile(_toCompile);
-        _toCompile->children.clear();
-    }
-
-    // uploads:
-    if (!_toUpload.empty())
-    {
-        vsgcontext->upload(_toUpload);
-        _toUpload.clear();
-    }
-
-    System::update(vsgcontext);
+    Inherit::update(vsgcontext);
 }
 
 LineGeometryNode::LineGeometryNode()

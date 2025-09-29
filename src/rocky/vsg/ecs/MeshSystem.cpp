@@ -16,7 +16,7 @@ using namespace ROCKY_NAMESPACE::detail;
 #define MESH_SET 0
 #define MESH_BINDING_STYLE_LUT 0 // layout(set=0, binding=0) in the shader
 #define MESH_BINDING_UNIFORMS  1 // layout(set=0, binding=1) in the shader
-#define MESH_BINDING_TEXTURE   2 // layout(set=0, binding=2) in the shader
+#define MESH_BINDING_TEXTURES  2 // layout(set=0, binding=2) in the shader
 
 namespace
 {
@@ -59,7 +59,7 @@ namespace
         shaderSet->addDescriptorBinding("mesh", "", MESH_SET, MESH_BINDING_UNIFORMS,
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
 
-        shaderSet->addDescriptorBinding("meshTexture", "", MESH_SET, MESH_BINDING_TEXTURE,
+        shaderSet->addDescriptorBinding("meshTexture", "", MESH_SET, MESH_BINDING_TEXTURES,
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_MESH_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
         // Note: 128 is the maximum size required by the Vulkan spec so don't increase it
@@ -81,29 +81,29 @@ namespace
         (void)r.get_or_emplace<Visibility>(e);
 
         r.get<Mesh>(e).owner = e;
-
-        // do this last, so that everything is set up when dirty is processed
         r.get<Mesh>(e).dirty(r);
     }
 
     void on_construct_MeshStyle(entt::registry& r, entt::entity e)
     {
         r.emplace<MeshStyleDetail>(e);
-
         r.get<MeshStyle>(e).owner = e;
-
-        // do this last, so that everything is set up when dirty is processed
         r.get<MeshStyle>(e).dirty(r);
     }
 
     void on_construct_MeshGeometry(entt::registry& r, entt::entity e)
     {
         r.emplace<MeshGeometryDetail>(e);
-
         r.get<MeshGeometry>(e).owner = e;
-
-        // do this last, so that everything is set up when dirty is processed
         r.get<MeshGeometry>(e).dirty(r);
+    }
+
+    void on_construct_MeshTexture(entt::registry& r, entt::entity e)
+    {
+        auto& tex = r.get<MeshTexture>(e);
+        tex._index = -1; // not yet assigned
+        tex.owner = e;
+        tex.dirty(r);
     }
 
 
@@ -121,11 +121,16 @@ namespace
     {
         r.remove<MeshGeometryDetail>(e);
     }
+
+    void on_destroy_MeshTexture(entt::registry& r, entt::entity e)
+    {
+        // nop - todo: remove it from the texture atlas?
+    }
 }
 
 
 MeshSystemNode::MeshSystemNode(Registry& registry) :
-    System(registry)
+    Inherit(registry)
 {
     _styleInUse.fill(false);
     _textureInUse.fill(false);
@@ -167,7 +172,6 @@ MeshSystemNode::initialize(VSGContext& context)
         c.config->enableArray("in_normal", VK_VERTEX_INPUT_RATE_VERTEX, 12);
         c.config->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
         c.config->enableArray("in_uv", VK_VERTEX_INPUT_RATE_VERTEX, 8);
-        //c.config->enableArray("in_depthoffset", VK_VERTEX_INPUT_RATE_VERTEX, 4);
 
         //if (feature_mask & DYNAMIC_STYLE)
         //{
@@ -230,24 +234,27 @@ MeshSystemNode::initialize(VSGContext& context)
     // Texture arena
     _textureBuffer = vsg::DescriptorImage::create(
         vsg::ImageInfoList{},
-        MESH_BINDING_TEXTURE, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        MESH_BINDING_TEXTURES, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
     _registry.write([&](entt::registry& r)
         {
-            // install the ecs callbacks for Lines
+            // install the ecs callbacks
             r.on_construct<Mesh>().connect<&on_construct_Mesh>();
             r.on_construct<MeshStyle>().connect<&on_construct_MeshStyle>();
             r.on_construct<MeshGeometry>().connect<&on_construct_MeshGeometry>();
+            r.on_construct<MeshTexture>().connect<&on_construct_MeshTexture>();
 
             r.on_destroy<Mesh>().connect<&on_destroy_Mesh>();
             r.on_destroy<MeshStyle>().connect<&on_destroy_MeshStyle>();
             r.on_destroy<MeshGeometry>().connect<&on_destroy_MeshGeometry>();
+            r.on_destroy<MeshTexture>().connect<&on_destroy_MeshTexture>();
 
             // Set up the dirty tracking.
             auto e = r.create();
             r.emplace<Mesh::Dirty>(e);
             r.emplace<MeshStyle::Dirty>(e);
             r.emplace<MeshGeometry::Dirty>(e);
+            r.emplace<MeshTexture::Dirty>(e);
         });
 }
 
@@ -257,7 +264,9 @@ MeshSystemNode::createOrUpdateComponent(const Mesh& mesh, MeshDetail& meshDetail
 {
     auto layout = getPipelineLayout(mesh);
 
-    if (!meshDetail.node)
+    bool isNew = !meshDetail.node;
+
+    if (isNew)
     {
         auto bind = BindMeshDescriptors::create();
 
@@ -274,7 +283,7 @@ MeshSystemNode::createOrUpdateComponent(const Mesh& mesh, MeshDetail& meshDetail
         meshDetail.node->stateCommands.emplace_back(bind);
         meshDetail.bind = bind;
 
-        _toCompile->addChild(meshDetail.node);
+        compile(meshDetail.node);
     }
 
     ROCKY_SOFT_ASSERT_AND_RETURN(meshDetail.node, void());
@@ -284,10 +293,11 @@ MeshSystemNode::createOrUpdateComponent(const Mesh& mesh, MeshDetail& meshDetail
 
     vsg::Group* parent = meshDetail.node;
 
-    if (styleDetail)
+    auto& uniforms = *static_cast<MeshUniforms*>(meshDetail.bind->_uniformsData->dataPointer());
+    auto styleIndex = styleDetail ? styleDetail->index : -1;
+    if (isNew || styleIndex != uniforms.styleIndex)
     {
-        auto& uniforms = *static_cast<MeshUniforms*>(meshDetail.bind->_uniformsData->dataPointer());
-        uniforms.style = styleDetail->index;
+        uniforms.styleIndex = styleIndex;
         upload(meshDetail.bind->_uniformsBuffer->bufferInfoList);
     }
 
@@ -364,7 +374,7 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
 
     geomDetail.node = geomDetail.cullNode;
 
-    _toCompile->addChild(geomDetail.node);
+    compile(geomDetail.node);
 }
 
 
@@ -372,16 +382,11 @@ void
 MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& styleDetail, entt::registry& reg)
 {
     auto& styleLUT = *static_cast<MeshStyleLUT*>(_styleLUT_data->dataPointer());
-    bool recompileTextures = false;
+    bool reassignTextures = false;
 
     if (styleDetail.index >= 0)
     {
         auto& entry = styleLUT.lut[styleDetail.index];
-        if (styleDetail.texture != style.texture)
-        {
-            styleDetail.texture = style.texture;
-            recompileTextures = true;
-        }
         entry.populate(style);
     }
     else
@@ -400,31 +405,43 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
                 break;
             }
         }
-
-        recompileTextures = true;
     }
 
-    if (recompileTextures)
+    auto& entry = styleLUT.lut[styleDetail.index];
+
+    if (style.texture == entt::null)
     {
+        entry.textureIndex = -1;
+    }
+
+    else if (style.texture != styleDetail.texture || entry.textureIndex < 0)
+    {
+        entry.textureIndex = -1;
         auto& tex = reg.get<MeshTexture>(style.texture);
-        if (tex.index < 0)
+        for (unsigned i = 0; i < _textureBuffer->imageInfoList.size(); ++i)
         {
-            for (unsigned i = 0; i < MAX_MESH_TEXTURES; ++i)
+            if (tex.imageInfo == _textureBuffer->imageInfoList[i])
             {
-                if (!_textureInUse[i])
-                {
-                    _textureInUse[i] = true;
-                    tex.index = i;
-                    _textureLUTSize = std::max(_textureLUTSize, i + 1);
-
-                    _textureBuffer->imageInfoList.resize(_textureLUTSize);
-                    _textureBuffer->imageInfoList[i] = tex.imageInfo;
-                    break;
-                }
+                entry.textureIndex = i;
+                break;
             }
-
-            _toCompile->addChild(_textureBuffer); // will start an upload as well, I think :)
         }
+    }
+
+    styleDetail.texture = style.texture;
+
+    upload(_styleLUT_buffer->bufferInfoList);
+}
+
+void
+MeshSystemNode::addOrUpdateTexture(const MeshTexture& tex)
+{
+    if (tex._index < 0 && tex.imageInfo)
+    {
+        auto i = _textureArenaSize++;
+        _textureBuffer->imageInfoList.resize(_textureArenaSize);
+        _textureBuffer->imageInfoList[i] = tex.imageInfo;
+        // don't compile yet... there may be others
     }
 }
 
@@ -504,19 +521,16 @@ MeshSystemNode::update(VSGContext& vsgcontext)
 {
     bool uploadStyles = false;
 
-    if (!_toCompile)
-    {
-        _toCompile = vsg::Objects::create();
-    }
-
-    if (!_pipelinesCompiled)
-    {
-        _toCompile->addChild(_pipelines[0].commands);
-        _pipelinesCompiled = true;
-    }
+    auto numTextures = _textureArenaSize;
 
     _registry.read([&](entt::registry& reg)
         {
+            MeshTexture::eachDirty(reg, [&](entt::entity e)
+                {
+                    auto& tex = reg.get<MeshTexture>(e);
+                    addOrUpdateTexture(tex);
+                });
+
             MeshStyle::eachDirty(reg, [&](entt::entity e)
                 {
                     auto& [style, styleDetail] = reg.get<MeshStyle, MeshStyleDetail>(e);
@@ -544,26 +558,12 @@ MeshSystemNode::update(VSGContext& vsgcontext)
         upload(_styleLUT_buffer->bufferInfoList);
     }
 
-    // compiles:
-    if (_toCompile->children.size() > 0)
+    if (numTextures < _textureArenaSize)
     {
-        vsgcontext->compile(_toCompile);
-        _toCompile->children.clear();
+        compile(_textureBuffer);
     }
 
-    // uploads:
-    if (!_buffersToUpload.empty())
-    {
-        vsgcontext->upload(_buffersToUpload);
-        _buffersToUpload.clear();
-    }
-    if (!_imagesToUpload.empty())
-    {
-        vsgcontext->upload(_imagesToUpload);
-        _imagesToUpload.clear();
-    }
-
-    System::update(vsgcontext);
+    Inherit::update(vsgcontext);
 }
 
 
@@ -585,7 +585,6 @@ MeshGeometryNode::reserve(size_t num_verts)
     _normals.reserve(num_verts);
     _colors.reserve(num_verts);
     _uvs.reserve(num_verts);
-    //_depthoffsets.reserve(num_verts);
     _indices.reserve(num_verts);
 }
 
@@ -604,7 +603,6 @@ MeshGeometryNode::add(const vsg::vec3* verts, const vsg::vec2* uvs, const vsg::v
             _verts.push_back(verts[v]);
             _uvs.push_back(uvs[v]);
             _colors.push_back(colors[v]);
-            //_depthoffsets.push_back(depthoffsets[v]);
             _lut[key] = (index_type)i;
         }
 
@@ -627,7 +625,6 @@ MeshGeometryNode::compile(vsg::Context& context)
         auto normal_array = vsg::vec3Array::create(_normals.size(), _normals.data());
         auto color_array = vsg::vec4Array::create(_colors.size(), _colors.data());
         auto uv_array = vsg::vec2Array::create(_uvs.size(), _uvs.data());
-        //auto depthoffset_array = vsg::floatArray::create(_depthoffsets.size(), _depthoffsets.data());
         auto index_array = vsg::uintArray::create(_indices.size(), _indices.data());
 
         assignArrays({ vert_array, normal_array, color_array, uv_array });

@@ -13,10 +13,10 @@ namespace ROCKY_NAMESPACE
     constexpr unsigned MAX_MESH_STYLES = 1024;
     constexpr unsigned MAX_MESH_TEXTURES = 1024;
 
-    struct MeshTexture
+    struct MeshTexture : public ComponentBase2<MeshTexture>
     {
         vsg::ref_ptr<vsg::ImageInfo> imageInfo;
-        int index = -1; // index into the texture LUT
+        int _index = -1; // index into the texture buffer (TODO: put this in a private MeshTextureDetail object instead)
     };
 
     namespace detail
@@ -35,25 +35,17 @@ namespace ROCKY_NAMESPACE
         };
         static_assert(sizeof(MeshStyleRecord) % 16 == 0, "MeshStyleRecord must be 16-byte aligned");
 
+
         struct MeshStyleLUT
         {
             std::array<MeshStyleRecord, MAX_MESH_STYLES> lut;
         };
         static_assert(sizeof(MeshStyleLUT) % 16 == 0, "MeshStyleLUT must be 16-byte aligned");
         
-        struct MeshTextureRecord
-        {
-            vsg::ref_ptr<vsg::DescriptorImage> di;
-        };
-
-        struct MeshTextureLUT
-        {
-            std::array<MeshTextureRecord, MAX_MESH_TEXTURES> lut;
-        };
 
         struct MeshUniforms
         {
-            std::int32_t style = 0; // index into the style LUT.
+            std::int32_t styleIndex = -1; // index into the style LUT.
 
             // pad to 16 bytes
             std::uint32_t padding[3];
@@ -79,18 +71,10 @@ namespace ROCKY_NAMESPACE
 
         void reserve(size_t numVerts);
 
-        inline void add(
-            const vsg::dvec3* verts,
-            const vsg::vec2* uvs,
-            const vsg::vec4* colors);
+        inline void add(const vsg::dvec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors);
 
-        void add(
-            const vsg::vec3* verts,
-            const vsg::vec2* uvs,
-            const vsg::vec4* colors);
+        void add(const vsg::vec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors);
 
-        //! Recompile the geometry after making changes.
-        //! TODO: just make it dynamic instead
         void compile(vsg::Context&) override;
 
         vsg::vec4 _defaultColor = { 1,1,1,1 };
@@ -118,8 +102,6 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::Node> node;
             vsg::ref_ptr<MeshGeometryNode> geomNode;
             vsg::ref_ptr<vsg::CullNode> cullNode;
-            bool needsCompile = true;
-            bool needsUpload = false;
             std::size_t capacity = 0;
         };
 
@@ -143,9 +125,7 @@ namespace ROCKY_NAMESPACE
     /**
     * VSG node that renders Mesh components.
     */
-    class ROCKY_EXPORT MeshSystemNode :
-        public vsg::Inherit<vsg::Compilable, MeshSystemNode>,
-        public System
+    class ROCKY_EXPORT MeshSystemNode : public vsg::Inherit<detail::SimpleSystemNodeBase, MeshSystemNode>
     {
     public:
         //! Construct the mesh renderer
@@ -179,19 +159,11 @@ namespace ROCKY_NAMESPACE
         unsigned _styleLUTSize = 0;
 
         std::array<bool, MAX_MESH_TEXTURES> _textureInUse;
-        unsigned _textureLUTSize = 0;
-
-        struct Pipeline
-        {
-            vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> config;
-            vsg::ref_ptr<vsg::Commands> commands;
-        };
-        std::vector<Pipeline> _pipelines;
+        unsigned _textureArenaSize = 0;
 
         inline vsg::PipelineLayout* getPipelineLayout(const Mesh& line) {
             return _pipelines[0].config->layout;
         }
-        bool _pipelinesCompiled = false;
 
         struct RenderLeaf {
             vsg::Node* node = nullptr;
@@ -215,22 +187,7 @@ namespace ROCKY_NAMESPACE
         // Called when a line style is found in the dirty list
         void createOrUpdateStyle(const MeshStyle&, detail::MeshStyleDetail&, entt::registry&);
 
-        vsg::ref_ptr<vsg::Objects> _toCompile;
-        vsg::BufferInfoList _buffersToUpload;
-        vsg::ImageInfoList _imagesToUpload;
-
-        inline void upload(vsg::BufferInfo* bi) {
-            _buffersToUpload.emplace_back(bi);
-        }
-        inline void upload(vsg::BufferInfoList& bil) {
-            _buffersToUpload.insert(_buffersToUpload.end(), bil.begin(), bil.end());
-        }
-
-        inline void upload(vsg::ImageInfo* bi) {
-            _imagesToUpload.emplace_back(bi);
-        }
-        inline void upload(vsg::ImageInfoList& bil) {
-            _imagesToUpload.insert(_imagesToUpload.end(), bil.begin(), bil.end());
-        }
+        // Called when a new mesh texture shows up
+        void addOrUpdateTexture(const MeshTexture&);
     };
 }

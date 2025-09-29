@@ -77,6 +77,78 @@ namespace ROCKY_NAMESPACE
             std::thread thread;
         };
 
+        class SimpleSystemNodeBase : public vsg::Inherit<vsg::Compilable, SimpleSystemNodeBase>,
+            public System
+        {
+        protected:
+            SimpleSystemNodeBase(Registry& in_registry) : System(in_registry)
+            {
+                _toCompile = vsg::Objects::create();
+            }
+
+            void update(VSGContext& vsgcontext) override
+            {
+                if (!_pipelinesCompiled)
+                {
+                    compile(_pipelines[0].commands);
+                    _pipelinesCompiled = true;
+                }
+
+                // compiles:
+                if (_toCompile->children.size() > 0)
+                {
+                    vsgcontext->compile(_toCompile);
+                    _toCompile->children.clear();
+                }
+
+                // uploads:
+                if (!_buffersToUpload.empty())
+                {
+                    vsgcontext->upload(_buffersToUpload);
+                    _buffersToUpload.clear();
+                }
+                if (!_imagesToUpload.empty())
+                {
+                    vsgcontext->upload(_imagesToUpload);
+                    _imagesToUpload.clear();
+                }
+
+                System::update(vsgcontext);
+            }
+
+            inline void compile(vsg::Object* object) {
+                _toCompile->addChild(vsg::ref_ptr<vsg::Object>(object));
+            }
+            inline void upload(vsg::BufferInfo* bi) {
+                _buffersToUpload.emplace_back(bi);
+            }
+            inline void upload(vsg::BufferInfoList& bil) {
+                _buffersToUpload.insert(_buffersToUpload.end(), bil.begin(), bil.end());
+            }
+
+            inline void upload(vsg::ImageInfo* bi) {
+                _imagesToUpload.emplace_back(bi);
+            }
+            inline void upload(vsg::ImageInfoList& bil) {
+                _imagesToUpload.insert(_imagesToUpload.end(), bil.begin(), bil.end());
+            }
+
+        protected:
+            struct Pipeline
+            {
+                vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> config;
+                vsg::ref_ptr<vsg::Commands> commands;
+            };
+            std::vector<Pipeline> _pipelines;
+            bool _pipelinesCompiled = false;
+
+
+        private:
+            vsg::ref_ptr<vsg::Objects> _toCompile;
+            vsg::BufferInfoList _buffersToUpload;
+            vsg::ImageInfoList _imagesToUpload;
+        };
+
         /**
         * VSG node representing an ECS system for the given component type (T).
         * A system of this type asumes that "T" will have a Renderable component attached
