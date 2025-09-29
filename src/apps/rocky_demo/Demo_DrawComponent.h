@@ -93,7 +93,7 @@ auto Demo_Draw = [](Application& app)
                 auto& style = r.emplace<LineStyle>(entity);
                 style.color = Color::Yellow;
                 style.width = 3;
-                style.depth_offset = 1000;
+                style.depthOffset = 1000;
 
                 r.emplace<Line>(entity, geom, style);
             });

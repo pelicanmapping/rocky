@@ -73,10 +73,6 @@ namespace ROCKY_NAMESPACE
                 {
                     func(e);
                 }
-                else
-                {
-                    Log()->info("Skipping invalid entity {}", (std::uint64_t)e);
-                }
             }
         }
     };

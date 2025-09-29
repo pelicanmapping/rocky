@@ -36,7 +36,7 @@ auto Demo_Line_Absolute = [](Application& app)
                 auto& style = r.emplace<LineStyle>(entity);
                 style.color = Color::Yellow;
                 style.width = 3.0f;
-                style.depth_offset = 1000.0f;
+                style.depthOffset = 1000.0f;
 
                 // A "Line" renders the given geometry with the given style.
                 auto& line = r.emplace<Line>(entity, geometry, style);
@@ -62,10 +62,10 @@ auto Demo_Line_Absolute = [](Application& app)
         if (ImGuiLTable::SliderFloat("Width", &style.width, 1.0f, 15.0f, "%.0f"))
             style.dirty(r);
 
-        if (ImGuiLTable::SliderInt("Stipple pattern", &style.stipple_pattern, 0x0001, 0xffff, "%04x", ImGuiSliderFlags_Logarithmic))
+        if (ImGuiLTable::SliderInt("Stipple pattern", &style.stipplePattern, 0x0001, 0xffff, "%04x", ImGuiSliderFlags_Logarithmic))
             style.dirty(r);
 
-        if (ImGuiLTable::SliderInt("Stipple factor", &style.stipple_factor, 1, 4))
+        if (ImGuiLTable::SliderInt("Stipple factor", &style.stippleFactor, 1, 4))
             style.dirty(r);
 
 

@@ -1,5 +1,4 @@
 #version 450
-#pragma import_defines(USE_MESH_STYLE)
 
 // vsg push constants
 layout(push_constant) uniform PushConstants {
@@ -7,24 +6,32 @@ layout(push_constant) uniform PushConstants {
     mat4 modelview;
 } pc;
 
-#ifdef USE_MESH_STYLE
-// see rocky::MeshStyle
-layout(set = 0, binding = 1) uniform MeshData {
+// see rocky::MeshStyleRecord
+struct MeshStyle {
     vec4 color;
-    float depthoffset;
+    float depthOffset;
+    int textureIndex;
+};
+
+layout(set = 0, binding = 0) readonly buffer MeshStyles {
+    MeshStyle lut[1024];
+} styles;
+
+layout(set = 0, binding = 1) uniform MeshUniforms {
+    int style;
+    int padding[3];
 } mesh;
-#endif
 
 // input vertex attributes
 layout(location = 0) in vec3 in_vertex;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec4 in_color;
 layout(location = 3) in vec2 in_uv;
-layout(location = 4) in float in_depthoffset;
 
 // inter-stage interface block
 struct Varyings {
     vec4 color;
+    int textureIndex;
 };
 layout(location = 1) out vec2 uv;
 layout(location = 2) flat out Varyings vary;
@@ -48,15 +55,9 @@ vec3 apply_depth_offset(in vec3 vertex, in float offset)
 
 void main()
 {
-    float depthoffset = in_depthoffset;
-
-#ifdef USE_MESH_STYLE
-    vary.color = mesh.color.a > 0.0 ? mesh.color : in_color;
-    if (mesh.depthoffset != 0.0)
-        depthoffset = mesh.depthoffset;
-#else
-    vary.color = in_color;
-#endif
+    vec4 style_color = styles.lut[mesh.style].color;
+    vary.color = style_color.a > 0.0 ? style_color : in_color;
+    float depthOffset = styles.lut[mesh.style].depthOffset;
 
     uv = in_uv;
 
@@ -64,7 +65,7 @@ void main()
     
     // Depth offset (view-space approach):
     vec4 view = pc.modelview * vec4(in_vertex, 1);
-    view.xyz = apply_depth_offset(view.xyz, depthoffset);
+    view.xyz = apply_depth_offset(view.xyz, depthOffset);
     vec4 clip = pc.projection * view;
 
     gl_Position = clip;

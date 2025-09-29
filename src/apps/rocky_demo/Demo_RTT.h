@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -40,16 +40,12 @@ namespace
         vsg::ComputeBounds computeBounds;
         node->accept(computeBounds);
         vsg::dvec3 centre = (computeBounds.bounds.min + computeBounds.bounds.max) * 0.5;
-        double radius = vsg::length(computeBounds.bounds.max - computeBounds.bounds.min) * 0.6;
-        double nearFarRatio = 0.001;
+        double r = 0.7 * vsg::length(computeBounds.bounds.max - computeBounds.bounds.min);
 
         // set up the camera
-        auto lookAt = vsg::LookAt::create(centre + vsg::dvec3(0.0, -radius * 3.5, 0.0),
-            centre, vsg::dvec3(0.0, 0.0, 1.0));
-
-        auto perspective = vsg::Perspective::create(45.0, 1.0, nearFarRatio* radius, radius * 10.0);
-
-        return vsg::Camera::create(perspective, lookAt, vsg::ViewportState::create(size));
+        auto view = vsg::LookAt::create(vsg::dvec3{ 0, r, 0 }, vsg::dvec3{ 0, 0, 0 }, vsg::dvec3{ 0, 0, 1 });
+        auto proj = vsg::Orthographic::create(-r, r, -r, r, -r*5, r*5);
+        return vsg::Camera::create(proj, view, vsg::ViewportState::create(size));
     }
 }
 
@@ -72,30 +68,29 @@ auto Demo_RTT = [](Application& app)
         auto main_window = app.display.mainWindow();
         auto main_view = app.display.views(main_window).front();
 
-        // this is the model we will see in the RTT:
-        URI uri("https://raw.githubusercontent.com/vsg-dev/vsgExamples/master/data/models/teapot.vsgt");
-        auto rtt_node = load_rtt_model(uri, app.vsgcontext);
-        if (!rtt_node)
-        {
-            status = Failure(Failure::ResourceUnavailable, "Unable to load the model from " + uri.full());
-            return;
-        }
+        // Create a simple VSG model using the Builder.
+        vsg::Builder builder;
+        vsg::GeometryInfo gi;       
+        gi.color = to_vsg(Color::Cyan);
+        vsg::StateInfo si;
+        si.lighting = false, si.wireframe = true;
+        auto rtt_node = builder.createBox(gi, si);
 
         // Make a transform so we can spin the model.
         mt = vsg::MatrixTransform::create();
         mt->addChild(rtt_node);
         rtt_node = mt;
 
-        // RTT camera and view:
+        // Set up the RTT camera and view.
         VkExtent2D size{ 256, 256 };
         auto rtt_cam = make_rtt_camera(rtt_node, size);
         auto rtt_view = vsg::View::create(rtt_cam, rtt_node);
 
-        // This is the render graph that will execute the RTT:
-        auto vsg_context = vsg::Context::create(main_window->getOrCreateDevice());
+        // This is the render graph that will execute the RTT.
+        auto context = vsg::Context::create(main_window->getOrCreateDevice());
         auto texture = vsg::ImageInfo::create();
         auto depth = vsg::ImageInfo::create();
-        auto rtt_graph = RTT::createOffScreenRenderGraph(*vsg_context, size, texture, depth);
+        auto rtt_graph = RTT::createOffScreenRenderGraph(*context, size, texture, depth);
         rtt_graph->addChild(rtt_view);
 
         // Add the RTT graph to our application's main window.
@@ -114,14 +109,16 @@ auto Demo_RTT = [](Application& app)
             };
         app.onNextUpdate(install);
 
-        auto [lock, registry] = app.registry.write();
 
-        // Now, create an entity to host our mesh.
-        // This is the geometry that we will apply the texture to. 
-        entity = registry.create();
-        auto& mesh = registry.emplace<Mesh>(entity);
+        // Now, create a Mesh entity to host our spinning object.
+        auto [_, reg] = app.registry.write();
 
-        // Cenerate the mesh geometry We have to add UVs (texture coordinates)
+        entity = reg.create();
+
+        // This is the geometry that we will apply the texture to.
+        auto& geom = reg.emplace<MeshGeometry>(entity);
+
+        // Generate the mesh geometry - We have to add UVs (texture coordinates)
         // in order to map the RTT texture.
         auto xform = rocky::SRS::WGS84.to(rocky::SRS::ECEF);
         const double step = 2.5;
@@ -145,37 +142,43 @@ auto Demo_RTT = [](Application& app)
                     xform(v[i], v[i]);
                 }
 
-                mesh.triangles.emplace_back(Triangle{ {v[0], v[1], v[2]}, { bg,bg,bg }, {uv[0], uv[1], uv[2]} });
-                mesh.triangles.emplace_back(Triangle{ {v[0], v[2], v[3]}, { bg,bg,bg }, {uv[0], uv[2], uv[3]} });
+                geom.triangles.emplace_back(Triangle{ {v[0], v[1], v[2]}, { bg,bg,bg }, {uv[0], uv[1], uv[2]} });
+                geom.triangles.emplace_back(Triangle{ {v[0], v[2], v[3]}, { bg,bg,bg }, {uv[0], uv[2], uv[3]} });
             }
         }
 
-        mesh.style = MeshStyle{ { 1,1,1,0.5 }, 64.0f };
+        // create a style
+        auto& style = reg.emplace<MeshStyle>(entity);
+        style.color = Color{ 1,1,1,0.5 };
+        style.depthOffset = 64.0f;
 
         // add the texture
-        mesh.texture = registry.create();
-        auto& t = registry.emplace<Texture>(mesh.texture);
+        style.texture = reg.create();
+        auto& t = reg.emplace<MeshTexture>(style.texture);
         t.imageInfo = texture;
 
-        app.vsgcontext->requestFrame();
-        
+        // and finally create the Mesh itself.
+        reg.emplace<Mesh>(entity, geom, style);
+
+        app.vsgcontext->requestFrame();        
         return;
     }
 
-    // spin the model.
+    // spin the model a little each frame.
     if (mt)
     {
-        mt->matrix = vsg::rotate(rotation, vsg::vec3(1, 1, 1));
+        mt->matrix = vsg::rotate(rotation, vsg::normalize(vsg::vec3(1, 1, 1)));
         rotation += 0.01f;
+        app.vsgcontext->requestFrame(); // render continuously.
     }
 
     if (ImGuiLTable::Begin("model"))
     {
-        auto [lock, registry] = app.registry.read();
+        auto [_, reg] = app.registry.read();
 
-        auto& v = registry.get<Visibility>(entity).visible[0];
+        auto& v = reg.get<Visibility>(entity).visible[0];
         if (ImGuiLTable::Checkbox("Show", &v))
-            setVisible(registry, entity, v);
+            setVisible(reg, entity, v);
 
         ImGuiLTable::End();
     }

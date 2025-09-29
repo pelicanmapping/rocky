@@ -18,10 +18,10 @@ namespace ROCKY_NAMESPACE
         // if alpha is zero, use the line's per-vertex color instead
         Color color = Color{ 1, 1, 1, 1 };
         float width = 2.0f; // pixels
-        int stipple_pattern = ~0;
-        int stipple_factor = 1;
+        int stipplePattern = ~0;
+        int stippleFactor = 1;
         float resolution = 100000.0f; // meters
-        float depth_offset = 0.0f; // meters
+        float depthOffset = 0.0f; // meters
     };
 
 

@@ -80,10 +80,10 @@ auto Demo_MVTFeatures = [](Application& app)
                 // set up the styling for the FeatureView to use for lines and meshes.
                 fview.styles.line.color = Color::Red;
                 fview.styles.line.width = 5.0f;
-                fview.styles.line.depth_offset = 10; // meters
+                fview.styles.line.depthOffset = 10; // meters
 
                 fview.styles.mesh.color = Color(1, 0.75f, 0.2f, 1);
-                fview.styles.mesh.depth_offset = 12; // meters
+                fview.styles.mesh.depthOffset = 12; // meters
 
                 if (gdal->featureCount() > 0)
                     fview.features.reserve(gdal->featureCount());

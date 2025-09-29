@@ -12,6 +12,7 @@
 #include "ecs/LabelSystem.h"
 #include "ecs/WidgetSystem.h"
 #include "ecs/TransformSystem.h"
+#include "ecs/NodeGraph.h"
 
 #include <rocky/contrib/EarthFileImporter.h>
 

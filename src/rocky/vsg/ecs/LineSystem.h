@@ -17,19 +17,19 @@ namespace ROCKY_NAMESPACE
         {
             Color color;
             float width;
-            std::int32_t stipple_pattern;
-            std::int32_t stipple_factor;
+            std::int32_t stipplePattern;
+            std::int32_t stippleFactor;
             float resolution;
-            float depth_offset;
+            float depthOffset;
             std::uint32_t padding[3]; // pad to 16 bytes
 
             inline void populate(const LineStyle& in) {
                 color = in.color;
                 width = in.width;
-                stipple_pattern = in.stipple_pattern;
-                stipple_factor = in.stipple_factor;
+                stipplePattern = in.stipplePattern;
+                stippleFactor = in.stippleFactor;
                 resolution = in.resolution;
-                depth_offset = in.depth_offset;
+                depthOffset = in.depthOffset;
             }
         };
         static_assert(sizeof(LineStyleRecord) % 16 == 0, "LineStyleRecord must be 16-byte aligned");
@@ -111,8 +111,6 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::Node> node;
             vsg::ref_ptr<LineGeometryNode> geomNode;
             vsg::ref_ptr<vsg::CullNode> cullNode;
-            bool needsCompile = true;
-            bool needsUpload = false;
             std::size_t capacity = 0;
         };
 

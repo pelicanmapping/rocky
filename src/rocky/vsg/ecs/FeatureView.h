@@ -23,7 +23,8 @@ namespace ROCKY_NAMESPACE
         LineStyle line;
         MeshStyle mesh;
 
-        std::function<MeshStyle(const Feature&)> mesh_function;
+        // EXPERIMENTAL, may change
+        std::function<Color(const Feature&)> meshColorFunction;
     };
 
     /**
@@ -47,10 +48,11 @@ namespace ROCKY_NAMESPACE
             LineStyle lineStyle;
 
             Mesh mesh;
+            MeshGeometry meshGeom;
             MeshStyle meshStyle;
 
             inline bool empty() const {
-                return lineGeom.points.empty() && mesh.triangles.empty();
+                return lineGeom.points.empty() && meshGeom.triangles.empty();
             }
 
             //! Creates components for the primitive data and moves them
@@ -69,9 +71,11 @@ namespace ROCKY_NAMESPACE
                     r.emplace<Line>(e, geom, style);
                     
                 }
-                if (!mesh.triangles.empty())
+                if (!meshGeom.triangles.empty())
                 {
-                    r.emplace<Mesh>(e, std::move(mesh));
+                    auto& style = r.emplace<MeshStyle>(e, std::move(meshStyle));
+                    auto& geom = r.emplace<MeshGeometry>(e, std::move(meshGeom));
+                    r.emplace<Mesh>(e, geom, style);
                 }
                 return e;
             }
@@ -81,7 +85,7 @@ namespace ROCKY_NAMESPACE
         struct PrimitivesRef
         {
             LineGeometry* lineGeom = nullptr;
-            Mesh* mesh = nullptr;
+            MeshGeometry* meshGeom = nullptr;
         };
 
     public:

@@ -193,7 +193,7 @@ namespace
     }
 
     void compile_polygon_feature_with_weemesh(const Feature& feature, const StyleSheet& styles, 
-        const GeoPoint& origin, ElevationSession& clamper, const SRS& output_srs, Mesh& mesh)
+        const GeoPoint& origin, ElevationSession& clamper, const SRS& output_srs, MeshGeometry& meshGeom)
     {
         // scales our local gnomonic coordinates so they are the same order of magnitude as
         // weemesh's default epsilon values:
@@ -335,25 +335,21 @@ namespace
         }
 
         auto color =
-            styles.mesh_function ? styles.mesh_function(feature).color :
+            styles.meshColorFunction ? styles.meshColorFunction(feature) :
             styles.mesh.color;
-
-        auto depth_offset =
-            styles.mesh_function ? styles.mesh_function(feature).depth_offset :
-            styles.mesh.depth_offset;
 
         Triangle temp = {
             {}, // we'll fill in the verts below
             {color, color, color},
             {}, // uvs - don't need them
-            {depth_offset, depth_offset, depth_offset} }; // depth offset values
+        };
 
         for (auto& tri : m.triangles)
         {
             temp.verts[0] = m.verts[tri.second.i0];
             temp.verts[1] = m.verts[tri.second.i1];
             temp.verts[2] = m.verts[tri.second.i2];
-            mesh.triangles.emplace_back(temp);
+            meshGeom.triangles.emplace_back(temp);
         }
     }
 }
@@ -388,7 +384,7 @@ FeatureView::generate(const SRS& output_srs)
         else if (feature.geometry.type == Geometry::Type::Polygon ||
             feature.geometry.type == Geometry::Type::MultiPolygon)
         {
-            compile_polygon_feature_with_weemesh(feature, styles, origin, clamper, output_srs, output.mesh);
+            compile_polygon_feature_with_weemesh(feature, styles, origin, clamper, output_srs, output.meshGeom);
         }
 
         else
@@ -423,9 +419,9 @@ FeatureView::generate(FeatureView::PrimitivesRef& output, const SRS& output_srs)
         else if (feature.geometry.type == Geometry::Type::Polygon ||
             feature.geometry.type == Geometry::Type::MultiPolygon)
         {
-            if (output.mesh)
+            if (output.meshGeom)
             {
-                compile_polygon_feature_with_weemesh(feature, styles, origin, clamper, output_srs, *output.mesh);
+                compile_polygon_feature_with_weemesh(feature, styles, origin, clamper, output_srs, *output.meshGeom);
             }
         }
 

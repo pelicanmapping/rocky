@@ -118,7 +118,7 @@ auto Demo_Geocoder = [](Application& app)
                                     // Outline for location boundary:
                                     FeatureView fgen;
                                     fgen.styles.line.color = Color::Yellow;
-                                    fgen.styles.line.depth_offset = 9000.0f; //meters
+                                    fgen.styles.line.depthOffset = 9000.0f; //meters
 
                                     fgen.features = { myfeature };
                                     auto primitives = fgen.generate(app.mapNode->srs());

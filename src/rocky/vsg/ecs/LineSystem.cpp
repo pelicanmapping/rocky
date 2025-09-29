@@ -7,8 +7,6 @@
 #include "../PipelineState.h"
 #include "../VSGUtils.h"
 
-#include <cstring>
-
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
 
@@ -236,9 +234,6 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
 void
 LineSystemNode::createOrUpdateLineNode(const Line& line, LineDetail& lineDetail, LineStyleDetail* style, LineGeometryDetail* geom, VSGContext& context)
 {
-    bool compile = false;
-    bool uploadUniforms = false;
-
     auto layout = getPipelineLayout(line);
 
     if (!lineDetail.node)
@@ -278,7 +273,6 @@ LineSystemNode::createOrUpdateLineNode(const Line& line, LineDetail& lineDetail,
     if (geom)
     {
         ROCKY_SOFT_ASSERT_AND_RETURN(geom->node, void(), "LineGeometryDetail node is missing");
-
         parent->addChild(geom->node);
     }
 }

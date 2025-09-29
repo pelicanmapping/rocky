@@ -100,7 +100,8 @@ namespace ROCKY_NAMESPACE
         //! to marking the buffer as DYNAMIC_DATA and marking it dirty(), which
         //! is inefficient for large numbers of buffers whose data is only
         //! updated periodically.
-        void upload(vsg::BufferInfoList bufferInfos);
+        void upload(const vsg::BufferInfoList& bufferInfos);
+        void upload(const vsg::ImageInfoList& inageInfos);
 
         //! The VSG/Vulkan device shared by all displays
         vsg::ref_ptr<vsg::Device> device();

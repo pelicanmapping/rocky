@@ -1,28 +1,27 @@
 #version 450
-#pragma import_defines(USE_MESH_TEXTURE)
 
 layout(location = 1) in vec2 uv;
 
 // inter-stage interface block
 struct Varyings {
     vec4 color;
+    int textureIndex;
 };
 layout(location = 2) flat in Varyings vary;
 
 // outputs
-layout(location = 0) out vec4 out_color;
+layout(location = 0) out vec4 outColor;
 
-// unis
-#ifdef USE_MESH_TEXTURE
-layout(binding=6) uniform sampler2D mesh_texture;
-#endif
+// textures
+layout(set = 0, binding = 2) uniform sampler2D meshTexture[1024];
 
 
 void main()
 {
-    out_color = vary.color;
+    outColor = vary.color;
 
-#ifdef USE_MESH_TEXTURE
-    out_color.rgb *= texture(mesh_texture, uv).rgb;
-#endif
+    if (vary.textureIndex >= 0)
+    {
+        outColor.rgb *= texture(meshTexture[vary.textureIndex], uv).rgb;
+    }
 }

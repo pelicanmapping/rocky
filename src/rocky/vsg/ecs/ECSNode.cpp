@@ -11,6 +11,7 @@
 #include "LabelSystem.h"
 #include "WidgetSystem.h"
 #include "TransformSystem.h"
+#include "NodeGraph.h"
 
 ROCKY_ABOUT(entt, ENTT_VERSION);
 
