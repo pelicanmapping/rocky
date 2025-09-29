@@ -22,7 +22,7 @@ namespace ROCKY_NAMESPACE
         /**
         * Component that holds a VSG node and its revision (so it can be
         * synchronized with the associated data model). One will typically
-        * attach a Renderable to BaseComponent::entity.
+        * attach a Renderable to ComponentBase::entity.
         */
         struct Renderable
         {
@@ -42,7 +42,7 @@ namespace ROCKY_NAMESPACE
         {
             entt::entity entity = entt::null;
             std::uint16_t version = 0;
-            std::shared_ptr<BaseComponent> component;
+            std::shared_ptr<ComponentBase> component;
         };
 
         // Internal structure for a batch of BuildItems associated with a system
@@ -114,7 +114,7 @@ namespace ROCKY_NAMESPACE
             void update(VSGContext&) override;
 
         protected:
-            using SHARED_T = SharedComponent<T>;
+            using SHARED_T = Shareable<T>;
 
             //! Construct from a subclass
             SystemNode(Registry& in_registry);
@@ -193,7 +193,8 @@ namespace ROCKY_NAMESPACE
         template<typename T>
         inline void SystemNode_on_construct(entt::registry& r, entt::entity e)
         {
-            T& new_component = r.get<T>(e);
+            T& new_comp = r.get<T>(e);
+            new_comp.owner = e;
 
             if (!r.try_get<ActiveState>(e))
             {
@@ -206,16 +207,18 @@ namespace ROCKY_NAMESPACE
             }
 
             // Create a Renderable component and attach it to the new component.
-            new_component.attach_point = r.create();
-            r.emplace<detail::Renderable>(new_component.attach_point);
+            new_comp.attach_point = r.create();
+            r.emplace<detail::Renderable>(new_comp.attach_point);
 
-            new_component.revision++;
+            new_comp.revision++;
         }
 
         template<typename T>
         inline void SystemNode_on_construct_shared(entt::registry& r, entt::entity e)
         {
-            auto& shared = r.get<SharedComponent<T>>(e);
+            auto& shared = r.get<Shareable<T>>(e);
+            shared.owner = e;
+
             auto& comp = *shared.pointer;
 
             if (!r.try_get<ActiveState>(e))
@@ -258,7 +261,7 @@ namespace ROCKY_NAMESPACE
         template<typename T>
         inline void SystemNode_on_update_shared(entt::registry& r, entt::entity e)
         {
-            auto& shared = r.get<SharedComponent<T>>(e);
+            auto& shared = r.get<Shareable<T>>(e);
             auto& updated_component = *shared.pointer;
 
             if (updated_component.attach_point == entt::null)
@@ -283,7 +286,7 @@ namespace ROCKY_NAMESPACE
         template<typename T>
         inline void SystemNode_on_destroy_shared(entt::registry& r, entt::entity e)
         {
-            auto& shared = r.get<SharedComponent<T>>(e);
+            auto& shared = r.get<Shareable<T>>(e);
             if (shared.pointer.use_count() == 1)
             {
                 T& component_being_destroyed = *shared.pointer;
@@ -570,7 +573,7 @@ namespace ROCKY_NAMESPACE
                             detail::BuildItem item;
                             item.entity = entity;
                             item.version = registry.current(entity);
-                            item.component = std::shared_ptr<BaseComponent>(new T(component));
+                            item.component = std::shared_ptr<ComponentBase>(new T(component));
                             item.existing_node = renderable->node;
                             item.new_node = {};
 

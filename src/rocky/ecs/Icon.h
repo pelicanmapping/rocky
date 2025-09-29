@@ -24,7 +24,7 @@ namespace ROCKY_NAMESPACE
     /**
     * Icon Component - an icon is a 2D billboard with a texture
     */
-    struct Icon : public AttachableComponent
+    struct Icon : public ComponentBase
     {
         //! Dynamic styling for the icon
         IconStyle style;

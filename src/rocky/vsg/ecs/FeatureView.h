@@ -43,10 +43,14 @@ namespace ROCKY_NAMESPACE
         struct Primitives
         {
             Line line;
+            LineGeometry lineGeom;
+            LineStyle lineStyle;
+
             Mesh mesh;
+            MeshStyle meshStyle;
 
             inline bool empty() const {
-                return line.geometry.points.empty() && mesh.triangles.empty();
+                return lineGeom.points.empty() && mesh.triangles.empty();
             }
 
             //! Creates components for the primitive data and moves them
@@ -58,9 +62,12 @@ namespace ROCKY_NAMESPACE
 
                 auto e = r.create();
 
-                if (!line.geometry.points.empty())
+                if (!lineGeom.points.empty())
                 {
-                    r.emplace<Line>(e, std::move(line));
+                    auto& style = r.emplace<LineStyle>(e, std::move(lineStyle));
+                    auto& geom = r.emplace<LineGeometry>(e, std::move(lineGeom));
+                    r.emplace<Line>(e, geom, style);
+                    
                 }
                 if (!mesh.triangles.empty())
                 {
@@ -73,7 +80,7 @@ namespace ROCKY_NAMESPACE
         //! Return value from FeatureView generate().
         struct PrimitivesRef
         {
-            Line* line = nullptr;
+            LineGeometry* lineGeom = nullptr;
             Mesh* mesh = nullptr;
         };
 

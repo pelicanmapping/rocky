@@ -122,12 +122,12 @@ auto Demo_MVTFeatures = [](Application& app)
                         auto node = EntityNode::create(app.registry);
 
                         // Take a write-lock to move the primitives into ECS entities.
-                        app.registry.write([&](entt::registry& registry)
+                        app.registry.write([&](entt::registry& reg)
                             {
-                                auto e = prims.createEntity(registry);
+                                auto e = prims.createEntity(reg);
 
                                 // Since we localized to an origin, the tile needs a transform:
-                                auto& xform = registry.get_or_emplace<Transform>(e);
+                                auto& xform = reg.get_or_emplace<Transform>(e);
                                 xform.position = fview.origin;
                                 xform.frustumCulled = false; // NodePager will take care of frustum culling for us
 

@@ -39,7 +39,7 @@ namespace ROCKY_NAMESPACE
     /**
     * Triangle mesh component
     */
-    struct Mesh : public AttachableComponent
+    struct Mesh : public ComponentBase
     {
         //! Whether to write the the depth buffer
         bool writeDepth = true;

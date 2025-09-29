@@ -127,7 +127,7 @@ namespace
     }
 
     void compile_feature_to_lines(const Feature& feature, const StyleSheet& styles, const GeoPoint& origin,
-        ElevationSession& clamper, const SRS& output_srs, Line& line)
+        ElevationSession& clamper, const SRS& output_srs, LineGeometry& lineGeom)
     {
         float max_span = styles.line.resolution;
 
@@ -162,24 +162,24 @@ namespace
                 }
 
                 // Populate the line component based on the topology.
-                if (line.geometry.topology == LineTopology::Strip)
+                if (lineGeom.topology == LineTopology::Strip)
                 {
                     // CHECK THIS
-                    line.geometry.points.reserve(line.geometry.points.size() + tessellated.size());
-                    line.geometry.points.insert(line.geometry.points.end(), tessellated.begin(), tessellated.end());
+                    lineGeom.points.reserve(lineGeom.points.size() + tessellated.size());
+                    lineGeom.points.insert(lineGeom.points.end(), tessellated.begin(), tessellated.end());
                 }
 
                 else // Line::Topology::Segments
                 {
                     std::size_t num_points_in_segments = tessellated.size() * 2 - 2;
-                    auto ptr = line.geometry.points.size();
-                    line.geometry.points.resize(line.geometry.points.size() + num_points_in_segments);
+                    auto ptr = lineGeom.points.size();
+                    lineGeom.points.resize(lineGeom.points.size() + num_points_in_segments);
 
                     // convert from a strip to segments
                     for (std::size_t i = 0; i < tessellated.size() - 1; ++i)
                     {
-                        line.geometry.points[ptr++] = glm::dvec3(tessellated[i].x, tessellated[i].y, tessellated[i].z);
-                        line.geometry.points[ptr++] = glm::dvec3(tessellated[i + 1].x, tessellated[i + 1].y, tessellated[i + 1].z);
+                        lineGeom.points[ptr++] = glm::dvec3(tessellated[i].x, tessellated[i].y, tessellated[i].z);
+                        lineGeom.points[ptr++] = glm::dvec3(tessellated[i + 1].x, tessellated[i + 1].y, tessellated[i + 1].z);
                     }
                 }
 
@@ -189,7 +189,7 @@ namespace
         // max length:
         max_span = final_max_span;
 
-        line.style = styles.line;
+        //line.style = styles.line;
     }
 
     void compile_polygon_feature_with_weemesh(const Feature& feature, const StyleSheet& styles, 
@@ -363,7 +363,10 @@ FeatureView::Primitives
 FeatureView::generate(const SRS& output_srs)
 {
     Primitives output;
-    output.line.geometry.topology = LineTopology::Segments;
+    output.lineGeom.topology = LineTopology::Segments;
+
+    output.lineStyle = styles.line;
+    output.meshStyle = styles.mesh;
 
     for (auto& feature : features)
     {
@@ -379,7 +382,7 @@ FeatureView::generate(const SRS& output_srs)
         if (feature.geometry.type == Geometry::Type::LineString ||
             feature.geometry.type == Geometry::Type::MultiLineString)
         {
-            compile_feature_to_lines(feature, styles, origin, clamper, output_srs, output.line);
+            compile_feature_to_lines(feature, styles, origin, clamper, output_srs, output.lineGeom);
         }
 
         else if (feature.geometry.type == Geometry::Type::Polygon ||
@@ -411,9 +414,9 @@ FeatureView::generate(FeatureView::PrimitivesRef& output, const SRS& output_srs)
         if (feature.geometry.type == Geometry::Type::LineString ||
             feature.geometry.type == Geometry::Type::MultiLineString)
         {
-            if (output.line)
+            if (output.lineGeom)
             {
-                compile_feature_to_lines(feature, styles, origin, clamper, output_srs, *output.line);
+                compile_feature_to_lines(feature, styles, origin, clamper, output_srs, *output.lineGeom);
             }
         }
 

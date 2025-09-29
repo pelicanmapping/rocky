@@ -37,15 +37,13 @@ DeclutterSystem::update(VSGContext& vsgcontext)
 
         auto [lock, registry] = _registry.read();
 
-        auto view = registry.view<ActiveState, Declutter, TransformDetail>();
-
-        for (auto&& [entity, active, declutter, transform_detail] : view.each())
+        const auto process = [&](auto& entity, auto& declutter, auto& transform_detail)
         {
             auto& view = transform_detail.views[viewID];
 
             // skip anything that didn't pass cull since we can't see it
             if (!view.passingCull)
-                continue;
+                return;
 
             // caclulate the window-space coordinates of the transform.
             // TODO: should we include the transform radius? Or leave that to the user?
@@ -59,10 +57,20 @@ DeclutterSystem::update(VSGContext& vsgcontext)
             rect.xmax += window.x + bufferPixels;
             rect.ymax += window.y + bufferPixels;
 
-            double sorting_metric = sorting == Sorting::Priority? (double)declutter.priority : clip.z;
+            double sorting_metric = sorting == Sorting::Priority ? (double)declutter.priority : clip.z;
 
             sorted.emplace_back(sorting_metric, entity, rect);
-        }
+        };
+
+        registry.view<ActiveState, Declutter, TransformDetail>().each([&](auto&& e, auto&&, auto&& declutter, auto&& xform)
+            {
+                process(e, declutter, xform);
+            });
+
+        registry.view<ActiveState, Shareable<Declutter>, TransformDetail>().each([&](auto&& e, auto, auto&& declutter, auto&& xform)
+            {
+                process(e, *declutter.pointer, xform);
+            });
 
         // sort them by the metric we selected:
         std::sort(sorted.begin(), sorted.end(), [](const auto& lhs, const auto& rhs) { return std::get<0>(lhs) > std::get<0>(rhs); });

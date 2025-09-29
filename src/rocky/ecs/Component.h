@@ -10,7 +10,8 @@
 
 namespace ROCKY_NAMESPACE
 {
-    struct BaseComponent
+    // old type. upgrade these to ComponentBase2.
+    struct ComponentBase
     {
         //! Revision, for synchronizing this component with another
         int revision = 0;
@@ -21,46 +22,62 @@ namespace ROCKY_NAMESPACE
             ++revision;
         }
 
-        //! Constructors
-        BaseComponent() = default;
-        BaseComponent(const BaseComponent&) = default;
-        BaseComponent& operator = (const BaseComponent&) = default;
-        BaseComponent(BaseComponent&& rhs) noexcept {
-            *this = rhs;
-        }
-        BaseComponent& operator = (BaseComponent&& rhs) noexcept {
-            if (this != &rhs) {
-                revision = rhs.revision;
-                rhs.revision = 0;
-            }
-            return *this;
-        }
-    };
-
-
-    /**
-    * Superclass for ECS components that support revisionings and an attach point.
-    * The attach point is for internal usage.
-    */
-    struct AttachableComponent : public BaseComponent
-    {
-        //! Attach point for additional components, as needed
         entt::entity attach_point = entt::null;
 
-        //! Constructors
-        AttachableComponent() = default;
-        AttachableComponent(const AttachableComponent&) = default;
-        AttachableComponent& operator = (const AttachableComponent&) = default;
-        AttachableComponent(AttachableComponent&& rhs) noexcept {
-            *this = rhs;
-        }
-        AttachableComponent& operator = (AttachableComponent&& rhs) noexcept {
-            if (this != &rhs) {
-                BaseComponent::operator = (rhs);
-                attach_point = rhs.attach_point;
-                rhs.attach_point = entt::null;
+        entt::entity owner = entt::null;
+    };
+
+    // Base component type with built-in dirty tracking.
+    // NOTE: Yes, we need the CRTP here so that the "Dirty" object is unique for each derived type!
+    template<class DERIVED>
+    struct ComponentBase2
+    {
+        //! The entity that owns this component
+        entt::entity owner = entt::null;
+       
+        // NOTE: RELIES on the System to install the Dirty singleton!
+        struct Dirty
+        {
+            std::mutex mutex;
+            std::vector<entt::entity> entities;
+        };
+
+        inline void dirty(entt::registry& r)
+        {
+            ROCKY_SOFT_ASSERT_AND_RETURN(owner != entt::null, void());
+
+            for (auto&& [_, dirtyList] : r.view<Dirty>().each())
+            {
+                std::scoped_lock lock(dirtyList.mutex);
+                dirtyList.entities.emplace_back(owner);
             }
-            return *this;
+        }
+
+        template<class CALLABLE>
+        inline static void eachDirty(entt::registry& r, CALLABLE&& func)
+        {
+            static_assert(std::is_invocable_v<CALLABLE, entt::entity>, "CALLABLE must be invocable with (entt::entity)");
+
+            std::vector<entt::entity> entities;
+            for (auto&& [_, dirtyList] : r.view<Dirty>().each())
+            {
+                std::scoped_lock lock(dirtyList.mutex);
+                entities.swap(dirtyList.entities);
+            }
+
+            for (auto e : entities)
+            {
+                // must check validity since it is possible the entity was destroyed
+                // after being put on the dirty list.
+                if (r.valid(e))
+                {
+                    func(e);
+                }
+                else
+                {
+                    Log()->info("Skipping invalid entity {}", (std::uint64_t)e);
+                }
+            }
         }
     };
 
@@ -70,14 +87,14 @@ namespace ROCKY_NAMESPACE
      * transforms, visibility states, etc.
      */
     template<typename T>
-    struct SharedComponent : public BaseComponent
+    struct Shareable : public ComponentBase
     {
         //! Shared pointer to the shared component
         std::shared_ptr<T> pointer;
 
         //! Construct a shared component. The pointer must be non-null
         //! at the time of construction and must stay non-null.
-        SharedComponent<T>(std::shared_ptr<T> p) : pointer(p) {
+        Shareable<T>(std::shared_ptr<T> p) : pointer(p) {
             ROCKY_HARD_ASSERT(p != nullptr);
         }
     };

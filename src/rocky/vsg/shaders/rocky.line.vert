@@ -7,13 +7,23 @@ layout(push_constant) uniform PushConstants {
 } pc;
 
 // see rocky::LineStyle
-layout(set = 0, binding = 1) uniform LineData {
+struct LineStyle {
     vec4 color;
     float width;
     int stipple_pattern;
     int stipple_factor;
     float resolution;
     float depth_offset;
+    int padding[3];
+};
+
+layout(set = 0, binding = 0) readonly buffer LineStyles {
+    LineStyle lut[1024];
+} styles;
+
+layout(set = 0, binding = 1) uniform LineUniforms {
+    int style;
+    int padding[3];
 } line;
 
 // vsg viewport data
@@ -25,7 +35,7 @@ layout(set = 1, binding = 1) readonly buffer VSG_Viewports {
 layout(location = 0) in vec3 in_vertex;
 layout(location = 1) in vec3 in_vertex_prev;
 layout(location = 2) in vec3 in_vertex_next;
-layout(location = 3) in vec4 in_color;
+//layout(location = 3) in vec4 in_color;
 
 // inter-stage interface block
 struct Varyings {
@@ -55,11 +65,13 @@ vec3 apply_depth_offset(in vec3 vertex, float offset, float n)
 
 void main()
 {
-    rk.color = line.color.a > 0.0 ? line.color : in_color;
-    rk.stipple_pattern = line.stipple_pattern;
-    rk.stipple_factor = line.stipple_factor;
+    int i = line.style >= 0 ? line.style : 0;
 
-    float thickness = max(0.5, floor(line.width));
+    rk.color = styles.lut[i].color;
+    rk.stipple_pattern = styles.lut[i].stipple_pattern;
+    rk.stipple_factor = styles.lut[i].stipple_factor;
+
+    float thickness = max(0.5, floor(styles.lut[i].width));
     float len = thickness;
     int code = (gl_VertexIndex + 2) & 3;
     bool is_start = code <= 1;
@@ -81,7 +93,7 @@ void main()
 
     vec2 viewport_size = vsg_viewports.viewport[0].zw;
 
-    float bias = line.depth_offset;
+    float bias = styles.lut[i].depth_offset;
     float nearz = -pc.projection[3][2] / (pc.projection[2][2] + 1.0);
 
     vec4 curr_view = pc.modelview * vec4(in_vertex, 1);
@@ -158,7 +170,7 @@ void main()
     vec2 offset = extrude_unit * lateral;
     curr_clip.xy += (offset * curr_clip.w);
 
-    if (line.stipple_pattern != 0xffff)
+    if (styles.lut[i].stipple_pattern != 0xffff)
     {
         const float quantize = 8.0;
 
