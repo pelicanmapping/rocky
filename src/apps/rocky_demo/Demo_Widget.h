@@ -141,10 +141,14 @@ auto Demo_Widget = [](Application& app)
         transform.topocentric = true;
 
         // Drop line from the widget to the ground, for fun.
-        auto& dropline = registry.emplace<Line>(entity);
-        dropline.points = { { 0,0,0 }, { 0, 0, -2'500'000.0 } };
-        dropline.style.color = Color(0.1f, 0.1f, 0.1f, 1.0f);
-        dropline.style.width = 2;
+        auto& droplineStyle = registry.emplace<LineStyle>(entity);
+        droplineStyle.color = Color(0.1f, 0.1f, 0.1f, 1.0f);
+        droplineStyle.width = 2;
+
+        auto& droplineGeom = registry.emplace<LineGeometry>(entity);
+        droplineGeom.points = { { 0,0,0 }, { 0, 0, -2'500'000.0 } };
+
+        registry.emplace<Line>(entity, droplineGeom, droplineStyle);
 
         app.vsgcontext->requestFrame();
     }

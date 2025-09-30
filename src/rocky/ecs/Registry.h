@@ -37,6 +37,7 @@ namespace ROCKY_NAMESPACE
             entt::registry* operator->() { return &registry; }
             operator std::pair<std::shared_lock<std::shared_mutex>, entt::registry&>() { return { std::move(lock), registry }; }
         };
+
         struct Write {
             std::unique_lock<std::shared_mutex> lock;
             entt::registry& registry;

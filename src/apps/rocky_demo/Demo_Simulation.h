@@ -104,6 +104,17 @@ namespace
 
         auto ll_to_ecef = SRS::WGS84.to(SRS::ECEF);
 
+        // Make the drop-line style and geometry. We can shaerd this across all simulated platforms.
+        auto dropEntity = registry.create();
+
+        auto& dropStyle = registry.emplace<LineStyle>(dropEntity);
+        dropStyle.width = 1.5f;
+        dropStyle.color = Color{ 0.4f, 0.4f, 0.4f, 1.0f };
+
+        auto& dropGeom = registry.emplace<LineGeometry>(dropEntity);
+        dropGeom.points = { {0.0, 0.0, 0.0}, {0.0, 0.0, -1e6} };
+
+
         entities.reserve(count);
 
         std::mt19937 mt;
@@ -139,13 +150,8 @@ namespace
             widget.text = std::to_string(i);
             widget.render = render_widget;
 
-            // How about a drop line?
-            // Since the drop line is relative to the platfrom, we have to enable
-            // transform.localTangentPlane = true (see above)
-            auto& drop_line = registry.emplace<Line>(entity);
-            drop_line.points = { {0.0, 0.0, 0.0}, {0.0, 0.0, -1e6} };
-            drop_line.style.width = 1.5f;
-            drop_line.style.color = Color{ 0.4f, 0.4f, 0.4f, 1.0f };
+            // Add the dropline fro this entity:
+            registry.emplace<Line>(entity, dropGeom, dropStyle);
 
             // Decluttering control. The presence of this component will allow the entity
             // to participate in decluttering when it's enabled.
@@ -169,7 +175,7 @@ auto Demo_Simulation = [](Application& app)
     static Status status;
     static Simulator sim(app);
     static ImGuiImage widgetImage;
-    static unsigned num_platforms = 1000;
+    static unsigned num_platforms = 1;
     static bool showPosition = false;
 
     if (status.failed())
@@ -225,7 +231,7 @@ auto Demo_Simulation = [](Application& app)
 
     if (ImGuiLTable::Begin("simulation"))
     {
-        ImGuiLTable::SliderInt("Entities", (int*)&num_platforms, 100, 5000);
+        ImGuiLTable::SliderInt("Entities", (int*)&num_platforms, 1, 5000);
         if (ImGuiLTable::Button("Refresh"))
         {
             app.registry.write([&](entt::registry& r)
@@ -256,8 +262,7 @@ auto Demo_Simulation = [](Application& app)
                 vp.heading = 45;
                 vp.pointFunction = [&]()
                     {
-                        auto [lock, registry] = app.registry.read();
-                        return registry.get<Transform>(*entityNode->entities.begin()).position;
+                        return app.registry.read()->get<Transform>(*entityNode->entities.begin()).position;
                     };
 
                 manip->setViewpoint(vp, 2.0s);

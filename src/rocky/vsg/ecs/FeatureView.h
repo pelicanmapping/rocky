@@ -23,7 +23,8 @@ namespace ROCKY_NAMESPACE
         LineStyle line;
         MeshStyle mesh;
 
-        std::function<MeshStyle(const Feature&)> mesh_function;
+        // EXPERIMENTAL, may change
+        std::function<Color(const Feature&)> meshColorFunction;
     };
 
     /**
@@ -43,10 +44,15 @@ namespace ROCKY_NAMESPACE
         struct Primitives
         {
             Line line;
+            LineGeometry lineGeom;
+            LineStyle lineStyle;
+
             Mesh mesh;
+            MeshGeometry meshGeom;
+            MeshStyle meshStyle;
 
             inline bool empty() const {
-                return line.points.empty() && mesh.triangles.empty();
+                return lineGeom.points.empty() && meshGeom.triangles.empty();
             }
 
             //! Creates components for the primitive data and moves them
@@ -58,13 +64,18 @@ namespace ROCKY_NAMESPACE
 
                 auto e = r.create();
 
-                if (!line.points.empty())
+                if (!lineGeom.points.empty())
                 {
-                    r.emplace<Line>(e, std::move(line));
+                    auto& style = r.emplace<LineStyle>(e, std::move(lineStyle));
+                    auto& geom = r.emplace<LineGeometry>(e, std::move(lineGeom));
+                    r.emplace<Line>(e, geom, style);
+                    
                 }
-                if (!mesh.triangles.empty())
+                if (!meshGeom.triangles.empty())
                 {
-                    r.emplace<Mesh>(e, std::move(mesh));
+                    auto& style = r.emplace<MeshStyle>(e, std::move(meshStyle));
+                    auto& geom = r.emplace<MeshGeometry>(e, std::move(meshGeom));
+                    r.emplace<Mesh>(e, geom, style);
                 }
                 return e;
             }
@@ -73,8 +84,8 @@ namespace ROCKY_NAMESPACE
         //! Return value from FeatureView generate().
         struct PrimitivesRef
         {
-            Line* line = nullptr;
-            Mesh* mesh = nullptr;
+            LineGeometry* lineGeom = nullptr;
+            MeshGeometry* meshGeom = nullptr;
         };
 
     public:

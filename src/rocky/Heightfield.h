@@ -112,6 +112,7 @@ namespace ROCKY_NAMESPACE
     inline float& Heightfield::heightAt(unsigned c, unsigned r)
     {
         static float empty = 0;
+        ROCKY_HARD_ASSERT(_writable);
         ROCKY_SOFT_ASSERT_AND_RETURN(_writable, empty);
         return image->value<float>(c, r);
     }

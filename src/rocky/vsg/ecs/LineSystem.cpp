@@ -7,15 +7,15 @@
 #include "../PipelineState.h"
 #include "../VSGUtils.h"
 
-#include <cstring>
-
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 #define LINE_VERT_SHADER "shaders/rocky.line.vert"
 #define LINE_FRAG_SHADER "shaders/rocky.line.frag"
 
-#define LINE_BUFFER_SET 0 // must match layout(set=X) in the shader UBO
-#define LINE_BUFFER_BINDING 1 // must match the layout(binding=X) in the shader UBO (set=0)
+#define LINE_SET 0
+#define LINE_BINDING_STYLE_LUT 0 // layout(set=0, binding=0) in the shader
+#define LINE_BINDING_UNIFORMS  1 // layout(set=0, binding=1) in the shader
 
 namespace
 {
@@ -49,10 +49,13 @@ namespace
         shaderSet->addAttributeBinding("in_vertex", "", 0, VK_FORMAT_R32G32B32_SFLOAT, { });
         shaderSet->addAttributeBinding("in_vertex_prev", "", 1, VK_FORMAT_R32G32B32_SFLOAT, {});
         shaderSet->addAttributeBinding("in_vertex_next", "", 2, VK_FORMAT_R32G32B32_SFLOAT, {});
-        shaderSet->addAttributeBinding("in_color", "", 3, VK_FORMAT_R32G32B32A32_SFLOAT, {});
+        //shaderSet->addAttributeBinding("in_color", "", 3, VK_FORMAT_R32G32B32A32_SFLOAT, {});
 
         // line data uniform buffer (width, stipple, etc.)
-        shaderSet->addDescriptorBinding("line", "", LINE_BUFFER_SET, LINE_BUFFER_BINDING,
+        shaderSet->addDescriptorBinding("styles", "", LINE_SET, LINE_BINDING_STYLE_LUT,
+            VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
+
+        shaderSet->addDescriptorBinding("line", "", LINE_SET, LINE_BINDING_UNIFORMS,
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
 
         // We need VSG's view-dependent data:
@@ -68,7 +71,61 @@ namespace
 LineSystemNode::LineSystemNode(Registry& registry) :
     Inherit(registry)
 {
-    //nop
+    _styleInUse.fill(false);
+}
+
+namespace
+{
+    void on_construct_Line(entt::registry& r, entt::entity e)
+    {
+        r.emplace<LineDetail>(e);
+
+        // TODO: put this in a utility function somewhere
+        // common components that may already exist on this entity:
+        (void) r.get_or_emplace<ActiveState>(e);
+        (void) r.get_or_emplace<Visibility>(e);
+
+        r.get<Line>(e).owner = e;
+
+        // do this last, so that everything is set up when dirty is processed
+        r.get<Line>(e).dirty(r);
+    }
+
+    void on_construct_LineStyle(entt::registry& r, entt::entity e)
+    {
+        r.emplace<LineStyleDetail>(e);
+
+        r.get<LineStyle>(e).owner = e;
+
+        // do this last, so that everything is set up when dirty is processed
+        r.get<LineStyle>(e).dirty(r);
+    }
+
+    void on_construct_LineGeometry(entt::registry& r, entt::entity e)
+    {
+        r.emplace<LineGeometryDetail>(e);
+
+        r.get<LineGeometry>(e).owner = e;
+
+        // do this last, so that everything is set up when dirty is processed
+        r.get<LineGeometry>(e).dirty(r);
+    }
+
+
+    void on_destroy_Line(entt::registry& r, entt::entity e)
+    {
+        r.remove<LineDetail>(e);
+    }
+
+    void on_destroy_LineStyle(entt::registry& r, entt::entity e)
+    {
+        r.remove<LineStyleDetail>(e);
+    }
+
+    void on_destroy_LineGeometry(entt::registry& r, entt::entity e)
+    {
+        r.remove<LineGeometryDetail>(e);
+    }
 }
 
 void
@@ -85,11 +142,11 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
         return;
     }
 
-    pipelines.resize(NUM_PIPELINES);
+    _pipelines.resize(NUM_PIPELINES);
 
     for (int feature_mask = 0; feature_mask < NUM_PIPELINES; ++feature_mask)
     {
-        auto& c = pipelines[feature_mask];
+        auto& c = _pipelines[feature_mask];
 
         // Create the pipeline configurator for terrain; this is a helper object
         // that acts as a "template" for terrain tile rendering state.
@@ -102,7 +159,7 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
         c.config->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
         c.config->enableArray("in_vertex_prev", VK_VERTEX_INPUT_RATE_VERTEX, 12);
         c.config->enableArray("in_vertex_next", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-        c.config->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
+        //c.config->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
 
         // Uniforms we will need:
         c.config->enableDescriptor("line");
@@ -126,8 +183,7 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
                 }
             }
             void apply(vsg::ColorBlendState& state) override {
-                state.attachments = vsg::ColorBlendState::ColorBlendAttachments
-                {
+                state.attachments = vsg::ColorBlendState::ColorBlendAttachments {
                     { true,
                       VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
                       VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
@@ -145,23 +201,97 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
         c.commands->children.push_back(c.config->bindGraphicsPipeline);
         c.commands->children.push_back(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, c.config->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
     }
+
+    // Style look up table.
+    _styleLUT_data = vsg::ubyteArray::create(sizeof(LineStyleLUT));
+    _styleLUT_buffer = vsg::DescriptorBuffer::create(_styleLUT_data, LINE_BINDING_STYLE_LUT, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+
+    // add a default style in slot 0.
+    auto& styleLUT = *static_cast<LineStyleLUT*>(_styleLUT_data->dataPointer());
+    styleLUT.lut[0].populate(LineStyle());
+    _styleInUse[0] = true;
+    _styleLUTSize = 1;
+
+    _registry.write([&](entt::registry& r)
+        {
+            // install the ecs callbacks for Lines
+            r.on_construct<Line>().connect<&on_construct_Line>();
+            r.on_construct<LineStyle>().connect<&on_construct_LineStyle>();
+            r.on_construct<LineGeometry>().connect<&on_construct_LineGeometry>();
+
+            r.on_destroy<Line>().connect<&on_destroy_Line>();
+            r.on_destroy<LineStyle>().connect<&on_destroy_LineStyle>();
+            r.on_destroy<LineGeometry>().connect<&on_destroy_LineGeometry>();
+
+            // Set up the dirty tracking.
+            auto e = r.create();
+            r.emplace<Line::Dirty>(e);
+            r.emplace<LineStyle::Dirty>(e);
+            r.emplace<LineGeometry::Dirty>(e);
+        });
 }
 
 void
-LineSystemNode::createOrUpdateNode(const Line& line, detail::BuildInfo& data, VSGContext& vsgcontext) const
+LineSystemNode::createOrUpdateLineNode(const Line& line, LineDetail& lineDetail, LineStyleDetail* style, LineGeometryDetail* geom, VSGContext& context)
 {
-    bool reallocate = false;
-    bool uploadStyle = false;
-    bool uploadPoints = false;
+    auto layout = getPipelineLayout(line);
 
-    if (!data.existing_node)
+    if (!lineDetail.node)
+    {
+        auto bind = BindLineDescriptors::create();
+
+        bind->_lineUniforms_data = vsg::ubyteArray::create(sizeof(LineUniforms));
+        bind->_lineUniforms_buffer = vsg::DescriptorBuffer::create(bind->_lineUniforms_data, LINE_BINDING_UNIFORMS, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+
+        bind->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        bind->firstSet = 0;
+        bind->layout = layout;
+        bind->descriptorSet = vsg::DescriptorSet::create(layout->setLayouts.front(),
+            vsg::Descriptors{ _styleLUT_buffer, bind->_lineUniforms_buffer });
+
+        lineDetail.node = vsg::StateGroup::create();
+        lineDetail.node->stateCommands.emplace_back(bind);
+        lineDetail.bind = bind;
+
+        compile(lineDetail.node);
+    }
+
+    ROCKY_SOFT_ASSERT_AND_RETURN(lineDetail.node, void());
+
+    // remove the children so we can rebuild the graph.
+    lineDetail.node->children.clear();
+
+    vsg::Group* parent = lineDetail.node;
+
+    if (style)
+    {
+        LineUniforms& uniforms = *static_cast<LineUniforms*>(lineDetail.bind->_lineUniforms_data->dataPointer());
+        uniforms.style = style->index;
+        upload(lineDetail.bind->_lineUniforms_buffer->bufferInfoList);
+    }
+
+    if (geom)
+    {
+        ROCKY_SOFT_ASSERT_AND_RETURN(geom->node, void(), "LineGeometryDetail node is missing");
+        parent->addChild(geom->node);
+    }
+}
+
+
+void
+LineSystemNode::createOrUpdateLineGeometry(const LineGeometry& geom, LineGeometryDetail& geomDetail, VSGContext& vsgcontext)
+{
+    // NB: registry is read-locked
+
+    bool reallocate = false;
+
+    if (!geomDetail.node)
     {
         reallocate = true;
     }
     else
     {
-        auto geometry = util::find<LineGeometry>(data.existing_node);
-        if (geometry && geometry->_capacity < line._capacity)
+        if (geomDetail.geomNode && geom.points.capacity() > geomDetail.capacity)
         {
             reallocate = true;
         }
@@ -169,216 +299,233 @@ LineSystemNode::createOrUpdateNode(const Line& line, detail::BuildInfo& data, VS
 
     if (reallocate)
     {
-        if (data.existing_node)
-        {
-            vsgcontext->dispose(data.existing_node);
-        }
+        if (geomDetail.geomNode)
+            vsgcontext->dispose(geomDetail.geomNode);
 
-        auto bindCommand = BindLineDescriptors::create();
-        bindCommand->updateStyle(line.style);
-        bindCommand->init(getPipelineLayout(line));
+        geomDetail.geomNode = LineGeometryNode::create();
 
-        auto stategroup = vsg::StateGroup::create();
-        stategroup->stateCommands.push_back(bindCommand);
+        // update the known capacity:
+        geomDetail.capacity = geom.points.capacity();
 
-        vsg::ref_ptr<LineGeometry> geometry;
-        vsg::ref_ptr<vsg::Node> geometry_root;
+        vsg::ref_ptr<vsg::Node> root;
         vsg::dmat4 localizer_matrix;
 
-        if (line.srs.valid())
+        if (geom.srs.valid())
         {
-            GeoPoint anchor(line.srs, 0, 0);
-            if (!line.points.empty())
-                anchor = GeoPoint(line.srs, (line.points.front() + line.points.back()) * 0.5);
+            GeoPoint anchor(geom.srs, 0, 0);
+            if (!geom.points.empty())
+                anchor = GeoPoint(geom.srs, (geom.points.front() + geom.points.back()) * 0.5);
 
-            SRSOperation xform;
-            glm::dvec3 offset;
-            bool ok = parseReferencePoint(anchor, xform, offset);
-            ROCKY_SOFT_ASSERT_AND_RETURN(ok, void());
+            ROCKY_SOFT_ASSERT_AND_RETURN(anchor.valid(), void());
+            auto [xform, offset] = anchor.parseAsReferencePoint();
 
             // make a copy that we will use to transform and offset:
-            geometry = LineGeometry::create();
-            if (!line.points.empty())
+            if (!geom.points.empty())
             {
-                std::vector<glm::dvec3> copy(line.points);
+                std::vector<glm::dvec3> copy(geom.points);
                 xform.transformRange(copy.begin(), copy.end());
                 for (auto& point : copy)
                     point -= offset;
-                geometry->set(copy, line.topology, line._capacity);
+
+                geomDetail.geomNode->set(copy, geom.topology, geomDetail.capacity);
             }
             else
             {
-                geometry->set(line.points, line.topology, line._capacity);
+                geomDetail.geomNode->set(geom.points, geom.topology, geomDetail.capacity);
             }
 
 
             localizer_matrix = vsg::translate(to_vsg(offset));
             auto localizer = vsg::MatrixTransform::create(localizer_matrix);
-            localizer->addChild(geometry);
-            geometry_root = localizer;
+            localizer->addChild(geomDetail.geomNode);
+            root = localizer;
         }
         else
         {
             // no reference point -- push raw geometry
-            geometry = LineGeometry::create();
-            geometry->set(line.points, line.topology, line._capacity);
-            geometry_root = geometry;
+            geomDetail.geomNode->set(geom.points, geom.topology, geomDetail.capacity);
+            root = geomDetail.geomNode;
         }
 
-        auto cull = vsg::CullNode::create();
-        if (stategroup)
+        if (!geomDetail.cullNode)
         {
-            stategroup->addChild(geometry_root);
-            cull->child = stategroup;
+            geomDetail.cullNode = vsg::CullNode::create();
         }
-        else
-        {
-            cull->child = geometry_root;
-        }
+
+        geomDetail.cullNode->child = root;
 
         // hand-calculate the bounding sphere
-        geometry->calcBound(cull->bound, localizer_matrix);
+        geomDetail.geomNode->calcBound(geomDetail.cullNode->bound, localizer_matrix);
 
-        data.new_node = cull;
+        geomDetail.node = geomDetail.cullNode;
 
-        uploadStyle = true;
-        uploadPoints = true;
+        compile(geomDetail.node);
     }
 
     else // existing node -- update:
     {
-        // style:
-        auto* bindStyle = util::find<BindLineDescriptors>(data.existing_node);
-        if (bindStyle)
+        vsg::dsphere bound;
+        vsg::dmat4 localizer_matrix;
+
+        if (geom.srs.valid() && geom.points.size() > 0)
         {
-            uploadStyle = bindStyle->updateStyle(line.style);
+            GeoPoint anchor(geom.srs, (geom.points.front() + geom.points.back()) * 0.5);
+
+            ROCKY_SOFT_ASSERT_AND_RETURN(anchor.valid(), void());
+
+            auto [xform, offset] = anchor.parseAsReferencePoint();
+
+            // make a copy that we will use to transform and offset:
+            std::vector<glm::dvec3> copy(geom.points);
+            xform.transformRange(copy.begin(), copy.end());
+            for (auto& point : copy)
+                point -= offset;
+
+            geomDetail.geomNode->set(copy, geom.topology, geomDetail.capacity);
+
+            auto mt = util::find<vsg::MatrixTransform>(geomDetail.node);
+            mt->matrix = vsg::translate(to_vsg(offset));
+            localizer_matrix = mt->matrix;
+        }
+        else
+        {
+            // no reference point -- push raw geometry
+            geomDetail.geomNode->set(geom.points, geom.topology, geomDetail.capacity);
         }
 
-        // points:
-        auto* geometry = util::find<LineGeometry>(data.existing_node);
-        if (geometry)
-        {
-            vsg::dsphere bound;
-            vsg::dmat4 localizer_matrix;
+        // hand-calculate the bounding sphere
+        geomDetail.geomNode->calcBound(geomDetail.cullNode->bound, localizer_matrix);
 
-            if (line.srs.valid() && line.points.size() > 0)
-            {
-                GeoPoint anchor(line.srs, (line.points.front() + line.points.back()) * 0.5);
-
-                SRSOperation xform;
-                glm::dvec3 offset;
-                bool ok = parseReferencePoint(anchor, xform, offset);
-                ROCKY_SOFT_ASSERT_AND_RETURN(ok, void());
-
-                // make a copy that we will use to transform and offset:
-                std::vector<glm::dvec3> copy(line.points);
-                xform.transformRange(copy.begin(), copy.end());
-                for (auto& point : copy)
-                    point -= offset;
-
-                geometry->set(copy, line.topology, line._capacity);
-
-                auto mt = util::find<vsg::MatrixTransform>(data.existing_node);
-                mt->matrix = vsg::translate(to_vsg(offset));
-                localizer_matrix = mt->matrix;
-            }
-            else
-            {
-                // no reference point -- push raw geometry
-                geometry->set(line.points, line.topology, line._capacity);
-            }
-
-            // hand-calculate the bounding sphere
-            auto cull = util::find<vsg::CullNode>(data.existing_node);
-            geometry->calcBound(cull->bound, localizer_matrix);
-
-            uploadPoints = true;
-        }
+        // upload the changed arrays
+        upload(geomDetail.geomNode->arrays);
+        upload(geomDetail.geomNode->indices);
     }
-
-    // check for updates to the style, and upload the new data if needed:
-    if (uploadStyle)
-    {
-        auto stategroup = util::find<vsg::StateGroup>(data.new_node ? data.new_node : data.existing_node);
-        if (stategroup)
-        {
-            auto bindCommand = stategroup->stateCommands[0]->cast<BindLineDescriptors>();
-            vsgcontext->upload(bindCommand->_ubo->bufferInfoList);
-        }
-    }
-
-    if (uploadPoints)
-    {
-        auto geometry = util::find<LineGeometry>(data.new_node ? data.new_node : data.existing_node);
-        if (geometry)
-        {
-            if (geometry->_current && geometry->indices)
-            {
-                vsgcontext->upload(geometry->arrays);
-                vsgcontext->upload(vsg::BufferInfoList{ geometry->indices });
-            }
-        }
-    }
-}
-
-int
-LineSystemNode::featureMask(const Line& c) const
-{
-    int mask = 0;
-    if (c.writeDepth) mask |= WRITE_DEPTH;
-    return mask;
-}
-
-
-BindLineDescriptors::BindLineDescriptors()
-{
-    //nop
-}
-
-bool
-BindLineDescriptors::updateStyle(const LineStyle& value)
-{
-    bool force = false;
-
-    if (!_styleData)
-    {
-        _styleData = vsg::ubyteArray::create(sizeof(LineStyle));
-        // do NOT mark as DYNAMIC_DATA, since we only update it when the style changes.
-        force = true;
-    }
-
-    LineStyle& my_style = *static_cast<LineStyle*>(_styleData->dataPointer());
-
-    if (force || (std::memcmp(&my_style, &value, sizeof(LineStyle)) != 0))
-    {
-        my_style = value;
-        _styleData->dirty();
-        return true;
-    }
-
-    return false;
 }
 
 void
-BindLineDescriptors::init(vsg::ref_ptr<vsg::PipelineLayout> layout)
+LineSystemNode::createOrUpdateLineStyle(const LineStyle& style, LineStyleDetail& styleDetail)
 {
-    vsg::Descriptors descriptors;
+    auto& styleLUT = *static_cast<LineStyleLUT*>(_styleLUT_data->dataPointer());
 
-    // the style buffer:
-    _ubo = vsg::DescriptorBuffer::create(_styleData, LINE_BUFFER_BINDING, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-    descriptors.push_back(_ubo);
-
-    if (!descriptors.empty())
+    if (styleDetail.index >= 0)
     {
-        this->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        this->firstSet = 0;
-        this->layout = layout;
-        this->descriptorSet = vsg::DescriptorSet::create(layout->setLayouts.front(), descriptors);
+        styleLUT.lut[styleDetail.index].populate(style);
+    }
+    else
+    {
+        ROCKY_SOFT_ASSERT_AND_RETURN(_styleLUTSize <= MAX_LINE_STYLES, void(),
+            "Line style LUT overflow - call support");
+
+        for (unsigned i = 0; i < MAX_LINE_STYLES; ++i)
+        {
+            if (!_styleInUse[i])
+            {
+                _styleInUse[i] = true;
+                styleLUT.lut[i].populate(style);
+                styleDetail.index = i;
+                _styleLUTSize = std::max(_styleLUTSize, i + 1);
+                break;
+            }
+        }
     }
 }
 
+void
+LineSystemNode::traverse(vsg::RecordTraversal& record) const
+{
+    const vsg::dmat4 identity_matrix = vsg::dmat4(1.0);
 
-LineGeometry::LineGeometry()
+    detail::RenderingState rs {
+        record.getCommandBuffer()->viewID,
+        record.getFrameStamp()->frameCount
+    };
+
+    // Collect render leaves while locking the registry
+    _registry.read([&](entt::registry& reg)
+        {
+            auto view = reg.view<Line, LineDetail, ActiveState, Visibility>();
+            for (auto&& [entity, comp, lineDetail, active, visibility] : view.each())
+            {
+                if (lineDetail.node && visible(visibility, rs))
+                {
+                    auto* transformDetail = reg.try_get<TransformDetail>(entity);
+                    if (transformDetail)
+                    {
+                        if (transformDetail->passingCull(rs))
+                        {
+                            _renderLeaves.emplace_back(RenderLeaf{ lineDetail.node, transformDetail });
+                        }
+                    }
+                    else
+                    {
+                        _renderLeaves.emplace_back(RenderLeaf{ lineDetail.node, nullptr });
+                    }
+                }
+            }
+        });
+
+    // Render collected data
+    if (!_renderLeaves.empty())
+    {
+        _pipelines[0].commands->accept(record);
+
+        for (auto& leaf : _renderLeaves)
+        {
+            if (leaf.xformDetail)
+            {
+                leaf.xformDetail->push(record);
+            }
+
+            leaf.node->accept(record);
+
+            if (leaf.xformDetail)
+            {
+                leaf.xformDetail->pop(record);
+            }
+        }
+    }
+
+    _renderLeaves.clear();
+}
+
+void
+LineSystemNode::update(VSGContext& vsgcontext)
+{
+    bool uploadStyles = false;
+
+    _registry.read([&](entt::registry& reg)
+        {
+            LineStyle::eachDirty(reg, [&](entt::entity e)
+                {
+                    auto& [style, styleDetail] = reg.get<LineStyle, LineStyleDetail>(e);
+                    createOrUpdateLineStyle(style, styleDetail);
+                    uploadStyles = true;
+                });
+
+            LineGeometry::eachDirty(reg, [&](entt::entity e)
+                {
+                    auto& [geom, geomDetail] = reg.get<LineGeometry, LineGeometryDetail>(e);
+                    createOrUpdateLineGeometry(geom, geomDetail, vsgcontext);
+                });
+
+            Line::eachDirty(reg, [&](entt::entity e)
+                {
+                    auto& [line, lineDetail] = reg.get<Line, LineDetail>(e);
+                    auto* styleDetail = line.style != entt::null ? reg.try_get<LineStyleDetail>(line.style) : nullptr;
+                    auto* geomDetail = line.geometry != entt::null ? reg.try_get<LineGeometryDetail>(line.geometry) : nullptr;
+                    createOrUpdateLineNode(line, lineDetail, styleDetail, geomDetail, vsgcontext);
+                });                    
+        });
+
+    if (uploadStyles)
+    {
+        upload(_styleLUT_buffer->bufferInfoList);
+    }
+
+    Inherit::update(vsgcontext);
+}
+
+LineGeometryNode::LineGeometryNode()
 {
     _drawCommand = vsg::DrawIndexed::create(
         0, // index count
@@ -392,19 +539,19 @@ LineGeometry::LineGeometry()
 }
 
 void
-LineGeometry::setFirst(unsigned value)
+LineGeometryNode::setFirst(unsigned value)
 {
     _drawCommand->firstIndex = value * 4;
 }
 
 void
-LineGeometry::setCount(unsigned value)
+LineGeometryNode::setCount(unsigned value)
 {
     _drawCommand->indexCount = value * 6;
 }
 
 void
-LineGeometry::calcBound(vsg::dsphere& output, const vsg::dmat4& matrix) const
+LineGeometryNode::calcBound(vsg::dsphere& output, const vsg::dmat4& matrix) const
 {
     int first = _drawCommand->firstIndex / 4;
     int count = _drawCommand->indexCount / 6;
@@ -416,20 +563,16 @@ LineGeometry::calcBound(vsg::dsphere& output, const vsg::dmat4& matrix) const
     }
 }
 
-
 void
-Line::recycle(entt::registry& registry)
+LineGeometry::recycle(entt::registry& reg)
 {
-    auto& renderable = registry.get<detail::Renderable>(attach_point);
-    if (renderable.node)
+    auto& geomDetail = reg.get<LineGeometryDetail>(owner);
+    if (geomDetail.node)
     {
-        auto geometry = util::find<LineGeometry>(renderable.node);
-        if (geometry)
-        {
-            geometry->setCount(0);
-        }
+        auto geom = util::find<LineGeometryNode>(geomDetail.node);
+        if (geom)
+            geom->setCount(0);
     }
-
     points.clear();
-    dirty();
+    dirty(reg);
 }

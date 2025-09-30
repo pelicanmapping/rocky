@@ -540,7 +540,7 @@ namespace ROCKY_NAMESPACE
 
         //! Finds the first node of a given type in a scene graph.
         template<class T>
-        inline T* find(const vsg::ref_ptr<vsg::Object>& root)
+        inline T* find(vsg::Object* root)
         {
             detail::FindNodeVisitor<T> visitor;
             root->accept(visitor);
@@ -549,7 +549,7 @@ namespace ROCKY_NAMESPACE
 
         //! Finds every node of a fiven type and runs a function against it
         template<class T>
-        inline void forEach(const vsg::ref_ptr<vsg::Object>& root, std::function<void(T*)> func)
+        inline void forEach(vsg::Object* root, std::function<void(T*)> func)
         {
             if (!root) return;
             detail::ForEachNodeVisitor<T> visitor(func);
