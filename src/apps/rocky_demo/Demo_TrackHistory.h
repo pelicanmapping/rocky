@@ -169,7 +169,7 @@ namespace
                 auto& geom = registry.emplace<LineGeometry>(c.attach_point);
                 geom.points.reserve(track_chunk_size);
 
-                registry.emplace<Line>(c.attach_point, geom.owner, style);
+                registry.emplace<Line>(c.attach_point, geom, registry.get<LineStyle>(style));
 
                 // Tie track visibility to host visibility:
                 updateVisibility(registry, host_entity, c);

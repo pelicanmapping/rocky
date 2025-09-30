@@ -59,7 +59,7 @@ namespace
         shaderSet->addDescriptorBinding("mesh", "", MESH_SET, MESH_BINDING_UNIFORMS,
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
 
-        shaderSet->addDescriptorBinding("meshTexture", "", MESH_SET, MESH_BINDING_TEXTURES,
+        shaderSet->addDescriptorBinding("Texture", "", MESH_SET, MESH_BINDING_TEXTURES,
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_MESH_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
         // Note: 128 is the maximum size required by the Vulkan spec so don't increase it
@@ -98,8 +98,9 @@ namespace
         r.get<MeshGeometry>(e).dirty(r);
     }
 
-    void on_construct_MeshTexture(entt::registry& r, entt::entity e)
+    void on_construct_Texture(entt::registry& r, entt::entity e)
     {
+        (void)r.get_or_emplace<MeshTextureDetail>(e);
         auto& tex = r.get<MeshTexture>(e);
         tex.owner = e;
         tex.dirty(r);
@@ -123,7 +124,7 @@ namespace
 
     void on_destroy_MeshTexture(entt::registry& r, entt::entity e)
     {
-        // nop - todo: remove it from the texture atlas?
+        r.remove<MeshTextureDetail>(e);
     }
 }
 
@@ -221,17 +222,17 @@ MeshSystemNode::initialize(VSGContext& context)
     }
 
     // Style look up table.
-    _styleLUT_data = vsg::ubyteArray::create(sizeof(MeshStyleLUT));
-    _styleLUT_buffer = vsg::DescriptorBuffer::create(_styleLUT_data, MESH_BINDING_STYLE_LUT, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    _styleAtlasData = vsg::ubyteArray::create(sizeof(MeshStyleLUT));
+    _styleAtlasBuffer = vsg::DescriptorBuffer::create(_styleAtlasData, MESH_BINDING_STYLE_LUT, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
     // add a default style in slot 0.
-    auto& styleLUT = *static_cast<MeshStyleLUT*>(_styleLUT_data->dataPointer());
+    auto& styleLUT = *static_cast<MeshStyleLUT*>(_styleAtlasData->dataPointer());
     styleLUT.lut[0].populate(MeshStyle());
     _styleInUse[0] = true;
     _styleLUTSize = 1;
 
     // Texture arena
-    _textureBuffer = vsg::DescriptorImage::create(
+    _textureAtlasBuffer = vsg::DescriptorImage::create(
         vsg::ImageInfoList{},
         MESH_BINDING_TEXTURES, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
@@ -241,7 +242,7 @@ MeshSystemNode::initialize(VSGContext& context)
             r.on_construct<Mesh>().connect<&on_construct_Mesh>();
             r.on_construct<MeshStyle>().connect<&on_construct_MeshStyle>();
             r.on_construct<MeshGeometry>().connect<&on_construct_MeshGeometry>();
-            r.on_construct<MeshTexture>().connect<&on_construct_MeshTexture>();
+            r.on_construct<MeshTexture>().connect<&on_construct_Texture>();
 
             r.on_destroy<Mesh>().connect<&on_destroy_Mesh>();
             r.on_destroy<MeshStyle>().connect<&on_destroy_MeshStyle>();
@@ -276,7 +277,7 @@ MeshSystemNode::createOrUpdateComponent(const Mesh& mesh, MeshDetail& meshDetail
         bind->firstSet = 0;
         bind->layout = layout;
         bind->descriptorSet = vsg::DescriptorSet::create(layout->setLayouts.front(),
-            vsg::Descriptors{ _styleLUT_buffer, _textureBuffer, bind->_uniformsBuffer });
+            vsg::Descriptors{ _styleAtlasBuffer, _textureAtlasBuffer, bind->_uniformsBuffer });
 
         meshDetail.node = vsg::StateGroup::create();
         meshDetail.node->stateCommands.emplace_back(bind);
@@ -293,7 +294,7 @@ MeshSystemNode::createOrUpdateComponent(const Mesh& mesh, MeshDetail& meshDetail
     vsg::Group* parent = meshDetail.node;
 
     auto& uniforms = *static_cast<MeshUniforms*>(meshDetail.bind->_uniformsData->dataPointer());
-    auto styleIndex = styleDetail ? styleDetail->index : -1;
+    auto styleIndex = styleDetail ? styleDetail->styleAtlasIndex : -1;
     if (isNew || styleIndex != uniforms.styleIndex)
     {
         uniforms.styleIndex = styleIndex;
@@ -436,12 +437,12 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
 void
 MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& styleDetail, entt::registry& reg)
 {
-    auto& styleLUT = *static_cast<MeshStyleLUT*>(_styleLUT_data->dataPointer());
+    auto& styleLUT = *static_cast<MeshStyleLUT*>(_styleAtlasData->dataPointer());
     bool reassignTextures = false;
 
-    if (styleDetail.index >= 0)
+    if (styleDetail.styleAtlasIndex >= 0)
     {
-        auto& entry = styleLUT.lut[styleDetail.index];
+        auto& entry = styleLUT.lut[styleDetail.styleAtlasIndex];
         entry.populate(style);
     }
     else
@@ -455,14 +456,14 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
             {
                 _styleInUse[i] = true;
                 styleLUT.lut[i].populate(style);
-                styleDetail.index = i;
+                styleDetail.styleAtlasIndex = i;
                 _styleLUTSize = std::max(_styleLUTSize, i + 1);
                 break;
             }
         }
     }
 
-    auto& entry = styleLUT.lut[styleDetail.index];
+    auto& entry = styleLUT.lut[styleDetail.styleAtlasIndex];
 
     if (style.texture == entt::null)
     {
@@ -473,9 +474,9 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
     {
         entry.textureIndex = -1;
         auto& tex = reg.get<MeshTexture>(style.texture);
-        for (unsigned i = 0; i < _textureBuffer->imageInfoList.size(); ++i)
+        for (unsigned i = 0; i < _textureAtlasBuffer->imageInfoList.size(); ++i)
         {
-            if (tex.imageInfo == _textureBuffer->imageInfoList[i])
+            if (tex.imageInfo == _textureAtlasBuffer->imageInfoList[i])
             {
                 entry.textureIndex = i;
                 break;
@@ -485,17 +486,18 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
 
     styleDetail.texture = style.texture;
 
-    upload(_styleLUT_buffer->bufferInfoList);
+    upload(_styleAtlasBuffer->bufferInfoList);
 }
 
 void
-MeshSystemNode::addOrUpdateTexture(const MeshTexture& tex)
+MeshSystemNode::addOrUpdateTexture(const MeshTexture& tex, MeshTextureDetail& texDetail)
 {
-    if (tex._index < 0 && tex.imageInfo)
+    if (texDetail.texAtlasIndex < 0 && tex.imageInfo)
     {
         auto i = _textureArenaSize++;
-        _textureBuffer->imageInfoList.resize(_textureArenaSize);
-        _textureBuffer->imageInfoList[i] = tex.imageInfo;
+        _textureAtlasBuffer->imageInfoList.resize(_textureArenaSize);
+        _textureAtlasBuffer->imageInfoList[i] = tex.imageInfo;
+        texDetail.texAtlasIndex = i;
         // don't compile yet... there may be others
     }
 }
@@ -582,8 +584,8 @@ MeshSystemNode::update(VSGContext& vsgcontext)
         {
             MeshTexture::eachDirty(reg, [&](entt::entity e)
                 {
-                    auto& tex = reg.get<MeshTexture>(e);
-                    addOrUpdateTexture(tex);
+                    auto& [tex, texDetail] = reg.get<MeshTexture, MeshTextureDetail>(e);
+                    addOrUpdateTexture(tex, texDetail);
                 });
 
             MeshStyle::eachDirty(reg, [&](entt::entity e)
@@ -610,12 +612,12 @@ MeshSystemNode::update(VSGContext& vsgcontext)
 
     if (uploadStyles)
     {
-        upload(_styleLUT_buffer->bufferInfoList);
+        upload(_styleAtlasBuffer->bufferInfoList);
     }
 
     if (numTextures < _textureArenaSize)
     {
-        compile(_textureBuffer);
+        compile(_textureAtlasBuffer);
     }
 
     Inherit::update(vsgcontext);

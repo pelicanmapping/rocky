@@ -72,8 +72,6 @@ namespace ROCKY_NAMESPACE
 
         //! Useful constructors
         inline Line() = default;
-        inline Line(entt::entity geometry_) : geometry(geometry_) {}
-        inline Line(entt::entity geometry_, entt::entity style_) : geometry(geometry_), style(style_) {}
         inline Line(const LineGeometry& geometry_) : geometry(geometry_.owner) {}
         inline Line(const LineGeometry& geometry_, const LineStyle& style_) : geometry(geometry_.owner), style(style_.owner) {}
     };

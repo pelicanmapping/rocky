@@ -4,7 +4,7 @@ Rocky is a C++ SDK for rendering maps and globes. <img align="right" width="200"
 
 Rocky will render an accurate 3D or 2D map with real geospatial imagery and elevation data. It supports thousands of map projections and many popular geodata sources including GeoTIFF, TMS, OpenStreetMap, WMTS, WMS, and Azure Maps. Rocky's data model is inspired by the osgEarth SDK, a 3D GIS toolkit created in 2008 and still in wide use today.
 
-This project is in its early stages so expect a lot of API and architectural changes before version 1.0. 
+**This project is in its early stages so expect a lot of API and architectural changes before version 1.0.**
 
 ![Windows](https://github.com/pelicanmapping/rocky/actions/workflows/ci-windows-minimal.yml/badge.svg)
 ![Documentation](https://github.com/pelicanmapping/rocky/actions/workflows/mkdocs-gh-pages.yml/badge.svg)

@@ -89,7 +89,7 @@ namespace ROCKY_NAMESPACE
         struct MeshStyleDetail
         {
             entt::entity texture = entt::null; // last know texture entt
-            int index = -1; // index into the Styles LUT SSBO
+            int styleAtlasIndex = -1; // index into the Styles LUT SSBO
         };
 
         struct MeshGeometryDetail
@@ -104,6 +104,11 @@ namespace ROCKY_NAMESPACE
         {
             vsg::ref_ptr<vsg::StateGroup> node;
             BindMeshDescriptors* bind = nullptr;
+        };
+
+        struct MeshTextureDetail
+        {
+            int texAtlasIndex = -1; // index into the texture array
         };
     }
 
@@ -167,9 +172,13 @@ namespace ROCKY_NAMESPACE
         mutable std::vector<RenderLeaf> _renderLeaves;
 
         // SSBO data for the Style LUT
-        mutable vsg::ref_ptr<vsg::ubyteArray> _styleLUT_data;
-        mutable vsg::ref_ptr<vsg::DescriptorBuffer> _styleLUT_buffer;
-        mutable vsg::ref_ptr<vsg::DescriptorImage> _textureBuffer;
+        mutable vsg::ref_ptr<vsg::ubyteArray> _styleAtlasData;
+
+        // GPU buffer for tye Style LUT
+        mutable vsg::ref_ptr<vsg::DescriptorBuffer> _styleAtlasBuffer;
+
+        // GPU buffer for the texture atlas array
+        mutable vsg::ref_ptr<vsg::DescriptorImage> _textureAtlasBuffer;
 
         // Called when a component is marked dirty (i.e., upon first creation or when either the
         // style of the geometry entity is reassigned).
@@ -183,6 +192,6 @@ namespace ROCKY_NAMESPACE
         void createOrUpdateStyle(const MeshStyle&, detail::MeshStyleDetail&, entt::registry&);
 
         // Called when a new mesh texture shows up
-        void addOrUpdateTexture(const MeshTexture&);
+        void addOrUpdateTexture(const MeshTexture&, detail::MeshTextureDetail&);
     };
 }

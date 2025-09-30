@@ -47,15 +47,17 @@ namespace ROCKY_NAMESPACE
         // as a simple method or avoiding depth fighting
         float depthOffset = 0.0f;
 
-        // texture
+        //! Entity hotsing the (optional) Texture to use
         entt::entity texture = entt::null;
     };
 
     //! Mesh comonent
     struct Mesh : public ComponentBase2<Mesh>
     {
+        //! Entity hosting the MeshGeometry to use
         entt::entity geometry = entt::null;
 
+        //! Entity hosting the MeshStyle to use
         entt::entity style = entt::null;
 
         //! Whether to write the the depth buffer
@@ -66,8 +68,6 @@ namespace ROCKY_NAMESPACE
 
         //! Useful constructors
         inline Mesh() = default;
-        inline Mesh(entt::entity geometry_) : geometry(geometry_) {}
-        inline Mesh(entt::entity geometry_, entt::entity style_) : geometry(geometry_), style(style_) {}
         inline Mesh(const MeshGeometry& geometry_) : geometry(geometry_.owner) {}
         inline Mesh(const MeshGeometry& geometry_, const MeshStyle& style_) : geometry(geometry_.owner), style(style_.owner) {}
     };

@@ -13,7 +13,7 @@ layout(location = 2) flat in Varyings vary;
 layout(location = 0) out vec4 outColor;
 
 // textures
-layout(set = 0, binding = 2) uniform sampler2D meshTexture[1024];
+layout(set = 0, binding = 2) uniform sampler2D Texture[1024];
 
 
 void main()
@@ -22,6 +22,6 @@ void main()
 
     if (vary.textureIndex >= 0)
     {
-        outColor.rgb *= texture(meshTexture[vary.textureIndex], uv).rgb;
+        outColor.rgb *= texture(Texture[vary.textureIndex], uv).rgb;
     }
 }

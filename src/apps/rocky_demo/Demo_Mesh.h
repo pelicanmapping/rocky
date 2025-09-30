@@ -232,7 +232,7 @@ auto Demo_Mesh_Textured = [](Application& app)
         app.vsgcontext->requestFrame();
     }
 
-    if (ImGuiLTable::Begin("MeshTexture"))
+    if (ImGuiLTable::Begin("Texture"))
     {
         auto [lock, reg] = app.registry.read();
 
@@ -355,7 +355,9 @@ auto Demo_Mesh_Shared = [](Application& app)
         {
             auto e = entities.emplace_back(reg.create());
 
-            reg.emplace<Mesh>(e, geoms[i % 3], styles[i % 3]);
+            reg.emplace<Mesh>(e,
+                reg.get<MeshGeometry>(geoms[i % 3]),
+                reg.get<MeshStyle>(styles[i % 3]));
 
             double lat = rand_unit(mt) * 170.0 - 85.0;
             double lon = rand_unit(mt) * 360.0 - 180.0;

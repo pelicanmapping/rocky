@@ -149,9 +149,9 @@ auto Demo_Line_Shared = [](Application& app)
 
     if (regenerate)
     {
-        app.registry.write([&](entt::registry& registry)
+        app.registry.write([&](entt::registry& reg)
             {
-                registry.destroy(entities.begin(), entities.end());
+                reg.destroy(entities.begin(), entities.end());
                 entities.clear();
                 regenerate = false;
             });
@@ -159,29 +159,29 @@ auto Demo_Line_Shared = [](Application& app)
 
     if (entities.empty())
     {
-        auto [_, registry] = app.registry.write();
+        auto [_, reg] = app.registry.write();
 
         const double size = 100000;
 
         // One style that all Lines will share:
-        styles[0] = entities.emplace_back(registry.create());
-        LineStyle& style0 = registry.emplace<LineStyle>(styles[0]);
+        styles[0] = entities.emplace_back(reg.create());
+        LineStyle& style0 = reg.emplace<LineStyle>(styles[0]);
         style0.color = Color::Red;
         style0.width = 2.0f;
 
-        styles[1] = entities.emplace_back(registry.create());
-        LineStyle& style1 = registry.emplace<LineStyle>(styles[1]);
+        styles[1] = entities.emplace_back(reg.create());
+        LineStyle& style1 = reg.emplace<LineStyle>(styles[1]);
         style1.color = Color::Yellow;
         style1.width = 2.0f;
         
-        styles[2] = entities.emplace_back(registry.create());
-        LineStyle& style2 = registry.emplace<LineStyle>(styles[2]);
+        styles[2] = entities.emplace_back(reg.create());
+        LineStyle& style2 = reg.emplace<LineStyle>(styles[2]);
         style2.color = Color::Lime;
         style2.width = 2.0f;
 
         // Create a few different line objects.
-        geoms[0] = entities.emplace_back(registry.create());
-        auto& square = registry.emplace<LineGeometry>(geoms[0]);
+        geoms[0] = entities.emplace_back(reg.create());
+        auto& square = reg.emplace<LineGeometry>(geoms[0]);
         square.points = {
             glm::dvec3{-size, -size, 0.0},
             glm::dvec3{ size, -size, 0.0},
@@ -189,16 +189,16 @@ auto Demo_Line_Shared = [](Application& app)
             glm::dvec3{-size,  size, 0.0},
             glm::dvec3{-size, -size, 0.0} };
 
-        geoms[1] = entities.emplace_back(registry.create());
-        auto& triangle = registry.emplace<LineGeometry>(geoms[1]);
+        geoms[1] = entities.emplace_back(reg.create());
+        auto& triangle = reg.emplace<LineGeometry>(geoms[1]);
         triangle.points = {
             glm::dvec3{0.0,  size, 0.0},
             glm::dvec3{ size, -size, 0.0},
             glm::dvec3{-size, -size, 0.0},
             glm::dvec3{0.0,  size, 0.0} };
 
-        geoms[2] = entities.emplace_back(registry.create());
-        auto& circle = registry.emplace<LineGeometry>(geoms[2]);
+        geoms[2] = entities.emplace_back(reg.create());
+        auto& circle = reg.emplace<LineGeometry>(geoms[2]);
         const int circle_points = 64;
         circle.points.reserve(circle_points);
         for (int i = 0; i <= circle_points; ++i) {
@@ -213,21 +213,23 @@ auto Demo_Line_Shared = [](Application& app)
         entities.reserve(count);
         for (unsigned i = 0; i < count; ++i)
         {
-            auto e = entities.emplace_back(registry.create());
+            auto e = entities.emplace_back(reg.create());
 
-            registry.emplace<Line>(e, geoms[i % 3], styles[i % 3]);
+            reg.emplace<Line>(e,
+                reg.get<LineGeometry>(geoms[i % 3]),
+                reg.get<LineStyle>(styles[i % 3]));
 
             double lat = rand_unit(mt) * 170.0 - 85.0;
             double lon = rand_unit(mt) * 360.0 - 180.0;
 
             // Add a transform that will place the line on the map
-            auto& transform = registry.emplace<Transform>(e);
+            auto& transform = reg.emplace<Transform>(e);
             transform.topocentric = true;
             transform.position = GeoPoint(SRS::WGS84, lon, lat, 25000.0);
             transform.radius = size; // for culling
 
             // Decluttering object, just to prove that it works with shared geometies:
-            auto& dc = registry.emplace<Declutter>(e);
+            auto& dc = reg.emplace<Declutter>(e);
             dc.rect = { -10, -10, 10, 10 };
             dc.priority = i % 3;
         }
@@ -239,17 +241,17 @@ auto Demo_Line_Shared = [](Application& app)
 
     if (ImGuiLTable::Begin("instanced linestring"))
     {
-        auto [_, r] = app.registry.read();
+        auto [_, reg] = app.registry.read();
 
-        auto& style0 = r.get<LineStyle>(styles[0]);
+        auto& style0 = reg.get<LineStyle>(styles[0]);
         if (ImGuiLTable::ColorEdit3("Color 1", (float*)&style0.color))
-            style0.dirty(r);
-        auto& style1 = r.get<LineStyle>(styles[1]);
+            style0.dirty(reg);
+        auto& style1 = reg.get<LineStyle>(styles[1]);
         if (ImGuiLTable::ColorEdit3("Color 2", (float*)&style1.color))
-            style1.dirty(r);
-        auto& style2 = r.get<LineStyle>(styles[2]);
+            style1.dirty(reg);
+        auto& style2 = reg.get<LineStyle>(styles[2]);
         if (ImGuiLTable::ColorEdit3("Color 3", (float*)&style2.color))
-            style2.dirty(r);
+            style2.dirty(reg);
 
         if (ImGuiLTable::Button("Regenerate"))
         {
