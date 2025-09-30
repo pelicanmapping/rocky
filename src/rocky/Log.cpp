@@ -43,5 +43,14 @@ Logger rocky::Log()
             }
         });
 
-    return spdlog::get("rocky");
+    auto logger = spdlog::get("rocky");
+
+    if (!logger)
+    {
+        // catch for calling Log() after static destruction of the 
+        // spdlog internal instance manager
+        logger = std::make_shared<spdlog::logger>("rocky.expired");
+    }
+
+    return logger;
 }
