@@ -584,26 +584,26 @@ MeshSystemNode::update(VSGContext& vsgcontext)
         {
             MeshTexture::eachDirty(reg, [&](entt::entity e)
                 {
-                    auto& [tex, texDetail] = reg.get<MeshTexture, MeshTextureDetail>(e);
+                    const auto& [tex, texDetail] = reg.get<MeshTexture, MeshTextureDetail>(e);
                     addOrUpdateTexture(tex, texDetail);
                 });
 
             MeshStyle::eachDirty(reg, [&](entt::entity e)
                 {
-                    auto& [style, styleDetail] = reg.get<MeshStyle, MeshStyleDetail>(e);
+                    const auto& [style, styleDetail] = reg.get<MeshStyle, MeshStyleDetail>(e);
                     createOrUpdateStyle(style, styleDetail, reg);
                     uploadStyles = true;
                 });
 
             MeshGeometry::eachDirty(reg, [&](entt::entity e)
                 {
-                    auto& [geom, geomDetail] = reg.get<MeshGeometry, MeshGeometryDetail>(e);
+                    const auto& [geom, geomDetail] = reg.get<MeshGeometry, MeshGeometryDetail>(e);
                     createOrUpdateGeometry(geom, geomDetail, vsgcontext);
                 });
 
             Mesh::eachDirty(reg, [&](entt::entity e)
                 {
-                    auto& [comp, compDetail] = reg.get<Mesh, MeshDetail>(e);
+                    const auto& [comp, compDetail] = reg.get<Mesh, MeshDetail>(e);
                     auto* styleDetail = comp.style != entt::null ? reg.try_get<MeshStyleDetail>(comp.style) : nullptr;
                     auto* geomDetail = comp.geometry != entt::null ? reg.try_get<MeshGeometryDetail>(comp.geometry) : nullptr;
                     createOrUpdateComponent(comp, compDetail, styleDetail, geomDetail, vsgcontext);

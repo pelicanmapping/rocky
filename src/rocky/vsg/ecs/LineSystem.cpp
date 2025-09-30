@@ -497,20 +497,20 @@ LineSystemNode::update(VSGContext& vsgcontext)
         {
             LineStyle::eachDirty(reg, [&](entt::entity e)
                 {
-                    auto& [style, styleDetail] = reg.get<LineStyle, LineStyleDetail>(e);
+                    const auto& [style, styleDetail] = reg.get<LineStyle, LineStyleDetail>(e);
                     createOrUpdateLineStyle(style, styleDetail);
                     uploadStyles = true;
                 });
 
             LineGeometry::eachDirty(reg, [&](entt::entity e)
                 {
-                    auto& [geom, geomDetail] = reg.get<LineGeometry, LineGeometryDetail>(e);
+                    const auto& [geom, geomDetail] = reg.get<LineGeometry, LineGeometryDetail>(e);
                     createOrUpdateLineGeometry(geom, geomDetail, vsgcontext);
                 });
 
             Line::eachDirty(reg, [&](entt::entity e)
                 {
-                    auto& [line, lineDetail] = reg.get<Line, LineDetail>(e);
+                    const auto& [line, lineDetail] = reg.get<Line, LineDetail>(e);
                     auto* styleDetail = line.style != entt::null ? reg.try_get<LineStyleDetail>(line.style) : nullptr;
                     auto* geomDetail = line.geometry != entt::null ? reg.try_get<LineGeometryDetail>(line.geometry) : nullptr;
                     createOrUpdateLineNode(line, lineDetail, styleDetail, geomDetail, vsgcontext);
