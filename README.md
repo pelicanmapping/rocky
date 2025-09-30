@@ -339,7 +339,7 @@ void addLabel(const std::string& text)
 {
     // Start by acquiring a write-lock on the registry.
     // The lock will release automatically at the end of the current scope.
-    auto [lock, registry] = app.registry.write();
+    auto& [lock, registry] = app.registry.write();
 
     // create a new entity
     auto entity = registry.create();
@@ -361,7 +361,7 @@ Let's briefly talk about the *Entity Registry*. In the ECS, the *registry* is a 
 ```c++
 void function_that_creates_or_destroys_things(Application& app)
 {
-   auto [lock, registry] = app.registry.write();
+   auto& [lock, registry] = app.registry.write();
    
    // ALL registry operations are safe here, including:
    auto e = registry.create();                // creating a new entity
@@ -372,7 +372,7 @@ void function_that_creates_or_destroys_things(Application& app)
 
 void function_that_only_reads_or_edits_things(Application& app)
 {
-   auto [lock, registry] = app.registry.read();
+   auto& [lock, registry] = app.registry.read();
 
    // ONLY actions that read data or modify data in-place are safe here, including:
    auto& label = registry.get<Label>(e);    // look up an existing component
@@ -422,7 +422,7 @@ app.registry.write([&](entt::registry& registry)
     });
 ```
 
-To toggle an entity's visiblity, use the `Visibility` component. (Rocky automatically adds a `Visibility` whenever you create one of the built-in primitive types - you don't have to emplace it yourself.) The component is actually an array so you can control visibility on a per-view basis.
+Use the `Visibility` component to toggle an entity's visibility. (Rocky automatically adds a `Visibility` whenever you create one of the built-in primitive types - you don't have to emplace it yourself.) The component is actually an array so you can control visibility on a per-view basis.
 ```c++
 // Set visibility on a particular view:
 app.registry.read([&](entt::registry& r)
