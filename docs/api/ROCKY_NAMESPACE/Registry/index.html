@@ -12,7 +12,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.20">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.21">
     
     
       
@@ -20,7 +20,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.e53b48f4.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.2a3383ac.min.css">
       
       
 
@@ -414,37 +414,37 @@
 <h2 id="functions">Functions</h2>
 <h3 id="read">read</h3>
 <p><em>public Read read()</em></p>
-<p><em>Defined at src/rocky/ecs/Registry.h#57</em></p>
+<p><em>Defined at src/rocky/ecs/Registry.h#58</em></p>
 <p>Returns a reference to a read-locked EnTT registry.</p>
 <p>A read-lock is appropriate for get(), view(), and in-place updates to existing components. The read-lock is scoped and will automatically release at the  closing of the usage scope.</p>
 <p>usage:   auto [lock, registry] = ecs_registry.read();</p>
 <p><strong>return</strong> A tuple including a scoped shared lock and a reference to the underlying registry</p>
 <h3 id="write">write</h3>
 <p><em>public Write write()</em></p>
-<p><em>Defined at src/rocky/ecs/Registry.h#70</em></p>
+<p><em>Defined at src/rocky/ecs/Registry.h#71</em></p>
 <p>Returns a reference to a write-locked EnTT registry.</p>
 <p>A write-lock is appropritae for calls to create(), destroy(), clear(), emplace(). Note: you do not need a write lock for in-place component changes.</p>
 <p>usage:   auto [lock, registry] = ecs_registry.write();</p>
 <p><strong>return</strong> A tuple including a scoped unique lock and a reference to the underlying registry</p>
 <h3 id="read_1">read</h3>
 <p><em>public void read(CALLABLE &amp;&amp; func)</em></p>
-<p><em>Defined at src/rocky/ecs/Registry.h#77</em></p>
+<p><em>Defined at src/rocky/ecs/Registry.h#78</em></p>
 <p>Convenience function to invoke a lambda with a read-locked registry reference. The signature of CALLABLE must match void(entt::registry&amp;).</p>
 <h3 id="write_1">write</h3>
 <p><em>public void write(CALLABLE &amp;&amp; func)</em></p>
-<p><em>Defined at src/rocky/ecs/Registry.h#86</em></p>
+<p><em>Defined at src/rocky/ecs/Registry.h#87</em></p>
 <p>Convenience function to invoke a lambda with a write-locked registry reference. The signature of CALLABLE must match void(entt::registry&amp;).</p>
 <h3 id="registry">Registry</h3>
 <p><em>public void Registry()</em></p>
-<p><em>Defined at src/rocky/ecs/Registry.h#93</em></p>
+<p><em>Defined at src/rocky/ecs/Registry.h#94</em></p>
 <p>Default constructor - empty registry</p>
 <h3 id="registry_1">Registry</h3>
 <p><em>public void Registry(const Registry &amp; rhs)</em></p>
-<p><em>Defined at src/rocky/ecs/Registry.h#96</em></p>
+<p><em>Defined at src/rocky/ecs/Registry.h#97</em></p>
 <p>Copy constructor</p>
 <h3 id="create">create</h3>
 <p><em>public Registry create()</em></p>
-<p><em>Defined at src/rocky/ecs/Registry.h#99</em></p>
+<p><em>Defined at src/rocky/ecs/Registry.h#100</em></p>
 <p>Creator</p>
 
 
