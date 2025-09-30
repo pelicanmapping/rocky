@@ -50,6 +50,12 @@ namespace ROCKY_NAMESPACE
     // These work because GLM and VSG classes are binary compatible.
     // C++ does not permit conversion operator overload outside of a class.
 
+    inline const glm::fvec2& to_glm(const vsg::vec2& a) {
+        return reinterpret_cast<const glm::fvec2&>(a);
+    }
+    inline const glm::dvec2& to_glm(const vsg::dvec2& a) {
+        return reinterpret_cast<const glm::dvec2&>(a);
+    }
     inline const glm::fvec3& to_glm(const vsg::vec3& a) {
         return reinterpret_cast<const glm::fvec3&>(a);
     }
@@ -75,6 +81,12 @@ namespace ROCKY_NAMESPACE
         return reinterpret_cast<const glm::dquat&>(a);
     }
 
+    inline const vsg::vec2& to_vsg(const glm::fvec2& a) {
+        return reinterpret_cast<const vsg::vec2&>(a);
+    }
+    inline const vsg::dvec2& to_vsg(const glm::dvec2& a) {
+        return reinterpret_cast<const vsg::dvec2&>(a);
+    }
     inline const vsg::vec3& to_vsg(const glm::fvec3& a) {
         return reinterpret_cast<const vsg::vec3&>(a);
     }

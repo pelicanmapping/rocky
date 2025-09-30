@@ -101,7 +101,6 @@ namespace
     void on_construct_MeshTexture(entt::registry& r, entt::entity e)
     {
         auto& tex = r.get<MeshTexture>(e);
-        tex._index = -1; // not yet assigned
         tex.owner = e;
         tex.dirty(r);
     }
@@ -323,41 +322,97 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
     vsg::ref_ptr<vsg::Node> root;
     vsg::dmat4 localizer_matrix;
 
-    if (geom.srs.valid() && geom.triangles.size() > 0)
+    if (geom.srs.valid())
     {
-        geomDetail.geomNode->reserve(geom.triangles.size() * 3);
-
-        GeoPoint anchor(geom.srs, geom.triangles.front().verts[0]);
-
-        auto [xform, offset] = anchor.parseAsReferencePoint();
-
-        vsg::dvec3 v0, v1, v2;
-        vsg::vec3 v32[3];
-        for (auto& tri : geom.triangles)
+        if (geom.verts.size() > 0)
         {
-            xform(tri.verts[0], v0); v32[0] = v0 - to_vsg(offset);
-            xform(tri.verts[1], v1); v32[1] = v1 - to_vsg(offset);
-            xform(tri.verts[2], v2); v32[2] = v2 - to_vsg(offset);
+            GeoPoint anchor(geom.srs, geom.verts.front());
+            auto [xform, offset] = anchor.parseAsReferencePoint();
 
-            geomDetail.geomNode->add(
-                v32,
-                reinterpret_cast<const vsg::vec2*>(tri.uvs),
-                reinterpret_cast<const vsg::vec4*>(tri.colors));
+            // transform and localize:
+            std::vector<glm::dvec3> verts(geom.verts); // copy
+            xform.transformRange(verts.begin(), verts.end());
+            for (auto& v : verts) v -= offset;
+
+            auto& gn = geomDetail.geomNode;
+
+            gn->_verts.resize(verts.size());
+            std::transform(verts.begin(), verts.end(), gn->_verts.begin(),
+                [](const glm::dvec3& v) { return to_vsg(v); });
+
+            gn->_colors.resize(geom.colors.size());
+            std::transform(geom.colors.begin(), geom.colors.end(), gn->_colors.begin(),
+                [](const glm::fvec4& c) { return to_vsg(c); });
+
+            gn->_uvs.resize(geom.uvs.size());
+            std::transform(geom.uvs.begin(), geom.uvs.end(), gn->_uvs.begin(),
+                [](const glm::fvec2& uv) { return to_vsg(uv); });
+
+            gn->_indices = geom.indices;
+
+            auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(offset)));
+            localizer->addChild(geomDetail.geomNode);
+            root = localizer;
         }
 
-        auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(offset)));
-        localizer->addChild(geomDetail.geomNode);
-        root = localizer;
+        else if (geom.triangles.size() > 0)
+        {
+            GeoPoint anchor(geom.srs, geom.triangles.front().verts[0]);
+            auto [xform, offset] = anchor.parseAsReferencePoint();
+
+            geomDetail.geomNode->reserve(geom.triangles.size() * 3);
+
+            vsg::dvec3 v0, v1, v2;
+            vsg::vec3 v32[3];
+            for (auto& tri : geom.triangles)
+            {
+                xform(tri.verts[0], v0); v32[0] = v0 - to_vsg(offset);
+                xform(tri.verts[1], v1); v32[1] = v1 - to_vsg(offset);
+                xform(tri.verts[2], v2); v32[2] = v2 - to_vsg(offset);
+
+                geomDetail.geomNode->addTriangle(
+                    v32,
+                    reinterpret_cast<const vsg::vec2*>(tri.uvs),
+                    reinterpret_cast<const vsg::vec4*>(tri.colors));
+            }
+
+            auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(offset)));
+            localizer->addChild(geomDetail.geomNode);
+            root = localizer;
+        }
     }
     else
     {
-        for (auto& tri : geom.triangles)
+        if (geom.verts.size() > 0)
         {
-            geomDetail.geomNode->add(
-                reinterpret_cast<const vsg::dvec3*>(tri.verts),
-                reinterpret_cast<const vsg::vec2*>(tri.uvs),
-                reinterpret_cast<const vsg::vec4*>(tri.colors));
+            auto& gn = geomDetail.geomNode;
+
+            gn->_verts.resize(geom.verts.size());
+            std::transform(geom.verts.begin(), geom.verts.end(), gn->_verts.begin(),
+                [](const glm::dvec3& v) { return to_vsg(v); });
+
+            gn->_colors.resize(geom.colors.size());
+            std::transform(geom.colors.begin(), geom.colors.end(), gn->_colors.begin(),
+                [](const glm::fvec4& c) { return to_vsg(c); });
+
+            gn->_uvs.resize(geom.uvs.size());
+            std::transform(geom.uvs.begin(), geom.uvs.end(), gn->_uvs.begin(),
+                [](const glm::fvec2& uv) { return to_vsg(uv); });
+
+            gn->_indices = geom.indices;
         }
+
+        else if (geom.triangles.size() > 0)
+        {
+            for (auto& tri : geom.triangles)
+            {
+                geomDetail.geomNode->addTriangle(
+                    reinterpret_cast<const vsg::dvec3*>(tri.verts),
+                    reinterpret_cast<const vsg::vec2*>(tri.uvs),
+                    reinterpret_cast<const vsg::vec4*>(tri.colors));
+            }
+        }
+
         root = geomDetail.geomNode;
     }
 
@@ -589,7 +644,7 @@ MeshGeometryNode::reserve(size_t num_verts)
 }
 
 void
-MeshGeometryNode::add(const vsg::vec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors)
+MeshGeometryNode::addTriangle(const vsg::vec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors)
 {
     for (int v = 0; v < 3; ++v)
     {
@@ -620,6 +675,12 @@ MeshGeometryNode::compile(vsg::Context& context)
 
         if (_normals.empty())
             _normals.assign(_verts.size(), vsg::vec3(0, 0, 1));
+
+        if (_colors.empty())
+            _colors.assign(_verts.size(), _defaultColor);
+
+        if (_uvs.empty())
+            _uvs.assign(_verts.size(), vsg::vec2(0, 0));
 
         auto vert_array = vsg::vec3Array::create(_verts.size(), _verts.data());
         auto normal_array = vsg::vec3Array::create(_normals.size(), _normals.data());

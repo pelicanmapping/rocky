@@ -7,17 +7,12 @@
 #include <rocky/ecs/Mesh.h>
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/ecs/ECSNode.h>
+#include <rocky/vsg/ecs/ECSTypes.h>
 
 namespace ROCKY_NAMESPACE
 {
     constexpr unsigned MAX_MESH_STYLES = 1024;
     constexpr unsigned MAX_MESH_TEXTURES = 1024;
-
-    struct MeshTexture : public ComponentBase2<MeshTexture>
-    {
-        vsg::ref_ptr<vsg::ImageInfo> imageInfo;
-        int _index = -1; // index into the texture buffer (TODO: put this in a private MeshTextureDetail object instead)
-    };
 
     namespace detail
     {
@@ -71,9 +66,9 @@ namespace ROCKY_NAMESPACE
 
         void reserve(size_t numVerts);
 
-        inline void add(const vsg::dvec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors);
+        inline void addTriangle(const vsg::dvec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors);
 
-        void add(const vsg::vec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors);
+        void addTriangle(const vsg::vec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors);
 
         void compile(vsg::Context&) override;
 
@@ -83,7 +78,7 @@ namespace ROCKY_NAMESPACE
         std::vector<vsg::vec4> _colors;
         std::vector<vsg::vec2> _uvs;
         vsg::ref_ptr<vsg::DrawIndexed> _drawCommand;
-        using index_type = unsigned int; // short;
+        using index_type = std::uint32_t;
         using key = std::tuple<vsg::vec3, vsg::vec4>; // vert, color (add normal?)
         std::map<key, index_type> _lut;
         std::vector<index_type> _indices;
@@ -112,14 +107,14 @@ namespace ROCKY_NAMESPACE
         };
     }
 
-    inline void MeshGeometryNode::add(const vsg::dvec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors)
+    inline void MeshGeometryNode::addTriangle(const vsg::dvec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors)
     {
         vsg::vec3 verts32[3] = {
             vsg::vec3(verts[0]),
             vsg::vec3(verts[1]),
             vsg::vec3(verts[2]) };
 
-        add(verts32, uvs, colors);
+        addTriangle(verts32, uvs, colors);
     }
 
     /**

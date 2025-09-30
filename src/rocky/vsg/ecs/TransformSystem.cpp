@@ -17,8 +17,7 @@ namespace
 
     void on_update_Transform(entt::registry& r, entt::entity e)
     {
-        if (!r.try_get<TransformDetail>(e))
-            r.emplace<TransformDetail>(e);
+        (void)r.get_or_emplace<TransformDetail>(e);
     }
 
     void on_destroy_Transform(entt::registry& r, entt::entity e)

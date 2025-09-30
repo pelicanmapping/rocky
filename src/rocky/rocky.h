@@ -25,7 +25,7 @@
 #include <rocky/vsg/GeoTransform.h>
 #include <rocky/vsg/ecs/FeatureView.h>
 #include <rocky/vsg/ecs/EntityNode.h>
-#include <rocky/vsg/ecs/NodeGraph.h>
+#include <rocky/vsg/ecs/ECSTypes.h>
 #endif
 
 // NOTE: do NOT add any imgui-related includes here

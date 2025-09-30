@@ -92,6 +92,7 @@ namespace ROCKY_NAMESPACE
 
         //! Construct a shared component. The pointer must be non-null
         //! at the time of construction and must stay non-null.
+        [[deprecated("EXPERIMENTAL FEATURE")]]
         Shareable<T>(std::shared_ptr<T> p) : pointer(p) {
             ROCKY_HARD_ASSERT(p != nullptr);
         }

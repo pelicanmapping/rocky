@@ -27,6 +27,12 @@ namespace ROCKY_NAMESPACE
         //! Triangles comprising the mesh
         std::vector<Triangle> triangles;
 
+        //! Or, separate arrays containing verts, colors, UVs, and indices.
+        std::vector<glm::dvec3> verts;
+        std::vector<glm::fvec4> colors;
+        std::vector<glm::fvec2> uvs;
+        std::vector<std::uint32_t> indices;
+
         //! Reference SRS for the triangles data.
         SRS srs;
     };
