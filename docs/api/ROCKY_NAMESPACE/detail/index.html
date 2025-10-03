@@ -408,15 +408,14 @@
 <li><a href="SimpleSystemNodeBase/">SimpleSystemNodeBase</a></li>
 <li><a href="SystemNode/">SystemNode</a></li>
 <li><a href="LineStyleRecord/">LineStyleRecord</a></li>
-<li><a href="LineStyleLUT/">LineStyleLUT</a></li>
-<li><a href="LineUniforms/">LineUniforms</a></li>
-<li><a href="ROCKY_EXPORT/">ROCKY_EXPORT</a></li>
+<li><a href="LineStyleUniform/">LineStyleUniform</a></li>
+<li><a href="LineDrawable/">LineDrawable</a></li>
 <li><a href="LineStyleDetail/">LineStyleDetail</a></li>
 <li><a href="LineGeometryDetail/">LineGeometryDetail</a></li>
 <li><a href="LineDetail/">LineDetail</a></li>
 <li><a href="MeshStyleRecord/">MeshStyleRecord</a></li>
-<li><a href="MeshStyleLUT/">MeshStyleLUT</a></li>
-<li><a href="MeshUniforms/">MeshUniforms</a></li>
+<li><a href="MeshStyleUniform/">MeshStyleUniform</a></li>
+<li><a href="MeshDrawable/">MeshDrawable</a></li>
 <li><a href="MeshStyleDetail/">MeshStyleDetail</a></li>
 <li><a href="MeshGeometryDetail/">MeshGeometryDetail</a></li>
 <li><a href="MeshDetail/">MeshDetail</a></li>
@@ -427,26 +426,26 @@
 <h2 id="functions">Functions</h2>
 <h3 id="systemnode_on_construct">SystemNode_on_construct</h3>
 <p><em>void SystemNode_on_construct(int &amp; r, int e)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#266</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#278</em></p>
 <p>called by registry.emplace<T>()</p>
 <h3 id="systemnode_on_construct_shared">SystemNode_on_construct_shared</h3>
 <p><em>void SystemNode_on_construct_shared(int &amp; r, int e)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#289</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#301</em></p>
 <h3 id="systemnode_on_update">SystemNode_on_update</h3>
 <p><em>void SystemNode_on_update(int &amp; r, int e)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#319</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#331</em></p>
 <p>invoked by registry.replace<T>(), emplace_or_replace<T>(), or patch<T>()</p>
 <h3 id="systemnode_on_update_shared">SystemNode_on_update_shared</h3>
 <p><em>void SystemNode_on_update_shared(int &amp; r, int e)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#334</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#346</em></p>
 <p>invoked by registry.replace<T>(), emplace_or_replace<T>(), or patch<T>()</p>
 <h3 id="systemnode_on_destroy">SystemNode_on_destroy</h3>
 <p><em>void SystemNode_on_destroy(int &amp; r, int e)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#351</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#363</em></p>
 <p>invoked by registry.erase<T>(), remove<T>(), or registry.destroy(e)</p>
 <h3 id="systemnode_on_destroy_shared">SystemNode_on_destroy_shared</h3>
 <p><em>void SystemNode_on_destroy_shared(int &amp; r, int e)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#359</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#371</em></p>
 <p>invoked by registry.erase<T>(), remove<T>(), or registry.destroy(e)</p>
 
 
