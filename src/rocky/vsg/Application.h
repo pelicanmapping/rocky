@@ -19,7 +19,12 @@
 
 namespace ROCKY_NAMESPACE
 {
+
+#ifdef ROCKY_HAS_IMGUI
     class RenderImGuiContext;
+#else
+    using RenderImGuiContext = vsg::Node;
+#endif  // ROCKY_HAS_IMGUI
 
     class ROCKY_EXPORT Application
     {
