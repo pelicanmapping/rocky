@@ -11,50 +11,6 @@
 
 namespace ROCKY_NAMESPACE
 {
-    constexpr unsigned MAX_MESH_STYLES = 1024;
-    constexpr unsigned MAX_MESH_TEXTURES = 1024;
-
-    namespace detail
-    {
-        struct MeshStyleRecord
-        {
-            Color color;
-            float depthOffset = 0.0f;
-            int textureIndex = -1;
-            std::uint32_t padding[2]; // pad to 16 bytes
-
-            inline void populate(const MeshStyle& in) {
-                color = in.color;
-                depthOffset = in.depthOffset;
-            }
-        };
-        static_assert(sizeof(MeshStyleRecord) % 16 == 0, "MeshStyleRecord must be 16-byte aligned");
-
-
-        struct MeshStyleLUT
-        {
-            std::array<MeshStyleRecord, MAX_MESH_STYLES> lut;
-        };
-        static_assert(sizeof(MeshStyleLUT) % 16 == 0, "MeshStyleLUT must be 16-byte aligned");
-        
-
-        struct MeshUniforms
-        {
-            std::int32_t styleIndex = -1; // index into the style LUT.
-
-            // pad to 16 bytes
-            std::uint32_t padding[3];
-        };
-        static_assert(sizeof(MeshUniforms) % 16 == 0, "MeshUniforms must be 16-byte aligned");
-
-        class ROCKY_EXPORT BindMeshDescriptors : public vsg::Inherit<vsg::BindDescriptorSet, BindMeshDescriptors>
-        {
-        public:
-            vsg::ref_ptr<vsg::Data> _uniformsData;
-            vsg::ref_ptr<vsg::DescriptorBuffer> _uniformsBuffer;
-        };
-    }
-
     /**
     * Command to render a Mesh's triangles.
     */
@@ -86,12 +42,51 @@ namespace ROCKY_NAMESPACE
 
     namespace detail
     {
+        // "mesh.style" in the shader
+        struct MeshStyleRecord
+        {
+            Color color = Color(1, 1, 1, 0);
+            float depthOffset = 0.0f;
+            int textureIndex = -1;
+            std::uint32_t padding[2]; // pad to 16 bytes
+
+            inline void populate(const MeshStyle& in) {
+                color = in.color;
+                depthOffset = in.depthOffset;
+                textureIndex = in.texture != entt::null ? 0 : -1;
+            }
+        };
+        static_assert(sizeof(MeshStyleRecord) % 16 == 0, "MeshStyleRecord must be 16-byte aligned");
+
+        // "mesh" in the shader
+        struct MeshStyleUniform
+        {
+            MeshStyleRecord style;
+        };
+
+        // render leaf for collecting and drawing meshes
+        struct MeshDrawable
+        {
+            vsg::Node* node = nullptr;
+            TransformDetail* xformDetail = nullptr;
+        };
+
+        using MeshDrawList = std::vector<MeshDrawable>;
+
+        // internal data paired with MeshStyle
         struct MeshStyleDetail
         {
             entt::entity texture = entt::null; // last know texture entt
             int styleAtlasIndex = -1; // index into the Styles LUT SSBO
+            MeshDrawList drawList;
+
+            vsg::ref_ptr<vsg::BindDescriptorSet> bind;
+            vsg::ref_ptr<vsg::Data> styleData;
+            vsg::ref_ptr<vsg::DescriptorBuffer> styleUBO;
+            vsg::ref_ptr<vsg::DescriptorImage> styleTexture;
         };
 
+        // internal data paired with MeshGeometry
         struct MeshGeometryDetail
         {
             vsg::ref_ptr<vsg::Node> node;
@@ -100,15 +95,17 @@ namespace ROCKY_NAMESPACE
             std::size_t capacity = 0;
         };
 
+        // internal data paired with Mesh
         struct MeshDetail
         {
-            vsg::ref_ptr<vsg::StateGroup> node;
-            BindMeshDescriptors* bind = nullptr;
+            vsg::ref_ptr<vsg::Node> node;
         };
 
+        // internal data paired with MeshTexture
         struct MeshTextureDetail
         {
-            int texAtlasIndex = -1; // index into the texture array
+            // nop
+            bool unused = true;
         };
     }
 
@@ -155,30 +152,12 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        std::array<bool, MAX_MESH_STYLES> _styleInUse;
-        unsigned _styleLUTSize = 0;
-
-        std::array<bool, MAX_MESH_TEXTURES> _textureInUse;
-        unsigned _textureArenaSize = 0;
-
         inline vsg::PipelineLayout* getPipelineLayout(const Mesh& line) {
             return _pipelines[0].config->layout;
         }
 
-        struct RenderLeaf {
-            vsg::Node* node = nullptr;
-            TransformDetail* xformDetail = nullptr;
-        };
-        mutable std::vector<RenderLeaf> _renderLeaves;
-
-        // SSBO data for the Style LUT
-        mutable vsg::ref_ptr<vsg::ubyteArray> _styleAtlasData;
-
-        // GPU buffer for tye Style LUT
-        mutable vsg::ref_ptr<vsg::DescriptorBuffer> _styleAtlasBuffer;
-
-        // GPU buffer for the texture atlas array
-        mutable vsg::ref_ptr<vsg::DescriptorImage> _textureAtlasBuffer;
+        // Default mesh style to use if a Mesh doesn't have one
+        mutable detail::MeshStyleDetail _defaultMeshStyleDetail;
 
         // Called when a component is marked dirty (i.e., upon first creation or when either the
         // style of the geometry entity is reassigned).
@@ -192,6 +171,6 @@ namespace ROCKY_NAMESPACE
         void createOrUpdateStyle(const MeshStyle&, detail::MeshStyleDetail&, entt::registry&);
 
         // Called when a new mesh texture shows up
-        void addOrUpdateTexture(const MeshTexture&, detail::MeshTextureDetail&);
+        void addOrUpdateTexture(const MeshTexture&, detail::MeshTextureDetail&, entt::registry&);
     };
 }

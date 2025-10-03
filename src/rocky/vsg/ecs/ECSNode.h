@@ -84,6 +84,7 @@ namespace ROCKY_NAMESPACE
             SimpleSystemNodeBase(Registry& in_registry) : System(in_registry)
             {
                 _toCompile = vsg::Objects::create();
+                _toDispose = vsg::Objects::create();
             }
 
             void update(VSGContext& vsgcontext) override
@@ -99,6 +100,13 @@ namespace ROCKY_NAMESPACE
                 {
                     vsgcontext->compile(_toCompile);
                     _toCompile->children.clear();
+                }
+
+                // disposals
+                if (_toDispose->children.size() > 0)
+                {
+                    vsgcontext->dispose(_toDispose);
+                    _toDispose = vsg::Objects::create();
                 }
 
                 // uploads:
@@ -118,6 +126,9 @@ namespace ROCKY_NAMESPACE
 
             inline void compile(vsg::Object* object) {
                 _toCompile->addChild(vsg::ref_ptr<vsg::Object>(object));
+            }
+            inline void dispose(vsg::Object* object) {
+                _toDispose->addChild(vsg::ref_ptr<vsg::Object>(object));
             }
             inline void upload(vsg::BufferInfo* bi) {
                 _buffersToUpload.emplace_back(bi);
@@ -145,6 +156,7 @@ namespace ROCKY_NAMESPACE
 
         private:
             vsg::ref_ptr<vsg::Objects> _toCompile;
+            vsg::ref_ptr<vsg::Objects> _toDispose;
             vsg::BufferInfoList _buffersToUpload;
             vsg::ImageInfoList _imagesToUpload;
         };

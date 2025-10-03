@@ -45,9 +45,8 @@ auto Demo_Mesh_Absolute = [](Application& app)
             }
         }
 
+        // Add a dynamic style that we can change at runtime.
         auto& style = reg.emplace<MeshStyle>(entity);
-
-        // Set a dynamic style that we can change at runtime.
         style.color = Color{ 1, 0.4f, 0.1f, 0.5f };
         style.depthOffset = 10000.0f;
 
@@ -61,19 +60,32 @@ auto Demo_Mesh_Absolute = [](Application& app)
 
     if (ImGuiLTable::Begin("Mesh"))
     {
-        auto [_, reg] = app.registry.read();
+        app.registry.read([&](entt::registry& reg)
+            {
+                static bool visible = true;
+                if (ImGuiLTable::Checkbox("Show", &visible))
+                    setVisible(reg, entity, visible);
 
-        static bool visible = true;
-        if (ImGuiLTable::Checkbox("Show", &visible))
-            setVisible(reg, entity, visible);
+                auto& style = reg.get<MeshStyle>(entity);
 
-        auto& style = reg.get<MeshStyle>(entity);
+                if (ImGuiLTable::ColorEdit4("Color", (float*)&style.color))
+                    style.dirty(reg);
 
-        if (ImGuiLTable::ColorEdit4("Color", (float*)&style.color))
-            style.dirty(reg);
+                if (ImGuiLTable::SliderFloat("Depth offset", &style.depthOffset, 0.0f, 10000.0f, "%.0f"))
+                    style.dirty(reg);
 
-        if (ImGuiLTable::SliderFloat("Depth offset", &style.depthOffset, 0.0f, 10000.0f, "%.0f"))
-            style.dirty(reg);
+                if (ImGuiLTable::Checkbox("Wireframe", &reg.get<Mesh>(entity).wireFrame))
+                    reg.get<Mesh>(entity).dirty(reg);
+            });
+
+        if (ImGuiLTable::Button("Recreate"))
+        {
+            app.registry.write([&](entt::registry& reg)
+                {
+                    reg.destroy(entity);
+                    entity = entt::null;
+                });
+        }
 
         ImGuiLTable::End();
     }
@@ -252,7 +264,7 @@ auto Demo_Mesh_Shared = [](Application& app)
     static std::vector<entt::entity> entities;
     static bool visible = true;
     static bool regenerate = false;
-    const unsigned count = 10000;
+    const unsigned count = 1000;
 
     if (regenerate)
     {
@@ -339,7 +351,7 @@ auto Demo_Mesh_Shared = [](Application& app)
             double angle = (double)i / (double)circle_points * glm::two_pi<double>();
             circle.verts.emplace_back(cos(angle) * size, sin(angle) * size, 0.0);
             circle.uvs.emplace_back((float)(0.5 + 0.5 * cos(angle)), (float)(0.5 + 0.5 * sin(angle)));
-            if (i > 2) {
+            if (i >= 2) {
                 circle.indices.emplace_back(0);
                 circle.indices.emplace_back(i - 1);
                 circle.indices.emplace_back(i);

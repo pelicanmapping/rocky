@@ -40,7 +40,7 @@ namespace ROCKY_NAMESPACE
     //! Mesh style component
     struct MeshStyle : public ComponentBase2<MeshStyle>
     {
-        // if alpha is zero, use the line's per-vertex color instead
+        // if alpha is zero, use the line's per-vertex color insteade
         Color color = { 1, 1, 1, 0 };
 
         // vertex adjustment (in meters) to apply to the mesh verts
@@ -59,6 +59,9 @@ namespace ROCKY_NAMESPACE
 
         //! Entity hosting the MeshStyle to use
         entt::entity style = entt::null;
+
+        //! Wireframe rendering
+        bool wireFrame = false;
 
         //! Whether to write the the depth buffer
         bool writeDepth = true;

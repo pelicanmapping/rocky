@@ -597,6 +597,8 @@ VSGContextImpl::upload(const vsg::BufferInfoList& bufferInfos)
         {
             task->transferTask->assign(bufferInfos);
         }
+
+        requestFrame();
     }
 }
 

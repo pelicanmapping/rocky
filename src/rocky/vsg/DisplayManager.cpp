@@ -278,13 +278,20 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     // share the device across all windows
     traits->device = sharedDevice();
 
+    // install necessary device features
+    traits->deviceFeatures->get().fillModeNonSolid = VK_TRUE;
+    //traits->deviceFeatures->get().shaderSampledImageArrayDynamicIndexing = VK_TRUE;
+
+    auto& ds3features = traits->deviceFeatures->get<VkPhysicalDeviceExtendedDynamicState3FeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT>();
+    ds3features.extendedDynamicState3PolygonMode = VK_TRUE;
+
     auto window = vsg::Window::create(traits);
 
     // install extensions:
     auto pd = window->getOrCreatePhysicalDevice();
 
     // This will install the debug messaging callback so we can capture validation errors
-    if (pd->supportsDeviceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME))
+    if (vsg::isExtensionSupported(VK_EXT_DEBUG_UTILS_EXTENSION_NAME))
     {
         traits->instanceExtensionNames.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
@@ -293,6 +300,11 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     if (pd->supportsDeviceExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME))
     {
         traits->deviceExtensionNames.push_back(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
+    }
+
+    if (pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME))
+    {
+        traits->deviceExtensionNames.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
     }
 
     // configure the window

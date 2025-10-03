@@ -6,27 +6,23 @@ layout(push_constant) uniform PushConstants {
     mat4 modelview;
 } pc;
 
-// see rocky::MeshStyleRecord
-struct MeshStyle {
-    vec4 color;
-    float depthOffset;
-    int textureIndex;
-};
-
-layout(set = 0, binding = 0) readonly buffer MeshStyles {
-    MeshStyle lut[1024];
-} styles;
-
-layout(set = 0, binding = 1) uniform MeshUniforms {
-    int styleIndex;
-    int padding[3];
-} mesh;
-
 // input vertex attributes
 layout(location = 0) in vec3 in_vertex;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec4 in_color;
 layout(location = 3) in vec2 in_uv;
+
+// rocky::detail::MeshStyleRecord
+struct MeshStyle {
+    vec4 color;
+    float depthOffset;
+    int textureIndex;
+    int padding[2];
+};
+
+layout(set = 0, binding = 1) uniform MeshUniform {
+    MeshStyle style;
+} mesh;
 
 // inter-stage interface block
 struct Varyings {
@@ -54,23 +50,11 @@ vec3 apply_depth_offset(in vec3 vertex, in float offset)
 }
 
 void main()
-{
-    float depthOffset = 0.0;
+{    
+    vary.color = mesh.style.color.a > 0.0 ? mesh.style.color : in_color;
+    vary.textureIndex = mesh.style.textureIndex;
 
-    if (mesh.styleIndex >= 0)
-    {
-        vary.color = styles.lut[mesh.styleIndex].color;
-        if (vary.color.a == 0.0) vary.color = in_color;
-        vary.textureIndex = styles.lut[mesh.styleIndex].textureIndex;
-        
-        depthOffset = styles.lut[mesh.styleIndex].depthOffset;
-    }
-    else
-    {
-        vary.color = in_color;
-        vary.textureIndex = -1;
-    }
-
+    float depthOffset = mesh.style.depthOffset;
 
     uv = in_uv;
 
