@@ -280,10 +280,15 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
 
     // install necessary device features
     traits->deviceFeatures->get().fillModeNonSolid = VK_TRUE;
-    //traits->deviceFeatures->get().shaderSampledImageArrayDynamicIndexing = VK_TRUE;
 
-    auto& ds3features = traits->deviceFeatures->get<VkPhysicalDeviceExtendedDynamicState3FeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT>();
-    ds3features.extendedDynamicState3PolygonMode = VK_TRUE;
+    auto& ds1 = traits->deviceFeatures->get<VkPhysicalDeviceExtendedDynamicStateFeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT>();
+    ds1.extendedDynamicState = VK_TRUE;
+
+    auto& ds2 = traits->deviceFeatures->get<VkPhysicalDeviceExtendedDynamicState2FeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT>();
+    ds2.extendedDynamicState2 = VK_TRUE;
+
+    auto& ds3 = traits->deviceFeatures->get<VkPhysicalDeviceExtendedDynamicState3FeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT>();
+    ds3.extendedDynamicState3PolygonMode = VK_TRUE;
 
     auto window = vsg::Window::create(traits);
 
@@ -300,6 +305,17 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     if (pd->supportsDeviceExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME))
     {
         traits->deviceExtensionNames.push_back(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
+    }
+
+    // All the dynamic state extensions
+    if (pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME))
+    {
+        traits->deviceExtensionNames.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+    }
+
+    if (pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME))
+    {
+        traits->deviceExtensionNames.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
     }
 
     if (pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME))

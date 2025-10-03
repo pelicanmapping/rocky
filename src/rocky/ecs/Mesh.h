@@ -49,6 +49,10 @@ namespace ROCKY_NAMESPACE
 
         //! Entity hotsing the (optional) Texture to use
         entt::entity texture = entt::null;
+
+        bool wireframe = false;
+        bool writeDepth = true;
+        bool cullBackfaces = true;
     };
 
     //! Mesh comonent
@@ -59,15 +63,6 @@ namespace ROCKY_NAMESPACE
 
         //! Entity hosting the MeshStyle to use
         entt::entity style = entt::null;
-
-        //! Wireframe rendering
-        bool wireFrame = false;
-
-        //! Whether to write the the depth buffer
-        bool writeDepth = true;
-
-        //! Whether to cull backfaces
-        bool cullBackfaces = true;
 
         //! Useful constructors
         inline Mesh() = default;

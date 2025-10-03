@@ -24,4 +24,9 @@ void main()
     {
         outColor.rgb *= texture(meshTexture, uv).rgb;
     }
+
+    if (gl_FrontFacing == false)
+    {
+        outColor = vec4(1,0,0,1);
+    }
 }

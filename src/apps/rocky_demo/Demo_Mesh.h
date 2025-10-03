@@ -49,11 +49,9 @@ auto Demo_Mesh_Absolute = [](Application& app)
         auto& style = reg.emplace<MeshStyle>(entity);
         style.color = Color{ 1, 0.4f, 0.1f, 0.5f };
         style.depthOffset = 10000.0f;
+        style.writeDepth = false;
 
         auto& mesh = reg.emplace<Mesh>(entity, geom, style);
-
-        // Turn off depth buffer writes
-        mesh.writeDepth = false;
 
         app.vsgcontext->requestFrame();
     }
@@ -74,8 +72,8 @@ auto Demo_Mesh_Absolute = [](Application& app)
                 if (ImGuiLTable::SliderFloat("Depth offset", &style.depthOffset, 0.0f, 10000.0f, "%.0f"))
                     style.dirty(reg);
 
-                if (ImGuiLTable::Checkbox("Wireframe", &reg.get<Mesh>(entity).wireFrame))
-                    reg.get<Mesh>(entity).dirty(reg);
+                if (ImGuiLTable::Checkbox("Wireframe", &style.wireframe))
+                    style.dirty(reg);
             });
 
         if (ImGuiLTable::Button("Recreate"))
@@ -137,7 +135,9 @@ auto Demo_Mesh_Relative = [](Application& app)
                 color.r *= 0.8f, color.b *= 0.8f;
         }
 
-        auto& mesh = reg.emplace<Mesh>(entity, geom);
+        auto& style = reg.emplace<MeshStyle>(entity);
+
+        auto& mesh = reg.emplace<Mesh>(entity, geom, style);
 
         // Add a transform component so we can position our mesh relative
         // to some geospatial coordinates. We then set the bound on the node
@@ -168,6 +168,16 @@ auto Demo_Mesh_Relative = [](Application& app)
 
         if (ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2500000.0, "%.1lf"))
             transform.dirty();
+
+        auto& style = reg.get<MeshStyle>(entity);
+        if (ImGuiLTable::Checkbox("Wireframe", &style.wireframe))
+            style.dirty(reg);
+
+        if (ImGuiLTable::Checkbox("Depth write", &style.writeDepth))
+            style.dirty(reg);
+
+        if (ImGuiLTable::Checkbox("Cull backfaces", &style.cullBackfaces))
+            style.dirty(reg);
 
         ImGuiLTable::End();
     }

@@ -81,6 +81,7 @@ namespace ROCKY_NAMESPACE
             MeshDrawList drawList;
 
             vsg::ref_ptr<vsg::BindDescriptorSet> bind;
+            vsg::ref_ptr<vsg::Commands> commands;
             vsg::ref_ptr<vsg::Data> styleData;
             vsg::ref_ptr<vsg::DescriptorBuffer> styleUBO;
             vsg::ref_ptr<vsg::DescriptorImage> styleTexture;
@@ -168,7 +169,7 @@ namespace ROCKY_NAMESPACE
         void createOrUpdateGeometry(const MeshGeometry&, detail::MeshGeometryDetail&, VSGContext&);
 
         // Called when a line style is found in the dirty list
-        void createOrUpdateStyle(const MeshStyle&, detail::MeshStyleDetail&, entt::registry&);
+        void createOrUpdateStyle(const MeshStyle&, detail::MeshStyleDetail&, entt::registry&, VSGContext&);
 
         // Called when a new mesh texture shows up
         void addOrUpdateTexture(const MeshTexture&, detail::MeshTextureDetail&, entt::registry&);

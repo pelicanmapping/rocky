@@ -6,6 +6,7 @@
  */
 #include "MeshSystem.h"
 #include "../PipelineState.h"
+#include "../Polyfill.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
@@ -18,25 +19,10 @@ using namespace ROCKY_NAMESPACE::detail;
 #define MESH_BINDING_UNIFORM   1 // layout(set=0, binding=1) in the shader
 #define MESH_BINDING_TEXTURE   2 // layout(set=0, binding=2) in the shader
 
-//#define TESTING_DYNAMIC_STATE
+#define USE_DYNAMIC_STATE
 
 namespace
 {
-#ifdef TESTING_DYNAMIC_STATE
-    PFN_vkCmdSetPolygonModeEXT s_vkCmdSetPolygonModeEXT = nullptr;
-
-    class SetPolygonMode : public vsg::Inherit<vsg::StateCommand, SetPolygonMode>
-    {
-    public:
-        SetPolygonMode(VkPolygonMode pm) : polygonMode(pm) {}
-        VkPolygonMode polygonMode;
-        void record(vsg::CommandBuffer& commandBuffer) const override {
-            if (s_vkCmdSetPolygonModeEXT)
-                s_vkCmdSetPolygonModeEXT(commandBuffer, polygonMode);
-        }
-    };
-#endif
-
     inline vsg::ref_ptr<vsg::ImageInfo> createEmptyTexture()
     {
         auto sampler = vsg::Sampler::create();
@@ -75,10 +61,6 @@ namespace
         shaderSet->addAttributeBinding("in_normal",      "", 1, VK_FORMAT_R32G32B32_SFLOAT, {});
         shaderSet->addAttributeBinding("in_color",       "", 2, VK_FORMAT_R32G32B32A32_SFLOAT, {});
         shaderSet->addAttributeBinding("in_uv",          "", 3, VK_FORMAT_R32G32_SFLOAT, {});
-        //shaderSet->addAttributeBinding("in_depthoffset", "", 4, VK_FORMAT_R32_SFLOAT, {});
-
-        //shaderSet->addDescriptorBinding("styles", "", MESH_SET, MESH_BINDING_STYLE_LUT,
-        //    VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
 
         shaderSet->addDescriptorBinding("mesh", "", MESH_SET, MESH_BINDING_UNIFORM,
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
@@ -88,11 +70,6 @@ namespace
 
         // Note: 128 is the maximum size required by the Vulkan spec so don't increase it
         shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
-
-#ifdef TESTING_DYNAMIC_STATE
-        // find some device extensions..
-        vsgcontext->device()->getProcAddr<PFN_vkCmdSetPolygonModeEXT>(s_vkCmdSetPolygonModeEXT, "vkCmdSetPolygonModeEXT");
-#endif
 
         return shaderSet;
     }
@@ -118,6 +95,9 @@ namespace
 
         MeshStyleUniform& uniforms = *static_cast<MeshStyleUniform*>(styleDetail.styleData->dataPointer());
         uniforms.style = MeshStyleRecord(); // default style
+
+        // container for dynamic state commands
+        styleDetail.commands = vsg::Commands::create();
     }
 }
 
@@ -175,6 +155,7 @@ namespace
     {
         auto& d = r.get<MeshStyleDetail>(e);
         dispose(d.bind);
+        dispose(d.commands);
         d = MeshStyleDetail();
     }
     void on_destroy_MeshGeometryDetail(entt::registry& r, entt::entity e)
@@ -255,37 +236,21 @@ MeshSystemNode::initialize(VSGContext& vsgcontext)
         c.config->enableArray("in_normal", VK_VERTEX_INPUT_RATE_VERTEX, 12);
         c.config->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
         c.config->enableArray("in_uv", VK_VERTEX_INPUT_RATE_VERTEX, 8);
-
-        //if (feature_mask & DYNAMIC_STYLE)
-        //{
-        //    c.config->enableDescriptor("mesh");
-        //    c.config->shaderHints->defines.insert("USE_MESH_STYLE");
-        //}
-
-        //if (feature_mask & TEXTURE)
-        //{
-        //    c.config->enableTexture("mesh_texture");
-        //    c.config->shaderHints->defines.insert("USE_MESH_TEXTURE");
-        //}
         
-        struct ConfigurePipelineStates : public vsg::Visitor
+        struct SetPipelineStates : public vsg::Visitor
         {
             int feature_mask;
-            ConfigurePipelineStates(int feature_mask_) : feature_mask(feature_mask_) { }
+            SetPipelineStates(int feature_mask_) : feature_mask(feature_mask_) { }
             void apply(vsg::Object& object) override {
                 object.traverse(*this);
             }
             void apply(vsg::RasterizationState& state) override {
                 state.polygonMode = VK_POLYGON_MODE_FILL;
-            //    state.cullMode =
-            //        (feature_mask & CULL_BACKFACES) ? VK_CULL_MODE_BACK_BIT :
-            //        VK_CULL_MODE_NONE;
+                state.cullMode = VK_CULL_MODE_BACK_BIT;
             }
-            //void apply(vsg::DepthStencilState& state) override {
-            //    if ((feature_mask & WRITE_DEPTH) == 0) {
-            //        state.depthWriteEnable = VK_FALSE;
-            //    }
-            //}
+            void apply(vsg::DepthStencilState& state) override {
+                state.depthWriteEnable = VK_TRUE;
+            }
             void apply(vsg::ColorBlendState& state) override {
                 state.attachments = vsg::ColorBlendState::ColorBlendAttachments{
                     { true,
@@ -294,20 +259,20 @@ MeshSystemNode::initialize(VSGContext& vsgcontext)
                       VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT }
                 };
             }
-
-#ifdef TESTING_DYNAMIC_STATE
+#ifdef USE_DYNAMIC_STATE
             void apply(vsg::DynamicState& state) override {
                 state.dynamicStates.emplace_back(VK_DYNAMIC_STATE_POLYGON_MODE_EXT);
-                Log()->info("Enabling dynamic polygon mode");
+                state.dynamicStates.emplace_back(VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT);
+                state.dynamicStates.emplace_back(VK_DYNAMIC_STATE_CULL_MODE_EXT);
             }
 #endif
         };
 
-#ifdef TESTING_DYNAMIC_STATE
+#ifdef USE_DYNAMIC_STATE
         c.config->pipelineStates.emplace_back(vsg::DynamicState::create());
 #endif
 
-        ConfigurePipelineStates visitor(feature_mask);
+        SetPipelineStates visitor(feature_mask);
         c.config->accept(visitor);
 
         // Initialize GraphicsPipeline from the data in the configuration.
@@ -486,7 +451,7 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
 
 
 void
-MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& styleDetail, entt::registry& reg)
+MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& styleDetail, entt::registry& reg, VSGContext& vsgcontext)
 {
     // NB: registry is read-locked
     bool needsCompile = false;
@@ -498,6 +463,29 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
         initializeStyleDetail(layout, styleDetail);
         needsCompile = true;
     }
+
+#ifdef USE_DYNAMIC_STATE
+    if (styleDetail.commands)
+    {
+        dispose(styleDetail.commands);
+        styleDetail.commands = vsg::Commands::create();
+
+        // wireframe:
+        styleDetail.commands->addChild(SetPolygonMode::create(
+            vsgcontext->device(),
+            style.wireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL));
+
+        // depth writes
+        styleDetail.commands->addChild(SetDepthWriteEnable::create(
+            vsgcontext->device(),
+            style.writeDepth ? VK_TRUE : VK_FALSE));
+
+        // cull mode
+        styleDetail.commands->addChild(SetCullMode::create(
+            vsgcontext->device(),
+            style.cullBackfaces ? VK_CULL_MODE_BACK_BIT : VK_CULL_MODE_NONE));
+    }
+#endif
 
     bool texChanged = style.texture != styleDetail.texture;
 
@@ -624,6 +612,9 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
                 for(auto& styleDetail : styleDetails)
                 {
                     styleDetail->bind->accept(record);
+                    
+                    if (styleDetail->commands)
+                        styleDetail->commands->accept(record);
 
                     if (!styleDetail->drawList.empty())
                     {
@@ -671,7 +662,7 @@ MeshSystemNode::update(VSGContext& vsgcontext)
             MeshStyle::eachDirty(reg, [&](entt::entity e)
                 {
                     const auto& [style, styleDetail] = reg.get<MeshStyle, MeshStyleDetail>(e);
-                    createOrUpdateStyle(style, styleDetail, reg);
+                    createOrUpdateStyle(style, styleDetail, reg, vsgcontext);
                 });
 
             MeshGeometry::eachDirty(reg, [&](entt::entity e)
