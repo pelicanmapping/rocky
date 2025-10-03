@@ -126,7 +126,6 @@ namespace
     // disposal vector processed by the system
     static std::mutex s_cleanupMutex;
     static vsg::ref_ptr<vsg::Objects> s_toDispose = vsg::Objects::create();
-    static std::vector<int> s_textureIndexesDestroyed;
     static inline void dispose(vsg::Object* object) {
         if (object) {
             std::scoped_lock lock(s_cleanupMutex);
@@ -146,21 +145,18 @@ namespace
         r.get<Mesh>(e).owner = e;
         r.get<Mesh>(e).dirty(r);
     }
-
     void on_construct_MeshStyle(entt::registry& r, entt::entity e)
     {
         r.emplace<MeshStyleDetail>(e);
         r.get<MeshStyle>(e).owner = e;
         r.get<MeshStyle>(e).dirty(r);
     }
-
     void on_construct_MeshGeometry(entt::registry& r, entt::entity e)
     {
         r.emplace<MeshGeometryDetail>(e);
         r.get<MeshGeometry>(e).owner = e;
         r.get<MeshGeometry>(e).dirty(r);
     }
-
     void on_construct_Texture(entt::registry& r, entt::entity e)
     {
         (void)r.get_or_emplace<MeshTextureDetail>(e);
@@ -172,31 +168,47 @@ namespace
 
     void on_destroy_MeshDetail(entt::registry& r, entt::entity e)
     {
-        //Log()->debug("on_destroy_MeshDetail {}", (int)e);
+        auto& d = r.get<MeshDetail>(e);
+        d = MeshDetail();
     }
-
     void on_destroy_MeshStyleDetail(entt::registry& r, entt::entity e)
     {
-        //Log()->debug("on_destroy_MeshStyleDetail {}", (int)e);
         auto& d = r.get<MeshStyleDetail>(e);
         dispose(d.bind);
         d = MeshStyleDetail();
     }
-
     void on_destroy_MeshGeometryDetail(entt::registry& r, entt::entity e)
     {
-        //Log()->debug("on_destroy_MeshGeometryDetail {} valid={}", (int)e, r.valid(e));
         auto& d = r.get<MeshGeometryDetail>(e);
         dispose(d.node);
         d = MeshGeometryDetail();
     }
-
     void on_destroy_MeshTextureDetail(entt::registry& r, entt::entity e)
     {
-        //Log()->debug("on_destroy_MeshTextureDetail {}", (int)e);
+        auto& d = r.get<MeshTextureDetail>(e);     
+    }
+
+
+    void on_update_Mesh(entt::registry& r, entt::entity e)
+    {
+        on_destroy_MeshDetail(r, e);
+        r.get<Mesh>(e).dirty(r);
+    }
+    void on_update_MeshStyle(entt::registry& r, entt::entity e)
+    {
+        on_destroy_MeshStyleDetail(r, e);
+        r.get<MeshStyle>(e).dirty(r);
+    }
+    void on_update_MeshGeometry(entt::registry& r, entt::entity e)
+    {
+        on_destroy_MeshGeometryDetail(r, e);
+        r.get<MeshGeometry>(e).dirty(r);
+    }
+    void on_update_Texture(entt::registry& r, entt::entity e)
+    {
         auto& d = r.get<MeshTextureDetail>(e);
         d = MeshTextureDetail();
-        // when a style using this texture is destroyed, it will go on the dispose list
+        r.get<MeshTexture>(e).dirty(r);
     }
 }
 
@@ -317,10 +329,10 @@ MeshSystemNode::initialize(VSGContext& vsgcontext)
             r.on_construct<MeshGeometry>().connect<&on_construct_MeshGeometry>();
             r.on_construct<MeshTexture>().connect<&on_construct_Texture>();
 
-            r.on_update<Mesh>().connect<&on_destroy_MeshDetail>();
-            r.on_update<MeshStyle>().connect<&on_destroy_MeshStyleDetail>();
-            r.on_update<MeshGeometry>().connect<&on_destroy_MeshGeometryDetail>();
-            r.on_update<MeshTexture>().connect<&on_destroy_MeshTextureDetail>();
+            r.on_update<Mesh>().connect<&on_update_Mesh>();
+            r.on_update<MeshStyle>().connect<&on_update_MeshStyle>();
+            r.on_update<MeshGeometry>().connect<&on_update_MeshGeometry>();
+            r.on_update<MeshTexture>().connect<&on_update_Texture>();
 
             r.on_destroy<MeshDetail>().connect<&on_destroy_MeshDetail>();
             r.on_destroy<MeshStyleDetail>().connect<&on_destroy_MeshStyleDetail>();

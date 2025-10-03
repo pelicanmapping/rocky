@@ -580,22 +580,24 @@ VSGContextImpl::upload(const vsg::BufferInfoList& bufferInfos)
     // A way to upload GPU buffers without using the dirty()/DYNAMIC_DATA mechanism,
     // which gets slow with a large number of buffers.
     // inspired by: https://github.com/vsg-dev/VulkanSceneGraph/discussions/1572
-    unsigned count = 0;
+    vsg::BufferInfoList validBufferInfos;
+    validBufferInfos.reserve(bufferInfos.size());
+
     for (auto& bi : bufferInfos)
     {
         if (bi && bi->data)
         {
             bi->data->dirty();
-            ++count;
+            validBufferInfos.emplace_back(bi);
         }
     }
 
-    if (count > 0)
+    if (!validBufferInfos.empty())
     {
         auto& tasks = _viewer->recordAndSubmitTasks;
         for (auto& task : tasks)
         {
-            task->transferTask->assign(bufferInfos);
+            task->transferTask->assign(validBufferInfos);
         }
 
         requestFrame();
@@ -608,23 +610,26 @@ VSGContextImpl::upload(const vsg::ImageInfoList& imageInfos)
     // A way to upload images without using the dirty()/DYNAMIC_DATA mechanism,
     // which gets slow with a large number of buffers.
     // inspired by: https://github.com/vsg-dev/VulkanSceneGraph/discussions/1572
-    unsigned count = 0;
+    vsg::ImageInfoList validImageInfos;
+    validImageInfos.reserve(imageInfos.size());
     for (auto& bi : imageInfos)
     {
         if (bi && bi->imageView && bi->imageView->image && bi->imageView->image->data)
         {
             bi->imageView->image->data->dirty();
-            ++count;
+            validImageInfos.emplace_back(bi);
         }
     }
 
-    if (count > 0)
+    if (!validImageInfos.empty())
     {
         auto& tasks = _viewer->recordAndSubmitTasks;
         for (auto& task : tasks)
         {
-            task->transferTask->assign(imageInfos);
+            task->transferTask->assign(validImageInfos);
         }
+
+        requestFrame();
     }
 }
 

@@ -52,21 +52,22 @@ namespace
         //! Please call create(registry)
         TrackHistorySystem(Registry& r) : System(r)
         {
-            auto [lock, registry] = r.write();
+            r.write([&](entt::registry& reg)
+                {
+                    // destruction of a TrackHistory requries some extra work:
+                    reg.on_destroy<TrackHistory>().connect<&TrackHistorySystem::on_destroy>(this);
 
-            // destruction of a TrackHistory requries some extra work:
-            registry.on_destroy<TrackHistory>().connect<&TrackHistorySystem::on_destroy>(this);
+                    // default track style
+                    trackStyles[0] = reg.create();
+                    auto& style1 = reg.emplace<LineStyle>(trackStyles[0]);
+                    style1.color = Color::Lime;
+                    style1.width = 2.0f;
 
-            // default track style
-            trackStyles[0] = registry.create();
-            auto& style1 = registry.emplace<LineStyle>(trackStyles[0]);
-            style1.color = Color::Lime;
-            style1.width = 2.0f;
-
-            trackStyles[1] = registry.create();
-            auto& style2 = registry.emplace<LineStyle>(trackStyles[1]);
-            style2.color = Color::Red;
-            style2.width = 2.0f;
+                    trackStyles[1] = reg.create();
+                    auto& style2 = reg.emplace<LineStyle>(trackStyles[1]);
+                    style2.color = Color::Red;
+                    style2.width = 2.0f;
+                });
         }
 
         void update(VSGContext& vsgcontext) override
@@ -79,7 +80,7 @@ namespace
 
             if (elapsed >= freq)
             {
-                auto [lock, registry] = _registry.read();
+                auto [lock, registry] = _registry.write();
 
                 auto view = registry.view<TrackHistory, Transform>();
                 for (auto&& [entity, track, transform] : view.each())

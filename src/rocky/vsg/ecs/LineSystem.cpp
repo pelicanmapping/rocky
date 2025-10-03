@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "LineSystem.h"
@@ -14,8 +14,7 @@ using namespace ROCKY_NAMESPACE::detail;
 #define LINE_FRAG_SHADER "shaders/rocky.line.frag"
 
 #define LINE_SET 0
-#define LINE_BINDING_STYLE_LUT 0 // layout(set=0, binding=0) in the shader
-#define LINE_BINDING_UNIFORMS  1 // layout(set=0, binding=1) in the shader
+#define LINE_BINDING_UNIFORM  1 // layout(set=0, binding=1) in the shader
 
 namespace
 {
@@ -51,11 +50,7 @@ namespace
         shaderSet->addAttributeBinding("in_vertex_next", "", 2, VK_FORMAT_R32G32B32_SFLOAT, {});
         //shaderSet->addAttributeBinding("in_color", "", 3, VK_FORMAT_R32G32B32A32_SFLOAT, {});
 
-        // line data uniform buffer (width, stipple, etc.)
-        shaderSet->addDescriptorBinding("styles", "", LINE_SET, LINE_BINDING_STYLE_LUT,
-            VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
-
-        shaderSet->addDescriptorBinding("line", "", LINE_SET, LINE_BINDING_UNIFORMS,
+        shaderSet->addDescriptorBinding("line", "", LINE_SET, LINE_BINDING_UNIFORM,
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
 
         // We need VSG's view-dependent data:
@@ -66,16 +61,47 @@ namespace
 
         return shaderSet;
     }
+
+
+    // creates an empty, default style detail bind command, ready to be populated.
+    void initializeStyleDetail(vsg::PipelineLayout* layout, LineStyleDetail& styleDetail)
+    {
+        // uniform: "mesh.styles" in the shader
+        styleDetail.styleData = vsg::ubyteArray::create(sizeof(LineStyleUniform));
+        styleDetail.styleUBO = vsg::DescriptorBuffer::create(styleDetail.styleData, LINE_BINDING_UNIFORM, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+
+        // bind command:
+        styleDetail.bind = vsg::BindDescriptorSet::create();
+        styleDetail.bind->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        styleDetail.bind->firstSet = 0;
+        styleDetail.bind->layout = layout;
+        styleDetail.bind->descriptorSet = vsg::DescriptorSet::create(
+            styleDetail.bind->layout->setLayouts.front(),
+            vsg::Descriptors{ styleDetail.styleUBO });
+
+        auto& uniforms = *static_cast<LineStyleUniform*>(styleDetail.styleData->dataPointer());
+        uniforms.style = LineStyleRecord(); // default style
+    }
 }
 
 LineSystemNode::LineSystemNode(Registry& registry) :
     Inherit(registry)
 {
-    _styleInUse.fill(false);
+    //nop
 }
 
 namespace
 {
+    // disposal vector processed by the system
+    static std::mutex s_cleanupMutex;
+    static vsg::ref_ptr<vsg::Objects> s_toDispose = vsg::Objects::create();
+    static inline void dispose(vsg::Object* object) {
+        if (object) {
+            std::scoped_lock lock(s_cleanupMutex);
+            s_toDispose->addChild(vsg::ref_ptr<vsg::Object>(object));
+        }
+    }
+
     void on_construct_Line(entt::registry& r, entt::entity e)
     {
         r.emplace<LineDetail>(e);
@@ -86,45 +112,53 @@ namespace
         (void) r.get_or_emplace<Visibility>(e);
 
         r.get<Line>(e).owner = e;
-
-        // do this last, so that everything is set up when dirty is processed
         r.get<Line>(e).dirty(r);
     }
-
     void on_construct_LineStyle(entt::registry& r, entt::entity e)
     {
         r.emplace<LineStyleDetail>(e);
-
         r.get<LineStyle>(e).owner = e;
-
-        // do this last, so that everything is set up when dirty is processed
         r.get<LineStyle>(e).dirty(r);
     }
-
     void on_construct_LineGeometry(entt::registry& r, entt::entity e)
     {
         r.emplace<LineGeometryDetail>(e);
-
         r.get<LineGeometry>(e).owner = e;
-
-        // do this last, so that everything is set up when dirty is processed
         r.get<LineGeometry>(e).dirty(r);
     }
 
-
-    void on_destroy_Line(entt::registry& r, entt::entity e)
+    void on_destroy_LineDetail(entt::registry& r, entt::entity e)
     {
-        r.remove<LineDetail>(e);
+        auto& d = r.get<LineDetail>(e);
+        d = LineDetail();
+    }
+    void on_destroy_LineStyleDetail(entt::registry& r, entt::entity e)
+    {
+        auto& d = r.get<LineStyleDetail>(e);
+        dispose(d.bind);
+        d = LineStyleDetail();
+    }
+    void on_destroy_LineGeometryDetail(entt::registry& r, entt::entity e)
+    {
+        auto& d = r.get<LineGeometryDetail>(e);
+        dispose(d.node);
+        d = LineGeometryDetail();
     }
 
-    void on_destroy_LineStyle(entt::registry& r, entt::entity e)
+    void on_update_Line(entt::registry& r, entt::entity e)
     {
-        r.remove<LineStyleDetail>(e);
+        on_destroy_LineDetail(r, e); // reset
+        r.get<Line>(e).dirty(r);
     }
-
-    void on_destroy_LineGeometry(entt::registry& r, entt::entity e)
+    void on_update_LineStyle(entt::registry& r, entt::entity e)
     {
-        r.remove<LineGeometryDetail>(e);
+        on_destroy_LineStyleDetail(r, e);
+        r.get<LineStyle>(e).dirty(r);
+    }
+    void on_update_LineGeometry(entt::registry& r, entt::entity e)
+    {
+        on_destroy_LineGeometryDetail(r, e);
+        r.get<LineGeometry>(e).dirty(r);
     }
 }
 
@@ -202,15 +236,9 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
         c.commands->children.push_back(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, c.config->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
     }
 
-    // Style look up table.
-    _styleLUT_data = vsg::ubyteArray::create(sizeof(LineStyleLUT));
-    _styleLUT_buffer = vsg::DescriptorBuffer::create(_styleLUT_data, LINE_BINDING_STYLE_LUT, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-
-    // add a default style in slot 0.
-    auto& styleLUT = *static_cast<LineStyleLUT*>(_styleLUT_data->dataPointer());
-    styleLUT.lut[0].populate(LineStyle());
-    _styleInUse[0] = true;
-    _styleLUTSize = 1;
+    // Set up our default style detail, which is used when a MeshStyle is missing.
+    initializeStyleDetail(getPipelineLayout(Line()), _defaultStyleDetail);
+    compile(_defaultStyleDetail.bind);
 
     _registry.write([&](entt::registry& r)
         {
@@ -219,9 +247,13 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
             r.on_construct<LineStyle>().connect<&on_construct_LineStyle>();
             r.on_construct<LineGeometry>().connect<&on_construct_LineGeometry>();
 
-            r.on_destroy<Line>().connect<&on_destroy_Line>();
-            r.on_destroy<LineStyle>().connect<&on_destroy_LineStyle>();
-            r.on_destroy<LineGeometry>().connect<&on_destroy_LineGeometry>();
+            r.on_update<Line>().connect<&on_update_Line>();
+            r.on_update<LineStyle>().connect<&on_update_LineStyle>();
+            r.on_update<LineGeometry>().connect<&on_update_LineGeometry>();
+
+            r.on_destroy<LineDetail>().connect<&on_destroy_LineDetail>();
+            r.on_destroy<LineStyleDetail>().connect<&on_destroy_LineStyleDetail>();
+            r.on_destroy<LineGeometryDetail>().connect<&on_destroy_LineGeometryDetail>();
 
             // Set up the dirty tracking.
             auto e = r.create();
@@ -232,54 +264,17 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
 }
 
 void
-LineSystemNode::createOrUpdateLineNode(const Line& line, LineDetail& lineDetail, LineStyleDetail* style, LineGeometryDetail* geom, VSGContext& context)
+LineSystemNode::createOrUpdateComponent(const Line& line, LineDetail& lineDetail, LineGeometryDetail* geomDetail)
 {
-    auto layout = getPipelineLayout(line);
-
-    if (!lineDetail.node)
+    // NB: registry is read-locked
+    if (geomDetail)
     {
-        auto bind = BindLineDescriptors::create();
-
-        bind->_lineUniforms_data = vsg::ubyteArray::create(sizeof(LineUniforms));
-        bind->_lineUniforms_buffer = vsg::DescriptorBuffer::create(bind->_lineUniforms_data, LINE_BINDING_UNIFORMS, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-
-        bind->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        bind->firstSet = 0;
-        bind->layout = layout;
-        bind->descriptorSet = vsg::DescriptorSet::create(layout->setLayouts.front(),
-            vsg::Descriptors{ _styleLUT_buffer, bind->_lineUniforms_buffer });
-
-        lineDetail.node = vsg::StateGroup::create();
-        lineDetail.node->stateCommands.emplace_back(bind);
-        lineDetail.bind = bind;
-
-        compile(lineDetail.node);
-    }
-
-    ROCKY_SOFT_ASSERT_AND_RETURN(lineDetail.node, void());
-
-    // remove the children so we can rebuild the graph.
-    lineDetail.node->children.clear();
-
-    vsg::Group* parent = lineDetail.node;
-
-    if (style)
-    {
-        LineUniforms& uniforms = *static_cast<LineUniforms*>(lineDetail.bind->_lineUniforms_data->dataPointer());
-        uniforms.style = style->index;
-        upload(lineDetail.bind->_lineUniforms_buffer->bufferInfoList);
-    }
-
-    if (geom)
-    {
-        ROCKY_SOFT_ASSERT_AND_RETURN(geom->node, void(), "LineGeometryDetail node is missing");
-        parent->addChild(geom->node);
+        lineDetail.node = geomDetail->node;
     }
 }
 
-
 void
-LineSystemNode::createOrUpdateLineGeometry(const LineGeometry& geom, LineGeometryDetail& geomDetail, VSGContext& vsgcontext)
+LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDetail& geomDetail, VSGContext& vsgcontext)
 {
     // NB: registry is read-locked
 
@@ -403,124 +398,144 @@ LineSystemNode::createOrUpdateLineGeometry(const LineGeometry& geom, LineGeometr
 }
 
 void
-LineSystemNode::createOrUpdateLineStyle(const LineStyle& style, LineStyleDetail& styleDetail)
+LineSystemNode::createOrUpdateStyle(const LineStyle& style, LineStyleDetail& styleDetail)
 {
-    auto& styleLUT = *static_cast<LineStyleLUT*>(_styleLUT_data->dataPointer());
+    // NB: registry is read-locked
+    bool needsCompile = false;
+    bool needsUpload = false;
 
-    if (styleDetail.index >= 0)
+    if (!styleDetail.bind)
     {
-        styleLUT.lut[styleDetail.index].populate(style);
+        auto layout = getPipelineLayout(Line());
+        initializeStyleDetail(layout, styleDetail);
+        needsCompile = true;
     }
-    else
-    {
-        ROCKY_SOFT_ASSERT_AND_RETURN(_styleLUTSize <= MAX_LINE_STYLES, void(),
-            "Line style LUT overflow - call support");
 
-        for (unsigned i = 0; i < MAX_LINE_STYLES; ++i)
-        {
-            if (!_styleInUse[i])
-            {
-                _styleInUse[i] = true;
-                styleLUT.lut[i].populate(style);
-                styleDetail.index = i;
-                _styleLUTSize = std::max(_styleLUTSize, i + 1);
-                break;
-            }
-        }
-    }
+    // update the uniform for this style:
+    auto& uniforms = *static_cast<LineStyleUniform*>(styleDetail.styleData->dataPointer());
+    uniforms.style.populate(style);
+    needsUpload = !needsCompile;
+
+    if (needsCompile)
+        compile(styleDetail.bind);
+    else if (needsUpload)
+        upload(styleDetail.styleUBO->bufferInfoList);
 }
 
 void
 LineSystemNode::traverse(vsg::RecordTraversal& record) const
 {
-    const vsg::dmat4 identity_matrix = vsg::dmat4(1.0);
-
     detail::RenderingState rs {
         record.getCommandBuffer()->viewID,
         record.getFrameStamp()->frameCount
     };
 
+    std::vector<LineStyleDetail*> styleDetails;
+    styleDetails.emplace_back(&_defaultStyleDetail);
+
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
         {
-            auto view = reg.view<Line, LineDetail, ActiveState, Visibility>();
-            for (auto&& [entity, comp, lineDetail, active, visibility] : view.each())
+            for (auto&& [entity, styleDetail] : reg.view<LineStyleDetail>().each())
             {
-                if (lineDetail.node && visible(visibility, rs))
+                styleDetails.emplace_back(&styleDetail);
+            }
+
+            int count = 0;
+            auto view = reg.view<Line, LineDetail, ActiveState, Visibility>();
+            for (auto&& [entity, comp, compDetail, active, visibility] : view.each())
+            {
+                auto* styleDetail = &_defaultStyleDetail;
+                auto* style = reg.try_get<LineStyle>(comp.style);
+                if (style)
+                {
+                    styleDetail = &reg.get<LineStyleDetail>(comp.style);
+                }
+
+                if (compDetail.node && visible(visibility, rs))
                 {
                     auto* transformDetail = reg.try_get<TransformDetail>(entity);
                     if (transformDetail)
                     {
                         if (transformDetail->passingCull(rs))
                         {
-                            _renderLeaves.emplace_back(RenderLeaf{ lineDetail.node, transformDetail });
+                            styleDetail->drawList.emplace_back(LineDrawable{ compDetail.node, transformDetail });
+                            ++count;
                         }
                     }
                     else
                     {
-                        _renderLeaves.emplace_back(RenderLeaf{ lineDetail.node, nullptr });
+                        styleDetail->drawList.emplace_back(LineDrawable{ compDetail.node, nullptr });
+                        ++count;
+                    }
+                }
+            }
+
+            // Render collected data.
+            // TODO: swap vectors into unprotected space to free up the readlock?
+            if (count > 0)
+            {
+                _pipelines[0].commands->accept(record);
+
+                for (auto& styleDetail : styleDetails)
+                {
+                    styleDetail->bind->accept(record);
+
+                    if (!styleDetail->drawList.empty())
+                    {
+                        for (auto& drawable : styleDetail->drawList)
+                        {
+                            if (drawable.xformDetail)
+                            {
+                                drawable.xformDetail->push(record);
+                            }
+
+                            drawable.node->accept(record);
+
+                            if (drawable.xformDetail)
+                            {
+                                drawable.xformDetail->pop(record);
+                            }
+                        }
+
+                        styleDetail->drawList.clear();
                     }
                 }
             }
         });
-
-    // Render collected data
-    if (!_renderLeaves.empty())
-    {
-        _pipelines[0].commands->accept(record);
-
-        for (auto& leaf : _renderLeaves)
-        {
-            if (leaf.xformDetail)
-            {
-                leaf.xformDetail->push(record);
-            }
-
-            leaf.node->accept(record);
-
-            if (leaf.xformDetail)
-            {
-                leaf.xformDetail->pop(record);
-            }
-        }
-    }
-
-    _renderLeaves.clear();
 }
 
 void
 LineSystemNode::update(VSGContext& vsgcontext)
 {
-    bool uploadStyles = false;
+    // start by disposing of any old static objects
+    if (!s_toDispose->children.empty())
+    {
+        dispose(s_toDispose);
+        s_toDispose = vsg::Objects::create();
+    }
 
     _registry.read([&](entt::registry& reg)
         {
             LineStyle::eachDirty(reg, [&](entt::entity e)
                 {
                     const auto& [style, styleDetail] = reg.get<LineStyle, LineStyleDetail>(e);
-                    createOrUpdateLineStyle(style, styleDetail);
-                    uploadStyles = true;
+                    createOrUpdateStyle(style, styleDetail);
                 });
 
             LineGeometry::eachDirty(reg, [&](entt::entity e)
                 {
                     const auto& [geom, geomDetail] = reg.get<LineGeometry, LineGeometryDetail>(e);
-                    createOrUpdateLineGeometry(geom, geomDetail, vsgcontext);
+                    createOrUpdateGeometry(geom, geomDetail, vsgcontext);
                 });
 
             Line::eachDirty(reg, [&](entt::entity e)
                 {
                     const auto& [line, lineDetail] = reg.get<Line, LineDetail>(e);
-                    auto* styleDetail = line.style != entt::null ? reg.try_get<LineStyleDetail>(line.style) : nullptr;
                     auto* geomDetail = line.geometry != entt::null ? reg.try_get<LineGeometryDetail>(line.geometry) : nullptr;
-                    createOrUpdateLineNode(line, lineDetail, styleDetail, geomDetail, vsgcontext);
+                    createOrUpdateComponent(line, lineDetail, geomDetail);
                 });                    
         });
-
-    if (uploadStyles)
-    {
-        upload(_styleLUT_buffer->bufferInfoList);
-    }
 
     Inherit::update(vsgcontext);
 }

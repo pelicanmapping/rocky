@@ -9,58 +9,6 @@
 
 namespace ROCKY_NAMESPACE
 {
-    constexpr unsigned MAX_LINE_STYLES = 1024;
-
-    namespace detail
-    {
-        struct LineStyleRecord
-        {
-            Color color;
-            float width;
-            std::int32_t stipplePattern;
-            std::int32_t stippleFactor;
-            float resolution;
-            float depthOffset;
-            std::uint32_t padding[3]; // pad to 16 bytes
-
-            inline void populate(const LineStyle& in) {
-                color = in.color;
-                width = in.width;
-                stipplePattern = in.stipplePattern;
-                stippleFactor = in.stippleFactor;
-                resolution = in.resolution;
-                depthOffset = in.depthOffset;
-            }
-        };
-        static_assert(sizeof(LineStyleRecord) % 16 == 0, "LineStyleRecord must be 16-byte aligned");
-
-
-        struct LineStyleLUT
-        {
-            std::array<LineStyleRecord, MAX_LINE_STYLES> lut;
-        };
-        static_assert(sizeof(LineStyleLUT) % 16 == 0, "LineStyleLUT must be 16-byte aligned");
-
-
-        struct LineUniforms
-        {
-            std::int32_t style = 0; // index into the style LUT.
-
-            // pad to 16 bytes
-            std::uint32_t padding[3];
-        };
-        static_assert(sizeof(LineUniforms) % 16 == 0, "LineUniforms must be 16-byte aligned");
-
-
-        class ROCKY_EXPORT BindLineDescriptors : public vsg::Inherit<vsg::BindDescriptorSet, BindLineDescriptors>
-        {
-        public:
-            vsg::ref_ptr<vsg::Data> _lineUniforms_data;
-            vsg::ref_ptr<vsg::DescriptorBuffer> _lineUniforms_buffer;
-        };
-    }
-
-
     /**
     * Renders a line or linestring geometry.
     */
@@ -100,10 +48,53 @@ namespace ROCKY_NAMESPACE
 
     namespace detail
     {
+        // "line.style" in the shader
+        struct LineStyleRecord
+        {
+            Color color;
+            float width;
+            std::int32_t stipplePattern;
+            std::int32_t stippleFactor;
+            float resolution;
+            float depthOffset;
+            std::uint32_t padding[3]; // pad to 16 bytes
+
+            inline void populate(const LineStyle& in) {
+                color = in.color;
+                width = in.width;
+                stipplePattern = in.stipplePattern;
+                stippleFactor = in.stippleFactor;
+                resolution = in.resolution;
+                depthOffset = in.depthOffset;
+            }
+        };
+        static_assert(sizeof(LineStyleRecord) % 16 == 0, "LineStyleRecord must be 16-byte aligned");
+
+
+        // "line" in the shader
+        struct LineStyleUniform
+        {
+            LineStyleRecord style; // actual style data
+        };
+        static_assert(sizeof(LineStyleUniform) % 16 == 0, "LineStyleUniform must be 16-byte aligned");
+
+
+        // render leaf for collecting and drawing meshes
+        struct LineDrawable
+        {
+            vsg::Node* node = nullptr;
+            TransformDetail* xformDetail = nullptr;
+        };
+
+        using LineDrawList = std::vector<LineDrawable>;
+
         struct LineStyleDetail
         {
-            // index into the Styles LUT SSBO
-            int index = -1;
+            LineDrawList drawList;
+
+            vsg::ref_ptr<vsg::BindDescriptorSet> bind;
+            vsg::ref_ptr<vsg::Data> styleData;
+            vsg::ref_ptr<vsg::DescriptorBuffer> styleUBO;
         };
 
         struct LineGeometryDetail
@@ -116,8 +107,7 @@ namespace ROCKY_NAMESPACE
 
         struct LineDetail
         {
-            vsg::ref_ptr<vsg::StateGroup> node;
-            BindLineDescriptors* bind = nullptr;
+            vsg::ref_ptr<vsg::Node> node;
         };
     }
 
@@ -152,35 +142,21 @@ namespace ROCKY_NAMESPACE
         void traverse(vsg::RecordTraversal&) const override;
 
     private:
-        std::unordered_map<entt::entity, int> _entityToStyleIndexMap;
-        std::array<bool, MAX_LINE_STYLES> _styleInUse;
-        unsigned _styleLUTSize = 0;
+        mutable detail::LineStyleDetail _defaultStyleDetail;
 
         inline vsg::PipelineLayout* getPipelineLayout(const Line& line) {
             return _pipelines[0].config->layout;
         }
 
-        struct RenderLeaf {
-            vsg::Node* node = nullptr;
-            TransformDetail* xformDetail = nullptr;
-        };
-        mutable std::vector<RenderLeaf> _renderLeaves;
-
-        // SSBO data for the Style LUT
-        mutable vsg::ref_ptr<vsg::ubyteArray> _styleLUT_data;
-        mutable vsg::ref_ptr<vsg::DescriptorBuffer> _styleLUT_buffer;
-
         // Called when a Line is marked dirty (i.e., upon first creation or when either the
         // style of the geometry entity is reassigned).
-        void createOrUpdateLineNode(const Line& line,
-            detail::LineDetail& lineDetail, detail::LineStyleDetail* style, detail::LineGeometryDetail* geom,
-            VSGContext& context);
+        void createOrUpdateComponent(const Line&, detail::LineDetail&, detail::LineGeometryDetail*);
 
         // Called when a line geometry component is found in the dirty list
-        void createOrUpdateLineGeometry(const LineGeometry& geom, detail::LineGeometryDetail&, VSGContext& context);
+        void createOrUpdateGeometry(const LineGeometry& geom, detail::LineGeometryDetail&, VSGContext& context);
 
         // Called when a line style is found in the dirty list
-        void createOrUpdateLineStyle(const LineStyle& style, detail::LineStyleDetail& styleDetail);
+        void createOrUpdateStyle(const LineStyle& style, detail::LineStyleDetail& styleDetail);
     };
 
 

@@ -6,7 +6,12 @@ layout(push_constant) uniform PushConstants {
     mat4 modelview;
 } pc;
 
-// see rocky::LineStyle
+// input vertex attributes
+layout(location = 0) in vec3 in_vertex;
+layout(location = 1) in vec3 in_vertex_prev;
+layout(location = 2) in vec3 in_vertex_next;
+
+// rocky::detail::LineStyleRecord
 struct LineStyle {
     vec4 color;
     float width;
@@ -17,25 +22,15 @@ struct LineStyle {
     int padding[3];
 };
 
-layout(set = 0, binding = 0) readonly buffer LineStyles {
-    LineStyle lut[1024];
-} styles;
-
-layout(set = 0, binding = 1) uniform LineUniforms {
-    int style;
-    int padding[3];
+// rocky::detail::LineStyleUniform
+layout(set = 0, binding = 1) uniform LineStyleUniform {
+    LineStyle style;
 } line;
 
 // vsg viewport data
 layout(set = 1, binding = 1) readonly buffer VSG_Viewports {
     vec4 viewport[1]; // x, y, width, height
 } vsg_viewports;
-
-// input vertex attributes
-layout(location = 0) in vec3 in_vertex;
-layout(location = 1) in vec3 in_vertex_prev;
-layout(location = 2) in vec3 in_vertex_next;
-//layout(location = 3) in vec4 in_color;
 
 // inter-stage interface block
 struct Varyings {
@@ -44,6 +39,7 @@ struct Varyings {
     int stipplePattern;
     int stippleFactor;
 };
+
 layout(location = 1) out float lateral;
 layout(location = 2) flat out Varyings vary;
 
@@ -65,13 +61,11 @@ vec3 apply_depth_offset(in vec3 vertex, float offset, float n)
 
 void main()
 {
-    int i = line.style >= 0 ? line.style : 0;
+    vary.color = line.style.color;
+    vary.stipplePattern = line.style.stipplePattern;
+    vary.stippleFactor = line.style.stippleFactor;
 
-    vary.color = styles.lut[i].color;
-    vary.stipplePattern = styles.lut[i].stipplePattern;
-    vary.stippleFactor = styles.lut[i].stippleFactor;
-
-    float thickness = max(0.5, floor(styles.lut[i].width));
+    float thickness = max(0.5, floor(line.style.width));
     float len = thickness;
     int code = (gl_VertexIndex + 2) & 3;
     bool is_start = code <= 1;
@@ -93,7 +87,7 @@ void main()
 
     vec2 viewport_size = vsg_viewports.viewport[0].zw;
 
-    float bias = styles.lut[i].depthOffset;
+    float bias = line.style.depthOffset;
     float nearz = -pc.projection[3][2] / (pc.projection[2][2] + 1.0);
 
     vec4 curr_view = pc.modelview * vec4(in_vertex, 1);
@@ -170,7 +164,7 @@ void main()
     vec2 offset = extrude_unit * lateral;
     curr_clip.xy += (offset * curr_clip.w);
 
-    if (styles.lut[i].stipplePattern != 0xffff)
+    if (line.style.stipplePattern != 0xffff)
     {
         const float quantize = 8.0;
 
