@@ -425,6 +425,8 @@ LineSystemNode::createOrUpdateStyle(const LineStyle& style, LineStyleDetail& sty
 void
 LineSystemNode::traverse(vsg::RecordTraversal& record) const
 {
+    if (_status.failed()) return;
+
     detail::RenderingState rs {
         record.getCommandBuffer()->viewID,
         record.getFrameStamp()->frameCount
@@ -479,10 +481,10 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
 
                 for (auto& styleDetail : styleDetails)
                 {
-                    styleDetail->bind->accept(record);
-
                     if (!styleDetail->drawList.empty())
                     {
+                        styleDetail->bind->accept(record);
+
                         for (auto& drawable : styleDetail->drawList)
                         {
                             if (drawable.xformDetail)
@@ -508,6 +510,8 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
 void
 LineSystemNode::update(VSGContext& vsgcontext)
 {
+    if (_status.failed()) return;
+
     // start by disposing of any old static objects
     if (!s_toDispose->children.empty())
     {

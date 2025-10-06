@@ -220,9 +220,9 @@ Application::ctor(int& argc, char** argv)
     ecsNode->add(xform_system);
 
     // Rendering components:
-    ecsNode->add(MeshSystemNode::create(registry));
     ecsNode->add(NodeSystemNode::create(registry));
     ecsNode->add(LineSystemNode::create(registry));
+    ecsNode->add(MeshSystemNode::create(registry));
 
     if (indirect)
         ecsNode->add(IconSystem2Node::create(registry));

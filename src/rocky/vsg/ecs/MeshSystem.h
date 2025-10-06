@@ -47,13 +47,13 @@ namespace ROCKY_NAMESPACE
         {
             Color color = Color(1, 1, 1, 0);
             float depthOffset = 0.0f;
-            int textureIndex = -1;
+            int hasTexture = 0;
             std::uint32_t padding[2]; // pad to 16 bytes
 
             inline void populate(const MeshStyle& in) {
                 color = in.color;
                 depthOffset = in.depthOffset;
-                textureIndex = in.texture != entt::null ? 0 : -1;
+                hasTexture = in.texture != entt::null ? 1 : 0;
             }
         };
         static_assert(sizeof(MeshStyleRecord) % 16 == 0, "MeshStyleRecord must be 16-byte aligned");
@@ -77,14 +77,16 @@ namespace ROCKY_NAMESPACE
         struct MeshStyleDetail
         {
             entt::entity texture = entt::null; // last know texture entt
-            int styleAtlasIndex = -1; // index into the Styles LUT SSBO
             MeshDrawList drawList;
 
             vsg::ref_ptr<vsg::BindDescriptorSet> bind;
-            vsg::ref_ptr<vsg::Commands> commands;
-            vsg::ref_ptr<vsg::Data> styleData;
+            //vsg::ref_ptr<vsg::Commands> commands;
+            vsg::ref_ptr<vsg::Data> styleUBOData;
             vsg::ref_ptr<vsg::DescriptorBuffer> styleUBO;
             vsg::ref_ptr<vsg::DescriptorImage> styleTexture;
+
+            using Pass = vsg::ref_ptr<vsg::Commands>;
+            std::vector<Pass> passes; // multipass rendering for a style
         };
 
         // internal data paired with MeshGeometry

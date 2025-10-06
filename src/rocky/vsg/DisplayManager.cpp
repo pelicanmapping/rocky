@@ -289,6 +289,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
 
     auto& ds3 = traits->deviceFeatures->get<VkPhysicalDeviceExtendedDynamicState3FeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT>();
     ds3.extendedDynamicState3PolygonMode = VK_TRUE;
+    ds3.extendedDynamicState3ColorWriteMask = VK_TRUE;
 
     auto window = vsg::Window::create(traits);
 

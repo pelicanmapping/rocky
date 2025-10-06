@@ -6,7 +6,8 @@
 #include <rocky/vsg/Common.h>
 
 namespace ROCKY_NAMESPACE
-{    class SetPolygonMode : public vsg::Inherit<vsg::StateCommand, SetPolygonMode>
+{  
+    class SetPolygonMode : public vsg::Inherit<vsg::StateCommand, SetPolygonMode>
     {
     public:
         SetPolygonMode(vsg::Device* device, VkPolygonMode pm) : _polygonMode(pm) {
@@ -51,5 +52,21 @@ namespace ROCKY_NAMESPACE
     private:
         VkCullModeFlags _cullMode;
         PFN_vkCmdSetCullModeEXT _vkCmdSetCullMode = nullptr;
+    };
+
+
+    class SetColorWriteMask : public vsg::Inherit<vsg::StateCommand, SetColorWriteMask>
+    {
+    public:
+        SetColorWriteMask(vsg::Device* device, VkColorComponentFlags value) : _colorWriteMask(value) {
+            device->getProcAddr<PFN_vkCmdSetColorWriteMaskEXT>(_vkCmdSetColorWriteMask, "vkCmdSetColorWriteMaskEXT");
+        }
+        void record(vsg::CommandBuffer& commandBuffer) const override {
+            if (_vkCmdSetColorWriteMask)
+                _vkCmdSetColorWriteMask(commandBuffer, 0, 1, &_colorWriteMask);
+        }
+    private:
+        VkColorComponentFlags _colorWriteMask;
+        PFN_vkCmdSetColorWriteMaskEXT _vkCmdSetColorWriteMask = nullptr;
     };
 }

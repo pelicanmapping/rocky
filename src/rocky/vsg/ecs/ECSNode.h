@@ -98,8 +98,14 @@ namespace ROCKY_NAMESPACE
                 // compiles:
                 if (_toCompile->children.size() > 0)
                 {
-                    vsgcontext->compile(_toCompile);
+                    auto r = vsgcontext->compile(_toCompile);
                     _toCompile->children.clear();
+
+                    if (!r)
+                    {
+                        Log()->critical("Compile failure in {}. {}", className(), r.message);
+                        _status = Failure(Failure::AssertionFailure, "Compile failure");
+                    }
                 }
 
                 // disposals
@@ -136,7 +142,6 @@ namespace ROCKY_NAMESPACE
             inline void upload(vsg::BufferInfoList& bil) {
                 _buffersToUpload.insert(_buffersToUpload.end(), bil.begin(), bil.end());
             }
-
             inline void upload(vsg::ImageInfo* bi) {
                 _imagesToUpload.emplace_back(bi);
             }
@@ -152,6 +157,7 @@ namespace ROCKY_NAMESPACE
             };
             std::vector<Pipeline> _pipelines;
             bool _pipelinesCompiled = false;
+            Status _status;
 
 
         private:

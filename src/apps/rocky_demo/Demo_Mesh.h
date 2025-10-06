@@ -173,11 +173,17 @@ auto Demo_Mesh_Relative = [](Application& app)
         if (ImGuiLTable::Checkbox("Wireframe", &style.wireframe))
             style.dirty(reg);
 
+        if (ImGuiLTable::Checkbox("Draw backfaces", &style.drawBackfaces))
+            style.dirty(reg);
+
         if (ImGuiLTable::Checkbox("Depth write", &style.writeDepth))
             style.dirty(reg);
 
-        if (ImGuiLTable::Checkbox("Cull backfaces", &style.cullBackfaces))
+        if (ImGuiLTable::Checkbox("Two-pass alpha", &style.twoPassAlpha)) {
+            if (style.twoPassAlpha)
+                style.writeDepth = true;
             style.dirty(reg);
+        }
 
         ImGuiLTable::End();
     }
@@ -202,17 +208,9 @@ auto Demo_Mesh_Textured = [](Application& app)
         // Make some geometry that will be relative to a geolocation:
         auto& geom = reg.emplace<MeshGeometry>(entity);
         const double s = 1000000.0;
-        glm::vec3 verts[4] = { { -s, -s, 0 }, {  s, -s, 0 }, {  s,  s, 0 }, { -s,  s, 0 } };
-        glm::vec2 uvs[4] = { {0,0}, {1,0}, {1,1}, {0,1} };
-        unsigned indices[6] = { 0, 1, 2, 0, 2, 3 };
-        Color color{ 1, 1, 1, 0.85f };
-        for (unsigned i = 0; i < 6; i += 3)
-        {
-            geom.triangles.emplace_back(Triangle{
-                {verts[indices[i + 0]], verts[indices[i + 1]], verts[indices[i + 2]]},
-                {color, color, color},
-                {uvs[indices[i + 0]], uvs[indices[i + 1]], uvs[indices[i + 2]]} });
-        }
+        geom.verts = { { -s, -s, 0 }, {  s, -s, 0 }, {  s,  s, 0 }, { -s,  s, 0 } };
+        geom.uvs = { {0,0}, {1,0}, {1,1}, {0,1} };
+        geom.indices = { 0, 1, 2, 0, 2, 3 };
 
         // A texture:
         glm::vec4 corners[4] = { {1,0,0,1}, {0,1,0,1}, {0,0,1,1}, {1,1,0,1} };
@@ -225,6 +223,7 @@ auto Demo_Mesh_Textured = [](Application& app)
                 image->write(c, i);
             });
 
+        // a sampler:
         auto sampler = vsg::Sampler::create();
         sampler->maxLod = 5;
         sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
@@ -233,6 +232,7 @@ auto Demo_Mesh_Textured = [](Application& app)
         sampler->anisotropyEnable = VK_TRUE;
         sampler->maxAnisotropy = 4.0f;
 
+        // Make a texture component to hold our image:
         auto& tex = reg.emplace<MeshTexture>(entity);
         tex.imageInfo = vsg::ImageInfo::create(sampler, util::moveImageToVSG(image));
 
@@ -248,7 +248,7 @@ auto Demo_Mesh_Textured = [](Application& app)
         // to control horizon culling a little better
         auto& xform = reg.emplace<Transform>(entity);
         xform.topocentric = true;
-        xform.position = GeoPoint(SRS::WGS84, 24.0, -24.0, s * 3.0);
+        xform.position = GeoPoint(SRS::WGS84, 24.0, -24.0, s);
         xform.radius = s * sqrt(2);
 
         app.vsgcontext->requestFrame();
@@ -411,3 +411,94 @@ auto Demo_Mesh_Shared = [](Application& app)
         ImGuiLTable::End();
     }
 };
+
+
+
+
+
+auto Demo_Mesh_Blending = [](Application& app)
+    {
+        static entt::entity entity = entt::null;
+
+        if (entity == entt::null)
+        {
+            auto [lock, reg] = app.registry.write();
+
+            // Create a new entity to host our mesh
+            entity = reg.create();
+
+            // Attach the new mesh:
+            auto& geom = reg.emplace<MeshGeometry>(entity);
+
+            geom.verts = {
+                { -200000.0, -200000.0, 200000.0 },
+                {  300000.0, -200000.0, 200000.0 },
+                {  300000.0,  300000.0, 200000.0 },
+                { -200000.0,  300000.0, 200000.0 },
+
+                { -250000.0, -250000.0, 0.0 },
+                {  250000.0, -250000.0, 0.0 },
+                {  250000.0,  250000.0, 0.0 },
+                { -250000.0,  250000.0, 0.0 },
+                
+                { -225000.0, -225000.0, 100000.0 },
+                {  275000.0, -225000.0, 100000.0 },
+                {  275000.0,  275000.0, 100000.0 },
+                { -225000.0,  275000.0, 100000.0 } };
+
+            const float a = 0.5f;
+
+            geom.colors = {
+                // color each pair of triangles a different primary color, with a constant alpha of 0.75:
+                {1,0,0,a}, {1,0,0,a}, {1,0,0,a}, {1,0,0,a},
+                {0,1,0,a}, {0,1,0,a}, {0,1,0,a}, {0,1,0,a},
+                {0,0,1,a}, {0,0,1,a}, {0,0,1,a}, {0,0,1,a} };
+
+            geom.indices = {
+                0,1,2, 0,2,3,
+                4,5,6, 4,6,7,
+                8,9,10, 8,10,11
+            };
+
+            auto& style = reg.emplace<MeshStyle>(entity);
+            style.twoPassAlpha = true;
+            style.writeDepth = true;
+
+            auto& mesh = reg.emplace<Mesh>(entity, geom, style);
+
+            // Add a transform component so we can position our mesh relative
+            // to some geospatial coordinates. We then set the bound on the node
+            // to control horizon culling a little better
+            auto& xform = reg.emplace<Transform>(entity);
+            xform.topocentric = true;
+            xform.position = GeoPoint(SRS::WGS84, 0.0, 0.0, 10000.0);
+            xform.radius = 40000.0;
+
+            app.vsgcontext->requestFrame();
+        }
+
+        if (ImGuiLTable::Begin("Mesh"))
+        {
+            auto [_, reg] = app.registry.read();
+
+            auto& style = reg.get<MeshStyle>(entity);
+            if (ImGuiLTable::Checkbox("Wireframe", &style.wireframe))
+                style.dirty(reg);
+
+            if (ImGuiLTable::Checkbox("Draw backfaces", &style.drawBackfaces))
+                style.dirty(reg);
+
+            if (ImGuiLTable::Checkbox("Depth write", &style.writeDepth))
+                style.dirty(reg);
+
+            if (ImGuiLTable::Checkbox("Two-pass alpha", &style.twoPassAlpha)) {
+                if (style.twoPassAlpha)
+                    style.writeDepth = true;
+                style.dirty(reg);
+            }
+            
+
+            ImGuiLTable::End();
+        }
+    };
+

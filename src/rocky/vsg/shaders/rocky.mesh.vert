@@ -16,7 +16,7 @@ layout(location = 3) in vec2 in_uv;
 struct MeshStyle {
     vec4 color;
     float depthOffset;
-    int textureIndex;
+    int hasTexture;
     int padding[2];
 };
 
@@ -27,7 +27,7 @@ layout(set = 0, binding = 1) uniform MeshUniform {
 // inter-stage interface block
 struct Varyings {
     vec4 color;
-    int textureIndex;
+    int hasTexture;
 };
 layout(location = 1) out vec2 uv;
 layout(location = 2) flat out Varyings vary;
@@ -52,7 +52,7 @@ vec3 apply_depth_offset(in vec3 vertex, in float offset)
 void main()
 {    
     vary.color = mesh.style.color.a > 0.0 ? mesh.style.color : in_color;
-    vary.textureIndex = mesh.style.textureIndex;
+    vary.hasTexture = mesh.style.hasTexture;
 
     float depthOffset = mesh.style.depthOffset;
 

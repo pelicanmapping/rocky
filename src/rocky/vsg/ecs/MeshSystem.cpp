@@ -78,8 +78,8 @@ namespace
     void initializeStyleDetail(vsg::PipelineLayout* layout, MeshStyleDetail& styleDetail)
     {
         // uniform: "mesh.styles" in the shader
-        styleDetail.styleData = vsg::ubyteArray::create(sizeof(MeshStyleUniform));
-        styleDetail.styleUBO = vsg::DescriptorBuffer::create(styleDetail.styleData, MESH_BINDING_UNIFORM, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+        styleDetail.styleUBOData = vsg::ubyteArray::create(sizeof(MeshStyleUniform));
+        styleDetail.styleUBO = vsg::DescriptorBuffer::create(styleDetail.styleUBOData, MESH_BINDING_UNIFORM, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
         // uniform: "meshTexture" in the fragment shader
         styleDetail.styleTexture = vsg::DescriptorImage::create(createEmptyTexture(), MESH_BINDING_TEXTURE, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
@@ -93,11 +93,8 @@ namespace
             styleDetail.bind->layout->setLayouts.front(),
             vsg::Descriptors{ styleDetail.styleUBO, styleDetail.styleTexture });
 
-        MeshStyleUniform& uniforms = *static_cast<MeshStyleUniform*>(styleDetail.styleData->dataPointer());
+        MeshStyleUniform& uniforms = *static_cast<MeshStyleUniform*>(styleDetail.styleUBOData->dataPointer());
         uniforms.style = MeshStyleRecord(); // default style
-
-        // container for dynamic state commands
-        styleDetail.commands = vsg::Commands::create();
     }
 }
 
@@ -155,7 +152,8 @@ namespace
     {
         auto& d = r.get<MeshStyleDetail>(e);
         dispose(d.bind);
-        dispose(d.commands);
+        for(auto& pass : d.passes)
+            dispose(pass);
         d = MeshStyleDetail();
     }
     void on_destroy_MeshGeometryDetail(entt::registry& r, entt::entity e)
@@ -264,6 +262,7 @@ MeshSystemNode::initialize(VSGContext& vsgcontext)
                 state.dynamicStates.emplace_back(VK_DYNAMIC_STATE_POLYGON_MODE_EXT);
                 state.dynamicStates.emplace_back(VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT);
                 state.dynamicStates.emplace_back(VK_DYNAMIC_STATE_CULL_MODE_EXT);
+                state.dynamicStates.emplace_back(VK_DYNAMIC_STATE_COLOR_WRITE_MASK_EXT);
             }
 #endif
         };
@@ -465,32 +464,66 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
     }
 
 #ifdef USE_DYNAMIC_STATE
-    if (styleDetail.commands)
+    for (auto& pass : styleDetail.passes)
+        dispose(pass);
+
+    styleDetail.passes.clear();
+    styleDetail.passes.emplace_back(vsg::Commands::create());
+    styleDetail.passes[0]->addChild(styleDetail.bind);
+
+    // wireframe:
+    styleDetail.passes[0]->addChild(SetPolygonMode::create(
+        vsgcontext->device(),
+        style.wireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL));
+
+    // cull mode
+    styleDetail.passes[0]->addChild(SetCullMode::create(
+        vsgcontext->device(),
+        style.drawBackfaces ? VK_CULL_MODE_NONE : VK_CULL_MODE_BACK_BIT));
+
+    if (style.twoPassAlpha == true && style.writeDepth == false)
     {
-        dispose(styleDetail.commands);
-        styleDetail.commands = vsg::Commands::create();
+        Log()->warn("MeshStyle: twoPassAlpha requires writeDepth to be true; ignoring twoPassAlpha.");
+    }
 
-        // wireframe:
-        styleDetail.commands->addChild(SetPolygonMode::create(
+    // when both 2-pass alpha AND writeDepth are enabled, create a second pass.
+    // render all objects first with no depth-writes; then write the depth 
+    // later in a second pass.
+    if (style.twoPassAlpha && style.writeDepth)
+    {
+        styleDetail.passes.emplace_back(vsg::Commands::create());
+
+        // first pass: no depth writes, full color writes:
+        styleDetail.passes[0]->addChild(SetDepthWriteEnable::create(
             vsgcontext->device(),
-            style.wireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL));
+            VK_FALSE));
+        styleDetail.passes[0]->addChild(SetColorWriteMask::create(
+            vsgcontext->device(), 0x0F));
 
+        // second pass: depth writes, no color writes:
+        styleDetail.passes[1]->addChild(SetDepthWriteEnable::create(
+            vsgcontext->device(),
+            VK_TRUE));
+        styleDetail.passes[1]->addChild(SetColorWriteMask::create(
+            vsgcontext->device(), 0x0));
+    }
+    else
+    {
         // depth writes
-        styleDetail.commands->addChild(SetDepthWriteEnable::create(
+        styleDetail.passes[0]->addChild(SetDepthWriteEnable::create(
             vsgcontext->device(),
             style.writeDepth ? VK_TRUE : VK_FALSE));
 
-        // cull mode
-        styleDetail.commands->addChild(SetCullMode::create(
-            vsgcontext->device(),
-            style.cullBackfaces ? VK_CULL_MODE_BACK_BIT : VK_CULL_MODE_NONE));
+        // and default color mask
+        styleDetail.passes[0]->addChild(SetColorWriteMask::create(
+            vsgcontext->device(), 0x0F));
     }
 #endif
 
     bool texChanged = style.texture != styleDetail.texture;
 
     // update the uniform for this style:
-    MeshStyleUniform& uniforms = *static_cast<MeshStyleUniform*>(styleDetail.styleData->dataPointer());
+    MeshStyleUniform& uniforms = *static_cast<MeshStyleUniform*>(styleDetail.styleUBOData->dataPointer());
     uniforms.style.populate(style);
     needsUpload = !needsCompile;
 
@@ -508,7 +541,7 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
             }
 
             styleDetail.styleTexture->imageInfoList = vsg::ImageInfoList{ tex->imageInfo };
-            uniforms.style.textureIndex = 0;
+            uniforms.style.hasTexture = 1;
             needsCompile = true;
         }
     }
@@ -555,7 +588,7 @@ MeshSystemNode::featureMask(const Mesh& mesh) const
 void
 MeshSystemNode::traverse(vsg::RecordTraversal& record) const
 {
-    const vsg::dmat4 identity_matrix = vsg::dmat4(1.0);
+    if (_status.failed()) return;
 
     detail::RenderingState rs{
         record.getCommandBuffer()->viewID,
@@ -611,30 +644,30 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
 
                 for(auto& styleDetail : styleDetails)
                 {
-                    styleDetail->bind->accept(record);
-                    
-                    if (styleDetail->commands)
-                        styleDetail->commands->accept(record);
-
                     if (!styleDetail->drawList.empty())
                     {
-                        for (auto& drawable : styleDetail->drawList)
+                        for (auto& pass : styleDetail->passes)
                         {
-                            if (drawable.xformDetail)
-                            {
-                                drawable.xformDetail->push(record);
-                            }
+                            pass->accept(record);
 
-                            drawable.node->accept(record);
-
-                            if (drawable.xformDetail)
+                            for (auto& drawable : styleDetail->drawList)
                             {
-                                drawable.xformDetail->pop(record);
+                                if (drawable.xformDetail)
+                                {
+                                    drawable.xformDetail->push(record);
+                                }
+
+                                drawable.node->accept(record);
+
+                                if (drawable.xformDetail)
+                                {
+                                    drawable.xformDetail->pop(record);
+                                }
                             }
                         }
 
                         styleDetail->drawList.clear();
-                    }                    
+                    }
                 }
             }
         });
@@ -643,6 +676,8 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
 void
 MeshSystemNode::update(VSGContext& vsgcontext)
 {
+    if (_status.failed()) return;
+
     // start by disposing of any old static objects
     if (!s_toDispose->children.empty())
     {

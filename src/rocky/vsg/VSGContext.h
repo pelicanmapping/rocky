@@ -85,7 +85,8 @@ namespace ROCKY_NAMESPACE
         //! a compile manager, so it is always a good idea to batch together as
         //! many compile operations as possible (e.g., with vsg::Objects) for good
         //! performance.
-        void compile(vsg::ref_ptr<vsg::Object> object);
+        //! @return the compile result, which you should use to check for errors.
+        vsg::CompileResult compile(vsg::ref_ptr<vsg::Object> object);
 
         //! Destroys a VSG object, eventually. 
         //! Call this to get rid of descriptor sets you plan to replace.

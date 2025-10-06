@@ -535,10 +535,10 @@ VSGContextImpl::onNextUpdate(std::function<void()> function)
     requestFrame();
 }
 
-void
+vsg::CompileResult
 VSGContextImpl::compile(vsg::ref_ptr<vsg::Object> compilable)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(compilable.valid(), void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(compilable.valid(), {});
 
     // note: this can block (with a fence) until a compile traversal is available.
     // Be sure to group as many compiles together as possible for maximum performance.
@@ -550,6 +550,8 @@ VSGContextImpl::compile(vsg::ref_ptr<vsg::Object> compilable)
         std::unique_lock lock(_compileMutex);
         _compileResult.add(cr);
     }
+
+    return cr;
 }
 
 void

@@ -50,9 +50,20 @@ namespace ROCKY_NAMESPACE
         //! Entity hotsing the (optional) Texture to use
         entt::entity texture = entt::null;
 
+        //! Whether to display only the edges of the mesh triangles
         bool wireframe = false;
+
+        //! Whether the mesh should write to the depth buffer
         bool writeDepth = true;
-        bool cullBackfaces = true;
+
+        //! Whether to draw back-facing triangles
+        //! (front-facing triangles are wound counter-clockwise)
+        bool drawBackfaces = false;
+
+        //! Whether to use a two-pass rendering technique that will help
+        //! blend semi-transparent objects propertly. "writeDepth" must
+        //! also be TRUE for this to take effect.
+        bool twoPassAlpha = false;
     };
 
     //! Mesh comonent

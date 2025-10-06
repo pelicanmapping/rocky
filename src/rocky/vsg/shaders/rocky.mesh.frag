@@ -5,7 +5,7 @@ layout(location = 1) in vec2 uv;
 // inter-stage interface block
 struct Varyings {
     vec4 color;
-    int textureIndex;
+    int hasTexture;
 };
 layout(location = 2) flat in Varyings vary;
 
@@ -20,13 +20,8 @@ void main()
 {
     outColor = vary.color;
 
-    if (vary.textureIndex >= 0)
+    if (vary.hasTexture > 0)
     {
         outColor.rgb *= texture(meshTexture, uv).rgb;
-    }
-
-    if (gl_FrontFacing == false)
-    {
-        outColor = vec4(1,0,0,1);
     }
 }
