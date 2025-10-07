@@ -1,4 +1,5 @@
 #version 450
+#pragma import_defines(ROCKY_ATMOSPHERE)
 
 // vsg push constants
 layout(push_constant) uniform PushConstants {
@@ -17,20 +18,20 @@ struct MeshStyle {
     vec4 color;
     float depthOffset;
     int hasTexture;
-    int padding[2];
+    int hasLighting;
+    int padding[1];
 };
 
 layout(set = 0, binding = 1) uniform MeshUniform {
     MeshStyle style;
 } mesh;
 
-// inter-stage interface block
-struct Varyings {
-    vec4 color;
-    int hasTexture;
-};
 layout(location = 1) out vec2 uv;
-layout(location = 2) flat out Varyings vary;
+layout(location = 2) out vec3 normal;
+layout(location = 3) out vec3 vertexView;
+layout(location = 4) flat out vec4 color;
+layout(location = 5) flat out int hasTexture;
+layout(location = 6) flat out int hasLighting;
 
 // GL built-ins
 out gl_PerVertex {
@@ -51,12 +52,19 @@ vec3 apply_depth_offset(in vec3 vertex, in float offset)
 
 void main()
 {    
-    vary.color = mesh.style.color.a > 0.0 ? mesh.style.color : in_color;
-    vary.hasTexture = mesh.style.hasTexture;
+    color = mesh.style.color.a > 0.0 ? mesh.style.color : in_color;
+    hasTexture = mesh.style.hasTexture;
+    hasLighting = mesh.style.hasLighting;
+
+    vec4 vv = pc.modelview * vec4(in_vertex, 1.0);
+    vertexView = vv.xyz / vv.w;
 
     float depthOffset = mesh.style.depthOffset;
 
     uv = in_uv;
+
+    mat3 normal_matrix = mat3(transpose(inverse(pc.modelview)));
+    normal = normal_matrix * in_normal;
 
     // TODO: lighting
     

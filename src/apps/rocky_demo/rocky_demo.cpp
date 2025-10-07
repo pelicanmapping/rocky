@@ -77,6 +77,7 @@ std::vector<Demo> demos =
         Demo{ "  Mesh - textured", Demo_Mesh_Textured },
         Demo{ "  Mesh - shared", Demo_Mesh_Shared },
         Demo{ "  Mesh - blending", Demo_Mesh_Blending },
+        Demo{ "  Mesh - lighting", Demo_Mesh_Lighting },
         Demo{ "Icon", Demo_Icon },
         Demo{ "Model", Demo_Model },
         Demo{ "Widget", Demo_Widget },

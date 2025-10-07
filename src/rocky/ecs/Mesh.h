@@ -30,6 +30,7 @@ namespace ROCKY_NAMESPACE
         //! Or, separate arrays containing verts, colors, UVs, and indices.
         std::vector<glm::dvec3> verts;
         std::vector<glm::fvec4> colors;
+        std::vector<glm::fvec3> normals;
         std::vector<glm::fvec2> uvs;
         std::vector<std::uint32_t> indices;
 
@@ -52,6 +53,9 @@ namespace ROCKY_NAMESPACE
 
         //! Whether to display only the edges of the mesh triangles
         bool wireframe = false;
+
+        //! Whether to apply normal-based lighting to the mesh
+        bool lighting = false;
 
         //! Whether the mesh should write to the depth buffer
         bool writeDepth = true;

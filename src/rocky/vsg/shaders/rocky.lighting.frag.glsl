@@ -5,9 +5,9 @@ layout(set = 1, binding = 0) uniform VSG_Lights {
     vec4 pack[64];
 } vsg_lights;
 
-#ifdef ROCKY_ATMOSPHERE
-layout(location = 15) in vec3 atmos_color;
-#endif
+//#ifdef ROCKY_ATMOSPHERE
+//layout(location = 15) in vec3 atmos_color;
+//#endif
 
 // TODO - this will eventually come from a material map
 struct PBR {
@@ -92,10 +92,34 @@ void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
 
     for (int i = 0; i < directional_count; ++i)
     {
-        vec4 light_color = vsg_lights.pack[index++];
-        vec3 direction = normalize(vsg_lights.pack[index++].xyz);
-        // placeholder:
-        Lo += (albedo * light_color.rgb * light_color.a);
+        // For now this is a copy of the point-light code.
+
+        vec3 light_color = vsg_lights.pack[index++].rgb;
+        vec3 position = vsg_lights.pack[index++].xyz;
+
+        // per-light radiance:
+        vec3 L = normalize(position - vertex_view);
+        vec3 H = normalize(V + L);
+        vec3 radiance = light_color;
+
+        // cook-torrance BRDF:
+        float D = DistributionGGX(N, H, pbr.roughness);
+        float G = GeometrySmith(N, V, L, pbr.roughness);
+        vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
+
+        float NdotL = max(dot(N, L), 0.0);
+
+        vec3 numerator = D * G * F;
+        float denominator = 4.0 * NdotV * NdotL + 0.001; // avoid division by zero
+        vec3 specular = numerator / denominator;
+
+        vec3 kS = F;
+        vec3 kD = vec3(1.0) - kS;
+        kD *= 1.0 - pbr.metal;
+
+        vec3 diffuse = kD * albedo / PI;
+
+        Lo += (diffuse + specular) * radiance * NdotL;
     }
 
     for (int i = 0; i < point_count; ++i)
@@ -141,15 +165,20 @@ void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
     {
         color.rgb = Lo + (clamp(ambient, vec3(0.0), vec3(1.0)) * albedo * pbr.ao);
 
-#if defined(ROCKY_ATMOSPHERE)
-        color.rgb += atmos_color; // add in the atmospheric haze
-        //color.rgb *= (atmos_color + vec3(1.0));
-#endif
+//#if defined(ROCKY_ATMOSPHERE)
+//        color.rgb += atmos_color; // add in the atmospheric haze
+//        //color.rgb *= (atmos_color + vec3(1.0));
+//#endif
 
-        //color.rgb = 1.0 - exp(-exposure * color.rgb); // exposure
+        // option 1 - exposure mapping
+        const float exposure = 3.3;
+        color.rgb = 1.0 - exp(-exposure * color.rgb);
 
+        // option 2 - reinhard tone mapping
         //color.rgb = color.rgb / (color.rgb + vec3(1.0)); // tone map
 
-        //color.rgb = pow(color.rgb, vec3(1.0 / 2.2)); // gamma correction
+        // NOTE: no gamma correction needed, since VSG uses SRGB as the
+        // default swapchain format. Ref:
+        // https://github.com/vsg-dev/VulkanSceneGraph/discussions/1379
     }
 }

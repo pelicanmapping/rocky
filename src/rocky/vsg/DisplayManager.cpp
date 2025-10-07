@@ -296,6 +296,8 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     // install extensions:
     auto pd = window->getOrCreatePhysicalDevice();
 
+    bool loadedAllRequiredExtensions = true;
+
     // This will install the debug messaging callback so we can capture validation errors
     if (vsg::isExtensionSupported(VK_EXT_DEBUG_UTILS_EXTENSION_NAME))
     {
@@ -305,23 +307,47 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     // Barycentric coordinates support for wireOverlay rendering
     if (pd->supportsDeviceExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME))
     {
+        Log()->info("Enabling: {}", VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
         traits->deviceExtensionNames.push_back(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
+    }
+    else
+    {
+        Log()->warn("Not available: {}", VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
+        loadedAllRequiredExtensions = false;
     }
 
     // All the dynamic state extensions
     if (pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME))
     {
+        Log()->info("Enabling: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
         traits->deviceExtensionNames.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+    }
+    else
+    {
+        Log()->warn("Not available: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+        loadedAllRequiredExtensions = false;
     }
 
     if (pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME))
     {
+        Log()->info("Enabling: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
         traits->deviceExtensionNames.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
+    }
+    else
+    {
+        Log()->warn("Not available: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
+        loadedAllRequiredExtensions = false;
     }
 
     if (pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME))
     {
+        Log()->info("Enabling: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
         traits->deviceExtensionNames.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
+    }
+    else
+    {
+        Log()->warn("Not available: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
+        loadedAllRequiredExtensions = false;
     }
 
     // configure the window

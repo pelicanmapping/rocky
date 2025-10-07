@@ -157,6 +157,10 @@ Application::ctor(int& argc, char** argv)
     {
         skyNode = rocky::SkyNode::create(vsgcontext);
         mainScene->addChild(skyNode);
+
+        // if the user didn't disable terrain lighting...enable it.
+        if (!mapNode->terrainSettings().lighting.has_value())
+            mapNode->terrainSettings().lighting = true;
     }
 
     // set on-demand rendering mode from the command line

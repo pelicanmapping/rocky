@@ -48,7 +48,6 @@ namespace
         shaderSet->addAttributeBinding("in_vertex", "", 0, VK_FORMAT_R32G32B32_SFLOAT, { });
         shaderSet->addAttributeBinding("in_vertex_prev", "", 1, VK_FORMAT_R32G32B32_SFLOAT, {});
         shaderSet->addAttributeBinding("in_vertex_next", "", 2, VK_FORMAT_R32G32B32_SFLOAT, {});
-        //shaderSet->addAttributeBinding("in_color", "", 3, VK_FORMAT_R32G32B32A32_SFLOAT, {});
 
         shaderSet->addDescriptorBinding("line", "", LINE_SET, LINE_BINDING_UNIFORM,
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
@@ -425,7 +424,7 @@ LineSystemNode::createOrUpdateStyle(const LineStyle& style, LineStyleDetail& sty
 void
 LineSystemNode::traverse(vsg::RecordTraversal& record) const
 {
-    if (_status.failed()) return;
+    if (status.failed()) return;
 
     detail::RenderingState rs {
         record.getCommandBuffer()->viewID,
@@ -510,7 +509,7 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
 void
 LineSystemNode::update(VSGContext& vsgcontext)
 {
-    if (_status.failed()) return;
+    if (status.failed()) return;
 
     // start by disposing of any old static objects
     if (!s_toDispose->children.empty())

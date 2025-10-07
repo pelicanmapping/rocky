@@ -107,6 +107,7 @@ auto Demo_Mesh_Relative = [](Application& app)
 
         // Make some geometry that will be relative to a geolocation:
         const double s = 250000.0;
+
         glm::dvec3 verts[8] = {
             { -s, -s, -s },
             {  s, -s, -s },
@@ -117,6 +118,7 @@ auto Demo_Mesh_Relative = [](Application& app)
             {  s,  s,  s },
             { -s,  s,  s }
         };
+
         unsigned indices[48] = {
             0,3,2, 0,2,1, 4,5,6, 4,6,7,
             1,2,6, 1,6,5, 3,0,4, 3,4,7,
@@ -417,88 +419,168 @@ auto Demo_Mesh_Shared = [](Application& app)
 
 
 auto Demo_Mesh_Blending = [](Application& app)
+{
+    static entt::entity entity = entt::null;
+
+    if (entity == entt::null)
     {
-        static entt::entity entity = entt::null;
+        auto [lock, reg] = app.registry.write();
 
-        if (entity == entt::null)
-        {
-            auto [lock, reg] = app.registry.write();
+        // Create a new entity to host our mesh
+        entity = reg.create();
 
-            // Create a new entity to host our mesh
-            entity = reg.create();
+        // Attach the new mesh:
+        auto& geom = reg.emplace<MeshGeometry>(entity);
 
-            // Attach the new mesh:
-            auto& geom = reg.emplace<MeshGeometry>(entity);
+        geom.verts = {
+            { -200000.0, -200000.0, 200000.0 },
+            {  300000.0, -200000.0, 200000.0 },
+            {  300000.0,  300000.0, 200000.0 },
+            { -200000.0,  300000.0, 200000.0 },
 
-            geom.verts = {
-                { -200000.0, -200000.0, 200000.0 },
-                {  300000.0, -200000.0, 200000.0 },
-                {  300000.0,  300000.0, 200000.0 },
-                { -200000.0,  300000.0, 200000.0 },
-
-                { -250000.0, -250000.0, 0.0 },
-                {  250000.0, -250000.0, 0.0 },
-                {  250000.0,  250000.0, 0.0 },
-                { -250000.0,  250000.0, 0.0 },
+            { -250000.0, -250000.0, 0.0 },
+            {  250000.0, -250000.0, 0.0 },
+            {  250000.0,  250000.0, 0.0 },
+            { -250000.0,  250000.0, 0.0 },
                 
-                { -225000.0, -225000.0, 100000.0 },
-                {  275000.0, -225000.0, 100000.0 },
-                {  275000.0,  275000.0, 100000.0 },
-                { -225000.0,  275000.0, 100000.0 } };
+            { -225000.0, -225000.0, 100000.0 },
+            {  275000.0, -225000.0, 100000.0 },
+            {  275000.0,  275000.0, 100000.0 },
+            { -225000.0,  275000.0, 100000.0 } };
 
-            const float a = 0.5f;
+        const float a = 0.5f;
 
-            geom.colors = {
-                // color each pair of triangles a different primary color, with a constant alpha of 0.75:
-                {1,0,0,a}, {1,0,0,a}, {1,0,0,a}, {1,0,0,a},
-                {0,1,0,a}, {0,1,0,a}, {0,1,0,a}, {0,1,0,a},
-                {0,0,1,a}, {0,0,1,a}, {0,0,1,a}, {0,0,1,a} };
+        geom.colors = {
+            // color each pair of triangles a different primary color, with a constant alpha of 0.75:
+            {1,0,0,a}, {1,0,0,a}, {1,0,0,a}, {1,0,0,a},
+            {0,1,0,a}, {0,1,0,a}, {0,1,0,a}, {0,1,0,a},
+            {0,0,1,a}, {0,0,1,a}, {0,0,1,a}, {0,0,1,a} };
 
-            geom.indices = {
-                0,1,2, 0,2,3,
-                4,5,6, 4,6,7,
-                8,9,10, 8,10,11
-            };
+        geom.indices = {
+            0,1,2, 0,2,3,
+            4,5,6, 4,6,7,
+            8,9,10, 8,10,11
+        };
 
-            auto& style = reg.emplace<MeshStyle>(entity);
-            style.twoPassAlpha = true;
-            style.writeDepth = true;
+        auto& style = reg.emplace<MeshStyle>(entity);
+        style.twoPassAlpha = true;
+        style.writeDepth = true;
 
-            auto& mesh = reg.emplace<Mesh>(entity, geom, style);
+        auto& mesh = reg.emplace<Mesh>(entity, geom, style);
 
-            // Add a transform component so we can position our mesh relative
-            // to some geospatial coordinates. We then set the bound on the node
-            // to control horizon culling a little better
-            auto& xform = reg.emplace<Transform>(entity);
-            xform.topocentric = true;
-            xform.position = GeoPoint(SRS::WGS84, 0.0, 0.0, 10000.0);
-            xform.radius = 40000.0;
+        // Add a transform component so we can position our mesh relative
+        // to some geospatial coordinates. We then set the bound on the node
+        // to control horizon culling a little better
+        auto& xform = reg.emplace<Transform>(entity);
+        xform.topocentric = true;
+        xform.position = GeoPoint(SRS::WGS84, 0.0, 0.0, 10000.0);
+        xform.radius = 40000.0;
 
-            app.vsgcontext->requestFrame();
-        }
+        app.vsgcontext->requestFrame();
+    }
 
-        if (ImGuiLTable::Begin("Mesh"))
+    if (ImGuiLTable::Begin("Mesh"))
+    {
+        auto [_, reg] = app.registry.read();
+
+        auto& style = reg.get<MeshStyle>(entity);
+        if (ImGuiLTable::Checkbox("Wireframe", &style.wireframe))
+            style.dirty(reg);
+
+        if (ImGuiLTable::Checkbox("Draw backfaces", &style.drawBackfaces))
+            style.dirty(reg);
+
+        if (ImGuiLTable::Checkbox("Depth write", &style.writeDepth))
+            style.dirty(reg);
+
+        if (ImGuiLTable::Checkbox("Two-pass alpha", &style.twoPassAlpha)) {
+            if (style.twoPassAlpha)
+                style.writeDepth = true;
+            style.dirty(reg);
+        }            
+
+        ImGuiLTable::End();
+    }
+};
+
+
+
+auto Demo_Mesh_Lighting = [](Application& app)
+{
+    static entt::entity entity = entt::null;
+
+    if (entity == entt::null)
+    {
+        auto [_, reg] = app.registry.write();
+
+        // Create a new entity to host our mesh
+        entity = reg.create();
+
+        // Createa a 3D geometry
+        auto& geom = reg.emplace<MeshGeometry>(entity);
+
+        // Populate geom.verts, geom.normals, geom.indices to create a solid
+        // ellipsoidal shape with CCW triangle winding:
+        const unsigned rings = 16;
+        const unsigned sectors = 32;
+        const double b = 1000000.0, c = 500000.0, a = 750000.0;
+        for (unsigned r = 0; r <= rings; ++r)
         {
-            auto [_, reg] = app.registry.read();
-
-            auto& style = reg.get<MeshStyle>(entity);
-            if (ImGuiLTable::Checkbox("Wireframe", &style.wireframe))
-                style.dirty(reg);
-
-            if (ImGuiLTable::Checkbox("Draw backfaces", &style.drawBackfaces))
-                style.dirty(reg);
-
-            if (ImGuiLTable::Checkbox("Depth write", &style.writeDepth))
-                style.dirty(reg);
-
-            if (ImGuiLTable::Checkbox("Two-pass alpha", &style.twoPassAlpha)) {
-                if (style.twoPassAlpha)
-                    style.writeDepth = true;
-                style.dirty(reg);
+            double theta = glm::pi<double>() * double(r) / double(rings);
+            double sin_theta = sin(theta);
+            double cos_theta = cos(theta);
+            for (unsigned s = 0; s <= sectors; ++s)
+            {
+                double phi = glm::two_pi<double>() * double(s) / double(sectors);
+                double sin_phi = sin(phi);
+                double cos_phi = cos(phi);
+                glm::dvec3 n{ cos_phi * sin_theta, cos_theta, sin_phi * sin_theta };
+                glm::dvec3 v{ a * n.x, b * n.y, c * n.z };
+                geom.verts.push_back(v);
+                geom.normals.push_back(n);
             }
-            
-
-            ImGuiLTable::End();
         }
-    };
+        for (unsigned r = 0; r < rings; ++r)
+        {
+            for (unsigned s = 0; s < sectors; ++s)
+            {
+                unsigned i1 = r * (sectors + 1) + s;
+                unsigned i2 = i1 + sectors + 1;
+                geom.indices.push_back(i1);
+                geom.indices.push_back(i1 + 1);
+                geom.indices.push_back(i2);
+                geom.indices.push_back(i1 + 1);
+                geom.indices.push_back(i2 + 1);
+                geom.indices.push_back(i2);
+            }
+        }
 
+        auto& style = reg.emplace<MeshStyle>(entity);
+        style.color = Color::Lime;
+        style.lighting = true;
+
+        auto& mesh = reg.emplace<Mesh>(entity, geom, style);
+
+        auto& xform = reg.emplace<Transform>(entity);
+        xform.topocentric = true;
+        xform.position = GeoPoint(SRS::WGS84, -25.0, 25.0, 250000.0);
+    }
+
+
+    if (ImGuiLTable::Begin("Mesh"))
+    {
+        auto [_, reg] = app.registry.read();
+
+        auto& style = reg.get<MeshStyle>(entity);
+        if (ImGuiLTable::Checkbox("Wireframe", &style.wireframe))
+            style.dirty(reg);
+
+        if (ImGuiLTable::Checkbox("Lighting", &style.lighting))
+            style.dirty(reg);
+
+        if (ImGuiLTable::Checkbox("Draw backfaces", &style.drawBackfaces))
+            style.dirty(reg);
+
+        ImGuiLTable::End();
+    }
+};

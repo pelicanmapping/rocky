@@ -68,6 +68,9 @@ namespace
         shaderSet->addDescriptorBinding("meshTexture", "", MESH_SET, MESH_BINDING_TEXTURE,
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
+        // We need VSG's view-dependent data for lighting support
+        PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_FRAGMENT_BIT);
+
         // Note: 128 is the maximum size required by the Vulkan spec so don't increase it
         shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
 
@@ -202,6 +205,20 @@ MeshSystemNode::MeshSystemNode(Registry& registry) :
 void
 MeshSystemNode::initialize(VSGContext& vsgcontext)
 {
+    // make sure all required vulkan features are available:
+    auto pd = vsgcontext->device()->getPhysicalDevice();
+
+    if (!pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) ||
+        !pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME) ||
+        !pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME))
+    {
+        status = Failure(Failure::ResourceUnavailable,
+            "MeshSystem requires the Vulkan extended dynamic state extensions. "
+            "These are not supported by the current Vulkan device.");
+        Log()->warn("MeshSystem not availabe! {}", status.error().message);
+        return;
+    }
+
     auto shaderSet = createShaderSet(vsgcontext);
 
     if (!shaderSet)
@@ -234,6 +251,8 @@ MeshSystemNode::initialize(VSGContext& vsgcontext)
         c.config->enableArray("in_normal", VK_VERTEX_INPUT_RATE_VERTEX, 12);
         c.config->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
         c.config->enableArray("in_uv", VK_VERTEX_INPUT_RATE_VERTEX, 8);
+
+        PipelineUtils::enableViewDependentData(c.config);
         
         struct SetPipelineStates : public vsg::Visitor
         {
@@ -279,6 +298,7 @@ MeshSystemNode::initialize(VSGContext& vsgcontext)
 
         c.commands = vsg::Commands::create();
         c.commands->addChild(c.config->bindGraphicsPipeline);
+        c.commands->addChild(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, c.config->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
     }
 
     // Set up our default style detail, which is used when a MeshStyle is missing.
@@ -406,6 +426,10 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
             gn->_verts.resize(geom.verts.size());
             std::transform(geom.verts.begin(), geom.verts.end(), gn->_verts.begin(),
                 [](const glm::dvec3& v) { return to_vsg(v); });
+
+            gn->_normals.resize(geom.normals.size());
+            std::transform(geom.normals.begin(), geom.normals.end(), gn->_normals.begin(),
+                [](const glm::fvec3& n) { return to_vsg(n); });
 
             gn->_colors.resize(geom.colors.size());
             std::transform(geom.colors.begin(), geom.colors.end(), gn->_colors.begin(),
@@ -588,7 +612,7 @@ MeshSystemNode::featureMask(const Mesh& mesh) const
 void
 MeshSystemNode::traverse(vsg::RecordTraversal& record) const
 {
-    if (_status.failed()) return;
+    if (status.failed()) return;
 
     detail::RenderingState rs{
         record.getCommandBuffer()->viewID,
@@ -676,7 +700,7 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
 void
 MeshSystemNode::update(VSGContext& vsgcontext)
 {
-    if (_status.failed()) return;
+    if (status.failed()) return;
 
     // start by disposing of any old static objects
     if (!s_toDispose->children.empty())
@@ -770,8 +794,30 @@ MeshGeometryNode::compile(vsg::Context& context)
         if (_verts.size() == 0)
             return;
 
-        if (_normals.empty())
-            _normals.assign(_verts.size(), vsg::vec3(0, 0, 1));
+        if (_normals.size() < _verts.size())
+        {
+            _normals.assign(_verts.size(), vsg::vec3(0.0f, 0.0f, 0.0f));
+
+            for (size_t i = 0; i < _indices.size(); i += 3)
+            {
+                auto i0 = _indices[i];
+                auto i1 = _indices[i + 1];
+                auto i2 = _indices[i + 2];
+                auto v0 = _verts[i0];
+                auto v1 = _verts[i1];
+                auto v2 = _verts[i2];
+                auto edge1 = v1 - v0;
+                auto edge2 = v2 - v0;
+                auto faceNormal = vsg::cross(edge1, edge2);
+                _normals[i0] += faceNormal;
+                _normals[i1] += faceNormal;
+                _normals[i2] += faceNormal;
+            }
+            for (auto& n : _normals)
+            {
+                n = vsg::normalize(n);
+            }
+        }
 
         if (_colors.empty())
             _colors.assign(_verts.size(), _defaultColor);

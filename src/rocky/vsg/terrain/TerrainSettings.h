@@ -60,6 +60,9 @@ namespace ROCKY_NAMESPACE
         //! Whether to render a wireframe overlay on the terrain
         option<bool> wireOverlay = false;
 
+        //! Whether to apply lighting to the terrain surface
+        option<bool> lighting = false;
+
     public: // internal runtime settings, not serialized.
 
         //! TEMPORARY.

@@ -48,12 +48,14 @@ namespace ROCKY_NAMESPACE
             Color color = Color(1, 1, 1, 0);
             float depthOffset = 0.0f;
             int hasTexture = 0;
-            std::uint32_t padding[2]; // pad to 16 bytes
+            int hasLighting = 0;
+            std::uint32_t padding[1]; // pad to 16 bytes
 
             inline void populate(const MeshStyle& in) {
                 color = in.color;
                 depthOffset = in.depthOffset;
                 hasTexture = in.texture != entt::null ? 1 : 0;
+                hasLighting = in.lighting;
             }
         };
         static_assert(sizeof(MeshStyleRecord) % 16 == 0, "MeshStyleRecord must be 16-byte aligned");

@@ -104,7 +104,7 @@ namespace ROCKY_NAMESPACE
                     if (!r)
                     {
                         Log()->critical("Compile failure in {}. {}", className(), r.message);
-                        _status = Failure(Failure::AssertionFailure, "Compile failure");
+                        status = Failure(Failure::AssertionFailure, "Compile failure");
                     }
                 }
 
@@ -157,7 +157,6 @@ namespace ROCKY_NAMESPACE
             };
             std::vector<Pipeline> _pipelines;
             bool _pipelinesCompiled = false;
-            Status _status;
 
 
         private:
