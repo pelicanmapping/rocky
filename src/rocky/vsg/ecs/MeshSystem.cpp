@@ -456,6 +456,7 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
         root = geomDetail.geomNode;
     }
 
+#if 0
     if (!geomDetail.cullNode)
     {
         geomDetail.cullNode = vsg::CullNode::create();
@@ -468,6 +469,9 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
     geomDetail.cullNode->bound.set((cb.bounds.min + cb.bounds.max) * 0.5, vsg::length(cb.bounds.min - cb.bounds.max) * 0.5);
 
     geomDetail.node = geomDetail.cullNode;
+#else
+    geomDetail.node = root;
+#endif
 
     compile(geomDetail.node);
 }
@@ -579,21 +583,21 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
 void
 MeshSystemNode::addOrUpdateTexture(const MeshTexture& tex, MeshTextureDetail& texDetail, entt::registry& reg)
 {
-    for(auto&& [entity, styleDetail] : reg.view<MeshStyleDetail>().each())
-    {
-        if (styleDetail.texture == tex.owner)
+    reg.view<MeshStyleDetail>().each([&](auto& styleDetail)
         {
-            // dispose of old one
-            if (styleDetail.styleTexture->imageInfoList.size() > 0 &&
-                styleDetail.styleTexture->imageInfoList[0].valid())
+            if (styleDetail.texture == tex.owner)
             {
-                dispose(styleDetail.styleTexture->imageInfoList[0]);
-            }
+                // dispose of old one
+                if (styleDetail.styleTexture->imageInfoList.size() > 0 &&
+                    styleDetail.styleTexture->imageInfoList[0].valid())
+                {
+                    dispose(styleDetail.styleTexture->imageInfoList[0]);
+                }
 
-            styleDetail.styleTexture->imageInfoList = vsg::ImageInfoList{ tex.imageInfo };
-            compile(styleDetail.bind);
-        }
-    }
+                styleDetail.styleTexture->imageInfoList = vsg::ImageInfoList{ tex.imageInfo };
+                compile(styleDetail.bind);
+            }
+        });
 }
 
 
@@ -619,46 +623,46 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
         record.getFrameStamp()->frameCount
     };
 
-    std::vector<MeshStyleDetail*> styleDetails;
-    styleDetails.emplace_back(&_defaultMeshStyleDetail);
-
+    _styleDetailBins.clear();
+    _styleDetailBins.emplace_back(&_defaultMeshStyleDetail);
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
         {
-            for (auto&& [entity, styleDetail] : reg.view<MeshStyleDetail>().each())
-            {
-                styleDetails.emplace_back(&styleDetail);
-            }
+            reg.view<MeshStyleDetail>().each([&](auto& styleDetail)
+                {
+                    _styleDetailBins.emplace_back(&styleDetail);
+                });
 
             int count = 0;
             auto view = reg.view<Mesh, MeshDetail, ActiveState, Visibility>();
-            for (auto&& [entity, comp, compDetail, active, visibility] : view.each())
-            {
-                auto* styleDetail = &_defaultMeshStyleDetail;
-                auto* style = reg.try_get<MeshStyle>(comp.style);
-                if (style)
-                {
-                    styleDetail = &reg.get<MeshStyleDetail>(comp.style);
-                }
 
-                if (compDetail.node && visible(visibility, rs))
+            view.each([&](auto entity, auto& comp, auto& compDetail, auto& active, auto& visibility)
                 {
-                    auto* transformDetail = reg.try_get<TransformDetail>(entity);
-                    if (transformDetail)
+                    auto* styleDetail = &_defaultMeshStyleDetail;
+                    auto* style = reg.try_get<MeshStyle>(comp.style);
+                    if (style)
                     {
-                        if (transformDetail->passingCull(rs))
+                        styleDetail = &reg.get<MeshStyleDetail>(comp.style);
+                    }
+
+                    if (compDetail.node && visible(visibility, rs))
+                    {
+                        auto* transformDetail = reg.try_get<TransformDetail>(entity);
+                        if (transformDetail)
                         {
-                            styleDetail->drawList.emplace_back(MeshDrawable{ compDetail.node, transformDetail });
+                            if (transformDetail->views[rs.viewID].passingCull)
+                            {
+                                styleDetail->drawList.emplace_back(MeshDrawable{ compDetail.node, transformDetail });
+                                ++count;
+                            }
+                        }
+                        else
+                        {
+                            styleDetail->drawList.emplace_back(MeshDrawable{ compDetail.node, nullptr });
                             ++count;
                         }
                     }
-                    else
-                    {
-                        styleDetail->drawList.emplace_back(MeshDrawable{ compDetail.node, nullptr });
-                        ++count;
-                    }
-                }
-            }
+                });
 
             // Render collected data.
             // TODO: swap vectors into unprotected space to free up the readlock?
@@ -666,7 +670,7 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
             {
                 _pipelines[0].commands->accept(record);
 
-                for(auto& styleDetail : styleDetails)
+                for(auto& styleDetail : _styleDetailBins)
                 {
                     if (!styleDetail->drawList.empty())
                     {

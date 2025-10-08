@@ -120,14 +120,16 @@ TransformDetail::push(vsg::RecordTraversal& record) const
     // replicates RecordTraversal::accept(MatrixTransform&):
     state->modelviewMatrixStack.push(view.modelview);
     state->dirty = true;
-    state->pushFrustum();
+    if (!sync.frustumCulled)
+        state->pushFrustum();
 }
 
 void
 TransformDetail::pop(vsg::RecordTraversal& record) const
 {
-    auto state = record.getState();
-    state->popFrustum();
+    auto* state = record.getState();
+    if (!sync.frustumCulled)
+        state->popFrustum();
     state->modelviewMatrixStack.pop();
     state->dirty = true;
 }

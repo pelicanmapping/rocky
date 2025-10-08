@@ -227,13 +227,13 @@ namespace
 
         void updateVisibility(entt::registry& registry)
         {
-            for (auto&& [host_entity, track] : registry.view<TrackHistory>().each())
-            {
-                for (auto& chunk : track.chunks)
+            registry.view<TrackHistory>().each([&](auto entity, auto& track)
                 {
-                    updateVisibility(registry, host_entity, chunk);
-                }
-            }
+                    for (auto& chunk : track.chunks)
+                    {
+                        updateVisibility(registry, entity, chunk);
+                    }
+                });
         }
 
         void reset()
@@ -244,12 +244,11 @@ namespace
                     reg.clear<TrackHistory>();
 
                     // then re-scan and add new ones.
-                    auto view = reg.view<Transform>();
-                    for (auto&& [entity, transform] : view.each())
-                    {
-                        auto& track = reg.emplace<TrackHistory>(entity);
-                        track.style = trackStyles[0];
-                    }
+                    reg.view<Transform>().each([&](auto entity, auto& transform)
+                        {
+                            auto& track = reg.emplace<TrackHistory>(entity);
+                            track.style = trackStyles[0];
+                        });
                 });
         }
 

@@ -43,13 +43,13 @@ TransformSystem::update(VSGContext& context)
 {
     auto [lock, registry] = _registry.read();
 
-    for(auto&& [entity, transform, detail] : registry.view<Transform, TransformDetail>().each())
-    {
-        if (transform.revision != detail.sync.revision)
+    registry.view<Transform, TransformDetail>().each([](auto& transform, auto& detail)
         {
-            detail.sync = transform;
-        }
-    }
+            if (transform.revision != detail.sync.revision)
+            {
+                detail.sync = transform;
+            }
+        });
 }
 
 void

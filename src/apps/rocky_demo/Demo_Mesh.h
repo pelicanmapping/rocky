@@ -276,7 +276,7 @@ auto Demo_Mesh_Shared = [](Application& app)
     static std::vector<entt::entity> entities;
     static bool visible = true;
     static bool regenerate = false;
-    const unsigned count = 1000;
+    const unsigned count = 100000;
 
     if (regenerate)
     {
@@ -389,7 +389,7 @@ auto Demo_Mesh_Shared = [](Application& app)
             // Add a transform that will place the line on the map
             auto& transform = reg.emplace<Transform>(e);
             transform.topocentric = true;
-            transform.position = GeoPoint(SRS::WGS84, lon, lat, 10000.0 * double((i%3)+1.0));
+            transform.position = GeoPoint(SRS::WGS84, lon, lat, 5000.0 + (double(i) * 100.0));
             transform.radius = size; // for culling
 
             // Decluttering object, just to prove that it works with shared geometies:

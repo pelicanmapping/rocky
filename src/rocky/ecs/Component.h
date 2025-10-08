@@ -46,11 +46,11 @@ namespace ROCKY_NAMESPACE
         {
             ROCKY_SOFT_ASSERT_AND_RETURN(owner != entt::null, void());
 
-            for (auto&& [_, dirtyList] : r.view<Dirty>().each())
-            {
-                std::scoped_lock lock(dirtyList.mutex);
-                dirtyList.entities.emplace_back(owner);
-            }
+            r.view<Dirty>().each([&](auto& dirtyList)
+                {
+                    std::scoped_lock lock(dirtyList.mutex);
+                    dirtyList.entities.emplace_back(owner);
+                });
         }
 
         template<class CALLABLE>
@@ -59,11 +59,11 @@ namespace ROCKY_NAMESPACE
             static_assert(std::is_invocable_v<CALLABLE, entt::entity>, "CALLABLE must be invocable with (entt::entity)");
 
             std::vector<entt::entity> entities;
-            for (auto&& [_, dirtyList] : r.view<Dirty>().each())
-            {
-                std::scoped_lock lock(dirtyList.mutex);
-                entities.swap(dirtyList.entities);
-            }
+            r.view<Dirty>().each([&](auto& dirtyList)
+                {
+                    std::scoped_lock lock(dirtyList.mutex);
+                    entities.swap(dirtyList.entities);
+                });
 
             for (auto e : entities)
             {

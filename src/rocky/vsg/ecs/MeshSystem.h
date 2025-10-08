@@ -163,6 +163,7 @@ namespace ROCKY_NAMESPACE
 
         // Default mesh style to use if a Mesh doesn't have one
         mutable detail::MeshStyleDetail _defaultMeshStyleDetail;
+        mutable std::vector<detail::MeshStyleDetail*> _styleDetailBins;
 
         // Called when a component is marked dirty (i.e., upon first creation or when either the
         // style of the geometry entity is reassigned).

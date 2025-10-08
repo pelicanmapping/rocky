@@ -437,40 +437,41 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
         {
-            for (auto&& [entity, styleDetail] : reg.view<LineStyleDetail>().each())
-            {
-                styleDetails.emplace_back(&styleDetail);
-            }
+            reg.view<LineStyleDetail>().each([&](auto& styleDetail)
+                {
+                    styleDetails.emplace_back(&styleDetail);
+                });
 
             int count = 0;
             auto view = reg.view<Line, LineDetail, ActiveState, Visibility>();
-            for (auto&& [entity, comp, compDetail, active, visibility] : view.each())
-            {
-                auto* styleDetail = &_defaultStyleDetail;
-                auto* style = reg.try_get<LineStyle>(comp.style);
-                if (style)
-                {
-                    styleDetail = &reg.get<LineStyleDetail>(comp.style);
-                }
 
-                if (compDetail.node && visible(visibility, rs))
+            view.each([&](auto entity, auto& comp, auto& compDetail, auto& active, auto& visibility)
                 {
-                    auto* transformDetail = reg.try_get<TransformDetail>(entity);
-                    if (transformDetail)
+                    auto* styleDetail = &_defaultStyleDetail;
+                    auto* style = reg.try_get<LineStyle>(comp.style);
+                    if (style)
                     {
-                        if (transformDetail->passingCull(rs))
+                        styleDetail = &reg.get<LineStyleDetail>(comp.style);
+                    }
+
+                    if (compDetail.node && visible(visibility, rs))
+                    {
+                        auto* transformDetail = reg.try_get<TransformDetail>(entity);
+                        if (transformDetail)
                         {
-                            styleDetail->drawList.emplace_back(LineDrawable{ compDetail.node, transformDetail });
+                            if (transformDetail->views[rs.viewID].passingCull)
+                            {
+                                styleDetail->drawList.emplace_back(LineDrawable{ compDetail.node, transformDetail });
+                                ++count;
+                            }
+                        }
+                        else
+                        {
+                            styleDetail->drawList.emplace_back(LineDrawable{ compDetail.node, nullptr });
                             ++count;
                         }
                     }
-                    else
-                    {
-                        styleDetail->drawList.emplace_back(LineDrawable{ compDetail.node, nullptr });
-                        ++count;
-                    }
-                }
-            }
+                });
 
             // Render collected data.
             // TODO: swap vectors into unprotected space to free up the readlock?

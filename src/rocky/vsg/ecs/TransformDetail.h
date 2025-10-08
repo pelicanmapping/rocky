@@ -69,7 +69,7 @@ namespace ROCKY_NAMESPACE
 
 
     // inline functions
-    bool TransformDetail::passingCull(detail::RenderingState rs) const
+    inline bool TransformDetail::passingCull(detail::RenderingState rs) const
     {
         return views[rs.viewID].passingCull;
     }

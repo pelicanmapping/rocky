@@ -548,7 +548,7 @@ namespace ROCKY_NAMESPACE
                     {
                         if (transform_detail)
                         {
-                            if (transform_detail->passingCull(rs))
+                            if (transform_detail->views[rs.viewID].passingCull)
                             {
                                 leaves.emplace_back(RenderLeaf{ &renderable, transform_detail });
                             }
@@ -583,7 +583,7 @@ namespace ROCKY_NAMESPACE
                     {
                         if (transform_detail)
                         {
-                            if (transform_detail->passingCull(rs))
+                            if (transform_detail->views[rs.viewID].passingCull)
                             {
                                 leaves.emplace_back(RenderLeaf{ &renderable, transform_detail });
                             }
