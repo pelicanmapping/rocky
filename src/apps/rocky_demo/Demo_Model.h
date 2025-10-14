@@ -68,21 +68,21 @@ auto Demo_Model = [](Application& app)
         if (ImGuiLTable::SliderDouble("Heading", &heading, -180.0, 180.0, "%.1lf"))
         {
             auto rot = util::quaternion_from_euler_degrees(pitch, roll, heading);
-            transform.localMatrix = glm::scale(glm::dmat4(1), glm::dvec3(scale)) * glm::mat4_cast(rot);
+            transform.localMatrix = glm::mat4_cast(rot) * glm::scale(glm::dmat4(1), glm::dvec3(scale));
             transform.dirty();
         }
 
         if (ImGuiLTable::SliderDouble("Pitch", &pitch, -90.0, 90.0, "%.1lf"))
         {
             auto rot = util::quaternion_from_euler_degrees(pitch, roll, heading);
-            transform.localMatrix = glm::scale(glm::dmat4(1), glm::dvec3(scale)) * glm::mat4_cast(rot);
+            transform.localMatrix = glm::mat4_cast(rot) * glm::scale(glm::dmat4(1), glm::dvec3(scale));
             transform.dirty();
         }
 
         if (ImGuiLTable::SliderDouble("Roll", &roll, -90.0, 90.0, "%.1lf"))
         {
             auto rot = util::quaternion_from_euler_degrees(pitch, roll, heading);
-            transform.localMatrix = glm::scale(glm::dmat4(1), glm::dvec3(scale)) * glm::mat4_cast(rot);
+            transform.localMatrix = glm::mat4_cast(rot) * glm::scale(glm::dmat4(1), glm::dvec3(scale));
             transform.dirty();
         }
 
