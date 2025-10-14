@@ -26,12 +26,21 @@ layout(set = 0, binding = 1) uniform MeshUniform {
     MeshStyle style;
 } mesh;
 
-layout(location = 1) out vec2 uv;
-layout(location = 2) out vec3 normal;
-layout(location = 3) out vec3 vertexView;
-layout(location = 4) flat out vec4 color;
-layout(location = 5) flat out int hasTexture;
-layout(location = 6) flat out int hasLighting;
+//layout(location = 1) out vec2 uv;
+//layout(location = 2) out vec3 normal;
+//layout(location = 3) out vec3 vertexView;
+//layout(location = 4) flat out vec4 color;
+//layout(location = 5) flat out int hasTexture;
+//layout(location = 6) flat out int hasLighting;
+
+layout(location = 1) out Varyings {
+    vec2 uv;
+    vec3 normal;
+    vec3 vertexView;
+    flat vec4 color;
+    flat int hasTexture;
+    flat int hasLighting;
+} vary;
 
 // GL built-ins
 out gl_PerVertex {
@@ -52,19 +61,19 @@ vec3 apply_depth_offset(in vec3 vertex, in float offset)
 
 void main()
 {    
-    color = mesh.style.color.a > 0.0 ? mesh.style.color : in_color;
-    hasTexture = mesh.style.hasTexture;
-    hasLighting = mesh.style.hasLighting;
+    vary.color = mesh.style.color.a > 0.0 ? mesh.style.color : in_color;
+    vary.hasTexture = mesh.style.hasTexture;
+    vary.hasLighting = mesh.style.hasLighting;
 
     vec4 vv = pc.modelview * vec4(in_vertex, 1.0);
-    vertexView = vv.xyz / vv.w;
+    vary.vertexView = vv.xyz / vv.w;
 
     float depthOffset = mesh.style.depthOffset;
 
-    uv = in_uv;
+    vary.uv = in_uv;
 
     mat3 normal_matrix = mat3(transpose(inverse(pc.modelview)));
-    normal = normal_matrix * in_normal;
+    vary.normal = normal_matrix * in_normal;
 
     // TODO: lighting
     

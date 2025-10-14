@@ -65,6 +65,7 @@ namespace ROCKY_NAMESPACE
         {
             MeshStyleRecord style;
         };
+        static_assert(sizeof(MeshStyleUniform) % 16 == 0, "MeshStyleUniform must be 16-byte aligned");
 
         // render leaf for collecting and drawing meshes
         struct MeshDrawable
@@ -78,25 +79,22 @@ namespace ROCKY_NAMESPACE
         // internal data paired with MeshStyle
         struct MeshStyleDetail
         {
-            entt::entity texture = entt::null; // last know texture entt
-            MeshDrawList drawList;
+            entt::entity texture = entt::null; // last know texture entt, for change tracking
 
             vsg::ref_ptr<vsg::BindDescriptorSet> bind;
-            //vsg::ref_ptr<vsg::Commands> commands;
             vsg::ref_ptr<vsg::Data> styleUBOData;
             vsg::ref_ptr<vsg::DescriptorBuffer> styleUBO;
             vsg::ref_ptr<vsg::DescriptorImage> styleTexture;
 
             using Pass = vsg::ref_ptr<vsg::Commands>;
             std::vector<Pass> passes; // multipass rendering for a style
+            MeshDrawList drawList;
         };
 
         // internal data paired with MeshGeometry
         struct MeshGeometryDetail
         {
-            vsg::ref_ptr<vsg::Node> node;
-            vsg::ref_ptr<MeshGeometryNode> geomNode;
-            vsg::ref_ptr<vsg::CullNode> cullNode;
+            vsg::ref_ptr<MeshGeometryNode> node;
             std::size_t capacity = 0;
         };
 

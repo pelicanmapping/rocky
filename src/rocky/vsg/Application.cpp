@@ -225,8 +225,8 @@ Application::ctor(int& argc, char** argv)
 
     // Rendering components:
     ecsNode->add(NodeSystemNode::create(registry));
-    ecsNode->add(LineSystemNode::create(registry));
     ecsNode->add(MeshSystemNode::create(registry));
+    ecsNode->add(LineSystemNode::create(registry));
 
     if (indirect)
         ecsNode->add(IconSystem2Node::create(registry));

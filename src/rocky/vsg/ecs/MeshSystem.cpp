@@ -348,12 +348,12 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
 {
     // NB: registry is read-locked
 
-    if (geomDetail.geomNode)
+    if (geomDetail.node)
     {
-        vsgcontext->dispose(geomDetail.geomNode);
+        vsgcontext->dispose(geomDetail.node);
     }
 
-    geomDetail.geomNode = MeshGeometryNode::create();
+    geomDetail.node = MeshGeometryNode::create();
 
     vsg::ref_ptr<vsg::Node> root;
     vsg::dmat4 localizer_matrix;
@@ -370,7 +370,7 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
             xform.transformRange(verts.begin(), verts.end());
             for (auto& v : verts) v -= offset;
 
-            auto& gn = geomDetail.geomNode;
+            auto& gn = geomDetail.node;
 
             gn->_verts.resize(verts.size());
             std::transform(verts.begin(), verts.end(), gn->_verts.begin(),
@@ -387,7 +387,7 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
             gn->_indices = geom.indices;
 
             auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(offset)));
-            localizer->addChild(geomDetail.geomNode);
+            localizer->addChild(geomDetail.node);
             root = localizer;
         }
 
@@ -396,7 +396,7 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
             GeoPoint anchor(geom.srs, geom.triangles.front().verts[0]);
             auto [xform, offset] = anchor.parseAsReferencePoint();
 
-            geomDetail.geomNode->reserve(geom.triangles.size() * 3);
+            geomDetail.node->reserve(geom.triangles.size() * 3);
 
             vsg::dvec3 v0, v1, v2;
             vsg::vec3 v32[3];
@@ -406,14 +406,14 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
                 xform(tri.verts[1], v1); v32[1] = v1 - to_vsg(offset);
                 xform(tri.verts[2], v2); v32[2] = v2 - to_vsg(offset);
 
-                geomDetail.geomNode->addTriangle(
+                geomDetail.node->addTriangle(
                     v32,
                     reinterpret_cast<const vsg::vec2*>(tri.uvs),
                     reinterpret_cast<const vsg::vec4*>(tri.colors));
             }
 
             auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(offset)));
-            localizer->addChild(geomDetail.geomNode);
+            localizer->addChild(geomDetail.node);
             root = localizer;
         }
     }
@@ -421,7 +421,7 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
     {
         if (geom.verts.size() > 0)
         {
-            auto& gn = geomDetail.geomNode;
+            auto& gn = geomDetail.node;
 
             gn->_verts.resize(geom.verts.size());
             std::transform(geom.verts.begin(), geom.verts.end(), gn->_verts.begin(),
@@ -446,32 +446,15 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
         {
             for (auto& tri : geom.triangles)
             {
-                geomDetail.geomNode->addTriangle(
+                geomDetail.node->addTriangle(
                     reinterpret_cast<const vsg::dvec3*>(tri.verts),
                     reinterpret_cast<const vsg::vec2*>(tri.uvs),
                     reinterpret_cast<const vsg::vec4*>(tri.colors));
             }
         }
 
-        root = geomDetail.geomNode;
+        root = geomDetail.node;
     }
-
-#if 0
-    if (!geomDetail.cullNode)
-    {
-        geomDetail.cullNode = vsg::CullNode::create();
-    }
-
-    geomDetail.cullNode->child = root;
-
-    vsg::ComputeBounds cb;
-    geomDetail.cullNode->child->accept(cb);
-    geomDetail.cullNode->bound.set((cb.bounds.min + cb.bounds.max) * 0.5, vsg::length(cb.bounds.min - cb.bounds.max) * 0.5);
-
-    geomDetail.node = geomDetail.cullNode;
-#else
-    geomDetail.node = root;
-#endif
 
     compile(geomDetail.node);
 }
@@ -500,13 +483,11 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
     styleDetail.passes[0]->addChild(styleDetail.bind);
 
     // wireframe:
-    styleDetail.passes[0]->addChild(SetPolygonMode::create(
-        vsgcontext->device(),
+    styleDetail.passes[0]->addChild(SetPolygonMode::create(vsgcontext->device(),
         style.wireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL));
 
     // cull mode
-    styleDetail.passes[0]->addChild(SetCullMode::create(
-        vsgcontext->device(),
+    styleDetail.passes[0]->addChild(SetCullMode::create(vsgcontext->device(),
         style.drawBackfaces ? VK_CULL_MODE_NONE : VK_CULL_MODE_BACK_BIT));
 
     if (style.twoPassAlpha == true && style.writeDepth == false)
@@ -522,29 +503,18 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
         styleDetail.passes.emplace_back(vsg::Commands::create());
 
         // first pass: no depth writes, full color writes:
-        styleDetail.passes[0]->addChild(SetDepthWriteEnable::create(
-            vsgcontext->device(),
-            VK_FALSE));
-        styleDetail.passes[0]->addChild(SetColorWriteMask::create(
-            vsgcontext->device(), 0x0F));
+        styleDetail.passes[0]->addChild(SetDepthWriteEnable::create(vsgcontext->device(), VK_FALSE));
+        styleDetail.passes[0]->addChild(SetColorWriteMask::create(vsgcontext->device(), 0x0F));
 
         // second pass: depth writes, no color writes:
-        styleDetail.passes[1]->addChild(SetDepthWriteEnable::create(
-            vsgcontext->device(),
-            VK_TRUE));
-        styleDetail.passes[1]->addChild(SetColorWriteMask::create(
-            vsgcontext->device(), 0x0));
+        styleDetail.passes[1]->addChild(SetDepthWriteEnable::create(vsgcontext->device(), VK_TRUE));
+        styleDetail.passes[1]->addChild(SetColorWriteMask::create(vsgcontext->device(), 0x0));
     }
     else
     {
-        // depth writes
-        styleDetail.passes[0]->addChild(SetDepthWriteEnable::create(
-            vsgcontext->device(),
-            style.writeDepth ? VK_TRUE : VK_FALSE));
-
-        // and default color mask
-        styleDetail.passes[0]->addChild(SetColorWriteMask::create(
-            vsgcontext->device(), 0x0F));
+        // depth writes, default color mask
+        styleDetail.passes[0]->addChild(SetDepthWriteEnable::create(vsgcontext->device(), style.writeDepth ? VK_TRUE : VK_FALSE));
+        styleDetail.passes[0]->addChild(SetColorWriteMask::create(vsgcontext->device(), 0x0F));
     }
 #endif
 

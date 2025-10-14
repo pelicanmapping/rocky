@@ -303,7 +303,7 @@ auto Demo_Mesh_Shared = [](Application& app)
         sampler->anisotropyEnable = VK_TRUE;
         sampler->maxAnisotropy = 4.0f;
 
-        // Textures:
+        // First texture:
         glm::vec4 corners[4] = { {1,0,0,1}, {0,1,0,1}, {0,0,1,1}, {1,1,0,1} };
         auto image0 = Image::create(Image::R8G8B8_UNORM, 64, 64);
         image0->eachPixel([&](const Image::iterator& i)
@@ -314,6 +314,7 @@ auto Demo_Mesh_Shared = [](Application& app)
                 image0->write(c, i);
             });
 
+        // Second texture:
         auto image1 = Image::create(Image::R8G8B8A8_UNORM, 64, 64);
         image1->eachPixel([&](const Image::iterator& i)
             {
@@ -324,6 +325,7 @@ auto Demo_Mesh_Shared = [](Application& app)
                 image1->write(c, i);
             });
 
+        // Create a few different styles.
         styles[0] = entities.emplace_back(reg.create());
         auto& style0 = reg.emplace<MeshStyle>(styles[0]);
         style0.color = Color::Lime;
@@ -340,7 +342,7 @@ auto Demo_Mesh_Shared = [](Application& app)
         tex2.imageInfo = vsg::ImageInfo::create(sampler, util::moveImageToVSG(image1));
         style2.texture = styles[2];
 
-        // Create a few different line objects.
+        // Create a few different geometries.
         geoms[0] = entities.emplace_back(reg.create());
         auto& square = reg.emplace<MeshGeometry>(geoms[0]);
         square.verts = { { -size, -size, 0.0 }, {size, -size, 0.0}, {size, size, 0.0}, {-size, size, 0.0} };
