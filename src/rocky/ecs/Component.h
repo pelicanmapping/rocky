@@ -6,49 +6,95 @@
 #pragma once
 #include <rocky/Common.h>
 #include <entt/entt.hpp>
+#include <memory>
 
 namespace ROCKY_NAMESPACE
 {
-    /**
-    * Superclass for ECS components that support revisionings and an attach point.
-    * The attach point is for internal usage.
-    */
-    struct BaseComponent
+    // old type. upgrade these to ComponentBase2.
+    struct ComponentBase
     {
         //! Revision, for synchronizing this component with another
         int revision = 0;
 
-        //! Attach point for additional components, as needed
-        entt::entity attach_point = entt::null;
-
-        //! bump the revision.
+        //! Bump the revision. It's up to other systems to detect a change
         virtual void dirty()
         {
             ++revision;
         }
 
-        BaseComponent() = default;
+        entt::entity attach_point = entt::null;
 
-        BaseComponent(const BaseComponent&) = default;
+        entt::entity owner = entt::null;
+    };
 
-        BaseComponent& operator = (const BaseComponent&) = default;
-
-        BaseComponent(BaseComponent&& rhs) noexcept
+    // Base component type with built-in dirty tracking.
+    // NOTE: Yes, we need the CRTP here so that the "Dirty" object is unique for each derived type!
+    template<class DERIVED>
+    struct ComponentBase2
+    {
+        //! The entity that owns this component
+        entt::entity owner = entt::null;
+       
+        // NOTE: RELIES on the System to install the Dirty singleton!
+        struct Dirty
         {
-            *this = rhs;
+            std::mutex mutex;
+            std::vector<entt::entity> entities;
+        };
+
+        inline void dirty(entt::registry& r)
+        {
+            ROCKY_SOFT_ASSERT_AND_RETURN(owner != entt::null, void());
+
+            r.view<Dirty>().each([&](auto& dirtyList)
+                {
+                    std::scoped_lock lock(dirtyList.mutex);
+                    dirtyList.entities.emplace_back(owner);
+                });
         }
 
-        BaseComponent& operator = (BaseComponent&& rhs) noexcept
+        template<class CALLABLE>
+        inline static void eachDirty(entt::registry& r, CALLABLE&& func)
         {
-            if (this != &rhs)
-            {
-                attach_point = rhs.attach_point;
-                rhs.attach_point = entt::null;
+            static_assert(std::is_invocable_v<CALLABLE, entt::entity>, "CALLABLE must be invocable with (entt::entity)");
 
-                revision = rhs.revision;
-                rhs.revision = 0;
+            std::vector<entt::entity> entities;
+            r.view<Dirty>().each([&](auto& dirtyList)
+                {
+                    std::scoped_lock lock(dirtyList.mutex);
+                    entities.swap(dirtyList.entities);
+                });
+
+            for (auto e : entities)
+            {
+                // must check validity since it is possible the entity was destroyed
+                // after being put on the dirty list.
+                if (r.valid(e))
+                {
+                    func(e);
+                }
             }
-            return *this;
+        }
+    };
+
+    /**
+     * ECS Component that holds a shared pointer to another component type.
+     * This is useful for re-using a single basic component with different
+     * transforms, visibility states, etc.
+     *
+     * WARNING -- EXPIERMENTAL -- API MAY CHANGE OR DISAPPEAR WITHOUT NOTICE!
+     */
+    template<typename T>
+    struct Shareable : public ComponentBase
+    {
+        //! Shared pointer to the shared component
+        std::shared_ptr<T> pointer;
+
+        //! Construct a shared component. The pointer must be non-null
+        //! at the time of construction and must stay non-null.
+        [[deprecated("EXPERIMENTAL FEATURE")]]
+        Shareable<T>(std::shared_ptr<T> p) : pointer(p) {
+            ROCKY_HARD_ASSERT(p != nullptr);
         }
     };
 }

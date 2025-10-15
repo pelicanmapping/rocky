@@ -10,42 +10,17 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-     * ECS system that handles LineString components
-     */
-    class ROCKY_EXPORT LineSystemNode : public vsg::Inherit<detail::SystemNode<Line>, LineSystemNode>
-    {
-    public:
-        //! Construct the system
-        LineSystemNode(Registry& registry);
-
-        enum Features
-        {
-            DEFAULT = 0x0,
-            WRITE_DEPTH = 1 << 0,
-            NUM_PIPELINES = 2
-        };
-
-        //! Returns a mask of supported features for the given mesh
-        int featureMask(const Line&) const override;
-
-        //! One-time initialization of the system    
-        void initialize(VSGContext&) override;
-
-        void createOrUpdateNode(const Line&, detail::BuildInfo&, VSGContext&) const override;
-    };
-
-    /**
     * Renders a line or linestring geometry.
     */
-    class ROCKY_EXPORT LineGeometry : public vsg::Inherit<vsg::Geometry, LineGeometry>
+    class ROCKY_EXPORT LineGeometryNode : public vsg::Inherit<vsg::Geometry, LineGeometryNode>
     {
     public:
         //! Construct a new line string geometry node
-        LineGeometry();
+        LineGeometryNode();
 
         //! Populate the geometry arrays
         template<typename VEC3_T>
-        inline void set(const std::vector<VEC3_T>& verts, Line::Topology topology, std::size_t capacity);
+        inline void set(const std::vector<VEC3_T>& verts, LineTopology topology, std::size_t capacity);
 
         //! The first vertex in the line string to render
         void setFirst(unsigned value);
@@ -71,31 +46,124 @@ namespace ROCKY_NAMESPACE
         }
     };
 
+    namespace detail
+    {
+        // "line.style" in the shader
+        struct LineStyleRecord
+        {
+            Color color;
+            float width;
+            std::int32_t stipplePattern;
+            std::int32_t stippleFactor;
+            float resolution;
+            float depthOffset;
+            std::uint32_t padding[3]; // pad to 16 bytes
+
+            inline void populate(const LineStyle& in) {
+                color = in.color;
+                width = in.width;
+                stipplePattern = in.stipplePattern;
+                stippleFactor = in.stippleFactor;
+                resolution = in.resolution;
+                depthOffset = in.depthOffset;
+            }
+        };
+        static_assert(sizeof(LineStyleRecord) % 16 == 0, "LineStyleRecord must be 16-byte aligned");
+
+
+        // "line" in the shader
+        struct LineStyleUniform
+        {
+            LineStyleRecord style; // actual style data
+        };
+        static_assert(sizeof(LineStyleUniform) % 16 == 0, "LineStyleUniform must be 16-byte aligned");
+
+
+        // render leaf for collecting and drawing meshes
+        struct LineDrawable
+        {
+            vsg::Node* node = nullptr;
+            TransformDetail* xformDetail = nullptr;
+        };
+
+        using LineDrawList = std::vector<LineDrawable>;
+
+        struct LineStyleDetail
+        {
+            LineDrawList drawList;
+
+            vsg::ref_ptr<vsg::BindDescriptorSet> bind;
+            vsg::ref_ptr<vsg::Data> styleData;
+            vsg::ref_ptr<vsg::DescriptorBuffer> styleUBO;
+        };
+
+        struct LineGeometryDetail
+        {
+            vsg::ref_ptr<vsg::Node> node;
+            vsg::ref_ptr<LineGeometryNode> geomNode;
+            vsg::ref_ptr<vsg::CullNode> cullNode;
+            std::size_t capacity = 0;
+        };
+
+        struct LineDetail
+        {
+            vsg::ref_ptr<vsg::Node> node;
+        };
+    }
+
+
     /**
-    * Applies a line style.
-    */
-    class ROCKY_EXPORT BindLineDescriptors : public vsg::Inherit<vsg::BindDescriptorSet, BindLineDescriptors>
+     * ECS system that handles LineString components
+     */
+    class ROCKY_EXPORT LineSystemNode : public vsg::Inherit<detail::SimpleSystemNodeBase, LineSystemNode>
     {
     public:
-        //! Construct a line style node
-        BindLineDescriptors();
+        //! Construct the system
+        LineSystemNode(Registry& registry);
 
-        //! Initialize this command with the associated layout
-        void init(vsg::ref_ptr<vsg::PipelineLayout> layout);
+        // (not hooked up for multiple pipelines - reevaluate and see
+        // if we can just use dynamic state instead)
+        enum Features
+        {
+            DEFAULT = 0x0,
+            WRITE_DEPTH = 1 << 0,
+            NUM_PIPELINES = 1
+        };
+        //! Returns a mask of supported features for the given mesh
+        //int featureMask(const Line&) const override;
 
-        //! Refresh the data buffer contents on the GPU
-        //! @return true if the style was changed, false if it was the same
-        bool updateStyle(const LineStyle&);
+        //! One-time initialization of the system    
+        void initialize(VSGContext&) override;
 
-        vsg::ref_ptr<vsg::ubyteArray> _styleData;
-        vsg::ref_ptr<vsg::DescriptorBuffer> _ubo;
+        //! Periodic update to check for style changes
+        void update(VSGContext&) override;
+
+        //! Record/render traversal
+        void traverse(vsg::RecordTraversal&) const override;
+
+    private:
+        mutable detail::LineStyleDetail _defaultStyleDetail;
+
+        inline vsg::PipelineLayout* getPipelineLayout(const Line& line) {
+            return _pipelines[0].config->layout;
+        }
+
+        // Called when a Line is marked dirty (i.e., upon first creation or when either the
+        // style of the geometry entity is reassigned).
+        void createOrUpdateComponent(const Line&, detail::LineDetail&, detail::LineGeometryDetail*);
+
+        // Called when a line geometry component is found in the dirty list
+        void createOrUpdateGeometry(const LineGeometry& geom, detail::LineGeometryDetail&, VSGContext& context);
+
+        // Called when a line style is found in the dirty list
+        void createOrUpdateStyle(const LineStyle& style, detail::LineStyleDetail& styleDetail);
     };
 
 
 
 
     template<typename VEC3_T>
-    void LineGeometry::set(const std::vector<VEC3_T>& t_verts, Line::Topology topology, std::size_t capacity)
+    void LineGeometryNode::set(const std::vector<VEC3_T>& t_verts, LineTopology topology, std::size_t capacity)
     {
         const vsg::vec4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
@@ -107,7 +175,7 @@ namespace ROCKY_NAMESPACE
         ROCKY_HARD_ASSERT(capacity > 0);
 
         std::size_t indices_to_allocate =
-            topology == Line::Topology::Strip ? (capacity - 1) * 6 :
+            topology == LineTopology::Strip ? (capacity - 1) * 6 :
             (capacity / 2) * 6; // Segments
 
         ROCKY_SOFT_ASSERT_AND_RETURN(_current == nullptr || capacity <= _capacity, void(),
@@ -139,7 +207,7 @@ namespace ROCKY_NAMESPACE
         auto* indicies = (_indices->data());
         int i_ptr = 0;
 
-        if (topology == Line::Topology::Strip)
+        if (topology == LineTopology::Strip)
         {
             for (unsigned i = 0; i < verts.size(); ++i)
             {
@@ -166,7 +234,7 @@ namespace ROCKY_NAMESPACE
                 }
             }
         }
-        else // topology == Topology::Segments
+        else // topology == LineTopology::Segments
         {
             ROCKY_SOFT_ASSERT_AND_RETURN((verts.size() & 0x1) == 0, void(), "Lines with 'Segment' topology must have an even number of vertices");
 

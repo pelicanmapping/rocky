@@ -4,18 +4,11 @@
  * MIT License
  */
 #pragma once
-#include <rocky/vsg/VSGContext.h>
-#include <rocky/ecs/Component.h>
+#include <rocky/vsg/ecs/ECSNode.h>
+#include <rocky/vsg/ecs/ECSTypes.h>
 
 namespace ROCKY_NAMESPACE
 {
-    /** ECS component that holds a VSG node */
-    struct NodeGraph : public BaseComponent
-    {
-        vsg::ref_ptr<vsg::Node> node;
-    };
-
-
     /**
     * VSG node that renders Node components (just plain vsg nodes)
     */

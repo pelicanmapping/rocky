@@ -220,7 +220,7 @@ ElevationLayer::assembleTile(const TileKey& key, const IOOptions& io) const
                 });
 
             // new output HF:
-            output = Mosaic::create(sources[0].image()->pixelFormat(), cols, rows);
+            output = Mosaic::create(HF_WRITABLE_FORMAT, cols, rows);
             Heightfield hf(output);
             hf.fill(NO_DATA_VALUE);
 

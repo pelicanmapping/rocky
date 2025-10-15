@@ -110,6 +110,8 @@ auto Demo_Terrain = [](Application& app)
                 c.erase(c.begin());
         }
 
+        ImGuiLTable::Checkbox("Lighting", &app.mapNode->terrainSettings().lighting.mutable_value());
+
         bool skirts = app.mapNode->terrainSettings().skirtRatio.value() > 0.0f;
         if (ImGuiLTable::Checkbox("Tile skirts", &skirts))
         {

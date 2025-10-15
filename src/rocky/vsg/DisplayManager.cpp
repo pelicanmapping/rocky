@@ -278,13 +278,31 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     // share the device across all windows
     traits->device = sharedDevice();
 
+    // install necessary device features
+    traits->deviceFeatures->get().fillModeNonSolid = VK_TRUE;
+
+    auto& ds1 = traits->deviceFeatures->get<VkPhysicalDeviceExtendedDynamicStateFeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT>();
+    ds1.extendedDynamicState = VK_TRUE;
+
+    auto& ds2 = traits->deviceFeatures->get<VkPhysicalDeviceExtendedDynamicState2FeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT>();
+    ds2.extendedDynamicState2 = VK_TRUE;
+
+    auto& ds3 = traits->deviceFeatures->get<VkPhysicalDeviceExtendedDynamicState3FeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT>();
+    ds3.extendedDynamicState3PolygonMode = VK_TRUE;
+    ds3.extendedDynamicState3ColorWriteMask = VK_TRUE;
+
+    auto& bary = traits->deviceFeatures->get<VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR>();
+    bary.fragmentShaderBarycentric = VK_TRUE;
+
     auto window = vsg::Window::create(traits);
 
     // install extensions:
     auto pd = window->getOrCreatePhysicalDevice();
 
+    bool loadedAllRequiredExtensions = true;
+
     // This will install the debug messaging callback so we can capture validation errors
-    if (pd->supportsDeviceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME))
+    if (vsg::isExtensionSupported(VK_EXT_DEBUG_UTILS_EXTENSION_NAME))
     {
         traits->instanceExtensionNames.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
@@ -292,7 +310,47 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     // Barycentric coordinates support for wireOverlay rendering
     if (pd->supportsDeviceExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME))
     {
+        Log()->info("Enabling: {}", VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
         traits->deviceExtensionNames.push_back(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
+    }
+    else
+    {
+        Log()->warn("Not available: {}", VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
+        loadedAllRequiredExtensions = false;
+    }
+
+    // All the dynamic state extensions
+    if (pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME))
+    {
+        Log()->info("Enabling: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+        traits->deviceExtensionNames.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+    }
+    else
+    {
+        Log()->warn("Not available: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+        loadedAllRequiredExtensions = false;
+    }
+
+    if (pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME))
+    {
+        Log()->info("Enabling: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
+        traits->deviceExtensionNames.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
+    }
+    else
+    {
+        Log()->warn("Not available: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
+        loadedAllRequiredExtensions = false;
+    }
+
+    if (pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME))
+    {
+        Log()->info("Enabling: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
+        traits->deviceExtensionNames.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
+    }
+    else
+    {
+        Log()->warn("Not available: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
+        loadedAllRequiredExtensions = false;
     }
 
     // configure the window

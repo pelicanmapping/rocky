@@ -11,6 +11,7 @@
 #include <rocky/vsg/VSGUtils.h>
 #include <rocky/Utils.h>
 #include <thread>
+#include <cstdint>
 
 namespace ROCKY_NAMESPACE
 {
@@ -21,7 +22,7 @@ namespace ROCKY_NAMESPACE
         /**
         * Component that holds a VSG node and its revision (so it can be
         * synchronized with the associated data model). One will typically
-        * attach a Renderable to BaseComponent::entity.
+        * attach a Renderable to ComponentBase::entity.
         */
         struct Renderable
         {
@@ -41,7 +42,7 @@ namespace ROCKY_NAMESPACE
         {
             entt::entity entity = entt::null;
             std::uint16_t version = 0;
-            std::shared_ptr<BaseComponent> component;
+            std::shared_ptr<ComponentBase> component;
         };
 
         // Internal structure for a batch of BuildItems associated with a system
@@ -74,6 +75,95 @@ namespace ROCKY_NAMESPACE
 
             std::shared_ptr<Buffers> buffers = nullptr;
             std::thread thread;
+        };
+
+        class SimpleSystemNodeBase : public vsg::Inherit<vsg::Compilable, SimpleSystemNodeBase>,
+            public System
+        {
+        protected:
+            SimpleSystemNodeBase(Registry& in_registry) : System(in_registry)
+            {
+                _toCompile = vsg::Objects::create();
+                _toDispose = vsg::Objects::create();
+            }
+
+            void update(VSGContext& vsgcontext) override
+            {
+                if (!_pipelinesCompiled)
+                {
+                    compile(_pipelines[0].commands);
+                    _pipelinesCompiled = true;
+                }
+
+                // compiles:
+                if (_toCompile->children.size() > 0)
+                {
+                    auto r = vsgcontext->compile(_toCompile);
+                    _toCompile->children.clear();
+
+                    if (!r)
+                    {
+                        Log()->critical("Compile failure in {}. {}", className(), r.message);
+                        status = Failure(Failure::AssertionFailure, "Compile failure");
+                    }
+                }
+
+                // disposals
+                if (_toDispose->children.size() > 0)
+                {
+                    vsgcontext->dispose(_toDispose);
+                    _toDispose = vsg::Objects::create();
+                }
+
+                // uploads:
+                if (!_buffersToUpload.empty())
+                {
+                    vsgcontext->upload(_buffersToUpload);
+                    _buffersToUpload.clear();
+                }
+                if (!_imagesToUpload.empty())
+                {
+                    vsgcontext->upload(_imagesToUpload);
+                    _imagesToUpload.clear();
+                }
+
+                System::update(vsgcontext);
+            }
+
+            inline void compile(vsg::Object* object) {
+                _toCompile->addChild(vsg::ref_ptr<vsg::Object>(object));
+            }
+            inline void dispose(vsg::Object* object) {
+                _toDispose->addChild(vsg::ref_ptr<vsg::Object>(object));
+            }
+            inline void upload(vsg::BufferInfo* bi) {
+                _buffersToUpload.emplace_back(bi);
+            }
+            inline void upload(vsg::BufferInfoList& bil) {
+                _buffersToUpload.insert(_buffersToUpload.end(), bil.begin(), bil.end());
+            }
+            inline void upload(vsg::ImageInfo* bi) {
+                _imagesToUpload.emplace_back(bi);
+            }
+            inline void upload(vsg::ImageInfoList& bil) {
+                _imagesToUpload.insert(_imagesToUpload.end(), bil.begin(), bil.end());
+            }
+
+        protected:
+            struct Pipeline
+            {
+                vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> config;
+                vsg::ref_ptr<vsg::Commands> commands;
+            };
+            std::vector<Pipeline> _pipelines;
+            bool _pipelinesCompiled = false;
+
+
+        private:
+            vsg::ref_ptr<vsg::Objects> _toCompile;
+            vsg::ref_ptr<vsg::Objects> _toDispose;
+            vsg::BufferInfoList _buffersToUpload;
+            vsg::ImageInfoList _imagesToUpload;
         };
 
         /**
@@ -113,6 +203,8 @@ namespace ROCKY_NAMESPACE
             void update(VSGContext&) override;
 
         protected:
+            using SHARED_T = Shareable<T>;
+
             //! Construct from a subclass
             SystemNode(Registry& in_registry);
 
@@ -158,7 +250,7 @@ namespace ROCKY_NAMESPACE
         private:
 
             // list of entities whose components are out of date and need updating
-            mutable std::vector<entt::entity> entities_to_update;
+            mutable std::vector<entt::entity> _entities_to_update;
 
             // internal structure used when sorting components (by pipeline) for rendering
             struct RenderLeaf
@@ -168,7 +260,21 @@ namespace ROCKY_NAMESPACE
             };
 
             // re-usable collection to minimize re-allocation
-            mutable std::vector<std::vector<RenderLeaf>> pipelineRenderLeaves;
+            mutable std::vector<std::vector<RenderLeaf>> _pipelineRenderLeaves;
+
+            // re-usable 'visited' collection for uniqueness testing.
+            // prefer std::vector over std::set for small collections (<100 entries), which we expect.
+            mutable std::vector<std::uintptr_t> _visited;
+            
+            template<typename V>
+            inline bool find_once(std::vector<std::uintptr_t>& v, V value) const
+            {
+                std::uintptr_t ptr = reinterpret_cast<std::uintptr_t>(value);
+                if (std::find(v.begin(), v.end(), ptr) != v.end())
+                    return false;
+                v.emplace_back(ptr);
+                return true;
+            }
         };
 
 
@@ -176,25 +282,53 @@ namespace ROCKY_NAMESPACE
         template<typename T>
         inline void SystemNode_on_construct(entt::registry& r, entt::entity e)
         {
-            T& new_component = r.get<T>(e);
+            T& new_comp = r.get<T>(e);
+            new_comp.owner = e;
 
             if (!r.try_get<ActiveState>(e))
             {
                 r.emplace<ActiveState>(e);
             }
 
-            // Add a visibility tag (if first time dealing with this component)
-            // I am not sure yet how to remove this in the end.
             if (!r.try_get<Visibility>(e))
             {
                 r.emplace<Visibility>(e);
             }
 
             // Create a Renderable component and attach it to the new component.
-            new_component.attach_point = r.create();
-            r.emplace<detail::Renderable>(new_component.attach_point);
+            new_comp.attach_point = r.create();
+            r.emplace<detail::Renderable>(new_comp.attach_point);
 
-            new_component.revision++;
+            new_comp.revision++;
+        }
+
+        template<typename T>
+        inline void SystemNode_on_construct_shared(entt::registry& r, entt::entity e)
+        {
+            auto& shared = r.get<Shareable<T>>(e);
+            shared.owner = e;
+
+            auto& comp = *shared.pointer;
+
+            if (!r.try_get<ActiveState>(e))
+            {
+                r.emplace<ActiveState>(e);
+            }
+
+            if (!r.try_get<Visibility>(e))
+            {
+                r.emplace<Visibility>(e);
+            }
+
+            // Create a Renderable component and attach it to the new component.
+            if (comp.attach_point == entt::null)
+            {
+                comp.attach_point = r.create();
+                r.emplace<detail::Renderable>(comp.attach_point);
+            }
+
+            comp.revision++;
+            shared.revision++;
         }
 
         // invoked by registry.replace<T>(), emplace_or_replace<T>(), or patch<T>()
@@ -212,12 +346,44 @@ namespace ROCKY_NAMESPACE
             updated_component.revision++;
         }
 
+        // invoked by registry.replace<T>(), emplace_or_replace<T>(), or patch<T>()
+        template<typename T>
+        inline void SystemNode_on_update_shared(entt::registry& r, entt::entity e)
+        {
+            auto& shared = r.get<Shareable<T>>(e);
+            auto& updated_component = *shared.pointer;
+
+            if (updated_component.attach_point == entt::null)
+            {
+                updated_component.attach_point = r.create();
+                r.emplace<detail::Renderable>(updated_component.attach_point);
+            }
+
+            shared.revision++;
+            updated_component.revision++;
+        }
+
         // invoked by registry.erase<T>(), remove<T>(), or registry.destroy(e)
         template<typename T>
         inline void SystemNode_on_destroy(entt::registry& r, entt::entity e)
         {
             T& component_being_destroyed = r.get<T>(e);
             r.destroy(component_being_destroyed.attach_point);
+        }
+
+        // invoked by registry.erase<T>(), remove<T>(), or registry.destroy(e)
+        template<typename T>
+        inline void SystemNode_on_destroy_shared(entt::registry& r, entt::entity e)
+        {
+            auto& shared = r.get<Shareable<T>>(e);
+            if (shared.pointer.use_count() == 1)
+            {
+                T& component_being_destroyed = *shared.pointer;
+                r.destroy(component_being_destroyed.attach_point);
+                component_being_destroyed.attach_point = entt::null;
+                component_being_destroyed.revision++;
+                shared.revision++;
+            }
         }
     }
 
@@ -230,6 +396,10 @@ namespace ROCKY_NAMESPACE
         registry.template on_construct<T>().template connect<&detail::SystemNode_on_construct<T>>();
         registry.template on_update<T>().template connect<&detail::SystemNode_on_update<T>>();
         registry.template on_destroy<T>().template connect<&detail::SystemNode_on_destroy<T>>();
+
+        registry.template on_construct<SHARED_T>().template connect<&detail::SystemNode_on_construct_shared<T>>();
+        registry.template on_update<SHARED_T>().template connect<&detail::SystemNode_on_update_shared<T>>();
+        registry.template on_destroy<SHARED_T>().template connect<&detail::SystemNode_on_destroy_shared<T>>();
     }
 
     template<class T>
@@ -240,6 +410,10 @@ namespace ROCKY_NAMESPACE
         registry.template on_construct<T>().template disconnect<&detail::SystemNode_on_construct<T>>();
         registry.template on_update<T>().template disconnect<&detail::SystemNode_on_update<T>>();
         registry.template on_destroy<T>().template disconnect<&detail::SystemNode_on_destroy<T>>();
+
+        registry.template on_construct<SHARED_T>().template disconnect<&detail::SystemNode_on_construct_shared<T>>();
+        registry.template on_update<SHARED_T>().template disconnect<&detail::SystemNode_on_update_shared<T>>();
+        registry.template on_destroy<SHARED_T>().template disconnect<&detail::SystemNode_on_destroy_shared<T>>();
     }
 
     template<class T>
@@ -257,6 +431,17 @@ namespace ROCKY_NAMESPACE
                 auto& renderable = registry.template get<Renderable>(c.attach_point);
                 if (renderable.node)
                     renderable.node->accept(v);
+            });
+
+        _visited.clear();
+        registry.template view<SHARED_T>().each([&](auto& shared)
+            {
+                if (find_once(_visited, shared.pointer.get()))
+                {
+                    auto& renderable = registry.template get<Renderable>(shared.pointer->attach_point);
+                    if (renderable.node)
+                        renderable.node->accept(v);
+                }
             });
 
         super::traverse(v);
@@ -278,6 +463,17 @@ namespace ROCKY_NAMESPACE
                 auto& renderable = registry.template get<Renderable>(c.attach_point);
                 if (renderable.node)
                     renderable.node->accept(v);
+            });
+
+        _visited.clear();
+        registry.template view<SHARED_T>().each([&](auto& shared)
+            {
+                if (find_once(_visited, shared.pointer.get()))
+                {
+                    auto& renderable = registry.template get<Renderable>(shared.pointer->attach_point);
+                    if (renderable.node)
+                        renderable.node->accept(v);
+                }
             });
 
         super::traverse(v);
@@ -303,6 +499,17 @@ namespace ROCKY_NAMESPACE
                 if (renderable.node)
                     renderable.node->accept(vsg_compiler);
             });
+
+        _visited.clear();
+        registry.template view<SHARED_T>().each([&](auto& shared)
+            {
+                if (find_once(_visited, shared.pointer.get()))
+                {
+                    auto& renderable = registry.template get<Renderable>(shared.pointer->attach_point);
+                    if (renderable.node)
+                        renderable.node->accept(vsg_compiler);
+                }
+            });
     }
 
     template<class T>
@@ -317,9 +524,9 @@ namespace ROCKY_NAMESPACE
 
         // Sort components into render sets by pipeline. If this system doesn't support
         // multiple pipelines, just store them all together in renderSet[0].
-        if (pipelineRenderLeaves.empty())
+        if (_pipelineRenderLeaves.empty())
         {
-            pipelineRenderLeaves.resize(!pipelines.empty() ? pipelines.size() : 1);
+            _pipelineRenderLeaves.resize(!pipelines.empty() ? pipelines.size() : 1);
         }
 
         auto [lock, registry] = _registry.read();
@@ -333,7 +540,7 @@ namespace ROCKY_NAMESPACE
                 auto& renderable = registry.template get<Renderable>(component.attach_point);
                 if (renderable.node)
                 {
-                    auto& leaves = !pipelines.empty() ? pipelineRenderLeaves[featureMask(component)] : pipelineRenderLeaves[0];
+                    auto& leaves = !pipelines.empty() ? _pipelineRenderLeaves[featureMask(component)] : _pipelineRenderLeaves[0];
                     auto* transform_detail = registry.template try_get<TransformDetail>(entity);
 
                     // if it's visible, queue it up for rendering
@@ -341,7 +548,7 @@ namespace ROCKY_NAMESPACE
                     {
                         if (transform_detail)
                         {
-                            if (transform_detail->passingCull(rs))
+                            if (transform_detail->views[rs.viewID].passingCull)
                             {
                                 leaves.emplace_back(RenderLeaf{ &renderable, transform_detail });
                             }
@@ -355,15 +562,50 @@ namespace ROCKY_NAMESPACE
 
                 if (renderable.revision != component.revision)
                 {
-                    entities_to_update.emplace_back(entity);
+                    _entities_to_update.emplace_back(entity);
                     renderable.revision = component.revision;
                 }
             });
 
+        const auto& view_shared = registry.template view<SHARED_T, ActiveState, Visibility>();
+        view_shared.each([&](const entt::entity entity, auto& shared, auto& active, auto& visibility)
+            {
+                auto& component = *shared.pointer;
+                ROCKY_HARD_ASSERT(component.attach_point != entt::null);
+                auto& renderable = registry.template get<Renderable>(component.attach_point);
+                if (renderable.node)
+                {
+                    auto& leaves = !pipelines.empty() ? _pipelineRenderLeaves[featureMask(component)] : _pipelineRenderLeaves[0];
+                    auto* transform_detail = registry.template try_get<TransformDetail>(entity);
+
+                    // if it's visible, queue it up for rendering
+                    if (visible(visibility, rs))
+                    {
+                        if (transform_detail)
+                        {
+                            if (transform_detail->views[rs.viewID].passingCull)
+                            {
+                                leaves.emplace_back(RenderLeaf{ &renderable, transform_detail });
+                            }
+                        }
+                        else
+                        {
+                            leaves.emplace_back(RenderLeaf{ &renderable });
+                        }
+                    }
+                }
+
+                if (renderable.revision != shared.revision)
+                {
+                    _entities_to_update.emplace_back(entity);
+                    renderable.revision = shared.revision;
+                }
+            });
+
         // Time to record all visible components. For each pipeline:
-        for (int p = 0; p < pipelineRenderLeaves.size(); ++p)
+        for (int p = 0; p < _pipelineRenderLeaves.size(); ++p)
         {
-            if (!pipelineRenderLeaves[p].empty())
+            if (!_pipelineRenderLeaves[p].empty())
             {
                 // Bind the Graphics Pipeline for this render set, if there is one:
                 if (!pipelines.empty())
@@ -372,7 +614,7 @@ namespace ROCKY_NAMESPACE
                 }
 
                 // Them record each component. If the component has a transform apply it too.
-                for (auto& leaf : pipelineRenderLeaves[p])
+                for (auto& leaf : _pipelineRenderLeaves[p])
                 {
                     if (leaf.transform_detail)
                     {
@@ -388,7 +630,7 @@ namespace ROCKY_NAMESPACE
                 }
 
                 // clear out for next time around.
-                pipelineRenderLeaves[p].clear();
+                _pipelineRenderLeaves[p].clear();
             }
         }
     }
@@ -399,36 +641,62 @@ namespace ROCKY_NAMESPACE
     {
         std::vector<detail::BuildItem> entities_to_build;
 
-        if (!entities_to_update.empty())
+        if (!_entities_to_update.empty())
         {
             auto [lock, registry] = _registry.read();
 
             //TODO: can we just do this during record...?
-            for (auto& entity : entities_to_update)
+            for (auto& entity : _entities_to_update)
             {
-                if (!registry.valid(entity) || !registry.template all_of<T>(entity))
-                    continue;
-
-                T& component = registry.template get<T>(entity);
-
-                auto* renderable = registry.template try_get<Renderable>(component.attach_point);
-                if (renderable)
+                if (registry.valid(entity))
                 {
-                    // either the node doesn't exist yet, or the revision changed.
-                    // Queue it up for creation.
-                    detail::BuildItem item;
-                    item.entity = entity;
-                    item.version = registry.current(entity);
-                    item.component = std::shared_ptr<BaseComponent>(new T(component));
-                    item.existing_node = renderable->node;
-                    item.new_node = {};
+                    if (registry.template all_of<T>(entity))
+                    {
+                        T& component = registry.template get<T>(entity);
 
-                    entities_to_build.emplace_back(std::move(item));
-                }
-                else
-                {
-                    Log()->warn("Failed to fetch Renderable for component {}",
-                        typeid(T).name());
+                        auto* renderable = registry.template try_get<Renderable>(component.attach_point);
+                        if (renderable)
+                        {
+                            // either the node doesn't exist yet, or the revision changed.
+                            // Queue it up for creation.
+                            detail::BuildItem item;
+                            item.entity = entity;
+                            item.version = registry.current(entity);
+                            item.component = std::shared_ptr<ComponentBase>(new T(component));
+                            item.existing_node = renderable->node;
+                            item.new_node = {};
+
+                            entities_to_build.emplace_back(std::move(item));
+                        }
+                        else
+                        {
+                            Log()->warn("Failed to fetch Renderable for component {}",
+                                typeid(T).name());
+                        }
+                    }
+                    else if (registry.template all_of<SHARED_T>(entity))
+                    {
+                        auto& shared = registry.template get<SHARED_T>(entity);
+                        T& component = *shared.pointer;
+                        auto* renderable = registry.template try_get<Renderable>(component.attach_point);
+                        if (renderable)
+                        {
+                            // either the node doesn't exist yet, or the revision changed.
+                            // Queue it up for creation.
+                            detail::BuildItem item;
+                            item.entity = entity;
+                            item.version = registry.current(entity);
+                            item.component = std::shared_ptr<T>(new T(component));
+                            item.existing_node = renderable->node;
+                            item.new_node = {};
+                            entities_to_build.emplace_back(std::move(item));
+                        }
+                        else
+                        {
+                            Log()->warn("Failed to fetch Renderable for shared component {}",
+                                typeid(T).name());
+                        }
+                    }
                 }
             }
         }
@@ -452,7 +720,7 @@ namespace ROCKY_NAMESPACE
             }
         }
 
-        entities_to_update.clear();
+        _entities_to_update.clear();
     }
 
     template<typename T>
@@ -464,7 +732,6 @@ namespace ROCKY_NAMESPACE
             {
                 copy = *static_cast<T*>(item.component.get());
             });
-        //T component = *static_cast<T*>(item.component.get());
         createOrUpdateNode(copy, item, context);
     }
 
@@ -473,19 +740,34 @@ namespace ROCKY_NAMESPACE
     {
         // if there's a new node AND the entity isn't outdated or deleted,
         // swap it in. This method is called from ECSNode::update().
-        if (item.new_node && registry.valid(item.entity) && registry.all_of<T>(item.entity) &&
-            registry.current(item.entity) == item.version)
+        if (item.new_node && registry.valid(item.entity))
         {
-            T& component = registry.get<T>(item.entity);
-            auto& renderable = registry.get<Renderable>(component.attach_point);
-
-            if (renderable.node != item.new_node)
+            if (registry.all_of<T>(item.entity) && registry.current(item.entity) == item.version)
             {
-                // dispose of the old node
-                if (renderable.node)
-                    context->dispose(renderable.node);
+                T& component = registry.get<T>(item.entity);
+                auto& renderable = registry.get<Renderable>(component.attach_point);
 
-                renderable.node = item.new_node;
+                if (renderable.node != item.new_node)
+                {
+                    // dispose of the old node
+                    if (renderable.node)
+                        context->dispose(renderable.node);
+
+                    renderable.node = item.new_node;
+                }
+            }
+            else if (registry.all_of<SHARED_T>(item.entity) && registry.current(item.entity) == item.version)
+            {
+                auto& shared = registry.get<SHARED_T>(item.entity);
+                T& component = *shared.pointer;
+                auto& renderable = registry.get<Renderable>(component.attach_point);
+                if (renderable.node != item.new_node)
+                {
+                    // dispose of the old node
+                    if (renderable.node)
+                        context->dispose(renderable.node);
+                    renderable.node = item.new_node;
+                }
             }
         }
     }

@@ -20,7 +20,8 @@ namespace ROCKY_NAMESPACE
         struct Uniforms
         {
             glm::vec4 backgroundColor = Color("#08AEE0");
-            bool wireOverlay = false;
+            int wireOverlay = 0;
+            int lighting = 0;
         };
 
         vsg::ref_ptr<vsg::Data> data;

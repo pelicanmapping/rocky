@@ -81,6 +81,9 @@ namespace ROCKY_NAMESPACE
         //! Readable string
         std::string string() const;
 
+        // parse?
+        inline std::pair<SRSOperation, glm::dvec3> parseAsReferencePoint() const;
+
     public:
         static GeoPoint INVALID;
 
@@ -90,4 +93,32 @@ namespace ROCKY_NAMESPACE
         GeoPoint(GeoPoint&& rhs) noexcept = default;
         GeoPoint& operator=(GeoPoint&& rhs) noexcept = default;
     };
+
+
+
+    std::pair<SRSOperation, glm::dvec3> GeoPoint::parseAsReferencePoint() const
+    {
+        SRSOperation xform;
+        glm::dvec3 offset(0, 0, 0);
+
+        if (srs.valid())
+        {
+            SRS worldSRS = srs;
+
+            if (srs.isGeodetic())
+            {
+                worldSRS = srs.geocentricSRS();
+                offset = transform(worldSRS);
+            }
+            else
+            {
+                offset = *this;
+            }
+
+            xform = SRSOperation(srs, worldSRS);
+        }
+
+        return std::make_pair(xform, offset);
+    }
+
 }

@@ -80,10 +80,10 @@ auto Demo_MVTFeatures = [](Application& app)
                 // set up the styling for the FeatureView to use for lines and meshes.
                 fview.styles.line.color = Color::Red;
                 fview.styles.line.width = 5.0f;
-                fview.styles.line.depth_offset = 10; // meters
+                fview.styles.line.depthOffset = 10; // meters
 
                 fview.styles.mesh.color = Color(1, 0.75f, 0.2f, 1);
-                fview.styles.mesh.depth_offset = 12; // meters
+                fview.styles.mesh.depthOffset = 12; // meters
 
                 if (gdal->featureCount() > 0)
                     fview.features.reserve(gdal->featureCount());
@@ -122,12 +122,12 @@ auto Demo_MVTFeatures = [](Application& app)
                         auto node = EntityNode::create(app.registry);
 
                         // Take a write-lock to move the primitives into ECS entities.
-                        app.registry.write([&](entt::registry& registry)
+                        app.registry.write([&](entt::registry& reg)
                             {
-                                auto e = prims.createEntity(registry);
+                                auto e = prims.createEntity(reg);
 
                                 // Since we localized to an origin, the tile needs a transform:
-                                auto& xform = registry.get_or_emplace<Transform>(e);
+                                auto& xform = reg.get_or_emplace<Transform>(e);
                                 xform.position = fview.origin;
                                 xform.frustumCulled = false; // NodePager will take care of frustum culling for us
 

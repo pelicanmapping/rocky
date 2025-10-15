@@ -12,6 +12,7 @@
 #include "ecs/LabelSystem.h"
 #include "ecs/WidgetSystem.h"
 #include "ecs/TransformSystem.h"
+#include "ecs/NodeGraphSystem.h"
 
 #include <rocky/contrib/EarthFileImporter.h>
 
@@ -156,6 +157,10 @@ Application::ctor(int& argc, char** argv)
     {
         skyNode = rocky::SkyNode::create(vsgcontext);
         mainScene->addChild(skyNode);
+
+        // if the user didn't disable terrain lighting...enable it.
+        if (!mapNode->terrainSettings().lighting.has_value())
+            mapNode->terrainSettings().lighting = true;
     }
 
     // set on-demand rendering mode from the command line
@@ -219,8 +224,8 @@ Application::ctor(int& argc, char** argv)
     ecsNode->add(xform_system);
 
     // Rendering components:
-    ecsNode->add(MeshSystemNode::create(registry));
     ecsNode->add(NodeSystemNode::create(registry));
+    ecsNode->add(MeshSystemNode::create(registry));
     ecsNode->add(LineSystemNode::create(registry));
 
     if (indirect)

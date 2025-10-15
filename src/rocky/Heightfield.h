@@ -112,6 +112,7 @@ namespace ROCKY_NAMESPACE
     inline float& Heightfield::heightAt(unsigned c, unsigned r)
     {
         static float empty = 0;
+        ROCKY_HARD_ASSERT(_writable);
         ROCKY_SOFT_ASSERT_AND_RETURN(_writable, empty);
         return image->value<float>(c, r);
     }
@@ -173,26 +174,14 @@ namespace ROCKY_NAMESPACE
                     if (h > maxH) maxH = h;
                 }
             });
-    }
-
-    inline std::pair<float, float> Heightfield::computeMinMax() const
-    {
-        float minH = std::numeric_limits<float>::max();
-        float maxH = -std::numeric_limits<float>::max();
-        forEachHeight([&](float h)
-            {
-                if (h != NO_DATA_VALUE) {
-                    if (h < minH) minH = h;
-                    if (h > maxH) maxH = h;
-                }
-            });
-        return std::make_pair(minH, maxH);
+        if (minH > maxH)
+            minH = maxH = 0.0;
     }
 
     inline Heightfield Heightfield::encode() const
     {
         ROCKY_HARD_ASSERT(_writable, "Image must be writable");
-        ROCKY_HARD_ASSERT(image->_maxValue > image->_minValue, "Must call computeAndSetMinMax() before encoding");
+        ROCKY_HARD_ASSERT(image->_maxValue >= image->_minValue, "Must call computeAndSetMinMax() before encoding");
 
         auto outImage = Image::create(HF_ENCODED_FORMAT, image->width(), image->height(), 1);
         outImage->_minValue = image->_minValue;
@@ -203,7 +192,7 @@ namespace ROCKY_NAMESPACE
         forEachHeight([&](float h)
             {
                 if (h == NO_DATA_VALUE) h = 0.0f;
-                *ptr++ = static_cast<EncodedDataType>(((h - image->_minValue) / (image->_maxValue - image->_minValue)) * 65535.0f);;
+                *ptr++ = static_cast<EncodedDataType>(((h - image->_minValue) / (image->_maxValue - image->_minValue)) * 65535.0f);
             });
 
         return Heightfield(outImage);

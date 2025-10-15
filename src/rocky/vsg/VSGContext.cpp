@@ -535,10 +535,10 @@ VSGContextImpl::onNextUpdate(std::function<void()> function)
     requestFrame();
 }
 
-void
+vsg::CompileResult
 VSGContextImpl::compile(vsg::ref_ptr<vsg::Object> compilable)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(compilable.valid(), void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(compilable.valid(), {});
 
     // note: this can block (with a fence) until a compile traversal is available.
     // Be sure to group as many compiles together as possible for maximum performance.
@@ -550,6 +550,8 @@ VSGContextImpl::compile(vsg::ref_ptr<vsg::Object> compilable)
         std::unique_lock lock(_compileMutex);
         _compileResult.add(cr);
     }
+
+    return cr;
 }
 
 void
@@ -575,28 +577,61 @@ VSGContextImpl::dispose(vsg::ref_ptr<vsg::Object> object)
 }
 
 void
-VSGContextImpl::upload(vsg::BufferInfoList bufferInfos)
+VSGContextImpl::upload(const vsg::BufferInfoList& bufferInfos)
 {
     // A way to upload GPU buffers without using the dirty()/DYNAMIC_DATA mechanism,
     // which gets slow with a large number of buffers.
     // inspired by: https://github.com/vsg-dev/VulkanSceneGraph/discussions/1572
-    unsigned count = 0;
+    vsg::BufferInfoList validBufferInfos;
+    validBufferInfos.reserve(bufferInfos.size());
+
     for (auto& bi : bufferInfos)
     {
         if (bi && bi->data)
         {
             bi->data->dirty();
-            ++count;
+            validBufferInfos.emplace_back(bi);
         }
     }
 
-    if (count > 0)
+    if (!validBufferInfos.empty())
     {
         auto& tasks = _viewer->recordAndSubmitTasks;
         for (auto& task : tasks)
         {
-            task->transferTask->assign(bufferInfos);
+            task->transferTask->assign(validBufferInfos);
         }
+
+        requestFrame();
+    }
+}
+
+void
+VSGContextImpl::upload(const vsg::ImageInfoList& imageInfos)
+{
+    // A way to upload images without using the dirty()/DYNAMIC_DATA mechanism,
+    // which gets slow with a large number of buffers.
+    // inspired by: https://github.com/vsg-dev/VulkanSceneGraph/discussions/1572
+    vsg::ImageInfoList validImageInfos;
+    validImageInfos.reserve(imageInfos.size());
+    for (auto& bi : imageInfos)
+    {
+        if (bi && bi->imageView && bi->imageView->image && bi->imageView->image->data)
+        {
+            bi->imageView->image->data->dirty();
+            validImageInfos.emplace_back(bi);
+        }
+    }
+
+    if (!validImageInfos.empty())
+    {
+        auto& tasks = _viewer->recordAndSubmitTasks;
+        for (auto& task : tasks)
+        {
+            task->transferTask->assign(validImageInfos);
+        }
+
+        requestFrame();
     }
 }
 

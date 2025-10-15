@@ -23,7 +23,8 @@ layout(location = 0) in RockyVaryings varyings;
 layout(set = 0, binding = 9) uniform TerrainData
 {
     vec4 backgroundColor;
-    bool wireOverlay;
+    int wireOverlay;
+    int lighting;
 } settings;
 
 layout(set = 0, binding = 11) uniform sampler2D color_tex;
@@ -50,10 +51,13 @@ void main()
     if (gl_FrontFacing == false)
         out_color.r = 1.0;
 
-    apply_lighting(out_color, varyings.vertex_view, get_normal());
+    if (settings.lighting > 0)
+    {
+        apply_lighting(out_color, varyings.vertex_view, get_normal());
+    }
 
 #if defined(ROCKY_HAS_VK_BARYCENTRIC_EXTENSION) && defined(GL_EXT_fragment_shader_barycentric)
-    if (settings.wireOverlay)
+    if (settings.wireOverlay > 0)
     {
         const float pixelWidth = 1.0;
         vec3 b = fwidth(gl_BaryCoordEXT.xyz);

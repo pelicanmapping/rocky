@@ -17,8 +17,7 @@ namespace
 
     void on_update_Transform(entt::registry& r, entt::entity e)
     {
-        if (!r.try_get<TransformDetail>(e))
-            r.emplace<TransformDetail>(e);
+        (void)r.get_or_emplace<TransformDetail>(e);
     }
 
     void on_destroy_Transform(entt::registry& r, entt::entity e)
@@ -44,13 +43,13 @@ TransformSystem::update(VSGContext& context)
 {
     auto [lock, registry] = _registry.read();
 
-    for(auto&& [entity, transform, detail] : registry.view<Transform, TransformDetail>().each())
-    {
-        if (transform.revision != detail.sync.revision)
+    registry.view<Transform, TransformDetail>().each([](auto& transform, auto& detail)
         {
-            detail.sync = transform;
-        }
-    }
+            if (transform.revision != detail.sync.revision)
+            {
+                detail.sync = transform;
+            }
+        });
 }
 
 void

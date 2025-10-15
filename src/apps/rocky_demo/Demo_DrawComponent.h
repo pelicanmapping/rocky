@@ -84,13 +84,18 @@ auto Demo_Draw = [](Application& app)
         app.registry.write([&](entt::registry& r)
             {
                 entity = r.create();
-                auto& line = r.emplace<Line>(entity);
-                line.style.color = Color::Yellow;
-                line.style.width = 3;
-                line.style.depth_offset = 1000;
-                line.topology = Line::Topology::Strip;
-                line.srs = SRS::ECEF;
-                line.points.reserve(4);
+
+                auto& geom = r.emplace<LineGeometry>(entity);
+                geom.topology = LineTopology::Strip;
+                geom.srs = SRS::ECEF;
+                geom.points.reserve(4);
+
+                auto& style = r.emplace<LineStyle>(entity);
+                style.color = Color::Yellow;
+                style.width = 3;
+                style.depthOffset = 1000;
+
+                r.emplace<Line>(entity, geom, style);
             });
 
         auto handler = MapEventHandler::create(app);
@@ -103,11 +108,11 @@ auto Demo_Draw = [](Application& app)
 
                 app.registry.read([&](entt::registry& r)
                     {
-                        auto& line = r.get<Line>(entity);
+                        auto& geom = r.get<LineGeometry>(entity);
                         if (!drawing)
-                            line.points = { p };
-                        line.points.emplace_back(p);
-                        line.dirty();
+                            geom.points = { p };
+                        geom.points.emplace_back(p);
+                        geom.dirty(r);
                     });
                 drawing = true;
                 app.vsgcontext->requestFrame();
@@ -122,9 +127,9 @@ auto Demo_Draw = [](Application& app)
                 {
                     app.registry.read([&](entt::registry& r)
                         {
-                            auto& line = r.get<Line>(entity);
-                            line.points.back() = p;
-                            line.dirty();
+                            auto& geom = r.get<LineGeometry>(entity);
+                            geom.points.back() = p;
+                            geom.dirty(r);
                         });
                 }
                 app.vsgcontext->requestFrame();
@@ -139,9 +144,9 @@ auto Demo_Draw = [](Application& app)
                 {
                     app.registry.read([&](entt::registry& r)
                         {
-                            auto& line = r.get<Line>(entity);
-                            line.points.emplace_back(p);
-                            line.dirty();
+                            auto& geom = r.get<LineGeometry>(entity);
+                            geom.points.emplace_back(p);
+                            geom.dirty(r);
                         });
                 }
                 drawing = false;
@@ -158,9 +163,9 @@ auto Demo_Draw = [](Application& app)
     {
         app.registry.read([&](entt::registry& r)
             {
-                auto& line = r.get<Line>(entity);
-                line.points.clear();
-                line.dirty();
+                auto& geom = r.get<LineGeometry>(entity);
+                geom.points.clear();
+                geom.dirty(r);
             });
 
         drawing = false;

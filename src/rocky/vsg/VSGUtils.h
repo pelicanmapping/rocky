@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -50,6 +50,12 @@ namespace ROCKY_NAMESPACE
     // These work because GLM and VSG classes are binary compatible.
     // C++ does not permit conversion operator overload outside of a class.
 
+    inline const glm::fvec2& to_glm(const vsg::vec2& a) {
+        return reinterpret_cast<const glm::fvec2&>(a);
+    }
+    inline const glm::dvec2& to_glm(const vsg::dvec2& a) {
+        return reinterpret_cast<const glm::dvec2&>(a);
+    }
     inline const glm::fvec3& to_glm(const vsg::vec3& a) {
         return reinterpret_cast<const glm::fvec3&>(a);
     }
@@ -75,6 +81,12 @@ namespace ROCKY_NAMESPACE
         return reinterpret_cast<const glm::dquat&>(a);
     }
 
+    inline const vsg::vec2& to_vsg(const glm::fvec2& a) {
+        return reinterpret_cast<const vsg::vec2&>(a);
+    }
+    inline const vsg::dvec2& to_vsg(const glm::dvec2& a) {
+        return reinterpret_cast<const vsg::dvec2&>(a);
+    }
     inline const vsg::vec3& to_vsg(const glm::fvec3& a) {
         return reinterpret_cast<const vsg::vec3&>(a);
     }
@@ -540,7 +552,7 @@ namespace ROCKY_NAMESPACE
 
         //! Finds the first node of a given type in a scene graph.
         template<class T>
-        inline T* find(const vsg::ref_ptr<vsg::Object>& root)
+        inline T* find(vsg::Object* root)
         {
             detail::FindNodeVisitor<T> visitor;
             root->accept(visitor);
@@ -549,7 +561,7 @@ namespace ROCKY_NAMESPACE
 
         //! Finds every node of a fiven type and runs a function against it
         template<class T>
-        inline void forEach(const vsg::ref_ptr<vsg::Object>& root, std::function<void(T*)> func)
+        inline void forEach(vsg::Object* root, std::function<void(T*)> func)
         {
             if (!root) return;
             detail::ForEachNodeVisitor<T> visitor(func);

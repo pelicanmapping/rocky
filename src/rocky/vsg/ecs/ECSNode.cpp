@@ -11,6 +11,7 @@
 #include "LabelSystem.h"
 #include "WidgetSystem.h"
 #include "TransformSystem.h"
+#include "NodeGraphSystem.h"
 
 ROCKY_ABOUT(entt, ENTT_VERSION);
 
@@ -29,9 +30,9 @@ ECSNode::ECSNode(Registry& reg, bool addDefaultSystems) :
     if (addDefaultSystems)
     {
         add(TransformSystem::create(registry));
-        add(MeshSystemNode::create(registry));
         add(NodeSystemNode::create(registry));
         add(LineSystemNode::create(registry));
+        add(MeshSystemNode::create(registry));
         add(IconSystemNode::create(registry));
         add(LabelSystemNode::create(registry));
 #ifdef ROCKY_HAS_IMGUI

@@ -14,37 +14,17 @@ using namespace ROCKY_NAMESPACE;
 auto Demo_Model = [](Application& app)
 {
     static entt::entity entity = entt::null;
-    static Status status;
     const double scale = 50000.0;
-
-    if (status.failed())
-    {
-        ImGui::TextColored(ImVec4(1, 0, 0, 1), "Model load failed!");
-        return;
-    }
 
     if (entity == entt::null)
     {
         auto [lock, registry] = app.registry.write();
 
-        // Load model data from a URI
-        URI uri("https://raw.githubusercontent.com/vsg-dev/vsgExamples/master/data/models/teapot.vsgt");
-        auto result = uri.read(app.vsgcontext->io);
-        if (result.failed())
-            return;
-
-        // Parse the model
-        // this is a bit awkward but it works when the URI has an extension
-        auto options = vsg::Options::create(*app.vsgcontext->readerWriterOptions);
-        auto extension = std::filesystem::path(uri.full()).extension();
-        options->extensionHint = extension.empty() ? std::filesystem::path(result.value().content.type) : extension;
-        std::istringstream in(result.value().content.data);
-        auto node = vsg::read_cast<vsg::Node>(in, options);
-        if (!node)
-        {
-            status = Failure(Failure::ResourceUnavailable, "Failed to parse model");
-            return;
-        }
+        // Create a simple VSG model using the Builder.
+        vsg::Builder builder;
+        vsg::GeometryInfo gi;
+        gi.color = to_vsg(Color::Cyan);
+        auto node = builder.createSphere(gi, vsg::StateInfo{});
 
         // New entity to host our model
         entity = registry.create();
@@ -88,21 +68,21 @@ auto Demo_Model = [](Application& app)
         if (ImGuiLTable::SliderDouble("Heading", &heading, -180.0, 180.0, "%.1lf"))
         {
             auto rot = util::quaternion_from_euler_degrees(pitch, roll, heading);
-            transform.localMatrix = glm::scale(glm::dmat4(1), glm::dvec3(scale)) * glm::mat4_cast(rot);
+            transform.localMatrix = glm::mat4_cast(rot) * glm::scale(glm::dmat4(1), glm::dvec3(scale));
             transform.dirty();
         }
 
         if (ImGuiLTable::SliderDouble("Pitch", &pitch, -90.0, 90.0, "%.1lf"))
         {
             auto rot = util::quaternion_from_euler_degrees(pitch, roll, heading);
-            transform.localMatrix = glm::scale(glm::dmat4(1), glm::dvec3(scale)) * glm::mat4_cast(rot);
+            transform.localMatrix = glm::mat4_cast(rot) * glm::scale(glm::dmat4(1), glm::dvec3(scale));
             transform.dirty();
         }
 
         if (ImGuiLTable::SliderDouble("Roll", &roll, -90.0, 90.0, "%.1lf"))
         {
             auto rot = util::quaternion_from_euler_degrees(pitch, roll, heading);
-            transform.localMatrix = glm::scale(glm::dmat4(1), glm::dvec3(scale)) * glm::mat4_cast(rot);
+            transform.localMatrix = glm::mat4_cast(rot) * glm::scale(glm::dmat4(1), glm::dvec3(scale));
             transform.dirty();
         }
 

@@ -127,7 +127,7 @@ namespace
     }
 
     void compile_feature_to_lines(const Feature& feature, const StyleSheet& styles, const GeoPoint& origin,
-        ElevationSession& clamper, const SRS& output_srs, Line& line)
+        ElevationSession& clamper, const SRS& output_srs, LineGeometry& lineGeom)
     {
         float max_span = styles.line.resolution;
 
@@ -162,24 +162,24 @@ namespace
                 }
 
                 // Populate the line component based on the topology.
-                if (line.topology == Line::Topology::Strip)
+                if (lineGeom.topology == LineTopology::Strip)
                 {
                     // CHECK THIS
-                    line.points.reserve(line.points.size() + tessellated.size());
-                    line.points.insert(line.points.end(), tessellated.begin(), tessellated.end());
+                    lineGeom.points.reserve(lineGeom.points.size() + tessellated.size());
+                    lineGeom.points.insert(lineGeom.points.end(), tessellated.begin(), tessellated.end());
                 }
 
                 else // Line::Topology::Segments
                 {
                     std::size_t num_points_in_segments = tessellated.size() * 2 - 2;
-                    auto ptr = line.points.size();
-                    line.points.resize(line.points.size() + num_points_in_segments);
+                    auto ptr = lineGeom.points.size();
+                    lineGeom.points.resize(lineGeom.points.size() + num_points_in_segments);
 
                     // convert from a strip to segments
                     for (std::size_t i = 0; i < tessellated.size() - 1; ++i)
                     {
-                        line.points[ptr++] = glm::dvec3(tessellated[i].x, tessellated[i].y, tessellated[i].z);
-                        line.points[ptr++] = glm::dvec3(tessellated[i + 1].x, tessellated[i + 1].y, tessellated[i + 1].z);
+                        lineGeom.points[ptr++] = glm::dvec3(tessellated[i].x, tessellated[i].y, tessellated[i].z);
+                        lineGeom.points[ptr++] = glm::dvec3(tessellated[i + 1].x, tessellated[i + 1].y, tessellated[i + 1].z);
                     }
                 }
 
@@ -189,11 +189,11 @@ namespace
         // max length:
         max_span = final_max_span;
 
-        line.style = styles.line;
+        //line.style = styles.line;
     }
 
     void compile_polygon_feature_with_weemesh(const Feature& feature, const StyleSheet& styles, 
-        const GeoPoint& origin, ElevationSession& clamper, const SRS& output_srs, Mesh& mesh)
+        const GeoPoint& origin, ElevationSession& clamper, const SRS& output_srs, MeshGeometry& meshGeom)
     {
         // scales our local gnomonic coordinates so they are the same order of magnitude as
         // weemesh's default epsilon values:
@@ -335,25 +335,21 @@ namespace
         }
 
         auto color =
-            styles.mesh_function ? styles.mesh_function(feature).color :
+            styles.meshColorFunction ? styles.meshColorFunction(feature) :
             styles.mesh.color;
-
-        auto depth_offset =
-            styles.mesh_function ? styles.mesh_function(feature).depth_offset :
-            styles.mesh.depth_offset;
 
         Triangle temp = {
             {}, // we'll fill in the verts below
             {color, color, color},
             {}, // uvs - don't need them
-            {depth_offset, depth_offset, depth_offset} }; // depth offset values
+        };
 
         for (auto& tri : m.triangles)
         {
             temp.verts[0] = m.verts[tri.second.i0];
             temp.verts[1] = m.verts[tri.second.i1];
             temp.verts[2] = m.verts[tri.second.i2];
-            mesh.triangles.emplace_back(temp);
+            meshGeom.triangles.emplace_back(temp);
         }
     }
 }
@@ -363,7 +359,10 @@ FeatureView::Primitives
 FeatureView::generate(const SRS& output_srs)
 {
     Primitives output;
-    output.line.topology = Line::Topology::Segments;
+    output.lineGeom.topology = LineTopology::Segments;
+
+    output.lineStyle = styles.line;
+    output.meshStyle = styles.mesh;
 
     for (auto& feature : features)
     {
@@ -379,13 +378,13 @@ FeatureView::generate(const SRS& output_srs)
         if (feature.geometry.type == Geometry::Type::LineString ||
             feature.geometry.type == Geometry::Type::MultiLineString)
         {
-            compile_feature_to_lines(feature, styles, origin, clamper, output_srs, output.line);
+            compile_feature_to_lines(feature, styles, origin, clamper, output_srs, output.lineGeom);
         }
 
         else if (feature.geometry.type == Geometry::Type::Polygon ||
             feature.geometry.type == Geometry::Type::MultiPolygon)
         {
-            compile_polygon_feature_with_weemesh(feature, styles, origin, clamper, output_srs, output.mesh);
+            compile_polygon_feature_with_weemesh(feature, styles, origin, clamper, output_srs, output.meshGeom);
         }
 
         else
@@ -411,18 +410,18 @@ FeatureView::generate(FeatureView::PrimitivesRef& output, const SRS& output_srs)
         if (feature.geometry.type == Geometry::Type::LineString ||
             feature.geometry.type == Geometry::Type::MultiLineString)
         {
-            if (output.line)
+            if (output.lineGeom)
             {
-                compile_feature_to_lines(feature, styles, origin, clamper, output_srs, *output.line);
+                compile_feature_to_lines(feature, styles, origin, clamper, output_srs, *output.lineGeom);
             }
         }
 
         else if (feature.geometry.type == Geometry::Type::Polygon ||
             feature.geometry.type == Geometry::Type::MultiPolygon)
         {
-            if (output.mesh)
+            if (output.meshGeom)
             {
-                compile_polygon_feature_with_weemesh(feature, styles, origin, clamper, output_srs, *output.mesh);
+                compile_polygon_feature_with_weemesh(feature, styles, origin, clamper, output_srs, *output.meshGeom);
             }
         }
 

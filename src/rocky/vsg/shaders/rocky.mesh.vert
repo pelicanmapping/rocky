@@ -1,5 +1,5 @@
 #version 450
-#pragma import_defines(USE_MESH_STYLE)
+#pragma import_defines(ROCKY_ATMOSPHERE)
 
 // vsg push constants
 layout(push_constant) uniform PushConstants {
@@ -7,27 +7,40 @@ layout(push_constant) uniform PushConstants {
     mat4 modelview;
 } pc;
 
-#ifdef USE_MESH_STYLE
-// see rocky::MeshStyle
-layout(set = 0, binding = 1) uniform MeshData {
-    vec4 color;
-    float depthoffset;
-} mesh;
-#endif
-
 // input vertex attributes
 layout(location = 0) in vec3 in_vertex;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec4 in_color;
 layout(location = 3) in vec2 in_uv;
-layout(location = 4) in float in_depthoffset;
 
-// inter-stage interface block
-struct Varyings {
+// rocky::detail::MeshStyleRecord
+struct MeshStyle {
     vec4 color;
+    float depthOffset;
+    int hasTexture;
+    int hasLighting;
+    int padding[1];
 };
-layout(location = 1) out vec2 uv;
-layout(location = 2) flat out Varyings vary;
+
+layout(set = 0, binding = 1) uniform MeshUniform {
+    MeshStyle style;
+} mesh;
+
+//layout(location = 1) out vec2 uv;
+//layout(location = 2) out vec3 normal;
+//layout(location = 3) out vec3 vertexView;
+//layout(location = 4) flat out vec4 color;
+//layout(location = 5) flat out int hasTexture;
+//layout(location = 6) flat out int hasLighting;
+
+layout(location = 1) out Varyings {
+    vec2 uv;
+    vec3 normal;
+    vec3 vertexView;
+    flat vec4 color;
+    flat int hasTexture;
+    flat int hasLighting;
+} vary;
 
 // GL built-ins
 out gl_PerVertex {
@@ -47,24 +60,26 @@ vec3 apply_depth_offset(in vec3 vertex, in float offset)
 }
 
 void main()
-{
-    float depthoffset = in_depthoffset;
+{    
+    vary.color = mesh.style.color.a > 0.0 ? mesh.style.color : in_color;
+    vary.hasTexture = mesh.style.hasTexture;
+    vary.hasLighting = mesh.style.hasLighting;
 
-#ifdef USE_MESH_STYLE
-    vary.color = mesh.color.a > 0.0 ? mesh.color : in_color;
-    if (mesh.depthoffset != 0.0)
-        depthoffset = mesh.depthoffset;
-#else
-    vary.color = in_color;
-#endif
+    vec4 vv = pc.modelview * vec4(in_vertex, 1.0);
+    vary.vertexView = vv.xyz / vv.w;
 
-    uv = in_uv;
+    float depthOffset = mesh.style.depthOffset;
+
+    vary.uv = in_uv;
+
+    mat3 normal_matrix = mat3(transpose(inverse(pc.modelview)));
+    vary.normal = normal_matrix * in_normal;
 
     // TODO: lighting
     
     // Depth offset (view-space approach):
     vec4 view = pc.modelview * vec4(in_vertex, 1);
-    view.xyz = apply_depth_offset(view.xyz, depthoffset);
+    view.xyz = apply_depth_offset(view.xyz, depthOffset);
     vec4 clip = pc.projection * view;
 
     gl_Position = clip;

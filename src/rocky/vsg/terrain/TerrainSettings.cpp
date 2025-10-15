@@ -26,6 +26,7 @@ TerrainSettings::from_json(std::string_view JSON)
     get_to(j, "backgroundColor", backgroundColor);
     get_to(j, "concurrency", concurrency);
     get_to(j, "wireOverlay", wireOverlay);
+    get_to(j, "lighting", lighting);
 
     return ResultVoidOK;
 }
@@ -44,5 +45,6 @@ TerrainSettings::to_json() const
     set(j, "backgroundColor", backgroundColor);
     set(j, "concurrency", concurrency);
     set(j, "wireOverlay", wireOverlay);
+    set(j, "lighting", lighting);
     return j.dump();
 }

@@ -43,5 +43,17 @@ Logger rocky::Log()
             }
         });
 
-    return spdlog::get("rocky");
+    auto logger = spdlog::get("rocky");
+
+    if (!logger)
+    {
+        // catch for calling Log() after static destruction of the spdlog internal instance manager..
+        // at least we'll get stderr output at the WARN level
+        auto sink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
+        logger = std::make_shared<spdlog::logger>("rocky", sink);
+        logger->set_level(spdlog::level::warn);
+        logger->set_pattern("%^[%n %l]%$ %v");
+    }
+
+    return logger;
 }

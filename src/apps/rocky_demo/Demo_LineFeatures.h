@@ -49,15 +49,10 @@ auto Demo_LineFeatures = [](Application& app)
                 });
 
             // apply a style for geometry creation:
-            feature_view.styles.line = LineStyle
-            {
-                { 1, 1, 0.3f, 1 }, // color
-                2.0f,              // width (pixels)
-                0xffff,            // stipple pattern (bitmask)
-                1,                 // stipple factor
-                100000.0f,         // resolution (geometric error)
-                5000.0f            // depth offset (meters)
-            };
+            feature_view.styles.line.color = Color::Yellow;
+            feature_view.styles.line.width = 2.0f;
+            feature_view.styles.line.resolution = 10000.0f;
+            feature_view.styles.line.depthOffset = 5000.0f;
 
             auto prims = feature_view.generate(app.mapNode->srs());
 

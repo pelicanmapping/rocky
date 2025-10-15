@@ -57,12 +57,16 @@ auto Demo_ElevationSampler = [](Application& app)
             {
                 entity = r.create();
                         
-                auto& line = r.emplace<Line>(entity);
-                line.style.color = Color::Cyan;
-                line.style.width = 4.0f;
-                line.topology = Line::Topology::Segments;
                 double t = 500.0;
-                line.points = { {-t, 0, 0}, {t, 0, 0}, {0, -t, 0}, {0, t, 0}, {0, 0, -t}, {0, 0, t} };
+                auto& geom = r.emplace<LineGeometry>(entity);
+                geom.topology = LineTopology::Segments;
+                geom.points = { {-t, 0, 0}, {t, 0, 0}, {0, -t, 0}, {0, t, 0}, {0, 0, -t}, {0, 0, t} };
+
+                auto& style = r.emplace<LineStyle>(entity);
+                style.color = Color::Cyan;
+                style.width = 4.0f;
+
+                r.emplace<Line>(entity, geom, style);
 
                 auto& transform = r.emplace<Transform>(entity);
                 transform.topocentric = true;

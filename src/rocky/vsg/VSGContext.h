@@ -85,7 +85,8 @@ namespace ROCKY_NAMESPACE
         //! a compile manager, so it is always a good idea to batch together as
         //! many compile operations as possible (e.g., with vsg::Objects) for good
         //! performance.
-        void compile(vsg::ref_ptr<vsg::Object> object);
+        //! @return the compile result, which you should use to check for errors.
+        vsg::CompileResult compile(vsg::ref_ptr<vsg::Object> object);
 
         //! Destroys a VSG object, eventually. 
         //! Call this to get rid of descriptor sets you plan to replace.
@@ -100,7 +101,8 @@ namespace ROCKY_NAMESPACE
         //! to marking the buffer as DYNAMIC_DATA and marking it dirty(), which
         //! is inefficient for large numbers of buffers whose data is only
         //! updated periodically.
-        void upload(vsg::BufferInfoList bufferInfos);
+        void upload(const vsg::BufferInfoList& bufferInfos);
+        void upload(const vsg::ImageInfoList& inageInfos);
 
         //! The VSG/Vulkan device shared by all displays
         vsg::ref_ptr<vsg::Device> device();
