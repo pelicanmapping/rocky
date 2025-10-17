@@ -341,17 +341,7 @@ LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDet
             root = geomDetail.geomNode;
         }
 
-        if (!geomDetail.cullNode)
-        {
-            geomDetail.cullNode = vsg::CullNode::create();
-        }
-
-        geomDetail.cullNode->child = root;
-
-        // hand-calculate the bounding sphere
-        geomDetail.geomNode->calcBound(geomDetail.cullNode->bound, localizer_matrix);
-
-        geomDetail.node = geomDetail.cullNode;
+        geomDetail.node = root;
 
         compile(geomDetail.node);
     }
@@ -386,9 +376,6 @@ LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDet
             // no reference point -- push raw geometry
             geomDetail.geomNode->set(geom.points, geom.topology, geomDetail.capacity);
         }
-
-        // hand-calculate the bounding sphere
-        geomDetail.geomNode->calcBound(geomDetail.cullNode->bound, localizer_matrix);
 
         // upload the changed arrays
         upload(geomDetail.geomNode->arrays);
@@ -576,6 +563,7 @@ LineGeometryNode::calcBound(vsg::dsphere& output, const vsg::dmat4& matrix) cons
     int count = _drawCommand->indexCount / 6;
 
     output.reset();
+
     for(int i = first; i < count; ++i)
     {
         expandBy(output, matrix * vsg::dvec3(_current->at(i * 4)));

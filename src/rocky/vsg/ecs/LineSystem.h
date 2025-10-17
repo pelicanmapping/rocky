@@ -101,7 +101,6 @@ namespace ROCKY_NAMESPACE
         {
             vsg::ref_ptr<vsg::Node> node;
             vsg::ref_ptr<LineGeometryNode> geomNode;
-            vsg::ref_ptr<vsg::CullNode> cullNode;
             std::size_t capacity = 0;
         };
 
