@@ -24,6 +24,7 @@ auto Demo_PolygonFeatures = [](Application& app)
     static jobs::future<LoadedFeatures> data;
     static std::vector<entt::entity> entities;
     static bool ready = false;
+    static entt::entity primitivesEntity = entt::null;
 
     if (!ready)
     {
@@ -79,7 +80,8 @@ auto Demo_PolygonFeatures = [](Application& app)
             {
                 app.registry.write([&](entt::registry& registry)
                     {
-                        entities.emplace_back(prims.createEntity(registry));
+                        primitivesEntity = prims.createEntity(registry);
+                        entities.emplace_back(primitivesEntity);
                     });
             }
 
@@ -94,12 +96,20 @@ auto Demo_PolygonFeatures = [](Application& app)
 
     else if (ImGuiLTable::Begin("Polygon features"))
     {
-        auto [lock, registry] = app.registry.read();
+        auto [lock, reg] = app.registry.read();
 
-        auto& v = registry.get<Visibility>(entities.front()).visible[0];
+        auto& v = reg.get<Visibility>(entities.front()).visible[0];
         if (ImGuiLTable::Checkbox("Show", &v))
         {
-            setVisible(registry, entities.begin(), entities.end(), v);
+            setVisible(reg, entities.begin(), entities.end(), v);
+        }
+
+        static bool wireframe = false;
+        if (ImGuiLTable::Checkbox("Wireframe", &wireframe))
+        {
+            auto& style = reg.get<MeshStyle>(primitivesEntity);
+            style.wireframe = wireframe;
+            style.dirty(reg);
         }
 
         ImGuiLTable::End();
