@@ -8,6 +8,7 @@
 #include <rocky/ECS.h>
 #include <rocky/vsg/ecs/System.h>
 #include <rocky/vsg/ecs/TransformDetail.h>
+#include <rocky/vsg/ecs/ECSVisitors.h>
 #include <rocky/vsg/VSGUtils.h>
 #include <rocky/Utils.h>
 #include <thread>
@@ -164,6 +165,10 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::Objects> _toDispose;
             vsg::BufferInfoList _buffersToUpload;
             vsg::ImageInfoList _imagesToUpload;
+
+            // re-usable 'visited' collection for uniqueness testing.
+            // prefer std::vector over std::set for small collections (<100 entries), which we expect.
+            mutable std::vector<std::uintptr_t> _visited;
         };
 
         /**
@@ -855,4 +860,5 @@ namespace ROCKY_NAMESPACE
         Registry registry;
         detail::EntityNodeFactory factory;
     };
+
 }

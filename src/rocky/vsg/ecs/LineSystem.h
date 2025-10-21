@@ -140,8 +140,11 @@ namespace ROCKY_NAMESPACE
         //! Record/render traversal
         void traverse(vsg::RecordTraversal&) const override;
 
+        void traverse(vsg::ConstVisitor&) const override;
+
     private:
         mutable detail::LineStyleDetail _defaultStyleDetail;
+        mutable vsg::ref_ptr<vsg::MatrixTransform> _tempMT;
 
         inline vsg::PipelineLayout* getPipelineLayout(const Line& line) {
             return _pipelines[0].config->layout;

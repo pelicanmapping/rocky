@@ -198,7 +198,9 @@ namespace
 MeshSystemNode::MeshSystemNode(Registry& registry) :
     Inherit(registry)
 {
-    //nop
+    // temporary transform used by the visitor traversal(s)
+    _tempMT = vsg::MatrixTransform::create();
+    _tempMT->children.resize(1);
 }
 
 
@@ -669,6 +671,47 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
                 }
             }
         });
+}
+
+void
+MeshSystemNode::traverse(vsg::ConstVisitor& v) const
+{
+    for (auto& pipeline : _pipelines)
+    {
+        pipeline.commands->accept(v);
+    }
+
+    // it might be an ECS visitor, in which case we'll communicate the entity being visited
+    auto* ecsVisitor = dynamic_cast<ECSVisitor*>(&v);
+    std::uint32_t viewID = ecsVisitor ? ecsVisitor->viewID : 0;
+
+    _registry.read([&](entt::registry& reg)
+        {
+            auto view = reg.view<Mesh, MeshDetail, ActiveState>();
+
+            view.each([&](auto entity, auto& comp, auto& compDetail, auto& active)
+                {
+                    if (compDetail.node)
+                    {
+                        if (ecsVisitor)
+                            ecsVisitor->currentEntity = entity;
+
+                        auto* transformDetail = reg.try_get<TransformDetail>(entity);
+                        if (transformDetail)
+                        {
+                            _tempMT->matrix = transformDetail->views[viewID].model;
+                            _tempMT->children[0] = compDetail.node;
+                            _tempMT->accept(v);
+                        }
+                        else
+                        {
+                            compDetail.node->accept(v);
+                        }
+                    }
+                });
+        });
+
+    Inherit::traverse(v);
 }
 
 void

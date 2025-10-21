@@ -41,6 +41,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_MVTFeatures.h"
 #include "Demo_DrawComponent.h"
 #include "Demo_ElevationSampler.h"
+#include "Demo_Intersect.h"
 
 template<class T>
 int layerError(T layer)
@@ -101,6 +102,7 @@ std::vector<Demo> demos =
     } },
     Demo{ "Decluttering", Demo_Decluttering },
     Demo{ "Elevation Queries", Demo_ElevationSampler },
+    Demo{ "Intersection", Demo_Intersect },
     Demo{ "Geocoding", Demo_Geocoder },
     Demo{ "Camera", Demo_MapManipulator },
     Demo{ "Views", Demo_Views },

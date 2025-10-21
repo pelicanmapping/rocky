@@ -104,16 +104,16 @@ namespace
 
         auto ll_to_ecef = SRS::WGS84.to(SRS::ECEF);
 
-        // Make the drop-line style and geometry. We can shaerd this across all simulated platforms.
+        // Make the drop-line style and geometry. We can share this across all simulated platforms.
         auto dropEntity = registry.create();
 
         auto& dropStyle = registry.emplace<LineStyle>(dropEntity);
         dropStyle.width = 1.5f;
-        dropStyle.color = Color{ 0.4f, 0.4f, 0.4f, 1.0f };
+        dropStyle.color = Color{ 0.5f, 0.4f, 0.4f, 1.0f };
 
         auto& dropGeom = registry.emplace<LineGeometry>(dropEntity);
         dropGeom.points = { {0.0, 0.0, 0.0}, {0.0, 0.0, -1e6} };
-
+        
 
         entities.reserve(count);
 
@@ -150,7 +150,7 @@ namespace
             widget.text = std::to_string(i);
             widget.render = render_widget;
 
-            // Add the dropline fro this entity:
+            // Add the dropline for this entity:
             registry.emplace<Line>(entity, dropGeom, dropStyle);
 
             // Decluttering control. The presence of this component will allow the entity

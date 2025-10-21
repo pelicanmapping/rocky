@@ -37,6 +37,12 @@ namespace ROCKY_NAMESPACE
     //! @return GeoPoint at the given window coordinates
     extern ROCKY_EXPORT Result<DisplayGeoPoint> pointAtWindowCoords(vsg::ref_ptr<vsg::Viewer> viewer, int x, int y);
 
+    //! Accept a visitor on the specifed object (or the view) using the view's viewID.
+    //! Since Rocky's ECS system is multi-view-aware, we need to embed the viewID in the visitor for the
+    //! ECS systems to choose the proper transform.
+    //! e.g.: Use this when running intersections on the scene to include ECS components!
+    extern ROCKY_EXPORT void visit(vsg::ConstVisitor* visitor, vsg::View* view, vsg::Object* object = nullptr);
+
     /**
     * DisplayManager is a helper class that manages the creation and destruction of
     * windows and views. It also provides some utility methods for working with

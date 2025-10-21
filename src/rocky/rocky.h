@@ -26,6 +26,7 @@
 #include <rocky/vsg/ecs/FeatureView.h>
 #include <rocky/vsg/ecs/EntityNode.h>
 #include <rocky/vsg/ecs/ECSTypes.h>
+#include <rocky/vsg/ecs/ECSVisitors.h>
 #endif
 
 // NOTE: do NOT add any imgui-related includes here

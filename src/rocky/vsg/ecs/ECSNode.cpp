@@ -31,8 +31,8 @@ ECSNode::ECSNode(Registry& reg, bool addDefaultSystems) :
     {
         add(TransformSystem::create(registry));
         add(NodeSystemNode::create(registry));
-        add(LineSystemNode::create(registry));
         add(MeshSystemNode::create(registry));
+        add(LineSystemNode::create(registry));
         add(IconSystemNode::create(registry));
         add(LabelSystemNode::create(registry));
 #ifdef ROCKY_HAS_IMGUI

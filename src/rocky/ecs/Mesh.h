@@ -24,15 +24,16 @@ namespace ROCKY_NAMESPACE
     //! Mesh geometry component
     struct MeshGeometry : public ComponentBase2<MeshGeometry>
     {
-        //! Triangles comprising the mesh
-        std::vector<Triangle> triangles;
-
-        //! Or, separate arrays containing verts, colors, UVs, and indices.
+        //! Separate arrays containing verts, colors, UVs, and indices.
         std::vector<glm::dvec3> verts;
         std::vector<glm::fvec4> colors;
         std::vector<glm::fvec3> normals;
         std::vector<glm::fvec2> uvs;
         std::vector<std::uint32_t> indices;
+
+        //! Alternatively, you can define a collection of triangles.
+        //! Prefer the array method above.
+        std::vector<Triangle> triangles;
 
         //! Reference SRS for the triangles data.
         SRS srs;
