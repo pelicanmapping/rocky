@@ -23,16 +23,16 @@ auto Demo_Map = [](Application& app)
         {
             if (!app.mapNode->map->name.empty())
             {
-                ImGuiLTable::Text("Name:", app.mapNode->map->name.c_str());
+                ImGuiLTable::Text("Name:", "%s", app.mapNode->map->name.c_str());
             }
 
             auto& profile = app.mapNode->profile;
             if (profile.valid())
             {
                 if (!profile.wellKnownName().empty())
-                    ImGuiLTable::Text("Profile:", profile.wellKnownName().c_str());
+                    ImGuiLTable::Text("Profile:", "%s", profile.wellKnownName().c_str());
                 else
-                    ImGuiLTable::TextWrapped("Profile:", profile.to_json().c_str());
+                    ImGuiLTable::TextWrapped("Profile:", "%s", profile.to_json().c_str());
             }
 
             ImGuiLTable::End();
@@ -40,7 +40,7 @@ auto Demo_Map = [](Application& app)
     }
     else
     {
-        ImGui::TextColored(ImGuiErrorColor, app.commandLineStatus.error().message.c_str());
+        ImGui::TextColored(ImGuiErrorColor, "%s", app.commandLineStatus.error().message.c_str());
     }
 
     // Enumerate all the map's layers and display information about them
@@ -101,16 +101,16 @@ auto Demo_Map = [](Application& app)
             {
                 if (layer->status().failed())
                 {
-                    ImGuiLTable::Text("ERROR:", layer->status().error().message.c_str());
+                    ImGuiLTable::Text("ERROR:", "%s", layer->status().error().message.c_str());
                 }
-                ImGuiLTable::Text("Type:", layer->getLayerTypeName().c_str());
+                ImGuiLTable::Text("Type:", "%s", layer->getLayerTypeName().c_str());
                 auto tileLayer = TileLayer::cast(layer);
                 if (tileLayer)
                 {
                     std::string srs_name = tileLayer->profile.srs().name();
                     if (srs_name.empty() || srs_name == "unknown")
                         srs_name = tileLayer->profile.srs().definition();
-                    ImGuiLTable::Text("SRS:", srs_name.c_str());
+                    ImGuiLTable::Text("SRS:", "%s", srs_name.c_str());
                 }
                 const GeoExtent& extent = layer->extent();
                 if (extent.valid())
@@ -120,7 +120,7 @@ auto Demo_Map = [](Application& app)
                 }
                 if (layer->attribution.has_value())
                 {
-                    ImGuiLTable::TextWrapped("Attribution:", layer->attribution->text.c_str());
+                    ImGuiLTable::TextWrapped("Attribution:", "%s", layer->attribution->text.c_str());
                 }
                 ImGuiLTable::End();
             }

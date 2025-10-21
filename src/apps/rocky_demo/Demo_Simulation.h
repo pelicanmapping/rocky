@@ -180,8 +180,8 @@ auto Demo_Simulation = [](Application& app)
 
     if (status.failed())
     {
-        ImGui::TextColored(ImVec4(1, 0, 0, 1), "Image load failed!");
-        ImGui::TextColored(ImVec4(1, 0, 0, 1), status.error().message.c_str());
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s", "Image load failed!");
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s", status.error().message.c_str());
         return;
     }
 
@@ -225,8 +225,8 @@ auto Demo_Simulation = [](Application& app)
             });
     }
 
-    ImGui::Text("TIP: toggle visibility in the Map panel!");
-    ImGui::Text("TIP: declutter by opening the Decluttering panel!");
+    ImGui::Text("%s", "TIP: toggle visibility in the Map panel!");
+    ImGui::Text("%s", "TIP: declutter by opening the Decluttering panel!");
     ImGui::Separator();
 
     if (ImGuiLTable::Begin("simulation"))

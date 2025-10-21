@@ -44,7 +44,7 @@ auto Demo_EntityCollectionLayer = [](Application& app)
         app.vsgcontext->requestFrame();
     }
 
-    ImGui::TextWrapped("EntityCollectionLayer is a map layer managing a vector of ECS entities."
+    ImGui::TextWrapped("EntityCollectionLayer is a map layer managing a vector of ECS entities.", "%s",
         " Open the 'Map' panel to toggle the layer on and off.");
     
 

@@ -15,7 +15,7 @@ auto Demo_Label = [](Application& app)
     auto& font = app.vsgcontext->defaultFont;
     if (!font)
     {
-        ImGui::TextWrapped(status.error().message.c_str());
+        ImGui::TextWrapped("%s", status.error().message.c_str());
         status = Failure(Failure::ResourceUnavailable,
             "No font available - did you set the ROCKY_DEFAULT_FONT environment variable?");
         return;

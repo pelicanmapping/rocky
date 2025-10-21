@@ -58,7 +58,7 @@ auto Demo_RTT = [](Application& app)
 
     if (status.failed())
     {
-        ImGui::TextColored(ImVec4(1, 0, 0, 1), status.error().message.c_str());
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s", status.error().message.c_str());
         return;
     }
 

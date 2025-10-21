@@ -151,10 +151,10 @@ auto Demo_NodePager = [](Application& app)
             int count = 0;
             for (auto& key : keys)
             {   
-                ImGui::Text(key.str().c_str());
+                ImGui::Text("%s", key.str().c_str());
                 if (++count % 6 > 0) ImGui::SameLine();
             }
-            ImGui::Text(" ");
+            ImGui::Text("%s", " ");
         }
     }
 };

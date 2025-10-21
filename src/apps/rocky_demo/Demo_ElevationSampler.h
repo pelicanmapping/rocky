@@ -123,7 +123,7 @@ auto Demo_ElevationSampler = [](Application& app)
     }
     else
     {
-        ImGuiLTable::Text("Mesh intersection:", "---");
+        ImGuiLTable::Text("Mesh intersection:", "%s", "---");
     }
 
     if (sampler.layer)
@@ -135,19 +135,19 @@ auto Demo_ElevationSampler = [](Application& app)
         }
         else if (sample.working())
         {
-            ImGuiLTable::Text("Elevation sampler:", "...");
+            ImGuiLTable::Text("Elevation sampler:", "%s", "...");
 
             if (sample.working())
                 app.vsgcontext->requestFrame();
         }
         else
         {
-            ImGuiLTable::Text("Elevation sampler:", "no data");
+            ImGuiLTable::Text("Elevation sampler:", "%s", "no data");
         }
     }
     else
     {
-        ImGuiLTable::Text("Elevation sampler:", "n/a - no elevation layer");
+        ImGuiLTable::Text("Elevation sampler:", "%s", "n/a - no elevation layer");
     }
     ImGuiLTable::End();
 };

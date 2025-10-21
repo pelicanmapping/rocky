@@ -14,7 +14,7 @@ auto Demo_Environment = [](Application& app)
 {
     if (app.skyNode == nullptr)
     {
-        ImGui::TextColored(ImVec4(1, 0, 0, 1), "Sky is not installed; use --sky");
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s", "Sky is not installed; use --sky");
 
 #if 0
         if (ImGui::Button("Install sky"))

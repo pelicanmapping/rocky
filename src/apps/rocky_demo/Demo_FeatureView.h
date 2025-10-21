@@ -42,5 +42,5 @@ auto Demo_FeatureView = [](Application& app)
             app.vsgcontext->requestFrame();
         }
 
-        ImGui::TextWrapped("FeatureView is a helper utility for turning GIS feature data into geometry (lines and meshes).");
+        ImGui::TextWrapped("%s", "FeatureView is a helper utility for turning GIS feature data into geometry (lines and meshes).");
     };

@@ -74,7 +74,7 @@ auto Demo_Geocoder = [](Application& app)
 
         if (geocoding_task.working())
         {
-            ImGui::Text("Searching...");
+            ImGui::Text("%s", "Searching...");
         }
 
         else if (geocoding_task.available())
@@ -83,7 +83,7 @@ auto Demo_Geocoder = [](Application& app)
             if (result.ok())
             {
                 int count = 0;
-                ImGui::Text("Click on a result to center:");
+                ImGui::Text("%s", "Click on a result to center:");
 
                 for (auto& feature : result.value())
                 {
@@ -160,7 +160,7 @@ auto Demo_Geocoder = [](Application& app)
             }
             else
             {
-                ImGui::TextColored(ImVec4(1, 0.5, 0.5, 1), std::string("Geocoding failed! " + result.error().message).c_str());
+                ImGui::TextColored(ImVec4(1, 0.5, 0.5, 1), "Geocoding failed! %s", result.error().message.c_str());
             }
         }
     }

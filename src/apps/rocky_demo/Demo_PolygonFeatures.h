@@ -42,7 +42,7 @@ auto Demo_PolygonFeatures = [](Application& app)
         }
         else if (data.working())
         {
-            ImGui::Text("Loading features...");
+            ImGui::Text("%s", "Loading features...");
         }
         else if (data.available() && data->status.ok())
         {
@@ -90,7 +90,7 @@ auto Demo_PolygonFeatures = [](Application& app)
         }
         else
         {
-            ImGui::Text("Failed to load features!");
+            ImGui::Text("%s", "Failed to load features!");
         }
     }
 
@@ -116,6 +116,6 @@ auto Demo_PolygonFeatures = [](Application& app)
     }
 
 #else
-    ImGui::TextColored(ImVec4(1, .3, .3, 1), "Unavailable - not built with GDAL");
+    ImGui::TextColored(ImVec4(1, .3, .3, 1), "%s", "Unavailable - not built with GDAL");
 #endif
 };

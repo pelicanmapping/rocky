@@ -98,9 +98,9 @@ auto Demo_Widget = [](Application& app)
 
                 i.renderWindow([&]()
                     {
-                        ImGui::Text(i.widget.text.c_str());
+                        ImGui::Text("%s", i.widget.text.c_str());
                         ImGui::Separator();
-                        ImGui::Text("Text string");
+                        ImGui::Text("%s", "Text string");
                         ImGui::SliderFloat("Slider", &some_float, 0.0f, 1.0f);
                         ImGui::Checkbox("Show me a fixed-position window", &fixed_window_open);
                     });
@@ -116,7 +116,7 @@ auto Demo_Widget = [](Application& app)
                         Transform& transform = i.registry.get<Transform>(i.entity);
                         auto p = transform.position.transform(SRS::WGS84);
 
-                        ImGui::Text("Widgets can be placed at absolute coordinates too.");
+                        ImGui::Text("%s", "Widgets can be placed at absolute coordinates too.");
                         ImGui::Separator();
                         if (ImGuiLTable::Begin("pos_table")) {
                             ImGuiLTable::Text("Latitude:", "%.3f", p.y);

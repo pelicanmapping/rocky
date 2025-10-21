@@ -27,7 +27,7 @@ auto Demo_MapManipulator = [](Application& app)
                 ImGui::SeparatorText("Focal point on map");
                 ImGuiLTable::Begin("Viewpoint");
 
-                ImGuiLTable::Text("SRS: %s", vp.position().srs.name());
+                ImGuiLTable::Text("SRS:", "%s", vp.position().srs.name());
                 ImGuiLTable::Text("X:", "%.1lf", vp.position().x);
                 ImGuiLTable::Text("Y:", "%.1lf", vp.position().y);
                 ImGuiLTable::Text("Z:", "%.1lf", vp.position().z);

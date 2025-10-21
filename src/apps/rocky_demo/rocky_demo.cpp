@@ -54,7 +54,7 @@ auto Demo_About = [](Application& app)
 {
     for (auto& about : rocky::ContextImpl::about())
     {
-        ImGui::Text(about.c_str());
+        ImGui::Text("%s", about.c_str());
     }
 };
 

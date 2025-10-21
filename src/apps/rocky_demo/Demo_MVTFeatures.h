@@ -156,7 +156,7 @@ auto Demo_MVTFeatures = [](Application& app)
     }
 
 
-    ImGui::TextWrapped("Mapbox Vector Tiles (MVT) is a spec for streaming tiled vector data.");
+    ImGui::TextWrapped("%s", "Mapbox Vector Tiles (MVT) is a spec for streaming tiled vector data.");
 
     if (ImGuiLTable::Begin("MVTFeatures"))
     {
@@ -203,6 +203,6 @@ auto Demo_MVTFeatures = [](Application& app)
         }
     }
 #else
-    ImGui::TextColored(ImVec4(1, .3, .3, 1), "Unavailable - not built with GDAL");
+    ImGui::TextColored(ImVec4(1, .3, .3, 1), "%s", "Unavailable - not built with GDAL");
 #endif
 };

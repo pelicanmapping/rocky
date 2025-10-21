@@ -90,7 +90,7 @@ auto Demo_LabelFeatures = [](Application& app)
                     ImGui::SetCurrentContext(i.context);
                     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
                     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-                    i.renderWindow([&]() { ImGui::Text(name.c_str()); });
+                    i.renderWindow([&]() { ImGui::Text("%s", name.c_str()); });
                     ImGui::PopStyleVar(2);                    
 
                     // update the decluttering record to reflect our widget's size
@@ -150,10 +150,10 @@ auto Demo_LabelFeatures = [](Application& app)
         }
         ImGuiLTable::End();
 
-        ImGui::TextWrapped("Tip: You can declutter the labels in the Decluttering panel.");
+        ImGui::TextWrapped("%s", "Tip: You can declutter the labels in the Decluttering panel.");
     }
 
 #else
-    ImGui::TextColored(ImGuiErrorColor, "Unavailable - not built with GDAL");
+    ImGui::TextColored(ImGuiErrorColor, "%s", "Unavailable - not built with GDAL");
 #endif
 };

@@ -60,7 +60,7 @@ auto Demo_Stats = [](Application& app)
 
     if (app.debugLayerOn())
     {
-        ImGui::TextColored(ImVec4(1, .3f, .3f, 1), "Warning: debug validation is ON");
+        ImGui::TextColored(ImVec4(1, .3f, .3f, 1), "%s", "Warning: debug validation is ON");
     }
 
     if (ImGuiLTable::Begin("Timings"))
@@ -119,7 +119,7 @@ auto Demo_Stats = [](Application& app)
             {
                 std::string name = m->name.empty() ? "default" : m->name;
                 auto buf = util::format("(%d) %d / %d", (int)m->concurrency, (int)m->running, (int)m->pending);
-                ImGuiLTable::Text(name.c_str(), buf.c_str());
+                ImGuiLTable::Text(name.c_str(), "%s", buf.c_str());
             }
         }
         ImGuiLTable::End();
@@ -130,13 +130,13 @@ auto Demo_Stats = [](Application& app)
 
     if (ImGuiLTable::Begin("System-Misc"))
     {
-        ImGuiLTable::Text("Last frame rendered", std::to_string(app.frameCount()).c_str());
+        ImGuiLTable::Text("Last frame rendered", "%s", std::to_string(app.frameCount()).c_str());
 
         if (!app.mapNode->profile.isComposite())
         {
             //auto& engine = app.mapNode->terrainNode->->engine;
-            //ImGuiLTable::Text("Terrain tiles resident", std::to_string(engine->tiles.size()).c_str());
-            //ImGuiLTable::Text("Terrain geometry pool", std::to_string(engine->geometryPool.size()).c_str());
+            //ImGuiLTable::Text("Terrain tiles resident", "%s", std::to_string(engine->tiles.size()).c_str());
+            //ImGuiLTable::Text("Terrain geometry pool", "%s", std::to_string(engine->geometryPool.size()).c_str());
         }
         ImGuiLTable::End();
     }
@@ -145,15 +145,15 @@ auto Demo_Stats = [](Application& app)
     {
         ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableNextColumn();
-        ImGui::TableNextColumn(); ImGui::Text("Capacity");
-        ImGui::TableNextColumn(); ImGui::Text("Size");
-        ImGui::TableNextColumn(); ImGui::Text("Hits");
-        ImGui::TableNextColumn(); ImGui::Text("Misses");
+        ImGui::TableNextColumn(); ImGui::Text("%s", "Capacity");
+        ImGui::TableNextColumn(); ImGui::Text("%s", "Size");
+        ImGui::TableNextColumn(); ImGui::Text("%s", "Hits");
+        ImGui::TableNextColumn(); ImGui::Text("%s", "Misses");
 
         auto contentCache = app.io().services().contentCache;
         if (contentCache)
         {
-            ImGui::TableNextColumn(); ImGui::Text("URI cache");
+            ImGui::TableNextColumn(); ImGui::Text("%s", "URI cache");
             ImGui::TableNextColumn(); ImGui::Text("%ld", contentCache->capacity());
             ImGui::TableNextColumn(); ImGui::Text("%ld", contentCache->size());
             ImGui::TableNextColumn(); ImGui::Text("%d", contentCache->hits());
@@ -163,7 +163,7 @@ auto Demo_Stats = [](Application& app)
         auto deadpool = app.io().services().deadpool;
         if (deadpool)
         {
-            ImGui::TableNextColumn(); ImGui::Text("URI deadpool");
+            ImGui::TableNextColumn(); ImGui::Text("%s", "URI deadpool");
             ImGui::TableNextColumn(); ImGui::Text("%ld", deadpool->capacity());
             ImGui::TableNextColumn(); ImGui::Text("%ld", deadpool->size());
             ImGui::TableNextColumn(); ImGui::Text("%d", deadpool->hits());
@@ -173,7 +173,7 @@ auto Demo_Stats = [](Application& app)
         auto residentImageCache = app.io().services().residentImageCache;
         if (residentImageCache)
         {
-            ImGui::TableNextColumn(); ImGui::Text("Resident image cache");
+            ImGui::TableNextColumn(); ImGui::Text("%s", "Resident image cache");
             ImGui::TableNextColumn(); ImGui::Text("%ld", residentImageCache->capacity());
             ImGui::TableNextColumn(); ImGui::Text("%ld", residentImageCache->size());
             ImGui::TableNextColumn(); ImGui::Text("%d", residentImageCache->hits());
