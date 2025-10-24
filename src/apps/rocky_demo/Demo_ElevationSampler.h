@@ -112,42 +112,55 @@ auto Demo_ElevationSampler = [](Application& app)
 
     ImGuiLTable::Begin("elevation sampler");
 
-    ImGuiLTable::Text("Point at mouse:", "%.2f, %.2f, %.2f", mouse.x, mouse.y, mouse.z);
-
     auto intersection = app.mapNode->terrainNode->intersect(mouse);
 
     if (intersection)
     {
+        ImGuiLTable::Text("Ray intersection", "", "");
         GeoPoint i = intersection->transform(SRS::WGS84);
-        ImGuiLTable::Text("Mesh intersection:", "%.2f, %.2f, %.2f", i.x, i.y, i.z);
-    }
-    else
-    {
-        ImGuiLTable::Text("Mesh intersection:", "%s", "---");
-    }
+        ImGuiLTable::Text("WGS84:", "%.2f, %.2f, %.2f", i.x, i.y, i.z);
 
-    if (sampler.layer)
-    {
-        if (sample.available() && sample.value().ok())
+        // Various coordinate spaces:
+        auto world = i.transform(app.mapNode->srs());
+        auto camera = app.display.viewAtWindowCoords(app.viewer->windows().front(), 0, 0)->camera;
+        auto viewMatrix = camera->viewMatrix->transform();
+        auto projMatrix = camera->projectionMatrix->transform();
+        auto viewPos = viewMatrix * vsg::dvec4(world.x, world.y, world.z, 1.0);
+        auto clipPos = projMatrix * viewPos;
+        ImGuiLTable::Text("World:", "%.2lf, %.2lf, %.2lf", world.x, world.y, world.z);
+        ImGuiLTable::Text("View:", "%.2lf, %.2lf, %.2lf", viewPos.x / viewPos.w, viewPos.y / viewPos.w, viewPos.z / viewPos.w);
+        ImGuiLTable::Text("Clip:", "%.3lf, %.3lf, %.7lf", clipPos.x / clipPos.w, clipPos.y / clipPos.w, clipPos.z / clipPos.w);
+
+        if (sampler.layer)
         {
-            ImGuiLTable::Text("Elevation sampler:", "%.2f m", sample->value());
+            ImGui::Separator();
 
-        }
-        else if (sample.working())
-        {
-            ImGuiLTable::Text("Elevation sampler:", "%s", "...");
+            if (sample.available() && sample.value().ok())
+            {
+                ImGuiLTable::Text("Elevation sampler:", "%.2f m", sample->value());
+                ImGuiLTable::Text("Geometric error:", "%.2f m", std::abs(sample->value() - i.z));
+            }
+            else if (sample.working())
+            {
+                ImGuiLTable::Text("Elevation sampler:", "%s", "...");
 
-            if (sample.working())
-                app.vsgcontext->requestFrame();
+                if (sample.working())
+                    app.vsgcontext->requestFrame();
+            }
+            else
+            {
+                ImGuiLTable::Text("Elevation sampler:", "%s", "no data");
+            }
         }
         else
         {
-            ImGuiLTable::Text("Elevation sampler:", "%s", "no data");
+            ImGuiLTable::Text("Elevation sampler:", "%s", "n/a - no elevation layer");
         }
     }
     else
     {
-        ImGuiLTable::Text("Elevation sampler:", "%s", "n/a - no elevation layer");
+        ImGuiLTable::Text("GeoPoint:", "%s", "no intersection");
     }
+
     ImGuiLTable::End();
 };
