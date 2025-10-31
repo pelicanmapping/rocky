@@ -500,7 +500,24 @@ widget.render = [](WidgetInstance& i)
 };
 ```
 
-[Demo_Widget.h](src/apps/rocky_demo/Demo_Widget.h) has more examples.
+**IMPORTANT!!** Anything you do with ImGui-based Widgets is *context-sensitive* so you must activate the current context explicitly when rendering by calling
+```c++
+ImGui::SetCurrentContext(...);
+```
+
+If you want to do some custom ImGui setup for Widgets, you can pass a function to the `WidgetSystem`. The function will run in ALL ImGui Contexts:
+```c++
+app.getSystem<WidgetSystem>()->preRecord([&](std::uint3_t viewID, ImGuiContext* igc)
+{
+    if (!font)
+    {
+        ImGui::SetCurrentContext(igc);
+        font = ImGui::GetIO().Fonts->AddFontFromFileTTF("c:/windows/fonts/arial.ttf");
+    }
+});
+```
+
+[Demo_Widget.h](src/apps/rocky_demo/Demo_Widget.h) and [Demo_LabelFeatures](src/apps/rocky_demo/Demo_LabelFeatures.h) have more examples.
 
 ### Creating an Application GUI
 Rocky has an `ImGuiIntegration` API that makes it easy to render a GUI atop your map display.
