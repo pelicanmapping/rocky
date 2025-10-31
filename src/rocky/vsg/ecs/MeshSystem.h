@@ -155,6 +155,9 @@ namespace ROCKY_NAMESPACE
 
         void traverse(vsg::ConstVisitor& v) const override;
 
+        // vsg::Compilable
+        void compile(vsg::Context& cc) override;
+
     private:
 
         inline vsg::PipelineLayout* getPipelineLayout(const Mesh& line) {

@@ -305,7 +305,7 @@ MeshSystemNode::initialize(VSGContext& vsgcontext)
 
     // Set up our default style detail, which is used when a MeshStyle is missing.
     initializeStyleDetail(getPipelineLayout(Mesh()), _defaultMeshStyleDetail);
-    compile(_defaultMeshStyleDetail.bind);
+    requestCompile(_defaultMeshStyleDetail.bind);
 
     _registry.write([&](entt::registry& r)
         {
@@ -332,6 +332,28 @@ MeshSystemNode::initialize(VSGContext& vsgcontext)
             r.emplace<MeshGeometry::Dirty>(e);
             r.emplace<MeshTexture::Dirty>(e);
         });
+}
+
+void
+MeshSystemNode::compile(vsg::Context& compileContext)
+{
+    // called during a compile traversal .. e.g., then adding a new View/RenderGraph.
+    _registry.read([&](entt::registry& reg)
+        {
+            reg.view<MeshStyleDetail>().each([&](auto& styleDetail)
+                {
+                    if (styleDetail.bind)
+                        styleDetail.bind->compile(compileContext);
+                });
+
+            reg.view<MeshGeometryDetail>().each([&](auto& geomDetail)
+                {
+                    if (geomDetail.node)
+                        geomDetail.node->compile(compileContext);
+                });
+        });
+
+    Inherit::compile(compileContext);
 }
 
 void
@@ -458,7 +480,7 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
         root = geomDetail.node;
     }
 
-    compile(geomDetail.node);
+    requestCompile(geomDetail.node);
 }
 
 
@@ -547,9 +569,9 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
     }
 
     if (needsCompile)
-        compile(styleDetail.bind);
+        requestCompile(styleDetail.bind);
     else if (needsUpload)
-        upload(styleDetail.styleUBO->bufferInfoList);
+        requestUpload(styleDetail.styleUBO->bufferInfoList);
 }
 
 void
@@ -567,7 +589,7 @@ MeshSystemNode::addOrUpdateTexture(const MeshTexture& tex, MeshTextureDetail& te
                 }
 
                 styleDetail.styleTexture->imageInfoList = vsg::ImageInfoList{ tex.imageInfo };
-                compile(styleDetail.bind);
+                requestCompile(styleDetail.bind);
             }
         });
 }

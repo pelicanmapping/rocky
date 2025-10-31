@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -132,90 +132,6 @@ namespace ROCKY_NAMESPACE
     };
 
 
-#if 0
-    /**
-    * Node that manages multiple ImGui contexts, each with their own child node.
-    */
-    class ROCKY_EXPORT ImGuiRendererNode : public vsg::Inherit<vsg::Node, ImGuiRendererNode>
-    {
-    public:
-        void addContext(ImGuiContext* igc)
-        {
-        };
-
-        struct ContextInfo
-        {
-            ImGuiContext* imguiContext = nullptr;
-            vsg::ref_ptr<vsg::Node> node;
-            vsg::ref_ptr<vsg::Window> window;
-            vsg::ref_ptr<vsg::View> view;
-        };
-
-        std::vector<ContextInfo> _contextInfos;
-
-    public:
-        void traverse(vsg::RecordTraversal& record) const override;
-    };
-
-
-
-
-
-    //! wrapper for vsgImGui::SendEventsToImGui that restricts ImGui events to a single window & imgui context,
-    //! of which there needs to be one per view.
-    class ROCKY_EXPORT ImGuiEventPropagator : public vsg::Inherit<SendEventsToImGui, ImGuiEventPropagator>
-    {
-    public:
-        ImGuiEventPropagator(vsg::ref_ptr<vsg::Window> window, ImGuiContext* imguiContext) :
-            _window(window), _imguiContext(imguiContext)
-        {
-            //nop
-        }
-
-        Callback<void(const vsg::UIEvent&)> onEvent;
-
-        template<typename E>
-        inline void propagate(E& e)
-        {
-            // only process events for the window we are interested in, and if the event wasn't handled
-            // (say, by another wrapper connected to another view)
-            if (!e.handled && ((_window == nullptr) || (e.window.ref_ptr() == _window)))
-            {
-                // activate the context associated with this window/view
-                if (_imguiContext)
-                {
-                    ImGui::SetCurrentContext(_imguiContext);
-                }
-
-                Inherit::apply(e);
-
-                onEvent.fire(e);
-            }
-        }
-
-        inline void apply(vsg::ButtonPressEvent& e) override { propagate(e); }
-        inline void apply(vsg::ButtonReleaseEvent& e) override { propagate(e); }
-        inline void apply(vsg::ScrollWheelEvent& e) override { propagate(e); }
-        inline void apply(vsg::KeyPressEvent& e) override { propagate(e); }
-        inline void apply(vsg::KeyReleaseEvent& e) override { propagate(e); }
-        inline void apply(vsg::MoveEvent& e) override { propagate(e); }
-        inline void apply(vsg::ConfigureWindowEvent& e) override { propagate(e); }
-
-        inline void apply(vsg::FrameEvent& e) override {
-            if (_imguiContext)
-                ImGui::SetCurrentContext(_imguiContext);
-            Inherit::apply(e);
-            onEvent.fire(e);
-        }
-
-    private:
-        vsg::ref_ptr<vsg::Window> _window;
-        ImGuiContext* _imguiContext;
-    };
-
-#endif
-
-
     namespace detail
     {
         /**
@@ -245,5 +161,45 @@ namespace ROCKY_NAMESPACE
                 }
             }
         };
+    }
+}
+
+
+namespace ImGuiEx
+{
+    static bool TextOutlined(const ImVec4& outlineColor, unsigned outlinePixels, std::string_view text)
+    {
+        auto dl = ImGui::GetWindowDrawList();
+        auto font = ImGui::GetFont();
+        auto size = ImGui::GetFontSize();
+        auto pos = ImGui::GetCursorScreenPos();
+
+        ImU32 outline_col = ImGui::ColorConvertFloat4ToU32(outlineColor);
+        ImU32 text_col = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_Text));
+
+        // Outline passes
+        for (int y = -(int)outlinePixels; y <= (int)outlinePixels; ++y)
+            for (int x = -(int)outlinePixels; x <= (int)outlinePixels; ++x)
+                if (x != 0 || y != 0) {
+                    ImU32 alpha = 0x00FFFFFF | ((0xFF / (int)pow(2, std::max(0, std::max(std::abs(x) - 1, std::abs(y) - 1)))) << 24);
+                    dl->AddText(font, size, ImVec2(pos.x + x, pos.y + y), alpha & outline_col, &text.front());
+                }
+
+        // Center (fill) pass
+        dl->AddText(font, size, pos, text_col, &text.front());
+
+        // Advance layout so subsequent widgets appear after the text
+        const ImVec2 sz = font->CalcTextSizeA(size, FLT_MAX, 0.0f, &text.front());
+
+        ImGui::Dummy(ImVec2(sz.x, sz.y));
+
+        return true;
+    }
+
+//    static void TextOutlined(const ImVec4& outlineColor, unsigned outlinePixels, const char* fmt, ...) IM_FMTARGS(3);
+
+    static bool TextOutlined(const ImVec4& outlineColor, std::string_view text)
+    {
+        return TextOutlined(outlineColor, 1, text);
     }
 }

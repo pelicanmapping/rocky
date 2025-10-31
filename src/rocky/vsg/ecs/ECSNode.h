@@ -92,7 +92,7 @@ namespace ROCKY_NAMESPACE
             {
                 if (!_pipelinesCompiled)
                 {
-                    compile(_pipelines[0].commands);
+                    requestCompile(_pipelines[0].commands);
                     _pipelinesCompiled = true;
                 }
 
@@ -131,24 +131,32 @@ namespace ROCKY_NAMESPACE
                 System::update(vsgcontext);
             }
 
-            inline void compile(vsg::Object* object) {
+            inline void requestCompile(vsg::Object* object) {
                 _toCompile->addChild(vsg::ref_ptr<vsg::Object>(object));
             }
             inline void dispose(vsg::Object* object) {
                 _toDispose->addChild(vsg::ref_ptr<vsg::Object>(object));
             }
-            inline void upload(vsg::BufferInfo* bi) {
+            inline void requestUpload(vsg::BufferInfo* bi) {
                 _buffersToUpload.emplace_back(bi);
             }
-            inline void upload(vsg::BufferInfoList& bil) {
+            inline void requestUpload(vsg::BufferInfoList& bil) {
                 _buffersToUpload.insert(_buffersToUpload.end(), bil.begin(), bil.end());
             }
-            inline void upload(vsg::ImageInfo* bi) {
+            inline void requestUpload(vsg::ImageInfo* bi) {
                 _imagesToUpload.emplace_back(bi);
             }
-            inline void upload(vsg::ImageInfoList& bil) {
+            inline void requestUpload(vsg::ImageInfoList& bil) {
                 _imagesToUpload.insert(_imagesToUpload.end(), bil.begin(), bil.end());
             }
+
+        public: // vsg::Compilable
+
+            virtual void compile(vsg::Context& cc) override {
+                for (auto& p : _pipelines) {
+                    p.commands->compile(cc);
+                }
+            };
 
         protected:
             struct Pipeline

@@ -87,8 +87,9 @@ auto Demo_LabelFeatures = [](Application& app)
                 if (fonts[viewID].igc != igc)
                 {
                     ImGui::SetCurrentContext(igc);
-                    fonts[viewID].font = ImGui::GetIO().Fonts->AddFontFromFileTTF("c:/windows/fonts/calibri.ttf");
+                    fonts[viewID].font = ImGui::GetIO().Fonts->AddFontFromFileTTF("c:/windows/fonts/arial.ttf");
                     fonts[viewID].igc = igc;
+                    ImGui::GetIO().FontDefault = fonts[viewID].font;
                 }
             });
 #endif
@@ -109,9 +110,9 @@ auto Demo_LabelFeatures = [](Application& app)
             auto& declutter = registry.emplace<Declutter>(entity);
             declutter.priority = (float)candidate.pop;
 
-            auto& widget = registry.emplace<Widget>(entity);
+            auto& label = registry.emplace<Widget>(entity);
 
-            widget.render = [&, name=std::string(name)](WidgetInstance& i)
+            label.render = [&, name=std::string(name)](WidgetInstance& i)
                 {
                     auto& dc = i.registry.get<Declutter>(i.entity);
 
@@ -120,17 +121,16 @@ auto Demo_LabelFeatures = [](Application& app)
                     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
                     ImGui::SetNextWindowPos(ImVec2(i.position.x - i.size.x / 2, i.position.y - i.size.y / 2));
                     ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
-                    {
-#ifdef USE_DYNAMIC_FONTS
-                        ImGui::PushFont(fonts[i.viewID].font, fontSize);
-#endif
-                        const ImVec4 outlineColor(0.05f, 0.05f, 0.05f, 1.0f);
-                        ImGuiEx::TextOutlined(outlineColor, outlineSize, name);
 
 #ifdef USE_DYNAMIC_FONTS
-                        ImGui::PopFont();
+                    ImGui::PushFont(nullptr, fontSize);
 #endif
-                    }
+                    const ImVec4 outlineColor(0.05f, 0.05f, 0.05f, 1.0f);
+                    ImGuiEx::TextOutlined(outlineColor, outlineSize, name);
+
+#ifdef USE_DYNAMIC_FONTS
+                    ImGui::PopFont();
+#endif
                     i.size = ImGui::GetWindowSize();
                     ImGui::End();
                     ImGui::PopStyleVar(1);

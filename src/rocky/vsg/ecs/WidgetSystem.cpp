@@ -14,6 +14,7 @@
 #include <rocky/ecs/Widget.h>
 #include <rocky/ecs/Visibility.h>
 #include <imgui.h>
+#include <rocky/vsg/imgui/ImGuiIntegration.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -105,8 +106,13 @@ WidgetSystemNode::initialize(VSGContext& context)
 
                     else
                     {
+                        const ImVec4 outlineColor(0.04f, 0.04f, 0.04f, 1.0f);
                         ImGuiContextScope s(i.context);
-                        i.renderWindow([&]() { ImGui::Text("%s", text.c_str()); });
+                        ImGui::SetNextWindowPos(ImVec2(i.position.x - i.size.x / 2, i.position.y - i.size.y / 2));
+                        ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
+                        ImGuiEx::TextOutlined(outlineColor, 1, text);
+                        i.size = ImGui::GetWindowSize();
+                        ImGui::End();
                     }
 
                     ROCKY_SOFT_ASSERT(i.size.x > 0 && i.size.y > 0,

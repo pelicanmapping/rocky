@@ -142,6 +142,9 @@ namespace ROCKY_NAMESPACE
 
         void traverse(vsg::ConstVisitor&) const override;
 
+        // vsg::Compilable
+        void compile(vsg::Context& cc) override;
+
     private:
         mutable detail::LineStyleDetail _defaultStyleDetail;
         mutable vsg::ref_ptr<vsg::MatrixTransform> _tempMT;

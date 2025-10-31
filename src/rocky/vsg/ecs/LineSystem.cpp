@@ -239,7 +239,7 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
 
     // Set up our default style detail, which is used when a MeshStyle is missing.
     initializeStyleDetail(getPipelineLayout(Line()), _defaultStyleDetail);
-    compile(_defaultStyleDetail.bind);
+    requestCompile(_defaultStyleDetail.bind);
 
     _registry.write([&](entt::registry& r)
         {
@@ -262,6 +262,28 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
             r.emplace<LineStyle::Dirty>(e);
             r.emplace<LineGeometry::Dirty>(e);
         });
+}
+
+void
+LineSystemNode::compile(vsg::Context& compileContext)
+{
+    // called during a compile traversal .. e.g., then adding a new View/RenderGraph.
+    _registry.read([&](entt::registry& reg)
+        {
+            reg.view<LineStyleDetail>().each([&](auto& styleDetail)
+                {
+                    if (styleDetail.bind)
+                        styleDetail.bind->compile(compileContext);
+                });
+
+            reg.view<LineGeometryDetail>().each([&](auto& geomDetail)
+                {
+                    if (geomDetail.geomNode)
+                        geomDetail.geomNode->compile(compileContext);
+                });
+        });
+
+    Inherit::compile(compileContext);
 }
 
 void
@@ -345,7 +367,7 @@ LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDet
 
         geomDetail.node = root;
 
-        compile(geomDetail.node);
+        requestCompile(geomDetail.node);
     }
 
     else // existing node -- update:
@@ -380,8 +402,8 @@ LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDet
         }
 
         // upload the changed arrays
-        upload(geomDetail.geomNode->arrays);
-        upload(geomDetail.geomNode->indices);
+        requestUpload(geomDetail.geomNode->arrays);
+        requestUpload(geomDetail.geomNode->indices);
     }
 }
 
@@ -405,9 +427,9 @@ LineSystemNode::createOrUpdateStyle(const LineStyle& style, LineStyleDetail& sty
     needsUpload = !needsCompile;
 
     if (needsCompile)
-        compile(styleDetail.bind);
+        requestCompile(styleDetail.bind);
     else if (needsUpload)
-        upload(styleDetail.styleUBO->bufferInfoList);
+        requestUpload(styleDetail.styleUBO->bufferInfoList);
 }
 
 void
