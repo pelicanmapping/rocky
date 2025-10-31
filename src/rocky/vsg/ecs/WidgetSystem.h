@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -10,13 +10,34 @@
 #if defined(ROCKY_HAS_IMGUI)
 #include <rocky/vsg/ecs/System.h>
 #include <rocky/ecs/Registry.h>
+#include <rocky/Rendering.h>
+#include <queue>
+#include <functional>
+#include <cstdint>
+#include <imgui.h>
 
 namespace ROCKY_NAMESPACE
 {
+    class WidgetSystem
+    {
+    public:
+        using Function = std::function<void(std::uint32_t, ImGuiContext*)>;
+
+        void run(Function f) {
+            for (auto& t : _tasks)
+                t.emplace_back(f);
+        }
+
+    protected:
+        ViewLocal<std::vector<Function>> _tasks;
+    };
+
     /**
      * Creates commands for rendering ImGui-based overlays
      */
-    class ROCKY_EXPORT WidgetSystemNode : public vsg::Inherit<vsg::Node, WidgetSystemNode>, public System
+    class WidgetSystemNode : public vsg::Inherit<vsg::Node, WidgetSystemNode>, 
+        public System,
+        public WidgetSystem
     {
     public:
         //! Construct the mesh renderer

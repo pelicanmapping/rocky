@@ -15,7 +15,7 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    void* open_OGR_layer(void* ds, const std::string& layerName)
+    OGRLayerH open_OGR_layer(void* ds, const std::string& layerName)
     {
         // Open a specific layer within the data source, if applicable:
         auto handle = GDALDatasetGetLayerByName(ds, layerName.c_str());
@@ -228,8 +228,9 @@ namespace
     }
 
 
-    void create_feature_from_OGR_handle(void* handle, const SRS& srs, const std::vector<std::string>& fieldNames, Feature& out_feature)
+    void create_feature_from_OGR_handle(void* vhandle, const SRS& srs, const std::vector<std::string>& fieldNames, Feature& out_feature)
     {
+        OGRFeatureH handle = (OGRFeatureH)vhandle;
         out_feature.id = OGR_F_GetFID(handle);
         OGRGeometryH geom_handle = OGR_F_GetGeometryRef(handle);
 
@@ -352,11 +353,11 @@ FeatureSource::iterator
 GDALFeatureSource::iterate(const IOOptions& io)
 {
     OGRDataSourceH dsHandle = nullptr;
-    OGRLayerH layerHandle = externalLayerHandle;
+    OGRLayerH layerHandle = (OGRLayerH)externalLayerHandle;
 
     if (!layerHandle)
     {
-        dsHandle = openGDALDataset();
+        dsHandle = (OGRDataSourceH)openGDALDataset();
 
         // open the handles safely:
         // Each cursor requires its own DS handle so that multi-threaded access will work.
@@ -396,7 +397,7 @@ GDALFeatureSource::iterator_impl::init()
     _resultSetHandle = _layerHandle;
 
     if (_resultSetHandle)
-        OGR_L_ResetReading(_resultSetHandle);
+        OGR_L_ResetReading((OGRLayerH)_resultSetHandle);
 
     readChunk();
 }
@@ -405,7 +406,7 @@ GDALFeatureSource::iterator_impl::~iterator_impl()
 {
     if (_nextHandleToQueue)
     {
-        OGR_F_Destroy(_nextHandleToQueue);
+        OGR_F_Destroy((OGRFeatureH)_nextHandleToQueue);
     }
 }
 
@@ -421,7 +422,7 @@ GDALFeatureSource::iterator_impl::readChunk()
 
     while (_queue.size() < _chunkSize && !_resultSetEndReached)
     {
-        auto handle = OGR_L_GetNextFeature(_resultSetHandle);
+        auto handle = OGR_L_GetNextFeature((OGRLayerH)_resultSetHandle);
         if (handle)
         {
             Feature feature;
@@ -448,7 +449,7 @@ GDALFeatureSource::iterator_impl::readChunk()
 
     if (_chunkSize == ~0)
     {
-        OGR_L_ResetReading(_resultSetHandle);
+        OGR_L_ResetReading((OGRLayerH)_resultSetHandle);
     }
 }
 
@@ -529,10 +530,10 @@ GDALFeatureSource::open()
                 "Failed to open layer \"" + layerName + "\" from \"" + _source + "\"");
         }
 
-        _featureCount = (int)OGR_L_GetFeatureCount(_layerHandle, 1);
+        _featureCount = (int)OGR_L_GetFeatureCount((OGRLayerH)_layerHandle, 1);
 
         // Build the field schema:
-        auto fetaureDefHandle = OGR_L_GetLayerDefn(_layerHandle);
+        auto fetaureDefHandle = OGR_L_GetLayerDefn((OGRLayerH)_layerHandle);
         if (fetaureDefHandle)
         {
             int count = OGR_FD_GetFieldCount(fetaureDefHandle);
@@ -551,7 +552,7 @@ GDALFeatureSource::open()
         }
 
         // extract the SRS and Extent:
-        OGRSpatialReferenceH srHandle = OGR_L_GetSpatialRef(_layerHandle);
+        OGRSpatialReferenceH srHandle = OGR_L_GetSpatialRef((OGRLayerH)_layerHandle);
         if (!srHandle)
         {
             return Failure(Failure::ResourceUnavailable, "No spatial reference found in \"" + _source + "\"");
@@ -571,7 +572,7 @@ GDALFeatureSource::open()
 
         // extract the full extent of the layer:
         OGREnvelope env;
-        if (OGR_L_GetExtent(_layerHandle, &env, 1) != OGRERR_NONE)
+        if (OGR_L_GetExtent((OGRLayerH)_layerHandle, &env, 1) != OGRERR_NONE)
         {
             return Failure(Failure::ResourceUnavailable, "Invalid extent returned from \"" + _source + "\"");
         }
@@ -607,7 +608,7 @@ GDALFeatureSource::close()
 
     if (_dsHandle)
     {
-        OGRReleaseDataSource(_dsHandle);
+        OGRReleaseDataSource((OGRDataSourceH)_dsHandle);
         _dsHandle = nullptr;
     }
 }

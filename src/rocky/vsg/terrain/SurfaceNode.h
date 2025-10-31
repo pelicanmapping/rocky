@@ -73,7 +73,7 @@ namespace ROCKY_NAMESPACE
         bool _horizonCullingPoint_valid = false;
         vsg::ref_ptr<vsg::Geometry> _proxyGeom;
         vsg::ref_ptr<vsg::vec3Array> _proxyVerts;
-        mutable detail::ViewLocal<Horizon>* _horizon = nullptr;
+        mutable ViewLocal<Horizon>* _horizon = nullptr;
     };
 
 

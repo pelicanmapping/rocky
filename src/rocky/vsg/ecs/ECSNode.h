@@ -522,7 +522,7 @@ namespace ROCKY_NAMESPACE
     {
         const vsg::dmat4 identity_matrix = vsg::dmat4(1.0);
 
-        detail::RenderingState rs{
+        RenderingState rs{
             record.getCommandBuffer()->viewID,
             record.getFrameStamp()->frameCount
         };

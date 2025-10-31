@@ -30,11 +30,11 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Whether this entity is visible in each view
-        detail::ViewLocal<bool> visible;
+        ViewLocal<bool> visible;
 
         //! Frame number when this entity was last visible in each view,
         //! or ~0 if not in use.
-        detail::ViewLocal<std::int64_t> frame;
+        ViewLocal<std::int64_t> frame;
 
         //! Activate the ability to control visibility based on visitation frame
         inline void enableFrameAgeVisibility(bool on) {
@@ -42,7 +42,7 @@ namespace ROCKY_NAMESPACE
         }
     };
 
-    inline bool visible(const Visibility& vis, detail::RenderingState& rs)
+    inline bool visible(const Visibility& vis, RenderingState& rs)
     {
         auto delta = (std::int64_t)rs.frame - vis.frame[rs.viewID];
         return vis.visible[rs.viewID] && delta <= 1;

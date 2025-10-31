@@ -206,7 +206,7 @@ int main(int argc, char** argv)
     {
         auto imagery = rocky::TMSImageLayer::create();
         imagery->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
-        imagery->attribution = { "ReadyMap(R) data courtesy of Pelican Mapping" };
+        imagery->attribution = { "ReadyMap(R) data courtesy of Pelican Mapping", "https://readymap.org" };
         map->add(imagery);
 
         auto elevation = rocky::TMSElevationLayer::create();

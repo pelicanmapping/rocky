@@ -35,21 +35,29 @@ namespace ROCKY_NAMESPACE
         entt::registry& registry;
         entt::entity entity;
         int windowFlags;
-        ImVec2 center;
+        ImVec2 position;
         ImVec2& size;
         ImGuiContext* context;
         std::uint32_t viewID;
+
+        inline void beginWindow() {
+            ImGui::SetNextWindowPos(ImVec2(position.x - size.x / 2, position.y - size.y / 2));
+            ImGui::Begin(uid.c_str(), nullptr, windowFlags);
+        }
+
+        inline void endWindow() {
+            size = ImGui::GetWindowSize();
+            ImGui::End();
+        }
 
         //! Submit a widget rendering function (convenience function).
         //! Don't forget to call ImGui::SetCurrentContext(i.context) or use
         //! ImGuiContextScope to set the current context before calling this.
         template<typename FUNC>
         inline void renderWindow(FUNC&& f) {
-            ImGui::SetNextWindowPos(ImVec2(center.x - size.x / 2, center.y - size.y / 2));
-            ImGui::Begin(uid.c_str(), nullptr, windowFlags);
+            beginWindow();
             f();
-            size = ImGui::GetWindowSize();
-            ImGui::End();
+            endWindow();
         }
     };
 

@@ -38,6 +38,43 @@ namespace ImGui
 }
 #endif
 
+namespace ImGuiEx
+{
+    static bool TextOutlined(const ImVec4& outlineColor, unsigned outlinePixels, std::string_view text)
+    {
+        auto dl = ImGui::GetWindowDrawList();
+        auto font = ImGui::GetFont();
+        auto size = ImGui::GetFontSize();
+        auto pos = ImGui::GetCursorScreenPos();
+
+        ImU32 outline_col = ImGui::ColorConvertFloat4ToU32(outlineColor);
+        ImU32 text_col = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_Text));
+
+        // Outline passes
+        for (int y = -(int)outlinePixels; y <= (int)outlinePixels; ++y)
+            for (int x = -(int)outlinePixels; x <= (int)outlinePixels; ++x)
+                if (x != 0 || y != 0) {
+                    ImU32 alpha = 0x00FFFFFF | ((0xFF / (int)pow(2, std::max(0, std::max(std::abs(x)-1, std::abs(y)-1)))) << 24);
+                    dl->AddText(font, size, ImVec2(pos.x + x, pos.y + y), alpha & outline_col, &text.front());
+                }
+
+        // Center (fill) pass
+        dl->AddText(font, size, pos, text_col, &text.front());
+
+        // Advance layout so subsequent widgets appear after the text
+        const ImVec2 sz = font->CalcTextSizeA(size, FLT_MAX, 0.0f, &text.front());
+
+        ImGui::Dummy(ImVec2(sz.x, sz.y));
+
+        return true;
+    }
+
+    static bool TextOutlined(const ImVec4& outlineColor, std::string_view text)
+    {
+        return TextOutlined(outlineColor, 1, text);
+    }
+}
+
 // handy nice-looking table with names on the left.
 namespace ImGuiLTable
 {
@@ -237,9 +274,12 @@ namespace ImGuiLTable
         ImGui::Text("%s", label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
-        ImGui::Text("%s", text);
-        // coming soon in imgui 1.91.0!
-        //ImGui::TextLinkOpenURL(label, href);
+#if IMGUI_VERSION_NUM >= 19200
+        if (href)
+            ImGui::TextLinkOpenURL(text, href);
+        else
+#endif
+            ImGui::TextWrapped("%s", text);
     }
 
     static void Section(const char* label)

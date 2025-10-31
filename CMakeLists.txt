@@ -53,14 +53,14 @@ include(GNUInstallDirs)
 include("cmake/install-export-files.cmake")
 
 # optional modules
-option(ROCKY_RENDERER_VSG "Build the VSG/Vulkan Rendering" ON)
+option(ROCKY_RENDERER_VSG "Build the Vulkan/VSG rendering engine" ON)
 option(ROCKY_SUPPORTS_HTTPLIB "Support HTTP with the lightweight cpp-httplib library" ON)
 option(ROCKY_SUPPORTS_CURL "Support HTTP with the CURL library" OFF)
 option(ROCKY_SUPPORTS_HTTPS "Support HTTPS (requires openssl)" ON)
 option(ROCKY_SUPPORTS_GDAL "Support GeoTIFF, WMS, WMTS, and other GDAL formats (requires gdal)" ON)
 option(ROCKY_SUPPORTS_MBTILES "Support MBTiles databases with extended spatial profile support (requires sqlite3, zlib)" ON)
 option(ROCKY_SUPPORTS_AZURE "Support Azure Maps (subscription required)" ON)
-option(ROCKY_SUPPORTS_BING "Support Bing Maps (subscription required)" ON)
+option(ROCKY_SUPPORTS_BING "Support Bing Maps (subscription required)" OFF)
 option(ROCKY_SUPPORTS_IMGUI "Support Dear ImGui and build ImGui-based demos" ON)
 option(ROCKY_SUPPORTS_QT "Build Qt demos" OFF)
 

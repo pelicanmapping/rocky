@@ -120,7 +120,8 @@ auto Demo_Map = [](Application& app)
                 }
                 if (layer->attribution.has_value())
                 {
-                    ImGuiLTable::TextWrapped("Attribution:", "%s", layer->attribution->text.c_str());
+                    ImGuiLTable::TextLinkOpenURL("Source:", layer->attribution->text.c_str(),
+                        layer->attribution->href.full().empty() ? nullptr : layer->attribution->href.full().c_str());
                 }
                 ImGuiLTable::End();
             }

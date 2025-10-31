@@ -149,6 +149,10 @@ namespace ROCKY_NAMESPACE
         //! Destructor
         ~Application();
 
+        //! Find an installed system interface by type
+        template<typename T>
+        inline T* getSystem();
+
     private:
         bool _apilayer = false;
         bool _debuglayer = false;
@@ -179,6 +183,16 @@ namespace ROCKY_NAMESPACE
 
     inline bool Application::ok() const {
         return vsgcontext && vsgcontext->status.ok();
+    }
+
+    template<typename T>
+    T* Application::getSystem() {
+        if (!ecsNode) return nullptr;
+        for(auto& child : ecsNode->children) {
+            T* system = dynamic_cast<T*>(child.get());
+            if (system) return system;
+        }
+        return nullptr;
     }
 }
 

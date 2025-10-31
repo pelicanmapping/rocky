@@ -35,8 +35,12 @@ namespace
 
         VSG_to_Spdlog_Logger()
         {
-            vsg_logger = spdlog::stdout_color_mt("vsg");
-            vsg_logger->set_pattern("%^[%n %l]%$ %v");
+            vsg_logger = spdlog::get("vsg");
+            if (!vsg_logger)
+            {
+                vsg_logger = spdlog::stdout_color_mt("vsg");
+                vsg_logger->set_pattern("%^[%n %l]%$ %v");
+            }
         }
 
     protected:
@@ -334,6 +338,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
     readerWriterOptions->paths.push_back("/etc/fonts");
     readerWriterOptions->paths.push_back("/usr/local/share/rocky/data");
 
+#if 0
     // Load a default font if there is one
     auto font_file = util::getEnvVar("ROCKY_DEFAULT_FONT");
     if (font_file.empty())
@@ -350,6 +355,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
     {
         Log()->warn("Cannot load font \"" + font_file + "\"");
     }
+#endif
 
     // establish search paths for shaders and data:
     auto vsgPaths = vsg::getEnvPaths("VSG_FILE_PATH");

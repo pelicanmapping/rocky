@@ -72,6 +72,6 @@ namespace ROCKY_NAMESPACE
 
         bool _openedLayers = false;
 
-        mutable detail::ViewLocal<Horizon> _horizon;
+        mutable ViewLocal<Horizon> _horizon;
     };
 }

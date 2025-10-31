@@ -455,7 +455,7 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
             // so install this "idle" function:
             auto func = [vsgcontext(vsgcontext), viewID(view->viewID), imguicontext]()
                 {
-                    detail::RenderingState vrs{
+                    RenderingState vrs{
                         viewID,
                         vsgcontext->viewer()->getFrameStamp()->frameCount
                     };

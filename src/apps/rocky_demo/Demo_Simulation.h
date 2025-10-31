@@ -62,8 +62,8 @@ namespace
 
                 auto point = t.position.transform(SRS::WGS84);
 
-                i.center.x += (i.size.x / 2) - (image.size().y / 2);
-                i.center.y += (i.size.y / 2) - (image.size().y / 2);
+                i.position.x += (i.size.x / 2) - (image.size().y / 2);
+                i.position.y += (i.size.y / 2) - (image.size().y / 2);
 
                 ImGui::SetCurrentContext(i.context);
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
@@ -75,7 +75,11 @@ namespace
                         if (ImGui::BeginTable("asset", 2))
                         {
                             ImGui::TableNextColumn();
+#if IMGUI_VERSION_NUM >= 19200
+                            ImGui::Image(ImTextureRef(image.id(context->device()->deviceID)), image.size());
+#else
                             ImGui::Image(image.id(context->device()->deviceID), image.size());
+#endif
 
                             ImGui::TableNextColumn();
                             ImGui::Text("ID: %s", i.widget.text.c_str());

@@ -1,15 +1,18 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #pragma once
 #include "helpers.h"
-#include <rocky/GDALFeatureSource.h>
 #include <unordered_map>
 #include <unordered_set>
 
 using namespace ROCKY_NAMESPACE;
+
+#if IMGUI_VERSION_NUM >= 19200
+#define USE_DYNAMIC_FONTS
+#endif
 
 auto Demo_LabelFeatures = [](Application& app)
 {
@@ -27,8 +30,16 @@ auto Demo_LabelFeatures = [](Application& app)
     static std::unordered_map<std::string, Candidate> candidates;
     static std::unordered_set<entt::entity> labels;
     static bool active = true;
-    static float label_size_percentage = 100.0f;
-    const float starting_label_size = 16.0f;
+    static float fontSize = 20.0f;
+    static float minFontSize = 13.0f;
+    static float maxFontSize = 32.0f;
+    static int outlineSize = 2;
+
+    struct FontData {
+        ImGuiContext* igc = nullptr;
+        ImFont* font = nullptr;
+    };
+    static ViewLocal<FontData> fonts;
 
     if (!status.has_value())
     {
@@ -68,7 +79,24 @@ auto Demo_LabelFeatures = [](Application& app)
             }
         }
 
+
+#if defined(_WIN32) && defined(USE_DYNAMIC_FONTS)
+        // Load a new font. This will run once per frame in the WidgetSystem.
+        app.getSystem<WidgetSystem>()->run([&](std::uint32_t viewID, ImGuiContext* igc)
+            {
+                if (fonts[viewID].igc != igc)
+                {
+                    ImGui::SetCurrentContext(igc);
+                    fonts[viewID].font = ImGui::GetIO().Fonts->AddFontFromFileTTF("c:/windows/fonts/calibri.ttf");
+                    fonts[viewID].igc = igc;
+                }
+            });
+#endif
+
+
         auto [lock, registry] = app.registry.write();
+
+        static bool appliedFont = false;
 
         // create an entity for each candidate
         for (auto& [name, candidate] : candidates)
@@ -83,15 +111,29 @@ auto Demo_LabelFeatures = [](Application& app)
 
             auto& widget = registry.emplace<Widget>(entity);
 
-            widget.render = [name=std::string(name)](WidgetInstance& i)
+            widget.render = [&, name=std::string(name)](WidgetInstance& i)
                 {
                     auto& dc = i.registry.get<Declutter>(i.entity);
 
                     ImGui::SetCurrentContext(i.context);
-                    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+                    ImGui::SetNextWindowBgAlpha(0.0f); // fully transparent background
                     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-                    i.renderWindow([&]() { ImGui::Text("%s", name.c_str()); });
-                    ImGui::PopStyleVar(2);                    
+                    ImGui::SetNextWindowPos(ImVec2(i.position.x - i.size.x / 2, i.position.y - i.size.y / 2));
+                    ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
+                    {
+#ifdef USE_DYNAMIC_FONTS
+                        ImGui::PushFont(fonts[i.viewID].font, fontSize);
+#endif
+                        const ImVec4 outlineColor(0.05f, 0.05f, 0.05f, 1.0f);
+                        ImGuiEx::TextOutlined(outlineColor, outlineSize, name);
+
+#ifdef USE_DYNAMIC_FONTS
+                        ImGui::PopFont();
+#endif
+                    }
+                    i.size = ImGui::GetWindowSize();
+                    ImGui::End();
+                    ImGui::PopStyleVar(1);
 
                     // update the decluttering record to reflect our widget's size
                     dc.rect = Rect(i.size.x, i.size.y);
@@ -140,6 +182,18 @@ auto Demo_LabelFeatures = [](Application& app)
                     else
                         registry.remove<ActiveState>(entity);
                 }
+            }
+
+#ifdef USE_DYNAMIC_FONTS
+            if (ImGuiLTable::SliderFloat("Font size", &fontSize, minFontSize, maxFontSize, "%.0f"))
+            {
+                app.vsgcontext->requestFrame();
+            }
+#endif
+
+            if (ImGuiLTable::SliderInt("Outline size", &outlineSize, 0, 5))
+            {
+                app.vsgcontext->requestFrame();
             }
 
             ImGuiLTable::Text("Features:", "%ld", candidates.size());

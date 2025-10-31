@@ -590,7 +590,7 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
 {
     if (status.failed()) return;
 
-    detail::RenderingState rs{
+    RenderingState rs{
         record.getCommandBuffer()->viewID,
         record.getFrameStamp()->frameCount
     };

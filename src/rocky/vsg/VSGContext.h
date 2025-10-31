@@ -60,7 +60,7 @@ namespace ROCKY_NAMESPACE
         std::vector<std::uint32_t> activeViewIDs = { 0 };
 
         //! Callbacks to render GUI elements
-        using GuiRecorder = std::function<void(detail::RenderingState&, void* guiContext)>;
+        using GuiRecorder = std::function<void(RenderingState&, void* guiContext)>;
         std::deque<GuiRecorder> guiRecorders;
 
         //! Callback fired during each update pass.

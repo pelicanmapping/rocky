@@ -84,7 +84,7 @@ namespace ROCKY_NAMESPACE
         ImGuiContextNode() = default;
 
         //! Installs the context pointer on the record traversal.
-        void traverse(vsg::RecordTraversal& record) const override
+        inline void traverse(vsg::RecordTraversal& record) const override
         {
             ImGuiContext* imguiContext = nullptr;
             record.getValue("imgui.context", imguiContext);
@@ -131,6 +131,91 @@ namespace ROCKY_NAMESPACE
         mutable bool _firstFrame = true;
     };
 
+
+#if 0
+    /**
+    * Node that manages multiple ImGui contexts, each with their own child node.
+    */
+    class ROCKY_EXPORT ImGuiRendererNode : public vsg::Inherit<vsg::Node, ImGuiRendererNode>
+    {
+    public:
+        void addContext(ImGuiContext* igc)
+        {
+        };
+
+        struct ContextInfo
+        {
+            ImGuiContext* imguiContext = nullptr;
+            vsg::ref_ptr<vsg::Node> node;
+            vsg::ref_ptr<vsg::Window> window;
+            vsg::ref_ptr<vsg::View> view;
+        };
+
+        std::vector<ContextInfo> _contextInfos;
+
+    public:
+        void traverse(vsg::RecordTraversal& record) const override;
+    };
+
+
+
+
+
+    //! wrapper for vsgImGui::SendEventsToImGui that restricts ImGui events to a single window & imgui context,
+    //! of which there needs to be one per view.
+    class ROCKY_EXPORT ImGuiEventPropagator : public vsg::Inherit<SendEventsToImGui, ImGuiEventPropagator>
+    {
+    public:
+        ImGuiEventPropagator(vsg::ref_ptr<vsg::Window> window, ImGuiContext* imguiContext) :
+            _window(window), _imguiContext(imguiContext)
+        {
+            //nop
+        }
+
+        Callback<void(const vsg::UIEvent&)> onEvent;
+
+        template<typename E>
+        inline void propagate(E& e)
+        {
+            // only process events for the window we are interested in, and if the event wasn't handled
+            // (say, by another wrapper connected to another view)
+            if (!e.handled && ((_window == nullptr) || (e.window.ref_ptr() == _window)))
+            {
+                // activate the context associated with this window/view
+                if (_imguiContext)
+                {
+                    ImGui::SetCurrentContext(_imguiContext);
+                }
+
+                Inherit::apply(e);
+
+                onEvent.fire(e);
+            }
+        }
+
+        inline void apply(vsg::ButtonPressEvent& e) override { propagate(e); }
+        inline void apply(vsg::ButtonReleaseEvent& e) override { propagate(e); }
+        inline void apply(vsg::ScrollWheelEvent& e) override { propagate(e); }
+        inline void apply(vsg::KeyPressEvent& e) override { propagate(e); }
+        inline void apply(vsg::KeyReleaseEvent& e) override { propagate(e); }
+        inline void apply(vsg::MoveEvent& e) override { propagate(e); }
+        inline void apply(vsg::ConfigureWindowEvent& e) override { propagate(e); }
+
+        inline void apply(vsg::FrameEvent& e) override {
+            if (_imguiContext)
+                ImGui::SetCurrentContext(_imguiContext);
+            Inherit::apply(e);
+            onEvent.fire(e);
+        }
+
+    private:
+        vsg::ref_ptr<vsg::Window> _window;
+        ImGuiContext* _imguiContext;
+    };
+
+#endif
+
+
     namespace detail
     {
         /**
@@ -149,7 +234,7 @@ namespace ROCKY_NAMESPACE
 
             void traverse(vsg::RecordTraversal& record) const override
             {
-                detail::RenderingState rs{
+                RenderingState rs{
                     record.getCommandBuffer()->viewID,
                     record.getFrameStamp()->frameCount
                 };

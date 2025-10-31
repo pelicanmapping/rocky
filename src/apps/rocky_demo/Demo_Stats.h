@@ -190,4 +190,10 @@ auto Demo_Stats = [](Application& app)
             ImGuiLTable::End();
         }
     }
+
+    ImGui::Separator();
+    static bool showDemoWindow = false;
+    ImGui::Checkbox("Show ImGui demo window", &showDemoWindow);
+    if (showDemoWindow)
+        ImGui::ShowDemoWindow();
 };

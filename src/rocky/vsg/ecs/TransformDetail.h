@@ -41,7 +41,7 @@ namespace ROCKY_NAMESPACE
         Transform sync;
 
         // Per-view data, calculated during the record traversal
-        detail::ViewLocal<TransformViewDetail> views;
+        ViewLocal<TransformViewDetail> views;
 
         // Cached global data
         struct Cached
@@ -49,7 +49,7 @@ namespace ROCKY_NAMESPACE
             SRS world_srs;
             const Ellipsoid* world_ellipsoid = nullptr;
             SRSOperation pos_to_world;
-            detail::ViewLocal<Horizon>* horizon = nullptr;
+            ViewLocal<Horizon>* horizon = nullptr;
         };
         Cached cached;
 
@@ -64,12 +64,12 @@ namespace ROCKY_NAMESPACE
         void pop(vsg::RecordTraversal&) const;
 
         //! True if this transform is visible in the provided view state
-        inline bool passingCull(detail::RenderingState) const;
+        inline bool passingCull(RenderingState) const;
     };
 
 
     // inline functions
-    inline bool TransformDetail::passingCull(detail::RenderingState rs) const
+    inline bool TransformDetail::passingCull(RenderingState rs) const
     {
         return views[rs.viewID].passingCull;
     }

@@ -23,8 +23,8 @@ namespace
     struct WidgetRenderable
     {
         const std::string uid = std::to_string((std::uintptr_t)this);
-        detail::ViewLocal<ImVec2> screen;
-        ImVec2 windowSize = { 0, 0 };
+        ViewLocal<ImVec2> screen;
+        ImVec2 windowSize = { -1, -1 };
     };
 
     void on_construct_Widget(entt::registry& r, entt::entity e)
@@ -60,8 +60,12 @@ void
 WidgetSystemNode::initialize(VSGContext& context)
 {
     // register me as a gui rendering callback.
-    auto recorder = [this](detail::RenderingState& rs, void* imguiContext)
+    auto recorder = [this](RenderingState& rs, void* imguiContext)
         {
+            // run any per-context tasks:
+            for (auto& task : _tasks[rs.viewID])
+                task(rs.viewID, (ImGuiContext*)imguiContext);
+
             auto [lock, registry] = _registry.read();
 
             const int defaultWindowFlags =
@@ -104,6 +108,10 @@ WidgetSystemNode::initialize(VSGContext& context)
                         ImGuiContextScope s(i.context);
                         i.renderWindow([&]() { ImGui::Text("%s", text.c_str()); });
                     }
+
+                    ROCKY_SOFT_ASSERT(i.size.x > 0 && i.size.y > 0,
+                        "DEVEL ERROR: Widget::render must set instance size prior to ImGui::End (e.g., i.size = ImGui::GetWindowSize)");
+
                 }
             }
         };

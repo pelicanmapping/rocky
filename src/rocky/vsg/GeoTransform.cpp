@@ -19,7 +19,7 @@ GeoTransform::traverse(vsg::RecordTraversal& record) const
 {
     _transformDetail.update(record);
 
-    detail::RenderingState rs{
+    RenderingState rs{
         record.getCommandBuffer()->viewID,
         record.getFrameStamp()->frameCount
     };
