@@ -39,7 +39,7 @@ if (NOT TARGET imgui::imgui)
             set_property(TARGET imgui::imgui APPEND PROPERTY
                 INTERFACE_INCLUDE_DIRECTORIES ${IMGUI_INCLUDE_DIR} "${IMGUI_INCLUDE_DIR}/backends")
             
-            foreach(_file imgui.cpp imgui_widgets.cpp imgui_draw.cpp imgui_tables.cpp backends/imgui_impl_vulkan.cpp)            
+            foreach(_file imgui.cpp imgui_widgets.cpp imgui_draw.cpp imgui_tables.cpp imgui_demo.cpp backends/imgui_impl_vulkan.cpp)            
                 find_file(_source_${_file} NAMES ${_file}
                     HINTS ${IMGUI_DIR}
                     NO_CACHE NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH )

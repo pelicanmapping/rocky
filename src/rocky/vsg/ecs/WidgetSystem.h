@@ -10,8 +10,6 @@
 #if defined(ROCKY_HAS_IMGUI)
 #include <rocky/vsg/ecs/System.h>
 #include <rocky/ecs/Registry.h>
-#include <rocky/Rendering.h>
-#include <queue>
 #include <functional>
 #include <cstdint>
 #include <imgui.h>
@@ -21,7 +19,7 @@ namespace ROCKY_NAMESPACE
     class WidgetSystem
     {
     public:
-        using Function = std::function<void(std::uint32_t, ImGuiContext*)>;
+        using Function = std::function<void(std::uint32_t, struct ImGuiContext*)>;
 
         inline void preRecord(Function&& f) {
             _preRecordTasks.emplace_back(std::move(f));
