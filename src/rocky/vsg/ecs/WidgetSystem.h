@@ -23,13 +23,12 @@ namespace ROCKY_NAMESPACE
     public:
         using Function = std::function<void(std::uint32_t, ImGuiContext*)>;
 
-        void run(Function f) {
-            for (auto& t : _tasks)
-                t.emplace_back(f);
+        inline void preRecord(Function&& f) {
+            _preRecordTasks.emplace_back(std::move(f));
         }
 
     protected:
-        ViewLocal<std::vector<Function>> _tasks;
+        std::vector<Function> _preRecordTasks;
     };
 
     /**

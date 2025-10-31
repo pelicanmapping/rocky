@@ -45,9 +45,10 @@ namespace
         shaderSet = vsg::ShaderSet::create(shaderStages);
 
         // "binding" (3rd param) must match "layout(location=X) in" in the vertex shader
-        shaderSet->addAttributeBinding("in_vertex", "", 0, VK_FORMAT_R32G32B32_SFLOAT, { });
+        shaderSet->addAttributeBinding("in_vertex",      "", 0, VK_FORMAT_R32G32B32_SFLOAT, {});
         shaderSet->addAttributeBinding("in_vertex_prev", "", 1, VK_FORMAT_R32G32B32_SFLOAT, {});
         shaderSet->addAttributeBinding("in_vertex_next", "", 2, VK_FORMAT_R32G32B32_SFLOAT, {});
+        shaderSet->addAttributeBinding("in_color",       "", 3, VK_FORMAT_R32G32B32A32_SFLOAT, {});
 
         shaderSet->addDescriptorBinding("line", "", LINE_SET, LINE_BINDING_UNIFORM,
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
@@ -194,7 +195,7 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
         c.config->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
         c.config->enableArray("in_vertex_prev", VK_VERTEX_INPUT_RATE_VERTEX, 12);
         c.config->enableArray("in_vertex_next", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-        //c.config->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
+        c.config->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
 
         // Uniforms we will need:
         c.config->enableDescriptor("line");
@@ -345,11 +346,11 @@ LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDet
                 for (auto& point : copy)
                     point -= offset;
 
-                geomDetail.geomNode->set(copy, geom.topology, geomDetail.capacity);
+                geomDetail.geomNode->set(copy, geom.colors, geom.topology, geomDetail.capacity);
             }
             else
             {
-                geomDetail.geomNode->set(geom.points, geom.topology, geomDetail.capacity);
+                geomDetail.geomNode->set(geom.points, geom.colors, geom.topology, geomDetail.capacity);
             }
 
 
@@ -361,7 +362,7 @@ LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDet
         else
         {
             // no reference point -- push raw geometry
-            geomDetail.geomNode->set(geom.points, geom.topology, geomDetail.capacity);
+            geomDetail.geomNode->set(geom.points, geom.colors, geom.topology, geomDetail.capacity);
             root = geomDetail.geomNode;
         }
 
@@ -389,7 +390,7 @@ LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDet
             for (auto& point : copy)
                 point -= offset;
 
-            geomDetail.geomNode->set(copy, geom.topology, geomDetail.capacity);
+            geomDetail.geomNode->set(copy, geom.colors, geom.topology, geomDetail.capacity);
 
             auto mt = util::find<vsg::MatrixTransform>(geomDetail.node);
             mt->matrix = vsg::translate(to_vsg(offset));
@@ -398,7 +399,7 @@ LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDet
         else
         {
             // no reference point -- push raw geometry
-            geomDetail.geomNode->set(geom.points, geom.topology, geomDetail.capacity);
+            geomDetail.geomNode->set(geom.points, geom.colors, geom.topology, geomDetail.capacity);
         }
 
         // upload the changed arrays

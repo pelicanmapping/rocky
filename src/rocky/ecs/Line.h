@@ -45,6 +45,10 @@ namespace ROCKY_NAMESPACE
         //! referencePoint if that is in use.
         std::vector<glm::dvec3> points;
 
+        //! Colors per vertex (optional). If this vector is empty, the color in the 
+        //! LineStyle is used for all points.
+        std::vector<Color> colors;
+
         //! reset this geometry for reuse.
         void recycle(entt::registry&);
     };

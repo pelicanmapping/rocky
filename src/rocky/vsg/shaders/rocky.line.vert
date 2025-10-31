@@ -10,6 +10,7 @@ layout(push_constant) uniform PushConstants {
 layout(location = 0) in vec3 in_vertex;
 layout(location = 1) in vec3 in_vertex_prev;
 layout(location = 2) in vec3 in_vertex_next;
+layout(location = 3) in vec4 in_color;
 
 // rocky::detail::LineStyleRecord
 struct LineStyle {
@@ -61,7 +62,7 @@ vec3 apply_depth_offset(in vec3 vertex, float offset, float n)
 
 void main()
 {
-    vary.color = line.style.color;
+    vary.color = line.style.color.a > 0.0 ? line.style.color : in_color;
     vary.stipplePattern = line.style.stipplePattern;
     vary.stippleFactor = line.style.stippleFactor;
 

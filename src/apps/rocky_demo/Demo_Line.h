@@ -73,6 +73,65 @@ auto Demo_Line_Absolute = [](Application& app)
     }
 };
 
+auto Demo_Line_Per_Vertex_Colors = [](Application& app)
+{
+    static entt::entity entity = entt::null;
+    static bool visible = true;
+
+    if (entity == entt::null)
+    {
+        app.registry.write([&](entt::registry& r)
+            {
+                // Create a new entity to host our line.
+                entity = r.create();
+
+                // Build the geometry.
+                auto& geometry = r.emplace<LineGeometry>(entity);
+
+                // Let's transform geodetic (long, lat) points into our world SRS:
+                auto xform = SRS::WGS84.to(app.mapNode->srs());
+                for (double lon = -180; lon <= 0.0; lon += 2.0)
+                {
+                    auto world = xform(glm::dvec3(lon, -20.0, 25000.0));
+                    geometry.points.emplace_back(world);
+                }
+
+                // Generate some pretty per-vertex colors:
+                std::mt19937 rng;
+                std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+                for (std::size_t i = 0; i < geometry.points.size(); ++i)
+                {
+                    geometry.colors.emplace_back(dist(rng), dist(rng), dist(rng), 1.0f);
+                }
+
+                // Style our line.
+                auto& style = r.emplace<LineStyle>(entity);
+                style.color = Color::Transparent; // signals to use per-vertex colors
+                style.width = 6.0f;
+
+                // A "Line" renders the given geometry with the given style.
+                auto& line = r.emplace<Line>(entity, geometry, style);
+
+                app.vsgcontext->requestFrame();
+            });
+    }
+
+    if (ImGuiLTable::Begin("absolute linestring"))
+    {
+        auto [lock, r] = app.registry.read();
+
+        static bool visible = true;
+        if (ImGuiLTable::Checkbox("Show", &visible))
+            setVisible(r, entity, visible);
+
+        auto& style = r.get<LineStyle>(entity);
+        if (ImGuiLTable::SliderFloat("Width", &style.width, 1.0f, 15.0f, "%.0f"))
+            style.dirty(r);
+
+        ImGuiLTable::End();
+    }
+};
+
 auto Demo_Line_Relative = [](Application& app)
 {
     static entt::entity entity = entt::null;

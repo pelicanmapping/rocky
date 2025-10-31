@@ -82,7 +82,7 @@ auto Demo_LabelFeatures = [](Application& app)
 
 #if defined(_WIN32) && defined(USE_DYNAMIC_FONTS)
         // Load a new font. This will run once per frame in the WidgetSystem.
-        app.getSystem<WidgetSystem>()->run([&](std::uint32_t viewID, ImGuiContext* igc)
+        app.getSystem<WidgetSystem>()->preRecord([&](std::uint32_t viewID, ImGuiContext* igc)
             {
                 if (fonts[viewID].igc != igc)
                 {

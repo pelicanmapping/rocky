@@ -19,8 +19,9 @@ namespace ROCKY_NAMESPACE
         LineGeometryNode();
 
         //! Populate the geometry arrays
-        template<typename VEC3_T>
-        inline void set(const std::vector<VEC3_T>& verts, LineTopology topology, std::size_t capacity);
+        template<typename VEC3_T, typename VEC4_T>
+        inline void set(const std::vector<VEC3_T>& verts, 
+            const std::vector<VEC4_T>& colors, LineTopology topology, std::size_t capacity);
 
         //! The first vertex in the line string to render
         void setFirst(unsigned value);
@@ -167,12 +168,16 @@ namespace ROCKY_NAMESPACE
 
 
 
-    template<typename VEC3_T>
-    void LineGeometryNode::set(const std::vector<VEC3_T>& t_verts, LineTopology topology, std::size_t capacity)
+    template<typename VEC3_T, typename VEC4_T>
+    void LineGeometryNode::set(const std::vector<VEC3_T>& t_verts, 
+        const std::vector<VEC4_T>& t_colors, LineTopology topology, std::size_t capacity)
     {
         const vsg::vec4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
         auto& verts = reinterpret_cast<const std::vector<vsg::dvec3>&>(t_verts);
+        auto& colors = reinterpret_cast<const std::vector<vsg::vec4>&>(t_colors);
+
+        bool colorPerVert = (colors.size() == verts.size());
 
         capacity = std::max(capacity, verts.size());
         capacity = std::max(capacity, (std::size_t)4);
@@ -224,7 +229,7 @@ namespace ROCKY_NAMESPACE
                     (_previous->data())[i * 4 + n] = first ? verts[i] : verts[i - 1];
                     (_next->data())[i * 4 + n] = last ? verts[i] : verts[i + 1];
                     (_current->data())[i * 4 + n] = verts[i];
-                    (_colors->data())[i * 4 + n] = defaultColor;
+                    (_colors->data())[i * 4 + n] = colorPerVert ? colors[i] : defaultColor;
                 }
 
                 if (!first)
@@ -261,7 +266,7 @@ namespace ROCKY_NAMESPACE
                     }
 
                     current[i * 4 + n] = verts[i];
-                    color[i * 4 + n] = defaultColor;
+                    color[i * 4 + n] = colorPerVert ? colors[i] : defaultColor;
                 }
 
                 if (even)

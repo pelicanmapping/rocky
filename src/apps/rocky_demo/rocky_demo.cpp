@@ -70,10 +70,11 @@ std::vector<Demo> demos =
     Demo{ "Map", Demo_Map },
     Demo{ "Basics", {},
     {
-        Demo{ "Line   - absolute", Demo_Line_Absolute },
+        Demo{ "Line -   absolute", Demo_Line_Absolute },
+        Demo{ "  Line - per-vertex colors", Demo_Line_Per_Vertex_Colors },
         Demo{ "  Line - relative", Demo_Line_Relative },
         Demo{ "  Line - shared", Demo_Line_Shared },
-        Demo{ "Mesh   - absolute", Demo_Mesh_Absolute },
+        Demo{ "Mesh -   absolute", Demo_Mesh_Absolute },
         Demo{ "  Mesh - relative", Demo_Mesh_Relative },
         Demo{ "  Mesh - textured", Demo_Mesh_Textured },
         Demo{ "  Mesh - shared", Demo_Mesh_Shared },

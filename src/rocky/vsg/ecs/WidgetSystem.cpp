@@ -64,7 +64,7 @@ WidgetSystemNode::initialize(VSGContext& context)
     auto recorder = [this](RenderingState& rs, void* imguiContext)
         {
             // run any per-context tasks:
-            for (auto& task : _tasks[rs.viewID])
+            for (auto& task : _preRecordTasks)
                 task(rs.viewID, (ImGuiContext*)imguiContext);
 
             auto [lock, registry] = _registry.read();
