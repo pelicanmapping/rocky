@@ -42,6 +42,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_DrawComponent.h"
 #include "Demo_ElevationSampler.h"
 #include "Demo_Intersect.h"
+#include "Demo_Screenshot.h"
 
 template<class T>
 int layerError(T layer)
@@ -87,6 +88,7 @@ std::vector<Demo> demos =
         Demo{ "Drawing", Demo_Draw },
         Demo{ "Node Pager", Demo_NodePager },
         Demo{ "RTT", Demo_RTT },
+        Demo{ "Screenshot", Demo_Screenshot },
     } },
     Demo{ "GIS Data", {},
     {
