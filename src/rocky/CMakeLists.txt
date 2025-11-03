@@ -168,7 +168,7 @@ if(unofficial-sqlite3_FOUND AND ZLIB_FOUND)
 endif()
 
 if(ImGui_FOUND)
-    list(APPEND PRIVATE_LIBS imgui::imgui)
+    list(APPEND PUBLIC_LIBS imgui::imgui)
 endif()
 
 if (ROCKY_SUPPORTS_AZURE)
