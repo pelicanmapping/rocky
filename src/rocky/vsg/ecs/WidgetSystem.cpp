@@ -63,10 +63,6 @@ WidgetSystemNode::initialize(VSGContext& context)
     // register me as a gui rendering callback.
     auto recorder = [this](RenderingState& rs, void* imguiContext)
         {
-            // run any per-context tasks:
-            for (auto& task : _preRecordTasks)
-                task(rs.viewID, (ImGuiContext*)imguiContext);
-
             auto [lock, registry] = _registry.read();
 
             const int defaultWindowFlags =

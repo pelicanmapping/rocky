@@ -12,29 +12,16 @@
 #include <rocky/ecs/Registry.h>
 #include <functional>
 #include <cstdint>
-#include <imgui.h>
+
+//struct ImGuiContext;
 
 namespace ROCKY_NAMESPACE
 {
-    class WidgetSystem
-    {
-    public:
-        using Function = std::function<void(std::uint32_t, struct ImGuiContext*)>;
-
-        inline void preRecord(Function&& f) {
-            _preRecordTasks.emplace_back(std::move(f));
-        }
-
-    protected:
-        std::vector<Function> _preRecordTasks;
-    };
-
     /**
      * Creates commands for rendering ImGui-based overlays
      */
-    class WidgetSystemNode : public vsg::Inherit<vsg::Node, WidgetSystemNode>, 
-        public System,
-        public WidgetSystem
+    class WidgetSystemNode : public vsg::Inherit<vsg::Node, WidgetSystemNode>,
+        public System
     {
     public:
         //! Construct the mesh renderer

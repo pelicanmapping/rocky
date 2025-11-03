@@ -10,7 +10,7 @@
 
 using namespace ROCKY_NAMESPACE;
 
-#if IMGUI_VERSION_NUM >= 19200
+#if IMGUI_VERSION_NUM >= 19200 && defined(_WIN32)
 #define USE_DYNAMIC_FONTS
 #endif
 
@@ -80,21 +80,6 @@ auto Demo_LabelFeatures = [](Application& app)
         }
 
 
-#if defined(_WIN32) && defined(USE_DYNAMIC_FONTS)
-        // Load a new font. This will run once per frame in the WidgetSystem.
-        app.getSystem<WidgetSystem>()->preRecord([&](std::uint32_t viewID, ImGuiContext* igc)
-            {
-                if (fonts[viewID].igc != igc)
-                {
-                    ImGui::SetCurrentContext(igc);
-                    fonts[viewID].font = ImGui::GetIO().Fonts->AddFontFromFileTTF("c:/windows/fonts/arial.ttf");
-                    fonts[viewID].igc = igc;
-                    ImGui::GetIO().FontDefault = fonts[viewID].font;
-                }
-            });
-#endif
-
-
         auto [lock, registry] = app.registry.write();
 
         static bool appliedFont = false;
@@ -114,8 +99,6 @@ auto Demo_LabelFeatures = [](Application& app)
 
             label.render = [&, name=std::string(name)](WidgetInstance& i)
                 {
-                    auto& dc = i.registry.get<Declutter>(i.entity);
-
                     ImGui::SetCurrentContext(i.context);
                     ImGui::SetNextWindowBgAlpha(0.0f); // fully transparent background
                     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -123,6 +106,13 @@ auto Demo_LabelFeatures = [](Application& app)
                     ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
 
 #ifdef USE_DYNAMIC_FONTS
+                    // Load the font if necessary
+                    if (fonts[i.viewID].igc != i.context)
+                    {
+                        fonts[i.viewID].font = ImGui::GetIO().Fonts->AddFontFromFileTTF("c:/windows/fonts/arial.ttf");
+                        fonts[i.viewID].igc = i.context;
+                        ImGui::GetIO().FontDefault = fonts[i.viewID].font;
+                    }
                     ImGui::PushFont(nullptr, fontSize);
 #endif
                     const ImVec4 outlineColor(0.05f, 0.05f, 0.05f, 1.0f);
@@ -136,6 +126,7 @@ auto Demo_LabelFeatures = [](Application& app)
                     ImGui::PopStyleVar(1);
 
                     // update the decluttering record to reflect our widget's size
+                    auto& dc = i.registry.get<Declutter>(i.entity);
                     dc.rect = Rect(i.size.x, i.size.y);
                 };
 
