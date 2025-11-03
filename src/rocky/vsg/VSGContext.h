@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <rocky/vsg/Common.h>
+#include <rocky/vsg/Polyfill.h>
 #include <rocky/Context.h>
 #include <rocky/Callbacks.h>
 #include <rocky/Rendering.h>
@@ -59,12 +60,15 @@ namespace ROCKY_NAMESPACE
         //! List of viewIDs that are active.
         std::vector<std::uint32_t> activeViewIDs = { 0 };
 
+        //! Callback fired during each update pass.
+        Callback<> onUpdate;
+
         //! Callbacks to render GUI elements
         using GuiRecorder = std::function<void(RenderingState&, void* guiContext)>;
         std::deque<GuiRecorder> guiRecorders;
 
-        //! Callback fired during each update pass.
-        Callback<> onUpdate;
+        //! Polyfill Vulkan Extension functions (not supplied by VSG yet)
+        VulkanExtensions* ext();
 
     public:
 
@@ -128,6 +132,8 @@ namespace ROCKY_NAMESPACE
         std::deque<std::vector<vsg::ref_ptr<vsg::Object>>> _gc;
 
         vsg::ref_ptr<vsg::CommandGraph> _computeCommandGraph;
+
+        vsg::ref_ptr<VulkanExtensions> _vulkanExtensions;
 
     private:
         //! Construct a new VSG-based application instance

@@ -338,18 +338,22 @@ namespace
             styles.meshColorFunction ? styles.meshColorFunction(feature) :
             styles.mesh.color;
 
-        Triangle temp = {
-            {}, // we'll fill in the verts below
-            {color, color, color},
-            {}, // uvs - don't need them
-        };
+        //Triangle temp = {
+        //    {}, // we'll fill in the verts below
+        //    {color, color, color},
+        //    {}, // uvs - don't need them
+        //};
+
+        meshGeom.triangles.reserve(meshGeom.triangles.size() + m.triangles.size());
 
         for (auto& tri : m.triangles)
         {
+            Triangle temp;
+            temp.colors = { color, color, color };
             temp.verts[0] = m.verts[tri.second.i0];
             temp.verts[1] = m.verts[tri.second.i1];
             temp.verts[2] = m.verts[tri.second.i2];
-            meshGeom.triangles.emplace_back(temp);
+            meshGeom.triangles.emplace_back(std::move(temp));
         }
     }
 }

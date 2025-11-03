@@ -498,6 +498,21 @@ VSGContextImpl::device()
     return _viewer->windows().size() > 0 ? _viewer->windows().front()->getOrCreateDevice() : nullptr;
 }
 
+VulkanExtensions*
+VSGContextImpl::ext()
+{
+    if (!_vulkanExtensions)
+    {
+        std::scoped_lock lock(_compileMutex);
+        if (!_vulkanExtensions)
+        {
+            ROCKY_HARD_ASSERT(device());
+            _vulkanExtensions = VulkanExtensions::create(device());
+        }
+    }
+    return _vulkanExtensions;
+}
+
 vsg::ref_ptr<vsg::CommandGraph>
 VSGContextImpl::getComputeCommandGraph() const
 {

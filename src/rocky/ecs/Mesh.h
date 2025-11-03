@@ -7,6 +7,7 @@
 #include <rocky/ecs/Component.h>
 #include <rocky/Color.h>
 #include <rocky/SRS.h>
+#include <array>
 
 namespace ROCKY_NAMESPACE
 {
@@ -14,9 +15,9 @@ namespace ROCKY_NAMESPACE
     template<typename VEC2 = glm::fvec2, typename VEC3 = glm::dvec3, typename VEC4 = glm::vec4>
     struct Triangle_t
     {
-        VEC3 verts[3];
-        VEC4 colors[3] = { {1,1,1,1}, {1,1,1,1}, {1,1,1,1} };
-        VEC2 uvs[3] = { {0,0}, {0,0}, {0,0} };
+        std::array<VEC3, 3> verts;
+        std::array<VEC4, 3> colors = { VEC4{1,1,1,1}, VEC4{1,1,1,1}, VEC4{1,1,1,1} };
+        std::array<VEC2, 3> uvs = { VEC2{0,0}, VEC2{0,0}, VEC2{0,0} };
     };
     using Triangle = Triangle_t<>;
 

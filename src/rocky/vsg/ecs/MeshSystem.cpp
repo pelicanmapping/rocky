@@ -6,7 +6,6 @@
  */
 #include "MeshSystem.h"
 #include "../PipelineState.h"
-#include "../Polyfill.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
@@ -432,8 +431,8 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
 
                 geomDetail.node->addTriangle(
                     v32,
-                    reinterpret_cast<const vsg::vec2*>(tri.uvs),
-                    reinterpret_cast<const vsg::vec4*>(tri.colors));
+                    reinterpret_cast<const vsg::vec2*>(&tri.uvs),
+                    reinterpret_cast<const vsg::vec4*>(&tri.colors));
             }
 
             auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(offset)));
@@ -471,9 +470,9 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
             for (auto& tri : geom.triangles)
             {
                 geomDetail.node->addTriangle(
-                    reinterpret_cast<const vsg::dvec3*>(tri.verts),
-                    reinterpret_cast<const vsg::vec2*>(tri.uvs),
-                    reinterpret_cast<const vsg::vec4*>(tri.colors));
+                    reinterpret_cast<const vsg::dvec3*>(&tri.verts),
+                    reinterpret_cast<const vsg::vec2*>(&tri.uvs),
+                    reinterpret_cast<const vsg::vec4*>(&tri.colors));
             }
         }
 
@@ -507,11 +506,11 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
     styleDetail.passes[0]->addChild(styleDetail.bind);
 
     // wireframe:
-    styleDetail.passes[0]->addChild(SetPolygonMode::create(vsgcontext->device(),
+    styleDetail.passes[0]->addChild(SetPolygonMode::create(vsgcontext->ext(),
         style.wireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL));
 
     // cull mode
-    styleDetail.passes[0]->addChild(SetCullMode::create(vsgcontext->device(),
+    styleDetail.passes[0]->addChild(SetCullMode::create(vsgcontext->ext(),
         style.drawBackfaces ? VK_CULL_MODE_NONE : VK_CULL_MODE_BACK_BIT));
 
     if (style.twoPassAlpha == true && style.writeDepth == false)
@@ -527,18 +526,18 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
         styleDetail.passes.emplace_back(vsg::Commands::create());
 
         // first pass: no depth writes, full color writes:
-        styleDetail.passes[0]->addChild(SetDepthWriteEnable::create(vsgcontext->device(), VK_FALSE));
-        styleDetail.passes[0]->addChild(SetColorWriteMask::create(vsgcontext->device(), 0x0F));
+        styleDetail.passes[0]->addChild(SetDepthWriteEnable::create(vsgcontext->ext(), VK_FALSE));
+        styleDetail.passes[0]->addChild(SetColorWriteMask::create(vsgcontext->ext(), 0x0F));
 
         // second pass: depth writes, no color writes:
-        styleDetail.passes[1]->addChild(SetDepthWriteEnable::create(vsgcontext->device(), VK_TRUE));
-        styleDetail.passes[1]->addChild(SetColorWriteMask::create(vsgcontext->device(), 0x0));
+        styleDetail.passes[1]->addChild(SetDepthWriteEnable::create(vsgcontext->ext(), VK_TRUE));
+        styleDetail.passes[1]->addChild(SetColorWriteMask::create(vsgcontext->ext(), 0x0));
     }
     else
     {
         // depth writes, default color mask
-        styleDetail.passes[0]->addChild(SetDepthWriteEnable::create(vsgcontext->device(), style.writeDepth ? VK_TRUE : VK_FALSE));
-        styleDetail.passes[0]->addChild(SetColorWriteMask::create(vsgcontext->device(), 0x0F));
+        styleDetail.passes[0]->addChild(SetDepthWriteEnable::create(vsgcontext->ext(), style.writeDepth ? VK_TRUE : VK_FALSE));
+        styleDetail.passes[0]->addChild(SetColorWriteMask::create(vsgcontext->ext(), 0x0F));
     }
 #endif
 
