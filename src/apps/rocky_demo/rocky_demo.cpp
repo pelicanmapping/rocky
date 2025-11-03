@@ -87,8 +87,8 @@ std::vector<Demo> demos =
         Demo{ "Label (old)", Demo_Label },
         Demo{ "Drawing", Demo_Draw },
         Demo{ "Node Pager", Demo_NodePager },
-        Demo{ "RTT", Demo_RTT },
-        Demo{ "Screenshot", Demo_Screenshot },
+        Demo{ "RTT", Demo_RTT }
+        //Demo{ "Screenshot", Demo_Screenshot },
     } },
     Demo{ "GIS Data", {},
     {
