@@ -18,6 +18,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Map.h"
 #include "Demo_Line.h"
 #include "Demo_Mesh.h"
+#include "Demo_Point.h"
 #include "Demo_Icon.h"
 #include "Demo_Model.h"
 #include "Demo_Label.h"
@@ -81,6 +82,7 @@ std::vector<Demo> demos =
         Demo{ "  Mesh - shared", Demo_Mesh_Shared },
         Demo{ "  Mesh - blending", Demo_Mesh_Blending },
         Demo{ "  Mesh - lighting", Demo_Mesh_Lighting },
+        Demo{ "Point", Demo_Point },
         Demo{ "Icon", Demo_Icon },
         Demo{ "Model", Demo_Model },
         Demo{ "Widget", Demo_Widget },

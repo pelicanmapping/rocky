@@ -7,6 +7,7 @@
 
 #include "ecs/MeshSystem.h"
 #include "ecs/LineSystem.h"
+#include "ecs/PointSystem.h"
 #include "ecs/IconSystem.h"
 #include "ecs/IconSystem2.h"
 #include "ecs/LabelSystem.h"
@@ -227,6 +228,7 @@ Application::ctor(int& argc, char** argv)
     ecsNode->add(NodeSystemNode::create(registry));
     ecsNode->add(MeshSystemNode::create(registry));
     ecsNode->add(LineSystemNode::create(registry));
+    ecsNode->add(PointSystemNode::create(registry));
 
     if (indirect)
         ecsNode->add(IconSystem2Node::create(registry));

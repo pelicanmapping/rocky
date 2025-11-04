@@ -7,6 +7,7 @@
 
 #include "MeshSystem.h"
 #include "LineSystem.h"
+#include "PointSystem.h"
 #include "IconSystem.h"
 #include "LabelSystem.h"
 #include "WidgetSystem.h"
@@ -33,6 +34,7 @@ ECSNode::ECSNode(Registry& reg, bool addDefaultSystems) :
         add(NodeSystemNode::create(registry));
         add(MeshSystemNode::create(registry));
         add(LineSystemNode::create(registry));
+        add(PointSystemNode::create(registry));
         add(IconSystemNode::create(registry));
         add(LabelSystemNode::create(registry));
 #ifdef ROCKY_HAS_IMGUI

@@ -10,10 +10,6 @@
 #if defined(ROCKY_HAS_IMGUI)
 #include <rocky/vsg/ecs/System.h>
 #include <rocky/ecs/Registry.h>
-#include <functional>
-#include <cstdint>
-
-//struct ImGuiContext;
 
 namespace ROCKY_NAMESPACE
 {

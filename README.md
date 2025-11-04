@@ -315,9 +315,10 @@ Spatial reference systems ensure that your map data aligns correctly, support ac
 
 Rocky has a set of built-in primitives for displaying objects on the map.
 
-* Icon - a 2D billboard image
 * Line - a string of 2D line segments
 * Mesh - a collection of triangles
+* Point - a collection of points
+* Icon - a 2D image facing the viewer
 * Model - a VSG scene graph representing an object
 * Widget - an interactive ImGui panel (or a simple text label)
 
