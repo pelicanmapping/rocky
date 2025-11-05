@@ -338,7 +338,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
     readerWriterOptions->paths.push_back("/etc/fonts");
     readerWriterOptions->paths.push_back("/usr/local/share/rocky/data");
 
-#if 0
+#if 1
     // Load a default font if there is one
     auto font_file = util::getEnvVar("ROCKY_DEFAULT_FONT");
     if (font_file.empty())
